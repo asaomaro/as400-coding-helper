@@ -1,0 +1,133 @@
+{
+  "name": "rpg-cl-vscode-support",
+  "displayName": "RPG/CL Development Support",
+  "description": "Fixed-format RPG and CL editing support with F4-style prompter for AS400 / IBM i developers.",
+  "version": "0.0.1",
+  "publisher": "as400-coding-helper",
+  "engines": {
+    "vscode": "^1.90.0"
+  },
+  "categories": [
+    "Programming Languages",
+    "Other"
+  ],
+  "main": "./out/extension/extension.js",
+  "activationEvents": [
+    "onLanguage:rpg-fixed",
+    "onLanguage:cl",
+    "onCommand:rpgClSupport.showPrompter"
+  ],
+  "contributes": {
+    "languages": [
+      {
+        "id": "rpg-fixed",
+        "aliases": [
+          "RPG Fixed",
+          "RPG (Fixed Format)"
+        ],
+        "extensions": [
+          ".rpgle"
+        ],
+        "configuration": "./language-configuration/rpg-fixed-language.json"
+      },
+      {
+        "id": "cl",
+        "aliases": [
+          "CL",
+          "Control Language"
+        ],
+        "extensions": [
+          ".clp"
+        ],
+        "configuration": "./language-configuration/cl-language.json"
+      }
+    ],
+    "grammars": [
+      {
+        "language": "rpg-fixed",
+        "scopeName": "source.rpgle",
+        "path": "./resources/language/rpg-fixed.tmLanguage.json"
+      },
+      {
+        "language": "cl",
+        "scopeName": "source.cl",
+        "path": "./resources/language/cl.tmLanguage.json"
+      }
+    ],
+    "commands": [
+      {
+        "command": "rpgClSupport.showPrompter",
+        "title": "RPG/CL: Show F4 Prompter"
+      },
+      {
+        "command": "rpgClSupport.toggleComment.rpg",
+        "title": "RPG/CL: Toggle Comment (RPG)"
+      },
+      {
+        "command": "rpgClSupport.toggleComment.cl",
+        "title": "RPG/CL: Toggle Comment (CL)"
+      }
+    ],
+    "keybindings": [
+      {
+        "command": "rpgClSupport.toggleComment.rpg",
+        "key": "ctrl+/",
+        "when": "editorLangId == rpg-fixed && editorTextFocus"
+      },
+      {
+        "command": "rpgClSupport.toggleComment.cl",
+        "key": "ctrl+/",
+        "when": "editorLangId == cl && editorTextFocus"
+      },
+      {
+        "command": "rpgClSupport.showPrompter",
+        "key": "f4",
+        "when": "editorTextFocus && (editorLangId == rpg-fixed || editorLangId == cl)"
+      }
+    ],
+    "configuration": {
+      "title": "RPG/CL Development Support",
+      "properties": {
+        "rpgClSupport.cNewOpcodes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": [
+            "EVAL",
+            "EVALR",
+            "IF",
+            "ELSEIF",
+            "ELSE",
+            "ENDIF",
+            "SELECT",
+            "WHEN",
+            "OTHER",
+            "ENDSL"
+          ],
+          "description": "C 仕様書で「新形式」として扱うオペコードの一覧です。ここに列挙されたオペコードは C-NEW プロンプターで扱われ、それ以外は従来形式（C-SPEC）として扱われます。"
+        },
+        "rpgClSupport.prompter.openBeside": {
+          "type": "boolean",
+          "default": true,
+          "description": "F4 プロンプターをソースと同じエディターグループではなく、右側のエディターグループに新規タブとして表示します。"
+        }
+      }
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "test": "echo \"Tests are not configured for this environment yet.\""
+  },
+  "devDependencies": {
+    "@types/mocha": "^10.0.0",
+    "@types/node": "^20.0.0",
+    "@types/vscode": "^1.90.0",
+    "glob": "^10.3.0",
+    "mocha": "^10.0.0",
+    "typescript": "^5.0.0"
+  }
+}
+

@@ -31,7 +31,14 @@
 
 *GATE: Must pass before Phase 0 research. Re-check after Phase 1 design.*
 
-[Gates determined based on constitution file]
+- Confirm that the feature spec defines prioritized, independently testable
+  user stories and maps to business value (Constitution Principle 2).
+- Identify foundational work that must be completed before any user story
+  can be implemented and record it explicitly in this plan (Principle 3).
+- For IBM i / AS400-impacting changes, capture safety gates (environments,
+  authorities, rollback) in this plan (Principle 1).
+- If tests are requested, ensure test work is captured and ordered ahead of
+  implementation tasks for each story (Principle 4).
 
 ## Project Structure
 

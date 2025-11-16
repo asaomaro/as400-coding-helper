@@ -1,0 +1,166 @@
+openapi: 3.0.3
+info:
+  title: RPG/CL VS Code Extension – Prompter & Validation API
+  version: 0.1.0
+  description: >
+    Logical contracts between the VS Code extension core and any future
+    backend/worker responsible for parsing RPG/CL and validating prompter input.
+
+paths:
+  /prompter/resolve:
+    post:
+      summary: Resolve prompter definition for a given keyword
+      operationId: resolvePrompter
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                language:
+                  type: string
+                  enum: [rpg-fixed, cl]
+                keyword:
+                  type: string
+                workspaceRoot:
+                  type: string
+              required: [language, keyword]
+      responses:
+        '200':
+          description: Prompter definition resolved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  keyword:
+                    type: string
+                  description:
+                    type: string
+                  parameters:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ParameterDefinition'
+        '404':
+          description: No prompter definition found for the keyword
+
+  /prompter/validate:
+    post:
+      summary: Validate parameter values for a given prompter definition
+      operationId: validatePrompterInput
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                keyword:
+                  type: string
+                parameters:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/ParameterValue'
+              required: [keyword, parameters]
+      responses:
+        '200':
+          description: Validation performed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  diagnostics:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Diagnostic'
+
+components:
+  schemas:
+    ParameterDefinition:
+      type: object
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        inputType:
+          type: string
+          enum: [text, dropdown, number, group]
+        required:
+          type: boolean
+        defaultValue:
+          type: string
+          nullable: true
+        attributes:
+          type: object
+          properties:
+            characterSet:
+              type: string
+              enum: [alpha, alnum, upper, any]
+              nullable: true
+            numericOnly:
+              type: boolean
+              nullable: true
+            minLength:
+              type: integer
+              nullable: true
+            maxLength:
+              type: integer
+              nullable: true
+        length:
+          type: integer
+          nullable: true
+        placeholder:
+          type: string
+          nullable: true
+        maxOccurrences:
+          type: integer
+          nullable: true
+        visibleByDefault:
+          type: boolean
+          nullable: true
+        options:
+          type: array
+          items:
+            type: object
+            properties:
+              label:
+                type: string
+              value:
+                type: string
+        children:
+          type: array
+          items:
+            $ref: '#/components/schemas/ParameterDefinition'
+
+    ParameterValue:
+      type: object
+      properties:
+        name:
+          type: string
+        occurrenceIndex:
+          type: integer
+          description: 0-based index for repeated parameters
+        value:
+          type: string
+      required: [name, occurrenceIndex, value]
+
+    Diagnostic:
+      type: object
+      properties:
+        severity:
+          type: string
+          enum: [info, warning, error]
+        message:
+          type: string
+        parameterName:
+          type: string
+        occurrenceIndex:
+          type: integer
+        code:
+          type: string
+          nullable: true
+      required: [severity, message, parameterName, occurrenceIndex]
+
