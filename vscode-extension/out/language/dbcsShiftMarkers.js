@@ -54,12 +54,14 @@ function isDbcsCodePoint(codePoint) {
 function registerDbcsShiftMarkers(context) {
     shiftOutDecoration = vscode.window.createTextEditorDecorationType({
         before: {
-            contentText: "{"
+            contentText: "{",
+            color: new vscode.ThemeColor("editorCodeLens.foreground")
         }
     });
     shiftInDecoration = vscode.window.createTextEditorDecorationType({
         before: {
-            contentText: "}"
+            contentText: "}",
+            color: new vscode.ThemeColor("editorCodeLens.foreground")
         }
     });
     context.subscriptions.push(shiftOutDecoration, shiftInDecoration);

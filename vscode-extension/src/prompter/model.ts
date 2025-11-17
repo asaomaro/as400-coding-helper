@@ -12,11 +12,35 @@ export interface PrompterState {
   readonly hasErrors: boolean;
 }
 
+function flattenParameters(
+  parameters: readonly ParameterDefinition[]
+): ParameterDefinition[] {
+  const result: ParameterDefinition[] = [];
+
+  for (const parameter of parameters) {
+    if (
+      parameter.inputType === "group" &&
+      Array.isArray(parameter.children) &&
+      parameter.children.length > 0
+    ) {
+      for (const child of parameter.children) {
+        result.push(child);
+      }
+    } else {
+      result.push(parameter);
+    }
+  }
+
+  return result;
+}
+
 export function buildInitialState(
   definition: PrompterDefinition,
   initialValues: Record<string, string | undefined>
 ): PrompterState {
-  const fields: FieldValue[] = definition.parameters.map(parameter => {
+  const flatParameters = flattenParameters(definition.parameters);
+
+  const fields: FieldValue[] = flatParameters.map(parameter => {
     const raw =
       initialValues[parameter.name] ??
       parameter.defaultValue ??
@@ -56,7 +80,7 @@ export function validate(
   }
 
   if (parameter.attributes?.numericOnly && trimmed.length > 0) {
-    if (!/^[0-9]+$/.test(trimmed)) {
+    if (!/^[0-9]+$/u.test(trimmed)) {
       return "Only numeric characters are allowed.";
     }
   }
@@ -69,17 +93,21 @@ export function validate(
     }
   }
 
-   // コメント以外の項目については、数値専用でない限り
-   // 英数字と空白/アンダースコアのみ許可する。
-   if (
-     parameter.name !== "COMMENT" &&
-     !parameter.attributes?.numericOnly &&
-     trimmed.length > 0
-   ) {
-     if (!/^[A-Za-z0-9_ ]+$/.test(trimmed)) {
-       return "Only alphanumeric characters are allowed.";
-     }
-   }
+  // コメント以外の項目については、数値専用でなく、かつ
+  // characterSet が英数字系 (alpha/alnum/upper) の場合のみ
+  // 英数字と空白/アンダースコアに制限する。
+  const charset = parameter.attributes?.characterSet;
+  if (
+    parameter.name !== "COMMENT" &&
+    !parameter.attributes?.numericOnly &&
+    trimmed.length > 0 &&
+    charset &&
+    (charset === "alpha" || charset === "alnum" || charset === "upper")
+  ) {
+    if (!/^[A-Za-z0-9_ ]+$/u.test(trimmed)) {
+      return "Only alphanumeric characters are allowed.";
+    }
+  }
 
   if (parameter.options && parameter.options.length > 0) {
     const allowed = parameter.options.map(option => option.value);

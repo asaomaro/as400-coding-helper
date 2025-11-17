@@ -7,7 +7,7 @@ import { showParameterHelp } from "./help";
 
 export interface PrompterResult {
   readonly confirmed: boolean;
-  readonly values: Record<string, string>;
+  readonly values: Record<string, string | string[]>;
 }
 
 export async function openPrompter(
@@ -55,7 +55,7 @@ export async function openPrompter(
         panel.dispose();
         resolve({
           confirmed: true,
-          values: message.values as Record<string, string>
+          values: message.values as Record<string, string | string[]>
         });
       } else if (message?.type === "cancel") {
         subscription.dispose();
@@ -89,4 +89,3 @@ function createNonce(): string {
   }
   return nonce;
 }
-

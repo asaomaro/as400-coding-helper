@@ -169,13 +169,77 @@ function extractClInitialValues(resolved, definition) {
         return {};
     }
     const values = {};
-    const paramNames = new Set(definition.parameters.map(parameter => parameter.name.toUpperCase()));
+    const paramNames = new Set();
+    for (const parameter of definition.parameters) {
+        paramNames.add(parameter.name.toUpperCase());
+        if (Array.isArray(parameter.children) &&
+            parameter.children.length > 0) {
+            for (const child of parameter.children) {
+                paramNames.add(child.name.toUpperCase());
+            }
+        }
+    }
     // tokens[0] is the command name (CALL, etc.)
-    if (tokens.length > 1 && paramNames.has("PGM")) {
-        values.PGM = tokens[1] ?? "";
+    if (tokens.length > 1) {
+        const token = tokens[1] ?? "";
+        const match = /^PGM\((.*)\)$/iu.exec(token);
+        const inside = (match ? match[1] ?? "" : token).trim();
+        if (inside.length > 0) {
+            // inside は "LIBL/OBJ" または "OBJ" 形式
+            const slashIndex = inside.indexOf("/");
+            let libl = "";
+            let obj = inside;
+            if (slashIndex >= 0) {
+                libl = inside.slice(0, slashIndex).trim();
+                obj = inside.slice(slashIndex + 1).trim();
+            }
+            if (libl && paramNames.has("LIBL")) {
+                values.LIBL = libl;
+            }
+            if (obj && paramNames.has("OBJ")) {
+                values.OBJ = obj;
+            }
+        }
     }
     if (tokens.length > 2 && paramNames.has("PARM")) {
-        values.PARM = tokens.slice(2).join(" ");
+        const parmValues = [];
+        // トークン列から PARM(...) 部分を抽出する。
+        // 旧形式:   PARM('AAA') PARM('BBB')
+        // 新形式:   PARM('AAA' 'BBB' 'CC')
+        for (let i = 2; i < tokens.length; i += 1) {
+            const token = tokens[i] ?? "";
+            const upper = token.toUpperCase();
+            if (!upper.startsWith("PARM(")) {
+                continue;
+            }
+            // PARM( で始まるトークンから、対応する ) までを結合する
+            let combined = token;
+            while (!combined.trimEnd().endsWith(")") && i + 1 < tokens.length) {
+                i += 1;
+                combined += ` ${tokens[i]}`;
+            }
+            const match = /^PARM\((.*)\)$/iu.exec(combined.trim());
+            if (!match || !match[1]) {
+                continue;
+            }
+            const inside = match[1].trim();
+            if (!inside) {
+                continue;
+            }
+            // 括弧内を空白区切りで分割し、各トークンを 1 行として扱う
+            const innerTokens = inside.split(/\s+/u).filter(part => part.length > 0);
+            for (let part of innerTokens) {
+                if (part.startsWith("(") && part.endsWith(")")) {
+                    part = part.slice(1, -1).trim();
+                }
+                if (part.length > 0) {
+                    parmValues.push(part);
+                }
+            }
+        }
+        if (parmValues.length > 0) {
+            values.PARM = parmValues.join("\n");
+        }
     }
     return values;
 }

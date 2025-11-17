@@ -3,6 +3,18 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.toSerializableState = toSerializableState;
 exports.buildHtml = buildHtml;
 function toSerializableState(definition, state, resolved) {
+    const groupInfoByChildName = new Map();
+    for (const parameter of definition.parameters) {
+        if (parameter.inputType === "group" &&
+            Array.isArray(parameter.children) &&
+            parameter.children.length > 0) {
+            const groupName = parameter.name;
+            const groupLabel = parameter.description;
+            for (const child of parameter.children) {
+                groupInfoByChildName.set(child.name, { groupName, groupLabel });
+            }
+        }
+    }
     return {
         keyword: definition.keyword,
         positionLine: resolved.line,
@@ -16,12 +28,67 @@ function toSerializableState(definition, state, resolved) {
             options: field.parameter.options,
             error: field.error,
             hasHelp: Boolean(field.parameter.help && field.parameter.help.trim()),
-            help: field.parameter.help
+            help: field.parameter.help,
+            maxOccurrences: field.parameter.maxOccurrences,
+            groupName: groupInfoByChildName.get(field.parameter.name)?.groupName,
+            groupLabel: groupInfoByChildName.get(field.parameter.name)?.groupLabel
         }))
     };
 }
 function buildHtml(state, options) {
-    const fieldsHtml = state.fields
+    const standaloneFields = [];
+    const groups = new Map();
+    const groupOrder = [];
+    for (const field of state.fields) {
+        if (field.groupName) {
+            let group = groups.get(field.groupName);
+            if (!group) {
+                group = {
+                    label: field.groupLabel ?? field.groupName,
+                    fields: []
+                };
+                groups.set(field.groupName, group);
+                groupOrder.push(field.groupName);
+            }
+            group.fields.push(field);
+        }
+        else {
+            standaloneFields.push(field);
+        }
+    }
+    const groupHtml = groupOrder
+        .map(groupName => {
+        const group = groups.get(groupName);
+        if (!group) {
+            return "";
+        }
+        const childrenHtml = group.fields
+            .map(child => {
+            const controlHtml = buildFieldControlHtml(child);
+            const errorHtml = child.error
+                ? `<div class="error">${escapeHtml(child.error)}</div>`
+                : "";
+            const helpIcon = child.hasHelp
+                ? `<span class="help-indicator" data-parameter-name="${escapeHtml(child.name)}" data-help="${escapeHtml(child.help ?? "")}" title="F1 でヘルプを表示">?</span>`
+                : "";
+            return `
+          <div class="field">
+            <label>
+              <span>${escapeHtml(child.label)}${child.required ? " *" : ""}${helpIcon}</span>
+              ${controlHtml}
+            </label>
+            ${errorHtml}
+          </div>`;
+        })
+            .join("\n");
+        return `
+      <fieldset class="field group-field">
+        <legend>${escapeHtml(group.label)}</legend>
+        ${childrenHtml}
+      </fieldset>`;
+    })
+        .join("\n");
+    const standaloneHtml = standaloneFields
         .map(field => {
         const controlHtml = buildFieldControlHtml(field);
         const errorHtml = field.error
@@ -40,6 +107,7 @@ function buildHtml(state, options) {
       </div>`;
     })
         .join("\n");
+    const fieldsHtml = [groupHtml, standaloneHtml].filter(Boolean).join("\n");
     return `<!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -81,13 +149,16 @@ function buildHtml(state, options) {
     .has-error {
       border: 1px solid #be1100;
     }
+    .multi-field { margin-top: 4px; }
+    .multi-items { display: flex; flex-direction: column; gap: 4px; margin-bottom: 4px; }
+    .multi-item { display: flex; gap: 4px; }
   </style>
 </head>
 <body>
   <h2>${escapeHtml(state.keyword)} プロンプター</h2>
   <div id="help-overlay" class="help-overlay" aria-hidden="true">
     <div class="help-backdrop"></div>
-    <div class="help-dialog" role="dialog" aria-modal="true">
+    <div class="help-dialog">
       <div id="help-content"></div>
     </div>
   </div>
@@ -206,8 +277,100 @@ function buildHtml(state, options) {
       return !hasError;
     }
 
-    // 初期フォーカス
+    function getMultiFieldNames(form) {
+      const names = new Set();
+      const multiFields = form.querySelectorAll('.multi-field');
+      for (const field of multiFields) {
+        const name = field.getAttribute('data-name');
+        if (name) {
+          names.add(name);
+        }
+      }
+      return names;
+    }
+
+    function setupMultiFieldButtons() {
+      const form = getForm();
+      if (!form) {
+        return;
+      }
+
+      form.addEventListener('click', function (event) {
+        const target = event.target;
+        if (!target || typeof target.matches !== 'function') {
+          return;
+        }
+
+        if (target.matches('.multi-add')) {
+          event.preventDefault();
+
+          const name = target.getAttribute('data-name');
+          if (!name) {
+            return;
+          }
+
+          const container = target.closest('.multi-field');
+          if (!container) {
+            return;
+          }
+
+          const itemsRoot = container.querySelector('.multi-items');
+          if (!itemsRoot) {
+            return;
+          }
+
+          const max = parseInt(container.getAttribute('data-max') || '0', 10);
+          const existing = itemsRoot.querySelectorAll('.multi-item').length;
+          if (max > 0 && existing >= max) {
+            return;
+          }
+
+          const wrapper = document.createElement('div');
+          wrapper.className = 'multi-item';
+
+          const input = document.createElement('input');
+          input.type = 'text';
+          input.name = name;
+          input.className = 'multi-input';
+
+          const template = container.querySelector('input[name=\"' + name + '\"]');
+          if (template && template.getAttribute('data-required') === 'true') {
+            input.setAttribute('data-required', 'true');
+          }
+
+          const removeButton = document.createElement('button');
+          removeButton.type = 'button';
+          removeButton.className = 'multi-remove';
+          removeButton.textContent = '-';
+          removeButton.title = 'Remove';
+
+          wrapper.appendChild(input);
+          wrapper.appendChild(removeButton);
+          itemsRoot.appendChild(wrapper);
+          input.focus();
+        } else if (target.matches('.multi-remove')) {
+          event.preventDefault();
+
+          const item = target.closest('.multi-item');
+          const container = target.closest('.multi-field');
+          const itemsRoot = container && container.querySelector('.multi-items');
+          if (!item || !itemsRoot) {
+            return;
+          }
+
+          const existing = itemsRoot.querySelectorAll('.multi-item').length;
+          if (existing <= 1) {
+            return;
+          }
+
+          itemsRoot.removeChild(item);
+        }
+      });
+    }
+
+    // 初期フォーカスと複数項目ボタンのセットアップ
     focusFirstField();
+    setupMultiFieldButtons();
 
     document.getElementById('prompter-form').addEventListener('submit', function (event) {
       event.preventDefault();
@@ -217,10 +380,23 @@ function buildHtml(state, options) {
       }
       const formData = new FormData(form);
       const values = {};
+      const multiNames = getMultiFieldNames(form);
       for (const pair of formData.entries()) {
         const key = pair[0];
-        const value = pair[1];
-        values[key] = String(value);
+        const value = String(pair[1] ?? '');
+        if (multiNames.has(key)) {
+          const trimmed = value.trim();
+          if (!trimmed) {
+            continue;
+          }
+          if (Object.prototype.hasOwnProperty.call(values, key)) {
+            values[key].push(trimmed);
+          } else {
+            values[key] = [trimmed];
+          }
+        } else {
+          values[key] = value;
+        }
       }
       vscode.postMessage({ type: 'submit', values });
     });
@@ -313,7 +489,7 @@ function buildHtml(state, options) {
       });
     }
 
-    // バックドロップクリックでヘルプを閉じる
+    // バックドロップのクリックでヘルプを閉じる
     const backdrop = document.querySelector('.help-backdrop');
     if (backdrop) {
       backdrop.addEventListener('click', function () {
@@ -340,7 +516,29 @@ function buildFieldControlHtml(field) {
 ${optionsHtml}
 </select>`;
     }
-    // number / text / group はひとまず単一行テキスト入力として扱う
+    const isRepeatable = typeof field.maxOccurrences === "number" && field.maxOccurrences > 1;
+    if (isRepeatable) {
+        const raw = field.value || "";
+        const values = raw.length > 0 ? raw.split(/\r?\n/u) : [""];
+        const itemsHtml = values
+            .map((value, index) => {
+            const removeButton = index === 0
+                ? ""
+                : `<button type="button" class="multi-remove" title="Remove">-</button>`;
+            return `<div class="multi-item">
+  <input type="text" class="multi-input" name="${escapeHtml(field.name)}" value="${escapeHtml(value)}"${requiredAttr} />
+  ${removeButton}
+</div>`;
+        })
+            .join("\n");
+        return `<div class="multi-field" data-name="${escapeHtml(field.name)}" data-max="${field.maxOccurrences ?? ""}">
+  <div class="multi-items">
+${itemsHtml}
+  </div>
+  <button type="button" class="multi-add" data-name="${escapeHtml(field.name)}">追加</button>
+</div>`;
+    }
+    // number / text / group は単一行テキスト入力として扱う
     return `<input type="text" name="${escapeHtml(field.name)}" value="${escapeHtml(field.value)}"${requiredAttr} />`;
 }
 function escapeHtml(value) {

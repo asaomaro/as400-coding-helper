@@ -41,7 +41,7 @@ async function applyChanges(editor, definition, resolved, values) {
     const { document } = editor;
     if (resolved.language === "cl") {
         const logical = (0, clContinuation_1.getLogicalCommandRange)(document, resolved.line);
-        const newText = buildClCommandText(definition.keyword, values);
+        const newText = buildClCommandText(definition, values);
         await editor.edit(editBuilder => {
             editBuilder.replace(logical.range, newText);
         });
@@ -68,21 +68,65 @@ async function applyChanges(editor, definition, resolved, values) {
         success
     }));
 }
-function buildClCommandText(keyword, values) {
-    const parts = [keyword];
-    const names = Object.keys(values);
-    for (const name of names) {
-        const value = values[name].trim();
-        if (value.length === 0) {
-            continue;
-        }
-        parts.push(value);
+function buildClCommandText(definition, values) {
+    const keyword = definition.keyword.toUpperCase();
+    // Columns 1–13: label area, column 14: command.
+    const labelArea = " ".repeat(13);
+    let line = labelArea + keyword;
+    // Parameters start at column 25.
+    const paramStartColumn = 25; // 1-based
+    const desiredParamIndex = paramStartColumn - 1; // 0-based
+    if (line.length < desiredParamIndex) {
+        line = line.padEnd(desiredParamIndex, " ");
     }
-    return parts.join(" ");
+    else {
+        line += " ";
+    }
+    const paramTokens = [];
+    if (keyword === "CALL") {
+        const liblRaw = values.LIBL;
+        const objRaw = values.OBJ;
+        const libl = (Array.isArray(liblRaw) ? liblRaw[0] ?? "" : liblRaw ?? "").trim();
+        const obj = (Array.isArray(objRaw) ? objRaw[0] ?? "" : objRaw ?? "").trim();
+        if (obj.length > 0) {
+            const pgmArg = libl.length > 0 ? `${libl}/${obj}` : obj;
+            paramTokens.push(`PGM(${pgmArg})`);
+        }
+        const parmRaw = values.PARM;
+        const parmValues = Array.isArray(parmRaw)
+            ? parmRaw
+            : typeof parmRaw === "string" && parmRaw.length > 0
+                ? parmRaw.split(/\r?\n/u)
+                : [];
+        const cleaned = [];
+        for (const raw of parmValues) {
+            const trimmed = String(raw ?? "").trim();
+            if (trimmed.length === 0) {
+                continue;
+            }
+            cleaned.push(trimmed);
+        }
+        if (cleaned.length > 0) {
+            paramTokens.push(`PARM(${cleaned.join(" ")})`);
+        }
+    }
+    else {
+        // Generic CL command: NAME(VALUE)
+        for (const parameter of definition.parameters) {
+            const raw = values[parameter.name];
+            const single = (Array.isArray(raw) ? raw[0] ?? "" : raw ?? "").trim();
+            if (single.length === 0) {
+                continue;
+            }
+            paramTokens.push(`${parameter.name}(${single})`);
+        }
+    }
+    if (paramTokens.length > 0) {
+        line += paramTokens.join(" ");
+    }
+    return line;
 }
 function buildRpgLineText(original, definition, values) {
-    // JSON / 組み込み定義に sourceStart/sourceLength が指定されている場合のみ、
-    // その範囲に値を書き戻す。指定がない場合は元の行をそのまま返す。
     const hasColumnInfo = definition.parameters.some(parameter => typeof parameter.sourceStart === "number" &&
         typeof parameter.sourceLength === "number" &&
         parameter.sourceStart > 0 &&
@@ -97,21 +141,19 @@ function buildRpgLineText(original, definition, values) {
     const chars = original.split("");
     for (const parameter of definition.parameters) {
         const paramName = parameter.name.toUpperCase();
-        // COMMENT は列情報を持たない想定なので、81 桁目以降に書き戻す
         if (paramName === "COMMENT" &&
             (typeof parameter.sourceStart !== "number" ||
                 typeof parameter.sourceLength !== "number")) {
             const rawComment = (values[parameter.name] ?? "").toString();
             const trimmedComment = rawComment.trim();
             const maxCommentLength = parameter.attributes?.maxLength ?? 50;
-            const commentStartIndex = 80; // 81 桁目 (0 始まりインデックス)
+            const commentStartIndex = 80; // column 81 (0-based index)
             const commentEndIndex = commentStartIndex + maxCommentLength;
             if (chars.length < commentEndIndex) {
                 for (let i = chars.length; i < commentEndIndex; i += 1) {
                     chars[i] = " ";
                 }
             }
-            // 一旦コメント領域を空白でクリア
             for (let i = commentStartIndex; i < commentEndIndex; i += 1) {
                 chars[i] = " ";
             }
@@ -132,15 +174,14 @@ function buildRpgLineText(original, definition, values) {
             parameter.sourceLength <= 0) {
             continue;
         }
-        const raw = (values[parameter.name] ?? "").toString();
+        const rawValue = values[parameter.name];
+        const raw = (Array.isArray(rawValue) ? rawValue[0] ?? "" : rawValue ?? "").toString();
         const trimmed = raw.trim();
         const isNumericField = parameter.inputType === "number" || parameter.attributes?.numericOnly;
         const padded = (() => {
             if (trimmed.length > parameter.sourceLength) {
-                // 桁溢れ時は右側を優先して切り詰める
                 return trimmed.slice(-parameter.sourceLength);
             }
-            // 数値系は右寄せ、それ以外は左寄せ
             if (isNumericField) {
                 return trimmed.padStart(parameter.sourceLength, " ");
             }
@@ -148,7 +189,6 @@ function buildRpgLineText(original, definition, values) {
         })();
         const startIndex = parameter.sourceStart - 1;
         const endIndex = startIndex + parameter.sourceLength;
-        // 長さに応じて行長を伸ばす
         if (chars.length < endIndex) {
             for (let i = chars.length; i < endIndex; i += 1) {
                 chars[i] = " ";

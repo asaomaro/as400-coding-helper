@@ -25,13 +25,15 @@ export function registerDbcsShiftMarkers(
 ): void {
   shiftOutDecoration = vscode.window.createTextEditorDecorationType({
     before: {
-      contentText: "{"
+      contentText: "{",
+      color: new vscode.ThemeColor("editorCodeLens.foreground")
     }
   });
 
   shiftInDecoration = vscode.window.createTextEditorDecorationType({
     before: {
-      contentText: "}"
+      contentText: "}",
+      color: new vscode.ThemeColor("editorCodeLens.foreground")
     }
   });
 
