@@ -4,6 +4,7 @@ import { registerRpgCommentToggle } from "./rpgCommentToggle";
 import { registerClCommentToggle } from "./clCommentToggle";
 import { registerRpgTabNavigation } from "./rpgTabNavigation";
 import { registerDbcsShiftMarkers } from "./dbcsShiftMarkers";
+import { registerFixedFormatNavigation } from "./fixedFormatNavigation";
 
 let diagnosticsInstance: RpgClDiagnostics | undefined;
 
@@ -31,5 +32,6 @@ export function registerLanguageFeatures(
   registerRpgCommentToggle(context);
   registerClCommentToggle(context);
   registerRpgTabNavigation(context);
+  registerFixedFormatNavigation(context);
   registerDbcsShiftMarkers(context);
 }

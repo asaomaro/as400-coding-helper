@@ -33,34 +33,18 @@ var __importStar = (this && this.__importStar) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.registerLanguageFeatures = registerLanguageFeatures;
+exports.registerFixedFormatNavigation = registerFixedFormatNavigation;
 const vscode = __importStar(require("vscode"));
-const diagnostics_1 = require("./diagnostics");
-const rpgCommentToggle_1 = require("./rpgCommentToggle");
-const clCommentToggle_1 = require("./clCommentToggle");
-const rpgTabNavigation_1 = require("./rpgTabNavigation");
-const dbcsShiftMarkers_1 = require("./dbcsShiftMarkers");
-const fixedFormatNavigation_1 = require("./fixedFormatNavigation");
-let diagnosticsInstance;
-function registerLanguageFeatures(context) {
-    if (!diagnosticsInstance) {
-        diagnosticsInstance = new diagnostics_1.RpgClDiagnostics();
-        diagnosticsInstance.register(context);
-    }
-    const selector = [
-        { language: "rpg-fixed", scheme: "file" },
-        { language: "cl", scheme: "file" }
-    ];
-    const disposable = vscode.languages.registerHoverProvider(selector, {
-        provideHover(_document, _position) {
-            return undefined;
-        }
-    });
-    context.subscriptions.push(disposable);
-    (0, rpgCommentToggle_1.registerRpgCommentToggle)(context);
-    (0, clCommentToggle_1.registerClCommentToggle)(context);
-    (0, rpgTabNavigation_1.registerRpgTabNavigation)(context);
-    (0, fixedFormatNavigation_1.registerFixedFormatNavigation)(context);
-    (0, dbcsShiftMarkers_1.registerDbcsShiftMarkers)(context);
+function isSupportedDocument(document) {
+    return document.languageId === "rpg-fixed" || document.languageId === "cl";
 }
-//# sourceMappingURL=registration.js.map
+function registerFixedFormatNavigation(_context) {
+    // 固定長フォーマット用のカーソル移動および
+    // 矢印キーに連動したスペース挿入ロジックは廃止しました。
+    //
+    // 将来的に必要になった場合は、この関数内で
+    // onDidChangeTextEditorSelection などのハンドラを
+    // 再度登録してください。
+    void vscode; // import を使用済みにして ESLint/tsc の警告を防ぐ
+}
+//# sourceMappingURL=fixedFormatNavigation.js.map
