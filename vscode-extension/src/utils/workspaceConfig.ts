@@ -13,13 +13,13 @@ export function getWorkspaceConfig(): WorkspaceConfig {
   const maxLineLength =
     config.get<number | undefined>("maxLineLength") ?? undefined;
 
-  const rpgSpecPath =
-    config.get<string>("jsonDefinitionPaths.rpgSpecPath") ??
-    ".rpg-cl/rpg-prompter.json";
+  const rpgSpecDir =
+    config.get<string>("jsonDefinitionPaths.rpgSpecDir") ??
+    ".rpg-cl/rpg";
 
-  const clCommandsPath =
-    config.get<string>("jsonDefinitionPaths.clCommandsPath") ??
-    ".rpg-cl/cl-prompter.json";
+  const clCommandsDir =
+    config.get<string>("jsonDefinitionPaths.clCommandsDir") ??
+    ".rpg-cl/cl";
 
   return {
     workspaceRoot: workspaceFolder,
@@ -28,8 +28,8 @@ export function getWorkspaceConfig(): WorkspaceConfig {
       maxLineLength
     },
     jsonDefinitionPaths: {
-      rpgSpecPath,
-      clCommandsPath
+      rpgSpecDir,
+      clCommandsDir
     }
   };
 }

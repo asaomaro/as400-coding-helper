@@ -8,8 +8,8 @@ export interface WorkspaceConfig {
     readonly maxLineLength?: number;
   };
   readonly jsonDefinitionPaths: {
-    readonly rpgSpecPath: string;
-    readonly clCommandsPath: string;
+    readonly rpgSpecDir: string;
+    readonly clCommandsDir: string;
   };
 }
 
