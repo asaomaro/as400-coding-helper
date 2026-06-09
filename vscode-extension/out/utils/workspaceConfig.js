@@ -40,10 +40,10 @@ function getWorkspaceConfig() {
     const workspaceFolder = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath ?? "";
     const warningLevel = config.get("warningLevel") ?? "warning";
     const maxLineLength = config.get("maxLineLength") ?? undefined;
-    const rpgSpecPath = config.get("jsonDefinitionPaths.rpgSpecPath") ??
-        ".rpg-cl/rpg-prompter.json";
-    const clCommandsPath = config.get("jsonDefinitionPaths.clCommandsPath") ??
-        ".rpg-cl/cl-prompter.json";
+    const rpgSpecDir = config.get("jsonDefinitionPaths.rpgSpecDir") ??
+        ".rpg-cl/rpg";
+    const clCommandsDir = config.get("jsonDefinitionPaths.clCommandsDir") ??
+        ".rpg-cl/cl";
     return {
         workspaceRoot: workspaceFolder,
         rules: {
@@ -51,8 +51,8 @@ function getWorkspaceConfig() {
             maxLineLength
         },
         jsonDefinitionPaths: {
-            rpgSpecPath,
-            clCommandsPath
+            rpgSpecDir,
+            clCommandsDir
         }
     };
 }
