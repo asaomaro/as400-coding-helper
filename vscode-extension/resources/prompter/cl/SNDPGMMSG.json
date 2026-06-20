@@ -1,0 +1,249 @@
+{
+  "keyword": "SNDPGMMSG",
+  "description": "プログラム・メッセージ送信（SNDPGMMSG）",
+  "help": "CL プロシージャー/プログラムから、メッセージ待ち行列または呼び出しメッセージ待ち行列へメッセージを送信します。即時メッセージ（MSG）または定義済みメッセージ（MSGID＋MSGF）を送れます。送信先は TOPGMQ / TOMSGQ / TOUSR のいずれか一つを指定します。",
+  "parameters": [
+    {
+      "name": "MSG",
+      "description": "メッセージ・テキスト",
+      "help": "送信する即時メッセージ本文を指定します（最大3000文字、プロンプト時は512文字）。MSGID と排他で、指定時は MSGF/MSGDTA は使用できません。*ESCAPE/*NOTIFY/*STATUS は指定できません。",
+      "inputType": "text",
+      "required": false,
+      "attributes": {
+        "maxLength": 3000
+      },
+      "placeholder": "'メッセージ本文'"
+    },
+    {
+      "name": "MSGID",
+      "description": "メッセージID",
+      "help": "送信する定義済みメッセージのメッセージIDを指定します（7文字）。MSG と排他。指定時は MSGF が必須です。",
+      "inputType": "text",
+      "required": false,
+      "attributes": {
+        "characterSet": "upper",
+        "maxLength": 7
+      },
+      "placeholder": "CPF9897"
+    },
+    {
+      "name": "MSGF",
+      "description": "メッセージ・ファイル",
+      "help": "定義済みメッセージが入っているメッセージ・ファイルを LIB/FILE 形式で指定します。MSGID 指定時は必須です。",
+      "inputType": "group",
+      "required": false,
+      "children": [
+        {
+          "name": "LIB",
+          "description": "ライブラリ",
+          "help": "メッセージ・ファイルのライブラリ。*LIBL（ライブラリ・リスト検索）、*CURLIB（現行ライブラリ）、またはライブラリ名。",
+          "inputType": "text",
+          "required": false,
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          },
+          "placeholder": "*LIBL"
+        },
+        {
+          "name": "MSGF",
+          "description": "メッセージ・ファイル",
+          "help": "メッセージ・ファイル名を指定します。",
+          "inputType": "text",
+          "required": true,
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          },
+          "placeholder": "QCPFMSG"
+        }
+      ]
+    },
+    {
+      "name": "MSGDTA",
+      "description": "メッセージ・データ",
+      "help": "定義済みメッセージの置換変数に渡す置き換え値の連結文字ストリング、または CL 変数を指定します。値なしは *NONE。MSG 指定時は使用できません。",
+      "inputType": "text",
+      "required": false,
+      "attributes": {
+        "maxLength": 3000
+      },
+      "placeholder": "*NONE"
+    },
+    {
+      "name": "TOPGMQ",
+      "description": "呼出スタック項目メッセージ待行列",
+      "help": "送信先のプログラム・メッセージ待ち行列を指定します。単一値 *EXT（ジョブの外部メッセージ待ち行列）も指定可。TOMSGQ/TOUSR と排他。特殊値: *CTLBDY/*PGMBDY/*PGMNAME。要素はネスト構造のため平坦化して表現しています。",
+      "inputType": "group",
+      "required": false,
+      "children": [
+        {
+          "name": "RELATION",
+          "description": "関係",
+          "help": "メッセージ待ち行列と呼び出しスタック項目の関係。既定は *PRV。",
+          "inputType": "dropdown",
+          "required": false,
+          "options": [
+            { "label": "*PRV（直前の項目）", "value": "*PRV" },
+            { "label": "*SAME（その項目自身）", "value": "*SAME" }
+          ]
+        },
+        {
+          "name": "CSEID",
+          "description": "呼び出しスタック項目",
+          "help": "OPMプログラム名/ILEプロシージャー名、または特殊値 *（このコマンドを実行する項目）。",
+          "inputType": "text",
+          "required": false,
+          "attributes": {
+            "maxLength": 256
+          },
+          "placeholder": "*"
+        },
+        {
+          "name": "MODULE",
+          "description": "モジュール",
+          "help": "ILEモジュール名（修飾子）。指定しない場合は *NONE。",
+          "inputType": "text",
+          "required": false,
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          },
+          "placeholder": "*NONE"
+        },
+        {
+          "name": "PGM",
+          "description": "バインド済みプログラム",
+          "help": "バインド先プログラム名（修飾子）。指定しない場合は *NONE。",
+          "inputType": "text",
+          "required": false,
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          },
+          "placeholder": "*NONE"
+        }
+      ]
+    },
+    {
+      "name": "TOMSGQ",
+      "description": "非PGMメッセージ待ち行列へ送信",
+      "help": "送信先の非プログラム・メッセージ待ち行列（最大50個）を LIB/QUEUE 形式で指定します。単一値: *TOPGMQ / *SYSOPR。待ち行列名に *HSTLOG（ヒストリー・ログ QHST）指定可。TOUSR と排他。",
+      "inputType": "group",
+      "required": false,
+      "maxOccurrences": 50,
+      "children": [
+        {
+          "name": "LIB",
+          "description": "ライブラリ",
+          "help": "メッセージ待ち行列のライブラリ。*LIBL / *CURLIB / ライブラリ名。",
+          "inputType": "text",
+          "required": false,
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          },
+          "placeholder": "*LIBL"
+        },
+        {
+          "name": "MSGQ",
+          "description": "メッセージ待ち行列",
+          "help": "メッセージ待ち行列名、または *HSTLOG。",
+          "inputType": "text",
+          "required": true,
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          },
+          "placeholder": "QSYSOPR"
+        }
+      ]
+    },
+    {
+      "name": "TOUSR",
+      "description": "TOユーザー・プロファイル",
+      "help": "送信先ユーザーのユーザー・プロファイル名。特殊値: *SYSOPR（システム操作員）/ *REQUESTER（要求元）/ *ALLACT（実行中の全対話ユーザー）。TOMSGQ/TOPGMQ と排他。",
+      "inputType": "text",
+      "required": false,
+      "attributes": {
+        "characterSet": "upper",
+        "maxLength": 10
+      },
+      "placeholder": "*SYSOPR"
+    },
+    {
+      "name": "MSGTYPE",
+      "description": "メッセージ・タイプ",
+      "help": "メッセージ種別を指定します。既定は *INFO。",
+      "inputType": "dropdown",
+      "required": false,
+      "options": [
+        { "label": "*INFO（通知）", "value": "*INFO" },
+        { "label": "*INQ（照会）", "value": "*INQ" },
+        { "label": "*RQS（要求）", "value": "*RQS" },
+        { "label": "*COMP（完了）", "value": "*COMP" },
+        { "label": "*DIAG（診断）", "value": "*DIAG" },
+        { "label": "*NOTIFY（通知例外）", "value": "*NOTIFY" },
+        { "label": "*ESCAPE（エスケープ）", "value": "*ESCAPE" },
+        { "label": "*STATUS（状況）", "value": "*STATUS" }
+      ]
+    },
+    {
+      "name": "RPYMSGQ",
+      "description": "応答を受けるメッセージ待ち行列",
+      "help": "照会/通知メッセージの応答先メッセージ待ち行列を LIB/QUEUE 形式で指定します。単一値: *PGMQ（呼び出しスタック項目に関連した待ち行列）。",
+      "inputType": "group",
+      "required": false,
+      "children": [
+        {
+          "name": "LIB",
+          "description": "ライブラリ",
+          "help": "*LIBL / *CURLIB / ライブラリ名。",
+          "inputType": "text",
+          "required": false,
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          },
+          "placeholder": "*LIBL"
+        },
+        {
+          "name": "MSGQ",
+          "description": "メッセージ待ち行列",
+          "help": "応答を受けるメッセージ待ち行列名。",
+          "inputType": "text",
+          "required": true,
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          },
+          "placeholder": "*PGMQ"
+        }
+      ]
+    },
+    {
+      "name": "KEYVAR",
+      "description": "メッセージ参照キーのCL変数",
+      "help": "送信したメッセージのメッセージ参照キー（4文字）を受け取る CL 文字変数名を指定します。",
+      "inputType": "text",
+      "required": false,
+      "attributes": {
+        "characterSet": "upper",
+        "maxLength": 11
+      },
+      "placeholder": "&MSGKEY"
+    },
+    {
+      "name": "CCSID",
+      "description": "コード化文字セットID",
+      "help": "メッセージ/メッセージ・データの CCSID。*JOB（ジョブのCCSID）/ *HEX（CCSID 65535・無変換）/ 1〜65535 の値。",
+      "inputType": "text",
+      "required": false,
+      "attributes": {
+        "characterSet": "upper",
+        "maxLength": 5
+      },
+      "placeholder": "*JOB"
+    }
+  ]
+}
