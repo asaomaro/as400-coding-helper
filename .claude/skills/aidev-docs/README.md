@@ -39,6 +39,7 @@ PJ非依存の開発ワークフローを、skill 群で制御・進捗管理す
 | 40 | coding | 標準 | 実装、tasks 更新 |
 | 50 | test | 標準 | 受け入れ基準の検証 |
 | 60 | review | 標準 | 差分点検（指摘あれば coding へ差し戻し） |
+| 65 | walkthrough | 任意 | 人間レビュー補助の解説（walkthrough.md・mermaid） |
 | 70 | deliver | 標準（最終） | コミット / PR で着地 |
 | 90 | retro | 任意 | 振り返りと改善提案（retro.md） |
 
