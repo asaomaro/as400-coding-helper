@@ -1,0 +1,556 @@
+{
+  "keyword": "RTVJOBA",
+  "description": "ジョブ属性検索（RTVJOBA）",
+  "help": "1つ以上のジョブ属性の値を検索し、それらの値を指定された CL 変数へ戻します。CL プログラムまたは REXX プロシージャーの中でのみ有効です。属性は、このコマンドが実行されるジョブ（属性がスレッド・レベルのみの場合は実行スレッド）から検索されます。すべてのパラメーターは任意で、各パラメーターには戻り先となる CL 変数名（先頭は &）を指定します。各変数には必要な最小長（文字変数は長さ、10進変数は「長さ 小数桁数」）があり、各パラメーターの help に記載しています。",
+  "parameters": [
+    {
+      "name": "JOB",
+      "description": "JOBのCL変数 (10)",
+      "help": "ジョブの名前を受け取る CL 文字変数名を指定します。変数は最小長10文字の文字変数でなければなりません。",
+      "inputType": "text",
+      "required": false,
+      "attributes": { "maxLength": 11 },
+      "placeholder": "&JOB"
+    },
+    {
+      "name": "USER",
+      "description": "USERのCL変数 (10)",
+      "help": "ジョブの開始時にジョブと関連付けられたユーザー・プロファイル名（修飾ジョブ名の2番目の部分）を受け取る CL 文字変数名を指定します。最小長10文字の文字変数。",
+      "inputType": "text",
+      "required": false,
+      "attributes": { "maxLength": 11 },
+      "placeholder": "&USER"
+    },
+    {
+      "name": "NBR",
+      "description": "NBRのCL変数 (6)",
+      "help": "システムによってジョブに割り当てられた6文字の番号（修飾ジョブ名の最初の部分）を受け取る CL 文字変数名を指定します。最小長6文字の文字変数。",
+      "inputType": "text",
+      "required": false,
+      "attributes": { "maxLength": 11 },
+      "placeholder": "&NBR"
+    },
+    {
+      "name": "CURUSER",
+      "description": "CURUSERのCL変数 (10)",
+      "help": "現行ユーザー・プロファイルの名前を受け取る CL 文字変数名を指定します。最小長10文字の文字変数。",
+      "inputType": "text",
+      "required": false,
+      "attributes": { "maxLength": 11 },
+      "placeholder": "&CURUSER"
+    },
+    {
+      "name": "TYPE",
+      "description": "TYPEのCL変数 (1)",
+      "help": "ジョブの環境を表す1桁の値を受け取る CL 文字変数名を指定します。0=バッチ・ジョブ、1=対話式ジョブ。最小長1文字の文字変数。",
+      "inputType": "text",
+      "required": false,
+      "attributes": { "maxLength": 11 },
+      "placeholder": "&TYPE"
+    },
+    {
+      "name": "SUBTYPE",
+      "description": "SUBTYPEのCL変数 (1)",
+      "help": "ジョブの環境のサブタイプ値を受け取る CL 文字変数名を指定します。最小長1文字。戻る値: *（サブタイプなし）/ D（バッチ即時）/ E（通信呼び出し）/ F（システム/36）/ J（事前開始）/ P（印刷ドライバー）/ T（MRT）/ U（代替スプール・ユーザー）。",
+      "inputType": "text",
+      "required": false,
+      "attributes": { "maxLength": 11 },
+      "placeholder": "&SUBTYPE"
+    },
+    {
+      "name": "SYSLIBL",
+      "description": "SYSLIBLのCL変数 (165)",
+      "help": "スレッドのライブラリー・リストのシステム部分を受け取る CL 文字変数名を指定します。各ライブラリー名は11桁フィールドに左寄せ・右ブランク埋め。最小長165桁の文字変数。",
+      "inputType": "text",
+      "required": false,
+      "attributes": { "maxLength": 11 },
+      "placeholder": "&SYSLIBL"
+    },
+    {
+      "name": "CURLIB",
+      "description": "CURLIBのCL変数 (10)",
+      "help": "スレッドの現行ライブラリー名を受け取る CL 文字変数名を指定します。最小長10文字。現行ライブラリーがない場合は *NONE が戻ります。",
+      "inputType": "text",
+      "required": false,
+      "attributes": { "maxLength": 11 },
+      "placeholder": "&CURLIB"
+    },
+    {
+      "name": "USRLIBL",
+      "description": "USRLIBLのCL変数 (2750)",
+      "help": "スレッドのライブラリー・リストのユーザー部分を受け取る CL 文字変数名を指定します。各ライブラリー名は11桁フィールドに左寄せ・右ブランク埋め。変数が小さすぎると例外が出ます。最大250ライブラリーの場合は最小長2750文字が必要。ライブラリーが削除済みなら該当位置に *DELETED が入ります。",
+      "inputType": "text",
+      "required": false,
+      "attributes": { "maxLength": 11 },
+      "placeholder": "&USRLIBL"
+    },
+    {
+      "name": "ASPGRP",
+      "description": "ASPGRPのCL変数 (10)",
+      "help": "補助記憶域プール(ASP)グループ名を受け取る CL 文字変数名を指定します。最小長10文字。ASPグループがない場合は *NONE が戻ります。",
+      "inputType": "text",
+      "required": false,
+      "attributes": { "maxLength": 11 },
+      "placeholder": "&ASPGRP"
+    },
+    {
+      "name": "LOGLVL",
+      "description": "LOGLVLのCL変数 (1)",
+      "help": "メッセージ・ロギング・レベル（0〜4）を示す1桁の値を受け取る CL 文字変数名を指定します。最小長1文字の文字変数。",
+      "inputType": "text",
+      "required": false,
+      "attributes": { "maxLength": 11 },
+      "placeholder": "&LOGLVL"
+    },
+    {
+      "name": "LOGSEV",
+      "description": "LOGSEVのCL変数 (2 0)",
+      "help": "ジョブ・ログ記録に使うログ重大度レベル（00〜99）を受け取る CL 変数名を指定します。変数は小数部のない2桁の10進数変数でなければなりません。",
+      "inputType": "text",
+      "required": false,
+      "attributes": { "maxLength": 11 },
+      "placeholder": "&LOGSEV"
+    },
+    {
+      "name": "LOGTYPE",
+      "description": "LOGTYPEのCL変数 (10)",
+      "help": "ジョブ・ログに書き出されるメッセージのテキスト・レベルを示す特殊値を受け取る CL 文字変数名を指定します。最小長10文字。",
+      "inputType": "text",
+      "required": false,
+      "attributes": { "maxLength": 11 },
+      "placeholder": "&LOGTYPE"
+    },
+    {
+      "name": "LOGCLPGM",
+      "description": "LOGCLPGMのCL変数 (10)",
+      "help": "CL プログラム中の処理コマンドをジョブ・ログに記録するかどうかを示す特殊値を受け取る CL 文字変数名を指定します。最小長10文字。",
+      "inputType": "text",
+      "required": false,
+      "attributes": { "maxLength": 11 },
+      "placeholder": "&LOGCLPGM"
+    },
+    {
+      "name": "LOGOUTPUT",
+      "description": "LOGOUTPUTのCL変数 (10)",
+      "help": "ジョブ完了時のジョブ・ログ作成方法を示す特殊値を受け取る CL 文字変数名を指定します。最小長10文字。戻る値: *JOBEND / *JOBLOGSVR / *PND。",
+      "inputType": "text",
+      "required": false,
+      "attributes": { "maxLength": 11 },
+      "placeholder": "&LOGOUTPUT"
+    },
+    {
+      "name": "JOBMSGQMX",
+      "description": "JOBMSGQMXのCL変数 (2 0)",
+      "help": "ジョブ・メッセージ待ち行列の最大サイズを受け取る CL 変数名を指定します。変数は小数部のない2桁の10進数変数でなければなりません。",
+      "inputType": "text",
+      "required": false,
+      "attributes": { "maxLength": 11 },
+      "placeholder": "&JOBMSGQMX"
+    },
+    {
+      "name": "JOBMSGQFL",
+      "description": "JOBMSGQFLのCL変数 (10)",
+      "help": "ジョブ・メッセージ待ち行列が満杯時に取る処置を示す特殊値を受け取る CL 文字変数名を指定します。最小長10文字。戻る値: *NOWRAP / *WRAP / *PRTWRAP。",
+      "inputType": "text",
+      "required": false,
+      "attributes": { "maxLength": 11 },
+      "placeholder": "&JOBMSGQFL"
+    },
+    {
+      "name": "INQMSGRPY",
+      "description": "INQMSGRPYのCL変数 (10)",
+      "help": "ジョブでどのように照会メッセージを処理するかを示す特殊値を受け取る CL 文字変数名を指定します。最小長10文字。",
+      "inputType": "text",
+      "required": false,
+      "attributes": { "maxLength": 11 },
+      "placeholder": "&INQMSGRPY"
+    },
+    {
+      "name": "STSMSG",
+      "description": "STSMSGのCL変数 (7)",
+      "help": "ジョブに対する状況メッセージの処理方法を示す特殊値を受け取る CL 文字変数名を指定します。最小長7文字。",
+      "inputType": "text",
+      "required": false,
+      "attributes": { "maxLength": 11 },
+      "placeholder": "&STSMSG"
+    },
+    {
+      "name": "BRKMSG",
+      "description": "BRKMSGのCL変数 (7)",
+      "help": "ジョブで有効な中断メッセージ処理のモードを示す特殊値を受け取る CL 文字変数名を指定します。最小長7文字。",
+      "inputType": "text",
+      "required": false,
+      "attributes": { "maxLength": 11 },
+      "placeholder": "&BRKMSG"
+    },
+    {
+      "name": "DEVRCYACN",
+      "description": "DEVRCYACNのCL変数 (13)",
+      "help": "対話式ジョブで *REQUESTER 装置に入出力エラーが見つかった時にジョブが取る回復処置を示す特殊値を受け取る CL 文字変数名を指定します。最小長13文字。",
+      "inputType": "text",
+      "required": false,
+      "attributes": { "maxLength": 11 },
+      "placeholder": "&DEVRCYACN"
+    },
+    {
+      "name": "RTNCDE",
+      "description": "RTNCDEのCL変数 (5 0)",
+      "help": "RPG/COBOL/DFU/分類ユーティリティーの5桁10進戻りコードを受け取る CL 変数名を指定します。0=正常戻り、1=LR標識オン(RPG)、2=エラー(停止標識未セット)、3=停止標識オン(RPG H1〜H9)。変数は小数部のない5桁の10進数変数でなければなりません。",
+      "inputType": "text",
+      "required": false,
+      "attributes": { "maxLength": 11 },
+      "placeholder": "&RTNCDE"
+    },
+    {
+      "name": "ENDSTS",
+      "description": "ENDSTSのCL変数 (1)",
+      "help": "取り消し状況を受け取る CL 文字変数名を指定します。1=システム/サブシステム/ジョブが取り消し中、0=制御付き取り消しなし。最小長1文字。",
+      "inputType": "text",
+      "required": false,
+      "attributes": { "maxLength": 11 },
+      "placeholder": "&ENDSTS"
+    },
+    {
+      "name": "PRTDEV",
+      "description": "PRTDEVのCL変数 (10)",
+      "help": "印刷装置の名前を受け取る CL 文字変数名を指定します。最小長10文字。",
+      "inputType": "text",
+      "required": false,
+      "attributes": { "maxLength": 11 },
+      "placeholder": "&PRTDEV"
+    },
+    {
+      "name": "OUTQ",
+      "description": "OUTQのCL変数 (10)",
+      "help": "スプール出力に使われる出力待ち行列の名前を受け取る CL 文字変数名を指定します。最小長10文字。",
+      "inputType": "text",
+      "required": false,
+      "attributes": { "maxLength": 11 },
+      "placeholder": "&OUTQ"
+    },
+    {
+      "name": "OUTQLIB",
+      "description": "OUTQLIBのCL変数 (10)",
+      "help": "出力待ち行列が入っているライブラリーの名前を受け取る CL 文字変数名を指定します。最小長10文字。",
+      "inputType": "text",
+      "required": false,
+      "attributes": { "maxLength": 11 },
+      "placeholder": "&OUTQLIB"
+    },
+    {
+      "name": "SPLFACN",
+      "description": "SPLFACNのCL変数 (10)",
+      "help": "スプール・ファイルをジョブとともに保管するか終了時に切り離すかを示す特殊値を受け取る CL 文字変数名を指定します。最小長10文字。戻る値: *KEEP / *DETACH。",
+      "inputType": "text",
+      "required": false,
+      "attributes": { "maxLength": 11 },
+      "placeholder": "&SPLFACN"
+    },
+    {
+      "name": "PRTTXT",
+      "description": "PRTTXTのCL変数 (30)",
+      "help": "ジョブの印刷テキストを受け取る CL 文字変数名を指定します。最小長30桁の文字変数。",
+      "inputType": "text",
+      "required": false,
+      "attributes": { "maxLength": 11 },
+      "placeholder": "&PRTTXT"
+    },
+    {
+      "name": "PRTKEYFMT",
+      "description": "PRTKEYFMTのCL変数 (10)",
+      "help": "ジョブのページ印刷キー形式を受け取る CL 文字変数名を指定します。最小長10文字。戻る値: *NONE / *PRTBDR / *PRTHDR / *PRTALL。",
+      "inputType": "text",
+      "required": false,
+      "attributes": { "maxLength": 11 },
+      "placeholder": "&PRTKEYFMT"
+    },
+    {
+      "name": "SRTSEQ",
+      "description": "SRTSEQのCL変数 (10)",
+      "help": "ジョブに使用される分類順序テーブルの名前を受け取る CL 文字変数名を指定します。最小長10文字。特殊値 *LANGIDUNQ / *LANGIDSHR / *HEX が戻る場合があります。",
+      "inputType": "text",
+      "required": false,
+      "attributes": { "maxLength": 11 },
+      "placeholder": "&SRTSEQ"
+    },
+    {
+      "name": "SRTSEQLIB",
+      "description": "SRTSEQLIBのCL変数 (10)",
+      "help": "分類順序テーブルが入っているライブラリーの名前を受け取る CL 文字変数名を指定します。最小長10文字。SRTSEQ が *LANGIDUNQ/*LANGIDSHR/*HEX の場合はブランクが戻ります。",
+      "inputType": "text",
+      "required": false,
+      "attributes": { "maxLength": 11 },
+      "placeholder": "&SRTSEQLIB"
+    },
+    {
+      "name": "LANGID",
+      "description": "LANGIDのCL変数 (3)",
+      "help": "ジョブに使用される言語IDを示す値を受け取る CL 文字変数名を指定します。最小長3桁の文字変数。",
+      "inputType": "text",
+      "required": false,
+      "attributes": { "maxLength": 11 },
+      "placeholder": "&LANGID"
+    },
+    {
+      "name": "CNTRYID",
+      "description": "CNTRYIDのCL変数 (2)",
+      "help": "ジョブに使用される国別または地域別のIDを示す値を受け取る CL 文字変数名を指定します。最小長2桁の文字変数。",
+      "inputType": "text",
+      "required": false,
+      "attributes": { "maxLength": 11 },
+      "placeholder": "&CNTRYID"
+    },
+    {
+      "name": "CCSID",
+      "description": "CCSIDのCL変数 (5 0)",
+      "help": "使用されるコード化文字セットID値を受け取る CL 変数名を指定します。変数は小数部のない5桁の10進数変数でなければなりません。",
+      "inputType": "text",
+      "required": false,
+      "attributes": { "maxLength": 11 },
+      "placeholder": "&CCSID"
+    },
+    {
+      "name": "DFTCCSID",
+      "description": "DFTCCSIDのCL変数 (5 0)",
+      "help": "ジョブに使用される省略時のコード化文字セットID値を受け取る CL 変数名を指定します。変数は小数部のない5桁の10進数変数でなければなりません。",
+      "inputType": "text",
+      "required": false,
+      "attributes": { "maxLength": 11 },
+      "placeholder": "&DFTCCSID"
+    },
+    {
+      "name": "CHRIDCTL",
+      "description": "CHRIDCTL用CL変数 (10)",
+      "help": "ジョブに対する文字ID制御として使用される値を受け取る CL 文字変数名を指定します。最小長10文字。",
+      "inputType": "text",
+      "required": false,
+      "attributes": { "maxLength": 11 },
+      "placeholder": "&CHRIDCTL"
+    },
+    {
+      "name": "DECFMT",
+      "description": "DECFMTのCL変数 (1)",
+      "help": "ジョブの10進数形式として使用されている文字を受け取る CL 文字変数名を指定します。最小長1文字。",
+      "inputType": "text",
+      "required": false,
+      "attributes": { "maxLength": 11 },
+      "placeholder": "&DECFMT"
+    },
+    {
+      "name": "DATFMT",
+      "description": "DATFMTのCL変数 (4)",
+      "help": "ジョブの日付形式として使用される特殊値を受け取る CL 文字変数名を指定します。最小長4文字。",
+      "inputType": "text",
+      "required": false,
+      "attributes": { "maxLength": 11 },
+      "placeholder": "&DATFMT"
+    },
+    {
+      "name": "DATSEP",
+      "description": "DATSEPのCL変数 (1)",
+      "help": "ジョブの日付区切り文字として使用される文字を受け取る CL 文字変数名を指定します。最小長1文字。",
+      "inputType": "text",
+      "required": false,
+      "attributes": { "maxLength": 11 },
+      "placeholder": "&DATSEP"
+    },
+    {
+      "name": "TIMSEP",
+      "description": "TIMSEPのCL変数 (1)",
+      "help": "ジョブの時刻区切り文字として使用される文字を受け取る CL 文字変数名を指定します。最小長1文字。",
+      "inputType": "text",
+      "required": false,
+      "attributes": { "maxLength": 11 },
+      "placeholder": "&TIMSEP"
+    },
+    {
+      "name": "DATE",
+      "description": "DATEのCL変数 (6)",
+      "help": "ジョブの開始時にシステムが割り当てた日付（ジョブ日付の形式）を受け取る CL 文字変数名を指定します。最小長6文字。",
+      "inputType": "text",
+      "required": false,
+      "attributes": { "maxLength": 11 },
+      "placeholder": "&DATE"
+    },
+    {
+      "name": "CYMDDATE",
+      "description": "CYMDDATEのCL変数 (7)",
+      "help": "ジョブの開始時にシステムが割り当てた日付を CYYMMDD 形式（C=世紀, YY=年, MM=月, DD=日）で受け取る CL 文字変数名を指定します。最小長7文字。",
+      "inputType": "text",
+      "required": false,
+      "attributes": { "maxLength": 11 },
+      "placeholder": "&CYMDDATE"
+    },
+    {
+      "name": "DATETIME",
+      "description": "DATETIMEのCL変数 (20)",
+      "help": "ジョブの現在のローカル日時を YYYYMMDDHHNNSSXXXXXX 形式で受け取る CL 文字変数名を指定します。最小長20文字。",
+      "inputType": "text",
+      "required": false,
+      "attributes": { "maxLength": 11 },
+      "placeholder": "&DATETIME"
+    },
+    {
+      "name": "DAYOFWEEK",
+      "description": "DAYOFWEEKのCL変数 (4)",
+      "help": "ジョブの現在のローカル曜日を受け取る CL 文字変数名を指定します。最小長4文字。戻る値: *SUN / *MON / *TUE / *WED / *THU / *FRI / *SAT。",
+      "inputType": "text",
+      "required": false,
+      "attributes": { "maxLength": 11 },
+      "placeholder": "&DAYOFWEEK"
+    },
+    {
+      "name": "TIMZON",
+      "description": "TIMZONのCL変数 (10)",
+      "help": "ローカル・ジョブ時間の計算に使用される現行時間帯記述を受け取る CL 文字変数名を指定します。最小長10文字。",
+      "inputType": "text",
+      "required": false,
+      "attributes": { "maxLength": 11 },
+      "placeholder": "&TIMZON"
+    },
+    {
+      "name": "TIMZONABBR",
+      "description": "TIMZONABBRのCL変数 (10)",
+      "help": "時間帯の現行省略名（短い名前）を受け取る CL 文字変数名を指定します。夏時間調整時の有無により標準時/夏時間の省略名が含まれます。最小長10文字。",
+      "inputType": "text",
+      "required": false,
+      "attributes": { "maxLength": 11 },
+      "placeholder": "&TIMZONABBR"
+    },
+    {
+      "name": "TIMZONFULL",
+      "description": "TIMZONFULLのCL変数 (50)",
+      "help": "時間帯の現行フルネーム（長い名前）を受け取る CL 文字変数名を指定します。夏時間調整時の有無により標準時/夏時間のフルネームが入ります。最小長50文字。",
+      "inputType": "text",
+      "required": false,
+      "attributes": { "maxLength": 11 },
+      "placeholder": "&TIMZONFULL"
+    },
+    {
+      "name": "TIMOFFSET",
+      "description": "TIMOFFSETのCL変数 (3 0)",
+      "help": "ローカル・ジョブ時間の計算に使用される現行オフセット（分）を受け取る CL 変数名を指定します。必要に応じ夏時間調整済み。変数は小数部のない3桁の10進数変数でなければなりません。",
+      "inputType": "text",
+      "required": false,
+      "attributes": { "maxLength": 11 },
+      "placeholder": "&TIMOFFSET"
+    },
+    {
+      "name": "YEAROFS",
+      "description": "YEAROFSのCL変数 (3 0)",
+      "help": "ジョブの年オフセット（グレゴリオ年とジョブの暦体系の現在年の差、範囲 -140〜140）を受け取る CL 変数名を指定します。変数は小数部のない3桁の10進数変数でなければなりません。",
+      "inputType": "text",
+      "required": false,
+      "attributes": { "maxLength": 11 },
+      "placeholder": "&YEAROFS"
+    },
+    {
+      "name": "ACGCDE",
+      "description": "ACGCDEのCL変数 (15)",
+      "help": "ジョブの会計コードを受け取る CL 文字変数名を指定します。最小長15文字。",
+      "inputType": "text",
+      "required": false,
+      "attributes": { "maxLength": 11 },
+      "placeholder": "&ACGCDE"
+    },
+    {
+      "name": "SWS",
+      "description": "SWSのCL変数 (8)",
+      "help": "ジョブが使用する8個のジョブ・スイッチの値を受け取る CL 文字変数名を指定します。各桁が対応するスイッチの値(1または0)を表す8文字値として検索されます。最小長8文字。",
+      "inputType": "text",
+      "required": false,
+      "attributes": { "maxLength": 11 },
+      "placeholder": "&SWS"
+    },
+    {
+      "name": "RUNPTY",
+      "description": "RUNPTYのCL変数 (2 0)",
+      "help": "ジョブの処理優先順位（1〜99、ジョブ内全スレッドに許される最高の実行優先順位）を受け取る CL 変数名を指定します。変数は小数部のない2桁の10進数変数でなければなりません。",
+      "inputType": "text",
+      "required": false,
+      "attributes": { "maxLength": 11 },
+      "placeholder": "&RUNPTY"
+    },
+    {
+      "name": "TIMESLICE",
+      "description": "TIMESLICEのCL変数 (7 0)",
+      "help": "ジョブ内のスレッドが処理時間を与えられた時に実行できる最大ミリ秒数（8〜9999999）を受け取る CL 変数名を指定します。変数は小数部のない7桁の10進数変数でなければなりません。",
+      "inputType": "text",
+      "required": false,
+      "attributes": { "maxLength": 11 },
+      "placeholder": "&TIMESLICE"
+    },
+    {
+      "name": "PURGE",
+      "description": "PURGEのCL変数 (10)",
+      "help": "タイム・スライス終了時や長時間待機時にジョブが主記憶域から取り出されて補助記憶域に入れる適格となるかを示す特殊値を受け取る CL 文字変数名を指定します。最小長10文字。",
+      "inputType": "text",
+      "required": false,
+      "attributes": { "maxLength": 11 },
+      "placeholder": "&PURGE"
+    },
+    {
+      "name": "DFTWAIT",
+      "description": "DFTWAITのCL変数 (7 0)",
+      "help": "システムが資源獲得のためマシン語命令を待機する最大秒数の省略時値（1〜9999999、*NOMAX の場合は -1）を受け取る CL 変数名を指定します。変数は小数部のない7桁の10進数変数でなければなりません。",
+      "inputType": "text",
+      "required": false,
+      "attributes": { "maxLength": 11 },
+      "placeholder": "&DFTWAIT"
+    },
+    {
+      "name": "SBMMSGQ",
+      "description": "SBMMSGQのCL変数 (10)",
+      "help": "メッセージ待ち行列の名前を受け取る CL 文字変数名を指定します。最小長10文字。",
+      "inputType": "text",
+      "required": false,
+      "attributes": { "maxLength": 11 },
+      "placeholder": "&SBMMSGQ"
+    },
+    {
+      "name": "SBMMSGQLIB",
+      "description": "SBMMSGQLIBのCL変数 (10)",
+      "help": "SBMMSGQ のメッセージ待ち行列が入っているライブラリーの名前を受け取る CL 文字変数名を指定します。最小長10文字。",
+      "inputType": "text",
+      "required": false,
+      "attributes": { "maxLength": 11 },
+      "placeholder": "&SBMMSGQLIB"
+    },
+    {
+      "name": "DDMCNV",
+      "description": "DDMCNVのCL変数 (5)",
+      "help": "ジョブでの分散データ管理機能(DDM)会話に取られる処置を示す特殊値を受け取る CL 文字変数名を指定します。最小長5文字。",
+      "inputType": "text",
+      "required": false,
+      "attributes": { "maxLength": 11 },
+      "placeholder": "&DDMCNV"
+    },
+    {
+      "name": "TSEPOOL",
+      "description": "TSEPOOLのCL変数 (10)",
+      "help": "対話式ジョブがタイム・スライス終了時に別の主記憶域プールへ移動するかを示す特殊値を受け取る CL 文字変数名を指定します。最小長10文字。",
+      "inputType": "text",
+      "required": false,
+      "attributes": { "maxLength": 11 },
+      "placeholder": "&TSEPOOL"
+    },
+    {
+      "name": "THDRSCAFN",
+      "description": "THDRSCAFNのCL変数 (20)",
+      "help": "2次スレッドが初期スレッドと同じシステム資源グループへの類縁性を持つかを示す特殊値を受け取る CL 文字変数名を指定します。最小長20文字。最初の10文字に *NOGROUP / *GROUP、次の10文字に類縁性レベル *NORMAL / *HIGH が戻ります。",
+      "inputType": "text",
+      "required": false,
+      "attributes": { "maxLength": 11 },
+      "placeholder": "&THDRSCAFN"
+    },
+    {
+      "name": "RSCAFNGRP",
+      "description": "RSCAFNGRPのCL変数 (10)",
+      "help": "ジョブが同じルーティング項目/事前開始ジョブ項目を使う他ジョブと同じプロセッサー/メモリー・グループへの類縁性を持つかを示す特殊値を受け取る CL 文字変数名を指定します。最小長10文字。戻る値: *NO / *YES。",
+      "inputType": "text",
+      "required": false,
+      "attributes": { "maxLength": 11 },
+      "placeholder": "&RSCAFNGRP"
+    }
+  ]
+}

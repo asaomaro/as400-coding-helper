@@ -1,0 +1,64 @@
+{
+  "keyword": "DLTF",
+  "description": "ファイル削除（DLTF）",
+  "help": "システムから1つ以上のファイルを削除します。FILE には特定のファイル名または総称名（末尾 *）を指定できます。物理ファイルは、対応する論理ファイルがない場合のみ削除できます（論理ファイルを先に削除する必要があります）。ファイルがオープン中（使用中）の場合は削除されません。ファイルに対する *OBJEXIST/*OBJOPR 権限と、ライブラリーに対する *EXECUTE 権限が必要です。",
+  "parameters": [
+    {
+      "name": "FILE",
+      "description": "ファイル",
+      "help": "削除する1つ以上のファイルを LIB/FILE 形式で指定します（必須・定位置1）。修飾子1=ファイル名または総称名（1文字以上＋末尾 *）、修飾子2=ライブラリー。総称名による削除は、削除に適格でその総称名を持つすべてのファイルを削除します。",
+      "inputType": "group",
+      "required": true,
+      "children": [
+        {
+          "name": "LIB",
+          "description": "ライブラリー",
+          "help": "ファイルが入っているライブラリー。*LIBL（ライブラリー・リスト検索）/ *CURLIB（現行ライブラリー）/ *USRLIBL / *ALL（QSYS含む全ライブラリー）/ *ALLUSR（全ユーザー・ライブラリー）/ ライブラリー名。",
+          "inputType": "text",
+          "required": false,
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          },
+          "placeholder": "*LIBL"
+        },
+        {
+          "name": "FILE",
+          "description": "ファイル",
+          "help": "削除するファイル名、または総称名（1文字以上の後にアスタリスク * を付けた文字ストリング）。",
+          "inputType": "text",
+          "required": true,
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          },
+          "placeholder": "FILE"
+        }
+      ]
+    },
+    {
+      "name": "SYSTEM",
+      "description": "システム",
+      "help": "ファイルをローカル・システムから削除するかリモート・システムから削除するかを指定します。既定は *LCL。*RMT は FILE に DDM ファイルを指定する必要があります。",
+      "inputType": "dropdown",
+      "required": false,
+      "options": [
+        { "label": "*LCL（ローカル・システムから削除）", "value": "*LCL" },
+        { "label": "*RMT（リモート・システムから削除／DDMファイル必須）", "value": "*RMT" },
+        { "label": "*FILETYPE（DDMファイルの有無で判定）", "value": "*FILETYPE" }
+      ]
+    },
+    {
+      "name": "RMVCST",
+      "description": "制約の除去",
+      "help": "参照制約の親ファイルを削除する際に、従属ファイルの関連セット中で除去される制約関係を指定します。既定は *RESTRICT。",
+      "inputType": "dropdown",
+      "required": false,
+      "options": [
+        { "label": "*RESTRICT（制約があれば親ファイルを削除しない）", "value": "*RESTRICT" },
+        { "label": "*REMOVE（制約関係・外部キー・アクセス・パスを除去）", "value": "*REMOVE" },
+        { "label": "*KEEP（制約関係は解除するが制約定義は残す）", "value": "*KEEP" }
+      ]
+    }
+  ]
+}

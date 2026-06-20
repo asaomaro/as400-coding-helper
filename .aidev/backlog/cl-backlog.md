@@ -12,10 +12,10 @@
 - [x] CHGVAR — 変数変更（PR #9）
 - [x] MONMSG — メッセージ・モニター（PR #9）
 - [x] RCVMSG — メッセージ受信（aidev-batch 試走で生成・PR feature/cl-rcvmsg）
-- [ ] DLTF — ファイル削除の定義JSONを作成
-- [ ] RTVJOBA — ジョブ属性検索の定義JSONを作成
-- [ ] SNDRCVF — レコード送受信の定義JSONを作成
-- [ ] WRKSPLF — スプール・ファイル処理の定義JSONを作成
+- [x] DLTF — ファイル削除の定義JSONを作成（aidev-batch / feature/cl-defs-batch-20260620）
+- [x] RTVJOBA — ジョブ属性検索の定義JSONを作成（aidev-batch / feature/cl-defs-batch-20260620）
+- [x] SNDRCVF — レコード送受信の定義JSONを作成（aidev-batch / feature/cl-defs-batch-20260620）
+- [x] WRKSPLF — スプール・ファイル処理の定義JSONを作成（aidev-batch / feature/cl-defs-batch-20260620）
 
 > 各行のタスクは「<CMD> の定義JSONを作成」。実処理は PJ skill `cl-command-def` に委譲される
 > （IBM docs を Playwright で取得 → types.ts 準拠でマッピング・検証）。
