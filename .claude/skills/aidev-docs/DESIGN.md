@@ -161,6 +161,44 @@ flowchart LR
   挙動は **soft**（interactive=警告して続行可、autonomous/batch=保留して次へ）＝「硬ゲートは承認のみ」の思想に合わせる。
   当初は backlog 行への `blocked-by:` 注記＋batch ガードを検討したが、入口非依存にならないため退けた。
 
+## 2.5 タスク管理モデル（works = 実行の正 / backlog = 遅延キュー）
+
+タスクの「管理」がどこに乗るかを、レイヤで分けて捉える（設計の世界観の記録）。
+
+- **実行層 = `works/<slug>/state.yml`（基盤・常在）**：着手した作業の唯一の source of truth。
+  `aidev-00-start` の「新規 requirement」直接フローは backlog なしで完結する**原初フロー**で、常に第一級
+  （backlog 未導入時はこれだけで運用していた）。
+- **intake 層 = backlog（任意・後付け・ローカル既定）**：**遅延／連続実行のためのキュー**。
+  抽象的な役割は「autonomous ループが pop する未着手キュー」で、実体はローカル `.aidev/backlog/*.md` でも
+  外部トラッカー（Jira/Redmine の未着手クエリ等）でもよい。backlog はその**ローカル既定実装**。
+- **入口は2つ**：①直接（`aidev-00-start` 新規）②キュー経由（batch が backlog を pop）。着地は同じ `works`。
+  流れは **backlog → works（consume）**であって works → backlog ではない。backlog 行は deliver で `[x]`。
+
+### いつ backlog を使うか（判断ルール）
+- **今すぐ1件** → `aidev-00-start` 直接（backlog 不要）。
+- **後で／連続して複数件**（/loop・autonomous・タスク分割・計画ストック）→ backlog（または外部トラッカー）に積む。
+
+### なぜ未着手を works に実体化しないか（state に `pending` を持たせる案を退けた理由）
+全タスクを works 化し `state.yml` に `pending` 状態を持たせる案も検討したが、退けた。
+works/ ノイズや「なめる state.yml が無い」問題は status フィルタで消せるが、次は構造的に残る:
+- **グルーピング／共有文脈の喪失**：backlog 1ファイル＝順序つき・共有ヘッダ付きの束。N フォルダに割ると散る。
+- **早すぎる 1:1 固定**：backlog 1項目は拾われる時に分割／統合／再定義され得る。先にフォルダを切ると凍結。
+- **フォルダのゴミ化**：未着手の多くはやらない／言い換えられる。行は消せるがフォルダは残骸化。
+- **外部トラッカーの二重持ち**：Jira 運用 PJ では未着手の正は Jira。works-pending はそれを二重化する。
+→ 方針は **「保存を統一せず、ビューを統一する」**：router/insights が「works（常在）＋ backlog/トラッカー（あれば）」を
+  読んで未着手＋進行中を一望する。未着手を works に実体化しない。
+
+### ツール非依存の背骨
+- `state.yml` の外部チケット参照は GitHub 固有にしない（将来 `issue:` → ツール非依存の `ticket:`。種類は PJ 設定）。
+- 作業間依存 `dependsOn`（「protocol 2.7」）は **works slug を第一形式**にし、外部チケット（`#N` 等）は参照に徹する
+  → 依存解決はトラッカー非依存で完結する。
+
+### backlog ファイルの整理（複数前提）
+- **standing**（ドメイン別の定常キュー：`cl.md` 等）と **split**（タスク分割由来・親に紐づく短命キュー：
+  `split-<親>.md`）を区別し、自己記述ヘッダ（`kind` / `parent` / `priority`）を持たせる。
+- 全項目消化済みは `archive/` へ退避し、active な glob を小さく保つ。複数ファイル選択は priority→名前順、
+  跨ぎ依存は work レベルの `dependsOn` が担保。
+
 ## 3. 退けた案（なぜ採用しなかったか）
 
 - **自動で次工程へ遷移**：工程ゲートの人間レビューが品質の要。自動化すると手戻りが増幅。→ ゲート式。
