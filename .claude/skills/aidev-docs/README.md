@@ -51,6 +51,7 @@ PJ非依存の開発ワークフローを、skill 群で制御・進捗管理す
 | skill | 役割 |
 |---|---|
 | `aidev-insights` | 複数作業を横断して傾向・再発パターンを分析し、改善提案を出す（`/aidev-insights`） |
+| `aidev-batch` | バックログの未処理項目を autonomous モードで順次処理（L1 バッチ駆動）。`/loop`・`/schedule` から起動可 |
 
 ## 承認ゲート（各工程の終わり）
 
