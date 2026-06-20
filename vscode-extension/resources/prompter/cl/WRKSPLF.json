@@ -1,0 +1,235 @@
+{
+  "keyword": "WRKSPLF",
+  "description": "スプール・ファイル処理（WRKSPLF）",
+  "help": "システム上のすべてのスプール・ファイルのリスト、またはその中から選択したリストを表示します。表示された項目に対して、変更・保留・削除・表示・解放の操作を選択できます。SELECT パラメーターの各要素でファイルを絞り込みます。すべての引数はオプショナルで、引数なしの WRKSPLF は実行中ユーザーのスプール・ファイルを一覧表示します。",
+  "parameters": [
+    {
+      "name": "SELECT",
+      "description": "ファイル選択",
+      "help": "表示するために選択するファイルのグループを指定します。各要素（ユーザー／印刷装置／用紙タイプ／ユーザー・データ／ASP／スプール・ファイル名）すべてと一致するファイルだけが選択されます。定位置1。",
+      "inputType": "group",
+      "required": false,
+      "children": [
+        {
+          "name": "USER",
+          "description": "ユーザー",
+          "help": "ファイルを作成したユーザーで選択します。*CURRENT（このコマンドを実行中のユーザー、既定）／*ALL（全ユーザー）／総称名（例 ABC*）／ユーザー名。",
+          "inputType": "text",
+          "required": false,
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          },
+          "placeholder": "*CURRENT"
+        },
+        {
+          "name": "DEV",
+          "description": "印刷装置",
+          "help": "ファイルが待機している装置で選択します。*ALL（装置作成/ユーザー作成の全出力待ち行列上のファイル）／*OUTQ（ユーザー作成の出力待ち行列の全ファイル）／装置名（その装置の装置作成出力待ち行列上のファイル）。",
+          "inputType": "text",
+          "required": false,
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          },
+          "placeholder": "*ALL"
+        },
+        {
+          "name": "FORMTYPE",
+          "description": "用紙タイプ",
+          "help": "用紙タイプで選択します。*ALL（全用紙タイプ）／*STD（標準用紙タイプ）／文字値（指定の用紙タイプ）。",
+          "inputType": "text",
+          "required": false,
+          "attributes": {
+            "maxLength": 10
+          },
+          "placeholder": "*ALL"
+        },
+        {
+          "name": "USRDTA",
+          "description": "ユーザー・データ",
+          "help": "ファイルに関連したユーザー・データ・タグで選択します。*ALL（ユーザー・データ・タグが指定されている全ファイル）／総称ユーザー・データ（例 ABC*）／ユーザー・データ・タグ。",
+          "inputType": "text",
+          "required": false,
+          "attributes": {
+            "maxLength": 10
+          },
+          "placeholder": "*ALL"
+        },
+        {
+          "name": "ASP",
+          "description": "ASP",
+          "help": "ファイルが入っている補助記憶域プールで選択します。*ALL（ASPDEV指定の全ファイル）／*ASPDEV（ASPDEVパラメーター指定のファイル）／1〜32（ASP番号）。",
+          "inputType": "text",
+          "required": false,
+          "attributes": {
+            "maxLength": 7
+          },
+          "placeholder": "*ALL"
+        },
+        {
+          "name": "SPLFNAME",
+          "description": "スプール・ファイル",
+          "help": "スプール・ファイル名で選択します。*ALL（任意の名前）／総称名（例 ABC*）／スプール・ファイル名。",
+          "inputType": "text",
+          "required": false,
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          },
+          "placeholder": "*ALL"
+        }
+      ]
+    },
+    {
+      "name": "JOB",
+      "description": "ジョブ名",
+      "help": "選択するスプール・ファイルを作成したジョブを修飾ジョブ名で指定します。単一値 *ALL（全ジョブ）。注: このパラメーターは SELECT のユーザー要素に *ALL を指定した場合だけ使用できます。",
+      "inputType": "group",
+      "required": false,
+      "children": [
+        {
+          "name": "JOB",
+          "description": "ジョブ名",
+          "help": "ジョブ名。総称名（例 ABC*）または名前。単一値として *ALL（全ジョブ）も指定可。",
+          "inputType": "text",
+          "required": false,
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          },
+          "placeholder": "*ALL"
+        },
+        {
+          "name": "USER",
+          "description": "ユーザー",
+          "help": "ジョブのユーザー名。*ALL（ジョブ名一致の全ジョブ）／総称名／ユーザー名。",
+          "inputType": "text",
+          "required": false,
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          },
+          "placeholder": "*ALL"
+        },
+        {
+          "name": "NBR",
+          "description": "番号",
+          "help": "ジョブ番号。*ALL（ジョブ名/ユーザー名一致の全スプール・ファイル）／000001〜999999。",
+          "inputType": "text",
+          "required": false,
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 6
+          },
+          "placeholder": "*ALL"
+        }
+      ]
+    },
+    {
+      "name": "PERIOD",
+      "description": "時間枠",
+      "help": "表示するスプール・ファイルを作成日時で選択する期間を指定します。2つの要素リスト（開始時刻/日付・終了時刻/日付）から成り、各要素がさらに時刻と日付の2要素を持ちます。要素はネスト構造のため平坦化して表現しています。",
+      "inputType": "group",
+      "required": false,
+      "children": [
+        {
+          "name": "STRTIME",
+          "description": "開始時刻",
+          "help": "その時またはそれ以後に作成されたファイルを選択する開始時刻。*AVAIL（指定開始日以後の全ファイル）／時刻（24時間形式 HHMM/HHMMSS、区切りありは 'HH:MM:SS'）。",
+          "inputType": "text",
+          "required": false,
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 8
+          },
+          "placeholder": "*AVAIL"
+        },
+        {
+          "name": "STRDATE",
+          "description": "開始日付",
+          "help": "その時またはそれ以後に作成されたファイルを選択する開始日。*BEGIN（条件を満たす全ファイル。指定時は*AVAIL以外の開始時刻は無視）／*CURRENT（現在の日付）／日付（ジョブのDATFMT/DATSEP形式）。",
+          "inputType": "text",
+          "required": false,
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          },
+          "placeholder": "*BEGIN"
+        },
+        {
+          "name": "ENDTIME",
+          "description": "終了時刻",
+          "help": "それ以前に作成されたファイルを選択する終了時刻。*AVAIL（指定終了日以前の全ファイル）／時刻（24時間形式、区切りありは 'HH:MM:SS'）。",
+          "inputType": "text",
+          "required": false,
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 8
+          },
+          "placeholder": "*AVAIL"
+        },
+        {
+          "name": "ENDDATE",
+          "description": "終了日付",
+          "help": "その時またはそれ以前に作成されたファイルを選択する終了日。*END（最後に作成された日。指定時は*AVAIL以外の終了時刻は無視）／日付（ジョブのDATFMT/DATSEP形式）。",
+          "inputType": "text",
+          "required": false,
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          },
+          "placeholder": "*END"
+        }
+      ]
+    },
+    {
+      "name": "ASPDEV",
+      "description": "ASP装置",
+      "help": "選択されるスプール・ファイルが入っている補助記憶域プール装置を指定します。有効なのは SELECT の ASP 要素が *ALL または *ASPDEV の場合だけです。*（現スレッドのライブラリー名スペース内のASP）／*SYSBAS（システムASPおよび全定義済みユーザーASP）／*CURASPGRP（スレッドのASPグループの1次/2次ASP）／名前（ASP装置記述名）。",
+      "inputType": "text",
+      "required": false,
+      "attributes": {
+        "characterSet": "upper",
+        "maxLength": 10
+      },
+      "placeholder": "*"
+    },
+    {
+      "name": "OUTPUT",
+      "description": "出力",
+      "help": "出力を表示するか印刷するかを指定します。",
+      "inputType": "dropdown",
+      "required": false,
+      "options": [
+        { "label": "*（対話式は表示、バッチは印刷）", "value": "*" },
+        { "label": "*PRINT（印刷）", "value": "*PRINT" }
+      ]
+    },
+    {
+      "name": "DSPFMT",
+      "description": "画面様式",
+      "help": "表示で使用する様式および用語を指定します。定位置2。",
+      "inputType": "dropdown",
+      "required": false,
+      "options": [
+        { "label": "*INLENV（ユーザー・プロファイルのSPCENVに従う）", "value": "*INLENV" },
+        { "label": "*S36FMT（システム/36の用語）", "value": "*S36FMT" },
+        { "label": "*NORMAL（このシステムの用語）", "value": "*NORMAL" }
+      ]
+    },
+    {
+      "name": "ASTLVL",
+      "description": "援助レベル",
+      "help": "使用するユーザー・インターフェース（援助レベル）を指定します。",
+      "inputType": "dropdown",
+      "required": false,
+      "options": [
+        { "label": "*PRV（前に使用したインターフェース）", "value": "*PRV" },
+        { "label": "*USRPRF（ユーザー・プロファイルのASTLVL）", "value": "*USRPRF" },
+        { "label": "*BASIC（操作援助機能）", "value": "*BASIC" },
+        { "label": "*INTERMED（システム・インターフェース）", "value": "*INTERMED" }
+      ]
+    }
+  ]
+}
