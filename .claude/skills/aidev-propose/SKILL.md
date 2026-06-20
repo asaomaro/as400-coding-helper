@@ -53,7 +53,7 @@ AI 開発ワークフローの **planner（課題提案 / L_planner・A 層）**
      1タスクを分割した産物なら `split-<親>.md`（`kind: split` / `parent`）に分ける（`aidev-batch`「backlog ファイル規約」）。
      着手前から既知の前提は項目行末に `(needs: <slug/#N>)` を付す。
    - **依存関係があれば記録する**: issue 本文に前提（例 `#18 に依存`）を明記し、その課題が works 化される際は
-     `state.yml` の `dependsOn` に前提（works slug / issue `#N`）を設定する（`protocol.md`「2.7」）。
+     `state.yml` の `dependsOn` に前提（works slug / 外部チケット `#N`）を設定する（`protocol.md`「2.7」）。
      これで batch・手動いずれの入口でも依存順が尊重される。
 8. レポート（採用/見送り/分割の理由、作成した issue/バックログ）。
 
