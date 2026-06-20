@@ -41,6 +41,7 @@ const clCommentToggle_1 = require("./clCommentToggle");
 const rpgTabNavigation_1 = require("./rpgTabNavigation");
 const dbcsShiftMarkers_1 = require("./dbcsShiftMarkers");
 const fixedFormatNavigation_1 = require("./fixedFormatNavigation");
+const ruler_1 = require("./ruler");
 let diagnosticsInstance;
 function registerLanguageFeatures(context) {
     if (!diagnosticsInstance) {
@@ -62,5 +63,6 @@ function registerLanguageFeatures(context) {
     (0, rpgTabNavigation_1.registerRpgTabNavigation)(context);
     (0, fixedFormatNavigation_1.registerFixedFormatNavigation)(context);
     (0, dbcsShiftMarkers_1.registerDbcsShiftMarkers)(context);
+    (0, ruler_1.registerRuler)(context);
 }
 //# sourceMappingURL=registration.js.map
