@@ -1,0 +1,96 @@
+# aidev 開発ワークフローハーネス — 利用ガイド
+
+PJ非依存の開発ワークフローを、skill 群で制御・進捗管理するハーネス。
+要件定義からデリバリまでを、人間の承認ゲート付きで一貫して進め、いつでも中断・再開できる。
+
+> このファイルは参照専用（`SKILL.md` ではないため skill 実行時には読まれない）。
+> 設計思想・意思決定の記録は [DESIGN.md](./DESIGN.md) を参照。
+
+## これは何か
+
+- **基盤＝開発フローの制御と進捗管理の器**（工程順・承認・遷移・状態・再開）。
+- **実作業の中身は PJ 資産に委ねる**：PJ の AGENTS.md（規約・観点）と PJ固有 skill（review/commit 等）が
+  あれば自動的に優先され、無ければ各工程のジェネリック手順で進む。
+
+## クイックスタート
+
+1. 開発を始める／再開する：
+
+   ```
+   /aidev-00-start
+   ```
+
+   現在の作業状況を確認し、「続きから / 別工程をやり直す / 新規作業」を選べる。
+2. 新規作業を選ぶと `.aidev/works/<連番>-<slug>/` が作られ、requirement 工程へ進む。
+3. 以降、各工程の最後で承認ゲート（選択肢UX）が出る。選ぶだけで次へ進む／中断できる。
+
+慣れていれば各工程を直接呼んでもよい（例 `/aidev-40-coding`）。各工程は前提を自己チェックする。
+
+## 工程一覧
+
+| 番号 | 工程 | 種別 | 役割 |
+|------|------|------|------|
+| 00 | start | 入口 | ルーター。状況確認と工程案内 |
+| 10 | requirement | 標準 | 何を・なぜ作るか（requirement.md） |
+| 15 | research | 任意 | spec 前の事実調査（research.md） |
+| 20 | spec | 標準 | どう作るか・仕様（spec.md） |
+| 25 | design | 任意 | 構造設計（design.md） |
+| 30 | plan | 標準 | 作業分解（plan.md / tasks.md） |
+| 40 | coding | 標準 | 実装、tasks 更新 |
+| 50 | test | 標準 | 受け入れ基準の検証 |
+| 60 | review | 標準 | 差分点検（指摘あれば coding へ差し戻し） |
+| 70 | deliver | 標準（最終） | コミット / PR で着地 |
+| 90 | retro | 任意 | 振り返りと改善提案（retro.md） |
+
+標準フロー：`requirement → spec → plan → coding → test → review → deliver`。
+番号末尾 **0=標準 / 5=任意**。番号は推奨順であり強制ではない（差し戻し可）。
+
+## 承認ゲート（各工程の終わり）
+
+工程ごとに成果物を提示し、単一の選択肢から選ぶ：
+
+- `承認して次工程へ進む`
+- `承認してここで中断`（再開可能な状態で停止）
+- `差し戻す`（指摘を反映して同工程をやり直す）
+
+自動では次へ進まない。最終工程 deliver では「承認して完了」になる。
+（AskUserQuestion 非対応エージェントでは同じ選択肢をテキストで提示）
+
+## 任意工程の起動
+
+- **ユーザー指定**：明示的に `/aidev-15-research` 等を選ぶ。
+- **AI検知＋推奨**：requirement 終了時に調査不足を、spec 終了時に複雑度を検知すると、
+  遷移ゲートで research / design を理由付きで推奨する（却下すれば標準工程へ直行）。
+- retro はユーザー指定で起動（作業完了後）。
+
+## 中断と再開
+
+- 状態は `.aidev/works/<NNN-slug>/state.yml`（`current` / `approved`）＋成果物ファイルで管理。
+- どこで止めても、`/aidev-00-start` で現在地が復元され、続きから再開できる。
+- 複数作業を並行可能。`.aidev/current` が「今どれを触っているか」を指す。
+
+## ファイル構成
+
+```
+.claude/skills/
+  aidev-00-start/      入口 + protocol.md（共通規約のホーム）
+  aidev-10-requirement/ … aidev-90-retro/   各工程
+  aidev-docs/          このREADMEとDESIGN（参照専用・skillではない）
+.aidev/                実行時に生成される状態
+  current              現在の作業フォルダ名（.gitignore 対象）
+  works/<NNN-slug>/    作業単位ごとの成果物 + state.yml
+```
+
+## 別PJへの導入
+
+1. `.claude/skills/aidev-*`（aidev-docs 含む）をコピー。
+2. `.gitignore` に `.aidev/current` を追加（works 配下の成果物はコミット推奨）。
+3. PJ の AGENTS.md に規約・レビュー観点を書く。PJ固有 skill があればそのまま活かされる。
+
+基盤はドメイン非依存。PJ固有の知識・実作業は AGENTS.md と PJ skill 側が担う。
+
+## 他エージェントについて
+
+選択肢UX（AskUserQuestion）とサブエージェント委譲（Agent）は Claude Code 上の実現手段。
+Copilot / Codex 等では、選択肢はテキスト提示、委譲は各機構またはインライン実行にフォールバックする
+（規約本体は散文で書かれており挙動は同等を意図）。
