@@ -79,8 +79,11 @@
 一律に効く（backlog 等への個別注記は不要）。各工程は開始時（「1. 対象作業の特定」の後）に評価する。
 
 - **充足判定**:
-  - works slug（例 `20260620-rpg-dialect-split`）→ 当該 works の `state.yml` の `approved` に `deliver` が含まれる。
-  - GitHub issue（例 `#18`）→ その issue がクローズ済み（`gh issue view <N> --json state -q .state` 等）。
+  - works slug（例 `20260620-rpg-dialect-split`）→ 当該 works の `state.yml` の `approved` に `deliver` が含まれる
+    （ツール非依存で最も推奨。依存解決を外部トラッカーに縛らない）。
+  - 外部チケット（例 `#18` / `PROJ-123`）→ そのチケットがクローズ／完了。判定は `.aidev/config.yml` の
+    `tracker.type` に応じたアダプタで行う（github: `gh issue view <N> --json state -q .state` ／ jira・redmine:
+    各CLI/API ／ `none` や CLI不在: **advisory＝参照のみで自動判定しない**）。
   - 参照先が見つからない場合は「未充足（未着手）」とみなす。
 - **未充足時の挙動（soft）**:
   - **interactive**: 未充足の依存とその理由を警告し、`AskUserQuestion` で「依存を待つ＝中断 / 承知のうえ続行」を
@@ -158,13 +161,14 @@
 
 ```yaml
 slug: <作業slug>            # 例: user-login
-issue: <番号 または 省略>    # 任意。GitHub issue 連携時に使用
+ticket: <ID または 省略>     # 任意。外部チケット/issue の ID（ツール非依存。例 "#18" / "PROJ-123"）。種類は .aidev/config.yml の tracker
+                            # 後方互換: 旧 `issue: <番号>`（GitHub前提）も受理する。新規は ticket を使う。
 current: <直近で作業した工程の論理名>
 approved: [<承認済み工程の論理名…>]
 mode: interactive           # interactive（既定）| autonomous。「10.」参照
 humanGates: []              # autonomous 時に人間ゲートを残す工程の論理名（部分自律）。例: [spec]
 maxSendBacks: 3             # autonomous 時の差し戻し上限（同一工程あたり）。未指定なら 3。「10.」参照
-dependsOn: []              # この作業の前提（他の works slug / GitHub issue #N）。未充足なら着手前に警告。「2.7」参照
+dependsOn: []              # この作業の前提（他の works slug / 外部チケット #N・PROJ-123）。未充足なら着手前に警告。「2.7」参照
 ```
 
 > `maxSendBacks` の現在のカウントは `state.yml` に別途持たず、`metrics.yml` の当該 phase の

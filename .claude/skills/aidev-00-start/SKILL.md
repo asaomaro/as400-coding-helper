@@ -50,7 +50,7 @@ AI 開発ワークフローの入口（ルーター）。
 2. 日付プレフィックスを取得する：`date -u +%Y%m%d`（UTC）。フォルダ名は `<YYYYMMDD>-<slug>`。
    同日・同 slug が既存なら末尾に `-2`,`-3`… を付けて一意化する。
 3. `mkdir -p .aidev/works/<YYYYMMDD-slug>` を作成。
-4. `state.yml` を初期化（`protocol.md` の「6. state.yml スキーマ」に従う。`current: requirement`、`approved: []`）。GitHub issue 連携時は `issue` を設定。
+4. `state.yml` を初期化（`protocol.md` の「6. state.yml スキーマ」に従う。`current: requirement`、`approved: []`）。外部チケット連携時は `ticket` に ID を設定（種類は `.aidev/config.yml` の `tracker`）。
    - **実行モード**を決める（`protocol.md`「10.」）。既定は `mode: interactive`。
      夜間自律など人手を介さず PR まで回す場合は `mode: autonomous` とし、必要なら
      `humanGates`（人間ゲートを残す工程。例 `[spec]`＝部分自律）を設定する。
