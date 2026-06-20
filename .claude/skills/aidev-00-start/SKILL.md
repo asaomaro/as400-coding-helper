@@ -25,9 +25,11 @@ AI 開発ワークフローの入口（ルーター）。
 
 - `cat .aidev/current 2>/dev/null` で現在作業中フォルダを確認。
 - `ls .aidev/works 2>/dev/null` で全作業フォルダを一覧。
-- 各フォルダの `state.yml`（`current` / `approved`）と成果物ファイルの有無を読み、進捗を要約する。
+- 各フォルダの `state.yml`（`current` / `approved` / `dependsOn`）と成果物ファイルの有無を読み、進捗を要約する。
+- `dependsOn`（`protocol.md`「2.7」）に未充足の依存がある作業は `⛔依存待ち（<未充足の依存>）` と明示する。
 
-要約例: `001 user-login … spec 承認済み（次: plan）` / `002 export-csv … requirement 作成中`
+要約例: `001 user-login … spec 承認済み（次: plan）` / `002 export-csv … requirement 作成中` /
+`003 rpg-skill … ⛔依存待ち（#18 未クローズ）`
 
 `.aidev/` 自体が無い場合は「新規作業の開始」のみ提示する。
 
@@ -52,6 +54,7 @@ AI 開発ワークフローの入口（ルーター）。
    - **実行モード**を決める（`protocol.md`「10.」）。既定は `mode: interactive`。
      夜間自律など人手を介さず PR まで回す場合は `mode: autonomous` とし、必要なら
      `humanGates`（人間ゲートを残す工程。例 `[spec]`＝部分自律）を設定する。
+   - **前提となる作業/issue があれば** `dependsOn` に記録する（他の works slug / GitHub issue `#N`。`protocol.md`「2.7」）。
 5. `.aidev/current` に `<YYYYMMDD-slug>` を書き込む。
 6. **作業ブランチの準備（PJ委譲・任意）**：PJ がブランチ運用の場合に行う（`protocol.md`「2.5」に従う）。
    - PJ にブランチ作成を伴う skill（例: issue＋ブランチ作成 skill）があれば、それを優先して使う。

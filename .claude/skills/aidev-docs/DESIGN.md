@@ -154,6 +154,13 @@ flowchart LR
   安全弁必須（test硬ゲート・ループ/予算上限・PRで停止/auto-merge禁止・証跡保存）。
   実行手段（headless/スケジュール）は harness とは別レイヤ。
 
+- **作業間依存は `state.yml` の `dependsOn` に集約（backlog 注記でなく）**：依存問題は batch 駆動だけでなく
+  **手動実行（`/aidev-40-coding` 直叩き）でも起きる**。backlog 限定の `blocked-by` では手動入口を素通りする。
+  各工程が開始時に必ず読む `state.yml` に持たせ、`protocol.md`「2.7」の前提チェックで評価することで、
+  **全入口（batch / 手動 / 直叩き）に一律に効く**。充足判定は works slug→approved に deliver / issue `#N`→クローズ。
+  挙動は **soft**（interactive=警告して続行可、autonomous/batch=保留して次へ）＝「硬ゲートは承認のみ」の思想に合わせる。
+  当初は backlog 行への `blocked-by:` 注記＋batch ガードを検討したが、入口非依存にならないため退けた。
+
 ## 3. 退けた案（なぜ採用しなかったか）
 
 - **自動で次工程へ遷移**：工程ゲートの人間レビューが品質の要。自動化すると手戻りが増幅。→ ゲート式。

@@ -92,7 +92,7 @@ planner の方針は `.aidev/charter.md` で縛る。
 
 ## 中断と再開
 
-- 状態は `.aidev/works/<YYYYMMDD-slug>/state.yml`（`current` / `approved`）＋成果物ファイルで管理。
+- 状態は `.aidev/works/<YYYYMMDD-slug>/state.yml`（`current` / `approved` / `dependsOn`）＋成果物ファイルで管理。
 - どこで止めても、`/aidev-00-start` で現在地が復元され、続きから再開できる。
 - 複数作業を並行可能。`.aidev/current` が「今どれを触っているか」を指す。
 
@@ -107,7 +107,7 @@ planner の方針は `.aidev/charter.md` で縛る。
 .aidev/                実行時に生成される状態
   current              現在の作業フォルダ名（.gitignore 対象）
   works/<YYYYMMDD-slug>/  作業単位ごとの成果物（命名: 日付(UTC)-slug）
-    state.yml          進捗（current / approved）
+    state.yml          進捗（current / approved / dependsOn）
     metrics.yml        工程の実施日時・時間・件数などのイベントログ
     requirement.md / spec.md / plan.md / tasks.md / decisions.md / review.md など
   insights/            横断分析レポート（<日付>-insights.md）

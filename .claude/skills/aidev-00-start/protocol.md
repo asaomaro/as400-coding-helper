@@ -72,6 +72,23 @@
 > Claude Code での実現: 各工程 skill の `allowed-tools` に `Agent` を含めることで委譲を可能にしている。
 > 他エージェントでは各自の委譲機構を用いる（無ければインライン実行）。
 
+## 2.7 作業間依存（dependsOn）の前提チェック
+
+作業（works）が他の作業/issue に依存する場合、`state.yml` の `dependsOn`（「6.」）に記録する。
+依存を**1か所（state.yml）に集約**することで、batch・手動・`/aidev-40-coding` 直叩きのいずれの入口でも
+一律に効く（backlog 等への個別注記は不要）。各工程は開始時（「1. 対象作業の特定」の後）に評価する。
+
+- **充足判定**:
+  - works slug（例 `20260620-rpg-dialect-split`）→ 当該 works の `state.yml` の `approved` に `deliver` が含まれる。
+  - GitHub issue（例 `#18`）→ その issue がクローズ済み（`gh issue view <N> --json state -q .state` 等）。
+  - 参照先が見つからない場合は「未充足（未着手）」とみなす。
+- **未充足時の挙動（soft）**:
+  - **interactive**: 未充足の依存とその理由を警告し、`AskUserQuestion` で「依存を待つ＝中断 / 承知のうえ続行」を
+    選ばせる。続行は妨げない（硬ゲートは承認のみ、の思想）。
+  - **autonomous / batch**: その作業には着手せず「依存未充足のため保留」と報告する（batch は次の項目へ進む）。
+- 充足済み・依存なしなら通常どおり進む。`dependsOn` の記録は新規作業時（「aidev-00-start」手順4）か
+  `aidev-propose` の起票時に行う。
+
 ## 3. 工程終了プロトコル
 
 工程の成果物を生成・更新したら、必ず以下の順で終える。
@@ -147,6 +164,7 @@ approved: [<承認済み工程の論理名…>]
 mode: interactive           # interactive（既定）| autonomous。「10.」参照
 humanGates: []              # autonomous 時に人間ゲートを残す工程の論理名（部分自律）。例: [spec]
 maxSendBacks: 3             # autonomous 時の差し戻し上限（同一工程あたり）。未指定なら 3。「10.」参照
+dependsOn: []              # この作業の前提（他の works slug / GitHub issue #N）。未充足なら着手前に警告。「2.7」参照
 ```
 
 > `maxSendBacks` の現在のカウントは `state.yml` に別途持たず、`metrics.yml` の当該 phase の
