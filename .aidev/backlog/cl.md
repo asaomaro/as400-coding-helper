@@ -1,3 +1,8 @@
+---
+backlog: cl
+kind: standing        # standing（定常ドメインキュー）| split（タスク分割由来・短命）
+priority: 1           # 複数backlog選択順（小さいほど先）
+---
 # CLコマンド定義 バックログ
 
 `aidev-batch` が消化する対象リスト。各未チェック行 = 1件のタスク（autonomous aidev の requirement）。

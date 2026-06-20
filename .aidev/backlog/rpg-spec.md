@@ -1,3 +1,8 @@
+---
+backlog: rpg-spec
+kind: standing        # standing（定常ドメインキュー）| split（タスク分割由来・短命）
+priority: 2           # 複数backlog選択順（小さいほど先）
+---
 # RPG仕様書 定義バックログ
 
 `aidev-batch` が消化する対象リスト。各未チェック行 = 1件のタスク（autonomous aidev の requirement）。
@@ -14,10 +19,10 @@ RPG 固定長フォーマットの仕様書（Spec）ごとのプロンプター
 - [x] C-SPEC — 演算仕様書（従来形式・既存）
 - [x] C-NEW — 演算仕様書（新形式・既存）
 - [x] H-SPEC — 制御仕様書（ヘッダー）（aidev-batch 試走で生成・PR feature/rpg-hspec）
-- [ ] F-SPEC — ファイル仕様書のプロンプター定義JSONを作成
-- [ ] I-SPEC — 入力仕様書のプロンプター定義JSONを作成
-- [ ] O-SPEC — 出力仕様書のプロンプター定義JSONを作成
-- [ ] P-SPEC — プロシージャー仕様書のプロンプター定義JSONを作成
+- [ ] F-SPEC — ファイル仕様書のプロンプター定義JSONを作成 (needs: #19)
+- [ ] I-SPEC — 入力仕様書のプロンプター定義JSONを作成 (needs: #19)
+- [ ] O-SPEC — 出力仕様書のプロンプター定義JSONを作成 (needs: #19)
+- [ ] P-SPEC — プロシージャー仕様書のプロンプター定義JSONを作成 (needs: #19)
 
 > 各行のタスクは「<X>-Spec の定義JSONを作成」。固定長の桁位置は仕様種別で異なるため、
 > 参照リファレンスと既存定義を正に、`types.ts` 準拠でマッピング・検証する。

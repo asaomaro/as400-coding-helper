@@ -105,11 +105,13 @@ planner の方針は `.aidev/charter.md` で縛る。
   aidev-insights/      横断分析ユーティリティ（番号なし・パイプライン外）
   aidev-docs/          このREADMEとDESIGN（参照専用・skillではない）
 .aidev/                実行時に生成される状態
+  config.yml           PJ単位の設定（tracker 種類など。コミット対象）
   current              現在の作業フォルダ名（.gitignore 対象）
   works/<YYYYMMDD-slug>/  作業単位ごとの成果物（命名: 日付(UTC)-slug）
-    state.yml          進捗（current / approved / dependsOn）
+    state.yml          進捗（current / approved / dependsOn / ticket）
     metrics.yml        工程の実施日時・時間・件数などのイベントログ
     requirement.md / spec.md / plan.md / tasks.md / decisions.md / review.md など
+  backlog/             遅延キュー（任意）。<domain>.md（standing）/ split-<親>.md（split）/ archive/
   insights/            横断分析レポート（<日付>-insights.md）
 ```
 

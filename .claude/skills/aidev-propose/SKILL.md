@@ -49,6 +49,9 @@ AI 開発ワークフローの **planner（課題提案 / L_planner・A 層）**
    - interactive: `AskUserQuestion` で「どの課題を作るか」を選ばせる（複数選択可）。
    - autonomous: ガード内で自動採用（**grounded・独立・1回の件数上限内**のみ。曖昧/高結合/根拠薄は採用しない）。
 7. 採用分を起票: `create-issue` で issue 化（ブランチ運用は委譲）かつ/または バックログへ `[ ]` 追記。
+   - **backlog へ追記する場合**: 定常ドメインキュー（`.aidev/backlog/<domain>.md`、`kind: standing`）か、
+     1タスクを分割した産物なら `split-<親>.md`（`kind: split` / `parent`）に分ける（`aidev-batch`「backlog ファイル規約」）。
+     着手前から既知の前提は項目行末に `(needs: <slug/#N>)` を付す。
    - **依存関係があれば記録する**: issue 本文に前提（例 `#18 に依存`）を明記し、その課題が works 化される際は
      `state.yml` の `dependsOn` に前提（works slug / issue `#N`）を設定する（`protocol.md`「2.7」）。
      これで batch・手動いずれの入口でも依存順が尊重される。
