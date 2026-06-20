@@ -1,0 +1,110 @@
+{
+  "keyword": "RCVMSG",
+  "description": "メッセージ受信（RCVMSG）",
+  "help": "メッセージ待ち行列または呼び出しメッセージ待ち行列からメッセージを受信し、その内容（テキスト・データ・送信元情報等）を CL 変数に取り出します。多くのパラメータは受信結果を受け取る戻り CL 変数です。",
+  "parameters": [
+    {
+      "name": "PGMQ",
+      "description": "呼出スタック項目メッセージ待行列",
+      "help": "受信元のプログラム・メッセージ待ち行列。単一値 *EXT も可。要素はネストのため平坦化。MSGQ と排他的に使う。",
+      "inputType": "group",
+      "required": false,
+      "children": [
+        { "name": "RELATION", "description": "関係", "help": "*SAME（その項目自身）/ *PRV（直前）。", "inputType": "dropdown", "required": false,
+          "options": [ { "label": "*SAME（その項目自身）", "value": "*SAME" }, { "label": "*PRV（直前の項目）", "value": "*PRV" } ] },
+        { "name": "CSEID", "description": "呼び出しスタック項目", "help": "OPMプログラム名/ILEプロシージャー名、または * 。", "inputType": "text", "required": false, "attributes": { "maxLength": 256 }, "placeholder": "*" },
+        { "name": "MODULE", "description": "モジュール", "help": "ILEモジュール名（修飾子）。既定 *NONE。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 10 }, "placeholder": "*NONE" },
+        { "name": "PGM", "description": "バインド済みプログラム", "help": "バインド先プログラム名（修飾子）。既定 *NONE。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 10 }, "placeholder": "*NONE" }
+      ]
+    },
+    {
+      "name": "MSGQ",
+      "description": "メッセージ待ち行列",
+      "help": "受信元のメッセージ待ち行列を LIB/QUEUE で指定。単一値 *PGMQ（呼び出しメッセージ待ち行列）も可。",
+      "inputType": "group",
+      "required": false,
+      "children": [
+        { "name": "LIB", "description": "ライブラリ", "help": "*LIBL / *CURLIB / ライブラリ名。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 10 }, "placeholder": "*LIBL" },
+        { "name": "MSGQ", "description": "メッセージ待ち行列", "help": "メッセージ待ち行列名。", "inputType": "text", "required": true, "attributes": { "characterSet": "upper", "maxLength": 10 }, "placeholder": "*PGMQ" }
+      ]
+    },
+    {
+      "name": "MSGTYPE",
+      "description": "メッセージ・タイプ",
+      "help": "受信するメッセージの種別。既定 *ANY。",
+      "inputType": "dropdown",
+      "required": false,
+      "options": [
+        { "label": "*ANY（任意）", "value": "*ANY" },
+        { "label": "*NEXT（次）", "value": "*NEXT" },
+        { "label": "*PRV（前）", "value": "*PRV" },
+        { "label": "*INFO（通知）", "value": "*INFO" },
+        { "label": "*INQ（照会）", "value": "*INQ" },
+        { "label": "*RPY（応答）", "value": "*RPY" },
+        { "label": "*FIRST（最初）", "value": "*FIRST" },
+        { "label": "*COPY（送信元コピー）", "value": "*COPY" },
+        { "label": "*COMP（完了）", "value": "*COMP" },
+        { "label": "*DIAG（診断）", "value": "*DIAG" },
+        { "label": "*EXCP（例外）", "value": "*EXCP" },
+        { "label": "*RQS（要求）", "value": "*RQS" },
+        { "label": "*LAST（最後）", "value": "*LAST" },
+        { "label": "*NXTJLMSG（次のジョブログ）", "value": "*NXTJLMSG" },
+        { "label": "*PRVJLMSG（前のジョブログ）", "value": "*PRVJLMSG" }
+      ]
+    },
+    { "name": "MSGKEY", "description": "メッセージ・キー", "help": "受信対象のメッセージ参照キー（4文字）。*NONE / *TOP も可。", "inputType": "text", "required": false, "attributes": { "maxLength": 11 }, "placeholder": "*NONE" },
+    { "name": "WAIT", "description": "待機時間", "help": "メッセージ到着まで待つ秒数。0（待たない）/ *MAX（無制限）/ 整数秒。", "inputType": "text", "required": false, "attributes": { "maxLength": 10 }, "placeholder": "0" },
+    {
+      "name": "RMV",
+      "description": "メッセージ除去",
+      "help": "受信後にメッセージを待ち行列から除去するか。",
+      "inputType": "dropdown",
+      "required": false,
+      "options": [
+        { "label": "*YES（除去）", "value": "*YES" },
+        { "label": "*NO（残す）", "value": "*NO" },
+        { "label": "*KEEPEXCP（例外は残す）", "value": "*KEEPEXCP" }
+      ]
+    },
+    { "name": "CCSID", "description": "コード化文字セットID", "help": "受信テキストの変換先 CCSID。*HEX / *JOB / 1-65535。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 5 }, "placeholder": "*JOB" },
+    {
+      "name": "RJTDFTRPY",
+      "description": "省略時応答の拒否",
+      "help": "照会メッセージ除去時に省略時応答の送信を拒否するか。",
+      "inputType": "dropdown",
+      "required": false,
+      "options": [
+        { "label": "*NOALWRJT（拒否しない）", "value": "*NOALWRJT" },
+        { "label": "*ALWRJT（拒否する）", "value": "*ALWRJT" }
+      ]
+    },
+    { "name": "KEYVAR", "description": "メッセージ参照キー（戻り）", "help": "受信メッセージのメッセージ参照キー（4文字）を受け取る CL 変数。", "inputType": "text", "required": false, "attributes": { "maxLength": 11 }, "placeholder": "&MSGKEY" },
+    { "name": "MSG", "description": "第1レベル・テキスト（戻り）", "help": "第1レベル・メッセージ・テキストを受け取る CL 文字変数。", "inputType": "text", "required": false, "attributes": { "maxLength": 11 }, "placeholder": "&MSG" },
+    { "name": "MSGLEN", "description": "テキスト長（戻り）", "help": "第1レベル・テキストの長さを受け取る CL 10進変数(5 0)。", "inputType": "text", "required": false, "attributes": { "maxLength": 11 }, "placeholder": "&MSGLEN" },
+    { "name": "SECLVL", "description": "第2レベル・テキスト（戻り）", "help": "第2レベル（ヘルプ）テキストを受け取る CL 文字変数。", "inputType": "text", "required": false, "attributes": { "maxLength": 11 }, "placeholder": "&SECLVL" },
+    { "name": "SECLVLLEN", "description": "第2レベル長（戻り）", "help": "第2レベル・テキスト長を受け取る CL 10進変数(5 0)。", "inputType": "text", "required": false, "attributes": { "maxLength": 11 }, "placeholder": "&SECLEN" },
+    { "name": "MSGDTA", "description": "メッセージ・データ（戻り）", "help": "メッセージ・データを受け取る CL 文字変数。", "inputType": "text", "required": false, "attributes": { "maxLength": 11 }, "placeholder": "&MSGDTA" },
+    { "name": "MSGDTALEN", "description": "データ長（戻り）", "help": "メッセージ・データ長を受け取る CL 10進変数(5 0)。", "inputType": "text", "required": false, "attributes": { "maxLength": 11 }, "placeholder": "&DTALEN" },
+    { "name": "MSGID", "description": "メッセージID（戻り）", "help": "メッセージID(7文字)を受け取る CL 文字変数。", "inputType": "text", "required": false, "attributes": { "maxLength": 11 }, "placeholder": "&MSGID" },
+    { "name": "SEV", "description": "重大度（戻り）", "help": "メッセージの重大度を受け取る CL 10進変数(2 0)。", "inputType": "text", "required": false, "attributes": { "maxLength": 11 }, "placeholder": "&SEV" },
+    { "name": "SENDER", "description": "送信元情報（戻り）", "help": "送信元情報を受け取る CL 文字変数（SENDERFMT で長さが決まる）。", "inputType": "text", "required": false, "attributes": { "maxLength": 11 }, "placeholder": "&SENDER" },
+    {
+      "name": "SENDERFMT",
+      "description": "送信元の形式",
+      "help": "SENDER に取り出す送信元情報の形式。",
+      "inputType": "dropdown",
+      "required": false,
+      "options": [
+        { "label": "*SHORT（短形式）", "value": "*SHORT" },
+        { "label": "*LONG（長形式）", "value": "*LONG" }
+      ]
+    },
+    { "name": "RTNTYPE", "description": "メッセージ・タイプ（戻り）", "help": "受信メッセージのタイプ・コード(2文字)を受け取る CL 文字変数。", "inputType": "text", "required": false, "attributes": { "maxLength": 11 }, "placeholder": "&RTNTYPE" },
+    { "name": "ALROPT", "description": "警報オプション（戻り）", "help": "警報オプション(9文字)を受け取る CL 文字変数。", "inputType": "text", "required": false, "attributes": { "maxLength": 11 }, "placeholder": "&ALROPT" },
+    { "name": "MSGF", "description": "メッセージ・ファイル（戻り）", "help": "メッセージ記述のメッセージ・ファイル名(10文字)を受け取る CL 文字変数。", "inputType": "text", "required": false, "attributes": { "maxLength": 11 }, "placeholder": "&MSGF" },
+    { "name": "MSGFLIB", "description": "MSGFライブラリ（戻り）", "help": "メッセージ・ファイルのライブラリ(10文字)を受け取る CL 文字変数。", "inputType": "text", "required": false, "attributes": { "maxLength": 11 }, "placeholder": "&MSGFLIB" },
+    { "name": "SNDMSGFLIB", "description": "送信時MSGFライブラリ（戻り）", "help": "送信時のメッセージ・ファイル・ライブラリ(10文字)を受け取る CL 文字変数。", "inputType": "text", "required": false, "attributes": { "maxLength": 11 }, "placeholder": "&SNDLIB" },
+    { "name": "TXTCCSID", "description": "テキストCCSID（戻り）", "help": "取り出したテキストの CCSID を受け取る CL 10進変数(5 0)。", "inputType": "text", "required": false, "attributes": { "maxLength": 11 }, "placeholder": "&TXTCCSID" },
+    { "name": "DTACCSID", "description": "データCCSID（戻り）", "help": "メッセージ・データの CCSID を受け取る CL 10進変数(5 0)。", "inputType": "text", "required": false, "attributes": { "maxLength": 11 }, "placeholder": "&DTACCSID" }
+  ]
+}
