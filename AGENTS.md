@@ -1,32 +1,44 @@
-﻿# as400-coding-helper Development Guidelines
+﻿# Overview
 
-Auto-generated from all feature plans. Last updated: 2025-11-15
+- VSCode上でAS400のコーディング(RPG,RPGLE,CLP,DDS,PRTF,CMD)をサポートするVSCode拡張機能を開発するPJ
 
-## Active Technologies
-- TypeScript (ESNext) targeting VS Code Extension Host (Node.js) + VS Code Extension API, VS Code WebView API, JSON ベースのプロンプター定義 (`.json`)、Web アセット (HTML/CSS/JavaScript) によるプロンプター UI (001-rpg-cl-vscode-support)
-- ローカルファイル (RPG/CL ソース)、JSON 定義ファイル、VS Code 設定・ワークスペース設定 (001-rpg-cl-vscode-support)
+## 言語
 
-- TypeScript (ESNext) targeting VS Code Extension Host (Node.js) + VS Code Extension API、VS Code WebView API、JSONベースのプロンプター定義 (001-rpg-cl-vscode-support)
+- TypeScript
 
-## Project Structure
+## サポートする機能
 
-```text
-src/
-tests/
-```
+### プロンプトによるコード入力補助機能
 
-## Commands
+- SEUによる編集操作でF4キーから呼び出されるプロンプトウィンドウによる入力機能をサポート
+- RPGLE(ILE RPG)は、固定長フォーマットのみをサポートし、自由記述(free format)には対応しない
+- プロンプトウィンドウの種類ごとに、JSONフォーマットの外部ファイルで設定を定義できる設計
+  - RPG,RPGLEソースの仕様書(D-Spec,C-Spec etc)単位
+    - C-Specなど、古い命令と新しい命令(ex. MOVEL & EVAL)で、固定長フォーマットの記述位置が異なるケースでは、別々の定義ファイルを使用する
+  - CLコマンドは、コマンドごとに定義ファイルを用意する
+- 各パラメータの属性(文字、数値)や必須入力(required)を定義でき、validationが可能
+- コマンドにはヘルプを設定でき、プロンプトのヘルプボタンからコマンドについてのヘルプが参照できる
+  - 各パラメータにも個別にヘルプを設定でき、フォーカス中にF1キーをクリックすることでパラメータのヘルプを参照できる
+- コマンドの可変パラメータに対応し、プロンプトウィンドウ上の操作で、入力項目の増減が可能
+- グルーピングされたコマンド(ex. FILEパラメータは、FILE(LIBL/FILE) のようにライブラリーとファイルの2つのパラメータを持っている)を扱えるよう、定義でグルーピングを設定できるようにする
+  - プロンプトウィンドウ上でもグルーピングされている事が分かるデザインで表現する
+- ソースファイル上からF4キーをクリックすることで、VSCodeの別タブでヘルプウィンドウが表示できる
+  - ソースファイルでフォーカスの当たっていた行のコードの内容がプロンプトウィンドウに表示される
 
-npm test; npm run lint
+### ルーラー表示
 
-## Code Style
+- SEUによる表示では、固定長フォーマットの桁位置が分かるようにルーラーが表示されている
+- VSCodeによる編集時にもフォーカスしている行の上側にルーラーを表示されるようにする
+- ルーラーはコードを書き換えずに入力補助として表示させる
+- ルーラー表示は、特定のファイル拡張子(rpg,rpgle,clp,dds,dspf,prtf,cmd)の場合に表示させる
+- ルーラー表示のオンオフを、VSCodeのステータスバークリックで切り替えられるようにする
 
-TypeScript (ESNext) targeting VS Code Extension Host (Node.js): Follow standard conventions
+### 制御コード(SOSI)表示
 
-## Recent Changes
-- 001-rpg-cl-vscode-support: Added TypeScript (ESNext) targeting VS Code Extension Host (Node.js) + VS Code Extension API, VS Code WebView API, JSON ベースのプロンプター定義 (`.json`)、Web アセット (HTML/CSS/JavaScript) によるプロンプター UI
+- SEUにる表示では、DBCSの前後にSO(shift out)とSI(shift in)が挿入される
+- VSCodeでの表示では制御コードが表示されず、正しい桁位置で表示がされない
+- VSCode上でも正しい桁位置で表示されるよう、DBCS前後にSOを'{'、SIを'}'で表示させる
+- '{','}'はコードを書き換えずに入力補助として表示させる
+- '{','}'表示は、特定のファイル拡張子(rpg,rpgle,clp,dds,dspf,prtf,cmd)の場合に表示させる
+- 制御コード表示のオンオフを、VSCodeのステータスバークリックで切り替えられるようにする
 
-- 001-rpg-cl-vscode-support: Added TypeScript (ESNext) targeting VS Code Extension Host (Node.js) + VS Code Extension API、VS Code WebView API、JSONベースのプロンプター定義
-
-<!-- MANUAL ADDITIONS START -->
-<!-- MANUAL ADDITIONS END -->

@@ -1,0 +1,750 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>EMPMNT01_spec.md</title>
+<meta http-equiv="Content-type" content="text/html;charset=UTF-8">
+
+<style>
+/* https://github.com/microsoft/vscode/blob/master/extensions/markdown-language-features/media/markdown.css */
+/*---------------------------------------------------------------------------------------------
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
+
+body {
+	font-family: var(--vscode-markdown-font-family, -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI", "Ubuntu", "Droid Sans", sans-serif);
+	font-size: var(--vscode-markdown-font-size, 14px);
+	padding: 0 26px;
+	line-height: var(--vscode-markdown-line-height, 22px);
+	word-wrap: break-word;
+}
+
+#code-csp-warning {
+	position: fixed;
+	top: 0;
+	right: 0;
+	color: white;
+	margin: 16px;
+	text-align: center;
+	font-size: 12px;
+	font-family: sans-serif;
+	background-color:#444444;
+	cursor: pointer;
+	padding: 6px;
+	box-shadow: 1px 1px 1px rgba(0,0,0,.25);
+}
+
+#code-csp-warning:hover {
+	text-decoration: none;
+	background-color:#007acc;
+	box-shadow: 2px 2px 2px rgba(0,0,0,.25);
+}
+
+body.scrollBeyondLastLine {
+	margin-bottom: calc(100vh - 22px);
+}
+
+body.showEditorSelection .code-line {
+	position: relative;
+}
+
+body.showEditorSelection .code-active-line:before,
+body.showEditorSelection .code-line:hover:before {
+	content: "";
+	display: block;
+	position: absolute;
+	top: 0;
+	left: -12px;
+	height: 100%;
+}
+
+body.showEditorSelection li.code-active-line:before,
+body.showEditorSelection li.code-line:hover:before {
+	left: -30px;
+}
+
+.vscode-light.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(0, 0, 0, 0.15);
+}
+
+.vscode-light.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(0, 0, 0, 0.40);
+}
+
+.vscode-light.showEditorSelection .code-line .code-line:hover:before {
+	border-left: none;
+}
+
+.vscode-dark.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(255, 255, 255, 0.4);
+}
+
+.vscode-dark.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(255, 255, 255, 0.60);
+}
+
+.vscode-dark.showEditorSelection .code-line .code-line:hover:before {
+	border-left: none;
+}
+
+.vscode-high-contrast.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(255, 160, 0, 0.7);
+}
+
+.vscode-high-contrast.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(255, 160, 0, 1);
+}
+
+.vscode-high-contrast.showEditorSelection .code-line .code-line:hover:before {
+	border-left: none;
+}
+
+img {
+	max-width: 100%;
+	max-height: 100%;
+}
+
+a {
+	text-decoration: none;
+}
+
+a:hover {
+	text-decoration: underline;
+}
+
+a:focus,
+input:focus,
+select:focus,
+textarea:focus {
+	outline: 1px solid -webkit-focus-ring-color;
+	outline-offset: -1px;
+}
+
+hr {
+	border: 0;
+	height: 2px;
+	border-bottom: 2px solid;
+}
+
+h1 {
+	padding-bottom: 0.3em;
+	line-height: 1.2;
+	border-bottom-width: 1px;
+	border-bottom-style: solid;
+}
+
+h1, h2, h3 {
+	font-weight: normal;
+}
+
+table {
+	border-collapse: collapse;
+}
+
+table > thead > tr > th {
+	text-align: left;
+	border-bottom: 1px solid;
+}
+
+table > thead > tr > th,
+table > thead > tr > td,
+table > tbody > tr > th,
+table > tbody > tr > td {
+	padding: 5px 10px;
+}
+
+table > tbody > tr + tr > td {
+	border-top: 1px solid;
+}
+
+blockquote {
+	margin: 0 7px 0 5px;
+	padding: 0 16px 0 10px;
+	border-left-width: 5px;
+	border-left-style: solid;
+}
+
+code {
+	font-family: Menlo, Monaco, Consolas, "Droid Sans Mono", "Courier New", monospace, "Droid Sans Fallback";
+	font-size: 1em;
+	line-height: 1.357em;
+}
+
+body.wordWrap pre {
+	white-space: pre-wrap;
+}
+
+pre:not(.hljs),
+pre.hljs code > div {
+	padding: 16px;
+	border-radius: 3px;
+	overflow: auto;
+}
+
+pre code {
+	color: var(--vscode-editor-foreground);
+	tab-size: 4;
+}
+
+/** Theming */
+
+.vscode-light pre {
+	background-color: rgba(220, 220, 220, 0.4);
+}
+
+.vscode-dark pre {
+	background-color: rgba(10, 10, 10, 0.4);
+}
+
+.vscode-high-contrast pre {
+	background-color: rgb(0, 0, 0);
+}
+
+.vscode-high-contrast h1 {
+	border-color: rgb(0, 0, 0);
+}
+
+.vscode-light table > thead > tr > th {
+	border-color: rgba(0, 0, 0, 0.69);
+}
+
+.vscode-dark table > thead > tr > th {
+	border-color: rgba(255, 255, 255, 0.69);
+}
+
+.vscode-light h1,
+.vscode-light hr,
+.vscode-light table > tbody > tr + tr > td {
+	border-color: rgba(0, 0, 0, 0.18);
+}
+
+.vscode-dark h1,
+.vscode-dark hr,
+.vscode-dark table > tbody > tr + tr > td {
+	border-color: rgba(255, 255, 255, 0.18);
+}
+
+</style>
+
+<style>
+/* Tomorrow Theme */
+/* http://jmblog.github.com/color-themes-for-google-code-highlightjs */
+/* Original theme - https://github.com/chriskempson/tomorrow-theme */
+
+/* Tomorrow Comment */
+.hljs-comment,
+.hljs-quote {
+	color: #8e908c;
+}
+
+/* Tomorrow Red */
+.hljs-variable,
+.hljs-template-variable,
+.hljs-tag,
+.hljs-name,
+.hljs-selector-id,
+.hljs-selector-class,
+.hljs-regexp,
+.hljs-deletion {
+	color: #c82829;
+}
+
+/* Tomorrow Orange */
+.hljs-number,
+.hljs-built_in,
+.hljs-builtin-name,
+.hljs-literal,
+.hljs-type,
+.hljs-params,
+.hljs-meta,
+.hljs-link {
+	color: #f5871f;
+}
+
+/* Tomorrow Yellow */
+.hljs-attribute {
+	color: #eab700;
+}
+
+/* Tomorrow Green */
+.hljs-string,
+.hljs-symbol,
+.hljs-bullet,
+.hljs-addition {
+	color: #718c00;
+}
+
+/* Tomorrow Blue */
+.hljs-title,
+.hljs-section {
+	color: #4271ae;
+}
+
+/* Tomorrow Purple */
+.hljs-keyword,
+.hljs-selector-tag {
+	color: #8959a8;
+}
+
+.hljs {
+	display: block;
+	overflow-x: auto;
+	color: #4d4d4c;
+	padding: 0.5em;
+}
+
+.hljs-emphasis {
+	font-style: italic;
+}
+
+.hljs-strong {
+	font-weight: bold;
+}
+</style>
+
+<style>
+/*
+ * Markdown PDF CSS
+ */
+
+ body {
+	font-family: -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI", "Ubuntu", "Droid Sans", sans-serif, "Meiryo";
+	padding: 0 12px;
+}
+
+pre {
+	background-color: #f8f8f8;
+	border: 1px solid #cccccc;
+	border-radius: 3px;
+	overflow-x: auto;
+	white-space: pre-wrap;
+	overflow-wrap: break-word;
+}
+
+pre:not(.hljs) {
+	padding: 23px;
+	line-height: 19px;
+}
+
+blockquote {
+	background: rgba(127, 127, 127, 0.1);
+	border-color: rgba(0, 122, 204, 0.5);
+}
+
+.emoji {
+	height: 1.4em;
+}
+
+code {
+	font-size: 14px;
+	line-height: 19px;
+}
+
+/* for inline code */
+:not(pre):not(.hljs) > code {
+	color: #C9AE75; /* Change the old color so it seems less like an error */
+	font-size: inherit;
+}
+
+/* Page Break : use <div class="page"/> or <div class="page"></div> to insert page break
+-------------------------------------------------------- */
+.page {
+	page-break-after: always;
+}
+
+</style>
+
+<script src="https://unpkg.com/mermaid/dist/mermaid.min.js"></script>
+</head>
+<body>
+  <script>
+    mermaid.initialize({
+      startOnLoad: true,
+      theme: document.body.classList.contains('vscode-dark') || document.body.classList.contains('vscode-high-contrast')
+          ? 'dark'
+          : 'default'
+    });
+  </script>
+<h1 id="empmnt01rpgle-詳細設計書">EMPMNT01.rpgle 詳細設計書</h1>
+<h2 id="1-概要">1. 概要</h2>
+<p><code>EMPMNT01.rpgle</code> は、社員マスタメンテナンス用の AS/400 ILE RPG プログラムです。
+主な機能は以下の通りです。</p>
+<ul>
+<li>社員マスタの一覧表示</li>
+<li>社員追加</li>
+<li>社員変更</li>
+<li>社員削除</li>
+<li>社員照会</li>
+</ul>
+<p>内部的にはサブファイルを使った一覧画面と、複数のサブルーチンによる処理分岐で構成されています。</p>
+<hr>
+<h2 id="2-ファイル定義">2. ファイル定義</h2>
+<table>
+<thead>
+<tr>
+<th>ファイル名</th>
+<th>種別</th>
+<th>属性</th>
+<th>役割</th>
+<th>補足</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>FEMPMSTP</code></td>
+<td>UF</td>
+<td>A E K DISK USROPN</td>
+<td>基本社員マスタ入力ファイル</td>
+<td><code>RENAME(EMPMSTR:EMPREC)</code></td>
+</tr>
+<tr>
+<td><code>FEMPDSP</code></td>
+<td>CF</td>
+<td>E WORKSTN SFILE(EMPSFL:RRN)</td>
+<td>社員一覧用サブファイル</td>
+<td><code>INFDS(WSINFO)</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="21-fempmstp-のキー">2.1 <code>FEMPMSTP</code> のキー</h3>
+<ul>
+<li><code>EMPREC</code> レコードをキーアクセスで操作</li>
+<li><code>CHAIN EMPREC</code> / <code>WRITE EMPREC</code> / <code>UPDATE EMPREC</code> / <code>DELETE EMPREC</code> が使用される</li>
+</ul>
+<h3 id="22-fempdsp-のサブファイル">2.2 <code>FEMPDSP</code> のサブファイル</h3>
+<ul>
+<li>表示専用のサブファイルレコード <code>EMPSFL</code></li>
+<li>制御フィールドに <code>RRN</code> を使用</li>
+<li>ワークステーション情報を <code>WSINFO</code> に格納</li>
+</ul>
+<hr>
+<h2 id="3-パラメータ定義">3. パラメータ定義</h2>
+<p>このプログラムは外部パラメータ定義を明示していません。
+すべての変数は内部で定義されるスタンドアロン変数とデータ構造です。</p>
+<hr>
+<h2 id="4-データ構造定義">4. データ構造定義</h2>
+<h3 id="41-wsinfo">4.1 <code>WSINFO</code></h3>
+<ul>
+<li><code>WSKEY</code> 369～369A</li>
+<li><code>FEMPDSP</code> の <code>INFDS</code> で使用するワークステーション情報領域</li>
+</ul>
+<h3 id="42-dates">4.2 <code>DATES</code></h3>
+<ul>
+<li><code>SDATE</code> : 8S 0</li>
+<li><code>SYY</code> : 4S 0 OVERLAY(SDATE:1)</li>
+<li><code>SMM</code> : 2S 0 OVERLAY(SDATE:5)</li>
+<li><code>SDD</code> : 2S 0 OVERLAY(SDATE:7)</li>
+</ul>
+<h3 id="43-errcode">4.3 <code>ERRCODE</code></h3>
+<ul>
+<li><code>BYTPVD</code> : 10I 0 INZ(0)</li>
+<li><code>BYTAVL</code> : 10I 0</li>
+<li><code>MSGID</code> : 7A</li>
+<li>API 呼び出し時のエラーメッセージ領域</li>
+</ul>
+<hr>
+<h2 id="5-スタンドアロン変数一覧">5. スタンドアロン変数一覧</h2>
+<table>
+<thead>
+<tr>
+<th>変数</th>
+<th>型</th>
+<th>初期値</th>
+<th>役割</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>RRN</code></td>
+<td>4S 0</td>
+<td>-</td>
+<td>サブファイルレコード番号</td>
+</tr>
+<tr>
+<td><code>SFLSIZ</code></td>
+<td>4S 0</td>
+<td>9999</td>
+<td>サブファイル最大件数</td>
+</tr>
+<tr>
+<td><code>SFLPAG</code></td>
+<td>4S 0</td>
+<td>15</td>
+<td>1ページあたり表示件数</td>
+</tr>
+<tr>
+<td><code>MSGLIN</code></td>
+<td>4S 0</td>
+<td>24</td>
+<td>メッセージ表示行</td>
+</tr>
+<tr>
+<td><code>ERRFLG</code></td>
+<td>1A</td>
+<td>-</td>
+<td>エラーフラグ</td>
+</tr>
+<tr>
+<td><code>FUNC</code></td>
+<td>1A</td>
+<td>-</td>
+<td>機能コード</td>
+</tr>
+<tr>
+<td><code>OLDKEY</code></td>
+<td>6S 0</td>
+<td>-</td>
+<td>変更時の旧キー保持</td>
+</tr>
+<tr>
+<td><code>TODAY</code></td>
+<td>D</td>
+<td>-</td>
+<td>当日日付</td>
+</tr>
+<tr>
+<td><code>WDATE</code></td>
+<td>8S 0</td>
+<td>-</td>
+<td>ワーク日付</td>
+</tr>
+<tr>
+<td><code>WTIME</code></td>
+<td>6S 0</td>
+<td>-</td>
+<td>ワーク時刻</td>
+</tr>
+<tr>
+<td><code>WUSER</code></td>
+<td>10A</td>
+<td>-</td>
+<td>ユーザープロファイル</td>
+</tr>
+<tr>
+<td><code>CNT</code></td>
+<td>4S 0</td>
+<td>-</td>
+<td>汎用カウンタ</td>
+</tr>
+</tbody>
+</table>
+<h3 id="51-画面バッファ関連">5.1 画面バッファ関連</h3>
+<ul>
+<li><code>WEMPNO</code>, <code>WEMPNM</code>, <code>WDEPT</code>, <code>WPOST</code>, <code>WSAL</code>, <code>WHDATE</code> などの入力/出力用フィールドが使用される</li>
+<li><code>ERRMSG</code> はエラーメッセージ表示用</li>
+</ul>
+<hr>
+<h2 id="6-定数定義">6. 定数定義</h2>
+<table>
+<thead>
+<tr>
+<th>定数</th>
+<th>値</th>
+<th>説明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>C_ADD</code></td>
+<td>'1'</td>
+<td>追加</td>
+</tr>
+<tr>
+<td><code>C_UPD</code></td>
+<td>'2'</td>
+<td>変更</td>
+</tr>
+<tr>
+<td><code>C_DEL</code></td>
+<td>'4'</td>
+<td>削除</td>
+</tr>
+<tr>
+<td><code>C_INQ</code></td>
+<td>'5'</td>
+<td>照会</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h2 id="7-処理フロー概要">7. 処理フロー概要</h2>
+<h3 id="71-プログラム開始">7.1 プログラム開始</h3>
+<ol>
+<li><code>INIT</code> サブルーチン呼び出し</li>
+<li><code>DOW *IN03 = *OFF</code> のメインループ</li>
+<li><code>DSPSFL</code> で画面表示</li>
+<li><code>*IN03</code> 判定で終了</li>
+<li><code>*IN06</code> で <code>ADDEMP</code></li>
+<li>それ以外は <code>SFLDTL</code></li>
+<li>ループ終了後に <code>TERM</code></li>
+</ol>
+<h3 id="72-主なサブルーチン">7.2 主なサブルーチン</h3>
+<ul>
+<li><code>INIT</code></li>
+<li><code>CLRSFL</code></li>
+<li><code>DSPSFL</code></li>
+<li><code>SFLDTL</code></li>
+<li><code>ADDEMP</code></li>
+<li><code>CHGEMP</code></li>
+<li><code>DLTEMP</code></li>
+<li><code>INQEMP</code></li>
+<li><code>CHKADD</code></li>
+<li><code>TERM</code></li>
+</ul>
+<hr>
+<h2 id="8-サブルーチン詳細">8. サブルーチン詳細</h2>
+<h3 id="81-init">8.1 <code>INIT</code></h3>
+<ul>
+<li>システム日付/時刻取得</li>
+<li>ユーザープロファイル取得 (<code>QWCRNETA</code>)</li>
+<li>社員マスタファイルオープン</li>
+<li>サブファイル初期化（<code>CLRSFL</code>）</li>
+</ul>
+<h3 id="82-clrsfl">8.2 <code>CLRSFL</code></h3>
+<ul>
+<li><code>*IN31</code> を OFF にして <code>EMPCTL</code> を書く</li>
+<li><code>RRN</code> を 0 にリセット</li>
+</ul>
+<h3 id="83-dspsfl">8.3 <code>DSPSFL</code></h3>
+<ul>
+<li><code>CLRSFL</code> 呼び出し</li>
+<li><code>EMPMSTR</code> を先頭から読み込み</li>
+<li>ループ内で <code>EMPSFL</code> にサブファイルレコードを書き込み</li>
+<li><code>RRN</code> &gt; 0 の場合 <code>*IN32</code> を ON にしてサブファイル有効化</li>
+<li><code>EMPCTL</code> を <code>EXFMT</code> で表示</li>
+</ul>
+<h3 id="84-sfldtl">8.4 <code>SFLDTL</code></h3>
+<ul>
+<li><code>ERRFLG</code> 初期化</li>
+<li><code>DO RRN</code> でサブファイル明細分処理</li>
+<li><code>CHAIN CNT EMPSFL</code> でサブファイル明細を取得</li>
+<li><code>SOPT</code> に応じて以下を呼び出し
+<ul>
+<li><code>C_UPD</code> → <code>CHGEMP</code></li>
+<li><code>C_DEL</code> → <code>DLTEMP</code></li>
+<li><code>C_INQ</code> → <code>INQEMP</code></li>
+</ul>
+</li>
+<li><code>SOPT</code> を空白に戻して <code>UPDATE EMPSFL</code></li>
+<li>エラー時は <code>ERRMSG</code> をセット</li>
+</ul>
+<h3 id="85-addemp">8.5 <code>ADDEMP</code></h3>
+<ul>
+<li>追加入力画面の初期化</li>
+<li><code>EXFMT EMPADD</code> で入力受け付け</li>
+<li><code>CHKADD</code> で入力チェック</li>
+<li>問題なければ社員レコードを <code>WRITE EMPREC</code></li>
+<li>成功時に <code>ERRMSG = '追加しました'</code></li>
+</ul>
+<h3 id="86-chgemp">8.6 <code>CHGEMP</code></h3>
+<ul>
+<li><code>SEMPNO CHAIN EMPREC</code> で対象レコードを取得</li>
+<li>レコードが存在しない場合、エラー</li>
+<li>画面用フィールドに読込データをセット</li>
+<li><code>EXFMT EMPCHG</code> で編集</li>
+<li><code>OLDKEY CHAIN EMPREC</code> で再取得後、更新</li>
+<li><code>UPDATE EMPREC</code></li>
+<li>成功時に <code>ERRMSG = '変更しました'</code></li>
+</ul>
+<h3 id="87-dltemp">8.7 <code>DLTEMP</code></h3>
+<ul>
+<li><code>SEMPNO CHAIN EMPREC</code> で対象レコードを取得</li>
+<li><code>EXFMT EMPDLT</code> で削除確認</li>
+<li><code>SEMPNO CHAIN EMPREC</code> で再取得後、<code>DELETE EMPREC</code></li>
+<li>成功時に <code>ERRMSG = '削除しました'</code></li>
+</ul>
+<h3 id="88-inqemp">8.8 <code>INQEMP</code></h3>
+<ul>
+<li><code>SEMPNO CHAIN EMPREC</code> で対象レコードを取得</li>
+<li>画面用フィールドに読込データをセット</li>
+<li><code>EXFMT EMPINQ</code> で照会表示</li>
+</ul>
+<h3 id="89-chkadd">8.9 <code>CHKADD</code></h3>
+<ul>
+<li><code>WEMPNO</code> が 0 以下ならエラー</li>
+<li><code>WEMPNO CHAIN EMPREC</code> で重複チェック</li>
+<li><code>WEMPNM</code> が空白ならエラー</li>
+</ul>
+<h3 id="810-term">8.10 <code>TERM</code></h3>
+<ul>
+<li><code>CLOSE EMPMSTR</code></li>
+</ul>
+<hr>
+<h2 id="9-サブルーチン呼び出し構造">9. サブルーチン呼び出し構造</h2>
+<pre><code class="language-mermaid"><div class="mermaid">flowchart LR
+    MAIN[Main Loop]
+    INIT[INIT]
+    DSPSFL[DSPSFL]
+    TERM[TERM]
+    CLRSFL[CLRSFL]
+    SFLDTL[SFLDTL]
+    ADDEMP[ADDEMP]
+    CHKADD[CHKADD]
+    CHGEMP[CHGEMP]
+    DLTEMP[DLTEMP]
+    INQEMP[INQEMP]
+
+    MAIN --> INIT
+    MAIN --> DSPSFL
+    MAIN --> TERM
+    DSPSFL --> CLRSFL
+    MAIN -->|F6=追加| ADDEMP
+    MAIN -->|その他| SFLDTL
+
+    ADDEMP --> CHKADD
+    SFLDTL --> CHGEMP
+    SFLDTL --> DLTEMP
+    SFLDTL --> INQEMP
+</div></code></pre>
+<hr>
+<h2 id="10-主要キーレコードアクセス">10. 主要キー/レコードアクセス</h2>
+<h3 id="101-empmstr--emprec">10.1 <code>EMPMSTR / EMPREC</code></h3>
+<ul>
+<li>追加: <code>WRITE EMPREC</code></li>
+<li>変更: <code>CHAIN EMPREC</code> / <code>UPDATE EMPREC</code></li>
+<li>削除: <code>CHAIN EMPREC</code> / <code>DELETE EMPREC</code></li>
+<li>照会: <code>CHAIN EMPREC</code></li>
+</ul>
+<h3 id="102-empsfl">10.2 <code>EMPSFL</code></h3>
+<ul>
+<li>サブファイル明細は <code>WRITE EMPSFL</code></li>
+<li>明細ループでは <code>CHAIN CNT EMPSFL</code></li>
+<li>オプション判定後 <code>UPDATE EMPSFL</code></li>
+</ul>
+<hr>
+<h2 id="11-主要画面定義ソース上で参照">11. 主要画面定義（ソース上で参照）</h2>
+<ul>
+<li><code>EMPCTL</code></li>
+<li><code>EMPSFL</code></li>
+<li><code>EMPADD</code></li>
+<li><code>EMPCHG</code></li>
+<li><code>EMPDLT</code></li>
+<li><code>EMPINQ</code></li>
+</ul>
+<hr>
+<h2 id="12-注意点設計上の特徴">12. 注意点・設計上の特徴</h2>
+<ul>
+<li><code>QWCRNETA</code> によるユーザープロファイル取得</li>
+<li>サブファイル表示後に <code>EXFMT EMPCTL</code> でキー入力を待機</li>
+<li><code>SFLDTL</code> のループは <code>RRN</code> 件数分だけサブファイル明細処理を行う</li>
+<li>追加・変更・削除・照会は <code>SOPT</code> フィールド1文字による分岐</li>
+<li>エラー時は <code>ERRMSG</code> をセットして再表示させる設計</li>
+</ul>
+<hr>
+<h2 id="13-追加補足">13. 追加補足</h2>
+<h3 id="131-サブファイルの制御">13.1 サブファイルの制御</h3>
+<ul>
+<li><code>RRN &gt; 0</code> の場合にのみ <code>*IN32</code> を ON にして画面上にサブファイルを有効化</li>
+<li>サブファイルクリア時には <code>*IN31</code> の制御を行う</li>
+</ul>
+<h3 id="132-エラーハンドリング">13.2 エラーハンドリング</h3>
+<ul>
+<li><code>CHGEMP</code>, <code>DLTEMP</code>, <code>INQEMP</code> では存在確認後にエラーを表示</li>
+<li><code>CHKADD</code> では入力不備と重複登録を防止</li>
+</ul>
+<hr>
+<p>この設計書は <code>EMPMNT01.rpgle</code> の処理構造とデータ設計を元に作成しています。
+必要であれば、画面定義 <code>DSPF</code> / <code>SRVPGM</code> との連携や実際のフィールド定義一覧をさらに追加できます。</p>
+
+</body>
+</html>
