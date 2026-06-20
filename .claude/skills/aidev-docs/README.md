@@ -52,6 +52,15 @@ PJ非依存の開発ワークフローを、skill 群で制御・進捗管理す
 |---|---|
 | `aidev-insights` | 複数作業を横断して傾向・再発パターンを分析し、改善提案を出す（`/aidev-insights`） |
 | `aidev-batch` | バックログの未処理項目を autonomous モードで順次処理（L1 バッチ駆動）。`/loop`・`/schedule` から起動可 |
+| `aidev-propose` | charter と信号(insights/retro/負債)から次の課題を提案・分割し、承認のうえ issue/バックログ化（L_planner / 最上流） |
+
+### 自己給餌ループ（実用形）
+
+```
+insights/retro（信号） → aidev-propose（課題化・人間承認） → aidev-batch（autonomous実装） → PR（人間レビュー）
+```
+両端（どの課題・どの PR）に人間ゲートを残し、間を自律化する。完全自動（発案→マージ）は高リスクのため採らない。
+planner の方針は `docs/aidev-charter.md` で縛る。
 
 ## 承認ゲート（各工程の終わり）
 

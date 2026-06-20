@@ -48,6 +48,10 @@
   L2（/loop・/schedule）。「次の1件」は毎回ファイル（未チェック行）から導出（pop カーソルを別管理しない＝
   中断再開に強い）。将来、上流に planner（課題提案→issue化、人間承認付き）を足せば自己給餌ループになるが、
   完全自動(発案→マージ)は高リスク。実用形は「AI提案＋人間が課題承認＋自律実装＋人間PRレビュー」（B→A の順で段階導入）。
+- **planner（`aidev-propose`・A 実装）**：charter(`docs/aidev-charter.md`)＋信号(insights/retro/負債)から
+  課題を**提案**し、split 判定で右サイズ化、承認のうえ issue/バックログ化する非番号ユーティリティ（最上流 L_planner）。
+  **信号に根ざす（恣意発案しない）・人間承認が既定・charter で縛る・重複排除・提案止まり**が安全設計の柱。
+  自己給餌ループ: `insights/retro → aidev-propose → aidev-batch → PR`（両端に人間ゲート）。
 - **実行モード（interactive / autonomous）**：autonomous は「夜セット→朝PR」型。思想は
   **「ゲートを消す」でなく「ゲートを PR（最終レビュー）に集約し、自己チェックを固くする」**。
   人間ゲートは前（タスク指示=requirement）と後（PRレビュー）に移動し、ループ内からは外す。
