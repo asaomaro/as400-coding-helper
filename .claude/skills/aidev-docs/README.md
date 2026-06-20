@@ -21,7 +21,7 @@ PJ非依存の開発ワークフローを、skill 群で制御・進捗管理す
    ```
 
    現在の作業状況を確認し、「続きから / 別工程をやり直す / 新規作業」を選べる。
-2. 新規作業を選ぶと `.aidev/works/<連番>-<slug>/` が作られ、requirement 工程へ進む。
+2. 新規作業を選ぶと `.aidev/works/<YYYYMMDD>-<slug>/` が作られ、requirement 工程へ進む。
 3. 以降、各工程の最後で承認ゲート（選択肢UX）が出る。選ぶだけで次へ進む／中断できる。
 
 慣れていれば各工程を直接呼んでもよい（例 `/aidev-40-coding`）。各工程は前提を自己チェックする。
@@ -45,6 +45,12 @@ PJ非依存の開発ワークフローを、skill 群で制御・進捗管理す
 標準フロー：`requirement → spec → plan → coding → test → review → deliver`。
 番号末尾 **0=標準 / 5=任意**。番号は推奨順であり強制ではない（差し戻し可）。
 
+### ユーティリティ（番号なし・パイプライン外）
+
+| skill | 役割 |
+|---|---|
+| `aidev-insights` | 複数作業を横断して傾向・再発パターンを分析し、改善提案を出す（`/aidev-insights`） |
+
 ## 承認ゲート（各工程の終わり）
 
 工程ごとに成果物を提示し、単一の選択肢から選ぶ：
@@ -65,7 +71,7 @@ PJ非依存の開発ワークフローを、skill 群で制御・進捗管理す
 
 ## 中断と再開
 
-- 状態は `.aidev/works/<NNN-slug>/state.yml`（`current` / `approved`）＋成果物ファイルで管理。
+- 状態は `.aidev/works/<YYYYMMDD-slug>/state.yml`（`current` / `approved`）＋成果物ファイルで管理。
 - どこで止めても、`/aidev-00-start` で現在地が復元され、続きから再開できる。
 - 複数作業を並行可能。`.aidev/current` が「今どれを触っているか」を指す。
 
@@ -75,10 +81,15 @@ PJ非依存の開発ワークフローを、skill 群で制御・進捗管理す
 .claude/skills/
   aidev-00-start/      入口 + protocol.md（共通規約のホーム）
   aidev-10-requirement/ … aidev-90-retro/   各工程
+  aidev-insights/      横断分析ユーティリティ（番号なし・パイプライン外）
   aidev-docs/          このREADMEとDESIGN（参照専用・skillではない）
 .aidev/                実行時に生成される状態
   current              現在の作業フォルダ名（.gitignore 対象）
-  works/<NNN-slug>/    作業単位ごとの成果物 + state.yml
+  works/<YYYYMMDD-slug>/  作業単位ごとの成果物（命名: 日付(UTC)-slug）
+    state.yml          進捗（current / approved）
+    metrics.yml        工程の実施日時・時間・件数などのイベントログ
+    requirement.md / spec.md / plan.md / tasks.md / decisions.md / review.md など
+  insights/            横断分析レポート（<日付>-insights.md）
 ```
 
 ## 別PJへの導入

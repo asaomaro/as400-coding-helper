@@ -17,7 +17,7 @@ AI 開発ワークフローの入口（ルーター）。
 - 工程は `requirement → spec → plan → coding → test → review` の順（推奨デフォルト）。
 - 各工程は **承認ゲート付き**で、自動では次に進まない（承認後に「次へ進むか」を確認する）。
 - 番号順は強制ではなく、差し戻し（例: review → coding）も可能。
-- 作業は `.aidev/works/<NNN-slug>/` 単位で管理され、いつでも中断・再開できる。
+- 作業は `.aidev/works/<YYYYMMDD-slug>/` 単位で管理され、いつでも中断・再開できる。
 
 ## 2. 作業状況の確認
 
@@ -45,11 +45,18 @@ AI 開発ワークフローの入口（ルーター）。
 ## 4. 新規作業の開始
 
 1. requirement の概要をユーザーに確認し、簡潔な slug を決める（kebab-case、英小文字）。
-2. 次の連番を決める（`.aidev/works` 内の最大番号 + 1、ゼロパディング 3 桁）。フォルダが無ければ `001`。
-3. `mkdir -p .aidev/works/<NNN-slug>` を作成。
+2. 日付プレフィックスを取得する：`date -u +%Y%m%d`（UTC）。フォルダ名は `<YYYYMMDD>-<slug>`。
+   同日・同 slug が既存なら末尾に `-2`,`-3`… を付けて一意化する。
+3. `mkdir -p .aidev/works/<YYYYMMDD-slug>` を作成。
 4. `state.yml` を初期化（`protocol.md` の「6. state.yml スキーマ」に従う。`current: requirement`、`approved: []`）。GitHub issue 連携時は `issue` を設定。
-5. `.aidev/current` に `<NNN-slug>` を書き込む。
-6. `aidev-10-requirement` 工程の開始を案内する。
+5. `.aidev/current` に `<YYYYMMDD-slug>` を書き込む。
+6. **作業ブランチの準備（PJ委譲・任意）**：PJ がブランチ運用の場合に行う（`protocol.md`「2.5」に従う）。
+   - PJ にブランチ作成を伴う skill（例: issue＋ブランチ作成 skill）があれば、それを優先して使う。
+   - 無ければ PJ 規約に沿って作成する（例: `feature/<slug>`）。
+   - trunk-based 等ブランチを使わない PJ ではスキップする。
+   - 既に作業ブランチ上にいる場合は新規作成しない（重複防止）。
+   - 成果物（`.aidev/works/...`）も同じブランチに乗せると、後段の PR がきれいになる。
+7. `aidev-10-requirement` 工程の開始を案内する。
 
 ## 5. 注意
 
