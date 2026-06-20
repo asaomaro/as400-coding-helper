@@ -11,7 +11,7 @@
 - [x] DCL — CL変数宣言（PR #9）
 - [x] CHGVAR — 変数変更（PR #9）
 - [x] MONMSG — メッセージ・モニター（PR #9）
-- [ ] RCVMSG — メッセージ受信の定義JSONを作成（IBM原典準拠、types.ts 準拠、固定値は dropdown）
+- [x] RCVMSG — メッセージ受信（aidev-batch 試走で生成・PR feature/cl-rcvmsg）
 - [ ] DLTF — ファイル削除の定義JSONを作成
 - [ ] RTVJOBA — ジョブ属性検索の定義JSONを作成
 - [ ] SNDRCVF — レコード送受信の定義JSONを作成
