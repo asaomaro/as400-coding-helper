@@ -2,7 +2,11 @@ import { strict as assert } from "node:assert";
 import * as vscode from "vscode";
 import { getNextTabStop } from "../../language/rpgLayout";
 import { isEditAllowedRange } from "../../language/rpgEditGuards";
-import { isInScopeUri } from "../../utils/fileScope";
+import {
+  isInScopeUri,
+  isInScopeDocument,
+  TARGET_EXTENSIONS
+} from "../../utils/fileScope";
 import { getLogicalCommandRange } from "../../language/clContinuation";
 
 suite("Editing behaviors", () => {
@@ -48,6 +52,47 @@ suite("Editing behaviors", () => {
     assert.equal(isInScopeUri(rpgUri), true);
     assert.equal(isInScopeUri(clUri), true);
     assert.equal(isInScopeUri(txtUri), false);
+  });
+
+  test("isInScopeUri covers all target extensions (issue #4)", () => {
+    for (const ext of TARGET_EXTENSIONS) {
+      const uri = vscode.Uri.file(`/workspace/src/sample.${ext}`);
+      assert.equal(
+        isInScopeUri(uri),
+        true,
+        `Expected .${ext} to be in scope`
+      );
+    }
+  });
+
+  test("isInScopeUri is case-insensitive for the extension", () => {
+    assert.equal(isInScopeUri(vscode.Uri.file("/ws/SAMPLE.DDS")), true);
+    assert.equal(isInScopeUri(vscode.Uri.file("/ws/Sample.Prtf")), true);
+  });
+
+  test("isInScopeUri rejects non-target extensions", () => {
+    assert.equal(isInScopeUri(vscode.Uri.file("/ws/a.ts")), false);
+    assert.equal(isInScopeUri(vscode.Uri.file("/ws/a.txt")), false);
+    assert.equal(isInScopeUri(vscode.Uri.file("/ws/a.cmdx")), false);
+  });
+
+  test("isInScopeDocument matches by languageId or target extension", () => {
+    const byLanguage = {
+      languageId: "rpg-fixed",
+      uri: vscode.Uri.file("/ws/no-extension")
+    } as unknown as vscode.TextDocument;
+    const byExtension = {
+      languageId: "plaintext",
+      uri: vscode.Uri.file("/ws/report.prtf")
+    } as unknown as vscode.TextDocument;
+    const outOfScope = {
+      languageId: "plaintext",
+      uri: vscode.Uri.file("/ws/notes.txt")
+    } as unknown as vscode.TextDocument;
+
+    assert.equal(isInScopeDocument(byLanguage), true);
+    assert.equal(isInScopeDocument(byExtension), true);
+    assert.equal(isInScopeDocument(outOfScope), false);
   });
 
   test("getLogicalCommandRange expands across CL continuation lines", () => {
