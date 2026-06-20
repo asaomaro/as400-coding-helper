@@ -37,8 +37,7 @@ exports.registerRpgTabNavigation = registerRpgTabNavigation;
 const vscode = __importStar(require("vscode"));
 const rpgEditGuards_1 = require("./rpgEditGuards");
 const positionResolver_1 = require("../prompter/positionResolver");
-let cachedRpgKeywordColumns;
-let cachedClKeywordColumns;
+const keywordColumns_1 = require("./keywordColumns");
 function registerRpgTabNavigation(context) {
     const nextDisposable = vscode.commands.registerCommand("rpgClSupport.rpgTabNext", async () => {
         const editor = vscode.window.activeTextEditor;
@@ -240,14 +239,14 @@ async function computeMove(document, position, context, direction) {
 async function getKeywordColumnsForLine(document, lineIndex, context) {
     const languageId = document.languageId;
     if (languageId === "cl") {
-        const clColumns = await getClKeywordColumns(context);
+        const clColumns = await (0, keywordColumns_1.getClKeywordColumns)(context);
         return clColumns;
     }
     const resolved = (0, positionResolver_1.resolvePosition)(document, new vscode.Position(lineIndex, 0));
     if (!resolved) {
         return undefined;
     }
-    const rpgColumns = await getRpgKeywordColumns(context);
+    const rpgColumns = await (0, keywordColumns_1.getRpgKeywordColumns)(context);
     const columns = rpgColumns.get(resolved.keyword);
     return columns;
 }
@@ -299,90 +298,5 @@ async function findPreviousLineWithColumns(document, startLineIndex, context) {
         }
     }
     return undefined;
-}
-async function getRpgKeywordColumns(context) {
-    if (cachedRpgKeywordColumns) {
-        return cachedRpgKeywordColumns;
-    }
-    const map = new Map();
-    try {
-        const uri = vscode.Uri.joinPath(context.extensionUri, "resources", "navigation", "rpg-fixed-keyword-columns.json");
-        const document = await vscode.workspace.openTextDocument(uri);
-        const raw = document.getText();
-        const parsed = JSON.parse(raw);
-        for (const [key, value] of Object.entries(parsed)) {
-            const columns = parseColumnsValue(value);
-            if (columns.length > 0) {
-                map.set(key.toUpperCase(), columns);
-            }
-        }
-    }
-    catch (error) {
-        console.log("[rpgClSupport] failed to load RPG keyword column definitions", String(error));
-    }
-    cachedRpgKeywordColumns = map;
-    return map;
-}
-async function getClKeywordColumns(context) {
-    if (cachedClKeywordColumns) {
-        return cachedClKeywordColumns;
-    }
-    try {
-        const uri = vscode.Uri.joinPath(context.extensionUri, "resources", "navigation", "cl-keyword-columns.json");
-        const document = await vscode.workspace.openTextDocument(uri);
-        const raw = document.getText();
-        const parsed = JSON.parse(raw);
-        const columns = parseColumnsValue(parsed);
-        if (columns.length > 0) {
-            cachedClKeywordColumns = columns;
-            return columns;
-        }
-    }
-    catch (error) {
-        console.log("[rpgClSupport] failed to load CL keyword column definitions", String(error));
-    }
-    cachedClKeywordColumns = [];
-    return cachedClKeywordColumns;
-}
-function parseColumnsValue(value) {
-    if (typeof value === "string") {
-        return parseColumnsFromString(value);
-    }
-    if (Array.isArray(value)) {
-        return parseColumnsFromArray(value);
-    }
-    if (value &&
-        typeof value === "object" &&
-        "columns" in value &&
-        (typeof value.columns === "string" ||
-            Array.isArray(value.columns))) {
-        const inner = value.columns;
-        return parseColumnsValue(inner);
-    }
-    return [];
-}
-function parseColumnsFromString(raw) {
-    const parts = raw.split(/[,、\s]+/u).filter(part => part.length > 0);
-    const columns = [];
-    for (const part of parts) {
-        const parsed = Number(part);
-        if (Number.isFinite(parsed) && parsed > 0) {
-            columns.push(parsed - 1);
-        }
-    }
-    return columns.sort((a, b) => a - b);
-}
-function parseColumnsFromArray(values) {
-    const columns = [];
-    for (const value of values) {
-        if (typeof value === "number" && Number.isFinite(value) && value > 0) {
-            columns.push(Math.floor(value) - 1);
-        }
-        else if (typeof value === "string") {
-            const nested = parseColumnsFromString(value);
-            columns.push(...nested);
-        }
-    }
-    return columns.sort((a, b) => a - b);
 }
 //# sourceMappingURL=rpgTabNavigation.js.map
