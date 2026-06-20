@@ -63,6 +63,16 @@ PJ非依存の開発ワークフローを、skill 群で制御・進捗管理す
 自動では次へ進まない。最終工程 deliver では「承認して完了」になる。
 （AskUserQuestion 非対応エージェントでは同じ選択肢をテキストで提示）
 
+## 実行モード（interactive / autonomous）
+
+`state.yml` の `mode` で切替（既定 interactive）。
+
+- **interactive**: 各工程末で人間が承認（上記ゲート）。
+- **autonomous**: 人間ゲートを置かず requirement→…→deliver を自律実行し、**PR を出して停止**（auto-merge しない）。
+  夜間に回して朝に PR を一括レビューする使い方。`humanGates`（例 `[spec]`）で特定工程だけ人間ゲートを残す**部分自律**も可。
+  安全弁: test は硬いゲート（未通過なら draft PR）／差し戻し回数・予算に上限／成果物・walkthrough を証跡として残す。
+  ※夜間に回す実行手段（headless/スケジュール）は harness とは別レイヤで用意する。
+
 ## 任意工程の起動
 
 - **ユーザー指定**：明示的に `/aidev-15-research` 等を選ぶ。

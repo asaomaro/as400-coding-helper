@@ -41,7 +41,15 @@
 - **全成果物にテンプレ/スキーマ**：requirement/spec/plan/tasks/decisions/state を定義済み。
   「下敷きにAIが埋める」方式（厳格スキーマ強制まではしていない）。
 - **任意工程は AI検知＋ゲート推奨**：research は requirement 終了時に調査不足を、design は spec 終了時に
-  複雑度を検知し、遷移ゲートで推奨（理由付き）。強制せず却下可。retro はユーザー指定起動。
+  複雑度を、walkthrough は review 終了時に複雑度を検知し、遷移ゲートで推奨（理由付き）。強制せず却下可。
+  retro はユーザー指定起動。
+- **実行モード（interactive / autonomous）**：autonomous は「夜セット→朝PR」型。思想は
+  **「ゲートを消す」でなく「ゲートを PR（最終レビュー）に集約し、自己チェックを固くする」**。
+  人間ゲートは前（タスク指示=requirement）と後（PRレビュー）に移動し、ループ内からは外す。
+  受け入れるのは主に「方向/spec 誤りの手戻り」（機械的誤りは夜間の self-correction で潰れる）。
+  `humanGates`（例 [spec]）で高レバレッジ工程だけ人間を残す**部分自律**が実用的。
+  安全弁必須（test硬ゲート・ループ/予算上限・PRで停止/auto-merge禁止・証跡保存）。
+  実行手段（headless/スケジュール）は harness とは別レイヤ。
 
 ## 3. 退けた案（なぜ採用しなかったか）
 
