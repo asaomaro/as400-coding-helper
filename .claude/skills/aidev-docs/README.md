@@ -60,7 +60,7 @@ PJ非依存の開発ワークフローを、skill 群で制御・進捗管理す
 insights/retro（信号） → aidev-propose（課題化・人間承認） → aidev-batch（autonomous実装） → PR（人間レビュー）
 ```
 両端（どの課題・どの PR）に人間ゲートを残し、間を自律化する。完全自動（発案→マージ）は高リスクのため採らない。
-planner の方針は `docs/aidev-charter.md` で縛る。
+planner の方針は `.aidev/charter.md` で縛る。
 
 ## 承認ゲート（各工程の終わり）
 

@@ -19,7 +19,7 @@ AI 開発ワークフローの **planner（課題提案 / L_planner・A 層）**
 
 ## 前提
 
-- `docs/aidev-charter.md`（ゴール・スコープ・やらないこと・品質基準）があること（無ければ作成を促す）。
+- `.aidev/charter.md`（ゴール・スコープ・やらないこと・品質基準）があること（無ければ作成を促す）。
   charter が planner を縛る錨。これが無いと提案が発散する。
 
 ## 入力（信号・grounded 優先）
@@ -34,7 +34,7 @@ AI 開発ワークフローの **planner（課題提案 / L_planner・A 層）**
 ## 出力
 
 - 提案課題の一覧（根拠・優先度・split 案つき）。
-- 承認分 → `create-issue`（PJの issue 作成 skill）で issue 化、かつ/または バックログ（`docs/*-backlog.md`）へ追記。
+- 承認分 → `create-issue`（PJの issue 作成 skill）で issue 化、かつ/または バックログ（`.aidev/backlog/*.md`）へ追記。
 
 ## 手順
 
