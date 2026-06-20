@@ -5,6 +5,100 @@
 > 「いま何があるか」は各 `SKILL.md` と `aidev-00-start/protocol.md` が正。
 > ここには「なぜそうしたか・何を退けたか」を残す。
 
+## 0. 全体像（図）
+
+skill 群の関係と実行順を俯瞰するための地図。詳細な規約は `protocol.md` と各 `SKILL.md` が正。
+
+### 0.1 工程パイプラインと差し戻し
+
+標準工程（末尾0）を順に進み、任意工程（末尾5）は AI検知＋推奨かユーザー指定で差し込む。
+各工程の末尾に承認ゲートがあり（interactive は人間 / autonomous は自動承認＋`humanGates`）、
+test 失敗・review 指摘は coding へ差し戻す。
+
+```mermaid
+flowchart TD
+  start["aidev-00-start<br/>入口・ルーター・レジューム"]
+  start --> req
+
+  subgraph STD["標準工程（末尾0・デフォルトパイプライン）"]
+    direction TB
+    req["10 requirement"] --> spec["20 spec"] --> plan["30 plan"]
+    plan --> coding["40 coding"] --> test["50 test"] --> review["60 review"] --> deliver["70 deliver（最終）"]
+  end
+
+  subgraph OPT["任意工程（末尾5・推奨/指定で差し込み）"]
+    research["15 research"]
+    design["25 design"]
+    walkthrough["65 walkthrough"]
+  end
+
+  req -. 調査不足を検知 .-> research -. spec へ .-> spec
+  spec -. 複雑度を検知 .-> design -. plan へ .-> plan
+  review -. 複雑度を検知 .-> walkthrough -. deliver へ .-> deliver
+
+  test -- 失敗 --> coding
+  review -- "must/should 指摘" --> coding
+  deliver -. 完了後（任意・ユーザー指定） .-> retro["90 retro"]
+
+  classDef opt fill:#eef,stroke:#88a,stroke-dasharray:4 3
+  class research,design,walkthrough,retro opt
+```
+
+### 0.2 三層の責務分担
+
+基盤（PJ非依存）／知識（AGENTS.md）／実作業（PJ固有 skill）を分離。各工程は実作業を PJ 資産へ
+委譲し、無ければジェネリック手順にフォールバックする。ゲート・state・遷移は常に基盤が担う。
+
+```mermaid
+flowchart TB
+  subgraph H["ハーネス（基盤・PJ非依存）"]
+    proto["protocol.md<br/>終了プロトコル / state / ゲート / 遷移 / メトリクス"]
+    stages["aidev-* 各工程 SKILL.md"]
+  end
+  subgraph K["PJルール（知識）"]
+    agents["AGENTS.md<br/>規約・レビュー観点・ドメイン論点"]
+  end
+  subgraph X["PJ固有 skill（実作業）"]
+    pjskill["review / test / commit / PR / cl-command-def 等"]
+  end
+
+  stages -->|相対参照で従う| proto
+  stages -->|判断基準として優先| agents
+  stages -->|実作業を委譲| pjskill
+  pjskill -. 無ければ .-> generic["各工程のジェネリック手順"]
+```
+
+### 0.3 エコシステムと自己給餌ループ
+
+番号なしユーティリティ（propose / batch / insights）が、パイプラインの上流・繰り返し・横断分析を担う。
+両端（どの課題を起票するか・どの PR をマージするか）に人間ゲートを残し、間を自律化する。
+
+```mermaid
+flowchart LR
+  subgraph SIG["信号"]
+    insights["aidev-insights<br/>works横断分析"]
+    retro2["retro / lint / test失敗 / 負債"]
+  end
+
+  propose["aidev-propose<br/>課題提案・split・重複排除<br/>（charter で縛る）"]
+  backlog["issue / バックログ"]
+  batch["aidev-batch<br/>未処理を autonomous で順次処理（L1）"]
+  pipe["aidev-10..70<br/>requirement → … → deliver"]
+  pr["PR"]
+
+  insights --> propose
+  retro2 --> propose
+  propose -->|人間承認| backlog
+  backlog --> batch --> pipe --> pr
+  pr -->|人間レビュー / マージ| done["着地"]
+  done -.実績が次の信号に.-> insights
+
+  classDef gate fill:#ffe,stroke:#cc0,stroke-width:2px
+  class propose,pr gate
+```
+
+> 黄色＝人間ゲート（前＝課題承認、後＝PR レビュー）。完全自動（発案→マージ）は高リスクのため採らない。
+
 ## 1. 目的と思想
 
 - **PJ非依存の汎用ハーネス**。`.claude/skills/aidev-*` だけで自己完結し、特定PJ（AS400 等）に縛られない。
