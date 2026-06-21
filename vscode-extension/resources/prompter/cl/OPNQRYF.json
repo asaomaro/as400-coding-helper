@@ -1,0 +1,319 @@
+{
+  "keyword": "OPNQRYF",
+  "description": "照会ファイルのオープン（OPNQRYF）",
+  "help": "データベース・ファイルのレコードを動的に選択・結合・分類・集計して、その結果セットを HLL プログラム用にオープンします。QRYSLT で選択条件、KEYFLD で分類、JFLD で結合、GRPFLD/GRPSLT で集計、MAPFLD で派生フィールドを定義します。",
+  "parameters": [
+    {
+      "name": "FILE",
+      "description": "ファイル仕様",
+      "help": "照会対象の1つ以上のファイル（最大32回の繰り返し）。各要素はファイル(修飾名)/メンバー/レコード様式。必須・定位置1。",
+      "inputType": "group",
+      "required": true,
+      "maxOccurrences": 32,
+      "children": [
+        { "name": "FILE", "description": "ファイル", "help": "照会対象のファイル名。", "inputType": "text", "required": true, "attributes": { "characterSet": "upper", "maxLength": 10 }, "placeholder": "FILE" },
+        { "name": "LIB", "description": "ライブラリー", "help": "ファイルのライブラリー。*LIBL / *CURLIB / ライブラリー名。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 10 }, "defaultValue": "*LIBL", "placeholder": "*LIBL" },
+        { "name": "MBR", "description": "メンバー", "help": "メンバー名。*FIRST（先頭）/ *LAST / *ALL / メンバー名。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 10 }, "defaultValue": "*FIRST", "placeholder": "*FIRST" },
+        { "name": "RCDFMT", "description": "レコード様式", "help": "レコード様式名。*ONLY（唯一の様式）/ 様式名。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 10 }, "placeholder": "*ONLY" }
+      ]
+    },
+    {
+      "name": "OPTION",
+      "description": "オープン・オプション",
+      "help": "ファイルのオープン方法。単一値 *ALL、またはその他の値（最大4回の繰り返し）から選択。*INP（入力）/ *OUT（出力）/ *UPD（更新）/ *DLT（削除）。既定 *ALL。",
+      "inputType": "text",
+      "required": false,
+      "attributes": { "characterSet": "upper", "maxLength": 10 },
+      "defaultValue": "*ALL",
+      "placeholder": "*ALL",
+      "maxOccurrences": 4
+    },
+    {
+      "name": "FORMAT",
+      "description": "様式仕様",
+      "help": "照会結果のレコード様式の定義元。単一値 *FILE（FILE の様式を使用、既定）、またはファイル(修飾名)/レコード様式で別ファイルの様式を使用。",
+      "inputType": "group",
+      "required": false,
+      "children": [
+        { "name": "FILE", "description": "ファイル", "help": "様式定義元のファイル名。*FILE で FILE の様式を使用。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 10 }, "defaultValue": "*FILE", "placeholder": "*FILE" },
+        { "name": "LIB", "description": "ライブラリー", "help": "様式定義元ファイルのライブラリー。*LIBL / *CURLIB / ライブラリー名。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 10 }, "defaultValue": "*LIBL", "placeholder": "*LIBL" },
+        { "name": "RCDFMT", "description": "レコード様式", "help": "レコード様式名。*ONLY / 様式名。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 10 }, "placeholder": "*ONLY" }
+      ]
+    },
+    {
+      "name": "QRYSLT",
+      "description": "QUERY選択式",
+      "help": "レコード選択条件を表す文字値（QUERY選択式）。*ALL で全レコードを選択（既定）。",
+      "inputType": "text",
+      "required": false,
+      "attributes": { "maxLength": 2000 },
+      "defaultValue": "*ALL",
+      "placeholder": "*ALL"
+    },
+    {
+      "name": "KEYFLD",
+      "description": "キー・フィールド仕様",
+      "help": "分類キーの定義。単一値 *NONE（分類しない、既定）/ *FILE（ファイルのキー使用）、またはその他の値（最大50回の繰り返し）として キー・フィールド(修飾名)/順序/絶対値順序 を平坦化指定。",
+      "inputType": "group",
+      "required": false,
+      "maxOccurrences": 50,
+      "children": [
+        { "name": "KEYFLD", "description": "キー・フィールド", "help": "分類に使うキー・フィールド名。*NONE / *FILE も可。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 10 }, "defaultValue": "*NONE", "placeholder": "*NONE" },
+        { "name": "FILE", "description": "ファイルまたは要素", "help": "キー・フィールドが属するファイル名、または *MAPFLD、または FILE パラメーターの要素番号(1-32)。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 10 }, "placeholder": "*MAPFLD" },
+        { "name": "ORDER", "description": "キー・フィールド順序", "help": "*ASCEND（昇順、既定）/ *DESCEND（降順）。", "inputType": "dropdown", "required": false, "options": [ { "label": "*ASCEND（昇順）", "value": "*ASCEND" }, { "label": "*DESCEND（降順）", "value": "*DESCEND" } ] },
+        { "name": "ABSVAL", "description": "絶対値による順序", "help": "*ABSVAL を指定すると絶対値で分類する。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 10 }, "placeholder": "*ABSVAL" }
+      ]
+    },
+    {
+      "name": "UNIQUEKEY",
+      "description": "固有キー・フィールド",
+      "help": "重複キーを除く先頭からのキー・フィールド数。1-120 / *NONE（重複除去なし、既定）/ *ALL（全キー・フィールド）。",
+      "inputType": "text",
+      "required": false,
+      "attributes": { "characterSet": "upper", "maxLength": 10 },
+      "defaultValue": "*NONE",
+      "placeholder": "*NONE"
+    },
+    {
+      "name": "JFLD",
+      "description": "結合フィールド仕様",
+      "help": "ファイル結合の対応フィールド定義。単一値 *NONE（結合しない、既定）、またはその他の値（最大50回の繰り返し）として 取り出しフィールド(修飾名)/受け取りフィールド(修飾名)/結合演算子 を平坦化指定。",
+      "inputType": "group",
+      "required": false,
+      "maxOccurrences": 50,
+      "children": [
+        { "name": "FROMFLD", "description": "取り出しフィールド", "help": "結合元の取り出しフィールド名。*NONE で結合なし。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 10 }, "defaultValue": "*NONE", "placeholder": "*NONE" },
+        { "name": "FROMFILE", "description": "取り出しファイルまたは要素", "help": "取り出しフィールドが属するファイル名、*MAPFLD、または FILE 要素番号(1-32)。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 10 }, "placeholder": "*MAPFLD" },
+        { "name": "TOFLD", "description": "受け取りフィールド", "help": "結合先の受け取りフィールド名。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 10 }, "placeholder": "FIELD" },
+        { "name": "TOFILE", "description": "受け取りファイルまたは要素", "help": "受け取りフィールドが属するファイル名、*MAPFLD、または FILE 要素番号(1-32)。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 10 }, "placeholder": "*MAPFLD" },
+        { "name": "OPERATOR", "description": "結合演算子", "help": "*EQ（=、既定）/ *NE / *LT / *GT / *LE / *GE。", "inputType": "dropdown", "required": false, "options": [ { "label": "*EQ（等しい）", "value": "*EQ" }, { "label": "*NE（等しくない）", "value": "*NE" }, { "label": "*LT（より小さい）", "value": "*LT" }, { "label": "*GT（より大きい）", "value": "*GT" }, { "label": "*LE（以下）", "value": "*LE" }, { "label": "*GE（以上）", "value": "*GE" } ] }
+      ]
+    },
+    {
+      "name": "JDFTVAL",
+      "description": "省略時の値による結合",
+      "help": "結合で一致レコードがない場合に省略時値を使うか。*NO（一致のみ、既定）/ *YES（不一致は省略時値）/ *ONLYDFT（省略時値の行のみ）。",
+      "inputType": "dropdown",
+      "required": false,
+      "options": [
+        { "label": "*NO（一致レコードのみ）", "value": "*NO" },
+        { "label": "*YES（不一致は省略時値で結合）", "value": "*YES" },
+        { "label": "*ONLYDFT（省略時値の行のみ）", "value": "*ONLYDFT" }
+      ]
+    },
+    {
+      "name": "JORDER",
+      "description": "ファイル結合順序",
+      "help": "結合時のファイル処理順序。*ANY（システムに任せる、既定）/ *FILE（FILE の指定順）。",
+      "inputType": "dropdown",
+      "required": false,
+      "options": [
+        { "label": "*ANY（システムが最適化）", "value": "*ANY" },
+        { "label": "*FILE（FILE の指定順）", "value": "*FILE" }
+      ]
+    },
+    {
+      "name": "GRPFLD",
+      "description": "フィールド名のグループ化",
+      "help": "集計のグループ化キー。単一値 *NONE（グループ化しない、既定）、またはその他の値（最大50回の繰り返し）として フィールド(修飾名) を平坦化指定。",
+      "inputType": "group",
+      "required": false,
+      "maxOccurrences": 50,
+      "children": [
+        { "name": "GRPFLD", "description": "フィールド名のグループ化", "help": "グループ化に使うフィールド名。*NONE でグループ化なし。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 10 }, "defaultValue": "*NONE", "placeholder": "*NONE" },
+        { "name": "FILE", "description": "ファイルまたは要素", "help": "フィールドが属するファイル名、*MAPFLD、または FILE 要素番号(1-32)。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 10 }, "placeholder": "*MAPFLD" }
+      ]
+    },
+    {
+      "name": "GRPSLT",
+      "description": "グループ選択式",
+      "help": "グループ化後のグループ選択条件を表す文字値。*ALL で全グループを選択（既定）。",
+      "inputType": "text",
+      "required": false,
+      "attributes": { "maxLength": 2000 },
+      "defaultValue": "*ALL",
+      "placeholder": "*ALL"
+    },
+    {
+      "name": "MAPFLD",
+      "description": "マップされたフィールド仕様",
+      "help": "派生（マップ）フィールドの定義。単一値 *NONE（既定）、またはその他の値（最大50回の繰り返し）として フィールド名/定義式/タイプ/長さ/小数桁/CCSID を平坦化指定。",
+      "inputType": "group",
+      "required": false,
+      "maxOccurrences": 50,
+      "children": [
+        { "name": "FIELD", "description": "マップされたフィールド", "help": "新しく定義するマップ・フィールド名。*NONE でマップなし。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 10 }, "defaultValue": "*NONE", "placeholder": "*NONE" },
+        { "name": "EXPR", "description": "フィールド定義式", "help": "マップ・フィールドの値を計算する文字値（式）。", "inputType": "text", "required": false, "attributes": { "maxLength": 2000 }, "placeholder": "FLDA + FLDB" },
+        { "name": "TYPE", "description": "マップされたフィールドのタイプ", "help": "データ・タイプ。*CALC（式から算出、既定）/ *BIN2 / *BIN4 / *FLT4 / *FLT8 / *DEC / *ZONED / *CHAR / *VCHAR / *HEX / *VHEX / *DATE / *TIME / *TIMESTP / *ONLY / *VONLY / *OPEN / *VOPEN / *EITHER / *VEITHER / *GRAPHIC / *VGRAPHIC。", "inputType": "dropdown", "required": false, "options": [
+          { "label": "*CALC（式から算出）", "value": "*CALC" },
+          { "label": "*BIN2", "value": "*BIN2" },
+          { "label": "*BIN4", "value": "*BIN4" },
+          { "label": "*FLT4", "value": "*FLT4" },
+          { "label": "*FLT8", "value": "*FLT8" },
+          { "label": "*DEC", "value": "*DEC" },
+          { "label": "*ZONED", "value": "*ZONED" },
+          { "label": "*CHAR", "value": "*CHAR" },
+          { "label": "*VCHAR", "value": "*VCHAR" },
+          { "label": "*HEX", "value": "*HEX" },
+          { "label": "*VHEX", "value": "*VHEX" },
+          { "label": "*DATE", "value": "*DATE" },
+          { "label": "*TIME", "value": "*TIME" },
+          { "label": "*TIMESTP", "value": "*TIMESTP" },
+          { "label": "*ONLY", "value": "*ONLY" },
+          { "label": "*VONLY", "value": "*VONLY" },
+          { "label": "*OPEN", "value": "*OPEN" },
+          { "label": "*VOPEN", "value": "*VOPEN" },
+          { "label": "*EITHER", "value": "*EITHER" },
+          { "label": "*VEITHER", "value": "*VEITHER" },
+          { "label": "*GRAPHIC", "value": "*GRAPHIC" },
+          { "label": "*VGRAPHIC", "value": "*VGRAPHIC" }
+        ] },
+        { "name": "LEN", "description": "長さ", "help": "フィールドの長さ。0-32766。", "inputType": "number", "required": false, "attributes": { "numericOnly": true, "maxLength": 5 }, "placeholder": "10" },
+        { "name": "DEC", "description": "小数点以下の桁数", "help": "小数点以下の桁数。0-63。", "inputType": "number", "required": false, "attributes": { "numericOnly": true, "maxLength": 2 }, "placeholder": "0" },
+        { "name": "CCSID", "description": "マップされたフィールドのCCSID", "help": "マップ・フィールドの CCSID。1-65535 / *CALC（算出、既定）/ *HEX。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 5 }, "defaultValue": "*CALC", "placeholder": "*CALC" }
+      ]
+    },
+    {
+      "name": "IGNDECERR",
+      "description": "10進データ・エラーの無視",
+      "help": "ゾーン10進/パック10進データのデータ・エラーを無視するか。*NO（無視しない、既定）/ *YES。",
+      "inputType": "dropdown",
+      "required": false,
+      "options": [
+        { "label": "*NO（無視しない）", "value": "*NO" },
+        { "label": "*YES（無視する）", "value": "*YES" }
+      ]
+    },
+    {
+      "name": "OPNID",
+      "description": "オープン・ファイルID",
+      "help": "オープンしたファイルを識別する ID。*FILE（先頭ファイルの名前を使用、既定）/ 名前。",
+      "inputType": "text",
+      "required": false,
+      "attributes": { "characterSet": "upper", "maxLength": 10 },
+      "defaultValue": "*FILE",
+      "placeholder": "*FILE"
+    },
+    {
+      "name": "SEQONLY",
+      "description": "順次のみへの制限",
+      "help": "順次専用処理に制限するか。単一値 *NO（既定）、または要素リスト（順次のみ *YES / レコード数 1-32767）。",
+      "inputType": "group",
+      "required": false,
+      "children": [
+        { "name": "SEQONLY", "description": "順次のみ", "help": "*NO（制限しない、既定）/ *YES（順次専用）。", "inputType": "dropdown", "required": false, "options": [ { "label": "*NO（制限しない）", "value": "*NO" }, { "label": "*YES（順次専用）", "value": "*YES" } ] },
+        { "name": "NBRRCDS", "description": "レコード数", "help": "一度に転送するレコード数。1-32767。", "inputType": "number", "required": false, "attributes": { "numericOnly": true, "maxLength": 5 }, "placeholder": "1" }
+      ]
+    },
+    {
+      "name": "COMMIT",
+      "description": "コミットメント制御活動中",
+      "help": "コミットメント制御下でオープンするか。*NO（既定）/ *YES。",
+      "inputType": "dropdown",
+      "required": false,
+      "options": [
+        { "label": "*NO（コミットメント制御なし）", "value": "*NO" },
+        { "label": "*YES（コミットメント制御下）", "value": "*YES" }
+      ]
+    },
+    {
+      "name": "OPNSCOPE",
+      "description": "有効範囲のオープン",
+      "help": "オープンの有効範囲。*ACTGRPDFN（活動化グループ定義、既定）/ *ACTGRP（活動化グループ）/ *JOB（ジョブ）。",
+      "inputType": "dropdown",
+      "required": false,
+      "options": [
+        { "label": "*ACTGRPDFN（活動化グループ定義）", "value": "*ACTGRPDFN" },
+        { "label": "*ACTGRP（活動化グループ）", "value": "*ACTGRP" },
+        { "label": "*JOB（ジョブ）", "value": "*JOB" }
+      ]
+    },
+    {
+      "name": "DUPKEYCHK",
+      "description": "重複キー検査",
+      "help": "重複キーのフィードバックを行うか。*NO（既定）/ *YES。",
+      "inputType": "dropdown",
+      "required": false,
+      "options": [
+        { "label": "*NO（重複キー検査なし）", "value": "*NO" },
+        { "label": "*YES（重複キー検査あり）", "value": "*YES" }
+      ]
+    },
+    {
+      "name": "ALWCPYDTA",
+      "description": "データのコピー可能",
+      "help": "結果作成のためにデータのコピーを許すか。*YES（許す、既定）/ *OPTIMIZE（最適化判断）/ *NO（許さない）。",
+      "inputType": "dropdown",
+      "required": false,
+      "options": [
+        { "label": "*YES（コピーを許す）", "value": "*YES" },
+        { "label": "*OPTIMIZE（最適化に基づき判断）", "value": "*OPTIMIZE" },
+        { "label": "*NO（コピーを許さない）", "value": "*NO" }
+      ]
+    },
+    {
+      "name": "OPTIMIZE",
+      "description": "パフォーマンスの最適化",
+      "help": "最適化の目標。単一値 *ALLIO（全レコード処理向け、既定）/ *MINWAIT、または要素リスト（*FIRSTIO / レコード数 1-2147483647）。",
+      "inputType": "group",
+      "required": false,
+      "children": [
+        { "name": "OPTIMIZE", "description": "パフォーマンスの最適化", "help": "*ALLIO（全件処理を最適化、既定）/ *MINWAIT / *FIRSTIO（先頭レコードを早く返す）。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 10 }, "defaultValue": "*ALLIO", "placeholder": "*ALLIO" },
+        { "name": "NBRRCDS", "description": "レコード数", "help": "*FIRSTIO 時に最適化対象とするレコード数。1-2147483647。", "inputType": "number", "required": false, "attributes": { "numericOnly": true, "maxLength": 10 }, "placeholder": "1" }
+      ]
+    },
+    {
+      "name": "OPTALLAP",
+      "description": "すべてのアクセス・パスの最適化",
+      "help": "すべてのアクセス・パスを最適化するか。*NO（既定）/ *YES。",
+      "inputType": "dropdown",
+      "required": false,
+      "options": [
+        { "label": "*NO（最適化しない）", "value": "*NO" },
+        { "label": "*YES（すべて最適化）", "value": "*YES" }
+      ]
+    },
+    {
+      "name": "SRTSEQ",
+      "description": "分類順序",
+      "help": "分類順序。単一値 *HEX / *JOB（ジョブの分類順序、既定）/ *LANGIDSHR / *LANGIDUNQ、または分類順序表(修飾名)。",
+      "inputType": "group",
+      "required": false,
+      "children": [
+        { "name": "SRTSEQ", "description": "分類順序", "help": "*JOB（既定）/ *HEX / *LANGIDSHR / *LANGIDUNQ / 分類順序表名。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 10 }, "defaultValue": "*JOB", "placeholder": "*JOB" },
+        { "name": "LIB", "description": "ライブラリー", "help": "分類順序表のライブラリー。*LIBL / *CURLIB / ライブラリー名。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 10 }, "defaultValue": "*LIBL", "placeholder": "*LIBL" }
+      ]
+    },
+    {
+      "name": "LANGID",
+      "description": "言語ID",
+      "help": "*LANGIDSHR/*LANGIDUNQ 使用時の言語ID。*JOB（ジョブの言語ID、既定）/ 言語ID名。",
+      "inputType": "text",
+      "required": false,
+      "attributes": { "characterSet": "upper", "maxLength": 10 },
+      "defaultValue": "*JOB",
+      "placeholder": "*JOB"
+    },
+    {
+      "name": "CCSID",
+      "description": "最終出力のCCSID",
+      "help": "最終結果テキストの CCSID。1-65535 / *JOB（ジョブの CCSID、既定）/ *HEX。",
+      "inputType": "text",
+      "required": false,
+      "attributes": { "characterSet": "upper", "maxLength": 5 },
+      "defaultValue": "*JOB",
+      "placeholder": "*JOB"
+    },
+    {
+      "name": "TYPE",
+      "description": "オープンのタイプ",
+      "help": "オープンのタイプ。*NORMAL（通常、既定）/ *PERM（永続）。",
+      "inputType": "dropdown",
+      "required": false,
+      "options": [
+        { "label": "*NORMAL（通常）", "value": "*NORMAL" },
+        { "label": "*PERM（永続）", "value": "*PERM" }
+      ]
+    }
+  ]
+}

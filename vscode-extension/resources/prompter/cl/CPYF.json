@@ -1,0 +1,203 @@
+{
+  "keyword": "CPYF",
+  "description": "ファイル・コピー（CPYF）",
+  "help": "あるデータベース・ファイル（FROMFILE）のレコードを別のファイル（TOFILE）またはプリンターにコピーします。メンバー選択・レコード範囲・キー範囲・レコード選択（文字／フィールド・テスト）・様式マッピング等を指定できます。",
+  "parameters": [
+    {
+      "name": "FROMFILE",
+      "description": "FROMファイル",
+      "help": "コピー元の物理ファイルまたは論理ファイル。LIB/FILE で修飾。",
+      "inputType": "group",
+      "required": true,
+      "children": [
+        { "name": "LIB", "description": "ライブラリー", "help": "*LIBL / *CURLIB / ライブラリー名。", "inputType": "text", "required": false, "defaultValue": "*LIBL", "attributes": { "characterSet": "upper", "maxLength": 10 }, "placeholder": "*LIBL" },
+        { "name": "FROMFILE", "description": "FROMファイル", "help": "コピー元ファイル名。", "inputType": "text", "required": true, "attributes": { "characterSet": "upper", "maxLength": 10 } }
+      ]
+    },
+    {
+      "name": "TOFILE",
+      "description": "TOファイル",
+      "help": "コピー先ファイル。単一値 *PRINT（印刷）または LIB/FILE で修飾したファイル名。",
+      "inputType": "group",
+      "required": true,
+      "children": [
+        { "name": "LIB", "description": "ライブラリー", "help": "*LIBL / *CURLIB / ライブラリー名。*PRINT 指定時は不要。", "inputType": "text", "required": false, "defaultValue": "*LIBL", "attributes": { "characterSet": "upper", "maxLength": 10 }, "placeholder": "*LIBL" },
+        { "name": "TOFILE", "description": "TOファイル", "help": "コピー先ファイル名。単一値 *PRINT で印刷出力。", "inputType": "text", "required": true, "attributes": { "characterSet": "upper", "maxLength": 10 }, "placeholder": "*PRINT" }
+      ]
+    },
+    { "name": "FROMMBR", "description": "FROMメンバー", "help": "コピー元メンバー（総称名可）。定義済み値: *FIRST（先頭メンバー）, *ALL（全メンバー）。", "inputType": "text", "required": false, "defaultValue": "*FIRST", "attributes": { "characterSet": "upper", "maxLength": 10 }, "placeholder": "*FIRST" },
+    { "name": "TOMBR", "description": "TOメンバーまたはラベル", "help": "コピー先メンバーまたはラベル。定義済み値: *FIRST, *FROMMBR（FROMメンバーと同名）, *ALL。", "inputType": "text", "required": false, "defaultValue": "*FIRST", "attributes": { "characterSet": "upper", "maxLength": 10 }, "placeholder": "*FIRST" },
+    {
+      "name": "MBROPT",
+      "description": "レコードの置き換えまたは追加",
+      "help": "コピー先既存レコードの扱い。",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*NONE",
+      "options": [
+        { "label": "*NONE（追加も置換もしない）", "value": "*NONE" },
+        { "label": "*ADD（追加）", "value": "*ADD" },
+        { "label": "*REPLACE（置き換え）", "value": "*REPLACE" },
+        { "label": "*UPDADD（更新後追加）", "value": "*UPDADD" }
+      ]
+    },
+    {
+      "name": "CRTFILE",
+      "description": "ファイル作成",
+      "help": "コピー先ファイルが存在しない場合に作成するか。",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*NO",
+      "options": [
+        { "label": "*NO（作成しない）", "value": "*NO" },
+        { "label": "*YES（作成する）", "value": "*YES" }
+      ]
+    },
+    {
+      "name": "OUTFMT",
+      "description": "印刷形式",
+      "help": "TOFILE が *PRINT のときの印刷形式。",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*CHAR",
+      "options": [
+        { "label": "*CHAR（文字）", "value": "*CHAR" },
+        { "label": "*HEX（16進）", "value": "*HEX" }
+      ]
+    },
+    {
+      "name": "PRINT",
+      "description": "印刷するレコード",
+      "help": "印刷するレコード種別。単一値 *NONE。その他の値（最大3回）: *EXCLD（除外）, *COPIED（コピー済み）, *ERROR（エラー）。",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*NONE",
+      "maxOccurrences": 3,
+      "options": [
+        { "label": "*NONE（印刷しない）", "value": "*NONE" },
+        { "label": "*EXCLD（除外レコード）", "value": "*EXCLD" },
+        { "label": "*COPIED（コピーされたレコード）", "value": "*COPIED" },
+        { "label": "*ERROR（エラー・レコード）", "value": "*ERROR" }
+      ]
+    },
+    { "name": "RCDFMT", "description": "論理ファイルのレコード様式", "help": "論理ファイルをコピーするときのレコード様式名。定義済み値: *ONLY（唯一の様式）, *ALL。", "inputType": "text", "required": false, "defaultValue": "*ONLY", "attributes": { "characterSet": "upper", "maxLength": 10 }, "placeholder": "*ONLY" },
+    { "name": "FROMRCD", "description": "コピー開始レコード番号", "help": "コピー開始相対レコード番号。符号なし整数または *START（先頭）。", "inputType": "text", "required": false, "defaultValue": "*START", "attributes": { "characterSet": "upper", "maxLength": 10 }, "placeholder": "*START" },
+    { "name": "TORCD", "description": "コピー終了レコード番号", "help": "コピー終了相対レコード番号。符号なし整数または *END（末尾）。", "inputType": "text", "required": false, "defaultValue": "*END", "attributes": { "characterSet": "upper", "maxLength": 10 }, "placeholder": "*END" },
+    {
+      "name": "FROMKEY",
+      "description": "コピー開始レコード・キー",
+      "help": "コピー開始キー。単一値 *NONE。指定する場合は要素リスト（キー・フィールド数とキー値）。キー値は最大50回繰り返し。",
+      "inputType": "group",
+      "required": false,
+      "children": [
+        { "name": "NBRKEYFLD", "description": "キー・フィールドの数", "help": "整数、または *BLDKEY（キー値からキーを構築）。", "inputType": "text", "required": false, "defaultValue": "*NONE", "attributes": { "characterSet": "upper", "maxLength": 10 }, "placeholder": "*NONE" },
+        { "name": "KEYVAL", "description": "キーの値", "help": "キー値（文字値）。最大50回繰り返し。", "inputType": "text", "required": false, "maxOccurrences": 50, "attributes": { "maxLength": 256 } }
+      ]
+    },
+    {
+      "name": "TOKEY",
+      "description": "コピー終了レコード・キー",
+      "help": "コピー終了キー。単一値 *NONE。指定する場合は要素リスト（キー・フィールド数とキー値）。キー値は最大50回繰り返し。",
+      "inputType": "group",
+      "required": false,
+      "children": [
+        { "name": "NBRKEYFLD", "description": "キー・フィールドの数", "help": "整数、または *BLDKEY（キー値からキーを構築）。", "inputType": "text", "required": false, "defaultValue": "*NONE", "attributes": { "characterSet": "upper", "maxLength": 10 }, "placeholder": "*NONE" },
+        { "name": "KEYVAL", "description": "キーの値", "help": "キー値（文字値）。最大50回繰り返し。", "inputType": "text", "required": false, "maxOccurrences": 50, "attributes": { "maxLength": 256 } }
+      ]
+    },
+    { "name": "NBRRCDS", "description": "コピーするレコードの数", "help": "コピーするレコード数。符号なし整数または *END（範囲末尾まで）。", "inputType": "text", "required": false, "defaultValue": "*END", "attributes": { "characterSet": "upper", "maxLength": 10 }, "placeholder": "*END" },
+    {
+      "name": "INCCHAR",
+      "description": "文字テストによるレコード組込",
+      "help": "文字位置の比較でレコードを組み込む条件。単一値 *NONE。要素リスト: フィールド／文字位置／比較演算子／値。",
+      "inputType": "group",
+      "required": false,
+      "children": [
+        { "name": "FIELD", "description": "フィールド", "help": "対象フィールド名。定義済み値: *RCD（レコード全体）, *FLD。単一値 *NONE で組込無し。", "inputType": "text", "required": false, "defaultValue": "*NONE", "attributes": { "characterSet": "upper", "maxLength": 10 }, "placeholder": "*NONE" },
+        { "name": "CHARPOS", "description": "文字位置", "help": "比較開始文字位置（整数）。", "inputType": "number", "required": false, "attributes": { "numericOnly": true } },
+        { "name": "OPERATOR", "description": "比較演算子", "help": "比較演算子。", "inputType": "dropdown", "required": false,
+          "options": [
+            { "label": "*EQ（等しい）", "value": "*EQ" }, { "label": "*GT（より大）", "value": "*GT" }, { "label": "*LT（より小）", "value": "*LT" },
+            { "label": "*NE（等しくない）", "value": "*NE" }, { "label": "*GE（以上）", "value": "*GE" }, { "label": "*NL（より小でない）", "value": "*NL" },
+            { "label": "*LE（以下）", "value": "*LE" }, { "label": "*NG（より大でない）", "value": "*NG" }, { "label": "*CT（含む）", "value": "*CT" }
+          ] },
+        { "name": "VALUE", "description": "値", "help": "比較する文字値。", "inputType": "text", "required": false, "attributes": { "maxLength": 256 } }
+      ]
+    },
+    {
+      "name": "INCREL",
+      "description": "フィールド・テストでレコードの組込",
+      "help": "フィールド値の比較でレコードを組み込む条件。単一値 *NONE。要素リスト（最大50回）: 関係／フィールド／比較演算子／値。",
+      "inputType": "group",
+      "required": false,
+      "maxOccurrences": 50,
+      "children": [
+        { "name": "RELATION", "description": "関係", "help": "*IF（最初の条件）, *AND, *OR。単一値 *NONE で組込無し。", "inputType": "text", "required": false, "defaultValue": "*NONE", "attributes": { "characterSet": "upper", "maxLength": 10 }, "placeholder": "*NONE" },
+        { "name": "FIELD", "description": "フィールド", "help": "対象フィールド名。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 10 } },
+        { "name": "OPERATOR", "description": "比較演算子", "help": "比較演算子。", "inputType": "dropdown", "required": false,
+          "options": [
+            { "label": "*EQ（等しい）", "value": "*EQ" }, { "label": "*GT（より大）", "value": "*GT" }, { "label": "*LT（より小）", "value": "*LT" },
+            { "label": "*NE（等しくない）", "value": "*NE" }, { "label": "*GE（以上）", "value": "*GE" }, { "label": "*NL（より小でない）", "value": "*NL" },
+            { "label": "*LE（以下）", "value": "*LE" }, { "label": "*NG（より大でない）", "value": "*NG" }
+          ] },
+        { "name": "VALUE", "description": "値", "help": "比較する文字値、または *NULL。", "inputType": "text", "required": false, "attributes": { "maxLength": 256 }, "placeholder": "*NULL" }
+      ]
+    },
+    {
+      "name": "FMTOPT",
+      "description": "レコード様式フィールドのマップ",
+      "help": "コピー元と先で様式が異なる場合のフィールド対応。単一値: *NONE / *NOCHK / *CVTSRC。その他の値（最大2回）: *MAP, *DROP, *CVTFLOAT, *NULLFLAGS。",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*NONE",
+      "maxOccurrences": 2,
+      "options": [
+        { "label": "*NONE（マップしない）", "value": "*NONE" },
+        { "label": "*NOCHK（検査なし）", "value": "*NOCHK" },
+        { "label": "*CVTSRC（ソース変換）", "value": "*CVTSRC" },
+        { "label": "*MAP（フィールド名でマップ）", "value": "*MAP" },
+        { "label": "*DROP（余分フィールド除去）", "value": "*DROP" },
+        { "label": "*CVTFLOAT（浮動小数変換）", "value": "*CVTFLOAT" },
+        { "label": "*NULLFLAGS（NULL標識）", "value": "*NULLFLAGS" }
+      ]
+    },
+    {
+      "name": "SRCOPT",
+      "description": "ソース更新オプション",
+      "help": "ソース・ファイル・コピー時の更新。単一値 *SAME。その他の値（最大2回）: *SEQNBR（順序番号）, *DATE（日付）。",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*SAME",
+      "maxOccurrences": 2,
+      "options": [
+        { "label": "*SAME（変更しない）", "value": "*SAME" },
+        { "label": "*SEQNBR（順序番号付け直し）", "value": "*SEQNBR" },
+        { "label": "*DATE（日付フィールド更新）", "value": "*DATE" }
+      ]
+    },
+    {
+      "name": "SRCSEQ",
+      "description": "ソース・ステートメントの順序番号付け",
+      "help": "ソース順序番号の開始値と増分（0.01-9999.99）。",
+      "inputType": "group",
+      "required": false,
+      "children": [
+        { "name": "STARTNBR", "description": "開始順序番号", "help": "0.01-9999.99。既定 1.00。", "inputType": "text", "required": false, "defaultValue": "1.00", "attributes": { "maxLength": 7 }, "placeholder": "1.00" },
+        { "name": "INCRNBR", "description": "増分番号", "help": "0.01-9999.99。既定 1.00。", "inputType": "text", "required": false, "defaultValue": "1.00", "attributes": { "maxLength": 7 }, "placeholder": "1.00" }
+      ]
+    },
+    { "name": "ERRLVL", "description": "許容エラー", "help": "コピーを停止せず許容する回復不能エラー数。符号なし整数、0（既定）、または *NOMAX。", "inputType": "text", "required": false, "defaultValue": "0", "attributes": { "characterSet": "upper", "maxLength": 10 }, "placeholder": "0" },
+    {
+      "name": "COMPRESS",
+      "description": "削除済みレコードの圧縮",
+      "help": "削除済みレコードを圧縮（除去）するか。",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*YES",
+      "options": [
+        { "label": "*YES（圧縮する）", "value": "*YES" },
+        { "label": "*NO（圧縮しない）", "value": "*NO" }
+      ]
+    }
+  ]
+}

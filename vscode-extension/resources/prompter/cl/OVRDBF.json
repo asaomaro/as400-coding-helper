@@ -1,0 +1,189 @@
+{
+  "keyword": "OVRDBF",
+  "description": "データベース・ファイルの一時変更（OVRDBF）",
+  "help": "プログラムが使用するデータベース・ファイルの属性（コピー先ファイル・メンバー・開始位置・待機時間・共用等）を実行時に一時的に変更（オーバーライド）します。",
+  "parameters": [
+    { "name": "FILE", "description": "一時変更中のファイル", "help": "この一時変更が適用されるプログラム中のファイル名。", "inputType": "text", "required": true, "attributes": { "characterSet": "upper", "maxLength": 10 } },
+    {
+      "name": "TOFILE",
+      "description": "データベース・ファイルの一時変更",
+      "help": "FILE の代わりに使用するデータベース・ファイル。単一値 *FILE（FILE と同じファイルの属性のみ変更）または LIB/FILE で修飾したファイル名。",
+      "inputType": "group",
+      "required": false,
+      "children": [
+        { "name": "LIB", "description": "ライブラリー", "help": "*LIBL / *CURLIB / ライブラリー名。*FILE 指定時は不要。", "inputType": "text", "required": false, "defaultValue": "*LIBL", "attributes": { "characterSet": "upper", "maxLength": 10 }, "placeholder": "*LIBL" },
+        { "name": "TOFILE", "description": "データベース・ファイルの一時変更", "help": "代わりに使用するファイル名。単一値 *FILE。", "inputType": "text", "required": false, "defaultValue": "*FILE", "attributes": { "characterSet": "upper", "maxLength": 10 }, "placeholder": "*FILE" }
+      ]
+    },
+    { "name": "MBR", "description": "一時変更しているメンバー", "help": "使用するメンバー名。定義済み値: *FIRST（先頭）, *LAST（最後）, *ALL（全メンバー）。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 10 }, "placeholder": "*FIRST" },
+    {
+      "name": "POSITION",
+      "description": "ファイルの開始桁",
+      "help": "ファイル・オープン後の初期位置。単一値: *NONE / *START（先頭）/ *END（末尾）。その他の値は要素リスト（検索順序・レコード番号またはキーフィールド数・レコード様式・キー値）。",
+      "inputType": "group",
+      "required": false,
+      "children": [
+        { "name": "ORDER", "description": "検索順序", "help": "*RRN（相対レコード番号）, *KEYB, *KEYBE, *KEY, *KEYAE, *KEYA。単一値 *NONE/*START/*END で位置指定なし。", "inputType": "text", "required": false, "defaultValue": "*NONE", "attributes": { "characterSet": "upper", "maxLength": 10 }, "placeholder": "*NONE" },
+        { "name": "NBR", "description": "*RRN-レコードNO / *KEY-キーフィールド数", "help": "*RRN のときレコード番号、*KEY のときキー・フィールドの数（符号なし整数）。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 10 } },
+        { "name": "RCDFMT", "description": "*KEY-レコード様式（キー付き）", "help": "*KEY 指定時のレコード様式名。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 10 } },
+        { "name": "KEYVAL", "description": "*KEY-キー値", "help": "*KEY 指定時のキー値（文字値）。", "inputType": "text", "required": false, "attributes": { "maxLength": 256 } }
+      ]
+    },
+    {
+      "name": "RCDFMTLCK",
+      "description": "レコード様式のロック",
+      "help": "レコード様式ごとのロック状態（最大32回繰り返し）。要素: レコード様式名／ロック状態。",
+      "inputType": "group",
+      "required": false,
+      "maxOccurrences": 32,
+      "children": [
+        { "name": "RCDFMT", "description": "レコード様式", "help": "レコード様式名。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 10 } },
+        { "name": "LCKSTATE", "description": "ロック状態", "help": "ロック状態。", "inputType": "dropdown", "required": false,
+          "options": [
+            { "label": "*SHRRD（共用読み取り）", "value": "*SHRRD" },
+            { "label": "*SHRNUP（共用非更新）", "value": "*SHRNUP" },
+            { "label": "*SHRUPD（共用更新）", "value": "*SHRUPD" },
+            { "label": "*EXCLRD（排他許可読み取り）", "value": "*EXCLRD" },
+            { "label": "*EXCL（排他）", "value": "*EXCL" }
+          ] }
+      ]
+    },
+    { "name": "FRCRATIO", "description": "強制書き出しレコード数", "help": "補助記憶へ強制書き出しするまでのレコード数。整数または *NONE。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 10 }, "placeholder": "*NONE" },
+    {
+      "name": "FMTSLR",
+      "description": "レコード様式選択プログラム",
+      "help": "出力時にレコード様式を選択するプログラム。LIB/PGM で修飾。",
+      "inputType": "group",
+      "required": false,
+      "children": [
+        { "name": "LIB", "description": "ライブラリー", "help": "*LIBL / *CURLIB / ライブラリー名。", "inputType": "text", "required": false, "defaultValue": "*LIBL", "attributes": { "characterSet": "upper", "maxLength": 10 }, "placeholder": "*LIBL" },
+        { "name": "FMTSLR", "description": "レコード様式選択プログラム", "help": "プログラム名。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 10 } }
+      ]
+    },
+    { "name": "WAITFILE", "description": "最大ファイル待機時間", "help": "ファイル資源割り振りの待機秒数。整数、*IMMED（即時）, *CLS（クラス値）。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 10 }, "placeholder": "*IMMED" },
+    { "name": "WAITRCD", "description": "最大レコード待機時間", "help": "レコード・ロック解放の待機秒数。整数、*IMMED, *NOMAX。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 10 }, "placeholder": "*IMMED" },
+    {
+      "name": "REUSEDLT",
+      "description": "削除済みレコードの再使用",
+      "help": "削除済みレコードの領域を再使用するか。",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*NO",
+      "options": [
+        { "label": "*NO（再使用しない）", "value": "*NO" },
+        { "label": "*YES（再使用する）", "value": "*YES" }
+      ]
+    },
+    { "name": "NBRRCDS", "description": "一度に検索するレコード", "help": "1回の入出力操作で検索するレコード数（整数）。", "inputType": "number", "required": false, "attributes": { "numericOnly": true } },
+    { "name": "EOFDLY", "description": "EOF再試行遅延(秒数)", "help": "ファイル終わり到達後に再試行するまでの遅延秒数。1-99999 または *NONE。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 10 }, "placeholder": "*NONE" },
+    {
+      "name": "LVLCHK",
+      "description": "レコード様式レベルの検査",
+      "help": "オープン時にレコード様式レベル識別コードを検査するか。",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*NO",
+      "options": [
+        { "label": "*NO（検査しない）", "value": "*NO" },
+        { "label": "*YES（検査する）", "value": "*YES" }
+      ]
+    },
+    {
+      "name": "EXPCHK",
+      "description": "満了日の検査",
+      "help": "メンバーの満了日を検査するか。",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*YES",
+      "options": [
+        { "label": "*YES（検査する）", "value": "*YES" },
+        { "label": "*NO（検査しない）", "value": "*NO" }
+      ]
+    },
+    {
+      "name": "INHWRT",
+      "description": "書き込み禁止",
+      "help": "ファイルへの書き込みを禁止するか。",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*NO",
+      "options": [
+        { "label": "*NO（書き込み許可）", "value": "*NO" },
+        { "label": "*YES（書き込み禁止）", "value": "*YES" }
+      ]
+    },
+    {
+      "name": "SECURE",
+      "description": "他の一時変更からの保護",
+      "help": "上位の一時変更からこのファイルを保護するか。",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*NO",
+      "options": [
+        { "label": "*NO（保護しない）", "value": "*NO" },
+        { "label": "*YES（保護する）", "value": "*YES" }
+      ]
+    },
+    {
+      "name": "OVRSCOPE",
+      "description": "有効範囲の一時変更",
+      "help": "一時変更の有効範囲。",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*ACTGRPDFN",
+      "options": [
+        { "label": "*ACTGRPDFN（活動化グループ定義）", "value": "*ACTGRPDFN" },
+        { "label": "*CALLLVL（呼び出しレベル）", "value": "*CALLLVL" },
+        { "label": "*JOB（ジョブ）", "value": "*JOB" }
+      ]
+    },
+    {
+      "name": "SHARE",
+      "description": "オープン・データ・パス共用",
+      "help": "オープン・データ・パス（ODP）を同一ジョブ内で共用するか。",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*NO",
+      "options": [
+        { "label": "*NO（共用しない）", "value": "*NO" },
+        { "label": "*YES（共用する）", "value": "*YES" }
+      ]
+    },
+    {
+      "name": "OPNSCOPE",
+      "description": "有効範囲のオープン",
+      "help": "オープン・データ・パスの有効範囲。",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*ACTGRPDFN",
+      "options": [
+        { "label": "*ACTGRPDFN（活動化グループ定義）", "value": "*ACTGRPDFN" },
+        { "label": "*JOB（ジョブ）", "value": "*JOB" }
+      ]
+    },
+    {
+      "name": "SEQONLY",
+      "description": "順次のみへの制限",
+      "help": "順次専用処理に制限するか。単一値 *NO。その他の値は要素リスト（順次のみ *YES／レコード数またはバッファ・サイズ）。",
+      "inputType": "group",
+      "required": false,
+      "children": [
+        { "name": "SEQ", "description": "順次のみ", "help": "*YES（順次専用に制限）。単一値 *NO で制限なし。", "inputType": "text", "required": false, "defaultValue": "*NO", "attributes": { "characterSet": "upper", "maxLength": 10 }, "placeholder": "*NO" },
+        { "name": "NBRRCDS", "description": "レコード数", "help": "バッファに入れるレコード数（整数）、または *BUF32KB, *BUF64KB, *BUF128KB, *BUF256KB。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 10 } }
+      ]
+    },
+    {
+      "name": "DSTDTA",
+      "description": "分散データ",
+      "help": "分散データの取り扱い。",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*BUFFERED",
+      "options": [
+        { "label": "*BUFFERED（バッファー）", "value": "*BUFFERED" },
+        { "label": "*PROTECTED（保護）", "value": "*PROTECTED" },
+        { "label": "*CURRENT（現行）", "value": "*CURRENT" }
+      ]
+    }
+  ]
+}
