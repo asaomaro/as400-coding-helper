@@ -23,7 +23,7 @@ RPG 固定長フォーマットの仕様書（Spec）ごとのプロンプター
 - [x] C-NEW — 演算仕様書（新形式・既存）
 - [x] H-SPEC — 制御仕様書（ヘッダー）（aidev-batch 試走で生成・PR feature/rpg-hspec）
 - [x] F-SPEC — ファイル仕様書のプロンプター定義JSONを作成（#19 rpg-spec-def skill 新設時にドッグフードで生成・原典 L159-171 照合済み）
-- [ ] I-SPEC — 入力仕様書のプロンプター定義JSONを作成 (needs: #19)
+- [x] I-SPEC — 入力仕様書のプロンプター定義JSONを作成（batch: 原典 L503-515 照合済み＋F4配線。20260621-rpg-ispec-def）
 - [ ] O-SPEC — 出力仕様書のプロンプター定義JSONを作成 (needs: #19)
 - [ ] P-SPEC — プロシージャー仕様書のプロンプター定義JSONを作成 (needs: #19)
 
