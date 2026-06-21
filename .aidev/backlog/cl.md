@@ -69,78 +69,78 @@ PR #42 収集の原典HTML（IBM i 7.4 / `ssw_ibm_i_74`、`docs/origin/manifest.
 - [x] RTVDTAARA — データ域検索
 - [x] DLTDTAARA — データ域削除
 
-### P4 ファイル/メンバ/DB
+### P4 ファイル/メンバ/DB — 20260621-cl-defs-batch-rest（issue #43）で実装・原典照合済み
 
 - [x] ADDPFM — 物理ファイル・メンバー追加（20260621-cl-defs-batch-p2p4 / issue #43）
-- [ ] CLRPFM — 物理ファイル・メンバー消去
-- [ ] RGZPFM — 物理ファイル・メンバー再編成
-- [ ] RMVM — メンバー除去
-- [ ] CPYF — ファイル・コピー
-- [ ] OVRDBF — データベース・ファイル一時変更
-- [ ] OPNQRYF — QUERYファイル・オープン
-- [ ] CHGPF — 物理ファイル変更
-- [ ] CRTPF — 物理ファイル作成
-- [ ] CRTLF — 論理ファイル作成
-- [ ] CRTSRCPF — ソース物理ファイル作成
-- [ ] DCLF — ファイル宣言
-- [ ] RCVF — ファイル受信
-- [ ] SNDF — ファイル送信
-- [ ] OVRPRTF — 印刷装置ファイル一時変更
-- [ ] CLOF — ファイルのクローズ
+- [x] CLRPFM — 物理ファイル・メンバー消去
+- [x] RGZPFM — 物理ファイル・メンバー再編成
+- [x] RMVM — メンバー除去
+- [x] CPYF — ファイル・コピー
+- [x] OVRDBF — データベース・ファイル一時変更
+- [x] OPNQRYF — QUERYファイル・オープン
+- [x] CHGPF — 物理ファイル変更
+- [x] CRTPF — 物理ファイル作成
+- [x] CRTLF — 論理ファイル作成
+- [x] CRTSRCPF — ソース物理ファイル作成
+- [x] DCLF — ファイル宣言
+- [x] RCVF — ファイル受信
+- [x] SNDF — ファイル送信
+- [x] OVRPRTF — 印刷装置ファイル一時変更
+- [x] CLOF — ファイルのクローズ
 
-### P5 オブジェクト/権限
+### P5 オブジェクト/権限 — 20260621-cl-defs-batch-rest（issue #43）で実装・原典照合済み
 
-- [ ] ALCOBJ — オブジェクト割り振り
-- [ ] DLCOBJ — オブジェクト割り振り解除
-- [ ] CHGOBJD — オブジェクト記述変更
-- [ ] RTVOBJD — オブジェクト記述の検索
-- [ ] DSPOBJD — オブジェクト記述表示
-- [ ] MOVOBJ — オブジェクト移動
-- [ ] RNMOBJ — オブジェクト名変更
-- [ ] CRTDUPOBJ — 複製オブジェクト作成
-- [ ] DLTOBJ — オブジェクトの削除
-- [ ] CHKOBJ — オブジェクト検査
-- [ ] GRTOBJAUT — オブジェクト権限認可
-- [ ] RVKOBJAUT — オブジェクト権限取り消し
-- [ ] SAVOBJ — オブジェクト保管
-- [ ] RSTOBJ — オブジェクト復元
+- [x] ALCOBJ — オブジェクト割り振り
+- [x] DLCOBJ — オブジェクト割り振り解除
+- [x] CHGOBJD — オブジェクト記述変更
+- [x] RTVOBJD — オブジェクト記述の検索
+- [x] DSPOBJD — オブジェクト記述表示
+- [x] MOVOBJ — オブジェクト移動
+- [x] RNMOBJ — オブジェクト名変更
+- [x] CRTDUPOBJ — 複製オブジェクト作成
+- [x] DLTOBJ — オブジェクトの削除
+- [x] CHKOBJ — オブジェクト検査
+- [x] GRTOBJAUT — オブジェクト権限認可
+- [x] RVKOBJAUT — オブジェクト権限取り消し
+- [x] SAVOBJ — オブジェクト保管
+- [x] RSTOBJ — オブジェクト復元
 
-### P6 ライブラリ
+### P6 ライブラリ — 20260621-cl-defs-batch-rest（issue #43）で実装・原典照合済み
 
-- [ ] ADDLIBLE — ライブラリー・リスト項目追加
-- [ ] CRTLIB — ライブラリー作成
-- [ ] DLTLIB — ライブラリー削除
+- [x] ADDLIBLE — ライブラリー・リスト項目追加
+- [x] CRTLIB — ライブラリー作成
+- [x] DLTLIB — ライブラリー削除
 
-### P7 ジョブ
+### P7 ジョブ — 20260621-cl-defs-batch-rest（issue #43）で実装・原典照合済み
 
-- [ ] CHGJOB — ジョブ変更
-- [ ] SBMJOB — ジョブ投入
-- [ ] WRKJOB — ジョブ処理
-- [ ] WRKACTJOB — 活動ジョブ処理
-- [ ] DLYJOB — ジョブ延期
+- [x] CHGJOB — ジョブ変更
+- [x] SBMJOB — ジョブ投入
+- [x] WRKJOB — ジョブ処理
+- [x] WRKACTJOB — 活動ジョブ処理
+- [x] DLYJOB — ジョブ延期
 
-### P8 スプール
+### P8 スプール — 20260621-cl-defs-batch-rest（issue #43）で実装・原典照合済み
 
-- [ ] CHGSPLFA — スプール・ファイル属性変更
-- [ ] CPYSPLF — スプール・ファイル・コピー
-- [ ] DLTSPLF — スプール・ファイル削除
-- [ ] HLDSPLF — スプール・ファイルの保留
-- [ ] RLSSPLF — スプール・ファイル解放
-- [ ] WRKOUTQ — 出力待ち行列処理
+- [x] CHGSPLFA — スプール・ファイル属性変更
+- [x] CPYSPLF — スプール・ファイル・コピー
+- [x] DLTSPLF — スプール・ファイル削除
+- [x] HLDSPLF — スプール・ファイルの保留
+- [x] RLSSPLF — スプール・ファイル解放
+- [x] WRKOUTQ — 出力待ち行列処理
 
-### P9 作成（PGM/ファイル）
+### P9 作成（PGM/ファイル） — 20260621-cl-defs-batch-rest（issue #43）で実装・原典照合済み
 
-- [ ] CRTBNDCL — バインドCL PGMの作成
-- [ ] CRTBNDRPG — バインドRPG PGMの作成
-- [ ] CRTCLPGM — CLプログラム作成
-- [ ] CRTPGM — プログラムの作成
-- [ ] CRTRPGMOD — RPGモジュールの作成
-- [ ] CRTDSPF — 表示装置ファイル作成
-- [ ] CRTPRTF — 印刷装置ファイル作成
+- [x] CRTBNDCL — バインドCL PGMの作成
+- [x] CRTBNDRPG — バインドRPG PGMの作成
+- [x] CRTCLPGM — CLプログラム作成
+- [x] CRTPGM — プログラムの作成
+- [x] CRTRPGMOD — RPGモジュールの作成
+- [x] CRTDSPF — 表示装置ファイル作成
+- [x] CRTPRTF — 印刷装置ファイル作成
 
-### P10 検索/表示
+### P10 検索/表示 — 20260621-cl-defs-batch-rest（issue #43）で実装・原典照合済み
 
-- [ ] RTVSYSVAL — システム値検索
-- [ ] RTVMBRD — メンバー記述の検索
-- [ ] DSPFD — ファイル記述表示
-- [ ] DSPFFD — ファイル・フィールド記述表示
+- [x] RTVSYSVAL — システム値検索
+- [x] RTVMBRD — メンバー記述の検索
+- [x] DSPFD — ファイル記述表示
+- [x] DSPFFD — ファイル・フィールド記述表示
