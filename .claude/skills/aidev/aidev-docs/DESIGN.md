@@ -106,7 +106,8 @@ flowchart LR
   - **ハーネス（基盤）= 開発フローの制御と進捗管理の器**。工程順・承認ゲート・遷移・state・レジューム。
   - **PJルール（AGENTS.md）= 知識**。レビュー観点・コーディング規約・ドメイン固有論点。
   - **PJ固有 skill = 実作業**。review/test/commit/PR 等の具体実行。
-- 別PJへは `.claude/skills/aidev-*` と `.gitignore`（`.aidev/current` 除外）を置くだけで動く想定。
+- 別PJへは `.claude/skills/aidev/`（aidev-* 一式を内包）と `.gitignore`（`.aidev/current` 除外）を
+  置くだけで動く想定。aidev-* を同じ親の兄弟として保てば配置階層は問わない。
 
 ## 2. 主要な設計判断と理由
 
@@ -248,7 +249,10 @@ works/ ノイズや「なめる state.yml が無い」問題は status フィル
 - **AIの自己検知は不完全**：research/design 推奨は過検知・見逃しがある。だから推奨止まりで強制しない。
 - **サブエージェントの自動委譲は非決定的**：「あれば優先」は確率を上げるが100%保証ではない。
 - **PJ skill 自動採用も非決定的**：実運用で「reviewでPJ skillが使われたか」の観察が望ましい。
-- **相対参照（`../aidev-00-start/protocol.md`）**：Claude Code の `.claude/skills/` 配置前提。
+- **相対参照（`../aidev-00-start/protocol.md`）**：各工程 skill が共通プロトコルへ兄弟ディレクトリ
+  参照する前提。現在は全 aidev skill を `.claude/skills/aidev/` 配下に**入れ子集約**しているが、
+  全工程が同じ親の兄弟として並ぶ限り相対参照は無修正で解決する（Claude Code は SKILL.md を再帰検出し、
+  スキル名は folder ではなく frontmatter の `name:` で決まる）。一部だけ別階層へ移すと参照が壊れる。
   他エージェント展開時はパス解決方法の確認が要る。
 - **クロスエージェント**：AskUserQuestion / Agent は Claude Code の実現手段。Copilot/Codex では
   選択UIはテキスト、委譲は各機構/インラインにフォールバック（挙動は同等を意図）。各社仕様は流動的。
