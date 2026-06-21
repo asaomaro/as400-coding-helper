@@ -15,6 +15,10 @@
 #   aidev doctor                               # 全 work を横断検査（legacy は免除して報告）
 #   aidev status [--format table|tsv]          # works横断＋backlog未着手の状況サマリ（読み取り専用）
 #   aidev metrics [slug] [--all] [--phases] [--format table|tsv]  # metrics.yml から派生指標を集計（読み取り専用）
+#   aidev worktree add <slug> [--branch n] [--base ref] [--path dir] [--mode m] [--ticket id] [--depends list]
+#                                              # work 専用の git worktree+ブランチを作る（ユーザー責任の並行 on-ramp）
+#   aidev worktree list [--format table|tsv]   # aidev 管理 worktree を一覧（読み取り専用）
+#   aidev worktree rm <slug|path> [--force] [--delete-branch]     # worktree を安全に撤去（未コミットは既定で拒否）
 #   aidev help
 #
 # 終了コード: 0=OK / 1=使用法・環境エラー / 2=前提成果物の不足 / 3=依存(dependsOn)未充足 / 4=不変条件違反
@@ -499,6 +503,192 @@ cmd_metrics() {
   fi
 }
 
+# --- コマンド: worktree（ユーザー責任の並行作業 on-ramp） ----------------------------
+# 前提（research.md で実証）: .aidev/current は gitignore 対象＝worktree ローカルで main と非干渉。
+# よって worktree 操作は main tree の current を絶対に書き換えない（INV-1）。git は実 exit code を直接判定する。
+git_present() { command -v git >/dev/null 2>&1 || die "git が見つかりません"; }
+
+# 既定 worktree パス: <親>/<repo名>-wt/<slug>（リポジトリ外の兄弟）
+default_wt_path() { printf '%s/%s-wt/%s' "$(dirname "$ROOT")" "$(basename "$ROOT")" "$1"; }
+
+# worktree 内で state.yml の slug が一致する work dir 名（dated）を列挙（改行区切り）
+works_matching_slug() { # path slug
+  _p=$1; _s=$2
+  [ -d "$_p/.aidev/works" ] || return 0
+  for _d in "$_p/.aidev/works"/*/; do
+    [ -d "$_d" ] || continue
+    [ -f "${_d}state.yml" ] || continue
+    [ "$(yget "${_d}state.yml" slug)" = "$_s" ] && basename "${_d%/}"
+  done
+  return 0  # 最終比較の偽値で関数が非0終了し、set -e で $(...) 代入が落ちるのを防ぐ
+}
+
+# git worktree list --porcelain を "path<TAB>branch" 行に整形
+wt_porcelain() {
+  git worktree list --porcelain | awk '
+    function flush(){ if(p!=""){ print p"\t"(b==""?"-":b); p="";b="" } }
+    /^worktree /{ flush(); p=substr($0,10) }
+    /^branch /{ b=$2; sub(/^refs\/heads\//,"",b) }
+    /^detached/{ b="detached" }
+    END{ flush() }'
+}
+
+wt_add() {
+  slug=""; branch=""; base="HEAD"; wpath=""; mode=interactive; ticket=""; depends=""
+  while [ $# -gt 0 ]; do
+    case "$1" in
+      --branch)  branch=$2; shift 2 ;;
+      --base)    base=$2; shift 2 ;;
+      --path)    wpath=$2; shift 2 ;;
+      --mode)    mode=$2; shift 2 ;;
+      --ticket)  ticket=$2; shift 2 ;;
+      --depends) depends=$2; shift 2 ;;
+      -*) die "未知のオプション: $1" ;;
+      *) [ -z "$slug" ] && slug=$1 || die "slug は1つだけ"; shift ;;
+    esac
+  done
+  [ -n "$slug" ] || die "使用法: aidev worktree add <slug> [--branch ..] [--base ..] [--path ..] [--mode ..] [--ticket ..] [--depends ..]"
+  git_present
+  [ -n "$branch" ] || branch="feature/$slug"
+  [ -n "$wpath" ] || wpath=$(default_wt_path "$slug")
+  [ -e "$wpath" ] && die "path が既に存在します: $wpath"
+
+  # ブランチ存在で分岐（既存→checkout / 新規→-b で base から作成）。branch は必ず明示（git の basename 自動命名に委ねない）。
+  if git show-ref --verify --quiet "refs/heads/$branch"; then
+    git worktree add "$wpath" "$branch" || die "git worktree add に失敗（branch=$branch）"
+  else
+    git worktree add -b "$branch" "$wpath" "$base" || die "git worktree add に失敗（branch=$branch base=$base）"
+  fi
+  wpath=$(cd "$wpath" && pwd)  # 以降は絶対パスで扱う
+
+  # worktree 内で work を確定（main tree の .aidev/current には触れない＝INV-1）
+  matches=$(works_matching_slug "$wpath" "$slug")
+  mcount=$(printf '%s' "$matches" | grep -c . || true)
+  if [ "$mcount" -gt 1 ]; then
+    die "worktree 内に slug=$slug の work が複数あります。曖昧なため中断（手動で current 設定を）"
+  elif [ "$mcount" -eq 1 ]; then
+    printf '%s\n' "$matches" > "$wpath/.aidev/current"
+    work_note="既存 work をリンク: $matches（current 設定のみ）"
+  else
+    # add 内で new: worktree をカレントにして既存 new ロジックに委譲（単一検証経路の維持・DRY）
+    set -- new "$slug" --mode "$mode"
+    [ -n "$ticket" ]  && set -- "$@" --ticket "$ticket"
+    [ -n "$depends" ] && set -- "$@" --depends "$depends"
+    ( cd "$wpath" && "$wpath/.aidev/bin/aidev" "$@" ) || die "worktree 内の new に失敗"
+    work_note="新規 work を作成（add 内で new）"
+  fi
+
+  printf 'worktree 追加: %s\n' "$wpath"
+  printf '  branch: %s / base: %s\n' "$branch" "$base"
+  printf '  work:   %s\n' "$work_note"
+  printf '⚠ この work が package.json(contributes) / src/fileScope.ts / 言語登録に触るなら、\n'
+  printf '  他 worktree と languageId 波及・マージ衝突が起きうる（AGENTS.md「languageId 下流波及」）。並行可否はユーザー判断。\n'
+  printf '⚠ CL/RPG プロンプター定義など原典照合が要る work は主エージェント実施が必須（委譲して検証を落とさない）。\n'
+  printf '次: cd %s して各工程 skill を実行。\n' "$wpath"
+}
+
+wt_list() {
+  fmt=table
+  while [ $# -gt 0 ]; do
+    case "$1" in
+      --format) fmt=${2:-}; shift 2 ;;
+      -*) die "未知のオプション: $1" ;;
+      *) die "list は位置引数を取りません: $1" ;;
+    esac
+  done
+  case "$fmt" in table|tsv) ;; *) die "--format は table|tsv" ;; esac
+  git_present
+
+  rows=""; wtinfo=$(wt_porcelain)
+  oldifs=$IFS; IFS='
+'
+  for line in $wtinfo; do
+    path=${line%%	*}; branch=${line#*	}
+    # 判定キー: worktree ローカル .aidev/current の有無（branch 名ではない）
+    [ -f "$path/.aidev/current" ] || continue
+    work=$(head -n1 "$path/.aidev/current" | tr -d '\r\n'); [ -z "$work" ] && work=-
+    phase=-
+    if [ "$work" != - ] && [ -f "$path/.aidev/works/$work/state.yml" ]; then
+      phase=$(yget "$path/.aidev/works/$work/state.yml" current); [ -z "$phase" ] && phase=-
+    fi
+    rows="$rows$path	$branch	$work	$phase
+"
+  done
+  IFS=$oldifs
+
+  if [ "$fmt" = tsv ]; then
+    printf '%s' "$rows" | while IFS='	' read -r a b c d; do
+      [ -z "$a" ] && continue
+      printf 'worktree\t%s\t%s\t%s\t%s\n' "$a" "$b" "$c" "$d"
+    done
+    return 0
+  fi
+  n=$(printf '%s' "$rows" | grep -c . || true)
+  printf 'WORKTREES (%s)\n' "$n"
+  if [ "$n" -gt 0 ]; then
+    { printf 'path\tbranch\twork\tphase\n'; printf '%s' "$rows"; } | fmt_table
+  fi
+}
+
+wt_rm() {
+  target=""; force=no; delbranch=no
+  while [ $# -gt 0 ]; do
+    case "$1" in
+      --force) force=yes; shift ;;
+      --delete-branch) delbranch=yes; shift ;;
+      -*) die "未知のオプション: $1" ;;
+      *) [ -z "$target" ] && target=$1 || die "対象は1つだけ"; shift ;;
+    esac
+  done
+  [ -n "$target" ] || die "使用法: aidev worktree rm <slug|path> [--force] [--delete-branch]"
+  git_present
+
+  abst=""; [ -d "$target" ] && abst=$(cd "$target" && pwd)
+  rpath=""; rbranch=""
+  oldifs=$IFS; IFS='
+'
+  for line in $(wt_porcelain); do
+    p=${line%%	*}; b=${line#*	}
+    if [ -n "$abst" ]; then
+      [ "$p" = "$abst" ] && { rpath=$p; rbranch=$b; break; }
+    else
+      if [ "$(basename "$p")" = "$target" ] || [ "$b" = "feature/$target" ] || [ "$b" = "$target" ]; then
+        [ -n "$rpath" ] && { IFS=$oldifs; die "対象が複数該当します（path を明示してください）: $target"; }
+        rpath=$p; rbranch=$b
+      fi
+    fi
+  done
+  IFS=$oldifs
+  [ -n "$rpath" ] || die "対象 worktree が見つかりません: $target"
+
+  # 未コミット差分チェック（--force 無しなら拒否）
+  if [ "$force" = no ] && [ -n "$(git -C "$rpath" status --porcelain 2>/dev/null)" ]; then
+    die "未コミットの変更があります（--force で強制削除）: $rpath"
+  fi
+  if [ "$force" = yes ]; then
+    git worktree remove --force "$rpath" || die "git worktree remove に失敗: $rpath"
+  else
+    git worktree remove "$rpath" || die "git worktree remove に失敗: $rpath"
+  fi
+  printf 'worktree 撤去: %s\n' "$rpath"
+  rmdir "$(dirname "$rpath")" 2>/dev/null || true  # 既定の <repo>-wt/ コンテナが空なら掃除（非空なら何もしない）
+
+  if [ "$delbranch" = yes ] && [ "$rbranch" != - ] && [ "$rbranch" != detached ]; then
+    git branch -D "$rbranch" && printf '  branch 削除: %s\n' "$rbranch" || warn "branch 削除に失敗: $rbranch"
+  fi
+}
+
+cmd_worktree() {
+  [ $# -ge 1 ] || die "使用法: aidev worktree <add|list|rm> ..."
+  sub=$1; shift
+  case "$sub" in
+    add)  wt_add "$@" ;;
+    list) wt_list "$@" ;;
+    rm)   wt_rm "$@" ;;
+    *) die "未知の worktree サブコマンド: $sub（add|list|rm）" ;;
+  esac
+}
+
 usage() {
   # 先頭(2行目以降)の連続するコメント行のみを出力（コメント末尾で停止。範囲ズレに強い）
   awk 'NR==1{next} /^#/{sub(/^#[[:space:]]?/,"");print;next} {exit}' "$0"
@@ -515,6 +705,7 @@ case "$cmd" in
   doctor)  cmd_doctor "$@" ;;
   status)  cmd_status "$@" ;;
   metrics) cmd_metrics "$@" ;;
+  worktree) cmd_worktree "$@" ;;
   help|-h|--help) usage ;;
   *) die "未知のコマンド: $cmd（aidev help）" ;;
 esac

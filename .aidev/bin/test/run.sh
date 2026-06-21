@@ -126,6 +126,58 @@ run_sh doctor >/dev/null 2>&1; assert_eq "$?" "0" "doctor exit 0"
 run_sh guard plan >/dev/null 2>&1; assert_eq "$?" "2" "guard plan(前提成果物なし) exit 2"
 G_OUT=$(run_sh guard spec 2>&1); echo "$G_OUT" | grep -q "advisory" && ok "guard: #99 を advisory(warn) 表示" || ng "guard advisory 表示"
 
+echo "== worktree =="
+if command -v git >/dev/null 2>&1; then
+  # フィクスチャ git リポジトリを $TMP/repo に作る（既定 worktree パスは $TMP/repo-wt/* ＝ $TMP 配下なので
+  # 既存 trap の rm -rf "$TMP" で worktree ごと自動掃除される）。
+  REPO="$TMP/repo"
+  mkdir -p "$REPO/.aidev/bin"
+  cp "$AIDEV_SH" "$REPO/.aidev/bin/aidev"; chmod +x "$REPO/.aidev/bin/aidev"
+  printf '.aidev/current\n' > "$REPO/.gitignore"
+  (
+    cd "$REPO"
+    git init -q
+    git config user.email t@example.com; git config user.name tester
+    git add -A; git commit -qm init >/dev/null 2>&1
+  )
+  run_repo() { ( cd "$REPO" && "$AIDEV_SH" "$@" ); }
+
+  # add（add 内で new）
+  ADD_OUT=$(run_repo worktree add probe 2>&1); ADD_RC=$?
+  assert_eq "$ADD_RC" "0" "worktree add exit 0"
+  assert_contains "$ADD_OUT" "worktree 追加" "add: 追加メッセージ"
+  assert_contains "$ADD_OUT" "languageId" "add: 規約警告(languageId)を出力"
+  WP="$TMP/repo-wt/probe"
+  assert_eq "$([ -d "$WP" ] && echo yes || echo no)" "yes" "add: 既定 path に worktree 作成"
+  WT_CUR=$(cat "$WP/.aidev/current" 2>/dev/null)
+  assert_contains "$WT_CUR" "-probe" "add: worktree current が dated probe work を指す"
+  # INV-1: main(repo) tree の current は add で作られない/変わらない（gitignore＝worktree ローカル）
+  assert_eq "$([ -f "$REPO/.aidev/current" ] && echo yes || echo no)" "no" "INV-1: main の current は不変(未作成)"
+
+  # list（判定キー=current 有無。probe worktree が出る）
+  L_TSV=$(run_repo worktree list --format tsv)
+  assert_contains "$L_TSV" "worktree	$WP	feature/probe" "list: probe を current 有無で抽出(branch=feature/probe)"
+  L_TBL=$(run_repo worktree list)
+  assert_contains "$L_TBL" "WORKTREES" "list: table ヘッダ"
+
+  # 異常系
+  run_repo worktree bogus >/dev/null 2>&1; assert_eq "$?" "1" "未知 sub は exit 1"
+  run_repo worktree add >/dev/null 2>&1; assert_eq "$?" "1" "slug 無し add は exit 1"
+  run_repo worktree list --format bogus >/dev/null 2>&1; assert_eq "$?" "1" "list 不正 --format は exit 1"
+
+  # rm（未コミット work フォルダがあるので --force 無しは拒否）
+  run_repo worktree rm probe >/dev/null 2>&1; assert_eq "$?" "1" "rm: 未コミット差分で既定拒否(exit 1)"
+  assert_eq "$([ -d "$WP" ] && echo yes || echo no)" "yes" "rm: 拒否時は worktree 残存"
+  RM_OUT=$(run_repo worktree rm probe --force --delete-branch 2>&1); assert_eq "$?" "0" "rm --force --delete-branch exit 0"
+  assert_contains "$RM_OUT" "branch 削除: feature/probe" "rm: --delete-branch でブランチ削除"
+  assert_eq "$([ -d "$WP" ] && echo yes || echo no)" "no" "rm: worktree 撤去済み"
+  ( cd "$REPO" && git show-ref --verify --quiet refs/heads/feature/probe ); assert_eq "$?" "1" "rm: ブランチも削除済み"
+  # INV-1（rm 後も main current 不変＝未作成のまま）
+  assert_eq "$([ -f "$REPO/.aidev/current" ] && echo yes || echo no)" "no" "INV-1: rm 後も main current 不変"
+else
+  printf '  skip: git 不在のため worktree テストを省略\n'
+fi
+
 echo "== sh ⇔ ps1 パリティ =="
 if command -v pwsh >/dev/null 2>&1; then
   for args in "status --format tsv" "metrics --all --format tsv" "metrics 20260101-alpha --phases --format tsv"; do
