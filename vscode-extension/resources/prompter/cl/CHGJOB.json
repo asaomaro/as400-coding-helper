@@ -1,0 +1,267 @@
+{
+  "keyword": "CHGJOB",
+  "description": "ジョブ変更（CHGJOB）",
+  "help": "ジョブの実行属性（優先順位・出力待ち行列・ロギング・日付/時刻・分類順序など）を変更します。",
+  "parameters": [
+    {
+      "name": "JOB",
+      "description": "ジョブ名",
+      "help": "属性を変更するジョブ。単一値 * はこのコマンドを出すジョブ。修飾ジョブ名はジョブ名/ユーザー/番号で指定。",
+      "inputType": "group",
+      "required": false,
+      "children": [
+        { "name": "JOB", "description": "ジョブ名", "help": "ジョブの名前。* で自ジョブ。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 10 }, "placeholder": "*" },
+        { "name": "USER", "description": "ユーザー", "help": "ジョブの実行に使用されるユーザー・プロファイル名。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 10 } },
+        { "name": "NBR", "description": "番号", "help": "システムが割り当てたジョブ番号(000000-999999)。", "inputType": "text", "required": false, "attributes": { "maxLength": 6, "numericOnly": true } }
+      ]
+    },
+    { "name": "JOBPTY", "description": "ジョブ優先順位（JOBQでの）", "help": "ジョブ待ち行列でのスケジューリング優先順位。0-9 / *SAME。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 5 }, "placeholder": "*SAME" },
+    { "name": "OUTPTY", "description": "出力優先順位（OUTQでの）", "help": "出力待ち行列でのスプール出力優先順位。1-9 / *SAME。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 5 }, "placeholder": "*SAME" },
+    { "name": "PRTDEV", "description": "印刷装置", "help": "省略時の印刷装置。装置名 / *SAME / *USRPRF / *SYSVAL / *WRKSTN。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 10 }, "placeholder": "*SAME" },
+    {
+      "name": "OUTQ",
+      "description": "出力待ち行列",
+      "help": "省略時の出力待ち行列。単一値(*SAME/*USRPRF/*DEV/*WRKSTN) か 修飾オブジェクト名(待ち行列/ライブラリー)。",
+      "inputType": "group",
+      "required": false,
+      "children": [
+        { "name": "LIB", "description": "ライブラリー", "help": "出力待ち行列のライブラリー。*LIBL / *CURLIB / ライブラリー名。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 10 }, "placeholder": "*LIBL" },
+        { "name": "OUTQ", "description": "出力待ち行列", "help": "出力待ち行列名。単一値 *SAME / *USRPRF / *DEV / *WRKSTN も可。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 10 }, "placeholder": "*SAME" }
+      ]
+    },
+    { "name": "RUNPTY", "description": "実行優先順位", "help": "ジョブの実行優先順位。1-99 / *SAME。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 5 }, "placeholder": "*SAME" },
+    {
+      "name": "JOBQ",
+      "description": "ジョブ待ち行列",
+      "help": "ジョブを置くジョブ待ち行列。単一値 *SAME か 修飾オブジェクト名(待ち行列/ライブラリー)。",
+      "inputType": "group",
+      "required": false,
+      "children": [
+        { "name": "LIB", "description": "ライブラリー", "help": "ジョブ待ち行列のライブラリー。*LIBL / *CURLIB / ライブラリー名。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 10 }, "placeholder": "*LIBL" },
+        { "name": "JOBQ", "description": "ジョブ待ち行列", "help": "ジョブ待ち行列名。単一値 *SAME も可。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 10 }, "placeholder": "*SAME" }
+      ]
+    },
+    { "name": "PRTTXT", "description": "印刷テキスト", "help": "印刷出力の下端に印刷するテキスト。文字値 / *SAME / *SYSVAL / *BLANK。", "inputType": "text", "required": false, "attributes": { "maxLength": 30 }, "placeholder": "*SAME" },
+    {
+      "name": "LOG",
+      "description": "メッセージのロギング",
+      "help": "ジョブ・ログのロギング・レベル・重大度・テキスト。要素リストを平坦化。",
+      "inputType": "group",
+      "required": false,
+      "children": [
+        { "name": "LEVEL", "description": "レベル", "help": "ロギング・レベル。0-4 / *SAME。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 5 }, "placeholder": "*SAME" },
+        { "name": "SEVERITY", "description": "重大度", "help": "メッセージの重大度。0-99 / *SAME。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 5 }, "placeholder": "*SAME" },
+        {
+          "name": "TEXT", "description": "テキスト", "help": "ログするテキストのレベル。", "inputType": "dropdown", "required": false,
+          "options": [
+            { "label": "*SAME（変更しない）", "value": "*SAME" },
+            { "label": "*MSG（メッセージのみ）", "value": "*MSG" },
+            { "label": "*SECLVL（第2レベルも）", "value": "*SECLVL" },
+            { "label": "*NOLIST（ログを生成しない）", "value": "*NOLIST" }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "LOGCLPGM", "description": "CL PGMコマンドのログ", "help": "CL プログラムのコマンドをジョブ・ログに記録するか。", "inputType": "dropdown", "required": false,
+      "options": [ { "label": "*SAME（変更しない）", "value": "*SAME" }, { "label": "*NO（記録しない）", "value": "*NO" }, { "label": "*YES（記録する）", "value": "*YES" } ]
+    },
+    {
+      "name": "LOGOUTPUT", "description": "ジョブ・ログ出力", "help": "ジョブ・ログの生成方法。", "inputType": "dropdown", "required": false,
+      "options": [
+        { "label": "*SAME（変更しない）", "value": "*SAME" },
+        { "label": "*SYSVAL（システム値）", "value": "*SYSVAL" },
+        { "label": "*JOBLOGSVR（ジョブ・ログ・サーバー）", "value": "*JOBLOGSVR" },
+        { "label": "*JOBEND（ジョブ終了時）", "value": "*JOBEND" },
+        { "label": "*PND（保留）", "value": "*PND" }
+      ]
+    },
+    {
+      "name": "JOBMSGQFL", "description": "ジョブ・メッセージ待ち行列満杯処置", "help": "ジョブ・メッセージ待ち行列が満杯になったときの処置。", "inputType": "dropdown", "required": false,
+      "options": [
+        { "label": "*SAME（変更しない）", "value": "*SAME" },
+        { "label": "*SYSVAL（システム値）", "value": "*SYSVAL" },
+        { "label": "*NOWRAP（折り返さない）", "value": "*NOWRAP" },
+        { "label": "*WRAP（折り返す）", "value": "*WRAP" },
+        { "label": "*PRTWRAP（印刷して折り返す）", "value": "*PRTWRAP" }
+      ]
+    },
+    {
+      "name": "INQMSGRPY", "description": "照会メッセージ応答", "help": "照会メッセージへの応答方法。", "inputType": "dropdown", "required": false,
+      "options": [
+        { "label": "*SAME（変更しない）", "value": "*SAME" },
+        { "label": "*RQD（応答を要求）", "value": "*RQD" },
+        { "label": "*DFT（省略時応答を使用）", "value": "*DFT" },
+        { "label": "*SYSRPYL（システム応答リスト）", "value": "*SYSRPYL" }
+      ]
+    },
+    {
+      "name": "BRKMSG", "description": "中断メッセージ処理", "help": "中断メッセージの処理方法。", "inputType": "dropdown", "required": false,
+      "options": [
+        { "label": "*SAME（変更しない）", "value": "*SAME" },
+        { "label": "*NORMAL（通常）", "value": "*NORMAL" },
+        { "label": "*NOTIFY（通知）", "value": "*NOTIFY" },
+        { "label": "*HOLD（保留）", "value": "*HOLD" }
+      ]
+    },
+    {
+      "name": "STSMSG", "description": "状況メッセージ", "help": "状況メッセージの表示方法。", "inputType": "dropdown", "required": false,
+      "options": [
+        { "label": "*SAME（変更しない）", "value": "*SAME" },
+        { "label": "*USRPRF（ユーザー・プロファイル）", "value": "*USRPRF" },
+        { "label": "*SYSVAL（システム値）", "value": "*SYSVAL" },
+        { "label": "*NONE（表示しない）", "value": "*NONE" },
+        { "label": "*NORMAL（表示する）", "value": "*NORMAL" }
+      ]
+    },
+    {
+      "name": "DDMCNV", "description": "DDM会話", "help": "未使用の DDM 会話の扱い。", "inputType": "dropdown", "required": false,
+      "options": [
+        { "label": "*SAME（変更しない）", "value": "*SAME" },
+        { "label": "*KEEP（保持）", "value": "*KEEP" },
+        { "label": "*DROP（除去）", "value": "*DROP" }
+      ]
+    },
+    { "name": "SCDDATE", "description": "スケジュール日", "help": "ジョブを実行する日付。日付 / *SAME / *CURRENT / *MONTHSTR / *MONTHEND / *MON / *TUE / *WED / *THU / *FRI / *SAT / *SUN。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 10 }, "placeholder": "*SAME" },
+    { "name": "SCDTIME", "description": "スケジュール時刻", "help": "ジョブを実行する時刻。時刻 / *SAME / *CURRENT。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 8 }, "placeholder": "*SAME" },
+    { "name": "DATE", "description": "ジョブ日付", "help": "ジョブに使用する日付。日付 / *SAME。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 8 }, "placeholder": "*SAME" },
+    {
+      "name": "DATFMT", "description": "日付の形式", "help": "ジョブで使用する日付の形式。", "inputType": "dropdown", "required": false,
+      "options": [
+        { "label": "*SAME（変更しない）", "value": "*SAME" },
+        { "label": "*SYSVAL（システム値）", "value": "*SYSVAL" },
+        { "label": "*YMD（年月日）", "value": "*YMD" },
+        { "label": "*MDY（月日年）", "value": "*MDY" },
+        { "label": "*DMY（日月年）", "value": "*DMY" },
+        { "label": "*JUL（ユリウス）", "value": "*JUL" }
+      ]
+    },
+    {
+      "name": "DATSEP", "description": "日付区切り記号", "help": "日付の区切り記号。", "inputType": "dropdown", "required": false,
+      "options": [
+        { "label": "*SAME（変更しない）", "value": "*SAME" },
+        { "label": "*SYSVAL（システム値）", "value": "*SYSVAL" },
+        { "label": "*BLANK（なし）", "value": "*BLANK" },
+        { "label": "/（スラッシュ）", "value": "'/'" },
+        { "label": "-（ハイフン）", "value": "'-'" },
+        { "label": ".（ピリオド）", "value": "'.'" },
+        { "label": "（空白）", "value": "' '" },
+        { "label": ",（コンマ）", "value": "','" }
+      ]
+    },
+    {
+      "name": "TIMSEP", "description": "時刻区切り記号", "help": "時刻の区切り記号。", "inputType": "dropdown", "required": false,
+      "options": [
+        { "label": "*SAME（変更しない）", "value": "*SAME" },
+        { "label": "*SYSVAL（システム値）", "value": "*SYSVAL" },
+        { "label": "*BLANK（なし）", "value": "*BLANK" },
+        { "label": ":（コロン）", "value": "':'" },
+        { "label": ".（ピリオド）", "value": "'.'" },
+        { "label": "（空白）", "value": "' '" },
+        { "label": ",（コンマ）", "value": "','" }
+      ]
+    },
+    { "name": "SWS", "description": "ジョブ・スイッチ", "help": "8桁のジョブ・スイッチ設定（0/1/X）。文字値 / *SAME。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 8 }, "placeholder": "*SAME" },
+    { "name": "TIMESLICE", "description": "タイム・スライス", "help": "タイム・スライス(ミリ秒)。1-9999999 / *SAME。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 8 }, "placeholder": "*SAME" },
+    {
+      "name": "PURGE", "description": "除去適格", "help": "ジョブを記憶域から除去する適格があるか。", "inputType": "dropdown", "required": false,
+      "options": [ { "label": "*SAME（変更しない）", "value": "*SAME" }, { "label": "*YES（適格）", "value": "*YES" }, { "label": "*NO（非適格）", "value": "*NO" } ]
+    },
+    { "name": "DFTWAIT", "description": "省略時の待ち時間", "help": "命令の省略時の待ち時間(秒)。1-9999999 / *SAME / *NOMAX。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 8 }, "placeholder": "*SAME" },
+    {
+      "name": "DEVRCYACN", "description": "装置回復処置", "help": "対話式ジョブで装置入出力エラー時にとる処置。", "inputType": "dropdown", "required": false,
+      "options": [
+        { "label": "*SAME（変更しない）", "value": "*SAME" },
+        { "label": "*SYSVAL（システム値）", "value": "*SYSVAL" },
+        { "label": "*MSG（メッセージ送信）", "value": "*MSG" },
+        { "label": "*DSCMSG（切断しメッセージ）", "value": "*DSCMSG" },
+        { "label": "*DSCENDRQS（切断し要求終了）", "value": "*DSCENDRQS" },
+        { "label": "*ENDJOB（ジョブ終了）", "value": "*ENDJOB" },
+        { "label": "*ENDJOBNOLIST（ジョブ終了・ログなし）", "value": "*ENDJOBNOLIST" }
+      ]
+    },
+    {
+      "name": "TSEPOOL", "description": "タイム・スライス終了プール", "help": "タイム・スライス終了時にジョブを移すプール。", "inputType": "dropdown", "required": false,
+      "options": [
+        { "label": "*SAME（変更しない）", "value": "*SAME" },
+        { "label": "*SYSVAL（システム値）", "value": "*SYSVAL" },
+        { "label": "*NONE（移動しない）", "value": "*NONE" },
+        { "label": "*BASE（基本プール）", "value": "*BASE" }
+      ]
+    },
+    {
+      "name": "PRTKEYFMT", "description": "ページ印刷キー形式", "help": "Print キーで印刷する境界・ヘッダー情報。", "inputType": "dropdown", "required": false,
+      "options": [
+        { "label": "*SAME（変更しない）", "value": "*SAME" },
+        { "label": "*SYSVAL（システム値）", "value": "*SYSVAL" },
+        { "label": "*NONE（なし）", "value": "*NONE" },
+        { "label": "*PRTBDR（境界）", "value": "*PRTBDR" },
+        { "label": "*PRTHDR（ヘッダー）", "value": "*PRTHDR" },
+        { "label": "*PRTALL（両方）", "value": "*PRTALL" }
+      ]
+    },
+    {
+      "name": "SRTSEQ",
+      "description": "分類順序",
+      "help": "分類順序テーブル。単一値(*SAME/*USRPRF/*SYSVAL/*HEX/*LANGIDUNQ/*LANGIDSHR) か 修飾オブジェクト名。",
+      "inputType": "group",
+      "required": false,
+      "children": [
+        { "name": "LIB", "description": "ライブラリー", "help": "分類順序テーブルのライブラリー。*LIBL / *CURLIB / ライブラリー名。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 10 }, "placeholder": "*LIBL" },
+        { "name": "SRTSEQ", "description": "分類順序", "help": "分類順序テーブル名。単一値 *SAME / *USRPRF / *SYSVAL / *HEX / *LANGIDUNQ / *LANGIDSHR も可。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 10 }, "placeholder": "*SAME" }
+      ]
+    },
+    { "name": "LANGID", "description": "言語ID", "help": "言語ID。文字値 / *SAME / *USRPRF / *SYSVAL。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 10 }, "placeholder": "*SAME" },
+    { "name": "CNTRYID", "description": "国別または地域ID", "help": "国別または地域ID。文字値 / *SAME / *USRPRF / *SYSVAL。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 10 }, "placeholder": "*SAME" },
+    { "name": "CCSID", "description": "コード化文字セットID", "help": "コード化文字セットID。1-65535 / *SAME / *USRPRF / *SYSVAL / *HEX。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 10 }, "placeholder": "*SAME" },
+    {
+      "name": "DECFMT", "description": "10進数形式", "help": "10進数の小数点・桁区切りの形式。", "inputType": "dropdown", "required": false,
+      "options": [
+        { "label": "*SAME（変更しない）", "value": "*SAME" },
+        { "label": "*SYSVAL（システム値）", "value": "*SYSVAL" },
+        { "label": "*BLANK（ピリオド/コンマ）", "value": "*BLANK" },
+        { "label": "I", "value": "I" },
+        { "label": "J", "value": "J" }
+      ]
+    },
+    {
+      "name": "CHRIDCTL", "description": "文字識別コードの制御", "help": "文字識別コード(CHRID)の制御方法。", "inputType": "dropdown", "required": false,
+      "options": [
+        { "label": "*SAME（変更しない）", "value": "*SAME" },
+        { "label": "*USRPRF（ユーザー・プロファイル）", "value": "*USRPRF" },
+        { "label": "*SYSVAL（システム値）", "value": "*SYSVAL" },
+        { "label": "*DEVD（装置記述）", "value": "*DEVD" },
+        { "label": "*JOBCCSID（ジョブCCSID）", "value": "*JOBCCSID" }
+      ]
+    },
+    {
+      "name": "SPLFACN", "description": "スプール・ファイル・アクション", "help": "ジョブ終了時のスプール・ファイルの扱い。", "inputType": "dropdown", "required": false,
+      "options": [
+        { "label": "*SAME（変更しない）", "value": "*SAME" },
+        { "label": "*SYSVAL（システム値）", "value": "*SYSVAL" },
+        { "label": "*KEEP（保持）", "value": "*KEEP" },
+        { "label": "*DETACH（切り離す）", "value": "*DETACH" }
+      ]
+    },
+    { "name": "WLCGRP", "description": "作業負荷グループ", "help": "作業負荷グループ。単純名 / *SAME / *NONE。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 10 }, "placeholder": "*SAME" },
+    { "name": "CPUTIME", "description": "最大CPU時間", "help": "ジョブで使用できる最大CPU時間(ミリ秒)。1-9999999 / *SAME / *NOMAX。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 10 }, "placeholder": "*SAME" },
+    { "name": "MAXTMPSTG", "description": "最大一時記憶域", "help": "ジョブで使用できる最大一時記憶域(MB)。1-2147483647 / *SAME / *NOMAX。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 10 }, "placeholder": "*SAME" },
+    {
+      "name": "PRCRSCPTY", "description": "プロセッサー資源の優先順位", "help": "プロセッサー資源の優先順位。", "inputType": "dropdown", "required": false,
+      "options": [
+        { "label": "*SAME（変更しない）", "value": "*SAME" },
+        { "label": "*SYSCTL（システム制御）", "value": "*SYSCTL" },
+        { "label": "*NORMAL（通常）", "value": "*NORMAL" },
+        { "label": "*HIGH（高）", "value": "*HIGH" },
+        { "label": "*LOW（低）", "value": "*LOW" }
+      ]
+    },
+    {
+      "name": "DUPJOBOPT", "description": "重複ジョブ・オプション", "help": "複数ジョブが一致したときの処置。", "inputType": "dropdown", "required": false,
+      "options": [
+        { "label": "*SELECT（選択画面を表示）", "value": "*SELECT" },
+        { "label": "*MSG（メッセージを送信）", "value": "*MSG" }
+      ]
+    }
+  ]
+}
