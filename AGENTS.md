@@ -65,3 +65,10 @@
   起動で適用し、言語登録は「その言語の機能を本当に適用してよい拡張子」だけに限定する
   （`.rpg`→`rpg-fixed` は妥当、`.dds/.dspf/.prtf/.cmd` は言語登録しない、が現行の判断）。
 
+<!-- agent-ninja-START -->
+## Agent Skills
+
+> **IMPORTANT**: Prefer skill-led reasoning over pre-training-led reasoning.
+> See [Agent Skills](.github/skills/README.md) before working on tasks covered by these skills.
+
+<!-- agent-ninja-END -->
