@@ -13,11 +13,17 @@
 #   pwsh .aidev/bin/aidev.ps1 doctor
 #   pwsh .aidev/bin/aidev.ps1 status [--format table|tsv]
 #   pwsh .aidev/bin/aidev.ps1 metrics [slug] [--all] [--phases] [--format table|tsv]
+#   pwsh .aidev/bin/aidev.ps1 worktree add <slug> [--branch n] [--base ref] [--path dir] [--mode m] [--ticket id] [--depends list]
+#   pwsh .aidev/bin/aidev.ps1 worktree list [--format table|tsv]
+#   pwsh .aidev/bin/aidev.ps1 worktree rm <slug|path> [--force] [--delete-branch]
 #   pwsh .aidev/bin/aidev.ps1 help
 #
 # 終了コード: 0=OK / 1=使用法・環境エラー / 2=前提成果物の不足 / 3=依存未充足 / 4=不変条件違反
 
 $ErrorActionPreference = 'Stop'
+# git をネイティブ呼び出しする（worktree）。PS7.4+ の既定 throw-on-nonzero を無効化し、$LASTEXITCODE で判定する
+# （git show-ref 等は ref 不在で 1 を返すのが正常系のため）。古い pwsh では通常変数になるだけで無害。
+$PSNativeCommandUseErrorActionPreference = $false
 
 $script:CURRENT_SCHEMA = 2
 $script:PHASES = @('requirement','research','spec','design','plan','coding','test','review','walkthrough','deliver','retro')
@@ -476,6 +482,203 @@ function Cmd-Metrics($rest) {
   else { foreach ($l in (Fmt-Table (@($hdr) + $rows))) { Write-Output $l } }
 }
 
+# --- worktree（ユーザー責任の並行作業 on-ramp） --------------------------------
+# .aidev/current は gitignore 対象＝worktree ローカルで main と非干渉。worktree 操作は main の current を書き換えない(INV-1)。
+function GitPresent() { if (-not (Get-Command git -ErrorAction SilentlyContinue)) { Die "git が見つかりません" } }
+
+function DefaultWtPath($slug) {
+  $parent = Split-Path $script:ROOT -Parent
+  $repo = Split-Path $script:ROOT -Leaf
+  return (Join-Path (Join-Path $parent "$repo-wt") $slug)
+}
+
+# worktree 内で state.yml の slug が一致する work dir 名（dated）の配列を返す
+function WorksMatchingSlug($path, $slug) {
+  $res = @()
+  $wd = Join-Path (Join-Path $path '.aidev') 'works'
+  if (-not (Test-Path $wd)) { return $res }
+  foreach ($d in (Get-ChildItem -Path $wd -Directory | Sort-Object Name)) {
+    $st = Join-Path $d.FullName 'state.yml'
+    if (-not (Test-Path $st)) { continue }
+    if ((YGet $st 'slug') -eq $slug) { $res += $d.Name }
+  }
+  return $res
+}
+
+# git worktree list --porcelain を "path<TAB>branch" 配列に整形（sh の wt_porcelain と一致）
+function WtPorcelain() {
+  $out=@(); $p=''; $b=''
+  foreach ($line in (git worktree list --porcelain)) {
+    if ($line -like 'worktree *') {
+      if ($p -ne '') { $out += ($p + "`t" + ($(if ($b -eq '') { '-' } else { $b }))); $b='' }
+      $p = $line.Substring(9)
+    } elseif ($line -like 'branch *') {
+      $b = $line.Substring(7) -replace '^refs/heads/',''
+    } elseif ($line -like 'detached*') {
+      $b = 'detached'
+    }
+  }
+  if ($p -ne '') { $out += ($p + "`t" + ($(if ($b -eq '') { '-' } else { $b }))) }
+  return $out
+}
+
+function Wt-Add($rest) {
+  $slug=''; $branch=''; $base='HEAD'; $wpath=''; $mode='interactive'; $ticket=''; $depends=''
+  for ($i=0; $i -lt $rest.Count; $i++) {
+    switch ($rest[$i]) {
+      '--branch'  { $branch=$rest[++$i] }
+      '--base'    { $base=$rest[++$i] }
+      '--path'    { $wpath=$rest[++$i] }
+      '--mode'    { $mode=$rest[++$i] }
+      '--ticket'  { $ticket=$rest[++$i] }
+      '--depends' { $depends=$rest[++$i] }
+      default {
+        if ($rest[$i].StartsWith('-')) { Die "未知のオプション: $($rest[$i])" }
+        if ($slug) { Die "slug は1つだけ" } else { $slug=$rest[$i] }
+      }
+    }
+  }
+  if (-not $slug) { Die "使用法: aidev worktree add <slug> [--branch ..] [--base ..] [--path ..] [--mode ..] [--ticket ..] [--depends ..]" }
+  GitPresent
+  if (-not $branch) { $branch = "feature/$slug" }
+  if (-not $wpath)  { $wpath = DefaultWtPath $slug }
+  if (Test-Path $wpath) { Die "path が既に存在します: $wpath" }
+
+  # ブランチ存在で分岐（既存→checkout / 新規→-b で base から作成）。branch は必ず明示。実 exit code を判定。
+  git show-ref --verify --quiet "refs/heads/$branch"
+  if ($LASTEXITCODE -eq 0) {
+    git worktree add "$wpath" "$branch"
+    if ($LASTEXITCODE -ne 0) { Die "git worktree add に失敗（branch=$branch）" }
+  } else {
+    git worktree add -b "$branch" "$wpath" "$base"
+    if ($LASTEXITCODE -ne 0) { Die "git worktree add に失敗（branch=$branch base=$base）" }
+  }
+  $wpath = (Resolve-Path $wpath).Path
+
+  # worktree 内で work を確定（main tree の .aidev/current には触れない＝INV-1）
+  # @() で配列強制（要素1個だと return がスカラー文字列にアンロールし $mw[0] が先頭1文字になるのを防ぐ）
+  $mw = @(WorksMatchingSlug $wpath $slug)
+  if ($mw.Count -gt 1) {
+    Die "worktree 内に slug=$slug の work が複数あります。曖昧なため中断（手動で current 設定を）"
+  } elseif ($mw.Count -eq 1) {
+    WriteText (Join-Path (Join-Path $wpath '.aidev') 'current') ($mw[0] + "`n")
+    $workNote = "既存 work をリンク: $($mw[0])（current 設定のみ）"
+  } else {
+    # add 内で new: worktree をカレントにして既存 new ロジックに委譲（単一検証経路の維持・DRY）
+    $bin = Join-Path (Join-Path (Join-Path $wpath '.aidev') 'bin') 'aidev.ps1'
+    $argv = @('new', $slug, '--mode', $mode)
+    if ($ticket)  { $argv += @('--ticket', $ticket) }
+    if ($depends) { $argv += @('--depends', $depends) }
+    Push-Location $wpath
+    try { & pwsh $bin @argv; if ($LASTEXITCODE -ne 0) { Die "worktree 内の new に失敗" } }
+    finally { Pop-Location }
+    $workNote = "新規 work を作成（add 内で new）"
+  }
+
+  Write-Output "worktree 追加: $wpath"
+  Write-Output "  branch: $branch / base: $base"
+  Write-Output "  work:   $workNote"
+  Write-Output "⚠ この work が package.json(contributes) / src/fileScope.ts / 言語登録に触るなら、"
+  Write-Output "  他 worktree と languageId 波及・マージ衝突が起きうる（AGENTS.md「languageId 下流波及」）。並行可否はユーザー判断。"
+  Write-Output "⚠ CL/RPG プロンプター定義など原典照合が要る work は主エージェント実施が必須（委譲して検証を落とさない）。"
+  Write-Output "次: cd $wpath して各工程 skill を実行。"
+}
+
+function Wt-List($rest) {
+  $fmt='table'
+  for ($i=0; $i -lt $rest.Count; $i++) {
+    switch ($rest[$i]) {
+      '--format' { $fmt=$rest[++$i] }
+      default {
+        if ($rest[$i].StartsWith('-')) { Die "未知のオプション: $($rest[$i])" }
+        else { Die "list は位置引数を取りません: $($rest[$i])" }
+      }
+    }
+  }
+  if ($fmt -ne 'table' -and $fmt -ne 'tsv') { Die "--format は table|tsv" }
+  GitPresent
+
+  $rows=@()
+  foreach ($line in (WtPorcelain)) {
+    $cols = $line -split "`t"; $path = $cols[0]; $branch = $cols[1]
+    # 判定キー: worktree ローカル .aidev/current の有無（branch 名ではない）
+    $cur = Join-Path (Join-Path $path '.aidev') 'current'
+    if (-not (Test-Path $cur)) { continue }
+    $lines = [System.IO.File]::ReadAllLines($cur)
+    $work = if ($lines.Count -ge 1) { $lines[0].Trim() } else { '' }
+    if (-not $work) { $work = '-' }
+    $phase = '-'
+    $st = Join-Path (Join-Path (Join-Path (Join-Path $path '.aidev') 'works') $work) 'state.yml'
+    if ($work -ne '-' -and (Test-Path $st)) { $phase = YGet $st 'current'; if (-not $phase) { $phase='-' } }
+    $rows += ($path + "`t" + $branch + "`t" + $work + "`t" + $phase)
+  }
+
+  if ($fmt -eq 'tsv') {
+    foreach ($r in $rows) { Write-Output ("worktree`t" + $r) }
+    return
+  }
+  Write-Output ("WORKTREES (" + $rows.Count + ")")
+  if ($rows.Count -gt 0) { foreach ($l in (Fmt-Table (@("path`tbranch`twork`tphase") + $rows))) { Write-Output $l } }
+}
+
+function Wt-Rm($rest) {
+  $target=''; $force=$false; $delbranch=$false
+  for ($i=0; $i -lt $rest.Count; $i++) {
+    switch ($rest[$i]) {
+      '--force' { $force=$true }
+      '--delete-branch' { $delbranch=$true }
+      default {
+        if ($rest[$i].StartsWith('-')) { Die "未知のオプション: $($rest[$i])" }
+        if ($target) { Die "対象は1つだけ" } else { $target=$rest[$i] }
+      }
+    }
+  }
+  if (-not $target) { Die "使用法: aidev worktree rm <slug|path> [--force] [--delete-branch]" }
+  GitPresent
+
+  $abst=''
+  if (Test-Path -PathType Container $target) { $abst = (Resolve-Path $target).Path }
+  $rpath=''; $rbranch=''
+  foreach ($line in (WtPorcelain)) {
+    $cols = $line -split "`t"; $p = $cols[0]; $b = $cols[1]
+    if ($abst) {
+      if ($p -eq $abst) { $rpath=$p; $rbranch=$b; break }
+    } else {
+      if ((Split-Path $p -Leaf) -eq $target -or $b -eq "feature/$target" -or $b -eq $target) {
+        if ($rpath) { Die "対象が複数該当します（path を明示してください）: $target" }
+        $rpath=$p; $rbranch=$b
+      }
+    }
+  }
+  if (-not $rpath) { Die "対象 worktree が見つかりません: $target" }
+
+  if (-not $force) {
+    $dirty = (git -C "$rpath" status --porcelain)
+    if ($dirty) { Die "未コミットの変更があります（--force で強制削除）: $rpath" }
+  }
+  if ($force) { git worktree remove --force "$rpath" } else { git worktree remove "$rpath" }
+  if ($LASTEXITCODE -ne 0) { Die "git worktree remove に失敗: $rpath" }
+  Write-Output "worktree 撤去: $rpath"
+  $container = Split-Path $rpath -Parent
+  if ((Test-Path $container) -and -not (Get-ChildItem -Force $container)) { Remove-Item $container -Force }
+
+  if ($delbranch -and $rbranch -ne '-' -and $rbranch -ne 'detached') {
+    git branch -D "$rbranch"
+    if ($LASTEXITCODE -eq 0) { Write-Output "  branch 削除: $rbranch" } else { Warn "branch 削除に失敗: $rbranch" }
+  }
+}
+
+function Cmd-Worktree($rest) {
+  if ($rest.Count -lt 1) { Die "使用法: aidev worktree <add|list|rm> ..." }
+  $sub=$rest[0]; $sr=@(); if ($rest.Count -gt 1) { $sr=$rest[1..($rest.Count-1)] }
+  switch ($sub) {
+    'add'  { Wt-Add $sr }
+    'list' { Wt-List $sr }
+    'rm'   { Wt-Rm $sr }
+    default { Die "未知の worktree サブコマンド: $sub（add|list|rm）" }
+  }
+}
+
 function Usage() {
   # 先頭(2行目以降)の連続するコメント行のみを出力（コメント末尾で停止。範囲ズレに強い）
   foreach ($l in (Get-Content $PSCommandPath | Select-Object -Skip 1)) {
@@ -495,6 +698,7 @@ switch ($cmd) {
   'doctor'  { Cmd-Doctor }
   'status'  { Cmd-Status $rest }
   'metrics' { Cmd-Metrics $rest }
+  'worktree' { Cmd-Worktree $rest }
   'help'    { Usage }
   '-h'      { Usage }
   '--help'  { Usage }

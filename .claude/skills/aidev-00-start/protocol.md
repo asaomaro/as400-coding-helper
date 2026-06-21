@@ -32,6 +32,22 @@
 - `.aidev/current` が無い、または指す先が存在しない場合は工程を実行せず、`aidev-00-start` を案内する。
 - 対象確定後、`aidev event <工程> start` で **start イベント**を記録する（CLI が `metrics.yml` を自動生成・追記。「8.」）。
 
+## 1.5 並行作業（worktree・ユーザー責任の任意機能）
+
+複数の作業を**並行**で進めたいとき、ユーザーは `aidev worktree`（CLI。`bin/README.md` 参照）で work 専用の
+git worktree＋`feature/<slug>` ブランチを作って隔離着手できる。ハーネスは並列化を自動判断せず、
+**並列の要否はユーザーが明示 `aidev worktree add` で判断する**（人間オプトインの逸脱。既定は単一ワーキングツリーの直列）。
+
+- **current は worktree ローカル**: `.aidev/current` は `.gitignore` 対象＝未追跡のため、各 worktree が独立した
+  current を持ち、worktree 間で共有されない。よって **worktree 操作は main tree の `.aidev/current` を書き換えない（INV-1）**。
+- **1 worktree = 1 branch = 1 work** を単位とする。`worktree add` は worktree 内に該当 slug の work が無ければ `new` を
+  委譲し（add 内で new）、有れば current 設定のみ行う。
+- **既存 work の継続は要コミット**: work 成果物（`works/*`）は追跡対象なので、別ブランチの worktree で継続するには
+  その work がコミット済みでブランチに乗っている必要がある（未コミットの work フォルダは worktree に伝播しない）。
+- **規約**: worktree 上の作業が共有ファイル（`package.json` contributes・`fileScope.ts`・言語登録）に及ぶ場合の
+  languageId 波及（AGENTS.md）と、原典照合の主エージェント実施義務は、並行作業でも変わらず適用される
+  （`worktree add` 完了時に CLI が注意を出力する）。
+
 ## 2. 前提チェック
 
 - 工程番号の順序ではなく、必要な成果物ファイルの有無で開始可否を判断する。
