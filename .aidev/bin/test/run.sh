@@ -174,6 +174,12 @@ if command -v git >/dev/null 2>&1; then
   ( cd "$REPO" && git show-ref --verify --quiet refs/heads/feature/probe ); assert_eq "$?" "1" "rm: ブランチも削除済み"
   # INV-1（rm 後も main current 不変＝未作成のまま）
   assert_eq "$([ -f "$REPO/.aidev/current" ] && echo yes || echo no)" "no" "INV-1: rm 後も main current 不変"
+
+  # #33: slug が main worktree(basename=repo) に一致しても rm 対象にせず、明確なメッセージで拒否する
+  RMM_OUT=$(run_repo worktree rm repo 2>&1); RMM_RC=$?
+  assert_eq "$RMM_RC" "1" "rm: main worktree に一致する slug は exit 1"
+  assert_contains "$RMM_OUT" "main worktree は rm できません" "rm: main worktree 一致時は明確な文言で拒否"
+  assert_eq "$([ -d "$REPO" ] && echo yes || echo no)" "yes" "rm: main worktree は削除されない"
 else
   printf '  skip: git 不在のため worktree テストを省略\n'
 fi

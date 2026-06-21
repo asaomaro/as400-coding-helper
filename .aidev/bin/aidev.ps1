@@ -638,19 +638,25 @@ function Wt-Rm($rest) {
 
   $abst=''
   if (Test-Path -PathType Container $target) { $abst = (Resolve-Path $target).Path }
-  $rpath=''; $rbranch=''
-  foreach ($line in (WtPorcelain)) {
+  $wts = @(WtPorcelain)
+  $mainWt = if ($wts.Count -ge 1) { ($wts[0] -split "`t")[0] } else { '' }  # porcelain 先頭＝main worktree（rm 対象外）
+  $rpath=''; $rbranch=''; $hitMain=$false
+  foreach ($line in $wts) {
     $cols = $line -split "`t"; $p = $cols[0]; $b = $cols[1]
     if ($abst) {
       if ($p -eq $abst) { $rpath=$p; $rbranch=$b; break }
     } else {
       if ((Split-Path $p -Leaf) -eq $target -or $b -eq "feature/$target" -or $b -eq $target) {
+        if ($p -eq $mainWt) { $hitMain=$true; continue }  # slug が main worktree に一致しても対象にしない
         if ($rpath) { Die "対象が複数該当します（path を明示してください）: $target" }
         $rpath=$p; $rbranch=$b
       }
     }
   }
-  if (-not $rpath) { Die "対象 worktree が見つかりません: $target" }
+  if (-not $rpath) {
+    if ($hitMain) { Die "'$target' は main worktree（$mainWt）に該当します。main worktree は rm できません（worktree のみ対象）。" }
+    Die "対象 worktree が見つかりません: $target"
+  }
 
   if (-not $force) {
     $dirty = (git -C "$rpath" status --porcelain)
