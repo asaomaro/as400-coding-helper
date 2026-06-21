@@ -1,5 +1,5 @@
 #!/bin/sh
-# aidev CLI テスト（status / metrics / 既存回帰 / sh⇔ps1 パリティ）。Node 非依存。
+# aidev CLI テスト（status / metrics / worktree / 既存回帰 / sh⇔ps1 パリティ）。Node 非依存。
 # 使い方: sh .aidev/bin/test/run.sh
 # 一時フィクスチャ（works/backlog/metrics）を作り、aidev の出力を期待値と照合する。
 set -u
@@ -187,6 +187,45 @@ if command -v pwsh >/dev/null 2>&1; then
     O_PS=$( ( cd "$TMP" && pwsh "$AIDEV_PS1" $args ) | tr -d '\r' )
     assert_eq "$O_SH" "$O_PS" "パリティ: $args"
   done
+
+  # worktree パリティ（git 必須）: ps1 の worktree 実装を実機で検証する（#28）。
+  # pwsh 不在の開発機では skip されるため、ps1 の worktree は本節（pwsh 環境/CI）で初めて実行検証される。
+  if command -v git >/dev/null 2>&1; then
+    PREPO="$TMP/prepo"
+    mkdir -p "$PREPO/.aidev/bin" "$PREPO/.aidev/works/20260101-existing"
+    cp "$AIDEV_SH"  "$PREPO/.aidev/bin/aidev";     chmod +x "$PREPO/.aidev/bin/aidev"
+    cp "$AIDEV_PS1" "$PREPO/.aidev/bin/aidev.ps1"
+    printf '.aidev/current\n' > "$PREPO/.gitignore"
+    # 既存work一致 add の回帰用に slug:existing の work をコミットしておく
+    cat > "$PREPO/.aidev/works/20260101-existing/state.yml" <<'YML'
+schema: 2
+slug: existing
+current: spec
+approved: [requirement, spec]
+mode: interactive
+humanGates: []
+maxSendBacks: 3
+dependsOn: []
+YML
+    printf 'events:\n' > "$PREPO/.aidev/works/20260101-existing/metrics.yml"
+    ( cd "$PREPO" && git init -q && git config user.email t@example.com && git config user.name tester \
+        && git add -A && git commit -qm init >/dev/null 2>&1 )
+
+    # (1) sh で worktree を1つ作り、list の出力を sh⇔ps1 で突合（同一 git 状態・同一 current を読むので一致するはず）
+    ( cd "$PREPO" && "$AIDEV_SH" worktree add probe >/dev/null 2>&1 )
+    WL_SH=$( ( cd "$PREPO" && "$AIDEV_SH"      worktree list --format tsv ) )
+    WL_PS=$( ( cd "$PREPO" && pwsh "$AIDEV_PS1" worktree list --format tsv ) | tr -d '\r' )
+    assert_eq "$WL_SH" "$WL_PS" "パリティ: worktree list --format tsv"
+
+    # (2) ps1 の add（既存work一致＝current 設定のみ）。current が full dated 名であること
+    #     ＝ review 検出の must「PowerShell 単一要素配列アンラップ($mw[0]が先頭1文字)」の回帰ガード
+    PW_OUT=$( ( cd "$PREPO" && pwsh "$AIDEV_PS1" worktree add existing ) | tr -d '\r' )
+    PW_CUR=$(cat "$TMP/prepo-wt/existing/.aidev/current" 2>/dev/null)
+    assert_eq "$PW_CUR" "20260101-existing" "パリティ: ps1 add(既存work) current=full dated 名(\$mw アンラップ回帰)"
+    assert_contains "$PW_OUT" "既存 work をリンク" "パリティ: ps1 add は既存をリンク(new 委譲せず)"
+  else
+    printf '  skip: git 不在のため worktree パリティを省略\n'
+  fi
 else
   printf '  skip: pwsh 不在のためパリティテストを省略\n'
 fi
