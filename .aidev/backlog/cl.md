@@ -5,9 +5,9 @@ priority: 1           # 複数backlog選択順（小さいほど先）
 ---
 # CLコマンド定義 バックログ
 
-`aidev-batch` が消化する対象リスト。各未チェック行 = 1件のタスク（autonomous aidev の requirement）。
+`aidev-util-batch` が消化する対象リスト。各未チェック行 = 1件のタスク（autonomous aidev の requirement）。
 処理が済んだら `[x]` にし、PR/コミット参照を追記する。
-（`aidev-batch` は未チェックの先頭から、1回の上限件数まで処理する。）
+（`aidev-util-batch` は未チェックの先頭から、1回の上限件数まで処理する。）
 
 ## 定義対象（プロンプター用 CL コマンド定義 JSON: `vscode-extension/resources/prompter/cl/<CMD>.json`）
 

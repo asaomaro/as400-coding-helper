@@ -1,6 +1,6 @@
 # aidev charter（planner の錨）
 
-`aidev-propose`（planner）が課題提案する際の方針。スコープ・品質・優先度をここで縛る。
+`aidev-util-propose`（planner）が課題提案する際の方針。スコープ・品質・優先度をここで縛る。
 これは **PJ 側の設定ファイル**であり、汎用ハーネス（`.claude/skills/aidev-*`）はこのパスを規約として読むだけで、
 中身（PJ固有のゴール・ドメイン知識）には依存しない（疎結合の継ぎ目）。
 

@@ -1,6 +1,6 @@
 ---
 name: aidev-00-start
-description: AI開発ワークフローの入口。作業状況を確認し、どの工程から始めるかをユーザーに確認して案内する。「AI開発を始めたい」「開発ワークフローを開始」「続きから再開」「aidev」などと言われたときに使用する。
+description: ［入口/ルーター／主トリガ:ユーザー起動］AI開発ワークフローの入口。作業状況を確認し、どの工程から始めるかをユーザーに確認して案内する。「AI開発を始めたい」「開発ワークフローを開始」「続きから再開」「aidev」などと言われたときに使用する。
 allowed-tools: [Bash, Read, AskUserQuestion]
 ---
 
@@ -28,8 +28,8 @@ AI 開発ワークフローの入口（ルーター）。
 - 各フォルダの `state.yml`（`current` / `approved` / `dependsOn`）と成果物ファイルの有無を読み、進捗を要約する。
 - `dependsOn`（`protocol.md`「2.7」）に未充足の依存がある作業は `⛔依存待ち（<未充足の依存>）` と明示する。
 
-要約例: `001 user-login … spec 承認済み（次: plan）` / `002 export-csv … requirement 作成中` /
-`003 rpg-skill … ⛔依存待ち（#18 未クローズ）`
+要約例: `20260620-user-login … spec 承認済み（次: plan）` / `20260620-export-csv … requirement 作成中` /
+`20260621-rpg-skill … ⛔依存待ち（#18 未クローズ）`
 
 ### 未着手キューも一望する（ビュー統合）
 

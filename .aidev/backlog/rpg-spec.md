@@ -5,7 +5,7 @@ priority: 2           # 複数backlog選択順（小さいほど先）
 ---
 # RPG仕様書 定義バックログ
 
-`aidev-batch` が消化する対象リスト。各未チェック行 = 1件のタスク（autonomous aidev の requirement）。
+`aidev-util-batch` が消化する対象リスト。各未チェック行 = 1件のタスク（autonomous aidev の requirement）。
 RPG 固定長フォーマットの仕様書（Spec）ごとのプロンプター定義 JSON を作成する。
 
 参照（原典・grounded）:

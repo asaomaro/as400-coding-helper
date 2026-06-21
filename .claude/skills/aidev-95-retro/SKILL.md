@@ -1,6 +1,6 @@
 ---
-name: aidev-90-retro
-description: （任意）AI開発ワークフローの retro（振り返り）工程。完了した作業を振り返り、改善提案（コード follow-up / PJ規約 / ハーネス自体）をまとめる。「振り返りをして」「retro工程」などと言われたとき、または作業完了後に使用する。
+name: aidev-95-retro
+description: ［任意工程・末尾5／主トリガ:ユーザー指定］AI開発ワークフローの retro（振り返り）工程。完了した作業を振り返り、改善提案（コード follow-up / PJ規約 / ハーネス自体）をまとめる。「振り返りをして」「retro工程」などと言われたとき、または作業完了後に使用する。
 allowed-tools: [Bash, Read, Write, Edit, AskUserQuestion, Agent]
 ---
 

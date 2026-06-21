@@ -1,6 +1,6 @@
 ---
 name: aidev-40-coding
-description: AI開発ワークフローの coding（実装）工程。tasks.md の未チェック項目を実装し進捗を更新する。「実装を始めたい」「コーディング工程」などと言われたとき、または前工程から案内されたときに使用する。
+description: ［標準工程・末尾0／主トリガ:両方（直接起動 or 前工程からの遷移／autonomous 自動）］AI開発ワークフローの coding（実装）工程。tasks.md の未チェック項目を実装し進捗を更新する。「実装を始めたい」「コーディング工程」などと言われたとき、または前工程から案内されたときに使用する。
 allowed-tools: [Bash, Read, Write, Edit, AskUserQuestion, Agent]
 ---
 

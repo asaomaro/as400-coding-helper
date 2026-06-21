@@ -1,6 +1,6 @@
 ---
 name: aidev-30-plan
-description: AI開発ワークフローの plan（計画/作業分解）工程。spec.md から plan.md と tasks.md を作る。「計画を立てたい」「作業分解」「plan工程」などと言われたとき、または前工程から案内されたときに使用する。
+description: ［標準工程・末尾0／主トリガ:両方（直接起動 or 前工程からの遷移／autonomous 自動）］AI開発ワークフローの plan（計画/作業分解）工程。spec.md から plan.md と tasks.md を作る。「計画を立てたい」「作業分解」「plan工程」などと言われたとき、または前工程から案内されたときに使用する。
 allowed-tools: [Bash, Read, Write, Edit, AskUserQuestion]
 ---
 

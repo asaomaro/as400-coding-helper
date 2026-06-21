@@ -1,6 +1,6 @@
 ---
-name: aidev-insights
-description: AI開発ワークフローの横断分析ユーティリティ。複数の作業（.aidev/works/*）を横断して review.md / metrics.yml / decisions.md を集計し、再発パターンと systemic な改善提案をまとめる。「横断分析して」「これまでの作業の傾向を見たい」「insights」などと言われたときに使用する。
+name: aidev-util-insights
+description: ［ユーティリティ・パイプライン外／主トリガ:ユーザー起動］AI開発ワークフローの横断分析ユーティリティ。複数の作業（.aidev/works/*）を横断して review.md / metrics.yml / decisions.md を集計し、再発パターンと systemic な改善提案をまとめる。「横断分析して」「これまでの作業の傾向を見たい」「insights」などと言われたときに使用する。
 allowed-tools: [Bash, Read, Write, AskUserQuestion, Agent]
 ---
 

@@ -1,6 +1,6 @@
 ---
 name: aidev-70-deliver
-description: AI開発ワークフローの deliver（着地）工程。レビュー済みの変更をコミット・PR作成で着地させる最終工程。「コミットして」「PRを出して」「deliver工程」などと言われたとき、または review 通過後に使用する。
+description: ［標準工程・末尾0（最終）／主トリガ:両方（直接起動 or 前工程からの遷移／autonomous 自動）］AI開発ワークフローの deliver（着地）工程。レビュー済みの変更をコミット・PR作成で着地させる最終工程。「コミットして」「PRを出して」「deliver工程」などと言われたとき、または review 通過後に使用する。
 allowed-tools: [Bash, Read, AskUserQuestion]
 ---
 

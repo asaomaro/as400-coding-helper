@@ -1,6 +1,6 @@
 ---
 name: aidev-50-test
-description: AI開発ワークフローの test（テスト/検証）工程。spec の受け入れ基準を検証し、失敗時は coding へ差し戻す。「テストしたい」「検証工程」「test工程」などと言われたとき、または前工程から案内されたときに使用する。
+description: ［標準工程・末尾0／主トリガ:両方（直接起動 or 前工程からの遷移／autonomous 自動）］AI開発ワークフローの test（テスト/検証）工程。spec の受け入れ基準を検証し、失敗時は coding へ差し戻す。「テストしたい」「検証工程」「test工程」などと言われたとき、または前工程から案内されたときに使用する。
 allowed-tools: [Bash, Read, Write, Edit, AskUserQuestion, Agent]
 ---
 
