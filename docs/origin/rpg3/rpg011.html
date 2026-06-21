@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html><head>
+<meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+<meta name="GENERATOR" content="Microsoft FrontPage 4.0">
+<meta name="ProgId" content="FrontPage.Editor.Document">
+<title>RPG Tutorial: Output Edit Words</title>
+<meta name="Microsoft Border" content="none"><style type="text/css">
+a.button {display: block; width: 310px; height: 30px; background-color: lawngreen; padding: 10x; text-align: center; border-radius: 5px; color: black; font-size: 24px; font-family: helvetica;  }
+</style>
+
+</head>
+
+<body bgcolor="#FFFFCC">
+
+<h2><font face="Arial">RPG Tutorial: Output edit words</font></h2>
+<p><font face="Arial">RPG, like most programming languages, has a mechanism for
+editing numeric data.&nbsp; Typical editing involves suppression of leading
+zeros, inserting commas and decimal points, inserting fixed or floating dollar
+symbols to clarify monetary amounts, and providing sign status (+/- or DB/CR).</font></p>
+<p><font face="Arial">In order to edit a numeric field using an edit word,
+column 38 of the output specification (Edit Codes) must remain blank.&nbsp;
+Under RPG I, only the Z edit code is functional, so most of the time it is
+necessary to utilize an edit word to achieve the most desirable result in
+editing numeric information.</font></p>
+<p><font face="Arial">The name of the numeric field to be edited is placed in
+columns 32-37 (Field Name) and the edit word, enclosed in apostrophes, is placed
+in columns 45-70 (Constant or Edit Word) of the same output specification.</font></p>
+<p><font face="Arial">Here are a few general rules to follow for forming edit
+words:</font></p>
+<ul>
+  <li><font face="Arial">A blank in the edit word is replaced with the digit
+    from the corresponding position of the data field.</font></li>
+  <li><font face="Arial">An ampersand (&amp;) causes a space in the edited
+    field.&nbsp; There is no way to obtain an ampersand in an edited field.</font></li>
+  <li><font face="Arial">A zero (0) is used to stop zero suppression.&nbsp; It
+    is placed in the rightmost position where zero suppression is to take
+    place.&nbsp; It will be replaced with the character from the corresponding
+    position of the data field, unless that character is a zero.&nbsp; At least
+    one leading zero is suppressed.&nbsp; If you do not want any leading zeros
+    suppressed, make the edit word one character larger than the data field and
+    place a zero in the first position of the edit word.</font></li>
+  <li><font face="Arial">An asterisk (*) is used for asterisk protection and
+    zero suppression.&nbsp; Like the zero (above), it is placed in the rightmost
+    position where zero suppression is to take place.&nbsp; It will be replaced
+    with the character from the corresponding position of the data field unless
+    that character is a zero and there is no significant digit to its
+    left.&nbsp; Each zero that is suppressed is replaced by an asterisk.</font></li>
+  <li><font face="Arial">A dollar sign in the edit word placed immediately to
+    the left of the zero suppression code (0) causes the insertion of a dollar
+    sign in the position to the left of the first significant digit.&nbsp; This
+    is what is usually referred to as a <i>floating</i> dollar sign.&nbsp; If it
+    is necessary for the dollar sign to appear when all digits in the data are
+    significant, the edit word must start with a blank to allow space in which
+    the dollar sign can print.&nbsp; A dollar sign in the edit word placed
+    immediately after the initial apostrophe will be printed in the same
+    location each time.&nbsp; This is referred to as a <i>fixed</i> dollar sign.</font></li>
+  <li><font face="Arial">Commas and decimal points placed in the edit word are
+    printed in the edited output in the same relative positions in which they
+    were written unless they are to the left of significant digits.&nbsp; If
+    zero suppression has not been stopped by the presence of a zero in the edit
+    word, they will be replaced by either spaces or asterisks, depending upon
+    the method of zero suppression specified.&nbsp; Other than the fixed dollar
+    sign, any characters that precede the first non-zero digit position will
+    always be suppressed.</font></li>
+  <li><font face="Arial">All other characters used in the edit word are printed
+    if they are to the right of the non-zero digits in the data field.&nbsp; If
+    they are to the left of the first non-zero digit in the data field, they
+    will be replaced by spaces or asterisks.</font></li>
+  <li><font face="Arial">The letters CR or the minus symbol (-) placed on the
+    rightmost position of the edit word (typically known as the status portion
+    of the edit word) will be printed if the sign in the dat field is
+    minus.&nbsp; If the sign is positive, they will be replaced by spaces.</font></li>
+  <li><font face="Arial">Asterisks to the right of the CR or minus symbol (-)
+    are printed.&nbsp; They are typically used to indicate a specific level of
+    control total.</font></li>
+  <li><font face="Arial">If there are more digit positions in the edit word than
+    there are digits in the field to be edited, leading zeros will be added to
+    the field before editing.</font></li>
+  <li><font face="Arial">An edit word can contain a maximum of fifteen digit
+    positions, the maximum length of a numeric data field in RPG.</font></li>
+  <li><font face="Arial">When multiple CR or minus symbols are placed in an edit
+    word, the first one to the right of the last replaceable data character is
+    considered the status.&nbsp; Any other CR or minus symbols are treated as
+    constants.</font></li>
+</ul>
+<h4><font face="Arial">Examples of Edit Words</font></h4>
+<table border="1" width="100%">
+  <tbody><tr>
+    <td width="25%" rowspan="2">
+      <p align="center"><font face="Arial">Edit Word</font></p></td>
+    <td width="25%" rowspan="2">
+      <p align="center"><font face="Arial">Data Field</font></p></td>
+    <td width="50%" colspan="2">
+      <p align="center"><font face="Arial">Result</font></p></td>
+  </tr>
+  <tr>
+    <td width="25%">
+      <p align="center"><font face="Arial">if data is positive</font></p></td>
+    <td width="25%">
+      <p align="center"><font face="Arial">if data is negative</font></p></td>
+  </tr>
+  <tr>
+    <td width="25%"><font face="Courier">' ,&nbsp; 0.&nbsp; '</font></td>
+    <td width="25%"><font face="Courier">000005</font></td>
+    <td width="25%"><font face="Courier">&nbsp;&nbsp;&nbsp;&nbsp; .05</font></td>
+    <td width="25%"><font face="Courier">&nbsp;&nbsp;&nbsp;&nbsp; .05</font></td>
+  </tr>
+  <tr>
+    <td width="25%"><font face="Courier">' ,&nbsp; 0.&nbsp; '</font></td>
+    <td width="25%"><font face="Courier">100000</font></td>
+    <td width="25%"><font face="Courier">1,000.00</font></td>
+    <td width="25%"><font face="Courier">1,000.00</font></td>
+  </tr>
+  <tr>
+    <td width="25%"><font face="Courier">'&nbsp; AMT0'</font></td>
+    <td width="25%"><font face="Courier">005</font></td>
+    <td width="25%"><font face="Courier">&nbsp;&nbsp;&nbsp;&nbsp; 5</font></td>
+    <td width="25%"><font face="Courier">&nbsp;&nbsp;&nbsp;&nbsp; 5</font></td>
+  </tr>
+  <tr>
+    <td width="25%"><font face="Courier">'&nbsp; AMT0'</font></td>
+    <td width="25%"><font face="Courier">100</font></td>
+    <td width="25%"><font face="Courier">10AMT0</font></td>
+    <td width="25%"><font face="Courier">10AMT0</font></td>
+  </tr>
+  <tr>
+    <td width="25%"><font face="Courier">'&nbsp; 0AMT '</font></td>
+    <td width="25%"><font face="Courier">005</font></td>
+    <td width="25%"><font face="Courier">&nbsp; AMT5</font></td>
+    <td width="25%"><font face="Courier">&nbsp; AMT5</font></td>
+  </tr>
+  <tr>
+    <td width="25%"><font face="Courier">'&nbsp; 0AMT '</font></td>
+    <td width="25%"><font face="Courier">1005</font></td>
+    <td width="25%"><font face="Courier">100AMT5</font></td>
+    <td width="25%"><font face="Courier">100AMT5</font></td>
+  </tr>
+  <tr>
+    <td width="25%"><font face="Courier">'&nbsp; XX&nbsp; '</font></td>
+    <td width="25%"><font face="Courier">005</font></td>
+    <td width="25%"><font face="Courier">&nbsp;&nbsp;&nbsp;&nbsp; 5</font></td>
+    <td width="25%"><font face="Courier">&nbsp;&nbsp;&nbsp;&nbsp; 5</font></td>
+  </tr>
+  <tr>
+    <td width="25%"><font face="Courier">'&nbsp; XX&nbsp; '</font></td>
+    <td width="25%"><font face="Courier">100</font></td>
+    <td width="25%"><font face="Courier">&nbsp;1XX00</font></td>
+    <td width="25%"><font face="Courier">&nbsp;1XX00</font></td>
+  </tr>
+  <tr>
+    <td width="25%"><font face="Courier">'.&nbsp; '</font></td>
+    <td width="25%"><font face="Courier">05</font></td>
+    <td width="25%"><font face="Courier">&nbsp; 5</font></td>
+    <td width="25%"><font face="Courier">&nbsp; 5</font></td>
+  </tr>
+  <tr>
+    <td width="25%"><font face="Courier">'&nbsp; , $0.&nbsp; '</font></td>
+    <td width="25%"><font face="Courier">000005</font></td>
+    <td width="25%"><font face="Courier">&nbsp;&nbsp;&nbsp;&nbsp; $.05</font></td>
+    <td width="25%"><font face="Courier">&nbsp;&nbsp;&nbsp;&nbsp; $.05</font></td>
+  </tr>
+  <tr>
+    <td width="25%"><font face="Courier">'&nbsp; , $0.&nbsp; '</font></td>
+    <td width="25%"><font face="Courier">100000</font></td>
+    <td width="25%"><font face="Courier">$1,000.00</font></td>
+    <td width="25%"><font face="Courier">$1,000.00</font></td>
+  </tr>
+  <tr>
+    <td width="25%"><font face="Courier">'&nbsp; ,$0 .&nbsp; '</font></td>
+    <td width="25%"><font face="Courier">000010</font></td>
+    <td width="25%"><font face="Courier">&nbsp;&nbsp;&nbsp; $0.10</font></td>
+    <td width="25%"><font face="Courier">&nbsp;&nbsp;&nbsp; $0.10</font></td>
+  </tr>
+  <tr>
+    <td width="25%"><font face="Courier">'$0&nbsp; .&nbsp; '</font></td>
+    <td width="25%"><font face="Courier">00100</font></td>
+    <td width="25%"><font face="Courier">&nbsp;$ 01.00</font></td>
+    <td width="25%"><font face="Courier">&nbsp;$ 01.00</font></td>
+  </tr>
+  <tr>
+    <td width="25%"><font face="Courier">'&nbsp; 0-'</font></td>
+    <td width="25%"><font face="Courier">010</font></td>
+    <td width="25%"><font face="Courier">&nbsp; 10</font></td>
+    <td width="25%"><font face="Courier">&nbsp; 10-</font></td>
+  </tr>
+  <tr>
+    <td width="25%"><font face="Courier">'&nbsp; 0CR*'</font></td>
+    <td width="25%"><font face="Courier">010</font></td>
+    <td width="25%"><font face="Courier">&nbsp;10&nbsp; *</font></td>
+    <td width="25%"><font face="Courier">&nbsp;10CR*</font></td>
+  </tr>
+  <tr>
+    <td width="25%"><font face="Courier">'0&nbsp; -&nbsp; -&nbsp;&nbsp;&nbsp; '</font></td>
+    <td width="25%"><font face="Courier">123456789</font></td>
+    <td width="25%"><font face="Courier">123-45-6789</font></td>
+    <td width="25%"><font face="Courier">123-45-6789</font></td>
+  </tr>
+  <tr>
+    <td width="25%"><font face="Courier">' 0CR-'</font></td>
+    <td width="25%"><font face="Courier">05</font></td>
+    <td width="25%"><font face="Courier">&nbsp; 5&nbsp; -</font></td>
+    <td width="25%"><font face="Courier">&nbsp; 5CR-</font></td>
+  </tr>
+  <tr>
+    <td width="25%"><font face="Courier">' 0CREDIT'</font></td>
+    <td width="25%"><font face="Courier">05</font></td>
+    <td width="25%"><font face="Courier">&nbsp;5&nbsp; EDIT</font></td>
+    <td width="25%"><font face="Courier">&nbsp;5CREDIT</font></td>
+  </tr>
+  <tr>
+    <td width="25%"><font face="Courier">'&nbsp; **'</font></td>
+    <td width="25%"><font face="Courier">10</font></td>
+    <td width="25%"><font face="Courier">*10*</font></td>
+    <td width="25%"><font face="Courier">*10*</font></td>
+  </tr>
+  <tr>
+    <td width="25%"><font face="Courier">' 0**'</font></td>
+    <td width="25%"><font face="Courier">10</font></td>
+    <td width="25%"><font face="Courier">10**</font></td>
+    <td width="25%"><font face="Courier">10**</font></td>
+  </tr>
+  <tr>
+    <td width="25%"><font face="Courier">'$ ,&nbsp; *.&nbsp; '</font></td>
+    <td width="25%"><font face="Courier">000010</font></td>
+    <td width="25%"><font face="Courier">$*****.10</font></td>
+    <td width="25%"><font face="Courier">$*****.10</font></td>
+  </tr>
+  <tr>
+    <td width="25%"><font face="Courier">'$ ,&nbsp; *.&nbsp; '</font></td>
+    <td width="25%"><font face="Courier">050000</font></td>
+    <td width="25%"><font face="Courier">$**500.00</font></td>
+    <td width="25%"><font face="Courier">$**500.00</font></td>
+  </tr>
+  <tr>
+    <td width="25%"><font face="Courier">'&nbsp;&nbsp;&nbsp; 0 '</font></td>
+    <td width="25%"><font face="Courier">05</font></td>
+    <td width="25%"><font face="Courier">&nbsp;&nbsp;&nbsp;&nbsp; 5</font></td>
+    <td width="25%"><font face="Courier">&nbsp;&nbsp;&nbsp;&nbsp; 5</font></td>
+  </tr>
+  <tr>
+    <td width="25%"><font face="Courier">'&nbsp;&nbsp; 0&nbsp; '</font></td>
+    <td width="25%"><font face="Courier">05</font></td>
+    <td width="25%"><font face="Courier">&nbsp;&nbsp;&nbsp; 05</font></td>
+    <td width="25%"><font face="Courier">&nbsp;&nbsp;&nbsp; 05</font></td>
+  </tr>
+  <tr>
+    <td width="25%"><font face="Courier">' 0&nbsp;&nbsp;&nbsp; '</font></td>
+    <td width="25%"><font face="Courier">05</font></td>
+    <td width="25%"><font face="Courier">&nbsp; 0005</font></td>
+    <td width="25%"><font face="Courier">&nbsp; 0005</font></td>
+  </tr>
+</tbody></table>
+<hr>
+<p><img border="0" src="../images/dinomail.gif" width="172" height="75"></p>
+<hr align="center">
+<p align="center"><input type="BUTTON" value="Back to Previous Page" onclick="history.go(-1)"><a href="../index.html" class="button">Return
+to Site Home Page</a>&nbsp;</p>
+<hr align="center">
+<p><font face="Arial">This page was last updated on <!--webbot bot="Timestamp"
+s-type="EDITED" s-format="%B %d, %Y" startspan -->January 17, 2015<!--webbot bot="Timestamp" endspan i-CheckSum="31531" -->.</font></p>
+
+
+
+</body></html>

@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html><head>
+<meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+<meta name="GENERATOR" content="Microsoft FrontPage 4.0">
+<meta name="ProgId" content="FrontPage.Editor.Document">
+<title>RPG Tutorial: Advanced statement types (Extension/Line Counter)</title>
+<meta name="Microsoft Border" content="none"><style type="text/css">
+a.button {display: block; width: 310px; height: 30px; background-color: lawngreen; padding: 10x; text-align: center; border-radius: 5px; color: black; font-size: 24px; font-family: helvetica;  }
+</style>
+
+</head>
+
+<body bgcolor="#FFFFCC">
+
+<h2><font face="Arial">RPG Tutorial: Advanced statement types (Extension/Line
+Counter)</font></h2>
+<p><font face="Arial">The Extension and Line Counter specifications are both
+used to supply additional information about specific types of files to be processed by
+the RPG program.&nbsp;&nbsp;</font></p>
+<p><font face="Arial"> It is rare to have a printer file that will not require a
+Line Counter specification, but the specification is uncomplicated and will, for
+the most part, be the same for all programs.</font></p>
+<p><font face="Arial">The Extension specification is used for defining tables
+and establishing relationships to indexed-sequential files that are to be read
+"automatically" using chaining fields or Record Address Files.&nbsp; Therefore,
+the need to code Extension specifications will occur less frequently.</font></p>
+<p><font face="Arial">If used, Extension and Line Counter specifications follow
+the File Description specifications in the source program.</font></p>
+<ol>
+  <li><font face="Arial"><a href="#LineCounter">Line Counter</a></font></li>
+  <li><font face="Arial"><a href="#Extension">Extension</a></font></li>
+</ol>
+<h3><font face="Arial"><a name="LineCounter"></a>Line Counter specification</font></h3>
+
+<p><font face="Arial">When writing an output file to a
+physical printer, the printer relies upon carriage control tape punches (or the
+equivalent carriage control buffer) to control skipping and page overflow
+operations.&nbsp; When such a file is first written to an intermediary storage
+device, such as happens under MVT spooling, the RPG program must count the
+number of output lines written and simulate the presence of a carriage control
+tape/buffer.</font></p>
+
+<p><font face="Arial">This functionality is provided with the Line Counter
+specification.&nbsp; In a physical carriage control tape, a channel 12 punch is
+used to signal that the end of the physical page has been reached.&nbsp; A channel 01 punch is used to advance the carriage to the top of the
+next physical page.&nbsp; Punches in other channels are optionally used to
+specify stopping at intermediate points on the physical page.&nbsp; Entries on
+the Line Counter specifications are used to provide the functional equivalent of
+the carriage control tape punches (or forms control buffer).</font></p>
+
+  <table border="01" width="96%" style="border-style: line" bordercolordark="#000000" bordercolorlight="#FFFFCC" bordercolor="#000000">
+    <tbody><tr>
+      <td width="12%"><font face="Arial"><u>Column(s)</u></font></td>
+      <td width="25%"><font face="Arial"><u>Field Name</u></font></td>
+      <td width="66%"><font face="Arial"><u>Use</u></font></td>
+    </tr>
+    <tr>
+      <td width="12%" valign="top" align="left"><font face="Arial">7 - 14</font></td>
+      <td width="25%" valign="top" align="left"><font face="Arial">File Name</font></td>
+      <td width="66%" valign="top" align="left"><font face="Arial">name of the
+        output file to which this line counter specification applies</font></td>
+    </tr>
+    <tr>
+      <td width="12%" valign="top" align="left"><font face="Arial">15 - 17<br>
+        20 - 22<br>
+        25 - 27<br>
+        30 - 32<br>
+        35 - 37<br>
+        40 - 42<br>
+        45 - 47<br>
+        50 - 52<br>
+        55 - 57<br>
+        60 - 62<br>
+        65 - 67<br>
+        70 - 72</font></td>
+      <td width="25%" valign="top" align="left"><font face="Arial">Line Number</font></td>
+      <td width="66%" valign="top" align="left"><font face="Arial">the number of
+        the line at which channel punches are to be simulated - as a
+        minimum, the lines at which channel 01 and channel 12 punches occur must be defined to specify the top
+        and bottom limits of the page</font></td>
+    </tr>
+    <tr>
+      <td width="12%" valign="top" align="left"><font face="Arial">18 - 19<br>
+        23 - 24<br>
+        28 - 29<br>
+        33 - 34<br>
+        38 - 39<br>
+        43 - 44<br>
+        48 - 49<br>
+        53 - 54<br>
+        58 - 59<br>
+        63 - 64<br>
+        68 - 69<br>
+        73 - 74</font></td>
+      <td width="25%" valign="top" align="left"><font face="Arial">Channel
+        Number</font></td>
+      <td width="66%" valign="top" align="left"><font face="Arial">the channel
+        punch to simulate for the corresponding line number</font></td>
+    </tr>
+  </tbody></table>
+<h3><font face="Arial"><a name="Extension"></a>File Extension specification</font></h3>
+<p><font face="Arial">RPG programs which utilize Record
+Address Files, chained indexed-sequential files, and table files require that
+information specific to these files be specified in addition to the standard
+information contained on the File Description specification.&nbsp; The File Extension
+specification is used to provide that information.&nbsp; Because this
+specification is used to specify such a variety of dissimilar information, it
+can be confusing.&nbsp; I have divided the information into three groups - the
+first for chained files, the second for record address files, and the third for
+tables.</font></p>
+<h4><font face="Arial">Entries for chained files</font></h4>
+<table border="01" width="96%">
+  <tbody><tr>
+    <td width="9%">&nbsp;<font face="Arial"><u>Column(s)</u></font></td>
+    <td width="26%"><font face="Arial"><u>Field Name</u></font></td>
+    <td width="68%"><font face="Arial"><u>Use</u></font></td>
+  </tr>
+  <tr>
+    <td width="12%" valign="top" align="left"><font face="Arial">7 - 8</font></td>
+    <td width="23%" valign="top" align="left"><font face="Arial">Record Sequence
+      of chaining file</font></td>
+    <td width="68%" valign="top" align="left"><font face="Arial">enter the
+      sequence entry (from column 15-16 of the input specification) for the input
+      file which is the 'chained from' file</font></td>
+  </tr>
+  <tr>
+    <td width="12%" valign="top" align="left"><font face="Arial">9 - 10</font></td>
+    <td width="23%" valign="top" align="left"><font face="Arial">Number of the
+      chaining field</font></td>
+    <td width="68%" valign="top" align="left"><font face="Arial">enter the
+      number (C1 - C9) identifying the field used to link the chaining record
+      with the chained record (from column 61-62 of the input specification)</font></td>
+  </tr>
+  <tr>
+    <td width="12%" valign="top" align="left"><font face="Arial">11 - 18</font></td>
+    <td width="23%" valign="top" align="left"><font face="Arial">From Filename</font></td>
+    <td width="68%" valign="top" align="left"><font face="Arial">enter the name
+      of the chaining file&nbsp;</font></td>
+  </tr>
+  <tr>
+    <td width="12%" valign="top" align="left"><font face="Arial">19 - 26</font></td>
+    <td width="23%" valign="top" align="left"><font face="Arial">To Filename</font></td>
+    <td width="68%" valign="top" align="left"><font face="Arial">enter the name
+      of the chained file</font></td>
+  </tr>
+</tbody></table>
+<h4><font face="Arial">Entries for Record Address Files</font></h4><font face="Arial">
+</font>
+<table border="01" width="96%">
+  <tbody><tr>
+    <td width="9%">&nbsp;<font face="Arial"><u>Column(s)</u></font></td>
+    <td width="26%"><font face="Arial"><u>Field Name</u></font></td>
+    <td width="68%"><font face="Arial"><u>Use</u></font></td>
+  </tr>
+  <tr>
+    <td width="12%" valign="top" align="left"><font face="Arial">11 - 18</font></td>
+    <td width="23%" valign="top" align="left"><font face="Arial">From Filename</font></td>
+    <td width="68%" valign="top" align="left"><font face="Arial">enter the name
+      of the record address file&nbsp;</font></td>
+  </tr>
+  <tr>
+    <td width="12%" valign="top" align="left"><font face="Arial">19 - 26</font></td>
+    <td width="23%" valign="top" align="left"><font face="Arial">To Filename</font></td>
+    <td width="68%" valign="top" align="left"><font face="Arial">enter the name
+      of the Indexed-Sequential file that contains the data records to be processed</font></td>
+  </tr>
+</tbody></table>
+<h4><font face="Arial">Entries for tables</font></h4><font face="Arial">
+</font>
+<table border="01" width="96%">
+  <tbody><tr>
+    <td width="9%">&nbsp;<font face="Arial"><u>Column(s)</u></font></td>
+    <td width="26%"><font face="Arial"><u>Field Name</u></font></td>
+    <td width="68%"><font face="Arial"><u>Use</u></font></td>
+  </tr>
+  <tr>
+    <td width="12%" valign="top" align="left"><font face="Arial">11 - 18</font></td>
+    <td width="23%" valign="top" align="left"><font face="Arial">From Filename</font></td>
+    <td width="68%" valign="top" align="left"><font face="Arial">enter the name
+      of the file from which the table entries will be read</font></td>
+  </tr>
+  <tr>
+    <td width="12%" valign="top" align="left"><font face="Arial">19 - 26</font></td>
+    <td width="23%" valign="top" align="left"><font face="Arial">To Filename</font></td>
+    <td width="68%" valign="top" align="left"><font face="Arial">enter the name
+      of the file to which the updated table will be written</font></td>
+  </tr>
+  <tr>
+    <td width="12%" valign="top" align="left"><font face="Arial">27 - 32</font></td>
+    <td width="23%" valign="top" align="left"><font face="Arial">Table Name</font></td>
+    <td width="68%" valign="top" align="left"><font face="Arial">enter the name
+      of the table (the first three positions must be "TAB")</font></td>
+  </tr>
+  <tr>
+    <td width="12%" valign="top" align="left"><font face="Arial">33 - 35</font></td>
+    <td width="23%" valign="top" align="left"><font face="Arial">Entries per
+      Record</font></td>
+    <td width="68%" valign="top" align="left"><font face="Arial">enter the
+      number of table elements read from/written to each physical record (used
+      only when table is read from or written to a file)</font></td>
+  </tr>
+  <tr>
+    <td width="12%" valign="top" align="left"><font face="Arial">36 - 39</font></td>
+    <td width="23%" valign="top" align="left"><font face="Arial">Entries per
+      Table</font></td>
+    <td width="68%" valign="top" align="left"><font face="Arial">enter the
+      number of elements to be contained in the table</font></td>
+  </tr>
+  <tr>
+    <td width="12%" valign="top" align="left"><font face="Arial">40 - 42</font></td>
+    <td width="23%" valign="top" align="left"><font face="Arial">Length of Entry</font></td>
+    <td width="68%" valign="top" align="left"><font face="Arial">enter the
+      length of each element in the table</font></td>
+  </tr>
+  <tr>
+    <td width="12%" valign="top" align="left"><font face="Arial">43</font></td>
+    <td width="23%" valign="top" align="left"><font face="Arial">Packed</font></td>
+    <td width="68%" valign="top" align="left"><font face="Arial">enter
+      "P" if the data in the table elements is in packed decimal
+      format</font></td>
+  </tr>
+  <tr>
+    <td width="12%" valign="top" align="left"><font face="Arial">44</font></td>
+    <td width="23%" valign="top" align="left"><font face="Arial">Decimal
+      Positions</font></td>
+    <td width="68%" valign="top" align="left"><font face="Arial">enter the
+      number of decimal positions (0 - 9) if the data in the table elements are
+      numeric - leave blank for alphanumeric data</font></td>
+  </tr>
+  <tr>
+    <td width="12%" valign="top" align="left"><font face="Arial">45</font></td>
+    <td width="23%" valign="top" align="left"><font face="Arial">Sequence</font></td>
+    <td width="68%" valign="top" align="left"><font face="Arial">enter
+      "A" if the table elements are in ascending sequence; enter
+      "D" if in descending sequence; leave blank if unsequenced - in
+      tables consisting of alternating arguments and functions, the sequence
+      refers to the order in which the arguments appear in the table</font></td>
+  </tr>
+  <tr>
+    <td width="12%" valign="top" align="left"><font face="Arial">46 - 51</font></td>
+    <td width="23%" valign="top" align="left"><font face="Arial">Table Name</font></td>
+    <td width="68%" valign="top" align="left"><font face="Arial">enter the
+      name of the table to contain the function elements related to the argument
+      table specified in columns 27-32 (the first three positions must be "TAB")</font></td>
+  </tr>
+  <tr>
+    <td width="12%" valign="top" align="left"><font face="Arial">52 - 54</font></td>
+    <td width="23%" valign="top" align="left"><font face="Arial">Length of Entry</font></td>
+    <td width="68%" valign="top" align="left"><font face="Arial">enter the
+      length of each element in the function table</font></td>
+  </tr>
+  <tr>
+    <td width="12%" valign="top" align="left"><font face="Arial">55</font></td>
+    <td width="23%" valign="top" align="left"><font face="Arial">Packed</font></td>
+    <td width="68%" valign="top" align="left"><font face="Arial">enter
+      "P" if the data in the table elements is in packed decimal
+      format</font></td>
+  </tr>
+  <tr>
+    <td width="12%" valign="top" align="left"><font face="Arial">56</font></td>
+    <td width="23%" valign="top" align="left"><font face="Arial">Decimal
+      Positions</font></td>
+    <td width="68%" valign="top" align="left"><font face="Arial">enter the
+      number of decimal positions (0 - 9) if the data in the table element are
+      numeric - leave blank for alphanumeric data</font></td>
+  </tr>
+  <tr>
+    <td width="12%" valign="top" align="left"><font face="Arial">57</font></td>
+    <td width="23%" valign="top" align="left"><font face="Arial">Sequence</font></td>
+    <td width="68%" valign="top" align="left"><font face="Arial">enter
+      "A" if the table elements are in ascending sequence; enter
+      "D" if in descending sequence; leave blank if unsequenced - in
+      tables consisting of alternating arguments and functions, the sequence
+      refers to the order in which the arguments appear in the table</font></td>
+  </tr>
+</tbody></table>
+<hr>
+<p><img border="0" src="../images/dinomail.gif" width="172" height="75"><font face="Arial"><span>&nbsp;&nbsp;&nbsp;</span></font></p>
+<hr align="center">
+<p align="center"><input type="BUTTON" value="Back to Previous Page" onclick="history.go(-1)"><a href="../index.html" class="button">Return
+to Site Home Page</a>&nbsp;</p>
+<hr align="center">
+<p><font face="Arial">This page was last updated on <!--webbot bot="Timestamp"
+s-type="EDITED" s-format="%B %d, %Y" startspan -->January 17, 2015<!--webbot bot="Timestamp" endspan i-CheckSum="31531" --></font></p></body></html>
