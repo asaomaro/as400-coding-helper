@@ -1,0 +1,229 @@
+{
+  "keyword": "CRTRPGMOD",
+  "description": "RPGモジュール作成（CRTRPGMOD）",
+  "help": "ILE RPGソースをコンパイルし、後で CRTPGM/CRTSRVPGM でバインドするモジュール・オブジェクト(*MODULE)を作成します。",
+  "parameters": [
+    {
+      "name": "MODULE",
+      "description": "モジュール",
+      "help": "作成するモジュールの修飾名（オプショナル・定位置1）。修飾子1=モジュール名（既定 *CTLSPEC：制御仕様から取得）、修飾子2=ライブラリー（既定 *CURLIB）。",
+      "inputType": "group",
+      "required": false,
+      "children": [
+        { "name": "LIB", "description": "ライブラリー", "help": "モジュールを作成するライブラリー。*CURLIB / ライブラリー名。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 10 }, "placeholder": "*CURLIB" },
+        { "name": "MODULE", "description": "モジュール", "help": "作成するモジュールの名前。*CTLSPEC / 名前。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 10 }, "placeholder": "*CTLSPEC" }
+      ]
+    },
+    {
+      "name": "SRCFILE",
+      "description": "ソース・ファイル",
+      "help": "RPGソースが入っているソース物理ファイルの修飾名（オプショナル・定位置2）。既定 QRPGLESRC。",
+      "inputType": "group",
+      "required": false,
+      "children": [
+        { "name": "LIB", "description": "ライブラリー", "help": "ソース・ファイルのライブラリー。*LIBL / *CURLIB / ライブラリー名。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 10 }, "placeholder": "*LIBL" },
+        { "name": "SRCFILE", "description": "ソース・ファイル", "help": "ソース物理ファイル名。既定 QRPGLESRC。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 10 }, "defaultValue": "QRPGLESRC", "placeholder": "QRPGLESRC" }
+      ]
+    },
+    { "name": "SRCMBR", "description": "ソース・メンバー", "help": "RPGソース・メンバー名（オプショナル・定位置3）。既定 *MODULE（MODULE名と同じメンバー）。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 10 }, "placeholder": "*MODULE" },
+    { "name": "SRCSTMF", "description": "ソース・ストリーム・ファイル", "help": "ソース・ストリーム・ファイルのパス名。SRCFILE/SRCMBR の代わりに使用。", "inputType": "text", "required": false, "attributes": { "maxLength": 256 } },
+    { "name": "GENLVL", "description": "生成重大度レベル", "help": "モジュール生成を継続する最大エラー重大度。0-20（既定 10）。", "inputType": "number", "required": false, "attributes": { "numericOnly": true, "maxLength": 2 }, "placeholder": "10" },
+    { "name": "TEXT", "description": "テキスト'記述'", "help": "モジュールを説明するテキスト記述。*SRCMBRTXT / *BLANK / 文字値。", "inputType": "text", "required": false, "attributes": { "maxLength": 50 }, "placeholder": "*SRCMBRTXT" },
+    { "name": "OPTION", "description": "コンパイラー・オプション", "help": "コンパイラー・オプション（最大20回）。*XREF/*NOXREF, *GEN/*NOGEN, *SECLVL/*NOSECLVL, *SHOWCPY/*NOSHOWCPY, *EXPDDS/*NOEXPDDS, *EXT/*NOEXT, *SHOWSKP/*NOSHOWSKP, *SRCSTMT/*NOSRCSTMT, *DEBUGIO/*NODEBUGIO, *UNREF/*NOUNREF, *EVENTF/*NOEVENTF。", "inputType": "text", "required": false, "maxOccurrences": 20, "attributes": { "characterSet": "upper", "maxLength": 12 }, "placeholder": "*XREF" },
+    {
+      "name": "DBGVIEW",
+      "description": "デバッグ用ビュー",
+      "help": "デバッグ用ビュー。*STMT / *SOURCE / *LIST / *COPY / *ALL / *NONE。",
+      "inputType": "dropdown",
+      "required": false,
+      "options": [
+        { "label": "*STMT（ステートメント番号）", "value": "*STMT" },
+        { "label": "*SOURCE（ソース・ビュー）", "value": "*SOURCE" },
+        { "label": "*LIST（リスト・ビュー）", "value": "*LIST" },
+        { "label": "*COPY（コピー・ビュー）", "value": "*COPY" },
+        { "label": "*ALL（すべて）", "value": "*ALL" },
+        { "label": "*NONE（なし）", "value": "*NONE" }
+      ]
+    },
+    { "name": "DBGENCKEY", "description": "デバッグ暗号鍵", "help": "デバッグ・ビューを暗号化する鍵。*NONE / 文字値。", "inputType": "text", "required": false, "attributes": { "maxLength": 32 }, "placeholder": "*NONE" },
+    {
+      "name": "OUTPUT",
+      "description": "出力",
+      "help": "コンパイラー・リストの出力。*PRINT / *NONE。",
+      "inputType": "dropdown",
+      "required": false,
+      "options": [
+        { "label": "*PRINT（リストを印刷）", "value": "*PRINT" },
+        { "label": "*NONE（リストなし）", "value": "*NONE" }
+      ]
+    },
+    {
+      "name": "OPTIMIZE",
+      "description": "最適化レベル",
+      "help": "生成コードの最適化レベル。*NONE / *BASIC / *FULL。",
+      "inputType": "dropdown",
+      "required": false,
+      "options": [
+        { "label": "*NONE", "value": "*NONE" },
+        { "label": "*BASIC", "value": "*BASIC" },
+        { "label": "*FULL", "value": "*FULL" }
+      ]
+    },
+    { "name": "INDENT", "description": "ソース・リストの字下げ", "help": "構造化操作をリストで字下げするか。*NONE、または字下げに使う文字値。", "inputType": "text", "required": false, "attributes": { "maxLength": 2 }, "placeholder": "*NONE" },
+    {
+      "name": "CVTOPT",
+      "description": "タイプ変換オプション",
+      "help": "DDS のデータ・タイプをどう扱うか。単一値 *NONE、またはその他の値（最大4回）。*DATETIME, *GRAPHIC, *VARCHAR, *VARGRAPHIC。",
+      "inputType": "text",
+      "required": false,
+      "maxOccurrences": 4,
+      "attributes": { "characterSet": "upper", "maxLength": 12 },
+      "placeholder": "*NONE"
+    },
+    {
+      "name": "SRTSEQ",
+      "description": "ソート順序",
+      "help": "ソート順序。単一値 *HEX / *JOB / *JOBRUN / *LANGIDUNQ / *LANGIDSHR、またはソート順序表の修飾名。",
+      "inputType": "group",
+      "required": false,
+      "children": [
+        { "name": "LIB", "description": "ライブラリー", "help": "ソート順序表のライブラリー。*LIBL / *CURLIB / ライブラリー名。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 10 }, "placeholder": "*LIBL" },
+        { "name": "SRTSEQ", "description": "ソート順序", "help": "*HEX / *JOB / *JOBRUN / *LANGIDUNQ / *LANGIDSHR、またはソート順序表名。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 10 }, "placeholder": "*HEX" }
+      ]
+    },
+    { "name": "LANGID", "description": "言語識別コード", "help": "SRTSEQ が *LANGIDUNQ/*LANGIDSHR の場合に使う言語ID。*JOBRUN / *JOB / 名前。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 3 }, "placeholder": "*JOBRUN" },
+    {
+      "name": "REPLACE",
+      "description": "モジュールの置き換え",
+      "help": "同名の既存モジュールを置き換えるか。*YES / *NO。",
+      "inputType": "dropdown",
+      "required": false,
+      "options": [
+        { "label": "*YES（置き換える）", "value": "*YES" },
+        { "label": "*NO（置き換えない）", "value": "*NO" }
+      ]
+    },
+    { "name": "AUT", "description": "権限", "help": "オブジェクトの共通認可。*LIBCRTAUT / *ALL / *CHANGE / *USE / *EXCLUDE / 認可リスト名。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 10 }, "placeholder": "*LIBCRTAUT" },
+    {
+      "name": "TRUNCNBR",
+      "description": "数字の切り捨て",
+      "help": "数値オーバーフロー時に上位桁を切り捨てるか。*YES / *NO。",
+      "inputType": "dropdown",
+      "required": false,
+      "options": [
+        { "label": "*YES（切り捨てる）", "value": "*YES" },
+        { "label": "*NO（例外を出す）", "value": "*NO" }
+      ]
+    },
+    {
+      "name": "FIXNBR",
+      "description": "数値の修正",
+      "help": "正しくない10進数データの扱い。単一値 *NONE、またはその他の値（最大2回）。*ZONED, *INPUTPACKED。",
+      "inputType": "text",
+      "required": false,
+      "maxOccurrences": 2,
+      "attributes": { "characterSet": "upper", "maxLength": 12 },
+      "placeholder": "*NONE"
+    },
+    { "name": "TGTRLS", "description": "ターゲット・リリース", "help": "オブジェクトを使用するオペレーティング・システムのリリース。*CURRENT / *PRV / 単純名。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 10 }, "placeholder": "*CURRENT" },
+    {
+      "name": "ALWNULL",
+      "description": "ヌル値可能",
+      "help": "ヌル可能フィールドの扱い。*NO / *INPUTONLY / *USRCTL / *YES。",
+      "inputType": "dropdown",
+      "required": false,
+      "options": [
+        { "label": "*NO", "value": "*NO" },
+        { "label": "*INPUTONLY（入力のみ）", "value": "*INPUTONLY" },
+        { "label": "*USRCTL（ユーザー制御）", "value": "*USRCTL" },
+        { "label": "*YES", "value": "*YES" }
+      ]
+    },
+    { "name": "DEFINE", "description": "条件名の定義", "help": "条件付きコンパイル用の条件名（最大32回）。*NONE / 単純名。", "inputType": "text", "required": false, "maxOccurrences": 32, "attributes": { "characterSet": "upper", "maxLength": 50 }, "placeholder": "*NONE" },
+    {
+      "name": "ENBPFRCOL",
+      "description": "パフォーマンス収集使用可能化",
+      "help": "パフォーマンス測定データの収集レベル。*PEP / *ENTRYEXIT / *FULL。",
+      "inputType": "dropdown",
+      "required": false,
+      "options": [
+        { "label": "*PEP（プログラム入口/出口のみ）", "value": "*PEP" },
+        { "label": "*ENTRYEXIT（入口/出口）", "value": "*ENTRYEXIT" },
+        { "label": "*FULL（すべて）", "value": "*FULL" }
+      ]
+    },
+    {
+      "name": "PRFDTA",
+      "description": "プロファイル・データ",
+      "help": "プロファイル・データ収集を有効にするか。*NOCOL / *COL。",
+      "inputType": "dropdown",
+      "required": false,
+      "options": [
+        { "label": "*NOCOL（収集しない）", "value": "*NOCOL" },
+        { "label": "*COL（収集する）", "value": "*COL" }
+      ]
+    },
+    {
+      "name": "STGMDL",
+      "description": "ストレージ・モデル",
+      "help": "モジュールのストレージ・モデル。*INHERIT / *SNGLVL / *TERASPACE。",
+      "inputType": "dropdown",
+      "required": false,
+      "options": [
+        { "label": "*INHERIT（継承）", "value": "*INHERIT" },
+        { "label": "*SNGLVL（単一レベル記憶）", "value": "*SNGLVL" },
+        { "label": "*TERASPACE", "value": "*TERASPACE" }
+      ]
+    },
+    {
+      "name": "BNDDIR",
+      "description": "バインディング・ディレクトリー",
+      "help": "シンボル解決に使うバインディング・ディレクトリー。単一値 *NONE、またはバインディング・ディレクトリーの修飾名（最大50回）。",
+      "inputType": "group",
+      "required": false,
+      "maxOccurrences": 50,
+      "children": [
+        { "name": "LIB", "description": "ライブラリー", "help": "バインディング・ディレクトリーのライブラリー。*LIBL / *CURLIB / ライブラリー名。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 10 }, "placeholder": "*LIBL" },
+        { "name": "BNDDIR", "description": "バインディング・ディレクトリー", "help": "*NONE、またはバインディング・ディレクトリー名。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 10 }, "placeholder": "*NONE" }
+      ]
+    },
+    { "name": "LICOPT", "description": "ライセンス内部コード・オプション", "help": "ライセンス内部コード・コンパイル・オプション。文字値。", "inputType": "text", "required": false, "attributes": { "maxLength": 50 } },
+    { "name": "INCDIR", "description": "組み込みディレクトリー", "help": "INCLUDE ファイルを検索するディレクトリーのパス名（最大32回）。*NONE / パス名。", "inputType": "text", "required": false, "maxOccurrences": 32, "attributes": { "maxLength": 256 }, "placeholder": "*NONE" },
+    {
+      "name": "PGMINFO",
+      "description": "PGMインターフェース情報",
+      "help": "プログラム・インターフェース情報(PCML)の生成。要素1=生成、要素2=場所。",
+      "inputType": "group",
+      "required": false,
+      "children": [
+        { "name": "GENERATE", "description": "生成", "help": "PCML を生成するか。*NO / *PCML。", "inputType": "dropdown", "required": false, "options": [ { "label": "*NO", "value": "*NO" }, { "label": "*PCML", "value": "*PCML" } ] },
+        { "name": "LOCATION", "description": "場所", "help": "PCML の出力先。*STMF / *MODULE / *ALL。", "inputType": "dropdown", "required": false, "options": [ { "label": "*STMF（ストリーム・ファイル）", "value": "*STMF" }, { "label": "*MODULE", "value": "*MODULE" }, { "label": "*ALL", "value": "*ALL" } ] }
+      ]
+    },
+    { "name": "INFOSTMF", "description": "プログラム・インターフェース・ストリーム・ファイル", "help": "PGMINFO を出力するストリーム・ファイルのパス名。", "inputType": "text", "required": false, "attributes": { "maxLength": 256 } },
+    {
+      "name": "PPGENOPT",
+      "description": "プリプロセッサー・オプション",
+      "help": "プリプロセッサーの動作。単一値 *NONE / *DFT、またはその他の値（最大3回）。*RMVCOMMENT/*NORMVCOMMENT, *EXPINCLUDE/*NOEXPINCLUDE, *SEQSRC/*NOSEQSRC。",
+      "inputType": "text",
+      "required": false,
+      "maxOccurrences": 3,
+      "attributes": { "characterSet": "upper", "maxLength": 14 },
+      "placeholder": "*NONE"
+    },
+    {
+      "name": "PPSRCFILE",
+      "description": "出力ソース・ファイル",
+      "help": "プリプロセッサーの出力ソース・ファイルの修飾名。",
+      "inputType": "group",
+      "required": false,
+      "children": [
+        { "name": "LIB", "description": "ライブラリー", "help": "出力ソース・ファイルのライブラリー。*CURLIB / ライブラリー名。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 10 }, "placeholder": "*CURLIB" },
+        { "name": "PPSRCFILE", "description": "出力ソース・ファイル", "help": "出力ソース・ファイル名。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 10 } }
+      ]
+    },
+    { "name": "PPSRCMBR", "description": "出力ソース・メンバー", "help": "プリプロセッサー出力ソース・メンバー名。*MODULE / 名前。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 10 }, "placeholder": "*MODULE" },
+    { "name": "PPSRCSTMF", "description": "出力ストリーム・ファイル", "help": "プリプロセッサー出力ストリーム・ファイルのパス名。*SRCSTMF / パス名。", "inputType": "text", "required": false, "attributes": { "maxLength": 256 }, "placeholder": "*SRCSTMF" },
+    { "name": "TGTCCSID", "description": "ターゲットCCSID", "help": "ソースを変換するターゲットCCSID。*SRC / *JOB / 1-65534。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 5 }, "placeholder": "*SRC" }
+  ]
+}

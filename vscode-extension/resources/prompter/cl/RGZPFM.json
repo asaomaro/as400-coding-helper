@@ -1,0 +1,181 @@
+{
+  "keyword": "RGZPFM",
+  "description": "物理ファイル・メンバーの再編成（RGZPFM）",
+  "help": "物理ファイル・メンバーを再編成します。削除済みレコードを除去して圧縮したり、キー順または論理ファイルの順序に並べ替えたりできます。",
+  "parameters": [
+    {
+      "name": "FILE",
+      "description": "データベース・ファイル",
+      "help": "再編成されるメンバーが入っている物理ファイルを LIB/FILE 形式で指定します。これは必須パラメーターです。",
+      "inputType": "group",
+      "required": true,
+      "children": [
+        {
+          "name": "LIB",
+          "description": "ライブラリー",
+          "help": "ファイルが入っているライブラリー。*LIBL（ライブラリー・リスト検索）/ *CURLIB（現行ライブラリー）/ ライブラリー名。",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "*LIBL",
+          "attributes": { "characterSet": "upper", "maxLength": 10 },
+          "placeholder": "*LIBL"
+        },
+        {
+          "name": "FILE",
+          "description": "データベース・ファイル",
+          "help": "再編成するメンバーが入っている物理ファイルの名前を指定します。",
+          "inputType": "text",
+          "required": true,
+          "attributes": { "characterSet": "upper", "maxLength": 10 },
+          "placeholder": "FILE"
+        }
+      ]
+    },
+    {
+      "name": "MBR",
+      "description": "メンバー",
+      "help": "再編成されるメンバーを指定します。定義済み値: *FIRST=最初のメンバー、*LAST=最後のメンバー。",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*FIRST",
+      "attributes": { "characterSet": "upper", "maxLength": 10 },
+      "placeholder": "*FIRST"
+    },
+    {
+      "name": "KEYFILE",
+      "description": "キー・ファイル",
+      "help": "再編成の方式を指定します。単一値を指定するか、論理ファイルとメンバーを指定します。単一値: *NONE=並べ替えず削除済みレコードを除去して圧縮、*FILE=キー順アクセス・パスに一致させる、*RPLDLTRCD=先頭の削除済みレコードを末尾の有効レコードで置き換える。論理ファイルを指定する場合は LIB と論理ファイル名、メンバーを入力します。",
+      "inputType": "group",
+      "required": false,
+      "children": [
+        {
+          "name": "LIB",
+          "description": "ライブラリー",
+          "help": "論理ファイルが入っているライブラリー。*LIBL（ライブラリー・リスト検索）/ *CURLIB（現行ライブラリー）/ ライブラリー名。論理ファイル名を指定する場合のみ使用します。",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "*LIBL",
+          "attributes": { "characterSet": "upper", "maxLength": 10 },
+          "placeholder": "*LIBL"
+        },
+        {
+          "name": "KEYFILE",
+          "description": "論理ファイル",
+          "help": "キー・ファイルとして使用する論理ファイルの名前。単一値 *NONE / *FILE / *RPLDLTRCD を指定する場合はここに入力します。",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "*NONE",
+          "attributes": { "characterSet": "upper", "maxLength": 10 },
+          "placeholder": "*NONE"
+        },
+        {
+          "name": "MBR",
+          "description": "メンバー",
+          "help": "物理ファイル・メンバーの再編成に使用する順序をもつ論理ファイルのメンバー名を指定します。",
+          "inputType": "text",
+          "required": false,
+          "attributes": { "characterSet": "upper", "maxLength": 10 },
+          "placeholder": "MBR"
+        }
+      ]
+    },
+    {
+      "name": "RBDACCPTH",
+      "description": "アクセス・パスの再作成",
+      "help": "有効なアクセス・パスを再ビルドまたは保守するかどうかを指定します。",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*YES",
+      "options": [
+        { "label": "*YES（終了時に同期再作成）", "value": "*YES" },
+        { "label": "*OPTIMIZE（最速の方法で再作成または保守）", "value": "*OPTIMIZE" },
+        { "label": "*NO（再編成時に保守／ALWCANCEL(*YES)必須）", "value": "*NO" }
+      ]
+    },
+    {
+      "name": "ALWCANCEL",
+      "description": "取り消しの許可",
+      "help": "再編成を取り消せるようにするかどうかを指定します。",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*NO",
+      "options": [
+        { "label": "*NO（取り消し不可）", "value": "*NO" },
+        { "label": "*YES（取り消し可能）", "value": "*YES" }
+      ]
+    },
+    {
+      "name": "LOCK",
+      "description": "ロック状態",
+      "help": "物理ファイル・メンバーに対して獲得するロックを指定します。再編成中の他ジョブからの並行アクセス量を決定します。",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*EXCL",
+      "options": [
+        { "label": "*EXCL（排他ロック）", "value": "*EXCL" },
+        { "label": "*EXCLRD（排他的読み取り可能ロック／ALWCANCEL(*YES)必須）", "value": "*EXCLRD" },
+        { "label": "*SHRUPD（共用更新ロック／ALWCANCEL(*YES)必須）", "value": "*SHRUPD" }
+      ]
+    },
+    {
+      "name": "FROMRCD",
+      "description": "開始レコード",
+      "help": "ファイル内のどのレコードから再編成するかを指定します。定義済み値: *START=すべてのレコード、*PRVRGZ=直前の再編成で除去できなかったレコードから開始。符号なし整数（1～4294967288）も指定できます。",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*START",
+      "attributes": { "characterSet": "upper", "maxLength": 10 },
+      "placeholder": "*START"
+    },
+    {
+      "name": "SRCOPT",
+      "description": "ソース更新オプション",
+      "help": "物理ソース・ファイルの場合に、順序番号フィールドや日付フィールドを更新するかを指定します。単一値: *SAME=変更しない。その他の値（最大2回）: *SEQNBR=順序番号を付け直す、*DATE=日付フィールドにゼロを入れる。",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*SAME",
+      "attributes": { "characterSet": "upper", "maxLength": 10 },
+      "placeholder": "*SAME",
+      "maxOccurrences": 2
+    },
+    {
+      "name": "SRCSEQ",
+      "description": "ソース・ステートメントの順序番号付け",
+      "help": "SRCOPTに*SEQNBRを指定した場合の、最初のレコードに与える順序番号と増分値を指定します（いずれも 0.01～9999.99、既定 1.00）。",
+      "inputType": "group",
+      "required": false,
+      "children": [
+        {
+          "name": "STRSEQNBR",
+          "description": "開始順序番号",
+          "help": "メンバーの最初のソース・レコードの順序番号（0.01～9999.99）。既定 1.00。",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "1.00",
+          "attributes": { "maxLength": 7 },
+          "placeholder": "1.00"
+        },
+        {
+          "name": "INCNBR",
+          "description": "増分番号",
+          "help": "2番目以降のレコードに付け直す順序番号の増分値（0.01～9999.99）。既定 1.00。",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "1.00",
+          "attributes": { "maxLength": 7 },
+          "placeholder": "1.00"
+        }
+      ]
+    },
+    {
+      "name": "RCDFMT",
+      "description": "レコード様式",
+      "help": "複数様式論理ファイルの順序で再編成する場合のレコード様式名を指定します。定義済み値: *ONLY=論理ファイルにレコード様式が1つしかない場合に使用。",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*ONLY",
+      "attributes": { "characterSet": "upper", "maxLength": 10 },
+      "placeholder": "*ONLY"
+    }
+  ]
+}

@@ -1,0 +1,358 @@
+{
+  "keyword": "CHGPF",
+  "description": "物理ファイル変更（CHGPF）",
+  "help": "既存の物理ファイルおよびそのメンバーの属性（メンバー最大数、サイズ、アクセス・パス保守、満了日、共用、再使用、テキスト等）を変更します。DDS ソースを指定すると、ファイル様式の再定義（変更）も行えます。",
+  "parameters": [
+    {
+      "name": "FILE",
+      "description": "物理ファイル",
+      "help": "変更する物理ファイルを LIB/FILE 形式で指定します。必須・定位置1。",
+      "inputType": "group",
+      "required": true,
+      "children": [
+        { "name": "FILE", "description": "物理ファイル", "help": "変更する物理ファイル名。", "inputType": "text", "required": true, "attributes": { "characterSet": "upper", "maxLength": 10 }, "placeholder": "FILE" },
+        { "name": "LIB", "description": "ライブラリー", "help": "ファイルのライブラリー。*LIBL / *CURLIB / ライブラリー名。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 10 }, "defaultValue": "*LIBL", "placeholder": "*LIBL" }
+      ]
+    },
+    {
+      "name": "SYSTEM",
+      "description": "システム",
+      "help": "ローカル/リモートのどちらのファイルを変更するか。*LCL（ローカル、既定）/ *RMT（リモート）/ *FILETYPE（DDM ファイルの有無で判定）。",
+      "inputType": "dropdown",
+      "required": false,
+      "options": [
+        { "label": "*LCL（ローカル・システム）", "value": "*LCL" },
+        { "label": "*RMT（リモート・システム）", "value": "*RMT" },
+        { "label": "*FILETYPE（DDM ファイルの有無で判定）", "value": "*FILETYPE" }
+      ]
+    },
+    {
+      "name": "SRCFILE",
+      "description": "ソース・ファイル",
+      "help": "様式再定義に使う DDS ソース・ファイル。単一値 *NONE（再定義しない、既定）、またはソース・ファイル(修飾名)。",
+      "inputType": "group",
+      "required": false,
+      "children": [
+        { "name": "SRCFILE", "description": "ソース・ファイル", "help": "DDS ソース・ファイル名。*NONE / QDDSSRC / ファイル名。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 10 }, "defaultValue": "*NONE", "placeholder": "*NONE" },
+        { "name": "LIB", "description": "ライブラリー", "help": "ソース・ファイルのライブラリー。*LIBL / *CURLIB / ライブラリー名。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 10 }, "defaultValue": "*LIBL", "placeholder": "*LIBL" }
+      ]
+    },
+    {
+      "name": "SRCMBR",
+      "description": "ソース・メンバー",
+      "help": "DDS ソース・メンバー名。*FILE（ファイル名と同名、既定）/ メンバー名。",
+      "inputType": "text",
+      "required": false,
+      "attributes": { "characterSet": "upper", "maxLength": 10 },
+      "defaultValue": "*FILE",
+      "placeholder": "*FILE"
+    },
+    {
+      "name": "OPTION",
+      "description": "ソース・リスト・オプション",
+      "help": "様式再定義時のソース・リストとイベント・ファイルの出力オプション（最大3回の繰り返し）。*SRC/*NOSRC、*SOURCE/*NOSOURCE、*LIST/*NOLIST、*SECLVL/*NOSECLVL、*EVENTF/*NOEVENTF。",
+      "inputType": "text",
+      "required": false,
+      "attributes": { "characterSet": "upper", "maxLength": 10 },
+      "placeholder": "*SRC",
+      "maxOccurrences": 3
+    },
+    {
+      "name": "GENLVL",
+      "description": "生成重大度レベル",
+      "help": "ファイルを生成しない重大度レベル。0-30。既定 20。",
+      "inputType": "number",
+      "required": false,
+      "attributes": { "numericOnly": true, "maxLength": 2 },
+      "defaultValue": "20",
+      "placeholder": "20"
+    },
+    {
+      "name": "FLAG",
+      "description": "フラグづけ重大度レベル",
+      "help": "ソース・リストにフラグ付けする最小重大度レベル。0-30。既定 0。",
+      "inputType": "number",
+      "required": false,
+      "attributes": { "numericOnly": true, "maxLength": 2 },
+      "defaultValue": "0",
+      "placeholder": "0"
+    },
+    {
+      "name": "DLTDEPLF",
+      "description": "従属論理ファイル削除",
+      "help": "様式変更時に従属論理ファイルを削除するか。*NO（削除しない、既定）/ *YES。",
+      "inputType": "dropdown",
+      "required": false,
+      "options": [
+        { "label": "*NO（削除しない）", "value": "*NO" },
+        { "label": "*YES（従属論理ファイルを削除）", "value": "*YES" }
+      ]
+    },
+    {
+      "name": "RMVCST",
+      "description": "制約の除去",
+      "help": "様式変更時に制約を除去するか。*RESTRICT（制約があれば変更しない、既定）/ *REMOVE（制約を除去して変更）。",
+      "inputType": "dropdown",
+      "required": false,
+      "options": [
+        { "label": "*RESTRICT（制約があれば変更しない）", "value": "*RESTRICT" },
+        { "label": "*REMOVE（制約を除去して変更）", "value": "*REMOVE" }
+      ]
+    },
+    {
+      "name": "EXPDATE",
+      "description": "メンバーの満了日",
+      "help": "メンバーの満了日。日付 / *SAME（変更しない、既定）/ *NONE（満了日なし）。",
+      "inputType": "text",
+      "required": false,
+      "attributes": { "characterSet": "upper", "maxLength": 10 },
+      "defaultValue": "*SAME",
+      "placeholder": "*SAME"
+    },
+    {
+      "name": "MAXMBRS",
+      "description": "メンバーの最大数",
+      "help": "ファイルに許すメンバーの最大数。整数 / *SAME（変更しない、既定）/ *NOMAX（最大なし）。",
+      "inputType": "text",
+      "required": false,
+      "attributes": { "characterSet": "upper", "maxLength": 10 },
+      "defaultValue": "*SAME",
+      "placeholder": "*SAME"
+    },
+    {
+      "name": "ACCPTHSIZ",
+      "description": "アクセス・パス・サイズ",
+      "help": "アクセス・パスの最大サイズ。*SAME（変更しない、既定）/ *MAX4GB / *MAX1TB。",
+      "inputType": "dropdown",
+      "required": false,
+      "options": [
+        { "label": "*SAME（変更しない）", "value": "*SAME" },
+        { "label": "*MAX4GB（最大4GB）", "value": "*MAX4GB" },
+        { "label": "*MAX1TB（最大1TB）", "value": "*MAX1TB" }
+      ]
+    },
+    {
+      "name": "MAINT",
+      "description": "アクセス・パスの保守",
+      "help": "アクセス・パスの保守方法。*SAME（変更しない、既定）/ *IMMED（即時）/ *REBLD（再作成）/ *DLY（遅延）。",
+      "inputType": "dropdown",
+      "required": false,
+      "options": [
+        { "label": "*SAME（変更しない）", "value": "*SAME" },
+        { "label": "*IMMED（即時保守）", "value": "*IMMED" },
+        { "label": "*REBLD（オープン時に再作成）", "value": "*REBLD" },
+        { "label": "*DLY（遅延保守）", "value": "*DLY" }
+      ]
+    },
+    {
+      "name": "RECOVER",
+      "description": "アクセス・パス回復",
+      "help": "アクセス・パスの回復タイミング。*SAME（変更しない、既定）/ *NO / *AFTIPL / *IPL。",
+      "inputType": "dropdown",
+      "required": false,
+      "options": [
+        { "label": "*SAME（変更しない）", "value": "*SAME" },
+        { "label": "*NO（回復しない）", "value": "*NO" },
+        { "label": "*AFTIPL（IPL後に回復）", "value": "*AFTIPL" },
+        { "label": "*IPL（IPL中に回復）", "value": "*IPL" }
+      ]
+    },
+    {
+      "name": "FRCACCPTH",
+      "description": "強制キー順アクセス・パス",
+      "help": "アクセス・パスを補助記憶域へ強制書き出しするか。*SAME（変更しない、既定）/ *NO / *YES。",
+      "inputType": "dropdown",
+      "required": false,
+      "options": [
+        { "label": "*SAME（変更しない）", "value": "*SAME" },
+        { "label": "*NO（強制しない）", "value": "*NO" },
+        { "label": "*YES（強制書き出し）", "value": "*YES" }
+      ]
+    },
+    {
+      "name": "SIZE",
+      "description": "メンバー・サイズ",
+      "help": "メンバーのレコード容量。単一値 *NOMAX、または要素リスト（初期レコード数 / 増分レコード数 / 最大増分値）。各要素は *SAME も可。",
+      "inputType": "group",
+      "required": false,
+      "children": [
+        { "name": "INITRCDS", "description": "初期レコード数", "help": "初期レコード数。1-2147483646 / *SAME / *NOMAX（単一値で最大なし）。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 10 }, "defaultValue": "*SAME", "placeholder": "*SAME" },
+        { "name": "INCRCDS", "description": "増分レコード数", "help": "増分レコード数。0-32767 / *SAME。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 10 }, "defaultValue": "*SAME", "placeholder": "*SAME" },
+        { "name": "MAXINC", "description": "最大増分値", "help": "最大増分回数。0-32767 / *SAME。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 10 }, "defaultValue": "*SAME", "placeholder": "*SAME" }
+      ]
+    },
+    {
+      "name": "ALLOCATE",
+      "description": "記憶域割り振り",
+      "help": "メンバー追加時に初期記憶スペースを割り振るか。*SAME（変更しない、既定）/ *NO / *YES。",
+      "inputType": "dropdown",
+      "required": false,
+      "options": [
+        { "label": "*SAME（変更しない）", "value": "*SAME" },
+        { "label": "*NO（必要量を割り振る）", "value": "*NO" },
+        { "label": "*YES（SIZE 初期値を割り振る）", "value": "*YES" }
+      ]
+    },
+    {
+      "name": "UNIT",
+      "description": "入れたい記憶装置",
+      "help": "データを配置する補助記憶装置。1-255 / *SAME（変更しない、既定）/ *ANY / *SSD。",
+      "inputType": "text",
+      "required": false,
+      "attributes": { "characterSet": "upper", "maxLength": 10 },
+      "defaultValue": "*SAME",
+      "placeholder": "*SAME"
+    },
+    {
+      "name": "FRCRATIO",
+      "description": "強制書き出しレコード数",
+      "help": "補助記憶域へ強制書き出しするまでのレコード数。整数 / *SAME（変更しない、既定）/ *NONE。",
+      "inputType": "text",
+      "required": false,
+      "attributes": { "characterSet": "upper", "maxLength": 10 },
+      "defaultValue": "*SAME",
+      "placeholder": "*SAME"
+    },
+    {
+      "name": "WAITFILE",
+      "description": "最大ファイル待機時間",
+      "help": "ファイル資源の割り振りを待つ最大秒数。整数 / *SAME（変更しない、既定）/ *IMMED / *CLS。",
+      "inputType": "text",
+      "required": false,
+      "attributes": { "characterSet": "upper", "maxLength": 10 },
+      "defaultValue": "*SAME",
+      "placeholder": "*SAME"
+    },
+    {
+      "name": "WAITRCD",
+      "description": "最大レコード待機時間",
+      "help": "レコード・ロックを待つ最大秒数。整数 / *SAME（変更しない、既定）/ *IMMED / *NOMAX。",
+      "inputType": "text",
+      "required": false,
+      "attributes": { "characterSet": "upper", "maxLength": 10 },
+      "defaultValue": "*SAME",
+      "placeholder": "*SAME"
+    },
+    {
+      "name": "SHARE",
+      "description": "オープン・データ・パス共用",
+      "help": "同一ジョブ内でオープン・データ・パスを共用するか。*SAME（変更しない、既定）/ *NO / *YES。",
+      "inputType": "dropdown",
+      "required": false,
+      "options": [
+        { "label": "*SAME（変更しない）", "value": "*SAME" },
+        { "label": "*NO（共用しない）", "value": "*NO" },
+        { "label": "*YES（共用する）", "value": "*YES" }
+      ]
+    },
+    {
+      "name": "DLTPCT",
+      "description": "許される削除レコードの最大%",
+      "help": "削除済みレコードが占める割合の上限（%）。1-100 / *NONE / *SAME（変更しない、既定）。",
+      "inputType": "text",
+      "required": false,
+      "attributes": { "characterSet": "upper", "maxLength": 10 },
+      "defaultValue": "*SAME",
+      "placeholder": "*SAME"
+    },
+    {
+      "name": "REUSEDLT",
+      "description": "削除済みレコードの再使用",
+      "help": "削除済みレコード領域を再使用するか。*SAME（変更しない、既定）/ *YES / *NO。",
+      "inputType": "dropdown",
+      "required": false,
+      "options": [
+        { "label": "*SAME（変更しない）", "value": "*SAME" },
+        { "label": "*YES（再使用する）", "value": "*YES" },
+        { "label": "*NO（再使用しない）", "value": "*NO" }
+      ]
+    },
+    {
+      "name": "SRTSEQ",
+      "description": "分類順序",
+      "help": "アクセス・パスの分類順序。単一値 *SAME（変更しない、既定）/ *SRC / *JOB / *LANGIDSHR / *LANGIDUNQ / *HEX、または分類順序表(修飾名)。",
+      "inputType": "group",
+      "required": false,
+      "children": [
+        { "name": "SRTSEQ", "description": "分類順序", "help": "*SAME（既定）/ *SRC / *JOB / *LANGIDSHR / *LANGIDUNQ / *HEX / 分類順序表名。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 10 }, "defaultValue": "*SAME", "placeholder": "*SAME" },
+        { "name": "LIB", "description": "ライブラリー", "help": "分類順序表のライブラリー。*LIBL / *CURLIB / ライブラリー名。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 10 }, "defaultValue": "*LIBL", "placeholder": "*LIBL" }
+      ]
+    },
+    {
+      "name": "LANGID",
+      "description": "言語ID",
+      "help": "*LANGIDSHR/*LANGIDUNQ 使用時の言語ID。文字値 / *JOB / *SAME（変更しない、既定）。",
+      "inputType": "text",
+      "required": false,
+      "attributes": { "characterSet": "upper", "maxLength": 10 },
+      "defaultValue": "*SAME",
+      "placeholder": "*SAME"
+    },
+    {
+      "name": "LVLCHK",
+      "description": "レコード様式レベルの検査",
+      "help": "オープン時にレコード様式レベルを検査するか。*SAME（変更しない、既定）/ *YES / *NO。",
+      "inputType": "dropdown",
+      "required": false,
+      "options": [
+        { "label": "*SAME（変更しない）", "value": "*SAME" },
+        { "label": "*YES（検査する）", "value": "*YES" },
+        { "label": "*NO（検査しない）", "value": "*NO" }
+      ]
+    },
+    {
+      "name": "KEEPINMEM",
+      "description": "メモリーに保管",
+      "help": "ファイル・データをメモリーに常駐させるか。*SAME（変更しない、既定）/ *NO / *YES。",
+      "inputType": "dropdown",
+      "required": false,
+      "options": [
+        { "label": "*SAME（変更しない）", "value": "*SAME" },
+        { "label": "*NO（常駐させない）", "value": "*NO" },
+        { "label": "*YES（常駐させる）", "value": "*YES" }
+      ]
+    },
+    {
+      "name": "NODGRP",
+      "description": "ノード・グループ",
+      "help": "分散ファイルのノード・グループ。単一値 *NONE / *SAME（変更しない、既定）、またはノード・グループ(修飾名)。",
+      "inputType": "group",
+      "required": false,
+      "children": [
+        { "name": "NODGRP", "description": "ノード・グループ", "help": "ノード・グループ名。*NONE / *SAME / 名前。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 10 }, "defaultValue": "*SAME", "placeholder": "*SAME" },
+        { "name": "LIB", "description": "ライブラリー", "help": "ノード・グループのライブラリー。*LIBL / *CURLIB / ライブラリー名。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 10 }, "defaultValue": "*LIBL", "placeholder": "*LIBL" }
+      ]
+    },
+    {
+      "name": "PTNKEY",
+      "description": "区画キー",
+      "help": "分散ファイルの区画キー・フィールド。単一値 *SAME（変更しない、既定）、またはフィールド名（最大300回の繰り返し）。",
+      "inputType": "text",
+      "required": false,
+      "attributes": { "characterSet": "upper", "maxLength": 10 },
+      "defaultValue": "*SAME",
+      "placeholder": "*SAME",
+      "maxOccurrences": 300
+    },
+    {
+      "name": "TEXT",
+      "description": "テキスト'記述'",
+      "help": "ファイルを説明するテキスト記述。文字値 / *SAME（変更しない、既定）/ *BLANK（空白）。",
+      "inputType": "text",
+      "required": false,
+      "attributes": { "maxLength": 50 },
+      "defaultValue": "*SAME",
+      "placeholder": "*SAME"
+    },
+    {
+      "name": "CCSID",
+      "description": "コード化文字セットID",
+      "help": "ファイルの文字データの CCSID。1-65535 / *SAME（変更しない、既定）/ *HEX。",
+      "inputType": "text",
+      "required": false,
+      "attributes": { "characterSet": "upper", "maxLength": 5 },
+      "defaultValue": "*SAME",
+      "placeholder": "*SAME"
+    }
+  ]
+}

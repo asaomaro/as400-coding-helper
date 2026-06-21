@@ -1,0 +1,509 @@
+{
+  "keyword": "CRTPF",
+  "description": "物理ファイル作成（CRTPF）",
+  "help": "DDS ソースまたはレコード長 (RCDLEN) の指定に基づいて、データを格納する物理ファイル（およびオプションでメンバー）を作成します。",
+  "parameters": [
+    {
+      "name": "FILE",
+      "description": "ファイル（CRTPF）",
+      "help": "作成する物理ファイルを LIB/FILE 形式で指定します（必須・定位置1）。",
+      "inputType": "group",
+      "required": true,
+      "children": [
+        {
+          "name": "LIB",
+          "description": "ライブラリー",
+          "help": "ファイルを作成するライブラリー。*CURLIB（現行ライブラリー）／ライブラリー名。",
+          "inputType": "text",
+          "required": false,
+          "attributes": { "characterSet": "upper", "maxLength": 10 },
+          "defaultValue": "*CURLIB",
+          "placeholder": "*CURLIB"
+        },
+        {
+          "name": "FILE",
+          "description": "ファイル",
+          "help": "作成する物理ファイル名。",
+          "inputType": "text",
+          "required": true,
+          "attributes": { "characterSet": "upper", "maxLength": 10 },
+          "placeholder": "MYFILE"
+        }
+      ]
+    },
+    {
+      "name": "SRCFILE",
+      "description": "ソース・ファイル（CRTPF）",
+      "help": "ファイルの DDS が入っているソース・ファイルを LIB/FILE 形式で指定します（定位置2）。RCDLEN を指定する場合は不要です。",
+      "inputType": "group",
+      "required": false,
+      "children": [
+        {
+          "name": "LIB",
+          "description": "ライブラリー",
+          "help": "ソース・ファイルが入っているライブラリー。*LIBL／*CURLIB／ライブラリー名。",
+          "inputType": "text",
+          "required": false,
+          "attributes": { "characterSet": "upper", "maxLength": 10 },
+          "defaultValue": "*LIBL",
+          "placeholder": "*LIBL"
+        },
+        {
+          "name": "SRCFILE",
+          "description": "ソース・ファイル",
+          "help": "DDS が入っているソース・ファイル名。既定は QDDSSRC。",
+          "inputType": "text",
+          "required": false,
+          "attributes": { "characterSet": "upper", "maxLength": 10 },
+          "defaultValue": "QDDSSRC",
+          "placeholder": "QDDSSRC"
+        }
+      ]
+    },
+    {
+      "name": "SRCMBR",
+      "description": "ソース・メンバー（CRTPF）",
+      "help": "DDS が入っているソース・メンバー名。*FILE（ファイルと同名）／メンバー名（定位置3）。",
+      "inputType": "text",
+      "required": false,
+      "attributes": { "characterSet": "upper", "maxLength": 10 },
+      "defaultValue": "*FILE",
+      "placeholder": "*FILE"
+    },
+    {
+      "name": "RCDLEN",
+      "description": "DDSがない場合のレコード長（CRTPF）",
+      "help": "DDS を使用しない場合のレコード長（整数）。DDS（SRCFILE）を指定する場合は指定しません（定位置4）。",
+      "inputType": "number",
+      "required": false,
+      "placeholder": "80"
+    },
+    {
+      "name": "GENLVL",
+      "description": "生成重大度レベル（CRTPF）",
+      "help": "ファイル作成を続行できなくなる重大度レベル。この値以上の重大度のメッセージが出るとファイルは作成されません。0-30。既定は 20。",
+      "inputType": "number",
+      "required": false,
+      "defaultValue": "20",
+      "placeholder": "20"
+    },
+    {
+      "name": "FLAG",
+      "description": "フラグづけ重大度レベル（CRTPF）",
+      "help": "ソース・リストに表示するメッセージの最小重大度レベル。0-30。既定は 0。",
+      "inputType": "number",
+      "required": false,
+      "defaultValue": "0",
+      "placeholder": "0"
+    },
+    {
+      "name": "FILETYPE",
+      "description": "ファイル・タイプ（CRTPF）",
+      "help": "作成するファイルがデータ・ファイルかソース・ファイルかを指定します。",
+      "inputType": "dropdown",
+      "required": false,
+      "options": [
+        { "label": "*DATA（データ・ファイル）", "value": "*DATA" },
+        { "label": "*SRC（ソース・ファイル）", "value": "*SRC" }
+      ]
+    },
+    {
+      "name": "MBR",
+      "description": "メンバー（CRTPF）",
+      "help": "ファイル作成時に追加するメンバー名。*FILE（ファイルと同名）／*NONE（メンバーを追加しない）／メンバー名。",
+      "inputType": "text",
+      "required": false,
+      "attributes": { "characterSet": "upper", "maxLength": 10 },
+      "defaultValue": "*FILE",
+      "placeholder": "*FILE"
+    },
+    {
+      "name": "IGCDTA",
+      "description": "ユーザー指定のDBCSデータ（CRTPF）",
+      "help": "ファイルが DBCS（2バイト文字）データを処理するかどうかを指定します。",
+      "inputType": "dropdown",
+      "required": false,
+      "options": [
+        { "label": "*NO（DBCSデータなし）", "value": "*NO" },
+        { "label": "*YES（DBCSデータあり）", "value": "*YES" }
+      ]
+    },
+    {
+      "name": "TEXT",
+      "description": "テキスト記述（CRTPF）",
+      "help": "ファイルを簡潔に説明するテキスト。*SRCMBRTXT（ソース・メンバーのテキスト）／*BLANK（テキストなし）／文字値。",
+      "inputType": "text",
+      "required": false,
+      "attributes": { "maxLength": 50 },
+      "defaultValue": "*SRCMBRTXT",
+      "placeholder": "*SRCMBRTXT"
+    },
+    {
+      "name": "OPTION",
+      "description": "ソース・リスト・オプション（CRTPF）",
+      "help": "コンパイル時に作成する出力を指定します（最大4回の繰り返し・定位置5）。*SRC/*NOSRC（ソース）, *LIST/*NOLIST（リスト）, *SECLVL/*NOSECLVL（第2レベル・メッセージ）, *EVENTF/*NOEVENTF（イベント・ファイル）。",
+      "inputType": "text",
+      "required": false,
+      "attributes": { "characterSet": "upper", "maxLength": 10 },
+      "placeholder": "*SRC",
+      "maxOccurrences": 4
+    },
+    {
+      "name": "SYSTEM",
+      "description": "システム（CRTPF）",
+      "help": "ファイルをローカル・システムとリモート・システムのいずれに作成するかを指定します。",
+      "inputType": "dropdown",
+      "required": false,
+      "options": [
+        { "label": "*LCL（ローカル・システム）", "value": "*LCL" },
+        { "label": "*RMT（リモート・システム）", "value": "*RMT" },
+        { "label": "*FILETYPE（DDMファイルの有無で判定）", "value": "*FILETYPE" }
+      ]
+    },
+    {
+      "name": "EXPDATE",
+      "description": "メンバーの満了日（CRTPF）",
+      "help": "メンバーの満了日。*NONE（満了日なし）／日付（ジョブの日付形式）。",
+      "inputType": "text",
+      "required": false,
+      "attributes": { "maxLength": 10 },
+      "defaultValue": "*NONE",
+      "placeholder": "*NONE"
+    },
+    {
+      "name": "MAXMBRS",
+      "description": "メンバーの最大数（CRTPF）",
+      "help": "ファイルが持てるメンバーの最大数。既定は 1。*NOMAX（制限なし）／整数。",
+      "inputType": "text",
+      "required": false,
+      "attributes": { "characterSet": "upper", "maxLength": 10 },
+      "defaultValue": "1",
+      "placeholder": "1"
+    },
+    {
+      "name": "ACCPTHSIZ",
+      "description": "アクセス・パス・サイズ（CRTPF）",
+      "help": "アクセス・パスの最大サイズを指定します。",
+      "inputType": "dropdown",
+      "required": false,
+      "options": [
+        { "label": "*MAX1TB（最大1テラバイト）", "value": "*MAX1TB" },
+        { "label": "*MAX4GB（最大4ギガバイト）", "value": "*MAX4GB" }
+      ]
+    },
+    {
+      "name": "PAGESIZE",
+      "description": "アクセス・パス論理ページ・サイズ（CRTPF）",
+      "help": "アクセス・パスに使用される論理ページ・サイズ（KB）。*KEYLEN（キー長から決定）／8/16/32/64/128/256/512。",
+      "inputType": "dropdown",
+      "required": false,
+      "options": [
+        { "label": "*KEYLEN（キー長から決定）", "value": "*KEYLEN" },
+        { "label": "8", "value": "8" },
+        { "label": "16", "value": "16" },
+        { "label": "32", "value": "32" },
+        { "label": "64", "value": "64" },
+        { "label": "128", "value": "128" },
+        { "label": "256", "value": "256" },
+        { "label": "512", "value": "512" }
+      ]
+    },
+    {
+      "name": "MAINT",
+      "description": "アクセス・パスの保守（CRTPF）",
+      "help": "キー順アクセス・パスの保守方法を指定します。",
+      "inputType": "dropdown",
+      "required": false,
+      "options": [
+        { "label": "*IMMED（即時保守）", "value": "*IMMED" },
+        { "label": "*DLY（遅延保守）", "value": "*DLY" },
+        { "label": "*REBLD（オープン時に再作成）", "value": "*REBLD" }
+      ]
+    },
+    {
+      "name": "RECOVER",
+      "description": "アクセス・パス回復（CRTPF）",
+      "help": "システム異常終了後にアクセス・パスを再作成するタイミングを指定します。",
+      "inputType": "dropdown",
+      "required": false,
+      "options": [
+        { "label": "*NO（オープン時に再作成）", "value": "*NO" },
+        { "label": "*AFTIPL（IPL後に再作成）", "value": "*AFTIPL" },
+        { "label": "*IPL（IPL中に再作成）", "value": "*IPL" }
+      ]
+    },
+    {
+      "name": "FRCACCPTH",
+      "description": "強制キー順アクセス・パス（CRTPF）",
+      "help": "アクセス・パスをデータと同時に補助記憶域へ強制書き出しするかどうかを指定します。",
+      "inputType": "dropdown",
+      "required": false,
+      "options": [
+        { "label": "*NO（強制しない）", "value": "*NO" },
+        { "label": "*YES（強制する）", "value": "*YES" }
+      ]
+    },
+    {
+      "name": "SIZE",
+      "description": "メンバー・サイズ（CRTPF）",
+      "help": "各メンバーが格納できるレコード数を指定します。単一値 *NOMAX（最大サイズまで自動増加）か、初期レコード数・増分レコード数・最大増分回数の要素リストで指定します。要素を空欄にすると *NOMAX とみなされます。",
+      "inputType": "group",
+      "required": false,
+      "children": [
+        {
+          "name": "INIT",
+          "description": "初期レコード数",
+          "help": "メンバーの初期レコード数。1-2147483646。既定は 10000。*NOMAX を指定すると単一値として扱われます。",
+          "inputType": "text",
+          "required": false,
+          "attributes": { "characterSet": "upper", "maxLength": 10 },
+          "defaultValue": "10000",
+          "placeholder": "10000"
+        },
+        {
+          "name": "INCR",
+          "description": "増分レコード数",
+          "help": "メンバーが満杯になったときに自動的に追加されるレコード数。整数。既定は 1000。",
+          "inputType": "number",
+          "required": false,
+          "defaultValue": "1000",
+          "placeholder": "1000"
+        },
+        {
+          "name": "MAXINCR",
+          "description": "最大増分値",
+          "help": "自動増分を行う最大回数。整数。既定は 3。",
+          "inputType": "number",
+          "required": false,
+          "defaultValue": "3",
+          "placeholder": "3"
+        }
+      ]
+    },
+    {
+      "name": "ALLOCATE",
+      "description": "記憶域割り振り（CRTPF）",
+      "help": "メンバー追加時に初期サイズ分の記憶域をあらかじめ割り振るかどうかを指定します。",
+      "inputType": "dropdown",
+      "required": false,
+      "options": [
+        { "label": "*NO（割り振らない）", "value": "*NO" },
+        { "label": "*YES（割り振る）", "value": "*YES" }
+      ]
+    },
+    {
+      "name": "CONTIG",
+      "description": "連続記憶域（CRTPF）",
+      "help": "メンバーの初期レコード用記憶域を連続して割り振るかどうかを指定します。",
+      "inputType": "dropdown",
+      "required": false,
+      "options": [
+        { "label": "*NO（連続割り振りしない）", "value": "*NO" },
+        { "label": "*YES（連続割り振りする）", "value": "*YES" }
+      ]
+    },
+    {
+      "name": "UNIT",
+      "description": "入れたい記憶装置（CRTPF）",
+      "help": "ファイルのデータを格納する補助記憶装置を指定します。1-255／*ANY（任意の装置）／*SSD（ソリッド・ステート・ディスク）。",
+      "inputType": "text",
+      "required": false,
+      "attributes": { "characterSet": "upper", "maxLength": 4 },
+      "defaultValue": "*ANY",
+      "placeholder": "*ANY"
+    },
+    {
+      "name": "FRCRATIO",
+      "description": "強制書き出しレコード数（CRTPF）",
+      "help": "補助記憶域へ強制書き出しするまでの挿入・更新・削除レコード数。*NONE（強制書き出しなし）／整数。",
+      "inputType": "text",
+      "required": false,
+      "attributes": { "characterSet": "upper", "maxLength": 10 },
+      "defaultValue": "*NONE",
+      "placeholder": "*NONE"
+    },
+    {
+      "name": "WAITFILE",
+      "description": "最大ファイル待機時間（CRTPF）",
+      "help": "ファイル・リソースが割り振られるのを待つ秒数。既定は 30。*IMMED（待たない）／*CLS（クラス値）／整数。",
+      "inputType": "text",
+      "required": false,
+      "attributes": { "characterSet": "upper", "maxLength": 10 },
+      "defaultValue": "30",
+      "placeholder": "30"
+    },
+    {
+      "name": "WAITRCD",
+      "description": "最大レコード待機時間（CRTPF）",
+      "help": "ロックされたレコードが解放されるのを待つ秒数。既定は 60。*IMMED（待たない）／*NOMAX（無制限）／整数。",
+      "inputType": "text",
+      "required": false,
+      "attributes": { "characterSet": "upper", "maxLength": 10 },
+      "defaultValue": "60",
+      "placeholder": "60"
+    },
+    {
+      "name": "SHARE",
+      "description": "オープン・データ・パス共用（CRTPF）",
+      "help": "同一ジョブ内の複数のオープンでオープン・データ・パス (ODP) を共用できるかどうかを指定します。",
+      "inputType": "dropdown",
+      "required": false,
+      "options": [
+        { "label": "*NO（共用しない）", "value": "*NO" },
+        { "label": "*YES（共用する）", "value": "*YES" }
+      ]
+    },
+    {
+      "name": "DLTPCT",
+      "description": "許される削除レコードの最大%（CRTPF）",
+      "help": "削除済みレコードがこの割合を超えたときにメッセージを出します。*NONE（チェックしない）／1-100。",
+      "inputType": "text",
+      "required": false,
+      "attributes": { "characterSet": "upper", "maxLength": 5 },
+      "defaultValue": "*NONE",
+      "placeholder": "*NONE"
+    },
+    {
+      "name": "REUSEDLT",
+      "description": "削除済みレコードの再使用（CRTPF）",
+      "help": "削除されたレコードのスペースを後続の挿入で再使用するかどうかを指定します。",
+      "inputType": "dropdown",
+      "required": false,
+      "options": [
+        { "label": "*YES（再使用する）", "value": "*YES" },
+        { "label": "*NO（再使用しない）", "value": "*NO" }
+      ]
+    },
+    {
+      "name": "SRTSEQ",
+      "description": "分類順序（CRTPF）",
+      "help": "ファイルに関連付ける分類順序を指定します。単一値 *SRC/*JOB/*LANGIDSHR/*LANGIDUNQ/*HEX、または分類順序テーブルを LIB/TABLE で指定します。要素を空欄にすると単一値 *SRC とみなされます。",
+      "inputType": "group",
+      "required": false,
+      "children": [
+        {
+          "name": "LIB",
+          "description": "ライブラリー",
+          "help": "分類順序テーブルが入っているライブラリー。*LIBL／*CURLIB／ライブラリー名。",
+          "inputType": "text",
+          "required": false,
+          "attributes": { "characterSet": "upper", "maxLength": 10 },
+          "defaultValue": "*LIBL",
+          "placeholder": "*LIBL"
+        },
+        {
+          "name": "SRTSEQ",
+          "description": "分類順序",
+          "help": "単一値 *SRC/*JOB/*LANGIDSHR/*LANGIDUNQ/*HEX、または分類順序テーブル名。",
+          "inputType": "text",
+          "required": false,
+          "attributes": { "characterSet": "upper", "maxLength": 10 },
+          "defaultValue": "*SRC",
+          "placeholder": "*SRC"
+        }
+      ]
+    },
+    {
+      "name": "LANGID",
+      "description": "言語ID（CRTPF）",
+      "help": "SRTSEQ が *LANGIDSHR / *LANGIDUNQ のときに使用する言語ID。*JOB（ジョブの言語ID）／言語ID（例 ENU/JPN）。",
+      "inputType": "text",
+      "required": false,
+      "attributes": { "characterSet": "upper", "maxLength": 10 },
+      "defaultValue": "*JOB",
+      "placeholder": "*JOB"
+    },
+    {
+      "name": "CCSID",
+      "description": "コード化文字セットID（CRTPF）",
+      "help": "ファイルの文字データに使用される CCSID。*JOB（ジョブの CCSID）／*HEX（CCSID 65535）／整数（1-65535）。",
+      "inputType": "text",
+      "required": false,
+      "attributes": { "characterSet": "upper", "maxLength": 5 },
+      "defaultValue": "*JOB",
+      "placeholder": "*JOB"
+    },
+    {
+      "name": "ALWUPD",
+      "description": "更新操作可能（CRTPF）",
+      "help": "ファイル内のレコードを更新できるかどうかを指定します。",
+      "inputType": "dropdown",
+      "required": false,
+      "options": [
+        { "label": "*YES（更新可能）", "value": "*YES" },
+        { "label": "*NO（更新不可）", "value": "*NO" }
+      ]
+    },
+    {
+      "name": "ALWDLT",
+      "description": "削除操作可能（CRTPF）",
+      "help": "ファイル内のレコードを削除できるかどうかを指定します。",
+      "inputType": "dropdown",
+      "required": false,
+      "options": [
+        { "label": "*YES（削除可能）", "value": "*YES" },
+        { "label": "*NO（削除不可）", "value": "*NO" }
+      ]
+    },
+    {
+      "name": "LVLCHK",
+      "description": "レコード様式レベルの検査（CRTPF）",
+      "help": "ファイル・オープン時にレコード様式レベル識別子を検査するかどうかを指定します。",
+      "inputType": "dropdown",
+      "required": false,
+      "options": [
+        { "label": "*YES（検査する）", "value": "*YES" },
+        { "label": "*NO（検査しない）", "value": "*NO" }
+      ]
+    },
+    {
+      "name": "NODGRP",
+      "description": "ノード・グループ（CRTPF）",
+      "help": "分散ファイルに関連付けるノード・グループを指定します。単一値 *NONE（分散しない）、またはノード・グループを LIB/NODGRP で指定します。要素を空欄にすると *NONE とみなされます。",
+      "inputType": "group",
+      "required": false,
+      "children": [
+        {
+          "name": "LIB",
+          "description": "ライブラリー",
+          "help": "ノード・グループが入っているライブラリー。*LIBL／*CURLIB／ライブラリー名。",
+          "inputType": "text",
+          "required": false,
+          "attributes": { "characterSet": "upper", "maxLength": 10 },
+          "defaultValue": "*LIBL",
+          "placeholder": "*LIBL"
+        },
+        {
+          "name": "NODGRP",
+          "description": "ノード・グループ",
+          "help": "単一値 *NONE、またはノード・グループ名。",
+          "inputType": "text",
+          "required": false,
+          "attributes": { "characterSet": "upper", "maxLength": 10 },
+          "defaultValue": "*NONE",
+          "placeholder": "*NONE"
+        }
+      ]
+    },
+    {
+      "name": "PTNKEY",
+      "description": "区画キー（CRTPF）",
+      "help": "分散ファイルのレコードをノード間に分散させるための区画キーとなるフィールド名（最大300回の繰り返し）。",
+      "inputType": "text",
+      "required": false,
+      "attributes": { "characterSet": "upper", "maxLength": 10 },
+      "placeholder": "FIELD1",
+      "maxOccurrences": 300
+    },
+    {
+      "name": "AUT",
+      "description": "権限（CRTPF）",
+      "help": "このファイルに対する特定権限を持たないユーザーに与える権限。*LIBCRTAUT（ライブラリーの作成権限）／*ALL／*CHANGE／*EXCLUDE／*USE／権限リスト名。",
+      "inputType": "text",
+      "required": false,
+      "attributes": { "characterSet": "upper", "maxLength": 10 },
+      "defaultValue": "*LIBCRTAUT",
+      "placeholder": "*LIBCRTAUT"
+    }
+  ]
+}

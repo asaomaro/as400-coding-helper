@@ -1,0 +1,164 @@
+{
+  "keyword": "CRTPGM",
+  "description": "プログラム作成（CRTPGM）",
+  "help": "1つ以上のモジュール・オブジェクトとサービス・プログラムをバインドして、実行可能なILEプログラム(*PGM)を作成します。",
+  "parameters": [
+    {
+      "name": "PGM",
+      "description": "プログラム",
+      "help": "作成するプログラムの修飾名（必須・定位置1）。修飾子1=プログラム名、修飾子2=ライブラリー（既定 *CURLIB）。",
+      "inputType": "group",
+      "required": true,
+      "children": [
+        { "name": "LIB", "description": "ライブラリー", "help": "プログラムを作成するライブラリー。*CURLIB / ライブラリー名。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 10 }, "placeholder": "*CURLIB" },
+        { "name": "PGM", "description": "プログラム", "help": "作成するプログラムの名前。", "inputType": "text", "required": true, "attributes": { "characterSet": "upper", "maxLength": 10 }, "placeholder": "PGM" }
+      ]
+    },
+    {
+      "name": "MODULE",
+      "description": "モジュール",
+      "help": "バインドするモジュールの修飾名。単一値 *PGM、またはモジュールの修飾名（最大300回）。修飾子1はモジュール名/総称名/*ALL。",
+      "inputType": "group",
+      "required": false,
+      "maxOccurrences": 300,
+      "children": [
+        { "name": "LIB", "description": "ライブラリー", "help": "モジュールのライブラリー。*LIBL / *CURLIB / *USRLIBL / ライブラリー名。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 10 }, "placeholder": "*LIBL" },
+        { "name": "MODULE", "description": "モジュール", "help": "モジュール名／総称名／*ALL。単一値 *PGM はプログラムと同名のモジュール。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 10 }, "placeholder": "*PGM" }
+      ]
+    },
+    { "name": "TEXT", "description": "テキスト'記述'", "help": "プログラムを説明するテキスト記述。*ENTMODTXT（入口モジュールのテキスト）/ *BLANK / 文字値。", "inputType": "text", "required": false, "attributes": { "maxLength": 50 }, "placeholder": "*ENTMODTXT" },
+    {
+      "name": "ENTMOD",
+      "description": "プログラム入口プロシージャー・モジュール",
+      "help": "プログラム入口プロシージャー(PEP)を含むモジュール。単一値 *FIRST / *ONLY / *PGM、またはモジュールの修飾名。",
+      "inputType": "group",
+      "required": false,
+      "children": [
+        { "name": "LIB", "description": "ライブラリー", "help": "入口モジュールのライブラリー。*LIBL / *CURLIB / *USRLIBL / ライブラリー名。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 10 }, "placeholder": "*LIBL" },
+        { "name": "ENTMOD", "description": "入口モジュール", "help": "*FIRST（最初に見つかった PEP）/ *ONLY / *PGM、またはモジュール名。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 10 }, "placeholder": "*FIRST" }
+      ]
+    },
+    {
+      "name": "BNDSRVPGM",
+      "description": "サービス・プログラムのバインド",
+      "help": "バインドするサービス・プログラム。単一値 *NONE、または要素リスト（最大300回）。要素1=サービス・プログラム修飾名、要素2=活動化。",
+      "inputType": "group",
+      "required": false,
+      "maxOccurrences": 300,
+      "children": [
+        { "name": "LIB", "description": "ライブラリー", "help": "サービス・プログラムのライブラリー。*LIBL / ライブラリー名。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 10 }, "placeholder": "*LIBL" },
+        { "name": "SRVPGM", "description": "サービス・プログラム", "help": "サービス・プログラム名／総称名／*ALL。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 10 } },
+        { "name": "ACTIVATION", "description": "活動化", "help": "サービス・プログラムの活動化方法。*IMMED（即時）/ *DEFER（据え置き）。", "inputType": "dropdown", "required": false, "options": [ { "label": "*IMMED（即時）", "value": "*IMMED" }, { "label": "*DEFER（据え置き）", "value": "*DEFER" } ] }
+      ]
+    },
+    {
+      "name": "BNDDIR",
+      "description": "ディレクトリーのバインド",
+      "help": "シンボル解決に使うバインディング・ディレクトリー。単一値 *NONE、またはバインディング・ディレクトリーの修飾名（最大300回）。",
+      "inputType": "group",
+      "required": false,
+      "maxOccurrences": 300,
+      "children": [
+        { "name": "LIB", "description": "ライブラリー", "help": "バインディング・ディレクトリーのライブラリー。*LIBL / *CURLIB / *USRLIBL / ライブラリー名。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 10 }, "placeholder": "*LIBL" },
+        { "name": "BNDDIR", "description": "バインディング・ディレクトリー", "help": "*NONE、またはバインディング・ディレクトリー名。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 10 }, "placeholder": "*NONE" }
+      ]
+    },
+    { "name": "ACTGRP", "description": "活動化グループ", "help": "プログラムが関連付けられる活動化グループ。*ENTMOD / *NEW / *CALLER / 名前。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 10 }, "placeholder": "*ENTMOD" },
+    { "name": "OPTION", "description": "作成オプション", "help": "作成オプション（最大5回）。*GEN/*NOGEN, *NODUPPROC/*DUPPROC, *NODUPVAR/*DUPVAR, *WARN/*NOWARN, *RSLVREF/*UNRSLVREF。", "inputType": "text", "required": false, "maxOccurrences": 5, "attributes": { "characterSet": "upper", "maxLength": 12 }, "placeholder": "*GEN" },
+    {
+      "name": "DETAIL",
+      "description": "明細のリスト",
+      "help": "バインダー・リストの詳細レベル。*NONE / *BASIC / *EXTENDED / *FULL。",
+      "inputType": "dropdown",
+      "required": false,
+      "options": [
+        { "label": "*NONE（なし）", "value": "*NONE" },
+        { "label": "*BASIC（基本）", "value": "*BASIC" },
+        { "label": "*EXTENDED（拡張）", "value": "*EXTENDED" },
+        { "label": "*FULL（すべて）", "value": "*FULL" }
+      ]
+    },
+    {
+      "name": "ALWUPD",
+      "description": "更新可能",
+      "help": "プログラムをバインダー言語で更新可能にするか。*YES / *NO。",
+      "inputType": "dropdown",
+      "required": false,
+      "options": [
+        { "label": "*YES（更新可能）", "value": "*YES" },
+        { "label": "*NO", "value": "*NO" }
+      ]
+    },
+    {
+      "name": "ALWLIBUPD",
+      "description": "*SRVPGMライブラリー更新可能",
+      "help": "バインドしたサービス・プログラムのライブラリー更新を許可するか。*YES / *NO。",
+      "inputType": "dropdown",
+      "required": false,
+      "options": [
+        { "label": "*YES（許可）", "value": "*YES" },
+        { "label": "*NO", "value": "*NO" }
+      ]
+    },
+    { "name": "USRPRF", "description": "ユーザー・プロファイル", "help": "プログラム実行時に使用するユーザー・プロファイル。*USER / *OWNER。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 10 }, "placeholder": "*USER" },
+    {
+      "name": "REPLACE",
+      "description": "プログラムの置き換え",
+      "help": "同名の既存プログラムを置き換えるか。*YES / *NO。",
+      "inputType": "dropdown",
+      "required": false,
+      "options": [
+        { "label": "*YES（置き換える）", "value": "*YES" },
+        { "label": "*NO（置き換えない）", "value": "*NO" }
+      ]
+    },
+    { "name": "AUT", "description": "権限", "help": "オブジェクトの共通認可。*LIBCRTAUT / *CHANGE / *ALL / *USE / *EXCLUDE / 認可リスト名。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 10 }, "placeholder": "*LIBCRTAUT" },
+    { "name": "TGTRLS", "description": "ターゲット・リリース", "help": "オブジェクトを使用するオペレーティング・システムのリリース。*CURRENT / *PRV / 文字値。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 10 }, "placeholder": "*CURRENT" },
+    {
+      "name": "ALWRINZ",
+      "description": "再初期設定可能",
+      "help": "プログラムの再初期設定を許可するか。*NO / *YES。",
+      "inputType": "dropdown",
+      "required": false,
+      "options": [
+        { "label": "*NO", "value": "*NO" },
+        { "label": "*YES", "value": "*YES" }
+      ]
+    },
+    {
+      "name": "STGMDL",
+      "description": "ストレージ・モデル",
+      "help": "プログラムのストレージ・モデル。*SNGLVL / *TERASPACE / *INHERIT。",
+      "inputType": "dropdown",
+      "required": false,
+      "options": [
+        { "label": "*SNGLVL（単一レベル記憶）", "value": "*SNGLVL" },
+        { "label": "*TERASPACE", "value": "*TERASPACE" },
+        { "label": "*INHERIT（継承）", "value": "*INHERIT" }
+      ]
+    },
+    {
+      "name": "ARGOPT",
+      "description": "引数最適化",
+      "help": "引数の受け渡しを最適化するか。*NO / *YES。",
+      "inputType": "dropdown",
+      "required": false,
+      "options": [
+        { "label": "*NO", "value": "*NO" },
+        { "label": "*YES", "value": "*YES" }
+      ]
+    },
+    {
+      "name": "IPA",
+      "description": "プロシージャー間分析",
+      "help": "プロシージャー間分析(IPA)を行うか。*YES / *NO。",
+      "inputType": "dropdown",
+      "required": false,
+      "options": [
+        { "label": "*YES", "value": "*YES" },
+        { "label": "*NO", "value": "*NO" }
+      ]
+    },
+    { "name": "IPACTLFILE", "description": "IPA制御ファイル", "help": "IPA 制御情報を含むストリーム・ファイルのパス名。*NONE / パス名。", "inputType": "text", "required": false, "attributes": { "maxLength": 256 }, "placeholder": "*NONE" }
+  ]
+}

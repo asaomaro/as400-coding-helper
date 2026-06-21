@@ -1,0 +1,554 @@
+{
+  "keyword": "RSTOBJ",
+  "description": "オブジェクト復元（RSTOBJ）",
+  "help": "テープ・光ディスク・保管ファイル・媒体定義から保管されたオブジェクトを、1つ以上のライブラリーに復元します。",
+  "parameters": [
+    {
+      "name": "OBJ",
+      "description": "オブジェクト",
+      "help": "復元するオブジェクトの名前。単一値 *ALL、または総称名（末尾 *）/ 名前（最大300個）。必須・定位置1。",
+      "inputType": "text",
+      "required": true,
+      "attributes": { "characterSet": "upper", "maxLength": 10 },
+      "defaultValue": "*ALL",
+      "placeholder": "*ALL",
+      "maxOccurrences": 300
+    },
+    {
+      "name": "SAVLIB",
+      "description": "保管されたライブラリー",
+      "help": "オブジェクトの保管元ライブラリー。単一値 *ANY / *SELECT、または総称名（末尾 *）/ 名前（最大300個）。必須・定位置2。",
+      "inputType": "text",
+      "required": true,
+      "attributes": { "characterSet": "upper", "maxLength": 10 },
+      "placeholder": "*ANY",
+      "maxOccurrences": 300
+    },
+    {
+      "name": "DEV",
+      "description": "装置",
+      "help": "復元に使用する装置。単一値 *SAVF（保管ファイル）/ *MEDDFN（媒体定義）、または装置名（最大4個）。必須・定位置3。",
+      "inputType": "text",
+      "required": true,
+      "attributes": { "characterSet": "upper", "maxLength": 10 },
+      "placeholder": "*SAVF",
+      "maxOccurrences": 4
+    },
+    {
+      "name": "OBJTYPE",
+      "description": "オブジェクト・タイプ",
+      "help": "復元するオブジェクトのタイプ。単一値 *ALL、またはタイプのリスト（最大75個）。定位置4。",
+      "inputType": "text",
+      "required": false,
+      "attributes": { "characterSet": "upper", "maxLength": 10 },
+      "defaultValue": "*ALL",
+      "placeholder": "*ALL",
+      "maxOccurrences": 75
+    },
+    {
+      "name": "VOL",
+      "description": "ボリュームID",
+      "help": "復元元媒体のボリュームID。単一値 *MOUNTED / *SAVVOL、またはボリュームID（最大75個）。定位置5。",
+      "inputType": "text",
+      "required": false,
+      "attributes": { "characterSet": "upper", "maxLength": 6 },
+      "defaultValue": "*MOUNTED",
+      "placeholder": "*MOUNTED",
+      "maxOccurrences": 75
+    },
+    {
+      "name": "SEQNBR",
+      "description": "順序番号",
+      "help": "媒体上の順序番号。1-16777215 または *SEARCH（検索）。定位置6。",
+      "inputType": "text",
+      "required": false,
+      "attributes": { "characterSet": "upper", "maxLength": 8 },
+      "defaultValue": "*SEARCH",
+      "placeholder": "*SEARCH"
+    },
+    {
+      "name": "POSITION",
+      "description": "ファイルの開始桁",
+      "help": "復元を開始するファイルの位置。16進値 / *FIRST。",
+      "inputType": "text",
+      "required": false,
+      "attributes": { "characterSet": "upper", "maxLength": 10 },
+      "defaultValue": "*FIRST",
+      "placeholder": "*FIRST"
+    },
+    {
+      "name": "LABEL",
+      "description": "ラベル",
+      "help": "復元するファイルのデータ・ファイル識別ラベル。文字値 / *SAVLIB。",
+      "inputType": "text",
+      "required": false,
+      "attributes": { "maxLength": 17 },
+      "defaultValue": "*SAVLIB",
+      "placeholder": "*SAVLIB"
+    },
+    {
+      "name": "ENDOPT",
+      "description": "媒体の終わりオプション",
+      "help": "操作完了後の媒体位置付け。",
+      "inputType": "dropdown",
+      "required": false,
+      "options": [
+        { "label": "*REWIND（巻き戻し）", "value": "*REWIND" },
+        { "label": "*LEAVE（そのまま）", "value": "*LEAVE" },
+        { "label": "*UNLOAD（アンロード）", "value": "*UNLOAD" }
+      ]
+    },
+    {
+      "name": "SAVF",
+      "description": "保管ファイル",
+      "help": "DEV(*SAVF) のとき、復元元の保管ファイルを LIB/SAVF 形式で指定します。",
+      "inputType": "group",
+      "required": false,
+      "children": [
+        {
+          "name": "LIB",
+          "description": "ライブラリー",
+          "help": "保管ファイルが入っているライブラリー。*LIBL / *CURLIB / ライブラリー名。",
+          "inputType": "text",
+          "required": false,
+          "attributes": { "characterSet": "upper", "maxLength": 10 },
+          "defaultValue": "*LIBL",
+          "placeholder": "*LIBL"
+        },
+        {
+          "name": "SAVF",
+          "description": "保管ファイル",
+          "help": "保管ファイルの名前。",
+          "inputType": "text",
+          "required": false,
+          "attributes": { "characterSet": "upper", "maxLength": 10 },
+          "placeholder": "SAVF"
+        }
+      ]
+    },
+    {
+      "name": "OPTION",
+      "description": "オプション",
+      "help": "どのオブジェクトを復元するか。",
+      "inputType": "dropdown",
+      "required": false,
+      "options": [
+        { "label": "*ALL（すべて復元）", "value": "*ALL" },
+        { "label": "*NEW（システムに存在しないものだけ）", "value": "*NEW" },
+        { "label": "*OLD（システムに既に存在するものだけ）", "value": "*OLD" },
+        { "label": "*FREE（記憶域が解放されているものだけ）", "value": "*FREE" }
+      ]
+    },
+    {
+      "name": "FILEMBR",
+      "description": "ファイル・メンバー",
+      "help": "復元するデータベース・ファイルのメンバーを指定します（最大50回繰り返し。要素リストを平坦化）。",
+      "inputType": "group",
+      "required": false,
+      "maxOccurrences": 50,
+      "children": [
+        {
+          "name": "FILE",
+          "description": "ファイル",
+          "help": "ファイル名。*ALL / ファイル名。",
+          "inputType": "text",
+          "required": false,
+          "attributes": { "characterSet": "upper", "maxLength": 10 },
+          "defaultValue": "*ALL",
+          "placeholder": "*ALL"
+        },
+        {
+          "name": "MBR",
+          "description": "メンバー",
+          "help": "メンバー名。単一値 *ALL / *NONE、または総称名（末尾 *）/ 名前。",
+          "inputType": "text",
+          "required": false,
+          "attributes": { "characterSet": "upper", "maxLength": 10 },
+          "defaultValue": "*ALL",
+          "placeholder": "*ALL"
+        }
+      ]
+    },
+    {
+      "name": "MBROPT",
+      "description": "DBメンバー・オプション",
+      "help": "既存データベース・ファイルへのメンバー復元方法。",
+      "inputType": "dropdown",
+      "required": false,
+      "options": [
+        { "label": "*MATCH（メンバーが一致する場合のみ）", "value": "*MATCH" },
+        { "label": "*ALL（すべて復元）", "value": "*ALL" },
+        { "label": "*NEW（新規メンバーのみ）", "value": "*NEW" },
+        { "label": "*OLD（既存メンバーのみ）", "value": "*OLD" }
+      ]
+    },
+    {
+      "name": "DFRID",
+      "description": "据え置きID",
+      "help": "据え置き復元に使用する識別名。*NONE / 名前。",
+      "inputType": "text",
+      "required": false,
+      "attributes": { "characterSet": "upper", "maxLength": 10 },
+      "defaultValue": "*NONE",
+      "placeholder": "*NONE"
+    },
+    {
+      "name": "SPLFDTA",
+      "description": "スプール・ファイル・データ",
+      "help": "出力待ち行列のスプール・ファイル・データを復元するか。",
+      "inputType": "dropdown",
+      "required": false,
+      "options": [
+        { "label": "*NEW（新規のみ復元）", "value": "*NEW" },
+        { "label": "*NONE（復元しない）", "value": "*NONE" }
+      ]
+    },
+    {
+      "name": "PVTAUT",
+      "description": "専用権限",
+      "help": "保管された専用権限も復元するか。",
+      "inputType": "dropdown",
+      "required": false,
+      "options": [
+        { "label": "*NO（専用権限を復元しない）", "value": "*NO" },
+        { "label": "*YES（専用権限を復元する）", "value": "*YES" }
+      ]
+    },
+    {
+      "name": "STRJRN",
+      "description": "ジャーナル処理の開始",
+      "help": "復元したファイルのジャーナル処理を自動的に開始するか。",
+      "inputType": "dropdown",
+      "required": false,
+      "options": [
+        { "label": "*YES（ジャーナル処理を開始）", "value": "*YES" },
+        { "label": "*NO（開始しない）", "value": "*NO" }
+      ]
+    },
+    {
+      "name": "SAVDATE",
+      "description": "保管日",
+      "help": "復元対象を特定するための保管日（日付）。",
+      "inputType": "text",
+      "required": false,
+      "attributes": { "characterSet": "upper", "maxLength": 10 },
+      "placeholder": "保管日"
+    },
+    {
+      "name": "SAVTIME",
+      "description": "保管時刻",
+      "help": "復元対象を特定するための保管時刻（時刻）。",
+      "inputType": "text",
+      "required": false,
+      "attributes": { "characterSet": "upper", "maxLength": 8 },
+      "placeholder": "保管時刻"
+    },
+    {
+      "name": "ALWOBJDIF",
+      "description": "オブジェクト差異可能",
+      "help": "保管時と復元先で差異があるオブジェクトの復元を許可するか。単一値 *NONE / *COMPATIBLE / *ALL、または複数指定（最大4個）: *AUTL, *FILELVL, *OWNER, *PGP。",
+      "inputType": "text",
+      "required": false,
+      "attributes": { "characterSet": "upper", "maxLength": 12 },
+      "defaultValue": "*NONE",
+      "placeholder": "*NONE",
+      "maxOccurrences": 4
+    },
+    {
+      "name": "FRCOBJCVN",
+      "description": "強制オブジェクト変換",
+      "help": "復元中にプログラム等を現行形式へ強制変換するか（要素リストを平坦化）。",
+      "inputType": "group",
+      "required": false,
+      "children": [
+        {
+          "name": "CVNRST",
+          "description": "復元中変換",
+          "help": "復元中に変換するか。*SYSVAL / *NO / *YES。",
+          "inputType": "text",
+          "required": false,
+          "attributes": { "characterSet": "upper", "maxLength": 8 },
+          "defaultValue": "*SYSVAL",
+          "placeholder": "*SYSVAL"
+        },
+        {
+          "name": "OBJ",
+          "description": "変換するオブジェクト",
+          "help": "変換対象のオブジェクト範囲。*RQD（必要なものだけ）/ *ALL。",
+          "inputType": "text",
+          "required": false,
+          "attributes": { "characterSet": "upper", "maxLength": 6 },
+          "defaultValue": "*RQD",
+          "placeholder": "*RQD"
+        }
+      ]
+    },
+    {
+      "name": "RSTLIB",
+      "description": "復元先ライブラリー",
+      "help": "オブジェクトを復元するライブラリー。*SAVLIB（保管元と同じ）/ ライブラリー名。",
+      "inputType": "text",
+      "required": false,
+      "attributes": { "characterSet": "upper", "maxLength": 10 },
+      "defaultValue": "*SAVLIB",
+      "placeholder": "*SAVLIB"
+    },
+    {
+      "name": "OUTPUT",
+      "description": "出力",
+      "help": "復元されたオブジェクトの情報リストの出力先。",
+      "inputType": "dropdown",
+      "required": false,
+      "options": [
+        { "label": "*NONE（出力しない）", "value": "*NONE" },
+        { "label": "*PRINT（印刷）", "value": "*PRINT" },
+        { "label": "*OUTFILE（出力ファイル）", "value": "*OUTFILE" }
+      ]
+    },
+    {
+      "name": "MEDDFN",
+      "description": "媒体定義",
+      "help": "DEV(*MEDDFN) のとき、使用する媒体定義を LIB/MEDDFN 形式で指定します。",
+      "inputType": "group",
+      "required": false,
+      "children": [
+        {
+          "name": "LIB",
+          "description": "ライブラリー",
+          "help": "媒体定義が入っているライブラリー。*LIBL / *CURLIB / ライブラリー名。",
+          "inputType": "text",
+          "required": false,
+          "attributes": { "characterSet": "upper", "maxLength": 10 },
+          "defaultValue": "*LIBL",
+          "placeholder": "*LIBL"
+        },
+        {
+          "name": "MEDDFN",
+          "description": "媒体定義",
+          "help": "媒体定義の名前。",
+          "inputType": "text",
+          "required": false,
+          "attributes": { "characterSet": "upper", "maxLength": 10 },
+          "placeholder": "MEDDFN"
+        }
+      ]
+    },
+    {
+      "name": "OPTFILE",
+      "description": "光ディスク・ファイル",
+      "help": "復元に使用する光ディスク・ファイルのパス名。* / パス名。",
+      "inputType": "text",
+      "required": false,
+      "placeholder": "*"
+    },
+    {
+      "name": "RSTASPDEV",
+      "description": "復元先ASP装置",
+      "help": "オブジェクトの復元先となる補助記憶域プール(ASP)装置名。*SAVASPDEV / ASP装置名。",
+      "inputType": "text",
+      "required": false,
+      "attributes": { "characterSet": "upper", "maxLength": 10 },
+      "defaultValue": "*SAVASPDEV",
+      "placeholder": "*SAVASPDEV"
+    },
+    {
+      "name": "RSTASP",
+      "description": "復元先ASP番号",
+      "help": "オブジェクトの復元先となるASP番号。1-32 / *SAVASP。",
+      "inputType": "text",
+      "required": false,
+      "attributes": { "characterSet": "upper", "maxLength": 8 },
+      "defaultValue": "*SAVASP",
+      "placeholder": "*SAVASP"
+    },
+    {
+      "name": "OUTFILE",
+      "description": "出力を受け取るファイル",
+      "help": "OUTPUT(*OUTFILE) のとき、出力を受け取るファイルを LIB/FILE 形式で指定します。",
+      "inputType": "group",
+      "required": false,
+      "children": [
+        {
+          "name": "LIB",
+          "description": "ライブラリー",
+          "help": "出力ファイルが入っているライブラリー。*LIBL / *CURLIB / ライブラリー名。",
+          "inputType": "text",
+          "required": false,
+          "attributes": { "characterSet": "upper", "maxLength": 10 },
+          "defaultValue": "*LIBL",
+          "placeholder": "*LIBL"
+        },
+        {
+          "name": "FILE",
+          "description": "出力を受け取るファイル",
+          "help": "出力ファイルの名前。",
+          "inputType": "text",
+          "required": false,
+          "attributes": { "characterSet": "upper", "maxLength": 10 },
+          "placeholder": "FILE"
+        }
+      ]
+    },
+    {
+      "name": "OUTMBR",
+      "description": "出力メンバー・オプション",
+      "help": "出力ファイルのメンバー指定（要素リストを平坦化）。",
+      "inputType": "group",
+      "required": false,
+      "children": [
+        {
+          "name": "MBR",
+          "description": "出力を受け取るメンバー",
+          "help": "出力先メンバー名。*FIRST / メンバー名。",
+          "inputType": "text",
+          "required": false,
+          "attributes": { "characterSet": "upper", "maxLength": 10 },
+          "defaultValue": "*FIRST",
+          "placeholder": "*FIRST"
+        },
+        {
+          "name": "OPTION",
+          "description": "レコードの置き換えまたは追加",
+          "help": "既存レコードを置き換えるか追加するか。*REPLACE / *ADD。",
+          "inputType": "text",
+          "required": false,
+          "attributes": { "characterSet": "upper", "maxLength": 8 },
+          "defaultValue": "*REPLACE",
+          "placeholder": "*REPLACE"
+        }
+      ]
+    },
+    {
+      "name": "INFTYPE",
+      "description": "出力情報のタイプ",
+      "help": "出力に含める情報の種類。",
+      "inputType": "dropdown",
+      "required": false,
+      "options": [
+        { "label": "*OBJ（オブジェクト単位）", "value": "*OBJ" },
+        { "label": "*MBR（メンバー単位）", "value": "*MBR" }
+      ]
+    },
+    {
+      "name": "OMITLIB",
+      "description": "除外するライブラリー",
+      "help": "復元から除外するライブラリー。単一値 *NONE、または総称名（末尾 *）/ 名前（最大300個）。",
+      "inputType": "text",
+      "required": false,
+      "attributes": { "characterSet": "upper", "maxLength": 10 },
+      "defaultValue": "*NONE",
+      "placeholder": "*NONE",
+      "maxOccurrences": 300
+    },
+    {
+      "name": "OMITOBJ",
+      "description": "除外するオブジェクト",
+      "help": "復元から除外するオブジェクト（最大300回繰り返し。要素リストを平坦化）。",
+      "inputType": "group",
+      "required": false,
+      "maxOccurrences": 300,
+      "children": [
+        {
+          "name": "LIB",
+          "description": "ライブラリー",
+          "help": "除外オブジェクトのライブラリー。総称名（末尾 *）/ 名前 / *ALL。",
+          "inputType": "text",
+          "required": false,
+          "attributes": { "characterSet": "upper", "maxLength": 10 },
+          "defaultValue": "*ALL",
+          "placeholder": "*ALL"
+        },
+        {
+          "name": "OBJ",
+          "description": "オブジェクト",
+          "help": "除外するオブジェクトの名前。総称名（末尾 *）/ 名前 / *NONE / *ALL。",
+          "inputType": "text",
+          "required": false,
+          "attributes": { "characterSet": "upper", "maxLength": 10 },
+          "defaultValue": "*NONE",
+          "placeholder": "*NONE"
+        },
+        {
+          "name": "OBJTYPE",
+          "description": "オブジェクト・タイプ",
+          "help": "除外するオブジェクトのタイプ。文字値 / *ALL。",
+          "inputType": "text",
+          "required": false,
+          "attributes": { "characterSet": "upper", "maxLength": 10 },
+          "defaultValue": "*ALL",
+          "placeholder": "*ALL"
+        }
+      ]
+    },
+    {
+      "name": "SELECT",
+      "description": "選択",
+      "help": "復元対象を組み込み/除外で細かく選択します（最大300回繰り返し。要素リストを平坦化）。",
+      "inputType": "group",
+      "required": false,
+      "maxOccurrences": 300,
+      "children": [
+        {
+          "name": "INCREL",
+          "description": "組み込みまたは除外",
+          "help": "この項目を組み込むか除外するか。*INCLUDE / *OMIT。",
+          "inputType": "text",
+          "required": false,
+          "attributes": { "characterSet": "upper", "maxLength": 8 },
+          "defaultValue": "*INCLUDE",
+          "placeholder": "*INCLUDE"
+        },
+        {
+          "name": "LIB",
+          "description": "ライブラリー",
+          "help": "対象オブジェクトのライブラリー。総称名（末尾 *）/ 名前 / *ALL。",
+          "inputType": "text",
+          "required": false,
+          "attributes": { "characterSet": "upper", "maxLength": 10 },
+          "defaultValue": "*ALL",
+          "placeholder": "*ALL"
+        },
+        {
+          "name": "OBJ",
+          "description": "オブジェクト",
+          "help": "対象オブジェクトの名前。総称名（末尾 *）/ 名前 / *ALL。",
+          "inputType": "text",
+          "required": false,
+          "attributes": { "characterSet": "upper", "maxLength": 10 },
+          "defaultValue": "*ALL",
+          "placeholder": "*ALL"
+        },
+        {
+          "name": "OBJTYPE",
+          "description": "オブジェクト・タイプ",
+          "help": "対象オブジェクトのタイプ。文字値 / *ALL。",
+          "inputType": "text",
+          "required": false,
+          "attributes": { "characterSet": "upper", "maxLength": 10 },
+          "defaultValue": "*ALL",
+          "placeholder": "*ALL"
+        },
+        {
+          "name": "OBJATR",
+          "description": "オブジェクトの属性",
+          "help": "対象オブジェクトの属性。文字値 / *ALL / *BLANK。",
+          "inputType": "text",
+          "required": false,
+          "attributes": { "characterSet": "upper", "maxLength": 10 },
+          "defaultValue": "*ALL",
+          "placeholder": "*ALL"
+        },
+        {
+          "name": "MBR",
+          "description": "ファイル・メンバー",
+          "help": "対象ファイルのメンバー。総称名（末尾 *）/ 名前 / *ALL / *ALLMBR。",
+          "inputType": "text",
+          "required": false,
+          "attributes": { "characterSet": "upper", "maxLength": 10 },
+          "defaultValue": "*ALL",
+          "placeholder": "*ALL"
+        }
+      ]
+    }
+  ]
+}

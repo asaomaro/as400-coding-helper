@@ -1,0 +1,674 @@
+{
+  "keyword": "CRTPRTF",
+  "description": "印刷装置ファイル作成（CRTPRTF）",
+  "help": "DDSソースまたはプログラム記述から、印刷出力に使う印刷装置ファイル(*FILE)を作成します。",
+  "parameters": [
+    {
+      "name": "FILE",
+      "description": "ファイル",
+      "help": "作成する印刷装置ファイルの修飾名（必須・定位置1）。修飾子1=ファイル名、修飾子2=ライブラリー（既定 *CURLIB）。",
+      "inputType": "group",
+      "required": true,
+      "children": [
+        { "name": "LIB", "description": "ライブラリー", "help": "ファイルを作成するライブラリー。*CURLIB / ライブラリー名。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 10 }, "placeholder": "*CURLIB" },
+        { "name": "FILE", "description": "ファイル", "help": "作成するファイルの名前。", "inputType": "text", "required": true, "attributes": { "characterSet": "upper", "maxLength": 10 }, "placeholder": "FILE" }
+      ]
+    },
+    {
+      "name": "SRCFILE",
+      "description": "ソース・ファイル",
+      "help": "DDSソースが入っているソース物理ファイル（オプショナル・定位置2）。単一値 *NONE、またはソース・ファイルの修飾名。",
+      "inputType": "group",
+      "required": false,
+      "children": [
+        { "name": "LIB", "description": "ライブラリー", "help": "ソース・ファイルのライブラリー。*LIBL / *CURLIB / ライブラリー名。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 10 }, "placeholder": "*LIBL" },
+        { "name": "SRCFILE", "description": "ソース・ファイル", "help": "*NONE（プログラム記述ファイル）、または DDS ソース・ファイル名。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 10 }, "placeholder": "*NONE" }
+      ]
+    },
+    { "name": "SRCMBR", "description": "ソース・メンバー", "help": "DDSソース・メンバー名（オプショナル・定位置3）。既定 *FILE（ファイル名と同じメンバー）。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 10 }, "placeholder": "*FILE" },
+    { "name": "GENLVL", "description": "生成重大度レベル", "help": "ファイル生成を継続する最大エラー重大度。0-30（既定 20）。", "inputType": "number", "required": false, "attributes": { "numericOnly": true, "maxLength": 2 }, "placeholder": "20" },
+    { "name": "FLAG", "description": "フラグづけ重大度レベル", "help": "リストにフラグを付ける最小メッセージ重大度。0-30（既定 0）。", "inputType": "number", "required": false, "attributes": { "numericOnly": true, "maxLength": 2 }, "placeholder": "0" },
+    {
+      "name": "DEV",
+      "description": "装置",
+      "help": "出力先の印刷装置。要素1=印刷装置（*JOB / *SYSVAL / 名前）。",
+      "inputType": "group",
+      "required": false,
+      "children": [
+        { "name": "PRINTER", "description": "印刷装置", "help": "印刷装置名。*JOB / *SYSVAL / 装置名。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 10 }, "placeholder": "*JOB" }
+      ]
+    },
+    {
+      "name": "DEVTYPE",
+      "description": "印刷装置タイプ",
+      "help": "印刷装置データ・ストリームのタイプ。*SCS / *IPDS / *LINE / *AFPDSLINE / *USERASCII / *AFPDS。",
+      "inputType": "dropdown",
+      "required": false,
+      "options": [
+        { "label": "*SCS", "value": "*SCS" },
+        { "label": "*IPDS", "value": "*IPDS" },
+        { "label": "*LINE", "value": "*LINE" },
+        { "label": "*AFPDSLINE", "value": "*AFPDSLINE" },
+        { "label": "*USERASCII", "value": "*USERASCII" },
+        { "label": "*AFPDS", "value": "*AFPDS" }
+      ]
+    },
+    {
+      "name": "IGCDTA",
+      "description": "ユーザー指定のDBCSデータ",
+      "help": "ファイルが2バイト文字(DBCS)データを処理するか。*NO / *YES。",
+      "inputType": "dropdown",
+      "required": false,
+      "options": [
+        { "label": "*NO", "value": "*NO" },
+        { "label": "*YES（DBCSデータを処理）", "value": "*YES" }
+      ]
+    },
+    {
+      "name": "IGCEXNCHR",
+      "description": "外字",
+      "help": "拡張文字(外字)処理を行うか。*YES / *NO。",
+      "inputType": "dropdown",
+      "required": false,
+      "options": [
+        { "label": "*YES", "value": "*YES" },
+        { "label": "*NO", "value": "*NO" }
+      ]
+    },
+    { "name": "TEXT", "description": "テキスト'記述'", "help": "ファイルを説明するテキスト記述。*SRCMBRTXT / *BLANK / 文字値。", "inputType": "text", "required": false, "attributes": { "maxLength": 50 }, "placeholder": "*SRCMBRTXT" },
+    { "name": "OPTION", "description": "ソース・リスト・オプション", "help": "ソース・リスト・オプション（オプショナル・定位置4、最大4回）。*SRC/*NOSRC, *SOURCE/*NOSOURCE, *LIST/*NOLIST, *SECLVL/*NOSECLVL, *EVENTF/*NOEVENTF。", "inputType": "text", "required": false, "maxOccurrences": 4, "attributes": { "characterSet": "upper", "maxLength": 12 }, "placeholder": "*SRC" },
+    {
+      "name": "PAGESIZE",
+      "description": "ページ・サイズ",
+      "help": "ページのサイズ。要素1=長さ(1ページ当たりの行数 0.001-255.0、既定 66)、要素2=幅(1行当たりの文字数 0.001-378.0、既定 132)、要素3=測定方法。",
+      "inputType": "group",
+      "required": false,
+      "children": [
+        { "name": "LENGTH", "description": "長さ--1ページ当たりの行数", "help": "1ページ当たりの行数。0.001-255.0（既定 66）。", "inputType": "text", "required": false, "attributes": { "maxLength": 7 }, "placeholder": "66" },
+        { "name": "WIDTH", "description": "幅--1行当たりの文字数", "help": "1行当たりの文字数。0.001-378.0（既定 132）。", "inputType": "text", "required": false, "attributes": { "maxLength": 7 }, "placeholder": "132" },
+        { "name": "MEASURE", "description": "測定方法", "help": "ページ・サイズの測定方法。*ROWCOL（行・桁）/ *UOM（計測単位）。", "inputType": "dropdown", "required": false, "options": [ { "label": "*ROWCOL（行・桁）", "value": "*ROWCOL" }, { "label": "*UOM（計測単位）", "value": "*UOM" } ] }
+      ]
+    },
+    { "name": "LPI", "description": "行／インチ", "help": "1インチ当たりの行数。6 / 6.0 / 3.0 / 4.0 / 7.5 / 8.0 / 9.0 / 12.0（既定 6）。", "inputType": "text", "required": false, "attributes": { "maxLength": 5 }, "placeholder": "6" },
+    { "name": "CPI", "description": "1インチ当たりの文字数", "help": "1インチ当たりの文字数。10 / 5.0 / 12.0 / 13.3 / 15.0 / 16.7 / 18.0 / 20.0（既定 10）。", "inputType": "text", "required": false, "attributes": { "maxLength": 5 }, "placeholder": "10" },
+    {
+      "name": "FRONTMGN",
+      "description": "フロント・マージン",
+      "help": "前面マージン。単一値 *DEVD、または要素リスト（下方向オフセット・横方向オフセット 0.0-57.79）。",
+      "inputType": "group",
+      "required": false,
+      "children": [
+        { "name": "DOWN", "description": "下方向オフセット", "help": "下方向のオフセット。0.0-57.79。単一値 *DEVD を使う場合は空欄。", "inputType": "text", "required": false, "attributes": { "maxLength": 6 }, "placeholder": "*DEVD" },
+        { "name": "ACROSS", "description": "横方向オフセット", "help": "横方向のオフセット。0.0-57.79。", "inputType": "text", "required": false, "attributes": { "maxLength": 6 } }
+      ]
+    },
+    {
+      "name": "BACKMGN",
+      "description": "バック・マージン",
+      "help": "背面マージン。単一値 *FRONTMGN / *DEVD、または要素リスト（下方向オフセット・横方向オフセット 0.0-57.79）。",
+      "inputType": "group",
+      "required": false,
+      "children": [
+        { "name": "DOWN", "description": "下方向オフセット", "help": "下方向のオフセット。0.0-57.79。単一値 *FRONTMGN / *DEVD を使う場合は空欄。", "inputType": "text", "required": false, "attributes": { "maxLength": 6 }, "placeholder": "*FRONTMGN" },
+        { "name": "ACROSS", "description": "横方向オフセット", "help": "横方向のオフセット。0.0-57.79。", "inputType": "text", "required": false, "attributes": { "maxLength": 6 } }
+      ]
+    },
+    { "name": "OVRFLW", "description": "オーバーフロー行番号", "help": "オーバーフロー行番号。1-255（既定 60）。", "inputType": "number", "required": false, "attributes": { "numericOnly": true, "maxLength": 3 }, "placeholder": "60" },
+    {
+      "name": "FOLD",
+      "description": "レコードの折り返し",
+      "help": "行幅を超えるレコードを次の行に折り返すか。*NO / *YES。",
+      "inputType": "dropdown",
+      "required": false,
+      "options": [
+        { "label": "*NO", "value": "*NO" },
+        { "label": "*YES（折り返す）", "value": "*YES" }
+      ]
+    },
+    {
+      "name": "RPLUNPRT",
+      "description": "印刷不能文字の処置",
+      "help": "印刷不能文字の置き換え。単一値 *NO、または要素リスト（要素1=文字の置き換え *YES、要素2=置き換え文字）。",
+      "inputType": "group",
+      "required": false,
+      "children": [
+        { "name": "REPLACE", "description": "文字の置き換え", "help": "印刷不能文字を置き換えるか。*YES。単一値 *NO を使う場合は空欄。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 4 }, "placeholder": "*NO" },
+        { "name": "CHAR", "description": "置き換え文字", "help": "置き換えに使う文字。*BLANK / X'40'-X'FE'。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 6 }, "placeholder": "*BLANK" }
+      ]
+    },
+    {
+      "name": "ALIGN",
+      "description": "ページの位置合わせ",
+      "help": "用紙の位置合わせメッセージを出すか。*NO / *YES。",
+      "inputType": "dropdown",
+      "required": false,
+      "options": [
+        { "label": "*NO", "value": "*NO" },
+        { "label": "*YES", "value": "*YES" }
+      ]
+    },
+    {
+      "name": "CTLCHAR",
+      "description": "制御文字",
+      "help": "印刷制御文字の種類。*NONE / *FCFC / *MACHINE。",
+      "inputType": "dropdown",
+      "required": false,
+      "options": [
+        { "label": "*NONE", "value": "*NONE" },
+        { "label": "*FCFC（先行制御文字）", "value": "*FCFC" },
+        { "label": "*MACHINE（機械制御コード）", "value": "*MACHINE" }
+      ]
+    },
+    {
+      "name": "CHLVAL",
+      "description": "チャネル値",
+      "help": "チャネルと行番号の対応。単一値 *NORMAL、または要素リスト（要素1=チャネル 1-12、要素2=行番号 1-255）（最大12回）。",
+      "inputType": "group",
+      "required": false,
+      "maxOccurrences": 12,
+      "children": [
+        { "name": "CHANNEL", "description": "チャネル", "help": "チャネル番号。1-12。単一値 *NORMAL を使う場合は空欄。", "inputType": "text", "required": false, "attributes": { "maxLength": 7 }, "placeholder": "*NORMAL" },
+        { "name": "LINE", "description": "チャネルの行番号", "help": "チャネルに割り当てる行番号。1-255。", "inputType": "number", "required": false, "attributes": { "numericOnly": true, "maxLength": 3 } }
+      ]
+    },
+    {
+      "name": "FIDELITY",
+      "description": "精度",
+      "help": "印刷時のエラー処理。*CONTENT / *ABSOLUTE。",
+      "inputType": "dropdown",
+      "required": false,
+      "options": [
+        { "label": "*CONTENT（可能な限り続行）", "value": "*CONTENT" },
+        { "label": "*ABSOLUTE（エラーで停止）", "value": "*ABSOLUTE" }
+      ]
+    },
+    {
+      "name": "PRTQLTY",
+      "description": "印刷品質",
+      "help": "印刷品質。*STD / *DEVD / *DRAFT / *NLQ / *FASTDRAFT。",
+      "inputType": "dropdown",
+      "required": false,
+      "options": [
+        { "label": "*STD（標準）", "value": "*STD" },
+        { "label": "*DEVD", "value": "*DEVD" },
+        { "label": "*DRAFT（ドラフト）", "value": "*DRAFT" },
+        { "label": "*NLQ（高品質）", "value": "*NLQ" },
+        { "label": "*FASTDRAFT", "value": "*FASTDRAFT" }
+      ]
+    },
+    {
+      "name": "FORMFEED",
+      "description": "用紙送り",
+      "help": "用紙送り方法。*DEVD / *AUTOCUT / *CONT / *CUT / *CONT2。",
+      "inputType": "dropdown",
+      "required": false,
+      "options": [
+        { "label": "*DEVD", "value": "*DEVD" },
+        { "label": "*AUTOCUT（自動カット紙）", "value": "*AUTOCUT" },
+        { "label": "*CONT（連続用紙）", "value": "*CONT" },
+        { "label": "*CUT（カット紙）", "value": "*CUT" },
+        { "label": "*CONT2（連続用紙2）", "value": "*CONT2" }
+      ]
+    },
+    { "name": "DRAWER", "description": "ソース用紙入れ", "help": "用紙の給紙元。1-255 / *E1 / *FORMDF（既定 1）。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 7 }, "placeholder": "1" },
+    { "name": "OUTBIN", "description": "出力ビン", "help": "印刷出力の排出先ビン。1-65535 / *DEVD。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 7 }, "placeholder": "*DEVD" },
+    {
+      "name": "FONT",
+      "description": "フォント",
+      "help": "印刷フォント。単一値 *CPI / *DEVD、または要素リスト（要素1=識別コード、要素2=ポイント・サイズ 0.1-999.9 / *NONE）。",
+      "inputType": "group",
+      "required": false,
+      "children": [
+        { "name": "IDENTIFIER", "description": "識別コード", "help": "フォント識別コード（文字値、例 011）。単一値 *CPI / *DEVD を使う場合は空欄。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 6 }, "placeholder": "*CPI" },
+        { "name": "POINTSIZE", "description": "ポイント・サイズ", "help": "フォントのポイント・サイズ。0.1-999.9 / *NONE。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 6 }, "placeholder": "*NONE" }
+      ]
+    },
+    {
+      "name": "CHRID",
+      "description": "文字ID",
+      "help": "文字ID。単一値 *DEVD / *SYSVAL / *JOBCCSID / *CHRIDCTL、または要素リスト（図形文字セット・コード・ページ）。",
+      "inputType": "group",
+      "required": false,
+      "children": [
+        { "name": "CHARSET", "description": "図形文字セット", "help": "図形文字セット番号（整数）。単一値を使う場合は空欄。", "inputType": "number", "required": false, "attributes": { "numericOnly": true, "maxLength": 5 }, "placeholder": "*DEVD" },
+        { "name": "CODEPAGE", "description": "コード・ページ", "help": "コード・ページ番号（整数）。", "inputType": "number", "required": false, "attributes": { "numericOnly": true, "maxLength": 5 } }
+      ]
+    },
+    {
+      "name": "DECFMT",
+      "description": "10進数形式",
+      "help": "編集時の10進数形式。*FILE / *JOB。",
+      "inputType": "dropdown",
+      "required": false,
+      "options": [
+        { "label": "*FILE", "value": "*FILE" },
+        { "label": "*JOB", "value": "*JOB" }
+      ]
+    },
+    {
+      "name": "FNTCHRSET",
+      "description": "フォント文字セット",
+      "help": "AFP フォント文字セット。単一値 *FONT、または要素リスト（要素1=文字セット修飾名、要素2=コード・ページ修飾名、要素3=ポイント・サイズ）。",
+      "inputType": "group",
+      "required": false,
+      "children": [
+        { "name": "CHARSETLIB", "description": "文字セット ライブラリー", "help": "文字セットのライブラリー。*LIBL / *CURLIB / ライブラリー名。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 10 }, "placeholder": "*LIBL" },
+        { "name": "CHARSET", "description": "文字セット", "help": "フォント文字セット名。単一値 *FONT を使う場合は空欄。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 10 }, "placeholder": "*FONT" },
+        { "name": "CODEPAGELIB", "description": "コード・ページ ライブラリー", "help": "コード・ページのライブラリー。*LIBL / *CURLIB / ライブラリー名。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 10 }, "placeholder": "*LIBL" },
+        { "name": "CODEPAGE", "description": "コード・ページ", "help": "コード・ページ名。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 10 } },
+        { "name": "POINTSIZE", "description": "ポイント・サイズ", "help": "ポイント・サイズ。0.1-999.9 / *NONE。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 6 }, "placeholder": "*NONE" }
+      ]
+    },
+    {
+      "name": "CDEFNT",
+      "description": "コード化フォント",
+      "help": "AFP コード化フォント。単一値 *FNTCHRSET、または要素リスト（要素1=コード化フォント修飾名、要素2=ポイント・サイズ）。",
+      "inputType": "group",
+      "required": false,
+      "children": [
+        { "name": "LIB", "description": "ライブラリー", "help": "コード化フォントのライブラリー。*LIBL / *CURLIB / ライブラリー名。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 10 }, "placeholder": "*LIBL" },
+        { "name": "CDEFNT", "description": "コード化フォント", "help": "コード化フォント名。単一値 *FNTCHRSET を使う場合は空欄。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 10 }, "placeholder": "*FNTCHRSET" },
+        { "name": "POINTSIZE", "description": "ポイント・サイズ", "help": "ポイント・サイズ。0.1-999.9 / *NONE。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 6 }, "placeholder": "*NONE" }
+      ]
+    },
+    {
+      "name": "TBLREFCHR",
+      "description": "テーブル参照文字",
+      "help": "テーブル参照文字(TRC)を使うか。*YES / *NO。",
+      "inputType": "dropdown",
+      "required": false,
+      "options": [
+        { "label": "*YES", "value": "*YES" },
+        { "label": "*NO", "value": "*NO" }
+      ]
+    },
+    {
+      "name": "PAGDFN",
+      "description": "ページ定義",
+      "help": "ページ定義。単一値 *NONE、またはページ定義の修飾名。",
+      "inputType": "group",
+      "required": false,
+      "children": [
+        { "name": "LIB", "description": "ライブラリー", "help": "ページ定義のライブラリー。*LIBL / *CURLIB / ライブラリー名。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 10 }, "placeholder": "*LIBL" },
+        { "name": "PAGDFN", "description": "ページ定義", "help": "*NONE、またはページ定義名。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 10 }, "placeholder": "*NONE" }
+      ]
+    },
+    {
+      "name": "FORMDF",
+      "description": "書式定義",
+      "help": "書式定義。単一値 *NONE / *DEVD、または書式定義の修飾名。",
+      "inputType": "group",
+      "required": false,
+      "children": [
+        { "name": "LIB", "description": "ライブラリー", "help": "書式定義のライブラリー。*LIBL / *CURLIB / ライブラリー名。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 10 }, "placeholder": "*LIBL" },
+        { "name": "FORMDF", "description": "書式定義", "help": "*NONE / *DEVD、または書式定義名。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 10 }, "placeholder": "*NONE" }
+      ]
+    },
+    { "name": "AFPCHARS", "description": "AFP文字", "help": "AFP 文字(コード化フォント)識別子。単一値 *NONE、または文字値（最大4回）。", "inputType": "text", "required": false, "maxOccurrences": 4, "attributes": { "characterSet": "upper", "maxLength": 4 }, "placeholder": "*NONE" },
+    {
+      "name": "PAGRTT",
+      "description": "ページ回転度数",
+      "help": "ページ回転度数。*AUTO / *DEVD / *COR / 0 / 90 / 180 / 270。",
+      "inputType": "dropdown",
+      "required": false,
+      "options": [
+        { "label": "*AUTO（自動）", "value": "*AUTO" },
+        { "label": "*DEVD", "value": "*DEVD" },
+        { "label": "*COR（印刷出力の縮小）", "value": "*COR" },
+        { "label": "0", "value": "0" },
+        { "label": "90", "value": "90" },
+        { "label": "180", "value": "180" },
+        { "label": "270", "value": "270" }
+      ]
+    },
+    { "name": "MULTIUP", "description": "面当たりページ数", "help": "用紙の片面に印刷するページ数。1-4（既定 1）。", "inputType": "number", "required": false, "attributes": { "numericOnly": true, "maxLength": 1 }, "placeholder": "1" },
+    {
+      "name": "REDUCE",
+      "description": "出力の減少",
+      "help": "MULTIUP 時の出力縮小方法。*TEXT / *NONE。",
+      "inputType": "dropdown",
+      "required": false,
+      "options": [
+        { "label": "*TEXT", "value": "*TEXT" },
+        { "label": "*NONE", "value": "*NONE" }
+      ]
+    },
+    { "name": "PRTTXT", "description": "印刷テキスト", "help": "各ページの下部に印刷するテキスト。*JOB / *BLANK / X'…' / 文字値。", "inputType": "text", "required": false, "attributes": { "maxLength": 50 }, "placeholder": "*JOB" },
+    {
+      "name": "JUSTIFY",
+      "description": "ハードウェア位置調整",
+      "help": "ハードウェアによる行末位置調整(%)。0 / 50 / 100。",
+      "inputType": "dropdown",
+      "required": false,
+      "options": [
+        { "label": "0", "value": "0" },
+        { "label": "50", "value": "50" },
+        { "label": "100", "value": "100" }
+      ]
+    },
+    {
+      "name": "DUPLEX",
+      "description": "両面印刷",
+      "help": "両面印刷の指定。*NO / *YES / *TUMBLE / *FORMDF。",
+      "inputType": "dropdown",
+      "required": false,
+      "options": [
+        { "label": "*NO（片面）", "value": "*NO" },
+        { "label": "*YES（両面・長辺とじ）", "value": "*YES" },
+        { "label": "*TUMBLE（両面・短辺とじ）", "value": "*TUMBLE" },
+        { "label": "*FORMDF", "value": "*FORMDF" }
+      ]
+    },
+    {
+      "name": "UOM",
+      "description": "計測単位",
+      "help": "マージン・オフセット等で使う計測単位。*INCH / *CM。",
+      "inputType": "dropdown",
+      "required": false,
+      "options": [
+        { "label": "*INCH（インチ）", "value": "*INCH" },
+        { "label": "*CM（センチメートル）", "value": "*CM" }
+      ]
+    },
+    {
+      "name": "FRONTOVL",
+      "description": "前面オーバーレイ",
+      "help": "前面オーバーレイ。単一値 *NONE、または要素リスト（オーバーレイ修飾名・下方向オフセット・横方向オフセット）。",
+      "inputType": "group",
+      "required": false,
+      "children": [
+        { "name": "LIB", "description": "ライブラリー", "help": "オーバーレイのライブラリー。*LIBL / *CURLIB / ライブラリー名。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 10 }, "placeholder": "*LIBL" },
+        { "name": "OVERLAY", "description": "オーバーレイ", "help": "オーバーレイ名。単一値 *NONE を使う場合は空欄。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 10 }, "placeholder": "*NONE" },
+        { "name": "DOWN", "description": "下方向オフセット", "help": "下方向オフセット。0.0-57.79（既定 0）。", "inputType": "text", "required": false, "attributes": { "maxLength": 6 }, "placeholder": "0" },
+        { "name": "ACROSS", "description": "横方向オフセット", "help": "横方向オフセット。0.0-57.79（既定 0）。", "inputType": "text", "required": false, "attributes": { "maxLength": 6 }, "placeholder": "0" }
+      ]
+    },
+    {
+      "name": "BACKOVL",
+      "description": "背面オーバーレイ",
+      "help": "背面オーバーレイ。単一値 *FRONTOVL / *NONE、または要素リスト（オーバーレイ修飾名・下方向オフセット・横方向オフセット・コンスタント・バック）。",
+      "inputType": "group",
+      "required": false,
+      "children": [
+        { "name": "LIB", "description": "ライブラリー", "help": "オーバーレイのライブラリー。*LIBL / *CURLIB / ライブラリー名。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 10 }, "placeholder": "*LIBL" },
+        { "name": "OVERLAY", "description": "オーバーレイ", "help": "オーバーレイ名。単一値 *FRONTOVL / *NONE を使う場合は空欄。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 10 }, "placeholder": "*FRONTOVL" },
+        { "name": "DOWN", "description": "下方向オフセット", "help": "下方向オフセット。0.0-57.79（既定 0）。", "inputType": "text", "required": false, "attributes": { "maxLength": 6 }, "placeholder": "0" },
+        { "name": "ACROSS", "description": "横方向オフセット", "help": "横方向オフセット。0.0-57.79（既定 0）。", "inputType": "text", "required": false, "attributes": { "maxLength": 6 }, "placeholder": "0" },
+        { "name": "CONSTANT", "description": "コンスタント・バック", "help": "背面を定数印刷するか。*NOCONSTANT / *CONSTANT。", "inputType": "dropdown", "required": false, "options": [ { "label": "*NOCONSTANT", "value": "*NOCONSTANT" }, { "label": "*CONSTANT", "value": "*CONSTANT" } ] }
+      ]
+    },
+    {
+      "name": "CVTLINDTA",
+      "description": "行データ変換",
+      "help": "行データを AFPDS に変換するか。*NO / *YES。",
+      "inputType": "dropdown",
+      "required": false,
+      "options": [
+        { "label": "*NO", "value": "*NO" },
+        { "label": "*YES", "value": "*YES" }
+      ]
+    },
+    {
+      "name": "IPDSPASTHR",
+      "description": "IPDSパススルー",
+      "help": "IPDS パススルーを行うか。*DEVD / *NO / *YES。",
+      "inputType": "dropdown",
+      "required": false,
+      "options": [
+        { "label": "*DEVD", "value": "*DEVD" },
+        { "label": "*NO", "value": "*NO" },
+        { "label": "*YES", "value": "*YES" }
+      ]
+    },
+    { "name": "USRRSCLIBL", "description": "USER資源ライブラリー・リスト", "help": "AFP 資源を検索するユーザー資源ライブラリー・リスト。単一値 *DEVD / *NONE / *JOBLIBL / *CURLIB、またはライブラリー名（最大4回）。", "inputType": "text", "required": false, "maxOccurrences": 4, "attributes": { "characterSet": "upper", "maxLength": 10 }, "placeholder": "*DEVD" },
+    {
+      "name": "CORNERSTPL",
+      "description": "コーナー・ステープルとじ",
+      "help": "コーナー・ステープルとじの位置。*NONE / *BOTRIGHT / *TOPRIGHT / *TOPLEFT / *BOTLEFT / *DEVD。",
+      "inputType": "dropdown",
+      "required": false,
+      "options": [
+        { "label": "*NONE", "value": "*NONE" },
+        { "label": "*BOTRIGHT（右下）", "value": "*BOTRIGHT" },
+        { "label": "*TOPRIGHT（右上）", "value": "*TOPRIGHT" },
+        { "label": "*TOPLEFT（左上）", "value": "*TOPLEFT" },
+        { "label": "*BOTLEFT（左下）", "value": "*BOTLEFT" },
+        { "label": "*DEVD", "value": "*DEVD" }
+      ]
+    },
+    {
+      "name": "EDGESTITCH",
+      "description": "平とじ",
+      "help": "平とじ。単一値 *NONE、または要素リスト（基準縁・基準縁オフセット・ステープルの数・ステープル・オフセット）。",
+      "inputType": "group",
+      "required": false,
+      "children": [
+        { "name": "REFEDGE", "description": "基準縁", "help": "とじ位置の基準縁。*BOT / *RIGHT / *TOP / *LEFT / *DEVD。単一値 *NONE を使う場合は空欄。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 8 }, "placeholder": "*NONE" },
+        { "name": "OFFSET", "description": "基準縁オフセット", "help": "基準縁からのオフセット。0.0-57.79 / *DEVD。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 6 }, "placeholder": "*DEVD" },
+        { "name": "NBRSTAPLES", "description": "ステープルの数", "help": "ステープルの数。1-122 / *DEVD。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 5 }, "placeholder": "*DEVD" },
+        { "name": "STAPLEOFFSET", "description": "ステープル・オフセット", "help": "各ステープルのオフセット。単一値 *DEVD、または 0.0-57.79（最大122回）。", "inputType": "text", "required": false, "maxOccurrences": 122, "attributes": { "characterSet": "upper", "maxLength": 6 }, "placeholder": "*DEVD" }
+      ]
+    },
+    {
+      "name": "SADLSTITCH",
+      "description": "中とじ",
+      "help": "中とじ。単一値 *NONE、または要素リスト（基準縁・ステープルの数・ステープル・オフセット）。",
+      "inputType": "group",
+      "required": false,
+      "children": [
+        { "name": "REFEDGE", "description": "基準縁", "help": "とじ位置の基準縁。*TOP / *LEFT / *DEVD。単一値 *NONE を使う場合は空欄。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 6 }, "placeholder": "*NONE" },
+        { "name": "NBRSTAPLES", "description": "ステープルの数", "help": "ステープルの数。1-122 / *DEVD。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 5 }, "placeholder": "*DEVD" },
+        { "name": "STAPLEOFFSET", "description": "ステープル・オフセット", "help": "各ステープルのオフセット。単一値 *DEVD、または 0.0-57.79（最大122回）。", "inputType": "text", "required": false, "maxOccurrences": 122, "attributes": { "characterSet": "upper", "maxLength": 6 }, "placeholder": "*DEVD" }
+      ]
+    },
+    {
+      "name": "FNTRSL",
+      "description": "形式設定用フォント解像度",
+      "help": "形式設定に使うフォント解像度。*DEVD / *SEARCH / 240 / 300。",
+      "inputType": "dropdown",
+      "required": false,
+      "options": [
+        { "label": "*DEVD", "value": "*DEVD" },
+        { "label": "*SEARCH", "value": "*SEARCH" },
+        { "label": "240", "value": "240" },
+        { "label": "300", "value": "300" }
+      ]
+    },
+    {
+      "name": "DFRWRT",
+      "description": "書き出し据え置き",
+      "help": "印刷装置への書き出しを据え置くか。*YES / *NO。",
+      "inputType": "dropdown",
+      "required": false,
+      "options": [
+        { "label": "*YES（据え置く）", "value": "*YES" },
+        { "label": "*NO", "value": "*NO" }
+      ]
+    },
+    {
+      "name": "SPOOL",
+      "description": "データのスプール",
+      "help": "出力をスプールするか。*YES / *NO。",
+      "inputType": "dropdown",
+      "required": false,
+      "options": [
+        { "label": "*YES（スプールする）", "value": "*YES" },
+        { "label": "*NO（直接出力）", "value": "*NO" }
+      ]
+    },
+    {
+      "name": "OUTQ",
+      "description": "スプール出力待ち行列",
+      "help": "スプール出力待ち行列。単一値 *JOB / *DEV、または出力待ち行列の修飾名。",
+      "inputType": "group",
+      "required": false,
+      "children": [
+        { "name": "LIB", "description": "ライブラリー", "help": "出力待ち行列のライブラリー。*LIBL / *CURLIB / ライブラリー名。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 10 }, "placeholder": "*LIBL" },
+        { "name": "OUTQ", "description": "スプール出力待ち行列", "help": "*JOB / *DEV、または出力待ち行列名。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 10 }, "placeholder": "*JOB" }
+      ]
+    },
+    { "name": "FORMTYPE", "description": "用紙タイプ", "help": "印刷に使う用紙のタイプ。*STD / 文字値。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 10 }, "placeholder": "*STD" },
+    { "name": "COPIES", "description": "コピー枚数", "help": "印刷するコピー枚数。1-255（既定 1）。", "inputType": "number", "required": false, "attributes": { "numericOnly": true, "maxLength": 3 }, "placeholder": "1" },
+    { "name": "EXPDATE", "description": "ファイルの満了日", "help": "スプール・ファイルの満了日。*NONE / *DAYS / 日付。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 10 }, "placeholder": "*NONE" },
+    { "name": "DAYS", "description": "ファイル満了までの日数", "help": "EXPDATE(*DAYS) のときの満了までの日数。1-366。", "inputType": "number", "required": false, "attributes": { "numericOnly": true, "maxLength": 3 } },
+    {
+      "name": "PAGERANGE",
+      "description": "印刷ページ範囲",
+      "help": "印刷するページ範囲。要素1=開始ページ(整数 / 1 / *ENDPAGE)、要素2=終了ページ(整数 / *END)。",
+      "inputType": "group",
+      "required": false,
+      "children": [
+        { "name": "STARTPAGE", "description": "開始ページ", "help": "開始ページ。整数 / 1 / *ENDPAGE。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 10 }, "placeholder": "1" },
+        { "name": "ENDPAGE", "description": "終了ページ", "help": "終了ページ。整数 / *END。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 10 }, "placeholder": "*END" }
+      ]
+    },
+    { "name": "MAXRCDS", "description": "スプール出力レコードの最大数", "help": "スプール・ファイルの最大レコード数。1-99999999 / *NOMAX（既定 100000）。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 8 }, "placeholder": "100000" },
+    { "name": "FILESEP", "description": "ファイル区切り", "help": "ファイル区切りページの数。0-9（既定 0）。", "inputType": "number", "required": false, "attributes": { "numericOnly": true, "maxLength": 1 }, "placeholder": "0" },
+    {
+      "name": "SCHEDULE",
+      "description": "スプール出力のスケジュール",
+      "help": "スプール出力を印刷可能にするタイミング。*FILEEND / *IMMED / *JOBEND。",
+      "inputType": "dropdown",
+      "required": false,
+      "options": [
+        { "label": "*FILEEND（ファイル・クローズ時）", "value": "*FILEEND" },
+        { "label": "*IMMED（即時）", "value": "*IMMED" },
+        { "label": "*JOBEND（ジョブ終了時）", "value": "*JOBEND" }
+      ]
+    },
+    {
+      "name": "HOLD",
+      "description": "スプール・ファイルの保留",
+      "help": "スプール・ファイルを保留状態で作成するか。*NO / *YES。",
+      "inputType": "dropdown",
+      "required": false,
+      "options": [
+        { "label": "*NO", "value": "*NO" },
+        { "label": "*YES（保留）", "value": "*YES" }
+      ]
+    },
+    {
+      "name": "SAVE",
+      "description": "スプール・ファイルの保管",
+      "help": "印刷後にスプール・ファイルを保管するか。*NO / *YES。",
+      "inputType": "dropdown",
+      "required": false,
+      "options": [
+        { "label": "*NO", "value": "*NO" },
+        { "label": "*YES（保管）", "value": "*YES" }
+      ]
+    },
+    { "name": "OUTPTY", "description": "出力優先順位(OUTQでの)", "help": "出力待ち行列での出力優先順位。*JOB / 1-9。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 4 }, "placeholder": "*JOB" },
+    { "name": "USRDTA", "description": "ユーザー・データ", "help": "スプール・ファイルに関連付けるユーザー・データ。*SOURCE / 文字値。", "inputType": "text", "required": false, "attributes": { "maxLength": 10 }, "placeholder": "*SOURCE" },
+    {
+      "name": "SPLFOWN",
+      "description": "スプール・ファイル所有者",
+      "help": "スプール・ファイルの所有者。*CURUSRPRF / *JOB / *CURGRPPRF / *JOBGRPPRF。",
+      "inputType": "dropdown",
+      "required": false,
+      "options": [
+        { "label": "*CURUSRPRF（現行ユーザー）", "value": "*CURUSRPRF" },
+        { "label": "*JOB（ジョブ・ユーザー）", "value": "*JOB" },
+        { "label": "*CURGRPPRF（現行グループ）", "value": "*CURGRPPRF" },
+        { "label": "*JOBGRPPRF（ジョブ・グループ）", "value": "*JOBGRPPRF" }
+      ]
+    },
+    { "name": "USRDFNOPT", "description": "ユーザー定義オプション", "help": "ユーザー定義オプション。単一値 *NONE、または文字値（最大4回）。", "inputType": "text", "required": false, "maxOccurrences": 4, "attributes": { "maxLength": 10 }, "placeholder": "*NONE" },
+    { "name": "USRDFNDTA", "description": "ユーザー定義データ", "help": "ユーザー定義データ。*NONE / 文字値。", "inputType": "text", "required": false, "attributes": { "maxLength": 50 }, "placeholder": "*NONE" },
+    {
+      "name": "USRDFNOBJ",
+      "description": "ユーザー定義オブジェクト",
+      "help": "ユーザー定義オブジェクト。単一値 *NONE、または要素リスト（オブジェクト修飾名・オブジェクト・タイプ）。",
+      "inputType": "group",
+      "required": false,
+      "children": [
+        { "name": "LIB", "description": "ライブラリー", "help": "オブジェクトのライブラリー。*LIBL / *CURLIB / ライブラリー名。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 10 }, "placeholder": "*LIBL" },
+        { "name": "OBJECT", "description": "オブジェクト", "help": "オブジェクト名。単一値 *NONE を使う場合は空欄。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 10 }, "placeholder": "*NONE" },
+        { "name": "OBJTYPE", "description": "オブジェクト・タイプ", "help": "オブジェクトのタイプ。*DTAARA / *DTAQ / *FILE / *PSFCFG / *USRIDX / *USRQ / *USRSPC。", "inputType": "dropdown", "required": false, "options": [ { "label": "*DTAARA", "value": "*DTAARA" }, { "label": "*DTAQ", "value": "*DTAQ" }, { "label": "*FILE", "value": "*FILE" }, { "label": "*PSFCFG", "value": "*PSFCFG" }, { "label": "*USRIDX", "value": "*USRIDX" }, { "label": "*USRQ", "value": "*USRQ" }, { "label": "*USRSPC", "value": "*USRSPC" } ] }
+      ]
+    },
+    {
+      "name": "IGCCHRRTT",
+      "description": "DBCSの回転",
+      "help": "DBCS文字を回転するか。*NO / *YES。",
+      "inputType": "dropdown",
+      "required": false,
+      "options": [
+        { "label": "*NO", "value": "*NO" },
+        { "label": "*YES", "value": "*YES" }
+      ]
+    },
+    { "name": "IGCCPI", "description": "インチ当たりのDBCS数", "help": "1インチ当たりのDBCS文字数。*CPI / *CONDENSED / 5 / 6 / 10。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 10 }, "placeholder": "*CPI" },
+    {
+      "name": "IGCSOSI",
+      "description": "DBCSのSO/SIのスペース",
+      "help": "SO/SI 制御文字の表示位置。*YES / *NO / *RIGHT。",
+      "inputType": "dropdown",
+      "required": false,
+      "options": [
+        { "label": "*YES", "value": "*YES" },
+        { "label": "*NO", "value": "*NO" },
+        { "label": "*RIGHT", "value": "*RIGHT" }
+      ]
+    },
+    {
+      "name": "IGCCDEFNT",
+      "description": "DBCSコード化フォント",
+      "help": "DBCS コード化フォント。単一値 *SYSVAL、または要素リスト（コード化フォント修飾名・ポイント・サイズ）。",
+      "inputType": "group",
+      "required": false,
+      "children": [
+        { "name": "LIB", "description": "ライブラリー", "help": "DBCS コード化フォントのライブラリー。*LIBL / *CURLIB / ライブラリー名。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 10 }, "placeholder": "*LIBL" },
+        { "name": "IGCCDEFNT", "description": "DBCSコード化フォント", "help": "DBCS コード化フォント名。単一値 *SYSVAL を使う場合は空欄。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 10 }, "placeholder": "*SYSVAL" },
+        { "name": "POINTSIZE", "description": "ポイント・サイズ", "help": "ポイント・サイズ。0.1-999.9 / *NONE。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 6 }, "placeholder": "*NONE" }
+      ]
+    },
+    { "name": "TOSTMF", "description": "TOストリーム・ファイル", "help": "出力先ストリーム・ファイルのパス名。*NONE / パス名。", "inputType": "text", "required": false, "attributes": { "maxLength": 256 }, "placeholder": "*NONE" },
+    {
+      "name": "WSCST",
+      "description": "ワークステーション・カスタマイズ・オブジェクト",
+      "help": "ワークステーション・カスタマイズ・オブジェクト。単一値 *NONE / *PDF、またはオブジェクトの修飾名。",
+      "inputType": "group",
+      "required": false,
+      "children": [
+        { "name": "LIB", "description": "ライブラリー", "help": "カスタマイズ・オブジェクトのライブラリー。*LIBL / *CURLIB / ライブラリー名。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 10 }, "placeholder": "*LIBL" },
+        { "name": "WSCST", "description": "ワークステーション・カスタマイズ・オブジェクト", "help": "*NONE / *PDF、またはオブジェクト名。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 10 }, "placeholder": "*NONE" }
+      ]
+    },
+    { "name": "WAITFILE", "description": "最大ファイル待機時間", "help": "ファイル資源の割り振りを待つ秒数。*IMMED / *CLS / 整数。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 10 }, "placeholder": "*IMMED" },
+    {
+      "name": "SHARE",
+      "description": "オープン・データ・パス共用",
+      "help": "同一ジョブ内でオープン・データ・パスを共用するか。*NO / *YES。",
+      "inputType": "dropdown",
+      "required": false,
+      "options": [
+        { "label": "*NO", "value": "*NO" },
+        { "label": "*YES（共用する）", "value": "*YES" }
+      ]
+    },
+    {
+      "name": "LVLCHK",
+      "description": "レコード様式レベルの検査",
+      "help": "オープン時にレコード様式レベル識別子を検査するか。*YES / *NO。",
+      "inputType": "dropdown",
+      "required": false,
+      "options": [
+        { "label": "*YES（検査する）", "value": "*YES" },
+        { "label": "*NO", "value": "*NO" }
+      ]
+    },
+    { "name": "AUT", "description": "権限", "help": "オブジェクトの共通認可。*LIBCRTAUT / *ALL / *CHANGE / *EXCLUDE / *USE / 認可リスト名。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 10 }, "placeholder": "*LIBCRTAUT" },
+    {
+      "name": "REPLACE",
+      "description": "ファイルの置き換え",
+      "help": "同名の既存ファイルを置き換えるか。*YES / *NO。",
+      "inputType": "dropdown",
+      "required": false,
+      "options": [
+        { "label": "*YES（置き換える）", "value": "*YES" },
+        { "label": "*NO（置き換えない）", "value": "*NO" }
+      ]
+    }
+  ]
+}

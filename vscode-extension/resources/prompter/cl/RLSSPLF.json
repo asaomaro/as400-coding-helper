@@ -1,0 +1,198 @@
+{
+  "keyword": "RLSSPLF",
+  "description": "スプール・ファイル解放（RLSSPLF）",
+  "help": "保留されている1つまたは複数のスプール・ファイルを解放し、印刷できる状態にします。FILE で単一ファイルを指定するか *SELECT で SELECT パラメーターの選択条件に合致するファイルをまとめて解放します。",
+  "parameters": [
+    {
+      "name": "FILE",
+      "description": "スプール・ファイル",
+      "help": "解放するスプール・ファイルを指定します。必須。名前（スプール・ファイル名）／*SELECT（SELECT パラメーターの選択値に合致する全ファイル。JOB/SPLNBR/JOBSYSNAME/CRTDATE と相互排他）。定位置1。",
+      "inputType": "text",
+      "required": true,
+      "attributes": {
+        "characterSet": "upper",
+        "maxLength": 10
+      },
+      "placeholder": "*SELECT"
+    },
+    {
+      "name": "JOB",
+      "description": "ジョブ名",
+      "help": "解放するファイルを作成したジョブを修飾ジョブ名で指定します。単一値 *（このコマンドを出したジョブ）。定位置2。",
+      "inputType": "group",
+      "required": false,
+      "children": [
+        {
+          "name": "JOB",
+          "description": "ジョブ名",
+          "help": "解放するファイルを作成したジョブの名前。単一値 * も指定可。",
+          "inputType": "text",
+          "required": false,
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          },
+          "placeholder": "*"
+        },
+        {
+          "name": "USER",
+          "description": "ユーザー",
+          "help": "ジョブの実行で使用されるユーザー・プロファイルを識別するユーザー名。",
+          "inputType": "text",
+          "required": false,
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          }
+        },
+        {
+          "name": "NBR",
+          "description": "番号",
+          "help": "システム割り当てジョブ番号。000000〜999999。",
+          "inputType": "text",
+          "required": false,
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 6
+          }
+        }
+      ]
+    },
+    {
+      "name": "SPLNBR",
+      "description": "スプール・ファイル番号",
+      "help": "指定されたジョブで作成されたスプール・ファイル番号を指定します。*ONLY（ジョブ内に該当ファイル名が1つだけ。番号不要）／*LAST（最高番号のファイル）／*ANY（番号で選択しない。JOBSYSNAME/CRTDATE を優先）／1〜999999。定位置3。",
+      "inputType": "text",
+      "required": false,
+      "attributes": {
+        "characterSet": "upper",
+        "maxLength": 7
+      },
+      "defaultValue": "*ONLY"
+    },
+    {
+      "name": "JOBSYSNAME",
+      "description": "ジョブ・システム名",
+      "help": "スプール・ファイルを作成したジョブが実行されたシステム名を指定します。ジョブ名/ユーザー名/ジョブ番号/ファイル名/ファイル番号が一致した後に考慮されます。*ONLY（該当が1つ）／*CURRENT（現行システム上で作成）／*ANY（システム名で選択しない。CRTDATE を優先）／名前。",
+      "inputType": "text",
+      "required": false,
+      "attributes": {
+        "characterSet": "upper",
+        "maxLength": 8
+      },
+      "defaultValue": "*ONLY"
+    },
+    {
+      "name": "CRTDATE",
+      "description": "作成されたスプール・ファイル",
+      "help": "スプール・ファイルが作成された日時を指定します。他のパラメーター要件が一致した後に考慮されます。単一値 *ONLY（該当が1つ）／*LAST（最後の作成日時）。日付・時刻を指定する場合は作成日（要素1）と作成時刻（要素2）を入力します。",
+      "inputType": "group",
+      "required": false,
+      "children": [
+        {
+          "name": "CRTDATE",
+          "description": "作成日",
+          "help": "スプール・ファイルが作成された日付。単一値 *ONLY／*LAST も指定可。",
+          "inputType": "text",
+          "required": false,
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          },
+          "placeholder": "*ONLY"
+        },
+        {
+          "name": "CRTTIME",
+          "description": "作成時刻",
+          "help": "スプール・ファイルが作成された時刻。*ONLY（該当が1つ）／*LAST（最後の作成時刻）／時刻。",
+          "inputType": "text",
+          "required": false,
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 8
+          },
+          "placeholder": "*ONLY"
+        }
+      ]
+    },
+    {
+      "name": "SELECT",
+      "description": "ファイル選択",
+      "help": "解放するために選択するファイルのグループを指定します。各要素（ユーザー／印刷装置／用紙タイプ／ユーザー・データ／ASP）すべてと一致するファイルだけが選択されます。FILE(*SELECT) のときに使用します。",
+      "inputType": "group",
+      "required": false,
+      "children": [
+        {
+          "name": "USER",
+          "description": "ユーザー",
+          "help": "ファイルを作成したユーザーで選択します。*CURRENT（このコマンドを実行中のユーザー）／*ALL（全ユーザー）／ユーザー名。",
+          "inputType": "text",
+          "required": false,
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          },
+          "placeholder": "*CURRENT"
+        },
+        {
+          "name": "DEV",
+          "description": "印刷装置",
+          "help": "ファイルが待機している装置で選択します。*ALL（装置作成/ユーザー作成の全出力待ち行列上のファイル）／*OUTQ（ユーザー作成の出力待ち行列の全ファイル）／装置名。",
+          "inputType": "text",
+          "required": false,
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          },
+          "placeholder": "*ALL"
+        },
+        {
+          "name": "FORMTYPE",
+          "description": "用紙タイプ",
+          "help": "用紙タイプで選択します。*ALL（全用紙タイプ）／*STD（標準用紙タイプ）／用紙タイプ。",
+          "inputType": "text",
+          "required": false,
+          "attributes": {
+            "maxLength": 10
+          },
+          "placeholder": "*ALL"
+        },
+        {
+          "name": "USRDTA",
+          "description": "ユーザー・データ",
+          "help": "ファイルに関連したユーザー・データ・タグで選択します。*ALL（タグ指定の全ファイル）／ユーザー・データ・タグ。",
+          "inputType": "text",
+          "required": false,
+          "attributes": {
+            "maxLength": 10
+          },
+          "placeholder": "*ALL"
+        },
+        {
+          "name": "ASP",
+          "description": "ASP",
+          "help": "ファイルが入っている補助記憶域プールで選択します。*ALL（ASPDEV 指定の全ファイル）／*ASPDEV（ASPDEV パラメーター指定のファイル）／1〜32（ASP番号）。",
+          "inputType": "text",
+          "required": false,
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 7
+          },
+          "placeholder": "*ALL"
+        }
+      ]
+    },
+    {
+      "name": "ASPDEV",
+      "description": "ASP装置",
+      "help": "選択されるスプール・ファイルが入っている補助記憶域プール装置を指定します。有効なのは SELECT の ASP 要素が *ALL または *ASPDEV の場合だけです。*（現スレッドのライブラリー名スペース内のASP）／*SYSBAS（システムASPおよび全定義済みユーザーASP）／*CURASPGRP（スレッドのASPグループの1次/2次ASP）／ASP装置記述名。",
+      "inputType": "text",
+      "required": false,
+      "attributes": {
+        "characterSet": "upper",
+        "maxLength": 10
+      },
+      "placeholder": "*"
+    }
+  ]
+}

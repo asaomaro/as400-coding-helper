@@ -1,0 +1,136 @@
+{
+  "keyword": "DSPFD",
+  "description": "ファイル記述表示（DSPFD）",
+  "help": "1つ以上のファイルの属性記述（ファイル属性・アクセス・パス・メンバー・レコード様式・トリガー・制約等）を表示・印刷、または出力ファイルへ書き出します。FILE に対象ファイル、TYPE に表示する情報のタイプ、OUTPUT に出力先を指定します。",
+  "parameters": [
+    {
+      "name": "FILE",
+      "description": "ファイル（DSPFD）",
+      "help": "記述を表示するファイルを LIB/FILE 形式で指定します（必須・定位置1）。修飾子1=ファイル名・総称名・*ALL、修飾子2=ライブラリー。",
+      "inputType": "group",
+      "required": true,
+      "children": [
+        {
+          "name": "LIB",
+          "description": "ライブラリー",
+          "help": "ファイルが入っているライブラリー。*LIBL / *CURLIB / *USRLIBL / *ALLUSR / *ALL / ライブラリー名。",
+          "inputType": "text",
+          "required": false,
+          "attributes": { "characterSet": "upper", "maxLength": 10 },
+          "placeholder": "*LIBL"
+        },
+        {
+          "name": "FILE",
+          "description": "ファイル",
+          "help": "記述を表示するファイル名、総称名（先頭文字＋*）、または *ALL（ライブラリー内の全ファイル）。",
+          "inputType": "text",
+          "required": true,
+          "attributes": { "characterSet": "upper", "maxLength": 10 },
+          "placeholder": "FILE"
+        }
+      ]
+    },
+    {
+      "name": "TYPE",
+      "description": "情報のタイプ（DSPFD）",
+      "help": "表示するファイル情報のタイプを指定します（オプショナル・定位置2）。単一値 *ALL（全タイプ）/ *BASATR（基本属性のみ）、またはその他の値を最大10回まで繰り返し指定します。指定可能値: *ATR, *ACCPTH, *MBRLIST, *SELECT, *SEQ, *RCDFMT, *MBR, *SPOOL, *JOIN, *TRG, *CST, *NODGRP。",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*ALL",
+      "placeholder": "*ALL",
+      "maxOccurrences": 10,
+      "attributes": { "characterSet": "upper", "maxLength": 10 }
+    },
+    {
+      "name": "OUTPUT",
+      "description": "出力（DSPFD）",
+      "help": "出力先を指定します（オプショナル・定位置3）。*（表示またはジョブのスプール出力）/ *PRINT（印刷）/ *OUTFILE（出力ファイルへ書き出し）。",
+      "inputType": "dropdown",
+      "required": false,
+      "options": [
+        { "label": "*（表示／スプール出力）", "value": "*" },
+        { "label": "*PRINT（印刷）", "value": "*PRINT" },
+        { "label": "*OUTFILE（出力ファイルへ書き出し）", "value": "*OUTFILE" }
+      ]
+    },
+    {
+      "name": "FILEATR",
+      "description": "ファイル属性（DSPFD）",
+      "help": "表示対象を限定するファイル属性を指定します（オプショナル）。単一値 *ALL、またはその他の値を最大12回まで繰り返し指定します。指定可能値: *DSPF, *PRTF, *DKTF, *TAPF, *CMNF, *BSCF, *MXDF, *PF, *LF, *SAVF, *DDMF, *ICFF。",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*ALL",
+      "placeholder": "*ALL",
+      "maxOccurrences": 12,
+      "attributes": { "characterSet": "upper", "maxLength": 10 }
+    },
+    {
+      "name": "OUTFILE",
+      "description": "出力を受け取るファイル（DSPFD）",
+      "help": "OUTPUT(*OUTFILE) のとき、出力を受け取るデータベース・ファイルを LIB/FILE 形式で指定します（オプショナル）。修飾子1=ファイル名、修飾子2=ライブラリー。",
+      "inputType": "group",
+      "required": false,
+      "children": [
+        {
+          "name": "LIB",
+          "description": "ライブラリー",
+          "help": "出力ファイルが入っているライブラリー。*LIBL / *CURLIB / ライブラリー名。",
+          "inputType": "text",
+          "required": false,
+          "attributes": { "characterSet": "upper", "maxLength": 10 },
+          "placeholder": "*LIBL"
+        },
+        {
+          "name": "FILE",
+          "description": "出力を受け取るファイル",
+          "help": "出力を受け取るデータベース・ファイルの名前。",
+          "inputType": "text",
+          "required": false,
+          "attributes": { "characterSet": "upper", "maxLength": 10 },
+          "placeholder": "FILE"
+        }
+      ]
+    },
+    {
+      "name": "OUTMBR",
+      "description": "出力メンバー・オプション（DSPFD）",
+      "help": "OUTPUT(*OUTFILE) のとき、出力先メンバーとレコードの扱いを指定します（オプショナル）。要素1=出力を受け取るメンバー（*FIRST／メンバー名）、要素2=レコードの置き換えまたは追加（*REPLACE／*ADD）。",
+      "inputType": "group",
+      "required": false,
+      "children": [
+        {
+          "name": "MEMBER",
+          "description": "出力を受け取るメンバー",
+          "help": "出力を受け取るメンバー名。*FIRST（最初のメンバー、なければ作成）/ メンバー名。",
+          "inputType": "text",
+          "required": false,
+          "attributes": { "characterSet": "upper", "maxLength": 10 },
+          "placeholder": "*FIRST"
+        },
+        {
+          "name": "OPTION",
+          "description": "レコードの置き換えまたは追加",
+          "help": "メンバーへの書き出し方法。*REPLACE（既存レコードを置き換え）/ *ADD（既存レコードに追加）。",
+          "inputType": "dropdown",
+          "required": false,
+          "options": [
+            { "label": "*REPLACE（置き換え）", "value": "*REPLACE" },
+            { "label": "*ADD（追加）", "value": "*ADD" }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "SYSTEM",
+      "description": "システム（DSPFD）",
+      "help": "ファイルをローカル・システムで探すかリモート・システムで探すかを指定します（オプショナル）。*LCL（ローカル）/ *RMT（リモート）/ *ALL（両方）。",
+      "inputType": "dropdown",
+      "required": false,
+      "options": [
+        { "label": "*LCL（ローカル）", "value": "*LCL" },
+        { "label": "*RMT（リモート）", "value": "*RMT" },
+        { "label": "*ALL（両方）", "value": "*ALL" }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,180 @@
+{
+  "keyword": "SBMJOB",
+  "description": "ジョブ投入（SBMJOB）",
+  "help": "バッチ・ジョブをジョブ待ち行列に投入します。実行コマンド・ジョブ記述・属性などを指定します。",
+  "parameters": [
+    { "name": "CMD", "description": "実行するコマンド", "help": "ルーティング・プログラムが QCMD のとき、バッチ・ジョブで実行するコマンド・ストリング。", "inputType": "text", "required": false, "attributes": { "maxLength": 256 }, "placeholder": "'CALL MYPGM'" },
+    { "name": "JOB", "description": "ジョブ名", "help": "投入するジョブの名前。名前 / *JOBD（ジョブ記述名を使用）。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 10 }, "placeholder": "*JOBD" },
+    {
+      "name": "JOBD",
+      "description": "ジョブ記述",
+      "help": "使用するジョブ記述。単一値 *USRPRF か 修飾オブジェクト名(ジョブ記述/ライブラリー)。",
+      "inputType": "group",
+      "required": false,
+      "children": [
+        { "name": "LIB", "description": "ライブラリー", "help": "ジョブ記述のライブラリー。*LIBL / *CURLIB / ライブラリー名。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 10 }, "placeholder": "*LIBL" },
+        { "name": "JOBD", "description": "ジョブ記述", "help": "ジョブ記述名。単一値 *USRPRF も可。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 10 }, "placeholder": "*USRPRF" }
+      ]
+    },
+    {
+      "name": "JOBQ",
+      "description": "ジョブ待ち行列",
+      "help": "ジョブを置くジョブ待ち行列。単一値 *JOBD か 修飾オブジェクト名(待ち行列/ライブラリー)。",
+      "inputType": "group",
+      "required": false,
+      "children": [
+        { "name": "LIB", "description": "ライブラリー", "help": "ジョブ待ち行列のライブラリー。*LIBL / *CURLIB / ライブラリー名。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 10 }, "placeholder": "*LIBL" },
+        { "name": "JOBQ", "description": "ジョブ待ち行列", "help": "ジョブ待ち行列名。単一値 *JOBD も可。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 10 }, "placeholder": "*JOBD" }
+      ]
+    },
+    { "name": "JOBPTY", "description": "ジョブ優先順位（JOBQでの）", "help": "ジョブ待ち行列でのスケジューリング優先順位。1-9 / *JOBD。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 5 }, "placeholder": "*JOBD" },
+    { "name": "OUTPTY", "description": "出力優先順位（OUTQでの）", "help": "出力待ち行列でのスプール出力優先順位。1-9 / *JOBD。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 5 }, "placeholder": "*JOBD" },
+    { "name": "PRTDEV", "description": "印刷装置", "help": "省略時の印刷装置。装置名 / *CURRENT / *USRPRF / *SYSVAL / *JOBD。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 10 }, "placeholder": "*CURRENT" },
+    {
+      "name": "OUTQ",
+      "description": "出力待ち行列",
+      "help": "省略時の出力待ち行列。単一値(*CURRENT/*USRPRF/*DEV/*JOBD) か 修飾オブジェクト名(待ち行列/ライブラリー)。",
+      "inputType": "group",
+      "required": false,
+      "children": [
+        { "name": "LIB", "description": "ライブラリー", "help": "出力待ち行列のライブラリー。*LIBL / *CURLIB / ライブラリー名。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 10 }, "placeholder": "*LIBL" },
+        { "name": "OUTQ", "description": "出力待ち行列", "help": "出力待ち行列名。単一値 *CURRENT / *USRPRF / *DEV / *JOBD も可。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 10 }, "placeholder": "*CURRENT" }
+      ]
+    },
+    { "name": "USER", "description": "ユーザー", "help": "ジョブを実行するユーザー・プロファイル。名前 / *CURRENT / *JOBD。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 10 }, "placeholder": "*CURRENT" },
+    { "name": "ACGCDE", "description": "アカウント・コード", "help": "ジョブのアカウンティング・コード。文字値 / *CURRENT / *USRPRF / *JOBD。", "inputType": "text", "required": false, "attributes": { "maxLength": 15 }, "placeholder": "*CURRENT" },
+    { "name": "PRTTXT", "description": "印刷テキスト", "help": "印刷出力の下端に印刷するテキスト。文字値 / *CURRENT / *JOBD / *SYSVAL / *BLANK。", "inputType": "text", "required": false, "attributes": { "maxLength": 30 }, "placeholder": "*CURRENT" },
+    { "name": "RTGDTA", "description": "ルーティング・データ", "help": "ジョブのルーティングに使用するデータ。文字値 / QCMDB / *JOBD / *RQSDTA。", "inputType": "text", "required": false, "attributes": { "maxLength": 80 }, "placeholder": "QCMDB" },
+    { "name": "RQSDTA", "description": "要求データまたはコマンド", "help": "ジョブのメッセージ待ち行列に置く要求データ。文字値 / *CMD / *JOBD / *NONE / *RTGDTA。", "inputType": "text", "required": false, "attributes": { "maxLength": 256 }, "placeholder": "*CMD" },
+    {
+      "name": "SYSLIBL", "description": "システム・ライブラリー・リスト", "help": "使用するシステム部分のライブラリー・リスト。", "inputType": "dropdown", "required": false,
+      "options": [ { "label": "*CURRENT（現行ジョブと同じ）", "value": "*CURRENT" }, { "label": "*SYSVAL（システム値）", "value": "*SYSVAL" } ]
+    },
+    { "name": "CURLIB", "description": "現行ライブラリー", "help": "ジョブの現行ライブラリー。名前 / *CURRENT / *USRPRF / *CRTDFT。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 10 }, "placeholder": "*CURRENT" },
+    {
+      "name": "INLLIBL", "description": "初期ライブラリー・リスト", "help": "ジョブのユーザー部分の初期ライブラリー・リスト。単一値 *CURRENT / *JOBD / *SYSVAL / *NONE、またはライブラリー名（最大250）。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 10 }, "placeholder": "*CURRENT", "maxOccurrences": 250
+    },
+    { "name": "INLASPGRP", "description": "初期ASPグループ", "help": "ジョブの初期 ASP グループ。名前 / *CURRENT / *JOBD / *NONE。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 10 }, "placeholder": "*CURRENT" },
+    {
+      "name": "LOG",
+      "description": "メッセージのロギング",
+      "help": "ジョブ・ログのロギング・レベル・重大度・テキスト。要素リストを平坦化。",
+      "inputType": "group",
+      "required": false,
+      "children": [
+        { "name": "LEVEL", "description": "レベル", "help": "ロギング・レベル。0-4 / *JOBD。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 5 }, "placeholder": "*JOBD" },
+        { "name": "SEVERITY", "description": "重大度", "help": "メッセージの重大度。0-99 / *JOBD。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 5 }, "placeholder": "*JOBD" },
+        {
+          "name": "TEXT", "description": "テキスト", "help": "ログするテキストのレベル。", "inputType": "dropdown", "required": false,
+          "options": [
+            { "label": "*JOBD（ジョブ記述）", "value": "*JOBD" },
+            { "label": "*MSG（メッセージのみ）", "value": "*MSG" },
+            { "label": "*SECLVL（第2レベルも）", "value": "*SECLVL" },
+            { "label": "*NOLIST（ログを生成しない）", "value": "*NOLIST" }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "LOGCLPGM", "description": "CL PGMコマンドのログ", "help": "CL プログラムのコマンドをジョブ・ログに記録するか。", "inputType": "dropdown", "required": false,
+      "options": [ { "label": "*JOBD（ジョブ記述）", "value": "*JOBD" }, { "label": "*NO（記録しない）", "value": "*NO" }, { "label": "*YES（記録する）", "value": "*YES" } ]
+    },
+    {
+      "name": "LOGOUTPUT", "description": "ジョブ・ログ出力", "help": "ジョブ・ログの生成方法。", "inputType": "dropdown", "required": false,
+      "options": [
+        { "label": "*JOBD（ジョブ記述）", "value": "*JOBD" },
+        { "label": "*SYSVAL（システム値）", "value": "*SYSVAL" },
+        { "label": "*JOBLOGSVR（ジョブ・ログ・サーバー）", "value": "*JOBLOGSVR" },
+        { "label": "*JOBEND（ジョブ終了時）", "value": "*JOBEND" },
+        { "label": "*PND（保留）", "value": "*PND" }
+      ]
+    },
+    { "name": "JOBMSGQMX", "description": "ジョブ・メッセージ待ち行列最大サイズ", "help": "ジョブ・メッセージ待ち行列の最大サイズ(MB)。2-64 / *JOBD / *SYSVAL。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 7 }, "placeholder": "*JOBD" },
+    {
+      "name": "JOBMSGQFL", "description": "ジョブ・メッセージ待ち行列満杯処置", "help": "ジョブ・メッセージ待ち行列が満杯になったときの処置。", "inputType": "dropdown", "required": false,
+      "options": [
+        { "label": "*JOBD（ジョブ記述）", "value": "*JOBD" },
+        { "label": "*SYSVAL（システム値）", "value": "*SYSVAL" },
+        { "label": "*NOWRAP（折り返さない）", "value": "*NOWRAP" },
+        { "label": "*WRAP（折り返す）", "value": "*WRAP" },
+        { "label": "*PRTWRAP（印刷して折り返す）", "value": "*PRTWRAP" }
+      ]
+    },
+    {
+      "name": "INQMSGRPY", "description": "照会メッセージ応答", "help": "照会メッセージへの応答方法。", "inputType": "dropdown", "required": false,
+      "options": [
+        { "label": "*JOBD（ジョブ記述）", "value": "*JOBD" },
+        { "label": "*RQD（応答を要求）", "value": "*RQD" },
+        { "label": "*DFT（省略時応答を使用）", "value": "*DFT" },
+        { "label": "*SYSRPYL（システム応答リスト）", "value": "*SYSRPYL" }
+      ]
+    },
+    {
+      "name": "HOLD", "description": "ジョブ待ち行列上での保留", "help": "ジョブ待ち行列上でジョブを保留するか。", "inputType": "dropdown", "required": false,
+      "options": [ { "label": "*JOBD（ジョブ記述）", "value": "*JOBD" }, { "label": "*NO（保留しない）", "value": "*NO" }, { "label": "*YES（保留する）", "value": "*YES" } ]
+    },
+    { "name": "SCDDATE", "description": "スケジュール日", "help": "ジョブを実行する日付。日付 / *CURRENT / *MONTHSTR / *MONTHEND / *MON / *TUE / *WED / *THU / *FRI / *SAT / *SUN。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 10 }, "placeholder": "*CURRENT" },
+    { "name": "SCDTIME", "description": "スケジュール時刻", "help": "ジョブを実行する時刻。時刻 / *CURRENT。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 8 }, "placeholder": "*CURRENT" },
+    { "name": "DATE", "description": "ジョブ日付", "help": "ジョブに使用する日付。日付 / *JOBD / *SYSVAL。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 8 }, "placeholder": "*JOBD" },
+    { "name": "SWS", "description": "ジョブ・スイッチ", "help": "8桁のジョブ・スイッチ設定（0/1）。文字値 / *JOBD。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 8 }, "placeholder": "*JOBD" },
+    {
+      "name": "DSPSBMJOB", "description": "WRKSBMJOBによる表示可能", "help": "WRKSBMJOB コマンドでこのジョブを表示できるか。", "inputType": "dropdown", "required": false,
+      "options": [ { "label": "*YES（表示可能）", "value": "*YES" }, { "label": "*NO（表示不可）", "value": "*NO" } ]
+    },
+    {
+      "name": "SBMFOR",
+      "description": "投入",
+      "help": "ジョブの代行投入先。単一値 *CURRENT か 修飾ジョブ名(ジョブ名/ユーザー/番号)。",
+      "inputType": "group",
+      "required": false,
+      "children": [
+        { "name": "JOB", "description": "投入（ジョブ名）", "help": "投入先ジョブの名前。単一値 *CURRENT も可。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 10 }, "placeholder": "*CURRENT" },
+        { "name": "USER", "description": "ユーザー", "help": "投入先ジョブのユーザー・プロファイル名。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 10 } },
+        { "name": "NBR", "description": "番号", "help": "投入先ジョブのジョブ番号(000000-999999)。", "inputType": "text", "required": false, "attributes": { "maxLength": 6, "numericOnly": true } }
+      ]
+    },
+    {
+      "name": "MSGQ",
+      "description": "MSG 待ち行列",
+      "help": "ジョブ完了メッセージを送るメッセージ待ち行列。単一値(*USRPRF/*WRKSTN/*NONE) か 修飾オブジェクト名(待ち行列/ライブラリー)。",
+      "inputType": "group",
+      "required": false,
+      "children": [
+        { "name": "LIB", "description": "ライブラリー", "help": "メッセージ待ち行列のライブラリー。*LIBL / *CURLIB / ライブラリー名。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 10 }, "placeholder": "*LIBL" },
+        { "name": "MSGQ", "description": "MSG 待ち行列", "help": "メッセージ待ち行列名。単一値 *USRPRF / *WRKSTN / *NONE も可。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 10 }, "placeholder": "*USRPRF" }
+      ]
+    },
+    {
+      "name": "SRTSEQ",
+      "description": "分類順序",
+      "help": "分類順序テーブル。単一値(*CURRENT/*USRPRF/*SYSVAL/*HEX/*LANGIDUNQ/*LANGIDSHR) か 修飾オブジェクト名。",
+      "inputType": "group",
+      "required": false,
+      "children": [
+        { "name": "LIB", "description": "ライブラリー", "help": "分類順序テーブルのライブラリー。*LIBL / *CURLIB / ライブラリー名。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 10 }, "placeholder": "*LIBL" },
+        { "name": "SRTSEQ", "description": "分類順序", "help": "分類順序テーブル名。単一値 *CURRENT / *USRPRF / *SYSVAL / *HEX / *LANGIDUNQ / *LANGIDSHR も可。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 10 }, "placeholder": "*CURRENT" }
+      ]
+    },
+    { "name": "LANGID", "description": "言語ID", "help": "言語ID。文字値 / *CURRENT / *USRPRF / *SYSVAL。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 10 }, "placeholder": "*CURRENT" },
+    { "name": "CNTRYID", "description": "国別または地域ID", "help": "国別または地域ID。文字値 / *CURRENT / *USRPRF / *SYSVAL。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 10 }, "placeholder": "*CURRENT" },
+    { "name": "CCSID", "description": "コード化文字セットID", "help": "コード化文字セットID。1-65535 / *CURRENT / *USRPRF / *SYSVAL / *HEX。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 10 }, "placeholder": "*CURRENT" },
+    {
+      "name": "CPYENVVAR", "description": "環境変数コピー", "help": "投入元ジョブの環境変数を投入先ジョブにコピーするか。", "inputType": "dropdown", "required": false,
+      "options": [ { "label": "*NO（コピーしない）", "value": "*NO" }, { "label": "*YES（コピーする）", "value": "*YES" } ]
+    },
+    {
+      "name": "ALWMLTTHD", "description": "マルチスレッド使用可能", "help": "ジョブで複数スレッドの作成を許可するか。", "inputType": "dropdown", "required": false,
+      "options": [ { "label": "*JOBD（ジョブ記述）", "value": "*JOBD" }, { "label": "*NO（不許可）", "value": "*NO" }, { "label": "*YES（許可）", "value": "*YES" } ]
+    },
+    {
+      "name": "SPLFACN", "description": "スプール・ファイル・アクション", "help": "ジョブ終了時のスプール・ファイルの扱い。", "inputType": "dropdown", "required": false,
+      "options": [
+        { "label": "*CURRENT（現行ジョブと同じ）", "value": "*CURRENT" },
+        { "label": "*JOBD（ジョブ記述）", "value": "*JOBD" },
+        { "label": "*SYSVAL（システム値）", "value": "*SYSVAL" },
+        { "label": "*KEEP（保持）", "value": "*KEEP" },
+        { "label": "*DETACH（切り離す）", "value": "*DETACH" }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,852 @@
+{
+  "keyword": "CHGSPLFA",
+  "description": "スプール・ファイル属性変更（CHGSPLFA）",
+  "help": "出力待ち行列内の1つまたは複数のスプール・ファイルの属性（印刷装置・コピー枚数・出力待ち行列・用紙タイプなど）を変更します。FILE で単一ファイルを、*SELECT で SELECT パラメーターの選択条件に合致するファイルをまとめて変更します。",
+  "parameters": [
+    {
+      "name": "FILE",
+      "description": "スプール・ファイル",
+      "help": "属性を変更するスプール・ファイルを指定します。必須。名前（スプール・ファイル名）／*SELECT（SELECT パラメーターの選択値に合致する全ファイル。JOB/SPLNBR/JOBSYSNAME/CRTDATE と相互排他）。定位置1。",
+      "inputType": "text",
+      "required": true,
+      "attributes": {
+        "characterSet": "upper",
+        "maxLength": 10
+      },
+      "placeholder": "*SELECT"
+    },
+    {
+      "name": "JOB",
+      "description": "ジョブ名",
+      "help": "スプール・ファイルを作成したジョブを修飾ジョブ名で指定します。単一値 *（このコマンドを出したジョブ）。定位置2。",
+      "inputType": "group",
+      "required": false,
+      "children": [
+        {
+          "name": "JOB",
+          "description": "ジョブ名",
+          "help": "スプール・ファイルが入っているジョブの名前。単一値 * も指定可。",
+          "inputType": "text",
+          "required": false,
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          },
+          "placeholder": "*"
+        },
+        {
+          "name": "USER",
+          "description": "ユーザー",
+          "help": "ジョブの実行で使用されるユーザー・プロファイルを識別するユーザー名。",
+          "inputType": "text",
+          "required": false,
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          }
+        },
+        {
+          "name": "NBR",
+          "description": "番号",
+          "help": "システム割り当てジョブ番号。000000〜999999。",
+          "inputType": "text",
+          "required": false,
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 6
+          }
+        }
+      ]
+    },
+    {
+      "name": "SPLNBR",
+      "description": "スプール・ファイル番号",
+      "help": "このジョブで属性を変更するスプール・ファイルの固有の番号を指定します。*ONLY（ジョブ内に該当ファイル名が1つだけ。番号不要）／*LAST（最高番号のファイル）／*ANY（番号で選択しない。JOBSYSNAME/CRTDATE を優先）／1〜999999。定位置3。",
+      "inputType": "text",
+      "required": false,
+      "attributes": {
+        "characterSet": "upper",
+        "maxLength": 7
+      },
+      "defaultValue": "*ONLY"
+    },
+    {
+      "name": "JOBSYSNAME",
+      "description": "ジョブ・システム名",
+      "help": "スプール・ファイルを作成したジョブが実行されたシステム名を指定します。ジョブ名/ユーザー名/ジョブ番号/ファイル名/ファイル番号が一致した後に考慮されます。*ONLY（該当が1つ）／*CURRENT（現行システム上で作成）／*ANY（システム名で選択しない。CRTDATE を優先）／名前。",
+      "inputType": "text",
+      "required": false,
+      "attributes": {
+        "characterSet": "upper",
+        "maxLength": 8
+      },
+      "defaultValue": "*ONLY"
+    },
+    {
+      "name": "CRTDATE",
+      "description": "作成されたスプール・ファイル",
+      "help": "スプール・ファイルが作成された日時を指定します。他のパラメーター要件が一致した後に考慮されます。単一値 *ONLY（該当が1つ）／*LAST（最後の作成日時）。日付・時刻を指定する場合は作成日（要素1）と作成時刻（要素2）を入力します。",
+      "inputType": "group",
+      "required": false,
+      "children": [
+        {
+          "name": "CRTDATE",
+          "description": "作成日",
+          "help": "スプール・ファイルが作成された日付。単一値 *ONLY／*LAST も指定可。",
+          "inputType": "text",
+          "required": false,
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          },
+          "placeholder": "*ONLY"
+        },
+        {
+          "name": "CRTTIME",
+          "description": "作成時刻",
+          "help": "スプール・ファイルが作成された時刻。*ONLY（該当が1つ）／*LAST（最後の作成時刻）／時刻。",
+          "inputType": "text",
+          "required": false,
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 8
+          },
+          "placeholder": "*ONLY"
+        }
+      ]
+    },
+    {
+      "name": "SELECT",
+      "description": "ファイル選択",
+      "help": "変更するために選択するファイルのグループを指定します。各要素（ユーザー／印刷装置／用紙タイプ／ユーザー・データ／ASP）すべてと一致するファイルだけが選択されます。FILE(*SELECT) のときに使用します。",
+      "inputType": "group",
+      "required": false,
+      "children": [
+        {
+          "name": "USER",
+          "description": "ユーザー",
+          "help": "ファイルを作成したユーザーで選択します。*CURRENT（このコマンドを実行中のユーザー）／*ALL（全ユーザー）／ユーザー名。",
+          "inputType": "text",
+          "required": false,
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          },
+          "placeholder": "*CURRENT"
+        },
+        {
+          "name": "DEV",
+          "description": "印刷装置",
+          "help": "ファイルが待機している装置で選択します。*ALL（装置作成/ユーザー作成の全出力待ち行列上のファイル）／*OUTQ（ユーザー作成の出力待ち行列の全ファイル）／装置名。",
+          "inputType": "text",
+          "required": false,
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          },
+          "placeholder": "*ALL"
+        },
+        {
+          "name": "FORMTYPE",
+          "description": "用紙タイプ",
+          "help": "用紙タイプで選択します。*ALL（全用紙タイプ）／*STD（標準用紙タイプ）／用紙タイプ。",
+          "inputType": "text",
+          "required": false,
+          "attributes": {
+            "maxLength": 10
+          },
+          "placeholder": "*ALL"
+        },
+        {
+          "name": "USRDTA",
+          "description": "ユーザー・データ",
+          "help": "ファイルに関連したユーザー・データ・タグで選択します。*ALL（タグ指定の全ファイル）／ユーザー・データ・タグ。",
+          "inputType": "text",
+          "required": false,
+          "attributes": {
+            "maxLength": 10
+          },
+          "placeholder": "*ALL"
+        },
+        {
+          "name": "ASP",
+          "description": "ASP",
+          "help": "ファイルが入っている補助記憶域プールで選択します。*ALL（ASPDEV 指定の全ファイル）／*ASPDEV（ASPDEV パラメーター指定のファイル）／1〜32（ASP番号）。",
+          "inputType": "text",
+          "required": false,
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 7
+          },
+          "placeholder": "*ALL"
+        }
+      ]
+    },
+    {
+      "name": "ASPDEV",
+      "description": "ASP装置",
+      "help": "選択されるスプール・ファイルが入っている補助記憶域プール装置を指定します。有効なのは SELECT の ASP 要素が *ALL または *ASPDEV の場合だけです。*（現スレッドのライブラリー名スペース内のASP）／*SYSBAS（システムASPおよび全定義済みユーザーASP）／*CURASPGRP（スレッドのASPグループの1次/2次ASP）／ASP装置記述名。",
+      "inputType": "text",
+      "required": false,
+      "attributes": {
+        "characterSet": "upper",
+        "maxLength": 10
+      },
+      "placeholder": "*"
+    },
+    {
+      "name": "DEV",
+      "description": "印刷装置",
+      "help": "ファイルの印刷に使用される印刷装置を指定します。*SAME（現在の値のまま）／*OUTQ（特定装置に割り当てず OUTQ パラメーターの出力待ち行列に入れる）／印刷装置名。",
+      "inputType": "text",
+      "required": false,
+      "attributes": {
+        "characterSet": "upper",
+        "maxLength": 10
+      },
+      "defaultValue": "*SAME"
+    },
+    {
+      "name": "PRTSEQ",
+      "description": "印刷順序",
+      "help": "ファイルを出力待ち行列の次のファイルにするかどうかを指定します。SCHEDULE/OUTPTY と一緒には使用できません。",
+      "inputType": "dropdown",
+      "required": false,
+      "options": [
+        { "label": "*SAME（上部に明示的には移動しない）", "value": "*SAME" },
+        { "label": "*NEXT（出力待ち行列の始めに移動）", "value": "*NEXT" }
+      ]
+    },
+    {
+      "name": "FORMTYPE",
+      "description": "用紙タイプ",
+      "help": "印刷装置で使用される用紙のタイプを指定します。*SAME（変更しない）／*STD（標準用紙）／用紙タイプ（組み込みブランクがある場合はアポストロフィで囲む）。",
+      "inputType": "text",
+      "required": false,
+      "attributes": {
+        "maxLength": 10
+      },
+      "defaultValue": "*SAME"
+    },
+    {
+      "name": "COPIES",
+      "description": "コピー枚数",
+      "help": "印刷中の出力のコピー数を指定します。*SAME（変更しない）／1〜255。",
+      "inputType": "text",
+      "required": false,
+      "attributes": {
+        "characterSet": "upper",
+        "maxLength": 5
+      },
+      "defaultValue": "*SAME"
+    },
+    {
+      "name": "RESTART",
+      "description": "印刷の再始動",
+      "help": "印刷を再始動したいページを指定します。*SAME（変更しない）／*STRPAGE（PAGERANGE 指定の最初のページ）／*ENDPAGE（印刷終了ページ）／*NEXT（最後に印刷したページの次）／再始動ページ（整数）。",
+      "inputType": "text",
+      "required": false,
+      "attributes": {
+        "characterSet": "upper",
+        "maxLength": 10
+      },
+      "defaultValue": "*SAME"
+    },
+    {
+      "name": "VOL",
+      "description": "ボリューム",
+      "help": "ディスケット出力ファイルの場合に、スプール・ファイルが書き出されるディスケットのボリュームIDを指定します。単一値 *SAME（変更しない）／*NONE（IDを指定しない）。ボリュームIDは挿入順に最大50回繰り返し可（各ID最大6文字）。",
+      "inputType": "text",
+      "required": false,
+      "attributes": {
+        "characterSet": "upper",
+        "maxLength": 6
+      },
+      "defaultValue": "*SAME",
+      "maxOccurrences": 50
+    },
+    {
+      "name": "LABEL",
+      "description": "ディスケット・ラベル",
+      "help": "ディスケット出力ファイルの場合に、スプール・ファイルから書き出されるデータ・ファイルのデータ・ファイルIDを指定します。*SAME（変更しない）／データ・ファイルID。",
+      "inputType": "text",
+      "required": false,
+      "attributes": {
+        "maxLength": 17
+      },
+      "defaultValue": "*SAME"
+    },
+    {
+      "name": "OUTQ",
+      "description": "出力待ち行列",
+      "help": "ファイルを入れる出力待ち行列を指定します。単一値 *SAME（変更しない）／*DEV（印刷装置と同じ名前の出力待ち行列）。または修飾オブジェクト名を指定します。",
+      "inputType": "group",
+      "required": false,
+      "children": [
+        {
+          "name": "OUTQ",
+          "description": "出力待ち行列",
+          "help": "出力待ち行列の名前。単一値 *SAME／*DEV も指定可。",
+          "inputType": "text",
+          "required": false,
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          },
+          "placeholder": "*SAME"
+        },
+        {
+          "name": "LIB",
+          "description": "ライブラリー",
+          "help": "出力待ち行列が入っているライブラリー。*LIBL（ライブラリー・リストを検索）／*CURLIB（ジョブの現行ライブラリー）／ライブラリー名。",
+          "inputType": "text",
+          "required": false,
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          },
+          "defaultValue": "*LIBL"
+        }
+      ]
+    },
+    {
+      "name": "FILESEP",
+      "description": "ファイル区切り",
+      "help": "各印刷ファイルの前に印刷するファイル区切りページ数を指定します。*SAME（変更しない）／0〜9。",
+      "inputType": "text",
+      "required": false,
+      "attributes": {
+        "characterSet": "upper",
+        "maxLength": 5
+      },
+      "defaultValue": "*SAME"
+    },
+    {
+      "name": "PAGERANGE",
+      "description": "印刷ページ範囲",
+      "help": "印刷する開始ページと終了ページを指定します。開始ページ（要素1）と終了ページ（要素2）を入力します。",
+      "inputType": "group",
+      "required": false,
+      "children": [
+        {
+          "name": "STRPAGE",
+          "description": "開始ページ",
+          "help": "印刷を開始するページ。*SAME（変更しない）／*ENDPAGE／整数。",
+          "inputType": "text",
+          "required": false,
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          },
+          "placeholder": "*SAME"
+        },
+        {
+          "name": "ENDPAGE",
+          "description": "終了ページ",
+          "help": "印刷を終了するページ。*SAME（変更しない）／*END／整数。",
+          "inputType": "text",
+          "required": false,
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          },
+          "placeholder": "*SAME"
+        }
+      ]
+    },
+    {
+      "name": "SCHEDULE",
+      "description": "スプール出力スケジュール",
+      "help": "スプール・ファイルが書き出しプログラムで使用可能になる時期を指定します。",
+      "inputType": "dropdown",
+      "required": false,
+      "options": [
+        { "label": "*SAME（変更しない）", "value": "*SAME" },
+        { "label": "*JOBEND（ジョブ終了時）", "value": "*JOBEND" },
+        { "label": "*FILEEND（ファイルのクローズ時）", "value": "*FILEEND" },
+        { "label": "*IMMED（最初のレコードが書き込まれた時）", "value": "*IMMED" }
+      ]
+    },
+    {
+      "name": "SAVE",
+      "description": "保管ファイル",
+      "help": "印刷後にスプール・ファイルを保管するかどうかを指定します。",
+      "inputType": "dropdown",
+      "required": false,
+      "options": [
+        { "label": "*SAME（変更しない）", "value": "*SAME" },
+        { "label": "*NO（印刷後に削除）", "value": "*NO" },
+        { "label": "*YES（印刷後に保管）", "value": "*YES" },
+        { "label": "*IMMED（保管し直ちに使用可能）", "value": "*IMMED" }
+      ]
+    },
+    {
+      "name": "EXPDATE",
+      "description": "ファイルの満了日",
+      "help": "スプール・ファイルの満了日を指定します。*SAME（変更しない）／*NONE（満了日なし）／*DAYS（DAYS パラメーターの日数で計算）／日付。",
+      "inputType": "text",
+      "required": false,
+      "attributes": {
+        "characterSet": "upper",
+        "maxLength": 10
+      },
+      "defaultValue": "*SAME"
+    },
+    {
+      "name": "DAYS",
+      "description": "ファイル満了までの日数",
+      "help": "スプール・ファイルが満了するまでの日数を指定します。EXPDATE(*DAYS) のときに使用します。1〜366。",
+      "inputType": "number",
+      "required": false,
+      "attributes": {
+        "numericOnly": true,
+        "maxLength": 3
+      }
+    },
+    {
+      "name": "OUTPTY",
+      "description": "出力優先順位",
+      "help": "出力待ち行列内のスプール・ファイルの出力優先順位を指定します。*SAME（変更しない）／*JOB（ジョブの出力優先順位）／1〜9（1が最優先）。",
+      "inputType": "text",
+      "required": false,
+      "attributes": {
+        "characterSet": "upper",
+        "maxLength": 5
+      },
+      "defaultValue": "*SAME"
+    },
+    {
+      "name": "USRDTA",
+      "description": "ユーザー・データ",
+      "help": "スプール・ファイルに関連付けるユーザー・データ・タグを指定します。*SAME（変更しない）／ユーザー・データ。",
+      "inputType": "text",
+      "required": false,
+      "attributes": {
+        "maxLength": 10
+      },
+      "defaultValue": "*SAME"
+    },
+    {
+      "name": "ALIGN",
+      "description": "ページの位置合わせ",
+      "help": "印刷前に用紙の位置合わせを必要とするかどうかを指定します。",
+      "inputType": "dropdown",
+      "required": false,
+      "options": [
+        { "label": "*SAME（変更しない）", "value": "*SAME" },
+        { "label": "*NO（位置合わせ不要）", "value": "*NO" },
+        { "label": "*YES（位置合わせが必要）", "value": "*YES" }
+      ]
+    },
+    {
+      "name": "PRTQLTY",
+      "description": "印刷品質",
+      "help": "出力を印刷する印刷品質を指定します。",
+      "inputType": "dropdown",
+      "required": false,
+      "options": [
+        { "label": "*SAME（変更しない）", "value": "*SAME" },
+        { "label": "*STD（標準品質）", "value": "*STD" },
+        { "label": "*DEVD（装置記述の値）", "value": "*DEVD" },
+        { "label": "*DRAFT（ドラフト品質）", "value": "*DRAFT" },
+        { "label": "*NLQ（活字体品質）", "value": "*NLQ" },
+        { "label": "*FASTDRAFT（高速ドラフト）", "value": "*FASTDRAFT" }
+      ]
+    },
+    {
+      "name": "FORMFEED",
+      "description": "用紙送り",
+      "help": "印刷装置への用紙の送り方法を指定します。",
+      "inputType": "dropdown",
+      "required": false,
+      "options": [
+        { "label": "*SAME（変更しない）", "value": "*SAME" },
+        { "label": "*DEVD（装置記述の値）", "value": "*DEVD" },
+        { "label": "*CONT（連続用紙）", "value": "*CONT" },
+        { "label": "*CUT（カット用紙）", "value": "*CUT" },
+        { "label": "*AUTOCUT（自動カット用紙送り）", "value": "*AUTOCUT" },
+        { "label": "*CONT2（2次連続用紙）", "value": "*CONT2" }
+      ]
+    },
+    {
+      "name": "DRAWER",
+      "description": "ソース用紙入れ",
+      "help": "使用するソース用紙入れを指定します。*SAME（変更しない）／*E1（封筒用紙入れ）／*FORMDF（書式定義に従う）／1〜255。",
+      "inputType": "text",
+      "required": false,
+      "attributes": {
+        "characterSet": "upper",
+        "maxLength": 7
+      },
+      "defaultValue": "*SAME"
+    },
+    {
+      "name": "FIDELITY",
+      "description": "印刷精度",
+      "help": "エラーが起きたときに印刷を続行するかどうか（印刷精度）を指定します。",
+      "inputType": "dropdown",
+      "required": false,
+      "options": [
+        { "label": "*SAME（変更しない）", "value": "*SAME" },
+        { "label": "*ABSOLUTE（エラーで停止）", "value": "*ABSOLUTE" },
+        { "label": "*CONTENT（エラーを無視して続行）", "value": "*CONTENT" }
+      ]
+    },
+    {
+      "name": "DUPLEX",
+      "description": "両面印刷",
+      "help": "用紙の両面に印刷するかどうかを指定します。",
+      "inputType": "dropdown",
+      "required": false,
+      "options": [
+        { "label": "*SAME（変更しない）", "value": "*SAME" },
+        { "label": "*NO（片面印刷）", "value": "*NO" },
+        { "label": "*YES（長辺とじ両面印刷）", "value": "*YES" },
+        { "label": "*TUMBLE（短辺とじ両面印刷）", "value": "*TUMBLE" },
+        { "label": "*FORMDF（書式定義に従う）", "value": "*FORMDF" }
+      ]
+    },
+    {
+      "name": "MULTIUP",
+      "description": "面当たりページ数",
+      "help": "用紙の片面に印刷する論理ページ数を指定します。*SAME（変更しない）／1〜4。",
+      "inputType": "text",
+      "required": false,
+      "attributes": {
+        "characterSet": "upper",
+        "maxLength": 5
+      },
+      "defaultValue": "*SAME"
+    },
+    {
+      "name": "PAGDFN",
+      "description": "ページ定義",
+      "help": "印刷に使用するページ定義を指定します。単一値 *SAME（変更しない）／*NONE（ページ定義なし）。または修飾オブジェクト名を指定します。",
+      "inputType": "group",
+      "required": false,
+      "children": [
+        {
+          "name": "PAGDFN",
+          "description": "ページ定義",
+          "help": "ページ定義の名前。単一値 *SAME／*NONE も指定可。",
+          "inputType": "text",
+          "required": false,
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          },
+          "placeholder": "*SAME"
+        },
+        {
+          "name": "LIB",
+          "description": "ライブラリー",
+          "help": "ページ定義が入っているライブラリー。*LIBL（ライブラリー・リストを検索）／*CURLIB（ジョブの現行ライブラリー）／ライブラリー名。",
+          "inputType": "text",
+          "required": false,
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          },
+          "defaultValue": "*LIBL"
+        }
+      ]
+    },
+    {
+      "name": "FORMDF",
+      "description": "書式定義",
+      "help": "印刷に使用する書式定義を指定します。単一値 *SAME（変更しない）／*NONE（書式定義なし）／*DEVD（装置記述の値）／*INLINE（インライン書式定義）／*INLINED（データ内の書式定義）。または修飾オブジェクト名を指定します。",
+      "inputType": "group",
+      "required": false,
+      "children": [
+        {
+          "name": "FORMDF",
+          "description": "書式定義",
+          "help": "書式定義の名前。単一値 *SAME／*NONE／*DEVD／*INLINE／*INLINED も指定可。",
+          "inputType": "text",
+          "required": false,
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          },
+          "placeholder": "*SAME"
+        },
+        {
+          "name": "LIB",
+          "description": "ライブラリー",
+          "help": "書式定義が入っているライブラリー。*LIBL（ライブラリー・リストを検索）／*CURLIB（ジョブの現行ライブラリー）／ライブラリー名。",
+          "inputType": "text",
+          "required": false,
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          },
+          "defaultValue": "*LIBL"
+        }
+      ]
+    },
+    {
+      "name": "AFPCHARS",
+      "description": "AFP文字",
+      "help": "印刷に使用する AFP コード化フォントを指定します。単一値 *SAME（変更しない）／*NONE（指定なし）。文字値を最大4回繰り返し指定可。",
+      "inputType": "text",
+      "required": false,
+      "attributes": {
+        "characterSet": "upper",
+        "maxLength": 4
+      },
+      "defaultValue": "*SAME",
+      "maxOccurrences": 4
+    },
+    {
+      "name": "FRONTOVL",
+      "description": "前面オーバーレイ",
+      "help": "用紙の前面に印刷するオーバーレイを指定します。単一値 *NONE（前面オーバーレイなし）。指定する場合はオーバーレイ（修飾オブジェクト名）と下方向/横方向オフセットを入力します。",
+      "inputType": "group",
+      "required": false,
+      "children": [
+        {
+          "name": "OVERLAY",
+          "description": "オーバーレイ",
+          "help": "前面オーバーレイの名前。単一値 *SAME（変更しない）／*NONE。",
+          "inputType": "text",
+          "required": false,
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          },
+          "placeholder": "*NONE"
+        },
+        {
+          "name": "OVERLAYLIB",
+          "description": "オーバーレイ・ライブラリー",
+          "help": "オーバーレイが入っているライブラリー。*LIBL（ライブラリー・リストを検索）／*CURLIB（ジョブの現行ライブラリー）／ライブラリー名。",
+          "inputType": "text",
+          "required": false,
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          },
+          "defaultValue": "*LIBL"
+        },
+        {
+          "name": "DOWN",
+          "description": "下方向オフセット",
+          "help": "オーバーレイの下方向オフセット。*SAME（変更しない）／0.0〜57.79。",
+          "inputType": "text",
+          "required": false,
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 6
+          },
+          "placeholder": "*SAME"
+        },
+        {
+          "name": "ACROSS",
+          "description": "横方向オフセット",
+          "help": "オーバーレイの横方向オフセット。*SAME（変更しない）／0.0〜57.79。",
+          "inputType": "text",
+          "required": false,
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 6
+          },
+          "placeholder": "*SAME"
+        }
+      ]
+    },
+    {
+      "name": "BACKOVL",
+      "description": "背面オーバーレイ",
+      "help": "用紙の背面に印刷するオーバーレイを指定します。単一値 *FRONTOVL（前面と同じ）／*NONE（背面オーバーレイなし）。指定する場合はオーバーレイ・オフセット・コンスタント・バックを入力します。",
+      "inputType": "group",
+      "required": false,
+      "children": [
+        {
+          "name": "OVERLAY",
+          "description": "オーバーレイ",
+          "help": "背面オーバーレイの名前。単一値 *SAME（変更しない）／*FRONTOVL／*NONE。",
+          "inputType": "text",
+          "required": false,
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          },
+          "placeholder": "*FRONTOVL"
+        },
+        {
+          "name": "OVERLAYLIB",
+          "description": "オーバーレイ・ライブラリー",
+          "help": "オーバーレイが入っているライブラリー。*LIBL（ライブラリー・リストを検索）／*CURLIB（ジョブの現行ライブラリー）／ライブラリー名。",
+          "inputType": "text",
+          "required": false,
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          },
+          "defaultValue": "*LIBL"
+        },
+        {
+          "name": "DOWN",
+          "description": "下方向オフセット",
+          "help": "オーバーレイの下方向オフセット。*SAME（変更しない）／0.0〜57.79。",
+          "inputType": "text",
+          "required": false,
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 6
+          },
+          "placeholder": "*SAME"
+        },
+        {
+          "name": "ACROSS",
+          "description": "横方向オフセット",
+          "help": "オーバーレイの横方向オフセット。*SAME（変更しない）／0.0〜57.79。",
+          "inputType": "text",
+          "required": false,
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 6
+          },
+          "placeholder": "*SAME"
+        },
+        {
+          "name": "CONSTANT",
+          "description": "コンスタント・バック",
+          "help": "コンスタント・バック印刷の指定。*SAME（変更しない）／*NOCONSTANT（コンスタント・バックなし）／*CONSTANT（コンスタント・バックを使用）。",
+          "inputType": "text",
+          "required": false,
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 11
+          },
+          "placeholder": "*SAME"
+        }
+      ]
+    },
+    {
+      "name": "USRDFNOPT",
+      "description": "ユーザー定義オプション",
+      "help": "スプール・ファイルの処理に使用する1つまたは複数のユーザー定義オプションを指定します。単一値 *SAME（変更しない）／*NONE（指定なし）。文字値を最大4回繰り返し指定可。",
+      "inputType": "text",
+      "required": false,
+      "attributes": {
+        "maxLength": 10
+      },
+      "defaultValue": "*SAME",
+      "maxOccurrences": 4
+    },
+    {
+      "name": "USRDFNDTA",
+      "description": "ユーザー定義データ",
+      "help": "スプール・ファイルの処理に使用するユーザー定義データを指定します。*SAME（変更しない）／*NONE（指定なし）／文字値。",
+      "inputType": "text",
+      "required": false,
+      "attributes": {
+        "maxLength": 255
+      },
+      "defaultValue": "*SAME"
+    },
+    {
+      "name": "USRDFNOBJ",
+      "description": "ユーザー定義オブジェクト",
+      "help": "スプール・ファイルの処理に使用するユーザー定義オブジェクトを指定します。単一値 *NONE（指定なし）／*SAME（変更しない）。指定する場合はオブジェクト（修飾オブジェクト名）とオブジェクト・タイプを入力します。",
+      "inputType": "group",
+      "required": false,
+      "children": [
+        {
+          "name": "OBJ",
+          "description": "オブジェクト",
+          "help": "ユーザー定義オブジェクトの名前。単一値 *NONE／*SAME も指定可。",
+          "inputType": "text",
+          "required": false,
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          },
+          "placeholder": "*NONE"
+        },
+        {
+          "name": "OBJLIB",
+          "description": "オブジェクト・ライブラリー",
+          "help": "オブジェクトが入っているライブラリー。*LIBL（ライブラリー・リストを検索）／*CURLIB（ジョブの現行ライブラリー）／ライブラリー名。",
+          "inputType": "text",
+          "required": false,
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          },
+          "defaultValue": "*LIBL"
+        },
+        {
+          "name": "OBJTYPE",
+          "description": "オブジェクト・タイプ",
+          "help": "ユーザー定義オブジェクトのタイプを指定します。",
+          "inputType": "dropdown",
+          "required": false,
+          "options": [
+            { "label": "*DTAARA（データ域）", "value": "*DTAARA" },
+            { "label": "*DTAQ（データ待ち行列）", "value": "*DTAQ" },
+            { "label": "*FILE（ファイル）", "value": "*FILE" },
+            { "label": "*PSFCFG（PSF構成）", "value": "*PSFCFG" },
+            { "label": "*USRIDX（ユーザー索引）", "value": "*USRIDX" },
+            { "label": "*USRQ（ユーザー待ち行列）", "value": "*USRQ" },
+            { "label": "*USRSPC（ユーザー・スペース）", "value": "*USRSPC" }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "IPDSPASTHR",
+      "description": "IPDSパススルー",
+      "help": "IPDS パススルーを使用するかどうかを指定します。",
+      "inputType": "dropdown",
+      "required": false,
+      "options": [
+        { "label": "*SAME（変更しない）", "value": "*SAME" },
+        { "label": "*DEVD（装置記述の値）", "value": "*DEVD" },
+        { "label": "*NO（パススルーしない）", "value": "*NO" },
+        { "label": "*YES（パススルーする）", "value": "*YES" }
+      ]
+    },
+    {
+      "name": "FNTRSL",
+      "description": "形式設定用フォント解像度",
+      "help": "形式設定に使用するフォント解像度を指定します。",
+      "inputType": "dropdown",
+      "required": false,
+      "options": [
+        { "label": "*SAME（変更しない）", "value": "*SAME" },
+        { "label": "*DEVD（装置記述の値）", "value": "*DEVD" },
+        { "label": "*SEARCH（解像度を検索）", "value": "*SEARCH" },
+        { "label": "240（240 ペル）", "value": "240" },
+        { "label": "300（300 ペル）", "value": "300" }
+      ]
+    },
+    {
+      "name": "EXCHTYPE",
+      "description": "ディスケット・ファイル交換タイプ",
+      "help": "ディスケット出力ファイルの交換タイプを指定します。",
+      "inputType": "dropdown",
+      "required": false,
+      "options": [
+        { "label": "*SAME（変更しない）", "value": "*SAME" },
+        { "label": "*STD（標準交換）", "value": "*STD" },
+        { "label": "*BASIC（基本交換）", "value": "*BASIC" },
+        { "label": "*H（H交換）", "value": "*H" },
+        { "label": "*I（I交換）", "value": "*I" }
+      ]
+    },
+    {
+      "name": "CODE",
+      "description": "コード",
+      "help": "ディスケット出力ファイルに使用するデータ・コードを指定します。",
+      "inputType": "dropdown",
+      "required": false,
+      "options": [
+        { "label": "*SAME（変更しない）", "value": "*SAME" },
+        { "label": "*EBCDIC（EBCDIC コード）", "value": "*EBCDIC" },
+        { "label": "*ASCII（ASCII コード）", "value": "*ASCII" }
+      ]
+    }
+  ]
+}

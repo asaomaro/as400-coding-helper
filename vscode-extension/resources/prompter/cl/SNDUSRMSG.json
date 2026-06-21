@@ -1,0 +1,174 @@
+{
+  "keyword": "SNDUSRMSG",
+  "description": "ユーザー・メッセージ送信（SNDUSRMSG）",
+  "help": "即時メッセージまたは事前定義メッセージをユーザーやメッセージ待ち行列に送り、応答を受け取ることができます。",
+  "parameters": [
+    {
+      "name": "MSG",
+      "description": "メッセージ・テキスト",
+      "help": "送信する即時メッセージのテキスト（文字値）を指定します。MSGID と排他です。",
+      "inputType": "text",
+      "required": false,
+      "attributes": { "maxLength": 512 },
+      "placeholder": "'メッセージ・テキスト'"
+    },
+    {
+      "name": "MSGID",
+      "description": "メッセージID",
+      "help": "送信する事前定義メッセージの識別コード（7文字）を指定します。MSGF と併用します。",
+      "inputType": "text",
+      "required": false,
+      "attributes": { "characterSet": "upper", "maxLength": 7 },
+      "placeholder": "CPF0000"
+    },
+    {
+      "name": "MSGF",
+      "description": "メッセージ・ファイル",
+      "help": "MSGID のメッセージが定義されているメッセージ・ファイルを指定します。",
+      "inputType": "group",
+      "required": false,
+      "children": [
+        {
+          "name": "LIB",
+          "description": "ライブラリー",
+          "help": "メッセージ・ファイルのライブラリー名。定義済み値: *LIBL、*CURLIB。",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "*LIBL",
+          "attributes": { "characterSet": "upper", "maxLength": 10 },
+          "placeholder": "*LIBL"
+        },
+        {
+          "name": "MSGF",
+          "description": "メッセージ・ファイル",
+          "help": "メッセージ・ファイル名を指定します。",
+          "inputType": "text",
+          "required": false,
+          "attributes": { "characterSet": "upper", "maxLength": 10 },
+          "placeholder": "QCPFMSG"
+        }
+      ]
+    },
+    {
+      "name": "MSGDTA",
+      "description": "メッセージ・データ・フィールドの値",
+      "help": "事前定義メッセージの置換変数に使うメッセージ・データ（文字値）を指定します。",
+      "inputType": "text",
+      "required": false,
+      "placeholder": "&MSGDTA"
+    },
+    {
+      "name": "VALUES",
+      "description": "有効な応答値",
+      "help": "照会メッセージで受け付ける有効な応答値を指定します。定義済み値: *NONE。最大20個まで指定できます。",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*NONE",
+      "placeholder": "*NONE",
+      "maxOccurrences": 20
+    },
+    {
+      "name": "DFT",
+      "description": "省略時応答値",
+      "help": "応答が得られない場合の省略時応答値（文字値）を指定します。定義済み値: *MSGDFT=メッセージの省略時応答。",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*MSGDFT",
+      "placeholder": "*MSGDFT"
+    },
+    {
+      "name": "MSGTYPE",
+      "description": "MSGタイプ",
+      "help": "メッセージのタイプを指定します。*INQ=照会（応答を要求）、*INFO=通知。",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*INQ",
+      "options": [
+        { "label": "*INQ（照会）", "value": "*INQ" },
+        { "label": "*INFO（通知）", "value": "*INFO" }
+      ]
+    },
+    {
+      "name": "TOMSGQ",
+      "description": "TOメッセージ待ち行列",
+      "help": "メッセージを送る先のメッセージ待ち行列を指定します。単一値: *=送信側、*EXT=外部、*SYSOPR=システム操作員。",
+      "inputType": "group",
+      "required": false,
+      "children": [
+        {
+          "name": "LIB",
+          "description": "ライブラリー",
+          "help": "メッセージ待ち行列のライブラリー名。定義済み値: *LIBL、*CURLIB。",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "*LIBL",
+          "attributes": { "characterSet": "upper", "maxLength": 10 },
+          "placeholder": "*LIBL"
+        },
+        {
+          "name": "TOMSGQ",
+          "description": "TOメッセージ待ち行列",
+          "help": "メッセージ待ち行列名を指定します。",
+          "inputType": "text",
+          "required": false,
+          "attributes": { "characterSet": "upper", "maxLength": 10 },
+          "placeholder": "*SYSOPR"
+        }
+      ]
+    },
+    {
+      "name": "TOUSR",
+      "description": "TOユーザー・プロファイル",
+      "help": "メッセージを送るユーザー・プロファイル名を指定します。定義済み値: *SYSOPR、*REQUESTER。",
+      "inputType": "text",
+      "required": false,
+      "attributes": { "characterSet": "upper", "maxLength": 10 },
+      "placeholder": "*REQUESTER"
+    },
+    {
+      "name": "MSGRPY",
+      "description": "メッセージ応答のCL変数",
+      "help": "照会メッセージの応答を受け取るCL変数（文字値）を指定します。",
+      "inputType": "text",
+      "required": false,
+      "placeholder": "&MSGRPY"
+    },
+    {
+      "name": "TRNTBL",
+      "description": "変換テーブル",
+      "help": "応答に適用する変換テーブルを指定します。単一値: *NONE=変換しない。修飾子1の定義済み値: QSYSTRNTBL。",
+      "inputType": "group",
+      "required": false,
+      "children": [
+        {
+          "name": "LIB",
+          "description": "ライブラリー",
+          "help": "変換テーブルのライブラリー名。定義済み値: *LIBL、*CURLIB。",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "*LIBL",
+          "attributes": { "characterSet": "upper", "maxLength": 10 },
+          "placeholder": "*LIBL"
+        },
+        {
+          "name": "TRNTBL",
+          "description": "変換テーブル",
+          "help": "変換テーブル名を指定します。定義済み値: QSYSTRNTBL。",
+          "inputType": "text",
+          "required": false,
+          "attributes": { "characterSet": "upper", "maxLength": 10 },
+          "placeholder": "*NONE"
+        }
+      ]
+    },
+    {
+      "name": "CCSID",
+      "description": "コード化文字セットID",
+      "help": "メッセージ・テキストの CCSID を指定します。1-65535 の値、*HEX、または *JOB を指定できます。",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*JOB",
+      "placeholder": "*JOB"
+    }
+  ]
+}
