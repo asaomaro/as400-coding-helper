@@ -1,0 +1,262 @@
+{
+  "keyword": "RTVMBRD",
+  "description": "メンバー記述検索（RTVMBRD）",
+  "help": "データベース・ファイル・メンバーの記述情報（メンバー名・属性・タイプ・各種日付・レコード数・テキスト等）を検索し、指定した CL 変数に戻します。CL プログラムまたは REXX プロシージャー内でのみ有効です。FILE に対象ファイル、MBR に対象メンバーを指定し、戻し先の各パラメーターに値を受け取る CL 変数名（先頭は &）を指定します。",
+  "parameters": [
+    {
+      "name": "FILE",
+      "description": "ファイル（RTVMBRD）",
+      "help": "検索されるメンバー記述が入っているファイルを LIB/FILE 形式で指定します（必須・定位置1）。ファイルに対する *USE 権限とライブラリーに対する *EXECUTE 権限が必要です。",
+      "inputType": "group",
+      "required": true,
+      "children": [
+        {
+          "name": "LIB",
+          "description": "ライブラリー",
+          "help": "ファイルが入っているライブラリー。*LIBL（ライブラリー・リスト検索）/ *CURLIB（現行ライブラリー）/ ライブラリー名。",
+          "inputType": "text",
+          "required": false,
+          "attributes": { "characterSet": "upper", "maxLength": 10 },
+          "placeholder": "*LIBL"
+        },
+        {
+          "name": "FILE",
+          "description": "ファイル",
+          "help": "ファイル・メンバーが入っているファイルの名前を指定します。",
+          "inputType": "text",
+          "required": true,
+          "attributes": { "characterSet": "upper", "maxLength": 10 },
+          "placeholder": "FILE"
+        }
+      ]
+    },
+    {
+      "name": "MBR",
+      "description": "メンバー（RTVMBRD）",
+      "help": "記述を検索するファイル・メンバーを指定します。単一値（*FIRST=日付順最初／*LAST=日付順最後）を MBR に直接入れるか、参照メンバー＋関係の2要素を指定します。要素指定時は MBR を空にし、子の MEMBER と RELATION を使用します。",
+      "inputType": "group",
+      "required": false,
+      "children": [
+        {
+          "name": "MEMBER",
+          "description": "参照メンバー",
+          "help": "参照メンバーの名前。*FIRSTMBR（名前順最初）/ *LASTMBR（名前順最後）/ メンバー名 / 総称名（先頭文字＋*）。*FIRSTMBR・*LASTMBR・総称名は関係 *SAME が必要です。単一値 *FIRST / *LAST を使う場合はここに入力します。",
+          "inputType": "text",
+          "required": false,
+          "attributes": { "characterSet": "upper", "maxLength": 10 },
+          "placeholder": "*FIRST"
+        },
+        {
+          "name": "RELATION",
+          "description": "関係",
+          "help": "検索メンバーと参照メンバーの関係。*SAME（参照メンバー自身）/ *NEXT（名前順で直後）/ *PRV（名前順で直前）。",
+          "inputType": "dropdown",
+          "required": false,
+          "options": [
+            { "label": "*SAME（参照メンバー自身）", "value": "*SAME" },
+            { "label": "*NEXT（名前順で直後）", "value": "*NEXT" },
+            { "label": "*PRV（名前順で直前）", "value": "*PRV" }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "RTNSYSTEM",
+      "description": "RTNSYSTEMのCL変数（RTVMBRD）",
+      "help": "ファイルが見つかったシステム名を受け取る 4 桁の CL 文字変数名を指定します。戻る値: *LCL（ローカル）/ *RMT（リモート）。",
+      "inputType": "text",
+      "required": false,
+      "attributes": { "maxLength": 11 },
+      "placeholder": "&RTNSYSTEM"
+    },
+    {
+      "name": "RTNLIB",
+      "description": "RTNLIBのCL変数（RTVMBRD）",
+      "help": "指定したファイル・メンバーを含むファイルが見つかったライブラリー名を受け取る 10 桁の CL 文字変数名を指定します。",
+      "inputType": "text",
+      "required": false,
+      "attributes": { "maxLength": 11 },
+      "placeholder": "&RTNLIB"
+    },
+    {
+      "name": "RTNMBR",
+      "description": "RTNMBRのCL変数（RTVMBRD）",
+      "help": "記述を検索したファイル・メンバーの名前を受け取る 10 桁の CL 文字変数名を指定します。",
+      "inputType": "text",
+      "required": false,
+      "attributes": { "maxLength": 11 },
+      "placeholder": "&RTNMBR"
+    },
+    {
+      "name": "FILEATR",
+      "description": "FILEATRのCL変数（RTVMBRD）",
+      "help": "ファイル属性を受け取る 3 桁の CL 文字変数名を指定します。戻る値: *PF（物理ファイル・メンバー）/ *LF（論理ファイル・メンバー）。",
+      "inputType": "text",
+      "required": false,
+      "attributes": { "maxLength": 11 },
+      "placeholder": "&FILEATR"
+    },
+    {
+      "name": "FILETYPE",
+      "description": "FILETYPEのCL変数（RTVMBRD）",
+      "help": "ファイル・タイプを受け取る 5 桁の CL 文字変数名を指定します。戻る値: *DATA（データ・ファイル・メンバー）/ *SRC（ソース・ファイル・メンバー）。",
+      "inputType": "text",
+      "required": false,
+      "attributes": { "maxLength": 11 },
+      "placeholder": "&FILETYPE"
+    },
+    {
+      "name": "SRCTYPE",
+      "description": "SRCTYPEのCL変数（RTVMBRD）",
+      "help": "ソース・ファイル・メンバーのソース・タイプを受け取る 10 桁の CL 文字変数名を指定します。ソース・ファイル・メンバーでない場合はブランクが戻ります。",
+      "inputType": "text",
+      "required": false,
+      "attributes": { "maxLength": 11 },
+      "placeholder": "&SRCTYPE"
+    },
+    {
+      "name": "SRCCHGDATE",
+      "description": "SRCCHGDATEのCL変数（RTVMBRD）",
+      "help": "ソース・ファイル・メンバーが最後に変更された世紀・日付・時刻を受け取る 13 桁の CL 文字変数名を指定します。形式 CYYMMDDHHMMSS（C: 0=1940-1999, 1=2000-2039）。利用可能な日付がない場合はブランクが戻ります。",
+      "inputType": "text",
+      "required": false,
+      "attributes": { "maxLength": 11 },
+      "placeholder": "&SRCCHGDATE"
+    },
+    {
+      "name": "CRTDATE",
+      "description": "CRTDATEのCL変数（RTVMBRD）",
+      "help": "ファイル・メンバー作成の世紀・日付・時刻を受け取る 13 桁の CL 文字変数名を指定します。形式 CYYMMDDHHMMSS（C: 0=1940-1999, 1=2000-2039）。",
+      "inputType": "text",
+      "required": false,
+      "attributes": { "maxLength": 11 },
+      "placeholder": "&CRTDATE"
+    },
+    {
+      "name": "EXPDATE",
+      "description": "EXPDATEのCL変数（RTVMBRD）",
+      "help": "ファイル・メンバー満了の世紀・日付を受け取る 7 桁の CL 文字変数名を指定します。形式 CYYMMDD。",
+      "inputType": "text",
+      "required": false,
+      "attributes": { "maxLength": 11 },
+      "placeholder": "&EXPDATE"
+    },
+    {
+      "name": "TEXT",
+      "description": "TEXTのCL変数（RTVMBRD）",
+      "help": "メンバーのテキスト記述を受け取る 50 桁の CL 文字変数名を指定します。",
+      "inputType": "text",
+      "required": false,
+      "attributes": { "maxLength": 11 },
+      "placeholder": "&TEXT"
+    },
+    {
+      "name": "NBRCURRCD",
+      "description": "NBRCURRCDのCL変数（RTVMBRD）",
+      "help": "メンバー内の現在のレコード数を受け取る CL 変数名を指定します。変数は小数部のない 10 桁の 10 進数変数(10 0)でなければなりません。",
+      "inputType": "text",
+      "required": false,
+      "attributes": { "maxLength": 11 },
+      "placeholder": "&NBRCURRCD"
+    },
+    {
+      "name": "NBRDLTRCD",
+      "description": "NBRDLTRCDのCL変数（RTVMBRD）",
+      "help": "メンバー内の削除済みレコード数を受け取る CL 変数名を指定します。変数は小数部のない 10 桁の 10 進数変数(10 0)でなければなりません。",
+      "inputType": "text",
+      "required": false,
+      "attributes": { "maxLength": 11 },
+      "placeholder": "&NBRDLTRCD"
+    },
+    {
+      "name": "SHARE",
+      "description": "SHAREのCL変数（RTVMBRD）",
+      "help": "オープン・データ・パスを共用するかどうかを受け取る 4 桁の CL 文字変数名を指定します。戻る値: *YES / *NO。",
+      "inputType": "text",
+      "required": false,
+      "attributes": { "maxLength": 11 },
+      "placeholder": "&SHARE"
+    },
+    {
+      "name": "DTASPCSIZ",
+      "description": "DTASPCSIZのCL変数（RTVMBRD）",
+      "help": "メンバーのデータ・スペースのサイズ（バイト）を受け取る CL 変数名を指定します。変数は小数部のない 15 桁の 10 進数変数(15 0)でなければなりません。",
+      "inputType": "text",
+      "required": false,
+      "attributes": { "maxLength": 11 },
+      "placeholder": "&DTASPCSIZ"
+    },
+    {
+      "name": "ACCPTHSIZ",
+      "description": "ACCPTHSIZのCL変数（RTVMBRD）",
+      "help": "メンバーのアクセス・パスのサイズ（バイト）を受け取る CL 変数名を指定します。変数は小数部のない 12 桁の 10 進数変数(12 0)でなければなりません。",
+      "inputType": "text",
+      "required": false,
+      "attributes": { "maxLength": 11 },
+      "placeholder": "&ACCPTHSIZ"
+    },
+    {
+      "name": "CHGDATE",
+      "description": "CHGDATEのCL変数（RTVMBRD）",
+      "help": "メンバーが最後に変更された世紀・日付・時刻を受け取る 13 桁の CL 文字変数名を指定します。形式 CYYMMDDHHMMSS。",
+      "inputType": "text",
+      "required": false,
+      "attributes": { "maxLength": 11 },
+      "placeholder": "&CHGDATE"
+    },
+    {
+      "name": "SAVDATE",
+      "description": "SAVDATEのCL変数（RTVMBRD）",
+      "help": "メンバーが最後に保管された世紀・日付・時刻を受け取る 13 桁の CL 文字変数名を指定します。形式 CYYMMDDHHMMSS。保管されていない場合はブランクが戻ります。",
+      "inputType": "text",
+      "required": false,
+      "attributes": { "maxLength": 11 },
+      "placeholder": "&SAVDATE"
+    },
+    {
+      "name": "RSTDATE",
+      "description": "RSTDATEのCL変数（RTVMBRD）",
+      "help": "メンバーが最後に復元された世紀・日付・時刻を受け取る 13 桁の CL 文字変数名を指定します。形式 CYYMMDDHHMMSS。復元されていない場合はブランクが戻ります。",
+      "inputType": "text",
+      "required": false,
+      "attributes": { "maxLength": 11 },
+      "placeholder": "&RSTDATE"
+    },
+    {
+      "name": "NBRDTAMBRS",
+      "description": "NBRDTAMBRSのCL変数（RTVMBRD）",
+      "help": "論理ファイル・メンバーに基づくデータ・メンバーの数を受け取る CL 変数名を指定します。変数は小数部のない 2 桁の 10 進数変数(2 0)でなければなりません。",
+      "inputType": "text",
+      "required": false,
+      "attributes": { "maxLength": 11 },
+      "placeholder": "&NBRDTAMBRS"
+    },
+    {
+      "name": "USEDATE",
+      "description": "USEDATEのCL変数（RTVMBRD）",
+      "help": "メンバーが最後に使用された世紀・日付を受け取る 7 桁の CL 文字変数名を指定します。形式 CYYMMDD。使用されていない場合はブランクが戻ります。",
+      "inputType": "text",
+      "required": false,
+      "attributes": { "maxLength": 11 },
+      "placeholder": "&USEDATE"
+    },
+    {
+      "name": "USECOUNT",
+      "description": "USECOUNTのCL変数（RTVMBRD）",
+      "help": "メンバーの使用回数（日数）を受け取る CL 変数名を指定します。変数は小数部のない 5 桁の 10 進数変数(5 0)でなければなりません。",
+      "inputType": "text",
+      "required": false,
+      "attributes": { "maxLength": 11 },
+      "placeholder": "&USECOUNT"
+    },
+    {
+      "name": "RESETDATE",
+      "description": "RESETDATEのCL変数（RTVMBRD）",
+      "help": "使用回数が最後にリセットされた世紀・日付を受け取る 7 桁の CL 文字変数名を指定します。形式 CYYMMDD。リセットされていない場合はブランクが戻ります。",
+      "inputType": "text",
+      "required": false,
+      "attributes": { "maxLength": 11 },
+      "placeholder": "&RESETDATE"
+    }
+  ]
+}
