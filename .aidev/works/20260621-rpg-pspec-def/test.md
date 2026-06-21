@@ -1,0 +1,13 @@
+# テスト記録: P-SPEC
+
+検証日時: 2026-06-21（UTC）。原典照合は主E直読。passed=4 / failed=0（環境不足 skip 1）。
+
+| # | 観点 | 方法 | 結果 |
+|---|---|---|---|
+| (a) | JSON パース・回帰なし | `node require` で rpg/**/*.json 全件 | **PASS** |
+| (b) | types.ts 準拠・dropdown options | 許容キー検査・BEGINEND(B/E) options | **PASS**（schema OK） |
+| (c) | 桁位置が原典一致 | 原典 L788-807 を主E再直読し P-SPEC 4欄と機械突合 | **PASS**（7-21/24/44-80 一致。B/E・EXPORT/EXTPROC 一致） |
+| (d) | F4 配線 | 前作業の共有 `classifyRpgSpecKeyword` で P→"P-SPEC" 解決（tsc クリーン） | **PASS** |
+
+## 環境不足 skip（deliver 引き継ぎ）
+- ユニット/結合テスト未実行（runner 未設定）。
