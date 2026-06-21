@@ -54,13 +54,13 @@ PR #42 収集の原典HTML（IBM i 7.4 / `ssw_ibm_i_74`、`docs/origin/manifest.
 - [x] CALLSUBR — サブルーチンの呼び出し
 - [x] CALLPRC — 結合プロシージャーの呼び出し
 
-### P2 メッセージ
+### P2 メッセージ — 20260621-cl-defs-batch-p2p4（issue #43）で実装・原典照合済み
 
-- [ ] SNDMSG — メッセージ送信
-- [ ] SNDUSRMSG — ユーザー・メッセージ送信
-- [ ] SNDRPY — 応答送信
-- [ ] RMVMSG — メッセージ除去
-- [ ] RTVMSG — メッセージ検索
+- [x] SNDMSG — メッセージ送信
+- [x] SNDUSRMSG — ユーザー・メッセージ送信
+- [x] SNDRPY — 応答送信
+- [x] RMVMSG — メッセージ除去
+- [x] RTVMSG — メッセージ検索
 
 ### P3 データ域
 
