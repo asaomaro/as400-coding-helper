@@ -9,9 +9,11 @@ BIN="$SELF/.."
 AIDEV_SH="$BIN/aidev"
 AIDEV_PS1="$BIN/aidev.ps1"
 
-PASS=0; FAIL=0
+PASS=0; FAIL=0; SKIP=0
 ok()   { PASS=$((PASS+1)); printf '  ok: %s\n' "$1"; }
 ng()   { FAIL=$((FAIL+1)); printf '  NG: %s\n' "$1" >&2; }
+# 環境不足で検証を飛ばしたら skip() を使う。RESULT に skip 件数を出して「未検証の穴」を可視化する(#32)。
+skip() { SKIP=$((SKIP+1)); printf '  skip: %s\n' "$1"; }
 assert_contains() { # haystack needle desc
   case "$1" in *"$2"*) ok "$3" ;; *) ng "$3 (期待を含まず: [$2])"; printf '    出力:\n%s\n' "$1" >&2 ;; esac
 }
@@ -181,7 +183,7 @@ if command -v git >/dev/null 2>&1; then
   assert_contains "$RMM_OUT" "main worktree は rm できません" "rm: main worktree 一致時は明確な文言で拒否"
   assert_eq "$([ -d "$REPO" ] && echo yes || echo no)" "yes" "rm: main worktree は削除されない"
 else
-  printf '  skip: git 不在のため worktree テストを省略\n'
+  skip "git 不在のため worktree テストを省略"
 fi
 
 echo "== sh ⇔ ps1 パリティ =="
@@ -230,12 +232,14 @@ YML
     assert_eq "$PW_CUR" "20260101-existing" "パリティ: ps1 add(既存work) current=full dated 名(\$mw アンラップ回帰)"
     assert_contains "$PW_OUT" "既存 work をリンク" "パリティ: ps1 add は既存をリンク(new 委譲せず)"
   else
-    printf '  skip: git 不在のため worktree パリティを省略\n'
+    skip "git 不在のため worktree パリティを省略"
   fi
 else
-  printf '  skip: pwsh 不在のためパリティテストを省略\n'
+  skip "pwsh 不在のためパリティテストを省略"
 fi
 
 echo
-printf 'RESULT: pass=%s fail=%s\n' "$PASS" "$FAIL"
+printf 'RESULT: pass=%s fail=%s skip=%s\n' "$PASS" "$FAIL" "$SKIP"
+# skip>0＝環境不足で未実行の検証（未検証の穴）。deliver/PR で「未検証 surface」として引き継ぐこと(#32)。
+[ "$SKIP" -gt 0 ] && printf 'NOTE: %s 件の検証が環境不足で skip された（未検証の穴）。pwsh/git のある環境(CI)で再実行して埋めること。\n' "$SKIP" >&2
 [ "$FAIL" -eq 0 ]
