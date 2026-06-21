@@ -1,0 +1,286 @@
+{
+  "keyword": "CPYSPLF",
+  "description": "スプール・ファイル・コピー（CPYSPLF）",
+  "help": "スプール・ファイルのレコードを、ユーザー定義の物理データベース・ファイルまたは（*TOSTMF を介して）ストリーム・ファイルにコピーします。",
+  "parameters": [
+    {
+      "name": "FILE",
+      "description": "スプール・ファイル",
+      "help": "データベース・ファイルまたはストリーム・ファイルにコピーするスプール・ファイル名を指定します。必須。定位置1。",
+      "inputType": "text",
+      "required": true,
+      "attributes": {
+        "characterSet": "upper",
+        "maxLength": 10
+      }
+    },
+    {
+      "name": "TOFILE",
+      "description": "TOデータベース・ファイル",
+      "help": "コピー先を指定します。必須。単一値 *TOSTMF（TOSTMF パラメーターで指定したストリーム・ファイルに出力）。または修飾オブジェクト名（コピー先の物理ファイル）を指定します。定位置2。",
+      "inputType": "group",
+      "required": true,
+      "children": [
+        {
+          "name": "TOFILE",
+          "description": "TOデータベース・ファイル",
+          "help": "コピーを受け取る物理ファイルの名前。単一値 *TOSTMF も指定可。",
+          "inputType": "text",
+          "required": false,
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          },
+          "placeholder": "*TOSTMF"
+        },
+        {
+          "name": "LIB",
+          "description": "ライブラリー",
+          "help": "ファイルが入っているライブラリー。*LIBL（ライブラリー・リストを検索）／*CURLIB（ジョブの現行ライブラリー）／ライブラリー名。",
+          "inputType": "text",
+          "required": false,
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          },
+          "defaultValue": "*LIBL"
+        }
+      ]
+    },
+    {
+      "name": "JOB",
+      "description": "ジョブ名",
+      "help": "データ・レコードをコピーするスプール・ファイルを作成したジョブを修飾ジョブ名で指定します。単一値 *（このコマンドを出したジョブ）。",
+      "inputType": "group",
+      "required": false,
+      "children": [
+        {
+          "name": "JOB",
+          "description": "ジョブ名",
+          "help": "スプール・ファイルを作成したジョブの名前。単一値 * も指定可。",
+          "inputType": "text",
+          "required": false,
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          },
+          "placeholder": "*"
+        },
+        {
+          "name": "USER",
+          "description": "ユーザー",
+          "help": "ジョブの実行で使用されるユーザー・プロファイルを識別するユーザー名。",
+          "inputType": "text",
+          "required": false,
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          }
+        },
+        {
+          "name": "NBR",
+          "description": "番号",
+          "help": "システム割り当てジョブ番号。000000〜999999。",
+          "inputType": "text",
+          "required": false,
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 6
+          }
+        }
+      ]
+    },
+    {
+      "name": "SPLNBR",
+      "description": "スプール・ファイル番号",
+      "help": "このジョブでデータ・レコードをコピーするスプール・ファイル番号を指定します。*ONLY（ジョブ内に該当ファイル名が1つだけ。番号不要）／*LAST（最高番号のファイル）／*ANY（番号で選択しない。JOBSYSNAME/CRTDATE を優先）／1〜999999。",
+      "inputType": "text",
+      "required": false,
+      "attributes": {
+        "characterSet": "upper",
+        "maxLength": 7
+      },
+      "defaultValue": "*ONLY"
+    },
+    {
+      "name": "JOBSYSNAME",
+      "description": "ジョブ・システム名",
+      "help": "スプール・ファイルを作成したジョブが実行されたシステム名を指定します。ジョブ名/ユーザー名/ジョブ番号/ファイル名/ファイル番号が一致した後に考慮されます。*ONLY（該当が1つ）／*CURRENT（現行システム上で作成）／*ANY（システム名で選択しない。CRTDATE を優先）／名前。",
+      "inputType": "text",
+      "required": false,
+      "attributes": {
+        "characterSet": "upper",
+        "maxLength": 8
+      },
+      "defaultValue": "*ONLY"
+    },
+    {
+      "name": "CRTDATE",
+      "description": "作成されたスプール・ファイル",
+      "help": "スプール・ファイルが作成された日時を指定します。他のパラメーター要件が一致した後に考慮されます。単一値 *ONLY（該当が1つ）／*LAST（最後の作成日時）。日付・時刻を指定する場合は作成日（要素1）と作成時刻（要素2）を入力します。",
+      "inputType": "group",
+      "required": false,
+      "children": [
+        {
+          "name": "CRTDATE",
+          "description": "作成日",
+          "help": "スプール・ファイルが作成された日付。単一値 *ONLY／*LAST も指定可。",
+          "inputType": "text",
+          "required": false,
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          },
+          "placeholder": "*ONLY"
+        },
+        {
+          "name": "CRTTIME",
+          "description": "作成時刻",
+          "help": "スプール・ファイルが作成された時刻。*ONLY（該当が1つ）／*LAST（最後の作成時刻）／時刻。",
+          "inputType": "text",
+          "required": false,
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 8
+          },
+          "placeholder": "*ONLY"
+        }
+      ]
+    },
+    {
+      "name": "TOMBR",
+      "description": "TOメンバー",
+      "help": "コピー済みレコードを受け取るファイル・メンバーの名前を指定します。*FIRST（指定ファイルの最初のメンバー）／名前（存在しなければ作成されます）。",
+      "inputType": "text",
+      "required": false,
+      "attributes": {
+        "characterSet": "upper",
+        "maxLength": 10
+      },
+      "defaultValue": "*FIRST"
+    },
+    {
+      "name": "MBROPT",
+      "description": "レコードの置き換えまたは追加",
+      "help": "新しいレコードで置き換えるか、既存のレコードに追加するかを指定します。",
+      "inputType": "dropdown",
+      "required": false,
+      "options": [
+        { "label": "*REPLACE（既存メンバーを消去して追加）", "value": "*REPLACE" },
+        { "label": "*ADD（既存レコードの終わりに追加）", "value": "*ADD" }
+      ]
+    },
+    {
+      "name": "CTLCHAR",
+      "description": "制御文字",
+      "help": "スプール・ファイルの内部印刷制御文字を置き換える印刷制御文字を指定します。WSCST が *NONE 以外の場合は無視されます。",
+      "inputType": "dropdown",
+      "required": false,
+      "options": [
+        { "label": "*NONE（印刷制御文字を作成しない）", "value": "*NONE" },
+        { "label": "*FCFC（先頭文字に ANSI 用紙制御コード）", "value": "*FCFC" },
+        { "label": "*PRTCTL（先頭4文字に印刷前スキップ/スペース値）", "value": "*PRTCTL" },
+        { "label": "*S36FMT（システム/36 の COPYPRT 様式）", "value": "*S36FMT" }
+      ]
+    },
+    {
+      "name": "CHLVAL",
+      "description": "チャネル値",
+      "help": "行番号が割り当てられたチャネル番号のリストを指定します。CTLCHAR(*FCFC) のときだけ指定します。単一値 *NORMAL（チャネル1だけが割り当てられ、行1）。最大12回繰り返し可。各要素はチャネル番号（1〜12）と回線（行番号 1〜255）の組です。",
+      "inputType": "group",
+      "required": false,
+      "maxOccurrences": 12,
+      "children": [
+        {
+          "name": "CHANNEL",
+          "description": "チャネル",
+          "help": "報告書でのスキップ制御に使用するチャネル番号。1〜12。各チャネル番号は1回だけ指定可。",
+          "inputType": "text",
+          "required": false,
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 7
+          },
+          "placeholder": "*NORMAL"
+        },
+        {
+          "name": "LINE",
+          "description": "回線",
+          "help": "チャネル番号に割り当てる行番号。1〜255。各行番号は1回だけ指定可。",
+          "inputType": "number",
+          "required": false,
+          "attributes": {
+            "numericOnly": true,
+            "maxLength": 3
+          }
+        }
+      ]
+    },
+    {
+      "name": "TOSTMF",
+      "description": "TOストリーム・ファイル",
+      "help": "出力データを書き出すストリーム・ファイルのパス名を指定します。TOFILE(*TOSTMF) のときは *NONE 以外の値が必須です。*NONE（TOFILE に物理ファイルを指定した場合のみ有効）／パス名（ディレクトリーは事前に存在している必要あり）。",
+      "inputType": "text",
+      "required": false,
+      "attributes": {
+        "characterSet": "any"
+      },
+      "defaultValue": "*NONE"
+    },
+    {
+      "name": "WSCST",
+      "description": "ワークステーション・カスタマイズ・オブジェクト",
+      "help": "ストリーム・ファイルへ書き出す前に出力を最終形式に変換するワークステーション・カスタマイズ・オブジェクトを指定します。TOFILE に物理ファイルを指定した場合は無視されます。単一値 *NONE（使用しない）／*PDF（PDF に変換）。または修飾オブジェクト名を指定します。",
+      "inputType": "group",
+      "required": false,
+      "children": [
+        {
+          "name": "WSCST",
+          "description": "ワークステーション・カスタマイズ・オブジェクト",
+          "help": "カスタマイズ・オブジェクトの名前。単一値 *NONE／*PDF も指定可。",
+          "inputType": "text",
+          "required": false,
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          },
+          "placeholder": "*NONE"
+        },
+        {
+          "name": "LIB",
+          "description": "ライブラリー",
+          "help": "カスタマイズ・オブジェクトが入っているライブラリー。*LIBL（ライブラリー・リストを検索）／*CURLIB（ジョブの現行ライブラリー）／ライブラリー名。",
+          "inputType": "text",
+          "required": false,
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          },
+          "defaultValue": "*LIBL"
+        }
+      ]
+    },
+    {
+      "name": "STMFOPT",
+      "description": "ストリーム・ファイル・オプション",
+      "help": "出力先ストリーム・ファイルが既に存在する場合の処理を指定します。",
+      "inputType": "dropdown",
+      "required": false,
+      "options": [
+        { "label": "*NONE（既存ファイルがあるとエラー）", "value": "*NONE" },
+        { "label": "*REPLACE（既存ファイルを置き換え）", "value": "*REPLACE" }
+      ]
+    },
+    {
+      "name": "OPNSPLF",
+      "description": "オープン・スプール・ファイルのコピー",
+      "help": "オープン状態（書き込み中）のスプール・ファイルをコピーするかどうかを指定します。",
+      "inputType": "dropdown",
+      "required": false,
+      "options": [
+        { "label": "*NO（オープン・ファイルはコピーしない）", "value": "*NO" },
+        { "label": "*YES（オープン・ファイルもコピーする）", "value": "*YES" }
+      ]
+    }
+  ]
+}
