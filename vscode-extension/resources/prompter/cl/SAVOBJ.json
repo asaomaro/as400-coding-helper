@@ -1,0 +1,677 @@
+{
+  "keyword": "SAVOBJ",
+  "description": "オブジェクト保管（SAVOBJ）",
+  "help": "1つ以上のライブラリーから、指定したオブジェクトのコピーをテープ・光ディスク・保管ファイル・媒体定義に保管します。",
+  "parameters": [
+    {
+      "name": "OBJ",
+      "description": "オブジェクト",
+      "help": "保管するオブジェクトの名前。単一値 *ALL、または総称名（末尾 *）/ 名前（最大300個）。必須・定位置1。",
+      "inputType": "text",
+      "required": true,
+      "attributes": { "characterSet": "upper", "maxLength": 10 },
+      "defaultValue": "*ALL",
+      "placeholder": "*ALL",
+      "maxOccurrences": 300
+    },
+    {
+      "name": "LIB",
+      "description": "ライブラリー",
+      "help": "保管するオブジェクトが入っているライブラリー。単一値 *SELECT / *USRSPC、または総称名（末尾 *）/ 名前（最大300個）。必須・定位置2。",
+      "inputType": "text",
+      "required": true,
+      "attributes": { "characterSet": "upper", "maxLength": 10 },
+      "placeholder": "LIB",
+      "maxOccurrences": 300
+    },
+    {
+      "name": "DEV",
+      "description": "装置",
+      "help": "保管に使用する装置。単一値 *SAVF（保管ファイル）/ *MEDDFN（媒体定義）、または装置名（最大4個）。必須・定位置3。",
+      "inputType": "text",
+      "required": true,
+      "attributes": { "characterSet": "upper", "maxLength": 10 },
+      "placeholder": "*SAVF",
+      "maxOccurrences": 4
+    },
+    {
+      "name": "OBJTYPE",
+      "description": "オブジェクト・タイプ",
+      "help": "保管するオブジェクトのタイプ。単一値 *ALL、またはタイプのリスト（最大300個）。定位置4。",
+      "inputType": "text",
+      "required": false,
+      "attributes": { "characterSet": "upper", "maxLength": 10 },
+      "defaultValue": "*ALL",
+      "placeholder": "*ALL",
+      "maxOccurrences": 300
+    },
+    {
+      "name": "VOL",
+      "description": "ボリュームID",
+      "help": "保管先媒体のボリュームID。単一値 *MOUNTED、またはボリュームID（最大75個）。定位置5。",
+      "inputType": "text",
+      "required": false,
+      "attributes": { "characterSet": "upper", "maxLength": 6 },
+      "defaultValue": "*MOUNTED",
+      "placeholder": "*MOUNTED",
+      "maxOccurrences": 75
+    },
+    {
+      "name": "SEQNBR",
+      "description": "順序番号",
+      "help": "媒体上の順序番号。1-16777215 または *END（末尾に追加）。",
+      "inputType": "text",
+      "required": false,
+      "attributes": { "characterSet": "upper", "maxLength": 8 },
+      "defaultValue": "*END",
+      "placeholder": "*END"
+    },
+    {
+      "name": "LABEL",
+      "description": "ラベル",
+      "help": "保管されるファイルのデータ・ファイル識別ラベル。文字値 / *LIB（ライブラリー名）。",
+      "inputType": "text",
+      "required": false,
+      "attributes": { "maxLength": 17 },
+      "defaultValue": "*LIB",
+      "placeholder": "*LIB"
+    },
+    {
+      "name": "EXPDATE",
+      "description": "ファイル満了日",
+      "help": "保管ファイルの満了日。日付 / *PERM（永久）。",
+      "inputType": "text",
+      "required": false,
+      "attributes": { "characterSet": "upper", "maxLength": 10 },
+      "defaultValue": "*PERM",
+      "placeholder": "*PERM"
+    },
+    {
+      "name": "ENDOPT",
+      "description": "媒体の終わりオプション",
+      "help": "操作完了後の媒体位置付け。",
+      "inputType": "dropdown",
+      "required": false,
+      "options": [
+        { "label": "*REWIND（巻き戻し）", "value": "*REWIND" },
+        { "label": "*LEAVE（そのまま）", "value": "*LEAVE" },
+        { "label": "*UNLOAD（アンロード）", "value": "*UNLOAD" }
+      ]
+    },
+    {
+      "name": "SAVF",
+      "description": "保管ファイル",
+      "help": "DEV(*SAVF) のとき、保管先の保管ファイルを LIB/SAVF 形式で指定します。",
+      "inputType": "group",
+      "required": false,
+      "children": [
+        {
+          "name": "LIB",
+          "description": "ライブラリー",
+          "help": "保管ファイルが入っているライブラリー。*LIBL / *CURLIB / ライブラリー名。",
+          "inputType": "text",
+          "required": false,
+          "attributes": { "characterSet": "upper", "maxLength": 10 },
+          "defaultValue": "*LIBL",
+          "placeholder": "*LIBL"
+        },
+        {
+          "name": "SAVF",
+          "description": "保管ファイル",
+          "help": "保管ファイルの名前。",
+          "inputType": "text",
+          "required": false,
+          "attributes": { "characterSet": "upper", "maxLength": 10 },
+          "placeholder": "SAVF"
+        }
+      ]
+    },
+    {
+      "name": "MEDDFN",
+      "description": "媒体定義",
+      "help": "DEV(*MEDDFN) のとき、使用する媒体定義を LIB/MEDDFN 形式で指定します。",
+      "inputType": "group",
+      "required": false,
+      "children": [
+        {
+          "name": "LIB",
+          "description": "ライブラリー",
+          "help": "媒体定義が入っているライブラリー。*LIBL / *CURLIB / ライブラリー名。",
+          "inputType": "text",
+          "required": false,
+          "attributes": { "characterSet": "upper", "maxLength": 10 },
+          "defaultValue": "*LIBL",
+          "placeholder": "*LIBL"
+        },
+        {
+          "name": "MEDDFN",
+          "description": "媒体定義",
+          "help": "媒体定義の名前。",
+          "inputType": "text",
+          "required": false,
+          "attributes": { "characterSet": "upper", "maxLength": 10 },
+          "placeholder": "MEDDFN"
+        }
+      ]
+    },
+    {
+      "name": "OPTFILE",
+      "description": "光ディスク・ファイル",
+      "help": "保管に使用する光ディスク・ファイルのパス名。* / パス名。",
+      "inputType": "text",
+      "required": false,
+      "placeholder": "*"
+    },
+    {
+      "name": "USEOPTBLK",
+      "description": "最適ブロックの使用",
+      "help": "装置に最適なブロック・サイズを使用するか。",
+      "inputType": "dropdown",
+      "required": false,
+      "options": [
+        { "label": "*YES（最適ブロックを使用）", "value": "*YES" },
+        { "label": "*NO（使用しない）", "value": "*NO" }
+      ]
+    },
+    {
+      "name": "TGTRLS",
+      "description": "ターゲット・リリース",
+      "help": "保管オブジェクトを使用するリリース。*CURRENT / *PRV / VxRxMx 形式のリリース・レベル。",
+      "inputType": "text",
+      "required": false,
+      "attributes": { "characterSet": "upper", "maxLength": 6 },
+      "defaultValue": "*CURRENT",
+      "placeholder": "*CURRENT"
+    },
+    {
+      "name": "UPDHST",
+      "description": "ヒストリー更新",
+      "help": "保管されるオブジェクトの保管ヒストリー情報を更新するか。",
+      "inputType": "dropdown",
+      "required": false,
+      "options": [
+        { "label": "*YES（更新する）", "value": "*YES" },
+        { "label": "*NO（更新しない）", "value": "*NO" }
+      ]
+    },
+    {
+      "name": "CLEAR",
+      "description": "消去",
+      "help": "保管前に媒体上の活動データを消去するか。",
+      "inputType": "dropdown",
+      "required": false,
+      "options": [
+        { "label": "*NONE（消去しない）", "value": "*NONE" },
+        { "label": "*ALL（すべて消去）", "value": "*ALL" },
+        { "label": "*AFTER（最初のボリューム以降を消去）", "value": "*AFTER" },
+        { "label": "*REPLACE（活動データを置き換え）", "value": "*REPLACE" }
+      ]
+    },
+    {
+      "name": "PRECHK",
+      "description": "オブジェクト事前検査",
+      "help": "保管開始前に全オブジェクトが保管要件を満たすか検査するか。",
+      "inputType": "dropdown",
+      "required": false,
+      "options": [
+        { "label": "*NO（事前検査しない）", "value": "*NO" },
+        { "label": "*YES（事前検査する）", "value": "*YES" }
+      ]
+    },
+    {
+      "name": "SAVACT",
+      "description": "活動状態保管",
+      "help": "オブジェクトが使用中でも保管できるようにするか。",
+      "inputType": "dropdown",
+      "required": false,
+      "options": [
+        { "label": "*NO（活動状態保管しない）", "value": "*NO" },
+        { "label": "*LIB（ライブラリー単位で同期）", "value": "*LIB" },
+        { "label": "*SYNCLIB（全ライブラリーを同期）", "value": "*SYNCLIB" },
+        { "label": "*SYSDFN（システム定義の同期）", "value": "*SYSDFN" }
+      ]
+    },
+    {
+      "name": "SAVACTWAIT",
+      "description": "活動状態保管待ち時間",
+      "help": "活動状態保管のロック取得などの待ち時間（要素リストを平坦化）。",
+      "inputType": "group",
+      "required": false,
+      "children": [
+        {
+          "name": "OBJLCKWAIT",
+          "description": "オブジェクト・ロック",
+          "help": "オブジェクト・ロック取得の最大待ち秒数。0-99999 / *NOMAX。既定120。",
+          "inputType": "text",
+          "required": false,
+          "attributes": { "characterSet": "upper", "maxLength": 6 },
+          "defaultValue": "120",
+          "placeholder": "120"
+        },
+        {
+          "name": "PNDRCDCHG",
+          "description": "保留中のレコード変更",
+          "help": "保留中のレコード変更の待ち秒数。0-99999 / *LOCKWAIT / *NOCMTBDY / *NOMAX。",
+          "inputType": "text",
+          "required": false,
+          "attributes": { "characterSet": "upper", "maxLength": 9 },
+          "defaultValue": "*LOCKWAIT",
+          "placeholder": "*LOCKWAIT"
+        },
+        {
+          "name": "OTHPNDCHG",
+          "description": "他の保留中の変更",
+          "help": "他の保留中の変更の待ち秒数。0-99999 / *LOCKWAIT / *NOMAX。",
+          "inputType": "text",
+          "required": false,
+          "attributes": { "characterSet": "upper", "maxLength": 9 },
+          "defaultValue": "*LOCKWAIT",
+          "placeholder": "*LOCKWAIT"
+        }
+      ]
+    },
+    {
+      "name": "SAVACTMSGQ",
+      "description": "活動状態保管メッセージ待ち行列",
+      "help": "活動状態保管のチェックポイント到達を通知するメッセージ待ち行列を LIB/MSGQ 形式で指定します。",
+      "inputType": "group",
+      "required": false,
+      "children": [
+        {
+          "name": "MSGQ",
+          "description": "メッセージ待ち行列",
+          "help": "メッセージ待ち行列名。*NONE / *WRKSTN / メッセージ待ち行列名。",
+          "inputType": "text",
+          "required": false,
+          "attributes": { "characterSet": "upper", "maxLength": 10 },
+          "defaultValue": "*NONE",
+          "placeholder": "*NONE"
+        },
+        {
+          "name": "LIB",
+          "description": "ライブラリー",
+          "help": "メッセージ待ち行列が入っているライブラリー。*LIBL / *CURLIB / ライブラリー名。",
+          "inputType": "text",
+          "required": false,
+          "attributes": { "characterSet": "upper", "maxLength": 10 },
+          "defaultValue": "*LIBL",
+          "placeholder": "*LIBL"
+        }
+      ]
+    },
+    {
+      "name": "SYNCID",
+      "description": "同期 ID",
+      "help": "複数の保管操作を同期させるための同期ID。*NONE / 名前。",
+      "inputType": "text",
+      "required": false,
+      "attributes": { "characterSet": "upper", "maxLength": 10 },
+      "defaultValue": "*NONE",
+      "placeholder": "*NONE"
+    },
+    {
+      "name": "FILEMBR",
+      "description": "ファイル・メンバー",
+      "help": "保管するデータベース・ファイルのメンバーを指定します（最大50回繰り返し。要素リストを平坦化）。",
+      "inputType": "group",
+      "required": false,
+      "maxOccurrences": 50,
+      "children": [
+        {
+          "name": "FILE",
+          "description": "ファイル",
+          "help": "ファイル名。*ALL / ファイル名。",
+          "inputType": "text",
+          "required": false,
+          "attributes": { "characterSet": "upper", "maxLength": 10 },
+          "defaultValue": "*ALL",
+          "placeholder": "*ALL"
+        },
+        {
+          "name": "MBR",
+          "description": "メンバー",
+          "help": "メンバー名。単一値 *ALL / *NONE、または総称名（末尾 *）/ 名前。",
+          "inputType": "text",
+          "required": false,
+          "attributes": { "characterSet": "upper", "maxLength": 10 },
+          "defaultValue": "*ALL",
+          "placeholder": "*ALL"
+        }
+      ]
+    },
+    {
+      "name": "ACCPTH",
+      "description": "アクセス・パス保管",
+      "help": "論理ファイルのアクセス・パスを保管するか。",
+      "inputType": "dropdown",
+      "required": false,
+      "options": [
+        { "label": "*SYSVAL（システム値 QSAVACCPTH に従う）", "value": "*SYSVAL" },
+        { "label": "*NO（保管しない）", "value": "*NO" },
+        { "label": "*YES（保管する）", "value": "*YES" }
+      ]
+    },
+    {
+      "name": "SAVFDTA",
+      "description": "保管ファイル・データ",
+      "help": "保管ファイル(*SAVF)オブジェクトを保管するとき、その内容データも保管するか。",
+      "inputType": "dropdown",
+      "required": false,
+      "options": [
+        { "label": "*YES（データも保管）", "value": "*YES" },
+        { "label": "*NO（記述のみ保管）", "value": "*NO" }
+      ]
+    },
+    {
+      "name": "SPLFDTA",
+      "description": "スプール・ファイル・データ",
+      "help": "出力待ち行列のスプール・ファイル・データを保管するか。",
+      "inputType": "dropdown",
+      "required": false,
+      "options": [
+        { "label": "*NONE（保管しない）", "value": "*NONE" },
+        { "label": "*ALL（すべて保管）", "value": "*ALL" }
+      ]
+    },
+    {
+      "name": "QDTA",
+      "description": "待ち行列データ",
+      "help": "データ待ち行列(*DTAQ)の項目データを保管するか。",
+      "inputType": "dropdown",
+      "required": false,
+      "options": [
+        { "label": "*NONE（保管しない）", "value": "*NONE" },
+        { "label": "*DTAQ（データ待ち行列の内容を保管）", "value": "*DTAQ" }
+      ]
+    },
+    {
+      "name": "PVTAUT",
+      "description": "専用権限",
+      "help": "オブジェクトの専用権限も保管するか。",
+      "inputType": "dropdown",
+      "required": false,
+      "options": [
+        { "label": "*NO（専用権限を保管しない）", "value": "*NO" },
+        { "label": "*YES（専用権限を保管する）", "value": "*YES" }
+      ]
+    },
+    {
+      "name": "STG",
+      "description": "記憶域",
+      "help": "保管後にオブジェクトの記憶域を保持するか解放するか。",
+      "inputType": "dropdown",
+      "required": false,
+      "options": [
+        { "label": "*KEEP（記憶域を保持）", "value": "*KEEP" },
+        { "label": "*FREE（記憶域を解放）", "value": "*FREE" }
+      ]
+    },
+    {
+      "name": "DTACPR",
+      "description": "データ圧縮",
+      "help": "保管データの圧縮レベル。",
+      "inputType": "dropdown",
+      "required": false,
+      "options": [
+        { "label": "*DEV（装置に依存）", "value": "*DEV" },
+        { "label": "*NO（圧縮しない）", "value": "*NO" },
+        { "label": "*YES（圧縮する）", "value": "*YES" },
+        { "label": "*LOW（低圧縮）", "value": "*LOW" },
+        { "label": "*MEDIUM（中圧縮）", "value": "*MEDIUM" },
+        { "label": "*HIGH（高圧縮）", "value": "*HIGH" }
+      ]
+    },
+    {
+      "name": "COMPACT",
+      "description": "データ短縮",
+      "help": "装置のデータ短縮機能を使用するか。",
+      "inputType": "dropdown",
+      "required": false,
+      "options": [
+        { "label": "*DEV（装置に依存）", "value": "*DEV" },
+        { "label": "*NO（短縮しない）", "value": "*NO" }
+      ]
+    },
+    {
+      "name": "OMITLIB",
+      "description": "除外するライブラリー",
+      "help": "保管から除外するライブラリー。単一値 *NONE / *USRSPC、または総称名（末尾 *）/ 名前（最大300個）。",
+      "inputType": "text",
+      "required": false,
+      "attributes": { "characterSet": "upper", "maxLength": 10 },
+      "defaultValue": "*NONE",
+      "placeholder": "*NONE",
+      "maxOccurrences": 300
+    },
+    {
+      "name": "OMITOBJ",
+      "description": "除外するオブジェクト",
+      "help": "保管から除外するオブジェクト（最大300回繰り返し。要素リストを平坦化）。単一値 *USRSPC のみ別途指定可。",
+      "inputType": "group",
+      "required": false,
+      "maxOccurrences": 300,
+      "children": [
+        {
+          "name": "LIB",
+          "description": "ライブラリー",
+          "help": "除外オブジェクトのライブラリー。総称名（末尾 *）/ 名前 / *ALL。",
+          "inputType": "text",
+          "required": false,
+          "attributes": { "characterSet": "upper", "maxLength": 10 },
+          "defaultValue": "*ALL",
+          "placeholder": "*ALL"
+        },
+        {
+          "name": "OBJ",
+          "description": "オブジェクト",
+          "help": "除外するオブジェクトの名前。総称名（末尾 *）/ 名前 / *NONE / *ALL。",
+          "inputType": "text",
+          "required": false,
+          "attributes": { "characterSet": "upper", "maxLength": 10 },
+          "defaultValue": "*NONE",
+          "placeholder": "*NONE"
+        },
+        {
+          "name": "OBJTYPE",
+          "description": "オブジェクト・タイプ",
+          "help": "除外するオブジェクトのタイプ。文字値 / *ALL。",
+          "inputType": "text",
+          "required": false,
+          "attributes": { "characterSet": "upper", "maxLength": 10 },
+          "defaultValue": "*ALL",
+          "placeholder": "*ALL"
+        }
+      ]
+    },
+    {
+      "name": "SELECT",
+      "description": "選択",
+      "help": "保管対象を組み込み/除外で細かく選択します（最大300回繰り返し。要素リストを平坦化）。単一値 *USRSPC のみ別途指定可。",
+      "inputType": "group",
+      "required": false,
+      "maxOccurrences": 300,
+      "children": [
+        {
+          "name": "INCREL",
+          "description": "組み込みまたは除外",
+          "help": "この項目を組み込むか除外するか。*INCLUDE / *OMIT。",
+          "inputType": "text",
+          "required": false,
+          "attributes": { "characterSet": "upper", "maxLength": 8 },
+          "defaultValue": "*INCLUDE",
+          "placeholder": "*INCLUDE"
+        },
+        {
+          "name": "LIB",
+          "description": "ライブラリー",
+          "help": "対象オブジェクトのライブラリー。総称名（末尾 *）/ 名前 / *ALL。",
+          "inputType": "text",
+          "required": false,
+          "attributes": { "characterSet": "upper", "maxLength": 10 },
+          "defaultValue": "*ALL",
+          "placeholder": "*ALL"
+        },
+        {
+          "name": "OBJ",
+          "description": "オブジェクト",
+          "help": "対象オブジェクトの名前。総称名（末尾 *）/ 名前 / *ALL。",
+          "inputType": "text",
+          "required": false,
+          "attributes": { "characterSet": "upper", "maxLength": 10 },
+          "defaultValue": "*ALL",
+          "placeholder": "*ALL"
+        },
+        {
+          "name": "OBJTYPE",
+          "description": "オブジェクト・タイプ",
+          "help": "対象オブジェクトのタイプ。文字値 / *ALL。",
+          "inputType": "text",
+          "required": false,
+          "attributes": { "characterSet": "upper", "maxLength": 10 },
+          "defaultValue": "*ALL",
+          "placeholder": "*ALL"
+        },
+        {
+          "name": "OBJATR",
+          "description": "オブジェクトの属性",
+          "help": "対象オブジェクトの属性。文字値 / *ALL / *BLANK。",
+          "inputType": "text",
+          "required": false,
+          "attributes": { "characterSet": "upper", "maxLength": 10 },
+          "defaultValue": "*ALL",
+          "placeholder": "*ALL"
+        },
+        {
+          "name": "MBR",
+          "description": "ファイル・メンバー",
+          "help": "対象ファイルのメンバー。総称名（末尾 *）/ 名前 / *ALL / *ALLMBR。",
+          "inputType": "text",
+          "required": false,
+          "attributes": { "characterSet": "upper", "maxLength": 10 },
+          "defaultValue": "*ALL",
+          "placeholder": "*ALL"
+        }
+      ]
+    },
+    {
+      "name": "ASPDEV",
+      "description": "ASP装置",
+      "help": "保管するライブラリーに記憶域が割り振られている補助記憶域プール(ASP)装置名。* / *SYSBAS / *CURASPGRP / ASP装置名。",
+      "inputType": "text",
+      "required": false,
+      "attributes": { "characterSet": "upper", "maxLength": 10 },
+      "defaultValue": "*",
+      "placeholder": "*"
+    },
+    {
+      "name": "OUTPUT",
+      "description": "出力",
+      "help": "保管されたオブジェクトの情報リストの出力先。",
+      "inputType": "dropdown",
+      "required": false,
+      "options": [
+        { "label": "*NONE（出力しない）", "value": "*NONE" },
+        { "label": "*PRINT（印刷）", "value": "*PRINT" },
+        { "label": "*OUTFILE（出力ファイル）", "value": "*OUTFILE" }
+      ]
+    },
+    {
+      "name": "OUTFILE",
+      "description": "出力を受け取るファイル",
+      "help": "OUTPUT(*OUTFILE) のとき、出力を受け取るファイルを LIB/FILE 形式で指定します。",
+      "inputType": "group",
+      "required": false,
+      "children": [
+        {
+          "name": "LIB",
+          "description": "ライブラリー",
+          "help": "出力ファイルが入っているライブラリー。*LIBL / *CURLIB / ライブラリー名。",
+          "inputType": "text",
+          "required": false,
+          "attributes": { "characterSet": "upper", "maxLength": 10 },
+          "defaultValue": "*LIBL",
+          "placeholder": "*LIBL"
+        },
+        {
+          "name": "FILE",
+          "description": "出力を受け取るファイル",
+          "help": "出力ファイルの名前。",
+          "inputType": "text",
+          "required": false,
+          "attributes": { "characterSet": "upper", "maxLength": 10 },
+          "placeholder": "FILE"
+        }
+      ]
+    },
+    {
+      "name": "OUTMBR",
+      "description": "出力メンバー・オプション",
+      "help": "出力ファイルのメンバー指定（要素リストを平坦化）。",
+      "inputType": "group",
+      "required": false,
+      "children": [
+        {
+          "name": "MBR",
+          "description": "出力を受け取るメンバー",
+          "help": "出力先メンバー名。*FIRST / メンバー名。",
+          "inputType": "text",
+          "required": false,
+          "attributes": { "characterSet": "upper", "maxLength": 10 },
+          "defaultValue": "*FIRST",
+          "placeholder": "*FIRST"
+        },
+        {
+          "name": "OPTION",
+          "description": "レコードの置き換えまたは追加",
+          "help": "既存レコードを置き換えるか追加するか。*REPLACE / *ADD。",
+          "inputType": "text",
+          "required": false,
+          "attributes": { "characterSet": "upper", "maxLength": 8 },
+          "defaultValue": "*REPLACE",
+          "placeholder": "*REPLACE"
+        }
+      ]
+    },
+    {
+      "name": "INFTYPE",
+      "description": "出力情報のタイプ",
+      "help": "出力に含める情報の種類。",
+      "inputType": "dropdown",
+      "required": false,
+      "options": [
+        { "label": "*OBJ（オブジェクト単位）", "value": "*OBJ" },
+        { "label": "*LIB（ライブラリー単位）", "value": "*LIB" },
+        { "label": "*MBR（メンバー単位）", "value": "*MBR" },
+        { "label": "*ERR（エラーのみ）", "value": "*ERR" }
+      ]
+    },
+    {
+      "name": "CMDUSRSPC",
+      "description": "コマンド・ユーザー・スペース",
+      "help": "コマンド・パラメーターを取り込むユーザー・スペースを LIB/USRSPC 形式で指定します。",
+      "inputType": "group",
+      "required": false,
+      "children": [
+        {
+          "name": "LIB",
+          "description": "ライブラリー",
+          "help": "ユーザー・スペースが入っているライブラリー。*LIBL / *CURLIB / ライブラリー名。",
+          "inputType": "text",
+          "required": false,
+          "attributes": { "characterSet": "upper", "maxLength": 10 },
+          "defaultValue": "*LIBL",
+          "placeholder": "*LIBL"
+        },
+        {
+          "name": "USRSPC",
+          "description": "コマンド・ユーザー・スペース",
+          "help": "ユーザー・スペースの名前。",
+          "inputType": "text",
+          "required": false,
+          "attributes": { "characterSet": "upper", "maxLength": 10 },
+          "placeholder": "USRSPC"
+        }
+      ]
+    }
+  ]
+}
