@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html><head>
+<meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+<meta name="GENERATOR" content="Microsoft FrontPage 4.0">
+<meta name="ProgId" content="FrontPage.Editor.Document">
+<title>RPG Tutorial: RPG Indicators</title>
+<meta name="Microsoft Border" content="none"><style type="text/css">
+a.button {display: block; width: 310px; height: 30px; background-color: lawngreen; padding: 10x; text-align: center; border-radius: 5px; color: black; font-size: 24px; font-family: helvetica;  }
+</style>
+
+</head>
+
+<body bgcolor="#FFFFCC">
+
+<h2><font face="Arial">RPG Tutorial: RPG Indicators</font></h2>
+<p><font face="Arial">This page outlines the conditions under which various RPG
+indicators are set on or off and the times during the execution of each
+iteration of the RPG object module at which the indicators are set.&nbsp;&nbsp;</font></p>
+<p><font face="Arial">The condition of any indicator may be governed by SETON
+and SETOF operations included among the calculation specifications.&nbsp; The
+RPG object module will turn indicators on only if the conditions specified in
+the RPG specifications are met, that is, last record (LR), matching record (MR),
+and overflow (OV or OA, OB, ... OG).&nbsp; In addition, certain conditions may arise that will
+cause the RPG object module to set on the halt indicator HO.&nbsp; These
+conditions are listed below.&nbsp; Unless the HO indicator is turned off by a
+SETOF operation (entered in the calculation specifications), the object module
+will terminate before the next input record is read.&nbsp; The RPG object module
+will turn on indicator HO whenever the program:</font></p>
+<ul>
+  <li><font face="Arial">Reads an input record that was not defined on the input
+    specifications sheet (columns 21-41).&nbsp;</font></li>
+  <li><font face="Arial">Finds an input record out of the predetermined sequence
+    of card types specified by the entry in Sequence (columns 15-16) on the
+    input specifications sheet.</font></li>
+  <li><font face="Arial">Finds an input record out of sequence when the entry in
+    Matching Fields (columns 61-62) on the input specifications sheet was used
+    for sequence checking a single input file.</font></li>
+  <li><font face="Arial">Encounters a chaining field in the chaining file that
+    does not appear in the chained file during random processing of multiple
+    input files.</font></li>
+  <li><font face="Arial">Does not find the record key that designates the lower
+    limit (obtained from the Record Address File) during sequential processing
+    between limits of an indexed-sequential file.</font></li>
+  <li><font face="Arial">Finds a wrong length record during processing of an
+    indexed-sequential file.</font></li>
+  <li><font face="Arial">Finds an invalid length record (zero or too long)
+    during random processing by record identification of a file residing on a
+    disk device.</font></li>
+  <li><font face="Arial">Finds a difference between the key length of a
+    record in an indexed-sequential file and the length as specified in Length
+    of Record Address Field (columns 29-30) on the file description
+    specifications sheet during processing with Record Address File support
+    (random or between limits).</font></li>
+  <li><font face="Arial">Finds a difference between the key length in the
+    chained indexed-sequential file and the length as specified (columns 44-51)
+    on the input specifications sheet during chaining of multiple input files.</font></li>
+  <li><font face="Arial">Encounters a disk device error during sequential or random
+    processing of an indexed-sequential file.</font></li>
+  <li><font face="Arial">Does not find keys in a directly organized file when
+    the entry in Record Address Type (column 31) on the file description
+    specifications sheet specified processing by key.</font></li>
+  <li><font face="Arial">Does not find a record with the specified key during
+    random processing of an indexed-sequential file.</font></li>
+  <li><font face="Arial">Encounters an irrecoverable input-output error during
+    processing of a sequential file.</font></li>
+</ul>
+<h2><font face="Arial">RPG Indicator Chart</font></h2>
+<table border="1" width="100%">
+  <tbody><tr>
+    <td width="16%">
+      <p align="center"><font face="Arial">Indicators</font></p></td>
+    <td width="16%">
+      <p align="center"><font face="Arial">Where Specified</font></p></td>
+    <td width="17%">
+      <p align="center"><font face="Arial">Where Used</font></p></td>
+    <td width="17%">
+      <p align="center"><font face="Arial">Turned On</font></p></td>
+    <td width="17%">
+      <p align="center"><font face="Arial">Turned Off</font></p></td>
+    <td width="17%">
+      <p align="center"><font face="Arial">Notes</font></p></td>
+  </tr>
+  <tr>
+    <td width="16%"><font face="Arial">Resulting Indicator 00</font></td>
+    <td width="16%"><font face="Arial">Internal</font></td>
+    <td width="17%"><font face="Arial">Output Indicators on Output
+      Specifications (columns 24-25, 27-28, 30-31)</font></td>
+    <td width="17%"><font face="Arial">This Indicator is always ON</font></td>
+    <td width="17%"><font face="Arial">Can never be turned OFF</font></td>
+    <td width="17%">&nbsp;</td>
+  </tr>
+  <tr>
+    <td width="16%" rowspan="2"><font face="Arial">Resulting Indicators<br>
+      &nbsp;(01 - 99)</font></td>
+    <td width="16%"><font face="Arial">Input Specifications (columns 19-20)</font></td>
+    <td width="17%"><font face="Arial">Indicators on Calculation Specifications
+      (columns 10-11, 13-14, 16-17)</font>
+      <p><font face="Arial">Output Indicators on Output Specifications (columns
+      24-25, 27-28, 30-31)</font></p></td>
+    <td width="17%"><font face="Arial">When specified record type has been read
+      and is ready for processing</font></td>
+    <td width="17%"><font face="Arial">Before the first record is read on the
+      next processing cycle</font></td>
+    <td width="17%"><font face="Arial">Turning OFF and ON can also be
+      accomplished by using SETON and SETOF operation codes</font></td>
+  </tr>
+  <tr>
+    <td width="16%"><font face="Arial">Calculation Specifications (columns
+      54-55, 56-57, 58-59)</font></td>
+    <td width="17%"><font face="Arial">Same as above</font></td>
+    <td width="17%"><font face="Arial">Whenever the specified field status
+      condition is satisfied</font></td>
+    <td width="17%"><font face="Arial">The next time that this field status is
+      to be tested</font></td>
+    <td width="17%"><font face="Arial">Same as above</font></td>
+  </tr>
+  <tr>
+    <td width="16%"><font face="Arial">Field Indicators (01 - 99)</font></td>
+    <td width="16%"><font face="Arial">Input Specifications (columns 65-66,
+      67-68, 69-70)</font></td>
+    <td width="17%"><font face="Arial">Same as above</font></td>
+    <td width="17%"><font face="Arial">Same as above</font></td>
+    <td width="17%"><font face="Arial">Same as above</font></td>
+    <td width="17%"><font face="Arial">Same as above</font></td>
+  </tr>
+  <tr>
+    <td width="16%"><font face="Arial">Halt Indicators (H0 - H9)</font></td>
+    <td width="16%"><font face="Arial">Input Specifications (columns 65-66,
+      67-68, 69-70)</font>
+      <p><font face="Arial">Calculation Specifications (columns 54-55, 56-57,
+      58-59)</font></p></td>
+    <td width="17%"><font face="Arial">Same as above</font></td>
+    <td width="17%"><font face="Arial">Same as above</font>
+      <p><font face="Arial">H0 is automatically turned on for the conditions
+      listed in the text above</font></p></td>
+    <td width="17%"><font face="Arial">Can only be turned OFF by SETOF operation
+      code (see note at right)</font></td>
+    <td width="17%"><font face="Arial">If these indicators remain ON, the object
+      program will terminate before reading the next record</font></td>
+  </tr>
+  <tr>
+    <td width="16%"><font face="Arial">LR</font></td>
+    <td width="16%"><font face="Arial">Internal</font></td>
+    <td width="17%"><font face="Arial">Same as above and Calculation
+      Specifications (columns 7-8)</font></td>
+    <td width="17%"><font face="Arial">After processing the last record of the
+      last file</font></td>
+    <td width="17%">&nbsp;</td>
+    <td width="17%"><font face="Arial">All Control Level Indicators (L1 - L9)
+      are also turned ON when the LR is turned ON</font></td>
+  </tr>
+  <tr>
+    <td width="16%"><font face="Arial">Control Level Indicators<br>
+      (L1 - L9)</font></td>
+    <td width="16%"><font face="Arial">Input Specifications (columns 59-60)</font></td>
+    <td width="17%"><font face="Arial">Same as above and Calculation
+      Specifications (columns 7-8)</font></td>
+    <td width="17%"><font face="Arial">When the value in a control field
+      changes.&nbsp; All indicators of the lower levels are also turned ON</font></td>
+    <td width="17%"><font face="Arial">Before the first record is read on the
+      next processing cycle</font></td>
+    <td width="17%"><font face="Arial">Turning OFF and ON can be accomplished by
+      using SETON and SETOF operation codes</font></td>
+  </tr>
+  <tr>
+    <td width="16%"><font face="Arial">L0</font></td>
+    <td width="16%"><font face="Arial">Internal</font></td>
+    <td width="17%"><font face="Arial">Indicators on Calculations Specifications
+      (columns 10-11, 13-14, 16-17)</font>
+      <p><font face="Arial">Output Indicators on Output Specifications (columns
+      24-25, 27-28, 30-31)</font></p></td>
+    <td width="17%"><font face="Arial">This indicator is always ON</font></td>
+    <td width="17%"><font face="Arial">Can never be turned OFF</font></td>
+    <td width="17%">&nbsp;</td>
+  </tr>
+  <tr>
+    <td width="16%"><font face="Arial">MR</font></td>
+    <td width="16%"><font face="Arial">Internal</font></td>
+    <td width="17%"><font face="Arial">Same as above</font></td>
+    <td width="17%"><font face="Arial">When multiple input files and the
+      matching fields specification are used, this indicator is turned ON if a
+      secondary file record matches the primary file record</font></td>
+    <td width="17%"><font face="Arial">Before the first record is read on the
+      next processing cycle</font></td>
+    <td width="17%">&nbsp;</td>
+  </tr>
+  <tr>
+    <td width="16%"><font face="Arial">Overflow Indicators (OA, OB, OC, OD, OE,
+      OF, OG, OV)</font></td>
+    <td width="16%"><font face="Arial">File Description (columns 33-34)</font></td>
+    <td width="17%"><font face="Arial">Same as above</font></td>
+    <td width="17%"><font face="Arial">One line after channel 12 of the carriage
+      control tape is sensed</font></td>
+    <td width="17%"><font face="Arial">After the detail and heading records are
+      written</font></td>
+    <td width="17%"><font face="Arial">These indicators remain ON for one
+      complete processing cycle</font></td>
+  </tr>
+  <tr>
+    <td width="16%"><font face="Arial">1P</font></td>
+    <td width="16%"><font face="Arial">Internal</font></td>
+    <td width="17%"><font face="Arial">Output Indicators on Output Secifications
+      (columns 24-25, 27-28, 30-31)</font></td>
+    <td width="17%"><font face="Arial">This indicator is ON at the beginning of
+      processing before any records are read</font></td>
+    <td width="17%"><font face="Arial">Before the first record is read</font></td>
+    <td width="17%"><font face="Arial">This indicator is used to govern printing
+      of the first page of the report</font></td>
+  </tr>
+</tbody></table>
+<hr>
+<p><img border="0" src="../images/dinomail.gif" width="172" height="75"></p>
+<hr align="center">
+<p align="center"><input type="BUTTON" value="Back to Previous Page" onclick="history.go(-1)"><a href="../index.html" class="button">Return
+to Site Home Page</a>&nbsp;</p>
+<hr align="center">
+<p><font face="Arial">This page was last updated on <!--webbot bot="Timestamp"
+s-type="EDITED" s-format="%B %d, %Y" startspan -->January 17, 2015<!--webbot bot="Timestamp" endspan i-CheckSum="31531" -->.</font></p>
+
+
+
+</body></html>

@@ -1,0 +1,581 @@
+<!DOCTYPE html>
+<html><head>
+<meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+<meta name="GENERATOR" content="Microsoft FrontPage 4.0">
+<meta name="ProgId" content="FrontPage.Editor.Document">
+<title>RPG Tutorial: Basic statement types (Header/File/Input/Output)</title>
+<style type="text/css">
+a.button {display: block; width: 310px; height: 30px; background-color: lawngreen; padding: 10x; text-align: center; border-radius: 5px; color: black; font-size: 24px; font-family: helvetica;  }
+</style>
+
+<meta name="Microsoft Border" content="none">
+</head>
+
+<body bgcolor="#FFFFCC">
+
+<h2><font face="Arial">RPG Tutorial: Basic statement types
+(Header/File/Input/Output)</font></h2>
+<p><font face="Arial">RPG source statements consist of a relatively small set of
+rigidly formatted specification statements.&nbsp; Because RPG programs can be complex,
+and deal with complex collections of data, the formats of the specifications can, at first glance, seem overwhelming.&nbsp; However, the specifications
+are designed to be able to handle a large range of needs, so in actual practice
+any individual program will only require entries to be made in a small number of
+the fields.&nbsp; </font></p>
+<p><font face="Arial">Since I am intending for this to be an introductory
+tutorial, I have not covered every entry possible in every specification
+field.&nbsp; For example, I have not covered combined reader/punch files since it is unlikely that under
+Hercules/MVT anyone will be dealing with physical card devices.&nbsp; If you
+come to the end of the material I have presented here and find that you have needs
+beyond what I have covered, try the nearest university library.&nbsp; You
+will be amazed at the books that are tucked away in some of the stacks gathering
+dust.</font></p>
+<p><font face="Arial">Although the number of specifications has been increased
+with the later extensions (RPG II, RPG III, and RPG IV), the RPG Debugging
+Template I acquired back in 1973 (I still have two well-worn copies) defines only ten
+types of specification.&nbsp; Of those ten, a
+simple program may be written using only four:</font></p>
+<ol>
+  <li><font face="Arial"><a href="#Header">Header</a></font></li>
+  <li><font face="Arial"><a href="#FileDescription">File Description</a></font></li>
+  <li><font face="Arial"><a href="#Input">Input</a></font></li>
+  <li><font face="Arial"><a href="#Output">Output</a></font></li>
+</ol>
+<p><font face="Arial"><font style="background-color: #00FFFF">Update 01/30/2015:</font>&nbsp; Wally Schwarz sent me PDFs
+containing scans of the forms for the <a href="../downloads/pdf/rpg_file.pdf">File
+Description</a>, <a href="../downloads/pdf/rpg_input.pdf">Input Specifications</a>,
+<a href="../downloads/pdf/rpg_calculation.pdf">Calculation Specifications</a>,
+and <a href="../downloads/pdf/rpg_output.pdf">Output-Format Specifications</a>
+which can be printed and used to code the specifications for an RPG program.</font></p>
+<p><font face="Arial">Columns one through five of any specification statement
+are traditionally used for sequence numbers, with the first two digits typically
+containing the coding sheet page number and the last three digits containing
+the statement number within that page.&nbsp; Like all other languages, once we
+started moving away from physical cards, the sequence numbers lost some of their
+utility and were omitted most of the time.&nbsp; The default behavior of the MVT
+RPG compiler is to not sequence check the source, so you may leave the first
+five columns of each statement blank.</font></p>
+<p><font face="Arial">Column six of the specification statement designates the type -
+<b>
+H</b> for Header, <b> F</b> for File Description, <b> I</b> for Input, and <b> O</b> for Output.&nbsp; The
+order the specification statements must occur in when processed by the compiler
+is:</font></p>
+<ol>
+  <li><font face="Arial">Header</font></li>
+  <li><font face="Arial">File Description</font></li>
+  <li><font face="Arial">Extension</font></li>
+  <li><font face="Arial">Line Counter</font></li>
+  <li><font face="Arial">Input</font></li>
+  <li><font face="Arial">Calculation</font></li>
+  <li><font face="Arial">Output</font></li>
+</ol>
+<p><font face="Arial">All specifications of an individual type are processed
+together.&nbsp; So, there should be a single <b>H</b>eader specification,
+followed by one or more <b>F</b>ile description specifications, and so on
+through the <b>O</b>utput specifications.</font></p>
+<p><font face="Arial">Column seven of any specification statement may contain an
+asterisk (*) to designate a comment.&nbsp; The contents of the card will be
+printed on the compiler listing and otherwise ignored.&nbsp; However, the
+specification type (column six) must be correct and in the correct order (as
+shown above).&nbsp;&nbsp;</font></p>
+<h3><font face="Arial"><a name="Header"></a>Header Specification</font></h3>
+<p><font face="Arial">The Header specification
+statement provides the overall characteristics of the program and its operating
+environment.&nbsp; Most of the fields had much more significance on the earlier (smaller) IBM
+360 series mainframes or on the later System/3 (and other minicomputers) than
+they do for RPG programs written to run under OS/360.&nbsp;
+I do remember using some of the fields when I was writing programs on a
+System/3, but 99% of the time all entries are left blank.&nbsp; However, the presence of
+the Header specification is mandatory, so you must include the card with an 'H' in column six.</font></p>
+<p><font face="Arial">The only significant entry for RPG I is the program name,
+which may be entered in columns 75-80.&nbsp; If provided, this will be the name
+used for the object program (the name of the CSECT, or control section).&nbsp; If omitted, the name
+of the program will be the default: RPGOBJ.</font></p>
+<h3><font face="Arial"><a name="FileDescription"></a>File Description
+Specification</font></h3>
+
+<p><font face="Arial">The File Description
+specification statement provides the characteristics of the files to be read and/or
+written by the program.&nbsp; No file will use every entry in the file
+specification and only an indexed sequential (ISAM) disk file will use a
+significant number of entries.</font></p>
+
+  <table border="01" width="96%" style="border-style: line" bordercolordark="#000000" bordercolorlight="#FFFFCC" bordercolor="#000000">
+    <tbody><tr>
+      <td width="12%"><font face="Arial"><u>Column(s)</u></font></td>
+      <td width="25%"><font face="Arial"><u>Field Name</u></font></td>
+      <td width="66%"><font face="Arial"><u>Use</u></font></td>
+    </tr>
+    <tr>
+      <td width="12%" valign="top" align="left"><font face="Arial">7 - 14</font></td>
+      <td width="25%" valign="top" align="left"><font face="Arial">File Name</font></td>
+      <td width="66%" valign="top" align="left"><font face="Arial">name of file used internally and in JCL
+        (DD name)</font></td>
+    </tr>
+    <tr>
+      <td width="12%" valign="top" align="left"><font face="Arial">15</font></td>
+      <td width="25%" valign="top" align="left"><font face="Arial">File Type</font></td>
+      <td width="66%" valign="top" align="left"><font face="Arial">I = input, O = output, U =
+        update</font></td>
+    </tr>
+    <tr>
+      <td width="12%" valign="top" align="left"><font face="Arial">16</font></td>
+      <td width="25%" valign="top" align="left"><font face="Arial">File Designation</font></td>
+      <td width="66%" valign="top" align="left"><font face="Arial">P = primary, S = secondary,
+        C = chained,&nbsp;<br>
+ R = record address,
+        T = table</font></td>
+    </tr>
+    <tr>
+      <td width="12%" valign="top" align="left"><font face="Arial">17</font></td>
+      <td width="25%" valign="top" align="left"><font face="Arial">End of File</font></td>
+      <td width="66%" valign="top" align="left"><font face="Arial">enter E for
+        each input file to be checked to determine when the last record has been
+        read and processed (LR indicator)</font></td>
+    </tr>
+    <tr>
+      <td width="12%" valign="top" align="left"><font face="Arial">18</font></td>
+      <td width="25%" valign="top" align="left"><font face="Arial">Sequence</font></td>
+      <td width="66%" valign="top" align="left"><font face="Arial">A = ascending, D = descending
+        (required for Matching Records otherwise leave blank)</font></td>
+    </tr>
+    <tr>
+      <td width="12%" valign="top" align="left"><font face="Arial">19</font></td>
+      <td width="25%" valign="top" align="left"><font face="Arial">File format</font></td>
+      <td width="66%" valign="top" align="left"><font face="Arial">F = fixed or V =
+        variable</font></td>
+    </tr>
+    <tr>
+      <td width="12%" valign="top" align="left"><font face="Arial">20 - 23</font></td>
+      <td width="25%" valign="top" align="left"><font face="Arial">Block Length</font></td>
+      <td width="66%" valign="top" align="left"><font face="Arial">enter block
+        size for fixed blocked, enter record size for fixed unblocked, enter
+        largest record size for variable</font></td>
+    </tr>
+    <tr>
+      <td width="12%" valign="top" align="left"><font face="Arial">24 - 27</font></td>
+      <td width="25%" valign="top" align="left"><font face="Arial">Record Length</font></td>
+      <td width="66%" valign="top" align="left"><font face="Arial">enter record
+        size for fixed, enter largest record size for variable</font></td>
+    </tr>
+    <tr>
+      <td width="12%" valign="top" align="left"><font face="Arial">28</font></td>
+      <td width="25%" valign="top" align="left"><font face="Arial">Mode of Processing</font></td>
+      <td width="66%" valign="top" align="left"><font face="Arial">blank =
+        sequential, L = segment (limits), R = random</font></td>
+    </tr>
+    <tr>
+      <td width="12%" valign="top" align="left"><font face="Arial">29 - 30</font></td>
+      <td width="25%" valign="top" align="left"><font face="Arial">Length of Record Address or Length of
+        Key Field</font></td>
+      <td width="66%" valign="top" align="left"><font face="Arial">if the file
+        is a Record Address File file, enter the number of
+        positions that each entry in the file occupies; if the file is an
+        Indexed-Sequential file, enter the length of the record key</font></td>
+    </tr>
+    <tr>
+      <td width="12%" valign="top" align="left"><font face="Arial">31</font></td>
+      <td width="25%" valign="top" align="left"><font face="Arial">Record Address Type</font></td>
+      <td width="66%" valign="top" align="left"><font face="Arial">K = records
+        retrieved using record keys&nbsp;</font></td>
+    </tr>
+    <tr>
+      <td width="12%" valign="top" align="left"><font face="Arial">32</font></td>
+      <td width="25%" valign="top" align="left"><font face="Arial">Type of File Organization or<br>
+        Dual I/O Areas</font></td>
+      <td width="66%" valign="top" align="left"><font face="Arial">blank =
+        sequential, I = indexed sequential</font></td>
+    </tr>
+    <tr>
+      <td width="12%" valign="top" align="left"><font face="Arial">33 - 34</font></td>
+      <td width="25%" valign="top" align="left"><font face="Arial">Overflow Indicator</font></td>
+      <td width="66%" valign="top" align="left"><font face="Arial">Overflow indicator (OF,
+        OA, OB, OC, OD, OE, OG, or OV ) to use for
+        this file</font></td>
+    </tr>
+    <tr>
+      <td width="12%" valign="top" align="left"><font face="Arial">35 - 38</font></td>
+      <td width="25%" valign="top" align="left"><font face="Arial">Key field starting location</font></td>
+      <td width="66%" valign="top" align="left"></td>
+    </tr>
+    <tr>
+      <td width="12%" valign="top" align="left"><font face="Arial">39 </font></td>
+      <td width="25%" valign="top" align="left"><font face="Arial">Extension or Line Counter
+        specifications</font></td>
+      <td width="66%" valign="top" align="left"><font face="Arial">E = extension specifications provided
+        for this file, L = line counter specifications provided for this file</font></td>
+    </tr>
+    <tr>
+      <td width="12%" valign="top" align="left"><font face="Arial">40 - 46</font></td>
+      <td width="25%" valign="top" align="left"><font face="Arial">Device</font></td>
+      <td width="66%" valign="top" align="left"><font face="Arial">READ40 = card reader, PRINTER, TAPE,
+        DISK14</font></td>
+    </tr>
+    <tr>
+      <td width="12%" valign="top" align="left"><font face="Arial">47 - 52</font></td>
+      <td width="25%" valign="top" align="left"><font face="Arial">Symbolic Device</font></td>
+      <td width="66%" valign="top" align="left"><font face="Arial">leave blank for MVT/MVS</font></td>
+    </tr>
+    <tr>
+      <td width="12%" valign="top" align="left"><font face="Arial">53</font></td>
+      <td width="25%" valign="top" align="left"><font face="Arial">Labels</font></td>
+      <td width="66%" valign="top" align="left"><font face="Arial">blank = no
+        labels, S = standard, E = standard plus user</font></td>
+    </tr>
+    <tr>
+      <td width="12%" valign="top" align="left"><font face="Arial">66 </font></td>
+      <td width="25%" valign="top" align="left"><font face="Arial">File Addition or Unordered</font></td>
+      <td width="66%" valign="top" align="left"><font face="Arial">A = new
+        records are to be added to indexed sequential file</font></td>
+    </tr>
+    <tr>
+      <td width="12%" valign="top" align="left"><font face="Arial">71 - 72</font></td>
+      <td width="25%" valign="top" align="left"><font face="Arial">File Condition</font></td>
+      <td width="66%" valign="top" align="left"><font face="Arial">U1, U2, ... U8 external switches
+        conditioning optional file</font></td>
+    </tr>
+  </tbody></table>
+<h3><font face="Arial"><a name="Input"></a>Input Specification</font></h3>
+<p><font face="Arial">The Input specification
+statement
+provides characteristics of input records and defines the individual
+data fields associated with each input record.&nbsp; A great deal of program
+logic may be specified with the input specification, such as control fields,
+matching multiple inputs on a common field (such as account number),
+automatically using a key value in one file to read the corresponding record in
+a secondary file, and setting indicators depending upon the presence of data in
+specified fields. </font></p>
+<p><font face="Arial">Using the input specification is done a bit differently from the
+file specification.&nbsp; One or more specification statements are used to first
+define characteristics of the record in order to allow the program to identify the record
+uniquely.&nbsp; Following these specification statements are one or more
+statements which
+define the data fields which are to be processed from the input record.&nbsp;&nbsp;</font></p>
+<p><font face="Arial"> To clearly differentiate these
+functions, I have divided the fields of the input specification into two groups.&nbsp;
+These fields define record characteristics and provide the means to uniquely
+identify each discrete record type:</font></p>
+<table border="01" width="96%">
+  <tbody><tr>
+    <td width="9%">&nbsp;<font face="Arial"><u>Column(s)</u></font></td>
+    <td width="26%"><font face="Arial"><u>Field Name</u></font></td>
+    <td width="68%"><font face="Arial"><u>Use</u></font></td>
+  </tr>
+  <tr>
+    <td width="12%" valign="top" align="left"><font face="Arial">7 - 14</font></td>
+    <td width="23%" valign="top" align="left"><font face="Arial">File Name</font></td>
+    <td width="68%" valign="top" align="left"><font face="Arial">name of file used internally and in JCL
+        (DD name)</font></td>
+  </tr>
+  <tr>
+    <td width="12%" valign="top" align="left"><font face="Arial">14 - 16</font></td>
+    <td width="23%" valign="top" align="left"><font face="Arial">OR/AND</font></td>
+    <td width="68%" valign="top" align="left"><font face="Arial">used when specifying more than 3 record
+      identifiers or for specifying alternate indicators to be turned on for
+      identical record formats</font></td>
+  </tr>
+  <tr>
+    <td width="12%" valign="top" align="left"><font face="Arial">15 - 16</font></td>
+    <td width="23%" valign="top" align="left"><font face="Arial">Sequence</font></td>
+    <td width="68%" valign="top" align="left"><font face="Arial">used to specify sequence
+      checking on record groups - enter number, beginning with 01, for each
+      record type - enter any 2
+      alphabetic characters for unsequenced input&nbsp;record groups</font></td>
+  </tr>
+  <tr>
+    <td width="12%" valign="top" align="left"><font face="Arial">17</font></td>
+    <td width="23%" valign="top" align="left"><font face="Arial">Number</font></td>
+    <td width="68%" valign="top" align="left"><font face="Arial">used in
+      conjunction with sequence, enter 1 to indicate only one instance of a
+      specific record type should occur in a group; enter N to indicate one or
+      more instances may be present</font></td>
+  </tr>
+  <tr>
+    <td width="12%" valign="top" align="left"><font face="Arial">18</font></td>
+    <td width="23%" valign="top" align="left"><font face="Arial">Option</font></td>
+    <td width="68%" valign="top" align="left"><font face="Arial">used in
+      conjunction with sequence, enter O if a specific record need not be
+      present in a group; leave blank if an instance is required to be present</font></td>
+  </tr>
+  <tr>
+    <td width="12%" valign="top" align="left"><font face="Arial">19 - 20&nbsp;</font></td>
+    <td width="23%" valign="top" align="left"><font face="Arial">Record Indicator</font></td>
+    <td width="68%" valign="top" align="left"><font face="Arial">enter the
+      indicator (01 - 99) to be set on when this record is read</font></td>
+  </tr>
+  <tr>
+    <td width="12%" valign="top" align="left"><font face="Arial">21 - 24<br>
+      28 - 31<br>
+      34 - 38</font></td>
+    <td width="23%" valign="top" align="left"><font face="Arial">Position in record where identifying
+      character(s) located</font></td>
+    <td width="68%" valign="top" align="left">&nbsp;</td>
+  </tr>
+  <tr>
+    <td width="12%" valign="top" align="left"><font face="Arial">25<br>
+      32<br>
+      39</font></td>
+    <td width="23%" valign="top" align="left"><font face="Arial">Negates comparison</font></td>
+    <td width="68%" valign="top" align="left"><font face="Arial">the code
+      described must <b>not</b> be present in the position specified</font></td>
+  </tr>
+  <tr>
+    <td width="12%" valign="top" align="left"><font face="Arial">26<br>
+      33<br>
+      40</font></td>
+    <td width="23%" valign="top" align="left"><font face="Arial">Comparison Type</font></td>
+    <td width="68%" valign="top" align="left"><font face="Arial">C = character, Z = zone, D = decimal</font></td>
+  </tr>
+  <tr>
+    <td width="12%" valign="top" align="left"><font face="Arial">27<br>
+      34<br>
+      41</font></td>
+    <td width="23%" valign="top" align="left"><font face="Arial">Literal to Match</font></td>
+    <td width="68%" valign="top" align="left"><font face="Arial">if comparison
+      type is C, enter any EBCDIC character; if comparison type is Z, enter
+      &amp; or A-I to check for 12-zone, enter - or J-R to check for 11-zone,
+      S-Z to check for 0-zone, blank or 0-9 to check for the absence of zones</font></td>
+  </tr>
+  <tr>
+    <td width="12%" valign="top" align="left"><font face="Arial">42</font></td>
+    <td width="23%" valign="top" align="left"><font face="Arial">Stacker Select</font></td>
+    <td width="68%" valign="top" align="left">&nbsp;</td>
+  </tr>
+</tbody></table>
+<p>
+<font face="Arial">These fields define individual data fields in the input
+records, along with identifying control level, matching, and other special
+characteristics of data fields:<br clear="left">
+<br clear="left">
+</font>
+<table border="01" width="96%">
+  <tbody><tr>
+    <td width="13%">&nbsp;<font face="Arial"><u>Column(s)</u></font></td>
+    <td width="24%"><font face="Arial"><u>Field Name</u></font></td>
+    <td width="66%"><font face="Arial"><u>Use</u></font></td>
+  </tr>
+  <tr>
+    <td width="13%" valign="top" align="left"><font face="Arial">43</font></td>
+    <td width="24%" valign="top" align="left"><font face="Arial">Packed&nbsp;</font></td>
+    <td width="66%" valign="top" align="left"><font face="Arial">enter P if
+      field is in packed decimal format</font></td>
+  </tr>
+  <tr>
+    <td width="13%" valign="top" align="left"><font face="Arial">44 - 47</font></td>
+    <td width="24%" valign="top" align="left"><font face="Arial">Field Begins</font></td>
+    <td width="66%" valign="top" align="left"><font face="Arial">enter record
+      position containing first position of field</font></td>
+  </tr>
+  <tr>
+    <td width="13%" valign="top" align="left"><font face="Arial">48 - 51</font></td>
+    <td width="24%" valign="top" align="left"><font face="Arial">Field Ends</font></td>
+    <td width="66%" valign="top" align="left"><font face="Arial">enter record
+      position containing last position of field</font></td>
+  </tr>
+  <tr>
+    <td width="13%" valign="top" align="left"><font face="Arial">52</font></td>
+    <td width="24%" valign="top" align="left"><font face="Arial">Decimal
+      Positions</font></td>
+    <td width="66%" valign="top" align="left"><font face="Arial">for numeric
+      fields, enter the number of decimal positions (0-9)</font></td>
+  </tr>
+  <tr>
+    <td width="13%" valign="top" align="left"><font face="Arial">53 - 58</font></td>
+    <td width="24%" valign="top" align="left"><font face="Arial">Field Name</font></td>
+    <td width="66%" valign="top" align="left">&nbsp;</td>
+  </tr>
+  <tr>
+    <td width="13%" valign="top" align="left"><font face="Arial">59 - 60</font></td>
+    <td width="24%" valign="top" align="left"><font face="Arial">Control Level</font></td>
+    <td width="66%" valign="top" align="left"><font face="Arial">L1, L2, ... L9</font></td>
+  </tr>
+  <tr>
+    <td width="13%" valign="top" align="left"><font face="Arial">61 - 62</font></td>
+    <td width="24%" valign="top" align="left"><font face="Arial">Matching Fields or&nbsp;<br>
+      Chaining Fields</font></td>
+    <td width="66%" valign="top" align="left"><font face="Arial">M1, M2, M3<br>
+      C1, C2, ... C9</font></td>
+  </tr>
+  <tr>
+    <td width="13%" valign="top" align="left"><font face="Arial">63 - 64</font></td>
+    <td width="24%" valign="top" align="left"><font face="Arial">Field/Record Relation</font></td>
+    <td width="66%" valign="top" align="left"><font face="Arial">enter the
+      record indicator to relate identically named fields contained in different
+      positions within a group of records</font></td>
+  </tr>
+  <tr>
+    <td width="13%" valign="top" align="left"><font face="Arial">65 - 66</font></td>
+    <td width="24%" valign="top" align="left"><font face="Arial">Positive</font></td>
+    <td width="66%" valign="top" align="left">
+      <p align="left"><font face="Arial">for numeric fields, enter indicator to
+      turn on if the field contains a positive value when read</font></p></td>
+  </tr>
+  <tr>
+    <td width="13%" valign="top" align="left"><font face="Arial">67 - 68</font></td>
+    <td width="24%" valign="top" align="left"><font face="Arial">Negative</font></td>
+    <td width="66%" valign="top" align="left"><font face="Arial">for numeric
+      fields, enter indicator to turn on if the field contains a negative value
+      when read</font></td>
+  </tr>
+  <tr>
+    <td width="13%" valign="top" align="left"><font face="Arial">69 - 70</font></td>
+    <td width="24%" valign="top" align="left"><font face="Arial">Zero or Blank</font></td>
+    <td width="66%" valign="top" align="left"><font face="Arial">for numeric
+      fields, enter indicator to turn on if the field contains zero when read;
+      for alphabetic fields, enter indicator to turn on if the field contains
+      blanks when read</font></td>
+  </tr>
+</tbody></table>
+</p><h3><font face="Arial"><a name="Output"></a>Output Specification</font></h3>
+<p><font face="Arial">The Output specification
+statement
+provides characteristics of output records and defines the individual
+data fields or constants to be written for a particular output (or updated)
+record.&nbsp;&nbsp;</font></p>
+<p><font face="Arial">Like the input specification, the output specification is
+used to provide two separate, but related, types of information.&nbsp; First,
+one or more specification statements are used to define the conditions under which an
+output record is produced.&nbsp; Following these specification statements are one or more
+statements which
+define the data fields or literals to be written to the output record.</font></p>
+<p><font face="Arial"> To clearly differentiate these
+functions, I have divided the fields of the output specification into two
+groups.&nbsp; These fields define when an output record is written:</font></p>
+<table border="01" width="96%">
+  <tbody><tr>
+    <td width="14%">&nbsp;<font face="Arial"><u>Column(s)</u></font></td>
+    <td width="23%"><font face="Arial"><u>Field Name</u></font></td>
+    <td width="66%"><font face="Arial"><u>Use</u></font></td>
+  </tr>
+  <tr>
+    <td width="14%" valign="top" align="left"><font face="Arial">7 - 14</font></td>
+    <td width="23%" valign="top" align="left"><font face="Arial">File name</font></td>
+    <td width="66%" valign="top" align="left"><font face="Arial">name of file used internally and in JCL
+        (DD name)</font></td>
+  </tr>
+  <tr>
+    <td width="14%" valign="top" align="left"><font face="Arial">14 - 16</font></td>
+    <td width="23%" valign="top" align="left"><font face="Arial">AND/OR</font></td>
+    <td width="66%" valign="top" align="left"><font face="Arial">used when specifying more than 3 record
+      indicators</font></td>
+  </tr>
+  <tr>
+    <td width="14%" valign="top" align="left"><font face="Arial">15</font></td>
+    <td width="23%" valign="top" align="left"><font face="Arial">H = heading<br>
+      D = detail<br>
+      T = total</font></td>
+    <td width="66%" valign="top" align="left"><font face="Arial">specifies the
+      time in the RPG logic cycle when this output is to occur - note that for
+      all practical purposes, Heading and Detail time are the same</font></td>
+  </tr>
+  <tr>
+    <td width="14%" valign="top" align="left"><font face="Arial">16 - 18</font></td>
+    <td width="23%" valign="top" align="left"><font face="Arial">ADD</font></td>
+    <td width="66%" valign="top" align="left"><font face="Arial">to add records
+      to an ISAM file</font></td>
+  </tr>
+  <tr>
+    <td width="14%" valign="top" align="left"><font face="Arial">17</font></td>
+    <td width="23%" valign="top" align="left"><font face="Arial">Space Before</font></td>
+    <td width="66%" valign="top" align="left"><font face="Arial">enter 0-3 to
+      specify number of lines to space before printing</font></td>
+  </tr>
+  <tr>
+    <td width="14%" valign="top" align="left"><font face="Arial">18</font></td>
+    <td width="23%" valign="top" align="left"><font face="Arial">Space After</font></td>
+    <td width="66%" valign="top" align="left"><font face="Arial">enter 0-3 to
+      specify number of lines to space after printing</font></td>
+  </tr>
+  <tr>
+    <td width="14%" valign="top" align="left"><font face="Arial">19 - 20</font></td>
+    <td width="23%" valign="top" align="left"><font face="Arial">Skip Before</font></td>
+    <td width="66%" valign="top" align="left"><font face="Arial">enter 01-12 to
+      specify channel to skip to before printing</font></td>
+  </tr>
+  <tr>
+    <td width="14%" valign="top" align="left"><font face="Arial">21 - 22</font></td>
+    <td width="23%" valign="top" align="left"><font face="Arial">Skip After</font></td>
+    <td width="66%" valign="top" align="left"><font face="Arial">enter 01-12 to
+      specify channel to skip to after printing</font></td>
+  </tr>
+  <tr>
+    <td width="14%" valign="top" align="left"><font face="Arial">23<br>
+      26<br>
+      29</font></td>
+    <td width="23%" valign="top" align="left"><font face="Arial">Negates indicator</font></td>
+    <td width="66%" valign="top" align="left"><font face="Arial">enter N to
+      specify that the associated indicator must <b>not</b> be on as a condition
+      of this output operation</font></td>
+  </tr>
+  <tr>
+    <td width="14%" valign="top" align="left"><font face="Arial">24 - 25<br>
+      27 - 28<br>
+      30 - 31</font></td>
+    <td width="23%" valign="top" align="left"><font face="Arial">Indicator</font></td>
+    <td width="66%" valign="top" align="left"><font face="Arial">enter the
+      indicator to be used to condition this output operation</font></td>
+  </tr>
+</tbody></table><p>
+
+<font face="Arial">These fields define individual data fields or literal values
+to be placed in the output record:<br clear="all">
+<br clear="all">
+</font>
+
+<table border="01" width="96%">
+  <tbody><tr>
+    <td width="15%">&nbsp;<font face="Arial"><u>Column(s)</u></font></td>
+    <td width="22%"><font face="Arial"><u>Field Name</u></font></td>
+    <td width="66%"><font face="Arial"><u>Use</u></font></td>
+  </tr>
+
+  <tr>
+    <td width="15%" valign="top" align="left"><font face="Arial">32 - 37</font></td>
+    <td width="22%" valign="top" align="left"><font face="Arial">Field Name</font></td>
+    <td width="66%" valign="top" align="left"><font face="Arial">enter field to
+      be written to output</font></td>
+  </tr>
+  <tr>
+    <td width="15%" valign="top" align="left"><font face="Arial">38</font></td>
+    <td width="22%" valign="top" align="left"><font face="Arial">Edit Code</font></td>
+    <td width="66%" valign="top" align="left"><font face="Arial">enter edit code
+      or leave blank to use edit constant word</font></td>
+  </tr>
+  <tr>
+    <td width="15%" valign="top" align="left"><font face="Arial">39</font></td>
+    <td width="22%" valign="top" align="left"><font face="Arial">Blank After</font></td>
+    <td width="66%" valign="top" align="left"><font face="Arial">reset source
+      data field
+      contents to blank or zero after field is moved to the output record</font></td>
+  </tr>
+  <tr>
+    <td width="15%" valign="top" align="left"><font face="Arial">40 - 43</font></td>
+    <td width="22%" valign="top" align="left"><font face="Arial">End Position</font></td>
+    <td width="66%" valign="top" align="left"><font face="Arial">enter position
+      in output record to contain right-most character of output field</font></td>
+  </tr>
+  <tr>
+    <td width="15%" valign="top" align="left"><font face="Arial">44</font></td>
+    <td width="22%" valign="top" align="left"><font face="Arial">Packed&nbsp;</font></td>
+    <td width="66%" valign="top" align="left"><font face="Arial">enter P if
+      output is to be written in packed decimal format</font></td>
+  </tr>
+  <tr>
+    <td width="15%" valign="top" align="left"><font face="Arial">45 - 70&nbsp;</font></td>
+    <td width="22%" valign="top" align="left"><font face="Arial">Constant or<br>
+      Edit Word</font></td>
+    <td width="66%" valign="top" align="left"><font face="Arial">enter literal
+      constant or edit word enclosed in apostrophes</font></td>
+  </tr>
+</tbody></table>
+</p><hr>
+<p><img border="0" src="../images/dinomail.gif" width="172" height="75"></p>
+<hr align="center">
+<p align="center"><input type="BUTTON" value="Back to Previous Page" onclick="history.go(-1)"><a href="../index.html" class="button">Return
+to Site Home Page</a>&nbsp;</p>
+<hr align="center">
+<p><font face="Arial">This page was last updated on <!--webbot bot="Timestamp"
+s-type="EDITED" s-format="%B %d, %Y" startspan -->January 30, 2015<!--webbot bot="Timestamp" endspan i-checksum="31519" -->.</font></p>
+
+
+
+</body></html>
