@@ -76,13 +76,13 @@ flowchart TB
 ```mermaid
 flowchart LR
   subgraph SIG["信号"]
-    insights["aidev-insights<br/>works横断分析"]
+    insights["aidev-util-insights<br/>works横断分析"]
     retro2["retro / lint / test失敗 / 負債"]
   end
 
-  propose["aidev-propose<br/>課題提案・split・重複排除<br/>（charter で縛る）"]
+  propose["aidev-util-propose<br/>課題提案・split・重複排除<br/>（charter で縛る）"]
   backlog["issue / バックログ"]
-  batch["aidev-batch<br/>未処理を autonomous で順次処理（L1）"]
+  batch["aidev-util-batch<br/>未処理を autonomous で順次処理（L1）"]
   pipe["aidev-10..70<br/>requirement → … → deliver"]
   pr["PR"]
 
@@ -126,6 +126,14 @@ flowchart LR
   ブランチ並行作成での番号衝突（max+1 が複数ブランチで同値）を避けるため日付方式に変更。
   日付は時系列ソート・可読性・衝突回避を両立し、既存走査も不要（`date` のみ）。UUID は可読性/ソートを
   損なうため不採用。
+- **命名カテゴリは「役割」で割る（トリガでは割らない）**：当初は番号付き工程とユーティリティが同じ
+  `aidev-*` 名前空間で交ざり見通しが悪かった。「人間が呼ぶ / AI が呼ぶ」で割る案も出たが**退けた**——
+  標準工程は interactive で人間直叩きも前工程からの遷移も、autonomous で AI 自動も起こり得る（§3「単独実行可能」
+  と整合）ので、トリガは状況依存の二次属性であり命名軸に不適。安定して固有なのは**役割／レイヤ**。
+  そこで ①番号付きパイプライン（`aidev-N0/N5`）②ユーティリティ（`aidev-util-*` で名前空間分離）
+  ③ランタイムガード（`aidev` CLI＝skill ではない）に分け、**トリガは description 冒頭の定型タグ**で示す
+  （picker と AI ルーティングが見る場所）。これに伴い retro を `90`→`95` に renumber し「末尾5=任意」不変条件を回復。
+  正典は `protocol.md`「4.1」。論理名参照のおかげで renumber/改名の影響は skill 名だけに閉じた。
 - **論理名で相互参照**：renumber の影響を skill 名だけに閉じ込めるため、参照は番号でなく論理名。
 - **PJ資産の優先（宣言不要・自動）**：知識は AGENTS.md 自動読込で自動採用。実行物は
   「関連PJ skill があれば優先、なければジェネリック手順」。PJ側の事前宣言・設定は不要。
@@ -142,15 +150,15 @@ flowchart LR
   同じプロファイルなので、requirement/spec から **AI推奨で opt-in 起動**する（PJに質問深掘り skill があれば優先、
   無ければ同等の質問をインライン＝PJ資産優先）。**autonomous は対話前提のため基本スキップ**。標準skillに役割で
   参照し特定skillへハード依存しない（移植性）。metrics/state に乗せたくなれば末尾5の任意工程へ昇格する余地は残す。
-- **バッチ駆動（`aidev-batch`・非番号ユーティリティ）**：バックログ（チェックリスト）の未処理を
+- **バッチ駆動（`aidev-util-batch`・非番号ユーティリティ）**：バックログ（チェックリスト）の未処理を
   autonomous で順次処理する L1 オーケストレーター。実処理は autonomous aidev＋PJ資産へ委譲、繰り返しは
   L2（/loop・/schedule）。「次の1件」は毎回ファイル（未チェック行）から導出（pop カーソルを別管理しない＝
   中断再開に強い）。将来、上流に planner（課題提案→issue化、人間承認付き）を足せば自己給餌ループになるが、
   完全自動(発案→マージ)は高リスク。実用形は「AI提案＋人間が課題承認＋自律実装＋人間PRレビュー」（B→A の順で段階導入）。
-- **planner（`aidev-propose`・A 実装）**：charter(`.aidev/charter.md`)＋信号(insights/retro/負債)から
+- **planner（`aidev-util-propose`・A 実装）**：charter(`.aidev/charter.md`)＋信号(insights/retro/負債)から
   課題を**提案**し、split 判定で右サイズ化、承認のうえ issue/バックログ化する非番号ユーティリティ（最上流 L_planner）。
   **信号に根ざす（恣意発案しない）・人間承認が既定・charter で縛る・重複排除・提案止まり**が安全設計の柱。
-  自己給餌ループ: `insights/retro → aidev-propose → aidev-batch → PR`（両端に人間ゲート）。
+  自己給餌ループ: `insights/retro → aidev-util-propose → aidev-util-batch → PR`（両端に人間ゲート）。
 - **実行モード（interactive / autonomous）**：autonomous は「夜セット→朝PR」型。思想は
   **「ゲートを消す」でなく「ゲートを PR（最終レビュー）に集約し、自己チェックを固くする」**。
   人間ゲートは前（タスク指示=requirement）と後（PRレビュー）に移動し、ループ内からは外す。
@@ -204,6 +212,25 @@ works/ ノイズや「なめる state.yml が無い」問題は status フィル
 - 全項目消化済みは `archive/` へ退避し、active な glob を小さく保つ。複数ファイル選択は priority→名前順、
   跨ぎ依存は work レベルの `dependsOn` が担保。
 
+## 2.6 ランタイムガード（強制力の二層モデル）
+
+散文規約（SKILL/protocol）は LLM が守る前提で**実効が非決定的**だった（「必須化」と書いても記録が抜ける）。
+そこで **state/metrics の更新と前提・不変条件検査を `.aidev/bin/` の CLI に集約**し、強制力を二層にした。
+
+- **二層モデル**：散文＝**ソフト**（移植可能・全エージェント共通）／ CLI＝**ハード**（決定的検査）。
+  各 skill は CLI を呼ぶが、**非CLI環境向けに手作業フォールバックを残す**（挙動同一・移植性維持）。
+- **hooks は採らない**（ユーザー方針）。hooks はツール境界でしか発火せず「工程開始/記録忘れ」のような
+  非ツール事象を捕捉できない＝この用途に不適。代わりに「**正しいやり方＝ガードされたやり方**」にして、
+  最後の砦を deliver の `verify` ゲートと `doctor` の事後検知に置く（自動割り込みは諦め、単一経路化で代替）。
+- **Node 非依存・OS両対応**：`aidev`（POSIX sh）と `aidev.ps1`（PowerShell）で挙動・出力・終了コードを一致。
+  破壊的 git 操作は CLI に持たせない（`land` を作らず `verify && commit` パターン）＝安全・移植性。
+- **version-aware verify が肝**：`new` が `state.yml` に `schema:` を刻み、`verify`/`doctor` は**導入版以上の
+  不変条件のみ強制**。schema 未記載の旧 work は **legacy 免除**。これで「PJと一緒に育てる」中で新ガードを
+  足しても**過去 work を遡及的に違反扱いしない**（「過去分は捏造しない」= protocol §8 と整合）。
+- **`new` を作成の唯一経路にする理由**：手書きだと `schema:` 刻印を書き忘れ得る→その work が誤って legacy
+  免除になり enforcement が無効化する。`new` 一本化で「全新規 work が検査対象」を保証する（enforcement の起点）。
+- 退けた: `land`（verify+commit）を別コマンド化＝CLI に破壊的操作を入れると移植性/安全性が落ちるため。
+
 ## 3. 退けた案（なぜ採用しなかったか）
 
 - **自動で次工程へ遷移**：工程ゲートの人間レビューが品質の要。自動化すると手戻りが増幅。→ ゲート式。
@@ -231,15 +258,16 @@ works/ ノイズや「なめる state.yml が無い」問題は status フィル
 - **deploy(80) / その他任意工程**：必要になったら末尾規約に沿って差し込み。
 - **テンプレの厳格化（任意）**：揺れを抑えたい場合、テンプレを「厳密遵守」化、またはテンプレファイル分離。
 - **retro の活用**：retro の「ハーネス改善提案」をこのファイルや新 issue に還流させる運用。
-- **`aidev-insights`（横断分析・実装済）**：複数 works を横断して `review.md` / `metrics.yml` /
+- **`aidev-util-insights`（横断分析・実装済）**：複数 works を横断して `review.md` / `metrics.yml` /
   `decisions.md` / `retro.md` を集計し、再発パターンと systemic な改善提案を出す**非番号のユーティリティ skill**。
   per-work の retro とは別レベル（meta）。パイプライン工程ではないため番号を付けず、protocol の
   対象作業特定／終了プロトコル／メトリクス記録には乗らない。出力は `.aidev/insights/<日付>-insights.md`。
   ※ works が少ないうちは傾向が出ない点に留意（skill 側でデータ限界を明示する）。
-- **state 更新の堅牢化**：state.yml 更新を手書き heredoc でなくヘルパー化（cwd 事故・冗長さの回避）。
+- ~~**state 更新の堅牢化**：state.yml 更新を手書き heredoc でなくヘルパー化~~（**実装済**: `.aidev/bin/aidev`(+`.ps1`) の
+  `new`/`event`/`approve` に集約。「2.6 ランタイムガード」参照）。
 - **作業の split 判定（A=planner の一部・未実装）**：1要件を複数の作業/issue/PR に分けるかの判定。
   plan のタスク分解（1PR内）とは別レベル＝作業単位そのものの分割。出力は issue/バックログ項目 →
-  `aidev-batch` が消化（A planner へのボトムアップ入口）。requirement 終了時（必要なら spec 終了時）に
+  `aidev-util-batch` が消化（A planner へのボトムアップ入口）。requirement 終了時（必要なら spec 終了時）に
   既存の AI 検知パターンで「分割提案」する。interactive=人間が分割案を承認、autonomous=自動判定。
 
   **判定ルール（結合度が主軸・規模は引き金）**:

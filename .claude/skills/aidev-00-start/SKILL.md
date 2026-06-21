@@ -1,6 +1,6 @@
 ---
 name: aidev-00-start
-description: AI開発ワークフローの入口。作業状況を確認し、どの工程から始めるかをユーザーに確認して案内する。「AI開発を始めたい」「開発ワークフローを開始」「続きから再開」「aidev」などと言われたときに使用する。
+description: ［入口/ルーター／主トリガ:ユーザー起動］AI開発ワークフローの入口。作業状況を確認し、どの工程から始めるかをユーザーに確認して案内する。「AI開発を始めたい」「開発ワークフローを開始」「続きから再開」「aidev」などと言われたときに使用する。
 allowed-tools: [Bash, Read, AskUserQuestion]
 ---
 
@@ -28,8 +28,8 @@ AI 開発ワークフローの入口（ルーター）。
 - 各フォルダの `state.yml`（`current` / `approved` / `dependsOn`）と成果物ファイルの有無を読み、進捗を要約する。
 - `dependsOn`（`protocol.md`「2.7」）に未充足の依存がある作業は `⛔依存待ち（<未充足の依存>）` と明示する。
 
-要約例: `001 user-login … spec 承認済み（次: plan）` / `002 export-csv … requirement 作成中` /
-`003 rpg-skill … ⛔依存待ち（#18 未クローズ）`
+要約例: `20260620-user-login … spec 承認済み（次: plan）` / `20260620-export-csv … requirement 作成中` /
+`20260621-rpg-skill … ⛔依存待ち（#18 未クローズ）`
 
 ### 未着手キューも一望する（ビュー統合）
 
@@ -60,22 +60,23 @@ AI 開発ワークフローの入口（ルーター）。
 ## 4. 新規作業の開始
 
 1. requirement の概要をユーザーに確認し、簡潔な slug を決める（kebab-case、英小文字）。
-2. 日付プレフィックスを取得する：`date -u +%Y%m%d`（UTC）。フォルダ名は `<YYYYMMDD>-<slug>`。
-   同日・同 slug が既存なら末尾に `-2`,`-3`… を付けて一意化する。
-3. `mkdir -p .aidev/works/<YYYYMMDD-slug>` を作成。
-4. `state.yml` を初期化（`protocol.md` の「6. state.yml スキーマ」に従う。`current: requirement`、`approved: []`）。外部チケット連携時は `ticket` に ID を設定（種類は `.aidev/config.yml` の `tracker`）。
-   - **実行モード**を決める（`protocol.md`「10.」）。既定は `mode: interactive`。
-     夜間自律など人手を介さず PR まで回す場合は `mode: autonomous` とし、必要なら
-     `humanGates`（人間ゲートを残す工程。例 `[spec]`＝部分自律）を設定する。
-   - **前提となる作業/issue があれば** `dependsOn` に記録する（他の works slug / GitHub issue `#N`。`protocol.md`「2.7」）。
-5. `.aidev/current` に `<YYYYMMDD-slug>` を書き込む。
-6. **作業ブランチの準備（PJ委譲・任意）**：PJ がブランチ運用の場合に行う（`protocol.md`「2.5」に従う）。
+2. **`aidev new <slug>` を実行**して作業を作成する（フォルダ作成・日付プレフィックス採番・
+   `state.yml`/`metrics.yml` 初期化・`.aidev/current` 設定・`schema` 刻印を一括で行う）。
+   - 実行モード（`protocol.md`「10.」）: 既定 `--mode interactive`。夜間自律で PR まで回すなら
+     `--mode autonomous`（必要なら作成後に `state.yml` の `humanGates` を設定＝部分自律。例 `[spec]`）。
+   - 外部チケット連携時は `--ticket <ID>`（種類は `.aidev/config.yml` の `tracker`）。
+   - 前提となる作業/issue があれば `--depends <works slug,#N,…>`（`protocol.md`「2.7」「6.」）。
+   - 例: `aidev new user-login --mode interactive --ticket "#42" --depends 20260620-base`
+   - **CLI を持たない環境**では手で同等に行う（`date -u +%Y%m%d` で `<YYYYMMDD>-<slug>` 採番 → `mkdir` →
+     `protocol.md`「6.」に従い `state.yml`（`schema`/`current: requirement`/`approved: []`）と
+     `metrics.yml`（`events:`）を作成 → `.aidev/current` 設定）。
+3. **作業ブランチの準備（PJ委譲・任意）**：PJ がブランチ運用の場合に行う（`protocol.md`「2.5」に従う）。
    - PJ にブランチ作成を伴う skill（例: issue＋ブランチ作成 skill）があれば、それを優先して使う。
    - 無ければ PJ 規約に沿って作成する（例: `feature/<slug>`）。
    - trunk-based 等ブランチを使わない PJ ではスキップする。
    - 既に作業ブランチ上にいる場合は新規作成しない（重複防止）。
    - 成果物（`.aidev/works/...`）も同じブランチに乗せると、後段の PR がきれいになる。
-7. `aidev-10-requirement` 工程の開始を案内する。
+4. `aidev-10-requirement` 工程の開始を案内する。
 
 ## 5. 注意
 

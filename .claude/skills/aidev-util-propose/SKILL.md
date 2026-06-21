@@ -1,12 +1,12 @@
 ---
-name: aidev-propose
-description: AI開発ワークフローの planner（課題提案）ユーティリティ。charter と信号（insights/retro/lint/テスト等）から次に着手すべき課題を提案し、適切な粒度に分割して、承認のうえ issue/バックログ化する。「次の課題を提案して」「バックログを作って」「propose」などのときに使用する。
+name: aidev-util-propose
+description: ［ユーティリティ・パイプライン外／主トリガ:ユーザー起動］AI開発ワークフローの planner（課題提案）ユーティリティ。charter と信号（insights/retro/lint/テスト等）から次に着手すべき課題を提案し、適切な粒度に分割して、承認のうえ issue/バックログ化する。「次の課題を提案して」「バックログを作って」「propose」などのときに使用する。
 allowed-tools: [Bash, Read, Write, Edit, AskUserQuestion, Agent]
 ---
 
 AI 開発ワークフローの **planner（課題提案 / L_planner・A 層）**。
 **charter（ゴール・制約）と実信号**から次に着手すべき課題を**提案**し、split 判定で右サイズ化して、
-**承認のうえ issue / バックログ化**する。出力は `aidev-batch` や per-issue の aidev が消化する。
+**承認のうえ issue / バックログ化**する。出力は `aidev-util-batch` や per-issue の aidev が消化する。
 
 **開始前に共通プロトコル `../aidev-00-start/protocol.md` を読むこと。**
 
@@ -15,7 +15,7 @@ AI 開発ワークフローの **planner（課題提案 / L_planner・A 層）**
 - **パイプライン工程ではない**（番号なし。insights/batch と同列のユーティリティ・最上流 L_planner）。
 - **AIが自由に発案するのではなく、信号に根ざして提案**する（恣意的発案は暴走の元）。
 - **採否は人間が決める**のが既定（interactive）。autonomous でもガード内に限定。
-- **作るのは提案＋issue/バックログまで**。実装は aidev（autonomous）/aidev-batch が担う。
+- **作るのは提案＋issue/バックログまで**。実装は aidev（autonomous）/aidev-util-batch が担う。
 
 ## 前提
 
@@ -50,11 +50,11 @@ AI 開発ワークフローの **planner（課題提案 / L_planner・A 層）**
    - autonomous: ガード内で自動採用（**grounded・独立・1回の件数上限内**のみ。曖昧/高結合/根拠薄は採用しない）。
 7. 採用分を起票: `create-issue` で issue 化（ブランチ運用は委譲）かつ/または バックログへ `[ ]` 追記。
    - **backlog へ追記する場合**: 定常ドメインキュー（`.aidev/backlog/<domain>.md`、`kind: standing`）か、
-     1タスクを分割した産物なら `split-<親>.md`（`kind: split` / `parent`）に分ける（`aidev-batch`「backlog ファイル規約」）。
+     1タスクを分割した産物なら `split-<親>.md`（`kind: split` / `parent`）に分ける（`aidev-util-batch`「backlog ファイル規約」）。
      着手前から既知の前提は項目行末に `(needs: <slug/#N>)` を付す。
-   - **依存関係があれば記録する**: issue 本文に前提（例 `#18 に依存`）を明記し、その課題が works 化される際は
-     `state.yml` の `dependsOn` に前提（works slug / 外部チケット `#N`）を設定する（`protocol.md`「2.7」）。
-     これで batch・手動いずれの入口でも依存順が尊重される。
+   - **依存関係があれば記録する**: issue 本文に前提（例 `#18 に依存`）を明記し、backlog 項目には `(needs: …)` を付す。
+     その課題が works 化される際に `aidev new --depends <works slug/#N>` で `dependsOn` へ設定される
+     （batch・start いずれの入口でも。`protocol.md`「2.7」）。これで全入口で依存順が尊重される。
 8. レポート（採用/見送り/分割の理由、作成した issue/バックログ）。
 
 ## 安全弁（必須）
@@ -66,5 +66,5 @@ AI 開発ワークフローの **planner（課題提案 / L_planner・A 層）**
 
 ## 自己給餌ループとしての位置（参考）
 
-`insights/retro（信号）→ aidev-propose（課題化・承認）→ aidev-batch（autonomous 実装）→ PR（人間レビュー）`。
+`insights/retro（信号）→ aidev-util-propose（課題化・承認）→ aidev-util-batch（autonomous 実装）→ PR（人間レビュー）`。
 両端（どの課題・どの PR）に人間ゲートを残し、間を自律化するのが実用形。完全自動（発案→マージ）は高リスク。

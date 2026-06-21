@@ -41,23 +41,36 @@ PJ非依存の開発ワークフローを、skill 群で制御・進捗管理す
 | 60 | review | 標準 | 差分点検（指摘あれば coding へ差し戻し） |
 | 65 | walkthrough | 任意 | 人間レビュー補助の解説（walkthrough.md・mermaid） |
 | 70 | deliver | 標準（最終） | コミット / PR で着地 |
-| 90 | retro | 任意 | 振り返りと改善提案（retro.md） |
+| 95 | retro | 任意 | 振り返りと改善提案（retro.md） |
 
 標準フロー：`requirement → spec → plan → coding → test → review → deliver`。
 番号末尾 **0=標準 / 5=任意**。番号は推奨順であり強制ではない（差し戻し可）。
+
+### 命名カテゴリ（役割で割る）
+
+skill は **役割／レイヤ**で命名し、トリガ（人間/AI）では割らない（標準工程は両方から呼ばれ得るため）。
+正典は `protocol.md`「4.1」。トリガは各 skill の description 冒頭の定型タグで示す。
+
+| カテゴリ | 命名 | 主トリガ |
+|---|---|---|
+| 入口/ルーター | `aidev-00-start` | ユーザー起動 |
+| 標準工程 | `aidev-N0-<名>`（末尾0） | 両方（直接 / 前工程遷移 / autonomous 自動） |
+| 任意工程 | `aidev-N5-<名>`（末尾5） | AI検知推奨 or ユーザー指定 |
+| ユーティリティ | `aidev-util-<名>`（番号なし） | ユーザー起動（一部 /loop） |
+| ランタイムガード（skill外） | `aidev` CLI（`.aidev/bin/`） | 工程内で AI が自動 |
 
 ### ユーティリティ（番号なし・パイプライン外）
 
 | skill | 役割 |
 |---|---|
-| `aidev-insights` | 複数作業を横断して傾向・再発パターンを分析し、改善提案を出す（`/aidev-insights`） |
-| `aidev-batch` | バックログの未処理項目を autonomous モードで順次処理（L1 バッチ駆動）。`/loop`・`/schedule` から起動可 |
-| `aidev-propose` | charter と信号(insights/retro/負債)から次の課題を提案・分割し、承認のうえ issue/バックログ化（L_planner / 最上流） |
+| `aidev-util-insights` | 複数作業を横断して傾向・再発パターンを分析し、改善提案を出す（`/aidev-util-insights`） |
+| `aidev-util-batch` | バックログの未処理項目を autonomous モードで順次処理（L1 バッチ駆動）。`/loop`・`/schedule` から起動可 |
+| `aidev-util-propose` | charter と信号(insights/retro/負債)から次の課題を提案・分割し、承認のうえ issue/バックログ化（L_planner / 最上流） |
 
 ### 自己給餌ループ（実用形）
 
 ```
-insights/retro（信号） → aidev-propose（課題化・人間承認） → aidev-batch（autonomous実装） → PR（人間レビュー）
+insights/retro（信号） → aidev-util-propose（課題化・人間承認） → aidev-util-batch（autonomous実装） → PR（人間レビュー）
 ```
 両端（どの課題・どの PR）に人間ゲートを残し、間を自律化する。完全自動（発案→マージ）は高リスクのため採らない。
 planner の方針は `.aidev/charter.md` で縛る。
@@ -101,14 +114,15 @@ planner の方針は `.aidev/charter.md` で縛る。
 ```
 .claude/skills/
   aidev-00-start/      入口 + protocol.md（共通規約のホーム）
-  aidev-10-requirement/ … aidev-90-retro/   各工程
-  aidev-insights/      横断分析ユーティリティ（番号なし・パイプライン外）
+  aidev-10-requirement/ … aidev-95-retro/   各工程（番号付きパイプライン）
+  aidev-util-propose/ aidev-util-batch/ aidev-util-insights/   ユーティリティ（番号なし・パイプライン外）
   aidev-docs/          このREADMEとDESIGN（参照専用・skillではない）
-.aidev/                実行時に生成される状態
+.aidev/                実行時に生成される状態（bin/ はコミット対象）
+  bin/                 ランタイムガード CLI（aidev=POSIX sh / aidev.ps1=PowerShell・README.md 同梱）
   config.yml           PJ単位の設定（tracker 種類など。コミット対象）
   current              現在の作業フォルダ名（.gitignore 対象）
   works/<YYYYMMDD-slug>/  作業単位ごとの成果物（命名: 日付(UTC)-slug）
-    state.yml          進捗（current / approved / dependsOn / ticket）
+    state.yml          進捗（schema / current / approved / dependsOn / ticket / mode）
     metrics.yml        工程の実施日時・時間・件数などのイベントログ
     requirement.md / spec.md / plan.md / tasks.md / decisions.md / review.md など
   backlog/             遅延キュー（任意）。<domain>.md（standing）/ split-<親>.md（split）/ archive/
@@ -118,8 +132,10 @@ planner の方針は `.aidev/charter.md` で縛る。
 ## 別PJへの導入
 
 1. `.claude/skills/aidev-*`（aidev-docs 含む）をコピー。
-2. `.gitignore` に `.aidev/current` を追加（works 配下の成果物はコミット推奨）。
-3. PJ の AGENTS.md に規約・レビュー観点を書く。PJ固有 skill があればそのまま活かされる。
+2. `.aidev/bin/`（`aidev` / `aidev.ps1` / `README.md`）をコピーし、`aidev` に実行権限を付ける
+   （ランタイムガード。無くてもフォールバックで動くが、強制力を効かせるなら導入推奨）。
+3. `.gitignore` に `.aidev/current` を追加（works 配下の成果物・`bin/` はコミット推奨）。
+4. PJ の AGENTS.md に規約・レビュー観点を書く。PJ固有 skill があればそのまま活かされる。
 
 基盤はドメイン非依存。PJ固有の知識・実作業は AGENTS.md と PJ skill 側が担う。
 

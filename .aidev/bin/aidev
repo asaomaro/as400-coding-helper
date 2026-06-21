@@ -1,0 +1,313 @@
+#!/bin/sh
+# aidev ランタイムガード CLI（POSIX sh のみ・Node 非依存）
+#
+# 役割: aidev ハーネスの state.yml / metrics.yml 更新を「単一の検証済み経路」に集約し、
+#       工程の前提・不変条件を決定的に検査する（散文規約=ソフト / この CLI=ハードの二層）。
+# 正典: .claude/skills/aidev-00-start/protocol.md（§6 state / §8 metrics / §4.1 命名 / §2.7 依存）。
+# Windows 版は同ディレクトリの aidev.ps1（挙動を一致させること）。
+#
+# 使い方:
+#   aidev new <slug> [--mode interactive|autonomous] [--ticket ID] [--depends a,b,#N]
+#   aidev event <phase> <start|approved|sent_back> [key=value ...]
+#   aidev approve <phase> [key=value ...]      # approved 追記 + current 更新 + approved イベント
+#   aidev guard <phase>                        # 前提成果物 + dependsOn の充足を検査（exit!=0で未充足）
+#   aidev verify [slug]                        # 現在(or指定)workの不変条件を version-aware に検査
+#   aidev doctor                               # 全 work を横断検査（legacy は免除して報告）
+#   aidev help
+#
+# 終了コード: 0=OK / 1=使用法・環境エラー / 2=前提成果物の不足 / 3=依存(dependsOn)未充足 / 4=不変条件違反
+
+set -eu
+
+CURRENT_SCHEMA=2   # 現行スキーマ版。new がこの値を刻む。
+PHASES="requirement research spec design plan coding test review walkthrough deliver retro"
+
+die()  { printf 'aidev: %s\n' "$*" >&2; exit 1; }
+warn() { printf 'aidev: %s\n' "$*" >&2; }
+now()  { date -u +%Y-%m-%dT%H:%M:%SZ; }
+
+# --- ルート/作業ディレクトリ解決 -------------------------------------------------
+find_root() {
+  d=$(pwd)
+  while [ "$d" != "/" ]; do
+    [ -d "$d/.aidev" ] && { printf '%s\n' "$d"; return 0; }
+    d=$(dirname "$d")
+  done
+  [ -d "/.aidev" ] && { printf '%s\n' "/"; return 0; }
+  return 1
+}
+
+ROOT=$(find_root) || die ".aidev が見つかりません（リポジトリ内で実行してください）"
+AIDEV="$ROOT/.aidev"
+
+resolve_work() { # [slug]
+  slug=${1:-}
+  if [ -z "$slug" ]; then
+    slug=${AIDEV_WORK:-}
+  fi
+  if [ -z "$slug" ]; then
+    [ -f "$AIDEV/current" ] || die "対象作業が不明です（.aidev/current 無し）。aidev new か slug 指定を。"
+    slug=$(head -n1 "$AIDEV/current" | tr -d '\r\n')
+  fi
+  WORK="$AIDEV/works/$slug"
+  [ -d "$WORK" ] || die "work が存在しません: $slug"
+  SLUG=$slug
+}
+
+is_phase() { for p in $PHASES; do [ "$p" = "$1" ] && return 0; done; return 1; }
+
+# --- 最小 YAML 読み取り（フロー形式前提・コメント除去） ----------------------------
+# scalar: "key: value   # comment" -> value
+yget() {
+  sed -n "s/^$2:[[:space:]]*//p" "$1" 2>/dev/null | head -n1 \
+    | sed 's/[[:space:]]*#.*$//' | sed 's/[[:space:]]*$//'
+}
+# flow list: "key: [a, b]" -> "a b"（カンマ/角括弧除去・クォート除去）
+ylist() {
+  v=$(yget "$1" "$2")
+  v=${v#[}; v=${v%]}
+  printf '%s' "$v" | tr ',' ' ' | tr -d '"'
+}
+approved_has() { ylist "$WORK/state.yml" approved | grep -qw "$1"; }
+
+# 1行を丸ごと差し替え（awk で sed エスケープ事故を回避）
+replace_line() { # file key newline
+  awk -v key="^$2:" -v repl="$3" '$0 ~ key {print repl; next} {print}' "$1" > "$1.tmp" && mv "$1.tmp" "$1"
+}
+
+# --- metrics.yml 追記 ---------------------------------------------------------
+ensure_events() {
+  f="$WORK/metrics.yml"
+  if [ ! -f "$f" ]; then printf 'events:\n' > "$f"; return; fi
+  # events: [] を block 形式に変換（block item を足すため）
+  if grep -q '^events:[[:space:]]*\[\][[:space:]]*$' "$f"; then
+    awk '/^events:[[:space:]]*\[\][[:space:]]*$/{print "events:"; next}{print}' "$f" > "$f.tmp" && mv "$f.tmp" "$f"
+  fi
+  grep -q '^events:' "$f" || printf 'events:\n' >> "$f"
+}
+
+build_entry() { # phase event [key=value ...]
+  ph=$1; ev=$2; shift 2
+  m=""
+  for kv in "$@"; do
+    k=${kv%%=*}; val=${kv#*=}
+    if [ -z "$m" ]; then m="$k: $val"; else m="$m, $k: $val"; fi
+  done
+  if [ -n "$m" ]; then
+    printf '{ ts: %s, phase: %s, event: %s, metrics: { %s } }' "$(now)" "$ph" "$ev" "$m"
+  else
+    printf '{ ts: %s, phase: %s, event: %s }' "$(now)" "$ph" "$ev"
+  fi
+}
+
+append_event() { # phase event [key=value ...]
+  ensure_events
+  entry=$(build_entry "$@")
+  printf '  - %s\n' "$entry" >> "$WORK/metrics.yml"
+}
+
+# --- コマンド: new ------------------------------------------------------------
+cmd_new() {
+  slug=""; mode="interactive"; ticket=""; depends=""
+  while [ $# -gt 0 ]; do
+    case "$1" in
+      --mode) mode=$2; shift 2 ;;
+      --ticket) ticket=$2; shift 2 ;;
+      --depends) depends=$2; shift 2 ;;
+      -*) die "未知のオプション: $1" ;;
+      *) [ -z "$slug" ] && slug=$1 || die "slug は1つだけ"; shift ;;
+    esac
+  done
+  [ -n "$slug" ] || die "使用法: aidev new <slug> [--mode ..] [--ticket ..] [--depends ..]"
+  case "$mode" in interactive|autonomous) ;; *) die "mode は interactive|autonomous" ;; esac
+
+  date_p=$(date -u +%Y%m%d)
+  base="$date_p-$slug"; name="$base"; n=2
+  while [ -d "$AIDEV/works/$name" ]; do name="$base-$n"; n=$((n+1)); done
+  WORK="$AIDEV/works/$name"
+  mkdir -p "$WORK"
+
+  deps_yaml="[]"
+  if [ -n "$depends" ]; then
+    list=""
+    old_ifs=$IFS; IFS=,
+    for d in $depends; do
+      d=$(printf '%s' "$d" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')
+      [ -z "$d" ] && continue
+      if [ -z "$list" ]; then list="$d"; else list="$list, $d"; fi
+    done
+    IFS=$old_ifs
+    deps_yaml="[$list]"
+  fi
+
+  {
+    printf 'schema: %s\n' "$CURRENT_SCHEMA"
+    printf 'slug: %s\n' "$slug"
+    [ -n "$ticket" ] && printf 'ticket: %s\n' "$ticket"
+    printf 'current: requirement\n'
+    printf 'approved: []\n'
+    printf 'mode: %s\n' "$mode"
+    printf 'humanGates: []\n'
+    printf 'maxSendBacks: 3\n'
+    printf 'dependsOn: %s\n' "$deps_yaml"
+  } > "$WORK/state.yml"
+
+  printf 'events:\n' > "$WORK/metrics.yml"
+  printf '%s\n' "$name" > "$AIDEV/current"
+  printf 'created: %s (schema %s, mode %s)\n' "$WORK" "$CURRENT_SCHEMA" "$mode"
+}
+
+# --- コマンド: event ----------------------------------------------------------
+cmd_event() {
+  [ $# -ge 2 ] || die "使用法: aidev event <phase> <start|approved|sent_back> [k=v ...]"
+  ph=$1; ev=$2; shift 2
+  is_phase "$ph" || die "未知の phase: $ph"
+  case "$ev" in start|approved|sent_back) ;; *) die "event は start|approved|sent_back" ;; esac
+  resolve_work
+  append_event "$ph" "$ev" "$@"
+  printf 'recorded: %s/%s/%s\n' "$SLUG" "$ph" "$ev"
+}
+
+# --- コマンド: approve --------------------------------------------------------
+cmd_approve() {
+  [ $# -ge 1 ] || die "使用法: aidev approve <phase> [k=v ...]"
+  ph=$1; shift
+  is_phase "$ph" || die "未知の phase: $ph"
+  resolve_work
+  st="$WORK/state.yml"
+  [ -f "$st" ] || die "state.yml がありません: $SLUG"
+
+  if approved_has "$ph"; then
+    : # 既に承認済み（冪等）
+  else
+    cur=$(ylist "$st" approved)
+    if [ -z "$cur" ]; then newl="[$ph]"; else
+      list=""
+      for p in $cur; do if [ -z "$list" ]; then list="$p"; else list="$list, $p"; fi; done
+      newl="[$list, $ph]"
+    fi
+    replace_line "$st" approved "approved: $newl"
+  fi
+  replace_line "$st" current "current: $ph"
+  append_event "$ph" approved "$@"
+  printf 'approved: %s @ %s\n' "$ph" "$SLUG"
+}
+
+# --- コマンド: guard ----------------------------------------------------------
+need_file()    { [ -f "$WORK/$1" ] || { GMISS="$GMISS $1"; return 1; }; return 0; }
+need_approved(){ approved_has "$1" || { GUNAPP="$GUNAPP $1"; return 1; }; return 0; }
+
+check_depends() {
+  GDEP=""
+  deps=$(ylist "$WORK/state.yml" dependsOn)
+  for d in $deps; do
+    [ -z "$d" ] && continue
+    case "$d" in
+      \#*) # 外部チケット(#N): 自動判定不可＝advisory（手動確認）
+        warn "依存(外部チケット $d): 自動判定不可＝advisory（手動確認）" ;;
+      *) # それ以外は works slug とみなす
+        if [ -d "$AIDEV/works/$d" ]; then
+          da=$(ylist "$AIDEV/works/$d/state.yml" approved)
+          printf '%s' "$da" | grep -qw deliver || GDEP="$GDEP $d(未deliver)"
+        else
+          GDEP="$GDEP $d(work不明)"
+        fi ;;
+    esac
+  done
+}
+
+cmd_guard() {
+  [ $# -ge 1 ] || die "使用法: aidev guard <phase>"
+  ph=$1
+  is_phase "$ph" || die "未知の phase: $ph"
+  resolve_work
+  GMISS=""; GUNAPP=""
+  case "$ph" in
+    requirement) : ;;
+    research|spec) need_file requirement.md || : ;;
+    design) need_file spec.md || : ;;
+    plan) need_file spec.md || : ;;  # tasks.md は plan の産物なので前提にしない
+    coding) need_file plan.md || : ; need_file tasks.md || : ;;
+    test) need_file tasks.md || : ;;
+    review) need_file spec.md || : ;;
+    walkthrough|deliver) need_approved review || : ;;
+    retro) need_approved deliver || : ;;
+  esac
+  check_depends
+
+  rc=0
+  if [ -n "$GMISS" ]; then printf 'NG 前提成果物が不足:%s\n' "$GMISS" >&2; rc=2; fi
+  if [ -n "$GUNAPP" ]; then printf 'NG 前提工程が未承認:%s\n' "$GUNAPP" >&2; rc=2; fi
+  if [ -n "$GDEP" ]; then printf 'NG 依存(dependsOn)が未充足:%s\n' "$GDEP" >&2; [ $rc -eq 0 ] && rc=3; fi
+  if [ $rc -eq 0 ]; then printf 'OK guard %s @ %s\n' "$ph" "$SLUG"; fi
+  return $rc
+}
+
+# --- コマンド: verify（version-aware） -----------------------------------------
+verify_work() { # WORK already set; prints lines; returns 0 ok / 4 fail
+  st="$WORK/state.yml"
+  VF=""
+  if [ ! -f "$st" ]; then printf '  FAIL state.yml なし\n'; return 4; fi
+  for k in slug current approved; do
+    grep -q "^$k:" "$st" || VF="$VF state.yml:$k欠落"
+  done
+
+  schema=$(yget "$st" schema)
+  if [ -z "$schema" ]; then
+    printf '  SKIP legacy (schema 未記載・metrics導入前の作業として免除)\n'
+  else
+    # schema >= 2 の不変条件
+    if [ "$schema" -ge 2 ] 2>/dev/null; then
+      [ -f "$WORK/metrics.yml" ] || VF="$VF metrics.yml欠落"
+      if approved_has review; then [ -f "$WORK/review.md" ] || VF="$VF review.md欠落(review承認済)"; fi
+      if approved_has deliver; then
+        grep -Eq 'phase:[[:space:]]*deliver.*event:[[:space:]]*approved|event:[[:space:]]*approved.*phase:[[:space:]]*deliver' "$WORK/metrics.yml" 2>/dev/null \
+          || VF="$VF deliver承認イベントがmetricsに無い"
+      fi
+    fi
+  fi
+
+  if [ -n "$VF" ]; then printf '  FAIL%s\n' "$VF"; return 4; fi
+  printf '  OK\n'; return 0
+}
+
+cmd_verify() {
+  resolve_work "${1:-}"
+  printf 'verify: %s\n' "$SLUG"
+  if verify_work; then return 0; else return 4; fi
+}
+
+# --- コマンド: doctor ---------------------------------------------------------
+cmd_doctor() {
+  [ -d "$AIDEV/works" ] || die "works がありません"
+  total=0; fail=0; legacy=0
+  printf 'doctor: 全 work 横断検査\n'
+  for d in "$AIDEV/works"/*/; do
+    [ -d "$d" ] || continue
+    WORK=${d%/}; SLUG=$(basename "$WORK")
+    total=$((total+1))
+    printf '%s\n' "- $SLUG"
+    sc=$(yget "$WORK/state.yml" schema 2>/dev/null || true)
+    [ -z "$sc" ] && legacy=$((legacy+1))
+    if ! verify_work; then fail=$((fail+1)); fi
+  done
+  printf 'summary: works=%s fail=%s legacy(免除)=%s\n' "$total" "$fail" "$legacy"
+  [ "$fail" -eq 0 ]
+}
+
+usage() {
+  sed -n '2,30p' "$0" | sed 's/^# \{0,1\}//'
+}
+
+[ $# -ge 1 ] || { usage; exit 1; }
+cmd=$1; shift
+case "$cmd" in
+  new)     cmd_new "$@" ;;
+  event)   cmd_event "$@" ;;
+  approve) cmd_approve "$@" ;;
+  guard)   cmd_guard "$@" ;;
+  verify)  cmd_verify "$@" ;;
+  doctor)  cmd_doctor "$@" ;;
+  help|-h|--help) usage ;;
+  *) die "未知のコマンド: $cmd（aidev help）" ;;
+esac
