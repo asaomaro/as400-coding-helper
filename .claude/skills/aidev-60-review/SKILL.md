@@ -38,6 +38,7 @@ AI 開発ワークフローの **review（レビュー）工程**を実行する
 4. 判定に応じて分岐する。
    - **must/should の指摘あり** → `aidev event review sent_back` を記録のうえ coding 工程への
      差し戻しを提案する（protocol.md「4. 番号と順序」に基づく正当な遷移）。
+     coding を**再開する際は `aidev event coding start` を記録する**（さもないと手戻り回数を取りこぼす。protocol.md「3.」「8.」）。
    - **指摘なし（または nit のみ）** → protocol.md「3. 工程終了プロトコル」に従って終了する。
      **複雑度の自己評価（walkthrough 推奨判定）**: protocol.md「4.5」に従い「差分が大きい/複数モジュール
      横断/処理フローが複雑」のいずれかなら、遷移ゲートに `承認して walkthrough(任意) を挟む`（推奨）を
