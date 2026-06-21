@@ -62,16 +62,16 @@ PR #42 収集の原典HTML（IBM i 7.4 / `ssw_ibm_i_74`、`docs/origin/manifest.
 - [x] RMVMSG — メッセージ除去
 - [x] RTVMSG — メッセージ検索
 
-### P3 データ域
+### P3 データ域 — 20260621-cl-defs-batch-p2p4（issue #43）で実装・原典照合済み
 
-- [ ] CRTDTAARA — データ域作成
-- [ ] CHGDTAARA — データ域変更
-- [ ] RTVDTAARA — データ域検索
-- [ ] DLTDTAARA — データ域削除
+- [x] CRTDTAARA — データ域作成
+- [x] CHGDTAARA — データ域変更
+- [x] RTVDTAARA — データ域検索
+- [x] DLTDTAARA — データ域削除
 
 ### P4 ファイル/メンバ/DB
 
-- [ ] ADDPFM — 物理ファイル・メンバー追加
+- [x] ADDPFM — 物理ファイル・メンバー追加（20260621-cl-defs-batch-p2p4 / issue #43）
 - [ ] CLRPFM — 物理ファイル・メンバー消去
 - [ ] RGZPFM — 物理ファイル・メンバー再編成
 - [ ] RMVM — メンバー除去
