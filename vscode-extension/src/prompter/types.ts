@@ -1,5 +1,9 @@
 export type LanguageId = "rpg-fixed" | "cl";
 
+// RPG 固定長の方言。languageId(`rpg-fixed`) とは直交する別次元で、
+// 拡張子から導出する（.rpgle→ile / .rpg→rpg3、設定で上書き可）。
+export type Dialect = "ile" | "rpg3";
+
 export interface WorkspaceConfig {
   readonly workspaceRoot: string;
   readonly rules?: {

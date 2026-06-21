@@ -3,17 +3,20 @@ backlog: rpg-spec
 kind: standing        # standing（定常ドメインキュー）| split（タスク分割由来・短命）
 priority: 2           # 複数backlog選択順（小さいほど先）
 ---
-# RPG仕様書 定義バックログ
+# RPG仕様書 定義バックログ（**ILE / RPG IV スコープ**）
+
+> **スコープ: ILE(RPG IV)**。本バックログの定義はすべて `ile` 方言（`resources/prompter/rpg/ile/`）が対象。
+> RPG III(RPG/400) の定義は別バックログ `rpg3-spec.md` で管理する（#18 で方言分離済み）。
 
 `aidev-util-batch` が消化する対象リスト。各未チェック行 = 1件のタスク（autonomous aidev の requirement）。
 RPG 固定長フォーマットの仕様書（Spec）ごとのプロンプター定義 JSON を作成する。
 
 参照（原典・grounded）:
 - `docs/ILE_RPG_Fixed_Format_Reference.md`（固定長フォーマットの桁位置リファレンス）
-- 既存 `vscode-extension/resources/prompter/rpg/{C-SPEC,C-NEW,D-SPEC}.json`（スキーマ実例）
+- 既存 `vscode-extension/resources/prompter/rpg/ile/{C-SPEC,C-NEW,D-SPEC}.json`（スキーマ実例）
 - スキーマの正は `vscode-extension/src/prompter/types.ts`
 
-## 定義対象（`vscode-extension/resources/prompter/rpg/<X>-SPEC.json`）
+## 定義対象（`vscode-extension/resources/prompter/rpg/ile/<X>-SPEC.json`）
 
 - [x] D-SPEC — 定義仕様書（既存）
 - [x] C-SPEC — 演算仕様書（従来形式・既存）

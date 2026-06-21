@@ -35,6 +35,7 @@ var __importStar = (this && this.__importStar) || (function () {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.resolvePosition = resolvePosition;
 const vscode = __importStar(require("vscode"));
+const dialect_1 = require("./dialect");
 function resolvePosition(document, position) {
     const language = getLanguageId(document);
     if (!language) {
@@ -46,27 +47,36 @@ function resolvePosition(document, position) {
         return undefined;
     }
     let keyword = "";
+    let dialect;
     if (language === "cl") {
         const trimmed = text.trimStart();
         const parts = trimmed.split(/\s+/);
         keyword = (parts[0] ?? "").toUpperCase();
     }
     else {
+        dialect = (0, dialect_1.resolveDialect)(document);
         const specCharRaw = text.length > 5 ? text.charAt(5) : " ";
         const specChar = specCharRaw.toUpperCase();
         if (specChar === "D") {
             keyword = "D-SPEC";
         }
         else if (specChar === "C") {
-            const tail = text.length > 6 ? text.slice(6) : "";
-            const tokens = tail.trim().split(/\s+/).filter(token => token.length > 0);
-            const opcode = (tokens[0] ?? "").toUpperCase();
-            const cNewOpcodes = getCNewOpcodes();
-            if (opcode && cNewOpcodes.has(opcode)) {
-                keyword = "C-NEW";
+            // RPG III(rpg3) には C-NEW(自由形演算) が存在しないため常に C-SPEC。
+            // ILE(ile) のみ従来どおり opcode で C-NEW を判定する。
+            if (dialect === "rpg3") {
+                keyword = "C-SPEC";
             }
             else {
-                keyword = "C-SPEC";
+                const tail = text.length > 6 ? text.slice(6) : "";
+                const tokens = tail.trim().split(/\s+/).filter(token => token.length > 0);
+                const opcode = (tokens[0] ?? "").toUpperCase();
+                const cNewOpcodes = getCNewOpcodes();
+                if (opcode && cNewOpcodes.has(opcode)) {
+                    keyword = "C-NEW";
+                }
+                else {
+                    keyword = "C-SPEC";
+                }
             }
         }
         else {
@@ -78,6 +88,7 @@ function resolvePosition(document, position) {
     }
     return {
         language,
+        dialect,
         document,
         position,
         line: position.line,

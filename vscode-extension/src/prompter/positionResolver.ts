@@ -1,8 +1,11 @@
 import * as vscode from "vscode";
-import type { LanguageId } from "./types";
+import type { Dialect, LanguageId } from "./types";
+import { resolveDialect } from "./dialect";
 
 export interface ResolvedPosition {
   readonly language: LanguageId;
+  // RPG 固定長のときのみ設定（拡張子＋設定から導出）。cl では undefined。
+  readonly dialect?: Dialect;
   readonly document: vscode.TextDocument;
   readonly position: vscode.Position;
   readonly line: number;
@@ -27,27 +30,36 @@ export function resolvePosition(
   }
 
   let keyword = "";
+  let dialect: Dialect | undefined;
 
   if (language === "cl") {
     const trimmed = text.trimStart();
     const parts = trimmed.split(/\s+/);
     keyword = (parts[0] ?? "").toUpperCase();
   } else {
+    dialect = resolveDialect(document);
+
     const specCharRaw = text.length > 5 ? text.charAt(5) : " ";
     const specChar = specCharRaw.toUpperCase();
 
     if (specChar === "D") {
       keyword = "D-SPEC";
     } else if (specChar === "C") {
-      const tail = text.length > 6 ? text.slice(6) : "";
-      const tokens = tail.trim().split(/\s+/).filter(token => token.length > 0);
-      const opcode = (tokens[0] ?? "").toUpperCase();
-
-      const cNewOpcodes = getCNewOpcodes();
-      if (opcode && cNewOpcodes.has(opcode)) {
-        keyword = "C-NEW";
-      } else {
+      // RPG III(rpg3) には C-NEW(自由形演算) が存在しないため常に C-SPEC。
+      // ILE(ile) のみ従来どおり opcode で C-NEW を判定する。
+      if (dialect === "rpg3") {
         keyword = "C-SPEC";
+      } else {
+        const tail = text.length > 6 ? text.slice(6) : "";
+        const tokens = tail.trim().split(/\s+/).filter(token => token.length > 0);
+        const opcode = (tokens[0] ?? "").toUpperCase();
+
+        const cNewOpcodes = getCNewOpcodes();
+        if (opcode && cNewOpcodes.has(opcode)) {
+          keyword = "C-NEW";
+        } else {
+          keyword = "C-SPEC";
+        }
       }
     } else {
       return undefined;
@@ -60,6 +72,7 @@ export function resolvePosition(
 
   return {
     language,
+    dialect,
     document,
     position,
     line: position.line,

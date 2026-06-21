@@ -1,5 +1,5 @@
 import * as vscode from "vscode";
-import type { LanguageId, PrompterDefinition } from "./types";
+import type { Dialect, LanguageId, PrompterDefinition } from "./types";
 
 export class PrompterDefinitionLoader {
   private async loadDefinitionFromUri(uri: vscode.Uri): Promise<PrompterDefinition> {
@@ -52,28 +52,31 @@ export class PrompterDefinitionLoader {
 
   async loadForLanguage(
     language: LanguageId,
+    dialect: Dialect | undefined,
     workspaceFolder: vscode.WorkspaceFolder | undefined,
     context: vscode.ExtensionContext
   ): Promise<PrompterDefinition[]> {
-    const subDir = language === "rpg-fixed" ? "rpg" : "cl";
+    // RPG は方言別サブディレクトリ rpg/{dialect}/ を使う。CL は従来どおり cl/。
+    const subPath =
+      language === "rpg-fixed" ? ["rpg", dialect ?? "ile"] : ["cl"];
 
     // 1) Load default definitions bundled with the extension
     const defaultDirUri = vscode.Uri.joinPath(
       context.extensionUri,
       "resources",
       "prompter",
-      subDir
+      ...subPath
     );
     const definitions = await this.loadFromDirectory(defaultDirUri);
 
     if (definitions.length === 0) {
       console.log(
         "[rpgClSupport] no default prompter definitions found",
-        JSON.stringify({ language, subDir })
+        JSON.stringify({ language, dialect, subPath: subPath.join("/") })
       );
     }
 
-    // 2) Load workspace overrides from .rpg-cl/{subDir}/ if available
+    // 2) Load workspace overrides from .rpg-cl/{subPath}/ if available
     const baseUri =
       workspaceFolder?.uri ?? vscode.workspace.workspaceFolders?.[0]?.uri;
 
@@ -81,20 +84,33 @@ export class PrompterDefinitionLoader {
       return definitions;
     }
 
-    const workspaceDirUri = vscode.Uri.joinPath(baseUri, ".rpg-cl", subDir);
-    const workspaceDefs = await this.loadFromDirectory(workspaceDirUri);
-
-    if (workspaceDefs.length === 0) {
-      return definitions;
+    // 上書き層を低→高優先で重ねる。
+    // - ile のみ: 旧 .rpg-cl/rpg/（dialect 無し）も後方互換で読む（既定移設前のユーザー上書き互換）。
+    // - 全方言/CL: .rpg-cl/{subPath}/ を読む（高優先）。
+    const overrideDirs: vscode.Uri[] = [];
+    if (language === "rpg-fixed" && (dialect ?? "ile") === "ile") {
+      overrideDirs.push(vscode.Uri.joinPath(baseUri, ".rpg-cl", "rpg"));
     }
+    overrideDirs.push(vscode.Uri.joinPath(baseUri, ".rpg-cl", ...subPath));
 
     const byKeyword = new Map<string, PrompterDefinition>();
     for (const def of definitions) {
       byKeyword.set(def.keyword.toUpperCase(), def);
     }
-    for (const def of workspaceDefs) {
-      byKeyword.set(def.keyword.toUpperCase(), def);
+
+    let hasOverride = false;
+    for (const dirUri of overrideDirs) {
+      const overrideDefs = await this.loadFromDirectory(dirUri);
+      for (const def of overrideDefs) {
+        byKeyword.set(def.keyword.toUpperCase(), def);
+        hasOverride = true;
+      }
     }
+
+    if (!hasOverride) {
+      return definitions;
+    }
+
     return Array.from(byKeyword.values());
   }
 }

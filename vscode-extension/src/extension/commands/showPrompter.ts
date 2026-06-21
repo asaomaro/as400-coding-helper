@@ -62,6 +62,7 @@ export function registerShowPrompterCommand(
       const workspaceFolder = vscode.workspace.getWorkspaceFolder(document.uri);
       const definitions = await loader.loadForLanguage(
         resolved.language,
+        resolved.dialect,
         workspaceFolder,
         context
       );

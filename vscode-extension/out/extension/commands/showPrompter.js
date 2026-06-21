@@ -73,7 +73,7 @@ function registerShowPrompterCommand(context) {
         }
         const loader = new jsonDefinitions_1.PrompterDefinitionLoader();
         const workspaceFolder = vscode.workspace.getWorkspaceFolder(document.uri);
-        const definitions = await loader.loadForLanguage(resolved.language, workspaceFolder, context);
+        const definitions = await loader.loadForLanguage(resolved.language, resolved.dialect, workspaceFolder, context);
         console.log("[rpgClSupport] loaded definitions", JSON.stringify({
             language: resolved.language,
             count: definitions.length,
