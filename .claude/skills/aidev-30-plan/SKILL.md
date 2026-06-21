@@ -33,7 +33,7 @@ spec を実装可能な作業単位に分解し、`plan.md`（方針・順序）
    - 各タスクは coding 工程で 1 つずつ消化できる粒度にする。
    - 依存があるタスクは順序が分かるように並べる。依存が複雑なら mermaid で図示する（protocol.md「9.」）。
 4. protocol.md「3. 工程終了プロトコル」に従って終了する（次工程: `coding`）。
-   承認時、`metrics.yml` の plan approved イベントに `metrics: { tasks_planned: <tasks.md のタスク総数> }` を付与する（protocol.md「8.」参照）。
+   承認は `aidev approve plan tasks_planned=<tasks.md のタスク総数>`（protocol.md「3.」「8.」）。
 
 ## plan.md テンプレート
 

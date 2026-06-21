@@ -36,14 +36,13 @@ AI 開発ワークフローの **review（レビュー）工程**を実行する
    - **保守性**: 重複・複雑さ・命名・周辺コードとの一貫性。
 3. 指摘を重大度（must / should / nit）付きで一覧化し、`review.md` に当該ラウンドとして追記する。
 4. 判定に応じて分岐する。
-   - **must/should の指摘あり** → coding 工程への差し戻しを提案する
-     （protocol.md「4. 番号と順序」に基づく正当な遷移）。
+   - **must/should の指摘あり** → `aidev event review sent_back` を記録のうえ coding 工程への
+     差し戻しを提案する（protocol.md「4. 番号と順序」に基づく正当な遷移）。
    - **指摘なし（または nit のみ）** → protocol.md「3. 工程終了プロトコル」に従って終了する。
      **複雑度の自己評価（walkthrough 推奨判定）**: protocol.md「4.5」に従い「差分が大きい/複数モジュール
      横断/処理フローが複雑」のいずれかなら、遷移ゲートに `承認して walkthrough(任意) を挟む`（推奨）を
      加え理由を添える（次工程: 推奨時 `walkthrough`、それ以外 `deliver`）。
-5. 承認時、`metrics.yml` の review approved イベントに重大度別件数を付与する
-   （`metrics: { must, should, nit }`。protocol.md「8.」参照）。
+5. 承認は `aidev approve review must=<件数> should=<件数> nit=<件数>`（protocol.md「3.」「8.」）。
 
 ## 完了の目安
 
