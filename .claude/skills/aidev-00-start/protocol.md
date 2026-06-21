@@ -128,8 +128,11 @@ git worktree＋`feature/<slug>` ブランチを作って隔離着手できる。
    - **autonomous**: 人間ゲートを置かず**自動承認**する。ただし `state.yml` の `humanGates` に
      当該工程が含まれる場合は、その工程だけ interactive と同じくユーザーに確認する（部分自律）。
 3. **分岐**：
-   - **差し戻す**：指摘を反映し、同工程をやり直す（state は変更しない）。
+   - **差し戻す**：指摘を反映し、やり直す（state は変更しない）。判定した工程で
      `aidev event <工程> sent_back` で **sent_back イベント**を記録する（「8.」）。
+     - **差し戻し先が前工程の場合（例: review/test→coding）**：その工程を**再開する時に**
+       `aidev event <差し戻し先工程> start`（例 `aidev event coding start`）を記録する。
+       これを怠ると metrics の**手戻り回数（reworks）が増えず手戻りを取りこぼす**（「8.」）。
    - **承認（いずれか）**：`aidev approve <工程> [k=v …]` を実行する。これで
      `state.yml` の `approved` 追記（冪等）・`current` 更新・`metrics.yml` の **approved イベント**追記を
      一括で行う（工程別メトリクスは `k=v`。「8.」）。
@@ -280,6 +283,7 @@ events:
 
 - **各工程の経過時間**：approved − 直近の start（待ち時間・中断を含む壁時計値）。
 - **手戻り回数**：同一 phase の start が2回以上（review/test→coding ループ等）。
+  ※差し戻しで coding を再開する際に `aidev event coding start` を記録しないと、この指標は手戻りを取りこぼす（「3.」差し戻し分岐）。
 - **差し戻し回数**：sent_back の件数（工程別）。
 - **リードタイム**：最初の start 〜 deliver の approved。
 - **任意工程の使用**：research / design の start 有無。
