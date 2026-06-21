@@ -33,6 +33,8 @@ pwsh .aidev/bin/aidev.ps1 <command> ...
 | `guard <phase>` | 工程開始時の**前提チェック**（前提成果物の有無・前提工程の承認・`dependsOn` 充足）。未充足なら非ゼロ終了。 |
 | `verify [slug]` | 現在(または指定)work の**不変条件**を version-aware に検査。違反で非ゼロ終了。**deliver の commit 前ゲート**に使う。 |
 | `doctor` | 全 work を横断検査しドリフトを報告（legacy は免除）。retro/insights の冒頭で事後検知に使う。 |
+| `status [--format table\|tsv]` | **読み取り専用**。全 work を横断（work/ticket/mode/current/next/done/deps）＋ backlog（`*.md`・`archive/` 除く）の未着手件数（todo/needs）を機械抽出。`aidev-00-start` の状況把握に使う。既定は人間可読表、`--format tsv` は機械パース向け（先頭列 `work`/`backlog` でレコード種別を判別）。 |
+| `metrics [slug] [--all] [--phases] [--format table\|tsv]` | **読み取り専用**。`metrics.yml` のイベントログから protocol §8 の派生指標を集計。既定 per-work（first_start/delivered/lead_sec/reworks/sent_backs）、`--phases` で工程別（phase/start/approved/elapsed_sec）。`--all` で全 work。`aidev-util-insights` の集計に使う。ts は `Z`/`UTC`/無しを許容。 |
 
 `k=v` は `metrics.yml` の `metrics:` マップになる（例: `approve plan tasks_planned=4` /
 `event test approved passed=12 failed=0` / `approve review must=0 should=1 nit=2`）。

@@ -11,6 +11,8 @@
 #   pwsh .aidev/bin/aidev.ps1 guard <phase>
 #   pwsh .aidev/bin/aidev.ps1 verify [slug]
 #   pwsh .aidev/bin/aidev.ps1 doctor
+#   pwsh .aidev/bin/aidev.ps1 status [--format table|tsv]
+#   pwsh .aidev/bin/aidev.ps1 metrics [slug] [--all] [--phases] [--format table|tsv]
 #   pwsh .aidev/bin/aidev.ps1 help
 #
 # 終了コード: 0=OK / 1=使用法・環境エラー / 2=前提成果物の不足 / 3=依存未充足 / 4=不変条件違反
@@ -60,11 +62,13 @@ function ResolveWork($slug) {
 
 function IsPhase($p) { return $script:PHASES -contains $p }
 
+# scalar 読み取り（前後空白と囲み二重引用符を除去）。inline コメント(#)は除去しない
+# （ticket/dependsOn は '#18' 等 '#' 始まりの値を持つため）。sh の yget と一致。
 function YGet($file,$key) {
   if (-not (Test-Path $file)) { return '' }
   foreach ($line in [System.IO.File]::ReadAllLines($file)) {
     if ($line -match ("^" + [regex]::Escape($key) + ":\s*(.*)$")) {
-      return (($Matches[1] -replace '\s*#.*$','').Trim())
+      return (($Matches[1].Trim()) -replace '^"','' -replace '"$','')
     }
   }
   return ''
@@ -183,6 +187,20 @@ function Cmd-Approve($rest) {
   Write-Output "approved: $ph @ $($script:SLUG)"
 }
 
+# 依存(dependsOn)の充足を読み取り専用で評価（state は変更しない）。
+# 結果を $script:EvalUnmet（works 由来の未充足・exit に影響）/ $script:EvalAdvisory（外部チケット #N）に格納。
+function Eval-Depends($workDir) {
+  $script:EvalUnmet = @(); $script:EvalAdvisory = @()
+  foreach ($d in (YList (Join-Path $workDir 'state.yml') 'dependsOn')) {
+    if (-not $d) { continue }
+    if ($d.StartsWith('#')) { $script:EvalAdvisory += $d; continue }
+    $depWork = Join-Path (Join-Path $script:AIDEV 'works') $d
+    if (Test-Path $depWork) {
+      if ((YList (Join-Path $depWork 'state.yml') 'approved') -notcontains 'deliver') { $script:EvalUnmet += "$d(未deliver)" }
+    } else { $script:EvalUnmet += "$d(work不明)" }
+  }
+}
+
 # --- guard -------------------------------------------------------------------
 function Cmd-Guard($rest) {
   if ($rest.Count -lt 1) { Die "使用法: aidev guard <phase>" }
@@ -206,16 +224,10 @@ function Cmd-Guard($rest) {
     'deliver'     { needApproved 'review' }
     'retro'       { needApproved 'deliver' }
   }
-  # dependsOn
-  $dep=@()
-  foreach ($d in (YList (Join-Path $script:WORK 'state.yml') 'dependsOn')) {
-    if (-not $d) { continue }
-    if ($d.StartsWith('#')) { Warn "依存(外部チケット $d): 自動判定不可＝advisory（手動確認）" ; continue }
-    $depWork = Join-Path (Join-Path $script:AIDEV 'works') $d
-    if (Test-Path $depWork) {
-      if ((YList (Join-Path $depWork 'state.yml') 'approved') -notcontains 'deliver') { $dep += "$d(未deliver)" }
-    } else { $dep += "$d(work不明)" }
-  }
+  # dependsOn（共有 Eval-Depends を使用。挙動は従来と一致）
+  Eval-Depends $script:WORK
+  $dep = $script:EvalUnmet
+  foreach ($a in $script:EvalAdvisory) { Warn "依存(外部チケット $a): 自動判定不可＝advisory（手動確認）" }
 
   $rc=0
   if ($script:miss.Count -gt 0)  { [Console]::Error.WriteLine("NG 前提成果物が不足: " + ($script:miss -join ' ')); $rc=2 }
@@ -280,8 +292,195 @@ function Cmd-Doctor() {
   if ($fail -eq 0) { exit 0 } else { exit 1 }
 }
 
+# --- status（読み取り専用・works横断＋backlog未着手） ----------------------------
+$script:STD_PIPELINE = @('requirement','spec','plan','coding','test','review','deliver')
+
+# タブ区切り行（先頭にヘッダ含む）を列幅で揃えた行配列に整形（sh の fmt_table と一致）
+function Fmt-Table($rows) {
+  $w=@{}; $maxnf=0; $cells=@()
+  foreach ($r in $rows) {
+    $cols = $r -split "`t"
+    $cells += ,$cols
+    if ($cols.Count -gt $maxnf) { $maxnf = $cols.Count }
+    for ($i=0; $i -lt $cols.Count; $i++) {
+      if (-not $w.ContainsKey($i) -or $cols[$i].Length -gt $w[$i]) { $w[$i] = $cols[$i].Length }
+    }
+  }
+  $out=@()
+  foreach ($cols in $cells) {
+    $line=''
+    for ($i=0; $i -lt $maxnf; $i++) {
+      $c = if ($i -lt $cols.Count) { $cols[$i] } else { '' }
+      if ($i -lt $maxnf-1) { $line += $c + (' ' * ($w[$i]-$c.Length)) + '  ' } else { $line += $c }
+    }
+    $out += $line
+  }
+  return $out
+}
+
+function Cmd-Status($rest) {
+  $fmt='table'
+  for ($i=0; $i -lt $rest.Count; $i++) {
+    switch ($rest[$i]) {
+      '--format' { $fmt=$rest[++$i] }
+      default {
+        if ($rest[$i].StartsWith('-')) { Die "未知のオプション: $($rest[$i])" }
+        else { Die "status は位置引数を取りません: $($rest[$i])" }
+      }
+    }
+  }
+  if ($fmt -ne 'table' -and $fmt -ne 'tsv') { Die "--format は table|tsv" }
+
+  $worksDir = Join-Path $script:AIDEV 'works'
+  $wrows=@(); $wn=0
+  if (Test-Path $worksDir) {
+    foreach ($d in (Get-ChildItem -Path $worksDir -Directory | Sort-Object Name)) {
+      $st = Join-Path $d.FullName 'state.yml'
+      if (-not (Test-Path $st)) { continue }
+      $ticket = YGet $st 'ticket';  if (-not $ticket)  { $ticket='-' }
+      $mode = YGet $st 'mode';      if (-not $mode)    { $mode='-' }
+      $current = YGet $st 'current';if (-not $current) { $current='-' }
+      $appr = YList $st 'approved'
+      $wdone = if ($appr -contains 'deliver') { 'yes' } else { 'no' }
+      $next='-'
+      if ($wdone -eq 'no') { foreach ($p in $script:STD_PIPELINE) { if ($appr -notcontains $p) { $next=$p; break } } }
+      Eval-Depends $d.FullName
+      $tok=@()
+      foreach ($u in $script:EvalUnmet) { $tok += $u }
+      foreach ($a in $script:EvalAdvisory) { $tok += "$a(advisory)" }
+      $deps = if ($tok.Count -gt 0) { [string]::Join(',', $tok) } else { 'ok' }
+      $wn++
+      $wrows += ($d.Name + "`t" + $ticket + "`t" + $mode + "`t" + $current + "`t" + $next + "`t" + $wdone + "`t" + $deps)
+    }
+  }
+
+  $backlogDir = Join-Path $script:AIDEV 'backlog'
+  $brows=@(); $bf=0; $bn=0
+  if (Test-Path $backlogDir) {
+    foreach ($f in (Get-ChildItem -Path $backlogDir -File -Filter *.md | Sort-Object Name)) {
+      $todo=0; $needs=0
+      foreach ($l in [System.IO.File]::ReadAllLines($f.FullName)) {
+        if ($l -match '^\s*- \[ \]') { $todo++; if ($l -match '\(needs:') { $needs++ } }
+      }
+      $bf++; $bn += $todo
+      $brows += ($f.Name + "`t" + $todo + "`t" + $needs)
+    }
+  }
+
+  if ($fmt -eq 'tsv') {
+    foreach ($r in $wrows) { Write-Output ("work`t" + $r) }
+    foreach ($r in $brows) { Write-Output ("backlog`t" + $r) }
+    return
+  }
+
+  Write-Output "WORKS ($wn)"
+  if ($wn -gt 0) { foreach ($l in (Fmt-Table (@("work`tticket`tmode`tcurrent`tnext`tdone`tdeps") + $wrows))) { Write-Output $l } }
+  Write-Output ""
+  Write-Output "BACKLOG (未着手 $bn 件)"
+  if ($bf -gt 0) { foreach ($l in (Fmt-Table (@("file`ttodo`tneeds") + $brows))) { Write-Output $l } }
+}
+
+# --- metrics（読み取り専用・metrics.yml から派生指標を集計） ----------------------
+function Mt-Epoch($ts) {
+  $t = ($ts -replace 'Z$','') -replace 'UTC$',''
+  if ($t.Length -lt 19 -or $t.Substring(10,1) -ne 'T') { return -1 }
+  try {
+    $dt = [DateTime]::ParseExact($t.Substring(0,19), 'yyyy-MM-ddTHH:mm:ss', [Globalization.CultureInfo]::InvariantCulture, [Globalization.DateTimeStyles]::None)
+    return [int64]([DateTimeOffset]::new($dt, [TimeSpan]::Zero).ToUnixTimeSeconds())
+  } catch { return -1 }
+}
+
+function Cmd-Metrics($rest) {
+  $fmt='table'; $allf=$false; $phasesf=$false; $mslug=''
+  for ($i=0; $i -lt $rest.Count; $i++) {
+    switch ($rest[$i]) {
+      '--all'     { $allf=$true }
+      '--phases'  { $phasesf=$true }
+      '--format'  { $fmt=$rest[++$i] }
+      default {
+        if ($rest[$i].StartsWith('-')) { Die "未知のオプション: $($rest[$i])" }
+        elseif ($mslug) { Die "slug は1つだけ" } else { $mslug=$rest[$i] }
+      }
+    }
+  }
+  if ($fmt -ne 'table' -and $fmt -ne 'tsv') { Die "--format は table|tsv" }
+
+  $worksDir = Join-Path $script:AIDEV 'works'
+  $dirs=@()
+  if ($allf) {
+    if (Test-Path $worksDir) { $dirs = @(Get-ChildItem -Path $worksDir -Directory | Sort-Object Name | ForEach-Object { $_.FullName }) }
+  } elseif ($mslug) {
+    $p = Join-Path $worksDir $mslug
+    if (-not (Test-Path $p)) { Die "work が存在しません: $mslug" }
+    $dirs=@($p)
+  } else {
+    $cur = Join-Path $script:AIDEV 'current'
+    if (-not (Test-Path $cur)) { Die "対象作業が不明です（.aidev/current 無し）。slug 指定か --all を。" }
+    $c = ([System.IO.File]::ReadAllLines($cur))[0].Trim()
+    $p = Join-Path $worksDir $c
+    if (-not (Test-Path $p)) { Die "work が存在しません: $c" }
+    $dirs=@($p)
+  }
+
+  $rows=@()
+  foreach ($wd in $dirs) {
+    $name = Split-Path $wd -Leaf
+    $mf = Join-Path $wd 'metrics.yml'
+    $first=-1; $firstts='-'; $deliveredFlag=$false; $deliveredE=-1; $sback=0
+    $scount=@{}; $laststart=@{}; $laststartTs=@{}; $appat=@{}; $appatTs=@{}
+    if (Test-Path $mf) {
+      foreach ($line in [System.IO.File]::ReadAllLines($mf)) {
+        if ($line -notmatch 'event:') { continue }
+        $ts=''; $ph=''; $ev=''
+        if ($line -match 'ts:\s*([^,}]+)')      { $ts = $Matches[1].Trim() }
+        if ($line -match 'phase:\s*([A-Za-z_]+)'){ $ph = $Matches[1] }
+        if ($line -match 'event:\s*([A-Za-z_]+)'){ $ev = $Matches[1] }
+        if (-not $ph -or -not $ev) { continue }
+        $e = Mt-Epoch $ts
+        if ($ev -eq 'start') {
+          if ($scount.ContainsKey($ph)) { $scount[$ph]++ } else { $scount[$ph]=1 }
+          if ($e -ge 0) {
+            if ($first -lt 0 -or $e -lt $first) { $first=$e; $firstts=$ts }
+            if (-not $laststart.ContainsKey($ph) -or $e -gt $laststart[$ph]) { $laststart[$ph]=$e; $laststartTs[$ph]=$ts }
+          }
+        } elseif ($ev -eq 'approved') {
+          if ($e -ge 0) { $appat[$ph]=$e; $appatTs[$ph]=$ts }
+          if ($ph -eq 'deliver') { $deliveredFlag=$true; if ($e -ge 0) { $deliveredE=$e } }
+        } elseif ($ev -eq 'sent_back') { $sback++ }
+      }
+    }
+    if ($phasesf) {
+      foreach ($p in $script:PHASES) {
+        if ($laststart.ContainsKey($p) -or $appat.ContainsKey($p)) {
+          $st = if ($laststartTs.ContainsKey($p)) { $laststartTs[$p] } else { '-' }
+          $ap = if ($appatTs.ContainsKey($p))     { $appatTs[$p] }     else { '-' }
+          $el = '-'
+          if ($laststart.ContainsKey($p) -and $appat.ContainsKey($p)) { $el = $appat[$p]-$laststart[$p] }
+          $rows += ($name + "`t" + $p + "`t" + $st + "`t" + $ap + "`t" + $el)
+        }
+      }
+    } else {
+      $fs = if ($first -ge 0) { $firstts } else { '-' }
+      $dv = if ($deliveredFlag) { 'yes' } else { 'no' }
+      $lead = '-'
+      if ($deliveredFlag -and $first -ge 0 -and $deliveredE -ge 0) { $lead = $deliveredE-$first }
+      $rw=0; foreach ($k in $scount.Keys) { if ($scount[$k] -ge 2) { $rw++ } }
+      $rows += ($name + "`t" + $fs + "`t" + $dv + "`t" + $lead + "`t" + $rw + "`t" + $sback)
+    }
+  }
+
+  if ($phasesf) { $hdr = "work`tphase`tstart`tapproved`telapsed_sec" }
+  else          { $hdr = "work`tfirst_start`tdelivered`tlead_sec`treworks`tsent_backs" }
+
+  if ($fmt -eq 'tsv') { foreach ($r in $rows) { Write-Output $r } }
+  else { foreach ($l in (Fmt-Table (@($hdr) + $rows))) { Write-Output $l } }
+}
+
 function Usage() {
-  Get-Content $PSCommandPath | Select-Object -Skip 1 -First 28 | ForEach-Object { $_ -replace '^#\s?','' }
+  # 先頭(2行目以降)の連続するコメント行のみを出力（コメント末尾で停止。範囲ズレに強い）
+  foreach ($l in (Get-Content $PSCommandPath | Select-Object -Skip 1)) {
+    if ($l -match '^#') { $l -replace '^#\s?','' } else { break }
+  }
 }
 
 if ($args.Count -lt 1) { Usage; exit 1 }
@@ -294,6 +493,8 @@ switch ($cmd) {
   'guard'   { Cmd-Guard $rest }
   'verify'  { Cmd-Verify $rest }
   'doctor'  { Cmd-Doctor }
+  'status'  { Cmd-Status $rest }
+  'metrics' { Cmd-Metrics $rest }
   'help'    { Usage }
   '-h'      { Usage }
   '--help'  { Usage }
