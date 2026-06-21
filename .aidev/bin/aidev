@@ -644,22 +644,28 @@ wt_rm() {
   git_present
 
   abst=""; [ -d "$target" ] && abst=$(cd "$target" && pwd)
-  rpath=""; rbranch=""
+  wtinfo=$(wt_porcelain)
+  main_wt=$(printf '%s\n' "$wtinfo" | head -n1 | cut -f1)  # porcelain 先頭＝main worktree（rm 対象外）
+  rpath=""; rbranch=""; hit_main=no
   oldifs=$IFS; IFS='
 '
-  for line in $(wt_porcelain); do
+  for line in $wtinfo; do
     p=${line%%	*}; b=${line#*	}
     if [ -n "$abst" ]; then
       [ "$p" = "$abst" ] && { rpath=$p; rbranch=$b; break; }
     else
       if [ "$(basename "$p")" = "$target" ] || [ "$b" = "feature/$target" ] || [ "$b" = "$target" ]; then
+        if [ "$p" = "$main_wt" ]; then hit_main=yes; continue; fi  # slug が main worktree に一致しても対象にしない
         [ -n "$rpath" ] && { IFS=$oldifs; die "対象が複数該当します（path を明示してください）: $target"; }
         rpath=$p; rbranch=$b
       fi
     fi
   done
   IFS=$oldifs
-  [ -n "$rpath" ] || die "対象 worktree が見つかりません: $target"
+  if [ -z "$rpath" ]; then
+    [ "$hit_main" = yes ] && die "'$target' は main worktree（$main_wt）に該当します。main worktree は rm できません（worktree のみ対象）。"
+    die "対象 worktree が見つかりません: $target"
+  fi
 
   # 未コミット差分チェック（--force 無しなら拒否）
   if [ "$force" = no ] && [ -n "$(git -C "$rpath" status --porcelain 2>/dev/null)" ]; then
