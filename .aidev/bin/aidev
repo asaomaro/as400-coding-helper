@@ -13,6 +13,8 @@
 #   aidev guard <phase>                        # 前提成果物 + dependsOn の充足を検査（exit!=0で未充足）
 #   aidev verify [slug]                        # 現在(or指定)workの不変条件を version-aware に検査
 #   aidev doctor                               # 全 work を横断検査（legacy は免除して報告）
+#   aidev status [--format table|tsv]          # works横断＋backlog未着手の状況サマリ（読み取り専用）
+#   aidev metrics [slug] [--all] [--phases] [--format table|tsv]  # metrics.yml から派生指標を集計（読み取り専用）
 #   aidev help
 #
 # 終了コード: 0=OK / 1=使用法・環境エラー / 2=前提成果物の不足 / 3=依存(dependsOn)未充足 / 4=不変条件違反
@@ -56,11 +58,13 @@ resolve_work() { # [slug]
 
 is_phase() { for p in $PHASES; do [ "$p" = "$1" ] && return 0; done; return 1; }
 
-# --- 最小 YAML 読み取り（フロー形式前提・コメント除去） ----------------------------
-# scalar: "key: value   # comment" -> value
+# --- 最小 YAML 読み取り（フロー形式前提） ------------------------------------------
+# scalar: 'key: value' -> value（前後空白と囲み二重引用符を除去）。
+# 注意: inline コメント(#)は除去しない。state.yml/metrics.yml は機械生成でコメントを含まず、
+#       逆に ticket/dependsOn は '#18' 等 '#' 始まりの値を持つため（'#' をコメント扱いすると消える）。
 yget() {
   sed -n "s/^$2:[[:space:]]*//p" "$1" 2>/dev/null | head -n1 \
-    | sed 's/[[:space:]]*#.*$//' | sed 's/[[:space:]]*$//'
+    | sed 's/[[:space:]]*$//; s/^"//; s/"$//'
 }
 # flow list: "key: [a, b]" -> "a b"（カンマ/角括弧除去・クォート除去）
 ylist() {
@@ -197,22 +201,33 @@ cmd_approve() {
 need_file()    { [ -f "$WORK/$1" ] || { GMISS="$GMISS $1"; return 1; }; return 0; }
 need_approved(){ approved_has "$1" || { GUNAPP="$GUNAPP $1"; return 1; }; return 0; }
 
-check_depends() {
-  GDEP=""
-  deps=$(ylist "$WORK/state.yml" dependsOn)
+# 依存(dependsOn)の充足を読み取り専用で評価（state は変更しない）。
+# 結果を EVAL_UNMET（works 由来の未充足・exit に影響）/ EVAL_ADVISORY（外部チケット #N の生トークン）に格納。
+eval_depends() { # work_dir
+  _wd=$1
+  EVAL_UNMET=""; EVAL_ADVISORY=""
+  deps=$(ylist "$_wd/state.yml" dependsOn)
   for d in $deps; do
     [ -z "$d" ] && continue
     case "$d" in
       \#*) # 外部チケット(#N): 自動判定不可＝advisory（手動確認）
-        warn "依存(外部チケット $d): 自動判定不可＝advisory（手動確認）" ;;
+        EVAL_ADVISORY="$EVAL_ADVISORY $d" ;;
       *) # それ以外は works slug とみなす
         if [ -d "$AIDEV/works/$d" ]; then
           da=$(ylist "$AIDEV/works/$d/state.yml" approved)
-          printf '%s' "$da" | grep -qw deliver || GDEP="$GDEP $d(未deliver)"
+          printf '%s' "$da" | grep -qw deliver || EVAL_UNMET="$EVAL_UNMET $d(未deliver)"
         else
-          GDEP="$GDEP $d(work不明)"
+          EVAL_UNMET="$EVAL_UNMET $d(work不明)"
         fi ;;
     esac
+  done
+}
+
+check_depends() {
+  eval_depends "$WORK"
+  GDEP=$EVAL_UNMET
+  for a in $EVAL_ADVISORY; do
+    warn "依存(外部チケット $a): 自動判定不可＝advisory（手動確認）"
   done
 }
 
@@ -295,8 +310,198 @@ cmd_doctor() {
   [ "$fail" -eq 0 ]
 }
 
+# --- コマンド: status（読み取り専用・works横断＋backlog未着手） ---------------------
+STD_PIPELINE="requirement spec plan coding test review deliver"
+
+# タブ区切り行（先頭にヘッダ含む）を列幅で揃えて出力
+fmt_table() {
+  awk -F'\t' '
+    { for(i=1;i<=NF;i++){ cell[NR,i]=$i; if(length($i)>w[i])w[i]=length($i) }
+      if(NF>maxnf)maxnf=NF; nr=NR }
+    END{ for(r=1;r<=nr;r++){ line=""
+        for(i=1;i<=maxnf;i++){ c=cell[r,i]
+          if(i<maxnf){ pad=w[i]-length(c); s=c; while(pad-->0)s=s" "; line=line s"  " }
+          else line=line c }
+        print line } }'
+}
+
+cmd_status() {
+  fmt=table
+  while [ $# -gt 0 ]; do
+    case "$1" in
+      --format) fmt=${2:-}; shift 2 ;;
+      -*) die "未知のオプション: $1" ;;
+      *) die "status は位置引数を取りません: $1" ;;
+    esac
+  done
+  case "$fmt" in table|tsv) ;; *) die "--format は table|tsv" ;; esac
+
+  # ---- works 収集 ----
+  wn=0; wrows=""
+  if [ -d "$AIDEV/works" ]; then
+    for d in "$AIDEV/works"/*/; do
+      [ -d "$d" ] || continue
+      dir=${d%/}; name=$(basename "$dir"); st="$dir/state.yml"
+      [ -f "$st" ] || continue
+      ticket=$(yget "$st" ticket);   [ -z "$ticket" ]  && ticket=-
+      mode=$(yget "$st" mode);       [ -z "$mode" ]     && mode=-
+      current=$(yget "$st" current); [ -z "$current" ]  && current=-
+      appr=$(ylist "$st" approved)
+      case " $appr " in *" deliver "*) wdone=yes ;; *) wdone=no ;; esac
+      next=-
+      if [ "$wdone" = no ]; then
+        for p in $STD_PIPELINE; do
+          case " $appr " in *" $p "*) ;; *) next=$p; break ;; esac
+        done
+      fi
+      eval_depends "$dir"
+      deps=""
+      for u in $EVAL_UNMET; do deps="$deps,$u"; done
+      for a in $EVAL_ADVISORY; do deps="$deps,$a(advisory)"; done
+      deps=${deps#,}; [ -z "$deps" ] && deps=ok
+      wn=$((wn+1))
+      wrows="$wrows$name	$ticket	$mode	$current	$next	$wdone	$deps
+"
+    done
+  fi
+
+  # ---- backlog 収集（archive/ はサブディレクトリのため *.md グロブで自動除外） ----
+  bf=0; bn=0; brows=""
+  if [ -d "$AIDEV/backlog" ]; then
+    for f in "$AIDEV/backlog"/*.md; do
+      [ -f "$f" ] || continue
+      fname=$(basename "$f")
+      todo=$(grep -c '^[[:space:]]*- \[ \]' "$f" 2>/dev/null || true); todo=${todo:-0}
+      needs=$(grep '^[[:space:]]*- \[ \]' "$f" 2>/dev/null | grep -c '(needs:' || true); needs=${needs:-0}
+      bf=$((bf+1)); bn=$((bn+todo))
+      brows="$brows$fname	$todo	$needs
+"
+    done
+  fi
+
+  if [ "$fmt" = tsv ]; then
+    printf '%s' "$wrows" | while IFS='	' read -r a b c e f g h; do
+      [ -z "$a" ] && continue
+      printf 'work\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n' "$a" "$b" "$c" "$e" "$f" "$g" "$h"
+    done
+    printf '%s' "$brows" | while IFS='	' read -r a b c; do
+      [ -z "$a" ] && continue
+      printf 'backlog\t%s\t%s\t%s\n' "$a" "$b" "$c"
+    done
+    return 0
+  fi
+
+  printf 'WORKS (%s)\n' "$wn"
+  if [ "$wn" -gt 0 ]; then
+    { printf 'work\tticket\tmode\tcurrent\tnext\tdone\tdeps\n'; printf '%s' "$wrows"; } | fmt_table
+  fi
+  printf '\n'
+  printf 'BACKLOG (未着手 %s 件)\n' "$bn"
+  if [ "$bf" -gt 0 ]; then
+    { printf 'file\ttodo\tneeds\n'; printf '%s' "$brows"; } | fmt_table
+  fi
+}
+
+# --- コマンド: metrics（読み取り専用・metrics.yml から派生指標を集計） ----------------
+metrics_awk='
+function dse(y,m,d,   yy,era,yoe,doy,doe){
+  yy=y-(m<=2); era=int((yy>=0?yy:yy-399)/400); yoe=yy-era*400
+  doy=int((153*(m+(m>2?-3:9))+2)/5)+d-1
+  doe=yoe*365+int(yoe/4)-int(yoe/100)+doy
+  return era*146097+doe-719468
+}
+function epoch(ts,   y,mo,d,h,mi,s){
+  sub(/Z$/,"",ts); sub(/UTC$/,"",ts)
+  if(length(ts)<19 || substr(ts,11,1)!="T") return -1
+  y=substr(ts,1,4)+0; mo=substr(ts,6,2)+0; d=substr(ts,9,2)+0
+  h=substr(ts,12,2)+0; mi=substr(ts,15,2)+0; s=substr(ts,18,2)+0
+  return dse(y,mo,d)*86400 + h*3600 + mi*60 + s
+}
+BEGIN{ first=-1; delivered_e=-1; delivered_flag=0; sback=0 }
+/event:/{
+  ts=""; ph=""; ev=""
+  if(match($0,/ts:[ ]*[^,}]+/)){ ts=substr($0,RSTART+3,RLENGTH-3); gsub(/[ ]/,"",ts) }
+  if(match($0,/phase:[ ]*[A-Za-z_]+/)){ ph=substr($0,RSTART+6,RLENGTH-6); gsub(/[ ]/,"",ph) }
+  if(match($0,/event:[ ]*[A-Za-z_]+/)){ ev=substr($0,RSTART+6,RLENGTH-6); gsub(/[ ]/,"",ev) }
+  if(ph=="" || ev=="") next
+  e=epoch(ts)
+  if(ev=="start"){
+    scount[ph]++
+    if(e>=0){ if(first<0||e<first){first=e; firstts=ts}
+              if(!(ph in laststart)||e>laststart[ph]){laststart[ph]=e; laststart_ts[ph]=ts} }
+  } else if(ev=="approved"){
+    if(e>=0){ appat[ph]=e; appat_ts[ph]=ts }
+    if(ph=="deliver"){ delivered_flag=1; if(e>=0) delivered_e=e }
+  } else if(ev=="sent_back"){ sback++ }
+}
+END{
+  if(phases=="yes"){
+    n=split(PH,arr," ")
+    for(i=1;i<=n;i++){ p=arr[i]
+      if((p in laststart)||(p in appat)){
+        st=(p in laststart_ts)?laststart_ts[p]:"-"
+        ap=(p in appat_ts)?appat_ts[p]:"-"
+        el="-"; if((p in laststart)&&(p in appat)) el=appat[p]-laststart[p]
+        printf "%s\t%s\t%s\t%s\t%s\n", name, p, st, ap, el
+      }
+    }
+  } else {
+    fs=(first>=0)?firstts:"-"
+    dv=(delivered_flag>0)?"yes":"no"
+    lead="-"; if(delivered_flag>0 && first>=0 && delivered_e>=0) lead=delivered_e-first
+    rw=0; for(p in scount) if(scount[p]>=2) rw++
+    printf "%s\t%s\t%s\t%s\t%s\t%s\n", name, fs, dv, lead, rw, sback+0
+  }
+}'
+
+cmd_metrics() {
+  fmt=table; allf=no; phasesf=no; mslug=""
+  while [ $# -gt 0 ]; do
+    case "$1" in
+      --all) allf=yes; shift ;;
+      --phases) phasesf=yes; shift ;;
+      --format) fmt=${2:-}; shift 2 ;;
+      -*) die "未知のオプション: $1" ;;
+      *) [ -z "$mslug" ] && mslug=$1 || die "slug は1つだけ"; shift ;;
+    esac
+  done
+  case "$fmt" in table|tsv) ;; *) die "--format は table|tsv" ;; esac
+
+  dirs=""
+  if [ "$allf" = yes ]; then
+    for d in "$AIDEV/works"/*/; do [ -d "$d" ] && dirs="$dirs ${d%/}"; done
+  elif [ -n "$mslug" ]; then
+    [ -d "$AIDEV/works/$mslug" ] || die "work が存在しません: $mslug"
+    dirs="$AIDEV/works/$mslug"
+  else
+    [ -f "$AIDEV/current" ] || die "対象作業が不明です（.aidev/current 無し）。slug 指定か --all を。"
+    cur=$(head -n1 "$AIDEV/current" | tr -d '\r\n')
+    [ -d "$AIDEV/works/$cur" ] || die "work が存在しません: $cur"
+    dirs="$AIDEV/works/$cur"
+  fi
+
+  rows=""
+  for wd in $dirs; do
+    name=$(basename "$wd"); mf="$wd/metrics.yml"
+    [ -f "$mf" ] || mf=/dev/null
+    out=$(awk -v name="$name" -v phases="$phasesf" -v PH="$PHASES" "$metrics_awk" "$mf")
+    [ -n "$out" ] && rows="$rows$out
+"
+  done
+
+  if [ "$phasesf" = yes ]; then hdr='work	phase	start	approved	elapsed_sec'
+  else hdr='work	first_start	delivered	lead_sec	reworks	sent_backs'; fi
+
+  if [ "$fmt" = tsv ]; then
+    printf '%s' "$rows" | sed '/^[[:space:]]*$/d'
+  else
+    { printf '%s\n' "$hdr"; printf '%s' "$rows" | sed '/^[[:space:]]*$/d'; } | fmt_table
+  fi
+}
+
 usage() {
-  sed -n '2,30p' "$0" | sed 's/^# \{0,1\}//'
+  # 先頭(2行目以降)の連続するコメント行のみを出力（コメント末尾で停止。範囲ズレに強い）
+  awk 'NR==1{next} /^#/{sub(/^#[[:space:]]?/,"");print;next} {exit}' "$0"
 }
 
 [ $# -ge 1 ] || { usage; exit 1; }
@@ -308,6 +513,8 @@ case "$cmd" in
   guard)   cmd_guard "$@" ;;
   verify)  cmd_verify "$@" ;;
   doctor)  cmd_doctor "$@" ;;
+  status)  cmd_status "$@" ;;
+  metrics) cmd_metrics "$@" ;;
   help|-h|--help) usage ;;
   *) die "未知のコマンド: $cmd（aidev help）" ;;
 esac

@@ -21,26 +21,27 @@ AI 開発ワークフローの入口（ルーター）。
 
 ## 2. 作業状況の確認
 
-以下を実行して現状を把握する。
+**`aidev status` で機械抽出する**（各 `state.yml` を個別に手読みしない。works が増えても一定コスト）。
 
-- `cat .aidev/current 2>/dev/null` で現在作業中フォルダを確認。
-- `ls .aidev/works 2>/dev/null` で全作業フォルダを一覧。
-- 各フォルダの `state.yml`（`current` / `approved` / `dependsOn`）と成果物ファイルの有無を読み、進捗を要約する。
-- `dependsOn`（`protocol.md`「2.7」）に未充足の依存がある作業は `⛔依存待ち（<未充足の依存>）` と明示する。
+```sh
+.aidev/bin/aidev status                 # 進行中(works)＋未着手(backlog) を人間可読表で
+# 機械処理が必要なら: .aidev/bin/aidev status --format tsv
+# Windows: pwsh .aidev/bin/aidev.ps1 status
+```
 
-要約例: `20260620-user-login … spec 承認済み（次: plan）` / `20260620-export-csv … requirement 作成中` /
-`20260621-rpg-skill … ⛔依存待ち（#18 未クローズ）`
+出力の読み方:
 
-### 未着手キューも一望する（ビュー統合）
-
-進行中（works）だけでなく、**未着手の待ち行列**も同じ画面で示す（保存は分かれていてもビューは統合する。
-`DESIGN.md`「2.5」）。
-
-- **backlog**: `.aidev/backlog/*.md`（`archive/` 除く）の未チェック `[ ]` 行を「未着手（backlog）」として
-  ファイル別に件数＋先頭数件を提示する。`(needs: …)` 付きは依存待ちと分かるように示す。
+- **WORKS 表**: `work` / `ticket` / `mode` / `current` / `next`（次工程。`done` なら `-`）/ `done`
+  （`deliver` 承認済か）/ `deps`。`deps` が `ok` 以外（`<slug>(未deliver)` や `#N(advisory)`）の作業は
+  依存未充足・要確認＝ `⛔依存待ち（<deps の内容>）` として扱う（`protocol.md`「2.7」）。
+- **BACKLOG 表**: backlog ファイルごとの未着手件数 `todo` と、依存待ち（`(needs:…)`）件数 `needs`。
+  これで「進行中（works）＋未着手（backlog）」を1画面で把握できる（ビュー統合。`DESIGN.md`「2.5」）。
+  各項目の本文（先頭数件）が必要なら、対象ファイルを `grep '- \[ \]' .aidev/backlog/<file>` で参照する。
 - **外部トラッカー（任意）**: `.aidev/config.yml` の `tracker.type` が `github` 等なら、必要に応じ
-  `gh issue list`（または各ツール）で open を「未着手（トラッカー）」として併記してよい。
-- これで「進行中（works）＋未着手（backlog/トラッカー）」を1画面で把握できる。
+  `gh issue list`（または各ツール）で open を「未着手（トラッカー）」として併記してよい（status の対象外）。
+
+CLI が使えない環境のフォールバック: `cat .aidev/current` / `ls .aidev/works` と各 `state.yml`
+（`current`/`approved`/`dependsOn`）＋ `.aidev/backlog/*.md`（`archive/` 除く）を読んで同等に要約する。
 
 `.aidev/` 自体が無い場合は「新規作業の開始」のみ提示する。
 
