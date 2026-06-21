@@ -212,6 +212,25 @@ works/ ノイズや「なめる state.yml が無い」問題は status フィル
 - 全項目消化済みは `archive/` へ退避し、active な glob を小さく保つ。複数ファイル選択は priority→名前順、
   跨ぎ依存は work レベルの `dependsOn` が担保。
 
+## 2.6 ランタイムガード（強制力の二層モデル）
+
+散文規約（SKILL/protocol）は LLM が守る前提で**実効が非決定的**だった（「必須化」と書いても記録が抜ける）。
+そこで **state/metrics の更新と前提・不変条件検査を `.aidev/bin/` の CLI に集約**し、強制力を二層にした。
+
+- **二層モデル**：散文＝**ソフト**（移植可能・全エージェント共通）／ CLI＝**ハード**（決定的検査）。
+  各 skill は CLI を呼ぶが、**非CLI環境向けに手作業フォールバックを残す**（挙動同一・移植性維持）。
+- **hooks は採らない**（ユーザー方針）。hooks はツール境界でしか発火せず「工程開始/記録忘れ」のような
+  非ツール事象を捕捉できない＝この用途に不適。代わりに「**正しいやり方＝ガードされたやり方**」にして、
+  最後の砦を deliver の `verify` ゲートと `doctor` の事後検知に置く（自動割り込みは諦め、単一経路化で代替）。
+- **Node 非依存・OS両対応**：`aidev`（POSIX sh）と `aidev.ps1`（PowerShell）で挙動・出力・終了コードを一致。
+  破壊的 git 操作は CLI に持たせない（`land` を作らず `verify && commit` パターン）＝安全・移植性。
+- **version-aware verify が肝**：`new` が `state.yml` に `schema:` を刻み、`verify`/`doctor` は**導入版以上の
+  不変条件のみ強制**。schema 未記載の旧 work は **legacy 免除**。これで「PJと一緒に育てる」中で新ガードを
+  足しても**過去 work を遡及的に違反扱いしない**（「過去分は捏造しない」= protocol §8 と整合）。
+- **`new` を作成の唯一経路にする理由**：手書きだと `schema:` 刻印を書き忘れ得る→その work が誤って legacy
+  免除になり enforcement が無効化する。`new` 一本化で「全新規 work が検査対象」を保証する（enforcement の起点）。
+- 退けた: `land`（verify+commit）を別コマンド化＝CLI に破壊的操作を入れると移植性/安全性が落ちるため。
+
 ## 3. 退けた案（なぜ採用しなかったか）
 
 - **自動で次工程へ遷移**：工程ゲートの人間レビューが品質の要。自動化すると手戻りが増幅。→ ゲート式。
@@ -244,7 +263,8 @@ works/ ノイズや「なめる state.yml が無い」問題は status フィル
   per-work の retro とは別レベル（meta）。パイプライン工程ではないため番号を付けず、protocol の
   対象作業特定／終了プロトコル／メトリクス記録には乗らない。出力は `.aidev/insights/<日付>-insights.md`。
   ※ works が少ないうちは傾向が出ない点に留意（skill 側でデータ限界を明示する）。
-- **state 更新の堅牢化**：state.yml 更新を手書き heredoc でなくヘルパー化（cwd 事故・冗長さの回避）。
+- ~~**state 更新の堅牢化**：state.yml 更新を手書き heredoc でなくヘルパー化~~（**実装済**: `.aidev/bin/aidev`(+`.ps1`) の
+  `new`/`event`/`approve` に集約。「2.6 ランタイムガード」参照）。
 - **作業の split 判定（A=planner の一部・未実装）**：1要件を複数の作業/issue/PR に分けるかの判定。
   plan のタスク分解（1PR内）とは別レベル＝作業単位そのものの分割。出力は issue/バックログ項目 →
   `aidev-util-batch` が消化（A planner へのボトムアップ入口）。requirement 終了時（必要なら spec 終了時）に

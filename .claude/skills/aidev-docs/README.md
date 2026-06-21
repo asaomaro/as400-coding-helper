@@ -117,11 +117,12 @@ planner の方針は `.aidev/charter.md` で縛る。
   aidev-10-requirement/ … aidev-95-retro/   各工程（番号付きパイプライン）
   aidev-util-propose/ aidev-util-batch/ aidev-util-insights/   ユーティリティ（番号なし・パイプライン外）
   aidev-docs/          このREADMEとDESIGN（参照専用・skillではない）
-.aidev/                実行時に生成される状態
+.aidev/                実行時に生成される状態（bin/ はコミット対象）
+  bin/                 ランタイムガード CLI（aidev=POSIX sh / aidev.ps1=PowerShell・README.md 同梱）
   config.yml           PJ単位の設定（tracker 種類など。コミット対象）
   current              現在の作業フォルダ名（.gitignore 対象）
   works/<YYYYMMDD-slug>/  作業単位ごとの成果物（命名: 日付(UTC)-slug）
-    state.yml          進捗（current / approved / dependsOn / ticket）
+    state.yml          進捗（schema / current / approved / dependsOn / ticket / mode）
     metrics.yml        工程の実施日時・時間・件数などのイベントログ
     requirement.md / spec.md / plan.md / tasks.md / decisions.md / review.md など
   backlog/             遅延キュー（任意）。<domain>.md（standing）/ split-<親>.md（split）/ archive/
@@ -131,8 +132,10 @@ planner の方針は `.aidev/charter.md` で縛る。
 ## 別PJへの導入
 
 1. `.claude/skills/aidev-*`（aidev-docs 含む）をコピー。
-2. `.gitignore` に `.aidev/current` を追加（works 配下の成果物はコミット推奨）。
-3. PJ の AGENTS.md に規約・レビュー観点を書く。PJ固有 skill があればそのまま活かされる。
+2. `.aidev/bin/`（`aidev` / `aidev.ps1` / `README.md`）をコピーし、`aidev` に実行権限を付ける
+   （ランタイムガード。無くてもフォールバックで動くが、強制力を効かせるなら導入推奨）。
+3. `.gitignore` に `.aidev/current` を追加（works 配下の成果物・`bin/` はコミット推奨）。
+4. PJ の AGENTS.md に規約・レビュー観点を書く。PJ固有 skill があればそのまま活かされる。
 
 基盤はドメイン非依存。PJ固有の知識・実作業は AGENTS.md と PJ skill 側が担う。
 
