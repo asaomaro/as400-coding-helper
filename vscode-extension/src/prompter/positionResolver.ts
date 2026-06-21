@@ -1,6 +1,7 @@
 import * as vscode from "vscode";
 import type { Dialect, LanguageId } from "./types";
 import { resolveDialect } from "./dialect";
+import { classifyRpgSpecKeyword } from "./specClassifier";
 
 export interface ResolvedPosition {
   readonly language: LanguageId;
@@ -39,31 +40,13 @@ export function resolvePosition(
   } else {
     dialect = resolveDialect(document);
 
-    const specCharRaw = text.length > 5 ? text.charAt(5) : " ";
-    const specChar = specCharRaw.toUpperCase();
-
-    if (specChar === "D") {
-      keyword = "D-SPEC";
-    } else if (specChar === "C") {
-      // RPG III(rpg3) には C-NEW(自由形演算) が存在しないため常に C-SPEC。
-      // ILE(ile) のみ従来どおり opcode で C-NEW を判定する。
-      if (dialect === "rpg3") {
-        keyword = "C-SPEC";
-      } else {
-        const tail = text.length > 6 ? text.slice(6) : "";
-        const tokens = tail.trim().split(/\s+/).filter(token => token.length > 0);
-        const opcode = (tokens[0] ?? "").toUpperCase();
-
-        const cNewOpcodes = getCNewOpcodes();
-        if (opcode && cNewOpcodes.has(opcode)) {
-          keyword = "C-NEW";
-        } else {
-          keyword = "C-SPEC";
-        }
-      }
-    } else {
+    // スペック種別は specClassifier に集約（ruler.ts と共有＝ドリフト防止）。
+    // H/F/D/I/O/P/C すべて解決し、C は dialect 依存で新旧判定する。
+    const resolved = classifyRpgSpecKeyword(text, dialect);
+    if (!resolved) {
       return undefined;
     }
+    keyword = resolved;
   }
 
   if (!keyword) {
@@ -79,34 +62,6 @@ export function resolvePosition(
     column: position.character,
     keyword
   };
-}
-
-function getCNewOpcodes(): Set<string> {
-  const defaults = new Set<string>([
-    "EVAL",
-    "EVALR",
-    "IF",
-    "ELSEIF",
-    "ELSE",
-    "ENDIF",
-    "SELECT",
-    "WHEN",
-    "OTHER",
-    "ENDSL"
-  ]);
-
-  const config = vscode.workspace.getConfiguration("rpgClSupport");
-  const configured = config.get<unknown>("cNewOpcodes");
-
-  if (Array.isArray(configured)) {
-    for (const value of configured) {
-      if (typeof value === "string" && value.trim().length > 0) {
-        defaults.add(value.trim().toUpperCase());
-      }
-    }
-  }
-
-  return defaults;
 }
 
 function getLanguageId(document: vscode.TextDocument): LanguageId | undefined {
