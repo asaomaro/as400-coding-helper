@@ -274,6 +274,39 @@ for ph in plan coding test review; do run_sub approve "$ph" >/dev/null; done
 assert_contains "$(cat "$SUB/.aidev/works/$SP/state.yml")" "activeSubtask: done" "D: 全 subtask 完了で activeSubtask=done"
 assert_eq "$(cat "$SUB/.aidev/current")" "$SP" "D: 全完了でカーソルが親 work へ戻る"
 
+# --- status subtask ロールアップ表示（案C）---
+TAB=$(printf '\t')
+run_sub new feat2 >/dev/null
+SP2=$(cat "$SUB/.aidev/current")
+for f in requirement spec plan; do : > "$SUB/.aidev/works/$SP2/$f.md"; done
+for ph in requirement spec plan; do run_sub approve "$ph" >/dev/null; done
+run_sub new 01-a --parent "$SP2" >/dev/null
+run_sub new 02-b --parent "$SP2" >/dev/null
+# 01-a を review まで承認（N=1 / M=2。D が current を 02-b へ動かす）
+echo "$SP2/01-a" > "$SUB/.aidev/current"
+for ph in plan coding test review; do run_sub approve "$ph" >/dev/null; done
+: > "$SUB/.aidev/works/$SP2/01-a/review.md"
+
+# 既定: 親 next=sub 1/2、子行は出さない
+RST=$(run_sub status)
+assert_contains "$RST" "sub 1/2" "rollup: 既定 status の next=sub 1/2"
+assert_absent  "$RST" "↳ 01-a"  "rollup: 既定では子行を出さない"
+# --subtasks: 子をインデント展開
+RSTS=$(run_sub status --subtasks)
+assert_contains "$RSTS" "↳ 01-a" "rollup: --subtasks で子 01-a を展開"
+assert_contains "$RSTS" "↳ 02-b" "rollup: --subtasks で子 02-b を展開"
+# tsv: subtask 行型／work 行は8フィールド維持
+RTSV=$(run_sub status --subtasks --format tsv)
+assert_contains "$RTSV" "subtask${TAB}$SP2/01-a${TAB}review${TAB}yes" "rollup: tsv subtask 行(01-a review/yes)"
+assert_contains "$RTSV" "subtask${TAB}$SP2/02-b${TAB}plan${TAB}no"     "rollup: tsv subtask 行(02-b plan/no)"
+WNF=$(printf '%s\n' "$RTSV" | awk -F'\t' -v w="$SP2" '$1=="work" && $2==w {print NF}')
+assert_eq "$WNF" "8" "rollup: tsv work 行は8フィールド維持(後方互換)"
+# 回帰: subtask 無し work は next に sub を出さない
+run_sub new solo >/dev/null; SSO=$(cat "$SUB/.aidev/current")
+: > "$SUB/.aidev/works/$SSO/requirement.md"; run_sub approve requirement >/dev/null
+SOLOLINE=$(run_sub status --subtasks | grep "$SSO")
+assert_absent "$SOLOLINE" "sub " "rollup: subtask 無し work(solo) は next に sub を出さない"
+
 echo "== sh ⇔ ps1 パリティ =="
 if command -v pwsh >/dev/null 2>&1; then
   for args in "status --format tsv" "metrics --all --format tsv" "metrics 20260101-alpha --phases --format tsv"; do
@@ -285,7 +318,7 @@ if command -v pwsh >/dev/null 2>&1; then
   done
 
   # subtask 層のパリティ（$SUB フィクスチャ。doctor のネスト横断・status・metrics を sh⇔ps1 突合）
-  for args in "doctor" "status --format tsv" "metrics --all --format tsv"; do
+  for args in "doctor" "status --format tsv" "status --subtasks --format tsv" "metrics --all --format tsv"; do
     # shellcheck disable=SC2086
     O_SH=$( ( cd "$SUB" && "$AIDEV_SH" $args ) )
     # shellcheck disable=SC2086
