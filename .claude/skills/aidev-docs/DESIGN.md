@@ -215,7 +215,7 @@ works/ ノイズや「なめる state.yml が無い」問題は status フィル
 ## 2.6 ランタイムガード（強制力の二層モデル）
 
 散文規約（SKILL/protocol）は LLM が守る前提で**実効が非決定的**だった（「必須化」と書いても記録が抜ける）。
-そこで **state/metrics の更新と前提・不変条件検査を `.aidev/bin/` の CLI に集約**し、強制力を二層にした。
+そこで **state/metrics の更新と前提・不変条件検査を `.claude/skills/aidev-docs/bin/` の CLI に集約**し、強制力を二層にした。
 
 - **二層モデル**：散文＝**ソフト**（移植可能・全エージェント共通）／ CLI＝**ハード**（決定的検査）。
   各 skill は CLI を呼ぶが、**非CLI環境向けに手作業フォールバックを残す**（挙動同一・移植性維持）。
@@ -263,7 +263,7 @@ works/ ノイズや「なめる state.yml が無い」問題は status フィル
   per-work の retro とは別レベル（meta）。パイプライン工程ではないため番号を付けず、protocol の
   対象作業特定／終了プロトコル／メトリクス記録には乗らない。出力は `.aidev/insights/<日付>-insights.md`。
   ※ works が少ないうちは傾向が出ない点に留意（skill 側でデータ限界を明示する）。
-- ~~**state 更新の堅牢化**：state.yml 更新を手書き heredoc でなくヘルパー化~~（**実装済**: `.aidev/bin/aidev`(+`.ps1`) の
+- ~~**state 更新の堅牢化**：state.yml 更新を手書き heredoc でなくヘルパー化~~（**実装済**: `.claude/skills/aidev-docs/bin/aidev`(+`.ps1`) の
   `new`/`event`/`approve` に集約。「2.6 ランタイムガード」参照）。
 - **作業の split 判定（3層決定木）**：1要件をどの粒度の作業単位に割るかの判定。**軸（frontend/backend・層別・
   機能別…）は列挙しない**——それらは下記の単一原則を適用した結果にすぎず、軸を taxonomy 化すると原則と矛盾し

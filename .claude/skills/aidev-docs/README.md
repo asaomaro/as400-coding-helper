@@ -57,7 +57,7 @@ skill は **役割／レイヤ**で命名し、トリガ（人間/AI）では割
 | 標準工程 | `aidev-N0-<名>`（末尾0） | 両方（直接 / 前工程遷移 / autonomous 自動） |
 | 任意工程 | `aidev-N5-<名>`（末尾5） | AI検知推奨 or ユーザー指定 |
 | ユーティリティ | `aidev-util-<名>`（番号なし） | ユーザー起動（一部 /loop） |
-| ランタイムガード（skill外） | `aidev` CLI（`.aidev/bin/`） | 工程内で AI が自動 |
+| ランタイムガード（skill外） | `aidev` CLI（`.claude/skills/aidev-docs/bin/`） | 工程内で AI が自動 |
 
 ### ユーティリティ（番号なし・パイプライン外）
 
@@ -116,9 +116,9 @@ planner の方針は `.aidev/charter.md` で縛る。
   aidev-00-start/      入口 + protocol.md（共通規約のホーム）
   aidev-10-requirement/ … aidev-95-retro/   各工程（番号付きパイプライン）
   aidev-util-propose/ aidev-util-batch/ aidev-util-insights/   ユーティリティ（番号なし・パイプライン外）
-  aidev-docs/          このREADMEとDESIGN（参照専用・skillではない）
-.aidev/                実行時に生成される状態（bin/ はコミット対象）
-  bin/                 ランタイムガード CLI（aidev=POSIX sh / aidev.ps1=PowerShell・README.md 同梱）
+  aidev-docs/          このREADMEとDESIGN（参照専用・skillではない）＋ bin/
+    bin/               ランタイムガード CLI（aidev=POSIX sh / aidev.ps1=PowerShell・README.md / test/ 同梱）
+.aidev/                PJ固有の実行時状態（skill ではない）
   config.yml           PJ単位の設定（tracker 種類など。コミット対象）
   current              現在の作業フォルダ名（.gitignore 対象）
   works/<YYYYMMDD-slug>/  作業単位ごとの成果物（命名: 日付(UTC)-slug）
@@ -131,10 +131,11 @@ planner の方針は `.aidev/charter.md` で縛る。
 
 ## 別PJへの導入
 
-1. `.claude/skills/aidev-*`（aidev-docs 含む）をコピー。
-2. `.aidev/bin/`（`aidev` / `aidev.ps1` / `README.md`）をコピーし、`aidev` に実行権限を付ける
-   （ランタイムガード。無くてもフォールバックで動くが、強制力を効かせるなら導入推奨）。
-3. `.gitignore` に `.aidev/current` を追加（works 配下の成果物・`bin/` はコミット推奨）。
+1. `.claude/skills/aidev-*`（`aidev-docs/bin/` のランタイムガード CLI を含む）をコピー。CLI は skills 同梱なので
+   別途コピーは不要。`aidev-docs/bin/aidev` に実行権限を付ける（`chmod +x`）。
+2. リポジトリ直下に `.aidev/` を用意する（CLI は `.aidev/` を上方探索して状態を読み書きする。最初の作業前に
+   存在させる。`config.yml` を置くか空ディレクトリでよい）。
+3. `.gitignore` に `.aidev/current` を追加（`.aidev/works/` 配下の成果物はコミット推奨）。
 4. PJ の AGENTS.md に規約・レビュー観点を書く。PJ固有 skill があればそのまま活かされる。
 
 基盤はドメイン非依存。PJ固有の知識・実作業は AGENTS.md と PJ skill 側が担う。

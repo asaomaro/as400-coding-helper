@@ -5,19 +5,19 @@
 # 役割と正典は `aidev` 冒頭コメント／protocol.md「4.1」を参照。
 #
 # 使い方:
-#   pwsh .aidev/bin/aidev.ps1 new <slug> [--mode interactive|autonomous] [--ticket ID] [--depends a,b,#N] [--parent <親work>]
+#   pwsh .claude/skills/aidev-docs/bin/aidev.ps1 new <slug> [--mode interactive|autonomous] [--ticket ID] [--depends a,b,#N] [--parent <親work>]
 #     --parent 指定時は親 work 配下に subtask（<NN>-<subslug>・date prefix なし・current=plan）を作る
-#   pwsh .aidev/bin/aidev.ps1 event <phase> <start|approved|sent_back> [key=value ...]
-#   pwsh .aidev/bin/aidev.ps1 approve <phase> [key=value ...]
-#   pwsh .aidev/bin/aidev.ps1 guard <phase>
-#   pwsh .aidev/bin/aidev.ps1 verify [slug]
-#   pwsh .aidev/bin/aidev.ps1 doctor
-#   pwsh .aidev/bin/aidev.ps1 status [--format table|tsv]
-#   pwsh .aidev/bin/aidev.ps1 metrics [slug] [--all] [--phases] [--format table|tsv]
-#   pwsh .aidev/bin/aidev.ps1 worktree add <slug> [--branch n] [--base ref] [--path dir] [--mode m] [--ticket id] [--depends list]
-#   pwsh .aidev/bin/aidev.ps1 worktree list [--format table|tsv]
-#   pwsh .aidev/bin/aidev.ps1 worktree rm <slug|path> [--force] [--delete-branch]
-#   pwsh .aidev/bin/aidev.ps1 help
+#   pwsh .claude/skills/aidev-docs/bin/aidev.ps1 event <phase> <start|approved|sent_back> [key=value ...]
+#   pwsh .claude/skills/aidev-docs/bin/aidev.ps1 approve <phase> [key=value ...]
+#   pwsh .claude/skills/aidev-docs/bin/aidev.ps1 guard <phase>
+#   pwsh .claude/skills/aidev-docs/bin/aidev.ps1 verify [slug]
+#   pwsh .claude/skills/aidev-docs/bin/aidev.ps1 doctor
+#   pwsh .claude/skills/aidev-docs/bin/aidev.ps1 status [--format table|tsv]
+#   pwsh .claude/skills/aidev-docs/bin/aidev.ps1 metrics [slug] [--all] [--phases] [--format table|tsv]
+#   pwsh .claude/skills/aidev-docs/bin/aidev.ps1 worktree add <slug> [--branch n] [--base ref] [--path dir] [--mode m] [--ticket id] [--depends list]
+#   pwsh .claude/skills/aidev-docs/bin/aidev.ps1 worktree list [--format table|tsv]
+#   pwsh .claude/skills/aidev-docs/bin/aidev.ps1 worktree rm <slug|path> [--force] [--delete-branch]
+#   pwsh .claude/skills/aidev-docs/bin/aidev.ps1 help
 #
 # 終了コード: 0=OK / 1=使用法・環境エラー / 2=前提成果物の不足 / 3=依存未充足 / 4=不変条件違反
 

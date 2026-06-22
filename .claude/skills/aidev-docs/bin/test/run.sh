@@ -1,6 +1,6 @@
 #!/bin/sh
 # aidev CLI テスト（status / metrics / worktree / 既存回帰 / sh⇔ps1 パリティ）。Node 非依存。
-# 使い方: sh .aidev/bin/test/run.sh
+# 使い方: sh .claude/skills/aidev-docs/bin/test/run.sh
 # 一時フィクスチャ（works/backlog/metrics）を作り、aidev の出力を期待値と照合する。
 set -u
 
@@ -133,8 +133,13 @@ if command -v git >/dev/null 2>&1; then
   # フィクスチャ git リポジトリを $TMP/repo に作る（既定 worktree パスは $TMP/repo-wt/* ＝ $TMP 配下なので
   # 既存 trap の rm -rf "$TMP" で worktree ごと自動掃除される）。
   REPO="$TMP/repo"
-  mkdir -p "$REPO/.aidev/bin"
-  cp "$AIDEV_SH" "$REPO/.aidev/bin/aidev"; chmod +x "$REPO/.aidev/bin/aidev"
+  # CLI は skills 配下に置く（worktree add は worktree 内の .claude/skills/aidev-docs/bin/aidev を self-invoke するため、
+  # 追跡＝コミットして worktree に伝播させる）。.aidev/ は追跡マーカ(.gitkeep)で worktree に存在させ、
+  # find_root が worktree 内 .aidev で止まる（さもないと $TMP/.aidev へ脱出して汚染する）。実 repo は charter/config/works
+  # が追跡されているのと同じ前提。
+  mkdir -p "$REPO/.claude/skills/aidev-docs/bin" "$REPO/.aidev"
+  cp "$AIDEV_SH" "$REPO/.claude/skills/aidev-docs/bin/aidev"; chmod +x "$REPO/.claude/skills/aidev-docs/bin/aidev"
+  : > "$REPO/.aidev/.gitkeep"
   printf '.aidev/current\n' > "$REPO/.gitignore"
   (
     cd "$REPO"
@@ -189,9 +194,9 @@ fi
 echo "== subtask 層（new --parent / guard 継承 / 兄弟 dependsOn / doctor 横断） =="
 # 既存フィクスチャ(status/metrics の件数アサート)を汚さないよう独立 root を使う。
 SUB="$TMP/sub"
-mkdir -p "$SUB/.aidev/works" "$SUB/.aidev/bin"
-cp "$AIDEV_SH"  "$SUB/.aidev/bin/aidev";     chmod +x "$SUB/.aidev/bin/aidev"
-cp "$AIDEV_PS1" "$SUB/.aidev/bin/aidev.ps1"
+# .aidev/works で find_root が $SUB に止まる。CLI は $AIDEV_SH を直接叩き new --parent は self-invoke しないため
+# subtask フィクスチャに CLI コピーは不要（worktree add のみ self-invoke する）。
+mkdir -p "$SUB/.aidev/works"
 run_sub() { ( cd "$SUB" && "$AIDEV_SH" "$@" ); }
 
 # 親 work を作り、上流成果物を置いて plan まで承認
@@ -280,9 +285,10 @@ if command -v pwsh >/dev/null 2>&1; then
   # pwsh 不在の開発機では skip されるため、ps1 の worktree は本節（pwsh 環境/CI）で初めて実行検証される。
   if command -v git >/dev/null 2>&1; then
     PREPO="$TMP/prepo"
-    mkdir -p "$PREPO/.aidev/bin" "$PREPO/.aidev/works/20260101-existing"
-    cp "$AIDEV_SH"  "$PREPO/.aidev/bin/aidev";     chmod +x "$PREPO/.aidev/bin/aidev"
-    cp "$AIDEV_PS1" "$PREPO/.aidev/bin/aidev.ps1"
+    # CLI は skills 配下（worktree add の self-invoke 先）。.aidev/ は追跡 work(20260101-existing)で worktree に存在。
+    mkdir -p "$PREPO/.claude/skills/aidev-docs/bin" "$PREPO/.aidev/works/20260101-existing"
+    cp "$AIDEV_SH"  "$PREPO/.claude/skills/aidev-docs/bin/aidev";     chmod +x "$PREPO/.claude/skills/aidev-docs/bin/aidev"
+    cp "$AIDEV_PS1" "$PREPO/.claude/skills/aidev-docs/bin/aidev.ps1"
     printf '.aidev/current\n' > "$PREPO/.gitignore"
     # 既存work一致 add の回帰用に slug:existing の work をコミットしておく
     cat > "$PREPO/.aidev/works/20260101-existing/state.yml" <<'YML'
