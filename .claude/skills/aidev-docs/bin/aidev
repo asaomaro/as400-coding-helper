@@ -452,18 +452,32 @@ fmt_table() {
         print line } }'
 }
 
+# 親 work dir の subtask 進捗を "N M"（N=review承認済の子数 / M=総数）で返す。subtasks 無しは空。
+subtask_progress() { # work_dir
+  _subs=$(ylist "$1/state.yml" subtasks)
+  [ -z "$_subs" ] && return 0
+  _m=0; _n=0
+  for _s in $_subs; do
+    _m=$((_m+1))
+    case " $(ylist "$1/$_s/state.yml" approved) " in *" review "*) _n=$((_n+1)) ;; esac
+  done
+  printf '%s %s' "$_n" "$_m"
+  return 0
+}
+
 cmd_status() {
-  fmt=table
+  fmt=table; subflag=no
   while [ $# -gt 0 ]; do
     case "$1" in
       --format) fmt=${2:-}; shift 2 ;;
+      --subtasks) subflag=yes; shift ;;
       -*) die "未知のオプション: $1" ;;
       *) die "status は位置引数を取りません: $1" ;;
     esac
   done
   case "$fmt" in table|tsv) ;; *) die "--format は table|tsv" ;; esac
 
-  # ---- works 収集 ----
+  # ---- works 収集（rows は型タグ付き: W=work 行 / S=subtask 子行） ----
   wn=0; wrows=""
   if [ -d "$AIDEV/works" ]; then
     for d in "$AIDEV/works"/*/; do
@@ -481,14 +495,37 @@ cmd_status() {
           case " $appr " in *" $p "*) ;; *) next=$p; break ;; esac
         done
       fi
+      # subtask を持つ親は next を subtask 進捗に差し替える（未完=sub N/M、全完了=統合工程の次）
+      sp=$(subtask_progress "$dir")
+      if [ -n "$sp" ] && [ "$wdone" = no ]; then
+        spn=${sp% *}; spm=${sp#* }
+        if [ "$spn" -lt "$spm" ]; then
+          next="sub $spn/$spm"
+        else
+          next=-   # 全 subtask 完了 → coding は子が実施済。統合工程(test/review/deliver)の次を示す
+          for p in test review deliver; do
+            case " $appr " in *" $p "*) ;; *) next=$p; break ;; esac
+          done
+        fi
+      fi
       eval_depends "$dir"
       deps=""
       for u in $EVAL_UNMET; do deps="$deps,$u"; done
       for a in $EVAL_ADVISORY; do deps="$deps,$a(advisory)"; done
       deps=${deps#,}; [ -z "$deps" ] && deps=ok
       wn=$((wn+1))
-      wrows="$wrows$name	$ticket	$mode	$current	$next	$wdone	$deps
+      wrows="${wrows}W	$name	$ticket	$mode	$current	$next	$wdone	$deps
 "
+      # --subtasks: 親直下に子を列挙（S 行。current=子の工程 / done=子の review 承認）
+      if [ "$subflag" = yes ] && [ -n "$sp" ]; then
+        for cs in $(ylist "$st" subtasks); do
+          cst="$dir/$cs/state.yml"
+          ccur=$(yget "$cst" current); [ -z "$ccur" ] && ccur=-
+          case " $(ylist "$cst" approved) " in *" review "*) cdone=yes ;; *) cdone=no ;; esac
+          wrows="${wrows}S	$name	$cs	$ccur	$cdone
+"
+        done
+      fi
     done
   fi
 
@@ -507,9 +544,13 @@ cmd_status() {
   fi
 
   if [ "$fmt" = tsv ]; then
-    printf '%s' "$wrows" | while IFS='	' read -r a b c e f g h; do
-      [ -z "$a" ] && continue
-      printf 'work\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n' "$a" "$b" "$c" "$e" "$f" "$g" "$h"
+    printf '%s' "$wrows" | while IFS='	' read -r ty a b c e f g h; do
+      [ -z "$ty" ] && continue
+      if [ "$ty" = W ]; then
+        printf 'work\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n' "$a" "$b" "$c" "$e" "$f" "$g" "$h"
+      else  # S: a=親 b=子 c=current e=done
+        printf 'subtask\t%s/%s\t%s\t%s\n' "$a" "$b" "$c" "$e"
+      fi
     done
     printf '%s' "$brows" | while IFS='	' read -r a b c; do
       [ -z "$a" ] && continue
@@ -520,7 +561,17 @@ cmd_status() {
 
   printf 'WORKS (%s)\n' "$wn"
   if [ "$wn" -gt 0 ]; then
-    { printf 'work\tticket\tmode\tcurrent\tnext\tdone\tdeps\n'; printf '%s' "$wrows"; } | fmt_table
+    {
+      printf 'work\tticket\tmode\tcurrent\tnext\tdone\tdeps\n'
+      printf '%s' "$wrows" | while IFS='	' read -r ty a b c e f g h; do
+        [ -z "$ty" ] && continue
+        if [ "$ty" = W ]; then
+          printf '%s\t%s\t%s\t%s\t%s\t%s\t%s\n' "$a" "$b" "$c" "$e" "$f" "$g" "$h"
+        else  # S: 子をインデント行で（a=親 b=子 c=current e=done）
+          printf '  ↳ %s\t-\t-\t%s\t-\t%s\t-\n' "$b" "$c" "$e"
+        fi
+      done
+    } | fmt_table
   fi
   printf '\n'
   printf 'BACKLOG (未着手 %s 件)\n' "$bn"

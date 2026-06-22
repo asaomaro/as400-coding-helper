@@ -432,11 +432,23 @@ function Fmt-Table($rows) {
   return $out
 }
 
+# 親 work dir の subtask 進捗 "N M"（N=review承認済の子数/M=総数）。subtasks 無しは ''。
+function SubtaskProgress($workDir) {
+  $subs = @(YList (Join-Path $workDir 'state.yml') 'subtasks')
+  if ($subs.Count -eq 0) { return '' }
+  $m = $subs.Count; $n = 0
+  foreach ($s in $subs) {
+    if ((YList (Join-Path (Join-Path $workDir $s) 'state.yml') 'approved') -contains 'review') { $n++ }
+  }
+  return "$n $m"
+}
+
 function Cmd-Status($rest) {
-  $fmt='table'
+  $fmt='table'; $subflag=$false
   for ($i=0; $i -lt $rest.Count; $i++) {
     switch ($rest[$i]) {
-      '--format' { $fmt=$rest[++$i] }
+      '--format'   { $fmt=$rest[++$i] }
+      '--subtasks' { $subflag=$true }
       default {
         if ($rest[$i].StartsWith('-')) { Die "未知のオプション: $($rest[$i])" }
         else { Die "status は位置引数を取りません: $($rest[$i])" }
@@ -446,7 +458,7 @@ function Cmd-Status($rest) {
   if ($fmt -ne 'table' -and $fmt -ne 'tsv') { Die "--format は table|tsv" }
 
   $worksDir = Join-Path $script:AIDEV 'works'
-  $wrows=@(); $wn=0
+  $wrows=@(); $wn=0   # 各要素は型タグ付き: "W`t…7列…" / "S`t親`t子`tcurrent`tdone"
   if (Test-Path $worksDir) {
     foreach ($d in (Get-ChildItem -Path $worksDir -Directory | Sort-Object Name)) {
       $st = Join-Path $d.FullName 'state.yml'
@@ -458,13 +470,29 @@ function Cmd-Status($rest) {
       $wdone = if ($appr -contains 'deliver') { 'yes' } else { 'no' }
       $next='-'
       if ($wdone -eq 'no') { foreach ($p in $script:STD_PIPELINE) { if ($appr -notcontains $p) { $next=$p; break } } }
+      # subtask を持つ親は next を subtask 進捗に差し替える（未完=sub N/M、全完了=統合工程の次）
+      $sp = SubtaskProgress $d.FullName
+      if ($sp -and $wdone -eq 'no') {
+        $spp = $sp -split ' '; $spn=[int]$spp[0]; $spm=[int]$spp[1]
+        if ($spn -lt $spm) { $next = "sub $spn/$spm" }
+        else { $next='-'; foreach ($p in @('test','review','deliver')) { if ($appr -notcontains $p) { $next=$p; break } } }
+      }
       Eval-Depends $d.FullName
       $tok=@()
       foreach ($u in $script:EvalUnmet) { $tok += $u }
       foreach ($a in $script:EvalAdvisory) { $tok += "$a(advisory)" }
       $deps = if ($tok.Count -gt 0) { [string]::Join(',', $tok) } else { 'ok' }
       $wn++
-      $wrows += ($d.Name + "`t" + $ticket + "`t" + $mode + "`t" + $current + "`t" + $next + "`t" + $wdone + "`t" + $deps)
+      $wrows += ("W`t" + $d.Name + "`t" + $ticket + "`t" + $mode + "`t" + $current + "`t" + $next + "`t" + $wdone + "`t" + $deps)
+      # --subtasks: 親直下に子を列挙（S 行）
+      if ($subflag -and $sp) {
+        foreach ($cs in @(YList $st 'subtasks')) {
+          $cst = Join-Path (Join-Path $d.FullName $cs) 'state.yml'
+          $ccur = YGet $cst 'current'; if (-not $ccur) { $ccur='-' }
+          $cdone = if ((YList $cst 'approved') -contains 'review') { 'yes' } else { 'no' }
+          $wrows += ("S`t" + $d.Name + "`t" + $cs + "`t" + $ccur + "`t" + $cdone)
+        }
+      }
     }
   }
 
@@ -482,13 +510,25 @@ function Cmd-Status($rest) {
   }
 
   if ($fmt -eq 'tsv') {
-    foreach ($r in $wrows) { Write-Output ("work`t" + $r) }
+    foreach ($r in $wrows) {
+      $c = $r -split "`t"
+      if ($c[0] -eq 'W') { Write-Output ("work`t" + ($c[1..7] -join "`t")) }
+      else { Write-Output ("subtask`t" + $c[1] + "/" + $c[2] + "`t" + $c[3] + "`t" + $c[4]) }
+    }
     foreach ($r in $brows) { Write-Output ("backlog`t" + $r) }
     return
   }
 
   Write-Output "WORKS ($wn)"
-  if ($wn -gt 0) { foreach ($l in (Fmt-Table (@("work`tticket`tmode`tcurrent`tnext`tdone`tdeps") + $wrows))) { Write-Output $l } }
+  if ($wn -gt 0) {
+    $disp = @("work`tticket`tmode`tcurrent`tnext`tdone`tdeps")
+    foreach ($r in $wrows) {
+      $c = $r -split "`t"
+      if ($c[0] -eq 'W') { $disp += ($c[1..7] -join "`t") }
+      else { $disp += ("  ↳ " + $c[2] + "`t-`t-`t" + $c[3] + "`t-`t" + $c[4] + "`t-") }
+    }
+    foreach ($l in (Fmt-Table $disp)) { Write-Output $l }
+  }
   Write-Output ""
   Write-Output "BACKLOG (未着手 $bn 件)"
   if ($bf -gt 0) { foreach ($l in (Fmt-Table (@("file`ttodo`tneeds") + $brows))) { Write-Output $l } }
