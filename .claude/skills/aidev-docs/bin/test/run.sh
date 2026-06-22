@@ -250,7 +250,9 @@ run_sub guard plan >/dev/null 2>&1; assert_eq "$?" "3" "guard: 兄弟 01-be 未r
 echo "$SP/01-be" > "$SUB/.aidev/current"
 for ph in plan coding test review; do run_sub approve "$ph" >/dev/null; done
 : > "$SUB/.aidev/works/$SP/01-be/review.md"
-echo "$SP/02-fe" > "$SUB/.aidev/current"
+# D: 01-be の review 承認でカーソルが次の未完 subtask(02-fe)へ自動前進する
+assert_contains "$(cat "$SUB/.aidev/works/$SP/state.yml")" "activeSubtask: 02-fe" "D: 01-be review 承認で親 activeSubtask が 02-fe へ前進"
+assert_eq "$(cat "$SUB/.aidev/current")" "$SP/02-fe" "D: カーソル(.aidev/current)が 02-fe へ自動前進"
 run_sub guard plan >/dev/null 2>&1; assert_eq "$?" "0" "guard: 兄弟 01-be review 済で dependsOn 充足(0)"
 
 # event/approve が subtask に記録される
@@ -264,6 +266,13 @@ assert_contains "$SD" "$SP/01-be" "doctor: subtask 01-be を横断検査"
 assert_contains "$SD" "$SP/02-fe" "doctor: subtask 02-fe を横断検査"
 # verify が subtask を解決
 SV=$(run_sub verify "$SP/01-be"); assert_contains "$SV" "verify: $SP/01-be" "verify: subtask パスを解決"
+
+# D: 最後の subtask(02-fe)の review 承認で activeSubtask=done、カーソルが親へ戻る
+echo "$SP/02-fe" > "$SUB/.aidev/current"
+for ph in plan coding test review; do run_sub approve "$ph" >/dev/null; done
+: > "$SUB/.aidev/works/$SP/02-fe/review.md"
+assert_contains "$(cat "$SUB/.aidev/works/$SP/state.yml")" "activeSubtask: done" "D: 全 subtask 完了で activeSubtask=done"
+assert_eq "$(cat "$SUB/.aidev/current")" "$SP" "D: 全完了でカーソルが親 work へ戻る"
 
 echo "== sh ⇔ ps1 パリティ =="
 if command -v pwsh >/dev/null 2>&1; then

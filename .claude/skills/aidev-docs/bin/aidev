@@ -258,6 +258,29 @@ cmd_approve() {
   replace_line "$st" current "current: $ph"
   append_event "$ph" approved "$@"
   printf 'approved: %s @ %s\n' "$ph" "$SLUG"
+
+  # D: subtask の review 承認でカーソルを前進させる（散文の手動カーソル操作を排除）。
+  # 親 subtasks を順に見て review 未承認の最初の子を次の active にする。無ければ done（→親の統合 test へ）。
+  if [ "$ph" = review ]; then
+    par=$(yget "$st" parent)
+    if [ -n "$par" ] && [ -d "$AIDEV/works/$par" ]; then
+      pst="$AIDEV/works/$par/state.yml"
+      nextsub=""
+      for s in $(ylist "$pst" subtasks); do
+        sap=$(ylist "$AIDEV/works/$par/$s/state.yml" approved)
+        case " $sap " in *" review "*) ;; *) nextsub="$s"; break ;; esac
+      done
+      if [ -n "$nextsub" ]; then
+        set_or_append "$pst" activeSubtask "activeSubtask: $nextsub"
+        printf '%s\n' "$par/$nextsub" > "$AIDEV/current"
+        printf 'cursor: activeSubtask=%s（次の subtask へ自動前進）\n' "$nextsub"
+      else
+        set_or_append "$pst" activeSubtask "activeSubtask: done"
+        printf '%s\n' "$par" > "$AIDEV/current"
+        printf 'cursor: 全 subtask 完了 → activeSubtask=done。親 %s の統合 test へ\n' "$par"
+      fi
+    fi
+  fi
 }
 
 # --- コマンド: guard ----------------------------------------------------------

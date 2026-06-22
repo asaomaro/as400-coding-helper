@@ -44,11 +44,15 @@ AI 開発ワークフローの **review（レビュー）工程**を実行する
      差し戻しを提案する（protocol.md「4. 番号と順序」に基づく正当な遷移）。
      coding を**再開する際は `aidev event coding start` を記録する**（さもないと手戻り回数を取りこぼす。protocol.md「3.」「8.」）。
      - **統合 review の差し戻し先（protocol.md「2.8」）**: 結合起因の指摘は**原因となった subtask の coding** へ
-       戻す。`.aidev/current` を該当 subtask（`<親>/<NN>-<subslug>`）に切り替え、必要なら親 `activeSubtask` を
-       その子に戻してから、その子で `aidev event coding start`。再 split（親 plan 戻し）は避け、最小手戻りにする。
+       戻す。`.aidev/current` を該当 subtask（`<親>/<NN>-<subslug>`）に切り替え、親 `activeSubtask` をその子に戻し、
+       **その子の `approved` から `review` を外して**（完了を取り消す）から `aidev event coding start`。これで
+       再 coding→test→review 後の `approve review` が再びカーソルを前進させられる（D と整合）。
+       再 split（親 plan 戻し）は避け、最小手戻りにする。
    - **指摘なし（または nit のみ）** → protocol.md「3. 工程終了プロトコル」に従って終了する。
-     - **subtask の review** なら次工程は**親へ戻る**（その子のサイクルは完了）。親 `activeSubtask` を次の
-       未完 subtask に進め、全 subtask 完了なら `done` にして親の統合 test → 統合 review へ。
+     - **subtask の review** なら、`aidev approve review` の時点で **CLI がカーソルを自動前進**させる
+       （手動の `activeSubtask` 操作は不要）: 親 `subtasks` の次の未完 subtask があれば `activeSubtask` と
+       `.aidev/current` をそこへ進め（次工程: その子の `plan`）、全 subtask 完了なら `activeSubtask=done` にして
+       `.aidev/current` を親へ戻す（次工程: 親の統合 `test`）。CLI の出力 `cursor: …` で遷移先を確認する。
      - **親の統合 review** なら **複雑度の自己評価（walkthrough 推奨判定）**: protocol.md「4.5」に従い「差分が
        大きい/複数モジュール横断/処理フローが複雑」のいずれかなら、遷移ゲートに `承認して walkthrough(任意) を挟む`
        （推奨）を加え理由を添える（次工程: 推奨時 `walkthrough`、それ以外 `deliver`）。

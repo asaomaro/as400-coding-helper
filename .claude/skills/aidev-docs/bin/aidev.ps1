@@ -240,6 +240,30 @@ function Cmd-Approve($rest) {
   ReplaceLine $st 'current' "current: $ph"
   AppendEvent $script:WORK $ph 'approved' $kvs
   Write-Output "approved: $ph @ $($script:SLUG)"
+
+  # D: subtask の review 承認でカーソルを前進させる（散文の手動カーソル操作を排除）。
+  # 親 subtasks を順に見て review 未承認の最初の子を次の active にする。無ければ done（→親の統合 test へ）。
+  if ($ph -eq 'review') {
+    $par = YGet $st 'parent'
+    $worksRoot = Join-Path $script:AIDEV 'works'
+    if ($par -and (Test-Path (Join-Path $worksRoot $par))) {
+      $pst2 = Join-Path (Join-Path $worksRoot $par) 'state.yml'
+      $nextsub = ''
+      foreach ($s in (YList $pst2 'subtasks')) {
+        $subSt = Join-Path (Join-Path (Join-Path $worksRoot $par) $s) 'state.yml'
+        if ((YList $subSt 'approved') -notcontains 'review') { $nextsub = $s; break }
+      }
+      if ($nextsub) {
+        SetOrAppend $pst2 'activeSubtask' "activeSubtask: $nextsub"
+        WriteText (Join-Path $script:AIDEV 'current') "$par/$nextsub`n"
+        Write-Output "cursor: activeSubtask=$nextsub（次の subtask へ自動前進）"
+      } else {
+        SetOrAppend $pst2 'activeSubtask' "activeSubtask: done"
+        WriteText (Join-Path $script:AIDEV 'current') "$par`n"
+        Write-Output "cursor: 全 subtask 完了 → activeSubtask=done。親 $par の統合 test へ"
+      }
+    }
+  }
 }
 
 # 依存(dependsOn)の充足を読み取り専用で評価（state は変更しない）。
