@@ -1,6 +1,6 @@
 # 設計: `aidev worktree`（ユーザー責任での並行作業 on-ramp）
 
-> 状態: 提案（design）。正典は `.claude/skills/aidev-00-start/protocol.md` と `.aidev/bin/aidev`。
+> 状態: 提案（design）。正典は `.claude/skills/aidev-00-start/protocol.md` と `.claude/skills/aidev-docs/bin/aidev`。
 > 本書は CLI に `worktree` サブコマンドを追加する実装可能設計。
 
 ## 1. 確定している前提（原典照合済み）

@@ -1,6 +1,6 @@
 #!/bin/sh
 # aidev CLI テスト（status / metrics / worktree / 既存回帰 / sh⇔ps1 パリティ）。Node 非依存。
-# 使い方: sh .aidev/bin/test/run.sh
+# 使い方: sh .claude/skills/aidev-docs/bin/test/run.sh
 # 一時フィクスチャ（works/backlog/metrics）を作り、aidev の出力を期待値と照合する。
 set -u
 
@@ -133,8 +133,13 @@ if command -v git >/dev/null 2>&1; then
   # フィクスチャ git リポジトリを $TMP/repo に作る（既定 worktree パスは $TMP/repo-wt/* ＝ $TMP 配下なので
   # 既存 trap の rm -rf "$TMP" で worktree ごと自動掃除される）。
   REPO="$TMP/repo"
-  mkdir -p "$REPO/.aidev/bin"
-  cp "$AIDEV_SH" "$REPO/.aidev/bin/aidev"; chmod +x "$REPO/.aidev/bin/aidev"
+  # CLI は skills 配下に置く（worktree add は worktree 内の .claude/skills/aidev-docs/bin/aidev を self-invoke するため、
+  # 追跡＝コミットして worktree に伝播させる）。.aidev/ は追跡マーカ(.gitkeep)で worktree に存在させ、
+  # find_root が worktree 内 .aidev で止まる（さもないと $TMP/.aidev へ脱出して汚染する）。実 repo は charter/config/works
+  # が追跡されているのと同じ前提。
+  mkdir -p "$REPO/.claude/skills/aidev-docs/bin" "$REPO/.aidev"
+  cp "$AIDEV_SH" "$REPO/.claude/skills/aidev-docs/bin/aidev"; chmod +x "$REPO/.claude/skills/aidev-docs/bin/aidev"
+  : > "$REPO/.aidev/.gitkeep"
   printf '.aidev/current\n' > "$REPO/.gitignore"
   (
     cd "$REPO"
@@ -186,6 +191,89 @@ else
   skip "git 不在のため worktree テストを省略"
 fi
 
+echo "== subtask 層（new --parent / guard 継承 / 兄弟 dependsOn / doctor 横断） =="
+# 既存フィクスチャ(status/metrics の件数アサート)を汚さないよう独立 root を使う。
+SUB="$TMP/sub"
+# .aidev/works で find_root が $SUB に止まる。CLI は $AIDEV_SH を直接叩き new --parent は self-invoke しないため
+# subtask フィクスチャに CLI コピーは不要（worktree add のみ self-invoke する）。
+mkdir -p "$SUB/.aidev/works"
+run_sub() { ( cd "$SUB" && "$AIDEV_SH" "$@" ); }
+
+# 親 work を作り、上流成果物を置いて plan まで承認
+run_sub new feat >/dev/null
+SP=$(cat "$SUB/.aidev/current")
+for f in requirement spec design plan; do : > "$SUB/.aidev/works/$SP/$f.md"; done
+for ph in requirement spec design plan; do run_sub approve "$ph" >/dev/null; done
+
+# subtask 01-be 作成
+SO=$(run_sub new 01-be --parent "$SP")
+assert_contains "$SO" "created subtask" "new --parent: subtask 作成"
+assert_eq "$(cat "$SUB/.aidev/current")" "$SP/01-be" "new --parent: current が subtask パス"
+SPST="$SUB/.aidev/works/$SP/state.yml"
+assert_contains "$(cat "$SPST")" "subtasks: [01-be]" "親 subtasks に追記"
+assert_contains "$(cat "$SPST")" "activeSubtask: 01-be" "親 activeSubtask 設定"
+SCST="$SUB/.aidev/works/$SP/01-be/state.yml"
+assert_contains "$(cat "$SCST")" "parent: $SP" "子 state.yml に parent 逆参照"
+assert_contains "$(cat "$SCST")" "current: plan" "子 current=plan"
+assert_contains "$(cat "$SCST")" "schema: 3" "子 schema=3"
+
+# 2つ目: activeSubtask は先頭(01-be)のまま・subtasks に追記
+run_sub new 02-fe --parent "$SP" --depends 01-be >/dev/null
+assert_contains "$(cat "$SPST")" "subtasks: [01-be, 02-fe]" "親 subtasks に2件目を追記"
+assert_contains "$(cat "$SPST")" "activeSubtask: 01-be" "activeSubtask は先頭のまま"
+
+# subtask slug にスラッシュ禁止
+run_sub new a/b --parent "$SP" >/dev/null 2>&1; assert_eq "$?" "1" "subtask slug にスラッシュは exit 1"
+# 親不在は exit 1
+run_sub new x --parent nope >/dev/null 2>&1; assert_eq "$?" "1" "親不在の --parent は exit 1"
+# C: 多段ネスト禁止（親が既に subtask なら exit 1）
+run_sub new deep --parent "$SP/01-be" >/dev/null 2>&1; assert_eq "$?" "1" "C: 親が subtask の --parent は exit 1（多段ネスト不可）"
+
+# guard: subtask plan は親の spec.md を継承して充足(0)
+echo "$SP/01-be" > "$SUB/.aidev/current"
+run_sub guard plan >/dev/null 2>&1; assert_eq "$?" "0" "guard plan: 親 spec.md 継承で充足"
+# guard: subtask coding は親 plan.md を継承「しない」（subtask 固有）。子に plan.md/tasks.md が無いので未充足(2)
+run_sub guard coding >/dev/null 2>&1; assert_eq "$?" "2" "guard coding: 親 plan.md を継承せず未充足(2)"
+# 子に plan.md/tasks.md を置けば充足(0)
+: > "$SUB/.aidev/works/$SP/01-be/plan.md"; : > "$SUB/.aidev/works/$SP/01-be/tasks.md"
+run_sub guard coding >/dev/null 2>&1; assert_eq "$?" "0" "guard coding: 子の plan.md/tasks.md で充足(0)"
+# B: 親専用工程は subtask で実行不可（exit 2）。subtask の工程は plan/coding/test/review のみ
+for ph in spec design deliver walkthrough requirement; do
+  run_sub guard "$ph" >/dev/null 2>&1; assert_eq "$?" "2" "B: subtask の guard $ph は親専用で拒否(2)"
+done
+# B: subtask 固有工程(review)は親専用ブロックに掛からない（spec.md 継承で充足 0）
+run_sub guard review >/dev/null 2>&1; assert_eq "$?" "0" "B: subtask の guard review は許可(0)"
+
+# 兄弟 dependsOn: 02-fe は 01-be 未review で未充足(3)、review 後に充足(0)
+echo "$SP/02-fe" > "$SUB/.aidev/current"
+run_sub guard plan >/dev/null 2>&1; assert_eq "$?" "3" "guard: 兄弟 01-be 未review で dependsOn 未充足(3)"
+echo "$SP/01-be" > "$SUB/.aidev/current"
+for ph in plan coding test review; do run_sub approve "$ph" >/dev/null; done
+: > "$SUB/.aidev/works/$SP/01-be/review.md"
+# D: 01-be の review 承認でカーソルが次の未完 subtask(02-fe)へ自動前進する
+assert_contains "$(cat "$SUB/.aidev/works/$SP/state.yml")" "activeSubtask: 02-fe" "D: 01-be review 承認で親 activeSubtask が 02-fe へ前進"
+assert_eq "$(cat "$SUB/.aidev/current")" "$SP/02-fe" "D: カーソル(.aidev/current)が 02-fe へ自動前進"
+run_sub guard plan >/dev/null 2>&1; assert_eq "$?" "0" "guard: 兄弟 01-be review 済で dependsOn 充足(0)"
+
+# event/approve が subtask に記録される
+echo "$SP/01-be" > "$SUB/.aidev/current"
+run_sub event coding start >/dev/null
+assert_contains "$(cat "$SUB/.aidev/works/$SP/01-be/metrics.yml")" "phase: coding, event: start" "event は subtask の metrics に記録"
+
+# doctor が subtask も横断検査する
+SD=$(run_sub doctor)
+assert_contains "$SD" "$SP/01-be" "doctor: subtask 01-be を横断検査"
+assert_contains "$SD" "$SP/02-fe" "doctor: subtask 02-fe を横断検査"
+# verify が subtask を解決
+SV=$(run_sub verify "$SP/01-be"); assert_contains "$SV" "verify: $SP/01-be" "verify: subtask パスを解決"
+
+# D: 最後の subtask(02-fe)の review 承認で activeSubtask=done、カーソルが親へ戻る
+echo "$SP/02-fe" > "$SUB/.aidev/current"
+for ph in plan coding test review; do run_sub approve "$ph" >/dev/null; done
+: > "$SUB/.aidev/works/$SP/02-fe/review.md"
+assert_contains "$(cat "$SUB/.aidev/works/$SP/state.yml")" "activeSubtask: done" "D: 全 subtask 完了で activeSubtask=done"
+assert_eq "$(cat "$SUB/.aidev/current")" "$SP" "D: 全完了でカーソルが親 work へ戻る"
+
 echo "== sh ⇔ ps1 パリティ =="
 if command -v pwsh >/dev/null 2>&1; then
   for args in "status --format tsv" "metrics --all --format tsv" "metrics 20260101-alpha --phases --format tsv"; do
@@ -196,13 +284,28 @@ if command -v pwsh >/dev/null 2>&1; then
     assert_eq "$O_SH" "$O_PS" "パリティ: $args"
   done
 
+  # subtask 層のパリティ（$SUB フィクスチャ。doctor のネスト横断・status・metrics を sh⇔ps1 突合）
+  for args in "doctor" "status --format tsv" "metrics --all --format tsv"; do
+    # shellcheck disable=SC2086
+    O_SH=$( ( cd "$SUB" && "$AIDEV_SH" $args ) )
+    # shellcheck disable=SC2086
+    O_PS=$( ( cd "$SUB" && pwsh "$AIDEV_PS1" $args ) | tr -d '\r' )
+    assert_eq "$O_SH" "$O_PS" "パリティ(subtask): $args"
+  done
+
+  # ps1 の new --parent を実機で検証（sh で作った親に ps1 が subtask を足し、親 state を正しく更新）
+  ( cd "$SUB" && pwsh "$AIDEV_PS1" new 03-ps --parent "$SP" >/dev/null 2>&1 )
+  assert_contains "$(cat "$SUB/.aidev/works/$SP/state.yml")" "03-ps" "パリティ: ps1 new --parent が親 subtasks に追記"
+  assert_contains "$(cat "$SUB/.aidev/works/$SP/03-ps/state.yml" 2>/dev/null)" "parent: $SP" "パリティ: ps1 new --parent が子 parent 逆参照を刻む"
+
   # worktree パリティ（git 必須）: ps1 の worktree 実装を実機で検証する（#28）。
   # pwsh 不在の開発機では skip されるため、ps1 の worktree は本節（pwsh 環境/CI）で初めて実行検証される。
   if command -v git >/dev/null 2>&1; then
     PREPO="$TMP/prepo"
-    mkdir -p "$PREPO/.aidev/bin" "$PREPO/.aidev/works/20260101-existing"
-    cp "$AIDEV_SH"  "$PREPO/.aidev/bin/aidev";     chmod +x "$PREPO/.aidev/bin/aidev"
-    cp "$AIDEV_PS1" "$PREPO/.aidev/bin/aidev.ps1"
+    # CLI は skills 配下（worktree add の self-invoke 先）。.aidev/ は追跡 work(20260101-existing)で worktree に存在。
+    mkdir -p "$PREPO/.claude/skills/aidev-docs/bin" "$PREPO/.aidev/works/20260101-existing"
+    cp "$AIDEV_SH"  "$PREPO/.claude/skills/aidev-docs/bin/aidev";     chmod +x "$PREPO/.claude/skills/aidev-docs/bin/aidev"
+    cp "$AIDEV_PS1" "$PREPO/.claude/skills/aidev-docs/bin/aidev.ps1"
     printf '.aidev/current\n' > "$PREPO/.gitignore"
     # 既存work一致 add の回帰用に slug:existing の work をコミットしておく
     cat > "$PREPO/.aidev/works/20260101-existing/state.yml" <<'YML'

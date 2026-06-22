@@ -67,7 +67,7 @@
 
 ### sh / ps1 二本立て CLI の実装観点（既知の罠）
 
-`.aidev/bin/aidev`（POSIX sh・正本）と `.aidev/bin/aidev.ps1`（PowerShell）は**挙動・出力・終了コードを一致**
+`.claude/skills/aidev-docs/bin/aidev`（POSIX sh・正本）と `.claude/skills/aidev-docs/bin/aidev.ps1`（PowerShell）は**挙動・出力・終了コードを一致**
 させる二本立て。実装・レビュー時は、両言語で踏みやすい次の罠を点検する（過去に実際に踏んでいる）。
 
 - **POSIX sh は `set -eu` 前提**。次の2点に注意する。
@@ -80,7 +80,7 @@
   `$x[0]` が（配列の先頭要素ではなく）**文字列の先頭1文字**を返す。
   - 配列を期待する呼び出し側は **`$x = @(Func ...)` で配列強制**する（0件→Count0 / 1件→[0]正 / 複数→正）。
     例: `Wt-Add` の `$mw` が1件一致時に先頭1文字化し、worktree の `.aidev/current` を壊した（`@()` で修正）。
-- 検証の担保: sh⇔ps1 の差異は `.aidev/bin/test/run.sh` のパリティ節（pwsh 環境/CI）で機械的に突合する。
+- 検証の担保: sh⇔ps1 の差異は `.claude/skills/aidev-docs/bin/test/run.sh` のパリティ節（pwsh 環境/CI）で機械的に突合する。
   ローカルに pwsh が無いと skip されるため、**ps1 変更は CI（pwsh 同梱の runner）での実行を必ず確認**する。
 
 <!-- agent-ninja-START -->

@@ -24,9 +24,9 @@ AI 開発ワークフローの入口（ルーター）。
 **`aidev status` で機械抽出する**（各 `state.yml` を個別に手読みしない。works が増えても一定コスト）。
 
 ```sh
-.aidev/bin/aidev status                 # 進行中(works)＋未着手(backlog) を人間可読表で
-# 機械処理が必要なら: .aidev/bin/aidev status --format tsv
-# Windows: pwsh .aidev/bin/aidev.ps1 status
+.claude/skills/aidev-docs/bin/aidev status                 # 進行中(works)＋未着手(backlog) を人間可読表で
+# 機械処理が必要なら: .claude/skills/aidev-docs/bin/aidev status --format tsv
+# Windows: pwsh .claude/skills/aidev-docs/bin/aidev.ps1 status
 ```
 
 出力の読み方:
