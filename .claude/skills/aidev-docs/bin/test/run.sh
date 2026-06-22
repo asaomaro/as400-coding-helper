@@ -226,6 +226,8 @@ assert_contains "$(cat "$SPST")" "activeSubtask: 01-be" "activeSubtask は先頭
 run_sub new a/b --parent "$SP" >/dev/null 2>&1; assert_eq "$?" "1" "subtask slug にスラッシュは exit 1"
 # 親不在は exit 1
 run_sub new x --parent nope >/dev/null 2>&1; assert_eq "$?" "1" "親不在の --parent は exit 1"
+# C: 多段ネスト禁止（親が既に subtask なら exit 1）
+run_sub new deep --parent "$SP/01-be" >/dev/null 2>&1; assert_eq "$?" "1" "C: 親が subtask の --parent は exit 1（多段ネスト不可）"
 
 # guard: subtask plan は親の spec.md を継承して充足(0)
 echo "$SP/01-be" > "$SUB/.aidev/current"
@@ -235,6 +237,12 @@ run_sub guard coding >/dev/null 2>&1; assert_eq "$?" "2" "guard coding: 親 plan
 # 子に plan.md/tasks.md を置けば充足(0)
 : > "$SUB/.aidev/works/$SP/01-be/plan.md"; : > "$SUB/.aidev/works/$SP/01-be/tasks.md"
 run_sub guard coding >/dev/null 2>&1; assert_eq "$?" "0" "guard coding: 子の plan.md/tasks.md で充足(0)"
+# B: 親専用工程は subtask で実行不可（exit 2）。subtask の工程は plan/coding/test/review のみ
+for ph in spec design deliver walkthrough requirement; do
+  run_sub guard "$ph" >/dev/null 2>&1; assert_eq "$?" "2" "B: subtask の guard $ph は親専用で拒否(2)"
+done
+# B: subtask 固有工程(review)は親専用ブロックに掛からない（spec.md 継承で充足 0）
+run_sub guard review >/dev/null 2>&1; assert_eq "$?" "0" "B: subtask の guard review は許可(0)"
 
 # 兄弟 dependsOn: 02-fe は 01-be 未review で未充足(3)、review 後に充足(0)
 echo "$SP/02-fe" > "$SUB/.aidev/current"

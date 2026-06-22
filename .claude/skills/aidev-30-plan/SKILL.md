@@ -28,8 +28,12 @@ spec を実装可能な作業単位に分解し、`plan.md`（方針・順序）
 
 1. protocol.md「1. 対象作業の特定」に従い対象フォルダを確定。「2. 前提チェック」に従い `spec.md` を確認
    （`design.md` があればそれも読み込む）。
+   - **この work が subtask か親かを見分ける**（state.yml に `parent` があれば subtask）。
+     **subtask の plan は split 判定（手順3）と subtask 生成（手順4）を行わない**。手順5の「scope 凍結の
+     tasks.md 分解」だけを実施し、**再分割（subtask の下に subtask を作る）は禁止**（CLI も多段ネストを弾く）。
+     scope は親 plan が確定済み——子 plan は自分の slice の分解と兄弟 subtask への dependsOn 順序付けに限定する。
 2. `spec.md`（と `design.md` があればその構造設計）を読み、実装手順・依存関係・リスクを整理して `plan.md` を書く。
-3. **split 判定（subtask 分割の要否）**: `aidev-docs/DESIGN.md`「5.」の3層決定木に従い、この work を
+3. **（親 work のみ）split 判定（subtask 分割の要否）**: `aidev-docs/DESIGN.md`「5.」の3層決定木に従い、この work を
    subtask へ割るか判断する。判定の discriminator は単一原則 **「そのピースは単独で検証・デリバリ可能か」**。
    - **単独で検証・デリバリ可能（低結合）** → そもそも別 work/PR の候補（本 work では割らず、必要なら
      `aidev-util-propose` で別 work 化を提案）。**振る舞い不変な変更（refactor 等）はここ**＝subtask に落とさない。

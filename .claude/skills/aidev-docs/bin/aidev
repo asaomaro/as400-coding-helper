@@ -155,6 +155,8 @@ cmd_new() {
     pdir="$AIDEV/works/$parent"
     [ -d "$pdir" ] || die "親 work が存在しません: $parent"
     [ -f "$pdir/state.yml" ] || die "親 state.yml がありません: $parent"
+    # C: 多段ネスト禁止（単層のみ）。親が既に subtask なら拒否（doctor 横断・依存解決・activeSubtask は1段前提）
+    [ -n "$(yget "$pdir/state.yml" parent)" ] && die "親が既に subtask です。多段ネストは不可（subtask は単層のみ）: $parent"
     case "$slug" in */*) die "subtask slug にスラッシュは使えません: $slug" ;; esac
     name="$parent/$slug"
     WORK="$AIDEV/works/$name"
@@ -320,6 +322,14 @@ cmd_guard() {
   PARENT_DIR=""
   _par=$(yget "$WORK/state.yml" parent)
   [ -n "$_par" ] && [ -d "$AIDEV/works/$_par" ] && PARENT_DIR="$AIDEV/works/$_par"
+  # B: 親専用工程は subtask で実行不可（subtask の工程は plan/coding/test/review のみ）
+  if [ -n "$_par" ]; then
+    case "$ph" in
+      requirement|research|spec|design|walkthrough|deliver|retro)
+        printf 'NG %s は親 work 専用です（subtask では実行不可。subtask の工程は plan/coding/test/review）: %s\n' "$ph" "$SLUG" >&2
+        return 2 ;;
+    esac
+  fi
   case "$ph" in
     requirement) : ;;
     research|spec) need_file requirement.md || : ;;

@@ -163,6 +163,8 @@ function Cmd-New($rest) {
     if (-not (Test-Path $pdir)) { Die "親 work が存在しません: $parent" }
     $pst = Join-Path $pdir 'state.yml'
     if (-not (Test-Path $pst)) { Die "親 state.yml がありません: $parent" }
+    # C: 多段ネスト禁止（単層のみ）。親が既に subtask なら拒否（doctor 横断・依存解決・activeSubtask は1段前提）
+    if (YGet $pst 'parent') { Die "親が既に subtask です。多段ネストは不可（subtask は単層のみ）: $parent" }
     if ($slug -match '/') { Die "subtask slug にスラッシュは使えません: $slug" }
     $name = "$parent/$slug"
     $work = Join-Path $pdir $slug
@@ -277,6 +279,11 @@ function Cmd-Guard($rest) {
   $script:PARENT_DIR=''
   $par = YGet (Join-Path $script:WORK 'state.yml') 'parent'
   if ($par) { $pd = Join-Path (Join-Path $script:AIDEV 'works') $par; if (Test-Path $pd) { $script:PARENT_DIR=$pd } }
+  # B: 親専用工程は subtask で実行不可（subtask の工程は plan/coding/test/review のみ）
+  if ($par -and ('requirement','research','spec','design','walkthrough','deliver','retro' -contains $ph)) {
+    [Console]::Error.WriteLine("NG $ph は親 work 専用です（subtask では実行不可。subtask の工程は plan/coding/test/review）: $($script:SLUG)")
+    exit 2
+  }
   function needFile($f) {
     if (Test-Path (Join-Path $script:WORK $f)) { return }
     # 上流成果物(requirement/spec/design)のみ親から継承。plan.md/tasks.md は subtask 固有なので継承しない。
