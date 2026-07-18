@@ -247,6 +247,49 @@ function parseRestrictions(html) {
   return items;
 }
 
+/**
+ * 使用例の複数行を1本のコマンドに連結する。
+ * CL の継続文字 `+` は「次行先頭の空白を無視して空白1個で連結」、
+ * `-` は「先頭空白を保持して連結」。
+ */
+function joinExampleLines(code) {
+  const lines = code.split(/\r?\n/);
+  let result = "";
+  for (let i = 0; i < lines.length; i += 1) {
+    const text = lines[i];
+    const trimmed = text.trimEnd();
+    const marker = trimmed.slice(-1);
+    if (i < lines.length - 1 && (marker === "+" || marker === "-")) {
+      result += marker === "+" ? `${trimmed.slice(0, -1).trim()} ` : trimmed.slice(0, -1);
+      continue;
+    }
+    result += `${trimmed.trim()} `;
+  }
+  return result.replace(/\s+/g, " ").trim();
+}
+
+/**
+ * 実行可能な形の使用例か。原典の例には
+ *   IF &TESTSW DO GROUP A （CLコマンドのグループ） …
+ * のような説明を交えた擬似コードも含まれるため、それらは除く。
+ * 判定: 括弧が釣り合っていること、日本語（全角）を含まないこと。
+ */
+function isRunnableExample(code) {
+  if (code.length === 0) return false;
+  if (/[^\x00-\x7F]/u.test(code)) return false;
+  // 原典は「PGM : ENDPGM」のように、単独の `:` を省略記号として使った
+  // 擬似コードを例に混ぜている。そのまま取り込むと `PGM PARM(:)` のような
+  // 不正なコマンドを生成する（実機が「Label ':' not valid.」で弾いて発覚）。
+  if (/(^|\s):(\s|$)/u.test(code)) return false;
+  let depth = 0;
+  for (const char of code) {
+    if (char === "(") depth += 1;
+    if (char === ")") depth -= 1;
+    if (depth < 0) return false;
+  }
+  return depth === 0;
+}
+
 function parseCommandMeta(html, command) {
   const plain = stripTags(html);
 
@@ -269,7 +312,11 @@ function parseCommandMeta(html, command) {
   const examples = matchAll(html, /<pre[^>]*>([\s\S]*?)<\/pre>/gi)
     .map(m => decode(m[1].replace(/<[^>]+>/g, "")).trim())
     .filter(code => new RegExp(`^${command}\\b`).test(code))
-    .map(code => ({ code: code.split(/\r?\n/)[0].trim() }));
+    // 複数行の例を1行目だけ切り出すと、継続文字 `+` で終わる壊れた例になる
+    // （実機が「A matching parenthesis not found.」で弾いて発覚した）。
+    // 継続行は連結して1本のコマンドとして保持する。
+    .map(code => ({ code: joinExampleLines(code) }))
+    .filter(example => isRunnableExample(example.code));
 
   const errorMessages = [];
   for (const [, id, text] of matchAll(

@@ -155,6 +155,17 @@ const PATTERNS = [
       `継続行をまたぐパラメータが失われた（LEVEL=${values.LEVEL} OUTQ=${values.OUTQ}）`
   },
   {
+    // 修飾名の総称指定には `/*` が現れる。コメント開始と誤認すると
+    // コマンドが途中で切れる（実機が「A matching parenthesis not found.」で
+    // 弾いて発覚した）。実機で OBJ(MYLIB/*ALL) が受理されることを確認済み。
+    label: "修飾名の総称指定（/* を含む）",
+    command: "DLTOBJ",
+    lines: ["             DLTOBJ     OBJ(MYLIB/*ALL) OBJTYPE(*USRSPC)"],
+    expect: (_text, values) =>
+      (values.LIB === "MYLIB" && values.OBJ === "*ALL" && values.OBJTYPE === "*USRSPC") ||
+      `総称指定が壊れた（LIB=${values.LIB} OBJ=${values.OBJ}）`
+  },
+  {
     label: "ラベル付き",
     command: "ADDLIBLE",
     lines: ["TAG1:        ADDLIBLE   LIB(TESTLIB) POSITION(*AFTER QGPL)"],

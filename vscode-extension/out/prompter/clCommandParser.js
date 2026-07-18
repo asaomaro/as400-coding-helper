@@ -34,6 +34,10 @@ function joinContinuationLines(lines) {
     }
     return result.trim();
 }
+/** コメント `/*` の直前として妥当な文字か（行頭・空白・開き括弧）。 */
+function isCommentBoundary(previous) {
+    return previous === undefined || /[\s(]/u.test(previous);
+}
 /** `/* ... *​/` のコメントを取り除く（引用符の内側は対象外）。 */
 function stripComments(line) {
     let result = "";
@@ -53,7 +57,12 @@ function stripComments(line) {
             result += char;
             continue;
         }
-        if (char === "/" && next === "*") {
+        // コメント開始とみなすのは `/*` の直前が区切り（行頭か空白か開き括弧）のときだけ。
+        // 修飾名の総称指定 `OBJ(MYLIB/*ALL)` にも `/*` が現れるため、無条件に
+        // コメント開始と扱うとコマンドが途中で切れる。
+        // 実機(IBM i)で `DSPOBJD OBJ(MYLIB/*ALL)` が受理され、
+        // `... OBJTYPE(*FILE) /* コメント */` もコメントとして受理されることを確認済み。
+        if (char === "/" && next === "*" && isCommentBoundary(line[i - 1])) {
             const close = line.indexOf("*/", i + 2);
             if (close === -1) {
                 return result;
@@ -84,7 +93,8 @@ function extractComments(lines) {
                 quote = char;
                 continue;
             }
-            if (char === "/" && line[i + 1] === "*") {
+            // 取り除く側と同じ規則で判定する（片方だけ直すと食い違う）。
+            if (char === "/" && line[i + 1] === "*" && isCommentBoundary(line[i - 1])) {
                 const close = line.indexOf("*/", i + 2);
                 const body = (close === -1 ? line.slice(i + 2) : line.slice(i + 2, close)).trim();
                 if (body.length > 0)
