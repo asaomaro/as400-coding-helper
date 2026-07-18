@@ -39,9 +39,14 @@ const vscode = __importStar(require("vscode"));
 const jsonDefinitions_1 = require("../prompter/jsonDefinitions");
 const specClassifier_1 = require("../prompter/specClassifier");
 const dialect_1 = require("../prompter/dialect");
-/** C 仕様の命令コード欄（1 始まり）。ILE も RPG III も 26-35 桁。 */
-const OPCODE_RANGE = { from: 26, to: 35 };
-/** H/F/D/P 仕様のキーワード欄は 44 桁目から。 */
+/**
+ * C 仕様の命令コード欄（1 始まり）。方言で桁が違う。
+ *   ILE(RPG IV) 26-35 … 名前が伸びた分だけ広い（DATA-INTO 等）
+ *   RPG III      28-32 … 5 桁しかないため命令名も 5 文字以内（LOKUP / EXCPT）
+ * RPG III の桁は prompter/rpg/rpg3/C-SPEC.json の OPCODE(28) / FACTOR2(33) と一致する。
+ */
+const OPCODE_RANGE = { ile: { from: 26, to: 35 }, rpg3: { from: 28, to: 32 } };
+/** H/F/D/P 仕様のキーワード欄は 44 桁目から（ILE のみ）。 */
 const KEYWORD_COLUMN = 44;
 let cache;
 let cacheLanguage;
@@ -53,7 +58,11 @@ async function loadData(context) {
     try {
         const uri = vscode.Uri.joinPath(context.extensionUri, "resources", "completion", language === "ja" ? "rpg-completion.json" : `rpg-completion.${language}.json`);
         const document = await vscode.workspace.openTextDocument(uri);
-        cache = JSON.parse(document.getText());
+        const ile = JSON.parse(document.getText());
+        const rpg3Uri = vscode.Uri.joinPath(context.extensionUri, "resources", "completion", language === "ja" ? "rpg3-completion.json" : `rpg3-completion.${language}.json`);
+        const rpg3Document = await vscode.workspace.openTextDocument(rpg3Uri);
+        const rpg3 = JSON.parse(rpg3Document.getText());
+        cache = { ...ile, rpg3Opcodes: rpg3.opcodes };
         cacheLanguage = language;
         return cache;
     }
@@ -72,19 +81,25 @@ function resolveCompletionKind(line, character, specKeyword, dialect) {
     if (line.length > 6 && line.charAt(6) === "*")
         return undefined;
     const column = character + 1; // 1 始まりの桁
+    const isRpg3 = dialect === "rpg3";
     // % を打った直後は組み込み関数。式はどの欄にも書けるので桁で絞らない。
-    // ただし組み込み関数は RPG IV(ILE) で入ったもので RPG III には無い。
-    // 候補の出所も ILE RPG 解説書なので、rpg3 では出さない。
+    // ただし組み込み関数は RPG IV で入ったもので RPG III には無い。
     const before = line.slice(0, character);
     if (/%[A-Za-z0-9]*$/u.test(before)) {
-        return dialect === "rpg3" ? undefined : { kind: "bif" };
+        return isRpg3 ? undefined : { kind: "bif" };
     }
     if (specKeyword.startsWith("C-")) {
-        if (column >= OPCODE_RANGE.from && column <= OPCODE_RANGE.to + 1) {
-            return { kind: "opcode" };
+        const range = isRpg3 ? OPCODE_RANGE.rpg3 : OPCODE_RANGE.ile;
+        if (column >= range.from && column <= range.to + 1) {
+            return { kind: "opcode", dialect: isRpg3 ? "rpg3" : "ile" };
         }
         return undefined;
     }
+    // 仕様書キーワードは ILE のもの。RPG III の H/F 仕様は 71 桁目まで固定欄で、
+    // 自由に書けるキーワード欄が無い（prompter/rpg/rpg3/F-SPEC.json 参照）。
+    // ここで候補を出すと固定欄の途中に語を挿し込むことになる。
+    if (isRpg3)
+        return undefined;
     if (/^[HFDP]-SPEC$/u.test(specKeyword) && column >= KEYWORD_COLUMN) {
         return { kind: "keyword", spec: specKeyword };
     }
@@ -152,7 +167,11 @@ function registerRpgCompletion(context) {
                     return item;
                 });
             }
-            const operations = target.kind === "bif" ? data.bifs : data.opcodes;
+            const operations = target.kind === "bif"
+                ? data.bifs
+                : target.dialect === "rpg3"
+                    ? data.rpg3Opcodes
+                    : data.opcodes;
             return operations.map(operation => {
                 const item = new vscode.CompletionItem(operation.name, target.kind === "bif"
                     ? vscode.CompletionItemKind.Function

@@ -123,6 +123,19 @@
   - 組み込み関数の詳細ページは表を持たず、本文に構文がある。ただし本文には
     使用例（`%date(string:*MDY0)` のように小文字）も出るため、関数名と同じ表記の
     ものだけ採る。表題（`%SUBST (サブストリングの検索)`）を構文として拾う事故もある。
+- **方言(ILE / RPG III)で桁も語彙も違う**。RPG III は命令コード欄が **28-32 桁**（ILE は 26-35）で、
+  5 文字しか入らない。そのため綴りが別物になる（`LOOKUP`→`LOKUP`、`EXCEPT`→`EXCPT`、`CHECKR`→`CHEKR`）。
+  ILE の一覧を桁数で絞っても RPG III の語彙にはならない。組み込み関数と `EVAL`/`CALLP`/`IF`/`DOW` 等は
+  RPG IV で入ったもので RPG III には無い。RPG III の H/F 仕様は 71 桁目まで固定欄で、
+  ILE のようなキーワード欄が無い（`prompter/rpg/rpg3/F-SPEC.json` 参照）。
+- **RPG III の命令集合の原典は実機のコンパイラ**。IBM の RPG/400 Reference は ibm.com/docs に生 HTML が
+  無く PDF も入手できず、`docs/origin/rpg3/` の第三者資料は System/3 系 RPG II/III のもので足りない。
+  1命令1行の C 仕様を `CRTRPGPGM OPTION(*SOURCE) GENLVL(50)` に通し、**QRG5014『Operation entry invalid』**が
+  付いた行を弾く（`probe-rpg3-opcodes.sh`）。判定時の注意:
+  - **対照として存在しない命令(`ZZZZZ`)を必ず混ぜる**。これが QRG5014 にならなければ手法が壊れている。
+  - `BEGSR`/`ENDSR` は後続行を巻き添えにする(QRG5005『Operation entry following ENDSR operation invalid』)。
+    本体から外し、正しい副ルーチンの形で別に測る。外さないと後続が検査されず全部「有効」に見える。
+  - **候補に無い命令は検出できない**。実際 `CHEKR` を当初落としており、追試で拾った。
 - **日英で件数が一致しない**。原典そのものの差で、新しめの命令・関数
   （`%CONCAT` / `FOR-EACH` 等）は日本語の翻訳が無い。検査でも件数一致は求めず、
   各言語の索引に対する取りこぼしだけを見る。
