@@ -3,6 +3,16 @@ import type { ParameterDefinition, PrompterDefinition } from "./types";
 import type { ResolvedPosition } from "./positionResolver";
 import { getLogicalCommandRange } from "../language/clContinuation";
 import { isEditAllowedRange } from "../language/rpgEditGuards";
+import {
+  extractComments,
+  joinContinuationLines,
+  parseClCommand
+} from "./clCommandParser";
+import {
+  countOccurrences,
+  isRepeatableGroup,
+  occurrenceName
+} from "./occurrences";
 
 export interface AppliedValues {
   readonly [parameterName: string]: string | string[];
@@ -18,7 +28,18 @@ export async function applyChanges(
 
   if (resolved.language === "cl") {
     const logical = getLogicalCommandRange(document, resolved.line);
-    const newText = buildClCommandText(definition, values);
+
+    // ラベルとコメントは入力欄に現れないため、元のソースから引き継ぐ。
+    const originalLines: string[] = [];
+    for (let line = logical.range.start.line; line <= logical.range.end.line; line += 1) {
+      originalLines.push(document.lineAt(line).text);
+    }
+    const parsed = parseClCommand(joinContinuationLines(originalLines));
+
+    const newText = buildClCommandText(definition, values, {
+      label: parsed?.label,
+      comments: extractComments(originalLines)
+    });
     await editor.edit(editBuilder => {
       editBuilder.replace(logical.range, newText);
     });
@@ -61,15 +82,24 @@ export async function applyChanges(
   );
 }
 
+export interface ClCommandContext {
+  /** ソース上に付いていたラベル（`TAG1:`）。プロンプター確定後も残す。 */
+  readonly label?: string;
+  /** ソース上に書かれていたコメント。失わないよう末尾に付け直す。 */
+  readonly comments?: readonly string[];
+}
+
 // CL コマンド行の組み立ては vscode API に依存しない純粋関数のため、検証用に公開する。
 export function buildClCommandText(
   definition: PrompterDefinition,
-  values: AppliedValues
+  values: AppliedValues,
+  context: ClCommandContext = {}
 ): string {
   const keyword = definition.keyword.toUpperCase();
 
   // Columns 1–13: label area, column 14: command.
-  const labelArea = " ".repeat(13);
+  const label = context.label ? `${context.label}:` : "";
+  const labelArea = label.length >= 13 ? `${label} ` : label.padEnd(13, " ");
   let line = labelArea + keyword;
 
   // Parameters start at column 25.
@@ -90,11 +120,53 @@ export function buildClCommandText(
     }
   }
 
-  if (paramTokens.length > 0) {
-    line += paramTokens.join(" ");
+  for (const comment of context.comments ?? []) {
+    paramTokens.push(`/* ${comment} */`);
   }
 
-  return line;
+  return wrapClCommand(line, paramTokens);
+}
+
+// CL ソースの桁幅。継続行はパラメータ開始桁に揃える。
+const CL_LINE_WIDTH = 72;
+const CL_PARAM_COLUMN = 25; // 1-based
+
+/**
+ * コマンド行を CL ソースの桁幅に折り返す。
+ * 1行に収まらない場合は継続文字 `+` を付け、次行をパラメータ開始桁に揃える。
+ *
+ * 折り返しは「パラメータ単位」でのみ行う。トークンの途中で折ると
+ * 再解析したときに値が変わってしまうため（往復で同じ結果になる必要がある）。
+ */
+function wrapClCommand(head: string, paramTokens: readonly string[]): string {
+  if (paramTokens.length === 0) {
+    return head.trimEnd();
+  }
+
+  const indent = " ".repeat(CL_PARAM_COLUMN - 1);
+  const lines: string[] = [];
+  let current = head;
+  // その行に既にパラメータを載せたか。1つも載せずに折り返すと
+  // コマンド名だけの行ができてしまうため、最低1つは載せる。
+  let hasToken = false;
+
+  for (const token of paramTokens) {
+    const candidate = `${current}${current.endsWith(" ") ? "" : " "}${token}`;
+
+    // `+ ` の分を見込んで幅を判定する。
+    if (hasToken && candidate.length > CL_LINE_WIDTH - 2) {
+      lines.push(`${current.trimEnd()} +`);
+      current = indent + token;
+      hasToken = true;
+      continue;
+    }
+
+    current = candidate;
+    hasToken = true;
+  }
+
+  lines.push(current.trimEnd());
+  return lines.join("\n");
 }
 
 /** 1つの入力値を、前後空白を落とした文字列として取り出す。 */
@@ -126,16 +198,20 @@ function readMultiple(raw: string | string[] | undefined): string[] {
  */
 function buildParameterBody(
   parameter: ParameterDefinition,
-  values: AppliedValues
+  values: AppliedValues,
+  // 繰り返し指定の何件目か（0 始まり）。入れ子の末端まで引き継ぐ。
+  occurrence = 0
 ): string | undefined {
   const children = parameter.children ?? [];
 
   if (parameter.inputType !== "group" || children.length === 0) {
-    const single = readSingle(values[parameter.name]);
+    const single = readSingle(values[occurrenceName(parameter.name, occurrence)]);
     return single.length > 0 ? single : undefined;
   }
 
-  const childBodies = children.map(child => buildParameterBody(child, values) ?? "");
+  const childBodies = children.map(
+    child => buildParameterBody(child, values, occurrence) ?? ""
+  );
 
   // 単一値はどの入力欄に入っているとは限らない。修飾名では
   // ライブラリーではなくオブジェクト側の欄に *SAME 等が入る。
@@ -181,13 +257,36 @@ function buildParameterToken(
   parameter: ParameterDefinition,
   values: AppliedValues
 ): string | undefined {
+  if (isRepeatableGroup(parameter)) {
+    const bodies: string[] = [];
+    const count = countOccurrences(parameter, values);
+    for (let index = 0; index < count; index += 1) {
+      const body = buildParameterBody(parameter, values, index);
+      if (body) bodies.push(body);
+    }
+
+    if (bodies.length === 0) {
+      return undefined;
+    }
+
+    // 各出現を括弧で包むかどうかは原典の記法に合わせる。
+    //   修飾名の繰り返し     … 包まない  例: MODULE(LIB/MOD1 LIB/MOD2)
+    //   要素リストの繰り返し … 出現が複数、または要素が複数なら包む
+    //                          例: OBJ((LIB/F *FILE *EXCL M))  KEYFLD((F *DESCEND))
+    //                          単一要素1件だけなら包まない 例: FILE(ORDFILE)
+    const isElements = (parameter.groupKind ?? "qualified") === "elements";
+    const needsParens =
+      isElements && (bodies.length > 1 || bodies.some(body => /\s/u.test(body)));
+
+    const joined = needsParens
+      ? bodies.map(body => `(${body})`).join(" ")
+      : bodies.join(" ");
+
+    return `${parameter.name}(${joined})`;
+  }
+
   const isRepeatable =
     typeof parameter.maxOccurrences === "number" && parameter.maxOccurrences > 1;
-
-  if (isRepeatable && parameter.inputType === "group") {
-    const body = buildParameterBody(parameter, values);
-    return body ? `${parameter.name}((${body}))` : undefined;
-  }
 
   if (isRepeatable) {
     const list = readMultiple(values[parameter.name]);
@@ -198,7 +297,8 @@ function buildParameterToken(
   return body ? `${parameter.name}(${body})` : undefined;
 }
 
-function buildRpgLineText(
+// RPG 固定長行の組み立ても vscode API に依存しないため、検証用に公開する。
+export function buildRpgLineText(
   original: string,
   definition: PrompterDefinition,
   values: AppliedValues
@@ -275,6 +375,18 @@ function buildRpgLineText(
     const raw =
       (Array.isArray(rawValue) ? rawValue[0] ?? "" : rawValue ?? "").toString();
     const trimmed = raw.trim();
+
+    // 値が変わっていない項目は、元の桁の中身をそのまま残す。
+    // 取り出すときに前後の空白を落としているため、書き戻しで詰め直すと
+    // 元の寄せ方（右寄せ/中寄せ）が失われ、編集していない項目まで行が
+    // 変形してしまう（F仕様書の外部記述 'E' などで実際に発生していた）。
+    const originalSlice = original.slice(
+      parameter.sourceStart - 1,
+      parameter.sourceStart - 1 + parameter.sourceLength
+    );
+    if (originalSlice.trim() === trimmed) {
+      continue;
+    }
 
     const isNumericField =
       parameter.inputType === "number" || parameter.attributes?.numericOnly;

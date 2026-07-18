@@ -1,8 +1,17 @@
 import type { PrompterDefinition, ParameterDefinition } from "./types";
 import { evaluateParameter } from "./visibilityRules";
+import {
+  countOccurrences,
+  isRepeatableGroup,
+  occurrenceName
+} from "./occurrences";
 
 export interface FieldValue {
   readonly parameter: ParameterDefinition;
+  /** フォーム上の入力欄名。繰り返しの2件目以降は `名前#2` になる。 */
+  readonly fieldName: string;
+  /** 繰り返し指定の何件目か（0 始まり）。 */
+  readonly occurrence: number;
   readonly value: string;
   readonly error?: string;
   // dependsOn 評価後の実効状態。静的な parameter.required とは異なりうる。
@@ -44,29 +53,64 @@ function flattenParameters(
   return result;
 }
 
+/**
+ * 入力欄を、繰り返し指定の件数だけ展開して並べる。
+ * 2件目以降の入力欄名は `名前#2` のように連番になる（occurrences.ts の規則）。
+ */
+function expandOccurrences(
+  parameters: readonly ParameterDefinition[],
+  values: Record<string, string | undefined>
+): { parameter: ParameterDefinition; occurrence: number; fieldName: string }[] {
+  const result: {
+    parameter: ParameterDefinition;
+    occurrence: number;
+    fieldName: string;
+  }[] = [];
+
+  for (const parameter of parameters) {
+    const count = isRepeatableGroup(parameter) ? countOccurrences(parameter, values) : 1;
+
+    for (let occurrence = 0; occurrence < count; occurrence += 1) {
+      for (const leaf of flattenParameters([parameter])) {
+        result.push({
+          parameter: leaf,
+          occurrence,
+          fieldName: occurrenceName(leaf.name, occurrence)
+        });
+      }
+    }
+  }
+
+  return result;
+}
+
 export function buildInitialState(
   definition: PrompterDefinition,
   initialValues: Record<string, string | undefined>
 ): PrompterState {
-  const flatParameters = flattenParameters(definition.parameters);
+  const slots = expandOccurrences(definition.parameters, initialValues);
 
   // dependsOn は他パラメータの確定値を参照するため、先に全項目の値を determine する。
   const resolvedValues: Record<string, string | undefined> = {};
-  for (const parameter of flatParameters) {
-    resolvedValues[parameter.name] =
-      initialValues[parameter.name] ?? parameter.defaultValue ?? "";
+  for (const slot of slots) {
+    resolvedValues[slot.fieldName] =
+      initialValues[slot.fieldName] ??
+      // 2件目以降に既定値を勝手に入れると、空のはずの繰り返しが出力されてしまう。
+      (slot.occurrence === 0 ? slot.parameter.defaultValue ?? "" : "");
   }
 
-  const fields: FieldValue[] = flatParameters.map(parameter => {
-    const raw = resolvedValues[parameter.name] ?? "";
+  const fields: FieldValue[] = slots.map(slot => {
+    const raw = resolvedValues[slot.fieldName] ?? "";
     const { visible, required, disabled, allowedValues } = evaluateParameter(
-      parameter,
+      slot.parameter,
       resolvedValues
     );
-    const error = validate(parameter, raw, required, allowedValues);
+    const error = validate(slot.parameter, raw, required, allowedValues);
 
     return {
-      parameter,
+      parameter: slot.parameter,
+      fieldName: slot.fieldName,
+      occurrence: slot.occurrence,
       value: raw,
       error,
       required,
