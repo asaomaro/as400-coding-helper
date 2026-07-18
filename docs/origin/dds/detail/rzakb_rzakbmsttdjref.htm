@@ -1,0 +1,54 @@
+<h1 class="title topictitle1">JREF (結合における参照) キーワード - 結合論理ファイルのみ</h1><div id="lastModifiedDate"><span>Last Updated</span>: 2021-04-13</div>
+<div class="body refbody"><p class="shortdesc"><span class="ph">これは結合論理ファイルのフィールド・レベル・キーワードで、名前が複数の物理ファイルで指定されているフィールドについて使用します。このキーワードは、そのフィールドが
+どの物理ファイルに含まれているかを示します。</span></p>
+<div class="section"><div class="p">キーワードの形式は次のとおりです。<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code>JREF(file-name | relative-file-number)</code></pre></div><div class="docs--copy-btn"></div></div>
+</div>
+<p class="p">このキーワードには、物理ファイル名またはその相対ファイル番号の
+いずれかを指定することができます。JFILE キーワードで同じ物理ファイルの名前を 2 回指定した場合には、相対ファイル番号を指定しなければなりません。
+相対ファイル番号は、JFILE キーワードで指定した
+物理ファイルに対応します。例えば、JREF(1) を指定すると、フィールドは、JFILE キーワードに
+指定した最初の物理ファイルに関連付けられます。JREF(2) を指定すると、フィールドは、JFILE キーワードに指定した 2 番目の
+物理ファイルに関連付けられます。このトピックの例 2 を参照してください。</p>
+<p class="p">このキーワードは結合論理ファイルに対してだけ有効です。</p>
+<p class="p">結合論理ファイルは、複数 (最高 256 個) の物理ファイルを基にしています。結合論理ファイルのレコード様式で指定する各フィールド名は、いずれも、その結合論理ファイル
+の基礎となっている物理ファイルのフィールドの 1 つを固有に識別するもので
+なければなりません。例えば、結合論理ファイルが 2 つの物理ファイルを基礎にしており、各物理ファイルに NAME という名前のフィールドがある場合には、そのフィールドがどちらの物理ファイルのものであるかを識別するために、JREF キーワードを
+指定しなければなりません。</p>
+<p class="p">物理ファイル (JFILE キーワードで指定されたもの) の間でフィールド名が固有な
+場合には、このキーワードの指定はオプショナルです。
+例えば、結合論理ファイルが 2 つの物理ファイルに関連付けられており、物理ファイルのどちらか 1 つにだけフィールド NAME1 が入っている
+場合には、JREF キーワードを指定する必要はありません。</p>
+<p class="p">結合論理ファイルがただ 1 つの物理ファイルに関連付けられている場合
+(JFILE キーワードで同じファイル名を 2 回指定している場合) には、フィールドごとに JREF キーワードを指定しなければなりません。</p>
+</div>
+<div class="example"><h2 class="title sectiontitle">例 1</h2><p class="p">以下に JREF キーワードの指定方法の例を示します。</p>
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code>|...+....1....+....2....+....3....+....4....+....5....+....6....+....7....+....8
+00010A          R JOINREC                   JFILE(PFA PFB PFC)
+00020A               :
+00030A               :
+00040A               :
+00050A            NAME                      JREF(PFB)
+     A</code></pre></div><div class="docs--copy-btn"></div></div>
+<p class="p">この例では、JREF キーワードはファイル名を伴って指定されており、NAME は PFA と PFB の両方に入っています。JREF (PFB) の
+指定により、このフィールドを PFB と関連付けています。</p>
+</div>
+<div class="example"><h2 class="title sectiontitle">例 2</h2><p class="p">次の例は、相対ファイル番号を使用して JREF を
+指定する方法を示します。</p>
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code>|...+....1....+....2....+....3....+....4....+....5....+....6....+....7....+....8
+00010A          R JOINREC                   JFILE(PFA PFB PFC)
+00020A               :
+00030A               :
+00040A               :
+00050A            NAME                      JREF(2)
+     A</code></pre></div><div class="docs--copy-btn"></div></div>
+<p class="p">例 2 は例 1 と同じことを意味しています。
+例 2 では、NAME は PFA と PFB の両方に入っています。 JREF(2) の指定により、
+このフィールドを PFB (JFILE キーワードで指定した 2 番目の物理ファイル) に関連付けています。</p>
+</div>
+</div>
+<div class="related-links ibm-padding-top-1 ibm-padding-bottom-2 bx--row bottom-section-parent" aria-label="bottom related links">
+<div class="familylinks ibm-margin-bottom-1">
+<div class="parentlink"><strong>親トピック:</strong> <div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a class="link bottom-section-link" href="/docs/ja/ssw_ibm_i_74/rzakb/rzakbmstlfkeyw.htm" title="キーワード項目は、45 から 80 桁目 (機能欄) に記入します。">物理ファイルおよび論理ファイルのキーワード項目 (45 から 80 桁目)</a></div></div>
+</div>
+</div>
+

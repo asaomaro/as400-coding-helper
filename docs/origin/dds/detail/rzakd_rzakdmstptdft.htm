@@ -1,0 +1,67 @@
+<h1 class="title topictitle1">印刷装置ファイルの DFT (デフォルト) キーワード</h1><div id="lastModifiedDate"><span>Last Updated</span>: 2021-04-13</div>
+<div class="body refbody"><p class="shortdesc"><span class="ph">DFT キーワードは、固定情報フィールドの値を指定する場合に使用します。</span></p>
+<div class="section"><p class="p">キーワードの形式は次のとおりです。</p>
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code>DFT('value')
+'value'
+DFT(X'hexadecimal-value')
+X'hexadecimal-value'</code></pre></div><div class="docs--copy-btn"></div></div>
+<p class="p">固定情報の値として指定できるのは次のいずれかです。</p>
+<ul class="ul cds--list--unordered"><li class="li cds--list__item">文字値。文字値の各文字は指定したとおりに印刷されます。文字数はフィールドの印刷桁数と同じです。(値の中では、隣接した 2 つの単一引用符は 1 つ
+の単一引用符として印刷されます。)<a class="xref" href="#rzakdmstptdft__rzakddft">例 1</a> を参照してください。</li>
+<li class="li cds--list__item">16 進数値。2 つで 1 組の文字が、文字セットの中の 1 つのコード・ポイントを表します。指定したコード・ポイントに対応する文字が、定義中のフィールドに印刷されます
+(代替文字は DFNCHR を用いて定義します)。印刷桁数は、単一引用符と単一引用符
+との間に指定する文字数の半分です。DFT で 16 進数値を
+指定する場合には、TRNSPY キーワードを指定しなければなりません。<a class="xref" href="#rzakdmstptdft__constantdft">例 2</a> を参照してください。</li>
+</ul>
+<p class="p">DFT キーワードおよび括弧を省略することによって、DFT を暗黙に指定する
+ことができます (これは、文字値と 16 進数値の両方に当てはまります)。単一引用符で囲んで値を指定してください。ただし、16 進数値を指定する場合には、値の前に X も付けなければなりません。</p>
+<p class="p">EDTCDE キーワードおよび EDTWRD キーワードは、DFT キーワードとともに指定することはできません。</p>
+<p class="p">オプション標識は、このキーワードでは無効です。
+ただし、このキーワードを
+指定した固定情報フィールドの条件付けのために、オプション標識を使用することはできます
+(フィールド位置と同じ行に最後のオプション標識を指定します)。</p>
+</div>
+<div class="example" id="rzakdmstptdft__rzakddft"><h2 class="title sectiontitle">例 1</h2><p class="p">次の例は、文字値を使用する DFT の指定方法を示しています。</p>
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code>|...+....1....+....2....+....3....+....4....+....5....+....6....+....7....+....8
+00010A          R SUPPLIES
+00020A            PENS          20      2  1
+00030A            INK           20      3  1
+00040A            PAPER         20      4  1
+00050A                                  7  9DFT('ON')
+00060A                                  8  9'ON'
+00070A
+00080A  01                             12  1'Hotel name: 'Terrace Inn'
+00100A
+00110A  02                             12  1'Hotel name: 'Riverview Inn'
+     A</code></pre></div><div class="docs--copy-btn"></div></div>
+<p class="p">この例で、DFT('ON') と 'ON' とは同じです。2 通りの指定を用いているのは、DFT の明示指定と暗黙指定の違いを示すためです。</p>
+<div class="p">標識 01 がオンであれば、次のものが印刷されます。<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code>Hotel name: 'Terrace Inn'</code></pre></div><div class="docs--copy-btn"></div></div>
+</div>
+<div class="p">標識 02 がオンで標識 01 がオフであれば、次のものが印刷されます。<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code>Hotel name: 'Riverview Inn'</code></pre></div><div class="docs--copy-btn"></div></div>
+</div>
+</div>
+<div class="example" id="rzakdmstptdft__constantdft"><h2 class="title sectiontitle">例 2</h2><p class="p">次の例は、代替文字が含まれる固定情報フィールドについての DFT の
+指定方法を示しています。</p>
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code>|...+....1....+....2....+....3....+....4....+....5....+....6....+....7....+....8
+12
+00010A          R RECORD                    DFNCHR(X'7C' X'007E813CC324817E00')
+00020A                          358  4DFT(X'7C')   TRNSPY  4
+00030A                                    +2DFT('1982')
+     A</code></pre></div><div class="docs--copy-btn"></div></div>
+<p class="p">この例では、DFT キーワードが指定されている固定情報フィールド <strong class="ph b">1</strong> は、58 行目の 4 桁目に印刷されます。このフィールドには、16 進数 7C に対して定義されている文字が印刷されます。
+DFNCHR キーワード <strong class="ph b">2</strong> は、この例ではレコード・レベルで指定されており、16 進数 7C を著作権マークとして定義します。</p>
+<div class="p">次に、この例 <strong class="ph b">3</strong> で定義されている通りに値を指定する 4 通りの方法を示します。<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code>DFT(X'7C')
+X'7C'
+DFT('©')
+'©'</code></pre></div><div class="docs--copy-btn"></div></div>
+</div>
+<p class="p">DFT キーワードで 16 進数値を指定する場合には、TRNSPY キーワード <strong class="ph b">4</strong> が
+必要です。</p>
+</div>
+</div>
+<div class="related-links ibm-padding-top-1 ibm-padding-bottom-2 bx--row bottom-section-parent" aria-label="bottom related links">
+<div class="familylinks ibm-margin-bottom-1">
+<div class="parentlink"><strong>親トピック:</strong> <div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a class="link bottom-section-link" href="/docs/ja/ssw_ibm_i_74/rzakd/rzakdmstprkey.htm" title="これらは印刷装置ファイルの定義に有効なキーワード項目です。">印刷装置ファイルのキーワード項目 (45 から 80 桁目)</a></div></div>
+</div>
+</div>
+

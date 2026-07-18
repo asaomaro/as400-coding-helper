@@ -1,0 +1,57 @@
+<h1 class="title topictitle1">表示装置ファイルの PUTRETAIN (データ保持 PUT) キーワード</h1><div id="lastModifiedDate"><span>Last Updated</span>: 2021-04-13</div>
+<div class="body refbody"><p class="shortdesc">これはレコード・レベルまたはフィールド・レベル・キーワードで、レコードを再表示する時点で、<span class="keyword">IBM® i</span> オペレーティング・システムが画面上の既存のデータを消去しないことを指定するために、OVERLAY キーワードとともに使用します。
+PUTOVR キーワードは、PUTRETAIN キーワードと類似した機能を持ちますが、より効果的です。</p>
+<div class="section"><p class="p">このキーワードにはパラメーターはありません。</p>
+<p class="p">このキーワードが出力命令に及ぼす効果を分かりやすく説明するために、次の一連のステップを想定してみます。</p>
+<ol class="ol cds--list--ordered--temporary"><li class="li cds--list__item">プログラムは、RECORD1 に対する出力命令を出し、RECORD1 を表示します。PUTRETAIN は、効力を持っていても、無視されます。
+RECORD1 のレコード域にあるデータは、すべて RECORD1 の表示前に消去されます。</li>
+<li class="li cds--list__item">その後、画面に RECORD1 がまだ表示されている間に、プログラムが RECORD1 に対する二度目の出力命令を送ります。この場合、次の 2 とおりの状態が起こり得ます。<ul class="ul cds--list--unordered cds--list--nested"><li class="li cds--list__item">PUTRETAIN キーワードが効力を持っていない場合には、<span class="keyword">IBM i</span> オペレーティング・システムは、まず RECORD1 のレコード域を削除し、その後で RECORD1 を表示します。
+この時点で選択され表示されるフィールドは、新しいデータ内容と新しい表示属性 (前と同じ場合もあります) で表示されます。
+レコード域には、RECORD1 のフィールドまたはその一部を表示するすべての行が含まれます。</li>
+<li class="li cds--list__item">PUTRETAIN キーワードが効力を持っている場合には、<span class="keyword">IBM i</span> オペレーティング・システムは、RECORD1 のレコード域を削除しません。
+選択したフィールドのデータ内容は変わりません。
+ただし、選択したフィールドの表示属性は、画面に送られ、変更されることがあります (この出力命令で有効な DSPATR キーワードを指定してあった場合)。
+表示用に選択されなかったフィールドは、表示用に選択されたフィールドによって、文字単位で重ね書きされます。(詳細については、<a class="xref" href="#rzakcmstdfptret__whenf">フィールドがオプション標識によって選択される場合</a>を参照してください。)</li>
+</ul>
+</li>
+</ol>
+<div class="note note border-2 cds--inline-notification--info ibmdocs-note cds--inline-notification cds--inline-notification--low-contrast margin-top-1 margin-bottom-1"><div class="cds--inline-notification__details"><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" class="cds--inline-notification__icon" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M16,2A14,14,0,1,0,30,16,14,14,0,0,0,16,2Zm0,5a1.5,1.5,0,1,1-1.5,1.5A1.5,1.5,0,0,1,16,7Zm4,17.12H12V21.88h2.88V15.12H13V12.88h4.13v9H20Z"></path></svg>
+        <div class="cds--inline-notification__text-wrapper">
+          <div class="cds--inline-notification__subtitle"><span class="notetitle ibm-bold ibm-textcolor-blue-50 background-blue cds--inline-notification__title ibm-padding-top-1 ibm-padding-bottom-1 padding-left-1 padding-right-1">注:</span> PUTRETAIN キーワードをフィールド・レベルで使用する場合、レコード内に PUTRETAIN が効力を持っているフィールドが 1 つもなければ、レコード域全体が削除されます。
+無条件で PUTRETAIN が効力を持つフィールドを少なくとも 1 つ指定しておけばレコード域の削除を防ぐことができます。</div>
+        </div>
+      </div></div>
+<p class="p">PUTRETAIN キーワードを指定した場合には、表示装置ファイルの作成 (CRTDSPF) コマンドまたは表示装置ファイルの変更 (CHGDSPF) コマンドに RSTDSP(*YES) を指定しなければなりません。そうしないと、ファイルの処理が中断された場合に、画面上のデータが失われることがあります。</p>
+<p class="p">このキーワードについては、オプション標識を使用することができます。</p>
+</div>
+<div class="section"><h2 class="title sectiontitle">PUTRETAIN キーワードに影響する条件</h2><p class="p">PUTRETAIN は、それを指定したレコード様式にのみ、しかも画面上にすでにそのレコードが表示されている場合にのみ適用されます。
+PUTRETAIN を指定したレコードが画面上に存在しない場合には、PUTRETAIN は無視されます。</p>
+<p class="p">このキーワードをレコード・レベルで指定した場合には、選択され表示される当該レコード様式内のすべてのフィールドに、このキーワードが適用されます。</p>
+<p class="p">このキーワードは、レコード様式内の複数のフィールドに対して指定できますが、1 つのフィールドについて一度しか指定できません。また、同一レコード様式内で、レコード・レベルおよびフィールド・レベルの両方で指定することができます。</p>
+<p class="p">PUTRETAIN は、PUTOVR キーワードと同時に指定することはできません。</p>
+<p class="p">DSPMOD キーワードが指定されているレコードに、PUTRETAIN キーワードを指定すると、ファイル作成時に警告メッセージが表示されます。実行時に、表示モードが変更されると、PUTRETAIN キーワードは無視されます。</p>
+<p class="p">PUTRETAIN を指定した場合には、OVERLAY キーワードも指定しなければなりません。</p>
+<p class="p">OVERLAY キーワードが有効になっていない場合には、PUTRETAIN は無視され、レコードの表示の前に画面全体が削除されます。</p>
+</div>
+<div class="section" id="rzakcmstdfptret__whenf"><h2 class="title sectiontitle">フィールドがオプション標識によって選択される場合</h2><p class="p">フィールド選択を伴う出力命令で PUTRETAIN が効力を持っている場合には、そのレコード様式内のフィールドは、再表示の際に選択されなかった場合でも、画面からは削除されません。このようなフィールドは、新たに選択されたフィールドにより、部分的または全体的に書き直されることがあります。</p>
+<p class="p">PUTRETAIN が新たに選択されたフィールドに対してだけ効力をもっている (フィールド・レベルが指定されている) 場合には、そのフィールドの開始属性文字だけが画面に送られ、終了属性文字は画面には送られません。
+同一レコード様式内にあって PUTRETAIN が指定されていないフィールドの場合には、<span class="keyword">IBM i</span> オペレーティング・システムは、表示属性とデータを送ります。
+PUTRETAIN がレコード全体に効力を持っている (レコード・レベルで指定されている)  場合には、開始属性文字と終了属性文字だけが画面に送られます。
+したがって、あるフィールドの表示属性は、そのフィールドの直前のフィールドが選択され、そのフィールドが選択されなかった場合には、通常の属性にリセットされることがあります。</p>
+<p class="p">例えば、属性文字がオーバーラップしている 2 つの連続したフィールドに対して DSPATR(UL) が有効になっているとします。
+PUTRETAIN が効力を持っている出力命令で、最初のフィールドが選択され、2 番目のフィールドが選択されなかった場合には、2 番目のフィールドの表示属性は、通常の表示属性にリセットされます。
+これは、<span class="keyword">IBM i</span> オペレーティング・システムにより最初のフィールドが開始属性文字および終了属性文字とともに画面に送られますが、その終了属性文字が 2 番目のフィールドの開始属性文字を変更してしまうためです。</p>
+</div>
+<div class="example"><h2 class="title sectiontitle">例</h2><p class="p">次の例は、PUTRETAIN キーワードの指定方法を示しています。</p>
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code>|...+....1....+....2....+....3....+....4....+....5....+....6....+....7....+....8
+00101A          R CUST
+00102A                                      PUTRETAIN OVERLAY
+     A</code></pre></div><div class="docs--copy-btn"></div></div>
+</div>
+</div>
+<div class="related-links ibm-padding-top-1 ibm-padding-bottom-2 bx--row bottom-section-parent" aria-label="bottom related links">
+<div class="familylinks ibm-margin-bottom-1">
+<div class="parentlink"><strong>親トピック:</strong> <div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a class="link bottom-section-link" href="/docs/ja/ssw_ibm_i_74/rzakc/rzakcmstkeyent.htm" title="表示装置ファイルを定義するキーワード項目は、45 - 80 桁目 (機能欄) に記入します。">表示装置ファイルの DDS キーワード項目 (45 - 80 桁目)</a></div></div>
+</div>
+</div>
+

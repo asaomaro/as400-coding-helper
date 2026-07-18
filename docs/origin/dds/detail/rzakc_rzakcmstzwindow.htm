@@ -1,0 +1,156 @@
+<h1 class="title topictitle1">表示装置ファイルの WINDOW (ウィンドウ) キーワード</h1><div id="lastModifiedDate"><span>Last Updated</span>: 2021-04-13</div>
+<div class="body refbody"><p class="shortdesc"><span class="ph">これはレコード・レベル・キーワードで、定義中のレコード様式がウィンドウを使用して表示されるよう指定するために使用します。</span></p>
+<div class="section"><p class="p">ウィンドウは、画面の一部をオーバーレイする情報です。ウィンドウは通常、実際のワークステーション画面よりも小さく、画面上のどこにでも置くことができます。</p>
+<div class="p">WINDOW キーワードに使用できる 2 つの形式があります。これらの形式により次のことを行います。<ul class="ul cds--list--unordered"><li class="li cds--list__item">ウィンドウの位置およびサイズを指定することにより、ウィンドウを定義します。これはウィンドウ定義レコードとして認識されます。</li>
+<li class="li cds--list__item">ウィンドウ位置およびサイズが定義されているレコード様式名を参照します。これはウィンドウ参照レコードとして認識されます。</li>
+</ul>
+</div>
+<div class="p">このキーワードの形式は次のとおりです。<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code>WINDOW(start-line | &amp;start-line-field start-position
+| &amp;start-position-field window-lines window-positions
+[*MSGLIN | *NOMSGLIN])
+[*RSTCSR | *NORSTCSR])
+または
+WINDOW(*DFT window-lines window-position
+[*MSGLIN | *NOMSGLIN]
+[*RSTCSR | *NORSTCSR])</code></pre></div><div class="docs--copy-btn"></div></div>
+</div>
+<p class="p">ウィンドウの定義を行う場合には、この形式の WINDOW キーワードを指定してください。
+定義中のレコード様式がこのウィンドウに表示されます。
+画面には、一度に最大 12 個までのウィンドウを表示することができます。
+DDS には 12 個を超えるウィンドウを定義することができますが、同時に表示することができるのは 12 個だけです。
+しかし、USRRSTDSP が指定されている場合には、ウィンドウの数は制限されません。
+このレコードで定義するすべてのフィールドが、ウィンドウに収まらなければなりません。</p>
+<div class="p">パラメーターには、次のものを指定します。<ul class="ul cds--list--unordered"><li class="li cds--list__item">ウィンドウ枠の左上隅が入る行の番号を指定する番号またはフィールドの名前。フィールド名を指定する場合には、
+そのフィールドはレコード様式内に存在しなければならず、桁数が 3 桁以下で、符号付き数字 (データ・タイプ S) のプログラム - システム間 (使用目的 P) フィールドでなければなりません。</li>
+<li class="li cds--list__item">ウィンドウ枠の左上端が入る桁の番号を指定する番号またはフィールドの名前。フィールド名を指定する場合には、
+そのフィールドはレコード様式内に存在しなければならず、桁数が 3 桁以下で、符号付き数字 (データ・タイプ S) のプログラム - システム間 (使用目的 P) フィールドでなければなりません。</li>
+<li class="li cds--list__item">ウィンドウ内のウィンドウ行数。
+ウィンドウ行は、表示画面サイズで使用できる行から 2 を引いた数を超えることはできません。これは、上および下のウィンドウ枠がそれぞれ 1 行使用するからです。<p class="p">ウィンドウの最終ウィンドウ行はメッセージ行として使用され、フィールドを含むことはできません。
+例えば、ウィンドウに 10 行のウィンドウ行を指定する WINDOW キーワードをコーディングする場合には、それらのうちの 9 行だけがフィールドを含むことができ、10 行目はメッセージ行です。</p>
+</li>
+<li class="li cds--list__item">ウィンドウ内のウィンドウの桁数。ウィンドウ桁は、画面サイズで使用できる桁から 4 を引いた数以下でなければなりません。これは、ウィンドウ内で右の枠と左の枠の両方で属性バイトが必要なためです。
+属性バイトは、枠文字と使用できるウィンドウ桁の間に存在します。
+DBCS 可能ウィンドウの場合、見えない DBCS フィールドについてのシフトアウト文字およびシフトイン文字のために、ウィンドウの両側でさらに 2 バイトずつが必要になる可能性があります。</li>
+<li class="li cds--list__item">MSGLIN パラメーターは、ウィンドウにメッセージ行が入るかどうかを指定します。
+このパラメーターを指定しない場合、デフォルトは *MSGLIN です。*NOMSGLIN を指定すると、メッセージはウィンドウの外側に移動され、画面の最下部、または MSGLOC キーワードで定義された位置に置かれます。
+ウィンドウ内の最後の使用可能行は、エラー・メッセージ用に予約されています。そこにはレコードは表示されません。エラー・メッセージは、行よりも長い場合には、行に収まるように切り捨てられます。</li>
+<li class="li cds--list__item">*RSTCSR パラメーターは、カーソルがウィンドウの外側にあるときにユーザーが限定された機能を使用できるかどうかを指定します。
+*NORSTCSR を指定すると、カーソルがウィンドウの外側にあるときでも、カーソルがウィンドウ内にある場合のように機能キーを押してその機能を有効にすることができます。
+非プログラマブル・ワークステーションの拡張インターフェースをサポートする制御装置上で *RSTCSR を指定する場合、ユーザーはウィンドウの外側にカーソルを移動することができます (マウスを使用する場合は例外)。
+他のワークステーションについては、カーソルがウィンドウの外側にある間にユーザーが機能キーを押そうとするとビープ音が鳴り、カーソルはウィンドウの内側に配置されます。制御はアプリケーションに戻されません。*RSTCSR はデフォルトです。</li>
+</ul>
+</div>
+<p class="p">特殊値 *DFT を start-line および start-position パラメーターの代わりに指定することは、システムがウィンドウの開始行および開始桁を判別することを示します。
+ウィンドウは、可変開始位置のアプリケーション・ヘルプ・ウィンドウと同様に、カーソル位置に関連して位置が決められます。システムがウィンドウを位置づけるために使用する規則の詳細については、<a class="xref" href="http://publib.boulder.ibm.com/infocenter/iseries/v6r1m0/topic/rzakc/sc415715.pdf" target="_blank" title="(PDF ファイルを開く)">Application Display Programming</a> 資料を参照してください。</p>
+<p class="p">WINDOW キーワードの 2 番目の形式は <samp class="ph codeph">WINDOW(record-format-name)</samp> です。</p>
+<p class="p">WINDOW キーワードのこの形式は、定義中のレコード様式を他のレコード様式で定義されたウィンドウに表示する場合に指定します。</p>
+<p class="p">パラメーターは、指定されたウィンドウ属性を持つレコード様式名を指定します。
+このパラメーターを使用するレコード様式が、参照されるレコードで定義されたウィンドウに表示されます。</p>
+<p class="p">WINDOW キーワードで指定された、レコード様式内のフィールド位置は、ウィンドウの左上隅の初めに使用できるウィンドウ位置と相対関係にあります。
+初めに使用できるウィンドウ位置は上枠のすぐ下で、左枠から 2 桁右のところです (枠のすぐ右のバイトは終了属性バイトが使用します)。</p>
+<p class="p">USRRSTDSP が指定されていない場合には、ウィンドウが表示されるとき、現在画面上にあるどのレコードも中断します。中断しているレコードは、ウィンドウのわきに見ることができます。入力は活動状態のウィンドウの中でだけ行えます。
+画面からウィンドウを除去するには、レコードを見えないウィンドウに書き込むか、画面で非ウィンドウ・レコードをオーバーレイする必要があります。</p>
+<p class="p">WINDOW キーワードは、次のキーワードが指定されているレコード様式で使用することはできません。</p>
+<div class="tablenoborder"><div class="cds--data-table-container"><table id="parm_table0" cellpadding="4" cellspacing="0" role="presentation" class="table presentation cds--data-table" rules="none" frame="void" border="0"><tbody class="tbody"><tr class="row"><td class="entry valigntop" width="50%"><p class="lines">ALWROL<br>
+ASSUME<br>
+MNUBAR</p>
+</td>
+<td class="entry valigntop" width="50%"><p class="lines">PULLDOWN<br>
+SFL<br>
+USRDFN</p>
+</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="note note border-2 cds--inline-notification--info ibmdocs-note cds--inline-notification cds--inline-notification--low-contrast margin-top-1 margin-bottom-1"><div class="cds--inline-notification__details"><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" class="cds--inline-notification__icon" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M16,2A14,14,0,1,0,30,16,14,14,0,0,0,16,2Zm0,5a1.5,1.5,0,1,1-1.5,1.5A1.5,1.5,0,0,1,16,7Zm4,17.12H12V21.88h2.88V15.12H13V12.88h4.13v9H20Z"></path></svg>
+        <div class="cds--inline-notification__text-wrapper">
+          <div class="cds--inline-notification__subtitle"><span class="notetitle ibm-bold ibm-textcolor-blue-50 background-blue cds--inline-notification__title ibm-padding-top-1 ibm-padding-bottom-1 padding-left-1 padding-right-1">注:</span> WINDOW キーワードは SFLCTL キーワードとともにレコードで使用することができます。これで、ウィンドウ内にサブファイルを表示することができます。</div>
+        </div>
+      </div></div>
+<p class="p">WINDOW は PASSRCD キーワードで指定されたレコード様式に使用することはできません。</p>
+<p class="p">ERRSFL キーワードは、WINDOW キーワードが指定されたレコードでは無視されます。</p>
+<p class="p">MSGLOC キーワードは、NOMSGLIN が指定されない限り、WINDOW が指定されているレコードについては無視されます。</p>
+<p class="p">レコード様式に WINDOW および WDWBORDER の両方のキーワードが指定されている場合には、WINDOW キーワードで start-line、start-position、window-lines、および window-positions パラメーターを指定してください。
+WINDOW キーワードで record-format-name パラメーターを指定するべきではありません。</p>
+<p class="p">オプション標識は、このキーワードでは無効です。しかし、画面サイズ条件名は使用することができます。</p>
+</div>
+<div class="example"><h2 class="title sectiontitle">例 1</h2><p class="p">次の例は、ウィンドウを定義するための WINDOW キーワードの指定方法を示します。</p>
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code>|...+....1....+....2....+....3....+....4....+....5....+....6....+....7....+....8
+     A          R WINDOW1                   WINDOW(4 20 9 30 *NORSTCSR)
+     A            FIELD1         8A  B  5 10
+     A            FIELD2        10A  B  6 10
+     A          R WINDOW2                   WINDOW(*DFT 9 30 *NOMSGLIN)
+     A</code></pre></div><div class="docs--copy-btn"></div></div>
+<div class="p">レコード WINDOW1 が表示されるとき、ウィンドウ枠の左上隅は、画面の 4 行目の 20 桁目に位置します。枠の右下隅は、上枠より 10 行下で、左枠から 33 桁右に位置します。
+<ul class="ul cds--list--unordered"><li class="li cds--list__item">下枠行 = 上枠行 + ウィンドウ行 + 1</li>
+<li class="li cds--list__item">右枠桁 = 左枠桁 + ウィンドウ桁 + 3</li>
+</ul>
+</div>
+<div class="p">フィールド FIELD1 は、上枠の 2 行下、左枠文字 (画面の 6 行目の 31 桁目) の 11 桁 (枠文字の終了属性バイトを含めて) 右から始まります。<ul class="ul cds--list--unordered"><li class="li cds--list__item">実際のフィールド行 = 上枠行 + フィールドの行番号</li>
+<li class="li cds--list__item">実際のフィールド桁 = 左枠桁 + フィールドの桁 + 1</li>
+</ul>
+</div>
+<p class="p">フィールド FIELD2 は、上枠の 6 行下、左枠 (画面の 10 行目の 31 桁目) の 11 桁右から始まります。</p>
+<p class="p">カーソルがウィンドウの外側に移動しても、機能キーは活動状態のままです。</p>
+<p class="p">レコード WINDOW 2 が表示されるときには、ウィンドウの左上端は実行時のカーソル位置になります。メッセージ行はウィンドウの内側には表示されず、画面の最下部に表示されます。</p>
+<p class="p">カーソルがウィンドウの外側に移動すると、機能キーは非活動状態になります。ユーザーが機能キーを押すとビープ音が鳴り、カーソルはウィンドウの内側に配置されます。</p>
+</div>
+<div class="example"><h2 class="title sectiontitle">例 2</h2><p class="p">次の例は、同じウィンドウ内に複数のレコードを表示するための WINDOW キーワードの使用方法を示しています。</p>
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code>|...+....1....+....2....+....3....+....4....+....5....+....6....+....7....+....8
+     A          R WINDOW1                   WINDOW(&amp;LINE &amp;POS 9 30)
+     A            USERID         8A  O  2 10
+     A            LINE           2S 0P
+     A            POS            3S 0P
+     A
+     A          R RECORD1                   WINDOW(WINDOW1)
+     A                                      OVERLAY
+     A            FIELD1         5A  B  7  2
+     A            FIELD2        20A  B  8  5
+     A
+     A          R RECORD2                   WINDOW(WINDOW1)
+     A            FIELD3        10A  B  2  2
+     A            FIELD4         8A  B  8  5
+     A            FIELD4         8A  B  8  5
+     A</code></pre></div><div class="docs--copy-btn"></div></div>
+<p class="p">レコード WINDOW1 が表示されるとき、枠の左上隅は、LINE および POS フィールドで指定された行および桁番号に配置されます。枠の右下隅は、上枠より 10 行下で、左枠から 33 桁右に位置します。</p>
+<p class="p">フィールド USERID は、上枠の 2 行下、左枠文字の 11 桁右から始まります。</p>
+<p class="p">RECORD1 (前の例の) が表示される場合には、WINDOW1 内に配置されます。そのフィールドはウィンドウの左上隅と関連して位置付けされます。
+RECORD1 に OVERLAY キーワードが使用され、2 つのレコードは重なり合わないので、画面上のレコード WINDOW1 のフィールドは残ります。</p>
+<p class="p">RECORD2 (前の例の) が表示される場合には、これも WINDOW1 内に配置されます。そのフィールドはウィンドウの左上隅と関連して位置付けされます。
+OVERLAY キーワードが使用されていないので、レコード WINDOW1 および RECORD1 のフィールドはウィンドウから除去されます。</p>
+</div>
+<div class="example"><h2 class="title sectiontitle">例 3</h2><p class="p">次の例は、サブファイルを指定する WINDOW キーワードの使用方法を示しています。</p>
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code>|...+....1....+....2....+....3....+....4....+....5....+....6....+....7....+....8
+     A          R SFLDATA                   SFL
+     A            NAME          20A  B  4  5
+     A            RANK          10A  B  4 27
+     A            SERIAL         8A  B  4 38
+     A
+     A          R WINDOW1                   SFLCTL(SFLDATA)
+     A                                      WINDOW(8 25 10 50)
+     A                                      SFLPAG(4)
+     A                                      SFLSIZ(17)
+     A                                      SFLDSP
+     A                                      SFLDSPCTL
+     A                                  2  5'Full Name'
+     A                                  2 27'Rank'
+     A                                  2 38'Serial Nbr'
+     A</code></pre></div><div class="docs--copy-btn"></div></div>
+<p class="p">WINDOW1 サブファイル制御レコードが表示されるとき、それとサブファイルがウィンドウに表示されます。
+ウィンドウ枠の左上隅は画面の 8 行目の 25 桁目になります。枠の右下隅は、19 行目の 78 桁目に位置します。</p>
+<p class="p">サブファイル・レコードおよびサブファイル制御レコードの両方のフィールドは、ウィンドウの左上隅の初めの使用可能ウィンドウ桁と関連して位置付けされます。
+例えば、SFLDATA レコードの NAME フィールドは、ウィンドウの 4 行目の 5 桁目から始まります。
+これは、画面の 12 行目の 31 桁目と同じことです。</p>
+</div>
+</div>
+<div class="related-links ibm-padding-top-1 ibm-padding-bottom-2 bx--row bottom-section-parent" aria-label="bottom related links">
+<div class="familylinks ibm-margin-bottom-1">
+<div class="parentlink"><strong>親トピック:</strong> <div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a class="link bottom-section-link" href="/docs/ja/ssw_ibm_i_74/rzakc/rzakcmstkeyent.htm" title="表示装置ファイルを定義するキーワード項目は、45 - 80 桁目 (機能欄) に記入します。">表示装置ファイルの DDS キーワード項目 (45 - 80 桁目)</a></div></div>
+</div>
+<div class="relinfo relref ibm-margin-bottom-1"><strong>関連資料</strong>:<br>
+<div><div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a class="link bottom-section-link" href="/docs/ja/ssw_ibm_i_74/rzakc/rzakcmstzusrrstd.htm" title="これはウィンドウ・レコードのレコード・レベル・キーワードで、アプリケーションが画面を管理することを指定するために使用します。">表示装置ファイルの USRRSTDSP (ユーザー復元画面) キーワード</a></div></div>
+<div><div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a class="link bottom-section-link" href="/docs/ja/ssw_ibm_i_74/rzakc/rzakcmstoverla.htm" title="これはレコード・レベル・キーワードで、事前に画面全体の削除を行わずに、定義中のレコード様式を画面に表示することを指定するために使用します。">表示装置ファイルの OVERLAY (オーバーレイ) キーワード</a></div></div>
+</div>
+</div>
+

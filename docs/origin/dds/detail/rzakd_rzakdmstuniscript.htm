@@ -1,0 +1,195 @@
+<h1 class="title topictitle1">印刷装置ファイルの UNISCRIPT (Unicode テキスト・レイアウト) キーワード</h1><div id="lastModifiedDate"><span>Last Updated</span>: 2021-04-13</div>
+<div class="body refbody"><p class="shortdesc">このフィールド・レベルのキーワードは、
+複合スクリプト処理のためにマークされたテキストの選択を制御する場合に使用します。</p>
+<div class="section"><p class="p">このキーワードには、2 つのフォーマットを使用できます。</p>
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code>UNISCRIPT</code></pre></div><div class="docs--copy-btn"></div></div>
+<p class="p">UNISCRIPT キーワードのすべてのパラメーターにはデフォルトがあります。
+パラメーターを指定しないでこのキーワードを指定すると、各パラメーターのデフォルトが使用されます。</p>
+<p class="p">また、1 つまたは複数のオプション・パラメーターを指定してこのキーワードを使用することもできます。
+パラメーターは任意の順序で指定できます。</p>
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code>UNISCRIPT([*PRECHK]  [*NORMALIZE]
+      [(*ICULOC 'locale_constant_string' | *NONE | &amp;iculocale_field_name)]
+      [(*PARDIR *RL | *LR | *PREV | *CALC | &amp;paragraph_dir_field)]
+      [(*ALTIPOS position_value | &amp;alternate_inline_position_field])</code></pre></div><div class="docs--copy-btn"></div></div>
+<p class="p">パラメーターを指定しない場合は、そのパラメーターのデフォルトが使用されます。</p>
+<p class="p">precheck_data parameter *PRECHK を使用して、複合レイアウト技法が必要かどうかを判断するために、印刷時にデータ・テストを行うように要求します。
+このオプション・パラメーターを指定すると、データは、まず、ストリングが正しく表されるには複合テキスト・レイアウトが必要かどうかを決めるために分析されます。
+複合レイアウトが必要でない場合は、Unicode データはマークされず、従来のテキスト・レイアウト技法で処理されます。
+この場合、このフィールドについては以降の UNISCRIPT パラメーターは無視されます。
+複合レイアウトが必要な場合、またはこのパラメーターが省略された場合は、データは複合テキスト・レイアウト用にマークされます。
+この前処理を実行するためには、<span class="keyword">IBM® i</span> オプション 39—UNICODE 国際コンポーネント (ICU)—がインストールされていなければなりません。</p>
+<p class="p">icu_locale パラメーター *ICULOC を使用して、テキスト・レイアウト機能を持つアプリケーションをガイドするためのロケールを指定します。
+大部分のアプリケーションは、Unicode コード・ポイントを使用するだけで、テキストの正しいレイアウトを決定できます。
+しかし、少数の TrueType フォントは、特定の言語、国、または地域のための代替字形を備えています。例えば、1 つのフォントに中国の字形と日本の字形の両方が含まれている場合は、それに合った文字変形にアクセスするためにロケールが必要になります。
+ICU ロケールの指定は、フォントにこのような変形が含まれていることがわかっていて、印刷アプリケーションがその言語または地域に限定されている場合以外はお勧めしません。</p>
+<p class="p">このパラメーターは、(*ICULOC value) の形式で指定します。
+指定できる値は次のとおりです。</p>
+<ul class="ul cds--list--unordered"><li class="li cds--list__item">*NONE。
+フィールド・データに関連するロケール名はありません。これはデフォルトです。<p class="p">データのテキスト・レイアウトをガイドするためにプレゼンテーション・システムのデフォルトのロケールが使用されます。</p>
+</li>
+<li class="li cds--list__item">locale_constant_string は、長さ 2 から 96 バイトの引用符付きストリングです。
+<p class="p">ロケール名はプレゼンテーション・システムで使用される ICU 機能の規則に則っていなければなりません。
+一般に、ICU ロケールは、下線で区切られた 1 つ、2 つ、または 3 つの順序付けられたコードで構成されます。
+最初のコードは、ISO-639 標準の 2 文字または 3 文字の小文字の言語コードです。
+さらに、ロケールは、ISO-3166 標準の 2 文字または 3 文字の大文字の地域コードで修飾できます。
+これらのコードのいずれに対しても、2 文字の値が定義されている場合はそれが使用されます。
+3 番目の修飾子は可変レコードで、アプリケーション固有の任意のストリングです。</p>
+<p class="p">引用符付きストリング値には小文字が含まれることがあるため、正しく解釈されるためにはエンコード方式を考慮する必要があります。
+ユーザーが入力として定数ストリングを提供した場合、DDS コンパイラーはソース・メンバーに (*HEX でない) CCSID のタグがついているかどうかを検査します。</p>
+</li>
+</ul>
+<p class="p">ロケール名はプログラム - システム間フィールドに指定できます。このフィールドは UNISCRIPT キーワードと同じレコード様式内に存在しなければならず、桁数 2 から 96、データ・タイプ A (文字) でなければなりません。</p>
+<p class="p">ホスト印刷変換機能を使用して文書を印刷する場合、
+指定するロケール名は <span class="keyword">IBM i</span> オプション 39 で提供される
+ICU に用意されているものでなければなりません。
+指定されたロケールが見つからない場合は、定義済みロケールのクラス階層に基づいて代替ロケールが検出されます。</p>
+<p class="p">paragraph_direction パラメーター *PARDIR を使用して、優先段落方向を決める方法を指定します。
+この値は、データに双方向アルゴリズムが適用されるときに入力データとして使用されます。
+また、代替インライン位置が指定されている場合に、現行位置と代替位置のいずれにテキストを配置するかの決定にも使用されます。
+このパラメーターは、特殊値またはプログラム - システム間フィールドとして指定できます。</p>
+<p class="p">このパラメーターは、(*PARDIR value) の形式で指定します。
+サポートされる特殊値とその定義を以下にリストします。</p>
+<ul class="ul cds--list--unordered"><li class="li cds--list__item">*CALC。
+段落方向は、最初に検出された強方向文字に基づく複合テキスト・ランによって決定されます。
+そのような文字がストリング中に検出されない場合は、左から右のデフォルトの段落方向が使用されます。これはデフォルト値です。</li>
+<li class="li cds--list__item">*RL。
+段落方向は右から左に設定されます。</li>
+<li class="li cds--list__item">*LR。
+段落方向は左から右に設定されます。</li>
+<li class="li cds--list__item">*PREV。
+段落方向は、直前の複合テキスト・ランによって決定されます。
+フィールドがページの最初の複合テキスト・ランである場合、段落方向は、最初に検出された強方向文字に基づくテキスト・データにより決定されます。
+そのような文字がストリング中に検出されない場合は、左から右のデフォルトの段落方向が使用されます。</li>
+</ul>
+<p class="p">パラメーター値がプログラム - システム間フィールドである場合、このフィールドは UNISCRIPT キーワードと同じレコード様式内に存在しなければならず、桁数 5、データ・タイプ A (文字) でなければなりません。</p>
+<p class="p">alternate-inline-position パラメーター *ALTIPOS は、段落方向の異なるテキスト・ランについて、現行インライン (横方向) 位置の代わりに使用される現行ライン上の代替位置を指定するために使用します。
+このパラメーターにより、右から左の段落方向を持つフィールドは右寄せにし、左から右の段落方向を持つフィールドは左寄せにすることができます。
+ある段落方向の開始点として使用される位置の決定は、現行インライン方向と段落方向の関係に基づきます。
+このパラメーターの使用法については、次の例を参照してください。</p>
+<p class="p">alternate-inline-position パラメーター値は、CRTPRTF コマンドの FRONTMGN パラメーターまた
+は BACKMGN パラメーターに指定されたマージンに相対的に適用されます。
+有効な値は、0 から 57.790 cm (0 から 22.750 インチ) です。
+CRTPRTF コマンドの UOM パラメーターは、alternate-inline-position パラメーター値を測る単位を決定します。
+指定された値が有効範囲から外れた場合は、スプール・ファイルの作成時にフラグが付けられます。</p>
+<p class="p">このパラメーターは (*ALTIPOS value) の形式です。
+値はプログラム - システム間フィールドで提供できます。
+このフィールドは UNISCRIPT キーワードと同じレコード様式内に存在しなければならず、桁数 5、小数点以下の桁数 3、データ・タイプ S (数字) でなければなりません。
+alternate-inline-position パラメーターを指定しない場合は、追加の位置指定アクションは行われません。これがデフォルトです。</p>
+<p class="p">ファイルに UNISCRIPT を指定する場合は、CRTPRTF コマンドで DEVTYPE(*AFPDS) を指定してください。DEVTYPE が *AFPDS 以外に変更された場合には、キーワードは
+無視され、印刷時に警告メッセージが出ます。 </p>
+<p class="p">フィールドに UNISCRIPT キーワードを使用するとき、次のことも考慮する必要があります。
+フィールドは <samp class="ph tt">G</samp> データ・タイプでなければならず、UCS-2 または UTF-16 CCSID の CCSID キーワードと *NOCONVERT パラメーターを使用しなければなりません。
+このキーワードはデータに TrueType フォントを適用しなければ有益でないので、FONTNAME キーワード (コード・ページ・パラメーターを指定しない) も必要です。</p>
+<p class="p">このキーワードについては、オプション標識を使用できます。</p>
+</div>
+<div class="section"><h2 class="title sectiontitle">例</h2><p class="p">次の例では、右から左へ書く文字になじみのない人のために、大文字と小文字を使用して、異種の文字タイプを表すことにします。
+右から左へ書く文字 (アラビア語、ヘブライ語など) を大文字で代用し、左から右へ書く文字 (英語、ロシア語字など) を小文字で代用します。
+ストレージ内では、Unicode 文字は論理順序で格納されます。
+以下の例では、<samp class="ph codeph">「TEXT text」</samp> というテキスト・ストリングについて検討します。</p>
+<p class="p">段落方向パラメーターに *RL または *CALC を指定した場合、このストリングは次のように表示されます。</p>
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code>text TXET</code></pre></div><div class="docs--copy-btn"></div></div>
+<p class="p">*LR を指定した場合は、次のように表示されます。</p>
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code>TXET text</code></pre></div><div class="docs--copy-btn"></div></div>
+<p class="p">alternate-inline-position を省略すると、フィールドは、指定された段落方向または計算された段落方向にかかわりなく、通常の位置に配置され、現行インライン方向にレイアウトされます。
+デフォルトでは、*AFPDS 印刷装置ファイルは左から右 (L-to-R) のインライン方向を使用します。右から左 (R-to-L) のインライン方向は、FONTNAME キーワードおよび TXTRTT キーワードの *ROTATION パラメーターに 180 度の値を指定して得られます。
+現行インライン位置が P1 であり、段落方向が R-to-L であるとします。</p>
+<ul class="ul cds--list--unordered"><li class="li cds--list__item">インライン方向が L-to-R の場合は、ストリングは次のようになります。
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code>(P1)text TXET</code></pre></div><div class="docs--copy-btn"></div></div>
+</li>
+<li class="li cds--list__item">インライン方向が R-to-L の場合は、ストリングは次のようになります。
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code>text TXET(P1)</code></pre></div><div class="docs--copy-btn"></div></div>
+</li>
+</ul>
+<p class="p">alternate-inline-position パラメーターを使用すると、アプリケーションはインライン方向を変更せずに L-to-R および R-to-L のテキストを正しく配置できます。
+このパラメーターは次のように使用します。</p>
+<ul class="ul cds--list--unordered"><li class="li cds--list__item">インライン方向が L-to-R (文字回転 0 度) の場合、R-to-L 段落方向のフィールドには alternate_inline_position (P2) が使用されます。
+段落方向が L-to-R の場合は、通常のインライン位置 (P1) が使用されます。</li>
+<li class="li cds--list__item">インライン方向が R-to-L (文字回転 180 度) の場合、L-to-R 方向の段落には alternate_inline_position (P2) が使用されます。
+段落方向が R-to-L の場合は、通常のインライン位置 (P1) が使用されます。</li>
+</ul>
+<p class="p">alternate-inline-position (P2) を指定すると、上の例のストリングは次のように配置されます。</p>
+<ul class="ul cds--list--unordered"><li class="li cds--list__item">現行インライン方向が L-to-R であり、段落方向が R-to-L である場合、ストリングは次のようになります。
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code>(P1)                          text TXET(P2)</code></pre></div><div class="docs--copy-btn"></div></div>
+</li>
+<li class="li cds--list__item">現行インライン方向が L-to-R であり、段落方向が L-to-R である場合、ストリングは次のようになります。
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code>(P1)TXET text                         (P2)</code></pre></div><div class="docs--copy-btn"></div></div>
+</li>
+<li class="li cds--list__item">現行インライン方向が R-to-L であり、段落方向が L-to-R である場合、ストリングは次のようになります。
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code>(P1)                      	                (P2)TXET text </code></pre></div><div class="docs--copy-btn"></div></div>
+</li>
+<li class="li cds--list__item">現行インライン方向が R-to-L であり、段落方向が R-to-L である場合、ストリングは次のようになります。
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code>text TXET(P1)                        	(P2)</code></pre></div><div class="docs--copy-btn"></div></div>
+</li>
+</ul>
+<p class="p">文書全体に代替位置を使用して R-to-L スクリプト用のまったく異なるレポート・レイアウトを生成する場合、すべてのフィールドが同じ段落方向で解釈されることがきわめて重要です。
+この目的のために、*PARDIR パラメーター用の特殊値 *PREV が提供されています。
+プログラム - システム間フィールドもこの目的に使用できます。</p>
+<p class="p">なお、90 度および 270 度の文字回転値で表される垂直インライン方向については、Unicode 双方向処理はサポートされず、alternate-inline-position は無視されることに注意してください。</p>
+<p class="p">次の例は、UNISCRIPT キーワードの指定方法を示しています。</p>
+<div class="note note border-2 cds--inline-notification--info ibmdocs-note cds--inline-notification cds--inline-notification--low-contrast margin-top-1 margin-bottom-1"><div class="cds--inline-notification__details"><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" class="cds--inline-notification__icon" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M16,2A14,14,0,1,0,30,16,14,14,0,0,0,16,2Zm0,5a1.5,1.5,0,1,1-1.5,1.5A1.5,1.5,0,0,1,16,7Zm4,17.12H12V21.88h2.88V15.12H13V12.88h4.13v9H20Z"></path></svg>
+        <div class="cds--inline-notification__text-wrapper">
+          <div class="cds--inline-notification__subtitle"><span class="notetitle ibm-bold ibm-textcolor-blue-50 background-blue cds--inline-notification__title ibm-padding-top-1 ibm-padding-bottom-1 padding-left-1 padding-right-1">注:</span> コード例を使用すると、<a class="xref" href="/docs/ja/ssw_ibm_i_74/rzakd/codedisclaimer.htm">コードに関するライセンス情報および特記事項</a>の条件に同意したことになります。</div>
+        </div>
+      </div></div>
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code>|...+....1....+....2....+....3....+....4....+....5....+....6....+....7....+....8
+     A*
+     A          R REC1                      
+     A            F1            10G     3  8UNISCRIPT
+     A                                      CCSID(13488 *NOCONVERT)
+     A                                      FONTNAME('Monotype Sans WT' +
+     A                                      (*POINTSIZE 10.0))  	   
+     A* 
+     A          R REC2	                    CCSID(1200 *NOCONVERT)
+     A                                      FONTNAME('Monotype Sans WT' +
+     A                                      (*POINTSIZE 10.0))  
+     A            F2            10G     4  8UNISCRIPT(*NORMALIZE +
+     A                                      (*ICULOC 'zh_HK') +
+     A                                      (*PARDIR *RL) +
+     A                                      (*ALTIPOS 5.77))
+     A            F3            10G     5  8UNISCRIPT(*PRECHK +
+     A                                      (*ICULOC &amp;ICULOC) +
+     A                                      (*PARDIR &amp;PARDIR) +
+     A                                      (*ALTIPOS &amp;ALTPOS))
+     A            ICULOC        20A  P
+     A            PARDIR         5A  P
+     A            ALTPOS         5S 3P
+     A                                           </code></pre></div><div class="docs--copy-btn"></div></div>
+<div class="note note border-2 cds--inline-notification--info ibmdocs-note cds--inline-notification cds--inline-notification--low-contrast margin-top-1 margin-bottom-1"><div class="cds--inline-notification__details"><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" class="cds--inline-notification__icon" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M16,2A14,14,0,1,0,30,16,14,14,0,0,0,16,2Zm0,5a1.5,1.5,0,1,1-1.5,1.5A1.5,1.5,0,0,1,16,7Zm4,17.12H12V21.88h2.88V15.12H13V12.88h4.13v9H20Z"></path></svg>
+        <div class="cds--inline-notification__text-wrapper">
+          <div class="cds--inline-notification__subtitle"><span class="notetitle ibm-bold ibm-textcolor-blue-50 background-blue cds--inline-notification__title ibm-padding-top-1 ibm-padding-bottom-1 padding-left-1 padding-right-1">注:</span> CRTPRTF コマンドの UOM パラメーターは、alternate-inline-position パラメーターのパラメーター値を測る単位を決定します。</div>
+        </div>
+      </div></div>
+<p class="p">レコード REC1 のフィールド F1 は UNISCRIPT キーワードのデフォルトを使用します。
+F1 のテキストでは、複合テキスト・レイアウトが必要かどうかを判断する事前検査は行われません。
+このフィールドのデータはプレゼンテーション・デバイスにより正規化されません。
+ICU ロケール名はプレゼンテーション・システムにより提供されます。
+段落方向は、F1 のテキストで最初に検出された強方向文字により決定されます。
+alternate-inline-position パラメーターが指定されていないので、追加の位置指定アクションは行われません。
+UCS-2 または UTF-16 CCSID の CCSID キーワードと *NOCONVERT パラメーターは必須です。
+FONTNAME キーワードも必須です。</p>
+<p class="p">レコード REC2 は、CCSID キーワードと FONTNAME キーワードをレコード・レベルで使用します。
+これらのキーワードは、レコード様式内の <samp class="ph tt">G</samp> データ・タイプ・フィールドごとに適用されます。その結果、UNISCRIPT キーワードを指定されたすべての <samp class="ph tt">G</samp> フィールドも、必須の CCSID キーワードと FONTNAME キーワードを持ちます。</p>
+<p class="p">REC2 のフィールド F2 は、提供されたすべてのパラメーター値を持つ UNISCRIPT キーワードを使用します。
+テキストはプレゼンテーション・デバイスにより正規化されます。
+<samp class="ph tt">中国の香港特別行政区</samp>の ICU ロケールが要求されています。段落方向は右から左に設定されます。
+テキストは、CRTPRTF コマンドの FRONTMGN または BACKMGN パラメーターで指定された
+マージンから 5.77 単位横に配置されます。</p>
+<p class="p">REC2 のフィールド F3 は、プログラム - システム間フィールドに UNISCRIPT パラメーターの値の一部を提供します。
+*PRECHK と *NORMALIZE はプログラム - システム間フィールド・パラメーターをサポートしないことに注意してください。
+この例では *NORMALIZE パラメーターが省略されているので、テキストはプレゼンテーション・デバイスにより正規化されません (デフォルト)。
+また、*PRECHK パラメーターが指定されているので、ファイルのテキストでは複合テキストに対して事前検査がされます。</p>
+</div>
+</div>
+<div class="related-links ibm-padding-top-1 ibm-padding-bottom-2 bx--row bottom-section-parent" aria-label="bottom related links">
+<div class="familylinks ibm-margin-bottom-1">
+<div class="parentlink"><strong>親トピック:</strong> <div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a class="link bottom-section-link" href="/docs/ja/ssw_ibm_i_74/rzakd/rzakdmstprkey.htm" title="これらは印刷装置ファイルの定義に有効なキーワード項目です。">印刷装置ファイルのキーワード項目 (45 から 80 桁目)</a></div></div>
+</div>
+<div class="relinfo relref ibm-margin-bottom-1"><strong>関連資料</strong>:<br>
+<div><div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a class="link bottom-section-link" href="/docs/ja/ssw_ibm_i_74/nls/rbagssyssuplocalesourcedef.htm">システム提供のロケールと推奨 CCSID</a></div></div>
+</div>
+<div class="relinfo ibm-margin-bottom-1"><strong>関連情報</strong>:<br>
+<div><div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 16 16" aria-hidden="true" class="blue-icon"><path d="M13,14H3c-0.6,0-1-0.4-1-1V3c0-0.6,0.4-1,1-1h5v1H3v10h10V8h1v5C14,13.6,13.6,14,13,14z"></path><polygon points="10,1 10,2 13.3,2 9,6.3 9.7,7 14,2.7 14,6 15,6 15,1"></polygon></svg><a class="link bottom-section-link" href="https://www.ibm.com/links?url=http%3A%2F%2Fwww.unicode.org%2Funicode%2Freports%2Ftr15%2F" target="_blank" title="(新しいタブまたはウィンドウで開く)">Unicode 正規化形式</a></div></div>
+<div><div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 16 16" aria-hidden="true" class="blue-icon"><path d="M13,14H3c-0.6,0-1-0.4-1-1V3c0-0.6,0.4-1,1-1h5v1H3v10h10V8h1v5C14,13.6,13.6,14,13,14z"></path><polygon points="10,1 10,2 13.3,2 9,6.3 9.7,7 14,2.7 14,6 15,6 15,1"></polygon></svg><a class="link bottom-section-link" href="http://www.ibm.com/software/globalization/icu/index.jsp" target="_blank" title="(新しいタブまたはウィンドウで開く)">IBM グローバリゼーション - ICU</a></div></div>
+</div>
+</div>
+

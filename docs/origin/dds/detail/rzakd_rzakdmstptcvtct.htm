@@ -1,0 +1,76 @@
+<h1 class="title topictitle1">印刷装置ファイルの CVTDTA (データ変換) キーワード</h1><div id="lastModifiedDate"><span>Last Updated</span>: 2021-04-13</div>
+<div class="body conbody"><p class="shortdesc">これはフィールド・レベル・キーワードで、フィールドがプリンターに渡されるときに、文字データを 16 進数データに変換することを指定するために使用します。</p>
+<div class="p">CVTDTA キーワードにより次のものを定義することができます。<ul class="ul cds--list--unordered"><li class="li cds--list__item">用紙のレターヘッドとして印刷する社章や紋章など。</li>
+<li class="li cds--list__item">代替文字セットまたは記号 (版権の記号など)。</li>
+<li class="li cds--list__item">物理的な用紙の書式 (送り状の用紙などで、欄と欄の間に縦横の罫線を引く)。</li>
+<li class="li cds--list__item">IPDS バーコード・コマンド</li>
+</ul>
+</div>
+<p class="p">このキーワードにはパラメーターはありません。</p>
+<p class="p">SCS 印刷装置ファイル (CRTPRTF コマンドで DEVTYPE(*SCS) の指定されている
+ファイル) では、CVTDTA は、DFNCHR キーワードを使用する場合に限り指定するように
+してください。さらに、CVTDTA は、未割り当てのコード・ポイントに文字を定義する場合に
+使用します。<strong class="ph b">コード・ポイント</strong>とは、文字セットの中の文字を割り当てる
+ことのできる 256 個の値の 1 つ 1 つをいいます。<strong class="ph b">未割り当てコード・ポイント</strong>とは、まだ文字が割り当てられていないコード・ポイントのことです。
+<span class="keyword">IBM® i</span> オペレーティング・システムでは、
+コード・ポイントは 2 桁の 16 進数で識別されます。
+例えば、EBCDIC 文字セットでは、コード・ポイント 16 進数 C1 には文字 A が割り当てられています。16 進数 51 は未割り当てのコード・ポイントです。</p>
+<p class="p">CVTDTA は、5224、5225、または IPDS プリンターを対象とした場合に有効です。
+IPDS プリンターの場合には、CVTDTA によって、データ・ストリームに含めるコード・ポイントを指定することができます。これらのコード・ポイントは、プリンターであらかじめ割り当
+てられているとおりに印刷されます。IPDS プリンターの場合には、CVTDTA キーワードは TRNSPY および DFNCHR キーワードと一緒に使用しないでください。</p>
+<div class="p">未割り当てのコード・ポイントに割り当てる文字を定義する場合には、次のいずれかを実行します。<ul class="ul cds--list--unordered"><li class="li cds--list__item">CVTDTA を指定する。</li>
+<li class="li cds--list__item">ユーザーのプログラムの中で 16 進数データを処理する。</li>
+</ul>
+</div>
+<p class="p">CVTDTA は、名前付きのフィールドについてだけ指定します。固定情報フィールド内の、ユーザー定義の文字のためには、DFT キーワードおよび DFNCHR キーワードを
+使用します。</p>
+<p class="p">SCS 印刷装置ファイル (CRTPRTF コマンドで DEVTYPE(*SCS) の指定されている
+ファイル) では、CVTDTA を指定する場合には TRNSPY キーワードも
+指定しなければなりません。CRTPRTF コマンドの DEVTYPE(*IPDS) または DEVTYPE(*AFPDS) で作成された印刷装置ファイルに、
+CVTDTA を指定した場合には、TRNSPY キーワードを指定する必要はありません。
+ただし、その場合は、DEVTYPE を *SCS に変更してはならないということを示す警告メッセージが
+表示されます。</p>
+<p class="p">あるフィールドについて CVTDTA を指定する場合、そのフィールドの桁数は
+偶数でなければなりません。フィールドの印刷桁数は、指定した桁数を 2 で割った数になります。</p>
+<p class="p">あるフィールドについて CVTDTA を指定する場合、プログラムがそのフィールドに
+入れて渡す文字データには、有効な 16 進数文字 (0 から 9 および A から F) だけが
+含まれていなければなりません。ブランクは、組み込みブランクも後書きブランクも
+有効な 16 進数文字ではありません。プログラムの実行時に、無効な文字が
+フィールドに指定されていた場合には、<span class="keyword">IBM i</span> オペレーティング・システムは、ユーザー・プログラム
+に対してエスケープ・メッセージ CPF5234 を送ります。</p>
+<p class="p">オプション標識は、このキーワードでは無効です。</p>
+<div class="p">バーコード・コマンドに DDS の CVTDTA を使用する場合には、下記の規則が適用されます。<ul class="ul cds--list--unordered"><li class="li cds--list__item">装置タイプが *IPDS のプリンターだけがサポートされています。</li>
+<li class="li cds--list__item">使用できるコマンドは次のとおりです。<ul class="ul cds--list--unordered cds--list--nested"><li class="li cds--list__item">WBCC (バーコード書き込み制御)</li>
+<li class="li cds--list__item">WBC (バーコード書き込み)</li>
+<li class="li cds--list__item">END</li>
+</ul>
+<p class="p">3 つのコマンドはすべて同じフィールドになければなりません。その他のコマンドは、上記コマンドのフィールド内にあってはなりません。</p>
+</li>
+<li class="li cds--list__item">フィールドの桁数は、正確でなければなりません。</li>
+<li class="li cds--list__item">各コマンド内の桁数は、正確でなければなりません。</li>
+<li class="li cds--list__item">オプション - ファイルには、ファイル内の別のレコードについての DDS BARCODE キーワードが含まれている場合があります。
+このレコードは使用する必要はありません。この
+レコードは、ファイル使用時にバーコードが予測されることを <span class="keyword">IBM i</span> オペレーティング・システムに
+指示します。</li>
+<li class="li cds--list__item">相関 ID は、IPDS コマンドでは不要です。</li>
+<li class="li cds--list__item">ユーザーのバーコード・データには、妥当性検査がなされません。無効なデータがあると、プリンターに、該当コマンドが無効であるということが
+示されます。</li>
+<li class="li cds--list__item"><a class="xref" href="#rzakdmstptcvtct__barcmd">図 1</a> にコマンドの例を示してあります。
+この例のコマンド桁を
+加算すると、合計 69 (45 + 17 + 7 = 69) となります。この数に 2 を掛けると、CVTDTA フィールドの文字数となります。つまり、この例の、CVTDTA が指定されている
+フィールドには、138 桁 (69 x 2 = 138) が必要となります。</li>
+<li class="li cds--list__item">バーコード・コマンドについての詳細は、「<cite class="cite">Intelligent printer data stream reference</cite>」を参照してください。</li>
+</ul>
+</div>
+<div class="fig fignone" id="rzakdmstptcvtct__barcmd"><span class="figcap">図 1. CVTDTA を使用するバーコード・コマンドのコマンド形式 (1/2)</span><div class="image"><img class="image ibmdocs-image-downsize" src="/docs/ja/ssw_ibm_i_74/rzakd/rsll917.gif" alt="CVTDTA を使用するバーコード・コマンドのコマンド形式"></div></div>
+<div class="fig fignone"><span class="figcap">図 2. CVTDTA を使用するバーコード・コマンドのコマンド形式 (2/2)</span><div class="image"><img class="image ibmdocs-image-downsize" src="/docs/ja/ssw_ibm_i_74/rzakd/rsll918.gif" alt="CVTDTA を使用するバーコード・コマンドのコマンド形式"></div></div>
+</div>
+<div class="related-links ibm-padding-top-1 ibm-padding-bottom-2 bx--row bottom-section-parent" aria-label="bottom related links">
+<div class="familylinks ibm-margin-bottom-1">
+<div class="parentlink"><strong>親トピック:</strong> <div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a class="link bottom-section-link" href="/docs/ja/ssw_ibm_i_74/rzakd/rzakdmstprkey.htm" title="これらは印刷装置ファイルの定義に有効なキーワード項目です。">印刷装置ファイルのキーワード項目 (45 から 80 桁目)</a></div></div>
+</div>
+<div class="relinfo relref ibm-margin-bottom-1"><strong>関連資料</strong>:<br>
+<div><div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a class="link bottom-section-link" href="/docs/ja/ssw_ibm_i_74/rzakd/rzakdmsttrspy.htm" title="これはフィールド・レベル・キーワードで、DFNCHR キーワードを使用して 再定義したコード・ポイントが、定義中のフィールドを印刷するための出力命令を プログラムが送ったときに、SCS プリンター制御コマンドとして解釈されないようにします。">印刷装置ファイルの TRNSPY (透過) キーワード</a></div></div>
+</div>
+</div>
+

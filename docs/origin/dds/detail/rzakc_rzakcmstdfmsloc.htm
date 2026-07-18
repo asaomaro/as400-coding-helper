@@ -1,0 +1,63 @@
+<h1 class="title topictitle1">表示装置ファイルの MSGLOC (メッセージ位置) キーワード</h1><div id="lastModifiedDate"><span>Last Updated</span>: 2021-04-13</div>
+<div class="body refbody"><p class="shortdesc"><span class="ph">これはファイル・レベル・キーワードで、メッセージ行を指定した番号の行に移すために使用します。</span></p>
+<div class="section"><div class="p">キーワードの形式は次のとおりです。<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code>MSGLOC(line-number)</code></pre></div><div class="docs--copy-btn"></div></div>
+</div>
+<p class="p">パラメーター値は必須で、1 - 28 の範囲内に入っていなければなりません。
+この範囲内の番号であれば、DSPSIZ キーワードで指定されている画面サイズに関係なく、パラメーター値として常に有効です。
+24 x 80 の画面サイズの場合には、26 - 28 行目にメッセージ位置が指定されていれば、ファイルのオープンの時点で診断メッセージが送られます。</p>
+<div class="p">MSGLOC を指定しなかった場合には、画面の最後の行がメッセージ行になります。メッセージ行とは、次のメッセージが表示される位置のことです。<ul class="ul cds--list--unordered"><li class="li cds--list__item">妥当性検査エラー・メッセージ</li>
+<li class="li cds--list__item">無効なキーについてのメッセージ</li>
+<li class="li cds--list__item">ERRMSG キーワードおよび SFLMSG キーワードのパラメーター値として定義されているメッセージ</li>
+<li class="li cds--list__item">ERRMSGID キーワードおよび SFLMSGID キーワードにより識別されるメッセージ (画面全体はメッセージ・ヘルプに使用される)</li>
+<li class="li cds--list__item">メッセージ・フィールド</li>
+<li class="li cds--list__item">操作員エラー・コードおよびそれに関連するメッセージ</li>
+</ul>
+</div>
+<p class="p">2 次画面サイズでのメッセージ行がデフォルトのメッセージ行と異なる場合には、画面サイズ条件名を指定しなければなりません。</p>
+<div class="p">MSGLOC キーワードを指定しなかった場合には、次に示すデフォルト値が使用されます。<dl class="dl"><dt class="dt dlterm">画面サイズが 24 x 80 の場合:</dt>
+<dd class="dd">25 行目</dd>
+<dt class="dt dlterm">画面サイズが 27 x 132 の場合:</dt>
+<dd class="dd">28 行目</dd>
+</dl>
+</div>
+<div class="p">24 x 80 の画面サイズの場合には、デフォルトの 25 行目は次のようになります。<ul class="ul cds--list--unordered"><li class="li cds--list__item">5250 表示装置または 5251-12 型表示装置に画面が送られる場合には、24 行目がメッセージ行として使用されます。</li>
+<li class="li cds--list__item">ローカル 6040 または 6041 制御装置に接続された 3180-2 型表示装置または 3197-D1 型、D2 型、W1 型、または W2 型
+表示装置、あるいは 5294 または 5394 制御装置にリモート接続された 3180-2 型表示装置または 3197-D1 型、D2 型、W1 型、W2 型
+表示装置に画面が送られる場合には、25 行目がメッセージ行として使用されます。</li>
+</ul>
+</div>
+<div class="p">当該ファイルに ERRSFL キーワードが指定してある場合には、メッセージ位置の値として、画面サイズが 24 x 80 の場合は 25 を、画面サイズが 27 x 132 の場合は 28 を、それぞれ指定することはできません。
+ファイルに ERRSFL キーワードを指定しても、MSGLOC キーワードを指定しない場合は、次に示すデフォルト値が使用されます。<dl class="dl"><dt class="dt dlterm">画面サイズが 24 x 80 の場合:</dt>
+<dd class="dd">24 行目</dd>
+<dt class="dt dlterm">画面サイズが 27 x 132 の場合:</dt>
+<dd class="dd">27 行目</dd>
+</dl>
+</div>
+<p class="p">MSGLOC キーワードの仕様は、ファイルのオープン時点からクローズ時点まで効力を持続します。
+同じワークステーション装置に対して別のファイルがオープンされる間、定義中のファイルの処理が中断される場合には、
+仕様が一時的に指定変更されることもあります。一時変更された場合には、定義中のファイルの処理が再開されるまで、もう 1 つのファイルで有効なメッセージ位置が使用されます。</p>
+<p class="p">メッセージが表示される前に画面に表示されていたデータは、すべて一時保管され、Reset キーを押すと復元されます。</p>
+<p class="p">オプション標識は、このキーワードでは無効です。</p>
+</div>
+<div class="section"><h2 class="title sectiontitle">例</h2><p class="p">以下に MSGLOC キーワードの指定方法の例を示します。</p>
+</div>
+<div class="example"><h2 class="title sectiontitle">例 1</h2><div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code>|...+....1....+....2....+....3....+....4....+....5....+....6....+....7....+....8
+     A                                      MSGLOC(1)
+     A</code></pre></div><div class="docs--copy-btn"></div></div>
+<p class="p">この例では、1 次画面サイズの場合にメッセージ行が 1 行目に移動されます。
+(DSPSIZ キーワードがなければ、1 次画面サイズは 24 x 80 です。)</p>
+</div>
+<div class="example"><h2 class="title sectiontitle">例 2</h2><div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code>|...+....1....+....2....+....3....+....4....+....5....+....6....+....7....+....8
+     A                                      DSPSIZ(*DS3 *DS4)
+     A                                      MSGLOC(1)
+     A  *DS4                                MSGLOC(1)
+     A</code></pre></div><div class="docs--copy-btn"></div></div>
+<p class="p">この例では、1 次画面サイズおよび 2 次画面サイズ 2 の両方について、メッセージ行が 1 行目に移ります。</p>
+</div>
+</div>
+<div class="related-links ibm-padding-top-1 ibm-padding-bottom-2 bx--row bottom-section-parent" aria-label="bottom related links">
+<div class="familylinks ibm-margin-bottom-1">
+<div class="parentlink"><strong>親トピック:</strong> <div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a class="link bottom-section-link" href="/docs/ja/ssw_ibm_i_74/rzakc/rzakcmstkeyent.htm" title="表示装置ファイルを定義するキーワード項目は、45 - 80 桁目 (機能欄) に記入します。">表示装置ファイルの DDS キーワード項目 (45 - 80 桁目)</a></div></div>
+</div>
+</div>
+

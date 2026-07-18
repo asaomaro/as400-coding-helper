@@ -1,0 +1,62 @@
+<h1 class="title topictitle1">物理ファイルおよび論理ファイルの REFSHIFT (シフト参照) キーワード</h1><div id="lastModifiedDate"><span>Last Updated</span>: 2021-04-13</div>
+<div class="body refbody"><p class="shortdesc"><span class="ph">これはフィールド・レベルのキーワードで、表示装置ファイルまたは (DFU) 操作でフィールドが参照される場合に、そのフィールドのキーボード・シフトを指定するために使用します。</span></p>
+<div class="section"><div class="p">キーワードの形式は次のとおりです。<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code>REFSHIFT(keyboard-shift)</code></pre></div><div class="docs--copy-btn"></div></div>
+</div>
+<p class="p">表示装置ファイルに入力可能フィールドを定義するときに、29 桁目に R を
+指定し、REF または REFFLD キーワードを指定することによって、定義しているフィールドを参照します。
+表示装置ファイル作成時に、
+オペレーティング・システムは、REFSHIFT キーワードおよびその他のフィールド属性を、
+論理ファイルの該当フィールドから表示装置ファイルのフィールドに複写します。
+新たに編集キーワードを指定することによって、
+表示装置ファイルまたは印刷装置ファイルに指定されている編集を指定変更できます。DLTEDT キーワードを
+指定して、フィールドについての編集をすべて削除することができます。</p>
+<p class="p">このキーワードで指定したパラメーターの値が、データベース・ファイルに
+指定されているデータ・タイプに代わって、表示装置ファイルのキーボード・シフト
+の値 (35 桁目) になります。物理ファイルまたは論理ファイルにおいて、REFSHIFT キーワードが指定されたフィールドを参照した場合には、その REFSHIFT キーワード
+が、表示装置ファイルの新しいフィールドに複写されます。ただし、新しいフィールドに指定されたフィールド属性 (データ・タイプなど)
+が REFSHIFT キーワードで指定したキーボード・シフトと矛盾している場合には、このキーワードは
+無視されます。</p>
+<div class="p">このキーワードは、データ・タイプ A、S、B、または P のフィールドに対して有効です。
+パラメーター値として、データ・タイプと矛盾しないキーボード・シフトの値を選択してください。各データ・タイプに対応する有効なパラメーターは次のとおりです。<ul class="ul cds--list--unordered"><li class="li cds--list__item">文字フィールド (A) : REFSHIFT(A | X | W | N | I | D | M)</li>
+<li class="li cds--list__item">数字フィールド (S、B、P): REFSHIFT(S | Y | N | I | D)</li>
+</ul>
+</div>
+</div>
+<div class="example"><h2 class="title sectiontitle">例</h2><p class="p">次の例は、物理ファイルでの REFSHIFT キーワードの
+指定方法を示します。</p>
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code>|...+....1....+....2....+....3....+....4....+....5....+....6....+....7....+....8
+00010A          R RECORD
+00020A            FIELDA         5          REFSHIFT(X)
+00030A            FIELDN         4P         REFSHIFT(N)
+     A</code></pre></div><div class="docs--copy-btn"></div></div>
+<p class="p">示されているように、ファイル (FILE1) のフィールド FIELDA および
+FIELDN に REFSHIFT キーワード
+が指定されています。REFSHIFT キーワードは、これらのフィールドが
+表示装置ファイルから参照された場合に使用されます。</p>
+</div>
+<div class="example"> <div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code>|...+....1....+....2....+....3....+....4....+....5....+....6....+....7....+....8
+00010A                                      REF(FILE1)
+00020A          R RECORD
+00030A            FIELDA    R           1  2
+     A            FIELDN    R           2  2
+     A</code></pre></div><div class="docs--copy-btn"></div></div>
+<div class="p">この例では、表示装置ファイルで FILE1 が参照されています (REF キーワード)。
+この表示装置ファイル内のフィールド FIELDA および FIELDN では、FILE1 の中
+の FIELDA および FIELDN が参照されます。FILE1 のフィールドには REFSHIFT キーワードが
+指定されているので、表示装置ファイルでは、その REFSHIFT キーワードで指定されているキーボード・シフト
+が使用され、各フィールドの属性は次のようになります。<ul class="ul cds--list--unordered"><li class="li cds--list__item">FIELDA については、35 桁目のキーボード・シフト属性は X。</li>
+<li class="li cds--list__item">FIELDN については、35 桁目のキーボード・シフト属性は N。</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="related-links ibm-padding-top-1 ibm-padding-bottom-2 bx--row bottom-section-parent" aria-label="bottom related links">
+<div class="familylinks ibm-margin-bottom-1">
+<div class="parentlink"><strong>親トピック:</strong> <div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a class="link bottom-section-link" href="/docs/ja/ssw_ibm_i_74/rzakb/rzakbmstlfkeyw.htm" title="キーワード項目は、45 から 80 桁目 (機能欄) に記入します。">物理ファイルおよび論理ファイルのキーワード項目 (45 から 80 桁目)</a></div></div>
+</div>
+<div class="relinfo ibm-margin-bottom-1"><strong>関連情報</strong>:<br>
+<div><div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a class="link bottom-section-link" href="/docs/ja/ssw_ibm_i_74/rzakc/rzakcmstpos29.htm">表示装置ファイルの参照 (29 桁目)</a></div></div>
+<div><div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a class="link bottom-section-link" href="/docs/ja/ssw_ibm_i_74/rzakc/rzakcmstdfdt.htm">表示装置ファイルのデータ・タイプ/キーボード・シフト (35 桁目)</a></div></div>
+</div>
+</div>
+

@@ -1,0 +1,195 @@
+<main role="main"><article role="article" aria-labelledby="rzakcmstdfprint__title__1">
+<h1 class="topictitle1" id="rzakcmstdfprint__title__1">PRINT (Print) keyword for display files</h1><div id="lastModifiedDate"><span>Last Updated</span>: 2026-07-13</div>
+
+
+
+<div class="body refbody"><p class="shortdesc">You use this file-level or record-level keyword
+to specify that the workstation user can press the Print key to print
+the current display.</p>
+
+<div class="section"><p>See <a href="/docs/en/ssw_ibm_i_74/rzakc/s36env.htm" title="The User Display Management (USRDSPMGT) keyword causes the record formats in the display file to function similarly to System/36 SFGR display formats.">System/36 environment considerations for display files</a> for
+special considerations when you specify the PRINT keyword in files
+that are used in the System/36 environment.</p>
+<div class="p">The
+format of the keyword is:  <div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>PRINT[(response-indicator ['text']) ∨ (*PGM) ∨
+&nbsp;&nbsp;([library-name/]printer-file-name)]</code></pre></div><div class="docs--copy-btn"></div></div></div>
+<p>The
+following four examples illustrate the four ways you can specify the
+PRINT keyword:</p>
+
+<div class="tablenoborder"><div class="cds--data-table-container"><table summary="" role="presentation" class="presentation cds--data-table"><colgroup><col><col></colgroup><tbody>
+<tr>
+<td class="nrule"><code class="ph codeph">PRINT</code></td>
+
+<td class="nrule">The <span class="keyword">IBM i</span> operating
+system spools the output to printer file QSYSPRT unless you specify
+another printer file for the workstation on the PRTFILE parameter
+on the CRTDEVDSP or CHGDEVDSP commands. See <a href="#rzakcmstdfprint__printk">PRINT keyword without parameter values</a>.</td>
+
+</tr>
+
+<tr>
+<td class="nrule"><code class="ph codeph">PRINT(01 'User presses Print key')</code></td>
+
+<td class="nrule">Your program is given control and decides what to do (for example,
+produce formatted printer output). The response indicator is set on.
+No data is sent from the device.</td>
+
+</tr>
+
+<tr>
+<td class="nrule"><code class="ph codeph">PRINT(*PGM)</code></td>
+
+<td class="nrule">Control returns to your program when the Print key is pressed.</td>
+
+</tr>
+
+<tr>
+<td class="nrule"><code class="ph codeph">PRINT(LIB1/PRINTFILE1)</code></td>
+
+<td class="nrule">The <span class="keyword">IBM i</span> operating
+system spools the output to the specified printer file (which can
+be defined through DDS or on the PRTFILE parameter on the CRTDEVDSP
+or CHGDEVDSP commands). An Override with Printer File (OVRPRTF) command,
+if in effect before the printer file is opened (when the Print key
+is pressed), can change the printer device name.</td>
+
+</tr>
+
+</tbody>
+</table></div>
+</div>
+<p>Further considerations of the ways to specify the PRINT
+keyword are discussed in the following sections.</p>
+<p>If you specify
+the PRINT keyword in any form, the workstation user can print a display
+containing the message help. In this case, the print operation is
+performed as if the PRINT keyword were specified with no parameters.</p>
+</div>
+
+<section class="section" role="region" aria-labelledby="rzakcmstdfprint__printk__title__1" id="rzakcmstdfprint__printk"><h2 class="sectiontitle" id="rzakcmstdfprint__printk__title__1">PRINT keyword without parameter values
+for the local workstation</h2><p>The <span class="keyword">IBM i</span> operating system spools
+the output to the specified printer file (which can be defined through
+DDS or on the PRTFILE parameter on the CRTDEVDSP or CHGDEVDSP commands).</p>
+<p>Nondisplay
+fields appear as blanks. Duplicated characters entered by pressing
+the Dup key appear as asterisks (*). Display attributes appear as
+blanks. If the print function cannot be performed successfully, the <span class="keyword">IBM i</span> operating system attempts
+to complete the print function using the printer file specified on
+the PRTFILE parameter on the CRTDEVDSP or the CHGDEVDSP command that
+is used to describe the display device to the system.</p>
+<p>For workstation
+printers attached through the workstation controller, a message indicating
+that there is a problem is sent to the workstation user requesting
+the print function. The workstation user can make the printer ready
+or press the Reset key. To cancel a print request before it is complete,
+the workstation user can press and hold the Shift key, then press
+the Print key.</p>
+<div class="note border-2 cds--inline-notification--info ibmdocs-note cds--inline-notification cds--inline-notification--low-contrast margin-top-1 margin-bottom-1"><div class="cds--inline-notification__details"><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" class="cds--inline-notification__icon" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M16,2A14,14,0,1,0,30,16,14,14,0,0,0,16,2Zm0,5a1.5,1.5,0,1,1-1.5,1.5A1.5,1.5,0,0,1,16,7Zm4,17.12H12V21.88h2.88V15.12H13V12.88h4.13v9H20Z"></path></svg>
+        <div class="cds--inline-notification__text-wrapper">
+          <div class="cds--inline-notification__subtitle"><span class="notetitle ibm-bold ibm-textcolor-blue-50 background-blue cds--inline-notification__title ibm-padding-top-1 ibm-padding-bottom-1 padding-left-1 padding-right-1">Note:</span> After the current display is printed, the
+paper is advanced twice the number of lines as in the current display
+size (48 lines for a 24 x 80 display, and 54 lines for a 27 x 132
+display).</div>
+        </div>
+      </div></div>
+</section>
+
+<section class="section" role="region" aria-labelledby="rzakcmstdfprint__title__3"><h2 class="sectiontitle" id="rzakcmstdfprint__title__3">PRINT keyword without parameter values for the remote
+workstation</h2><p>The <span class="keyword">IBM i</span> program
+attempts to print the display image on the associated workstation
+printer without sending the data through the system. The associated
+workstation printer is the printer device specified on the PRINTER
+parameter of the CRTDEVDSP or CHGDEVDSP command that is used to describe
+the local display device to the system.</p>
+<div class="p">If the printer is not
+ready when the Print key is pressed, no specific message is sent to
+the user. The workstation requesting the print function remains inoperable
+until the printer is made ready, or until the print request is canceled
+(by using the shifted Print key). <div class="note border-2 cds--inline-notification--info ibmdocs-note cds--inline-notification cds--inline-notification--low-contrast margin-top-1 margin-bottom-1"><div class="cds--inline-notification__details"><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" class="cds--inline-notification__icon" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M16,2A14,14,0,1,0,30,16,14,14,0,0,0,16,2Zm0,5a1.5,1.5,0,1,1-1.5,1.5A1.5,1.5,0,0,1,16,7Zm4,17.12H12V21.88h2.88V15.12H13V12.88h4.13v9H20Z"></path></svg>
+        <div class="cds--inline-notification__text-wrapper">
+          <div class="cds--inline-notification__subtitle"><span class="notetitle ibm-bold ibm-textcolor-blue-50 background-blue cds--inline-notification__title ibm-padding-top-1 ibm-padding-bottom-1 padding-left-1 padding-right-1">Note:</span> After the current display
+is printed, the paper is advanced the same number of lines as in the
+current display size (24 lines for a 24 x 80 display, and 27 lines
+for a 27 x 132 display).</div>
+        </div>
+      </div></div>
+</div>
+<p>Option indicators are valid
+for this keyword.</p>
+</section>
+
+<div class="example"><h2 class="sectiontitle" id="rzakcmstdfprint__title__4">Example: PRINT keyword with no parameter values</h2><p>The
+following example shows how to specify the PRINT keyword with no parameter
+values.</p>
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>|...+....1....+....2....+....3....+....4....+....5....+....6....+....7....+....8
+00010A                                      PRINT
+00020A          R RECORD1
+     A</code></pre></div><div class="docs--copy-btn"></div></div></div>
+
+<div class="example"><h2 class="sectiontitle" id="rzakcmstdfprint__title__5">Example: PRINT keyword with a response indicator or
+*PGM special value</h2><p>If you specify the PRINT keyword with
+a response indicator, the <span class="keyword">IBM i</span> operating
+system returns control to your program with the specified response
+indicator set on. No data is received from the device. The keyboard
+is locked until your program sends another output operation to the
+display file. There is no difference in the print function between
+local and remote workstations. If you specify *PGM, the <span class="keyword">IBM i</span> operating system returns
+control to your program. The only difference between these two forms
+is the response indicator; all other processing is the same.</p>
+<p>The
+optional text for the response indicator form is included on the computer
+printout created at program compilation time to explain the intended
+use of the indicator. This text functions only as a comment. The single
+quotation marks are required. If you specify more than 50 characters
+between the single quotation marks, the text is truncated to 50 characters
+on the program computer printout.</p>
+<p>The following example shows
+how to specify the PRINT keyword with a response indicator.</p>
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>|...+....1....+....2....+....3....+....4....+....5....+....6....+....7....+....8
+00010A                                      PRINT(01 'User presses Print key')
+00020A          R RECORD1
+     A</code></pre></div><div class="docs--copy-btn"></div></div><p>The following example shows how to specify the
+PRINT keyword with the *PGM special value.</p>
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>|...+....1....+....2....+....3....+....4....+....5....+....6....+....7....+....8
+00010A                                      PRINT(*PGM)
+00020A          R RECORD1
+     A</code></pre></div><div class="docs--copy-btn"></div></div></div>
+
+<div class="example"><h2 class="sectiontitle" id="rzakcmstdfprint__title__6">Example: PRINT keyword with a specified printer file</h2><p>The <span class="keyword">IBM i</span> program reads the
+display buffer and prints the display image using the specified printer
+file. The printer file that you specify as a parameter value for this
+keyword can be either an externally described or a program-described
+file. It also can be either spooled or nonspooled. If you specify
+an externally described printer file, it must contain a record format
+with the same name as the file.</p>
+<p>The printer file must exist
+and be authorized to the user of the display when the Print key is
+pressed. This also applies to the library name if it is specified.
+If the <span class="keyword">IBM i</span> operating
+system is unable to perform the print function on the specified printer
+file, it attempts to use the printer file specified on the PRTFILE
+parameter of the CRTDEVDSP or the CHGDEVDSP command. SPOOL(*YES) should
+be specified on the CRTPRTF or CHGPRTF command to prevent the keyboard
+from locking.</p>
+<p>If you do not specify the library name, the current
+library list at program run time is used.</p>
+<p>The following example
+shows how to specify that the display is to be directed to printer
+file, LIB1/PRINTFILE1.</p>
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>|...+....1....+....2....+....3....+....4....+....5....+....6....+....7....+....8
+00010A                                      PRINT(LIB1/PRINTFILE1)
+00020A          R RECORD1
+     A</code></pre></div><div class="docs--copy-btn"></div></div></div>
+
+</div>
+
+<aside role="complementary" aria-labelledby="rzakcmstdfprint__title__1"><nav role="navigation" aria-label="bottom related links" class="ibm-padding-top-1 ibm-padding-bottom-2 bx--row bottom-section-parent">
+<div class="familylinks ibm-margin-bottom-1">
+<div class="parentlink"><strong>Parent topic:</strong> <div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a data-hd-product="ssw_ibm_i_74" href="/docs/en/ssw_ibm_i_74/rzakc/rzakcmstkeyent.htm" title="You type the keyword entries that define display files in positions 45 through 80 (functions)." class="bottom-section-link">DDS keyword entries for display files (positions 45 through 80)</a></div></div>
+</div>
+
+<div class="linklist relinfo relref ibm-margin-bottom-1" lang="en-us"><h2 class="linkheading bottom-section-h2-title">Related reference</h2>
+<ul><li class="cds--list__item"><div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a data-hd-product="ssw_ibm_i_74" href="/docs/en/ssw_ibm_i_74/rzakc/rzakcmstdfopprt.htm" title="You use this file-level keyword to specify that after the printer file is opened (the first time the user presses the Print key), it is to remain open until the associated display file is closed." class="bottom-section-link">OPENPRT (Open Printer File) keyword for display files</a></div></li>
+</ul></div>
+</nav></aside></article></main>

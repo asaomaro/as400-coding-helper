@@ -1,0 +1,493 @@
+<main role="main"><article role="article" aria-labelledby="rzakcmstdfcolor__title__1">
+<h1 class="topictitle1" id="rzakcmstdfcolor__title__1">COLOR (Color) keyword for display files</h1><div id="lastModifiedDate"><span>Last Updated</span>: 2026-07-13</div>
+
+
+
+<div class="body refbody"><p class="shortdesc">You use this keyword to specify the color
+of a field on a color display.</p>
+
+<div class="section"><p>This field-level keyword specifies the color of a field
+on a color display (3179, 3197 Models C1 and C2, 3477 Model FC, 3486,
+3487 Model HC, 3488<a name="fnsrc_1" href="#fntarg_1"><sup>1</sup></a> or 5292 Color Display Stations only). This keyword is
+ignored if it is selected for a field displayed on monochrome display
+stations. You can specify one parameter value for the COLOR keyword,
+but you can specify more than one COLOR keyword on each field.</p>
+<p>The
+format of the keyword is:</p>
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>COLOR(GRN | WHT | RED | TRQ | YLW | PNK | BLU)</code></pre></div><div class="docs--copy-btn"></div></div><p>The
+valid parameter values are:</p>
+<dl>
+
+<dt class="dthd"><strong>Value</strong></dt>
+<dd class="ddhd"><strong>Meaning</strong></dd>
+
+
+
+<dt class="dlterm">GRN</dt>
+
+<dd class="dlentry">Green</dd>
+
+
+<dt class="dlterm">WHT</dt>
+
+<dd class="dlentry">White</dd>
+
+
+<dt class="dlterm">RED</dt>
+
+<dd class="dlentry">Red</dd>
+
+
+<dt class="dlterm">TRQ</dt>
+
+<dd class="dlentry">Turquoise</dd>
+
+
+<dt class="dlterm">YLW</dt>
+
+<dd class="dlentry">Yellow</dd>
+
+
+<dt class="dlterm">PNK</dt>
+
+<dd class="dlentry">Pink</dd>
+
+
+<dt class="dlterm">BLU</dt>
+
+<dd class="dlentry">Blue</dd>
+
+</dl>
+<p>Because green is the default color of the fields
+on color display stations, you need to specify COLOR(GRN) only to
+keep the color of a field green. Specifying DSPATR(HI), DSPATR(CS),
+or DSPATR(BL) for a field changes the color of the field unless you
+also specify COLOR(GRN).</p>
+<p>Option indicators are valid for this
+keyword.</p>
+<p>When you specify the COLOR keyword more than once for
+a field, you must specify option indicators with each COLOR  keyword.
+If more than one COLOR keyword is in effect for an output operation,
+the <span class="keyword">IBM i</span> operating
+system uses the first COLOR keyword that is specified in the DDS 
+(see <a href="#rzakcmstdfcolor__rzakcmstdfcolorex1">Example 1</a>). You
+cannot specify the same color more than once for a field.</p>
+<p>The
+number of COLOR keywords you can specify in one display file is limited
+by the maximum size of an internal storage area of the system called
+the screen attribute array. The maximum size of the screen attribute
+array is 32&nbsp;763 bytes for the entire display file. Each COLOR
+keyword you specify in the file uses up a significant amount of storage
+within this array.</p>
+<p>If you use many COLOR keywords in a file,
+particularly with conditioning, you should consider the amount of
+internal storage these keywords will require. If the 32&nbsp;763-byte
+limit is exceeded, message CPF0673 (<samp class="ph systemoutput">Too many COLOR or
+DSPATR keywords specified in file</samp>) is issued during
+file creation. To determine the amount of storage required for a particular
+COLOR keyword, use the following algorithm:</p>
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>(# of conditions for the keyword) x 2 + 2 + 29 = # of bytes required
+in the screen
+attribute array
+for the keyword</code></pre></div><div class="docs--copy-btn"></div></div><p>For example, suppose a file contains
+8 fields, each field contains 9 COLOR keywords, and each COLOR keyword
+is optioned using 3 conditions. Using the above algorithm, each COLOR
+keyword requires 520 bytes in the screen attribute array:</p>
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>3 x 2 + 2 + 29 = 520 bytes</code></pre></div><div class="docs--copy-btn"></div></div><p>Because there are nine COLOR keywords per field and eight
+fields in the file, the total storage required in the screen attribute
+array is 37&nbsp;440 bytes (520 x 9 keywords x 8 fields). Because
+37&nbsp;440 is greater than 32&nbsp;763, message CPF0673 is issued
+at file-creation time.</p>
+</div>
+
+<section class="section" role="region" aria-labelledby="rzakcmstdfcolor__title__2"><h2 class="sectiontitle" id="rzakcmstdfcolor__title__2">Using the COLOR keyword with the DSPATR keyword</h2><p>In
+some combinations of COLOR and DSPATR, both keywords have effect.
+Those combinations are:</p>
+<dl>
+
+<dt class="dthd"><strong>COLOR</strong></dt>
+<dd class="ddhd"><strong>DSPATR</strong></dd>
+
+
+
+<dt class="dlterm">Any</dt>
+
+<dd class="dlentry">RI (reverse image)</dd>
+
+
+<dt class="dlterm">Any</dt>
+
+<dd class="dlentry">UL (underline)</dd>
+
+
+<dt class="dlterm">RED</dt>
+
+<dd class="dlentry">BL (blinking field)</dd>
+
+
+<dt class="dlterm">RED</dt>
+
+<dd class="dlentry">BL and RI</dd>
+
+
+<dt class="dlterm">RED</dt>
+
+<dd class="dlentry">BL and UL</dd>
+
+
+<dt class="dlterm">RED</dt>
+
+<dd class="dlentry">RI and UL</dd>
+
+
+<dt class="dlterm">GRN</dt>
+
+<dd class="dlentry">RI and UL</dd>
+
+
+<dt class="dlterm">TRQ</dt>
+
+<dd class="dlentry">RI and UL</dd>
+
+
+<dt class="dlterm">PNK</dt>
+
+<dd class="dlentry">RI and UL</dd>
+
+</dl>
+<p>For example, if COLOR(YLW) and DSPATR(RI) are both
+in effect, the field appears as black characters on a yellow background.</p>
+<p>In
+some combinations of the COLOR and DSPATR keywords, some of the parameter
+values are ignored. Those combinations are shown in the following
+table.</p>
+
+<div class="tablenoborder"><div class="cds--data-table-container"><table summary="" class="defaultstyle cds--data-table"><colgroup><col><col><col></colgroup><thead>
+<tr>
+<th id="rzakcmstdfcolor__entry__1" class="thbot"><div class="cds--table-header-label"> COLOR</div></th>
+
+<th id="rzakcmstdfcolor__entry__2" class="thbot"><div class="cds--table-header-label"> DSPATR</div></th>
+
+<th id="rzakcmstdfcolor__entry__3" class="thbot"><div class="cds--table-header-label"> Effect</div></th>
+
+</tr>
+
+</thead>
+<tbody>
+<tr>
+<td headers="rzakcmstdfcolor__entry__1 " class="tdleft"><div class="lines">Any<br>
+Any<br>
+Any</div>
+</td>
+
+<td headers="rzakcmstdfcolor__entry__2 " class="tdleft"><div class="lines">ND (nondisplay)<br>
+HI (high intensity)<br>
+CS (column separators)</div>
+</td>
+
+<td headers="rzakcmstdfcolor__entry__3 " class="tdleft"><div class="lines">All colors are ignored<br>
+HI is ignored<br>
+CS is ignored<sup>1</sup></div>
+</td>
+
+</tr>
+
+<tr>
+<td headers="rzakcmstdfcolor__entry__1 " class="tdleft"><div class="lines">GRN<br>
+WHT<br>
+TRQ<br>
+YLW<br>
+PNK<br>
+BLU</div>
+</td>
+
+<td headers="rzakcmstdfcolor__entry__2 " class="tdleft"><div class="lines">BL<br>
+BL<br>
+BL<br>
+BL<br>
+BL<br>
+BL</div>
+</td>
+
+<td headers="rzakcmstdfcolor__entry__3 " class="tdleft"><div class="lines">BL is ignored<sup>2</sup><br>
+BL is ignored<sup>2</sup><br>
+BL is ignored<sup>2</sup><br>
+BL is ignored<sup>2</sup><br>
+BL is ignored<sup>2</sup><br>
+BL is ignored<sup>2</sup></div>
+</td>
+
+</tr>
+
+<tr>
+<td headers="rzakcmstdfcolor__entry__1 " class="tdleft">RED</td>
+
+<td headers="rzakcmstdfcolor__entry__2 " class="tdleft">RI and BL and UL</td>
+
+<td headers="rzakcmstdfcolor__entry__3 " class="tdleft">UL is ignored<sup>3</sup></td>
+
+</tr>
+
+<tr>
+<td headers="rzakcmstdfcolor__entry__1 " class="tdleft">YLW BLU WHT</td>
+
+<td headers="rzakcmstdfcolor__entry__2 " class="tdleft"><div class="lines">RI and UL<br>
+RI and UL<br>
+RI and UL</div>
+</td>
+
+<td headers="rzakcmstdfcolor__entry__3 " class="tdleft"><div class="lines">RI is ignored<br>
+RI is ignored<br>
+RI is ignored</div>
+</td>
+
+</tr>
+
+</tbody>
+</table></div>
+</div>
+<p><sup>1</sup>Turquoise and yellow fields have column separators
+even if DSPATR(CS) is not specified. (The column separators appear
+as small blue dots between characters on color displays. They disappear
+when the display station user sets the color display station for reduced
+line spacing.)</p>
+<p><sup>2</sup>The only color that can blink is
+red.</p>
+<p><sup>3</sup>Underlines are also removed from input-capable
+fields, which are underlined by default.</p>
+<p>For example, if COLOR(YLW)
+and DSPATR(HI) are both selected for an output operation, the field
+is yellow but not high intensity.</p>
+</section>
+
+<section class="section" role="region" aria-labelledby="rzakcmstdfcolor__title__3"><h2 class="sectiontitle" id="rzakcmstdfcolor__title__3">Using the DSPATR keyword on color displays</h2><p>When
+you specify the DSPATR keyword without the COLOR keyword, fields are
+displayed on color displays with the colors in the following table
+but without the specified display attributes.</p>
+
+<div class="tablenoborder"><div class="cds--data-table-container"><table summary="" class="defaultstyle cds--data-table"><caption class="cds--data-table-header"><span class="tablecap cds--data-table-header__title">Table 1. DSPATR keyword on color displays</span></caption><colgroup><col><col><col><col></colgroup><thead>
+<tr>
+<th id="rzakcmstdfcolor__entry__16" class="thleft thbot"><div class="cds--table-header-label">DSPATR(CS) display attribute selected</div></th>
+
+<th id="rzakcmstdfcolor__entry__17" class="thleft thbot"><div class="cds--table-header-label">DSPATR(HI) display attribute selected</div></th>
+
+<th id="rzakcmstdfcolor__entry__18" class="thleft thbot"><div class="cds--table-header-label">DSPATR(BL) display attribute selected</div></th>
+
+<th id="rzakcmstdfcolor__entry__19" class="thleft thbot"><div class="cds--table-header-label">Color produced on the color display
+station</div></th>
+
+</tr>
+
+</thead>
+<tbody>
+<tr>
+<td headers="rzakcmstdfcolor__entry__16 " class="tdleft">&nbsp;</td>
+
+<td headers="rzakcmstdfcolor__entry__17 " class="tdleft">&nbsp;</td>
+
+<td headers="rzakcmstdfcolor__entry__18 " class="tdleft">&nbsp;</td>
+
+<td headers="rzakcmstdfcolor__entry__19 " class="tdleft">Green (normal)</td>
+
+</tr>
+
+<tr>
+<td headers="rzakcmstdfcolor__entry__16 " class="tdleft">X</td>
+
+<td headers="rzakcmstdfcolor__entry__17 " class="tdleft">&nbsp;</td>
+
+<td headers="rzakcmstdfcolor__entry__18 " class="tdleft">&nbsp;</td>
+
+<td headers="rzakcmstdfcolor__entry__19 " class="tdleft">Turquoise<sup>1</sup></td>
+
+</tr>
+
+<tr>
+<td headers="rzakcmstdfcolor__entry__16 " class="tdleft">&nbsp;</td>
+
+<td headers="rzakcmstdfcolor__entry__17 " class="tdleft">X</td>
+
+<td headers="rzakcmstdfcolor__entry__18 " class="tdleft">&nbsp;</td>
+
+<td headers="rzakcmstdfcolor__entry__19 " class="tdleft">White</td>
+
+</tr>
+
+<tr>
+<td headers="rzakcmstdfcolor__entry__16 " class="tdleft">&nbsp;</td>
+
+<td headers="rzakcmstdfcolor__entry__17 " class="tdleft">&nbsp;</td>
+
+<td headers="rzakcmstdfcolor__entry__18 " class="tdleft">X</td>
+
+<td headers="rzakcmstdfcolor__entry__19 " class="tdleft">Red, no blinking</td>
+
+</tr>
+
+<tr>
+<td headers="rzakcmstdfcolor__entry__16 " class="tdleft">&nbsp;</td>
+
+<td headers="rzakcmstdfcolor__entry__17 " class="tdleft">X</td>
+
+<td headers="rzakcmstdfcolor__entry__18 " class="tdleft">X</td>
+
+<td headers="rzakcmstdfcolor__entry__19 " class="tdleft">Red, with blinking</td>
+
+</tr>
+
+<tr>
+<td headers="rzakcmstdfcolor__entry__16 " class="tdleft">X</td>
+
+<td headers="rzakcmstdfcolor__entry__17 " class="tdleft">X</td>
+
+<td headers="rzakcmstdfcolor__entry__18 " class="tdleft">&nbsp;</td>
+
+<td headers="rzakcmstdfcolor__entry__19 " class="tdleft">Yellow<sup>1</sup></td>
+
+</tr>
+
+<tr>
+<td headers="rzakcmstdfcolor__entry__16 " class="tdleft">X</td>
+
+<td headers="rzakcmstdfcolor__entry__17 " class="tdleft">&nbsp;</td>
+
+<td headers="rzakcmstdfcolor__entry__18 " class="tdleft">X</td>
+
+<td headers="rzakcmstdfcolor__entry__19 " class="tdleft">Pink</td>
+
+</tr>
+
+<tr>
+<td headers="rzakcmstdfcolor__entry__16 " class="tdleft">X</td>
+
+<td headers="rzakcmstdfcolor__entry__17 " class="tdleft">X</td>
+
+<td headers="rzakcmstdfcolor__entry__18 " class="tdleft">X</td>
+
+<td headers="rzakcmstdfcolor__entry__19 " class="tdleft">Blue</td>
+
+</tr>
+
+</tbody>
+</table></div>
+</div>
+<sup>1</sup>Turquoise and yellow fields are displayed with
+column separators (which are always blue) except when the workstation
+user sets the color display station for reduced line spacing.<p>For
+example, if DSPATR(HI) is selected for a field and the COLOR keyword
+is not specified, the field is white but not highlighted on a color
+display.</p>
+<p>The COLOR keyword is ignored if it is selected for
+a monochrome display.</p>
+</section>
+
+<div class="example" id="rzakcmstdfcolor__rzakcmstdfcolorex1"><h2 class="sectiontitle" id="rzakcmstdfcolor__rzakcmstdfcolorex1__title__1">Example 1</h2><p>The following
+example shows the effects of specifying COLOR and DSPATR for a field.</p>
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>|...+....1....+....2....+....3....+....4....+....5....+....6....+....7....+....8
+00010A          R RECORD                    1
+00020A                                  1  2'Column Heading'
+00030A                                      DSPATR(HI)
+00040A       2  FIELD1         5      3  2
+00050A       3  FIELD2         5   I  5  2COLOR(YLW)
+00060A       4  FIELD3         5      7  2DSPATR(BL)
+00070A       5  FIELD4         5   I  9  2
+00080A  42                                  COLOR(YLW)
+00090A  43                                  COLOR(TRQ)
+00100A  44                                  COLOR(BLU)
+     A</code></pre></div><div class="docs--copy-btn"></div></div><dl>
+<dt class="dlterm">1</dt>
+
+<dd class="dlentry">On color displays, the constant field <em>Column Heading</em> is
+white; on monochrome displays, it is highlighted.</dd>
+
+
+<dt class="dlterm">2</dt>
+
+<dd class="dlentry">On all displays, FIELD1 is green.</dd>
+
+
+<dt class="dlterm">3</dt>
+
+<dd class="dlentry">On color displays, FIELD2 is yellow with blue column separators.
+On all displays, the field is underlined because it is an input-capable
+field.</dd>
+
+
+<dt class="dlterm">4</dt>
+
+<dd class="dlentry">On color displays, FIELD3 is red and does not blink; on monochrome
+displays, it blinks.</dd>
+
+
+<dt class="dlterm">5</dt>
+
+<dd class="dlentry">On color displays, FIELD4 can appear in one of the following colors:
+ <ul class="cds--list--unordered">
+<li class="cds--list__item">Green, if no indicators are on</li>
+
+<li class="cds--list__item">Yellow, if indicator 42 is on (no matter how other indicators
+are set)</li>
+
+<li class="cds--list__item">Turquoise, if indicator 43 is on and indicator 42 is off</li>
+
+<li class="cds--list__item">Blue, if indicator 44 is the only indicator on</li>
+
+</ul>
+<p>On monochrome displays, FIELD4 is green. On all displays,
+FIELD4 is underlined.</p>
+</dd>
+
+</dl>
+</div>
+
+<div class="example"><h2 class="sectiontitle" id="rzakcmstdfcolor__title__6">Example 2</h2> <p>The following example shows one
+way of specifying a field for use as an input-capable field on both
+color and monochrome displays.</p>
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>|...+....1....+....2....+....3....+....4....+....5....+....6....+....7....+....8
+00010A          R RECORD
+00020A 2 1      FIELDA         5   B  2  2COLOR(TRQ)
+00030A  44                                  ERRMSG('Record not found' 44)
+     A</code></pre></div><div class="docs--copy-btn"></div></div><dl>
+<dt class="dlterm">1</dt>
+
+<dd class="dlentry">On color displays, FIELDA is turquoise with blue column separators;
+on monochrome displays, it is green.</dd>
+
+
+<dt class="dlterm">2</dt>
+
+<dd class="dlentry">If option indicator 44 is set on when FIELDA is displayed, the
+ERRMSG keyword is in effect and has the following effect:  <ul class="cds--list--unordered">
+<li class="cds--list__item">On color displays, FIELDA is turquoise and its image is reversed.
+(Because of the COLOR keyword, it is not highlighted.) The error message <samp class="ph systemoutput">Record
+not found</samp> is displayed on the message line in white.</li>
+
+<li class="cds--list__item">On monochrome displays, FIELDA is highlighted and its image is
+reversed. The error message <samp class="ph systemoutput">Record not found</samp> is
+also highlighted and is displayed on the message line.</li>
+
+</ul>
+</dd>
+
+</dl>
+</div>
+
+</div>
+
+<aside role="complementary" aria-labelledby="rzakcmstdfcolor__title__1"><nav role="navigation" aria-label="bottom related links" class="ibm-padding-top-1 ibm-padding-bottom-2 bx--row bottom-section-parent">
+<div class="familylinks ibm-margin-bottom-1">
+<div class="parentlink"><strong>Parent topic:</strong> <div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a data-hd-product="ssw_ibm_i_74" href="/docs/en/ssw_ibm_i_74/rzakc/rzakcmstkeyent.htm" title="You type the keyword entries that define display files in positions 45 through 80 (functions)." class="bottom-section-link">DDS keyword entries for display files (positions 45 through 80)</a></div></div>
+</div>
+
+<div class="linklist relinfo relref ibm-margin-bottom-1" lang="en-us"><h2 class="linkheading bottom-section-h2-title">Related reference</h2>
+<ul><li class="cds--list__item"><div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a data-hd-product="ssw_ibm_i_74" href="/docs/en/ssw_ibm_i_74/rzakc/rzakcmstchcava.htm" title="You use this field-level keyword to specify the color or display attributes to be used when the system is displaying the available choices in a menu bar, push button, selection field, or subfile single-choice or multiple-choice selection list." class="bottom-section-link">CHCAVAIL (Choice Color/Display Attribute when Available) keyword for display files</a></div></li>
+<li class="cds--list__item"><div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a data-hd-product="ssw_ibm_i_74" href="/docs/en/ssw_ibm_i_74/rzakc/rzakcmstchcslt.htm" title="You use this field-level keyword to specify the color or display attributes to be used when the system is displaying a selected choice in a menu bar or selection field." class="bottom-section-link">CHCSLT (Choice Color/Display Attribute when Selected) keyword for display files</a></div></li>
+<li class="cds--list__item"><div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a data-hd-product="ssw_ibm_i_74" href="/docs/en/ssw_ibm_i_74/rzakc/rzakcmstchcuna.htm" title="You use this field-level keyword to specify the color or display attributes to be used when the system displays the unavailable choices in a selection field or a push button field." class="bottom-section-link">CHCUNAVAIL (Choice Color/Display Attribute when Unavailable) keyword for display files</a></div></li>
+<li class="cds--list__item"><div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a data-hd-product="ssw_ibm_i_74" href="/docs/en/ssw_ibm_i_74/rzakc/rzakcmstdfdspat.htm" title="You use this field-level keyword to specify one or more display attributes for the field that you are defining." class="bottom-section-link">DSPATR (Display Attribute) keyword for display files</a></div></li>
+<li class="cds--list__item"><div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a data-hd-product="ssw_ibm_i_74" href="/docs/en/ssw_ibm_i_74/rzakc/rzakcmstentfld.htm" title="You use this field-level, record-level, or file-level keyword to define that the leading attribute of the field changes to a specified attribute whenever the cursor is located in the field." class="bottom-section-link">ENTFLDATR (Entry Field Attribute) keyword for display files</a></div></li>
+<li class="cds--list__item"><div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a data-hd-product="ssw_ibm_i_74" href="/docs/en/ssw_ibm_i_74/rzakc/rzakcmstdfems.htm" title="You can use one of these field-level keywords to identify a message that is displayed on the message line and that is associated with that field." class="bottom-section-link">ERRMSG (Error Message) and ERRMSGID (Error Message Identifier) keywords for display files</a></div></li>
+<li class="cds--list__item"><div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a data-hd-product="ssw_ibm_i_74" href="/docs/en/ssw_ibm_i_74/rzakc/rzakcmstmnubrs.htm" title="You use this field-level keyword on a menu-bar field to specify the color, display attributes, or the character that is used to form the menu-bar separator line." class="bottom-section-link">MNUBARSEP (Menu-Bar Separator) keyword for display files</a></div></li>
+<li class="cds--list__item"><div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a data-hd-product="ssw_ibm_i_74" href="/docs/en/ssw_ibm_i_74/rzakc/rzakcmstwdwbord.htm" title="You use this file-level or record-level keyword to specify the color, display attributes, and characters used to form the border of a window." class="bottom-section-link">WDWBORDER (Window Border) keyword for display files</a></div></li>
+</ul></div>
+</nav></aside><div class="fn"><a name="fntarg_1" href="#fnsrc_1"><sup>1</sup></a>  Dependent on the monitor attached to the display
+device.</div></article></main>

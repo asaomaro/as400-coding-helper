@@ -1,0 +1,152 @@
+<h1 class="title topictitle1">DYNSLT (動的選択) キーワード - 論理ファイルのみ</h1><div id="lastModifiedDate"><span>Last Updated</span>: 2021-04-13</div>
+<div class="body refbody"><p class="shortdesc">これはファイル・レベルのキーワードで、選択/除外仕様によりファイルに指定した選択および除外のテストを処理時点で行うことを指定するために使用します。</p>
+<div class="section"><p class="p">このキーワードは、アクセス・パスの選択/除外ではなく、動的な選択/除外を指定します。このキーワードにはパラメーターはありません。</p>
+<p class="p">DYNSLT キーワードが指定されている論理ファイルに対してプログラムが入力操作を行うと、
+関連した物理ファイルのすべてのレコードについて、
+選択/除外値が有効であるかどうかのテストがシステムにより行われます。
+値を満たすレコードだけがプログラムに渡されます。各レコードをテストすることで入出力のパフォーマンス
+が低下する場合もありますが、ファイルのアクセス・パスの保守を行うよりは
+効率のよい場合もあります。
+これは、読み取り回数の少ない論理ファイルの場合であって、特に、その基礎となっている物理ファイルが頻繁に更新されるような場合に適して
+います。また、選択されるレコードの占める割合が大きいファイルの場
+合も、一般に動的選択/除外を用いた方が効率が良くなります。</p>
+<p class="p">
+キー順序アクセス・ファイルの場合には、ファイル作成時にアクセス・パスが作成され、
+論理ファイル作成 (CRTLF) コマンドまたは論理ファイル変更 (CHGLF) コマンドの MAINT パラメーターに従って、
+そのアクセス・パスの保守が行われます。DYNSLT キーワードは、キー順序アクセス・ファイルの
+アクセス・パスの保守には影響を及ぼしません。</p>
+<p class="p">DYNSLT キーワードを指定したすべての単一様式論理ファイルについては、選択/除外
+フィールドを指定するためにキー・フィールドを指定する
+必要はありません。
+しかし、DYNSLT キーワードを指定したすべての複数様式論理ファイルについては、少なくとも 1 つのキー・フィールドを
+指定しなければなりません。
+このキー・フィールドに *NONE を指定することができます。</p>
+<div class="p">フィールドの選択または除外を行う必要があり、
+次のいずれかの条件に該当する場合には、DYNSLT キーワードを使用しなければなりません。<ul class="ul cds--list--unordered"><li class="li cds--list__item">論理ファイルが到着順である (キー・フィールドが指定されていない)。このトピックの例 1 を参照してください。</li>
+<li class="li cds--list__item">論理ファイルが、JDFTVAL キーワードの指定された結合論理ファイルである。</li>
+<li class="li cds--list__item">論理ファイルが結合論理ファイルであり、選択/除外フィールドが、
+その論理ファイルの基礎となっている複数の物理ファイルから取り出されたフィールドであり、かつ、
+次のいずれかの条件に該当している。<ul class="ul cds--list--unordered cds--list--nested"><li class="li cds--list__item">選択/除外フィールドが、同じ選択ステートメントまたは除外ステートメント上
+で使用されている。このトピックの例 3 を参照してください。</li>
+<li class="li cds--list__item">選択/除外フィールドが、選択ステートメントと除外ステートメントの両方で使用されている。
+このトピックの例 4 を参照してください。</li>
+<li class="li cds--list__item">選択/除外フィールドが、OR 関係にある複数の選択ステートメントで使用されている。</li>
+<li class="li cds--list__item">選択/除外フィールドが、AND 関係にある複数の除外ステートメントで使用されている。</li>
+</ul>
+</li>
+</ul>
+</div>
+<p class="p">DYNSLT キーワードは、REFACCPTH キーワードとともに指定することはできません。</p>
+<p class="p">結合論理ファイルの場合、選択/除外フィールドは、JFILE キーワードで
+指定されたどの物理ファイルの中にあるフィールドであってもかまいません。したがって、結合論理ファイルでは、フィールドの出所を明確にし、あいまいさを避けるために、JREF キーワードを使用してください。</p>
+</div>
+<div class="section"><h2 class="title sectiontitle">例</h2><p class="p">以下に、DYNSLT キーワードの指定方法の例を示します。</p>
+</div>
+<div class="example"><h2 class="title sectiontitle">例 1</h2><p class="p">次の例に、到着順の動的選択の指定方法を示します。</p>
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code>|...+....1....+....2....+....3....+....4....+....5....+....6....+....7....+....8
+00010A                                      DYNSLT
+00020A          R RECORD1                   PFILE(PF1)
+00030A            FLD1
+00040A            FLD2
+00050A          S FLD1                      COMP(GT 2)</code></pre></div><div class="docs--copy-btn"></div></div>
+<p class="p">この例では、キー・フィールドがないため、DYNSLT キーワードは必須です。</p>
+<div class="p">レコードは到着順で論理ファイルからプログラムに渡されます。物理ファイル PF1 には、次のレコードがあるものとします。
+<dl class="dl"><dt class="dthd"><strong>FLD1</strong></dt>
+<dd class="ddhd"><strong>FLD2</strong></dd>
+<dt class="dt dlterm">1</dt>
+<dd class="dd">aaaa</dd>
+<dt class="dt dlterm">2</dt>
+<dd class="dd">dddd</dd>
+<dt class="dt dlterm">3</dt>
+<dd class="dd">jjjj</dd>
+<dt class="dt dlterm">4</dt>
+<dd class="dd">bbbb</dd>
+</dl>
+</div>
+<div class="p">プログラムが入力操作を行うさいに、システムは、選択/除外値に従って
+最初の 2 つのレコードをテストしますが、これらのレコードは、プログラムには渡されません。
+プログラムに渡されるのは、最後の 2 つのレコードだけです。<dl class="dl"><dt class="dthd"><strong>FLD1</strong></dt>
+<dd class="ddhd"><strong>FLD2</strong></dd>
+<dt class="dt dlterm">3</dt>
+<dd class="dd">jjjj</dd>
+<dt class="dt dlterm">4</dt>
+<dd class="dd">bbbb</dd>
+</dl>
+</div>
+</div>
+<div class="example"><h2 class="title sectiontitle">例 2</h2><p class="p">次の例に、キー順アクセス・パスを用いた動的選択の
+指定方法を示します。</p>
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code>|...+....1....+....2....+....3....+....4....+....5....+....6....+....7....+....8
+00010A                                      DYNSLT
+00020A          R RECORD1                   PFILE(PF1)
+00030A            FLD1
+00040A            FLD2
+00050A          K FLD1
+00060A          S FLD2                      COMP(GT 'bbbb')
+     A</code></pre></div><div class="docs--copy-btn"></div></div>
+<div class="p">この例では、DYNSLT キーワードの指定は必須ではありません。
+レコードは、論理ファイルからキー順でプログラムに渡されます。物理ファイル PF1 には、次のレコードがあるものとします。
+<dl class="dl"><dt class="dthd"><strong>FLD1</strong></dt>
+<dd class="ddhd"><strong>FLD2</strong></dd>
+<dt class="dt dlterm">1</dt>
+<dd class="dd">aaaa</dd>
+<dt class="dt dlterm">2</dt>
+<dd class="dd">dddd</dd>
+<dt class="dt dlterm">3</dt>
+<dd class="dd">jjjj</dd>
+<dt class="dt dlterm">4</dt>
+<dd class="dd">bbbb</dd>
+</dl>
+</div>
+<div class="p">前述のプログラムがレコードを要求すると、システムは、選択/除外値に従って
+そのレコードの FLD2 値をテストします。その結果、プログラムには次のレコードだけが渡されます。<dl class="dl"><dt class="dthd"><strong>FLD1</strong></dt>
+<dd class="ddhd"><strong>FLD2</strong></dd>
+<dt class="dt dlterm">2</dt>
+<dd class="dd">dddd</dd>
+<dt class="dt dlterm">3</dt>
+<dd class="dd">jjjj</dd>
+</dl>
+</div>
+</div>
+<div class="example"><h2 class="title sectiontitle">例 3</h2><p class="p">次に示すのは、2 つの物理ファイルから取り出したフィールド
+を比較する選択/除外仕様を指定した結合論理ファイルの例です。</p>
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code>|...+....1....+....2....+....3....+....4....+....5....+....6....+....7....+....8
+00010A                                      DYNSLT
+00020A          R RECORD1                   JFILE(PF1 PF2)
+00030A          J                           JFLD(FLD1 FLD3)
+00040A            FLD1                      JREF(PF1)
+00050A            FLD2                      JREF(PF1)
+00060A            FLD3                      JREF(PF2)
+00070A            FLD4                      JREF(PF2)
+00080A          S FLD1                      COMP(GT FLD4)
+     A</code></pre></div><div class="docs--copy-btn"></div></div>
+<p class="p">この例では、FLD1 および FLD2 は 1 次ファイル (PF1) のフィールドであり、FLD3 および FLD4 は 2 次ファイル (PF2) のフィールドです。
+選択仕様により、1 次ファイルの FLD1 と 2 次ファイルの FLD4 とが
+比較されます。
+したがって、DYNSLT キーワードは必須です。</p>
+</div>
+<div class="example"><h2 class="title sectiontitle">例 4</h2><p class="p">次に示すのは、複数の物理ファイルのフィールドを
+使用する選択仕様および除外仕様を指定した結合論理ファイルの例です。</p>
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code>|...+....1....+....2....+....3....+....4....+....5....+....6....+....7....+....8
+00010A                                      DYNSLT
+00020A          R JREC                      JFILE(PF1 PF2)
+00030A          J                           JOIN(PF1 PF2)
+00040A                                      JFLD(FLD1 FLD2)
+00050A            FLD1                      JREF(PF1)
+00060A            FLD2                      JREF(PF1)
+00070A            FLD3                      JREF(PF2)
+00080A          K FLD1
+00090A          S FLD1                      COMP(GT 0)
+00100A          O FLD3                      COMP(GT 4)
+     A</code></pre></div><div class="docs--copy-btn"></div></div>
+<p class="p">この例では、FLD1 および FLD3 は異なる物理ファイルのフィールドであり、選択ステートメントおよび除外ステートメントの両方に
+指定されています。
+したがって、DYNSLT キーワードは必須です。</p>
+</div>
+</div>
+<div class="related-links ibm-padding-top-1 ibm-padding-bottom-2 bx--row bottom-section-parent" aria-label="bottom related links">
+<div class="familylinks ibm-margin-bottom-1">
+<div class="parentlink"><strong>親トピック:</strong> <div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a class="link bottom-section-link" href="/docs/ja/ssw_ibm_i_74/rzakb/rzakbmstlfkeyw.htm" title="キーワード項目は、45 から 80 桁目 (機能欄) に記入します。">物理ファイルおよび論理ファイルのキーワード項目 (45 から 80 桁目)</a></div></div>
+</div>
+</div>
+

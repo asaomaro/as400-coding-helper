@@ -1,0 +1,95 @@
+<h1 class="title topictitle1">表示装置ファイルの SFLROLVAL (サブファイル・ロール値) キーワード</h1><div id="lastModifiedDate"><span>Last Updated</span>: 2021-04-13</div>
+<div class="body refbody"><p class="shortdesc">これはフィールド・レベル・キーワードであり、ワークステーション・ユーザーがこのフィールドに値を入力できることを指定するために、サブファイル制御レコード様式で使用します。
+この値は、該当のページ・キーを押したときにページを前後に送るレコード数を <span class="keyword">IBM® i</span> オペレーティング・システムに伝えるためのものです。</p>
+<div class="section"><p class="p">このフィールドは、小数点以下の桁数がゼロの、符号付き数字のキーボード・シフト属性を備えていなければなりません。
+桁数は最大 4 桁で、入出力共用フィールドまたは入力専用フィールドとして定義しなければなりません。</p>
+<p class="p">このキーワードにはパラメーターはありません。</p>
+<p class="p">ワークステーション・ユーザーは、まずページ送りしたいレコード数を入力し、
+次に前ページ・キーまたは次ページ・キーを押すことによって、表示中のデータを上下にページ送りすることができます。
+(後続のページ送り命令では、ページ送りを行う前に新しい値を入力しない限り、SFLROLVAL の値は変わりません。)この
+フィールドに負の値またはゼロを入力して、ページ・キーを押した場合には、ワークステーションにエラー・メッセージが表示されます。</p>
+<p class="p">このキーワードは、サブファイル制御レコード様式についてのみ有効です。<span class="keyword">IBM i</span> オペレーティング・システムでレコード単位のページ送り機能を使用したい場合には、このキーワードを指定しなければなりません。</p>
+<p class="p">このキーワードを指定しなかった場合には、<span class="keyword">IBM i</span> オペレーティング・システムは、SFLDROP を使用しているサブファイルの場合を除いて、SFLPAG の値に従って画面をページ送りします。
+SFLDROP を使用するサブファイルで、レコードが切り捨て形式で表示される場合には、SFLPAG の指定値よりも多くのレコードが表示されます。
+切り捨て形式のレコードを表示する場合は、切り捨て形式で表示するレコードの数だけ、<span class="keyword">IBM i</span> オペレーティング・システムにより画面がページ送りされます。</p>
+<p class="p">サブファイル・サイズがサブファイル・ページに等しい場合には、SFLROLVAL は無視されます。
+複数の画面サイズを使用している場合 (DSPSIZ キーワードで指定されている場合) には、サブファイル・サイズがサブファイル・ページと同じになる画面サイズについてのみ、SFLROLVAL キーワードが無視されます。
+サブファイル・レコード様式にフィールド選択が含まれている場合には、SFLROLVAL は無効です。</p>
+<p class="p">このフィールドは、当該サブファイル制御レコードの入力の一部として、ユーザーのプログラムに返されます。  </p>
+<div class="p">前ページ・キーを押すと、サブファイルのレコードの最初のページを超えてしまう場合、次の条件のうち 1 つが発生します。<ul class="ul cds--list--unordered"><li class="li cds--list__item">レコードの最初のページが現在表示されていない場合、前ページによって表示されます。</li>
+<li class="li cds--list__item">レコードの最初のページが現在表示されている場合、前ページによってメッセージが表示されます。</li>
+</ul>
+</div>
+<div class="p">次ページ・キーを押すと、サブファイルの最後の活動レコードを超える場合、次の条件のうち 1 つが発生します。<ul class="ul cds--list--unordered"><li class="li cds--list__item">レコードの最後の全ページがまだ表示されていない場合、次ページ・キーを使用するとその部分が表示されます。</li>
+<li class="li cds--list__item">レコードの最後の全ページがすでに表示されている場合、次ページ・キーを使用するとメッセージが表示されます。
+この規則には例外が 1 つあります。SFLROLVAL の値が SFLPAG の値よりも小さい場合です。
+この場合、<span class="keyword">IBM i</span> オペレーティング・システムはサブファイルをページ送りし、メッセージは表示しません。</li>
+</ul>
+</div>
+<div class="p">次のキーワードは、SFLROLVAL とともに使用すると便利です。<ul class="ul cds--list--unordered"><li class="li cds--list__item">SFLEND キーワードを指定すると、最後のサブファイル・レコードが表示された際に、ワークステーション・ユーザーに通知されます。</li>
+<li class="li cds--list__item">PAGEUP または PAGEDOWN キーワードを使用すると、前ページ・キーまたは次ページ・キーを押してサブファイルの終わりを超えるときに、制御がプログラムに戻ります。
+PAGEUP(ROLLDOWN) または PAGEDOWN(ROLLUP) を使用しないと、メッセージが表示されます (前述のとおり)。</li>
+</ul>
+<div class="note note border-2 cds--inline-notification--info ibmdocs-note cds--inline-notification cds--inline-notification--low-contrast margin-top-1 margin-bottom-1"><div class="cds--inline-notification__details"><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" class="cds--inline-notification__icon" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M16,2A14,14,0,1,0,30,16,14,14,0,0,0,16,2Zm0,5a1.5,1.5,0,1,1-1.5,1.5A1.5,1.5,0,0,1,16,7Zm4,17.12H12V21.88h2.88V15.12H13V12.88h4.13v9H20Z"></path></svg>
+        <div class="cds--inline-notification__text-wrapper">
+          <div class="cds--inline-notification__subtitle"><span class="notetitle ibm-bold ibm-textcolor-blue-50 background-blue cds--inline-notification__title ibm-padding-top-1 ibm-padding-bottom-1 padding-left-1 padding-right-1">注:</span> ROLLUP キーワードは PAGEDOWN キーワードと同じであり、ROLLDOWN キーワードは PAGEUP キーワードと同じです。</div>
+        </div>
+      </div></div>
+</div>
+<div class="p">以下に、SFLROLVAL キーワードの用法を示す例を挙げます。<ul class="ul cds--list--unordered"><li class="li cds--list__item">「前ページ」。SFLPAG の指定値が 3 で、サブファイル内に 11 の活動レコードがあるとします。
+レコード 8 - 10 が現在表示されており、ユーザーが 8 以上のページ値をタイプする場合、前ページ・キーはレコード 1 - 3 を表示します。<p class="p">レコード 1-3 が現在表示されており、前ページ・キーが 0 より大きい SFLROLVAL 値で入力されると、
+メッセージがワークステーション・ユーザーに送信されるか (PAGEUP が指定されていない場合)、
+またはユーザー・プログラムに制御が戻されます (PAGEUP が指定されていて、ページ送りはプログラムで行う必要がある場合)。</p>
+</li>
+<li class="li cds--list__item">「次ページ」。SFLPAG の指定値が 3 で、サブファイル内に 11 の活動レコードがあるとします。
+レコード 8 - 10 が現在表示されており、ユーザーが SFLROLVAL フィールドに 3 を入力する場合、次ページ・キーを押すと、画面の最上部のページ域にレコード 11 が表示されます。そのレコード以外の行はすべてブランクになります。次ページ・キーを再度押すと、サブファイル・レコードの最後のページ全部 (レコード 9 - 11) が表示されます。
+最後に、次ページ・キーを三度目に押すと、メッセージがワークステーション・ユーザーに送られるか (PAGEDOWN が指定されていない場合)、
+または制御がユーザー・プログラムに戻されます (PAGEDOWN が指定されていて、プログラムで次ページにする責任がある場合)。</li>
+</ul>
+</div>
+<div class="p">次に、ページ送りによりサブファイルの始めまたは終わりを超えてしまう場合 (SFLROLVAL の値が SFLPAG の値より大きい場合) にどのような状態が生じるかを示します。<ul class="ul cds--list--unordered"><li class="li cds--list__item">次ページ・キーを押した場合:
+<ul class="ul cds--list--unordered cds--list--nested"><li class="li cds--list__item">レコードの最終ページ全体がまだ表示されていない場合には、最終ページが表示されます。</li>
+<li class="li cds--list__item">レコードの最終ページ全体がすでに表示されている場合には、メッセージが表示されます。</li>
+</ul>
+</li>
+<li class="li cds--list__item">次ページ・キーを二度目に押すと、次のようになります。<ul class="ul cds--list--unordered cds--list--nested"><li class="li cds--list__item">PAGEDOWN が指定される場合、制御はプログラムに戻ります。</li>
+<li class="li cds--list__item">PAGEDOWN が指定されない場合、メッセージが表示されます。</li>
+</ul>
+</li>
+<li class="li cds--list__item">前ページ・キーを押した場合:
+<ul class="ul cds--list--unordered cds--list--nested"><li class="li cds--list__item">サブファイルの最初のページが現在画面に表示されていない場合には、最初のページが表示されます。</li>
+<li class="li cds--list__item">サブファイルの最初のページが現在画面に表示されている場合には、次のようになります。<ul class="ul cds--list--unordered cds--list--nested"><li class="li cds--list__item">PAGEUP が指定されると、制御はプログラムに戻ります。</li>
+<li class="li cds--list__item">PAGEUP が指定されないと、メッセージが表示されます。</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+<p class="p">同一フィールドについて、SFLROLVAL キーワードと SFLRCDNBR キーワードの両方を同時に指定することはできません。</p>
+<p class="p">オプション標識は、このキーワードでは無効です。</p>
+</div>
+<div class="example"><h2 class="title sectiontitle">例</h2><p class="p">次の例は、SFLROLVAL キーワードの指定方法を示しています。</p>
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code>|...+....1....+....2....+....3....+....4....+....5....+....6....+....7....+....8
+00010A          R SFLR                      SFL
+     A*
+     A*           (at least one displayable field)
+     A*
+00040A          R SFLCTLR                   SFLCTL(SFLR)
+00050A                                      SFLPAG(17)
+00060A                                      SFLSIZ(17)
+00070A                                      SFLDSP SFLDSPCTL
+00080A            ROLVAL         4S 0B  1 47SFLROLVAL
+     A</code></pre></div><div class="docs--copy-btn"></div></div>
+</div>
+</div>
+<div class="related-links ibm-padding-top-1 ibm-padding-bottom-2 bx--row bottom-section-parent" aria-label="bottom related links">
+<div class="familylinks ibm-margin-bottom-1">
+<div class="parentlink"><strong>親トピック:</strong> <div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a class="link bottom-section-link" href="/docs/ja/ssw_ibm_i_74/rzakc/rzakcmstkeyent.htm" title="表示装置ファイルを定義するキーワード項目は、45 - 80 桁目 (機能欄) に記入します。">表示装置ファイルの DDS キーワード項目 (45 - 80 桁目)</a></div></div>
+</div>
+<div class="relinfo relref ibm-margin-bottom-1"><strong>関連資料</strong>:<br>
+<div><div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a class="link bottom-section-link" href="/docs/ja/ssw_ibm_i_74/rzakc/rzakcmstdfalwr.htm" title="これはレコード・レベル・キーワードで、定義中のレコード様式が画面に表示されているときに、プログラムで画面上のウィンドウ内のデータをページングできるようにするために使用します。">表示装置ファイルの ALWROL (ロール可能) キーワード</a></div></div>
+<div><div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a class="link bottom-section-link" href="/docs/ja/ssw_ibm_i_74/rzakc/rzakcmstdfslend.htm" title="これは、レコード・レベル・キーワードで、画面上でサブファイルまたはスクロール・バーが占めている部分の右下の隅に正符号 (+) またはテキスト (「続く」または「終わり」) を表示するために、サブファイル制御レコード様式で使用します。">表示装置ファイルの SFLEND (サブファイル終了) キーワード</a></div></div>
+</div>
+</div>
+

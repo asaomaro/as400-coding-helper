@@ -1,0 +1,160 @@
+<h1 class="title topictitle1">印刷装置ファイルの DFNCHR (文字の定義) キーワード</h1><div id="lastModifiedDate"><span>Last Updated</span>: 2021-04-13</div>
+<div class="body refbody"><p class="shortdesc">このファイル・レベルまたはレコード・レベルのキーワードは、
+5224 プリンターまたは 5225 プリンター用として独自に設計した文字を定義する場合に使用します。</p>
+<div class="section"><p class="p">このキーワードは、ファイル・レベルおよびレコード・レベルで何回でも指定する
+ことができます。また、このキーワードの 1 回の指定により、最高 50 個の文字を
+定義することができます。</p>
+<p class="p">キーワードの形式は次のとおりです。</p>
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code>DFNCHR(X'code-point-1' X'dot-matrix-pattern-1'
+[X'code-point-2' X'dot-matrix-pattern-2'...
+[X'code-point-50' X'dot-matrix-pattern-50']])</code></pre></div><div class="docs--copy-btn"></div></div>
+<div class="note note border-2 cds--inline-notification--info ibmdocs-note cds--inline-notification cds--inline-notification--low-contrast margin-top-1 margin-bottom-1"><div class="cds--inline-notification__details"><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" class="cds--inline-notification__icon" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M16,2A14,14,0,1,0,30,16,14,14,0,0,0,16,2Zm0,5a1.5,1.5,0,1,1-1.5,1.5A1.5,1.5,0,0,1,16,7Zm4,17.12H12V21.88h2.88V15.12H13V12.88h4.13v9H20Z"></path></svg>
+        <div class="cds--inline-notification__text-wrapper">
+          <div class="cds--inline-notification__subtitle"><span class="notetitle ibm-bold ibm-textcolor-blue-50 background-blue cds--inline-notification__title ibm-padding-top-1 ibm-padding-bottom-1 padding-left-1 padding-right-1">注:</span> 1 つの DDS ステートメントで使用できる文字数は最高 5000 文字です。複数の DFNCHR キーワードをまとめて指定するために 5000 文字を超える文字を
+指定することが必要になった場合には、オプション標識を指定することによって、超過した DFNCHR キーワードのための新しい DDS ステートメントを書き始める
+ことができます。標識をオンにセットする必要性をなくすためには、N (例えば、N50) を
+指定します。このようにすれば、プログラムによる処置を必要とせずに、キーワードの条件がオンになるようにすることができます。</div>
+        </div>
+      </div></div>
+<p class="p">ユーザー定義の文字は、1 桁分の印刷桁を占めることも (例 1)、また 2 桁以上の印刷桁を占めることもできます (例 2 および 3)。各印刷行ごとに、それぞれコード・ポイントとドット・マトリックス・パターンを 1 つずつ指定します。EBCDIC 文字セットでは、16 進数 C1 には文字 A が割り当てられています。16 進数 51 は未割り当てのコード・ポイントです。</p>
+<p class="p">DDS でドット・マトリックス・パターンを定義するには、2 桁で 1 組の 16 進数を 9 個指定します。使用できる文字は、0 から 9 および A から F だけです。</p>
+<p class="p">ユーザー・プログラムが、DFNCHR の指定されているレコード様式に対する出力命令を
+送ったときに、その DFNCHR で定義されているコード・ポイントが前回の出力操作のときとは
+異なっている場合には、<span class="keyword">IBM® i</span> オペレーティング・システムはその新しい定義をロードし、したがって
+定義済みの文字は変更されることになります。
+この処理のために印刷速度が低下することがあります。</p>
+<p class="p">しかし、同じ DFNCHR キーワードが、連続して 2 つの出力命令に対して
+効力を持つ場合には、<span class="keyword">IBM i</span> オペレーティング・システムは、2 番目の出力命令に対してコード・ポイントを
+再ロードしません。</p>
+<p class="p">DFNCHR は SCS プリンターを対象とした場合に限り有効です。したがって同一の
+レコード様式に対して、COLOR、LPI、および BARCODE などの IPDS プリンター用キーワードと一緒にこのキーワードを指定することはできません。
+ファイル内に SCS プリンター用キーワードと IPDS プリンター用キーワードとが混在するレコード様式があった場合には、そのファイルは作成されません。</p>
+<p class="p">DEVTYPE(*IPDS) または DEVTYPE(*AFPDS) として作成されたファイルに DFNCHR を指定すると、
+ファイル作成時に警告メッセージが表示されます。</p>
+<p class="p">同じレコード様式に対して、DRAWER キーワードと一緒にこのキーワードを指定
+することはできません。ファイル内に、DFNCHR (レコード・レベル) および DRAWER キーワードの両方が
+指定されたレコード様式があった場合には、そのファイルは作成されません。</p>
+<p class="p">このキーワードについては、オプション標識を使用できます。</p>
+</div>
+<div class="section"><h2 class="title sectiontitle">例</h2><p class="p">以下に DFNCHR の指定方法の例を示します。</p>
+</div>
+<div class="example"><h2 class="title sectiontitle">例 1</h2><p class="p">次の例では、1 つのドット・マトリックスを使用して、レコード・レベルで DFNCHR を指定することにより、16 進数 7C が @ ではなく © として印刷されるようにする方法を示しています。</p>
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code>|...+....1....+....2....+....3....+....4....+....5....+....6....+....7....+....8
+12
+00010A          R RECORD                    DFNCHR(X'7C' X'007E813CC324817E00')
+00020A                                 58  4DFT(X'7C')   TRNSPY
+00030A                                    +2DFT('1982')
+     A</code></pre></div><div class="docs--copy-btn"></div></div>
+<div class="p">この例では、EBCDIC 文字セットでは通常 @ であるコード・ポイント 16 進数 7C <strong class="ph b">1</strong> を、著作権マークとして再定義します。
+著作権マークは、次に示すように (印刷用紙の 58 行目に)
+印刷されます。<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code>© 1982</code></pre></div><div class="docs--copy-btn"></div></div>
+</div>
+<p class="p">16 進数字 <strong class="ph b">2</strong> は、次のドット・マトリックス・パターンを定義します。</p>
+<div class="fig fignone" id="rzakdmstptdfnch__e16b"><span class="figcap">図 1. 例 1 のドット・マトリックス・パターン</span><div class="image"><img class="image ibmdocs-image-downsize" src="/docs/ja/ssw_ibm_i_74/rzakd/rsll763.gif" alt="例 1 のドット・マトリックス・パターン"></div></div>
+</div>
+<div class="example"><h2 class="title sectiontitle">例 2</h2><p class="p">次の例では、大きい文字のドット・マトリックスが指定されています。この例は、2 桁分の幅と 2 行分の高さを持つ文字を定義するための DFNCHR を、ファイル・レベルで指定する方法を示しています。</p>
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code>|...+....1....+....2....+....3....+....4....+....5....+....6....+....7....+....8
+12
+00010A                                      DFNCHR(X'51' X'000000FF00FF00E700' +
+00020A                                             X'52' X'E700E700E700E10000' +
+00030A                                             X'53' X'0000009C001F000700' +
+00040A                                             X'54' X'07000700FF00FC0000' +
+00050A                                             X'55' X'00000000FF00E700E7' +
+00060A                                             X'56' X'00E700E700E3000000' +
+00070A                                             X'57' X'000000001E00070007' +
+00080A                                             X'58' X'0007000700FE000000')
+00090A          R RECORD1
+00100A                   3  58  4DFT(X'5152')   TRNSPY
+00110A                                 58  4DFT(X'5556')   TRNSPY
+00120A                                 59  4DFT(X'5354')   TRNSPY
+00130A                                 59  4DFT(X'5758')   TRNSPY
+     A</code></pre></div><div class="docs--copy-btn"></div></div>
+<p class="p">例 2 では、8 個のコード・ポイント (16 進数 51 から 16 進数 58) <strong class="ph b">1</strong> が再定義されています。横方向に隣接するドットが印刷できるようにするために、2 × 2 の文字の各印刷位置がそれぞれ 2 回ずつ印刷されます。
+16 進コード <strong class="ph b">2</strong> はドット・マトリックス・パターンを定義しています。</p>
+<p class="p"><strong class="ph b">3</strong> は、5 という文字を大きく印刷することを指定しています (この文字は、印刷用紙の行 58 上の 2 個および行 59 上の 2 個、合計 4 個の印刷位置を
+使って、次のように印刷されます)。</p>
+<div class="note note border-2 cds--inline-notification--info ibmdocs-note cds--inline-notification cds--inline-notification--low-contrast margin-top-1 margin-bottom-1"><div class="cds--inline-notification__details"><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" class="cds--inline-notification__icon" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M16,2A14,14,0,1,0,30,16,14,14,0,0,0,16,2Zm0,5a1.5,1.5,0,1,1-1.5,1.5A1.5,1.5,0,0,1,16,7Zm4,17.12H12V21.88h2.88V15.12H13V12.88h4.13v9H20Z"></path></svg>
+        <div class="cds--inline-notification__text-wrapper">
+          <div class="cds--inline-notification__subtitle"><span class="notetitle ibm-bold ibm-textcolor-blue-50 background-blue cds--inline-notification__title ibm-padding-top-1 ibm-padding-bottom-1 padding-left-1 padding-right-1">注:</span> 大きい文字の中に横方向の間隔が生じないようにするために、ファイルの LPI は 9 にしなければなりません
+(CRTPRTF、CHGPRTF、または OVRPRTF コマンドの LPI パラメーター)。</div>
+        </div>
+      </div></div>
+<p class="p">文字設計用紙には、例 2 に示すように、最高 9 個分の
+印刷位置 (3 桁 3 行) を表すドット・パターンを記入します。</p>
+<div class="fig fignone" id="rzakdmstptdfnch__e18b"><span class="figcap">図 2. 例 2 のグリッド・パターンの指定 (ポイント 51 から 54)</span><div class="image"><img class="image ibmdocs-image-downsize" src="/docs/ja/ssw_ibm_i_74/rzakd/rsll768.gif" alt="例 2 のグリッド・パターンの指定"></div></div>
+<p class="p">表の使用法: <a class="xref" href="/docs/ja/ssw_ibm_i_74/rzakd/prdots.htm" title="ユーザー定義のドット・マトリックス・パターンを定義する場合には、2 桁で 1 組の 16 進数を 9 個指定します。">ドット・マトリックス内の印刷されるドットの指定</a>に示すビット・パターン用の
+16 進数字は、グリッド・パターンの各桁の上半分と下半分に、それぞれどの 16 進数字を指定するかを決めるものです。</p>
+<p class="p"><a class="xref" href="#rzakdmstptdfnch__e18c">図 3</a> に示すように、
+印刷位置ごとに、コード・ポイント 51 から 54 について 1 行分のグリッド・パターン (1 つの升目に 1 組の 16 進数字) を記入します。</p>
+<div class="fig fignone" id="rzakdmstptdfnch__e18c"><span class="figcap">図 3. 例 2 のコード・ポイントの記入 (ポイント 51 から 54)</span><div class="image"><img class="image ibmdocs-image-downsize" src="/docs/ja/ssw_ibm_i_74/rzakd/rsll769.gif" alt="例 2 のコード・ポイントの記入"></div></div>
+<p class="p">文字設計用紙には、<a class="xref" href="#rzakdmstptdfnch__e18d">図 4</a> に示すように、最高 9 個分の
+印刷位置 (3 桁 3 行) を表すドット・パターンを記入します。</p>
+<div class="fig fignone" id="rzakdmstptdfnch__e18d"><span class="figcap">図 4. 例 2 のグリッド・パターンの指定 (ポイント 55 から 58)</span><div class="image"><img class="image ibmdocs-image-downsize" src="/docs/ja/ssw_ibm_i_74/rzakd/rsll770.gif" alt="例 2 のグリッド・パターンの指定 (ポイント 55 から 58)"></div></div>
+<p class="p">表の使用法: <a class="xref" href="/docs/ja/ssw_ibm_i_74/rzakd/prdots.htm" title="ユーザー定義のドット・マトリックス・パターンを定義する場合には、2 桁で 1 組の 16 進数を 9 個指定します。">ドット・マトリックス内の印刷されるドットの指定</a>に示すビット・パターン用の
+16 進数字は、グリッド・パターンの各桁の上半分と下半分に、それぞれどの 16 進数字を指定するかを決めるものです。</p>
+<p class="p"><a class="xref" href="#rzakdmstptdfnch__e18e">図 5</a> に示すように、印刷位置ごとに、コード・ポイント 55 から 58 について
+1 行分のグリッド・パターン (1 つの升目に 1 組の 16 進数字) を記入します。</p>
+<div class="fig fignone" id="rzakdmstptdfnch__e18e"><span class="figcap">図 5. 例 2 のコード・ポイントの記入 (ポイント 55 から 58)</span><div class="image"><img class="image ibmdocs-image-downsize" src="/docs/ja/ssw_ibm_i_74/rzakd/rsll772.gif" alt="例 2 のコード・ポイントの記入"></div></div>
+</div>
+<div class="example"><h2 class="title sectiontitle">例 3</h2><p class="p">次の例は、DFNCHR をファイル・レベルで指定することによって、3 桁分の幅と 2 行分の高さを持つ大きい図形を定義する方法を示しています。</p>
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code>|...+....1....+....2....+....3....+....4....+....5....+....6....+....7....+....8
+00010A                                         12
+00020A                                      DFNCHR(X'B1' X'FF00E000D000C800C4' +
+00030A                                             X'B2' X'00C200C100C100C200' +
+00040A                                             X'B3' X'C400C800D000E000FF' +
+00050A                                             X'B4' X'FF0007000800130023' +
+00060A                                             X'B5' X'004300830083004300' +
+00070A                                             X'B6' X'230013000B000700FF' +
+00080A                                             X'B7' X'00FF00F000D800CC00' +
+00090A                                             X'B8' X'C600C100C100C100C6' +
+00100A                                             X'B9' X'00CC00D800F000FF00' +
+00110A                                             X'BA' X'00FF000F001B003300' +
+00120A                                             X'BB' X'630083008300830063' +
+00130A                                             X'BC' X'0033001B000F00FF00')
+00140A          R RECORD1                   CPI(15)
+00150A                                 58  4DFT(X'B1B2B3')   TRNSPY
+00160A                                 58  4DFT(X'B7B8B9')   TRNSPY
+00170A                                 59  4DFT(X'B4B5B6')   TRNSPY
+00180A                                 59  4DFT(X'BABBBC')   TRNSPY
+     A</code></pre></div><div class="docs--copy-btn"></div></div>
+<p class="p">この例では、12 個のコード・ポイント (16 進数 B1 から 16 進数 BC まで) <strong class="ph b">1</strong> が再定義されています。横方向に隣接するドットが印刷できるようにするために、3 × 2 の文字の各印刷位置がそれぞれ 2 回ずつ印刷されます。
+16 進コード <strong class="ph b">2</strong> はドット・マトリックス・パターンを定義しています。</p>
+<p class="p">この例を使用すると、印刷用紙上の行 58 およ
+び 59 の 3 個の印刷位置を使って、☐ の中に X を入れた図形が印刷されます。</p>
+<div class="note note border-2 cds--inline-notification--info ibmdocs-note cds--inline-notification cds--inline-notification--low-contrast margin-top-1 margin-bottom-1"><div class="cds--inline-notification__details"><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" class="cds--inline-notification__icon" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M16,2A14,14,0,1,0,30,16,14,14,0,0,0,16,2Zm0,5a1.5,1.5,0,1,1-1.5,1.5A1.5,1.5,0,0,1,16,7Zm4,17.12H12V21.88h2.88V15.12H13V12.88h4.13v9H20Z"></path></svg>
+        <div class="cds--inline-notification__text-wrapper">
+          <div class="cds--inline-notification__subtitle"><span class="notetitle ibm-bold ibm-textcolor-blue-50 background-blue cds--inline-notification__title ibm-padding-top-1 ibm-padding-bottom-1 padding-left-1 padding-right-1">注:</span> 大きい文字の中に横方向の間隔が生じないようにするために、ファイルの LPI は 9 にしなければなりません
+(CRTPRTF、CHGPRTF、または OVRPRTF コマンドの LPI パラメーター)。</div>
+        </div>
+      </div></div>
+<p class="p">文字設計用紙には、例に示すように、最高 9 個分の印刷位置 (3 桁 3 行) を表すドット・パターンを記入します。</p>
+<div class="fig fignone" id="rzakdmstptdfnch__e19b"><span class="figcap">図 6. 例 3 のグリッド・パターンの指定 (ポイント B1 から B6)</span><div class="image"><img class="image ibmdocs-image-downsize" src="/docs/ja/ssw_ibm_i_74/rzakd/rsll774.gif" alt="例 3 のグリッド・パターンの指定"></div></div>
+<p class="p">表の使用法: <a class="xref" href="/docs/ja/ssw_ibm_i_74/rzakd/prdots.htm" title="ユーザー定義のドット・マトリックス・パターンを定義する場合には、2 桁で 1 組の 16 進数を 9 個指定します。">ドット・マトリックス内の印刷されるドットの指定</a>に示すビット・パターン用の
+16 進数字は、グリッドの各桁の上半分と下半分に、それぞれどの 16 進数字を指定するかを決めるものです。
+<a class="xref" href="#rzakdmstptdfnch__e19c">図 7</a> に示すように、印刷位置ごとに 1 行分のグリッド・パターン (1 つの升目に 1 組の 16 進数字) を記入します。</p>
+<div class="fig fignone" id="rzakdmstptdfnch__e19c"><span class="figcap">図 7. 例 3 のコード・ポイントの記入 (ポイント B1 から B6)</span><div class="image"><img class="image ibmdocs-image-downsize" src="/docs/ja/ssw_ibm_i_74/rzakd/rsll775.gif" alt="例 3 のコード・ポイントの記入 (ポイント B1 から B6)"></div></div>
+<p class="p">文字設計用紙には、<a class="xref" href="#rzakdmstptdfnch__e19d">図 8</a> に示すように、最高 9 個分の印刷位置
+(3 桁 3 行) を表すドット・パターンを記入します。</p>
+<div class="fig fignone" id="rzakdmstptdfnch__e19d"><span class="figcap">図 8. 例 3 のグリッド・パターンの指定 (ポイント B7 から BC)</span><div class="image"><img class="image ibmdocs-image-downsize" src="/docs/ja/ssw_ibm_i_74/rzakd/rsll776.gif" alt="例 3 のグリッド・パターンの指定 (ポイント B7 から BC)"></div></div>
+<p class="p">表の使用法: <a class="xref" href="/docs/ja/ssw_ibm_i_74/rzakd/prdots.htm" title="ユーザー定義のドット・マトリックス・パターンを定義する場合には、2 桁で 1 組の 16 進数を 9 個指定します。">ドット・マトリックス内の印刷されるドットの指定</a>に示すビット・パターン用の
+16 進数字は、グリッドの各桁の上半分と下半分に、それぞれどの 16 進数字を指定するかを決めるものです。
+<a class="xref" href="#rzakdmstptdfnch__e19e">図 9</a> に示すように、印刷位置ごとに 1 行分のグリッド・パターン (1 つの升目に 1 組の 16 進数字) を記入します。</p>
+<div class="fig fignone" id="rzakdmstptdfnch__e19e"><span class="figcap">図 9. 例 3 のコード・ポイントの記入 (ポイント B7 から BC)</span><div class="image"><img class="image ibmdocs-image-downsize" src="/docs/ja/ssw_ibm_i_74/rzakd/rsll777.gif" alt="例 3 のコード・ポイントの記入 (ポイント B7 から BC)"></div></div>
+</div>
+</div>
+<div class="related-links ibm-padding-top-1 ibm-padding-bottom-2 bx--row bottom-section-parent" aria-label="bottom related links">
+<ul class="ullinks cds--list--unordered">
+<li class="link ulchildlink cds--list__item"><span class="ulchildlinktext"><a href="/docs/ja/ssw_ibm_i_74/rzakd/prpnts.htm">再定義するコード・ポイントの選択</a></span><br>
+16 進数 00 を除くすべてのコード・ポイントを定義することができます。</li>
+<li class="link ulchildlink cds--list__item"><span class="ulchildlinktext"><a href="/docs/ja/ssw_ibm_i_74/rzakd/dotm.htm">ドット・マトリックス</a></span><br>
+<span class="ph">5224 プリンターおよび 5225 プリンターのドット・マトリックスは 8 行 x 9 桁のマトリックスです。
+CPI または LPI の設定にかかわらず、8 行および 9 桁はすべて印刷されます。</span></li>
+<li class="link ulchildlink cds--list__item"><span class="ulchildlinktext"><a href="/docs/ja/ssw_ibm_i_74/rzakd/prdots.htm">ドット・マトリックス内の印刷されるドットの指定</a></span><br>
+ユーザー定義のドット・マトリックス・パターンを定義する場合には、2 桁で 1 組の 16 進数を 9 個指定します。</li>
+</ul>
+
+<div class="familylinks ibm-margin-bottom-1">
+<div class="parentlink"><strong>親トピック:</strong> <div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a class="link bottom-section-link" href="/docs/ja/ssw_ibm_i_74/rzakd/rzakdmstprkey.htm" title="これらは印刷装置ファイルの定義に有効なキーワード項目です。">印刷装置ファイルのキーワード項目 (45 から 80 桁目)</a></div></div>
+</div>
+</div>
+

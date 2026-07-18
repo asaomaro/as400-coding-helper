@@ -1,0 +1,62 @@
+<h1 class="title topictitle1">印刷装置ファイルの STAPLE (ステープル) キーワード</h1><div id="lastModifiedDate"><span>Last Updated</span>: 2021-04-13</div>
+<div class="body refbody"><p class="shortdesc"><span class="ph">このレコード・レベルのキーワードは、
+スプール・ファイル内でステープル操作を行う必要があることを指定する場合に使用します。</span></p>
+<div class="section"><p class="p">ステープル操作は、CRTPRTF、CHGPRTF、または OVRPRTF コマンドの CORNERSTPL、
+EDGESTITCH、または SADLSTITCH パラメーターで定義する必要があります。印刷装置ファイルでステープル操作が定義されない場合、STAPLE キーワードは無視されます。
+STAPLE キーワードを指定しない場合、EDGESTITCH、SADLSTITCH、または CORNERSTPL パラメーターの定義に従って、
+スプール・ファイル全体がステープル処理されます。</p>
+<p class="p">キーワードの形式は次のとおりです。</p>
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code>STAPLE([on/off-indicator])</code></pre></div><div class="docs--copy-btn"></div></div>
+<p class="p">STAPLE キーワードが処理されると、プリンターはページを排出し、前回のステープル操作以降にスタックされていた直前のページがすべて、まとめてステープル処理されます。
+これには、スプール・ファイルの開始以降、前回の STAPLE キーワードの発行以降、
+または前回の STAPLE(*ON) の発行後に再開されたステープル操作以降に処理されたページが含まれます。</p>
+<p class="p">例えば、片面印刷の場合、ページ 5 の先頭で STAPLE キーワードが発行された場合、直前の 4 ページがまとめてステープルされます。
+一部のプリンターでは、単一ページのステープルがサポートされない場合があります。</p>
+<p class="p">任意指定の off-on ステープル標識は、スプール・ファイル内でステープルをオフにするかどうかを指定します。</p>
+<dl class="dl"><dt class="dt dlterm">*OFF</dt>
+<dd class="dd">ステープルをオフにすることを指定します。
+スプール・ファイルの開始以降、前回の STAPLE キーワードの発行以降、
+または前回の STAPLE(*ON) の発行後に再開されたステープル操作以降に処理されたページはすべて、まとめてステープルされます。
+STAPLE(*OFF) は、STAPLE(*ON) キーワードが発行されるまで有効なままです。STAPLE(*OFF) は、ページ境界で発行されるレコード様式で指定する必要があります。</dd>
+<dt class="dt dlterm">*ON</dt>
+<dd class="dd">ステープルを再開することを指定します。これは、通常、直前のレコード様式で STAPLE(*OFF) が発行された後で発行されます。ステープルが現在、オンとして定義されている場合、このキーワードは無視されます。
+STAPLE(*ON) は、STAPLE(*OFF) キーワードが発行されるまで有効なままです。
+STAPLE(*ON) は、ページ境界で発行されるレコード様式で指定する必要があります。STAPLE(*ON) キーワードにより、以前に処理されたページがステープル処理されることはありません。</dd>
+</dl>
+<p class="p">STAPLE はページの境界で指定されていないと、実行時に無視されます。
+あるページについて、名前付きのフィールドまたは固定情報フィールドが 1 つも
+処理されていなければ、プリンターはページの境界にあります。名前付きフィールド
+または固定情報フィールドが 1 つでも処理されると、プリンターはもうページの
+境界にはありません。SKIP、SPACE、ENDPAGE、FORCE、または INVMMAP のいずれかの
+キーワードが処理されたためにプリンターが改ページを行うと、プリンターは再びページの境界に位置づけられます。</p>
+<p class="p">STAPLE、SKIP、および SPACE キーワードは、次の順序で処理されます。</p>
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code>SKIPB
+SPACEB
+STAPLE
+SPACEA
+SKIPA</code></pre></div><div class="docs--copy-btn"></div></div>
+<p class="p">ステープル操作を行うと、現行の用紙が排出されます。両面印刷が有効である (印刷装置ファイルまたは DDS で指定されている) ときに、奇数ページ (例えば、5 ページ) の先頭で STAPLE が発行される場合、直前の 4 ページ (用紙 2 枚分) がステープル処理されます。偶数ページ (例えば、6 ページ) の先頭で STAPLE が発行される場合、直前の 5 ページ (用紙 3 枚分) がステープル処理されます。3 枚目の用紙の裏面はブランクです。</p>
+<p class="p">このキーワードについては、オプション標識を使用できます。常に、各レコード様式ごとに 1 つの STAPLE キーワードが有効です。</p>
+</div>
+<div class="section"><h2 class="title sectiontitle">例</h2><div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code>|...+....1....+....2....+....3....+....4....+....5....+....6....+....7....+....8
+00010A          R RECORD1                   SKIPB(3)             
+00020A            FIELD1        10         1SPACEA(1)            
+00030A            FIELD2         5         1SPACEA(1)            
+00040A          R RECORD2                   STAPLE               
+00050A            FIELD1         5         1                     
+00060A          R RECORD3                   STAPLE SKIPB(1)      
+00070A            FIELD1        10         1                     
+00080A                                                           
+00090A          R RECORD4                   STAPLE(*OFF) SKIPB(1)
+00100A                                                           </code></pre></div><div class="docs--copy-btn"></div></div>
+<p class="p">この例では、レコード様式 RECORD1 の処理のあとは、プリンターがページの境界に
+ありません。したがって、レコード様式 RECORD2 が処理されるときには、STAPLE は無視されます。
+RECORD3 で SKIPB(1) が指定されているので、STAPLE が処理されるときは、プリンターはページ境界にあります。前回のステープル操作以降に処理されたページはすべて、まとめてステープル処理されます。RECORD 4 は、ステープルをオフにします。前回のステープル操作以降に処理されたページはすべて、まとめてステープル処理されます。別のレコード様式で STAPLE(*ON) が発行されない限り、ステープル操作は再開されません。</p>
+</div>
+</div>
+<div class="related-links ibm-padding-top-1 ibm-padding-bottom-2 bx--row bottom-section-parent" aria-label="bottom related links">
+<div class="familylinks ibm-margin-bottom-1">
+<div class="parentlink"><strong>親トピック:</strong> <div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a class="link bottom-section-link" href="/docs/ja/ssw_ibm_i_74/rzakd/rzakdmstprkey.htm" title="これらは印刷装置ファイルの定義に有効なキーワード項目です。">印刷装置ファイルのキーワード項目 (45 から 80 桁目)</a></div></div>
+</div>
+</div>
+

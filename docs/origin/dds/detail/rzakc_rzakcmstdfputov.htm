@@ -1,0 +1,80 @@
+<h1 class="title topictitle1">表示装置ファイルの PUTOVR (明示的な一時変更を伴う PUT) キーワード</h1><div id="lastModifiedDate"><span>Last Updated</span>: 2021-04-13</div>
+<div class="body refbody"><p class="shortdesc">これはレコード・レベル・キーワードであり、ワークステーション装置に表示されているレコードの特定のフィールドの表示属性
+またはデータ内容 (あるいはその両方) を指定変更できるようにするために使用されます。
+PUTOVR キーワードを使用することによって、表示装置に送られるデータの量を減らすことができます。</p>
+<div class="section"><p class="p">このキーワードにはパラメーターはありません。</p>
+<p class="p">PUTOVR とサブファイルを使用する場合には、いくつかの制約事項があります。これらの制約事項、およびシステム/36 環境で使用するファイルで PUTOVR を使用する方法の詳細については、「<a class="xref" href="http://publib.boulder.ibm.com/infocenter/iseries/v6r1m0/topic/rzakc/sc415715.pdf" target="_blank" title="(PDF ファイルを開く)">アプリケーション表示プログラミング</a>」 の資料を参照してください。</p>
+<p class="p">すでに表示されているレコードから選択したフィールドを変更しようとする場合には、そのレコードに対する出力命令または入出力命令で、PUTOVR、OVRDTA、および OVRATR の各キーワードが効力を持っている場合に、OVRDTA キーワードまたは OVRATR キーワードが効力を持っているフィールドだけが変更されます。
+OVRDTA キーワードを使用すると、フィールドのデータ内容を変更することがき、OVRATR キーワードを使用すると、フィールドの表示属性を変更することができます。
+どのフィールドを変更するかは、オプション標識の設定により制御します。</p>
+<div class="p">次のような状態が生じると、PUTOVR キーワードは無視されます。ただし、エラーとはなりません。<ul class="ul cds--list--unordered"><li class="li cds--list__item">出力命令の時点で、PUTOVR に効力がない。</li>
+<li class="li cds--list__item">出力命令の時点で、OVRDTA キーワードにも OVRATR キーワードにも効力がない。</li>
+<li class="li cds--list__item">当該のレコード様式が画面上に存在していない。</li>
+</ul>
+</div>
+<p class="p">名前を持つ出力可能フィールドに DFT が指定されている場合には、PUTOVR キーワードおよび OVRDTA キーワードを指定する必要があります。
+1 つのフィールドに対して PUTOVR と OVRDTA の両方が効力を持っている場合には、DFT キーワードで指定されたデフォルト値は、フィールドの最初の表示時点でのみ表示されます。PUTOVR キーワードと OVRDTA キーワードが効力を持つそれ以降の画面では、プログラム値が表示されます。</p>
+<div class="p">あるフィールドがレコード様式に対する最初の出力命令で表示されなかった場合、特定の制約が適用されます。
+この制約は、2 回目以降の出力命令の際にそのフィールドが選択され表示された時点で、PUTOVR キーワードも効力を持っている場合に、適用されます。<ul class="ul cds--list--unordered"><li class="li cds--list__item">OVRDTA キーワードまたは OVRATR キーワードが選択されている出力専用フィールドの場合には、<span class="keyword">IBM® i</span> オペレーティング・システムは終了属性文字を送りません。表示属性 (反転表示など) は、画面上の次のフィールドの開始属性文字が現れるまで、そのまま機能を維持します。
+後で指定変更できるように終了属性文字を送るためには、最初の出力命令で出力専用フィールドを表示することが必要です (フィールドの表示を望まない場合には、DSPATR(ND) を指定します)。</li>
+<li class="li cds--list__item">OVRDTA または OVRATR キーワードが選択される入力可能またはメッセージ・フィールドに、<span class="keyword">IBM i</span> オペレーティング・システムは終了属性文字を送ります。
+このフィールドは最初の出力命令で表示されなければなりません。</li>
+</ul>
+</div>
+<p class="p">PUTRETAIN キーワードと PUTOVR キーワードは、同一レコード様式に対して同時に指定することはできません。</p>
+<p class="p">OVRDTA キーワードは、出力専用フィールド (使用目的 O)、入出力共用フィールド (使用目的 B)、プログラム - システム間フィールド (使用目的 P)、またはメッセージ・フィールド (使用目的 M) についてのみ使用することができます。</p>
+<p class="p">OVRATR キーワードは、出力専用フィールド (使用目的 O)、入力専用フィールド (使用目的 I)、または入出力共用フィールド (使用目的 B) についてのみ使用することができます。</p>
+<p class="p">PUTOVR を指定した場合には、表示装置ファイルの作成 (CRTDSPF) コマンドまたは表示装置ファイルの変更 (CHGDSPF) コマンドに RSTDSP(*YES) を指定しなければなりません。そうしないと、ファイルの処理が中断された場合に、画面上のデータが失われることがあります。</p>
+<p class="p">DSPMOD キーワードが指定されているレコードに PUTOVR キーワードを指定すると、ファイル作成時に警告メッセージが表示されます。実行時に、表示モードが変更されると、PUTOVR キーワードは無視されます。</p>
+<div class="p">OVRATR キーワードを指定できるのは、次の表示属性を指定変更する場合だけです。<p class="lines">CHECK(ER)<br>
+CHECK(ME)<br>
+DUP<br>
+DSPATR (OID および SP を除くすべて)</p>
+</div>
+<p class="p">OVRDTA キーワードが効力を持っている出力命令では、OVRATR キーワードを指定しなくても、指定変更の対象となる 1 つまたは複数のフィールドのデータ内容だけでなく、表示属性も変更することができます。</p>
+<p class="p">PUTOVR、OVRATR、および OVRDTA の各キーワードでは、オプション標識を使用することができます。</p>
+</div>
+<div class="example"><h2 class="title sectiontitle">例</h2><p class="p">次の例は、PUTOVR、OVRATR、および OVRDTA キーワードの指定方法を示しています。</p>
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code>|...+....1....+....2....+....3....+....4....+....5....+....6....+....7....+....8
+00010A          R INVRCD                    PUTOVR
+00020A            FLD1                  1 26'INVENTORY REMAINING IN WAREHOUSE 1'
+00030A*
+00040A                                  3  2'Remaining on hand:'
+00050A                                      OVRATR
+00060A  11                                  DSPATR(HI)
+00070A*
+00080A            INVBAL         5Y 0     +2
+00090A  12                                  OVRDTA
+00100A*
+00110A                                    +2'Low on stock' OVRATR
+00120A N70                                  DSPATR(ND)
+00130A  70                                  DSPATR(HI)
+00140A*
+00150A            SUPPPL        20   B  5  2DFT('INTERNAL')
+00160A  13                                  OVRDTA
+00170A*
+00180A            ACCT          20      6  2OVRDTA
+00190A                                      DSPATR(HI)
+00200A  14                                  DSPATR(RI)
+     A</code></pre></div><div class="docs--copy-btn"></div></div>
+<div class="p">この例では、最初の出力命令で画面全体に情報が表示されます。二度目の出力命令では PUTOVR が効力を持ち、プログラムがオプション標識をセットして画面に対して次の変更を行います。<ul class="ul cds--list--unordered"><li class="li cds--list__item">オプション標識 11 がオンになった場合には、<em class="ph i">Remaining on hand</em> という固定情報フィールドは高輝度フィールドに変更されます。
+この表示属性を通常輝度に戻すためには、オプション標識 11 をオフにし、レコード様式を再表示します。</li>
+<li class="li cds--list__item">オプション標識 12 がオンになった場合には、プログラムで、フィールド INVBAL の表示値を変更することができます。</li>
+<li class="li cds--list__item">オプション標識 70 がオフになった場合には、<em class="ph i">Low on stock</em> という固定情報フィールドが非表示フィールドになります。
+オプション標識 70 がオンになった場合には、この固定情報フィールドは高輝度フィールドに変更されます。</li>
+<li class="li cds--list__item">オプション標識 13 がオンになった場合には、プログラムで、フィールド SUPPL の値をセットして、省略時値 (INTERNAL) を指定変更することができます。
+最初に表示される値は必ず INTERNAL です。INTERNAL を別の値に変更したあと、それを再び表示するためには、プログラムで、当該フィールドの値を INTERNAL にセットしてから再表示しなければなりません。</li>
+<li class="li cds--list__item">オプション標識 14 がオンになった場合には、フィールド ACCT の表示属性が、このフィールドに新しいデータが送られてくると同時に、高輝度から、高輝度および反転表示に変わります。オプション標識 14 がオフになった場合には、表示属性は元の高輝度だけに戻ります。出力命令のたびに、新しいデータが画面に送られます。</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="related-links ibm-padding-top-1 ibm-padding-bottom-2 bx--row bottom-section-parent" aria-label="bottom related links">
+<div class="familylinks ibm-margin-bottom-1">
+<div class="parentlink"><strong>親トピック:</strong> <div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a class="link bottom-section-link" href="/docs/ja/ssw_ibm_i_74/rzakc/rzakcmstkeyent.htm" title="表示装置ファイルを定義するキーワード項目は、45 - 80 桁目 (機能欄) に記入します。">表示装置ファイルの DDS キーワード項目 (45 - 80 桁目)</a></div></div>
+</div>
+<div class="relinfo relref ibm-margin-bottom-1"><strong>関連資料</strong>:<br>
+<div><div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a class="link bottom-section-link" href="/docs/ja/ssw_ibm_i_74/rzakc/rzakcmstdfdft.htm" title="これはフィールド・レベル・キーワードで、固定情報フィールド (名前のないフィールド) の値、または名前の付いたフィールドのデフォルト値を指定するために使用します。">表示装置ファイルの DFT (デフォルト値) キーワード</a></div></div>
+</div>
+</div>
+

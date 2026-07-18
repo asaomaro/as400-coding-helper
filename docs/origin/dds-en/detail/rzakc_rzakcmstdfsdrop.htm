@@ -1,0 +1,90 @@
+<main role="main"><article role="article" aria-labelledby="rzakcmstdfsdrop__title__1">
+<h1 class="topictitle1" id="rzakcmstdfsdrop__title__1">SFLDROP (Subfile Drop) keyword for display files</h1><div id="lastModifiedDate"><span>Last Updated</span>: 2026-07-13</div>
+
+
+
+<div class="body refbody"><p class="shortdesc">You use this record-level keyword on
+the subfile-control record format to assign a command attention (CA) key or
+a command function (CF) key that the workstation user can press to fold or
+truncate subfile records that require more than one display line.</p>
+
+<div class="section"><div class="p">The format of the keyword is:  <div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>SFLDROP(CAnn | CFnn)</code></pre></div><div class="docs--copy-btn"></div></div></div>
+<p>Without
+SFLDROP, the <span class="keyword">IBM i</span> operating
+system displays the entire subfile record and folds it where needed. When
+SFLDROP is specified, the <span class="keyword">IBM i</span> operating
+system first displays the subfile in truncated form; subfile records are truncated
+to fit on one display line. When the workstation user presses the specified
+key, the <span class="keyword">IBM i</span> operating
+system displays the records again in folded form. Each record continues onto
+subsequent lines immediately following the line the record starts on.</p>
+<p>By
+pressing the specified key, the form of the displayed subfile changes from
+one state to the other.</p>
+<p>In the truncated form, more records are displayed
+than are specified on the SFLPAG keyword. In the folded form, as many records
+are displayed as are specified on the SFLPAG keyword.</p>
+<p>The <span class="keyword">IBM i</span> operating
+system truncates subfile records in the middle of output-only fields. However,
+if the truncation is in the middle of an input-capable field, the whole field
+is omitted from the display. If this results in omitting the entire record
+from the display, an error message is sent to the display and the record is
+not truncated. Instead, it is displayed in folded form.</p>
+<div class="note note border-2 cds--inline-notification--info ibmdocs-note cds--inline-notification cds--inline-notification--low-contrast margin-top-1 margin-bottom-1"><div class="cds--inline-notification__details"><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" class="cds--inline-notification__icon" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M16,2A14,14,0,1,0,30,16,14,14,0,0,0,16,2Zm0,5a1.5,1.5,0,1,1-1.5,1.5A1.5,1.5,0,0,1,16,7Zm4,17.12H12V21.88h2.88V15.12H13V12.88h4.13v9H20Z"></path></svg>
+        <div class="cds--inline-notification__text-wrapper">
+          <div class="cds--inline-notification__subtitle"><span class="notetitle ibm-bold ibm-textcolor-blue-50 background-blue cds--inline-notification__title ibm-padding-top-1 ibm-padding-bottom-1 padding-left-1 padding-right-1">Notes:</span> <ol class="cds--list--ordered--temporary">
+<li class="cds--list__item">A warning message is sent at file creation if the entire record fits on
+a single display line.</li>
+
+<li class="cds--list__item">If subfile size equals subfile page, SFLDROP is ignored. When several
+display sizes are used (DSPSIZ keyword specified), SFLDROP is ignored only
+for display sizes for which the subfile size equals subfile page. If the subfile
+record format contains field selection, SFLDROP is not valid.</li>
+
+<li class="cds--list__item">If the subfile contains input-capable fields, it is recommended that you
+specify a CF key rather than a CA key. If you specify a CA key in this situation,
+changed data is lost when the key is pressed.</li>
+
+<li class="cds--list__item">If several subfiles using SFLDROP are displayed at one time, the same
+function key should be specified on each SFLDROP keyword. If the function
+keys are different, only the key specified for the most recently displayed
+subfile is in effect. Pressing the function key affects the subfile containing
+the cursor. If the cursor is not positioned in a subfile, the function key
+affects the upper subfile.</li>
+
+<li class="cds--list__item">SFLDROP can be specified on the same subfile-control record format as
+the SFLFOLD keyword. If both keywords are active, the SFLFOLD keyword is used.
+Indicators are checked at the time the subfile is displayed. Both keywords
+must use the same key.</li>
+
+</ol>
+ </div>
+        </div>
+      </div></div>
+<p>Option indicators are valid for this keyword.</p>
+</div>
+
+<div class="example"><h2 class="sectiontitle" id="rzakcmstdfsdrop__title__2">Example</h2><p>The following example shows how to specify
+the SFLDROP keyword.</p>
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>|...+....1....+....2....+....3....+....4....+....5....+....6....+....7....+....8
+00010A          R SFLR                      SFL
+     A*
+     A*           (subfile records should not fit on one screen line)
+     A*
+00040A          R SFLCTLR                   SFLCTL(SFLR)
+00050A                                      SFLPAG(17)
+00060A                                      SFLSIZ(34)
+00070A                                      SFLDSP SFLDSPCTL
+00090A                                      SFLDROP(CF03)
+     A</code></pre></div><div class="docs--copy-btn"></div></div><p>When the subfile is displayed, the workstation user can
+press the CF03 key to change the subfile from truncated to folded form and
+from folded to truncated form.</p>
+</div>
+
+</div>
+
+<aside role="complementary" aria-labelledby="rzakcmstdfsdrop__title__1"><nav role="navigation" aria-label="bottom related links" class="ibm-padding-top-1 ibm-padding-bottom-2 bx--row bottom-section-parent">
+<div class="familylinks ibm-margin-bottom-1">
+<div class="parentlink"><strong>Parent topic:</strong> <div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a data-hd-product="ssw_ibm_i_74" href="/docs/en/ssw_ibm_i_74/rzakc/rzakcmstkeyent.htm" title="You type the keyword entries that define display files in positions 45 through 80 (functions)." class="bottom-section-link">DDS keyword entries for display files (positions 45 through 80)</a></div></div>
+</div>
+</nav></aside></article></main>

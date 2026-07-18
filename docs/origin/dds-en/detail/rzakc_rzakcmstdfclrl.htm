@@ -1,0 +1,160 @@
+<main role="main"><article role="article" aria-labelledby="rzakcmstdfclrl__title__1">
+<h1 class="topictitle1" id="rzakcmstdfclrl__title__1">CLRL (Clear Line) keyword for display files</h1><div id="lastModifiedDate"><span>Last Updated</span>: 2026-07-13</div>
+
+
+
+<div class="body refbody"><p class="shortdesc">You use this record-level keyword to specify
+that the <span class="keyword">IBM i</span> operating
+system is to clear (delete) a specific number of lines before the
+record is displayed. Only those lines are cleared.</p>
+
+<div class="section"> <div class="note border-2 cds--inline-notification--info ibmdocs-note cds--inline-notification cds--inline-notification--low-contrast margin-top-1 margin-bottom-1"><div class="cds--inline-notification__details"><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" class="cds--inline-notification__icon" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M16,2A14,14,0,1,0,30,16,14,14,0,0,0,16,2Zm0,5a1.5,1.5,0,1,1-1.5,1.5A1.5,1.5,0,0,1,16,7Zm4,17.12H12V21.88h2.88V15.12H13V12.88h4.13v9H20Z"></path></svg>
+        <div class="cds--inline-notification__text-wrapper">
+          <div class="cds--inline-notification__subtitle"><span class="notetitle ibm-bold ibm-textcolor-blue-50 background-blue cds--inline-notification__title ibm-padding-top-1 ibm-padding-bottom-1 padding-left-1 padding-right-1">Note:</span> As with OVERLAY, other records remain on the display.</div>
+        </div>
+      </div></div>
+<p>See
+the <a href="http://public.dhe.ibm.com/systems/power/docs/systemi/v6r1/en_US/sc415715.pdf" rel="noopener" target="_blank" title="(Opens a PDF file)">Application Display Programming book</a> for
+information about how to use CLRL in files that are used in the System/36 environment.</p>
+<p>The
+format of the keyword is:</p>
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>CLRL(nn|*END|*NO|*ALL)</code></pre></div><div class="docs--copy-btn"></div></div><p>You
+can specify the CLRL keyword in one of the following ways:</p>
+<ul class="cds--list--unordered">
+<li class="cds--list__item">Specify nn, where nn is an integer between 1 and 27. The number
+specified is the number of lines cleared, starting with and including
+the first line on which the record is to be displayed. If the SLNO
+(Starting Line Number) keyword is also specified for this record format,
+the clearing of lines begins with the starting line number in effect
+for the record format at the time it is displayed. <div class="note border-2 cds--inline-notification--info ibmdocs-note cds--inline-notification cds--inline-notification--low-contrast margin-top-1 margin-bottom-1"><div class="cds--inline-notification__details"><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" class="cds--inline-notification__icon" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M16,2A14,14,0,1,0,30,16,14,14,0,0,0,16,2Zm0,5a1.5,1.5,0,1,1-1.5,1.5A1.5,1.5,0,0,1,16,7Zm4,17.12H12V21.88h2.88V15.12H13V12.88h4.13v9H20Z"></path></svg>
+        <div class="cds--inline-notification__text-wrapper">
+          <div class="cds--inline-notification__subtitle"><span class="notetitle ibm-bold ibm-textcolor-blue-50 background-blue cds--inline-notification__title ibm-padding-top-1 ibm-padding-bottom-1 padding-left-1 padding-right-1">Note:</span> When
+you specify nn, the record must have at least one field defined.</div>
+        </div>
+      </div></div>
+</li>
+
+<li class="cds--list__item">Specify *END to indicate that all lines starting with and including
+the first line on which the record is to be displayed are to be cleared.
+For a 24 x 80 display, lines up to and including line 24 are cleared.
+For a 27 x 132 display, lines up to and including line 27 are cleared.</li>
+
+<li class="cds--list__item">Specify *NO so that no lines on the display are cleared before
+displaying the record whose format you are defining. The displayed
+record overlays any data already on the display.</li>
+
+<li class="cds--list__item">Specify *ALL so that all of the lines on the display are cleared
+before displaying the record whose format you are defining. At least
+one field must be defined in the record format.</li>
+
+</ul>
+<p>When a record format begins with a field in position 1, the
+beginning attribute byte of the format is in the last position of
+the previous line. The previous line number is the starting line number
+in the format. This also applies to a SLNO format with a field defined
+in the DDS in line 1, position 1.</p>
+<p>If the record format for which
+the CLRL keyword is specified has one or more input-capable fields,
+any records that are overlaid are no longer recognized by the <span class="keyword">IBM i</span> operating system.
+That is, any input-capable fields can no longer be typed into, any
+input operation written to one of those records results in an error,
+and they cannot be cleared by selecting the ERASE keyword.</p>
+<p>If
+you specify the CLRL(nn) keyword in a record format without input-capable
+fields, the input-capable fields in the overlapped records remain
+input-capable. That is, input-capable fields in the overlaid records
+remain input-capable, and input operations written to those record
+formats are still valid. If the ROLLUP or ROLLDOWN keywords are specified
+on the record containing the CLRL keyword, they are ignored. Records
+with the CLRL keyword and no input-capable fields are not cleared
+properly when they are overlaid by other records that have the OVERLAY
+keyword specified. The lines needed for the overlapping record are
+cleared and the lines not needed for the overlapping record remain
+on the display.</p>
+<p>You can use the CLRL(*NO) keyword to prevent
+an overlapped record from being cleared when the overlapping record
+is written to the display. If you use this keyword, any records being
+displayed that are to be overlapped are not cleared from the display.
+The new record overlays them entirely or partially. There is a performance
+advantage to using CLRL(*NO) if you have a display containing constants
+and data that is repeatedly sent to the display. Sending constants
+as a separate format and using the CLRL(*NO) keyword for the format
+containing the data reduces the time required to send the record format
+to the display.</p>
+<p>If the CLRL keyword is not specified and neither
+OVERLAY nor PUTOVR (Put with Explicit Override) is specified, the
+entire display is cleared.</p>
+<p>If the CLRL keyword is used and the
+PUTOVR or PUTRETAIN keyword is in effect, the clearing of any lines
+might conflict with the PUTOVR or PUTRETAIN function. The PUTOVR or
+PUTRETAIN keyword requires that the fields being overridden be on
+the display, while the CLRL(nn) or CLRL(*END) keyword clears those
+fields first. If a record becomes unavailable for input because of
+the CLRL(nn) or CLRL(*END) keyword, the input-capable fields remain
+input-capable if the PUTOVR keyword is in effect. However, the <span class="keyword">IBM i</span> operating system sends
+a message if the program attempts to read such a record.</p>
+<p>If
+you specify the CLRL keyword, you should also specify RSTDSP(*YES)
+on the Create Display File (CRTDSPF) or Change Display File (CHGDSPF)
+command. Otherwise, data on the display can be lost if the file is
+suspended.</p>
+</div>
+
+<section class="section" role="region" aria-labelledby="rzakcmstdfclrl__title__2"><h2 class="sectiontitle" id="rzakcmstdfclrl__title__2">Preventing overlapped records from being cleared</h2><p>The
+CLRL keyword cannot be specified with any of the following keywords:</p>
+
+<div class="tablenoborder"><div class="cds--data-table-container"><table summary="" role="presentation" class="presentation cds--data-table"><colgroup><col><col></colgroup><tbody>
+<tr>
+<td class="nrule"><div class="lines">ASSUME<br>
+KEEP<br>
+SFL</div>
+</td>
+
+<td class="nrule"><div class="lines">SFLCTL<br>
+USRDFN</div>
+</td>
+
+</tr>
+
+</tbody>
+</table></div>
+</div>
+<p>A warning message appears at file creation time if the
+CLRL keyword is specified on a record with the DSPMOD keyword. At
+run time, the CLRL keyword is ignored when the display mode changes.</p>
+<p>The
+CLRL keyword cannot be specified for the record format specified by
+the PASSRCD keyword.</p>
+<p>Option indicators are not valid for this
+keyword.</p>
+</section>
+
+<div class="example"><h2 class="sectiontitle" id="rzakcmstdfclrl__title__3">Example</h2><p>The following example shows how
+to specify the CLRL keyword.</p>
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>|...+....1....+....2....+....3....+....4....+....5....+....6....+....7....+....8
+00010A          R RECORD1                   CLRL(5)
+00020A            FLD1           5      3  2
+00030A            FLD2          10  OB  5  2
+00040A            FLD3          10   I  6  2
+00050A*
+00060A          R RECORD2                   CLRL(*NO)
+00070A            FLD1           5  2   2  2
+00080A            FLD2           5   H
+00090A            FLD3          10   I  4  2
+00100A*
+00110A          R RECORD3                   CLRL(*END)
+00120A            FLD1           5   B  5  2
+00130A            FLD2           5   I  8  2
+     A</code></pre></div><div class="docs--copy-btn"></div></div><p>Lines 3, 4, 5, 6, and 7 are cleared before RECORD1
+is displayed. In RECORD2, no lines are cleared, and when the record
+is displayed, it will overlay anything already displayed. Lines 5
+through 24 are cleared before RECORD3 is displayed.</p>
+</div>
+
+</div>
+
+<aside role="complementary" aria-labelledby="rzakcmstdfclrl__title__1"><nav role="navigation" aria-label="bottom related links" class="ibm-padding-top-1 ibm-padding-bottom-2 bx--row bottom-section-parent">
+<div class="familylinks ibm-margin-bottom-1">
+<div class="parentlink"><strong>Parent topic:</strong> <div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a data-hd-product="ssw_ibm_i_74" href="/docs/en/ssw_ibm_i_74/rzakc/rzakcmstkeyent.htm" title="You type the keyword entries that define display files in positions 45 through 80 (functions)." class="bottom-section-link">DDS keyword entries for display files (positions 45 through 80)</a></div></div>
+</div>
+</nav></aside></article></main>

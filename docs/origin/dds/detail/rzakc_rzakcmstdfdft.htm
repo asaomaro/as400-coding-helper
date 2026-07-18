@@ -1,0 +1,66 @@
+<h1 class="title topictitle1">表示装置ファイルの DFT (デフォルト値) キーワード</h1><div id="lastModifiedDate"><span>Last Updated</span>: 2021-04-13</div>
+<div class="body refbody"><p class="shortdesc"><span class="ph">これはフィールド・レベル・キーワードで、固定情報フィールド (名前のないフィールド) の値、または名前の付いたフィールドのデフォルト値を指定するために使用します。</span></p>
+<div class="section"><p class="p">キーワードの形式は次のとおりです。</p>
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code>DFT('value') | 'value'</code></pre></div><div class="docs--copy-btn"></div></div>
+<p class="p">リテラルとして指定できる最大文字数は、当該フィールドが表示される表示画面のサイズによって、次のようになります。</p>
+<dl class="dl"><dt class="dthd"><strong>画面サイズ</strong></dt>
+<dd class="ddhd"><strong>最大文字数</strong></dd>
+<dt class="dt dlterm">24 x 80</dt>
+<dd class="dd">1919</dd>
+<dt class="dt dlterm">27 x 132</dt>
+<dd class="dd">3563</dd>
+</dl>
+</div>
+<div class="section"><h2 class="title sectiontitle">固定情報フィールド</h2><p class="p">固定情報フィールドの値は、単一引用符で囲んだ値として指定することができます。(固定情報フィールドの他の指定方法については、DATE、MSGCON、および TIME の各キーワードの項を参照してください。)
+括弧だけでなく、DFT キーワード自体も省略して、DDS を簡素化することができます。
+DFT キーワードを明示指定するか、暗黙に指定するかにかかわらず、<span class="keyword">IBM® i</span> オペレーティング・システムは、指定された値を画面上に固定情報フィールドとして表示します。
+固定情報フィールドについては、<a class="xref" href="/docs/ja/ssw_ibm_i_74/rzakc/pos1928.htm" title="この欄を使用して、レコード様式名またはフィールド名を指定します。">表示装置ファイルの名前 (19 - 28 桁目)</a>を参照してください。</p>
+</div>
+<div class="section"><h2 class="title sectiontitle">名前付きフィールド</h2><p class="p">入力専用フィールドの場合には、そのフィールドが表示されるたびに、指定した値も表示されます。表示された値は、
+ワークステーション・ユーザーによって変更されたあと、プログラムに戻すことができます。</p>
+<p class="p">出力専用フィールドおよび入出力共用フィールドの場合には、DFT キーワードとともに、レコード・レベルで PUTOVR を指定し、フィールド・レベルで OVRDTA を指定しなければなりません。指定したリテラルが表示されるのは、最初の出力命令時だけで、
+後続の出力命令時にはプログラム値が表示されます。</p>
+<p class="p">DFTVAL、EDTCDE、および EDTWRD の各キーワードは、DFT キーワードとともに指定することはできません。</p>
+<p class="p">浮動小数点数フィールドでは、DFT キーワードは無効です。</p>
+<p class="p">オプション標識は、このキーワードでは無効です。ただし、このキーワードを指定したフィールド (固定情報フィールドまたは名前付きフィールド) の条件付けのために、オプション標識を使用することはできます。</p>
+</div>
+<div class="example"><h2 class="title sectiontitle">例 1</h2><p class="p">次の例は、DFT キーワードの指定方法を示しています。</p>
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code>|...+....1....+....2....+....3....+....4....+....5....+....6....+....7....+....8
+00030A            HOTTYP         1   I  7  9DFT('D')
+00040A                                      VALUES('D' 'S')
+00050A                                  8  9'ON'
+00060A        01                       12  1'HOTEL NAME: 'TERRACE INN'
+00070A                                      TEXT('Constant field is +
+00080A                                      conditioned, not the implicit +
+00090A                                      DFT keyword')
+00100A        02                       12  1'HOTEL NAME: 'RIVER VIEW INN'
+00110A                                      TEXT('Either 'TERRACE INN' or +
+00120A                                          'RIVER VIEW INN' could +
+00130A                                          appear in line 12, position 1')
+     A</code></pre></div><div class="docs--copy-btn"></div></div>
+<p class="p">この例では、固定情報フィールド <em class="ph i">ON</em> は、オプション標識の指定がないので、常に表示されます。</p>
+<p class="p">標識 01 がオンの場合には、次の情報が表示されます。</p>
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code>HOTEL NAME:  'TERRACE INN'</code></pre></div><div class="docs--copy-btn"></div></div>
+<p class="p">標識 02 がオンで、標識 01 がオフの場合には、次の情報が表示されます。</p>
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code>HOTEL NAME:  'RIVER VIEW INN'</code></pre></div><div class="docs--copy-btn"></div></div>
+</div>
+<div class="example"><h2 class="title sectiontitle">例 2</h2> <p class="p">複数の画面サイズについて固定情報フィールドを指定したい場合で、しかも画面サイズが異なってもフィールドの内容は変えずにフィールドの位置を変えたい場合には、当該値の指定を繰り返してはなりません。次の例は、これを行う方法を示します。</p>
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code>|...+....1....+....2....+....3....+....4....+....5....+....6....+....7....+....8
+00010A                                      DSPSIZ(*DS3 *DS4)
+     A                                      :
+     A                                      :
+00080A                                 22  2'Constant data'
+00090A                                 26  2
+     A</code></pre></div><div class="docs--copy-btn"></div></div>
+<p class="p">この例では、固定情報フィールド <em class="ph i">Constant data</em> は、24 x 80 の画面では 22 行目の 2 桁目に表示され、27 x 132 の画面では 26 行目の 2 桁目に表示されます。</p>
+</div>
+</div>
+<div class="related-links ibm-padding-top-1 ibm-padding-bottom-2 bx--row bottom-section-parent" aria-label="bottom related links">
+<div class="familylinks ibm-margin-bottom-1">
+<div class="parentlink"><strong>親トピック:</strong> <div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a class="link bottom-section-link" href="/docs/ja/ssw_ibm_i_74/rzakc/rzakcmstkeyent.htm" title="表示装置ファイルを定義するキーワード項目は、45 - 80 桁目 (機能欄) に記入します。">表示装置ファイルの DDS キーワード項目 (45 - 80 桁目)</a></div></div>
+</div>
+<div class="relinfo relref ibm-margin-bottom-1"><strong>関連資料</strong>:<br>
+<div><div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a class="link bottom-section-link" href="/docs/ja/ssw_ibm_i_74/rzakc/rzakcmstdfputov.htm" title="これはレコード・レベル・キーワードであり、ワークステーション装置に表示されているレコードの特定のフィールドの表示属性 またはデータ内容 (あるいはその両方) を指定変更できるようにするために使用されます。 PUTOVR キーワードを使用することによって、表示装置に送られるデータの量を減らすことができます。">表示装置ファイルの PUTOVR (明示的な一時変更を伴う PUT) キーワード</a></div></div>
+</div>
+</div>
+

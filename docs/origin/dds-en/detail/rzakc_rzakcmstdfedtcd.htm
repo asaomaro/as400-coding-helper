@@ -1,0 +1,993 @@
+<main role="main"><article role="article" aria-labelledby="rzakcmstdfedtcd__title__1">
+<h1 class="topictitle1" id="rzakcmstdfedtcd__title__1">EDTCDE (Edit Code) keyword for display files</h1><div id="lastModifiedDate"><span>Last Updated</span>: 2026-07-13</div>
+
+
+
+<div class="body refbody"><p class="shortdesc">You use this field-level keyword to edit
+output-capable numeric fields.</p>
+
+<div class="section"><p>The format of the keyword is:</p>
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>EDTCDE(edit-code [* |floating-currency-symbol])</code></pre></div><div class="docs--copy-btn"></div></div><div class="p">Editing
+includes the following changes to the appearance of displayed fields,
+depending on which edit code is specified:  <ul class="cds--list--unordered">
+<li class="cds--list__item">Leading zeros are suppressed.</li>
+
+<li class="cds--list__item">The field can be punctuated with commas and periods to show decimal
+position and to group digits by threes.</li>
+
+<li class="cds--list__item">Negative values can be displayed with a minus sign or CR to the
+right.</li>
+
+<li class="cds--list__item">Zero values can be displayed as zero or blanks.</li>
+
+<li class="cds--list__item">Asterisks can be displayed to the left of significant digits to
+provide asterisk protection.</li>
+
+<li class="cds--list__item">A currency symbol (corresponding to the system value QCURSYM)
+can be displayed immediately to the left of the significant digit
+that is farthest to the left (called <em>floating-currency symbol</em>).
+For fixed-currency symbols, use the EDTWRD keyword.</li>
+
+<li class="cds--list__item">The field can be further edited using a <a href="#rzakcmstdfedtcd__udec1">user-defined edit code</a>.</li>
+
+</ul>
+</div>
+<p>EDTCDE covers most editing requirements. Use EDTWRD when
+the EDTCDE keyword is not sufficient.</p>
+<p>You cannot specify both
+EDTCDE and EDTWRD for the same field. If a field previously defined
+in a database file has EDTCDE specified, you need not specify EDTCDE
+for that field in the display file. You can specify R in position
+29 to refer to the previously defined field. The editing specified
+for the referenced field is included in the display file. However,
+if you also specify length, data type, or decimal positions for a
+display file field, editing specified for the referenced field is
+not included in the display file, and you must specify editing again
+in the display file.</p>
+<p>The DFT and DFTVAL keywords cannot be specified
+with the EDTCDE keyword.</p>
+<p>Option indicators are not valid for
+this keyword.</p>
+<p>The rules for specifying edit codes and edit words
+are the same in all types of files. You can specify two kinds of edit
+codes: <span class="keyword">IBM i</span> edit
+codes and user-defined edit codes.</p>
+<p>The EDTCDE keyword is valid
+only for fields with Y or blank in position 35 (Data Type/Keyboard
+Shift). The use of this keyword changes the default used for position
+35 to a Y.</p>
+</div>
+
+<section class="section" role="region" aria-labelledby="rzakcmstdfedtcd__title__2"><h2 class="sectiontitle" id="rzakcmstdfedtcd__title__2"><span class="keyword">IBM i</span> edit
+codes</h2><p>The <span class="keyword">IBM i</span> edit
+codes are:</p>
+<div class="lines">1 through 4<br>
+A through D<br>
+J through Q<br>
+W through Z</div>
+<div class="note border-2 cds--inline-notification--info ibmdocs-note cds--inline-notification cds--inline-notification--low-contrast margin-top-1 margin-bottom-1"><div class="cds--inline-notification__details"><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" class="cds--inline-notification__icon" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M16,2A14,14,0,1,0,30,16,14,14,0,0,0,16,2Zm0,5a1.5,1.5,0,1,1-1.5,1.5A1.5,1.5,0,0,1,16,7Zm4,17.12H12V21.88h2.88V15.12H13V12.88h4.13v9H20Z"></path></svg>
+        <div class="cds--inline-notification__text-wrapper">
+          <div class="cds--inline-notification__subtitle"><span class="notetitle ibm-bold ibm-textcolor-blue-50 background-blue cds--inline-notification__title ibm-padding-top-1 ibm-padding-bottom-1 padding-left-1 padding-right-1">Note:</span> The <span class="keyword">IBM i</span> hardware operates
+with a preferred sign of F, which is equivalent to using edit code
+X. Edit code X sets the default of a blank keyboard shift (position
+35) to numeric-only (attribute Y). The display length of the field
+is determined by the keyboard shift, not by edit code X (the default
+numeric-only Y attribute might add 1 position to the field for decimals).
+If the DATE or TIME keyword is specified with edit code X, the separator
+character is not displayed.</div>
+        </div>
+      </div></div>
+</section>
+
+<section class="section" role="region" aria-labelledby="rzakcmstdfedtcd__title__3"><h2 class="sectiontitle" id="rzakcmstdfedtcd__title__3">Optionally specifying asterisk fill or floating currency
+symbol</h2><p>You can optionally specify asterisk
+fill or floating currency symbol with edit codes 1 through 4, A through
+D, and J through&nbsp;Q.</p>
+<p>When you specify asterisk fill, an
+asterisk (*) is printed for each zero that is suppressed. A complete
+field of asterisks is printed for a zero balance field.</p>
+<p>When
+you specify floating currency symbol, the symbol appears to the left
+of the first significant digit. The symbol does not print on a zero
+balance when an edit code is used that suppresses the zero balance.
+(The symbol that you specify must match the system value for the currency
+symbol (QCURSYM). The symbol must match when the file is created.
+It need not match when the file is used.)</p>
+<div class="note border-2 cds--inline-notification--info ibmdocs-note cds--inline-notification cds--inline-notification--low-contrast margin-top-1 margin-bottom-1"><div class="cds--inline-notification__details"><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" class="cds--inline-notification__icon" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M16,2A14,14,0,1,0,30,16,14,14,0,0,0,16,2Zm0,5a1.5,1.5,0,1,1-1.5,1.5A1.5,1.5,0,0,1,16,7Zm4,17.12H12V21.88h2.88V15.12H13V12.88h4.13v9H20Z"></path></svg>
+        <div class="cds--inline-notification__text-wrapper">
+          <div class="cds--inline-notification__subtitle"><span class="notetitle ibm-bold ibm-textcolor-blue-50 background-blue cds--inline-notification__title ibm-padding-top-1 ibm-padding-bottom-1 padding-left-1 padding-right-1">Note:</span> If an edit code
+is changed after a file is created, the editing specified at the time
+the file was created is used. The new edit code is not used unless
+the file is recreated.</div>
+        </div>
+      </div></div>
+<p>The following table summarizes the
+functions provided by <span class="keyword">IBM i</span> edit
+codes.</p>
+
+<div class="tablenoborder"><div class="cds--data-table-container"><table summary="" id="rzakcmstdfedtcd__tbledit" class="defaultstyle cds--data-table"><caption class="cds--data-table-header"><span class="tablecap cds--data-table-header__title">Table 1. Summary
+chart for <span class="keyword cds--data-table-header__title">IBM i</span> edit
+codes</span></caption><colgroup><col><col><col><col><col><col><col><col></colgroup><thead>
+<tr>
+<th id="rzakcmstdfedtcd__tbledit__entry__1" class="thleft"><div class="cds--table-header-label">Edit codes</div></th>
+
+<th id="rzakcmstdfedtcd__tbledit__entry__2" class="thleft"><div class="cds--table-header-label">Commas<sup>1</sup> displayed</div></th>
+
+<th id="rzakcmstdfedtcd__tbledit__entry__3" class="thleft"><div class="cds--table-header-label">Decimal points<sup>1</sup> displayed</div></th>
+
+<th id="rzakcmstdfedtcd__tbledit__entry__4" class="thleft"><div class="cds--table-header-label">Sign displayed when negative value</div></th>
+
+<th id="rzakcmstdfedtcd__tbledit__entry__5" class="thleft"><div class="cds--table-header-label">Blank value of QDECFMT system value</div></th>
+
+<th id="rzakcmstdfedtcd__tbledit__entry__6" class="thleft"><div class="cds--table-header-label">I value of QDECFMT system value</div></th>
+
+<th id="rzakcmstdfedtcd__tbledit__entry__7" class="thleft"><div class="cds--table-header-label">J value of QDECFMT system value</div></th>
+
+<th id="rzakcmstdfedtcd__tbledit__entry__8" class="thleft"><div class="cds--table-header-label">Leading Zero suppressed</div></th>
+
+</tr>
+
+</thead>
+<tbody>
+<tr>
+<td headers="rzakcmstdfedtcd__tbledit__entry__1 " class="tdleft">1</td>
+
+<td headers="rzakcmstdfedtcd__tbledit__entry__2 " class="tdleft">Yes</td>
+
+<td headers="rzakcmstdfedtcd__tbledit__entry__3 " class="tdleft">Yes</td>
+
+<td headers="rzakcmstdfedtcd__tbledit__entry__4 " class="tdleft">No sign</td>
+
+<td headers="rzakcmstdfedtcd__tbledit__entry__5 " class="tdleft">.00 or 0</td>
+
+<td headers="rzakcmstdfedtcd__tbledit__entry__6 " class="tdleft">,00 or 0</td>
+
+<td headers="rzakcmstdfedtcd__tbledit__entry__7 " class="tdleft">0,00 or 0</td>
+
+<td headers="rzakcmstdfedtcd__tbledit__entry__8 " class="tdleft">Yes</td>
+
+</tr>
+
+<tr>
+<td headers="rzakcmstdfedtcd__tbledit__entry__1 " class="tdleft">2</td>
+
+<td headers="rzakcmstdfedtcd__tbledit__entry__2 " class="tdleft">Yes</td>
+
+<td headers="rzakcmstdfedtcd__tbledit__entry__3 " class="tdleft">Yes</td>
+
+<td headers="rzakcmstdfedtcd__tbledit__entry__4 " class="tdleft">No sign</td>
+
+<td headers="rzakcmstdfedtcd__tbledit__entry__5 " class="tdleft">Blanks</td>
+
+<td headers="rzakcmstdfedtcd__tbledit__entry__6 " class="tdleft">Blanks</td>
+
+<td headers="rzakcmstdfedtcd__tbledit__entry__7 " class="tdleft">Blanks</td>
+
+<td headers="rzakcmstdfedtcd__tbledit__entry__8 " class="tdleft">Yes</td>
+
+</tr>
+
+<tr>
+<td headers="rzakcmstdfedtcd__tbledit__entry__1 " class="tdleft">3</td>
+
+<td headers="rzakcmstdfedtcd__tbledit__entry__2 " class="tdleft">&nbsp;</td>
+
+<td headers="rzakcmstdfedtcd__tbledit__entry__3 " class="tdleft">Yes</td>
+
+<td headers="rzakcmstdfedtcd__tbledit__entry__4 " class="tdleft">No sign</td>
+
+<td headers="rzakcmstdfedtcd__tbledit__entry__5 " class="tdleft">.00 or 0</td>
+
+<td headers="rzakcmstdfedtcd__tbledit__entry__6 " class="tdleft">,00 or 0</td>
+
+<td headers="rzakcmstdfedtcd__tbledit__entry__7 " class="tdleft">0,00 or 0</td>
+
+<td headers="rzakcmstdfedtcd__tbledit__entry__8 " class="tdleft">Yes</td>
+
+</tr>
+
+<tr>
+<td headers="rzakcmstdfedtcd__tbledit__entry__1 " class="tdleft">4</td>
+
+<td headers="rzakcmstdfedtcd__tbledit__entry__2 " class="tdleft">&nbsp;</td>
+
+<td headers="rzakcmstdfedtcd__tbledit__entry__3 " class="tdleft">Yes</td>
+
+<td headers="rzakcmstdfedtcd__tbledit__entry__4 " class="tdleft">No sign</td>
+
+<td headers="rzakcmstdfedtcd__tbledit__entry__5 " class="tdleft">Blanks</td>
+
+<td headers="rzakcmstdfedtcd__tbledit__entry__6 " class="tdleft">Blanks</td>
+
+<td headers="rzakcmstdfedtcd__tbledit__entry__7 " class="tdleft">Blanks</td>
+
+<td headers="rzakcmstdfedtcd__tbledit__entry__8 " class="tdleft">Yes</td>
+
+</tr>
+
+<tr>
+<td headers="rzakcmstdfedtcd__tbledit__entry__1 " class="tdleft">A</td>
+
+<td headers="rzakcmstdfedtcd__tbledit__entry__2 " class="tdleft">Yes</td>
+
+<td headers="rzakcmstdfedtcd__tbledit__entry__3 " class="tdleft">Yes</td>
+
+<td headers="rzakcmstdfedtcd__tbledit__entry__4 " class="tdleft">CR</td>
+
+<td headers="rzakcmstdfedtcd__tbledit__entry__5 " class="tdleft">.00 or 0</td>
+
+<td headers="rzakcmstdfedtcd__tbledit__entry__6 " class="tdleft">,00 or 0</td>
+
+<td headers="rzakcmstdfedtcd__tbledit__entry__7 " class="tdleft">0,00 or 0</td>
+
+<td headers="rzakcmstdfedtcd__tbledit__entry__8 " class="tdleft">Yes</td>
+
+</tr>
+
+<tr>
+<td headers="rzakcmstdfedtcd__tbledit__entry__1 " class="tdleft">B</td>
+
+<td headers="rzakcmstdfedtcd__tbledit__entry__2 " class="tdleft">Yes</td>
+
+<td headers="rzakcmstdfedtcd__tbledit__entry__3 " class="tdleft">Yes</td>
+
+<td headers="rzakcmstdfedtcd__tbledit__entry__4 " class="tdleft">CR</td>
+
+<td headers="rzakcmstdfedtcd__tbledit__entry__5 " class="tdleft">Blanks</td>
+
+<td headers="rzakcmstdfedtcd__tbledit__entry__6 " class="tdleft">Blanks</td>
+
+<td headers="rzakcmstdfedtcd__tbledit__entry__7 " class="tdleft">Blanks</td>
+
+<td headers="rzakcmstdfedtcd__tbledit__entry__8 " class="tdleft">Yes</td>
+
+</tr>
+
+<tr>
+<td headers="rzakcmstdfedtcd__tbledit__entry__1 " class="tdleft">C</td>
+
+<td headers="rzakcmstdfedtcd__tbledit__entry__2 " class="tdleft">&nbsp;</td>
+
+<td headers="rzakcmstdfedtcd__tbledit__entry__3 " class="tdleft">Yes</td>
+
+<td headers="rzakcmstdfedtcd__tbledit__entry__4 " class="tdleft">CR</td>
+
+<td headers="rzakcmstdfedtcd__tbledit__entry__5 " class="tdleft">.00 or 0</td>
+
+<td headers="rzakcmstdfedtcd__tbledit__entry__6 " class="tdleft">,00 or 0</td>
+
+<td headers="rzakcmstdfedtcd__tbledit__entry__7 " class="tdleft">0,00 or 0</td>
+
+<td headers="rzakcmstdfedtcd__tbledit__entry__8 " class="tdleft">Yes</td>
+
+</tr>
+
+<tr>
+<td headers="rzakcmstdfedtcd__tbledit__entry__1 " class="tdleft">D</td>
+
+<td headers="rzakcmstdfedtcd__tbledit__entry__2 " class="tdleft">&nbsp;</td>
+
+<td headers="rzakcmstdfedtcd__tbledit__entry__3 " class="tdleft">Yes</td>
+
+<td headers="rzakcmstdfedtcd__tbledit__entry__4 " class="tdleft">CR</td>
+
+<td headers="rzakcmstdfedtcd__tbledit__entry__5 " class="tdleft">Blanks</td>
+
+<td headers="rzakcmstdfedtcd__tbledit__entry__6 " class="tdleft">Blanks</td>
+
+<td headers="rzakcmstdfedtcd__tbledit__entry__7 " class="tdleft">Blanks</td>
+
+<td headers="rzakcmstdfedtcd__tbledit__entry__8 " class="tdleft">Yes</td>
+
+</tr>
+
+<tr>
+<td headers="rzakcmstdfedtcd__tbledit__entry__1 " class="tdleft">J</td>
+
+<td headers="rzakcmstdfedtcd__tbledit__entry__2 " class="tdleft">Yes</td>
+
+<td headers="rzakcmstdfedtcd__tbledit__entry__3 " class="tdleft">Yes</td>
+
+<td headers="rzakcmstdfedtcd__tbledit__entry__4 " class="tdleft">-(Minus)</td>
+
+<td headers="rzakcmstdfedtcd__tbledit__entry__5 " class="tdleft">.00 or 0</td>
+
+<td headers="rzakcmstdfedtcd__tbledit__entry__6 " class="tdleft">,00 or 0</td>
+
+<td headers="rzakcmstdfedtcd__tbledit__entry__7 " class="tdleft">0,00 or 0</td>
+
+<td headers="rzakcmstdfedtcd__tbledit__entry__8 " class="tdleft">Yes</td>
+
+</tr>
+
+<tr>
+<td headers="rzakcmstdfedtcd__tbledit__entry__1 " class="tdleft">K</td>
+
+<td headers="rzakcmstdfedtcd__tbledit__entry__2 " class="tdleft">Yes</td>
+
+<td headers="rzakcmstdfedtcd__tbledit__entry__3 " class="tdleft">Yes</td>
+
+<td headers="rzakcmstdfedtcd__tbledit__entry__4 " class="tdleft">-(Minus)</td>
+
+<td headers="rzakcmstdfedtcd__tbledit__entry__5 " class="tdleft">Blanks</td>
+
+<td headers="rzakcmstdfedtcd__tbledit__entry__6 " class="tdleft">Blanks</td>
+
+<td headers="rzakcmstdfedtcd__tbledit__entry__7 " class="tdleft">Blanks</td>
+
+<td headers="rzakcmstdfedtcd__tbledit__entry__8 " class="tdleft">Yes</td>
+
+</tr>
+
+<tr>
+<td headers="rzakcmstdfedtcd__tbledit__entry__1 " class="tdleft">L</td>
+
+<td headers="rzakcmstdfedtcd__tbledit__entry__2 " class="tdleft">&nbsp;</td>
+
+<td headers="rzakcmstdfedtcd__tbledit__entry__3 " class="tdleft">Yes</td>
+
+<td headers="rzakcmstdfedtcd__tbledit__entry__4 " class="tdleft">-(Minus)</td>
+
+<td headers="rzakcmstdfedtcd__tbledit__entry__5 " class="tdleft">.00 or 0</td>
+
+<td headers="rzakcmstdfedtcd__tbledit__entry__6 " class="tdleft">,00 or 0</td>
+
+<td headers="rzakcmstdfedtcd__tbledit__entry__7 " class="tdleft">0,00 or 0</td>
+
+<td headers="rzakcmstdfedtcd__tbledit__entry__8 " class="tdleft">Yes</td>
+
+</tr>
+
+<tr>
+<td headers="rzakcmstdfedtcd__tbledit__entry__1 " class="tdleft">M</td>
+
+<td headers="rzakcmstdfedtcd__tbledit__entry__2 " class="tdleft">&nbsp;</td>
+
+<td headers="rzakcmstdfedtcd__tbledit__entry__3 " class="tdleft">Yes</td>
+
+<td headers="rzakcmstdfedtcd__tbledit__entry__4 " class="tdleft">-(Minus)</td>
+
+<td headers="rzakcmstdfedtcd__tbledit__entry__5 " class="tdleft">Blanks</td>
+
+<td headers="rzakcmstdfedtcd__tbledit__entry__6 " class="tdleft">Blanks</td>
+
+<td headers="rzakcmstdfedtcd__tbledit__entry__7 " class="tdleft">Blanks</td>
+
+<td headers="rzakcmstdfedtcd__tbledit__entry__8 " class="tdleft">Yes</td>
+
+</tr>
+
+<tr>
+<td headers="rzakcmstdfedtcd__tbledit__entry__1 " class="tdleft">N</td>
+
+<td headers="rzakcmstdfedtcd__tbledit__entry__2 " class="tdleft">Yes</td>
+
+<td headers="rzakcmstdfedtcd__tbledit__entry__3 " class="tdleft">Yes</td>
+
+<td headers="rzakcmstdfedtcd__tbledit__entry__4 " class="tdleft">-(Minus)</td>
+
+<td headers="rzakcmstdfedtcd__tbledit__entry__5 " class="tdleft">.00 or 0</td>
+
+<td headers="rzakcmstdfedtcd__tbledit__entry__6 " class="tdleft">,00 or 0</td>
+
+<td headers="rzakcmstdfedtcd__tbledit__entry__7 " class="tdleft">0,00 or 0</td>
+
+<td headers="rzakcmstdfedtcd__tbledit__entry__8 " class="tdleft">Yes</td>
+
+</tr>
+
+<tr>
+<td headers="rzakcmstdfedtcd__tbledit__entry__1 " class="tdleft">O</td>
+
+<td headers="rzakcmstdfedtcd__tbledit__entry__2 " class="tdleft">Yes</td>
+
+<td headers="rzakcmstdfedtcd__tbledit__entry__3 " class="tdleft">Yes</td>
+
+<td headers="rzakcmstdfedtcd__tbledit__entry__4 " class="tdleft">-(Minus)</td>
+
+<td headers="rzakcmstdfedtcd__tbledit__entry__5 " class="tdleft">Blanks</td>
+
+<td headers="rzakcmstdfedtcd__tbledit__entry__6 " class="tdleft">Blanks</td>
+
+<td headers="rzakcmstdfedtcd__tbledit__entry__7 " class="tdleft">Blanks</td>
+
+<td headers="rzakcmstdfedtcd__tbledit__entry__8 " class="tdleft">Yes</td>
+
+</tr>
+
+<tr>
+<td headers="rzakcmstdfedtcd__tbledit__entry__1 " class="tdleft">P</td>
+
+<td headers="rzakcmstdfedtcd__tbledit__entry__2 " class="tdleft">&nbsp;</td>
+
+<td headers="rzakcmstdfedtcd__tbledit__entry__3 " class="tdleft">Yes</td>
+
+<td headers="rzakcmstdfedtcd__tbledit__entry__4 " class="tdleft">-(Minus)</td>
+
+<td headers="rzakcmstdfedtcd__tbledit__entry__5 " class="tdleft">.00 or 0</td>
+
+<td headers="rzakcmstdfedtcd__tbledit__entry__6 " class="tdleft">,00 or 0</td>
+
+<td headers="rzakcmstdfedtcd__tbledit__entry__7 " class="tdleft">0,00 or 0</td>
+
+<td headers="rzakcmstdfedtcd__tbledit__entry__8 " class="tdleft">Yes</td>
+
+</tr>
+
+<tr>
+<td headers="rzakcmstdfedtcd__tbledit__entry__1 " class="tdleft">Q</td>
+
+<td headers="rzakcmstdfedtcd__tbledit__entry__2 " class="tdleft">&nbsp;</td>
+
+<td headers="rzakcmstdfedtcd__tbledit__entry__3 " class="tdleft">Yes</td>
+
+<td headers="rzakcmstdfedtcd__tbledit__entry__4 " class="tdleft">-(Minus)</td>
+
+<td headers="rzakcmstdfedtcd__tbledit__entry__5 " class="tdleft">Blanks</td>
+
+<td headers="rzakcmstdfedtcd__tbledit__entry__6 " class="tdleft">Blanks</td>
+
+<td headers="rzakcmstdfedtcd__tbledit__entry__7 " class="tdleft">Blanks</td>
+
+<td headers="rzakcmstdfedtcd__tbledit__entry__8 " class="tdleft">Yes</td>
+
+</tr>
+
+<tr>
+<td headers="rzakcmstdfedtcd__tbledit__entry__1 " class="tdleft">W<sup>2</sup></td>
+
+<td headers="rzakcmstdfedtcd__tbledit__entry__2 " class="tdleft">&nbsp;</td>
+
+<td headers="rzakcmstdfedtcd__tbledit__entry__3 " class="tdleft">&nbsp;</td>
+
+<td headers="rzakcmstdfedtcd__tbledit__entry__4 " class="tdleft">&nbsp;</td>
+
+<td headers="rzakcmstdfedtcd__tbledit__entry__5 " class="tdleft">&nbsp;</td>
+
+<td headers="rzakcmstdfedtcd__tbledit__entry__6 " class="tdleft">&nbsp;</td>
+
+<td headers="rzakcmstdfedtcd__tbledit__entry__7 " class="tdleft">&nbsp;</td>
+
+<td headers="rzakcmstdfedtcd__tbledit__entry__8 " class="tdleft">Yes</td>
+
+</tr>
+
+<tr>
+<td headers="rzakcmstdfedtcd__tbledit__entry__1 " class="tdleft">Y<sup>3</sup></td>
+
+<td headers="rzakcmstdfedtcd__tbledit__entry__2 " class="tdleft">&nbsp;</td>
+
+<td headers="rzakcmstdfedtcd__tbledit__entry__3 " class="tdleft">&nbsp;</td>
+
+<td headers="rzakcmstdfedtcd__tbledit__entry__4 " class="tdleft">&nbsp;</td>
+
+<td headers="rzakcmstdfedtcd__tbledit__entry__5 " class="tdleft">&nbsp;</td>
+
+<td headers="rzakcmstdfedtcd__tbledit__entry__6 " class="tdleft">&nbsp;</td>
+
+<td headers="rzakcmstdfedtcd__tbledit__entry__7 " class="tdleft">&nbsp;</td>
+
+<td headers="rzakcmstdfedtcd__tbledit__entry__8 " class="tdleft">Yes</td>
+
+</tr>
+
+<tr>
+<td headers="rzakcmstdfedtcd__tbledit__entry__1 " class="tdleft">Z<sup>4</sup></td>
+
+<td headers="rzakcmstdfedtcd__tbledit__entry__2 " class="tdleft">&nbsp;</td>
+
+<td headers="rzakcmstdfedtcd__tbledit__entry__3 " class="tdleft">&nbsp;</td>
+
+<td headers="rzakcmstdfedtcd__tbledit__entry__4 " class="tdleft">&nbsp;</td>
+
+<td headers="rzakcmstdfedtcd__tbledit__entry__5 " class="tdleft">&nbsp;</td>
+
+<td headers="rzakcmstdfedtcd__tbledit__entry__6 " class="tdleft">&nbsp;</td>
+
+<td headers="rzakcmstdfedtcd__tbledit__entry__7 " class="tdleft">&nbsp;</td>
+
+<td headers="rzakcmstdfedtcd__tbledit__entry__8 " class="tdleft">Yes</td>
+
+</tr>
+
+</tbody>
+</table></div>
+</div>
+<div class="note note border-2 cds--inline-notification--info ibmdocs-note cds--inline-notification cds--inline-notification--low-contrast margin-top-1 margin-bottom-1"><div class="cds--inline-notification__details"><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" class="cds--inline-notification__icon" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M16,2A14,14,0,1,0,30,16,14,14,0,0,0,16,2Zm0,5a1.5,1.5,0,1,1-1.5,1.5A1.5,1.5,0,0,1,16,7Zm4,17.12H12V21.88h2.88V15.12H13V12.88h4.13v9H20Z"></path></svg>
+        <div class="cds--inline-notification__text-wrapper">
+          <div class="cds--inline-notification__subtitle"><span class="notetitle ibm-bold ibm-textcolor-blue-50 background-blue cds--inline-notification__title ibm-padding-top-1 ibm-padding-bottom-1 padding-left-1 padding-right-1">Notes:</span> <ol class="cds--list--ordered--temporary">
+<li class="cds--list__item">The QDECFMT system value determines the decimal point character
+(period in U.S. usage), the character used to separate groups of three
+digits (comma in U.S. usage), and the type of zero suppression (depending
+on comma and period placement).</li>
+
+<li class="cds--list__item">The W edit code suppresses the farthest left zero of a date field
+that is five digits long. It also suppresses the three farthest left
+zeros of a field that is six to eight digits long. The W edit code
+also inserts slashes (/) between the month, day, and year according
+to the following pattern:  <ul class="cds--list--unordered cds--list--nested">
+<li class="cds--list__item">nn/nnn</li>
+
+<li class="cds--list__item">nnnn/nn</li>
+
+<li class="cds--list__item">nnnn/nnn</li>
+
+<li class="cds--list__item">nnnn/nn/nn</li>
+
+</ul>
+</li>
+
+<li class="cds--list__item">The Y edit code suppresses the farthest left zero of a date field
+that is three to six digits long or eight digits long. It also suppresses
+the two farthest left zeros of a field that is seven positions long.
+The Y edit code also inserts slashes (/) between the month, day, and
+year according to the following pattern:  <ul class="cds--list--unordered cds--list--nested">
+<li class="cds--list__item">nn/n</li>
+
+<li class="cds--list__item">nn/nn</li>
+
+<li class="cds--list__item">nn/nn/n</li>
+
+<li class="cds--list__item">nn/nn/nn</li>
+
+<li class="cds--list__item">nnn/nn/nn</li>
+
+<li class="cds--list__item">nn/nn/nnnn</li>
+
+</ul>
+<p>If the DATE keyword is specified with EDTCDE(Y), the separator
+character used is the job attribute, DATSEP at run time. The slash
+(/) is the default DATSEP.</p>
+</li>
+
+<li class="cds--list__item">The Z edit code removes the sign (plus and minus) from a numeric
+field. The sign of the units position is changed to a hexadecimal
+F before the field is written.</li>
+
+</ol>
+ </div>
+        </div>
+      </div></div>
+</section>
+
+<section class="section" role="region" aria-labelledby="rzakcmstdfedtcd__udec1__title__1" id="rzakcmstdfedtcd__udec1"><h2 class="sectiontitle" id="rzakcmstdfedtcd__udec1__title__1">User-defined edit codes</h2><p>Edit
+codes 5 through 9 are user-defined edit codes. A user-defined edit
+code can do more editing than an <span class="keyword">IBM i</span> edit code. For example,
+you might need to edit numbers that include hyphens (such as telephone
+numbers) or more than one decimal point. You can use user-defined
+edit codes for these functions. These edit codes are named QEDIT5,
+QEDIT6, QEDIT7, QEDIT8, and QEDIT9, and can be referred to in DDS
+or a high-level language program by number (5, 6, 7, 8, or 9).</p>
+<p>A
+user-defined edit code is an <span class="keyword">IBM i</span> object and must exist
+before display file creation. It is created using the Create Edit
+Description (CRTEDTD) command. When you create a display file in which
+a user-defined edit code is specified, editing information is extracted
+from the previously created edit description. Changing a user-defined
+edit code after display file creation does not affect the display
+file unless the display file is re-created.</p>
+<p>The following table
+shows edit codes, unedited source data, and edited output. Zero suppression
+and decimal characters are determined by the system value QDECFMT.
+The date separator character is determined by the job attribute DATSEP.
+In this figure, QDECFMT is assumed to equal x (blank), and DATSEP
+is assumed to equal / (slash).</p>
+
+<div class="tablenoborder"><div class="cds--data-table-container"><table summary="" id="rzakcmstdfedtcd__dfvec" class="defaultstyle cds--data-table"><caption class="cds--data-table-header"><span class="tablecap cds--data-table-header__title">Table 2. Valid edit codes, source data, and edited output</span></caption><colgroup><col><col><col><col><col><col><col></colgroup><thead>
+<tr>
+<th id="rzakcmstdfedtcd__dfvec__entry__1" class="thleft"><div class="cds--table-header-label">Edit codes</div></th>
+
+<th id="rzakcmstdfedtcd__dfvec__entry__2" class="thleft"><div class="cds--table-header-label">Positive number with two decimal
+positions</div></th>
+
+<th id="rzakcmstdfedtcd__dfvec__entry__3" class="thleft"><div class="cds--table-header-label">Positive number with no decimal positions</div></th>
+
+<th id="rzakcmstdfedtcd__dfvec__entry__4" class="thleft"><div class="cds--table-header-label">Negative number with three decimal
+positions<sup>1</sup></div></th>
+
+<th id="rzakcmstdfedtcd__dfvec__entry__5" class="thleft"><div class="cds--table-header-label">Negative number with no decimal positions<sup>1</sup></div></th>
+
+<th id="rzakcmstdfedtcd__dfvec__entry__6" class="thleft"><div class="cds--table-header-label">Zero balance with two decimal positions<sup>1</sup></div></th>
+
+<th id="rzakcmstdfedtcd__dfvec__entry__7" class="thleft"><div class="cds--table-header-label">Zero balance with no decimal positions<sup>1</sup></div></th>
+
+</tr>
+
+</thead>
+<tbody>
+<tr>
+<td headers="rzakcmstdfedtcd__dfvec__entry__1 " class="tdleft">Unedited</td>
+
+<td headers="rzakcmstdfedtcd__dfvec__entry__2 " class="tdleft">1234567</td>
+
+<td headers="rzakcmstdfedtcd__dfvec__entry__3 " class="tdleft">1234567</td>
+
+<td headers="rzakcmstdfedtcd__dfvec__entry__4 " class="tdleft">xxxx.125–</td>
+
+<td headers="rzakcmstdfedtcd__dfvec__entry__5 " class="tdleft">125–</td>
+
+<td headers="rzakcmstdfedtcd__dfvec__entry__6 " class="tdleft">xxxxxx</td>
+
+<td headers="rzakcmstdfedtcd__dfvec__entry__7 " class="tdleft">xxxxxx</td>
+
+</tr>
+
+<tr>
+<td headers="rzakcmstdfedtcd__dfvec__entry__1 " class="tdleft">1</td>
+
+<td headers="rzakcmstdfedtcd__dfvec__entry__2 " class="tdleft">12,345.67</td>
+
+<td headers="rzakcmstdfedtcd__dfvec__entry__3 " class="tdleft">1,234,567</td>
+
+<td headers="rzakcmstdfedtcd__dfvec__entry__4 " class="tdleft">.125</td>
+
+<td headers="rzakcmstdfedtcd__dfvec__entry__5 " class="tdleft">125</td>
+
+<td headers="rzakcmstdfedtcd__dfvec__entry__6 " class="tdleft">.00</td>
+
+<td headers="rzakcmstdfedtcd__dfvec__entry__7 " class="tdleft">0</td>
+
+</tr>
+
+<tr>
+<td headers="rzakcmstdfedtcd__dfvec__entry__1 " class="tdleft">2</td>
+
+<td headers="rzakcmstdfedtcd__dfvec__entry__2 " class="tdleft">12,345.67</td>
+
+<td headers="rzakcmstdfedtcd__dfvec__entry__3 " class="tdleft">1,234,567</td>
+
+<td headers="rzakcmstdfedtcd__dfvec__entry__4 " class="tdleft">.125</td>
+
+<td headers="rzakcmstdfedtcd__dfvec__entry__5 " class="tdleft">125</td>
+
+<td headers="rzakcmstdfedtcd__dfvec__entry__6 " class="tdleft">&nbsp;</td>
+
+<td headers="rzakcmstdfedtcd__dfvec__entry__7 " class="tdleft">&nbsp;</td>
+
+</tr>
+
+<tr>
+<td headers="rzakcmstdfedtcd__dfvec__entry__1 " class="tdleft">3</td>
+
+<td headers="rzakcmstdfedtcd__dfvec__entry__2 " class="tdleft">12345.67</td>
+
+<td headers="rzakcmstdfedtcd__dfvec__entry__3 " class="tdleft">1234567</td>
+
+<td headers="rzakcmstdfedtcd__dfvec__entry__4 " class="tdleft">.125</td>
+
+<td headers="rzakcmstdfedtcd__dfvec__entry__5 " class="tdleft">125</td>
+
+<td headers="rzakcmstdfedtcd__dfvec__entry__6 " class="tdleft">.00</td>
+
+<td headers="rzakcmstdfedtcd__dfvec__entry__7 " class="tdleft">0</td>
+
+</tr>
+
+<tr>
+<td headers="rzakcmstdfedtcd__dfvec__entry__1 " class="tdleft">4</td>
+
+<td headers="rzakcmstdfedtcd__dfvec__entry__2 " class="tdleft">12345.67</td>
+
+<td headers="rzakcmstdfedtcd__dfvec__entry__3 " class="tdleft">1234567</td>
+
+<td headers="rzakcmstdfedtcd__dfvec__entry__4 " class="tdleft">.125</td>
+
+<td headers="rzakcmstdfedtcd__dfvec__entry__5 " class="tdleft">125</td>
+
+<td headers="rzakcmstdfedtcd__dfvec__entry__6 " class="tdleft">&nbsp;</td>
+
+<td headers="rzakcmstdfedtcd__dfvec__entry__7 " class="tdleft">&nbsp;</td>
+
+</tr>
+
+<tr>
+<td headers="rzakcmstdfedtcd__dfvec__entry__1 " class="tdleft">A</td>
+
+<td headers="rzakcmstdfedtcd__dfvec__entry__2 " class="tdleft">12,345.67</td>
+
+<td headers="rzakcmstdfedtcd__dfvec__entry__3 " class="tdleft">1,234,567</td>
+
+<td headers="rzakcmstdfedtcd__dfvec__entry__4 " class="tdleft">.125CR</td>
+
+<td headers="rzakcmstdfedtcd__dfvec__entry__5 " class="tdleft">125CR</td>
+
+<td headers="rzakcmstdfedtcd__dfvec__entry__6 " class="tdleft">.00</td>
+
+<td headers="rzakcmstdfedtcd__dfvec__entry__7 " class="tdleft">0</td>
+
+</tr>
+
+<tr>
+<td headers="rzakcmstdfedtcd__dfvec__entry__1 " class="tdleft">B</td>
+
+<td headers="rzakcmstdfedtcd__dfvec__entry__2 " class="tdleft">12,345.67</td>
+
+<td headers="rzakcmstdfedtcd__dfvec__entry__3 " class="tdleft">1,234,567</td>
+
+<td headers="rzakcmstdfedtcd__dfvec__entry__4 " class="tdleft">.125CR</td>
+
+<td headers="rzakcmstdfedtcd__dfvec__entry__5 " class="tdleft">125CR</td>
+
+<td headers="rzakcmstdfedtcd__dfvec__entry__6 " class="tdleft">&nbsp;</td>
+
+<td headers="rzakcmstdfedtcd__dfvec__entry__7 " class="tdleft">&nbsp;</td>
+
+</tr>
+
+<tr>
+<td headers="rzakcmstdfedtcd__dfvec__entry__1 " class="tdleft">C</td>
+
+<td headers="rzakcmstdfedtcd__dfvec__entry__2 " class="tdleft">12345.67</td>
+
+<td headers="rzakcmstdfedtcd__dfvec__entry__3 " class="tdleft">1234567</td>
+
+<td headers="rzakcmstdfedtcd__dfvec__entry__4 " class="tdleft">.125CR</td>
+
+<td headers="rzakcmstdfedtcd__dfvec__entry__5 " class="tdleft">125CR</td>
+
+<td headers="rzakcmstdfedtcd__dfvec__entry__6 " class="tdleft">.00</td>
+
+<td headers="rzakcmstdfedtcd__dfvec__entry__7 " class="tdleft">0</td>
+
+</tr>
+
+<tr>
+<td headers="rzakcmstdfedtcd__dfvec__entry__1 " class="tdleft">D</td>
+
+<td headers="rzakcmstdfedtcd__dfvec__entry__2 " class="tdleft">12345.67</td>
+
+<td headers="rzakcmstdfedtcd__dfvec__entry__3 " class="tdleft">1234567</td>
+
+<td headers="rzakcmstdfedtcd__dfvec__entry__4 " class="tdleft">.125CR</td>
+
+<td headers="rzakcmstdfedtcd__dfvec__entry__5 " class="tdleft">125CR</td>
+
+<td headers="rzakcmstdfedtcd__dfvec__entry__6 " class="tdleft">&nbsp;</td>
+
+<td headers="rzakcmstdfedtcd__dfvec__entry__7 " class="tdleft">&nbsp;</td>
+
+</tr>
+
+<tr>
+<td headers="rzakcmstdfedtcd__dfvec__entry__1 " class="tdleft">J</td>
+
+<td headers="rzakcmstdfedtcd__dfvec__entry__2 " class="tdleft">12,345.67</td>
+
+<td headers="rzakcmstdfedtcd__dfvec__entry__3 " class="tdleft">1,234,567</td>
+
+<td headers="rzakcmstdfedtcd__dfvec__entry__4 " class="tdleft">.125-</td>
+
+<td headers="rzakcmstdfedtcd__dfvec__entry__5 " class="tdleft">125-</td>
+
+<td headers="rzakcmstdfedtcd__dfvec__entry__6 " class="tdleft">.00</td>
+
+<td headers="rzakcmstdfedtcd__dfvec__entry__7 " class="tdleft">0</td>
+
+</tr>
+
+<tr>
+<td headers="rzakcmstdfedtcd__dfvec__entry__1 " class="tdleft">K</td>
+
+<td headers="rzakcmstdfedtcd__dfvec__entry__2 " class="tdleft">12,345.67</td>
+
+<td headers="rzakcmstdfedtcd__dfvec__entry__3 " class="tdleft">1,234,567</td>
+
+<td headers="rzakcmstdfedtcd__dfvec__entry__4 " class="tdleft">.125-</td>
+
+<td headers="rzakcmstdfedtcd__dfvec__entry__5 " class="tdleft">125-</td>
+
+<td headers="rzakcmstdfedtcd__dfvec__entry__6 " class="tdleft">&nbsp;</td>
+
+<td headers="rzakcmstdfedtcd__dfvec__entry__7 " class="tdleft">&nbsp;</td>
+
+</tr>
+
+<tr>
+<td headers="rzakcmstdfedtcd__dfvec__entry__1 " class="tdleft">L</td>
+
+<td headers="rzakcmstdfedtcd__dfvec__entry__2 " class="tdleft">12345.67</td>
+
+<td headers="rzakcmstdfedtcd__dfvec__entry__3 " class="tdleft">1234567</td>
+
+<td headers="rzakcmstdfedtcd__dfvec__entry__4 " class="tdleft">.125-</td>
+
+<td headers="rzakcmstdfedtcd__dfvec__entry__5 " class="tdleft">125-</td>
+
+<td headers="rzakcmstdfedtcd__dfvec__entry__6 " class="tdleft">.00</td>
+
+<td headers="rzakcmstdfedtcd__dfvec__entry__7 " class="tdleft">0</td>
+
+</tr>
+
+<tr>
+<td headers="rzakcmstdfedtcd__dfvec__entry__1 " class="tdleft">M</td>
+
+<td headers="rzakcmstdfedtcd__dfvec__entry__2 " class="tdleft">12345.67</td>
+
+<td headers="rzakcmstdfedtcd__dfvec__entry__3 " class="tdleft">1234567</td>
+
+<td headers="rzakcmstdfedtcd__dfvec__entry__4 " class="tdleft">.125-</td>
+
+<td headers="rzakcmstdfedtcd__dfvec__entry__5 " class="tdleft">125-</td>
+
+<td headers="rzakcmstdfedtcd__dfvec__entry__6 " class="tdleft">&nbsp;</td>
+
+<td headers="rzakcmstdfedtcd__dfvec__entry__7 " class="tdleft">&nbsp;</td>
+
+</tr>
+
+<tr>
+<td headers="rzakcmstdfedtcd__dfvec__entry__1 " class="tdleft">N</td>
+
+<td headers="rzakcmstdfedtcd__dfvec__entry__2 " class="tdleft">12,345.67</td>
+
+<td headers="rzakcmstdfedtcd__dfvec__entry__3 " class="tdleft">1,234,567</td>
+
+<td headers="rzakcmstdfedtcd__dfvec__entry__4 " class="tdleft">-.125</td>
+
+<td headers="rzakcmstdfedtcd__dfvec__entry__5 " class="tdleft">-125</td>
+
+<td headers="rzakcmstdfedtcd__dfvec__entry__6 " class="tdleft">.00</td>
+
+<td headers="rzakcmstdfedtcd__dfvec__entry__7 " class="tdleft">0</td>
+
+</tr>
+
+<tr>
+<td headers="rzakcmstdfedtcd__dfvec__entry__1 " class="tdleft">O</td>
+
+<td headers="rzakcmstdfedtcd__dfvec__entry__2 " class="tdleft">12,345.67</td>
+
+<td headers="rzakcmstdfedtcd__dfvec__entry__3 " class="tdleft">1,234,567</td>
+
+<td headers="rzakcmstdfedtcd__dfvec__entry__4 " class="tdleft">-.125</td>
+
+<td headers="rzakcmstdfedtcd__dfvec__entry__5 " class="tdleft">-125</td>
+
+<td headers="rzakcmstdfedtcd__dfvec__entry__6 " class="tdleft">&nbsp;</td>
+
+<td headers="rzakcmstdfedtcd__dfvec__entry__7 " class="tdleft">&nbsp;</td>
+
+</tr>
+
+<tr>
+<td headers="rzakcmstdfedtcd__dfvec__entry__1 " class="tdleft">P</td>
+
+<td headers="rzakcmstdfedtcd__dfvec__entry__2 " class="tdleft">12345.67</td>
+
+<td headers="rzakcmstdfedtcd__dfvec__entry__3 " class="tdleft">1234567</td>
+
+<td headers="rzakcmstdfedtcd__dfvec__entry__4 " class="tdleft">-.125</td>
+
+<td headers="rzakcmstdfedtcd__dfvec__entry__5 " class="tdleft">-125</td>
+
+<td headers="rzakcmstdfedtcd__dfvec__entry__6 " class="tdleft">.00</td>
+
+<td headers="rzakcmstdfedtcd__dfvec__entry__7 " class="tdleft">0</td>
+
+</tr>
+
+<tr>
+<td headers="rzakcmstdfedtcd__dfvec__entry__1 " class="tdleft">Q</td>
+
+<td headers="rzakcmstdfedtcd__dfvec__entry__2 " class="tdleft">12345.67</td>
+
+<td headers="rzakcmstdfedtcd__dfvec__entry__3 " class="tdleft">1234567</td>
+
+<td headers="rzakcmstdfedtcd__dfvec__entry__4 " class="tdleft">-.125</td>
+
+<td headers="rzakcmstdfedtcd__dfvec__entry__5 " class="tdleft">-125</td>
+
+</tr>
+
+<tr>
+<td headers="rzakcmstdfedtcd__dfvec__entry__1 " class="tdleft">W<sup>2</sup></td>
+
+<td headers="rzakcmstdfedtcd__dfvec__entry__2 " class="tdleft">1234/567</td>
+
+<td headers="rzakcmstdfedtcd__dfvec__entry__3 " class="tdleft">1234/567</td>
+
+<td headers="rzakcmstdfedtcd__dfvec__entry__4 " class="tdleft">0/125</td>
+
+<td headers="rzakcmstdfedtcd__dfvec__entry__5 " class="tdleft">0/125</td>
+
+<td headers="rzakcmstdfedtcd__dfvec__entry__6 " class="tdleft">0/000</td>
+
+<td headers="rzakcmstdfedtcd__dfvec__entry__7 " class="tdleft">0/000</td>
+
+</tr>
+
+<tr>
+<td headers="rzakcmstdfedtcd__dfvec__entry__1 " class="tdleft">Y<sup>3</sup></td>
+
+<td headers="rzakcmstdfedtcd__dfvec__entry__2 " class="tdleft">123/45/67</td>
+
+<td headers="rzakcmstdfedtcd__dfvec__entry__3 " class="tdleft">123/45/67</td>
+
+<td headers="rzakcmstdfedtcd__dfvec__entry__4 " class="tdleft">0/01/25</td>
+
+<td headers="rzakcmstdfedtcd__dfvec__entry__5 " class="tdleft">0/01/25</td>
+
+<td headers="rzakcmstdfedtcd__dfvec__entry__6 " class="tdleft">0/00/00</td>
+
+<td headers="rzakcmstdfedtcd__dfvec__entry__7 " class="tdleft">0/00/00</td>
+
+</tr>
+
+<tr>
+<td headers="rzakcmstdfedtcd__dfvec__entry__1 " class="tdleft">Z<sup>4</sup></td>
+
+<td headers="rzakcmstdfedtcd__dfvec__entry__2 " class="tdleft">1234567</td>
+
+<td headers="rzakcmstdfedtcd__dfvec__entry__3 " class="tdleft">1234567</td>
+
+<td headers="rzakcmstdfedtcd__dfvec__entry__4 " class="tdleft">125</td>
+
+<td headers="rzakcmstdfedtcd__dfvec__entry__5 " class="tdleft">125</td>
+
+<td headers="rzakcmstdfedtcd__dfvec__entry__6 " class="tdleft">&nbsp;</td>
+
+<td headers="rzakcmstdfedtcd__dfvec__entry__7 " class="tdleft">&nbsp;</td>
+
+</tr>
+
+</tbody>
+</table></div>
+</div>
+<div class="note note border-2 cds--inline-notification--info ibmdocs-note cds--inline-notification cds--inline-notification--low-contrast margin-top-1 margin-bottom-1"><div class="cds--inline-notification__details"><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" class="cds--inline-notification__icon" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M16,2A14,14,0,1,0,30,16,14,14,0,0,0,16,2Zm0,5a1.5,1.5,0,1,1-1.5,1.5A1.5,1.5,0,0,1,16,7Zm4,17.12H12V21.88h2.88V15.12H13V12.88h4.13v9H20Z"></path></svg>
+        <div class="cds--inline-notification__text-wrapper">
+          <div class="cds--inline-notification__subtitle"><span class="notetitle ibm-bold ibm-textcolor-blue-50 background-blue cds--inline-notification__title ibm-padding-top-1 ibm-padding-bottom-1 padding-left-1 padding-right-1">Notes:</span> <ol class="cds--list--ordered--temporary">
+<li class="cds--list__item">The x represents a blank.</li>
+
+<li class="cds--list__item">The W edit code suppresses the farthest left zero of a date field
+that is five digits long. It also suppresses the three farthest left
+zeros of a field that is six to eight digits long. For more information,
+see the second footnote in <a href="#rzakcmstdfedtcd__tbledit">Table 1</a>.</li>
+
+<li class="cds--list__item">The Y edit code suppresses the farthest left zero of a date field
+that is three to six digits long or eight digits long. It also suppresses
+the two farthest left zeros of a field that is seven positions long.
+For more information, see the third footnote in <a href="#rzakcmstdfedtcd__tbledit">Table 1</a>.</li>
+
+<li class="cds--list__item">The Z edit code removes the sign (plus or minus) and suppresses
+leading zeros.</li>
+
+</ol>
+ </div>
+        </div>
+      </div></div>
+</section>
+
+<div class="example"><h2 class="sectiontitle" id="rzakcmstdfedtcd__title__7">Example</h2><p>The following example shows how
+to specify the EDTCDE keyword.</p>
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>|...+....1....+....2....+....3....+....4....+....5....+....6....+....7....+....8
+00010A            PRICE          5  2   1 10EDTCDE(J)
+00020A            SALES          7  2   2 10EDTCDE(K $)
+00030A            SALARY         8  2   3 10EDTCDE(1 *)
+     A</code></pre></div><div class="docs--copy-btn"></div></div><div class="p">The display length for PRICE is 7 because the
+J edit code is specified, causing the field to contain a decimal point
+and an ending minus sign. It is edited as:  <div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>ddd.dd-</code></pre></div><div class="docs--copy-btn"></div></div>where
+d represents a digit.</div>
+<div class="p">The display length for SALES is 11 because
+the K edit code and floating currency symbol are specified. It is
+edited as:  <div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>$dd,ddd.dd-</code></pre></div><div class="docs--copy-btn"></div></div></div>
+<div class="p">The display length
+for SALARY is 10 because the edit code 1 is specified with asterisk
+fill. It is edited as:  <div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>ddd,ddd.dd</code></pre></div><div class="docs--copy-btn"></div></div></div>
+</div>
+
+</div>
+
+<aside role="complementary" aria-labelledby="rzakcmstdfedtcd__title__1"><nav role="navigation" aria-label="bottom related links" class="ibm-padding-top-1 ibm-padding-bottom-2 bx--row bottom-section-parent">
+<div class="familylinks ibm-margin-bottom-1">
+<div class="parentlink"><strong>Parent topic:</strong> <div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a data-hd-product="ssw_ibm_i_74" href="/docs/en/ssw_ibm_i_74/rzakc/rzakcmstkeyent.htm" title="You type the keyword entries that define display files in positions 45 through 80 (functions)." class="bottom-section-link">DDS keyword entries for display files (positions 45 through 80)</a></div></div>
+</div>
+
+<div class="linklist relinfo relconcepts ibm-margin-bottom-1" lang="en-us"><h2 class="linkheading bottom-section-h2-title">Related concepts</h2>
+<ul><li class="cds--list__item"><div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a data-hd-product="ssw_ibm_i_74" href="/docs/en/ssw_ibm_i_74/rzakc/dfnoy.htm" title="You can only type the numbers 0 through 9, plus (+), minus (-), period (.), comma (,), and space (&nbsp;) into the field. You can press any key to leave the field." class="bottom-section-link">Numeric only (Y)</a></div></li>
+</ul></div>
+
+<div class="linklist relinfo ibm-margin-bottom-1" lang="en-us"><h2 class="linkheading bottom-section-h2-title">Related information</h2>
+<ul><li class="cds--list__item"><div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a data-hd-product="ssw_ibm_i_74" href="/docs/en/ssw_ibm_i_74/rzakz/rzakz1.htm" class="bottom-section-link">System values</a></div></li>
+</ul></div>
+</nav></aside></article></main>

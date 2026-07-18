@@ -1,0 +1,57 @@
+<h1 class="title topictitle1">表示装置ファイルの SLNO (開始行番号) キーワード</h1><div id="lastModifiedDate"><span>Last Updated</span>: 2021-04-13</div>
+<div class="body refbody"><p class="shortdesc"><span class="ph">これはレコード・レベル・キーワードで、定義中のレコード様式の開始行番号を指定するために使用します。</span></p>
+<div class="section"><p class="p">SLNO を指定した場合には、レコード様式の各フィールドの実際の行番号が調整されます。
+SLNO を指定しなかった場合には、レコード様式内のフィールドは、39 - 41 桁目で指定した行に表示されます。</p>
+<div class="p">キーワードの形式は次のとおりです。<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code>SLNO(n | *VAR)</code></pre></div><div class="docs--copy-btn"></div></div>
+</div>
+<div class="p">このキーワードには、2 つのパラメーター値のいずれか 1 つを指定することができます。<ul class="ul cds--list--unordered"><li class="li cds--list__item"><em class="ph i">n</em> (n は 1 - 27 の値)。n を指定すると、レコード様式内のすべてのフィールドは、画面上の指定された位置から n - 1 行下に表示されます。
+SLNO(1) を指定した場合には、レコード様式には、1 行目の 1 桁目から始まるフィールドを含めることはできません。</li>
+<li class="li cds--list__item">*VAR。*VAR を指定すると、実行時に、このレコード様式を表示する前にユーザー・プログラムで開始行番号を指定することができます。
+ファイル作成時には、<span class="keyword">IBM® i</span> プログラムにより、開始行番号が 1 に設定されます。
+レコードに 1 行目の 1 桁目から始まるフィールドが含まれていると、ファイル作成時に警告メッセージが表示されます。ユーザー・プログラムで開始行番号が設定されない場合、またはゼロに設定された場合には、<span class="keyword">IBM i</span> オペレーティング・システムは、開始行番号が 1 であると見なします。
+ユーザー・プログラムにより設定された開始行番号が、レコード様式内の最初のフィールドを画面に表示できないような値であった場合、あるいは負数であった場合には、<span class="keyword">IBM i</span> オペレーティング・システムからユーザー・プログラムに通知メッセージ (CPF5002) が送られ、レコードは表示されません。
+開始行番号が 1 に設定されていて、レコード様式に 1 行目の 1 桁目から始まるフィールドが含まれていた場合には、<span class="keyword">IBM i</span> オペレーティング・システムからユーザー・プログラムにエラー・メッセージ (CPF5398) が送られます。レコードは表示されません。<p class="p">実際にフィールドが表示される行を計算するためには、39 - 41 桁目に指定した行番号から 1 を引き、それに開始行番号を加えます。
+フィールドが 1 行目の 1 桁目に定義されていない限り、レコード様式は SLNO で指定した行から開始されます。このような場合には、開始属性バイトは前の行の最後の桁になり、その様式の開始行は、SLNO で指定した行より 1 だけ小さいものになります。</p>
+<p class="p">*VAR が指定されている場合、レコードのどのフィールドも画面の最終桁を占めることはできません。</p>
+</li>
+</ul>
+</div>
+<p class="p">当該レコードの表示時に CLRL(nn) キーワードまたは CLRL(*END) キーワードも効力を持っている場合には、画面上の行は、その様式の開始行番号から始まって消去されます。</p>
+<p class="p">SLNO(*VAR) キーワードを OVERLAY キーワードとともに指定し、CLRL キーワードを指定せずに、レコードの書き込みを、各回ごとに異なる開始行番号を用いて複数回行う場合には、前のレコードは、新しいレコードの表示前に削除されます。</p>
+<div class="p">SLNO キーワードを次の各キーワードとともに指定すると、<span class="keyword">IBM i</span> プログラムは、開始行番号を検査して、レコードに対する前の出力命令が同じ開始行番号を用いているかどうかを判別します。<p class="lines">ERRMSG<br>
+ERRMSGID<br>
+PUTOVR<br>
+PUTRETAIN</p>
+</div>
+<p class="p">開始行番号が同じであれば、ERRMSG、ERRMSGID、PUTOVR、または PUTRETAIN キーワードで指定された処理が実行されます。</p>
+<p class="p">開始行番号が異なる場合には、ERRMSG、ERRMSGID、PUTOVR、または PUTRETAIN キーワードは無視されます。レコード様式は、行が新しい値に合わせて調整され、表示されます。</p>
+<div class="p">次のいずれかのキーワードが指定されているレコード様式では、SLNO キーワードは指定できません。<p class="lines">ASSUME<br>
+KEEP<br>
+SFL<br>
+SFLCTL<br>
+USRDFN</p>
+</div>
+<p class="p">PASSRCD キーワードにより指定されているレコード様式には、SLNO を指定することはできません。</p>
+<p class="p">オプション標識は、このキーワードでは無効です。</p>
+</div>
+<div class="example"><h2 class="title sectiontitle">例</h2><p class="p">次の例は、SLNO キーワードの指定方法を示しています。</p>
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code>|...+....1....+....2....+....3....+....4....+....5....+....6....+....7....+....8
+00010A          R RECORD1                   SLNO(*VAR)
+00020A            FIELD1         5   I  2  2
+00030A            FIELD2         5   B  3  2
+00040A
+00050A          R RECORD2                   SLNO(2)
+00060A            FIELD3         5     10  2
+00070A            FIELD4         5   B 10 13
+     A</code></pre></div><div class="docs--copy-btn"></div></div>
+<p class="p">この例では、開始行番号が 0 または 1 である場合は、指定どおりに、FIELD1 が 2 行目に表示され、FIELD2 が 3 行目に表示されます。
+プログラムで開始行番号が 2 に設定された場合には、FIELD1 は 3 行目 (2-1+2=3) に表示され、FIELD2 は 4 行目 (2-1+3=4) に表示されます。</p>
+<p class="p">FIELD3 および FIELD4 は、常に 11 行目に表示されます (2-1+10=11)。</p>
+</div>
+</div>
+<div class="related-links ibm-padding-top-1 ibm-padding-bottom-2 bx--row bottom-section-parent" aria-label="bottom related links">
+<div class="familylinks ibm-margin-bottom-1">
+<div class="parentlink"><strong>親トピック:</strong> <div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a class="link bottom-section-link" href="/docs/ja/ssw_ibm_i_74/rzakc/rzakcmstkeyent.htm" title="表示装置ファイルを定義するキーワード項目は、45 - 80 桁目 (機能欄) に記入します。">表示装置ファイルの DDS キーワード項目 (45 - 80 桁目)</a></div></div>
+</div>
+</div>
+

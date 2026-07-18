@@ -1,0 +1,49 @@
+<h1 class="title topictitle1">印刷装置ファイルの PAGNBR (ページ番号) キーワード</h1><div id="lastModifiedDate"><span>Last Updated</span>: 2021-04-13</div>
+<div class="body refbody"><p class="shortdesc"><span class="ph">このフィールド・レベルのキーワードは、
+ページ番号が入るフィールド (名前のない 4 桁のゾーン 10 進数フィールド) の位置を指定する場合に使用します。</span></p>
+<div class="section"><p class="p">PAGNBR キーワードとフィールドの位置だけを指定します (フィールドの位置は桁番号だけで指定することも、行番号と桁番号の両方で指定することもできます)。または、フィールドの位置を指定するためにレコードで POSITION (位置) キーワードが使用される場合は、特殊名 *NONE を使用してフィールドに名前を付けます。
+オプションとして、CHRSIZ、COLOR、FONT、HIGHLIGHT、UNDERLINE、または TEXT キーワードを指定することもできます。</p>
+<p class="p">このキーワードにはパラメーターはありません。</p>
+<p class="p">各印刷装置ファイルのオープンのさいに、<span class="keyword">IBM® i</span> オペレーティング・システムはページ・カウント
+をゼロにセットし、新しい各ページの印刷に移る前にその番号を 1 ずつ増やします。これは、PAGNBR キーワードの指定の有無にかかわらず行われます。PAGNBR キーワード
+の指定されたフィールドが印刷されるたびに、ページ番号が印刷されます。ページ番号は、9999 に達するとそれ以上増加することはなく、リセットされるまでは 9999 のままです。ページ・カウントをリセットするためには、オプション標識によって PAGNBR を条件付けします。ご使用の
+プログラムで PAGNBR が選択されると、<span class="keyword">IBM i</span> オペレーティング・システムはページ番号を
+リセットします (下記の例を参照してください)。</p>
+<p class="p">PAGNBR キーワードとともに、EDTCDE または EDTWRD を指定することもできます。</p>
+<p class="p">このキーワードについては、オプション標識を使用できます。</p>
+<p class="p">フィールド (位置だけ) とキーワードは、標識を付けずに 1 行に指定することも、別々の標識を付けて別々の行に指定することもできます。以下に、この両者の違いについて説明します。</p>
+</div>
+<div class="section"><h2 class="title sectiontitle">例 1: 印刷装置ファイル内で標識を付けずに 1 行に指定する場合</h2><p class="p">次の例のように指定すると、ページ番号は必ず印刷され、ページ番号を 1 にリセットすることはできません。</p>
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code>|...+....1....+....2....+....3....+....4....+....5....+....6....+....7....+....8
+00100A          R RECORD
+00110A                                  1 60'PAGE:'
+00120A                                    +1PAGNBR
+     A</code></pre></div><div class="docs--copy-btn"></div></div>
+<div class="note note border-2 cds--inline-notification--info ibmdocs-note cds--inline-notification cds--inline-notification--low-contrast margin-top-1 margin-bottom-1"><div class="cds--inline-notification__details"><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" class="cds--inline-notification__icon" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M16,2A14,14,0,1,0,30,16,14,14,0,0,0,16,2Zm0,5a1.5,1.5,0,1,1-1.5,1.5A1.5,1.5,0,0,1,16,7Zm4,17.12H12V21.88h2.88V15.12H13V12.88h4.13v9H20Z"></path></svg>
+        <div class="cds--inline-notification__text-wrapper">
+          <div class="cds--inline-notification__subtitle"><span class="notetitle ibm-bold ibm-textcolor-blue-50 background-blue cds--inline-notification__title ibm-padding-top-1 ibm-padding-bottom-1 padding-left-1 padding-right-1">注:</span> 順序番号 110 および 120 では、「PAGE:」およびページ番号自体
+(+1 で指定された位置) の 2 つの固定情報フィールドが指定されています。</div>
+        </div>
+      </div></div>
+</div>
+<div class="section"><h2 class="title sectiontitle">例 2: 印刷装置ファイル内で別々の標識を付けて別々の行に指定する場合</h2><p class="p">フィールドの標識 (次の例では 01) がオフの場合、キーワードの標識 (次の例で
+は 02) がオンであってもフィールドは印刷されません。フィールドの標識がオン
+の場合には、フィールドは印刷されます。ページ・カウントが増加するのは、キーワードの標識がオフのときです。キーワードの標識がオンの場合には、ページ・カウントは 1 にリセットされます。キーワードの標識がオンであっても
+オフであっても、ページ番号は印刷されます。</p>
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code>|...+....1....+....2....+....3....+....4....+....5....+....6....+....7....+....8
+00100A          R RECORD
+00110A  01                              1 60'PAGE'
+00120A  01                                +1
+00130A  02                                  PAGNBR
+     A</code></pre></div><div class="docs--copy-btn"></div></div>
+</div>
+</div>
+<div class="related-links ibm-padding-top-1 ibm-padding-bottom-2 bx--row bottom-section-parent" aria-label="bottom related links">
+<div class="familylinks ibm-margin-bottom-1">
+<div class="parentlink"><strong>親トピック:</strong> <div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a class="link bottom-section-link" href="/docs/ja/ssw_ibm_i_74/rzakd/rzakdmstprkey.htm" title="これらは印刷装置ファイルの定義に有効なキーワード項目です。">印刷装置ファイルのキーワード項目 (45 から 80 桁目)</a></div></div>
+</div>
+<div class="relinfo relconcepts ibm-margin-bottom-1"><strong>関連概念</strong>:<br>
+<div><div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a class="link bottom-section-link" href="/docs/ja/ssw_ibm_i_74/rzakd/constantfields.htm" title="固定情報フィールドは、名前のないフィールド (19 から 28 桁目はブランクでなければなりません) であるか、 POSITION キーワードがレコードで使用されるときに特殊名 (*NONE) を持つフィールドです。">印刷装置ファイル内の固定情報フィールド</a></div></div>
+</div>
+</div>
+

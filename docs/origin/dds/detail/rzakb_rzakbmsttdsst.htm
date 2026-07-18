@@ -1,0 +1,120 @@
+<h1 class="title topictitle1">SST (サブストリング) キーワード - 論理ファイルのみ</h1><div id="lastModifiedDate"><span>Last Updated</span>: 2021-04-13</div>
+<div class="body refbody"><p class="shortdesc"><span class="ph">これはフィールド・レベルのキーワードで、既存の文字、16 進数、ゾーン・フィールド、または図形のサブセットである文字ストリングを指定するために使用します。</span></p>
+<div class="section"><div class="p">キーワードの形式は次のとおりです。<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code>SST(field-name starting-position [length])</code></pre></div><div class="docs--copy-btn"></div></div>
+</div>
+<div class="p">field-name パラメーターには、サブストリングの取り出し元のフィールドの名前を
+指定します。このフィールドは、同じ論理ファイル様式の中で SST フィールド
+(現在定義中のフィールド) より前に定義されているか、あるいは、PFILE または JFILE キーワードで指定した物理ファイルの中に存在していなければ
+なりません。このフィールドを見つけるために、システムは一致するフィールド名を次のように
+して検索します。<ol class="ol cds--list--ordered--temporary"><li class="li cds--list__item">最初に、システムはこの SST フィールドより前の論理ファイル様式
+の 19 から 28 桁目に指定されているフィールド名を調べます。</li>
+<li class="li cds--list__item">一致するフィールド名が論理ファイル様式の 19 から 28 桁目に見つからない場合、
+システムは次の規則に従い、PFILE キーワードまたは JFILE キーワードで指定された物理ファイルの中から当該のフィールド名を検索します。<ul class="ul cds--list--unordered cds--list--nested"><li class="li cds--list__item">論理ファイルが単一様式論理ファイルまたは複数様式論理ファイルの場合には、当該フィールドは、PFILE キーワードで指定したすべてのファイルに入っていなければなりません。</li>
+<li class="li cds--list__item">論理ファイルが結合論理ファイルであり、SST フィールドについて JREF キーワードが
+指定されている場合には、当該フィールドは、JREF キーワードで参照される JFILE に
+入っていなければなりません。</li>
+<li class="li cds--list__item">論理ファイルが結合論理ファイルであり、SST フィールドについて JREF キーワードが
+指定されていない場合には、当該フィールドは、1 つの JFILE だけに
+入っていなければなりません。</li>
+</ul>
+</li>
+</ol>
+</div>
+<div class="p">サブストリングは、SST キーワードで指定する開始桁から始まります。その長さは、
+キーワードの 3 番目のパラメーターとして指定するか、またはフィールドの長さ (DDS の 30 から 34 桁目) で指定します。
+開始桁は必須パラメーターですが、長さはオプショナルです。<div class="note note border-2 cds--inline-notification--info ibmdocs-note cds--inline-notification cds--inline-notification--low-contrast margin-top-1 margin-bottom-1"><div class="cds--inline-notification__details"><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" class="cds--inline-notification__icon" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M16,2A14,14,0,1,0,30,16,14,14,0,0,0,16,2Zm0,5a1.5,1.5,0,1,1-1.5,1.5A1.5,1.5,0,0,1,16,7Zm4,17.12H12V21.88h2.88V15.12H13V12.88h4.13v9H20Z"></path></svg>
+        <div class="cds--inline-notification__text-wrapper">
+          <div class="cds--inline-notification__subtitle"><span class="notetitle ibm-bold ibm-textcolor-blue-50 background-blue cds--inline-notification__title ibm-padding-top-1 ibm-padding-bottom-1 padding-left-1 padding-right-1">注:</span> 開始桁および長さの値は両方とも正の整数値でなければならず、定義する
+サブストリングは、SST キーワードで指定したフィールドの長さより大きくすることは
+できません。</div>
+        </div>
+      </div></div>
+</div>
+<div class="p">この場合には次の規則が適用されます。<ul class="ul cds--list--unordered"><li class="li cds--list__item">SST キーワードのフィールドが 2 進文字である場合、
+結果のフィールドも 2 進文字であり、SST キーワードのフィールドが 16 進数である場合は、
+結果のフィールドも 16 進数です。また、SST キーワードのフィールドが DBCS グラフィックである場合は、
+結果のフィールドも DBCS グラフィックです。それ以外の場合、結果のフィールドは必ず文字フィールドです。
+DDS にデータ・タイプが指定されていないと、
+結果のフィールドのデータ・タイプは、次の表に示すサブストリング化されたフィールドによって決まります
+(<em class="ph i">ソース・フィールド・タイプ</em> は、
+物理ファイル・フィールド、または前に論理ファイル・ソースで定義された論理ファイル・フィールドのタイプです)。
+<div class="tablenoborder"><div class="cds--data-table-container"><table cellpadding="4" cellspacing="0" class="table cds--data-table" rules="all" frame="border" border="1"><thead class="thead alignleft"><tr class="row"><th scope="col" class="entry valigntop" id="d40206e68"><div class="cds--table-header-label">ソース・フィールド・タイプ</div></th>
+<th scope="col" class="entry valigntop" id="d40206e70"><div class="cds--table-header-label">結果の論理ファイル・フィールド</div></th>
+</tr>
+</thead>
+<tbody class="tbody"><tr class="row"><td class="entry valigntop" headers="d40206e68 ">A</td>
+<td class="entry valigntop" headers="d40206e70 ">A</td>
+</tr>
+<tr class="row"><td class="entry valigntop" headers="d40206e68 ">H</td>
+<td class="entry valigntop" headers="d40206e70 ">H</td>
+</tr>
+<tr class="row"><td class="entry valigntop" headers="d40206e68 ">S</td>
+<td class="entry valigntop" headers="d40206e70 ">A</td>
+</tr>
+<tr class="row"><td class="entry valigntop" headers="d40206e68 ">G</td>
+<td class="entry valigntop" headers="d40206e70 ">G</td>
+</tr>
+<tr class="row"><td class="entry valigntop" headers="d40206e68 ">2 進文字</td>
+<td class="entry valigntop" headers="d40206e70 ">2 進文字</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+</li>
+<li class="li cds--list__item">結果のフィールドの使用目的は、入力専用 (I) または非入出力 (N) の
+いずれかでなければなりません。</li>
+<li class="li cds--list__item">結果のフィールドの長さはオプショナルです。
+フィールドの長さか、キーワードの length パラメーターのいずれかを
+指定しなければなりません。両方を
+指定する場合には、両方が等しい値でなければなりません。フィールドの長さを
+指定しなかった場合には、キーワードの length パラメーターの
+値が割り当てられます。</li>
+<li class="li cds--list__item">SST キーワードは、CONCAT、RENAME、または TRNTBL キーワードと
+同時に、同じフィールドに対して指定することはできません。</li>
+<li class="li cds--list__item">このキーワードに指定したフィールドを、CONCAT、TRNTBL、または SST キーワードを使用して定義することはできません。</li>
+</ul>
+</div>
+</div>
+<div class="example"><h2 class="title sectiontitle">例</h2><p class="p">次の例は、結合論理ファイルでの SST キーワードの
+指定方法を示します。</p>
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code>|...+....1....+....2....+....3....+....4....+....5....+....6....+....7....+....8
+     A          R RECORD1                   JFILE(PF1 PF2)
+     A          J                           JOIN(1 2)
+     A                                      JFELD(CITY CITY)
+     A            ADDRESS                   JREF(2)
+     A            CITY               I      SST(ADDRESS 21 10)
+     A                                      JREF(2)
+     A            SYEAR              I      SST(SALESDATE 5)
+     A            NAME                      JREF(1)
+     A            CUSTNAME           I      SST(NAME 11 10) JREF(2)
+     A          K SYEAR
+     A</code></pre></div><div class="docs--copy-btn"></div></div>
+<div class="p">この例には、下記のことが示されています。<ul class="ul cds--list--unordered"><li class="li cds--list__item">CITY は、論理ファイル様式のフィールド ADDRESS のサブストリングであり、PF1 の CITY と結合されます。</li>
+<li class="li cds--list__item">CUSTNAME は、論理ファイル様式のフィールド NAME に別の JREF が指定されているため、PF2 のフィールド NAME のサブストリングです。</li>
+<li class="li cds--list__item">SYEAR は、キー・フィールドであり、固有のフィールド名 SALESDATE が PF1 の中に
+存在していなければなりません。</li>
+<li class="li cds--list__item">SST キーワードを指定したフィールドの使用目的 (38 桁目) は、I (入力専用) でなければなりません。
+これは、結合論理ファイルであるため、使用目的のデフォルト値は I です。</li>
+</ul>
+</div>
+</div>
+<div class="example"><p class="p">次の例は、単一または複数様式論理ファイルの場合の SST キーワードの指定方法を
+示します。</p>
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code>|...+....1....+....2....+....3....+....4....+....5....+....6....+....7....+....8
+     A          R REC1                      PFILE(PFA)
+     A            LASTNAME           I      SST(NAME 10 10)
+     A          K LASTNAME
+     A</code></pre></div><div class="docs--copy-btn"></div></div>
+<p class="p">この例では、LASTNAME フィールドは PFA の NAME のサブストリングです。
+単一様式論理ファイルまたは複数様式論理ファイルの SST フィールドには、38 桁目に使用目的 I を指定しなければなりません。</p>
+</div>
+</div>
+<div class="related-links ibm-padding-top-1 ibm-padding-bottom-2 bx--row bottom-section-parent" aria-label="bottom related links">
+<div class="familylinks ibm-margin-bottom-1">
+<div class="parentlink"><strong>親トピック:</strong> <div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a class="link bottom-section-link" href="/docs/ja/ssw_ibm_i_74/rzakb/rzakbmstlfkeyw.htm" title="キーワード項目は、45 から 80 桁目 (機能欄) に記入します。">物理ファイルおよび論理ファイルのキーワード項目 (45 から 80 桁目)</a></div></div>
+</div>
+<div class="relinfo relref ibm-margin-bottom-1"><strong>関連資料</strong>:<br>
+<div><div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a class="link bottom-section-link" href="/docs/ja/ssw_ibm_i_74/rzakb/lleng.htm" title="この欄は、物理ファイル・フィールドまたは論理ファイル・フィールドの長さを指定するのに使用します。">物理ファイルおよび論理ファイルの長さ (30 から 34 桁目)</a></div></div>
+</div>
+</div>
+

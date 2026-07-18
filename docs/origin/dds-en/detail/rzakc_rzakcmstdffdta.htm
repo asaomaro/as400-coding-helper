@@ -1,0 +1,86 @@
+<main role="main"><article role="article" aria-labelledby="rzakcmstdffdta__title__1">
+<h1 class="topictitle1" id="rzakcmstdffdta__title__1">FRCDTA (Force Data) keyword for display files</h1><div id="lastModifiedDate"><span>Last Updated</span>: 2026-07-13</div>
+
+
+
+<div class="body refbody"><p class="shortdesc"><span class="ph">You use this record-level keyword to display
+a record format immediately, without waiting for the next input or input/output
+operation. When the buffer is partially full, the FRCDTA keyword can be used
+to clear the buffer.</span></p>
+
+<div class="section">  <div class="note border-2 cds--inline-notification--info ibmdocs-note cds--inline-notification cds--inline-notification--low-contrast margin-top-1 margin-bottom-1"><div class="cds--inline-notification__details"><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" class="cds--inline-notification__icon" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M16,2A14,14,0,1,0,30,16,14,14,0,0,0,16,2Zm0,5a1.5,1.5,0,1,1-1.5,1.5A1.5,1.5,0,0,1,16,7Zm4,17.12H12V21.88h2.88V15.12H13V12.88h4.13v9H20Z"></path></svg>
+        <div class="cds--inline-notification__text-wrapper">
+          <div class="cds--inline-notification__subtitle"><span class="notetitle ibm-bold ibm-textcolor-blue-50 background-blue cds--inline-notification__title ibm-padding-top-1 ibm-padding-bottom-1 padding-left-1 padding-right-1">Note:</span> If this keyword is used after each write statement, performance
+problems will occur.</div>
+        </div>
+      </div></div>
+<p>This keyword has no parameters.</p>
+<p>When this keyword is in effect for
+a record format, the record format is displayed as if you had specified DFRWRT(*NO)
+on the Create Display File (CRTDSPF) command or the Change Display File (CHGDSPF)
+command.</p>
+<p>You can use this keyword when DFRWRT(*YES)
+is in effect for the display file and when your program does several output
+operations before doing an input operation. With DFRWRT(*YES) specified, none
+of the record formats is displayed until the input operation. There might
+be a long delay for the workstation user while the program completes its processing.
+You can specify FRCDTA for a record format that is displayed first. This record
+format tells the workstation user that the delay is normal. For a step-by-step
+description, see the following example.</p>
+<p>The FRCDTA keyword
+can be specified once for each record format.</p>
+<p>Option indicators are
+valid for this keyword.</p>
+</div>
+
+<div class="example"><h2 class="sectiontitle" id="rzakcmstdffdta__title__2">Example</h2> <p>The following example shows how to specify
+the FRCDTA keyword.</p>
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>|...+....1....+....2....+....3....+....4....+....5....+....6....+....7....+....8
+00010A* Following record format displays in progress message
+00020A          R INPROG                    LOCK
+00030A                                      FRCDTA
+00040A                                 12 21'Please wait; +
+00050A                                      operations in progress'
+     A
+00060A* Following record format uses upper part of screen
+00070A          R RCD1                      OVERLAY
+00080A                                  1 34'Sample Title'
+00090A            FLD1           8  0   3  2
+00100A            FLD2          20      4  2
+     A
+00110A* Following record format uses middle part of screen
+00120A          R RCD2                      OVERLAY
+00120A            FLDA           8     11  2
+00140A            FLDB          18     12  2
+     A
+00150A* Following record format uses lower part of screen
+00160A          R RCD3                      OVERLAY
+00170A            FLDC           8   B 15  2
+00180A            FLDD           8   B 16  2
+     A</code></pre></div><div class="docs--copy-btn"></div></div><p>Three record formats (RCD1, RCD2, and
+RCD3) are used to create a single display; each of these record formats uses
+only a part of the display. Record format INPROG prepares the workstation
+user for the delay while the other three record formats are prepared. The
+program does the following operations:</p>
+<ul class="cds--list--unordered">
+<li class="cds--list__item">Displays record format INPROG. With FRCDTA specified, this displays the
+in-progress notice immediately. The keyboard remains locked because the LOCK
+keyword is specified.</li>
+
+<li class="cds--list__item">Continues processing to prepare the other three record formats (RCD1,
+RCD2, and RCD3), then displays them. Because they overlap record format INPROG,
+it is erased.</li>
+
+<li class="cds--list__item">Reads record format RCD3. This unlocks the keyboard and the workstation
+user can respond to the complete display.</li>
+
+</ul>
+</div>
+
+</div>
+
+<aside role="complementary" aria-labelledby="rzakcmstdffdta__title__1"><nav role="navigation" aria-label="bottom related links" class="ibm-padding-top-1 ibm-padding-bottom-2 bx--row bottom-section-parent">
+<div class="familylinks ibm-margin-bottom-1">
+<div class="parentlink"><strong>Parent topic:</strong> <div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a data-hd-product="ssw_ibm_i_74" href="/docs/en/ssw_ibm_i_74/rzakc/rzakcmstkeyent.htm" title="You type the keyword entries that define display files in positions 45 through 80 (functions)." class="bottom-section-link">DDS keyword entries for display files (positions 45 through 80)</a></div></div>
+</div>
+</nav></aside></article></main>

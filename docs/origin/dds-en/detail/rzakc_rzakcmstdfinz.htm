@@ -1,0 +1,194 @@
+<main role="main"><article role="article" aria-labelledby="rzakcmstdfinz__title__1">
+<h1 class="topictitle1" id="rzakcmstdfinz__title__1">INZINP (Initialize Input) keyword for display files</h1><div id="lastModifiedDate"><span>Last Updated</span>: 2026-07-13</div>
+
+
+<div class="body conbody"><p class="shortdesc"><span class="ph">You use this record-level keyword
+to initialize input/output fields without necessarily sending the initialized
+data to the display when the PUTOVR and ERASEINP(*ALL) keywords are both in
+effect.</span></p>
+
+<p>This keyword has no parameters.</p>
+
+<p>INZINP is particularly useful for applications that perform data entry
+from remote workstations. It can reduce line traffic between the system unit
+and the remote workstation.</p>
+
+<p>The following steps describe how this keyword is used:</p>
+
+<ol class="cds--list--ordered--temporary">
+<li class="cds--list__item">An output operation displays an input/output field for which the OVRDTA
+or OVRATR keyword is in effect. The system initializes the input save area
+to the program value of the field. For example, if the program sets NAME1
+to the name Bob, the input save area contains the name Bob.</li>
+
+<li class="cds--list__item">An input operation places data from the workstation in an input buffer.
+If the workstation user did not key into the input-capable field and the DSPATR(MDT)
+keyword is not in effect for the field, the field does not return data from
+the workstation. The system retrieves data from the input save area and places
+it in the input buffer for use by the program. Thus, all input-capable fields
+have data in the input buffer, either from the workstation or from the input
+save area.</li>
+
+<li class="cds--list__item">On another output operation, the following cases might occur:<ul class="cds--list--unordered cds--list--nested">
+<li class="cds--list__item">If the INZINP and OVRDTA keywords are not in effect, the
+input save area is unchanged, even if the program changed the field value.
+For example, if the program changes the field value to the name Tom, the input
+save area will still have either the value entered by the workstation user
+or the name Bob, the earlier program value.</li>
+
+<li class="cds--list__item">If INZINP is in effect, the input save area will have the
+current program value. The current program value is sent to the display for
+fields for which the OVRDTA keyword is in effect. <p>If the OVRDTA keyword
+is not in effect on an output operation, the program must clear the output
+buffer for the fields with the OVRDTA keyword specified to ensure that the
+input save area matches the fields on the display (which are all blanks after
+the output operation).</p>
+</li>
+
+</ul>
+</li>
+
+</ol>
+
+<div class="note border-2 cds--inline-notification--info ibmdocs-note cds--inline-notification cds--inline-notification--low-contrast margin-top-1 margin-bottom-1"><div class="cds--inline-notification__details"><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" class="cds--inline-notification__icon" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M16,2A14,14,0,1,0,30,16,14,14,0,0,0,16,2Zm0,5a1.5,1.5,0,1,1-1.5,1.5A1.5,1.5,0,0,1,16,7Zm4,17.12H12V21.88h2.88V15.12H13V12.88h4.13v9H20Z"></path></svg>
+        <div class="cds--inline-notification__text-wrapper">
+          <div class="cds--inline-notification__subtitle"><span class="notetitle ibm-bold ibm-textcolor-blue-50 background-blue cds--inline-notification__title ibm-padding-top-1 ibm-padding-bottom-1 padding-left-1 padding-right-1">Note:</span> If the ERASEINP(*ALL) keyword is in effect for the output operation,
+input-capable fields are cleared at the display device (on the display), but
+the input save area is not cleared. For the contents of the input save area,
+see <a href="#rzakcmstdfinz__exoutin">Table 1</a> and <a href="#rzakcmstdfinz__exinout">Table 2</a>.
+Fields with the DFT keyword specified are initialized with the value specified
+for the DFT keyword even if the fields are not selected for display. The values
+are maintained unless the application program selects the fields for display,
+then changes their data values. This keyword requires the PUTOVR, OVERLAY,
+and ERASEINP(*ALL) keywords to be specified at the record level.</div>
+        </div>
+      </div></div>
+
+<p>The following tables show the effect of the ERASEINP(*ALL)
+and PUTOVR keywords with and without the INZINP, OVRATR or OVRDTA keywords.</p>
+
+
+<hr>
+<div class="tablenoborder"><div class="cds--data-table-container"><table summary="" id="rzakcmstdfinz__exoutin" class="defaultstyle cds--data-table"><caption class="cds--data-table-header"><span class="tablecap cds--data-table-header__title">Table 1. INZINP Input/output fields</span></caption><colgroup><col><col><col></colgroup><thead>
+<tr>
+<th id="rzakcmstdfinz__exoutin__entry__1" class="nrule thleft thbot"><div class="cds--table-header-label">OVRATR or OVRDTA keyword</div></th>
+
+<th id="rzakcmstdfinz__exoutin__entry__2" class="nrule thleft thbot"><div class="cds--table-header-label">INZINP keyword</div></th>
+
+<th id="rzakcmstdfinz__exoutin__entry__3" class="nrule thleft thbot"><div class="cds--table-header-label">Contents of input save area</div></th>
+
+</tr>
+
+</thead>
+<tbody>
+<tr>
+<td headers="rzakcmstdfinz__exoutin__entry__1 " class="nrule tdleft">Not specified</td>
+
+<td headers="rzakcmstdfinz__exoutin__entry__2 " class="nrule tdleft">Does not apply</td>
+
+<td headers="rzakcmstdfinz__exoutin__entry__3 " class="nrule tdleft">Previous contents</td>
+
+</tr>
+
+<tr>
+<td headers="rzakcmstdfinz__exoutin__entry__1 " class="nrule tdleft">Specified but not in effect</td>
+
+<td headers="rzakcmstdfinz__exoutin__entry__2 " class="nrule tdleft">Specified but not in effect</td>
+
+<td headers="rzakcmstdfinz__exoutin__entry__3 " class="nrule tdleft">Previous contents</td>
+
+</tr>
+
+<tr>
+<td headers="rzakcmstdfinz__exoutin__entry__1 " class="nrule tdleft">Specified but not in effect</td>
+
+<td headers="rzakcmstdfinz__exoutin__entry__2 " class="nrule tdleft">Specified and in effect</td>
+
+<td headers="rzakcmstdfinz__exoutin__entry__3 " class="nrule tdleft">Program value (not sent to display)</td>
+
+</tr>
+
+<tr>
+<td headers="rzakcmstdfinz__exoutin__entry__1 " class="nrule tdleft">OVRATR specified and in effect</td>
+
+<td headers="rzakcmstdfinz__exoutin__entry__2 " class="nrule tdleft">Does not apply</td>
+
+<td headers="rzakcmstdfinz__exoutin__entry__3 " class="nrule tdleft">Program value (also sent to display)</td>
+
+</tr>
+
+<tr>
+<td headers="rzakcmstdfinz__exoutin__entry__1 " class="nrule tdleft">OVRATR specified and in effect; OVRDTA not
+specified or not in effect</td>
+
+<td headers="rzakcmstdfinz__exoutin__entry__2 " class="nrule tdleft">Does not apply</td>
+
+<td headers="rzakcmstdfinz__exoutin__entry__3 " class="nrule tdleft">Previous contents (not sent to display)</td>
+
+</tr>
+
+</tbody>
+</table></div></div>
+<hr>
+
+
+
+<hr>
+<div class="tablenoborder"><div class="cds--data-table-container"><table summary="" id="rzakcmstdfinz__exinout" class="defaultstyle cds--data-table"><caption class="cds--data-table-header"><span class="tablecap cds--data-table-header__title">Table 2. INZINP input-only fields</span></caption><colgroup><col><col><col></colgroup><thead>
+<tr>
+<th id="rzakcmstdfinz__exinout__entry__1" class="nrule thleft thbot"><div class="cds--table-header-label">OVRATR keyword</div></th>
+
+<th id="rzakcmstdfinz__exinout__entry__2" class="nrule thleft thbot"><div class="cds--table-header-label">INZINP keyword</div></th>
+
+<th id="rzakcmstdfinz__exinout__entry__3" class="nrule thleft thbot"><div class="cds--table-header-label">Contents of input save area</div></th>
+
+</tr>
+
+</thead>
+<tbody>
+<tr>
+<td headers="rzakcmstdfinz__exinout__entry__1 " class="nrule tdleft">Not specified</td>
+
+<td headers="rzakcmstdfinz__exinout__entry__2 " class="nrule tdleft">Does not apply</td>
+
+<td headers="rzakcmstdfinz__exinout__entry__3 " class="nrule tdleft">Previous contents</td>
+
+</tr>
+
+<tr>
+<td headers="rzakcmstdfinz__exinout__entry__1 " class="nrule tdleft">Specified and in effect</td>
+
+<td headers="rzakcmstdfinz__exinout__entry__2 " class="nrule tdleft">Does not apply</td>
+
+<td headers="rzakcmstdfinz__exinout__entry__3 " class="nrule tdleft">Previous contents</td>
+
+</tr>
+
+<tr>
+<td headers="rzakcmstdfinz__exinout__entry__1 " class="nrule tdleft">Specified but not in effect</td>
+
+<td headers="rzakcmstdfinz__exinout__entry__2 " class="nrule tdleft">Does not apply</td>
+
+<td headers="rzakcmstdfinz__exinout__entry__3 " class="nrule tdleft"><div class="lines">Character fields: blanks <br>
+Numeric fields: zeros</div>
+</td>
+
+</tr>
+
+</tbody>
+</table></div></div>
+<hr>
+
+
+</div>
+
+<aside role="complementary" aria-labelledby="rzakcmstdfinz__title__1"><nav role="navigation" aria-label="bottom related links" class="ibm-padding-top-1 ibm-padding-bottom-2 bx--row bottom-section-parent">
+<ul class="ullinks cds--list--unordered">
+<li class="ulchildlink cds--list__item" data-hd-product="ssw_ibm_i_74"><strong><a href="/docs/en/ssw_ibm_i_74/rzakc/rzakcmstdfinzeraseinp.htm">ERASEINP(*ALL) keyword</a></strong><br>
+<span class="ph">You can set the input save area to blanks and zeros to match the fields cleared at the workstation by the ERASEINP(*ALL) keyword.</span></li>
+</ul>
+
+<div class="familylinks ibm-margin-bottom-1">
+<div class="parentlink"><strong>Parent topic:</strong> <div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a data-hd-product="ssw_ibm_i_74" href="/docs/en/ssw_ibm_i_74/rzakc/rzakcmstkeyent.htm" title="You type the keyword entries that define display files in positions 45 through 80 (functions)." class="bottom-section-link">DDS keyword entries for display files (positions 45 through 80)</a></div></div>
+</div>
+</nav></aside></article></main>

@@ -1,0 +1,89 @@
+<h1 class="title topictitle1">表示装置ファイルの MSGID (メッセージ識別コード) キーワード</h1><div id="lastModifiedDate"><span>Last Updated</span>: 2021-04-13</div>
+<div class="body refbody"><p class="shortdesc">これはフィールド・レベル・キーワードで、アプリケーション・プログラムが、その実行時に、名前付きのフィールド用のテキストが入っているメッセージ記述を識別できるようにするために使用します。</p>
+<div class="section"><p class="p">このキーワードのパラメーター値には、メッセージ識別コード、メッセージ・ファイル、およびライブラリーが入っているフィールドを指定します。プログラムがフィールドを所定の値にセットすると、出力命令に基づいてメッセージがメッセージ・ファイルから取り出され、画面に表示されます。
+取り出されたメッセージは、MSGID フィールドよりも長い場合には切り捨てられます。
+MSGID フィールドよりも短い場合には、ブランクで埋め込まれます。</p>
+<p class="p">システム/36
+環境で使用するファイルに MSGID キーワードを指定する方法については、<a class="xref" href="/docs/ja/ssw_ibm_i_74/rzakc/s36env.htm" title="ユーザー画面管理 (USRDSPMGT) キーワードを指定すると、その表示装置ファイルのレコード様式がシステム/36 SFGR 画面様式と同じ働きをします。">表示装置ファイルのシステム/36 環境に関する考慮事項</a>を参照してください。</p>
+<div class="p">キーワードの形式は次のとおりです。<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code>MSGID(message-identifier [library-name/]message-file)
+または
+MSGID(*NONE)</code></pre></div><div class="docs--copy-btn"></div></div>
+</div>
+<div class="p">message-identifier パラメーターは、名前付きのフィールド用のテキストが入っているメッセージ記述を示します。このパラメーターは、次のいずれかの形式で指定することができます。<ul class="ul cds--list--unordered"><li class="li cds--list__item"><samp class="ph codeph">[msg-prefix] &amp;field-name</samp>  <p class="p">メッセージ接頭部およびフィールド名。フィールド名は、MSGID フィールドと同じレコード様式の中に入っていなければなりません。
+接頭部を指定する場合には、接頭部の桁数は 3 にしなければなりません。また、フィールド名は、桁数が 4 で、使用目的が H、P、B、または O の文字フィールドとして定義しなければなりません。接頭部を指定しない場合には、フィールド名は、桁数が 7 で、使用目的が H、P、B、または O の文字フィールドとして定義する必要があります。</p>
+</li>
+<li class="li cds--list__item"><samp class="ph codeph">[msgid-prefix] msg-id</samp>  <p class="p">単一の値、または複数の組み合わせを用いて、メッセージ識別コードを指定することもできます。
+接頭部を指定する場合には、接頭部の桁数は 3 で、メッセージ識別コードの桁数は 4 でなければなりません。接頭部を指定しない場合には、メッセージ識別コードの桁数は 7 でなければなりません。</p>
+</li>
+</ul>
+</div>
+<p class="p">message-identifier は必須パラメーターです。</p>
+<div class="p">message-file および library-name パラメーターは、メッセージ記述が入っているメッセージ・ファイルを識別するためのものです。これらは、次のいずれかの形式で指定できます。<ul class="ul cds--list--unordered"><li class="li cds--list__item"><samp class="ph codeph">[library-name/]file-name</samp></li>
+<li class="li cds--list__item"><samp class="ph codeph">[&amp;field1/]&amp;field2</samp>  <p class="p">field1 および field2 の桁数は、それぞれ 10 です。</p>
+<p class="p">フィールド名は、MSGID フィールドと同じレコード様式内に入っていなければならず、また、フィールドは、桁数が 10 で、使用目的が H、P、B、または O の文字フィールドとして定義されていなければなりません。</p>
+</li>
+<li class="li cds--list__item">フィールド名と固定情報の組み合わせ
+<ul class="ul cds--list--unordered cds--list--nested"><li class="li cds--list__item"><samp class="ph codeph">library-name/&amp;field1</samp>  (field1 の桁数は 10)</li>
+<li class="li cds--list__item"><samp class="ph codeph">&amp;field2/file-name</samp>     (field2 の桁数は 10)</li>
+</ul>
+</li>
+</ul>
+</div>
+<p class="p">message-file は必須パラメーターです。
+ライブラリー・パラメーターを指定しなかった場合には、*LIBL がプログラム実行時のメッセージ・ファイルの探索に使用されます。library-name はオプションのパラメーターです。</p>
+<p class="p">*NONE パラメーターは、メッセージ・テキストが表示されないことを示します。</p>
+<p class="p">ユーザーあるいはプログラムは、OVRMSGF コマンドを使用して、メッセージ・ファイル名を一時変更することができます。</p>
+<p class="p">1 つのフィールドに対して複数の MSGID キーワードを指定することができます。
+複数の MSGID キーワードを指定する場合は、該当のフィールドに対する最後を除くすべての MSGID キーワードでオプション標識が必要です。
+1 つのフィールドに対して指定する最後の (または唯一の) MSGID キーワードには、オプション標識は使用できません。
+同じフィールドに対して複数の MSGID キーワードが効力をもつ場合には、最初に指定した MSGID が使用されます。</p>
+<p class="p">1 つのレコード様式には、複数の MSGID キーワードを指定することができます。
+パラメーターとして使用するフィールド名は、複数の MSGID キーワードに指定することができます。</p>
+<p class="p">ユーザーは、プログラムの実行時に該当のメッセージ・ファイルの使用権限を持っている必要があります。</p>
+<p class="p">MSGID を指定するフィールドは、出力可能フィールド (使用目的 B または O) でなければなりません。
+指定するフィールドの桁数は、画面に表示されるメッセージ・テキストの桁数です。この桁数は、表示される最も長いメッセージの桁数でなければなりません。</p>
+<p class="p">MSGID を指定するフィールド自体は出力バッファーには入りません。ただし、入出力共用 (使用目的 B) として定義されていれば、入力バッファーに入ります。
+出力専用として定義されている MSGID フィールドは、高水準言語プログラムでは使用できません。</p>
+<p class="p">MSGID のパラメーターのフィールド (存在する場合) は出力バッファーには現れますが、入力バッファーに現れるのは潜在または入出力共用 (使用目的 H または B) として定義されている場合だけです。</p>
+<p class="p">プログラム - システム間フィールドは、メッセージ識別コード、ファイル名、またはライブラリー名として指定することができます。</p>
+<p class="p">MSGID は、サブファイル・レコード様式 (SFL キーワード) に指定することはできません。</p>
+<p class="p">下記のキーワードは、MSGID キーワードの指定されているフィールドに指定することはできません。</p>
+<p class="lines">DFT<br>
+DFTVAL<br>
+FLTFIXDEC<br>
+FLTPCN<br>
+MSGCON</p>
+</div>
+<div class="example"><h2 class="title sectiontitle">例</h2><p class="p">次の例は、MSGID キーワードの指定方法を示しています。</p>
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code>|...+....1....+....2....+....3....+....4....+....5....+....6....+....7....+....8
+     A          R RECORD1
+     A            MSGFIELD1     40A  B 02 10MSGID(CPD0001 QGPL/USRMSG)
+     A  01        MSGFIELD2     10A  O 02 60
+     A  25                                  MSGID(&amp;MSGIDNUM &amp;MSGFILENM);
+     A                                      MSGID(CPD1234 QGPL/USRMSG)
+     A            MSGFIELD3     80A  B 02 60
+     A                                      MSGID(USR &amp;MSGNBR +
+     A                                      QGPL/&amp;MSGGILENM);
+     A            MSGIDNUM       7A  P
+     A            MSGFILENM     10A  H
+     A            MSGNBR         4A  B 07 01
+     A</code></pre></div><div class="docs--copy-btn"></div></div>
+<div class="p">この例では、RECORD1 の表示時点で次のようになります。<ul class="ul cds--list--unordered"><li class="li cds--list__item">MSGFIELD1 には、ライブラリー QGPL のメッセージ・ファイル USRMSG にあるメッセージ CPD0001 の最初の 40 文字が入れられます。 このフィールドは、入出力共用フィールド (使用目的 B) なので、ユーザーは、フィールドの値を変更することができます。</li>
+<li class="li cds--list__item">オプション標識 01 がオフの場合、MSGFIELD2 は表示されません。
+オプション標識 01 と 25 がオンの場合、MSGFIELD2 には、フィールド MSGIDNUM および MSGFILENM で識別されるメッセージの最初の 10 文字が入れられます。
+MSGIDNUM (メッセージ識別コード) の値および MSGFILENM (メッセージ・ファイル) の値は、RECORD1 の表示前に、プログラムで設定されていなければなりません。<p class="p">オプション標識 01 がオンで、オプション標識 25 がオフの場合には、ライブラリー QGPL のメッセージ・ファイル USRMSG からのメッセージ CPD1234 の最初の 10 文字が、MSGFIELD2 に入ります。MSGFIELD2 は、出力専用フィールド (使用目的 O) なので、プログラムでは使用できません。</p>
+</li>
+<li class="li cds--list__item">MSGFIELD3 には、接頭語 USR、フィールド MSGNBR に設定されたメッセージ番号、およびフィールド MSGFILENM に設定されたメッセージ・ファイルによって識別されるメッセージの最初の 80 文字が入れられます。</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="related-links ibm-padding-top-1 ibm-padding-bottom-2 bx--row bottom-section-parent" aria-label="bottom related links">
+<div class="familylinks ibm-margin-bottom-1">
+<div class="parentlink"><strong>親トピック:</strong> <div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a class="link bottom-section-link" href="/docs/ja/ssw_ibm_i_74/rzakc/rzakcmstkeyent.htm" title="表示装置ファイルを定義するキーワード項目は、45 - 80 桁目 (機能欄) に記入します。">表示装置ファイルの DDS キーワード項目 (45 - 80 桁目)</a></div></div>
+</div>
+<div class="relinfo relref ibm-margin-bottom-1"><strong>関連資料</strong>:<br>
+<div><div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a class="link bottom-section-link" href="/docs/ja/ssw_ibm_i_74/rzakc/msfidf.htm" title="これはフィールド・レベル・キーワードで、アプリケーション・プログラムが、その実行時に、名前付きのフィールド用のテキストが入っているメッセージ記述を識別できるようにするために使用します。">MSGID キーワード</a></div></div>
+</div>
+</div>
+

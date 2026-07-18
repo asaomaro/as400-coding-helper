@@ -1,0 +1,235 @@
+<main role="main"><article role="article" aria-labelledby="dtdynsl__title__1">
+<h1 class="topictitle1" id="dtdynsl__title__1">DYNSLT (Dynamic Select) keyword—logical files only</h1><div id="lastModifiedDate"><span>Last Updated</span>: 2026-07-13</div>
+
+
+
+<div class="body refbody"><p class="shortdesc">You can use this file-level keyword to indicate that
+the selection and omission tests specified in the file (using select/omit
+specifications) are done at processing time.</p>
+
+<div class="section"><p>This keyword specifies dynamic select/omit rather than access
+path select/omit. This keyword has no parameters.</p>
+<p>When your program
+does input operations to a logical file with the DYNSLT keyword specified,
+all the records in the associated physical file are tested by the system to
+see if they satisfy the select/omit values. Only those records that satisfy
+the values are supplied to your program. The testing of each record can result
+in slower I/O performance, but can be more efficient than maintaining an access
+path for the file. This is particularly likely for files read only occasionally,
+especially when the physical files they are based on are updated frequently.
+Using dynamic select/omit is probably also more efficient for files with a
+high percentage of selected records.</p>
+<p>In keyed sequence access files, an access path is
+created at file creation time and is maintained for the file according to
+the MAINT parameter on the Create Logical File (CRTLF) or Change Logical File
+(CHGLF) command. The DYNSLT keyword does not affect the maintenance of access
+paths for keyed sequence access files.</p>
+<p>For all single-format logical
+files with a DYNSLT keyword, you do not need to specify key fields in order
+to specify select/omit fields. However, for all multiple-format logical files
+with a DYNSLT keyword, you do need to specify at least one key field. You
+can specify *NONE for this key field.</p>
+<div class="p">You must use the
+DYNSLT keyword when you want to select or omit fields and any of the following
+situations are true:  <ul class="cds--list--unordered">
+<li class="cds--list__item">The logical file has arrival sequence (no key fields are specified). See
+example 1 in this topic.</li>
+
+<li class="cds--list__item">The logical file is a join logical file with the JDFTVAL keyword specified.</li>
+
+<li class="cds--list__item">The logical file is a join logical file, select/omit fields come from
+more than one of the physical files the logical file is based on, and one
+of the following conditions is true:  <ul class="cds--list--unordered cds--list--nested">
+<li class="cds--list__item">The select/omit fields are on the same select or omit statement. See example
+3 in this topic.</li>
+
+<li class="cds--list__item">The select/omit fields are on a mixture of select and omit statements.
+See example 4 in this topic.</li>
+
+<li class="cds--list__item">The select/omit fields are on select statements that are grouped together
+by OR.</li>
+
+<li class="cds--list__item">The select/omit fields are on omit statements that are grouped together
+by AND.</li>
+
+</ul>
+</li>
+
+</ul>
+</div>
+<p>You cannot specify the DYNSLT keyword with the REFACCPTH keyword.</p>
+<p>For
+a join logical file, the select/omit fields can occur in any of the physical
+files specified on the JFILE keyword. Use the JREF keyword in join logical
+files to qualify the origin of the field and resolve any ambiguities.</p>
+</div>
+
+<section class="section" role="region" aria-labelledby="dtdynsl__title__2"><h2 class="sectiontitle" id="dtdynsl__title__2">Examples</h2><p>The following examples show how to specify
+the DYNSLT keyword.</p>
+</section>
+
+<div class="example"><h2 class="sectiontitle" id="dtdynsl__title__3">Example 1</h2><p>The following example shows how to specify
+dynamic select with arrival sequence.</p>
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>|...+....1....+....2....+....3....+....4....+....5....+....6....+....7....+....8
+00010A                                      DYNSLT
+00020A          R RECORD1                   PFILE(PF1)
+00030A            FLD1
+00040A            FLD2
+00050A          S FLD1                      COMP(GT 2)</code></pre></div><div class="docs--copy-btn"></div></div><p>The DYNSLT
+keyword is required because there are no key fields.</p>
+<div class="p">The logical file
+supplies records to your program in arrival sequence. Assume that physical
+file PF1 has the following records:  <dl>
+
+<dt class="dthd"><strong>FLD1</strong></dt>
+<dd class="ddhd"><strong>FLD2</strong></dd>
+
+
+
+<dt class="dlterm">1</dt>
+
+<dd class="dlentry">aaaa</dd>
+
+
+<dt class="dlterm">2</dt>
+
+<dd class="dlentry">dddd</dd>
+
+
+<dt class="dlterm">3</dt>
+
+<dd class="dlentry">jjjj</dd>
+
+
+<dt class="dlterm">4</dt>
+
+<dd class="dlentry">bbbb</dd>
+
+</dl>
+</div>
+<div class="p">As your program does input operations, the system tests
+the first two records according to the select/omit values, but does not supply
+them to your program. Your program only sees the last two records:  <dl>
+
+<dt class="dthd"><strong>FLD1</strong></dt>
+<dd class="ddhd"><strong>FLD2</strong></dd>
+
+
+
+<dt class="dlterm">3</dt>
+
+<dd class="dlentry">jjjj</dd>
+
+
+<dt class="dlterm">4</dt>
+
+<dd class="dlentry">bbbb</dd>
+
+</dl>
+</div>
+</div>
+
+<div class="example"><h2 class="sectiontitle" id="dtdynsl__title__4">Example 2</h2><p>The following example shows how to specify
+dynamic select with keyed sequence access path.</p>
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>|...+....1....+....2....+....3....+....4....+....5....+....6....+....7....+....8
+00010A                                      DYNSLT
+00020A          R RECORD1                   PFILE(PF1)
+00030A            FLD1
+00040A            FLD2
+00050A          K FLD1
+00060A          S FLD2                      COMP(GT 'bbbb')
+     A</code></pre></div><div class="docs--copy-btn"></div></div><div class="p">In this example, the DYNSLT keyword is not required.
+The logical file supplies records to your program in keyed sequence. Assume
+that physical file PF1 has the following records:  <dl>
+
+<dt class="dthd"><strong>FLD1</strong></dt>
+<dd class="ddhd"><strong>FLD2</strong></dd>
+
+
+
+<dt class="dlterm">1</dt>
+
+<dd class="dlentry">aaaa</dd>
+
+
+<dt class="dlterm">2</dt>
+
+<dd class="dlentry">dddd</dd>
+
+
+<dt class="dlterm">3</dt>
+
+<dd class="dlentry">jjjj</dd>
+
+
+<dt class="dlterm">4</dt>
+
+<dd class="dlentry">bbbb</dd>
+
+</dl>
+</div>
+<div class="p">When your program requests a record, the system tests
+the value of FLD2 for that record according to the select/omit values. Your
+program only sees the following records:  <dl>
+
+<dt class="dthd"><strong>FLD1</strong></dt>
+<dd class="ddhd"><strong>FLD2</strong></dd>
+
+
+
+<dt class="dlterm">2</dt>
+
+<dd class="dlentry">dddd</dd>
+
+
+<dt class="dlterm">3</dt>
+
+<dd class="dlentry">jjjj</dd>
+
+</dl>
+</div>
+</div>
+
+<div class="example"><h2 class="sectiontitle" id="dtdynsl__title__5">Example 3</h2><p>The following example shows how to specify
+a join logical file with select/omit comparing fields from two physical files.</p>
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>|...+....1....+....2....+....3....+....4....+....5....+....6....+....7....+....8
+00010A                                      DYNSLT
+00020A          R RECORD1                   JFILE(PF1 PF2)
+00030A          J                           JFLD(FLD1 FLD3)
+00040A            FLD1                      JREF(PF1)
+00050A            FLD2                      JREF(PF1)
+00060A            FLD3                      JREF(PF2)
+00070A            FLD4                      JREF(PF2)
+00080A          S FLD1                      COMP(GT FLD4)
+     A</code></pre></div><div class="docs--copy-btn"></div></div><p>FLD1 and FLD2 come from the primary file (PF1), and FLD3
+and FLD4 come from the secondary file (PF2). The select specification compares
+FLD1 from the primary file with FLD4 from the secondary file. Therefore, the
+DYNSLT keyword is required.</p>
+</div>
+
+<div class="example"><h2 class="sectiontitle" id="dtdynsl__title__6">Example 4</h2><p>The following example shows how to specify
+a join logical file with select and omit using fields from more than one physical
+file.</p>
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>|...+....1....+....2....+....3....+....4....+....5....+....6....+....7....+....8
+00010A                                      DYNSLT
+00020A          R JREC                      JFILE(PF1 PF2)
+00030A          J                           JOIN(PF1 PF2)
+00040A                                      JFLD(FLD1 FLD2)
+00050A            FLD1                      JREF(PF1)
+00060A            FLD2                      JREF(PF1)
+00070A            FLD3                      JREF(PF2)
+00080A          K FLD1
+00090A          S FLD1                      COMP(GT 0)
+00100A          O FLD3                      COMP(GT 4)
+     A</code></pre></div><div class="docs--copy-btn"></div></div><p>FLD1 and FLD3 come from different physical files and
+are specified in a mixture of select and omit statements.  Therefore, the
+DYNSLT keyword is required.</p>
+</div>
+
+</div>
+
+<aside role="complementary" aria-labelledby="dtdynsl__title__1"><nav role="navigation" aria-label="bottom related links" class="ibm-padding-top-1 ibm-padding-bottom-2 bx--row bottom-section-parent">
+<div class="familylinks ibm-margin-bottom-1">
+<div class="parentlink"><strong>Parent topic:</strong> <div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a data-hd-product="ssw_i5_72" href="/docs/en/ssw_ibm_i_74/rzakb/rzakbmstlfkeyw.htm" title="Keyword entries are typed in positions 45 through 80 (functions)." class="bottom-section-link">Keyword entries for physical and logical files (positions 45 through 80)</a></div></div>
+</div>
+</nav></aside></article></main>

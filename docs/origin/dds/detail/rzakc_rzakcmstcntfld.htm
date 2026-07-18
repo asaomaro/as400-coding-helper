@@ -1,0 +1,49 @@
+<h1 class="title topictitle1">表示装置ファイルの CNTFLD (継続入力フィールド) キーワード</h1><div id="lastModifiedDate"><span>Last Updated</span>: 2021-04-13</div>
+<div class="body refbody"><p class="shortdesc">これはフィールド・レベル・キーワードで、フィールドを継続入力フィールドとして定義するために使用します。</p>
+<div class="section"><p class="p">継続入力フィールドは、フィールド・データの入力および編集時に、
+ワークステーション制御装置によって単一のフィールドとして扱われる、関連付けられた一連の入力フィールドです。
+表示装置が、非プログラマブル・ワークステーションに対して拡張インターフェースをサポートする制御装置に
+接続されていない場合には、継続入力フィールドの各セグメントは、フィールドに編集が行われるときは別々に扱われます。</p>
+<p class="p"><a class="xref" href="#rzakcmstcntfld__rec">図 1</a> は、長方形のテキスト入力フィールドを作成するための継続フィールドの使用例を示します。</p>
+</div>
+<div class="example"> <div class="fig fignone" id="rzakcmstcntfld__rec"><span class="figcap">図 1. 長方形配列の継続入力フィールド</span><div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code>Enter Text . . .  ________________________________________
+                  ________________________________________
+                  ________________________________________
+                  ________________________________________
+                  ________________________________________</code></pre></div><div class="docs--copy-btn"></div></div>
+</div>
+</div>
+<div class="section"><p class="p">ユーザーにとっては、複数の表示行にまたがる単一の入力フィールドよりもテキスト入力形式の方が便利です。最後の行が桁の幅全体に満たなくても、長方形の中にほかのフィールドが入ることはありません。
+継続入力フィールドを使用する場合は、ウィンドウの内側に複数行入力フィールドを定義することが可能になります。</p>
+<p class="p">キーワードの形式は次のとおりです。</p>
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code>CNTFLD(width of column)</code></pre></div><div class="docs--copy-btn"></div></div>
+<p class="p">パラメーターは、1 つは必ず指定しなければなりません。</p>
+<p class="p">width of column パラメーターは、この継続フィールドに使用される桁数を指定します。この値は、画面またはウィンドウの幅を超えてはなりません。
+この値は、フィールドの桁数よりも小さくなければなりません。</p>
+<p class="p">CNTFLD キーワードが入っているフィールドは、データ・タイプが A である入力可能フィールドとして定義しなければなりません。このフィールドをサブファイル内で定義することはできません。</p>
+<p class="p">CNTFLD キーワードを指定するフィールドでは、次のキーワードを指定することはできません。</p>
+<ul class="ul cds--list--unordered"><li class="li cds--list__item">AUTO (RAB、RAZ)</li>
+<li class="li cds--list__item">CHECK(AB、MF、RB、RZ、RLTB)</li>
+<li class="li cds--list__item">CHOICE</li>
+<li class="li cds--list__item">DSPATR(OID SP)</li>
+<li class="li cds--list__item">EDTMSK</li>
+</ul>
+<p class="p">CNTFLD キーワードを定義する際は、最低 2 つのスペースを使ってこのキーワードを他のキーワードと区分する必要があります。</p>
+<p class="p">オプション標識は、このキーワードでは無効です。</p>
+<p class="p">入力フィールドの最大数は 256 ですが、CNTFLD キーワードの使用はフィールド・カウントに影響を及ぼす可能性があります。CNTFLD フィールドの各セグメントは、実行時に、一部のエミュレーターまたは制御装置に関する個別の入力フィールドとして処理されます。
+一部の制御装置では、このフィールドの各セグメントが実際の入力フィールドとみなされ、各セグメントは最大 256 まで数えられます。ただし、一部のエミュレーターでは、CNTFLD フィールドが単一フィールドとして最大 256 まで数えられます。しかし、これらのエミュレーターは各セグメントを別個に追跡することがあります。最大 512 個のセグメントを許容できることで知られているエミュレーターもあります。したがって、エミュレーターと制御装置が同じ表示装置ファイルを使用するときは、エミュレーターが制御装置よりも多くの CNTFLD フィールドを許容することがあります。</p>
+<p class="p">このキーワードと DBCS データの併用については、<a class="xref" href="/docs/ja/ssw_ibm_i_74/rzakc/dbcscn.htm" title="これはフィールド・レベル・キーワードで、フィールドを継続入力フィールドとして定義するために使用します。">CNTFLD (継続入力フィールド) キーワード</a>を参照してください。</p>
+</div>
+<div class="example"><h2 class="title sectiontitle">例</h2><p class="p">次の例は、CNTFLD キーワードの指定方法を示しています。</p>
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code>|...+....1....+....2....+....3....+....4....+....5....+....6....+....7....+....8
+00010A          R RECORD
+00020A            F1            90A  B  3  4CNTFLD(30)</code></pre></div><div class="docs--copy-btn"></div></div>
+<p class="p">この例では、複数行入力フィールドが定義されています。入力フィールドは、3 行で、30 桁の幅です。</p>
+</div>
+</div>
+<div class="related-links ibm-padding-top-1 ibm-padding-bottom-2 bx--row bottom-section-parent" aria-label="bottom related links">
+<div class="familylinks ibm-margin-bottom-1">
+<div class="parentlink"><strong>親トピック:</strong> <div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a class="link bottom-section-link" href="/docs/ja/ssw_ibm_i_74/rzakc/rzakcmstkeyent.htm" title="表示装置ファイルを定義するキーワード項目は、45 - 80 桁目 (機能欄) に記入します。">表示装置ファイルの DDS キーワード項目 (45 - 80 桁目)</a></div></div>
+</div>
+</div>
+

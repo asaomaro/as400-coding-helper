@@ -1,0 +1,59 @@
+<h1 class="title topictitle1">表示装置ファイルの HLPRTN (ヘルプからの戻り) キーワード</h1><div id="lastModifiedDate"><span>Last Updated</span>: 2021-04-13</div>
+<div class="body refbody"><p class="shortdesc">これはファイル・レベルまたはレコード・レベル・キーワードで、Help キーを押した時点でユーザーのプログラムに制御権が戻るようにするために使用します。</p>
+<div class="section"><p class="p">HLPRTN が指定されていない場合には、Help キーを押すと、現在のカーソル位置に関連するオンライン・ヘルプ情報が表示されます。</p>
+<p class="p">システム/36 環境で使用するファイルに HLPRTN キーワードを指定する場合の特殊な考慮事項については、<a class="xref" href="/docs/ja/ssw_ibm_i_74/rzakc/s36env.htm" title="ユーザー画面管理 (USRDSPMGT) キーワードを指定すると、その表示装置ファイルのレコード様式がシステム/36 SFGR 画面様式と同じ働きをします。">表示装置ファイルのシステム/36 環境に関する考慮事項</a>を参照してください。</p>
+<div class="p">キーワードの形式は次のとおりです。<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code>HLPRTN[(response-indicator ['text'])]</code></pre></div><div class="docs--copy-btn"></div></div>
+</div>
+<p class="p">応答標識を指定すると、応答標識がオンにセットされ、ユーザーのプログラムに戻されます。
+そのキーを押しても表示装置からの入力データの転送は行われません。処理は、コマンド・アテンション・キーの場合と同じです。</p>
+<p class="p">任意指定のテキストは、標識の用途を示すために、プログラムのコンパイル時に作成されるリストに組み込まれます。
+このテキストは、ファイルまたはプログラムの中では、注釈以外の機能はもちません。単一引用符は必須です。
+単一引用符で囲んだテキストが 50 文字を超えていた場合には、
+プログラム式コンピューター印刷出力では 50 文字に切り捨てられます。</p>
+<p class="p">HLPRTN キーワードは、ファイル・レベルの場合もレコード・レベルの場合も、すべての HLPRCD キーワード、HLPPNLGRP キーワード、または HLPDOC キーワードに優先して実行されます。ファイル内で HLPRTN キーワードが見つかると、それが、他のどの適用可能なヘルプ・キーワードよりも前に処理されます。</p>
+<div class="p">HLPRTN を指定すると、オプション標識を使用するかどうかによって、制御権がプログラムに戻るかどうかが決まります。<ul class="ul cds--list--unordered"><li class="li cds--list__item">オプション標識を指定せずに HLPRTN を指定した場合には、Help キーを押した時点で、制御権がユーザーのプログラムに戻ります。H 仕様が入っているファイルまたはレコードで、オプション標識の指定のない HLPRTN キーワードを指定した場合には、作成時に警告メッセージが表示されます。</li>
+<li class="li cds--list__item">オプション標識とともに HLPRTN を指定した場合には、レコードが表示された時点でオプション標識がオンになっていれば、制御権がユーザーのプログラムに戻ります。オプション標識がオフであれば、H 仕様が使用されます。</li>
+</ul>
+</div>
+<p class="p">このキーワードについては、オプション標識を使用することができます。</p>
+</div>
+<div class="example"><h2 class="title sectiontitle">例 1</h2><p class="p">次の例は、HLPRTN キーワードの指定方法を示しています。</p>
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code>|...+....1....+....2....+....3....+....4....+....5....+....6....+....7....+....8
+     A                                      HELP
+     A                                      HLPRCD(GENERAL)
+     A          R RECORD1
+     A  02                                  HLPRTN
+     A          H                           HLPARA(1 1 3 10)
+     A                                      HLPRCD(HELPREC1)
+     A            FIELD1        10A  B  2  2
+     A          R RECORD2                   HLPRTN
+     A            FIELDA         5A  B 10  7
+     A</code></pre></div><div class="docs--copy-btn"></div></div>
+<p class="p">この例では、RECORD1 が画面に書き込まれるときに標識 02 がオンであれば、Help キーを押した時点で制御権がユーザーのプログラムに戻ります。
+標識 02 がオフであれば、Help キーを押すと、カーソルの位置に応じて、オンライン・ヘルプ情報レコード HELPREC1 または GENERAL が表示されます。
+RECORD2 が表示されている場合には、Help キーを押すと、制御権がユーザーのプログラムに戻ります。</p>
+</div>
+<div class="example"><h2 class="title sectiontitle">例 2</h2> <div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code>|...+....1....+....2....+....3....+....4....+....5....+....6....+....7....+....8
+     A                                      HELP
+     A  01                                  HLPRTN
+     A                                      HLPRCD(GENERAL)
+     A          R RECORD1
+     A          H                           HLPARA(1 1 3 10)
+     A                                      HLPRCD(HELPREC1)
+     A            FIELD1        10A  B  2  2
+     A          R RECORD2
+     A            FIELDA         5A  B 10  7
+     A</code></pre></div><div class="docs--copy-btn"></div></div>
+<p class="p">この例では、標識 01 がオンであれば、カーソルの位置にかかわらず、Help キーを押すと制御権がユーザーのプログラムに戻ります。</p>
+</div>
+</div>
+<div class="related-links ibm-padding-top-1 ibm-padding-bottom-2 bx--row bottom-section-parent" aria-label="bottom related links">
+<div class="familylinks ibm-margin-bottom-1">
+<div class="parentlink"><strong>親トピック:</strong> <div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a class="link bottom-section-link" href="/docs/ja/ssw_ibm_i_74/rzakc/rzakcmstkeyent.htm" title="表示装置ファイルを定義するキーワード項目は、45 - 80 桁目 (機能欄) に記入します。">表示装置ファイルの DDS キーワード項目 (45 - 80 桁目)</a></div></div>
+</div>
+<div class="relinfo relref ibm-margin-bottom-1"><strong>関連資料</strong>:<br>
+<div><div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a class="link bottom-section-link" href="/docs/ja/ssw_ibm_i_74/rzakc/rzakcmstdfhelp.htm" title="これはファイル・レベルまたはレコード・レベル・キーワードで、Help キーを使用可能にするために使用します。">表示装置ファイルの HELP (ヘルプ) キーワード</a></div></div>
+<div><div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a class="link bottom-section-link" href="/docs/ja/ssw_ibm_i_74/rzakc/rzakcmstdfhpara.htm" title="これはヘルプ仕様レベル・キーワードで、表示画面上の長方形の区域を定義するために使用します。">表示装置ファイルの HLPARA (ヘルプ域) キーワード</a></div></div>
+</div>
+</div>
+

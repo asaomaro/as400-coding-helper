@@ -1,0 +1,66 @@
+<h1 class="title topictitle1">表示装置ファイルの SFLCHCCTL (サブファイル選択制御) キーワード</h1><div id="lastModifiedDate"><span>Last Updated</span>: 2021-04-13</div>
+<div class="body refbody"><p class="shortdesc"><span class="ph">これはフィールド・レベル・キーワードで、選択リストの選択項目の使用可能性を制御するためにそのリスト上で使用します。</span></p>
+<div class="section"><p class="p">キーワードの形式は <samp class="ph codeph">SFLCHCCTL</samp> です。</p>
+<p class="p">SFLCHCCTL キーワードをフィールド上で指定すると、そのフィールドはそのレコードの制御フィールドと見なされます。
+そのフィールドはサブファイル・レコードで定義される最初のフィールドでなければなりません。
+また、桁数は 1、データ・タイプは Y、小数点以下の桁数はゼロ、および使用目的は H である必要があります。
+さらに、サブファイルで最初のフィールドとして定義される必要があります。制御フィールドは以下のように作動します。</p>
+<div class="tablenoborder"><div class="cds--data-table-container"><table id="parm_table0" summary="Parameters" cellpadding="4" cellspacing="0" class="table cds--data-table" rules="none" frame="void" border="0"><caption class="cds--data-table-header"><span class="tablecap cds--data-table-header__title">表 1. SFLCHCCTL キーワードの制御フィールド</span></caption><thead class="thead alignleft"><tr class="row"><th scope="col" class="entry" width="33.33333333333333%" id="d51264e45"><div class="cds--table-header-label">制御値</div></th>
+<th scope="col" class="entry" width="33.33333333333333%" id="d51264e47"><div class="cds--table-header-label">出力における意味</div></th>
+<th scope="col" class="entry" width="33.33333333333333%" id="d51264e49"><div class="cds--table-header-label">入力の意味</div></th>
+</tr>
+</thead>
+<tbody class="tbody"><tr class="row"><td class="entry valigntop alignleft" width="33.33333333333333%" headers="d51264e45 ">0</td>
+<td class="entry valigntop alignleft" width="33.33333333333333%" headers="d51264e47 ">選択可能</td>
+<td class="entry valigntop alignleft" width="33.33333333333333%" headers="d51264e49 ">選択されていない</td>
+</tr>
+<tr class="row"><td class="entry valigntop alignleft" width="33.33333333333333%" headers="d51264e45 ">1</td>
+<td class="entry valigntop alignleft" width="33.33333333333333%" headers="d51264e47 ">選択済み</td>
+<td class="entry valigntop alignleft" width="33.33333333333333%" headers="d51264e49 ">選択済み</td>
+</tr>
+<tr class="row"><td class="entry valigntop alignleft" width="33.33333333333333%" headers="d51264e45 ">2</td>
+<td class="entry valigntop alignleft" width="33.33333333333333%" headers="d51264e47 ">選択不可能。
+選択項目のヘルプが選択可能でない場合、選択項目上のカーソルを位置付けることはできません。<sup class="ph sup">1</sup></td>
+<td class="entry valigntop alignleft" width="33.33333333333333%" headers="d51264e49 ">&nbsp;</td>
+</tr>
+<tr class="row"><td class="entry valigntop alignleft" width="33.33333333333333%" headers="d51264e45 ">3</td>
+<td class="entry valigntop alignleft" width="33.33333333333333%" headers="d51264e47 ">選択不可能。選択項目上でのカーソルの位置付けは許可されています。</td>
+<td class="entry valigntop alignleft" width="33.33333333333333%" headers="d51264e49 ">&nbsp;</td>
+</tr>
+<tr class="row"><td class="entry valigntop alignleft" width="33.33333333333333%" headers="d51264e45 ">4</td>
+<td class="entry valigntop alignleft" width="33.33333333333333%" headers="d51264e47 ">選択不可能。
+選択項目のヘルプが選択可能である場合でも、選択項目上でカーソルを位置付けることができません。<sup class="ph sup">1</sup></td>
+<td class="entry valigntop alignleft" width="33.33333333333333%" headers="d51264e49 ">&nbsp;</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<sup class="ph sup">1</sup>非プログラマブル・ワークステーション用の拡張インターフェースをサポートする制御装置に接続された表示装置にのみ適用されます。<p class="p">オプション標識は、このキーワードでは無効です。</p>
+<p class="p">SFLNXTCHC キーワードは、SFLCHCCTL キーワードを持つフィールドが入ったレコードでは指定できません。</p>
+<p class="p">1 つのサブファイル・レコードで使用できる SFLCHCCTL キーワードは 1 つだけです。</p>
+</div>
+<div class="example"><h2 class="title sectiontitle">例</h2><p class="p">次の例は、SFLCHCCTL キーワードの指定方法を示しています。</p>
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code>|...+....1....+....2....+....3....+....4....+....5....+....6....+....7....+....8
+     A
+     A          R SFLRCD                    SFL
+     A            CTLFLD         1Y 0H      SFLCHCCTL
+     A            F1             4A  O  6 10
+     A          R SFLCTLRCD                 SFLCTL(SFLRCD)
+     A                                      SFLMLTCHC
+     A                                      SFLPAG(5) SFLSIZ(&amp;SFLSIZ);
+     A                                      SFLDSP SFLDSPCTL
+     A                                      ROLLUP(10)
+     A   10                                 SFLEND(*SCRBAR)
+     A            F3             5S 0H      SFLSCROLL
+     A            F2             4S 0H      SFLRCDNBR(CURSOR *TOP)
+     A            SFLSIZ         5S 0P
+     A                                 1 30'Panel Title'
+     A                                 4  5'Multiple selection list:'</code></pre></div><div class="docs--copy-btn"></div></div>
+</div>
+</div>
+<div class="related-links ibm-padding-top-1 ibm-padding-bottom-2 bx--row bottom-section-parent" aria-label="bottom related links">
+<div class="familylinks ibm-margin-bottom-1">
+<div class="parentlink"><strong>親トピック:</strong> <div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a class="link bottom-section-link" href="/docs/ja/ssw_ibm_i_74/rzakc/rzakcmstkeyent.htm" title="表示装置ファイルを定義するキーワード項目は、45 - 80 桁目 (機能欄) に記入します。">表示装置ファイルの DDS キーワード項目 (45 - 80 桁目)</a></div></div>
+</div>
+</div>
+

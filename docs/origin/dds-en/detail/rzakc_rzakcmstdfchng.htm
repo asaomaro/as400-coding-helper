@@ -1,0 +1,83 @@
+<main role="main"><article role="article" aria-labelledby="rzakcmstdfchng__title__1">
+<h1 class="topictitle1" id="rzakcmstdfchng__title__1">CHANGE (Change) keyword for display files</h1><div id="lastModifiedDate"><span>Last Updated</span>: 2026-07-13</div>
+
+
+
+<div class="body refbody"><p class="shortdesc">You use this record-level or field-level keyword
+to set on the specified response indicator for an input operation.</p>
+
+<div class="section"><p>This is done under the following conditions:</p>
+<ul class="cds--list--unordered">
+<li class="cds--list__item">The keyword is specified at the record level, and any input-capable
+field in the record format has its modified data tag (MDT) set on.</li>
+
+<li class="cds--list__item">The keyword is specified for an input-capable field, and that field has
+its changed data tag (MDT) set on.</li>
+
+</ul>
+<p>See <a href="/docs/en/ssw_ibm_i_74/rzakc/s36env.htm" title="The User Display Management (USRDSPMGT) keyword causes the record formats in the display file to function similarly to System/36 SFGR display formats.">System/36 environment considerations for display files</a> for information
+about how to specify the CHANGE keyword in files that are used in the System/36 environment.</p>
+<div class="p">The
+format of the keyword is:  <div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>CHANGE(response-indicator ['text'])</code></pre></div><div class="docs--copy-btn"></div></div></div>
+<p>The MDT of an input-capable field is set on when
+the display station user types in the field, or when your program selects
+the display attribute (DSPATR(MDT)) keyword for the output operation that
+displays the field. If the MDT is set on using the DSPATR(MDT) keyword, the
+data in the field might not have changed even though the MDT (and hence the
+response indicator specified for CHANGE) is set on. Also, note that the MDT
+is set on even if the workstation user types the same data in the field as
+was initially displayed (such as typing into a blank field and then clearing
+the field).</p>
+<div class="note border-2 cds--inline-notification--info ibmdocs-note cds--inline-notification cds--inline-notification--low-contrast margin-top-1 margin-bottom-1"><div class="cds--inline-notification__details"><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" class="cds--inline-notification__icon" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M16,2A14,14,0,1,0,30,16,14,14,0,0,0,16,2Zm0,5a1.5,1.5,0,1,1-1.5,1.5A1.5,1.5,0,0,1,16,7Zm4,17.12H12V21.88h2.88V15.12H13V12.88h4.13v9H20Z"></path></svg>
+        <div class="cds--inline-notification__text-wrapper">
+          <div class="cds--inline-notification__subtitle"><span class="notetitle ibm-bold ibm-textcolor-blue-50 background-blue cds--inline-notification__title ibm-padding-top-1 ibm-padding-bottom-1 padding-left-1 padding-right-1">Note:</span> The CHANGE response indicator is not set on when a command
+attention key (CAnn, Help, Print, Home, or Clear) is pressed.</div>
+        </div>
+      </div></div>
+<p>When
+the <span class="keyword">IBM i</span> operating system
+detects validity checking errors and displays the record again with an error
+message, any CHANGE keyword response indicators that have been set on by typing
+into fields remain on until all validity checks succeed and the record is
+passed to your program.</p>
+<p>The optional text is included on the list created
+at program compilation time to explain the intended use of the indicator.
+This text has no function in the file or the program other than as a comment.
+The single quotation marks are required. If you specify more than 50 characters
+between the single quotation marks, the text is truncated to 50 characters
+on the program computer printout.</p>
+<p>Option indicators are not valid for
+this keyword.</p>
+</div>
+
+<div class="example"><h2 class="sectiontitle" id="rzakcmstdfchng__title__2">Example 1</h2><p>The following example shows how to specify
+the CHANGE keyword at the field level.</p>
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>|...+....1....+....2....+....3....+....4....+....5....+....6....+....7....+....8
+00010A            FLDX           5   B  8  2CHANGE(67 'FLDX was changed')
+     A
+00020A            FLDY           3   I  8 30CHANGE(68 'FLDY was entered')
+     A</code></pre></div><div class="docs--copy-btn"></div></div></div>
+
+<div class="example"><h2 class="sectiontitle" id="rzakcmstdfchng__title__3">Example 2</h2><p>The following example shows how to specify
+the CHANGE keyword at the record level.</p>
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>|...+....1....+....2....+....3....+....4....+....5....+....6....+....7....+....8
+00010A          R REC1
+00020A                                      CHANGE(88 'A field was changed')
+00030A*
+00040A            FIELD1        10   B  3  2
+00050A            FIELD2         5   B  5  2
+00060A            FIELD3         6   B  7  2
+00070A            FIELD4         3   I  9  2DFT('ABC')
+     A</code></pre></div><div class="docs--copy-btn"></div></div></div>
+
+</div>
+
+<aside role="complementary" aria-labelledby="rzakcmstdfchng__title__1"><nav role="navigation" aria-label="bottom related links" class="ibm-padding-top-1 ibm-padding-bottom-2 bx--row bottom-section-parent">
+<div class="familylinks ibm-margin-bottom-1">
+<div class="parentlink"><strong>Parent topic:</strong> <div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a data-hd-product="ssw_ibm_i_74" href="/docs/en/ssw_ibm_i_74/rzakc/rzakcmstkeyent.htm" title="You type the keyword entries that define display files in positions 45 through 80 (functions)." class="bottom-section-link">DDS keyword entries for display files (positions 45 through 80)</a></div></div>
+</div>
+
+<div class="linklist relinfo relconcepts ibm-margin-bottom-1" lang="en-us"><h2 class="linkheading bottom-section-h2-title">Related concepts</h2>
+<ul><li class="cds--list__item"><div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a data-hd-product="ssw_ibm_i_74" href="/docs/en/ssw_ibm_i_74/rzakc/s36change.htm" title="You use this record-level keyword to indicate that on an input operation, the record is to be returned to the application program only if the user has changed the record." class="bottom-section-link">CHANGE record-level keyword</a></div></li>
+</ul></div>
+</nav></aside></article></main>

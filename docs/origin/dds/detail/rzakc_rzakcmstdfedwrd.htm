@@ -1,0 +1,102 @@
+<h1 class="title topictitle1">表示装置ファイルの EDTWRD (編集語) キーワード</h1><div id="lastModifiedDate"><span>Last Updated</span>: 2021-04-13</div>
+<div class="body refbody"><p class="shortdesc"><span class="ph">これはフィールド・レベル・キーワードで、EDTCDE キーワードを使用しても必要な編集が行えない場合に、必要な機能を得るための編集語を指定するために使用します。</span></p>
+<div class="section"><div class="p">キーワードの形式は次のとおりです。<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code>EDTWRD('edit-word')</code></pre></div><div class="docs--copy-btn"></div></div>
+</div>
+<p class="p">編集語は、フィールドの値の表示形式を指定し、小数点、コンマ、浮動通貨記号、固定通貨記号、および貸方記号などの文字を直接挿入することにより、データを編集します。
+編集語を用いて、先行ゼロを抑制したり、アスタリスク充てんによる保護を指定したりすることもできます。</p>
+<p class="p">データベース・ファイルですでに定義されているフィールドに EDTWRD キーワードが指定されている場合には、表示装置ファイルでそのフィールドに EDTWRD を指定する必要はありません。29 桁目に R を指定すれば、前に定義されているフィールドを参照することができます。
+参照されたフィールドに指定されている編集は、表示装置ファイルに組み込まれます。
+ただし、表示装置ファイルのフィールドについて、桁数、データ・タイプ、または小数点以下の桁数も指定した場合には、参照フィールドに指定した編集指定は表示装置ファイルには組み込まれません。したがって、この場合には、表示装置ファイルで編集を指定し直さなければなりません。</p>
+</div>
+<div class="example"><h2 class="title sectiontitle">編集語の各部分</h2><p class="p">編集語は、3 つの部分、つまり、本体、状況、および拡張部分からなっています。<a class="xref" href="#rzakcmstdfedwrd__exedwrd">図 1</a> は、編集語の 3 つの部分を示します。</p>
+<div class="fig fignone" id="rzakcmstdfedwrd__exedwrd"><span class="figcap">図 1. 編集語の 3 つの部分</span><div class="image"><img class="image ibmdocs-image-downsize" src="/docs/ja/ssw_ibm_i_74/rzakc/rv2f511.gif" alt="編集語の 3 つの部分: 本体、状況、および拡張部分"></div></div>
+<p class="p">本体は、データ・フィールドから出力レコードへ転送される数字のためのスペースです。本体は編集語の左端の桁から始まります。
+本体に含まれるブランクの数 (+ ゼロ 1 個またはアスタリスク 1 個) は、編集されるデータ・フィールドの桁数と同数です。
+編集語でゼロまたはアスタリスクが最初の文字の場合、そこに含まれるブランクの数はデータ・フィールドの桁数と同数になります。数字で置き換えることのできる右端の文字が、本体の終わりです。</p>
+<p class="p">状況桁には、該当データ・フィールドの符号 (+ または -) が表示されます。状況桁は、本体の右側にあり、CR (貸方) または - (負) 記号までです。
+これらの記号は、フィールドの値が負の場合にだけ出力されます。CR または - の記号が指定されていない編集語には、状況桁はありません。</p>
+<p class="p">拡張部分は、編集命令により変更されることはありません。
+拡張部分は、状況桁 (または、状況桁の指定がない場合は本体) の右にある最初の桁から始まり、編集語の右端の文字で終わります。</p>
+</div>
+<div class="section"><h2 class="title sectiontitle">編集語の本体の構成</h2><p class="p">次の各文字は、編集語の本体で使用されると、特殊な意味になります。</p>
+<dl class="dl"><dt class="dt dlterm">ブランク</dt>
+<dd class="dd">ブランクは、データ・フィールドの対応する桁の文字で置き換えられます。
+ブランク桁は数字桁と見なされます。</dd>
+<dt class="dt dlterm">アンパーサンド</dt>
+<dd class="dd">アンパーサンドは、編集済みフィールドではブランクになります。つまり、アンパーサンドは表示されません。
+前後をブランクで囲まれたアンパーサンドを含む編集語を入出力共用フィールドに対して指定した場合には、正しくないデータが生じることがあります。
+これは、数字のみのフィールドの組み込みブランクがゼロに変換されるためです。</dd>
+<dt class="dt dlterm">ゼロ</dt>
+<dd class="dd">ゼロは、ゼロ抑制を打ち切ります。ゼロ抑制を打ち切りたい右端の桁に、ゼロを指定します。
+このゼロは、データ・フィールドの対応する桁の文字がゼロでない限り、その文字で置き換えられます。
+ゼロ抑制停止文字の右側にあるデータ内のゼロは、すべて表示されます。
+ゼロ抑制停止文字は数字桁と見なされます。ただし、それが最初の文字のときは、数字桁を意味しません。
+ゼロ抑制停止文字が EDTWRD の最初の文字でなければ、最低 1 つの先行ゼロが抑制されます。そのときブランクの数はフィールドの桁数と等しくなるので、数字として数えられません。抑制されたゼロは、それぞれブランクで置き換えられます。アスタリスクは、ゼロをアスタリスクに置き換えます (アスタリスク保護)。
+ゼロ抑制を打ち切りたい右端の桁にアスタリスクを指定します。抑制されたゼロは、それぞれアスタリスクで置き換えられます。<div class="note note border-2 cds--inline-notification--info ibmdocs-note cds--inline-notification cds--inline-notification--low-contrast margin-top-1 margin-bottom-1"><div class="cds--inline-notification__details"><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" class="cds--inline-notification__icon" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M16,2A14,14,0,1,0,30,16,14,14,0,0,0,16,2Zm0,5a1.5,1.5,0,1,1-1.5,1.5A1.5,1.5,0,0,1,16,7Zm4,17.12H12V21.88h2.88V15.12H13V12.88h4.13v9H20Z"></path></svg>
+        <div class="cds--inline-notification__text-wrapper">
+          <div class="cds--inline-notification__subtitle"><span class="notetitle ibm-bold ibm-textcolor-blue-50 background-blue cds--inline-notification__title ibm-padding-top-1 ibm-padding-bottom-1 padding-left-1 padding-right-1">注:</span> バージョン 2 リリース 1 より前の表示装置ファイルが作成される場合、編集語 (EDTWRD) キーワードを使用すると、再コンパイル後に異なる出力が表示される場合があります。</div>
+        </div>
+      </div></div>
+</dd>
+<dt class="dt dlterm">アスタリスク</dt>
+<dd class="dd">ゼロに先行するアスタリスクは、アスタリスク保護を示すものと見なされます。この場合、ゼロは固定情報として印刷されます。ゼロ抑制停止文字の右側にあるアスタリスクまたはゼロは、すべて固定情報です。</dd>
+<dt class="dt dlterm">通貨記号</dt>
+<dd class="dd"> <p class="p">ゼロ抑制コードのすぐ左に通貨記号をコーディングすると、最初の有効数字の左側の桁に通貨記号が挿入されます。このような使い方をした場合に、この記号を<em class="ph i">浮動通貨記号</em> と呼びます。</p>
+<p class="p">編集語の左側の桁にコーディングした通貨記号は、位置が固定されており、常に同じ桁に表示されます。このような使い方をした場合に、この記号を<em class="ph i">固定通貨記号</em> と呼びます。</p>
+<p class="p">通貨記号は数字置換桁とは見なされません。
+この記号は、システム値 QCURSYM に一致するものでなければなりません。</p>
+</dd>
+<dt class="dt dlterm">小数点およびコンマ</dt>
+<dd class="dd"> <p class="p">小数点およびコンマは、最初の有効数字より左側にある場合を除いて、編集語の中にコーディングした桁に対応する桁に出力されます。
+ただし、最初の有効数字より前にある場合には、ブランクまたはアスタリスクで置き換えられます。</p>
+<p class="p">その他の文字は、編集語の中で有効数字の右側になる場合には、すべて出力されます。
+編集語の中で、最高位の有効数字より左側にある文字は、ブランクになるか、または、アスタリスク保護が使用されていればアスタリスクで置き換えられます。</p>
+<p class="p">固定情報が左端の桁に出力される場合には、その固定情報の前にゼロが 1 つ付かなければならず、フィールドの桁数は 1 増えます。</p>
+</dd>
+</dl>
+</div>
+<div class="section"><h2 class="title sectiontitle">編集語の状況桁の構成</h2><p class="p">次の各文字は、編集語の状況桁で使用されると、特殊な意味になります。</p>
+<dl class="dl"><dt class="dt dlterm">アンパーサンド</dt>
+<dd class="dd">編集済み出力フィールドではブランクになります。編集済み出力フィールドに、アンパーサンドを入れることはできません。</dd>
+<dt class="dt dlterm">CR または負符号</dt>
+<dd class="dd">編集済み出力フィールドの符号が正 (+) の場合には、状況桁はブランクになります。
+負 (-) の場合には、CR または負符号が指定された桁がそのまま出力されます。</dd>
+</dl>
+</div>
+<div class="section"><h2 class="title sectiontitle">編集語の拡張部分の構成</h2><p class="p">編集語の拡張部分の文字は、必ずそのまま出力されます。拡張部分にブランクを含めることはできません。
+編集済み出力フィールドにブランクが必要な場合には、編集語の本体にアンパーサンドを指定します。</p>
+</div>
+<div class="section"><h2 class="title sectiontitle">有効な編集後の指定</h2><p class="p">有効な編集語を指定するためには、次の規則に従ってください。</p>
+<ul class="ul cds--list--unordered"><li class="li cds--list__item">EDTWRD キーワードが使用できるのは、数字のみのフィールド (35 桁目に Y を指定したもの) の場合です。</li>
+<li class="li cds--list__item">同一フィールドに対して、EDTWRD と EDTCDE の両方を指定することはできません。</li>
+<li class="li cds--list__item">EDTWRD キーワードとともに DFT キーワードまたは DFTVAL キーワードを指定することはできません。</li>
+<li class="li cds--list__item">編集語は単一引用符で囲みます。</li>
+<li class="li cds--list__item">編集語に含まれるブランクおよびゼロ抑制停止文字 (数字桁) の合計は、フィールドの桁数に等しい値でなければなりません。</li>
+<li class="li cds--list__item">ゼロ抑制停止文字が編集語の最初の文字の場合、ブランクの合計はフィールドの桁数またはフィールドの桁数から 1 を引いた桁数と同数になります。</li>
+<li class="li cds--list__item">浮動通貨記号を使用する場合には、通貨記号は数字桁に含まれません。
+例えば、桁数が 7 桁で小数点以下 2 桁のフィールドについて浮動通貨記号を指定する場合には、編集語は次のようになります。<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code>EDTWRD('____$0.__)</code></pre></div><div class="docs--copy-btn"></div></div>
+<p class="p">ここで _ はブランクを表します。</p>
+</li>
+<li class="li cds--list__item">負数に負符号を表示したい場合には、編集語に符号を 1 つ含めます。
+負符号 (-) または文字 CR (貸方) を最後の数字置換文字の右側に指定します。これらは、数値が負の場合にのみ出力されます。</li>
+</ul>
+<p class="p">オプション標識は、このキーワードでは無効です。</p>
+<p class="p"><a class="xref" href="#rzakcmstdfedwrd__dfsew">図 2</a> は、編集語、フィールドのプログラム値、およびフィールドの表示値 (編集結果) の例を示します。</p>
+</div>
+<div class="example"> <div class="fig fignone" id="rzakcmstdfedwrd__dfsew"><span class="figcap">図 2. 編集語の例</span><div class="image"><img class="image ibmdocs-image-downsize" src="/docs/ja/ssw_ibm_i_74/rzakc/rv2f481.gif" alt="編集語の例の図。"></div></div>
+</div>
+<div class="example"><h2 class="title sectiontitle">例</h2><p class="p">次の例は、EDTWRD キーワードの指定方法を示しています。</p>
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code>|...+....1....+....2....+....3....+....4....+....5....+....6....+....7....+....8
+00020A            FIELDA         7  2   5  2EDTWRD('    $0. ')
+     A</code></pre></div><div class="docs--copy-btn"></div></div>
+</div>
+</div>
+<div class="related-links ibm-padding-top-1 ibm-padding-bottom-2 bx--row bottom-section-parent" aria-label="bottom related links">
+<div class="familylinks ibm-margin-bottom-1">
+<div class="parentlink"><strong>親トピック:</strong> <div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a class="link bottom-section-link" href="/docs/ja/ssw_ibm_i_74/rzakc/rzakcmstkeyent.htm" title="表示装置ファイルを定義するキーワード項目は、45 - 80 桁目 (機能欄) に記入します。">表示装置ファイルの DDS キーワード項目 (45 - 80 桁目)</a></div></div>
+</div>
+<div class="relinfo relconcepts ibm-margin-bottom-1"><strong>関連概念</strong>:<br>
+<div><div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a class="link bottom-section-link" href="/docs/ja/ssw_ibm_i_74/rzakc/dfnoy.htm" title="このフィールドに入力できる文字は、0 から 9 までの数字、正符号 (+)、負符号 (-)、ピリオド (.)、コンマ (,)、およびスペース ( ) だけです。 どのキーを押してもこのフィールドから出ることができます。">数字のみ (Y)</a></div></div>
+</div>
+</div>
+

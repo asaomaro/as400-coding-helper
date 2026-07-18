@@ -1,0 +1,56 @@
+<h1 class="title topictitle1">表示装置ファイルの ALWROL (ロール可能) キーワード</h1><div id="lastModifiedDate"><span>Last Updated</span>: 2021-04-13</div>
+<div class="body refbody"><p class="shortdesc"><span class="ph">これはレコード・レベル・キーワードで、定義中のレコード様式が画面に表示されているときに、プログラムで画面上のウィンドウ内のデータをページングできるようにするために使用します。</span></p>
+<div class="section"><p class="p">ウィンドウは、プログラムで定義した開始行と終了行、およびその間の表示行で構成される区域です。ページングする行の数およびページングの方向は、プログラムで定義します。</p>
+<p class="p">このキーワードにはパラメーターはありません。</p>
+<p class="p">プログラムが当該レコード様式に対する出力命令を送ると、<span class="keyword">IBM® i</span> オペレーティング・システムは、ウィンドウ内にすでに入っているデータを画面の上方または下方にページングして、そのレコード様式を表示します。
+ページングにより開始行または終了行を超えたデータは失われます。ページングを行った後は、ページングの前に一部または全体がウィンドウ内に含まれていたレコード様式に対して、プログラムから入力命令を送ることはできません。</p>
+<p class="p">COBOL で ALWROL 機能を使用するためには、WRITE ROLLING ステートメントを使用します。</p>
+<p class="p">ALWROL キーワードを使用する場合、表示装置のユーザーがデータをページングすることはできません。画面上でデータをページングすることができるのは、プログラムだけです。
+表示装置のユーザーによるデータのページングを可能にするには、ROLLUP および ROLLDOWN の各キーワードを指定するか、またはサブファイル・サイズがサブファイル・ページに等しくないサブファイルを指定します。</p>
+<p class="p">ページングされたレコードが消去されないようにしたい場合には、ALWROL キーワードとともに OVERLAY キーワードまたは CLRL (行の消去) キーワードを指定してください。</p>
+<p class="p">ALWROL キーワードを指定した場合は、フィールド・レベルで PUTRETAIN キーワードを指定してはなりません。
+この 2 つを同時に指定すると、プログラムからの出力命令が出た時点で、PUTRETAIN が選択されているかどうかにかかわらず、<span class="keyword">IBM i</span> オペレーティング・システムからメッセージ <samp class="ph systemoutput">CPF5014</samp> が送られます。</p>
+<div class="p">ALWROL キーワードを次のキーワードとともに指定する場合には、これらのキーワードについてオプション標識を指定しなければなりません。  <p class="lines">ERRMSG<br>
+ERRMSGID<br>
+PUTOVR<br>
+PUTRETAIN (レコード・レベル)</p>
+</div>
+<p class="p">ユーザー・プログラムは、上記のキーワードの 1 つを選択するのと同時に、ALWROL 機能を使用する出力命令を送ることはできません (<span class="keyword">IBM i</span> オペレーティング・システムからメッセージ CPF5014 が送られます)。</p>
+<div class="p">ALWROL キーワードは、下記のキーワードとともに指定することはできません。<p class="lines">ASSUME<br>
+KEEP<br>
+SFL<br>
+SFLCTL<br>
+USRDFN</p>
+</div>
+<p class="p">DSPMOD キーワードが指定されているレコードで ALWROL キーワードを指定すると、ファイル作成時に警告メッセージが表示されます。実行時に、表示モードが変更されると、ALWROL キーワードは無視されます。</p>
+<p class="p">ALWROL キーワードは、PASSRCD キーワードにより指定されたレコード様式に対しては、指定することができません。</p>
+<p class="p">オプション標識は、このキーワードでは無効です。</p>
+</div>
+<div class="example"><h2 class="title sectiontitle">例</h2><p class="p">次の例は、ALWROL キーワードの指定方法を示しています。</p>
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code>|...+....1....+....2....+....3....+....4....+....5....+....6....+....7....+....8
+00010A    1  R RECORD1                   ALWROL OVERLAY  2
+00020A            FLDA          79   I 23  2CHECK(LC)
+00030A  44                           3  ERRMSG('Record not found' 44)
+     A</code></pre></div><div class="docs--copy-btn"></div></div>
+<dl class="dl"><dt class="dt dlterm">1</dt>
+<dd class="dd">アプリケーション・プログラムで、RECORD1 への出力命令を送り、FLDA を 23 行目の 2 桁目に表示することができます。以降の出力命令で、プログラムは、RECORD1 (この例では FLDA) を画面の上方、下方、あるいは画面外へページングすることができます。
+通常は、1 行だけ上方移動します。1 行上方移動した場合には、最初に入力されたデータが 22 行目に表示され、新しい入力フィールドが 23 行目に表示されます。
+表示装置のユーザーは、22 行目のフィールドにデータを入力することはできず、プログラムも、22 行目のフィールドを読み取ることはできません。
+22 行目のフィールドは、後続の出力命令により、ウィンドウの開始行 (プログラムで指定)  または表示画面の 1 行目を過ぎるまで、同様に上に送ることができます。</dd>
+<dt class="dt dlterm">2</dt>
+<dd class="dd">OVERLAY キーワードは、ページングされたレコードが削除されるのを防ぐために使用されています。</dd>
+<dt class="dt dlterm">3</dt>
+<dd class="dd">ERRMSG キーワードは、これが ALWROL 機能に及ぼす影響を示すために指定されたものです。プログラムは、オプション標識 44 をオンにするのと同時に、ALWROL 機能を要求する出力命令を出すことはできません。プログラムがこれを行おうとすると、<span class="keyword">IBM i</span> オペレーティング・システムから通知メッセージ CPF5014 が出されます。</dd>
+</dl>
+</div>
+</div>
+<div class="related-links ibm-padding-top-1 ibm-padding-bottom-2 bx--row bottom-section-parent" aria-label="bottom related links">
+<div class="familylinks ibm-margin-bottom-1">
+<div class="parentlink"><strong>親トピック:</strong> <div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a class="link bottom-section-link" href="/docs/ja/ssw_ibm_i_74/rzakc/rzakcmstkeyent.htm" title="表示装置ファイルを定義するキーワード項目は、45 - 80 桁目 (機能欄) に記入します。">表示装置ファイルの DDS キーワード項目 (45 - 80 桁目)</a></div></div>
+</div>
+<div class="relinfo relref ibm-margin-bottom-1"><strong>関連資料</strong>:<br>
+<div><div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a class="link bottom-section-link" href="/docs/ja/ssw_ibm_i_74/rzakc/rzakcmstdfsfrol.htm" title="これはフィールド・レベル・キーワードであり、ワークステーション・ユーザーがこのフィールドに値を入力できることを指定するために、サブファイル制御レコード様式で使用します。 この値は、該当のページ・キーを押したときにページを前後に送るレコード数を IBM i オペレーティング・システムに伝えるためのものです。">表示装置ファイルの SFLROLVAL (サブファイル・ロール値) キーワード</a></div></div>
+<div><div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a class="link bottom-section-link" href="/docs/ja/ssw_ibm_i_74/rzakc/rzakcmstdfsfrnm.htm" title="これはフィールド・レベル・キーワードで、表示したいサブファイルのページが、このフィールドにある相対レコード番号を持つレコードの入っているページであることを指定するために、サブファイル制御レコード様式で使用します。">表示装置ファイルの SFLRCDNBR (サブファイル・レコード番号) キーワード</a></div></div>
+</div>
+</div>
+

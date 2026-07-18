@@ -70,6 +70,22 @@ for (const lang of ["ja", "en"]) {
       failures.push(`${lang}/${key}: 和名/英名が空のものがある`);
     }
 
+    // 構文はほぼ全件で取れるはず（原典に構文の記載が無いものが少数ある）。
+    // 大きく欠けていたら詳細ページの取得漏れか抽出の壊れを疑う。
+    const withSyntax = keywords.filter(k => Array.isArray(k.syntax) && k.syntax.length > 0);
+    if (withSyntax.length < keywords.length * 0.9) {
+      failures.push(
+        `${lang}/${key}: 構文が ${withSyntax.length}/${keywords.length} 件しか無い`
+      );
+    }
+    // 構文の先頭はキーワード名で始まるはず（別キーワードの構文が紛れ込むと崩れる）。
+    const wrong = withSyntax.filter(k => !k.syntax[0].startsWith(k.name)).slice(0, 3);
+    if (wrong.length > 0) {
+      failures.push(
+        `${lang}/${key}: 構文がキーワード名で始まらない（${wrong.map(k => `${k.name}: ${k.syntax[0]}`).join(" / ")}）`
+      );
+    }
+
     // 索引のリンク数に対して取りこぼしが大きくないか（キーワード以外の
     // リンクも混ざるため 7 割を下限とする）。
     const links = countOriginLinks(lang, originFile);

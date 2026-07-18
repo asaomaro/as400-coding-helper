@@ -1,0 +1,228 @@
+<main role="main"><article role="article" aria-labelledby="rzakdmstptdfnch__title__1">
+<h1 class="topictitle1" id="rzakdmstptdfnch__title__1">DFNCHR (Define Character) keyword in printer files</h1><div id="lastModifiedDate"><span>Last Updated</span>: 2026-07-13</div>
+
+
+
+<div class="body refbody"><p class="shortdesc">You use this file-level or record-level keyword to define
+characters of your own design for the 5224 Printer and 5225 Printer.</p>
+
+<div class="section"><p>With this keyword you can specify
+DFNCHR more than once at the file or record level, or as many as 50 characters
+each time you specify DFNCHR.</p>
+<p>The format of the keyword is:</p>
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>DFNCHR(X'code-point-1' X'dot-matrix-pattern-1'
+[X'code-point-2' X'dot-matrix-pattern-2'...
+[X'code-point-50' X'dot-matrix-pattern-50']])</code></pre></div><div class="docs--copy-btn"></div></div><div class="note border-2 cds--inline-notification--info ibmdocs-note cds--inline-notification cds--inline-notification--low-contrast margin-top-1 margin-bottom-1"><div class="cds--inline-notification__details"><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" class="cds--inline-notification__icon" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M16,2A14,14,0,1,0,30,16,14,14,0,0,0,16,2Zm0,5a1.5,1.5,0,1,1-1.5,1.5A1.5,1.5,0,0,1,16,7Zm4,17.12H12V21.88h2.88V15.12H13V12.88h4.13v9H20Z"></path></svg>
+        <div class="cds--inline-notification__text-wrapper">
+          <div class="cds--inline-notification__subtitle"><span class="notetitle ibm-bold ibm-textcolor-blue-50 background-blue cds--inline-notification__title ibm-padding-top-1 ibm-padding-bottom-1 padding-left-1 padding-right-1">Note:</span> You cannot
+specify more than 5000 characters in a single DDS statement. If you need to
+specify more than 5000 characters in specifying DFNCHR several times together,
+start a new DDS statement by specifying an option indicator for the new DFNCHR
+keywords. To avoid having to set the indicators on, specify an N (for example,
+N50). This causes the conditioning to be on for the keyword with no program
+action.</div>
+        </div>
+      </div></div>
+<p>User-defined characters can take up one print position (as
+in example 1) or more than one print position (as in examples 2 and 3). For
+each print position, specify a code point and a dot matrix pattern. In the
+EBCDIC character set, hexadecimal C1 is assigned the character A; hexadecimal
+51 is an unassigned code point.</p>
+<p>You define a dot matrix pattern in DDS
+by specifying nine 2-digit pairs of hexadecimal digits. You can specify only
+the characters 0 through 9 and A through F.</p>
+<p>When your program sends
+an output operation to a record format for which DFNCHR defines code points
+different from those defined for the previous output operation, the <span class="keyword">IBM i</span> operating system loads the
+new definitions, thereby changing the defined characters. This process can
+slow printing.</p>
+<p>If, however, the same DFNCHR keywords are in effect for
+two output operations in a row, the <span class="keyword">IBM i</span> operating
+system does not reload code points for the second output operation.</p>
+<p>You
+can use DFNCHR only with SCS printers. It cannot be specified on the same
+record format with IPDS printer keywords, such as COLOR, LPI, and BARCODE.
+If any format in the file contains a combination of SCS and IPDS printer keywords,
+the file is not created.</p>
+<p>If you specify DFNCHR in a file
+created with DEVTYPE(*IPDS) or DEVTYPE(*AFPDS), a warning message appears
+at creation time.</p>
+<p>You cannot specify DFNCHR on the same record format
+as the DRAWER keyword. If any format in the file contains DFNCHR at the record-level
+and a DRAWER keyword, the file is not created.</p>
+<p>Option indicators are
+valid for this keyword.</p>
+</div>
+
+<section class="section" role="region" aria-labelledby="rzakdmstptdfnch__title__2"><h2 class="sectiontitle" id="rzakdmstptdfnch__title__2">Examples</h2><p>The following examples show how to specify
+DFNCHR.</p>
+</section>
+
+<div class="example"><h2 class="sectiontitle" id="rzakdmstptdfnch__title__3">Example 1</h2><p>The following example uses a single dot
+matrix to show how to specify DFNCHR at the record level so that hexadecimal
+7C prints © instead of @.</p>
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>|...+....1....+....2....+....3....+....4....+....5....+....6....+....7....+....8
+12
+00010A          R RECORD                    DFNCHR(X'7C' X'007E813CC324817E00')
+00020A                                 58  4DFT(X'7C')   TRNSPY
+00030A                                    +2DFT('1982')
+     A</code></pre></div><div class="docs--copy-btn"></div></div><div class="p">This example redefines code point hexadecimal 7C<strong>1</strong>,
+normally @ in the EBCDIC character set, as a copyright mark. The copyright
+mark is printed as follows (on line 58 of a printer form):  <div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>© 1982</code></pre></div><div class="docs--copy-btn"></div></div></div>
+<p>The
+hexadecimal digits <strong>2</strong> define the following dot matrix pattern:</p>
+<figure class="fignone" id="rzakdmstptdfnch__e16b"><figcaption>Figure 1. Dot matrix pattern for example 1</figcaption>
+<div class="image"><img src="/docs/en/ssw_ibm_i_74/gifs/rsll763.gif" alt="Dot matrix pattern for example 1" class="ibmdocs-image-downsize"></div>
+</figure>
+</div>
+
+<div class="example"><h2 class="sectiontitle" id="rzakdmstptdfnch__title__5">Example 2</h2><p>The following example uses a dot matrix
+for a large character. This example shows how to specify DFNCHR at the file
+level for a character two positions wide by two lines high.</p>
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>|...+....1....+....2....+....3....+....4....+....5....+....6....+....7....+....8
+12
+00010A                                      DFNCHR(X'51' X'000000FF00FF00E700' +
+00020A                                             X'52' X'E700E700E700E10000' +
+00030A                                             X'53' X'0000009C001F000700' +
+00040A                                             X'54' X'07000700FF00FC0000' +
+00050A                                             X'55' X'00000000FF00E700E7' +
+00060A                                             X'56' X'00E700E700E3000000' +
+00070A                                             X'57' X'000000001E00070007' +
+00080A                                             X'58' X'0007000700FE000000')
+00090A          R RECORD1
+00100A                   3  58  4DFT(X'5152')   TRNSPY
+00110A                                 58  4DFT(X'5556')   TRNSPY
+00120A                                 59  4DFT(X'5354')   TRNSPY
+00130A                                 59  4DFT(X'5758')   TRNSPY
+     A</code></pre></div><div class="docs--copy-btn"></div></div><p>Example 2 redefines eight code points (hexadecimal 51
+through hexadecimal 58) <strong>1</strong>. Each position of the two-by-two character
+is printed twice so that adjacent horizontal dots can print. The hexadecimal
+codes <strong>2</strong> define the dot matrix pattern.</p>
+<p>The information marked <strong>3</strong> shows
+how the large character 5 looks when printed (using four print positions,
+two on line 58 and two on line 59 of a printer form):</p>
+<div class="note border-2 cds--inline-notification--info ibmdocs-note cds--inline-notification cds--inline-notification--low-contrast margin-top-1 margin-bottom-1"><div class="cds--inline-notification__details"><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" class="cds--inline-notification__icon" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M16,2A14,14,0,1,0,30,16,14,14,0,0,0,16,2Zm0,5a1.5,1.5,0,1,1-1.5,1.5A1.5,1.5,0,0,1,16,7Zm4,17.12H12V21.88h2.88V15.12H13V12.88h4.13v9H20Z"></path></svg>
+        <div class="cds--inline-notification__text-wrapper">
+          <div class="cds--inline-notification__subtitle"><span class="notetitle ibm-bold ibm-textcolor-blue-50 background-blue cds--inline-notification__title ibm-padding-top-1 ibm-padding-bottom-1 padding-left-1 padding-right-1">Note:</span> The file should
+be at 9 lpi to avoid a horizontal gap in the large character (LPI parameter
+on the CRTPRTF, CHGPRTF, or OVRPRTF command).</div>
+        </div>
+      </div></div>
+<p>In the grid pattern,
+mark the dot patterns for as many as nine print columns (three across and
+three down), as shown in example 2.</p>
+<figure class="fignone" id="rzakdmstptdfnch__e18b"><figcaption>Figure 2. Specifying the
+grid pattern for example 2 (points 51 through 54)</figcaption>
+<div class="image"><img src="/docs/en/ssw_ibm_i_74/gifs/rsll768.gif" alt="Specifying the grid pattern for example 2" class="ibmdocs-image-downsize"></div>
+</figure>
+<p>Use Table: Hexadecimal digits for the bit patterns in <a href="/docs/en/ssw_ibm_i_74/rzakd/prdots.htm" title="When you define a dot matrix pattern for a user-defined character, specify nine 2-digit pairs of hexadecimal digits.">Specifying dots to be printed in the dot matrix</a> to
+determine which hexadecimal digit to specify for each half-column in the grid
+pattern.</p>
+<p>For each print position, complete one row of the grid pattern
+(one pair of hexadecimal digits to each box) as shown in <a href="#rzakdmstptdfnch__e18c">Figure 3</a> for
+code points 51 through 54.</p>
+<figure class="fignone" id="rzakdmstptdfnch__e18c"><figcaption>Figure 3. Completing code points
+for example 2 (points 51 through 54)</figcaption>
+<div class="image"><img src="/docs/en/ssw_ibm_i_74/gifs/rsll769.gif" alt="Completing code points for example 2" class="ibmdocs-image-downsize"></div>
+</figure>
+<p>In the grid pattern, mark the dot patterns for as many as nine print
+columns (three across and three down), as shown in <a href="#rzakdmstptdfnch__e18d">Figure 4</a>.</p>
+<figure class="fignone" id="rzakdmstptdfnch__e18d"><figcaption>Figure 4. Specifying the grid pattern for example 2 (points 55 through
+58)</figcaption>
+<div class="image"><img src="/docs/en/ssw_ibm_i_74/gifs/rsll770.gif" alt="Specifying the grid pattern for example 2 (points 55 through 58)" class="ibmdocs-image-downsize"></div>
+</figure>
+<p>Use Table: Hexadecimal digits for the bit patterns in <a href="/docs/en/ssw_ibm_i_74/rzakd/prdots.htm" title="When you define a dot matrix pattern for a user-defined character, specify nine 2-digit pairs of hexadecimal digits.">Specifying dots to be printed in the dot matrix</a> to
+determine which hexadecimal digit to specify for each half-column in the grid
+pattern.</p>
+<p>For each print position, complete one row of the grid pattern
+(one pair of hexadecimal digits to each box) as shown in <a href="#rzakdmstptdfnch__e18e">Figure 5</a> for
+code points 55 through 58.</p>
+<figure class="fignone" id="rzakdmstptdfnch__e18e"><figcaption>Figure 5. Completing the code points
+for example 2 (points 55 through 58)</figcaption>
+<div class="image"><img src="/docs/en/ssw_ibm_i_74/gifs/rsll772.gif" alt="Completing the code points for example 2" class="ibmdocs-image-downsize"></div>
+</figure>
+</div>
+
+<div class="example"><h2 class="sectiontitle" id="rzakdmstptdfnch__title__10">Example 3</h2><p>The following example uses a dot matrix
+for a large graphic to show how to specify DFNCHR at the file level for a
+large graphic three columns wide by two lines high.</p>
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>|...+....1....+....2....+....3....+....4....+....5....+....6....+....7....+....8
+00010A                                         12
+00020A                                      DFNCHR(X'B1' X'FF00E000D000C800C4' +
+00030A                                             X'B2' X'00C200C100C100C200' +
+00040A                                             X'B3' X'C400C800D000E000FF' +
+00050A                                             X'B4' X'FF0007000800130023' +
+00060A                                             X'B5' X'004300830083004300' +
+00070A                                             X'B6' X'230013000B000700FF' +
+00080A                                             X'B7' X'00FF00F000D800CC00' +
+00090A                                             X'B8' X'C600C100C100C100C6' +
+00100A                                             X'B9' X'00CC00D800F000FF00' +
+00110A                                             X'BA' X'00FF000F001B003300' +
+00120A                                             X'BB' X'630083008300830063' +
+00130A                                             X'BC' X'0033001B000F00FF00')
+00140A          R RECORD1                   CPI(15)
+00150A                                 58  4DFT(X'B1B2B3')   TRNSPY
+00160A                                 58  4DFT(X'B7B8B9')   TRNSPY
+00170A                                 59  4DFT(X'B4B5B6')   TRNSPY
+00180A                                 59  4DFT(X'BABBBC')   TRNSPY
+     A</code></pre></div><div class="docs--copy-btn"></div></div><p>The example redefines 12 code points (hexadecimal B1
+through hexadecimal BC) <strong>1</strong>. Each column of the three-by-two character
+prints twice so that adjacent horizontal dots can print. The hexadecimal codes <strong>2</strong> define
+the dot matrix pattern.</p>
+<p>This example prints an X inside a grid using
+three print columns (on lines 58 and 59 on a printer form).</p>
+<div class="note border-2 cds--inline-notification--info ibmdocs-note cds--inline-notification cds--inline-notification--low-contrast margin-top-1 margin-bottom-1"><div class="cds--inline-notification__details"><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" class="cds--inline-notification__icon" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M16,2A14,14,0,1,0,30,16,14,14,0,0,0,16,2Zm0,5a1.5,1.5,0,1,1-1.5,1.5A1.5,1.5,0,0,1,16,7Zm4,17.12H12V21.88h2.88V15.12H13V12.88h4.13v9H20Z"></path></svg>
+        <div class="cds--inline-notification__text-wrapper">
+          <div class="cds--inline-notification__subtitle"><span class="notetitle ibm-bold ibm-textcolor-blue-50 background-blue cds--inline-notification__title ibm-padding-top-1 ibm-padding-bottom-1 padding-left-1 padding-right-1">Note:</span> The file
+should be at 9 lpi to avoid a horizontal gap in the large character (LPI parameter
+on the CRTPRTF, CHGPRTF, or OVRPRTF command).</div>
+        </div>
+      </div></div>
+<p>Mark the dot patterns
+for as many as nine print columns (three across and three down) in the grid,
+as shown in the example.</p>
+<figure class="fignone" id="rzakdmstptdfnch__e19b"><figcaption>Figure 6. Specifying the grid pattern
+for example 3 (points B1 through B6)</figcaption>
+<div class="image"><img src="/docs/en/ssw_ibm_i_74/gifs/rsll774.gif" alt="Specifying the grid pattern for example 3" class="ibmdocs-image-downsize"></div>
+</figure>
+<p>Use Table: Hexadecimal digits for the bit patterns in <a href="/docs/en/ssw_ibm_i_74/rzakd/prdots.htm" title="When you define a dot matrix pattern for a user-defined character, specify nine 2-digit pairs of hexadecimal digits.">Specifying dots to be printed in the dot matrix</a> to
+determine which hexadecimal digit to specify for each half-column in the grid.
+For each print position, complete one row of the grid pattern (one pair of
+hexadecimal digits to each box) as shown in <a href="#rzakdmstptdfnch__e19c">Figure 7</a>.</p>
+<figure class="fignone" id="rzakdmstptdfnch__e19c"><figcaption>Figure 7. Completing the code points for example 3 (points B1 through
+B6)</figcaption>
+<div class="image"><img src="/docs/en/ssw_ibm_i_74/gifs/rsll775.gif" alt="Completing the code points for example 3 (points B1 through B6)" class="ibmdocs-image-downsize"></div>
+</figure>
+<p>As shown in <a href="#rzakdmstptdfnch__e19d">Figure 8</a>, mark the
+dot patterns in the grid for as many as nine print columns (three across and
+three down).</p>
+<figure class="fignone" id="rzakdmstptdfnch__e19d"><figcaption>Figure 8. Specifying the grid pattern for example
+3 (points B7 through BC)</figcaption>
+<div class="image"><img src="/docs/en/ssw_ibm_i_74/gifs/rsll776.gif" alt="Specifying the grid pattern for example 3 (points B7 through BC)" class="ibmdocs-image-downsize"></div>
+</figure>
+<p>Use Table: Hexadecimal digits for the bit patterns in <a href="/docs/en/ssw_ibm_i_74/rzakd/prdots.htm" title="When you define a dot matrix pattern for a user-defined character, specify nine 2-digit pairs of hexadecimal digits.">Specifying dots to be printed in the dot matrix</a> to determine which hexadecimal digit to specify
+for each half-column in the grid. For each print position, complete one row
+of the grid pattern (one pair of hexadecimal digits to each box) as shown
+in <a href="#rzakdmstptdfnch__e19e">Figure 9</a>.</p>
+<figure class="fignone" id="rzakdmstptdfnch__e19e"><figcaption>Figure 9. Completing
+the code points for example 3 (points B7 through BC)</figcaption>
+<div class="image"><img src="/docs/en/ssw_ibm_i_74/gifs/rsll777.gif" alt="Completing the code points for example 3 (points B7 through BC)" class="ibmdocs-image-downsize"></div>
+</figure>
+</div>
+
+</div>
+
+<aside role="complementary" aria-labelledby="rzakdmstptdfnch__title__1"><nav role="navigation" aria-label="bottom related links" class="ibm-padding-top-1 ibm-padding-bottom-2 bx--row bottom-section-parent">
+<ul class="ullinks cds--list--unordered">
+<li class="ulchildlink cds--list__item" data-hd-product="ssw_ibm_i_74"><strong><a href="/docs/en/ssw_ibm_i_74/rzakd/prpnts.htm">Selecting which code points to redefine</a></strong><br>
+You can define any code point except hexadecimal 00.</li>
+<li class="ulchildlink cds--list__item" data-hd-product="ssw_ibm_i_74"><strong><a href="/docs/en/ssw_ibm_i_74/rzakd/dotm.htm">Dot matrix</a></strong><br>
+<span class="ph">The dot matrix for the 5224 Printer and 5225 Printer is a matrix of 8 row by 9 column. All 8 rows and 9 columns are printed regardless of the CPI or LPI settings.</span></li>
+<li class="ulchildlink cds--list__item" data-hd-product="ssw_ibm_i_74"><strong><a href="/docs/en/ssw_ibm_i_74/rzakd/prdots.htm">Specifying dots to be printed in the dot matrix</a></strong><br>
+When you define a dot matrix pattern for a user-defined character, specify nine 2-digit pairs of hexadecimal digits.</li>
+</ul>
+
+<div class="familylinks ibm-margin-bottom-1">
+<div class="parentlink"><strong>Parent topic:</strong> <div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a data-hd-product="ssw_ibm_i_74" href="/docs/en/ssw_ibm_i_74/rzakd/rzakdmstprkey.htm" title="These are valid keyword entries for defining printer files." class="bottom-section-link">Keyword entries for printer files (positions 45 through 80)</a></div></div>
+</div>
+</nav></aside></article></main>

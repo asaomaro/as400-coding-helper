@@ -1,0 +1,181 @@
+<main role="main"><article role="article" aria-labelledby="lconcat__title__1">
+<h1 class="topictitle1" id="lconcat__title__1">CONCAT (Concatenate) keyword—logical files only </h1><div id="lastModifiedDate"><span>Last Updated</span>: 2026-07-13</div>
+
+
+
+<div class="body refbody"><p class="shortdesc"><span class="ph">You can use this field-level keyword to combine
+two or more fields from the physical-file record format into one field in
+the logical-file record format you are defining. The name of
+this concatenated field must appear in positions 19 through 28.</span></p>
+
+<div class="section"><div class="p">The format of the keyword is:  <div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>CONCAT(field-1 field-2...)</code></pre></div><div class="docs--copy-btn"></div></div></div>
+<p>Specify
+the physical file field names in the order in which you want them to be concatenated,
+and separate them by blanks.</p>
+<p>If the same physical field is specified
+more than once in a record format in the logical file (that is, by using either
+RENAME or CONCAT), the sequence in which the fields are specified in the logical
+file is the sequence in which the data is moved to the physical file on an
+update or insert operation. Thus, the value in the last occurrence of the
+physical field is the value that is put in the physical record and is the
+value that is used for all keys built over that physical field. All previous
+values of the same field are ignored.</p>
+<p>If you want to use a field defined
+using the CONCAT keyword or a field specified as a parameter value on the
+CONCAT keyword as a key field, see the Key field name topic.</p>
+<p>Binary
+character fields can be concatenated only with other binary character fields.
+UTF-8 fields can be concatenated only with other UTF-8 fields. UCS-2 and UTF-16
+fields can be concatenated only with fields of the same type or with each
+other.</p>
+<p>You cannot include a field containing decimal positions other
+than zero in a concatenated field. You can include a field having decimal
+positions of zero in which case the field is treated as an integer field.</p>
+<p>The <span class="keyword">IBM i</span> program assigns the length
+of the concatenated field as the sum of the lengths (digits and characters)
+of the fields included in the concatenation.</p>
+<div class="p">The operating system assigns
+the field to be fixed length or variable length based on the fields that are
+concatenated. The general rules are:  <ul class="cds--list--unordered">
+<li class="cds--list__item">Concatenation of a variable-length field to either a fixed-length field
+or another variable-length field results in a variable-length field.</li>
+
+<li class="cds--list__item">Concatenation of a fixed-length field to a fixed-length field results
+in a fixed-length field unless the VARLEN keyword is also specified on the
+same field as the CONCAT keyword.  <div class="note border-2 cds--inline-notification--info ibmdocs-note cds--inline-notification cds--inline-notification--low-contrast margin-top-1 margin-bottom-1"><div class="cds--inline-notification__details"><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" class="cds--inline-notification__icon" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M16,2A14,14,0,1,0,30,16,14,14,0,0,0,16,2Zm0,5a1.5,1.5,0,1,1-1.5,1.5A1.5,1.5,0,0,1,16,7Zm4,17.12H12V21.88h2.88V15.12H13V12.88h4.13v9H20Z"></path></svg>
+        <div class="cds--inline-notification__text-wrapper">
+          <div class="cds--inline-notification__subtitle"><span class="notetitle ibm-bold ibm-textcolor-blue-50 background-blue cds--inline-notification__title ibm-padding-top-1 ibm-padding-bottom-1 padding-left-1 padding-right-1">Note:</span> If the result of the concatenation
+is a variable-length field, a field that allows the null value, a UCS-2 field,
+a UTF-16 field, a UTF-8 field, or a binary character field, the CONCAT field
+must be input only (I in position 38). If a logical file record format contains
+a concatenation, it cannot contain any fields that allow the null value from
+the physical file record format of the based-on file.</div>
+        </div>
+      </div></div>
+</li>
+
+</ul>
+</div>
+<div class="p">The operating system assigns the data type based on the data types
+of the fields that are being concatenated. The general rules are:  <ul class="cds--list--unordered">
+<li class="cds--list__item">If the concatenation contains one or more hexadecimal (H) fields, the
+resulting data type is hexadecimal (H).</li>
+
+<li class="cds--list__item">If the concatenation contains one or more character (A) fields, but no
+hexadecimal fields, the resulting data type is character (A).</li>
+
+<li class="cds--list__item">If the concatenation contains only numeric (S, P, B) fields, the resulting
+data type is zoned decimal (S).</li>
+
+<li class="cds--list__item">If the concatenation contains UTF-8 fields, the result is a UTF-8 field.</li>
+
+<li class="cds--list__item">If the concatenation contains UCS-2 or UTF-16 field, the result is UTF-16
+if there is at least one UTF-16 field in the list; otherwise, the result is
+UCS-2.</li>
+
+<li class="cds--list__item">If the concatenation contains binary character fields, the result is binary
+character.</li>
+
+</ul>
+</div>
+<p>When concatenating numeric fields, the sign of the farthest right
+field in the concatenation is used as the sign of the concatenated field.
+The signs of the other fields are ignored; however, they are present in the
+concatenated field. Therefore, if a negative value appears in a field other
+than the last field, you must take appropriate action to delete the embedded
+signs (such as converting the concatenated field to packed decimal).</p>
+<p>The
+maximum length of a concatenated field varies, depending on the data type
+of the concatenated field and the length of the fields being concatenated.
+If the concatenated field is zoned decimal (S), its total length cannot exceed
+63 bytes. If the field is character (A) or hexadecimal (H), its total length
+cannot exceed 32&nbsp;766 bytes. If the concatenated field is a variable length
+field, its total length cannot exceed 32&nbsp;740 (32&nbsp;739 if the field
+also allows the null value).</p>
+<p>You cannot include a floating-point, date,
+time, or timestamp field in a concatenated field.</p>
+<p>In join logical files,
+the fields to be concatenated must be from the same physical file. The first
+field specified on the CONCAT keyword identifies which physical file is used.
+The first field must, therefore, be unique among the physical files the join
+logical file is based on, or you must also specify the JREF keyword following
+the CONCAT keyword to specify which physical file to use.</p>
+</div>
+
+<section class="section" role="region" aria-labelledby="lconcat__title__2"><h2 class="sectiontitle" id="lconcat__title__2">Examples</h2><p>The following examples show how to specify
+the CONCAT keyword.</p>
+</section>
+
+<div class="example"><h2 class="sectiontitle" id="lconcat__title__3">Example 1</h2> <p>MTH, DAY, and YEAR are fields in the
+physical file that are concatenated into one field DATE in the logical file,
+as shown in the following example.</p>
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>|...+....1....+....2....+....3....+....4....+....5....+....6....+....7....+....8
+00010A          R RECORD1                   PFILE(PF1)
+00020A            DATE                      CONCAT(MTH DAY YEAR)
+     A</code></pre></div><div class="docs--copy-btn"></div></div></div>
+
+<div class="example"><h2 class="sectiontitle" id="lconcat__title__4">Example 2</h2><p>In the following example, if the program
+changes DATE from 01 03 81 to 02 05 81, the value placed in the physical record
+does not change because the fields specified last are MTH (value 01), DAY
+(value 03), and YEAR (value 81). However, if MTH, DAY, and YEAR are changed
+to new values, the value of DATE in the physical record also changes.</p>
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>|...+....1....+....2....+....3....+....4....+....5....+....6....+....7....+....8
+00010A          R RECORD2                   PFILE(PF1)
+00020A            DATE                      CONCAT(MTH DAY YEAR)
+00030A            MTH
+00040A            DAY
+00050A            YEAR
+     A</code></pre></div><div class="docs--copy-btn"></div></div></div>
+
+<div class="example"><h2 class="sectiontitle" id="lconcat__title__5">Example 3</h2><p>In the following example, fields from
+the physical file are concatenated into more than one field in the logical
+file.</p>
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>|...+....1....+....2....+....3....+....4....+....5....+....6....+....7....+....8
+00010A          R RECORD3                   PFILE(PF1)
+00020A            DATE                      CONCAT(MTH DAY YEAR)
+00030A            CMPDAT                    CONCAT(DAY MTH YEAR)
+     A</code></pre></div><div class="docs--copy-btn"></div></div></div>
+
+<div class="example"><h2 class="sectiontitle" id="lconcat__title__6">Example 4</h2> <div class="p">In the following example, if the fields
+from PF1 are: <ul class="cds--list--unordered">
+<li class="cds--list__item">FIXED1 is a fixed length field.</li>
+
+<li class="cds--list__item">FIXED2 is a fixed length field.</li>
+
+<li class="cds--list__item">VARLEN1 is a variable length field.</li>
+
+</ul>
+</div>
+<div class="p">The resulting fields are:  <ul class="cds--list--unordered">
+<li class="cds--list__item">FIELD1 is a variable length field.</li>
+
+<li class="cds--list__item">FIELD2 is a fixed length field.</li>
+
+<li class="cds--list__item">FIELD3 is a variable length field.</li>
+
+</ul>
+</div>
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>|...+....1....+....2....+....3....+....4....+....5....+....6....+....7....+....8
+00010A          R RECORD4                   PFILE(PF1)
+00020A            FIELD1                    CONCAT(FIXED1 VARLEN1)
+00030A            FIELD2                    CONCAT(FIXED1 FIXED2)
+00040A            FIELD3                    CONCAT(FIXED1 FIXED2)
+00050A                                      VARLEN
+     A</code></pre></div><div class="docs--copy-btn"></div></div></div>
+
+</div>
+
+<aside role="complementary" aria-labelledby="lconcat__title__1"><nav role="navigation" aria-label="bottom related links" class="ibm-padding-top-1 ibm-padding-bottom-2 bx--row bottom-section-parent">
+<div class="familylinks ibm-margin-bottom-1">
+<div class="parentlink"><strong>Parent topic:</strong> <div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a data-hd-product="ssw_i5_72" href="/docs/en/ssw_ibm_i_74/rzakb/rzakbmstlfkeyw.htm" title="Keyword entries are typed in positions 45 through 80 (functions)." class="bottom-section-link">Keyword entries for physical and logical files (positions 45 through 80)</a></div></div>
+</div>
+
+<div class="linklist relinfo relconcepts ibm-margin-bottom-1" lang="en-us"><h2 class="linkheading bottom-section-h2-title">Related concepts</h2>
+<ul><li class="cds--list__item"><div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a data-hd-product="ssw_i5_72" href="/docs/en/ssw_ibm_i_74/rzakb/fieldname.htm" title="When position 17 is left blank, the name specified in positions 19 through 28 is a field name." class="bottom-section-link">Field name</a></div></li>
+<li class="cds--list__item"><div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a data-hd-product="ssw_i5_72" href="/docs/en/ssw_ibm_i_74/rzakb/lkeynm.htm" title="When you specify K in position 17, the name specified in positions 19 through 28 is a key field name." class="bottom-section-link">Key field name</a></div></li>
+</ul></div>
+
+<div class="linklist relinfo relref ibm-margin-bottom-1" lang="en-us"><h2 class="linkheading bottom-section-h2-title">Related reference</h2>
+<ul><li class="cds--list__item"><div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a data-hd-product="ssw_i5_72" href="/docs/en/ssw_ibm_i_74/rzakb/dbcconcat.htm" title="Using this field-level keyword, you can combine two or more fields from the physical-file record format into one field in the logical-file record format you are describing." class="bottom-section-link">CONCAT (Concatenate) keyword</a></div></li>
+</ul></div>
+</nav></aside></article></main>

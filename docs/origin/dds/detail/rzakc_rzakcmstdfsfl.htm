@@ -1,0 +1,79 @@
+<h1 class="title topictitle1">表示装置ファイルの SFL (サブファイル) キーワード</h1><div id="lastModifiedDate"><span>Last Updated</span>: 2021-04-13</div>
+<div class="body refbody"><p class="shortdesc">これはレコード・レベル・キーワードで、このレコード様式がサブファイル制御レコード様式であることを指定するために使用します。</p>
+<div class="section"><p class="p">当該レコード様式および関連するフィールド記述は、サブファイル制御レコード様式 (SFLCTL キーワードにより識別されるもの) の直前になければなりません。</p>
+<p class="p">このキーワードにはパラメーターはありません。</p>
+<p class="p">サブファイル・レコード様式には、表示可能なフィールドを少なくとも 1 つは指定しなければなりません。ただし、サブファイルがメッセージ・サブファイルの場合を除きます (SFLMSGRCD キーワード)。
+このレコード様式の各フィールドに指定する位置は、サブファイルの各ページの最初のレコードが表示される場合の画面上の位置に相当します。
+レコードの各ページの残りの部分は、最初のレコードの下に表示されます。</p>
+<p class="p">1 ページ当たりのレコード数は、SFLPAG キーワードで指定したパラメーター値によって決まります。</p>
+<p class="p">サブファイル制御レコード様式に指定した表示可能フィールドは、サブファイル・レコードと同時に表示することができます。
+ただし、サブファイル制御レコード様式に指定したフィールドは、たとえオプション標識とともに指定したとしても、サブファイル・レコード様式に指定したフィールドをオーバーラップすることはできません。</p>
+<p class="p">サブファイル・レコードまたはサブファイル制御レコードの最初のフィールドが 1 桁目から始まっている場合には、オーバーラップ・エラーが起こることがあります。1 桁目から始まるフィールドの場合、その開始属性バイトは前の行に入っています。 したがって、前の行も当該レコード様式の一部になります。</p>
+<p class="p">1 つの表示装置ファイル内で指定できるサブファイル (それぞれに SFL キーワードおよび SFLCTL キーワードが 1 つずつ指定されています) の数は、その表示装置ファイル内で指定可能なレコード様式の数によってのみ制約されます (最高 1024 のレコード様式、または 512 のサブファイル)。
+活動レコードを含むことができる、または表示が可能であるサブファイルの数は、一時点で 12 個までです。</p>
+<p class="p">画面サイズが *DS3 である場合、フィールドが 80 桁を超えると次の行に折り返されます。</p>
+<p class="p">オプション標識は、このキーワードでは無効です。</p>
+<div class="p">SFL のほかに、サブファイル・レコード様式について有効なキーワードには次のものがあります。<ul class="ul cds--list--unordered"><li class="li cds--list__item">メッセージ・サブファイルの場合:
+<p class="lines">SFLMSGRCD (レコード・レベルで必須)<br>
+SFLMSGKEY (フィールド・レベルで必須)<br>
+SFLPGMQ</p>
+</li>
+<li class="li cds--list__item">他のすべてのサブファイルの場合 (レコード・レベルで指定可能) : <div class="tablenoborder"><div class="cds--data-table-container"><table id="parm_table0" cellpadding="4" cellspacing="0" role="presentation" class="table presentation cds--data-table" rules="none" frame="void" border="0"><tbody class="tbody"><tr class="row"><td class="entry valigntop" width="50%"><p class="lines">CHANGE<br>
+CHECK(AB)<br>
+CHECK(RL)<br>
+CHGINPDFT<br>
+INDTXT<br>
+KEEP</p>
+</td>
+<td class="entry valigntop" width="50%"><p class="lines">LOGINP<br>
+LOGOUT<br>
+SETOF<br>
+SETOFF<br>
+SFLNXTCHG<br>
+TEXT</p>
+</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="p">次に示すキーワードは、他の場合には有効ですが、フィールド・レベルでサブファイル・レコード様式に指定した場合には、無効になります。<div class="tablenoborder"><div class="cds--data-table-container"><table id="parm_table1" cellpadding="4" cellspacing="0" role="presentation" class="table presentation cds--data-table" rules="none" frame="void" border="0"><tbody class="tbody"><tr class="row"><td class="entry valigntop" width="50%"><p class="lines">DATE<br>
+DFTVAL<br>
+ERRMSG</p>
+</td>
+<td class="entry valigntop" width="50%"><p class="lines">ERRMSGID<br>
+MSGID<br>
+TIME</p>
+</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+</div>
+</li>
+</ul>
+</div>
+</div>
+<div class="example"><h2 class="title sectiontitle">例</h2><p class="p">次の例は、SFL キーワードの指定方法を示しています。</p>
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code>|...+....1....+....2....+....3....+....4....+....5....+....6....+....7....+....8
+00010A          R SFLR                      SFL
+     A*
+00020A*           (at least one displayable field)
+     A*
+00030A          R SFLCTLR                   SFLCTL(SFLR)
+00040A                                      SFLPAG(17)
+00050A                                      SFLSIZ(17)
+00060A                                      SFLDSP
+00070A                                      SFLDSPCTL
+     A</code></pre></div><div class="docs--copy-btn"></div></div>
+</div>
+</div>
+<div class="related-links ibm-padding-top-1 ibm-padding-bottom-2 bx--row bottom-section-parent" aria-label="bottom related links">
+<div class="familylinks ibm-margin-bottom-1">
+<div class="parentlink"><strong>親トピック:</strong> <div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a class="link bottom-section-link" href="/docs/ja/ssw_ibm_i_74/rzakc/rzakcmstkeyent.htm" title="表示装置ファイルを定義するキーワード項目は、45 - 80 桁目 (機能欄) に記入します。">表示装置ファイルの DDS キーワード項目 (45 - 80 桁目)</a></div></div>
+</div>
+<div class="relinfo relref ibm-margin-bottom-1"><strong>関連資料</strong>:<br>
+<div><div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a class="link bottom-section-link" href="/docs/ja/ssw_ibm_i_74/rzakc/rzakcmstdfsfmrc.htm" title="これはレコード・レベル・キーワードで、このサブファイルはメッセージ・サブファイルであり、サブファイル表示時点で表示するレコードはプログラム・メッセージ待ち行列から取り出したメッセージであることを指定するために、サブファイル・レコード様式で使用します。">表示装置ファイルの SFLMSGRCD (サブファイル・メッセージ・レコード) キーワード</a></div></div>
+<div><div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a class="link bottom-section-link" href="/docs/ja/ssw_ibm_i_74/rzakc/rzakcmstdfsfpag.htm" title="これはレコード・レベル・キーワードで、同時に表示するサブファイル・レコードの数を指定するために、サブファイル制御レコード様式で使用します。">表示装置ファイルの SFLPAG (サブファイル・ページ) キーワード</a></div></div>
+</div>
+</div>
+

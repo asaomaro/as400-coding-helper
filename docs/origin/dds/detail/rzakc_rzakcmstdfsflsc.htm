@@ -1,0 +1,49 @@
+<h1 class="title topictitle1">表示装置ファイルの SFLSCROLL (サブファイル・スクロール) キーワード</h1><div id="lastModifiedDate"><span>Last Updated</span>: 2021-04-13</div>
+<div class="body refbody"><p class="shortdesc">これはサブファイル・レコード様式のフィールド・レベル・キーワードで、制御がプログラムに返されるときにサブファイルの最上部にあるサブファイル・レコードの相対レコード数を戻すために使用します。</p>
+<div class="section"><p class="p">このキーワードにはパラメーターはありません。</p>
+<p class="p">このフィールドは、小数点以下の桁数がゼロの、符号付き数字のキーボード・シフト属性を備えていなければなりません。長さは 5 桁で、潜在フィールドとして定義する必要があります。潜在フィールドは、画面上で入力フィールドを表示しません。</p>
+<p class="p">このフィールドは、当該サブファイル制御レコードの入力の一部として、ユーザーのプログラムに返されます。
+Enter キーを押すことによって制御がプログラムに戻される場合、戻される値は、現在表示されている最上部のサブファイル・レコードの相対レコード数になります。</p>
+<p class="p">ROLLUP キーワードまたは ROLLDOWN キーワードを使用すると、前ページ・キーまたは次ページ・キーを押してサブファイルの終わりを超えるときに制御がプログラムに戻されます。ROLLUP または ROLLDOWN を使用しないと、メッセージが表示されます。
+ROLLUP キーワードのために制御がプログラムへ戻される場合、戻される値は次ページ最上部のサブファイル・レコードの相対レコード数になります。ROLLDOWN キーワードのために制御がプログラムへ戻される場合、相対レコード数フィールドに 1 が戻されます。</p>
+<div class="note note border-2 cds--inline-notification--info ibmdocs-note cds--inline-notification cds--inline-notification--low-contrast margin-top-1 margin-bottom-1"><div class="cds--inline-notification__details"><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" class="cds--inline-notification__icon" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M16,2A14,14,0,1,0,30,16,14,14,0,0,0,16,2Zm0,5a1.5,1.5,0,1,1-1.5,1.5A1.5,1.5,0,0,1,16,7Zm4,17.12H12V21.88h2.88V15.12H13V12.88h4.13v9H20Z"></path></svg>
+        <div class="cds--inline-notification__text-wrapper">
+          <div class="cds--inline-notification__subtitle"><span class="notetitle ibm-bold ibm-textcolor-blue-50 background-blue cds--inline-notification__title ibm-padding-top-1 ibm-padding-bottom-1 padding-left-1 padding-right-1">注:</span> ROLLUP キーワードは PAGEDOWN キーワードと同じであり、ROLLDOWN キーワードは PAGEUP キーワードと同じです。</div>
+        </div>
+      </div></div>
+<p class="p">SFLSCROLL は、SFLSIZ と SFLPAG が等しい場合は許可されません。</p>
+<p class="p">このキーワードは、サブファイル制御レコード様式についてのみ有効です。</p>
+<p class="p">このキーワードは、スクロール・バーが使用されるときに役立ちます (SFLEND(*SCRBAR) が指定される場合)。
+ユーザーがスクロール・バーと対話する際、SFLSCROLL が入っている潜在フィールドには、ユーザーが表示したいレコードの相対レコード数が含まれています。制御は、ユーザーが書き込まれていないサブファイルの部分にスクロールを試みる際、または Enter キーが押された場合にのみプログラムに戻されます。役立つ可能性のある別のキーワードは、*TOP をパラメーターとして持つ SFLRCDNBR です。
+レコードをサブファイルに追加した後、SFLRCDNBR を伴うサブファイルを再表示します。
+SFLSCROLL キーワードに戻されたこのキーワードには、同じ番号を使用してください。</p>
+<p class="p">SFLROLVAL、SFLSCROLL、および SFLRCDNBR キーワードを同じフィールドに指定することはできません。</p>
+<p class="p">サブファイル制御レコードで許可されるのは、1 つの SFLSCROLL だけです。</p>
+<p class="p">オプション標識は、このキーワードでは無効です。</p>
+</div>
+<div class="example"><h2 class="title sectiontitle">例</h2><p class="p">次の例は、SFLSCROLL キーワードの指定方法を示しています。</p>
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code>|...+....1....+....2....+....3....+....4....+....5....+....6....+....7....+....8
+     A
+     A          R SFLRCD                    SFL
+     A            CTLFLD         1Y 0H      SFLCHCCTL
+     A            F1             4A  O  6 10
+     A          R SFLCTLRCD                 SFLCTL(SFLRCD)
+     A                                      SFLSNGCHC
+     A                                      SFLPAG(5) SFLSIZ(&amp;SFLSIZ);
+     A                                      SFLDSP SFLDSPCTL
+     A                                      ROLLUP(10)
+     A   10                                 SFLEND(*SCRBAR)
+     A            F3             5S 0H      SFLSCROLL
+     A            F2             4S 0H      SFLRCDNBR(CURSOR *TOP)
+     A            SFLSIZ         5S 0P
+     A                                 1 30'Panel Title'
+     A                                 4  5'Multiple selection list:'</code></pre></div><div class="docs--copy-btn"></div></div>
+<p class="p">この例では、制御がプログラムに戻されるときにフィールド F3 に、サブファイルの最上部にあるサブファイル・レコードの相対レコード数が入っています。</p>
+</div>
+</div>
+<div class="related-links ibm-padding-top-1 ibm-padding-bottom-2 bx--row bottom-section-parent" aria-label="bottom related links">
+<div class="familylinks ibm-margin-bottom-1">
+<div class="parentlink"><strong>親トピック:</strong> <div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a class="link bottom-section-link" href="/docs/ja/ssw_ibm_i_74/rzakc/rzakcmstkeyent.htm" title="表示装置ファイルを定義するキーワード項目は、45 - 80 桁目 (機能欄) に記入します。">表示装置ファイルの DDS キーワード項目 (45 - 80 桁目)</a></div></div>
+</div>
+</div>
+

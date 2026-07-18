@@ -1,0 +1,61 @@
+<h1 class="title topictitle1">印刷装置ファイルの OUTBIN (出力ビン) キーワード</h1><div id="lastModifiedDate"><span>Last Updated</span>: 2021-04-13</div>
+<div class="body refbody"><p class="shortdesc">このレコード・レベルのキーワードは、
+複数の出力ビンを使用できる印刷装置に対して出力先を指定する場合に使用します。</p>
+<div class="section"><p class="p"> キーワードの形式は次のとおりです。</p>
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code>OUTBIN(output-bin number | &amp;output-bin number)</code></pre></div><div class="docs--copy-btn"></div></div>
+<p class="p">指定できる値は次のいずれかです。</p>
+<dl class="dl"><dt class="dt dlterm">*DEVD</dt>
+<dd class="dd">出力先は、装置のデフォルト出力ビンです。</dd>
+<dt class="dt dlterm">output-bin</dt>
+<dd class="dd">出力先の出力ビンを指定します。有効な値の範囲は 1 から 65535 です。</dd>
+</dl>
+<p class="p">出力ビン番号は、固定情報フィールドまたはプログラム - システム間
+フィールドとして指定できます。出力ビン番号をプログラム - システム間フィールドとして
+指定するとき、そのフィールドは OUTBIN キーワードと同じレコード様式内になければなりません。また、そのフィールドの桁数は 5、小数点以下の桁数は 0、データ・タイプ S、および使用目的 P として定義する必要があります。</p>
+<p class="p">OUTBIN キーワードを指定しなかった場合には、CRTPRTF コマンド、CHGPRTF コマンド、または OVRPRTF コマンド
+の OUTBIN パラメーターに指定されている値によって、出力ビンの
+値が決まります。</p>
+<p class="p">ファイルに OUTBIN が指定される場合には、CRTPRTF コマンドで DEVTYPE(*AFPDS) を
+指定してください。DEVTYPE が *AFPDS 以外に変更された場合には、キーワードは
+無視され、印刷時に警告メッセージが出ます。 </p>
+<p class="p">OUTBIN はページの境界で指定されていないと、実行時に無視されます。あるページについて、名前付きのフィールドまたは固定情報フィールドが 1 つも
+処理されていなければ、プリンターはページの境界にあります。名前付きフィールド
+または固定情報フィールドが 1 つでも処理されると、プリンターはもうページの
+境界にはありません。SKIP、SPACE、ENDPAGE、または INVMMAP のいずれかの
+キーワードが処理されたためにプリンターが改ページを行うと、プリンターは再びページの境界に位置づけられます。</p>
+<p class="p">OUTBIN、SKIP、および SPACE の各キーワードは、次の順序で処理されます。</p>
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code>SKIPB
+SPACEB
+OUTBIN
+SPACEA
+SKIPA  </code></pre></div><div class="docs--copy-btn"></div></div>
+<p class="p">OUTBIN は、それを指定したレコード様式に対してだけ効力を持ちます。指定のレコード様式を持つレコードが処理された後、次のレコード様式 (OUTBIN キーワードが指定されていない場合) に
+使用される出力ビンは、ファイル・レベル (CRTPRTF、CHGPRTF、または OVRPRTF) コマンドで指定されている出力ビンです。</p>
+<p class="p">ジョブとファイルの区切りページは、プリンターに対して
+指定されている出力ビン内にだけ配置できます。</p>
+<p class="p">このキーワードについては、オプション標識を使用できます。</p>
+<div class="note note border-2 cds--inline-notification--info ibmdocs-note cds--inline-notification cds--inline-notification--low-contrast margin-top-1 margin-bottom-1"><div class="cds--inline-notification__details"><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" class="cds--inline-notification__icon" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M16,2A14,14,0,1,0,30,16,14,14,0,0,0,16,2Zm0,5a1.5,1.5,0,1,1-1.5,1.5A1.5,1.5,0,0,1,16,7Zm4,17.12H12V21.88h2.88V15.12H13V12.88h4.13v9H20Z"></path></svg>
+        <div class="cds--inline-notification__text-wrapper">
+          <div class="cds--inline-notification__subtitle"><span class="notetitle ibm-bold ibm-textcolor-blue-50 background-blue cds--inline-notification__title ibm-padding-top-1 ibm-padding-bottom-1 padding-left-1 padding-right-1">注:</span> MVS™
+へスプール・ファイルを送信する際にこの DDS キーワードを使用するシステムでは、
+生成されるスプール・ファイルは正しく印刷されません。
+スプール・ファイルは印刷されず、PSF または
+MVS によって出力キューに保留されます。</div>
+        </div>
+      </div></div>
+</div>
+<div class="section"><h2 class="title sectiontitle">例</h2><p class="p">次の例は、OUTBIN キーワードの指定方法を示しています。</p>
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code>|...+....1....+....2....+....3....+....4....+....5....+....6....+....7....+....8
+     A*
+     A          R REC1                      OUTBIN(2)
+     A            FLD1           5A    60 10
+     A*</code></pre></div><div class="docs--copy-btn"></div></div>
+<p class="p">印刷時に REC1 は出力ビン 2 に送られます。</p>
+</div>
+</div>
+<div class="related-links ibm-padding-top-1 ibm-padding-bottom-2 bx--row bottom-section-parent" aria-label="bottom related links">
+<div class="familylinks ibm-margin-bottom-1">
+<div class="parentlink"><strong>親トピック:</strong> <div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a class="link bottom-section-link" href="/docs/ja/ssw_ibm_i_74/rzakd/rzakdmstprkey.htm" title="これらは印刷装置ファイルの定義に有効なキーワード項目です。">印刷装置ファイルのキーワード項目 (45 から 80 桁目)</a></div></div>
+</div>
+</div>
+

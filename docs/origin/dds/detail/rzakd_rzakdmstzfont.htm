@@ -1,0 +1,138 @@
+<h1 class="title topictitle1">印刷装置ファイルの FONT (フォント) キーワード</h1><div id="lastModifiedDate"><span>Last Updated</span>: 2021-04-13</div>
+<div class="body refbody"><p class="shortdesc">このレコード・レベルまたはフィールド・レベルのキーワードは、
+レコード内の名前付きフィールドまたは固定情報フィールドの印刷に使用するフォント ID を指定する場合に使用します。</p>
+<div class="section"><p class="p">キーワードの形式は次のとおりです。</p>
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code>FONT(font-identifier | &amp;font-identifier-field
+    [(*POINTSIZE height-value | &amp;height-value-field
+    width-value | &amp;width-value-field)])</code></pre></div><div class="docs--copy-btn"></div></div>
+<p class="p">font-identifier は必須パラメーターで、キーワードに続く最初のパラメーター
+でなくてはなりません。数字フォント識別コードまたは図形フォント名、あるいは *VECTOR を指定してください。</p>
+<p class="p">font-identifier は、次の例に示すように、固定情報フィールドまたはプログラム - システム間フィールドとして指定できます。</p>
+<ul class="ul cds--list--unordered"><li class="li cds--list__item"><samp class="ph codeph">font-identifier...</samp></li>
+<li class="li cds--list__item"><samp class="ph codeph">&amp;field1...</samp></li>
+</ul>
+<p class="p">font-identifier をプログラム - システム間フィールドとして指定するとき、このフィールドは FONT キーワードと同じレコード様式内に存在しなければ
+なりません。また、そのフィールドの桁数は 10、データ・タイプ A (文字)、および使用目的 P (プログラム - システム間) として定義する必要があります。</p>
+<p class="p">スケーラブルなプリンター常駐フォントの場合、任意指定の point-size パラメーターを使用して
+数字フォントをさらに詳細に定義できます。このパラメーターは、ポイント・サイズを指定します。point-size パラメーターは、次の形式で指定します。</p>
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code>(*POINTSIZE height-value width-value)</code></pre></div><div class="docs--copy-btn"></div></div>
+<p class="p">height-value は、フォントの高さのポイント・サイズを指定します。width-value は、フォントの幅のポイント・サイズを指定します。フォントのスケールを均等にする場合 (高さと幅が同じ) は、height-value だけを指定できます。height-value を指定せずに width-value を指定することはできません。このパラメーターに
+使用できる値は 0.1 から 999.9 です。</p>
+<p class="p">次の例に示すとおり、point-size height および point-size width は、固定情報フィールド、プログラム - システム間フィールド、またはその両方の組み合わせとして指定できます。</p>
+<ul class="ul cds--list--unordered"><li class="li cds--list__item"><samp class="ph codeph">[(*POINTSIZE height-value &amp;field1)]</samp></li>
+<li class="li cds--list__item"><samp class="ph codeph">[(*POINTSIZE &amp;field2 width-value)]</samp></li>
+</ul>
+<p class="p">point-size の height-value または width-value をプログラム - システム間フィールドとして指定するとき、これらのフィールドは FONT キーワードと同じレコード様式内に存在しなければなりません。これらのフィールドは、桁数 4、小数点以下の桁数 1、データ・タイプ S、および使用目的 P (プログラム - システム間) として定義しなければなりません。</p>
+<p class="p">スケーラブルでないプリンター常駐フォントの場合、point-size パラメーターは無視されます。</p>
+<p class="p">DEVTYPE(*IPDS) の場合、ポイント・サイズの width パラメーターは
+無視されます。</p>
+<p class="p">図形フォント名または *VECTOR を指定した FONT キーワードに point-size パラメーターを指定した場合は、
+ファイル作成時に警告メッセージが出ます。
+その場合、point-size パラメーターは無視されます。</p>
+<p class="p">このキーワードを指定しなかった場合は、フォント ID とポイント・サイズは、CRTPRTF コマンド、CHGPRTF コマンド、または OVRPRTF コマンドの FONT パラメーターに
+したがってセットされます。このキーワードをレコード・レベルで指定した場合には、このキーワードを
+フィールド・レベルで個別に指定したフィールドを除いて、当該レコード様式の
+すべてのフィールドについて同じフォント ID とポイント・サイズが使用されます。</p>
+<p class="p">FONT キーワードでは、図形フォント (英数字) またはハードウェア・フォント
+(数字フォント識別コード) を指定することができます。
+図形フォントの場合には、<span class="keyword">IBM® i</span> オペレーティング・システム、
+GDDM®、PGR、および BGU
+で使用可能な図形記号セット (GSS) を使用します。
+サポートされるのはベクトル記号 (各文字は 1 組の直線または曲線により形成されます) だけです。
+しかし、オペレーティング・システムおよび GDDM
+により提供される、ほとんどのベクトル記号セットはサポートされます。
+イメージ記号は使用できません。
+図形記号セットの探索には、*LIBL が修飾ライブラリー名として使用されます。</p>
+<p class="p">図形フォントの名前には、最高 10 個の英数字を使用することができます。</p>
+<p class="p">ハードウェア・フォントは最高 10 個の数字で構成されますが、これは登録された
+フォント番号でなければなりません。
+フォント ID のリストについては、
+「<a class="xref" href="http://pic.dhe.ibm.com/infocenter/iseries/v6r1m0/topic/books_web/g5445846.pdf" target="_blank" title="(PDF ファイルを開く)">IBM
+Infoprint Fonts: Font Summary</a>」を参照してください。</p>
+<p class="p">FONT キーワードに *VECTOR を指定することにより、4234 IPDS プリンターでは、ベクトル・フォントを利用することができます。
+拡張文字の印刷については、PRTQLTY(*DRAFT) キーワードを使用するよりも、ベクトル・フォントの方が早く
+印刷できます。拡張文字の指定は、CHRSIZ キーワードで行います。</p>
+<div class="note note border-2 cds--inline-notification--info ibmdocs-note cds--inline-notification cds--inline-notification--low-contrast margin-top-1 margin-bottom-1"><div class="cds--inline-notification__details"><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" class="cds--inline-notification__icon" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M16,2A14,14,0,1,0,30,16,14,14,0,0,0,16,2Zm0,5a1.5,1.5,0,1,1-1.5,1.5A1.5,1.5,0,0,1,16,7Zm4,17.12H12V21.88h2.88V15.12H13V12.88h4.13v9H20Z"></path></svg>
+        <div class="cds--inline-notification__text-wrapper">
+          <div class="cds--inline-notification__subtitle"><span class="notetitle ibm-bold ibm-textcolor-blue-50 background-blue cds--inline-notification__title ibm-padding-top-1 ibm-padding-bottom-1 padding-left-1 padding-right-1">注:</span> CHRSIZ キーワードとともに FONT(*VECTOR) を指定すると、4234 プリンターはデフォルトのコード・ページを使用します。</div>
+        </div>
+      </div></div>
+<div class="p">ベクトル・フォントを使用できるのは以下の文字についてだけです。<ul class="ul cds--list--unordered"><li class="li cds--list__item">A から Z</li>
+<li class="li cds--list__item">0 から 9</li>
+<li class="li cds--list__item">特殊文字 (.+ $ * - / % ブランク)</li>
+</ul>
+</div>
+<p class="p">印刷するデータ内に上記以外の文字が入っていると、すべての文字は
+そのプリンターにおけるデフォルトのフォントを使用して印刷されます。</p>
+<p class="p">FONT(*VECTOR) を指定しても、拡張されない文字には何も影響がありません。CHRSIZ (1 1) が適用されるフィールドまたはレコード、あるいは CHRSIZ キーワードが適用されないフィールドまたはレコード
+に FONT(*VECTOR) を指定すると、警告メッセージが出されます。</p>
+<div class="note note border-2 cds--inline-notification--info ibmdocs-note cds--inline-notification cds--inline-notification--low-contrast margin-top-1 margin-bottom-1"><div class="cds--inline-notification__details"><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" class="cds--inline-notification__icon" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M16,2A14,14,0,1,0,30,16,14,14,0,0,0,16,2Zm0,5a1.5,1.5,0,1,1-1.5,1.5A1.5,1.5,0,0,1,16,7Zm4,17.12H12V21.88h2.88V15.12H13V12.88h4.13v9H20Z"></path></svg>
+        <div class="cds--inline-notification__text-wrapper">
+          <div class="cds--inline-notification__subtitle"><span class="notetitle ibm-bold ibm-textcolor-blue-50 background-blue cds--inline-notification__title ibm-padding-top-1 ibm-padding-bottom-1 padding-left-1 padding-right-1">注:</span> 4224 プリンターまたは 3812 プリンターに対して FONT(*VECTOR) を指定しても、これらのプリンターではデフォルトのフォントならびにコード・ページが使用されます。</div>
+        </div>
+      </div></div>
+<p class="p">ファイル作成時には、フォント名 (またはフォント番号) およびポイント・
+サイズの値の検査は行われません。指定したフォント ID とポイント・サイズ
+の値が有効でない場合には、レコードの印刷時に診断メッセージが出され、当該キーワードは使用されません。</p>
+<p class="p">FONT をフィールド・レベルで指定した場合、重複フィールドに関する診断は行われません。</p>
+<p class="p">CRTPRTF、CHGPRTF、または OVRPRTF のいずれかのコマンドで図形フォントを指定
+する場合には、そのフォント ID には暗黙のページ・コードが付属しています。要求するページ・コードが得られるようにするためには、適切なフォント ID を
+使用しなければなりません。CHRID パラメーターで指定したコード・ページは
+使用されません。</p>
+<p class="p">CHRID キーワードと一緒に OCR-A フォントを指定する場合、これらのフォントにはコード・ページ 892 が必要です。CHRID キーワードと一緒に OCR-B フォントを指定する場合、これらのフォントにはコード・ページ 893 が必要です。</p>
+<p class="p">DEVTYPE(*IPDS) および FONT(*DEVD) の指定に基づいて作成されるファイルで FONT DDS キーワードを指定すると、
+ファイル作成時に警告メッセージが出ます。
+SCS 印刷装置ファイルの場合には、レコードまたはフィールドの印刷
+のさいに FONT キーワードは無視されます。IPDS プリンターの場合は、レコード・レベルまたはフィールド・レベルで FONT キーワードを変更することができます。</p>
+<p class="p">FONT キーワードを使用するファイルを、登録済みフォントを
+サポートしない IPDS AFP(*YES) プリンターで印刷する場合は、フォントの置換が行われます。</p>
+<p class="p">フォント・サポートが使用される装置に対して、CRTPRTF、CHGPRTF、または OVRPRTF のいずれかのコマンドを用いて FONT(*CPI) を指定した場合には、ホスト・システムは、現行の印刷装置ファイルの CPI に該当するピッチの
+フォントを選択します。</p>
+<p class="p">FONT(graphic-font-name) と CHRID とを同時に指定することはできません。
+次の場合には、CHRID キーワードは無視されます。</p>
+<ul class="ul cds--list--unordered"><li class="li cds--list__item">FONT(graphic-font-name) と CHRID とを同じフィールドに対して指定した場合。</li>
+<li class="li cds--list__item">FONT(graphic-font-name) をレコード・レベルで指定し、そのレコード内のフィールドについて、数字 FONT ではなく CHRID を指定した場合。</li>
+</ul>
+<p class="p">FONT は、CDEFNT または FNTCHRSET キーワードと同じレベルで指定することはできません。</p>
+<p class="p">このキーワードは、各レコードおよび各フィールドについてそれぞれ 1 回だけ指定することができます。</p>
+<p class="p">このキーワードの対象として有効なデータ・タイプは、A、S、および F です。</p>
+<p class="p">このキーワードについては、オプション標識を使用できます。</p>
+</div>
+<div class="section"><h2 class="title sectiontitle">例</h2><p class="p">次の例は、FONT キーワードの指定方法を示しています。</p>
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code>|...+....1....+....2....+....3....+....4....+....5....+....6....+....7....+....8
+00010A          R RECORD1
+00020A  02 03                               FONT(222)
+00030A            FLD1           6A    16 01
+00040A  01                                  FONT(ADMMVSS)
+00050A            FLD2           6S    20 01
+00060A          R RECORD2
+00070A  04                                  FONT(16951 (*POINTSIZE 10))
+00080A            FLD3           6A    16 01
+00090A  05                                  FONT(16951 (*POINTSIZE 12))
+00100A            FLD4           6S    20 01FONT(4919)
+00110A
+00120A            FLD5          10A    30 01FONT(416 +
+00130A  05                                  (*POINTSIZE 5.0 3.0))</code></pre></div><div class="docs--copy-btn"></div></div>
+<p class="p">この例では、FLD1 については、標識 01 がオンであれば各国間共通記号セット
+(FONT(ADMMVSS)) が使用され、標識 01 がオフで、標識 02 および 03 がオン
+であれば Gothic [英字フォント]、ゴシック [日本語フォント] 15 (FONT(222)) が使用されます。その他の場合は、CRTPRTF コマンドで指定されているフォントが使用されます。</p>
+<p class="p">FLD2 については、標識 02 および 03 がオンであれば Gothic [英字フォント]、ゴシック [日本語フォント] 15 が
+使用され、その他の場合は、CRTPRTF コマンドで指定されているフォントが使用されます。</p>
+<p class="p">FLD3 については、標識 05 がオンであれば
+ポイント・サイズ 12 の Century Schoolbook** (FONT(16951 (*POINTSIZE 12))) が使用され、標識 05 が
+オフで標識 04 がオンであればポイント・サイズ 10 の Century Schoolbook が
+使用されます。その他の場合は、CRTPRTF コマンドで指定されているフォントが使用されます。</p>
+<p class="p">FLD4 については、Goudy 旧字体 (FONT(4919)) が使用されます。</p>
+<p class="p">FLD5 は、垂直ポイント・サイズ 5.0 と水平ポイント・サイズ 3.0 を使用して
+フォント 416 を指定します。</p>
+</div>
+</div>
+<div class="related-links ibm-padding-top-1 ibm-padding-bottom-2 bx--row bottom-section-parent" aria-label="bottom related links">
+<div class="familylinks ibm-margin-bottom-1">
+<div class="parentlink"><strong>親トピック:</strong> <div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a class="link bottom-section-link" href="/docs/ja/ssw_ibm_i_74/rzakd/rzakdmstprkey.htm" title="これらは印刷装置ファイルの定義に有効なキーワード項目です。">印刷装置ファイルのキーワード項目 (45 から 80 桁目)</a></div></div>
+</div>
+<div class="relinfo relref ibm-margin-bottom-1"><strong>関連資料</strong>:<br>
+<div><div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a class="link bottom-section-link" href="/docs/ja/ssw_ibm_i_74/rzakd/rzakdmstptcpi.htm" title="このレコード・レベルまたはフィールド・レベルのキーワードにより、 定義中のレコード様式またはフィールドについての横方向の印刷密度を指定します。">印刷装置ファイルの CPI (1 インチ当たりの文字数) キーワード</a></div></div>
+</div>
+</div>
+

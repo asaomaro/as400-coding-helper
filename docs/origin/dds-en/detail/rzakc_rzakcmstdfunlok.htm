@@ -1,0 +1,93 @@
+<main role="main"><article role="article" aria-labelledby="rzakcmstdfunlok__title__1">
+<h1 class="topictitle1" id="rzakcmstdfunlok__title__1">UNLOCK (Unlock) keyword for display files</h1><div id="lastModifiedDate"><span>Last Updated</span>: 2026-07-13</div>
+
+
+
+<div class="body refbody"><p class="shortdesc"><span class="ph">You use this record-level keyword
+to specify that the <span class="keyword">IBM i</span> operating
+system is to unlock the keyboard immediately after issuing an input operation
+to the record format you are defining.</span></p>
+
+<div class="section"><p>Without the UNLOCK keyword, the <span class="keyword">IBM i</span> operating
+system leaves the keyboard locked after reading the data on the display. The
+workstation user cannot key data into input-capable fields while the data
+that has just been read is being processed.</p>
+<div class="p">The format of the keyword
+is:  <div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>UNLOCK[(*ERASE) | (*MDTOFF)] | [(*ERASE *MDTOFF)] |  [(*MDTOFF *ERASE)]</code></pre></div><div class="docs--copy-btn"></div></div></div>
+<p>The
+parameter values *ERASE and *MDTOFF are optional. If you do not specify any
+parameter value, *ERASE is the default.</p>
+<p>When your program sends an input
+operation, the following sequence of operations typically occurs:</p>
+<ol class="cds--list--ordered--temporary">
+<li class="cds--list__item">The keyboard is unlocked (if it is not already unlocked) to allow the
+workstation user to key into input-capable fields on the display.</li>
+
+<li class="cds--list__item">The workstation user presses the Enter key (or a valid function key).</li>
+
+<li class="cds--list__item">Modified data tags (MDTs) for input-capable fields in the record format
+are set on if they have been typed into or if they were displayed with the
+DSPATR(MDT) keyword in effect.</li>
+
+<li class="cds--list__item">When the input operation is completed, the parameter values for UNLOCK
+affect the input-capable fields with MDTs set on as described in the following
+sections.</li>
+
+</ol>
+</div>
+
+<section class="section" role="region" aria-labelledby="rzakcmstdfunlok__title__2"><h2 class="sectiontitle" id="rzakcmstdfunlok__title__2">UNLOCK (without GETRETAIN) or UNLOCK(*ERASE)</h2><p>The
+keyboard remains unlocked, input-capable fields on the display are erased,
+and their MDTs remain on following the input operation.</p>
+</section>
+
+<section class="section" role="region" aria-labelledby="rzakcmstdfunlok__title__3"><h2 class="sectiontitle" id="rzakcmstdfunlok__title__3">UNLOCK(*MDTOFF) or UNLOCK (with GETRETAIN)</h2><p>The keyboard
+remains unlocked, input-capable fields on the display are not erased, and
+their MDTs are set off following the input operation.</p>
+</section>
+
+<section class="section" role="region" aria-labelledby="rzakcmstdfunlok__title__4"><h2 class="sectiontitle" id="rzakcmstdfunlok__title__4">UNLOCK(*ERASE *MDTOFF) or UNLOCK(*MDTOFF *ERASE)</h2><p>The
+keyboard remains unlocked, input-capable fields on the display with their
+MDTs set on are erased, and their MDTs are set off following the input operation.</p>
+<p>The
+GETRETAIN keyword is ignored and an error message results at file creation
+time if the GETRETAIN keyword is specified with UNLOCK(any parameter).</p>
+<div class="note border-2 cds--inline-notification--info ibmdocs-note cds--inline-notification cds--inline-notification--low-contrast margin-top-1 margin-bottom-1"><div class="cds--inline-notification__details"><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" class="cds--inline-notification__icon" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M16,2A14,14,0,1,0,30,16,14,14,0,0,0,16,2Zm0,5a1.5,1.5,0,1,1-1.5,1.5A1.5,1.5,0,0,1,16,7Zm4,17.12H12V21.88h2.88V15.12H13V12.88h4.13v9H20Z"></path></svg>
+        <div class="cds--inline-notification__text-wrapper">
+          <div class="cds--inline-notification__subtitle"><span class="notetitle ibm-bold ibm-textcolor-blue-50 background-blue cds--inline-notification__title ibm-padding-top-1 ibm-padding-bottom-1 padding-left-1 padding-right-1">Note:</span> This keyword does not prevent your program from issuing an
+output operation immediately after an input operation. However, the keyboard
+is unlocked and the workstation user can be typing input data when the output
+operation changes the display.</div>
+        </div>
+      </div></div>
+<p>Option indicators are not valid for
+this keyword.</p>
+</section>
+
+<div class="example"><h2 class="sectiontitle" id="rzakcmstdfunlok__title__5">Example</h2><p>The following example shows how to specify
+the UNLOCK keyword.</p>
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>|...+....1....+....2....+....3....+....4....+....5....+....6....+....7....+....8
+00010A          R RECORD1                   UNLOCK(*ERASE)
+00020A            FLD1           4   B  2  2
+00030A            FLD2           4   B  3  2
+     A
+00040A          R RECORD2                   UNLOCK(*MDTOFF)
+00050A            FLD21          4   B  4  2
+00060A            FLD22          4   B  5  2
+     A
+00070A          R RECORD3                   UNLOCK(*ERASE *MDTOFF)
+00080A            FLD31          4   B  6  2
+00090A            FLD32          4   B  7  2
+     A</code></pre></div><div class="docs--copy-btn"></div></div></div>
+
+</div>
+
+<aside role="complementary" aria-labelledby="rzakcmstdfunlok__title__1"><nav role="navigation" aria-label="bottom related links" class="ibm-padding-top-1 ibm-padding-bottom-2 bx--row bottom-section-parent">
+<div class="familylinks ibm-margin-bottom-1">
+<div class="parentlink"><strong>Parent topic:</strong> <div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a data-hd-product="ssw_ibm_i_74" href="/docs/en/ssw_ibm_i_74/rzakc/rzakcmstkeyent.htm" title="You type the keyword entries that define display files in positions 45 through 80 (functions)." class="bottom-section-link">DDS keyword entries for display files (positions 45 through 80)</a></div></div>
+</div>
+
+<div class="linklist relinfo relref ibm-margin-bottom-1" lang="en-us"><h2 class="linkheading bottom-section-h2-title">Related reference</h2>
+<ul><li class="cds--list__item"><div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a data-hd-product="ssw_ibm_i_74" href="/docs/en/ssw_ibm_i_74/rzakc/rzakcmstdfgetr.htm" title="You use this record-level keyword with the UNLOCK keyword to specify that the IBM i operating system is not to erase input-capable fields on input operations as described under the UNLOCK keyword." class="bottom-section-link">GETRETAIN (Get Retain) keyword for display files</a></div></li>
+</ul></div>
+</nav></aside></article></main>

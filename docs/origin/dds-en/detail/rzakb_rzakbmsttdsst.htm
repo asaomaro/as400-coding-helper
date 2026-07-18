@@ -1,0 +1,178 @@
+<main role="main"><article role="article" aria-labelledby="tdsst__title__1">
+<h1 class="topictitle1" id="tdsst__title__1">SST (Substring) keyword—logical files only</h1><div id="lastModifiedDate"><span>Last Updated</span>: 2026-07-13</div>
+
+
+
+<div class="body refbody"><p class="shortdesc"><span class="ph">You can use this field-level keyword to specify
+a character string that is a subset of an existing character, hexadecimal,
+zoned field, or graphic.</span></p>
+
+<div class="section"><div class="p">The format of the keyword is:  <div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>SST(field-name starting-position [length])</code></pre></div><div class="docs--copy-btn"></div></div></div>
+<div class="p">The
+field-name parameter specifies the name of the field from which the substring
+is taken. This field must be defined in the same logical file format before
+the SST field (which is the field you are defining) or it must exist in the
+physical file specified on the PFILE or JFILE keyword. To find the field,
+the system searches for a matching field name as follows:<ol class="cds--list--ordered--temporary">
+<li class="cds--list__item">First, the system searches the field names specified in positions 19 to
+28 in the logical file format before the SST field.</li>
+
+<li class="cds--list__item">If no matching field name is found in positions 19 to 28 in the logical
+file format, the system searches for the field name in the physical file specified
+on the PFILE or JFILE keyword, according to the following rules:  <ul class="cds--list--unordered cds--list--nested">
+<li class="cds--list__item">If the logical file is a simple or multiple format logical file, the field
+must exist in all files specified on the PFILE keyword.</li>
+
+<li class="cds--list__item">If the logical file is a join logical file and the JREF keyword is specified
+on the SST field, the field must exist in the JFILE referred to by the JREF
+keyword.</li>
+
+<li class="cds--list__item">If the logical file is a join logical file and the JREF keyword is not
+specified on the SST field, the field must exist in exactly one JFILE.</li>
+
+</ul>
+</li>
+
+</ol>
+</div>
+<div class="p">The substring begins at the starting position you specify on the
+SST keyword. Specify its length either as the third parameter on the keyword
+or on the field length (DDS positions 30 through 34). The starting position
+is a required parameter; the length is optional.  <div class="note border-2 cds--inline-notification--info ibmdocs-note cds--inline-notification cds--inline-notification--low-contrast margin-top-1 margin-bottom-1"><div class="cds--inline-notification__details"><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" class="cds--inline-notification__icon" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M16,2A14,14,0,1,0,30,16,14,14,0,0,0,16,2Zm0,5a1.5,1.5,0,1,1-1.5,1.5A1.5,1.5,0,0,1,16,7Zm4,17.12H12V21.88h2.88V15.12H13V12.88h4.13v9H20Z"></path></svg>
+        <div class="cds--inline-notification__text-wrapper">
+          <div class="cds--inline-notification__subtitle"><span class="notetitle ibm-bold ibm-textcolor-blue-50 background-blue cds--inline-notification__title ibm-padding-top-1 ibm-padding-bottom-1 padding-left-1 padding-right-1">Note:</span> Both the starting
+position and length values must be positive integer values and the defined
+substring must not be greater than the length of the field specified on the
+SST keyword.</div>
+        </div>
+      </div></div>
+</div>
+<div class="p">The following rules apply:  <ul class="cds--list--unordered">
+<li class="cds--list__item">If the field on the SST keyword is binary character, the resulting field
+is binary character; if the field on the SST keyword is hexadecimal, the resulting
+field is hexadecimal; if the field on the SST keyword is DBCS-graphic, the
+resulting field is DBCS-graphic; otherwise, the resulting field is always
+character. If the data type is not specified in DDS, the result field's data
+type depends on the sub-stringed field as shown in the following table (the <em>Source
+field type</em> is the type of the physical file field or the logical file
+field defined earlier in the logical file source): 
+<div class="tablenoborder"><div class="cds--data-table-container"><table summary="" class="defaultstyle cds--data-table"><colgroup><col><col></colgroup><thead>
+<tr>
+<th id="tdsst__entry__1"><div class="cds--table-header-label">Source field type</div></th>
+
+<th id="tdsst__entry__2"><div class="cds--table-header-label">Logical file field becomes:</div></th>
+
+</tr>
+
+</thead>
+<tbody>
+<tr>
+<td headers="tdsst__entry__1 ">A</td>
+
+<td headers="tdsst__entry__2 ">A</td>
+
+</tr>
+
+<tr>
+<td headers="tdsst__entry__1 ">H</td>
+
+<td headers="tdsst__entry__2 ">H</td>
+
+</tr>
+
+<tr>
+<td headers="tdsst__entry__1 ">S</td>
+
+<td headers="tdsst__entry__2 ">A</td>
+
+</tr>
+
+<tr>
+<td headers="tdsst__entry__1 ">G</td>
+
+<td headers="tdsst__entry__2 ">G</td>
+
+</tr>
+
+<tr>
+<td headers="tdsst__entry__1 ">Binary character</td>
+
+<td headers="tdsst__entry__2 ">Binary character</td>
+
+</tr>
+
+</tbody>
+</table></div>
+</div>
+</li>
+
+<li class="cds--list__item">The use of the resulting field must be either input-only (I) or neither
+(N).</li>
+
+<li class="cds--list__item">The length of the resulting field is optional. You must specify either
+the field length or the length parameter on the keyword. If you specify both,
+they must be equal. If the field length is not specified, it is assigned the
+length parameter on the keyword.</li>
+
+<li class="cds--list__item">You cannot specify this keyword on the same field with the CONCAT, RENAME,
+or TRNTBL keywords.</li>
+
+<li class="cds--list__item">The field specified on this keyword cannot be defined with the CONCAT,
+TRNTBL, or SST keywords.</li>
+
+</ul>
+</div>
+</div>
+
+<div class="example"><h2 class="sectiontitle" id="tdsst__title__2">Examples</h2><p>The following example shows how to specify
+the SST keyword on a join logical file.</p>
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>|...+....1....+....2....+....3....+....4....+....5....+....6....+....7....+....8
+     A          R RECORD1                   JFILE(PF1 PF2)
+     A          J                           JOIN(1 2)
+     A                                      JFELD(CITY CITY)
+     A            ADDRESS                   JREF(2)
+     A            CITY               I      SST(ADDRESS 21 10)
+     A                                      JREF(2)
+     A            SYEAR              I      SST(SALESDATE 5)
+     A            NAME                      JREF(1)
+     A            CUSTNAME           I      SST(NAME 11 10) JREF(2)
+     A          K SYEAR
+     A</code></pre></div><div class="docs--copy-btn"></div></div><div class="p">This example shows:  <ul class="cds--list--unordered">
+<li class="cds--list__item">CITY is a substring of ADDRESS from the logical format and is joined with
+CITY from PF1.</li>
+
+<li class="cds--list__item">CUSTNAME is a substring of NAME from PF2 because NAME in
+the logical file format has a different JREF.</li>
+
+<li class="cds--list__item">Because SYEAR is a key field, the unique field
+name SALESDATE must exist in PF1.</li>
+
+<li class="cds--list__item">The usage (position 38) for a field with the SST keyword must be I (input
+only). Because this is a join logical file, the usage default is I.</li>
+
+</ul>
+</div>
+</div>
+
+<div class="example"><p>The following example shows how to specify the SST keyword on
+a simple or multiple format logical file.</p>
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>|...+....1....+....2....+....3....+....4....+....5....+....6....+....7....+....8
+     A          R REC1                      PFILE(PFA)
+     A            LASTNAME           I      SST(NAME 10 10)
+     A          K LASTNAME
+     A</code></pre></div><div class="docs--copy-btn"></div></div><p>The LASTNAME field is a substring of NAME from PFA. The
+usage I in position 38 must be specified for SST fields in simple or multiple
+format logical files.</p>
+</div>
+
+</div>
+
+<aside role="complementary" aria-labelledby="tdsst__title__1"><nav role="navigation" aria-label="bottom related links" class="ibm-padding-top-1 ibm-padding-bottom-2 bx--row bottom-section-parent">
+<div class="familylinks ibm-margin-bottom-1">
+<div class="parentlink"><strong>Parent topic:</strong> <div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a data-hd-product="ssw_i5_72" href="/docs/en/ssw_ibm_i_74/rzakb/rzakbmstlfkeyw.htm" title="Keyword entries are typed in positions 45 through 80 (functions)." class="bottom-section-link">Keyword entries for physical and logical files (positions 45 through 80)</a></div></div>
+</div>
+
+<div class="linklist relinfo relref ibm-margin-bottom-1" lang="en-us"><h2 class="linkheading bottom-section-h2-title">Related reference</h2>
+<ul><li class="cds--list__item"><div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a data-hd-product="ssw_i5_72" href="/docs/en/ssw_ibm_i_74/rzakb/lleng.htm" title="You use these positions to specify the length of a physical or logical file field." class="bottom-section-link">Length for physical and logical files (positions 30 through 34)</a></div></li>
+</ul></div>
+</nav></aside></article></main>

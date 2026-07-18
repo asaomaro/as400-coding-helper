@@ -1,0 +1,80 @@
+<h1 class="title topictitle1">表示装置ファイルの CHOICE (選択フィールド選択) キーワード</h1><div id="lastModifiedDate"><span>Last Updated</span>: 2021-04-13</div>
+<div class="body refbody"><p class="shortdesc"><span class="ph">これはフィールド・レベル・キーワードで、選択フィールドの選択項目を定義するのに使用します。</span></p>
+<div class="section"><p class="p">キーワードの形式は次のとおりです。</p>
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code>CHOICE(choice-number choice-text [*SPACEB])</code></pre></div><div class="docs--copy-btn"></div></div>
+<p class="p">choice-number パラメーターは、この選択項目についての識別番号を定義します。このパラメーターは必須です。
+選択項目番号は、選択フィールド内のどの選択項目が選択されたかを示すためにアプリケーション・プログラムに戻されます。
+非図形表示装置では、選択項目テキストの左側にも選択項目番号が表示されます。
+choice-number についての有効な値は、1 以上 99 以下の正の整数です。
+1 つの選択フィールド内に重複した choice-number 値があってはなりません。</p>
+<p class="p">choice-text パラメーターは、選択項目を表すために選択フィールドに表示されるテキストを定義します。このパラメーターは必須です。パラメーターは、次のいずれかの書式で指定できます。</p>
+<ul class="ul cds--list--unordered"><li class="li cds--list__item">文字ストリングとして:  '選択項目テキスト '</li>
+<li class="li cds--list__item">プログラム - システム間フィールドとして: &amp;フィールド名</li>
+</ul>
+<p class="p">指定するフィールドは、選択フィールドと同じレコード内に存在しなければならず、使用目的 P の文字フィールドとして定義しなければなりません。</p>
+<p class="p">選択フィールド内にあるすべての選択項目の選択項目テキストは、ファイルで指定されている最小の画面サイズの表示装置に収まる必要があります。したがって、選択項目テキストの最大長は以下の要素によって異なります。</p>
+<ul class="ul cds--list--unordered"><li class="li cds--list__item">選択項目フィールドの桁</li>
+<li class="li cds--list__item">選択項目の左側に表示される選択項目番号の長さ</li>
+<li class="li cds--list__item">選択項目テキスト自体の長さ</li>
+<li class="li cds--list__item">選択フィールドの列数</li>
+<li class="li cds--list__item">列間の余白の広さ</li>
+</ul>
+<p class="p">最小の画面サイズが 24 x 80 である場合には、上記の合計が 80 以下でなければなりません。指定された最小の画面サイズが 27 x 132 である場合には、この合計が 132 以下でなければなりません。</p>
+<p class="p">選択項目テキスト内で、略号文字を示す「より大 (&gt;) 文字」を使用することによって、選択項目についての略号を指定することができます。 &gt; の右隣の文字が略号になります。
+略号は、非プログラマブル・ワークステーションについての拡張インターフェースをサポートする制御装置に接続されている文字ベースの図形表示装置 (選択項目がラジオ・ボタンを使用して示される) でのみ使用されます。
+略号は、フィールドが数字選択を使用して示される画面では無視されます。
+これは、システムが、1 つの選択フィールドで数字と略号の両方の選択はサポートしないためです。以下に略号の指定方法の例を示します。</p>
+<dl class="dl"><dt class="dthd"><strong>選択項目テキスト</strong></dt>
+<dd class="ddhd"><strong>画面での表示</strong></dd>
+<dt class="dt dlterm">'&gt;File'</dt>
+<dd class="dd"><u class="ph u">F</u>ile</dd>
+<dt class="dt dlterm">'F&gt;inish'</dt>
+<dd class="dd">F<u class="ph u">i</u>nish</dd>
+<dt class="dt dlterm">'Save &gt;As...'</dt>
+<dd class="dd">Save <u class="ph u">A</u>s...</dd>
+<dt class="dt dlterm">'X &gt;= 1'</dt>
+<dd class="dd">X <u class="ph u">=</u> 1</dd>
+</dl>
+<p class="p">テキスト内で &gt; を文字として指定するには、テキストに単一のアポストロフィ文字を入れるためにアポストロフィ文字を 2 回指定するのと同様に、&gt; を 2 回指定する必要があります。例えば、次のとおりです。</p>
+<dl class="dl"><dt class="dthd"><strong>選択項目テキスト</strong></dt>
+<dd class="ddhd"><strong>画面での表示</strong></dd>
+<dt class="dt dlterm">'X &gt;&gt;= 1'</dt>
+<dd class="dd">X &gt;= 1</dd>
+<dt class="dt dlterm">'X &gt;&gt;&gt;= 1'</dt>
+<dd class="dd">X &gt;<u class="ph u">=</u> 1</dd>
+</dl>
+<div class="note note border-2 cds--inline-notification--info ibmdocs-note cds--inline-notification cds--inline-notification--low-contrast margin-top-1 margin-bottom-1"><div class="cds--inline-notification__details"><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" class="cds--inline-notification__icon" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M16,2A14,14,0,1,0,30,16,14,14,0,0,0,16,2Zm0,5a1.5,1.5,0,1,1-1.5,1.5A1.5,1.5,0,0,1,16,7Zm4,17.12H12V21.88h2.88V15.12H13V12.88h4.13v9H20Z"></path></svg>
+        <div class="cds--inline-notification__text-wrapper">
+          <div class="cds--inline-notification__subtitle"><span class="notetitle ibm-bold ibm-textcolor-blue-50 background-blue cds--inline-notification__title ibm-padding-top-1 ibm-padding-bottom-1 padding-left-1 padding-right-1">注:</span> &gt; を略号文字として指定することはできません。</div>
+        </div>
+      </div></div>
+<p class="p">示される略号文字は、1 バイト文字でなければならず、ブランクであってはなりません。1 つの選択項目テキスト内で使用できる略号は 1 つだけであり、また、2 つ以上の選択項目に同じ略号文字を指定してはなりません。</p>
+<p class="p">*SPACEB パラメーターは任意指定であり、この選択項目の前にブランクのスペース (または行) が挿入されることを示します。
+このパラメーターは、連続的に番号付けされている選択項目の論理的なグループ分けを指定するのに使用します。</p>
+<p class="p">垂直方向の選択フィールド (単一の列に配列されている選択フィールドのこと) では、選択番号が連続していない場合、連続していない選択項目の間にブランクのスペースが自動的に挿入されます。
+これは水平方向の選択フィールド (複数の列に配列されている選択フィールドのこと) の場合には起こりません。</p>
+<p class="p">フィールドに CHOICE キーワードを指定するときには、SNGCHCFLD または MLTCHCFLD のいずれかのキーワードも指定しなければなりません。</p>
+<p class="p">1 つの選択フィールドに複数の CHOICE キーワードを指定することができます。
+指定できる CHOICE キーワードの最大数は、選択フィールドの桁および画面サイズによって異なります。
+すべての選択項目は、ファイルに指定されている最小画面サイズに収まるようにしなければなりません。</p>
+<p class="p">このキーワードについては、オプション標識を使用することができます。CHOICE キーワードがオフにされると、選択項目のリストが圧縮されます。</p>
+</div>
+<div class="example"><h2 class="title sectiontitle">例</h2><p class="p">次の例は、CHOICE キーワードの指定方法を示しています。</p>
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code>|...+....1....+....2....+....3....+....4....+....5....+....6....+....7....+....8
+     A          R RECORD
+     A            F1             2Y 0B  1  2SNGCHCFLD
+     A  01                                  CHOICE(1 '&gt;Undo       ')
+     A                                      CHOICE(2 &amp;MARKTXT);
+     A                                      CHOICE(3 '&gt;Copy       ')
+     A            MARKTXT       12A  P
+     A</code></pre></div><div class="docs--copy-btn"></div></div>
+<p class="p">この例では、単一選択項目フィールド F1 について 3 つの選択項目が定義されています。
+選択項目 2 のテキストはフィールド MARKTXT に入っており、選択項目 2 の略号は、実行時にアプリケーション・プログラムによって提供されるテキストに入っていなければなりません。レコードが作成されるときに標識 01 がオフにされると、選択項目 2 および 3 だけが表示されます。</p>
+</div>
+</div>
+<div class="related-links ibm-padding-top-1 ibm-padding-bottom-2 bx--row bottom-section-parent" aria-label="bottom related links">
+<div class="familylinks ibm-margin-bottom-1">
+<div class="parentlink"><strong>親トピック:</strong> <div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a class="link bottom-section-link" href="/docs/ja/ssw_ibm_i_74/rzakc/rzakcmstkeyent.htm" title="表示装置ファイルを定義するキーワード項目は、45 - 80 桁目 (機能欄) に記入します。">表示装置ファイルの DDS キーワード項目 (45 - 80 桁目)</a></div></div>
+</div>
+</div>
+

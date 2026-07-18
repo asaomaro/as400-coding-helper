@@ -1,0 +1,154 @@
+<h1 class="title topictitle1">印刷装置ファイルの CPI (1 インチ当たりの文字数) キーワード</h1><div id="lastModifiedDate"><span>Last Updated</span>: 2021-04-13</div>
+<div class="body refbody"><p class="shortdesc">このレコード・レベルまたはフィールド・レベルのキーワードにより、
+定義中のレコード様式またはフィールドについての横方向の印刷密度を指定します。</p>
+<div class="section"><div class="p">CPI キーワードを用いて次のことができます。<ul class="ul cds--list--unordered"><li class="li cds--list__item">ロゴ、および DFNCHR キーワードを用いて作成する他のグラフィックスに
+明暗を付ける。</li>
+<li class="li cds--list__item">印刷用紙の少ないスペースに多くのデータを入れる。</li>
+<li class="li cds--list__item">用紙の外観を必要に合わせる。</li>
+</ul>
+</div>
+<div class="p">キーワードの形式は次のとおりです。
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code>CPI (10 | 15)</code></pre></div><div class="docs--copy-btn"></div></div>
+</div>
+<p class="p">10 または 15 は 1 インチ当たりの文字数を表します。</p>
+<p class="p">このキーワードは、5224、5225 SCS プリンターについてのみ有効です。CPI を指定しなかった場合には、印刷密度は、印刷装置ファイルの作成 (CRTPRTF)、印刷装置ファイルの変更 (CHGPRTF)、または印刷装置ファイルの指定変更 (OVRPRTF) コマンド
+の CPI パラメーターにより設定されます。</p>
+<p class="p">CPI をレコード・レベルで指定した場合には、CPI をフィールド・レベルで
+個別に指定してあるフィールドを除き、そのレコード様式内のすべてのフィールドが
+同じ印刷密度になります。</p>
+<p class="p">CPI をフィールド・レベルで指定する場合には、同じ行に印刷される個々の
+フィールドについてそれぞれ異なる密度を指定することができます。各フィールドに
+ついての桁の指定 (42 から 44 桁目) は、CRTPRTF、CHGPRTF、または OVRPRTF コマンドの CPI パラメーターの値に基づいて行います (後述の
+例を参照してください)。</p>
+<p class="p">CPI をフィールド・レベルで指定した場合、重複フィールドの有無に関する診断は
+行われません。</p>
+<p class="p">DEVTYPE(*IPDS) または DEVTYPE(*AFPDS) を指定して作成されたファイルで CPI を指定した場合には、
+ファイル作成時に警告メッセージが表示されます。
+CPI を変更するには、FONT キーワードを指定しなければなりません。</p>
+<p class="p">CPI キーワードと DRAWER キーワードとを同じレコード様式に対して指定することはできません。</p>
+<p class="p">このキーワードについては、オプション標識を使用できます。</p>
+</div>
+<div class="section"><h2 class="title sectiontitle">例</h2><p class="p">以下の例は、レコード様式についての CPI キーワードの
+指定方法を示します。</p>
+</div>
+<div class="example"><h2 class="title sectiontitle">例 1</h2><div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code>|...+....1....+....2....+....3....+....4....+....5....+....6....+....7....+....8
+00010A          R RECORD1
+00020A  02                                  CPI(15)
+00030A            FLD1         20       3  1
+00040A            FLD2          5  0      +2
+00050A          R RECORD2                   SPACEB(1)
+00060A            FLD3                     1
+     A</code></pre></div><div class="docs--copy-btn"></div></div>
+<p class="p">この例では、オプション標識 02 がオンにセットされると、RECORD1 内の FLD1 と FLD2 は両方とも 1 インチ当たり 15 文字で印刷されます。オプション標識 02 がオフにセットされると、FLD1 および FLD2 は、CRTPRTF、CHGPRTF、または OVRPRTF コマンドの CPI パラメーターに指定された
+密度で印刷されます。</p>
+<p class="p">プリンターでは、RECORD2 の印刷前に 1 行の行送りが行われます。
+RECORD2 の FLD3 は、CRTPRTF、CHGPRTF、または OVRPRTF コマンドの CPI パラメーターに
+指定されている密度で印刷されます。</p>
+</div>
+<div class="example"><h2 class="title sectiontitle">例 2</h2><p class="p">以下の例では、10 CPI で印刷されるフィールドの間に 15 CPI の
+フィールドが印刷されるとどのようなことが起こるかを示します。</p>
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code>|...+....1....+....2....+....3....+....4....+....5....+....6....+....7....+....8
+00010A          R RCDA                      SPACEA(1)
+00020A            FLD1          10         1
+00030A            FLD2          10        11CPI(15)1
+00040A            FLD3          10        21
+     A</code></pre></div><div class="docs--copy-btn"></div></div>
+<div class="p">この例では、すべての桁指定項目 <strong class="ph b">1</strong> は、10 CPI として判断される (CRTPRTF、OVRPRTF、または CHGPRTF コマンドで
+指定されているため) 桁を参照しています。したがって、RCDA は次のように印刷されます。<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code>11111111112222222222     3333333333</code></pre></div><div class="docs--copy-btn"></div></div>
+</div>
+<div class="p">FLD2 は 15 CPI に圧縮されるため、そのためのスペースは FLD1 または FLD3 より
+狭くなります。その結果生じる空白 (すき間) をなくすためには、FLD3 をもっと左寄りに指定する
+必要があります。FLD3 をどの位置に指定すればよいかは、FLD2 について指定した
+桁に FLD2 の長さを加えることによって算出することができます。
+FLD2 の長さは次の式により求められます。<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code>指定した長さ × ファイル密度 = 印刷される長さ
+そのフィールドの密度</code></pre></div><div class="docs--copy-btn"></div></div>
+</div>
+<div class="p">これを FLD2 に当てはめると次のようになります。<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code>10 × 10 = 10 × 2 = 6.67 (7 に切り上げ)
+15        3</code></pre></div><div class="docs--copy-btn"></div></div>
+</div>
+<div class="p">11 (FLD2 の位置として指定されている桁) に 7 を加えると、次のようになります。<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code>7 + 11 = 18</code></pre></div><div class="docs--copy-btn"></div></div>
+</div>
+<div class="p">この結果に基づいて例 2 の DDS を修正すると、次のようになります。<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code>R RCDA                     SPACEA(1)
+FLD1            10      1
+FLD2            10     11CPI(15)
+FLD3            10     18</code></pre></div><div class="docs--copy-btn"></div></div>
+</div>
+<div class="p">この結果、レコード様式は次のように印刷されます。<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code>11111111112222222222 3333333333</code></pre></div><div class="docs--copy-btn"></div></div>
+</div>
+</div>
+<div class="example"><h2 class="title sectiontitle">例 3</h2><p class="p">以下の例では、15 CPI で印刷されるフィールドの間に 10 CPI の
+フィールドが印刷されるとどのようなことが起こるかを示します。</p>
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code>|...+....1....+....2....+....3....+....4....+....5....+....6....+....7....+....8
+00010A          R RCDB                      SPACEA(1)
+00020A            FLD4          10          1
+00030A            FLD5          10         11CPI(10)  1
+00040A            FLD6          10         21
+     A</code></pre></div><div class="docs--copy-btn"></div></div>
+<div class="p">この例では、桁指定項目 <strong class="ph b">1</strong> は、15 CPI として
+判断される (CRTPRTF、OVRPRTF、または CHGPRTF コマンドで指定されているため) 桁を
+参照しています。システムは、次の式により、15 CPI で印刷されるフィールドに
+挟まれた、10 CPI で印刷されるフィールドの開始位置を算出します。<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code>2(指定位置 - 1) + 1 = 印刷位置 (端数は切り捨て)
+3</code></pre></div><div class="docs--copy-btn"></div></div>
+</div>
+<div class="p">これを FLD5 に当てはめると次のようになります。<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code>2(11-1)  + 1 = 7.67 (7 に切り捨て)
+3</code></pre></div><div class="docs--copy-btn"></div></div>
+</div>
+<div class="p">切り捨ての結果、次の例のように FLD4 と FLD5 のオーバーラップが生じることがあります。<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code>44444444445555556666666666666</code></pre></div><div class="docs--copy-btn"></div></div>
+</div>
+<p class="p">オーバーラップが生じないようにするためには、FLD5 を 1 桁右にずらして 12 桁目に指定します。</p>
+<div class="p">FLD6 の位置を計算するためには、FLD5 開始桁に FLD5 の桁数を加えます。
+FLD5 の桁数を算出するには、次の算式を使用します。<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code>指定した長さ × ファイルの密度 = 印刷される長さ
+そのフィールドの密度</code></pre></div><div class="docs--copy-btn"></div></div>
+</div>
+<div class="p">これを FLD5 に当てはめると次のようになります。<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code>10 X 15 = 15 (必要ならば切り上げ)
+10</code></pre></div><div class="docs--copy-btn"></div></div>
+</div>
+<div class="p">調整後の FLD5 の開始位置に 15 を加えると、次のようになります。<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code>15 + 12 = 27</code></pre></div><div class="docs--copy-btn"></div></div>
+</div>
+<div class="p">この結果に基づいて例 3 の DDS を修正すると、次のようになります。<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code>R RCDB                SPACEA(1)
+FLD4       10      1
+FLD5       10     12CPI(10)
+FLD6       10     27</code></pre></div><div class="docs--copy-btn"></div></div>
+</div>
+<div class="p">この結果、レコード様式は次のように印刷されます。<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code>4444444444 5555555555 6666666666</code></pre></div><div class="docs--copy-btn"></div></div>
+</div>
+</div>
+<div class="example"><h2 class="title sectiontitle">例 4</h2><p class="p">以下の例では、
+印刷用紙の右端でシステムが行うフィールドの切り捨てまたは改行に関して CPI キーワードが与える影響を示します。
+これは、CRTPRTF コマンド、CHGPRTF コマンド、または OVRPRTF コマンド
+の FOLD パラメーターおよび PAGESIZE パラメーターの値により左右されます。</p>
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code>|...+....1....+....2....+....3....+....4....+....5....+....6....+....7....+....8
+00010A          R RCDC                      SPACEA(1)
+00020A            FLD7          10       140
+00030A            FLD8          10       150CPI(10)
+     A</code></pre></div><div class="docs--copy-btn"></div></div>
+<div class="p">この例では、用紙の幅が 160 であり、ファイルが 15 CPI で印刷されるとすれば、FLD7 および FLD8 は次のように印刷されます。<ul class="ul cds--list--unordered"><li class="li cds--list__item">FLD7 は、140 桁目から 15 CPI で 10 桁印刷されます (16.9 mm または 0.667 インチ)。</li>
+<li class="li cds--list__item">FLD8 は、150 桁目から 10 CPI で 10 桁印刷されます (25.4 mm または 1 インチ)。</li>
+</ul>
+</div>
+<div class="p">FLD8 を 15 CPI に基づいて計算された 150 桁目から印刷すると、FLD8 は右マージンを
+超えてしまいます。したがって、FLD8 は、切り捨てられるかまたは次の行に
+継続します (どちらになるかは、CRTPRTF コマンド、CHGPRTF コマンド、または OVRPRTF コマンドの FOLD パラメーターによって決まります)。FLD8 の桁数を計算するには、次の式を使用します。<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code>指定した長さ × ファイルの密度 = 印刷される長さ
+そのフィールドの密度</code></pre></div><div class="docs--copy-btn"></div></div>
+</div>
+<div class="p">これを FLD8 に当てはめると次のようになります。<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code>10 × 15 = 15 (必要ならば、整数に切り捨て)
+10</code></pre></div><div class="docs--copy-btn"></div></div>
+<div class="note note border-2 cds--inline-notification--info ibmdocs-note cds--inline-notification cds--inline-notification--low-contrast margin-top-1 margin-bottom-1"><div class="cds--inline-notification__details"><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" class="cds--inline-notification__icon" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M16,2A14,14,0,1,0,30,16,14,14,0,0,0,16,2Zm0,5a1.5,1.5,0,1,1-1.5,1.5A1.5,1.5,0,0,1,16,7Zm4,17.12H12V21.88h2.88V15.12H13V12.88h4.13v9H20Z"></path></svg>
+        <div class="cds--inline-notification__text-wrapper">
+          <div class="cds--inline-notification__subtitle"><span class="notetitle ibm-bold ibm-textcolor-blue-50 background-blue cds--inline-notification__title ibm-padding-top-1 ibm-padding-bottom-1 padding-left-1 padding-right-1">注:</span> 15 CPI で印刷されるファイルに 10 CPI で印刷されるフィールドが含まれている場合には、次の式に従って、すべてのフィールドについて用紙の右マージンが調整されます。</div>
+        </div>
+      </div></div>
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code>2(フィールドの指定の長さ - 1) + 1 = 調整
+3                                 (端数は切り捨て)</code></pre></div><div class="docs--copy-btn"></div></div>
+</div>
+</div>
+</div>
+<div class="related-links ibm-padding-top-1 ibm-padding-bottom-2 bx--row bottom-section-parent" aria-label="bottom related links">
+<div class="familylinks ibm-margin-bottom-1">
+<div class="parentlink"><strong>親トピック:</strong> <div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a class="link bottom-section-link" href="/docs/ja/ssw_ibm_i_74/rzakd/rzakdmstprkey.htm" title="これらは印刷装置ファイルの定義に有効なキーワード項目です。">印刷装置ファイルのキーワード項目 (45 から 80 桁目)</a></div></div>
+</div>
+<div class="relinfo relref ibm-margin-bottom-1"><strong>関連資料</strong>:<br>
+<div><div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a class="link bottom-section-link" href="/docs/ja/ssw_ibm_i_74/rzakd/rzakdmstzfont.htm" title="このレコード・レベルまたはフィールド・レベルのキーワードは、 レコード内の名前付きフィールドまたは固定情報フィールドの印刷に使用するフォント ID を指定する場合に使用します。">印刷装置ファイルの FONT (フォント) キーワード</a></div></div>
+</div>
+</div>
+

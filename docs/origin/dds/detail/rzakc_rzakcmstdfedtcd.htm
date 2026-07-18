@@ -1,0 +1,490 @@
+<h1 class="title topictitle1">表示装置ファイルの EDTCDE (編集コード) キーワード</h1><div id="lastModifiedDate"><span>Last Updated</span>: 2021-04-13</div>
+<div class="body refbody"><p class="shortdesc">これはフィールド・レベル・キーワードで、出力可能数字フィールドを編集するために使用します。</p>
+<div class="section"><p class="p">キーワードの形式は次のとおりです。</p>
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code>EDTCDE(edit-code [* |floating-currency-symbol])</code></pre></div><div class="docs--copy-btn"></div></div>
+<div class="p">指定する編集コードに応じて、フィールドの表示内容が次のように変わります。<ul class="ul cds--list--unordered"><li class="li cds--list__item">先行ゼロが抑制されます。</li>
+<li class="li cds--list__item">小数点の位置を示すため、および数字を 3 桁ごとに区切るために、フィールドにコンマおよびピリオドを入れることができます。</li>
+<li class="li cds--list__item">負の値は、右端に負記号または CR を付けて表示することができます。</li>
+<li class="li cds--list__item">ゼロの値は、ゼロまたはブランクとして表示することができます。</li>
+<li class="li cds--list__item">有効数字の左側にアスタリスクを表示して、アスタリスクによる保護を施すことができます。</li>
+<li class="li cds--list__item">通貨記号 (システム値 QCURSYM に対応するもの) を、左端の有効数字のすぐ左側に表示することができます (このような通貨記号を<em class="ph i">浮動通貨記号</em> といいます)。
+固定通貨記号の場合には、EDTWRD キーワードを使用します。</li>
+<li class="li cds--list__item">フィールドは、さらに、<a class="xref" href="#rzakcmstdfedtcd__udec1">ユーザー定義の編集コード</a>を使用して編集できます。</li>
+</ul>
+</div>
+<p class="p">EDTCDE キーワードは、ほとんどの編集上の要件を満たすことができます。
+EDTCDE が十分でない場合には、EDTWRD を使用してください。</p>
+<p class="p">同一フィールドについて、EDTCDE と EDTWRD の両方を指定することはできません。
+データベース・ファイルで前に定義されているフィールドに EDTCDE が指定されている場合には、表示装置ファイルのそのフィールドに EDTCDE キーワードを指定する必要はありません。29 桁目に R を指定すれば、前に定義されているフィールドを参照することができます。
+参照されたフィールドに指定されている編集は、表示装置ファイルに組み込まれます。
+ただし、表示装置ファイルのフィールドについて、桁数、データ・タイプ、または小数点以下の桁数も指定した場合には、参照フィールドに指定した編集指定は表示装置ファイルには組み込まれません。したがって、この場合には、表示装置ファイルで編集を指定し直さなければなりません。</p>
+<p class="p">EDTCDE キーワードとともに DFT キーワードまたは DFTVAL キーワードを指定することはできません。</p>
+<p class="p">オプション標識は、このキーワードでは無効です。</p>
+<p class="p">編集コードおよび編集語の指定についての規則は、すべてのタイプのファイルと同じです。
+指定できる編集コードには、<span class="keyword">IBM® i</span> 編集コードとユーザー定義の編集コードの 2 種類があります。</p>
+<p class="p">EDTCDE キーワードは、35 桁目 (データ・タイプ/キーボード・シフト) に Y またはブランクが入っているフィールドについてのみ有効です。
+このキーワードを使用すると、35 桁目についてのデフォルトが Y に変更されます。</p>
+</div>
+<div class="section"><h2 class="title sectiontitle"><span class="keyword">IBM i</span> 編集コード</h2><p class="p"><span class="keyword">IBM i</span> 編集コードは次のとおりです。</p>
+<p class="lines">1 - 4<br>
+A - D<br>
+J - Q<br>
+W - Z</p>
+<div class="note note border-2 cds--inline-notification--info ibmdocs-note cds--inline-notification cds--inline-notification--low-contrast margin-top-1 margin-bottom-1"><div class="cds--inline-notification__details"><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" class="cds--inline-notification__icon" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M16,2A14,14,0,1,0,30,16,14,14,0,0,0,16,2Zm0,5a1.5,1.5,0,1,1-1.5,1.5A1.5,1.5,0,0,1,16,7Zm4,17.12H12V21.88h2.88V15.12H13V12.88h4.13v9H20Z"></path></svg>
+        <div class="cds--inline-notification__text-wrapper">
+          <div class="cds--inline-notification__subtitle"><span class="notetitle ibm-bold ibm-textcolor-blue-50 background-blue cds--inline-notification__title ibm-padding-top-1 ibm-padding-bottom-1 padding-left-1 padding-right-1">注:</span> <span class="keyword">IBM i</span> のハードウェアは優先符号 F で動作します。これは、編集コード X を使用するのと同じです。編集コード X を指定すると、キーボード・シフト (35 桁目) がブランクの場合にはデフォルトとして数字のみ (属性 Y) が使用されます。
+フィールドの表示桁数は、編集コード X によってではなく、キーボード・シフトによって決まります (数字のみを示すデフォルトの Y 属性により、小数点のための 1 桁がフィールドに追加されることがあります)。編集コード X とともに DATE キーワードまたは TIME キーワードを指定すると、区切り記号は表示されません。</div>
+        </div>
+      </div></div>
+</div>
+<div class="section"><h2 class="title sectiontitle">アスタリスク充てんまたは浮動通貨記号の任意指定</h2><p class="p">必要に応じて、アスタリスク充てんまたは浮動通貨記号を、編集コード 1 から 4、A から D、および J から Q とともに指定することができます。</p>
+<p class="p">アスタリスク充てんを指定すると、抑制された個々のゼロの代わりにアスタリスク (*) が出力されます。
+全桁ゼロのフィールドでは、フィールドの全桁にアスタリスクが出力されます。</p>
+<p class="p">浮動通貨記号を指定すると、通貨記号が最初の有効数字の左側に表示されます。
+ゼロ抑制の編集コードを使用した場合には、全桁ゼロのフィールドでは通貨記号は印刷されません。
+(指定する記号は、通貨記号についてのシステム値 (QCURSYM) に一致していなければなりません。記号はファイル作成時に一致することが必要ですが、
+ファイル使用時にはその必要はありません。)</p>
+<div class="note note border-2 cds--inline-notification--info ibmdocs-note cds--inline-notification cds--inline-notification--low-contrast margin-top-1 margin-bottom-1"><div class="cds--inline-notification__details"><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" class="cds--inline-notification__icon" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M16,2A14,14,0,1,0,30,16,14,14,0,0,0,16,2Zm0,5a1.5,1.5,0,1,1-1.5,1.5A1.5,1.5,0,0,1,16,7Zm4,17.12H12V21.88h2.88V15.12H13V12.88h4.13v9H20Z"></path></svg>
+        <div class="cds--inline-notification__text-wrapper">
+          <div class="cds--inline-notification__subtitle"><span class="notetitle ibm-bold ibm-textcolor-blue-50 background-blue cds--inline-notification__title ibm-padding-top-1 ibm-padding-bottom-1 padding-left-1 padding-right-1">注:</span> ファイル作成後に編集コードを変更しても、ファイル作成時点で指定されていた編集機能が使用されます。
+変更された編集コードは、そのファイルを再作成しない限り、使用されません。</div>
+        </div>
+      </div></div>
+<p class="p">次の表は、<span class="keyword">IBM i</span> 編集コードの持つ機能を要約したものです。</p>
+<div class="tablenoborder"><div class="cds--data-table-container"><table id="parm_table0" summary="Parameters" cellpadding="4" cellspacing="0" class="table cds--data-table" width="100%" rules="all" frame="border" border="1"><caption class="cds--data-table-header"><span class="tablecap cds--data-table-header__title">表 1. <span class="keyword cds--data-table-header__title">IBM i</span> 編集コードの早見表</span></caption><thead class="thead alignleft"><tr class="row"><th scope="col" class="entry valigntop alignleft" width="12.626262626262626%" id="d28875e139"><div class="cds--table-header-label">編集コード</div></th>
+<th scope="col" class="entry valigntop alignleft" width="12.373737373737374%" id="d28875e141"><div class="cds--table-header-label">コンマ<sup class="ph sup">1</sup> の<br>
+表示</div></th>
+<th scope="col" class="entry valigntop alignleft" width="12.626262626262626%" id="d28875e148"><div class="cds--table-header-label">小数点<sup class="ph sup">1</sup> の<br>表示</div></th>
+<th scope="col" class="entry valigntop alignleft" width="12.373737373737374%" id="d28875e155"><div class="cds--table-header-label">負数の場合の符号の<br>表示</div></th>
+<th scope="col" class="entry valigntop alignleft" width="12.626262626262626%" id="d28875e159"><div class="cds--table-header-label">システム値 QDECFMT の値ブランク</div></th>
+<th scope="col" class="entry valigntop alignleft" width="12.373737373737374%" id="d28875e161"><div class="cds--table-header-label">システム値 QDECFMT の値 I</div></th>
+<th scope="col" class="entry valigntop alignleft" width="12.626262626262626%" id="d28875e163"><div class="cds--table-header-label">システム値 QDECFMT の値 J</div></th>
+<th scope="col" class="entry valigntop alignleft" width="12.373737373737374%" id="d28875e165"><div class="cds--table-header-label">先行ゼロの抑制</div></th>
+</tr>
+</thead>
+<tbody class="tbody"><tr class="row"><td class="entry valigntop alignleft" width="12.626262626262626%" headers="d28875e139 ">1</td>
+<td class="entry valigntop alignleft" width="12.373737373737374%" headers="d28875e141 ">あり</td>
+<td class="entry valigntop alignleft" width="12.626262626262626%" headers="d28875e148 ">あり</td>
+<td class="entry valigntop alignleft" width="12.373737373737374%" headers="d28875e155 ">符号なし</td>
+<td class="entry valigntop alignleft" width="12.626262626262626%" headers="d28875e159 ">.00 または 0</td>
+<td class="entry valigntop alignleft" width="12.373737373737374%" headers="d28875e161 ">,00 または 0</td>
+<td class="entry valigntop alignleft" width="12.626262626262626%" headers="d28875e163 ">0,00 または 0</td>
+<td class="entry valigntop alignleft" width="12.373737373737374%" headers="d28875e165 ">あり</td>
+</tr>
+<tr class="row"><td class="entry valigntop alignleft" width="12.626262626262626%" headers="d28875e139 ">2</td>
+<td class="entry valigntop alignleft" width="12.373737373737374%" headers="d28875e141 ">あり</td>
+<td class="entry valigntop alignleft" width="12.626262626262626%" headers="d28875e148 ">あり</td>
+<td class="entry valigntop alignleft" width="12.373737373737374%" headers="d28875e155 ">符号なし</td>
+<td class="entry valigntop alignleft" width="12.626262626262626%" headers="d28875e159 ">ブランク</td>
+<td class="entry valigntop alignleft" width="12.373737373737374%" headers="d28875e161 ">ブランク</td>
+<td class="entry valigntop alignleft" width="12.626262626262626%" headers="d28875e163 ">ブランク</td>
+<td class="entry valigntop alignleft" width="12.373737373737374%" headers="d28875e165 ">あり</td>
+</tr>
+<tr class="row"><td class="entry valigntop alignleft" width="12.626262626262626%" headers="d28875e139 ">3</td>
+<td class="entry valigntop alignleft" width="12.373737373737374%" headers="d28875e141 ">&nbsp;</td>
+<td class="entry valigntop alignleft" width="12.626262626262626%" headers="d28875e148 ">あり</td>
+<td class="entry valigntop alignleft" width="12.373737373737374%" headers="d28875e155 ">符号なし</td>
+<td class="entry valigntop alignleft" width="12.626262626262626%" headers="d28875e159 ">.00 または 0</td>
+<td class="entry valigntop alignleft" width="12.373737373737374%" headers="d28875e161 ">,00 または 0</td>
+<td class="entry valigntop alignleft" width="12.626262626262626%" headers="d28875e163 ">0,00 または 0</td>
+<td class="entry valigntop alignleft" width="12.373737373737374%" headers="d28875e165 ">あり</td>
+</tr>
+<tr class="row"><td class="entry valigntop alignleft" width="12.626262626262626%" headers="d28875e139 ">4</td>
+<td class="entry valigntop alignleft" width="12.373737373737374%" headers="d28875e141 ">&nbsp;</td>
+<td class="entry valigntop alignleft" width="12.626262626262626%" headers="d28875e148 ">あり</td>
+<td class="entry valigntop alignleft" width="12.373737373737374%" headers="d28875e155 ">符号なし</td>
+<td class="entry valigntop alignleft" width="12.626262626262626%" headers="d28875e159 ">ブランク</td>
+<td class="entry valigntop alignleft" width="12.373737373737374%" headers="d28875e161 ">ブランク</td>
+<td class="entry valigntop alignleft" width="12.626262626262626%" headers="d28875e163 ">ブランク</td>
+<td class="entry valigntop alignleft" width="12.373737373737374%" headers="d28875e165 ">あり</td>
+</tr>
+<tr class="row"><td class="entry valigntop alignleft" width="12.626262626262626%" headers="d28875e139 ">A</td>
+<td class="entry valigntop alignleft" width="12.373737373737374%" headers="d28875e141 ">あり</td>
+<td class="entry valigntop alignleft" width="12.626262626262626%" headers="d28875e148 ">あり</td>
+<td class="entry valigntop alignleft" width="12.373737373737374%" headers="d28875e155 ">CR</td>
+<td class="entry valigntop alignleft" width="12.626262626262626%" headers="d28875e159 ">.00 または 0</td>
+<td class="entry valigntop alignleft" width="12.373737373737374%" headers="d28875e161 ">,00 または 0</td>
+<td class="entry valigntop alignleft" width="12.626262626262626%" headers="d28875e163 ">0,00 または 0</td>
+<td class="entry valigntop alignleft" width="12.373737373737374%" headers="d28875e165 ">あり</td>
+</tr>
+<tr class="row"><td class="entry valigntop alignleft" width="12.626262626262626%" headers="d28875e139 ">B</td>
+<td class="entry valigntop alignleft" width="12.373737373737374%" headers="d28875e141 ">あり</td>
+<td class="entry valigntop alignleft" width="12.626262626262626%" headers="d28875e148 ">あり</td>
+<td class="entry valigntop alignleft" width="12.373737373737374%" headers="d28875e155 ">CR</td>
+<td class="entry valigntop alignleft" width="12.626262626262626%" headers="d28875e159 ">ブランク</td>
+<td class="entry valigntop alignleft" width="12.373737373737374%" headers="d28875e161 ">ブランク</td>
+<td class="entry valigntop alignleft" width="12.626262626262626%" headers="d28875e163 ">ブランク</td>
+<td class="entry valigntop alignleft" width="12.373737373737374%" headers="d28875e165 ">あり</td>
+</tr>
+<tr class="row"><td class="entry valigntop alignleft" width="12.626262626262626%" headers="d28875e139 ">C</td>
+<td class="entry valigntop alignleft" width="12.373737373737374%" headers="d28875e141 ">&nbsp;</td>
+<td class="entry valigntop alignleft" width="12.626262626262626%" headers="d28875e148 ">あり</td>
+<td class="entry valigntop alignleft" width="12.373737373737374%" headers="d28875e155 ">CR</td>
+<td class="entry valigntop alignleft" width="12.626262626262626%" headers="d28875e159 ">.00 または 0</td>
+<td class="entry valigntop alignleft" width="12.373737373737374%" headers="d28875e161 ">,00 または 0</td>
+<td class="entry valigntop alignleft" width="12.626262626262626%" headers="d28875e163 ">0,00 または 0</td>
+<td class="entry valigntop alignleft" width="12.373737373737374%" headers="d28875e165 ">あり</td>
+</tr>
+<tr class="row"><td class="entry valigntop alignleft" width="12.626262626262626%" headers="d28875e139 ">D</td>
+<td class="entry valigntop alignleft" width="12.373737373737374%" headers="d28875e141 ">&nbsp;</td>
+<td class="entry valigntop alignleft" width="12.626262626262626%" headers="d28875e148 ">あり</td>
+<td class="entry valigntop alignleft" width="12.373737373737374%" headers="d28875e155 ">CR</td>
+<td class="entry valigntop alignleft" width="12.626262626262626%" headers="d28875e159 ">ブランク</td>
+<td class="entry valigntop alignleft" width="12.373737373737374%" headers="d28875e161 ">ブランク</td>
+<td class="entry valigntop alignleft" width="12.626262626262626%" headers="d28875e163 ">ブランク</td>
+<td class="entry valigntop alignleft" width="12.373737373737374%" headers="d28875e165 ">あり</td>
+</tr>
+<tr class="row"><td class="entry valigntop alignleft" width="12.626262626262626%" headers="d28875e139 ">J</td>
+<td class="entry valigntop alignleft" width="12.373737373737374%" headers="d28875e141 ">あり</td>
+<td class="entry valigntop alignleft" width="12.626262626262626%" headers="d28875e148 ">あり</td>
+<td class="entry valigntop alignleft" width="12.373737373737374%" headers="d28875e155 ">- (マイナス)</td>
+<td class="entry valigntop alignleft" width="12.626262626262626%" headers="d28875e159 ">.00 または 0</td>
+<td class="entry valigntop alignleft" width="12.373737373737374%" headers="d28875e161 ">,00 または 0</td>
+<td class="entry valigntop alignleft" width="12.626262626262626%" headers="d28875e163 ">0,00 または 0</td>
+<td class="entry valigntop alignleft" width="12.373737373737374%" headers="d28875e165 ">あり</td>
+</tr>
+<tr class="row"><td class="entry valigntop alignleft" width="12.626262626262626%" headers="d28875e139 ">K</td>
+<td class="entry valigntop alignleft" width="12.373737373737374%" headers="d28875e141 ">あり</td>
+<td class="entry valigntop alignleft" width="12.626262626262626%" headers="d28875e148 ">あり</td>
+<td class="entry valigntop alignleft" width="12.373737373737374%" headers="d28875e155 ">- (マイナス)</td>
+<td class="entry valigntop alignleft" width="12.626262626262626%" headers="d28875e159 ">ブランク</td>
+<td class="entry valigntop alignleft" width="12.373737373737374%" headers="d28875e161 ">ブランク</td>
+<td class="entry valigntop alignleft" width="12.626262626262626%" headers="d28875e163 ">ブランク</td>
+<td class="entry valigntop alignleft" width="12.373737373737374%" headers="d28875e165 ">あり</td>
+</tr>
+<tr class="row"><td class="entry valigntop alignleft" width="12.626262626262626%" headers="d28875e139 ">L</td>
+<td class="entry valigntop alignleft" width="12.373737373737374%" headers="d28875e141 ">&nbsp;</td>
+<td class="entry valigntop alignleft" width="12.626262626262626%" headers="d28875e148 ">あり</td>
+<td class="entry valigntop alignleft" width="12.373737373737374%" headers="d28875e155 ">- (マイナス)</td>
+<td class="entry valigntop alignleft" width="12.626262626262626%" headers="d28875e159 ">.00 または 0</td>
+<td class="entry valigntop alignleft" width="12.373737373737374%" headers="d28875e161 ">,00 または 0</td>
+<td class="entry valigntop alignleft" width="12.626262626262626%" headers="d28875e163 ">0,00 または 0</td>
+<td class="entry valigntop alignleft" width="12.373737373737374%" headers="d28875e165 ">あり</td>
+</tr>
+<tr class="row"><td class="entry valigntop alignleft" width="12.626262626262626%" headers="d28875e139 ">M</td>
+<td class="entry valigntop alignleft" width="12.373737373737374%" headers="d28875e141 ">&nbsp;</td>
+<td class="entry valigntop alignleft" width="12.626262626262626%" headers="d28875e148 ">あり</td>
+<td class="entry valigntop alignleft" width="12.373737373737374%" headers="d28875e155 ">- (マイナス)</td>
+<td class="entry valigntop alignleft" width="12.626262626262626%" headers="d28875e159 ">ブランク</td>
+<td class="entry valigntop alignleft" width="12.373737373737374%" headers="d28875e161 ">ブランク</td>
+<td class="entry valigntop alignleft" width="12.626262626262626%" headers="d28875e163 ">ブランク</td>
+<td class="entry valigntop alignleft" width="12.373737373737374%" headers="d28875e165 ">あり</td>
+</tr>
+<tr class="row"><td class="entry valigntop alignleft" width="12.626262626262626%" headers="d28875e139 ">N</td>
+<td class="entry valigntop alignleft" width="12.373737373737374%" headers="d28875e141 ">あり</td>
+<td class="entry valigntop alignleft" width="12.626262626262626%" headers="d28875e148 ">あり</td>
+<td class="entry valigntop alignleft" width="12.373737373737374%" headers="d28875e155 ">- (マイナス)</td>
+<td class="entry valigntop alignleft" width="12.626262626262626%" headers="d28875e159 ">.00 または 0</td>
+<td class="entry valigntop alignleft" width="12.373737373737374%" headers="d28875e161 ">,00 または 0</td>
+<td class="entry valigntop alignleft" width="12.626262626262626%" headers="d28875e163 ">0,00 または 0</td>
+<td class="entry valigntop alignleft" width="12.373737373737374%" headers="d28875e165 ">あり</td>
+</tr>
+<tr class="row"><td class="entry valigntop alignleft" width="12.626262626262626%" headers="d28875e139 ">O</td>
+<td class="entry valigntop alignleft" width="12.373737373737374%" headers="d28875e141 ">あり</td>
+<td class="entry valigntop alignleft" width="12.626262626262626%" headers="d28875e148 ">あり</td>
+<td class="entry valigntop alignleft" width="12.373737373737374%" headers="d28875e155 ">- (マイナス)</td>
+<td class="entry valigntop alignleft" width="12.626262626262626%" headers="d28875e159 ">ブランク</td>
+<td class="entry valigntop alignleft" width="12.373737373737374%" headers="d28875e161 ">ブランク</td>
+<td class="entry valigntop alignleft" width="12.626262626262626%" headers="d28875e163 ">ブランク</td>
+<td class="entry valigntop alignleft" width="12.373737373737374%" headers="d28875e165 ">あり</td>
+</tr>
+<tr class="row"><td class="entry valigntop alignleft" width="12.626262626262626%" headers="d28875e139 ">P</td>
+<td class="entry valigntop alignleft" width="12.373737373737374%" headers="d28875e141 ">&nbsp;</td>
+<td class="entry valigntop alignleft" width="12.626262626262626%" headers="d28875e148 ">あり</td>
+<td class="entry valigntop alignleft" width="12.373737373737374%" headers="d28875e155 ">- (マイナス)</td>
+<td class="entry valigntop alignleft" width="12.626262626262626%" headers="d28875e159 ">.00 または 0</td>
+<td class="entry valigntop alignleft" width="12.373737373737374%" headers="d28875e161 ">,00 または 0</td>
+<td class="entry valigntop alignleft" width="12.626262626262626%" headers="d28875e163 ">0,00 または 0</td>
+<td class="entry valigntop alignleft" width="12.373737373737374%" headers="d28875e165 ">あり</td>
+</tr>
+<tr class="row"><td class="entry valigntop alignleft" width="12.626262626262626%" headers="d28875e139 ">Q</td>
+<td class="entry valigntop alignleft" width="12.373737373737374%" headers="d28875e141 ">&nbsp;</td>
+<td class="entry valigntop alignleft" width="12.626262626262626%" headers="d28875e148 ">あり</td>
+<td class="entry valigntop alignleft" width="12.373737373737374%" headers="d28875e155 ">- (マイナス)</td>
+<td class="entry valigntop alignleft" width="12.626262626262626%" headers="d28875e159 ">ブランク</td>
+<td class="entry valigntop alignleft" width="12.373737373737374%" headers="d28875e161 ">ブランク</td>
+<td class="entry valigntop alignleft" width="12.626262626262626%" headers="d28875e163 ">ブランク</td>
+<td class="entry valigntop alignleft" width="12.373737373737374%" headers="d28875e165 ">あり</td>
+</tr>
+<tr class="row"><td class="entry valigntop alignleft" width="12.626262626262626%" headers="d28875e139 ">W<sup class="ph sup">2</sup></td>
+<td class="entry valigntop alignleft" width="12.373737373737374%" headers="d28875e141 ">&nbsp;</td>
+<td class="entry valigntop alignleft" width="12.626262626262626%" headers="d28875e148 ">&nbsp;</td>
+<td class="entry valigntop alignleft" width="12.373737373737374%" headers="d28875e155 ">&nbsp;</td>
+<td class="entry valigntop alignleft" width="12.626262626262626%" headers="d28875e159 ">&nbsp;</td>
+<td class="entry valigntop alignleft" width="12.373737373737374%" headers="d28875e161 ">&nbsp;</td>
+<td class="entry valigntop alignleft" width="12.626262626262626%" headers="d28875e163 ">&nbsp;</td>
+<td class="entry valigntop alignleft" width="12.373737373737374%" headers="d28875e165 ">あり</td>
+</tr>
+<tr class="row"><td class="entry valigntop alignleft" width="12.626262626262626%" headers="d28875e139 ">Y<sup class="ph sup">3</sup></td>
+<td class="entry valigntop alignleft" width="12.373737373737374%" headers="d28875e141 ">&nbsp;</td>
+<td class="entry valigntop alignleft" width="12.626262626262626%" headers="d28875e148 ">&nbsp;</td>
+<td class="entry valigntop alignleft" width="12.373737373737374%" headers="d28875e155 ">&nbsp;</td>
+<td class="entry valigntop alignleft" width="12.626262626262626%" headers="d28875e159 ">&nbsp;</td>
+<td class="entry valigntop alignleft" width="12.373737373737374%" headers="d28875e161 ">&nbsp;</td>
+<td class="entry valigntop alignleft" width="12.626262626262626%" headers="d28875e163 ">&nbsp;</td>
+<td class="entry valigntop alignleft" width="12.373737373737374%" headers="d28875e165 ">あり</td>
+</tr>
+<tr class="row"><td class="entry valigntop alignleft" width="12.626262626262626%" headers="d28875e139 ">Z<sup class="ph sup">4</sup></td>
+<td class="entry valigntop alignleft" width="12.373737373737374%" headers="d28875e141 ">&nbsp;</td>
+<td class="entry valigntop alignleft" width="12.626262626262626%" headers="d28875e148 ">&nbsp;</td>
+<td class="entry valigntop alignleft" width="12.373737373737374%" headers="d28875e155 ">&nbsp;</td>
+<td class="entry valigntop alignleft" width="12.626262626262626%" headers="d28875e159 ">&nbsp;</td>
+<td class="entry valigntop alignleft" width="12.373737373737374%" headers="d28875e161 ">&nbsp;</td>
+<td class="entry valigntop alignleft" width="12.626262626262626%" headers="d28875e163 ">&nbsp;</td>
+<td class="entry valigntop alignleft" width="12.373737373737374%" headers="d28875e165 ">あり</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="note note border-2 cds--inline-notification--info ibmdocs-note cds--inline-notification cds--inline-notification--low-contrast margin-top-1 margin-bottom-1"><div class="cds--inline-notification__details"><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" class="cds--inline-notification__icon" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M16,2A14,14,0,1,0,30,16,14,14,0,0,0,16,2Zm0,5a1.5,1.5,0,1,1-1.5,1.5A1.5,1.5,0,0,1,16,7Zm4,17.12H12V21.88h2.88V15.12H13V12.88h4.13v9H20Z"></path></svg>
+        <div class="cds--inline-notification__text-wrapper">
+          <div class="cds--inline-notification__subtitle"><span class="notetitle ibm-bold ibm-textcolor-blue-50 background-blue cds--inline-notification__title ibm-padding-top-1 ibm-padding-bottom-1 padding-left-1 padding-right-1">注:</span> <ol class="ol cds--list--ordered--temporary"><li class="li cds--list__item">小数点文字、数字を 3 桁ごとに区切るための文字、およびゼロ抑制のタイプ (コンマおよびピリオドの配置により異なる) は、システム値 QDECFMT により決まります。</li>
+<li class="li cds--list__item">編集コード W は、5 桁の日付フィールドの先頭のゼロを抑制します。また、6 - 8 桁のフィールドの先頭の 3 文字分のゼロも抑制します。
+さらに編集コード W は、次のような形式で、年月日の間にスラッシュ (/) を入れます。<ul class="ul cds--list--unordered cds--list--nested"><li class="li cds--list__item">nn/nnn</li>
+<li class="li cds--list__item">nnnn/nn</li>
+<li class="li cds--list__item">nnnn/nnn</li>
+<li class="li cds--list__item">nnnn/nn/nn</li>
+</ul>
+</li>
+<li class="li cds--list__item">編集コード Y は、3 - 6 桁または 3 - 8 桁の日付フィールドの先頭のゼロを抑制し、7 桁分のフィールドの先頭の 2 文字分のゼロも抑制します。
+さらに編集コード Y は、次のような形式で、年月日の間にスラッシュ (/) を入れます。<ul class="ul cds--list--unordered cds--list--nested"><li class="li cds--list__item">nn/n</li>
+<li class="li cds--list__item">nn/nn</li>
+<li class="li cds--list__item">nn/nn/n</li>
+<li class="li cds--list__item">nn/nn/nn</li>
+<li class="li cds--list__item">nnn/nn/nn</li>
+<li class="li cds--list__item">nn/nn/nnnn</li>
+</ul>
+<p class="p">DATE キーワードが EDTCDE(Y) と一緒に指定された場合、使用される区切り文字は実行時のジョブ属性 DATSEP です。
+DATSEP のデフォルトはスラッシュ (/) です。</p>
+</li>
+<li class="li cds--list__item">編集コード Z は、数字フィールドから符号 (正または負の) を除去します。単位桁の符号は、フィールドが書き込まれる前に 16 進数 F に変換されます。</li>
+</ol>
+</div>
+        </div>
+      </div></div>
+</div>
+<div class="section" id="rzakcmstdfedtcd__udec1"><h2 class="title sectiontitle">ユーザー定義の編集コード</h2><p class="p">編集コード 5 - 9 はユーザー定義の編集コードです。
+ユーザー定義の編集コードは、<span class="keyword">IBM i</span> 編集コード以上の編集機能を持っています。
+例えば、ハイフンの入った数字 (電話番号など) や複数の小数点の入っている数字を編集しなければならない場合があります。
+そのような場合にユーザー定義の編集コードを使用することができます。
+この編集コードには QEDIT5、QEDIT6、QEDIT7、QEDIT8、および QEDIT9 という名前が付いており、DDS または高水準言語プログラミングから番号 (5、6、7、8、または 9) で参照することができます。</p>
+<p class="p">ユーザー定義の編集コードは <span class="keyword">IBM i</span> のオブジェクトであり、表示装置ファイルの作成前に作成しなければなりません。これは、編集記述の作成 (CRTEDTD) コマンドを用いて作成します。
+ユーザー定義の編集コードを指定した表示装置ファイルを作成する場合には、編集に関する情報は、事前に作成されている編集記述から取り出して使用されます。
+表示装置ファイルの作成が済んだ後でユーザー定義の編集コードを変更しても、表示装置ファイルを再作成しない限り、新しい編集コードが表示装置ファイルに影響を及ぼすことはありません。</p>
+<p class="p">次の表は、編集コード、編集前のソース・データ、および編集後の出力データを示しています。
+ゼロ抑制および小数点文字は、システム値 QDECFMT により決まります。日付区切り記号は、ジョブ属性 DATSEP により決まります。
+この図では、QDECFMT は x (ブランク) で、DATSEP は / (スラッシュ) であると仮定しています。</p>
+<div class="tablenoborder"><div class="cds--data-table-container"><table id="parm_table1" summary="Parameters" cellpadding="4" cellspacing="0" class="table cds--data-table" width="100%" rules="all" frame="border" border="1"><caption class="cds--data-table-header"><span class="tablecap cds--data-table-header__title">表 2. 有効な編集コード、ソース・データ、および編集後の出力</span></caption><thead class="thead alignleft"><tr class="row"><th scope="col" class="entry valigntop alignleft" width="14.393939393939394%" id="d28875e551"><div class="cds--table-header-label">編集コード</div></th>
+<th scope="col" class="entry valigntop alignleft" width="14.393939393939394%" id="d28875e553"><div class="cds--table-header-label">小数点以下 2 桁の正数</div></th>
+<th scope="col" class="entry valigntop alignleft" width="14.14141414141414%" id="d28875e555"><div class="cds--table-header-label">小数点以下のない正数</div></th>
+<th scope="col" class="entry valigntop alignleft" width="14.393939393939394%" id="d28875e557"><div class="cds--table-header-label">小数点以下 3 桁の負数<sup class="ph sup">1</sup></div></th>
+<th scope="col" class="entry valigntop alignleft" width="14.14141414141414%" id="d28875e561"><div class="cds--table-header-label">小数点以下のない負数<sup class="ph sup">1</sup></div></th>
+<th scope="col" class="entry valigntop alignleft" width="14.393939393939394%" id="d28875e565"><div class="cds--table-header-label">小数点以下
+2 桁のゼロ・
+バランス<sup class="ph sup">1</sup></div></th>
+<th scope="col" class="entry valigntop alignleft" width="14.14141414141414%" id="d28875e569"><div class="cds--table-header-label">小数点以下のないゼロ・
+バランス<sup class="ph sup">1</sup></div></th>
+</tr>
+</thead>
+<tbody class="tbody"><tr class="row"><td class="entry valigntop alignleft" width="14.393939393939394%" headers="d28875e551 ">編集なし</td>
+<td class="entry valigntop alignleft" width="14.393939393939394%" headers="d28875e553 ">1234567</td>
+<td class="entry valigntop alignleft" width="14.14141414141414%" headers="d28875e555 ">1234567</td>
+<td class="entry valigntop alignleft" width="14.393939393939394%" headers="d28875e557 ">xxxx.125–</td>
+<td class="entry valigntop alignleft" width="14.14141414141414%" headers="d28875e561 ">125–</td>
+<td class="entry valigntop alignleft" width="14.393939393939394%" headers="d28875e565 ">xxxxxx</td>
+<td class="entry valigntop alignleft" width="14.14141414141414%" headers="d28875e569 ">xxxxxx</td>
+</tr>
+<tr class="row"><td class="entry valigntop alignleft" width="14.393939393939394%" headers="d28875e551 ">1</td>
+<td class="entry valigntop alignleft" width="14.393939393939394%" headers="d28875e553 ">12,345.67</td>
+<td class="entry valigntop alignleft" width="14.14141414141414%" headers="d28875e555 ">1,234,567</td>
+<td class="entry valigntop alignleft" width="14.393939393939394%" headers="d28875e557 ">.125</td>
+<td class="entry valigntop alignleft" width="14.14141414141414%" headers="d28875e561 ">125</td>
+<td class="entry valigntop alignleft" width="14.393939393939394%" headers="d28875e565 ">.00</td>
+<td class="entry valigntop alignleft" width="14.14141414141414%" headers="d28875e569 ">0</td>
+</tr>
+<tr class="row"><td class="entry valigntop alignleft" width="14.393939393939394%" headers="d28875e551 ">2</td>
+<td class="entry valigntop alignleft" width="14.393939393939394%" headers="d28875e553 ">12,345.67</td>
+<td class="entry valigntop alignleft" width="14.14141414141414%" headers="d28875e555 ">1,234,567</td>
+<td class="entry valigntop alignleft" width="14.393939393939394%" headers="d28875e557 ">.125</td>
+<td class="entry valigntop alignleft" width="14.14141414141414%" headers="d28875e561 ">125</td>
+<td class="entry valigntop alignleft" width="14.393939393939394%" headers="d28875e565 ">&nbsp;</td>
+<td class="entry valigntop alignleft" width="14.14141414141414%" headers="d28875e569 ">&nbsp;</td>
+</tr>
+<tr class="row"><td class="entry valigntop alignleft" width="14.393939393939394%" headers="d28875e551 ">3</td>
+<td class="entry valigntop alignleft" width="14.393939393939394%" headers="d28875e553 ">12345.67</td>
+<td class="entry valigntop alignleft" width="14.14141414141414%" headers="d28875e555 ">1234567</td>
+<td class="entry valigntop alignleft" width="14.393939393939394%" headers="d28875e557 ">.125</td>
+<td class="entry valigntop alignleft" width="14.14141414141414%" headers="d28875e561 ">125</td>
+<td class="entry valigntop alignleft" width="14.393939393939394%" headers="d28875e565 ">.00</td>
+<td class="entry valigntop alignleft" width="14.14141414141414%" headers="d28875e569 ">0</td>
+</tr>
+<tr class="row"><td class="entry valigntop alignleft" width="14.393939393939394%" headers="d28875e551 ">4</td>
+<td class="entry valigntop alignleft" width="14.393939393939394%" headers="d28875e553 ">12345.67</td>
+<td class="entry valigntop alignleft" width="14.14141414141414%" headers="d28875e555 ">1234567</td>
+<td class="entry valigntop alignleft" width="14.393939393939394%" headers="d28875e557 ">.125</td>
+<td class="entry valigntop alignleft" width="14.14141414141414%" headers="d28875e561 ">125</td>
+<td class="entry valigntop alignleft" width="14.393939393939394%" headers="d28875e565 ">&nbsp;</td>
+<td class="entry valigntop alignleft" width="14.14141414141414%" headers="d28875e569 ">&nbsp;</td>
+</tr>
+<tr class="row"><td class="entry valigntop alignleft" width="14.393939393939394%" headers="d28875e551 ">A</td>
+<td class="entry valigntop alignleft" width="14.393939393939394%" headers="d28875e553 ">12,345.67</td>
+<td class="entry valigntop alignleft" width="14.14141414141414%" headers="d28875e555 ">1,234,567</td>
+<td class="entry valigntop alignleft" width="14.393939393939394%" headers="d28875e557 ">.125CR</td>
+<td class="entry valigntop alignleft" width="14.14141414141414%" headers="d28875e561 ">125CR</td>
+<td class="entry valigntop alignleft" width="14.393939393939394%" headers="d28875e565 ">.00</td>
+<td class="entry valigntop alignleft" width="14.14141414141414%" headers="d28875e569 ">0</td>
+</tr>
+<tr class="row"><td class="entry valigntop alignleft" width="14.393939393939394%" headers="d28875e551 ">B</td>
+<td class="entry valigntop alignleft" width="14.393939393939394%" headers="d28875e553 ">12,345.67</td>
+<td class="entry valigntop alignleft" width="14.14141414141414%" headers="d28875e555 ">1,234,567</td>
+<td class="entry valigntop alignleft" width="14.393939393939394%" headers="d28875e557 ">.125CR</td>
+<td class="entry valigntop alignleft" width="14.14141414141414%" headers="d28875e561 ">125CR</td>
+<td class="entry valigntop alignleft" width="14.393939393939394%" headers="d28875e565 ">&nbsp;</td>
+<td class="entry valigntop alignleft" width="14.14141414141414%" headers="d28875e569 ">&nbsp;</td>
+</tr>
+<tr class="row"><td class="entry valigntop alignleft" width="14.393939393939394%" headers="d28875e551 ">C</td>
+<td class="entry valigntop alignleft" width="14.393939393939394%" headers="d28875e553 ">12345.67</td>
+<td class="entry valigntop alignleft" width="14.14141414141414%" headers="d28875e555 ">1234567</td>
+<td class="entry valigntop alignleft" width="14.393939393939394%" headers="d28875e557 ">.125CR</td>
+<td class="entry valigntop alignleft" width="14.14141414141414%" headers="d28875e561 ">125CR</td>
+<td class="entry valigntop alignleft" width="14.393939393939394%" headers="d28875e565 ">.00</td>
+<td class="entry valigntop alignleft" width="14.14141414141414%" headers="d28875e569 ">0</td>
+</tr>
+<tr class="row"><td class="entry valigntop alignleft" width="14.393939393939394%" headers="d28875e551 ">D</td>
+<td class="entry valigntop alignleft" width="14.393939393939394%" headers="d28875e553 ">12345.67</td>
+<td class="entry valigntop alignleft" width="14.14141414141414%" headers="d28875e555 ">1234567</td>
+<td class="entry valigntop alignleft" width="14.393939393939394%" headers="d28875e557 ">.125CR</td>
+<td class="entry valigntop alignleft" width="14.14141414141414%" headers="d28875e561 ">125CR</td>
+<td class="entry valigntop alignleft" width="14.393939393939394%" headers="d28875e565 ">&nbsp;</td>
+<td class="entry valigntop alignleft" width="14.14141414141414%" headers="d28875e569 ">&nbsp;</td>
+</tr>
+<tr class="row"><td class="entry valigntop alignleft" width="14.393939393939394%" headers="d28875e551 ">J</td>
+<td class="entry valigntop alignleft" width="14.393939393939394%" headers="d28875e553 ">12,345.67</td>
+<td class="entry valigntop alignleft" width="14.14141414141414%" headers="d28875e555 ">1,234,567</td>
+<td class="entry valigntop alignleft" width="14.393939393939394%" headers="d28875e557 ">.125-</td>
+<td class="entry valigntop alignleft" width="14.14141414141414%" headers="d28875e561 ">125-</td>
+<td class="entry valigntop alignleft" width="14.393939393939394%" headers="d28875e565 ">.00</td>
+<td class="entry valigntop alignleft" width="14.14141414141414%" headers="d28875e569 ">0</td>
+</tr>
+<tr class="row"><td class="entry valigntop alignleft" width="14.393939393939394%" headers="d28875e551 ">K</td>
+<td class="entry valigntop alignleft" width="14.393939393939394%" headers="d28875e553 ">12,345.67</td>
+<td class="entry valigntop alignleft" width="14.14141414141414%" headers="d28875e555 ">1,234,567</td>
+<td class="entry valigntop alignleft" width="14.393939393939394%" headers="d28875e557 ">.125-</td>
+<td class="entry valigntop alignleft" width="14.14141414141414%" headers="d28875e561 ">125-</td>
+<td class="entry valigntop alignleft" width="14.393939393939394%" headers="d28875e565 ">&nbsp;</td>
+<td class="entry valigntop alignleft" width="14.14141414141414%" headers="d28875e569 ">&nbsp;</td>
+</tr>
+<tr class="row"><td class="entry valigntop alignleft" width="14.393939393939394%" headers="d28875e551 ">L</td>
+<td class="entry valigntop alignleft" width="14.393939393939394%" headers="d28875e553 ">12345.67</td>
+<td class="entry valigntop alignleft" width="14.14141414141414%" headers="d28875e555 ">1234567</td>
+<td class="entry valigntop alignleft" width="14.393939393939394%" headers="d28875e557 ">.125-</td>
+<td class="entry valigntop alignleft" width="14.14141414141414%" headers="d28875e561 ">125-</td>
+<td class="entry valigntop alignleft" width="14.393939393939394%" headers="d28875e565 ">.00</td>
+<td class="entry valigntop alignleft" width="14.14141414141414%" headers="d28875e569 ">0</td>
+</tr>
+<tr class="row"><td class="entry valigntop alignleft" width="14.393939393939394%" headers="d28875e551 ">M</td>
+<td class="entry valigntop alignleft" width="14.393939393939394%" headers="d28875e553 ">12345.67</td>
+<td class="entry valigntop alignleft" width="14.14141414141414%" headers="d28875e555 ">1234567</td>
+<td class="entry valigntop alignleft" width="14.393939393939394%" headers="d28875e557 ">.125-</td>
+<td class="entry valigntop alignleft" width="14.14141414141414%" headers="d28875e561 ">125-</td>
+<td class="entry valigntop alignleft" width="14.393939393939394%" headers="d28875e565 ">&nbsp;</td>
+<td class="entry valigntop alignleft" width="14.14141414141414%" headers="d28875e569 ">&nbsp;</td>
+</tr>
+<tr class="row"><td class="entry valigntop alignleft" width="14.393939393939394%" headers="d28875e551 ">N</td>
+<td class="entry valigntop alignleft" width="14.393939393939394%" headers="d28875e553 ">12,345.67</td>
+<td class="entry valigntop alignleft" width="14.14141414141414%" headers="d28875e555 ">1,234,567</td>
+<td class="entry valigntop alignleft" width="14.393939393939394%" headers="d28875e557 ">-.125</td>
+<td class="entry valigntop alignleft" width="14.14141414141414%" headers="d28875e561 ">-125</td>
+<td class="entry valigntop alignleft" width="14.393939393939394%" headers="d28875e565 ">.00</td>
+<td class="entry valigntop alignleft" width="14.14141414141414%" headers="d28875e569 ">0</td>
+</tr>
+<tr class="row"><td class="entry valigntop alignleft" width="14.393939393939394%" headers="d28875e551 ">O</td>
+<td class="entry valigntop alignleft" width="14.393939393939394%" headers="d28875e553 ">12,345.67</td>
+<td class="entry valigntop alignleft" width="14.14141414141414%" headers="d28875e555 ">1,234,567</td>
+<td class="entry valigntop alignleft" width="14.393939393939394%" headers="d28875e557 ">-.125</td>
+<td class="entry valigntop alignleft" width="14.14141414141414%" headers="d28875e561 ">-125</td>
+<td class="entry valigntop alignleft" width="14.393939393939394%" headers="d28875e565 ">&nbsp;</td>
+<td class="entry valigntop alignleft" width="14.14141414141414%" headers="d28875e569 ">&nbsp;</td>
+</tr>
+<tr class="row"><td class="entry valigntop alignleft" width="14.393939393939394%" headers="d28875e551 ">P</td>
+<td class="entry valigntop alignleft" width="14.393939393939394%" headers="d28875e553 ">12345.67</td>
+<td class="entry valigntop alignleft" width="14.14141414141414%" headers="d28875e555 ">1234567</td>
+<td class="entry valigntop alignleft" width="14.393939393939394%" headers="d28875e557 ">-.125</td>
+<td class="entry valigntop alignleft" width="14.14141414141414%" headers="d28875e561 ">-125</td>
+<td class="entry valigntop alignleft" width="14.393939393939394%" headers="d28875e565 ">.00</td>
+<td class="entry valigntop alignleft" width="14.14141414141414%" headers="d28875e569 ">0</td>
+</tr>
+<tr class="row"><td class="entry valigntop alignleft" width="14.393939393939394%" headers="d28875e551 ">Q</td>
+<td class="entry valigntop alignleft" width="14.393939393939394%" headers="d28875e553 ">12345.67</td>
+<td class="entry valigntop alignleft" width="14.14141414141414%" headers="d28875e555 ">1234567</td>
+<td class="entry valigntop alignleft" width="14.393939393939394%" headers="d28875e557 ">-.125</td>
+<td class="entry valigntop alignleft" width="14.14141414141414%" headers="d28875e561 ">-125</td>
+</tr>
+<tr class="row"><td class="entry valigntop alignleft" width="14.393939393939394%" headers="d28875e551 ">W<sup class="ph sup">2</sup></td>
+<td class="entry valigntop alignleft" width="14.393939393939394%" headers="d28875e553 ">1234/567</td>
+<td class="entry valigntop alignleft" width="14.14141414141414%" headers="d28875e555 ">1234/567</td>
+<td class="entry valigntop alignleft" width="14.393939393939394%" headers="d28875e557 ">0/125</td>
+<td class="entry valigntop alignleft" width="14.14141414141414%" headers="d28875e561 ">0/125</td>
+<td class="entry valigntop alignleft" width="14.393939393939394%" headers="d28875e565 ">0/000</td>
+<td class="entry valigntop alignleft" width="14.14141414141414%" headers="d28875e569 ">0/000</td>
+</tr>
+<tr class="row"><td class="entry valigntop alignleft" width="14.393939393939394%" headers="d28875e551 ">Y<sup class="ph sup">3</sup></td>
+<td class="entry valigntop alignleft" width="14.393939393939394%" headers="d28875e553 ">123/45/67</td>
+<td class="entry valigntop alignleft" width="14.14141414141414%" headers="d28875e555 ">123/45/67</td>
+<td class="entry valigntop alignleft" width="14.393939393939394%" headers="d28875e557 ">0/01/25</td>
+<td class="entry valigntop alignleft" width="14.14141414141414%" headers="d28875e561 ">0/01/25</td>
+<td class="entry valigntop alignleft" width="14.393939393939394%" headers="d28875e565 ">0/00/00</td>
+<td class="entry valigntop alignleft" width="14.14141414141414%" headers="d28875e569 ">0/00/00</td>
+</tr>
+<tr class="row"><td class="entry valigntop alignleft" width="14.393939393939394%" headers="d28875e551 ">Z<sup class="ph sup">4</sup></td>
+<td class="entry valigntop alignleft" width="14.393939393939394%" headers="d28875e553 ">1234567</td>
+<td class="entry valigntop alignleft" width="14.14141414141414%" headers="d28875e555 ">1234567</td>
+<td class="entry valigntop alignleft" width="14.393939393939394%" headers="d28875e557 ">125</td>
+<td class="entry valigntop alignleft" width="14.14141414141414%" headers="d28875e561 ">125</td>
+<td class="entry valigntop alignleft" width="14.393939393939394%" headers="d28875e565 ">&nbsp;</td>
+<td class="entry valigntop alignleft" width="14.14141414141414%" headers="d28875e569 ">&nbsp;</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="note note border-2 cds--inline-notification--info ibmdocs-note cds--inline-notification cds--inline-notification--low-contrast margin-top-1 margin-bottom-1"><div class="cds--inline-notification__details"><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" class="cds--inline-notification__icon" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M16,2A14,14,0,1,0,30,16,14,14,0,0,0,16,2Zm0,5a1.5,1.5,0,1,1-1.5,1.5A1.5,1.5,0,0,1,16,7Zm4,17.12H12V21.88h2.88V15.12H13V12.88h4.13v9H20Z"></path></svg>
+        <div class="cds--inline-notification__text-wrapper">
+          <div class="cds--inline-notification__subtitle"><span class="notetitle ibm-bold ibm-textcolor-blue-50 background-blue cds--inline-notification__title ibm-padding-top-1 ibm-padding-bottom-1 padding-left-1 padding-right-1">注:</span> <ol class="ol cds--list--ordered--temporary"><li class="li cds--list__item">x は、ブランクを表します。</li>
+<li class="li cds--list__item">編集コード W は、5 桁の日付フィールドの先頭のゼロを抑制します。また、6 - 8 桁のフィールドの先頭の 3 文字分のゼロも抑制します。詳細については、<a class="xref" href="#rzakcmstdfedtcd__tbledit">表 1</a> の注 2 を参照してください。</li>
+<li class="li cds--list__item">編集コード Y は、3 - 6 桁または 3 - 8 桁の日付フィールドの先頭のゼロを抑制し、7 桁分のフィールドの先頭の 2 文字分のゼロも抑制します。
+詳細については、<a class="xref" href="#rzakcmstdfedtcd__tbledit">表 1</a>の注 3 を参照してください。</li>
+<li class="li cds--list__item">編集コード Z は、(正または負の) 符号を取り除き、先行ゼロを抑制します。</li>
+</ol>
+</div>
+        </div>
+      </div></div>
+</div>
+<div class="example"><h2 class="title sectiontitle">例</h2><p class="p">次の例は、EDTCDE キーワードの指定方法を示しています。</p>
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code>|...+....1....+....2....+....3....+....4....+....5....+....6....+....7....+....8
+00010A            PRICE          5  2   1 10EDTCDE(J)
+00020A            SALES          7  2   2 10EDTCDE(K $)
+00030A            SALARY         8  2   3 10EDTCDE(1 *)
+     A</code></pre></div><div class="docs--copy-btn"></div></div>
+<div class="p">この例では、PRICE フィールドには編集コード J が指定されているので、PRICE フィールドの表示桁数は 7 桁になり、小数点および末尾の負符号がフィールドに含まれます。
+編集後のフィールドは次のとおりです。<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code>ddd.dd-</code></pre></div><div class="docs--copy-btn"></div></div>
+d は数字です。</div>
+<div class="p">SALES フィールドには編集コード K および浮動通貨記号が指定されているため、SALES フィールドの表示桁数は 11 桁数になります。
+編集後のフィールドは次のとおりです。<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code>$dd,ddd.dd-</code></pre></div><div class="docs--copy-btn"></div></div>
+</div>
+<div class="p">SALARY フィールドには編集コード 1 がアスタリスク充てんとともに指定されているので、SALARY フィールドの表示桁数は 10 桁になります。
+編集後のフィールドは次のとおりです。<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code>ddd,ddd.dd</code></pre></div><div class="docs--copy-btn"></div></div>
+</div>
+</div>
+</div>
+<div class="related-links ibm-padding-top-1 ibm-padding-bottom-2 bx--row bottom-section-parent" aria-label="bottom related links">
+<div class="familylinks ibm-margin-bottom-1">
+<div class="parentlink"><strong>親トピック:</strong> <div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a class="link bottom-section-link" href="/docs/ja/ssw_ibm_i_74/rzakc/rzakcmstkeyent.htm" title="表示装置ファイルを定義するキーワード項目は、45 - 80 桁目 (機能欄) に記入します。">表示装置ファイルの DDS キーワード項目 (45 - 80 桁目)</a></div></div>
+</div>
+<div class="relinfo relconcepts ibm-margin-bottom-1"><strong>関連概念</strong>:<br>
+<div><div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a class="link bottom-section-link" href="/docs/ja/ssw_ibm_i_74/rzakc/dfnoy.htm" title="このフィールドに入力できる文字は、0 から 9 までの数字、正符号 (+)、負符号 (-)、ピリオド (.)、コンマ (,)、およびスペース ( ) だけです。 どのキーを押してもこのフィールドから出ることができます。">数字のみ (Y)</a></div></div>
+</div>
+<div class="relinfo ibm-margin-bottom-1"><strong>関連情報</strong>:<br>
+<div><div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a class="link bottom-section-link" href="/docs/ja/ssw_ibm_i_74/rzakz/rzakz1.htm">システム値</a></div></div>
+</div>
+</div>
+

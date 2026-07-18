@@ -1,0 +1,87 @@
+<h1 class="title topictitle1">印刷装置ファイルの CDEFNT (コード化フォント名) キーワード</h1><div id="lastModifiedDate"><span>Last Updated</span>: 2021-04-13</div>
+<div class="body conbody"><p class="shortdesc">このフィールド・レベルまたはレコード・レベルのキーワードは、
+レコード内の名前付きフィールドまたは固定情報フィールドを印刷するためのコード化フォントを指定する場合に使用します。</p>
+<div class="p">キーワードの形式は次のとおりです。
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code>  CDEFNT([library-name/ | &amp;library-name-field/]
+         coded-font-name | &amp;coded-font-name-field
+         [(*POINTSIZE height-value | &amp;height-value-field 
+         width-value | &amp;width-value-field)])</code></pre></div><div class="docs--copy-btn"></div></div>
+</div>
+<p class="p">coded-font-name パラメーターは必須で、桁数は 8 文字までです。</p>
+<p class="p">任意指定の library-name パラメーターで、コード化フォント名をさらに修飾
+することができます。ライブラリー名を指定しない場合には、印刷時にコード化
+フォント名を探索するために *LIBL が使用されます。*LIBL が使用される場合には、要求されたフォントを探索するさいにシステム提供のフォント・ライブラリーがライブラリー・リストに追加されます。IBM 提供のコード化フォント名を表示するには、フォント資源の
+処理 (WRKFNTRSC) コマンドを使用してコード化フォントを指定します。IBM 提供のコード化フォント名は、すべて文字 X0 から始まります。</p>
+<p class="p">library-name パラメーターを使用する
+ことにより、コード化フォント名をさらに早く見つけることができます。
+ただし、コード化フォント名により定義された文字セットおよびコード・ページを
+見つけるためには、ライブラリー・リストが使用されます。</p>
+<div class="p">次の例に示すとおり、library-name および coded-font-name は、固定情報フィールド、プログラム - システム間フィールド、またはその両方の組み合わせとして指定できます。
+<ul class="ul cds--list--unordered"><li class="li cds--list__item"><samp class="ph codeph">[library-name/]coded-font-name...</samp></li>
+<li class="li cds--list__item"><samp class="ph codeph">[library-name/]&amp;field1...</samp></li>
+<li class="li cds--list__item"><samp class="ph codeph">[&amp;field2/]coded-font-name...</samp></li>
+</ul>
+</div>
+<p class="p">library-name をプログラム - システム間フィールドとして指定するとき、このフィールドは CDEFNT キーワードと同じレコード様式内に存在しなければなりません。また、そのフィールドの桁数は 10、データ・タイプ A (文字)、および使用目的 P (プログラム - システム間) として定義する必要があります。</p>
+<p class="p">coded-font-name をプログラム - システム間フィールドとして指定するとき、このフィールドは CDEFNT キーワードと同じレコード様式内に存在しなければなりません。
+また、そのフィールドの桁数は 8、データ・タイプ A (文字)、および使用目的 P (プログラム - システム間) として定義する必要があります。</p>
+<div class="note note border-2 cds--inline-notification--info ibmdocs-note cds--inline-notification cds--inline-notification--low-contrast margin-top-1 margin-bottom-1"><div class="cds--inline-notification__details"><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" class="cds--inline-notification__icon" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M16,2A14,14,0,1,0,30,16,14,14,0,0,0,16,2Zm0,5a1.5,1.5,0,1,1-1.5,1.5A1.5,1.5,0,0,1,16,7Zm4,17.12H12V21.88h2.88V15.12H13V12.88h4.13v9H20Z"></path></svg>
+        <div class="cds--inline-notification__text-wrapper">
+          <div class="cds--inline-notification__subtitle"><span class="notetitle ibm-bold ibm-textcolor-blue-50 background-blue cds--inline-notification__title ibm-padding-top-1 ibm-padding-bottom-1 padding-left-1 padding-right-1">注:</span> アプリケーションが専用リソース (例えば、フォント、ページ・セグメント、オーバーレイ、またはシステムで配布されたのではない GDF ファイル) を使用する場合には、次の点を注意してください。これらのリソースを参照するさい、*LIBL を指定するか
+ライブラリー名を指定しない場合には、そのリソースは、スプール・ファイルを作成する
+アプリケーションが使用しているライブラリー・リストを介して使用できなければなりません。</div>
+        </div>
+      </div></div>
+<div class="p">point-size は、数字フォントをさらに定義するための任意指定のパラメーターで、このパラメーターにはポイント・サイズを指定します。point-size パラメーターは、次の形式で指定します。
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code>(*POINTSIZE height-value width-value)</code></pre></div><div class="docs--copy-btn"></div></div>
+height-value は、フォントの高さのポイント・サイズを指定します。width-value は、フォントの幅のポイント・サイズを指定します。フォントのスケールを均等にする場合 (高さと幅が同じ) は、height-value だけを指定できます。height-value を指定せずに width-value を指定することはできません。このパラメーターに
+使用できる値は 0.1 から 999.9 です。</div>
+<div class="p">次の例に示すとおり、point-size height および point-size width は、固定情報フィールド、プログラム - システム間フィールド、またはその両方の組み合わせとして指定できます。
+<ul class="ul cds--list--unordered"><li class="li cds--list__item"><samp class="ph codeph">[(*POINTSIZE height-value &amp;field1)]</samp></li>
+<li class="li cds--list__item"><samp class="ph codeph">[(*POINTSIZE &amp;field2 width-value)]</samp></li>
+</ul>
+</div>
+<p class="p">point-size の height-value または width-value をプログラム - システム間フィールドとして指定するとき、これらのフィールドは CDEFNT キーワードと同じレコード様式内に存在しなければなりません。これらのフィールドは、桁数 4、小数点以下の桁数 1、データ・タイプ S、および使用目的 P (プログラム - システム間) として定義しなければなりません。</p>
+<div class="note note border-2 cds--inline-notification--info ibmdocs-note cds--inline-notification cds--inline-notification--low-contrast margin-top-1 margin-bottom-1"><div class="cds--inline-notification__details"><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" class="cds--inline-notification__icon" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M16,2A14,14,0,1,0,30,16,14,14,0,0,0,16,2Zm0,5a1.5,1.5,0,1,1-1.5,1.5A1.5,1.5,0,0,1,16,7Zm4,17.12H12V21.88h2.88V15.12H13V12.88h4.13v9H20Z"></path></svg>
+        <div class="cds--inline-notification__text-wrapper">
+          <div class="cds--inline-notification__subtitle"><span class="notetitle ibm-bold ibm-textcolor-blue-50 background-blue cds--inline-notification__title ibm-padding-top-1 ibm-padding-bottom-1 padding-left-1 padding-right-1">注:</span> <ol class="ol cds--list--ordered--temporary"><li class="li cds--list__item">ラスター・フォントの場合、印刷サービス機能 (PSF) はポイント・サイズを無視します。
+PSF は、スプール代行受信時に妥当性検査を行ったり、エラー・メッセージを出したりしません。</li>
+<li class="li cds--list__item">アウトライン・コード化フォントの場合は、ポイント・サイズを
+指定する必要があります。ただし、一部のアウトライン・コード化フォントには、デフォルトのポイント・サイズが指定されています。このようなコード化フォントにポイント・サイズを指定しない場合は、コード化フォントに指定されているデフォルトのポイント・サイズが
+使用されます。<p class="p">デフォルトのポイント・サイズがないアウトライン・コード化フォントに
+ポイント・サイズを指定しない場合、PSF はスプール・ファイルを
+印刷できません。スプール・ファイルは、印刷書き込み時に保留されます。PSF はスプール代行受信時には妥当性検査を行いません。</p>
+</li>
+</ol>
+</div>
+        </div>
+      </div></div>
+<p class="p">コード化フォント値は印刷時に検査されます。それが無効の場合、またはリソース
+が見つけられない場合には、エラー・メッセージが出ます。</p>
+<p class="p">ファイルに CDEFNT が指定される場合には、CRTPRTF コマンドの DEVTYPE(*AFPDS) を
+指定してください。DEVTYPE が *AFPDS 以外に変更された場合には、キーワードは
+無視され、印刷時に警告メッセージが出ます。 </p>
+<p class="p">CDEFNT は、FONT または FNTCHRSET キーワードと同じレベルで指定することは
+できません。</p>
+<p class="p">このキーワードについては、オプション標識を使用できます。</p>
+<div class="section"><h2 class="title sectiontitle">例</h2><p class="p">次の例は、CDEFNT キーワードの指定方法を示しています。</p>
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code>|...+....1....+....2....+....3....+....4....+....5....+....6....+....7....+....8
+     A*
+     A          R REC1
+     A            FLD1           8A    10 13CDEFNT(QFNTCPL/X0BRTR)
+     A*
+     A            FLD2          10A    11 13CDEFNT(QFNTCPL/X0BRTP +
+     A                                      (*POINTSIZE 10.1))
+     A            FLD3          10A    20 13CDEFNT(QFNTCPL/X0BRTP +
+     A                                      (*POINTSIZE 5.0 3.0))</code></pre></div><div class="docs--copy-btn"></div></div>
+<p class="p">FLD1 は、ライブラリー QFNTCPL にあるコード化フォント X0BRTR を指定します。FLD2 は、ライブラリー QFNTCPL にあるフォント X0BRTP および
+そのフィールドのポイント・サイズ 10.1 を指定します。FLD3 は、垂直ポイント・サイズ 5.0 と水平ポイント・サイズ 3.0 を使用して
+フォント X0BRTP を指定します。</p>
+</div>
+</div>
+<div class="related-links ibm-padding-top-1 ibm-padding-bottom-2 bx--row bottom-section-parent" aria-label="bottom related links">
+<div class="familylinks ibm-margin-bottom-1">
+<div class="parentlink"><strong>親トピック:</strong> <div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a class="link bottom-section-link" href="/docs/ja/ssw_ibm_i_74/rzakd/rzakdmstprkey.htm" title="これらは印刷装置ファイルの定義に有効なキーワード項目です。">印刷装置ファイルのキーワード項目 (45 から 80 桁目)</a></div></div>
+</div>
+</div>
+

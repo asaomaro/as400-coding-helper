@@ -1,0 +1,44 @@
+<h1 class="title topictitle1">表示装置ファイルの CHKMSGID (検査メッセージ識別コード) キーワード</h1><div id="lastModifiedDate"><span>Last Updated</span>: 2021-04-13</div>
+<div class="body refbody"><p class="shortdesc"><span class="ph">これはフィールド・レベル・キーワードで、妥当性検査エラーが検出されたときに出されるエラー・メッセージを識別するのに使用します。</span></p>
+<div class="section"><p class="p">CHKMSGID キーワードを指定しない場合、システムはメッセージを出します。
+CHECK(M10)、CHECK(M11)、CHECK(VN)、CHECK(VNE)、CMP、COMP、RANGE、または VALUES キーワードに関連付けられた妥当性検査規則を指定します。</p>
+<p class="p">キーワードの形式は次のとおりです。</p>
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code>CHKMSGID(message-id [library/]message-file [&amp;message-data-field])</code></pre></div><div class="docs--copy-btn"></div></div>
+<p class="p">message-id パラメーターには、メッセージ行に表示したいテキストが入っているメッセージ記述を指定します。</p>
+<p class="p">message-file および library パラメーターでは、メッセージ記述が入っているメッセージ・ファイルを指定します。ライブラリー名は任意指定です。
+ライブラリー名を指定しない場合には、実行時点で有効なライブラリー・リスト (*LIBL) を用いてメッセージ・ファイルの探索が行われます。</p>
+<p class="p">message-data-field パラメーターでは、メッセージ行に表示したいメッセージ置換テキストが入っているフィールドの名前を指定します。
+message-data-field パラメーターの形式は、&amp;フィールド名です。
+この名前のフィールドにメッセージ置換テキストが入っています。フィールド名は、該当レコード様式内に存在しなければならず、使用目的が P の文字フィールド (データ・タイプ A) として定義しなければなりません。</p>
+<p class="p">CHKMSGID を指定できるのは、CHECK(M10)、CHECK(M11)、CHECK(VN)、CHECK(VNE)、CMP、
+COMP、RANGE、または VALUES のいずれかのキーワードも指定されているフィールドだけです。
+このキーワードを指定するのは、入力可能フィールド (使用目的が B または I) でなければなりません。</p>
+<p class="p">オプション標識は、このキーワードでは無効です。</p>
+</div>
+<div class="example"><h2 class="title sectiontitle">例</h2><p class="p">次の例は、CHKMSGID キーワードの指定方法を示しています。</p>
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code>|...+....1....+....2....+....3....+....4....+....5....+....6....+....7....+....8
+00010A                                      MSGLOC(20)
+00020A          R RECORD1
+00030A            FIELD1        10A  B  4  2CHECK(VN) CHKMSGID(USR1234 +
+00040A                                      QGPL/USRMSGS &amp;MSGFLD1);
+00050A            MSGFLD1       12A  P
+00060A            FIELD2         1A  I  4 20VALUES('A' 'B' 'I')
+00070A                                      CHKMSGID(XYZ9999 APPLMSGS)
+00080A            FIELD3         3S OB  4 25RANGE(023 199)
+     A</code></pre></div><div class="docs--copy-btn"></div></div>
+<p class="p">RECORD1 が表示画面から読み取られると、次のことが起こります。</p>
+<ul class="ul cds--list--unordered"><li class="li cds--list__item">FIELD1 に入っている名前が有効な名前でない場合は、ライブラリー QGPL のメッセージ・ファイル USRMSGS からのメッセージ USR1234 が、MSGFLD1 内に指定された置換テキストとともに 20 行目に表示されます。</li>
+<li class="li cds--list__item">FIELD2 に入力されたデータが A、B、または I のいずれの文字でもない場合は、*LIBL/APPLMSGS からのメッセージ XYZ9999 が 20 行目に表示されます。</li>
+<li class="li cds--list__item">FIELD3 に入力されたデータが 023 未満か 199 より大きい場合、CHKMSGID キーワードが指定されていないため、システム提供のメッセージ CPF5224 (フィールドの値が正しい範囲になっていない) が 20 行目に表示されます。</li>
+</ul>
+</div>
+</div>
+<div class="related-links ibm-padding-top-1 ibm-padding-bottom-2 bx--row bottom-section-parent" aria-label="bottom related links">
+<div class="familylinks ibm-margin-bottom-1">
+<div class="parentlink"><strong>親トピック:</strong> <div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a class="link bottom-section-link" href="/docs/ja/ssw_ibm_i_74/rzakc/rzakcmstkeyent.htm" title="表示装置ファイルを定義するキーワード項目は、45 - 80 桁目 (機能欄) に記入します。">表示装置ファイルの DDS キーワード項目 (45 - 80 桁目)</a></div></div>
+</div>
+<div class="relinfo relref ibm-margin-bottom-1"><strong>関連資料</strong>:<br>
+<div><div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a class="link bottom-section-link" href="/docs/ja/ssw_ibm_i_74/rzakc/rzakcmstdfval.htm" title="これはフィールド・レベル・キーワードで、ユーザーがフィールドに入力できる有効な値のリストを指定するために使用します。">表示装置ファイルの VALUES (値) キーワード</a></div></div>
+</div>
+</div>
+

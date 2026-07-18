@@ -1,0 +1,147 @@
+<main role="main"><article role="article" aria-labelledby="rzakcmstdfsflms__title__1">
+<h1 class="topictitle1" id="rzakcmstdfsflms__title__1">SFLMSG (Subfile Message) and SFLMSGID (Subfile Message Identifier)
+keywords for display files</h1><div id="lastModifiedDate"><span>Last Updated</span>: 2026-07-13</div>
+
+
+
+<div class="body refbody"><p class="shortdesc">You use these record-level keywords on the subfile-control
+record format to identify a message to be displayed on the message line when
+your program performs an output operation to the subfile-control record format.</p>
+
+<div class="section"><p>Your program has the responsibility to reverse the images of any
+fields and to position the cursor appropriately in the subfile being displayed.</p>
+<div class="p">The
+formats of the keywords are:  <div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>SFLMSG('message-text' [response-indicator])</code></pre></div><div class="docs--copy-btn"></div></div><div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>SFLMSGID(msgid [library-name/]msg-file [response-indicator] [&amp;msg-data])</code></pre></div><div class="docs--copy-btn"></div></div></div>
+</div>
+
+<section class="section" role="region" aria-labelledby="rzakcmstdfsflms__title__2"><h2 class="sectiontitle" id="rzakcmstdfsflms__title__2">SFLMSG keyword</h2><p>Specify SFLMSG as
+you do the ERRMSG keyword. The parameters specify a message text and, optionally,
+a response indicator. The message text is the message to be displayed.</p>
+<p>If you specify a response indicator, it should be the same
+as the option indicator used to condition SFLMSG. On the input operation that
+follows the display of the error message, the <span class="keyword">IBM i</span> operating
+system turns off the indicator. If the response and option indicators are
+the same, they are both turned off. One exception to this rule is that if
+the response indicator is also specified for another keyword, such as CHANGE,
+CA<var class="keyword varname">nn</var>, or CF<var class="keyword varname">nn</var>, the on/off
+setting of the response indicator is based on the results of the function
+provided by the CHANGE or CFnn keyword.</p>
+<p>When a response indicator is
+specified, the first 50 characters of the message text are also used as indicator
+text. Separate response indicator text is not valid for SFLMSG.</p>
+</section>
+
+<section class="section" role="region" aria-labelledby="rzakcmstdfsflms__title__3"><h2 class="sectiontitle" id="rzakcmstdfsflms__title__3">SFLMSGID keyword</h2><p>Specify SFLMSGID
+as you do the ERRMSGID keyword.</p>
+<div class="p">For SFLMSGID, the parameters specify:
+ <ul class="cds--list--unordered">
+<li class="cds--list__item">The message identifier for the message to be displayed</li>
+
+<li class="cds--list__item">The message file and, optionally, the library</li>
+
+<li class="cds--list__item">A response indicator</li>
+
+<li class="cds--list__item">A msg-data field name</li>
+
+</ul>
+</div>
+<p>The response indicator, if specified, should be the same as the
+option indicator used to condition the SFLMSGID keyword. On the subsequent
+input operation, after the display of the error message, the <span class="keyword">IBM i</span> operating
+system turns off the indicator. However, if the response indicator is also
+specified on another keyword, such as CHANGE, CA<var class="keyword varname">nn</var>, or
+CF<var class="keyword varname">nn</var>, the on/off setting of the response indicator is based
+on the results of the function provided by the CHANGE, CA<var class="keyword varname">nn</var>,
+or CF<var class="keyword varname">nn</var> keyword.</p>
+<div class="note border-2 cds--inline-notification--info ibmdocs-note cds--inline-notification cds--inline-notification--low-contrast margin-top-1 margin-bottom-1"><div class="cds--inline-notification__details"><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" class="cds--inline-notification__icon" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M16,2A14,14,0,1,0,30,16,14,14,0,0,0,16,2Zm0,5a1.5,1.5,0,1,1-1.5,1.5A1.5,1.5,0,0,1,16,7Zm4,17.12H12V21.88h2.88V15.12H13V12.88h4.13v9H20Z"></path></svg>
+        <div class="cds--inline-notification__text-wrapper">
+          <div class="cds--inline-notification__subtitle"><span class="notetitle ibm-bold ibm-textcolor-blue-50 background-blue cds--inline-notification__title ibm-padding-top-1 ibm-padding-bottom-1 padding-left-1 padding-right-1">Note:</span> Indicator text cannot be specified
+on the SFLMSGID keyword.</div>
+        </div>
+      </div></div>
+<p>The msg-data field, if specified,
+contains the replacement text for the specified message. The field must exist
+in the record format, and the field must be defined as a character field (data
+type A) with usage P. For more information about how replacement text works,
+see the <a href="/docs/en/ssw_ibm_i_74/cl/sndpgmmsg.htm">Send Program
+Message (SNDPGMMSG)</a> command.</p>
+</section>
+
+<section class="section" role="region" aria-labelledby="rzakcmstdfsflms__title__4"><h2 class="sectiontitle" id="rzakcmstdfsflms__title__4">Conditions occurring during message display</h2><p>The
+display of messages using SFLMSG and SFLMSGID is similar to the display of
+messages by the <span class="keyword">IBM i</span> operating
+system when field validation errors are detected. An important difference
+from ERRMSG and ERRMSGID is that the program, and not the <span class="keyword">IBM i</span> operating
+system, must position the cursor to the appropriate field within the subfile,
+reverse the image of that field within the subfile, and also optionally reverse
+the image of more than one field at a time. On the 5250 workstation, blinking
+cursor and message highlighting are allowed.</p>
+<div class="note border-2 cds--inline-notification--info ibmdocs-note cds--inline-notification cds--inline-notification--low-contrast margin-top-1 margin-bottom-1"><div class="cds--inline-notification__details"><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" class="cds--inline-notification__icon" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M16,2A14,14,0,1,0,30,16,14,14,0,0,0,16,2Zm0,5a1.5,1.5,0,1,1-1.5,1.5A1.5,1.5,0,0,1,16,7Zm4,17.12H12V21.88h2.88V15.12H13V12.88h4.13v9H20Z"></path></svg>
+        <div class="cds--inline-notification__text-wrapper">
+          <div class="cds--inline-notification__subtitle"><span class="notetitle ibm-bold ibm-textcolor-blue-50 background-blue cds--inline-notification__title ibm-padding-top-1 ibm-padding-bottom-1 padding-left-1 padding-right-1">Note:</span> The SFLDSP keyword must
+be in effect for SFLMSG and SFLMSGID to be processed.</div>
+        </div>
+      </div></div>
+</section>
+
+<section class="section" role="region" aria-labelledby="rzakcmstdfsflms__title__5"><h2 class="sectiontitle" id="rzakcmstdfsflms__title__5">Restoration of reversed image fields</h2><p>See the Restoration of reversed image fields
+section in <a href="/docs/en/ssw_ibm_i_74/rzakc/rzakcmstdfems.htm" title="You can use one of these field-level keywords to identify a message that is displayed on the message line and that is associated with that field.">ERRMSG (Error Message) and ERRMSGID (Error Message Identifier) keywords for display files</a>.</p>
+</section>
+
+<section class="section" role="region" aria-labelledby="rzakcmstdfsflms__title__6"><h2 class="sectiontitle" id="rzakcmstdfsflms__title__6">Priority among selected keywords</h2><p>You can specify
+either SFLMSG or SFLMSGID several times for a single subfile-control record
+format. In your program, set option indicators to select a particular message
+to be displayed and to select particular fields to be displayed in reverse
+image. Several fields can be displayed in reverse image in different records
+of a subfile when the subfile is displayed again. However, only one message
+can be displayed at one time.</p>
+<p>If more than one error
+message is selected at a time, the <span class="keyword">IBM i</span> operating
+system displays the first of the following keywords:</p>
+<ol class="cds--list--ordered--temporary">
+<li class="cds--list__item">ERRMSG (If more than one ERRMSG keyword is selected, the first one selected
+is displayed.)</li>
+
+<li class="cds--list__item">ERRMSGID (If more than one ERRMSGID keyword is selected, the first one
+selected is displayed.)</li>
+
+<li class="cds--list__item">SFLMSG (If more than one SFLMSG keyword is selected, the first one selected
+is displayed.)</li>
+
+<li class="cds--list__item">SFLMSGID (If more than one SFLMSGID keyword is selected, the first one
+selected is displayed.)</li>
+
+<li class="cds--list__item">Message fields (M in position 38) (If more than one message field is selected,
+the first one selected is displayed.)</li>
+
+</ol>
+<p>Multiple subfile messages (SFLMSG and SFLMSGID) are allowed on error
+subfiles.</p>
+<p>Option indicators are valid for these keywords.</p>
+</section>
+
+<div class="example"><h2 class="sectiontitle" id="rzakcmstdfsflms__title__7">Example</h2><p>The following example shows how to specify
+the SFLMSG and SFLMSGID keywords.</p>
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>|...+....1....+....2....+....3....+....4....+....5....+....6....+....7....+....8
+00010A          R SFLR                      SFL
+00020A*
+00030A*           (at least one displayable field)
+00040A*
+00050A          R SFLCTLR                   SFLCTL(SFLR)
+00060A                                      SFLPAG(17)
+00070A                                      SFLSIZ(17)
+00080A                                      SFLDSP SFLDSPCTL
+00090A  11                                  SFLMSGID(USR0006 PAYROLL/UMSGF1 +
+00100A                                      11 &amp;RPLTXT);
+00110A  12                                  SFLMSGID(USR0007 PAYROLL/UMSGEF1 +
+00120A                                      12 &amp;RPLTXT);
+00130A            RPLTXT        78A  P
+     A</code></pre></div><div class="docs--copy-btn"></div></div></div>
+
+</div>
+
+<aside role="complementary" aria-labelledby="rzakcmstdfsflms__title__1"><nav role="navigation" aria-label="bottom related links" class="ibm-padding-top-1 ibm-padding-bottom-2 bx--row bottom-section-parent">
+<div class="familylinks ibm-margin-bottom-1">
+<div class="parentlink"><strong>Parent topic:</strong> <div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a data-hd-product="ssw_ibm_i_74" href="/docs/en/ssw_ibm_i_74/rzakc/rzakcmstkeyent.htm" title="You type the keyword entries that define display files in positions 45 through 80 (functions)." class="bottom-section-link">DDS keyword entries for display files (positions 45 through 80)</a></div></div>
+</div>
+</nav></aside></article></main>

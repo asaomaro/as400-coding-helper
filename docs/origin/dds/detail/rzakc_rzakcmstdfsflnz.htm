@@ -1,0 +1,54 @@
+<h1 class="title topictitle1">表示装置ファイルの SFLINZ (サブファイル初期設定) キーワード</h1><div id="lastModifiedDate"><span>Last Updated</span>: 2021-04-13</div>
+<div class="body refbody"><p class="shortdesc">これはレコード・レベル・キーワードで、SFLCTL (サブファイル制御) キーワードで識別されるサブファイル制御レコード様式に対する出力命令の時点で、<span class="keyword">IBM® i</span> オペレーティング・システムがサブファイル内のすべてのレコードを初期設定するよう指定するために、サブファイル制御レコード様式で使用します。</p>
+<div class="section"><p class="p">サブファイルの各レコード内のフィールドは、文字タイプならブランクに、浮動小数点数タイプならヌルに、その他の数字タイプならゼロに初期設定されます。また、DFT キーワードが指定されている場合には、入力専用フィールドに指定されている固定情報値に初期設定されます。</p>
+<p class="p">サブファイルが表示される (サブファイル制御レコードに対する出力命令で表示される)  場合には、サブファイル内のすべてのレコードは、同じ値で表示されます。
+前にデータが書き込まれていたレコードは、すべて重ね書きされ、以前の値は失われます。</p>
+<p class="p">このキーワードにはパラメーターはありません。</p>
+<p class="p">サブファイル制御レコード様式に対する出力命令時に SFLINZ が有効になっている場合には、次の事項が当てはまります。
+サブファイル・レコード様式のフィールドに対してキーワード (例えば DSPATR(HI) など) が指定されていて、しかもそれらのキーワードにオプション標識が指定されている場合には、サブファイルは、すべてのオプション標識がオフ (16 進数 F0) になっている場合と同様の方法で表示されます。オプション標識に N が指定されている場合には、キーワードの選択を行える点に注意してください。</p>
+<p class="p">SFLINZ が効力を持っているサブファイル制御レコードに対してプログラムから出力命令が送られた後は、サブファイル内のすべてのレコードは、活動状態とは見なされますが、変更されているとは見なされません。
+レコードが変更されたと見なされるのは、ワークステーション・ユーザーがレコードを変更するか、SFLNXTCHG キーワードが
+効力を持っているサブファイル・レコード様式に対してプログラムから出力命令が送られた場合だけです。</p>
+<p class="p">活動レコードがないサブファイルを初期設定するには、SFLRNA (サブファイル・レコード非活動) キーワードを使用してください。</p>
+<div class="p">一般に、SFLINZ は次の目的で使用します。<ul class="ul cds--list--unordered"><li class="li cds--list__item">SFLINZ を SFLRNA キーワードとともに使用します。これによって、プログラムは、サブファイルを初期設定し、そして、初期設定済みレコードを活動状態と見なさずに、そのサブファイルにレコードを追加することができます。</li>
+<li class="li cds--list__item">SFLINZ を SFLPGMQ キーワードとともに指定します。
+これによって、プログラムは 1 回の出力命令でメッセージ・サブファイルを作成することができます。</li>
+</ul>
+<div class="note note border-2 cds--inline-notification--info ibmdocs-note cds--inline-notification cds--inline-notification--low-contrast margin-top-1 margin-bottom-1"><div class="cds--inline-notification__details"><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" class="cds--inline-notification__icon" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M16,2A14,14,0,1,0,30,16,14,14,0,0,0,16,2Zm0,5a1.5,1.5,0,1,1-1.5,1.5A1.5,1.5,0,0,1,16,7Zm4,17.12H12V21.88h2.88V15.12H13V12.88h4.13v9H20Z"></path></svg>
+        <div class="cds--inline-notification__text-wrapper">
+          <div class="cds--inline-notification__subtitle"><span class="notetitle ibm-bold ibm-textcolor-blue-50 background-blue cds--inline-notification__title ibm-padding-top-1 ibm-padding-bottom-1 padding-left-1 padding-right-1">注:</span> <ol class="ol cds--list--ordered--temporary"><li class="li cds--list__item">サブファイル・レコード様式でフィールド選択が使用されている場合には、SFLINZ は無効です。
+プログラムで行えるのは、必要に応じてフィールドを選択しながら、サブファイル・レコード様式に対する一連の出力命令によってサブファイルを初期設定することだけです。</li>
+<li class="li cds--list__item">メッセージ・サブファイル (SFLMSGRCD) のサブファイル制御レコード様式の場合には、そのサブファイル制御レコード様式にフィールド・レベルで SFLPGMQ キーワードも同時に指定しない限り、SFLINZ を指定することはできません。</li>
+</ol>
+</div>
+        </div>
+      </div></div>
+</div>
+<p class="p">このキーワードについては、オプション標識を使用することができます。
+画面サイズ条件名は指定できません。</p>
+</div>
+<div class="example"><h2 class="title sectiontitle">例</h2><p class="p">次の例は、SFLINZ キーワードの指定方法を示しています。</p>
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code>|...+....1....+....2....+....3....+....4....+....5....+....6....+....7....+....8
+00010A          R SFLR                      SFL
+00020A*
+00030A*           (at least one displayable field)
+00040A          R SFLCTLR                   SFLCTL(SFLR)
+00050A                                      SFLPAG(17)
+00060A                                      SFLSIZ(17)
+00070A  01                                  SFLDSP SFLDSPCTL
+00080A  02                                  SFLINZ
+00090A                                      UNLOCK(*ERASE *MDTOFF)
+     A</code></pre></div><div class="docs--copy-btn"></div></div>
+</div>
+</div>
+<div class="related-links ibm-padding-top-1 ibm-padding-bottom-2 bx--row bottom-section-parent" aria-label="bottom related links">
+<div class="familylinks ibm-margin-bottom-1">
+<div class="parentlink"><strong>親トピック:</strong> <div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a class="link bottom-section-link" href="/docs/ja/ssw_ibm_i_74/rzakc/rzakcmstkeyent.htm" title="表示装置ファイルを定義するキーワード項目は、45 - 80 桁目 (機能欄) に記入します。">表示装置ファイルの DDS キーワード項目 (45 - 80 桁目)</a></div></div>
+</div>
+<div class="relinfo relref ibm-margin-bottom-1"><strong>関連資料</strong>:<br>
+<div><div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a class="link bottom-section-link" href="/docs/ja/ssw_ibm_i_74/rzakc/rzakcmstdfsfrna.htm" title="これはレコード・レベル・キーワードで、プログラムが活動レコードを持たないサブファイルを初期設定できるようにするために、サブファイル制御レコード様式でサブファイル初期設定 (SFLINZ) キーワードとともに使用します。 活動レコードを持たないサブファイルを初期設定するためには、プログラムは、SFLINZ キーワードを選択し、サブファイル制御レコード様式に対する出力命令を送らなければなりません。">表示装置ファイルの SFLRNA (サブファイル・レコード非活動) キーワード</a></div></div>
+<div><div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a class="link bottom-section-link" href="/docs/ja/ssw_ibm_i_74/rzakc/rzakcmstdfsfpmq.htm" title="これはフィールド・レベル・キーワードで、メッセージ・サブファイルのサブファイル・レコード様式の 2 番目の (および最後の) フィールドで使用します。">表示装置ファイルの SFLPGMQ (サブファイル・プログラム・メッセージ待ち行列) キーワード</a></div></div>
+<div><div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a class="link bottom-section-link" href="/docs/ja/ssw_ibm_i_74/rzakc/rzakcmstdfsfmrc.htm" title="これはレコード・レベル・キーワードで、このサブファイルはメッセージ・サブファイルであり、サブファイル表示時点で表示するレコードはプログラム・メッセージ待ち行列から取り出したメッセージであることを指定するために、サブファイル・レコード様式で使用します。">表示装置ファイルの SFLMSGRCD (サブファイル・メッセージ・レコード) キーワード</a></div></div>
+</div>
+</div>
+

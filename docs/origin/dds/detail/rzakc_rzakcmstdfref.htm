@@ -1,0 +1,43 @@
+<h1 class="title topictitle1">表示装置ファイルの REF (参照) キーワード</h1><div id="lastModifiedDate"><span>Last Updated</span>: 2021-04-13</div>
+<div class="body refbody"><p class="shortdesc">これはファイル・レベル・キーワードで、フィールド記述を取り出すファイルの名前を指定するために使用します。また、前に記述したレコード様式内のいくつかのフィールドから記述情報を複写する場合にもこのキーワードを使用します。</p>
+<div class="section"><p class="p">同じファイルを参照する複数のフィールド記述がある場合に、個々のフィールド記述ごとに REFFLD キーワードを指定しなくても、REF キーワードにそのファイル名を一度指定することにより、同じ処理を行うことができます。
+複数のファイルを参照する場合には、REFFLD キーワードを使用します。(REF キーワードは一度しか指定できません。)</p>
+<div class="p">キーワードの形式は次のとおりです。<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code>REF([library-name/]database-file-name [record-format-name])</code></pre></div><div class="docs--copy-btn"></div></div>
+</div>
+<p class="p">参照ファイルに複数のレコード様式がある場合には、様式を順次探索する必要がない限り、このキーワードにパラメーター値として様式名を指定し、それによって <span class="keyword">IBM® i</span> オペレーティング・システムに使用すべき様式を伝えます。</p>
+<p class="p">database-file-name は、このキーワードの必須パラメーターです。
+library-name および record-format-name の指定は任意です。</p>
+<p class="p">library-name を指定しなかった場合には、ファイル作成時の現行のライブラリー・リスト (*LIBL) が使用されます。 record-format-name を指定しなかった場合には、各レコード様式が順番に (指定されている順に) 検索され、最初に出てきた該当フィールド名が使用されます。REF および REFFLD キーワードの選択よって決まる検索順序については、<a class="xref" href="/docs/ja/ssw_ibm_i_74/dds/specref.htm">REF および REFFLD キーワードを DDS ファイルに指定する時期</a>を参照してください。</p>
+<p class="p">このキーワードでは、分散データ管理 (DDM) ファイルを指定することもできます。</p>
+<p class="p">DDM ファイルを使用する場合、database-file-name および library-name は、ソース・システム上の DDM ファイル名およびライブラリー名です。また、レコード様式名は、ターゲット・システム上のリモート・ファイル内のレコード様式名です。</p>
+<div class="note note border-2 cds--inline-notification--info ibmdocs-note cds--inline-notification cds--inline-notification--low-contrast margin-top-1 margin-bottom-1"><div class="cds--inline-notification__details"><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" class="cds--inline-notification__icon" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M16,2A14,14,0,1,0,30,16,14,14,0,0,0,16,2Zm0,5a1.5,1.5,0,1,1-1.5,1.5A1.5,1.5,0,0,1,16,7Zm4,17.12H12V21.88h2.88V15.12H13V12.88h4.13v9H20Z"></path></svg>
+        <div class="cds--inline-notification__text-wrapper">
+          <div class="cds--inline-notification__subtitle"><span class="notetitle ibm-bold ibm-textcolor-blue-50 background-blue cds--inline-notification__title ibm-padding-top-1 ibm-padding-bottom-1 padding-left-1 padding-right-1">注:</span> IDDU ファイルは、参照ファイルとしては使用できません。</div>
+        </div>
+      </div></div>
+<p class="p">オプション標識は、このキーワードでは無効です。</p>
+</div>
+<div class="example"><h2 class="title sectiontitle">例</h2><p class="p">以下に REF キーワードの指定方法の例を示します。</p>
+<p class="p">この例では、FLD1 は FILE1 内の最初の (または唯一の) FLD1 と同じ属性をもちます。</p>
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code>|...+....1....+....2....+....3....+....4....+....5....+....6....+....7....+....8
+00010A                                      REF(FILE1)
+00020A          R RECORD
+00030A            FLD1      R           2  2
+     A</code></pre></div><div class="docs--copy-btn"></div></div>
+<p class="p">この例では、FLD1 は LIB1 内の FILE1 内の RECORD2 内の FLD1 と同じ属性をもちます。</p>
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code>|...+....1....+....2....+....3....+....4....+....5....+....6....+....7....+....8
+00010A                                      REF(LIB/FILE1 RECORD2)
+00020A          R RECORD
+00030A            FLD1      R           2  2
+     A</code></pre></div><div class="docs--copy-btn"></div></div>
+</div>
+</div>
+<div class="related-links ibm-padding-top-1 ibm-padding-bottom-2 bx--row bottom-section-parent" aria-label="bottom related links">
+<div class="familylinks ibm-margin-bottom-1">
+<div class="parentlink"><strong>親トピック:</strong> <div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a class="link bottom-section-link" href="/docs/ja/ssw_ibm_i_74/rzakc/rzakcmstkeyent.htm" title="表示装置ファイルを定義するキーワード項目は、45 - 80 桁目 (機能欄) に記入します。">表示装置ファイルの DDS キーワード項目 (45 - 80 桁目)</a></div></div>
+</div>
+<div class="relinfo relconcepts ibm-margin-bottom-1"><strong>関連概念</strong>:<br>
+<div><div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a class="link bottom-section-link" href="/docs/ja/ssw_ibm_i_74/rzakc/rzakcmstpos29.htm" title="IBM i オペレーティング・システムの参照機能を使用する場合は、この欄に R を指定することができます。この参照機能は、事前に定義されている名前付きフィールド (参照フィールド といいます) の属性を定義中のフィールドにコピーします。">表示装置ファイルの参照 (29 桁目)</a></div></div>
+</div>
+</div>
+

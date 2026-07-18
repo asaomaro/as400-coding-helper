@@ -1,0 +1,226 @@
+<main role="main"><article role="article" aria-labelledby="tdjdftv__title__1">
+<h1 class="topictitle1" id="tdjdftv__title__1">JDFTVAL (Join Default Values) keyword—join logical files only</h1><div id="lastModifiedDate"><span>Last Updated</span>: 2026-07-13</div>
+
+
+
+<div class="body refbody"><p class="shortdesc"><span class="ph">The JDFTVAL keyword is valid only
+for join logical files. If this keyword is in effect, the system provides
+default values for fields when a join to a secondary file does not produce
+any records.</span></p>
+
+<div class="section"><p>This keyword has no parameters.</p>
+<p>The default values for the
+system are blanks for character and hexadecimal fields and zeros for numeric
+fields.  You can change the default for specific fields by specifying the
+DFT keyword for the fields in the physical file.</p>
+<p>If you specify JDFTVAL,
+your program retrieves records for which a secondary file does not have a
+corresponding record. If you do not specify JDFTVAL, a record in the primary
+file for which there is no corresponding record in a secondary file is skipped.</p>
+<p>If
+you are joining three or more files, and you specify the JDFTVAL keyword for
+fields used as join fields, default values of fields missing in secondary
+files are used in the same way that a field value is used. For example, records
+are selected and omitted based on the default value. Also, if this field is
+used as a join field to join to other secondary files, records from the other
+secondary files are returned to your program based on the default value.</p>
+</div>
+
+<div class="example"><h2 class="sectiontitle" id="tdjdftv__title__2">Example</h2><p>The following example shows how to specify
+the JDFTVAL keyword.</p>
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>|...+....1....+....2....+....3....+....4....+....5....+....6....+....7....+....8
+00010A                                      JDFTVAL
+00020A          R RECORD1                   JFILE(PF1 PF2)
+00030A          J                           JOIN(PF1 PF2)
+00040A                                      JFLD(NAME NAME)
+00050A            NAME                      JREF(1)
+00060A            ADDR
+00070A            BAL
+     A</code></pre></div><div class="docs--copy-btn"></div></div><p>PF1 is the primary file and PF2 is a secondary file.
+Assume that PF1 and PF2 have the following records:</p>
+
+<div class="tablenoborder"><div class="cds--data-table-container"><table summary="" class="cds--data-table"><colgroup><col><col><col><col></colgroup><thead>
+<tr>
+<th id="tdjdftv__entry__1" class="nrule"><div class="cds--table-header-label">PF1 NAME</div></th>
+
+<th id="tdjdftv__entry__2" class="nrule"><div class="cds--table-header-label">ADDR</div></th>
+
+<th id="tdjdftv__entry__3" class="nrule"><div class="cds--table-header-label">PF2 NAME</div></th>
+
+<th id="tdjdftv__entry__4" class="nrule"><div class="cds--table-header-label">BAL</div></th>
+
+</tr>
+
+</thead>
+<tbody>
+<tr>
+<td headers="tdjdftv__entry__1 " class="nrule">Anne</td>
+
+<td headers="tdjdftv__entry__2 " class="nrule">120 1st St.</td>
+
+<td headers="tdjdftv__entry__3 " class="nrule">Anne</td>
+
+<td headers="tdjdftv__entry__4 " class="nrule">5.00</td>
+
+</tr>
+
+<tr>
+<td headers="tdjdftv__entry__1 " class="nrule">Doug</td>
+
+<td headers="tdjdftv__entry__2 " class="nrule">40 Pillsbury</td>
+
+<td headers="tdjdftv__entry__3 " class="nrule">Doug</td>
+
+<td headers="tdjdftv__entry__4 " class="nrule">6.50</td>
+
+</tr>
+
+<tr>
+<td headers="tdjdftv__entry__1 " class="nrule">Mark</td>
+
+<td headers="tdjdftv__entry__2 " class="nrule">2 Lakeside Dr.</td>
+
+<td headers="tdjdftv__entry__3 " class="nrule">Sue</td>
+
+<td headers="tdjdftv__entry__4 " class="nrule">2.00</td>
+
+</tr>
+
+<tr>
+<td headers="tdjdftv__entry__1 " class="nrule">Sue</td>
+
+<td headers="tdjdftv__entry__2 " class="nrule">120 Broadway</td>
+
+<td headers="tdjdftv__entry__3 " class="nrule">&nbsp;</td>
+
+<td headers="tdjdftv__entry__4 " class="nrule">&nbsp;</td>
+
+</tr>
+
+</tbody>
+</table></div>
+</div>
+<p>With JDFTVAL specified in the join logical file, the program reads
+the following records (shown in arrival sequence):</p>
+
+<div class="tablenoborder"><div class="cds--data-table-container"><table summary="" class="cds--data-table"><colgroup><col><col><col></colgroup><thead>
+<tr>
+<th id="tdjdftv__entry__21" class="nrule"><div class="cds--table-header-label">NAME</div></th>
+
+<th id="tdjdftv__entry__22" class="nrule"><div class="cds--table-header-label">ADDR</div></th>
+
+<th id="tdjdftv__entry__23" class="nrule"><div class="cds--table-header-label">BAL</div></th>
+
+</tr>
+
+</thead>
+<tbody>
+<tr>
+<td headers="tdjdftv__entry__21 " class="nrule">Anne</td>
+
+<td headers="tdjdftv__entry__22 " class="nrule">120 1st St.</td>
+
+<td headers="tdjdftv__entry__23 " class="nrule">5.00</td>
+
+</tr>
+
+<tr>
+<td headers="tdjdftv__entry__21 " class="nrule">Doug</td>
+
+<td headers="tdjdftv__entry__22 " class="nrule">40 Pillsbury</td>
+
+<td headers="tdjdftv__entry__23 " class="nrule">6.50</td>
+
+</tr>
+
+<tr>
+<td headers="tdjdftv__entry__21 " class="nrule">Mark</td>
+
+<td headers="tdjdftv__entry__22 " class="nrule">2 Lakeside Dr.</td>
+
+<td headers="tdjdftv__entry__23 " class="nrule">0.00</td>
+
+</tr>
+
+<tr>
+<td headers="tdjdftv__entry__21 " class="nrule">Sue</td>
+
+<td headers="tdjdftv__entry__22 " class="nrule">120 Broadway</td>
+
+<td headers="tdjdftv__entry__23 " class="nrule">2.00</td>
+
+</tr>
+
+</tbody>
+</table></div>
+</div>
+<p>Without JDFTVAL specified in the join logical file, the program
+can read only three records (no record is found for Mark).</p>
+<p>In this example,
+if you specified JREF(2) instead of JREF(1), the records returned to the program
+might be different, as follows:</p>
+
+<div class="tablenoborder"><div class="cds--data-table-container"><table summary="" class="cds--data-table"><colgroup><col><col><col></colgroup><thead>
+<tr>
+<th id="tdjdftv__entry__36" class="nrule"><div class="cds--table-header-label">NAME</div></th>
+
+<th id="tdjdftv__entry__37" class="nrule"><div class="cds--table-header-label">ADDR</div></th>
+
+<th id="tdjdftv__entry__38" class="nrule"><div class="cds--table-header-label">BAL</div></th>
+
+</tr>
+
+</thead>
+<tbody>
+<tr>
+<td headers="tdjdftv__entry__36 " class="nrule">Anne</td>
+
+<td headers="tdjdftv__entry__37 " class="nrule">120 1st St.</td>
+
+<td headers="tdjdftv__entry__38 " class="nrule">5.00</td>
+
+</tr>
+
+<tr>
+<td headers="tdjdftv__entry__36 " class="nrule">Doug</td>
+
+<td headers="tdjdftv__entry__37 " class="nrule">40 Pillsbury</td>
+
+<td headers="tdjdftv__entry__38 " class="nrule">6.50</td>
+
+</tr>
+
+<tr>
+<td headers="tdjdftv__entry__36 " class="nrule">&nbsp;</td>
+
+<td headers="tdjdftv__entry__37 " class="nrule">2 Lakeside Dr.</td>
+
+<td headers="tdjdftv__entry__38 " class="nrule">0.00</td>
+
+</tr>
+
+<tr>
+<td headers="tdjdftv__entry__36 " class="nrule">Sue</td>
+
+<td headers="tdjdftv__entry__37 " class="nrule">120 Broadway</td>
+
+<td headers="tdjdftv__entry__38 " class="nrule">2.00</td>
+
+</tr>
+
+</tbody>
+</table></div>
+</div>
+</div>
+
+</div>
+
+<aside role="complementary" aria-labelledby="tdjdftv__title__1"><nav role="navigation" aria-label="bottom related links" class="ibm-padding-top-1 ibm-padding-bottom-2 bx--row bottom-section-parent">
+<div class="familylinks ibm-margin-bottom-1">
+<div class="parentlink"><strong>Parent topic:</strong> <div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a data-hd-product="ssw_i5_72" href="/docs/en/ssw_ibm_i_74/rzakb/rzakbmstlfkeyw.htm" title="Keyword entries are typed in positions 45 through 80 (functions)." class="bottom-section-link">Keyword entries for physical and logical files (positions 45 through 80)</a></div></div>
+</div>
+
+<div class="linklist relinfo relref ibm-margin-bottom-1" lang="en-us"><h2 class="linkheading bottom-section-h2-title">Related reference</h2>
+<ul><li class="cds--list__item"><div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a data-hd-product="ssw_i5_72" href="/docs/en/ssw_ibm_i_74/rzakb/rzakbmstpdft.htm" title="You can use this field-level keyword to specify a default value for a field." class="bottom-section-link">DFT (Default) keyword—physical files only</a></div></li>
+</ul></div>
+</nav></aside></article></main>

@@ -1,0 +1,56 @@
+<h1 class="title topictitle1">表示装置ファイルの UNLOCK (ロック解除) キーワード</h1><div id="lastModifiedDate"><span>Last Updated</span>: 2021-04-13</div>
+<div class="body refbody"><p class="shortdesc"><span class="ph">これはレコード・レベル・キーワードで、定義中のレコード様式に対する入力命令の直後に <span class="keyword">IBM® i</span> オペレーティング・システムがキーボードのロックを解除することを指定するために使用します。</span></p>
+<div class="section"><p class="p">UNLOCK キーワードを指定しなかった場合には、<span class="keyword">IBM i</span> オペレーティング・システムは、画面上のデータの読み取りが終わった後も、キーボードをロックしたままにしておきます。
+したがって、ワークステーション・ユーザーは、読み取られたばかりのデータが処理されている間は、
+入力可能フィールドにデータを入力することはできません。</p>
+<div class="p">キーワードの形式は次のとおりです。<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code>UNLOCK[(*ERASE) | (*MDTOFF)] | [(*ERASE *MDTOFF)] |  [(*MDTOFF *ERASE)]</code></pre></div><div class="docs--copy-btn"></div></div>
+</div>
+<p class="p">パラメーター値 *ERASE および *MDTOFF は任意指定です。
+パラメーター値を何も指定しなかった場合には、デフォルトの *ERASE が使用されます。</p>
+<p class="p">ユーザーのプログラムが入力命令を送ると、通常は、次の一連の命令が行われます。</p>
+<ol class="ol cds--list--ordered--temporary"><li class="li cds--list__item">キーボード・ロックが (まだ解除されていない場合には) 解除され、ワークステーション・ユーザーは画面上の入力可能フィールドに入力することができるようになります。</li>
+<li class="li cds--list__item">ワークステーション・ユーザーは、Enter キー (または有効な機能キー) を押します。</li>
+<li class="li cds--list__item">レコード様式内の入力可能フィールドにデータが入力された場合、または入力可能フィールドが表示された時点で DSPATR(MDT) キーワードが有効になっていた場合には、その入力可能フィールドの変更データ・タグ (MDT) がオンになります。</li>
+<li class="li cds--list__item">入力命令が完了すると、MDT がオンになっている入力可能フィールドは、次に説明するように、UNLOCK のパラメーター値の影響を受けます。</li>
+</ol>
+</div>
+<div class="section"><h2 class="title sectiontitle">UNLOCK (GETRETAIN の指定なし) または UNLOCK(*ERASE)</h2><p class="p">この入力命令の後は、キーボードはロックを解除されたままで、画面上の入力可能フィールドは消去され、それらの MDT はオンのままです。</p>
+</div>
+<div class="section"><h2 class="title sectiontitle">UNLOCK(*MDTOFF) または UNLOCK (GETRETAIN の指定あり)</h2><p class="p">この入力命令の後は、キーボードはロックが解除されたままで、画面上の入力可能フィールドは消去されず、それらの MDT はオフになります。</p>
+</div>
+<div class="section"><h2 class="title sectiontitle">UNLOCK(*ERASE *MDTOFF) または UNLOCK(*MDTOFF *ERASE)</h2><p class="p">この入力命令の後は、キーボードはロックが解除されたままで、MDT がオンになっている画面上の入力可能フィールドは消去され、それらの MDT がオフになります。</p>
+<p class="p">GETRETAIN キーワードを UNLOCK (いずれかのパラメーターを指定したもの) と一緒に指定した場合、GETRETAIN キーワードは無視され、ファイル作成時にエラー・メッセージが出ます。</p>
+<div class="note note border-2 cds--inline-notification--info ibmdocs-note cds--inline-notification cds--inline-notification--low-contrast margin-top-1 margin-bottom-1"><div class="cds--inline-notification__details"><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" class="cds--inline-notification__icon" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M16,2A14,14,0,1,0,30,16,14,14,0,0,0,16,2Zm0,5a1.5,1.5,0,1,1-1.5,1.5A1.5,1.5,0,0,1,16,7Zm4,17.12H12V21.88h2.88V15.12H13V12.88h4.13v9H20Z"></path></svg>
+        <div class="cds--inline-notification__text-wrapper">
+          <div class="cds--inline-notification__subtitle"><span class="notetitle ibm-bold ibm-textcolor-blue-50 background-blue cds--inline-notification__title ibm-padding-top-1 ibm-padding-bottom-1 padding-left-1 padding-right-1">注:</span> このキーワードは、入力命令の直後にプログラムが出力命令を出すのを妨げるものではありません。
+ただし、出力命令により画面が変わった時点で、キーボードのロックが解除され、
+ワークステーション・ユーザーが入力データを入力できるようになります。</div>
+        </div>
+      </div></div>
+<p class="p">オプション標識は、このキーワードでは無効です。</p>
+</div>
+<div class="example"><h2 class="title sectiontitle">例</h2><p class="p">次の例は、UNLOCK キーワードの指定方法を示しています。</p>
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code>|...+....1....+....2....+....3....+....4....+....5....+....6....+....7....+....8
+00010A          R RECORD1                   UNLOCK(*ERASE)
+00020A            FLD1           4   B  2  2
+00030A            FLD2           4   B  3  2
+     A
+00040A          R RECORD2                   UNLOCK(*MDTOFF)
+00050A            FLD21          4   B  4  2
+00060A            FLD22          4   B  5  2
+     A
+00070A          R RECORD3                   UNLOCK(*ERASE *MDTOFF)
+00080A            FLD31          4   B  6  2
+00090A            FLD32          4   B  7  2
+     A</code></pre></div><div class="docs--copy-btn"></div></div>
+</div>
+</div>
+<div class="related-links ibm-padding-top-1 ibm-padding-bottom-2 bx--row bottom-section-parent" aria-label="bottom related links">
+<div class="familylinks ibm-margin-bottom-1">
+<div class="parentlink"><strong>親トピック:</strong> <div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a class="link bottom-section-link" href="/docs/ja/ssw_ibm_i_74/rzakc/rzakcmstkeyent.htm" title="表示装置ファイルを定義するキーワード項目は、45 - 80 桁目 (機能欄) に記入します。">表示装置ファイルの DDS キーワード項目 (45 - 80 桁目)</a></div></div>
+</div>
+<div class="relinfo relref ibm-margin-bottom-1"><strong>関連資料</strong>:<br>
+<div><div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a class="link bottom-section-link" href="/docs/ja/ssw_ibm_i_74/rzakc/rzakcmstdfgetr.htm" title="これはレコード・レベル・キーワードで、UNLOCK キーワードの項に説明するような入力命令時における入力可能フィールドの消去を IBM i オペレーティング・システムで行わないことを指定するために、UNLOCK キーワードとともに使用します。">表示装置ファイルの GETRETAIN (データ保持 GET) キーワード</a></div></div>
+</div>
+</div>
+

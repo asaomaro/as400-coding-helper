@@ -1,0 +1,44 @@
+<h1 class="title topictitle1">印刷装置ファイルの DTASTMCMD (データ・ストリーム・コマンド) キーワード</h1><div id="lastModifiedDate"><span>Last Updated</span>: 2021-04-13</div>
+<div class="body refbody"><p class="shortdesc">このレコード・レベルまたはフィールド・レベルのキーワードは、
+データ・ストリーム・コマンドまたはその他の情報をスプール・ファイルに保管する場合に使用します。</p>
+<div class="section"><p class="p">このコマンドを使用して、スプール・ファイルの特定ページのレコード
+またはフィールドをどのように処理するのかを決定できます。DTASTMCMD が有効になるのは、装置タイプ *AFPDS が指定された
+印刷装置ファイルに限ります。</p>
+<div class="p">キーワードの形式は次のとおりです。
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code>DTASTMCMD(text |&amp;text-field);</code></pre></div><div class="docs--copy-btn"></div></div>
+</div>
+<p class="p">テキストは単一引用符で囲む必要があります。
+テキストの長さが 255 文字を超える場合には、コンパイル時にエラー・メッセージが通知されます。</p>
+<p class="p">指定されたプログラム - システム間フィールドは DTASTMCMD キーワードと
+同じレコード様式内になければなりません。プログラム - システム間フィールドの
+長さが 255 文字を超える場合には、コンパイル時にエラー・メッセージが通知されます。</p>
+<p class="p">ユーザー・アプリケーションまたはユーザー指定のプログラムは
+スプール・ファイルの特定ページを処理する方法を知っている必要があるため、データ・ストリームを探索してデータ・ストリーム・コマンドを取り出すことができます。このコマンドは、AFPDS (MODCA) NOP コマンドに含まれています。NOP は、このキーワードを含むレコードまたはフィールドについての
+どの印刷可能データよりも先にデータ・ストリーム内に構築されます。この情報は保管されたばかりなので、このキーワードが実際のファイルに
+直接影響を与えることはありません。NOP コマンドについての詳細は、「<cite class="cite">MO:DCA Reference</cite>」(SC31-6802) を参照してください。</p>
+<p class="p">このキーワードについては、オプション標識を使用できます。</p>
+<div class="note note border-2 cds--inline-notification--info ibmdocs-note cds--inline-notification cds--inline-notification--low-contrast margin-top-1 margin-bottom-1"><div class="cds--inline-notification__details"><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" class="cds--inline-notification__icon" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M16,2A14,14,0,1,0,30,16,14,14,0,0,0,16,2Zm0,5a1.5,1.5,0,1,1-1.5,1.5A1.5,1.5,0,0,1,16,7Zm4,17.12H12V21.88h2.88V15.12H13V12.88h4.13v9H20Z"></path></svg>
+        <div class="cds--inline-notification__text-wrapper">
+          <div class="cds--inline-notification__subtitle"><span class="notetitle ibm-bold ibm-textcolor-blue-50 background-blue cds--inline-notification__title ibm-padding-top-1 ibm-padding-bottom-1 padding-left-1 padding-right-1">注:</span> このキーワードは、レコードおよびフィールドごとに、それぞれ 1 回だけ
+指定することができます。</div>
+        </div>
+      </div></div>
+</div>
+<div class="section"><h2 class="title sectiontitle">例</h2><p class="p">次の例は、DTASTMCMD キーワードの指定方法を示しています。</p>
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code>|...+....1....+....2....+....3....+....4....+....5....+....6....+....7....+....8
+     A          R RECORD1                   DTASTMCMD('TEXT(Record 1)')
+     A            FIELD1        10A     5  5
+     A  01                                  DTASTMCMD('TEXT(Field 1)')
+     A            FIELD2        10A    10  5DTASTMCMD(&amp;DATA);
+     A            DATA          10A  P
+     A</code></pre></div><div class="docs--copy-btn"></div></div>
+<p class="p">レコード RECORD1 のデータ・ストリームには、DTASTMCMD のテキストとして TEXT(Record 1) があります。オプション標識 01 がオンに設定されている場合には、フィールド FIELD1 の
+データ・ストリームには、DTASTMCMD のテキストとして TEXT(Field 1) があります。オプション標識 01 がオフに設定されている場合には、FIELD1 では DTASTMCMD のデータ・ストリーム・テキストは生成されません。FIELD2 は、DATA に入っているものを DTASTMCMD のテキストとして使用します。</p>
+</div>
+</div>
+<div class="related-links ibm-padding-top-1 ibm-padding-bottom-2 bx--row bottom-section-parent" aria-label="bottom related links">
+<div class="familylinks ibm-margin-bottom-1">
+<div class="parentlink"><strong>親トピック:</strong> <div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a class="link bottom-section-link" href="/docs/ja/ssw_ibm_i_74/rzakd/rzakdmstprkey.htm" title="これらは印刷装置ファイルの定義に有効なキーワード項目です。">印刷装置ファイルのキーワード項目 (45 から 80 桁目)</a></div></div>
+</div>
+</div>
+

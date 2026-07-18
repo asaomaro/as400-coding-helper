@@ -1,0 +1,247 @@
+<main role="main"><article role="article" aria-labelledby="rzakcmstdfslend__title__1">
+<h1 class="topictitle1" id="rzakcmstdfslend__title__1">SFLEND (Subfile End) keyword for display files</h1><div id="lastModifiedDate"><span>Last Updated</span>: 2026-07-13</div>
+
+
+
+<div class="body refbody"><p class="shortdesc">You use this record-level keyword on the
+subfile-control record format to enable the display of a plus sign
+(+) or text (More or Bottom) in the lower-right display location occupied
+by the subfile or a scroll bar.</p>
+
+<div class="section"><p>The plus sign or More text indicates that
+the workstation user can move the text lines on the subfile to display
+more records by pressing the Page Up key.</p>
+<div class="p">The format of the
+keyword is:  <div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>SFLEND[(*PLUS | *MORE | {*SCRBAR [*SCRBAR | *PLUS |*MORE ]})]</code></pre></div><div class="docs--copy-btn"></div></div></div>
+<div class="p">The
+scroll bar indicates different types of information about the subfile:
+ <ul class="cds--list--unordered">
+<li class="cds--list__item">Where the user is at in the subfile</li>
+
+<li class="cds--list__item">How big the subfile is</li>
+
+<li class="cds--list__item">What proportion of the subfile the user is viewing</li>
+
+</ul>
+</div>
+<p>The parameter values *PLUS, *SCRBAR, and *MORE are optional.
+If no parameter is specified, *PLUS is used. The second set of *PLUS,
+*MORE, and *SCRBAR can only be specified if *SCRBAR is specified as
+the first parameter. *SCRBAR is the default for the second parameter.</p>
+<p>*PLUS
+tells the system to use the plus sign to indicate that you can use
+the Page Down key to see more records.</p>
+<p>*MORE tells
+the system to use the More text to indicate that you can use the Page
+Down key to see more records. *MORE also tells the system to use the
+Bottom text to indicate that the last subfile record is displayed.</p>
+<p>When *MORE is specified, the subfile takes up one more
+line on the screen (SFLPAG + 1). This line is needed for the text
+More and Bottom. If there is not room for the extra line on the display
+or in a window, a message is issued at file-creation time and the
+file is not created.</p>
+<p>*SCRBAR tells the system to use a graphical
+scroll bar for a graphical display. When *SCRBAR is specified, the
+last 3 columns of the lines that the subfile is using is reserved
+for the scroll bar. When *SCRBAR is used, a second parameter can be
+specified. The second parameter tells the system what scrolling indicator
+should be used for nongraphical displays. *SCRBAR is the default for
+those displays. *MORE and *PLUS can be used for the second parameter.
+When *SCRBAR is used the subfile must occupy at least 3 lines. SFLFOLD
+or SFLDROP will work with scroll bars. Both versions of the subfile
+(folded or truncated) must occupy three lines.</p>
+<p>If the device
+configuration that is being used supports a pointer device, the scroll
+bar can also navigate through the subfile. For more information about
+how to support different device configurations and how scroll bars
+are controlled using the PAGEUP, PAGEDOWN, and SFLSIZ keywords, see
+the <a href="http://public.dhe.ibm.com/systems/power/docs/systemi/v6r1/en_US/sc415715.pdf" rel="noopener" target="_blank" title="(Opens a PDF file)">Application Display Programming book</a>.</p>
+<p>An
+option indicator must be specified for this keyword.</p>
+</div>
+
+<section class="section" role="region" aria-labelledby="rzakcmstdfslend__title__2"><h2 class="sectiontitle" id="rzakcmstdfslend__title__2">Paging through your program (SFLPAG equals SFLSIZ)</h2><p>Your program controls the display of the plus sign or
+the More or Bottom text through the use of the indicators on SFLEND.
+Set the indicators off to display the plus sign or the More text.
+Set the indicators on to remove the plus sign from the display or
+to display the Bottom text. When the Page Up key is pressed, your
+program handles the processing. For instance, it reads the subfile,
+clears it, rewrites the subfile with new records, and displays it
+again. If your program does this, the display shows the plus sign
+or the More text. If not, the plus sign disappears from the display
+or the Bottom text appears.</p>
+<div class="note border-2 cds--inline-notification--info ibmdocs-note cds--inline-notification cds--inline-notification--low-contrast margin-top-1 margin-bottom-1"><div class="cds--inline-notification__details"><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" class="cds--inline-notification__icon" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M16,2A14,14,0,1,0,30,16,14,14,0,0,0,16,2Zm0,5a1.5,1.5,0,1,1-1.5,1.5A1.5,1.5,0,0,1,16,7Zm4,17.12H12V21.88h2.88V15.12H13V12.88h4.13v9H20Z"></path></svg>
+        <div class="cds--inline-notification__text-wrapper">
+          <div class="cds--inline-notification__subtitle"><span class="notetitle ibm-bold ibm-textcolor-blue-50 background-blue cds--inline-notification__title ibm-padding-top-1 ibm-padding-bottom-1 padding-left-1 padding-right-1">Note:</span> *SCRBAR can be used when SFLPAG
+equals SFLSIZ. The scroll bar will be displayed with buttons, a shaft,
+and a scroll box which covers the entire shaft.</div>
+        </div>
+      </div></div>
+</section>
+
+<section class="section" role="region" aria-labelledby="rzakcmstdfslend__title__3"><h2 class="sectiontitle" id="rzakcmstdfslend__title__3">Paging through <span class="keyword">IBM i</span> (SFLPAG does not equal
+SFLSIZ)</h2><p>The <span class="keyword">IBM i</span> operating system displays
+the plus sign as long as there are more records in the subfile to
+be displayed, no matter how the option indicator is set. The scroll
+bar is displayed with the scroll box placed at a position on the scroll
+bar that best represents where the user is in the subfile. When the
+last page of the subfile is displayed, the operating system displays
+the plus sign, the More text, or the scroll bar with the scroll box
+one page size above the scroll button if the indicator is off. It
+does not display the plus sign, the Bottom text, or the scroll bar
+with the scroll box on top of the bottom scroll button if the indicator
+is on.</p>
+<p>Your program must set the indicator on or off when displaying
+the subfile. (Your program cannot find out, when the <span class="keyword">IBM i</span> operating system is
+paging through the subfile, which page of the subfile is displayed.)</p>
+<p>If
+your program sets off the indicator for SFLEND when displaying the
+subfile, either the plus sign, the More text, or the scroll bar with
+the scroll box one page size above, the scroll button is displayed
+with the last page of the subfile. Because the plus sign is displayed
+but the <span class="keyword">IBM i</span> operating
+system cannot page the subfile any further, your program must provide
+for any further paging. Specify the PAGEDOWN keyword on the subfile-control
+record format so that control is passed to your program when the Page
+Down key is pressed again. When your program receives control, it
+can add more records to the end of the subfile and use the SFLRCDNBR
+keyword to display a new page.</p>
+<div class="note border-2 cds--inline-notification--info ibmdocs-note cds--inline-notification cds--inline-notification--low-contrast margin-top-1 margin-bottom-1"><div class="cds--inline-notification__details"><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" class="cds--inline-notification__icon" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M16,2A14,14,0,1,0,30,16,14,14,0,0,0,16,2Zm0,5a1.5,1.5,0,1,1-1.5,1.5A1.5,1.5,0,0,1,16,7Zm4,17.12H12V21.88h2.88V15.12H13V12.88h4.13v9H20Z"></path></svg>
+        <div class="cds--inline-notification__text-wrapper">
+          <div class="cds--inline-notification__subtitle"><span class="notetitle ibm-bold ibm-textcolor-blue-50 background-blue cds--inline-notification__title ibm-padding-top-1 ibm-padding-bottom-1 padding-left-1 padding-right-1">Note:</span> If the PAGEDOWN keyword is
+specified with a scroll bar, then control is passed back to the program
+when a PAGEDOWN key is pressed or a manipulation of the graphical
+scroll bar will display a partial page.</div>
+        </div>
+      </div></div>
+</section>
+
+<section class="section" role="region" aria-labelledby="rzakcmstdfslend__title__4"><h2 class="sectiontitle" id="rzakcmstdfslend__title__4">Position of plus sign with *PLUS option</h2><p>For
+the 24 x 80 display size, positions 78 through 80 of the last line
+occupied by the subfile are used for the beginning attribute character,
+plus sign, and ending attribute character. For the 27 x 132 display
+size, positions 130 through 132 of the last line occupied by the subfile
+are used for the beginning attribute character, plus sign, and ending
+attribute character.</p>
+<div class="note border-2 cds--inline-notification--info ibmdocs-note cds--inline-notification cds--inline-notification--low-contrast margin-top-1 margin-bottom-1"><div class="cds--inline-notification__details"><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" class="cds--inline-notification__icon" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M16,2A14,14,0,1,0,30,16,14,14,0,0,0,16,2Zm0,5a1.5,1.5,0,1,1-1.5,1.5A1.5,1.5,0,0,1,16,7Zm4,17.12H12V21.88h2.88V15.12H13V12.88h4.13v9H20Z"></path></svg>
+        <div class="cds--inline-notification__text-wrapper">
+          <div class="cds--inline-notification__subtitle"><span class="notetitle ibm-bold ibm-textcolor-blue-50 background-blue cds--inline-notification__title ibm-padding-top-1 ibm-padding-bottom-1 padding-left-1 padding-right-1">Note:</span> If an input field occupies the location
+of the plus sign and the field is changed, the plus sign and its attribute
+characters are returned to the program as data in the field. For selection
+lists, the plus will be positioned to the right of the choices for
+the list.</div>
+        </div>
+      </div></div>
+</section>
+
+<section class="section" role="region" aria-labelledby="rzakcmstdfslend__title__5"><h2 class="sectiontitle" id="rzakcmstdfslend__title__5">Position of More and Bottom text with *MORE option</h2><p>For the 24 x 80 display size, positions 67 through 80
+of the line immediately following the last line occupied by the subfile
+are used for the beginning attribute character, the right-aligned
+More or Bottom text, and the ending attribute character. For the 27
+x 132 display size, positions 119 through 132 of the line immediately
+following the last line occupied by the subfile are used for the beginning
+attribute character, the right-aligned More or Bottom text, and the
+ending attribute character. For selection lists, the More and Bottom
+text is positioned to the right of the choices for the list.</p>
+</section>
+
+<section class="section" role="region" aria-labelledby="rzakcmstdfslend__title__6"><h2 class="sectiontitle" id="rzakcmstdfslend__title__6">Position of the scroll bar with *SCRBAR option</h2><p>For
+the 24 x 80 display size, positions 77 through 80 of every line of
+the subfile will be reserved for the scroll bar. No fields of the
+subfile can use those columns. Thus no fields can occupy more than
+one line of the subfile. Multiple line subfiles can be used. For the
+27 x 132 display size, positions 129 through 132 of every line of
+the subfile will be reserved for the scroll bar. For selection lists,
+the scroll bar will be positioned to the right of the choices for
+the list. For other subfiles, the scroll bar will be positioned on
+column 79.</p>
+</section>
+
+<div class="example"><h2 class="sectiontitle" id="rzakcmstdfslend__title__7">Example 1</h2><p>The following example shows how
+to specify the SFLEND keyword without parameters.</p>
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>|...+....1....+....2....+....3....+....4....+....5....+....6....+....7....+....8
+00010A          R SETSFL1                   SFL
+00020A  50                                  SFLNXTCHG
+00030A            SETSEL         1Y 0B  6  2VALUES(1 2 9) CHECK(AB)
+00040A            SETNAME       10A  O  6  4
+00050A          R SETCTL1                   SFLCTL(SETSFL1)
+00060A                                      SFLSIZ(34)
+00070A                                      SFLPAG(17)
+00080A  40                                  SFLDSP
+00090A  41                                  SFLDSPCTL
+00100A  42                                  SFLDLT
+00110A  43                                  SFLCLR
+00120A  49                                  SFLEND
+00130A N49                                  ROLLUP(26)
+00140A            SETRRN         4S 0H      SFLRCDNBR(CURSOR)
+     A</code></pre></div><div class="docs--copy-btn"></div></div><p>Paging is provided by the <span class="keyword">IBM i</span> operating system and
+the plus sign (+) appears in the lower right corner of the display.
+When the last record is written to the subfile, indicator 49 is set
+on, which disables the Page Down key and omits the plus sign from
+the display.</p>
+</div>
+
+<div class="example"><h2 class="sectiontitle" id="rzakcmstdfslend__title__8">Example 2</h2><p>The following example shows how
+to specify the SFLEND keyword with *MORE as a parameter.</p>
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>|...+....1....+....2....+....3....+....4....+....5....+....6....+....7....+....8
+00010A          R SETSFL2                   SFL
+00020A  50                                  SFLNXTCHG
+00030A            SETSEL         1Y 0B  6  2VALUES(1 2 9) CHECK(AB)
+00040A            SETNAM        10A  O  6  4
+00050A          R SETCTL2                   SFLCTL(SETSFL2)
+00060A                                      SFLSIZ(34)
+00070A                                      SFLPAG(17)
+00080A  40                                  SFLDSP
+00090A  41                                  SFLDSPCTL
+00100A  42                                  SFLDLT
+00110A  43                                  SFLCLR
+00120A  49                                  SFLEND(*MORE)
+00130A N49                                  ROLLUP(26)
+00140A            SETRRN         4S 0H      SFLRCDNBR(CURSOR)
+     A</code></pre></div><div class="docs--copy-btn"></div></div><p>Paging is provided by the <span class="keyword">IBM i</span> operating system.
+The More text appears at the lower right corner of the display on
+the line immediately following the subfile if there are more records
+to see in the subfile. When the last record is written to the subfile,
+indicator 49 is set on, which disables the Page Down key and causes
+the Bottom text to appear instead of the More text.</p>
+</div>
+
+<div class="example"><h2 class="sectiontitle" id="rzakcmstdfslend__title__9">Example 3</h2><p>The following example shows how
+to specify the SFLEND keyword with *SCRBAR as a parameter.</p>
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>|...+....1....+....2....+....3....+....4....+....5....+....6....+....7....+....8
+00010A          R SETSFL2                   SFL
+00020A  50                                  SFLNXTCHG
+00030A            SETSEL         1Y 0B  6  2VALUES(1 2 9) CHECK(AB)
+00040A            SETNAM        10A  O  6  4
+00050A          R SETCTL2                   SFLCTL(SETSFL2)
+00060A                                      SFLSIZ(34)
+00070A                                      SFLPAG(17)
+00080A  40                                  SFLDSP
+00090A  41                                  SFLDSPCTL
+00100A  42                                  SFLDLT
+00110A  43                                  SFLCLR
+00120A  49                                  SFLEND(*SCRBAR *MORE)
+00130A N49                                  ROLLUP(26)
+00140A            SETRRN         4S 0H      SFLRCDNBR(CURSOR)
+     A</code></pre></div><div class="docs--copy-btn"></div></div><p>Paging is provided by the <span class="keyword">IBM i</span> operating system.
+The scroll bar is shown for graphical displays. If a graphical display
+is not used, then the More text appears at the lower right corner
+of the display on the line immediately following the subfile if there
+are more records to see in the subfile. When the last record is written
+to the subfile, indicator 49 is set on, which disables the Page Down
+key and causes the Bottom text to appear instead of the More text.
+The scroll bar is displayed with the scroll box just above the bottom
+scroll button.</p>
+</div>
+
+</div>
+
+<aside role="complementary" aria-labelledby="rzakcmstdfslend__title__1"><nav role="navigation" aria-label="bottom related links" class="ibm-padding-top-1 ibm-padding-bottom-2 bx--row bottom-section-parent">
+<div class="familylinks ibm-margin-bottom-1">
+<div class="parentlink"><strong>Parent topic:</strong> <div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a data-hd-product="ssw_ibm_i_74" href="/docs/en/ssw_ibm_i_74/rzakc/rzakcmstkeyent.htm" title="You type the keyword entries that define display files in positions 45 through 80 (functions)." class="bottom-section-link">DDS keyword entries for display files (positions 45 through 80)</a></div></div>
+</div>
+
+<div class="linklist relinfo relref ibm-margin-bottom-1" lang="en-us"><h2 class="linkheading bottom-section-h2-title">Related reference</h2>
+<ul><li class="cds--list__item"><div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a data-hd-product="ssw_ibm_i_74" href="/docs/en/ssw_ibm_i_74/rzakc/rzakcmstdfsfrol.htm" title="You use this field-level keyword in the subfile-control record format to specify that the workstation user can type a value in this field. The value tells the IBM i operating system how many records to page up or down when the appropriate paging key is pressed." class="bottom-section-link">SFLROLVAL (Subfile Roll Value) keyword for display files</a></div></li>
+</ul></div>
+</nav></aside></article></main>

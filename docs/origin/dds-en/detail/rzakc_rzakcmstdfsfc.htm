@@ -1,0 +1,116 @@
+<main role="main"><article role="article" aria-labelledby="rzakcmstdfsfc__title__1">
+<h1 class="topictitle1" id="rzakcmstdfsfc__title__1">SFLCHCCTL (Subfile Choice Control) keyword for display files</h1><div id="lastModifiedDate"><span>Last Updated</span>: 2026-07-13</div>
+
+
+
+<div class="body refbody"><p class="shortdesc"><span class="ph">You use this field-level keyword on a
+selection list to control the availability of choices for the list.</span></p>
+
+<div class="section"><p>The format of the keyword is <code class="ph codeph">SFLCHCCTL</code>.</p>
+<p>When
+the SFLCHCCTL keyword is specified on a field, that field will be
+considered the control field for that record. That field must be the
+first field defined in the subfile record. That field must have a
+length of 1, data type of Y, decimal positions of zero, and have a
+usage of H. That field must be defined as the first field in the subfile.
+The control field works as follows:</p>
+
+<div class="tablenoborder"><div class="cds--data-table-container"><table summary="" id="rzakcmstdfsfc__sfltab" class="cds--data-table"><caption class="cds--data-table-header"><span class="tablecap cds--data-table-header__title">Table 1. Control field for the SFLCHCCTL keyword</span></caption><colgroup><col><col><col></colgroup><thead>
+<tr>
+<th id="rzakcmstdfsfc__sfltab__entry__1" class="nrule thleft thbot"><div class="cds--table-header-label">Control value</div></th>
+
+<th id="rzakcmstdfsfc__sfltab__entry__2" class="nrule thleft thbot"><div class="cds--table-header-label">Meaning on output</div></th>
+
+<th id="rzakcmstdfsfc__sfltab__entry__3" class="nrule thleft thbot"><div class="cds--table-header-label">Meaning of input</div></th>
+
+</tr>
+
+</thead>
+<tbody>
+<tr>
+<td headers="rzakcmstdfsfc__sfltab__entry__1 " class="nrule tdleft">0</td>
+
+<td headers="rzakcmstdfsfc__sfltab__entry__2 " class="nrule tdleft">Available</td>
+
+<td headers="rzakcmstdfsfc__sfltab__entry__3 " class="nrule tdleft">Not selected</td>
+
+</tr>
+
+<tr>
+<td headers="rzakcmstdfsfc__sfltab__entry__1 " class="nrule tdleft">1</td>
+
+<td headers="rzakcmstdfsfc__sfltab__entry__2 " class="nrule tdleft">Selected</td>
+
+<td headers="rzakcmstdfsfc__sfltab__entry__3 " class="nrule tdleft">Selected</td>
+
+</tr>
+
+<tr>
+<td headers="rzakcmstdfsfc__sfltab__entry__1 " class="nrule tdleft">2</td>
+
+<td headers="rzakcmstdfsfc__sfltab__entry__2 " class="nrule tdleft">Unavailable. Cannot place cursor
+on choice unless help for choice is available.<sup>1</sup></td>
+
+<td headers="rzakcmstdfsfc__sfltab__entry__3 " class="nrule tdleft">&nbsp;</td>
+
+</tr>
+
+<tr>
+<td headers="rzakcmstdfsfc__sfltab__entry__1 " class="nrule tdleft">3</td>
+
+<td headers="rzakcmstdfsfc__sfltab__entry__2 " class="nrule tdleft">Unavailable. Placing cursor on choice
+is allowed.</td>
+
+<td headers="rzakcmstdfsfc__sfltab__entry__3 " class="nrule tdleft">&nbsp;</td>
+
+</tr>
+
+<tr>
+<td headers="rzakcmstdfsfc__sfltab__entry__1 " class="nrule tdleft">4</td>
+
+<td headers="rzakcmstdfsfc__sfltab__entry__2 " class="nrule tdleft">Unavailable. Cannot place cursor
+on choice even if help for the choice is available.<sup>1</sup></td>
+
+<td headers="rzakcmstdfsfc__sfltab__entry__3 " class="nrule tdleft">&nbsp;</td>
+
+</tr>
+
+</tbody>
+</table></div>
+</div>
+<sup>1</sup> Applies only to displays attached to a controller
+that supports an enhanced interface for nonprogrammable workstations.<p>Option
+indicators are not valid for this keyword.</p>
+<p>SFLNXTCHC keyword
+cannot be specified in a record that contains a field with the SFLCHCCTL
+keyword.</p>
+<p>Only one SFLCHCCTL keyword can be used in one subfile
+record.</p>
+</div>
+
+<div class="example"><h2 class="sectiontitle" id="rzakcmstdfsfc__title__3">Example</h2><p>The following example shows how
+to specify the SFLCHCCTL keyword.</p>
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>|...+....1....+....2....+....3....+....4....+....5....+....6....+....7....+....8
+     A
+     A          R SFLRCD                    SFL
+     A            CTLFLD         1Y 0H      SFLCHCCTL
+     A            F1             4A  O  6 10
+     A          R SFLCTLRCD                 SFLCTL(SFLRCD)
+     A                                      SFLMLTCHC
+     A                                      SFLPAG(5) SFLSIZ(&amp;SFLSIZ);
+     A                                      SFLDSP SFLDSPCTL
+     A                                      ROLLUP(10)
+     A   10                                 SFLEND(*SCRBAR)
+     A            F3             5S 0H      SFLSCROLL
+     A            F2             4S 0H      SFLRCDNBR(CURSOR *TOP)
+     A            SFLSIZ         5S 0P
+     A                                 1 30'Panel Title'
+     A                                 4  5'Multiple selection list:'</code></pre></div><div class="docs--copy-btn"></div></div></div>
+
+</div>
+
+<aside role="complementary" aria-labelledby="rzakcmstdfsfc__title__1"><nav role="navigation" aria-label="bottom related links" class="ibm-padding-top-1 ibm-padding-bottom-2 bx--row bottom-section-parent">
+<div class="familylinks ibm-margin-bottom-1">
+<div class="parentlink"><strong>Parent topic:</strong> <div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a data-hd-product="ssw_ibm_i_74" href="/docs/en/ssw_ibm_i_74/rzakc/rzakcmstkeyent.htm" title="You type the keyword entries that define display files in positions 45 through 80 (functions)." class="bottom-section-link">DDS keyword entries for display files (positions 45 through 80)</a></div></div>
+</div>
+</nav></aside></article></main>

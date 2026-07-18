@@ -1,0 +1,100 @@
+<main role="main"><article role="article" aria-labelledby="rzakdmstptdate__title__1">
+<h1 class="topictitle1" id="rzakdmstptdate__title__1">DATE (Date) keyword in printer files</h1><div id="lastModifiedDate"><span>Last Updated</span>: 2026-07-13</div>
+
+
+
+<div class="body conbody"><p class="shortdesc">You use this field-level keyword to display
+the current date or the current system date as a constant field that is 6
+or 8 bytes long.</p>
+
+<p>You can specify the DATE keyword and the location of the field.
+Also, you can name the field with the special name *NONE, if the POSITION
+keyword is used in the record to specify the location of the fields. Optionally,
+you can specify the CDEFNT, CHRSIZ, COLOR, EDTCDE, EDTWRD, FNTCHRSET, FONT,
+HIGHLIGHT, UNDERLINE, or TEXT keyword.</p>
+
+<p>If the POSITION keyword is used, you must specify the name *NONE
+(positions 19 through 29). If POSITION keyword is not used, positions 17 through
+38 must be blank.</p>
+
+<div class="p">The format of the keyword is:  <div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>DATE([*JOB | *SYS] [*Y|*YY])</code></pre></div><div class="docs--copy-btn"></div></div></div>
+
+<p>The *JOB value causes the current job date to be printed. If you do not
+specify a parameter, *JOB is used. The *SYS parameter causes the current system
+date to be printed.</p>
+
+<p>If you specify *Y, 2 digits represent the year in the date format that
+the DATFMT job attribute designates. If you specify *YY, 4 digits represent
+the year in the date format that the DATFMT job attribute designates. If you
+do not specify a parameter, *Y is specified by default.</p>
+
+<p>The W edit code on the EDTCDE keyword returns a correctly formatted date
+only if a four digit year (*YY) is requested, and the job attribute DATFMT
+is YMD.</p>
+
+<div class="p">If you specify EDTCDE(Y) for a DATE field, separators are added according
+the date format of the DATFMT job attribute. For example, using EDTCDE(Y)
+when the DATFMT job attribute specifies *MDY changes the date from  <div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>mmddyy</code></pre></div><div class="docs--copy-btn"></div></div>to
+ <div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>mm/dd/yy</code></pre></div><div class="docs--copy-btn"></div></div></div>
+
+<p>The slashes (/) represent the job attribute DATSEP at run time and the
+job attribute DATFMT determines the order of the month, day, and year. (DATFMT
+can be *SYSVAL, indicating that your program is to retrieve the date from
+the system value QDATFMT, or MDY, DMY, YMD, or JUL, where M=month, D=day,
+Y=year, and JUL=Julian.)</p>
+
+<p>Field length depends on the following factors:</p>
+
+<ol class="cds--list--ordered--temporary">
+<li class="cds--list__item">The format of the DATFMT job attribute.</li>
+
+<li class="cds--list__item">Whether the date field includes separators. The EDTCDE keyword controls
+separators.</li>
+
+<li class="cds--list__item">The number of digits that represent the year. The DATE keyword controls
+the number of year digits.</li>
+
+</ol>
+
+<p>If the DATFMT specified for the job is *JUL (Julian), you cannot use the
+EDTWRD keyword to edit the result.</p>
+
+<p>Option indicators are not valid for this keyword. However, option indicators
+can be used to condition the field associated with this keyword.</p>
+
+<section class="section" role="region" aria-labelledby="rzakdmstptdate__title__2"><h2 class="sectiontitle" id="rzakdmstptdate__title__2">Example</h2><p>The following example shows how to specify
+the DATE keyword.</p>
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>|...+....1....+....2....+....3....+....4....+....5....+....6....+....7....+....8
+     A          R REC01
+     A                                  1 56
+     A                                      DATE
+     A  21                              2 56
+     A                                      DATE(*JOB *Y)
+     A  22                              2 56
+     A                                      DATE EDTCDE(Y)
+     A  23                              2 56
+     A                                      DATE(*JOB) EDTCDE(Y)
+     A  24                              2 56
+     A                                      DATE(*SYS)
+     A  25                              2 56
+     A                                      DATE(*SYS *YY) EDTCDE(Y)
+     A</code></pre></div><div class="docs--copy-btn"></div></div><p>The job date is printed without editing on line position
+56.</p>
+<p>The job date is also printed without editing if option indicator
+21 is on. The job date is printed with editing, if either option indicator
+22 or 23 is on. The system date is printed without editing, if option indicator
+24 is on. The system date is printed with editing and a 4 digit year, if option
+indicator 25 is on.</p>
+</section>
+
+</div>
+
+<aside role="complementary" aria-labelledby="rzakdmstptdate__title__1"><nav role="navigation" aria-label="bottom related links" class="ibm-padding-top-1 ibm-padding-bottom-2 bx--row bottom-section-parent">
+<div class="familylinks ibm-margin-bottom-1">
+<div class="parentlink"><strong>Parent topic:</strong> <div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a data-hd-product="ssw_ibm_i_74" href="/docs/en/ssw_ibm_i_74/rzakd/rzakdmstprkey.htm" title="These are valid keyword entries for defining printer files." class="bottom-section-link">Keyword entries for printer files (positions 45 through 80)</a></div></div>
+</div>
+
+<div class="linklist relinfo relconcepts ibm-margin-bottom-1" lang="en-us"><h2 class="linkheading bottom-section-h2-title">Related concepts</h2>
+<ul><li class="cds--list__item"><div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a data-hd-product="ssw_ibm_i_74" href="/docs/en/ssw_ibm_i_74/rzakd/constantfields.htm" title="Constant fields are unnamed fields (positions 19 through 28 must be blank), or fields with a special name (*NONE) when the POSITION keyword is used in the record." class="bottom-section-link">Constant fields in printer files</a></div></li>
+</ul></div>
+</nav></aside></article></main>

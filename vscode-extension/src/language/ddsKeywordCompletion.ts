@@ -19,6 +19,10 @@ interface DdsKeyword {
   /** 使用レベル（file/record/field/help/key/join）。原典から判別できた分だけ。 */
   readonly level?: readonly string[];
   readonly description?: string;
+  /** 構文。複数の書き方があるキーワードは複数行になる。 */
+  readonly syntax?: readonly string[];
+  /** パラメータを取るか。false なら括弧を付けない。 */
+  readonly hasParameters?: boolean;
 }
 
 type DdsType = "DDS-PF" | "DDS-DSPF" | "DDS-PRTF";
@@ -123,12 +127,24 @@ export function registerDdsKeywordCompletion(
         );
         item.detail = keyword.title;
         item.range = range;
+
+        // パラメータを取るキーワードは括弧まで入れて中にカーソルを置く。
+        // 取らないものに括弧を付けると構文誤りになるため付けない。
+        if (keyword.hasParameters) {
+          item.insertText = new vscode.SnippetString(`${keyword.name}($0)`);
+        }
+
+        const documentation = new vscode.MarkdownString();
+        if (keyword.syntax?.length) {
+          documentation.appendCodeblock(keyword.syntax.join("\n"), "text");
+        }
+        if (keyword.level) {
+          documentation.appendMarkdown(`\n\`${keyword.level.join(" / ")}\`\n\n`);
+        }
         if (keyword.description) {
-          const documentation = new vscode.MarkdownString();
-          if (keyword.level) {
-            documentation.appendMarkdown(`\`${keyword.level.join(" / ")}\`\n\n`);
-          }
           documentation.appendText(keyword.description);
+        }
+        if (documentation.value.length > 0) {
           item.documentation = documentation;
         }
         return item;

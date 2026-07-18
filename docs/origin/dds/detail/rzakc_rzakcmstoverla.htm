@@ -1,0 +1,49 @@
+<h1 class="title topictitle1">表示装置ファイルの OVERLAY (オーバーレイ) キーワード</h1><div id="lastModifiedDate"><span>Last Updated</span>: 2021-04-13</div>
+<div class="body refbody"><p class="shortdesc"><span class="ph">これはレコード・レベル・キーワードで、事前に画面全体の削除を行わずに、定義中のレコード様式を画面に表示することを指定するために使用します。</span></p>
+<div class="section"><p class="p">このキーワードにはパラメーターはありません。</p>
+<div class="p">通常は、出力命令のたびに画面全体の削除が行われます。
+画面に表示されているレコードのうちで、そのフィールドが部分的または全体的に定義中のレコードのフィールドにオーバーラップするレコードは、すべて、定義中のレコードの表示の前に削除されます。その他のレコードはすべて画面上に残り、変更はまったくありません。
+画面上にすでにあるレコードは、定義中のレコード様式内で指定されたフィールドが表示用に選択されていない場合でも、オーバーラップする場合には削除されます。例えば、次のレコードが現在画面に表示されているとします。<p class="lines">REC1 (1 行目および 2 行目)<br>
+REC2 (3 行目および 4 行目)<br>
+REC3 (5 行目)<br>
+REC4 (9 行目)</p>
+OVERLAY の指定のある REC5 (4 行目および 5 行目) を出力すると、画面上のレコードは次のようになります。<p class="lines">REC1 (1 行目および 2 行目)<br>
+REC5 (4 行目および 5 行目)<br>
+REC4 (9 行目)</p>
+</div>
+<p class="p">OVERLAY キーワードが有効なレコードがすでに画面上にあり、しかも、PUTOVR、
+PUTRETAIN、または CLRL のいずれかのキーワードが指定されていない場合には、そのレコードは消去され、新しいレコードとして書き直されます。</p>
+<p class="p">レコードの開始属性文字が、すでに表示されているレコードの終了属性文字にオーバーラップする場合には、行の 1 桁目で 2 つの
+属性文字が重なり合います。
+(表示されている最初のレコードの最後のフィールドが、その前の行の右端の表示桁で終わっている場合。)</p>
+<div class="p">ただし、上記の例では、4 行目にかかっている REC2 の部分が、REC2 の最後のフィールドの終了属性文字だけである場合 (この状況は、3 行目の最後の桁に REC2 の最後のフィールドの最後の文字が表示されている場合に起こります) には、REC2 は、OVERLAY の指定のある REC5 が表示されたあとも、表示されたままです。画面には、次のレコードが表示されます。<p class="lines">REC1 (1 行目および 2 行目)<br>
+REC2 (3 行目)<br>
+REC5 (4 行目および 5 行目)<br>
+REC9 (9 行目)</p>
+</div>
+<p class="p">画面は、ファイルのオープン後の最初の出力命令時に必ず削除されます。ただし、ASSUME と OVERLAY の両方が指定されていれば消去されません。</p>
+<p class="p"><span class="keyword">IBM® i</span> オペレーティング・システムでは、ERRMSG、ERRMSGID、PUTOVR、および CLRL の各機能については OVERLAY が指定されているものと見なします。</p>
+<p class="p">OVERLAY に条件が付いていて、その条件付けの結果 OVERLAY が選択されなかった場合には、ERASE、
+ERASEINP、MDTOFF、PROTECT、および PUTRETAIN の各キーワードは、それが選択された場合でも、PUTOVR キーワードが選択されていない限り効力を持ちません。
+PUTOVR が選択された場合には、ERASE、ERASEINP、および MDTOFF が有効になります。</p>
+<p class="p">OVERLAY を指定した場合には、CRTDSPF (表示装置ファイルの作成) コマンドまたは CHGDSPF (表示装置ファイルの変更) コマンドに RSTDSP(*YES) キーワードも指定しなければなりません。そうしないと、ファイルの処理が中断された場合に、画面上のデータが失われることがあります。</p>
+<p class="p">画面上のレコードを消去するためには、ERASE キーワードを使用して、消去したいレコード様式の名前を指定します。</p>
+<p class="p">CLRL キーワードも同時に指定した場合には、処理は、OVERLAY 仕様ではなくて、CLRL の仕様に従って実行されます。</p>
+<p class="p">DSPMOD キーワードの指定されているレコードに OVERLAY キーワードを指定すると、ファイル作成時に警告メッセージが表示されます。実行時に、表示モードが変更されると、OVERLAY キーワードは無視されます。</p>
+<p class="p">このキーワードについては、オプション標識を使用することができます。</p>
+</div>
+<div class="example"><h2 class="title sectiontitle">例</h2><p class="p">次の例は、OVERLAY キーワードの指定方法を示しています。</p>
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code>|...+....1....+....2....+....3....+....4....+....5....+....6....+....7....+....8
+00021A          R RECL                      OVERLAY
+     A</code></pre></div><div class="docs--copy-btn"></div></div>
+</div>
+</div>
+<div class="related-links ibm-padding-top-1 ibm-padding-bottom-2 bx--row bottom-section-parent" aria-label="bottom related links">
+<div class="familylinks ibm-margin-bottom-1">
+<div class="parentlink"><strong>親トピック:</strong> <div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a class="link bottom-section-link" href="/docs/ja/ssw_ibm_i_74/rzakc/rzakcmstkeyent.htm" title="表示装置ファイルを定義するキーワード項目は、45 - 80 桁目 (機能欄) に記入します。">表示装置ファイルの DDS キーワード項目 (45 - 80 桁目)</a></div></div>
+</div>
+<div class="relinfo relref ibm-margin-bottom-1"><strong>関連資料</strong>:<br>
+<div><div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a class="link bottom-section-link" href="/docs/ja/ssw_ibm_i_74/rzakc/rzakcmstzwindow.htm" title="これはレコード・レベル・キーワードで、定義中のレコード様式がウィンドウを使用して表示されるよう指定するために使用します。">表示装置ファイルの WINDOW (ウィンドウ) キーワード</a></div></div>
+</div>
+</div>
+
