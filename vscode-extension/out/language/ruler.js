@@ -38,6 +38,7 @@ const vscode = __importStar(require("vscode"));
 const fileScope_1 = require("../utils/fileScope");
 const keywordColumns_1 = require("./keywordColumns");
 const specClassifier_1 = require("../prompter/specClassifier");
+const dialect_1 = require("../prompter/dialect");
 const CYCLE = ["off", "ruler", "full"];
 const STATE_KEY = "rpgClSupport.ruler.mode";
 /** ルーラー文字列の最小桁数（行が短くても最低この幅まで目盛りを出す）。 */
@@ -275,8 +276,16 @@ function classifySpec(document, lineIndex) {
         return undefined;
     }
     // スペック種別判定は specClassifier に集約（positionResolver と共有＝ドリフト防止）。
-    // ルーラー表示は dialect を渡さない（C は従来どおりオペコードで新旧判定）。
-    return (0, specClassifier_1.classifyRpgSpecKeyword)(text);
+    // ルーラー表示は dialect を渡さない（C は従来どおりオペコードで新旧判定）が、
+    // I/O 仕様書の記述種別は F 仕様書（22 桁目）で決まるため前の行は渡す。
+    // 渡さないとルーラーとプロンプターで別の桁を表示してしまう。
+    const precedingLines = [];
+    for (let above = 0; above < lineIndex; above += 1) {
+        precedingLines.push(document.lineAt(above).text);
+    }
+    // dialect も渡す。RPG III は I/O をレイアウト別に分けていないため、
+    // ここで取り違えるとルーラーが出なくなる。
+    return (0, specClassifier_1.classifyRpgSpecKeyword)(text, (0, dialect_1.resolveDialect)(document), precedingLines);
 }
 async function getColumnsForKey(context, key) {
     if (key === "CL") {
