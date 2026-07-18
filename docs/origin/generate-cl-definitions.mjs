@@ -546,6 +546,8 @@ function carryOver(generated, existing) {
     }
     if (old.dependsOn) parameter.dependsOn = old.dependsOn;
     if (old.placeholder) parameter.placeholder = old.placeholder;
+    // basic は実機の F4/F10 実測由来で原典からは決まらないため引き継ぐ。
+    if (old.basic) parameter.basic = old.basic;
   }
 
   if (existing.constraints) generated.constraints = existing.constraints;

@@ -114,6 +114,13 @@ export interface ParameterDefinition {
   readonly children?: ParameterDefinition[];
   // CL の定位置指定 (定位置 N)。原典のパラメータ表「ノーツ」欄に対応。
   readonly positional?: number;
+  /**
+   * 実機の F4 基本プロンプトに現れるパラメータか。
+   * false/未設定は「F10 追加パラメータ」側。
+   * この情報は原典(IBM i 7.4 ドキュメント)には無く、実機(pub400 / 7.5)の
+   * F4・F10 実測から取り込んでいる（docs/origin/cl-prompt-groups.json）。
+   */
+  readonly basic?: boolean;
   // group のときの連結方式。既定は qualified。
   readonly groupKind?: GroupKind;
   // group が単一値としても指定できる場合の、その単一値の一覧。
