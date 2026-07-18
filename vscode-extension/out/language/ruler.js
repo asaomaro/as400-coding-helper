@@ -127,6 +127,16 @@ const FONT_PROMPT_KEY = "rpgClSupport.ruler.codeLensFontPrompted";
  * そのままだとルーラーの桁がコードと合わず、ルーラーの用をなさない。
  * 設定を勝手に書き換えるのは筋が悪いので、一度だけ尋ねる。
  */
+/** 今の字体・字大を人が読める形にする（ずれの原因を目で確かめるため）。 */
+function describeFonts() {
+    const editorConfig = vscode.workspace.getConfiguration("editor");
+    const lensFamily = editorConfig.get("codeLensFontFamily");
+    const lensSize = editorConfig.get("codeLensFontSize");
+    return [
+        `エディター: ${editorConfig.get("fontFamily")} / ${editorConfig.get("fontSize")}px`,
+        `CodeLens : ${lensFamily || "(未設定＝UI の字体。等幅ではない)"} / ${lensSize || "(未設定＝エディターの 90%)"}`
+    ].join("\n");
+}
 function isCodeLensFontAligned() {
     const editorConfig = vscode.workspace.getConfiguration("editor");
     const fontSize = editorConfig.get("fontSize");
@@ -136,9 +146,12 @@ function isCodeLensFontAligned() {
     // codeLensFontSize は 0 が「editor.fontSize の 90%」、
     // codeLensFontFamily は空が「エディターの字体を継承」を意味する既定値。
     // 字大が 90% のままだと桁は必ずずれる。
+    // 字体が未設定だと UI の字体（等幅ではない）で描かれ、桁は合わない。
+    // 「未設定＝エディターを継承」ではないため、明示されていることまで要る。
     return (Boolean(fontSize) &&
         lensFontSize === fontSize &&
-        (!lensFontFamily || lensFontFamily === fontFamily));
+        Boolean(lensFontFamily) &&
+        lensFontFamily === fontFamily);
 }
 /** CodeLens の字体・字大をエディターに合わせる。 */
 async function alignCodeLensFont() {
@@ -251,12 +264,16 @@ function updateStatusBar() {
         return;
     }
     const label = mode === "full" ? "Full" : mode === "ruler" ? "Cols" : "Off";
-    // 桁がずれている間は警告を出す。黙ってずれているのがいちばん困る。
+    // 桁がずれている間は警告を出し、クリックで直せるようにする。
+    // 黙ってずれているのがいちばん困る（等幅でない字体だと桁は絶対に合わない）。
     const aligned = mode === "off" || isCodeLensFontAligned();
     statusBarItem.text = `$(ruler) Ruler: ${label}${aligned ? "" : " $(warning)"}`;
+    statusBarItem.command = aligned
+        ? "rpgClSupport.ruler.cycleMode"
+        : "rpgClSupport.ruler.alignFont";
     statusBarItem.tooltip = aligned
         ? "クリックでルーラー表示を切替 (Off → Cols → Full)"
-        : "ルーラーの桁がコードとずれています。コマンド「ルーラー: 桁をコードに合わせる」で揃います。";
+        : `ルーラーの桁がコードとずれています。クリックで揃えます。\n${describeFonts()}`;
 }
 /**
  * 目盛り段の文字列を生成する。1 始まりで 10 桁ごとに桁番号の下 1 桁、
