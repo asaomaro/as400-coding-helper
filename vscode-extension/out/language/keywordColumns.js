@@ -33,12 +33,41 @@ var __importStar = (this && this.__importStar) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.getDdsKeywordColumns = getDdsKeywordColumns;
 exports.getRpgKeywordColumns = getRpgKeywordColumns;
 exports.getClKeywordColumns = getClKeywordColumns;
 exports.parseColumnsValue = parseColumnsValue;
 const vscode = __importStar(require("vscode"));
 let cachedRpgKeywordColumns;
 let cachedClKeywordColumns;
+let cachedDdsKeywordColumns;
+/**
+ * DDS の定位置項目の桁定義を読み込む（種別 → 桁）。
+ * DDS は用途（物理/論理・表示装置・印刷装置）で桁の意味が変わるため、
+ * 種別ごとに別のエントリーを持つ。
+ */
+async function getDdsKeywordColumns(context) {
+    if (cachedDdsKeywordColumns) {
+        return cachedDdsKeywordColumns;
+    }
+    const map = new Map();
+    try {
+        const uri = vscode.Uri.joinPath(context.extensionUri, "resources", "navigation", "dds-keyword-columns.json");
+        const document = await vscode.workspace.openTextDocument(uri);
+        const parsed = JSON.parse(document.getText());
+        for (const [key, value] of Object.entries(parsed)) {
+            const columns = parseColumnsValue(value);
+            if (columns.length > 0) {
+                map.set(key.toUpperCase(), columns);
+            }
+        }
+    }
+    catch (error) {
+        console.log("[rpgClSupport] failed to load DDS keyword column definitions", String(error));
+    }
+    cachedDdsKeywordColumns = map;
+    return map;
+}
 /**
  * RPG 固定フォーマットのスペック種別ごとのキーワード桁定義を読み込む。
  * タブナビゲーション・ルーラー表示など複数機能の単一真実源。

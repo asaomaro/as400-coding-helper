@@ -253,6 +253,16 @@ function specFamily(document) {
     if (/\.(clle|clp)$/u.test(lower)) {
         return "cl";
     }
+    // DDS は同じ A 仕様書でも用途で桁の意味が変わるため、拡張子で種別まで決める。
+    if (/\.(pf|lf)$/u.test(lower)) {
+        return "dds-pf";
+    }
+    if (/\.(dspf|mnudds)$/u.test(lower)) {
+        return "dds-dspf";
+    }
+    if (/\.(prtf)$/u.test(lower)) {
+        return "dds-prtf";
+    }
     return "other";
 }
 /**
@@ -266,8 +276,19 @@ function classifySpec(document, lineIndex) {
         const text = document.lineAt(lineIndex).text;
         return text.trim().length > 0 ? "CL" : undefined;
     }
+    if (family.startsWith("dds-")) {
+        const text = document.lineAt(lineIndex).text;
+        if (text.trim().length === 0) {
+            return undefined;
+        }
+        // 7 桁目が '*' の注記行は桁ラベルを出さない（8-80 桁が本文になるため）。
+        if (text.length > 6 && text.charAt(6) === "*") {
+            return undefined;
+        }
+        return family.toUpperCase(); // DDS-PF / DDS-DSPF / DDS-PRTF
+    }
     if (family !== "rpg") {
-        return undefined; // DDS/DSPF/PRTF/CMD 等は目盛り段のみ
+        return undefined; // CMD 等は目盛り段のみ
     }
     const text = document.lineAt(lineIndex).text;
     if (text.length < 6) {
@@ -293,6 +314,9 @@ async function getColumnsForKey(context, key) {
     if (key === "CL") {
         return (0, keywordColumns_1.getClKeywordColumns)(context);
     }
+    if (key.startsWith("DDS-")) {
+        return (await (0, keywordColumns_1.getDdsKeywordColumns)(context)).get(key);
+    }
     const map = await (0, keywordColumns_1.getRpgKeywordColumns)(context);
     return map.get(key);
 }
@@ -300,8 +324,34 @@ async function getLabelsForKey(context, key) {
     if (key === "CL") {
         return getClFieldLabels(context);
     }
+    if (key.startsWith("DDS-")) {
+        return (await getDdsFieldLabels(context)).get(key) ?? [];
+    }
     const map = await getRpgFieldLabels(context);
     return map.get(key) ?? [];
+}
+let cachedDdsFieldLabels;
+/** DDS の欄名を読み込む（種別 → 欄名の配列）。真実源は resources/navigation。 */
+async function getDdsFieldLabels(context) {
+    if (cachedDdsFieldLabels) {
+        return cachedDdsFieldLabels;
+    }
+    const map = new Map();
+    try {
+        const uri = vscode.Uri.joinPath(context.extensionUri, "resources", "navigation", "dds-field-labels.json");
+        const document = await vscode.workspace.openTextDocument(uri);
+        const parsed = JSON.parse(document.getText());
+        for (const [key, value] of Object.entries(parsed)) {
+            if (Array.isArray(value)) {
+                map.set(key.toUpperCase(), value.map(String));
+            }
+        }
+    }
+    catch (error) {
+        console.log("[rpgClSupport] failed to load DDS field labels", String(error));
+    }
+    cachedDdsFieldLabels = map;
+    return map;
 }
 async function getRpgFieldLabels(context) {
     if (cachedRpgFieldLabels) {
