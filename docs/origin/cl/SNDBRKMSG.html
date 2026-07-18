@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="ja"><head><meta charset="utf-8"><title>中断メッセージ送信  (SNDBRKMSG)</title></head>
+<body>
+<div role="main">
+<script type="text/javascript" src="../rzahg/synch.js"></script>
+<a name="SNDBRKMSG.Top_Of_Page"></a>
+<h1>中断メッセージ送信  (SNDBRKMSG)</h1><div id="lastModifiedDate"><span>Last Updated</span>: 2021-04-13</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table0" width="100%" class="cds--data-table">
+<tbody><tr>
+<td class="valigntop alignleft"><strong>実行可能場所:  </strong>すべての環境 (*ALL)<br>
+<strong>スレッド・セーフ:  </strong>いいえ
+</td>
+<td class="valigntop alignright">
+<a href="#SNDBRKMSG.PARAMETERS.TABLE">パラメーター</a><br>
+<a href="#SNDBRKMSG.COMMAND.EXAMPLES">例</a><br>
+<a href="#SNDBRKMSG.ERROR.MESSAGES">エラー・メッセージ</a></td>
+</tr>
+</tbody></table></div></div>
+<div> <a name="SNDBRKMSG"></a>
+<p>中断メッセージ送信(SNDBRKMSG)コマンドは，即時メッセージを1つまたは複数のワークステーション・メッセージ待ち行列に送るために使用されます。即時メッセージとは，事前定義でなく，メッセージ・ファイルに記憶されていないメッセージのことです。このコマンドによって，即時メッセージは常に中断モードで転送されます。メッセージを受け取ると，メッセージ待ち行列の転送モード，重大度，および中断処理プログラムの設定にかかわりなく，そのメッセージ用のDSPMSG画面が表示されます。ただし，BRKMSGジョブ属性により，場合によってはメッセージを表示できないことがあります。このコマンドは主として，システム操作員が使用することを意図したものです。
+</p>
+<h2><strong>制約事項</strong><strong>:</strong>
+</h2>
+<ol class="cds--list--ordered--temporary">
+<li class="cds--list__item">このコマンドは，ワークステーション・メッセージ待ち行列に中断メッセージを送るためにしか使用できません。
+</li>
+<li class="cds--list__item">このコマンドは，複数のワークステーションに照会メッセージ(MSGTYPE(INQ)によって指定）を送ることはできません。
+</li>
+</ol>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table1" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#SNDBRKMSG.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div>
+<h2><a name="SNDBRKMSG.PARAMETERS.TABLE">パラメーター</a></h2>
+<div class="tablenoborder"><div class="cds--data-table-container"><table id="parm_table2" summary="Parameters" border="1" cellpadding="4" cellspacing="0" class="cds--data-table">
+<!-- col1="10" col2="15" col3="30" col4="10" -->
+<tbody><tr>
+<th scope="col" class="valignbottom alignleft"><div class="cds--table-header-label">キーワード</div></th>
+<th scope="col" class="valignbottom alignleft"><div class="cds--table-header-label">記述</div></th>
+<th scope="col" class="valignbottom alignleft"><div class="cds--table-header-label">選択項目</div></th>
+<th scope="col" class="valignbottom alignleft"><div class="cds--table-header-label">ノーツ</div></th>
+</tr>
+<tr>
+<td class="valigntop"><a href="#SNDBRKMSG.MSG"><strong>MSG</strong></a></td>
+<td class="valigntop">メッセージ・テキスト</td>
+<td class="valigntop"><span class="var">文字値</span></td>
+<td class="valigntop">必須, 定位置 1</td>
+</tr>
+<tr>
+<td class="valigntop" rowspan="3"><a href="#SNDBRKMSG.TOMSGQ"><strong>TOMSGQ</strong></a></td>
+<td class="valigntop"> TO ワークステーション MSG待ち行列</td>
+<td class="valigntop">単一値: *ALLWS<br>その他の値 (最大 50 回の繰り返し): <span class="var">修飾オブジェクト名</span></td>
+<td class="valigntop" rowspan="3">必須, 定位置 2</td>
+</tr>
+<tr>
+<td class="valigntop">修飾子 1:  TO ワークステーション MSG待ち行列</td>
+<td class="valigntop"><span class="var">名前</span></td>
+</tr><tr>
+<td class="valigntop">修飾子 2: ライブラリー</td>
+<td class="valigntop"><span class="var">名前</span>, <strong class="underlined">*LIBL</strong></td>
+</tr><tr>
+<td class="valigntop"><a href="#SNDBRKMSG.MSGTYPE"><strong>MSGTYPE</strong></a></td>
+<td class="valigntop">MSG タイプ</td>
+<td class="valigntop"><strong class="underlined">*INFO</strong>, *INQ</td>
+<td class="valigntop">オプショナル, 定位置 3</td>
+</tr>
+<tr>
+<td class="valigntop" rowspan="3"><a href="#SNDBRKMSG.RPYMSGQ"><strong>RPYMSGQ</strong></a></td>
+<td class="valigntop">応答を受けるメッセージ待ち行列</td>
+<td class="valigntop"><span class="var">修飾オブジェクト名</span></td>
+<td class="valigntop" rowspan="3">オプショナル</td>
+</tr>
+<tr>
+<td class="valigntop">修飾子 1: 応答を受けるメッセージ待ち行列</td>
+<td class="valigntop"><span class="var">名前</span>, <strong class="underlined">QSYSOPR</strong></td>
+</tr><tr>
+<td class="valigntop">修飾子 2: ライブラリー</td>
+<td class="valigntop"><span class="var">名前</span>, <strong class="underlined">*LIBL</strong></td>
+</tr><tr>
+<td class="valigntop"><a href="#SNDBRKMSG.CCSID"><strong>CCSID</strong></a></td>
+<td class="valigntop">コード化文字セットID</td>
+<td class="valigntop">1-65535, *HEX, <strong class="underlined">*JOB</strong></td>
+<td class="valigntop">オプショナル</td>
+</tr>
+</tbody></table></div></div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table3" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#SNDBRKMSG.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+</div>
+<div> <a name="SNDBRKMSG.MSG"></a>
+<h2>メッセージ・テキスト (MSG)</h2>
+<p>送信したい即時メッセージを指定します。テキストにブランクまたは他の特殊文字が入っている場合には，テキストをアポストロフィで囲まなければなりません。最大512文字まで指定することができます。
+</p>
+<h3><strong>コード化文字セット</strong><strong>ID (CCSID)</strong><strong>に関する考慮事項</strong>
+</h3>
+<p>MSGパラメーターに指定されたテキストは，コード化文字セットIDがCCSIDパラメーターに指定されない限り，このコマンドを実行中のジョブのCCSIDに入っているとみなされます。メッセージ・ハンドラーとそれによるCCSIDの使用の詳細については，IBM i Information Center(http://www.ibm.com/systems/i/infocenter/)の「i5/OSのグローバリゼーション」トピック・コレクションを参照してください。
+</p>
+<p>これは必須パラメーターです。
+</p>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table4" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#SNDBRKMSG.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="SNDBRKMSG.TOMSGQ"></a>
+<h2>TO ワークステーション MSG待ち行列 (TOMSGQ)</h2>
+<p>中断メッセージが送られる1つ以上のワークステーション・メッセージ待ち行列を指定します。指定できるのはワークステーション・メッセージ待ち行列の名前だけで，ライブラリー値には*LIBLまたはQSYSしか指定することができません。
+</p>
+<h3><strong>単一値</strong>
+</h3>
+<dl>
+<dt><strong>*ALLWS</strong></dt>
+<dd>中断メッセージは，すべてのワークステーションおよびパーソナル・コンピューターのメッセージ待ち行列に送られます。<strong>MSG </strong><strong>タイプ</strong><strong> (MSGTYPE)</strong>パラメーターに*INQを指定した場合には，*ALLWSを指定することはできません。
+</dd>
+</dl>
+<h3><strong>修飾子</strong><strong>1:  TO ワークステーション MSG</strong><strong>待ち行列</strong>
+</h3>
+<dl>
+<dt><strong class="italic">メッセージ待ち行列名</strong></dt>
+<dd>中断メッセージが送られる先のメッセージ待ち行列の名前を指定してください。
+</dd>
+</dl>
+<h3><strong>修飾子</strong><strong>2: ライブラリー</strong>
+</h3>
+<dl>
+<dt><strong class="underlined">*LIBL</strong></dt>
+<dd>最初に一致するものが見つかるまで，現行スレッドのライブラリー・リスト内のすべてのライブラリーが検索されます。
+</dd>
+</dl>
+<dl>
+<dt><strong class="italic">ライブラリー名</strong></dt>
+<dd>メッセージ待ち行列が入っているライブラリーを指定してください。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table5" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#SNDBRKMSG.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="SNDBRKMSG.MSGTYPE"></a>
+<h2>MSG タイプ (MSGTYPE)</h2>
+<p>中断モードで送られるメッセージのタイプを指定します。指定できるのは，通知または照会メッセージ・タイプだけです。照会メッセージには応答が必要な場合もあります。
+</p>
+<dl>
+<dt><strong class="underlined">*INFO</strong></dt>
+<dd>通知専用メッセージが中断モードで送られます。
+</dd>
+<dt><strong>*INQ</strong></dt>
+<dd>照会メッセージが中断モードで送られます。メッセージを受け取るワークステーションでは，それに応答することが必要です。1つだけのコマンドで照会メッセージを複数の待ち行列に送ることはできません。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table6" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#SNDBRKMSG.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="SNDBRKMSG.RPYMSGQ"></a>
+<h2>応答を受けるメッセージ待ち行列 (RPYMSGQ)</h2>
+<p>照会メッセージが送られる場合に限り，ワークステーション・ユーザーの応答が送られる先のメッセージ待ち行列を指定します。
+</p>
+<h3><strong>修飾子</strong><strong>1: </strong><strong>応答を受ける</strong><strong>メッセージ</strong><strong>待ち行列</strong>
+</h3>
+<dl>
+<dt><strong class="underlined">QSYSOPR</strong></dt>
+<dd>中断メッセージに対する応答は，システム操作員のメッセージ待ち行列QSYSOPRに送られます。
+</dd>
+<dt><strong class="italic">メッセージ待ち行列名</strong></dt>
+<dd>中断メッセージに対する応答の送信先になるメッセージ待ち行列の名前を指定してください。指定できるのは，ユーザーまたはワークステーション・メッセージ待ち行列だけです。
+</dd>
+</dl>
+<h3><strong>修飾子</strong><strong>2: ライブラリー</strong>
+</h3>
+<dl>
+<dt><strong class="underlined">*LIBL</strong></dt>
+<dd>最初に一致するものが見つかるまで，現行スレッドのライブラリー・リスト内のすべてのライブラリーが検索されます。
+</dd>
+</dl>
+<dl>
+<dt><strong class="italic">ライブラリー名</strong></dt>
+<dd>メッセージ待ち行列が入っているライブラリーを指定してください。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table7" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#SNDBRKMSG.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="SNDBRKMSG.CCSID"></a>
+<h2>コード化文字セットID (CCSID)</h2>
+<p>指定されたメッセージ・テキストが入っているコード化文字セットID (CCSID)を指定します。MSGパラメーターによって指定されたテキストは，このパラメーターによって指定されたCCSIDに入っているとみなされます。メッセージ・ハンドラーとそれによるCCSIDの使用の詳細については，IBM i Information Center(http://www.ibm.com/systems/i/infocenter/)の「i5/OSのグローバリゼーション」トピック・コレクションを参照してください。
+</p>
+<dl>
+<dt><strong class="underlined">*JOB</strong></dt>
+<dd>メッセージ・テキストは，このコマンドを実行するジョブのCCSIDに入っているとみなされます。
+</dd>
+<dt><strong>*HEX</strong></dt>
+<dd>メッセージ・テキストは変換されません。CCSID 65535が使用されます。
+</dd>
+<dt><strong class="italic">コード化文字セットID</strong></dt>
+<dd>メッセージ・テキストの前提とする有効なCCSIDを指定してください。有効な値の範囲は1から65535です。有効なCCSIDの値のリストについては，iSeries Information Center(http://www.ibm.com/eserver/iseries/infocenter)にあるグローバリゼーション情報を参照してください。このコマンドはCCSIDの妥当性検査を行います。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table8" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#SNDBRKMSG.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div><h2><a name="SNDBRKMSG.COMMAND.EXAMPLES">例</a> </h2>
+<h3><strong>例</strong><strong>1:</strong><strong>メッセージの送信</strong>
+</h3>
+<p>
+</p><pre>SNDBRKMSG   MSG('INVENTORY APPLICATION SHUTS DOWN AT 4:00 PM.')
+</pre>
+<p></p>
+<p>このコマンドは，「INVENTORY APPLICATION SHUTS DOWN AT 4:00 PM.」というメッセージをすべてのワークステーション・メッセージ待ち行列に送ります。ワークステーションがサインオンされている場合には，それらのメッセージ待ち行列の転送属性の設定にかかわらず，メッセージは中断モードで転送されます。サインオンされていないそれらのワークステーションのワークステーション・メッセージ待ち行列にも，メッセージが追加されます。
+</p>
+<h3><strong>例</strong><strong>2:</strong><strong>即時メッセージの送信</strong>
+</h3>
+<p>
+</p><pre>SNDBRKMSG   MSG('Your printed output is ready.')
+            TOMSGQ(GEORGEMSGQ)
+</pre>
+<p></p>
+<p>この例は，即時メッセージをワークステーション・ユーザーに送るための，システム操作員によるSNDBRKMSGコマンドの典型的な使用を示しています。
+</p>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table9" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#SNDBRKMSG.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div><h2><a name="SNDBRKMSG.ERROR.MESSAGES">エラー・メッセージ</a> </h2>
+<p><strong class="underlined">*ESCAPE </strong><strong class="underlined">メッセージ</strong>
+</p>
+<dl>
+<dt><strong>CPF2428</strong></dt>
+<dd>メッセージ待ち行列パラメーターが正しくありません。
+</dd>
+<dt><strong>CPF2469</strong></dt>
+<dd>メッセージ&amp;1の送信中に，エラーが起こった。
+</dd>
+<dt><strong>CPF247E</strong></dt>
+<dd>CCSID &amp;1が無効です。
+</dd>
+<dt><strong>CPF9838</strong></dt>
+<dd>ユーザー・プロファイルの記憶域限界を超えた。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table10" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#SNDBRKMSG.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+</div>
+
+
+</body></html>

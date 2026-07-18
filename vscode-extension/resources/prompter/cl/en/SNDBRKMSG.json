@@ -1,0 +1,129 @@
+{
+  "keyword": "SNDBRKMSG",
+  "description": "Send Break Message (SNDBRKMSG)",
+  "parameters": [
+    {
+      "name": "MSG",
+      "description": "Message text",
+      "help": "Message text (MSG)\n\nSpecifies the immediate message that is being sent. The text must be enclosed in apostrophes if it contains blanks or other special characters. A maximum of 512 characters can be specified.\n\nCoded Character Set Identifier (CCSID) Considerations\n\nThe text supplied for the MSG parameter is assumed to be in the CCSID of the job running this command unless a coded character set identifier is supplied for the CCSID parameter. For more information about the message handler and its use of CCSIDs, see the i5/OS globalization topic collection in the IBM i Information Center at http://www.ibm.com/systems/i/infocenter/.\n\nThis is a required parameter.",
+      "inputType": "text",
+      "required": true,
+      "positional": 1
+    },
+    {
+      "name": "TOMSGQ",
+      "description": "To work station message queue",
+      "help": "To work station message queue (TOMSGQ)\n\nSpecifies one or more work station message queues to which the break message is sent. Only the names of work station message queues can be specified and only *LIBL or QSYS can be specified for the library value.\n\nSingle values\n\nQualifier 1: To work station message queue\n\nQualifier 2: Library",
+      "inputType": "group",
+      "required": true,
+      "groupKind": "qualified",
+      "singleValues": [
+        "*ALLWS"
+      ],
+      "children": [
+        {
+          "name": "LIB",
+          "description": "Library",
+          "help": "指定できる特殊値: *LIBL",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "*LIBL",
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          }
+        },
+        {
+          "name": "TOMSGQ",
+          "description": "To work station message queue",
+          "inputType": "text",
+          "required": true,
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          }
+        }
+      ],
+      "positional": 2,
+      "maxOccurrences": 50
+    },
+    {
+      "name": "MSGTYPE",
+      "description": "Message type",
+      "help": "Message type (MSGTYPE)\n\nSpecifies the type of message that is sent in break mode. Only informational or inquiry message types can be specified. Inquiry messages may require a response.",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*INFO",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*INFO",
+          "value": "*INFO"
+        },
+        {
+          "label": "*INQ",
+          "value": "*INQ"
+        }
+      ],
+      "positional": 3
+    },
+    {
+      "name": "RPYMSGQ",
+      "description": "Message queue to get reply",
+      "help": "Message queue to get reply (RPYMSGQ)\n\nSpecifies, only if an inquiry message is sent, the message queue that the work station user's reply is sent to.\n\nQualifier 1: Message queue to get reply\n\nQualifier 2: Library",
+      "inputType": "group",
+      "required": false,
+      "groupKind": "qualified",
+      "children": [
+        {
+          "name": "RPYMSGQ_LIB",
+          "description": "Library",
+          "help": "指定できる特殊値: *LIBL",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "*LIBL",
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          }
+        },
+        {
+          "name": "RPYMSGQ",
+          "description": "Message queue to get reply",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "QSYSOPR",
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          }
+        }
+      ]
+    },
+    {
+      "name": "CCSID",
+      "description": "Coded character set ID",
+      "help": "Coded character set ID (CCSID)\n\nSpecifies the coded character set identifier (CCSID) that the specified message text is in. The text supplied by the MSG parameter is assumed to be in the CCSID supplied by this parameter. For more information about the message handler and its use of CCSIDs, see the i5/OS globalization topic collection in the IBM i Information Center at http://www.ibm.com/systems/i/infocenter/.\n\n指定できる特殊値: *HEX, *JOB",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*JOB",
+      "attributes": {
+        "characterSet": "upper"
+      }
+    }
+  ],
+  "examples": [
+    {
+      "code": "SNDBRKMSG MSG('Inventory application shuts down at 4:00 PM.')"
+    },
+    {
+      "code": "SNDBRKMSG MSG('Your printed output is ready.') TOMSGQ(GEORGEMSGQ)"
+    }
+  ],
+  "source": {
+    "url": "https://www.ibm.com/docs/en/ssw_ibm_i_74/cl/sndbrkmsg.htm",
+    "version": "IBM i 7.4"
+  }
+}
