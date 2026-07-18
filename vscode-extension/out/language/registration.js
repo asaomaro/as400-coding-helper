@@ -35,6 +35,7 @@ var __importStar = (this && this.__importStar) || (function () {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.registerLanguageFeatures = registerLanguageFeatures;
 const vscode = __importStar(require("vscode"));
+const ddsKeywordCompletion_1 = require("./ddsKeywordCompletion");
 const diagnostics_1 = require("./diagnostics");
 const rpgCommentToggle_1 = require("./rpgCommentToggle");
 const clCommentToggle_1 = require("./clCommentToggle");
@@ -44,6 +45,8 @@ const fixedFormatNavigation_1 = require("./fixedFormatNavigation");
 const ruler_1 = require("./ruler");
 let diagnosticsInstance;
 function registerLanguageFeatures(context) {
+    // DDS のキーワード補完（45 桁目以降の機能欄で候補を出す）。
+    context.subscriptions.push((0, ddsKeywordCompletion_1.registerDdsKeywordCompletion)(context));
     if (!diagnosticsInstance) {
         diagnosticsInstance = new diagnostics_1.RpgClDiagnostics();
         diagnosticsInstance.register(context);
