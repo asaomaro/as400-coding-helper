@@ -3,6 +3,29 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.toSerializableState = toSerializableState;
 exports.buildHtml = buildHtml;
 const commandHelp_1 = require("./commandHelp");
+const occurrences_1 = require("./occurrences");
+/**
+ * 繰り返し group の「最後の一組」を求める。ここにだけ追加ボタンを出す。
+ * 途中の組に出すと、どこに追加されるのか分からなくなるため。
+ */
+function buildRepeatableGroups(definition, state) {
+    const result = {};
+    for (const parameter of definition.parameters) {
+        if (!(0, occurrences_1.isRepeatableGroup)(parameter))
+            continue;
+        const last = state.fields
+            .filter(field => leafNamesOf(parameter).has(field.parameter.name))
+            .reduce((max, field) => Math.max(max, field.occurrence), 0);
+        result[(0, occurrences_1.occurrenceName)(parameter.name, last)] = {
+            base: parameter.name,
+            max: parameter.maxOccurrences ?? 1
+        };
+    }
+    return result;
+}
+function leafNamesOf(parameter) {
+    return new Set(flattenForConstraints([parameter]).map(leaf => leaf.name));
+}
 /** 相関制約の判定に使う末端パラメータを集める（group は入れ子になりうる）。 */
 function flattenForConstraints(parameters) {
     return parameters.flatMap(parameter => parameter.inputType === "group" && parameter.children?.length
@@ -39,6 +62,7 @@ function toSerializableState(definition, state, resolved) {
         positionColumn: resolved.column,
         commandHelp: (0, commandHelp_1.buildCommandHelpText)(definition),
         constraints: definition.constraints,
+        repeatableGroups: buildRepeatableGroups(definition, state),
         // 相関制約の「指定した」判定に既定値が要るため、対象パラメータの末端を渡す。
         constraintFields: definition.constraints?.length
             ? Object.fromEntries([...new Set(definition.constraints.flatMap(c => c.parameters))].map(name => {
@@ -53,8 +77,11 @@ function toSerializableState(definition, state, resolved) {
         // 非表示項目もマークアップ上は出力し、クライアント側で入力値に追従して
         // 表示/必須を切り替える（除外してしまうと条件成立時に入力できなくなる）。
         fields: state.fields.map(field => ({
-            name: field.parameter.name,
-            label: field.parameter.description,
+            name: field.fieldName,
+            // 繰り返しの2件目以降は見出しに件数を添えて区別できるようにする。
+            label: field.occurrence > 0
+                ? `${field.parameter.description} (${field.occurrence + 1})`
+                : field.parameter.description,
             value: field.value,
             // 静的な定義値ではなく dependsOn 評価後の実効必須を UI に渡す。
             required: field.required,
@@ -64,8 +91,18 @@ function toSerializableState(definition, state, resolved) {
             hasHelp: Boolean((0, commandHelp_1.buildParameterHelpText)(field.parameter)),
             help: (0, commandHelp_1.buildParameterHelpText)(field.parameter),
             maxOccurrences: field.parameter.maxOccurrences,
-            groupName: groupInfoByChildName.get(field.parameter.name)?.groupName,
-            groupLabel: groupInfoByChildName.get(field.parameter.name)?.groupLabel,
+            groupName: (() => {
+                const info = groupInfoByChildName.get(field.parameter.name);
+                return info ? (0, occurrences_1.occurrenceName)(info.groupName, field.occurrence) : undefined;
+            })(),
+            groupLabel: (() => {
+                const info = groupInfoByChildName.get(field.parameter.name);
+                if (!info)
+                    return undefined;
+                return field.occurrence > 0
+                    ? `${info.groupLabel} (${field.occurrence + 1})`
+                    : info.groupLabel;
+            })(),
             visible: field.visible,
             dependsOn: field.parameter.dependsOn,
             disabled: field.disabled,
@@ -119,10 +156,16 @@ function buildHtml(state, options) {
           </div>`;
         })
             .join("\n");
+        // 繰り返し指定の group は、最後の一組にだけ「追加」ボタンを出す。
+        const repeat = state.repeatableGroups?.[groupName];
+        const addButton = repeat
+            ? `<button type="button" class="group-add" data-group="${escapeHtml(repeat.base)}" data-max="${repeat.max}">追加</button>`
+            : "";
         return `
-      <fieldset class="field group-field">
+      <fieldset class="field group-field" data-group-name="${escapeHtml(groupName)}">
         <legend>${escapeHtml(group.label)}</legend>
         ${childrenHtml}
+        ${addButton}
       </fieldset>`;
     })
         .join("\n");
@@ -190,6 +233,7 @@ function buildHtml(state, options) {
       border: 1px solid #be1100;
     }
     .constraint-errors { margin-bottom: 8px; white-space: pre-wrap; }
+    .group-add { margin-top: 4px; }
     .multi-field { margin-top: 4px; }
     .multi-items { display: flex; flex-direction: column; gap: 4px; margin-bottom: 4px; }
     .multi-item { display: flex; gap: 4px; }
@@ -624,9 +668,79 @@ function buildHtml(state, options) {
       });
     }
 
+    // 繰り返し指定の group を1組増やす。最後の一組を複製し、
+    // 入力欄名の連番（名前#N）を振り直して値を空にする。
+    function setupRepeatableGroups() {
+      const form = getForm();
+      if (!form) {
+        return;
+      }
+
+      form.addEventListener('click', function (event) {
+        const target = event.target;
+        if (!target || typeof target.matches !== 'function' || !target.matches('.group-add')) {
+          return;
+        }
+        event.preventDefault();
+
+        const base = target.getAttribute('data-group');
+        const max = parseInt(target.getAttribute('data-max') || '0', 10);
+        const fieldset = target.closest('.group-field');
+        if (!base || !fieldset) {
+          return;
+        }
+
+        const existing = form.querySelectorAll('.group-field[data-group-name^="' + base + '"]').length;
+        if (max > 0 && existing >= max) {
+          return;
+        }
+
+        const next = existing + 1; // 追加後の件数（1件目は連番なし）
+        const clone = fieldset.cloneNode(true);
+        clone.setAttribute('data-group-name', base + '#' + next);
+
+        const legend = clone.querySelector('legend');
+        if (legend) {
+          legend.textContent = legend.textContent.replace(/\\s*\\(\\d+\\)\\s*$/, '') + ' (' + next + ')';
+        }
+
+        for (const field of clone.querySelectorAll('.field[data-field-name]')) {
+          const name = field.getAttribute('data-field-name').replace(/#\\d+$/, '');
+          const renamed = name + '#' + next;
+          field.setAttribute('data-field-name', renamed);
+
+          const label = field.querySelector('label > span');
+          if (label) {
+            const mark = label.querySelector('.required-mark');
+            const help = label.querySelector('.help-indicator');
+            const text = (label.childNodes[0] && label.childNodes[0].textContent) || '';
+            label.childNodes[0].textContent = text.replace(/\\s*\\(\\d+\\)\\s*$/, '') + ' (' + next + ')';
+            if (mark) mark.textContent = '';
+            if (help) help.setAttribute('data-parameter-name', renamed);
+          }
+
+          for (const control of field.querySelectorAll('[name]')) {
+            control.setAttribute('name', renamed);
+            control.value = '';
+            control.disabled = false;
+          }
+          const err = field.querySelector('.error');
+          if (err) err.textContent = '';
+        }
+
+        // 追加ボタンは常に最後の一組だけに置く。
+        const oldButton = fieldset.querySelector('.group-add');
+        if (oldButton) oldButton.remove();
+
+        fieldset.parentNode.insertBefore(clone, fieldset.nextSibling);
+        applyDependencyRules();
+      });
+    }
+
     // 初期フォーカスと複数項目ボタンのセットアップ
     focusFirstField();
     setupMultiFieldButtons();
+    setupRepeatableGroups();
 
     // 依存関係の初期反映と、以後の入力変更への追従
     applyDependencyRules();

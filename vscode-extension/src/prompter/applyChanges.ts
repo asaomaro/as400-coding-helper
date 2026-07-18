@@ -8,6 +8,11 @@ import {
   joinContinuationLines,
   parseClCommand
 } from "./clCommandParser";
+import {
+  countOccurrences,
+  isRepeatableGroup,
+  occurrenceName
+} from "./occurrences";
 
 export interface AppliedValues {
   readonly [parameterName: string]: string | string[];
@@ -141,20 +146,23 @@ function wrapClCommand(head: string, paramTokens: readonly string[]): string {
   const indent = " ".repeat(CL_PARAM_COLUMN - 1);
   const lines: string[] = [];
   let current = head;
+  // その行に既にパラメータを載せたか。1つも載せずに折り返すと
+  // コマンド名だけの行ができてしまうため、最低1つは載せる。
+  let hasToken = false;
 
   for (const token of paramTokens) {
-    const candidate = current.trimEnd().length === current.length && current.endsWith(" ")
-      ? current + token
-      : `${current}${current.endsWith(" ") ? "" : " "}${token}`;
+    const candidate = `${current}${current.endsWith(" ") ? "" : " "}${token}`;
 
     // `+ ` の分を見込んで幅を判定する。
-    if (candidate.length > CL_LINE_WIDTH - 2 && current.trim().length > 0) {
+    if (hasToken && candidate.length > CL_LINE_WIDTH - 2) {
       lines.push(`${current.trimEnd()} +`);
       current = indent + token;
+      hasToken = true;
       continue;
     }
 
     current = candidate;
+    hasToken = true;
   }
 
   lines.push(current.trimEnd());
@@ -190,16 +198,20 @@ function readMultiple(raw: string | string[] | undefined): string[] {
  */
 function buildParameterBody(
   parameter: ParameterDefinition,
-  values: AppliedValues
+  values: AppliedValues,
+  // 繰り返し指定の何件目か（0 始まり）。入れ子の末端まで引き継ぐ。
+  occurrence = 0
 ): string | undefined {
   const children = parameter.children ?? [];
 
   if (parameter.inputType !== "group" || children.length === 0) {
-    const single = readSingle(values[parameter.name]);
+    const single = readSingle(values[occurrenceName(parameter.name, occurrence)]);
     return single.length > 0 ? single : undefined;
   }
 
-  const childBodies = children.map(child => buildParameterBody(child, values) ?? "");
+  const childBodies = children.map(
+    child => buildParameterBody(child, values, occurrence) ?? ""
+  );
 
   // 単一値はどの入力欄に入っているとは限らない。修飾名では
   // ライブラリーではなくオブジェクト側の欄に *SAME 等が入る。
@@ -245,13 +257,36 @@ function buildParameterToken(
   parameter: ParameterDefinition,
   values: AppliedValues
 ): string | undefined {
+  if (isRepeatableGroup(parameter)) {
+    const bodies: string[] = [];
+    const count = countOccurrences(parameter, values);
+    for (let index = 0; index < count; index += 1) {
+      const body = buildParameterBody(parameter, values, index);
+      if (body) bodies.push(body);
+    }
+
+    if (bodies.length === 0) {
+      return undefined;
+    }
+
+    // 各出現を括弧で包むかどうかは原典の記法に合わせる。
+    //   修飾名の繰り返し     … 包まない  例: MODULE(LIB/MOD1 LIB/MOD2)
+    //   要素リストの繰り返し … 出現が複数、または要素が複数なら包む
+    //                          例: OBJ((LIB/F *FILE *EXCL M))  KEYFLD((F *DESCEND))
+    //                          単一要素1件だけなら包まない 例: FILE(ORDFILE)
+    const isElements = (parameter.groupKind ?? "qualified") === "elements";
+    const needsParens =
+      isElements && (bodies.length > 1 || bodies.some(body => /\s/u.test(body)));
+
+    const joined = needsParens
+      ? bodies.map(body => `(${body})`).join(" ")
+      : bodies.join(" ");
+
+    return `${parameter.name}(${joined})`;
+  }
+
   const isRepeatable =
     typeof parameter.maxOccurrences === "number" && parameter.maxOccurrences > 1;
-
-  if (isRepeatable && parameter.inputType === "group") {
-    const body = buildParameterBody(parameter, values);
-    return body ? `${parameter.name}((${body}))` : undefined;
-  }
 
   if (isRepeatable) {
     const list = readMultiple(values[parameter.name]);

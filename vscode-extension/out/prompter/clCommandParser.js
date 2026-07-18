@@ -6,6 +6,7 @@ exports.splitTopLevel = splitTopLevel;
 exports.parseClCommand = parseClCommand;
 exports.assignParameterValue = assignParameterValue;
 exports.mapParsedCommandToValues = mapParsedCommandToValues;
+const occurrences_1 = require("./occurrences");
 /**
  * 継続行を1本の論理コマンドに連結する。
  *
@@ -219,10 +220,12 @@ function primaryChild(parameter) {
  * パラメータの生テキストを、入力欄ごとの値に割り当てる。
  * applyChanges.ts の buildParameterBody の逆変換。
  */
-function assignParameterValue(parameter, raw, values) {
+function assignParameterValue(parameter, raw, values, 
+// 繰り返し指定の何件目か（0 始まり）。入れ子の末端まで引き継ぐ。
+occurrence = 0) {
     const text = raw.trim();
     if (leafOf(parameter)) {
-        values[parameter.name] = text;
+        values[(0, occurrences_1.occurrenceName)(parameter.name, occurrence)] = text;
         return;
     }
     // 単一値（*FIRST 等）は主の欄に入れ、他の欄は使わない。
@@ -230,13 +233,23 @@ function assignParameterValue(parameter, raw, values) {
     if (singleValues.some(value => value.toUpperCase() === text.toUpperCase())) {
         const primary = primaryChild(parameter);
         if (primary)
-            values[primary.name] = text;
+            values[(0, occurrences_1.occurrenceName)(primary.name, occurrence)] = text;
         return;
     }
+    // 繰り返し指定は各出現が括弧で包まれる: OBJ((A ...) (B ...))
+    if ((0, occurrences_1.isRepeatableGroup)(parameter)) {
+        const occurrences = splitTopLevel(text);
+        const limit = Math.min(occurrences.length, parameter.maxOccurrences ?? 1);
+        for (let index = 0; index < limit; index += 1) {
+            assignGroupBody(parameter, unwrapOuterParens(occurrences[index] ?? ""), values, index);
+        }
+        return;
+    }
+    assignGroupBody(parameter, text, values, occurrence);
+}
+/** group 1件分（括弧を剥がした中身）を子の入力欄へ割り当てる。 */
+function assignGroupBody(parameter, body, values, occurrence) {
     const children = parameter.children ?? [];
-    const isRepeatable = typeof parameter.maxOccurrences === "number" && parameter.maxOccurrences > 1;
-    // 繰り返し指定は各出現が括弧で包まれる。現状は最初の出現のみ扱う。
-    const body = isRepeatable ? unwrapOuterParens(splitTopLevel(text)[0] ?? text) : text;
     if ((parameter.groupKind ?? "qualified") === "qualified") {
         // 修飾名は右詰め。`MYPGM` は LIB を省略した形で、オブジェクト側に入る。
         const parts = splitTopLevel(body, "/");
@@ -244,7 +257,7 @@ function assignParameterValue(parameter, raw, values) {
         parts.forEach((part, i) => {
             const child = children[offset + i];
             if (child)
-                assignParameterValue(child, part, values);
+                assignParameterValue(child, part, values, occurrence);
         });
         return;
     }
@@ -254,7 +267,7 @@ function assignParameterValue(parameter, raw, values) {
         if (!child)
             return;
         // *N は「その要素を省略した」印なので空欄に戻す。
-        assignParameterValue(child, part.toUpperCase() === "*N" ? "" : part, values);
+        assignParameterValue(child, part.toUpperCase() === "*N" ? "" : part, values, occurrence);
     });
 }
 /**

@@ -4,6 +4,7 @@ exports.buildInitialState = buildInitialState;
 exports.validateConstraints = validateConstraints;
 exports.validate = validate;
 const visibilityRules_1 = require("./visibilityRules");
+const occurrences_1 = require("./occurrences");
 /**
  * 入力欄を持つ末端パラメータを取り出す。group は入れ子になりうるため再帰的に辿る
  * （例: ALCOBJ の OBJ は「要素リストの要素1が修飾名」という2階層構造）。
@@ -22,20 +23,44 @@ function flattenParameters(parameters) {
     }
     return result;
 }
+/**
+ * 入力欄を、繰り返し指定の件数だけ展開して並べる。
+ * 2件目以降の入力欄名は `名前#2` のように連番になる（occurrences.ts の規則）。
+ */
+function expandOccurrences(parameters, values) {
+    const result = [];
+    for (const parameter of parameters) {
+        const count = (0, occurrences_1.isRepeatableGroup)(parameter) ? (0, occurrences_1.countOccurrences)(parameter, values) : 1;
+        for (let occurrence = 0; occurrence < count; occurrence += 1) {
+            for (const leaf of flattenParameters([parameter])) {
+                result.push({
+                    parameter: leaf,
+                    occurrence,
+                    fieldName: (0, occurrences_1.occurrenceName)(leaf.name, occurrence)
+                });
+            }
+        }
+    }
+    return result;
+}
 function buildInitialState(definition, initialValues) {
-    const flatParameters = flattenParameters(definition.parameters);
+    const slots = expandOccurrences(definition.parameters, initialValues);
     // dependsOn は他パラメータの確定値を参照するため、先に全項目の値を determine する。
     const resolvedValues = {};
-    for (const parameter of flatParameters) {
-        resolvedValues[parameter.name] =
-            initialValues[parameter.name] ?? parameter.defaultValue ?? "";
+    for (const slot of slots) {
+        resolvedValues[slot.fieldName] =
+            initialValues[slot.fieldName] ??
+                // 2件目以降に既定値を勝手に入れると、空のはずの繰り返しが出力されてしまう。
+                (slot.occurrence === 0 ? slot.parameter.defaultValue ?? "" : "");
     }
-    const fields = flatParameters.map(parameter => {
-        const raw = resolvedValues[parameter.name] ?? "";
-        const { visible, required, disabled, allowedValues } = (0, visibilityRules_1.evaluateParameter)(parameter, resolvedValues);
-        const error = validate(parameter, raw, required, allowedValues);
+    const fields = slots.map(slot => {
+        const raw = resolvedValues[slot.fieldName] ?? "";
+        const { visible, required, disabled, allowedValues } = (0, visibilityRules_1.evaluateParameter)(slot.parameter, resolvedValues);
+        const error = validate(slot.parameter, raw, required, allowedValues);
         return {
-            parameter,
+            parameter: slot.parameter,
+            fieldName: slot.fieldName,
+            occurrence: slot.occurrence,
             value: raw,
             error,
             required,

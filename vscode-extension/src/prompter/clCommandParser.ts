@@ -1,4 +1,5 @@
 import type { ParameterDefinition, PrompterDefinition } from "./types";
+import { isRepeatableGroup, occurrenceName } from "./occurrences";
 
 /**
  * CL コマンドの解析。ソース上の記述（複数行・継続・ラベル・コメント）を
@@ -255,12 +256,14 @@ function primaryChild(parameter: ParameterDefinition): ParameterDefinition | und
 export function assignParameterValue(
   parameter: ParameterDefinition,
   raw: string,
-  values: Record<string, string>
+  values: Record<string, string>,
+  // 繰り返し指定の何件目か（0 始まり）。入れ子の末端まで引き継ぐ。
+  occurrence = 0
 ): void {
   const text = raw.trim();
 
   if (leafOf(parameter)) {
-    values[parameter.name] = text;
+    values[occurrenceName(parameter.name, occurrence)] = text;
     return;
   }
 
@@ -268,16 +271,31 @@ export function assignParameterValue(
   const singleValues = parameter.singleValues ?? [];
   if (singleValues.some(value => value.toUpperCase() === text.toUpperCase())) {
     const primary = primaryChild(parameter);
-    if (primary) values[primary.name] = text;
+    if (primary) values[occurrenceName(primary.name, occurrence)] = text;
     return;
   }
 
-  const children = parameter.children ?? [];
-  const isRepeatable =
-    typeof parameter.maxOccurrences === "number" && parameter.maxOccurrences > 1;
+  // 繰り返し指定は各出現が括弧で包まれる: OBJ((A ...) (B ...))
+  if (isRepeatableGroup(parameter)) {
+    const occurrences = splitTopLevel(text);
+    const limit = Math.min(occurrences.length, parameter.maxOccurrences ?? 1);
+    for (let index = 0; index < limit; index += 1) {
+      assignGroupBody(parameter, unwrapOuterParens(occurrences[index] ?? ""), values, index);
+    }
+    return;
+  }
 
-  // 繰り返し指定は各出現が括弧で包まれる。現状は最初の出現のみ扱う。
-  const body = isRepeatable ? unwrapOuterParens(splitTopLevel(text)[0] ?? text) : text;
+  assignGroupBody(parameter, text, values, occurrence);
+}
+
+/** group 1件分（括弧を剥がした中身）を子の入力欄へ割り当てる。 */
+function assignGroupBody(
+  parameter: ParameterDefinition,
+  body: string,
+  values: Record<string, string>,
+  occurrence: number
+): void {
+  const children = parameter.children ?? [];
 
   if ((parameter.groupKind ?? "qualified") === "qualified") {
     // 修飾名は右詰め。`MYPGM` は LIB を省略した形で、オブジェクト側に入る。
@@ -285,7 +303,7 @@ export function assignParameterValue(
     const offset = children.length - parts.length;
     parts.forEach((part, i) => {
       const child = children[offset + i];
-      if (child) assignParameterValue(child, part, values);
+      if (child) assignParameterValue(child, part, values, occurrence);
     });
     return;
   }
@@ -295,7 +313,7 @@ export function assignParameterValue(
     const child = children[i];
     if (!child) return;
     // *N は「その要素を省略した」印なので空欄に戻す。
-    assignParameterValue(child, part.toUpperCase() === "*N" ? "" : part, values);
+    assignParameterValue(child, part.toUpperCase() === "*N" ? "" : part, values, occurrence);
   });
 }
 

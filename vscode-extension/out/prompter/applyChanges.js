@@ -39,6 +39,7 @@ const vscode = __importStar(require("vscode"));
 const clContinuation_1 = require("../language/clContinuation");
 const rpgEditGuards_1 = require("../language/rpgEditGuards");
 const clCommandParser_1 = require("./clCommandParser");
+const occurrences_1 = require("./occurrences");
 async function applyChanges(editor, definition, resolved, values) {
     const { document } = editor;
     if (resolved.language === "cl") {
@@ -124,17 +125,20 @@ function wrapClCommand(head, paramTokens) {
     const indent = " ".repeat(CL_PARAM_COLUMN - 1);
     const lines = [];
     let current = head;
+    // その行に既にパラメータを載せたか。1つも載せずに折り返すと
+    // コマンド名だけの行ができてしまうため、最低1つは載せる。
+    let hasToken = false;
     for (const token of paramTokens) {
-        const candidate = current.trimEnd().length === current.length && current.endsWith(" ")
-            ? current + token
-            : `${current}${current.endsWith(" ") ? "" : " "}${token}`;
+        const candidate = `${current}${current.endsWith(" ") ? "" : " "}${token}`;
         // `+ ` の分を見込んで幅を判定する。
-        if (candidate.length > CL_LINE_WIDTH - 2 && current.trim().length > 0) {
+        if (hasToken && candidate.length > CL_LINE_WIDTH - 2) {
             lines.push(`${current.trimEnd()} +`);
             current = indent + token;
+            hasToken = true;
             continue;
         }
         current = candidate;
+        hasToken = true;
     }
     lines.push(current.trimEnd());
     return lines.join("\n");
@@ -163,13 +167,15 @@ function readMultiple(raw) {
  *  - elements は " " 連結。末尾の空要素は落とし、途中の空要素は CL の
  *    省略指定 *N に置き換える。例: "*AFTER REFLIB"
  */
-function buildParameterBody(parameter, values) {
+function buildParameterBody(parameter, values, 
+// 繰り返し指定の何件目か（0 始まり）。入れ子の末端まで引き継ぐ。
+occurrence = 0) {
     const children = parameter.children ?? [];
     if (parameter.inputType !== "group" || children.length === 0) {
-        const single = readSingle(values[parameter.name]);
+        const single = readSingle(values[(0, occurrences_1.occurrenceName)(parameter.name, occurrence)]);
         return single.length > 0 ? single : undefined;
     }
-    const childBodies = children.map(child => buildParameterBody(child, values) ?? "");
+    const childBodies = children.map(child => buildParameterBody(child, values, occurrence) ?? "");
     // 単一値はどの入力欄に入っているとは限らない。修飾名では
     // ライブラリーではなくオブジェクト側の欄に *SAME 等が入る。
     // 単一値が指定されたら、他の欄（ライブラリーの *LIBL 等）は無視する。
@@ -203,11 +209,30 @@ function buildParameterBody(parameter, values) {
  * 例: ALCOBJ OBJ((LIBB/FILEA *FILE *EXCL MEMBERA))
  */
 function buildParameterToken(parameter, values) {
-    const isRepeatable = typeof parameter.maxOccurrences === "number" && parameter.maxOccurrences > 1;
-    if (isRepeatable && parameter.inputType === "group") {
-        const body = buildParameterBody(parameter, values);
-        return body ? `${parameter.name}((${body}))` : undefined;
+    if ((0, occurrences_1.isRepeatableGroup)(parameter)) {
+        const bodies = [];
+        const count = (0, occurrences_1.countOccurrences)(parameter, values);
+        for (let index = 0; index < count; index += 1) {
+            const body = buildParameterBody(parameter, values, index);
+            if (body)
+                bodies.push(body);
+        }
+        if (bodies.length === 0) {
+            return undefined;
+        }
+        // 各出現を括弧で包むかどうかは原典の記法に合わせる。
+        //   修飾名の繰り返し     … 包まない  例: MODULE(LIB/MOD1 LIB/MOD2)
+        //   要素リストの繰り返し … 出現が複数、または要素が複数なら包む
+        //                          例: OBJ((LIB/F *FILE *EXCL M))  KEYFLD((F *DESCEND))
+        //                          単一要素1件だけなら包まない 例: FILE(ORDFILE)
+        const isElements = (parameter.groupKind ?? "qualified") === "elements";
+        const needsParens = isElements && (bodies.length > 1 || bodies.some(body => /\s/u.test(body)));
+        const joined = needsParens
+            ? bodies.map(body => `(${body})`).join(" ")
+            : bodies.join(" ");
+        return `${parameter.name}(${joined})`;
     }
+    const isRepeatable = typeof parameter.maxOccurrences === "number" && parameter.maxOccurrences > 1;
     if (isRepeatable) {
         const list = readMultiple(values[parameter.name]);
         return list.length > 0 ? `${parameter.name}(${list.join(" ")})` : undefined;
