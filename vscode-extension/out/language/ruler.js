@@ -87,7 +87,8 @@ function registerRuler(context) {
         await context.workspaceState.update(STATE_KEY, mode);
         refresh();
     });
-    context.subscriptions.push(cycleCommand, 
+    const alignCommand = vscode.commands.registerCommand("rpgClSupport.ruler.alignFont", () => alignCodeLensFont());
+    context.subscriptions.push(cycleCommand, alignCommand, 
     // 対象拡張子だけに絞る（言語登録に依らないのは表示系の方針どおり）。
     vscode.languages.registerCodeLensProvider({ scheme: "file", pattern: `**/*.{${fileScope_1.TARGET_EXTENSIONS.join(",")}}` }, lensProvider), vscode.window.onDidChangeActiveTextEditor(() => refresh()), 
     // カーソル行が変われば書式行も変わる。SEU も現在行に対して出すため追従させる。
@@ -126,28 +127,47 @@ const FONT_PROMPT_KEY = "rpgClSupport.ruler.codeLensFontPrompted";
  * そのままだとルーラーの桁がコードと合わず、ルーラーの用をなさない。
  * 設定を勝手に書き換えるのは筋が悪いので、一度だけ尋ねる。
  */
-async function checkCodeLensFont(context) {
-    if (context.globalState.get(FONT_PROMPT_KEY)) {
-        return;
-    }
+function isCodeLensFontAligned() {
     const editorConfig = vscode.workspace.getConfiguration("editor");
     const fontSize = editorConfig.get("fontSize");
     const lensFontSize = editorConfig.get("codeLensFontSize");
-    // 0 は「editor.fontSize の 90%」を意味する既定値。
-    if (!fontSize || lensFontSize === fontSize) {
-        return;
-    }
-    const answer = await vscode.window.showInformationMessage("ルーラーの桁をコードに合わせるには、CodeLens の字体・字大をエディターと揃える必要があります。設定しますか？", "揃える", "今はしない");
-    await context.globalState.update(FONT_PROMPT_KEY, true);
-    if (answer !== "揃える") {
-        return;
-    }
     const fontFamily = editorConfig.get("fontFamily");
-    await editorConfig.update("codeLensFontSize", fontSize, vscode.ConfigurationTarget.Global);
+    const lensFontFamily = editorConfig.get("codeLensFontFamily");
+    // codeLensFontSize は 0 が「editor.fontSize の 90%」、
+    // codeLensFontFamily は空が「エディターの字体を継承」を意味する既定値。
+    // 字大が 90% のままだと桁は必ずずれる。
+    return (Boolean(fontSize) &&
+        lensFontSize === fontSize &&
+        (!lensFontFamily || lensFontFamily === fontFamily));
+}
+/** CodeLens の字体・字大をエディターに合わせる。 */
+async function alignCodeLensFont() {
+    const editorConfig = vscode.workspace.getConfiguration("editor");
+    const fontSize = editorConfig.get("fontSize");
+    const fontFamily = editorConfig.get("fontFamily");
+    if (fontSize) {
+        await editorConfig.update("codeLensFontSize", fontSize, vscode.ConfigurationTarget.Global);
+    }
     if (fontFamily) {
         await editorConfig.update("codeLensFontFamily", fontFamily, vscode.ConfigurationTarget.Global);
     }
     refresh();
+    void vscode.window.showInformationMessage(`ルーラーの桁をコードに合わせました（${fontFamily ?? "既定"} / ${fontSize ?? "既定"}px）。`);
+}
+async function checkCodeLensFont(context) {
+    if (isCodeLensFontAligned() || context.globalState.get(FONT_PROMPT_KEY)) {
+        return;
+    }
+    const answer = await vscode.window.showWarningMessage("ルーラーの桁がコードとずれます。CodeLens の字体・字大はエディターと別枠で、既定は文字の大きさが 90% になるためです。揃えますか？", "揃える", "後で");
+    // 答えを選ばずに閉じた場合(undefined)は「尋ねた」ことにしない。
+    // 記録すると二度と出せず、ずれたまま気付けなくなる。
+    if (answer === undefined) {
+        return;
+    }
+    await context.globalState.update(FONT_PROMPT_KEY, true);
+    if (answer === "揃える") {
+        await alignCodeLensFont();
+    }
 }
 function readDefaultMode() {
     const config = vscode.workspace.getConfiguration("rpgClSupport");
@@ -231,9 +251,12 @@ function updateStatusBar() {
         return;
     }
     const label = mode === "full" ? "Full" : mode === "ruler" ? "Cols" : "Off";
-    statusBarItem.text = `$(ruler) Ruler: ${label}`;
-    statusBarItem.tooltip =
-        "クリックでルーラー表示を切替 (Off → Cols → Full)";
+    // 桁がずれている間は警告を出す。黙ってずれているのがいちばん困る。
+    const aligned = mode === "off" || isCodeLensFontAligned();
+    statusBarItem.text = `$(ruler) Ruler: ${label}${aligned ? "" : " $(warning)"}`;
+    statusBarItem.tooltip = aligned
+        ? "クリックでルーラー表示を切替 (Off → Cols → Full)"
+        : "ルーラーの桁がコードとずれています。コマンド「ルーラー: 桁をコードに合わせる」で揃います。";
 }
 /**
  * 目盛り段の文字列を生成する。1 始まりで 10 桁ごとに桁番号の下 1 桁、
