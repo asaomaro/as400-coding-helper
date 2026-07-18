@@ -34,6 +34,8 @@ var __importStar = (this && this.__importStar) || (function () {
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.registerRuler = registerRuler;
+exports.buildTensRow = buildTensRow;
+exports.buildSeuRow = buildSeuRow;
 const vscode = __importStar(require("vscode"));
 const fileScope_1 = require("../utils/fileScope");
 const keywordColumns_1 = require("./keywordColumns");
@@ -44,27 +46,30 @@ const STATE_KEY = "rpgClSupport.ruler.mode";
 /** ルーラー文字列の最小桁数（行が短くても最低この幅まで目盛りを出す）。 */
 const MIN_WIDTH = 80;
 /**
- * CSS で浮かせる際の上方向オフセット（行高基準・em）。
- * 直上行への重なりを最小化しつつ視認できる値。実値は実機で調整可能（spec 未確定点）。
+ * ルーラーは CodeLens で出す。
+ *
+ * 以前は装飾(::before)を position:absolute で浮かせていたが、Monaco の行は
+ * 固定行高で絶対配置されるため、浮かせた分がそのまま上の行に重なりコードが
+ * 隠れていた。CodeLens は行の上に実際の余白を確保する唯一の口で、
+ * 差し込む形になるのでコードは隠れない。
+ *
+ * 代償として CodeLens の字体・字大が既定ではエディターと違う（字大は
+ * editor.fontSize の 90%）。桁が合わないとルーラーの意味が無いので、
+ * ずれている場合は起動時に一度だけ揃えるか尋ねる（checkCodeLensFont）。
+ * 桁を保つため空白は改行なし空白(U+00A0)で出す。
  */
-const TOP_UPPER = "-2.4em"; // 目盛り段（full 時はコードの概ね 2 行上）
-const TOP_LOWER = "-1.2em"; // 境界段 / ruler 時の目盛り段（概ね 1 行上）
-let tensDecoration;
-let fieldsDecoration;
 let statusBarItem;
+let lensProvider;
 let mode = "full";
 /** mode がユーザー操作で確定済みか（false の間は設定 defaultMode に追従する）。 */
 let modePinned = false;
-/** 非同期更新の世代カウンタ（古い境界段適用を捨てるため）。 */
-let updateToken = 0;
 let cachedRpgFieldLabels;
 let cachedClFieldLabels;
 function registerRuler(context) {
-    tensDecoration = vscode.window.createTextEditorDecorationType({});
-    fieldsDecoration = vscode.window.createTextEditorDecorationType({});
     statusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Right, 100);
     statusBarItem.command = "rpgClSupport.ruler.cycleMode";
-    context.subscriptions.push(tensDecoration, fieldsDecoration, statusBarItem);
+    context.subscriptions.push(statusBarItem);
+    lensProvider = new RulerCodeLensProvider(context);
     // 初期モード: 保存値があればそれ、無ければ設定 defaultMode。
     const stored = context.workspaceState.get(STATE_KEY);
     if (stored && CYCLE.includes(stored)) {
@@ -80,26 +85,69 @@ function registerRuler(context) {
         mode = CYCLE[(index + 1) % CYCLE.length];
         modePinned = true;
         await context.workspaceState.update(STATE_KEY, mode);
-        void updateForEditor(vscode.window.activeTextEditor, context);
+        refresh();
     });
-    context.subscriptions.push(cycleCommand, vscode.window.onDidChangeActiveTextEditor(editor => {
-        void updateForEditor(editor ?? undefined, context);
-    }), vscode.window.onDidChangeTextEditorSelection(event => {
-        void updateForEditor(event.textEditor, context);
-    }), vscode.workspace.onDidChangeTextDocument(event => {
-        const activeEditor = vscode.window.activeTextEditor;
-        if (activeEditor && event.document === activeEditor.document) {
-            void updateForEditor(activeEditor, context);
+    context.subscriptions.push(cycleCommand, 
+    // 対象拡張子だけに絞る（言語登録に依らないのは表示系の方針どおり）。
+    vscode.languages.registerCodeLensProvider({ scheme: "file", pattern: `**/*.{${fileScope_1.TARGET_EXTENSIONS.join(",")}}` }, lensProvider), vscode.window.onDidChangeActiveTextEditor(() => refresh()), 
+    // カーソル行が変われば書式行も変わる。SEU も現在行に対して出すため追従させる。
+    vscode.window.onDidChangeTextEditorSelection(event => {
+        if (event.textEditor === vscode.window.activeTextEditor) {
+            refresh();
         }
     }), vscode.workspace.onDidChangeConfiguration(event => {
         if (event.affectsConfiguration("rpgClSupport.ruler.defaultMode")) {
             if (!modePinned) {
                 mode = readDefaultMode();
             }
-            void updateForEditor(vscode.window.activeTextEditor, context);
+            refresh();
         }
     }));
-    void updateForEditor(vscode.window.activeTextEditor, context);
+    refresh();
+    void checkCodeLensFont(context);
+}
+/** ステータスバーと CodeLens を作り直す。 */
+function refresh() {
+    updateStatusBar();
+    const editor = vscode.window.activeTextEditor;
+    if (statusBarItem) {
+        if (editor && (0, fileScope_1.isInScopeDocument)(editor.document)) {
+            statusBarItem.show();
+        }
+        else {
+            statusBarItem.hide();
+        }
+    }
+    lensProvider?.refresh();
+}
+const FONT_PROMPT_KEY = "rpgClSupport.ruler.codeLensFontPrompted";
+/**
+ * CodeLens の字大はエディターと別枠で、既定は editor.fontSize の 90%。
+ * そのままだとルーラーの桁がコードと合わず、ルーラーの用をなさない。
+ * 設定を勝手に書き換えるのは筋が悪いので、一度だけ尋ねる。
+ */
+async function checkCodeLensFont(context) {
+    if (context.globalState.get(FONT_PROMPT_KEY)) {
+        return;
+    }
+    const editorConfig = vscode.workspace.getConfiguration("editor");
+    const fontSize = editorConfig.get("fontSize");
+    const lensFontSize = editorConfig.get("codeLensFontSize");
+    // 0 は「editor.fontSize の 90%」を意味する既定値。
+    if (!fontSize || lensFontSize === fontSize) {
+        return;
+    }
+    const answer = await vscode.window.showInformationMessage("ルーラーの桁をコードに合わせるには、CodeLens の字体・字大をエディターと揃える必要があります。設定しますか？", "揃える", "今はしない");
+    await context.globalState.update(FONT_PROMPT_KEY, true);
+    if (answer !== "揃える") {
+        return;
+    }
+    const fontFamily = editorConfig.get("fontFamily");
+    await editorConfig.update("codeLensFontSize", fontSize, vscode.ConfigurationTarget.Global);
+    if (fontFamily) {
+        await editorConfig.update("codeLensFontFamily", fontFamily, vscode.ConfigurationTarget.Global);
+    }
+    refresh();
 }
 function readDefaultMode() {
     const config = vscode.workspace.getConfiguration("rpgClSupport");
@@ -109,77 +157,74 @@ function readDefaultMode() {
     }
     return "full";
 }
-async function updateForEditor(editor, context) {
-    if (!tensDecoration || !fieldsDecoration || !statusBarItem) {
-        return;
+/**
+ * ルーラーを CodeLens として現在行の上に差し込む。
+ *
+ * CodeLens は行の上に実際の余白を確保するので、コードは隠れない。
+ * 出すのは常に 1 行だけ:
+ *   mode "ruler" … 目盛り（....+....1....+....2 …）
+ *   mode "full"  … SEU の書式行（.....CL0N01N02N03Factor1+++Opcde… ）
+ */
+class RulerCodeLensProvider {
+    context;
+    changed = new vscode.EventEmitter();
+    onDidChangeCodeLenses = this.changed.event;
+    constructor(context) {
+        this.context = context;
     }
-    const token = (updateToken += 1);
-    if (!editor || !(0, fileScope_1.isInScopeDocument)(editor.document)) {
-        clearAll(editor);
-        statusBarItem.hide();
-        return;
+    refresh() {
+        this.changed.fire();
     }
-    updateStatusBar();
-    statusBarItem.show();
-    if (mode === "off") {
-        clearAll(editor);
-        return;
+    async provideCodeLenses(document) {
+        if (mode === "off" || !(0, fileScope_1.isInScopeDocument)(document)) {
+            return [];
+        }
+        // ルーラーはカーソル行に対して出す。別のエディターで開かれている同じ
+        // 文書に出さないよう、アクティブなエディターの文書だけを見る。
+        const editor = vscode.window.activeTextEditor;
+        if (!editor || editor.document !== document) {
+            return [];
+        }
+        const line = editor.selection.active.line;
+        const lineText = document.lineAt(line).text;
+        const width = Math.max(MIN_WIDTH, lineText.length);
+        const row = mode === "full"
+            ? (await this.buildFormatRow(document, line, width)) ?? buildTensRow(width)
+            : buildTensRow(width);
+        const lens = new vscode.CodeLens(new vscode.Range(line, 0, line, 0), {
+            title: toFixedPitch(row),
+            command: "rpgClSupport.ruler.cycleMode",
+            tooltip: "クリックでルーラー表示を切替 (Off → Cols → Full)"
+        });
+        return [lens];
     }
-    const { document } = editor;
-    const line = editor.selection.active.line;
-    const lineText = document.lineAt(line).text;
-    const width = Math.max(MIN_WIDTH, lineText.length);
-    const range = new vscode.Range(line, 0, line, 0);
-    // 目盛り段: full 時は上段、ruler 時はコード寄りの 1 段上。
-    const tensTop = mode === "full" ? TOP_UPPER : TOP_LOWER;
-    setFloating(editor, tensDecoration, range, buildTensRow(width), tensTop);
-    if (mode !== "full") {
-        editor.setDecorations(fieldsDecoration, []);
-        return;
-    }
-    const key = classifySpec(document, line);
-    if (!key) {
-        editor.setDecorations(fieldsDecoration, []);
-        return;
-    }
-    const columns = await getColumnsForKey(context, key);
-    if (token !== updateToken) {
-        return; // 別の更新が走った
-    }
-    if (!columns || columns.length === 0) {
-        editor.setDecorations(fieldsDecoration, []);
-        return;
-    }
-    const labels = await getLabelsForKey(context, key);
-    if (token !== updateToken) {
-        return;
-    }
-    const fieldsRow = buildFieldsRow(columns, labels, width);
-    setFloating(editor, fieldsDecoration, range, fieldsRow, TOP_LOWER);
-}
-function clearAll(editor) {
-    if (!editor || !tensDecoration || !fieldsDecoration) {
-        return;
-    }
-    editor.setDecorations(tensDecoration, []);
-    editor.setDecorations(fieldsDecoration, []);
-}
-function setFloating(editor, type, range, contentText, top) {
-    const css = `none; position: absolute; top: ${top}; left: 0; white-space: pre; ` +
-        `z-index: 2; pointer-events: none; padding: 0 2px; border-radius: 2px;`;
-    editor.setDecorations(type, [
-        {
-            range,
-            renderOptions: {
-                before: {
-                    contentText,
-                    color: new vscode.ThemeColor("editorCodeLens.foreground"),
-                    backgroundColor: new vscode.ThemeColor("editor.background"),
-                    textDecoration: css
-                }
+    /** SEU の書式行。判定できなければ undefined（呼び側が目盛りに落とす）。 */
+    async buildFormatRow(document, line, width) {
+        const key = classifySpec(document, line);
+        if (!key) {
+            return undefined;
+        }
+        // RPG III は実機の書式行がそのまま使える（合成より正確）。
+        if ((0, dialect_1.resolveDialect)(document) === "rpg3" && specFamily(document) === "rpg") {
+            const template = await getSeuFormatLine(this.context, key, document, line);
+            if (template) {
+                return template.slice(0, width).padEnd(width, ".");
             }
         }
-    ]);
+        const columns = await getColumnsForKey(this.context, key);
+        if (!columns || columns.length === 0) {
+            return undefined;
+        }
+        const labels = await getLabelsForKey(this.context, key);
+        return buildSeuRow(columns, labels, width);
+    }
+}
+/**
+ * 桁を保つため、空白を改行なし空白(U+00A0)に置き換える。
+ * CodeLens の表題は HTML として描かれるので、素の空白は詰められてしまう。
+ */
+function toFixedPitch(row) {
+    return row.replace(/ /gu, "\u00a0");
 }
 function updateStatusBar() {
     if (!statusBarItem) {
@@ -210,31 +255,62 @@ function buildTensRow(width) {
     return chars.join("");
 }
 /**
- * 境界段の文字列を生成する。境界（0-indexed 昇順）で区切られた各区間の先頭に
- * 区切り '|' を置き、対応ラベルを左寄せ（区間幅で切り詰め）で描画する。
+ * SEU の書式行を欄の定義から組み立てる（RPG III 以外＝実機の書式行が無いもの）。
+ *
+ * SEU の書き方に合わせる:
+ *   欄名はその欄の幅まで '+' で埋める（Factor 1 → `Factor1+++`）
+ *   欄名の無いところは '.' で埋める
+ *   欄名中の空白は詰める（SEU も `Factor1` と書く）
  */
-function buildFieldsRow(columns, labels, width) {
-    const cells = new Array(width).fill(" ");
+function buildSeuRow(columns, labels, width) {
+    const cells = new Array(width).fill(".");
     for (let i = 0; i < columns.length; i += 1) {
         const start = columns[i];
         if (start < 0 || start >= width) {
             continue;
         }
-        const end = i + 1 < columns.length ? columns[i + 1] : width;
-        cells[start] = "|";
-        const label = labels[i] ?? "";
-        if (label.length > 0) {
-            const room = end - start - 1; // 区切り '|' の右側に書ける幅
-            const text = label.slice(0, Math.max(0, room));
-            for (let j = 0; j < text.length; j += 1) {
-                const pos = start + 1 + j;
-                if (pos < width) {
-                    cells[pos] = text.charAt(j);
-                }
-            }
+        const end = Math.min(i + 1 < columns.length ? columns[i + 1] : width, width);
+        const room = end - start;
+        if (room <= 0) {
+            continue;
+        }
+        const label = (labels[i] ?? "").replace(/\s+/gu, "");
+        if (label.length === 0) {
+            continue; // '.' のまま
+        }
+        const text = label.slice(0, room).padEnd(room, "+");
+        for (let j = 0; j < room; j += 1) {
+            cells[start + j] = text.charAt(j);
         }
     }
     return cells.join("");
+}
+let cachedSeuFormatLines;
+/**
+ * RPG III の SEU 書式行を返す。出所は実機（resources/navigation）。
+ *
+ * O 仕様書だけは実機もレコード行とフィールド行で書式行が別なので、行を見て選ぶ。
+ * レコード行は 7-14 桁にレコード名が入り、フィールド行はそこが空白になる。
+ */
+async function getSeuFormatLine(context, key, document, line) {
+    if (!cachedSeuFormatLines) {
+        try {
+            const uri = vscode.Uri.joinPath(context.extensionUri, "resources", "navigation", "rpg3-seu-format-lines.json");
+            const loaded = await vscode.workspace.openTextDocument(uri);
+            const parsed = JSON.parse(loaded.getText());
+            cachedSeuFormatLines = parsed.templates ?? {};
+        }
+        catch (error) {
+            console.log("[rpgClSupport] failed to load SEU format lines", String(error));
+            cachedSeuFormatLines = {};
+        }
+    }
+    if (key === "O-SPEC") {
+        const text = document.lineAt(line).text;
+        const hasRecordName = text.slice(6, 14).trim().length > 0;
+        return cachedSeuFormatLines[hasRecordName ? "O-SPEC-RECORD" : "O-SPEC-FIELD"];
+    }
+    return cachedSeuFormatLines[key];
 }
 function specFamily(document) {
     const languageId = document.languageId;
