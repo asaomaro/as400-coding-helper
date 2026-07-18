@@ -87,6 +87,13 @@ export const categories = {
       { name: 'C-SPEC-layout', topic: 'ssw_ibm_i_74/rzasd/calss.htm',   note: 'C: 従来型の演算仕様ステートメント（桁レイアウト）' },
       { name: 'O-SPEC-layout', topic: 'ssw_ibm_i_74/rzasd/outspc.htm',  note: 'O: 出力仕様ステートメント（桁レイアウト）' },
       { name: 'P-SPEC-layout', topic: 'ssw_ibm_i_74/rzasd/psent.htm',   note: 'P: 従来型のプロシージャー仕様書ステートメント（桁レイアウト）' },
+
+      // --- 第5弾: I/O 仕様書は「プログラム記述/外部記述」で桁の意味が変わる。
+      //     1つの定義では表せないため、レイアウトを個別に取得する。 ---
+      { name: 'I-SPEC-layout-program',  topic: 'ssw_ibm_i_74/rzasd/proglay.htm', note: 'I: プログラム記述ファイルのレイアウト（桁）' },
+      { name: 'I-SPEC-layout-external', topic: 'ssw_ibm_i_74/rzasd/extlay.htm',  note: 'I: 外部記述ファイルのレイアウト（桁）' },
+      { name: 'O-SPEC-layout-program',  topic: 'ssw_ibm_i_74/rzasd/prlay.htm',   note: 'O: プログラム記述ファイルのレイアウト（桁）' },
+      { name: 'O-SPEC-layout-external', topic: 'ssw_ibm_i_74/rzasd/exlay.htm',   note: 'O: 外部記述ファイルのレイアウト（桁）' },
     ],
   },
 
