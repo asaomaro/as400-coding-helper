@@ -1,0 +1,685 @@
+{
+  "keyword": "CPYF",
+  "description": "Copy File (CPYF)",
+  "parameters": [
+    {
+      "name": "FROMFILE",
+      "description": "From file",
+      "help": "From file (FROMFILE)\n\nSpecifies the database file or device file that contains the records to be copied. A database file can be a physical file or a logical file. A device file can be a diskette file or a tape file.\n\nThis is a required parameter.\n\nQualifier 1: From file\n\nQualifier 2: Library",
+      "inputType": "group",
+      "required": true,
+      "groupKind": "qualified",
+      "children": [
+        {
+          "name": "LIB",
+          "description": "Library",
+          "help": "指定できる特殊値: *LIBL, *CURLIB",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "*LIBL",
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          },
+          "placeholder": "*LIBL"
+        },
+        {
+          "name": "FROMFILE",
+          "description": "From file",
+          "inputType": "text",
+          "required": true,
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          }
+        }
+      ],
+      "positional": 1,
+      "basic": true
+    },
+    {
+      "name": "TOFILE",
+      "description": "To file",
+      "help": "To file (TOFILE)\n\nSpecifies the file that receives the copied records.\n\nThis is a required parameter.\n\nNote: A device file can be a diskette file, tape file, or printer file. However: (1) If the from-file and to-file are both diskette files, the to-file must be spooled (SPOOL(*YES) must be specified on the Create Diskette File (CRTDKTF), Change Diskette File (CHGDKTF), or Override Diskette File (OVRDKTF) command). (2) An externally described printer file cannot be specified.\n\nIf the device file is a print file or if TOFILE(*PRINT) is specified, shift-out and shift-in (SO-SI) characters are not added around the graphic data. OUTFMT(*HEX) can be specified to print the data in hexadecimal format.\n\nSingle values\n\nQualifier 1: To file\n\nQualifier 2: Library",
+      "inputType": "group",
+      "required": true,
+      "groupKind": "qualified",
+      "singleValues": [
+        "*PRINT"
+      ],
+      "children": [
+        {
+          "name": "TOFILE_LIB",
+          "description": "Library",
+          "help": "指定できる特殊値: *LIBL, *CURLIB",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "*LIBL",
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          },
+          "placeholder": "*LIBL"
+        },
+        {
+          "name": "TOFILE",
+          "description": "To file",
+          "inputType": "text",
+          "required": true,
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          },
+          "placeholder": "*PRINT"
+        }
+      ],
+      "positional": 2,
+      "basic": true
+    },
+    {
+      "name": "FROMMBR",
+      "description": "From member",
+      "help": "From member (FROMMBR)\n\nSpecifies the database file member, or the diskette file label or tape file label, in the from-file that is to be copied.\n\n指定できる特殊値: *FIRST, *ALL",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*FIRST",
+      "attributes": {
+        "characterSet": "upper",
+        "maxLength": 10
+      },
+      "positional": 3,
+      "placeholder": "*FIRST",
+      "basic": true
+    },
+    {
+      "name": "TOMBR",
+      "description": "To member or label",
+      "help": "To member or label (TOMBR)\n\nSpecifies the database file member name, or the diskette or tape file label identifier of the to-file member that receives the copied data records. If *PRINT is specified for the To file (TOFILE) parameter, either *FIRST or *FROMMBR must be specified on this parameter.\n\n指定できる特殊値: *FIRST, *FROMMBR, *ALL",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*FIRST",
+      "attributes": {
+        "characterSet": "upper",
+        "maxLength": 10
+      },
+      "positional": 4,
+      "placeholder": "*FIRST",
+      "basic": true
+    },
+    {
+      "name": "MBROPT",
+      "description": "Replace or add records",
+      "help": "Replace or add records (MBROPT)\n\nSpecifies whether the new records replace or are added to the existing records.\n\nNote: If the records are being copied to an existing physical file, this parameter must specify *ADD, *UPDADD, or *REPLACE. If the to-file does not exist but CRTFILE(*YES) is specified, the copy operation assumes MBROPT(*ADD) for all records copied to the file after it is created, regardless of the value specified on this parameter.\n\nIf *ADD or *UPDADD is specified and the from-file is empty (contains no records), the copy operation completes normally. If *REPLACE is specified and the from-file is empty, the copy operation ends abnormally.",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*NONE",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*NONE",
+          "value": "*NONE"
+        },
+        {
+          "label": "*ADD",
+          "value": "*ADD"
+        },
+        {
+          "label": "*REPLACE",
+          "value": "*REPLACE"
+        },
+        {
+          "label": "*UPDADD",
+          "value": "*UPDADD"
+        }
+      ],
+      "positional": 5,
+      "basic": true
+    },
+    {
+      "name": "CRTFILE",
+      "description": "Create file",
+      "help": "Create file (CRTFILE)\n\nSpecifies, when this command is used to copy from a physical file or a logical file, whether a physical file is created to receive the data if the specified to-file does not exist. If the to-file is a Distributed Data Management (DDM) file that identifies a remote file that does not exist, the to-file file is created on the target system.",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*NO",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*NO",
+          "value": "*NO"
+        },
+        {
+          "label": "*YES",
+          "value": "*YES"
+        }
+      ],
+      "positional": 6,
+      "basic": true
+    },
+    {
+      "name": "OUTFMT",
+      "description": "Print format",
+      "help": "Print format (OUTFMT)\n\nSpecifies whether records are printed in character format, or in both character and hexadecimal format. This parameter is used only when *PRINT is specified for the To file (TOFILE) parameter or *EXCLD or *COPIED is specified for the Which records to print (PRINT) parameter.",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*CHAR",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*CHAR",
+          "value": "*CHAR"
+        },
+        {
+          "label": "*HEX",
+          "value": "*HEX"
+        }
+      ],
+      "basic": true
+    },
+    {
+      "name": "PRINT",
+      "description": "Which records to print",
+      "help": "Which records to print (PRINT)\n\nSpecifies whether copied records, excluded records, or both, are printed.\n\nSingle values\n\nOther values (up to 3 repetitions)",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*NONE",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*NONE",
+          "value": "*NONE"
+        },
+        {
+          "label": "*EXCLD",
+          "value": "*EXCLD"
+        },
+        {
+          "label": "*COPIED",
+          "value": "*COPIED"
+        },
+        {
+          "label": "*ERROR",
+          "value": "*ERROR"
+        }
+      ],
+      "maxOccurrences": 3
+    },
+    {
+      "name": "RCDFMT",
+      "description": "Record format of logical file",
+      "help": "Record format of logical file (RCDFMT)\n\nSpecifies, for copying from a database file only, the name of the record format that is copied. If the from-file is not a logical or physical file, *ONLY is the only value allowed. A record format name is optional if the logical file has only a single record format, but either a format name or *ALL must be specified if the from-file has more than one record format.\n\n指定できる特殊値: *ONLY, *ALL",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*ONLY",
+      "attributes": {
+        "characterSet": "upper",
+        "maxLength": 10
+      },
+      "placeholder": "*ONLY"
+    },
+    {
+      "name": "FROMRCD",
+      "description": "Copy from record number",
+      "help": "Copy from record number (FROMRCD)\n\nSpecifies the record number from which to start the copy. A record number is not valid if a value other than *NONE is specified for the Copy from record key (FROMKEY) parameter or for the Copy to record key (TOKEY) parameter, and it is not allowed if the from-file is a keyed logical file.\n\n指定できる特殊値: *START",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*START",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "placeholder": "*START"
+    },
+    {
+      "name": "TORCD",
+      "description": "Copy to record number",
+      "help": "Copy to record number (TORCD)\n\nSpecifies the record number of the last record in the from-file (or each from-file member) that is copied. A record number is not valid if a value other than *NONE is specified for the Copy from record key (FROMKEY) parameter or the Copy to record key (TOKEY) parameter, if a value other than *END is specified for the Number of records to copy (NBRRCDS) parameter, or if the from-file is a keyed logical file.\n\n指定できる特殊値: *END",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*END",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "placeholder": "*END"
+    },
+    {
+      "name": "FROMKEY",
+      "description": "Copy from record key",
+      "help": "Copy from record key (FROMKEY)\n\nSpecifies, when a file with key fields is copied, the key value of the first record in the from-file (or each from-file member) is copied. This parameter is valid only for a from-file that is a keyed database file, and is not allowed if record number values are specified for the Copy from record number (FROMRCD) parameter or for the Copy to record number (TORCD) parameter.\n\nSingle values\n\nElement 1: Number of key fields\n\nThe list of values specified for element 2 is applied (in order) to corresponding fields in the from-file key. For character fields, the character strings are converted from the current job CCSID to the from-file field CCSID. For date, time, or timestamp fields, corresponding input values are converted to the format and separator form of the from-file field. For variable-length fields, only enter the character data, not the 2-byte length portion. When a DBCS graphic field is specified, the input string (DBCS data) must be enclosed between shiftout (SO) and shiftin (SI) characters. The SO-SI characters are removed from the input string and the remaining DBCS data is converted from the associated DBCS CCSID of the current job to the DBCS CCSID of the DBCS graphic field.\n\nElement 2: Key value",
+      "inputType": "group",
+      "required": false,
+      "groupKind": "elements",
+      "singleValues": [
+        "*NONE"
+      ],
+      "children": [
+        {
+          "name": "NBRKEYFLD",
+          "description": "Number of key fields",
+          "help": "指定できる特殊値: *BLDKEY",
+          "inputType": "text",
+          "required": false,
+          "attributes": {
+            "characterSet": "upper"
+          },
+          "defaultValue": "*NONE",
+          "placeholder": "*NONE"
+        },
+        {
+          "name": "KEYVAL",
+          "description": "Key value",
+          "inputType": "text",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "TOKEY",
+      "description": "Copy to record key",
+      "help": "Copy to record key (TOKEY)\n\nSpecifies, when a file with key fields is copied, the key value of the last record in the from-file (or each from-file member) that is copied. This parameter is valid only for a from-file that is a keyed database file, and it is not allowed if record number values are specified for the Copy from record number (FROMRCD) parameter or for the Copy to record number (TORCD) parameter, or if a number of records is specified for the Number of records to copy (NBRRCDS) parameter.\n\nSingle values\n\nElement 1: Number of key fields\n\nThe list of values specified for element 2 is applied (in order) to corresponding fields in the from-file key. For character fields, the character strings are converted from the current job CCSID to the from-file field CCSID. For date, time, or timestamp fields, corresponding input values are converted to the format and separator form of the from-file field. For variable-length fields, only enter the character data, not the 2-byte length portion. When a DBCS graphic field is specified, the input string (DBCS data) must be enclosed between shiftout (SO) and shiftin (SI) characters. The SO-SI characters are removed from the input string and the remaining DBCS data is converted from the associated DBCS CCSID of the current job to the DBCS CCSID of the DBCS graphic field.\n\nElement 2: Key value",
+      "inputType": "group",
+      "required": false,
+      "groupKind": "elements",
+      "singleValues": [
+        "*NONE"
+      ],
+      "children": [
+        {
+          "name": "TOKEY_NBRKEYFLD",
+          "description": "Number of key fields",
+          "help": "指定できる特殊値: *BLDKEY",
+          "inputType": "text",
+          "required": false,
+          "attributes": {
+            "characterSet": "upper"
+          },
+          "defaultValue": "*NONE",
+          "placeholder": "*NONE"
+        },
+        {
+          "name": "TOKEY_KEYVAL",
+          "description": "Key value",
+          "inputType": "text",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "NBRRCDS",
+      "description": "Number of records to copy",
+      "help": "Number of records to copy (NBRRCDS)\n\nSpecifies the number of records copied to the to-file.\n\n指定できる特殊値: *END",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*END",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "placeholder": "*END"
+    },
+    {
+      "name": "INCCHAR",
+      "description": "Include records by char test",
+      "help": "Include records by char test (INCCHAR)\n\nSpecifies that records are copied based on a comparison of a character string value and the data in some position of either a field in the record or the entire record.\n\nSingle values\n\nComparison values\n\nTo specify the comparison that determines which records are to be copied, four values must be entered. Either *RCD or the name of a field must be entered, followed by the three values that control the comparison: starting position, operator, and character string value. All records that satisfy the relationship are copied to the to-file.\n\nElement 1: Field\n\nElement 2: Character position\n\nElement 3: Relational operator\n\nSpecify the operator that indicates the relationship that must exist between the record or field and the specified character string.\n\nElement 4: Value",
+      "inputType": "group",
+      "required": false,
+      "groupKind": "elements",
+      "singleValues": [
+        "*NONE"
+      ],
+      "children": [
+        {
+          "name": "FIELD",
+          "description": "Field",
+          "help": "指定できる特殊値: *RCD, *FLD",
+          "inputType": "text",
+          "required": false,
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          },
+          "defaultValue": "*NONE",
+          "placeholder": "*NONE"
+        },
+        {
+          "name": "CHARPOS",
+          "description": "Character position",
+          "inputType": "number",
+          "required": false,
+          "attributes": {
+            "numericOnly": true
+          }
+        },
+        {
+          "name": "OPERATOR",
+          "description": "Relational operator",
+          "inputType": "dropdown",
+          "required": false,
+          "attributes": {
+            "characterSet": "upper"
+          },
+          "options": [
+            {
+              "label": "*EQ",
+              "value": "*EQ"
+            },
+            {
+              "label": "*GT",
+              "value": "*GT"
+            },
+            {
+              "label": "*LT",
+              "value": "*LT"
+            },
+            {
+              "label": "*NE",
+              "value": "*NE"
+            },
+            {
+              "label": "*GE",
+              "value": "*GE"
+            },
+            {
+              "label": "*NL",
+              "value": "*NL"
+            },
+            {
+              "label": "*LE",
+              "value": "*LE"
+            },
+            {
+              "label": "*NG",
+              "value": "*NG"
+            },
+            {
+              "label": "*CT",
+              "value": "*CT"
+            }
+          ]
+        },
+        {
+          "name": "VALUE",
+          "description": "Value",
+          "inputType": "text",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "INCREL",
+      "description": "Include records by field test",
+      "help": "Include records by field test (INCREL)\n\nSpecifies that records are copied based on whether certain fields in the record contain data that satisfies specified relationships. This parameter is not valid for a copy from all record formats of a logical file with more than one format.\n\nSingle values\n\nRelationship values\n\nTo specify the conditions under which records are copied, a set of values is specified for each condition. Up to 50 sets of realtionship values can be specified. Each set must contain exactly four values:\n\nElement 1: Relationship\n\nElement 2: Field\n\nElement 3: Relational operator\n\nSpecify the operator that indicates the relationship which must exist between the field in the record and the specified field value.\n\nElement 4: Value",
+      "inputType": "group",
+      "required": false,
+      "groupKind": "elements",
+      "singleValues": [
+        "*NONE"
+      ],
+      "children": [
+        {
+          "name": "RELATION",
+          "description": "Relationship",
+          "inputType": "dropdown",
+          "required": false,
+          "attributes": {
+            "characterSet": "upper"
+          },
+          "options": [
+            {
+              "label": "*NONE",
+              "value": "*NONE"
+            },
+            {
+              "label": "*IF",
+              "value": "*IF"
+            },
+            {
+              "label": "*AND",
+              "value": "*AND"
+            },
+            {
+              "label": "*OR",
+              "value": "*OR"
+            }
+          ],
+          "defaultValue": "*NONE",
+          "placeholder": "*NONE"
+        },
+        {
+          "name": "INCREL_FIELD",
+          "description": "Field",
+          "inputType": "text",
+          "required": false,
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          }
+        },
+        {
+          "name": "INCREL_OPERATOR",
+          "description": "Relational operator",
+          "inputType": "dropdown",
+          "required": false,
+          "attributes": {
+            "characterSet": "upper"
+          },
+          "options": [
+            {
+              "label": "*EQ",
+              "value": "*EQ"
+            },
+            {
+              "label": "*GT",
+              "value": "*GT"
+            },
+            {
+              "label": "*LT",
+              "value": "*LT"
+            },
+            {
+              "label": "*NE",
+              "value": "*NE"
+            },
+            {
+              "label": "*GE",
+              "value": "*GE"
+            },
+            {
+              "label": "*NL",
+              "value": "*NL"
+            },
+            {
+              "label": "*LE",
+              "value": "*LE"
+            },
+            {
+              "label": "*NG",
+              "value": "*NG"
+            }
+          ]
+        },
+        {
+          "name": "INCREL_VALUE",
+          "description": "Value",
+          "help": "指定できる特殊値: *NULL",
+          "inputType": "text",
+          "required": false,
+          "attributes": {
+            "characterSet": "upper"
+          },
+          "placeholder": "*NULL"
+        }
+      ],
+      "maxOccurrences": 50
+    },
+    {
+      "name": "FMTOPT",
+      "description": "Record format field mapping",
+      "help": "Record format field mapping (FMTOPT)\n\nSpecifies, when a physical or logical from-file is copied to a physical to-file, what field-level record format processing (if any) is done. If the from-file and to-file are database files with different file types (one is *SRC and the other is *DATA), *CVTSRC must be specified.\n\nSingle values\n\nOther values (up to 2 repetitions)\n\nIf *MAP is specified, *DROP can also be specified. Mapped fields may have different starting positions in the from-file and to-file record formats.\n\nIf *MAP is specified and a valid conversion is defined between the from-file field CCSID and the to-file field CCSID, the character data is converted to the to-file field CCSID. However, if either the from-file field CCSID or the to-file field CCSID is 65535, the character data is not converted.\n\n*MAP allows for the conversion of date/time data and the copying of null values.\n\nNote: If *CVTFLOAT or *NULLFLAGS is specified and the input file is externally described, the input file external description will not be used in doing the mapping of the copied data. If *CVTFLOAT or *NULLFLAGS is specified, any other value is ignored (unless both are specified). TOFILE must be an externally-described physical data file. The following parameter values cannot be specified when *CVTFLOAT or *NULLFLAGS is specified:\n\n*** ATTENTION ***\n\n*CVTFLOAT and *NULLFLAGS must only be used for conversion of data to i5/OS format, and they must be used correctly to avoid possible data corruption.\n\n*****************",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*NONE",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*NONE",
+          "value": "*NONE"
+        },
+        {
+          "label": "*NOCHK",
+          "value": "*NOCHK"
+        },
+        {
+          "label": "*CVTSRC",
+          "value": "*CVTSRC"
+        },
+        {
+          "label": "*MAP",
+          "value": "*MAP"
+        },
+        {
+          "label": "*DROP",
+          "value": "*DROP"
+        },
+        {
+          "label": "*CVTFLOAT",
+          "value": "*CVTFLOAT"
+        },
+        {
+          "label": "*NULLFLAGS",
+          "value": "*NULLFLAGS"
+        }
+      ],
+      "maxOccurrences": 2
+    },
+    {
+      "name": "SRCOPT",
+      "description": "Source update options",
+      "help": "Source update options (SRCOPT)\n\nSpecifies, only for copying to a source physical file, whether new sequence numbers are inserted in the sequence number fields and whether the date fields are set to zero. Both *SEQNBR and *DATE can be specified.\n\nSingle values\n\nOther values (up to 2 repetitions)",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*SAME",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*SAME",
+          "value": "*SAME"
+        },
+        {
+          "label": "*SEQNBR",
+          "value": "*SEQNBR"
+        },
+        {
+          "label": "*DATE",
+          "value": "*DATE"
+        }
+      ],
+      "maxOccurrences": 2
+    },
+    {
+      "name": "SRCSEQ",
+      "description": "Source sequence numbering",
+      "help": "Source sequence numbering (SRCSEQ)\n\nSpecifies, only when *SEQNBR is specified for the Source update options (SRCOPT) parameter, the sequence number that is given to the first record copied to the to-file, and what value is added to renumber all other records that are copied.\n\nElement 1: Starting sequence number\n\nElement 2: Increment number",
+      "inputType": "group",
+      "required": false,
+      "groupKind": "elements",
+      "children": [
+        {
+          "name": "STARTNBR",
+          "description": "Starting sequence number",
+          "inputType": "number",
+          "required": false,
+          "defaultValue": "1.00",
+          "attributes": {
+            "numericOnly": true
+          },
+          "placeholder": "1.00"
+        },
+        {
+          "name": "INCRNBR",
+          "description": "Increment number",
+          "inputType": "number",
+          "required": false,
+          "defaultValue": "1.00",
+          "attributes": {
+            "numericOnly": true
+          },
+          "placeholder": "1.00"
+        }
+      ]
+    },
+    {
+      "name": "ERRLVL",
+      "description": "Errors allowed",
+      "help": "Errors allowed (ERRLVL)\n\nSpecifies the maximum number of recoverable read or write errors for the file that are tolerated during the copy operation for a single database from-file member or tape from-file label identifier.\n\n指定できる特殊値: *NOMAX",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "0",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "placeholder": "0"
+    },
+    {
+      "name": "COMPRESS",
+      "description": "Compress out deleted records",
+      "help": "Compress out deleted records (COMPRESS)\n\nSpecifies whether the to-file contains a compressed form of the from-file. Compression occurs when deleted records in the from-file are not copied to the to-file. *NO is used to copy all records when the from-file and to-file are both physical files. If from-file is delete-capable and the to-file is not delete-capable, then *YES must be specified.",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*YES",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*YES",
+          "value": "*YES"
+        },
+        {
+          "label": "*NO",
+          "value": "*NO"
+        }
+      ]
+    }
+  ],
+  "examples": [
+    {
+      "code": "CPYF FROMFILE(PERSONNEL/PAYROLL) TOFILE(TESTPAY/PAYROLL) MBROPT(*ADD) CRTFILE(*YES) ERRLVL(10)"
+    },
+    {
+      "code": "CPYF FROMFILE(PERSONNEL/EMP1) TOFILE(PERSONNEL/VACLEFT) FROMMBR(VAC) MBROPT(*REPLACE) FROMKEY(1 X'0008872F') TOKEY(1 X'0810199F') INCREL((*IF VAC *GT 5.0)) FMTOPT(*MAP *DROP)"
+    },
+    {
+      "code": "CPYF FROMFILE(MYLIB/DATAFILE) TOFILE(QIDU/QTXTSRC) FROMMBR(A1) TOMBR(*FROMMBR) MBROPT(*REPLACE) FMTOPT(*CVTSRC)"
+    },
+    {
+      "code": "CPYF FROMFILE(DEPTS/SALES) TOFILE(DEPTS/YTDSALES) FROMMBR(TOTSALES) TOMBR(MARCH) RCDFMT(AA) NBRRCDS(5) MBROPT(*REPLACE)"
+    },
+    {
+      "code": "CPYF FROMFILE(QDKT) TOFILE(QGPL/QCLSRC) FROMMBR(PAY*) TOMBR(*FROMMBR) MBROPT(*REPLACE) SRCOPT(*SEQNBR) SRCSEQ(1 .25)"
+    },
+    {
+      "code": "CPYF FROMFILE(TEMPFILE) TOFILE(*PRINT) FROMMBR(EMP1) FROMKEY(1 448762) NBRRCDS(20) OUTFMT(*HEX)"
+    },
+    {
+      "code": "CPYF FROMFILE(PERSONNEL/PAYROLL) TOFILE(DISK1) FROMMBR(VAC1) INCCHAR(NAME 1 *CT SMITH) INCREL((*IF VAC *GT 10.5)(*AND HOLIDAYS *EQ 0))"
+    },
+    {
+      "code": "CPYF FROMFILE(PERSONNEL/PAYROLL) TOFILE(DISK1) FROMMBR(*ALL) TOMBR(*FROMMBR)"
+    }
+  ],
+  "source": {
+    "url": "https://www.ibm.com/docs/en/ssw_ibm_i_74/cl/cpyf.htm",
+    "version": "IBM i 7.4"
+  }
+}

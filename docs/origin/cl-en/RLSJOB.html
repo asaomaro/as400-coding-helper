@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="ja"><head><meta charset="utf-8"><title>Release Job  (RLSJOB)</title></head>
+<body>
+<main role="main"><article role="article" aria-labelledby="rlsjob__title__1"> 
+<h1 class="topictitle1" id="rlsjob__title__1">Release Job  (RLSJOB)</h1><div id="lastModifiedDate"><span>Last Updated</span>: 2026-07-13</div>
+
+<div class="body">
+<p>
+<strong>Release Job  (RLSJOB)
+</strong></p>
+
+<p>
+<strong>Where allowed to run:  
+</strong>All environments (*ALL)
+
+</p>
+
+<p>
+<strong>Threadsafe:  </strong>No
+</p>
+
+<p><a href="#rlsjob__parameters">Parameters</a></p>
+
+<p><a href="#rlsjob__examples">Examples</a></p>
+
+<p><a href="#rlsjob__errormsgs">Error messages</a></p>
+
+<div class="div" id="rlsjob__rlsjob">
+<p>
+The Release Job (RLSJOB) command makes a job eligible for processing either after that job is held from processing by the Hold Job (HLDJOB) command, or if the job was submitted to the system as a held job by the Batch Job (BCHJOB) command or Submit Job (SBMJOB) command.  The job being released can be on the job queue, on an output queue, or active in a subsystem (competing for system resources) when it is held.  Releasing a job causes all threads within the job to be released.  Spooled output files being held because *YES is specified for the 
+<strong>Hold spooled files
+</strong> (SPLFILE) parameter in the Hold Job (HLDJOB) command are also released.  Only those spooled output files which are on output queues in the library name space of the thread issuing this command (RLSJOB) will be released.  If the 
+<strong>Spooled file action (SPLFACN)
+</strong> job attribute is *DETACH and the job is ended while the spooled files are held, the spooled files cannot be released using the RLSJOB command.  To release spooled files after the job has been removed from the system, use the Release Spooled File (RLSSPLF) command.
+
+</p>
+
+<p>
+<strong>Restrictions:
+</strong> The issuer of the command must be running under a user profile which is the same as the job user identity of the job being released, or the issuer of the command must be running under a user profile which has job control (*JOBCTL) special authority.
+
+</p>
+
+<p>
+The job user identity is the name of the user profile by which a job is known to other jobs. It is described in more detail in the Work Management book.
+
+</p>
+
+</div>
+<section class="section" role="region" aria-labelledby="rlsjob__parameters__title__1" id="rlsjob__parameters"><h2 class="sectiontitle" id="rlsjob__parameters__title__1">Parameters</h2>
+
+
+<div class="tablenoborder"><div class="cds--data-table-container"><table summary="" class="defaultstyle cds--data-table"><colgroup><col><col><col><col></colgroup><thead>
+<tr>
+<th id="rlsjob__parameters__entry__1"><div class="cds--table-header-label">
+Keyword
+</div></th>
+
+<th id="rlsjob__parameters__entry__2"><div class="cds--table-header-label">
+Description
+</div></th>
+
+<th id="rlsjob__parameters__entry__3"><div class="cds--table-header-label">
+Choices
+</div></th>
+
+<th id="rlsjob__parameters__entry__4"><div class="cds--table-header-label">
+Notes
+</div></th>
+
+</tr>
+
+</thead>
+<tbody>
+<tr>
+<td rowspan="4" headers="rlsjob__parameters__entry__1 "><a href="#rlsjob__job"><strong>JOB
+</strong></a></td>
+
+<td headers="rlsjob__parameters__entry__2 ">Job name
+</td>
+
+<td headers="rlsjob__parameters__entry__3 "><em>Qualified job name
+</em></td>
+
+<td rowspan="4" headers="rlsjob__parameters__entry__4 ">Required, Positional 1
+</td>
+
+</tr>
+
+<tr>
+<td headers="rlsjob__parameters__entry__2 ">Qualifier 1: Job name
+</td>
+
+<td headers="rlsjob__parameters__entry__3 "><em>Name
+</em></td>
+
+</tr>
+
+<tr>
+<td headers="rlsjob__parameters__entry__2 ">Qualifier 2: User
+</td>
+
+<td headers="rlsjob__parameters__entry__3 "><em>Name
+</em></td>
+
+</tr>
+
+<tr>
+<td headers="rlsjob__parameters__entry__2 ">Qualifier 3: Number
+</td>
+
+<td headers="rlsjob__parameters__entry__3 ">000000-999999
+</td>
+
+</tr>
+
+<tr>
+<td headers="rlsjob__parameters__entry__1 "><a href="#rlsjob__dupjobopt"><strong>DUPJOBOPT
+</strong></a></td>
+
+<td headers="rlsjob__parameters__entry__2 ">Duplicate job option
+</td>
+
+<td headers="rlsjob__parameters__entry__3 "><strong><u>*SELECT
+</u></strong>, *MSG
+</td>
+
+<td headers="rlsjob__parameters__entry__4 ">Optional
+</td>
+
+</tr>
+
+</tbody>
+</table></div>
+</div>
+
+<div class="div" id="rlsjob__job">
+<p>
+<strong>Job name (JOB)
+</strong></p>
+
+<p>
+Specifies the name of the job being released.
+
+</p>
+
+<p>
+This is a required parameter.
+
+</p>
+
+<p>
+<strong>Qualifier 1: Job name
+</strong>
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><em>name
+</em></strong></dt>
+
+<dd class="dlentry">
+Specify the name of the job being released.
+</dd>
+
+</dl>
+
+<p>
+<strong>Qualifier 2: User
+</strong>
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><em>name
+</em></strong></dt>
+
+<dd class="dlentry">
+Specify the user name that identifies the user profile under which the job is started.
+</dd>
+
+</dl>
+
+<p>
+<strong>Qualifier 3: Number
+</strong>
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><em>000000-999999
+</em></strong></dt>
+
+<dd class="dlentry">
+Specify the system-assigned job number.
+</dd>
+
+</dl>
+
+<p>
+<strong>Note:     
+</strong>If no user name or job number is specified, all jobs currently in the system are searched for the job name.  If more than one occurrence of the specified name is found, a qualified job name must be provided either explicitly or through the selection display.  Refer to the 
+<strong>Duplicate job option (DUPJOBOPT)
+</strong> parameter for more information.
+
+</p>
+
+</div>
+<div class="div" id="rlsjob__dupjobopt">
+<p>
+<strong>Duplicate job option (DUPJOBOPT)
+</strong></p>
+
+<p>
+Specifies the action taken when duplicate jobs are found by this command.
+
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><u>*SELECT
+</u></strong></dt>
+
+<dd class="dlentry">
+The selection display is shown when duplicate jobs are found during an interactive session.  Otherwise, a message is issued.
+</dd>
+
+<dt class="dlterm">
+<strong>*MSG
+</strong></dt>
+
+<dd class="dlentry">
+A message is issued when duplicate jobs are found.
+</dd>
+
+</dl>
+
+</div>
+</section>
+
+<section class="section" role="region" aria-labelledby="rlsjob__examples__title__1" id="rlsjob__examples"><h2 class="sectiontitle" id="rlsjob__examples__title__1">Examples</h2>
+
+<p>
+<strong>Example 1: Releasing a Job for Processing
+</strong>
+</p>
+
+<div class="p">
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>
+RLSJOB   JOB(PAYROLL)
+
+</code></pre></div><div class="docs--copy-btn"></div></div>
+
+</div>
+
+<p>
+This command releases the job PAYROLL for processing. If the corresponding HLDJOB command had specified SPLFILE(*YES), any spooled files for job PAYROLL are also released.
+
+</p>
+
+<p>
+<strong>Example 2: Releasing a Job for Processing
+</strong>
+</p>
+
+<div class="p">
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>
+RLSJOB   JOB(DEPTXYZ/PAYROLL)
+
+</code></pre></div><div class="docs--copy-btn"></div></div>
+
+</div>
+
+<p>
+This command releases job name PAYROLL that was submitted by a user through the user profile DEPTXYZ and later held. The qualified form of the job name is used when jobs with duplicate names exist in the system.
+
+</p>
+
+</section>
+
+<section class="section" role="region" aria-labelledby="rlsjob__errormsgs__title__1" id="rlsjob__errormsgs"><h2 class="sectiontitle" id="rlsjob__errormsgs__title__1">Error messages</h2>
+
+<p>
+<strong><u>*ESCAPE Messages
+</u></strong>
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong>CPF1317
+</strong></dt>
+
+<dd class="dlentry">
+No response from subsystem for job &amp;3/&amp;2/&amp;1.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF1321
+</strong></dt>
+
+<dd class="dlentry">
+Job &amp;1 user &amp;2 job number &amp;3 not found.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF1332
+</strong></dt>
+
+<dd class="dlentry">
+End of duplicate job names.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF1340
+</strong></dt>
+
+<dd class="dlentry">
+Job control function not performed.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF1341
+</strong></dt>
+
+<dd class="dlentry">
+Reader or writer &amp;3/&amp;2/&amp;1 not allowed as job name.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF1343
+</strong></dt>
+
+<dd class="dlentry">
+Job &amp;3/&amp;2/&amp;1 not valid job type for function.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF1344
+</strong></dt>
+
+<dd class="dlentry">
+Not authorized to control job &amp;3/&amp;2/&amp;1.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF1349
+</strong></dt>
+
+<dd class="dlentry">
+Job &amp;3/&amp;2/&amp;1 not released, the job is not held.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF134C
+</strong></dt>
+
+<dd class="dlentry">
+Job &amp;3/&amp;2/&amp;1 not released, CPUTIME limit exceeded.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF134D
+</strong></dt>
+
+<dd class="dlentry">
+Job &amp;3/&amp;2/&amp;1 not released, MAXTMPSTG limit exceeded.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF1351
+</strong></dt>
+
+<dd class="dlentry">
+Function check occurred in subsystem for job &amp;3/&amp;2/&amp;1.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF1352
+</strong></dt>
+
+<dd class="dlentry">
+Function not done.  &amp;3/&amp;2/&amp;1 in transition condition.
+</dd>
+
+</dl>
+
+</section>
+
+</div>
+
+</article></main>
+</body></html>

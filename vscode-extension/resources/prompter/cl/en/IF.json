@@ -1,0 +1,59 @@
+{
+  "keyword": "IF",
+  "description": "If (IF)",
+  "parameters": [
+    {
+      "name": "COND",
+      "description": "Condition",
+      "help": "Condition (COND)\n\nSpecifies the logical expression that is evaluated to determine a condition in the program and what is done next. Refer to \"Logical Expressions\" in the CL topic collection in the Programming category in the IBM i Information Center at http://www.ibm.com/systems/i/infocenter/ for a description of logical expressions. Note that variables, constants, and the %SUBSTRING, %SWITCH, and %BINARY built-in functions can be used within the expression.\n\nTo test if a pointer has a null value, the CL pointer variable can be compared to the special value *NULL if the CL source is being compiled with the Create CL Module (CRTCLMOD) or Create Bound CL Program (CRTBNDCL) command. If the CL source is being compiled with the Create CL Program (CRTCLPGM) command, compare the CL pointer variable to another CL pointer variable that was declared with ADDRESS(*NULL) and has not been changed.\n\nThis is a required parameter.",
+      "inputType": "text",
+      "required": true,
+      "positional": 1,
+      "placeholder": "&A *EQ &B",
+      "basic": true
+    },
+    {
+      "name": "THEN",
+      "description": "Command",
+      "help": "Command (THEN)\n\nSpecifies the command or group of commands (in a Do group) that are processed if the result of evaluating the logical expression is true. After the command or Do group is processed, control is passed to the next command after the ELSE command associated with this IF command. If the result is true, the ELSE command associated with the IF command is not processed. If the command specified in this parameter is a DO command, all commands within the Do group are considered to be the command specified by the parameter.\n\nIf the command specified by the THEN keyword is not coded on the same line when the keyword is coded, the THEN keyword must be immediately followed (on the same line) either by the left parenthesis or by a plus sign (+) or a minus sign (-) to show continuation. (A blank cannot immediately follow any keyword.) The command and the right parenthesis can then be coded on the next line. For example:\n\nIf any part of the command specified by the THEN parameter continues on the next line, a continuation character (+ or -) must be specified.\n\nIf a DO command is specified, only the DO command (not the commands specified within the Do group) is within the parentheses. For example:\n\nIf no command is specified for the THEN parameter (a null THEN) and the ELSE command immediately follows it, the ELSE is processed if the IF expression is false and it is skipped if the expression is true.\n\nAny CL command can be specified for the THEN parameter, except the following commands:\n\nThe command can be another IF, unless there are already ten levels of nested IF and ELSE commands.",
+      "inputType": "text",
+      "required": false,
+      "positional": 2,
+      "placeholder": "GOTO X",
+      "basic": true
+    }
+  ],
+  "examples": [
+    {
+      "code": "IF &TESTSW DO Group A (group of CL commands) . . ENDDO ELSE DO Group B (group of CL commands) . . ENDDO Group C (continued CL commands) . ."
+    },
+    {
+      "code": "IF COND(&A *EQ &B) THEN( GOTO C)"
+    },
+    {
+      "code": "IF COND(&A *EQ &B) THEN(DO) CMD1 CMD2 . . ENDDO"
+    },
+    {
+      "code": "IF COND(&A *EQ &B) THEN(GOTO X) IF (&A *EQ &B) THEN(GOTO X) IF (&A *EQ &B) (GOTO X) IF COND(&A *EQ &B) THEN(GOTO X)"
+    },
+    {
+      "code": "IF COND(&TESTSW) THEN(CHGVAR VAR(&A) VALUE(23))"
+    },
+    {
+      "code": "IF COND((&ALPHA *EQ &BETA) *AND *NOT &GAMMA) THEN(RETURN)"
+    },
+    {
+      "code": "IF &TEST THEN(DO) CHGVAR &A (&A + 1) GOTO X ENDDO ELSE DO CHGVAR &B (&B + 1) CALL EXTPGM (&B) ENDDO"
+    },
+    {
+      "code": "IF (&A *EQ YES) DO CHGVAR &B 1 CHGVAR &C 'Z' ENDDO"
+    },
+    {
+      "code": "IF %SWITCH(10XXXX10) THEN(GOTO X)"
+    }
+  ],
+  "source": {
+    "url": "https://www.ibm.com/docs/en/ssw_ibm_i_74/cl/if.htm",
+    "version": "IBM i 7.4"
+  }
+}

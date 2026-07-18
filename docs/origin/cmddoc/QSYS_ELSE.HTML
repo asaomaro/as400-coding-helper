@@ -1,0 +1,157 @@
+
+  <!doctype html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+  <html>
+<head><META http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>Else  (ELSE)</title>
+</head>
+<body bgcolor="white">
+<a name="ELSE.Top_Of_Page"></a>
+<h2>Else  (ELSE)</h2>
+<table width="100%">
+<tr>
+<td align="left" valign="top"><b>Where allowed to run:  </b>
+<ul><li>Batch program (*BPGM)</li>
+<li>Interactive program (*IPGM)</li>
+</ul><b>Threadsafe:  </b>Yes
+</td>
+<td align="right" valign="top">
+<a href="#ELSE.PARAMETERS.TABLE">Parameters</a><br>
+<a href="#ELSE.COMMAND.EXAMPLES">Examples</a><br>
+<a href="#ELSE.ERROR.MESSAGES">Error messages</a></td>
+</tr>
+</table>
+
+<div> <a name="ELSE"></a>
+<p>The Else (ELSE) command is used with an IF command to specify another command that is to be conditionally processed.  The ELSE command is processed only if the result of evaluating the logical expression on the preceding IF command is false.  If the result is true, the ELSE command and commands associated with it are not processed.
+</p>
+<p>The ELSE command can specify a CL command, or a Do group, to be processed for the false condition.
+</p>
+<p>An ELSE command does not have to follow each IF command, but each ELSE command that is coded must have an associated IF command preceding it.  If nested levels of IF commands are used, a given ELSE is always matched with the innermost IF command that has not already been matched with another ELSE command.  Although the ELSE command is optional, coding all of the matching ELSE commands makes it easier to see where all of the nesting levels start and end.
+</p>
+<p><b>Restrictions:</b> The ELSE command is valid only in a CL program or ILE CL procedure.  It must have an associated IF command preceding it.
+</p>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#ELSE.Top_Of_Page">Top</a></td></tr>
+</table>
+<hr width="100%" size="2">
+
+<div>
+<h3><a name="ELSE.PARAMETERS.TABLE">Parameters</a></h3>
+<table cellspacing="0" cellpadding="4" border="1"><tr>
+<th width="10%" align="left" valign="bottom" bgcolor="aqua">Keyword</th>
+<th width="15%" align="left" valign="bottom" bgcolor="aqua">Description</th>
+<th width="30%" align="left" valign="bottom" bgcolor="aqua">Choices</th>
+<th width="10%" align="left" valign="bottom" bgcolor="aqua">Notes</th>
+</tr>
+<tr>
+<td valign="top"><a href="#ELSE.CMD"><b>CMD</b></a></td>
+<td valign="top">Command</td>
+<td valign="top"><i>Command string</i></td>
+<td valign="top">Optional, Positional 1</td>
+</tr>
+</table>
+
+<table width="100%">
+<tr><td align="right"><a href="#ELSE.Top_Of_Page">Top</a></td></tr>
+</table>
+</div>
+<div> <a name="ELSE.CMD"></a>
+<h3>Command (CMD)</h3>
+<p>Specifies the command or commands (in a Do group) to be processed if the result of evaluating the expression on the corresponding IF command is false.
+</p>
+<p>If the command specified in this parameter is a DO command, all of the commands specified within the Do group are considered to be part of the command specified by the parameter.  If no command is specified, no action is taken for a false condition.
+</p>
+<p>If the command specified by the CMD keyword is not coded on the same line as the keyword, the left parenthesis following CMD must be coded on the same line, followed by a + or - to show continuation.  The command and the right parenthesis can then be coded on the next line.  For example:
+</p>
+<p>
+<pre>
+ELSE  CMD(  +
+    GOTO C)
+</pre>
+</p>
+<p>If any part of the command continues on the next line, a continuation character (+ or -) must be specified.
+</p>
+<p>If a DO command is specified, only the DO command (not the commands specified as part of the Do group) is placed in parentheses.  For example:
+</p>
+<p>
+<pre>
+ELSE  CMD(DO)
+    CMD1
+    CMD2
+      .
+      .
+      .
+    ENDDO
+</pre>
+</p>
+<p>The following commands, although valid in a CL program or ILE CL procedure, cannot be specified on the ELSE command:
+</p>
+<ul>
+<li>ENDDO (End Do)
+</li>
+<li>MONMSG (Monitor Message)
+</li>
+<li>PGM (Program)
+</li>
+<li>ENDPGM (End Program)
+</li>
+<li>DCL (Declare CL Variable)
+</li>
+<li>DCLF (Declare File)
+</li>
+<li>another ELSE command
+</li>
+<li>WHEN, OTHERWISE, ENDSELECT
+</li>
+</ul>
+<p>In addition, the MONMSG command cannot be specified as the next command after the ELSE command.
+</p>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#ELSE.Top_Of_Page">Top</a></td></tr>
+</table>
+<hr width="100%" size="2">
+<div><h3><a name="ELSE.COMMAND.EXAMPLES">Examples</a> </h3>
+<p><b>Example 1: Using ELSE and IF Commands</b>
+</p>
+<p>
+<pre>
+IF   (&amp;A *GT &amp;B)  THEN(CHGVAR  VAR(&amp;A)  VALUE(&amp;B))
+ELSE   (CHGVAR &amp;B &amp;A)
+</pre>
+</p>
+<p>If the value of &amp;A is greater than the value of &amp;B, &amp;A is set equal to &amp;B. If &amp;A is less than or equal to &amp;B, the test result is false. The CHGVAR command on the ELSE command is processed, and the value of &amp;B is set to the same value as &amp;A. (Refer to the CHGVAR (Change Variable) command for the description of the command and its parameters.)
+</p>
+<p><b>Example 2: Nested Levels of Commands</b>
+</p>
+<p>
+<pre>
+IF   COND(&amp;A *EQ &amp;B)  +
+THEN(IF   (&amp;C *EQ &amp;D)  +
+THEN(IF   (&amp;C *EQ &amp;F)   THEN(DO)))
+CMD1
+CMD2
+ :
+ENDDO
+ELSE   CMDX
+ELSE   CMDY
+ELSE   DO
+</pre>
+</p>
+<p>This example shows the use of nested levels of IF commands where an ELSE command is associated with each IF. The use of the ELSE commands makes the nested levels of IF commands easier to identify.
+</p>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#ELSE.Top_Of_Page">Top</a></td></tr>
+</table>
+<hr width="100%" size="2">
+<div><h3><a name="ELSE.ERROR.MESSAGES">Error messages</a> </h3>
+<p>None
+</p>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#ELSE.Top_Of_Page">Top</a></td></tr>
+</table>
+</body>
+</html>

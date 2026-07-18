@@ -1,0 +1,439 @@
+
+  <!doctype html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+  <html>
+<head><META http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>Declare CL Variable  (DCL)</title>
+</head>
+<body bgcolor="white">
+<a name="DCL.Top_Of_Page"></a>
+<h2>Declare CL Variable  (DCL)</h2>
+<table width="100%">
+<tr>
+<td align="left" valign="top"><b>Where allowed to run:  </b>
+<ul><li>Batch program (*BPGM)</li>
+<li>Interactive program (*IPGM)</li>
+</ul><b>Threadsafe:  </b>Yes
+</td>
+<td align="right" valign="top">
+<a href="#DCL.PARAMETERS.TABLE">Parameters</a><br>
+<a href="#DCL.COMMAND.EXAMPLES">Examples</a><br>
+<a href="#DCL.ERROR.MESSAGES">Error messages</a></td>
+</tr>
+</table>
+
+<div> <a name="DCL"></a>
+<p>The Declare CL Variable (DCL) command defines the Control Language (CL) program variables that are used in a CL program or ILE CL procedure.  CL variables are used to store and update data and to receive parameters from another program on a call.  CL variables are known by name only within the program that declares them.  They cannot be used outside a CL program or ILE CL procedure except when they are referred to by some commands (such as the DSPPGMVAR command) used for debugging programs.  However, the value in the variable can be passed to another program as a parameter.  If a variable is declared, but not referred to by another command in a CL program or ILE CL procedure, the variable is not included in the program when it is compiled.  Each DCL command defines the attributes of one CL variable and declares its name in the program in which it is used.
+</p>
+<p>Each CL variable in a program must be identified by one of the two declare commands.  The Declare File (DCLF) command declares CL variables for display device files and database files.  The DCL command declares all other CL variables.
+</p>
+<p><b>Restrictions:</b> The DCL command is valid only within a CL program or ILE CL procedure.  All declare commands (DCL, COPYRIGHT, DCLF, and DCLPRCOPT) must follow the PGM (Program) command and must precede all other commands in the program.  The four types of declare commands can be intermixed in any order.
+</p>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#DCL.Top_Of_Page">Top</a></td></tr>
+</table>
+<hr width="100%" size="2">
+
+<div>
+<h3><a name="DCL.PARAMETERS.TABLE">Parameters</a></h3>
+<table cellspacing="0" cellpadding="4" border="1"><tr>
+<th width="10%" align="left" valign="bottom" bgcolor="aqua">Keyword</th>
+<th width="15%" align="left" valign="bottom" bgcolor="aqua">Description</th>
+<th width="30%" align="left" valign="bottom" bgcolor="aqua">Choices</th>
+<th width="10%" align="left" valign="bottom" bgcolor="aqua">Notes</th>
+</tr>
+<tr>
+<td valign="top"><a href="#DCL.VAR"><b>VAR</b></a></td>
+<td valign="top">CL variable name</td>
+<td valign="top"><i>CL variable name</i></td>
+<td valign="top">Required, Positional 1</td>
+</tr>
+<tr>
+<td valign="top"><a href="#DCL.TYPE"><b>TYPE</b></a></td>
+<td valign="top">Type</td>
+<td valign="top">*DEC, *CHAR, *LGL, *INT, *UINT, *PTR</td>
+<td valign="top">Required, Positional 2</td>
+</tr>
+<tr>
+<td valign="top"><a href="#DCL.STG"><b>STG</b></a></td>
+<td valign="top">Storage</td>
+<td valign="top"><b><u>*AUTO</u></b>, *BASED, *DEFINED</td>
+<td valign="top">Optional</td>
+</tr>
+<tr>
+<td valign="top" rowspan="3"><a href="#DCL.LEN"><b>LEN</b></a></td>
+<td valign="top">Length of variable</td>
+<td valign="top"><i>Element list</i></td>
+<td valign="top" rowspan="3">Optional, Positional 3</td>
+</tr>
+<tr>
+<td valign="top">Element 1: Length</td>
+<td valign="top">
+<i>Integer</i></td>
+</tr>
+<tr>
+<td valign="top">Element 2: Decimal positions</td>
+<td valign="top">
+<i>Integer</i></td>
+</tr>
+<tr>
+<td valign="top"><a href="#DCL.VALUE"><b>VALUE</b></a></td>
+<td valign="top">Initial value</td>
+<td valign="top"><i>Character value</i></td>
+<td valign="top">Optional, Positional 4</td>
+</tr>
+<tr>
+<td valign="top"><a href="#DCL.BASPTR"><b>BASPTR</b></a></td>
+<td valign="top">Basing pointer variable</td>
+<td valign="top"><i>CL variable name</i></td>
+<td valign="top">Optional</td>
+</tr>
+<tr>
+<td valign="top" rowspan="3"><a href="#DCL.DEFVAR"><b>DEFVAR</b></a></td>
+<td valign="top">Defined on variable</td>
+<td valign="top"><i>Element list</i></td>
+<td valign="top" rowspan="3">Optional</td>
+</tr>
+<tr>
+<td valign="top">Element 1: CL variable name</td>
+<td valign="top">
+<i>CL variable name</i></td>
+</tr>
+<tr>
+<td valign="top">Element 2: Position</td>
+<td valign="top">
+1-32767, <b><u>1</u></b></td>
+</tr>
+<tr>
+<td valign="top" rowspan="3"><a href="#DCL.ADDRESS"><b>ADDRESS</b></a></td>
+<td valign="top">Address</td>
+<td valign="top">Single values: *NULL<br>Other values: <i>Element list</i></td>
+<td valign="top" rowspan="3">Optional</td>
+</tr>
+<tr>
+<td valign="top">Element 1: CL variable name</td>
+<td valign="top">
+<i>CL variable name</i></td>
+</tr>
+<tr>
+<td valign="top">Element 2: Offset</td>
+<td valign="top">
+0-32766, <b><u>0</u></b></td>
+</tr>
+</table>
+
+<table width="100%">
+<tr><td align="right"><a href="#DCL.Top_Of_Page">Top</a></td></tr>
+</table>
+</div>
+<div> <a name="DCL.VAR"></a>
+<h3>CL variable name (VAR)</h3>
+<p>Specifies the CL variable to be declared in the CL program or ILE CL procedure.  The variable exists only within the program in which it is defined.  It can be passed as a parameter on a call to another program, in which case it can be processed by the called program.  The name must start with an ampersand (&amp;).
+</p>
+<p>This is a required parameter.
+</p>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#DCL.Top_Of_Page">Top</a></td></tr>
+</table>
+<div> <a name="DCL.TYPE"></a>
+<h3>Type (TYPE)</h3>
+<p>Specifies the type of value contained in the CL variable to be declared.  The value for this parameter cannot be specified by a CL variable.
+</p>
+<p>This is a required parameter.
+</p>
+<dl>
+<dt><b>*DEC</b></dt>
+<dd>A decimal variable that contains a packed decimal value.
+</dd>
+<dt><b>*CHAR</b></dt>
+<dd>A character variable that contains a character string value.
+</dd>
+<dt><b>*LGL</b></dt>
+<dd>A logical variable that contains a logical value of either '1' or '0'.
+</dd>
+<dt><b>*INT</b></dt>
+<dd>An integer variable that contains a signed binary value.
+</dd>
+<dt><b>*UINT</b></dt>
+<dd>An integer variable that contains a unsigned binary value.
+</dd>
+<dt><b>*PTR</b></dt>
+<dd>A pointer variable that contains an address.
+</dd>
+</dl>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#DCL.Top_Of_Page">Top</a></td></tr>
+</table>
+<div> <a name="DCL.STG"></a>
+<h3>Storage (STG)</h3>
+<p>Specifies the storage type of the variable.  The value for this parameter cannot be specified by a CL variable.
+</p>
+<dl>
+<dt><b><u>*AUTO</u></b></dt>
+<dd>The storage for this variable is allocated in automatic storage.
+</dd>
+<dt><b>*BASED</b></dt>
+<dd>The storage for this variable is based on the pointer variable specified on the <b>Basing pointer variable (BASPTR)</b> parameter.  A based CL variable cannot be used unless the basing pointer variable has been set to a valid address.
+</dd>
+<dt><b>*DEFINED</b></dt>
+<dd>The storage for this variable is provided by the CL variable specified on the <b>Defined on variable (DEFVAR)</b> parameter.
+</dd>
+</dl>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#DCL.Top_Of_Page">Top</a></td></tr>
+</table>
+<div> <a name="DCL.LEN"></a>
+<h3>Length of variable (LEN)</h3>
+<p>Specifies the length of the CL variable to be declared.  If the variable is a decimal value, the number of decimal digits to the right of the decimal point can be optionally specified.  The value for this LEN parameter cannot be specified by a CL variable.
+</p>
+<p>
+<b>Note:     </b>If *PTR is specified for the TYPE parameter, you cannot specify a value for this parameter.  Pointers have a fixed length of 16 bytes.
+</p>
+<p><b>Element 1: Length</b>
+</p>
+<dl>
+<dt><b><i>length</i></b></dt>
+<dd>For character or integer CL variables, specify the number of bytes for the CL variable.  For decimal CL variables, specify the maximum number of digits for the CL variable.  The length cannot be greater than the maximum for this type of variable.  The length must be 2, 4, or 8 for integer CL variables.  Only ILE CL procedures allow the length of 8 for integer CL variables.
+</dd>
+</dl>
+<p><b>Element 2: Decimal positions</b>
+</p>
+<dl>
+<dt><b><i>decimal-positions</i></b></dt>
+<dd>This element is valid only for <i>decimal</i> variables.  The length of the value in the variable includes the number of decimal positions in the value.  The maximum length of the decimal value is 15 digits, including the digits to the right of the decimal point.  Up to nine decimal positions can be specified.  If nine decimal positions are specified, the value to the <i>left</i> of the decimal point can never be greater than 999,999 because only 6 of the 15 digits are left for the integer value.
+<p>If a length (in digits) is specified for a decimal variable and the number of decimal positions is not specified, 0 decimal positions is assumed.
+</p>
+</dd>
+</dl>
+<p>The maximum lengths for each of the five types are:
+</p>
+<ul>
+<li>Decimal -- 15 digits, 9 decimal positions
+</li>
+<li>Character -- 32767 bytes
+<p>
+<b>Note:     </b>The initial value (specified for the VALUE parameter) of a CL variable can be no greater than 5000 characters.
+</p>
+</li>
+<li>Logical -- 1 byte
+</li>
+<li>Integer -- 8 bytes for ILE CL, 4 bytes for OPM CL
+</li>
+<li>Unsigned integer -- 8 bytes for ILE CL, 4 bytes for OPM CL
+</li>
+</ul>
+<p>The default lengths for each of the five types are:
+</p>
+<ul>
+<li>Decimal -- 15 digits, 5 decimal positions
+</li>
+<li>Character -- 32 bytes
+</li>
+<li>Logical -- 1 byte
+</li>
+<li>Integer -- 4 bytes
+</li>
+<li>Unsigned integer -- 4 bytes
+</li>
+</ul>
+<p>
+<b>Note:     </b>For decimal and character types, the default length is the same as the length of the initial value, if one is specified in the VALUE parameter.
+</p>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#DCL.Top_Of_Page">Top</a></td></tr>
+</table>
+<div> <a name="DCL.VALUE"></a>
+<h3>Initial value (VALUE)</h3>
+<p>Specifies the initial value that is assigned to the CL variable when it is declared in the program.  The value must be of the type specified by the TYPE parameter.  If no value is specified, a character variable is set to blanks, a decimal, integer, or unsigned integer variable is set to a value of zero, and a logical variable is set to '0'.  The value for the VALUE parameter cannot be specified by a CL variable.
+</p>
+<p>The VALUE parameter may not be specified for *PTR CL variables, or CL variables declared with *DEFINED or *BASED specified for the <b>Storage (STG)</b> parameter.
+</p>
+<p>If the name of the declared variable is specified for the PARM parameter of the PGM command in the same program in which the variable is declared, an initial value <i>cannot</i> be specified for the variable.  In that case, the variable receives its value from the calling program.
+</p>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#DCL.Top_Of_Page">Top</a></td></tr>
+</table>
+<div> <a name="DCL.BASPTR"></a>
+<h3>Basing pointer variable (BASPTR)</h3>
+<p>Specifies the basing pointer for a CL variable declared with storage of *BASED.
+</p>
+<p>
+<b>Note:     </b>This parameter must be specified if *BASED is specified for the <b>Storage (STG)</b> parameter.
+</p>
+<dl>
+<dt><b><i>CL-variable-name</i></b></dt>
+<dd>Specify the name of a CL variable declared as TYPE(*PTR) which will serve as the basing pointer for the based CL variable being declared.  This pointer must be initialized to a value before the based variable can be used.
+<p>The name must start with an ampersand (&amp;).
+</p>
+</dd>
+</dl>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#DCL.Top_Of_Page">Top</a></td></tr>
+</table>
+<div> <a name="DCL.DEFVAR"></a>
+<h3>Defined on (DEFVAR)</h3>
+<p>Specifies the CL variable that the variable being declared is to be defined on.
+</p>
+<p>
+<b>Note:     </b>This parameter must be specified if *DEFINED is specified for the <b>Storage (STG)</b> parameter.
+</p>
+<p>
+<b>Note:     </b>A variable declared as STG(*DEFINED) cannot extend beyond the last byte of of the CL variable that it is defined on.
+</p>
+<p><b>Element 1: CL variable name</b>
+</p>
+<dl>
+<dt><b><i>CL-variable-name</i></b></dt>
+<dd>Specify the name of the CL variable that the variable being declared is defined on.
+</dd>
+</dl>
+<p><b>Element 2: Starting position</b>
+</p>
+<dl>
+<dt><b><u>1</u></b></dt>
+<dd>The variable being declared starts at the beginning of the defined-on variable.
+</dd>
+<dt><b><i>1-32767</i></b></dt>
+<dd>Specify the starting position of the variable being declared from the beginning of the defined-on variable.
+</dd>
+</dl>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#DCL.Top_Of_Page">Top</a></td></tr>
+</table>
+<div> <a name="DCL.ADDRESS"></a>
+<h3>Address (ADDRESS)</h3>
+<p>Specifies the initial address for a CL variable declared with *PTR as the TYPE value.
+</p>
+<p>
+<b>Note:     </b>A value cannot be specified for this parameter unless the variable being declared is a pointer variable and *AUTO is specified for the STG parameter.
+</p>
+<p><b>Single values</b>
+</p>
+<dl>
+<dt><b>*NULL</b></dt>
+<dd>The pointer will be initialized with a null value.
+</dd>
+</dl>
+<p><b>Element 1: CL variable name</b>
+</p>
+<dl>
+<dt><b><i>CL-variable-name</i></b></dt>
+<dd>Specifies the name of a CL variable which is to be the initial address for the pointer variable.
+<p>The name must start with an ampersand (&amp;).
+</p>
+</dd>
+</dl>
+<p><b>Element 2: Offset</b>
+</p>
+<dl>
+<dt><b><u>0</u></b></dt>
+<dd>The pointer variable is set to the first byte of the CL variable being addressed.
+</dd>
+<dt><b><i>0-32766</i></b></dt>
+<dd>Specify the number of bytes from the beginning of the variable being address that the pointer is to be set.
+</dd>
+</dl>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#DCL.Top_Of_Page">Top</a></td></tr>
+</table>
+<hr width="100%" size="2">
+<div><h3><a name="DCL.COMMAND.EXAMPLES">Examples</a> </h3>
+<p><b>Example 1: Specifying the CL Variable Length</b>
+</p>
+<p>
+<pre>
+DCL   &amp;ABLE  *DEC  LEN(5 2)
+</pre>
+</p>
+<p>This command declares a CL variable named &amp;ABLE that contains a decimal value. The value can never be greater than 999.99 because LEN specifies up to 5 digits, of which two are to the right of the decimal point. Because the VALUE parameter was not specified, and it is a numeric value, &amp;ABLE is set to a value of zero (000.00).
+</p>
+<p><b>Example 2: Specifying a Logical Value</b>
+</p>
+<p>
+<pre>
+DCL   &amp;SWITCH   *LGL
+</pre>
+</p>
+<p>This command declares a CL variable named &amp;SWITCH to contain a logical value. Because the type parameter specifies logical, the variable is one character long and it is set to '0'.
+</p>
+<p><b>Example 3: Specifying Initial Value of CL Variable</b>
+</p>
+<p>
+<pre>
+DCL   &amp;FILNAM   *CHAR   VALUE(FILEA)
+</pre>
+</p>
+<p>This command declares a CL variable named &amp;FILNAM whose value is FILEA. Because the value contains 5 characters and the LEN parameter was not specified, the length of the variable is also 5 characters.
+</p>
+<p><b>Example 4: Specifying Defined CL Variables</b>
+</p>
+<p>
+<pre>
+DCL   &amp;QUALOBJ  *CHAR  LEN(20)
+DCL   &amp;OBJ  *CHAR  LEN(10)  STG(*DEFINED)  DEFVAR(&amp;QUALOBJ 1)
+DCL   &amp;LIB  *CHAR  LEN(10)  STG(*DEFINED)  DEFVAR(&amp;QUALOBJ 11)
+</pre>
+</p>
+<p>The first DCL command declares a 20-character variable in the program's automatic storage.  The second DCL command declares a variable named &amp;OBJ which refers to the first 10 characters of the &amp;QUALOBJ variable.  The last DCL command declares a variable named &amp;LIB which can be used to reference the last 10 characters of the &amp;QUALOBJ variable.
+</p>
+<p><b>Example 5: Specifying Pointer CL Variables</b>
+</p>
+<p>
+<pre>
+DCL   &amp;CHAR  *CHAR  LEN(10)
+DCL   &amp;PTR   *PTR   ADDRESS(&amp;CHAR)
+</pre>
+</p>
+<p>The second DCL command declares a pointer variable which is initialized to point to the &amp;CHAR variable in the program's automatic storage.
+</p>
+<p><b>Example 6: Specifying Based CL Variables</b>
+</p>
+<p>
+<pre>
+DCL   &amp;PTR   *PTR
+DCL   &amp;CHAR  *CHAR  LEN(10)  STG(*BASED)  BASPTR(&amp;PTR)
+</pre>
+</p>
+<p>The second DCL command declares a character variable which is found at the location addressed by the &amp;PTR variable.  Before the &amp;CHAR variable can be used, the &amp;PTR variable must be initialized to a valid address by using the %ADDRESS built-in function.
+</p>
+<p><b>Example 7: Specifying Defined Pointer CL Variables</b>
+</p>
+<p>
+<pre>
+DCL   &amp;CHAR  *CHAR  LEN(48)
+DCL   &amp;PTR   *PTR  STG(*DEFINED)  DEFVAR(&amp;CHAR 17)
+</pre>
+</p>
+<p>The second DCL command declares a pointer variable in bytes 17 through 32 of the variable &amp;CHAR.
+</p>
+<p><b>Example 8: Declaring a Pointer Initialized to a Null Value</b>
+</p>
+<p>
+<pre>
+DCL   &amp;PAYREC   *PTR  STG(*AUTO)  ADDRESS(*NULL)
+</pre>
+</p>
+<p>The pointer variable &amp;PAYREC is declared with an initial address value of null.
+</p>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#DCL.Top_Of_Page">Top</a></td></tr>
+</table>
+<hr width="100%" size="2">
+<div><h3><a name="DCL.ERROR.MESSAGES">Error messages</a> </h3>
+<p>None
+</p>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#DCL.Top_Of_Page">Top</a></td></tr>
+</table>
+</body>
+</html>

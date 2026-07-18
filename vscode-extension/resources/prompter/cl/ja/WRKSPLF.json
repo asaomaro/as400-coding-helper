@@ -1,0 +1,440 @@
+{
+  "keyword": "WRKSPLF",
+  "description": "スプール・ファイル処理 (WRKSPLF)",
+  "help": "スプール・ファイル処理(WRKSPLF)コマンドは，システム上のすべてのスプール・ファイルのリストまたはその中から選択したリストを表示します。表示されている任意の項目またはすべての項目を変更，保留，削除，表示，または解放するよう，選択することができます。\n\nパフォーマンスに関する考慮事項： スプール・ファイルのリストを表示するために必要な時間の長さは，使用される選択基準およびリスト中のスプール・ファイルの数によって異なります。多数のスプール・ファイルがあるシステムでは，システムのスプール・ファイルの選択したリストを表示することが必要な場合があります。WRKSPLFに関する詳細なパフォーマンス情報については，IBM i Information Center(http://www.ibm.com/systems/i/infocenter/)の「Spool Performance Considerations Experience Report」を参照してください。",
+  "parameters": [
+    {
+      "name": "SELECT",
+      "description": "ファイル選択",
+      "help": "表示するために選択するファイルのグループを指定します。次の定位置値を使用して，ファイルを選択することができます。すなわち，ファイルを作成したユーザー，ファイルが待機している装置，指定された用紙タイプ，ファイルと関連したユーザー・データ・タグ，ファイルが入っている補助記憶域プール，またはスプール・ファイル名です。各値と一致するファイルだけが選択されます。",
+      "inputType": "group",
+      "required": false,
+      "groupKind": "elements",
+      "children": [
+        {
+          "name": "USER",
+          "description": "ユーザー",
+          "help": "*CURRENT: このコマンドを実行中のユーザーによって作成されたファイルだけが選択されます。\n*ALL: すべてのユーザーによって作成されたファイルが選択されます。\n選択された基準を満たすすべてのユーザーによって作成されたファイル。総称名は1つまたは複数の文字の後にアスタリスク(*)を付けた文字ストリング（例えば，ABC*など）です。アスタリスクは任意の有効な文字で置き換えられます。名前にアスタリスクが指定されていない場合には，システムはその名前を完全なユーザー名であるとみなします。\nユーザー名を指定してください。そのユーザー名によって作成されたファイルだけが選択されます。",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "*CURRENT",
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          },
+          "placeholder": "*CURRENT"
+        },
+        {
+          "name": "DEV",
+          "description": "印刷装置",
+          "help": "*ALL: 装置作成またはユーザー作成の出力待ち行列上にあるファイルが選択されます。\n*OUTQ: ユーザー作成の出力待ち行列のすべてのファイルが選択されます。ユーザー作成の出力待ち行列とは，装置によって自動的に作成されない出力待ち行列です。ユーザー作成の出力待ち行列は通常は装置と同じ名前にはなりません。同じ名前の場合には，それはライブラリーQUSRSYS内にはありません。\n装置名を指定してください。その装置の装置作成の出力待ち行列上のファイルだけが選択されます。装置作成の出力待ち行列は装置と同じ名前を持ち，QUSRSYSライブラリーにあります。この出力待ち行列が既に存在していなければ，装置の作成時にシステムによって自動的に作成されます。装置作成の出力待ち行列を削除することはできません。",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "*ALL",
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          },
+          "placeholder": "*ALL"
+        },
+        {
+          "name": "FORMTYPE",
+          "description": "用紙タイプ",
+          "help": "*ALL: すべての用紙タイプのファイルが選択されます。\n*STD: 標準用紙タイプを指定するファイルだけが選択されます。\nファイルを選択する用紙タイプを指定してください。",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "*ALL",
+          "attributes": {
+            "characterSet": "upper"
+          },
+          "placeholder": "*ALL"
+        },
+        {
+          "name": "USRDTA",
+          "description": "ユーザー・データ",
+          "help": "*ALL: ユーザー・データ・タグが指定されているファイルが選択されます。\n基準と一致するユーザー・データ・タグを持つファイルが選択されます。総称ユーザー・データ・タグは1つ以上の文字の後にアスタリスク(*)を付けた文字ストリング（例えば，ABC*など）です。アスタリスクは任意の有効な文字で置き換えられます。ストリングの中間にアスタリスクを組み込んだ場合（例えば，AB*C*など）は，それが比較ストリングの一部として取り扱われます。\nファイルを選択するためのユーザー・データ・タグを指定してください。",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "*ALL",
+          "attributes": {
+            "characterSet": "upper"
+          },
+          "placeholder": "*ALL"
+        },
+        {
+          "name": "ASP",
+          "description": "ASP",
+          "help": "*ALL: 補助記憶域プール装置(ASPDEV)パラメーターに指定された通りにすべてのファイルが選択されます。\n*ASPDEV: 補助記憶域プール装置(ASPDEV)パラメーターに指定されたファイルが選択されます。\n選択するファイルの補助記憶域プール(ASP)を指定してください。",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "*ALL",
+          "attributes": {
+            "characterSet": "upper"
+          },
+          "placeholder": "*ALL"
+        },
+        {
+          "name": "SPLFNAME",
+          "description": "スプール・ファイル",
+          "help": "*ALL: 任意の名前を持つファイルが選択されます。\n総称名と一致する名前を持つすべてのスプール・ファイルが選択されます。総称名は1つ以上の文字の後にアスタリスク(*)を付けた文字ストリング（例えば，ABC*など）です。アスタリスクは任意の有効な文字で置き換えられます。名前にアスタリスクが指定されていない場合には，システムはその名前を完全なスプール・ファイル名であるとみなします。\n選択するスプール・ファイルの名前を指定してください。",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "*ALL",
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          },
+          "placeholder": "*ALL"
+        }
+      ],
+      "positional": 1,
+      "basic": true
+    },
+    {
+      "name": "JOB",
+      "description": "ジョブ名",
+      "help": "選択するスプール・ファイルを作成したジョブの名前を指定します。",
+      "inputType": "group",
+      "required": false,
+      "groupKind": "qualified",
+      "singleValues": [
+        "*ALL"
+      ],
+      "children": [
+        {
+          "name": "JOB_Q3",
+          "description": "番号",
+          "help": "*ALL: 指定されたジョブ名およびユーザー名と一致するジョブが作成したすべてのスプール・ファイルが組み込まれます。\nジョブ名およびユーザー名をさらに修飾するジョブ番号を指定してください。",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "*ALL",
+          "attributes": {
+            "characterSet": "upper"
+          },
+          "placeholder": "*ALL"
+        },
+        {
+          "name": "JOB_Q2",
+          "description": "ユーザー",
+          "help": "*ALL: 指定されたジョブ名と一致するジョブが作成したスプール・ファイルが組み込まれます。\n指定された総称ユーザー名を持つジョブが作成したスプール・ファイルが組み込まれます。\n指定されたユーザー名を持つジョブが作成したスプール・ファイルが組み込まれます。",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "*ALL",
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          },
+          "placeholder": "*ALL"
+        },
+        {
+          "name": "JOB",
+          "description": "ジョブ名",
+          "help": "指定された総称名を持つジョブが作成したスプール・ファイルが組み込まれます。総称名は1つ以上の文字の後にアスタリスク(*)を付けた文字ストリング（例えば，ABC*)です。アスタリスクは任意の有効な文字で置き換えられます。総称ジョブ名は，総称接頭部で始まるジョブ名を持つすべてのジョブを指定します。\n指定された名前を持つジョブが作成したスプール・ファイルが組み込まれます。",
+          "inputType": "text",
+          "required": false,
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          },
+          "defaultValue": "*ALL",
+          "placeholder": "*ALL"
+        }
+      ],
+      "basic": true
+    },
+    {
+      "name": "PERIOD",
+      "description": "時間枠",
+      "help": "表示されるスプール・ファイルを選択するための時間の期間を指定します。これは，スプール・ファイルの作成日および時刻です。このパラメーターには，それぞれが2つの要素を持つ2つの要素リストが含まれています。\n\n次の1つを使用して，その時またはそれ以後にスプール・ファイルが作成された開始時刻を指定します。指定した時刻と日付より前に作成されたスプール・ファイルは表示されません。\n\n次の1つを使用して，その時またはそれ以後にスプール・ファイルが作成された開始日を指定します。指定した日付より前に作成されたスプール・ファイルは表示されません。\n\n次の1つを使用して，それ以前にスプール・ファイルが作成された終了時刻を指定します。\n\n次の1つを使用して，その時またはそれ以前にスプール・ファイルが作成された終了日を指定します。",
+      "inputType": "group",
+      "required": false,
+      "groupKind": "elements",
+      "children": [
+        {
+          "name": "PERIOD_E1",
+          "description": "開始時刻および日付",
+          "inputType": "text",
+          "required": false
+        },
+        {
+          "name": "PERIOD_PERIOD_E1",
+          "description": "開始時刻",
+          "inputType": "dropdown",
+          "required": false,
+          "defaultValue": "*AVAIL",
+          "attributes": {
+            "characterSet": "upper"
+          },
+          "options": [
+            {
+              "label": "*AVAIL",
+              "value": "*AVAIL"
+            }
+          ]
+        },
+        {
+          "name": "PERIOD_E2",
+          "description": "開始日付",
+          "help": "開始日を指定してください。日付は，ジョブ値DATFMTによって指定された形式で入力する必要があり，区切り記号を使用する場合には，ジョブ値DATSEPによって指定された日付区切り記号でなければなりません。",
+          "inputType": "dropdown",
+          "required": false,
+          "defaultValue": "*BEGIN",
+          "attributes": {
+            "characterSet": "upper"
+          },
+          "options": [
+            {
+              "label": "*BEGIN",
+              "value": "*BEGIN",
+              "help": "他の選択基準を満たすすべてのスプール・ファイルが表示されます。開始日として*BEGINを指定した場合には，*AVAIL以外の開始時刻値は無視されます。"
+            },
+            {
+              "label": "*CURRENT",
+              "value": "*CURRENT",
+              "help": "現在の日付が開始日として使用されます。"
+            }
+          ]
+        },
+        {
+          "name": "PERIOD_PERIOD_E2",
+          "description": "終了時刻および日付",
+          "help": "*BEGIN: 他の選択基準を満たすすべてのスプール・ファイルが表示されます。開始日として*BEGINを指定した場合には，*AVAIL以外の開始時刻値は無視されます。\n*CURRENT: 現在の日付が開始日として使用されます。\n開始日を指定してください。日付は，ジョブ値DATFMTによって指定された形式で入力する必要があり，区切り記号を使用する場合には，ジョブ値DATSEPによって指定された日付区切り記号でなければなりません。",
+          "inputType": "text",
+          "required": false
+        },
+        {
+          "name": "PERIOD_PERIOD_E12",
+          "description": "終了時刻",
+          "inputType": "dropdown",
+          "required": false,
+          "defaultValue": "*AVAIL",
+          "attributes": {
+            "characterSet": "upper"
+          },
+          "options": [
+            {
+              "label": "*AVAIL",
+              "value": "*AVAIL"
+            }
+          ]
+        },
+        {
+          "name": "PERIOD_PERIOD_E22",
+          "description": "終了日付",
+          "help": "*BEGIN: 他の選択基準を満たすすべてのスプール・ファイルが表示されます。開始日として*BEGINを指定した場合には，*AVAIL以外の開始時刻値は無視されます。\n*CURRENT: 現在の日付が開始日として使用されます。\n開始日を指定してください。日付は，ジョブ値DATFMTによって指定された形式で入力する必要があり，区切り記号を使用する場合には，ジョブ値DATSEPによって指定された日付区切り記号でなければなりません。",
+          "inputType": "dropdown",
+          "required": false,
+          "defaultValue": "*END",
+          "attributes": {
+            "characterSet": "upper"
+          },
+          "options": [
+            {
+              "label": "*END",
+              "value": "*END"
+            }
+          ]
+        }
+      ],
+      "basic": true
+    },
+    {
+      "name": "ASPDEV",
+      "description": "ASP装置",
+      "help": "選択されるスプール・ファイルが入っている補助記憶域プール装置を指定します。このパラメーターが有効なのは，選択パラメーターのASP番号(ASP)要素が*ALLまたは*ASPDEVである場合だけです。\n\n*: 現在スレッドのライブラリー名スペースの一部となっているASPで見つかったファイルが選択されます。これには，システムASP (ASP 1),すべての定義済み基本ユーザーASP (ASP 2から32)が含まれ，また，スレッドにASPグループがある場合には，スレッドのASPグループ内の1次および2次ASPが含まれます。\n*SYSBAS: システムASP (ASP 1)およびすべての定義済みユーザーASP (ASP 2から32)で見つかったファイルが選択されます。\n*CURASPGRP: スレッドのASPグループの1次および2次ASPで見つかったファイルが選択されます。スレッドと関連したASPグループがない場合には，エラーが出されます。\n補助記憶域プール装置記述の名前を指定してください。指定された1次または2次ASPで見つかったファイルが選択されます。スレッドのASPグループ内にある1次または2次ASPのみを指定することができます。スレッドと関連したASPグループがない場合には，エラーが出されます。",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*",
+      "attributes": {
+        "characterSet": "upper",
+        "maxLength": 10
+      },
+      "placeholder": "*",
+      "basic": true
+    },
+    {
+      "name": "OUTPUT",
+      "description": "出力",
+      "help": "出力を表示装置に表示するかまたは印刷するかを指定します。出力が表示される場合には，出力はこのコマンドを入力したワークステーションに送られます。",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*",
+          "value": "*",
+          "help": "出力は表示されるか（対話式ジョブによって要求された場合），あるいは印刷されます（バッチ・ジョブによって要求された場合）。"
+        },
+        {
+          "label": "*PRINT",
+          "value": "*PRINT",
+          "help": "出力は印刷されます。"
+        }
+      ],
+      "basic": true
+    },
+    {
+      "name": "DSPFMT",
+      "description": "画面様式",
+      "help": "このコマンドの実行の結果の表示で使用する様式および用語を指定します。",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*INLENV",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*INLENV",
+          "value": "*INLENV",
+          "help": "使用される様式および用語は，ユーザー・プロファイルで指定されたSPCENV（特殊環境）値によって決定されます。SPCENV値が*S36の場合には，システム/36の用語が使用されます。他のすべての値では，このシステムの用語が使用されることになります。"
+        },
+        {
+          "label": "*S36FMT",
+          "value": "*S36FMT",
+          "help": "システム/36の用語を使用して情報を表示します。 注: *S36FMTの表示様式を使用している場合には，1次または2次補助記憶域プールに存在しているスプール・ファイルは表示されません。"
+        },
+        {
+          "label": "*NORMAL",
+          "value": "*NORMAL",
+          "help": "情報を表示するためにこのシステムの用語が使用されます。"
+        }
+      ],
+      "positional": 2
+    },
+    {
+      "name": "ASTLVL",
+      "description": "援助レベル",
+      "help": "使用するユーザー・インターフェースを指定します。",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*PRV",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*PRV",
+          "value": "*PRV",
+          "help": "前に使用したユーザー・インターフェースが表示されます。"
+        },
+        {
+          "label": "*USRPRF",
+          "value": "*USRPRF",
+          "help": "ユーザー・プロファイルの 援助レベル (ASTLVL) パラメーターに指定されたユーザー・インターフェースが使用されます。"
+        },
+        {
+          "label": "*BASIC",
+          "value": "*BASIC",
+          "help": "操作援助機能ユーザー・インターフェースが使用されます。"
+        },
+        {
+          "label": "*INTERMED",
+          "value": "*INTERMED",
+          "help": "システム・ユーザー・インターフェースが使用されます。"
+        }
+      ]
+    }
+  ],
+  "threadSafe": false,
+  "environment": "すべての環境 (*ALL)",
+  "examples": [
+    {
+      "code": "WRKSPLF SELECT(*ALL *ALL *ALL *ALL *ALL *ALL) DSPFMT(*NORMAL)"
+    },
+    {
+      "code": "WRKSPLF SELECT(CASMITH *ALL *ALL MEMO *ALL *ALL)"
+    },
+    {
+      "code": "WRKSPLF SELECT(*ALL *ALL *ALL '*SAV*' *ALL *ALL)"
+    },
+    {
+      "code": "WRKSPLF SELECT(*ALL) PERIOD(('11:30:00' '01/12/2005') ('20:00:00' '01/12/2005'))"
+    }
+  ],
+  "errorMessages": [
+    {
+      "id": "CPF1E94",
+      "text": "ユーザー名&1は存在していない。"
+    },
+    {
+      "id": "CPF1E95",
+      "text": "印刷装置&1が見つからなかった。"
+    },
+    {
+      "id": "CPF1E99",
+      "text": "予期しないエラーが起こった。"
+    },
+    {
+      "id": "CPF337E",
+      "text": "ASP装置&1がスレッドの現行ASPグループにありません。"
+    },
+    {
+      "id": "CPF337F",
+      "text": "ASP番号&2ではASP装置&1は使用できません。"
+    },
+    {
+      "id": "CPF33D0",
+      "text": "印刷装置&1が存在していない。"
+    },
+    {
+      "id": "CPF33D1",
+      "text": "ユーザー&1が存在していない。"
+    },
+    {
+      "id": "CPF3302",
+      "text": "ファイル&2への印刷ファイル&1の一時変更は正しくない。"
+    },
+    {
+      "id": "CPF3330",
+      "text": "必要な資源が使用できない。"
+    },
+    {
+      "id": "CPF33FD",
+      "text": "ASP装置&1は使用できません。"
+    },
+    {
+      "id": "CPF3420",
+      "text": "バッチにシステム／３６画面様式を使用することはできない。"
+    },
+    {
+      "id": "CPF7D41",
+      "text": "発注援助要求のロギング時にエラーが起こりました。"
+    },
+    {
+      "id": "CPF7D42",
+      "text": "データベース操作の実行中にエラーが起こった。"
+    },
+    {
+      "id": "CPF9825",
+      "text": "装置&1は認可されていない。"
+    },
+    {
+      "id": "CPF9833",
+      "text": "*CURASPGRPまたは*ASPGRPPRIが指定されていて，スレッドにASPグループがない。"
+    },
+    {
+      "id": "CPF9845",
+      "text": "ファイル&1のオープン中にエラーが起こった。"
+    },
+    {
+      "id": "CPF9846",
+      "text": "ライブラリー&2のファイル&1の処理中にエラーが起こった。"
+    },
+    {
+      "id": "CPF9871",
+      "text": "処理中に，エラーが起こった。"
+    },
+    {
+      "id": "CPFB8ED",
+      "text": "装置記述&1はこの操作には正しくありません。"
+    }
+  ],
+  "source": {
+    "url": "https://www.ibm.com/docs/ja/ssw_ibm_i_74/cl/wrksplf.htm",
+    "version": "IBM i 7.4"
+  }
+}

@@ -1,0 +1,188 @@
+
+  <!doctype html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+  <html>
+<head><META http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>Delete Data Area  (DLTDTAARA)</title>
+</head>
+<body bgcolor="white">
+<a name="DLTDTAARA.Top_Of_Page"></a>
+<h2>Delete Data Area  (DLTDTAARA)</h2>
+<table width="100%">
+<tr>
+<td align="left" valign="top"><b>Where allowed to run:  </b>All environments (*ALL)<br>
+<b>Threadsafe:  </b>Yes
+</td>
+<td align="right" valign="top">
+<a href="#DLTDTAARA.PARAMETERS.TABLE">Parameters</a><br>
+<a href="#DLTDTAARA.COMMAND.EXAMPLES">Examples</a><br>
+<a href="#DLTDTAARA.ERROR.MESSAGES">Error messages</a></td>
+</tr>
+</table>
+
+<div> <a name="DLTDTAARA"></a>
+<p>The Delete Data Area (DLTDTAARA) command deletes the specified data areas from a library.
+</p>
+<p><b>Restrictions:</b>
+</p>
+<ol>
+<li>To use this command, you must have object existence (*OBJEXIST) authority for the data area, and execute (*EXECUTE) authority for the library.
+</li>
+<li>Local data areas, group data areas, and program initialization parameter data areas cannot be deleted.
+</li>
+</ol>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#DLTDTAARA.Top_Of_Page">Top</a></td></tr>
+</table>
+<hr width="100%" size="2">
+
+<div>
+<h3><a name="DLTDTAARA.PARAMETERS.TABLE">Parameters</a></h3>
+<table cellspacing="0" cellpadding="4" border="1"><tr>
+<th width="10%" align="left" valign="bottom" bgcolor="aqua">Keyword</th>
+<th width="15%" align="left" valign="bottom" bgcolor="aqua">Description</th>
+<th width="30%" align="left" valign="bottom" bgcolor="aqua">Choices</th>
+<th width="10%" align="left" valign="bottom" bgcolor="aqua">Notes</th>
+</tr>
+<tr>
+<td valign="top" rowspan="3"><a href="#DLTDTAARA.DTAARA"><b>DTAARA</b></a></td>
+<td valign="top">Data area</td>
+<td valign="top"><i>Qualified object name</i></td>
+<td valign="top" rowspan="3">Required, Positional 1</td>
+</tr>
+<tr>
+<td valign="top">Qualifier 1: Data area</td>
+<td valign="top"><i>Generic name, name</i></td>
+</tr><tr>
+<td valign="top">Qualifier 2: Library</td>
+<td valign="top"><i>Name</i>, <b><u>*LIBL</u></b>, *CURLIB, *USRLIBL, *ALL, *ALLUSR</td>
+</tr></table>
+
+<table width="100%">
+<tr><td align="right"><a href="#DLTDTAARA.Top_Of_Page">Top</a></td></tr>
+</table>
+</div>
+<div> <a name="DLTDTAARA.DTAARA"></a>
+<h3>Data area (DTAARA)</h3>
+<p>Specifies the name and library of the data areas being deleted.  A specific data area or a generic data area can be specified; either type can be optionally qualified by a library name.
+</p>
+<p>This is a required parameter.
+</p>
+<p><b>Qualifier 1: Data area</b>
+</p>
+<dl>
+<dt><b><i>generic-name</i></b></dt>
+<dd>Specify the generic name of the data area being deleted.  A generic name is a character string that contains one or more characters followed by an asterisk (*).  If a generic name is specified, then all data areas that have names with the same prefix as the generic data area name are deleted.
+</dd>
+<dt><b><i>name</i></b></dt>
+<dd>Specify the name of the data area.
+</dd>
+</dl>
+<p><b>Qualifier 2: Library</b>
+</p>
+<dl>
+<dt><b><u>*LIBL</u></b></dt>
+<dd>All libraries in the thread's library list are searched until a match is found.  If a specific object name is specified (instead of a generic name), only the first object found to have that name is deleted.
+</dd>
+<dt><b>*CURLIB</b></dt>
+<dd>The current library for the thread is used to locate the object.  If no library is specified as the current library for the thread, the QGPL library is used.
+</dd>
+<dt><b>*USRLIBL</b></dt>
+<dd>Only the libraries listed in the user portion of the library list are searched.  If a  specific object name is specified (instead of a generic name), only the first object found with that name is deleted.
+</dd>
+<dt><b>*ALL</b></dt>
+<dd>All libraries in auxiliary storage pools (ASPs) that are currently part of the thread's library name space will be searched.  This includes the system ASP (ASP 1), all defined basic user ASPs (ASPs 2-32), and, if the thread has an ASP group, the primary and secondary ASPs in the thread's ASP group.  Only your own QTEMP library is searched.  All objects matching the specified name and object type in all libraries in the thread's name space are deleted.
+</dd>
+</dl>
+<dl>
+<dt><b>*ALLUSR</b></dt>
+<dd>All user libraries are searched.  All libraries with names that do not begin with the letter Q are searched except for the following:
+<p>
+<pre>
+#CGULIB     #DSULIB     #SEULIB
+#COBLIB     #RPGLIB
+#DFULIB     #SDALIB
+</pre>
+</p>
+<p>Although the following Qxxx libraries are provided by IBM, they typically contain user data that changes frequently.  Therefore, these libraries are considered user libraries and are also searched:
+</p>
+<p>
+<pre>
+QDSNX       QRCLxxxxx   QUSRDIRDB   QUSRVI
+QGPL        QSRVAGT     QUSRIJS     QUSRVxRxMx
+QGPL38      QSYS2       QUSRINFSKR  QWQCENT
+QMGTC       QSYS2xxxxx  QUSRNOTES   QWQREPOS
+QMGTC2      QS36F       QUSROND
+QMPGDATA    QUSER38     QUSRPOSGS
+QMQMDATA    QUSRADSM    QUSRPOSSA
+QMQMPROC    QUSRBRM     QUSRPYMSVR
+QPFRDATA    QUSRDIRCF   QUSRRDARS
+QRCL        QUSRDIRCL   QUSRSYS
+</pre>
+</p>
+<ol>
+<li>'xxxxx' is the number of a primary auxiliary storage pool (ASP).
+</li>
+<li>A different library name, in the format QUSRVxRxMx, can be created by the user for each previous release supported by IBM to contain any user commands to be compiled in a CL program for the previous release.  For the QUSRVxRxMx user library, VxRxMx is the version, release, and modification level of a previous release that IBM continues to support.
+</li>
+</ol>
+</dd>
+</dl>
+<dl>
+<dt><b><i>name</i></b></dt>
+<dd>Specify the library where the data area is located.
+</dd>
+</dl>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#DLTDTAARA.Top_Of_Page">Top</a></td></tr>
+</table>
+<hr width="100%" size="2">
+<div><h3><a name="DLTDTAARA.COMMAND.EXAMPLES">Examples</a> </h3>
+<p>
+<pre>
+DLTDTAARA   DTAARA(MYLIB/MYDATA)
+</pre>
+</p>
+<p>This command deletes the data area named MYDATA from the library MYLIB if the user has the proper authority for the data area and the library.
+</p>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#DLTDTAARA.Top_Of_Page">Top</a></td></tr>
+</table>
+<hr width="100%" size="2">
+<div><h3><a name="DLTDTAARA.ERROR.MESSAGES">Error messages</a> </h3>
+<p><b><u>*ESCAPE Messages</u></b>
+</p>
+<dl>
+<dt><b>CPF2105</b></dt>
+<dd>Object &amp;1 in &amp;2 type *&amp;3 not found.
+</dd>
+<dt><b>CPF2110</b></dt>
+<dd>Library &amp;1 not found.
+</dd>
+<dt><b>CPF2113</b></dt>
+<dd>Cannot allocate library &amp;1.
+</dd>
+<dt><b>CPF2114</b></dt>
+<dd>Cannot allocate object &amp;1 in &amp;2 type *&amp;3.
+</dd>
+<dt><b>CPF2117</b></dt>
+<dd>&amp;4 objects type *&amp;3 deleted. &amp;5 objects not deleted.
+</dd>
+<dt><b>CPF2176</b></dt>
+<dd>Library &amp;1 damaged.
+</dd>
+<dt><b>CPF2182</b></dt>
+<dd>Not authorized to library &amp;1.
+</dd>
+<dt><b>CPF2189</b></dt>
+<dd>Not authorized to object &amp;1 in &amp;2 type *&amp;3.
+</dd>
+</dl>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#DLTDTAARA.Top_Of_Page">Top</a></td></tr>
+</table>
+</body>
+</html>

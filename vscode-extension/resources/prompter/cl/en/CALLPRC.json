@@ -1,0 +1,95 @@
+{
+  "keyword": "CALLPRC",
+  "description": "Call Bound Procedure (CALLPRC)",
+  "parameters": [
+    {
+      "name": "PRC",
+      "description": "Procedure",
+      "help": "Procedure (PRC)\n\nSpecifies the name of the procedure to be called.",
+      "inputType": "text",
+      "required": true,
+      "positional": 1,
+      "placeholder": "'myproc'",
+      "basic": true
+    },
+    {
+      "name": "PARM",
+      "description": "Parameters",
+      "help": "Parameters (PARM)\n\nSpecifies parameter values that are to be passed to the called procedure. Passing parameters is optional; if no parameters are specified, no parameters will be passed to the called procedure. Up to 300 parameters can be specified.\n\nElement 1: Parameter\n\nThe type and length of each parameter must be the same in both the calling and called procedures. The order in which parameters are sent and received must also be the same. The number of parameters specified by the calling procedure does not have to match the number of parameters specified by the called procedure. If the calling procedure specifies more parameters than are defined in the called procedure, the extra parameters are ignored. If the calling procedure specifies fewer parameters than are defined in the called procedure, and the called procedure references the missing parameters, runtime results will be unpredictable.\n\nParameters can be passed and received as follows:\n\nThe called procedure can receive less than the number of bytes passed (in this case, no message is sent). For example, if a called procedure specifies that 4 characters are to be received and ABCDEF is passed, only ABCD is accepted and used by the called procedure. Quoted character strings can also be passed.\n\nIf either a decimal constant or a program variable can be passed to the called procedure, the parameter should be defined as (15 5), and any calling procedure must adhere to that definition. If the type, number, order, and length of the parameters do not match between the calling and called procedures (other than the length exception noted previously for character constants), unpredictable results will occur.\n\nElement 2: Passed",
+      "inputType": "group",
+      "required": false,
+      "groupKind": "elements",
+      "children": [
+        {
+          "name": "PARM",
+          "description": "Parameter",
+          "inputType": "text",
+          "required": false,
+          "placeholder": "&VAR"
+        },
+        {
+          "name": "PASSING",
+          "description": "Passed",
+          "inputType": "dropdown",
+          "required": false,
+          "defaultValue": "*BYREF",
+          "attributes": {
+            "characterSet": "upper"
+          },
+          "options": [
+            {
+              "label": "*BYREF",
+              "value": "*BYREF"
+            },
+            {
+              "label": "*BYVAL",
+              "value": "*BYVAL"
+            }
+          ]
+        }
+      ],
+      "positional": 2,
+      "maxOccurrences": 300,
+      "basic": true
+    },
+    {
+      "name": "RTNVAL",
+      "description": "CL variable for returned value",
+      "help": "CL variable for returned value (RTNVAL)\n\nSpecifies the variable to contain the return value from the called procedure. If the value returned by the called procedure is a binary number (types int or short in ILE C or ILE C++), you must either specify an integer CL variable (specified as TYPE(*INT) or TYPE(*UINT) on the DCL statement) or use the %BINARY or %BIN built-in function on a character CL variable (specified as TYPE(*CHAR) on the DCL statement) used for the return value parameter.\n\n指定できる特殊値: *NONE",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*NONE",
+      "attributes": {
+        "characterSet": "upper",
+        "maxLength": 10
+      },
+      "positional": 3,
+      "placeholder": "*NONE",
+      "basic": true
+    }
+  ],
+  "examples": [
+    {
+      "code": "CALLPRC PRC(PAYROLL)"
+    },
+    {
+      "code": "CALLPRC PRC(PAYROLL) PARM('1')"
+    },
+    {
+      "code": "CALLPRC PRC(PAYROLL) PARM(CHICAGO 1234 &VAR1) RTNVAL(*NONE)"
+    },
+    {
+      "code": "CALLPRC PRC(PRC1) PARM(1.5E3 *INF) RTNVAL(&RVAL)"
+    },
+    {
+      "code": "CALLPRC PRC(PRC1) PARM(1.5E3 *INF) RTNVAL(*NONE)"
+    },
+    {
+      "code": "CALLPRC PRC(RTNINT) RTNVAL(%BIN(&RTNV 1 4))"
+    }
+  ],
+  "source": {
+    "url": "https://www.ibm.com/docs/en/ssw_ibm_i_74/cl/callprc.htm",
+    "version": "IBM i 7.4"
+  }
+}

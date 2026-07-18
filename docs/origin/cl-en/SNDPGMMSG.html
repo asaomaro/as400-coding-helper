@@ -1,0 +1,1721 @@
+<!DOCTYPE html>
+<html lang="ja"><head><meta charset="utf-8"><title>Send Program Message  (SNDPGMMSG)</title></head>
+<body>
+<main role="main"><article role="article" aria-labelledby="sndpgmmsg__title__1"> 
+<h1 class="topictitle1" id="sndpgmmsg__title__1">Send Program Message  (SNDPGMMSG)</h1><div id="lastModifiedDate"><span>Last Updated</span>: 2026-07-13</div>
+
+<div class="body">
+<p>
+<strong>Send Program Message  (SNDPGMMSG)
+</strong></p>
+
+<p>
+<strong>Where allowed to run:  
+</strong>Compiled CL program or interpreted REXX (*BPGM *IPGM *BREXX *IREXX)
+
+</p>
+
+<p>
+<strong>Threadsafe:  </strong>Yes
+</p>
+
+<p><a href="#sndpgmmsg__parameters">Parameters</a></p>
+
+<p><a href="#sndpgmmsg__examples">Examples</a></p>
+
+<p><a href="#sndpgmmsg__errormsgs">Error messages</a></p>
+
+<div class="div" id="sndpgmmsg__sndpgmmsg">
+<p>
+The Send Program Message (SNDPGMMSG) command sends a message to a named message queue or to a call message queue.  A call message queue can be the *EXT external message queue or a message queue associated with a call stack entry.  Each time a program or procedure is called a new message queue is associated with its call stack entry.  The message queue is identified by the name of its associated program or procedure.
+
+</p>
+
+<p>
+A program can send a message to its own message queue or to a message queue that is associated with a different call stack entry.
+
+</p>
+
+<p>
+This command can send both exception and non-exception messages.  When an exception message is sent, processing of the sending program is interrupted until action is taken on the exception. Depending on the action taken, processing of the sending program may resume.  If allowed to resume, processing continues in the sending program at the CL command immediately following the SNDPGMMSG command.  When a non-exception message is sent, processing of the sending program is not interrupted. After the message is sent, the sending program continues to run at the CL command immediately following the SNDPGMMSG command.
+
+</p>
+
+<p>
+When a program or procedure monitors for an exception message and an exception message is sent to the call stack entry in which that program or procedure is running, the related exception handler is called and run by the system. Therefore, a program or procedure can identify when an exception message is sent to the call stack entry in which it is running.  There is no automatic notification for non-exception messages.
+
+</p>
+
+<p>
+The message can be an immediate or a predefined message that is stored in a message file. Substitution data can be specified in the MSGDTA parameter (as a single character string containing one or more concatenated message data fields) to replace the substitution variables in the message.  The message can be sent to the job's *EXT message queue, to a message queue associated with a call stack entry, to one or more nonprogram message queues (such as a user profile message queue), to the system operator message queue, or to the system history log, QHST.
+
+</p>
+
+<p>
+<strong>Restrictions:
+</strong>
+</p>
+
+<ol class="cds--list--ordered--temporary">
+<li class="cds--list__item">
+The SNDPGMMSG command allows a message of up to 512 characters to be sent.  However, if the message is sent to the *EXT message queue of an interactive job, only 76 characters are shown on the Display Program Messages display.  If the message is sent to a user's, work station's, or the system operator's message queue, the Display Message (DSPMSG) command allows all 512 characters to be displayed.
+
+</li>
+
+<li class="cds--list__item">
+This command can only send inquiry messages (specified by MSGTYPE(*INQ)) to one message queue or to two nonprogram message queues if one of the queues is *HSTLOG.
+
+</li>
+
+
+</ol>
+
+</div>
+<section class="section" role="region" aria-labelledby="sndpgmmsg__parameters__title__1" id="sndpgmmsg__parameters"><h2 class="sectiontitle" id="sndpgmmsg__parameters__title__1">Parameters</h2>
+
+
+<div class="tablenoborder"><div class="cds--data-table-container"><table summary="" class="defaultstyle cds--data-table"><colgroup><col><col><col><col></colgroup><thead>
+<tr>
+<th id="sndpgmmsg__parameters__entry__1"><div class="cds--table-header-label">
+Keyword
+</div></th>
+
+<th id="sndpgmmsg__parameters__entry__2"><div class="cds--table-header-label">
+Description
+</div></th>
+
+<th id="sndpgmmsg__parameters__entry__3"><div class="cds--table-header-label">
+Choices
+</div></th>
+
+<th id="sndpgmmsg__parameters__entry__4"><div class="cds--table-header-label">
+Notes
+</div></th>
+
+</tr>
+
+</thead>
+<tbody>
+<tr>
+<td headers="sndpgmmsg__parameters__entry__1 "><a href="#sndpgmmsg__msg"><strong>MSG
+</strong></a></td>
+
+<td headers="sndpgmmsg__parameters__entry__2 ">Message text, or
+</td>
+
+<td headers="sndpgmmsg__parameters__entry__3 "><em>Character value
+</em></td>
+
+<td headers="sndpgmmsg__parameters__entry__4 ">Optional, Positional 1
+</td>
+
+</tr>
+
+<tr>
+<td headers="sndpgmmsg__parameters__entry__1 "><a href="#sndpgmmsg__msgid"><strong>MSGID
+</strong></a></td>
+
+<td headers="sndpgmmsg__parameters__entry__2 ">Message identifier
+</td>
+
+<td headers="sndpgmmsg__parameters__entry__3 "><em>Name
+</em></td>
+
+<td headers="sndpgmmsg__parameters__entry__4 ">Optional, Positional 2
+</td>
+
+</tr>
+
+<tr>
+<td rowspan="3" headers="sndpgmmsg__parameters__entry__1 "><a href="#sndpgmmsg__msgf"><strong>MSGF
+</strong></a></td>
+
+<td headers="sndpgmmsg__parameters__entry__2 ">Message file
+</td>
+
+<td headers="sndpgmmsg__parameters__entry__3 "><em>Qualified object name
+</em></td>
+
+<td rowspan="3" headers="sndpgmmsg__parameters__entry__4 ">Optional, Positional 3
+</td>
+
+</tr>
+
+<tr>
+<td headers="sndpgmmsg__parameters__entry__2 ">Qualifier 1: Message file
+</td>
+
+<td headers="sndpgmmsg__parameters__entry__3 "><em>Name
+</em></td>
+
+</tr>
+
+<tr>
+<td headers="sndpgmmsg__parameters__entry__2 ">Qualifier 2: Library
+</td>
+
+<td headers="sndpgmmsg__parameters__entry__3 "><em>Name
+</em>, 
+<strong><u>*LIBL
+</u></strong>, *CURLIB
+</td>
+
+</tr>
+
+<tr>
+<td headers="sndpgmmsg__parameters__entry__1 "><a href="#sndpgmmsg__msgdta"><strong>MSGDTA
+</strong></a></td>
+
+<td headers="sndpgmmsg__parameters__entry__2 ">Message data field values
+</td>
+
+<td headers="sndpgmmsg__parameters__entry__3 "><em>Character value
+</em>, 
+<strong><u>*NONE
+</u></strong></td>
+
+<td headers="sndpgmmsg__parameters__entry__4 ">Optional, Positional 4
+</td>
+
+</tr>
+
+<tr>
+<td rowspan="6" headers="sndpgmmsg__parameters__entry__1 "><a href="#sndpgmmsg__topgmq"><strong>TOPGMQ
+</strong></a></td>
+
+<td headers="sndpgmmsg__parameters__entry__2 ">Call stack entry message queue
+</td>
+
+<td headers="sndpgmmsg__parameters__entry__3 ">Single values: *EXT
+
+Other values: 
+<em>Element list
+</em></td>
+
+<td rowspan="6" headers="sndpgmmsg__parameters__entry__4 ">Optional
+</td>
+
+</tr>
+
+<tr>
+<td headers="sndpgmmsg__parameters__entry__2 ">Element 1: Relationship
+</td>
+
+<td headers="sndpgmmsg__parameters__entry__3 "><strong><u>*PRV
+</u></strong>, *SAME
+</td>
+
+</tr>
+
+<tr>
+<td headers="sndpgmmsg__parameters__entry__2 ">Element 2: Call stack entry identifier
+</td>
+
+<td headers="sndpgmmsg__parameters__entry__3 "><em>Element list
+</em></td>
+
+</tr>
+
+<tr>
+<td headers="sndpgmmsg__parameters__entry__2 ">Element 1: Call stack entry
+</td>
+
+<td headers="sndpgmmsg__parameters__entry__3 "><em>Character value
+</em>, 
+<strong><u>*
+</u></strong></td>
+
+</tr>
+
+<tr>
+<td headers="sndpgmmsg__parameters__entry__2 ">Element 2: Module
+</td>
+
+<td headers="sndpgmmsg__parameters__entry__3 "><em>Name
+</em>, 
+<strong><u>*NONE
+</u></strong></td>
+
+</tr>
+
+<tr>
+<td headers="sndpgmmsg__parameters__entry__2 ">Element 3: Bound program
+</td>
+
+<td headers="sndpgmmsg__parameters__entry__3 "><em>Name
+</em>, 
+<strong><u>*NONE
+</u></strong></td>
+
+</tr>
+
+<tr>
+<td rowspan="3" headers="sndpgmmsg__parameters__entry__1 "><a href="#sndpgmmsg__tomsgq"><strong>TOMSGQ
+</strong></a></td>
+
+<td headers="sndpgmmsg__parameters__entry__2 ">Send to non-pgm message queue
+</td>
+
+<td headers="sndpgmmsg__parameters__entry__3 ">Single values: 
+<strong><u>*TOPGMQ
+</u></strong>, *SYSOPR
+
+Other values (up to 50 repetitions): 
+<em>Qualified object name
+</em></td>
+
+<td rowspan="3" headers="sndpgmmsg__parameters__entry__4 ">Optional
+</td>
+
+</tr>
+
+<tr>
+<td headers="sndpgmmsg__parameters__entry__2 ">Qualifier 1: Send to non-pgm message queue
+</td>
+
+<td headers="sndpgmmsg__parameters__entry__3 "><em>Name
+</em>, *HSTLOG
+</td>
+
+</tr>
+
+<tr>
+<td headers="sndpgmmsg__parameters__entry__2 ">Qualifier 2: Library
+</td>
+
+<td headers="sndpgmmsg__parameters__entry__3 "><em>Name
+</em>, 
+<strong><u>*LIBL
+</u></strong>, *CURLIB
+</td>
+
+</tr>
+
+<tr>
+<td headers="sndpgmmsg__parameters__entry__1 "><a href="#sndpgmmsg__tousr"><strong>TOUSR
+</strong></a></td>
+
+<td headers="sndpgmmsg__parameters__entry__2 ">To user profile
+</td>
+
+<td headers="sndpgmmsg__parameters__entry__3 "><em>Name
+</em>, *SYSOPR, *ALLACT, *REQUESTER
+</td>
+
+<td headers="sndpgmmsg__parameters__entry__4 ">Optional
+</td>
+
+</tr>
+
+<tr>
+<td headers="sndpgmmsg__parameters__entry__1 "><a href="#sndpgmmsg__msgtype"><strong>MSGTYPE
+</strong></a></td>
+
+<td headers="sndpgmmsg__parameters__entry__2 ">Message type
+</td>
+
+<td headers="sndpgmmsg__parameters__entry__3 "><strong><u>*INFO
+</u></strong>, *INQ, *RQS, *COMP, *DIAG, *NOTIFY, *ESCAPE, *STATUS
+</td>
+
+<td headers="sndpgmmsg__parameters__entry__4 ">Optional
+</td>
+
+</tr>
+
+<tr>
+<td rowspan="3" headers="sndpgmmsg__parameters__entry__1 "><a href="#sndpgmmsg__rpymsgq"><strong>RPYMSGQ
+</strong></a></td>
+
+<td headers="sndpgmmsg__parameters__entry__2 ">Message queue to get reply
+</td>
+
+<td headers="sndpgmmsg__parameters__entry__3 ">Single values: 
+<strong><u>*PGMQ
+</u></strong>
+Other values: 
+<em>Qualified object name
+</em></td>
+
+<td rowspan="3" headers="sndpgmmsg__parameters__entry__4 ">Optional
+</td>
+
+</tr>
+
+<tr>
+<td headers="sndpgmmsg__parameters__entry__2 ">Qualifier 1: Message queue to get reply
+</td>
+
+<td headers="sndpgmmsg__parameters__entry__3 "><em>Name
+</em></td>
+
+</tr>
+
+<tr>
+<td headers="sndpgmmsg__parameters__entry__2 ">Qualifier 2: Library
+</td>
+
+<td headers="sndpgmmsg__parameters__entry__3 "><em>Name
+</em>, 
+<strong><u>*LIBL
+</u></strong>, *CURLIB
+</td>
+
+</tr>
+
+<tr>
+<td headers="sndpgmmsg__parameters__entry__1 "><a href="#sndpgmmsg__keyvar"><strong>KEYVAR
+</strong></a></td>
+
+<td headers="sndpgmmsg__parameters__entry__2 ">CL var for KEYVAR        (4)
+</td>
+
+<td headers="sndpgmmsg__parameters__entry__3 "><em>Character value
+</em></td>
+
+<td headers="sndpgmmsg__parameters__entry__4 ">Optional
+</td>
+
+</tr>
+
+<tr>
+<td headers="sndpgmmsg__parameters__entry__1 "><a href="#sndpgmmsg__ccsid"><strong>CCSID
+</strong></a></td>
+
+<td headers="sndpgmmsg__parameters__entry__2 ">Coded character set ID
+</td>
+
+<td headers="sndpgmmsg__parameters__entry__3 ">1-65535, *HEX, 
+<strong><u>*JOB
+</u></strong></td>
+
+<td headers="sndpgmmsg__parameters__entry__4 ">Optional
+</td>
+
+</tr>
+
+</tbody>
+</table></div>
+</div>
+
+<div class="div" id="sndpgmmsg__msg">
+<p>
+<strong>Message text, or (MSG)
+</strong></p>
+
+<p>
+Specifies the message text that is to be sent.  A maximum of 3000 characters can be specified or, if you are prompting for this command in an interactive job, a maximum of 512 characters can be specified.  The string must be enclosed in apostrophes if special characters (including blanks) are used.  If this parameter is specified, a value cannot be specified for the 
+<strong>Message identifier (MSGID)
+</strong> parameter, and *ESCAPE, *NOTIFY, or *STATUS cannot be specified for the 
+<strong>Message type (MSGTYPE)
+</strong> parameter.  If this parameter is specified, a value cannot be specified for the 
+<strong>Message file (MSGF)
+</strong> parameter or the 
+<strong>Message data field values (MSGDTA)
+</strong> parameter, because these types require that a message identifier also be specified.
+
+</p>
+
+<p>
+<strong>Coded Character Set Identifier (CCSID) Considerations
+</strong>
+</p>
+
+<p>
+The text supplied for the MSG parameter is assumed to be in the CCSID of the job running this command unless a coded character set identifier is supplied in the CCSID parameter.  For more information about the message handler and its use of CCSIDs, see the i5/OS globalization topic collection in the IBM i Information Center at http://www.ibm.com/systems/i/infocenter/.
+
+</p>
+
+</div>
+<div class="div" id="sndpgmmsg__msgid">
+<p>
+<strong>Message identifier (MSGID)
+</strong></p>
+
+<p>
+Specifies the message identifier of a message description whose predefined message is being sent by the program to a message queue.  If this parameter is specified, a value cannot be specified for the 
+<strong>Message text, or (MSG)
+</strong> parameter.
+
+</p>
+
+</div>
+<div class="div" id="sndpgmmsg__msgf">
+<p>
+<strong>Message file (MSGF)
+</strong></p>
+
+<p>
+Specifies the message file that contains the predefined message to be sent.  This parameter is required if a value is specified for the 
+<strong>Message identifier (MSGID)
+</strong> parameter.
+
+</p>
+
+<p>
+<strong>Qualifier 1: Message file
+</strong>
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><em>name
+</em></strong></dt>
+
+<dd class="dlentry">
+Specify the name of the message file which contains the predefined message to be sent.
+</dd>
+
+</dl>
+
+<p>
+<strong>Qualifier 2: Library
+</strong>
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><u>*LIBL
+</u></strong></dt>
+
+<dd class="dlentry">
+All libraries in the library list for the current thread are searched until the first match is found.
+</dd>
+
+</dl>
+
+<dl>
+<dt class="dlterm">
+<strong>*CURLIB
+</strong></dt>
+
+<dd class="dlentry">
+The current library for the job is used to locate the message file.  If no current library entry exists in the library list, QGPL is used.
+</dd>
+
+<dt class="dlterm">
+<strong><em>name
+</em></strong></dt>
+
+<dd class="dlentry">
+Specify the library where the message file is located.
+</dd>
+
+</dl>
+
+</div>
+<div class="div" id="sndpgmmsg__msgdta">
+<p>
+<strong>Message data field values (MSGDTA)
+</strong></p>
+
+<p>
+Specifies the character string, or a CL variable that contains a character string, containing one or more substitution values that are used as message data fields within the predefined message.  The substitution values take the place of the substitution variables that were defined in the message text when the message was defined.
+
+</p>
+
+<p>
+<strong>Note:     
+</strong>The MSGDTA parameter is not allowed if the MSG parameter is specified.
+
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><u>*NONE
+</u></strong></dt>
+
+<dd class="dlentry">
+There is no character string of substitution values to use in the specified message.
+</dd>
+
+<dt class="dlterm">
+<strong><em>character-string
+</em></strong></dt>
+
+<dd class="dlentry">
+Specify the character string that gives the substitution values in the specified predefined message that is sent by the program, or specify the name of the CL variable that contains the character string.
+<p>
+<strong>Rules for specifying substitution values for MSGDTA:
+</strong>
+</p>
+
+<ul class="cds--list--unordered">
+<li class="cds--list__item">
+If multiple substitution variables exist, all the substitution values must be concatenated to form a single character string that is specified for the MSGDTA parameter.
+
+</li>
+
+<li class="cds--list__item">
+If more than one substitution variable exists in the message, the MSGDTA character string must be the same length as the sum of all the message data field formats defined in the message.
+
+</li>
+
+<li class="cds--list__item">
+The character string containing the substituion values must be coded with the proper fill characters (zeros for numeric values, and blanks for character values) to position the values properly in the string to match the concatenated fields used to create the single string.  If the string contains special characters (including blanks), it must be enclosed in apostrophes. The null value *N cannot be specified for a substitution value.
+
+</li>
+
+<li class="cds--list__item">
+The length of the entire character string of concatenated substitution data cannot be greater than 3000 characters, or if you are prompting for this command, the length cannot be greater than 512 characters. More information about the length of individual message data fields is in the FMT parameter description of the ADDMSGD (Add Message Description) command.
+
+</li>
+
+<li class="cds--list__item">
+The substitution values specified in the MSGDTA string must be in the same order as defined in the FMT parameter of the ADDMSGD command.
+
+</li>
+
+<li class="cds--list__item">
+If the length of the substitution value that is passed for a substitution variable is shorter than the length specified for the FMT parameter of the ADDMSGD command, the substitution value becomes a null field.
+
+</li>
+
+<li class="cds--list__item">
+If the length of the substitution value passed to a substitution variable is longer than the length specified for the FMT parameter on the ADDMSGD command, the substitution value is truncated.
+
+</li>
+
+</ul>
+
+<p>
+As an example of using these rules, consider a message contains three substition variables:
+
+</p>
+
+<div class="p">
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>
+Variable  Type    Length         Expected Values
+&amp;1        *CHAR   3 characters   Yes or No
+&amp;2        *CHAR   4 digits       4 digits
+&amp;3        *CHAR   8 characters   One or two words
+
+</code></pre></div><div class="docs--copy-btn"></div></div>
+
+</div>
+
+<p>
+The following are samples of valid character strings that could be specified for MSGDTA:
+
+</p>
+
+<div class="p">
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>
+MSGDTA('Yes0007not done')
+MSGDTA('No 0285finished')
+MSGDTA(&amp;DTA)
+
+</code></pre></div><div class="docs--copy-btn"></div></div>
+
+</div>
+
+<p>
+Notice that the second substitution variable is defined as a character variable, not as a decimal variable. If a character string is to be used instead of a CL variable to specify the substitution values for the MSGDTA parameter, the associated substitution variables must be defined (in the FMT parameter of the ADDMSGD command) as character variables to prevent results that are not valid in the text of the message that is sent.
+
+</p>
+
+<p>
+The third sample of valid character strings, shows a CL variable instead of an actual character string.  The CL variable &amp;DTA might have been declared in the sending program as:
+
+</p>
+
+<div class="p">
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>
+DCL   VAR(&amp;DTA)  TYPE(*CHAR)
+      LEN(15)  VALUE('YES0175not done')
+
+</code></pre></div><div class="docs--copy-btn"></div></div>
+
+</div>
+
+<p>
+The character string, specified as the initial value for variable &amp;DTA, contains the three concatenated substitution values YES, 0175, and not done, which are to be sent as message data.
+
+</p>
+
+<p>
+<strong>Note:     
+</strong>If the last character in the string provided for MSGDTA is blank (for the format types *BIN, *UBIN, *ITV, and date time stamp fields), the system truncates the blank.  If the resulting string is shorter than the length specified on the FMT parameter of the ADDMSGD command, the substitution variable becomes a null field.  To prevent the system from truncating the blanks, concatenate a nonblank character (for the format type *BIN, *UBIN, *ITV, and date time stamp fields) to the string after the blanks. The system will retain the blanks and truncate the additional character.
+
+</p>
+
+<p>
+<strong>Coded Character Set Identifier (CCSID) Considerations
+</strong>
+</p>
+
+<p>
+The text supplied for the MSGDTA parameter that corresponds to the *CCHAR type field is assumed to be in the CCSID of the job running this command unless the coded character set identifier is supplied in the CCSID parameter.  All other text supplied for the MSGDTA parameter is assumed to be 65535 and is not converted.  For more information about the message handler and its use of CCSIDs, see the i5/OS globalization topic collection in the IBM i Information Center at http://www.ibm.com/systems/i/infocenter/.  For more information about the *CCHAR type fields, see the Add Message Description (ADDMSGD) command.
+
+</p>
+
+</dd>
+
+</dl>
+
+</div>
+<div class="div" id="sndpgmmsg__topgmq">
+<p>
+<strong>Call stack entry message queue (TOPGMQ)
+</strong></p>
+
+<p>
+Specifies the program message queue to which the specified message is to be sent.  The message queue can be the *EXT external queue or the message queue associated with a call stack entry.
+
+</p>
+
+<p>
+<strong>Single values
+</strong>
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong>*EXT
+</strong></dt>
+
+<dd class="dlentry">
+The message is sent to the external message queue of the job.  The external message queue is used to communicate with the external requester of the job, such as a display station user.  *INQ messages that are sent to *EXT in an interactive job, wait for 24 hours before the default reply is sent.  In a batch job, the default reply is sent immediately.
+<p>
+Messages sent to this queue can be 512 characters in length, but only 76 characters of text are shown on the Program Messages display.
+
+</p>
+
+</dd>
+
+</dl>
+
+<p>
+<strong>Element 1: Relationship
+</strong>
+</p>
+
+<p>
+Two parameter elements are used to specify the call stack entry message queue from which a message is to be sent.  The first element specifies whether the message queue is associated with the program or procedure identified by the second element, or if it is associated with the caller of the program or procedure.
+
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><u>*PRV
+</u></strong></dt>
+
+<dd class="dlentry">
+The message is sent to the message queue of the call stack entry that is immediately previous to the one identified by the second element of this parameter.  However, if the message queue immediately previous to the one identified by the second element is for an Integrated Language Environment (ILE) program entry procedure (PEP), the message is sent to the message queue that precedes the PEP message queue in the stack.
+</dd>
+
+<dt class="dlterm">
+<strong>*SAME
+</strong></dt>
+
+<dd class="dlentry">
+The message is sent to the message queue of the call stack entry identified by the second element of this parameter.
+</dd>
+
+</dl>
+
+<p>
+<strong>Element 2: Call stack entry identifier
+</strong>
+</p>
+
+<p>
+The second element of this parameter is used to provide the information needed to identify a call stack entry.  It has three elements.  Element 1 specifies an OPM program or ILE procedure name or a special value.  Element 2 specifies an ILE module name which is used as a qualifier for the value specified in element 1.  Element 3 can specify either an OPM program name or an ILE program name or a service program name, depending on what is specified in element 1.  Element 3 is also used as a qualifier for what is specified in element 1.
+
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong></strong></dt>
+
+<dd class="dlentry">
+<p>
+<strong>Element 1: Call stack entry
+</strong>
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><u>*
+</u></strong></dt>
+
+<dd class="dlentry">
+Specifies the OPM program or ILE procedure running this command.
+</dd>
+
+<dt class="dlterm">
+<strong><em>name
+</em></strong></dt>
+
+<dd class="dlentry">
+Specify the name of the OPM program or ILE procedure used to identify the call stack entry.
+<p>
+A procedure name alone may not identify the correct procedure since several different procedures with the same name can run in a job.  A procedure can be further identified by specifying element 2 or by specifying both element 2 and 3.
+
+</p>
+
+<p>
+The system begins its search for the specified program or procedure name with the most recently called program or procedure.
+
+</p>
+
+<p>
+If this element identifies an OPM program, the name specified can be a maximum of 10 characters.  If this element identifies an ILE procedure, the name specified can be a maximum of 256 characters.
+
+</p>
+
+<p>
+Nested procedure names can be specified by separating each procedure name with a colon (:).  When specifying nested procedure names, the outermost procedure name is identified first, followed by its contained procedures.  The innermost procedure name is identified last in the string.
+
+</p>
+
+<p>
+Partial names of programs or procedures can be specified by placing three less-than symbols (&lt;&lt;&lt;) at the beginning of the name or by placing three greater-than symbols (&gt;&gt;&gt;) at the end of the name.  If both the greater-than symbols and the less-than symbols are used, the program or procedure name specified is limited to 250 characters.
+
+</p>
+
+<p>
+When searching for a partial program or procedure name:
+
+</p>
+
+<ul class="cds--list--unordered">
+<li class="cds--list__item">
+The less-than symbols (&lt;&lt;&lt;) are truncated when specified only at the beginning of a program or procedure name and the remaining character string is right-justified.  The remaining characters in the specified string are compared to the current program or procedure on the call stack, starting with the last position of the program or procedure name and comparing backward.
+
+</li>
+
+<li class="cds--list__item">
+The greater-than symbols (&gt;&gt;&gt;) are truncated when specified only at the end of a program or procedure name.  The remaining characters in the specified string are compared to the current program or procedure on the call stack, starting with the first position of the program or procedure name.
+
+</li>
+
+<li class="cds--list__item">
+The less-than symbols (&lt;&lt;&lt;) and the greater-than symbols (&gt;&gt;&gt;) are truncated when both are specified for a program or procedure name.  The remaining characters are used to scan and compare the entire length of the specified string with the current program or procedure on the call stack.
+
+</li>
+
+</ul>
+
+</dd>
+
+</dl>
+
+</dd>
+
+<dt class="dlterm">
+<strong></strong></dt>
+
+<dd class="dlentry">
+<p>
+<strong>Element 2: Module
+</strong>
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><u>*NONE
+</u></strong></dt>
+
+<dd class="dlentry">
+No ILE module qualifier is provided.
+</dd>
+
+<dt class="dlterm">
+<strong><em>name
+</em></strong></dt>
+
+<dd class="dlentry">
+Specify the ILE module name to be used to identify the message queue.  This name identifies the module into which the procedure was compiled.
+</dd>
+
+</dl>
+
+</dd>
+
+<dt class="dlterm">
+<strong></strong></dt>
+
+<dd class="dlentry">
+<p>
+<strong>Element 3: Program
+</strong>
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><u>*NONE
+</u></strong></dt>
+
+<dd class="dlentry">
+No program qualifier is provided.
+</dd>
+
+<dt class="dlterm">
+<strong><em>name
+</em></strong></dt>
+
+<dd class="dlentry">
+Specify the program name to be used to identify the message queue.  This name identifies the program to which the procedure was bound.
+</dd>
+
+</dl>
+
+</dd>
+
+</dl>
+
+<p>
+The following special values can be specified for the call stack entry element (which is the the first qualifier of the second element) of the TOPGMQ parameter:
+
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong>*CTLBDY
+</strong></dt>
+
+<dd class="dlentry">
+Specifies the call stack entry that is at the most recent control boundary. This entry will be running in the same activation group as the CL program that is running the SNDPGMMSG command. Note that a control boundary will not exist if all programs on the call stack are OPM programs.
+</dd>
+
+<dt class="dlterm">
+<strong>*PGMBDY
+</strong></dt>
+
+<dd class="dlentry">
+Specifies the program boundary of either the program that is using the SNDPGMMSG command or the program whose name is specified for qualifier 3 of this parameter.  If no name is specified for qualifier 3, it is assumed that the program is the one using the command.
+<p>
+If it is an ILE program that is being specified, this special value identifies the call stack entry for the program entry procedure (PEP) of that program, if the program was called by a dynamic call. If the program was called by a procedure pointer, this special value identifies the call stack entry for the procedure that was pointed to.  If it is an ILE service program that is being specified, this special value identifies the call stack entry for the first procedure that was called in that service program.
+
+</p>
+
+<p>
+If the program being specified is an OPM program, this special value has the same effect as specifying the special value * or a program name for item 1. A difference will occur if the OPM program has called itself recursively. In this case, this special value identifies the first recursion level rather than the current recursion level as would be the case if the special value * or a program name was used.
+
+</p>
+
+</dd>
+
+<dt class="dlterm">
+<strong>*PGMNAME
+</strong></dt>
+
+<dd class="dlentry">
+Specifies that the call stack entry will be identified only by using a program name and optionally a module name. When this special value is used, qualifier 3 must specify an ILE program or service program name or OPM program name.  Qualifier 2 may contain either the special value *NONE or an ILE module name.
+<p>
+This special value is used to send a message to the most recently called procedure that is part of the specified ILE program or service program.  When using this special value, it is not necessary to explicitly provide a procedure name. If a module name is also provided, then this special value is used to send a message to the most recently called procedure that is both part of the identified program and the identified module.
+
+</p>
+
+<p>
+This special value may also be used to send a message to an OPM program.  In this case, using this special value and providing the OPM program name in item 3 has exactly the same effect as providing that program name here in item 1. Note that if this special value is being used to send to an OPM program then the module name must be specified as *NONE.
+
+</p>
+
+</dd>
+
+</dl>
+
+</div>
+<div class="div" id="sndpgmmsg__tomsgq">
+<p>
+<strong>Send to non-pgm message queue (TOMSGQ)
+</strong></p>
+
+<p>
+Specifies up to 50 nonprogram message queues to which an informational message is sent.  For an inquiry message, one message queue may be specified or two message queues may be specified if one of the queues is *HSTLOG.  This parameter cannot be used if a value is specified for the 
+<strong>To user profile (TOUSR)
+</strong> parameter.
+
+</p>
+
+<p>
+<strong>Single values
+</strong>
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><u>*TOPGMQ
+</u></strong></dt>
+
+<dd class="dlentry">
+The message is sent only to the call message queue specified for the 
+<strong>Call stack entry message queue (TOPGMQ)
+</strong> parameter.
+</dd>
+
+<dt class="dlterm">
+<strong>*SYSOPR
+</strong></dt>
+
+<dd class="dlentry">
+The message is sent to the system operator message (message queue QSYSOPR in library QSYS).  Any message sent to message queue QSYSOPR in library QSYS automatically has a copy of the message sent to the QHST (history log) message queue in library QSYS.
+</dd>
+
+</dl>
+
+<p>
+<strong>Qualifier 1: Send to non-pgm message queue
+</strong>
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong>*HSTLOG
+</strong></dt>
+
+<dd class="dlentry">
+The message is sent to the system history log (message queue QHST in library QSYS).  If *HSTLOG is specified more than once, only one message will be sent to the system history log.  If *HSTLOG is specified with message queue QSYSOPR, only one message is sent to the system history log.
+</dd>
+
+<dt class="dlterm">
+<strong><em>name
+</em></strong></dt>
+
+<dd class="dlentry">
+Specify the name of the message queue to which the message is to be sent.  A maximum of fifty message queues can be specified.
+</dd>
+
+</dl>
+
+<p>
+<strong>Qualifier 2: Library
+</strong>
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><u>*LIBL
+</u></strong></dt>
+
+<dd class="dlentry">
+All libraries in the library list for the current thread are searched until the first match is found.
+</dd>
+
+</dl>
+
+<dl>
+<dt class="dlterm">
+<strong>*CURLIB
+</strong></dt>
+
+<dd class="dlentry">
+The current library for the job is used to locate the message queue.  If no current library entry exists in the library list, QGPL is used.
+</dd>
+
+<dt class="dlterm">
+<strong><em>name
+</em></strong></dt>
+
+<dd class="dlentry">
+Specify the library where the message queue is located.
+</dd>
+
+</dl>
+
+</div>
+<div class="div" id="sndpgmmsg__tousr">
+<p>
+<strong>To user profile (TOUSR)
+</strong></p>
+
+<p>
+Specifies that the message is to be sent to the message queue specified in the user profile for the user named on this parameter.  This parameter cannot be used if a value is specified for the 
+<strong>Send to non-pgm message queue (TOMSGQ)
+</strong> parameter or the 
+<strong>Call stack entry message queue (TOPGMQ)
+</strong> parameter.
+
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong>*SYSOPR
+</strong></dt>
+
+<dd class="dlentry">
+The message is sent to the system operator (message queue QSYSOPR in library QSYS).  Any message sent to message queue QSYSOPR in library QSYS automatically has a copy of the message sent to the QHST (history log) message queue in library QSYS.
+</dd>
+
+<dt class="dlterm">
+<strong>*REQUESTER
+</strong></dt>
+
+<dd class="dlentry">
+The message is sent to the user profile message queue for interactive jobs or to the system operator's message queue (QSYSOPR in library QSYS) for batch jobs.
+</dd>
+
+<dt class="dlterm">
+<strong>*ALLACT
+</strong></dt>
+
+<dd class="dlentry">
+A copy of the message is sent to the user profile message queue of each user profile with an interactive job currently running.  *ALLACT cannot be specified with inquiry messages.
+</dd>
+
+<dt class="dlterm">
+<strong><em>name
+</em></strong></dt>
+
+<dd class="dlentry">
+Specify the user profile name of the user to whom the message is to be sent.
+</dd>
+
+</dl>
+
+</div>
+<div class="div" id="sndpgmmsg__msgtype">
+<p>
+<strong>Message type (MSGTYPE)
+</strong></p>
+
+<p>
+Specifies which message type is assigned to this message when it is sent by this program.
+
+</p>
+
+<p>
+<strong>Notes:
+</strong>
+</p>
+
+<ol class="cds--list--ordered--temporary">
+<li class="cds--list__item">
+Inquiry messages can be sent only to the external queue or to a named message queue specified for the TOUSR or TOMSGQ parameters.  When sending an inquiry with the TOMSGQ parameter, a second queue can be specified if the value is *HSTLOG.
+
+</li>
+
+<li class="cds--list__item">
+Completion, diagnostic, escape, notify, and status messages can be sent only to a call message queue.
+
+</li>
+
+<li class="cds--list__item">
+Escape messages cannot be sent to the external message queue.
+
+</li>
+
+
+</ol>
+
+<dl>
+<dt class="dlterm">
+<strong><u>*INFO
+</u></strong></dt>
+
+<dd class="dlentry">
+The message is sent as an informational message.
+</dd>
+
+<dt class="dlterm">
+<strong>*INQ
+</strong></dt>
+
+<dd class="dlentry">
+The message is sent as an inquiry message.
+</dd>
+
+<dt class="dlterm">
+<strong>*COMP
+</strong></dt>
+
+<dd class="dlentry">
+A completion message is sent to a call message queue.  A completion message indicates the status of the work that is successfully performed.
+</dd>
+
+<dt class="dlterm">
+<strong>*DIAG
+</strong></dt>
+
+<dd class="dlentry">
+A diagnostic message is sent to a call message queue.  Diagnostic messages provide information about errors detected by this program.  The errors are either in the input sent to it, or are those that occurred while it was running the requested function.  An escape or notify message should also be sent to inform the receiving program or procedure of the diagnostic messages that are on its message queue.
+</dd>
+
+<dt class="dlterm">
+<strong>*NOTIFY
+</strong></dt>
+
+<dd class="dlentry">
+A notify exception message is sent to a call message queue.  A notify message describes a condition for which corrective action must be taken before the sending program can continue.  A reply message is sent back to the sending program.  After corrective action is taken, the sending program can resume running and can receive the reply message from its message queue.
+</dd>
+
+<dt class="dlterm">
+<strong>*ESCAPE
+</strong></dt>
+
+<dd class="dlentry">
+An escape exception message is sent to a call message queue.  An escape message describes an irrecoverable error condition.  The sending program does not continue to run.
+</dd>
+
+<dt class="dlterm">
+<strong>*RQS
+</strong></dt>
+
+<dd class="dlentry">
+A request message is sent to a call message queue.  A request message allows request data received from device files to pass from this program to another program or procedure.  An immediate message, specified by the MSG parameter, must be used to send the request.
+</dd>
+
+<dt class="dlterm">
+<strong>*STATUS
+</strong></dt>
+
+<dd class="dlentry">
+A status exception message is sent to a call message queue.  The status message describes the status of work performed by the sending program.  The first 28 characters of message data in the MSGDTA parameter are used as the comparison data for message monitors (established by the Monitor Message (MONMSG) command).  If the status exception message is not being monitored, control is returned to the sending program.  If a status message is sent to the external message queue of an interactive job, the message is shown on line 24, processing continues, and no response is required.
+<p>
+<strong>Note:     
+</strong>This value cannot be specified if the 
+<strong>Message text, or (MSG)
+</strong> parameter, is specified.
+
+</p>
+
+</dd>
+
+</dl>
+
+</div>
+<div class="div" id="sndpgmmsg__rpymsgq">
+<p>
+<strong>Message queue to get reply (RPYMSGQ)
+</strong></p>
+
+<p>
+Specifies, for inquiry and notify messages only, the call message queue or the non-program message queue to which the reply message is to be sent.
+
+</p>
+
+<p>
+<strong>Note:     
+</strong>A value of *PGMQ must be specified if a notify message is sent or if an inquiry message is sent to *EXT,
+
+</p>
+
+<p>
+<strong>Single values
+</strong>
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><u>*PGMQ
+</u></strong></dt>
+
+<dd class="dlentry">
+The reply to an inquiry or notify message is sent to the message queue associated with the call stack entry of the program or procedure using this command.
+</dd>
+
+</dl>
+
+<p>
+<strong>Qualifier 1: Message queue to get reply
+</strong>
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><em>name
+</em></strong></dt>
+
+<dd class="dlentry">
+Specify the name of the message queue to which the reply is sent.
+</dd>
+
+</dl>
+
+<p>
+<strong>Qualifier 2: Library
+</strong>
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><u>*LIBL
+</u></strong></dt>
+
+<dd class="dlentry">
+All libraries in the library list for the current thread are searched until the first match is found.
+</dd>
+
+</dl>
+
+<dl>
+<dt class="dlterm">
+<strong>*CURLIB
+</strong></dt>
+
+<dd class="dlentry">
+The current library for the job is used to locate the message queue.  If no current library entry exists in the library list, QGPL is used.
+</dd>
+
+<dt class="dlterm">
+<strong><em>name
+</em></strong></dt>
+
+<dd class="dlentry">
+Specify the library where the message queue is located.
+</dd>
+
+</dl>
+
+</div>
+<div class="div" id="sndpgmmsg__keyvar">
+<p>
+<strong>CL var for KEYVAR        (4) (KEYVAR)
+</strong></p>
+
+<p>
+Specifies the name of the CL character variable, if any, that contains the message reference key that identifies the message sent by the program containing this command.  The message reference key is assigned by the system when the message is sent and is placed in the variable specified here.
+
+</p>
+
+<p>
+If a message is being sent to a message queue associated with a call stack entry, KEYVAR refers to that message queue (specified for the 
+<strong>Call stack entry message queue (TOPGMQ)
+</strong> parameter).  If *INQ or *NOTIFY is specified for the 
+<strong>Message type (MSGTYPE)
+</strong> parameter, KEYVAR refers to the sender copy message located in the message queue specified for the 
+<strong>Message queue to get reply (RPYMSGQ)
+</strong> parameter.  In all other cases, KEYVAR refers to the message queue specified for the TOPGMQ parameter.
+
+</p>
+
+<p>
+Any type of message can be assigned a key when it is being sent to a program message queue.  For messages sent to a nonprogram message queue, message reference keys are available for inquiry (*INQ) messages only.  If another message type is sent to a nonprogram queue, no message key is available and blanks are returned for KEYVAR.
+
+</p>
+
+<p>
+The variable must be a character variable having a length of 4 characters.  If KEYVAR is not specified and a reply is required, it can be received by the program in FIFO order.
+
+</p>
+
+<p>
+<strong>Note:     
+</strong>A common usage of this field deals with inquiry and reply messages.  When an inquiry message is sent, use this parameter as the method to obtain the reply to the inquiry message.  For example, when sending an inquiry, this parameter will contain the key of the sender copy which can be specified in the MSGKEY parameter of the RCVMSG command to obtain the reply once it is sent to the inquiry message.
+
+</p>
+
+</div>
+<div class="div" id="sndpgmmsg__ccsid">
+<p>
+<strong>Coded character set ID (CCSID)
+</strong></p>
+
+<p>
+Specifies the coded character set identifier (CCSID) that the supplied message or message data is in.  If a message identifier is specified, the text supplied by the MSGDTA (message data) parameter that corresponds to the *CCHAR type field is assumed to be in the CCSID specified by the CCSID parameter.  The data supplied that does not correspond to the *CCHAR type field is assumed to be 65535 and is not converted.  For more information about the *CCHAR type field see the Add Message Description (ADDMSGD) command.
+
+</p>
+
+<p>
+If no message identifier is specified, the text supplied by the MSG (message) parameter is assumed to be in the CCSID supplied by the CCSID parameter.  For more information about the message handler and its use of CCSIDs, see the i5/OS globalization topic collection in the IBM i Information Center at http://www.ibm.com/systems/i/infocenter/.
+
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><u>*JOB
+</u></strong></dt>
+
+<dd class="dlentry">
+The message data or immediate text is assumed to be in the CCSID of the job running this command.
+</dd>
+
+<dt class="dlterm">
+<strong>*HEX
+</strong></dt>
+
+<dd class="dlentry">
+The message data or immediate text is not converted.  CCSID 65535 is used.
+</dd>
+
+<dt class="dlterm">
+<strong><em>coded-character-set-identifier
+</em></strong></dt>
+
+<dd class="dlentry">
+Specify a valid CCSID in which you want your message or message data to be considered in.  Valid values range from 1 through 65535.  This command validates the CCSID.  See the Globalization information in the iSeries Information Center at http://www.ibm.com/eserver/iseries/infocenter for a list of valid CCSID values.
+</dd>
+
+</dl>
+
+</div>
+</section>
+
+<section class="section" role="region" aria-labelledby="sndpgmmsg__examples__title__1" id="sndpgmmsg__examples"><h2 class="sectiontitle" id="sndpgmmsg__examples__title__1">Examples</h2>
+
+<p>
+<strong>Example 1: Specifying Substitution Values
+</strong>
+</p>
+
+<div class="p">
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>
+SNDPGMMSG   MSGID(UIN0023)  MSGF(INV)  MSGDTA('50 100')
+            TOPGMQ(*EXT)
+
+</code></pre></div><div class="docs--copy-btn"></div></div>
+
+</div>
+
+<p>
+This command sends the message identified as UIN0023, which is stored in message file INV, to the external message queue of the job (the Display Program Messages presents the message at a display station). The data, which contains two substitution values specified in the MSGDTA parameter, is sent with the message. This data can then be used as substitution values when the message is received, or it can be used as data to be dumped, depending on how the message UIN0023 is defined in the message file. Assuming that the variables &amp;1 and &amp;2 have been defined in the message file as character variables, each 3 characters long, and that the first-level message text of the message UIN0023 is: 'Requested item decreased by &amp;1; current balance &amp;2.' The message text sent is: 'Requested item decreased by 50; current balance 100.'
+
+</p>
+
+<p>
+<strong>Example 2: Sending an Inquiry Message
+</strong>
+</p>
+
+<div class="p">
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>
+SNDPGMMSG   MSG('Mount checks in printer before continuing')
+            MSGTYPE(*INQ)  TOMSGQ(*SYSOPR)
+
+</code></pre></div><div class="docs--copy-btn"></div></div>
+
+</div>
+
+<p>
+This command sends an inquiry message to the system operator.  The operator looks at the message that was sent by using the DSPMSG command and responds to the message directly on that display. A Receive Message (RCVMSG) command is used in the program to accept the operator's response.
+
+</p>
+
+<p>
+<strong>Example 3: Sending an Escape Message
+</strong>
+</p>
+
+<div class="p">
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>
+SNDPGMMSG   MSGID(USR0001)  MSGF(USRMSGR)  TOPGMQ(*PRV  *)
+            MSGTYPE(*ESCAPE)
+
+</code></pre></div><div class="docs--copy-btn"></div></div>
+
+</div>
+
+<p>
+This command is an example of how a message could be sent to the caller of a program or procedure to cause an abnormal end. The message USR0001 could indicate that an invalid code was passed (such as a nonnumeric code when numeric is required). Because the message being sent is an escape message, the program or procedure that is sending the message cannot be resumed. The values *PRV and * did not have to be coded on this command because they are the default values on the TOPGMQ parameter.
+
+</p>
+
+<p>
+<strong>Example 4: Sending an Escape Message to an ILE Procedure
+</strong>
+</p>
+
+<div class="p">
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>
+SNDPGMMSG   MSGID(USR0001)  MSGF(USRMSGR)
+            TOPGMQ(*SAME ACCOUNT_FINAL_TOTALS)
+            MSGTYPE(*ESCAPE)
+
+</code></pre></div><div class="docs--copy-btn"></div></div>
+
+</div>
+
+<p>
+This command sends a message to an ILE procedure. In this example, the call stack entry identifier is more than 10 characters. Since no qualifier is specified, the actual module name and bound program name associated with the procedure are not used in finding the procedure. The escape exception message is sent to the message queue associated with ACCOUNT_FINAL_TOTALS because *SAME is specified for Element 1.
+
+</p>
+
+<p>
+<strong>Example 5: Sending an Escape Message using Qualifiers
+</strong>
+</p>
+
+<div class="p">
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>
+SNDPGMMSG   MSGID(USR0001)  MSGF(USRMSGR)
+            TOPGMQ(*PRV FIRST_QTR_SUMMARY SUMQTRS REPORTS)
+            MSGTYPE(*ESCAPE)
+
+</code></pre></div><div class="docs--copy-btn"></div></div>
+
+</div>
+
+<p>
+This command sends an escape exception message to the caller of the procedure FIRST_QTR_SYMMARY. The procedure is qualified by the module name SUMQTRS and the bound program name REPORTS. The escape exception message interrupts the sending program and the sending program is not resumed.
+
+</p>
+
+<p>
+<strong>Example 6: Sending a Completion Message using a Partial Procedure Name
+</strong>
+</p>
+
+<div class="p">
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>
+SNDPGMMSG   MSGID(USR0001)  MSGF(USRMSGR)
+            TOPGMQ(*SAME 'MANAGE_SALES&gt;&gt;&gt;')  MSGTYPE(*COMP)
+
+</code></pre></div><div class="docs--copy-btn"></div></div>
+
+</div>
+
+<p>
+This command sends a completion message to the most recent procedure whose name begins with MANAGE_SALES.
+
+</p>
+
+</section>
+
+<section class="section" role="region" aria-labelledby="sndpgmmsg__errormsgs__title__1" id="sndpgmmsg__errormsgs"><h2 class="sectiontitle" id="sndpgmmsg__errormsgs__title__1">Error messages</h2>
+
+<p>
+<strong><u>*ESCAPE Messages
+</u></strong>
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong>CPF24CB
+</strong></dt>
+
+<dd class="dlentry">
+*PGMNAME requires a specified program name.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF2409
+</strong></dt>
+
+<dd class="dlentry">
+Specified message type not valid with specified program message queue.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF2428
+</strong></dt>
+
+<dd class="dlentry">
+Message queue parameter is not valid.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF2453
+</strong></dt>
+
+<dd class="dlentry">
+Reply queue not sender's program message queue.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF2469
+</strong></dt>
+
+<dd class="dlentry">
+Error occurred when sending message&amp;1.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF247A
+</strong></dt>
+
+<dd class="dlentry">
+Call stack entry not found.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF247E
+</strong></dt>
+
+<dd class="dlentry">
+CCSID &amp;1 is not valid.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF2499
+</strong></dt>
+
+<dd class="dlentry">
+Message identifier &amp;1 not valid.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF2524
+</strong></dt>
+
+<dd class="dlentry">
+Exception handler not available because of reason code &amp;1.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF2550
+</strong></dt>
+
+<dd class="dlentry">
+Exception message sent to a deleted program or procedure.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF2702
+</strong></dt>
+
+<dd class="dlentry">
+Device description &amp;1 not found.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF7C08
+</strong></dt>
+
+<dd class="dlentry">
+No support network connection.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF8C0C
+</strong></dt>
+
+<dd class="dlentry">
+Content of problem record &amp;1 not valid.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF8C0E
+</strong></dt>
+
+<dd class="dlentry">
+Library QGPL not found.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF8C01
+</strong></dt>
+
+<dd class="dlentry">
+Cannot connect to IBM service system. One session allowed.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF8C07
+</strong></dt>
+
+<dd class="dlentry">
+A parameter is not valid.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF8C08
+</strong></dt>
+
+<dd class="dlentry">
+Cannot specify *SELECT for the control point name.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF8C09
+</strong></dt>
+
+<dd class="dlentry">
+&amp;1 not defined as a service provider.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF8C16
+</strong></dt>
+
+<dd class="dlentry">
+Error occurred while processing request.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF8C17
+</strong></dt>
+
+<dd class="dlentry">
+Sign-on failed.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF8C18
+</strong></dt>
+
+<dd class="dlentry">
+No support network connection.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF8C19
+</strong></dt>
+
+<dd class="dlentry">
+Remote support application failed.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF8C2A
+</strong></dt>
+
+<dd class="dlentry">
+Cannot connect to IBM service system.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF8C24
+</strong></dt>
+
+<dd class="dlentry">
+Error occurred while processing request.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF8C27
+</strong></dt>
+
+<dd class="dlentry">
+Alternate load device not found.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF8C32
+</strong></dt>
+
+<dd class="dlentry">
+PTF order cannot be processed.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF9830
+</strong></dt>
+
+<dd class="dlentry">
+Cannot assign library &amp;1.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF9845
+</strong></dt>
+
+<dd class="dlentry">
+Error occurred while opening file &amp;1.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF9846
+</strong></dt>
+
+<dd class="dlentry">
+Error while processing file &amp;1 in library &amp;2.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF9847
+</strong></dt>
+
+<dd class="dlentry">
+Error occurred while closing file &amp;1 in library &amp;2.
+</dd>
+
+</dl>
+
+</section>
+
+</div>
+
+</article></main>
+</body></html>

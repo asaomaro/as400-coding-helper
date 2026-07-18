@@ -1,0 +1,203 @@
+
+  <!doctype html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+  <html>
+<head><META http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>Clear Physical File Member  (CLRPFM)</title>
+</head>
+<body bgcolor="white">
+<a name="CLRPFM.Top_Of_Page"></a>
+<h2>Clear Physical File Member  (CLRPFM)</h2>
+<table width="100%">
+<tr>
+<td align="left" valign="top"><b>Where allowed to run:  </b>All environments (*ALL)<br>
+<b>Threadsafe:  </b>Conditional
+</td>
+<td align="right" valign="top">
+<a href="#CLRPFM.PARAMETERS.TABLE">Parameters</a><br>
+<a href="#CLRPFM.COMMAND.EXAMPLES">Examples</a><br>
+<a href="#CLRPFM.ERROR.MESSAGES">Error messages</a></td>
+</tr>
+</table>
+
+<div> <a name="CLRPFM"></a>
+<p>The Clear Physical File Member (CLRPFM) command removes all the data (including deleted records) from the specified member of a physical file.  If *NO was specified for the <b>Allocate storage (ALLOCATE)</b> parameter when the file was created, the record count for the member is set to zero, and the member size is set to the minimum size possible.  If *YES was specified for the ALLOCATE parameter when the file was created, the CLRPFM command resets the member size to the value used when the file was initially created is reset.
+</p>
+<p><b>Restrictions:</b>
+</p>
+<ul>
+<li>This command is conditionally threadsafe.  In multithreaded jobs, this command is not threadsafe for distributed files.  This command is also not threadsafe and fails for Distributed Data Management (DDM) files of type *SNA.
+</li>
+</ul>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#CLRPFM.Top_Of_Page">Top</a></td></tr>
+</table>
+<hr width="100%" size="2">
+
+<div>
+<h3><a name="CLRPFM.PARAMETERS.TABLE">Parameters</a></h3>
+<table cellspacing="0" cellpadding="4" border="1"><tr>
+<th width="10%" align="left" valign="bottom" bgcolor="aqua">Keyword</th>
+<th width="15%" align="left" valign="bottom" bgcolor="aqua">Description</th>
+<th width="30%" align="left" valign="bottom" bgcolor="aqua">Choices</th>
+<th width="10%" align="left" valign="bottom" bgcolor="aqua">Notes</th>
+</tr>
+<tr>
+<td valign="top" rowspan="3"><a href="#CLRPFM.FILE"><b>FILE</b></a></td>
+<td valign="top">Physical file</td>
+<td valign="top"><i>Qualified object name</i></td>
+<td valign="top" rowspan="3">Required, Positional 1</td>
+</tr>
+<tr>
+<td valign="top">Qualifier 1: Physical file</td>
+<td valign="top"><i>Name</i></td>
+</tr><tr>
+<td valign="top">Qualifier 2: Library</td>
+<td valign="top"><i>Name</i>, <b><u>*LIBL</u></b>, *CURLIB</td>
+</tr><tr>
+<td valign="top"><a href="#CLRPFM.MBR"><b>MBR</b></a></td>
+<td valign="top">Member</td>
+<td valign="top"><i>Name</i>, <b><u>*FIRST</u></b>, *LAST, *ALL</td>
+<td valign="top">Optional, Positional 2</td>
+</tr>
+</table>
+
+<table width="100%">
+<tr><td align="right"><a href="#CLRPFM.Top_Of_Page">Top</a></td></tr>
+</table>
+</div>
+<div> <a name="CLRPFM.FILE"></a>
+<h3>Physical file (FILE)</h3>
+<p>Specifies the physical file that contains the member to be cleared.
+</p>
+<p>This is a required parameter.
+</p>
+<p><b>Qualifier 1: Physical file</b>
+</p>
+<dl>
+<dt><b><i>name</i></b></dt>
+<dd>Specify the name of the physical file.
+</dd>
+</dl>
+<p><b>Qualifier 2: Library</b>
+</p>
+<dl>
+<dt><b><u>*LIBL</u></b></dt>
+<dd>All libraries in the library list for the current thread are searched until the first match is found.
+</dd>
+</dl>
+<dl>
+<dt><b>*CURLIB</b></dt>
+<dd>The current library for the job is used to locate the file.  If no library is specified as the current library, QGPL is used.
+</dd>
+</dl>
+<dl>
+<dt><b><i>name</i></b></dt>
+<dd>Specify the name of the library to be searched.
+</dd>
+</dl>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#CLRPFM.Top_Of_Page">Top</a></td></tr>
+</table>
+<div> <a name="CLRPFM.MBR"></a>
+<h3>Member (MBR)</h3>
+<p>Specifies the name of the member to be cleared.
+</p>
+<dl>
+<dt><b><u>*FIRST</u></b></dt>
+<dd>The first member of the specified physical file is cleared.
+</dd>
+<dt><b>*LAST</b></dt>
+<dd>The last member of the specified physical file is cleared.
+</dd>
+<dt><b>*ALL</b></dt>
+<dd>All members of the specified physical file are cleared.
+</dd>
+<dt><b><i>name</i></b></dt>
+<dd>Specify the name of the physical file member to be cleared.
+</dd>
+</dl>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#CLRPFM.Top_Of_Page">Top</a></td></tr>
+</table>
+<hr width="100%" size="2">
+<div><h3><a name="CLRPFM.COMMAND.EXAMPLES">Examples</a> </h3>
+<p>
+<pre>
+CLRPFM   FILE(*CURLIB/INV)  MBR(FEB)
+</pre>
+</p>
+<p>This command clears the member named FEB in the physical file INV, found in the current library for the job *CURLIB. It is not cleared until all jobs currently using the member and all jobs using the access paths over the member are done with it.
+</p>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#CLRPFM.Top_Of_Page">Top</a></td></tr>
+</table>
+<hr width="100%" size="2">
+<div><h3><a name="CLRPFM.ERROR.MESSAGES">Error messages</a> </h3>
+<p><b><u>*ESCAPE Messages</u></b>
+</p>
+<dl>
+<dt><b>CPF3130</b></dt>
+<dd>Member &amp;2 already in use.
+</dd>
+<dt><b>CPF3133</b></dt>
+<dd>File &amp;1 in library &amp;3 contains no members.
+</dd>
+<dt><b>CPF3134</b></dt>
+<dd>Referential constraint error processing member &amp;2.
+</dd>
+<dt><b>CPF3136</b></dt>
+<dd>File &amp;1 in &amp;3 not allowed on command.
+</dd>
+<dt><b>CPF3137</b></dt>
+<dd>No authority to clear, initialize, or copy member &amp;2.
+</dd>
+<dt><b>CPF3141</b></dt>
+<dd>Member &amp;2 not found.
+</dd>
+<dt><b>CPF3142</b></dt>
+<dd>File &amp;1 in library &amp;3 not found.
+</dd>
+<dt><b>CPF3144</b></dt>
+<dd>Member &amp;2 not cleared or initialized.
+</dd>
+<dt><b>CPF3156</b></dt>
+<dd>File &amp;1 in library &amp;3 in use.
+</dd>
+<dt><b>CPF3157</b></dt>
+<dd>Triggers or the system-period temporal table prevent requested operation.
+</dd>
+<dt><b>CPF3159</b></dt>
+<dd>Member &amp;2 saved with STG(*FREE).
+</dd>
+<dt><b>CPF3160</b></dt>
+<dd>Operation on member &amp;2 ended. Entry cannot be journaled.
+</dd>
+<dt><b>CPF3179</b></dt>
+<dd>Cannot clear or initialize DDM file &amp;1 in &amp;3.
+</dd>
+<dt><b>CPF32B8</b></dt>
+<dd>Distributed file error, reason code &amp;3.
+</dd>
+<dt><b>CPF32CF</b></dt>
+<dd>Distributed file error, reason code &amp;3.
+</dd>
+<dt><b>CPF32C3</b></dt>
+<dd>Distributed file error, level ID mismatch
+</dd>
+<dt><b>CPF320B</b></dt>
+<dd>Operation was not valid for database file &amp;1.
+</dd>
+<dt><b>CPF3203</b></dt>
+<dd>Cannot allocate object for file &amp;1 in &amp;2.
+</dd>
+</dl>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#CLRPFM.Top_Of_Page">Top</a></td></tr>
+</table>
+</body>
+</html>

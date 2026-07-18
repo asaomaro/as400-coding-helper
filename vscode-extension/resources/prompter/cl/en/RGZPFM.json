@@ -1,0 +1,290 @@
+{
+  "keyword": "RGZPFM",
+  "description": "Reorganize Physical File Mbr (RGZPFM)",
+  "parameters": [
+    {
+      "name": "FILE",
+      "description": "Data base file",
+      "help": "Data base file (FILE)\n\nSpecifies the physical file whose member is to be reorganized.\n\nThis is a required parameter.\n\nQualifier 1: Data base file\n\nQualifier 2: Library",
+      "inputType": "group",
+      "required": true,
+      "groupKind": "qualified",
+      "children": [
+        {
+          "name": "LIB",
+          "description": "Library",
+          "help": "指定できる特殊値: *LIBL, *CURLIB",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "*LIBL",
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          },
+          "placeholder": "*LIBL"
+        },
+        {
+          "name": "FILE",
+          "description": "Data base file",
+          "inputType": "text",
+          "required": true,
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          },
+          "placeholder": "FILE"
+        }
+      ],
+      "positional": 1,
+      "basic": true
+    },
+    {
+      "name": "MBR",
+      "description": "Member",
+      "help": "Member (MBR)\n\nSpecifies the member to be reorganized.\n\n指定できる特殊値: *FIRST, *LAST",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*FIRST",
+      "attributes": {
+        "characterSet": "upper",
+        "maxLength": 10
+      },
+      "positional": 2,
+      "placeholder": "*FIRST",
+      "basic": true
+    },
+    {
+      "name": "KEYFILE",
+      "description": "Key file",
+      "help": "Key file (KEYFILE)\n\nSpecifies whether the physical file member has its arrival sequence changed to match its keyed sequence, is reorganized in the sequence of a logical file member, or is not reorganized. If this parameter specifies a multiple-format logical file and member, the Record format (RCDFMT) parameter must also be specified.\n\nNote: Join logical files, or an SQL Index with a WHERE clause cannot be specified as key files, and a logical file in this parameter is not allowed to have a select/omit access path.\n\nSingle values\n\nElement 1: Logical file\n\nSpecify the name and library of the logical file associated with the physical file member.\n\nQualifier 1: Logical file\n\nQualifier 2: Library\n\nElement 2: Member",
+      "inputType": "group",
+      "required": false,
+      "groupKind": "elements",
+      "singleValues": [
+        "*NONE",
+        "*FILE",
+        "*RPLDLTRCD"
+      ],
+      "children": [
+        {
+          "name": "KEYFILE_E1",
+          "description": "Logical file",
+          "inputType": "group",
+          "required": false,
+          "groupKind": "qualified",
+          "children": [
+            {
+              "name": "KEYFILE_LIB",
+              "description": "Library",
+              "help": "指定できる特殊値: *LIBL, *CURLIB",
+              "inputType": "text",
+              "required": false,
+              "defaultValue": "*LIBL",
+              "attributes": {
+                "characterSet": "upper",
+                "maxLength": 10
+              },
+              "placeholder": "*LIBL"
+            },
+            {
+              "name": "KEYFILE",
+              "description": "Logical file",
+              "inputType": "text",
+              "required": false,
+              "attributes": {
+                "characterSet": "upper",
+                "maxLength": 10
+              },
+              "placeholder": "*NONE"
+            }
+          ],
+          "defaultValue": "*NONE"
+        },
+        {
+          "name": "KEYFILE_MBR",
+          "description": "Member",
+          "inputType": "text",
+          "required": false,
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          },
+          "placeholder": "MBR"
+        }
+      ],
+      "basic": true
+    },
+    {
+      "name": "RBDACCPTH",
+      "description": "Rebuild access paths",
+      "help": "Rebuild access paths (RBDACCPTH)\n\nSpecifies whether to rebuild or maintain any valid access paths (other than an access path specified as the KEYFILE or a MAINT(*REBLD) access path) over the member.\n\nIf *NO is specified, ALWCANCEL(*YES) must also be specified.",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*YES",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*YES",
+          "value": "*YES"
+        },
+        {
+          "label": "*OPTIMIZE",
+          "value": "*OPTIMIZE"
+        },
+        {
+          "label": "*NO",
+          "value": "*NO"
+        }
+      ],
+      "basic": true
+    },
+    {
+      "name": "ALWCANCEL",
+      "description": "Allow cancel",
+      "help": "Allow cancel (ALWCANCEL)\n\nSpecifies whether to allow the reorganize to be canceled.\n\nIf *NO is specified, KEYFILE(*RPLDLTRCD) and RDBACCPTH(*NO) must not be specified, and LOCK(*EXCL) must also be specified.",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*NO",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*NO",
+          "value": "*NO"
+        },
+        {
+          "label": "*YES",
+          "value": "*YES"
+        }
+      ],
+      "basic": true
+    },
+    {
+      "name": "LOCK",
+      "description": "Lock state",
+      "help": "Lock state (LOCK)\n\nSpecifies the lock to acquire on the physical file member. The lock state will determine how much concurrent access is allowed by other jobs during the reorganize.\n\nIf *EXCLRD is specified, ALWCANCEL(*YES) must also be specified.\n\nIf *SHRUPD is chosen, the resulting order of the records may not exactly match what was requested on the KEYFILE keyword. The records will be reorganized to closely match the specified order, but concurrent update, delete, and insert operations will cause some records to not be reorganized. If the records must exactly match the arrival sequence (*NONE) or a keyed file sequence, do not use *SHRUPD.\n\nAt the end of the reorganize, an attempt is made to remove deleted records at the end of the file and return storage to the system. If *SHRUPD is specified, it is possible that a concurrent insert that occurs just prior to removing the deleted records may prevent the removal of some or all of the deleted records at the end of the file. In this case, the FROMRCD keyword can be used on a subsequent reorganize to attempt the removal of the deleted records without reorganizing the the entire file again.\n\nIf *SHRUPD is specified, ALWCANCEL(*YES) must also be specified.\n\nNote: Additional details about lock states can be found in the CL topic collection in the Programming category in the IBM i Information Center at http://www.ibm.com/systems/i/infocenter/.",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*EXCL",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*EXCL",
+          "value": "*EXCL"
+        },
+        {
+          "label": "*EXCLRD",
+          "value": "*EXCLRD"
+        },
+        {
+          "label": "*SHRUPD",
+          "value": "*SHRUPD"
+        }
+      ]
+    },
+    {
+      "name": "FROMRCD",
+      "description": "From record",
+      "help": "From record (FROMRCD)\n\nSpecifies which records in the file will be reorganized. Only records from the specified record to the end of the file will be reorganized.\n\nIf the previous reorganize completed normally and was able to remove the deleted records, the reorganize will begin with the first record in the file.\n\n*PRVRGZ is ignored if the reorganize is continued from a previously canceled reorganize.\n\nIf *PRVRGZ is specified, ALWCANCEL(*YES) must be specified and either KEYFILE(*RPLDLTRCD) or KEYFILE(*NONE) must be specified.\n\nIf a record number greater than 1 is specified, ALWCANCEL(*YES) must be specified and either KEYFILE(*RPLDLTRCD) or KEYFILE(*NONE) must be specified.\n\n指定できる特殊値: *START, *PRVRGZ",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*START",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "placeholder": "*START"
+    },
+    {
+      "name": "SRCOPT",
+      "description": "Source update options",
+      "help": "Source update options (SRCOPT)\n\nSpecifies, for physical source files only, whether the member places new numbers in the sequence number field, places zeros in the date field, or changes both fields. Changes occur after the records are compressed or reorganized.\n\nSingle values\n\nOther values",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*SAME",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*SAME",
+          "value": "*SAME"
+        },
+        {
+          "label": "*SEQNBR",
+          "value": "*SEQNBR"
+        },
+        {
+          "label": "*DATE",
+          "value": "*DATE"
+        }
+      ],
+      "maxOccurrences": 2,
+      "placeholder": "*SAME"
+    },
+    {
+      "name": "SRCSEQ",
+      "description": "Source sequence numbering",
+      "help": "Source sequence numbering (SRCSEQ)\n\nSpecifies, only when *SEQNBR is also specified on the SRCOPT parameter, the sequence number that is given to the first record in the source file member and the increment value that is used to renumber all other records in the member. If the member is renumbered but this parameter is not specified, 1.00 is assumed for sequence number and increment value.\n\nElement 1: Starting sequence number\n\nElement 2: Increment number\n\nFor example, if SRCSEQ(5000 10) is specified, the first record in the reorganized member is numbered 5000.00, the second is 5010.00, the third is 5020.00, and so on. If SRCSEQ(*N .25) is specified, the records are numbered 1.00, 1.25, 1.50, 1.75, 2.00, and so on. If a starting value of .01 and an increment value of .01 are specified, there are 999,999 unique sequence numbers possible. If the maximum sequence number of 9999.99 is reached, the remaining records are also assigned the sequence number 9999.99.",
+      "inputType": "group",
+      "required": false,
+      "groupKind": "elements",
+      "children": [
+        {
+          "name": "STRSEQNBR",
+          "description": "Starting sequence number",
+          "inputType": "number",
+          "required": false,
+          "defaultValue": "1.00",
+          "attributes": {
+            "numericOnly": true
+          },
+          "placeholder": "1.00"
+        },
+        {
+          "name": "INCNBR",
+          "description": "Increment number",
+          "inputType": "number",
+          "required": false,
+          "defaultValue": "1.00",
+          "attributes": {
+            "numericOnly": true
+          },
+          "placeholder": "1.00"
+        }
+      ]
+    },
+    {
+      "name": "RCDFMT",
+      "description": "Record format",
+      "help": "Record format (RCDFMT)\n\nSpecifies the record format name if the physical file member is reorganized in the sequence of a multiple-format logical file.\n\n指定できる特殊値: *ONLY",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*ONLY",
+      "attributes": {
+        "characterSet": "upper",
+        "maxLength": 10
+      },
+      "placeholder": "*ONLY"
+    }
+  ],
+  "examples": [
+    {
+      "code": "RGZPFM FILE(PAYROLL) MBR(MBR1)"
+    },
+    {
+      "code": "RGZPFM FILE(PAYROLL) MBR(MBR1) KEYFILE(*RPLDLTRCD) ALWCANCEL(*YES) LOCK(*EXCLRD)"
+    },
+    {
+      "code": "RGZPFM FILE(QCLSRC) MBR(CLMBR2) SRCOPT(*SEQNBR *DATE) KEYFILE(*FILE) SRCSEQ(1.00 .25)"
+    }
+  ],
+  "source": {
+    "url": "https://www.ibm.com/docs/en/ssw_ibm_i_74/cl/rgzpfm.htm",
+    "version": "IBM i 7.4"
+  }
+}

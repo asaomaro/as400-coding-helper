@@ -1,0 +1,750 @@
+{
+  "keyword": "CRTOUTQ",
+  "description": "出力待ち行列作成 (CRTOUTQ)",
+  "help": "出力待ち行列作成(CRTOUTQ)コマンドは，スプール・ファイルのための新しい出力待ち行列を作成します。各スプール・ファイルごとに1つの項目が出力待ち行列に入れられます。ファイルが出力装置に書き出される順序は，スプール・ファイルの出力優先順位および 待ち行列上のファイルの順序 (SEQ) パラメーターに指定された値によって決定されます。",
+  "parameters": [
+    {
+      "name": "OUTQ",
+      "description": "出力待ち行列",
+      "help": "作成する出力待ち行列を指定します。\n\nこれは必須パラメーターです。",
+      "inputType": "group",
+      "required": true,
+      "groupKind": "qualified",
+      "children": [
+        {
+          "name": "LIB",
+          "description": "ライブラリー",
+          "help": "*CURLIB: 出力待ち行列を見つけるために，ジョブの現行ライブラリーが使用されます。ライブラリー・リストに現行ライブラリー項目がない場合には，QGPLが使用されます。\n出力待ち行列が入っているライブラリーの名前を指定してください。 注: 一時ライブラリーQTEMPは有効なライブラリー名ではありません。出力待ち行列は永続ライブラリーになければなりません。",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "*CURLIB",
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          }
+        },
+        {
+          "name": "OUTQ",
+          "description": "出力待ち行列",
+          "help": "作成したい出力待ち行列の名前を指定してください。",
+          "inputType": "text",
+          "required": true,
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          }
+        }
+      ],
+      "positional": 1,
+      "basic": true
+    },
+    {
+      "name": "MAXPAGES",
+      "description": "スプール・ファイル最大サイズ",
+      "help": "開始時刻と終了時刻の間で印刷が許可されるスプール・ファイルの最大サイズをページ数で指定します。スプール・ファイルがページの制限を超える場合には，終了時刻になるまで印刷が据え置かれます（DFR状況）。正確なページ数が不明のファイルの場合には，見積ページ数が使用されます。（見積ページ数を見つけるためには，スプール・ファイル属性処理(WRKSPLFA)コマンドを使用することができます。）時刻は24時間時計でHHMMSSの形式で指定しなければなりません。",
+      "inputType": "group",
+      "required": false,
+      "groupKind": "elements",
+      "singleValues": [
+        "*NONE"
+      ],
+      "children": [
+        {
+          "name": "MAXPAGES_E1",
+          "description": "ページ数",
+          "help": "印刷可能な最大スプール・ファイルをページ数で指定してください。",
+          "inputType": "number",
+          "required": false,
+          "attributes": {
+            "numericOnly": true
+          },
+          "defaultValue": "*NONE"
+        },
+        {
+          "name": "MAXPAGES_E2",
+          "description": "開始時刻",
+          "help": "スプール・ファイルの最大サイズの制限が始まる時刻を指定してください。",
+          "inputType": "text",
+          "required": false
+        },
+        {
+          "name": "MAXPAGES_E3",
+          "description": "終了時刻",
+          "help": "最大スプール・ファイル・サイズの制限が終る時刻を指定してください。",
+          "inputType": "text",
+          "required": false
+        }
+      ],
+      "maxOccurrences": 5,
+      "basic": true
+    },
+    {
+      "name": "SEQ",
+      "description": "待ち行列上のファイルの順序",
+      "help": "出力待ち行列上のスプール・ファイルの順序を指定します。",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*FIFO",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*FIFO",
+          "value": "*FIFO",
+          "help": "待ち行列は，各ファイルの優先順位内で先入れ先出しになっています。これは，同じ優先順位の他のすべての項目の後に，新しいスプール・ファイルが待ち行列に入れられることを意味します。"
+        },
+        {
+          "label": "*JOBNBR",
+          "value": "*JOBNBR",
+          "help": "スプール・ファイルの待ち行列項目は，スプール・ファイルを作成したジョブのジョブ番号（実際には，ジョブを入力したシステムが使用した日付および時刻）を使用して，優先順位にしたがって分類されます。"
+        }
+      ],
+      "basic": true
+    },
+    {
+      "name": "RMTSYS",
+      "description": "リモート・システム",
+      "help": "出力待ち行列に対して（STRRMTWTRコマンドを使用して）リモート書き出しプログラムが開始された時にファイルが送られるリモート・システムを指定します。これは，SNADSによって「アドレス」として，またTCP/IPによって「ホスト」として参照されます。\n\n*NONE: 出力待ち行列はローカル印刷にのみ使用されます。OUTQパラメーターにこの出力待ち行列が指定されている時には，STRRMTWTRコマンドを使用することはできません。\n*PASTHR: ユーザー・ジョブによって作成されたスプール・ファイルを送る時に，ユーザーが（STRPASTHRコマンドを使用して）パススルーを行ったシステムが使用されます。別のシステムからパススルーされたジョブによって作成されたスプール・ファイルでなかった場合には，そのスプール・ファイルは保留されます（HLD状況）。\n*INTNETADR: INTNETADRパラメーターは，リモート書き出しプログラムが出力待ち行列に対して開始される時にシステムを識別するために使用されます。ホスト・テーブルまたはドメイン・ネーム・サーバーがTCP/IPネットワークにある場合には，このパラメーターの代わりにリモート・システム名を使用できます。 注: この値はCNNTYPEパラメーターに*IPが指定されている場合にのみ有効です。\n*NWSA: RMTPRTQパラメーターは，出力待ち行列へのリモート書き出しプログラムが開始される時に，システムを識別するために使用されます。この値が正しいのは，*NDSがDESTTYPEパラメーターに指定されている場合だけです。\nリモート・システムの名前を指定してください。接続タイプ（CNNTYPEパラメーター）が*SNAとして指定されている時には最初の8文字だけが使用されます。リモート・システムの名前を小文字にする必要がある場合には，その名前をアポストロフィで囲まなければなりません。アポストロフィを使用しなければ，オペレーティング・システムはその名前を大文字に変更します。",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*NONE",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "basic": true
+    },
+    {
+      "name": "RMTPRTQ",
+      "description": "リモート印刷装置待ち行列",
+      "help": "リモート書き出しプログラムがスプール・ファイルを送るリモート・システム(RMTSYSパラメーター）の印刷装置待ち行列を指定します。\n\nリモート・システムの名前を小文字にする必要がある場合には，その名前をアポストロフィで囲まなければなりません。アポストロフィを使用しなければ，オペレーティング・システムはその名前を大文字に変更します。\n\nIBM System iではない宛先システムの場合には，この名前はシステムに依存し，装置の実際の名前とするか，あるいは印刷待ち行列の名前とすることができます。\n\nこの出力待ち行列は，通常，ライブラリー名／出力待ち行列名として指定されます。ライブラリー名修飾子が指定されていない場合には，省略時の値として*LIBLが使用されます。\n\n*USER: スプール・ファイルを作成したユーザー・プロファイルによって，リモート・システムでのユーザーIDが決定されます。この値が有効なのは，接続タイプ(CNNTYPEパラメーター）が*SNAとして指定された場合だけです。\n*SYSTEM: リモート・システムの省略時のシステム印刷装置を使用して，印刷装置待ち行列が決定されます。リモートIBM System iの場合には，QPRTDEVシステム値に指定された印刷装置と関連する出力待ち行列が印刷装置待ち行列として使用されます。 注: この値が有効なのは，接続タイプ(CNNTYPEパラメーター）が*SNAまたは*USRDFNとして指定され，DESTTYPEが*OS400または*S390の場合だけです。\nリモート・システムの印刷装置待ち行列の名前を指定します。リモートIBM System iの場合には，これはスプール・ファイルが作成される出力待ち行列の名前となります。 リモート・システムの名前を小文字にする必要がある場合には，その名前をアポストロフィで囲まなければなりません。アポストロフィを使用しなければ，オペレーティング・システムはその名前を大文字に変更します。 IBM System iではない宛先システムの場合には，この名前はシステムに依存し，装置の実際の名前とするか，あるいは印刷待ち行列の名前とすることができます。 この出力待ち行列は，通常，ライブラリー名／出力待ち行列名として指定されます。ライブラリー名修飾子が指定されていない場合には，省略時の値として*LIBLが使用されます。",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*USER",
+      "attributes": {
+        "characterSet": "upper"
+      }
+    },
+    {
+      "name": "AUTOSTRWTR",
+      "description": "自動開始する書出プログラム",
+      "help": "システムによって自動始動されるリモート書き出しプログラムの数を指定します。リモート・システムが*NONEとして指定されているユーザー作成の出力待ち行列の場合には，このパラメーターは無視されます。\n\n*NONE: この出力待ち行列に対してシステムによって自動始動される書き出しプログラムはありません。\nシステムによってこの出力待ち行列に対して自動始動される書き出しプログラムの数を指定してください。",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*NONE",
+      "attributes": {
+        "characterSet": "upper"
+      }
+    },
+    {
+      "name": "MSGQ",
+      "description": "書出プログラムMSG用待ち行列",
+      "help": "この出力待ち行列に対して開始されたリモート書き出しプログラムによってメッセージが作成された時に，メッセージが送られるメッセージ待ち行列を指定します。",
+      "inputType": "group",
+      "required": false,
+      "groupKind": "qualified",
+      "children": [
+        {
+          "name": "MSGQ_LIB",
+          "description": "ライブラリー",
+          "help": "*LIBL: 最初に一致するものが見つかるまで，現行スレッドのライブラリー・リスト内のすべてのライブラリーが検索されます。\n*CURLIB: スレッドの現行ライブラリーが検索されます。スレッドの現行ライブラリーとして指定されているライブラリーがない場合，QGPLライブラリーが検索されます。\n検索するライブラリーの名前を指定してください。",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "*LIBL",
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          }
+        },
+        {
+          "name": "MSGQ",
+          "description": "書出プログラムMSG用待ち行列",
+          "help": "QSYSOPR: メッセージがQSYSOPRメッセージ待ち行列に送られます。\nリモート書き出しプログラムによって作成されたメッセージが送られるメッセージ待ち行列の名前を指定してください。",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "QSYSOPR",
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          }
+        }
+      ]
+    },
+    {
+      "name": "CNNTYPE",
+      "description": "接続タイプ",
+      "help": "リモート・システムとの接続のタイプを指定します。\n\n*SNA: スプール・ファイルはSNADSを使用して送られます。これは，ネットワーク・スプール・ファイル送信(SNDNETSPLF)コマンドと類似しており，SNADSの構成を必要とします。\n*IP: スプール・ファイルはTCP/IPを使用して送られます。これは，TCP/IPスプール・ファイル送信(SNDTCPSPLF)コマンドと類似しており，TCP/IPプロダクトの導入を必要とします。\n*USRDFN: スプール・ファイルはユーザー定義の接続を使用して送信されます。",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*SNA",
+      "attributes": {
+        "characterSet": "upper"
+      }
+    },
+    {
+      "name": "DESTTYPE",
+      "description": "宛先タイプ",
+      "help": "リモート・システム(RMTSYSパラメーター）のタイプを指定します。このパラメーターは，スプール・ファイルを送るために使用される形式を決定するために，スプール・ファイルに入っているデータのタイプ（CRTPRTFコマンドのDEVTYPEパラメーター）とともにリモート書き出しプログラムによって使用されます。スプール・ファイル中のデータのタイプがシステムによってサポートされていない場合には，スプール・ファイルはリモート書き出しプログラムによって保留されます。\n\n*OS400: 接続タイプ(CNNTYPE)が*SNAとして指定されている時には，スプール・ファイルはIBM System iに送られます。CNNTYPEが*IPである時には，この値はTCP/IP (V2R3以降）をサポートするすべてのリリースで指定することができます。 注: 他のパラメーター値を選択する時に最大の柔軟性を許可する場合には，この値を指定してください（可能な場合）。\n*OS400V2: スプール・ファイルはV2R3以前のIBM i (OS/400)が稼働しているシステムに送られます。この値が有効であるのは，CNNTYPEが*SNAの場合だけです。\n*S390: スプール・ファイルはSYSTEM Zに送られます。この値が有効であるのは，CNNTYPEが*SNAの場合，またはCNNTYPEが*USRDFNの場合だけです。\n*PSF2: スプール・ファイルはPSF/2プロダクトを実行しているパーソナル・コンピューターに送られます。この値が有効なのは，CNNTYPEが*IPである場合だけです。\n*NDS: スプール・ファイルはNETWARE4に送信するためのものです。この値が有効なのは，CNNTYPEが*USRDFNである場合だけです。\n*OTHER: スプール・ファイルは他のどの特殊値とも対応しないシステムに送られます。これには，V1R3以前のIBM i (OS/400)が稼働しているシステム，システム/36およびシステム/38システムが含まれます。",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*OS400",
+      "attributes": {
+        "characterSet": "upper"
+      }
+    },
+    {
+      "name": "TRANSFORM",
+      "description": "ホスト印刷の変換",
+      "help": "ファイルがリモート印刷装置待ち行列に送られる時に，装置タイプ*SCSのスプール・ファイルをASCIIデータに変換するためにホスト印刷変換機能を使用するかどうかを指定します。",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*YES",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*YES",
+          "value": "*YES",
+          "help": "SCSデータ・ストリームが変換されます。"
+        },
+        {
+          "label": "*NO",
+          "value": "*NO",
+          "help": "SCSデータ・ストリームは変換されません。"
+        }
+      ]
+    },
+    {
+      "name": "USRDTATFM",
+      "description": "ユーザー・データ変換",
+      "help": "スプール・ファイル・データの変換に使用されるユーザー定義データ・プログラムを指定します。",
+      "inputType": "group",
+      "required": false,
+      "groupKind": "qualified",
+      "singleValues": [
+        "*NONE"
+      ],
+      "children": [
+        {
+          "name": "USRDTATFM_LIB",
+          "description": "ライブラリー",
+          "help": "*LIBL: 最初に一致するものが見つかるまで，現行スレッドのライブラリー・リスト内のすべてのライブラリーが検索されます。\n*CURLIB: スレッドの現行ライブラリーが検索されます。スレッドの現行ライブラリーとして指定されているライブラリーがない場合，QGPLライブラリーが検索されます。\n検索するライブラリーの名前を指定してください。",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "*LIBL",
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          }
+        },
+        {
+          "name": "USRDTATFM",
+          "description": "ユーザー・データ変換",
+          "help": "ドライバー・プログラムによって使用されるデータ変換プログラムの名前を指定してください。",
+          "inputType": "text",
+          "required": false,
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          },
+          "defaultValue": "*NONE"
+        }
+      ]
+    },
+    {
+      "name": "MFRTYPMDL",
+      "description": "製造タイプおよび型式",
+      "help": "ホスト印刷変換機能またはユーザー・データ変換プログラムを使用している印刷装置のメーカー，タイプ，および型式を指定します。このパラメーターのプロンプトが出されるのは，TRANSFORM(*YES)が指定された場合，またはユーザー・データ変換プログラムを使用した場合だけです。\n\nMFRTYPMDLに*WSCSTXXXが指定された場合には，ワークステーション・カスタマイズ・オブジェクトを指定しなければなりません。\n\n*IBM42011: IBM 4201-1 PROPRINTERが使用されます。\n*WSCST: WSCSTパラメーターの値が使用されます。\nホスト印刷変換機能を使用している印刷装置のメーカー，タイプ，および型式を指定してください。",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*IBM42011",
+      "attributes": {
+        "characterSet": "upper"
+      }
+    },
+    {
+      "name": "WSCST",
+      "description": "ワークステーション・カスタマイズ・オブジェクト",
+      "help": "ワークステーションや印刷装置などの指定のASCII装置をカスタマイズするために使用される属性テーブルからなるオブジェクトを指定します。カスタマイズできる特性の例は文字表示，フォント仕様，および制御キー順序などです。\n\nこのパラメーターのプロンプトが出されるのは，TRANSFORM(*YES)が指定された場合，またはユーザー・データ変換プログラムを使用した場合だけです。",
+      "inputType": "group",
+      "required": false,
+      "groupKind": "qualified",
+      "singleValues": [
+        "*NONE"
+      ],
+      "children": [
+        {
+          "name": "WSCST_LIB",
+          "description": "ライブラリー",
+          "help": "*LIBL: 最初に一致するものが見つかるまで，現行スレッドのライブラリー・リスト内のすべてのライブラリーが検索されます。\n*CURLIB: スレッドの現行ライブラリーが検索されます。スレッドの現行ライブラリーとして指定されているライブラリーがない場合，QGPLライブラリーが検索されます。\n検索するライブラリーの名前を指定してください。",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "*LIBL",
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          }
+        },
+        {
+          "name": "WSCST",
+          "description": "ワークステーション・カスタマイズ・オブジェクト",
+          "help": "ワークステーション・カスタマイズ・オブジェクト作成(CRTWSCST)コマンドによって作成されたワークステーション・カスタマイズ・オブジェクトの名前を指定してください。",
+          "inputType": "text",
+          "required": false,
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          },
+          "defaultValue": "*NONE"
+        }
+      ]
+    },
+    {
+      "name": "IMGCFG",
+      "description": "イメージ構成",
+      "help": "この出力待ち行列のイメージ構成を指定します。イメージ構成オブジェクトは，さまざまなイメージおよび印刷データ・ストリーム形式の変換サービスを提供します。このパラメーターが使用されるのは，リモート書き出しプログラムの場合だけです。\n\n提供されるイメージ構成オブジェクトのリストについては，以下のイメージ構成オブジェクト(IMGCFG パラメーター）テーブルを参照してください。\n\n普及している多くの印刷装置について推奨されるIMGCFGについては，以下の印刷装置別推奨イメージ構成オブジェクト・テーブルを参照してください。\n\n*NONE: イメージ構成は指定されません。\nこの出力待ち行列に使用するイメージ構成を指定してください。",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*NONE",
+      "attributes": {
+        "characterSet": "upper"
+      }
+    },
+    {
+      "name": "INTNETADR",
+      "description": "IPアドレス",
+      "help": "印刷要求が送られる先のリモート・システムのIPアドレスを指定します。\n\nコマンド入力行から入力する場合には，値をアポストロフィ(')で囲まなければなりません。\n\nIPアドレスは NNN.NNN.NNN.NNN の形式で指定されます。ここで NNN は0から255の範囲の10進数です。そのアドレスのネットワークID部分またはホストID部分のビットがすべて2進数の1または0であるIPアドレスは無効です。 コマンド入力行から入力する場合には，値をアポストロフィ(')で囲まなければなりません。",
+      "inputType": "text",
+      "required": false
+    },
+    {
+      "name": "CLASS",
+      "description": "VM/MVSクラス",
+      "help": "VM/MVSホスト・システムに送られるファイルのVM/MVS SYSOUTクラスを指定します。\n\nA: クラスはAです。\n配布クラス値を指定してください。有効な値の範囲は，AからZおよび0から9です。",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "A"
+    },
+    {
+      "name": "FCB",
+      "description": "用紙制御バッファー",
+      "help": "VM/MVSホスト・システムに送られるファイルの用紙制御バッファーを指定します。\n\n*NONE: 用紙制御バッファーは使用されません。\n*USRDTA: ユーザー・データ(USRDTA)スプール・ファイル属性の最初の8文字が用紙制御バッファーの名前になります。ユーザー・データがブランクの場合には，用紙制御バッファーは使用されません。\n*PRTF: ファイルをスプールするために使用される印刷装置ファイルの最初の8文字が用紙制御バッファーの名前になります。\n使用される用紙制御バッファーの名前を指定してください。",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*NONE",
+      "attributes": {
+        "characterSet": "upper"
+      }
+    },
+    {
+      "name": "DESTOPT",
+      "description": "宛先オプション",
+      "help": "宛先従属オプションを指定します。CNNTYPE(*IP)が指定された場合には，宛先従属オプションが制御ファイル(LPDサーバーに送信される）に追加されます。CNNTYPE(*SNA)が指定されると，スプール・ファイルがリモート・システムに送信された後の処理方法を判別するのにこのフィールドが使用されます。\n\n*NONE: 宛先オプションは指定されません。\n*USRDFNTXT: スプール・ファイルが作成された時点のユーザー・プロファイルのユーザー定義テキストが使用されます。CNNTYPE(*SNA)が指定されている場合には，この値は無視されます。\n*NOWAIT: CNNTYPE(*SNA)が指定された場合に，*NOWAITの値はオペレーティング・システムがスプール・ファイルを送信した後はそれを記憶しないことを指示します。\nアポストロフィで囲まれた128文字を超えない文字を指定してください。",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*NONE",
+      "attributes": {
+        "characterSet": "upper"
+      }
+    },
+    {
+      "name": "SEPPAGE",
+      "description": "区切りページの印刷",
+      "help": "リモート・システムで印刷する時に，区切りページを要求するかしないかを指定します。",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*YES",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*YES",
+          "value": "*YES",
+          "help": "区切りページが要求されます。"
+        },
+        {
+          "label": "*NO",
+          "value": "*NO",
+          "help": "区切りページは要求されません。"
+        }
+      ]
+    },
+    {
+      "name": "USRDFNOPT",
+      "description": "ユーザー定義オプション",
+      "help": "スプール出力の場合にのみ，スプール・ファイルを処理するユーザー・アプリケーションまたはユーザー指定プログラムによって使用される1つまたは複数のユーザー定義オプションを指定します。最大4つのユーザー定義オプションを指定することができます。\n\n*NONE: ユーザー定義のオプションは指定しません。",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*NONE",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "maxOccurrences": 4
+    },
+    {
+      "name": "USRDFNOBJ",
+      "description": "ユーザー定義オブジェクト",
+      "help": "スプール出力の場合のみ，スプール・ファイルを処理するユーザー・アプリケーションまたはユーザー指定プログラムによって使用されるユーザー定義オブジェクトを指定します。",
+      "inputType": "group",
+      "required": false,
+      "groupKind": "elements",
+      "singleValues": [
+        "*NONE"
+      ],
+      "children": [
+        {
+          "name": "USRDFNOBJ_E1",
+          "description": "オブジェクト",
+          "inputType": "group",
+          "required": false,
+          "groupKind": "qualified",
+          "children": [
+            {
+              "name": "USRDFNOBJ_LIB",
+              "description": "ライブラリー",
+              "help": "*LIBL: 最初に一致するものが見つかるまで，現行スレッドのライブラリー・リスト内のすべてのライブラリーが検索されます。\n*CURLIB: スレッドの現行ライブラリーが検索されます。スレッドの現行ライブラリーとして指定されているライブラリーがない場合，QGPLライブラリーが検索されます。\n検索するライブラリーの名前を指定してください。",
+              "inputType": "text",
+              "required": false,
+              "defaultValue": "*LIBL",
+              "attributes": {
+                "characterSet": "upper",
+                "maxLength": 10
+              }
+            },
+            {
+              "name": "USRDFNOBJ",
+              "description": "オブジェクト",
+              "help": "ユーザー定義オブジェクトの名前を指定してください。",
+              "inputType": "text",
+              "required": false,
+              "attributes": {
+                "characterSet": "upper",
+                "maxLength": 10
+              }
+            }
+          ],
+          "defaultValue": "*NONE"
+        },
+        {
+          "name": "USRDFNOBJ_E2",
+          "description": "オブジェクト・タイプ",
+          "help": "ユーザー・オブジェクトのタイプは，次の1つとすることができます。 *DTAARA（データ域） *DTAQ（データ待ち行列） *FILE（ファイル） *PSFCFG (PSF構成） *USRIDX（ユーザー見出し） *USRQ（ユーザー待ち行列） *USRSPC（ユーザー・スペース）",
+          "inputType": "dropdown",
+          "required": false,
+          "attributes": {
+            "characterSet": "upper"
+          },
+          "options": [
+            {
+              "label": "*DTAARA",
+              "value": "*DTAARA"
+            },
+            {
+              "label": "*DTAQ",
+              "value": "*DTAQ"
+            },
+            {
+              "label": "*FILE",
+              "value": "*FILE"
+            },
+            {
+              "label": "*PSFCFG",
+              "value": "*PSFCFG"
+            },
+            {
+              "label": "*USRIDX",
+              "value": "*USRIDX"
+            },
+            {
+              "label": "*USRQ",
+              "value": "*USRQ"
+            },
+            {
+              "label": "*USRSPC",
+              "value": "*USRSPC"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "USRDRVPGM",
+      "description": "ユーザー・ドライバー・プログラム",
+      "help": "ユーザー定義のドライバー・プログラムを指定します。",
+      "inputType": "group",
+      "required": false,
+      "groupKind": "qualified",
+      "singleValues": [
+        "*NONE"
+      ],
+      "children": [
+        {
+          "name": "USRDRVPGM_LIB",
+          "description": "ライブラリー",
+          "help": "*LIBL: 最初に一致するものが見つかるまで，現行スレッドのライブラリー・リスト内のすべてのライブラリーが検索されます。\n*CURLIB: スレッドの現行ライブラリーが検索されます。スレッドの現行ライブラリーとして指定されているライブラリーがない場合，QGPLライブラリーが検索されます。\n検索するライブラリーの名前を指定してください。",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "*LIBL",
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          }
+        },
+        {
+          "name": "USRDRVPGM",
+          "description": "ユーザー・ドライバー・プログラム",
+          "help": "スプール・ファイルを処理するためのユーザー指定のドライバー・プログラムの名前を指定してください。",
+          "inputType": "text",
+          "required": false,
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          },
+          "defaultValue": "*NONE"
+        }
+      ]
+    },
+    {
+      "name": "SPLFASP",
+      "description": "スプール・ファイルASP",
+      "help": "スプール・ファイルが物理的に存在する補助記憶域プール(ASP)を指定します。",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*SYSTEM",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*SYSTEM",
+          "value": "*SYSTEM",
+          "help": "スプール・ファイルはシステムASPにあります。出力待ち行列が1次または2次ASP上のライブラリーにある場合には，この値は許可されません。"
+        },
+        {
+          "label": "*OUTQASP",
+          "value": "*OUTQASP",
+          "help": "スプール・ファイルは出力待ち行列が入っているのと同じASPにあります。"
+        }
+      ]
+    },
+    {
+      "name": "TEXT",
+      "description": "テキスト'記述'",
+      "help": "オブジェクトを簡単に記述したテキストを指定します。\n\n*BLANK: テキストは指定されません。\n50文字以内をアポストロフィで囲んで指定してください。",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*BLANK",
+      "attributes": {
+        "characterSet": "upper"
+      }
+    },
+    {
+      "name": "DSPDTA",
+      "description": "ファイルの表示",
+      "help": "出力待ち行列の読み取り権限を持っているユーザーが，待ち行列上のすべてのスプール・ファイルのデータを表示することができるか，あるいはユーザー自身のファイルのデータしか表示することができないかを指定します。",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*NO",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*NO",
+          "value": "*NO",
+          "help": "待ち行列の使用を認可されたユーザーは，ある種の特殊権限を持っていない限り，ユーザー自身のファイルのデータしか表示，コピー，または送信することができません。"
+        },
+        {
+          "label": "*YES",
+          "value": "*YES",
+          "help": "待ち行列の読み取り権限を持つユーザーは，待ち行列上のすべてのファイルのデータを表示，コピー，または送信することができます。"
+        },
+        {
+          "label": "*OWNER",
+          "value": "*OWNER",
+          "help": "ファイルの所有者またはスプール制御(*SPLCTL)特殊権限を持つユーザーは，待ち行列上のスプール・ファイルを表示，コピー，または送信することができます。"
+        }
+      ],
+      "positional": 2
+    },
+    {
+      "name": "JOBSEP",
+      "description": "ジョブ区切り",
+      "help": "出力待ち行列上のファイルを使用する各ジョブについて，ジョブの出力の先頭に置く区切りの数を指定します。それぞれの区切りには，ジョブの名前，ジョブ・ユーザー名，ジョブ番号，ジョブ実行の時刻と日付，などのジョブを識別する情報が含まれています。\n\nこのパラメーターは，印刷装置書出プログラムによってのみ使用されます。他のすべてのタイプの書き出しプログラムは，このパラメーターに指定された値を無視します。\n\n0: 各ジョブの出力の前にジョブ区切りを印刷しません。\n*MSG: 各ジョブの終了を操作員に通知するメッセージがメッセージ待ち行列に送られます。このメッセージ待ち行列は，印刷装置書き出しプログラム開始(STRPRTWTR)コマンドの MSG 待ち行列 (MSGQ) パラメーターによって識別されます。\n各ジョブの出力の前に置く区切りの数を指定します。",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "0",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "positional": 3
+    },
+    {
+      "name": "OPRCTL",
+      "description": "操作員制御",
+      "help": "ジョブ制御権限を持つユーザーに，この出力待ち行列上のファイルの管理または制御を許可するかどうかを指定します。",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*YES",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*YES",
+          "value": "*YES",
+          "help": "ジョブ制御権限を持つユーザーは，待ち行列を制御し，待ち行列上のファイルを変更することができます。"
+        },
+        {
+          "label": "*NO",
+          "value": "*NO",
+          "help": "ジョブ制御権限を持つユーザーは，他の特殊権限を持っている場合を除いて，この待ち行列および待ち行列上の項目を制御または変更することはできません。"
+        }
+      ],
+      "positional": 4
+    },
+    {
+      "name": "DTAQ",
+      "description": "データ待ち行列名",
+      "help": "出力待ち行列に関連したデータ待ち行列を指定します。スプール・ファイルが出力待ち行列で印刷可能(RDY)状況になっている時には，データ待ち行列に項目が記録されます。ユーザー・プログラムは，データ待ち行列受け取りAPI (QRCVDTAQ)を使用してデータ待ち行列から情報を受け取ることによって，出力待ち行列でスプール・ファイルが使用可能になる時点を判別することができます。\n\n出力待ち行列でスプール・ファイルがRDY状況になるたびに，項目がデータ待ち行列に送られます。スプール・ファイルは，出力待ち行列から取り出されるまでにいくつかの状況変更があることがあります（例えば，RDY−保留(HLD)−解放(RLS)−RDYと状況が変わることがあります）。こうした状況の変化によって，スプール・ファイルがRDY状況になるたびに，データ待ち行列にそのスプール・ファイルの項目が入れられます。\n\nデータ待ち行列作成(CRTDTAQ)コマンドを使用してデータ待ち行列が作成される時には，メッセージの最大長（MAXLENパラメーター）値は少なくとも128にし，順序（SEQパラメーター）値は*FIFOまたは*LIFOにしてください。出力待ち行列上のデータ待ち行列の詳細は，IBM i Information Center(http://www.ibm.com/systems/i/infocenter/)の「印刷」カテゴリーにあります。",
+      "inputType": "group",
+      "required": false,
+      "groupKind": "qualified",
+      "singleValues": [
+        "*NONE"
+      ],
+      "children": [
+        {
+          "name": "DTAQ_LIB",
+          "description": "ライブラリー",
+          "help": "*LIBL: 最初に一致するものが見つかるまで，現行スレッドのライブラリー・リスト内のすべてのライブラリーが検索されます。\n*CURLIB: スレッドの現行ライブラリーが検索されます。スレッドの現行ライブラリーとして指定されているライブラリーがない場合，QGPLライブラリーが検索されます。\nデータ待ち行列が入っているライブラリーの名前を指定してください。",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "*LIBL",
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          }
+        },
+        {
+          "name": "DTAQ",
+          "description": "データ待ち行列名",
+          "help": "出力待ち行列と関連したデータ待ち行列の名前を指定してください。",
+          "inputType": "text",
+          "required": false,
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          },
+          "defaultValue": "*NONE"
+        }
+      ]
+    },
+    {
+      "name": "AUTCHK",
+      "description": "検査権限",
+      "help": "出力待ち行列に対してどのタイプの権限を持っているユーザーが待ち行列上のすべてのファイルを制御することができるかを指定します。ある種の特殊権限を持つユーザーもスプール・ファイルを制御できる場合があります。",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*OWNER",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*OWNER",
+          "value": "*OWNER",
+          "help": "出力待ち行列権限テストを通過するためには，要求元は出力待ち行列に対する所有権限を必要とします。要求元は，出力待ち行列の所有者となるか，グループ・プロファイルを待ち行列の所有者と共用するか，あるいは所有者の権限に合うプログラムを実行することで所有権限を持つことができます。"
+        },
+        {
+          "label": "*DTAAUT",
+          "value": "*DTAAUT",
+          "help": "出力待ち行列に対して追加，読み取り，および削除の権限を持っているユーザーが，待ち行列上のすべてのスプール・ファイルを制御することができます。"
+        }
+      ]
+    },
+    {
+      "name": "AUT",
+      "description": "権限",
+      "help": "このオブジェクトに対する特定の権限をもっておらず，権限リスト上になく，さらにそのグループ・プロファイルまたは補足グループ・プロファイルがオブジェクトに対する特定の権限をもっていないユーザーに付与する権限を指定します。\n\n*USE: 使用権限によって，ユーザーは，待ち行列上にスプール・ファイルを入れるなど，出力待ち行列に対して基本的な操作を実行することができます。*USE権限は，オブジェクト操作権限，読み取り権限，および実行権限を提供します。\n*CHANGE: *DTAAUTを 検査権限 (AUTCHK) パラメーターに指定して待ち行列を作成した場合には，変更権限によって，ユーザーは出力待ち行列記述を変更し，他のユーザーが作成したファイルを制御することができます。\n*ALL: ユーザーは，所有者に限定されるか，あるいは権限リスト管理(*AUTLMGT)権限によって管理される以外のオブジェクトで，すべての操作を実行することができます。ユーザーはオブジェクトの存在を制御し，オブジェクトの機密保護を指定し，オブジェクトを変更し，さらにオブジェクトに対して基本的な機能を実行することができます。オブジェクトの所有権を変更することもできます。\n*EXCLUDE: ユーザーはオブジェクトにアクセスすることはできません。\n*LIBCRTAUT: オブジェクトに対する権限は，そのオブジェクトが作成されているライブラリーの 作成権限 (CRTAUT) パラメーターに指定された値と同じです。CRTAUTパラメーターに指定された値が変更された場合には，新しい値は既存のどのオブジェクトにも影響しません。\nオブジェクトに対する権限に使用する権限リストの名前を指定してください。権限リストに載っているユーザーは，リストに指定されているオブジェクトに対する権限が認可されます。この権限リストはオブジェクトの作成時に存在していなければなりません。",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*USE",
+      "attributes": {
+        "characterSet": "upper",
+        "maxLength": 10
+      }
+    }
+  ],
+  "threadSafe": false,
+  "environment": "すべての環境 (*ALL)",
+  "examples": [
+    {
+      "code": "CRTOUTQ OUTQ(DEPTAPRT) AUT(*EXCLUDE) SEQ(*FIFO) TEXT('SPECIAL PRINTER FILES FOR DEPTA')"
+    }
+  ],
+  "errorMessages": [
+    {
+      "id": "CPF2182",
+      "text": "ライブラリー&1は認可されていない。"
+    },
+    {
+      "id": "CPF2192",
+      "text": "オブジェクト&1をライブラリー&3に作成することはできない。"
+    },
+    {
+      "id": "CPF2207",
+      "text": "ライブラリー&3のタイプ*&2のオブジェクト&1の使用を認可されていない。"
+    },
+    {
+      "id": "CPF2212",
+      "text": "ライブラリー&1を割り振ることができない。"
+    },
+    {
+      "id": "CPF2402",
+      "text": "ライブラリー&1が見つかりません。"
+    },
+    {
+      "id": "CPF2799",
+      "text": "ライブラリー&2にメッセージ待ち行列&1が見つかりませんでした。"
+    },
+    {
+      "id": "CPF33F1",
+      "text": "ライブラリー&2のデータ待ち行列&1が見つからない。"
+    },
+    {
+      "id": "CPF3352",
+      "text": "一時ライブラリー&1は出力待ち行列&2に対して正しくない。"
+    },
+    {
+      "id": "CPF3353",
+      "text": "&2に出力待ち行列&1は既に存在している。"
+    },
+    {
+      "id": "CPF3354",
+      "text": "ライブラリー&1が見つかりません。"
+    },
+    {
+      "id": "CPF3356",
+      "text": "ライブラリー&1を割り振ることができない。"
+    },
+    {
+      "id": "CPF3371",
+      "text": "スプール・ユーザー・プロファイルQSPLに損傷があるか，または見つからない。"
+    },
+    {
+      "id": "CPF34D6",
+      "text": "エラーのために&2中の出力待ち行列&1が作成されなかった。"
+    },
+    {
+      "id": "CPF9818",
+      "text": "オブジェクト&2はライブラリー&3に作成されなかった。"
+    }
+  ],
+  "source": {
+    "url": "https://www.ibm.com/docs/ja/ssw_ibm_i_74/cl/crtoutq.htm",
+    "version": "IBM i 7.4"
+  }
+}

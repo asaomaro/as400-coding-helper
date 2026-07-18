@@ -1,0 +1,200 @@
+
+  <!doctype html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+  <html>
+<head><META http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>Send File  (SNDF)</title>
+</head>
+<body bgcolor="white">
+<a name="SNDF.Top_Of_Page"></a>
+<h2>Send File  (SNDF)</h2>
+<table width="100%">
+<tr>
+<td align="left" valign="top"><b>Where allowed to run:  </b>
+<ul><li>Batch program (*BPGM)</li>
+<li>Interactive program (*IPGM)</li>
+</ul><b>Threadsafe:  </b>No
+</td>
+<td align="right" valign="top">
+<a href="#SNDF.PARAMETERS.TABLE">Parameters</a><br>
+<a href="#SNDF.COMMAND.EXAMPLES">Examples</a><br>
+<a href="#SNDF.ERROR.MESSAGES">Error messages</a></td>
+</tr>
+</table>
+
+<div> <a name="SNDF"></a>
+<p>The Send File (SNDF) command is used by a CL program or ILE CL procedure to send a record to a display device that is being used by an interactive user.  The device can be any display station, including the console.  The command sends the data from the program's CL variables to the display's device file in the specified record format.  These variables were automatically declared in the program (one for each field in the record format) when the CL source program was compiled and a Declare File (DCLF) command was processed as part of the source.
+</p>
+<p>Of the record formats specified in the DCLF command, only one can be specified in each SNDF command.  If the device file has not been opened, it is opened by this command.  The file and record format specified in this command can be overridden by an Override with Display File  (OVRDSPF) command if it is entered before the file is opened.  However, care should be taken that the fields in the overriding record format correspond to the CL variables declared in the program.
+</p>
+<p><b>Restrictions:</b>
+</p>
+<ul>
+<li>This command is valid only within a CL program or ILE CL procedure.
+</li>
+<li>This command is valid only for display files.
+</li>
+<li>This command cannot be used with database files.
+</li>
+</ul>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#SNDF.Top_Of_Page">Top</a></td></tr>
+</table>
+<hr width="100%" size="2">
+
+<div>
+<h3><a name="SNDF.PARAMETERS.TABLE">Parameters</a></h3>
+<table cellspacing="0" cellpadding="4" border="1"><tr>
+<th width="10%" align="left" valign="bottom" bgcolor="aqua">Keyword</th>
+<th width="15%" align="left" valign="bottom" bgcolor="aqua">Description</th>
+<th width="30%" align="left" valign="bottom" bgcolor="aqua">Choices</th>
+<th width="10%" align="left" valign="bottom" bgcolor="aqua">Notes</th>
+</tr>
+<tr>
+<td valign="top"><a href="#SNDF.DEV"><b>DEV</b></a></td>
+<td valign="top">Display device</td>
+<td valign="top"><i>Name</i>, <b><u>*FILE</u></b></td>
+<td valign="top">Optional, Positional 1</td>
+</tr>
+<tr>
+<td valign="top"><a href="#SNDF.RCDFMT"><b>RCDFMT</b></a></td>
+<td valign="top">Record format</td>
+<td valign="top"><i>Name</i>, <b><u>*FILE</u></b></td>
+<td valign="top">Optional, Positional 2</td>
+</tr>
+<tr>
+<td valign="top"><a href="#SNDF.OPNID"><b>OPNID</b></a></td>
+<td valign="top">Open file identifier</td>
+<td valign="top"><i>Simple name</i>, <b><u>*NONE</u></b></td>
+<td valign="top">Optional</td>
+</tr>
+</table>
+
+<table width="100%">
+<tr><td align="right"><a href="#SNDF.Top_Of_Page">Top</a></td></tr>
+</table>
+</div>
+<div> <a name="SNDF.DEV"></a>
+<h3>Display device (DEV)</h3>
+<p>Specifies the name of the display device to which the data in the CL variables for the specified record format is to be sent.
+</p>
+<dl>
+<dt><b><u>*FILE</u></b></dt>
+<dd>The program's data is to be sent to the device associated with the device file that was declared in the FILE parameter of the DCLF command.  If more than one device name is specified in the device file, *FILE cannot be specified.
+</dd>
+<dt><b><i>name</i></b></dt>
+<dd>Specify the name of the device or the name of the CL variable that contains the name of the device to which the program's data is to be sent.
+</dd>
+</dl>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#SNDF.Top_Of_Page">Top</a></td></tr>
+</table>
+<div> <a name="SNDF.RCDFMT"></a>
+<h3>Record format (RCDFMT)</h3>
+<p>Specifies the name of the record format that is to be used to send data to the file.  The format contains all the fields in the record.  This parameter must be coded with a record format name if there is more than one record format name in the device file; *FILE cannot be coded if there is more than one.  If the record format contains the INVITE DDS keyword (optioned on), the SNDF functions as if SNDRCVF WAIT(*NO) had been coded.
+</p>
+<dl>
+<dt><b><u>*FILE</u></b></dt>
+<dd>There is only one record format in the device file; that is the format in which the program's data is to be sent to the file.
+</dd>
+<dt><b><i>name</i></b></dt>
+<dd>Specify the name of the record format in which the program's data is to be sent to the file.  A CL variable cannot be used to specify the record format name.
+</dd>
+</dl>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#SNDF.Top_Of_Page">Top</a></td></tr>
+</table>
+<div> <a name="SNDF.OPNID"></a>
+<h3>Open file identifier (OPNID)</h3>
+<p>Specifies the open file identifier that was declared on a preceding Declare File (DCLF) command in the same CL program or ILE CL procedure.  A CL variable cannot be specified for this parameter value.
+</p>
+<dl>
+<dt><b><u>*NONE</u></b></dt>
+<dd>No open file identifier is provided.  This command will use the file associated with the DCLF command that had *NONE specified for the OPNID parameter. Only one file can be declared in a CL program or ILE CL procedure with *NONE as the open file identifier.
+</dd>
+<dt><b><i>simple-name</i></b></dt>
+<dd>Specify a name that matches the OPNID parameter value on a preceding DCLF command in the same CL program or ILE CL procedure.
+</dd>
+</dl>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#SNDF.Top_Of_Page">Top</a></td></tr>
+</table>
+<hr width="100%" size="2">
+<div><h3><a name="SNDF.COMMAND.EXAMPLES">Examples</a> </h3>
+<p><b>Example 1: Using Display File with One Record Format</b>
+</p>
+<p>
+<pre>
+DCLF   FILE(MENU1)
+ :
+SNDF
+</pre>
+</p>
+<p>The record format in the device file MENU1 is sent to the device specified in the file. There is only one record format in the file.
+</p>
+<p><b>Example 2: Using Display File with Multiple Record Formats</b>
+</p>
+<p>
+<pre>
+DCLF   FILE(SCREEN1)  RCDFMT(REC1 REC2)
+ :
+SNDF   DEV(DISP3)  RCDFMT(REC1)
+</pre>
+</p>
+<p>The device file named SCREEN1 causes the display station named DISP3 to display the data sent by the CL program or ILE CL procedure. The data is shown in the format specified by the REC1 record format.
+</p>
+<p><b>Example 3: Using Open File Identifier</b>
+</p>
+<p>
+<pre>
+DCLF   FILE(SCREEN1)  RCDFMT(REC1 REC2)  OPNID(OUTDSP1)
+DCLF   FILE(SCREEN2)  RCDFMT(REC3 REC4)  OPNID(OUTDSP2)
+ :
+SNDF   DEV(*FILE)  RCDFMT(REC2)  OPNID(OUTDSP1)
+</pre>
+</p>
+<p>The device file named SCREEN1 is used to send data to the display device named in the same device file.  The data is presented to the user in the format specified by record format REC2.  The SNDF command is associated with device file SCREEN1 because the open file identifier specified on the SNDF command matches the open file identifier specified on the DCLF command for display file SCREEN1.
+</p>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#SNDF.Top_Of_Page">Top</a></td></tr>
+</table>
+<hr width="100%" size="2">
+<div><h3><a name="SNDF.ERROR.MESSAGES">Error messages</a> </h3>
+<p><b><u>*ESCAPE Messages</u></b>
+</p>
+<dl>
+<dt><b>CPF0859</b></dt>
+<dd>File override caused I/O buffer size to be exceeded.
+</dd>
+<dt><b>CPF0861</b></dt>
+<dd>File &amp;1 in library &amp;2 is not a display file.
+</dd>
+<dt><b>CPF0864</b></dt>
+<dd>End of file detected for file &amp;1 in &amp;2.
+</dd>
+<dt><b>CPF0883</b></dt>
+<dd>*FILE not valid in DEV parameter for file &amp;1.
+</dd>
+<dt><b>CPF0887</b></dt>
+<dd>Data available from previous input request.
+</dd>
+<dt><b>CPF4101</b></dt>
+<dd>File &amp;2 in library &amp;3 not found or inline data file missing.
+</dd>
+<dt><b>CPF5068</b></dt>
+<dd>Program device &amp;4 not found in file &amp;2 in library &amp;3.
+</dd>
+<dt><b>CPF5070</b></dt>
+<dd>File &amp;2 in library &amp;3 has no program devices acquired.
+</dd>
+</dl>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#SNDF.Top_Of_Page">Top</a></td></tr>
+</table>
+</body>
+</html>

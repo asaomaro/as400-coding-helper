@@ -1,0 +1,308 @@
+{
+  "keyword": "STRDBG",
+  "description": "Start Debug (STRDBG)",
+  "parameters": [
+    {
+      "name": "PGM",
+      "description": "Program",
+      "help": "Program (PGM)\n\nSpecifies up to 20 programs to debug in the job. Before a program can be debugged, its name must be specified on this parameter, in the Add Program (ADDPGM) command, or the Display Module Source (DSPMODSRC) command.\n\nThis parameter is applicable in both OPM and ILE environments.\n\nSingle values\n\nOther values (up to 20 repetitions)\n\nQualifier 1: Program\n\nQualifier 2: Library",
+      "inputType": "group",
+      "required": false,
+      "groupKind": "qualified",
+      "singleValues": [
+        "*NONE"
+      ],
+      "children": [
+        {
+          "name": "LIB",
+          "description": "Library",
+          "help": "指定できる特殊値: *LIBL, *CURLIB",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "*LIBL",
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          }
+        },
+        {
+          "name": "PGM",
+          "description": "Program",
+          "inputType": "text",
+          "required": false,
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          },
+          "defaultValue": "*NONE"
+        }
+      ],
+      "positional": 1,
+      "maxOccurrences": 20,
+      "basic": true
+    },
+    {
+      "name": "DFTPGM",
+      "description": "Default program",
+      "help": "Default program (DFTPGM)\n\nSpecifies the original program model (OPM) program to use as the default program during debug mode. The program specified here is used as the default program for any of the other debug commands for which the user specified a value of *DFTPGM for the Program (PGM) parameter. That is, if a default program was previously specified, this parameter can change it.\n\nThis parameter is applicable only in the OPM environment.\n\nNote: If OPMSRC(*YES) is specified, the OPM program may be added to either the OPM debug environment or the ILE debug environment. If added to the ILE debug environment, then it cannot be a default program for the OPM debug environment.\n\n指定できる特殊値: *PGM, *NONE",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*PGM",
+      "attributes": {
+        "characterSet": "upper",
+        "maxLength": 10
+      },
+      "basic": true
+    },
+    {
+      "name": "MAXTRC",
+      "description": "Maximum trace statements",
+      "help": "Maximum trace statements (MAXTRC)\n\nSpecifies the maximum number of trace statements that the system puts into the job's trace file before either stopping tracing or wrapping around (overlaying) on the trace file. When the trace file contains the maximum specified, the system performs the actions specified by the value supplied for the Trace full (TRCFULL) parameter.\n\nNote: Instruction stepping can be performed on a program being debugged in an interactive environment by setting the maximum number of trace statements to 1 and the value for the TRCFULL parameter to *STOPTRC.\n\nThis parameter is applicable only in the OPM environment.",
+      "inputType": "number",
+      "required": false,
+      "defaultValue": "200",
+      "attributes": {
+        "numericOnly": true
+      },
+      "basic": true
+    },
+    {
+      "name": "TRCFULL",
+      "description": "Trace full",
+      "help": "Trace full (TRCFULL)\n\nSpecifies what happens when the job's trace file is full (that is, it contains the maximum number of trace statements specified by the value supplied for the Maximum trace statements (MAXTRC) parameter.\n\nThis parameter is applicable only in the OPM environment.",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*STOPTRC",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*STOPTRC",
+          "value": "*STOPTRC"
+        },
+        {
+          "label": "*WRAP",
+          "value": "*WRAP"
+        }
+      ],
+      "basic": true
+    },
+    {
+      "name": "UPDPROD",
+      "description": "Update production files",
+      "help": "Update production files (UPDPROD)\n\nSpecifies whether or not database files in a production library can be opened for updating records, or for adding new records, while the job is in debug mode. If not, the files must be copied into a test library before trying to run a program that uses the files.\n\nThis parameter is applicable in both OPM and ILE environments.",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*NO",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*NO",
+          "value": "*NO"
+        },
+        {
+          "label": "*YES",
+          "value": "*YES"
+        }
+      ],
+      "basic": true
+    },
+    {
+      "name": "OPMSRC",
+      "description": "OPM source level debug",
+      "help": "OPM source level debug (OPMSRC)\n\nSpecifies that original program model (OPM) programs are debugged using the system source debug support (same as ILE source debug).\n\nThis parameter is valid for OPM CL, OPM RPG and OPM COBOL programs that were created with OPTION(*SRCDBG) with CRTCLPGM, CRTRPGPGM and CRTCBLPGM commands. Additionally, this parameter is valid for OPM CL, OPM RPG and OPM COBOL programs that were created with OPTION(*LSTDBG) with the CRTCLPGM, CRTRPGPGM, CRTCBLPGM, CRTSQLRPG, CRTSQLCBL, and CRTRPTRPG commands. If the OPM program is not CL, RPG or COBOL and was not compiled with a valid debug option, then this parameter is ignored.\n\nThis parameter is applicable in both OPM and ILE environment.\n\nILE functions will now operate on OPM programs. For example, source level debug.",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*NO",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*NO",
+          "value": "*NO"
+        },
+        {
+          "label": "*YES",
+          "value": "*YES"
+        }
+      ],
+      "basic": true
+    },
+    {
+      "name": "SRVPGM",
+      "description": "Service program",
+      "help": "Service program (SRVPGM)\n\nSpecifies up to 20 service programs to debug in the job. Before a service program can be debugged, its name must be specified on this parameter or the Display Module Source (DSPMODSRC) command.\n\nThis parameter is applicable only in the ILE environment.\n\nSingle values\n\nOther values (up to 20 repetitions)\n\nQualifier 1: Service program\n\nQualifier 2: Library",
+      "inputType": "group",
+      "required": false,
+      "groupKind": "qualified",
+      "singleValues": [
+        "*NONE"
+      ],
+      "children": [
+        {
+          "name": "SRVPGM_LIB",
+          "description": "Library",
+          "help": "指定できる特殊値: *LIBL, *CURLIB",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "*LIBL",
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          }
+        },
+        {
+          "name": "SRVPGM",
+          "description": "Service program",
+          "inputType": "text",
+          "required": false,
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          },
+          "defaultValue": "*NONE"
+        }
+      ],
+      "maxOccurrences": 20,
+      "basic": true
+    },
+    {
+      "name": "CLASS",
+      "description": "Class file",
+      "help": "Class file (CLASS)\n\nSpecifies up to 20 class files to debug in the job. Before a class file can be debugged, its name must be specified on this parameter or the Display Module Source (DSPMODSRC) command.\n\nThis parameter is applicable only in the ILE environment.\n\n指定できる特殊値: *NONE",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*NONE",
+      "attributes": {
+        "characterSet": "upper",
+        "maxLength": 10
+      },
+      "maxOccurrences": 20,
+      "basic": true
+    },
+    {
+      "name": "DSPMODSRC",
+      "description": "Display module source",
+      "help": "Display module source (DSPMODSRC)\n\nSpecifies whether the first display of the source debug program is shown when this command is processed and no errors occur.\n\nThis parameter is applicable only in the ILE environment.",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*PGMDEP",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*PGMDEP",
+          "value": "*PGMDEP"
+        },
+        {
+          "label": "*NO",
+          "value": "*NO"
+        },
+        {
+          "label": "*YES",
+          "value": "*YES"
+        }
+      ]
+    },
+    {
+      "name": "SRCDBGPGM",
+      "description": "Source debug program",
+      "help": "Source debug program (SRCDBGPGM)\n\nSpecifies the source debug program to be used. See the APIs topic collection in the Programming category in the IBM i Information Center at http://www.ibm.com/systems/i/infocenter/ for an explanation of this parameter.\n\nThis parameter is applicable only in the ILE environment.\n\nSingle values\n\nQualifier 1: Source debug program\n\nQualifier 2: Library",
+      "inputType": "group",
+      "required": false,
+      "groupKind": "qualified",
+      "singleValues": [
+        "*SYSDFT"
+      ],
+      "children": [
+        {
+          "name": "SRCDBGPGM_LIB",
+          "description": "Library",
+          "help": "指定できる特殊値: *LIBL, *CURLIB",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "*LIBL",
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          }
+        },
+        {
+          "name": "SRCDBGPGM",
+          "description": "Source debug program",
+          "inputType": "text",
+          "required": false,
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          },
+          "defaultValue": "*SYSDFT"
+        }
+      ]
+    },
+    {
+      "name": "UNMONPGM",
+      "description": "Unmonitored message program",
+      "help": "Unmonitored message program (UNMONPGM)\n\nSpecifies the qualified name of the user-supplied program called when a message that is not monitored occurs in the job being debugged. When the program specified is called, it is passed parameters that identify the program name, the recursion level, the high-level language statement identifier, the machine instruction number at which the breakpoint occurred, the message that was not monitored, the message data, the length of the message data, and the message reference key.\n\nThis parameter is applicable only in the OPM environment.\n\nThe passed parameters have the following formats:\n\nAll the parameter values are left-adjusted and padded on the right with blanks. When control returns to the program with the message that was not monitored, processing continues.\n\nSingle values\n\nQualifier 1: Unmonitored message program\n\nQualifier 2: Library",
+      "inputType": "group",
+      "required": false,
+      "groupKind": "qualified",
+      "singleValues": [
+        "*NONE"
+      ],
+      "children": [
+        {
+          "name": "UNMONPGM_LIB",
+          "description": "Library",
+          "help": "指定できる特殊値: *LIBL, *CURLIB",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "*LIBL",
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          }
+        },
+        {
+          "name": "UNMONPGM",
+          "description": "Unmonitored message program",
+          "inputType": "text",
+          "required": false,
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          },
+          "defaultValue": "*NONE"
+        }
+      ]
+    },
+    {
+      "name": "DBGENCKEY",
+      "description": "Decryption key",
+      "help": "Decryption key (DBGENCKEY)\n\nEnter the key that was specified as the encryption key when the program was compiled. A specified key value of less than 16 bytes will be padded to 16 bytes with x'40'.\n\nIf the key contains any characters which are not invariant over all code pages, ensure that the job CCSID is the same as the job CCSID used when the program was compiled, otherwise the key may not match, and the decryption will fail.\n\nSingle values\n\nOther values\n\nQualifier 1: Decryption key.\n\n指定できる特殊値: *NONE",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*NONE",
+      "attributes": {
+        "characterSet": "upper"
+      }
+    }
+  ],
+  "examples": [
+    {
+      "code": "STRDBG PGM(TESTLIB/PAYROLL) UPDPROD(*NO)"
+    },
+    {
+      "code": "STRDBG CLASS('financial.payapplet')"
+    }
+  ],
+  "source": {
+    "url": "https://www.ibm.com/docs/en/ssw_ibm_i_74/cl/strdbg.htm",
+    "version": "IBM i 7.4"
+  }
+}

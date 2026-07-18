@@ -20,8 +20,11 @@ import { fileURLToPath } from "node:url";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(HERE, "../..");
-const HTML_DIR = path.join(ROOT, "docs/origin/cl");
-const JSON_DIR = path.join(ROOT, "vscode-extension/resources/prompter/cl");
+// 言語ごとに原典と定義を分けている。既定は日本語。
+const langArg = process.argv.find(a => a.startsWith("--lang="));
+const LANG = langArg ? langArg.slice("--lang=".length) : "ja";
+const HTML_DIR = path.join(ROOT, `docs/origin/cl${LANG === "ja" ? "" : `-${LANG}`}`);
+const JSON_DIR = path.join(ROOT, `vscode-extension/resources/prompter/cl/${LANG}`);
 
 const decode = text =>
   text
@@ -39,7 +42,11 @@ const matchAll = (text, re) => [...String(text).matchAll(re)];
 
 /** 原典のパラメータ表から、突き合わせに使う事実だけを取り出す。 */
 function parseOrigin(html) {
-  const table = html.match(/<table[^>]*summary="Parameters"[^>]*>([\s\S]*?)<\/table>/i);
+  const table =
+    html.match(/<table[^>]*summary="Parameters"[^>]*>([\s\S]*?)<\/table>/i) ||
+    [...html.matchAll(/<table[^>]*>([\s\S]*?)<\/table>/gi)].find(m =>
+      /<th[^>]*>[\s\S]{0,120}?(Keyword|キーワード)[\s\S]{0,120}?<\/th>/i.test(m[1])
+    );
   if (!table) return null;
 
   const params = [];
@@ -52,7 +59,7 @@ function parseOrigin(html) {
     const keyword = cells[0].match(/<strong>\s*([A-Z0-9]+)\s*<\/strong>/i);
     if (keyword && cells.length >= 4) {
       const notes = stripTags(cells[3]);
-      current = { name: keyword[1], required: /必須/.test(notes), html: cells[2] };
+      current = { name: keyword[1], required: /必須|Required/i.test(notes), html: cells[2] };
       params.push(current);
     } else if (current && cells.length >= 2) {
       current.html += ` ${cells[1]}`;
@@ -60,9 +67,9 @@ function parseOrigin(html) {
   }
 
   for (const param of params) {
-    param.defaultValue = param.html.match(
-      /<strong class="underlined">\s*([^<\s][^<]*?)\s*<\/strong>/i
-    )?.[1];
+    param.defaultValue =
+      param.html.match(/<strong class="underlined">\s*([^<\s][^<]*?)\s*<\/strong>/i)?.[1] ??
+      param.html.match(/<u>\s*([^<\s][^<]*?)\s*<\/u>/i)?.[1];
     param.specials = [...new Set(matchAll(stripTags(param.html), /\*[A-Z0-9]+/g).map(m => m[0]))];
   }
 
@@ -86,7 +93,7 @@ const effectiveRequired = parameter =>
 const findings = [];
 const report = (kind, detail) => findings.push({ kind, detail });
 
-const targets = process.argv.slice(2);
+const targets = process.argv.slice(2).filter(a => !a.startsWith("--"));
 const commands = (
   targets.length > 0
     ? targets

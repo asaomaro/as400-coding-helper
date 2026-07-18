@@ -1,0 +1,125 @@
+
+  <!doctype html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+  <html>
+<head><META http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>Otherwise  (OTHERWISE)</title>
+</head>
+<body bgcolor="white">
+<a name="OTHERWISE.Top_Of_Page"></a>
+<h2>Otherwise  (OTHERWISE)</h2>
+<table width="100%">
+<tr>
+<td align="left" valign="top"><b>Where allowed to run:  </b>
+<ul><li>Batch program (*BPGM)</li>
+<li>Interactive program (*IPGM)</li>
+</ul><b>Threadsafe:  </b>Yes
+</td>
+<td align="right" valign="top">
+<a href="#OTHERWISE.PARAMETERS.TABLE">Parameters</a><br>
+<a href="#OTHERWISE.COMMAND.EXAMPLES">Examples</a><br>
+<a href="#OTHERWISE.ERROR.MESSAGES">Error messages</a></td>
+</tr>
+</table>
+
+<div> <a name="OTHERWISE"></a>
+<p>Specifies the command or group of commands (in an If or Do group) that are processed if none of the conditions on any of the When commands within a Select command group were evaluated to be true.  After the command or Do group is processed, control is passed to the next command <i>after</i> the End Select command associated with this Otherwise command.  If the command specified in this parameter is a DO, DOWHILE, DOUNTIL, or DOFOR command, all commands within the Do group are considered to be the command specified by the parameter.
+</p>
+<p><b>Restrictions:</b>
+</p>
+<ul>
+<li>This command is valid only within a CL program or ILE CL procedure.
+</li>
+<li>This command is valid only within a SELECT-ENDSELECT command group.
+</li>
+<li>Only one OTHERWISE may be specified in a SELECT-ENDSELECT command group.
+</li>
+<li>All WHEN commands in a SELECT-ENDSELECT command group must appear before the OTHERWISE command.
+</li>
+</ul>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#OTHERWISE.Top_Of_Page">Top</a></td></tr>
+</table>
+<hr width="100%" size="2">
+
+<div>
+<h3><a name="OTHERWISE.PARAMETERS.TABLE">Parameters</a></h3>
+<table cellspacing="0" cellpadding="4" border="1"><tr>
+<th width="10%" align="left" valign="bottom" bgcolor="aqua">Keyword</th>
+<th width="15%" align="left" valign="bottom" bgcolor="aqua">Description</th>
+<th width="30%" align="left" valign="bottom" bgcolor="aqua">Choices</th>
+<th width="10%" align="left" valign="bottom" bgcolor="aqua">Notes</th>
+</tr>
+<tr>
+<td valign="top"><a href="#OTHERWISE.CMD"><b>CMD</b></a></td>
+<td valign="top">Command</td>
+<td valign="top"><i>Command string</i></td>
+<td valign="top">Optional, Positional 1</td>
+</tr>
+</table>
+
+<table width="100%">
+<tr><td align="right"><a href="#OTHERWISE.Top_Of_Page">Top</a></td></tr>
+</table>
+</div>
+<div> <a name="OTHERWISE.CMD"></a>
+<h3>Command (CMD)</h3>
+<p>Specifies the command or commands (in a If or Do group) to be processed if no When commands had an expression that evaluated to true.
+</p>
+<p>If the command specified in this parameter is a DO, DOWHILE, DOUNTIL, or DOFOR command, all of the commands specified within the Do group are considered to be part of the command specified by the parameter.
+</p>
+<p>If no command is specified on the CMD parameter (a null OTHERWISE) control is passed to the next command <i>after</i> the ENDSELECT command associated with this WHEN command.
+</p>
+<p>Any CL command can be specified on the CMD parameter, except the following commands:
+</p>
+<ul>
+<li>ELSE
+</li>
+<li>PGM, ENDPGM
+</li>
+<li>ENDDO
+</li>
+<li>MONMSG
+</li>
+<li>DCL, DCLF
+</li>
+<li>WHEN, OTHERWISE, ENDSELECT
+</li>
+</ul>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#OTHERWISE.Top_Of_Page">Top</a></td></tr>
+</table>
+<hr width="100%" size="2">
+<div><h3><a name="OTHERWISE.COMMAND.EXAMPLES">Examples</a> </h3>
+<p>
+<pre>
+DCL   VAR(&amp;NAME)  TYPE(*CHAR)  LEN(10)
+ :
+SELECT
+  WHEN   COND(&amp;NAME *EQ *CMD)  THEN(DO)
+    :   (group of CL commands)
+  ENDDO
+  WHEN   COND(&amp;NAME *EQ *PGM)  THEN(DO)
+    :   (group of CL commands)
+  ENDDO
+  OTHERWISE   CMD(CHGVAR &amp;NAME *PGM)
+ENDSELECT
+</pre>
+</p>
+<p>The OTHERWISE specifies the command to run if none of conditions on any of the WHEN commands in a SELECT command group command group were matched.  In this example the CHGVAR will be run when the value of &amp;NAME is not *CMD and not *PGM.
+</p>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#OTHERWISE.Top_Of_Page">Top</a></td></tr>
+</table>
+<hr width="100%" size="2">
+<div><h3><a name="OTHERWISE.ERROR.MESSAGES">Error messages</a> </h3>
+<p>None
+</p>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#OTHERWISE.Top_Of_Page">Top</a></td></tr>
+</table>
+</body>
+</html>

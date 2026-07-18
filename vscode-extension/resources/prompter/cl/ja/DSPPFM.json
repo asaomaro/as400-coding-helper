@@ -1,0 +1,115 @@
+{
+  "keyword": "DSPPFM",
+  "description": "物理ファイル・メンバー表示 (DSPPFM)",
+  "help": "物理ファイル・メンバー表示(DSPPFM)コマンドは物理データベース・ファイル・メンバーを表示します。 ファイルがキー順アクセス・パスであっても，レコードは到着順に表示されます。 ファイルを通覧したり，レコード番号によって特定のレコードを見つけたり，レコード内の開始位置を指定したりすることができます。 また，レコードの文字表示または16進表示を選択することもできます。",
+  "parameters": [
+    {
+      "name": "FILE",
+      "description": "ファイル",
+      "help": "表示するメンバーが入っている物理ファイルの名前およびライブラリーを指定します。\n\nこれは必須パラメーターです。",
+      "inputType": "group",
+      "required": true,
+      "groupKind": "qualified",
+      "children": [
+        {
+          "name": "LIB",
+          "description": "ライブラリー",
+          "help": "*LIBL: 最初に一致するものが見つかるまで，現行スレッドのライブラリー・リスト内のすべてのライブラリーが検索されます。\n*CURLIB: ファイルを見つけるためにスレッドの現行ライブラリーが使用されます。ジョブの現行ライブラリーとして指定されているライブラリーがない場合，QGPLライブラリーが使用されます。\n検索するライブラリーの名前を指定してください。",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "*LIBL",
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          }
+        },
+        {
+          "name": "FILE",
+          "description": "ファイル",
+          "inputType": "text",
+          "required": true,
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          }
+        }
+      ],
+      "positional": 1,
+      "basic": true
+    },
+    {
+      "name": "MBR",
+      "description": "メンバー",
+      "help": "表示するファイル・メンバーの名前を指定します。\n\n*FIRST: 指定された物理ファイルの最初のメンバーが表示されます。\n*LAST: 指定された物理ファイルの最後のメンバーが表示されます。\nファイル・メンバーの名前を指定してください。",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*FIRST",
+      "attributes": {
+        "characterSet": "upper",
+        "maxLength": 10
+      },
+      "positional": 2,
+      "basic": true
+    },
+    {
+      "name": "FROMRCD",
+      "description": "開始レコード",
+      "help": "初期画面の最上行に表示する物理ファイル中のレコードを指定します。 指定したレコード番号が削除済みレコードの場合には，削除されたレコードに続く最初のレコードに画面が位置付けられます。 前ページおよび次ページ・キーを使用して必要なだけのレコードを表示することができます。\n\n考えられる値は，次の通りです。\n\n1: 物理ファイルのレコード番号1,または削除済みでない最初のレコードが表示されます。 ファイルが分散ファイルの場合には，これは，ローカル・メンバーの削除済みでない最初のレコードとなり，ローカル・データだけが表示されます。\n*END: 物理ファイル中の削除済みでない最後のレコードが表示されます。 *END値は，物理ファイル中の最後のレコードが画面の終わりに表示されるように，最後の完了ページを表示します。ファイルが分散ファイルの場合には，これは，ローカル・メンバーの削除済みでない最後のレコードとなり，ローカル・データだけが表示されます。\n*ALLDATA: 分散ファイルのすべてのデータが，リモート・データも含めて表示されます。 非分散ファイルに*ALLDATAが指定された場合には，これはFROMRCD(1)と同じに扱われます。\n初期画面の最上行に表示するレコードの番号を指定してください。ファイルが分散ファイルの場合には，これは，ローカル・メンバーのレコード番号となり，ローカル・データだけが表示されます。",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "1",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "basic": true
+    }
+  ],
+  "threadSafe": false,
+  "environment": "対話環境 (*INTERACT *IPGM *IREXX *EXEC)",
+  "examples": [
+    {
+      "code": "DSPPFM FILE(TESTA)"
+    },
+    {
+      "code": "DSPPFM FILE(SAMPLE/TESTB) MBR(PROGRAM)"
+    }
+  ],
+  "errorMessages": [
+    {
+      "id": "CPF8056",
+      "text": "&2のファイル&1が物理ファイルでない。"
+    },
+    {
+      "id": "CPF9810",
+      "text": "ライブラリー&1が見つかりません。"
+    },
+    {
+      "id": "CPF9812",
+      "text": "ライブラリー&2にファイル&1が見つからない。"
+    },
+    {
+      "id": "CPF9820",
+      "text": "ライブラリー&1の使用は認可されていない。"
+    },
+    {
+      "id": "CPF9822",
+      "text": "ライブラリー&2のファイル&1は認可されていない。"
+    },
+    {
+      "id": "CPF9845",
+      "text": "ファイル&1のオープン中にエラーが起こった。"
+    },
+    {
+      "id": "CPF9846",
+      "text": "ライブラリー&2のファイル&1の処理中にエラーが起こった。"
+    },
+    {
+      "id": "CPF9847",
+      "text": "ライブラリー&2のファイル&1のクローズ中にエラーが起こった。"
+    }
+  ],
+  "source": {
+    "url": "https://www.ibm.com/docs/ja/ssw_ibm_i_74/cl/dsppfm.htm",
+    "version": "IBM i 7.4"
+  }
+}

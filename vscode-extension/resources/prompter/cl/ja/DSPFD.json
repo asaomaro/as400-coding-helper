@@ -1,0 +1,466 @@
+{
+  "keyword": "DSPFD",
+  "description": "ファイル記述表示 (DSPFD)",
+  "help": "ファイル記述表示(DSPFD)コマンドは，1つまたは複数のデータベースまたは装置ファイル（あるいはその両方）のファイル記述から検索した1つまたは複数の種類の情報を表示します。 指定された名前を持っているファイルで，指定のライブラリー修飾子で指定されたライブラリー中にあるユーザーがアクセス権を持っている各ファイルの情報が提供されます。この情報は表示，印刷，またはデータベース出力ファイル(OUTFILE)に出力することができます。 DSPFDコマンドによって使用されるファイルの詳細については，IBM i Information Center(http://www.ibm.com/systems/i/infocenter/)の「データベース」カテゴリーを参照してください。",
+  "parameters": [
+    {
+      "name": "FILE",
+      "description": "ファイル",
+      "help": "ファイルの名前およびライブラリーを指定します。\n\nこれは必須パラメーターです。\n\nファイル名として指定できる値は次の通りです。\n\n次のQXXXライブラリーは弊社提供のものですが，これらには一般的によく変更されるユーザー・データが収められます。したがって，これらのライブラリーは「ユーザー・ライブラリー」と見なされ，検索されます。",
+      "inputType": "group",
+      "required": true,
+      "groupKind": "qualified",
+      "children": [
+        {
+          "name": "LIB",
+          "description": "ライブラリー",
+          "help": "*LIBL: 最初に一致するものが見つかるまで，現行スレッドのライブラリー・リスト内のすべてのライブラリーが検索されます。\n*USRLIBL: 現行ライブラリー項目が現行スレッドのライブラリー・リストに存在する場合には，現行ライブラリーおよびライブラリー・リストのユーザー部分にあるライブラリーが検索されます。現行ライブラリー項目がない場合には，ライブラリー・リストのユーザー部分にあるライブラリーが検索されます。\n*CURLIB: スレッドの現行ライブラリーが検索されます。スレッドの現行ライブラリーとして指定されているライブラリーがない場合，QGPLライブラリーが検索されます。\n*ALL: QSYSを含むシステム上のすべてのライブラリーが検索されます。\n*ALLUSR: すべてのユーザー・ライブラリーが検索されます。次のものを除き，英字Qで始まらない名前のすべてのライブラリーが検索されます。 #CGULIB #DSULIB #SEULIB #COBLIB #RPGLIB #DFULIB #SDALIB 次のQXXXライブラリーは弊社提供のものですが，これらには一般的によく変更されるユーザー・データが収められます。したがって，これらのライブラリーは「ユーザー・ライブラリー」と見なされ，検索されます。 QDSNX QRCLXXXXX QUSRDIRDB QUSRVI QGPL QSRVAGT QUSRIJS QUSRVXRXMX QGPL38 QSYS2 QUSRINFSKR QWQCENT QMGTC QSYS2XXXXX QUSRNOTES QWQREPOS QMGTC2 QS36F QUSROND QMPGDATA QUSER38 QUSRPOSGS QMQMDATA QUSRADSM QUSRPOSSA QMQMPROC QUSRBRM QUSRPYMSVR QPFRDATA QUSRDIRCF QUSRRDARS QRCL QUSRDIRCL QUSRSYS 'XXXXX'は1次補助記憶域プール(ASP)の番号です。 前のリリースのCLプログラム内でコンパイルされるユーザー・コマンドを入れるために，弊社がサポートする前の各リリース用にQUSRVXRXMXの形式の別のライブラリー名を作成することができます。QUSRVXRXMXユーザー・ライブラリーのVXRXMXは弊社が引き続きサポートしている前のリリースのバージョン，リリース，およびモディフィケーション・レベルです。\n検索するライブラリーの名前を指定してください。",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "*LIBL",
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          },
+          "placeholder": "*LIBL"
+        },
+        {
+          "name": "FILE",
+          "description": "ファイル",
+          "help": "指定できる特殊値: *ALL",
+          "inputType": "text",
+          "required": true,
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          },
+          "placeholder": "FILE"
+        }
+      ],
+      "positional": 1,
+      "basic": true
+    },
+    {
+      "name": "TYPE",
+      "description": "情報のタイプ",
+      "help": "提供されるファイル情報のタイプを指定します。 *ALLは，情報が表示または印刷される場合にだけ有効です。 *BASATRは，情報がデータベース出力ファイルに記憶される場合にだけ有効です。 他のパラメーターについては，情報が表示または印刷される場合に1つまたは複数の値を指定することができます。 情報がデータベース出力ファイルに記憶される場合には，1つしか値を指定することができません。\n\n考えられる値は次の通りです。",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*ALL",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*ALL",
+          "value": "*ALL",
+          "help": "指定されたファイルに適用できるすべてのタイプの情報が表示または印刷されます。 注: OUTFILEパラメーターにファイル名が指定された場合には，*ALLを指定することはできません。"
+        },
+        {
+          "label": "*BASATR",
+          "value": "*BASATR",
+          "help": "すべてのファイルに共通のファイル・レベルの属性情報が表示されます。"
+        },
+        {
+          "label": "*ATR",
+          "value": "*ATR",
+          "help": "指定されたファイルについての意味のある属性情報が提示されます。"
+        },
+        {
+          "label": "*ACCPTH",
+          "value": "*ACCPTH",
+          "help": "物理ファイルおよび論理ファイルのアクセス・パスが提示されます。 キー付アクセス・パスの場合には，複合キー記述も示されます。"
+        },
+        {
+          "label": "*MBRLIST",
+          "value": "*MBRLIST",
+          "help": "指定されたファイルのすべてのファイル・メンバーのアルファベット順リストおよび簡単な説明が提供されます。"
+        },
+        {
+          "label": "*SELECT",
+          "value": "*SELECT",
+          "help": "論理ファイルの選択／除外属性が提示されます。"
+        },
+        {
+          "label": "*SEQ",
+          "value": "*SEQ",
+          "help": "物理ファイルおよび論理ファイルの照合順序が提示されます。"
+        },
+        {
+          "label": "*RCDFMT",
+          "value": "*RCDFMT",
+          "help": "指定されたファイルのレコード様式名およびレコード様式レベル情報が提供されます。"
+        },
+        {
+          "label": "*MBR",
+          "value": "*MBR",
+          "help": "物理ファイルおよび論理ファイルの中のファイル・メンバーに関する情報が提供されます。"
+        },
+        {
+          "label": "*SPOOL",
+          "value": "*SPOOL",
+          "help": "指定されたディスケットまたは印刷装置ファイルのスプーリング属性が提示されます。"
+        },
+        {
+          "label": "*JOIN",
+          "value": "*JOIN",
+          "help": "結合論理ファイルについて，結合元ファイル，結合先ファイル，および結合に含まれているフィールドが提示されます。"
+        },
+        {
+          "label": "*TRG",
+          "value": "*TRG",
+          "help": "トリガー・プログラムの数，各トリガー・プログラム名とライブラリー，およびトリガーをもつ各ファイルのトリガー事象，トリガー時刻，およびトリガー更新条件が提供されます。正しい出力ファイル様式はシステム・ファイルQAFDTRGからのQWHFDTRGです。"
+        },
+        {
+          "label": "*CST",
+          "value": "*CST",
+          "help": "物理ファイルの場合にだけ，ファイルと関連した制約関係についての情報が提供されます。正しい出力ファイル様式はシステム・ファイルQAFDCSTからのQWHFDCSTです。"
+        },
+        {
+          "label": "*NODGRP",
+          "value": "*NODGRP",
+          "help": "分散物理ファイルの場合にだけ，ファイルの作成時にノード・グループ(*NODGRP)からコピーされたデータ区分およびリレーショナル・データベース情報が提供されます。 正しい出力ファイル様式はシステム・ファイルQAF DNGPからのQWHFDNGPです。"
+        }
+      ],
+      "positional": 2,
+      "maxOccurrences": 10,
+      "placeholder": "*ALL",
+      "basic": true
+    },
+    {
+      "name": "OUTPUT",
+      "description": "出力",
+      "help": "コマンドからの出力がどこに送られるかを指定します。",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*",
+          "value": "*",
+          "help": "出力は表示されるか（対話式ジョブによって要求された場合），あるいはジョブのスプール出力で印刷されます（バッチ・ジョブによって要求された場合）。"
+        },
+        {
+          "label": "*PRINT",
+          "value": "*PRINT",
+          "help": "出力はジョブのスプール出力で印刷されます。"
+        },
+        {
+          "label": "*OUTFILE",
+          "value": "*OUTFILE",
+          "help": "出力は， 出力を受け取るファイル (OUTFILE) パラメーターで指定されたデータベース・ファイルに送られます。"
+        }
+      ],
+      "positional": 3,
+      "basic": true
+    },
+    {
+      "name": "FILEATR",
+      "description": "ファイル属性",
+      "help": "属性が表示されるファイルのタイプを指定します。 リモート・ファイルの場合には，指定できるパラメーターは*PF, *LF,または*ALLだけです。\n\n考えられる値は次の通りです。",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*ALL",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*ALL",
+          "value": "*ALL",
+          "help": "すべてのファイルの属性が提示されます。 ただし， 出力 プロンプト（OUTPUTパラメーター）に*OUTFILEを指定し， 情報のタイプ プロンプト（TYPEパラメーター）に*ATRを指定した場合には，このパラメーターを指定することはできません。"
+        },
+        {
+          "label": "*DSPF",
+          "value": "*DSPF",
+          "help": "表示装置ファイルの属性が提示されます。"
+        },
+        {
+          "label": "*PRTF",
+          "value": "*PRTF",
+          "help": "印刷装置ファイルの属性が提示されます。"
+        },
+        {
+          "label": "*DKTF",
+          "value": "*DKTF",
+          "help": "ディスケット・ファイルの属性が提示されます。"
+        },
+        {
+          "label": "*TAPF",
+          "value": "*TAPF",
+          "help": "テープ・ファイルの属性が提示されます。"
+        },
+        {
+          "label": "*CMNF",
+          "value": "*CMNF",
+          "help": "通信ファイルの属性が提示されます。"
+        },
+        {
+          "label": "*BSCF",
+          "value": "*BSCF",
+          "help": "BSCファイルの属性が提示されます。"
+        },
+        {
+          "label": "*MXDF",
+          "value": "*MXDF",
+          "help": "混合ファイルの属性が提示されます。"
+        },
+        {
+          "label": "*PF",
+          "value": "*PF",
+          "help": "物理ファイルの属性が提示されます。"
+        },
+        {
+          "label": "*LF",
+          "value": "*LF",
+          "help": "論理ファイルの属性が提示されます。"
+        },
+        {
+          "label": "*SAVF",
+          "value": "*SAVF",
+          "help": "保管ファイルの属性が提示されます。"
+        },
+        {
+          "label": "*DDMF",
+          "value": "*DDMF",
+          "help": "分散データ管理機能(DDM)ファイルの属性が提供されます。"
+        },
+        {
+          "label": "*ICFF",
+          "value": "*ICFF",
+          "help": "ICFファイルの属性が提示されます。"
+        }
+      ],
+      "maxOccurrences": 12,
+      "placeholder": "*ALL",
+      "basic": true
+    },
+    {
+      "name": "OUTFILE",
+      "description": "出力を受け取るファイル",
+      "help": "コマンドの出力が送られるデータベース・ファイルを指定します。ファイルが存在しない場合には，このコマンドによって，指定されたライブラリーにデータベース・ファイルが作成されます。ファイルが作成される場合には，ファイルの共通権限は，ファイルが作成されるライブラリーに指定された作成権限と同じものになります。ライブラリーの作成権限を表示するには，ライブラリー記述表示(DSPLIBD)コマンドを使用してください。",
+      "inputType": "group",
+      "required": false,
+      "groupKind": "qualified",
+      "children": [
+        {
+          "name": "OUTFILE_LIB",
+          "description": "ライブラリー",
+          "help": "*LIBL: ファイルを見つけるために，ライブラリー・リストが使用されます。ファイルが見つからない場合には，現行ライブラリーにファイルが作成されます。現行ライブラリーが存在していない場合には，ファイルはQGPLライブラリーに作成されます。\n*CURLIB: ファイルを見つけるためにスレッドの現行ライブラリーが使用されます。スレッドの現行ライブラリーとして指定されているライブラリーがない場合，QGPLライブラリーが使用されます。\n検索するライブラリーの名前を指定してください。",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "*LIBL",
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          },
+          "placeholder": "*LIBL"
+        },
+        {
+          "name": "OUTFILE",
+          "description": "出力を受け取るファイル",
+          "help": "コマンド出力が送られる先のデータベース・ファイルの名前を指定してください。",
+          "inputType": "text",
+          "required": false,
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          },
+          "placeholder": "FILE"
+        }
+      ]
+    },
+    {
+      "name": "OUTMBR",
+      "description": "出力メンバー・オプション",
+      "help": "コマンドの出力を受け取るデータベース・ファイル・メンバーの名前を指定します。",
+      "inputType": "group",
+      "required": false,
+      "groupKind": "elements",
+      "children": [
+        {
+          "name": "MEMBER",
+          "description": "出力を受け取るメンバー",
+          "help": "*FIRST: ファイル内の最初のメンバーが出力を受け取ります。OUTMBR(*FIRST)が指定されていて，メンバーが存在していない場合には，システムが 出力を受け取るファイル (OUTFILE) パラメーターに指定されたファイルの名前を使用してメンバーを作成します。メンバーが既に存在している場合，その既存メンバーの終わりに新規レコードを追加するのか，あるいはそのメンバーをクリアして新規レコードを追加するのかを選択できます。\n出力を受け取るファイル・メンバーの名前を指定してください。存在していない場合には，システムが作成します。",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "*FIRST",
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          },
+          "placeholder": "*FIRST"
+        },
+        {
+          "name": "OPTION",
+          "description": "レコードの置き換えまたは追加",
+          "inputType": "dropdown",
+          "required": false,
+          "defaultValue": "*REPLACE",
+          "attributes": {
+            "characterSet": "upper"
+          },
+          "options": [
+            {
+              "label": "*REPLACE",
+              "value": "*REPLACE",
+              "help": "システムは，既存のメンバーを消去し，新しいレコードを追加します。"
+            },
+            {
+              "label": "*ADD",
+              "value": "*ADD",
+              "help": "システムは，既存のレコードの終わりに新しいレコードを追加します。"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "SYSTEM",
+      "description": "システム",
+      "help": "戻される情報がローカル・システムのファイルについてのものであるか，あるいはリモート・システムのファイルについてのものであるかを指定します。\n\n考えられる値は次の通りです。",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*LCL",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*LCL",
+          "value": "*LCL",
+          "help": "ローカル・ファイルについての情報だけが戻されます。"
+        },
+        {
+          "label": "*RMT",
+          "value": "*RMT",
+          "help": "リモート・ファイルについての情報だけが戻されます。"
+        },
+        {
+          "label": "*ALL",
+          "value": "*ALL",
+          "help": "ローカルおよびリモート・ファイルの両方についての情報が戻されます。"
+        }
+      ]
+    }
+  ],
+  "threadSafe": false,
+  "environment": "すべての環境 (*ALL)",
+  "restrictions": [
+    "ユーザーが指定したファイルに対するオブジェクト操作権を持っていないと，これらのファイルを表示することはできません。",
+    "ライブラリー修飾子によって識別されたライブラリーについては，ユーザーが読み取り権限を持っているライブラリー中の指定のファイルだけが検索されます。",
+    "TYPE(*ALL), TYPE(*MBR),またはTYPE(*MBRLIST)を指定し，このファイルが物理ファイルである場合には，ユーザーは，そのメンバーについての情報を受け取るために，ファイルに対するデータ権限（読み取り，書き出し，更新，または削除）を少なくとも1つ持っていなければなりません。"
+  ],
+  "examples": [
+    {
+      "code": "DSPFD FILE(*ALL/FILE1)"
+    },
+    {
+      "code": "DSPFD FILE(LIBRARY1/FILE1)"
+    },
+    {
+      "code": "DSPFD FILE(*ALL/*ALL) TYPE(*ALL) SYSTEM(*ALL)"
+    }
+  ],
+  "errorMessages": [
+    {
+      "id": "CPF3011",
+      "text": "ライブラリー&2のファイル&1のTYPEが見つからない。"
+    },
+    {
+      "id": "CPF3012",
+      "text": "ライブラリー&2にファイル&1が見つからない。"
+    },
+    {
+      "id": "CPF3014",
+      "text": "&2の&1として指定されたファイルを表示することができない。"
+    },
+    {
+      "id": "CPF3020",
+      "text": "&2の&1のファイルにFILEATRが指定されていない。"
+    },
+    {
+      "id": "CPF3021",
+      "text": "SYSTEM(*RMT)でファイル&1を使用することはできない。"
+    },
+    {
+      "id": "CPF3022",
+      "text": "&2のファイル&1にSYSTEM(*RMT)を使用することはできない。"
+    },
+    {
+      "id": "CPF3030",
+      "text": "&2のファイル&1のメンバー&4に&3個のレコードが追加された。"
+    },
+    {
+      "id": "CPF3061",
+      "text": "出力ファイル&1のレコード様式&3が見つからない。"
+    },
+    {
+      "id": "CPF3064",
+      "text": "ライブラリー&1が見つかりません。"
+    },
+    {
+      "id": "CPF3067",
+      "text": "&2のファイル&1のオープン中にエラー。"
+    },
+    {
+      "id": "CPF3068",
+      "text": "&2のファイル&1への書き出し中にエラー。"
+    },
+    {
+      "id": "CPF3069",
+      "text": "&2のファイル&1のクローズ中にエラー。"
+    },
+    {
+      "id": "CPF3070",
+      "text": "ファイル&1のメンバー&3の作成中にエラー。"
+    },
+    {
+      "id": "CPF3072",
+      "text": "&2のファイル&1はシステム・ファイルである。"
+    },
+    {
+      "id": "CPF3074",
+      "text": "ライブラリー&1の使用は認可されていない。"
+    },
+    {
+      "id": "CPF3075",
+      "text": "ライブラリー&1が使用できません。"
+    },
+    {
+      "id": "CPF3076",
+      "text": "画面上でエラーが起こった。"
+    },
+    {
+      "id": "CPF3077",
+      "text": "表示を取り消そうとした時にエラーが起こった。"
+    },
+    {
+      "id": "CPF3084",
+      "text": "ファイル&1のメンバー&3の消去中にエラー。"
+    },
+    {
+      "id": "CPF326B",
+      "text": "ライブラリー&2のファイル&1に損傷がある。"
+    },
+    {
+      "id": "CPF9851",
+      "text": "&2のファイル&1のオーバーフロー値が小さすぎる。"
+    },
+    {
+      "id": "CPF9852",
+      "text": "ページ・サイズが&2のファイル&1には小さすぎる。"
+    },
+    {
+      "id": "CPF9899",
+      "text": "コマンドの処理中にエラーが起こった。"
+    }
+  ],
+  "source": {
+    "url": "https://www.ibm.com/docs/ja/ssw_ibm_i_74/cl/dspfd.htm",
+    "version": "IBM i 7.4"
+  }
+}

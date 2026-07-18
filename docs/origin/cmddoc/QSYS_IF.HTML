@@ -1,0 +1,255 @@
+
+  <!doctype html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+  <html>
+<head><META http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>If  (IF)</title>
+</head>
+<body bgcolor="white">
+<a name="IF.Top_Of_Page"></a>
+<h2>If  (IF)</h2>
+<table width="100%">
+<tr>
+<td align="left" valign="top"><b>Where allowed to run:  </b>
+<ul><li>Batch program (*BPGM)</li>
+<li>Interactive program (*IPGM)</li>
+</ul><b>Threadsafe:  </b>Yes
+</td>
+<td align="right" valign="top">
+<a href="#IF.PARAMETERS.TABLE">Parameters</a><br>
+<a href="#IF.COMMAND.EXAMPLES">Examples</a><br>
+<a href="#IF.ERROR.MESSAGES">Error messages</a></td>
+</tr>
+</table>
+
+<div> <a name="IF"></a>
+<p>The If (IF) command evaluates a logical expression and conditionally processes CL program or ILE CL procedure commands according to the evaluation of the expression.  If the logical expression is true (a logical 1), the command (or the group of commands in a Do group) specified in the THEN parameter is processed, and the ELSE command with its associated command or Do group is not processed.  If the result of the logical expression is false (a logical 0), the command specified in the THEN parameter is not processed and control passes to the next command.  If that command is an ELSE command, the command or Do group specified in that command is processed.  If the ELSE command is not specified, control passes to the next command.
+</p>
+<p>When a DO command is specified, either in the THEN parameter of the IF command or in the CMD parameter of the ELSE command, the Do group is bypassed if the result of the expression is not the one needed for the group being processed.  That is, control passes to the command that follows the ENDDO command associated with that DO.
+</p>
+<p>When the command or Do group specified by the THEN parameter or the ELSE command is completed (and no GOTO command has been processed), control passes to the next command following the command or Do group specified by the ELSE command.  If a GOTO command is processed, control is passed to the command with the label specified by the GOTO command, and processing continues from that command.
+</p>
+<p>The following command sequence shows this flow.  In this example, &amp;TESTSW is a logical variable.
+</p>
+<p>
+<pre>
+IF &amp;TESTSW DO
+   Group A  (group of CL commands)
+        .
+        .
+   ENDDO
+ELSE DO
+   Group B  (group of CL commands)
+        .
+        .
+   ENDDO
+Group C  (continued CL commands)
+        .
+        .
+</pre>
+</p>
+<p>The IF command tests the logical variable &amp;TESTSW.  If a true condition exists (&amp;TESTSW contains a value of '1'), the commands in Group A are processed, then control passes to the commands in Group C.  If a false condition exists (&amp;TESTW contains a value of 0), the commands in group A are bypassed, the commands in Group B are processed, then control passes to the commands in Group C.
+</p>
+<p><b>Restrictions:</b>
+</p>
+<ul>
+<li>The IF command is valid only in a CL program or ILE CL procedure.
+</li>
+<li>Up to ten levels of nested IF and ELSE commands are allowed.
+</li>
+</ul>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#IF.Top_Of_Page">Top</a></td></tr>
+</table>
+<hr width="100%" size="2">
+
+<div>
+<h3><a name="IF.PARAMETERS.TABLE">Parameters</a></h3>
+<table cellspacing="0" cellpadding="4" border="1"><tr>
+<th width="10%" align="left" valign="bottom" bgcolor="aqua">Keyword</th>
+<th width="15%" align="left" valign="bottom" bgcolor="aqua">Description</th>
+<th width="30%" align="left" valign="bottom" bgcolor="aqua">Choices</th>
+<th width="10%" align="left" valign="bottom" bgcolor="aqua">Notes</th>
+</tr>
+<tr>
+<td valign="top"><a href="#IF.COND"><b>COND</b></a></td>
+<td valign="top">Condition</td>
+<td valign="top"><i>Logical value</i></td>
+<td valign="top">Required, Positional 1</td>
+</tr>
+<tr>
+<td valign="top"><a href="#IF.THEN"><b>THEN</b></a></td>
+<td valign="top">Command</td>
+<td valign="top"><i>Command string</i></td>
+<td valign="top">Optional, Positional 2</td>
+</tr>
+</table>
+
+<table width="100%">
+<tr><td align="right"><a href="#IF.Top_Of_Page">Top</a></td></tr>
+</table>
+</div>
+<div> <a name="IF.COND"></a>
+<h3>Condition (COND)</h3>
+<p>Specifies the logical expression that is evaluated to determine a condition in the program and what is done next.  Refer to "Logical Expressions" in the CL topic collection in the Programming category in the IBM i Information Center at http://www.ibm.com/systems/i/infocenter/ for a description of logical expressions.  Note that variables, constants, and the %SUBSTRING, %SWITCH, and %BINARY built-in functions can be used within the expression.
+</p>
+<p>To test if a pointer has a null value, the CL pointer variable can be compared to the special value *NULL if the CL source is being compiled with the Create CL Module (CRTCLMOD) or Create Bound CL Program (CRTBNDCL) command.  If the CL source is being compiled with the Create CL Program (CRTCLPGM) command, compare the CL pointer variable to another CL pointer variable that was declared with ADDRESS(*NULL) and has not been changed.
+</p>
+<p>This is a required parameter.
+</p>
+<dl>
+<dt><b><i>logical-value</i></b></dt>
+<dd>Specify the name of a CL logical variable or a logical expression.
+</dd>
+</dl>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#IF.Top_Of_Page">Top</a></td></tr>
+</table>
+<div> <a name="IF.THEN"></a>
+<h3>Command (THEN)</h3>
+<p>Specifies the command or group of commands (in a Do group) that are processed if the result of evaluating the logical expression is true.  After the command or Do group is processed, control is passed to the next command <i>after</i> the ELSE command associated with this IF command.  If the result is true, the ELSE command associated with the IF command is not processed.  If the command specified in this parameter is a DO command, all commands within the Do group are considered to be the command specified by the parameter.
+</p>
+<p>If the command specified by the THEN keyword is not coded on the same line when the keyword is coded, the THEN keyword must be immediately followed (on the same line) either by the left parenthesis or by a plus sign (+) or a minus sign (-) to show continuation.  (A blank cannot immediately follow any keyword.)  The command and the right parenthesis can then be coded on the next line.  For example:
+</p>
+<p>
+<pre>
+IF COND(&amp;A *EQ &amp;B)  THEN(      +
+  GOTO C)
+</pre>
+</p>
+<p>If any part of the command specified by the THEN parameter continues on the next line, a continuation character (+ or -) must be specified.
+</p>
+<p>If a DO command is specified, only the DO command (not the commands specified within the Do group) is within the parentheses.  For example:
+</p>
+<p>
+<pre>
+IF COND(&amp;A *EQ &amp;B)  THEN(DO)
+  CMD1
+  CMD2
+    .
+    .
+  ENDDO
+</pre>
+</p>
+<p>If no command is specified for the THEN parameter (a null THEN) and the ELSE command immediately follows it, the ELSE is processed if the IF expression is false and it is skipped if the expression is true.
+</p>
+<p>Any CL command can be specified for the THEN parameter, except the following commands:
+</p>
+<ul>
+<li>ELSE
+</li>
+<li>PGM, ENDPGM
+</li>
+<li>ENDDO
+</li>
+<li>MONMSG
+</li>
+<li>DCL, DCLF
+</li>
+<li>WHEN, OTHERWISE, ENDSELECT
+</li>
+</ul>
+<p>The command can be another IF, unless there are already ten levels of nested IF and ELSE commands.
+</p>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#IF.Top_Of_Page">Top</a></td></tr>
+</table>
+<hr width="100%" size="2">
+<div><h3><a name="IF.COMMAND.EXAMPLES">Examples</a> </h3>
+<p>
+<pre>
+IF   COND(&amp;A *EQ &amp;B)  THEN(GOTO X)
+IF   (&amp;A *EQ &amp;B)  THEN(GOTO X)
+IF   (&amp;A *EQ &amp;B)  (GOTO X)
+IF   COND(&amp;A *EQ &amp;B)  THEN(GOTO X)
+</pre>
+</p>
+<p>The examples above show a number of different ways the IF command can be specified to test a condition and branch to a label.  In each of these examples, if &amp;A equals &amp;B, control passes to a CL command that has a label named X.
+</p>
+<p>
+<pre>
+IF  COND(&amp;TESTSW)  THEN(CHGVAR  VAR(&amp;A)  VALUE(23))
+</pre>
+</p>
+<p>If &amp;TESTSW has a logical value of 1 (true), the CHGVAR command is processed to set &amp;A to decimal 23; if &amp;TESTW has a logical value of 0 (not true), the Change Variable (CHGVAR) command is not processed.
+</p>
+<p>
+<pre>
+IF   COND((&amp;ALPHA *EQ &amp;BETA) *AND *NOT &amp;GAMMA)
+     THEN(RETURN)
+</pre>
+</p>
+<p>If the value of &amp;ALPHA equals the value of &amp;BETA and if &amp;GAMMA is a logical 0, then return to the program or procedure that called this CL program or ILE CL procedure.
+</p>
+<p>
+<pre>
+IF   &amp;LOG1  THEN(IF  (&amp;A *GT 10) THEN(GOTO X))
+                     ELSE(GOTO Y)
+ELSE  DO
+ :  (group of CL commands)
+ENDDO
+</pre>
+</p>
+<p>This is an example of nested IF commands. If &amp;LOG1 has a logical value of 1 (true) and if &amp;A is greater than 10, a branch is made to label X. If &amp;LOG1 has a logical value of 1 and &amp;A is <i>not</i> greater than 10, a branch is made to label Y. If &amp;LOG1 has a logical value of 0 (false), &amp;A is not compared to 10. Instead, the DO group of the second ELSE command is processed.
+</p>
+<p>
+<pre>
+IF   &amp;TEST  THEN(DO)
+  CHGVAR  &amp;A (&amp;A + 1)
+  GOTO   X
+ENDDO
+ELSE   DO
+  CHGVAR   &amp;B  (&amp;B + 1)
+  CALL   EXTPGM  (&amp;B)
+ENDDO
+</pre>
+</p>
+<p>This example shows how the THEN parameter can be continued on the next line. If &amp;TEST has a logical value of 1, the Do group specified in the THEN parameter is processed. Otherwise, the Do group specified by the ELSE command is processed.
+</p>
+<p>
+<pre>
+IF   (&amp;A *EQ YES)  DO
+  CHGVAR   &amp;B 1
+  CHGVAR   &amp;C 'Z'
+ENDDO
+</pre>
+</p>
+<p>This example shows a Do group as the THEN parameter. The two Change Variable (CHGVAR) commands are processed if, in the relational expression, &amp;A is equal to YES.
+</p>
+<p>
+<pre>
+IF   %SWITCH(10XXXX10)   THEN(GOTO X)
+</pre>
+</p>
+<p>This example shows how the built-in function %SWITCH is used to test the eight job switches in a job. Refer to the topic "Built-in functions for CL" in the CL topic collection in the Programming category in the IBM i Information Center at http://www.ibm.com/systems/i/infocenter/ for a complete description of %SWITCH.  In this example, job switches 1, 2, 7, and 8 are tested for the values indicated in the 8-character mask. If switches 1 and 7 contain 1s and switches 2 and 8 contain 0s, then control branches to the command having the label X. If any of the four switches do not contain the value indicated, the branch does not occur.
+</p>
+<p>
+<pre>
+DCL  &amp;NULLPTR  *PTR  ADDRESS(*NULL)
+IF   COND(&amp;PTRVAR *EQ *NULL)   THEN(GOTO X)
+IF   COND(&amp;PTRVAR *EQ &amp;NULLPTR)   THEN(GOTO X)
+</pre>
+</p>
+<p>This example shows two ways to test if pointer variable &amp;PTRVAR contains a null value.  The pointer variable can be compared to the special value *NULL if the CL source is being compiled with the Create CL Module (CRTCLMOD) or Create Bound CL Program (CRTBNDCL) command.  If the CL source is being compiled with the Create CL Program (CRTCLPGM) command, the CL pointer variable can be compared to another CL pointer variable, like &amp;NULLPTR, that was declared with ADDRESS(*NULL) and has not been changed.
+</p>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#IF.Top_Of_Page">Top</a></td></tr>
+</table>
+<hr width="100%" size="2">
+<div><h3><a name="IF.ERROR.MESSAGES">Error messages</a> </h3>
+<p><b><u>*ESCAPE Messages</u></b>
+</p>
+<dl>
+<dt><b>CPF0816</b></dt>
+<dd>%SWITCH mask &amp;1 not valid.
+</dd>
+</dl>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#IF.Top_Of_Page">Top</a></td></tr>
+</table>
+</body>
+</html>

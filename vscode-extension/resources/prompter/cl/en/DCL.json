@@ -1,0 +1,233 @@
+{
+  "keyword": "DCL",
+  "description": "Declare CL Variable (DCL)",
+  "parameters": [
+    {
+      "name": "VAR",
+      "description": "CL variable name",
+      "help": "CL variable name (VAR)\n\nSpecifies the CL variable to be declared in the CL program or ILE CL procedure. The variable exists only within the program in which it is defined. It can be passed as a parameter on a call to another program, in which case it can be processed by the called program. The name must start with an ampersand (&).\n\nThis is a required parameter.",
+      "inputType": "text",
+      "required": true,
+      "attributes": {
+        "characterSet": "upper",
+        "maxLength": 10
+      },
+      "positional": 1,
+      "placeholder": "&VAR",
+      "basic": true
+    },
+    {
+      "name": "TYPE",
+      "description": "Type",
+      "help": "Type (TYPE)\n\nSpecifies the type of value contained in the CL variable to be declared. The value for this parameter cannot be specified by a CL variable.\n\nThis is a required parameter.",
+      "inputType": "dropdown",
+      "required": true,
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*DEC",
+          "value": "*DEC"
+        },
+        {
+          "label": "*CHAR",
+          "value": "*CHAR"
+        },
+        {
+          "label": "*LGL",
+          "value": "*LGL"
+        },
+        {
+          "label": "*INT",
+          "value": "*INT"
+        },
+        {
+          "label": "*UINT",
+          "value": "*UINT"
+        },
+        {
+          "label": "*PTR",
+          "value": "*PTR"
+        }
+      ],
+      "positional": 2,
+      "basic": true
+    },
+    {
+      "name": "STG",
+      "description": "Storage",
+      "help": "Storage (STG)\n\nSpecifies the storage type of the variable. The value for this parameter cannot be specified by a CL variable.",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*AUTO",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*AUTO",
+          "value": "*AUTO"
+        },
+        {
+          "label": "*BASED",
+          "value": "*BASED"
+        },
+        {
+          "label": "*DEFINED",
+          "value": "*DEFINED"
+        }
+      ],
+      "basic": true
+    },
+    {
+      "name": "LEN",
+      "description": "Length of variable",
+      "help": "Length of variable (LEN)\n\nSpecifies the length of the CL variable to be declared. If the variable is a decimal value, the number of decimal digits to the right of the decimal point can be optionally specified. The value for this LEN parameter cannot be specified by a CL variable.\n\nNote: If *PTR is specified for the TYPE parameter, you cannot specify a value for this parameter. Pointers have a fixed length of 16 bytes.\n\nElement 1: Length\n\nElement 2: Decimal positions\n\nIf a length (in digits) is specified for a decimal variable and the number of decimal positions is not specified, 0 decimal positions is assumed.\n\nThe maximum lengths for each of the five types are:\n\nNote: The initial value (specified for the VALUE parameter) of a CL variable can be no greater than 5000 characters.\n\nThe default lengths for each of the five types are:\n\nNote: For decimal and character types, the default length is the same as the length of the initial value, if one is specified in the VALUE parameter.",
+      "inputType": "group",
+      "required": false,
+      "groupKind": "elements",
+      "children": [
+        {
+          "name": "LENGTH",
+          "description": "Length",
+          "inputType": "number",
+          "required": false,
+          "attributes": {
+            "numericOnly": true
+          },
+          "placeholder": "10"
+        },
+        {
+          "name": "DEC",
+          "description": "Decimal positions",
+          "inputType": "number",
+          "required": false,
+          "attributes": {
+            "numericOnly": true
+          },
+          "placeholder": "0"
+        }
+      ],
+      "positional": 3
+    },
+    {
+      "name": "VALUE",
+      "description": "Initial value",
+      "help": "Initial value (VALUE)\n\nSpecifies the initial value that is assigned to the CL variable when it is declared in the program. The value must be of the type specified by the TYPE parameter. If no value is specified, a character variable is set to blanks, a decimal, integer, or unsigned integer variable is set to a value of zero, and a logical variable is set to '0'. The value for the VALUE parameter cannot be specified by a CL variable.\n\nThe VALUE parameter may not be specified for *PTR CL variables, or CL variables declared with *DEFINED or *BASED specified for the Storage (STG) parameter.\n\nIf the name of the declared variable is specified for the PARM parameter of the PGM command in the same program in which the variable is declared, an initial value cannot be specified for the variable. In that case, the variable receives its value from the calling program.",
+      "inputType": "text",
+      "required": false,
+      "positional": 4,
+      "placeholder": "' '"
+    },
+    {
+      "name": "BASPTR",
+      "description": "Basing pointer variable",
+      "help": "Basing pointer variable (BASPTR)\n\nSpecifies the basing pointer for a CL variable declared with storage of *BASED.\n\nNote: This parameter must be specified if *BASED is specified for the Storage (STG) parameter.\n\nThe name must start with an ampersand (&).",
+      "inputType": "text",
+      "required": false,
+      "attributes": {
+        "characterSet": "upper",
+        "maxLength": 10
+      },
+      "placeholder": "&PTR"
+    },
+    {
+      "name": "DEFVAR",
+      "description": "Defined on variable",
+      "help": "Defined on (DEFVAR)\n\nSpecifies the CL variable that the variable being declared is to be defined on.\n\nNote: This parameter must be specified if *DEFINED is specified for the Storage (STG) parameter.\n\nNote: A variable declared as STG(*DEFINED) cannot extend beyond the last byte of of the CL variable that it is defined on.\n\nElement 1: CL variable name\n\nElement 2: Starting position",
+      "inputType": "group",
+      "required": false,
+      "groupKind": "elements",
+      "children": [
+        {
+          "name": "DEFVAR_VAR",
+          "description": "CL variable name",
+          "inputType": "text",
+          "required": false,
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          },
+          "placeholder": "&BASE"
+        },
+        {
+          "name": "POS",
+          "description": "Position",
+          "inputType": "number",
+          "required": false,
+          "defaultValue": "1",
+          "attributes": {
+            "numericOnly": true
+          },
+          "placeholder": "1"
+        }
+      ]
+    },
+    {
+      "name": "ADDRESS",
+      "description": "Address",
+      "help": "Address (ADDRESS)\n\nSpecifies the initial address for a CL variable declared with *PTR as the TYPE value.\n\nNote: A value cannot be specified for this parameter unless the variable being declared is a pointer variable and *AUTO is specified for the STG parameter.\n\nSingle values\n\nElement 1: CL variable name\n\nThe name must start with an ampersand (&).\n\nElement 2: Offset",
+      "inputType": "group",
+      "required": false,
+      "groupKind": "elements",
+      "singleValues": [
+        "*NULL"
+      ],
+      "children": [
+        {
+          "name": "ADDRESS_VAR",
+          "description": "CL variable name",
+          "inputType": "text",
+          "required": false,
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          },
+          "placeholder": "*NULL"
+        },
+        {
+          "name": "OFFSET",
+          "description": "Offset",
+          "inputType": "number",
+          "required": false,
+          "defaultValue": "0",
+          "attributes": {
+            "numericOnly": true
+          },
+          "placeholder": "0"
+        }
+      ]
+    }
+  ],
+  "examples": [
+    {
+      "code": "DCL &ABLE *DEC LEN(5 2)"
+    },
+    {
+      "code": "DCL &SWITCH *LGL"
+    },
+    {
+      "code": "DCL &FILNAM *CHAR VALUE(FILEA)"
+    },
+    {
+      "code": "DCL &QUALOBJ *CHAR LEN(20) DCL &OBJ *CHAR LEN(10) STG(*DEFINED) DEFVAR(&QUALOBJ 1) DCL &LIB *CHAR LEN(10) STG(*DEFINED) DEFVAR(&QUALOBJ 11)"
+    },
+    {
+      "code": "DCL &CHAR *CHAR LEN(10) DCL &PTR *PTR ADDRESS(&CHAR)"
+    },
+    {
+      "code": "DCL &PTR *PTR DCL &CHAR *CHAR LEN(10) STG(*BASED) BASPTR(&PTR)"
+    },
+    {
+      "code": "DCL &CHAR *CHAR LEN(48) DCL &PTR *PTR STG(*DEFINED) DEFVAR(&CHAR 17)"
+    },
+    {
+      "code": "DCL &PAYREC *PTR STG(*AUTO) ADDRESS(*NULL)"
+    }
+  ],
+  "source": {
+    "url": "https://www.ibm.com/docs/en/ssw_ibm_i_74/cl/dcl.htm",
+    "version": "IBM i 7.4"
+  }
+}

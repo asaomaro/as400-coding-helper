@@ -1,0 +1,1957 @@
+
+  <!doctype html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+  <html>
+<head><META http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>Change Spooled File Attributes  (CHGSPLFA)</title>
+</head>
+<body bgcolor="white">
+<a name="CHGSPLFA.Top_Of_Page"></a>
+<h2>Change Spooled File Attributes  (CHGSPLFA)</h2>
+<table width="100%">
+<tr>
+<td align="left" valign="top"><b>Where allowed to run:  </b>All environments (*ALL)<br>
+<b>Threadsafe:  </b>No
+</td>
+<td align="right" valign="top">
+<a href="#CHGSPLFA.PARAMETERS.TABLE">Parameters</a><br>
+<a href="#CHGSPLFA.COMMAND.EXAMPLES">Examples</a><br>
+<a href="#CHGSPLFA.ERROR.MESSAGES">Error messages</a></td>
+</tr>
+</table>
+
+<div> <a name="CHGSPLFA"></a>
+<p>The Change Spooled File Attributes (CHGSPLFA) command allows you to change attributes of a spooled file while it is on an output queue.  These changes affect only the current processing of the file.  The next time the job runs and the file is produced, the file attributes are derived from the device file description, the program, and any override commands.
+</p>
+<p>If the file is currently being produced on an output device, the only parameters that can be changed are COPIES, RESTART, and SAVE.  An attempt to change any other parameter results in an error, and no file attributes are changed.  However, if the file is being held on an output queue because of spooling attribute errors, this command can be used to change the attributes, and a spooling writer can then be started to produce the file.
+</p>
+<p>See the Information Center for more information about changing spooled file attributes.
+</p>
+<p>You can change the following attributes:
+</p>
+<ul>
+<li>The name of the device
+</li>
+<li>The order of the spooled file entries
+</li>
+<li>The output queue of the specified file
+</li>
+<li>The type of forms to be used for printer output
+</li>
+<li>The number of copies to be produced
+</li>
+<li>The number of separator pages for this printer file
+</li>
+<li>The schedule for the output
+</li>
+<li>Whether the spooled file is to be saved after it has been written
+</li>
+<li>The output priority
+</li>
+<li>The user data that identifies the spooled file
+</li>
+<li>The alignment prompts to be used for a printer file
+</li>
+<li>The print quality for a printer file
+</li>
+<li>Whether to print the file on one or both sides of each page
+</li>
+<li>The form feed attachment to be used for a printer file
+</li>
+<li>The volume identifier used for diskette files
+</li>
+<li>The label identifier used for diskette files
+</li>
+<li>The exchange type used to write to diskette
+</li>
+<li>The character code (EBCDIC or ASCII) used for diskette
+</li>
+</ul>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#CHGSPLFA.Top_Of_Page">Top</a></td></tr>
+</table>
+<hr width="100%" size="2">
+
+<div>
+<h3><a name="CHGSPLFA.PARAMETERS.TABLE">Parameters</a></h3>
+<table cellspacing="0" cellpadding="4" border="1"><tr>
+<th width="10%" align="left" valign="bottom" bgcolor="aqua">Keyword</th>
+<th width="15%" align="left" valign="bottom" bgcolor="aqua">Description</th>
+<th width="30%" align="left" valign="bottom" bgcolor="aqua">Choices</th>
+<th width="10%" align="left" valign="bottom" bgcolor="aqua">Notes</th>
+</tr>
+<tr>
+<td valign="top"><a href="#CHGSPLFA.FILE"><b>FILE</b></a></td>
+<td valign="top">Spooled file</td>
+<td valign="top"><i>Name</i>, *SELECT</td>
+<td valign="top">Required, Key, Positional 1</td>
+</tr>
+<tr>
+<td valign="top" rowspan="4"><a href="#CHGSPLFA.JOB"><b>JOB</b></a></td>
+<td valign="top">Job name</td>
+<td valign="top">Single values: <b><u>*</u></b><br>Other values: <i>Qualified job name</i></td>
+<td valign="top" rowspan="4">Optional, Key, Positional 2</td>
+</tr>
+<tr>
+<td valign="top">Qualifier 1: Job name</td>
+<td valign="top"><i>Name</i></td>
+</tr><tr>
+<td valign="top">Qualifier 2: User</td>
+<td valign="top"><i>Name</i></td>
+</tr><tr>
+<td valign="top">Qualifier 3: Number</td>
+<td valign="top">000000-999999</td>
+</tr><tr>
+<td valign="top"><a href="#CHGSPLFA.SPLNBR"><b>SPLNBR</b></a></td>
+<td valign="top">Spooled file number</td>
+<td valign="top">1-999999, <b><u>*ONLY</u></b>, *LAST, *ANY</td>
+<td valign="top">Optional, Key, Positional 3</td>
+</tr>
+<tr>
+<td valign="top"><a href="#CHGSPLFA.JOBSYSNAME"><b>JOBSYSNAME</b></a></td>
+<td valign="top">Job system name</td>
+<td valign="top"><i>Name</i>, <b><u>*ONLY</u></b>, *CURRENT, *ANY</td>
+<td valign="top">Optional, Key</td>
+</tr>
+<tr>
+<td valign="top" rowspan="3"><a href="#CHGSPLFA.CRTDATE"><b>CRTDATE</b></a></td>
+<td valign="top">Spooled file created</td>
+<td valign="top">Single values: <b><u>*ONLY</u></b>, *LAST<br>Other values: <i>Element list</i></td>
+<td valign="top" rowspan="3">Optional, Key</td>
+</tr>
+<tr>
+<td valign="top">Element 1: Creation date</td>
+<td valign="top">
+<i>Date</i></td>
+</tr>
+<tr>
+<td valign="top">Element 2: Creation time</td>
+<td valign="top">
+<i>Time</i>, <b><u>*ONLY</u></b>, *LAST</td>
+</tr>
+<tr>
+<td valign="top" rowspan="6"><a href="#CHGSPLFA.SELECT"><b>SELECT</b></a></td>
+<td valign="top">Select files for</td>
+<td valign="top"><i>Element list</i></td>
+<td valign="top" rowspan="6">Optional</td>
+</tr>
+<tr>
+<td valign="top">Element 1: User</td>
+<td valign="top">
+<i>Name</i>, <b><u>*CURRENT</u></b>, *ALL</td>
+</tr>
+<tr>
+<td valign="top">Element 2: Print device</td>
+<td valign="top">
+<i>Name</i>, <b><u>*ALL</u></b>, *OUTQ</td>
+</tr>
+<tr>
+<td valign="top">Element 3: Form type</td>
+<td valign="top">
+<i>Character value</i>, <b><u>*ALL</u></b>, *STD</td>
+</tr>
+<tr>
+<td valign="top">Element 4: User data</td>
+<td valign="top">
+<i>Character value</i>, <b><u>*ALL</u></b></td>
+</tr>
+<tr>
+<td valign="top">Element 5: ASP</td>
+<td valign="top">
+1-32, <b><u>*ALL</u></b>, *ASPDEV</td>
+</tr>
+<tr>
+<td valign="top"><a href="#CHGSPLFA.ASPDEV"><b>ASPDEV</b></a></td>
+<td valign="top">ASP device</td>
+<td valign="top"><i>Name</i>, <b><u>*</u></b>, *SYSBAS, *CURASPGRP</td>
+<td valign="top">Optional</td>
+</tr>
+<tr>
+<td valign="top"><a href="#CHGSPLFA.DEV"><b>DEV</b></a></td>
+<td valign="top">Printer</td>
+<td valign="top"><i>Name</i>, <b><u>*SAME</u></b>, *OUTQ</td>
+<td valign="top">Optional</td>
+</tr>
+<tr>
+<td valign="top"><a href="#CHGSPLFA.PRTSEQ"><b>PRTSEQ</b></a></td>
+<td valign="top">Print sequence</td>
+<td valign="top"><b><u>*SAME</u></b>, *NEXT</td>
+<td valign="top">Optional</td>
+</tr>
+<tr>
+<td valign="top"><a href="#CHGSPLFA.FORMTYPE"><b>FORMTYPE</b></a></td>
+<td valign="top">Form type</td>
+<td valign="top"><i>Character value</i>, <b><u>*SAME</u></b>, *STD</td>
+<td valign="top">Optional</td>
+</tr>
+<tr>
+<td valign="top"><a href="#CHGSPLFA.COPIES"><b>COPIES</b></a></td>
+<td valign="top">Copies</td>
+<td valign="top">1-255, <b><u>*SAME</u></b></td>
+<td valign="top">Optional</td>
+</tr>
+<tr>
+<td valign="top"><a href="#CHGSPLFA.RESTART"><b>RESTART</b></a></td>
+<td valign="top">Restart printing</td>
+<td valign="top"><i>Integer</i>, <b><u>*SAME</u></b>, *STRPAGE, *ENDPAGE, *NEXT</td>
+<td valign="top">Optional</td>
+</tr>
+<tr>
+<td valign="top"><a href="#CHGSPLFA.VOL"><b>VOL</b></a></td>
+<td valign="top">Volume</td>
+<td valign="top">Single values: <b><u>*SAME</u></b>, *NONE<br>Other values (up to 50 repetitions): <i>Character value</i></td>
+<td valign="top">Optional</td>
+</tr>
+<tr>
+<td valign="top"><a href="#CHGSPLFA.LABEL"><b>LABEL</b></a></td>
+<td valign="top">Diskette label</td>
+<td valign="top"><i>Character value</i>, <b><u>*SAME</u></b></td>
+<td valign="top">Optional</td>
+</tr>
+<tr>
+<td valign="top" rowspan="3"><a href="#CHGSPLFA.OUTQ"><b>OUTQ</b></a></td>
+<td valign="top">Output queue</td>
+<td valign="top">Single values: <b><u>*SAME</u></b>, *DEV<br>Other values: <i>Qualified object name</i></td>
+<td valign="top" rowspan="3">Optional</td>
+</tr>
+<tr>
+<td valign="top">Qualifier 1: Output queue</td>
+<td valign="top"><i>Name</i></td>
+</tr><tr>
+<td valign="top">Qualifier 2: Library</td>
+<td valign="top"><i>Name</i>, <b><u>*LIBL</u></b>, *CURLIB</td>
+</tr><tr>
+<td valign="top"><a href="#CHGSPLFA.FILESEP"><b>FILESEP</b></a></td>
+<td valign="top">File separators</td>
+<td valign="top">0-9, <b><u>*SAME</u></b></td>
+<td valign="top">Optional</td>
+</tr>
+<tr>
+<td valign="top" rowspan="3"><a href="#CHGSPLFA.PAGERANGE"><b>PAGERANGE</b></a></td>
+<td valign="top">Page range to print</td>
+<td valign="top"><i>Element list</i></td>
+<td valign="top" rowspan="3">Optional</td>
+</tr>
+<tr>
+<td valign="top">Element 1: Starting page</td>
+<td valign="top">
+<i>Integer</i>, <b><u>*SAME</u></b>, *ENDPAGE</td>
+</tr>
+<tr>
+<td valign="top">Element 2: Ending page</td>
+<td valign="top">
+<i>Integer</i>, <b><u>*SAME</u></b>, *END</td>
+</tr>
+<tr>
+<td valign="top"><a href="#CHGSPLFA.SCHEDULE"><b>SCHEDULE</b></a></td>
+<td valign="top">File becomes available</td>
+<td valign="top"><b><u>*SAME</u></b>, *JOBEND, *FILEEND, *IMMED</td>
+<td valign="top">Optional</td>
+</tr>
+<tr>
+<td valign="top"><a href="#CHGSPLFA.SAVE"><b>SAVE</b></a></td>
+<td valign="top">Save file</td>
+<td valign="top"><b><u>*SAME</u></b>, *NO, *YES, *IMMED</td>
+<td valign="top">Optional</td>
+</tr>
+<tr>
+<td valign="top"><a href="#CHGSPLFA.EXPDATE"><b>EXPDATE</b></a></td>
+<td valign="top">Expiration date for file</td>
+<td valign="top"><i>Date</i>, <b><u>*SAME</u></b>, *NONE, *DAYS</td>
+<td valign="top">Optional</td>
+</tr>
+<tr>
+<td valign="top"><a href="#CHGSPLFA.DAYS"><b>DAYS</b></a></td>
+<td valign="top">Days until file expires</td>
+<td valign="top">1-366</td>
+<td valign="top">Optional</td>
+</tr>
+<tr>
+<td valign="top"><a href="#CHGSPLFA.OUTPTY"><b>OUTPTY</b></a></td>
+<td valign="top">Output priority</td>
+<td valign="top">1-9, <b><u>*SAME</u></b>, *JOB</td>
+<td valign="top">Optional</td>
+</tr>
+<tr>
+<td valign="top"><a href="#CHGSPLFA.USRDTA"><b>USRDTA</b></a></td>
+<td valign="top">User data</td>
+<td valign="top"><i>Character value</i>, <b><u>*SAME</u></b></td>
+<td valign="top">Optional</td>
+</tr>
+<tr>
+<td valign="top"><a href="#CHGSPLFA.ALIGN"><b>ALIGN</b></a></td>
+<td valign="top">Align page</td>
+<td valign="top"><b><u>*SAME</u></b>, *NO, *YES</td>
+<td valign="top">Optional</td>
+</tr>
+<tr>
+<td valign="top"><a href="#CHGSPLFA.PRTQLTY"><b>PRTQLTY</b></a></td>
+<td valign="top">Print quality</td>
+<td valign="top"><b><u>*SAME</u></b>, *STD, *DEVD, *DRAFT, *NLQ, *FASTDRAFT</td>
+<td valign="top">Optional</td>
+</tr>
+<tr>
+<td valign="top"><a href="#CHGSPLFA.FORMFEED"><b>FORMFEED</b></a></td>
+<td valign="top">Form feed</td>
+<td valign="top"><b><u>*SAME</u></b>, *DEVD, *CONT, *CUT, *AUTOCUT, *CONT2</td>
+<td valign="top">Optional</td>
+</tr>
+<tr>
+<td valign="top"><a href="#CHGSPLFA.DRAWER"><b>DRAWER</b></a></td>
+<td valign="top">Source drawer</td>
+<td valign="top">1-255, <b><u>*SAME</u></b>, *E1, *FORMDF</td>
+<td valign="top">Optional</td>
+</tr>
+<tr>
+<td valign="top"><a href="#CHGSPLFA.FIDELITY"><b>FIDELITY</b></a></td>
+<td valign="top">Print fidelity</td>
+<td valign="top"><b><u>*SAME</u></b>, *ABSOLUTE, *CONTENT</td>
+<td valign="top">Optional</td>
+</tr>
+<tr>
+<td valign="top"><a href="#CHGSPLFA.DUPLEX"><b>DUPLEX</b></a></td>
+<td valign="top">Print on both sides</td>
+<td valign="top"><b><u>*SAME</u></b>, *NO, *YES, *TUMBLE, *FORMDF</td>
+<td valign="top">Optional</td>
+</tr>
+<tr>
+<td valign="top"><a href="#CHGSPLFA.MULTIUP"><b>MULTIUP</b></a></td>
+<td valign="top">Pages per side</td>
+<td valign="top">1-4, <b><u>*SAME</u></b></td>
+<td valign="top">Optional</td>
+</tr>
+<tr>
+<td valign="top" rowspan="3"><a href="#CHGSPLFA.PAGDFN"><b>PAGDFN</b></a></td>
+<td valign="top">Page definition</td>
+<td valign="top">Single values: <b><u>*SAME</u></b>, *NONE<br>Other values: <i>Qualified object name</i></td>
+<td valign="top" rowspan="3">Optional</td>
+</tr>
+<tr>
+<td valign="top">Qualifier 1: Page definition</td>
+<td valign="top"><i>Name</i></td>
+</tr><tr>
+<td valign="top">Qualifier 2: Library</td>
+<td valign="top"><i>Name</i>, <b><u>*LIBL</u></b>, *CURLIB</td>
+</tr><tr>
+<td valign="top" rowspan="3"><a href="#CHGSPLFA.FORMDF"><b>FORMDF</b></a></td>
+<td valign="top">Form definition</td>
+<td valign="top">Single values: <b><u>*SAME</u></b>, *NONE, *DEVD, *INLINE, *INLINED<br>Other values: <i>Qualified object name</i></td>
+<td valign="top" rowspan="3">Optional</td>
+</tr>
+<tr>
+<td valign="top">Qualifier 1: Form definition</td>
+<td valign="top"><i>Name</i></td>
+</tr><tr>
+<td valign="top">Qualifier 2: Library</td>
+<td valign="top"><i>Name</i>, <b><u>*LIBL</u></b>, *CURLIB</td>
+</tr><tr>
+<td valign="top"><a href="#CHGSPLFA.AFPCHARS"><b>AFPCHARS</b></a></td>
+<td valign="top">AFP Characters</td>
+<td valign="top">Single values: <b><u>*SAME</u></b>, *NONE<br>Other values (up to 4 repetitions): <i>Character value</i></td>
+<td valign="top">Optional</td>
+</tr>
+<tr>
+<td valign="top" rowspan="6"><a href="#CHGSPLFA.FRONTOVL"><b>FRONTOVL</b></a></td>
+<td valign="top">Front side overlay</td>
+<td valign="top">Single values: *NONE<br>Other values: <i>Element list</i></td>
+<td valign="top" rowspan="6">Optional</td>
+</tr>
+<tr>
+<td valign="top">Element 1: Overlay</td>
+<td valign="top">
+Single values: <b><u>*SAME</u></b><br>Other values: <i>Qualified object name</i></td>
+</tr>
+<tr>
+<td valign="top" style="padding-left:10pt">Qualifier 1: Overlay</td>
+<td valign="top"><i>Name</i></td>
+</tr><tr>
+<td valign="top" style="padding-left:10pt">Qualifier 2: Library</td>
+<td valign="top"><i>Name</i>, <b><u>*LIBL</u></b>, *CURLIB</td>
+</tr><tr>
+<td valign="top">Element 2: Offset down</td>
+<td valign="top">
+0.0-57.79, <b><u>*SAME</u></b></td>
+</tr>
+<tr>
+<td valign="top">Element 3: Offset across</td>
+<td valign="top">
+0.0-57.79, <b><u>*SAME</u></b></td>
+</tr>
+<tr>
+<td valign="top" rowspan="7"><a href="#CHGSPLFA.BACKOVL"><b>BACKOVL</b></a></td>
+<td valign="top">Back side overlay</td>
+<td valign="top">Single values: *FRONTOVL, *NONE<br>Other values: <i>Element list</i></td>
+<td valign="top" rowspan="7">Optional</td>
+</tr>
+<tr>
+<td valign="top">Element 1: Overlay</td>
+<td valign="top">
+Single values: <b><u>*SAME</u></b><br>Other values: <i>Qualified object name</i></td>
+</tr>
+<tr>
+<td valign="top" style="padding-left:10pt">Qualifier 1: Overlay</td>
+<td valign="top"><i>Name</i></td>
+</tr><tr>
+<td valign="top" style="padding-left:10pt">Qualifier 2: Library</td>
+<td valign="top"><i>Name</i>, <b><u>*LIBL</u></b>, *CURLIB</td>
+</tr><tr>
+<td valign="top">Element 2: Offset down</td>
+<td valign="top">
+0.0-57.79, <b><u>*SAME</u></b></td>
+</tr>
+<tr>
+<td valign="top">Element 3: Offset across</td>
+<td valign="top">
+0.0-57.79, <b><u>*SAME</u></b></td>
+</tr>
+<tr>
+<td valign="top">Element 4: Constant back</td>
+<td valign="top">
+<b><u>*SAME</u></b>, *NOCONSTANT, *CONSTANT</td>
+</tr>
+<tr>
+<td valign="top"><a href="#CHGSPLFA.USRDFNOPT"><b>USRDFNOPT</b></a></td>
+<td valign="top">User defined option</td>
+<td valign="top">Single values: <b><u>*SAME</u></b>, *NONE<br>Other values (up to 4 repetitions): <i>Character value</i></td>
+<td valign="top">Optional</td>
+</tr>
+<tr>
+<td valign="top"><a href="#CHGSPLFA.USRDFNDTA"><b>USRDFNDTA</b></a></td>
+<td valign="top">User Defined Data</td>
+<td valign="top"><i>Character value</i>, <b><u>*SAME</u></b>, *NONE</td>
+<td valign="top">Optional</td>
+</tr>
+<tr>
+<td valign="top" rowspan="5"><a href="#CHGSPLFA.USRDFNOBJ"><b>USRDFNOBJ</b></a></td>
+<td valign="top">User defined object</td>
+<td valign="top">Single values: *NONE, <b><u>*SAME</u></b><br>Other values: <i>Element list</i></td>
+<td valign="top" rowspan="5">Optional</td>
+</tr>
+<tr>
+<td valign="top">Element 1: Object</td>
+<td valign="top">
+<i>Qualified object name</i></td>
+</tr>
+<tr>
+<td valign="top" style="padding-left:10pt">Qualifier 1: Object</td>
+<td valign="top"><i>Name</i></td>
+</tr><tr>
+<td valign="top" style="padding-left:10pt">Qualifier 2: Library</td>
+<td valign="top"><i>Name</i>, <b><u>*LIBL</u></b>, *CURLIB</td>
+</tr><tr>
+<td valign="top">Element 2: Object type</td>
+<td valign="top">
+*DTAARA, *DTAQ, *FILE, *PSFCFG, *USRIDX, *USRQ, *USRSPC</td>
+</tr>
+<tr>
+<td valign="top"><a href="#CHGSPLFA.IPDSPASTHR"><b>IPDSPASTHR</b></a></td>
+<td valign="top">IPDS pass through</td>
+<td valign="top"><b><u>*SAME</u></b>, *DEVD, *NO, *YES</td>
+<td valign="top">Optional</td>
+</tr>
+<tr>
+<td valign="top"><a href="#CHGSPLFA.FNTRSL"><b>FNTRSL</b></a></td>
+<td valign="top">Font resolution for formatting</td>
+<td valign="top"><b><u>*SAME</u></b>, *DEVD, *SEARCH, 240, 300</td>
+<td valign="top">Optional</td>
+</tr>
+<tr>
+<td valign="top"><a href="#CHGSPLFA.EXCHTYPE"><b>EXCHTYPE</b></a></td>
+<td valign="top">Diskette file exchange type</td>
+<td valign="top"><b><u>*SAME</u></b>, *STD, *BASIC, *H, *I</td>
+<td valign="top">Optional</td>
+</tr>
+<tr>
+<td valign="top"><a href="#CHGSPLFA.CODE"><b>CODE</b></a></td>
+<td valign="top">Code</td>
+<td valign="top"><b><u>*SAME</u></b>, *EBCDIC, *ASCII</td>
+<td valign="top">Optional</td>
+</tr>
+</table>
+
+<table width="100%">
+<tr><td align="right"><a href="#CHGSPLFA.Top_Of_Page">Top</a></td></tr>
+</table>
+</div>
+<div> <a name="CHGSPLFA.FILE"></a>
+<h3>Spooled file (FILE)</h3>
+<p>Specifies the spooled file that is having its attributes changed.
+</p>
+<p>This is a required parameter.
+</p>
+<dl>
+<dt><b>*SELECT</b></dt>
+<dd>All spooled files that meet the selection values specified on the <b>Select files for (SELECT)</b> parameter are changed.  This value is mutually exclusive with a value specified on the <b>Job name (JOB)</b> parameter, <b>Spooled file number (SPLNBR)</b> parameter, <b>Job system name (JOBSYSNAME)</b> parameter, or <b>Spooled file created (CRTDATE)</b> parameter.
+</dd>
+<dt><b><i>name</i></b></dt>
+<dd>Specify the name of the spooled file.
+</dd>
+</dl>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#CHGSPLFA.Top_Of_Page">Top</a></td></tr>
+</table>
+<div> <a name="CHGSPLFA.JOB"></a>
+<h3>Job name (JOB)</h3>
+<p>Specifies the job that created the spooled file.
+</p>
+<p><b>Single values</b>
+</p>
+<dl>
+<dt><b><u>*</u></b></dt>
+<dd>The job that created the spooled file issued this command.
+</dd>
+</dl>
+<p><b>Qualifier 1: Job name</b>
+</p>
+<dl>
+<dt><b><i>name</i></b></dt>
+<dd>Specify the name of the job that contains the spooled file.
+</dd>
+</dl>
+<p><b>Qualifier 2: User</b>
+</p>
+<dl>
+<dt><b><i>name</i></b></dt>
+<dd>Specify the user name that identifies the user profile under which the job is run.
+</dd>
+</dl>
+<p><b>Qualifier 3: Number</b>
+</p>
+<dl>
+<dt><b><i>000000-999999</i></b></dt>
+<dd>Specify the system-assigned job number.
+</dd>
+</dl>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#CHGSPLFA.Top_Of_Page">Top</a></td></tr>
+</table>
+<div> <a name="CHGSPLFA.SPLNBR"></a>
+<h3>Spooled file number (SPLNBR)</h3>
+<p>Specifies the unique number of the spooled file in the job whose attributes are being changed.
+</p>
+<dl>
+<dt><b><u>*ONLY</u></b></dt>
+<dd>Only one spooled file in the job has the specified file name; therefore, the number of the spooled file is not necessary.
+</dd>
+</dl>
+<dl>
+<dt><b>*LAST</b></dt>
+<dd>If there is more than one spooled file with the specified file name the one with the highest number is the file whose attributes are changed.
+</dd>
+</dl>
+<dl>
+<dt><b>*ANY</b></dt>
+<dd>The spooled file number is not used to determine which spooled file is used. Use this value when the job system name parameter or the spooled file create date and time parameter is to take precedence over the spooled file number when selecting a spooled file.
+</dd>
+</dl>
+<dl>
+<dt><b><i>1-999999</i></b></dt>
+<dd>Specify the number of the spooled file that matches the file name whose attributes you wish to change.
+</dd>
+</dl>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#CHGSPLFA.Top_Of_Page">Top</a></td></tr>
+</table>
+<div> <a name="CHGSPLFA.JOBSYSNAME"></a>
+<h3>Job system name (JOBSYSNAME)</h3>
+<p>Specifies the system where the job that created the spooled file (JOB parameter) ran.  This parameter is considered after the job name, user name, job number, spooled file name, and spooled file number parameter requirements have been met.
+</p>
+<dl>
+<dt><b><u>*ONLY</u></b></dt>
+<dd>There is one spooled file with the specified job name, user name, job number, spooled file name, spooled file number, and spooled file create date and time.
+</dd>
+<dt><b>*CURRENT</b></dt>
+<dd>The spooled file created on the current system with the specified job name, user name, job number, spooled file name, spooled file number, and create date and time is used.
+</dd>
+<dt><b>*ANY</b></dt>
+<dd>The job system name is not used to determine which spooled file is used. Use this value when the spooled file create date and time parameter is to take precedence over the job system name when selecting a spooled file.
+</dd>
+<dt><b><i>name</i></b></dt>
+<dd>Specify the name of the system where the job that created the spooled file ran.
+</dd>
+</dl>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#CHGSPLFA.Top_Of_Page">Top</a></td></tr>
+</table>
+<div> <a name="CHGSPLFA.CRTDATE"></a>
+<h3>Spooled file created (CRTDATE)</h3>
+<p>Specifies the date and time the spooled file was created.  This parameter is considered after the job name, user name, job number, spooled file name, spooled file number, and job system name parameter requirements have been met.
+</p>
+<p><b>Single values</b>
+</p>
+<dl>
+<dt><b><u>*ONLY</u></b></dt>
+<dd>There is one spooled file with the specified job name, user name, job number, spooled file name, spooled file number, and job system name.
+</dd>
+<dt><b>*LAST</b></dt>
+<dd>The spooled file with the latest create date and time of the specified job name, user name, job number, spooled file name, spooled file number, and job system name is used.
+</dd>
+</dl>
+<p><b>Element 1: Creation date</b>
+</p>
+<dl>
+<dt><b><i>date</i></b></dt>
+<dd>Specify the date the spooled file was created.
+</dd>
+</dl>
+<p><b>Element 2: Creation time</b>
+</p>
+<dl>
+<dt><b><u>*ONLY</u></b></dt>
+<dd>There is one spooled file with the specified job name, user name, job number, spooled file name, spooled file number, job system name, and spooled file create date.
+</dd>
+<dt><b>*LAST</b></dt>
+<dd>The spooled file with the latest create time of the specified job name, user name, job number, spooled file name, spooled file number, job system name, and spooled file create date is used.
+</dd>
+<dt><b><i>time</i></b></dt>
+<dd>Specify the time the spooled file was created.
+</dd>
+</dl>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#CHGSPLFA.Top_Of_Page">Top</a></td></tr>
+</table>
+<div> <a name="CHGSPLFA.SELECT"></a>
+<h3>Select files for (SELECT)</h3>
+<p>Specifies which files have their attributes changed.  This parameter allows you to process more than one file at a time.  Positional values can be specified to select the files:  the user that created the file, the device that the file is queued for, the form type specified, the user data tag associated with the file, or the auxiliary storage pool the file is in.  Only files that meet each of the values are selected.
+</p>
+<p><b>Element 1: User</b>
+</p>
+<dl>
+<dt><b><u>*CURRENT</u></b></dt>
+<dd>Only files created by the user running this command are selected.
+</dd>
+<dt><b>*ALL</b></dt>
+<dd>Files created by all users are selected.
+</dd>
+<dt><b><i>name</i></b></dt>
+<dd>Specify a user name.  Only files created by that user name are selected.
+</dd>
+</dl>
+<p><b>Element 2: Print device</b>
+</p>
+<dl>
+<dt><b><u>*ALL</u></b></dt>
+<dd>Files on any device-created or user-created output queue are selected.
+</dd>
+<dt><b>*OUTQ</b></dt>
+<dd>All files on any user-created output queue are selected.  A user-created output queue is any output queue that is not automatically created by a device.  A user-created output queue does not generally have the same name as a device, but if it does, it does not reside in library QUSRSYS.
+</dd>
+<dt><b><i>name</i></b></dt>
+<dd>Specify a device name.  Only files on the device created output queue for that device are selected.  A device created output queue is one that has the same name as a device and resides in the QUSRSYS library.  Unless it already exists, it will automatically be created by the system when the device is created.  A device created output queue cannot be deleted.
+</dd>
+</dl>
+<p><b>Element 3: Form type</b>
+</p>
+<dl>
+<dt><b><u>*ALL</u></b></dt>
+<dd>Files for all form types are selected.
+</dd>
+<dt><b>*STD</b></dt>
+<dd>Only files that specify the standard form type are selected.
+</dd>
+<dt><b><i>form-type</i></b></dt>
+<dd>Specify the form type to select the file.
+</dd>
+</dl>
+<p><b>Element 4: User data</b>
+</p>
+<dl>
+<dt><b><u>*ALL</u></b></dt>
+<dd>Files with any user data tag specified are selected.
+</dd>
+<dt><b><i>user-data</i></b></dt>
+<dd>Specify the user data tag to select the file.
+</dd>
+</dl>
+<p><b>Element 5: ASP</b>
+</p>
+<dl>
+<dt><b><u>*ALL</u></b></dt>
+<dd>All files as specified in the Auxiliary Storage Pool Device (ASPDEV) parameter are selected.
+</dd>
+<dt><b>*ASPDEV</b></dt>
+<dd>Files specified in the Auxiliary Storage Pool Device (ASPDEV) parameter are selected.
+</dd>
+<dt><b><i>1-32</i></b></dt>
+<dd>Specify the auxiliary storage pool (ASP) of the files being selected.
+</dd>
+</dl>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#CHGSPLFA.Top_Of_Page">Top</a></td></tr>
+</table>
+<div> <a name="CHGSPLFA.ASPDEV"></a>
+<h3>ASP device (ASPDEV)</h3>
+<p>Specifies the auxiliary storage pool device from which spooled files are to be selected. This parameter is only valid if the ASP number (ASP) element of the SELECT parameter is *ALL or *ASPDEV.
+</p>
+<dl>
+<dt><b><u>*</u></b></dt>
+<dd>Files which are found in the ASPs that are currently part of the thread's library name space are selected.  This includes the system ASP (ASP 1), all defined basic user ASPs (ASPs 2-32), and if the thread has an ASP group, the primary and secondary ASPs in the thread's ASP group.
+</dd>
+<dt><b>*SYSBAS</b></dt>
+<dd>Files which are found in the system ASP (ASP 1) and all defined basic user ASPs (ASPs 2-32) are selected.
+</dd>
+<dt><b>*CURASPGRP</b></dt>
+<dd>Files which are found in the primary and secondary ASPs in the thread's ASP group are selected.  If no ASP group is associated with the thread, an error will be issued.
+</dd>
+<dt><b><i>name</i></b></dt>
+<dd>Specify the name of the auxiliary storage pool device description.  Files which are found in the specified primary or secondary ASP are selected. Only primary or secondary ASPs which are in the thread's ASP group may be specified.  If no ASP group is associated with the thread, an error will be issued.
+</dd>
+</dl>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#CHGSPLFA.Top_Of_Page">Top</a></td></tr>
+</table>
+<div> <a name="CHGSPLFA.DEV"></a>
+<h3>Printer (DEV)</h3>
+<p>Specifies the printer that is used to print the file.
+</p>
+<dl>
+<dt><b><u>*SAME</u></b></dt>
+<dd>The current value does not change.
+</dd>
+<dt><b>*OUTQ</b></dt>
+<dd>The file is not assigned to a specific printer.  Instead, it is placed on the output queue specified on the <b>Output queue (OUTQ)</b> parameter.
+</dd>
+<dt><b><i>name</i></b></dt>
+<dd>Specify the name of the printer that will print this file.
+</dd>
+</dl>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#CHGSPLFA.Top_Of_Page">Top</a></td></tr>
+</table>
+<div> <a name="CHGSPLFA.PRTSEQ"></a>
+<h3>Print sequence (PRTSEQ)</h3>
+<p>Specifies whether the file is the next file on the output queue to be printed.
+</p>
+<p>A value here is mutually exclusive with a value on the <b>File becomes available (SCHEDULE)</b> parameter or <b>Output priority (OUTPTY)</b> parameter.
+</p>
+<dl>
+<dt><b><u>*SAME</u></b></dt>
+<dd>The file is not explicitly moved to the top.  Changes to the SCHEDULE parameter or OUTPTY parameter may cause the position of the file on the output queue to change.
+</dd>
+<dt><b>*NEXT</b></dt>
+<dd>The attributes of the file (or files) are changed so that they are moved to the top of the output queue.  If PRTSEQ(*NEXT) is specified when the SELECT parameter is specified, files with selection values are moved ahead of the files that do not meet the requirements.  Two files that are both moved may change their relative positions on the output queue.
+</dd>
+</dl>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#CHGSPLFA.Top_Of_Page">Top</a></td></tr>
+</table>
+<div> <a name="CHGSPLFA.FORMTYPE"></a>
+<h3>Form type (FORMTYPE)</h3>
+<p>Specifies the type of forms used in the printer.
+</p>
+<dl>
+<dt><b><u>*SAME</u></b></dt>
+<dd>The type of forms does not change.
+</dd>
+</dl>
+<dl>
+<dt><b>*STD</b></dt>
+<dd>The standard form used at your computer system is used to produce this spooled file.
+</dd>
+</dl>
+<dl>
+<dt><b><i>form-type</i></b></dt>
+<dd>Specify the type of form you wish to use to print the output of this spooled file.  If the name of the form type includes embedded blanks, you must enclose it in apostrophes.
+</dd>
+</dl>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#CHGSPLFA.Top_Of_Page">Top</a></td></tr>
+</table>
+<div> <a name="CHGSPLFA.COPIES"></a>
+<h3>Copies (COPIES)</h3>
+<p>Specifies, for spooled output only, the number of copies of the output being printed.
+</p>
+<p>
+<b>Note:     </b>If you specify a value while a file is being printed the number of copies you specify are printed in addition to the number of copies that have already been printed.
+</p>
+<dl>
+<dt><b><u>*SAME</u></b></dt>
+<dd>The number of copies remains unchanged.
+</dd>
+<dt><b><i>1-255</i></b></dt>
+<dd>Specify the number of identical copies to print.
+</dd>
+</dl>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#CHGSPLFA.Top_Of_Page">Top</a></td></tr>
+</table>
+<div> <a name="CHGSPLFA.RESTART"></a>
+<h3>Restart printing (RESTART)</h3>
+<p>Specifies the page on which you wish to restart printing.  Specifying a value while a file is being printed causes the writer to stop printing the file and restart on the specified page.  If a file is not being printed, this change takes effect when the first copy is printed.  After the writer repositions to the page specified by this parameter, the value for this parameter is reset to *STRPAGE.
+</p>
+<dl>
+<dt><b><u>*SAME</u></b></dt>
+<dd>The page on which to restart printing does not change.
+</dd>
+<dt><b>*STRPAGE</b></dt>
+<dd>The first page specified on the <b>Page range to print (PAGERANGE)</b> parameter is the page on which to restart printing.
+</dd>
+<dt><b>*ENDPAGE</b></dt>
+<dd>The starting page to print is the ending page to print.  Only the end page is printed.
+</dd>
+<dt><b>*NEXT</b></dt>
+<dd>The page following the last page printed is the page on which to restart printing.  If printing has not been interrupted, the starting page will be used.
+<p>
+<b>Note:     </b>You can determine the last page printed by using the Work with Spooled File Attributes (WRKSPLFA) command.  This value will be accurate when the writer has been ended *PAGEEND or the file has been held *PAGEEND.  This value may not be accurate if the writer has been ended *IMMED or the spooled file has been held *IMMED.
+</p>
+</dd>
+<dt><b><i>restart-page</i></b></dt>
+<dd>Specify the page on which to restart printing.
+</dd>
+</dl>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#CHGSPLFA.Top_Of_Page">Top</a></td></tr>
+</table>
+<div> <a name="CHGSPLFA.VOL"></a>
+<h3>Volume (VOL)</h3>
+<p>Specifies, for diskette output files only, one or more volume identifiers of the diskettes on which this spooled file will be written.  The diskettes (volumes) must be put into the device in the same order as the identifiers are specified here; a message is sent to the system operator if the order is different.
+</p>
+<dl>
+<dt><b><u>*SAME</u></b></dt>
+<dd>The volume identifiers associated with the spooled file are not changed.
+</dd>
+<dt><b>*NONE</b></dt>
+<dd>No diskette volume identifiers are specified.  This file is written on the first available diskette, based on the diskette writer's current position.  No volume identifier checking is performed.
+</dd>
+<dt><b><i>volume-identifier</i></b></dt>
+<dd>Specify the identifier of one or more volumes in the order in which they are inserted and used for this file.  Each volume identifier contains a maximum of six characters.  A blank is used as the separator character when listing multiple identifiers.
+<p>If less than ten identifiers were initially specified for the diskette unit file, a maximum of ten can be specified here.  If more than ten volume names were specified when the file was first opened, only that number of volumes can be entered on the change command.  The maximum number of volumes allowed in the list is 50.  You can always specify at least 10 volumes.
+</p>
+</dd>
+</dl>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#CHGSPLFA.Top_Of_Page">Top</a></td></tr>
+</table>
+<div> <a name="CHGSPLFA.LABEL"></a>
+<h3>File label (LABEL)</h3>
+<p>Specifies, for diskette output files only, the data file identifier of the data file written on diskette from this spooled file.  The data file identifier is stored in a label in the volume label area of the diskette.
+</p>
+<dl>
+<dt><b><u>*SAME</u></b></dt>
+<dd>The data file identifier associated with the spooled file remains the same.
+</dd>
+<dt><b><i>data-file-identifier</i></b></dt>
+<dd>Specify the identifier (8 characters maximum) to be assigned to the data file that will be written on the diskette.
+</dd>
+</dl>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#CHGSPLFA.Top_Of_Page">Top</a></td></tr>
+</table>
+<div> <a name="CHGSPLFA.OUTQ"></a>
+<h3>Output queue (OUTQ)</h3>
+<p>Specifies the output queue to which the spooled file is moved.  This parameter is used only when the specified file is moved from one output queue to another.
+</p>
+<p>
+<b>Note:     </b>If the spooled file is currently on an output queue for which DSPDTA(*OWNER) is specified, you must own the file or have *SPLCTL authority to move it.
+</p>
+<p><b>Single values</b>
+</p>
+<dl>
+<dt><b><u>*SAME</u></b></dt>
+<dd>The file remains on the same output queue.
+</dd>
+</dl>
+<dl>
+<dt><b>*DEV</b></dt>
+<dd>The output queue associated with the printer device for the spooled file is used.
+</dd>
+</dl>
+<p><b>Qualifier 1: Output queue</b>
+</p>
+<dl>
+<dt><b><i>name</i></b></dt>
+<dd>Specify the name of the output queue to which the spooled file is moved.
+</dd>
+</dl>
+<p><b>Qualifier 2: Library</b>
+</p>
+<dl>
+<dt><b><u>*LIBL</u></b></dt>
+<dd>All libraries in the library list for the current thread are searched until the first match is found.
+</dd>
+</dl>
+<dl>
+<dt><b>*CURLIB</b></dt>
+<dd>The current library for the job is used to locate the output queue.  If no current library entry exists in the library list, QGPL is used.
+</dd>
+<dt><b><i>name</i></b></dt>
+<dd>Specify the name of the library in which the output queue is located.
+</dd>
+</dl>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#CHGSPLFA.Top_Of_Page">Top</a></td></tr>
+</table>
+<div> <a name="CHGSPLFA.FILESEP"></a>
+<h3>File separators (FILESEP)</h3>
+<p>Specifies the number of separator pages to produce at the beginning of each file so you can separate this file from the other files being printed.  The identifying information included on each file separator is the file name, file number, the name of the job and number, and the user's name.
+</p>
+<dl>
+<dt><b><u>*SAME</u></b></dt>
+<dd>The number of separator pages does not change.
+</dd>
+<dt><b><i>0-9</i></b></dt>
+<dd>Specify the number of pages that are used as file separators.
+</dd>
+</dl>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#CHGSPLFA.Top_Of_Page">Top</a></td></tr>
+</table>
+<div> <a name="CHGSPLFA.PAGERANGE"></a>
+<h3>Page range to print (PAGERANGE)</h3>
+<p>Specifies the page range to print for each copy of the file.
+</p>
+<p><b>Restriction</b> This parameter will be ignored by diskette writers when printer spooled files are redirected.
+</p>
+<p><b>Element 1: Starting page</b>
+</p>
+<dl>
+<dt><b><u>*SAME</u></b></dt>
+<dd>The starting page does not change.
+</dd>
+<dt><b>*ENDPAGE</b></dt>
+<dd>The starting page to print is the ending page to print.  Only the ending page is printed.
+</dd>
+<dt><b><i>integer</i></b></dt>
+<dd>Specify the starting page to printed.
+</dd>
+</dl>
+<p><b>Element 2: Ending page</b>
+</p>
+<dl>
+<dt><b><u>*SAME</u></b></dt>
+<dd>The ending page does not change.
+</dd>
+<dt><b>*END</b></dt>
+<dd>The last page of the file is the ending page to print.
+</dd>
+<dt><b><i>integer</i></b></dt>
+<dd>Specify the ending page to print.
+</dd>
+</dl>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#CHGSPLFA.Top_Of_Page">Top</a></td></tr>
+</table>
+<div> <a name="CHGSPLFA.SCHEDULE"></a>
+<h3>File becomes available (SCHEDULE)</h3>
+<p>Specifies when the spooled file is made available to the writer.
+</p>
+<dl>
+<dt><b><u>*SAME</u></b></dt>
+<dd>The schedule attribute of the spooled file does not change.
+</dd>
+<dt><b>*JOBEND</b></dt>
+<dd>The spooled file is made available to the writer only after the entire job is completed.
+</dd>
+<dt><b>*FILEEND</b></dt>
+<dd>The spooled file is made available to the writer as soon as the file has been closed in the program.
+</dd>
+</dl>
+<dl>
+<dt><b>*IMMED</b></dt>
+<dd>The spooled output file is made available to the writer as soon as the file is opened in the program.
+</dd>
+</dl>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#CHGSPLFA.Top_Of_Page">Top</a></td></tr>
+</table>
+<div> <a name="CHGSPLFA.SAVE"></a>
+<h3>Save file (SAVE)</h3>
+<p>Specifies whether the spooled file is saved after it has been written to an output device.
+</p>
+<dl>
+<dt><b><u>*SAME</u></b></dt>
+<dd>The save attribute of the spooled file does not change.
+</dd>
+<dt><b>*NO</b></dt>
+<dd>The spooled file data is not held on the output queue after it has been produced.
+</dd>
+<dt><b>*YES</b></dt>
+<dd>The spooled file data is held on the output queue until the file is deleted.  After the file is produced, the number of copies is set to 1, and the status of the file is changed from WTR to SAV.  Refer to the Release Spooled File (RLSSPLF) command for information on how to produce the spooled file again.
+</dd>
+<dt><b>*IMMED</b></dt>
+<dd>The spooled file status is changed to SAV immediately, without being produced.  The spooled file data is held on the output queue until the file is deleted.  If the file is currently being produced on an output device or *NEXT is specified on the <b>Print sequence (PRTSEQ)</b> parameter, SAVE(*YES) will be used.  Refer to the Release Spooled File (RLSSPLF) command for information on how to produce the spooled file again.
+</dd>
+</dl>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#CHGSPLFA.Top_Of_Page">Top</a></td></tr>
+</table>
+<div> <a name="CHGSPLFA.EXPDATE"></a>
+<h3>Expiration date for file (EXPDATE)</h3>
+<p>Specifies the expiration date for the spooled file.  The spooled file will expire at 23:59:59, system local time on the date specified.
+</p>
+<dl>
+<dt><b><u>*SAME</u></b></dt>
+<dd>The expiration date does not change.
+</dd>
+<dt><b>*NONE</b></dt>
+<dd>No expiration date is specified.
+</dd>
+<dt><b>*DAYS</b></dt>
+<dd>The expiration date is to be calculated using the value specified for the <b>Days until file expires (DAYS)</b> parameter.
+</dd>
+<dt><b><i>date</i></b></dt>
+<dd>Specify the date after which the spooled file will be eligible for removal from the system by the Delete Expired Spooled Files (DLTEXPSPLF) command.  The date must be enclosed in apostrophes if date separator characters are used in the value.
+</dd>
+</dl>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#CHGSPLFA.Top_Of_Page">Top</a></td></tr>
+</table>
+<div> <a name="CHGSPLFA.DAYS"></a>
+<h3>Days until file expires (DAYS)</h3>
+<p>Specifies the number of days to keep the spooled file.
+</p>
+<p>
+<b>Note:     </b>A value must be specified for this parameter if the <b>Expiration date for file (EXPDATE)</b> parameter has a value of *DAYS.  If the EXPDATE parameter has a value other than *DAYS, no value is allowed for this parameter.
+</p>
+<dl>
+<dt><b><i>1-366</i></b></dt>
+<dd>Specify an interval in days after which the spooled file will be eligible for removal from the system by the Delete Expired Spooled Files (DLTEXPSPLF) command.  The actual expiration date applied to the spooled file is calculated by adding the number of days specified to the date this command is executed.
+</dd>
+</dl>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#CHGSPLFA.Top_Of_Page">Top</a></td></tr>
+</table>
+<div> <a name="CHGSPLFA.OUTPTY"></a>
+<h3>Output priority (OUTPTY)</h3>
+<p>Specifies the output priority for spooled output files that are produced by this job.  The highest priority is 1 and the lowest priority is 9.
+</p>
+<dl>
+<dt><b><u>*SAME</u></b></dt>
+<dd>The current value does not change.
+</dd>
+</dl>
+<dl>
+<dt><b>*JOB</b></dt>
+<dd>The output priority associated with the job that created the spooled file is used.
+</dd>
+</dl>
+<dl>
+<dt><b><i>1-9</i></b></dt>
+<dd>Specify the output priority assigned.  Valid values range from 1 (highest) to 9 (lowest).
+</dd>
+</dl>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#CHGSPLFA.Top_Of_Page">Top</a></td></tr>
+</table>
+<div> <a name="CHGSPLFA.USRDTA"></a>
+<h3>User data (USRDTA)</h3>
+<p>Specifies, for spooled output, user-specified data that identifies the file.
+</p>
+<dl>
+<dt><b><u>*SAME</u></b></dt>
+<dd>The current value does not change.
+</dd>
+<dt><b><i>character-value</i></b></dt>
+<dd>Specify up to 10 characters of data assigned to the spooled file.
+</dd>
+</dl>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#CHGSPLFA.Top_Of_Page">Top</a></td></tr>
+</table>
+<div> <a name="CHGSPLFA.ALIGN"></a>
+<h3>Align page (ALIGN)</h3>
+<p>Specifies whether to verify forms alignment on this file.  This parameter is only used by printer writers which were started with *FILE specified on the <b>Align page (ALIGN)</b> parameter.
+</p>
+<dl>
+<dt><b><u>*SAME</u></b></dt>
+<dd>The current value for forms alignment verification does not change.
+</dd>
+<dt><b>*NO</b></dt>
+<dd>The forms alignment is not verified.
+</dd>
+<dt><b>*YES</b></dt>
+<dd>The forms alignment is verified.
+</dd>
+</dl>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#CHGSPLFA.Top_Of_Page">Top</a></td></tr>
+</table>
+<div> <a name="CHGSPLFA.PRTQLTY"></a>
+<h3>Print quality (PRTQLTY)</h3>
+<p>Specifies the quality of the print to be produced.  Not all printers support this parameter.  Refer to the Create Printer File (CRTPRTF) command to determine which printers are supported.
+</p>
+<dl>
+<dt><b><u>*SAME</u></b></dt>
+<dd>The print quality associated with the spooled file remains the same.
+</dd>
+</dl>
+<dl>
+<dt><b>*STD</b></dt>
+<dd>The output is printed with standard quality.
+</dd>
+</dl>
+<dl>
+<dt><b>*DRAFT</b></dt>
+<dd>The output is printed with draft print quality.
+</dd>
+<dt><b>*NLQ</b></dt>
+<dd>The output is printed with near letter quality.
+</dd>
+<dt><b>*DEVD</b></dt>
+<dd>The output is printed with the default print quality for the printer.
+</dd>
+<dt><b>*FASTDRAFT</b></dt>
+<dd>The output is printed at a higher speed and with lower quality than it would be if you specified *DRAFT.
+</dd>
+</dl>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#CHGSPLFA.Top_Of_Page">Top</a></td></tr>
+</table>
+<div> <a name="CHGSPLFA.FORMFEED"></a>
+<h3>Form feed (FORMFEED)</h3>
+<p>Specifies the form feed attachment used for this spooled file.  This parameter determines how forms are fed into the printer.  Not all printers support this parameter.  Refer to the Create Printer File (CRTPRTF) command to determine if this parameter is supported.
+</p>
+<dl>
+<dt><b><u>*SAME</u></b></dt>
+<dd>The value does not change.
+</dd>
+<dt><b>*DEVD</b></dt>
+<dd>The forms are fed into the printer in the manner specified in the device description for that printer.
+</dd>
+<dt><b>*CONT</b></dt>
+<dd>Continuous forms are used by the printer (the tractor feed attachment must be present).
+</dd>
+</dl>
+<dl>
+<dt><b>*CONT2</b></dt>
+<dd>Continuous forms are used by the printer.  The form is fed from the secondary tractor feed attachment.  The secondary tractor feed attachment must be on the printer device.
+</dd>
+</dl>
+<dl>
+<dt><b>*CUT</b></dt>
+<dd>Single-cut sheets are used by the printer.  Each sheet must be manually loaded.  For cut sheets, the forms alignment message is not issued.
+</dd>
+<dt><b>*AUTOCUT</b></dt>
+<dd>Single-cut sheets are automatically fed into the printer (the sheet-feed attachment must be attached).  For cut sheets, the forms alignment message is not issued.
+</dd>
+</dl>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#CHGSPLFA.Top_Of_Page">Top</a></td></tr>
+</table>
+<div> <a name="CHGSPLFA.DRAWER"></a>
+<h3>Source drawer (DRAWER)</h3>
+<p>Specifies the source drawer used when single-cut sheets are fed into the printer (specified by FORMFEED(*AUTOCUT)).
+</p>
+<dl>
+<dt><b><u>*SAME</u></b></dt>
+<dd>The value does not change.
+</dd>
+</dl>
+<dl>
+<dt><b>*E1</b></dt>
+<dd>The envelopes are fed from the envelope drawer on the sheet-feed paper handler.
+</dd>
+<dt><b>*FORMDF</b></dt>
+<dd>The form definition specifies the drawer from which the paper is fed.
+</dd>
+<dt><b><i>1-255</i></b></dt>
+<dd>Specify the drawer from which the paper is fed.
+</dd>
+</dl>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#CHGSPLFA.Top_Of_Page">Top</a></td></tr>
+</table>
+<div> <a name="CHGSPLFA.FIDELITY"></a>
+<h3>Print fidelity (FIDELITY)</h3>
+<p>Specifies the print fidelity that will be maintained for this file.
+</p>
+<dl>
+<dt><b><u>*SAME</u></b></dt>
+<dd>The print fidelity does not change.
+</dd>
+<dt><b>*ABSOLUTE</b></dt>
+<dd>The file is printed exactly as intended.  Printing is stopped if an error is encountered in the data stream.
+</dd>
+<dt><b>*CONTENT</b></dt>
+<dd>Errors in the data stream are overridden, if possible, and printing is continued.
+</dd>
+</dl>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#CHGSPLFA.Top_Of_Page">Top</a></td></tr>
+</table>
+<div> <a name="CHGSPLFA.DUPLEX"></a>
+<h3>Print on both sides (DUPLEX)</h3>
+<p>Specifies whether output is printed on one side or two sides of the paper.
+</p>
+<dl>
+<dt><b><u>*SAME</u></b></dt>
+<dd>The duplex value does not change.
+</dd>
+<dt><b>*NO</b></dt>
+<dd>The output is printed on one side of the paper.
+</dd>
+<dt><b>*YES</b></dt>
+<dd>The output is printed on both sides of the paper, with the top of each printed page at the same end of the sheet of paper.
+</dd>
+<dt><b>*TUMBLE</b></dt>
+<dd>The output is printed on both sides of the paper, with the top of one printed page at the opposite end from the top of the other printed page.  This is usually used for output that will be bound at the top.
+</dd>
+<dt><b>*FORMDF</b></dt>
+<dd>The duplex value specified in the form definition is used.  This value is valid only with printer device types of *AFPDS, *AFPDSLINE, or *LINE.
+</dd>
+</dl>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#CHGSPLFA.Top_Of_Page">Top</a></td></tr>
+</table>
+<div> <a name="CHGSPLFA.MULTIUP"></a>
+<h3>Pages per side (MULTIUP)</h3>
+<p>Specifies, for spooled files, whether or not multiple pages of output are printed on each physical page.  This parameter is used only when the printer device type is *SCS, *IPDS, or *AFPDS and the spooled file was created on an IBM i.
+</p>
+<p>
+<b>Note:     </b>This parameter cannot change when the value for Reduce output (REDUCE) is *NONE.  You can determine the value of Reduce output by using the Work with Spooled File Attributes (WRKSPLFA) command.
+</p>
+<dl>
+<dt><b><u>*SAME</u></b></dt>
+<dd>The number of pages of output printed per physical page does not change.
+</dd>
+<dt><b>1</b></dt>
+<dd>One page of output is printed for every physical page.
+</dd>
+<dt><b>2</b></dt>
+<dd>Two pages of output are printed for every physical page.
+</dd>
+<dt><b>4</b></dt>
+<dd>Four pages of output are printed for every physical page.
+</dd>
+</dl>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#CHGSPLFA.Top_Of_Page">Top</a></td></tr>
+</table>
+<div> <a name="CHGSPLFA.PAGDFN"></a>
+<h3>Page definition (PAGDFN)</h3>
+<p>Specifies the page definition to be used to format line data.
+</p>
+<p><b>Single values</b>
+</p>
+<dl>
+<dt><b><u>*SAME</u></b></dt>
+<dd>The value does not change.
+</dd>
+</dl>
+<dl>
+<dt><b>*NONE</b></dt>
+<dd>No page definition is specified.
+<p>Because PSF requires a page definition when *LINE or *AFPDSLINE is specified, an inline page definition is built from the print file parameters and passed to PSF when *NONE is specified.
+</p>
+</dd>
+</dl>
+<p><b>Qualifier 1: Page definition</b>
+</p>
+<dl>
+<dt><b><i>name</i></b></dt>
+<dd>Specify the name of the page definition that must exist in the library specified.  Valid values range from 1 to 8 characters.  Device type *AFPDSLINE, *LINE, or *USERASCII must be specified when using a page definition.
+</dd>
+</dl>
+<p><b>Qualifier 2: Library</b>
+</p>
+<dl>
+<dt><b><u>*LIBL</u></b></dt>
+<dd>All libraries in the library list for the current thread are searched until the first match is found.
+</dd>
+</dl>
+<dl>
+<dt><b>*CURLIB</b></dt>
+<dd>The current library for the thread is searched.  If no library is specified as the current library for the thread, the QGPL library is searched.
+</dd>
+</dl>
+<dl>
+<dt><b><i>name</i></b></dt>
+<dd>Specify the name of the library to be searched.
+</dd>
+</dl>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#CHGSPLFA.Top_Of_Page">Top</a></td></tr>
+</table>
+<div> <a name="CHGSPLFA.FORMDF"></a>
+<h3>Form definition (FORMDF)</h3>
+<p>Specifies the form definition to use when printing the file.  A form definition is a resource object that defines the characteristics of the form, including overlays, position of page data on the form, and number of copies of pages and modifications to pages.  The form definition is located inline with the file being printed, or in a library.
+</p>
+<p><b>Single values</b>
+</p>
+<dl>
+<dt><b><u>*SAME</u></b></dt>
+<dd>The value does not change.
+</dd>
+</dl>
+<dl>
+<dt><b>*NONE</b></dt>
+<dd>No form definition is used.
+<p>Because PSF requires a form definition, an inline form definition is built from the print file parameters and passed to PSF when *NONE is specified.
+</p>
+</dd>
+<dt><b>*DEVD</b></dt>
+<dd>The name of the form definition is specified in the printer device description.
+</dd>
+<dt><b>*INLINE</b></dt>
+<dd>The form definition is searched for inline.  If no inline form definition exists, the file will not print.
+</dd>
+<dt><b>*INLINED</b></dt>
+<dd>The form definition is searched for inline.  If none exists, the *DEVD form definition is used.
+</dd>
+</dl>
+<p><b>Qualifier 1: Form definition</b>
+</p>
+<dl>
+<dt><b><i>name</i></b></dt>
+<dd>Specify the name of the form definition that must exist in the library specified.  Valid values range from 1 to 8 characters.
+</dd>
+</dl>
+<p><b>Qualifier 2: Library</b>
+</p>
+<dl>
+<dt><b><u>*LIBL</u></b></dt>
+<dd>All libraries in the library list for the current thread are searched until the first match is found.
+</dd>
+</dl>
+<dl>
+<dt><b>*CURLIB</b></dt>
+<dd>The current library for the thread is searched.  If no library is specified as the current library for the thread, the QGPL library is searched.
+</dd>
+</dl>
+<dl>
+<dt><b><i>name</i></b></dt>
+<dd>Specify the name of the library to be searched.
+</dd>
+</dl>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#CHGSPLFA.Top_Of_Page">Top</a></td></tr>
+</table>
+<div> <a name="CHGSPLFA.AFPCHARS"></a>
+<h3>AFP Characters (AFPCHARS)</h3>
+<p>Specifies one or more AFP characters (coded fonts) to be used with line data and a page definition.
+</p>
+<p><b>Single values</b>
+</p>
+<dl>
+<dt><b><u>*SAME</u></b></dt>
+<dd>The value does not change.
+</dd>
+</dl>
+<dl>
+<dt><b>*NONE</b></dt>
+<dd>No AFP characters (coded fonts) specified.
+</dd>
+</dl>
+<p><b>Other values (up to 4 repetitions)</b>
+</p>
+<dl>
+<dt><b><i>character-value</i></b></dt>
+<dd>Specify up to four 4-byte names of coded fonts to be specified with the line data and a page definition.  The 4-byte names are concatenated to X0 to identify up to four coded fonts which are to be used when TBLREFCHR is being used within the data.
+</dd>
+</dl>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#CHGSPLFA.Top_Of_Page">Top</a></td></tr>
+</table>
+<div> <a name="CHGSPLFA.FRONTOVL"></a>
+<h3>Front side overlay (FRONTOVL)</h3>
+<p>Specifies the overlay object to be printed on the front side of the page, and where on the page to place the overlay.
+</p>
+<p><b>Single values</b>
+</p>
+<dl>
+<dt><b>*NONE</b></dt>
+<dd>No overlay is to be used.
+</dd>
+</dl>
+<p><b>Element 1: Overlay</b>
+</p>
+<p><b>Single values</b>
+</p>
+<dl>
+<dt><b><u>*SAME</u></b></dt>
+<dd>The front overlay value does not change.
+</dd>
+</dl>
+<dl>
+<dt><b></b></dt>
+<dd>
+<p><b>Qualifier 1: Overlay</b>
+</p>
+<dl>
+<dt><b><i>name</i></b></dt>
+<dd>Specify the name of the overlay.
+</dd>
+</dl>
+</dd>
+<dt><b></b></dt>
+<dd>
+<p><b>Qualifier 2: Library</b>
+</p>
+<dl>
+<dt><b><u>*LIBL</u></b></dt>
+<dd>All libraries in the library list for the current thread are searched until the first match is found.
+</dd>
+</dl>
+<dl>
+<dt><b>*CURLIB</b></dt>
+<dd>The current library for the job is used to locate the overlay.  If no library is specified as the current library for the job, QGPL is used.
+</dd>
+<dt><b><i>name</i></b></dt>
+<dd>Specify the name of the library where the overlay is located.
+</dd>
+</dl>
+</dd>
+</dl>
+<p><b>Element 2: Offset down</b>
+</p>
+<dl>
+<dt><b><u>*SAME</u></b></dt>
+<dd>The offset down does not change.
+</dd>
+<dt><b><i>0.0-57.79</i></b></dt>
+<dd>Specify the point where the overlay is placed.  The offset down value specifies the vertical position.  Valid values range from 0 through 57.79 if the unit of measure is centimeters, or 0 through 22.75 if the unit of measure is inches.  If no value is specified, the system sets the offset to 0.
+</dd>
+</dl>
+<p><b>Element 3: Offset across</b>
+</p>
+<dl>
+<dt><b><u>*SAME</u></b></dt>
+<dd>The offset across does not change.
+</dd>
+<dt><b><i>0.0-57.79</i></b></dt>
+<dd>Specify the point where the overlay is placed.  The offset across value specifies the horizontal position.  Valid values range from 0 through 57.79 if the unit of measure is centimeters, or 0 through 22.75 if the unit of measure is inches.  If no value is specified, the system sets the offset to 0.
+</dd>
+</dl>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#CHGSPLFA.Top_Of_Page">Top</a></td></tr>
+</table>
+<div> <a name="CHGSPLFA.BACKOVL"></a>
+<h3>Back side overlay (BACKOVL)</h3>
+<p>Specifies the qualified name of the object that contains both the the overlay to be printed on the back side of the page and the offset, down and across, form the point of origin used when the overlay is printed.  This parameter is used only when the printer device is *SCS or *IPDS.
+</p>
+<p><b>Single values</b>
+</p>
+<dl>
+<dt><b>*FRONTOVL</b></dt>
+<dd>The value specified for the <b>Front side overlay (FRONTOVL)</b> parameter is used.
+</dd>
+<dt><b>*NONE</b></dt>
+<dd>No overlay is used.
+</dd>
+</dl>
+<p><b>Element 1: Overlay</b>
+</p>
+<p><b>Single values</b>
+</p>
+<dl>
+<dt><b><u>*SAME</u></b></dt>
+<dd>The back overlay value does not change.
+</dd>
+</dl>
+<dl>
+<dt><b></b></dt>
+<dd>
+<p><b>Qualifier 1: Overlay</b>
+</p>
+<dl>
+<dt><b><i>name</i></b></dt>
+<dd>Specify the name of the overlay.
+</dd>
+</dl>
+</dd>
+<dt><b></b></dt>
+<dd>
+<p><b>Qualifier 2: Library</b>
+</p>
+<dl>
+<dt><b><u>*LIBL</u></b></dt>
+<dd>All libraries in the library list for the current thread are searched until the first match is found.
+</dd>
+</dl>
+<dl>
+<dt><b>*CURLIB</b></dt>
+<dd>The current library for the job is used to locate the overlay.  If no library is specified as the current library for the job, QGPL is used.
+</dd>
+<dt><b><i>name</i></b></dt>
+<dd>Specify the name of the library where the overlay is located.
+</dd>
+</dl>
+</dd>
+</dl>
+<p><b>Element 2: Offset down</b>
+</p>
+<dl>
+<dt><b><u>*SAME</u></b></dt>
+<dd>The offset down does not change.
+</dd>
+<dt><b><i>0.0-57.79</i></b></dt>
+<dd>Specify the offset down from the point of origin at which to begin printing.  If UOM(*CM) was specified on the CRTPRTF command when this file was created, valid values range from 0 through 57.79 and if UOM(*INCHES) was specified, valid values range from 0 through 22.57.
+</dd>
+</dl>
+<p><b>Element 3: Offset across</b>
+</p>
+<dl>
+<dt><b><u>*SAME</u></b></dt>
+<dd>The offset across does not change.
+</dd>
+<dt><b><i>0.0-57.79</i></b></dt>
+<dd>Specify the offset across from the point of origin at which to begin printing the overlay.  If UOM(*CM) was specified on the CRTPRTF command when this file was created, valid values range from 0 through 57.79 and if UOM(*INCHES) was specified, valid values range from 0 through 22.57.
+</dd>
+</dl>
+<p><b>Element 4: Constant back</b>
+</p>
+<p>The constant back function allows you to print overlays on blank pages without adding blank pages to the print application.  Specifying the constant back function would cause blank pages to be generated onto which the specified back overlay could be printed.  The generated blank pages are called constant forms because no variable data from the user's print application is printed on the pages.  This value is not changeable if MULTIUP is not 1.  The constant back function is only supported for duplex printing.  It is ignored when DUPLEX(*NO) is specified on the printer file.
+</p>
+<p>
+<b>Note:     </b>The offset down and offset across values are ignored when *CONSTANT is specified for constant back.  An offset of 0.0 is assumed for these values.
+</p>
+<dl>
+<dt><b><u>*SAME</u></b></dt>
+<dd>The value does not change.
+</dd>
+<dt><b>*NOCONSTANT</b></dt>
+<dd>The constant back function is not performed.
+</dd>
+<dt><b>*CONSTANT</b></dt>
+<dd>The constant back function is performed.
+</dd>
+</dl>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#CHGSPLFA.Top_Of_Page">Top</a></td></tr>
+</table>
+<div> <a name="CHGSPLFA.USRDFNOPT"></a>
+<h3>User Defined Option (USRDFNOPT)</h3>
+<p>Specifies, for spooled output only, one or more user-defined options to be used by user applications or user-specified programs that process spooled files.  A maximum of four user-defined options can be specified.
+</p>
+<p><b>Single values</b>
+</p>
+<dl>
+<dt><b><u>*SAME</u></b></dt>
+<dd>The value does not change.
+</dd>
+</dl>
+<dl>
+<dt><b>*NONE</b></dt>
+<dd>No user-defined options specified.
+</dd>
+</dl>
+<p><b>Other values (up to 4 repetitions)</b>
+</p>
+<dl>
+<dt><b><i>character-value</i></b></dt>
+<dd>Specify a user-defined option to be used by user applications or user-specified programs that process spooled files.  All characters are acceptable.
+</dd>
+</dl>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#CHGSPLFA.Top_Of_Page">Top</a></td></tr>
+</table>
+<div> <a name="CHGSPLFA.USRDFNDTA"></a>
+<h3>User Defined Data (USRDFNDTA)</h3>
+<p>Specifies, for spooled output only, the user-defined data to be used by user applications or user-specified programs that process spooled files.
+</p>
+<dl>
+<dt><b><u>*SAME</u></b></dt>
+<dd>The value does not change.
+</dd>
+</dl>
+<dl>
+<dt><b>*NONE</b></dt>
+<dd>No user-defined data is specified.
+</dd>
+<dt><b><i>character-value</i></b></dt>
+<dd>Specify user-defined data to be used by user applications or user-specified programs that process spooled files.  All characters are acceptable.
+</dd>
+</dl>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#CHGSPLFA.Top_Of_Page">Top</a></td></tr>
+</table>
+<div> <a name="CHGSPLFA.USRDFNOBJ"></a>
+<h3>User Defined Object (USRDFNOBJ)</h3>
+<p>Specifies, for spooled output only, the user-defined object to be used by user applications or user-specified programs that process spooled files.
+</p>
+<p><b>Single values</b>
+</p>
+<dl>
+<dt><b><u>*SAME</u></b></dt>
+<dd>The value does not change.
+</dd>
+</dl>
+<dl>
+<dt><b>*NONE</b></dt>
+<dd>No user-defined object specified.
+</dd>
+</dl>
+<p><b>Element 1: Object</b>
+</p>
+<dl>
+<dt><b></b></dt>
+<dd>
+<p><b>Qualifier 1: Object</b>
+</p>
+<dl>
+<dt><b><i>name</i></b></dt>
+<dd>Specify the user-defined object to be used by user applications or user-specified programs that process spooled files.
+</dd>
+</dl>
+</dd>
+<dt><b></b></dt>
+<dd>
+<p><b>Qualifier 2: Library</b>
+</p>
+<dl>
+<dt><b><u>*LIBL</u></b></dt>
+<dd>All libraries in the library list for the current thread are searched until the first match is found.
+</dd>
+</dl>
+<dl>
+<dt><b>*CURLIB</b></dt>
+<dd>The current library for the thread is searched.  If no library is specified as the current library for the thread, the QGPL library is searched.
+</dd>
+</dl>
+<dl>
+<dt><b><i>name</i></b></dt>
+<dd>Specify the name of the library to be searched.
+</dd>
+</dl>
+</dd>
+</dl>
+<p><b>Element 2: Object type</b>
+</p>
+<dl>
+<dt><b><i>object-type</i></b></dt>
+<dd>The user object type can be one of the following:
+<dl>
+<dt><b>*DTAARA</b></dt>
+<dd>Data Area
+</dd>
+<dt><b>*DTAQ</b></dt>
+<dd>Data Queue
+</dd>
+<dt><b>*FILE</b></dt>
+<dd>File
+</dd>
+<dt><b>*PSFCFG</b></dt>
+<dd>PSF Configuration Object
+</dd>
+<dt><b>*USRIDX</b></dt>
+<dd>User Index
+</dd>
+<dt><b>*USRQ</b></dt>
+<dd>User Queue
+</dd>
+<dt><b>*USRSPC</b></dt>
+<dd>User Space
+</dd>
+</dl>
+</dd>
+</dl>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#CHGSPLFA.Top_Of_Page">Top</a></td></tr>
+</table>
+<div> <a name="CHGSPLFA.IPDSPASTHR"></a>
+<h3>IPDS pass through (IPDSPASTHR)</h3>
+<p>Specifies whether IPDS (Intelligent Printer Data Stream) pass-through is done for the spooled file.
+</p>
+<dl>
+<dt><b><u>*SAME</u></b></dt>
+<dd>The value does not change.
+</dd>
+</dl>
+<dl>
+<dt><b>*DEVD</b></dt>
+<dd>The value specified for IPDSPASTHR in the PSF configuration object specified for a printer device description is used.  If no PSF configuration object is specified for the device, a value of *NO is used.
+</dd>
+<dt><b>*NO</b></dt>
+<dd>No IPDS pass-through is done.
+</dd>
+<dt><b>*YES</b></dt>
+<dd>Specifies that IPDS pass-through is to be done if the spooled file is eligible for IPDS pass-through.
+<p>
+<b>Note:     </b>Not all SCS or IPDS spooled files are eligible for IPDS pass-through. They may contain special functions that require transform to AFPDS for correct printing.  Specifying IPDS pass-through on the printer file allows only those spooled files eligible for IPDS pass-through to bypass the extra transforms. Those spooled files not eligible for IPDS pass-through will still undergo the transforms to AFPDS and back to IPDS.  IPDS pass-through will not be valid for all PSF supported printers. Any printer (or attachment) that does not support resident fonts can not support IPDS pass-through. This is because the resident font references in the data stream must be mapped to host fonts which are downloaded to the printer.  All IBM IPDS printers, except for the following, can be supported with IPDS pass-through: 3820, 3825, 3827, 3828, 3829, 3831, 3835, 3900-001 and any printer attached using Print Services Facility for OS/2's Distributed Print Function.
+</p>
+<p>For V3R7, V4R1 and V4R2, IPDSPASTHR can be specified with the USRDFNDTA parameter in a printer file.  You may continue using this support with existing printer files and PSF configuration objects by specifying IPDSPASTHR(*DEVD) in the printer file.  If you specify a value of anything other than *DEVD for the IPDSPASTHR parameter, any IPDS pass-through value in the USRDFNDTA parameter is ignored.
+</p>
+</dd>
+</dl>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#CHGSPLFA.Top_Of_Page">Top</a></td></tr>
+</table>
+<div> <a name="CHGSPLFA.FNTRSL"></a>
+<h3>Font resolution for formatting (FNTRSL)</h3>
+<p>Specifies the resolution PSF should use to print the spooled file when printing to a multiple resolution printer and the spooled file does not specify the font metrics and resolution with which to print the spooled file or the font is not available at that resolution.
+</p>
+<p>For more information regarding the algorithm used for searching a library list for a font resource, see the Printing category in the IBM i Information Center at http://www.ibm.com/systems/i/infocenter/ in the section entitled "User and Device Resource Library Lists" in the chapter called "Working With PSF Configuration Objects".
+</p>
+<dl>
+<dt><b><u>*SAME</u></b></dt>
+<dd>The value does not change.
+</dd>
+</dl>
+<dl>
+<dt><b>*DEVD</b></dt>
+<dd>The value specified in the FNTRSL parameter of the PSF configuration object for the device is used. If no PSF configuration object is specified for the device, a value of *SEARCH is used.
+</dd>
+<dt><b>*SEARCH</b></dt>
+<dd>Specifies to search the library list for the first occurrence of a host font with a name match.  The resolution of that font is used to print the spool file.  Message PQT3546 is sent to specify the resolution of the font that was selected.
+</dd>
+<dt><b>240</b></dt>
+<dd>The font resolution is 240 pels per inch.
+</dd>
+<dt><b>300</b></dt>
+<dd>The font resolution is 300 pels per inch.
+</dd>
+</dl>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#CHGSPLFA.Top_Of_Page">Top</a></td></tr>
+</table>
+<div> <a name="CHGSPLFA.EXCHTYPE"></a>
+<h3>Diskette file exchange type (EXCHTYPE)</h3>
+<p>Specifies, for diskette output files only, the exchange type used to write the spooled file.  This parameter determines the format and record length of the data being written to diskette. If you are going to read this diskette on another type of system, make sure this format is compatible with the other system.
+</p>
+<dl>
+<dt><b><u>*SAME</u></b></dt>
+<dd>The current value does not change.
+</dd>
+</dl>
+<dl>
+<dt><b>*STD</b></dt>
+<dd>The BASIC exchange format is used for a type 1 or a type 2 diskette.  The H exchange type is used for a type 2D diskette.
+</dd>
+</dl>
+<dl>
+<dt><b>*BASIC</b></dt>
+<dd>The BASIC exchange type is used.
+</dd>
+</dl>
+<dl>
+<dt><b>*H</b></dt>
+<dd>The H exchange type is used.
+</dd>
+<dt><b>*I</b></dt>
+<dd>The I exchange type is used.
+</dd>
+</dl>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#CHGSPLFA.Top_Of_Page">Top</a></td></tr>
+</table>
+<div> <a name="CHGSPLFA.CODE"></a>
+<h3>Code (CODE)</h3>
+<p>Specifies, for diskette output files only, the type of character code used when this spooled file is written to diskette.
+</p>
+<dl>
+<dt><b><u>*SAME</u></b></dt>
+<dd>The type of character code associated with the spooled file remains the same.
+</dd>
+<dt><b>*EBCDIC</b></dt>
+<dd>The EBCDIC character code is used with this spooled file.
+</dd>
+</dl>
+<dl>
+<dt><b>*ASCII</b></dt>
+<dd>The ASCII character code is used.
+</dd>
+</dl>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#CHGSPLFA.Top_Of_Page">Top</a></td></tr>
+</table>
+<hr width="100%" size="2">
+<div><h3><a name="CHGSPLFA.COMMAND.EXAMPLES">Examples</a> </h3>
+<p><b>Example 1: Moving a File to Another Queue</b>
+</p>
+<p>
+<pre>
+CHGSPLFA   FILE(SALES)  JOB(000147/JONES/BILLING)  OUTQ(QPRINT2)
+           FORMTYPE('1140-6')
+</pre>
+</p>
+<p>This command moves the file named SALES (of the BILLING job numbered 000147) from the present queue to the QPRINT2 queue. It also changes the forms identifier to 1140-6, which means that this form type is used in the printer.
+</p>
+<p><b>Example 2: Changing Number of Output Copies</b>
+</p>
+<p>
+<pre>
+CHGSPLFA   FILE(DEPT511)  COPIES(2)  FILESEP(5)
+</pre>
+</p>
+<p>This command changes the attributes of the spooled file DEPT511 that is produced by the submitter's job. It changes the number of output copies to 2 and specifies that five separator pages precede each copy.
+</p>
+<p><b>Example 3: Changing Starting and Ending Pages to Print</b>
+</p>
+<p>
+<pre>
+CHGSPLFA   FILE(DEPT481)  PAGERANGE(99 100)
+</pre>
+</p>
+<p>This command changes the attributes of the spooled file, DEPT481. It changes the starting and ending pages that are to be printed. Now, only pages 99 and 100 of each copy of the file is printed.
+</p>
+<p><b>Example 4: Starting on a Specific Page</b>
+</p>
+<p>
+<pre>
+CHGSPLFA   FILE(DEPT481)  RESTART(5)
+</pre>
+</p>
+<p>This command restarts printing spooled file DEPT481 on page 5.  All of the copies that follow are printed from the specified starting page to ending page. If the file is in WTR status, the writer stops printing the current copy and restarts printing on page 5. The page specified on the RESTART parameter must be within the range specified on the PAGERANGE parameter.
+</p>
+<p><b>Example 5: Restarting on the Next Page</b>
+</p>
+<p>
+<pre>
+CHGSPLFA   FILE(DEPT481)  RESTART(*NEXT)
+</pre>
+</p>
+<p>This command restarts the printing job on the page following the last page printed when the job was interrupted. All of the copies that follow are printed from the specified starting page to ending page. The file must not be in WTR status. If the file is in WTR status, this command is rejected and a message is sent to the user.  RESTART(*NEXT) is not valid when a file is being processed by a writer.
+</p>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#CHGSPLFA.Top_Of_Page">Top</a></td></tr>
+</table>
+<hr width="100%" size="2">
+<div><h3><a name="CHGSPLFA.ERROR.MESSAGES">Error messages</a> </h3>
+<p><b><u>*ESCAPE Messages</u></b>
+</p>
+<dl>
+<dt><b>CPF337E</b></dt>
+<dd>ASP device &amp;1 not in current ASP group for thread.
+</dd>
+<dt><b>CPF337F</b></dt>
+<dd>ASP device &amp;1 not allowed with ASP number &amp;2.
+</dd>
+<dt><b>CPF339F</b></dt>
+<dd>Expiration date must be today or a date in the future.
+</dd>
+<dt><b>CPF2207</b></dt>
+<dd>Not authorized to use object &amp;1 in library &amp;3 type *&amp;2.
+</dd>
+<dt><b>CPF33AD</b></dt>
+<dd>Target spooled file &amp;1 not last spooled file in ready status.  Source spooled file not moved.
+</dd>
+<dt><b>CPF33A6</b></dt>
+<dd>Spooled file &amp;1 selected by writer.  Spooled file not moved.
+</dd>
+<dt><b>CPF33A7</b></dt>
+<dd>Spooled file &amp;1 number &amp;8 in job &amp;5/&amp;4/&amp;3 not moved.
+</dd>
+<dt><b>CPF33A8</b></dt>
+<dd>Spooled file &amp;1 specified more than once.  Spooled file not moved.
+</dd>
+<dt><b>CPF33A9</b></dt>
+<dd>Target spooled file &amp;1 changed output queue.  Source spooled file not moved.
+</dd>
+<dt><b>CPF33C2</b></dt>
+<dd>Moving spooled files to the top allowed only for output queues with SEQ(*FIFO).
+</dd>
+<dt><b>CPF33C3</b></dt>
+<dd>Priority required to move spooled file exceeds user's limit.
+</dd>
+<dt><b>CPF33C4</b></dt>
+<dd>Spooled file &amp;1 held by HLDJOB command.  Spooled file not moved.
+</dd>
+<dt><b>CPF33C5</b></dt>
+<dd>Target spooled file &amp;1 selected by writer.  Source spooled file not moved.
+</dd>
+<dt><b>CPF33C6</b></dt>
+<dd>Priority required to move file exceeds user's limit.
+</dd>
+<dt><b>CPF33C7</b></dt>
+<dd>Cannot move file ahead of other users' files.
+</dd>
+<dt><b>CPF33D0</b></dt>
+<dd>Printer &amp;1 does not exist.
+</dd>
+<dt><b>CPF33D1</b></dt>
+<dd>User &amp;1 does not exist.
+</dd>
+<dt><b>CPF33F0</b></dt>
+<dd>Not authorized to move spooled file.
+</dd>
+<dt><b>CPF3303</b></dt>
+<dd>File &amp;1 not found in job &amp;5/&amp;4/&amp;3.
+</dd>
+<dt><b>CPF3309</b></dt>
+<dd>No files named &amp;1 are active.
+</dd>
+<dt><b>CPF3330</b></dt>
+<dd>Necessary resource not available.
+</dd>
+<dt><b>CPF3335</b></dt>
+<dd>File &amp;1 number &amp;8 attributes not changed.
+</dd>
+<dt><b>CPF3337</b></dt>
+<dd>File &amp;1 number &amp;8 already held or saved.
+</dd>
+<dt><b>CPF334A</b></dt>
+<dd>Specified user defined object &amp;1 not valid.  See previous messages.
+</dd>
+<dt><b>CPF3340</b></dt>
+<dd>More than one file with specified name found in job &amp;5/&amp;4/&amp;3.
+</dd>
+<dt><b>CPF3341</b></dt>
+<dd>File &amp;1 number &amp;8 attributes not changed.
+</dd>
+<dt><b>CPF3342</b></dt>
+<dd>Job &amp;5/&amp;4/&amp;3 not found.
+</dd>
+<dt><b>CPF3343</b></dt>
+<dd>Duplicate job names found.
+</dd>
+<dt><b>CPF3344</b></dt>
+<dd>File &amp;1 number &amp;8 no longer in the system.
+</dd>
+<dt><b>CPF3401</b></dt>
+<dd>Cannot change COPIES for files in PRT or SND status.
+</dd>
+<dt><b>CPF3464</b></dt>
+<dd>Not authorized to output queue &amp;1 in library &amp;2.
+</dd>
+<dt><b>CPF3492</b></dt>
+<dd>Not authorized to spooled file.
+</dd>
+<dt><b>CPF9825</b></dt>
+<dd>Not authorized to device &amp;1.
+</dd>
+<dt><b>CPF9833</b></dt>
+<dd>*CURASPGRP or *ASPGRPPRI specified and thread has no ASP group.
+</dd>
+<dt><b>CPFB8ED</b></dt>
+<dd>Device description &amp;1 not correct for operation.
+</dd>
+</dl>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#CHGSPLFA.Top_Of_Page">Top</a></td></tr>
+</table>
+</body>
+</html>

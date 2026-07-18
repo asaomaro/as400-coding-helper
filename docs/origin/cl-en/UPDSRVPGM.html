@@ -1,0 +1,1566 @@
+<!DOCTYPE html>
+<html lang="ja"><head><meta charset="utf-8"><title>Update Service Program  (UPDSRVPGM)</title></head>
+<body>
+<main role="main"><article role="article" aria-labelledby="updsrvpgm__title__1"> 
+<h1 class="topictitle1" id="updsrvpgm__title__1">Update Service Program  (UPDSRVPGM)</h1><div id="lastModifiedDate"><span>Last Updated</span>: 2026-07-13</div>
+
+<div class="body">
+<p>
+<strong>Update Service Program  (UPDSRVPGM)
+</strong></p>
+
+<p>
+<strong>Where allowed to run:  
+</strong>All environments (*ALL)
+
+</p>
+
+<p>
+<strong>Threadsafe:  </strong>No
+</p>
+
+<p><a href="#updsrvpgm__parameters">Parameters</a></p>
+
+<p><a href="#updsrvpgm__examples">Examples</a></p>
+
+<p><a href="#updsrvpgm__errormsgs">Error messages</a></p>
+
+<div class="div" id="updsrvpgm__updsrvpgm">
+<p>
+The Update Service Program (UPDSRVPGM) command can be used to replace modules of an Integrated Language Environment (ILE) bound service program with other modules on the system, without requiring you to change or recompile the bound service program.  Modules being replaced must be module objects (*MODULE) on the system.
+
+</p>
+
+<p>
+Other jobs running the bound service program can run while the service program is being updated with this command.  The currently running service program is moved to library QRPLOBJ and an updated version of the service program will be inserted into the library of the service program.  Current activations of the service program will continue running using the version of the service program in the QRPLOBJ library
+
+</p>
+
+<p>
+<strong>Restrictions:
+</strong>
+</p>
+
+<ul class="cds--list--unordered">
+<li class="cds--list__item">
+You must have use (*USE) and add (*ADD) authorities to the library of the service program.
+
+</li>
+
+<li class="cds--list__item">
+You must have *USE, object management (*OBJMGT), and object existence (*OBJEXIST) authorities to the service program.
+
+</li>
+
+<li class="cds--list__item">
+You must be the owner of the service program, or a member of a group who is the owner of the service program, or be a user with all object (*ALLOBJ) special authority.
+
+</li>
+
+<li class="cds--list__item">
+You must have *USE authority to the following:
+<ul class="cds--list--unordered cds--list--nested">
+<li class="cds--list__item">
+*MODULE objects specified on the 
+<strong>Module (MODULE)
+</strong> parameter, and execute (*EXECUTE) authority to the library that the module resides in.
+
+</li>
+
+<li class="cds--list__item">
+*SRVPGM objects specified on the 
+<strong>Bind service program (BNDSRVPGM)
+</strong> parameter.
+
+</li>
+
+<li class="cds--list__item">
+*BNDDIR objects specified on the 
+<strong>Binding directory (BNDDIR)
+</strong> parameter, and *EXECUTE authority to the library, and all objects used to resolve external symbols for these *BNDDIR objects, and their libraries.
+
+</li>
+
+</ul>
+
+
+</li>
+
+<li class="cds--list__item">
+You must have object operational (*OBJOPR) and read (*READ) authorities to the file specified for the 
+<strong>Export source file (SRCFILE)
+</strong> parameter.
+
+</li>
+
+<li class="cds--list__item">
+You must have read (*R) authority to the stream file specified for the 
+<strong>Export source stream file (SRCSTMF)
+</strong> parameter.
+
+</li>
+
+<li class="cds--list__item">
+You must have execute (*X) authority to each directory in the path of the stream file specified in the 
+<strong>Export source stream file (SRCSTMF)
+</strong> parameter.
+
+</li>
+
+</ul>
+
+</div>
+<section class="section" role="region" aria-labelledby="updsrvpgm__parameters__title__1" id="updsrvpgm__parameters"><h2 class="sectiontitle" id="updsrvpgm__parameters__title__1">Parameters</h2>
+
+
+<div class="tablenoborder"><div class="cds--data-table-container"><table summary="" class="defaultstyle cds--data-table"><colgroup><col><col><col><col></colgroup><thead>
+<tr>
+<th id="updsrvpgm__parameters__entry__1"><div class="cds--table-header-label">
+Keyword
+</div></th>
+
+<th id="updsrvpgm__parameters__entry__2"><div class="cds--table-header-label">
+Description
+</div></th>
+
+<th id="updsrvpgm__parameters__entry__3"><div class="cds--table-header-label">
+Choices
+</div></th>
+
+<th id="updsrvpgm__parameters__entry__4"><div class="cds--table-header-label">
+Notes
+</div></th>
+
+</tr>
+
+</thead>
+<tbody>
+<tr>
+<td rowspan="3" headers="updsrvpgm__parameters__entry__1 "><a href="#updsrvpgm__srvpgm"><strong>SRVPGM
+</strong></a></td>
+
+<td headers="updsrvpgm__parameters__entry__2 ">Service program
+</td>
+
+<td headers="updsrvpgm__parameters__entry__3 "><em>Qualified object name
+</em></td>
+
+<td rowspan="3" headers="updsrvpgm__parameters__entry__4 ">Required, Positional 1
+</td>
+
+</tr>
+
+<tr>
+<td headers="updsrvpgm__parameters__entry__2 ">Qualifier 1: Service program
+</td>
+
+<td headers="updsrvpgm__parameters__entry__3 "><em>Name
+</em></td>
+
+</tr>
+
+<tr>
+<td headers="updsrvpgm__parameters__entry__2 ">Qualifier 2: Library
+</td>
+
+<td headers="updsrvpgm__parameters__entry__3 "><em>Name
+</em>, 
+<strong><u>*USRLIBL
+</u></strong>, *CURLIB
+</td>
+
+</tr>
+
+<tr>
+<td rowspan="3" headers="updsrvpgm__parameters__entry__1 "><a href="#updsrvpgm__module"><strong>MODULE
+</strong></a></td>
+
+<td headers="updsrvpgm__parameters__entry__2 ">Module
+</td>
+
+<td headers="updsrvpgm__parameters__entry__3 ">Single values: *NONE
+
+Other values (up to 300 repetitions): 
+<em>Qualified object name
+</em></td>
+
+<td rowspan="3" headers="updsrvpgm__parameters__entry__4 ">Required, Positional 2
+</td>
+
+</tr>
+
+<tr>
+<td headers="updsrvpgm__parameters__entry__2 ">Qualifier 1: Module
+</td>
+
+<td headers="updsrvpgm__parameters__entry__3 "><em>Generic name, name
+</em>, *ALL
+</td>
+
+</tr>
+
+<tr>
+<td headers="updsrvpgm__parameters__entry__2 ">Qualifier 2: Library
+</td>
+
+<td headers="updsrvpgm__parameters__entry__3 "><em>Name
+</em>, 
+<strong><u>*LIBL
+</u></strong>, *CURLIB, *USRLIBL
+</td>
+
+</tr>
+
+<tr>
+<td headers="updsrvpgm__parameters__entry__1 "><a href="#updsrvpgm__export"><strong>EXPORT
+</strong></a></td>
+
+<td headers="updsrvpgm__parameters__entry__2 ">Export
+</td>
+
+<td headers="updsrvpgm__parameters__entry__3 "><strong><u>*CURRENT
+</u></strong>, *SRCFILE, *ALL
+</td>
+
+<td headers="updsrvpgm__parameters__entry__4 ">Optional
+</td>
+
+</tr>
+
+<tr>
+<td rowspan="3" headers="updsrvpgm__parameters__entry__1 "><a href="#updsrvpgm__srcfile"><strong>SRCFILE
+</strong></a></td>
+
+<td headers="updsrvpgm__parameters__entry__2 ">Export source file
+</td>
+
+<td headers="updsrvpgm__parameters__entry__3 "><em>Qualified object name
+</em></td>
+
+<td rowspan="3" headers="updsrvpgm__parameters__entry__4 ">Optional
+</td>
+
+</tr>
+
+<tr>
+<td headers="updsrvpgm__parameters__entry__2 ">Qualifier 1: Export source file
+</td>
+
+<td headers="updsrvpgm__parameters__entry__3 "><em>Name
+</em>, 
+<strong><u>QSRVSRC
+</u></strong></td>
+
+</tr>
+
+<tr>
+<td headers="updsrvpgm__parameters__entry__2 ">Qualifier 2: Library
+</td>
+
+<td headers="updsrvpgm__parameters__entry__3 "><em>Name
+</em>, 
+<strong><u>*LIBL
+</u></strong>, *CURLIB
+</td>
+
+</tr>
+
+<tr>
+<td headers="updsrvpgm__parameters__entry__1 "><a href="#updsrvpgm__srcmbr"><strong>SRCMBR
+</strong></a></td>
+
+<td headers="updsrvpgm__parameters__entry__2 ">Export source member
+</td>
+
+<td headers="updsrvpgm__parameters__entry__3 "><em>Name
+</em>, 
+<strong><u>*SRVPGM
+</u></strong></td>
+
+<td headers="updsrvpgm__parameters__entry__4 ">Optional
+</td>
+
+</tr>
+
+<tr>
+<td headers="updsrvpgm__parameters__entry__1 "><a href="#updsrvpgm__srcstmf"><strong>SRCSTMF
+</strong></a></td>
+
+<td headers="updsrvpgm__parameters__entry__2 ">Export source stream file
+</td>
+
+<td headers="updsrvpgm__parameters__entry__3 "><em>Path name
+</em></td>
+
+<td headers="updsrvpgm__parameters__entry__4 ">Optional
+</td>
+
+</tr>
+
+<tr>
+<td rowspan="2" headers="updsrvpgm__parameters__entry__1 "><a href="#updsrvpgm__rpllib"><strong>RPLLIB
+</strong></a></td>
+
+<td headers="updsrvpgm__parameters__entry__2 ">Replacement library
+</td>
+
+<td headers="updsrvpgm__parameters__entry__3 ">Single values: 
+<strong><u>*ONLY
+</u></strong>, *FIRST, *MODULE
+
+Other values: 
+<em>Qualifier list
+</em></td>
+
+<td rowspan="2" headers="updsrvpgm__parameters__entry__4 ">Optional
+</td>
+
+</tr>
+
+<tr>
+<td headers="updsrvpgm__parameters__entry__2 ">Qualifier 1: Replacement library
+</td>
+
+<td headers="updsrvpgm__parameters__entry__3 "><em>Name
+</em></td>
+
+</tr>
+
+<tr>
+<td rowspan="5" headers="updsrvpgm__parameters__entry__1 "><a href="#updsrvpgm__bndsrvpgm"><strong>BNDSRVPGM
+</strong></a></td>
+
+<td headers="updsrvpgm__parameters__entry__2 ">Bind service program
+</td>
+
+<td headers="updsrvpgm__parameters__entry__3 ">Single values: 
+<strong><u>*NONE
+</u></strong>
+Other values (up to 300 repetitions): 
+<em>Element list
+</em></td>
+
+<td rowspan="5" headers="updsrvpgm__parameters__entry__4 ">Optional
+</td>
+
+</tr>
+
+<tr>
+<td headers="updsrvpgm__parameters__entry__2 ">Element 1: Service program
+</td>
+
+<td headers="updsrvpgm__parameters__entry__3 "><em>Qualified object name
+</em></td>
+
+</tr>
+
+<tr>
+<td headers="updsrvpgm__parameters__entry__2 ">Qualifier 1: Service program
+</td>
+
+<td headers="updsrvpgm__parameters__entry__3 "><em>Generic name, name
+</em>, *ALL
+</td>
+
+</tr>
+
+<tr>
+<td headers="updsrvpgm__parameters__entry__2 ">Qualifier 2: Library
+</td>
+
+<td headers="updsrvpgm__parameters__entry__3 "><em>Name
+</em>, 
+<strong><u>*LIBL
+</u></strong></td>
+
+</tr>
+
+<tr>
+<td headers="updsrvpgm__parameters__entry__2 ">Element 2: Activation
+</td>
+
+<td headers="updsrvpgm__parameters__entry__3 "><strong><u>*SAME
+</u></strong>, *IMMED, *DEFER
+</td>
+
+</tr>
+
+<tr>
+<td rowspan="2" headers="updsrvpgm__parameters__entry__1 "><a href="#updsrvpgm__srvpgmlib"><strong>SRVPGMLIB
+</strong></a></td>
+
+<td headers="updsrvpgm__parameters__entry__2 ">Bound *SRVPGM library name
+</td>
+
+<td headers="updsrvpgm__parameters__entry__3 ">Single values: 
+<strong><u>*SAME
+</u></strong>, *LIBL
+
+Other values: 
+<em>Qualifier list
+</em></td>
+
+<td rowspan="2" headers="updsrvpgm__parameters__entry__4 ">Optional
+</td>
+
+</tr>
+
+<tr>
+<td headers="updsrvpgm__parameters__entry__2 ">Qualifier 1: Bound *SRVPGM library name
+</td>
+
+<td headers="updsrvpgm__parameters__entry__3 "><em>Name
+</em></td>
+
+</tr>
+
+<tr>
+<td rowspan="3" headers="updsrvpgm__parameters__entry__1 "><a href="#updsrvpgm__bnddir"><strong>BNDDIR
+</strong></a></td>
+
+<td headers="updsrvpgm__parameters__entry__2 ">Binding directory
+</td>
+
+<td headers="updsrvpgm__parameters__entry__3 ">Single values: 
+<strong><u>*NONE
+</u></strong>
+Other values (up to 300 repetitions): 
+<em>Qualified object name
+</em></td>
+
+<td rowspan="3" headers="updsrvpgm__parameters__entry__4 ">Optional
+</td>
+
+</tr>
+
+<tr>
+<td headers="updsrvpgm__parameters__entry__2 ">Qualifier 1: Binding directory
+</td>
+
+<td headers="updsrvpgm__parameters__entry__3 "><em>Name
+</em></td>
+
+</tr>
+
+<tr>
+<td headers="updsrvpgm__parameters__entry__2 ">Qualifier 2: Library
+</td>
+
+<td headers="updsrvpgm__parameters__entry__3 "><em>Name
+</em>, 
+<strong><u>*LIBL
+</u></strong>, *CURLIB, *USRLIBL
+</td>
+
+</tr>
+
+<tr>
+<td headers="updsrvpgm__parameters__entry__1 "><a href="#updsrvpgm__actgrp"><strong>ACTGRP
+</strong></a></td>
+
+<td headers="updsrvpgm__parameters__entry__2 ">Activation group
+</td>
+
+<td headers="updsrvpgm__parameters__entry__3 "><em>Name
+</em>, 
+<strong><u>*SAME
+</u></strong></td>
+
+<td headers="updsrvpgm__parameters__entry__4 ">Optional
+</td>
+
+</tr>
+
+<tr>
+<td headers="updsrvpgm__parameters__entry__1 "><a href="#updsrvpgm__option"><strong>OPTION
+</strong></a></td>
+
+<td headers="updsrvpgm__parameters__entry__2 ">Creation options
+</td>
+
+<td headers="updsrvpgm__parameters__entry__3 ">Values (up to 6 repetitions): *GEN, *NOGEN, *DUPPROC, *NODUPPROC, *DUPVAR, *NODUPVAR, *WARN, *NOWARN, *TRIM, *NOTRIM, *RSLVREF, *UNRSLVREF
+</td>
+
+<td headers="updsrvpgm__parameters__entry__4 ">Optional
+</td>
+
+</tr>
+
+<tr>
+<td headers="updsrvpgm__parameters__entry__1 "><a href="#updsrvpgm__detail"><strong>DETAIL
+</strong></a></td>
+
+<td headers="updsrvpgm__parameters__entry__2 ">Listing detail
+</td>
+
+<td headers="updsrvpgm__parameters__entry__3 "><strong><u>*NONE
+</u></strong>, *BASIC, *EXTENDED, *FULL
+</td>
+
+<td headers="updsrvpgm__parameters__entry__4 ">Optional
+</td>
+
+</tr>
+
+</tbody>
+</table></div>
+</div>
+
+<div class="div" id="updsrvpgm__srvpgm">
+<p>
+<strong>Service program (SRVPGM)
+</strong></p>
+
+<p>
+Specifies the service program that is to be updated.
+
+</p>
+
+<p>
+This is a required parameter.
+
+</p>
+
+<p>
+<strong>Qualifier 1: Service program
+</strong>
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><em>name
+</em></strong></dt>
+
+<dd class="dlentry">
+Specify the name of the bound service program that is to be updated.
+</dd>
+
+</dl>
+
+<p>
+<strong>Qualifier 2: Library
+</strong>
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><u>*USRLIBL
+</u></strong></dt>
+
+<dd class="dlentry">
+Only the libraries in the user portion of the job's library list are searched.
+</dd>
+
+<dt class="dlterm">
+<strong>*CURLIB
+</strong></dt>
+
+<dd class="dlentry">
+The current library for the job is searched.  If no library is specified as the current library for the job, the QGPL library is used.
+</dd>
+
+<dt class="dlterm">
+<strong><em>name
+</em></strong></dt>
+
+<dd class="dlentry">
+Specify the name of the library where the bound service program is located.
+</dd>
+
+</dl>
+
+</div>
+<div class="div" id="updsrvpgm__module">
+<p>
+<strong>Module (MODULE)
+</strong></p>
+
+<p>
+Specifies the existing *MODULE objects that are to replace the modules of the same name in the bound program.  Up to 300 names can be specified.  If two or more modules of the bound program have the same name, the 
+<strong>Replacement library (RPLLIB)
+</strong> parameter indicates which is to be replaced.
+
+</p>
+
+<p>
+If the library of the module being replaced is different from the library of the replacing module, the module's library after the update will remain the library the module was in when the service program was first created.  If the RPLLIB parameter is required to determine which module to replace, the value to be entered in the RPLLIB parameter for this module will not change due to the update.
+
+</p>
+
+<p>
+This is a required parameter.
+
+</p>
+
+<p>
+<strong>Single values
+</strong>
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong>*NONE
+</strong></dt>
+
+<dd class="dlentry">
+No modules are specified.
+<p>
+<strong>Note:     
+</strong>This value can be specified when the module is not changing, but you are updating the service program (the BNDSRVPGM parameter) or the binding directory (BNDDIR parameter) to examine for exports.  The existing module is used.
+
+</p>
+
+</dd>
+
+</dl>
+
+<p>
+<strong>Qualifier 1: Module
+</strong>
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong>*ALL
+</strong></dt>
+
+<dd class="dlentry">
+All modules of the same name to which the user has authority replace the modules of the bound service program.
+</dd>
+
+<dt class="dlterm">
+<strong><em>generic-name
+</em></strong></dt>
+
+<dd class="dlentry">
+Specify the generic name of the modules that replace the modules of the bound program.  A generic name is a character string of one or more characters followed by an asterisk (*); for example, ABC*.  All modules with names that begin with the generic name, and for which the user has authority, replace the modules of the bound service program.
+</dd>
+
+<dt class="dlterm">
+<strong><em>name
+</em></strong></dt>
+
+<dd class="dlentry">
+Specify the name of the module that replaces a module of the bound service program.
+</dd>
+
+</dl>
+
+<p>
+<strong>Qualifier 2: Library
+</strong>
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><u>*LIBL
+</u></strong></dt>
+
+<dd class="dlentry">
+All libraries in the library list for the current thread are searched until the first match is found.
+</dd>
+
+</dl>
+
+<dl>
+<dt class="dlterm">
+<strong>*CURLIB
+</strong></dt>
+
+<dd class="dlentry">
+The current library for the job is searched.  If no library is specified as the current library for the job, the QGPL library is used.
+</dd>
+
+<dt class="dlterm">
+<strong>*USRLIBL
+</strong></dt>
+
+<dd class="dlentry">
+Only the libraries in the user portion of the job's library list are searched.
+</dd>
+
+<dt class="dlterm">
+<strong><em>name
+</em></strong></dt>
+
+<dd class="dlentry">
+Specify the name of the library to be searched.
+</dd>
+
+</dl>
+
+</div>
+<div class="div" id="updsrvpgm__export">
+<p>
+<strong>Export (EXPORT)
+</strong></p>
+
+<p>
+Specifies the variables and procedures that are to be exported from the updated service program.  This parameter also specifies whether new signatures identifying the sequence of exports in the service program are created.
+
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><u>*CURRENT
+</u></strong></dt>
+
+<dd class="dlentry">
+The variables, procedures, and signatures currently exported from the service program continue to be exported.  No new signatures are created.
+<p>
+<strong>Note:     
+</strong>If a variable or procedure that is currently exported is not available for export after the update, an exception is signaled and the service program is not updated.
+
+</p>
+
+</dd>
+
+<dt class="dlterm">
+<strong>*SRCFILE
+</strong></dt>
+
+<dd class="dlentry">
+The source file member identified by the 
+<strong>Export source file (SRCFILE)
+</strong> and 
+<strong>Export source member (SRCMBR)
+</strong> parameters or the 
+<strong>Export source stream file (SRCSTMF)
+</strong> parameter contains EXPORT statements that identify the data and procedures to export from the service program.  If the specified source file differs from the one used to create the service program, a new signature or set of signatures may be created.
+<p>
+<strong>Note:     
+</strong>If a signature is lost, some current clients of the service program may not be able to use the service program without binding again.
+
+</p>
+
+</dd>
+
+<dt class="dlterm">
+<strong>*ALL
+</strong></dt>
+
+<dd class="dlentry">
+All variables and procedures exported from the modules of the service program are exported from the updated service program.
+<p>
+If the number or names of the variables and procedures exported before the service program update differs from those exported after the service program update, a new signature is created.
+
+</p>
+
+<p>
+<strong>Note:     
+</strong>If a new signature is created, all clients of the service program must be bound again before they can use the service program.
+
+</p>
+
+</dd>
+
+</dl>
+
+</div>
+<div class="div" id="updsrvpgm__srcfile">
+<p>
+<strong>Export source file (SRCFILE)
+</strong></p>
+
+<p>
+Specifies the source file containing the specifications for the service program exports.  This parameter cannot be specified with the 
+<strong>Export source stream file (SRCSTMF)
+</strong> parameter.
+
+</p>
+
+<p>
+<strong>Qualifier 1: Export source file
+</strong>
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><u>QSRVSRC
+</u></strong></dt>
+
+<dd class="dlentry">
+The source file name is QSRVSRC.
+</dd>
+
+<dt class="dlterm">
+<strong><em>name
+</em></strong></dt>
+
+<dd class="dlentry">
+Specify the name of the source file containing the specifications for the service program exports.
+</dd>
+
+</dl>
+
+<p>
+<strong>Qualifier 2: Library
+</strong>
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><u>*LIBL
+</u></strong></dt>
+
+<dd class="dlentry">
+All libraries in the library list for the current thread are searched until the first match is found.
+</dd>
+
+</dl>
+
+<dl>
+<dt class="dlterm">
+<strong>*CURLIB
+</strong></dt>
+
+<dd class="dlentry">
+The current library for the job is searched.  If no library is specified as the current library for the job, the QGPL library is used.
+</dd>
+
+<dt class="dlterm">
+<strong><em>name
+</em></strong></dt>
+
+<dd class="dlentry">
+Specify the name of the library to be searched.
+</dd>
+
+</dl>
+
+</div>
+<div class="div" id="updsrvpgm__srcmbr">
+<p>
+<strong>Export source member (SRCMBR)
+</strong></p>
+
+<p>
+Specifies the member in the file specified for the 
+<strong>Export source file (SRCFILE)
+</strong> parameter that contains the specifications for the service program exports.  This parameter cannot be specified with the 
+<strong>Export source stream file (SRCSTMF)
+</strong> parameter.
+
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><u>*SRVPGM
+</u></strong></dt>
+
+<dd class="dlentry">
+The source file member has the same name as the service program being updated.
+</dd>
+
+<dt class="dlterm">
+<strong><em>name
+</em></strong></dt>
+
+<dd class="dlentry">
+Specify the name of the member that contains the specifications for exporting.
+</dd>
+
+</dl>
+
+</div>
+<div class="div" id="updsrvpgm__srcstmf">
+<p>
+<strong>Export source stream file (SRCSTMF)
+</strong></p>
+
+<p>
+Specifies the path name of the stream file containing the specifications for exporting data and procedures from this bound service program.  This parameter can be an absolute path name or a relative path name.  An absolute path name begins with a separator character (which is usually the / character).  If the path name does not begin with a separator character, it is a relative path name and the system assumes the path starts with the current working directory of the job.  The 
+<strong>Export source stream file (SRCSTMF)
+</strong> parameter cannot be specified with the 
+<strong>Export source file (SRCFILE)
+</strong> or 
+<strong>Export source member (SRCMBR)
+</strong> parameters or if the object being updated has a target release earlier than V7R3M0.
+
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong>path-name
+</strong></dt>
+
+<dd class="dlentry">
+Specify the path name of the stream file that contains the specifications for the service program exports.
+</dd>
+
+</dl>
+
+</div>
+<div class="div" id="updsrvpgm__rpllib">
+<p>
+<strong>Replacement library (RPLLIB)
+</strong></p>
+
+<p>
+Specifies the method used to select the module to be replaced when two or more modules of the bound program have the name specified on the MODULE parameter.
+
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><u>*ONLY
+</u></strong></dt>
+
+<dd class="dlentry">
+The bound service program contains only one module of the specified name and it is replaced.  If two or more modules of the bound service program have the specified name, an exception is signaled and the bound service program is not updated.
+</dd>
+
+<dt class="dlterm">
+<strong>*FIRST
+</strong></dt>
+
+<dd class="dlentry">
+The first module of the specified name in the module list of the bound service program is replaced.
+</dd>
+
+<dt class="dlterm">
+<strong>*MODULE
+</strong></dt>
+
+<dd class="dlentry">
+The module that originated from the same library as the specified module is replaced.  If no module of the specified name originally came from the same library as the replacing module, no module is replaced and an exception is signaled.
+</dd>
+
+<dt class="dlterm">
+<strong><em>name
+</em></strong></dt>
+
+<dd class="dlentry">
+Specify the name of the originating library of the module to be selected for replacement.  If no module of the specified name originated in the specified library, no module is replaced.
+</dd>
+
+</dl>
+
+</div>
+<div class="div" id="updsrvpgm__bndsrvpgm">
+<p>
+<strong>Bind service program (BNDSRVPGM)
+</strong></p>
+
+<p>
+Specifies the service program to examine for exports if import requests to resolve external symbols cannot be met by the modules and service programs of the updated bound service program.  If the specified service program can resolve external symbols, it is added to the service programs that are bound to the bound service program.  Up to 300 names can be specified.  You can control the activation of each service program.  You can specify whether the referenced service program is activated at the same time as the program or service program being created, or is deferred until a procedure exported from the referenced service program is called.  Deferring activation may improve your application's performance.
+
+</p>
+
+<p>
+<strong>Single values
+</strong>
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><u>*NONE
+</u></strong></dt>
+
+<dd class="dlentry">
+No service programs, except those in the bound service program being updated, are examined during symbol resolution.
+</dd>
+
+</dl>
+
+<p>
+<strong>Element 1: Service program
+</strong>
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong></strong></dt>
+
+<dd class="dlentry">
+<p>
+<strong>Qualifier 1: Service program
+</strong>
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong>*ALL
+</strong></dt>
+
+<dd class="dlentry">
+All service programs are examined during symbol resolution.
+</dd>
+
+<dt class="dlterm">
+<strong><em>generic-name
+</em></strong></dt>
+
+<dd class="dlentry">
+Specify the generic name of the service programs to examine during symbol resolution.  A generic name is a character string of one or more characters followed by an asterisk (*); for example, ABC*.  All service programs with names that begin with the generic name, and for which the user has authority, are examined during symbol resolution.
+</dd>
+
+<dt class="dlterm">
+<strong><em>name
+</em></strong></dt>
+
+<dd class="dlentry">
+Specify the name of the service program to examine during symbol resolution.
+</dd>
+
+</dl>
+
+</dd>
+
+<dt class="dlterm">
+<strong></strong></dt>
+
+<dd class="dlentry">
+<p>
+<strong>Qualifier 2: Library
+</strong>
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><u>*LIBL
+</u></strong></dt>
+
+<dd class="dlentry">
+All libraries in the library list for the current thread are searched until the first match is found.
+</dd>
+
+</dl>
+
+<dl>
+<dt class="dlterm">
+<strong><em>name
+</em></strong></dt>
+
+<dd class="dlentry">
+Specify the name of the library to be searched.  QTEMP is not a valid library name for this parameter.
+</dd>
+
+</dl>
+
+</dd>
+
+</dl>
+
+<p>
+<strong>Element 2: Activation
+</strong>
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><u>*SAME
+</u></strong></dt>
+
+<dd class="dlentry">
+The referenced service program activation does not change.
+</dd>
+
+<dt class="dlterm">
+<strong>*IMMED
+</strong></dt>
+
+<dd class="dlentry">
+Activation of the bound service program takes place immediately when the service program being updated is activated.
+</dd>
+
+<dt class="dlterm">
+<strong>*DEFER
+</strong></dt>
+
+<dd class="dlentry">
+Activation of the bound service program may be deferred until a function it exports is called.
+</dd>
+
+</dl>
+
+</div>
+<div class="div" id="updsrvpgm__srvpgmlib">
+<p>
+<strong>Bound *SRVPGM library name (SRVPGMLIB)
+</strong></p>
+
+<p>
+Specifies the library name used to resolve to currently bound service programs.  A value other than *SAME for this parameter can be specified if the program attribute ALWLIBUPD is *YES.
+
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><u>*SAME
+</u></strong></dt>
+
+<dd class="dlentry">
+Use the library name where the service program (*SRVPGM) is currently bound from.
+</dd>
+
+<dt class="dlterm">
+<strong>*LIBL
+</strong></dt>
+
+<dd class="dlentry">
+All libraries in the job's library list are searched until the first match is found for each bound *SRVPGM.  The first occurrence of a *SRVPGM is used to resolve to currently bound service programs and *LIBL is saved to be used at run time.  If no match is found in the job's library list, the *SRVPGM currently bound to the program is used.  You must have *USE authority to the *SRVPGM objects in the library specified and *EXECUTE authority to the library itself.
+<p>
+<strong>Note:     
+</strong>The service programs that came from the implicit binding directories (system-supplied service programs) are not changed.
+
+</p>
+
+</dd>
+
+<dt class="dlterm">
+<strong><em>name
+</em></strong></dt>
+
+<dd class="dlentry">
+Specify the name of the library to be used first to resolve to all currently bound service programs.  If a bound *SRVPGM does exist in the library specified on SRVPGMLIB parameter, that *SRVPGM from that library is used instead of the currently bound *SRVPGM and the library name specified on the SRVPGMLIB parameter is saved to be used at run time.  If a *SRVPGM does not exist in the library specified on the SRVPGMLIB parameter, the *SRVPGM currently bound to the program is used.  You must have *USE authority to the *SRVPGM objects in the library specified and *EXECUTE authority to the library itself.
+</dd>
+
+</dl>
+
+</div>
+<div class="div" id="updsrvpgm__bnddir">
+<p>
+<strong>Binding directory (BNDDIR)
+</strong></p>
+
+<p>
+Specifies the binding directory to examine for exports if import requests to resolve external symbols cannot be met by (1) the modules and service programs of the updated bound program or by (2) the service program specified on the BNDSRVPGM parameter.  If a module or service program listed in the specified binding directory can resolve external symbols, it is added to the modules or service programs that are bound to the bound service program.  Up to 300 names can be specified.
+
+</p>
+
+<p>
+<strong>Single values
+</strong>
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><u>*NONE
+</u></strong></dt>
+
+<dd class="dlentry">
+No binding directories, except those in the bound service program being updated, are examined during symbol resolution.
+</dd>
+
+</dl>
+
+<p>
+<strong>Qualifier 1: Binding directory
+</strong>
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><em>name
+</em></strong></dt>
+
+<dd class="dlentry">
+Specify the name of the binding directory to be used during symbol resolution.
+</dd>
+
+</dl>
+
+<p>
+<strong>Qualifier 2: Library
+</strong>
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><u>*LIBL
+</u></strong></dt>
+
+<dd class="dlentry">
+All libraries in the library list for the current thread are searched until the first match is found.
+</dd>
+
+</dl>
+
+<dl>
+<dt class="dlterm">
+<strong>*CURLIB
+</strong></dt>
+
+<dd class="dlentry">
+The current library for the job is searched.  If no library is specified as the current library for the job, the QGPL library is used.
+</dd>
+
+<dt class="dlterm">
+<strong>*USRLIBL
+</strong></dt>
+
+<dd class="dlentry">
+Only the libraries in the user portion of the job's library list are searched.
+</dd>
+
+<dt class="dlterm">
+<strong><em>name
+</em></strong></dt>
+
+<dd class="dlentry">
+Specify the name of the library to be searched.
+</dd>
+
+</dl>
+
+</div>
+<div class="div" id="updsrvpgm__actgrp">
+<p>
+<strong>Activation group (ACTGRP)
+</strong></p>
+
+<p>
+Specifies the activation group to be used for the updated service program.
+
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><u>*SAME
+</u></strong></dt>
+
+<dd class="dlentry">
+The activation group is not changed.  Specify this value if the service program was given *CALLER activation group at the time it was created.
+</dd>
+
+<dt class="dlterm">
+<strong><em>name
+</em></strong></dt>
+
+<dd class="dlentry">
+Specify the name of the activation group that is associated with this called service program.  If the service program was given a named activation group at the time it was created, the name of that activation group can be changed to another named activation group.
+<p>
+<strong>Note:     
+</strong>Changing the activation group name can affect the behavior of the program (or service program).  Refer to the ILE Concepts book, SC41-5606 for detailed information on the behavior of named activation groups.
+
+</p>
+
+</dd>
+
+</dl>
+
+</div>
+<div class="div" id="updsrvpgm__option">
+<p>
+<strong>Creation options (OPTION)
+</strong></p>
+
+<p>
+Specifies the options to be used when the service program object is updated.
+
+</p>
+
+<p>
+You can specify up to 6 values for this parameter.
+
+</p>
+
+<p>
+<strong>Creating Program Objects
+</strong>
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><u>*GEN
+</u></strong></dt>
+
+<dd class="dlentry">
+An updated program object is created.
+</dd>
+
+<dt class="dlterm">
+<strong>*NOGEN
+</strong></dt>
+
+<dd class="dlentry">
+An updated program object is not created.
+</dd>
+
+</dl>
+
+<p>
+<strong>Duplicate Procedure Names
+</strong>
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><u>*DUPPROC
+</u></strong></dt>
+
+<dd class="dlentry">
+During symbol resolution, the procedure names that are exported from the modules and service programs need not be unique.  Additional information may be found in the ILE Concepts book, SC41-5606.
+</dd>
+
+<dt class="dlterm">
+<strong>*NODUPPROC
+</strong></dt>
+
+<dd class="dlentry">
+During symbol resolution, each procedure name that is exported from the modules and service programs must be unique.
+</dd>
+
+</dl>
+
+<p>
+<strong>Duplicate Variable Names
+</strong>
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><u>*DUPVAR
+</u></strong></dt>
+
+<dd class="dlentry">
+During symbol resolution, the variable names that are exported from the modules and service programs need not be unique.  Additional information may be found in the ILE Concepts book, SC41-5606.
+</dd>
+
+<dt class="dlterm">
+<strong>*NODUPVAR
+</strong></dt>
+
+<dd class="dlentry">
+During symbol resolution, each variable name that is exported from the modules and service programs must be unique.
+</dd>
+
+</dl>
+
+<p>
+<strong>Issuing Diagnostic Messages
+</strong>
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><u>*WARN
+</u></strong></dt>
+
+<dd class="dlentry">
+The appropriate diagnostic messages are signaled.  Also, if you specify duplicate procedures or variables (*DUPPROC or *DUPVAR) and duplicates are found, a diagnostic message is issued indicating what duplicates were found.
+</dd>
+
+<dt class="dlterm">
+<strong>*NOWARN
+</strong></dt>
+
+<dd class="dlentry">
+No information or diagnostic messages are issued.
+</dd>
+
+</dl>
+
+<p>
+<strong>Trimming Marooned Modules
+</strong>
+</p>
+
+<p>
+A 
+<strong>marooned module
+</strong> is a module of the bound program being updated. This module was originally bound into the bound program from a binding directory to resolve one or more imports.  Imports are not resolved for this program update.
+
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><u>*NOTRIM
+</u></strong></dt>
+
+<dd class="dlentry">
+Marooned modules are not removed from the bound program.
+<p>
+<strong>Note:     
+</strong>Bound service programs may grow significantly over time when *NOTRIM is specified.
+
+</p>
+
+</dd>
+
+<dt class="dlterm">
+<strong>*TRIM
+</strong></dt>
+
+<dd class="dlentry">
+Marooned modules are removed from the bound program.
+<p>
+<strong>Note:     
+</strong>If marooned modules are removed from the bound program during this program update, the exports that the modules contain are not available for other program updates.
+
+</p>
+
+</dd>
+
+</dl>
+
+<p>
+<strong>Resolving References (Imports)
+</strong>
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><u>*RSLVREF
+</u></strong></dt>
+
+<dd class="dlentry">
+All imports must resolve to exports for the bound service program to be updated.
+</dd>
+
+<dt class="dlterm">
+<strong>*UNRSLVREF
+</strong></dt>
+
+<dd class="dlentry">
+All imports do not need to resolve to exports for the bound service program to be updated.
+<p>
+<strong>Note:     
+</strong>If this command contains an import that does not resolve, an exception will be generated when the command is run.
+
+</p>
+
+</dd>
+
+</dl>
+
+</div>
+<div class="div" id="updsrvpgm__detail">
+<p>
+<strong>Listing detail (DETAIL)
+</strong></p>
+
+<p>
+Specifies the level of detail of the binder listing to be printed.  The printer file *LIBL/QSYSPRT is used to create the listing.
+
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><u>*NONE
+</u></strong></dt>
+
+<dd class="dlentry">
+No binder listing is printed.
+</dd>
+
+<dt class="dlterm">
+<strong>*BASIC
+</strong></dt>
+
+<dd class="dlentry">
+The brief summary table, the options passed to this command, and some processing statistics are printed.
+</dd>
+
+<dt class="dlterm">
+<strong>*EXTENDED
+</strong></dt>
+
+<dd class="dlentry">
+The extended summary table and the binding information listing are printed, in addition to the information provided in the *BASIC listing (the brief summary table, the options passed to this command, and some processing statistics).
+</dd>
+
+<dt class="dlterm">
+<strong>*FULL
+</strong></dt>
+
+<dd class="dlentry">
+The cross-reference listing is printed, in addition to the information provided in the *EXTENDED listing (the extended summary table, the binding information listing, the brief summary table, the options passed to this command, and some processing statistics).
+</dd>
+
+</dl>
+
+</div>
+</section>
+
+<section class="section" role="region" aria-labelledby="updsrvpgm__examples__title__1" id="updsrvpgm__examples"><h2 class="sectiontitle" id="updsrvpgm__examples__title__1">Examples</h2>
+
+<div class="p">
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>
+UPDSRVPGM   SRVPGM(WORKDOC)  MODULE(BIN/TASKTWO)
+            RPLLIB(*MODULE)
+
+</code></pre></div><div class="docs--copy-btn"></div></div>
+
+</div>
+
+<p>
+This command replaces the module named TASKTWO in the service program object named WORKDOC with another module named TASKTWO in the library BIN, only if the module being replaced was originally from the library BIN.
+
+</p>
+
+</section>
+
+<section class="section" role="region" aria-labelledby="updsrvpgm__errormsgs__title__1" id="updsrvpgm__errormsgs"><h2 class="sectiontitle" id="updsrvpgm__errormsgs__title__1">Error messages</h2>
+
+<p>
+<strong><u>*ESCAPE Messages
+</u></strong>
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong>CPF223D
+</strong></dt>
+
+<dd class="dlentry">
+Not authorized to update &amp;1 in &amp;2 type *&amp;3.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF223E
+</strong></dt>
+
+<dd class="dlentry">
+Authority check for use adopted authority attribute failed.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF5CA7
+</strong></dt>
+
+<dd class="dlentry">
+SRVPGMLIB must be *SAME when ALWLIBUPD is *NO.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF5CAC
+</strong></dt>
+
+<dd class="dlentry">
+The stream file could not be opened.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF5CE1
+</strong></dt>
+
+<dd class="dlentry">
+Service program &amp;1 not updated.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF5CE2
+</strong></dt>
+
+<dd class="dlentry">
+Unexpected error occurred during program or service program update.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF5D1C
+</strong></dt>
+
+<dd class="dlentry">
+Update of service program &amp;1 in library &amp;2 not allowed.
+</dd>
+
+</dl>
+
+</section>
+
+</div>
+
+</article></main>
+</body></html>

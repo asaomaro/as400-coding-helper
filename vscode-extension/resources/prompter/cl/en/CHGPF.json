@@ -1,0 +1,763 @@
+{
+  "keyword": "CHGPF",
+  "description": "Change Physical File (CHGPF)",
+  "parameters": [
+    {
+      "name": "FILE",
+      "description": "Physical file",
+      "help": "Physical file (FILE)\n\nSpecifies the physical file to be changed.\n\nNote: If a Distributed Data Management (DDM) file is specified, the name of the physical file to be changed and the name of the remote system on which the file is to be changed are contained in the DDM file. For more information, see the System (SYSTEM) parameter of this command.\n\nThis is a required parameter.\n\nQualifier 1: Physical file\n\nQualifier 2: Library",
+      "inputType": "group",
+      "required": true,
+      "groupKind": "qualified",
+      "children": [
+        {
+          "name": "LIB",
+          "description": "Library",
+          "help": "指定できる特殊値: *LIBL, *CURLIB",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "*LIBL",
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          },
+          "placeholder": "FILE"
+        },
+        {
+          "name": "FILE",
+          "description": "Physical file",
+          "inputType": "text",
+          "required": true,
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          },
+          "placeholder": "*LIBL"
+        }
+      ],
+      "positional": 1,
+      "basic": true
+    },
+    {
+      "name": "SYSTEM",
+      "description": "System",
+      "help": "System (SYSTEM)\n\nSpecifies whether the physical file is changed on the local system or the remote system.",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*LCL",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*LCL",
+          "value": "*LCL"
+        },
+        {
+          "label": "*RMT",
+          "value": "*RMT"
+        },
+        {
+          "label": "*FILETYPE",
+          "value": "*FILETYPE"
+        }
+      ],
+      "basic": true
+    },
+    {
+      "name": "SRCFILE",
+      "description": "Source file",
+      "help": "Source file (SRCFILE)\n\nSpecifies the source file used to change the physical file. The source file contains the specifications that describe the record format and its fields, and the access path for the file and its members. The data description specifications (DDS) that are made are described in the Database category in the IBM i Information Center at http://www.ibm.com/systems/i/infocenter/ and the DDS topic collection in the Programming category in the IBM i Information Center at http://www.ibm.com/systems/i/infocenter/.\n\nIf the format attributes are changed, the data in the existing file is converted to the new attributes.\n\nAttention:\n\nIf the access path attributes are changed or the attributes of one of the key fields in the format are changed, a new access path may need to be built.\n\nNote: When the data or the access path attributes are changed, the change file operation can take a long time to complete. Status messages are sent to keep the interactive user informed of the progress of the operation.\n\nSingle values\n\nQualifier 1: Source file\n\nQualifier 2: Library",
+      "inputType": "group",
+      "required": false,
+      "groupKind": "qualified",
+      "singleValues": [
+        "*NONE"
+      ],
+      "children": [
+        {
+          "name": "SRCFILE_LIB",
+          "description": "Library",
+          "help": "指定できる特殊値: *LIBL, *CURLIB",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "*LIBL",
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          },
+          "placeholder": "*NONE"
+        },
+        {
+          "name": "SRCFILE",
+          "description": "Source file",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "*NONE",
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          },
+          "placeholder": "*LIBL"
+        }
+      ],
+      "basic": true
+    },
+    {
+      "name": "SRCMBR",
+      "description": "Source member",
+      "help": "Source member (SRCMBR)\n\nSpecifies the source file member that contains the DDS for the physical file being changed.\n\nNote: This parameter is valid only when a source file is specified for the Source file (SRCFILE) parameter.\n\n指定できる特殊値: *FILE",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*FILE",
+      "attributes": {
+        "characterSet": "upper",
+        "maxLength": 10
+      },
+      "placeholder": "*FILE"
+    },
+    {
+      "name": "OPTION",
+      "description": "Source listing options",
+      "help": "Source listing options (OPTION)\n\nSpecifies the type of output produced when the file is changed. A maximum of four of the following values can be specified in any order on this parameter. If neither or both of the values on an option are specified, the first value is used.\n\nNotes:\n\nSource Listing Option\n\nProgram Listing Option\n\nSecond-Level Message Text Option\n\nEvent File Creation Option",
+      "inputType": "dropdown",
+      "required": false,
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*SRC",
+          "value": "*SRC"
+        },
+        {
+          "label": "*NOSRC",
+          "value": "*NOSRC"
+        },
+        {
+          "label": "*SOURCE",
+          "value": "*SOURCE"
+        },
+        {
+          "label": "*NOSOURCE",
+          "value": "*NOSOURCE"
+        },
+        {
+          "label": "*LIST",
+          "value": "*LIST"
+        },
+        {
+          "label": "*NOLIST",
+          "value": "*NOLIST"
+        },
+        {
+          "label": "*SECLVL",
+          "value": "*SECLVL"
+        },
+        {
+          "label": "*NOSECLVL",
+          "value": "*NOSECLVL"
+        },
+        {
+          "label": "*EVENTF",
+          "value": "*EVENTF"
+        },
+        {
+          "label": "*NOEVENTF",
+          "value": "*NOEVENTF"
+        }
+      ],
+      "maxOccurrences": 3,
+      "placeholder": "*SRC"
+    },
+    {
+      "name": "GENLVL",
+      "description": "Generation severity level",
+      "help": "Generation severity level (GENLVL)\n\nSpecifies the severity level of errors at which the change operation fails. If errors occur that have a severity level greater than or equal to this value, the operation ends.\n\nNotes:",
+      "inputType": "number",
+      "required": false,
+      "defaultValue": "20",
+      "attributes": {
+        "numericOnly": true
+      },
+      "placeholder": "20"
+    },
+    {
+      "name": "FLAG",
+      "description": "Flagging severity level",
+      "help": "Flagging severity level (FLAG)\n\nSpecifies the minimum severity level of messages to be listed.\n\nNote: This parameter is valid only when a source file is specified on the Source file (SRCFILE) parameter.",
+      "inputType": "number",
+      "required": false,
+      "defaultValue": "0",
+      "attributes": {
+        "numericOnly": true
+      },
+      "placeholder": "0"
+    },
+    {
+      "name": "DLTDEPLF",
+      "description": "Delete dependent logical file",
+      "help": "Delete dependent logical file (DLTDEPLF)\n\nSpecifies whether the logical files and SQL materialized query tables that are dependent on a field are deleted if that field is removed from the file as part of the change operation. A field is removed from the file if its definition is not included in the DDS identified in the source file.\n\nNote: This parameter is valid only when a source file is specified on the Source file (SRCFILE) parameter.",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*NO",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*NO",
+          "value": "*NO"
+        },
+        {
+          "label": "*YES",
+          "value": "*YES"
+        }
+      ]
+    },
+    {
+      "name": "RMVCST",
+      "description": "Remove constraint",
+      "help": "Remove constraint (RMVCST)\n\nSpecifies whether the constraint relationships are removed in the associated set of dependent files when you are deleting a parent file of a referential constraint.\n\nNote: This parameter is valid only when *YES if sepcified for the Delete dependent logical file (DLTDEPLF) parameter.",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*RESTRICT",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*RESTRICT",
+          "value": "*RESTRICT"
+        },
+        {
+          "label": "*REMOVE",
+          "value": "*REMOVE"
+        }
+      ]
+    },
+    {
+      "name": "EXPDATE",
+      "description": "Expiration date for member",
+      "help": "Expiration date for member (EXPDATE)\n\nSpecifies the expiration date of all the file's members. If an expiration date is specified, all members in the file are changed. You can specify a new expiration date for a member that has exceeded its expiration date by changing this parameter. The expiration date must be later than or equal to the current date.",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*SAME",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*SAME",
+          "value": "*SAME"
+        },
+        {
+          "label": "*NONE",
+          "value": "*NONE"
+        }
+      ],
+      "placeholder": "*SAME"
+    },
+    {
+      "name": "MAXMBRS",
+      "description": "Maximum members",
+      "help": "Maximum members (MAXMBRS)\n\nSpecifies the maximum number of members that the physical file can have at any time. The maximum number of members specified must be greater than or equal to the current number of members in the file.\n\n指定できる特殊値: *SAME, *NOMAX",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*SAME",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "placeholder": "*SAME"
+    },
+    {
+      "name": "ACCPTHSIZ",
+      "description": "Access path size",
+      "help": "Access path size (ACCPTHSIZ)\n\nSpecifies the maximum size of auxiliary storage that can be occupied by the following kinds of access paths:\n\nChanging the value for this file causes the access paths that are owned by the file to be rebuilt.\n\nNote: This parameter does not apply to access paths that are created for queries that refer to the data in the file.\n\nPerformance Tip\n\nFor optimum performance, consider whether there is high contention for keys within the access path when selecting the value on this parameter:",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*SAME",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*SAME",
+          "value": "*SAME"
+        },
+        {
+          "label": "*MAX4GB",
+          "value": "*MAX4GB"
+        },
+        {
+          "label": "*MAX1TB",
+          "value": "*MAX1TB"
+        }
+      ]
+    },
+    {
+      "name": "MAINT",
+      "description": "Access path maintenance",
+      "help": "Access path maintenance (MAINT)\n\nSpecifies the type of access path maintenance used for all members of the physical file. This parameter is valid only if the file has a keyed access path.\n\nIf the number of changes between a close operation and the next open operation reaches approximately 10% of the access path size, the system stops saving changes and the access path is completely rebuilt the next time the file is opened.",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*SAME",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*SAME",
+          "value": "*SAME"
+        },
+        {
+          "label": "*IMMED",
+          "value": "*IMMED"
+        },
+        {
+          "label": "*REBLD",
+          "value": "*REBLD"
+        },
+        {
+          "label": "*DLY",
+          "value": "*DLY"
+        }
+      ]
+    },
+    {
+      "name": "RECOVER",
+      "description": "Access path recovery",
+      "help": "Access path recovery (RECOVER)\n\nSpecifies, for files having immediate or delayed maintenance on their access paths, when recovery processing of the file is done if a system failure occurs while the access path is being changed. This parameter is valid only if a keyed access path is used.",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*SAME",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*SAME",
+          "value": "*SAME"
+        },
+        {
+          "label": "*NO",
+          "value": "*NO"
+        },
+        {
+          "label": "*AFTIPL",
+          "value": "*AFTIPL"
+        },
+        {
+          "label": "*IPL",
+          "value": "*IPL"
+        }
+      ]
+    },
+    {
+      "name": "FRCACCPTH",
+      "description": "Force keyed access path",
+      "help": "Force keyed access path (FRCACCPTH)\n\nSpecifies, for files with keyed access paths only, whether access path changes are forced to auxiliary storage along with the associated records in the file. Specifying *YES minimizes (but does not remove) the chance that an abnormal end will cause damage to the access path, which then requires it to be rebuilt.",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*SAME",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*SAME",
+          "value": "*SAME"
+        },
+        {
+          "label": "*NO",
+          "value": "*NO"
+        },
+        {
+          "label": "*YES",
+          "value": "*YES"
+        }
+      ]
+    },
+    {
+      "name": "SIZE",
+      "description": "Member size",
+      "help": "Member size (SIZE)\n\nSpecifies the initial number of records in each member of the file, the number of records for each increment added to the member, and the number of times the increment is automatically applied. The number of records for each file member is specified as the number of records that can be placed in it (this number includes any deleted records).\n\nThe maximum number of records for the member (initial number of records plus the increment number of records times the maximum increments) must be larger than the current number of records in the member. If it is smaller than the current number of records in the member, an error message is sent, and the maximum number of records for the member does not change.\n\nSingle values\n\nElement 1: Initial number of records\n\nElement 2: Increment number of records\n\nEnter a 0 value to prevent automatic extensions. This value must be 0 if the value for the maximum increments is 0.\n\nElement 3: Maximum increments",
+      "inputType": "group",
+      "required": false,
+      "groupKind": "elements",
+      "singleValues": [
+        "*NOMAX"
+      ],
+      "children": [
+        {
+          "name": "INITRCDS",
+          "description": "Initial number of records",
+          "help": "指定できる特殊値: *SAME",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "*SAME",
+          "attributes": {
+            "characterSet": "upper"
+          },
+          "placeholder": "*SAME"
+        },
+        {
+          "name": "INCRCDS",
+          "description": "Increment number of records",
+          "help": "指定できる特殊値: *SAME",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "*SAME",
+          "attributes": {
+            "characterSet": "upper"
+          },
+          "placeholder": "*SAME"
+        },
+        {
+          "name": "MAXINC",
+          "description": "Maximum increments",
+          "help": "指定できる特殊値: *SAME",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "*SAME",
+          "attributes": {
+            "characterSet": "upper"
+          },
+          "placeholder": "*SAME"
+        }
+      ]
+    },
+    {
+      "name": "ALLOCATE",
+      "description": "Allocate storage",
+      "help": "Allocate storage (ALLOCATE)\n\nSpecifies whether the initial storage space is allocated for each physical file member when it is added to the file. This change takes effect the next time a new member is added to the file or when a current member is cleared or reorganized.",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*SAME",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*NO",
+          "value": "*NO"
+        },
+        {
+          "label": "*YES",
+          "value": "*YES"
+        },
+        {
+          "label": "*SAME",
+          "value": "*SAME"
+        }
+      ]
+    },
+    {
+      "name": "UNIT",
+      "description": "Preferred storage unit",
+      "help": "Preferred storage unit (UNIT)\n\nSpecifies the preferred storage media for the file.\n\n指定できる特殊値: *SAME, *ANY, *SSD",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*SAME",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "placeholder": "*SAME"
+    },
+    {
+      "name": "FRCRATIO",
+      "description": "Records to force a write",
+      "help": "Records to force a write (FRCRATIO)\n\nSpecifies the number of inserted, changed, or deleted records that are processed before those records are forced to auxiliary (permanent) storage. If the physical file is being recorded in a journal, it is recommended that a larger force write ratio, or *NONE, be specified. More information on journal management is in the Recovering your system book, SC41-5304.\n\n指定できる特殊値: *SAME, *NONE",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*SAME",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "placeholder": "*SAME"
+    },
+    {
+      "name": "WAITFILE",
+      "description": "Maximum file wait time",
+      "help": "Maximum file wait time (WAITFILE)\n\nSpecifies the number of seconds that the program waits for the file resources and session resources to be allocated when the file is opened, or for the device or session resources to be allocated when an acquire operation is performed to the file. If the file resources are not allocated in the specified wait time, an error message is sent to the program.\n\nNote: An immediate allocation of the device by the device resource is required when an acquire operation is performed to the file.\n\n指定できる特殊値: *SAME, *IMMED, *CLS",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*SAME",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "placeholder": "*SAME"
+    },
+    {
+      "name": "WAITRCD",
+      "description": "Maximum record wait time",
+      "help": "Maximum record wait time (WAITRCD)\n\nSpecifies the number of seconds that the program waits for a record that is changed or deleted. If the record is not allocated in the specified wait time, an error message is sent to the program.\n\n指定できる特殊値: *SAME, *IMMED, *NOMAX",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*SAME",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "placeholder": "*SAME"
+    },
+    {
+      "name": "SHARE",
+      "description": "Share open data path",
+      "help": "Share open data path (SHARE)\n\nSpecifies whether the open data path (ODP) is shared with other programs in the same routing step. When an ODP is shared, the programs accessing the file share facilities such as the file status and the buffer.",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*SAME",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*SAME",
+          "value": "*SAME"
+        },
+        {
+          "label": "*NO",
+          "value": "*NO"
+        },
+        {
+          "label": "*YES",
+          "value": "*YES"
+        }
+      ]
+    },
+    {
+      "name": "DLTPCT",
+      "description": "Max % deleted records allowed",
+      "help": "Max % deleted records allowed (DLTPCT)\n\nSpecifies the maximum percentage of deleted records that any member in the physical file can have. The percentage is based on the number of deleted records compared with the total record count in a member. This change takes effect the next time the file is opened and closed.\n\n指定できる特殊値: *NONE, *SAME",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*SAME",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "placeholder": "*SAME"
+    },
+    {
+      "name": "REUSEDLT",
+      "description": "Reuse deleted records",
+      "help": "Reuse deleted records (REUSEDLT)\n\nSpecifies whether the space used by deleted data entries is reclaimed by future insert requests.\n\nNote: Arrival order becomes meaningless for a file that reuses deleted record space. Records might not be added at the end of the file.",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*SAME",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*SAME",
+          "value": "*SAME"
+        },
+        {
+          "label": "*YES",
+          "value": "*YES"
+        },
+        {
+          "label": "*NO",
+          "value": "*NO"
+        }
+      ]
+    },
+    {
+      "name": "SRTSEQ",
+      "description": "Sort sequence",
+      "help": "Sort sequence (SRTSEQ)\n\nSpecifies the sort sequence used for this file. The sort sequence value is used with the LANGID parameter to determine which sort sequence table is used.\n\nNote: Changing the value for this file causes the access paths that are owned by the file to be rebuilt.\n\nSingle values\n\nQualifier 1: Sort sequence\n\nQualifier 2: Library",
+      "inputType": "group",
+      "required": false,
+      "groupKind": "qualified",
+      "singleValues": [
+        "*SAME",
+        "*SRC",
+        "*JOB",
+        "*LANGIDSHR",
+        "*LANGIDUNQ",
+        "*HEX"
+      ],
+      "children": [
+        {
+          "name": "SRTSEQ_LIB",
+          "description": "Library",
+          "help": "指定できる特殊値: *LIBL, *CURLIB",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "*LIBL",
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          },
+          "placeholder": "*SAME"
+        },
+        {
+          "name": "SRTSEQ",
+          "description": "Sort sequence",
+          "inputType": "text",
+          "required": false,
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          },
+          "defaultValue": "*SAME",
+          "placeholder": "*LIBL"
+        }
+      ]
+    },
+    {
+      "name": "LANGID",
+      "description": "Language ID",
+      "help": "Language ID (LANGID)\n\nSpecifies the language identifier used when *LANGIDSHR or *LANGIDUNQ is specified for the Sort sequence (SRTSEQ) parameter. The language identifier is used with the SRTSEQ and Coded character set ID (CCSID) parameters to determine which sort sequence table the file will use.\n\nNote: Changing the value for this file causes the access paths that are owned by the file to be rebuilt unless the SRTSEQ attribute is *HEX.\n\n指定できる特殊値: *JOB, *SAME",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*SAME",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "placeholder": "*SAME"
+    },
+    {
+      "name": "LVLCHK",
+      "description": "Record format level check",
+      "help": "Record format level check (LVLCHK)\n\nSpecifies whether the levels of record format identifiers are checked to verify that the current record format identifier is the same as that specified in the program that opens the physical file.",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*SAME",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*SAME",
+          "value": "*SAME"
+        },
+        {
+          "label": "*YES",
+          "value": "*YES"
+        },
+        {
+          "label": "*NO",
+          "value": "*NO"
+        }
+      ]
+    },
+    {
+      "name": "KEEPINMEM",
+      "description": "Keep in memory",
+      "help": "Keep in memory (KEEPINMEM)\n\nSpecifies whether the data for a file member should be brought into a main storage pool by the SQL Query Engine (SQE) when the data is used in the query to improve the performance.\n\nNote: The Query Options File (QAQQINI) parameter MEMORY_POOL_PREFERENCE can be used to specify the preferred main storage pool that should be used.",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*SAME",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*SAME",
+          "value": "*SAME"
+        },
+        {
+          "label": "*NO",
+          "value": "*NO"
+        },
+        {
+          "label": "*YES",
+          "value": "*YES"
+        }
+      ]
+    },
+    {
+      "name": "NODGRP",
+      "description": "Node group",
+      "help": "Node group (NODGRP)\n\nSpecifies the name of a node group across which the file is distributed.\n\nSingle values\n\nQualifier 1: Node group\n\nQualifier 2: Library",
+      "inputType": "group",
+      "required": false,
+      "groupKind": "qualified",
+      "singleValues": [
+        "*NONE",
+        "*SAME"
+      ],
+      "children": [
+        {
+          "name": "NODGRP_LIB",
+          "description": "Library",
+          "help": "指定できる特殊値: *LIBL, *CURLIB",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "*LIBL",
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          },
+          "placeholder": "*SAME"
+        },
+        {
+          "name": "NODGRP",
+          "description": "Node group",
+          "inputType": "text",
+          "required": false,
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          },
+          "defaultValue": "*SAME",
+          "placeholder": "*LIBL"
+        }
+      ]
+    },
+    {
+      "name": "PTNKEY",
+      "description": "Partitioning Key",
+      "help": "Partitioning Key (PTNKEY)\n\nSpecifies the field, or set of fields, that is used as the partition key for distributing data.\n\nNote: This parameter is not valid when NODGRP(*NONE) is specified. If a node group name is specified (NODGRP parameter), one or more field names must be specified.\n\nSingle values\n\nOther values (up to 300 repetitions)\n\n指定できる特殊値: *SAME",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*SAME",
+      "attributes": {
+        "characterSet": "upper",
+        "maxLength": 10
+      },
+      "maxOccurrences": 300,
+      "placeholder": "*SAME"
+    },
+    {
+      "name": "TEXT",
+      "description": "Text 'description'",
+      "help": "Text 'description' (TEXT)\n\nSpecifies the text that briefly describes the object.\n\n指定できる特殊値: *SAME, *BLANK",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*SAME",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "placeholder": "*SAME"
+    },
+    {
+      "name": "CCSID",
+      "description": "Coded character set ID",
+      "help": "Coded character set ID (CCSID)\n\nSpecifies the coded character set identifier (CCSID) to be used to describe character data in the fields of the file.\n\nNotes:\n\nIf a DBCS field is in the physical file, the CCSID specified must have a corresponding mixed CCSID. More information on valid CCSIDs is in the Globalization information in the iSeries Information Center at http://www.ibm.com/eserver/iseries/infocenter.\n\n指定できる特殊値: *SAME, *HEX",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*SAME",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "placeholder": "*SAME"
+    }
+  ],
+  "examples": [
+    {
+      "code": "CHGPF FILE(QGPL/INV) EXPDATE('10/31/89')"
+    },
+    {
+      "code": "CHGPF FILE(QGPL/DDMF) SIZE(*NOMAX) SYSTEM(*RMT)"
+    },
+    {
+      "code": "CHGPF FILE(QGPL/T1) SRCFILE(QDDSSRC)"
+    }
+  ],
+  "source": {
+    "url": "https://www.ibm.com/docs/en/ssw_ibm_i_74/cl/chgpf.htm",
+    "version": "IBM i 7.4"
+  }
+}

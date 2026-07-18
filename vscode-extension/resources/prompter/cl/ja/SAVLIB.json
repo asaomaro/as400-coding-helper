@@ -1,0 +1,1361 @@
+{
+  "keyword": "SAVLIB",
+  "description": "ライブラリー保管 (SAVLIB)",
+  "help": "ライブラリー保管(SAVLIB)コマンドでは1つまたは複数のライブラリーのコピーを保管することができます。\n\n保管ファイルに保管する時には，ライブラリーは1つしか指定することができません。\n\nこのコマンドでは，ライブラリー記述，オブジェクト記述，およびライブラリー中のオブジェクトの内容を含め，ライブラリー全体が保管されます。ジョブ待ち行列，メッセージ待ち行列，および論理ファイルの場合には，オブジェクトの定義だけが保管され，内容は保管されません。しかし，論理ファイルのアクセス・パスは， アクセス・パス保管 (ACCPTH) パラメーターに*YESを指定することによって保管することができます。出力待ち行列上のスプール・ファイルの内容は， スプール・ファイル・データ (SPLFDTA) パラメーターに*ALLを指定することによって保管することができます。保管ファイルの内容は， 保管ファイル・データ (SAVFDTA) パラメーターに*YESを指定するか，あるいは保管ファイル・データ保管(SAVSAVFDTA)コマンドを使用することによって保管することができます。データ待ち行列の内容は， 待ち行列データ (QDTA) パラメーターに*DTAQを指定して保管することができます。コマンドで記憶域の解放を指定しない限り，システム中のライブラリーとそのオブジェクトには影響がありません。しかし， ヒストリー更新 (UPDHST) パラメーターに*NOを指定しない限り，各ライブラリーおよび各オブジェクトの記述は，それが最後に保管された日付，場所，および時刻で更新されます。LIBパラメーターに*NONSYS, *ALLUSR,または*IBMを指定してライブラリーのグループが保管される場合には，QSYS中のデータ域（データ域QSAVLIBALL, QSAVALLUSR,またはQSAVIBM）のヒストリーで日付，時刻，および場所が更新されます。\n\nこのコマンドによって保管されるオブジェクトのタイプは，IBM i Information Center(http://www.ibm.com/systems/i/infocenter/)の「プログラミング」カテゴリーの「制御言語(CL)」トピック・コレクションの「共通して使用されるパラメーター：詳細説明」のOBJTYPEパラメーターの説明で，追加の*DTADCTと一緒にリストされています。ユーザー・ライブラリーに含まれていないある種のオペレーティング・システム・オブジェクト（ユーザー・プロファイルなど）は，このコマンドでは保管されません。これらはシステム保管(SAVSYS)コマンドまたは機密保護データ保管(SAVSECDTA)コマンドによって保管することができます。\n\n注: このコマンドは，出力ファイル以外のジョブに対して現在有効になっているすべてのファイル一時変更を無視します。",
+  "parameters": [
+    {
+      "name": "LIB",
+      "description": "ライブラリー",
+      "help": "保管するライブラリーを指定します。\n\nこれは必須パラメーターです。\n\n次のQXXXライブラリーはIBMによって提供されますが，これらには一般的に，頻繁に変更されるユーザー・データが入れられます。したがって，こうしたライブラリーは「ユーザー・ライブラリー」とみなされ，これもまた保管されます。\n\nＱで始まらない名前をもつ次のライブラリーも保管されます。\n\n*NONSYS: 以下のシステム・ライブラリーを除くすべてのライブラリーが保管されます。XXXXおよびXXXXXはASP番号を表します。 QDOC QRCYXXXXX QSPL QSYSXXXXX QDOCXXXX QRECOVERY QSPLXXXX QTEMP QPTFOBJ1 QRPLOBJ QSRV QPTFOBJ2 QRPLXXXXX QSYS 注: このオプションを指定する場合には，サブシステム終了(ENDSBS)またはシステム終了(ENDSYS)コマンドですべてのサブシステムを終了していなければなりません。\n*ALLUSR: すべてのユーザー・ライブラリーが保管されます。次を除いて，英字Ｑで開始されない名前のすべてのライブラリーが保管されます。 #CGULIB #DSULIB #SEULIB #COBLIB #RPGLIB #DFULIB #SDALIB 次のQXXXライブラリーはIBMによって提供されますが，これらには一般的に，頻繁に変更されるユーザー・データが入れられます。したがって，こうしたライブラリーは「ユーザー・ライブラリー」とみなされ，これもまた保管されます。 QDSNX QRCLXXXXX QUSRDIRDB QUSRVI QGPL QSRVAGT QUSRIJS QUSRVXRXMX QGPL38 QSYS2 QUSRINFSKR QWQCENT QMGTC QSYS2XXXXX QUSRNOTES QWQREPOS QMGTC2 QS36F QUSROND QMPGDATA QUSER38 QUSRPOSGS QMQMDATA QUSRADSM QUSRPOSSA QMQMPROC QUSRBRM QUSRPYMSVR QPFRDATA QUSRDIRCF QUSRRDARS QRCL QUSRDIRCL QUSRSYS\n*IBM: 以下のものを除くIBM提供のすべてのライブラリーが保管されます。 QDOC QRCL QSYS2XXXXX QUSRPOSGS QDOCXXXX QRCLXXXXX QS36F QUSRPOSSA QDSNX QRCYXXXXX QTEMP QUSRPYMSVR QGPL QRECOVERY QUSER38 QUSRRDARS QGPL38 QRPLOBJ QUSRADSM QUSRSYS QMGTC QRPLXXXXX QUSRBRM QUSRVI QMGTC2 QSPL QUSRDIRCF QUSRVXRXMX QMPGDATA QSPLXXXX QUSRDIRCL QWQCENT QMQMDATA QSRV QUSRDIRDB QWQREPOS QMQMPROC QSRVAGT QUSRIJS QPFRDATA QSYS QUSRINFSKR QPTFOBJ1 QSYSXXXXX QUSRNOTES QPTFOBJ2 QSYS2 QUSROND 注: 前のリリースのCLプログラム内でコンパイルされるユーザー・コマンドを入れるために，弊社がサポートする前の各リリース用にQUSRVXRXMXの形式の別のライブラリー名を作成することができます。QUSRVXRXMXユーザー・ライブラリーのVXRXMXは弊社が引き続きサポートしている前のリリースのバージョン，リリース，およびモディフィケーション・レベルです。 Ｑで始まらない名前をもつ次のライブラリーも保管されます。 #CGULIB #DSULIB #SEULIB #COBLIB #RPGLIB #DFULIB #SDALIB\n*SELECT: SELECT (SELECT) パラメーターで識別されたライブラリーが保管されます。保管ファイルへの保管時，選択基準に指定できるライブラリーは1つだけです。特殊値*SPLFは選択基準には指定できません。\n*USRSPC: コマンド・ユーザー・スペース (CMDUSRSPC) パラメーターに指定されたユーザー・スペース中で識別されるライブラリーが保管されます。保管ファイルに保管する時には，ユーザー・スペースにライブラリーは1つしか指定することはできません。特殊値*SPLFはユーザー・スペースには指定できません。",
+      "inputType": "text",
+      "required": true,
+      "attributes": {
+        "characterSet": "upper",
+        "maxLength": 10
+      },
+      "positional": 1,
+      "maxOccurrences": 300,
+      "basic": true
+    },
+    {
+      "name": "DEV",
+      "description": "装置",
+      "help": "保管操作に使用される装置の名前を指定します。この装置名は，装置記述によってシステム上で既に認識されていなければなりません。\n\nこれは必須パラメーターです。\n\n*SAVF: 保管操作は， 保管ファイル (SAVF) パラメーターに指定された保管ファイルを使用して実行されます。\n*MEDDFN: 保管操作は， 媒体定義 (MEDDFN) パラメーターに指定された媒体定義で識別された装置および媒体を使用して実行されます。",
+      "inputType": "text",
+      "required": true,
+      "attributes": {
+        "characterSet": "upper",
+        "maxLength": 10
+      },
+      "positional": 2,
+      "maxOccurrences": 4,
+      "basic": true
+    },
+    {
+      "name": "VOL",
+      "description": "ボリュームID",
+      "help": "データを保管するボリュームのボリュームIDまたはテープ媒体ライブラリー装置内のテープのカートリッジIDを指定します。ボリュームは，このパラメーターに指定したのと同じ順序で装置に入れなければなりません。\n\n*MOUNTED: データは，装置に入っているボリュームに保管されます。媒体ライブラリー装置の場合には，使用されるボリュームは，テープ・カテゴリー設定(SETTAPCGY)コマンドによって装てんされているカテゴリー中の次のカートリッジです。 注: 光ディスク媒体ライブラリー装置を使用している時には，この値を指定することはできません。",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*MOUNTED",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "positional": 3,
+      "maxOccurrences": 75
+    },
+    {
+      "name": "SEQNBR",
+      "description": "順序番号",
+      "help": "テープが使用された時に，保管操作の開始点として使用する順序番号を指定します。\n\nLIBパラメーターに*NONSYS, *ALLUSR,または*IBMが指定された場合には，ライブラリーのセットの保管操作は，指定された順序番号で開始されます。このセットに最初に保管されたファイルはQFILEファイルです。QFILEファイルには保管されたライブラリーのリストが入っています。\n\n*END: 保管操作は，最初のテープ上の最後の順序番号の後で開始されます。最初のテープがいっぱいになっている場合には，エラー・メッセージが出されて操作は終了します。\n保管操作に使用されるファイルの順序番号を指定してください。",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*END",
+      "attributes": {
+        "characterSet": "upper"
+      }
+    },
+    {
+      "name": "LABEL",
+      "description": "ラベル",
+      "help": "保管操作に使用されるテープ・ボリューム上のデータ・ファイルを識別する名前を指定します。このパラメーターが保管コマンドで使用された場合には，復元コマンドでも同じラベルを指定しなければなりません。\n\n*LIB: ファイル・ラベルは， ライブラリー (LIB) パラメーターに指定されたライブラリーの名前を使用して，システムが作成します。\n保管操作に使用されるデータ・ファイルのデータ・ファイルIDを指定してください。最大17文字を使用することができます。このオプションは，単一ライブラリーの保管操作の場合にのみ有効です。",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*LIB",
+      "attributes": {
+        "characterSet": "upper"
+      }
+    },
+    {
+      "name": "EXPDATE",
+      "description": "ファイル満了日",
+      "help": "保管操作によって作成されるファイルの有効期限を指定します。日付が指定されている場合には，そのファイルは保護されて，指定された有効期限まで上書きできません。",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*PERM",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*PERM",
+          "value": "*PERM"
+        }
+      ]
+    },
+    {
+      "name": "ENDOPT",
+      "description": "媒体の終わりオプション",
+      "help": "保管操作の終了後にテープまたは光ディスク・ボリュームに対して自動的に実行される操作を指定します。複数のボリュームを使用する場合には，このパラメーターは最後に使用されるボリュームにだけ適用されます。その他のすべてのボリュームは，ボリュームの終わりに達するとアンロードされます。",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*REWIND",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*REWIND",
+          "value": "*REWIND",
+          "help": "操作の終了後にテープは自動的に巻き戻されますが，アンロードされません。"
+        },
+        {
+          "label": "*LEAVE",
+          "value": "*LEAVE",
+          "help": "テープは，操作の終了後に巻き戻しまたはアンロードされません。テープ装置の現在の位置に留まります。"
+        },
+        {
+          "label": "*UNLOAD",
+          "value": "*UNLOAD",
+          "help": "テープは操作が終了すると自動的に巻き戻されてアンロードされます。一部の光ディスク装置は操作が終了するとボリュームを排出します。"
+        }
+      ]
+    },
+    {
+      "name": "STRLIB",
+      "description": "開始ライブラリー",
+      "help": "保管操作を開始するライブラリーを指定します。\n\n保管操作中に回復不能媒体エラーが起こった場合には，このパラメーターを使用して，操作を再開することができます。\n\n保管操作再開の基本ステップは次の通りです。\n\nここで，STRLIBおよびOMITLIBパラメーターの ライブラリー名 は正常に保管された最後のライブラリーです。これにより，保管操作は正常に保管された最後のライブラリーの後のライブラリーから始まります。\n\nライブラリーを復元するには，実行されたそれぞれの保管操作ごとに別個の復元操作を実行する必要があります。\n\n*FIRST: 保管操作は， ライブラリー (LIB) パラメーターに指定された最初のライブラリー値から始まります。最初の値が総称名または特殊値であった場合には，保管操作はこの値と一致する最初のライブラリーから始まります。\n保管操作を開始するライブラリーの名前を指定してください。",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*FIRST",
+      "attributes": {
+        "characterSet": "upper",
+        "maxLength": 10
+      }
+    },
+    {
+      "name": "SAVF",
+      "description": "保管ファイル",
+      "help": "保管されたデータを入れるのに使用される保管ファイルを指定します。 消去 (CLEAR) パラメーターで*ALLが指定されないかぎり，保管ファイルは空になっていなければなりません。",
+      "inputType": "group",
+      "required": false,
+      "groupKind": "qualified",
+      "children": [
+        {
+          "name": "SAVF_LIB",
+          "description": "ライブラリー",
+          "help": "*LIBL: 最初に一致するものが見つかるまで，現行スレッドのライブラリー・リスト内のすべてのライブラリーが検索されます。\n*CURLIB: 保管ファイルを見つけるためにスレッドの現行ライブラリーが使用されます。ライブラリー・リストに現行ライブラリー項目が存在しない場合には，QGPLライブラリーが使用されます。\n保管ファイルが入っているライブラリーの名前を指定してください。",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "*LIBL",
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          }
+        },
+        {
+          "name": "SAVF",
+          "description": "保管ファイル",
+          "help": "使用する保管ファイルの名前を指定してください。",
+          "inputType": "text",
+          "required": false,
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          }
+        }
+      ]
+    },
+    {
+      "name": "MEDDFN",
+      "description": "媒体定義",
+      "help": "保管データを入れるのに使用される装置および媒体を識別する媒体定義(*MEDDFN)オブジェクトを指定します。媒体定義の作成および使用の詳細については，ISERIESバックアップおよび回復(SD88-5008)，およびIBM i Information Center(http://www.ibm.com/systems/i/infocenter/)の「プログラミング」カテゴリーの「API」トピック・コレクションの媒体定義作成APIを参照してください。\n\n媒体定義を指定した場合には，VOL, SEQNBR, SAVF,およびOPTFILEパラメーターは指定することができません。ボリュームIDおよび順序番号は，媒体定義に指定します。",
+      "inputType": "group",
+      "required": false,
+      "groupKind": "qualified",
+      "children": [
+        {
+          "name": "MEDDFN_LIB",
+          "description": "ライブラリー",
+          "help": "*LIBL: 最初に一致するものが見つかるまで，現行スレッドのライブラリー・リスト内のすべてのライブラリーが検索されます。\n*CURLIB: スレッドの現行ライブラリーが検索されます。スレッドの現行ライブラリーとして指定されているライブラリーがない場合，QGPLライブラリーが検索されます。\n検索するライブラリーの名前を指定してください。",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "*LIBL",
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          }
+        },
+        {
+          "name": "MEDDFN",
+          "description": "媒体定義",
+          "help": "使用する媒体定義の名前を指定してください。",
+          "inputType": "text",
+          "required": false,
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          }
+        }
+      ]
+    },
+    {
+      "name": "OPTFILE",
+      "description": "光ディスク・ファイル",
+      "help": "保管操作に使用されるボリュームのルート・ディレクトリーで始まる光ディスク・ファイルのパス名を指定します。\n\nパス名を指定するときの詳細については，IBM i Information Center(http://www.ibm.com/systems/i/infocenter/)の「プログラミング」カテゴリーの「制御言語(CL)」トピック・コレクション の「オブジェクトの命名規則」を参照してください。\n\nシステムは，光ディスク・ボリュームの指定されたディレクトリー内に光ディスク・ファイル名を生成します。\n光ディスク・ファイルのパス名を指定してください。",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*",
+          "value": "*",
+          "help": "システムは，光ディスク・ボリュームのルート・ディレクトリー内に光ディスク・ファイル名を生成します。"
+        }
+      ]
+    },
+    {
+      "name": "USEOPTBLK",
+      "description": "最適ブロックの使用",
+      "help": "保管操作で最適ブロック・サイズを使用するかどうかを指定します。",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*YES",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*YES",
+          "value": "*YES",
+          "help": "装置によってサポートされる最適ブロック・サイズが保管コマンドに使用されます。使用するブロック・サイズがすべての装置タイプによってサポートされるブロック・サイズより大きい場合には，次の通りです。 パフォーマンスが向上する場合があります。 作成されるテープ・ファイルは，使用したブロック・サイズをサポートする装置しか互換性がありません。ファイルを使用したのと同じブロック・サイズをサポートする装置に複製中でない限り，テープ複製(DUPTAP)などのコマンドはファイルを複製しません。 DTACPRパラメーターの値が無視されます。"
+        },
+        {
+          "label": "*NO",
+          "value": "*NO",
+          "help": "装置によってサポートされる最適ブロック・サイズは使用されません。保管コマンドでは，すべての装置タイプによってサポートされる省略時のブロック・サイズが使用されます。テープ・ボリュームは，テープ複製(DUPTAP)コマンドを使用して任意の媒体形式に複製することができます。"
+        }
+      ]
+    },
+    {
+      "name": "TGTRLS",
+      "description": "ターゲット・リリース",
+      "help": "オブジェクトを復元して使用しようとしているオペレーティング・システムのリリースを指定します。\n\nターゲット・リリース を指定する時は，形式VXRXMXでリリースを指定します。ここで，VXはバージョン，RXはリリース，MXはモディフィケーション・レベルです。例えば，V5R3M0はバージョン5,リリース3,モディフィケーション・レベル0です。\n\n有効な値は，オペレーティング・システムの現在のバージョン，リリース，およびモディフィケーション・レベルで異なり，リリースが新しくなるたびに変わります。このコマンド・パラメーターのプロンプト時にF4を押して，有効なターゲット・リリースの値のリストを表示することができます。\n\n保管操作を行うシステムとは異なるリリース・レベルのシステムに配布するオブジェクトを保管するように指定するためには，プログラム・オブジェクトの場合とプログラム以外のオブジェクトの場合とでは手順が異なり，またプログラム・オブジェクトが作成されるリリース・レベルによっても手順は異なります。例えば，前のリリースで実行中のシステムに配布するオブジェクトを保管する場合には，次の選択を行うことができます。\n\n次のことができます。",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*CURRENT",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*CURRENT",
+          "value": "*CURRENT"
+        },
+        {
+          "label": "*PRV",
+          "value": "*PRV"
+        }
+      ]
+    },
+    {
+      "name": "UPDHST",
+      "description": "ヒストリー更新",
+      "help": "各保管済みオブジェクトの保管ヒストリーを，この保管操作の日付，時刻，および位置で変更するかどうかを指定します。オブジェクトの保管ヒストリー情報は，オブジェクト記述表示(DSPOBJD)コマンドを使用して表示します。保管ヒストリー情報は，RCVRNG(*LASTSAVE)およびFROMENT(*LASTSAVE)またはFROMENTLRG(*LASTSAVE)がジャーナル処理項目適用(APYJRNCHG)コマンドで使用されると，処理するジャーナル項目はどれかを判別するために使用されます。",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*YES",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*YES",
+          "value": "*YES",
+          "help": "保管された各オブジェクトで最終保管日，時刻，および位置が更新されます。"
+        },
+        {
+          "label": "*NO",
+          "value": "*NO",
+          "help": "保管された各オブジェクトの記述に入っている保管ヒストリー情報は更新されません。 注: UPDHST(*NO)は，回復を目的としない保管操作で使用する必要があります。例えば，保管データをレコードごとに別のシステムに送信して，保管ファイルを即時に削除すると，保管ヒストリー情報が更新されない場合があります。"
+        }
+      ]
+    },
+    {
+      "name": "CLEAR",
+      "description": "消去",
+      "help": "媒体上の活動データを自動的に消去するか置き換えるかを指定します。活動データとは，媒体上の有効期限が切れていないすべてのファイルのことです。テープへの保管の場合には，活動データを消去すると，保管操作で書き込まれた最後のファイルより後の，テープ・ボリューム上のファイルは以後アクセスできなくなります。光ディスクへの保管の場合には，保管操作で書き込まれたファイルを自動的に置き換えてそのボリューム上の他のファイルを活動状態のまま残すか，またはすべての活動ファイルを自動的に消去することができます。消去では，データは削除されず，ファイルが以後アクセスできなくなるだけです。\n\nテープが使用され，SEQNBRパラメーターに順序番号が指定された場合には，その順序番号から最初のテープの消去が開始されます。その最初のテープに続くテープはすべて完全に消去されます。最初のテープ全体を消去するためには，SEQNBR(1)を指定する必要があります。",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*NONE",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*NONE",
+          "value": "*NONE"
+        },
+        {
+          "label": "*ALL",
+          "value": "*ALL"
+        },
+        {
+          "label": "*AFTER",
+          "value": "*AFTER"
+        },
+        {
+          "label": "*REPLACE",
+          "value": "*REPLACE"
+        }
+      ]
+    },
+    {
+      "name": "PRECHK",
+      "description": "オブジェクト事前検査",
+      "help": "次のいずれかが真の場合に，ライブラリーの保管操作を終了するかどうかを指定します。",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*NO",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*NO",
+          "value": "*NO",
+          "help": "ライブラリーに対する保管操作は続行し，保管できるオブジェクトのみを保管します。"
+        },
+        {
+          "label": "*YES",
+          "value": "*YES",
+          "help": "指定されたすべてのオブジェクトが検査された後で1つまたは複数のオブジェクトが保管できない場合には，ライブラリーに対する保管操作はデータが書き出される前に終了します。複数のライブラリーが指定された場合には，保管操作は次のライブラリーから続行します。ただし，PRECHK(*YES)およびSAVACT(*SYNCLIB)が指定され，保管するライブラリーの中に予備検査条件を満たしていないオブジェクトがある場合には，保管操作は終了し，オブジェクトはいずれも保管されません。"
+        }
+      ]
+    },
+    {
+      "name": "SAVACT",
+      "description": "活動状態保管",
+      "help": "オブジェクトを保管中にこれを更新できるかどうかを指定します。",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*NO",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*NO",
+          "value": "*NO",
+          "help": "使用中のオブジェクトは保管されません。保管中のオブジェクトを更新することはできません。"
+        },
+        {
+          "label": "*LIB",
+          "value": "*LIB",
+          "help": "ライブラリー内のオブジェクトは，別のジョブで使用中であっても，保管することができます。ライブラリー中のすべてのオブジェクトが同時にチェックポイントに達し，オブジェクト相互の関係が一貫性のある状態で保管されます。"
+        },
+        {
+          "label": "*SYNCLIB",
+          "value": "*SYNCLIB",
+          "help": "ライブラリー内のオブジェクトは，別のジョブで使用中であっても，保管することができます。保管操作中のすべてのオブジェクトおよびすべてのライブラリーが同時にチェックポイントに達し，それらの相互の関係に一貫性のある状態で保管されます。 注: この値を指定して，多数のライブラリーを保管しようとすると，保管操作ですべてのオブジェクトおよびライブラリーのチェックポイントに達するために長時間を要する可能性があります。"
+        },
+        {
+          "label": "*SYSDFN",
+          "value": "*SYSDFN",
+          "help": "ライブラリー内のオブジェクトは，別のジョブで使用中であっても，保管することができます。ライブラリー中のオブジェクトはそれぞれ異なる時点にチェックポイントに達することがあり，オブジェクト相互の関係が一貫性のある状態にならないことがあります。"
+        }
+      ]
+    },
+    {
+      "name": "SAVACTWAIT",
+      "description": "活動状態保管待ち時間",
+      "help": "保管操作を続行する前に，使用中のオブジェクトまたは変更が保留中になっているトランザクションがコミット境界に達するのを待つ時間の長さを指定します。\n\n使用中の各オブジェクトについては，そのオブジェクトが使用可能になるのを待つ時間の長さを指定します。オブジェクトが指定された時間内使用中のままになっている場合には，そのオブジェクトは保管されません。\n\n一緒にチェックポイント処理されるオブジェクトの各グループごとに，レコードの変更が保留中になっているトランザクションがコミット境界に達するのを待つ時間の長さを指定します。一緒にチェックポイント処理されるオブジェクトは， 活動状態保管 (SAVACT) パラメーターで決定されます。0が指定された場合には，保管中のすべてのオブジェクトがコミット境界になければなりません。その他の値が指定された場合には，保管中のオブジェクトと同じジャーナルにジャーナル処理されたすべてのオブジェクトがコミット境界に達していなければなりません。指定された時間以内にコミット境界に達しない場合には，*NOCMTBDYが指定されていない限り，保管操作は終了します。\n\n部分トランザクションとともに保管されたオブジェクトを復元した場合には，ジャーナル変更を適用または除去(APYJRNCHGまたはRMVJRNCHGコマンド）して，コミット境界に達するまで，そのオブジェクトは使用できません。変更を適用または除去するには，部分トランザクションに関する情報を含むすべてのジャーナル・レシーバーが必要になります。変更を適用または除去するまでは，*NOCMTBDYを指定しない場合であっても，そのオブジェクトの今後の保管には部分トランザクションが組み込まれることになります。\n\n各ライブラリーごとに，保留中になっているその他の変更があるトランザクションがコミット境界に達するのを待つ時間の長さを指定します。その他の保留中の変更には以下のものがあります。\n\nライブラリーについて指定された時間以内にコミット境界に達しない場合には，ライブラリーは保管されません。",
+      "inputType": "group",
+      "required": false,
+      "groupKind": "elements",
+      "children": [
+        {
+          "name": "SAVACTWAIT_E1",
+          "description": "オブジェクト・ロック",
+          "help": "120: システムは，保管操作を続行する前に，それぞれの個別オブジェクト・ロックを120秒まで待ちます。\n*NOMAX: 最大待ち時間が存在していません。\n保管操作を続行する前に，それぞれの個別オブジェクト・ロックを待つ秒数を指定します。",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "120",
+          "attributes": {
+            "characterSet": "upper"
+          }
+        },
+        {
+          "name": "SAVACTWAIT_E2",
+          "description": "保留中のレコード変更",
+          "help": "*LOCKWAIT: システムは，レコードの変更が保留中になっているトランザクションがコミット境界に達するのを，「要素1」に指定された値まで待ちます。\n*NOCMTBDY: システムは，レコードの変更が保留中になっているトランザクションがコミット境界に達することを必要とせずに，オブジェクトを保管します。したがって，オブジェクトは部分トランザクションとともに保管されることがあります。 部分トランザクションとともに保管されたオブジェクトを復元した場合には，ジャーナル変更を適用または除去(APYJRNCHGまたはRMVJRNCHGコマンド）して，コミット境界に達するまで，そのオブジェクトは使用できません。変更を適用または除去するには，部分トランザクションに関する情報を含むすべてのジャーナル・レシーバーが必要になります。変更を適用または除去するまでは，*NOCMTBDYを指定しない場合であっても，そのオブジェクトの今後の保管には部分トランザクションが組み込まれることになります。\n*NOMAX: 最大待ち時間が存在していません。\nレコードの変更が保留中になっているトランザクションがコミット境界に達するのを待つ秒数を指定します。",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "*LOCKWAIT",
+          "attributes": {
+            "characterSet": "upper"
+          }
+        },
+        {
+          "name": "SAVACTWAIT_E3",
+          "description": "他の保留中の変更",
+          "help": "*LOCKWAIT: システムは，上記のトランザクションのタイプがコミット境界に達するのを，「要素1」に指定された値まで待ちます。\n*NOMAX: 最大待ち時間が存在していません。\n上記のトランザクションのタイプがコミット境界に達するのを待つ秒数を指定します。",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "*LOCKWAIT",
+          "attributes": {
+            "characterSet": "upper"
+          }
+        }
+      ]
+    },
+    {
+      "name": "SAVACTMSGQ",
+      "description": "活動状態保管メッセージ待ち行列",
+      "help": "ライブラリーのチェックポイント処理が完了していることをユーザーに通知するために保管操作で使用されるメッセージ待ち行列を指定します。 活動状態保管 (SAVACT) パラメーターに*SYSDFNまたは*LIB値が指定されている時に，保管されるライブラリーごとに別々のメッセージが送られます。SAVACTパラメーターに*SYNCLIBが指定された場合には，保管操作ですべてのライブラリーに1つのメッセージが送られます。\n\nこのパラメーターは，既知の一貫性のある境界でオブジェクトを保管して，復元操作の後の追加回復手順を避けるために使用することができます。アプリケーションは，チェックポイント処理完了メッセージを受信するまで停止することができます。",
+      "inputType": "group",
+      "required": false,
+      "groupKind": "qualified",
+      "children": [
+        {
+          "name": "SAVACTMSGQ_LIB",
+          "description": "ライブラリー",
+          "help": "*LIBL: 最初に一致するものが見つかるまで，現行スレッドのライブラリー・リスト内のすべてのライブラリーが検索されます。\n*CURLIB: メッセージ待ち行列を見つけるために，ジョブの現行ライブラリーが使用されます。ジョブの現行ライブラリーとして指定されているライブラリーがない場合は，QGPLライブラリーが使用されます。\nメッセージ待ち行列が入っているライブラリーの名前を指定してください。",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "*LIBL",
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          }
+        },
+        {
+          "name": "SAVACTMSGQ",
+          "description": "活動状態保管メッセージ待ち行列",
+          "help": "使用するメッセージ待ち行列の名前を指定します。\n\n指定できる特殊値: *NONE, *WRKSTN",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "*NONE",
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          }
+        }
+      ]
+    },
+    {
+      "name": "SYNCID",
+      "description": "同期 ID",
+      "help": "この活動状態保管操作が関係する同期チェックポイントの名前を指定します。同期チェックポイントは，保管同期の開始 (STRSAVSYNC)コマンドによって既に開始しておく必要があります。\n\n*NONE: この活動状態保管操作のチェックポイントは，他のどの活動状態保管操作とも同期されていません。\n同期チェックポイントの名前を指定します。名前を指定する場合には， 活動状態保管 (SAVACT) パラメーターに値*SYNCLIBを指定する必要もあります。 注: 名前を指定する場合には， 活動状態保管待ち時間 (SAVACTWAIT) パラメーターの 要素 2: 保留中のレコード変更 で使用される値が，関係しているすべての保管操作のなかで最大の値になります。ただし，関係しているいずれかの保管操作に*NOCMTBDYが指定されている場合には，関係しているすべての保管操作で*NOCMTBDYを指定する必要があります。",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*NONE",
+      "attributes": {
+        "characterSet": "upper",
+        "maxLength": 10
+      }
+    },
+    {
+      "name": "ACCPTH",
+      "description": "アクセス・パス保管",
+      "help": "保管しようとしている物理ファイルに従属する論理ファイル・アクセス・パスも一緒に保管されるかどうかを指定します。アクセス・パスが保管されるのは，次の場合だけです。\n\nシステムでは，アクセス・パスの保全性を確認するための検査が行われます。システムによって相違が見つかった場合には，アクセス・パスが再作成される結果となります。\n\n各物理ファイルと一緒に保管される論理ファイル・アクセス・パスの数を示す通知メッセージが送られます。アクセス・パスが作成される物理ファイルはすべて同じライブラリー内になければなりません。このパラメーターは，論理ファイル・オブジェクトを保管するものではなく，アクセス・パスの保管を制御するだけです。保管されたアクセス・パスの復元の詳細は，ISERIESバックアップおよび回復(SD88-5008)にあります。",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*SYSVAL",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*SYSVAL",
+          "value": "*SYSVAL"
+        },
+        {
+          "label": "*NO",
+          "value": "*NO"
+        },
+        {
+          "label": "*YES",
+          "value": "*YES"
+        }
+      ]
+    },
+    {
+      "name": "SAVFDTA",
+      "description": "保管ファイル・データ",
+      "help": "保管ファイル・オブジェクトの場合に，保管ファイルの記述を保管するか，あるいは保管ファイルの記述と内容の両方とも保管するかを指定します。",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*YES",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*YES",
+          "value": "*YES",
+          "help": "保管ファイルの記述と内容を保管します。"
+        },
+        {
+          "label": "*NO",
+          "value": "*NO",
+          "help": "保管ファイルの記述だけを保管します。"
+        }
+      ]
+    },
+    {
+      "name": "SPLFDTA",
+      "description": "スプール・ファイル・データ",
+      "help": "保管される出力待ち行列のスプール・ファイル・データおよび属性を保管するかどうかを指定します。",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*NONE",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*NONE",
+          "value": "*NONE",
+          "help": "スプール・ファイル・データは保管されません。"
+        },
+        {
+          "label": "*ALL",
+          "value": "*ALL",
+          "help": "保管される出力待ち行列ごとに，出力待ち行列で使用可能なスプール・ファイル・データがすべて保管されます。"
+        }
+      ]
+    },
+    {
+      "name": "QDTA",
+      "description": "待ち行列データ",
+      "help": "待ち行列オブジェクトの場合に，待ち行列の記述を保管するか，あるいは待ち行列の記述と内容の両方とも保管するかを指定します。",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*NONE",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*NONE",
+          "value": "*NONE",
+          "help": "待ち行列の記述だけが保管されます。"
+        },
+        {
+          "label": "*DTAQ",
+          "value": "*DTAQ",
+          "help": "標準データ待ち行列の記述と内容を保管します。分散データ管理機能(DDM)データ待ち行列の記述だけが保管されます。"
+        }
+      ]
+    },
+    {
+      "name": "PVTAUT",
+      "description": "専用権限",
+      "help": "保管されたオブジェクトで，専用権限を保管するかどうかを指定します。専用権限の保管によって，オブジェクトを保管する時間が増大しますが，オブジェクトまたはオブジェクト・グループのリカバリーを単純化できます。システム全体のリカバリーを単純化するわけではありません。",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*NO",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*NO",
+          "value": "*NO",
+          "help": "どの専用権限も保管されません。"
+        },
+        {
+          "label": "*YES",
+          "value": "*YES",
+          "help": "保管される各オブジェクトについて，専用権限が保管されます。 注: この値を指定するには，システム保管(*SAVSYS)またはすべてのオブジェクト(*ALLOBJ)特殊権限が必要です。"
+        }
+      ]
+    },
+    {
+      "name": "STG",
+      "description": "記憶域",
+      "help": "保管しようとしているライブラリー中の指定されたメンバー（保管ファイルを除く），モジュール，プログラム，サービス・プログラム，SQLパッケージ，およびジャーナル・レシーバーのデータ部分によって占められているシステム記憶域が保管操作の一部として解放されるかどうかを指定します。これらのオブジェクトのデータ部分のみが解放され，オブジェクトの記述は解放されません。",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*KEEP",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*KEEP",
+          "value": "*KEEP",
+          "help": "保管しようとしているオブジェクトのデータ部分によって占められている記憶域は解放されません。"
+        },
+        {
+          "label": "*FREE",
+          "value": "*FREE",
+          "help": "保管しようとしている指定されたオブジェクトのデータ部分によって占められている記憶域が保管操作の一部として解放されます。ライブラリー中のすべてのオブジェクトが占めている記憶域は，そのライブラリー中のすべてのオブジェクトが正常に保管された後でのみ解放されます。 注: 起こる可能性があるプログラムの異常終了を防止するためには，*FREEが指定された時に，保管しようとしているプログラムがシステムで実行中であってはなりません。"
+        }
+      ]
+    },
+    {
+      "name": "DTACPR",
+      "description": "データ圧縮",
+      "help": "データ圧縮を使用するかどうかを指定します。システム上で他のジョブが活動状態のときに，ソフトウェア圧縮を使用した保管が行われる場合，全体的なシステム・パフォーマンスが影響を受ける場合があります。\n\nこのパラメーターに*YESが指定され，COMPACTパラメーターに*DEVが指定された場合には，装置上でサポートされていれば，装置データの短縮と装置データの圧縮の両方が実行されます。",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*DEV",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*DEV",
+          "value": "*DEV",
+          "help": "テープへの保管で，ターゲット装置が圧縮をサポートしている場合には，ハードウェアの圧縮が実行されます。そうでない場合には，データ圧縮は実行されません。"
+        },
+        {
+          "label": "*NO",
+          "value": "*NO",
+          "help": "データ圧縮は実行されません。"
+        },
+        {
+          "label": "*YES",
+          "value": "*YES",
+          "help": "テープへの保管で，ターゲット装置が圧縮をサポートしている場合には，ハードウェアの圧縮が実行されます。圧縮がサポートされていないか，あるいは保管データが光ディスク媒体または保管ファイルに書き出される場合には，ソフトウェア圧縮が実行されます。低ソフトウェア圧縮は，中間ソフトウェア圧縮を使用する光ディスクDVD以外のすべての装置に使用されます。"
+        },
+        {
+          "label": "*LOW",
+          "value": "*LOW",
+          "help": "保管操作が保管ファイルまたは光ディスクに対する操作の場合には，ソフトウェア・データ圧縮はSNAアルゴリズムで実行されます。通常，低圧縮はより高速であり，圧縮されるデータは中間および高圧縮が使用された場合より大きくなります。 注: この値はテープの場合には無効です。"
+        },
+        {
+          "label": "*MEDIUM",
+          "value": "*MEDIUM",
+          "help": "保管操作が保管ファイルまたは光ディスクに対する操作の場合には，ソフトウェア・データ圧縮はTERSEアルゴリズムで実行されます。通常，中間圧縮は低圧縮より低速になりますが，高圧縮よりは高速となります。圧縮されるデータは通常，低圧縮が使用された場合よりは小さくなり，高圧縮が使用された場合よりは大きくなります。 注: この値はテープの場合には無効です。"
+        },
+        {
+          "label": "*HIGH",
+          "value": "*HIGH",
+          "help": "保管操作が保管ファイルまたは光ディスクに対する操作の場合には，ソフトウェア・データ圧縮はLZ1アルゴリズムで実行されます。通常，高圧縮はより低速であり，圧縮されるデータは低および中間圧縮が使用された場合より小さくなります。 注: この値はテープの場合には無効です。"
+        }
+      ]
+    },
+    {
+      "name": "COMPACT",
+      "description": "データ短縮",
+      "help": "装置データ短縮を実行するかどうかを指定します。\n\nDTACPRパラメーターに*YESが指定され，このパラメーターに*DEVが指定された場合には，装置上でサポートされていれば，装置データの短縮と装置データの圧縮の両方が実行されます。",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*DEV",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*DEV",
+          "value": "*DEV",
+          "help": "データがテープに保管され， 装置 (DEV) パラメーターに指定したすべてのテープ装置が短縮機能をサポートしている場合には，装置データ短縮が実行されます。 注: *DEVが データ圧縮 (DTACPR) パラメーターとこのパラメーターの両方に指定されていて，装置データの短縮が装置上でサポートされている場合には，装置データの短縮だけが実行されます。そうでない場合には，装置上でサポートされていれば，データ圧縮が実行されます。 DTACPRパラメーターに*YESが指定され，このパラメーターに*DEVが指定された場合には，装置上でサポートされていれば，装置データの短縮と装置データの圧縮の両方が実行されます。"
+        },
+        {
+          "label": "*NO",
+          "value": "*NO",
+          "help": "装置データの短縮は実行されません。"
+        }
+      ]
+    },
+    {
+      "name": "OMITLIB",
+      "description": "除外するライブラリー",
+      "help": "保管操作から除外する，1つまたは複数のライブラリーの名前またはライブラリーの各グループの総称名を指定します。\n\n*NONE: どのライブラリーも保管操作から除外されません。\n*USRSPC: コマンド・ユーザー・スペース (CMDUSRSPC) パラメーターに指定されたユーザー・スペース中で識別されるライブラリーは，保管操作から除外されます。",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*NONE",
+      "attributes": {
+        "characterSet": "upper",
+        "maxLength": 10
+      },
+      "maxOccurrences": 300
+    },
+    {
+      "name": "OMITOBJ",
+      "description": "除外するオブジェクト",
+      "help": "操作から除外するオブジェクトを指定します。最大300までのオブジェクトまたは総称オブジェクトの値を指定することができます。\n\nこのコマンドについてプロンプトを出す時にオブジェクト・タイプの完全なリストを表示するには，このパラメーターのフィールドにカーソルを位置付け，F4（プロンプト）を押します。オブジェクト・タイプの記述については，IBM i Information Center(http://www.ibm.com/systems/i/infocenter/)の「プログラミング」カテゴリーの「制御言語(CL)」トピック・コレクションの「オブジェクト・タイプ」を参照してください。",
+      "inputType": "group",
+      "required": false,
+      "groupKind": "elements",
+      "singleValues": [
+        "*USRSPC"
+      ],
+      "children": [
+        {
+          "name": "OMITOBJ_E1",
+          "description": "オブジェクト",
+          "inputType": "group",
+          "required": false,
+          "groupKind": "qualified",
+          "children": [
+            {
+              "name": "OMITOBJ_LIB",
+              "description": "ライブラリー",
+              "help": "*ALL: 指定されたオブジェクトは，操作部位のすべてのライブラリーから除外されます。\n除外するオブジェクトが入っているライブラリーの総称名を指定します。 注: 総称名は，1つまたは複数の文字の後にアスタリスク(*)が付いた文字ストリングとして指定されます。総称名を指定した場合には，その総称オブジェクト名と同じ接頭部を持つ名前のついたすべてのオブジェクトが選択されます。\n操作から除外するオブジェクトが入っているライブラリーの名前を指定します。",
+              "inputType": "text",
+              "required": false,
+              "defaultValue": "*ALL",
+              "attributes": {
+                "characterSet": "upper",
+                "maxLength": 10
+              }
+            },
+            {
+              "name": "OMITOBJ",
+              "description": "オブジェクト",
+              "help": "*NONE: 操作から除外されるオブジェクトはありません。\n*ALL: 指定されたオブジェクト・タイプのすべてのオブジェクトが操作から除外されます。\n除外するオブジェクトの総称名を指定します。 注: 総称名は，1つまたは複数の文字の後にアスタリスク(*)が付いた文字ストリングとして指定されます。総称名を指定した場合には，その総称オブジェクト名と同じ接頭部を持つ名前のついたすべてのオブジェクトが選択されます。\n操作から除外するオブジェクトの名前を指定します。",
+              "inputType": "text",
+              "required": false,
+              "defaultValue": "*NONE",
+              "attributes": {
+                "characterSet": "upper",
+                "maxLength": 10
+              }
+            }
+          ]
+        },
+        {
+          "name": "OMITOBJ_E2",
+          "description": "オブジェクト・タイプ",
+          "help": "*ALL: オブジェクト名に指定された値に基づいて，すべてのオブジェクト・タイプが操作から除外されます。\n操作から除外するオブジェクトのオブジェクト・タイプを指定します。 このコマンドについてプロンプトを出す時にオブジェクト・タイプの完全なリストを表示するには，このパラメーターのフィールドにカーソルを位置付け，F4（プロンプト）を押します。オブジェクト・タイプの記述については，IBM i Information Center(http://www.ibm.com/systems/i/infocenter/)の「プログラミング」カテゴリーの「制御言語(CL)」トピック・コレクションの「オブジェクト・タイプ」を参照してください。",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "*ALL",
+          "attributes": {
+            "characterSet": "upper"
+          }
+        }
+      ],
+      "maxOccurrences": 300
+    },
+    {
+      "name": "SELECT",
+      "description": "SELECT",
+      "help": "保管するオブジェクトの選択基準を指定します。 ライブラリー (LIB) パラメーターに指定されたライブラリー内のオブジェクトから選択できます。\n\n選択したオブジェクトを保管操作に含めるか，またはこの操作から除外するかを指定します。\n\nこのコマンドについてプロンプトを出す時にオブジェクト・タイプの完全なリストを表示するには，このパラメーターのフィールドにカーソルを位置付け，F4（プロンプト）を押します。オブジェクト・タイプの記述については，IBM i Information Center(http://www.ibm.com/systems/i/infocenter/)の「プログラミング」カテゴリーの「制御言語(CL)」トピック・コレクションの「オブジェクト・タイプ」を参照してください。\n\n選択するデータベース・ファイル・メンバーを指定します。\n\n*ALLが指定された場合，前の要素によって選択されたオブジェクトが含まれるか，または除外されます。\n\n*ALL以外の値が指定された場合，前の要素によって選択されたオブジェクトが含まれます。そのオブジェクトがデータベース・ファイルでない場合でも同様です。選択されたオブジェクトがデータベース・ファイルの場合は，選択されたファイル・メンバーが含まれるか，あるいは除外されます。",
+      "inputType": "group",
+      "required": false,
+      "groupKind": "elements",
+      "singleValues": [
+        "*USRSPC"
+      ],
+      "children": [
+        {
+          "name": "SELECT_E1",
+          "description": "組み込みまたは除外",
+          "inputType": "dropdown",
+          "required": false,
+          "defaultValue": "*INCLUDE",
+          "attributes": {
+            "characterSet": "upper"
+          },
+          "options": [
+            {
+              "label": "*USRSPC",
+              "value": "*USRSPC",
+              "help": "コマンド・ユーザー・スペース (CMDUSRSPC) パラメーターに指定されたユーザー・スペース中で識別される選択基準が使用されます。"
+            },
+            {
+              "label": "*INCLUDE",
+              "value": "*INCLUDE",
+              "help": "選択したオブジェクトが保管されます(*OMITの指定によって一時変更された場合，および 除外するライブラリー (OMITLIB) パラメーターまたは 除外するオブジェクト (OMITOBJ) パラメーターによって除外された場合を除く）。"
+            },
+            {
+              "label": "*OMIT",
+              "value": "*OMIT",
+              "help": "選択したオブジェクトは保管操作に含まれません。"
+            }
+          ]
+        },
+        {
+          "name": "SELECT_E2",
+          "description": "オブジェクト",
+          "inputType": "group",
+          "required": false,
+          "groupKind": "qualified",
+          "children": [
+            {
+              "name": "SELECT_LIB",
+              "description": "ライブラリー",
+              "help": "*ALL: ライブラリー (LIB) パラメーターに指定されたすべてのライブラリー名が選択されます。\n選択するライブラリーの総称名を指定してください。\n選択するライブラリーの名前を指定してください。",
+              "inputType": "text",
+              "required": false,
+              "defaultValue": "*ALL",
+              "attributes": {
+                "characterSet": "upper",
+                "maxLength": 10
+              }
+            },
+            {
+              "name": "SELECT",
+              "description": "オブジェクト",
+              "help": "*ALL: すべてのオブジェクト名が選択されます。\n選択するオブジェクトの総称名を指定してください。 注: 総称名は，1つまたは複数の文字の後にアスタリスク(*)が付いた文字ストリングとして指定されます。総称名を指定した場合には，その総称オブジェクト名と同じ接頭部を持つ名前のついたすべてのオブジェクトが選択されます。\n選択されるオブジェクトの名前を指定してください。",
+              "inputType": "text",
+              "required": false,
+              "defaultValue": "*ALL",
+              "attributes": {
+                "characterSet": "upper",
+                "maxLength": 10
+              }
+            }
+          ]
+        },
+        {
+          "name": "SELECT_E3",
+          "description": "オブジェクト・タイプ",
+          "help": "*ALL: すべてのオブジェクト・タイプが選択されます。\n選択するオブジェクト・タイプを指定してください。 このコマンドについてプロンプトを出す時にオブジェクト・タイプの完全なリストを表示するには，このパラメーターのフィールドにカーソルを位置付け，F4（プロンプト）を押します。オブジェクト・タイプの記述については，IBM i Information Center(http://www.ibm.com/systems/i/infocenter/)の「プログラミング」カテゴリーの「制御言語(CL)」トピック・コレクションの「オブジェクト・タイプ」を参照してください。",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "*ALL",
+          "attributes": {
+            "characterSet": "upper"
+          }
+        },
+        {
+          "name": "SELECT_E4",
+          "description": "オブジェクトの属性",
+          "help": "*ALL: すべてのオブジェクト属性が選択されます。\n*BLANK: 属性値がないオブジェクトのみが選択されます。\n選択するオブジェクトの属性を指定してください。\n選択するオブジェクトの総称属性を指定してください。",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "*ALL",
+          "attributes": {
+            "characterSet": "upper"
+          }
+        },
+        {
+          "name": "SELECT_E5",
+          "description": "ファイル・メンバー",
+          "help": "*ALL: すべてのファイル・メンバーが選択されます。*OMIT指定の場合，選択されたファイルまたはオブジェクトも除外されます。\n*ALLMBR: すべてのファイル・メンバーが選択されます。*OMIT指定の場合，選択されたファイルまたはオブジェクトが含まれ，すべてのファイル・メンバーが除外されます。\n選択するファイル・メンバーの総称名を指定してください。選択されたファイルまたはオブジェクトに指定のメンバーが含まれていない場合でも，そのファイルまたはオブジェクトが含まれます。\n選択するファイル・メンバーの名前を指定してください。選択されたファイルまたはオブジェクトに指定のメンバーが含まれていない場合でも，そのファイルまたはオブジェクトが含まれます。",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "*ALL",
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          }
+        }
+      ],
+      "maxOccurrences": 300
+    },
+    {
+      "name": "ASPDEV",
+      "description": "ASP装置",
+      "help": "保管操作に組み込まれる補助記憶域プール(ASP)装置を指定します。このパラメーターは，OBJパラメーターに基づいてSAVに適格のオブジェクトのリストをサブセット化するのに使用されます。\n\n*: 操作には，システムASP (ASP番号1),すべての基本ユーザーASP (ASP番号2から32),さらに現行スレッドにASPグループがある場合には．そのASPグループ中のすべての独立ASPが組み込まれます。\n*SYSBAS: システムASPおよびすべての基本ユーザーASPが保管操作に組み込まれます。\n*CURASPGRP: 現行スレッドにASPグループがある場合には，そのASPグループ中のすべての独立ASPが保管操作に組み込まれます。\n保管操作に組み込むASP装置の名前を指定します。",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*",
+      "attributes": {
+        "characterSet": "upper",
+        "maxLength": 10
+      }
+    },
+    {
+      "name": "OUTPUT",
+      "description": "出力",
+      "help": "保管済みオブジェクトに関する情報が含まれているリストを作成するかどうかを指定します。この情報は，ジョブのスプール出力で印刷するか，あるいはデータベース・ファイルに出力することができます。",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*NONE",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*NONE",
+          "value": "*NONE",
+          "help": "出力リストは作成されません。"
+        },
+        {
+          "label": "*PRINT",
+          "value": "*PRINT",
+          "help": "出力はジョブのスプール出力で印刷されます。"
+        },
+        {
+          "label": "*OUTFILE",
+          "value": "*OUTFILE",
+          "help": "出力は， 出力を受け取るファイル (OUTFILE) パラメーターで指定されたデータベース・ファイルに送られます。"
+        }
+      ]
+    },
+    {
+      "name": "OUTFILE",
+      "description": "出力を受け取るファイル",
+      "help": "コマンドの出力が送られるデータベース・ファイルを指定します。ファイルが存在しない場合には，このコマンドによって，指定されたライブラリーにデータベース・ファイルが作成されます。ファイルが作成される場合には，ファイルの共通権限は，ファイルが作成されるライブラリーに指定された作成権限と同じものになります。ライブラリーの作成権限を表示するには，ライブラリー記述表示(DSPLIBD)コマンドを使用してください。",
+      "inputType": "group",
+      "required": false,
+      "groupKind": "qualified",
+      "children": [
+        {
+          "name": "OUTFILE_LIB",
+          "description": "ライブラリー",
+          "help": "*LIBL: ファイルを見つけるために，ライブラリー・リストが使用されます。ファイルが見つからない場合には，現行ライブラリーにファイルが作成されます。現行ライブラリーが存在していない場合には，ファイルはQGPLライブラリーに作成されます。\n*CURLIB: ファイルを見つけるためにスレッドの現行ライブラリーが使用されます。スレッドの現行ライブラリーとして指定されているライブラリーがない場合，QGPLライブラリーが使用されます。\n検索するライブラリーの名前を指定してください。",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "*LIBL",
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          }
+        },
+        {
+          "name": "OUTFILE",
+          "description": "出力を受け取るファイル",
+          "help": "コマンド出力が送られる先のデータベース・ファイルの名前を指定してください。",
+          "inputType": "text",
+          "required": false,
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          }
+        }
+      ]
+    },
+    {
+      "name": "OUTMBR",
+      "description": "出力メンバー・オプション",
+      "help": "出力 (OUTPUT) パラメーターに*OUTFILEが指定された時に，出力を指示するデータベース・ファイル・メンバーの名前を指定します。\n\nメンバーが存在している場合には，レコードを既存メンバーの終わりに追加するか，既存メンバーを消去してレコードを追加することができます。",
+      "inputType": "group",
+      "required": false,
+      "groupKind": "elements",
+      "children": [
+        {
+          "name": "OUTMBR_E1",
+          "description": "出力を受け取るメンバー",
+          "help": "*FIRST: ファイル内の最初のメンバーが出力を受け取ります。OUTMBR(*FIRST)が指定されていて，メンバーが存在していない場合には，システムが 出力を受け取るファイル (OUTFILE) パラメーターに指定されたファイルの名前を使用してメンバーを作成します。\n出力を受け取るファイル・メンバーの名前を指定してください。OUTMBR（メンバー名）が指定され，そのメンバーが存在しない場合，システムがメンバーを作成します。 メンバーが存在している場合には，レコードを既存メンバーの終わりに追加するか，既存メンバーを消去してレコードを追加することができます。",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "*FIRST",
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          }
+        },
+        {
+          "name": "OUTMBR_E2",
+          "description": "レコードの置き換えまたは追加",
+          "inputType": "dropdown",
+          "required": false,
+          "defaultValue": "*REPLACE",
+          "attributes": {
+            "characterSet": "upper"
+          },
+          "options": [
+            {
+              "label": "*REPLACE",
+              "value": "*REPLACE",
+              "help": "指定したデータベース・ファイル・メンバー中に既存のレコードは，新規レコードで置き換えられます。"
+            },
+            {
+              "label": "*ADD",
+              "value": "*ADD",
+              "help": "新規レコードが指定されたデータベース・ファイル・メンバーの既存情報に追加されます。"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "INFTYPE",
+      "description": "出力情報のタイプ",
+      "help": "印刷するか，データベース・ファイルに向ける情報のタイプを指定します。",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*OBJ",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*OBJ",
+          "value": "*OBJ",
+          "help": "リストには，保管するように要求された各オブジェクトの項目が入ります。"
+        },
+        {
+          "label": "*LIB",
+          "value": "*LIB",
+          "help": "リストには，保管するように要求された各ライブラリーのライブラリー項目が入ります。"
+        },
+        {
+          "label": "*MBR",
+          "value": "*MBR",
+          "help": "リストには，保管するように要求された各オブジェクトの項目，データベース・ファイル・メンバー，およびスプール・ファイルが入ります。"
+        },
+        {
+          "label": "*ERR",
+          "value": "*ERR",
+          "help": "リストには，コマンド，各ライブラリーの項目，および正常に保管されなかった各オブジェクトの項目に関する情報が入ります。"
+        }
+      ]
+    },
+    {
+      "name": "CMDUSRSPC",
+      "description": "コマンド・ユーザー・スペース",
+      "help": "このコマンドに*USRSPCが指定されたパラメーターに対して値を入れたユーザー・スペースを指定します。このユーザー・スペースには，パラメーターごとに32767までのリスト値が許可されていますが，コマンド・パラメーターには300までしかリスト値が許可されていません。ユーザー・スペースは，オブジェクト・リスト保管(QSRSAVO) APIによって使用されるフォーマットでパラメーターを定義しなければなりません。",
+      "inputType": "group",
+      "required": false,
+      "groupKind": "qualified",
+      "children": [
+        {
+          "name": "CMDUSRSPC_LIB",
+          "description": "ライブラリー",
+          "help": "*LIBL: 最初に一致するものが見つかるまで，現行スレッドのライブラリー・リスト内のすべてのライブラリーが検索されます。\n*CURLIB: ユーザー・スペースを見つけるために，ジョブの現行ライブラリーが使用されます。ジョブの現行ライブラリーとして指定されているライブラリーがない場合は，QGPLライブラリーが使用されます。\nユーザー・スペースが入っているライブラリーの名前を指定します。",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "*LIBL",
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          }
+        },
+        {
+          "name": "CMDUSRSPC",
+          "description": "コマンド・ユーザー・スペース",
+          "help": "このコマンドに*USRSPCが指定されたパラメーターに対して値を入れたユーザー・スペースの名前を指定します。",
+          "inputType": "text",
+          "required": false,
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          }
+        }
+      ]
+    },
+    {
+      "name": "SORT",
+      "description": "ソート方法",
+      "help": "ライブラリー (LIB) パラメーターに指定されたライブラリーが保管される順序を指定します。LIBパラメーターに*NONSYSまたは*ALLUSRが指定された場合，ライブラリーQSYS2, QGPL, QUSRSYS,およびQSYS2XXXXX（ここで，XXXXXは独立ASP番号です）が最初に保管されます（それらのライブラリーがＡＳＰＤＥＶパラメーターで指定されたＡＳＰ上にある場合）。\n\n*NAME: ライブラリーは，LIBパラメーターに名前が指定された順序で保管されます。総称値または特殊値ごとに，独立ASP上のライブラリーは，システムおよび基本ユーザーASP上のライブラリーより前に保管されます。同じASP上のライブラリーは，ライブラリー名のアルファベット順に保管されます。\n*SIZE: ライブラリーは，合計ライブラリー・サイズ順に最大から最小へと保管されます。これによって，保管操作のパフォーマンスを向上させることができます。",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*NAME",
+      "attributes": {
+        "characterSet": "upper",
+        "maxLength": 10
+      }
+    }
+  ],
+  "threadSafe": false,
+  "environment": "すべての環境 (*ALL)",
+  "restrictions": [
+    "システム保管(*SAVSYS)特殊権限または以下のオブジェクト権限が必要です。 指定された各ライブラリーに対する読み取り(*READ)権限，あるいはその所有者であること ライブラリー内の各オブジェクトに対するオブジェクト存在(*OBJEXIST)権限（スプール・ファイル・データの場合，出力待ち行列に対する*OBJEXIST権限）",
+    "*SAVSYS特殊権限がない場合には，ユーザーが権限を持っているライブラリーおよびオブジェクトのみが保管されます。",
+    "テープまたは光ディスク・ボリュームに保管する場合には，その関連した装置記述に対する使用(*USE)権限が必要です。",
+    "保管ファイルに保管する場合には，その保管ファイルに対する追加(*ADD)および使用(*USE)権限が必要です。",
+    "媒体定義を使用する場合には，その媒体定義に対する*USE権限および媒体定義が入っているライブラリーに対する実行(*EXECUTE)権限が必要です。",
+    "OUTFILEパラメーターを使用して既存のデータベース・ファイルに保管する場合には，その出力ファイル・ライブラリーに対する*EXECUTE権限が必要です。",
+    "「活動状態保管」を使用しない限り，保管中のライブラリーまたはその中のオブジェクトはどれも，保管操作の実行時に実行中のジョブによって更新することができません。",
+    "SAVFDTA(*YES)を指定して，保管ファイルの内容を同一保管ファイルに保管する場合には，保管ファイルの記述だけが保管されます。",
+    "保管ファイル・データ (SAVFDTA) パラメーターに*YESを指定することによって保管ファイルの内容を保管した場合には，そこに入っているオブジェクトを復元する前に，保管ファイルを復元しなければなりません。",
+    "コマンド・ユーザー・スペース (CMDUSRSPC) パラメーターを使用する場合には，そのユーザー・スペースに対する*USE権限およびユーザー・スペース・ライブラリーに対する*EXECUTE権限が必要です。"
+  ],
+  "examples": [
+    {
+      "code": "SAVLIB LIB(JOE) DEV(TAP01)"
+    },
+    {
+      "code": "SAVLIB LIB(QGPL) DEV(OPT01) VOL(ABC DEF GHI)"
+    },
+    {
+      "code": "SAVLIB LIB(CUSTDATA) DEV(TAP01) VOL(CUSTNM CUSTAD) STG(*FREE)"
+    },
+    {
+      "code": "SAVLIB LIB(USRLIB) DEV(TAP01 TAP02 TAP03) VOL(USRA USRB USRC USRD) ENDOPT(*UNLOAD)"
+    },
+    {
+      "code": "SAVLIB LIB(USRLIB) DEV(*MEDDFN) MEDDFN(LIBA/MEDDFNA)"
+    },
+    {
+      "code": "SAVLIB LIB(LIB1) DEV(TAP01) LABEL(MONDAYBACKUP)"
+    },
+    {
+      "code": "SAVLIB LIB(*NONSYS) DEV(TAP01 TAP02) STRLIB(MIKESLIB) ASPDEV(*SYSBAS)"
+    },
+    {
+      "code": "SAVLIB LIB(*ALLUSR) DEV(TAP01) ASPDEV(*CURASPGRP)"
+    },
+    {
+      "code": "SAVLIB LIB(MYLIB) DEV(TAP01) SPLFDTA(*ALL)"
+    }
+  ],
+  "errorMessages": [
+    {
+      "id": "CPF3701",
+      "text": "&1個のオブジェクトが&3から保管されました。&2が保管されていません。"
+    },
+    {
+      "id": "CPF3703",
+      "text": "&3の&2 &1は保管されなかった。"
+    },
+    {
+      "id": "CPF3708",
+      "text": "&2の保管ファイル&1が小さすぎる。"
+    },
+    {
+      "id": "CPF3709",
+      "text": "テープ装置は同じ密度をサポートしていない。"
+    },
+    {
+      "id": "CPF3727",
+      "text": "装置名リストで重複する装置&1が指定された。"
+    },
+    {
+      "id": "CPF3728",
+      "text": "装置&1が他の装置と一緒に指定されている。"
+    },
+    {
+      "id": "CPF3730",
+      "text": "ライブラリー&3の&2 &1は認可されていない。"
+    },
+    {
+      "id": "CPF3731",
+      "text": "ライブラリー&3の&2 &1を使用することができない。"
+    },
+    {
+      "id": "CPF3733",
+      "text": "&3の&2 &1で前に損傷が起こっている。"
+    },
+    {
+      "id": "CPF3735",
+      "text": "ユーザー・プロファイル&1の記憶域が限界を超えた。"
+    },
+    {
+      "id": "CPF3738",
+      "text": "保管または復元に使用した装置&1に損傷がある。"
+    },
+    {
+      "id": "CPF3749",
+      "text": "ライブラリー&2からオブジェクトが保管されませんでした。"
+    },
+    {
+      "id": "CPF3751",
+      "text": "保管されなかったライブラリーがある。"
+    },
+    {
+      "id": "CPF3767",
+      "text": "装置&1が見つからない。"
+    },
+    {
+      "id": "CPF3768",
+      "text": "装置&1はコマンドに対して正しくない。"
+    },
+    {
+      "id": "CPF377D",
+      "text": "内部システム資源の読み取りエラーのために保管が終了した。"
+    },
+    {
+      "id": "CPF377E",
+      "text": "活動状態保管の要求に記憶域が不十分である。"
+    },
+    {
+      "id": "CPF377F",
+      "text": "保管が終了しました。チェックポイントに到達できません。"
+    },
+    {
+      "id": "CPF3770",
+      "text": "ライブラリー&1について保管または復元されたオブジェクトはない。"
+    },
+    {
+      "id": "CPF3771",
+      "text": "&1個のオブジェクトが&3から保管されました。&2が保管されていません。"
+    },
+    {
+      "id": "CPF3777",
+      "text": "&1個のライブラリーは保管され，&6個のライブラリーは部分的に保管され，&2個のライブラリーは保管されませんでした。"
+    },
+    {
+      "id": "CPF378A",
+      "text": "メッセージ待ち行列が使用できない。"
+    },
+    {
+      "id": "CPF378C",
+      "text": "SAVACTMSGQ(*WRKSTN)はバッチ・ジョブでは正しくない。"
+    },
+    {
+      "id": "CPF378E",
+      "text": "ライブラリー&1は保管されていない。"
+    },
+    {
+      "id": "CPF3781",
+      "text": "ライブラリー&1が見つかりません。"
+    },
+    {
+      "id": "CPF3782",
+      "text": "&2のファイル&1は保管ファイルでない。"
+    },
+    {
+      "id": "CPF3785",
+      "text": "終了していないサブシステムがある。"
+    },
+    {
+      "id": "CPF3789",
+      "text": "指定したパラメーターではライブラリーは１つしか使用できない。"
+    },
+    {
+      "id": "CPF379E",
+      "text": "ライブラリー&1の保管に使用可能な記憶域が不十分である。"
+    },
+    {
+      "id": "CPF3793",
+      "text": "マシンまたはASPの記憶域限界に達しました。"
+    },
+    {
+      "id": "CPF3794",
+      "text": "保管または復元操作が正常に終了しなかった。"
+    },
+    {
+      "id": "CPF3797",
+      "text": "ライブラリー&3からオブジェクトが保管されませんでした。保管の限界を超えました。"
+    },
+    {
+      "id": "CPF37AB",
+      "text": "*NOCMTBDYはターゲット・リリースで使用できません。"
+    },
+    {
+      "id": "CPF37AC",
+      "text": "*NOCMTBDYの場合，ライブラリーは使用できません。"
+    },
+    {
+      "id": "CPF37B1",
+      "text": "SPLFDTAはターゲット・リリースでは使用できません。"
+    },
+    {
+      "id": "CPF37B4",
+      "text": "&2のユーザー・スペース&1が正しくありません。"
+    },
+    {
+      "id": "CPF37B5",
+      "text": "PVTAUTはターゲット・リリースでは使用できません。"
+    },
+    {
+      "id": "CPF37B7",
+      "text": "専用権限の保管は認可されていない。"
+    },
+    {
+      "id": "CPF37B9",
+      "text": "同期ID &1が使用中である。"
+    },
+    {
+      "id": "CPF37BC",
+      "text": "同期ID &1は終了しました。待機時間を超えました。"
+    },
+    {
+      "id": "CPF37BD",
+      "text": "同期ID &1は終了しました。チェックポイント前に保管が終了しました。"
+    },
+    {
+      "id": "CPF37BE",
+      "text": "同期ID &1が開始されていない。"
+    },
+    {
+      "id": "CPF37C7",
+      "text": "同期ID &1は終了しました。SAVACTWAITエラー。"
+    },
+    {
+      "id": "CPF380B",
+      "text": "この時点で保管を完了することができない。"
+    },
+    {
+      "id": "CPF3812",
+      "text": "&2の保管ファイル&1は使用中である。"
+    },
+    {
+      "id": "CPF3815",
+      "text": "&2の保管ファイル&1は保管操作には小さすぎる。"
+    },
+    {
+      "id": "CPF3818",
+      "text": "開始ライブラリー&1が見つからない。"
+    },
+    {
+      "id": "CPF384E",
+      "text": "CD-ROMの事前マスター処理にはUSEOPTBLK(*YES)は無効である。"
+    },
+    {
+      "id": "CPF3871",
+      "text": "保管または復元されたオブジェクトはない。&3個のオブジェクトが含まれなかった。"
+    },
+    {
+      "id": "CPF388B",
+      "text": "光ディスク・ファイル・パス名が正しくない。"
+    },
+    {
+      "id": "CPF3892",
+      "text": "&3の&2 &1は保管されなかった。"
+    },
+    {
+      "id": "CPF3894",
+      "text": "メッセージ&1に対して取り消し応答を受け取った。"
+    },
+    {
+      "id": "CPF38A2",
+      "text": "ASP装置&1は正しくありません。"
+    },
+    {
+      "id": "CPF38A3",
+      "text": "&2のファイル&1はASPDEVでは無効です。"
+    },
+    {
+      "id": "CPF38A4",
+      "text": "ASP装置&1は正しくありません。"
+    },
+    {
+      "id": "CPF38AA",
+      "text": "オブジェクト選択リスト・キーが無効です。"
+    },
+    {
+      "id": "CPF38AC",
+      "text": "LIB(*SELECT)は*ALLライブラリーでは無効です。"
+    },
+    {
+      "id": "CPF5729",
+      "text": "オブジェクト&1を割り振ることができない。"
+    },
+    {
+      "id": "CPF9809",
+      "text": "ライブラリー&1をアクセスすることができない。"
+    },
+    {
+      "id": "CPF9812",
+      "text": "ライブラリー&2にファイル&1が見つからない。"
+    },
+    {
+      "id": "CPF9814",
+      "text": "装置&1が見つかりません。"
+    },
+    {
+      "id": "CPF9820",
+      "text": "ライブラリー&1の使用は認可されていない。"
+    },
+    {
+      "id": "CPF9822",
+      "text": "ライブラリー&2のファイル&1は認可されていない。"
+    },
+    {
+      "id": "CPF9825",
+      "text": "装置&1は認可されていない。"
+    },
+    {
+      "id": "CPF9833",
+      "text": "*CURASPGRPまたは*ASPGRPPRIが指定されていて，スレッドにASPグループがない。"
+    },
+    {
+      "id": "CPFB8ED",
+      "text": "装置記述&1はこの操作には正しくありません。"
+    },
+    {
+      "id": "OPT1332",
+      "text": "光ディスク・ボリュームが装置&1に見つからない。"
+    },
+    {
+      "id": "CPF3770",
+      "text": "ライブラリー&1について保管または復元されたオブジェクトはない。"
+    },
+    {
+      "id": "CPF3771",
+      "text": "&1個のオブジェクトが&3から保管されました。&2が保管されていません。"
+    },
+    {
+      "id": "CPF3871",
+      "text": "保管または復元されたオブジェクトはない。&3個のオブジェクトが含まれなかった。"
+    }
+  ],
+  "source": {
+    "url": "https://www.ibm.com/docs/ja/ssw_ibm_i_74/cl/savlib.htm",
+    "version": "IBM i 7.4"
+  }
+}

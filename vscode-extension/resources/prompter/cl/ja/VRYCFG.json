@@ -1,0 +1,401 @@
+{
+  "keyword": "VRYCFG",
+  "description": "構成変更 (VRYCFG)",
+  "help": "構成変更(VRYCFG)コマンドは，1つ以上の構成オブジェクトをオンまたはオフに構成変更するとともに，下位構成に接続された構成オブジェクトをオンに構成変更することができます。また任意選択でVRYCFGは，指定されたオブジェクトに関連した入出力プロセッサー(IOP)をリセットすることもできます。\n\nオンまたはオフに構成変更できる構成オブジェクトは，ネットワーク・サーバー記述，回線，制御装置，および入出力装置です。このコマンドは，システム上のすべての回線，制御装置，および入出力装置に適用されます。\n\n媒体ライブラリー資源の構成オブジェクト・タイプの場合は，このコマンドを使用して，テープ媒体ライブラリー装置内のドライブをリセットするか，あるいはテープ媒体ライブラリー装置内または光ディスク媒体ライブラリー装置内のドライブの割り振りを変更することができます。ドライブ資源の現行割り振りを判別するには，媒体ライブラリー状況処理(WRKMLBSTS)コマンドを使用してください。\n\n下位構成接続されたオブジェクトは， 範囲 (RANGE) パラメーターに値*NETを指定することにより，ここで指定したオブジェクトと一緒にオンまたはオフに構成変更することができます。回線の下位構成接続オブジェクトは，接続されたすべての制御装置，および制御装置に接続されたすべての入出力装置です。制御装置の下位構成接続オブジェクトは，接続されたすべての入出力装置です。入出力装置には，下位構成されているものはありません。入出力装置の構成変更を行う時には，RANGEパラメーターは影響しません。\n\n回線のオンへの構成変更を同期的に行うか非同期的に行うかは， オンへの構成変更待機 (VRYWAIT) パラメーターで制御できます。これは，イーサネット，BSC，および非同期の回線記述にのみ適用されます。オンに構成変更コマンドの完了前にオブジェクトがオンに構成変更された状態になるか，あるいはタイマーが満了するまでのシステムの待機時間は，VRYWAITパラメーターに指定された値によって決定されます。\n\nVRYCFGコマンドは，入出力プロセッサーをリセットするためにも使用することができます。IOPは，通信制御装置，ローカル・ワークステーション制御装置，または磁気媒体制御装置とすることができます。IOPのリセットは，次のものをオンに構成変更する時にだけ有効です。\n\n次のようなときは，タイプが*ISCSIのネットワーク・サーバー記述をオンに構成変更することはできません。\n\n次のようなときは，回線をオンに構成変更することはできません。\n\n次のようなときは，制御装置をオンに構成変更することはできません。\n\n次のようなときは，装置をオンに構成変更することができません。\n\nネットワーク・サーバー記述は，次の時点までオフに構成変更できません。\n\n注: ネットワーク・サービス状況処理(WRKNWSSTS)コマンド（「構成状況の処理」画面から使用可能）を使用して，他のクライアントとのネットワーク・サーバー・セッションの状況を判別してください。\n\n次のようなときは，回線をオフに構成変更することはできません。\n\n次のようなときは，制御装置をオフに構成変更することはできません。\n\n次のようなときは，装置をオフに構成変更することはできません。\n\n次の時点まであるいは次のような場合には，ネットワーク・サーバー・ホスト・アダプター装置は，オフに構成変更することはできません。\n\nRANGEパラメーターが使用されている時には，次のとおりです。\n\nVRYWAITパラメーターが使用されている時には，次のとおりです。",
+  "parameters": [
+    {
+      "name": "CFGOBJ",
+      "description": "構成オブジェクト",
+      "help": "オンに構成変更する構成オブジェクトを指定します。\n\nこれは必須パラメーターです。\n\n*APPN: 拡張対等通信ネットワーク機能(APPN)を使用するすべてのオブジェクトがオンまたはオフに構成変更されます。この値は，CFGTYPEが*CTLまたは*DEVの場合にだけ有効です。\n*PRVCFGTYPE: 指定された構成オブジェクト・タイプについて，このコマンドをこのジョブで最後に実行した時に処理されたすべてのオブジェクトを処理します。",
+      "inputType": "text",
+      "required": true,
+      "attributes": {
+        "characterSet": "upper",
+        "maxLength": 10
+      },
+      "positional": 1,
+      "maxOccurrences": 256,
+      "basic": true
+    },
+    {
+      "name": "CFGTYPE",
+      "description": "タイプ",
+      "help": "構成変更されるオブジェクトのタイプを指定します。\n\nこれは必須パラメーターです。",
+      "inputType": "dropdown",
+      "required": true,
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*NWS",
+          "value": "*NWS",
+          "help": "ネットワーク・サーバー記述がオンまたはオフに構成変更されます。"
+        },
+        {
+          "label": "*LIN",
+          "value": "*LIN",
+          "help": "回線記述がオンまたはオフに構成変更されます。"
+        },
+        {
+          "label": "*CTL",
+          "value": "*CTL",
+          "help": "制御装置記述がオンまたはオフに構成変更されます。"
+        },
+        {
+          "label": "*DEV",
+          "value": "*DEV",
+          "help": "装置記述がオンまたはオフに構成変更されます。"
+        },
+        {
+          "label": "*MLBRSC",
+          "value": "*MLBRSC",
+          "help": "媒体ライブラリー中のドライブの状況が変更されます。"
+        }
+      ],
+      "positional": 2,
+      "basic": true
+    },
+    {
+      "name": "STATUS",
+      "description": "状況",
+      "help": "オブジェクトをオンまたはオフに構成変更するかどうかを指定します。\n\nこれは必須パラメーターです。\n\n媒体ライブラリー装置をオンに構成変更してからでなければ，この値を指定することはできません。",
+      "inputType": "dropdown",
+      "required": true,
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*ON",
+          "value": "*ON",
+          "help": "オブジェクトはオンに構成変更されます。"
+        },
+        {
+          "label": "*OFF",
+          "value": "*OFF",
+          "help": "オブジェクトはオフに構成変更されます。"
+        },
+        {
+          "label": "*RESET",
+          "value": "*RESET",
+          "help": "テープ媒体ライブラリー装置のドライブ資源がリセットされます。 注: ドライブ資源は 資源名 (RSRCNAME) パラメーターで指定しなければなりません。 媒体ライブラリー装置をオンに構成変更してからでなければ，この値を指定することはできません。"
+        },
+        {
+          "label": "*ALLOCATE",
+          "value": "*ALLOCATE",
+          "help": "テープの場合は，テープ媒体ライブラリー装置のドライブ資源がこのシステムによる使用専用に割り振られます。ライブラリー装置が複数のシステムで共用されるときには，この装置記述がオンに構成変更されている間は，他のシステムがこれらのドライブを使用できません。光ディスクの場合は，光ディスク媒体ライブラリー装置のドライブ資源が使用のために割り振られます。ドライブ資源は，この媒体ライブラリー装置だけに使用できます。 注: ドライブ資源は 資源名 (RSRCNAME) パラメーターで指定しなければなりません。"
+        },
+        {
+          "label": "*UNPROTECTED",
+          "value": "*UNPROTECTED",
+          "help": "テープ媒体ライブラリー装置のドライブ資源は，このライブラリー装置を共用するすべてのシステムで使用することができます。 注: ドライブ資源は 資源名 (RSRCNAME) パラメーターで指定しなければなりません。"
+        },
+        {
+          "label": "*DEALLOCATE",
+          "value": "*DEALLOCATE",
+          "help": "テープの場合は，テープ媒体ライブラリー装置のドライブ資源がこのシステムに対して割り振り解除されます。テープ媒体ライブラリーが複数のシステムで共用される場合には，このシステムはこのドライブを使用できませんが，他のシステムはこのドライブを使用できます。光ディスクの場合は，光ディスク媒体ライブラリー資源のドライブ資源がこの媒体ライブラリー資源に対して割り振り解除されます。ドライブは，別の光ディスク媒体ライブラリー装置に使用できません。 注: ドライブ資源は 資源名 (RSRCNAME) パラメーターで指定しなければなりません。"
+        }
+      ],
+      "positional": 3,
+      "basic": true
+    },
+    {
+      "name": "RANGE",
+      "description": "範囲",
+      "help": "構成変更される構成要素を指定します。",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*NET",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*NET",
+          "value": "*NET",
+          "help": "すべての下位接続構成要素が構成変更されます。"
+        },
+        {
+          "label": "*OBJ",
+          "value": "*OBJ",
+          "help": "指定されたオブジェクトだけが構成変更されます。"
+        }
+      ]
+    },
+    {
+      "name": "VRYWAIT",
+      "description": "オンへの構成変更待機",
+      "help": "オブジェクトが非同期または同期のどちらでオンに構成変更されるかを指定します。同期でオンに構成変更される場合には，システムがオンへの構成変更の完了を待機する時間の長さを指定します。\n\n*CFGOBJ: システムは，回線記述の オンへの構成変更待機 (VRYWAIT) パラメーターに指定された値を使用します。\n*NOWAIT: オンへの構成変更の完了を待つ必要はありません。回線のオンへの構成変更は非同期に行われます。\n待機する秒数を指定してください。システムは，VRYCFGコマンドを完了する前に，タイマーが満了するか，回線がオンに構成変更されるまで待機します。",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*CFGOBJ",
+      "attributes": {
+        "characterSet": "upper"
+      }
+    },
+    {
+      "name": "ASCVRYOFF",
+      "description": "非同期のオフに構成変更",
+      "help": "オブジェクトを同期または非同期のどちらでオフに構成変更するかを指定します。",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*NO",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*NO",
+          "value": "*NO",
+          "help": "オブジェクトは同期でオフに構成変更されます。"
+        },
+        {
+          "label": "*YES",
+          "value": "*YES",
+          "help": "オブジェクトは非同期でオフに構成変更されます。"
+        }
+      ]
+    },
+    {
+      "name": "RESET",
+      "description": "リセット",
+      "help": "オブジェクトに関連する入出力プロセッサー(IOP)に対してリセットを行うかどうかを指定します。",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*NO",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*NO",
+          "value": "*NO",
+          "help": "関連するIOPはリセットされません。"
+        },
+        {
+          "label": "*YES",
+          "value": "*YES",
+          "help": "関連するIOPはリセットされます。"
+        }
+      ]
+    },
+    {
+      "name": "RSRCNAME",
+      "description": "資源名",
+      "help": "リセットまたは割り振り解除する媒体ライブラリー装置の中のドライブを指定します。\n\n*ALL: 媒体ライブラリー装置の中のすべてのドライブがリセットまたは割り振り解除されます。",
+      "inputType": "text",
+      "required": false,
+      "attributes": {
+        "characterSet": "upper",
+        "maxLength": 10
+      },
+      "maxOccurrences": 16
+    },
+    {
+      "name": "FRCVRYOFF",
+      "description": "強制的にオフに構成変更",
+      "help": "活動ジョブの照会メッセージを出すかどうかを指定します。STATUS(*ON)が指定されている時には，このパラメーターは使用できません。",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*NO",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*NO",
+          "value": "*NO",
+          "help": "活動ジョブの照会メッセージを出します。"
+        },
+        {
+          "label": "*YES",
+          "value": "*YES",
+          "help": "活動ジョブの照会メッセージを出さず，ジョブを終了します。"
+        },
+        {
+          "label": "*LOCK",
+          "value": "*LOCK",
+          "help": "APPC,システム内通信，NWSH,およびMLB以外の装置では，装置記述のロックが現在の状況に関係なく試みられます。ロックが正常に行われると，装置がオフに構成変更された状態の時に，割り当てられたシステム・ジョブに転送されて装置記述ロックを保留します。装置がオフに構成変更された状態以外の場合には，装置記述をオフに構成変更する試みも行われます。"
+        }
+      ]
+    },
+    {
+      "name": "SBMMLTJOB",
+      "description": "複数ジョブの投入",
+      "help": "指定されたネットワーク・サーバー記述オブジェクトまたは補助記憶域プール(ASP)装置記述オブジェクトを構成変更するために，複数のバッチ・ジョブを投入するかどうかを指定します。このパラメーターが有効なのは，*NWSまたは*DEVが タイプ (CFGTYPE) パラメーターに指定されている場合だけです。",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*NO",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*NO",
+          "value": "*NO",
+          "help": "指定されたすべてのネットワーク・サーバー記述または補助記憶域プール(ASP)装置記述が，元のVRYCFGコマンドを出したジョブで同期的に構成変更されます。"
+        },
+        {
+          "label": "*YES",
+          "value": "*YES",
+          "help": "指定された各ネットワーク・サーバー記述または補助記憶域プール(ASP)記述ごとに，新しいVRYCFGコマンドがバッチで投入されます。"
+        }
+      ]
+    },
+    {
+      "name": "JOBD",
+      "description": "ジョブ記述",
+      "help": "複数のVRYCFGコマンドがバッチで投入されるジョブ記述を指定します。このパラメーターが有効であるのは，CFGTYPEが*NWSまたは*DEVであり，SBMMLTJOBが*YESであるときだけです。\n\nその他の考慮事項としては，ジョブ待ち行列を割り振るサブシステムが待ち行列を保留状態にしておかないこと，およびシステムが制限状態でないことがあります。",
+      "inputType": "group",
+      "required": false,
+      "groupKind": "qualified",
+      "children": [
+        {
+          "name": "LIB",
+          "description": "ライブラリー",
+          "help": "*LIBL: 最初に一致するものが見つかるまで，現行スレッドのライブラリー・リスト内のすべてのライブラリーが検索されます。\nジョブ記述が入っているライブラリーの名前を指定してください。",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "*LIBL",
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          }
+        },
+        {
+          "name": "JOBD",
+          "description": "ジョブ記述",
+          "help": "QBATCH: 投入されたジョブのジョブ記述としてジョブ記述QBATCHが使用されます。システムとともに出荷されるQBATCHジョブは，一度に最大1つのジョブを実行できるように構成されているジョブ待ち行列QBATCHを指定するので，注意してください。\n投入されたジョブで使用するジョブ記述の名前を指定してください。複数の構成変更を並行して実行するためには，活動ジョブの数に制限がないままで出荷されるジョブ待ち行列QSYS/QUSRNOMAXにジョブを渡すようにジョブ記述を作成することができます。 CRTJOBD JOBD(QSYS/QUSRNOMAX) JOBQ(QSYS/QUSRNOMAX) その他の考慮事項としては，ジョブ待ち行列を割り振るサブシステムが待ち行列を保留状態にしておかないこと，およびシステムが制限状態でないことがあります。",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "QBATCH",
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          }
+        }
+      ]
+    },
+    {
+      "name": "GENPTHCERT",
+      "description": "パス証明書の生成",
+      "help": "リモート・ネットワーク・サーバー・システムで証明書の新規セットを生成するかどうかを指定します。このパラメーターが有効であるのは，CFGTYPEが*NWSであり，かつSTATUSが*ONの場合だけです。",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*NO",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*NO",
+          "value": "*NO",
+          "help": "証明書のセットは生成されません。"
+        },
+        {
+          "label": "*YES",
+          "value": "*YES",
+          "help": "証明書のセットが生成されます。 注: このパラメーター値を使用するには，入出力システム構成(*IOSYSCFG)および機密保護管理者(*SECADM)特殊権限が必要です。"
+        }
+      ]
+    },
+    {
+      "name": "RESETSYS",
+      "description": "システムのリセット",
+      "help": "リモート・ネットワーク・サーバー・システムの現在の電源状態にかかわらず，このリセットを強制するかどうかを指定します。これは拡張機能であり，このオプションを選択すると，警告が通知されます。このパラメーターが有効であるのは，CFGTYPEが*NWSでネットワーク・サーバー記述がタイプ*ISCSIであり，さらにSTATUSが*ONの時だけです。",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*NO",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*NO",
+          "value": "*NO",
+          "help": "システムはリセットされません。"
+        },
+        {
+          "label": "*YES",
+          "value": "*YES",
+          "help": "システムがリセットされます。 注: このパラメーター値を使用するには，すべてのオブジェクト(*ALLOBJ)特殊権限がなければなりません。"
+        }
+      ]
+    }
+  ],
+  "threadSafe": false,
+  "environment": "すべての環境 (*ALL)",
+  "examples": [
+    {
+      "code": "VRYCFG CFGOBJ(LINE1) CFGTYPE(*LIN) STATUS(*OFF)"
+    },
+    {
+      "code": "VRYCFG CFGOBJ(CONTROLLER1) CFGTYPE(*CTL) STATUS(*ON) RANGE(*OBJ)"
+    },
+    {
+      "code": "VRYCFG CFGOBJ(DEVICE1) CFGTYPE(*DEV) STATUS(*ON) RANGE(*NET)"
+    },
+    {
+      "code": "VRYCFG CFGOBJ(LINE1) CFGTYPE(*LIN) STATUS(*ON) RANGE(*OBJ) RESET(*YES)"
+    },
+    {
+      "code": "VRYCFG CFGOBJ(LINE1) OJBTYPE(*LIN) STATUS(*ON) RANGE(*OBJ) VRYWAIT(*CFGOBJ)"
+    },
+    {
+      "code": "VRYCFG CFGOBJ(LINE1) CFGTYPE(*LIN) STATUS(*ON) RANGE(*OBJ) VRYWAIT(80)"
+    },
+    {
+      "code": "VRYCFG CFGOBJ(SERVER1) CFGTYPE(*NWS) STATUS(*ON)"
+    },
+    {
+      "code": "VRYCFG CFGOBJ(MYLIBRARY) CFGTYPE(*MLBRSC) STATUS(*RESET) RSRCNAME(TAP01 TAP02)"
+    },
+    {
+      "code": "VRYCFG CFGOBJ(MYLIBRARY) CFGTYPE(*MLBRSC) STATUS(*DEALLOCATE) RSRCNAME(OPT02)"
+    },
+    {
+      "code": "VRYCFG CFGOBJ(IPCS*) CFGTYPE(*NWS) STATUS(*ON) SBMMLTJOB(*YES) JOBD(*LIBL/QBATCH)"
+    },
+    {
+      "code": "VRYCFG CFGOBJ(SERVER1) CFGTYPE(*NWS) STATUS(*ON) GENPTHCERT(*YES)"
+    },
+    {
+      "code": "VRYCFG CFGOBJ(SERVER1) CFGTYPE(*NWS) STATUS(*ON) RESETSYS(*YES)"
+    }
+  ],
+  "errorMessages": [
+    {
+      "id": "CPF26AF",
+      "text": "装置記述&1中の駆動機構資源の状況が変更されなかった。"
+    },
+    {
+      "id": "CPF26B6",
+      "text": "ハードのエラーで初期設定プログラムが終了した。"
+    },
+    {
+      "id": "CPF26B7",
+      "text": "ソフトのエラーで初期設定プログラムが終了した。"
+    },
+    {
+      "id": "CPF262E",
+      "text": "IPL処理のオンへの構成変更中にエラーが起こった。"
+    },
+    {
+      "id": "CPF262F",
+      "text": "障害のためにQDCTRFが停止した。"
+    },
+    {
+      "id": "CPF2640",
+      "text": "構成変更コマンドは処理されなかった。"
+    },
+    {
+      "id": "CPF2659",
+      "text": "構成変更コマンドは完了していない場合がある。"
+    }
+  ],
+  "source": {
+    "url": "https://www.ibm.com/docs/ja/ssw_ibm_i_74/cl/vrycfg.htm",
+    "version": "IBM i 7.4"
+  }
+}

@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="ja"><head><meta charset="utf-8"><title>If  (IF)</title></head>
+<body>
+<main role="main"><article role="article" aria-labelledby="if__title__1"> 
+<h1 class="topictitle1" id="if__title__1">If  (IF)</h1><div id="lastModifiedDate"><span>Last Updated</span>: 2026-07-13</div>
+
+<div class="body">
+<p>
+<strong>If  (IF)
+</strong></p>
+
+<div class="p">
+<strong>Where allowed to run:  
+</strong><ul class="cds--list--unordered">
+<li class="cds--list__item">
+Batch program (*BPGM)
+
+</li>
+
+<li class="cds--list__item">
+Interactive program (*IPGM)
+
+</li>
+
+</ul>
+
+</div>
+
+<p>
+<strong>Threadsafe:  </strong>Yes
+</p>
+
+<p><a href="#if__parameters">Parameters</a></p>
+
+<p><a href="#if__examples">Examples</a></p>
+
+<p><a href="#if__errormsgs">Error messages</a></p>
+
+<div class="div" id="if__if">
+<p>
+The If (IF) command evaluates a logical expression and conditionally processes CL program or ILE CL procedure commands according to the evaluation of the expression.  If the logical expression is true (a logical 1), the command (or the group of commands in a Do group) specified in the THEN parameter is processed, and the ELSE command with its associated command or Do group is not processed.  If the result of the logical expression is false (a logical 0), the command specified in the THEN parameter is not processed and control passes to the next command.  If that command is an ELSE command, the command or Do group specified in that command is processed.  If the ELSE command is not specified, control passes to the next command.
+
+</p>
+
+<p>
+When a DO command is specified, either in the THEN parameter of the IF command or in the CMD parameter of the ELSE command, the Do group is bypassed if the result of the expression is not the one needed for the group being processed.  That is, control passes to the command that follows the ENDDO command associated with that DO.
+
+</p>
+
+<p>
+When the command or Do group specified by the THEN parameter or the ELSE command is completed (and no GOTO command has been processed), control passes to the next command following the command or Do group specified by the ELSE command.  If a GOTO command is processed, control is passed to the command with the label specified by the GOTO command, and processing continues from that command.
+
+</p>
+
+<p>
+The following command sequence shows this flow.  In this example, &amp;TESTSW is a logical variable.
+
+</p>
+
+<div class="p">
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>
+IF &amp;TESTSW DO
+   Group A  (group of CL commands)
+        .
+        .
+   ENDDO
+ELSE DO
+   Group B  (group of CL commands)
+        .
+        .
+   ENDDO
+Group C  (continued CL commands)
+        .
+        .
+
+</code></pre></div><div class="docs--copy-btn"></div></div>
+
+</div>
+
+<p>
+The IF command tests the logical variable &amp;TESTSW.  If a true condition exists (&amp;TESTSW contains a value of '1'), the commands in Group A are processed, then control passes to the commands in Group C.  If a false condition exists (&amp;TESTW contains a value of 0), the commands in group A are bypassed, the commands in Group B are processed, then control passes to the commands in Group C.
+
+</p>
+
+<p>
+<strong>Restrictions:
+</strong>
+</p>
+
+<ul class="cds--list--unordered">
+<li class="cds--list__item">
+The IF command is valid only in a CL program or ILE CL procedure.
+
+</li>
+
+<li class="cds--list__item">
+Up to ten levels of nested IF and ELSE commands are allowed.
+
+</li>
+
+</ul>
+
+</div>
+<section class="section" role="region" aria-labelledby="if__parameters__title__1" id="if__parameters"><h2 class="sectiontitle" id="if__parameters__title__1">Parameters</h2>
+
+
+<div class="tablenoborder"><div class="cds--data-table-container"><table summary="" class="defaultstyle cds--data-table"><colgroup><col><col><col><col></colgroup><thead>
+<tr>
+<th id="if__parameters__entry__1"><div class="cds--table-header-label">
+Keyword
+</div></th>
+
+<th id="if__parameters__entry__2"><div class="cds--table-header-label">
+Description
+</div></th>
+
+<th id="if__parameters__entry__3"><div class="cds--table-header-label">
+Choices
+</div></th>
+
+<th id="if__parameters__entry__4"><div class="cds--table-header-label">
+Notes
+</div></th>
+
+</tr>
+
+</thead>
+<tbody>
+<tr>
+<td headers="if__parameters__entry__1 "><a href="#if__cond"><strong>COND
+</strong></a></td>
+
+<td headers="if__parameters__entry__2 ">Condition
+</td>
+
+<td headers="if__parameters__entry__3 "><em>Logical value
+</em></td>
+
+<td headers="if__parameters__entry__4 ">Required, Positional 1
+</td>
+
+</tr>
+
+<tr>
+<td headers="if__parameters__entry__1 "><a href="#if__then"><strong>THEN
+</strong></a></td>
+
+<td headers="if__parameters__entry__2 ">Command
+</td>
+
+<td headers="if__parameters__entry__3 "><em>Command string
+</em></td>
+
+<td headers="if__parameters__entry__4 ">Optional, Positional 2
+</td>
+
+</tr>
+
+</tbody>
+</table></div>
+</div>
+
+<div class="div" id="if__cond">
+<p>
+<strong>Condition (COND)
+</strong></p>
+
+<p>
+Specifies the logical expression that is evaluated to determine a condition in the program and what is done next.  Refer to "Logical Expressions" in the CL topic collection in the Programming category in the IBM i Information Center at http://www.ibm.com/systems/i/infocenter/ for a description of logical expressions.  Note that variables, constants, and the %SUBSTRING, %SWITCH, and %BINARY built-in functions can be used within the expression.
+
+</p>
+
+<p>
+To test if a pointer has a null value, the CL pointer variable can be compared to the special value *NULL if the CL source is being compiled with the Create CL Module (CRTCLMOD) or Create Bound CL Program (CRTBNDCL) command.  If the CL source is being compiled with the Create CL Program (CRTCLPGM) command, compare the CL pointer variable to another CL pointer variable that was declared with ADDRESS(*NULL) and has not been changed.
+
+</p>
+
+<p>
+This is a required parameter.
+
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><em>logical-value
+</em></strong></dt>
+
+<dd class="dlentry">
+Specify the name of a CL logical variable or a logical expression.
+</dd>
+
+</dl>
+
+</div>
+<div class="div" id="if__then">
+<p>
+<strong>Command (THEN)
+</strong></p>
+
+<p>
+Specifies the command or group of commands (in a Do group) that are processed if the result of evaluating the logical expression is true.  After the command or Do group is processed, control is passed to the next command 
+<em>after
+</em> the ELSE command associated with this IF command.  If the result is true, the ELSE command associated with the IF command is not processed.  If the command specified in this parameter is a DO command, all commands within the Do group are considered to be the command specified by the parameter.
+
+</p>
+
+<p>
+If the command specified by the THEN keyword is not coded on the same line when the keyword is coded, the THEN keyword must be immediately followed (on the same line) either by the left parenthesis or by a plus sign (+) or a minus sign (-) to show continuation.  (A blank cannot immediately follow any keyword.)  The command and the right parenthesis can then be coded on the next line.  For example:
+
+</p>
+
+<div class="p">
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>
+IF COND(&amp;A *EQ &amp;B)  THEN(      +
+  GOTO C)
+
+</code></pre></div><div class="docs--copy-btn"></div></div>
+
+</div>
+
+<p>
+If any part of the command specified by the THEN parameter continues on the next line, a continuation character (+ or -) must be specified.
+
+</p>
+
+<p>
+If a DO command is specified, only the DO command (not the commands specified within the Do group) is within the parentheses.  For example:
+
+</p>
+
+<div class="p">
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>
+IF COND(&amp;A *EQ &amp;B)  THEN(DO)
+  CMD1
+  CMD2
+    .
+    .
+  ENDDO
+
+</code></pre></div><div class="docs--copy-btn"></div></div>
+
+</div>
+
+<p>
+If no command is specified for the THEN parameter (a null THEN) and the ELSE command immediately follows it, the ELSE is processed if the IF expression is false and it is skipped if the expression is true.
+
+</p>
+
+<p>
+Any CL command can be specified for the THEN parameter, except the following commands:
+
+</p>
+
+<ul class="cds--list--unordered">
+<li class="cds--list__item">
+ELSE
+
+</li>
+
+<li class="cds--list__item">
+PGM, ENDPGM
+
+</li>
+
+<li class="cds--list__item">
+ENDDO
+
+</li>
+
+<li class="cds--list__item">
+MONMSG
+
+</li>
+
+<li class="cds--list__item">
+DCL, DCLF
+
+</li>
+
+<li class="cds--list__item">
+WHEN, OTHERWISE, ENDSELECT
+
+</li>
+
+</ul>
+
+<p>
+The command can be another IF, unless there are already ten levels of nested IF and ELSE commands.
+
+</p>
+
+</div>
+</section>
+
+<section class="section" role="region" aria-labelledby="if__examples__title__1" id="if__examples"><h2 class="sectiontitle" id="if__examples__title__1">Examples</h2>
+
+<div class="p">
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>
+IF   COND(&amp;A *EQ &amp;B)  THEN(GOTO X)
+IF   (&amp;A *EQ &amp;B)  THEN(GOTO X)
+IF   (&amp;A *EQ &amp;B)  (GOTO X)
+IF   COND(&amp;A *EQ &amp;B)  THEN(GOTO X)
+
+</code></pre></div><div class="docs--copy-btn"></div></div>
+
+</div>
+
+<p>
+The examples above show a number of different ways the IF command can be specified to test a condition and branch to a label.  In each of these examples, if &amp;A equals &amp;B, control passes to a CL command that has a label named X.
+
+</p>
+
+<div class="p">
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>
+IF  COND(&amp;TESTSW)  THEN(CHGVAR  VAR(&amp;A)  VALUE(23))
+
+</code></pre></div><div class="docs--copy-btn"></div></div>
+
+</div>
+
+<p>
+If &amp;TESTSW has a logical value of 1 (true), the CHGVAR command is processed to set &amp;A to decimal 23; if &amp;TESTW has a logical value of 0 (not true), the Change Variable (CHGVAR) command is not processed.
+
+</p>
+
+<div class="p">
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>
+IF   COND((&amp;ALPHA *EQ &amp;BETA) *AND *NOT &amp;GAMMA)
+     THEN(RETURN)
+
+</code></pre></div><div class="docs--copy-btn"></div></div>
+
+</div>
+
+<p>
+If the value of &amp;ALPHA equals the value of &amp;BETA and if &amp;GAMMA is a logical 0, then return to the program or procedure that called this CL program or ILE CL procedure.
+
+</p>
+
+<div class="p">
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>
+IF   &amp;LOG1  THEN(IF  (&amp;A *GT 10) THEN(GOTO X))
+                     ELSE(GOTO Y)
+ELSE  DO
+ :  (group of CL commands)
+ENDDO
+
+</code></pre></div><div class="docs--copy-btn"></div></div>
+
+</div>
+
+<p>
+This is an example of nested IF commands. If &amp;LOG1 has a logical value of 1 (true) and if &amp;A is greater than 10, a branch is made to label X. If &amp;LOG1 has a logical value of 1 and &amp;A is 
+<em>not
+</em> greater than 10, a branch is made to label Y. If &amp;LOG1 has a logical value of 0 (false), &amp;A is not compared to 10. Instead, the DO group of the second ELSE command is processed.
+
+</p>
+
+<div class="p">
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>
+IF   &amp;TEST  THEN(DO)
+  CHGVAR  &amp;A (&amp;A + 1)
+  GOTO   X
+ENDDO
+ELSE   DO
+  CHGVAR   &amp;B  (&amp;B + 1)
+  CALL   EXTPGM  (&amp;B)
+ENDDO
+
+</code></pre></div><div class="docs--copy-btn"></div></div>
+
+</div>
+
+<p>
+This example shows how the THEN parameter can be continued on the next line. If &amp;TEST has a logical value of 1, the Do group specified in the THEN parameter is processed. Otherwise, the Do group specified by the ELSE command is processed.
+
+</p>
+
+<div class="p">
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>
+IF   (&amp;A *EQ YES)  DO
+  CHGVAR   &amp;B 1
+  CHGVAR   &amp;C 'Z'
+ENDDO
+
+</code></pre></div><div class="docs--copy-btn"></div></div>
+
+</div>
+
+<p>
+This example shows a Do group as the THEN parameter. The two Change Variable (CHGVAR) commands are processed if, in the relational expression, &amp;A is equal to YES.
+
+</p>
+
+<div class="p">
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>
+IF   %SWITCH(10XXXX10)   THEN(GOTO X)
+
+</code></pre></div><div class="docs--copy-btn"></div></div>
+
+</div>
+
+<p>
+This example shows how the built-in function %SWITCH is used to test the eight job switches in a job. Refer to the topic "Built-in functions for CL" in the CL topic collection in the Programming category in the IBM i Information Center at http://www.ibm.com/systems/i/infocenter/ for a complete description of %SWITCH.  In this example, job switches 1, 2, 7, and 8 are tested for the values indicated in the 8-character mask. If switches 1 and 7 contain 1s and switches 2 and 8 contain 0s, then control branches to the command having the label X. If any of the four switches do not contain the value indicated, the branch does not occur.
+
+</p>
+
+<div class="p">
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>
+DCL  &amp;NULLPTR  *PTR  ADDRESS(*NULL)
+IF   COND(&amp;PTRVAR *EQ *NULL)   THEN(GOTO X)
+IF   COND(&amp;PTRVAR *EQ &amp;NULLPTR)   THEN(GOTO X)
+
+</code></pre></div><div class="docs--copy-btn"></div></div>
+
+</div>
+
+<p>
+This example shows two ways to test if pointer variable &amp;PTRVAR contains a null value.  The pointer variable can be compared to the special value *NULL if the CL source is being compiled with the Create CL Module (CRTCLMOD) or Create Bound CL Program (CRTBNDCL) command.  If the CL source is being compiled with the Create CL Program (CRTCLPGM) command, the CL pointer variable can be compared to another CL pointer variable, like &amp;NULLPTR, that was declared with ADDRESS(*NULL) and has not been changed.
+
+</p>
+
+</section>
+
+<section class="section" role="region" aria-labelledby="if__errormsgs__title__1" id="if__errormsgs"><h2 class="sectiontitle" id="if__errormsgs__title__1">Error messages</h2>
+
+<p>
+<strong><u>*ESCAPE Messages
+</u></strong>
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong>CPF0816
+</strong></dt>
+
+<dd class="dlentry">
+%SWITCH mask &amp;1 not valid.
+</dd>
+
+</dl>
+
+</section>
+
+</div>
+
+</article></main>
+</body></html>

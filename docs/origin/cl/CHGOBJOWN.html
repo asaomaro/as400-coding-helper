@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="ja"><head><meta charset="utf-8"><title>オブジェクト所有者変更  (CHGOBJOWN)</title></head>
+<body>
+<div role="main">
+<script type="text/javascript" src="../rzahg/synch.js"></script>
+<a name="CHGOBJOWN.Top_Of_Page"></a>
+<h1>オブジェクト所有者変更  (CHGOBJOWN)</h1><div id="lastModifiedDate"><span>Last Updated</span>: 2021-04-13</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table0" width="100%" class="cds--data-table">
+<tbody><tr>
+<td class="valigntop alignleft"><strong>実行可能場所:  </strong>すべての環境 (*ALL)<br>
+<strong>スレッド・セーフ:  </strong>いいえ
+</td>
+<td class="valigntop alignright">
+<a href="#CHGOBJOWN.PARAMETERS.TABLE">パラメーター</a><br>
+<a href="#CHGOBJOWN.COMMAND.EXAMPLES">例</a><br>
+<a href="#CHGOBJOWN.ERROR.MESSAGES">エラー・メッセージ</a></td>
+</tr>
+</tbody></table></div></div>
+<div> <a name="CHGOBJOWN"></a>
+<p>オブジェクト所有者変更(CHGOBJOWN)コマンドは，オブジェクト所有権をあるユーザーから別のユーザーに移します。他のユーザーがオブジェクトに対して持っている権限は変更されません。
+</p>
+<p>オブジェクトの所有者は，明示的に取り消されないかぎり，そのオブジェクトに適用できるすべての権限を常にもっています。オブジェクトの所有者は，そのオブジェクトに対する権限を，他のユーザーに認可する権限があります。また，所有者は，前に取り消された権限を所有者自身に認可することもできます。例えば，所有者は，所有者固有のある権限を予防措置として除去してから，必要がある場合に，その同じ権限を自身に再び認可することができます。
+</p>
+<p>*ALLOBJ特殊権限をもつユーザーには，QSYS.LIBファイル・システム内のオブジェクトの所有権を移す権限があります。
+</p>
+<p>IBM Iのデータベース機密保護管理者機能(QIBM_DB_SECADM)が認可されているユーザーには，QSYS.LIBファイル・システム内のオブジェクトの所有権を移す権限があります。ただし，QIBM_DB_SECADM機能が認可されているユーザーは，所有権を自分自身に移すためには，その操作に必要な権限を持っていなければなりません。
+</p>
+<p>すべてのユーザーは自身のユーザー・プロファイルに対して追加および削除権限を持ちます。すなわち，ユーザーはオブジェクトの所有権を移動して，自身のユーザー・プロファイルへオブジェクトを追加するか，またはオブジェクト（ユーザーが作成した）を削除することができます。
+</p>
+<h2><strong>制約事項</strong><strong>:</strong>
+</h2>
+<ul class="cds--list--unordered">
+<li class="cds--list__item">所有権を移すためには，ユーザー（オブジェクトの現在の所有者を含む）は次の権限を持っていなければなりません。
+<ul class="cds--list--unordered cds--list--nested">
+<li class="cds--list__item">オブジェクト（権限リストを除く）のオブジェクト存在(*OBJEXIST)権限
+</li>
+<li class="cds--list__item">オブジェクトがファイル，ライブラリー，またはサブシステム記述である場合には，オブジェクト操作(*OBJOPR)権限および*OBJEXIST権限
+</li>
+<li class="cds--list__item">このオブジェクトが権限リストの場合には，全オブジェクト(*ALLOBJ)特殊権限または所有権
+</li>
+<li class="cds--list__item">新しい所有者のユーザー・プロファイルに対する追加(*ADD)権限
+</li>
+<li class="cds--list__item">現在の所有者のユーザー・プロファイルに対する削除(*DLT)権限
+</li>
+<li class="cds--list__item">プログラムのオブジェクト所有者またはその所有者の権限を借用するプログラム SQL（構造化照会言語）パッケージを変更するためには，全オブジェクト(*ALLOBJ)および機密保護管理者(*SECADM)特殊権限。
+</li>
+<li class="cds--list__item">補助記憶域プール装置を指定する場合は，その補助記憶域プール装置に対する使用(*USE)権限。
+</li>
+</ul>
+</li>
+<li class="cds--list__item">表示装置の場合で，所有権が変更されるかまたはメッセージ待ち行列の所有権が変更される装置からこのコマンドが実行されていない場合には，このコマンドがオブジェクト割り振り(ALCOBJ)コマンドとオブジェクト割り振り解除(DLCOBJ)コマンドの間になければなりません。
+</li>
+<li class="cds--list__item">オブジェクト・タイプ*DOCまたは*FLRを指定することはできません。DLO（文書交換）サポートを使用することが必要です。
+</li>
+<li class="cds--list__item">また，これと関連した権限ホルダーのオブジェクトの所有権を変更すると，その権限ホルダーの所有権も変更します。
+</li>
+</ul>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table1" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#CHGOBJOWN.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div>
+<h2><a name="CHGOBJOWN.PARAMETERS.TABLE">パラメーター</a></h2>
+<div class="tablenoborder"><div class="cds--data-table-container"><table id="parm_table2" summary="Parameters" border="1" cellpadding="4" cellspacing="0" class="cds--data-table">
+<!-- col1="10" col2="15" col3="30" col4="10" -->
+<tbody><tr>
+<th scope="col" class="valignbottom alignleft"><div class="cds--table-header-label">キーワード</div></th>
+<th scope="col" class="valignbottom alignleft"><div class="cds--table-header-label">記述</div></th>
+<th scope="col" class="valignbottom alignleft"><div class="cds--table-header-label">選択項目</div></th>
+<th scope="col" class="valignbottom alignleft"><div class="cds--table-header-label">ノーツ</div></th>
+</tr>
+<tr>
+<td class="valigntop" rowspan="3"><a href="#CHGOBJOWN.OBJ"><strong>OBJ</strong></a></td>
+<td class="valigntop">オブジェクト</td>
+<td class="valigntop"><span class="var">修飾オブジェクト名</span></td>
+<td class="valigntop" rowspan="3">必須, 定位置 1</td>
+</tr>
+<tr>
+<td class="valigntop">修飾子 1: オブジェクト</td>
+<td class="valigntop"><span class="var">名前</span></td>
+</tr><tr>
+<td class="valigntop">修飾子 2: ライブラリー</td>
+<td class="valigntop"><span class="var">名前</span>, <strong class="underlined">*LIBL</strong>, *CURLIB</td>
+</tr><tr>
+<td class="valigntop"><a href="#CHGOBJOWN.OBJTYPE"><strong>OBJTYPE</strong></a></td>
+<td class="valigntop">オブジェクト・タイプ</td>
+<td class="valigntop">*ALRTBL, *AUTL, *BNDDIR, *CFGL, *CHTFMT, *CLD, *CLS, *CMD, *CNNL, *COSD, *CRG, *CRQD, *CSI, *CSPMAP, *CSPTBL, *CTLD, *DEVD, *DTAARA, *DTADCT, *DTAQ, *EDTD, *FCT, *FILE, *FNTRSC, *FNTTBL, *FORMDF, *FTR, *GSS, *IGCDCT, *IGCSRT, *IMGCLG, *IPXD, *JOBD, *JOBQ, *JRN, *JRNRCV, *LIB, *LIND, *LOCALE, *M36, *M36CFG, *MEDDFN, *MENU, *MGTCOL, *MODD, *MODULE, *MSGF, *MSGQ, *NODGRP, *NODL, *NTBD, *NWID, *NWSCFG, *NWSD, *OUTQ, *OVL, *PAGDFN, *PAGSEG, *PDFMAP, *PDG, *PGM, *PNLGRP, *PRDAVL, *PRDDFN, *PRDLOD, *PSFCFG, *QMFORM, *QMQRY, *QRYDFN, *RCT, *S36, *SBSD, *SCHIDX, *SPADCT, *SQLPKG, *SQLUDT, *SQLXSR, *SRVPGM, *SSND, *SVRSTG, *TBL, *TIMZON, *USRIDX, *USRPRF, *USRQ, *USRSPC, *VLDL, *WSCST</td>
+<td class="valigntop">必須, 定位置 2</td>
+</tr>
+<tr>
+<td class="valigntop"><a href="#CHGOBJOWN.ASPDEV"><strong>ASPDEV</strong></a></td>
+<td class="valigntop">ASP装置</td>
+<td class="valigntop"><span class="var">名前</span>, <strong class="underlined">*</strong>, *SYSBAS</td>
+<td class="valigntop">オプショナル</td>
+</tr>
+<tr>
+<td class="valigntop"><a href="#CHGOBJOWN.NEWOWN"><strong>NEWOWN</strong></a></td>
+<td class="valigntop">新しい所有者</td>
+<td class="valigntop"><span class="var">名前</span></td>
+<td class="valigntop">必須, 定位置 3</td>
+</tr>
+<tr>
+<td class="valigntop"><a href="#CHGOBJOWN.CUROWNAUT"><strong>CUROWNAUT</strong></a></td>
+<td class="valigntop">現行の所有者権限</td>
+<td class="valigntop"><strong class="underlined">*REVOKE</strong>, *SAME</td>
+<td class="valigntop">オプショナル</td>
+</tr>
+</tbody></table></div></div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table3" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#CHGOBJOWN.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+</div>
+<div> <a name="CHGOBJOWN.OBJ"></a>
+<h2>オブジェクト (OBJ)</h2>
+<p>新規所有者に割り当てられるオブジェクトを指定します。
+</p>
+<p>これは必須パラメーターです。
+</p>
+<p>
+<strong>注:     </strong>ライブラリー名を指定して，正しいオブジェクトが所有権を変更していることを確認することができます。
+</p>
+<h3><strong>修飾子</strong><strong>1: </strong><strong>オブジェクト</strong>
+</h3>
+<dl>
+<dt><strong class="italic">名前</strong></dt>
+<dd>所有者を変更するオブジェクトの名前を指定します。
+</dd>
+</dl>
+<h3><strong>修飾子</strong><strong>2: ライブラリー</strong>
+</h3>
+<dl>
+<dt><strong class="underlined">*LIBL</strong></dt>
+<dd>最初に一致するものが見つかるまで，現行スレッドのライブラリー・リスト内のすべてのライブラリーが検索されます。
+</dd>
+<dt><strong>*CURLIB</strong></dt>
+<dd>スレッドの現行ライブラリーが検索されます。スレッドの現行ライブラリーとして指定されているライブラリーがない場合，QGPLライブラリーが使用されます。
+</dd>
+<dt><strong class="italic">名前</strong></dt>
+<dd>検索するライブラリーの名前を指定してください。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table4" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#CHGOBJOWN.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="CHGOBJOWN.OBJTYPE"></a>
+<h2>オブジェクト・タイプ (OBJTYPE)</h2>
+<p>所有者を変更するオブジェクトのオブジェクト・タイプを指定します。
+</p>
+<p>詳細については，IBM i Information Center(http://www.ibm.com/systems/i/infocenter/)の「プログラミング」カテゴリーの「制御言語(CL)」トピック・コレクションの「一般に使用されるパラメーター：拡張説明」にあるOBJTYPEパラメーターの説明を参照してください。
+</p>
+<p>これは必須パラメーターです。
+</p>
+<dl>
+<dt><strong class="italic">オブジェクト・タイプ</strong></dt>
+<dd>所有権が変更されるオブジェクトのオブジェクト・タイプを指定してください。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table5" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#CHGOBJOWN.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="CHGOBJOWN.ASPDEV"></a>
+<h2>ASP装置 (ASPDEV)</h2>
+<p>オブジェクト(OBJパラメーター）を含むライブラリーが入っている，その補助記憶域プール(ASP)装置名を指定します。オブジェクトのライブラリーがジョブに関連したライブラリー名前空間の一部でないASPにある場合には，このパラメーターを指定して，このコマンドの操作のターゲットとして正しいオブジェクトが使用されるようにしなければなりません。
+</p>
+<dl>
+<dt><strong>*</strong></dt>
+<dd>現在，ジョブのライブラリー名前空間の一部となっているASPがオブジェクトを見つけるために検索されます。これには，システムASP (ASP番号1),定義されているすべての基本ユーザーASP (ASP番号2から32), さらにジョブにASPグループがある場合には．そのASPグループ中のすべての独立ASPが含まれます。
+</dd>
+<dt><strong>*SYSBAS</strong></dt>
+<dd>システムASPおよびすべての基本ユーザーASPがオブジェクトを見つけるために検索されます。ジョブにASPグループがあっても独立ASPは検索されません。
+</dd>
+<dt><strong class="italic">名前</strong></dt>
+<dd>オブジェクトを見つけるために検索する独立ASPの装置名を指定してください。独立ASPは活動化されていて(ASP装置をオンに構成変更することによって），AVAILABLEの状況になっていなければなりません。システムASPおよび基本ユーザーASPは検索されません。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table6" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#CHGOBJOWN.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="CHGOBJOWN.NEWOWN"></a>
+<h2>新しい所有者 (NEWOWN)</h2>
+<p>オブジェクトの新規所有者のユーザー・プロファイルを指定します。このコマンドが実行される時には，ユーザー・プロファイルが存在していなければなりません。
+</p>
+<p>これは必須パラメーターです。
+</p>
+<dl>
+<dt><strong class="italic">名前</strong></dt>
+<dd>ユーザー・プロファイルの名前を指定します。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table7" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#CHGOBJOWN.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="CHGOBJOWN.CUROWNAUT"></a>
+<h2>現行の所有者権限 (CUROWNAUT)</h2>
+<p>所有権を変更した場合に，現行所有者の権限を取り消すかどうかを指定します。
+</p>
+<dl>
+<dt><strong class="underlined">*REVOKE</strong></dt>
+<dd>オブジェクト所有権を新しい所有者に変更した時に，現行所有者の権限を取り消します。
+</dd>
+<dt><strong>*SAME</strong></dt>
+<dd>現行所有者の権限は，オブジェクトに対する専用権限として保持されます。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table8" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#CHGOBJOWN.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div><h2><a name="CHGOBJOWN.COMMAND.EXAMPLES">例</a> </h2>
+<p>
+</p><pre>CHGOBJOWN   OBJ(USERLIB/PROGRAM1)  OBJTYPE(*PGM)  NEWOWN(ANN)
+</pre>
+<p></p>
+<p>このコマンドは，USERLIBという名前のユーザー・ライブラリー内にある，PROGRAM1という名前のプログラムの所有権をANNという名前のユーザーに割り当てます。権限は，現行所有者から取り消されます。
+</p>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table9" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#CHGOBJOWN.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div><h2><a name="CHGOBJOWN.ERROR.MESSAGES">エラー・メッセージ</a> </h2>
+<p><strong class="underlined">*ESCAPE </strong><strong class="underlined">メッセージ</strong>
+</p>
+<dl>
+<dt><strong>CPF0609</strong></dt>
+<dd>指定されたユーザー・プロファイルの使用は許されていない。
+</dd>
+<dt><strong>CPF22BD</strong></dt>
+<dd>&amp;3のオブジェクト&amp;1タイプ*&amp;2の所有権が変更されなかった可能性がある。
+</dd>
+<dt><strong>CPF22BE</strong></dt>
+<dd>ユーザー・プロファイル&amp;1に対して機能が実行されなかった。
+</dd>
+<dt><strong>CPF22DA</strong></dt>
+<dd>&amp;2のファイル&amp;1の操作は許可されていない。
+</dd>
+<dt><strong>CPF220A</strong></dt>
+<dd>新しい所有者&amp;1にユーザーIDがない。
+</dd>
+<dt><strong>CPF220C</strong></dt>
+<dd>所有者と１次グループを同じにすることはできない。
+</dd>
+<dt><strong>CPF2204</strong></dt>
+<dd>ユーザー・プロファイル&amp;1が見つからない。
+</dd>
+<dt><strong>CPF2207</strong></dt>
+<dd>ライブラリー&amp;3のタイプ*&amp;2のオブジェクト&amp;1の使用を認可されていない。
+</dd>
+<dt><strong>CPF2208</strong></dt>
+<dd>ライブラリー&amp;3のタイプ*&amp;2のオブジェクト&amp;1が見つからなかった。
+</dd>
+<dt><strong>CPF2209</strong></dt>
+<dd>ライブラリー&amp;1が見つかりません。
+</dd>
+<dt><strong>CPF2210</strong></dt>
+<dd>オブジェクト・タイプ*&amp;1に対する操作は許されていない。
+</dd>
+<dt><strong>CPF2211</strong></dt>
+<dd>&amp;3のオブジェクト&amp;1タイプ*&amp;2を割り振ることができない。
+</dd>
+<dt><strong>CPF2213</strong></dt>
+<dd>ユーザー・プロファイル&amp;1を割り振ることができない。
+</dd>
+<dt><strong>CPF2216</strong></dt>
+<dd>ライブラリー&amp;1の使用は認可されていない。
+</dd>
+<dt><strong>CPF2217</strong></dt>
+<dd>ユーザー・プロファイル&amp;1には認可されていません。
+</dd>
+<dt><strong>CPF2222</strong></dt>
+<dd>記憶域限界が，ユーザー・プロファイル&amp;1に指定されているものより大きい。
+</dd>
+<dt><strong>CPF2226</strong></dt>
+<dd>ユーザー・プロファイル&amp;1に対して機能が実行されなかった。
+</dd>
+<dt><strong>CPF2230</strong></dt>
+<dd>ライブラリー&amp;3のオブジェクト&amp;1は認可されていない。
+</dd>
+<dt><strong>CPF2231</strong></dt>
+<dd>プログラム&amp;1の所有権の変更は認可されていない。
+</dd>
+<dt><strong>CPF2232</strong></dt>
+<dd>ユーザー・プロファイル&amp;1には認可されていません。
+</dd>
+<dt><strong>CPF2233</strong></dt>
+<dd>ユーザー・プロファイル&amp;1に対する削除権限をもっていない。
+</dd>
+<dt><strong>CPF2298</strong></dt>
+<dd>ユーザー&amp;1から&amp;3のオブジェクト&amp;2の権限は取り消されなかった。
+</dd>
+<dt><strong>CPF4ACF</strong></dt>
+<dd>複製エラーのため，&amp;2内のオブジェクト&amp;1 (タイプ *&amp;3)に対する操作が失敗しました。
+</dd>
+<dt><strong>CPF4AC0</strong></dt>
+<dd>&amp;3内のタイプ*&amp;4のオブジェクト&amp;2の場合，所有者を&amp;1に変更できません。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table10" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#CHGOBJOWN.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+</div>
+
+
+</body></html>

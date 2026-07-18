@@ -1,0 +1,1665 @@
+
+  <!doctype html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+  <html>
+<head><META http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>Change Job  (CHGJOB)</title>
+</head>
+<body bgcolor="white">
+<a name="CHGJOB.Top_Of_Page"></a>
+<h2>Change Job  (CHGJOB)</h2>
+<table width="100%">
+<tr>
+<td align="left" valign="top"><b>Where allowed to run:  </b>All environments (*ALL)<br>
+<b>Threadsafe:  </b>Conditional
+</td>
+<td align="right" valign="top">
+<a href="#CHGJOB.PARAMETERS.TABLE">Parameters</a><br>
+<a href="#CHGJOB.COMMAND.EXAMPLES">Examples</a><br>
+<a href="#CHGJOB.ERROR.MESSAGES">Error messages</a></td>
+</tr>
+</table>
+
+<div> <a name="CHGJOB"></a>
+<p>The Change Job (CHGJOB) command changes some of the attributes of a job.  With the exception of a change in job queue, the job can be in a job queue or in an output queue, or it can be active in a subsystem. The job queue can only be changed when the job is a batch job and is in a job queue.  If the job is in the output queue, only the <b>Output priority (on OUTQ) (OUTPTY),</b> the <b>Job log output (LOGOUTPUT),</b> and the <b>Spooled file action (SPLFACN)</b> can be changed. With the exception of the class attributes, the new attributes remain in effect for the duration of the job unless they are changed by another CHGJOB command.  The class attributes remain in effect until the routing step that is currently active ends.  If no routing step is active when the changes are made, they apply to the next routing step that is started. If an attribute that no longer affects the job is changed, a message is sent to the user of the command. For example, if the job has already completed running, it is too late to change the <b>Output queue (OUTQ)</b> and <b>Job priority (on JOBQ) (JOBPTY)</b> parameters. If any output files are still on the output queue, however, changing the OUTPTY parameter changes their output priority.
+</p>
+<p><b>Restrictions:</b>
+</p>
+<ol>
+<li>The command must be issued from within the job being changed, or the issuer of the command must be running under a user profile which is the same as the job user identity of the job being changed, or the issuer of the command must be running under a user profile which has job control (*JOBCTL) special authority.
+<p>The job user identity is the name of the user profile by which a job is known to other jobs. It is described in more detail in the Work Management Guide.
+</p>
+</li>
+<li>To use this command, the following authorities are required:
+<ul>
+<li>To change the job queue (JOBQ), you must have use (*USE) authority to the job queue that the job is being changed to and execute (*EXECUTE) authority to the library containing that job queue.
+</li>
+<li>To change the output queue (OUTQ), you must have read (*READ) authority to the output queue that is currently allocated to the job and execute (*EXECUTE) authority to the library containing this output queue.  This authority can come from adopted authority.  When a job changes itself, no authority is required to the OUTQ currently allocated to the job.  You also must have read (*READ) authority to the output queue that the job is being changed to use, and execute (*EXECUTE) authority to the library containing that output queue.  This authority cannot come from adopted authority.
+</li>
+<li>To change the RUNPTY, TIMESLICE, PURGE, DFTWAIT, TSEPOOL, WLCGRP, CPUTIME, MAXTMPSTG, or PRCRSCPTY values, you must have job control (*JOBCTL) special authority.
+</li>
+<li>To change the sort sequence table (SRTSEQ), you must have use (*USE) authority to the new sort sequence table and execute (*EXECUTE) authority to the library that contains that sort sequence table.
+</li>
+</ul>
+</li>
+<li>This command is conditionally threadsafe.  Refer to <b>Considerations for Attribute Thread Safety</b> for additional information.
+</li>
+</ol>
+<p><b>Considerations for Attribute Thread Safety:</b>
+</p>
+<p>This command is intended to be used to change the job attributes for a job. All of the attributes are scoped to the job.
+</p>
+<p>The Threadsafe column of the following table indicates whether the attributes can be changed in a manner that is threadsafe.
+</p>
+<p><b>Yes:</b> - Attributes marked with this value are considered to be threadsafe. These attributes can be changed safely by issuing this command from either the initial thread or from a secondary thread. The target job may also be either single threaded or multi threaded.
+</p>
+<p><b>No:</b> - Attributes marked with this value are not threadsafe. An attempt to change these attributes will be denied if multiple threads are active in the job issuing this command or in the target job.
+</p>
+<p><b>Attribute and Thread Safety Table:</b>
+</p>
+<table border="1">
+<tr>
+<td>
+<p>
+<pre>
+Attribute                                     Threadsafe
+----------------------------                  ----------
+Break message handling (BRKMSG)                  Yes
+Character identifier control (CHRIDCTL)          Yes
+Coded character set ID (CCSID)                   Yes
+Country or region ID (CNTRYID)                   Yes
+Date format (DATFMT)                             Yes
+Date separator (DATSEP)                          Yes
+DDM conversation (DDMCNV)                        No
+Decimal format (DECFMT)                          Yes
+Default wait time (DFTWAIT)                      Yes
+Device recovery action (DEVRCYACN)               Yes
+Eligible for purge (PURGE)                       Yes
+Inquiry message reply (INQMSGRPY)                Yes
+Job date (DATE)                                  Yes
+Job Log output (LOGOUTPUT)                       Yes
+Job message queue full action (JOBMSGQFL)        Yes
+Job priority (on JOBQ) (JOBPTY)                  Yes
+Job queue (JOBQ)                                 Yes
+Job switches (SWS)                               Yes
+Language ID (LANGID)                             Yes
+Log CL program commands (LOGCLPGM)               Yes
+Maximum processor time (CPUTIME)                 Yes
+Maximum temporary storage (MAXTMPSTG)            Yes
+Message logging (LOG)                            Yes
+Output priority (on OUTQ) (OUTPTY)               Yes
+Output queue (OUTQ)                              Yes
+Print key format (PRTKEYFMT)                     Yes
+Print text (PRTTXT)                              Yes
+Print device (PRTDEV)                            Yes
+Processor resources priority (PRCRSCPTY)         Yes
+Run priority (RUNPTY)                            Yes
+Schedule date (SCDDATE)                          No
+Schedule time (SCDTIME)                          No
+Sort sequence (SRTSEQ)                           Yes
+Spooled file action (SPLFACN)                    Yes
+Status message (STSMSG)                          Yes
+Time separator (TIMSEP)                          Yes
+Time slice (TIMESLICE)                           Yes
+Time slice end pool (TSEPOOL)                    Yes
+Workload group (WLCGRP)                          Yes
+</pre>
+</p>
+</td>
+</tr>
+</table>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#CHGJOB.Top_Of_Page">Top</a></td></tr>
+</table>
+<hr width="100%" size="2">
+
+<div>
+<h3><a name="CHGJOB.PARAMETERS.TABLE">Parameters</a></h3>
+<table cellspacing="0" cellpadding="4" border="1"><tr>
+<th width="10%" align="left" valign="bottom" bgcolor="aqua">Keyword</th>
+<th width="15%" align="left" valign="bottom" bgcolor="aqua">Description</th>
+<th width="30%" align="left" valign="bottom" bgcolor="aqua">Choices</th>
+<th width="10%" align="left" valign="bottom" bgcolor="aqua">Notes</th>
+</tr>
+<tr>
+<td valign="top" rowspan="4"><a href="#CHGJOB.JOB"><b>JOB</b></a></td>
+<td valign="top">Job name</td>
+<td valign="top">Single values: <b><u>*</u></b><br>Other values: <i>Qualified job name</i></td>
+<td valign="top" rowspan="4">Optional, Key, Positional 1</td>
+</tr>
+<tr>
+<td valign="top">Qualifier 1: Job name</td>
+<td valign="top"><i>Name</i></td>
+</tr><tr>
+<td valign="top">Qualifier 2: User</td>
+<td valign="top"><i>Name</i></td>
+</tr><tr>
+<td valign="top">Qualifier 3: Number</td>
+<td valign="top">000000-999999</td>
+</tr><tr>
+<td valign="top"><a href="#CHGJOB.JOBPTY"><b>JOBPTY</b></a></td>
+<td valign="top">Job priority (on JOBQ)</td>
+<td valign="top">0-9, <b><u>*SAME</u></b></td>
+<td valign="top">Optional</td>
+</tr>
+<tr>
+<td valign="top"><a href="#CHGJOB.OUTPTY"><b>OUTPTY</b></a></td>
+<td valign="top">Output priority (on OUTQ)</td>
+<td valign="top">1-9, <b><u>*SAME</u></b></td>
+<td valign="top">Optional</td>
+</tr>
+<tr>
+<td valign="top"><a href="#CHGJOB.PRTDEV"><b>PRTDEV</b></a></td>
+<td valign="top">Print device</td>
+<td valign="top"><i>Name</i>, <b><u>*SAME</u></b>, *USRPRF, *SYSVAL, *WRKSTN</td>
+<td valign="top">Optional</td>
+</tr>
+<tr>
+<td valign="top" rowspan="3"><a href="#CHGJOB.OUTQ"><b>OUTQ</b></a></td>
+<td valign="top">Output queue</td>
+<td valign="top">Single values: <b><u>*SAME</u></b>, *USRPRF, *DEV, *WRKSTN<br>Other values: <i>Qualified object name</i></td>
+<td valign="top" rowspan="3">Optional</td>
+</tr>
+<tr>
+<td valign="top">Qualifier 1: Output queue</td>
+<td valign="top"><i>Name</i></td>
+</tr><tr>
+<td valign="top">Qualifier 2: Library</td>
+<td valign="top"><i>Name</i>, <b><u>*LIBL</u></b>, *CURLIB</td>
+</tr><tr>
+<td valign="top"><a href="#CHGJOB.RUNPTY"><b>RUNPTY</b></a></td>
+<td valign="top">Run priority</td>
+<td valign="top">1-99, <b><u>*SAME</u></b></td>
+<td valign="top">Optional</td>
+</tr>
+<tr>
+<td valign="top" rowspan="3"><a href="#CHGJOB.JOBQ"><b>JOBQ</b></a></td>
+<td valign="top">Job queue</td>
+<td valign="top">Single values: <b><u>*SAME</u></b><br>Other values: <i>Qualified object name</i></td>
+<td valign="top" rowspan="3">Optional</td>
+</tr>
+<tr>
+<td valign="top">Qualifier 1: Job queue</td>
+<td valign="top"><i>Name</i></td>
+</tr><tr>
+<td valign="top">Qualifier 2: Library</td>
+<td valign="top"><i>Name</i>, <b><u>*LIBL</u></b>, *CURLIB</td>
+</tr><tr>
+<td valign="top"><a href="#CHGJOB.PRTTXT"><b>PRTTXT</b></a></td>
+<td valign="top">Print text</td>
+<td valign="top"><i>Character value</i>, <b><u>*SAME</u></b>, *SYSVAL, *BLANK</td>
+<td valign="top">Optional</td>
+</tr>
+<tr>
+<td valign="top" rowspan="4"><a href="#CHGJOB.LOG"><b>LOG</b></a></td>
+<td valign="top">Message logging</td>
+<td valign="top"><i>Element list</i></td>
+<td valign="top" rowspan="4">Optional</td>
+</tr>
+<tr>
+<td valign="top">Element 1: Level</td>
+<td valign="top">
+0-4, <b><u>*SAME</u></b></td>
+</tr>
+<tr>
+<td valign="top">Element 2: Severity</td>
+<td valign="top">
+0-99, <b><u>*SAME</u></b></td>
+</tr>
+<tr>
+<td valign="top">Element 3: Text</td>
+<td valign="top">
+<b><u>*SAME</u></b>, *MSG, *SECLVL, *NOLIST</td>
+</tr>
+<tr>
+<td valign="top"><a href="#CHGJOB.LOGCLPGM"><b>LOGCLPGM</b></a></td>
+<td valign="top">Log CL program commands</td>
+<td valign="top"><b><u>*SAME</u></b>, *NO, *YES</td>
+<td valign="top">Optional</td>
+</tr>
+<tr>
+<td valign="top"><a href="#CHGJOB.LOGOUTPUT"><b>LOGOUTPUT</b></a></td>
+<td valign="top">Job log output</td>
+<td valign="top"><b><u>*SAME</u></b>, *SYSVAL, *JOBLOGSVR, *JOBEND, *PND</td>
+<td valign="top">Optional</td>
+</tr>
+<tr>
+<td valign="top"><a href="#CHGJOB.JOBMSGQFL"><b>JOBMSGQFL</b></a></td>
+<td valign="top">Job message queue full action</td>
+<td valign="top"><b><u>*SAME</u></b>, *SYSVAL, *NOWRAP, *WRAP, *PRTWRAP</td>
+<td valign="top">Optional</td>
+</tr>
+<tr>
+<td valign="top"><a href="#CHGJOB.INQMSGRPY"><b>INQMSGRPY</b></a></td>
+<td valign="top">Inquiry message reply</td>
+<td valign="top"><b><u>*SAME</u></b>, *RQD, *DFT, *SYSRPYL</td>
+<td valign="top">Optional</td>
+</tr>
+<tr>
+<td valign="top"><a href="#CHGJOB.BRKMSG"><b>BRKMSG</b></a></td>
+<td valign="top">Break message handling</td>
+<td valign="top"><b><u>*SAME</u></b>, *NORMAL, *NOTIFY, *HOLD</td>
+<td valign="top">Optional</td>
+</tr>
+<tr>
+<td valign="top"><a href="#CHGJOB.STSMSG"><b>STSMSG</b></a></td>
+<td valign="top">Status message</td>
+<td valign="top"><b><u>*SAME</u></b>, *USRPRF, *SYSVAL, *NONE, *NORMAL</td>
+<td valign="top">Optional</td>
+</tr>
+<tr>
+<td valign="top"><a href="#CHGJOB.DDMCNV"><b>DDMCNV</b></a></td>
+<td valign="top">DDM conversation</td>
+<td valign="top"><b><u>*SAME</u></b>, *KEEP, *DROP</td>
+<td valign="top">Optional</td>
+</tr>
+<tr>
+<td valign="top"><a href="#CHGJOB.SCDDATE"><b>SCDDATE</b></a></td>
+<td valign="top">Schedule date</td>
+<td valign="top"><i>Date</i>, <b><u>*SAME</u></b>, *CURRENT, *MONTHSTR, *MONTHEND, *MON, *TUE, *WED, *THU, *FRI, *SAT, *SUN</td>
+<td valign="top">Optional</td>
+</tr>
+<tr>
+<td valign="top"><a href="#CHGJOB.SCDTIME"><b>SCDTIME</b></a></td>
+<td valign="top">Schedule time</td>
+<td valign="top"><i>Time</i>, <b><u>*SAME</u></b>, *CURRENT</td>
+<td valign="top">Optional</td>
+</tr>
+<tr>
+<td valign="top"><a href="#CHGJOB.DATE"><b>DATE</b></a></td>
+<td valign="top">Job date</td>
+<td valign="top"><i>Date</i>, <b><u>*SAME</u></b></td>
+<td valign="top">Optional</td>
+</tr>
+<tr>
+<td valign="top"><a href="#CHGJOB.DATFMT"><b>DATFMT</b></a></td>
+<td valign="top">Date format</td>
+<td valign="top"><b><u>*SAME</u></b>, *SYSVAL, *YMD, *MDY, *DMY, *JUL</td>
+<td valign="top">Optional</td>
+</tr>
+<tr>
+<td valign="top"><a href="#CHGJOB.DATSEP"><b>DATSEP</b></a></td>
+<td valign="top">Date separator</td>
+<td valign="top"><b><u>*SAME</u></b>, *SYSVAL, *BLANK, '/', '-', '.', '&nbsp;', ','</td>
+<td valign="top">Optional</td>
+</tr>
+<tr>
+<td valign="top"><a href="#CHGJOB.TIMSEP"><b>TIMSEP</b></a></td>
+<td valign="top">Time separator</td>
+<td valign="top"><b><u>*SAME</u></b>, *SYSVAL, *BLANK, ':', '.', '&nbsp;', ','</td>
+<td valign="top">Optional</td>
+</tr>
+<tr>
+<td valign="top"><a href="#CHGJOB.SWS"><b>SWS</b></a></td>
+<td valign="top">Job switches</td>
+<td valign="top"><i>Character value</i>, <b><u>*SAME</u></b></td>
+<td valign="top">Optional</td>
+</tr>
+<tr>
+<td valign="top"><a href="#CHGJOB.TIMESLICE"><b>TIMESLICE</b></a></td>
+<td valign="top">Time slice</td>
+<td valign="top">1-9999999, <b><u>*SAME</u></b></td>
+<td valign="top">Optional</td>
+</tr>
+<tr>
+<td valign="top"><a href="#CHGJOB.PURGE"><b>PURGE</b></a></td>
+<td valign="top">Eligible for purge</td>
+<td valign="top"><b><u>*SAME</u></b>, *YES, *NO</td>
+<td valign="top">Optional</td>
+</tr>
+<tr>
+<td valign="top"><a href="#CHGJOB.DFTWAIT"><b>DFTWAIT</b></a></td>
+<td valign="top">Default wait time</td>
+<td valign="top">1-9999999, <b><u>*SAME</u></b>, *NOMAX</td>
+<td valign="top">Optional</td>
+</tr>
+<tr>
+<td valign="top"><a href="#CHGJOB.DEVRCYACN"><b>DEVRCYACN</b></a></td>
+<td valign="top">Device recovery action</td>
+<td valign="top"><b><u>*SAME</u></b>, *SYSVAL, *MSG, *DSCMSG, *DSCENDRQS, *ENDJOB, *ENDJOBNOLIST</td>
+<td valign="top">Optional</td>
+</tr>
+<tr>
+<td valign="top"><a href="#CHGJOB.TSEPOOL"><b>TSEPOOL</b></a></td>
+<td valign="top">Time slice end pool</td>
+<td valign="top"><b><u>*SAME</u></b>, *SYSVAL, *NONE, *BASE</td>
+<td valign="top">Optional</td>
+</tr>
+<tr>
+<td valign="top"><a href="#CHGJOB.PRTKEYFMT"><b>PRTKEYFMT</b></a></td>
+<td valign="top">Print key format</td>
+<td valign="top"><b><u>*SAME</u></b>, *SYSVAL, *NONE, *PRTBDR, *PRTHDR, *PRTALL</td>
+<td valign="top">Optional</td>
+</tr>
+<tr>
+<td valign="top" rowspan="3"><a href="#CHGJOB.SRTSEQ"><b>SRTSEQ</b></a></td>
+<td valign="top">Sort sequence</td>
+<td valign="top">Single values: <b><u>*SAME</u></b>, *USRPRF, *SYSVAL, *HEX, *LANGIDUNQ, *LANGIDSHR<br>Other values: <i>Qualified object name</i></td>
+<td valign="top" rowspan="3">Optional</td>
+</tr>
+<tr>
+<td valign="top">Qualifier 1: Sort sequence</td>
+<td valign="top"><i>Name</i></td>
+</tr><tr>
+<td valign="top">Qualifier 2: Library</td>
+<td valign="top"><i>Name</i>, <b><u>*LIBL</u></b>, *CURLIB</td>
+</tr><tr>
+<td valign="top"><a href="#CHGJOB.LANGID"><b>LANGID</b></a></td>
+<td valign="top">Language ID</td>
+<td valign="top"><i>Character value</i>, <b><u>*SAME</u></b>, *USRPRF, *SYSVAL</td>
+<td valign="top">Optional</td>
+</tr>
+<tr>
+<td valign="top"><a href="#CHGJOB.CNTRYID"><b>CNTRYID</b></a></td>
+<td valign="top">Country or region ID</td>
+<td valign="top"><i>Character value</i>, <b><u>*SAME</u></b>, *USRPRF, *SYSVAL</td>
+<td valign="top">Optional</td>
+</tr>
+<tr>
+<td valign="top"><a href="#CHGJOB.CCSID"><b>CCSID</b></a></td>
+<td valign="top">Coded character set ID</td>
+<td valign="top">1-65535, <b><u>*SAME</u></b>, *USRPRF, *SYSVAL, *HEX</td>
+<td valign="top">Optional</td>
+</tr>
+<tr>
+<td valign="top"><a href="#CHGJOB.DECFMT"><b>DECFMT</b></a></td>
+<td valign="top">Decimal format</td>
+<td valign="top"><b><u>*SAME</u></b>, *SYSVAL, *BLANK, I, J</td>
+<td valign="top">Optional</td>
+</tr>
+<tr>
+<td valign="top"><a href="#CHGJOB.CHRIDCTL"><b>CHRIDCTL</b></a></td>
+<td valign="top">Character identifier control</td>
+<td valign="top"><b><u>*SAME</u></b>, *USRPRF, *SYSVAL, *DEVD, *JOBCCSID</td>
+<td valign="top">Optional</td>
+</tr>
+<tr>
+<td valign="top"><a href="#CHGJOB.SPLFACN"><b>SPLFACN</b></a></td>
+<td valign="top">Spooled file action</td>
+<td valign="top"><b><u>*SAME</u></b>, *SYSVAL, *KEEP, *DETACH</td>
+<td valign="top">Optional</td>
+</tr>
+<tr>
+<td valign="top"><a href="#CHGJOB.WLCGRP"><b>WLCGRP</b></a></td>
+<td valign="top">Workload group</td>
+<td valign="top"><i>Simple name</i>, <b><u>*SAME</u></b>, *NONE</td>
+<td valign="top">Optional</td>
+</tr>
+<tr>
+<td valign="top"><a href="#CHGJOB.CPUTIME"><b>CPUTIME</b></a></td>
+<td valign="top">Maximum CPU time</td>
+<td valign="top">1-9999999, <b><u>*SAME</u></b>, *NOMAX</td>
+<td valign="top">Optional</td>
+</tr>
+<tr>
+<td valign="top"><a href="#CHGJOB.MAXTMPSTG"><b>MAXTMPSTG</b></a></td>
+<td valign="top">Maximum temporary storage</td>
+<td valign="top">1-2147483647, <b><u>*SAME</u></b>, *NOMAX</td>
+<td valign="top">Optional</td>
+</tr>
+<tr>
+<td valign="top"><a href="#CHGJOB.PRCRSCPTY"><b>PRCRSCPTY</b></a></td>
+<td valign="top">Processor resources priority</td>
+<td valign="top"><b><u>*SAME</u></b>, *SYSCTL, *NORMAL, *HIGH, *LOW</td>
+<td valign="top">Optional</td>
+</tr>
+<tr>
+<td valign="top"><a href="#CHGJOB.DUPJOBOPT"><b>DUPJOBOPT</b></a></td>
+<td valign="top">Duplicate job option</td>
+<td valign="top"><b><u>*SELECT</u></b>, *MSG</td>
+<td valign="top">Optional</td>
+</tr>
+</table>
+
+<table width="100%">
+<tr><td align="right"><a href="#CHGJOB.Top_Of_Page">Top</a></td></tr>
+</table>
+</div>
+<div> <a name="CHGJOB.JOB"></a>
+<h3>Job name (JOB)</h3>
+<p>Specifies the name of the job whose attributes are being changed.
+</p>
+<dl>
+<dt><b><u>*</u></b></dt>
+<dd>The attributes of the job that issues this command are changed.
+</dd>
+</dl>
+<p><b>Qualifier 1: Job name</b>
+</p>
+<dl>
+<dt><b><i>name</i></b></dt>
+<dd>Specify the name of the job.
+</dd>
+</dl>
+<p><b>Qualifier 2: User</b>
+</p>
+<dl>
+<dt><b><i>name</i></b></dt>
+<dd>Specify the name of the user profile under which the job is run.
+</dd>
+</dl>
+<p><b>Qualifier 3: Number</b>
+</p>
+<dl>
+<dt><b><i>000000-999999</i></b></dt>
+<dd>Specify the job number assigned by the system.
+</dd>
+</dl>
+<p>If no job qualifier is given, all jobs currently in the system are searched for the job name.  If more than one occurrence of the specified name is found, a qualified job name must be specified.
+</p>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#CHGJOB.Top_Of_Page">Top</a></td></tr>
+</table>
+<div> <a name="CHGJOB.JOBPTY"></a>
+<h3>Job priority (on JOBQ) (JOBPTY)</h3>
+<p>Specifies the scheduling priority used for the job being changed.  Valid values range from 0 through 9, where 0 is the highest priority and 9 is the lowest priority.
+</p>
+<dl>
+<dt><b><u>*SAME</u></b></dt>
+<dd>The scheduling priority does not change.
+</dd>
+<dt><b><i>0-9</i></b></dt>
+<dd>Specify the scheduling priority for the job.  If the job is currently on the job queue, its position on the queue in relationship to other jobs may be changed.  The scheduling priority specified cannot be higher than the priority specified in the user profile under which the job in which this command is entered, is running.
+</dd>
+</dl>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#CHGJOB.Top_Of_Page">Top</a></td></tr>
+</table>
+<div> <a name="CHGJOB.OUTPTY"></a>
+<h3>Output priority (on OUTQ) (OUTPTY)</h3>
+<p>Specifies the output priority for spooled output files that are produced by this job.  The highest priority is 1 and the lowest priority is 9.
+</p>
+<dl>
+<dt><b><u>*SAME</u></b></dt>
+<dd>The job's priority for spooled output does not change.
+</dd>
+<dt><b><i>1-9</i></b></dt>
+<dd>Specify the priority of the job's output files.  The output priority specified cannot be higher than the priority specified in the user profile under which the job in which this command entered, is running.  Only those spooled output files which are on output queues in the library name space of the thread issuing this command will be changed.
+</dd>
+</dl>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#CHGJOB.Top_Of_Page">Top</a></td></tr>
+</table>
+<div> <a name="CHGJOB.PRTDEV"></a>
+<h3>Print device (PRTDEV)</h3>
+<p>Specifies the default printer device for this job.
+</p>
+<p>
+<b>Note:     </b>This assumes the defaults are specified on the OUTQ parameter for the printer file, job description, user profile and workstation.
+</p>
+<dl>
+<dt><b><u>*SAME</u></b></dt>
+<dd>The default printer device does not change.
+</dd>
+<dt><b>*USRPRF</b></dt>
+<dd>When the job being changed is the job in which this command is running, the printer device is obtained from the user profile under which this thread was initially running.  When the job being changed is a different job, the printer device is obtained from the current user profile associated with that job.
+</dd>
+<dt><b>*SYSVAL</b></dt>
+<dd>The value in the system value QPRTDEV is used as the printer device.
+</dd>
+<dt><b>*WRKSTN</b></dt>
+<dd>The default printer device used with this job is the printer device assigned to the work station that is associated with the job.
+</dd>
+</dl>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#CHGJOB.Top_Of_Page">Top</a></td></tr>
+</table>
+<div> <a name="CHGJOB.OUTQ"></a>
+<h3>Output queue (OUTQ)</h3>
+<p>Specifies the output queue used for spooled files that specify OUTQ(*JOB).  This parameter applies only to printer files that have *JOB specified for the OUTQ parameter.
+</p>
+<p><b>Single values</b>
+</p>
+<dl>
+<dt><b><u>*SAME</u></b></dt>
+<dd>The default output queue does not change.
+</dd>
+<dt><b>*USRPRF</b></dt>
+<dd>When the job being changed is the job in which this command is running, the output queue is obtained from the user profile under which this thread was initially running.  When the job being changed is a different job, the output queue is obtained from the current user profile associated with that job.
+</dd>
+<dt><b>*DEV</b></dt>
+<dd>The DEV parameter is determined by one of these printer file commands:  Create Printer File (CRTPRTF), Change Printer File (CHGPRTF), or Override with Printer File (OVRPRTF).
+<p>
+<b>Note:     </b>This assumes the defaults were specified on the OUTQ parameter for the printer file, job description, user profile, and workstation.
+</p>
+</dd>
+<dt><b>*WRKSTN</b></dt>
+<dd>The default output queue used with this job is the output queue assigned to the work station that is associated with the job at the time the job is started.
+</dd>
+</dl>
+<p><b>Qualifier 1: Output queue</b>
+</p>
+<dl>
+<dt><b><i>name</i></b></dt>
+<dd>Specify the name of the default output queue used by the job.
+</dd>
+</dl>
+<p><b>Qualifier 2: Library</b>
+</p>
+<dl>
+<dt><b><u>*LIBL</u></b></dt>
+<dd>All libraries in the library list for the current thread are searched until the first match is found.
+</dd>
+</dl>
+<dl>
+<dt><b>*CURLIB</b></dt>
+<dd>The current library for the thread is used to locate the default output queue.  If no library is specified as the current library for the thread, the QGPL library is used.
+</dd>
+<dt><b><i>name</i></b></dt>
+<dd>Specify the library where the default output queue used by the job is located.
+</dd>
+</dl>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#CHGJOB.Top_Of_Page">Top</a></td></tr>
+</table>
+<div> <a name="CHGJOB.RUNPTY"></a>
+<h3>Run priority (RUNPTY)</h3>
+<p>Specifies the run priority for the job.  Run priority is a value, ranging from 1 (highest priority) through 99 (lowest priority), that represents the priority at which the job competes for the processing unit relative to other jobs that are active at the same time.  This value represents the relative (not the absolute) importance of the job.  For example, a job with a run priority of 25 is not twice as important as one with a run priority of 50.  This value is the highest run priority allowed for any thread within the job.  Individual threads within the job may have a lower priority.  Changing the run priority of the job will affect the run priorities of all threads within the job.  For example, the job is running at priority 10, thread A within the job is running at priority 10 and thread B within the job is running at priority 15.  The priority of the job is changed to 20.  The priority of thread A would then be adjusted to 20 and the priority of thread B would be adjusted to 25.
+</p>
+<p>If the job consists of multiple routing steps, a change to this attribute during a routing step does not apply to subsequent routing steps.
+</p>
+<dl>
+<dt><b><u>*SAME</u></b></dt>
+<dd>The run priority does not change.
+</dd>
+<dt><b><i>1-99</i></b></dt>
+<dd>Specify the run priority of the job.
+</dd>
+</dl>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#CHGJOB.Top_Of_Page">Top</a></td></tr>
+</table>
+<div> <a name="CHGJOB.JOBQ"></a>
+<h3>Job queue (JOBQ)</h3>
+<p>Specifies the job queue in which this job is placed.
+</p>
+<p><b>Single values</b>
+</p>
+<dl>
+<dt><b><u>*SAME</u></b></dt>
+<dd>The job queue does not change.
+</dd>
+</dl>
+<p><b>Qualifier 1: Job queue</b>
+</p>
+<dl>
+<dt><b><i>name</i></b></dt>
+<dd>Specify the name of the job queue.
+</dd>
+</dl>
+<p><b>Qualifier 2: Library</b>
+</p>
+<dl>
+<dt><b><u>*LIBL</u></b></dt>
+<dd>All libraries in the library list for the current thread are searched until the first match is found.
+</dd>
+</dl>
+<dl>
+<dt><b>*CURLIB</b></dt>
+<dd>The current library for the thread is used to locate the job queue.  If no library is specified as the current library for the thread, the QGPL library is used.
+</dd>
+<dt><b><i>name</i></b></dt>
+<dd>Specify the library where the job queue is located.
+</dd>
+</dl>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#CHGJOB.Top_Of_Page">Top</a></td></tr>
+</table>
+<div> <a name="CHGJOB.PRTTXT"></a>
+<h3>Print text (PRTTXT)</h3>
+<p>Specifies the text that is printed at the bottom of each page of printed output and on separator pages.
+</p>
+<dl>
+<dt><b><u>*SAME</u></b></dt>
+<dd>The current value of the PRTTXT parameter does not change.
+</dd>
+<dt><b>*SYSVAL</b></dt>
+<dd>The system value, QPRTTXT, is used.
+</dd>
+<dt><b>*BLANK</b></dt>
+<dd>No text is printed on printed output.
+</dd>
+<dt><b><i>character-value</i></b></dt>
+<dd>Specify the character string that is printed at the bottom of each page.  A maximum of 30 characters can be entered, enclosed in apostrophes.
+</dd>
+</dl>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#CHGJOB.Top_Of_Page">Top</a></td></tr>
+</table>
+<div> <a name="CHGJOB.LOG"></a>
+<h3>Message logging (LOG)</h3>
+<p>Specifies the message logging values used to determine the amount and type of information sent to the job log by this job.  This parameter has three elements:  the message (or logging) level, the message severity, and the level of message text.  If no values are specified on this parameter, the values are not changed.
+</p>
+<p><b>Element 1: Level</b>
+</p>
+<dl>
+<dt><b><u>*SAME</u></b></dt>
+<dd>The message logging level of the job does not change.
+</dd>
+<dt><b><i>0-4</i></b></dt>
+<dd>Specify the message logging level used for the job's messages.  The possible logging levels are:
+<dl>
+<dt><b>0</b></dt>
+<dd>No messages are logged.
+</dd>
+<dt><b>1</b></dt>
+<dd>All messages sent to the job's external message queue with a severity greater than or equal to the message logging severity are logged.  This includes the indications of job start, job end, and job completion status.
+</dd>
+<dt><b>2</b></dt>
+<dd>The following information is logged:
+<ul>
+<li>Logging level 1 information
+</li>
+<li>Request messages which result in a high-level message with a severity code greater than or equal to the message logging severity.  Both the request message and all associated messages are logged.
+</li>
+</ul>
+<p>
+<b>Note:     </b>A high-level message is one that is sent to the program message queue of the program that receives the request message.  For example, QCMD is an IBM-supplied request processing program that receives request messages.
+</p>
+</dd>
+<dt><b>3</b></dt>
+<dd>The following information is logged:
+<ul>
+<li>Logging level 1 and 2 information
+</li>
+<li>All request messages
+</li>
+<li>Commands run by a CL program are logged if it is allowed by the logging of CL programs job attribute and the log attribute of the CL program.
+</li>
+</ul>
+</dd>
+<dt><b>4</b></dt>
+<dd>The following information is logged:
+<ul>
+<li>All request messages and all messages with a severity greater than or equal to the message logging severity, including trace messages.
+</li>
+<li>Commands run by a CL program are logged if it is allowed by the logging of CL programs job attribute and the log attribute of the CL program.
+</li>
+</ul>
+</dd>
+</dl>
+</dd>
+</dl>
+<p><b>Element 2: Severity</b>
+</p>
+<dl>
+<dt><b><u>*SAME</u></b></dt>
+<dd>The message logging severity does not change.
+</dd>
+<dt><b><i>0-99</i></b></dt>
+<dd>Specify the message logging severity that is used in conjunction with the logging level to determine which error messages are logged in the job log.
+</dd>
+</dl>
+<p><b>Element 3: Text</b>
+</p>
+<dl>
+<dt><b><u>*SAME</u></b></dt>
+<dd>The level of message text does not change.
+</dd>
+<dt><b>*MSG</b></dt>
+<dd>Only the message text is written to the job log.
+</dd>
+<dt><b>*SECLVL</b></dt>
+<dd>Both the message text and the message help (cause and recovery) of the error message are written to the job log.
+</dd>
+<dt><b>*NOLIST</b></dt>
+<dd>If the job ends normally, no job log is produced.  If the job ends abnormally (if the job end code is 20 or higher), a job log is produced.  The messages that appear in the job log contain both the message text and the message help.
+</dd>
+</dl>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#CHGJOB.Top_Of_Page">Top</a></td></tr>
+</table>
+<div> <a name="CHGJOB.LOGCLPGM"></a>
+<h3>Log CL program commands (LOGCLPGM)</h3>
+<p>Specifies whether the commands that are run in a control language program are logged to the job log by way of the CL program's message queue.  This parameter sets the status of the job's logging flag.  If *JOB has been specified for the <b>Message logging (LOG)</b> parameter in the Create CL Program (CRTCLPGM) command, the flag set in the <b>Log CL program commands (LOGCLPGM)</b> parameter is used.  Other values for the <b>Message logging (LOG)</b> parameter override the <b>Log CL program commands (LOGCLPGM)</b> parameter.  The commands are logged in the same manner as the requests.
+</p>
+<dl>
+<dt><b><u>*SAME</u></b></dt>
+<dd>The current state of the job's logging flag does not change.
+</dd>
+<dt><b>*NO</b></dt>
+<dd>Commands that come later in a CL program are not written to the job log.
+</dd>
+<dt><b>*YES</b></dt>
+<dd>Commands that come later in a CL program, and are capable of being written, are logged to the job log.
+</dd>
+</dl>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#CHGJOB.Top_Of_Page">Top</a></td></tr>
+</table>
+<div> <a name="CHGJOB.LOGOUTPUT"></a>
+<h3>Job log output (LOGOUTPUT)</h3>
+<p>Specifies how the job log will be produced when the job completes.  This does not affect job logs produced when the message queue is full and the job message queue full action specifies *PRTWRAP.  Messages in the job message queue are written to a spooled file, from which the job log can be printed, unless the Control Job Log Output (QMHCTLJL) API was used in the job to specify that the messages in the job log are to be written to a database file.
+</p>
+<p>The job log output value can be changed at any time until the job log has been produced or removed.  To change the job log output value for a job, use the Change Job (QWTCHGJB) API or the Change Job (CHGJOB) command.
+</p>
+<p>The job log can be displayed at any time until the job log has been produced or removed.  To display the job log, use the Display Job Log (DSPJOBLOG) command.
+</p>
+<p>The job log can be removed when the job has completed and the job log has not yet been produced or removed.  To remove the job log, use the Remove Pending Job Log (QWTRMVJL) API or the End Job (ENDJOB) command.
+</p>
+<dl>
+<dt><b><u>*SAME</u></b></dt>
+<dd>The value does not change.
+</dd>
+<dt><b>*SYSVAL</b></dt>
+<dd>The value specified in the system value QLOGOUTPUT is used.
+</dd>
+<dt><b>*JOBLOGSVR</b></dt>
+<dd>The job log will be produced by a job log server.  For more information about job log servers, refer to the Start Job Log Server (STRLOGSVR) command.
+</dd>
+<dt><b>*JOBEND</b></dt>
+<dd>The job log will be produced by the job itself.  If the job cannot produce its own job log, the job log will be produced by a job log server.  For example, a job does not produce its own job log when the system is processing a Power Down System (PWRDWNSYS) command.
+</dd>
+<dt><b>*PND</b></dt>
+<dd>The job log will not be produced.  The job log remains pending until removed.
+</dd>
+</dl>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#CHGJOB.Top_Of_Page">Top</a></td></tr>
+</table>
+<div> <a name="CHGJOB.JOBMSGQFL"></a>
+<h3>Job message queue full action (JOBMSGQFL)</h3>
+<p>Specifies the action that should be taken when the job message queue is full.
+</p>
+<dl>
+<dt><b><u>*SAME</u></b></dt>
+<dd>The job message queue full option does not change.
+</dd>
+<dt><b>*SYSVAL</b></dt>
+<dd>The value specified for the QJOBMSGQFL system value is used.
+</dd>
+<dt><b>*NOWRAP</b></dt>
+<dd>The message queue does not wrap when it is full.  This action ends the job.
+</dd>
+<dt><b>*WRAP</b></dt>
+<dd>The message queue wraps to the start of the message queue when full and starts filling the message queue again.
+</dd>
+<dt><b>*PRTWRAP</b></dt>
+<dd>The message queue wraps the job message queue when full and prints the messages that are being overlaid because of wrapping.
+</dd>
+</dl>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#CHGJOB.Top_Of_Page">Top</a></td></tr>
+</table>
+<div> <a name="CHGJOB.INQMSGRPY"></a>
+<h3>Inquiry message reply (INQMSGRPY)</h3>
+<p>Specifies the way that predefined messages that are sent as a result of running this job are answered.  You can specify that the inquiry message reply control is taken from the job description, or that all inquiry messages require a reply, or that a default reply is issued, or that the system reply list is checked for a matching reply as each predefined inquiry message is sent.
+</p>
+<dl>
+<dt><b><u>*SAME</u></b></dt>
+<dd>The method to use for inquiry message replies does not change.
+</dd>
+<dt><b>*RQD</b></dt>
+<dd>A reply is required by the receiver of the inquiry message for inquiry messages that are sent during the running of this job.
+</dd>
+<dt><b>*DFT</b></dt>
+<dd>The default message reply is used to answer any inquiry messages issued during the running of this job.
+</dd>
+<dt><b>*SYSRPYL</b></dt>
+<dd>The system reply list is checked to see if there is an entry for any inquiry message issued as a result of running this job.  If a match occurs, the reply value in that entry is used.  If no entry exists for that inquiry message, a reply is required.
+</dd>
+</dl>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#CHGJOB.Top_Of_Page">Top</a></td></tr>
+</table>
+<div> <a name="CHGJOB.BRKMSG"></a>
+<h3>Break message handling (BRKMSG)</h3>
+<p>Specifies how break messages are handled for the job.  This is determined by the status of the message queue, the message queue severity, and the setting of this value.
+</p>
+<dl>
+<dt><b><u>*SAME</u></b></dt>
+<dd>Break message handling does not change.
+</dd>
+<dt><b>*NORMAL</b></dt>
+<dd>Break message handling is determined by the message queue status.
+</dd>
+<dt><b>*NOTIFY</b></dt>
+<dd>An audible alarm sounds to indicate the presence of a message.  *NOTIFY is allowed only for interactive jobs.
+</dd>
+<dt><b>*HOLD</b></dt>
+<dd>Neither break messages, or messages sent to a signed-on work station through the Send Break Message (SNDBRKMSG) command, are shown for message queues in *BREAK delivery mode.  The alarm does not sound for messages sent to message queues in *NOTIFY delivery mode.  The user break message handling program is not started.
+</dd>
+</dl>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#CHGJOB.Top_Of_Page">Top</a></td></tr>
+</table>
+<div> <a name="CHGJOB.STSMSG"></a>
+<h3>Status message (STSMSG)</h3>
+<p>Specifies how status messages are handled for the job.
+</p>
+<dl>
+<dt><b><u>*SAME</u></b></dt>
+<dd>Status message handling does not change.
+</dd>
+<dt><b>*USRPRF</b></dt>
+<dd>When the job being changed is the job in which this command is running, the status message handling is obtained from the user profile under which this thread was initially running.  When the job being changed is a different job, the status message handling is obtained from the current user profile associated with that job.
+</dd>
+<dt><b>*SYSVAL</b></dt>
+<dd>Status messages are shown or not shown as specified in the QSTSMSG system value.
+</dd>
+<dt><b>*NONE</b></dt>
+<dd>Status messages are not shown.
+</dd>
+<dt><b>*NORMAL</b></dt>
+<dd>Status messages are shown.  Text on the bottom line of the display is lost.
+</dd>
+</dl>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#CHGJOB.Top_Of_Page">Top</a></td></tr>
+</table>
+<div> <a name="CHGJOB.DDMCNV"></a>
+<h3>DDM conversation (DDMCNV)</h3>
+<p>Specifies whether the connections using distributed data management (DDM) protocols remain active when they are not being used.  The connections include APPC conversations, active TCP/IP conversations or OptiConnect connections.  The DDM protocols are used in Distributed Relational Database Architecture (DRDA) applications, DDM applications, or DB2 Multisystem applications.
+</p>
+<dl>
+<dt><b><u>*SAME</u></b></dt>
+<dd>The current state of the job's DDM conversation attribute does not change.
+</dd>
+<dt><b>*KEEP</b></dt>
+<dd>The system keeps DDM conversation connections active when there are no users, except when:
+<ul>
+<li>The routing step ends on the source system, either at the job or when the job starts a reroute of the job.
+</li>
+<li>There is an explicit request that conversations be disconnected, using the Reclaim DDM Conversations (RCLDDMCNV) command or the Reclaim Resources (RCLRSC) command.
+</li>
+<li>There is a communications failure or internal failure.
+</li>
+<li>A DRDA connection to an application server not running on the System i ends.
+</li>
+</ul>
+</dd>
+<dt><b>*DROP</b></dt>
+<dd>The system ends a DDM-allocated conversation when there are no users.  Examples include when an application closes a DDM file, or when a DRDA application runs an SQL DISCONNECT statement.
+</dd>
+</dl>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#CHGJOB.Top_Of_Page">Top</a></td></tr>
+</table>
+<div> <a name="CHGJOB.SCDDATE"></a>
+<h3>Schedule date (SCDDATE)</h3>
+<p>Specifies the date on which the submitted job becomes eligible to run.
+</p>
+<p>If your system or your job is configured to use the Julian date format, *MONTHSTR and *MONTHEND are calculated as if the system or job did not use the Julian date format.
+</p>
+<dl>
+<dt><b><u>*SAME</u></b></dt>
+<dd>This value does not change.
+</dd>
+<dt><b>*CURRENT</b></dt>
+<dd>The submitted job becomes eligible to run on the current date.
+</dd>
+<dt><b>*MONTHSTR</b></dt>
+<dd>The submitted job becomes eligible to run on the first day of the month.  If you specify *MONTHSTR, and if today is the first day of the month and the time you specify on the SCDTIME parameter has not passed, the job becomes eligible to run today.  Otherwise, the job becomes eligible on the first day of the next month.
+</dd>
+<dt><b>*MONTHEND</b></dt>
+<dd>The submitted job becomes eligible to run on the last day of the month.  If you specify *MONTHEND, and if today is the last day of the month and the time you specify on the SCDTIME parameter has not passed, the job becomes eligible to run today.  Otherwise, the job becomes eligible on the last day of the next month.
+</dd>
+<dt><b>*MON</b></dt>
+<dd>The job becomes eligible to run on Monday.
+</dd>
+<dt><b>*TUE</b></dt>
+<dd>The job becomes eligible to run on Tuesday.
+</dd>
+<dt><b>*WED</b></dt>
+<dd>The job becomes eligible to run on Wednesday.
+</dd>
+<dt><b>*THU</b></dt>
+<dd>The job becomes eligible to run on Thursday.
+</dd>
+<dt><b>*FRI</b></dt>
+<dd>The job becomes eligible to run on Friday.
+</dd>
+<dt><b>*SAT</b></dt>
+<dd>The job becomes eligible to run on Saturday.
+</dd>
+<dt><b>*SUN</b></dt>
+<dd>The job becomes eligible to run on Sunday.
+</dd>
+<dt><b><i>date</i></b></dt>
+<dd>Specify a date in the job date format with or without separators.
+</dd>
+</dl>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#CHGJOB.Top_Of_Page">Top</a></td></tr>
+</table>
+<div> <a name="CHGJOB.SCDTIME"></a>
+<h3>Schedule time (SCDTIME)</h3>
+<p>Specifies the time on the scheduled date at which the job becomes eligible to run.
+</p>
+<p>
+<b>Note:     </b>Although the time can be specified to the second, the load on the system may affect the exact time at which the job becomes eligible to run.
+</p>
+<dl>
+<dt><b><u>*SAME</u></b></dt>
+<dd>This value does not change.
+</dd>
+<dt><b>*CURRENT</b></dt>
+<dd>The job is submitted on the current time.
+</dd>
+<dt><b><i>time</i></b></dt>
+<dd>Specify the time you want the job to start.  The time is specified in 24-hour format and can be specified with or without a time separator:
+<ul>
+<li>Without a time separator, specify a string of 4 or 6 digits (hhmm or hhmmss) where <b>hh</b> = hours, <b>mm</b> = minutes, and <b>ss</b> = seconds.  Valid values for <b>hh</b> range from 00 to 23.  Valid values for <b>mm</b> and <b>ss</b> range from 00 to 59.
+</li>
+<li>With a time separator, specify a string of 5 or 8 digits where the time separator specified for your job is used to separate the hours, minutes, and seconds.  If this command is entered from the command line, the string must be enclosed in apostrophes.  If a time separator other than the separator specified for your job is used, this command will fail.
+</li>
+</ul>
+</dd>
+</dl>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#CHGJOB.Top_Of_Page">Top</a></td></tr>
+</table>
+<div> <a name="CHGJOB.DATE"></a>
+<h3>Job date (DATE)</h3>
+<p>Specifies the date that is assigned to the job.  The job date remains the same for the duration of the job, unless it is changed by the user.
+</p>
+<dl>
+<dt><b><u>*SAME</u></b></dt>
+<dd>The job date does not change.
+</dd>
+<dt><b><i>date</i></b></dt>
+<dd>Specify the value that is used as the job date for the job.  The date must be entered in the current job date format.  If no job date is specified for a job, the system date is used as the default for any function requiring a job date.  The date specified in this parameter overrides the system date for the running of the job only.
+</dd>
+</dl>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#CHGJOB.Top_Of_Page">Top</a></td></tr>
+</table>
+<div> <a name="CHGJOB.DATFMT"></a>
+<h3>Date format (DATFMT)</h3>
+<p>Specifies the format used for the date.
+</p>
+<dl>
+<dt><b><u>*SAME</u></b></dt>
+<dd>The date format used does not change.
+</dd>
+<dt><b>*SYSVAL</b></dt>
+<dd>The system value, QDATFMT, is used.
+</dd>
+<dt><b>*YMD</b></dt>
+<dd>The date format used is year, month, and day.
+</dd>
+<dt><b>*MDY</b></dt>
+<dd>The date format used is month, day, and year.
+</dd>
+<dt><b>*DMY</b></dt>
+<dd>The date format used is day, month, year.
+</dd>
+<dt><b>*JUL</b></dt>
+<dd>The date format used is Julian.
+</dd>
+</dl>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#CHGJOB.Top_Of_Page">Top</a></td></tr>
+</table>
+<div> <a name="CHGJOB.DATSEP"></a>
+<h3>Date separator (DATSEP)</h3>
+<p>Specifies the date separator used for the date.
+</p>
+<dl>
+<dt><b><u>*SAME</u></b></dt>
+<dd>The date separator does not change.
+</dd>
+<dt><b>*SYSVAL</b></dt>
+<dd>The system value for the date separator is used.
+</dd>
+<dt><b>*BLANK</b></dt>
+<dd>A blank is used for the date separator.
+</dd>
+<dt><b>'/'</b></dt>
+<dd>A slash (/) is used for the date separator.
+</dd>
+<dt><b>'-'</b></dt>
+<dd>A dash (-) is used for the date separator.
+</dd>
+<dt><b>'.'</b></dt>
+<dd>A period (.) is used for the date separator.
+</dd>
+<dt><b>' '</b></dt>
+<dd>A blank is used for the date separator.
+</dd>
+<dt><b>','</b></dt>
+<dd>A comma (,) is used for the date separator.
+</dd>
+</dl>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#CHGJOB.Top_Of_Page">Top</a></td></tr>
+</table>
+<div> <a name="CHGJOB.TIMSEP"></a>
+<h3>Time separator (TIMSEP)</h3>
+<p>Specifies the time separator used for the job.
+</p>
+<p>
+<b>Note:     </b>When specifying time on other commands, you must use the time separator specified on this parameter or no time separator.  If a time separator different from the time separator specified here is used to specify time on another command, the command will fail.
+</p>
+<dl>
+<dt><b><u>*SAME</u></b></dt>
+<dd>The time separator does not change.
+</dd>
+<dt><b>*SYSVAL</b></dt>
+<dd>The time separator specified in the system value QTIMSEP is used.
+</dd>
+<dt><b>*BLANK</b></dt>
+<dd>A blank is used for the time separator.
+</dd>
+<dt><b>':'</b></dt>
+<dd>A colon (:) is used for the time separator.
+</dd>
+<dt><b>'.'</b></dt>
+<dd>A period (.) is used for the time separator.
+</dd>
+<dt><b>' '</b></dt>
+<dd>A blank is used for the time separator.
+</dd>
+<dt><b>','</b></dt>
+<dd>A comma (,) is used for the time separator.
+</dd>
+</dl>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#CHGJOB.Top_Of_Page">Top</a></td></tr>
+</table>
+<div> <a name="CHGJOB.SWS"></a>
+<h3>Job switches (SWS)</h3>
+<p>Specifies the switch settings for a group of eight job switches that are used with the job.  These switches can be set or tested in a CL program and used to control the flow of the program.  The only valid values for each 1-digit switch are 0 (off), 1 (on), or X.  The X indicates that a switch value does not change.
+</p>
+<dl>
+<dt><b><u>*SAME</u></b></dt>
+<dd>The values in the eight job switches do not change.
+</dd>
+<dt><b><i>character-value</i></b></dt>
+<dd>Specify any combination (in quotation marks or not) of eight 0's, 1's, or X's to change the job switch settings.  If a switch value is not being changed, enter an X in the position representing that switch.
+</dd>
+</dl>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#CHGJOB.Top_Of_Page">Top</a></td></tr>
+</table>
+<div> <a name="CHGJOB.TIMESLICE"></a>
+<h3>Time slice (TIMESLICE)</h3>
+<p>Specifies the maximum amount of processor time (in milliseconds) given to each thread in the job before other threads in this job and in other jobs are given an opportunity to run.  The time slice establishes the amount of time needed by a thread in the job to accomplish a meaningful amount of processing.  At the end of the time slice, the thread might be put in an inactive state so that other threads can become active in the storage pool.
+</p>
+<p>If the job consists of multiple routing steps, a change to this attribute during a routing step does not apply to subsequent routing steps.
+</p>
+<dl>
+<dt><b><u>*SAME</u></b></dt>
+<dd>The value specified for the time slice does not change.
+</dd>
+<dt><b><i>1-9999999</i></b></dt>
+<dd>Specify the amount of time (in milliseconds) that each thread in the job is allowed to run when it is given processing time.
+<p>
+<b>Note:     </b>A millisecond is one thousandth of a second.  So, 9 999 999 milliseconds equals 9999.999 seconds.  Although you can specify a value of less than 8, the system takes a minimum of 8 milliseconds to run a process.  If you display a job's run attributes, the time slice value is never less than 8.
+</p>
+</dd>
+</dl>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#CHGJOB.Top_Of_Page">Top</a></td></tr>
+</table>
+<div> <a name="CHGJOB.PURGE"></a>
+<h3>Eligible for purge (PURGE)</h3>
+<p>Specifies whether the job is eligible to be moved out of main storage and put into auxiliary storage at the end of a time slice or when entering a long wait (such as waiting for a work station user's response). This attribute is ignored when more than one thread is active within the job.
+</p>
+<p>If the job consists of multiple routing steps, a change to this attribute during a routing step does not apply to subsequent routing steps.
+</p>
+<dl>
+<dt><b><u>*SAME</u></b></dt>
+<dd>The value specified for the purge option does not change.
+</dd>
+<dt><b>*YES</b></dt>
+<dd>The job is eligible to be moved out of main storage and put into auxiliary storage.  However, a job with multiple threads is never purged from main storage.
+</dd>
+<dt><b>*NO</b></dt>
+<dd>The job is not eligible to be moved out of main storage and put into auxiliary storage.  However, when main storage is needed, pages belonging to a thread in this job may be moved to auxiliary storage.  Then, when a thread in this job runs again, its pages are returned to main storage as they are needed.
+</dd>
+</dl>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#CHGJOB.Top_Of_Page">Top</a></td></tr>
+</table>
+<div> <a name="CHGJOB.DFTWAIT"></a>
+<h3>Default wait time (DFTWAIT)</h3>
+<p>Specifies the default maximum time (in seconds) that a thread in the job waits for a system instruction, such as the LOCK machine interface (MI) instruction, to acquire a resource.  This default wait time is used when a wait time is not otherwise specified for a given situation.  Normally, this is the amount of time the system is willing to wait for the system before the request is ended.  The wait time specified for this parameter is ignored for read operations to database files.
+</p>
+<p>If the job consists of multiple routing steps, a change to this attribute during a routing step does not apply to subsequent routing steps.
+</p>
+<dl>
+<dt><b><u>*SAME</u></b></dt>
+<dd>The default maximum wait time does not change.
+</dd>
+<dt><b>*NOMAX</b></dt>
+<dd>There is no maximum wait time.
+</dd>
+<dt><b><i>1-9999999</i></b></dt>
+<dd>Specify the number of seconds for the maximum time that the system waits for the instruction to acquire a resource.
+</dd>
+</dl>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#CHGJOB.Top_Of_Page">Top</a></td></tr>
+</table>
+<div> <a name="CHGJOB.DEVRCYACN"></a>
+<h3>Device recovery action (DEVRCYACN)</h3>
+<p>Specifies the recovery action to take for the job when an I/O error is encountered on the *REQUESTER device for interactive jobs.  This parameter can be specified only for interactive jobs.
+</p>
+<dl>
+<dt><b><u>*SAME</u></b></dt>
+<dd>The work station recovery action does not change.
+</dd>
+<dt><b>*SYSVAL</b></dt>
+<dd>The value in the system value, QDEVRCYACN, is used as the device recovery action for this job.
+</dd>
+<dt><b>*MSG</b></dt>
+<dd>The application program requesting the I/O operation receives an error message indicating the I/O operation has failed.
+</dd>
+<dt><b>*DSCMSG</b></dt>
+<dd>The job is automatically disconnected.  When the job is reconnected, it receives an error message indicating that an I/O error has occurred but the device has been recovered.  Although the device has been recovered, the contents of the display prior to the error must be shown again.
+</dd>
+<dt><b>*DSCENDRQS</b></dt>
+<dd>The job is automatically disconnected.  Once it is reconnected, the ENDRQS command is issued specifying the previous request processor.  If there is no request processor, an error message is issued.
+</dd>
+<dt><b>*ENDJOB</b></dt>
+<dd>The job is ended with the *IMMED option.  A job log is produced for the job.
+</dd>
+<dt><b>*ENDJOBNOLIST</b></dt>
+<dd>The job is ended with the *IMMED option.  No job log is produced for the job.
+</dd>
+</dl>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#CHGJOB.Top_Of_Page">Top</a></td></tr>
+</table>
+<div> <a name="CHGJOB.TSEPOOL"></a>
+<h3>Time slice end pool (TSEPOOL)</h3>
+<p>Specifies whether threads in interactive jobs should be moved to another main storage pool when they reach the time slice end.  When a long wait occurs, the thread is moved back to the pool in which it was originally running.  This may minimize the effect on the interactive response time of other interactive jobs.  This parameter can be specified only for interactive jobs.
+</p>
+<dl>
+<dt><b><u>*SAME</u></b></dt>
+<dd>The value for the time slice end pool does not change.
+</dd>
+<dt><b>*SYSVAL</b></dt>
+<dd>The value in the system value, QTSEPOOL, at the time the CHGJOB command is issued is used as the time slice end pool action for this job.
+</dd>
+<dt><b>*NONE</b></dt>
+<dd>A thread in the job is not moved when it reaches the end of its time slice.
+</dd>
+<dt><b>*BASE</b></dt>
+<dd>A thread in the job is moved to the base pool when it reaches the end of its time slice.
+</dd>
+</dl>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#CHGJOB.Top_Of_Page">Top</a></td></tr>
+</table>
+<div> <a name="CHGJOB.PRTKEYFMT"></a>
+<h3>Print key format (PRTKEYFMT)</h3>
+<p>Specifies whether border and header information is printed when the print key is pressed.
+</p>
+<dl>
+<dt><b><u>*SAME</u></b></dt>
+<dd>The value specified for this parameter does not change.
+</dd>
+<dt><b>*SYSVAL</b></dt>
+<dd>The value specified on the system value QPRTKEYFMT determines whether header or border information is printed.
+</dd>
+<dt><b>*NONE</b></dt>
+<dd>Border information and header information are not printed.
+</dd>
+<dt><b>*PRTBDR</b></dt>
+<dd>Border information is printed.
+</dd>
+<dt><b>*PRTHDR</b></dt>
+<dd>Header information is printed.
+</dd>
+<dt><b>*PRTALL</b></dt>
+<dd>Border information and header information are printed.
+</dd>
+</dl>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#CHGJOB.Top_Of_Page">Top</a></td></tr>
+</table>
+<div> <a name="CHGJOB.SRTSEQ"></a>
+<h3>Sort sequence (SRTSEQ)</h3>
+<p>Specifies the sort sequence table to be used for string comparisons for this job.
+</p>
+<p><b>Single values</b>
+</p>
+<dl>
+<dt><b><u>*SAME</u></b></dt>
+<dd>This value does not change.
+</dd>
+<dt><b>*USRPRF</b></dt>
+<dd>When the job being changed is the job in which this command is running, the sort table is obtained from the user profile under which this thread was initially running.  When the job being changed is a different job, the sort table is obtained from the current user profile associated with that job.
+</dd>
+<dt><b>*SYSVAL</b></dt>
+<dd>The system value QSRTSEQ is used.
+</dd>
+<dt><b>*HEX</b></dt>
+<dd>A sort sequence table is not used.  The hexadecimal values of the characters are used to determine the sort sequence.
+</dd>
+<dt><b>*LANGIDUNQ</b></dt>
+<dd>A unique-weight sort table is used.
+</dd>
+<dt><b>*LANGIDSHR</b></dt>
+<dd>A shared-weight sort table is used.
+</dd>
+</dl>
+<p><b>Qualifier 1: Sort sequence</b>
+</p>
+<dl>
+<dt><b><i>name</i></b></dt>
+<dd>Specify the name of the sort sequence table to be used with this job.
+</dd>
+</dl>
+<p><b>Qualifier 2: Library</b>
+</p>
+<dl>
+<dt><b><u>*LIBL</u></b></dt>
+<dd>All libraries in the library list for the current thread are searched until the first match is found.
+</dd>
+</dl>
+<dl>
+<dt><b>*CURLIB</b></dt>
+<dd>The current library for the thread is searched.  If no library is specified as the current library for the thread, the QGPL library is used.
+</dd>
+<dt><b><i>name</i></b></dt>
+<dd>Specify the library where the sort sequence table is located.
+</dd>
+</dl>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#CHGJOB.Top_Of_Page">Top</a></td></tr>
+</table>
+<div> <a name="CHGJOB.LANGID"></a>
+<h3>Language ID (LANGID)</h3>
+<p>Specifies the language identifier to be associated with this job.  The language identifier is used when *LANGIDUNQ or *LANGIDSHR is specified on the <b>Sort sequence (SRTSEQ)</b> parameter.  If the job CCSID is 65535, this parameter is also used to determine the value of the job default CCSID (DFTCCSID).
+</p>
+<dl>
+<dt><b><u>*SAME</u></b></dt>
+<dd>The value does not change.
+</dd>
+<dt><b>*USRPRF</b></dt>
+<dd>When the job being changed is the job in which this command is running, the language ID is obtained from the user profile under which this thread was initially running.  When the job being changed is a different job, the language ID is obtained from the current user profile associated with that job.
+</dd>
+<dt><b>*SYSVAL</b></dt>
+<dd>The system value QLANGID is used.
+</dd>
+<dt><b><i>character-value</i></b></dt>
+<dd>Specify the language identifier to be used by the job.
+</dd>
+</dl>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#CHGJOB.Top_Of_Page">Top</a></td></tr>
+</table>
+<div> <a name="CHGJOB.CNTRYID"></a>
+<h3>Country or region ID (CNTRYID)</h3>
+<p>Specifies the country or region identifier to be used by the job.
+</p>
+<dl>
+<dt><b><u>*SAME</u></b></dt>
+<dd>The value does not change.
+</dd>
+<dt><b>*USRPRF</b></dt>
+<dd>When the job being changed is the job in which this command is running, the country or region ID is obtained from the user profile under which this thread was initially running.  When the job being changed is a different job, the country or region ID is obtained from the current user profile associated with that job.
+</dd>
+<dt><b>*SYSVAL</b></dt>
+<dd>The system value QCNTRYID is used.
+</dd>
+<dt><b><i>character-value</i></b></dt>
+<dd>Specify the country or region identifier to be used by the job.
+</dd>
+</dl>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#CHGJOB.Top_Of_Page">Top</a></td></tr>
+</table>
+<div> <a name="CHGJOB.CCSID"></a>
+<h3>Coded character set ID (CCSID)</h3>
+<p>Specifies the coded character set identifier (CCSID) used for this job.
+</p>
+<dl>
+<dt><b><u>*SAME</u></b></dt>
+<dd>The CCSID value does not change.
+</dd>
+<dt><b>*USRPRF</b></dt>
+<dd>When the job being changed is the job in which this command is running, the CCSID is obtained from the user profile under which this thread was initially running.  When the job being changed is a different job, the CCSID is obtained from the current user profile associated with that job.
+</dd>
+<dt><b>*SYSVAL</b></dt>
+<dd>The CCSID specified in the system value QCCSID is used.
+</dd>
+<dt><b>*HEX</b></dt>
+<dd>The CCSID 65535 is used, which indicates that the character data in the fields is treated as bit data and is not converted.
+</dd>
+<dt><b><i>1-65535</i></b></dt>
+<dd>Specify the CCSID.
+</dd>
+</dl>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#CHGJOB.Top_Of_Page">Top</a></td></tr>
+</table>
+<div> <a name="CHGJOB.DECFMT"></a>
+<h3>Decimal format (DECFMT)</h3>
+<p>Specifies the decimal format used for the job.
+</p>
+<dl>
+<dt><b><u>*SAME</u></b></dt>
+<dd>The value does not change.
+</dd>
+<dt><b>*SYSVAL</b></dt>
+<dd>The value specified for the QDECFMT system value is used.
+</dd>
+<dt><b>*BLANK</b></dt>
+<dd>A period (.) is used for the decimal format, zero suppression.
+</dd>
+<dt><b>I</b></dt>
+<dd>A comma (,) is used for the decimal format, zero suppression.
+</dd>
+<dt><b>J</b></dt>
+<dd>A comma (,) is used for the decimal format, one leading zero.
+</dd>
+</dl>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#CHGJOB.Top_Of_Page">Top</a></td></tr>
+</table>
+<div> <a name="CHGJOB.CHRIDCTL"></a>
+<h3>Character identifier control (CHRIDCTL)</h3>
+<p>Specifies the character identifier control used for the job.  This attribute controls the type of CCSID conversion that occurs for display files, printer files and panel groups. The *CHRIDCTL special value must be specified on the CHRID command parameter on the create, change or override commands for display files, printer files and panel groups before this attribute will be used.
+</p>
+<dl>
+<dt><b><u>*SAME</u></b></dt>
+<dd>The value does not change.
+</dd>
+</dl>
+<dl>
+<dt><b>*USRPRF</b></dt>
+<dd>When the job being changed is the job in which this command is running, the character identifier control is obtained from the user profile under which this thread was initially running.  When the job being changed is a different job, the character identifier control is obtained from the current user profile associated with that job.
+</dd>
+<dt><b>*SYSVAL</b></dt>
+<dd>The value specified for the QCHRIDCTL system value will be used.
+</dd>
+<dt><b>*DEVD</b></dt>
+<dd>The *DEVD special value performs the same function as on the CHRID command parameter for display files, printer files and panel groups.
+</dd>
+<dt><b>*JOBCCSID</b></dt>
+<dd>The *JOBCCSID special value performs the same function as on the CHRID command parameter for display files, printer files and panel groups.
+</dd>
+</dl>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#CHGJOB.Top_Of_Page">Top</a></td></tr>
+</table>
+<div> <a name="CHGJOB.SPLFACN"></a>
+<h3>Spooled file action (SPLFACN)</h3>
+<p>Specifies whether or not spooled files are accessed through job interfaces after the job ends.  Keeping spooled files with jobs allows job commands such as Work with Submitted Jobs (WRKSBMJOB) to work with the spooled files even after the job has ended.  Detaching spooled files from jobs reduces the use of system resources by allowing job structures to be recycled when the jobs end.
+</p>
+<dl>
+<dt><b><u>*SAME</u></b></dt>
+<dd>The value does not change.
+</dd>
+</dl>
+<dl>
+<dt><b>*SYSVAL</b></dt>
+<dd>The value specified in the system value QSPLFACN is used.
+</dd>
+<dt><b>*KEEP</b></dt>
+<dd>When the job ends, as long as spooled files for the job exist in the system auxiliary storage pool (ASP 1) or in a basic user ASP (ASPs 2-32), the spooled files are kept with the job and the status of the job is updated to indicate that the job has completed.  If all remaining spooled files for the job are in independent ASPs (ASPs 33-255), the spooled files will be detached from the job and the job will be removed from the system.
+</dd>
+<dt><b>*DETACH</b></dt>
+<dd>When the job ends, the spooled files are detached from the job and the job is removed from the system.  If the job has already ended, this change will immediately detach the spooled files from the job and remove the job from the system.
+</dd>
+</dl>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#CHGJOB.Top_Of_Page">Top</a></td></tr>
+</table>
+<div> <a name="CHGJOB.WLCGRP"></a>
+<h3>Workload group (WLCGRP)</h3>
+<p>Specifies the workload group associated with this job. You can use the Add Workload Group (ADDWLCGRP) command to define a workload group.
+</p>
+<p>If the job consists of multiple routing steps, a change to this attribute during a routing step does not apply to subsequent routing steps.
+</p>
+<p>
+<b>Note:     </b>Changes to this parameter may affect the performance of the job being changed.
+</p>
+<dl>
+<dt><b><u>*SAME</u></b></dt>
+<dd>The workload group does not change.
+</dd>
+<dt><b>*NONE</b></dt>
+<dd>The job will not be associated with a workload group.
+</dd>
+<dt><b><i>simple-name</i></b></dt>
+<dd>Specify the name of a workload group.
+</dd>
+</dl>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#CHGJOB.Top_Of_Page">Top</a></td></tr>
+</table>
+<div> <a name="CHGJOB.CPUTIME"></a>
+<h3>Maximum CPU time (CPUTIME)</h3>
+<p>Specifies the maximum processing unit time (in milliseconds) that the job can use.  If the job consists of multiple routing steps, only the current routing step is affected.  If the job is on a job queue, only the next routing step is affected.  If the maximum time is exceeded, the job is held.
+</p>
+<dl>
+<dt><b><u>*SAME</u></b></dt>
+<dd>The maximum processing unit time does not change.
+</dd>
+<dt><b>*NOMAX</b></dt>
+<dd>There is no limit on the processing unit time used.
+</dd>
+<dt><b><i>1-9999999</i></b></dt>
+<dd>Specify the maximum amount of processing unit time (in milliseconds) that can be used.
+</dd>
+</dl>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#CHGJOB.Top_Of_Page">Top</a></td></tr>
+</table>
+<div> <a name="CHGJOB.MAXTMPSTG"></a>
+<h3>Maximum temporary storage (MAXTMPSTG)</h3>
+<p>Specifies the maximum amount of temporary (auxiliary) storage (in megabytes) that the job can use.  If the job consists of multiple routing steps, only the current routing step is affected.  If the job is on a job queue, only the next routing step is affected.
+</p>
+<p>This temporary storage is used for storage required by the program itself and by implicitly created internal system objects used to support the job.  (It does not include storage for objects in the QTEMP library.)  If the maximum temporary storage is exceeded, the job is held.  This parameter does not apply to the use of permanent storage, which is controlled through the user profile.
+</p>
+<dl>
+<dt><b><u>*SAME</u></b></dt>
+<dd>The maximum amount of temporary storage allowed for the job does not change.
+</dd>
+<dt><b>*NOMAX</b></dt>
+<dd>The system maximum is used.
+</dd>
+<dt><b><i>1-2147483647</i></b></dt>
+<dd>Specify the maximum amount of temporary storage (in megabytes) that can be used.
+</dd>
+</dl>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#CHGJOB.Top_Of_Page">Top</a></td></tr>
+</table>
+<div> <a name="CHGJOB.PRCRSCPTY"></a>
+<h3>Processor resources priority (PRCRSCPTY)</h3>
+<p>If your system has simultaneous multithreading (SMT) enabled, the processor resources priority will be used by the operating system to determine the relative importance of the job when it is dispatched compared to other jobs that are dispatched.
+</p>
+<p>Performance may vary depending on processor model, partition placement, processor utilization and other system settings and configuration.
+</p>
+<p>
+<b>Note:     </b>Changes to the processor resources priority may impact overall system performance and utilization.  PRCRSCPTY(*HIGH) should be used conservatively to minimize any potential performance degradation to the rest of the system.
+</p>
+<dl>
+<dt><b><u>*SAME</u></b></dt>
+<dd>The processor resources priority does not change.
+</dd>
+<dt><b>*SYSCTL</b></dt>
+<dd>The system determines the processor resources priority for the job and its threads.
+</dd>
+<dt><b>*NORMAL</b></dt>
+<dd>The job and its threads will be dispatched uniformly across the maximum number of available processors.
+</dd>
+<dt><b>*HIGH</b></dt>
+<dd>The operating system will isolate this job and its threads, when possible, to processors with fewer threads running concurrently.
+</dd>
+<dt><b>*LOW</b></dt>
+<dd>The job and its threads will be dispatched to processors with other low priority jobs executing, when possible.
+</dd>
+</dl>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#CHGJOB.Top_Of_Page">Top</a></td></tr>
+</table>
+<div> <a name="CHGJOB.DUPJOBOPT"></a>
+<h3>Duplicate job option (DUPJOBOPT)</h3>
+<p>Specifies the action taken when duplicate jobs are found by this command.
+</p>
+<dl>
+<dt><b><u>*SELECT</u></b></dt>
+<dd>The selection display is shown when duplicate jobs are found during an interactive session.  Otherwise, a message is issued.
+</dd>
+<dt><b>*MSG</b></dt>
+<dd>A message is issued when duplicate jobs are found.
+</dd>
+</dl>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#CHGJOB.Top_Of_Page">Top</a></td></tr>
+</table>
+<hr width="100%" size="2">
+<div><h3><a name="CHGJOB.COMMAND.EXAMPLES">Examples</a> </h3>
+<p><b>Example 1: Changing Message Logging Values</b>
+</p>
+<p>
+<pre>
+CHGJOB   JOB(123581/DEPT2/WS1)  LOG(2 40 *SECLVL)
+</pre>
+</p>
+<p>This command changes the job WS1, which is associated with the user profile DEPT2, and has the job number 123581. It receives only commands and associated diagnostic messages (help text) if the messages have a severity level greater than or equal to 40. Help text, in addition to the message text, is logged in the job log.
+</p>
+<p><b>Example 2: Changing Scheduling Priority and Job Switches</b>
+</p>
+<p>
+<pre>
+CHGJOB   JOB(PAYROLL)  JOBPTY(4)  OUTPTY(3)  SWS(10XXXX00)
+</pre>
+</p>
+<p>This command changes the scheduling priority for the job PAYROLL to 4 and the priority of the job's output to 3. Also, four of the eight job switches are changed: switches 1 and 2 are set to 1 and 0, switches 3 through 6 remain the same, and switches 7 and 8 are both set to 0. Because only the simple name of the job is specified, there can be only one job named PAYROLL in the system.
+</p>
+<p><b>Example 3: Moving a Job to Another Queue</b>
+</p>
+<p>
+<pre>
+CHGJOB   JOB(MYJOB)  JOBQ(MYLIB/MYJOBQ)  INQMSGRPY(*SYSRPYL)
+</pre>
+</p>
+<p>This command moves the job from the job queue it is currently in to the job queue MYJOBQ in library MYLIB. For this change to be made, the job must not have begun running and must be a batch job.  Also, the job is changed so that any inquiry message that is issued on behalf of this job that has an entry in the system automatic reply list is answered according to the reply in that system reply list entry. For any inquiry message not represented in the system reply list, a reply is required.
+</p>
+<p><b>Example 4: Changing Run Priority and Default Wait Time</b>
+</p>
+<p>
+<pre>
+CHGJOB   JOB(MYJOB)  RUNPTY(10)  DFTWAIT(150)
+</pre>
+</p>
+<p>This command changes the run priority of the job MYJOB to 10 and the default wait time to 150 seconds, if the issuer of the command has job control authority. If the job is active, these changes take effect immediately. If the job is on a job queue, when the next routing step for the job is started, the run priority and default wait times become these values and not what was specified in the class associated with the routing entry used to start the step.
+</p>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#CHGJOB.Top_Of_Page">Top</a></td></tr>
+</table>
+<hr width="100%" size="2">
+<div><h3><a name="CHGJOB.ERROR.MESSAGES">Error messages</a> </h3>
+<p><b><u>*ESCAPE Messages</u></b>
+</p>
+<dl>
+<dt><b>CPF1317</b></dt>
+<dd>No response from subsystem for job &amp;3/&amp;2/&amp;1.
+</dd>
+<dt><b>CPF1321</b></dt>
+<dd>Job &amp;1 user &amp;2 job number &amp;3 not found.
+</dd>
+<dt><b>CPF1332</b></dt>
+<dd>End of duplicate job names.
+</dd>
+<dt><b>CPF1334</b></dt>
+<dd>Must be an interactive job for requested change.
+</dd>
+<dt><b>CPF1336</b></dt>
+<dd>Errors on CHGJOB command for job &amp;3/&amp;2/&amp;1.
+</dd>
+<dt><b>CPF1337</b></dt>
+<dd>&amp;3/&amp;2/&amp;1 not authorized to change parameters.
+</dd>
+<dt><b>CPF1340</b></dt>
+<dd>Job control function not performed.
+</dd>
+<dt><b>CPF1341</b></dt>
+<dd>Reader or writer &amp;3/&amp;2/&amp;1 not allowed as job name.
+</dd>
+<dt><b>CPF1343</b></dt>
+<dd>Job &amp;3/&amp;2/&amp;1 not valid job type for function.
+</dd>
+<dt><b>CPF1344</b></dt>
+<dd>Not authorized to control job &amp;3/&amp;2/&amp;1.
+</dd>
+<dt><b>CPF1351</b></dt>
+<dd>Function check occurred in subsystem for job &amp;3/&amp;2/&amp;1.
+</dd>
+<dt><b>CPF1352</b></dt>
+<dd>Function not done.  &amp;3/&amp;2/&amp;1 in transition condition.
+</dd>
+<dt><b>CPF1634</b></dt>
+<dd>Specified date or time has passed.
+</dd>
+<dt><b>CPF1635</b></dt>
+<dd>Requested change no longer allowed.
+</dd>
+<dt><b>CPF1642</b></dt>
+<dd>Schedule date &amp;1 not correct.
+</dd>
+<dt><b>CPF1644</b></dt>
+<dd>Scheduled date and time not changed.
+</dd>
+<dt><b>CPF1650</b></dt>
+<dd>Both scheduled date and time must be changed.
+</dd>
+<dt><b>CPF1651</b></dt>
+<dd>Sort sequence table not accessed.
+</dd>
+<dt><b>CPF180E</b></dt>
+<dd>&amp;4 not changed.
+</dd>
+<dt><b>CPF1846</b></dt>
+<dd>Request did not complete.  System value not available.
+</dd>
+<dt><b>CPF1854</b></dt>
+<dd>Value &amp;1 for CCSID not valid.
+</dd>
+</dl>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#CHGJOB.Top_Of_Page">Top</a></td></tr>
+</table>
+</body>
+</html>

@@ -1,0 +1,723 @@
+<!DOCTYPE html>
+<html lang="ja"><head><meta charset="utf-8"><title>Send Message  (SNDMSG)</title></head>
+<body>
+<main role="main"><article role="article" aria-labelledby="sndmsg__title__1"> 
+<h1 class="topictitle1" id="sndmsg__title__1">Send Message  (SNDMSG)</h1><div id="lastModifiedDate"><span>Last Updated</span>: 2026-07-13</div>
+
+<div class="body">
+<p>
+<strong>Send Message  (SNDMSG)
+</strong></p>
+
+<p>
+<strong>Where allowed to run:  
+</strong>All environments (*ALL)
+
+</p>
+
+<p>
+<strong>Threadsafe:  </strong>Yes
+</p>
+
+<p><a href="#sndmsg__parameters">Parameters</a></p>
+
+<p><a href="#sndmsg__examples">Examples</a></p>
+
+<p><a href="#sndmsg__errormsgs">Error messages</a></p>
+
+<div class="div" id="sndmsg__sndmsg">
+<p>
+The Send Message (SNDMSG) command is used by a display station user to send an immediate message from his display station to one or more message queues.  (An immediate message is a message that is not predefined and is not stored in a message file.)  The message can be sent to the system operator, to other display station users, to a user's message queue, all currently active users' message queues or to the system history log, QHST.  The sender can require a reply from the message receiver.  The primary users of this command are display station users and the system operator.
+
+</p>
+
+<p>
+<strong>Restrictions:
+</strong>
+</p>
+
+<ol class="cds--list--ordered--temporary">
+<li class="cds--list__item">
+You must have object operational (*OBJOPR) and add (*ADD) authorities for the message queue.
+
+</li>
+
+<li class="cds--list__item">
+You must have use (*USE) authority for the specified message queues and *USE authority for the libraries in which they are located.
+
+</li>
+
+<li class="cds--list__item">
+The SNDMSG command only allows a message of up to 512 characters of first-level message text to be sent.
+
+</li>
+
+<li class="cds--list__item">
+This command can only send inquiry messages (specified by MSGTYPE(*INQ)) to one message queue or to two message queues if one of the queues is *HSTLOG.
+
+</li>
+
+
+</ol>
+
+</div>
+<section class="section" role="region" aria-labelledby="sndmsg__parameters__title__1" id="sndmsg__parameters"><h2 class="sectiontitle" id="sndmsg__parameters__title__1">Parameters</h2>
+
+
+<div class="tablenoborder"><div class="cds--data-table-container"><table summary="" class="defaultstyle cds--data-table"><colgroup><col><col><col><col></colgroup><thead>
+<tr>
+<th id="sndmsg__parameters__entry__1"><div class="cds--table-header-label">
+Keyword
+</div></th>
+
+<th id="sndmsg__parameters__entry__2"><div class="cds--table-header-label">
+Description
+</div></th>
+
+<th id="sndmsg__parameters__entry__3"><div class="cds--table-header-label">
+Choices
+</div></th>
+
+<th id="sndmsg__parameters__entry__4"><div class="cds--table-header-label">
+Notes
+</div></th>
+
+</tr>
+
+</thead>
+<tbody>
+<tr>
+<td headers="sndmsg__parameters__entry__1 "><a href="#sndmsg__msg"><strong>MSG
+</strong></a></td>
+
+<td headers="sndmsg__parameters__entry__2 ">Message text
+</td>
+
+<td headers="sndmsg__parameters__entry__3 "><em>Character value
+</em></td>
+
+<td headers="sndmsg__parameters__entry__4 ">Required, Positional 1
+</td>
+
+</tr>
+
+<tr>
+<td headers="sndmsg__parameters__entry__1 "><a href="#sndmsg__tousr"><strong>TOUSR
+</strong></a></td>
+
+<td headers="sndmsg__parameters__entry__2 ">To user profile
+</td>
+
+<td headers="sndmsg__parameters__entry__3 "><em>Name
+</em>, *SYSOPR, *ALLACT, *REQUESTER
+</td>
+
+<td headers="sndmsg__parameters__entry__4 ">Optional, Positional 3
+</td>
+
+</tr>
+
+<tr>
+<td rowspan="3" headers="sndmsg__parameters__entry__1 "><a href="#sndmsg__tomsgq"><strong>TOMSGQ
+</strong></a></td>
+
+<td headers="sndmsg__parameters__entry__2 ">To message queue
+</td>
+
+<td headers="sndmsg__parameters__entry__3 ">Single values: *SYSOPR
+
+Other values (up to 50 repetitions): 
+<em>Qualified object name
+</em></td>
+
+<td rowspan="3" headers="sndmsg__parameters__entry__4 ">Optional, Positional 2
+</td>
+
+</tr>
+
+<tr>
+<td headers="sndmsg__parameters__entry__2 ">Qualifier 1: To message queue
+</td>
+
+<td headers="sndmsg__parameters__entry__3 "><em>Name
+</em>, *HSTLOG
+</td>
+
+</tr>
+
+<tr>
+<td headers="sndmsg__parameters__entry__2 ">Qualifier 2: Library
+</td>
+
+<td headers="sndmsg__parameters__entry__3 "><em>Name
+</em>, 
+<strong><u>*LIBL
+</u></strong>, *CURLIB
+</td>
+
+</tr>
+
+<tr>
+<td headers="sndmsg__parameters__entry__1 "><a href="#sndmsg__msgtype"><strong>MSGTYPE
+</strong></a></td>
+
+<td headers="sndmsg__parameters__entry__2 ">Message type
+</td>
+
+<td headers="sndmsg__parameters__entry__3 "><strong><u>*INFO
+</u></strong>, *INQ
+</td>
+
+<td headers="sndmsg__parameters__entry__4 ">Optional, Positional 4
+</td>
+
+</tr>
+
+<tr>
+<td rowspan="3" headers="sndmsg__parameters__entry__1 "><a href="#sndmsg__rpymsgq"><strong>RPYMSGQ
+</strong></a></td>
+
+<td headers="sndmsg__parameters__entry__2 ">Message queue to get reply
+</td>
+
+<td headers="sndmsg__parameters__entry__3 ">Single values: 
+<strong><u>*WRKSTN
+</u></strong>
+Other values: 
+<em>Qualified object name
+</em></td>
+
+<td rowspan="3" headers="sndmsg__parameters__entry__4 ">Optional
+</td>
+
+</tr>
+
+<tr>
+<td headers="sndmsg__parameters__entry__2 ">Qualifier 1: Message queue to get reply
+</td>
+
+<td headers="sndmsg__parameters__entry__3 "><em>Name
+</em></td>
+
+</tr>
+
+<tr>
+<td headers="sndmsg__parameters__entry__2 ">Qualifier 2: Library
+</td>
+
+<td headers="sndmsg__parameters__entry__3 "><em>Name
+</em>, 
+<strong><u>*LIBL
+</u></strong>, *CURLIB
+</td>
+
+</tr>
+
+<tr>
+<td headers="sndmsg__parameters__entry__1 "><a href="#sndmsg__ccsid"><strong>CCSID
+</strong></a></td>
+
+<td headers="sndmsg__parameters__entry__2 ">Coded character set ID
+</td>
+
+<td headers="sndmsg__parameters__entry__3 ">1-65535, *HEX, 
+<strong><u>*JOB
+</u></strong></td>
+
+<td headers="sndmsg__parameters__entry__4 ">Optional
+</td>
+
+</tr>
+
+</tbody>
+</table></div>
+</div>
+
+<div class="div" id="sndmsg__msg">
+<p>
+<strong>Message text (MSG)
+</strong></p>
+
+<p>
+Specifies the immediate message that is being sent.  The text must be enclosed in apostrophes if it contains blanks or other special characters.  A maximum of 512 characters can be specified.
+
+</p>
+
+<p>
+<strong>Coded Character Set Identifier (CCSID) Considerations
+</strong>
+</p>
+
+<p>
+The text supplied for the MSG parameter is assumed to be in the CCSID of the job running this command unless the coded character set identifier is supplied for the CCSID parameter.  For more information about the message handler and its use of CCSIDs, see the i5/OS globalization topic collection in the IBM i Information Center at http://www.ibm.com/systems/i/infocenter/.
+
+</p>
+
+<p>
+This is a required parameter.
+
+</p>
+
+</div>
+<div class="div" id="sndmsg__tousr">
+<p>
+<strong>To user profile (TOUSR)
+</strong></p>
+
+<p>
+Specifies that the message is to be sent to the message queue specified in the user profile for the user named on this parameter.  This parameter cannot be used if a value is specified for the 
+<strong>To message queue(TOMSGQ)
+</strong> parameter.
+
+</p>
+
+<p>
+Either this parameter or the 
+<strong>To message queue (TOMSGQ)
+</strong> parameter is required.
+
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><em>user-profile-name
+</em></strong></dt>
+
+<dd class="dlentry">
+Specify the user profile name of the user to whom the message is sent.
+</dd>
+
+<dt class="dlterm">
+<strong>*SYSOPR
+</strong></dt>
+
+<dd class="dlentry">
+The message is sent to the system operator message queue, QSYS/QSYSOPR.  Any message sent to QSYSOPR automatically has a copy of the message sent to QHST.
+</dd>
+
+</dl>
+
+<dl>
+<dt class="dlterm">
+<strong>*REQUESTER
+</strong></dt>
+
+<dd class="dlentry">
+The message is sent to the user profile message queue for interactive jobs or to the system operator's message queue (QSYS/QSYSOPR) for batch jobs.
+</dd>
+
+</dl>
+
+<dl>
+<dt class="dlterm">
+<strong>*ALLACT
+</strong></dt>
+
+<dd class="dlentry">
+A copy of the message is sent to the user profile message queue of each user profile with an interactive job currently running.  *ALLACT cannot be specified with inquiry messages.
+</dd>
+
+</dl>
+
+</div>
+<div class="div" id="sndmsg__tomsgq">
+<p>
+<strong>To message queue (TOMSGQ)
+</strong></p>
+
+<p>
+Specifies one to fifty message queues to which an informational message is sent.  For an inquiry message, one message queue may be specified or two message queues may be specified if one of the queues is *HSTLOG.  This parameter cannot be used if a value is specified for the 
+<strong>To user profile (TOUSR)
+</strong> parameter.
+
+</p>
+
+<p>
+Either this parameter or the 
+<strong>To user profile (TOUSR)
+</strong> parameter is required.
+
+</p>
+
+<p>
+<strong>Single values
+</strong>
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong>*SYSOPR
+</strong></dt>
+
+<dd class="dlentry">
+The message is sent to the system operator message queue, QSYS/QSYSOPR.  Any message sent to QSYSOPR automatically has a copy of the message sent to QHST.
+</dd>
+
+</dl>
+
+<p>
+<strong>Qualifier 1: To message queue
+</strong>
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong>*HSTLOG
+</strong></dt>
+
+<dd class="dlentry">
+The message is sent to the system history log message queue, QSYS/QHST.  If *HSTLOG is specified more than once, only one message will be sent to QSYS/QHST.  If *HSTLOG is specified with QSYSOPR only one message is sent to QSYS/QHST.
+</dd>
+
+<dt class="dlterm">
+<strong><em>message-queue-name
+</em></strong></dt>
+
+<dd class="dlentry">
+Specify the name of the message queue to which the message is to be sent.
+</dd>
+
+</dl>
+
+<p>
+<strong>Qualifier 2: Library
+</strong>
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><u>*LIBL
+</u></strong></dt>
+
+<dd class="dlentry">
+All libraries in the library list for the current thread are searched until the first match is found.
+</dd>
+
+</dl>
+
+<dl>
+<dt class="dlterm">
+<strong>*CURLIB
+</strong></dt>
+
+<dd class="dlentry">
+The current library for the job is used to locate the message queue.  If no current library entry exists in the library list, QGPL is used.
+</dd>
+
+<dt class="dlterm">
+<strong><em>library-name
+</em></strong></dt>
+
+<dd class="dlentry">
+Specify the library where the message queue is located.
+</dd>
+
+</dl>
+
+</div>
+<div class="div" id="sndmsg__msgtype">
+<p>
+<strong>Message type (MSGTYPE)
+</strong></p>
+
+<p>
+Specifies the type of message to be sent.  Only an informational or inquiry message can be specified.
+
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><u>*INFO
+</u></strong></dt>
+
+<dd class="dlentry">
+An informational message is to sent.
+</dd>
+
+<dt class="dlterm">
+<strong>*INQ
+</strong></dt>
+
+<dd class="dlentry">
+An inquiry message is to be sent.  The message queue receiving the message can reply to it.  Inquiry messages are sent to only one message queue at a time or a second queue can be specified for TOMSGQ if the value is *HSTLOG.
+</dd>
+
+</dl>
+
+</div>
+<div class="div" id="sndmsg__rpymsgq">
+<p>
+<strong>Message queue to get reply (RPYMSGQ)
+</strong></p>
+
+<p>
+Specifies, only if an inquiry message is sent, the message queue to which a reply is sent.
+
+</p>
+
+<p>
+<strong>Single values
+</strong>
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><u>*WRKSTN
+</u></strong></dt>
+
+<dd class="dlentry">
+The reply to the message is sent to the display station message queue associated with the sender's display station.
+<p>
+<strong>Note:     
+</strong>This value cannot be specified for batch jobs.
+
+</p>
+
+</dd>
+
+</dl>
+
+<p>
+<strong>Qualifier 1: Message queue to get reply
+</strong>
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><em>message-queue-name
+</em></strong></dt>
+
+<dd class="dlentry">
+Specify the name of the message queue to which a reply is sent.  For example, a user message queue, a display station message queue, or the system operator message queue can be specified.
+</dd>
+
+</dl>
+
+<p>
+<strong>Qualifier 2: Library
+</strong>
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><u>*LIBL
+</u></strong></dt>
+
+<dd class="dlentry">
+All libraries in the library list for the current thread are searched until the first match is found.
+</dd>
+
+</dl>
+
+<dl>
+<dt class="dlterm">
+<strong>*CURLIB
+</strong></dt>
+
+<dd class="dlentry">
+The current library for the job is used to locate the message queue.  If no current library entry exists in the library list, QGPL is used.
+</dd>
+
+<dt class="dlterm">
+<strong><em>library-name
+</em></strong></dt>
+
+<dd class="dlentry">
+Specify the library where the message queue is located.
+</dd>
+
+</dl>
+
+</div>
+<div class="div" id="sndmsg__ccsid">
+<p>
+<strong>Coded character set ID (CCSID)
+</strong></p>
+
+<p>
+Specifies the coded character set identifier (CCSID) that the supplied message text is in.  For more information about the message handler and its use of CCSIDs, see the i5/OS globalization topic collection in the IBM i Information Center at http://www.ibm.com/systems/i/infocenter/.
+
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><u>*JOB
+</u></strong></dt>
+
+<dd class="dlentry">
+The message text is assumed to be in the CCSID of the job running this command.
+</dd>
+
+<dt class="dlterm">
+<strong>*HEX
+</strong></dt>
+
+<dd class="dlentry">
+The message text is not converted.  CCSID 65535 is used.
+</dd>
+
+<dt class="dlterm">
+<strong><em>coded-character-set-identifier
+</em></strong></dt>
+
+<dd class="dlentry">
+Specify a valid CCSID in which you want your message text to be considered in.  Valid values are between 1 and 65535.  This command validates the CCSID.
+</dd>
+
+</dl>
+
+</div>
+</section>
+
+<section class="section" role="region" aria-labelledby="sndmsg__examples__title__1" id="sndmsg__examples"><h2 class="sectiontitle" id="sndmsg__examples__title__1">Examples</h2>
+
+<p>
+<strong>Example 1: Sending Message to User Message Queue
+</strong>
+</p>
+
+<div class="p">
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>
+SNDMSG   MSG('Do you want to update INV now?')  TOUSR(JONES)
+         MSGTYPE(*INQ)  RPYMSGQ(SMITH)
+
+</code></pre></div><div class="docs--copy-btn"></div></div>
+
+</div>
+
+<p>
+This command sends a message to the user message queue JONES.  When the message is answered, the reply will be sent to the message queue SMITH.
+
+</p>
+
+<p>
+<strong>Example 2: Sending Message to System's History Log
+</strong>
+</p>
+
+<div class="p">
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>
+SNDMSG   MSG('Errors on PAYROLL cost me 1 hour of run time.')
+         TOMSGQ(QHST)
+
+</code></pre></div><div class="docs--copy-btn"></div></div>
+
+</div>
+
+<p>
+This command is used by the system operator to send an informational message to the system's history log, QHST, through the log's message queue, which has the same name.
+
+</p>
+
+<p>
+<strong>Example 3: Sending Message to System Operator
+</strong>
+</p>
+
+<div class="p">
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>
+SNDMSG   MSG('Please make 2 copies of file LABORSTAT.')
+         TOMSGQ(QSYSOPR)
+
+</code></pre></div><div class="docs--copy-btn"></div></div>
+
+</div>
+
+<p>
+This command shows a typical use of the SNDMSG command by a display station user. The user is sending the message to the system operator.
+
+</p>
+
+<p>
+<strong>Example 4: Sending Message that Requires a Reply
+</strong>
+</p>
+
+<div class="p">
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>
+SNDMSG   MSG ('How long will the system be up today?')
+         TOMSGQ(*SYSOPR)  MSGTYPE(*INQ)
+
+</code></pre></div><div class="docs--copy-btn"></div></div>
+
+</div>
+
+<p>
+This command sends an inquiry message to the system operator.  The message requires a reply. The system operator displays the message by using the DSPMSG command and enters the reply on the display. The reply is then sent to the display station user's work station message queue. The display station user enters another DSPMSG command to display the reply.
+
+</p>
+
+</section>
+
+<section class="section" role="region" aria-labelledby="sndmsg__errormsgs__title__1" id="sndmsg__errormsgs"><h2 class="sectiontitle" id="sndmsg__errormsgs__title__1">Error messages</h2>
+
+<p>
+<strong><u>*ESCAPE Messages
+</u></strong>
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong>CPF2428
+</strong></dt>
+
+<dd class="dlentry">
+Message queue parameter is not valid.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF2433
+</strong></dt>
+
+<dd class="dlentry">
+Function not allowed for system log message queue &amp;1.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF2469
+</strong></dt>
+
+<dd class="dlentry">
+Error occurred when sending message&amp;1.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF247E
+</strong></dt>
+
+<dd class="dlentry">
+CCSID &amp;1 is not valid.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF2488
+</strong></dt>
+
+<dd class="dlentry">
+Reply message queue *WRKSTN not valid for batch job.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF9830
+</strong></dt>
+
+<dd class="dlentry">
+Cannot assign library &amp;1.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF9838
+</strong></dt>
+
+<dd class="dlentry">
+User profile storage limit exceeded.
+</dd>
+
+</dl>
+
+</section>
+
+</div>
+
+</article></main>
+</body></html>

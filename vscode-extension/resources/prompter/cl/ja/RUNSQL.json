@@ -1,0 +1,596 @@
+{
+  "keyword": "RUNSQL",
+  "description": "SQLの実行 (RUNSQL)",
+  "help": "SQL実行(RUNSQL)コマンドは， SQL (SQL) パラメーターに指定された構造化照会言語(SQL)ステートメントを実行します。\n\nSQLステートメントは，コマンドの実行時に解析されます。コマンドが実行されるまで構文エラーは識別されません。\n\nRUNSQLは呼び出し元の活動化グループ内でSQLステートメントを実行します。RUNSQLがコンパイル済みCLプログラムまたはILE CLプロシージャーで実行される場合，そのプログラムまたはプロシージャーの活動化グループが使用されます。",
+  "parameters": [
+    {
+      "name": "SQL",
+      "description": "SQL",
+      "help": "実行する単一の構造化照会言語(SQL)ステートメントを指定します。\n\nこれは必須パラメーターです。\n\n実行するSQLステートメントを指定してください。最大ステートメント長は5000バイトです。",
+      "inputType": "text",
+      "required": true,
+      "positional": 1,
+      "basic": true
+    },
+    {
+      "name": "COMMIT",
+      "description": "コミットメント制御",
+      "help": "SQLステートメントをコミットメント制御のもとで実行するかどうかを指定します。\n\nSQL ALTER, CALL, COMMENT ON, CREATE, DROP, GRANT, LABEL ON, RENAME,およびREVOKEステートメントで参照されるオブジェクト，および更新，削除，および挿入される行は作業単位（トランザクション）の終わりまでロックされることを指定します。他のジョブのコミットされていない変更を見ることができます。\nSQL ALTER, CALL, COMMENT ON, CREATE, DROP, GRANT, LABEL ON, RENAME,およびREVOKEステートメントで参照されるオブジェクトおよび選択，更新，削除，および挿入される行は作業単位（トランザクション）の終わりまでロックされることを指定します。他のジョブのコミットされていない変更を見ることはできません。\nコミットメント制御が使用されないことを指定します。他のジョブのコミットされていない変更を見ることができます。SQL DROP SCHEMAステートメントがプログラムに組み込まれている場合には，*NONEまたは*NCを使用しなければなりません。",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*CHG",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*CHG",
+          "value": "*CHG"
+        },
+        {
+          "label": "*UR",
+          "value": "*UR"
+        },
+        {
+          "label": "*CS",
+          "value": "*CS",
+          "help": "SQL ALTER, CALL, COMMENT ON, CREATE, DROP, GRANT, LABEL ON, RENAME,およびREVOKEステートメントで参照されるオブジェクト，および更新，削除，および挿入される行は作業単位（トランザクション）の終わりまでロックされることを指定します。選択されたのに更新されていない行は，次の行が選択されるまでロックされます。他のジョブのコミットされていない変更を見ることはできません。"
+        },
+        {
+          "label": "*ALL",
+          "value": "*ALL"
+        },
+        {
+          "label": "*RS",
+          "value": "*RS"
+        },
+        {
+          "label": "*NONE",
+          "value": "*NONE"
+        },
+        {
+          "label": "*NC",
+          "value": "*NC"
+        },
+        {
+          "label": "*RR",
+          "value": "*RR",
+          "help": "SQL ALTER, CALL, COMMENT ON, CREATE, DROP, GRANT, LABEL ON, RENAME,およびREVOKEステートメントで参照されるオブジェクトおよび選択，更新，削除，および挿入される行は作業単位（トランザクション）の終わりまでロックされることを指定します。他のジョブのコミットされていない変更を見ることはできません。SELECT, UPDATE, DELETE,およびINSERTの各ステートメントで参照されたすべてのテーブルは，作業単位（トランザクション）の終わりまで排他的にロックされます。"
+        }
+      ],
+      "positional": 2,
+      "basic": true
+    },
+    {
+      "name": "NAMING",
+      "description": "命名",
+      "help": "SQLステートメント中のオブジェクトに使用する命名規則を指定します。",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*SYS",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*SYS",
+          "value": "*SYS",
+          "help": "システムの命名規則（ライブラリー名／ファイル名）が使用されます。"
+        },
+        {
+          "label": "*SQL",
+          "value": "*SQL",
+          "help": "SQLの命名規則（スキーマ名．テーブル名）が使用されます。"
+        }
+      ],
+      "positional": 3,
+      "basic": true
+    },
+    {
+      "name": "DATFMT",
+      "description": "日付形式",
+      "help": "日付結果のカラムにアクセスする時に使用する形式を指定します。入力日付ストリングの場合には，指定した値は，日付が正しい形式で指定されているかどうかを判別するために使用されます。",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*JOB",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*JOB",
+          "value": "*JOB",
+          "help": "ジョブに指定された形式が使用されます。ジョブの現行日付形式を判別するには，ジョブ表示(DSPJOB)コマンドを使用してください。"
+        },
+        {
+          "label": "*USA",
+          "value": "*USA",
+          "help": "米国日付形式 MM/DD/YYYY が使用されます。"
+        },
+        {
+          "label": "*ISO",
+          "value": "*ISO",
+          "help": "国際標準化機構(ISO)日付形式 YYYY-MM-DD が使用されます。"
+        },
+        {
+          "label": "*EUR",
+          "value": "*EUR",
+          "help": "欧州日付形式 DD.MM.YYYY が使用されます。"
+        },
+        {
+          "label": "*JIS",
+          "value": "*JIS",
+          "help": "日本工業規格(JIS)日付形式 YYYY-MM-DD が使用されます。"
+        },
+        {
+          "label": "*MDY",
+          "value": "*MDY",
+          "help": "日付形式 MM/DD/YY が使用されます。"
+        },
+        {
+          "label": "*DMY",
+          "value": "*DMY",
+          "help": "日付形式 DD/MM/YY が使用されます。"
+        },
+        {
+          "label": "*YMD",
+          "value": "*YMD",
+          "help": "日付形式 YY/MM/DD が使用されます。"
+        },
+        {
+          "label": "*JUL",
+          "value": "*JUL",
+          "help": "年間通算日形式 YY/DDD が使用されます。"
+        }
+      ]
+    },
+    {
+      "name": "DATSEP",
+      "description": "日付区切り文字",
+      "help": "日付の結果のカラムをアクセスする時に使用する区切り記号を指定します。\n\nジョブの現行日付区切り文字を判別するには，ジョブ表示(DSPJOB)コマンドを使用してください。\n\nスラッシュが日付区切り文字として使用されます。\nピリオドが日付区切り文字として使用されます。\nダッシュが日付区切り文字として使用されます。\nコンマが日付区切り文字として使用されます。\nブランク( )が日付区切り文字として使用されます。",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*JOB",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*JOB",
+          "value": "*JOB",
+          "help": "プリコンパイル時，新規対話式SQLセッションの作成時，あるいはRUNSQLSTMの実行時にジョブのために指定される日付区切り文字が使用されます。 ジョブの現行日付区切り文字を判別するには，ジョブ表示(DSPJOB)コマンドを使用してください。"
+        },
+        {
+          "label": "*BLANK",
+          "value": "*BLANK"
+        }
+      ]
+    },
+    {
+      "name": "TIMFMT",
+      "description": "時刻形式",
+      "help": "時刻結果カラムにアクセスする時に使用する形式を指定します。入力時刻ストリングの場合には，指定した値は，時刻が正しい形式で指定されているかどうかを判別するために使用されます。",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*HMS",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*HMS",
+          "value": "*HMS",
+          "help": "HH:MM:SS 形式が使用されます。"
+        },
+        {
+          "label": "*USA",
+          "value": "*USA",
+          "help": "米国時刻形式 HH:MMXX が使用されます。ここで， XX はAMまたはPMです。"
+        },
+        {
+          "label": "*ISO",
+          "value": "*ISO",
+          "help": "国際標準化機構(ISO)時刻形式 HH.MM.SS が使用されます。"
+        },
+        {
+          "label": "*EUR",
+          "value": "*EUR",
+          "help": "欧州時刻形式 HH.MM.SS が使用されます。"
+        },
+        {
+          "label": "*JIS",
+          "value": "*JIS",
+          "help": "日本工業規格(JIS)時刻形式 HH:MM:SS が使用されます。"
+        }
+      ]
+    },
+    {
+      "name": "TIMSEP",
+      "description": "時刻区切り文字",
+      "help": "時刻の結果のカラムをアクセスする時に使用される区切り記号を指定します。\n\nジョブの現行時刻区切り文字を判別するには，ジョブ表示(DSPJOB)コマンドを使用してください。\n\nコロンが時刻区切り文字として使用されます。\nピリオドが時刻区切り文字として使用されます。\nコンマが時刻区切り文字として使用されます。\nブランク( )が時刻区切り文字として使用されます。",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*JOB",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*JOB",
+          "value": "*JOB",
+          "help": "プリコンパイル時，新規対話式SQLセッションの作成時，あるいはRUNSQLSTMの実行時にジョブのために指定される時刻区切り文字が使用されます。 ジョブの現行時刻区切り文字を判別するには，ジョブ表示(DSPJOB)コマンドを使用してください。"
+        },
+        {
+          "label": "*BLANK",
+          "value": "*BLANK"
+        }
+      ]
+    },
+    {
+      "name": "DFTRDBCOL",
+      "description": "省略時のコレクション",
+      "help": "テーブル，ビュー，索引，SQLパッケージ，別名，制約，外部プログラム，ノード・グループ，およびトリガーの修飾されていない名前に使用されるスキーマIDの名前を指定します。このパラメーターが適用されるのは，静的SQLステートメントに対してだけです。\n\n*NONE: 命名規則 (NAMING) パラメーターに指定された命名規則が使用されます。\nNAMINGパラメーターに指定された命名規則の代わりに使用するスキーマIDの名前を指定します。",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*NONE",
+      "attributes": {
+        "characterSet": "upper",
+        "maxLength": 10
+      }
+    },
+    {
+      "name": "DECMPT",
+      "description": "小数点",
+      "help": "SQLステートメント中の数値定数に使用する小数点値を指定します。この値は，文字と数値の間のキャスト時に小数点文字としても使用されます。",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*JOB",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*JOB",
+          "value": "*JOB",
+          "help": "小数点の表記は，ステートメントを実行しているジョブが使用している値になります。"
+        },
+        {
+          "label": "*SYSVAL",
+          "value": "*SYSVAL",
+          "help": "QDECFMTシステム値が小数点として使用されます。"
+        },
+        {
+          "label": "*PERIOD",
+          "value": "*PERIOD",
+          "help": "ピリオドが小数点を表します。"
+        },
+        {
+          "label": "*COMMA",
+          "value": "*COMMA",
+          "help": "コンマが小数点を表します。"
+        }
+      ]
+    },
+    {
+      "name": "SRTSEQ",
+      "description": "ソート順序",
+      "help": "SQLステートメント中のストリング比較に使用する分類順序テーブルを指定します。",
+      "inputType": "group",
+      "required": false,
+      "groupKind": "qualified",
+      "singleValues": [
+        "*JOB",
+        "*LANGIDUNQ",
+        "*LANGIDSHR",
+        "*HEX"
+      ],
+      "children": [
+        {
+          "name": "LIB",
+          "description": "ライブラリー",
+          "help": "*LIBL: 最初に一致するものが見つかるまで，現行スレッドのライブラリー・リスト内のすべてのライブラリーが検索されます。\n*CURLIB: ジョブの現行ライブラリーが検索されます。ジョブの現行ライブラリーとして指定されているライブラリーがない場合は，QGPLライブラリーが使用されます。\n検索するライブラリーの名前を指定してください。",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "*LIBL",
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          }
+        },
+        {
+          "name": "SRTSEQ",
+          "description": "ソート順序",
+          "help": "このプログラムで使用する分類順序テーブルの名前を指定します。",
+          "inputType": "text",
+          "required": false,
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          },
+          "defaultValue": "*JOB"
+        }
+      ]
+    },
+    {
+      "name": "LANGID",
+      "description": "言語ID",
+      "help": "SRTSEQ(*LANGIDUNQ)またはSRTSEQ(*LANGIDSHR)が指定されている時に使用される言語IDを指定します。\n\n*JOB: ジョブのLANGID値が検索されます。\n言語IDを指定してください。",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*JOB",
+      "attributes": {
+        "characterSet": "upper"
+      }
+    },
+    {
+      "name": "OPTION",
+      "description": "ソース・リスト・オプション",
+      "help": "このコマンドによってリストが生成されるかどうかを指定します。",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*NOLIST",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*NOLIST",
+          "value": "*NOLIST",
+          "help": "リストは生成されません。メッセージはジョブ・ログに送られます。"
+        },
+        {
+          "label": "*LIST",
+          "value": "*LIST",
+          "help": "リストが生成されます。"
+        }
+      ]
+    },
+    {
+      "name": "PRTFILE",
+      "description": "印刷ファイル",
+      "help": "コマンドからの印刷出力の送り先の印刷装置ファイルを指定します。このファイルには，132バイトの最小長が必要です。レコード長が132バイトより小さいファイルを指定すると，情報は失われます。",
+      "inputType": "group",
+      "required": false,
+      "groupKind": "qualified",
+      "children": [
+        {
+          "name": "PRTFILE_LIB",
+          "description": "ライブラリー",
+          "help": "*LIBL: 最初に一致するものが見つかるまで，現行スレッドのライブラリー・リスト内のすべてのライブラリーが検索されます。\n*CURLIB: ジョブの現行ライブラリーが検索されます。ジョブの現行ライブラリーとして指定されているライブラリーがない場合は，QGPLライブラリーが使用されます。\n印刷装置ファイルが入っているライブラリーの名前を指定してください。",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "*LIBL",
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          }
+        },
+        {
+          "name": "PRTFILE",
+          "description": "印刷ファイル",
+          "help": "QSYSPRT: 出力ファイルはIBM提供の印刷装置ファイルQSYSPRTに送られます。\n出力の送り先の印刷装置ファイルの名前を指定してください。",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "QSYSPRT",
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          }
+        }
+      ]
+    },
+    {
+      "name": "SECLVLTXT",
+      "description": "第2レベル・テキスト",
+      "help": "第2レベル・メッセージ・テキスト記述を出力リストに書き込むかどうかを指定します。",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*NO",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*NO",
+          "value": "*NO",
+          "help": "第2レベル・テキストがリストに組み込まれません。"
+        },
+        {
+          "label": "*YES",
+          "value": "*YES",
+          "help": "置換データがある第2レベル・テキストが，すべてのメッセージのリストに追加されます。"
+        }
+      ]
+    },
+    {
+      "name": "ALWCPYDTA",
+      "description": "データのコピー可能",
+      "help": "データのコピーをSELECTステートメント中で使用できるかどうかを指定します。",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*OPTIMIZE",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*OPTIMIZE",
+          "value": "*OPTIMIZE",
+          "help": "システムは，データベースから直接検索されたデータを使用するか，あるいはデータのコピーを使用するかを判別します。この判断は，どの方式で最善のパフォーマンスが得られるかに基づいて行われます。 コミットメント制御 (COMMIT) パラメーターが*NONEでない場合には，最良のパフォーマンスのために，可能な場合は ブロック化可能 (ALWBLK) パラメーターを*ALLREADに設定する必要があります。"
+        },
+        {
+          "label": "*YES",
+          "value": "*YES",
+          "help": "データのコピーが使用されるのは，必要な場合だけです。"
+        },
+        {
+          "label": "*NO",
+          "value": "*NO",
+          "help": "データのコピーを使用しません。QUERYを実行するためにデータの一時コピーが必要な場合には，エラー・メッセージが戻されます。"
+        }
+      ]
+    },
+    {
+      "name": "ALWBLK",
+      "description": "ブロック化可能",
+      "help": "データベース管理機能がレコード・ブロック化およびブロック化を読み取り専用カーソルに使用できるエクステントを使用できるかどうかを指定します。\n\n*ALLREADを指定すると，次の通りです。\n\n*NONEを指定すると，次の通りです。",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*ALLREAD",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*ALLREAD",
+          "value": "*ALLREAD",
+          "help": "読み取り専用カーソルのために行がブロック化されます。明示的に変更できない，プログラム中のすべてのカーソルは，プログラム中にEXECUTEまたはEXECUTE IMMEDIATEステートメントがあっても読み取り専用処理用にオープンされます。 *ALLREADを指定すると，次の通りです。 すべての読み取り専用カーソルのためにレコードのブロック化が可能になります。 プログラム中のほとんどすべての読み取り専用カーソルのパフォーマンスを向上できますが，QUERYは次の方法で制限されます。 *ALLREADが指定されていると，ロールバック(ROLLBACK)コマンド，ホスト言語のROLLBACKステートメント，またはROLLBACK HOLD SQLステートメントは読み取り専用カーソルを位置変更しません。 位置決めしたUPDATEまたはDELETEステートメントの動的実行（例えば，EXECUTE IMMEDIATEの使用）は，カーソルのDECLAREステートメントにFOR UPDATE文節が含まれていない限り，カーソル内の行を更新するためには使用できません。"
+        },
+        {
+          "label": "*NONE",
+          "value": "*NONE",
+          "help": "行は，カーソルのデータの検索のためにブロック化されません。 *NONEを指定すると，次の通りです。 検索されるデータが最新であることを保証します。 照会のためのデータの最初の行を検索するために必要な時間が削減される場合があります。 データベース管理機能が，QUERYがクローズされる前にQUERYの最初の数行しか検索されないと，プログラムによって使用されないデータ行のブロックの検索を停止します。 大量の行数を検索するQUERYのパフォーマンス全体が低下する可能性があります。"
+        },
+        {
+          "label": "*READ",
+          "value": "*READ",
+          "help": "次の場合には，レコードはカーソルのデータの読み取り専用検索のためにブロック化されません。 コミットメント制御は使用されないことを指示する*NONEが コミットメント制御 (COMMIT) パラメーターに指定されます。 カーソルがFOR READ ONLY文節を指定して宣言されているか，あるいはカーソルのために位置したUPDATEまたはDELETEステートメントを実行できなかった動的ステートメントがない場合。"
+        }
+      ]
+    },
+    {
+      "name": "SQLCURRULE",
+      "description": "SQL規則",
+      "help": "SQLステートメントに使用される意味体系を指定します。\n\n16進定数は文字データとして取り扱われます。\n\n16進定数は2進データとして取り扱われます。",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*DB2",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*DB2",
+          "value": "*DB2",
+          "help": "すべてのSQLステートメントの意味体系は，省略時の値により，DB2について確立された規則となります。このオプションでは，次の意味体系が制御されます。 16進定数は文字データとして取り扱われます。"
+        },
+        {
+          "label": "*STD",
+          "value": "*STD",
+          "help": "すべてのSQLステートメントの意味体系は，省略時の値により，ISOおよびANSI SQL規格によって確立された規則となります。このオプションでは，次の意味体系が制御されます。 16進定数は2進データとして取り扱われます。"
+        }
+      ]
+    },
+    {
+      "name": "DECRESULT",
+      "description": "10進数結果オプション",
+      "help": "10進数演算機構などの10進演算時に使用される必要がある最大精度，最大位取り，および最小除算位取りを指定します。指定した制限はNUMERICおよびDECIMALデータ・タイプにのみ適用されます。",
+      "inputType": "group",
+      "required": false,
+      "groupKind": "elements",
+      "children": [
+        {
+          "name": "DECRESULT_E1",
+          "description": "最大精度",
+          "help": "31: 10進演算から戻される必要がある最大精度（長さ）は31桁です。\n63: 10進演算から戻される必要がある最大精度（長さ）は63桁です。",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "31"
+        },
+        {
+          "name": "DECRESULT_E2",
+          "description": "最大位取り",
+          "help": "31: 10進演算から戻される必要がある最大位取り（小数点の右側の小数部の桁数）は31桁です。\n10進演算から戻される必要がある最大位取り（小数点の右側の小数部の桁数）を指定します。この値は0から最大精度までとすることができます。",
+          "inputType": "number",
+          "required": false,
+          "defaultValue": "31",
+          "attributes": {
+            "numericOnly": true
+          }
+        },
+        {
+          "name": "DECRESULT_E3",
+          "description": "割り算の最小位取り",
+          "help": "0: 最小除算位取りは使用されません。\n10進演算から戻される必要がある最小除算位取り（小数点の右側の小数部の桁数）を指定します。この値は最大位取りを超えることができません。最大位取りとして0が指定された場合には，最小除算位取りは使用されません。",
+          "inputType": "number",
+          "required": false,
+          "defaultValue": "0",
+          "attributes": {
+            "numericOnly": true
+          }
+        }
+      ]
+    },
+    {
+      "name": "CONACC",
+      "description": "同時アクセス解決",
+      "help": "データベース・マネージャーが，データの更新処理中にレコード・ロックの競合をどのように処理するかを指定します。",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*DFT",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*DFT",
+          "value": "*DFT",
+          "help": "このプログラムに並行アクセス・オプションを明示的に設定しないことを指定します。プログラムが呼び出されたときに，有効な値が使用されます。値は，QUERYオプション・ファイル内のSQL_CONCURRENT_ACCESS_RESOLUTIONオプションを使用して設定できます。"
+        },
+        {
+          "label": "*CURCMT",
+          "value": "*CURCMT",
+          "help": "読み取り専用QUERYでのレコード・ロック競合の場合，可能であれば，現在コミット中のデータを使用するようにデータベース・マネージャーに指示します。これは，コミット・レベルが*CSの場合にのみ適用されます。"
+        },
+        {
+          "label": "*WAIT",
+          "value": "*WAIT",
+          "help": "レコード・ロック競合の場合に，結果を待つようデータベース・マネージャーに指示します。"
+        }
+      ]
+    },
+    {
+      "name": "SYSTIME",
+      "description": "システム時刻に依存",
+      "help": "静的SQLステートメントと動的SQLステートメントの両方でのシステム期間一時表への参照がCURRENT TEMPORAL SYSTEM_TIME特殊レジスターの値の影響を受けるかどうかを指定します。",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*YES",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*YES",
+          "value": "*YES",
+          "help": "システム期間一時表への参照はCURRENT TEMPORAL SYSTEM_TIME特殊レジスターの値の影響を受けます。"
+        },
+        {
+          "label": "*NO",
+          "value": "*NO",
+          "help": "システム期間一時表への参照はCURRENT TEMPORAL SYSTEM_TIME特殊レジスターの値の影響を受けません。"
+        }
+      ]
+    }
+  ],
+  "threadSafe": false,
+  "environment": "すべての環境 (*ALL)",
+  "restrictions": [
+    "他のSQLインターフェースでは，SQLステートメントは2メガバイトの長さに制限されます。このコマンドでの制限は5000バイトであり，これはCLコマンドの*CHARパラメーターの最大長です。",
+    "RUNSQLSTM (SQLステートメント実行）コマンドとは異なり，RUNSQLコマンドはスプール・ファイルを作成しません。コマンド実行時にエラーが発生すると，対応するSQL障害メッセージがエスケープ・メッセージとして呼び出し元に送られます。構文エラーを戻す複合SQLステートメントの場合，構文エラーの原因を見つける最も容易な方法は，データベース・モニターを開始し，RUNSQLコマンドを実行してから，System iナビゲーターを使用してそのデータベース・モニターを分析することです。この方法は，SQLステートメントが制御言語(CL)プログラムまたはプロシージャーで式として構築される場合に特に適しています。",
+    "RUNSQLSTMコマンド（このコマンドが終了してコミットメント制御が使用される時にステートメントを暗黙的にコミットまたはロールバックする）とは異なり，RUNSQLコマンドは，コミットもロールバックも暗黙的に実行せず，ユーザーのアプリケーションに委任します。これは，組み込みSQLステートメントが他のプログラミング言語(RPGまたはCOBOLなど）で動作する方法と類似しています。",
+    "RUNSQLコマンドを使用してデータベース・ファイルを開いたり，開いたままにしておくことはできません。RUNSQLによって開かれたファイルは，制御が戻される前に閉じられます。"
+  ],
+  "examples": [
+    {
+      "code": "RUNSQL SQL('INSERT INTO TESTLIB/T1 VALUES (1)')"
+    },
+    {
+      "code": "RUNSQL SQL('CREATE TABLE QTEMP.T1 AS (SELECT * FROM QSYS2.SYSTABLES WHERE TABLE_SCHEMA = ''TESTLIB'') WITH DATA') COMMIT(*NONE) NAMING(*SQL)"
+    }
+  ],
+  "source": {
+    "url": "https://www.ibm.com/docs/ja/ssw_ibm_i_74/cl/runsql.htm",
+    "version": "IBM i 7.4"
+  }
+}

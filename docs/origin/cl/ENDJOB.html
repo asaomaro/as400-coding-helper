@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="ja"><head><meta charset="utf-8"><title>ジョブ終了  (ENDJOB)</title></head>
+<body>
+<div role="main">
+<script type="text/javascript" src="../rzahg/synch.js"></script>
+<a name="ENDJOB.Top_Of_Page"></a>
+<h1>ジョブ終了  (ENDJOB)</h1><div id="lastModifiedDate"><span>Last Updated</span>: 2021-04-13</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table0" width="100%" class="cds--data-table">
+<tbody><tr>
+<td class="valigntop alignleft"><strong>実行可能場所:  </strong>すべての環境 (*ALL)<br>
+<strong>スレッド・セーフ:  </strong>いいえ
+</td>
+<td class="valigntop alignright">
+<a href="#ENDJOB.PARAMETERS.TABLE">パラメーター</a><br>
+<a href="#ENDJOB.COMMAND.EXAMPLES">例</a><br>
+<a href="#ENDJOB.ERROR.MESSAGES">エラー・メッセージ</a></td>
+</tr>
+</tbody></table></div></div>
+<div> <a name="ENDJOB"></a>
+<p>ジョブ終了 (ENDJOB)コマンドは，指定されたジョブを終了し，関連したインライン・データ・ファイルがあればそれも終了します。ジョブはジョブ待ち行列上にあるか，活動状態になっているか，または既に実行を完了している可能性があります。
+</p>
+<p>ジョブの終了処理を制御するための時間をアプリケーション・プログラムに与えることを指定することができます。時間が与えられていない場合，あるいは与えられた時間内にクリーンアップを実行できない場合には，システムは最小限のジョブの終わり処理を実行します。これには次のものが含まれます。
+</p>
+<ul class="cds--list--unordered">
+<li class="cds--list__item">データベース・ファイルのクローズ。
+</li>
+<li class="cds--list__item">ジョブ・ログの出力待ち行列へのスプーリング。
+</li>
+<li class="cds--list__item">オペレーティング・システムの内部オブジェクトのクリーンアップ。
+</li>
+<li class="cds--list__item">ジョブ終了画面の表示（対話式ジョブの場合）。
+</li>
+<li class="cds--list__item">コミットメント制御処理の完了
+<p>ジョブを終了する前に，2フェーズ・コミットが進行中のために疑わしい状態になっている作業論理単位がないことを確認する必要があります。そうなっている場合には，「ENDJOBの処置」コミットメント・オプションの値がENDJOB処理に著しい影響を与える可能性があります。例えば，「ENDJOBの処置」コミットメント・オプションが省略時の値WAITである場合には，コミットメント制御操作が完了するまで，このジョブは保留され，そのジョブの終わり処理は完了しません。これにより，関連したすべてのシステム上のデータベース保全性が保証されます。これらの条件を判別する方法に関する特定の指示，およびこれらの条件下でのこのジョブを終了した場合のすべての影響については，Backup and Recoveryを参照してください。
+</p>
+</li>
+</ul>
+<p><strong>制約事項：</strong>コマンド発行側は，終了されるジョブのジョブ・ユーザー識別と同じユーザー・プロファイルで実行しなければなりません。また，コマンド発行側はジョブ制御(*JOBCTL)特殊権限をもつユーザー・プロファイルで実行しなければなりません。この制約事項は，現行ジョブの終了時であっても強制されます。
+</p>
+<p>ジョブ・ユーザー識別はユーザー・プロファイルの名前であり，これによってジョブは他のジョブに認識されます。これについては，Work Managementに詳細な説明があります。
+</p>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table1" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#ENDJOB.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div>
+<h2><a name="ENDJOB.PARAMETERS.TABLE">パラメーター</a></h2>
+<div class="tablenoborder"><div class="cds--data-table-container"><table id="parm_table2" summary="Parameters" border="1" cellpadding="4" cellspacing="0" class="cds--data-table">
+<!-- col1="10" col2="15" col3="30" col4="10" -->
+<tbody><tr>
+<th scope="col" class="valignbottom alignleft"><div class="cds--table-header-label">キーワード</div></th>
+<th scope="col" class="valignbottom alignleft"><div class="cds--table-header-label">記述</div></th>
+<th scope="col" class="valignbottom alignleft"><div class="cds--table-header-label">選択項目</div></th>
+<th scope="col" class="valignbottom alignleft"><div class="cds--table-header-label">ノーツ</div></th>
+</tr>
+<tr>
+<td class="valigntop" rowspan="4"><a href="#ENDJOB.JOB"><strong>JOB</strong></a></td>
+<td class="valigntop">ジョブ名</td>
+<td class="valigntop">単一値: *<br>その他の値: <span class="var">修飾ジョブ名</span></td>
+<td class="valigntop" rowspan="4">必須, 定位置 1</td>
+</tr>
+<tr>
+<td class="valigntop">修飾子 1: ジョブ名</td>
+<td class="valigntop"><span class="var">名前</span></td>
+</tr><tr>
+<td class="valigntop">修飾子 2: ユーザー</td>
+<td class="valigntop"><span class="var">名前</span></td>
+</tr><tr>
+<td class="valigntop">修飾子 3: 番号</td>
+<td class="valigntop">000000-999999</td>
+</tr><tr>
+<td class="valigntop"><a href="#ENDJOB.OPTION"><strong>OPTION</strong></a></td>
+<td class="valigntop">終了方法</td>
+<td class="valigntop"><strong class="underlined">*CNTRLD</strong>, *IMMED</td>
+<td class="valigntop">オプショナル, 定位置 2</td>
+</tr>
+<tr>
+<td class="valigntop"><a href="#ENDJOB.DELAY"><strong>DELAY</strong></a></td>
+<td class="valigntop">制御された終了遅延時間</td>
+<td class="valigntop">1-999999, <strong class="underlined">30</strong></td>
+<td class="valigntop">オプショナル, 定位置 3</td>
+</tr>
+<tr>
+<td class="valigntop"><a href="#ENDJOB.SPLFILE"><strong>SPLFILE</strong></a></td>
+<td class="valigntop">スプール・ファイル削除</td>
+<td class="valigntop"><strong class="underlined">*NO</strong>, *YES</td>
+<td class="valigntop">オプショナル, 定位置 4</td>
+</tr>
+<tr>
+<td class="valigntop"><a href="#ENDJOB.LOGLMT"><strong>LOGLMT</strong></a></td>
+<td class="valigntop">ログ項目の最大数</td>
+<td class="valigntop"><span class="var">整数</span>, <strong class="underlined">*SAME</strong>, *NOMAX</td>
+<td class="valigntop">オプショナル</td>
+</tr>
+<tr>
+<td class="valigntop"><a href="#ENDJOB.ADLINTJOBS"><strong>ADLINTJOBS</strong></a></td>
+<td class="valigntop">追加の対話式ジョブ数</td>
+<td class="valigntop"><strong class="underlined">*NONE</strong>, *GRPJOB, *ALL</td>
+<td class="valigntop">オプショナル</td>
+</tr>
+<tr>
+<td class="valigntop"><a href="#ENDJOB.DUPJOBOPT"><strong>DUPJOBOPT</strong></a></td>
+<td class="valigntop">重複ジョブ・オプション</td>
+<td class="valigntop"><strong class="underlined">*SELECT</strong>, *MSG</td>
+<td class="valigntop">オプショナル</td>
+</tr>
+</tbody></table></div></div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table3" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#ENDJOB.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+</div>
+<div> <a name="ENDJOB.JOB"></a>
+<h2>ジョブ名 (JOB)</h2>
+<p>終了するジョブの修飾ジョブ名を指定します。
+</p>
+<p>これは必須パラメーターです。
+</p>
+<h3><strong>単一値</strong>
+</h3>
+<dl>
+<dt><strong>*</strong></dt>
+<dd>このコマンドを実行するジョブは終了されます。この値が現行ジョブを終了する唯一の方法であることを指定します。
+</dd>
+</dl>
+<h3><strong>修飾子</strong><strong>1: </strong><strong>ジョブ名</strong>
+</h3>
+<dl>
+<dt><strong class="italic">名前</strong></dt>
+<dd>ジョブの名前を指定します。
+</dd>
+</dl>
+<h3><strong>修飾子</strong><strong>2: </strong><strong>ユーザー</strong>
+</h3>
+<dl>
+<dt><strong class="italic">名前</strong></dt>
+<dd>ジョブの実行で使用されるユーザー・プロファイルを識別するユーザー名を指定してください。
+</dd>
+</dl>
+<h3><strong>修飾子</strong><strong>3: </strong><strong>番号</strong>
+</h3>
+<dl>
+<dt><strong class="italic">000000から999999</strong></dt>
+<dd>システム割り当てジョブ番号を指定してください。
+</dd>
+</dl>
+<p>
+<strong>注:     </strong>ユーザー名またはジョブ番号を指定しないと，システムに現在あるすべてのジョブのジョブ名が検索されます。指定した名前が複数個見つかった場合は，修飾ジョブ名は明示的に，または選択表示を介して提供する必要があります。詳細については，<strong>重複ジョブ・オプション</strong><strong> (DUPJOBOPT)</strong>パラメーターを参照してください。
+</p>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table4" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#ENDJOB.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="ENDJOB.OPTION"></a>
+<h2>終了方法 (OPTION)</h2>
+<p>ジョブが即時に終了するか，あるいはアプリケーション・プログラムがジョブの終わり処理を実行できる制御された方式によって終了するかを指定します。いずれの場合にも，システムは何らかのクリーンアップ処理を実行します。
+</p>
+<dl>
+<dt><strong class="underlined">*CNTRLD</strong></dt>
+<dd>ジョブは制御された方式によって終了します。これにより，実行中のプログラムはクリーンアップ（ジョブの終わり処理）を行うことができます。終了中のジョブに非同期信号SIGTERM用の信号処理プロシージャーがある場合は，そのジョブに対してSIGTERM信号が生成されます。アプリケーションは，ジョブを終了する前にクリーンアップを完了するために，DELAYパラメーターに指定された時間があります。
+</dd>
+<dt><strong>*IMMED</strong></dt>
+<dd>ジョブは即時に終了し，システムはジョブの終わりクリーンアップを実行します。システムのクリーンアップにはわずかな時間または数分かかることがあります。終了するジョブに非同期信号SIGTERMの信号処理プロシージャーがあると，そのジョブに対してSIGTERM信号が生成され，QENDJOBLMTシステム値が時間制限を指定します。実行中のプログラムは，SIGTERM信号の処理による以外，いかなるクリーンアップも実行できません。
+<p>
+<strong>注:     </strong>*IMMED値は，データが部分的に更新されている場合に好ましくない結果をもたらす可能性があります。この値は，制御された終了が正常に試みられなかった後に限り使用してください。
+</p>
+<p>
+<strong>注:     </strong>ジョブの即時終了時にSIGTERM信号ハンドラーが実行している時は，OPTION(*IMMED)を指定したENDJOBコマンドを使用して，そのSIGTERM信号ハンドラーを終了できます。これが許されるのは，そのSIGTERM信号ハンドラーが既に少なくとも2分間実行している場合だけです。
+</p>
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table5" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#ENDJOB.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="ENDJOB.DELAY"></a>
+<h2>制御された終了遅延時間 (DELAY)</h2>
+<p>制御された終了中にそのクリーンアップ処理を完了するためにジョブで使用できる時間（秒数）を指定します。遅延時間の終わりまでにクリーンアップが完了しないと，ジョブは即時に終了されます。（システムのクリーンアップだけが実行されます。）
+</p>
+<p>次のいずれかの条件のためにジョブが中断された場合は，ジョブが活動状態になるまで，遅延時間は始まりません。
+</p>
+<ul class="cds--list--unordered">
+<li class="cds--list__item">システム要求オプション1が選択された。
+</li>
+<li class="cds--list__item">ジョブ保留 (HLDJOB)コマンドによってジョブが保留された。
+</li>
+<li class="cds--list__item">２次ジョブへの移行 (TFRSECJOB)コマンドによってジョブが転送された。
+</li>
+<li class="cds--list__item">グループ・ジョブへの移行 (TFRGRPJOB)コマンドによってジョブが転送された。
+</li>
+</ul>
+<p>
+<strong>注:     </strong>このパラメーターが有効なのは，OPTION(*CNTRLD)が指定された場合だけです。
+</p>
+<dl>
+<dt><strong class="underlined">30</strong></dt>
+<dd>ジョブが終了するまでにクリーンアップに30秒の最大遅延時間が与えられます。
+</dd>
+<dt><strong class="italic">1から999999</strong></dt>
+<dd>ジョブが終了する前の最大遅延時間（秒数）を指定してください。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table6" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#ENDJOB.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="ENDJOB.SPLFILE"></a>
+<h2>スプール・ファイル削除 (SPLFILE)</h2>
+<p>このジョブによって作成されたスプール出力ファイルが通常処理のために保持されるか，あるいは削除されるかを指定します。スプール・ファイルが削除されるかどうにかかわりなく，ジョブ・ログは保持されます。
+</p>
+<dl>
+<dt><strong class="underlined">*NO</strong></dt>
+<dd>終了されるジョブによって作成されるスプール出力ファイルは，書き出しプログラムによる通常処理に備えて保管されます。ジョブが終了すると，スプール・ファイルを切り離すのか，あるいはジョブとともに保管するのかは，スプール・ファイル処置(SPLFACN)ジョブ属性によって判別されます。
+</dd>
+<dt><strong>*YES</strong></dt>
+<dd>終了しようとしているジョブが作成したスプール出力ファイルのうち，このコマンドを出すスレッドのライブラリー名スペースの出力待ち行列にあるものが削除されます。ジョブ・ログは削除されません。ジョブが既に終了していて，そのジョブのスプール・ファイル処置がスプール・ファイルを切り離すことである場合には，ジョブ終了(ENDJOB)コマンドではそのジョブが検索されないし，スプール・ファイルも削除されません。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table7" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#ENDJOB.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="ENDJOB.LOGLMT"></a>
+<h2>ログ項目の最大数 (LOGLMT)</h2>
+<p>終了するジョブのメッセージ待ち行列中の，ジョブ・ログに書き込まれる項目の最大数を指定します。このパラメーターを使用して，終了するジョブごとに，ジョブ・ログの印刷出力ファイルQPJOBLOGに書き込まれるメッセージの数を制限することができます。
+</p>
+<p>ジョブが既に終了中である場合，またはジョブが既に終了された場合であっても，このパラメーターに指定された値によって，そのジョブのロギング限界を変更できます。ロギング限界の変更方法の例は次の通りです。
+</p>
+<ol class="cds--list--ordered--temporary">
+<li class="cds--list__item">指定された値が，コマンドが出された時点で書き出されたメッセージ数より大きい場合には，新しい限界に達するまでメッセージの書き出しが続行されます。
+</li>
+<li class="cds--list__item">指定された値が，スプール・ファイルに既に書き出されたメッセージ数より小さい場合には，限界に達したことを示すメッセージが最後の項目としてスプール・ファイルに即時に示されます。待ち行列上の残りのメッセージは無視されます。
+</li>
+<li class="cds--list__item">スプール・ファイルにメッセージを書き出す前に，0（ゼロ）が指定された場合には，終了中のジョブのジョブ・ログは作成されません。ジョブが既に終了し，ジョブ・ログがまだ作成されていない場合は，ジョブ・ログ出力(LOGOUTPUT)ジョブ属性の値にかかわらずジョブ・ログが除去されます。保留ジョブ・ログの除去の詳細については，保留ジョブ・ログの除去(QWTRMVJL) APIを参照してください。
+</li>
+</ol>
+<dl>
+<dt><strong class="underlined">*SAME</strong></dt>
+<dd>メッセージのロギング限界は変更されません。前のコマンドでこのジョブのロギング限界が変更されていない場合には，システムによって使用される値は*NOMAXとなります。
+</dd>
+<dt><strong>*NOMAX</strong></dt>
+<dd>記録されるメッセージの数に制限はありません。ジョブ・メッセージ待ち行列にある<strong>すべての</strong>メッセージがジョブ・ログに書き込まれます。
+</dd>
+<dt><strong class="italic">整数</strong></dt>
+<dd>ジョブ・ログに書き出すことができるメッセージの最大数を指定してください。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table8" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#ENDJOB.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="ENDJOB.ADLINTJOBS"></a>
+<h2>追加の対話式ジョブ数 (ADLINTJOBS)</h2>
+<p><strong>ジョブ名</strong><strong> (JOB)</strong>パラメーターに指定されたジョブと関連した追加の対話式ジョブを終了するかどうかを指定します。
+</p>
+<dl>
+<dt><strong class="underlined">*NONE</strong></dt>
+<dd>JOBパラメーターに指定されたジョブのみが終了します。
+</dd>
+<dt><strong>*GRPJOB</strong></dt>
+<dd>JOBパラメーターに指定されたジョブがグループ・ジョブの場合は，そのグループと関連したすべてのグループ・ジョブが終了します。そのジョブがグループ・ジョブでない場合は，JOBパラメーターに指定されたジョブが終了します。
+</dd>
+<dt><strong>*ALL</strong></dt>
+<dd>JOBパラメーターに指定されたジョブと関連したワークステーションで実行しているすべての対話式ジョブが終了します。これには，グループ・ジョブおよび2次ジョブが含まれます。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table9" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#ENDJOB.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="ENDJOB.DUPJOBOPT"></a>
+<h2>重複ジョブ・オプション (DUPJOBOPT)</h2>
+<p>このコマンドで重複ジョブが見つかった時に取られる処置を指定します。
+</p>
+<dl>
+<dt><strong class="underlined">*SELECT</strong></dt>
+<dd>対話式セッション中に重複しているジョブが見つかった時には，選択画面が表示されます。そうでない場合には，メッセージが出されます。
+</dd>
+<dt><strong>*MSG</strong></dt>
+<dd>重複しているジョブが見つかった時には，メッセージが出されます。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table10" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#ENDJOB.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div><h2><a name="ENDJOB.COMMAND.EXAMPLES">例</a> </h2>
+<h3><strong>例</strong><strong>1:</strong><strong>ジョブを即時に終了する</strong>
+</h3>
+<p>
+</p><pre>ENDJOB   JOB(JOB1)  OPTION(*IMMED)  SPLFILE(*YES)
+</pre>
+<p></p>
+<p>このコマンドは，JOB1という名前のジョブを即時に終了します。このジョブが生成したスプール出力は削除されますが，ジョブ・ログは保管されます。
+</p>
+<h3><strong>例</strong><strong>2:</strong><strong>スプール出力を保管する</strong>
+</h3>
+<p>
+</p><pre>ENDJOB   JOB(001234/XYZ/JOB2)  OPTION(*CNTRLD)
+         DELAY(50)  SPLFILE(*NO)
+</pre>
+<p></p>
+<p>このコマンドは，001234/XYZ/JOB2という名前のジョブを終了します。スプール出力は，通常処理のためにスプール書き出しプログラムによって保管されます。このジョブはクリーンアップ・ルーチンの実行に50秒を要し，その後，即時に終了されます。
+</p>
+<h3><strong>例</strong><strong>3:</strong><strong>保留ジョブ・ログの除去</strong>
+</h3>
+<p>
+</p><pre>ENDJOB   JOB(543210/ABCDE/JOB3)  LOGLMT(0)
+</pre>
+<p></p>
+<p>このコマンドは，543210/ABCDE/JOB3という名前の完了ジョブの保留ジョブ・ログを除去します。これには，保留ジョブ・ログの除去(QWTRMVJL) APIと同じ効果があります。
+</p>
+<h3><strong>例</strong><strong>4:</strong><strong>現行ジョブの終了</strong>
+</h3>
+<p>
+</p><pre>ENDJOB   JOB(*)  OPTION(*IMMED)
+</pre>
+<p></p>
+<p>このコマンドは，コマンドが出されるジョブを終了します。必要なクリーンアップが実行された後でSIGTERM信号処理プロシージャーから終了するには，現行ジョブを即時に終了してください。即時オプションが使用された場合であっても，制御はコマンド発行側に戻されます。この状態を処理するために，このコマンドを出したプログラムは戻す必要があります。
+</p>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table11" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#ENDJOB.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div><h2><a name="ENDJOB.ERROR.MESSAGES">エラー・メッセージ</a> </h2>
+<p><strong class="underlined">*ESCAPE </strong><strong class="underlined">メッセージ</strong>
+</p>
+<dl>
+<dt><strong>CPF1317</strong></dt>
+<dd>ジョブ&amp;3/&amp;2/&amp;1に対して，サブシステムから応答がない。
+</dd>
+<dt><strong>CPF1321</strong></dt>
+<dd>ジョブ&amp;1ユーザー&amp;2ジョブ番号&amp;3が見つからない。
+</dd>
+<dt><strong>CPF1332</strong></dt>
+<dd>重複したジョブ名の終わり。
+</dd>
+<dt><strong>CPF1340</strong></dt>
+<dd>ジョブ制御機能は実行されなかった。
+</dd>
+<dt><strong>CPF1341</strong></dt>
+<dd>読み取りプログラムまたは書き出しプログラム&amp;3/&amp;2/&amp;1は，ジョブ名として使用できない。
+</dd>
+<dt><strong>CPF1342</strong></dt>
+<dd>このコマンドのジョブ名として現行ジョブを使用することはできない。
+</dd>
+<dt><strong>CPF1343</strong></dt>
+<dd>ジョブ&amp;3/&amp;2/&amp;1は，この機能に対して正しくないジョブ・タイプである。
+</dd>
+<dt><strong>CPF1344</strong></dt>
+<dd>ジョブ&amp;3/&amp;2/&amp;1を制御する権限がない。
+</dd>
+<dt><strong>CPF1351</strong></dt>
+<dd>ジョブ&amp;3/&amp;2/&amp;1のサブシステムで機能チェックが起こった。
+</dd>
+<dt><strong>CPF1352</strong></dt>
+<dd>この機能は実行されなかった。&amp;3/&amp;2/&amp;1は移行状態である。
+</dd>
+<dt><strong>CPF135D</strong></dt>
+<dd>この時点ではENDJOB OPTION(*IMMED)は許可されません。
+</dd>
+<dt><strong>CPF1360</strong></dt>
+<dd>ENDJOBABNのため，&amp;3/&amp;2/&amp;1は既に終了中である。
+</dd>
+<dt><strong>CPF1361</strong></dt>
+<dd>ジョブ&amp;3/&amp;2/&amp;1が*IMMEDオプションで既に終了中である。
+</dd>
+<dt><strong>CPF1362</strong></dt>
+<dd>ジョブ&amp;3/&amp;2/&amp;1が完了した。
+</dd>
+<dt><strong>CPF1363</strong></dt>
+<dd>ジョブ&amp;3/&amp;2/&amp;1が*CNTRLDで既に終了中である。
+</dd>
+<dt><strong>CPF8172</strong></dt>
+<dd>ジョブ&amp;10/&amp;9/&amp;8のスプール制御ブロックに損傷がある。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table12" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#ENDJOB.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+</div>
+
+
+</body></html>

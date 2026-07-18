@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="ja"><head><meta charset="utf-8"><title>ジョブ解放  (RLSJOB)</title></head>
+<body>
+<div role="main">
+<script type="text/javascript" src="../rzahg/synch.js"></script>
+<a name="RLSJOB.Top_Of_Page"></a>
+<h1>ジョブ解放  (RLSJOB)</h1><div id="lastModifiedDate"><span>Last Updated</span>: 2021-04-13</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table0" width="100%" class="cds--data-table">
+<tbody><tr>
+<td class="valigntop alignleft"><strong>実行可能場所:  </strong>すべての環境 (*ALL)<br>
+<strong>スレッド・セーフ:  </strong>いいえ
+</td>
+<td class="valigntop alignright">
+<a href="#RLSJOB.PARAMETERS.TABLE">パラメーター</a><br>
+<a href="#RLSJOB.COMMAND.EXAMPLES">例</a><br>
+<a href="#RLSJOB.ERROR.MESSAGES">エラー・メッセージ</a></td>
+</tr>
+</tbody></table></div></div>
+<div> <a name="RLSJOB"></a>
+<p>ジョブ解放 (RLSJOB)コマンドは，ジョブ保留 (HLDJOB)コマンドによってジョブが処理を保留された後で，あるいはバッチ・ジョブ (BCHJOB)コマンドまたはジョブ投入 (SBMJOB)コマンドによって保留ジョブとしてジョブがシステムに投入された場合に，処理に適格なジョブにします。解放されるジョブは，保留時にジョブ待ち行列上にあるか，出力待ち行列上にあるか，またはサブシステムで活動状態になっている（システム資源を競合している）場合があります。ジョブを解放すると，そのジョブ中のすべてのスレッドも解放されることになります。また，ジョブ保留 (HLDJOB)コマンドの<strong>スプール・ファイルの保留</strong> (SPLFILE)パラメーターに*YESが指定されているために，保留されているスプール出力ファイルも解放されます。このコマンド(RLSJOB)を出すスレッドのライブラリー名スペース内の出力待ち行列にあるスプール出力ファイルのみが解放されます。<strong>スプール・ファイル・アクション (SPLFACN)</strong>ジョブ属性が*DETACHで，スプール・ファイルの保留中にジョブが終了された場合は，RLSJOBコマンドを使用してそのスプール・ファイルを解放することはできません。ジョブをシステムから除去した後にスプール・ファイルを解放するには，スプール・ファイル解放 (RLSSPLF)コマンドを使用してください。
+</p>
+<p><strong>制約事項：</strong>コマンド発行側は，解放されるジョブのジョブ・ユーザー識別と同じユーザー・プロファイルで実行しなければなりません。また，コマンド発行側はジョブ制御(*JOBCTL)特殊権限をもつユーザー・プロファイルで実行しなければなりません。
+</p>
+<p>ジョブ・ユーザー識別はユーザー・プロファイルの名前であり，これによってジョブは他のジョブに認識されます。これについては，Work Managementに詳細な説明があります。
+</p>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table1" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#RLSJOB.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div>
+<h2><a name="RLSJOB.PARAMETERS.TABLE">パラメーター</a></h2>
+<div class="tablenoborder"><div class="cds--data-table-container"><table id="parm_table2" summary="Parameters" border="1" cellpadding="4" cellspacing="0" class="cds--data-table">
+<!-- col1="10" col2="15" col3="30" col4="10" -->
+<tbody><tr>
+<th scope="col" class="valignbottom alignleft"><div class="cds--table-header-label">キーワード</div></th>
+<th scope="col" class="valignbottom alignleft"><div class="cds--table-header-label">記述</div></th>
+<th scope="col" class="valignbottom alignleft"><div class="cds--table-header-label">選択項目</div></th>
+<th scope="col" class="valignbottom alignleft"><div class="cds--table-header-label">ノーツ</div></th>
+</tr>
+<tr>
+<td class="valigntop" rowspan="4"><a href="#RLSJOB.JOB"><strong>JOB</strong></a></td>
+<td class="valigntop">ジョブ名</td>
+<td class="valigntop"><span class="var">修飾ジョブ名</span></td>
+<td class="valigntop" rowspan="4">必須, 定位置 1</td>
+</tr>
+<tr>
+<td class="valigntop">修飾子 1: ジョブ名</td>
+<td class="valigntop"><span class="var">名前</span></td>
+</tr><tr>
+<td class="valigntop">修飾子 2: ユーザー</td>
+<td class="valigntop"><span class="var">名前</span></td>
+</tr><tr>
+<td class="valigntop">修飾子 3: 番号</td>
+<td class="valigntop">000000-999999</td>
+</tr><tr>
+<td class="valigntop"><a href="#RLSJOB.DUPJOBOPT"><strong>DUPJOBOPT</strong></a></td>
+<td class="valigntop">重複ジョブ・オプション</td>
+<td class="valigntop"><strong class="underlined">*SELECT</strong>, *MSG</td>
+<td class="valigntop">オプショナル</td>
+</tr>
+</tbody></table></div></div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table3" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#RLSJOB.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+</div>
+<div> <a name="RLSJOB.JOB"></a>
+<h2>ジョブ名 (JOB)</h2>
+<p>解放するジョブの名前を指定します。
+</p>
+<p>これは必須パラメーターです。
+</p>
+<h3><strong>修飾子</strong><strong>1: </strong><strong>ジョブ名</strong>
+</h3>
+<dl>
+<dt><strong class="italic">名前</strong></dt>
+<dd>解放するジョブの名前を指定します。
+</dd>
+</dl>
+<h3><strong>修飾子</strong><strong>2: </strong><strong>ユーザー</strong>
+</h3>
+<dl>
+<dt><strong class="italic">名前</strong></dt>
+<dd>そのもとでジョブが開始されるユーザー・プロファイルを識別するユーザー名を指定してください。
+</dd>
+</dl>
+<h3><strong>修飾子</strong><strong>3: </strong><strong>番号</strong>
+</h3>
+<dl>
+<dt><strong class="italic">000000から999999</strong></dt>
+<dd>システム割り当てジョブ番号を指定してください。
+</dd>
+</dl>
+<p>
+<strong>注:     </strong>ユーザー名またはジョブ番号を指定しないと，システムに現在あるすべてのジョブのジョブ名が検索されます。指定した名前が複数個見つかった場合は，修飾ジョブ名は明示的に，または選択表示を介して提供する必要があります。詳細については，<strong>重複ジョブ・オプション</strong><strong> (DUPJOBOPT)</strong>パラメーターを参照してください。
+</p>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table4" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#RLSJOB.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="RLSJOB.DUPJOBOPT"></a>
+<h2>重複ジョブ・オプション (DUPJOBOPT)</h2>
+<p>このコマンドで重複ジョブが見つかった時に取られる処置を指定します。
+</p>
+<dl>
+<dt><strong class="underlined">*SELECT</strong></dt>
+<dd>対話式セッション中に重複しているジョブが見つかった時には，選択画面が表示されます。そうでない場合には，メッセージが出されます。
+</dd>
+<dt><strong>*MSG</strong></dt>
+<dd>重複しているジョブが見つかった時には，メッセージが出されます。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table5" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#RLSJOB.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div><h2><a name="RLSJOB.COMMAND.EXAMPLES">例</a> </h2>
+<h3><strong>例</strong><strong>1:</strong><strong>処理のためにジョブを保留解除する</strong>
+</h3>
+<p>
+</p><pre>RLSJOB   JOB(PAYROLL)
+</pre>
+<p></p>
+<p>このコマンドは，ジョブPAYROLLを処理のために保留解除します。対応するHLDJOBコマンドがSPLFILE(*YES)を指定していた場合は，ジョブPAYROLLのスプール・ファイルも保留解除されます。
+</p>
+<h3><strong>例</strong><strong>2:</strong><strong>処理のためにジョブを保留解除する</strong>
+</h3>
+<p>
+</p><pre>RLSJOB   JOB(DEPTXYZ/PAYROLL)
+</pre>
+<p></p>
+<p>このコマンドは，ユーザー・プロファイルDEPTXYZを介してユーザーによって投入され，後で保留された，ジョブ名PAYROLLを保留解除します。システム内に重複名をもつジョブが存在する時は，ジョブ名の修飾形式が使用されます。
+</p>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table6" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#RLSJOB.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div><h2><a name="RLSJOB.ERROR.MESSAGES">エラー・メッセージ</a> </h2>
+<p><strong class="underlined">*ESCAPE </strong><strong class="underlined">メッセージ</strong>
+</p>
+<dl>
+<dt><strong>CPF1317</strong></dt>
+<dd>ジョブ&amp;3/&amp;2/&amp;1に対して，サブシステムから応答がない。
+</dd>
+<dt><strong>CPF1321</strong></dt>
+<dd>ジョブ&amp;1ユーザー&amp;2ジョブ番号&amp;3が見つからない。
+</dd>
+<dt><strong>CPF1332</strong></dt>
+<dd>重複したジョブ名の終わり。
+</dd>
+<dt><strong>CPF1340</strong></dt>
+<dd>ジョブ制御機能は実行されなかった。
+</dd>
+<dt><strong>CPF1341</strong></dt>
+<dd>読み取りプログラムまたは書き出しプログラム&amp;3/&amp;2/&amp;1は，ジョブ名として使用できない。
+</dd>
+<dt><strong>CPF1343</strong></dt>
+<dd>ジョブ&amp;3/&amp;2/&amp;1は，この機能に対して正しくないジョブ・タイプである。
+</dd>
+<dt><strong>CPF1344</strong></dt>
+<dd>ジョブ&amp;3/&amp;2/&amp;1を制御する権限がない。
+</dd>
+<dt><strong>CPF1349</strong></dt>
+<dd>ジョブ&amp;3/&amp;2/&amp;1は開放されなかった。このジョブは保留されていません。
+</dd>
+<dt><strong>CPF134C</strong></dt>
+<dd>ジョブ&amp;3/&amp;2/&amp;1が解放されない。CPUTIME限度を超えた。
+</dd>
+<dt><strong>CPF134D</strong></dt>
+<dd>ジョブ&amp;3/&amp;2/&amp;1が解放されない。MAXTMPSTG限度を超えた。
+</dd>
+<dt><strong>CPF1351</strong></dt>
+<dd>ジョブ&amp;3/&amp;2/&amp;1のサブシステムで機能チェックが起こった。
+</dd>
+<dt><strong>CPF1352</strong></dt>
+<dd>この機能は実行されなかった。&amp;3/&amp;2/&amp;1は移行状態である。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table7" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#RLSJOB.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+</div>
+
+
+</body></html>

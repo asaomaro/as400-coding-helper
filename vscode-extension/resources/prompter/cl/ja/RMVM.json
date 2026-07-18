@@ -1,0 +1,114 @@
+{
+  "keyword": "RMVM",
+  "description": "メンバー除去 (RMVM)",
+  "help": "メンバー除去(RMVM)コマンドは，指定された物理ファイルまたは論理ファイルから1つ以上のメンバーを除去します。物理ファイルからメンバーが除去される場合には，メンバーとメンバー・データの両方がシステムから削除されます。論理ファイルからメンバーが除去される場合には，そのメンバーと物理ファイル・メンバーのデータに対するアクセス・パスがシステムから削除されます。",
+  "parameters": [
+    {
+      "name": "FILE",
+      "description": "データベース・ファイル",
+      "help": "除去する1つ以上のメンバーが入っている物理ファイルまたは論理ファイルを指定します。\n\nこれは必須パラメーターです。",
+      "inputType": "group",
+      "required": true,
+      "groupKind": "qualified",
+      "children": [
+        {
+          "name": "LIB",
+          "description": "ライブラリー",
+          "help": "*LIBL: 最初に一致するものが見つかるまで，現行スレッドのライブラリー・リスト内のすべてのライブラリーが検索されます。\n*CURLIB: ファイルを見つけるために，ジョブの現行ライブラリーが使用されます。ジョブの現行ライブラリーとしてライブラリーが指定されていない場合は，QGPLが使用されます。\nファイルのあるライブラリーを指定します。",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "*LIBL",
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          },
+          "placeholder": "*LIBL"
+        },
+        {
+          "name": "FILE",
+          "description": "データベース・ファイル",
+          "help": "データベース・ファイルの名前を指定してください。",
+          "inputType": "text",
+          "required": true,
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          },
+          "placeholder": "FILE"
+        }
+      ],
+      "positional": 1,
+      "basic": true
+    },
+    {
+      "name": "MBR",
+      "description": "メンバー",
+      "help": "除去する1つ以上のファイル・メンバーを指定します。\n\nこれは必須パラメーターです。\n\n*ALL: 指定されたファイルからすべてのメンバーが除去されます。\nファイルから除去するメンバーの総称名を指定してください。総称名は，1つ以上の文字とその後にアスタリスク(*)が付いた文字ストリングです。総称メンバー名を指定した場合には，総称メンバー名と同じ接頭部の名前をもつ指定ファイル内のすべてのメンバーが除去されます。\nファイルから除去するメンバーの名前を指定してください。",
+      "inputType": "text",
+      "required": true,
+      "attributes": {
+        "characterSet": "upper",
+        "maxLength": 10
+      },
+      "positional": 2,
+      "placeholder": "MBR",
+      "basic": true
+    }
+  ],
+  "environment": "すべての環境 (*ALL)",
+  "restrictions": [
+    "別のファイルのメンバーが削除しようとするメンバーのデータを共用している場合には，最初にその従属メンバーを除去しなければなりません。",
+    "1つ以上のメンバーが入っているファイルのオブジェクト存在(*OBJEXIST)権限が必要です。",
+    "このコマンドは条件付きのスレッド・セーフです。マルチスレッド・ジョブでは，このコマンドは，SYSTEM(*RMT)またはSYSTEM(*FILETYPE)が指定されている場合には，タイプ*SNAの分散データ管理機能(DDM)ファイルにはスレッド・セーフではありません。"
+  ],
+  "examples": [
+    {
+      "code": "RMVM FILE(JOBHIST1) MBR(JOBHIST1A)"
+    },
+    {
+      "code": "RMVM FILE(QGPL/JOBHISTL) MBR(SRC*)"
+    }
+  ],
+  "errorMessages": [
+    {
+      "id": "CPF32CF",
+      "text": "分散ファイル・エラー。理由コードは&3です。"
+    },
+    {
+      "id": "CPF32C3",
+      "text": "分散ファイル・エラー，レベルIDが一致していない。"
+    },
+    {
+      "id": "CPF320A",
+      "text": "メンバー&3を除去することはできない。"
+    },
+    {
+      "id": "CPF320B",
+      "text": "データベース・ファイル&1に対して操作が正しくない。"
+    },
+    {
+      "id": "CPF3203",
+      "text": "&2のファイル&1のオブジェクトを割り振ることができない。"
+    },
+    {
+      "id": "CPF3220",
+      "text": "&2のファイル&1に対して操作を実行することはできない。"
+    },
+    {
+      "id": "CPF3273",
+      "text": "ファイルまたはメンバーは，作成，削除または変更されなかった。"
+    },
+    {
+      "id": "CPF7301",
+      "text": "&3のファイル&2から&5個のメンバーが除去されなかった。"
+    },
+    {
+      "id": "CPF7310",
+      "text": "メンバー&1は&3のファイル&2から除去されませんでした。"
+    }
+  ],
+  "source": {
+    "url": "https://www.ibm.com/docs/ja/ssw_ibm_i_74/cl/rmvm.htm",
+    "version": "IBM i 7.4"
+  }
+}

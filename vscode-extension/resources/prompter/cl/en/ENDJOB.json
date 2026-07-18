@@ -1,0 +1,183 @@
+{
+  "keyword": "ENDJOB",
+  "description": "End Job (ENDJOB)",
+  "parameters": [
+    {
+      "name": "JOB",
+      "description": "Job name",
+      "help": "Job name (JOB)\n\nSpecifies the qualified job name of the job to be ended.\n\nThis is a required parameter.\n\nSingle values\n\nQualifier 1: Job name\n\nQualifier 2: User\n\nQualifier 3: Number\n\nNote: If no user name or job number is specified, all jobs currently in the system are searched for the job name. If more than one occurrence of the specified name is found, a qualified job name must be provided either explicitly or through the selection display. Refer to the Duplicate job option (DUPJOBOPT) parameter for more information.",
+      "inputType": "group",
+      "required": true,
+      "groupKind": "qualified",
+      "children": [
+        {
+          "name": "JOB_Q3",
+          "description": "Number",
+          "inputType": "number",
+          "required": false,
+          "attributes": {
+            "numericOnly": true
+          }
+        },
+        {
+          "name": "JOB_Q2",
+          "description": "User",
+          "inputType": "text",
+          "required": false,
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          }
+        },
+        {
+          "name": "JOB",
+          "description": "Job name",
+          "inputType": "text",
+          "required": true,
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          }
+        }
+      ],
+      "positional": 1,
+      "basic": true
+    },
+    {
+      "name": "OPTION",
+      "description": "How to end",
+      "help": "How to end (OPTION)\n\nSpecifies whether the job ends immediately or in a controlled manner that lets the application program perform end-of-job processing. In either case, the system performs certain job cleanup processing.\n\nNote: The *IMMED value might cause undesirable results if data has been partially updated. This value should be used only after a controlled end has been attempted unsuccessfully.\n\nNote: When a SIGTERM signal handler is running during the immediate ending of a job, an ENDJOB command with OPTION(*IMMED) can be used to end the SIGTERM signal handler. This is only allowed if the SIGTERM signal handler has already had at least two minutes to run.",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*CNTRLD",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*CNTRLD",
+          "value": "*CNTRLD"
+        },
+        {
+          "label": "*IMMED",
+          "value": "*IMMED"
+        }
+      ],
+      "positional": 2,
+      "basic": true
+    },
+    {
+      "name": "DELAY",
+      "description": "Controlled end delay time",
+      "help": "Controlled end delay time (DELAY)\n\nSpecifies the amount of time (in seconds) allowed for the job to complete its cleanup processing during a controlled end. If the cleanup is not completed before the end of the delay time, the job is ended immediately. (Only system cleanup is performed.)\n\nThe delay time does not start until the job becomes active if the job is suspended because of one of the following conditions:\n\nNote: This parameter is valid only when OPTION(*CNTRLD) is specified.",
+      "inputType": "number",
+      "required": false,
+      "defaultValue": "30",
+      "attributes": {
+        "numericOnly": true
+      },
+      "positional": 3,
+      "basic": true
+    },
+    {
+      "name": "SPLFILE",
+      "description": "Delete spooled files",
+      "help": "Delete spooled files (SPLFILE)\n\nSpecifies whether spooled output files created by this job are kept for normal processing or deleted. Regardless of whether the spooled files are deleted, the job logs are kept.",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*NO",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*NO",
+          "value": "*NO"
+        },
+        {
+          "label": "*YES",
+          "value": "*YES"
+        }
+      ],
+      "positional": 4,
+      "basic": true
+    },
+    {
+      "name": "LOGLMT",
+      "description": "Maximum log entries",
+      "help": "Maximum log entries (LOGLMT)\n\nSpecifies the maximum number of entries in the message queue of the job being ended that are written to the job log. This parameter can be used to limit the number of messages written to the job log printer file, QPJOBLOG, for a job that ends.\n\nThe value specified on this parameter can change the logging limit of the job even if the job is already ending or the job has already ended. The following are examples of how the logging limit can be changed:\n\n指定できる特殊値: *SAME, *NOMAX",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*SAME",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "basic": true
+    },
+    {
+      "name": "ADLINTJOBS",
+      "description": "Additional interactive jobs",
+      "help": "Additional interactive jobs (ADLINTJOBS)\n\nSpecifies whether the additional interactive jobs associated with the job specified in the Job name (JOB) parameter are ended.",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*NONE",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*NONE",
+          "value": "*NONE"
+        },
+        {
+          "label": "*GRPJOB",
+          "value": "*GRPJOB"
+        },
+        {
+          "label": "*ALL",
+          "value": "*ALL"
+        }
+      ],
+      "basic": true
+    },
+    {
+      "name": "DUPJOBOPT",
+      "description": "Duplicate job option",
+      "help": "Duplicate job option (DUPJOBOPT)\n\nSpecifies the action taken when duplicate jobs are found by this command.",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*SELECT",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*SELECT",
+          "value": "*SELECT"
+        },
+        {
+          "label": "*MSG",
+          "value": "*MSG"
+        }
+      ]
+    }
+  ],
+  "examples": [
+    {
+      "code": "ENDJOB JOB(JOB1) OPTION(*IMMED) SPLFILE(*YES)"
+    },
+    {
+      "code": "ENDJOB JOB(001234/XYZ/JOB2) OPTION(*CNTRLD) DELAY(50) SPLFILE(*NO)"
+    },
+    {
+      "code": "ENDJOB JOB(543210/ABCDE/JOB3) LOGLMT(0)"
+    },
+    {
+      "code": "ENDJOB JOB(*) OPTION(*IMMED)"
+    }
+  ],
+  "source": {
+    "url": "https://www.ibm.com/docs/en/ssw_ibm_i_74/cl/endjob.htm",
+    "version": "IBM i 7.4"
+  }
+}

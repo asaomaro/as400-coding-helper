@@ -11,7 +11,8 @@ AS/400 コーディング支援のプロンプター定義（CL コマンド・R
 
 | パス | 内容 | 件数 | 版/出所 |
 |---|---|---|---|
-| `cl/<CMD>.html` | CL コマンドの IBM Documentation ページ | 95 | IBM i 7.4 (`ssw_ibm_i_74`) |
+| `cl/<CMD>.html` | CL コマンドの IBM Documentation ページ（日本語） | 134 | IBM i 7.4 (`ssw_ibm_i_74`) |
+| `cl-en/<CMD>.html` | 同上（英語） | 133 | IBM i 7.4 |
 | `ilerpg/<X>-SPEC.html` | ILE RPG 固定長仕様書（H/F/D/I/C/O/P）の概説ページ | 7 | IBM i 7.4 |
 | `ilerpg/<X>-SPEC-<slug>.html` | 上記の桁・主要キーワード詳細サブページ（桁表を含む） | 14 | IBM i 7.4 |
 | `rpg3/<id>.html` | RPG III(RPG/400) 用 固定長リファレンス（第三者・jaymoseley） | 6 | 下記「rpg3 の出所」参照 |
@@ -60,6 +61,57 @@ https://www.ibm.com/docs/api/v1/content/<topic をURLエンコード>?parsebody=
 
 > **未解決**: `P-SPEC-keywords`（`rzasd/pskwd.htm`）は本文が 149 文字しか返らず gap のまま。
 > 正しいトピックパスの特定が必要。
+
+## 実機のコマンド定義（cmddoc/）
+
+`cmddoc/QSYS_<CMD>.HTML` は **実機のコマンドオブジェクトから `GENCMDDOC` で生成**した
+定義。IBM Documentation のページ（版に固定された文書）と違い、そのシステムで実際に
+受け付けられる定義そのものなので、裏取りに使う。
+
+```sh
+node docs/origin/verify-cl-against-cmddoc.mjs   # 定義と実機の突き合わせ（差分は報告のみ）
+```
+
+取得方法（pub400 は SSH が使える。画面操作より確実で速い）:
+
+```sh
+ssh -p 2222 <user>@pub400.com          # パスワード入力の文言が独自のため
+                                        # sshpass 利用時は -P "password" が要る
+system "GENCMDDOC CMD(QSYS/<CMD>) TODIR('/home/<user>/cmddoc')"
+scp -P 2222 '<user>@pub400.com:/home/<user>/cmddoc/*.HTML' docs/origin/cmddoc/
+```
+
+**定義の正は原典（`cl/`、IBM i 7.4 文書）のまま**で、cmddoc は裏取り用。実機は 7.5 の
+ため版差が出る。現時点の差分は次のとおりで、いずれも 7.5 で追加された項目と確認済み。
+
+| 差分 | 内容 |
+|---|---|
+| 実機にあり定義に無い 6件 | `ALCOBJ.MIRROR` `CRTBNDCL.TGTCCSID` `DLCOBJ.MIRROR` `DLYJOB.RSMDATE` `DLYJOB.CTLEND` `RTVOBJD.BLDID` |
+| 省略時値の差 1件 | `CALL.PARM = *DFT`（7.4 原典には既定値の記載が無い） |
+| required の差 | **0件** |
+| 定義にあり実機に無い | **0件** |
+
+`required` と パラメータ集合が実機と完全一致していることは、原典からの生成が
+正しいことの裏付けになっている。
+
+## 言語（日本語 / 英語）
+
+CL の原典は日本語版と英語版の両方を取得し、定義もそれぞれ生成する。
+
+```sh
+node docs/origin/fetch-origin.mjs --only=cl              # 日本語 → docs/origin/cl/
+node docs/origin/fetch-origin.mjs --only=cl --lang=en    # 英語   → docs/origin/cl-en/
+node docs/origin/generate-cl-definitions.mjs             # → resources/prompter/cl/ja/
+node docs/origin/generate-cl-definitions.mjs --lang=en   # → resources/prompter/cl/en/
+```
+
+拡張機能側は設定 `rpgClSupport.language`（`auto`/`ja`/`en`、既定 `auto`）で切り替える。
+`auto` は VS Code の表示言語に従う。
+
+**入力欄の名前は言語によらず共通**にしている。名前は表示語ではなく内部の識別子で、
+`dependsOn` / `constraints` / `basic` もこれを参照するため。英語版の生成時は日本語版を
+引き継ぎ元にして名前を揃えている（揃えないと `LOG_E1` のような合成名になり、
+同じコマンドなのに欄の名前が言語で食い違う）。
 
 ## 定義 JSON の生成
 

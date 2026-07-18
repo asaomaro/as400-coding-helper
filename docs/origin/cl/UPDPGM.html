@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html lang="ja"><head><meta charset="utf-8"><title>プログラムの更新  (UPDPGM)</title></head>
+<body>
+<div role="main">
+<script type="text/javascript" src="../rzahg/synch.js"></script>
+<a name="UPDPGM.Top_Of_Page"></a>
+<h1>プログラムの更新  (UPDPGM)</h1><div id="lastModifiedDate"><span>Last Updated</span>: 2021-04-13</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table0" width="100%" class="cds--data-table">
+<tbody><tr>
+<td class="valigntop alignleft"><strong>実行可能場所:  </strong>すべての環境 (*ALL)<br>
+<strong>スレッド・セーフ:  </strong>いいえ
+</td>
+<td class="valigntop alignright">
+<a href="#UPDPGM.PARAMETERS.TABLE">パラメーター</a><br>
+<a href="#UPDPGM.COMMAND.EXAMPLES">例</a><br>
+<a href="#UPDPGM.ERROR.MESSAGES">エラー・メッセージ</a></td>
+</tr>
+</tbody></table></div></div>
+<div> <a name="UPDPGM"></a>
+<p>プログラム更新(UPDPGM)コマンドを使用すれば，結合プログラムの変更または再コンパイルを必要とせずに，統合化言語環境(ILE)結合プログラムのモジュールをシステム上の他のモジュールで置き換えることができます。置き換えられるモジュールは，システム上のモジュール・オブジェクト(*MODULE)でなければなりません。
+</p>
+<p>プログラムがこのコマンドによって更新されている間であっても，結合プログラムを実行中の他のジョブは実行することができます。現在実行中の結合プログラムはライブラリーQRPLOBJに移動され，結合プログラムの更新済みバージョンが結合プログラムのライブラリーに挿入されます。プログラムの現在の活動化は，QRPLOBJライブラリー内のプログラムのバージョンを使用して実行し続けます。
+</p>
+<h2><strong>制約事項</strong><strong>:</strong>
+</h2>
+<ul class="cds--list--unordered">
+<li class="cds--list__item">結合プログラムのライブラリーに対する使用(*USE)および追加(*ADD)権限が必要です。
+</li>
+<li class="cds--list__item">結合プログラムに対する*USE,オブジェクト管理(*OBJMGT),およびオブジェクト存在(*OBJEXIST)権限が必要です。
+</li>
+<li class="cds--list__item">結合プログラムの所有者であるか，結合プログラムの所有者であるグループのメンバーであるか，あるいはすべてのオブジェクト(*ALLOBJ)特殊権限をもつユーザーである必要があります。
+</li>
+<li class="cds--list__item">次のものに対する*USE権限が必要です。
+<ul class="cds--list--unordered cds--list--nested">
+<li class="cds--list__item"><strong>モジュール</strong><strong> (MODULE)</strong>パラメーターに指定された*MODULEオブジェクト（およびそのモジュールが存在するライブラリーに対する実行(*EXECUTE)権限）。
+</li>
+<li class="cds--list__item"><strong> サービス・プログラム</strong><strong>のバインド</strong><strong> (BNDSRVPGM)</strong>パラメーターに指定された*SRVPGMオブジェクト。
+</li>
+<li class="cds--list__item"><strong>ディレクトリーのバインド</strong><strong> (BNDDIR)</strong>パラメーターに指定された*BNDDIRオブジェクト（およびそのライブラリーに対する*EXECUTE権限）および*BNDDIRオブジェクトの外部記号を分析解決するために使用されるすべてのオブジェクトとそれらのライブラリー。
+</li>
+</ul>
+</li>
+</ul>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table1" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#UPDPGM.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div>
+<h2><a name="UPDPGM.PARAMETERS.TABLE">パラメーター</a></h2>
+<div class="tablenoborder"><div class="cds--data-table-container"><table id="parm_table2" summary="Parameters" border="1" cellpadding="4" cellspacing="0" class="cds--data-table">
+<!-- col1="10" col2="15" col3="30" col4="10" -->
+<tbody><tr>
+<th scope="col" class="valignbottom alignleft"><div class="cds--table-header-label">キーワード</div></th>
+<th scope="col" class="valignbottom alignleft"><div class="cds--table-header-label">記述</div></th>
+<th scope="col" class="valignbottom alignleft"><div class="cds--table-header-label">選択項目</div></th>
+<th scope="col" class="valignbottom alignleft"><div class="cds--table-header-label">ノーツ</div></th>
+</tr>
+<tr>
+<td class="valigntop" rowspan="3"><a href="#UPDPGM.PGM"><strong>PGM</strong></a></td>
+<td class="valigntop">プログラム</td>
+<td class="valigntop"><span class="var">修飾オブジェクト名</span></td>
+<td class="valigntop" rowspan="3">必須, 定位置 1</td>
+</tr>
+<tr>
+<td class="valigntop">修飾子 1: プログラム</td>
+<td class="valigntop"><span class="var">名前</span></td>
+</tr><tr>
+<td class="valigntop">修飾子 2: ライブラリー</td>
+<td class="valigntop"><span class="var">名前</span>, <strong class="underlined">*USRLIBL</strong>, *CURLIB</td>
+</tr><tr>
+<td class="valigntop" rowspan="3"><a href="#UPDPGM.MODULE"><strong>MODULE</strong></a></td>
+<td class="valigntop">モジュール</td>
+<td class="valigntop">単一値: *NONE<br>その他の値 (最大 300 回の繰り返し): <span class="var">修飾オブジェクト名</span></td>
+<td class="valigntop" rowspan="3">必須, 定位置 2</td>
+</tr>
+<tr>
+<td class="valigntop">修飾子 1: モジュール</td>
+<td class="valigntop"><span class="var">総称名, 名前</span>, *ALL</td>
+</tr><tr>
+<td class="valigntop">修飾子 2: ライブラリー</td>
+<td class="valigntop"><span class="var">名前</span>, <strong class="underlined">*LIBL</strong>, *CURLIB, *USRLIBL</td>
+</tr><tr>
+<td class="valigntop" rowspan="2"><a href="#UPDPGM.RPLLIB"><strong>RPLLIB</strong></a></td>
+<td class="valigntop">置き換えライブラリー</td>
+<td class="valigntop">単一値: <strong class="underlined">*ONLY</strong>, *FIRST, *MODULE<br>その他の値: <span class="var">修飾子リスト</span></td>
+<td class="valigntop" rowspan="2">オプショナル</td>
+</tr>
+<tr>
+<td class="valigntop">修飾子 1: 置き換えライブラリー</td>
+<td class="valigntop"><span class="var">名前</span></td>
+</tr><tr>
+<td class="valigntop" rowspan="5"><a href="#UPDPGM.BNDSRVPGM"><strong>BNDSRVPGM</strong></a></td>
+<td class="valigntop"> サービス・プログラムのバインド</td>
+<td class="valigntop">単一値: <strong class="underlined">*NONE</strong><br>その他の値 (最大 300 回の繰り返し): <span class="var">要素リスト</span></td>
+<td class="valigntop" rowspan="5">オプショナル</td>
+</tr>
+<tr>
+<td class="valigntop">要素 1: サービス・プログラム</td>
+<td class="valigntop">
+<span class="var">修飾オブジェクト名</span></td>
+</tr>
+<tr>
+<td class="valigntop">修飾子 1: サービス・プログラム</td>
+<td class="valigntop"><span class="var">総称名, 名前</span>, *ALL</td>
+</tr><tr>
+<td class="valigntop">修飾子 2: ライブラリー</td>
+<td class="valigntop"><span class="var">名前</span>, <strong class="underlined">*LIBL</strong></td>
+</tr><tr>
+<td class="valigntop">要素 2: 活動化</td>
+<td class="valigntop">
+<strong class="underlined">*SAME</strong>, *IMMED, *DEFER</td>
+</tr>
+<tr>
+<td class="valigntop" rowspan="2"><a href="#UPDPGM.SRVPGMLIB"><strong>SRVPGMLIB</strong></a></td>
+<td class="valigntop">*SRVPGM ライブラリー名のバインド</td>
+<td class="valigntop">単一値: <strong class="underlined">*SAME</strong>, *LIBL<br>その他の値: <span class="var">修飾子リスト</span></td>
+<td class="valigntop" rowspan="2">オプショナル</td>
+</tr>
+<tr>
+<td class="valigntop">修飾子 1: *SRVPGM ライブラリー名のバインド</td>
+<td class="valigntop"><span class="var">名前</span></td>
+</tr><tr>
+<td class="valigntop" rowspan="3"><a href="#UPDPGM.BNDDIR"><strong>BNDDIR</strong></a></td>
+<td class="valigntop">ディレクトリーのバインド</td>
+<td class="valigntop">単一値: <strong class="underlined">*NONE</strong><br>その他の値 (最大 300 回の繰り返し): <span class="var">修飾オブジェクト名</span></td>
+<td class="valigntop" rowspan="3">オプショナル</td>
+</tr>
+<tr>
+<td class="valigntop">修飾子 1: ディレクトリーのバインド</td>
+<td class="valigntop"><span class="var">名前</span></td>
+</tr><tr>
+<td class="valigntop">修飾子 2: ライブラリー</td>
+<td class="valigntop"><span class="var">名前</span>, <strong class="underlined">*LIBL</strong>, *CURLIB, *USRLIBL</td>
+</tr><tr>
+<td class="valigntop"><a href="#UPDPGM.ACTGRP"><strong>ACTGRP</strong></a></td>
+<td class="valigntop">活動化グループ</td>
+<td class="valigntop"><span class="var">名前</span>, <strong class="underlined">*SAME</strong></td>
+<td class="valigntop">オプショナル</td>
+</tr>
+<tr>
+<td class="valigntop"><a href="#UPDPGM.OPTION"><strong>OPTION</strong></a></td>
+<td class="valigntop">作成オプション</td>
+<td class="valigntop">値 (最大 6 回の繰り返し): *GEN, *NOGEN, *DUPPROC, *NODUPPROC, *DUPVAR, *NODUPVAR, *WARN, *NOWARN, *TRIM, *NOTRIM, *RSLVREF, *UNRSLVREF</td>
+<td class="valigntop">オプショナル</td>
+</tr>
+<tr>
+<td class="valigntop"><a href="#UPDPGM.DETAIL"><strong>DETAIL</strong></a></td>
+<td class="valigntop">明細のリスト</td>
+<td class="valigntop"><strong class="underlined">*NONE</strong>, *BASIC, *EXTENDED, *FULL</td>
+<td class="valigntop">オプショナル</td>
+</tr>
+</tbody></table></div></div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table3" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#UPDPGM.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+</div>
+<div> <a name="UPDPGM.PGM"></a>
+<h2>プログラム (PGM)</h2>
+<p>更新する結合プログラムを指定します。
+</p>
+<p>これは必須パラメーターです。
+</p>
+<h3><strong>修飾子</strong><strong>1: </strong><strong>プログラム</strong>
+</h3>
+<dl>
+<dt><strong class="italic">名前</strong></dt>
+<dd>更新する結合プログラムの名前を指定してください。
+</dd>
+</dl>
+<h3><strong>修飾子</strong><strong>2: ライブラリー</strong>
+</h3>
+<dl>
+<dt><strong class="underlined">*USRLIBL</strong></dt>
+<dd>ジョブのライブラリー・リストのユーザー部分にあるライブラリーだけが検索されます。
+</dd>
+<dt><strong>*CURLIB</strong></dt>
+<dd>ジョブの現行ライブラリーが検索されます。ジョブの現行ライブラリーとして指定されているライブラリーがない場合は，QGPLライブラリーが使用されます。
+</dd>
+<dt><strong class="italic">名前</strong></dt>
+<dd>結合プログラムが入っているライブラリーの名前を指定してください。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table4" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#UPDPGM.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="UPDPGM.MODULE"></a>
+<h2>モジュール (MODULE)</h2>
+<p>結合プログラムの同じ名前のモジュールを置き換える既存の*MODULEオブジェクトの名前を指定します。結合プログラムの2つ以上のモジュールが同じ名前であった場合には，どれを置き換えるかが<strong>置き換えライブラリー</strong><strong> (RPLLIB)</strong>パラメーターによって指示されます。
+</p>
+<p>置き換えられるモジュールのライブラリーが置き換わるモジュールのライブラリーと異なる場合には，更新後のモジュールのライブラリーは，プログラムが最初に作成された時にモジュールがあったライブラリーのままです。置き換えられるモジュールを決定するのにRPLLIBパラメーターが必要な場合には，このモジュールのRPLLIBパラメーターに入力される値は，更新によっても変更されません。最大300の名前を指定することができます。
+</p>
+<p>これは必須パラメーターです。
+</p>
+<h3><strong>単一値</strong>
+</h3>
+<dl>
+<dt><strong>*NONE</strong></dt>
+<dd>モジュールは指定されません。
+</dd>
+</dl>
+<h3><strong>修飾子</strong><strong>1: </strong><strong>モジュール</strong>
+</h3>
+<dl>
+<dt><strong>*ALL</strong></dt>
+<dd>ユーザーに権限のある同じ名前のすべてのモジュールが，結合プログラムのモジュールを置き換えます。
+</dd>
+<dt><strong class="italic">総称名</strong></dt>
+<dd>結合プログラムのモジュールを置き換えるモジュールの総称名を指定してください。総称名は1つ以上の文字の後にアスタリスク(*)を付けた文字ストリング（例えば，ABC*など）です。この総称名で始まる名前をもち，ユーザーに権限があるすべてのモジュールが，結合プログラムのモジュールを置き換えます。
+</dd>
+<dt><strong class="italic">名前</strong></dt>
+<dd>結合プログラムのモジュールを置き換えるモジュールの名前を指定してください。
+</dd>
+</dl>
+<h3><strong>修飾子</strong><strong>2: ライブラリー</strong>
+</h3>
+<dl>
+<dt><strong class="underlined">*LIBL</strong></dt>
+<dd>最初に一致するものが見つかるまで，現行スレッドのライブラリー・リスト内のすべてのライブラリーが検索されます。
+</dd>
+</dl>
+<dl>
+<dt><strong>*CURLIB</strong></dt>
+<dd>ジョブの現行ライブラリーが検索されます。ジョブの現行ライブラリーとして指定されているライブラリーがない場合は，QGPLライブラリーが使用されます。
+</dd>
+<dt><strong>*USRLIBL</strong></dt>
+<dd>ジョブのライブラリー・リストのユーザー部分にあるライブラリーだけが検索されます。
+</dd>
+<dt><strong class="italic">名前</strong></dt>
+<dd>検索するライブラリーの名前を指定してください。
+</dd>
+</dl>
+<p>結合プログラムのモジュールを置き換えるモジュールの名前を指定してください。
+</p>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table5" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#UPDPGM.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="UPDPGM.RPLLIB"></a>
+<h2>置き換えライブラリー (RPLLIB)</h2>
+<p>結合プログラムの2つ以上のモジュールがMODULEパラメーターに指定された名前をもっている時に置き換えるモジュールを選択するために使用される方法を指定します。
+</p>
+<dl>
+<dt><strong class="underlined">*ONLY</strong></dt>
+<dd>結合プログラムには，指定された名前のモジュールが1つだけ入っており，それが置き換えられます。結合プログラムの2つ以上のモジュールが指定された名前であった場合には，例外が通知され，結合プログラムは更新されません。
+</dd>
+<dt><strong>*FIRST</strong></dt>
+<dd>結合プログラムのモジュール・リスト中の指定された名前の最初のモジュールが置き換えられます。
+</dd>
+<dt><strong>*MODULE</strong></dt>
+<dd>指定されたモジュールと同じライブラリーを起点とするモジュールが置き換えられます。置き換えモジュールと同じライブラリーを起点とする指定された名前のモジュールがなかった場合には，モジュールは置き換えられず，例外が通知されます。
+</dd>
+<dt><strong class="italic">名前</strong></dt>
+<dd>置き換えのために選択したモジュールの起点ライブラリーの名前を指定してください。指定したライブラリーを起点とする指定された名前のモジュールがなかった場合には，モジュールは置き換えられません。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table6" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#UPDPGM.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="UPDPGM.BNDSRVPGM"></a>
+<h2>サービス・プログラムのバインド (BNDSRVPGM)</h2>
+<p>外部記号を分析解決するためのインポート要求を更新済み結合プログラムのモジュールおよびサービス・プログラムによって満たすことができない場合に，エクスポートを調べるサービス・プログラムを指定します。指定されたサービス・プログラムで外部記号を分析解決することができる場合には，結合プログラムにバインドされるサービス・プログラムにそれが追加されます。最大300の名前を指定することができます。
+</p>
+<p>各サービス・プログラムの活動化を制御できます。参照サービス・プログラムを，プログラムの更新と同時に活動化するかどうか，または参照サービス・プログラムからエクスポートされたプロシージャーが呼び出されるまで保留するかどうかを指定できます。活動化の遅延によってアプリケーションのパフォーマンスが向上することがあります。
+</p>
+<h3><strong>単一値</strong>
+</h3>
+<dl>
+<dt><strong class="underlined">*NONE</strong></dt>
+<dd>記号の分析解決時にサービス・プログラムは調べられません。
+</dd>
+</dl>
+<h3><strong>要素</strong><strong>1: </strong><strong>サービス・プログラム</strong>
+</h3>
+<h3><strong>修飾子</strong><strong>1: </strong><strong>サービス・プログラム</strong>
+</h3>
+<dl>
+<dt><strong>*ALL</strong></dt>
+<dd>記号の分析解決時にすべてのサービス・プログラムが調べられます。
+</dd>
+<dt><strong class="italic">総称名</strong></dt>
+<dd>記号の分析解決時に調べるサービス・プログラムの総称名を指定してください。総称名は1つまたは複数の文字の後にアスタリスク(*)を付けた文字ストリング（例えば，ABC*など）です。この総称名で始まる名前をもち，ユーザーに権限があるすべてのサービス・プログラムが，記号の分析解決時に調べられます。
+</dd>
+<dt><strong class="italic">名前</strong></dt>
+<dd>記号の分析解決時に調べるサービス・プログラムの名前を指定してください。
+</dd>
+</dl>
+
+<dd>
+<h3><strong>修飾子</strong><strong>2: ライブラリー</strong>
+</h3>
+<dl>
+<dt><strong class="underlined">*LIBL</strong></dt>
+<dd>最初に一致するものが見つかるまで，現行スレッドのライブラリー・リスト内のすべてのライブラリーが検索されます。
+</dd>
+</dl>
+<dl>
+<dt><strong class="italic">名前</strong></dt>
+<dd>検索するライブラリーの名前を指定してください。QTEMPは，このパラメーターで有効なライブラリー名ではありません。
+</dd>
+</dl>
+</dd>
+
+<h3><strong>要素</strong><strong>2:  </strong><strong>活動化</strong>
+</h3>
+<dl>
+<dt><strong class="underlined">*SAME</strong></dt>
+<dd>参照サービス・プログラムの活動化は変更されません。
+</dd>
+<dt><strong>*IMMED</strong></dt>
+<dd>バインド・サービス・プログラムは，更新中のプログラムが活動化されるとすぐに活動化されます。
+</dd>
+<dt><strong>*DEFER</strong></dt>
+<dd>バインド・サービス・プログラムの活動化は，そのプログラムがエクスポートした関数が呼び出されるまで保留にされることがあります。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table7" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#UPDPGM.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="UPDPGM.SRVPGMLIB"></a>
+<h2>*SRVPGM ライブラリー名のバインド (SRVPGMLIB)</h2>
+<p>現在バインドされているサービス・プログラムに分析解決するために使用するライブラリー名を指定します。プログラム属性ALWLIBUPDが*YESの場合には，このパラメーターに*SAME以外の値を指定することができます。
+</p>
+<dl>
+<dt><strong class="underlined">*SAME</strong></dt>
+<dd>サービス・プログラム(*SRVPGM)の現在のバインド元であるライブラリー名を使用します。
+</dd>
+<dt><strong>*LIBL</strong></dt>
+<dd>バインドされた各*SRVPGMについて最初に一致するまで，ジョブのライブラリー・リスト内のすべてのライブラリーを検索します。*SRVPGMの最初のオカレンスが現在バインドされているサービス・プログラムに分析解決するために使用され，*LIBLが実行時に使用するために保存されます。ジョブのライブラリー・リスト中に一致が見つからない場合には，プログラムに現在バインドされている*SRVPGMが使用されます。指定されたライブラリーの*SRVPGMオブジェクトに対する*USE権限とライブラリー自体に対する*EXECUTE権限が必要です。
+<p>
+<strong>注:     </strong>暗黙のバインド・ディレクトリーからのサービス・プログラム（システム提供のサービス・プログラム）は変更されません。
+</p>
+</dd>
+<dt><strong class="italic">名前</strong></dt>
+<dd>現在バインドされているすべてのサービス・プログラムに分析解決するために最初に使用されるライブラリーの名前を指定してください。バインドされた*SRVPGMがSRVPGMLIBパラメーターで指定されたライブラリーに存在する場合には，そのライブラリーからのその*SRVPGMが現在バインドされている*SRVPGMの代わりに使用され，SRVPGMLIBパラメーターで指定されたライブラリー名を実行時に使用するために保存します。*SRVPGMがSRVPGMLIBパラメーターで指定されたライブラリーに存在しない場合には，プログラムに現在バインドされている*SRVPGMが使用されます。指定されたライブラリーの*SRVPGMオブジェクトに対する*USE権限とライブラリー自体に対する*EXECUTE権限が必要です。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table8" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#UPDPGM.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="UPDPGM.BNDDIR"></a>
+<h2>ディレクトリーのバインド (BNDDIR)</h2>
+<p>外部記号を分析解決するためのインポート要求を(1)更新済み結合プログラムのモジュールおよびサービス・プログラム，または(2)BNDSRVPGMパラメーターに指定されたサービス・プログラムによって満たすことができない場合に，エクスポートを調べるバインド・ディレクトリーを指定します。指定されたバインド・ディレクトリーにリストされたモジュールまたはサービス・プログラムで外部記号を分析解決することができる場合には，結合プログラムにバインドされるモジュールまたはサービス・プログラムにそれが追加されます。最大300の名前を指定することができます。
+</p>
+<h3><strong>単一値</strong>
+</h3>
+<dl>
+<dt><strong class="underlined">*NONE</strong></dt>
+<dd>バインド・ディレクトリーを指定しません。
+</dd>
+</dl>
+<h3><strong>修飾子</strong><strong>1: </strong><strong>ディレクトリーのバインド</strong>
+</h3>
+<dl>
+<dt><strong class="italic">名前</strong></dt>
+<dd>記号の分析解決時に使用されるバインド・ディレクトリーの名前を指定してください。
+</dd>
+</dl>
+<h3><strong>修飾子</strong><strong>2: ライブラリー</strong>
+</h3>
+<dl>
+<dt><strong class="underlined">*LIBL</strong></dt>
+<dd>最初に一致するものが見つかるまで，現行スレッドのライブラリー・リスト内のすべてのライブラリーが検索されます。
+</dd>
+</dl>
+<dl>
+<dt><strong>*CURLIB</strong></dt>
+<dd>ジョブの現行ライブラリーが検索されます。ジョブの現行ライブラリーとして指定されているライブラリーがない場合は，QGPLライブラリーが使用されます。
+</dd>
+<dt><strong>*USRLIBL</strong></dt>
+<dd>ジョブのライブラリー・リストのユーザー部分にあるライブラリーだけが検索されます。
+</dd>
+<dt><strong class="italic">名前</strong></dt>
+<dd>検索するライブラリーの名前を指定してください。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table9" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#UPDPGM.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="UPDPGM.ACTGRP"></a>
+<h2>活動化グループ (ACTGRP)</h2>
+<p>更新済みプログラムに使用する活動化グループを指定します。
+</p>
+<dl>
+<dt><strong class="underlined">*SAME</strong></dt>
+<dd>活動化グループは変更されません。プログラムに対してその作成時に*CALLERまたは*NEW活動化グループが割り当てられていた場合は，この値を指定してください。
+</dd>
+<dt><strong class="italic">名前</strong></dt>
+<dd>この呼び出されたプログラムと関連する活動化グループの名前を指定してください。作成時にプログラムが活動化グループの名前を指定された場合には，その活動化グループの名前を別の名前の活動化グループに変更することができます。
+<p>
+<strong>注:     </strong>活動化グループ名を変更すると，プログラム（またはサービス・プログラム）の動作に影響する場合があります。名前を指定した活動化グループの動作の詳細については，ILE概念(SD88-5033)を参照してください。
+</p>
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table10" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#UPDPGM.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="UPDPGM.OPTION"></a>
+<h2>作成オプション (OPTION)</h2>
+<p>結合プログラムの更新時に使用するオプションを指定します。
+</p>
+<p>このパラメーターには最大6個までの値を指定することができます。
+</p>
+<h3><strong>プログラム・オブジェクトの作成</strong>
+</h3>
+<dl>
+<dt><strong class="underlined">*GEN</strong></dt>
+<dd>更新済みプログラム・オブジェクトが作成されます。
+</dd>
+<dt><strong>*NOGEN</strong></dt>
+<dd>更新済みプログラム・オブジェクトは作成されません。
+</dd>
+</dl>
+<h3><strong>重複プロシージャー名</strong>
+</h3>
+<dl>
+<dt><strong class="underlined">*DUPPROC</strong></dt>
+<dd>記号の分析解決時に，モジュールおよびサービス・プログラムからエクスポートされるプロシージャー名は，固有である必要はありません。追加情報がILE概念(SD88-5033)にある可能性があります。
+</dd>
+<dt><strong>*NODUPPROC</strong></dt>
+<dd>記号の分析解決時に，モジュールおよびサービス・プログラムからエクスポートされる各プロシージャー名は，固有のものでなければなりません。
+</dd>
+</dl>
+<h3><strong>重複変数名</strong>
+</h3>
+<dl>
+<dt><strong class="underlined">*DUPVAR</strong></dt>
+<dd>記号の分析解決時に，モジュールおよびサービス・プログラムからエクスポートされる変数名は，固有である必要はありません。追加情報がILE概念(SD88-5033)にある可能性があります。
+</dd>
+<dt><strong>*NODUPVAR</strong></dt>
+<dd>記号の分析解決時に，モジュールおよびサービス・プログラムからエクスポートされる各変数名は，固有のものでなければなりません。
+</dd>
+</dl>
+<h3><strong>診断メッセージの発行</strong>
+</h3>
+<dl>
+<dt><strong class="underlined">*WARN</strong></dt>
+<dd>適切な診断メッセージが通知されます。また，重複したプロシージャーまたは変数(*DUPPROCまたは*DUPVAR)を指定し，重複が見つかった場合には，重複が見つかったことを示す診断メッセージが出されます。
+</dd>
+<dt><strong>*NOWARN</strong></dt>
+<dd>情報メッセージまたは診断メッセージは出されません。
+</dd>
+</dl>
+<h3><strong>孤立モジュールのトリミング</strong>
+</h3>
+<p><strong>孤立モジュール</strong>は，更新中の結合プログラムのモジュールのことです。このモジュールは，1つ以上のインポートを分析解決するために，最初にバインド・ディレクトリーから結合プログラムにバインドされます。このプログラム更新の間は，インポートは分析解決されません。
+</p>
+<dl>
+<dt><strong class="underlined">*NOTRIM</strong></dt>
+<dd>孤立モジュールは結合プログラムから除去されません。
+<p>
+<strong>注:     </strong>*NOTRIMを指定した場合には，プログラムの実行時間が大幅に増加することがあります。
+</p>
+</dd>
+<dt><strong>*TRIM</strong></dt>
+<dd>孤立モジュールは結合プログラムから除去されます。
+<p>
+<strong>注:     </strong>このプログラム更新の間に孤立モジュールが結合プログラムから除去された場合には，このモジュールに入っているエクスポートを他のプログラム更新に使用することはできません。
+</p>
+</dd>
+</dl>
+<h3><strong>参照の解決（インポート）</strong>
+</h3>
+<dl>
+<dt><strong class="underlined">*RSLVREF</strong></dt>
+<dd>結合プログラムが更新されている間に，エクスポートに対してすべてのインポートを分析解決する必要があります。
+</dd>
+<dt><strong>*UNRSLVREF</strong></dt>
+<dd>結合プログラムが更新されている間に，エクスポートに対してすべてのインポートを分析解決する必要はありません。
+<p>
+<strong>注:     </strong>このコマンドに分析解決されていないインポートが含まれていた場合には，コマンドの実行時に例外が生成されます。
+</p>
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table11" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#UPDPGM.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="UPDPGM.DETAIL"></a>
+<h2>明細のリスト (DETAIL)</h2>
+<p>印刷するバインダー・リストの詳細レベルを指定します。リストの作成には，印刷装置ファイル*LIBL/QSYSPRTが使用されます。
+</p>
+<dl>
+<dt><strong class="underlined">*NONE</strong></dt>
+<dd>バインダー・リストは印刷されません。
+</dd>
+<dt><strong>*BASIC</strong></dt>
+<dd>簡単な要約表，このコマンドに渡されたオプション，およびいくつかの処理統計が印刷されます。
+</dd>
+<dt><strong>*EXTENDED</strong></dt>
+<dd>*BASICリストで提供される情報（簡単な要約表，このコマンドに渡されたオプション，およびいくつかの処理統計）に加えて，拡張要約表およびバインド情報リストが印刷されます。
+</dd>
+<dt><strong>*FULL</strong></dt>
+<dd>*EXTENDEDリストで提供される情報（拡張要約表，バインド情報リスト，簡単な要約表，このコマンドに渡されたオプション，およびいくつかの処理統計）に加えて，相互参照表が印刷されます。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table12" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#UPDPGM.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div><h2><a name="UPDPGM.COMMAND.EXAMPLES">例</a> </h2>
+<p>
+</p><pre>UPDPGM   PGM(STAR)  MODULE(SKY/NOVA)  RPLLIB(*FIRST)
+</pre>
+<p></p>
+<p>このコマンドは，プログラム・オブジェクトSTARに存在しているNOVAという名前の最初のモジュールを，ライブラリーSKY内のモジュールNOVAによって置き換えます。
+</p>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table13" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#UPDPGM.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div><h2><a name="UPDPGM.ERROR.MESSAGES">エラー・メッセージ</a> </h2>
+<p><strong class="underlined">*ESCAPE </strong><strong class="underlined">メッセージ</strong>
+</p>
+<dl>
+<dt><strong>CPF223D</strong></dt>
+<dd>&amp;2のタイプ*&amp;3の&amp;1を更新する権限を認可されていない。
+</dd>
+<dt><strong>CPF223E</strong></dt>
+<dd>借用権限の使用属性の権限チェックが正常に実行されなかった。
+</dd>
+<dt><strong>CPF5CA7</strong></dt>
+<dd>ALWLIBUPDが*NOになっている時はSRVPGMLIBは*SAMEでなければならない。
+</dd>
+<dt><strong>CPF5CE0</strong></dt>
+<dd>プログラム&amp;1が更新されなかった。
+</dd>
+<dt><strong>CPF5CE2</strong></dt>
+<dd>プログラムまたはサービス・プログラムの更新中に予期しないエラーが起こった。
+</dd>
+<dt><strong>CPF5D1B</strong></dt>
+<dd>ライブラリー&amp;2のプログラム&amp;1の更新は使用できない。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table14" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#UPDPGM.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+</div>
+
+
+</body></html>

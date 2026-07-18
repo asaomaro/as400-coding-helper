@@ -1,0 +1,663 @@
+{
+  "keyword": "CRTOUTQ",
+  "description": "Create Output Queue (CRTOUTQ)",
+  "parameters": [
+    {
+      "name": "OUTQ",
+      "description": "Output queue",
+      "help": "Output queue (OUTQ)\n\nSpecifies the output queue being created.\n\nThis is a required parameter.\n\nQualifier 1: Output queue\n\nQualifier 2: Library\n\nNote: The temporary library QTEMP is not a valid library name. Output queues must be in permanent libraries.",
+      "inputType": "group",
+      "required": true,
+      "groupKind": "qualified",
+      "children": [
+        {
+          "name": "LIB",
+          "description": "Library",
+          "help": "指定できる特殊値: *CURLIB",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "*CURLIB",
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          }
+        },
+        {
+          "name": "OUTQ",
+          "description": "Output queue",
+          "inputType": "text",
+          "required": true,
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          }
+        }
+      ],
+      "positional": 1,
+      "basic": true
+    },
+    {
+      "name": "MAXPAGES",
+      "description": "Maximum spooled file size",
+      "help": "Maximum spooled file size (MAXPAGES)\n\nSpecifies the maximum spooled file size in pages that will be allowed to print between a starting and ending time. If a spooled file exceeds the page limit it will be deferred (DFR status) until the ending time expires. For files where the exact number of pages is not known, the estimated number of pages is used. (You can use the Work with Spooled File Attributes (WRKSPLFA) command to find out the estimated number of pages.) Time must be specified in hhmmss format, on a 24 hour clock.\n\nSingle values\n\nOther values (up to 5 repetitions)\n\nElement 1: Number of pages\n\nElement 2: Starting time\n\nElement 3: Ending time",
+      "inputType": "group",
+      "required": false,
+      "groupKind": "elements",
+      "singleValues": [
+        "*NONE"
+      ],
+      "children": [
+        {
+          "name": "MAXPAGES_E1",
+          "description": "Number of pages",
+          "inputType": "number",
+          "required": false,
+          "attributes": {
+            "numericOnly": true
+          },
+          "defaultValue": "*NONE"
+        },
+        {
+          "name": "MAXPAGES_E2",
+          "description": "Starting time",
+          "inputType": "text",
+          "required": false
+        },
+        {
+          "name": "MAXPAGES_E3",
+          "description": "Ending time",
+          "inputType": "text",
+          "required": false
+        }
+      ],
+      "maxOccurrences": 5,
+      "basic": true
+    },
+    {
+      "name": "SEQ",
+      "description": "Order of files on queue",
+      "help": "Order of files on queue (SEQ)\n\nSpecifies the order of the spooled files on the output queue.",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*FIFO",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*FIFO",
+          "value": "*FIFO"
+        },
+        {
+          "label": "*JOBNBR",
+          "value": "*JOBNBR"
+        }
+      ],
+      "basic": true
+    },
+    {
+      "name": "RMTSYS",
+      "description": "Remote system",
+      "help": "Remote system (RMTSYS)\n\nSpecifies the remote system to send files to when a remote writer is started (using the STRRMTWTR command) to the output queue. This is referred to as the \"address\" by SNADS, and the \"host\" by TCP/IP.\n\nNote: This value is valid only when *IP has been specified for the CNNTYPE parameter.\n\n指定できる特殊値: *INTNETADR, *NONE, *PASTHR, *NWSA",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*NONE",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "basic": true
+    },
+    {
+      "name": "RMTPRTQ",
+      "description": "Remote printer queue",
+      "help": "Remote printer queue (RMTPRTQ)\n\nSpecifies the printer queue on the remote system (RMTSYS parameter) to which the remote writer sends spooled files.\n\nNote: This value is valid only when the connection type (CNNTYPE parameter) is specified as *SNA or *USRDFN and the DESTTYPE is *OS400 or *S390.\n\nIf the name of the remote system needs to be lower case, the name must be enclosed in apostrophes. If you do not use apostrophes, the operating system changes the name to upper case.\n\nFor a destination system that is not an IBM System i, this name is system-dependent, and can be either the actual name of the device or the name of a printer queue.\n\nThis output queue is usually specified as library name/output queue name. If a library name qualifier is not specified, the value *LIBL is used as the default.\n\n指定できる特殊値: *USER, *SYSTEM",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*USER",
+      "attributes": {
+        "characterSet": "upper"
+      }
+    },
+    {
+      "name": "AUTOSTRWTR",
+      "description": "Writers to autostart",
+      "help": "Writers to autostart (AUTOSTRWTR)\n\nSpecifies the number of remote writers that will be started automatically by the system. For user created output queues with the remote system (RMTSYS parameter) specified as *NONE, this parameter will be ignored.\n\n指定できる特殊値: *NONE",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*NONE",
+      "attributes": {
+        "characterSet": "upper"
+      }
+    },
+    {
+      "name": "MSGQ",
+      "description": "Queue for writer messages",
+      "help": "Queue for writer messages (MSGQ)\n\nSpecifies the message queue to which messages are sent when created by the remote writer started to this output queue.\n\nQualifier 1: Queue for writer messages\n\nQualifier 2: Library",
+      "inputType": "group",
+      "required": false,
+      "groupKind": "qualified",
+      "children": [
+        {
+          "name": "MSGQ_LIB",
+          "description": "Library",
+          "help": "指定できる特殊値: *LIBL, *CURLIB",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "*LIBL",
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          }
+        },
+        {
+          "name": "MSGQ",
+          "description": "Queue for writer messages",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "QSYSOPR",
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          }
+        }
+      ]
+    },
+    {
+      "name": "CNNTYPE",
+      "description": "Connection type",
+      "help": "Connection type (CNNTYPE)\n\nSpecifies the type of connection with the remote system.\n\n指定できる特殊値: *SNA, *IP, *USRDFN",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*SNA",
+      "attributes": {
+        "characterSet": "upper"
+      }
+    },
+    {
+      "name": "DESTTYPE",
+      "description": "Destination type",
+      "help": "Destination type (DESTTYPE)\n\nSpecifies the type of the remote system (RMTSYS parameter). This parameter, along with the type of data contained in the spooled file (DEVTYPE parameter on the CRTPRTF command), is used by a remote writer to determine the format used to send the spooled file. The spooled file will be held by the remote writer if the type of data in the spooled file is not supported by the system.\n\nNote: This value should be specified when possible, to allow the greatest flexibility when selecting values for other parameters.\n\n指定できる特殊値: *OS400, *OS400V2, *PSF2, *S390, *NDS, *OTHER",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*OS400",
+      "attributes": {
+        "characterSet": "upper"
+      }
+    },
+    {
+      "name": "TRANSFORM",
+      "description": "Host print transform",
+      "help": "Transform SCS to ASCII (TRANSFORM)\n\nSpecifies whether or not to make use of the host print transform function to transform a spooled file of device type *SCS into ASCII data when the file is sent to a remote printer queue.\n\nNote: This parameter is not valid when the CNNTYPE is specified as *SNA or *NONE.",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*YES",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*YES",
+          "value": "*YES"
+        },
+        {
+          "label": "*NO",
+          "value": "*NO"
+        }
+      ]
+    },
+    {
+      "name": "USRDTATFM",
+      "description": "User data transform",
+      "help": "Data transform program (USRDTATFM)\n\nSpecifies the user-defined data program that is used to transform the spooled file data.\n\nNote: This parameter is valid only when RMTSYS is not *NONE.\n\nSingle values\n\nQualifier 1: User data transform\n\nQualifier 2: Library",
+      "inputType": "group",
+      "required": false,
+      "groupKind": "qualified",
+      "singleValues": [
+        "*NONE"
+      ],
+      "children": [
+        {
+          "name": "USRDTATFM_LIB",
+          "description": "Library",
+          "help": "指定できる特殊値: *LIBL, *CURLIB",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "*LIBL",
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          }
+        },
+        {
+          "name": "USRDTATFM",
+          "description": "User data transform",
+          "inputType": "text",
+          "required": false,
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          },
+          "defaultValue": "*NONE"
+        }
+      ]
+    },
+    {
+      "name": "MFRTYPMDL",
+      "description": "Manufacturer type and model",
+      "help": "Manufacturer type and model (MFRTYPMDL)\n\nSpecifies the manufacturer, type, and model for a printer using the host print transform function or user data transform program. This parameter is only prompted when TRANSFORM(*YES) is specified or a user data transform program is specified.\n\nIf *WSCSTxxx is specified for MFRTYPMDL, a workstation customizing object must be specified.\n\nManufacturer Type and Model Table\n\n指定できる特殊値: *IBM42011, *WSCST",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*IBM42011",
+      "attributes": {
+        "characterSet": "upper"
+      }
+    },
+    {
+      "name": "WSCST",
+      "description": "Workstation customizing object",
+      "help": "Workstation customizing object (WSCST)\n\nSpecifies an object that consists of a table of attributes used to customize a given ASCII device, such as a workstation or printer. Character presentation, font specifications and control key sequences are examples of characteristics that can be customized.\n\nThis parameter is only prompted when TRANSFORM(*YES) is specified, or when a user data transform program is used.\n\nSingle values\n\nQualifier 1: Workstation customizing object\n\nQualifier 2: Library",
+      "inputType": "group",
+      "required": false,
+      "groupKind": "qualified",
+      "singleValues": [
+        "*NONE"
+      ],
+      "children": [
+        {
+          "name": "WSCST_LIB",
+          "description": "Library",
+          "help": "指定できる特殊値: *LIBL, *CURLIB",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "*LIBL",
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          }
+        },
+        {
+          "name": "WSCST",
+          "description": "Workstation customizing object",
+          "inputType": "text",
+          "required": false,
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          },
+          "defaultValue": "*NONE"
+        }
+      ]
+    },
+    {
+      "name": "IMGCFG",
+      "description": "Image configuration",
+      "help": "Image configuration (IMGCFG)\n\nSpecifies the image configuration for this output queue. An image configuration object provides transform services for a variety of image and print datastream formats. This parameter is only used with remote writers.\n\nSee the Image Configuration Object (IMGCFG Parameter) table below for a list of the image configuration objects provided.\n\nSee the Recommended Image Configuration Objects by Printer table below for the suggested IMGCFG object for many popular printers.\n\nImage Configuration Object Table\n\nRecommended Image Configuration Objects by Printer Table\n\n指定できる特殊値: *NONE",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*NONE",
+      "attributes": {
+        "characterSet": "upper"
+      }
+    },
+    {
+      "name": "INTNETADR",
+      "description": "Internet address",
+      "help": "Internet address (INTNETADR)\n\nSpecifies the internet address of the remote system to which the print request will be sent.\n\nNote: This parameter is valid only when RMTSYS(*INTNETADR) and CNNTYPE(*IP) or CNNTYPE(*USRDFN) are specified.\n\nValues must be enclosed in apostrophes (') when entered from the command line.",
+      "inputType": "text",
+      "required": false
+    },
+    {
+      "name": "CLASS",
+      "description": "VM/MVS class",
+      "help": "VM/MVS class (CLASS)\n\nSpecifies the VM/MVS SYSOUT class for files sent to a VM/MVS host system.\n\nNote: This parameter is valid only when CNNTYPE(*SNA) and DESTTYPE(*S390) are specified.",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "A"
+    },
+    {
+      "name": "FCB",
+      "description": "Forms Control Buffer",
+      "help": "Forms Control Buffer (FCB)\n\nSpecifies the forms control buffer for files sent to a VM/MVS host system.\n\nNote: This parameter is valid only when CNNTYPE(*SNA) and DESTTYPE(*S390) are specified.\n\n指定できる特殊値: *NONE, *USRDTA, *PRTF",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*NONE",
+      "attributes": {
+        "characterSet": "upper"
+      }
+    },
+    {
+      "name": "DESTOPT",
+      "description": "Destination options",
+      "help": "Destination options (DESTOPT)\n\nSpecifies destination-dependent options. When CNNTYPE(*IP) is specified, the destination-dependent options are added to the control file which is sent to the LPD server. When CNNTYPE(*SNA) is specified, this field is used to determine how spooled files are handled once they are sent to the remote system.\n\n指定できる特殊値: *NONE, *USRDFNTXT, *NOWAIT",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*NONE",
+      "attributes": {
+        "characterSet": "upper"
+      }
+    },
+    {
+      "name": "SEPPAGE",
+      "description": "Print separator page",
+      "help": "Print separator page (SEPPAGE)\n\nSpecifies whether or not to request a separator page when printing on a remote system.",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*YES",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*YES",
+          "value": "*YES"
+        },
+        {
+          "label": "*NO",
+          "value": "*NO"
+        }
+      ]
+    },
+    {
+      "name": "USRDFNOPT",
+      "description": "User defined option",
+      "help": "User-defined options (USRDFNOPT)\n\nSpecifies, for spooled output only, one or more user-defined options to be used by user applications or user-specified programs that process spooled files. A maximum of four user-defined options can be specified.\n\nSingle values\n\nOther values (up to 4 repetitions)\n\n指定できる特殊値: *NONE",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*NONE",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "maxOccurrences": 4
+    },
+    {
+      "name": "USRDFNOBJ",
+      "description": "User defined object",
+      "help": "User-defined object (USRDFNOBJ)\n\nSpecifies, for spooled output only, the user-defined object to be used by user applications or user-specified programs that process spooled files.\n\nSingle values\n\nElement 1: Object\n\nQualifier 1: Object\n\nQualifier 2: Library\n\nElement 2: Object type",
+      "inputType": "group",
+      "required": false,
+      "groupKind": "elements",
+      "singleValues": [
+        "*NONE"
+      ],
+      "children": [
+        {
+          "name": "USRDFNOBJ_E1",
+          "description": "Object",
+          "inputType": "group",
+          "required": false,
+          "groupKind": "qualified",
+          "children": [
+            {
+              "name": "USRDFNOBJ_LIB",
+              "description": "Library",
+              "help": "指定できる特殊値: *LIBL, *CURLIB",
+              "inputType": "text",
+              "required": false,
+              "defaultValue": "*LIBL",
+              "attributes": {
+                "characterSet": "upper",
+                "maxLength": 10
+              }
+            },
+            {
+              "name": "USRDFNOBJ",
+              "description": "Object",
+              "inputType": "text",
+              "required": false,
+              "attributes": {
+                "characterSet": "upper",
+                "maxLength": 10
+              }
+            }
+          ],
+          "defaultValue": "*NONE"
+        },
+        {
+          "name": "USRDFNOBJ_E2",
+          "description": "Object type",
+          "inputType": "dropdown",
+          "required": false,
+          "attributes": {
+            "characterSet": "upper"
+          },
+          "options": [
+            {
+              "label": "*DTAARA",
+              "value": "*DTAARA"
+            },
+            {
+              "label": "*DTAQ",
+              "value": "*DTAQ"
+            },
+            {
+              "label": "*FILE",
+              "value": "*FILE"
+            },
+            {
+              "label": "*PSFCFG",
+              "value": "*PSFCFG"
+            },
+            {
+              "label": "*USRIDX",
+              "value": "*USRIDX"
+            },
+            {
+              "label": "*USRQ",
+              "value": "*USRQ"
+            },
+            {
+              "label": "*USRSPC",
+              "value": "*USRSPC"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "USRDRVPGM",
+      "description": "User driver program",
+      "help": "User-defined driver program (USRDRVPGM)\n\nSpecifies the user-defined driver program.\n\nNote: This parameter is valid only when RMTSYS is not *NONE.\n\nSingle values\n\nQualifier 1: User driver program\n\nQualifier 2: Library",
+      "inputType": "group",
+      "required": false,
+      "groupKind": "qualified",
+      "singleValues": [
+        "*NONE"
+      ],
+      "children": [
+        {
+          "name": "USRDRVPGM_LIB",
+          "description": "Library",
+          "help": "指定できる特殊値: *LIBL, *CURLIB",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "*LIBL",
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          }
+        },
+        {
+          "name": "USRDRVPGM",
+          "description": "User driver program",
+          "inputType": "text",
+          "required": false,
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          },
+          "defaultValue": "*NONE"
+        }
+      ]
+    },
+    {
+      "name": "SPLFASP",
+      "description": "Spooled file ASP",
+      "help": "Spooled file ASP (SPLFASP)\n\nSpecifies the auxiliary storage pool (ASP) where the spooled files physically reside.",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*SYSTEM",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*SYSTEM",
+          "value": "*SYSTEM"
+        },
+        {
+          "label": "*OUTQASP",
+          "value": "*OUTQASP"
+        }
+      ]
+    },
+    {
+      "name": "TEXT",
+      "description": "Text 'description'",
+      "help": "Text 'description' (TEXT)\n\nSpecifies the text that briefly describes the object.\n\n指定できる特殊値: *BLANK",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*BLANK",
+      "attributes": {
+        "characterSet": "upper"
+      }
+    },
+    {
+      "name": "DSPDTA",
+      "description": "Display any file",
+      "help": "Display any file (DSPDTA)\n\nSpecifies whether users who have authority to read the output queue can display the data of any spooled file on the queue or only the data in their own files.",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*NO",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*NO",
+          "value": "*NO"
+        },
+        {
+          "label": "*YES",
+          "value": "*YES"
+        },
+        {
+          "label": "*OWNER",
+          "value": "*OWNER"
+        }
+      ],
+      "positional": 2
+    },
+    {
+      "name": "JOBSEP",
+      "description": "Job separators",
+      "help": "Job separators (JOBSEP)\n\nSpecifies, for each job with files on the output queue, the number of separators placed at the beginning of the output for the job. Each separator contains information that identifies the job, such as the name of the job, the job user's name, the job number, and the time and date when the job is run.\n\nThis parameter is used only by printer writers, all other types of writers will ignore the value specified for this parameter.\n\n指定できる特殊値: *MSG",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "0",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "positional": 3
+    },
+    {
+      "name": "OPRCTL",
+      "description": "Operator controlled",
+      "help": "Operator controlled (OPRCTL)\n\nSpecifies whether a user who has job control authority is allowed to manage or control the files on this output queue.",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*YES",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*YES",
+          "value": "*YES"
+        },
+        {
+          "label": "*NO",
+          "value": "*NO"
+        }
+      ],
+      "positional": 4
+    },
+    {
+      "name": "DTAQ",
+      "description": "Data queue",
+      "help": "Data queue (DTAQ)\n\nSpecifies the data queue associated with the output queue. Entries are logged in the data queue when spooled files are in ready (RDY) status on the output queue. A user program can determine when a spooled file is available on an output queue using the Receive Data Queue API (QRCVDTAQ) to receive information from a data queue.\n\nEach time a spooled file on the output queue reaches RDY status, an entry is sent to the data queue. A spooled file can have several changes in status (for example, RDY to held (HLD) to release (RLS) to RDY again) before it is taken off the output queue. These status changes result in entries in the data queue for a spooled file each time the spooled file goes to RDY status.\n\nWhen the data queue is created using the Create Data Queue (CRTDTAQ) command, the maximum message length (MAXLEN parameter) value should be at least 128 and the sequence (SEQ parameter) value should be *FIFO or *LIFO. More information about data queues on output queues is in the Printing category in the IBM i Information Center at http://www.ibm.com/systems/i/infocenter/.\n\nSingle values\n\nQualifier 1: Data queue\n\nQualifier 2: Library",
+      "inputType": "group",
+      "required": false,
+      "groupKind": "qualified",
+      "singleValues": [
+        "*NONE"
+      ],
+      "children": [
+        {
+          "name": "DTAQ_LIB",
+          "description": "Library",
+          "help": "指定できる特殊値: *LIBL, *CURLIB",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "*LIBL",
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          }
+        },
+        {
+          "name": "DTAQ",
+          "description": "Data queue",
+          "inputType": "text",
+          "required": false,
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          },
+          "defaultValue": "*NONE"
+        }
+      ]
+    },
+    {
+      "name": "AUTCHK",
+      "description": "Authority to check",
+      "help": "Authority to check (AUTCHK)\n\nSpecifies what type of authorities to the output queue allow the user to control all the files on the queue. Users with some special authority may also be able to control the spooled files.",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*OWNER",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*OWNER",
+          "value": "*OWNER"
+        },
+        {
+          "label": "*DTAAUT",
+          "value": "*DTAAUT"
+        }
+      ]
+    },
+    {
+      "name": "AUT",
+      "description": "Authority",
+      "help": "Authority (AUT)\n\nSpecifies the authority you are giving to users who do not have specific authority for the object, who are not on an authorization list, and whose group profile or supplemental group profiles do not have specific authority for the object.\n\n指定できる特殊値: *USE, *ALL, *CHANGE, *EXCLUDE, *LIBCRTAUT",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*USE",
+      "attributes": {
+        "characterSet": "upper",
+        "maxLength": 10
+      }
+    }
+  ],
+  "examples": [
+    {
+      "code": "CRTOUTQ OUTQ(DEPTAPRT) AUT(*EXCLUDE) SEQ(*FIFO) TEXT('SPECIAL PRINTER FILES FOR DEPTA')"
+    }
+  ],
+  "source": {
+    "url": "https://www.ibm.com/docs/en/ssw_ibm_i_74/cl/crtoutq.htm",
+    "version": "IBM i 7.4"
+  }
+}

@@ -1,0 +1,342 @@
+
+  <!doctype html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+  <html>
+<head><META http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>Send Message  (SNDMSG)</title>
+</head>
+<body bgcolor="white">
+<a name="SNDMSG.Top_Of_Page"></a>
+<h2>Send Message  (SNDMSG)</h2>
+<table width="100%">
+<tr>
+<td align="left" valign="top"><b>Where allowed to run:  </b>All environments (*ALL)<br>
+<b>Threadsafe:  </b>Yes
+</td>
+<td align="right" valign="top">
+<a href="#SNDMSG.PARAMETERS.TABLE">Parameters</a><br>
+<a href="#SNDMSG.COMMAND.EXAMPLES">Examples</a><br>
+<a href="#SNDMSG.ERROR.MESSAGES">Error messages</a></td>
+</tr>
+</table>
+
+<div> <a name="SNDMSG"></a>
+<p>The Send Message (SNDMSG) command is used by a display station user to send an immediate message from his display station to one or more message queues.  (An immediate message is a message that is not predefined and is not stored in a message file.)  The message can be sent to the system operator, to other display station users, to a user's message queue, all currently active users' message queues or to the system history log, QHST.  The sender can require a reply from the message receiver.  The primary users of this command are display station users and the system operator.
+</p>
+<p><b>Restrictions:</b>
+</p>
+<ol>
+<li>You must have object operational (*OBJOPR) and add (*ADD) authorities for the message queue.
+</li>
+<li>You must have use (*USE) authority for the specified message queues and *USE authority for the libraries in which they are located.
+</li>
+<li>The SNDMSG command only allows a message of up to 512 characters of first-level message text to be sent.
+</li>
+<li>This command can only send inquiry messages (specified by MSGTYPE(*INQ)) to one message queue or to two message queues if one of the queues is *HSTLOG.
+</li>
+</ol>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#SNDMSG.Top_Of_Page">Top</a></td></tr>
+</table>
+<hr width="100%" size="2">
+
+<div>
+<h3><a name="SNDMSG.PARAMETERS.TABLE">Parameters</a></h3>
+<table cellspacing="0" cellpadding="4" border="1"><tr>
+<th width="10%" align="left" valign="bottom" bgcolor="aqua">Keyword</th>
+<th width="15%" align="left" valign="bottom" bgcolor="aqua">Description</th>
+<th width="30%" align="left" valign="bottom" bgcolor="aqua">Choices</th>
+<th width="10%" align="left" valign="bottom" bgcolor="aqua">Notes</th>
+</tr>
+<tr>
+<td valign="top"><a href="#SNDMSG.MSG"><b>MSG</b></a></td>
+<td valign="top">Message text</td>
+<td valign="top"><i>Character value</i></td>
+<td valign="top">Required, Positional 1</td>
+</tr>
+<tr>
+<td valign="top"><a href="#SNDMSG.TOUSR"><b>TOUSR</b></a></td>
+<td valign="top">To user profile</td>
+<td valign="top"><i>Name</i>, *SYSOPR, *ALLACT, *REQUESTER</td>
+<td valign="top">Optional, Positional 3</td>
+</tr>
+<tr>
+<td valign="top" rowspan="3"><a href="#SNDMSG.TOMSGQ"><b>TOMSGQ</b></a></td>
+<td valign="top">To message queue</td>
+<td valign="top">Single values: *SYSOPR<br>Other values (up to 50 repetitions): <i>Qualified object name</i></td>
+<td valign="top" rowspan="3">Optional, Positional 2</td>
+</tr>
+<tr>
+<td valign="top">Qualifier 1: To message queue</td>
+<td valign="top"><i>Name</i>, *HSTLOG</td>
+</tr><tr>
+<td valign="top">Qualifier 2: Library</td>
+<td valign="top"><i>Name</i>, <b><u>*LIBL</u></b>, *CURLIB</td>
+</tr><tr>
+<td valign="top"><a href="#SNDMSG.MSGTYPE"><b>MSGTYPE</b></a></td>
+<td valign="top">Message type</td>
+<td valign="top"><b><u>*INFO</u></b>, *INQ</td>
+<td valign="top">Optional, Positional 4</td>
+</tr>
+<tr>
+<td valign="top" rowspan="3"><a href="#SNDMSG.RPYMSGQ"><b>RPYMSGQ</b></a></td>
+<td valign="top">Message queue to get reply</td>
+<td valign="top">Single values: <b><u>*WRKSTN</u></b><br>Other values: <i>Qualified object name</i></td>
+<td valign="top" rowspan="3">Optional</td>
+</tr>
+<tr>
+<td valign="top">Qualifier 1: Message queue to get reply</td>
+<td valign="top"><i>Name</i></td>
+</tr><tr>
+<td valign="top">Qualifier 2: Library</td>
+<td valign="top"><i>Name</i>, <b><u>*LIBL</u></b>, *CURLIB</td>
+</tr><tr>
+<td valign="top"><a href="#SNDMSG.CCSID"><b>CCSID</b></a></td>
+<td valign="top">Coded character set ID</td>
+<td valign="top">1-65535, *HEX, <b><u>*JOB</u></b></td>
+<td valign="top">Optional</td>
+</tr>
+</table>
+
+<table width="100%">
+<tr><td align="right"><a href="#SNDMSG.Top_Of_Page">Top</a></td></tr>
+</table>
+</div>
+<div> <a name="SNDMSG.MSG"></a>
+<h3>Message text (MSG)</h3>
+<p>Specifies the immediate message that is being sent.  The text must be enclosed in apostrophes if it contains blanks or other special characters.  A maximum of 512 characters can be specified.
+</p>
+<p><b>Coded Character Set Identifier (CCSID) Considerations</b>
+</p>
+<p>The text supplied for the MSG parameter is assumed to be in the CCSID of the job running this command unless the coded character set identifier is supplied for the CCSID parameter.  For more information about the message handler and its use of CCSIDs, see the i5/OS globalization topic collection in the IBM i Information Center at http://www.ibm.com/systems/i/infocenter/.
+</p>
+<p>This is a required parameter.
+</p>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#SNDMSG.Top_Of_Page">Top</a></td></tr>
+</table>
+<div> <a name="SNDMSG.TOUSR"></a>
+<h3>To user profile (TOUSR)</h3>
+<p>Specifies that the message is to be sent to the message queue specified in the user profile for the user named on this parameter.  This parameter cannot be used if a value is specified for the <b>To message queue(TOMSGQ)</b> parameter.
+</p>
+<p>Either this parameter or the <b>To message queue (TOMSGQ)</b> parameter is required.
+</p>
+<dl>
+<dt><b><i>user-profile-name</i></b></dt>
+<dd>Specify the user profile name of the user to whom the message is sent.
+</dd>
+<dt><b>*SYSOPR</b></dt>
+<dd>The message is sent to the system operator message queue, QSYS/QSYSOPR.  Any message sent to QSYSOPR automatically has a copy of the message sent to QHST.
+</dd>
+</dl>
+<dl>
+<dt><b>*REQUESTER</b></dt>
+<dd>The message is sent to the user profile message queue for interactive jobs or to the system operator's message queue (QSYS/QSYSOPR) for batch jobs.
+</dd>
+</dl>
+<dl>
+<dt><b>*ALLACT</b></dt>
+<dd>A copy of the message is sent to the user profile message queue of each user profile with an interactive job currently running.  *ALLACT cannot be specified with inquiry messages.
+</dd>
+</dl>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#SNDMSG.Top_Of_Page">Top</a></td></tr>
+</table>
+<div> <a name="SNDMSG.TOMSGQ"></a>
+<h3>To message queue (TOMSGQ)</h3>
+<p>Specifies one to fifty message queues to which an informational message is sent.  For an inquiry message, one message queue may be specified or two message queues may be specified if one of the queues is *HSTLOG.  This parameter cannot be used if a value is specified for the <b>To user profile (TOUSR)</b> parameter.
+</p>
+<p>Either this parameter or the <b>To user profile (TOUSR)</b> parameter is required.
+</p>
+<p><b>Single values</b>
+</p>
+<dl>
+<dt><b>*SYSOPR</b></dt>
+<dd>The message is sent to the system operator message queue, QSYS/QSYSOPR.  Any message sent to QSYSOPR automatically has a copy of the message sent to QHST.
+</dd>
+</dl>
+<p><b>Qualifier 1: To message queue</b>
+</p>
+<dl>
+<dt><b>*HSTLOG</b></dt>
+<dd>The message is sent to the system history log message queue, QSYS/QHST.  If *HSTLOG is specified more than once, only one message will be sent to QSYS/QHST.  If *HSTLOG is specified with QSYSOPR only one message is sent to QSYS/QHST.
+</dd>
+<dt><b><i>message-queue-name</i></b></dt>
+<dd>Specify the name of the message queue to which the message is to be sent.
+</dd>
+</dl>
+<p><b>Qualifier 2: Library</b>
+</p>
+<dl>
+<dt><b><u>*LIBL</u></b></dt>
+<dd>All libraries in the library list for the current thread are searched until the first match is found.
+</dd>
+</dl>
+<dl>
+<dt><b>*CURLIB</b></dt>
+<dd>The current library for the job is used to locate the message queue.  If no current library entry exists in the library list, QGPL is used.
+</dd>
+<dt><b><i>library-name</i></b></dt>
+<dd>Specify the library where the message queue is located.
+</dd>
+</dl>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#SNDMSG.Top_Of_Page">Top</a></td></tr>
+</table>
+<div> <a name="SNDMSG.MSGTYPE"></a>
+<h3>Message type (MSGTYPE)</h3>
+<p>Specifies the type of message to be sent.  Only an informational or inquiry message can be specified.
+</p>
+<dl>
+<dt><b><u>*INFO</u></b></dt>
+<dd>An informational message is to sent.
+</dd>
+<dt><b>*INQ</b></dt>
+<dd>An inquiry message is to be sent.  The message queue receiving the message can reply to it.  Inquiry messages are sent to only one message queue at a time or a second queue can be specified for TOMSGQ if the value is *HSTLOG.
+</dd>
+</dl>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#SNDMSG.Top_Of_Page">Top</a></td></tr>
+</table>
+<div> <a name="SNDMSG.RPYMSGQ"></a>
+<h3>Message queue to get reply (RPYMSGQ)</h3>
+<p>Specifies, only if an inquiry message is sent, the message queue to which a reply is sent.
+</p>
+<p><b>Single values</b>
+</p>
+<dl>
+<dt><b><u>*WRKSTN</u></b></dt>
+<dd>The reply to the message is sent to the display station message queue associated with the sender's display station.
+<p>
+<b>Note:     </b>This value cannot be specified for batch jobs.
+</p>
+</dd>
+</dl>
+<p><b>Qualifier 1: Message queue to get reply</b>
+</p>
+<dl>
+<dt><b><i>message-queue-name</i></b></dt>
+<dd>Specify the name of the message queue to which a reply is sent.  For example, a user message queue, a display station message queue, or the system operator message queue can be specified.
+</dd>
+</dl>
+<p><b>Qualifier 2: Library</b>
+</p>
+<dl>
+<dt><b><u>*LIBL</u></b></dt>
+<dd>All libraries in the library list for the current thread are searched until the first match is found.
+</dd>
+</dl>
+<dl>
+<dt><b>*CURLIB</b></dt>
+<dd>The current library for the job is used to locate the message queue.  If no current library entry exists in the library list, QGPL is used.
+</dd>
+<dt><b><i>library-name</i></b></dt>
+<dd>Specify the library where the message queue is located.
+</dd>
+</dl>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#SNDMSG.Top_Of_Page">Top</a></td></tr>
+</table>
+<div> <a name="SNDMSG.CCSID"></a>
+<h3>Coded character set ID (CCSID)</h3>
+<p>Specifies the coded character set identifier (CCSID) that the supplied message text is in.  For more information about the message handler and its use of CCSIDs, see the i5/OS globalization topic collection in the IBM i Information Center at http://www.ibm.com/systems/i/infocenter/.
+</p>
+<dl>
+<dt><b><u>*JOB</u></b></dt>
+<dd>The message text is assumed to be in the CCSID of the job running this command.
+</dd>
+<dt><b>*HEX</b></dt>
+<dd>The message text is not converted.  CCSID 65535 is used.
+</dd>
+<dt><b><i>coded-character-set-identifier</i></b></dt>
+<dd>Specify a valid CCSID in which you want your message text to be considered in.  Valid values are between 1 and 65535.  This command validates the CCSID.
+</dd>
+</dl>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#SNDMSG.Top_Of_Page">Top</a></td></tr>
+</table>
+<hr width="100%" size="2">
+<div><h3><a name="SNDMSG.COMMAND.EXAMPLES">Examples</a> </h3>
+<p><b>Example 1: Sending Message to User Message Queue</b>
+</p>
+<p>
+<pre>
+SNDMSG   MSG('Do you want to update INV now?')  TOUSR(JONES)
+         MSGTYPE(*INQ)  RPYMSGQ(SMITH)
+</pre>
+</p>
+<p>This command sends a message to the user message queue JONES.  When the message is answered, the reply will be sent to the message queue SMITH.
+</p>
+<p><b>Example 2: Sending Message to System's History Log</b>
+</p>
+<p>
+<pre>
+SNDMSG   MSG('Errors on PAYROLL cost me 1 hour of run time.')
+         TOMSGQ(QHST)
+</pre>
+</p>
+<p>This command is used by the system operator to send an informational message to the system's history log, QHST, through the log's message queue, which has the same name.
+</p>
+<p><b>Example 3: Sending Message to System Operator</b>
+</p>
+<p>
+<pre>
+SNDMSG   MSG('Please make 2 copies of file LABORSTAT.')
+         TOMSGQ(QSYSOPR)
+</pre>
+</p>
+<p>This command shows a typical use of the SNDMSG command by a display station user. The user is sending the message to the system operator.
+</p>
+<p><b>Example 4: Sending Message that Requires a Reply</b>
+</p>
+<p>
+<pre>
+SNDMSG   MSG ('How long will the system be up today?')
+         TOMSGQ(*SYSOPR)  MSGTYPE(*INQ)
+</pre>
+</p>
+<p>This command sends an inquiry message to the system operator.  The message requires a reply. The system operator displays the message by using the DSPMSG command and enters the reply on the display. The reply is then sent to the display station user's work station message queue. The display station user enters another DSPMSG command to display the reply.
+</p>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#SNDMSG.Top_Of_Page">Top</a></td></tr>
+</table>
+<hr width="100%" size="2">
+<div><h3><a name="SNDMSG.ERROR.MESSAGES">Error messages</a> </h3>
+<p><b><u>*ESCAPE Messages</u></b>
+</p>
+<dl>
+<dt><b>CPF2428</b></dt>
+<dd>Message queue parameter is not valid.
+</dd>
+<dt><b>CPF2433</b></dt>
+<dd>Function not allowed for system log message queue &amp;1.
+</dd>
+<dt><b>CPF2469</b></dt>
+<dd>Error occurred when sending message&amp;1.
+</dd>
+<dt><b>CPF247E</b></dt>
+<dd>CCSID &amp;1 is not valid.
+</dd>
+<dt><b>CPF2488</b></dt>
+<dd>Reply message queue *WRKSTN not valid for batch job.
+</dd>
+<dt><b>CPF9830</b></dt>
+<dd>Cannot assign library &amp;1.
+</dd>
+<dt><b>CPF9838</b></dt>
+<dd>User profile storage limit exceeded.
+</dd>
+</dl>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#SNDMSG.Top_Of_Page">Top</a></td></tr>
+</table>
+</body>
+</html>

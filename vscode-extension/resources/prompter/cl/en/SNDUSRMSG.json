@@ -1,0 +1,250 @@
+{
+  "keyword": "SNDUSRMSG",
+  "description": "Send User Message (SNDUSRMSG)",
+  "parameters": [
+    {
+      "name": "MSG",
+      "description": "Message text, or",
+      "help": "Message text, or (MSG)\n\nSpecifies the message text of an immediate message that is sent by the program. A maximum of 512 characters can be specified. The text string must be enclosed in apostrophes if special characters (including blanks) are used. If this parameter is specified, values cannot be specified for the Message identifier (MSGID) parameter, Message file (MSGF) parameter, or Message data field values (MSGDTA) parameter.\n\nCoded Character Set Identifier (CCSID) Considerations\n\nThe text supplied for the MSG parameter is assumed to be in the CCSID of the job running this command unless a coded character set identifier is supplied in the CCSID parameter. For more information about the message handler and its use of CCSIDs, see the i5/OS globalization topic collection in the IBM i Information Center at http://www.ibm.com/systems/i/infocenter/.",
+      "inputType": "text",
+      "required": false,
+      "positional": 1,
+      "placeholder": "'メッセージ・テキスト'",
+      "basic": true
+    },
+    {
+      "name": "MSGID",
+      "description": "Message identifier",
+      "help": "Message identifier (MSGID)\n\nSpecifies the message identifier of a predefined message sent by the program to a message queue. If a value is specified for this parameter, a value must also be specified for the Message file (MSGF) parameter, and a value cannot be specified for the Message text, or (MSG) parameter.",
+      "inputType": "text",
+      "required": false,
+      "attributes": {
+        "characterSet": "upper",
+        "maxLength": 10
+      },
+      "placeholder": "CPF0000",
+      "basic": true
+    },
+    {
+      "name": "MSGF",
+      "description": "Message file",
+      "help": "Message file (MSGF)\n\nSpecifies the message file that contains the predefined message to be sent. This parameter is valid only if a value is specified for the Message identifier (MSGID) parameter.\n\nQualifier 1: Message file\n\nQualifier 2: Library",
+      "inputType": "group",
+      "required": false,
+      "groupKind": "qualified",
+      "children": [
+        {
+          "name": "LIB",
+          "description": "Library",
+          "help": "指定できる特殊値: *LIBL, *CURLIB",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "*LIBL",
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          },
+          "placeholder": "*LIBL"
+        },
+        {
+          "name": "MSGF",
+          "description": "Message file",
+          "inputType": "text",
+          "required": false,
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          },
+          "placeholder": "QCPFMSG"
+        }
+      ],
+      "basic": true
+    },
+    {
+      "name": "MSGDTA",
+      "description": "Message data field values",
+      "help": "Message data field values (MSGDTA)\n\nSpecifies the character string or the CL variable that contains a character string used as the message data in the predefined message. A character string that is specified contains one or more substitution values that are used in place of the substitution variables that were defined in the message's text when the message was defined. The MSGDTA parameter is valid only if a predefined message is being sent. For more information, refer to the description of the MSGDTA parameter of the Send Program Message (SNDPGMMSG) command.\n\nCoded Character Set Identifier (CCSID) Considerations\n\nThe text supplied for the MSGDTA parameter that corresponds to the *CCHAR type field is assumed to be in the CCSID of the job running this command unless a coded character set identifier is supplied in the CCSID parameter. All other text supplied for the MSGDTA parameter is assumed to be 65535 and is not converted. For more information about the message handler and its use of CCSIDs, see the i5/OS globalization topic collection in the IBM i Information Center at http://www.ibm.com/systems/i/infocenter/. For more information about the *CCHAR type field, see the Add Message Description (ADDMSGD) command.",
+      "inputType": "text",
+      "required": false,
+      "placeholder": "&MSGDTA",
+      "basic": true
+    },
+    {
+      "name": "VALUES",
+      "description": "Valid reply values",
+      "help": "Valid reply values (VALUES)\n\nSpecifies a list of valid replies to an inquiry message sent by this command. No more than 20 replies can be specified in the list. If the reply to the inquiry message does not match one of the specified values, an error message is sent to the reply's sender and the inquiry message is sent again. This value is valid only when a value is specified for the MSGRPY parameter.\n\nTranslation of the reply, if requested (on the TRNTBL parameter), will occur before verification of a match between the reply and the specified value. If TRNTBL (*LIBL/QSYSTRNTBL) is used to translate the reply values from lowercase to uppercase and lowercase characters still appear in a specified value, there is no match.\n\nVariables can be used in the list of replies. This parameter is valid only if MSGTYPE(*INQ) is specified.\n\n指定できる特殊値: *NONE",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*NONE",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "maxOccurrences": 20,
+      "placeholder": "*NONE",
+      "basic": true
+    },
+    {
+      "name": "DFT",
+      "description": "Default reply value",
+      "help": "Default reply value (DFT)\n\nSpecifies the value used as the reply to an inquiry message (sent by this command) if the inquiry message is sent to a message queue that is in default delivery mode, or for any other reason the default reply is sent.\n\n指定できる特殊値: *MSGDFT",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*MSGDFT",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "placeholder": "*MSGDFT",
+      "basic": true
+    },
+    {
+      "name": "MSGTYPE",
+      "description": "Message type",
+      "help": "Message type (MSGTYPE)\n\nSpecifies the type of message to be sent. Only inquiry and informational messages can be specified.",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*INQ",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*INQ",
+          "value": "*INQ"
+        },
+        {
+          "label": "*INFO",
+          "value": "*INFO"
+        }
+      ],
+      "basic": true
+    },
+    {
+      "name": "TOMSGQ",
+      "description": "To message queue",
+      "help": "To message queue (TOMSGQ)\n\nSpecifies the name of the message queue to which the message is to be sent. This parameter cannot be used if a value is specified for the To user profile (TOUSR) parameter.\n\nSingle values\n\nQualifier 1: To message queue\n\nQualifier 2: Library",
+      "inputType": "group",
+      "required": false,
+      "groupKind": "qualified",
+      "singleValues": [
+        "*EXT",
+        "*SYSOPR"
+      ],
+      "children": [
+        {
+          "name": "TOMSGQ_LIB",
+          "description": "Library",
+          "help": "指定できる特殊値: *LIBL, *CURLIB",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "*LIBL",
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          },
+          "placeholder": "*LIBL"
+        },
+        {
+          "name": "TOMSGQ",
+          "description": "To message queue",
+          "inputType": "text",
+          "required": false,
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          },
+          "defaultValue": "*",
+          "placeholder": "*SYSOPR"
+        }
+      ],
+      "basic": true
+    },
+    {
+      "name": "TOUSR",
+      "description": "To user profile",
+      "help": "To user profile (TOUSR)\n\nSpecifies that the message is to be sent to the message queue specified in the user profile for the user named on this parameter. This parameter cannot be used if a value is specified for the To message queue (TOMSGQ) parameter.\n\n指定できる特殊値: *SYSOPR, *REQUESTER",
+      "inputType": "text",
+      "required": false,
+      "attributes": {
+        "characterSet": "upper",
+        "maxLength": 10
+      },
+      "placeholder": "*REQUESTER",
+      "basic": true
+    },
+    {
+      "name": "MSGRPY",
+      "description": "CL var for message reply",
+      "help": "CL var for message reply (MSGRPY)\n\nSpecifies the CL character variable (of up to 132 characters) that contains the reply received in response to an inquiry message. This parameter is valid only if *INQ is specified for the Message type (MSGTYPE) parameter. If the reply is longer than the variable, it is truncated; if it is shorter, it is padded to the right with blanks. This command will wait for a response to the inquiry message even if no value is coded for this parameter when MSGTYPE(*INQ) is specified. If no value is coded for this parameter when MSGTYPE(*INQ) is specified, the command awaits a response from the operator in reply to the inquiry message.",
+      "inputType": "text",
+      "required": false,
+      "placeholder": "&MSGRPY",
+      "basic": true
+    },
+    {
+      "name": "TRNTBL",
+      "description": "Translate table",
+      "help": "Translate table (TRNTBL)\n\nSpecifies the name of the translation table that is used if the reply value is being translated.\n\nQualifier 1: Translate table\n\nThe IBM-supplied translation table QSYSTRNTBL table translates, for the English language only, all lowercase characters in the range of X'81' to X'A9' to uppercase characters. All other characters are not translated.\n\nTo use a different translation table, use the Create Table (CRTTBL) command and specify that particular table for this parameter.\n\nQualifier 2: Library",
+      "inputType": "group",
+      "required": false,
+      "groupKind": "qualified",
+      "singleValues": [
+        "*NONE"
+      ],
+      "children": [
+        {
+          "name": "TRNTBL_LIB",
+          "description": "Library",
+          "help": "指定できる特殊値: *LIBL, *CURLIB",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "*LIBL",
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          },
+          "placeholder": "*LIBL"
+        },
+        {
+          "name": "TRNTBL",
+          "description": "Translate table",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "QSYSTRNTBL",
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          },
+          "placeholder": "*NONE"
+        }
+      ],
+      "basic": true
+    },
+    {
+      "name": "CCSID",
+      "description": "Coded character set ID",
+      "help": "Coded character set ID (CCSID)\n\nSpecifies the coded character set identifier (CCSID) that the message text supplied for the MSG (message) or MSGDTA (message data) parameters is in. If a message identifier is specified, the text supplied by the MSGDTA (message data) parameter that corresponds to the *CCHAR type field is assumed to be in the CCSID supplied by this parameter. The data supplied that does not correspond to the *CCHAR type field is assumed to be 65535 and is not converted. For more information about the *CCHAR type field see the Add Message Description (ADDMSGD) command.\n\nIf no message identifier is specified, the text supplied by the MSG (message) parameter is assumed to be in the CCSID supplied by this parameter. For more information about the message handler and its use of CCSIDs, see the i5/OS globalization topic collection in the IBM i Information Center at http://www.ibm.com/systems/i/infocenter/.\n\n指定できる特殊値: *HEX, *JOB",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*JOB",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "placeholder": "*JOB"
+    }
+  ],
+  "examples": [
+    {
+      "code": "SNDUSRMSG MSG('Data verified. Update master files (Y,N)?') TOMSGQ(*) VALUES(Y N) DFT(N) MSGRPY(&REPLY)"
+    },
+    {
+      "code": "SNDUSRMSG MSG('Enter any response when ready to continue.') TOMSGQ(WS01)"
+    },
+    {
+      "code": "SNDUSRMSG MSGID(USR0150) TOUSR(FRED) MSGF(QGPL/USRMSGF) MSGDTA(&ACCTNO) MSGTYPE(*INFO)"
+    }
+  ],
+  "source": {
+    "url": "https://www.ibm.com/docs/en/ssw_ibm_i_74/cl/sndusrmsg.htm",
+    "version": "IBM i 7.4"
+  }
+}

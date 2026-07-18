@@ -1,0 +1,230 @@
+{
+  "keyword": "RMVMSG",
+  "description": "Remove Message (RMVMSG)",
+  "parameters": [
+    {
+      "name": "PGMQ",
+      "description": "Call stack entry message queue",
+      "help": "Call stack entry message queue (PGMQ)\n\nSpecifies the call message queue from which the messages are to be removed. Messages can be removed from the external queue (*EXT) or from a message queue associated with a call stack entry.\n\nNotes:\n\nSingle values\n\nElement 1: Relationship\n\nTwo parameter elements are used to specify the call stack entry message queue from which a message is to be removed. The first element specifies whether the message queue is associated with the program or procedure identified by the second element, or if it is associated with the caller of the program or procedure.\n\nNote: If the message queue previous to the one identified by the second value is for an ILE program entry procedure (PEP), the message will be removed from the message queue immediately previous to the PEP message queue; effectively this would be two message queues previous to the one identified by the program or qualified procedure.\n\nElement 2: Call stack entry identifier\n\nThe second element of this parameter is used to provide the information needed to identify a call stack entry. It has three elements. Element 1 specifies an OPM program or ILE procedure name or a special value. Element 2 specifies an ILE module name which is used as a qualifier for the value specified in element 1. Element 3 can specify either an OPM program name or an ILE program name or a service program name, depending on what is specified in element 1. Element 3 is also used as a qualifier for what is specified in element 1.\n\nElement 1: Call stack entry\n\nA procedure name alone may not identify the correct procedure since several different procedures with the same name can run in a job. A procedure can be further identified by specifying element 2 or by specifying both element 2 and 3.\n\nThe system begins its search for the specified program or procedure name with the most recently called program or procedure.\n\nIf this element identifies an OPM program, the name specified can be a maximum of 10 characters. If this element identifies an ILE procedure, the name specified can be a maximum of 256 characters.\n\nNested procedure names can be specified by separating each procedure name with a colon (:). When specifying nested procedure names, the outermost procedure name is identified first, followed by its contained procedures. The innermost procedure name is identified last in the string.\n\nPartial names of programs or procedures can be specified by placing three less-than symbols (<<<) at the beginning of the name or by placing three greater-than symbols (>>>) at the end of the name. If both the greater-than symbols and the less-than symbols are used, the program or procedure name specified is limited to 250 characters.\n\nWhen searching for a partial program or procedure name:\n\nElement 2: Module\n\nElement 3: Program",
+      "inputType": "group",
+      "required": false,
+      "groupKind": "elements",
+      "singleValues": [
+        "*ALLINACT",
+        "*EXT"
+      ],
+      "children": [
+        {
+          "name": "PGMQ_E1",
+          "description": "Relationship",
+          "inputType": "dropdown",
+          "required": false,
+          "defaultValue": "*SAME",
+          "attributes": {
+            "characterSet": "upper"
+          },
+          "options": [
+            {
+              "label": "*ALLINACT",
+              "value": "*ALLINACT"
+            },
+            {
+              "label": "*EXT",
+              "value": "*EXT"
+            },
+            {
+              "label": "*SAME",
+              "value": "*SAME"
+            },
+            {
+              "label": "*PRV",
+              "value": "*PRV"
+            }
+          ]
+        },
+        {
+          "name": "PGMQ_E2",
+          "description": "Call stack entry identifier",
+          "inputType": "text",
+          "required": false
+        },
+        {
+          "name": "PGMQ_PGMQ_E1",
+          "description": "Call stack entry",
+          "help": "指定できる特殊値: *",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "*",
+          "attributes": {
+            "characterSet": "upper"
+          }
+        },
+        {
+          "name": "PGMQ_PGMQ_E2",
+          "description": "Module",
+          "help": "指定できる特殊値: *NONE",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "*NONE",
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          }
+        },
+        {
+          "name": "PGMQ_E3",
+          "description": "Bound program",
+          "help": "指定できる特殊値: *NONE",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "*NONE",
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          }
+        }
+      ],
+      "basic": true
+    },
+    {
+      "name": "MSGQ",
+      "description": "Message queue",
+      "help": "Message queue (MSGQ)\n\nSpecifies the message queue from which one or more messages are to be removed. If this parameter is specified, the Call stack entry message queue (PGMQ) parameter cannot be specified.\n\nSingle values\n\nQualifier 1: Message queue\n\nQualifier 2: Library",
+      "inputType": "group",
+      "required": false,
+      "groupKind": "qualified",
+      "singleValues": [
+        "*PGMQ"
+      ],
+      "children": [
+        {
+          "name": "LIB",
+          "description": "Library",
+          "help": "指定できる特殊値: *LIBL, *CURLIB",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "*LIBL",
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          },
+          "placeholder": "*LIBL"
+        },
+        {
+          "name": "MSGQ",
+          "description": "Message queue",
+          "inputType": "text",
+          "required": false,
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          },
+          "placeholder": "*PGMQ"
+        }
+      ],
+      "basic": true
+    },
+    {
+      "name": "MSGKEY",
+      "description": "Message key",
+      "help": "Message key (MSGKEY)\n\nSpecifies the name of the control language (CL) variable that contains the message reference key of the message to be removed. This parameter can be specified only if CLEAR(*BYKEY) is specified.",
+      "inputType": "text",
+      "required": false,
+      "placeholder": "&MSGKEY",
+      "basic": true
+    },
+    {
+      "name": "CLEAR",
+      "description": "Clear",
+      "help": "Clear (CLEAR)\n\nSpecifies whether one or more messages are to be removed from the queue.",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*BYKEY",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*BYKEY",
+          "value": "*BYKEY"
+        },
+        {
+          "label": "*ALL",
+          "value": "*ALL"
+        },
+        {
+          "label": "*KEEPUNANS",
+          "value": "*KEEPUNANS"
+        },
+        {
+          "label": "*OLD",
+          "value": "*OLD"
+        },
+        {
+          "label": "*NEW",
+          "value": "*NEW"
+        }
+      ],
+      "basic": true
+    },
+    {
+      "name": "RMVEXCP",
+      "description": "Remove unhandled exception",
+      "help": "Remove unhandled exception (RMVEXCP)\n\nSpecifies the action to be taken when an unhandled exception message is found. An unhandled exception message is an escape, notify, or status message that has been sent to an ILE procedure. When this command is run, the ILE procedure has not yet taken action to tell the system that the exception is handled. One action that the ILE procedure can take is to call a CL program that will remove the exception message. More information on actions that an ILE procedure can take to handle an exception is in the ILE Concepts book, SC41-5606.\n\nThis parameter is valid only when working with a message queue that is associated with a call stack entry for an ILE procedure. This parameter is ignored when working with a message queue associated with a call stack entry for an OPM (original program model) program.",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*YES",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*YES",
+          "value": "*YES"
+        },
+        {
+          "label": "*NO",
+          "value": "*NO"
+        }
+      ],
+      "basic": true
+    },
+    {
+      "name": "RJTDFTRPY",
+      "description": "Reject default reply",
+      "help": "Reject default reply (RJTDFTRPY)\n\nRemoving an unanswered inquiry message causes the default reply to be sent to the inquiry message. This value indicates whether a reply handling exit program will be allowed to reject a default reply that is sent as a result of using this command. A reply handling exit program can be registered via the system registration facility for exit point QIBM_QMH_REPLY_INQ.",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*NOALWRJT",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*NOALWRJT",
+          "value": "*NOALWRJT"
+        },
+        {
+          "label": "*ALWRJT",
+          "value": "*ALWRJT"
+        }
+      ],
+      "basic": true
+    }
+  ],
+  "examples": [
+    {
+      "code": "RMVMSG MSGQ(SMITH) MSGKEY(&KEY)"
+    },
+    {
+      "code": "RMVMSG MSGQ(SMITH) CLEAR(*KEEPUNANS)"
+    },
+    {
+      "code": "RMVMSG PGMQ(*SAME 'PROCESS_ORDER>>>') CLEAR(*ALL)"
+    }
+  ],
+  "source": {
+    "url": "https://www.ibm.com/docs/en/ssw_ibm_i_74/cl/rmvmsg.htm",
+    "version": "IBM i 7.4"
+  }
+}

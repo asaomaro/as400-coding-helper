@@ -1,0 +1,1007 @@
+{
+  "keyword": "CRTRPGMOD",
+  "description": "RPGモジュールの作成 (CRTRPGMOD)",
+  "help": "RPGモジュール作成(CRTRPGMOD)コマンドは，RPGソース・コードをコンパイルしてモジュール・オブジェクト(*MODULE)を作成します。このコマンドはバッチ・モードでも，対話モードでも使用することができます。",
+  "parameters": [
+    {
+      "name": "MODULE",
+      "description": "モジュール",
+      "help": "作成しているモジュール・オブジェクトのライブラリー名およびモジュール名を指定します。モジュール名およびライブラリー名はサーバーの命名規則に従っていなければなりません。ライブラリーを指定しない場合には，作成されたモジュールは現行ライブラリーに保管されます。",
+      "inputType": "group",
+      "required": false,
+      "groupKind": "qualified",
+      "children": [
+        {
+          "name": "LIB",
+          "description": "ライブラリー",
+          "help": "指定できる特殊値: *CURLIB",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "*CURLIB",
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          },
+          "placeholder": "*CURLIB"
+        },
+        {
+          "name": "MODULE",
+          "description": "モジュール",
+          "help": "指定できる特殊値: *CTLSPEC",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "*CTLSPEC",
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          },
+          "placeholder": "*CTLSPEC"
+        }
+      ],
+      "positional": 1,
+      "basic": true
+    },
+    {
+      "name": "SRCFILE",
+      "description": "ソース・ファイル",
+      "help": "コンパイルされるILE RPGソース・メンバーが入っているソース・ファイルおよびそのソース・ファイルが保管されているライブラリーの名前を指定します。望ましいソース物理ファイルの長さは112文字で，内12文字は順序番号および日付用で，80文字はコード用で，20文字は注記用です。これは，コンパイル・リストに示されるソースの最大容量です。",
+      "inputType": "group",
+      "required": false,
+      "groupKind": "qualified",
+      "children": [
+        {
+          "name": "SRCFILE_LIB",
+          "description": "ライブラリー",
+          "help": "指定できる特殊値: *LIBL, *CURLIB",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "*LIBL",
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          },
+          "placeholder": "*LIBL"
+        },
+        {
+          "name": "SRCFILE",
+          "description": "ソース・ファイル",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "QRPGLESRC",
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          },
+          "placeholder": "QRPGLESRC"
+        }
+      ],
+      "positional": 2,
+      "basic": true
+    },
+    {
+      "name": "SRCMBR",
+      "description": "ソース・メンバー",
+      "help": "コンパイルされるILE RPGソース仕様が入っているソース・ファイルのメンバーの名前を指定します。\n\n*MODULE: ソース・ファイル・メンバー名としてMODULEパラメーターに指定された名前を使用します。コンパイル済みモジュール・オブジェクトは，ソース・ファイル・メンバーと同じ名前をもちます。MODULEパラメーターにモジュール名が指定されていない場合には，このコマンドは，ソース・ファイルに最初に作成または追加されたメンバーの名前をソース・メンバー名として使用します。\nILE RPGソース仕様が入っているメンバーの名前を入力してください。",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*MODULE",
+      "attributes": {
+        "characterSet": "upper",
+        "maxLength": 10
+      },
+      "positional": 3,
+      "placeholder": "*MODULE",
+      "basic": true
+    },
+    {
+      "name": "SRCSTMF",
+      "description": "ソース・ストリーム・ファイル",
+      "help": "コンパイルするILE RPGソース・コードが入っているストリーム・ファイルのパス名を指定します。\n\nこのパス名は絶対修飾または相対修飾のいずれかとすることができます。絶対パス名は'/'で始まり，相対パス名は'/'以外の文字で始まります。\n\n絶対修飾の場合は，パス名は完全です。相対修飾の場合は，パス名はジョブの現行作業ディレクトリーをそのパス名に付加することにより完全になります。\n\nSRCMBRおよびSRCFILEパラメーターをSRCSTMFパラメーターと一緒に指定することはできません。",
+      "inputType": "text",
+      "required": false,
+      "basic": true
+    },
+    {
+      "name": "GENLVL",
+      "description": "生成重大度レベル",
+      "help": "モジュール・オブジェクトの作成を制御します。モジュール・オブジェクトは，コンパイル中に見つかったすべてのエラーの重大度レベルが指定された生成重大度レベル以下である場合に作成されます。\n\n値は0-20でなければなりません。重大度が20を超えるエラーの場合には，モジュール・オブジェクトは生成されません。\n\n10: コンパイル時エラーの重大度レベルが10以下であれば，モジュール・オブジェクトが生成されます。これが省略時の値です。\n0 - 20の数値を入力してください。",
+      "inputType": "number",
+      "required": false,
+      "defaultValue": "10",
+      "attributes": {
+        "numericOnly": true
+      },
+      "placeholder": "10",
+      "basic": true
+    },
+    {
+      "name": "TEXT",
+      "description": "テキスト'記述'",
+      "help": "モジュールおよびその機能を簡単に説明するテキストを入力することができます。モジュール情報が表示される時には，常にこのテキストが現れます。\n\n*SRCMBRTXT: ソース・メンバーのテキストが使用されます。これが省略時の値です。\n*BLANK: テキストはありません。\nソース仕様の機能を簡単に記述するテキストを入力してください。テキストは最大50文字にすることができますが，アポストロフィで囲まなければなりません。アポストロフィは50文字のストリングの一部ではありません。プロンプト画面にテキストを入力する場合には，アポストロフィは必要ありません。",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*SRCMBRTXT",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "placeholder": "*SRCMBRTXT",
+      "basic": true
+    },
+    {
+      "name": "OPTION",
+      "description": "コンパイラー・オプション",
+      "help": "ソース・メンバーのコンパイル時に使用するオプションを指定します。一部またはすべてのオプションをどのような順序でも指定することができます。各オプションは１つまたは複数のブランク・スペースで区切ってください。オプションが複数回指定された場合には，最後のものが使用されます。\n\nSEU順序番号は，リストの左端の桁に示されます。ステートメント番号は，リストの右端の桁に示されます。これらの番号は，ステートメント番号を使用してデバッグするときに使用されます。\n\nクライアント・ツールでは，統合エラー・フィードバックを行うために，このファイルが使用されます。通常，イベント・ファイルは，クライアント・ツール内からモジュールまたはプログラムを生成するときに作成されます。",
+      "inputType": "dropdown",
+      "required": false,
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*XREF",
+          "value": "*XREF",
+          "help": "（適切な場合には）ソース・メンバーの相互参照表を作成します。"
+        },
+        {
+          "label": "*NOXREF",
+          "value": "*NOXREF",
+          "help": "相互参照表は作成されません。"
+        },
+        {
+          "label": "*GEN",
+          "value": "*GEN",
+          "help": "コンパイラーによって戻された最高の重大度レベルがGENLVLオプションに指定された重大度を超えない場合にCRTPGMコマンドを使用してバインドできるモジュール・オブジェクトを作成します。"
+        },
+        {
+          "label": "*NOGEN",
+          "value": "*NOGEN",
+          "help": "モジュール・オブジェクトを作成しません。"
+        },
+        {
+          "label": "*SECLVL",
+          "value": "*SECLVL",
+          "help": "メッセージ要約セクションの第１レベル・メッセージ・テキストの次の行に第２レベル・メッセージ・テキストを印刷します。"
+        },
+        {
+          "label": "*NOSECLVL",
+          "value": "*NOSECLVL",
+          "help": "第１レベル・メッセージ・テキストの次の行に第２レベル・メッセージ・テキストを印刷しません。"
+        },
+        {
+          "label": "*SHOWCPY",
+          "value": "*SHOWCPY",
+          "help": "/COPYコンパイラー・ディレクティブによって含まれるメンバーのソース・レコードを表示します。"
+        },
+        {
+          "label": "*NOSHOWCPY",
+          "value": "*NOSHOWCPY",
+          "help": "/COPYコンパイラー・ディレクティブによって含まれるメンバーのソース・レコードを表示しません。"
+        },
+        {
+          "label": "*EXPDDS",
+          "value": "*EXPDDS",
+          "help": "外部記述ファイルの拡張をリストに表示し，キー・フィールド情報を表示します。"
+        },
+        {
+          "label": "*NOEXPDDS",
+          "value": "*NOEXPDDS",
+          "help": "外部記述ファイルの拡張をリストに表示せず，キー・フィールド情報を表示しません。"
+        },
+        {
+          "label": "*EXT",
+          "value": "*EXT",
+          "help": "コンパイル時に参照された外部プロシージャーおよびフィールドのリストをリストに表示します。"
+        },
+        {
+          "label": "*NOEXT",
+          "value": "*NOEXT",
+          "help": "コンパイル時に参照された外部プロシージャーおよびフィールドのリストをリストに表示しません。"
+        },
+        {
+          "label": "*NOSHOWSKP",
+          "value": "*NOSHOWSKP",
+          "help": "リストのソース部分の中の無視されたステートメントは表示されません。コンパイラーは，/IF, /ELSEIFまたは/ELSEディレクティブの結果としてのステートメントを無視します。"
+        },
+        {
+          "label": "*SHOWSKP",
+          "value": "*SHOWSKP",
+          "help": "リストのソース部分の中のすべてのステートメントを，コンパイラーがそれらをスキップしたかどうかにかかわらず表示します。"
+        },
+        {
+          "label": "*NOSRCSTMT",
+          "value": "*NOSRCSTMT",
+          "help": "リスト中の行番号は，順次に割り当てられます。これらの番号は，ステートメント番号を使用してデバッグするときに使用されます。行番号は，リストの左端の桁に示されます。リストの右端の２桁にはソースIDとSEU順序番号が表示されます。"
+        },
+        {
+          "label": "*SRCSTMT",
+          "value": "*SRCSTMT",
+          "help": "デバッグのためのステートメント番号は，次のようにSEU順序番号およびソースIDを使用して生成されます。 ステートメント番号 = ソースID * 1000000 + ソースSEU順序番号 SEU順序番号は，リストの左端の桁に示されます。ステートメント番号は，リストの右端の桁に示されます。これらの番号は，ステートメント番号を使用してデバッグするときに使用されます。 注: OPTION(*SRCSTMT)が指定されているときには，ソース・ファイル中のすべての順序番号が有効な数値でなければなりません。同じソース・ファイルに重複した順序番号がある場合には，デバッガーの動作は予測できず，診断メッセージまたは相互参照項目のステートメント番号が無意味となることがあります。"
+        },
+        {
+          "label": "*DEBUGIO",
+          "value": "*DEBUGIO",
+          "help": "すべての入出力仕様に停止点を生成します。"
+        },
+        {
+          "label": "*NODEBUGIO",
+          "value": "*NODEBUGIO",
+          "help": "入出力仕様に停止点を生成しません。"
+        },
+        {
+          "label": "*UNREF",
+          "value": "*UNREF",
+          "help": "参照されないデータ項目が，コンパイル済みのモジュールに組み込まれます。"
+        },
+        {
+          "label": "*NOUNREF",
+          "value": "*NOUNREF",
+          "help": "参照されないデータ項目は，コンパイル済みのモジュールに組み込まれません。これにより，使用されるストレージ容量が減り，より大きなプログラムをコンパイルできるようになります。*NOUNREFオプションが選択されている場合，デバッグ時に，参照されないデータ項目を確認したり，参照されないデータ項目に割り当てを行ったりすることはできません。なお，参照されないデータ項目は，OPTION(*XREF)を指定することで作成される相互参照リストには表示されます。"
+        },
+        {
+          "label": "*NOEVENTF",
+          "value": "*NOEVENTF",
+          "help": "クライアント・ツールで使用するためのイベント・ファイルを作成しません。クライアント・ツールでは，統合エラー・フィードバックを行うために，このファイルが使用されます。通常，イベント・ファイルは，クライアント・ツール内からモジュールまたはプログラムを生成するときに作成されます。"
+        },
+        {
+          "label": "*EVENTF",
+          "value": "*EVENTF",
+          "help": "クライアント・ツールで使用するためのイベント・ファイルを作成します。イベント・ファイルは，作成されたモジュールまたはプログラム・オブジェクトが保管されるライブラリー中のファイルEVFEVENTのメンバーとして作成されます。ファイルEVFEVENT が存在しない場合には，自動的に作成されます。イベント・ファイル・メンバー名は，作成されるオブジェクトの名前と同じです。 クライアント・ツールでは，統合エラー・フィードバックを行うために，このファイルが使用されます。通常，イベント・ファイルは，クライアント・ツール内からモジュールまたはプログラムを生成するときに作成されます。"
+        }
+      ],
+      "maxOccurrences": 20,
+      "placeholder": "*XREF"
+    },
+    {
+      "name": "DBGVIEW",
+      "description": "デバッグ用ビュー",
+      "help": "コンパイル済みモジュール・オブジェクトに使用可能なデバッグのレベルおよびソース・レベルのデバッグに使用可能なソース・ビューを指定します。",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*STMT",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*STMT",
+          "value": "*STMT",
+          "help": "コンパイラー・リストの行番号またはステートメントを使用して，モジュール・オブジェクトをデバッグできるようにします。OPTION(*NOSRCSTMT)が指定されているときには，行番号がコンパイラー・リストのソース・セクションの左端の桁に示されます。OPTION(*SRCSTMT)が指定されているときには，ステートメント番号がコンパイラー・リストのソース・セクションの右端の桁に示されます。"
+        },
+        {
+          "label": "*SOURCE",
+          "value": "*SOURCE",
+          "help": "コンパイル済みモジュール・オブジェクトのデバッグのためのソース・ビューを生成します。ルートのソース・メンバーがDDMファイルである場合には，このビューは使用可能でありません。また，コンパイル後，プログラムのデバッグを試みる前にソース・メンバーに変更が加えられた場合にも，これらのソース・メンバーのビューが使用できないことがあります。"
+        },
+        {
+          "label": "*LIST",
+          "value": "*LIST",
+          "help": "コンパイル済みモジュール・オブジェクトのデバッグのためのリスト・ビューを生成します。リスト・ビューに含まれる情報は，OPTIONパラメーターに*SHOWCPY, *EXPDDS,および*SRCSTMTを指定していたかどうかによります。 注: リスト・ビューには，字下げオプションを使用して要求した字下げは示されません。"
+        },
+        {
+          "label": "*COPY",
+          "value": "*COPY",
+          "help": "コンパイル済みモジュール・オブジェクトのデバッグのためのソース・ビューおよびコピー・ビューを生成します。このオプションのソース・ビューは，*SOURCEオプションの場合に生成されたソース・ビューと同じです。コピー・ビューは，すべての/COPYソース・メンバーが含まれるデバッグ・ビューです。ルートのソース・メンバーがDDMファイルである場合には，これらのビューは使用可能でありません。また，コンパイル後，プログラムのデバッグを試みる前にソース・メンバーに変更が加えられた場合にも，これらのソース・メンバーのビューが使用できないことがあります。"
+        },
+        {
+          "label": "*ALL",
+          "value": "*ALL",
+          "help": "コンパイル済みモジュール・オブジェクトのデバッグのためのリスト・ビュー，ソース・ビュー，およびコピー・ビューを生成します。リスト・ビューに含まれる情報は，OPTIONパラメーターに*SHOWCPY, *EXPDDS,および*SRCSTMTを指定していたかどうかによります。"
+        },
+        {
+          "label": "*NONE",
+          "value": "*NONE",
+          "help": "コンパイル済みモジュール・オブジェクトのデバッグのためのすべてのデバッグ・オプションを使用できないようにします。"
+        }
+      ]
+    },
+    {
+      "name": "DBGENCKEY",
+      "description": "デバッグ暗号鍵",
+      "help": "デバッグ・ビューに組み込まれるプログラム・ソースを暗号化するために使用する暗号鍵を指定します。\n\nすべてのコード・ページでインバリアントな文字ではない文字を鍵に使用する場合，ユーザーの責任において，確実にターゲット・システムがソース・システムと同じコード・ページを使用するようにしなければなりません。そうしないと，鍵が一致せず，暗号化解除が失敗するおそれがあります。異なるコード・ページを使用する複数のシステム上で暗号鍵を入力しなければならない場合は，すべてのEBCDICコード・ページでインバリアントな文字で鍵を作成することをお勧めします。\n\n*NONE: 暗号鍵は指定されません。\nモジュール・オブジェクトに保管されるデバッグ・ビューに組み込まれるプログラム・ソースを暗号化するために使用する鍵を指定します。鍵の長さは1から16バイトまでです。長さが1から15バイトまでの鍵は，暗号化のため16バイトになるまでブランクが埋め込まれます。長さゼロの鍵を指定することは，*NONEの指定と同じです。 すべてのコード・ページでインバリアントな文字ではない文字を鍵に使用する場合，ユーザーの責任において，確実にターゲット・システムがソース・システムと同じコード・ページを使用するようにしなければなりません。そうしないと，鍵が一致せず，暗号化解除が失敗するおそれがあります。異なるコード・ページを使用する複数のシステム上で暗号鍵を入力しなければならない場合は，すべてのEBCDICコード・ページでインバリアントな文字で鍵を作成することをお勧めします。",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*NONE",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "placeholder": "*NONE"
+    },
+    {
+      "name": "OUTPUT",
+      "description": "出力",
+      "help": "コンパイル・リストが生成されるかどうかを指定します。",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*PRINT",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*PRINT",
+          "value": "*PRINT",
+          "help": "ILE RPGモジュール・ソースおよびすべてのコンパイル時メッセージからなるコンパイル・リストを作成します。リストに含まれる情報は，OPTIONパラメーターに*XREF, *SECLVL, *SHOWCPY, *EXPDDS, *EXT, *SHOWSKP,および*SRCSTMTを指定しているかどうかによって異なります。"
+        },
+        {
+          "label": "*NONE",
+          "value": "*NONE",
+          "help": "コンパイル・リストを生成しません。"
+        }
+      ]
+    },
+    {
+      "name": "OPTIMIZE",
+      "description": "最適化レベル",
+      "help": "モジュールの最適化のレベルがあればそれを指定します。",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*NONE",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*NONE",
+          "value": "*NONE",
+          "help": "生成されたコードは最適化されません。これは，変換時間の面で一番早いものです。デバッグ・モードになっている時には，変数を表示して修正することができます。"
+        },
+        {
+          "label": "*BASIC",
+          "value": "*BASIC",
+          "help": "生成されたコードに対してある種の最適化が実行されます。これにより，デバッグ・モードになっている時に，ユーザー変数は表示できますが，修正することはできません。"
+        },
+        {
+          "label": "*FULL",
+          "value": "*FULL",
+          "help": "最も効果的なコードを生成する最適化。変換時間は最も長くなります。提示されている値が現在値でない場合でも，ユーザー変数は変更できませんが，表示することはできます。"
+        }
+      ]
+    },
+    {
+      "name": "INDENT",
+      "description": "ソース・リストの字下げ",
+      "help": "読み易さを増すために，構造化された命令をソース・リストで字下げするかどうかを指定します。構造化された命令の文節をマークするために使用される文字も指定します。\n\n*NONE: ソース・リストで構造化された命令は字下げされません。これが省略時の値です。\n構造化された命令の文節に対してソース・リストが字下げされます。ステートメントおよび文節の位置合わせは，選択した文字を使用してマークされます。最大２文字の長さの任意の文字ストリングを選択することができます。文字ストリング中にブランクを使用したい場合には，そのストリングを単一引用符で囲まなければなりません。 注: モジュールにエラーがある場合には，字下げは期待通りに現れないことがあります。",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*NONE",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "placeholder": "*NONE"
+    },
+    {
+      "name": "CVTOPT",
+      "description": "タイプ変換オプション",
+      "help": "ILE RPGコンパイラーによる外部記述データベース・ファイルから検索された日付，時刻，タイム・スタンプ，図形データ・タイプ，および可変長データ・タイプの操作方法を指定します。",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*NONE",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*NONE",
+          "value": "*NONE",
+          "help": "RPG固有の日付，時刻，タイム・スタンプ，および可変長のデータ・タイプを使用します。"
+        },
+        {
+          "label": "*DATETIME",
+          "value": "*DATETIME",
+          "help": "日付，時刻，およびタイム・スタンプのデータベース・データ・タイプが固定長文字フィールドとして宣言されることを指定します。"
+        },
+        {
+          "label": "*GRAPHIC",
+          "value": "*GRAPHIC",
+          "help": "２バイト文字セット(DBCS)図形データ・タイプが固定長文字フィールドとして宣言されることを指定します。"
+        },
+        {
+          "label": "*VARCHAR",
+          "value": "*VARCHAR",
+          "help": "可変長文字データ・タイプが固定長文字フィールドとして宣言されることを指定します。"
+        },
+        {
+          "label": "*VARGRAPHIC",
+          "value": "*VARGRAPHIC",
+          "help": "可変長２バイト文字セット(DBCS)図形データ・タイプが固定長文字フィールドとして宣言されることを指定します。"
+        }
+      ],
+      "maxOccurrences": 4,
+      "placeholder": "*NONE"
+    },
+    {
+      "name": "SRTSEQ",
+      "description": "ソート順序",
+      "help": "ILE RPGソース・プログラムで使用されるソート順序テーブルを指定します。",
+      "inputType": "group",
+      "required": false,
+      "groupKind": "qualified",
+      "singleValues": [
+        "*HEX",
+        "*JOB",
+        "*JOBRUN",
+        "*LANGIDUNQ",
+        "*LANGIDSHR"
+      ],
+      "children": [
+        {
+          "name": "SRTSEQ_LIB",
+          "description": "ライブラリー",
+          "help": "指定できる特殊値: *LIBL, *CURLIB",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "*LIBL",
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          },
+          "placeholder": "*LIBL"
+        },
+        {
+          "name": "SRTSEQ",
+          "description": "ソート順序",
+          "inputType": "text",
+          "required": false,
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          },
+          "defaultValue": "*HEX",
+          "placeholder": "*HEX"
+        }
+      ]
+    },
+    {
+      "name": "LANGID",
+      "description": "言語識別コード",
+      "help": "ソート順序が*LANGIDUNQおよび*LANGIDSHRである時に使用される言語識別コードを指定します。LANGIDパラメーターは，ソート順序テーブルを選択するためにSRTSEQ パラメーターと一緒に使用されます。\n\n*JOBRUN: RPGモジュールが実行される時（バインド後）にジョブと関連したLANGID値を使用します。\n*JOB: RPGモジュールが作成される時にジョブと関連したLANGID値を使用します。\n指定された言語識別コードを使用します。（たとえば，フランス語の場合にはFRA で，ドイツ語の場合にはDEU。）",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*JOBRUN",
+      "attributes": {
+        "characterSet": "upper",
+        "maxLength": 10
+      },
+      "placeholder": "*JOBRUN"
+    },
+    {
+      "name": "REPLACE",
+      "description": "モジュールの置き換え",
+      "help": "指定されたライブラリーに同じ名前のモジュールがすでに存在している時に，新しいモジュール・オブジェクトが作成されるかどうかを指定します。",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*YES",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*YES",
+          "value": "*YES",
+          "help": "指定されたライブラリーに新しいモジュール・オブジェクト・プログラムが作成されます。指定されたライブラリーの同じ名前の既存のモジュール・オブジェクトはライブラリーQRPLOBJに移動されます。"
+        },
+        {
+          "label": "*NO",
+          "value": "*NO",
+          "help": "指定されたライブラリーに同じ名前のモジュール・オブジェクトがすでに存在している場合には，新しいモジュール・オブジェクトは作成されません。"
+        }
+      ]
+    },
+    {
+      "name": "AUT",
+      "description": "権限",
+      "help": "このオブジェクトに対する特定権限をもっていないユーザー，権限リスト上にないユーザー，および所属するユーザー・グループがこのオブジェクトに対する特定権限をもっていないユーザーに与えられる権限を指定します。モジュールの作成後に，CLコマンドのオブジェクト権限認可(GRTOBJAUT)またはオブジェクト権限取り消し(RVKOBJAUT)を使用してすべてまたは指定したユーザーの権限を変更することができます。これらのコマンドの詳細については，IBM i Information Center(http://www.ibm.com/systems/i/infocenter/)の「プログラミング」カテゴリーの「制御言語(CL)」トピック・コレクションを参照してください。\n\n一部のユーザーに変数をダンプさせたくない場合には，そのユーザーにモジュールを含むプログラムまたはサービス・プログラムに対する*OBJOPR権限と*EXECUTE権限だけを割り当ててください。これにより，そのユーザーはプログラムを呼び出すことはできますが，その変数をダンプすることはできません。作成済みプログラムまたはサービス・プログラムの権限を変更するには，EDTOBJAUT, GRTOBJAUT,またはRVKOBJAUTを使用してください。\n\nどのユーザーにも変数をダンプさせたくない場合には，モジュールではモジュール変更(CHGMOD)を使用し，モジュールを含むプログラムではプログラム変更(CHGPGM)またはサービス・プログラム変更(CHGSRVPGM)を使用して，識別可能な情報を除去してください。\n\n*LIBCRTAUT: オブジェクトの共通権限は，ターゲット・ライブラリー（オブジェクトが入っているライブラリー）のCRTAUTキーワードから取られます。値は，オブジェクトの作成時に決定されます。作成後にライブラリーのCRTAUT値が変わった場合には，新しい値は既存のオブジェクトに反映されません。\n*ALL: 所有者に限定されているか，あるいは権限リスト管理権限によって制御されるものを除いてモジュール・オブジェクトに対するすべての命令の権限。ユーザーはモジュール・オブジェクトの存在を制御し，オブジェクトに対するこの機密保護を指定し，オブジェクトを変更し，オブジェクトに対する基本機能を実行することができますが，所有権を移すことはできません。\n*CHANGE: 所有者に限定されているか，あるいはオブジェクト権とオブジェクト管理権によって制御されているものを除いて，モジュール・オブジェクトに対するすべてのデータ権限およびすべての命令を実行する権限を提供します。ユーザーはオブジェクトを変更し，オブジェクトに対して基本機能を実行することができます。\n*USE: オブジェクト操作権と読み取り権限，およびプログラムへのバインドなどのモジュール・オブジェクトに対する基本操作の権限を提供します。ユーザーはオブジェクトを変更することができません。 注: プログラムの変数の定様式ダンプを取るには，ユーザーにプログラムの*USE権限が必要です。変数をダンプするには，プログラムに，識別可能な情報も必要です。 一部のユーザーに変数をダンプさせたくない場合には，そのユーザーにモジュールを含むプログラムまたはサービス・プログラムに対する*OBJOPR権限と*EXECUTE権限だけを割り当ててください。これにより，そのユーザーはプログラムを呼び出すことはできますが，その変数をダンプすることはできません。作成済みプログラムまたはサービス・プログラムの権限を変更するには，EDTOBJAUT, GRTOBJAUT,またはRVKOBJAUTを使用してください。 どのユーザーにも変数をダンプさせたくない場合には，モジュールではモジュール変更(CHGMOD)を使用し，モジュールを含むプログラムではプログラム変更(CHGPGM)またはサービス・プログラム変更(CHGSRVPGM)を使用して，識別可能な情報を除去してください。\n*EXCLUDE: ユーザーは，オブジェクトをアクセスできません。\nユーザーおよびモジュールが追加される権限の権限リストの名前を入力してください。モジュール・オブジェクトはこの権限リストによって保護され，モジュール・オブジェクトの共通権限は*AUTLにセットされます。CRTRPGMODコマンドを出す時には，この権限リストがシステム上に存在していなければなりません。 注: システムの機密保護要件を反映させるためには，AUTパラメーターを使用してください。使用可能な機密保護機能は，System i機密保護解説書(SD88-5027)で詳しく説明されています。",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*LIBCRTAUT",
+      "attributes": {
+        "characterSet": "upper",
+        "maxLength": 10
+      },
+      "placeholder": "*LIBCRTAUT"
+    },
+    {
+      "name": "TRUNCNBR",
+      "description": "数字の切り捨て",
+      "help": "プログラムの実行中に数値オーバーフローが起こった場合に，結果のフィールドに切り捨て値を入れるか，それともエラーを生成するかを指定します。",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*YES",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*YES",
+          "value": "*YES",
+          "help": "数値オーバーフローを無視して，結果のフィールドに切り捨て値を入れます。"
+        },
+        {
+          "label": "*NO",
+          "value": "*NO",
+          "help": "数値オーバーフローが検出された時に，実行時エラーが生成されます。"
+        }
+      ]
+    },
+    {
+      "name": "FIXNBR",
+      "description": "数値の修正",
+      "help": "正しくない10進数データをコンパイラーによって訂正するかどうかを指定します。",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*NONE",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*NONE",
+          "value": "*NONE",
+          "help": "正しくない10進数データが使用された場合に，実行時に10進数エラーとなることを指示します。"
+        },
+        {
+          "label": "*ZONED",
+          "value": "*ZONED",
+          "help": "正しくないゾーン10進数データは，パック・データへの変換時にコンパイラーによって訂正されます。数字フィールドのブランクはゼロとして扱われます。各桁は妥当性検査されます。桁が有効でない場合には，その桁はゼロで置き換えられます。符号が有効でない場合には，その符号は16進数'F'の正符号に強制的に変更されます。符号が有効である場合には，必要に応じ16進数'F'の正符号または16進数'D'の負符号に変更されます。結果のパック・データが正しくない場合には，そのデータは訂正されません。"
+        },
+        {
+          "label": "*INPUTPACKED",
+          "value": "*INPUTPACKED",
+          "help": "正しくないパック10進数データが入力仕様の処理中に出てきた場合に，内部変数がゼロに設定されることを指示します。"
+        }
+      ],
+      "maxOccurrences": 2,
+      "placeholder": "*NONE"
+    },
+    {
+      "name": "TGTRLS",
+      "description": "ターゲット・リリース",
+      "help": "作成されるオブジェクトを使用するオペレーティング・システムのリリースを指定します。*CURRENTおよび*PRV値の場合の例では， ターゲット・リリース 値を指定する時には，形式VXRXMXを使用してリリースを指定します。VX はバージョン，RXはリリース，MXはモディフィケーション・レベルです。たとえば，V2R3M0は，バージョン２，リリース３，モディフィケーション・レベル０です。\n\nこのパラメーターに対する有効な値はリリースごとに変わります。指定できる値は次の通りです。\n\n有効な値は，現在のバージョン，リリース，およびモディフィケーション・レベルによって異なり，新しいリリースごとに変わります。このコマンドでサポートされている最も古いリリース・レベルよりも前の ターゲット・リリース を指定した場合には，サポートされる最も古いリリースが示されたエラー・メッセージが出されます。\n\nリリースをVXRXMXの形式で指定してください。オブジェクトは，指定したリリースのシステムまたはオペレーティング・システムの後続のリリースが導入されたシステムで使用することができます。 有効な値は，現在のバージョン，リリース，およびモディフィケーション・レベルによって異なり，新しいリリースごとに変わります。このコマンドでサポートされている最も古いリリース・レベルよりも前の ターゲット・リリース を指定した場合には，サポートされる最も古いリリースが示されたエラー・メッセージが出されます。 注: コマンドの現在のバージョンは，コマンドの前のリリースで使用可能でないオプションをサポートすることがあります。前のリリースで使用されるオブジェクトを作成するためにコマンドが使用される場合には，コマンドはそのリリースに該当するコンパイラーで処理され，サポートされないオプションはどれも認識されません。コンパイラーは，処理に使用可能でないオプションについて警告を出すとは限りません。",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*CURRENT",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*CURRENT",
+          "value": "*CURRENT",
+          "help": "オブジェクトは，現在ユーザー・システムで実行中のオペレーティング・システムのリリースで使用されます。たとえば，システムでV2R3M5を実行中の場合には，*CURRENTはV2R3M5が導入されているシステムでオブジェクトを使用しようとしていることを意味します。また，オペレーティング・システムの後続のリリースが導入されたシステムでも，このオブジェクトを使用することができます。 注: システムでV2R3M5が実行中で，オブジェクトをV2R3M0が導入されたシステムで使用しようとする場合には，TGTRLS(*CURRENT)ではなくTGTRLS(V2R3M0)を指定してください。"
+        },
+        {
+          "label": "*PRV",
+          "value": "*PRV",
+          "help": "オブジェクトは，オペレーティング・システムの前のリリース，モディフィケーション・レベル０で使用されます。たとえばシステムでV2R3M5を実行中の場合には，*PRVはV2R2M0が導入されているシステムでオブジェクトを使用しようとしていることを意味します。また，オペレーティング・システムの後続のリリースが導入されたシステムでも，このオブジェクトを使用することができます。"
+        }
+      ],
+      "placeholder": "*CURRENT"
+    },
+    {
+      "name": "ALWNULL",
+      "description": "ヌル値可能",
+      "help": "ILE RPGモジュールが，外部記述データベース・ファイルから，ヌル値可能フィールドの入ったレコードをどのように使用できるようにするかを指定します。",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*NO",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*NO",
+          "value": "*NO",
+          "help": "ILE RPGモジュールが外部記述ファイルからのヌル値フィールドをもつレコードを処理しないことを指定します。ヌル値が入っているレコードを検索しようとした場合には，レコード中のデータはILE RPGモジュールに対してアクセス不能となり，データ・マッピング・エラーが起こります。"
+        },
+        {
+          "label": "*INPUTONLY",
+          "value": "*INPUTONLY",
+          "help": "ILE RPGモジュールが，外部記述入力専用データベース・ファイルから，ヌル値の入ったヌル値可能フィールドをもつレコードを正常に読み取ることができることを指定します。ヌル値の入ったレコードを検索する時には，データ・マッピング・エラーは起こらず，データベースの省略時の値がヌル値の入った任意のフィールドに入れられます。モジュールは以下を実行することはできません。 ヌル値可能キー・フィールドの使用 ヌル値可能フィールドの入ったレコードの作成または更新 モジュールの実行中に，ヌル値可能フィールドが実際にヌルであるかどうかを判別すること ヌル値可能フィールドをヌルに設定すること"
+        },
+        {
+          "label": "*USRCTL",
+          "value": "*USRCTL",
+          "help": "ILE RPGモジュールが，外部記述データベース・ファイルから，ヌル値の入ったレコードを読み取り，書き出し，更新できることを指定します。ヌル・キーのあるレコードはキー順操作を使用して検索することができます。モジュールは，ヌル値可能フィールドが実際にヌルであるかどうかを判別することができ，出力または更新用に，ヌル値可能フィールドをヌルに設定することができます。プログラマーは，ヌル値の入ったフィールドがモジュール内で正しく使用されていることを確認する責任があります。"
+        },
+        {
+          "label": "*YES",
+          "value": "*YES",
+          "help": "*INPUTONLYと同じ。"
+        }
+      ]
+    },
+    {
+      "name": "DEFINE",
+      "description": "条件名の定義",
+      "help": "コンパイルの開始前に定義される条件名を指定します。パラメーターDEFINE(条件名)を使用することは，ソース・ファイルの最初の行に/DEFINE条件名ディレクティブをエンコードすることと同じです。\n\n最大32個までの条件名を指定することができます。各名前の長さは50桁までとすることができます。条件名はコンパイルの開始時に定義されるものと見なされます。",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*NONE",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*NONE",
+          "value": "*NONE",
+          "help": "条件名は定義されません。これが省略時の値です。"
+        }
+      ],
+      "maxOccurrences": 32,
+      "placeholder": "*NONE"
+    },
+    {
+      "name": "ENBPFRCOL",
+      "description": "パフォーマンス収集使用可能化",
+      "help": "パフォーマンス収集を使用可能にするかどうかを指定します。",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*PEP",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*PEP",
+          "value": "*PEP",
+          "help": "パフォーマンス統計は，プログラム入り口プロシージャーの入り口および出口でのみ収集されます。これは，プログラムの実際のプログラム入り口プロシージャーに対して適用され，プログラム内のモジュールのメイン・プロシージャーには適用されません。これが省略時の値です。"
+        },
+        {
+          "label": "*ENTRYEXIT",
+          "value": "*ENTRYEXIT",
+          "help": "パフォーマンス統計はモジュールのすべてのプロシージャーの入り口および出口に収集されます。"
+        },
+        {
+          "label": "*FULL",
+          "value": "*FULL",
+          "help": "パフォーマンス統計はすべてのプロシージャーの入り口および出口に収集されます。また，統計は，外部プロシージャーに対する各呼び出しの前後に収集されます。"
+        }
+      ]
+    },
+    {
+      "name": "PRFDTA",
+      "description": "プロファイル・データ",
+      "help": "プログラム・プロファイル・データ属性をモジュールに指定します。プログラム・プロファイルは，統計データ（プロファイル・データ）に基づいてプロシージャーおよびプロシージャー内のコードを再順序づけするために使用される拡張最適化手法です。",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*NOCOL",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*NOCOL",
+          "value": "*NOCOL",
+          "help": "このモジュールはプロファイル・データを収集できません。これが省略時の値です。"
+        },
+        {
+          "label": "*COL",
+          "value": "*COL",
+          "help": "このモジュールはプロファイル・データを収集できます。*COLは，モジュールの最適化レベルが*FULLの時と*CURRENTのターゲット・リリースでコンパイルしている時にだけ指定することができます。"
+        }
+      ]
+    },
+    {
+      "name": "STGMDL",
+      "description": "ストレージ・モデル",
+      "help": "モジュールで使用するストレージのタイプを指定します。",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*INHERIT",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*INHERIT",
+          "value": "*INHERIT",
+          "help": "モジュールは継承ストレージ・モデルを使って作成されます。継承ストレージ・モデルのモジュールは，単一レベルのストレージ・モデル，テラ・スペースのストレージ・モデルまたは継承ストレージ・モデルのストレージ・モデルを使用するプログラムやサービス・プログラムにバインドできます。単一レベルおよびテラ・スペースのストレージ・モデルのプログラムでは，自動ストレージおよび静的ストレージのために使用されるストレージのタイプはオブジェクトのストレージ・モデルと一致します。継承ストレージ・モデルのオブジェクトは，呼び出し元のストレージ・モデルを継承します。"
+        },
+        {
+          "label": "*SNGLVL",
+          "value": "*SNGLVL",
+          "help": "モジュールは単一レベル・ストレージ・モデルを使って作成されます。単一レベル・ストレージ・モデルのモジュールは，単一レベル・ストレージを使用するプログラムやサービス・プログラムにのみバインドできます。これらのプログラムやサービス・プログラムは自動ストレージおよび静的ストレージに単一レベル・ストレージを使用します。"
+        },
+        {
+          "label": "*TERASPACE",
+          "value": "*TERASPACE",
+          "help": "モジュールはテラ・スペース・ストレージ・モデルを使って作成されます。テラ・スペース・ストレージ・モデルのモジュールは，テラ・スペース・ストレージを使用するプログラムやサービス・プログラムにのみバインドできます。これらのプログラムやサービス・プログラムは自動ストレージおよび静的ストレージにテラ・スペース・ストレージを使用します。"
+        }
+      ]
+    },
+    {
+      "name": "BNDDIR",
+      "description": "バインディング・ディレクトリー",
+      "help": "モジュールの記号分析解決で使用されるバインディング・ディレクトリーのリストを指定します。バインディング・ディレクトリーの検索は，モジュールがCRTPGMまたはCRTSRVPGM時刻にバインドされる時に行われます。",
+      "inputType": "group",
+      "required": false,
+      "groupKind": "qualified",
+      "singleValues": [
+        "*NONE"
+      ],
+      "children": [
+        {
+          "name": "BNDDIR_LIB",
+          "description": "ライブラリー",
+          "help": "指定できる特殊値: *LIBL, *CURLIB",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "*LIBL",
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          },
+          "placeholder": "*LIBL"
+        },
+        {
+          "name": "BNDDIR",
+          "description": "バインディング・ディレクトリー",
+          "inputType": "text",
+          "required": false,
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          },
+          "defaultValue": "*NONE",
+          "placeholder": "*NONE"
+        }
+      ],
+      "maxOccurrences": 50
+    },
+    {
+      "name": "LICOPT",
+      "description": "ライセンス内部コード・オプション",
+      "help": "１つまたは複数のライセンス内部コード・コンパイル時オプションを指定します。このパラメーターは，個別のコンパイル時オプションを選択できるようにするもので，選択したそれぞれのタイプのコンパイラー・オプションの潜在的な利点と欠点を理解した高度のプログラマーを対象にしています。",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "X''"
+    },
+    {
+      "name": "INCDIR",
+      "description": "組み込みディレクトリー",
+      "help": "コピー・ファイルを検索するためにコンパイラーにより使用される検索パスに追加する１つ以上のディレクトリーを指定します。ソース・プログラム中のコピー・ファイルを解決できない場合に，コンパイラーはここに指定されたディレクトリーを検索します。\n\nコピー・ファイルを検索するディレクトリーを最大32個まで指定してください。指定されたディレクトリーの他に，ソース・ディレクトリーからもコピー・ファイルが検索されます。",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*NONE",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*NONE",
+          "value": "*NONE",
+          "help": "ユーザー・ディレクトリーでコピー・ファイルは検索されません。省略時の値により，ソース・ディレクトリーは検索されます。"
+        }
+      ],
+      "maxOccurrences": 32,
+      "placeholder": "*NONE"
+    },
+    {
+      "name": "PGMINFO",
+      "description": "PGMインターフェース情報",
+      "help": "プログラム・インターフェース情報を生成するのかどうか，およびどこに生成するのかを制御するオプションを指定します。",
+      "inputType": "group",
+      "required": false,
+      "groupKind": "elements",
+      "children": [
+        {
+          "name": "GENERATE",
+          "description": "生成",
+          "inputType": "dropdown",
+          "required": false,
+          "defaultValue": "*NO",
+          "attributes": {
+            "characterSet": "upper"
+          },
+          "options": [
+            {
+              "label": "*NO",
+              "value": "*NO"
+            },
+            {
+              "label": "*PCML",
+              "value": "*PCML"
+            }
+          ]
+        },
+        {
+          "name": "LOCATION",
+          "description": "場所",
+          "inputType": "dropdown",
+          "required": false,
+          "defaultValue": "*STMF",
+          "attributes": {
+            "characterSet": "upper"
+          },
+          "options": [
+            {
+              "label": "*STMF",
+              "value": "*STMF"
+            },
+            {
+              "label": "*MODULE",
+              "value": "*MODULE"
+            },
+            {
+              "label": "*ALL",
+              "value": "*ALL"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "INFOSTMF",
+      "description": "プログラム・インターフェース・ストリーム・ファイル",
+      "help": "PGMINFOオプションに指定された生成されたプログラム・インターフェース情報が入るストリーム・ファイルのパス名を指定します。\n\nこのパス名は絶対修飾または相対修飾のいずれかとすることができます。絶対パス名は'/'で始まり，相対パス名は'/'以外の文字で始まります。\n\n絶対修飾の場合は，パス名は完全です。相対修飾の場合は，パス名はジョブの現行作業ディレクトリーをそのパス名に付加することにより完全になります。\n\nこのパラメーターを指定できるのは，PGMINFOパラメーターに*NO以外の値が指定されている場合だけです。",
+      "inputType": "text",
+      "required": false
+    },
+    {
+      "name": "PPGENOPT",
+      "description": "プリプロセッサー・オプション",
+      "help": "ソース・コードのコンパイル時に使用するプリプロセッサー生成オプションを指定します。\n\n考えられるオプションは次の通りです。",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*NONE",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*NONE",
+          "value": "*NONE",
+          "help": "ソース・ファイルに対してコンパイラー全体を実行します。プリプロセッサー出力をファイルにコピーしません。"
+        },
+        {
+          "label": "*DFT",
+          "value": "*DFT",
+          "help": "入力ソースに対してプリプロセッサーを実行します。プリプロセッサー出力の生成のオプションとして，*RMVCOMMENT, *EXPINCLUDEおよび*NOSEQSRCが使用されます。出力ソース・ファイルおよびメンバーを指定するには，PPSRCFILEおよびPPSRCMBRを使用し，プリプロセッサー出力を含めるストリーム・ファイルを指定するには，PPSRCSTMFを使用してください。"
+        },
+        {
+          "label": "*RMVCOMMENT",
+          "value": "*RMVCOMMENT",
+          "help": "プリプロセス中にコメント，ブランク行，およびほとんどのディレクティブを除去します。RPG仕様のみ，および仕様の正しい変換処理に必要なすべてのディレクティブは保存します。"
+        },
+        {
+          "label": "*NORMVCOMMENT",
+          "value": "*NORMVCOMMENT",
+          "help": "プリプロセス中にコメント，ブランク行，およびリスト制御ディレクティブ（たとえば，/EJECT, /TITLE)を保存します。プリプロセス中にソース制御ディレクティブ（たとえば，/COPY, /IF)をコメントに変換します。"
+        },
+        {
+          "label": "*EXPINCLUDE",
+          "value": "*EXPINCLUDE",
+          "help": "生成された出力ファイルの/INCLUDEディレクティブを展開します。"
+        },
+        {
+          "label": "*NOEXPINCLUDE",
+          "value": "*NOEXPINCLUDE",
+          "help": "/INCLUDEディレクティブは生成された出力ファイルに変更されずに配置されます。 注: /COPYディレクティブは常に展開されます。"
+        },
+        {
+          "label": "*SEQSRC",
+          "value": "*SEQSRC",
+          "help": "PPSRCFILEを指定した場合は，生成された出力メンバーには順次に順序番号が付けられ，000001で始まり，000001ずつ増分されます。"
+        },
+        {
+          "label": "*NOSEQSRC",
+          "value": "*NOSEQSRC",
+          "help": "PPSRCFILEを指定した場合は，生成された出力メンバーは，プリプロセッサーが読み取った元のソースと同じ順序番号を持ちます。"
+        }
+      ],
+      "maxOccurrences": 3,
+      "placeholder": "*NONE"
+    },
+    {
+      "name": "PPSRCFILE",
+      "description": "出力ソース・ファイル",
+      "help": "プリプロセッサー出力のソース・ファイル名およびライブラリーを指定します。\n\n考えられるライブラリー値は次の通りです。",
+      "inputType": "group",
+      "required": false,
+      "groupKind": "qualified",
+      "children": [
+        {
+          "name": "PPSRCFILE_LIB",
+          "description": "ライブラリー",
+          "help": "指定できる特殊値: *CURLIB",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "*CURLIB",
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          },
+          "placeholder": "*CURLIB"
+        },
+        {
+          "name": "PPSRCFILE",
+          "description": "出力ソース・ファイル",
+          "inputType": "text",
+          "required": false,
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          }
+        }
+      ]
+    },
+    {
+      "name": "PPSRCMBR",
+      "description": "出力ソース・メンバー",
+      "help": "プリプロセッサー出力のソース・ファイル・メンバーの名前を指定します。\n\n*MODULE: MODULEパラメーターに提供した名前は，プリプロセッサー出力メンバー名として使用されます。\nプリプロセッサー出力のメンバーの名前を指定します。",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*MODULE",
+      "attributes": {
+        "characterSet": "upper",
+        "maxLength": 10
+      },
+      "placeholder": "*MODULE"
+    },
+    {
+      "name": "PPSRCSTMF",
+      "description": "出力ストリーム・ファイル",
+      "help": "プリプロセッサー出力のストリーム・ファイルのパス名を指定します。\n\nこのパス名は絶対修飾または相対修飾のいずれかとすることができます。絶対パス名は'/'で始まり，相対パス名は'/'以外の文字で始まります。\n\n絶対修飾の場合は，パス名は完全です。相対修飾の場合は，パス名はジョブの現行作業ディレクトリーをそのパス名に付加することにより完全になります。\n\nプリプロセッサー出力ストリーム・ファイルのパス名を指定します。 このパス名は絶対修飾または相対修飾のいずれかとすることができます。絶対パス名は'/'で始まり，相対パス名は'/'以外の文字で始まります。 絶対修飾の場合は，パス名は完全です。相対修飾の場合は，パス名はジョブの現行作業ディレクトリーをそのパス名に付加することにより完全になります。",
+      "inputType": "dropdown",
+      "required": false,
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*SRCSTMF",
+          "value": "*SRCSTMF",
+          "help": "SRCSTMFパラメーターに提供したパス名は，プリプロセッサー出力パス名として使用されます。ファイルは拡張子'.I'を持ちます。"
+        }
+      ],
+      "placeholder": "*SRCSTMF"
+    },
+    {
+      "name": "TGTCCSID",
+      "description": "ターゲットCCSID",
+      "help": "コンパイラーがソース・ファイルを読み取る際に使用するCCSIDを指定します。\n\n*SRC: ソースは，1次ソース・ファイルのCCSIDで読み込まれるか，またはそのファイルがASCII CCSIDを持つIFSファイルの場合には，ASCII CCSIDと関連したEBCDIC CCSIDです。これが省略時の値です。\n*JOB: ソースは，ジョブのCCSIDで読み込まれます。ジョブのCCSIDが65535の場合，ソースはジョブの省略時のCCSIDで読み込まれます。\nソースは，指定したCCSIDで読み込まれます。CCSIDは，1バイト用または混合バイト用のEBCDIC CCSIDでなければなりません。",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*SRC",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "placeholder": "*SRC"
+    }
+  ],
+  "threadSafe": false,
+  "environment": "すべての環境 (*ALL)",
+  "examples": [
+    {
+      "code": "CRTRPGMOD MODULE(MYLIB/XMPLE1) SRCFILE(MYLIB/QRPGLESRC) SRCMBR(XMPLE1) OUTPUT(*PRINT) TEXT('MY RPG IV MODULE')"
+    }
+  ],
+  "errorMessages": [
+    {
+      "id": "RNS9309",
+      "text": "コンパイルは正常に実行されなかった。モジュール&1がライブラリー&2に作成されませんでした。"
+    }
+  ],
+  "source": {
+    "url": "https://www.ibm.com/docs/ja/ssw_ibm_i_74/cl/crtrpgmod.htm",
+    "version": "IBM i 7.4"
+  },
+  "constraints": [
+    {
+      "kind": "exclusive",
+      "parameters": [
+        "SRCFILE",
+        "SRCSTMF"
+      ],
+      "note": "SRCFILE パラメーターを SRCSTMF パラメーターと一緒に指定することはできません。"
+    },
+    {
+      "kind": "exclusive",
+      "parameters": [
+        "SRCMBR",
+        "SRCSTMF"
+      ],
+      "note": "SRCMBR パラメーターを SRCSTMF パラメーターと一緒に指定することはできません。"
+    }
+  ]
+}

@@ -1,0 +1,109 @@
+
+  <!doctype html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+  <html>
+<head><META http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>Iterate  (ITERATE)</title>
+</head>
+<body bgcolor="white">
+<a name="ITERATE.Top_Of_Page"></a>
+<h2>Iterate  (ITERATE)</h2>
+<table width="100%">
+<tr>
+<td align="left" valign="top"><b>Where allowed to run:  </b>
+<ul><li>Batch program (*BPGM)</li>
+<li>Interactive program (*IPGM)</li>
+</ul><b>Threadsafe:  </b>Yes
+</td>
+<td align="right" valign="top">
+<a href="#ITERATE.PARAMETERS.TABLE">Parameters</a><br>
+<a href="#ITERATE.COMMAND.EXAMPLES">Examples</a><br>
+<a href="#ITERATE.ERROR.MESSAGES">Error messages</a></td>
+</tr>
+</table>
+
+<div> <a name="ITERATE"></a>
+<p>The Iterate (ITERATE) command interrupts the processing of commands in the associated DOWHILE, DOUNTIL, or DOFOR loop and passes control to the associated ENDDO.  The conditional part of the DOWHILE, DOUNTIL, or DOFOR will be evaluated and processing resume accordingly.
+</p>
+<p>By specifying the optional command label, processing will skip to the ENDDO of the associated Do command group.
+</p>
+<p><b>Restrictions:</b>
+</p>
+<ul>
+<li>This command is valid only in a CL program or ILE CL procedure.
+</li>
+<li>This command is valid only inside a DOWHILE, DOUNTIL, or DOFOR command group.
+</li>
+</ul>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#ITERATE.Top_Of_Page">Top</a></td></tr>
+</table>
+<hr width="100%" size="2">
+
+<div>
+<h3><a name="ITERATE.PARAMETERS.TABLE">Parameters</a></h3>
+<table cellspacing="0" cellpadding="4" border="1"><tr>
+<th width="10%" align="left" valign="bottom" bgcolor="aqua">Keyword</th>
+<th width="15%" align="left" valign="bottom" bgcolor="aqua">Description</th>
+<th width="30%" align="left" valign="bottom" bgcolor="aqua">Choices</th>
+<th width="10%" align="left" valign="bottom" bgcolor="aqua">Notes</th>
+</tr>
+<tr>
+<td valign="top"><a href="#ITERATE.CMDLBL"><b>CMDLBL</b></a></td>
+<td valign="top">Command label</td>
+<td valign="top"><i>Simple name</i>, <b><u>*CURRENT</u></b></td>
+<td valign="top">Optional, Positional 1</td>
+</tr>
+</table>
+
+<table width="100%">
+<tr><td align="right"><a href="#ITERATE.Top_Of_Page">Top</a></td></tr>
+</table>
+</div>
+<div> <a name="ITERATE.CMDLBL"></a>
+<h3>Command label (CMDLBL)</h3>
+<p>The label must be within the same program as the ITERATE command and be a label on an active DOWHILE, DOUNTIL, or DOFOR group.  A CL variable name cannot be used to specify the label name.
+</p>
+<dl>
+<dt><b><u>*CURRENT</u></b></dt>
+<dd>Iterates on the innermost loop surrounding this ITERATE command.
+</dd>
+<dt><b><i>simple-name</i></b></dt>
+<dd>Specify the label name of the surrounding DOWHILE, DOUNTIL, or DOFOR command which is being iterated.
+</dd>
+</dl>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#ITERATE.Top_Of_Page">Top</a></td></tr>
+</table>
+<hr width="100%" size="2">
+<div><h3><a name="ITERATE.COMMAND.EXAMPLES">Examples</a> </h3>
+<p>
+<pre>
+DCL   VAR(&amp;INT)  TYPE(*INT)  LEN(2)
+DCL   VAR(&amp;NAME)  TYPE(*CHAR)  LEN(10)
+ :
+DOUNTIL   COND(&amp;INT *GT 100)
+ :   (group of CL commands)
+ IF   COND(&amp;NAME *EQ *NONE)  THEN(ITERATE)
+ CHGVAR   VAR(&amp;INT)  VALUE(&amp;INT + 1)
+ :   (group of CL commands)
+ENDDO /* ITERATE passes control to here */
+</pre>
+</p>
+<p>Whenever the IF command evaluates the value of &amp;NAME to be equal to *NONE the ITERATE is processed.  Control will pass to the ENDDO command, the condition specified on the associated DOUNTIL is evaluated.  If the value of &amp;INT is 100 or less, the loop will be processed again.  If the value of &amp;INT is 101 or greater, control passes to the associated ENDDO.
+</p>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#ITERATE.Top_Of_Page">Top</a></td></tr>
+</table>
+<hr width="100%" size="2">
+<div><h3><a name="ITERATE.ERROR.MESSAGES">Error messages</a> </h3>
+<p>None
+</p>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#ITERATE.Top_Of_Page">Top</a></td></tr>
+</table>
+</body>
+</html>

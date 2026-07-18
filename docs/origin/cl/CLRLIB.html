@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="ja"><head><meta charset="utf-8"><title>ライブラリー消去  (CLRLIB)</title></head>
+<body>
+<div role="main">
+<script type="text/javascript" src="../rzahg/synch.js"></script>
+<a name="CLRLIB.Top_Of_Page"></a>
+<h1>ライブラリー消去  (CLRLIB)</h1><div id="lastModifiedDate"><span>Last Updated</span>: 2021-04-13</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table0" width="100%" class="cds--data-table">
+<tbody><tr>
+<td class="valigntop alignleft"><strong>実行可能場所:  </strong>すべての環境 (*ALL)<br>
+<strong>スレッド・セーフ:  </strong>条件付き
+</td>
+<td class="valigntop alignright">
+<a href="#CLRLIB.PARAMETERS.TABLE">パラメーター</a><br>
+<a href="#CLRLIB.COMMAND.EXAMPLES">例</a><br>
+<a href="#CLRLIB.ERROR.MESSAGES">エラー・メッセージ</a></td>
+</tr>
+</tbody></table></div></div>
+<div> <a name="CLRLIB"></a>
+<p>ライブラリー消去(CLRLIB)コマンドは，削除権限のあるすべてのオブジェクトを指定されたライブラリーから削除します。このコマンドは，指定されたライブラリーを削除するのではなく，オブジェクト存在(*OBJEXIST)権限のあるその中のオブジェクトだけを削除します。その他のオブジェクトはライブラリーの中にそのまま残ります。ライブラリー中のオブジェクトが使用中である（別のスレッドまたはジョブによってロックされている）場合には，そのオブジェクトは削除できません。
+</p>
+<h2><strong>制約事項：</strong>
+</h2>
+<ol class="cds--list--ordered--temporary">
+<li class="cds--list__item">削除されるすべてのオブジェクトに対するオブジェクト存在(*OBJEXIST)権限およびライブラリーに対する使用(*USE)権限が必要です。
+</li>
+<li class="cds--list__item">このコマンドを使用してIBMシステム・ライブラリーを消去することはできません。IBMシステム・ライブラリーが指定されていて，CLRLIBコマンドが実行されていない場合は，メッセージCPD2103が送信されます。
+</li>
+<li class="cds--list__item">このコマンドは条件付きのスレッド・セーフです。次の制約事項が適用されます。
+<ul class="cds--list--unordered cds--list--nested">
+<li class="cds--list__item">マルチスレッド・ジョブではこのコマンドは分散ファイルに対してスレッド・セーフではなく，タイプ*SNAのリレーショナル・データベースを使用する分散ファイルに対して正常に実行されません。
+</li>
+</ul>
+</li>
+</ol>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table1" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#CLRLIB.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div>
+<h2><a name="CLRLIB.PARAMETERS.TABLE">パラメーター</a></h2>
+<div class="tablenoborder"><div class="cds--data-table-container"><table id="parm_table2" summary="Parameters" border="1" cellpadding="4" cellspacing="0" class="cds--data-table">
+<!-- col1="10" col2="15" col3="30" col4="10" -->
+<tbody><tr>
+<th scope="col" class="valignbottom alignleft"><div class="cds--table-header-label">キーワード</div></th>
+<th scope="col" class="valignbottom alignleft"><div class="cds--table-header-label">記述</div></th>
+<th scope="col" class="valignbottom alignleft"><div class="cds--table-header-label">選択項目</div></th>
+<th scope="col" class="valignbottom alignleft"><div class="cds--table-header-label">ノーツ</div></th>
+</tr>
+<tr>
+<td class="valigntop"><a href="#CLRLIB.LIB"><strong>LIB</strong></a></td>
+<td class="valigntop">ライブラリー</td>
+<td class="valigntop"><span class="var">名前</span>, *CURLIB</td>
+<td class="valigntop">必須, 定位置 1</td>
+</tr>
+<tr>
+<td class="valigntop"><a href="#CLRLIB.ASPDEV"><strong>ASPDEV</strong></a></td>
+<td class="valigntop">ASP装置</td>
+<td class="valigntop"><span class="var">名前</span>, <strong class="underlined">*</strong>, *CURASPGRP, *SYSBAS</td>
+<td class="valigntop">オプショナル</td>
+</tr>
+</tbody></table></div></div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table3" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#CLRLIB.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+</div>
+<div> <a name="CLRLIB.LIB"></a>
+<h2>ライブラリー (LIB)</h2>
+<p>オブジェクト存在(*OBJEXIST)権限のあるすべてのオブジェクトが消去されるライブラリーを指定します。オブジェクトに対する*OBJEXIST権限がない場合には，そのオブジェクトはライブラリーに残ります。QGPLが指定された場合，あるいは*CURLIBによって省略時値として使用された場合には，QGPLライブラリーの消去の確認のために照会メッセージ(CPA2129)が送られます。
+</p>
+<p>これは必須パラメーターです。
+</p>
+<dl>
+<dt><strong>*CURLIB</strong></dt>
+<dd>スレッドの現行ライブラリーが消去されます。現行スレッドのライブラリー・リストに現行ライブラリーが存在しない場合には，QGPLライブラリーが消去されます。
+</dd>
+<dt><strong class="italic">名前</strong></dt>
+<dd>消去されるライブラリーの名前を指定してください。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table4" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#CLRLIB.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="CLRLIB.ASPDEV"></a>
+<h2>ASP装置 (ASPDEV)</h2>
+<p>消去されるライブラリーの記憶域が割り振られている補助記憶域プール(ASP)装置を指定します。消去されるライブラリーがスレッドのライブラリー名スペースの一部でない場合には，このパラメーターを指定して，確実に正しいライブラリーがライブラリー消去操作のターゲットになるようにしなければなりません。
+</p>
+<p>
+<strong>注:     </strong><strong>ライブラリー</strong><strong>(LIB)</strong>パラメーターに*CURLIBを指定した時に，このパラメーターを指定する場合には，ASPDEV(*)が唯一の有効な値です。
+</p>
+<dl>
+<dt><strong class="underlined">*</strong></dt>
+<dd>現在，スレッドのライブラリー名スペースの一部であるASPが，ライブラリーを見つけるために検索されます。これには，システムASP (ASP 1),すべての定義済み基本ユーザーASP (ASP 2から32),およびスレッドにASPグループがある場合にはASPグループ内のすべての1次および2次ASPが含まれます。
+</dd>
+<dt><strong>*CURASPGRP</strong></dt>
+<dd>スレッドにASPグループがある場合には，そのASPグループ内にある1次および2次ASPがライブラリーを見つけるために検索されます。システムASP (ASP 1)と定義済み基本ユーザーASP (ASP 2から32)は検索されません。
+</dd>
+<dt><strong>*SYSBAS</strong></dt>
+<dd>システムASP (ASP 1)とすべての定義済み基本ユーザーASP (ASP 2から32)が，ライブラリーを見つけるために検索されます。スレッドがASPグループを持っていても，1次および2次ASPは検索されません。
+</dd>
+<dt><strong class="italic">名前</strong></dt>
+<dd>ライブラリーを見つけるために検索される1次または2次ASP装置の名前を指定してください。この1次または2次ASPは(ASP装置をオンに構成変更することによって)活動化されていなければならず，状況は「使用可能」でなければなりません。システムASP (ASP 1)と定義済み基本ユーザーASP (ASP 2から32)は検索されません。
+<p>
+<strong>注:     </strong>特定の補助記憶域プール(ASP)装置名を指定するには，ASPグループ中の各ASP装置に対する使用(*USE)権限が必要です。
+</p>
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table5" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#CLRLIB.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div><h2><a name="CLRLIB.COMMAND.EXAMPLES">例</a> </h2>
+<h3><strong>例</strong><strong>1:</strong><strong>ライブラリーの消去</strong>
+</h3>
+<p>
+</p><pre>CLRLIB   LIB(A)
+</pre>
+<p></p>
+<p>このコマンドは，ライブラリーA中のオブジェクトのうちで，使用中でなく，またオブジェクト存在(*OBJEXIST)権限があるすべてのオブジェクトを削除します。
+</p>
+<h3><strong>例</strong><strong>2:</strong><strong>独立補助記憶域プール</strong><strong>(ASP)</strong><strong>中のライブラリーの削除</strong>
+</h3>
+<p>
+</p><pre>CLRLIB   LIB(INVENTORY) ASPDEV(SALES)
+</pre>
+<p></p>
+<p>このコマンドは，SALESという名前の独立補助記憶域プール(ASP)にあるライブラリーINVENTORY中の使用中でないオブジェクトのうちでオブジェクト存在(*OBJEXIST)権限のあるすべてのオブジェクトを削除します。SALES ASPは活動化されて（ASP装置をオンに構成変更することによって），状況が「使用可能」になっていなければなりません。
+</p>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table6" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#CLRLIB.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div><h2><a name="CLRLIB.ERROR.MESSAGES">エラー・メッセージ</a> </h2>
+<p><strong class="underlined">*ESCAPE </strong><strong class="underlined">メッセージ</strong>
+</p>
+<dl>
+<dt><strong>CPFB8ED</strong></dt>
+<dd>装置記述&amp;1はこの操作には正しくありません。
+</dd>
+<dt><strong>CPF210D</strong></dt>
+<dd>ライブラリー&amp;1は使用中である。
+</dd>
+<dt><strong>CPF2110</strong></dt>
+<dd>ライブラリー&amp;1が見つかりません。
+</dd>
+<dt><strong>CPF2113</strong></dt>
+<dd>ライブラリー&amp;1を割り振ることができない。
+</dd>
+<dt><strong>CPF2129</strong></dt>
+<dd>システム・ライブラリー&amp;1の消去または削除が取り消された。
+</dd>
+<dt><strong>CPF216B</strong></dt>
+<dd>ライブラリー&amp;1は消去できません。
+</dd>
+<dt><strong>CPF2161</strong></dt>
+<dd>ライブラリー&amp;1の一部のオブジェクトを削除することができない。
+</dd>
+<dt><strong>CPF2173</strong></dt>
+<dd>ライブラリーの特殊値にはASPDEVの値は無効である。
+</dd>
+<dt><strong>CPF218C</strong></dt>
+<dd>&amp;1は1次または2次ASPではない。
+</dd>
+<dt><strong>CPF2182</strong></dt>
+<dd>ライブラリー&amp;1は認可されていない。
+</dd>
+<dt><strong>CPF8122</strong></dt>
+<dd>ライブラリー&amp;4に&amp;8の損傷がある。
+</dd>
+<dt><strong>CPF9814</strong></dt>
+<dd>装置&amp;1が見つかりません。
+</dd>
+<dt><strong>CPF9825</strong></dt>
+<dd>装置&amp;1は認可されていない。
+</dd>
+<dt><strong>CPF9833</strong></dt>
+<dd>*CURASPGRPまたは*ASPGRPPRIが指定されていて，スレッドにASPグループがない。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table7" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#CLRLIB.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+</div>
+
+
+</body></html>

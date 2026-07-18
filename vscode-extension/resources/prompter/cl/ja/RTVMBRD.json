@@ -1,0 +1,395 @@
+{
+  "keyword": "RTVMBRD",
+  "description": "メンバー記述の検索 (RTVMBRD)",
+  "help": "メンバー記述検索(RTVMBRD)コマンドはCLプログラムまたはREXXプロシージャー中で使用され，データベース・ファイルから(CL変数中の）メンバー・レベル情報を検索します（戻します）。\n\n指定したCL変数に値が戻されます（複写されます）。次の種類のメンバー情報を検索することができます。",
+  "parameters": [
+    {
+      "name": "FILE",
+      "description": "ファイル",
+      "help": "検索されるメンバー記述が入っているファイルを指定します。\n\nこれは必須パラメーターです。",
+      "inputType": "group",
+      "required": true,
+      "groupKind": "qualified",
+      "children": [
+        {
+          "name": "LIB",
+          "description": "ライブラリー",
+          "help": "*LIBL: 最初に一致するものが見つかるまで，現行スレッドのライブラリー・リスト内のすべてのライブラリーが検索されます。\n*CURLIB: ジョブの現行ライブラリーが検索されます。ライブラリー・リストに現行項目が存在していない場合には，QGPLが使用されます。\n検索するライブラリー名を指定してください。",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "*LIBL",
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          },
+          "placeholder": "*LIBL"
+        },
+        {
+          "name": "FILE",
+          "description": "ファイル",
+          "help": "ファイル・メンバーが入っているファイルの名前を指定してください。",
+          "inputType": "text",
+          "required": true,
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          },
+          "placeholder": "FILE"
+        }
+      ],
+      "positional": 1,
+      "basic": true
+    },
+    {
+      "name": "MBR",
+      "description": "メンバー",
+      "help": "その記述が検索されるファイル・メンバーを指定します。単一値(*FIRSTまたは*LAST)あるいは２重値（参照メンバーおよび関係）のいずれかを指定することができます。",
+      "inputType": "group",
+      "required": false,
+      "groupKind": "elements",
+      "singleValues": [
+        "*FIRST",
+        "*LAST"
+      ],
+      "children": [
+        {
+          "name": "MEMBER",
+          "description": "参照メンバー",
+          "help": "*FIRSTMBR: 名前順のリストの最初のメンバーが検索されます。関係値*SAMEが必要です。\n*LASTMBR: 名前順のリストの最後のメンバーが検索されます。関係値*SAMEが必要です。\n参照メンバーの名前を指定してください。検索されるメンバーと参照メンバーとの関係は，このパラメーターの2番目の要素に指定します（*SAME, *NEXT,または*PRV）。変数を指定する場合には，参照メンバーの名前が入っている10文字のフィールドでなければなりません。\nメンバー名の最初の文字をその後にアスタリスクを付けて指定してください。これにより，指定された文字で始まる名前順リスト中の最初のメンバーが検索されます。関係値を*SAMEとする必要があります。",
+          "inputType": "text",
+          "required": false,
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          },
+          "defaultValue": "*FIRST",
+          "placeholder": "*FIRST"
+        },
+        {
+          "name": "RELATION",
+          "description": "関係",
+          "inputType": "dropdown",
+          "required": false,
+          "defaultValue": "*SAME",
+          "attributes": {
+            "characterSet": "upper"
+          },
+          "options": [
+            {
+              "label": "*SAME",
+              "value": "*SAME",
+              "help": "参照メンバーが検索されます。"
+            },
+            {
+              "label": "*NEXT",
+              "value": "*NEXT",
+              "help": "名前順のリストで参照メンバーの直後のメンバーが検索されます。"
+            },
+            {
+              "label": "*PRV",
+              "value": "*PRV",
+              "help": "名前順リストの中の参照メンバーの直前のメンバーが検索されます。"
+            }
+          ]
+        }
+      ],
+      "basic": true
+    },
+    {
+      "name": "RTNSYSTEM",
+      "description": "RTNSYSTEMのCL変数 (4)",
+      "help": "検索されたファイルからシステムの名前を検索するために使用される変数の名前を指定します。制御言語プログラムでは，これは4桁の文字変数でなければなりません。\n\n戻されることのある値は，*LCL（ファイルがローカル・システムで見つかった）および*RMT（ファイルがリモート・システムで見つかった）です。",
+      "inputType": "text",
+      "required": false,
+      "placeholder": "&RTNSYSTEM",
+      "basic": true
+    },
+    {
+      "name": "RTNLIB",
+      "description": "RTNLIBのCL変数 (10)",
+      "help": "指定されたファイル・メンバーを含むファイルをその中から見つけるライブラリーの名前を検索するために使用される変数の名前を指定します。制御言語プログラムでは，これは10桁の文字変数でなければなりません。",
+      "inputType": "text",
+      "required": false,
+      "placeholder": "&RTNLIB",
+      "basic": true
+    },
+    {
+      "name": "RTNMBR",
+      "description": "RTNMBRのCL変数 (10)",
+      "help": "その記述を検索しているファイル・メンバーの名前を検索するために使用される変数の名前を指定します。制御言語プログラムでは，これは10桁の文字変数でなければなりません。",
+      "inputType": "text",
+      "required": false,
+      "placeholder": "&RTNMBR",
+      "basic": true
+    },
+    {
+      "name": "FILEATR",
+      "description": "FILEATRのCL変数 (3)",
+      "help": "ファイル属性を検索するために使用される変数の名前を指定します。CLプログラムにおいて，これは3桁の文字変数でなければなりません。\n\n戻されることのある値は，*PF（物理ファイル・メンバー）および*LF（論理ファイル・メンバー）です。",
+      "inputType": "text",
+      "required": false,
+      "placeholder": "&FILEATR",
+      "basic": true
+    },
+    {
+      "name": "FILETYPE",
+      "description": "FILETYPEのCL変数 (5)",
+      "help": "ファイル・タイプを検索するために使用される変数の名前を指定します。CLプログラムにおいて，これは5文字の文字変数でなければなりません。\n\n戻される値は，*DATA（データ・ファイル・メンバー）および*SRC（ソース・ファイル・メンバー）です。",
+      "inputType": "text",
+      "required": false,
+      "placeholder": "&FILETYPE",
+      "basic": true
+    },
+    {
+      "name": "SRCTYPE",
+      "description": "SRCTYPEのCL変数 (10)",
+      "help": "これがソース・ファイル・メンバーの場合に，ソース・ファイル・メンバーを検索するために使用される変数の名前を指定します。これがソース・ファイル・メンバーでない場合には，ブランクが戻されます。制御言語プログラムでは，これは10桁の文字変数でなければなりません。",
+      "inputType": "text",
+      "required": false,
+      "placeholder": "&SRCTYPE",
+      "basic": true
+    },
+    {
+      "name": "SRCCHGDATE",
+      "description": "SRCCHGDATEのCL変数 (13)",
+      "help": "最後のソース・ファイル・メンバーが変更された世紀，日付，および時刻を検索するために使用される13桁のCL変数の名前を指定します。形式はCYYMMDDHHMMSSであり，ここでC =世紀（0 = 1940年から1999年まで，1 = 2000年から2039年まで），Y =年，M =月，D =日，H =時間，M =分，およびS =秒です。\n\n使用可能な日付がない場合には，ブランクが戻されます。リモートの非IBM Iおよび非システム/38ファイル，あるいは非ソース物理ファイルはブランクを戻します。",
+      "inputType": "text",
+      "required": false,
+      "placeholder": "&SRCCHGDATE",
+      "basic": true
+    },
+    {
+      "name": "CRTDATE",
+      "description": "CRTDATEのCL変数 (13)",
+      "help": "ファイル・メンバー作成の世紀，日付，および時刻を検索するために使用される変数の名前を指定します。制御言語プログラムでは，これは13桁の文字変数でなければなりません。形式はCYYMMDDHHMMSSであり，ここでC =世紀（0 = 1940年から1999年まで，1 = 2000年から2039年まで），Y =年，M =月，D =日，H =時間，M =分，およびS =秒です。",
+      "inputType": "text",
+      "required": false,
+      "placeholder": "&CRTDATE",
+      "basic": true
+    },
+    {
+      "name": "EXPDATE",
+      "description": "EXPDATEのCL変数 (7)",
+      "help": "ファイル・メンバー満了の世紀および日付を検索するために使用される変数の名前を指定します。制御言語プログラムでは，これは7桁の文字変数でなければなりません。形式はCYYMMDDであり，ここでC =世紀（0 = 1940年から1999 年まで，1 = 2000年から2039年まで），Y =年，M =月，D =日です。\n\n使用可能な日付がない場合には，*NONEが戻されます。",
+      "inputType": "text",
+      "required": false,
+      "placeholder": "&EXPDATE",
+      "basic": true
+    },
+    {
+      "name": "TEXT",
+      "description": "TEXTのCL変数 (50)",
+      "help": "ファイル・メンバー・テキストを検索するために使用される変数の名前を指定します。制御言語プログラムでは，これは50桁の文字変数でなければなりません。",
+      "inputType": "text",
+      "required": false,
+      "placeholder": "&TEXT",
+      "basic": true
+    },
+    {
+      "name": "NBRCURRCD",
+      "description": "NBRCURRCDのCL変数(10 0)",
+      "help": "このファイル・メンバー内の非削除レコードの現在数を検索するために使用する変数の名前を指定します。制御言語プログラムでは，10桁の10進変数とする必要があります。\n\nこのメンバーがキー付き論理メンバーである場合には，索引項目の数が戻されます。キー付きでない論理メンバーの場合には，基礎になっている物理ファイル・メンバー内の非削除レコード数が戻されます。\n\n結合論理ファイルでは，戻されたレコード数は，結合している非削除レコードのすべての合計です。この数値には，1次ファイルのレコードと一致しないレコードで，2次ファイル中にあるレコードも含まれます。除外または選択基準を使用した場合には，戻されるレコード数は，指定されたファイルでその選択基準を満たしているレコードの数だけ増減します。",
+      "inputType": "text",
+      "required": false,
+      "placeholder": "&NBRCURRCD",
+      "basic": true
+    },
+    {
+      "name": "NBRDLTRCD",
+      "description": "NBRDLTRCDのCL変数(10 0)",
+      "help": "このファイル・メンバー内の削除済みレコード数の現在数を検索するために使用する変数の名前を指定します。制御言語プログラムでは，10桁の10進変数とする必要があります。キー付き論理ファイルの場合は，ゼロ(0)が戻されます。リモートの非IBM Iおよび非S/38ファイルは値0を戻します。キー付きでない論理メンバーの場合には，基礎になっている物理ファイル・メンバー内の削除済みレコード数が戻されます。",
+      "inputType": "text",
+      "required": false,
+      "placeholder": "&NBRDLTRCD",
+      "basic": true
+    },
+    {
+      "name": "SHARE",
+      "description": "SHAREのCL変数 (4)",
+      "help": "オープン・データ・パス(ODP)が同じジョブで他のプログラムとの共用を可能にするかどうかを指示する値を検索するために使用される変数の名前を指定します。制御言語プログラムでは，これは4桁の文字変数でなければなりません。\n\nODPの共用を示す値は，*YES（ODPの共用が許される）および*NO（ODPの共用は許されない）です。\n\nリモートの非IBM Iおよび非S/38ファイルは*NOを戻します。",
+      "inputType": "text",
+      "required": false,
+      "placeholder": "&SHARE",
+      "basic": true
+    },
+    {
+      "name": "DTASPCSIZ",
+      "description": "DTASPCSIZのCL変数(15 0)",
+      "help": "このファイル・メンバーのデータ・スペース・サイズ（バイト数）を検索するために使用される変数の名前を指定します。制御言語プログラムでは，これは15桁の10進変数でなければなりません。これが論理ファイル・メンバーの場合には，ゼロ(0)が戻されます。",
+      "inputType": "text",
+      "required": false,
+      "placeholder": "&DTASPCSIZ",
+      "basic": true
+    },
+    {
+      "name": "ACCPTHSIZ",
+      "description": "ACCPTHSIZのCL変数(12 0)",
+      "help": "このファイル・メンバーのアクセス・パス・サイズ（バイト数）を検索するために使用される変数の名前を指定します。制御言語プログラムでは，これは１2桁の10進変数でなければなりません。ファイル・メンバーがキー付きでない場合には，ゼロ(0)が戻されます。リモートの非IBM Iおよび非S/38ファイルは値0を戻します。",
+      "inputType": "text",
+      "required": false,
+      "placeholder": "&ACCPTHSIZ",
+      "basic": true
+    },
+    {
+      "name": "CHGDATE",
+      "description": "CHGDATEのCL変数 (13)",
+      "help": "ファイル変更の世紀，日付，および時刻を検索するために使用される変数の名前を指定します。制御言語プログラムでは，これは13桁の文字変数でなければなりません。形式はCYYMMDDHHMMSSであり，ここでC =世紀（0 = 1940年から1999年まで，1 = 2000年から2039年まで），Y =年，M =月，D =日，H =時間，M =分，およびS =秒です。",
+      "inputType": "text",
+      "required": false,
+      "placeholder": "&CHGDATE",
+      "basic": true
+    },
+    {
+      "name": "SAVDATE",
+      "description": "SAVDATEのCL変数 (13)",
+      "help": "ファイル・メンバーとその保管の世紀，日付，および時刻を検索するために使用される変数の名前を指定します。制御言語プログラムでは，これは13桁の文字変数でなければなりません。形式はCYYMMDDHHMMSSであり，ここでC =世紀（0 = 1940年から1999年まで，1 = 2000年から2039年まで），Y =年，M =月，D =日，H =時間，M =分，およびS =秒です。\n\n使用可能な日付がない場合には，ブランクが戻されます。リモートの非IBM Iおよび非S/38ファイルはブランクを戻します。",
+      "inputType": "text",
+      "required": false,
+      "placeholder": "&SAVDATE",
+      "basic": true
+    },
+    {
+      "name": "RSTDATE",
+      "description": "RSTDATEのCL変数 (13)",
+      "help": "ファイル・メンバーとその復元の世紀，日付，および時刻を検索するために使用される変数の名前を指定します。制御言語プログラムでは，これは13桁の文字変数でなければなりません。形式はCYYMMDDHHMMSSであり，ここでC =世紀（0 = 1940年から1999年まで，1 = 2000年から2039年まで），Y =年，M =月，D =日，H =時間，M =分，およびS =秒です。\n\n使用可能な日付がない場合には，ブランクが戻されます。リモートの非IBM Iおよび非S/38ファイルはブランクを戻します。",
+      "inputType": "text",
+      "required": false,
+      "placeholder": "&RSTDATE",
+      "basic": true
+    },
+    {
+      "name": "NBRDTAMBRS",
+      "description": "NBRDTAMBRSのCL変数(2 0)",
+      "help": "この論理ファイル・メンバーのデータ・ファイル・メンバーの数を検索するために使用される変数の名前を指定します。CLプログラムにおいて，これは2桁の10進変数でなければなりません。これが物理ファイル・メンバーの場合には，値0が戻されます。",
+      "inputType": "text",
+      "required": false,
+      "placeholder": "&NBRDTAMBRS",
+      "basic": true
+    },
+    {
+      "name": "USEDATE",
+      "description": "USEDATEのCL変数 (7)",
+      "help": "メンバーが最後に使用した世紀および日付を戻すのに使用される変数の名前を指定します。制御言語プログラムでは，これは7桁の文字変数でなければなりません。形式はCYYMMDDであり，ここでC =世紀（0 = 1940年から1999 年まで，1 = 2000年から2039年まで），Y =年，M =月，D =日です。",
+      "inputType": "text",
+      "required": false,
+      "placeholder": "&USEDATE",
+      "basic": true
+    },
+    {
+      "name": "USECOUNT",
+      "description": "USECOUNTのCL変数 (5 0)",
+      "help": "メンバーが使用された日数を戻すのに使用される変数の名前を指定します。CLプログラムにおいて，これは5桁の10進変数でなければなりません。メンバーに最終使用日付がない場合には，0が戻されます。",
+      "inputType": "text",
+      "required": false,
+      "placeholder": "&USECOUNT",
+      "basic": true
+    },
+    {
+      "name": "RESETDATE",
+      "description": "RESETDATEのCL変数 (7)",
+      "help": "使用日数カウントが最後に0にリセットされた世紀および日付を戻すのに使用される変数の名前を指定します。制御言語プログラムでは，これは7桁の文字変数でなければなりません。形式はCYYMMDDであり，ここでC =世紀（0 = 1940年から1999 年まで，1 = 2000年から2039年まで），Y =年，M =月，D =日です。使用日数カウントがリセットされていない場合には，ブランクが戻されます。",
+      "inputType": "text",
+      "required": false,
+      "placeholder": "&RESETDATE",
+      "basic": true
+    }
+  ],
+  "threadSafe": false,
+  "environment": "コンパイル済み CL プログラムまたはインタープリットされた REXX (*BPGM *IPGM *BREXX *IREXX)",
+  "examples": [
+    {
+      "code": "RTVMBRD FILE(*CURLIB/MYFILE) MBR(BMEMBER *SAME) RTNLIB(&LIB) RTNSYSTEM(&SYS) RTNMBR(&MBR) FILEATR(&MTYPE) CRTDATE(&CRTDATE) TEXT(&TEXT) NBRCURRCD(&NBRRCD) DTASPCSIZ(&SIZE)"
+    },
+    {
+      "code": "RTVMBRD FILE(&LIB/MYFILE) MBR(&MBR *NEXT) RTNMBR(&MBR) CRTDATE(&CRTDATE) TEXT(&TEXT) NBRCURRCD(&NBRRCD) DTASPCSIZ(&SIZE)"
+    },
+    {
+      "code": "RTVMBRD FILE(*CURLIB/MYFILE) MBR(ZMEMBER *PRV) RTNMBR(&MBR) CHGDATE(&CHGDATE) TEXT(&TEXT)"
+    },
+    {
+      "code": "RTVMBRD FILE(*LIBL/MYFILE) MBR(JM*) RTNMBR(&MBR) CHGDATE(&CHGDATE) TEXT(&TEXT)"
+    }
+  ],
+  "errorMessages": [
+    {
+      "id": "CPF3018",
+      "text": "&2のファイル&1のメンバー&3が使用できない。"
+    },
+    {
+      "id": "CPF3019",
+      "text": "ライブラリー&2のファイル&1にはメンバーがない。"
+    },
+    {
+      "id": "CPF3027",
+      "text": "&2のファイル&1はデータベース・ファイルではない。"
+    },
+    {
+      "id": "CPF3038",
+      "text": "戻り変数&1の属性が正しくない。"
+    },
+    {
+      "id": "CPF3039",
+      "text": "戻り変数&1は結果を入れるには小さすぎる。"
+    },
+    {
+      "id": "CPF3049",
+      "text": "*NEXTまたは*PRVメンバーが存在していない。"
+    },
+    {
+      "id": "CPF3051",
+      "text": "ライブラリー&2のファイル&1を使用することができない。"
+    },
+    {
+      "id": "CPF325F",
+      "text": "テキストの変換が正常に実行されなかった。"
+    },
+    {
+      "id": "CPF327B",
+      "text": "ファイル&1の情報を検索することができない。"
+    },
+    {
+      "id": "CPF8109",
+      "text": "物理データベース・ファイル&4で&8の損傷がある。"
+    },
+    {
+      "id": "CPF8110",
+      "text": "&9の論理データベース・ファイル&4に&8の損傷がある。VLOGは&7です。"
+    },
+    {
+      "id": "CPF8111",
+      "text": "ファイル&4メンバー&9に&8の損傷がある。"
+    },
+    {
+      "id": "CPF9803",
+      "text": "ライブラリー&3のオブジェクト&2を割り振りできません。"
+    },
+    {
+      "id": "CPF9806",
+      "text": "ライブラリー&3のオブジェクト&2に対して機能を実行することはできない。"
+    },
+    {
+      "id": "CPF9810",
+      "text": "ライブラリー&1が見つかりません。"
+    },
+    {
+      "id": "CPF9812",
+      "text": "ライブラリー&2にファイル&1が見つからない。"
+    },
+    {
+      "id": "CPF9815",
+      "text": "ライブラリー&3のファイル&2のメンバー&5が見つからない。"
+    },
+    {
+      "id": "CPF9820",
+      "text": "ライブラリー&1の使用は認可されていない。"
+    },
+    {
+      "id": "CPF9822",
+      "text": "ライブラリー&2のファイル&1は認可されていない。"
+    }
+  ],
+  "source": {
+    "url": "https://www.ibm.com/docs/ja/ssw_ibm_i_74/cl/rtvmbrd.htm",
+    "version": "IBM i 7.4"
+  }
+}

@@ -1,0 +1,393 @@
+{
+  "keyword": "UPDPGM",
+  "description": "プログラムの更新 (UPDPGM)",
+  "help": "プログラム更新(UPDPGM)コマンドを使用すれば，結合プログラムの変更または再コンパイルを必要とせずに，統合化言語環境(ILE)結合プログラムのモジュールをシステム上の他のモジュールで置き換えることができます。置き換えられるモジュールは，システム上のモジュール・オブジェクト(*MODULE)でなければなりません。\n\nプログラムがこのコマンドによって更新されている間であっても，結合プログラムを実行中の他のジョブは実行することができます。現在実行中の結合プログラムはライブラリーQRPLOBJに移動され，結合プログラムの更新済みバージョンが結合プログラムのライブラリーに挿入されます。プログラムの現在の活動化は，QRPLOBJライブラリー内のプログラムのバージョンを使用して実行し続けます。",
+  "parameters": [
+    {
+      "name": "PGM",
+      "description": "プログラム",
+      "help": "更新する結合プログラムを指定します。\n\nこれは必須パラメーターです。",
+      "inputType": "group",
+      "required": true,
+      "groupKind": "qualified",
+      "children": [
+        {
+          "name": "LIB",
+          "description": "ライブラリー",
+          "help": "*USRLIBL: ジョブのライブラリー・リストのユーザー部分にあるライブラリーだけが検索されます。\n*CURLIB: ジョブの現行ライブラリーが検索されます。ジョブの現行ライブラリーとして指定されているライブラリーがない場合は，QGPLライブラリーが使用されます。\n結合プログラムが入っているライブラリーの名前を指定してください。",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "*USRLIBL",
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          }
+        },
+        {
+          "name": "PGM",
+          "description": "プログラム",
+          "help": "更新する結合プログラムの名前を指定してください。",
+          "inputType": "text",
+          "required": true,
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          }
+        }
+      ],
+      "positional": 1,
+      "basic": true
+    },
+    {
+      "name": "MODULE",
+      "description": "モジュール",
+      "help": "結合プログラムの同じ名前のモジュールを置き換える既存の*MODULEオブジェクトの名前を指定します。結合プログラムの2つ以上のモジュールが同じ名前であった場合には，どれを置き換えるかが 置き換えライブラリー (RPLLIB) パラメーターによって指示されます。\n\n置き換えられるモジュールのライブラリーが置き換わるモジュールのライブラリーと異なる場合には，更新後のモジュールのライブラリーは，プログラムが最初に作成された時にモジュールがあったライブラリーのままです。置き換えられるモジュールを決定するのにRPLLIBパラメーターが必要な場合には，このモジュールのRPLLIBパラメーターに入力される値は，更新によっても変更されません。最大300の名前を指定することができます。\n\nこれは必須パラメーターです。\n\n結合プログラムのモジュールを置き換えるモジュールの名前を指定してください。",
+      "inputType": "group",
+      "required": true,
+      "groupKind": "qualified",
+      "singleValues": [
+        "*NONE"
+      ],
+      "children": [
+        {
+          "name": "MODULE_LIB",
+          "description": "ライブラリー",
+          "help": "*LIBL: 最初に一致するものが見つかるまで，現行スレッドのライブラリー・リスト内のすべてのライブラリーが検索されます。\n*CURLIB: ジョブの現行ライブラリーが検索されます。ジョブの現行ライブラリーとして指定されているライブラリーがない場合は，QGPLライブラリーが使用されます。\n*USRLIBL: ジョブのライブラリー・リストのユーザー部分にあるライブラリーだけが検索されます。\n検索するライブラリーの名前を指定してください。",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "*LIBL",
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          }
+        },
+        {
+          "name": "MODULE",
+          "description": "モジュール",
+          "help": "*ALL: ユーザーに権限のある同じ名前のすべてのモジュールが，結合プログラムのモジュールを置き換えます。\n結合プログラムのモジュールを置き換えるモジュールの総称名を指定してください。総称名は1つ以上の文字の後にアスタリスク(*)を付けた文字ストリング（例えば，ABC*など）です。この総称名で始まる名前をもち，ユーザーに権限があるすべてのモジュールが，結合プログラムのモジュールを置き換えます。\n結合プログラムのモジュールを置き換えるモジュールの名前を指定してください。",
+          "inputType": "text",
+          "required": true,
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          }
+        }
+      ],
+      "positional": 2,
+      "maxOccurrences": 300,
+      "basic": true
+    },
+    {
+      "name": "RPLLIB",
+      "description": "置き換えライブラリー",
+      "help": "結合プログラムの2つ以上のモジュールがMODULEパラメーターに指定された名前をもっている時に置き換えるモジュールを選択するために使用される方法を指定します。",
+      "inputType": "group",
+      "required": false,
+      "groupKind": "qualified",
+      "singleValues": [
+        "*ONLY",
+        "*FIRST",
+        "*MODULE"
+      ],
+      "children": [
+        {
+          "name": "RPLLIB_LIB",
+          "description": "置き換えライブラリー",
+          "inputType": "text",
+          "required": false,
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          },
+          "defaultValue": "*ONLY"
+        }
+      ]
+    },
+    {
+      "name": "BNDSRVPGM",
+      "description": "サービス・プログラムのバインド",
+      "help": "外部記号を分析解決するためのインポート要求を更新済み結合プログラムのモジュールおよびサービス・プログラムによって満たすことができない場合に，エクスポートを調べるサービス・プログラムを指定します。指定されたサービス・プログラムで外部記号を分析解決することができる場合には，結合プログラムにバインドされるサービス・プログラムにそれが追加されます。最大300の名前を指定することができます。\n\n各サービス・プログラムの活動化を制御できます。参照サービス・プログラムを，プログラムの更新と同時に活動化するかどうか，または参照サービス・プログラムからエクスポートされたプロシージャーが呼び出されるまで保留するかどうかを指定できます。活動化の遅延によってアプリケーションのパフォーマンスが向上することがあります。",
+      "inputType": "group",
+      "required": false,
+      "groupKind": "elements",
+      "singleValues": [
+        "*NONE"
+      ],
+      "children": [
+        {
+          "name": "BNDSRVPGM_E1",
+          "description": "サービス・プログラム",
+          "inputType": "group",
+          "required": false,
+          "groupKind": "qualified",
+          "children": [
+            {
+              "name": "BNDSRVPGM_LIB",
+              "description": "ライブラリー",
+              "help": "*LIBL: 最初に一致するものが見つかるまで，現行スレッドのライブラリー・リスト内のすべてのライブラリーが検索されます。\n検索するライブラリーの名前を指定してください。QTEMPは，このパラメーターで有効なライブラリー名ではありません。",
+              "inputType": "text",
+              "required": false,
+              "defaultValue": "*LIBL",
+              "attributes": {
+                "characterSet": "upper",
+                "maxLength": 10
+              }
+            },
+            {
+              "name": "BNDSRVPGM",
+              "description": "サービス・プログラム",
+              "help": "*ALL: 記号の分析解決時にすべてのサービス・プログラムが調べられます。\n記号の分析解決時に調べるサービス・プログラムの総称名を指定してください。総称名は1つまたは複数の文字の後にアスタリスク(*)を付けた文字ストリング（例えば，ABC*など）です。この総称名で始まる名前をもち，ユーザーに権限があるすべてのサービス・プログラムが，記号の分析解決時に調べられます。\n記号の分析解決時に調べるサービス・プログラムの名前を指定してください。",
+              "inputType": "text",
+              "required": false,
+              "attributes": {
+                "characterSet": "upper",
+                "maxLength": 10
+              }
+            }
+          ],
+          "defaultValue": "*NONE"
+        },
+        {
+          "name": "BNDSRVPGM_E2",
+          "description": "活動化",
+          "inputType": "dropdown",
+          "required": false,
+          "defaultValue": "*SAME",
+          "attributes": {
+            "characterSet": "upper"
+          },
+          "options": [
+            {
+              "label": "*SAME",
+              "value": "*SAME",
+              "help": "参照サービス・プログラムの活動化は変更されません。"
+            },
+            {
+              "label": "*IMMED",
+              "value": "*IMMED",
+              "help": "バインド・サービス・プログラムは，更新中のプログラムが活動化されるとすぐに活動化されます。"
+            },
+            {
+              "label": "*DEFER",
+              "value": "*DEFER",
+              "help": "バインド・サービス・プログラムの活動化は，そのプログラムがエクスポートした関数が呼び出されるまで保留にされることがあります。"
+            }
+          ]
+        }
+      ],
+      "maxOccurrences": 300
+    },
+    {
+      "name": "SRVPGMLIB",
+      "description": "*SRVPGM ライブラリー名のバインド",
+      "help": "現在バインドされているサービス・プログラムに分析解決するために使用するライブラリー名を指定します。プログラム属性ALWLIBUPDが*YESの場合には，このパラメーターに*SAME以外の値を指定することができます。",
+      "inputType": "group",
+      "required": false,
+      "groupKind": "qualified",
+      "singleValues": [
+        "*SAME",
+        "*LIBL"
+      ],
+      "children": [
+        {
+          "name": "SRVPGMLIB_LIB",
+          "description": "*SRVPGM ライブラリー名のバインド",
+          "inputType": "text",
+          "required": false,
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          },
+          "defaultValue": "*SAME"
+        }
+      ]
+    },
+    {
+      "name": "BNDDIR",
+      "description": "ディレクトリーのバインド",
+      "help": "外部記号を分析解決するためのインポート要求を(1)更新済み結合プログラムのモジュールおよびサービス・プログラム，または(2)BNDSRVPGMパラメーターに指定されたサービス・プログラムによって満たすことができない場合に，エクスポートを調べるバインド・ディレクトリーを指定します。指定されたバインド・ディレクトリーにリストされたモジュールまたはサービス・プログラムで外部記号を分析解決することができる場合には，結合プログラムにバインドされるモジュールまたはサービス・プログラムにそれが追加されます。最大300の名前を指定することができます。",
+      "inputType": "group",
+      "required": false,
+      "groupKind": "qualified",
+      "singleValues": [
+        "*NONE"
+      ],
+      "children": [
+        {
+          "name": "BNDDIR_LIB",
+          "description": "ライブラリー",
+          "help": "*LIBL: 最初に一致するものが見つかるまで，現行スレッドのライブラリー・リスト内のすべてのライブラリーが検索されます。\n*CURLIB: ジョブの現行ライブラリーが検索されます。ジョブの現行ライブラリーとして指定されているライブラリーがない場合は，QGPLライブラリーが使用されます。\n*USRLIBL: ジョブのライブラリー・リストのユーザー部分にあるライブラリーだけが検索されます。\n検索するライブラリーの名前を指定してください。",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "*LIBL",
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          }
+        },
+        {
+          "name": "BNDDIR",
+          "description": "ディレクトリーのバインド",
+          "help": "記号の分析解決時に使用されるバインド・ディレクトリーの名前を指定してください。",
+          "inputType": "text",
+          "required": false,
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          },
+          "defaultValue": "*NONE"
+        }
+      ],
+      "maxOccurrences": 300
+    },
+    {
+      "name": "ACTGRP",
+      "description": "活動化グループ",
+      "help": "更新済みプログラムに使用する活動化グループを指定します。\n\n*SAME: 活動化グループは変更されません。プログラムに対してその作成時に*CALLERまたは*NEW活動化グループが割り当てられていた場合は，この値を指定してください。\nこの呼び出されたプログラムと関連する活動化グループの名前を指定してください。作成時にプログラムが活動化グループの名前を指定された場合には，その活動化グループの名前を別の名前の活動化グループに変更することができます。 注: 活動化グループ名を変更すると，プログラム（またはサービス・プログラム）の動作に影響する場合があります。名前を指定した活動化グループの動作の詳細については，ILE概念(SD88-5033)を参照してください。",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*SAME",
+      "attributes": {
+        "characterSet": "upper",
+        "maxLength": 10
+      }
+    },
+    {
+      "name": "OPTION",
+      "description": "作成オプション",
+      "help": "結合プログラムの更新時に使用するオプションを指定します。\n\nこのパラメーターには最大6個までの値を指定することができます。\n\n孤立モジュール は，更新中の結合プログラムのモジュールのことです。このモジュールは，1つ以上のインポートを分析解決するために，最初にバインド・ディレクトリーから結合プログラムにバインドされます。このプログラム更新の間は，インポートは分析解決されません。",
+      "inputType": "dropdown",
+      "required": false,
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*GEN",
+          "value": "*GEN"
+        },
+        {
+          "label": "*NOGEN",
+          "value": "*NOGEN"
+        },
+        {
+          "label": "*DUPPROC",
+          "value": "*DUPPROC"
+        },
+        {
+          "label": "*NODUPPROC",
+          "value": "*NODUPPROC"
+        },
+        {
+          "label": "*DUPVAR",
+          "value": "*DUPVAR"
+        },
+        {
+          "label": "*NODUPVAR",
+          "value": "*NODUPVAR"
+        },
+        {
+          "label": "*WARN",
+          "value": "*WARN"
+        },
+        {
+          "label": "*NOWARN",
+          "value": "*NOWARN"
+        },
+        {
+          "label": "*TRIM",
+          "value": "*TRIM"
+        },
+        {
+          "label": "*NOTRIM",
+          "value": "*NOTRIM"
+        },
+        {
+          "label": "*RSLVREF",
+          "value": "*RSLVREF"
+        },
+        {
+          "label": "*UNRSLVREF",
+          "value": "*UNRSLVREF"
+        }
+      ],
+      "maxOccurrences": 6
+    },
+    {
+      "name": "DETAIL",
+      "description": "明細のリスト",
+      "help": "印刷するバインダー・リストの詳細レベルを指定します。リストの作成には，印刷装置ファイル*LIBL/QSYSPRTが使用されます。",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*NONE",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*NONE",
+          "value": "*NONE",
+          "help": "バインダー・リストは印刷されません。"
+        },
+        {
+          "label": "*BASIC",
+          "value": "*BASIC",
+          "help": "簡単な要約表，このコマンドに渡されたオプション，およびいくつかの処理統計が印刷されます。"
+        },
+        {
+          "label": "*EXTENDED",
+          "value": "*EXTENDED",
+          "help": "*BASICリストで提供される情報（簡単な要約表，このコマンドに渡されたオプション，およびいくつかの処理統計）に加えて，拡張要約表およびバインド情報リストが印刷されます。"
+        },
+        {
+          "label": "*FULL",
+          "value": "*FULL",
+          "help": "*EXTENDEDリストで提供される情報（拡張要約表，バインド情報リスト，簡単な要約表，このコマンドに渡されたオプション，およびいくつかの処理統計）に加えて，相互参照表が印刷されます。"
+        }
+      ]
+    }
+  ],
+  "threadSafe": false,
+  "environment": "すべての環境 (*ALL)",
+  "restrictions": [
+    "結合プログラムのライブラリーに対する使用(*USE)および追加(*ADD)権限が必要です。",
+    "結合プログラムに対する*USE,オブジェクト管理(*OBJMGT),およびオブジェクト存在(*OBJEXIST)権限が必要です。",
+    "結合プログラムの所有者であるか，結合プログラムの所有者であるグループのメンバーであるか，あるいはすべてのオブジェクト(*ALLOBJ)特殊権限をもつユーザーである必要があります。",
+    "次のものに対する*USE権限が必要です。 モジュール (MODULE) パラメーターに指定された*MODULEオブジェクト（およびそのモジュールが存在するライブラリーに対する実行(*EXECUTE)権限）。 サービス・プログラム のバインド (BNDSRVPGM) パラメーターに指定された*SRVPGMオブジェクト。 ディレクトリーのバインド (BNDDIR) パラメーターに指定された*BNDDIRオブジェクト（およびそのライブラリーに対する*EXECUTE権限）および*BNDDIRオブジェクトの外部記号を分析解決するために使用されるすべてのオブジェクトとそれらのライブラリー。"
+  ],
+  "examples": [
+    {
+      "code": "UPDPGM PGM(STAR) MODULE(SKY/NOVA) RPLLIB(*FIRST)"
+    }
+  ],
+  "errorMessages": [
+    {
+      "id": "CPF223D",
+      "text": "&2のタイプ*&3の&1を更新する権限を認可されていない。"
+    },
+    {
+      "id": "CPF223E",
+      "text": "借用権限の使用属性の権限チェックが正常に実行されなかった。"
+    },
+    {
+      "id": "CPF5CA7",
+      "text": "ALWLIBUPDが*NOになっている時はSRVPGMLIBは*SAMEでなければならない。"
+    },
+    {
+      "id": "CPF5CE0",
+      "text": "プログラム&1が更新されなかった。"
+    },
+    {
+      "id": "CPF5CE2",
+      "text": "プログラムまたはサービス・プログラムの更新中に予期しないエラーが起こった。"
+    },
+    {
+      "id": "CPF5D1B",
+      "text": "ライブラリー&2のプログラム&1の更新は使用できない。"
+    }
+  ],
+  "source": {
+    "url": "https://www.ibm.com/docs/ja/ssw_ibm_i_74/cl/updpgm.htm",
+    "version": "IBM i 7.4"
+  }
+}

@@ -1,0 +1,680 @@
+<!DOCTYPE html>
+<html lang="ja"><head><meta charset="utf-8"><title>構成変更  (VRYCFG)</title></head>
+<body>
+<div role="main">
+<script type="text/javascript" src="../rzahg/synch.js"></script>
+<a name="VRYCFG.Top_Of_Page"></a>
+<h1>構成変更  (VRYCFG)</h1><div id="lastModifiedDate"><span>Last Updated</span>: 2021-04-13</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table0" width="100%" class="cds--data-table">
+<tbody><tr>
+<td class="valigntop alignleft"><strong>実行可能場所:  </strong>すべての環境 (*ALL)<br>
+<strong>スレッド・セーフ:  </strong>いいえ
+</td>
+<td class="valigntop alignright">
+<a href="#VRYCFG.PARAMETERS.TABLE">パラメーター</a><br>
+<a href="#VRYCFG.COMMAND.EXAMPLES">例</a><br>
+<a href="#VRYCFG.ERROR.MESSAGES">エラー・メッセージ</a></td>
+</tr>
+</tbody></table></div></div>
+<div> <a name="VRYCFG"></a>
+<p>構成変更(VRYCFG)コマンドは，1つ以上の構成オブジェクトをオンまたはオフに構成変更するとともに，下位構成に接続された構成オブジェクトをオンに構成変更することができます。また任意選択でVRYCFGは，指定されたオブジェクトに関連した入出力プロセッサー(IOP)をリセットすることもできます。
+</p>
+<p>オンまたはオフに構成変更できる構成オブジェクトは，ネットワーク・サーバー記述，回線，制御装置，および入出力装置です。このコマンドは，システム上のすべての回線，制御装置，および入出力装置に適用されます。
+</p>
+<p>媒体ライブラリー資源の構成オブジェクト・タイプの場合は，このコマンドを使用して，テープ媒体ライブラリー装置内のドライブをリセットするか，あるいはテープ媒体ライブラリー装置内または光ディスク媒体ライブラリー装置内のドライブの割り振りを変更することができます。ドライブ資源の現行割り振りを判別するには，媒体ライブラリー状況処理(WRKMLBSTS)コマンドを使用してください。
+</p>
+<p>下位構成接続されたオブジェクトは，<strong>範囲</strong><strong> (RANGE)</strong>パラメーターに値*NETを指定することにより，ここで指定したオブジェクトと一緒にオンまたはオフに構成変更することができます。回線の下位構成接続オブジェクトは，接続されたすべての制御装置，および制御装置に接続されたすべての入出力装置です。制御装置の下位構成接続オブジェクトは，接続されたすべての入出力装置です。入出力装置には，下位構成されているものはありません。入出力装置の構成変更を行う時には，RANGEパラメーターは影響しません。
+</p>
+<p>回線のオンへの構成変更を同期的に行うか非同期的に行うかは，<strong>オンへの構成変更待機</strong><strong> (VRYWAIT)</strong>パラメーターで制御できます。これは，イーサネット，BSC，および非同期の回線記述にのみ適用されます。オンに構成変更コマンドの完了前にオブジェクトがオンに構成変更された状態になるか，あるいはタイマーが満了するまでのシステムの待機時間は，VRYWAITパラメーターに指定された値によって決定されます。
+</p>
+<p>VRYCFGコマンドは，入出力プロセッサーをリセットするためにも使用することができます。IOPは，通信制御装置，ローカル・ワークステーション制御装置，または磁気媒体制御装置とすることができます。IOPのリセットは，次のものをオンに構成変更する時にだけ有効です。
+</p>
+<ul class="cds--list--unordered">
+<li class="cds--list__item">通信制御装置
+</li>
+<li class="cds--list__item">回線
+</li>
+<li class="cds--list__item">ローカル・ワークステーション制御装置
+</li>
+<li class="cds--list__item">テープ
+</li>
+</ul>
+<p>次のようなときは，タイプが*ISCSIのネットワーク・サーバー記述をオンに構成変更することはできません。
+</p>
+<ul class="cds--list--unordered">
+<li class="cds--list__item">ネットワーク・サーバー・ホスト・アダプター装置記述がオンに構成変更されるまで。
+</li>
+</ul>
+<p>次のようなときは，回線をオンに構成変更することはできません。
+</p>
+<ul class="cds--list--unordered">
+<li class="cds--list__item">ネットワーク・サーバー記述がオンに構成変更されるまで。
+</li>
+<li class="cds--list__item">交換回線の場合に，ダイヤル接続が完了するまで。
+</li>
+</ul>
+<p>次のようなときは，制御装置をオンに構成変更することはできません。
+</p>
+<ul class="cds--list--unordered">
+<li class="cds--list__item">非交換回線の場合に，接続する回線がオフに構成変更される場合。
+</li>
+<li class="cds--list__item">交換回線の場合に，ダイヤル接続が完了するまで。
+</li>
+</ul>
+<p>次のようなときは，装置をオンに構成変更することができません。
+</p>
+<ul class="cds--list--unordered">
+<li class="cds--list__item">接続する制御装置がオフラインに構成変更された場合。一部のテープ装置の場合には，制御装置に接続されないので，この制約事項は適用されません。
+</li>
+</ul>
+<p>ネットワーク・サーバー記述は，次の時点までオフに構成変更できません。
+</p>
+<ul class="cds--list--unordered">
+<li class="cds--list__item">接続されたすべての装置および制御装置がオフに構成変更されるまで。ネットワーク・サーバー記述をオフに構成変更すると，接続された回線記述もオフに構成変更されます。
+</li>
+</ul>
+<p>
+<strong>注:     </strong>ネットワーク・サービス状況処理(WRKNWSSTS)コマンド（「構成状況の処理」画面から使用可能）を使用して，他のクライアントとのネットワーク・サーバー・セッションの状況を判別してください。
+</p>
+<p>次のようなときは，回線をオフに構成変更することはできません。
+</p>
+<ul class="cds--list--unordered">
+<li class="cds--list__item">すべての接続制御装置および装置がオフに構成変更されていない場合。
+</li>
+</ul>
+<p>次のようなときは，制御装置をオフに構成変更することはできません。
+</p>
+<ul class="cds--list--unordered">
+<li class="cds--list__item">その制御装置が使用中の場合，あるいは使用のために割り振られている場合。
+</li>
+<li class="cds--list__item">すべての接続装置がオフに構成変更されていない場合。
+</li>
+</ul>
+<p>次のようなときは，装置をオフに構成変更することはできません。
+</p>
+<ul class="cds--list--unordered">
+<li class="cds--list__item">その制御装置が使用中の場合，あるいは使用のために割り振られている場合。
+</li>
+</ul>
+<p>次の時点まであるいは次のような場合には，ネットワーク・サーバー・ホスト・アダプター装置は，オフに構成変更することはできません。
+</p>
+<ul class="cds--list--unordered">
+<li class="cds--list__item">それを使用中のネットワーク・サーバー記述がオンに構成変更されている場合。
+</li>
+</ul>
+<p>RANGEパラメーターが使用されている時には，次のとおりです。
+</p>
+<ul class="cds--list--unordered">
+<li class="cds--list__item">装置の場合，下位構成接続オブジェクトをオンまたはオフに構成変更する値*NETは影響しません。装置には下位構成接続オブジェクトはありません。
+</li>
+<li class="cds--list__item">交換回線の場合，値*NETは，オンに構成変更する場合に限り，効力がありません。オフに構成変更する場合には，値*NETは，回線およびその下位構成接続オブジェクトをオフに構成変更します。
+</li>
+</ul>
+<p>VRYWAITパラメーターが使用されている時には，次のとおりです。
+</p>
+<ul class="cds--list--unordered">
+<li class="cds--list__item">回線をオンに構成変更するための時間とは，回線を管理するためのタスクを導入するための時間，入出力プロセッサー(IOP)プログラムのダウンロードを含めて通信IOPを活動化するための時間，データ回線終端装置(DCE)との通信を確立するための時間などです。
+</li>
+<li class="cds--list__item">回線をオンに構成変更する時間には，電話のダイヤル呼び出し時間は含まれませんが，モデムの電源がオフになっていると，オンへの構成変更の完了が妨げられて，待機時間が満了する可能性があります。タイマーが満了した場合には，通知メッセージがQSYSOPRメッセージ待ち行列に送られます。これに続いて，オンへの構成変更完了メッセージが出されます。
+</li>
+<li class="cds--list__item">イーサネット, 交換BSC,または非同期以外の回線記述に対するVRYCFGコマンドにVRYWAITパラメーターを指定した場合，パラメーターは受け入れられますが，無視されます。
+</li>
+</ul>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table1" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#VRYCFG.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div>
+<h2><a name="VRYCFG.PARAMETERS.TABLE">パラメーター</a></h2>
+<div class="tablenoborder"><div class="cds--data-table-container"><table id="parm_table2" summary="Parameters" border="1" cellpadding="4" cellspacing="0" class="cds--data-table">
+<!-- col1="10" col2="15" col3="30" col4="10" -->
+<tbody><tr>
+<th scope="col" class="valignbottom alignleft"><div class="cds--table-header-label">キーワード</div></th>
+<th scope="col" class="valignbottom alignleft"><div class="cds--table-header-label">記述</div></th>
+<th scope="col" class="valignbottom alignleft"><div class="cds--table-header-label">選択項目</div></th>
+<th scope="col" class="valignbottom alignleft"><div class="cds--table-header-label">ノーツ</div></th>
+</tr>
+<tr>
+<td class="valigntop"><a href="#VRYCFG.CFGOBJ"><strong>CFGOBJ</strong></a></td>
+<td class="valigntop">構成オブジェクト</td>
+<td class="valigntop">単一値: *APPN, *PRVCFGTYPE<br>その他の値 (最大 256 回の繰り返し): <span class="var">総称名, 名前</span></td>
+<td class="valigntop">必須, 定位置 1</td>
+</tr>
+<tr>
+<td class="valigntop"><a href="#VRYCFG.CFGTYPE"><strong>CFGTYPE</strong></a></td>
+<td class="valigntop">タイプ</td>
+<td class="valigntop">*NWS, *LIN, *CTL, *DEV, *MLBRSC</td>
+<td class="valigntop">必須, 定位置 2</td>
+</tr>
+<tr>
+<td class="valigntop"><a href="#VRYCFG.STATUS"><strong>STATUS</strong></a></td>
+<td class="valigntop">状況</td>
+<td class="valigntop">*ON, *OFF, *RESET, *ALLOCATE, *UNPROTECTED, *DEALLOCATE</td>
+<td class="valigntop">必須, 定位置 3</td>
+</tr>
+<tr>
+<td class="valigntop"><a href="#VRYCFG.RANGE"><strong>RANGE</strong></a></td>
+<td class="valigntop">範囲</td>
+<td class="valigntop"><strong class="underlined">*NET</strong>, *OBJ</td>
+<td class="valigntop">オプショナル</td>
+</tr>
+<tr>
+<td class="valigntop"><a href="#VRYCFG.VRYWAIT"><strong>VRYWAIT</strong></a></td>
+<td class="valigntop">オンへの構成変更待機</td>
+<td class="valigntop">15-180, <strong class="underlined">*CFGOBJ</strong>, *NOWAIT</td>
+<td class="valigntop">オプショナル</td>
+</tr>
+<tr>
+<td class="valigntop"><a href="#VRYCFG.ASCVRYOFF"><strong>ASCVRYOFF</strong></a></td>
+<td class="valigntop">非同期のオフに構成変更</td>
+<td class="valigntop"><strong class="underlined">*NO</strong>, *YES</td>
+<td class="valigntop">オプショナル</td>
+</tr>
+<tr>
+<td class="valigntop"><a href="#VRYCFG.RESET"><strong>RESET</strong></a></td>
+<td class="valigntop">リセット</td>
+<td class="valigntop"><strong class="underlined">*NO</strong>, *YES</td>
+<td class="valigntop">オプショナル</td>
+</tr>
+<tr>
+<td class="valigntop"><a href="#VRYCFG.RSRCNAME"><strong>RSRCNAME</strong></a></td>
+<td class="valigntop">資源名</td>
+<td class="valigntop">単一値: *ALL<br>その他の値 (最大 16 回の繰り返し): <span class="var">名前</span></td>
+<td class="valigntop">オプショナル</td>
+</tr>
+<tr>
+<td class="valigntop"><a href="#VRYCFG.FRCVRYOFF"><strong>FRCVRYOFF</strong></a></td>
+<td class="valigntop">強制的にオフに構成変更</td>
+<td class="valigntop"><strong class="underlined">*NO</strong>, *YES, *LOCK</td>
+<td class="valigntop">オプショナル</td>
+</tr>
+<tr>
+<td class="valigntop"><a href="#VRYCFG.SBMMLTJOB"><strong>SBMMLTJOB</strong></a></td>
+<td class="valigntop">複数ジョブの投入</td>
+<td class="valigntop"><strong class="underlined">*NO</strong>, *YES</td>
+<td class="valigntop">オプショナル</td>
+</tr>
+<tr>
+<td class="valigntop" rowspan="3"><a href="#VRYCFG.JOBD"><strong>JOBD</strong></a></td>
+<td class="valigntop">ジョブ記述</td>
+<td class="valigntop"><span class="var">修飾オブジェクト名</span></td>
+<td class="valigntop" rowspan="3">オプショナル</td>
+</tr>
+<tr>
+<td class="valigntop">修飾子 1: ジョブ記述</td>
+<td class="valigntop"><span class="var">名前</span>, <strong class="underlined">QBATCH</strong></td>
+</tr><tr>
+<td class="valigntop">修飾子 2: ライブラリー</td>
+<td class="valigntop"><span class="var">名前</span>, <strong class="underlined">*LIBL</strong></td>
+</tr><tr>
+<td class="valigntop"><a href="#VRYCFG.GENPTHCERT"><strong>GENPTHCERT</strong></a></td>
+<td class="valigntop">パス証明書の生成</td>
+<td class="valigntop"><strong class="underlined">*NO</strong>, *YES</td>
+<td class="valigntop">オプショナル</td>
+</tr>
+<tr>
+<td class="valigntop"><a href="#VRYCFG.RESETSYS"><strong>RESETSYS</strong></a></td>
+<td class="valigntop">システムのリセット</td>
+<td class="valigntop"><strong class="underlined">*NO</strong>, *YES</td>
+<td class="valigntop">オプショナル</td>
+</tr>
+</tbody></table></div></div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table3" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#VRYCFG.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+</div>
+<div> <a name="VRYCFG.CFGOBJ"></a>
+<h2>構成オブジェクト (CFGOBJ)</h2>
+<p>オンに構成変更する構成オブジェクトを指定します。
+</p>
+<p>これは必須パラメーターです。
+</p>
+<h3><strong>単一値</strong>
+</h3>
+<dl>
+<dt><strong>*APPN</strong></dt>
+<dd>拡張対等通信ネットワーク機能(APPN)を使用するすべてのオブジェクトがオンまたはオフに構成変更されます。この値は，CFGTYPEが*CTLまたは*DEVの場合にだけ有効です。
+</dd>
+<dt><strong>*PRVCFGTYPE</strong></dt>
+<dd>指定された構成オブジェクト・タイプについて，このコマンドをこのジョブで最後に実行した時に処理されたすべてのオブジェクトを処理します。
+</dd>
+</dl>
+<h3><strong>その他の値（最大</strong><strong>256</strong><strong>個指定可能）</strong>
+</h3>
+<dl>
+<dt><strong class="italic">総称名</strong></dt>
+<dd>オンに構成変更する構成オブジェクトの総称名を指定してください。
+<p>
+<strong>注:     </strong>総称名は，1つまたは複数の文字の後にアスタリスク(*)が付いた文字ストリングとして指定されます。総称名を指定した場合には，その総称オブジェクト名と同じ接頭部を持つ名前のついたすべてのオブジェクトが選択されます。
+</p>
+</dd>
+<dt><strong class="italic">名前</strong></dt>
+<dd>オンに構成変更する構成オブジェクトの名前を指定します。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table4" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#VRYCFG.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="VRYCFG.CFGTYPE"></a>
+<h2>タイプ (CFGTYPE)</h2>
+<p>構成変更されるオブジェクトのタイプを指定します。
+</p>
+<p>これは必須パラメーターです。
+</p>
+<dl>
+<dt><strong>*NWS</strong></dt>
+<dd>ネットワーク・サーバー記述がオンまたはオフに構成変更されます。
+</dd>
+<dt><strong>*LIN</strong></dt>
+<dd>回線記述がオンまたはオフに構成変更されます。
+</dd>
+<dt><strong>*CTL</strong></dt>
+<dd>制御装置記述がオンまたはオフに構成変更されます。
+</dd>
+<dt><strong>*DEV</strong></dt>
+<dd>装置記述がオンまたはオフに構成変更されます。
+</dd>
+<dt><strong>*MLBRSC</strong></dt>
+<dd>媒体ライブラリー中のドライブの状況が変更されます。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table5" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#VRYCFG.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="VRYCFG.STATUS"></a>
+<h2>状況 (STATUS)</h2>
+<p>オブジェクトをオンまたはオフに構成変更するかどうかを指定します。
+</p>
+<p>これは必須パラメーターです。
+</p>
+<dl>
+<dt><strong>*ON</strong></dt>
+<dd>オブジェクトはオンに構成変更されます。
+</dd>
+<dt><strong>*OFF</strong></dt>
+<dd>オブジェクトはオフに構成変更されます。
+</dd>
+<dt><strong>*RESET</strong></dt>
+<dd>テープ媒体ライブラリー装置のドライブ資源がリセットされます。
+<p>
+<strong>注:     </strong>ドライブ資源は<strong>資源名</strong><strong> (RSRCNAME)</strong>パラメーターで指定しなければなりません。
+</p>
+<p>媒体ライブラリー装置をオンに構成変更してからでなければ，この値を指定することはできません。
+</p>
+</dd>
+<dt><strong>*ALLOCATE</strong></dt>
+<dd>テープの場合は，テープ媒体ライブラリー装置のドライブ資源がこのシステムによる使用専用に割り振られます。ライブラリー装置が複数のシステムで共用されるときには，この装置記述がオンに構成変更されている間は，他のシステムがこれらのドライブを使用できません。光ディスクの場合は，光ディスク媒体ライブラリー装置のドライブ資源が使用のために割り振られます。ドライブ資源は，この媒体ライブラリー装置だけに使用できます。
+<p>
+<strong>注:     </strong>ドライブ資源は<strong>資源名</strong><strong> (RSRCNAME)</strong>パラメーターで指定しなければなりません。
+</p>
+</dd>
+<dt><strong>*UNPROTECTED</strong></dt>
+<dd>テープ媒体ライブラリー装置のドライブ資源は，このライブラリー装置を共用するすべてのシステムで使用することができます。
+<p>
+<strong>注:     </strong>ドライブ資源は<strong>資源名</strong><strong> (RSRCNAME)</strong>パラメーターで指定しなければなりません。
+</p>
+</dd>
+<dt><strong>*DEALLOCATE</strong></dt>
+<dd>テープの場合は，テープ媒体ライブラリー装置のドライブ資源がこのシステムに対して割り振り解除されます。テープ媒体ライブラリーが複数のシステムで共用される場合には，このシステムはこのドライブを使用できませんが，他のシステムはこのドライブを使用できます。光ディスクの場合は，光ディスク媒体ライブラリー資源のドライブ資源がこの媒体ライブラリー資源に対して割り振り解除されます。ドライブは，別の光ディスク媒体ライブラリー装置に使用できません。
+<p>
+<strong>注:     </strong>ドライブ資源は<strong>資源名</strong><strong> (RSRCNAME)</strong>パラメーターで指定しなければなりません。
+</p>
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table6" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#VRYCFG.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="VRYCFG.RANGE"></a>
+<h2>範囲 (RANGE)</h2>
+<p>構成変更される構成要素を指定します。
+</p>
+<dl>
+<dt><strong class="underlined">*NET</strong></dt>
+<dd>すべての下位接続構成要素が構成変更されます。
+</dd>
+<dt><strong>*OBJ</strong></dt>
+<dd>指定されたオブジェクトだけが構成変更されます。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table7" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#VRYCFG.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="VRYCFG.VRYWAIT"></a>
+<h2>オンへの構成変更待機 (VRYWAIT)</h2>
+<p>オブジェクトが非同期または同期のどちらでオンに構成変更されるかを指定します。同期でオンに構成変更される場合には，システムがオンへの構成変更の完了を待機する時間の長さを指定します。
+</p>
+<dl>
+<dt><strong class="underlined">*CFGOBJ</strong></dt>
+<dd>システムは，回線記述の<strong>オンへの構成変更待機</strong><strong> (VRYWAIT)</strong>パラメーターに指定された値を使用します。
+</dd>
+<dt><strong>*NOWAIT</strong></dt>
+<dd>オンへの構成変更の完了を待つ必要はありません。回線のオンへの構成変更は非同期に行われます。
+</dd>
+<dt><strong class="italic">15-180</strong></dt>
+<dd>待機する秒数を指定してください。システムは，VRYCFGコマンドを完了する前に，タイマーが満了するか，回線がオンに構成変更されるまで待機します。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table8" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#VRYCFG.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="VRYCFG.ASCVRYOFF"></a>
+<h2>非同期のオフに構成変更 (ASCVRYOFF)</h2>
+<p>オブジェクトを同期または非同期のどちらでオフに構成変更するかを指定します。
+</p>
+<dl>
+<dt><strong class="underlined">*NO</strong></dt>
+<dd>オブジェクトは同期でオフに構成変更されます。
+</dd>
+<dt><strong>*YES</strong></dt>
+<dd>オブジェクトは非同期でオフに構成変更されます。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table9" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#VRYCFG.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="VRYCFG.RESET"></a>
+<h2>リセット (RESET)</h2>
+<p>オブジェクトに関連する入出力プロセッサー(IOP)に対してリセットを行うかどうかを指定します。
+</p>
+<dl>
+<dt><strong class="underlined">*NO</strong></dt>
+<dd>関連するIOPはリセットされません。
+</dd>
+<dt><strong>*YES</strong></dt>
+<dd>関連するIOPはリセットされます。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table10" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#VRYCFG.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="VRYCFG.RSRCNAME"></a>
+<h2>資源名 (RSRCNAME)</h2>
+<p>リセットまたは割り振り解除する媒体ライブラリー装置の中のドライブを指定します。
+</p>
+<h3><strong>単一値</strong>
+</h3>
+<dl>
+<dt><strong>*ALL</strong></dt>
+<dd>媒体ライブラリー装置の中のすべてのドライブがリセットまたは割り振り解除されます。
+</dd>
+</dl>
+<h3><strong>その他の値（最大</strong><strong>16</strong><strong>個指定可能）</strong>
+</h3>
+<dl>
+<dt><strong class="italic">名前</strong></dt>
+<dd>リセットまたは割り振り解除する媒体ライブラリー装置の中のドライブの名前を指定します。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table11" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#VRYCFG.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="VRYCFG.FRCVRYOFF"></a>
+<h2>強制的にオフに構成変更 (FRCVRYOFF)</h2>
+<p>活動ジョブの照会メッセージを出すかどうかを指定します。STATUS(*ON)が指定されている時には，このパラメーターは使用できません。
+</p>
+<p><strong class="underlined">注</strong><strong class="underlined">: </strong>
+</p>
+<ol class="cds--list--ordered--temporary">
+<li class="cds--list__item">このパラメーターがSTATUS(*DEALLOCATE)で有効なのは，<strong>構成オブジェクト</strong><strong> (CFGOBJ)</strong>パラメーターにテープ媒体ライブラリー・オブジェクトが指定されている場合だけです。
+</li>
+<li class="cds--list__item">*NO以外の値の場合，ユーザー出口プログラムを介して構成変更要求を拒否する機能は取り消されます。構成変更出口点処理については，i5/OS Information CenterのQIBM_QDC_VRYEXIT出口点の文書を参照してください。
+</li>
+</ol>
+<dl>
+<dt><strong class="underlined">*NO</strong></dt>
+<dd>活動ジョブの照会メッセージを出します。
+</dd>
+<dt><strong>*YES</strong></dt>
+<dd>活動ジョブの照会メッセージを出さず，ジョブを終了します。
+</dd>
+<dt><strong>*LOCK</strong></dt>
+<dd>APPC,システム内通信，NWSH,およびMLB以外の装置では，装置記述のロックが現在の状況に関係なく試みられます。ロックが正常に行われると，装置がオフに構成変更された状態の時に，割り当てられたシステム・ジョブに転送されて装置記述ロックを保留します。装置がオフに構成変更された状態以外の場合には，装置記述をオフに構成変更する試みも行われます。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table12" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#VRYCFG.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="VRYCFG.SBMMLTJOB"></a>
+<h2>複数ジョブの投入 (SBMMLTJOB)</h2>
+<p>指定されたネットワーク・サーバー記述オブジェクトまたは補助記憶域プール(ASP)装置記述オブジェクトを構成変更するために，複数のバッチ・ジョブを投入するかどうかを指定します。このパラメーターが有効なのは，*NWSまたは*DEVが<strong>タイプ</strong><strong> (CFGTYPE)</strong>パラメーターに指定されている場合だけです。
+</p>
+<dl>
+<dt><strong class="underlined">*NO</strong></dt>
+<dd>指定されたすべてのネットワーク・サーバー記述または補助記憶域プール(ASP)装置記述が，元のVRYCFGコマンドを出したジョブで同期的に構成変更されます。
+</dd>
+<dt><strong>*YES</strong></dt>
+<dd>指定された各ネットワーク・サーバー記述または補助記憶域プール(ASP)記述ごとに，新しいVRYCFGコマンドがバッチで投入されます。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table13" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#VRYCFG.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="VRYCFG.JOBD"></a>
+<h2>ジョブ記述 (JOBD)</h2>
+<p>複数のVRYCFGコマンドがバッチで投入されるジョブ記述を指定します。このパラメーターが有効であるのは，CFGTYPEが*NWSまたは*DEVであり，SBMMLTJOBが*YESであるときだけです。
+</p>
+<h3><strong>修飾子</strong><strong>1: </strong><strong>ジョブ記述</strong>
+</h3>
+<dl>
+<dt><strong class="underlined">QBATCH</strong></dt>
+<dd>投入されたジョブのジョブ記述としてジョブ記述QBATCHが使用されます。システムとともに出荷されるQBATCHジョブは，一度に最大1つのジョブを実行できるように構成されているジョブ待ち行列QBATCHを指定するので，注意してください。
+</dd>
+<dt><strong class="italic">名前</strong></dt>
+<dd>投入されたジョブで使用するジョブ記述の名前を指定してください。複数の構成変更を並行して実行するためには，活動ジョブの数に制限がないままで出荷されるジョブ待ち行列QSYS/QUSRNOMAXにジョブを渡すようにジョブ記述を作成することができます。
+<p>
+</p><pre>CRTJOBD JOBD(QSYS/QUSRNOMAX) JOBQ(QSYS/QUSRNOMAX)
+</pre>
+<p></p>
+<p>その他の考慮事項としては，ジョブ待ち行列を割り振るサブシステムが待ち行列を保留状態にしておかないこと，およびシステムが制限状態でないことがあります。
+</p>
+</dd>
+</dl>
+<h3><strong>修飾子</strong><strong>2: ライブラリー</strong>
+</h3>
+<dl>
+<dt><strong class="underlined">*LIBL</strong></dt>
+<dd>最初に一致するものが見つかるまで，現行スレッドのライブラリー・リスト内のすべてのライブラリーが検索されます。
+</dd>
+</dl>
+<dl>
+<dt><strong class="italic">名前</strong></dt>
+<dd>ジョブ記述が入っているライブラリーの名前を指定してください。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table14" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#VRYCFG.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="VRYCFG.GENPTHCERT"></a>
+<h2>パス証明書の生成 (GENPTHCERT)</h2>
+<p>リモート・ネットワーク・サーバー・システムで証明書の新規セットを生成するかどうかを指定します。このパラメーターが有効であるのは，CFGTYPEが*NWSであり，かつSTATUSが*ONの場合だけです。
+</p>
+<dl>
+<dt><strong class="underlined">*NO</strong></dt>
+<dd>証明書のセットは生成されません。
+</dd>
+<dt><strong>*YES</strong></dt>
+<dd>証明書のセットが生成されます。
+<p>
+<strong>注:     </strong>このパラメーター値を使用するには，入出力システム構成(*IOSYSCFG)および機密保護管理者(*SECADM)特殊権限が必要です。
+</p>
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table15" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#VRYCFG.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="VRYCFG.RESETSYS"></a>
+<h2>システムのリセット (RESETSYS)</h2>
+<p>リモート・ネットワーク・サーバー・システムの現在の電源状態にかかわらず，このリセットを強制するかどうかを指定します。これは拡張機能であり，このオプションを選択すると，警告が通知されます。このパラメーターが有効であるのは，CFGTYPEが*NWSでネットワーク・サーバー記述がタイプ*ISCSIであり，さらにSTATUSが*ONの時だけです。
+</p>
+<dl>
+<dt><strong class="underlined">*NO</strong></dt>
+<dd>システムはリセットされません。
+</dd>
+<dt><strong>*YES</strong></dt>
+<dd>システムがリセットされます。
+<p>
+<strong>注:     </strong>このパラメーター値を使用するには，すべてのオブジェクト(*ALLOBJ)特殊権限がなければなりません。
+</p>
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table16" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#VRYCFG.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div><h2><a name="VRYCFG.COMMAND.EXAMPLES">例</a> </h2>
+<h3><strong>例</strong><strong>1:</strong><strong>回線および下位構成接続オブジェクトをオフに構成変更</strong>
+</h3>
+<p>
+</p><pre>VRYCFG   CFGOBJ(LINE1)  CFGTYPE(*LIN)  STATUS(*OFF)
+</pre>
+<p></p>
+<p>このコマンドは，回線およびすべての下位構成接続オブジェクトをオフに構成変更します。RANGEパラメーターには省略時値の*NETが取られています。
+</p>
+<h3><strong>例</strong><strong>2:</strong><strong>制御装置をオンに構成変更</strong>
+</h3>
+<p>
+</p><pre>VRYCFG   CFGOBJ(CONTROLLER1)  CFGTYPE(*CTL)  STATUS(*ON)
+         RANGE(*OBJ)
+</pre>
+<p></p>
+<p>このコマンドは，制御装置だけをオンに構成変更します。
+</p>
+<h3><strong>例</strong><strong>3:</strong><strong>装置をオンに構成変更</strong>
+</h3>
+<p>
+</p><pre>VRYCFG   CFGOBJ(DEVICE1)  CFGTYPE(*DEV)
+         STATUS(*ON)  RANGE(*NET)
+</pre>
+<p></p>
+<p>このコマンドは，装置だけをオンに構成変更します。RANGEパラメーターは装置では効力をもたないということに注意してください。
+</p>
+<h3><strong>例</strong><strong>4:</strong><strong>回線をオンに構成変更して，</strong><strong>IOP</strong><strong>をリセット</strong>
+</h3>
+<p>
+</p><pre>VRYCFG   CFGOBJ(LINE1)  CFGTYPE(*LIN)  STATUS(*ON)
+         RANGE(*OBJ)  RESET(*YES)
+</pre>
+<p></p>
+<p>このコマンドは，回線だけをオンに構成変更して，関連のIOPをリセットします。
+</p>
+<h3><strong>例</strong><strong>5:</strong><strong>待ち時間に回線記述の値を使用</strong>
+</h3>
+<p>
+</p><pre>VRYCFG   CFGOBJ(LINE1)  OJBTYPE(*LIN)  STATUS(*ON)
+         RANGE(*OBJ)  VRYWAIT(*CFGOBJ)
+</pre>
+<p></p>
+<p>このコマンドは，回線だけをオンに構成変更して，LINE1の回線記述に指定された「構成変更の待ち時間」値を使用します。
+</p>
+<h3><strong>例</strong><strong>6:</strong><strong>「構成変更の待ち時間」として</strong><strong>80</strong><strong>秒を使用</strong>
+</h3>
+<p>
+</p><pre>VRYCFG   CFGOBJ(LINE1)  CFGTYPE(*LIN)  STATUS(*ON)
+         RANGE(*OBJ)  VRYWAIT(80)
+</pre>
+<p></p>
+<p>このコマンドは，「構成変更の待ち時間」の値として80秒を使用して回線だけをオンに構成変更します。
+</p>
+<h3><strong>例</strong><strong>7:</strong><strong>ネットワーク・サーバー記述をオンに構成変更</strong>
+</h3>
+<p>
+</p><pre>VRYCFG   CFGOBJ(SERVER1)  CFGTYPE(*NWS)  STATUS(*ON)
+</pre>
+<p></p>
+<p>このコマンドは，SERVER1という名前のネットワーク・サーバー記述およびその接続回線記述をオンに構成変更します。ネットワーク・サーバー記述に指定された「オンに構成変更の待ち時間」値が使用されます。RANGEおよびRESETのパラメーターは，ネットワーク・サーバーの場合，指定されても無視されるということに注意してください。
+</p>
+<h3><strong>例</strong><strong>8:</strong><strong>媒体ライブラリー内のドライブのリセット</strong>
+</h3>
+<p>
+</p><pre>VRYCFG   CFGOBJ(MYLIBRARY)  CFGTYPE(*MLBRSC)  STATUS(*RESET)
+         RSRCNAME(TAP01 TAP02)
+</pre>
+<p></p>
+<p>このコマンドは，媒体ライブラリー装置MYLIBRARY内のドライブTAP01およびTAP02をリセットします。この処置を実行するには，装置MYLIBRARYをオンに構成変更しなければなりません。
+</p>
+<h3><strong>例</strong><strong>9:</strong><strong>媒体ライブラリー内のドライブの割り振り解除</strong>
+</h3>
+<p>
+</p><pre>VRYCFG   CFGOBJ(MYLIBRARY)  CFGTYPE(*MLBRSC)
+         STATUS(*DEALLOCATE)  RSRCNAME(OPT02)
+</pre>
+<p></p>
+<p>このコマンドは，媒体ライブラリー装置MYLIBRARY内のドライブOPT02を割り振り解除します。この処置を実行するには，装置MYLIBRARYをオンに構成変更しなければなりません。
+</p>
+<h3><strong>例</strong><strong>10:</strong><strong>複数のネットワーク・サーバー記述を並行してオンに構成変更</strong>
+</h3>
+<p>
+</p><pre>VRYCFG   CFGOBJ(IPCS*)  CFGTYPE(*NWS)  STATUS(*ON)
+         SBMMLTJOB(*YES) JOBD(*LIBL/QBATCH)
+</pre>
+<p></p>
+<p>このコマンドは，名前の先頭にIPCSが示された各ネットワーク・サーバー記述をオンに構成変更するために，個別のバッチ・ジョブを投入します。並行して実行されるジョブの数は，使用されるサブシステムの構成によります。
+</p>
+<h3><strong>例</strong><strong>11:</strong><strong>ネットワーク・サーバー記述をオンに構成変更する際の証明書のリセット</strong>
+</h3>
+<p>
+</p><pre>VRYCFG   CFGOBJ(SERVER1)  CFGTYPE(*NWS)  STATUS(*ON)
+         GENPTHCERT(*YES)
+</pre>
+<p></p>
+<p>このコマンドは，ネットワーク・サーバー記述をオンに構成変更し，構成変更がオンの間に新規の証明書セットを生成するよう要求します。
+</p>
+<h3><strong>例</strong><strong>12:</strong><strong>サーバー記述をオンに構成変更した時にリモート統合サーバーを再始動</strong>
+</h3>
+<p>
+</p><pre>VRYCFG   CFGOBJ(SERVER1)  CFGTYPE(*NWS)  STATUS(*ON)
+         RESETSYS(*YES)
+</pre>
+<p></p>
+<p>このコマンドは，ネットワーク・サーバー記述をオンに構成変更し，SERVER1の構成変更がオンの間にリモート統合サーバーのリセットを要求します。
+</p>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table17" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#VRYCFG.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div><h2><a name="VRYCFG.ERROR.MESSAGES">エラー・メッセージ</a> </h2>
+<p><strong class="underlined">*ESCAPE </strong><strong class="underlined">メッセージ</strong>
+</p>
+<dl>
+<dt><strong>CPF26AF</strong></dt>
+<dd>装置記述&amp;1中の駆動機構資源の状況が変更されなかった。
+</dd>
+<dt><strong>CPF26B6</strong></dt>
+<dd>ハードのエラーで初期設定プログラムが終了した。
+</dd>
+<dt><strong>CPF26B7</strong></dt>
+<dd>ソフトのエラーで初期設定プログラムが終了した。
+</dd>
+<dt><strong>CPF262E</strong></dt>
+<dd>IPL処理のオンへの構成変更中にエラーが起こった。
+</dd>
+<dt><strong>CPF262F</strong></dt>
+<dd>障害のためにQDCTRFが停止した。
+</dd>
+<dt><strong>CPF2640</strong></dt>
+<dd>構成変更コマンドは処理されなかった。
+</dd>
+<dt><strong>CPF2659</strong></dt>
+<dd>構成変更コマンドは完了していない場合がある。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table18" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#VRYCFG.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+</div>
+
+
+</body></html>

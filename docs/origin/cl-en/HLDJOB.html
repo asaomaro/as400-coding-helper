@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="ja"><head><meta charset="utf-8"><title>Hold Job  (HLDJOB)</title></head>
+<body>
+<main role="main"><article role="article" aria-labelledby="hldjob__title__1"> 
+<h1 class="topictitle1" id="hldjob__title__1">Hold Job  (HLDJOB)</h1><div id="lastModifiedDate"><span>Last Updated</span>: 2026-07-13</div>
+
+<div class="body">
+<p>
+<strong>Hold Job  (HLDJOB)
+</strong></p>
+
+<p>
+<strong>Where allowed to run:  
+</strong>All environments (*ALL)
+
+</p>
+
+<p>
+<strong>Threadsafe:  </strong>No
+</p>
+
+<p><a href="#hldjob__parameters">Parameters</a></p>
+
+<p><a href="#hldjob__examples">Examples</a></p>
+
+<p><a href="#hldjob__errormsgs">Error messages</a></p>
+
+<div class="div" id="hldjob__hldjob">
+<p>
+The Hold Job (HLDJOB) command makes a job ineligible for processing by the system.  The job is held until it is:
+
+</p>
+
+<ul class="cds--list--unordered">
+<li class="cds--list__item">
+Released by the Release Job (RLSJOB) command
+
+</li>
+
+<li class="cds--list__item">
+Cleared by the Clear Job Queue (CLRJOBQ) command
+
+</li>
+
+<li class="cds--list__item">
+Ended by the End Job (ENDJOB) command
+
+</li>
+
+<li class="cds--list__item">
+Ended (while the job is active) by the End Subsystem (ENDSBS) command, the End System (ENDSYS) command, or the Power Down System (PWRDWNSYS) command
+
+</li>
+
+</ul>
+
+<p>
+Holding a job causes all threads within the job to be held.
+
+</p>
+
+<p>
+<strong>Note:     
+</strong>If you use this command to hold a job that has exclusive access to any resources on the system, these resources are not available to other jobs.  Other jobs which require access to those resources will either fail or wait indefinitely.
+
+</p>
+
+<p>
+<strong>Restrictions:
+</strong> The issuer of the command must be running under a user profile which is the same as the job user identity of the job being held, or the issuer of the command must be running under a user profile which has job control (*JOBCTL) special authority.
+
+</p>
+
+<p>
+The job user identity is the name of the user profile by which a job is known to other jobs. It is described in more detail in the Work Management book.
+
+</p>
+
+</div>
+<section class="section" role="region" aria-labelledby="hldjob__parameters__title__1" id="hldjob__parameters"><h2 class="sectiontitle" id="hldjob__parameters__title__1">Parameters</h2>
+
+
+<div class="tablenoborder"><div class="cds--data-table-container"><table summary="" class="defaultstyle cds--data-table"><colgroup><col><col><col><col></colgroup><thead>
+<tr>
+<th id="hldjob__parameters__entry__1"><div class="cds--table-header-label">
+Keyword
+</div></th>
+
+<th id="hldjob__parameters__entry__2"><div class="cds--table-header-label">
+Description
+</div></th>
+
+<th id="hldjob__parameters__entry__3"><div class="cds--table-header-label">
+Choices
+</div></th>
+
+<th id="hldjob__parameters__entry__4"><div class="cds--table-header-label">
+Notes
+</div></th>
+
+</tr>
+
+</thead>
+<tbody>
+<tr>
+<td rowspan="4" headers="hldjob__parameters__entry__1 "><a href="#hldjob__job"><strong>JOB
+</strong></a></td>
+
+<td headers="hldjob__parameters__entry__2 ">Job name
+</td>
+
+<td headers="hldjob__parameters__entry__3 "><em>Qualified job name
+</em></td>
+
+<td rowspan="4" headers="hldjob__parameters__entry__4 ">Required, Positional 1
+</td>
+
+</tr>
+
+<tr>
+<td headers="hldjob__parameters__entry__2 ">Qualifier 1: Job name
+</td>
+
+<td headers="hldjob__parameters__entry__3 "><em>Name
+</em></td>
+
+</tr>
+
+<tr>
+<td headers="hldjob__parameters__entry__2 ">Qualifier 2: User
+</td>
+
+<td headers="hldjob__parameters__entry__3 "><em>Name
+</em></td>
+
+</tr>
+
+<tr>
+<td headers="hldjob__parameters__entry__2 ">Qualifier 3: Number
+</td>
+
+<td headers="hldjob__parameters__entry__3 ">000000-999999
+</td>
+
+</tr>
+
+<tr>
+<td headers="hldjob__parameters__entry__1 "><a href="#hldjob__splfile"><strong>SPLFILE
+</strong></a></td>
+
+<td headers="hldjob__parameters__entry__2 ">Hold spooled files
+</td>
+
+<td headers="hldjob__parameters__entry__3 "><strong><u>*NO
+</u></strong>, *YES
+</td>
+
+<td headers="hldjob__parameters__entry__4 ">Optional, Positional 2
+</td>
+
+</tr>
+
+<tr>
+<td headers="hldjob__parameters__entry__1 "><a href="#hldjob__dupjobopt"><strong>DUPJOBOPT
+</strong></a></td>
+
+<td headers="hldjob__parameters__entry__2 ">Duplicate job option
+</td>
+
+<td headers="hldjob__parameters__entry__3 "><strong><u>*SELECT
+</u></strong>, *MSG
+</td>
+
+<td headers="hldjob__parameters__entry__4 ">Optional
+</td>
+
+</tr>
+
+</tbody>
+</table></div>
+</div>
+
+<div class="div" id="hldjob__job">
+<p>
+<strong>Job name (JOB)
+</strong></p>
+
+<p>
+Specifies the name of the job being held.
+
+</p>
+
+<p>
+This is a required parameter.
+
+</p>
+
+<p>
+<strong>Qualifier 1: Job name
+</strong>
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><em>name
+</em></strong></dt>
+
+<dd class="dlentry">
+Specify the name of the job.
+</dd>
+
+</dl>
+
+<p>
+<strong>Qualifier 2: User
+</strong>
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><em>name
+</em></strong></dt>
+
+<dd class="dlentry">
+Specify the user name that identifies the user profile under which the job is started.
+</dd>
+
+</dl>
+
+<p>
+<strong>Qualifier 3: Number
+</strong>
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><em>000000-999999
+</em></strong></dt>
+
+<dd class="dlentry">
+Specify the system-assigned job number.
+</dd>
+
+</dl>
+
+<p>
+<strong>Note:     
+</strong>If no user name or job number is specified, all jobs currently in the system are searched for the job name.  If more than one occurrence of the specified name is found, a qualified job name must be provided either explicitly or through the selection display.  Refer to the 
+<strong>Duplicate job option (DUPJOBOPT)
+</strong> parameter for more information.
+
+</p>
+
+</div>
+<div class="div" id="hldjob__splfile">
+<p>
+<strong>Hold spooled files (SPLFILE)
+</strong></p>
+
+<p>
+Specifies whether spooled output files created by the job being held are also held.
+
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><u>*NO
+</u></strong></dt>
+
+<dd class="dlentry">
+The spooled output files produced by the job are not held.
+</dd>
+
+<dt class="dlterm">
+<strong>*YES
+</strong></dt>
+
+<dd class="dlentry">
+The spooled output files produced by the job are also held.  Only those spooled output files which are on output queues in the library name space of the thread issuing this command will be held.  If the 
+<strong>Spooled file action (SPLFACN)
+</strong> job attribute is *DETACH and the job is ended while the spooled files are held, the spooled files cannot be released using the Release Job (RLSJOB) command.  To release spooled files after the job has been removed from the system, use the Release Spooled File (RLSSPLF) command.
+</dd>
+
+</dl>
+
+</div>
+<div class="div" id="hldjob__dupjobopt">
+<p>
+<strong>Duplicate job option (DUPJOBOPT)
+</strong></p>
+
+<p>
+Specifies the action taken when duplicate jobs are found by this command.
+
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><u>*SELECT
+</u></strong></dt>
+
+<dd class="dlentry">
+The selection display is shown when duplicate jobs are found during an interactive session.  Otherwise, a message is issued.
+</dd>
+
+<dt class="dlterm">
+<strong>*MSG
+</strong></dt>
+
+<dd class="dlentry">
+A message is issued when duplicate jobs are found.
+</dd>
+
+</dl>
+
+</div>
+</section>
+
+<section class="section" role="region" aria-labelledby="hldjob__examples__title__1" id="hldjob__examples"><h2 class="sectiontitle" id="hldjob__examples__title__1">Examples</h2>
+
+<p>
+<strong>Example 1: Making a Job Ineligible for Processing
+</strong>
+</p>
+
+<div class="p">
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>
+HLDJOB   JOB(PAYROLL)  SPLFILE(*YES)
+
+</code></pre></div><div class="docs--copy-btn"></div></div>
+
+</div>
+
+<p>
+This command makes the job named PAYROLL ineligible for processing. All spooled files for this job are also held.
+
+</p>
+
+<p>
+<strong>Example 2: Holding a Job that has a Duplicate Name
+</strong>
+</p>
+
+<div class="p">
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>
+HLDJOB   JOB(DEPTXYZ/PAYROLL)
+
+</code></pre></div><div class="docs--copy-btn"></div></div>
+
+</div>
+
+<p>
+This command holds the job named PAYROLL submitted by a user operating under the user profile DEPTXYZ. The qualified form of the job name is used when jobs with duplicate names exist in the system. Spooled files are not held.
+
+</p>
+
+</section>
+
+<section class="section" role="region" aria-labelledby="hldjob__errormsgs__title__1" id="hldjob__errormsgs"><h2 class="sectiontitle" id="hldjob__errormsgs__title__1">Error messages</h2>
+
+<p>
+<strong><u>*ESCAPE Messages
+</u></strong>
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong>CPF1E52
+</strong></dt>
+
+<dd class="dlentry">
+Not authorized to hold job &amp;1.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF1E53
+</strong></dt>
+
+<dd class="dlentry">
+Job &amp;1 has ended and cannot be held.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF1E54
+</strong></dt>
+
+<dd class="dlentry">
+Job &amp;1 cannot be held.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF1317
+</strong></dt>
+
+<dd class="dlentry">
+No response from subsystem for job &amp;3/&amp;2/&amp;1.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF1321
+</strong></dt>
+
+<dd class="dlentry">
+Job &amp;1 user &amp;2 job number &amp;3 not found.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF1332
+</strong></dt>
+
+<dd class="dlentry">
+End of duplicate job names.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF1340
+</strong></dt>
+
+<dd class="dlentry">
+Job control function not performed.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF1341
+</strong></dt>
+
+<dd class="dlentry">
+Reader or writer &amp;3/&amp;2/&amp;1 not allowed as job name.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF1342
+</strong></dt>
+
+<dd class="dlentry">
+Current job not allowed as job name on this command.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF1343
+</strong></dt>
+
+<dd class="dlentry">
+Job &amp;3/&amp;2/&amp;1 not valid job type for function.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF1344
+</strong></dt>
+
+<dd class="dlentry">
+Not authorized to control job &amp;3/&amp;2/&amp;1.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF1345
+</strong></dt>
+
+<dd class="dlentry">
+Cannot hold job &amp;3/&amp;2/&amp;1.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF1346
+</strong></dt>
+
+<dd class="dlentry">
+Job &amp;3/&amp;2/&amp;1 already held.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF1347
+</strong></dt>
+
+<dd class="dlentry">
+Cannot hold job &amp;3/&amp;2/&amp;1.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF1348
+</strong></dt>
+
+<dd class="dlentry">
+Job &amp;3/&amp;2/&amp;1 held but unable to hold its files.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF1350
+</strong></dt>
+
+<dd class="dlentry">
+SPLFILE(*NO) specified but job &amp;3/&amp;2/&amp;1 on OUTQ.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF1351
+</strong></dt>
+
+<dd class="dlentry">
+Function check occurred in subsystem for job &amp;3/&amp;2/&amp;1.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF1352
+</strong></dt>
+
+<dd class="dlentry">
+Function not done.  &amp;3/&amp;2/&amp;1 in transition condition.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF1378
+</strong></dt>
+
+<dd class="dlentry">
+Job &amp;3/&amp;2/&amp;1 not held at current time.
+</dd>
+
+</dl>
+
+</section>
+
+</div>
+
+</article></main>
+</body></html>

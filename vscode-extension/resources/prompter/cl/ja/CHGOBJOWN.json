@@ -1,0 +1,573 @@
+{
+  "keyword": "CHGOBJOWN",
+  "description": "オブジェクト所有者変更 (CHGOBJOWN)",
+  "help": "オブジェクト所有者変更(CHGOBJOWN)コマンドは，オブジェクト所有権をあるユーザーから別のユーザーに移します。他のユーザーがオブジェクトに対して持っている権限は変更されません。\n\nオブジェクトの所有者は，明示的に取り消されないかぎり，そのオブジェクトに適用できるすべての権限を常にもっています。オブジェクトの所有者は，そのオブジェクトに対する権限を，他のユーザーに認可する権限があります。また，所有者は，前に取り消された権限を所有者自身に認可することもできます。例えば，所有者は，所有者固有のある権限を予防措置として除去してから，必要がある場合に，その同じ権限を自身に再び認可することができます。\n\n*ALLOBJ特殊権限をもつユーザーには，QSYS.LIBファイル・システム内のオブジェクトの所有権を移す権限があります。\n\nIBM Iのデータベース機密保護管理者機能(QIBM_DB_SECADM)が認可されているユーザーには，QSYS.LIBファイル・システム内のオブジェクトの所有権を移す権限があります。ただし，QIBM_DB_SECADM機能が認可されているユーザーは，所有権を自分自身に移すためには，その操作に必要な権限を持っていなければなりません。\n\nすべてのユーザーは自身のユーザー・プロファイルに対して追加および削除権限を持ちます。すなわち，ユーザーはオブジェクトの所有権を移動して，自身のユーザー・プロファイルへオブジェクトを追加するか，またはオブジェクト（ユーザーが作成した）を削除することができます。",
+  "parameters": [
+    {
+      "name": "OBJ",
+      "description": "オブジェクト",
+      "help": "新規所有者に割り当てられるオブジェクトを指定します。\n\nこれは必須パラメーターです。",
+      "inputType": "group",
+      "required": true,
+      "groupKind": "qualified",
+      "children": [
+        {
+          "name": "LIB",
+          "description": "ライブラリー",
+          "help": "*LIBL: 最初に一致するものが見つかるまで，現行スレッドのライブラリー・リスト内のすべてのライブラリーが検索されます。\n*CURLIB: スレッドの現行ライブラリーが検索されます。スレッドの現行ライブラリーとして指定されているライブラリーがない場合，QGPLライブラリーが使用されます。\n検索するライブラリーの名前を指定してください。",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "*LIBL",
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          }
+        },
+        {
+          "name": "OBJ",
+          "description": "オブジェクト",
+          "help": "所有者を変更するオブジェクトの名前を指定します。",
+          "inputType": "text",
+          "required": true,
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          }
+        }
+      ],
+      "positional": 1,
+      "basic": true
+    },
+    {
+      "name": "OBJTYPE",
+      "description": "オブジェクト・タイプ",
+      "help": "所有者を変更するオブジェクトのオブジェクト・タイプを指定します。\n\n詳細については，IBM i Information Center(http://www.ibm.com/systems/i/infocenter/)の「プログラミング」カテゴリーの「制御言語(CL)」トピック・コレクションの「一般に使用されるパラメーター：拡張説明」にあるOBJTYPEパラメーターの説明を参照してください。\n\nこれは必須パラメーターです。\n\n所有権が変更されるオブジェクトのオブジェクト・タイプを指定してください。",
+      "inputType": "dropdown",
+      "required": true,
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*ALRTBL",
+          "value": "*ALRTBL"
+        },
+        {
+          "label": "*AUTL",
+          "value": "*AUTL"
+        },
+        {
+          "label": "*BNDDIR",
+          "value": "*BNDDIR"
+        },
+        {
+          "label": "*CFGL",
+          "value": "*CFGL"
+        },
+        {
+          "label": "*CHTFMT",
+          "value": "*CHTFMT"
+        },
+        {
+          "label": "*CLD",
+          "value": "*CLD"
+        },
+        {
+          "label": "*CLS",
+          "value": "*CLS"
+        },
+        {
+          "label": "*CMD",
+          "value": "*CMD"
+        },
+        {
+          "label": "*CNNL",
+          "value": "*CNNL"
+        },
+        {
+          "label": "*COSD",
+          "value": "*COSD"
+        },
+        {
+          "label": "*CRG",
+          "value": "*CRG"
+        },
+        {
+          "label": "*CRQD",
+          "value": "*CRQD"
+        },
+        {
+          "label": "*CSI",
+          "value": "*CSI"
+        },
+        {
+          "label": "*CSPMAP",
+          "value": "*CSPMAP"
+        },
+        {
+          "label": "*CSPTBL",
+          "value": "*CSPTBL"
+        },
+        {
+          "label": "*CTLD",
+          "value": "*CTLD"
+        },
+        {
+          "label": "*DEVD",
+          "value": "*DEVD"
+        },
+        {
+          "label": "*DTAARA",
+          "value": "*DTAARA"
+        },
+        {
+          "label": "*DTADCT",
+          "value": "*DTADCT"
+        },
+        {
+          "label": "*DTAQ",
+          "value": "*DTAQ"
+        },
+        {
+          "label": "*EDTD",
+          "value": "*EDTD"
+        },
+        {
+          "label": "*FCT",
+          "value": "*FCT"
+        },
+        {
+          "label": "*FILE",
+          "value": "*FILE"
+        },
+        {
+          "label": "*FNTRSC",
+          "value": "*FNTRSC"
+        },
+        {
+          "label": "*FNTTBL",
+          "value": "*FNTTBL"
+        },
+        {
+          "label": "*FORMDF",
+          "value": "*FORMDF"
+        },
+        {
+          "label": "*FTR",
+          "value": "*FTR"
+        },
+        {
+          "label": "*GSS",
+          "value": "*GSS"
+        },
+        {
+          "label": "*IGCDCT",
+          "value": "*IGCDCT"
+        },
+        {
+          "label": "*IGCSRT",
+          "value": "*IGCSRT"
+        },
+        {
+          "label": "*IMGCLG",
+          "value": "*IMGCLG"
+        },
+        {
+          "label": "*IPXD",
+          "value": "*IPXD"
+        },
+        {
+          "label": "*JOBD",
+          "value": "*JOBD"
+        },
+        {
+          "label": "*JOBQ",
+          "value": "*JOBQ"
+        },
+        {
+          "label": "*JRN",
+          "value": "*JRN"
+        },
+        {
+          "label": "*JRNRCV",
+          "value": "*JRNRCV"
+        },
+        {
+          "label": "*LIB",
+          "value": "*LIB"
+        },
+        {
+          "label": "*LIND",
+          "value": "*LIND"
+        },
+        {
+          "label": "*LOCALE",
+          "value": "*LOCALE"
+        },
+        {
+          "label": "*M36",
+          "value": "*M36"
+        },
+        {
+          "label": "*M36CFG",
+          "value": "*M36CFG"
+        },
+        {
+          "label": "*MEDDFN",
+          "value": "*MEDDFN"
+        },
+        {
+          "label": "*MENU",
+          "value": "*MENU"
+        },
+        {
+          "label": "*MGTCOL",
+          "value": "*MGTCOL"
+        },
+        {
+          "label": "*MODD",
+          "value": "*MODD"
+        },
+        {
+          "label": "*MODULE",
+          "value": "*MODULE"
+        },
+        {
+          "label": "*MSGF",
+          "value": "*MSGF"
+        },
+        {
+          "label": "*MSGQ",
+          "value": "*MSGQ"
+        },
+        {
+          "label": "*NODGRP",
+          "value": "*NODGRP"
+        },
+        {
+          "label": "*NODL",
+          "value": "*NODL"
+        },
+        {
+          "label": "*NTBD",
+          "value": "*NTBD"
+        },
+        {
+          "label": "*NWID",
+          "value": "*NWID"
+        },
+        {
+          "label": "*NWSCFG",
+          "value": "*NWSCFG"
+        },
+        {
+          "label": "*NWSD",
+          "value": "*NWSD"
+        },
+        {
+          "label": "*OUTQ",
+          "value": "*OUTQ"
+        },
+        {
+          "label": "*OVL",
+          "value": "*OVL"
+        },
+        {
+          "label": "*PAGDFN",
+          "value": "*PAGDFN"
+        },
+        {
+          "label": "*PAGSEG",
+          "value": "*PAGSEG"
+        },
+        {
+          "label": "*PDFMAP",
+          "value": "*PDFMAP"
+        },
+        {
+          "label": "*PDG",
+          "value": "*PDG"
+        },
+        {
+          "label": "*PGM",
+          "value": "*PGM"
+        },
+        {
+          "label": "*PNLGRP",
+          "value": "*PNLGRP"
+        },
+        {
+          "label": "*PRDAVL",
+          "value": "*PRDAVL"
+        },
+        {
+          "label": "*PRDDFN",
+          "value": "*PRDDFN"
+        },
+        {
+          "label": "*PRDLOD",
+          "value": "*PRDLOD"
+        },
+        {
+          "label": "*PSFCFG",
+          "value": "*PSFCFG"
+        },
+        {
+          "label": "*QMFORM",
+          "value": "*QMFORM"
+        },
+        {
+          "label": "*QMQRY",
+          "value": "*QMQRY"
+        },
+        {
+          "label": "*QRYDFN",
+          "value": "*QRYDFN"
+        },
+        {
+          "label": "*RCT",
+          "value": "*RCT"
+        },
+        {
+          "label": "*S36",
+          "value": "*S36"
+        },
+        {
+          "label": "*SBSD",
+          "value": "*SBSD"
+        },
+        {
+          "label": "*SCHIDX",
+          "value": "*SCHIDX"
+        },
+        {
+          "label": "*SPADCT",
+          "value": "*SPADCT"
+        },
+        {
+          "label": "*SQLPKG",
+          "value": "*SQLPKG"
+        },
+        {
+          "label": "*SQLUDT",
+          "value": "*SQLUDT"
+        },
+        {
+          "label": "*SQLXSR",
+          "value": "*SQLXSR"
+        },
+        {
+          "label": "*SRVPGM",
+          "value": "*SRVPGM"
+        },
+        {
+          "label": "*SSND",
+          "value": "*SSND"
+        },
+        {
+          "label": "*SVRSTG",
+          "value": "*SVRSTG"
+        },
+        {
+          "label": "*TBL",
+          "value": "*TBL"
+        },
+        {
+          "label": "*TIMZON",
+          "value": "*TIMZON"
+        },
+        {
+          "label": "*USRIDX",
+          "value": "*USRIDX"
+        },
+        {
+          "label": "*USRPRF",
+          "value": "*USRPRF"
+        },
+        {
+          "label": "*USRQ",
+          "value": "*USRQ"
+        },
+        {
+          "label": "*USRSPC",
+          "value": "*USRSPC"
+        },
+        {
+          "label": "*VLDL",
+          "value": "*VLDL"
+        },
+        {
+          "label": "*WSCST",
+          "value": "*WSCST"
+        }
+      ],
+      "positional": 2,
+      "basic": true
+    },
+    {
+      "name": "ASPDEV",
+      "description": "ASP装置",
+      "help": "オブジェクト(OBJパラメーター）を含むライブラリーが入っている，その補助記憶域プール(ASP)装置名を指定します。オブジェクトのライブラリーがジョブに関連したライブラリー名前空間の一部でないASPにある場合には，このパラメーターを指定して，このコマンドの操作のターゲットとして正しいオブジェクトが使用されるようにしなければなりません。\n\n*: 現在，ジョブのライブラリー名前空間の一部となっているASPがオブジェクトを見つけるために検索されます。これには，システムASP (ASP番号1),定義されているすべての基本ユーザーASP (ASP番号2から32), さらにジョブにASPグループがある場合には．そのASPグループ中のすべての独立ASPが含まれます。\n*SYSBAS: システムASPおよびすべての基本ユーザーASPがオブジェクトを見つけるために検索されます。ジョブにASPグループがあっても独立ASPは検索されません。\nオブジェクトを見つけるために検索する独立ASPの装置名を指定してください。独立ASPは活動化されていて(ASP装置をオンに構成変更することによって），AVAILABLEの状況になっていなければなりません。システムASPおよび基本ユーザーASPは検索されません。",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*",
+      "attributes": {
+        "characterSet": "upper",
+        "maxLength": 10
+      },
+      "basic": true
+    },
+    {
+      "name": "NEWOWN",
+      "description": "新しい所有者",
+      "help": "オブジェクトの新規所有者のユーザー・プロファイルを指定します。このコマンドが実行される時には，ユーザー・プロファイルが存在していなければなりません。\n\nこれは必須パラメーターです。\n\nユーザー・プロファイルの名前を指定します。",
+      "inputType": "text",
+      "required": true,
+      "attributes": {
+        "characterSet": "upper",
+        "maxLength": 10
+      },
+      "positional": 3,
+      "basic": true
+    },
+    {
+      "name": "CUROWNAUT",
+      "description": "現行の所有者権限",
+      "help": "所有権を変更した場合に，現行所有者の権限を取り消すかどうかを指定します。",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*REVOKE",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*REVOKE",
+          "value": "*REVOKE",
+          "help": "オブジェクト所有権を新しい所有者に変更した時に，現行所有者の権限を取り消します。"
+        },
+        {
+          "label": "*SAME",
+          "value": "*SAME",
+          "help": "現行所有者の権限は，オブジェクトに対する専用権限として保持されます。"
+        }
+      ],
+      "basic": true
+    }
+  ],
+  "threadSafe": false,
+  "environment": "すべての環境 (*ALL)",
+  "restrictions": [
+    "所有権を移すためには，ユーザー（オブジェクトの現在の所有者を含む）は次の権限を持っていなければなりません。 オブジェクト（権限リストを除く）のオブジェクト存在(*OBJEXIST)権限 オブジェクトがファイル，ライブラリー，またはサブシステム記述である場合には，オブジェクト操作(*OBJOPR)権限および*OBJEXIST権限 このオブジェクトが権限リストの場合には，全オブジェクト(*ALLOBJ)特殊権限または所有権 新しい所有者のユーザー・プロファイルに対する追加(*ADD)権限 現在の所有者のユーザー・プロファイルに対する削除(*DLT)権限 プログラムのオブジェクト所有者またはその所有者の権限を借用するプログラム SQL（構造化照会言語）パッケージを変更するためには，全オブジェクト(*ALLOBJ)および機密保護管理者(*SECADM)特殊権限。 補助記憶域プール装置を指定する場合は，その補助記憶域プール装置に対する使用(*USE)権限。",
+    "表示装置の場合で，所有権が変更されるかまたはメッセージ待ち行列の所有権が変更される装置からこのコマンドが実行されていない場合には，このコマンドがオブジェクト割り振り(ALCOBJ)コマンドとオブジェクト割り振り解除(DLCOBJ)コマンドの間になければなりません。",
+    "オブジェクト・タイプ*DOCまたは*FLRを指定することはできません。DLO（文書交換）サポートを使用することが必要です。",
+    "また，これと関連した権限ホルダーのオブジェクトの所有権を変更すると，その権限ホルダーの所有権も変更します。"
+  ],
+  "examples": [
+    {
+      "code": "CHGOBJOWN OBJ(USERLIB/PROGRAM1) OBJTYPE(*PGM) NEWOWN(ANN)"
+    }
+  ],
+  "errorMessages": [
+    {
+      "id": "CPF0609",
+      "text": "指定されたユーザー・プロファイルの使用は許されていない。"
+    },
+    {
+      "id": "CPF22BD",
+      "text": "&3のオブジェクト&1タイプ*&2の所有権が変更されなかった可能性がある。"
+    },
+    {
+      "id": "CPF22BE",
+      "text": "ユーザー・プロファイル&1に対して機能が実行されなかった。"
+    },
+    {
+      "id": "CPF22DA",
+      "text": "&2のファイル&1の操作は許可されていない。"
+    },
+    {
+      "id": "CPF220A",
+      "text": "新しい所有者&1にユーザーIDがない。"
+    },
+    {
+      "id": "CPF220C",
+      "text": "所有者と１次グループを同じにすることはできない。"
+    },
+    {
+      "id": "CPF2204",
+      "text": "ユーザー・プロファイル&1が見つからない。"
+    },
+    {
+      "id": "CPF2207",
+      "text": "ライブラリー&3のタイプ*&2のオブジェクト&1の使用を認可されていない。"
+    },
+    {
+      "id": "CPF2208",
+      "text": "ライブラリー&3のタイプ*&2のオブジェクト&1が見つからなかった。"
+    },
+    {
+      "id": "CPF2209",
+      "text": "ライブラリー&1が見つかりません。"
+    },
+    {
+      "id": "CPF2210",
+      "text": "オブジェクト・タイプ*&1に対する操作は許されていない。"
+    },
+    {
+      "id": "CPF2211",
+      "text": "&3のオブジェクト&1タイプ*&2を割り振ることができない。"
+    },
+    {
+      "id": "CPF2213",
+      "text": "ユーザー・プロファイル&1を割り振ることができない。"
+    },
+    {
+      "id": "CPF2216",
+      "text": "ライブラリー&1の使用は認可されていない。"
+    },
+    {
+      "id": "CPF2217",
+      "text": "ユーザー・プロファイル&1には認可されていません。"
+    },
+    {
+      "id": "CPF2222",
+      "text": "記憶域限界が，ユーザー・プロファイル&1に指定されているものより大きい。"
+    },
+    {
+      "id": "CPF2226",
+      "text": "ユーザー・プロファイル&1に対して機能が実行されなかった。"
+    },
+    {
+      "id": "CPF2230",
+      "text": "ライブラリー&3のオブジェクト&1は認可されていない。"
+    },
+    {
+      "id": "CPF2231",
+      "text": "プログラム&1の所有権の変更は認可されていない。"
+    },
+    {
+      "id": "CPF2232",
+      "text": "ユーザー・プロファイル&1には認可されていません。"
+    },
+    {
+      "id": "CPF2233",
+      "text": "ユーザー・プロファイル&1に対する削除権限をもっていない。"
+    },
+    {
+      "id": "CPF2298",
+      "text": "ユーザー&1から&3のオブジェクト&2の権限は取り消されなかった。"
+    },
+    {
+      "id": "CPF4ACF",
+      "text": "複製エラーのため，&2内のオブジェクト&1 (タイプ *&3)に対する操作が失敗しました。"
+    },
+    {
+      "id": "CPF4AC0",
+      "text": "&3内のタイプ*&4のオブジェクト&2の場合，所有者を&1に変更できません。"
+    }
+  ],
+  "source": {
+    "url": "https://www.ibm.com/docs/ja/ssw_ibm_i_74/cl/chgobjown.htm",
+    "version": "IBM i 7.4"
+  }
+}

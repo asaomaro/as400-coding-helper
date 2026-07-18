@@ -1,0 +1,188 @@
+{
+  "keyword": "CHGPFM",
+  "description": "物理ファイル・メンバー変更 (CHGPFM)",
+  "help": "物理ファイル・メンバー変更(CHGPFM)コマンドは，物理ファイル・メンバーの属性を変更します。",
+  "parameters": [
+    {
+      "name": "FILE",
+      "description": "物理ファイル",
+      "help": "変更されるメンバーが入っている物理ファイルを指定します。\n\nこれは必須パラメーターです。",
+      "inputType": "group",
+      "required": true,
+      "groupKind": "qualified",
+      "children": [
+        {
+          "name": "LIB",
+          "description": "ライブラリー",
+          "help": "*LIBL: 最初に一致するものが見つかるまで，現行スレッドのライブラリー・リスト内のすべてのライブラリーが検索されます。\n*CURLIB: ファイルを見つけるためにスレッドの現行ライブラリーが使用されます。ジョブの現行ライブラリーとして指定されているライブラリーがない場合，QGPLライブラリーが使用されます。\n検索するライブラリーの名前を指定してください。",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "*LIBL",
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          }
+        },
+        {
+          "name": "FILE",
+          "description": "物理ファイル",
+          "help": "物理ファイルの名前を指定してください。",
+          "inputType": "text",
+          "required": true,
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          }
+        }
+      ],
+      "positional": 1,
+      "basic": true
+    },
+    {
+      "name": "MBR",
+      "description": "メンバー",
+      "help": "変更されるメンバーを指定します。\n\nこれは必須パラメーターです。\n\n*FIRST: 指定したファイルの最初のメンバーが使用されます。\n変更する物理ファイル・メンバーの名前を指定してください。",
+      "inputType": "text",
+      "required": true,
+      "attributes": {
+        "characterSet": "upper",
+        "maxLength": 10
+      },
+      "positional": 2,
+      "basic": true
+    },
+    {
+      "name": "SRCTYPE",
+      "description": "ソース仕様タイプ",
+      "help": "これがソース・ファイルである場合には，メンバーのソース・タイプを指定します。ソース・タイプ・オプションは，名前を表わす10文字以下の文字ストリングです。最初の文字は英字（文字\\, @,または#を含む）でなければならず，残りの文字は英数字または下線でなければなりません。\n\nソース仕様タイプ・オプションは，ソース・ファイル・メンバーのソース仕様タイプの属性の使用のためにこのコマンドでだけ使用することができます。\n\nメンバーのソース・タイプを指定してください。",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*SAME",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*SAME",
+          "value": "*SAME",
+          "help": "値は変更されません。"
+        },
+        {
+          "label": "*NONE",
+          "value": "*NONE",
+          "help": "ソース・タイプは指定されません。"
+        }
+      ]
+    },
+    {
+      "name": "EXPDATE",
+      "description": "メンバーの満了日",
+      "help": "満了日を指定します。ファイルは満了日まで上書きすることはできません。満了日は，現在日付と等しいかまたはそれより後でなければなりません。\n\nその日を過ぎるとメンバーが使用できなくなる日の日付を指定してください。日付の指定はジョブ日付の形式で行います。",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*SAME",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*SAME",
+          "value": "*SAME",
+          "help": "メンバーの満了日は変更されません。"
+        },
+        {
+          "label": "*NONE",
+          "value": "*NONE",
+          "help": "メンバーには満了日が設定されません。"
+        }
+      ]
+    },
+    {
+      "name": "SHARE",
+      "description": "オープン・データ・パス共用",
+      "help": "オープン・データ・パス(ODP)が同じルーティング・ステップの他のプログラムと共用するかどうかを指定します。ODPが共用される時には，ファイルにアクセスしているプログラムはファイル状況およびバッファーなどの機能を共用します。",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*SAME",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*SAME",
+          "value": "*SAME",
+          "help": "メンバーのODP共用値は変更されません。"
+        },
+        {
+          "label": "*YES",
+          "value": "*YES",
+          "help": "ファイルをオープンする時に*YESも指定したジョブで，同じODPを各プログラムと共用することができます。"
+        },
+        {
+          "label": "*NO",
+          "value": "*NO",
+          "help": "ODPは，ルーティング・ステップ内の他のプログラムと共用されません。ファイルの新しいODPが作成され，プログラムがファイルをオープンするたびに使用されます。"
+        }
+      ]
+    },
+    {
+      "name": "TEXT",
+      "description": "テキスト'記述'",
+      "help": "オブジェクトを簡単に記述したテキストを指定します。\n\n*SAME: メンバーを記述したテキストは変更されません。\n*BLANK: テキストは指定されません。\n50文字を超えないテキストを，アポストロフィで囲んで指定してください。",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*SAME",
+      "attributes": {
+        "characterSet": "upper"
+      }
+    },
+    {
+      "name": "UNIT",
+      "description": "入れたい記憶装置",
+      "help": "メンバーの優先記憶媒体を指定します。",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*SAME",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*SAME",
+          "value": "*SAME"
+        },
+        {
+          "label": "*ANY",
+          "value": "*ANY",
+          "help": "どの記憶媒体も優先しません。記憶域は任意の使用可能な記憶媒体から割り振られます。"
+        },
+        {
+          "label": "*SSD",
+          "value": "*SSD",
+          "help": "半導体ディスク記憶媒体を優先します。記憶域は，半導体ディスク記憶媒体が使用可能な場合はその媒体から割り振られます。"
+        }
+      ]
+    }
+  ],
+  "threadSafe": false,
+  "environment": "すべての環境 (*ALL)",
+  "restrictions": [
+    "物理メンバーを変更するには，メンバーが入っている物理ファイルに対するオブジェクト管理(*OBJMGT)またはオブジェクト変更(*OBJALTER)権限とそのファイルのライブラリーに対する実行(*EXECUTE)権限が必要です。",
+    "他のユーザーはそのメンバーを消去または初期設定することはできないばかりか，どのユーザーも独占的に使用するためにそのファイルを保持することはできません。他のユーザーはメンバーをオープンすることはできますが，メンバーに対して行った変更はオープンされたメンバーに反映されません。オープンしたメンバーに対する変更を有効にするためには，最初にそのメンバーをクローズ（メンバーがSHARE(*YES)としてオープンされている場合は，全クローズしなければならない）してから再びオープンしなければなりません。"
+  ],
+  "examples": [
+    {
+      "code": "CHGPFM FILE(QGPL/INV) MBR(FEB) EXPDATE('10/31/90')"
+    }
+  ],
+  "errorMessages": [
+    {
+      "id": "CPF3288",
+      "text": "&2のファイル&1のメンバー&3は変更されなかった。"
+    }
+  ],
+  "source": {
+    "url": "https://www.ibm.com/docs/ja/ssw_ibm_i_74/cl/chgpfm.htm",
+    "version": "IBM i 7.4"
+  }
+}

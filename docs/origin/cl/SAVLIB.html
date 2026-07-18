@@ -1,0 +1,2019 @@
+<!DOCTYPE html>
+<html lang="ja"><head><meta charset="utf-8"><title>ライブラリー保管  (SAVLIB)</title></head>
+<body>
+<div role="main">
+<script type="text/javascript" src="../rzahg/synch.js"></script>
+<a name="SAVLIB.Top_Of_Page"></a>
+<h1>ライブラリー保管  (SAVLIB)</h1><div id="lastModifiedDate"><span>Last Updated</span>: 2021-04-13</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table0" width="100%" class="cds--data-table">
+<tbody><tr>
+<td class="valigntop alignleft"><strong>実行可能場所:  </strong>すべての環境 (*ALL)<br>
+<strong>スレッド・セーフ:  </strong>いいえ
+</td>
+<td class="valigntop alignright">
+<a href="#SAVLIB.PARAMETERS.TABLE">パラメーター</a><br>
+<a href="#SAVLIB.COMMAND.EXAMPLES">例</a><br>
+<a href="#SAVLIB.ERROR.MESSAGES">エラー・メッセージ</a></td>
+</tr>
+</tbody></table></div></div>
+<div> <a name="SAVLIB"></a>
+<p>ライブラリー保管(SAVLIB)コマンドでは1つまたは複数のライブラリーのコピーを保管することができます。
+</p>
+<p>保管ファイルに保管する時には，ライブラリーは1つしか指定することができません。
+</p>
+<p>このコマンドでは，ライブラリー記述，オブジェクト記述，およびライブラリー中のオブジェクトの内容を含め，ライブラリー全体が保管されます。ジョブ待ち行列，メッセージ待ち行列，および論理ファイルの場合には，オブジェクトの定義だけが保管され，内容は保管されません。しかし，論理ファイルのアクセス・パスは，<strong>アクセス・パス保管</strong><strong> (ACCPTH)</strong>パラメーターに*YESを指定することによって保管することができます。出力待ち行列上のスプール・ファイルの内容は，<strong>スプール・ファイル・データ</strong><strong> (SPLFDTA)</strong>パラメーターに*ALLを指定することによって保管することができます。保管ファイルの内容は，<strong>保管ファイル・データ</strong><strong> (SAVFDTA)</strong>パラメーターに*YESを指定するか，あるいは保管ファイル・データ保管(SAVSAVFDTA)コマンドを使用することによって保管することができます。データ待ち行列の内容は，<strong>待ち行列データ</strong><strong> (QDTA)</strong>パラメーターに*DTAQを指定して保管することができます。コマンドで記憶域の解放を指定しない限り，システム中のライブラリーとそのオブジェクトには影響がありません。しかし，<strong>ヒストリー更新</strong><strong> (UPDHST)</strong>パラメーターに*NOを指定しない限り，各ライブラリーおよび各オブジェクトの記述は，それが最後に保管された日付，場所，および時刻で更新されます。LIBパラメーターに*NONSYS, *ALLUSR,または*IBMを指定してライブラリーのグループが保管される場合には，QSYS中のデータ域（データ域QSAVLIBALL, QSAVALLUSR,またはQSAVIBM）のヒストリーで日付，時刻，および場所が更新されます。
+</p>
+<p>このコマンドによって保管されるオブジェクトのタイプは，IBM i Information Center(http://www.ibm.com/systems/i/infocenter/)の「プログラミング」カテゴリーの「制御言語(CL)」トピック・コレクションの「共通して使用されるパラメーター：詳細説明」のOBJTYPEパラメーターの説明で，追加の*DTADCTと一緒にリストされています。ユーザー・ライブラリーに含まれていないある種のオペレーティング・システム・オブジェクト（ユーザー・プロファイルなど）は，このコマンドでは保管されません。これらはシステム保管(SAVSYS)コマンドまたは機密保護データ保管(SAVSECDTA)コマンドによって保管することができます。
+</p>
+<p>
+<strong>注:     </strong>このコマンドは，出力ファイル以外のジョブに対して現在有効になっているすべてのファイル一時変更を無視します。
+</p>
+<h2><strong>制約事項</strong><strong>:</strong>
+</h2>
+<ul class="cds--list--unordered">
+<li class="cds--list__item">システム保管(*SAVSYS)特殊権限または以下のオブジェクト権限が必要です。
+<ul class="cds--list--unordered cds--list--nested">
+<li class="cds--list__item">指定された各ライブラリーに対する読み取り(*READ)権限，あるいはその所有者であること
+</li>
+<li class="cds--list__item">ライブラリー内の各オブジェクトに対するオブジェクト存在(*OBJEXIST)権限（スプール・ファイル・データの場合，出力待ち行列に対する*OBJEXIST権限）
+</li>
+</ul>
+</li>
+<li class="cds--list__item">*SAVSYS特殊権限がない場合には，ユーザーが権限を持っているライブラリーおよびオブジェクトのみが保管されます。
+</li>
+<li class="cds--list__item">テープまたは光ディスク・ボリュームに保管する場合には，その関連した装置記述に対する使用(*USE)権限が必要です。
+</li>
+<li class="cds--list__item">保管ファイルに保管する場合には，その保管ファイルに対する追加(*ADD)および使用(*USE)権限が必要です。
+</li>
+<li class="cds--list__item">媒体定義を使用する場合には，その媒体定義に対する*USE権限および媒体定義が入っているライブラリーに対する実行(*EXECUTE)権限が必要です。
+</li>
+<li class="cds--list__item">OUTFILEパラメーターを使用して既存のデータベース・ファイルに保管する場合には，その出力ファイル・ライブラリーに対する*EXECUTE権限が必要です。
+</li>
+<li class="cds--list__item">「活動状態保管」を使用しない限り，保管中のライブラリーまたはその中のオブジェクトはどれも，保管操作の実行時に実行中のジョブによって更新することができません。
+</li>
+<li class="cds--list__item">SAVFDTA(*YES)を指定して，保管ファイルの内容を同一保管ファイルに保管する場合には，保管ファイルの記述だけが保管されます。
+</li>
+<li class="cds--list__item"><strong>保管ファイル・データ</strong><strong> (SAVFDTA)</strong>パラメーターに*YESを指定することによって保管ファイルの内容を保管した場合には，そこに入っているオブジェクトを復元する前に，保管ファイルを復元しなければなりません。
+</li>
+<li class="cds--list__item"><strong>コマンド・ユーザー・スペース</strong><strong> (CMDUSRSPC)</strong>パラメーターを使用する場合には，そのユーザー・スペースに対する*USE権限およびユーザー・スペース・ライブラリーに対する*EXECUTE権限が必要です。
+</li>
+</ul>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table1" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#SAVLIB.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div>
+<h2><a name="SAVLIB.PARAMETERS.TABLE">パラメーター</a></h2>
+<div class="tablenoborder"><div class="cds--data-table-container"><table id="parm_table2" summary="Parameters" border="1" cellpadding="4" cellspacing="0" class="cds--data-table">
+<!-- col1="10" col2="15" col3="30" col4="10" -->
+<tbody><tr>
+<th scope="col" class="valignbottom alignleft"><div class="cds--table-header-label">キーワード</div></th>
+<th scope="col" class="valignbottom alignleft"><div class="cds--table-header-label">記述</div></th>
+<th scope="col" class="valignbottom alignleft"><div class="cds--table-header-label">選択項目</div></th>
+<th scope="col" class="valignbottom alignleft"><div class="cds--table-header-label">ノーツ</div></th>
+</tr>
+<tr>
+<td class="valigntop"><a href="#SAVLIB.LIB"><strong>LIB</strong></a></td>
+<td class="valigntop">ライブラリー</td>
+<td class="valigntop">単一値: *NONSYS, *ALLUSR, *IBM, *SELECT, *USRSPC<br>その他の値 (最大 300 回の繰り返し): <span class="var">総称名, 名前</span></td>
+<td class="valigntop">必須, 定位置 1</td>
+</tr>
+<tr>
+<td class="valigntop"><a href="#SAVLIB.DEV"><strong>DEV</strong></a></td>
+<td class="valigntop">装置</td>
+<td class="valigntop">単一値: *SAVF, *MEDDFN<br>その他の値 (最大 4 回の繰り返し): <span class="var">名前</span></td>
+<td class="valigntop">必須, 定位置 2</td>
+</tr>
+<tr>
+<td class="valigntop"><a href="#SAVLIB.VOL"><strong>VOL</strong></a></td>
+<td class="valigntop">ボリュームID</td>
+<td class="valigntop">単一値: <strong class="underlined">*MOUNTED</strong><br>その他の値 (最大 75 回の繰り返し): <span class="var">文字値</span></td>
+<td class="valigntop">オプショナル, 定位置 3</td>
+</tr>
+<tr>
+<td class="valigntop"><a href="#SAVLIB.SEQNBR"><strong>SEQNBR</strong></a></td>
+<td class="valigntop">順序番号</td>
+<td class="valigntop">1-16777215, <strong class="underlined">*END</strong></td>
+<td class="valigntop">オプショナル</td>
+</tr>
+<tr>
+<td class="valigntop"><a href="#SAVLIB.LABEL"><strong>LABEL</strong></a></td>
+<td class="valigntop">ラベル</td>
+<td class="valigntop"><span class="var">文字値</span>, <strong class="underlined">*LIB</strong></td>
+<td class="valigntop">オプショナル</td>
+</tr>
+<tr>
+<td class="valigntop"><a href="#SAVLIB.EXPDATE"><strong>EXPDATE</strong></a></td>
+<td class="valigntop">ファイル満了日</td>
+<td class="valigntop"><span class="var">日付</span>, <strong class="underlined">*PERM</strong></td>
+<td class="valigntop">オプショナル</td>
+</tr>
+<tr>
+<td class="valigntop"><a href="#SAVLIB.ENDOPT"><strong>ENDOPT</strong></a></td>
+<td class="valigntop">媒体の終わりオプション</td>
+<td class="valigntop"><strong class="underlined">*REWIND</strong>, *LEAVE, *UNLOAD</td>
+<td class="valigntop">オプショナル</td>
+</tr>
+<tr>
+<td class="valigntop"><a href="#SAVLIB.STRLIB"><strong>STRLIB</strong></a></td>
+<td class="valigntop">開始ライブラリー</td>
+<td class="valigntop"><span class="var">名前</span>, <strong class="underlined">*FIRST</strong></td>
+<td class="valigntop">オプショナル</td>
+</tr>
+<tr>
+<td class="valigntop" rowspan="3"><a href="#SAVLIB.SAVF"><strong>SAVF</strong></a></td>
+<td class="valigntop">保管ファイル</td>
+<td class="valigntop"><span class="var">修飾オブジェクト名</span></td>
+<td class="valigntop" rowspan="3">オプショナル</td>
+</tr>
+<tr>
+<td class="valigntop">修飾子 1: 保管ファイル</td>
+<td class="valigntop"><span class="var">名前</span></td>
+</tr><tr>
+<td class="valigntop">修飾子 2: ライブラリー</td>
+<td class="valigntop"><span class="var">名前</span>, <strong class="underlined">*LIBL</strong>, *CURLIB</td>
+</tr><tr>
+<td class="valigntop" rowspan="3"><a href="#SAVLIB.MEDDFN"><strong>MEDDFN</strong></a></td>
+<td class="valigntop">媒体定義</td>
+<td class="valigntop"><span class="var">修飾オブジェクト名</span></td>
+<td class="valigntop" rowspan="3">オプショナル</td>
+</tr>
+<tr>
+<td class="valigntop">修飾子 1: 媒体定義</td>
+<td class="valigntop"><span class="var">名前</span></td>
+</tr><tr>
+<td class="valigntop">修飾子 2: ライブラリー</td>
+<td class="valigntop"><span class="var">名前</span>, <strong class="underlined">*LIBL</strong>, *CURLIB</td>
+</tr><tr>
+<td class="valigntop"><a href="#SAVLIB.OPTFILE"><strong>OPTFILE</strong></a></td>
+<td class="valigntop">光ディスク・ファイル</td>
+<td class="valigntop"><span class="var">パス名</span>, <strong class="underlined">*</strong></td>
+<td class="valigntop">オプショナル</td>
+</tr>
+<tr>
+<td class="valigntop"><a href="#SAVLIB.USEOPTBLK"><strong>USEOPTBLK</strong></a></td>
+<td class="valigntop">最適ブロックの使用</td>
+<td class="valigntop"><strong class="underlined">*YES</strong>, *NO</td>
+<td class="valigntop">オプショナル</td>
+</tr>
+<tr>
+<td class="valigntop"><a href="#SAVLIB.TGTRLS"><strong>TGTRLS</strong></a></td>
+<td class="valigntop">ターゲット・リリース</td>
+<td class="valigntop"><strong class="underlined">*CURRENT</strong>, *PRV, V7R2M0, V7R3M0, V7R4M0</td>
+<td class="valigntop">オプショナル</td>
+</tr>
+<tr>
+<td class="valigntop"><a href="#SAVLIB.UPDHST"><strong>UPDHST</strong></a></td>
+<td class="valigntop">ヒストリー更新</td>
+<td class="valigntop"><strong class="underlined">*YES</strong>, *NO</td>
+<td class="valigntop">オプショナル</td>
+</tr>
+<tr>
+<td class="valigntop"><a href="#SAVLIB.CLEAR"><strong>CLEAR</strong></a></td>
+<td class="valigntop">消去</td>
+<td class="valigntop"><strong class="underlined">*NONE</strong>, *ALL, *AFTER, *REPLACE</td>
+<td class="valigntop">オプショナル</td>
+</tr>
+<tr>
+<td class="valigntop"><a href="#SAVLIB.PRECHK"><strong>PRECHK</strong></a></td>
+<td class="valigntop">オブジェクト事前検査</td>
+<td class="valigntop"><strong class="underlined">*NO</strong>, *YES</td>
+<td class="valigntop">オプショナル</td>
+</tr>
+<tr>
+<td class="valigntop"><a href="#SAVLIB.SAVACT"><strong>SAVACT</strong></a></td>
+<td class="valigntop">活動状態保管</td>
+<td class="valigntop"><strong class="underlined">*NO</strong>, *LIB, *SYNCLIB, *SYSDFN</td>
+<td class="valigntop">オプショナル</td>
+</tr>
+<tr>
+<td class="valigntop" rowspan="4"><a href="#SAVLIB.SAVACTWAIT"><strong>SAVACTWAIT</strong></a></td>
+<td class="valigntop">活動状態保管待ち時間</td>
+<td class="valigntop"><span class="var">要素リスト</span></td>
+<td class="valigntop" rowspan="4">オプショナル</td>
+</tr>
+<tr>
+<td class="valigntop">要素 1: オブジェクト・ロック</td>
+<td class="valigntop">
+0-99999, <strong class="underlined">120</strong>, *NOMAX</td>
+</tr>
+<tr>
+<td class="valigntop">要素 2: 保留中のレコード変更</td>
+<td class="valigntop">
+0-99999, <strong class="underlined">*LOCKWAIT</strong>, *NOCMTBDY, *NOMAX</td>
+</tr>
+<tr>
+<td class="valigntop">要素 3: 他の保留中の変更</td>
+<td class="valigntop">
+0-99999, <strong class="underlined">*LOCKWAIT</strong>, *NOMAX</td>
+</tr>
+<tr>
+<td class="valigntop" rowspan="3"><a href="#SAVLIB.SAVACTMSGQ"><strong>SAVACTMSGQ</strong></a></td>
+<td class="valigntop">活動状態保管メッセージ待ち行列</td>
+<td class="valigntop"><span class="var">修飾オブジェクト名</span></td>
+<td class="valigntop" rowspan="3">オプショナル</td>
+</tr>
+<tr>
+<td class="valigntop">修飾子 1: 活動状態保管メッセージ待ち行列</td>
+<td class="valigntop"><span class="var">名前</span>, <strong class="underlined">*NONE</strong>, *WRKSTN</td>
+</tr><tr>
+<td class="valigntop">修飾子 2: ライブラリー</td>
+<td class="valigntop"><span class="var">名前</span>, <strong class="underlined">*LIBL</strong>, *CURLIB</td>
+</tr><tr>
+<td class="valigntop"><a href="#SAVLIB.SYNCID"><strong>SYNCID</strong></a></td>
+<td class="valigntop">同期 ID</td>
+<td class="valigntop"><span class="var">名前</span>, <strong class="underlined">*NONE</strong></td>
+<td class="valigntop">オプショナル</td>
+</tr>
+<tr>
+<td class="valigntop"><a href="#SAVLIB.ACCPTH"><strong>ACCPTH</strong></a></td>
+<td class="valigntop">アクセス・パス保管</td>
+<td class="valigntop"><strong class="underlined">*SYSVAL</strong>, *NO, *YES</td>
+<td class="valigntop">オプショナル</td>
+</tr>
+<tr>
+<td class="valigntop"><a href="#SAVLIB.SAVFDTA"><strong>SAVFDTA</strong></a></td>
+<td class="valigntop">保管ファイル・データ</td>
+<td class="valigntop"><strong class="underlined">*YES</strong>, *NO</td>
+<td class="valigntop">オプショナル</td>
+</tr>
+<tr>
+<td class="valigntop"><a href="#SAVLIB.SPLFDTA"><strong>SPLFDTA</strong></a></td>
+<td class="valigntop">スプール・ファイル・データ</td>
+<td class="valigntop"><strong class="underlined">*NONE</strong>, *ALL</td>
+<td class="valigntop">オプショナル</td>
+</tr>
+<tr>
+<td class="valigntop"><a href="#SAVLIB.QDTA"><strong>QDTA</strong></a></td>
+<td class="valigntop">待ち行列データ</td>
+<td class="valigntop"><strong class="underlined">*NONE</strong>, *DTAQ</td>
+<td class="valigntop">オプショナル</td>
+</tr>
+<tr>
+<td class="valigntop"><a href="#SAVLIB.PVTAUT"><strong>PVTAUT</strong></a></td>
+<td class="valigntop">専用権限</td>
+<td class="valigntop"><strong class="underlined">*NO</strong>, *YES</td>
+<td class="valigntop">オプショナル</td>
+</tr>
+<tr>
+<td class="valigntop"><a href="#SAVLIB.STG"><strong>STG</strong></a></td>
+<td class="valigntop">記憶域</td>
+<td class="valigntop"><strong class="underlined">*KEEP</strong>, *FREE</td>
+<td class="valigntop">オプショナル</td>
+</tr>
+<tr>
+<td class="valigntop"><a href="#SAVLIB.DTACPR"><strong>DTACPR</strong></a></td>
+<td class="valigntop">データ圧縮</td>
+<td class="valigntop"><strong class="underlined">*DEV</strong>, *NO, *YES, *LOW, *MEDIUM, *HIGH</td>
+<td class="valigntop">オプショナル</td>
+</tr>
+<tr>
+<td class="valigntop"><a href="#SAVLIB.COMPACT"><strong>COMPACT</strong></a></td>
+<td class="valigntop">データ短縮</td>
+<td class="valigntop"><strong class="underlined">*DEV</strong>, *NO</td>
+<td class="valigntop">オプショナル</td>
+</tr>
+<tr>
+<td class="valigntop"><a href="#SAVLIB.OMITLIB"><strong>OMITLIB</strong></a></td>
+<td class="valigntop">除外するライブラリー</td>
+<td class="valigntop">単一値: <strong class="underlined">*NONE</strong>, *USRSPC<br>その他の値 (最大 300 回の繰り返し): <span class="var">総称名, 名前</span></td>
+<td class="valigntop">オプショナル</td>
+</tr>
+<tr>
+<td class="valigntop" rowspan="5"><a href="#SAVLIB.OMITOBJ"><strong>OMITOBJ</strong></a></td>
+<td class="valigntop">除外するオブジェクト</td>
+<td class="valigntop">単一値: *USRSPC<br>その他の値 (最大 300 回の繰り返し): <span class="var">要素リスト</span></td>
+<td class="valigntop" rowspan="5">オプショナル</td>
+</tr>
+<tr>
+<td class="valigntop">要素 1: オブジェクト</td>
+<td class="valigntop">
+<span class="var">修飾オブジェクト名</span></td>
+</tr>
+<tr>
+<td class="valigntop">修飾子 1: オブジェクト</td>
+<td class="valigntop"><span class="var">総称名, 名前</span>, <strong class="underlined">*NONE</strong>, *ALL</td>
+</tr><tr>
+<td class="valigntop">修飾子 2: ライブラリー</td>
+<td class="valigntop"><span class="var">総称名, 名前</span>, <strong class="underlined">*ALL</strong></td>
+</tr><tr>
+<td class="valigntop">要素 2: オブジェクト・タイプ</td>
+<td class="valigntop">
+<span class="var">文字値</span>, <strong class="underlined">*ALL</strong></td>
+</tr>
+<tr>
+<td class="valigntop" rowspan="8"><a href="#SAVLIB.SELECT"><strong>SELECT</strong></a></td>
+<td class="valigntop">SELECT</td>
+<td class="valigntop">単一値: *USRSPC<br>その他の値 (最大 300 回の繰り返し): <span class="var">要素リスト</span></td>
+<td class="valigntop" rowspan="8">オプショナル</td>
+</tr>
+<tr>
+<td class="valigntop">要素 1: 組み込みまたは除外</td>
+<td class="valigntop">
+<strong class="underlined">*INCLUDE</strong>, *OMIT</td>
+</tr>
+<tr>
+<td class="valigntop">要素 2: オブジェクト</td>
+<td class="valigntop">
+<span class="var">修飾オブジェクト名</span></td>
+</tr>
+<tr>
+<td class="valigntop">修飾子 1: オブジェクト</td>
+<td class="valigntop"><span class="var">総称名, 名前</span>, <strong class="underlined">*ALL</strong></td>
+</tr><tr>
+<td class="valigntop">修飾子 2: ライブラリー</td>
+<td class="valigntop"><span class="var">総称名, 名前</span>, <strong class="underlined">*ALL</strong></td>
+</tr><tr>
+<td class="valigntop">要素 3: オブジェクト・タイプ</td>
+<td class="valigntop">
+<span class="var">文字値</span>, <strong class="underlined">*ALL</strong></td>
+</tr>
+<tr>
+<td class="valigntop">要素 4: オブジェクトの属性</td>
+<td class="valigntop">
+<span class="var">文字値</span>, <strong class="underlined">*ALL</strong>, *BLANK</td>
+</tr>
+<tr>
+<td class="valigntop">要素 5: ファイル・メンバー</td>
+<td class="valigntop">
+<span class="var">総称名, 名前</span>, <strong class="underlined">*ALL</strong>, *ALLMBR</td>
+</tr>
+<tr>
+<td class="valigntop"><a href="#SAVLIB.ASPDEV"><strong>ASPDEV</strong></a></td>
+<td class="valigntop">ASP装置</td>
+<td class="valigntop"><span class="var">名前</span>, <strong class="underlined">*</strong>, *SYSBAS, *CURASPGRP</td>
+<td class="valigntop">オプショナル</td>
+</tr>
+<tr>
+<td class="valigntop"><a href="#SAVLIB.OUTPUT"><strong>OUTPUT</strong></a></td>
+<td class="valigntop">出力</td>
+<td class="valigntop"><strong class="underlined">*NONE</strong>, *PRINT, *OUTFILE</td>
+<td class="valigntop">オプショナル</td>
+</tr>
+<tr>
+<td class="valigntop" rowspan="3"><a href="#SAVLIB.OUTFILE"><strong>OUTFILE</strong></a></td>
+<td class="valigntop">出力を受け取るファイル</td>
+<td class="valigntop"><span class="var">修飾オブジェクト名</span></td>
+<td class="valigntop" rowspan="3">オプショナル</td>
+</tr>
+<tr>
+<td class="valigntop">修飾子 1: 出力を受け取るファイル</td>
+<td class="valigntop"><span class="var">名前</span></td>
+</tr><tr>
+<td class="valigntop">修飾子 2: ライブラリー</td>
+<td class="valigntop"><span class="var">名前</span>, <strong class="underlined">*LIBL</strong>, *CURLIB</td>
+</tr><tr>
+<td class="valigntop" rowspan="3"><a href="#SAVLIB.OUTMBR"><strong>OUTMBR</strong></a></td>
+<td class="valigntop">出力メンバー・オプション</td>
+<td class="valigntop"><span class="var">要素リスト</span></td>
+<td class="valigntop" rowspan="3">オプショナル</td>
+</tr>
+<tr>
+<td class="valigntop">要素 1: 出力を受け取るメンバー</td>
+<td class="valigntop">
+<span class="var">名前</span>, <strong class="underlined">*FIRST</strong></td>
+</tr>
+<tr>
+<td class="valigntop">要素 2: レコードの置き換えまたは追加</td>
+<td class="valigntop">
+<strong class="underlined">*REPLACE</strong>, *ADD</td>
+</tr>
+<tr>
+<td class="valigntop"><a href="#SAVLIB.INFTYPE"><strong>INFTYPE</strong></a></td>
+<td class="valigntop">出力情報のタイプ</td>
+<td class="valigntop"><strong class="underlined">*OBJ</strong>, *LIB, *MBR, *ERR</td>
+<td class="valigntop">オプショナル</td>
+</tr>
+<tr>
+<td class="valigntop" rowspan="3"><a href="#SAVLIB.CMDUSRSPC"><strong>CMDUSRSPC</strong></a></td>
+<td class="valigntop">コマンド・ユーザー・スペース</td>
+<td class="valigntop"><span class="var">修飾オブジェクト名</span></td>
+<td class="valigntop" rowspan="3">オプショナル</td>
+</tr>
+<tr>
+<td class="valigntop">修飾子 1: コマンド・ユーザー・スペース</td>
+<td class="valigntop"><span class="var">名前</span></td>
+</tr><tr>
+<td class="valigntop">修飾子 2: ライブラリー</td>
+<td class="valigntop"><span class="var">名前</span>, <strong class="underlined">*LIBL</strong>, *CURLIB</td>
+</tr><tr>
+<td class="valigntop"><a href="#SAVLIB.SORT"><strong>SORT</strong></a></td>
+<td class="valigntop">ソート方法</td>
+<td class="valigntop"><strong class="underlined">*NAME</strong>, *SIZE</td>
+<td class="valigntop">オプショナル</td>
+</tr>
+</tbody></table></div></div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table3" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#SAVLIB.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+</div>
+<div> <a name="SAVLIB.LIB"></a>
+<h2>ライブラリー (LIB)</h2>
+<p>保管するライブラリーを指定します。
+</p>
+<h3><strong>注</strong><strong>:</strong>
+</h3>
+<ol class="cds--list--ordered--temporary">
+<li class="cds--list__item">システム・ライブラリーQDOC, QDOCXXXX, QPTFOBJ1, QPTFOBJ2, QRCYXXXXX, QRECOVERY, QRPLOBJ, QRPLXXXXX, QSPL, QSPLXXXX, QSRV, QSYS, QSYSXXXXX,およびQTEMPをこのコマンドで保管することはできません。XXXXは基本ユーザーASP番号であり，XXXXXは独立ASP番号です。
+</li>
+<li class="cds--list__item">このパラメーターに*ALLUSRまたは*IBMを指定した場合には，このコマンドは，指定したライブラリーが使用中でない時に実行しなければなりません。ライブラリーの保管中にライブラリー中のオブジェクトが使用中であった場合には，SAVACTを使用しなければオブジェクトは保管されません。すべてのライブラリーの保管を確実に完了するには，このコマンドを制限状態のシステムで実行してください。例えば，サブシステムQSNADSが活動状態である時にSAVLIB LIB(*ALLUSR)が実行された場合には，ライブラリーQUSRSYS中のQAO*ファイルは保管されません。QAO*ファイルを保管するには，SAVLIB LIB(*ALLUSR)の実行前にQSNADSサブシステムを終了してください。
+</li>
+<li class="cds--list__item">SAVLIB LIB(*IBM)を実行してから，SAVLIB LIB(*ALLUSR)を実行すると，SAVLIB LIB(*NONSYS)の場合と同じライブラリーが保管されますが，2つの復元コマンドが必要です。
+</li>
+<li class="cds--list__item">ライブラリーは，<strong>ソート方法</strong><strong> (SORT)</strong>パラメーターに指定された順序で保管されます。
+</li>
+</ol>
+<p>これは必須パラメーターです。
+</p>
+<h3><strong>単一値</strong>
+</h3>
+<dl>
+<dt><strong>*NONSYS</strong></dt>
+<dd>以下のシステム・ライブラリーを除くすべてのライブラリーが保管されます。XXXXおよびXXXXXはASP番号を表します。
+<p>
+</p><pre>QDOC        QRCYXXXXX   QSPL        QSYSXXXXX
+QDOCXXXX    QRECOVERY   QSPLXXXX    QTEMP
+QPTFOBJ1    QRPLOBJ     QSRV
+QPTFOBJ2    QRPLXXXXX   QSYS
+</pre>
+<p></p>
+<p>
+<strong>注:     </strong>このオプションを指定する場合には，サブシステム終了(ENDSBS)またはシステム終了(ENDSYS)コマンドですべてのサブシステムを終了していなければなりません。
+</p>
+</dd>
+<dt><strong>*ALLUSR</strong></dt>
+<dd>すべてのユーザー・ライブラリーが保管されます。次を除いて，英字Ｑで開始されない名前のすべてのライブラリーが保管されます。
+<p>
+</p><pre>#CGULIB     #DSULIB     #SEULIB
+#COBLIB     #RPGLIB
+#DFULIB     #SDALIB
+</pre>
+<p></p>
+<p>次のQXXXライブラリーはIBMによって提供されますが，これらには一般的に，頻繁に変更されるユーザー・データが入れられます。したがって，こうしたライブラリーは「ユーザー・ライブラリー」とみなされ，これもまた保管されます。
+</p>
+<p>
+</p><pre>QDSNX       QRCLXXXXX   QUSRDIRDB   QUSRVI
+QGPL        QSRVAGT     QUSRIJS     QUSRVXRXMX
+QGPL38      QSYS2       QUSRINFSKR  QWQCENT
+QMGTC       QSYS2XXXXX  QUSRNOTES   QWQREPOS
+QMGTC2      QS36F       QUSROND
+QMPGDATA    QUSER38     QUSRPOSGS
+QMQMDATA    QUSRADSM    QUSRPOSSA
+QMQMPROC    QUSRBRM     QUSRPYMSVR
+QPFRDATA    QUSRDIRCF   QUSRRDARS
+QRCL        QUSRDIRCL   QUSRSYS
+</pre>
+<p></p>
+</dd>
+<dt><strong>*IBM</strong></dt>
+<dd>以下のものを除くIBM提供のすべてのライブラリーが保管されます。
+<p>
+</p><pre>QDOC        QRCL        QSYS2XXXXX  QUSRPOSGS
+QDOCXXXX    QRCLXXXXX   QS36F       QUSRPOSSA
+QDSNX       QRCYXXXXX   QTEMP       QUSRPYMSVR
+QGPL        QRECOVERY   QUSER38     QUSRRDARS
+QGPL38      QRPLOBJ     QUSRADSM    QUSRSYS
+QMGTC       QRPLXXXXX   QUSRBRM     QUSRVI
+QMGTC2      QSPL        QUSRDIRCF   QUSRVXRXMX
+QMPGDATA    QSPLXXXX    QUSRDIRCL   QWQCENT
+QMQMDATA    QSRV        QUSRDIRDB   QWQREPOS
+QMQMPROC    QSRVAGT     QUSRIJS
+QPFRDATA    QSYS        QUSRINFSKR
+QPTFOBJ1    QSYSXXXXX   QUSRNOTES
+QPTFOBJ2    QSYS2       QUSROND
+</pre>
+<p></p>
+<p>
+<strong>注:     </strong>前のリリースのCLプログラム内でコンパイルされるユーザー・コマンドを入れるために，弊社がサポートする前の各リリース用にQUSRVXRXMXの形式の別のライブラリー名を作成することができます。QUSRVXRXMXユーザー・ライブラリーのVXRXMXは弊社が引き続きサポートしている前のリリースのバージョン，リリース，およびモディフィケーション・レベルです。
+</p>
+<p>Ｑで始まらない名前をもつ次のライブラリーも保管されます。
+</p>
+<p>
+</p><pre>#CGULIB     #DSULIB     #SEULIB
+#COBLIB     #RPGLIB
+#DFULIB     #SDALIB
+</pre>
+<p></p>
+</dd>
+</dl>
+<dl>
+<dt><strong>*SELECT</strong></dt>
+<dd><strong>SELECT (SELECT)</strong>パラメーターで識別されたライブラリーが保管されます。保管ファイルへの保管時，選択基準に指定できるライブラリーは1つだけです。特殊値*SPLFは選択基準には指定できません。
+</dd>
+</dl>
+<dl>
+<dt><strong>*USRSPC</strong></dt>
+<dd><strong>コマンド・ユーザー・スペース</strong><strong> (CMDUSRSPC)</strong>パラメーターに指定されたユーザー・スペース中で識別されるライブラリーが保管されます。保管ファイルに保管する時には，ユーザー・スペースにライブラリーは1つしか指定することはできません。特殊値*SPLFはユーザー・スペースには指定できません。
+</dd>
+</dl>
+<h3><strong>その他の値（最大</strong><strong>300</strong><strong>個指定可能）</strong>
+</h3>
+<dl>
+<dt><strong class="italic">総称名</strong></dt>
+<dd>保管するライブラリーの総称名を指定します。総称名は1つまたは複数の文字とその後にアスタリスク(*)が付いた文字ストリング（例えば，ABC*)です。アスタリスク(*)は，有効な任意の文字と置き換えられます。総称名の指定は，名前がその総称接頭部で始まる，ユーザーが権限を持っているすべてのライブラリーです。総称（接頭部）名にアスタリスクが含まれていない場合には，システムはそれを完全なライブラリー名とみなします。
+</dd>
+<dt><strong class="italic">名前</strong></dt>
+<dd>保管されるライブラリーの名前を指定してください。保管ファイルに保管する時には，ライブラリー名は1つしか保管できません。システム・ライブラリー名を指定することはできません。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table4" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#SAVLIB.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="SAVLIB.DEV"></a>
+<h2>装置 (DEV)</h2>
+<p>保管操作に使用される装置の名前を指定します。この装置名は，装置記述によってシステム上で既に認識されていなければなりません。
+</p>
+<p>これは必須パラメーターです。
+</p>
+<h3><strong>単一値</strong>
+</h3>
+<dl>
+<dt><strong>*SAVF</strong></dt>
+<dd>保管操作は，<strong>保管ファイル</strong><strong> (SAVF)</strong>パラメーターに指定された保管ファイルを使用して実行されます。
+</dd>
+</dl>
+<dl>
+<dt><strong>*MEDDFN</strong></dt>
+<dd>保管操作は，<strong>媒体定義</strong><strong> (MEDDFN)</strong>パラメーターに指定された媒体定義で識別された装置および媒体を使用して実行されます。
+</dd>
+</dl>
+<h3><strong>その他の値</strong>
+</h3>
+<dl>
+<dt><strong class="italic">光ディスク装置名</strong></dt>
+<dd>保管操作に使用される光ディスク装置の名前を指定してください。
+</dd>
+</dl>
+<dl>
+<dt><strong class="italic">テープ媒体ライブラリー装置名</strong></dt>
+<dd>保管操作に使用されるテープ媒体ライブラリー装置の名前を指定してください。
+</dd>
+</dl>
+<dl>
+<dt><strong class="italic">テープ装置名</strong></dt>
+<dd>保管操作に使用される1つまたは複数のテープ装置の名前を指定してください。仮想テープ装置を使用する場合には，指定された装置のみでなければなりません。複数のテープ装置を使用する場合には，互換性のある媒体形式になっていなければならず，それらの名前は使用される順序で指定しなければなりません。複数のテープ装置を使用すると，テープ・ボリュームを巻き戻してアンロードしながら，別のテープ装置で次のテープ・ボリュームを処理できます。複数の装置を並列に使用するには，媒体定義が指定されていなければなりません。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table5" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#SAVLIB.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="SAVLIB.VOL"></a>
+<h2>ボリュームID (VOL)</h2>
+<p>データを保管するボリュームのボリュームIDまたはテープ媒体ライブラリー装置内のテープのカートリッジIDを指定します。ボリュームは，このパラメーターに指定したのと同じ順序で装置に入れなければなりません。
+</p>
+<h3><strong>単一値</strong>
+</h3>
+<dl>
+<dt><strong class="underlined">*MOUNTED</strong></dt>
+<dd>データは，装置に入っているボリュームに保管されます。媒体ライブラリー装置の場合には，使用されるボリュームは，テープ・カテゴリー設定(SETTAPCGY)コマンドによって装てんされているカテゴリー中の次のカートリッジです。
+<p>
+<strong>注:     </strong>光ディスク媒体ライブラリー装置を使用している時には，この値を指定することはできません。
+</p>
+</dd>
+</dl>
+<h3><strong>その他の値（最大</strong><strong>75</strong><strong>個指定可能）</strong>
+</h3>
+<dl>
+<dt><strong class="italic">文字値</strong></dt>
+<dd>装置に入れてデータの保管に使用する順序で，1つまたは複数のボリュームのIDを指定してください。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table6" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#SAVLIB.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="SAVLIB.SEQNBR"></a>
+<h2>順序番号 (SEQNBR)</h2>
+<p>テープが使用された時に，保管操作の開始点として使用する順序番号を指定します。
+</p>
+<dl>
+<dt><strong class="underlined">*END</strong></dt>
+<dd>保管操作は，最初のテープ上の最後の順序番号の後で開始されます。最初のテープがいっぱいになっている場合には，エラー・メッセージが出されて操作は終了します。
+</dd>
+<dt><strong class="italic">1から16777215</strong></dt>
+<dd>保管操作に使用されるファイルの順序番号を指定してください。
+</dd>
+</dl>
+<p>LIBパラメーターに*NONSYS, *ALLUSR,または*IBMが指定された場合には，ライブラリーのセットの保管操作は，指定された順序番号で開始されます。このセットに最初に保管されたファイルはQFILEファイルです。QFILEファイルには保管されたライブラリーのリストが入っています。
+</p>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table7" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#SAVLIB.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="SAVLIB.LABEL"></a>
+<h2>ラベル (LABEL)</h2>
+<p>保管操作に使用されるテープ・ボリューム上のデータ・ファイルを識別する名前を指定します。このパラメーターが保管コマンドで使用された場合には，復元コマンドでも同じラベルを指定しなければなりません。
+</p>
+<p>
+<strong>注:     </strong>このパラメーターで*SAVLIBを指定することはできません。この値は復元コマンドの<strong>ラベル</strong><strong> (LABEL)</strong>パラメーターの特殊値であり，これを指定すると保管したものを復元できなくなるからです。
+</p>
+<dl>
+<dt><strong class="underlined">*LIB</strong></dt>
+<dd>ファイル・ラベルは，<strong>ライブラリー</strong><strong> (LIB)</strong>パラメーターに指定されたライブラリーの名前を使用して，システムが作成します。
+</dd>
+<dt><strong class="italic">文字値</strong></dt>
+<dd>保管操作に使用されるデータ・ファイルのデータ・ファイルIDを指定してください。最大17文字を使用することができます。このオプションは，単一ライブラリーの保管操作の場合にのみ有効です。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table8" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#SAVLIB.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="SAVLIB.EXPDATE"></a>
+<h2>ファイル満了日 (EXPDATE)</h2>
+<p>保管操作によって作成されるファイルの有効期限を指定します。日付が指定されている場合には，そのファイルは保護されて，指定された有効期限まで上書きできません。
+</p>
+<h3><strong>注</strong><strong>:</strong>
+</h3>
+<ol class="cds--list--ordered--temporary">
+<li class="cds--list__item">このパラメーターはテープおよび光ディスク・ファイルの場合に有効です。
+</li>
+<li class="cds--list__item">このパラメーターを指定しても，CLEAR(*ALL)が指定されている保管操作からは保護されません。
+</li>
+</ol>
+<dl>
+<dt><strong class="underlined">*PERM</strong></dt>
+<dd>ファイルは永続的に保護されます。
+</dd>
+<dt><strong class="italic">日付</strong></dt>
+<dd>ファイルの保護が終了する日付を指定してください。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table9" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#SAVLIB.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="SAVLIB.ENDOPT"></a>
+<h2>媒体の終わりオプション (ENDOPT)</h2>
+<p>保管操作の終了後にテープまたは光ディスク・ボリュームに対して自動的に実行される操作を指定します。複数のボリュームを使用する場合には，このパラメーターは最後に使用されるボリュームにだけ適用されます。その他のすべてのボリュームは，ボリュームの終わりに達するとアンロードされます。
+</p>
+<p>
+<strong>注:     </strong>このパラメーターが有効なのは，磁気テープ装置または光ディスク装置の名前がDEVパラメーターに指定されている場合だけです。光ディスク装置の場合は，サポートされる特殊値は*UNLOADだけであり，*REWINDおよび*LEAVEは無視されます。
+</p>
+<dl>
+<dt><strong class="underlined">*REWIND</strong></dt>
+<dd>操作の終了後にテープは自動的に巻き戻されますが，アンロードされません。
+</dd>
+</dl>
+<dl>
+<dt><strong>*LEAVE</strong></dt>
+<dd>テープは，操作の終了後に巻き戻しまたはアンロードされません。テープ装置の現在の位置に留まります。
+</dd>
+</dl>
+<dl>
+<dt><strong>*UNLOAD</strong></dt>
+<dd>テープは操作が終了すると自動的に巻き戻されてアンロードされます。一部の光ディスク装置は操作が終了するとボリュームを排出します。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table10" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#SAVLIB.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="SAVLIB.STRLIB"></a>
+<h2>開始ライブラリー (STRLIB)</h2>
+<p>保管操作を開始するライブラリーを指定します。
+</p>
+<p>保管操作中に回復不能媒体エラーが起こった場合には，このパラメーターを使用して，操作を再開することができます。
+</p>
+<p>保管操作再開の基本ステップは次の通りです。
+</p>
+<ol class="cds--list--ordered--temporary">
+<li class="cds--list__item">ジョブ・ログを調べて，前の保管操作が正常に行われなかったライブラリーを判別してください。最後に保管されたライブラリーを見つけてください。これは，正常完了メッセージによって示されます。
+</li>
+<li class="cds--list__item">次のテープが初期設定されていることを確認して，そのテープを装てんしてください。
+</li>
+<li class="cds--list__item">以下をオリジナルの保管操作に追加します。
+<p>
+</p><pre>  STRLIB(ライブラリー名)  OMITLIB(ライブラリー名)
+</pre>
+<p></p>
+<p>ここで，STRLIBおよびOMITLIBパラメーターの<span class="var">ライブラリー名</span>は正常に保管された最後のライブラリーです。これにより，保管操作は正常に保管された最後のライブラリーの後のライブラリーから始まります。
+</p>
+<p>ライブラリーを復元するには，実行されたそれぞれの保管操作ごとに別個の復元操作を実行する必要があります。
+</p>
+</li>
+</ol>
+<dl>
+<dt><strong class="underlined">*FIRST</strong></dt>
+<dd>保管操作は，<strong>ライブラリー</strong><strong> (LIB)</strong>パラメーターに指定された最初のライブラリー値から始まります。最初の値が総称名または特殊値であった場合には，保管操作はこの値と一致する最初のライブラリーから始まります。
+</dd>
+<dt><strong class="italic">名前</strong></dt>
+<dd>保管操作を開始するライブラリーの名前を指定してください。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table11" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#SAVLIB.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="SAVLIB.SAVF"></a>
+<h2>保管ファイル (SAVF)</h2>
+<p>保管されたデータを入れるのに使用される保管ファイルを指定します。<strong>消去</strong><strong> (CLEAR)</strong>パラメーターで*ALLが指定されないかぎり，保管ファイルは空になっていなければなりません。
+</p>
+<p>
+<strong>注:     </strong><strong>装置</strong><strong> (DEV)</strong>パラメーターに*SAVFが指定されている場合には，このパラメーターに値を指定しなければなりません。
+</p>
+<h3><strong>修飾子</strong><strong>1: </strong><strong>保管ファイル</strong>
+</h3>
+<dl>
+<dt><strong class="italic">名前</strong></dt>
+<dd>使用する保管ファイルの名前を指定してください。
+</dd>
+</dl>
+<h3><strong>修飾子</strong><strong>2: ライブラリー</strong>
+</h3>
+<dl>
+<dt><strong class="underlined">*LIBL</strong></dt>
+<dd>最初に一致するものが見つかるまで，現行スレッドのライブラリー・リスト内のすべてのライブラリーが検索されます。
+</dd>
+</dl>
+<dl>
+<dt><strong>*CURLIB</strong></dt>
+<dd>保管ファイルを見つけるためにスレッドの現行ライブラリーが使用されます。ライブラリー・リストに現行ライブラリー項目が存在しない場合には，QGPLライブラリーが使用されます。
+</dd>
+<dt><strong class="italic">名前</strong></dt>
+<dd>保管ファイルが入っているライブラリーの名前を指定してください。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table12" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#SAVLIB.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="SAVLIB.MEDDFN"></a>
+<h2>媒体定義 (MEDDFN)</h2>
+<p>保管データを入れるのに使用される装置および媒体を識別する媒体定義(*MEDDFN)オブジェクトを指定します。媒体定義の作成および使用の詳細については，ISERIESバックアップおよび回復(SD88-5008)，およびIBM i Information Center(http://www.ibm.com/systems/i/infocenter/)の「プログラミング」カテゴリーの「API」トピック・コレクションの媒体定義作成APIを参照してください。
+</p>
+<p>媒体定義を指定した場合には，VOL, SEQNBR, SAVF,およびOPTFILEパラメーターは指定することができません。ボリュームIDおよび順序番号は，媒体定義に指定します。
+</p>
+<h3><strong>修飾子</strong><strong>1: </strong><strong>媒体定義</strong>
+</h3>
+<dl>
+<dt><strong class="italic">名前</strong></dt>
+<dd>使用する媒体定義の名前を指定してください。
+</dd>
+</dl>
+<h3><strong>修飾子</strong><strong>2: ライブラリー</strong>
+</h3>
+<dl>
+<dt><strong class="underlined">*LIBL</strong></dt>
+<dd>最初に一致するものが見つかるまで，現行スレッドのライブラリー・リスト内のすべてのライブラリーが検索されます。
+</dd>
+</dl>
+<dl>
+<dt><strong>*CURLIB</strong></dt>
+<dd>スレッドの現行ライブラリーが検索されます。スレッドの現行ライブラリーとして指定されているライブラリーがない場合，QGPLライブラリーが検索されます。
+</dd>
+</dl>
+<dl>
+<dt><strong class="italic">名前</strong></dt>
+<dd>検索するライブラリーの名前を指定してください。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table13" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#SAVLIB.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="SAVLIB.OPTFILE"></a>
+<h2>光ディスク・ファイル (OPTFILE)</h2>
+<p>保管操作に使用されるボリュームのルート・ディレクトリーで始まる光ディスク・ファイルのパス名を指定します。
+</p>
+<p>パス名を指定するときの詳細については，IBM i Information Center(http://www.ibm.com/systems/i/infocenter/)の「プログラミング」カテゴリーの「制御言語(CL)」トピック・コレクション の「オブジェクトの命名規則」を参照してください。
+</p>
+<dl>
+<dt><strong class="underlined">*</strong></dt>
+<dd>システムは，光ディスク・ボリュームのルート・ディレクトリー内に光ディスク・ファイル名を生成します。
+</dd>
+<dt><strong class="italic">'光ディスクのパス名/*'</strong></dt>
+<dd>システムは，光ディスク・ボリュームの指定されたディレクトリー内に光ディスク・ファイル名を生成します。
+</dd>
+</dl>
+<dl>
+<dt><strong class="italic">'光ディスク・ファイル・パス名'</strong></dt>
+<dd>光ディスク・ファイルのパス名を指定してください。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table14" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#SAVLIB.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="SAVLIB.USEOPTBLK"></a>
+<h2>最適ブロックの使用 (USEOPTBLK)</h2>
+<p>保管操作で最適ブロック・サイズを使用するかどうかを指定します。
+</p>
+<p>
+<strong>注:     </strong>USEOPTBLK(*YES)を指定すると，同一ブロック・サイズをサポートする装置にしか複写できないテープになります。
+</p>
+<dl>
+<dt><strong class="underlined">*YES</strong></dt>
+<dd>装置によってサポートされる最適ブロック・サイズが保管コマンドに使用されます。使用するブロック・サイズがすべての装置タイプによってサポートされるブロック・サイズより大きい場合には，次の通りです。
+<ul class="cds--list--unordered">
+<li class="cds--list__item">パフォーマンスが向上する場合があります。
+</li>
+<li class="cds--list__item">作成されるテープ・ファイルは，使用したブロック・サイズをサポートする装置しか互換性がありません。ファイルを使用したのと同じブロック・サイズをサポートする装置に複製中でない限り，テープ複製(DUPTAP)などのコマンドはファイルを複製しません。
+</li>
+<li class="cds--list__item">DTACPRパラメーターの値が無視されます。
+</li>
+</ul>
+</dd>
+<dt><strong>*NO</strong></dt>
+<dd>装置によってサポートされる最適ブロック・サイズは使用されません。保管コマンドでは，すべての装置タイプによってサポートされる省略時のブロック・サイズが使用されます。テープ・ボリュームは，テープ複製(DUPTAP)コマンドを使用して任意の媒体形式に複製することができます。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table15" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#SAVLIB.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="SAVLIB.TGTRLS"></a>
+<h2>ターゲット・リリース (TGTRLS)</h2>
+<p>オブジェクトを復元して使用しようとしているオペレーティング・システムのリリースを指定します。
+</p>
+<p><strong>ターゲット・リリース</strong>を指定する時は，形式VXRXMXでリリースを指定します。ここで，VXはバージョン，RXはリリース，MXはモディフィケーション・レベルです。例えば，V5R3M0はバージョン5,リリース3,モディフィケーション・レベル0です。
+</p>
+<p>有効な値は，オペレーティング・システムの現在のバージョン，リリース，およびモディフィケーション・レベルで異なり，リリースが新しくなるたびに変わります。このコマンド・パラメーターのプロンプト時にF4を押して，有効なターゲット・リリースの値のリストを表示することができます。
+</p>
+<p>保管操作を行うシステムとは異なるリリース・レベルのシステムに配布するオブジェクトを保管するように指定するためには，プログラム・オブジェクトの場合とプログラム以外のオブジェクトの場合とでは手順が異なり，またプログラム・オブジェクトが作成されるリリース・レベルによっても手順は異なります。例えば，前のリリースで実行中のシステムに配布するオブジェクトを保管する場合には，次の選択を行うことができます。
+</p>
+<h3><strong>プログラム・オブジェクトの場合</strong><strong>:</strong>
+</h3>
+<ul class="cds--list--unordered">
+<li class="cds--list__item">ターゲットとなる，以前のリリースの後続のリリース・レベルでプログラム・オブジェクトが作成されている場合には，以下を行わなければなりません。
+<ol class="cds--list--ordered--temporary">
+<li class="cds--list__item">ターゲットとなる，以前のリリースを指定して，再度プログラム・オブジェクトを作成する
+</li>
+<li class="cds--list__item">ターゲットとなる，以前のリリースを指定して，このプログラム・オブジェクトを保管する
+</li>
+<li class="cds--list__item">ターゲット・システムでこのプログラム・オブジェクトを復元する
+</li>
+</ol>
+</li>
+<li class="cds--list__item">ターゲット・システムと同じリリース・レベルでプログラム・オブジェクトが作成されている場合には，以下を行うことができます。
+<ol class="cds--list--ordered--temporary">
+<li class="cds--list__item">ターゲットとなる，以前のリリースを指定して，このプログラム・オブジェクトを保管する
+</li>
+<li class="cds--list__item">ターゲット・システムでこのプログラム・オブジェクトを復元する
+</li>
+</ol>
+</li>
+</ul>
+<h3><strong>プログラム以外のオブジェクトの場合</strong><strong>:</strong>
+</h3>
+<p>次のことができます。
+</p>
+<ol class="cds--list--ordered--temporary">
+<li class="cds--list__item">ターゲットとなる，以前のリリースを指定して，このオブジェクトを保管する
+</li>
+<li class="cds--list__item">ターゲット・システムでこのオブジェクトを復元する
+</li>
+</ol>
+<dl>
+<dt><strong class="underlined">*CURRENT</strong></dt>
+<dd>オブジェクトは，現在ユーザーのシステムで実行中のオペレーティング・システムのリリースに復元され，使用されます。オブジェクトは，後続のリリースのオペレーティング・システムが導入されたシステムに復元することもできます。
+</dd>
+<dt><strong>*PRV</strong></dt>
+<dd>オブジェクトは，オペレーティング・システムの前のリリース（モディフィケーション・レベルは0)に復元されます。オブジェクトは，後続のリリースのオペレーティング・システムが導入されたシステムに復元することもできます。
+</dd>
+<dt><strong class="italic">文字値</strong></dt>
+<dd>リリースをVXRXMXの形式で指定してください。オブジェクトは，指定したリリースまたはそれ以降のオペレーティング・システムが導入されているシステムに復元することができます。
+</dd>
+</dl>
+<h3><strong>注</strong><strong>:</strong>
+</h3>
+<ol class="cds--list--ordered--temporary">
+<li class="cds--list__item">LIB(*NONSYS), LIB(*ALLUSR),またはLIB(*IBM)が指定された場合には，ターゲット・リリースにできるのは現行リリースだけです。
+</li>
+<li class="cds--list__item">すべてのオブジェクトで別のリリースをターゲットにすることができるわけではありません。どのオブジェクトがサポートされているかを判別するには，ISERIESバックアップおよび回復(SD88-5008)の図を参照してください。
+</li>
+</ol>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table16" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#SAVLIB.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="SAVLIB.UPDHST"></a>
+<h2>ヒストリー更新 (UPDHST)</h2>
+<p>各保管済みオブジェクトの保管ヒストリーを，この保管操作の日付，時刻，および位置で変更するかどうかを指定します。オブジェクトの保管ヒストリー情報は，オブジェクト記述表示(DSPOBJD)コマンドを使用して表示します。保管ヒストリー情報は，RCVRNG(*LASTSAVE)およびFROMENT(*LASTSAVE)またはFROMENTLRG(*LASTSAVE)がジャーナル処理項目適用(APYJRNCHG)コマンドで使用されると，処理するジャーナル項目はどれかを判別するために使用されます。
+</p>
+<dl>
+<dt><strong class="underlined">*YES</strong></dt>
+<dd>保管された各オブジェクトで最終保管日，時刻，および位置が更新されます。
+</dd>
+<dt><strong>*NO</strong></dt>
+<dd>保管された各オブジェクトの記述に入っている保管ヒストリー情報は更新されません。
+<p>
+<strong>注:     </strong>UPDHST(*NO)は，回復を目的としない保管操作で使用する必要があります。例えば，保管データをレコードごとに別のシステムに送信して，保管ファイルを即時に削除すると，保管ヒストリー情報が更新されない場合があります。
+</p>
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table17" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#SAVLIB.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="SAVLIB.CLEAR"></a>
+<h2>消去 (CLEAR)</h2>
+<p>媒体上の活動データを自動的に消去するか置き換えるかを指定します。活動データとは，媒体上の有効期限が切れていないすべてのファイルのことです。テープへの保管の場合には，活動データを消去すると，保管操作で書き込まれた最後のファイルより後の，テープ・ボリューム上のファイルは以後アクセスできなくなります。光ディスクへの保管の場合には，保管操作で書き込まれたファイルを自動的に置き換えてそのボリューム上の他のファイルを活動状態のまま残すか，またはすべての活動ファイルを自動的に消去することができます。消去では，データは削除されず，ファイルが以後アクセスできなくなるだけです。
+</p>
+<h3><strong>注</strong><strong>:</strong>
+</h3>
+<ol class="cds--list--ordered--temporary">
+<li class="cds--list__item">テープの消去は，そのテープを初期設定しません。テープは，保管コマンドの発行前に，テープ初期設定(INZTAP)コマンドを使用してNEWVOLパラメーターに値を指定することによって標準ラベル形式に初期設定する必要があります。
+</li>
+<li class="cds--list__item">光ディスク・ボリュームを消去すると，それは初期設定されます。
+</li>
+<li class="cds--list__item">初期設定されていないボリュームが保管操作時に検出されると，照会メッセージが送信されて，操作員はそのボリュームを初期設定することができます。
+</li>
+</ol>
+<dl>
+<dt><strong class="underlined">*NONE</strong></dt>
+<dd>媒体は自動的には消去されません。保管操作でテープ・ボリューム，または保管ファイルに活動データが検出されると，照会メッセージが送信されて，操作員は保管操作を終了するか，あるいは媒体を消去することができます。保管操作で指定された光ディスク・ファイルが検出されると，照会メッセージが送信されて，操作員は保管操作を終了するか，あるいはそのファイルを置き換えることができます。
+</dd>
+</dl>
+<dl>
+<dt><strong>*ALL</strong></dt>
+<dd>すべての媒体が自動的に消去されます。
+</dd>
+</dl>
+<p>テープが使用され，SEQNBRパラメーターに順序番号が指定された場合には，その順序番号から最初のテープの消去が開始されます。その最初のテープに続くテープはすべて完全に消去されます。最初のテープ全体を消去するためには，SEQNBR(1)を指定する必要があります。
+</p>
+<dl>
+<dt><strong>*AFTER</strong></dt>
+<dd>最初のボリュームの後ですべての媒体は自動的に消去されます。保管操作の最初のテープ・ボリュームに活動データがある場合には，照会メッセージが送信されて，操作員は保管操作の終了または媒体の消去ができます。保管操作で最初のボリュームに指定された光ディスク・ファイルが検出されると，照会メッセージが送信されて，操作員は保管操作を終了するか，あるいはそのファイルを置き換えることができます。
+</dd>
+</dl>
+<p>
+<strong>注:     </strong>*AFTER値は保管ファイルの場合には無効です。
+</p>
+<p></p>
+<dl>
+<dt><strong>*REPLACE</strong></dt>
+<dd>媒体上の活動データは自動的に置き換えられます。光ディスク・ボリュームは初期設定されません。その他の媒体は，*ALL値の場合と同様に自動的に消去されます。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table18" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#SAVLIB.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="SAVLIB.PRECHK"></a>
+<h2>オブジェクト事前検査 (PRECHK)</h2>
+<p>次のいずれかが真の場合に，ライブラリーの保管操作を終了するかどうかを指定します。
+</p>
+<ol class="cds--list--ordered--temporary">
+<li class="cds--list__item">オブジェクトが存在していない。
+</li>
+<li class="cds--list__item">ライブラリーまたはオブジェクトに損傷があることが前に判明している。
+</li>
+<li class="cds--list__item">ライブラリーまたはオブジェクトが他のジョブによってロックされている。
+</li>
+<li class="cds--list__item">保管操作の要求元に，そのライブラリーの権限がないか，あるいはオブジェクトの保管権限がない。
+</li>
+</ol>
+<dl>
+<dt><strong class="underlined">*NO</strong></dt>
+<dd>ライブラリーに対する保管操作は続行し，保管できるオブジェクトのみを保管します。
+</dd>
+<dt><strong>*YES</strong></dt>
+<dd>指定されたすべてのオブジェクトが検査された後で1つまたは複数のオブジェクトが保管できない場合には，ライブラリーに対する保管操作はデータが書き出される前に終了します。複数のライブラリーが指定された場合には，保管操作は次のライブラリーから続行します。ただし，PRECHK(*YES)およびSAVACT(*SYNCLIB)が指定され，保管するライブラリーの中に予備検査条件を満たしていないオブジェクトがある場合には，保管操作は終了し，オブジェクトはいずれも保管されません。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table19" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#SAVLIB.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="SAVLIB.SAVACT"></a>
+<h2>活動状態保管 (SAVACT)</h2>
+<p>オブジェクトを保管中にこれを更新できるかどうかを指定します。
+</p>
+<p>
+<strong>注:     </strong>ユーザーのシステムが制限状態であり，SAVACTパラメーターが指定された場合には，SAVACT(*NO)が指定されたかのように保管操作は実行されます。
+</p>
+<dl>
+<dt><strong class="underlined">*NO</strong></dt>
+<dd>使用中のオブジェクトは保管されません。保管中のオブジェクトを更新することはできません。
+</dd>
+<dt><strong>*LIB</strong></dt>
+<dd>ライブラリー内のオブジェクトは，別のジョブで使用中であっても，保管することができます。ライブラリー中のすべてのオブジェクトが同時にチェックポイントに達し，オブジェクト相互の関係が一貫性のある状態で保管されます。
+</dd>
+<dt><strong>*SYNCLIB</strong></dt>
+<dd>ライブラリー内のオブジェクトは，別のジョブで使用中であっても，保管することができます。保管操作中のすべてのオブジェクトおよびすべてのライブラリーが同時にチェックポイントに達し，それらの相互の関係に一貫性のある状態で保管されます。
+<p>
+<strong>注:     </strong>この値を指定して，多数のライブラリーを保管しようとすると，保管操作ですべてのオブジェクトおよびライブラリーのチェックポイントに達するために長時間を要する可能性があります。
+</p>
+</dd>
+<dt><strong>*SYSDFN</strong></dt>
+<dd>ライブラリー内のオブジェクトは，別のジョブで使用中であっても，保管することができます。ライブラリー中のオブジェクトはそれぞれ異なる時点にチェックポイントに達することがあり，オブジェクト相互の関係が一貫性のある状態にならないことがあります。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table20" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#SAVLIB.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="SAVLIB.SAVACTWAIT"></a>
+<h2>活動状態保管待ち時間 (SAVACTWAIT)</h2>
+<p>保管操作を続行する前に，使用中のオブジェクトまたは変更が保留中になっているトランザクションがコミット境界に達するのを待つ時間の長さを指定します。
+</p>
+<h3><strong>要素</strong><strong>1: </strong><strong>オブジェクト・ロック</strong>
+</h3>
+<p>使用中の各オブジェクトについては，そのオブジェクトが使用可能になるのを待つ時間の長さを指定します。オブジェクトが指定された時間内使用中のままになっている場合には，そのオブジェクトは保管されません。
+</p>
+<dl>
+<dt><strong class="underlined">120</strong></dt>
+<dd>システムは，保管操作を続行する前に，それぞれの個別オブジェクト・ロックを120秒まで待ちます。
+</dd>
+<dt><strong>*NOMAX</strong></dt>
+<dd>最大待ち時間が存在していません。
+</dd>
+<dt><strong class="italic">0から99999</strong></dt>
+<dd>保管操作を続行する前に，それぞれの個別オブジェクト・ロックを待つ秒数を指定します。
+</dd>
+</dl>
+<h3><strong>要素</strong><strong>2: </strong><strong>保留中のレコード変更</strong>
+</h3>
+<p>一緒にチェックポイント処理されるオブジェクトの各グループごとに，レコードの変更が保留中になっているトランザクションがコミット境界に達するのを待つ時間の長さを指定します。一緒にチェックポイント処理されるオブジェクトは，<strong>活動状態保管</strong><strong> (SAVACT)</strong>パラメーターで決定されます。0が指定された場合には，保管中のすべてのオブジェクトがコミット境界になければなりません。その他の値が指定された場合には，保管中のオブジェクトと同じジャーナルにジャーナル処理されたすべてのオブジェクトがコミット境界に達していなければなりません。指定された時間以内にコミット境界に達しない場合には，*NOCMTBDYが指定されていない限り，保管操作は終了します。
+</p>
+<dl>
+<dt><strong class="underlined">*LOCKWAIT</strong></dt>
+<dd>システムは，レコードの変更が保留中になっているトランザクションがコミット境界に達するのを，「要素1」に指定された値まで待ちます。
+</dd>
+<dt><strong>*NOCMTBDY</strong></dt>
+<dd>システムは，レコードの変更が保留中になっているトランザクションがコミット境界に達することを必要とせずに，オブジェクトを保管します。したがって，オブジェクトは部分トランザクションとともに保管されることがあります。
+<p>部分トランザクションとともに保管されたオブジェクトを復元した場合には，ジャーナル変更を適用または除去(APYJRNCHGまたはRMVJRNCHGコマンド）して，コミット境界に達するまで，そのオブジェクトは使用できません。変更を適用または除去するには，部分トランザクションに関する情報を含むすべてのジャーナル・レシーバーが必要になります。変更を適用または除去するまでは，*NOCMTBDYを指定しない場合であっても，そのオブジェクトの今後の保管には部分トランザクションが組み込まれることになります。
+</p>
+</dd>
+<dt><strong>*NOMAX</strong></dt>
+<dd>最大待ち時間が存在していません。
+</dd>
+<dt><strong class="italic">0から99999</strong></dt>
+<dd>レコードの変更が保留中になっているトランザクションがコミット境界に達するのを待つ秒数を指定します。
+</dd>
+</dl>
+<h3><strong>要素</strong><strong>3: </strong><strong>他の保留中の変更</strong>
+</h3>
+<p>各ライブラリーごとに，保留中になっているその他の変更があるトランザクションがコミット境界に達するのを待つ時間の長さを指定します。その他の保留中の変更には以下のものがあります。
+</p>
+<ul class="cds--list--unordered">
+<li class="cds--list__item">そのライブラリーに対するデータ定義言語(DDL)オブジェクト・レベルの変更。
+</li>
+<li class="cds--list__item">通常の保管処理を可能にするオプションを指定しないで追加されたすべてのAPIコミットメント資源。詳細については，IBM i Information Center(http://www.ibm.com/systems/i/infocenter/)の「プログラミング」カテゴリーの「API」トピック・コレクションのコミットメント資源追加(QTNADDCR) APIを参照してください。
+</li>
+</ul>
+<p>ライブラリーについて指定された時間以内にコミット境界に達しない場合には，ライブラリーは保管されません。
+</p>
+<dl>
+<dt><strong class="underlined">*LOCKWAIT</strong></dt>
+<dd>システムは，上記のトランザクションのタイプがコミット境界に達するのを，「要素1」に指定された値まで待ちます。
+</dd>
+<dt><strong>*NOMAX</strong></dt>
+<dd>最大待ち時間が存在していません。
+</dd>
+<dt><strong class="italic">0から99999</strong></dt>
+<dd>上記のトランザクションのタイプがコミット境界に達するのを待つ秒数を指定します。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table21" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#SAVLIB.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="SAVLIB.SAVACTMSGQ"></a>
+<h2>活動状態保管メッセージ待ち行列 (SAVACTMSGQ)</h2>
+<p>ライブラリーのチェックポイント処理が完了していることをユーザーに通知するために保管操作で使用されるメッセージ待ち行列を指定します。<strong>活動状態保管</strong><strong> (SAVACT)</strong>パラメーターに*SYSDFNまたは*LIB値が指定されている時に，保管されるライブラリーごとに別々のメッセージが送られます。SAVACTパラメーターに*SYNCLIBが指定された場合には，保管操作ですべてのライブラリーに1つのメッセージが送られます。
+</p>
+<p>このパラメーターは，既知の一貫性のある境界でオブジェクトを保管して，復元操作の後の追加回復手順を避けるために使用することができます。アプリケーションは，チェックポイント処理完了メッセージを受信するまで停止することができます。
+</p>
+<h3><strong>単一値</strong>
+</h3>
+<dl>
+<dt><strong class="underlined">*NONE</strong></dt>
+<dd>通知メッセージは送信されません。
+</dd>
+<dt><strong>*WRKSTN</strong></dt>
+<dd>通知メッセージがワークステーション・メッセージ待ち行列に送られます。この値はバッチ・モードでは無効です。
+</dd>
+</dl>
+<h3><strong>修飾子</strong><strong>1: </strong><strong>活動状態保管</strong><strong>メッセージ</strong><strong>待ち行列</strong>
+</h3>
+<dl>
+<dt><strong class="italic">名前</strong></dt>
+<dd>使用するメッセージ待ち行列の名前を指定します。
+</dd>
+</dl>
+<h3><strong>修飾子</strong><strong>2: ライブラリー</strong>
+</h3>
+<dl>
+<dt><strong class="underlined">*LIBL</strong></dt>
+<dd>最初に一致するものが見つかるまで，現行スレッドのライブラリー・リスト内のすべてのライブラリーが検索されます。
+</dd>
+</dl>
+<dl>
+<dt><strong>*CURLIB</strong></dt>
+<dd>メッセージ待ち行列を見つけるために，ジョブの現行ライブラリーが使用されます。ジョブの現行ライブラリーとして指定されているライブラリーがない場合は，QGPLライブラリーが使用されます。
+</dd>
+<dt><strong class="italic">名前</strong></dt>
+<dd>メッセージ待ち行列が入っているライブラリーの名前を指定してください。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table22" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#SAVLIB.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="SAVLIB.SYNCID"></a>
+<h2>同期 ID (SYNCID)</h2>
+<p>この活動状態保管操作が関係する同期チェックポイントの名前を指定します。同期チェックポイントは，保管同期の開始 (STRSAVSYNC)コマンドによって既に開始しておく必要があります。
+</p>
+<dl>
+<dt><strong class="underlined">*NONE</strong></dt>
+<dd>この活動状態保管操作のチェックポイントは，他のどの活動状態保管操作とも同期されていません。
+</dd>
+</dl>
+<dl>
+<dt><strong class="italic">名前</strong></dt>
+<dd>同期チェックポイントの名前を指定します。名前を指定する場合には，<strong>活動状態保管</strong><strong> (SAVACT)</strong>パラメーターに値*SYNCLIBを指定する必要もあります。
+<p>
+<strong>注:     </strong>名前を指定する場合には，<strong>活動状態保管待ち時間</strong><strong> (SAVACTWAIT)</strong>パラメーターの<strong>要素</strong><strong>2: </strong><strong>保留中のレコード変更</strong>で使用される値が，関係しているすべての保管操作のなかで最大の値になります。ただし，関係しているいずれかの保管操作に*NOCMTBDYが指定されている場合には，関係しているすべての保管操作で*NOCMTBDYを指定する必要があります。
+</p>
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table23" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#SAVLIB.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="SAVLIB.ACCPTH"></a>
+<h2>アクセス・パス保管 (ACCPTH)</h2>
+<p>保管しようとしている物理ファイルに従属する論理ファイル・アクセス・パスも一緒に保管されるかどうかを指定します。アクセス・パスが保管されるのは，次の場合だけです。
+</p>
+<ul class="cds--list--unordered">
+<li class="cds--list__item">アクセス・パスが作成されているすべてのメンバーがこの保管操作に組み込まれた場合。
+</li>
+<li class="cds--list__item">保管時点でアクセス・パスが無効でないか，または損傷を受けていない場合。
+</li>
+</ul>
+<p>システムでは，アクセス・パスの保全性を確認するための検査が行われます。システムによって相違が見つかった場合には，アクセス・パスが再作成される結果となります。
+</p>
+<p>各物理ファイルと一緒に保管される論理ファイル・アクセス・パスの数を示す通知メッセージが送られます。アクセス・パスが作成される物理ファイルはすべて同じライブラリー内になければなりません。このパラメーターは，論理ファイル・オブジェクトを保管するものではなく，アクセス・パスの保管を制御するだけです。保管されたアクセス・パスの復元の詳細は，ISERIESバックアップおよび回復(SD88-5008)にあります。
+</p>
+<h3><strong>重要：基礎になっている物理ファイルと論理ファイルが異なるライブラリーに入っている場合には，アクセス・パスが保管されます。しかし，論理ファイルおよび基礎になっている物理ファイルが異なるライブラリーに入っていて，論理ファイルまたは物理ファイルが復元時に存在していない（災害時回復や，ファイルが削除されていたなど）場合には，アクセス・パスは復元されません。これらは再作成されます。論理ファイルに対してできるだけ速い復元操作を実行するためには，論理ファイルおよび基礎になっている物理ファイルが同じライブラリーに入っていなければならず，同時に保管しなければなりません。</strong>
+</h3>
+<dl>
+<dt><strong class="underlined">*SYSVAL</strong></dt>
+<dd>QSAVACCPTHシステム値は，保管しようとしている物理ファイルに従属する論理ファイル・アクセス・パスを保管するかどうかを決定します。
+</dd>
+<dt><strong>*NO</strong></dt>
+<dd>このコマンドで指定されたオブジェクトのみが保管されます。論理ファイルのアクセス・パスは保管されません。
+</dd>
+<dt><strong>*YES</strong></dt>
+<dd>指定された物理ファイルとその上にあるすべての適切な論理ファイル・アクセス・パスが保管されます。
+<p>
+<strong>注:     </strong>この値を指定しても，論理ファイルは保管されません。
+</p>
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table24" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#SAVLIB.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="SAVLIB.SAVFDTA"></a>
+<h2>保管ファイル・データ (SAVFDTA)</h2>
+<p>保管ファイル・オブジェクトの場合に，保管ファイルの記述を保管するか，あるいは保管ファイルの記述と内容の両方とも保管するかを指定します。
+</p>
+<dl>
+<dt><strong class="underlined">*YES</strong></dt>
+<dd>保管ファイルの記述と内容を保管します。
+</dd>
+<dt><strong>*NO</strong></dt>
+<dd>保管ファイルの記述だけを保管します。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table25" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#SAVLIB.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="SAVLIB.SPLFDTA"></a>
+<h2>スプール・ファイル・データ (SPLFDTA)</h2>
+<p>保管される出力待ち行列のスプール・ファイル・データおよび属性を保管するかどうかを指定します。
+</p>
+<dl>
+<dt><strong class="underlined">*NONE</strong></dt>
+<dd>スプール・ファイル・データは保管されません。
+</dd>
+<dt><strong>*ALL</strong></dt>
+<dd>保管される出力待ち行列ごとに，出力待ち行列で使用可能なスプール・ファイル・データがすべて保管されます。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table26" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#SAVLIB.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="SAVLIB.QDTA"></a>
+<h2>待ち行列データ (QDTA)</h2>
+<p>待ち行列オブジェクトの場合に，待ち行列の記述を保管するか，あるいは待ち行列の記述と内容の両方とも保管するかを指定します。
+</p>
+<dl>
+<dt><strong class="underlined">*NONE</strong></dt>
+<dd>待ち行列の記述だけが保管されます。
+</dd>
+<dt><strong>*DTAQ</strong></dt>
+<dd>標準データ待ち行列の記述と内容を保管します。分散データ管理機能(DDM)データ待ち行列の記述だけが保管されます。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table27" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#SAVLIB.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="SAVLIB.PVTAUT"></a>
+<h2>専用権限 (PVTAUT)</h2>
+<p>保管されたオブジェクトで，専用権限を保管するかどうかを指定します。専用権限の保管によって，オブジェクトを保管する時間が増大しますが，オブジェクトまたはオブジェクト・グループのリカバリーを単純化できます。システム全体のリカバリーを単純化するわけではありません。
+</p>
+<dl>
+<dt><strong class="underlined">*NO</strong></dt>
+<dd>どの専用権限も保管されません。
+</dd>
+<dt><strong>*YES</strong></dt>
+<dd>保管される各オブジェクトについて，専用権限が保管されます。
+<p>
+<strong>注:     </strong>この値を指定するには，システム保管(*SAVSYS)またはすべてのオブジェクト(*ALLOBJ)特殊権限が必要です。
+</p>
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table28" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#SAVLIB.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="SAVLIB.STG"></a>
+<h2>記憶域 (STG)</h2>
+<p>保管しようとしているライブラリー中の指定されたメンバー（保管ファイルを除く），モジュール，プログラム，サービス・プログラム，SQLパッケージ，およびジャーナル・レシーバーのデータ部分によって占められているシステム記憶域が保管操作の一部として解放されるかどうかを指定します。これらのオブジェクトのデータ部分のみが解放され，オブジェクトの記述は解放されません。
+</p>
+<dl>
+<dt><strong class="underlined">*KEEP</strong></dt>
+<dd>保管しようとしているオブジェクトのデータ部分によって占められている記憶域は解放されません。
+</dd>
+<dt><strong>*FREE</strong></dt>
+<dd>保管しようとしている指定されたオブジェクトのデータ部分によって占められている記憶域が保管操作の一部として解放されます。ライブラリー中のすべてのオブジェクトが占めている記憶域は，そのライブラリー中のすべてのオブジェクトが正常に保管された後でのみ解放されます。
+<p>
+<strong>注:     </strong>起こる可能性があるプログラムの異常終了を防止するためには，*FREEが指定された時に，保管しようとしているプログラムがシステムで実行中であってはなりません。
+</p>
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table29" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#SAVLIB.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="SAVLIB.DTACPR"></a>
+<h2>データ圧縮 (DTACPR)</h2>
+<p>データ圧縮を使用するかどうかを指定します。システム上で他のジョブが活動状態のときに，ソフトウェア圧縮を使用した保管が行われる場合，全体的なシステム・パフォーマンスが影響を受ける場合があります。
+</p>
+<p>
+<strong>注:     </strong>*DEVがこのパラメーターと<strong>データ短縮</strong><strong> (COMPACT)</strong>パラメーターの両方に指定されていて，装置データの短縮が装置上でサポートされている場合には，装置データの短縮だけが実行されます。そうでない場合には，データ圧縮が実行されます。
+</p>
+<p>このパラメーターに*YESが指定され，COMPACTパラメーターに*DEVが指定された場合には，装置上でサポートされていれば，装置データの短縮と装置データの圧縮の両方が実行されます。
+</p>
+<dl>
+<dt><strong class="underlined">*DEV</strong></dt>
+<dd>テープへの保管で，ターゲット装置が圧縮をサポートしている場合には，ハードウェアの圧縮が実行されます。そうでない場合には，データ圧縮は実行されません。
+</dd>
+</dl>
+<dl>
+<dt><strong>*NO</strong></dt>
+<dd>データ圧縮は実行されません。
+</dd>
+<dt><strong>*YES</strong></dt>
+<dd>テープへの保管で，ターゲット装置が圧縮をサポートしている場合には，ハードウェアの圧縮が実行されます。圧縮がサポートされていないか，あるいは保管データが光ディスク媒体または保管ファイルに書き出される場合には，ソフトウェア圧縮が実行されます。低ソフトウェア圧縮は，中間ソフトウェア圧縮を使用する光ディスクDVD以外のすべての装置に使用されます。
+</dd>
+<dt><strong>*LOW</strong></dt>
+<dd>保管操作が保管ファイルまたは光ディスクに対する操作の場合には，ソフトウェア・データ圧縮はSNAアルゴリズムで実行されます。通常，低圧縮はより高速であり，圧縮されるデータは中間および高圧縮が使用された場合より大きくなります。
+<p>
+<strong>注:     </strong>この値はテープの場合には無効です。
+</p>
+</dd>
+<dt><strong>*MEDIUM</strong></dt>
+<dd>保管操作が保管ファイルまたは光ディスクに対する操作の場合には，ソフトウェア・データ圧縮はTERSEアルゴリズムで実行されます。通常，中間圧縮は低圧縮より低速になりますが，高圧縮よりは高速となります。圧縮されるデータは通常，低圧縮が使用された場合よりは小さくなり，高圧縮が使用された場合よりは大きくなります。
+<p>
+<strong>注:     </strong>この値はテープの場合には無効です。
+</p>
+</dd>
+<dt><strong>*HIGH</strong></dt>
+<dd>保管操作が保管ファイルまたは光ディスクに対する操作の場合には，ソフトウェア・データ圧縮はLZ1アルゴリズムで実行されます。通常，高圧縮はより低速であり，圧縮されるデータは低および中間圧縮が使用された場合より小さくなります。
+<p>
+<strong>注:     </strong>この値はテープの場合には無効です。
+</p>
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table30" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#SAVLIB.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="SAVLIB.COMPACT"></a>
+<h2>データ短縮 (COMPACT)</h2>
+<p>装置データ短縮を実行するかどうかを指定します。
+</p>
+<dl>
+<dt><strong class="underlined">*DEV</strong></dt>
+<dd>データがテープに保管され，<strong>装置</strong><strong> (DEV)</strong>パラメーターに指定したすべてのテープ装置が短縮機能をサポートしている場合には，装置データ短縮が実行されます。
+<p>
+<strong>注:     </strong>*DEVが<strong>データ圧縮</strong><strong> (DTACPR)</strong>パラメーターとこのパラメーターの両方に指定されていて，装置データの短縮が装置上でサポートされている場合には，装置データの短縮だけが実行されます。そうでない場合には，装置上でサポートされていれば，データ圧縮が実行されます。
+</p>
+<p>DTACPRパラメーターに*YESが指定され，このパラメーターに*DEVが指定された場合には，装置上でサポートされていれば，装置データの短縮と装置データの圧縮の両方が実行されます。
+</p>
+</dd>
+<dt><strong>*NO</strong></dt>
+<dd>装置データの短縮は実行されません。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table31" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#SAVLIB.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="SAVLIB.OMITLIB"></a>
+<h2>除外するライブラリー (OMITLIB)</h2>
+<p>保管操作から除外する，1つまたは複数のライブラリーの名前またはライブラリーの各グループの総称名を指定します。
+</p>
+<h3><strong>単一値</strong>
+</h3>
+<dl>
+<dt><strong class="underlined">*NONE</strong></dt>
+<dd>どのライブラリーも保管操作から除外されません。
+</dd>
+</dl>
+<dl>
+<dt><strong>*USRSPC</strong></dt>
+<dd><strong>コマンド・ユーザー・スペース</strong><strong> (CMDUSRSPC)</strong>パラメーターに指定されたユーザー・スペース中で識別されるライブラリーは，保管操作から除外されます。
+</dd>
+</dl>
+<h3><strong>その他の値（最大</strong><strong>300</strong><strong>個指定可能）</strong>
+</h3>
+<dl>
+<dt><strong class="italic">総称名</strong></dt>
+<dd>除外するライブラリーの総称名を指定します。総称名は1つまたは複数の文字とその後にアスタリスク(*)が付いた文字ストリング（例えば，ABC*)です。アスタリスク(*)は，有効な任意の文字と置き換えられます。総称名の指定は，名前がその総称接頭部で始まる，ユーザーが権限を持っているすべてのライブラリーです。総称（接頭部）名にアスタリスクが含まれていない場合には，システムはそれを完全なライブラリー名とみなします。
+</dd>
+<dt><strong class="italic">名前</strong></dt>
+<dd>保管操作から除外するライブラリーの名前を指定してください。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table32" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#SAVLIB.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="SAVLIB.OMITOBJ"></a>
+<h2>除外するオブジェクト (OMITOBJ)</h2>
+<p>操作から除外するオブジェクトを指定します。最大300までのオブジェクトまたは総称オブジェクトの値を指定することができます。
+</p>
+<h3><strong>単一値</strong>
+</h3>
+<dl>
+<dt><strong>*USRSPC</strong></dt>
+<dd><strong>コマンド・ユーザー・スペース</strong><strong> (CMDUSRSPC)</strong>パラメーターに指定されたユーザー・スペース中で識別されるオブジェクトは，保管操作から除外されます。
+</dd>
+</dl>
+<h3><strong>その他の値（最大</strong><strong>300</strong><strong>個指定可能）</strong>
+</h3>
+<h3><strong>要素</strong><strong>1: </strong><strong>オブジェクト</strong>
+</h3>
+<h3><strong>修飾子</strong><strong>1: </strong><strong>オブジェクト</strong>
+</h3>
+<dl>
+<dt><strong class="underlined">*NONE</strong></dt>
+<dd>操作から除外されるオブジェクトはありません。
+</dd>
+<dt><strong>*ALL</strong></dt>
+<dd>指定されたオブジェクト・タイプのすべてのオブジェクトが操作から除外されます。
+</dd>
+<dt><strong class="italic">総称名</strong></dt>
+<dd>除外するオブジェクトの総称名を指定します。
+<p>
+<strong>注:     </strong>総称名は，1つまたは複数の文字の後にアスタリスク(*)が付いた文字ストリングとして指定されます。総称名を指定した場合には，その総称オブジェクト名と同じ接頭部を持つ名前のついたすべてのオブジェクトが選択されます。
+</p>
+</dd>
+<dt><strong class="italic">名前</strong></dt>
+<dd>操作から除外するオブジェクトの名前を指定します。
+</dd>
+</dl>
+
+<h3><strong>修飾子</strong><strong>2: ライブラリー</strong>
+</h3>
+<dl>
+<dt><strong class="underlined">*ALL</strong></dt>
+<dd>指定されたオブジェクトは，操作部位のすべてのライブラリーから除外されます。
+</dd>
+<dt><strong class="italic">総称名</strong></dt>
+<dd>除外するオブジェクトが入っているライブラリーの総称名を指定します。
+<p>
+<strong>注:     </strong>総称名は，1つまたは複数の文字の後にアスタリスク(*)が付いた文字ストリングとして指定されます。総称名を指定した場合には，その総称オブジェクト名と同じ接頭部を持つ名前のついたすべてのオブジェクトが選択されます。
+</p>
+</dd>
+<dt><strong class="italic">名前</strong></dt>
+<dd>操作から除外するオブジェクトが入っているライブラリーの名前を指定します。
+</dd>
+</dl>
+
+<h3><strong>要素</strong><strong>2: </strong><strong>オブジェクト・タイプ</strong>
+</h3>
+<dl>
+<dt><strong class="underlined">*ALL</strong></dt>
+<dd>オブジェクト名に指定された値に基づいて，すべてのオブジェクト・タイプが操作から除外されます。
+</dd>
+<dt><strong class="italic">文字値</strong></dt>
+<dd>操作から除外するオブジェクトのオブジェクト・タイプを指定します。
+<p>このコマンドについてプロンプトを出す時にオブジェクト・タイプの完全なリストを表示するには，このパラメーターのフィールドにカーソルを位置付け，F4（プロンプト）を押します。オブジェクト・タイプの記述については，IBM i Information Center(http://www.ibm.com/systems/i/infocenter/)の「プログラミング」カテゴリーの「制御言語(CL)」トピック・コレクションの「オブジェクト・タイプ」を参照してください。
+</p>
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table33" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#SAVLIB.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="SAVLIB.SELECT"></a>
+<h2>SELECT (SELECT)</h2>
+<p>保管するオブジェクトの選択基準を指定します。<strong>ライブラリー</strong><strong> (LIB)</strong>パラメーターに指定されたライブラリー内のオブジェクトから選択できます。
+</p>
+<h3><strong>単一値</strong>
+</h3>
+<dl>
+<dt><strong>*USRSPC</strong></dt>
+<dd><strong>コマンド・ユーザー・スペース</strong><strong> (CMDUSRSPC)</strong>パラメーターに指定されたユーザー・スペース中で識別される選択基準が使用されます。
+</dd>
+</dl>
+<h3><strong>その他の値（最大</strong><strong>300</strong><strong>個指定可能）</strong>
+</h3>
+<h3><strong>要素</strong><strong>1: </strong><strong>組み込みまたは除外</strong>
+</h3>
+<p>選択したオブジェクトを保管操作に含めるか，またはこの操作から除外するかを指定します。
+</p>
+<dl>
+<dt><strong class="underlined">*INCLUDE</strong></dt>
+<dd>選択したオブジェクトが保管されます(*OMITの指定によって一時変更された場合，および<strong>除外するライブラリー</strong><strong> (OMITLIB)</strong>パラメーターまたは<strong>除外するオブジェクト</strong><strong>(OMITOBJ)</strong>パラメーターによって除外された場合を除く）。
+</dd>
+<dt><strong>*OMIT</strong></dt>
+<dd>選択したオブジェクトは保管操作に含まれません。
+</dd>
+</dl>
+<h3><strong>要素</strong><strong>2: </strong><strong>オブジェクト</strong>
+</h3>
+<h3><strong>修飾子</strong><strong>1: </strong><strong>オブジェクト</strong>
+</h3>
+<dl>
+<dt><strong class="underlined">*ALL</strong></dt>
+<dd>すべてのオブジェクト名が選択されます。
+</dd>
+<dt><strong class="italic">総称名</strong></dt>
+<dd>選択するオブジェクトの総称名を指定してください。
+<p>
+<strong>注:     </strong>総称名は，1つまたは複数の文字の後にアスタリスク(*)が付いた文字ストリングとして指定されます。総称名を指定した場合には，その総称オブジェクト名と同じ接頭部を持つ名前のついたすべてのオブジェクトが選択されます。
+</p>
+</dd>
+<dt><strong class="italic">名前</strong></dt>
+<dd>選択されるオブジェクトの名前を指定してください。
+</dd>
+</dl>
+
+<h3><strong>修飾子</strong><strong>2: ライブラリー</strong>
+</h3>
+<dl>
+<dt><strong class="underlined">*ALL</strong></dt>
+<dd><strong>ライブラリー</strong><strong> (LIB)</strong>パラメーターに指定されたすべてのライブラリー名が選択されます。
+</dd>
+<dt><strong class="italic">総称名</strong></dt>
+<dd>選択するライブラリーの総称名を指定してください。
+</dd>
+<dt><strong class="italic">名前</strong></dt>
+<dd>選択するライブラリーの名前を指定してください。
+</dd>
+</dl>
+
+<h3><strong>要素</strong><strong>3: </strong><strong>オブジェクト・タイプ</strong>
+</h3>
+<dl>
+<dt><strong class="underlined">*ALL</strong></dt>
+<dd>すべてのオブジェクト・タイプが選択されます。
+</dd>
+<dt><strong class="italic">文字値</strong></dt>
+<dd>選択するオブジェクト・タイプを指定してください。
+<p>このコマンドについてプロンプトを出す時にオブジェクト・タイプの完全なリストを表示するには，このパラメーターのフィールドにカーソルを位置付け，F4（プロンプト）を押します。オブジェクト・タイプの記述については，IBM i Information Center(http://www.ibm.com/systems/i/infocenter/)の「プログラミング」カテゴリーの「制御言語(CL)」トピック・コレクションの「オブジェクト・タイプ」を参照してください。
+</p>
+</dd>
+</dl>
+<h3><strong>要素</strong><strong>4: </strong><strong>オブジェクトの属性</strong>
+</h3>
+<dl>
+<dt><strong class="underlined">*ALL</strong></dt>
+<dd>すべてのオブジェクト属性が選択されます。
+</dd>
+<dt><strong>*BLANK</strong></dt>
+<dd>属性値がないオブジェクトのみが選択されます。
+</dd>
+<dt><strong class="italic">属性値</strong></dt>
+<dd>選択するオブジェクトの属性を指定してください。
+</dd>
+<dt><strong class="italic">総称属性値</strong></dt>
+<dd>選択するオブジェクトの総称属性を指定してください。
+</dd>
+</dl>
+<h3><strong>要素</strong><strong>5: </strong><strong>ファイル・メンバー</strong>
+</h3>
+<p>選択するデータベース・ファイル・メンバーを指定します。
+</p>
+<p>*ALLが指定された場合，前の要素によって選択されたオブジェクトが含まれるか，または除外されます。
+</p>
+<p>*ALL以外の値が指定された場合，前の要素によって選択されたオブジェクトが含まれます。そのオブジェクトがデータベース・ファイルでない場合でも同様です。選択されたオブジェクトがデータベース・ファイルの場合は，選択されたファイル・メンバーが含まれるか，あるいは除外されます。
+</p>
+<dl>
+<dt><strong class="underlined">*ALL</strong></dt>
+<dd>すべてのファイル・メンバーが選択されます。*OMIT指定の場合，選択されたファイルまたはオブジェクトも除外されます。
+</dd>
+<dt><strong>*ALLMBR</strong></dt>
+<dd>すべてのファイル・メンバーが選択されます。*OMIT指定の場合，選択されたファイルまたはオブジェクトが含まれ，すべてのファイル・メンバーが除外されます。
+</dd>
+<dt><strong class="italic">総称名</strong></dt>
+<dd>選択するファイル・メンバーの総称名を指定してください。選択されたファイルまたはオブジェクトに指定のメンバーが含まれていない場合でも，そのファイルまたはオブジェクトが含まれます。
+</dd>
+<dt><strong class="italic">名前</strong></dt>
+<dd>選択するファイル・メンバーの名前を指定してください。選択されたファイルまたはオブジェクトに指定のメンバーが含まれていない場合でも，そのファイルまたはオブジェクトが含まれます。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table34" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#SAVLIB.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="SAVLIB.ASPDEV"></a>
+<h2>ASP装置 (ASPDEV)</h2>
+<p>保管操作に組み込まれる補助記憶域プール(ASP)装置を指定します。このパラメーターは，OBJパラメーターに基づいてSAVに適格のオブジェクトのリストをサブセット化するのに使用されます。
+</p>
+<dl>
+<dt><strong class="underlined">*</strong></dt>
+<dd>操作には，システムASP (ASP番号1),すべての基本ユーザーASP (ASP番号2から32),さらに現行スレッドにASPグループがある場合には．そのASPグループ中のすべての独立ASPが組み込まれます。
+</dd>
+<dt><strong>*SYSBAS</strong></dt>
+<dd>システムASPおよびすべての基本ユーザーASPが保管操作に組み込まれます。
+</dd>
+<dt><strong>*CURASPGRP</strong></dt>
+<dd>現行スレッドにASPグループがある場合には，そのASPグループ中のすべての独立ASPが保管操作に組み込まれます。
+</dd>
+<dt><strong class="italic">名前</strong></dt>
+<dd>保管操作に組み込むASP装置の名前を指定します。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table35" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#SAVLIB.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="SAVLIB.OUTPUT"></a>
+<h2>出力 (OUTPUT)</h2>
+<p>保管済みオブジェクトに関する情報が含まれているリストを作成するかどうかを指定します。この情報は，ジョブのスプール出力で印刷するか，あるいはデータベース・ファイルに出力することができます。
+</p>
+<dl>
+<dt><strong class="underlined">*NONE</strong></dt>
+<dd>出力リストは作成されません。
+</dd>
+</dl>
+<dl>
+<dt><strong>*PRINT</strong></dt>
+<dd>出力はジョブのスプール出力で印刷されます。
+</dd>
+</dl>
+<dl>
+<dt><strong>*OUTFILE</strong></dt>
+<dd>出力は，<strong>出力を受け取るファイル</strong><strong> (OUTFILE)</strong>パラメーターで指定されたデータベース・ファイルに送られます。
+</dd>
+</dl>
+<p>
+<strong>注:     </strong>OUTPUT(*OUTFILE)が指定されている場合には，<strong>出力を受け取るファイル</strong><strong> (OUTFILE)</strong>パラメーターにデータベース・ファイル名を指定しなければなりません。
+</p>
+<p></p>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table36" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#SAVLIB.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="SAVLIB.OUTFILE"></a>
+<h2>出力を受け取るファイル (OUTFILE)</h2>
+<p>コマンドの出力が送られるデータベース・ファイルを指定します。ファイルが存在しない場合には，このコマンドによって，指定されたライブラリーにデータベース・ファイルが作成されます。ファイルが作成される場合には，ファイルの共通権限は，ファイルが作成されるライブラリーに指定された作成権限と同じものになります。ライブラリーの作成権限を表示するには，ライブラリー記述表示(DSPLIBD)コマンドを使用してください。
+</p>
+<h3><strong>修飾子</strong><strong>1: </strong><strong>出力を受け取るファイル</strong>
+</h3>
+<dl>
+<dt><strong class="italic">名前</strong></dt>
+<dd>コマンド出力が送られる先のデータベース・ファイルの名前を指定してください。
+</dd>
+</dl>
+<h3><strong>修飾子</strong><strong>2: ライブラリー</strong>
+</h3>
+<dl>
+<dt><strong class="underlined">*LIBL</strong></dt>
+<dd>ファイルを見つけるために，ライブラリー・リストが使用されます。ファイルが見つからない場合には，現行ライブラリーにファイルが作成されます。現行ライブラリーが存在していない場合には，ファイルはQGPLライブラリーに作成されます。
+</dd>
+<dt><strong>*CURLIB</strong></dt>
+<dd>ファイルを見つけるためにスレッドの現行ライブラリーが使用されます。スレッドの現行ライブラリーとして指定されているライブラリーがない場合，QGPLライブラリーが使用されます。
+</dd>
+</dl>
+<dl>
+<dt><strong class="italic">名前</strong></dt>
+<dd>検索するライブラリーの名前を指定してください。
+</dd>
+</dl>
+<p>
+<strong>注:     </strong>新規ファイルが作成される場合，システムは，IBM提供の形式名QSRSAVのファイルQASAVOBJをモデルとして使用します。
+</p>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table37" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#SAVLIB.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="SAVLIB.OUTMBR"></a>
+<h2>出力メンバー・オプション (OUTMBR)</h2>
+<p><strong>出力</strong><strong> (OUTPUT)</strong>パラメーターに*OUTFILEが指定された時に，出力を指示するデータベース・ファイル・メンバーの名前を指定します。
+</p>
+<h3><strong>要素</strong><strong>1: </strong><strong>出力を受け取るメンバー</strong>
+</h3>
+<dl>
+<dt><strong class="underlined">*FIRST</strong></dt>
+<dd>ファイル内の最初のメンバーが出力を受け取ります。OUTMBR(*FIRST)が指定されていて，メンバーが存在していない場合には，システムが<strong>出力を受け取るファイル</strong><strong> (OUTFILE)</strong>パラメーターに指定されたファイルの名前を使用してメンバーを作成します。
+</dd>
+<dt><strong class="italic">名前</strong></dt>
+<dd>出力を受け取るファイル・メンバーの名前を指定してください。OUTMBR（メンバー名）が指定され，そのメンバーが存在しない場合，システムがメンバーを作成します。
+<p>メンバーが存在している場合には，レコードを既存メンバーの終わりに追加するか，既存メンバーを消去してレコードを追加することができます。
+</p>
+</dd>
+</dl>
+<h3><strong>要素</strong><strong>2: </strong><strong>レコードの置き換えまたは追加</strong>
+</h3>
+<dl>
+<dt><strong class="underlined">*REPLACE</strong></dt>
+<dd>指定したデータベース・ファイル・メンバー中に既存のレコードは，新規レコードで置き換えられます。
+</dd>
+<dt><strong>*ADD</strong></dt>
+<dd>新規レコードが指定されたデータベース・ファイル・メンバーの既存情報に追加されます。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table38" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#SAVLIB.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="SAVLIB.INFTYPE"></a>
+<h2>情報のタイプ (INFTYPE)</h2>
+<p>印刷するか，データベース・ファイルに向ける情報のタイプを指定します。
+</p>
+<dl>
+<dt><strong class="underlined">*OBJ</strong></dt>
+<dd>リストには，保管するように要求された各オブジェクトの項目が入ります。
+</dd>
+<dt><strong>*ERR</strong></dt>
+<dd>リストには，コマンド，各ライブラリーの項目，および正常に保管されなかった各オブジェクトの項目に関する情報が入ります。
+</dd>
+<dt><strong>*LIB</strong></dt>
+<dd>リストには，保管するように要求された各ライブラリーのライブラリー項目が入ります。
+</dd>
+<dt><strong>*MBR</strong></dt>
+<dd>リストには，保管するように要求された各オブジェクトの項目，データベース・ファイル・メンバー，およびスプール・ファイルが入ります。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table39" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#SAVLIB.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="SAVLIB.CMDUSRSPC"></a>
+<h2>コマンド・ユーザー・スペース (CMDUSRSPC)</h2>
+<p>このコマンドに*USRSPCが指定されたパラメーターに対して値を入れたユーザー・スペースを指定します。このユーザー・スペースには，パラメーターごとに32767までのリスト値が許可されていますが，コマンド・パラメーターには300までしかリスト値が許可されていません。ユーザー・スペースは，オブジェクト・リスト保管(QSRSAVO) APIによって使用されるフォーマットでパラメーターを定義しなければなりません。
+</p>
+<h3><strong>修飾子</strong><strong>1:</strong><strong>ユーザー・スペース</strong>
+</h3>
+<dl>
+<dt><strong class="italic">名前</strong></dt>
+<dd>このコマンドに*USRSPCが指定されたパラメーターに対して値を入れたユーザー・スペースの名前を指定します。
+</dd>
+</dl>
+<h3><strong>修飾子</strong><strong>2: ライブラリー</strong>
+</h3>
+<dl>
+<dt><strong class="underlined">*LIBL</strong></dt>
+<dd>最初に一致するものが見つかるまで，現行スレッドのライブラリー・リスト内のすべてのライブラリーが検索されます。
+</dd>
+</dl>
+<dl>
+<dt><strong>*CURLIB</strong></dt>
+<dd>ユーザー・スペースを見つけるために，ジョブの現行ライブラリーが使用されます。ジョブの現行ライブラリーとして指定されているライブラリーがない場合は，QGPLライブラリーが使用されます。
+</dd>
+<dt><strong class="italic">名前</strong></dt>
+<dd>ユーザー・スペースが入っているライブラリーの名前を指定します。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table40" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#SAVLIB.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="SAVLIB.SORT"></a>
+<h2>ソート方法 (SORT)</h2>
+<p><strong>ライブラリー</strong><strong> (LIB)</strong>パラメーターに指定されたライブラリーが保管される順序を指定します。LIBパラメーターに*NONSYSまたは*ALLUSRが指定された場合，ライブラリーQSYS2, QGPL, QUSRSYS,およびQSYS2XXXXX（ここで，XXXXXは独立ASP番号です）が最初に保管されます（それらのライブラリーがＡＳＰＤＥＶパラメーターで指定されたＡＳＰ上にある場合）。
+</p>
+<dl>
+<dt><strong class="underlined">*NAME</strong></dt>
+<dd>ライブラリーは，LIBパラメーターに名前が指定された順序で保管されます。総称値または特殊値ごとに，独立ASP上のライブラリーは，システムおよび基本ユーザーASP上のライブラリーより前に保管されます。同じASP上のライブラリーは，ライブラリー名のアルファベット順に保管されます。
+</dd>
+<dt><strong>*SIZE</strong></dt>
+<dd>ライブラリーは，合計ライブラリー・サイズ順に最大から最小へと保管されます。これによって，保管操作のパフォーマンスを向上させることができます。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table41" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#SAVLIB.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div><h2><a name="SAVLIB.COMMAND.EXAMPLES">例</a> </h2>
+<h3><strong>例</strong><strong>1:</strong><strong>テープ装置でのライブラリーの保管</strong>
+</h3>
+<p>
+</p><pre>SAVLIB   LIB(JOE)  DEV(TAP01)
+</pre>
+<p></p>
+<p>このコマンドは，JOEという名前のライブラリーをTAP01という名前のテープ装置にあるテープに保管します。STGパラメーターは省略時の値(*KEEP)とみなされているので，システム内のJOEが占めていた記憶域は解放されません。
+</p>
+<h3><strong>例</strong><strong>2:</strong><strong>複数のボリュームでの保管</strong>
+</h3>
+<p>
+</p><pre>SAVLIB   LIB(QGPL)  DEV(OPT01)  VOL(ABC DEF GHI)
+</pre>
+<p></p>
+<p>汎用ライブラリー(QGPL)がOPT01という名前の装置の光ディスク・ボリュームで保管されます。使用される光ディスク・ボリュームはABC, DEF,およびGHIというボリューム名でなければなりません。ボリュームABCが満杯になった時に保管操作が終了していない場合には，装置にボリュームDEFを入れることを操作員に要求するメッセージが出されます。
+</p>
+<h3><strong>例</strong><strong>3:</strong><strong>データの保管時の記憶域の解放</strong>
+</h3>
+<p>
+</p><pre>SAVLIB   LIB(CUSTDATA)  DEV(TAP01)
+         VOL(CUSTNM CUSTAD)  STG(*FREE)
+</pre>
+<p></p>
+<p>CUSTDATAという名前のライブラリーが，テープ装置TAP01に入れられたボリュームCUSTNMおよびCUSTADに保管されます。CUSTDATAライブラリー内の指定されたメンバー，モジュール，プログラム，サービス・プログラム，SQLパッケージ，およびジャーナル・レシーバーが占めていた記憶域は，それらが保管された後に解放されます。
+</p>
+<h3><strong>例</strong><strong>4:</strong><strong>複数の装置での逐次保管</strong>
+</h3>
+<p>
+</p><pre>SAVLIB   LIB(USRLIB)  DEV(TAP01 TAP02 TAP03)
+         VOL(USRA USRB USRC USRD)  ENDOPT(*UNLOAD)
+</pre>
+<p></p>
+<p>USRLIBという名前のライブラリーが3つのテープ装置の4つのテープ・ボリュームに保管されます。USRAという名前のボリュームはTAP01という名前の装置に，USRBという名前のボリュームはTAP02という名前の装置に，USRCという名前のボリュームはTAP03という名前の装置に，およびUSRDという名前のボリュームはTAP01という名前の装置に入れられます。処理が完了した場合には，TAP01という名前の装置をUSRDという名前のボリュームに使用できるように，USRAという名前のボリュームを操作員が巻き戻し，アンロードする必要があります。
+</p>
+<h3><strong>例</strong><strong>5:</strong><strong>複数の装置での並列保管</strong>
+</h3>
+<p>
+</p><pre>SAVLIB   LIB(USRLIB)  DEV(*MEDDFN)  MEDDFN(LIBA/MEDDFNA)
+</pre>
+<p></p>
+<p>USRLIBという名前のライブラリーが，ライブラリーLIBAのMEDDFNAという名前の媒体定義に指定された装置で保管されます。媒体定義の作成および使用については，Information Centerの<strong>「バックアップ，回復，および可用性」</strong>トピックを参照してください。
+</p>
+<h3><strong>例</strong><strong>6:</strong><strong>媒体ファイル・ラベルを使用したライブラリーの保管</strong>
+</h3>
+<p>
+</p><pre>SAVLIB   LIB(LIB1)  DEV(TAP01)  LABEL(MONDAYBACKUP)
+</pre>
+<p></p>
+<p>このコマンドは，TAP01という名前のテープ装置を使用して，LIB1という名前のライブラリーをテープに保管します。ライブラリーは，MONDAYBACKUPの媒体ファイル・ラベルとともに保管されます。このライブラリーまたはそのいずれかのオブジェクトを復元する場合には，このラベルを指定する必要があります。
+</p>
+<h3><strong>例</strong><strong>7:</strong><strong>保管操作を開始する場所の指定</strong>
+</h3>
+<p>
+</p><pre>SAVLIB   LIB(*NONSYS)  DEV(TAP01 TAP02)
+         STRLIB(MIKESLIB)  ASPDEV(*SYSBAS)
+</pre>
+<p></p>
+<p>このコマンドは，システムおよび基本ユーザーASPにあるすべてのライブラリーを，MIKESLIBという名前のライブラリーから順にTAP01およびTAP02という名前のテープ装置で保管します。システム・ライブラリーおよび通常は最初に保管されるライブラリー(QSYS2, QGPL,およびQUSRSYS)は保管されません。
+</p>
+<h3><strong>例</strong><strong>8:</strong><strong>独立</strong><strong>ASP</strong><strong>グループへのユーザー・ライブラリーの保管</strong>
+</h3>
+<p>
+</p><pre>SAVLIB   LIB(*ALLUSR)  DEV(TAP01)  ASPDEV(*CURASPGRP)
+</pre>
+<p></p>
+<p>このコマンドは，現行スレッド用のASPグループにある独立ASPにすべてのユーザー・ライブラリーを保管します。これは，システムASP (ASP番号1)または基本ユーザーASP(ASP番号2から32)にはライブラリーを保管しません。
+</p>
+<h3><strong>例</strong><strong>9:</strong><strong>スプール・ファイルの保管</strong>
+</h3>
+<p>
+</p><pre>SAVLIB   LIB(MYLIB)  DEV(TAP01)  SPLFDTA(*ALL)
+</pre>
+<p></p>
+<p>このコマンドは，MYLIBという名前のライブラリーを保管します。これにはライブラリー中の出力待ち行列のスプール・ファイル・データが含まれます。
+</p>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table42" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#SAVLIB.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div><h2><a name="SAVLIB.ERROR.MESSAGES">エラー・メッセージ</a> </h2>
+<p><strong class="underlined">*ESCAPE </strong><strong class="underlined">メッセージ</strong>
+</p>
+<dl>
+<dt><strong>CPF3701</strong></dt>
+<dd>&amp;1個のオブジェクトが&amp;3から保管されました。&amp;2が保管されていません。
+</dd>
+<dt><strong>CPF3703</strong></dt>
+<dd>&amp;3の&amp;2 &amp;1は保管されなかった。
+</dd>
+<dt><strong>CPF3708</strong></dt>
+<dd>&amp;2の保管ファイル&amp;1が小さすぎる。
+</dd>
+<dt><strong>CPF3709</strong></dt>
+<dd>テープ装置は同じ密度をサポートしていない。
+</dd>
+<dt><strong>CPF3727</strong></dt>
+<dd>装置名リストで重複する装置&amp;1が指定された。
+</dd>
+<dt><strong>CPF3728</strong></dt>
+<dd>装置&amp;1が他の装置と一緒に指定されている。
+</dd>
+<dt><strong>CPF3730</strong></dt>
+<dd>ライブラリー&amp;3の&amp;2 &amp;1は認可されていない。
+</dd>
+<dt><strong>CPF3731</strong></dt>
+<dd>ライブラリー&amp;3の&amp;2 &amp;1を使用することができない。
+</dd>
+<dt><strong>CPF3733</strong></dt>
+<dd>&amp;3の&amp;2 &amp;1で前に損傷が起こっている。
+</dd>
+<dt><strong>CPF3735</strong></dt>
+<dd>ユーザー・プロファイル&amp;1の記憶域が限界を超えた。
+</dd>
+<dt><strong>CPF3738</strong></dt>
+<dd>保管または復元に使用した装置&amp;1に損傷がある。
+</dd>
+<dt><strong>CPF3749</strong></dt>
+<dd>ライブラリー&amp;2からオブジェクトが保管されませんでした。
+</dd>
+<dt><strong>CPF3751</strong></dt>
+<dd>保管されなかったライブラリーがある。
+</dd>
+<dt><strong>CPF3767</strong></dt>
+<dd>装置&amp;1が見つからない。
+</dd>
+<dt><strong>CPF3768</strong></dt>
+<dd>装置&amp;1はコマンドに対して正しくない。
+</dd>
+<dt><strong>CPF377D</strong></dt>
+<dd>内部システム資源の読み取りエラーのために保管が終了した。
+</dd>
+<dt><strong>CPF377E</strong></dt>
+<dd>活動状態保管の要求に記憶域が不十分である。
+</dd>
+<dt><strong>CPF377F</strong></dt>
+<dd>保管が終了しました。チェックポイントに到達できません。
+</dd>
+<dt><strong>CPF3770</strong></dt>
+<dd>ライブラリー&amp;1について保管または復元されたオブジェクトはない。
+</dd>
+<dt><strong>CPF3771</strong></dt>
+<dd>&amp;1個のオブジェクトが&amp;3から保管されました。&amp;2が保管されていません。
+</dd>
+<dt><strong>CPF3777</strong></dt>
+<dd>&amp;1個のライブラリーは保管され，&amp;6個のライブラリーは部分的に保管され，&amp;2個のライブラリーは保管されませんでした。
+</dd>
+<dt><strong>CPF378A</strong></dt>
+<dd>メッセージ待ち行列が使用できない。
+</dd>
+<dt><strong>CPF378C</strong></dt>
+<dd>SAVACTMSGQ(*WRKSTN)はバッチ・ジョブでは正しくない。
+</dd>
+<dt><strong>CPF378E</strong></dt>
+<dd>ライブラリー&amp;1は保管されていない。
+</dd>
+<dt><strong>CPF3781</strong></dt>
+<dd>ライブラリー&amp;1が見つかりません。
+</dd>
+<dt><strong>CPF3782</strong></dt>
+<dd>&amp;2のファイル&amp;1は保管ファイルでない。
+</dd>
+<dt><strong>CPF3785</strong></dt>
+<dd>終了していないサブシステムがある。
+</dd>
+<dt><strong>CPF3789</strong></dt>
+<dd>指定したパラメーターではライブラリーは１つしか使用できない。
+</dd>
+<dt><strong>CPF379E</strong></dt>
+<dd>ライブラリー&amp;1の保管に使用可能な記憶域が不十分である。
+</dd>
+<dt><strong>CPF3793</strong></dt>
+<dd>マシンまたはASPの記憶域限界に達しました。
+</dd>
+<dt><strong>CPF3794</strong></dt>
+<dd>保管または復元操作が正常に終了しなかった。
+</dd>
+<dt><strong>CPF3797</strong></dt>
+<dd>ライブラリー&amp;3からオブジェクトが保管されませんでした。保管の限界を超えました。
+</dd>
+<dt><strong>CPF37AB</strong></dt>
+<dd>*NOCMTBDYはターゲット・リリースで使用できません。
+</dd>
+<dt><strong>CPF37AC</strong></dt>
+<dd>*NOCMTBDYの場合，ライブラリーは使用できません。
+</dd>
+<dt><strong>CPF37B1</strong></dt>
+<dd>SPLFDTAはターゲット・リリースでは使用できません。
+</dd>
+<dt><strong>CPF37B4</strong></dt>
+<dd>&amp;2のユーザー・スペース&amp;1が正しくありません。
+</dd>
+<dt><strong>CPF37B5</strong></dt>
+<dd>PVTAUTはターゲット・リリースでは使用できません。
+</dd>
+<dt><strong>CPF37B7</strong></dt>
+<dd>専用権限の保管は認可されていない。
+</dd>
+<dt><strong>CPF37B9</strong></dt>
+<dd>同期ID &amp;1が使用中である。
+</dd>
+<dt><strong>CPF37BC</strong></dt>
+<dd>同期ID &amp;1は終了しました。待機時間を超えました。
+</dd>
+<dt><strong>CPF37BD</strong></dt>
+<dd>同期ID &amp;1は終了しました。チェックポイント前に保管が終了しました。
+</dd>
+<dt><strong>CPF37BE</strong></dt>
+<dd>同期ID &amp;1が開始されていない。
+</dd>
+<dt><strong>CPF37C7</strong></dt>
+<dd>同期ID &amp;1は終了しました。SAVACTWAITエラー。
+</dd>
+<dt><strong>CPF380B</strong></dt>
+<dd>この時点で保管を完了することができない。
+</dd>
+<dt><strong>CPF3812</strong></dt>
+<dd>&amp;2の保管ファイル&amp;1は使用中である。
+</dd>
+<dt><strong>CPF3815</strong></dt>
+<dd>&amp;2の保管ファイル&amp;1は保管操作には小さすぎる。
+</dd>
+<dt><strong>CPF3818</strong></dt>
+<dd>開始ライブラリー&amp;1が見つからない。
+</dd>
+<dt><strong>CPF384E</strong></dt>
+<dd>CD-ROMの事前マスター処理にはUSEOPTBLK(*YES)は無効である。
+</dd>
+<dt><strong>CPF3871</strong></dt>
+<dd>保管または復元されたオブジェクトはない。&amp;3個のオブジェクトが含まれなかった。
+</dd>
+<dt><strong>CPF388B</strong></dt>
+<dd>光ディスク・ファイル・パス名が正しくない。
+</dd>
+<dt><strong>CPF3892</strong></dt>
+<dd>&amp;3の&amp;2 &amp;1は保管されなかった。
+</dd>
+<dt><strong>CPF3894</strong></dt>
+<dd>メッセージ&amp;1に対して取り消し応答を受け取った。
+</dd>
+<dt><strong>CPF38A2</strong></dt>
+<dd>ASP装置&amp;1は正しくありません。
+</dd>
+<dt><strong>CPF38A3</strong></dt>
+<dd>&amp;2のファイル&amp;1はASPDEVでは無効です。
+</dd>
+<dt><strong>CPF38A4</strong></dt>
+<dd>ASP装置&amp;1は正しくありません。
+</dd>
+<dt><strong>CPF38AA</strong></dt>
+<dd>オブジェクト選択リスト・キーが無効です。
+</dd>
+<dt><strong>CPF38AC</strong></dt>
+<dd>LIB(*SELECT)は*ALLライブラリーでは無効です。
+</dd>
+<dt><strong>CPF5729</strong></dt>
+<dd>オブジェクト&amp;1を割り振ることができない。
+</dd>
+<dt><strong>CPF9809</strong></dt>
+<dd>ライブラリー&amp;1をアクセスすることができない。
+</dd>
+<dt><strong>CPF9812</strong></dt>
+<dd>ライブラリー&amp;2にファイル&amp;1が見つからない。
+</dd>
+<dt><strong>CPF9814</strong></dt>
+<dd>装置&amp;1が見つかりません。
+</dd>
+<dt><strong>CPF9820</strong></dt>
+<dd>ライブラリー&amp;1の使用は認可されていない。
+</dd>
+<dt><strong>CPF9822</strong></dt>
+<dd>ライブラリー&amp;2のファイル&amp;1は認可されていない。
+</dd>
+<dt><strong>CPF9825</strong></dt>
+<dd>装置&amp;1は認可されていない。
+</dd>
+<dt><strong>CPF9833</strong></dt>
+<dd>*CURASPGRPまたは*ASPGRPPRIが指定されていて，スレッドにASPグループがない。
+</dd>
+<dt><strong>CPFB8ED</strong></dt>
+<dd>装置記述&amp;1はこの操作には正しくありません。
+</dd>
+<dt><strong>OPT1332</strong></dt>
+<dd>光ディスク・ボリュームが装置&amp;1に見つからない。
+</dd>
+</dl>
+<p><strong class="underlined">*STATUS </strong><strong class="underlined">メッセージ</strong>
+</p>
+<dl>
+<dt><strong>CPF3770</strong></dt>
+<dd>ライブラリー&amp;1について保管または復元されたオブジェクトはない。
+</dd>
+<dt><strong>CPF3771</strong></dt>
+<dd>&amp;1個のオブジェクトが&amp;3から保管されました。&amp;2が保管されていません。
+</dd>
+<dt><strong>CPF3871</strong></dt>
+<dd>保管または復元されたオブジェクトはない。&amp;3個のオブジェクトが含まれなかった。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table43" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#SAVLIB.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+</div>
+
+
+</body></html>

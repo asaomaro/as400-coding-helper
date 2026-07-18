@@ -1,0 +1,771 @@
+<!DOCTYPE html>
+<html lang="ja"><head><meta charset="utf-8"><title>印刷装置書き出しPGM開始  (STRPRTWTR)</title></head>
+<body>
+<div role="main">
+<script type="text/javascript" src="../rzahg/synch.js"></script>
+<a name="STRPRTWTR.Top_Of_Page"></a>
+<h1>印刷装置書き出しPGM開始  (STRPRTWTR)</h1><div id="lastModifiedDate"><span>Last Updated</span>: 2021-04-13</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table0" width="100%" class="cds--data-table">
+<tbody><tr>
+<td class="valigntop alignleft"><strong>実行可能場所:  </strong>すべての環境 (*ALL)<br>
+<strong>スレッド・セーフ:  </strong>いいえ
+</td>
+<td class="valigntop alignright">
+<a href="#STRPRTWTR.PARAMETERS.TABLE">パラメーター</a><br>
+<a href="#STRPRTWTR.COMMAND.EXAMPLES">例</a><br>
+<a href="#STRPRTWTR.ERROR.MESSAGES">エラー・メッセージ</a></td>
+</tr>
+</tbody></table></div></div>
+<div> <a name="STRPRTWTR"></a>
+<p>印刷装置書き出しプログラム開始(STRPRTWTR)コマンドは，指定された印刷装置に対してスプール書き出しプログラムを開始します。システム・ジョブである書き出しプログラムは，出力待ち行列からスプール・ファイルを取り出して印刷装置上で出力を作成します（書き出します）。このコマンドでは，印刷装置の名前，使用する出力待ち行列とメッセージ待ち行列の名前，および書き出しプログラムの名前を指定します。
+</p>
+<p>同時に複数の書き出しプログラムを活動状態にすることができ（スプーリング・サブシステム記述で決められる），同じ出力待ち行列に対して最大10個の書き出しプログラムを活動状態にすることができます。各書き出しプログラムは固有の書き出しプログラム名および独自の装置を持っていなければならず，1つの出力待ち行列に対して1つのタイプの書き出しプログラム（印刷，リモート，またはディスケット）を活動状態にすることができます。開始された書き出しプログラムは，出力を活発に書き出したり，あるいは出力待ち行列にファイル項目が入れられるのを待機することができます。書き出しプログラム変更(CHGWTR)コマンド，書き出しプログラム保留(HLDWTR)コマンド，あるいは書き出しプログラム終了(ENDWTR)コマンドを使用することにより，書き出しプログラムを変更，保留，または取り消すことができます。各書き出しプログラムはそれを開始したジョブとは独立して実行するので，書き出しプログラムの開始後，システムで他の作業を続行することができます。
+</p>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table1" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#STRPRTWTR.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div>
+<h2><a name="STRPRTWTR.PARAMETERS.TABLE">パラメーター</a></h2>
+<div class="tablenoborder"><div class="cds--data-table-container"><table id="parm_table2" summary="Parameters" border="1" cellpadding="4" cellspacing="0" class="cds--data-table">
+<!-- col1="10" col2="15" col3="30" col4="10" -->
+<tbody><tr>
+<th scope="col" class="valignbottom alignleft"><div class="cds--table-header-label">キーワード</div></th>
+<th scope="col" class="valignbottom alignleft"><div class="cds--table-header-label">記述</div></th>
+<th scope="col" class="valignbottom alignleft"><div class="cds--table-header-label">選択項目</div></th>
+<th scope="col" class="valignbottom alignleft"><div class="cds--table-header-label">ノーツ</div></th>
+</tr>
+<tr>
+<td class="valigntop"><a href="#STRPRTWTR.DEV"><strong>DEV</strong></a></td>
+<td class="valigntop">印刷装置</td>
+<td class="valigntop"><span class="var">名前</span>, *ALL, *SYSVAL</td>
+<td class="valigntop">必須, 定位置 1</td>
+</tr>
+<tr>
+<td class="valigntop" rowspan="3"><a href="#STRPRTWTR.OUTQ"><strong>OUTQ</strong></a></td>
+<td class="valigntop">出力待ち行列</td>
+<td class="valigntop">単一値: <strong class="underlined">*DEV</strong><br>その他の値: <span class="var">修飾オブジェクト名</span></td>
+<td class="valigntop" rowspan="3">オプショナル, 定位置 2</td>
+</tr>
+<tr>
+<td class="valigntop">修飾子 1: 出力待ち行列</td>
+<td class="valigntop"><span class="var">名前</span></td>
+</tr><tr>
+<td class="valigntop">修飾子 2: ライブラリー</td>
+<td class="valigntop"><span class="var">名前</span>, <strong class="underlined">*LIBL</strong>, *CURLIB</td>
+</tr><tr>
+<td class="valigntop" rowspan="3"><a href="#STRPRTWTR.MSGQ"><strong>MSGQ</strong></a></td>
+<td class="valigntop">書出プログラムMSG用待ち行列</td>
+<td class="valigntop">単一値: <strong class="underlined">*DEVD</strong>, *REQUESTER<br>その他の値: <span class="var">修飾オブジェクト名</span></td>
+<td class="valigntop" rowspan="3">オプショナル, 定位置 4</td>
+</tr>
+<tr>
+<td class="valigntop">修飾子 1: 書出プログラムMSG用待ち行列</td>
+<td class="valigntop"><span class="var">名前</span></td>
+</tr><tr>
+<td class="valigntop">修飾子 2: ライブラリー</td>
+<td class="valigntop"><span class="var">名前</span>, <strong class="underlined">*LIBL</strong>, *CURLIB</td>
+</tr><tr>
+<td class="valigntop" rowspan="3"><a href="#STRPRTWTR.FORMTYPE"><strong>FORMTYPE</strong></a></td>
+<td class="valigntop">用紙タイプ・オプション</td>
+<td class="valigntop"><span class="var">要素リスト</span></td>
+<td class="valigntop" rowspan="3">オプショナル</td>
+</tr>
+<tr>
+<td class="valigntop">要素 1: 用紙タイプ</td>
+<td class="valigntop">
+<span class="var">文字値</span>, <strong class="underlined">*ALL</strong>, *STD, *FORMS</td>
+</tr>
+<tr>
+<td class="valigntop">要素 2: メッセージ・オプション</td>
+<td class="valigntop">
+<strong class="underlined">*INQMSG</strong>, *MSG, *NOMSG, *INFOMSG</td>
+</tr>
+<tr>
+<td class="valigntop"><a href="#STRPRTWTR.FILESEP"><strong>FILESEP</strong></a></td>
+<td class="valigntop">ファイル区切り</td>
+<td class="valigntop">0-9, <strong class="underlined">*FILE</strong></td>
+<td class="valigntop">オプショナル</td>
+</tr>
+<tr>
+<td class="valigntop"><a href="#STRPRTWTR.SEPDRAWER"><strong>SEPDRAWER</strong></a></td>
+<td class="valigntop">区切りページの用紙入れ</td>
+<td class="valigntop">1-255, <strong class="underlined">*DEVD</strong>, *FILE</td>
+<td class="valigntop">オプショナル</td>
+</tr>
+<tr>
+<td class="valigntop"><a href="#STRPRTWTR.WTR"><strong>WTR</strong></a></td>
+<td class="valigntop">書き出しプログラム</td>
+<td class="valigntop"><span class="var">名前</span>, <strong class="underlined">*DEV</strong></td>
+<td class="valigntop">オプショナル, 定位置 3</td>
+</tr>
+<tr>
+<td class="valigntop" rowspan="3"><a href="#STRPRTWTR.AUTOEND"><strong>AUTOEND</strong></a></td>
+<td class="valigntop">自動終了オプション</td>
+<td class="valigntop"><span class="var">要素リスト</span></td>
+<td class="valigntop" rowspan="3">オプショナル, 定位置 5</td>
+</tr>
+<tr>
+<td class="valigntop">要素 1: 書き出しプログラムの自動終了</td>
+<td class="valigntop">
+<strong class="underlined">*NO</strong>, *YES</td>
+</tr>
+<tr>
+<td class="valigntop">要素 2: 終了条件</td>
+<td class="valigntop">
+<strong class="underlined">*NORDYF</strong>, *FILEEND</td>
+</tr>
+<tr>
+<td class="valigntop"><a href="#STRPRTWTR.ALWDRTPRT"><strong>ALWDRTPRT</strong></a></td>
+<td class="valigntop">直接印刷可能</td>
+<td class="valigntop"><strong class="underlined">*NO</strong>, *YES</td>
+<td class="valigntop">オプショナル</td>
+</tr>
+<tr>
+<td class="valigntop"><a href="#STRPRTWTR.ALIGN"><strong>ALIGN</strong></a></td>
+<td class="valigntop">ページの位置合わせ</td>
+<td class="valigntop">*FILE, <strong class="underlined">*WTR</strong>, *FIRST</td>
+<td class="valigntop">オプショナル</td>
+</tr>
+<tr>
+<td class="valigntop"><a href="#STRPRTWTR.INIT"><strong>INIT</strong></a></td>
+<td class="valigntop">印刷装置初期設定</td>
+<td class="valigntop"><strong class="underlined">*WTR</strong>, *FIRST, *ALL</td>
+<td class="valigntop">オプショナル</td>
+</tr>
+<tr>
+<td class="valigntop"><a href="#STRPRTWTR.FILE"><strong>FILE</strong></a></td>
+<td class="valigntop">スプール・ファイル</td>
+<td class="valigntop"><span class="var">名前</span>, <strong class="underlined">*NONE</strong>, *LAST</td>
+<td class="valigntop">オプショナル</td>
+</tr>
+<tr>
+<td class="valigntop" rowspan="4"><a href="#STRPRTWTR.JOB"><strong>JOB</strong></a></td>
+<td class="valigntop">ジョブ名</td>
+<td class="valigntop">単一値: <strong class="underlined">*</strong><br>その他の値: <span class="var">修飾ジョブ名</span></td>
+<td class="valigntop" rowspan="4">オプショナル</td>
+</tr>
+<tr>
+<td class="valigntop">修飾子 1: ジョブ名</td>
+<td class="valigntop"><span class="var">名前</span></td>
+</tr><tr>
+<td class="valigntop">修飾子 2: ユーザー</td>
+<td class="valigntop"><span class="var">名前</span></td>
+</tr><tr>
+<td class="valigntop">修飾子 3: 番号</td>
+<td class="valigntop">000000-999999</td>
+</tr><tr>
+<td class="valigntop"><a href="#STRPRTWTR.SPLNBR"><strong>SPLNBR</strong></a></td>
+<td class="valigntop">スプール・ファイル番号</td>
+<td class="valigntop">1-999999, <strong class="underlined">*ONLY</strong>, *LAST, *ANY</td>
+<td class="valigntop">オプショナル</td>
+</tr>
+<tr>
+<td class="valigntop"><a href="#STRPRTWTR.JOBSYSNAME"><strong>JOBSYSNAME</strong></a></td>
+<td class="valigntop">ジョブ・システム名</td>
+<td class="valigntop"><span class="var">名前</span>, <strong class="underlined">*ONLY</strong>, *CURRENT, *ANY</td>
+<td class="valigntop">オプショナル</td>
+</tr>
+<tr>
+<td class="valigntop" rowspan="3"><a href="#STRPRTWTR.CRTDATE"><strong>CRTDATE</strong></a></td>
+<td class="valigntop">作成されたスプール・ファイル</td>
+<td class="valigntop">単一値: <strong class="underlined">*ONLY</strong>, *LAST<br>その他の値: <span class="var">要素リスト</span></td>
+<td class="valigntop" rowspan="3">オプショナル</td>
+</tr>
+<tr>
+<td class="valigntop">要素 1: 作成日</td>
+<td class="valigntop">
+<span class="var">日付</span></td>
+</tr>
+<tr>
+<td class="valigntop">要素 2: 作成時刻</td>
+<td class="valigntop">
+<span class="var">時刻</span>, <strong class="underlined">*ONLY</strong>, *LAST</td>
+</tr>
+<tr>
+<td class="valigntop"><a href="#STRPRTWTR.PAGE"><strong>PAGE</strong></a></td>
+<td class="valigntop">開始ページ</td>
+<td class="valigntop"><span class="var">整数</span>, <strong class="underlined">*BEGIN</strong></td>
+<td class="valigntop">オプショナル</td>
+</tr>
+</tbody></table></div></div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table3" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#STRPRTWTR.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+</div>
+<div> <a name="STRPRTWTR.DEV"></a>
+<h2>印刷装置 (DEV)</h2>
+<p>スプール・ファイルの印刷に使用する印刷装置を指定します。装置は，書き出しプログラムを開始する前に使用可能でなければなりません。
+</p>
+<p>これは必須パラメーターです。
+</p>
+<dl>
+<dt><strong>*ALL</strong></dt>
+<dd>システムで構成されたすべての印刷装置に印刷装置書出プログラムを開始します。
+</dd>
+<dt><strong>*SYSVAL</strong></dt>
+<dd>システムの省略時の印刷装置に印刷装置書出プログラムを開始します。
+</dd>
+<dt><strong class="italic">名前</strong></dt>
+<dd>開始されている印刷装置を識別する名前を指定します。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table4" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#STRPRTWTR.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="STRPRTWTR.OUTQ"></a>
+<h2>出力待ち行列 (OUTQ)</h2>
+<p>書き出しプログラムが処理するスプール・ファイルの出力待ち行列を指定します。
+</p>
+<h3><strong>単一値</strong>
+</h3>
+<dl>
+<dt><strong class="underlined">*DEV</strong></dt>
+<dd><strong>印刷装置</strong><strong> (DEV)</strong>パラメーターに指定された印刷装置と関連した省略時の出力待ち行列を使用します。
+</dd>
+</dl>
+<h3><strong>修飾子</strong><strong>1: </strong><strong>出力待ち行列</strong>
+</h3>
+<dl>
+<dt><strong class="italic">名前</strong></dt>
+<dd>書き出しプログラムが処理するスプール・ファイルの出力待ち行列の名前を指定します。
+</dd>
+</dl>
+<h3><strong>修飾子</strong><strong>2: ライブラリー</strong>
+</h3>
+<dl>
+<dt><strong class="underlined">*LIBL</strong></dt>
+<dd>最初に一致するものが見つかるまで，現行スレッドのライブラリー・リスト内のすべてのライブラリーが検索されます。
+</dd>
+</dl>
+<dl>
+<dt><strong>*CURLIB</strong></dt>
+<dd>出力待ち行列を見つけるために，ジョブの現行ライブラリーが使用されます。ライブラリー・リストに現行ライブラリー項目が存在しない場合には，QGPLが使用されます。
+</dd>
+<dt><strong class="italic">名前</strong></dt>
+<dd>出力待ち行列が入っているライブラリーの名前を指定してください。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table5" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#STRPRTWTR.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="STRPRTWTR.MSGQ"></a>
+<h2>書出プログラムMSG用待ち行列 (MSGQ)</h2>
+<p>このユーザーによって使用されるメッセージ待ち行列を指定します。
+</p>
+<h3><strong>単一値</strong>
+</h3>
+<dl>
+<dt><strong class="underlined">*DEVD</strong></dt>
+<dd>メッセージは，印刷装置の装置記述で指定されているメッセージ待ち行列に送られます。
+</dd>
+</dl>
+<dl>
+<dt><strong>*REQUESTER</strong></dt>
+<dd>メッセージは，処理を開始したユーザーのワークステーションのワークステーション・メッセージ待ち行列に送られます。この値をバッチ・ジョブに指定する場合には，*DEVDを使用します。
+</dd>
+</dl>
+<h3><strong>修飾子</strong><strong>1: </strong><strong>書出</strong><strong>プログラムMSG</strong><strong>用待ち行列</strong>
+</h3>
+<dl>
+<dt><strong class="italic">名前</strong></dt>
+<dd>書き出しプログラム・メッセージを送信する必要があるメッセージ待ち行列の名前を指定します。
+</dd>
+</dl>
+<h3><strong>修飾子</strong><strong>2: ライブラリー</strong>
+</h3>
+<dl>
+<dt><strong class="underlined">*LIBL</strong></dt>
+<dd>最初に一致するものが見つかるまで，現行スレッドのライブラリー・リスト内のすべてのライブラリーが検索されます。
+</dd>
+</dl>
+<dl>
+<dt><strong>*CURLIB</strong></dt>
+<dd>メッセージ待ち行列を見つけるために，ジョブの現行ライブラリーが使用されます。ライブラリー・リストに現行ライブラリー項目が存在しない場合には，QGPLが使用されます。
+</dd>
+<dt><strong class="italic">名前</strong></dt>
+<dd>メッセージ待ち行列が入っているライブラリーの名前を指定してください。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table6" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#STRPRTWTR.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="STRPRTWTR.FORMTYPE"></a>
+<h2>用紙タイプ・オプション (FORMTYPE)</h2>
+<p>印刷のために選択する用紙タイプを指定します。このパラメーターは，この時点でこの用紙タイプのファイルだけが処理されることを指定します。他のすべてのファイルは使用可能なファイルとして出力待ち行列に残されます。書き出しプログラムの開始後に，印刷する用紙のタイプを変更したい場合には，書き出しプログラム変更(CHGWTR)コマンドを使用してください。
+</p>
+<p>
+<strong>注:     </strong>印刷されるスプール・ファイルの用紙タイプが装置で印刷された最後のスプール・ファイルの用紙タイプと異なっている時には，用紙装てんメッセージが出されます。最後に印刷された用紙タイプは最後に出されたSTRPRTWTR, CHGWTR,またはVRYCFG以降のものが保持されます。
+</p>
+<p>次の例を考慮してください。
+</p>
+<ol class="cds--list--ordered--temporary">
+<li class="cds--list__item">印刷装置PRT01で最後に印刷されたスプール・ファイルの用紙タイプは*STDです。
+</li>
+<li class="cds--list__item">ユーザーは，次のコマンドを使用してPRT01の用紙タイプをXYZに変更します。
+<p>
+</p><pre>CHGWTR  PRT01  FORMTYPE(XYZ)
+</pre>
+<p></p>
+</li>
+<li class="cds--list__item">用紙タイプXYZのスプール・ファイルはPRT01で印刷されません。
+</li>
+<li class="cds--list__item">その後ユーザーは，用紙タイプ*STDのスプール・ファイルをPRT01に送ります。PRT01で最後に印刷されたスプール・ファイルの用紙タイプは印刷中のスプール・ファイルの用紙タイプと同じであるので，介在するCHGWTRコマンドにもかかわらず，用紙装てんメッセージが出されません。
+<p>用紙タイプXYZのスプール・ファイルが実際にPRT01で印刷される場合には，用紙装てんメッセージが出されることになります。
+</p>
+</li>
+</ol>
+<h3><strong>要素</strong><strong>1: </strong><strong>用紙タイプ</strong>
+</h3>
+<dl>
+<dt><strong class="underlined">*ALL</strong></dt>
+<dd>用紙タイプにかかわりなく出力待ち行列上の使用可能なすべてのファイルが処理されます。
+</dd>
+<dt><strong>*FORMS</strong></dt>
+<dd>出力待ち行列上で同じ用紙タイプの使用可能なすべてのファイルは，書き出しプログラムが次の用紙タイプに進む前に1グループとして処理されます。書き出しプログラムは，まず待ち行列上で最初に使用可能なファイルを選択します。最初のファイルが完了すると，同じ用紙タイプのすべてのファイルが処理されます。書き出しプログラムは，次にもう一度待ち行列上の最初の使用可能なファイルを選択し，その用紙タイプについて処理を反復します。
+</dd>
+<dt><strong>*STD</strong></dt>
+<dd>書き出しプログラムは，用紙タイプ*STDのスプール・ファイルを処理します。
+</dd>
+<dt><strong class="italic">用紙タイプ</strong></dt>
+<dd>処理したいスプール・ファイルの用紙のタイプを指定してください。
+</dd>
+</dl>
+<h3><strong>要素</strong><strong>2: </strong><strong>メッセージ・オプション</strong>
+</h3>
+<dl>
+<dt><strong class="underlined">*INQMSG</strong></dt>
+<dd>スプール・ファイルの用紙タイプが印刷装置の用紙タイプと異なっている時には，照会メッセージがメッセージ待ち行列に送られます。
+</dd>
+<dt><strong>*INFOMSG</strong></dt>
+<dd>この用紙タイプを必要とするスプール・ファイルが出力待ち行列に残っていない時には，通知メッセージがメッセージ待ち行列に送られます。
+</dd>
+<dt><strong>*MSG</strong></dt>
+<dd>スプール・ファイルの用紙タイプが印刷装置の用紙タイプと異なっている時には，照会メッセージがメッセージ待ち行列に送られ，この用紙タイプを必要とするスプール・ファイルが出力待ち行列に残っていない時には，通知メッセージが送られます。
+</dd>
+<dt><strong>*NOMSG</strong></dt>
+<dd>照会メッセージも，通知メッセージもメッセージ待ち行列に送られません。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table7" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#STRPRTWTR.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="STRPRTWTR.FILESEP"></a>
+<h2>ファイル区切り (FILESEP)</h2>
+<p>各ファイルの前に印刷されるファイル区切りページの数を制御する方法を指定します。
+</p>
+<dl>
+<dt><strong class="underlined">*FILE</strong></dt>
+<dd>各個別のファイルに指定された区切りの数が使用されます。
+</dd>
+<dt><strong class="italic">0から9</strong></dt>
+<dd>印刷する区切りページの数を指定します。新しい用紙タイプが印刷装置に入れられたことを示す用紙タイプ変更メッセージに応答する時はいつでも，書き出しプログラムは，新しい用紙タイプで印刷する必要があるファイル区切りページ数を尋ねるメッセージを出します。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table8" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#STRPRTWTR.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="STRPRTWTR.SEPDRAWER"></a>
+<h2>区切りページの用紙入れ (SEPDRAWER)</h2>
+<p>ジョブおよびファイル区切りの印刷のために選択する用紙入れを指定します。
+</p>
+<dl>
+<dt><strong class="underlined">*DEVD</strong></dt>
+<dd>印刷装置の装置記述に記憶された値が使用されます。
+</dd>
+<dt><strong>*FILE</strong></dt>
+<dd>区切りページはスプール・ファイルと同じ用紙入れから印刷されます。
+</dd>
+<dt><strong>1</strong></dt>
+<dd>区切りページは用紙入れ1から印刷されます。
+</dd>
+<dt><strong>2</strong></dt>
+<dd>区切りページは用紙入れ2から印刷されます。
+</dd>
+<dt><strong>3</strong></dt>
+<dd>区切りページは用紙入れ3から印刷されます。
+</dd>
+<dt><strong class="italic">1から255</strong></dt>
+<dd>区切りページを印刷する用紙入れを指示する番号を指定してください。
+<p>
+<strong>注:     </strong>一部の印刷装置の場合には，SEPDRAWER(3)は封筒引き出しを暗黙のうちに指定します。
+</p>
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table9" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#STRPRTWTR.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="STRPRTWTR.WTR"></a>
+<h2>書き出しプログラム (WTR)</h2>
+<p>開始するスプール書き出しプログラムの名前を指定します。各書き出しプログラム名は固有でなければなりません。
+</p>
+<dl>
+<dt><strong class="underlined">*DEV</strong></dt>
+<dd>書き出しプログラムの名前は，<strong>印刷装置</strong><strong> (DEV)</strong>パラメーターに指定された印刷装置の名前と同じです。
+</dd>
+<dt><strong class="italic">名前</strong></dt>
+<dd>開始する書き出しプログラムを識別する名前を指定してください。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table10" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#STRPRTWTR.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="STRPRTWTR.AUTOEND"></a>
+<h2>自動終了オプション(AUTOEND)</h2>
+<p>書き出しプログラムを自動的に終了するかどうかを指定します。
+</p>
+<h3><strong>要素</strong><strong>1: </strong><strong>書き出しプログラムの自動終了</strong>
+</h3>
+<dl>
+<dt><strong class="underlined">*NO</strong></dt>
+<dd>出力待ち行列から最後に使用可能なファイルが取り出されても，書き出しプログラムは終了しません。別のスプール・ファイルの項目が待ち行列に入れられるのを待機します。
+</dd>
+<dt><strong>*YES</strong></dt>
+<dd>書き出しプログラムは，このパラメーターの2番目の部分で指定された状態に達した後に，自動的に終了します。
+</dd>
+</dl>
+<h3><strong>要素</strong><strong>2: </strong><strong>終了条件</strong>
+</h3>
+<dl>
+<dt><strong>*NORDYF</strong></dt>
+<dd>書き出しプログラムは，実行可能なファイルがなくなった（出力待ち行列から使用可能なすべてのファイルが除去された）時点で自動的に終了します。
+</dd>
+<dt><strong>*FILEEND</strong></dt>
+<dd>書き出しプログラムは，1つのスプール・ファイルの処理を完了した後で停止します。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table11" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#STRPRTWTR.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="STRPRTWTR.ALWDRTPRT"></a>
+<h2>直接印刷可能 (ALWDRTPRT)</h2>
+<p>印刷装置に直接印刷するファイルの印刷装置書出プログラムを可能にするかどうか指定します。ファイルの直接印刷は印刷装置に印刷装置ファイルのSPOOL(*NO)を指定することによって作成されます。直接印刷が許可されており，印刷装置が使用可能な場合には，非スプールの印刷ファイルがすぐに印刷されます。印刷装置が使用中の場合には，非スプール印刷ファイルは印刷装置が使用可能になるまで待機します。最大の待ち時間は印刷装置ファイルのWAITFILEパラメーターに指定した時間の長さであり，その後ではジョブは自動的に取り消されます。ユーザーはジョブ終了(ENDJOB)コマンドによって非スプール印刷装置ファイルだけを取り消すことができます。
+</p>
+<dl>
+<dt><strong class="underlined">*NO</strong></dt>
+<dd>印刷装置では装置に印刷する非スプール印刷装置ファイルは許可されません。
+</dd>
+<dt><strong>*YES</strong></dt>
+<dd>印刷装置は，スプールおよび非スプール出力を印刷するために使用することができます。WAITFILEパラメーターの値を設定するためには，印刷ファイルの作成，変更，または一時変更(CRTPRTF, CHGPRTF,またはOVRPRTF)コマンドを参照してください。
+<p>
+<strong>注:     </strong>WAITFILEパラメーターに指定されている値が30秒より少ないかどうかにかかわらず，非スプール・ファイルは最大30秒まで待機します。
+</p>
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table12" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#STRPRTWTR.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="STRPRTWTR.ALIGN"></a>
+<h2>ページの位置合わせ (ALIGN)</h2>
+<p>用紙位置合わせの制御方法を指定します。
+</p>
+<dl>
+<dt><strong class="underlined">*WTR</strong></dt>
+<dd>書き出しプログラムは印刷される出力を記憶して，用紙の位置合わせが必要であると判別した時には，用紙位置合わせメッセージを出します。
+</dd>
+<dt><strong>*FILE</strong></dt>
+<dd>*YESが<strong>ページの位置合わせ</strong>プロンプト(ALIGNパラメーター）に指定されたすべてのファイルに対して，用紙位置合わせメッセージが出されます。書き出しプログラムによって提供される自動用紙位置合わせ制御機能で必要な結果が得られない時には，このオプションを選択する必要があります。
+</dd>
+<dt><strong>*FIRST</strong></dt>
+<dd>最初に印刷されるファイルの場合にだけ用紙位置合わせメッセージが出されます。印刷装置で後続のエラーが起こっても，用紙位置合わせメッセージは出されません。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table13" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#STRPRTWTR.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="STRPRTWTR.INIT"></a>
+<h2>印刷装置初期設定 (INIT)</h2>
+<p>印刷装置を初期設定する頻度を指定します。
+</p>
+<p>
+<strong>注:     </strong>印刷装置記述でTRANSFORM(*YES)またはユーザー・データ変換プログラムが指定されていると，このパラメーターは無視されます。
+</p>
+<dl>
+<dt><strong class="underlined">*WTR</strong></dt>
+<dd>書き出しプログラムは，必要な時に印刷装置を初期設定します。
+</dd>
+<dt><strong>*FIRST</strong></dt>
+<dd>書き出しプログラムが印刷装置を初期設定するのは，最初のファイルを印刷する前，または入出力装置エラーが起こった後だけです。
+</dd>
+<dt><strong>*ALL</strong></dt>
+<dd>書き出しプログラムは，各ファイルおよびファイルの各コピーを印刷する前に印刷装置を初期設定します。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table14" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#STRPRTWTR.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="STRPRTWTR.FILE"></a>
+<h2>スプール・ファイル (FILE)</h2>
+<p>印刷装置で印刷する最初の（または唯一の）スプール・ファイルを指定します。出力待ち行列に複数の使用可能なファイルがある場合には，次に作成されるファイルは優先順位が最高の最初に使用可能なファイルです。
+</p>
+<dl>
+<dt><strong class="underlined">*NONE</strong></dt>
+<dd>スプール・ファイル名は指定されません。出力待ち行列で最初に使用可能なスプール・ファイルが最初に処理されます。
+</dd>
+<dt><strong>*LAST</strong></dt>
+<dd>書き出しプログラムの終了時に印刷中であったスプール・ファイルは，書き出しプログラムが再始動されると開始されます。
+</dd>
+<dt><strong class="italic">名前</strong></dt>
+<dd>印刷装置に書き出される最初の（または唯一の）ファイルであるスプール・ファイルの名前を指定してください。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table15" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#STRPRTWTR.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="STRPRTWTR.JOB"></a>
+<h2>ジョブ名(JOB)</h2>
+<p>スプール・ファイルを作成したジョブの名前を指定します。このパラメーターが有効なのは，スプール・ファイル名が<strong>スプール・ファイル</strong><strong> (FILE)</strong>パラメーターに指定された場合だけです。
+</p>
+<h3><strong>単一値</strong>
+</h3>
+<dl>
+<dt><strong class="underlined">*</strong></dt>
+<dd>この印刷装置書き出しプログラム開始(STRPRTWTR)コマンドが出されたジョブは，そのスプール・ファイルを作成したジョブです。
+</dd>
+</dl>
+<h3><strong>修飾子</strong><strong>1: </strong><strong>ジョブ名</strong>
+</h3>
+<dl>
+<dt><strong class="italic">名前</strong></dt>
+<dd>スプール・ファイルを作成したジョブの名前を指定してください。別のジョブ修飾子を指定しない場合には，そのジョブの単純名を見つけるために，システムに現在あるすべてのジョブが検索されます。
+</dd>
+</dl>
+<h3><strong>修飾子</strong><strong>2: </strong><strong>ユーザー</strong>
+</h3>
+<dl>
+<dt><strong class="italic">名前</strong></dt>
+<dd>ジョブの実行で使用されるユーザー・プロファイルを識別するユーザー名を指定してください。
+</dd>
+</dl>
+<h3><strong>修飾子</strong><strong>3: </strong><strong>番号</strong>
+</h3>
+<dl>
+<dt><strong class="italic">000000から999999</strong></dt>
+<dd>システム割り当てジョブ番号を指定してください。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table16" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#STRPRTWTR.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="STRPRTWTR.SPLNBR"></a>
+<h2>スプール・ファイル番号 (SPLNBR)</h2>
+<p>最初に処理されるスプール・ファイルの番号を指定します。このパラメーターが有効なのは，スプール・ファイル名が<strong>スプール・ファイル</strong>プロンプト(FILEパラメーター）に指定された場合だけです。
+</p>
+<dl>
+<dt><strong class="underlined">*ONLY</strong></dt>
+<dd>ジョブ内の1つのスプール・ファイルだけが指定されたファイル名をもっています。したがって，スプール・ファイルの番号は不要です。
+</dd>
+</dl>
+<dl>
+<dt><strong>*LAST</strong></dt>
+<dd>指定されたファイル名で最高の番号が付いているスプール・ファイルが使用されます。
+</dd>
+</dl>
+<dl>
+<dt><strong>*ANY</strong></dt>
+<dd>使用するスプール・ファイルを決定するのに，スプール・ファイル番号は使用されません。スプール・ファイルの選択時に，スプール・ファイル番号よりジョブ・システム名パラメーターまたはスプール・ファイル作成日時パラメーターが優先されるようにする時には，この値を使用してください。
+</dd>
+</dl>
+<dl>
+<dt><strong class="italic">1から999999</strong></dt>
+<dd>指定された出力待ち行列のジョブで，最初に処理したい指定のファイルの番号を指定してください。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table17" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#STRPRTWTR.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="STRPRTWTR.JOBSYSNAME"></a>
+<h2>ジョブ・システム名(JOBSYSNAME)</h2>
+<p>スプール・ファイルを作成したジョブ(JOBパラメーター）が実行されたシステムの名前を指定します。このパラメーターは，ジョブ名，ユーザー名，ジョブ番号，スプール・ファイル名，およびスプール・ファイル番号のパラメーター要件が一致した後に考慮されます。
+</p>
+<dl>
+<dt><strong class="underlined">*ONLY</strong></dt>
+<dd>指定されたジョブ名，ユーザー名，ジョブ番号，スプール・ファイル名，スプール・ファイル番号，およびスプール・ファイル作成日時を持つスプール・ファイルは，1つです。
+</dd>
+<dt><strong>*CURRENT</strong></dt>
+<dd>指定されたジョブ名，ユーザー名，ジョブ番号，スプール・ファイル名，スプール・ファイル番号，および作成日時を持つ現行システム上で作成されたスプール・ファイルが使用されます。
+</dd>
+<dt><strong>*ANY</strong></dt>
+<dd>使用するスプール・ファイルを決定するのに，ジョブ・システム名は使用されません。スプール・ファイルの選択時に，ジョブ・システム名よりスプール・ファイル作成日時パラメーターが優先されるようにする時には，この値を使用してください。
+</dd>
+<dt><strong class="italic">名前</strong></dt>
+<dd>スプール・ファイルを作成したジョブが実行されたシステムの名前を指定します。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table18" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#STRPRTWTR.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="STRPRTWTR.CRTDATE"></a>
+<h2>作成されたスプール・ファイル (CRTDATE)</h2>
+<p>スプール・ファイルが作成された日時を指定します。このパラメーターは，ジョブ名，ユーザー名，ジョブ番号，スプール・ファイル名，スプール・ファイル番号，およびジョブ・システム名のパラメーター要件が一致した後に考慮されます。
+</p>
+<h3><strong>単一値</strong>
+</h3>
+<dl>
+<dt><strong class="underlined">*ONLY</strong></dt>
+<dd>指定されたジョブ名，ユーザー名，ジョブ番号，スプール・ファイル名，スプール・ファイル番号，およびジョブ・システム名を持つスプール・ファイルは，1つです。
+</dd>
+<dt><strong>*LAST</strong></dt>
+<dd>指定されたジョブ名，ユーザー名，ジョブ番号，スプール・ファイル名，スプール・ファイル番号，およびジョブ・システム名の最後の作成日時を持つスプール・ファイルが使用されます。
+</dd>
+</dl>
+<h3><strong>要素</strong><strong>1: </strong><strong>作成日</strong>
+</h3>
+<dl>
+<dt><strong class="italic">日付</strong></dt>
+<dd>スプール・ファイルが作成された日付を指定します。
+</dd>
+</dl>
+<h3><strong>要素</strong><strong>2: </strong><strong>作成時刻</strong>
+</h3>
+<dl>
+<dt><strong class="underlined">*ONLY</strong></dt>
+<dd>指定されたジョブ名，ユーザー名，ジョブ番号，スプール・ファイル名，スプール・ファイル番号，ジョブ・システム名，およびスプール・ファイル作成日を持つスプール・ファイルは，1つです。
+</dd>
+<dt><strong>*LAST</strong></dt>
+<dd>指定されたジョブ名，ユーザー名，ジョブ番号，スプール・ファイル名，スプール・ファイル番号，ジョブ・システム名，およびスプール・ファイル作成日の最後の作成時刻を持つスプール・ファイルが使用されます。
+</dd>
+<dt><strong class="italic">時刻</strong></dt>
+<dd>スプール・ファイルが作成された時刻を指定します。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table19" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#STRPRTWTR.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="STRPRTWTR.PAGE"></a>
+<h2>開始ページ (PAGE)</h2>
+<p>最初のファイルから印刷する最初のページのページ番号を指定します。このパラメーターが有効なのは，スプール・ファイル名が<strong>スプール・ファイル</strong>プロンプト(FILEパラメーター）に指定された場合だけです。
+</p>
+<dl>
+<dt><strong>*BEGIN</strong></dt>
+<dd>スプール・ファイルの再始動ページが最初に印刷するページです。
+<p>
+<strong>注:     </strong>この値がスプール・ファイル属性変更(CHGSPLFA)コマンドを使用して変更されなかった場合には，この値が*BEGINである時と同じ方法でファイルを印刷します。
+</p>
+</dd>
+<dt><strong class="italic">整数</strong></dt>
+<dd>印刷の最初のページの番号を指定します。この番号は，有効なファイルのページの範囲内でなければなりません。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table20" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#STRPRTWTR.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div><h2><a name="STRPRTWTR.COMMAND.EXAMPLES">例</a> </h2>
+<p>
+</p><pre>STRPRTWTR   DEV(QSYSPRT)  OUTQ(QPRINTS)  WTR(TOM)
+</pre>
+<p></p>
+<p>このコマンドは，TOMという名前のスプーリング書き出しプログラムを開始します。この書き出しプログラムは，QPRINTSという名前の出力待ち行列から出力データを取り出し，その出力データをQSYSPRTという名前の印刷装置で印刷します。書き出しプログラム・メッセージがシステム操作員のメッセージ待ち行列に送られ，待ち行列が空になっている場合には，書き出しプログラムは追加の出力データを待機します。
+</p>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table21" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#STRPRTWTR.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div><h2><a name="STRPRTWTR.ERROR.MESSAGES">エラー・メッセージ</a> </h2>
+<p><strong class="underlined">*ESCAPE </strong><strong class="underlined">メッセージ</strong>
+</p>
+<dl>
+<dt><strong>CPF0906</strong></dt>
+<dd>名前&amp;3/&amp;2/&amp;1の重複ジョブが見つかった。
+</dd>
+<dt><strong>CPF1338</strong></dt>
+<dd>SBMJOBコマンドでエラーが起こった。
+</dd>
+<dt><strong>CPF1764</strong></dt>
+<dd>装置&amp;1に対して，書き出しプログラムは既に開始されている。
+</dd>
+<dt><strong>CPF1842</strong></dt>
+<dd>システム値&amp;1をアクセスすることができない。
+</dd>
+<dt><strong>CPF2115</strong></dt>
+<dd>&amp;2のタイプ*&amp;3のオブジェクト&amp;1に損傷がある。
+</dd>
+<dt><strong>CPF2207</strong></dt>
+<dd>ライブラリー&amp;3のタイプ*&amp;2のオブジェクト&amp;1の使用を認可されていない。
+</dd>
+<dt><strong>CPF3303</strong></dt>
+<dd>ファイル&amp;1はジョブ&amp;5/&amp;4/&amp;3に見つからなかった。
+</dd>
+<dt><strong>CPF3305</strong></dt>
+<dd>ライブラリー&amp;2の出力待ち行列&amp;1は，別の書き出しプログラムに割り当てられている。
+</dd>
+<dt><strong>CPF3309</strong></dt>
+<dd>&amp;1という名前のファイルは活動状態でない。
+</dd>
+<dt><strong>CPF3310</strong></dt>
+<dd>書き出しプログラム&amp;1は既に開始されている。
+</dd>
+<dt><strong>CPF3330</strong></dt>
+<dd>必要な資源が使用できない。
+</dd>
+<dt><strong>CPF3340</strong></dt>
+<dd>指定された名前のファイルが，ジョブ&amp;5/&amp;4/&amp;3で複数個見つかった。
+</dd>
+<dt><strong>CPF3342</strong></dt>
+<dd>ジョブ&amp;5/&amp;4/&amp;3が見つからない。
+</dd>
+<dt><strong>CPF3343</strong></dt>
+<dd>重複したジョブ名が見つかった。
+</dd>
+<dt><strong>CPF3347</strong></dt>
+<dd>装置&amp;1が見つからない。
+</dd>
+<dt><strong>CPF3357</strong></dt>
+<dd>ライブラリー&amp;2に出力待ち行列&amp;1が見つかりません。
+</dd>
+<dt><strong>CPF3362</strong></dt>
+<dd>QTEMPのオブジェクトは，パラメーター値には正しくない。
+</dd>
+<dt><strong>CPF3363</strong></dt>
+<dd>ライブラリー&amp;2のメッセージ待ち行列&amp;1が見つからなかった。
+</dd>
+<dt><strong>CPF3369</strong></dt>
+<dd>装置&amp;1は印刷装置ではない。
+</dd>
+<dt><strong>CPF336B</strong></dt>
+<dd>ライブラリー&amp;2のドライバー出口プログラム&amp;1が見つからないか，認可されていない。
+</dd>
+<dt><strong>CPF3418</strong></dt>
+<dd>ジョブに重複したファイル&amp;1番号&amp;2が見つかった。
+</dd>
+<dt><strong>CPF346A</strong></dt>
+<dd>ライブラリー&amp;2の変形出口プログラム&amp;1が見つからないか，ユーザーが認可されていない。
+</dd>
+<dt><strong>CPF346B</strong></dt>
+<dd>ライブラリー&amp;2のドライバー出口プログラム&amp;1が見つからないか，ユーザーが認可されていない。
+</dd>
+<dt><strong>CPF3463</strong></dt>
+<dd>装置&amp;1の出力待ち行列が見つからない。
+</dd>
+<dt><strong>CPF3464</strong></dt>
+<dd>ライブラリー&amp;2の出力待ち行列&amp;1に対する権限がない。
+</dd>
+<dt><strong>CPF3478</strong></dt>
+<dd>ファイル&amp;1はライブラリー&amp;7の出力待ち行列&amp;6のジョブ&amp;5/&amp;4/&amp;3に見つからなかった。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table22" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#STRPRTWTR.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+</div>
+
+
+</body></html>

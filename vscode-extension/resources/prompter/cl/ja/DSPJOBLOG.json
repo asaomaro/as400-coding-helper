@@ -1,0 +1,284 @@
+{
+  "keyword": "DSPJOBLOG",
+  "description": "ジョブ・ログ表示 (DSPJOBLOG)",
+  "help": "ジョブ・ログ表示(DSPJOBLOG)コマンドは，ジョブ・ログが書き出されていない時に，まだ活動状態のジョブに対して，コマンドおよび関連したメッセージを示します。また，このコマンドは，処理を開始していなかったジョブ待ち行列上のジョブに対するコマンドも示します。\n\nこのコマンドは，ジョブの進行をモニターするために使用されます。\n\n注: この機能には，ジョブ表示(DSPJOB)およびジョブ処理(WRKJOB)コマンドを通じてアクセスすることもできます。",
+  "parameters": [
+    {
+      "name": "JOB",
+      "description": "ジョブ名",
+      "help": "ジョブ・ログが示されるジョブの名前を指定します。\n\nジョブIDは，最大3つの要素からなる特殊値または修飾名です。例えば，次のようになります。",
+      "inputType": "group",
+      "required": false,
+      "groupKind": "qualified",
+      "children": [
+        {
+          "name": "JOB_Q3",
+          "description": "番号",
+          "inputType": "number",
+          "required": false,
+          "attributes": {
+            "numericOnly": true
+          }
+        },
+        {
+          "name": "JOB_Q2",
+          "description": "ユーザー",
+          "inputType": "text",
+          "required": false,
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          }
+        },
+        {
+          "name": "JOB",
+          "description": "ジョブ名",
+          "inputType": "text",
+          "required": false,
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          },
+          "defaultValue": "*"
+        }
+      ],
+      "positional": 1,
+      "basic": true
+    },
+    {
+      "name": "OUTPUT",
+      "description": "出力",
+      "help": "コマンドからの出力を要求元ワークステーションに表示するか，ジョブのスプール出力で印刷するか，あるいはデータベース・ファイルへ送るかを指定します。\n\nこの値を使用すると，1次と2次の両方の出力ファイルを作成することができます。APIに指定したメッセージ・フィルターは，メッセージをデータベースに書き出す前にメッセージに適用されます。出力ファイルのデータベース形式(QMHPFT)は，弊社提供データベース・ファイルQAMHJLPRに指定された形式と同じです。",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*",
+          "value": "*",
+          "help": "出力は表示されるか（対話式ジョブによって要求された場合），あるいはジョブのスプール出力で印刷されます（バッチ・ジョブによって要求された場合）。"
+        },
+        {
+          "label": "*PRINT",
+          "value": "*PRINT",
+          "help": "出力はジョブのスプール出力で印刷されます。"
+        },
+        {
+          "label": "*APIDFN",
+          "value": "*APIDFN",
+          "help": "出力は，前にQMHCTLJL APIを実行することによって準備されたデータベース・ファイルに送られます。*APIDFNは，JOB(*)も指定した場合にだけ指定することができます。OUTFILEおよびOUTMBRパラメーターは使用されません。 この値を使用すると，1次と2次の両方の出力ファイルを作成することができます。APIに指定したメッセージ・フィルターは，メッセージをデータベースに書き出す前にメッセージに適用されます。出力ファイルのデータベース形式(QMHPFT)は，弊社提供データベース・ファイルQAMHJLPRに指定された形式と同じです。"
+        },
+        {
+          "label": "*OUTFILE",
+          "value": "*OUTFILE",
+          "help": "出力は，OUTFILEパラメーターに指定されたデータベース・ファイルに送られます。このオプションを使用できるのは，JOBパラメーターが特殊値のアスタリスク(*)を指定している場合だけです。このオプションだけを使用すると，1次出力ファイルを作成することができます。"
+        }
+      ],
+      "positional": 2,
+      "basic": true
+    },
+    {
+      "name": "OUTFILE",
+      "description": "出力を受け取るファイル",
+      "help": "コマンドの出力が送られるデータベース・ファイルを指定します。ファイルが存在しない場合には，このコマンドによって，指定されたライブラリーにデータベース・ファイルが作成されます。ファイルが作成される場合には，ファイルの共通権限は，ファイルが作成されるライブラリーに指定された作成権限と同じものになります。ライブラリーの作成権限を表示するには，ライブラリー記述表示(DSPLIBD)コマンドを使用してください。",
+      "inputType": "group",
+      "required": false,
+      "groupKind": "qualified",
+      "children": [
+        {
+          "name": "LIB",
+          "description": "ライブラリー",
+          "help": "*LIBL: ファイルを見つけるために，ライブラリー・リストが使用されます。ファイルが見つからない場合には，現行ライブラリーにファイルが作成されます。現行ライブラリーが存在していない場合には，ファイルはQGPLライブラリーに作成されます。\n*CURLIB: ファイルを見つけるためにスレッドの現行ライブラリーが使用されます。スレッドの現行ライブラリーとして指定されているライブラリーがない場合，QGPLライブラリーが使用されます。\n検索するライブラリーの名前を指定してください。",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "*LIBL",
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          }
+        },
+        {
+          "name": "OUTFILE",
+          "description": "出力を受け取るファイル",
+          "help": "コマンド出力が送られる先のデータベース・ファイルの名前を指定してください。",
+          "inputType": "text",
+          "required": false,
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          }
+        }
+      ]
+    },
+    {
+      "name": "OUTMBR",
+      "description": "出力メンバー・オプション",
+      "help": "コマンドの出力を受け取るデータベース・ファイル・メンバーの名前を指定します。",
+      "inputType": "group",
+      "required": false,
+      "groupKind": "elements",
+      "children": [
+        {
+          "name": "OUTMBR_E1",
+          "description": "出力を受け取るメンバー",
+          "help": "*FIRST: ファイル内の最初のメンバーが出力を受け取ります。OUTMBR(*FIRST)が指定されていて，メンバーが存在していない場合には，システムが 出力を受け取るファイル (OUTFILE) パラメーターに指定されたファイルの名前を使用してメンバーを作成します。メンバーが既に存在している場合，その既存メンバーの終わりに新規レコードを追加するのか，あるいはそのメンバーをクリアして新規レコードを追加するのかを選択できます。\n出力を受け取るファイル・メンバーの名前を指定してください。存在していない場合には，システムが作成します。",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "*FIRST",
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          }
+        },
+        {
+          "name": "OUTMBR_E2",
+          "description": "レコードの置き換えまたは追加",
+          "inputType": "dropdown",
+          "required": false,
+          "defaultValue": "*REPLACE",
+          "attributes": {
+            "characterSet": "upper"
+          },
+          "options": [
+            {
+              "label": "*REPLACE",
+              "value": "*REPLACE",
+              "help": "システムは，既存のメンバーを消去し，新しいレコードを追加します。"
+            },
+            {
+              "label": "*ADD",
+              "value": "*ADD",
+              "help": "システムは，既存のレコードの終わりに新しいレコードを追加します。"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "MSGF",
+      "description": "メッセージ・ファイル",
+      "help": "どうすれば事前定義メッセージの形式設定に使用されるメッセージ・ファイルが見つかるかを指定します。特定のライブラリー内のメッセージ・ファイルを使用して送信されるメッセージは，常にそのライブラリーからのメッセージ・ファイルを使用して形式設定されます。ライブラリー・リストを使用して見つかったメッセージ・ファイルを使用して送信されるメッセージは，メッセージが送信されたとき，またはジョブ・ログが表示されるとき，ライブラリー・リストを使用して形式設定できます。",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*MSG",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*MSG",
+          "value": "*MSG",
+          "help": "メッセージの送信時に見つかったメッセージ・ファイルが，事前定義メッセージを形式設定するために使用されます。"
+        },
+        {
+          "label": "*LIBL",
+          "value": "*LIBL",
+          "help": "ジョブ・ログを表示するジョブのライブラリー・リストが，メッセージ・ファイルの検索および事前定義メッセージの形式設定に使用されます。"
+        }
+      ]
+    },
+    {
+      "name": "DUPJOBOPT",
+      "description": "重複ジョブ・オプション",
+      "help": "このコマンドで重複ジョブが見つかった時に取られる処置を指定します。",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*SELECT",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*SELECT",
+          "value": "*SELECT",
+          "help": "対話式セッション中に重複しているジョブが見つかった時には，選択画面が表示されます。そうでない場合には，メッセージが出されます。"
+        },
+        {
+          "label": "*MSG",
+          "value": "*MSG",
+          "help": "重複しているジョブが見つかった時には，メッセージが出されます。"
+        }
+      ]
+    }
+  ],
+  "threadSafe": false,
+  "environment": "すべての環境 (*ALL)",
+  "restrictions": [
+    "ジョブ・ログを表示するには，ユーザーがジョブ制御(*JOBCTL)特殊権限を持っているか，あるいはジョブがDSPJOBLOGコマンドを実行しているユーザーと同じユーザー名を持っている必要があります。",
+    "全オブジェクト(*ALLOBJ)特殊権限を持っているジョブのジョブ・ログを表示するには，ユーザーが*ALLOBJ特殊権限を持っているか，あるいはSystem iナビゲーターのアプリケーション管理サポートによりIBM Iの「全オブジェクト・ジョブ・ログ」機能が許可されていなければなりません。QIBM_ACCESS_ALLOBJ_JOBLOGの機能IDを持つ機能使用法情報の変更(CHGFCNUSG)コマンドも，*ALLOBJ特殊権限を持つジョブのジョブ・ログを表示できるユーザーのリストを変更するために使用することができます。"
+  ],
+  "examples": [
+    {
+      "code": "DSPJOBLOG JOB(ANDERSON/PAYROLL) OUTPUT(*PRINT)"
+    }
+  ],
+  "errorMessages": [
+    {
+      "id": "CPF0941",
+      "text": "ジョブ&3/&2/&1はもはやシステムにない。"
+    },
+    {
+      "id": "CPF1069",
+      "text": "重複名の終わり。"
+    },
+    {
+      "id": "CPF1070",
+      "text": "ジョブ&3/&2/&1が見つからない。"
+    },
+    {
+      "id": "CPF24DB",
+      "text": "*APIDFNオプションの場合には，最初にQMHCTLJL APIを実行しなければならない。"
+    },
+    {
+      "id": "CPF24D7",
+      "text": "ジョブ・ログ作成用にライブラリー&2のファイル&1を使用することができない。"
+    },
+    {
+      "id": "CPF24D8",
+      "text": "ジョブ・ログ作成用にライブラリー&2のDDMファイル&1を使用することはできません。"
+    },
+    {
+      "id": "CPF24E0",
+      "text": "ジョブ・ログをライブラリー&2中のファイル&1に書き出している時に障害が起こった。"
+    },
+    {
+      "id": "CPF2441",
+      "text": "ジョブ・ログの表示は許可されていません。"
+    },
+    {
+      "id": "CPF2443",
+      "text": "ジョブが終了したため，ジョブ・ログは表示またはリストされなかった。"
+    },
+    {
+      "id": "CPF2523",
+      "text": "ジョブ・ログ情報がない。"
+    },
+    {
+      "id": "CPF2532",
+      "text": "ジョブ・メッセージ待ち行列に損傷がある。ジョブ・ログは終了しました。"
+    },
+    {
+      "id": "CPF9822",
+      "text": "ライブラリー&2のファイル&1は認可されていない。"
+    },
+    {
+      "id": "CPF9845",
+      "text": "ファイル&1のオープン中にエラーが起こった。"
+    },
+    {
+      "id": "CPF9846",
+      "text": "ライブラリー&2のファイル&1の処理中にエラーが起こった。"
+    },
+    {
+      "id": "CPF9847",
+      "text": "ライブラリー&2のファイル&1のクローズ中にエラーが起こった。"
+    }
+  ],
+  "source": {
+    "url": "https://www.ibm.com/docs/ja/ssw_ibm_i_74/cl/dspjoblog.htm",
+    "version": "IBM i 7.4"
+  }
+}

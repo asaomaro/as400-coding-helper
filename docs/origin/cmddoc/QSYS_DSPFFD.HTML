@@ -1,0 +1,443 @@
+
+  <!doctype html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+  <html>
+<head><META http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>Display File Field Description  (DSPFFD)</title>
+</head>
+<body bgcolor="white">
+<a name="DSPFFD.Top_Of_Page"></a>
+<h2>Display File Field Description  (DSPFFD)</h2>
+<table width="100%">
+<tr>
+<td align="left" valign="top"><b>Where allowed to run:  </b>All environments (*ALL)<br>
+<b>Threadsafe:  </b>No
+</td>
+<td align="right" valign="top">
+<a href="#DSPFFD.PARAMETERS.TABLE">Parameters</a><br>
+<a href="#DSPFFD.COMMAND.EXAMPLES">Examples</a><br>
+<a href="#DSPFFD.ERROR.MESSAGES">Error messages</a></td>
+</tr>
+</table>
+
+<div> <a name="DSPFFD"></a>
+<p>The Display File Field Description (DSPFFD) command shows, prints, or places in a database file field-level information for one or more files in a specific library or all the libraries to which the user has access.
+</p>
+<p>If the information is put in a database file, the database file will have a record format named QWHDRFFD.  The fields in record format QWHDRFFD are the same as the fields in the IBM-supplied format QWHDRFFD in file QADSPFFD in the library QSYS.  The following information is contained in the database file:
+</p>
+<ul>
+<li>For each file specified in the command, the database record contains:
+<ul>
+<li>The name of the file, the name of the library containing the file, the file type, and file member
+</li>
+<li>The file creation date and the number of record formats in the file
+</li>
+<li>The name of the record format used by the file, the format level identifier, the format text description, the format record length, and the number of fields in the format
+</li>
+<li>The information retrieval date and time
+</li>
+</ul>
+</li>
+<li>For each field in the record format, the record also contains the following, if applicable:
+<ul>
+<li>The field name and external field name
+</li>
+<li>The type and length of the field
+</li>
+<li>For fields referencing other fields, the name of the referenced file, record format, and field; if any attributes of the referenced field were changed, the attribute type is given
+</li>
+<li>The edit code, edit word, and column headings associated with the field
+</li>
+<li>A signal of whether validity checking is performed on the field
+</li>
+<li>The validity check message identifier, the message file, and the library
+</li>
+<li>The use of the field
+</li>
+</ul>
+</li>
+</ul>
+<p><b>Restrictions:</b>
+</p>
+<ul>
+<li>To create an OUTFILE, you must have *USE authority to the Create Physical File (CRTPF) command and add (*ADD) authority to the library.  To use an existing OUTFILE, the user must have object operational (*OBJOPR) and *ADD authority to the file.
+</li>
+<li>You must have object management (*OBJMGT) and delete (*DLT) authority if *REPLACE is specified for the outfile member and the file member already exists.
+</li>
+<li>You must have *OBJOPR authority for the file specified for the FILE parameter.  Also, of the libraries specified by the library qualifier, only the libraries for which you have execute (*EXECUTE) authority are searched.
+</li>
+</ul>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#DSPFFD.Top_Of_Page">Top</a></td></tr>
+</table>
+<hr width="100%" size="2">
+
+<div>
+<h3><a name="DSPFFD.PARAMETERS.TABLE">Parameters</a></h3>
+<table cellspacing="0" cellpadding="4" border="1"><tr>
+<th width="10%" align="left" valign="bottom" bgcolor="aqua">Keyword</th>
+<th width="15%" align="left" valign="bottom" bgcolor="aqua">Description</th>
+<th width="30%" align="left" valign="bottom" bgcolor="aqua">Choices</th>
+<th width="10%" align="left" valign="bottom" bgcolor="aqua">Notes</th>
+</tr>
+<tr>
+<td valign="top" rowspan="3"><a href="#DSPFFD.FILE"><b>FILE</b></a></td>
+<td valign="top">File</td>
+<td valign="top"><i>Qualified object name</i></td>
+<td valign="top" rowspan="3">Required, Positional 1</td>
+</tr>
+<tr>
+<td valign="top">Qualifier 1: File</td>
+<td valign="top"><i>Generic name, name</i>, *ALL</td>
+</tr><tr>
+<td valign="top">Qualifier 2: Library</td>
+<td valign="top"><i>Name</i>, <b><u>*LIBL</u></b>, *CURLIB, *USRLIBL, *ALLUSR, *ALL</td>
+</tr><tr>
+<td valign="top"><a href="#DSPFFD.OUTPUT"><b>OUTPUT</b></a></td>
+<td valign="top">Output</td>
+<td valign="top"><b><u>*</u></b>, *PRINT, *OUTFILE</td>
+<td valign="top">Optional, Positional 2</td>
+</tr>
+<tr>
+<td valign="top" rowspan="3"><a href="#DSPFFD.OUTFILE"><b>OUTFILE</b></a></td>
+<td valign="top">File to receive output</td>
+<td valign="top"><i>Qualified object name</i></td>
+<td valign="top" rowspan="3">Optional</td>
+</tr>
+<tr>
+<td valign="top">Qualifier 1: File to receive output</td>
+<td valign="top"><i>Name</i></td>
+</tr><tr>
+<td valign="top">Qualifier 2: Library</td>
+<td valign="top"><i>Name</i>, <b><u>*LIBL</u></b>, *CURLIB</td>
+</tr><tr>
+<td valign="top" rowspan="3"><a href="#DSPFFD.OUTMBR"><b>OUTMBR</b></a></td>
+<td valign="top">Output member options</td>
+<td valign="top"><i>Element list</i></td>
+<td valign="top" rowspan="3">Optional</td>
+</tr>
+<tr>
+<td valign="top">Element 1: Member to receive output</td>
+<td valign="top">
+<i>Name</i>, <b><u>*FIRST</u></b></td>
+</tr>
+<tr>
+<td valign="top">Element 2: Replace or add records</td>
+<td valign="top">
+<b><u>*REPLACE</u></b>, *ADD</td>
+</tr>
+<tr>
+<td valign="top"><a href="#DSPFFD.SYSTEM"><b>SYSTEM</b></a></td>
+<td valign="top">System</td>
+<td valign="top"><b><u>*LCL</u></b>, *RMT, *ALL</td>
+<td valign="top">Optional</td>
+</tr>
+</table>
+
+<table width="100%">
+<tr><td align="right"><a href="#DSPFFD.Top_Of_Page">Top</a></td></tr>
+</table>
+</div>
+<div> <a name="DSPFFD.FILE"></a>
+<h3>File (FILE)</h3>
+<p>Specifies the files for which field information is returned.
+</p>
+<p>This is a required parameter.
+</p>
+<p><b>Qualifier 1: File</b>
+</p>
+<dl>
+<dt><b>*ALL</b></dt>
+<dd>All files in the library or libraries have their information shown.
+</dd>
+<dt><b><i>name</i></b></dt>
+<dd>Specify the full name of a file.  Only information for the specified file is returned.
+</dd>
+<dt><b><i>generic-name</i></b></dt>
+<dd>Specify a generic name.  Information is provided for all files whose names begin with the specified characters.
+</dd>
+</dl>
+<p><b>Qualifier 2: Library</b>
+</p>
+<dl>
+<dt><b><u>*LIBL</u></b></dt>
+<dd>All libraries in the library list for the current thread are searched until the first match is found.
+</dd>
+</dl>
+<dl>
+<dt><b>*CURLIB</b></dt>
+<dd>The current library for the thread is searched.  If no library is specified as the current library for the thread, the QGPL library is searched.
+</dd>
+</dl>
+<dl>
+<dt><b>*USRLIBL</b></dt>
+<dd>If a current library entry exists in the library list for the current thread, the current library and the libraries in the user portion of the library list are searched.  If there is no current library entry, only the libraries in the user portion of the library list are searched.
+</dd>
+</dl>
+<dl>
+<dt><b>*ALLUSR</b></dt>
+<dd>All user libraries are searched.  All libraries with names that do not begin with the letter Q are searched except for the following:
+<p>
+<pre>
+#CGULIB     #DSULIB     #SEULIB
+#COBLIB     #RPGLIB
+#DFULIB     #SDALIB
+</pre>
+</p>
+<p>Although the following Qxxx libraries are provided by IBM, they typically contain user data that changes frequently.  Therefore, these libraries are considered user libraries and are also searched:
+</p>
+<p>
+<pre>
+QDSNX       QRCLxxxxx   QUSRDIRDB   QUSRVI
+QGPL        QSRVAGT     QUSRIJS     QUSRVxRxMx
+QGPL38      QSYS2       QUSRINFSKR  QWQCENT
+QMGTC       QSYS2xxxxx  QUSRNOTES   QWQREPOS
+QMGTC2      QS36F       QUSROND
+QMPGDATA    QUSER38     QUSRPOSGS
+QMQMDATA    QUSRADSM    QUSRPOSSA
+QMQMPROC    QUSRBRM     QUSRPYMSVR
+QPFRDATA    QUSRDIRCF   QUSRRDARS
+QRCL        QUSRDIRCL   QUSRSYS
+</pre>
+</p>
+<ol>
+<li>'xxxxx' is the number of a primary auxiliary storage pool (ASP).
+</li>
+<li>A different library name, in the format QUSRVxRxMx, can be created by the user for each previous release supported by IBM to contain any user commands to be compiled in a CL program for the previous release.  For the QUSRVxRxMx user library, VxRxMx is the version, release, and modification level of a previous release that IBM continues to support.
+</li>
+</ol>
+</dd>
+</dl>
+<dl>
+<dt><b>*ALL</b></dt>
+<dd>All libraries in the system, including QSYS, are searched.
+</dd>
+</dl>
+<dl>
+<dt><b><i>name</i></b></dt>
+<dd>Specify the name of the library to be searched.
+</dd>
+</dl>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#DSPFFD.Top_Of_Page">Top</a></td></tr>
+</table>
+<div> <a name="DSPFFD.OUTPUT"></a>
+<h3>Output (OUTPUT)</h3>
+<p>Specifies where the output from the command is sent.
+</p>
+<dl>
+<dt><b><u>*</u></b></dt>
+<dd>The output is displayed (if requested by an interactive job) or printed with the job's spooled output (if requested by a batch job).
+</dd>
+</dl>
+<dl>
+<dt><b>*PRINT</b></dt>
+<dd>The output is printed with the job's spooled output.
+</dd>
+</dl>
+<dl>
+<dt><b>*OUTFILE</b></dt>
+<dd>The output is directed to the database file specified for the <b>File to receive output (OUTFILE)</b> parameter.
+</dd>
+</dl>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#DSPFFD.Top_Of_Page">Top</a></td></tr>
+</table>
+<div> <a name="DSPFFD.OUTFILE"></a>
+<h3>File to receive output (OUTFILE)</h3>
+<p>Specifies the database file to which the output of the command is directed.  If the file does not exist, this command creates a database file in the specified library.  If the file is created, the public authority for the file is the same as the create authority specified for the library in which the file is created.  Use the Display Library Description (DSPLIBD) command to show the library's create authority.
+</p>
+<p><b>Qualifier 1: File to receive output</b>
+</p>
+<dl>
+<dt><b><i>name</i></b></dt>
+<dd>Specify the name of the database file to which the command output is directed.
+</dd>
+</dl>
+<p><b>Qualifier 2: Library</b>
+</p>
+<dl>
+<dt><b><u>*LIBL</u></b></dt>
+<dd>The library list is used to locate the file.  If the file is not found, one is created in the current library.  If no current library exists, the file will be created in the QGPL library.
+</dd>
+<dt><b>*CURLIB</b></dt>
+<dd>The current library for the thread is used to locate the file.  If no library is specified as the current library for the thread, the QGPL library is used.
+</dd>
+</dl>
+<dl>
+<dt><b><i>name</i></b></dt>
+<dd>Specify the name of the library to be searched.
+</dd>
+</dl>
+<p>
+<b>Note:     </b>The outfile format must be the same as QWHDRFFD of system file QADSPFFD.  For more information on the outfile format, refer to Database category in the IBM i Information Center at http://www.ibm.com/systems/i/infocenter/.
+</p>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#DSPFFD.Top_Of_Page">Top</a></td></tr>
+</table>
+<div> <a name="DSPFFD.OUTMBR"></a>
+<h3>Output member options (OUTMBR)</h3>
+<p>Specifies the name of the database file member that receives the output of the command.
+</p>
+<p><b>Element 1: Member to receive output</b>
+</p>
+<dl>
+<dt><b><u>*FIRST</u></b></dt>
+<dd>The first member in the file receives the output. If OUTMBR(*FIRST) is specified and the member does not exist, the system creates a member with the name of the file specified for the <b>File to receive output (OUTFILE)</b> parameter.  If the member already exists, you have the option to add new records to the end of the existing member or clear the member and then add the new records.
+</dd>
+</dl>
+<dl>
+<dt><b><i>name</i></b></dt>
+<dd>Specify the name of the file member that receives the output.  If it does not exist, the system creates it.
+</dd>
+</dl>
+<p><b>Element 2: Replace or add records</b>
+</p>
+<dl>
+<dt><b><u>*REPLACE</u></b></dt>
+<dd>The system clears the existing member and adds the new records.
+</dd>
+</dl>
+<dl>
+<dt><b>*ADD</b></dt>
+<dd>The system adds the new records to the end of the existing records.
+</dd>
+</dl>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#DSPFFD.Top_Of_Page">Top</a></td></tr>
+</table>
+<div> <a name="DSPFFD.SYSTEM"></a>
+<h3>System (SYSTEM)</h3>
+<p>Specifies whether the information that is returned is about files on the local system or files on remote systems.
+</p>
+<dl>
+<dt><b><u>*LCL</u></b></dt>
+<dd>The information returned is about local files only.
+</dd>
+<dt><b>*RMT</b></dt>
+<dd>The information returned is about remote files only.
+</dd>
+<dt><b>*ALL</b></dt>
+<dd>The information returned is about both local and remote files.
+</dd>
+</dl>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#DSPFFD.Top_Of_Page">Top</a></td></tr>
+</table>
+<hr width="100%" size="2">
+<div><h3><a name="DSPFFD.COMMAND.EXAMPLES">Examples</a> </h3>
+<p><b>Example 1: Displaying Information About a File on the Local System</b>
+</p>
+<p>
+<pre>
+DSPFFD   FILE(LIB1/FILE2)
+</pre>
+</p>
+<p>This command shows the field-level information about file FILE2 in LIB1 on the local system. The information is shown at the work station where the command was entered.
+</p>
+<p><b>Example 2: Displaying Information About Files on the Local and Remote Systems</b>
+</p>
+<p>
+<pre>
+DSPFFD   FILE(*ALL/*ALL)  SYSTEM(*ALL)
+</pre>
+</p>
+<p>This command shows the field-level information of all files in all libraries authorized to the user on the local system and on all remote systems. For distributed data management files, the display shows only information about the remote file that is named on the RMTFILE parameter of the CRTDDMF command. The information is shown at the work station where the command was entered.
+</p>
+<p><b>Example 3: Directing Output to a Database File</b>
+</p>
+<p>
+<pre>
+DSPFFD   FILE(QGPL/FLDREF)  OUTPUT(*OUTFILE)
+         OUTFILE(QGPL/FLDREFX)
+</pre>
+</p>
+<p>This command puts the field-level information for the file FLDREF in the QGPL library on the local system into a database file named FLDREFX in the general purpose library, QGPL. The FLDREFX file in the QGPL library can then be processed by a program.
+</p>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#DSPFFD.Top_Of_Page">Top</a></td></tr>
+</table>
+<hr width="100%" size="2">
+<div><h3><a name="DSPFFD.ERROR.MESSAGES">Error messages</a> </h3>
+<p><b><u>*ESCAPE Messages</u></b>
+</p>
+<dl>
+<dt><b>CPF3012</b></dt>
+<dd>File &amp;1 in library &amp;2 not found.
+</dd>
+<dt><b>CPF3014</b></dt>
+<dd>No file specified as &amp;1 in &amp;2 can be displayed.
+</dd>
+<dt><b>CPF3024</b></dt>
+<dd>File &amp;1 not allowed for SYSTEM(&amp;3).
+</dd>
+<dt><b>CPF3052</b></dt>
+<dd>Description for file &amp;1 not available.
+</dd>
+<dt><b>CPF3061</b></dt>
+<dd>Record format &amp;3 not found for outfile &amp;1.
+</dd>
+<dt><b>CPF3063</b></dt>
+<dd>Output file &amp;1 in &amp;2 not physical file.
+</dd>
+<dt><b>CPF3064</b></dt>
+<dd>Library &amp;1 not found.
+</dd>
+<dt><b>CPF3066</b></dt>
+<dd>Error creating output file &amp;1 in &amp;2.
+</dd>
+<dt><b>CPF3067</b></dt>
+<dd>Error while opening file &amp;1 in &amp;2.
+</dd>
+<dt><b>CPF3068</b></dt>
+<dd>Error while writing to file &amp;1 in &amp;2.
+</dd>
+<dt><b>CPF3069</b></dt>
+<dd>Error while closing file &amp;1 in &amp;2.
+</dd>
+<dt><b>CPF3070</b></dt>
+<dd>Error creating member &amp;3 in file &amp;1.
+</dd>
+<dt><b>CPF3072</b></dt>
+<dd>File &amp;1 in &amp;2 is a system file.
+</dd>
+<dt><b>CPF3074</b></dt>
+<dd>Not authorized to library &amp;1.
+</dd>
+<dt><b>CPF3075</b></dt>
+<dd>Library &amp;1 not available.
+</dd>
+<dt><b>CPF3076</b></dt>
+<dd>Error occurred when on display.
+</dd>
+<dt><b>CPF3077</b></dt>
+<dd>Error occurred when canceling display.
+</dd>
+<dt><b>CPF3084</b></dt>
+<dd>Error clearing member &amp;3 in file &amp;1.
+</dd>
+<dt><b>CPF326B</b></dt>
+<dd>Damage to file &amp;1 in library &amp;2.
+</dd>
+<dt><b>CPF9851</b></dt>
+<dd>Overflow value for file &amp;1 in &amp;2 too small.
+</dd>
+<dt><b>CPF9852</b></dt>
+<dd>Page size too narrow for file &amp;1 in &amp;2.
+</dd>
+<dt><b>CPF9899</b></dt>
+<dd>Error occurred during processing of command.
+</dd>
+</dl>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#DSPFFD.Top_Of_Page">Top</a></td></tr>
+</table>
+</body>
+</html>

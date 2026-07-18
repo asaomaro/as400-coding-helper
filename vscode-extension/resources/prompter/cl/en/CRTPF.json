@@ -1,0 +1,816 @@
+{
+  "keyword": "CRTPF",
+  "description": "Create Physical File (CRTPF)",
+  "parameters": [
+    {
+      "name": "FILE",
+      "description": "File",
+      "help": "File (FILE)\n\nSpecifies the physical file to be created.\n\nThis is a required parameter.\n\nQualifier 1: File\n\nQualifier 2: Library",
+      "inputType": "group",
+      "required": true,
+      "groupKind": "qualified",
+      "children": [
+        {
+          "name": "LIB",
+          "description": "Library",
+          "help": "指定できる特殊値: *CURLIB",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "*CURLIB",
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          },
+          "placeholder": "*CURLIB"
+        },
+        {
+          "name": "FILE",
+          "description": "File",
+          "inputType": "text",
+          "required": true,
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          },
+          "placeholder": "MYFILE"
+        }
+      ],
+      "positional": 1,
+      "basic": true
+    },
+    {
+      "name": "SRCFILE",
+      "description": "Source file",
+      "help": "Source file (SRCFILE)\n\nSpecifies the source file that contains the data description specifications (DDS) that describe the record format and its fields, and the access path for the file and its members. The specifications that are made in DDS are described in the Database category in the IBM i Information Center at http://www.ibm.com/systems/i/infocenter/ and the DDS topic collection in the Programming category in the IBM i Information Center at http://www.ibm.com/systems/i/infocenter/.\n\nNote: If a value is specified for this parameter, a value cannot be specified for the Record length (RCDLEN) parameter.\n\nQualifier 1: Source file\n\nQualifier 2: Library",
+      "inputType": "group",
+      "required": false,
+      "groupKind": "qualified",
+      "children": [
+        {
+          "name": "SRCFILE_LIB",
+          "description": "Library",
+          "help": "指定できる特殊値: *LIBL, *CURLIB",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "*LIBL",
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          },
+          "placeholder": "*LIBL"
+        },
+        {
+          "name": "SRCFILE",
+          "description": "Source file",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "QDDSSRC",
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          },
+          "placeholder": "QDDSSRC"
+        }
+      ],
+      "positional": 2,
+      "basic": true
+    },
+    {
+      "name": "SRCMBR",
+      "description": "Source member",
+      "help": "Source member (SRCMBR)\n\nSpecifies the name of the source file member that contains the DDS for the physical file being created; the member is in the source file specified in the SRCFILE parameter (or its default, QDDSSRC). If SRCMBR is specified, RCDLEN cannot be specified.\n\n指定できる特殊値: *FILE",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*FILE",
+      "attributes": {
+        "characterSet": "upper",
+        "maxLength": 10
+      },
+      "positional": 3,
+      "placeholder": "*FILE",
+      "basic": true
+    },
+    {
+      "name": "RCDLEN",
+      "description": "Record length, if no DDS",
+      "help": "Record length (RCDLEN)\n\nSpecifies the length (in bytes) of the records stored in the physical file. If RCDLEN and FILETYPE(*DATA) are specified, the physical file is created with a record format that has only one field. The file is then restricted to an arrival sequence access path. The record format and the field are both assigned the same name as that of the file, specified in the FILE parameter. A value ranging from 1 through 32766 bytes can be specified for the record length.\n\nIf RCDLEN and FILETYPE(*SRC) are specified, the record format has three fields: source sequence number, date, and source statement. The RCDLEN parameter must provide six positions for the source sequence number, six positions for the date field, and one position for source start, which are required in each record. These fields are defined with fixed attributes and names. If records are copied into the file by the CPYF command and the records are longer than the length specified, the records are truncated on the right.\n\nIf RCDLEN is specified, SRCFILE and SRCMBR cannot be specified; RCDLEN is used to specify a fixed record length for the record format when a source file is not needed (when only one field exists in each record or when the file being created is a source file). The high-level language program that processes the file must describe the fields in the record in the program.\n\nDouble-Byte Character Set Considerations\n\nIf IGCDTA(*NO) is specified, the field is assigned the data type of character whose length is the same as the record length specified. A value ranging from 1 to 32766 bytes can be specified for the record length. If IGCDTA(*YES) is specified, the field is assigned the data type of DBCS-open and a value ranging from 4 to 32766 can be specified.\n\nThe RCDLEN parameter must provide six positions for the source sequence number, six positions for the date field, and four positions for source start when FILETYPE(*SRC) and IGCDTA(*YES) are specified.",
+      "inputType": "number",
+      "required": false,
+      "attributes": {
+        "numericOnly": true
+      },
+      "positional": 4,
+      "placeholder": "80",
+      "basic": true
+    },
+    {
+      "name": "GENLVL",
+      "description": "Generation severity level",
+      "help": "Generation severity level (GENLVL)\n\nSpecifies the severity level at which the create operation fails. If errors occur that have a severity level greater than or equal to this value, the operation ends.\n\nThis parameter applies only to messages created while processing DDS source files.",
+      "inputType": "number",
+      "required": false,
+      "defaultValue": "20",
+      "attributes": {
+        "numericOnly": true
+      },
+      "placeholder": "20",
+      "basic": true
+    },
+    {
+      "name": "FLAG",
+      "description": "Flagging severity level",
+      "help": "Flagging severity level (FLAG)\n\nSpecifies the minimum severity level of messages to be listed.",
+      "inputType": "number",
+      "required": false,
+      "defaultValue": "0",
+      "attributes": {
+        "numericOnly": true
+      },
+      "placeholder": "0",
+      "basic": true
+    },
+    {
+      "name": "FILETYPE",
+      "description": "File type",
+      "help": "File type (FILETYPE)\n\nSpecifies whether each member of the physical file being created contains data records or contains source records (statements) for a program or another file. The file can contain, for example, RPG source statements for an RPG program or DDS source statements for another physical, logical, or device file.",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*DATA",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*DATA",
+          "value": "*DATA"
+        },
+        {
+          "label": "*SRC",
+          "value": "*SRC"
+        }
+      ],
+      "basic": true
+    },
+    {
+      "name": "MBR",
+      "description": "Member, if desired",
+      "help": "Member (MBR)\n\nSpecifies the name of the physical file member added when the physical file is created.\n\n指定できる特殊値: *FILE, *NONE",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*FILE",
+      "attributes": {
+        "characterSet": "upper",
+        "maxLength": 10
+      },
+      "placeholder": "*FILE",
+      "basic": true
+    },
+    {
+      "name": "IGCDTA",
+      "description": "User specified DBCS data",
+      "help": "User specified DBCS data (IGCDTA)\n\nSpecifies, for program-described files, whether the file processes double-byte character set (DBCS) data. Specifies, for externally described files, the DBCS attributes of the file.\n\nNote: This parameter has no meaning for physical files created using DDS, because the use of DBCS data is specified in the DDS.\n\nDouble-Byte Character Set Considerations\n\nIf the user creates a physical file and specifies the RCDLEN parameter, the system creates a default record format.\n\nThe system ignores the IGCDTA parameter value if a value for the RCDLEN parameter is not specified.\n\nThe user cannot override the IGCDTA value for a physical file.",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*NO",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*NO",
+          "value": "*NO"
+        },
+        {
+          "label": "*YES",
+          "value": "*YES"
+        }
+      ]
+    },
+    {
+      "name": "TEXT",
+      "description": "Text 'description'",
+      "help": "Text 'description' (TEXT)\n\nSpecifies the text that briefly describes the object.\n\n指定できる特殊値: *SRCMBRTXT, *BLANK",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*SRCMBRTXT",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "placeholder": "*SRCMBRTXT",
+      "basic": true
+    },
+    {
+      "name": "OPTION",
+      "description": "Source listing options",
+      "help": "Source listing options (OPTION)\n\nSpecifies the type of output produced when the file is created. A maximum of four of the following values can be specified in any order on this parameter. If neither or both of the values on an option are specified, the first value is used.\n\nNote: The first values on each option are similar to, but are not actually default values, and therefore, cannot be changed with the CHGCMDDFT (Change Command Default) command.\n\nSource Listing Option\n\nProgram Listing Option\n\nSecond-Level Message Text Option\n\nEvent File Creation Option",
+      "inputType": "dropdown",
+      "required": false,
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*SRC",
+          "value": "*SRC"
+        },
+        {
+          "label": "*NOSRC",
+          "value": "*NOSRC"
+        },
+        {
+          "label": "*SOURCE",
+          "value": "*SOURCE"
+        },
+        {
+          "label": "*NOSOURCE",
+          "value": "*NOSOURCE"
+        },
+        {
+          "label": "*LIST",
+          "value": "*LIST"
+        },
+        {
+          "label": "*NOLIST",
+          "value": "*NOLIST"
+        },
+        {
+          "label": "*SECLVL",
+          "value": "*SECLVL"
+        },
+        {
+          "label": "*NOSECLVL",
+          "value": "*NOSECLVL"
+        },
+        {
+          "label": "*EVENTF",
+          "value": "*EVENTF"
+        },
+        {
+          "label": "*NOEVENTF",
+          "value": "*NOEVENTF"
+        }
+      ],
+      "positional": 5,
+      "maxOccurrences": 4,
+      "placeholder": "*SRC"
+    },
+    {
+      "name": "SYSTEM",
+      "description": "System",
+      "help": "System (SYSTEM)\n\nSpecifies whether the physical file is created on the local system or the remote system.",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*LCL",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*LCL",
+          "value": "*LCL"
+        },
+        {
+          "label": "*RMT",
+          "value": "*RMT"
+        },
+        {
+          "label": "*FILETYPE",
+          "value": "*FILETYPE"
+        }
+      ]
+    },
+    {
+      "name": "EXPDATE",
+      "description": "Expiration date for member",
+      "help": "Expiration date for member (EXPDATE)\n\nSpecifies the expiration date for members of the physical file.",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*NONE",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*NONE",
+          "value": "*NONE"
+        }
+      ],
+      "placeholder": "*NONE"
+    },
+    {
+      "name": "MAXMBRS",
+      "description": "Maximum members",
+      "help": "Maximum members (MAXMBRS)\n\nSpecifies the maximum number of members that the physical file can contain.\n\n指定できる特殊値: *NOMAX",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "1",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "placeholder": "1"
+    },
+    {
+      "name": "ACCPTHSIZ",
+      "description": "Access path size",
+      "help": "Access path size (ACCPTHSIZ)\n\nSpecifies the maximum size of auxiliary storage that can be occupied by the following kinds of access paths:\n\nThis parameter does not apply to access paths that are created for logical files or for queries that refer to the data in a physical file.",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*MAX1TB",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*MAX1TB",
+          "value": "*MAX1TB"
+        },
+        {
+          "label": "*MAX4GB",
+          "value": "*MAX4GB"
+        }
+      ]
+    },
+    {
+      "name": "PAGESIZE",
+      "description": "Access path logical page size",
+      "help": "Access path logical page size (PAGESIZE)\n\nSpecifies the access path logical page size that is used when the access path is created.\n\nThe access path logical page size is used by the system to determine the size of each page of the index. This logical page size is the amount of bytes of the access path that can be moved into the job's storage pool from the auxiliary storage for a page fault.",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*KEYLEN",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*KEYLEN",
+          "value": "*KEYLEN"
+        }
+      ]
+    },
+    {
+      "name": "MAINT",
+      "description": "Access path maintenance",
+      "help": "Access path maintenance (MAINT)\n\nSpecifies, for files with key fields, the type of access path maintenance used for all members of the physical file.\n\nIf the number of changes between a close and the next open reaches approximately 10 percent of the access path size, the system stops saving changes and the access path is completely rebuilt the next time the file is opened.",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*IMMED",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*IMMED",
+          "value": "*IMMED"
+        },
+        {
+          "label": "*DLY",
+          "value": "*DLY"
+        },
+        {
+          "label": "*REBLD",
+          "value": "*REBLD"
+        }
+      ]
+    },
+    {
+      "name": "RECOVER",
+      "description": "Access path recovery",
+      "help": "Access path recovery (RECOVER)\n\nSpecifies, for files with immediate or delayed access path maintenance, when recovery processing of the file is performed if the access path is being changed when a system failure occurs. This parameter is valid only for a file with a keyed access path.\n\nIf *IMMED is specified for the Access path maintenance (MAINT) parameter, the access path can be rebuilt during initial program load (IPL) (before any user can run a job), or after IPL has ended (during jobs running at the same time), or when the file is next opened. While the access path is being rebuilt, the file cannot be used by any job.\n\nDuring the IPL, an Override Access Path Recovery display lists those access paths that must be recovered and the RECOVER parameter value for each access path. The user can override the RECOVER parameter value on this display. More information on access paths is in the Recovering your system book, SC41-5304.\n\nIf *REBLD is specified for the MAINT parameter, the access path is rebuilt the next time its file is opened.\n\nNote: *NO is the default for all files that do not require unique keys.\n\nNote: *AFTIPL is the default for all files that require unique keys.",
+      "inputType": "dropdown",
+      "required": false,
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*NO",
+          "value": "*NO"
+        },
+        {
+          "label": "*AFTIPL",
+          "value": "*AFTIPL"
+        },
+        {
+          "label": "*IPL",
+          "value": "*IPL"
+        }
+      ]
+    },
+    {
+      "name": "FRCACCPTH",
+      "description": "Force keyed access path",
+      "help": "Force keyed access path (FRCACCPTH)\n\nSpecifies, for files with key fields, whether access path changes are forced to auxiliary storage along with the associated records in the file. FRCACCPTH(*YES) minimizes (but does not remove) the possibility that an abnormal job end may cause damage to the access path that requires it to be rebuilt.\n\nFRCACCPTH(*YES) slows the response time of the system if the access path is changed in an interactive job. If the access path is changed frequently, the overall performance of the system is decreased.",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*NO",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*NO",
+          "value": "*NO"
+        },
+        {
+          "label": "*YES",
+          "value": "*YES"
+        }
+      ]
+    },
+    {
+      "name": "SIZE",
+      "description": "Member size",
+      "help": "Member size (SIZE)\n\nSpecifies the initial number of records in each member of the file, the number of records for each increment added to the member, and the number of times the increment is automatically applied. The number of records for each file member is specified as the number of records that can be placed in it (this number includes any deleted records).\n\nWhen the maximum number of records has been reached, a message (stating that the member is full) is sent to the system operator, giving the choice of ending the request or extending the member's number of records. When the operator chooses to extend the member, the maximum number of records for the member will be increased by the increment number of records times the number of increments specified. However, this increase in maximum number of records will not always have the same effect on the actual member size (in bytes).\n\nSingle values\n\nElement 1: Initial number of records\n\nSpecify the initial number of records in each member.\n\nElement 2: Increment number of records\n\nSpecify the number of additional records that are added to the member when the number of records in the member will exceed the initial number of records, or will exceed the current increment's number of records.\n\nIf 0 is specified for the increment number of records value, the member is not automatically extended. This value must be 0 if the value for the maximum increments is 0.\n\nElement 3: Maximum increments\n\nSpecify the maximum number of increments that can be automatically added to the member(s).",
+      "inputType": "group",
+      "required": false,
+      "groupKind": "elements",
+      "singleValues": [
+        "*NOMAX"
+      ],
+      "children": [
+        {
+          "name": "INIT",
+          "description": "Initial number of records",
+          "inputType": "number",
+          "required": false,
+          "defaultValue": "10000",
+          "attributes": {
+            "numericOnly": true
+          },
+          "placeholder": "10000"
+        },
+        {
+          "name": "INCR",
+          "description": "Increment number of records",
+          "inputType": "number",
+          "required": false,
+          "defaultValue": "1000",
+          "attributes": {
+            "numericOnly": true
+          },
+          "placeholder": "1000"
+        },
+        {
+          "name": "MAXINCR",
+          "description": "Maximum increments",
+          "inputType": "number",
+          "required": false,
+          "defaultValue": "3",
+          "attributes": {
+            "numericOnly": true
+          },
+          "placeholder": "3"
+        }
+      ]
+    },
+    {
+      "name": "ALLOCATE",
+      "description": "Allocate storage",
+      "help": "Allocate storage (ALLOCATE)\n\nSpecifies whether initial storage space is allocated to each physical file member added to the file. The allocation provides enough space to hold the number of records specified for the Member size (SIZE) parameter. Allocations that occur when a record cannot be added to a member without exceeding its capacity are determined by the system and by the SIZE parameter values.",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*NO",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*NO",
+          "value": "*NO"
+        },
+        {
+          "label": "*YES",
+          "value": "*YES"
+        }
+      ]
+    },
+    {
+      "name": "CONTIG",
+      "description": "Contiguous storage",
+      "help": "Contiguous storage (CONTIG)\n\nSpecifies, for each physical file member added to the file, whether all of the records in the initial storage allocation must be stored next to each other.",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*NO",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*NO",
+          "value": "*NO"
+        },
+        {
+          "label": "*YES",
+          "value": "*YES"
+        }
+      ]
+    },
+    {
+      "name": "UNIT",
+      "description": "Preferred storage unit",
+      "help": "Preferred storage unit (UNIT)\n\nSpecifies the preferred storage media for the file.\n\n指定できる特殊値: *ANY, *SSD",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*ANY",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "placeholder": "*ANY"
+    },
+    {
+      "name": "FRCRATIO",
+      "description": "Records to force a write",
+      "help": "Records to force a write (FRCRATIO)\n\nSpecifies the number of inserted or updated records that are processed before the records are forced into auxiliary storage. If this physical file is being journaled, either a large number or *NONE should be used. *NONE may cause long synchronization of the journal and physical files.\n\n指定できる特殊値: *NONE",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*NONE",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "placeholder": "*NONE"
+    },
+    {
+      "name": "WAITFILE",
+      "description": "Maximum file wait time",
+      "help": "Maximum file wait time (WAITFILE)\n\nSpecifies the number of seconds that the program waits for the file resources to be allocated when the file is opened, or the device or session resources to be allocated when an acquire operation is performed to the file. If the file resources cannot be allocated in the specified wait time, an error message is sent to the program.\n\n指定できる特殊値: *IMMED, *CLS",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "30",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "placeholder": "30"
+    },
+    {
+      "name": "WAITRCD",
+      "description": "Maximum record wait time",
+      "help": "Maximum record wait time (WAITRCD)\n\nSpecifies the number of seconds that the program waits for a record being changed or deleted. If the record cannot be allocated within the specified wait time, an error message is sent to the program.\n\n指定できる特殊値: *IMMED, *NOMAX",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "60",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "placeholder": "60"
+    },
+    {
+      "name": "SHARE",
+      "description": "Share open data path",
+      "help": "Share open data path (SHARE)\n\nSpecifies whether the open data path (ODP) is shared with other programs in the same routing step. When an ODP is shared, the programs accessing the file share facilities such as the file status and the buffer.\n\nNote: This parameter cannot be specified when *NONE is specified for the Member (MBR) parameter.",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*NO",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*NO",
+          "value": "*NO"
+        },
+        {
+          "label": "*YES",
+          "value": "*YES"
+        }
+      ]
+    },
+    {
+      "name": "DLTPCT",
+      "description": "Max % deleted records allowed",
+      "help": "Max % deleted records allowed (DLTPCT)\n\nSpecifies the maximum allowed percentage of deleted records for each member in the physical file. The percentage check is made when the member is closed. If the percentage of deleted records is greater than the value specified on this parameter, a message is sent to the system history log (QHST) to inform the user.\n\n指定できる特殊値: *NONE",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*NONE",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "placeholder": "*NONE"
+    },
+    {
+      "name": "REUSEDLT",
+      "description": "Reuse deleted records",
+      "help": "Reuse deleted records (REUSEDLT)\n\nSpecifies whether the space used by deleted data entries should be reclaimed by future insert requests.\n\nNotes:",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*NO",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*YES",
+          "value": "*YES"
+        },
+        {
+          "label": "*NO",
+          "value": "*NO"
+        }
+      ]
+    },
+    {
+      "name": "SRTSEQ",
+      "description": "Sort sequence",
+      "help": "Sort sequence (SRTSEQ)\n\nSpecifies the sort sequence used for this file. The sort sequence is used with the LANGID and CCSID parameters to determine which sort sequence table is used.\n\nSingle values\n\nQualifier 1: Sort sequence\n\nQualifier 2: Library",
+      "inputType": "group",
+      "required": false,
+      "groupKind": "qualified",
+      "singleValues": [
+        "*SRC",
+        "*JOB",
+        "*LANGIDSHR",
+        "*LANGIDUNQ",
+        "*HEX"
+      ],
+      "children": [
+        {
+          "name": "SRTSEQ_LIB",
+          "description": "Library",
+          "help": "指定できる特殊値: *LIBL, *CURLIB",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "*LIBL",
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          },
+          "placeholder": "*LIBL"
+        },
+        {
+          "name": "SRTSEQ",
+          "description": "Sort sequence",
+          "inputType": "text",
+          "required": false,
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          },
+          "defaultValue": "*SRC",
+          "placeholder": "*SRC"
+        }
+      ]
+    },
+    {
+      "name": "LANGID",
+      "description": "Language ID",
+      "help": "Language ID (LANGID)\n\nSpecifies the language identifier used when *LANGIDSHR or *LANGIDUNQ is specified on the SRTSEQ parameter. The language identifier is used with the SRTSEQ and CCSID parameters to determine which sort sequence table the file will use.\n\n指定できる特殊値: *JOB",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*JOB",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "placeholder": "*JOB"
+    },
+    {
+      "name": "CCSID",
+      "description": "Coded character set ID",
+      "help": "Coded character set ID (CCSID)\n\nSpecifies the coded character set identifier (CCSID) being used to describe character data in the fields of the file.\n\nThis parameter is applicable only if no value is specified for the Source file (SRCFILE) parameter and if a value is specified for the Record length (RCDLEN) parameter. If you specify a value other than the default value (*JOB) on this parameter, the SRCFILE parameter is not used, and a value must be specified for the RCDLEN parameter.\n\nNote: A file created with no DDS when FILETYPE(*DATA) is specified has a CCSID of 65535, regardless of the job CCSID value.\n\n指定できる特殊値: *JOB, *HEX",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*JOB",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "placeholder": "*JOB"
+    },
+    {
+      "name": "ALWUPD",
+      "description": "Allow update operation",
+      "help": "Allow update operation (ALWUPD)\n\nSpecifies whether records in this physical file can be updated.",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*YES",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*YES",
+          "value": "*YES"
+        },
+        {
+          "label": "*NO",
+          "value": "*NO"
+        }
+      ]
+    },
+    {
+      "name": "ALWDLT",
+      "description": "Allow delete operation",
+      "help": "Allow delete operation (ALWDLT)\n\nSpecifies whether records in this physical file can be deleted. Records in a logical file can be deleted only when the records in each physical file on which the logical file is based can be deleted.",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*YES",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*YES",
+          "value": "*YES"
+        },
+        {
+          "label": "*NO",
+          "value": "*NO"
+        }
+      ]
+    },
+    {
+      "name": "LVLCHK",
+      "description": "Record format level check",
+      "help": "Record format level check (LVLCHK)\n\nSpecifies whether the level identifiers of the record formats in the physical file are checked when the file is opened by a program.",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*YES",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*YES",
+          "value": "*YES"
+        },
+        {
+          "label": "*NO",
+          "value": "*NO"
+        }
+      ]
+    },
+    {
+      "name": "NODGRP",
+      "description": "Node group",
+      "help": "Node group (NODGRP)\n\nSpecifies a node group across which the file is to be distributed.\n\nSingle values\n\nQualifier 1: Node group\n\nQualifier 2: Library",
+      "inputType": "group",
+      "required": false,
+      "groupKind": "qualified",
+      "singleValues": [
+        "*NONE"
+      ],
+      "children": [
+        {
+          "name": "NODGRP_LIB",
+          "description": "Library",
+          "help": "指定できる特殊値: *LIBL, *CURLIB",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "*LIBL",
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          },
+          "placeholder": "*LIBL"
+        },
+        {
+          "name": "NODGRP",
+          "description": "Node group",
+          "inputType": "text",
+          "required": false,
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          },
+          "defaultValue": "*NONE",
+          "placeholder": "*NONE"
+        }
+      ]
+    },
+    {
+      "name": "PTNKEY",
+      "description": "Partitioning Key",
+      "help": "Partitioning Key (PTNKEY)\n\nSpecifies the field, or set of fields, that is used as the partition key for distributing data. Up to 300 field names can be specified.\n\nNote: This parameter is not valid if *NONE is specified for the Node group (NODGRP) parameter. If a node group name is specified for the NODGRP parameter, one or more field names must be specified.",
+      "inputType": "text",
+      "required": false,
+      "attributes": {
+        "characterSet": "upper",
+        "maxLength": 10
+      },
+      "maxOccurrences": 300,
+      "placeholder": "FIELD1"
+    },
+    {
+      "name": "AUT",
+      "description": "Authority",
+      "help": "Authority (AUT)\n\nSpecifies the authority you are giving to users who do not have specific authority for the object, who are not on an authorization list, and whose group profile or supplemental group profiles do not have specific authority for the object.\n\n指定できる特殊値: *LIBCRTAUT, *ALL, *CHANGE, *EXCLUDE, *USE",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*LIBCRTAUT",
+      "attributes": {
+        "characterSet": "upper",
+        "maxLength": 10
+      },
+      "placeholder": "*LIBCRTAUT"
+    }
+  ],
+  "examples": [
+    {
+      "code": "CRTPF FILE(PAYLIB/PAYTXS) SRCFILE(SRCLIB/PAYTXS) MBR(*NONE) MAXMBRS(5)"
+    },
+    {
+      "code": "CRTPF FILE(ORDERCTL/ORDERS) SRCFILE(ORDERCTL/ORDERSRC) SRCMBR(MFGORD) MAXMBRS(50) SIZE(1000 100 5) ALLOCATE(*YES)"
+    }
+  ],
+  "source": {
+    "url": "https://www.ibm.com/docs/en/ssw_ibm_i_74/cl/crtpf.htm",
+    "version": "IBM i 7.4"
+  }
+}

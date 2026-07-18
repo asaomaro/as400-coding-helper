@@ -1,0 +1,1876 @@
+<!DOCTYPE html>
+<html lang="ja"><head><meta charset="utf-8"><title>出力待ち行列変更  (CHGOUTQ)</title></head>
+<body>
+<div role="main">
+<script type="text/javascript" src="../rzahg/synch.js"></script>
+<a name="CHGOUTQ.Top_Of_Page"></a>
+<h1>出力待ち行列変更  (CHGOUTQ)</h1><div id="lastModifiedDate"><span>Last Updated</span>: 2021-04-13</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table0" width="100%" class="cds--data-table">
+<tbody><tr>
+<td class="valigntop alignleft"><strong>実行可能場所:  </strong>すべての環境 (*ALL)<br>
+<strong>スレッド・セーフ:  </strong>いいえ
+</td>
+<td class="valigntop alignright">
+<a href="#CHGOUTQ.PARAMETERS.TABLE">パラメーター</a><br>
+<a href="#CHGOUTQ.COMMAND.EXAMPLES">例</a><br>
+<a href="#CHGOUTQ.ERROR.MESSAGES">エラー・メッセージ</a></td>
+</tr>
+</tbody></table></div></div>
+<div> <a name="CHGOUTQ"></a>
+<p>出力待ち行列変更(CHGOUTQ)コマンドによって，ユーザーは指定した出力待ち行列の属性を変更することができます。書き出しプログラムが出力待ち行列を活動状態にしている時には，出力待ち行列の次の属性を変更することができます。
+</p>
+<ul class="cds--list--unordered">
+<li class="cds--list__item">この出力待ち行列からデータを表示する権限
+</li>
+<li class="cds--list__item">この出力待ち行列を制御する操作員の権限
+</li>
+<li class="cds--list__item">この出力待ち行列上のスプール・ファイルの順序
+</li>
+<li class="cds--list__item">この出力待ち行列を制御するために必要なオブジェクト権限
+</li>
+<li class="cds--list__item">出力待ち行列のデータ待ち行列
+</li>
+</ul>
+<p>次の属性を変更できるのは，指定した出力待ち行列に対して書き出しプログラムが非活動状態にある間だけです。
+</p>
+<ul class="cds--list--unordered">
+<li class="cds--list__item">ジョブ1つ当たりの区切りページの数
+</li>
+<li class="cds--list__item">印刷するスプール・ファイルの最大サイズ
+</li>
+<li class="cds--list__item">リモート書き出しプログラムのためにファイルを送るリモート・システム
+</li>
+<li class="cds--list__item">ファイルを送るリモート・システム上の印刷装置待ち行列
+</li>
+<li class="cds--list__item">出力待ち行列に自動始動する書き出しプログラムの数
+</li>
+<li class="cds--list__item">リモート書き出しプログラムによって使用されるメッセージ待ち行列
+</li>
+<li class="cds--list__item">リモート・システムの接続タイプ
+</li>
+<li class="cds--list__item">リモート・システムのタイプ
+</li>
+<li class="cds--list__item">VM/MVS/VSEシステムに送られるファイルのクラス
+</li>
+<li class="cds--list__item">VM/MVS/VSEシステムに送られるファイルの用紙制御バッファー
+</li>
+<li class="cds--list__item">接続タイプTCP/IPによって使用される変換オプション
+</li>
+<li class="cds--list__item">変換によって使用されるメーカーのタイプおよび型式
+</li>
+<li class="cds--list__item">変換によって使用されるWSCSTオブジェクト
+</li>
+<li class="cds--list__item">接続タイプTCP/IPによって使用されるIPアドレス
+</li>
+<li class="cds--list__item">イメージ構成
+</li>
+</ul>
+<p>出力待ち行列にスプール・ファイルが入っている場合には，その待ち行列のSEQパラメーターを変更することはできません。出力待ち行列にスプール・ファイルが入っていても，他のDSPDTA, JOBSEP, OPRCTLなどのCHGOUTQパラメーターは正常に変更することができます。出力待ち行列にスプール・ファイルが入っている時にSEQパラメーターを変更しようとしても，指定したパラメーターはどれも変更されません。
+</p>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table1" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#CHGOUTQ.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div>
+<h2><a name="CHGOUTQ.PARAMETERS.TABLE">パラメーター</a></h2>
+<div class="tablenoborder"><div class="cds--data-table-container"><table id="parm_table2" summary="Parameters" border="1" cellpadding="4" cellspacing="0" class="cds--data-table">
+<!-- col1="10" col2="15" col3="30" col4="10" -->
+<tbody><tr>
+<th scope="col" class="valignbottom alignleft"><div class="cds--table-header-label">キーワード</div></th>
+<th scope="col" class="valignbottom alignleft"><div class="cds--table-header-label">記述</div></th>
+<th scope="col" class="valignbottom alignleft"><div class="cds--table-header-label">選択項目</div></th>
+<th scope="col" class="valignbottom alignleft"><div class="cds--table-header-label">ノーツ</div></th>
+</tr>
+<tr>
+<td class="valigntop" rowspan="3"><a href="#CHGOUTQ.OUTQ"><strong>OUTQ</strong></a></td>
+<td class="valigntop">出力待ち行列</td>
+<td class="valigntop"><span class="var">修飾オブジェクト名</span></td>
+<td class="valigntop" rowspan="3">必須, キー, 定位置 1</td>
+</tr>
+<tr>
+<td class="valigntop">修飾子 1: 出力待ち行列</td>
+<td class="valigntop"><span class="var">名前</span></td>
+</tr><tr>
+<td class="valigntop">修飾子 2: ライブラリー</td>
+<td class="valigntop"><span class="var">名前</span>, <strong class="underlined">*LIBL</strong>, *CURLIB</td>
+</tr><tr>
+<td class="valigntop" rowspan="4"><a href="#CHGOUTQ.MAXPAGES"><strong>MAXPAGES</strong></a></td>
+<td class="valigntop">スプール・ファイル最大サイズ</td>
+<td class="valigntop">単一値: <strong class="underlined">*SAME</strong>, *NONE<br>その他の値 (最大 5 回の繰り返し): <span class="var">要素リスト</span></td>
+<td class="valigntop" rowspan="4">オプショナル</td>
+</tr>
+<tr>
+<td class="valigntop">要素 1: ページ数</td>
+<td class="valigntop">
+<span class="var">整数</span></td>
+</tr>
+<tr>
+<td class="valigntop">要素 2: 開始時刻</td>
+<td class="valigntop">
+<span class="var">時刻</span></td>
+</tr>
+<tr>
+<td class="valigntop">要素 3: 終了時刻</td>
+<td class="valigntop">
+<span class="var">時刻</span></td>
+</tr>
+<tr>
+<td class="valigntop"><a href="#CHGOUTQ.SEQ"><strong>SEQ</strong></a></td>
+<td class="valigntop">待ち行列上のファイルの順序</td>
+<td class="valigntop"><strong class="underlined">*SAME</strong>, *JOBNBR, *FIFO</td>
+<td class="valigntop">オプショナル</td>
+</tr>
+<tr>
+<td class="valigntop"><a href="#CHGOUTQ.RMTSYS"><strong>RMTSYS</strong></a></td>
+<td class="valigntop">リモート・システム</td>
+<td class="valigntop"><span class="var">文字値</span>, <strong class="underlined">*SAME</strong>, *INTNETADR, *NONE, *PASTHR, *NWSA</td>
+<td class="valigntop">オプショナル</td>
+</tr>
+<tr>
+<td class="valigntop"><a href="#CHGOUTQ.RMTPRTQ"><strong>RMTPRTQ</strong></a></td>
+<td class="valigntop">リモート印刷装置待ち行列</td>
+<td class="valigntop"><span class="var">文字値</span>, <strong class="underlined">*SAME</strong>, *USER, *SYSTEM</td>
+<td class="valigntop">オプショナル</td>
+</tr>
+<tr>
+<td class="valigntop"><a href="#CHGOUTQ.AUTOSTRWTR"><strong>AUTOSTRWTR</strong></a></td>
+<td class="valigntop">自動開始する書出プログラム</td>
+<td class="valigntop">1-10, <strong class="underlined">*SAME</strong>, *NONE</td>
+<td class="valigntop">オプショナル</td>
+</tr>
+<tr>
+<td class="valigntop" rowspan="3"><a href="#CHGOUTQ.MSGQ"><strong>MSGQ</strong></a></td>
+<td class="valigntop">書出プログラムMSG用待ち行列</td>
+<td class="valigntop">単一値: <strong class="underlined">*SAME</strong><br>その他の値: <span class="var">修飾オブジェクト名</span></td>
+<td class="valigntop" rowspan="3">オプショナル</td>
+</tr>
+<tr>
+<td class="valigntop">修飾子 1: 書出プログラムMSG用待ち行列</td>
+<td class="valigntop"><span class="var">名前</span></td>
+</tr><tr>
+<td class="valigntop">修飾子 2: ライブラリー</td>
+<td class="valigntop"><span class="var">名前</span>, <strong class="underlined">*LIBL</strong>, *CURLIB</td>
+</tr><tr>
+<td class="valigntop"><a href="#CHGOUTQ.CNNTYPE"><strong>CNNTYPE</strong></a></td>
+<td class="valigntop">接続タイプ</td>
+<td class="valigntop"><span class="var">文字値</span>, <strong class="underlined">*SAME</strong>, *SNA, *IP, *IPX, *USRDFN</td>
+<td class="valigntop">オプショナル</td>
+</tr>
+<tr>
+<td class="valigntop"><a href="#CHGOUTQ.DESTTYPE"><strong>DESTTYPE</strong></a></td>
+<td class="valigntop">宛先タイプ</td>
+<td class="valigntop"><span class="var">文字値</span>, <strong class="underlined">*SAME</strong>, *OS400, *OS400V2, *PSF2, *S390, *NETWARE3, *NDS, *OTHER</td>
+<td class="valigntop">オプショナル</td>
+</tr>
+<tr>
+<td class="valigntop"><a href="#CHGOUTQ.TRANSFORM"><strong>TRANSFORM</strong></a></td>
+<td class="valigntop">ホスト印刷の変換</td>
+<td class="valigntop"><strong class="underlined">*SAME</strong>, *YES, *NO</td>
+<td class="valigntop">オプショナル</td>
+</tr>
+<tr>
+<td class="valigntop" rowspan="3"><a href="#CHGOUTQ.USRDTATFM"><strong>USRDTATFM</strong></a></td>
+<td class="valigntop">ユーザー・データ変換</td>
+<td class="valigntop">単一値: <strong class="underlined">*SAME</strong>, *NONE<br>その他の値: <span class="var">修飾オブジェクト名</span></td>
+<td class="valigntop" rowspan="3">オプショナル</td>
+</tr>
+<tr>
+<td class="valigntop">修飾子 1: ユーザー・データ変換</td>
+<td class="valigntop"><span class="var">名前</span></td>
+</tr><tr>
+<td class="valigntop">修飾子 2: ライブラリー</td>
+<td class="valigntop"><span class="var">名前</span>, <strong class="underlined">*LIBL</strong>, *CURLIB</td>
+</tr><tr>
+<td class="valigntop"><a href="#CHGOUTQ.MFRTYPMDL"><strong>MFRTYPMDL</strong></a></td>
+<td class="valigntop">製造タイプおよび型式</td>
+<td class="valigntop"><span class="var">文字値</span>, <strong class="underlined">*SAME</strong>, *WSCST</td>
+<td class="valigntop">オプショナル</td>
+</tr>
+<tr>
+<td class="valigntop" rowspan="3"><a href="#CHGOUTQ.WSCST"><strong>WSCST</strong></a></td>
+<td class="valigntop"> ワークステーション・カスタマイズ・オブジェクト</td>
+<td class="valigntop">単一値: <strong class="underlined">*SAME</strong>, *NONE<br>その他の値: <span class="var">修飾オブジェクト名</span></td>
+<td class="valigntop" rowspan="3">オプショナル</td>
+</tr>
+<tr>
+<td class="valigntop">修飾子 1:  ワークステーション・カスタマイズ・オブジェクト</td>
+<td class="valigntop"><span class="var">名前</span></td>
+</tr><tr>
+<td class="valigntop">修飾子 2: ライブラリー</td>
+<td class="valigntop"><span class="var">名前</span>, <strong class="underlined">*LIBL</strong>, *CURLIB</td>
+</tr><tr>
+<td class="valigntop"><a href="#CHGOUTQ.IMGCFG"><strong>IMGCFG</strong></a></td>
+<td class="valigntop">イメージ構成</td>
+<td class="valigntop"><span class="var">文字値</span>, <strong class="underlined">*SAME</strong>, *NONE</td>
+<td class="valigntop">オプショナル</td>
+</tr>
+<tr>
+<td class="valigntop"><a href="#CHGOUTQ.INTNETADR"><strong>INTNETADR</strong></a></td>
+<td class="valigntop"> IPアドレス</td>
+<td class="valigntop"><span class="var">文字値</span>, <strong class="underlined">*SAME</strong></td>
+<td class="valigntop">オプショナル</td>
+</tr>
+<tr>
+<td class="valigntop"><a href="#CHGOUTQ.CLASS"><strong>CLASS</strong></a></td>
+<td class="valigntop"> VM/MVSクラス</td>
+<td class="valigntop"><strong class="underlined">*SAME</strong>, A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V, W, X, Y, Z, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9</td>
+<td class="valigntop">オプショナル</td>
+</tr>
+<tr>
+<td class="valigntop"><a href="#CHGOUTQ.FCB"><strong>FCB</strong></a></td>
+<td class="valigntop">用紙制御バッファー</td>
+<td class="valigntop"><span class="var">文字値</span>, *NONE, *USRDTA, *PRTF, <strong class="underlined">*SAME</strong></td>
+<td class="valigntop">オプショナル</td>
+</tr>
+<tr>
+<td class="valigntop"><a href="#CHGOUTQ.DESTOPT"><strong>DESTOPT</strong></a></td>
+<td class="valigntop">宛先オプション</td>
+<td class="valigntop"><span class="var">文字値</span>, <strong class="underlined">*SAME</strong>, *NONE, *USRDFNTXT, *NOWAIT</td>
+<td class="valigntop">オプショナル</td>
+</tr>
+<tr>
+<td class="valigntop"><a href="#CHGOUTQ.SEPPAGE"><strong>SEPPAGE</strong></a></td>
+<td class="valigntop">区切りページの印刷</td>
+<td class="valigntop"><strong class="underlined">*SAME</strong>, *YES, *NO</td>
+<td class="valigntop">オプショナル</td>
+</tr>
+<tr>
+<td class="valigntop"><a href="#CHGOUTQ.USRDFNOPT"><strong>USRDFNOPT</strong></a></td>
+<td class="valigntop">ユーザー定義オプション</td>
+<td class="valigntop">単一値: <strong class="underlined">*SAME</strong>, *NONE<br>その他の値 (最大 4 回の繰り返し): <span class="var">文字値</span></td>
+<td class="valigntop">オプショナル</td>
+</tr>
+<tr>
+<td class="valigntop" rowspan="5"><a href="#CHGOUTQ.USRDFNOBJ"><strong>USRDFNOBJ</strong></a></td>
+<td class="valigntop">ユーザー定義オブジェクト</td>
+<td class="valigntop">単一値: <strong class="underlined">*SAME</strong>, *NONE<br>その他の値: <span class="var">要素リスト</span></td>
+<td class="valigntop" rowspan="5">オプショナル</td>
+</tr>
+<tr>
+<td class="valigntop">要素 1: オブジェクト</td>
+<td class="valigntop">
+<span class="var">修飾オブジェクト名</span></td>
+</tr>
+<tr>
+<td class="valigntop">修飾子 1: オブジェクト</td>
+<td class="valigntop"><span class="var">名前</span></td>
+</tr><tr>
+<td class="valigntop">修飾子 2: ライブラリー</td>
+<td class="valigntop"><span class="var">名前</span>, <strong class="underlined">*LIBL</strong>, *CURLIB</td>
+</tr><tr>
+<td class="valigntop">要素 2: オブジェクト・タイプ</td>
+<td class="valigntop">
+*DTAARA, *DTAQ, *FILE, *PSFCFG, *USRIDX, *USRQ, *USRSPC</td>
+</tr>
+<tr>
+<td class="valigntop" rowspan="3"><a href="#CHGOUTQ.USRDRVPGM"><strong>USRDRVPGM</strong></a></td>
+<td class="valigntop"> ユーザー・ドライバー・プログラム</td>
+<td class="valigntop">単一値: <strong class="underlined">*SAME</strong>, *NONE<br>その他の値: <span class="var">修飾オブジェクト名</span></td>
+<td class="valigntop" rowspan="3">オプショナル</td>
+</tr>
+<tr>
+<td class="valigntop">修飾子 1:  ユーザー・ドライバー・プログラム</td>
+<td class="valigntop"><span class="var">名前</span></td>
+</tr><tr>
+<td class="valigntop">修飾子 2: ライブラリー</td>
+<td class="valigntop"><span class="var">名前</span>, <strong class="underlined">*LIBL</strong>, *CURLIB</td>
+</tr><tr>
+<td class="valigntop"><a href="#CHGOUTQ.SPLFASP"><strong>SPLFASP</strong></a></td>
+<td class="valigntop">スプール・ファイルASP</td>
+<td class="valigntop"><strong class="underlined">*SAME</strong>, *SYSTEM, *OUTQASP</td>
+<td class="valigntop">オプショナル</td>
+</tr>
+<tr>
+<td class="valigntop"><a href="#CHGOUTQ.TEXT"><strong>TEXT</strong></a></td>
+<td class="valigntop">テキスト'記述'</td>
+<td class="valigntop"><span class="var">文字値</span>, <strong class="underlined">*SAME</strong>, *BLANK</td>
+<td class="valigntop">オプショナル</td>
+</tr>
+<tr>
+<td class="valigntop"><a href="#CHGOUTQ.DSPDTA"><strong>DSPDTA</strong></a></td>
+<td class="valigntop">ファイルの表示</td>
+<td class="valigntop"><strong class="underlined">*SAME</strong>, *NO, *YES, *OWNER</td>
+<td class="valigntop">オプショナル, 定位置 2</td>
+</tr>
+<tr>
+<td class="valigntop"><a href="#CHGOUTQ.JOBSEP"><strong>JOBSEP</strong></a></td>
+<td class="valigntop">ジョブ区切り</td>
+<td class="valigntop">0-9, <strong class="underlined">*SAME</strong>, *MSG</td>
+<td class="valigntop">オプショナル, 定位置 3</td>
+</tr>
+<tr>
+<td class="valigntop"><a href="#CHGOUTQ.OPRCTL"><strong>OPRCTL</strong></a></td>
+<td class="valigntop">操作員制御</td>
+<td class="valigntop"><strong class="underlined">*SAME</strong>, *YES, *NO</td>
+<td class="valigntop">オプショナル, 定位置 4</td>
+</tr>
+<tr>
+<td class="valigntop" rowspan="3"><a href="#CHGOUTQ.DTAQ"><strong>DTAQ</strong></a></td>
+<td class="valigntop">データ待ち行列名</td>
+<td class="valigntop">単一値: <strong class="underlined">*SAME</strong>, *NONE<br>その他の値: <span class="var">修飾オブジェクト名</span></td>
+<td class="valigntop" rowspan="3">オプショナル</td>
+</tr>
+<tr>
+<td class="valigntop">修飾子 1: データ待ち行列名</td>
+<td class="valigntop"><span class="var">名前</span></td>
+</tr><tr>
+<td class="valigntop">修飾子 2: ライブラリー</td>
+<td class="valigntop"><span class="var">名前</span>, <strong class="underlined">*LIBL</strong>, *CURLIB</td>
+</tr><tr>
+<td class="valigntop"><a href="#CHGOUTQ.AUTCHK"><strong>AUTCHK</strong></a></td>
+<td class="valigntop">検査権限</td>
+<td class="valigntop"><strong class="underlined">*SAME</strong>, *OWNER, *DTAAUT</td>
+<td class="valigntop">オプショナル</td>
+</tr>
+</tbody></table></div></div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table3" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#CHGOUTQ.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+</div>
+<div> <a name="CHGOUTQ.OUTQ"></a>
+<h2>出力待ち行列 (OUTQ)</h2>
+<p>属性を変更したい出力待ち行列を指定します。
+</p>
+<p>これは必須パラメーターです。
+</p>
+<h3><strong>修飾子</strong><strong>1: </strong><strong>出力待ち行列</strong>
+</h3>
+<dl>
+<dt><strong class="italic">名前</strong></dt>
+<dd>変更する出力待ち行列の名前を指定してください。
+</dd>
+</dl>
+<h3><strong>修飾子</strong><strong>2: ライブラリー</strong>
+</h3>
+<dl>
+<dt><strong class="underlined">*LIBL</strong></dt>
+<dd>最初に一致するものが見つかるまで，現行スレッドのライブラリー・リスト内のすべてのライブラリーが検索されます。
+</dd>
+</dl>
+<dl>
+<dt><strong>*CURLIB</strong></dt>
+<dd>スレッドの現行ライブラリーが検索されます。スレッドの現行ライブラリーとして指定されているライブラリーがない場合，QGPLライブラリーが検索されます。
+</dd>
+</dl>
+<dl>
+<dt><strong class="italic">名前</strong></dt>
+<dd>出力待ち行列が入っているライブラリーの名前を指定してください。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table4" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#CHGOUTQ.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="CHGOUTQ.MAXPAGES"></a>
+<h2>スプール・ファイル最大サイズ (MAXPAGES)</h2>
+<p>開始時刻と終了時刻の間で印刷が許可されるスプール・ファイルの最大サイズをページ数で指定します。スプール・ファイルがページの制限を超える場合には，終了時刻になるまで印刷が据え置かれます（DFR状況）。正確なページ数が不明のファイルの場合には，見積ページ数が使用されます。（見積ページ数を見つけるためには，スプール・ファイル属性処理(WRKSPLFA)コマンドを使用することができます。）時刻は24時間時計でHHMMSSの形式で指定しなければなりません。
+</p>
+<h3><strong>単一値</strong>
+</h3>
+<dl>
+<dt><strong class="underlined">*SAME</strong></dt>
+<dd>値は変更されません。
+</dd>
+</dl>
+<dl>
+<dt><strong>*NONE</strong></dt>
+<dd>この出力待ち行列から印刷可能なスプール・ファイルのサイズに制限はありません。
+</dd>
+</dl>
+<h3><strong>その他の値（最大</strong><strong>5</strong><strong>個指定可能）</strong>
+</h3>
+<h3><strong>要素</strong><strong>1: </strong><strong>ページ数</strong>
+</h3>
+<dl>
+<dt><strong class="italic">整数</strong></dt>
+<dd>印刷可能な最大スプール・ファイルをページ数で指定してください。
+</dd>
+</dl>
+<h3><strong>要素</strong><strong>2: </strong><strong>開始時刻</strong>
+</h3>
+<dl>
+<dt><strong class="italic">時刻</strong></dt>
+<dd>スプール・ファイルの最大サイズの制限が始まる時刻を指定してください。
+</dd>
+</dl>
+<h3><strong>要素</strong><strong>3: </strong><strong>終了時刻</strong>
+</h3>
+<dl>
+<dt><strong class="italic">時刻</strong></dt>
+<dd>最大スプール・ファイル・サイズの制限が終る時刻を指定してください。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table5" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#CHGOUTQ.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="CHGOUTQ.SEQ"></a>
+<h2>待ち行列上のファイルの順序 (SEQ)</h2>
+<p>出力待ち行列上のスプール・ファイルの順序を指定します。
+</p>
+<dl>
+<dt><strong class="underlined">*SAME</strong></dt>
+<dd>待ち行列上のスプール・ファイルの順序は変わりません。
+</dd>
+<dt><strong>*JOBNBR</strong></dt>
+<dd>スプール・ファイルの待ち行列項目は，スプール・ファイルを作成したジョブのジョブ番号（実際には，ジョブを入力したシステムが使用した日付および時刻）を使用して，優先順位にしたがって分類されます。
+<p>SEQパラメーターで*JOBNBRを指定した場合は，同じ出力優先順位および状況を持つジョブのスプール・ファイルがグループ化されます。
+</p>
+<p>また，SEQパラメーターで*JOBNBRを指定した場合には，最初のジョブは常に優先順位が等しいジョブで最初に作成されたスプール・ファイルを持ちます。
+</p>
+</dd>
+<dt><strong>*FIFO</strong></dt>
+<dd>待ち行列は，各ファイルの優先順位内で先入れ先出しになっています。これは，同じ優先順位の他のすべての項目の後に，新しいスプール・ファイルが待ち行列に入れられることを意味します。次の変更は，待ち行列で優先順位が等しい他のすべての後に待ち行列項目が入れられます。
+<ul class="cds--list--unordered">
+<li class="cds--list__item">ジョブ変更(CHGJOB)コマンドによる出力優先順位の変更
+</li>
+<li class="cds--list__item">保留(HLD),保管済み(SAV),クローズ(CLO),またはオープン(OPN)から使用可能(RDY)への状況変更
+</li>
+<li class="cds--list__item">使用可能(RDY)から使用不能(HLD, SAV, CLO, OPN)への状況変更
+</li>
+<li class="cds--list__item">ファイルがオープンされている場合に待ち行列に追加されたスプール・ファイル
+</li>
+<li class="cds--list__item">スプール・ファイル属性変更(CHGSPLFA)コマンドを使用したスプール・ファイルのSEQ(*FIFO)が指定された出力待ち行列への移動
+</li>
+</ul>
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table6" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#CHGOUTQ.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="CHGOUTQ.RMTSYS"></a>
+<h2>リモート・システム (RMTSYS)</h2>
+<p>出力待ち行列に対して(STRRMTWTRコマンドを使用して）リモート書き出しプログラムが開始された時にファイルが送られるリモート・システムを指定します。これは，SNADSによって「アドレス」として，またTCP/IPによって「ホスト」として参照されます。
+</p>
+<dl>
+<dt><strong class="underlined">*SAME</strong></dt>
+<dd>値は変更されません。
+</dd>
+</dl>
+<dl>
+<dt><strong>*NONE</strong></dt>
+<dd>出力待ち行列はローカル印刷にのみ使用されます。OUTQパラメーターにこの出力待ち行列が指定されている時には，STRRMTWTRコマンドを使用することはできません。
+</dd>
+<dt><strong>*NWSA</strong></dt>
+<dd>RMTPRTQパラメーターは，出力待ち行列へのリモート書き出しプログラムが開始される時に，システムを識別するために使用されます。この値が有効なのは，*NDSがDESTTYPEパラメーターに指定されている場合だけです。
+</dd>
+<dt><strong>*PASTHR</strong></dt>
+<dd>ユーザー・ジョブによって作成されたスプール・ファイルを送る時には，ユーザーが(STRPASTHRコマンドを使用して）パススルーを行ったシステムが使用されます。別のシステムからパススルーされたジョブによって作成されたスプール・ファイルでなかった場合には，そのスプール・ファイルは保留されます（HLD状況）。
+</dd>
+<dt><strong>*INTNETADR</strong></dt>
+<dd>INTNETADRパラメーターは，リモート書き出しプログラムが出力待ち行列に対して開始される時にシステムを識別するために使用されます。
+<p>ホスト・テーブルまたはドメイン・ネーム・サーバーがTCP/IPネットワークにある場合には，このパラメーターの代わりにリモート・システム名を使用できます。
+</p>
+<p>
+<strong>注:     </strong>この値はCNNTYPEパラメーターに*IPが指定されている場合にのみ有効です。
+</p>
+</dd>
+<dt><strong class="italic">名前</strong></dt>
+<dd>リモート・システムの名前を指定してください。接続タイプ（CNNTYPEパラメーター）が*SNAとして指定されている時には最初の8文字だけが使用されます。リモート・システムの名前を小文字にする必要がある場合には，その名前をアポストロフィで囲まなければなりません。アポストロフィを使用しなければ，オペレーティング・システムはその名前を大文字に変更します。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table7" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#CHGOUTQ.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="CHGOUTQ.RMTPRTQ"></a>
+<h2>リモート印刷装置待ち行列 (RMTPRTQ)</h2>
+<p>リモート書き出しプログラムがスプール・ファイルを送るリモート・システム(RMTSYSパラメーター）の印刷装置待ち行列を指定します。
+</p>
+<dl>
+<dt><strong class="underlined">*SAME</strong></dt>
+<dd>値は変更されません。
+</dd>
+</dl>
+<dl>
+<dt><strong>*USER</strong></dt>
+<dd>スプール・ファイルを作成したユーザー・プロファイルによって，リモート・システムでのユーザーIDが決定されます。ファイルは，このユーザーの省略時の出力待ち行列でスプールされます。
+<p>
+<strong>注:     </strong>この値が有効なのは，接続タイプ(CNNTYPEパラメーター）が*SNAとして指定された場合だけです。
+</p>
+</dd>
+<dt><strong>*SYSTEM</strong></dt>
+<dd>リモート・システムの省略時のシステム印刷装置を使用して，印刷装置待ち行列が決定されます。リモートIBM Iの場合には，QPRTDEVシステム値に指定された印刷装置に関連付けられた出力待ち行列が，印刷装置待ち行列として使用されます。
+<p>
+<strong>注:     </strong>この値が有効なのは，接続タイプ(CNNTYPEパラメーター）が*SNAとして指定され，宛先タイプ(DESTTYPE)が*OS400または*S390の場合だけです。
+</p>
+</dd>
+<dt><strong class="italic">名前</strong></dt>
+<dd>リモート・システムの印刷装置待ち行列の名前を指定してください。リモートIBM Iの場合，これはスプール・ファイルが作成される出力待ち行列の名前となります。
+<p>リモート・システムの名前を小文字にする必要がある場合には，その名前をアポストロフィで囲まなければなりません。アポストロフィを使用しなければ，オペレーティング・システムはその名前を大文字に変更します。
+</p>
+<p>IBM Iではない宛先システムの場合，この名前はシステムに依存します。装置の実際の名前または印刷装置待ち行列の名前となります。
+</p>
+<p>この出力待ち行列は，通常，ライブラリー名／出力待ち行列名として指定されます。ライブラリー名修飾子が指定されていない場合には，省略時の値として*LIBLが使用されます。
+</p>
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table8" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#CHGOUTQ.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="CHGOUTQ.AUTOSTRWTR"></a>
+<h2>自動開始する書出プログラム (AUTOSTRWTR)</h2>
+<p>システムによってこの出力待ち行列に対して自動始動される書き出しプログラムの数を指定します。リモート・システムが*NONE以外の値として指定された場合には，このパラメーターの値によって，この出力待ち行列に対して開始されるリモート書き出しプログラムの数が決定されます。リモート・システムが*NONEとして指定され，これがシステム作成の印刷装置の省略時の待ち行列である場合には，このパラメーターの値によって，印刷装置書き出しプログラム開始 (STRPRTWTR)コマンドがDEV(*ALL)を指定して実行された時に出力待ち行列に対して単一の印刷装置書出プログラムが開始されるかどうかが決定されます。
+</p>
+<p>システム作成の省略時出力待ち行列の場合には，このパラメーターを*NONEまた1として指定することができます。リモート・システムが*NONEとして指定されているユーザー作成の出力待ち行列の場合には，このパラメーターは無視されます。
+</p>
+<dl>
+<dt><strong class="underlined">*SAME</strong></dt>
+<dd>値は変更されません。
+</dd>
+</dl>
+<dl>
+<dt><strong>*NONE</strong></dt>
+<dd>この出力待ち行列に対してシステムによって自動始動される書き出しプログラムはありません。
+</dd>
+<dt><strong class="italic">1から10</strong></dt>
+<dd>システムによってこの出力待ち行列に対して自動始動される書き出しプログラムの数を指定してください。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table9" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#CHGOUTQ.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="CHGOUTQ.MSGQ"></a>
+<h2>書出プログラムMSG用待ち行列 (MSGQ)</h2>
+<p>この出力待ち行列に開始されたリモート書き出しプログラムによってメッセージが作成された時にメッセージが送られるメッセージ待ち行列の修飾名を指定します。
+</p>
+<h3><strong>単一値</strong>
+</h3>
+<dl>
+<dt><strong class="underlined">*SAME</strong></dt>
+<dd>値は変更されません。
+</dd>
+</dl>
+<h3><strong>修飾子</strong><strong>1: </strong><strong>書出</strong><strong>プログラムMSG</strong><strong>用待ち行列</strong>
+</h3>
+<dl>
+<dt><strong class="italic">名前</strong></dt>
+<dd>リモート書き出しプログラムによって作成されたメッセージが送られるメッセージ待ち行列の名前を指定してください。
+</dd>
+</dl>
+<h3><strong>修飾子</strong><strong>2: ライブラリー</strong>
+</h3>
+<dl>
+<dt><strong class="underlined">*LIBL</strong></dt>
+<dd>最初に一致するものが見つかるまで，現行スレッドのライブラリー・リスト内のすべてのライブラリーが検索されます。
+</dd>
+</dl>
+<dl>
+<dt><strong>*CURLIB</strong></dt>
+<dd>スレッドの現行ライブラリーが検索されます。スレッドの現行ライブラリーとして指定されているライブラリーがない場合，QGPLライブラリーが検索されます。
+</dd>
+</dl>
+<dl>
+<dt><strong class="italic">名前</strong></dt>
+<dd>検索するライブラリーの名前を指定してください。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table10" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#CHGOUTQ.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="CHGOUTQ.CNNTYPE"></a>
+<h2>接続タイプ (CNNTYPE)</h2>
+<p>リモート・システムとの接続のタイプを指定します。
+</p>
+<dl>
+<dt><strong class="underlined">*SAME</strong></dt>
+<dd>値は変更されません。
+</dd>
+</dl>
+<dl>
+<dt><strong>*SNA</strong></dt>
+<dd>スプール・ファイルはSNADSを使用して送られます。これは，ネットワーク・スプール・ファイル送信(SNDNETSPLF)コマンドと類似しており，SNADSの構成を必要とします。
+</dd>
+<dt><strong>*IP</strong></dt>
+<dd>スプール・ファイルはTCP/IPを使用して送られます。これは，TCP/IPスプール・ファイル送信(SNDTCPSPLF)コマンドと類似しており，TCP/IPプロダクトの導入を必要とします。
+</dd>
+<dt><strong>*IPX</strong></dt>
+<dd>スプール・ファイルはIPXを使用して送信されます。
+<p>
+<strong>注:     </strong>オペレーティング・システムはIPXをもうサポートしていないので，この値は無視されます。
+</p>
+</dd>
+<dt><strong>*USRDFN</strong></dt>
+<dd>スプール・ファイルはユーザー定義の接続を使用して送信されます。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table11" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#CHGOUTQ.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="CHGOUTQ.DESTTYPE"></a>
+<h2>宛先タイプ (DESTTYPE)</h2>
+<p>リモート・システム(RMTSYSパラメーター）のタイプを指定します。このパラメーターは，スプール・ファイルを送るために使用される形式を決定するために，スプール・ファイルに入っているデータのタイプ（CRTPRTFコマンドのDEVTYPEパラメーター）とともにリモート書き出しプログラムによって使用されます。スプール・ファイル中のデータのタイプがシステムによってサポートされていない場合には，スプール・ファイルはリモート書き出しプログラムによって保留されます。
+</p>
+<dl>
+<dt><strong class="underlined">*SAME</strong></dt>
+<dd>値は変更されません。
+</dd>
+</dl>
+<dl>
+<dt><strong>*OS400</strong></dt>
+<dd>接続タイプ(CNNTYPE)が*SNAと指定されている時には，スプール・ファイルは別のIBM Iに送られます。CNNTYPEが*IPである時には，この値はTCP/IP (V2R3以降）をサポートするすべてのリリースで指定することができます。
+<p>
+<strong>注:     </strong>他のパラメーター値を選択する時に最大の柔軟性を許可する場合には，この値を指定してください（可能な場合）。
+</p>
+</dd>
+<dt><strong>*OS400V2</strong></dt>
+<dd>スプール・ファイルはV2R3以前のIBM i (OS/400)が稼働しているシステムに送られます。この値が有効であるのは，CNNTYPEが*SNAの場合だけです。
+</dd>
+<dt><strong>*S390</strong></dt>
+<dd>スプール・ファイルはSYSTEM Zに送られます。この値が有効なのは，CNNTYPEが*SNAまたは*USRDFNである場合だけです。
+</dd>
+<dt><strong>*PSF2</strong></dt>
+<dd>スプール・ファイルはPSF*/2プロダクトを実行しているパーソナル・コンピューターに送られます。
+<p>
+<strong>注:     </strong>この値が有効であるのは，CNNTYPEが*IPまたは*USRDFNである場合だけです。
+</p>
+</dd>
+<dt><strong>*NDS</strong></dt>
+<dd>スプール・ファイルはNETWARE4に送信するためのものです。この値が有効なのは，CNNTYPEが*USRDFNである場合だけです。
+</dd>
+<dt><strong>*OTHER</strong></dt>
+<dd>スプール・ファイルは他のどの特殊値とも対応しないシステムに送られます。これには，V1R3以前のIBM i (OS/400)が稼働しているシステム，システム/36およびシステム/38システムが含まれます。
+<p>
+<strong>注:     </strong>CNNTYPE(*IPX)が指定されている場合は，この値は無効です。
+</p>
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table12" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#CHGOUTQ.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="CHGOUTQ.TRANSFORM"></a>
+<h2>SCSからASCIIへの変換 (TRANSFORM)</h2>
+<p>ファイルがリモート印刷装置待ち行列に送られる時に，ホスト印刷変換機能を使用して装置タイプ*SCSのスプール・ファイルをASCIIデータに変換するかどうかを指定します。
+</p>
+<p>
+<strong>注:     </strong>このパラメーターは，CNNTYPEが*SNAまたは*NONEとして指定されている時には無効です。
+</p>
+<dl>
+<dt><strong class="underlined">*SAME</strong></dt>
+<dd>値は変更されません。
+</dd>
+</dl>
+<dl>
+<dt><strong>*YES</strong></dt>
+<dd>SCSデータ・ストリームが変換されます。
+</dd>
+<dt><strong>*NO</strong></dt>
+<dd>SCSデータ・ストリームは変換されません。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table13" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#CHGOUTQ.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="CHGOUTQ.USRDTATFM"></a>
+<h2>データ変換プログラム (USRDTATFM)</h2>
+<p>スプール・ファイル・データの変換に使用されるユーザー定義データ・プログラムを指定します。
+</p>
+<p>
+<strong>注:     </strong>このパラメーターは，RMTSYSが*NONEでない時にだけ有効です。
+</p>
+<h3><strong>単一値</strong>
+</h3>
+<dl>
+<dt><strong class="underlined">*SAME</strong></dt>
+<dd>値は変更されません。
+</dd>
+</dl>
+<dl>
+<dt><strong>*NONE</strong></dt>
+<dd>ユーザー定義のデータ変換プログラムは指定しません。
+</dd>
+</dl>
+<h3><strong>修飾子</strong><strong>1: </strong><strong>ユーザー・データ変換</strong>
+</h3>
+<dl>
+<dt><strong class="italic">名前</strong></dt>
+<dd>ユーザー定義データ変換プログラムの名前を指定してください。
+</dd>
+</dl>
+<h3><strong>修飾子</strong><strong>2: ライブラリー</strong>
+</h3>
+<dl>
+<dt><strong class="underlined">*LIBL</strong></dt>
+<dd>最初に一致するものが見つかるまで，現行スレッドのライブラリー・リスト内のすべてのライブラリーが検索されます。
+</dd>
+</dl>
+<dl>
+<dt><strong>*CURLIB</strong></dt>
+<dd>スレッドの現行ライブラリーが検索されます。スレッドの現行ライブラリーとして指定されているライブラリーがない場合，QGPLライブラリーが検索されます。
+</dd>
+</dl>
+<dl>
+<dt><strong class="italic">名前</strong></dt>
+<dd>検索するライブラリーの名前を指定してください。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table14" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#CHGOUTQ.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="CHGOUTQ.MFRTYPMDL"></a>
+<h2>製造タイプおよび型式 (MFRTYPMDL)</h2>
+<p>ホスト印刷変換機能またはユーザー・データ変換プログラムを使用している印刷装置のメーカー，タイプ，および型式を指定します。
+</p>
+<p>MFRTYPMDLに*WSCSTXXXが指定された場合には，ワークステーション・カスタマイズ・オブジェクトを指定しなければなりません。
+</p>
+<p>このパラメーターのプロンプトが出されるのは，TRANSFORM(*YES)が指定された場合，またはユーザー・データ変換プログラムを使用した場合だけです。
+</p>
+<dl>
+<dt><strong class="underlined">*SAME</strong></dt>
+<dd>値は変更されません。
+</dd>
+</dl>
+<dl>
+<dt><strong>*WSCST</strong></dt>
+<dd>WSCSTパラメーターの値が使用されます。
+</dd>
+<dt><strong class="italic">メーカー−タイプ−型式</strong></dt>
+<dd>ホスト印刷変換機能またはユーザー・データ変換プログラムを使用している印刷装置のメーカー，タイプ，および型式を指定してください。
+</dd>
+</dl>
+<h3><strong>メーカー，タイプ，および型式テーブル</strong>
+</h3>
+<p>
+</p><pre>*IBM2380        IBM 2380パーソナル・プリンター・シリーズII
+                IBM 2380プラス・プリンター
+*IBM2381        IBM 2381パーソナル・プリンター・シリーズII
+                IBM 2381プラス・プリンター
+*IBM2390        IBM 2390パーソナル・プリンター・シリーズII
+                IBM 2390プラス・プリンター
+*IBM2391        IBM 2391パーソナル・プリンター・シリーズII
+                IBM 2391プラス・プリンター
+*IBM3112        IBM 3112ページ印刷装置
+*IBM3116        IBM 3116ページ印刷装置
+*IBM3130        IBM 3130拡張印刷装置
+*IBM3812        IBM 3812ページ印刷装置
+*IBM3816        IBM 3816ページ印刷装置
+*IBM3912HP      IBM 3912ページ印刷装置(HPモード）
+*IBM3916HP      IBM 3916ページ印刷装置(HPモード）
+*IBM39302       IBM 39302 IBM 3930-02Sページ印刷装置
+                IBM 39302 IBM 3930-02Dページ印刷装置
+*IBM39303       IBM 39303 IBM 3930-03Sページ印刷装置
+                IBM 39303 IBM 3930-03Dページ印刷装置
+*IBM4019        IBM 4019レーザー・プリンター
+                IBM 4019Eレーザー・プリンターE
+*IBM4019HP      IBM 4019レーザー・プリンター(HPモード）
+                IBM 4019Eレーザー・プリンターE (HPモード）
+*IBM4029        IBM 4029-010レーザー・プリンター5E
+                IBM 4029-020レーザー・プリンター6
+                IBM 4029-030レーザー・プリンター10
+                IBM 4029-040レーザー・プリンター10L
+*IBM4029HP      IBM 4029-010レーザー・プリンター5E (HPモード）
+                IBM 4029-020レーザー・プリンター6 (HPモード）
+                IBM 4029-030レーザー・プリンター10 (HPモード）
+                IBM 4029-040レーザー・プリンター10L
+                (HPモード）
+*IBM4037        IBM 4037 5E印刷装置
+*IBM4039HP      IBM 4039レーザー・プリンター10D (HPモード）
+                IBM 4039レーザー・プリンター10Dプラス
+                (HPモード）
+                IBM 4039レーザー・プリンター10R (HPモード）
+                IBM 4039レーザー・プリンター10Rプラス
+                (HPモード）
+                IBM 4039レーザー・プリンター12R (HPモード）
+                IBM 4039レーザー・プリンター12Rプラス
+                (HPモード）
+                IBM 4039レーザー・プリンター12L (HPモード）
+                IBM 4039レーザー・プリンター12Lプラス
+                (HPモード）
+                IBM 4039レーザー・プリンター16L (HPモード）
+                IBM 4039レーザー・プリンター16Lプラス
+                (HPモード）
+*IBM4070        IBM 4070 IJ (IBMモード）
+*IBM4070EP      IBM 4070 IJ (EPSONモード）
+*IBM4072        IBM 4072 EXECJET
+*IBM4076        IBM 4076 EXECJET II印刷装置(HPモード）
+*IBM42011       IBM 4201-1 PROPRINTER
+*IBM42012       IBM 4201-2 PROPRINTER II
+*IBM42013       IBM 4201-3 PROPRINTER III
+*IBM42021       IBM 4202-1 PROPRINTER XL
+*IBM42022       IBM 4202-2 PROPRINTER II XL
+*IBM42023       IBM 4202-3 PROPRINTER III XL
+*IBM42071       IBM 4207-1 PROPRINTER X24
+*IBM42072       IBM 4207-2 PROPRINTER X24E
+*IBM42081       IBM 4208-1 PROPRINTER XL24
+*IBM42082       IBM 4208-2 PROPRINTER XL24E
+*IBM4212        IBM 4212 PROPRINTER 24P
+*IBM4216        IBM 4216-10パーソナル・ページ・プリンター
+*IBM4226        IBM 4226-302印刷装置
+*IBM4230        IBM 4230-4S3印刷装置(IBMモード）
+                IBM 4230-4I3印刷装置(IBMモード）
+*IBM4232        IBM 4232-302印刷装置(IBMモード）
+*IBM4244ASF     IBM 4244印刷装置（単一トラクター送りおよびASF)
+*IBM4244DUAL    IBM 4244印刷装置（複式連続用紙送り機構）
+*IBM4244MAN     IBM 4244印刷装置（単一用紙送りまたは手動選択）
+*IBM4247ASF     IBM 4247印刷装置（単一トラクター送りおよびASF)
+*IBM4247DUAL    IBM 4247印刷装置（複式連続用紙送り機構）
+*IBM4247MAN     IBM 4247印刷装置（単一用紙送りまたは手動選択）
+*IBM4308        IBM InfoPrintカラー8
+*IBM4312        IBMネットワーク印刷装置12
+*IBM4317        IBMネットワーク印刷装置17
+*IBM4320        IBM InfoPrint 20
+*IBM4322        IBM InfoPrint 21
+*IBM4324        IBM ネットワーク印刷装置24
+*IBM4332        IBM InfoPrint 32
+*IBM4340        IBM InfoPrint 40
+*IBM47121       IBM 4712-1トランザクション印刷装置
+*IBM47122       IBM 4712-2トランザクション印刷装置
+*IBM47221       IBM 4722-1文書印刷装置
+*IBM47222       IBM 4722-2文書印刷装置
+*IBM4770        IBM 4770インクジェット・トランザクション印刷装置
+*IBM4912        IBM InfoPrint 12
+*IBM5152        IBM 5152グラフィック印刷装置
+*IBM5201        IBM 5201-2 QUIETWRITER
+*IBM5202        IBM 5202-1 QUIETWRITER III
+*IBM5204        IBM 5204-1 QUICKWRITER
+*IBM5216        IBM 5216 WHEELPRINTER
+*IBM5575        IBM 5579-H02型印刷装置
+                IBM 5579-K02型印刷装置
+                IBM 5577-T02型印刷装置
+                IBM 5579-S02型印刷装置
+                IBM 5577-K02型印刷装置
+                IBM 5577-J02型印刷装置
+                IBM 5577-G02型印刷装置
+                IBM 5577-H02型印刷装置
+                IBM 5577-F02型印刷装置
+                IBM 5577-B02型印刷装置
+                IBM 5575-H02型印刷装置
+                IBM 5575-F02型印刷装置(SBCSカートリッジ付き）
+                IBM 5575-B02型印刷装置(SBCSカートリッジ付き）
+                IBM 5573-K02型印刷装置
+                IBM 5573-J02型印刷装置
+                IBM 5573-H02型印刷装置
+                IBM 5573-G02型印刷装置
+                IBM 5572-B02型印刷装置
+                IBM 5417-011型印刷装置
+                IBM 5407-011型印刷装置
+                IBM 5327-011型印刷装置
+                IBM 4208-502型印刷装置
+*IBM5575AMOV    IBM 5575印刷装置シリーズ（代替
+                バージョン）
+*IBM6400        IBM 6400印刷装置(IBMモード）
+*IBM6400EP      IBM 6400印刷装置(EPSONモード）
+*IBM6404        IBM 6404印刷装置(IBMモード）
+*IBM6404EP      IBM 6404印刷装置(EPSONモード）
+*IBM6408        IBM 6408-A00印刷装置(IBMモード）
+                IBM 6408-CTA印刷装置(IBMモード）
+*IBM6408EP      IBM 6408-A00印刷装置(EPSONモード）
+                IBM 6408-CTA印刷装置(EPSONモード）
+*IBM6412        IBM 6412-A00印刷装置(IBMモード）
+                IBM 6412-CTA印刷装置(IBMモード）
+*IBM6412EP      IBM 6412-A00印刷装置(EPSONモード）
+                IBM 6412-CTA印刷装置(EPSONモード）
+*IBMPAGES       IBM 5589-H01印刷装置
+                IBM 5588-H02印刷装置
+                IBM 5587-H01印刷装置
+                IBM 5586-H02印刷装置
+                IBM 5585-H01印刷装置
+                IBM 5584-K02型印刷装置
+                IBM 5584-H02印刷装置
+                IBM 5584-G02印刷装置
+*IBMPAGESNPB    *IBMPAGESと同じだが，
+                非印刷枠のテキスト位置調整なし
+*IBMPAGES300    IBMネットワーク・プリンター12
+                (PAGESフィーチャー付き）
+                IBMネットワーク・プリンター17
+                (PAGESフィーチャー付き）
+                IBMネットワーク・プリンター24
+                (PAGESフィーチャー付き）
+                IBM InfoPrint 20 (PAGESフィーチャーなし）
+                IBM InfoPrint 32 (PAGESフィーチャーあり）
+                IBM InfoPrint 40 (PAGESフィーチャーあり）
+*IBMPAGES300NPB *IBMPAGES300と同じだが，
+                非印刷枠のテキスト位置調整なし
+*InfoPrint8C    IBM InfoPrintカラー8
+*InfoPrint12    IBM InfoPrint 12
+*InfoPrint20    IBM InfoPrint 20
+*InfoPrint21    IBM InfoPrint 21
+*InfoPrint32    IBM InfoPrint 32
+*InfoPrint40    IBM InfoPrint 40
+*InfoPrint70    IBM InfoPrint 70
+*InfoPrint85    IBM InfoPrint 2085
+*InfoPrint105   IBM InfoPrint 2105
+*InfoPrint1116  IBM InfoPrint 1116
+*InfoPrint1120  IBM InfoPrint 1120
+*InfoPrint1125  IBM InfoPrint 1125
+*InfoPrint1130  IBM InfoPrint 1130
+*InfoPrint1140  IBM InfoPrint 1140
+*InfoPrint1145  IBM InfoPrint 1145
+*InfoPrint1220C IBM InfoPrintカラー1220
+*InfoPrint1222  IBM InfoPrint 1222
+*InfoPrint1226  IBM InfoPrint 1226
+*InfoPrint1228C IBM InfoPrintカラー1228
+*InfoPrint1312  IBM InfoPrint 1312
+*InfoPrint1332  IBM InfoPrint 1332
+*InfoPrint1334C IBM InfoPrintカラー1334
+*InfoPrint1352  IBM InfoPrint 1352
+*InfoPrint1354C IBM InfoPrintカラー1354
+*InfoPrint1357C IBM InfoPrintカラー1357
+*InfoPrint1372  IBM InfoPrint 1372
+*InfoPrint1400C IBM InfoPrintカラー14XXシリーズ印刷装置
+*InfoPrint1410  IBM InfoPrint 1410 MFP
+*InfoPrint1412  IBM InfoPrint 1412
+*InfoPrint1422  IBM InfoPrint 1422
+*InfoPrint1500  IBM InfoPrint 15XXシリーズ印刷装置
+*InfoPrint1500C IBM InfoPrintカラー15XXシリーズ印刷装置
+*InfoPrint1600  IBM InfoPrint 16XXシリーズ印刷装置
+*InfoPrint1600C IBM InfoPrintカラー16XXシリーズ印刷装置
+*InfoPrint2000  IBM InfoPrint 2000
+*InfoPrint2085  IBM InfoPrint 2085
+*InfoPrint2105  IBM InfoPrint 2105
+*InfoPrint2190  IBM InfoPrint 2190
+*InfoPrint2210  IBM InfoPrint 2210
+*InfoPrint2235  IBM InfoPrint 2235
+*InfoPrint2705  IBM InfoPrint 2105
+*InfoPrint2706  IBM InfoPrint 2105ES
+*InfoPrint2761  IBM InfoPrint 2060ES
+*InfoPrint2775  IBM InfoPrint 2075ES
+*InfoPrint2785  IBM InfoPrint 2085
+*InfoPrint2790  IBM InfoPrint 2090ES
+*InfoPrint4247  IBM InfoPrint 4247印刷装置シリーズ
+*InfoPrint6500  IBM InfoPrint 6500 (EPSONモード）
+*CANLIPS3       CANON LIPS3 DBCS印刷装置
+*CANLIPS3NPB    *CANLIPS3と同じだが，
+                非印刷枠のテキスト位置調整なし
+*CPQPM15        COMPAQ PAGEMARK 15 (HPモード）
+*CPQPM20        COMPAQ PAGEMARK 20 (HPモード）
+*EPAP2250       EPSON ACTIONPRINTER 2250
+*EPAP3250       EPSON ACTIONPRINTER 3250
+*EPAP5000       EPSON ACTIONPRINTER 5000
+*EPAP5500       EPSON ACTIONPRINTER 5500
+*EPDFX5000      EPSON DFX-5000
+*EPDFX8000      EPSON DFX-8000
+*EPEPL7000      EPSON EPL-7000
+*EPEPL8000      EPSON EPL-8000
+*EPFX850        EPSON FX-850
+*EPFX870        EPSON FX-870
+*EPFX1170       EPSON FX-1170
+*EPLQ510        EPSON LQ-510
+*EPLQ570        EPSON LQ-570
+*EPLQ860        EPSON LQ-860
+*EPLQ870        EPSON LQ-870
+*EPLQ1070       EPSON LQ-1070
+*EPLQ1170       EPSON LQ-1170
+*EPLQ2550       EPSON LQ-2550
+*EPLX810        EPSON LX-810
+*EPSQ870        EPSON SQ-870
+*EPSQ1170       EPSON SQ-1170
+*ESCPDBCS       EPSON ESC/P DBCS印刷装置
+*HPII           HP LASERJETシリーズII
+*HPIID          HP LASERJET IID
+*HPIIP          HP LASERJET IIP
+*HPIII          HP LASERJET III
+*HPIIID         HP LASERJET IIID
+*HPIIIP         HP LASERJET IIIP
+*HPIIISI        HP LASERJET IIISI
+*HP4            HP LASERJET 4
+*HP5            HP LASERJET 5シリーズ
+*HP5SI          HP LASERJET 5SI
+*HP6            HP LASERJET 6シリーズ
+*HP310          HP DESKJET 310
+*HP320          HP DESKJET 320
+*HP500          HP DESKJET 500
+*HP520          HP DESKJET 520
+*HP540          HP DESKJET 540
+*HP550C         HP DESKJET 550C
+*HP560C         HP DESKJET 560C
+*HP1100         HP LASERJET 1100シリーズ
+*HP1200C        HP DESKJET 1200C
+*HP1600C        HP DESKJET 1600C
+*HP4000         HP LASERJET 4000シリーズ
+*HP5000         HP LASERJET 5000シリーズ
+*HP8000         HP LASERJET 8000シリーズ
+*HPCOLORLJ      HP COLOR LASERJET 5
+*HPDBCS         HP LASERJET互換印刷装置DBCS入力用
+*HPPAINT        HP PAINTJET
+                HP PAINTJET XL
+                HP PAINTJET XL300
+*LEX2380        LEXMARK用紙印刷装置2380プラス
+*LEX2381        LEXMARK用紙印刷装置2381プラス
+*LEX2390        LEXMARK用紙印刷装置2390プラス
+*LEX2391        LEXMARK用紙印刷装置2391プラス
+*LEX4227        LEXMARK 4227用紙印刷装置
+*LEXMARKC       LEXMARK Cシリーズ印刷装置
+*LEXMARKC510    LEXMARK C510カラー印刷装置
+*LEXMARKC750    LEXMARK C750カラー印刷装置
+*LEXMARKC752    LEXMARK C752カラー印刷装置
+*LEXMARKC910    LEXMARK C910カラー印刷装置
+*LEXMARKC912    LEXMARK C912カラー印刷装置
+*LEXMARKE       LEXMARK Eシリーズ印刷装置
+*LEXMARKE322    LEXMARK E322印刷装置
+*LEXMARKE323    LEXMARK E323印刷装置
+*LEXMARKE330    LEXMARK E330印刷装置
+                LEXMARK E332N印刷装置
+*LEXMARKT       LEXMARK Tシリーズ印刷装置
+*LEXMARKT420    LEXMARK T420印刷装置
+*LEXMARKT520    LEXMARK T520印刷装置
+*LEXMARKT522    LEXMARK T522印刷装置
+*LEXMARKT620    LEXMARK T620印刷装置
+*LEXMARKT622    LEXMARK T622印刷装置
+*LEXMARKT630    LEXMARK T630印刷装置
+*LEXMARKT632    LEXMARK T632印刷装置
+*LEXMARKT634    LEXMARK T634印刷装置
+*LEXMARKW       LEXMARK Wシリーズ印刷装置
+*LEXMARKW812    LEXMARK W812印刷装置
+*LEXMARKW820    LEXMARK W820印刷装置
+*LEXMARKX422    LEXMARK X422 MFP
+*LEXOPTRA       LEXMARK OPTRA FAMILY (HPモード）
+*LEXOPTRAC      LEXMARK OPTRA Cカラー印刷装置
+*LEXOPTRAN      LEXMARK OPTRA N印刷装置
+*LEXOPTRAS      LEXMARK OPTRA S印刷装置ファミリー
+*LEXOPTRASC     LEXMARK OPTRA SCカラー印刷装置
+                LEXMARK OPTRAカラー1200印刷装置
+*LEXOPTRAT      LEXMARK OPTRA T印刷装置シリーズ
+*LEXOPTRAW      LEXMARK OPTRA W印刷装置シリーズ
+*NECP2          NEC P2 PINWRITER
+*NECP2200       NEC P2200 PINWRITER
+*NECP2200XE     NEC P2200 XE PINWRITER
+*NECP5200       NEC P5200 PINWRITER
+*NECP5300       NEC P5300 PINWRITER
+*NECP6200       NEC P6200 PINWRITER
+*NECP6300       NEC P6300 PINWRITER
+*NECPCPR201     NEC PC-PR101 DBCS印刷装置
+                NEC PC-PR201 DBCS印刷装置
+*NONE          印刷装置は，CVTIMG APIによって生成された
+                ページ記述子言語をサポートします。
+                注: 装置タイプが*SCSまたは*AFPDSの
+                スプール・ファイルは，これらの印刷装置
+                のホスト印刷変換機能では処理できま
+                せん。
+*OKI184IBM      OKIDATA MICROLINE 184 TURBO (IBMモード）
+*OKI320IBM      OKIDATA MICROLINE 320 (IBMモード）
+*OKI321IBM      OKIDATA MICROLINE 321 (IBMモード）
+*OKI390IBM      OKIDATA MICROLINE 390 PLUS (IBMモード）
+*OKI391IBM      OKIDATA MICROLINE 391 PLUS (IBMモード）
+*OKI393IBM      OKIDATA MICROLINE 393 PLUS (IBMモード）
+*OKI590IBM      OKIDATA MICROLINE 590 (IBMモード）
+*OKI591IBM      OKIDATA MICROLINE 591 (IBMモード）
+*OKI400         OKIDATA OL400 LEDページ印刷装置
+*OKI800         OKIDATA OL800 LEDページ印刷装置
+*OKI810         OKIDATA OL810 LEDページ印刷装置
+*OKI820         OKIDATA OL820 LEDページ印刷装置
+*OKI3410        OKIDATA PACEMARK 3410
+*PAN1123EP      PANASONIC KX-P1123 (EPSONモード）
+*PAN1124EP      PANASONIC KX-P1124 (EPSONモード）
+*PAN1124IEP     PANASONIC KX-P1124I (EPSONモード）
+*PAN1180EP      PANASONIC KX-P1180 (EPSONモード）
+*PAN1180IEP     PANASONIC KX-P1180I (EPSONモード）
+*PAN1191EP      PANASONIC KX-P1191 (EPSONモード）
+*PAN1624EP      PANASONIC KX-P1624 (EPSONモード）
+*PAN1654EP      PANASONIC KX-P1654 (EPSONモード）
+*PAN1695EP      PANASONIC KX-P1695 (EPSONモード）
+*PAN2123EP      PANASONIC KX-P2123 (EPSONモード）
+*PAN2124EP      PANASONIC KX-P2124 (EPSONモード）
+*PAN2180EP      PANASONIC KX-P2180 (EPSONモード）
+*PAN2624EP      PANASONIC KX-P2624 (EPSONモード）
+*PAN4410HP      PANASONIC KX-P4410 (HPモード）
+*PAN4420HP      PANASONIC KX-P4420 (HPモード）
+*PAN4430HP      PANASONIC KX-P4430 (HPモード）
+*PAN4450IHP     PANASONIC KX-P4450I (HPモード）
+*PAN4451HP      PANASONIC KX-P4451 (HPモード）
+*PANASONIC2310  PANASONIC DP-2310印刷装置
+*PANASONIC3010  PANASONIC DP-3010印刷装置
+*PANASONIC3510  PANASONIC DP-3510印刷装置
+*PANASONIC3520  PANASONIC DP-3520印刷装置
+*PANASONIC4510  PANASONIC DP-4510印刷装置
+*PANASONIC4520  PANASONIC DP-4520印刷装置
+*PANASONIC6010  PANASONIC DP-6010印刷装置
+*PANASONIC6020  PANASONIC DP-6020印刷装置
+*PDF            Portable Document Format
+*PDFEMBEDTT     Portable Document Format。すべてのTRUETYPE
+                フォント参照が出力文書に組み込まれます。
+*PDFIBMWT       Portable Document Format。システムに付属の
+                IBM WorldTypeフォントが標準PDFフォント参照
+                にマップされます。
+*RICOH1515      RICOH AFICIO 1515印刷装置シリーズ
+*RICOH2015      RICOH AFICIO 2015印刷装置シリーズ
+*RICOH2018      RICOH AFICIO 2018印刷装置シリーズ
+*RICOH2022      RICOH AFICIO 2022印刷装置シリーズ
+*RICOH2027      RICOH AFICIO 2027印刷装置シリーズ
+*RICOH2032      RICOH AFICIO 2032印刷装置シリーズ
+*RICOH2035      RICOH AFICIO 2035印刷装置シリーズ
+*RICOH2045      RICOH AFICIO 2045印刷装置シリーズ
+*RICOHAP400     RICOH AFICIO AP400印刷装置シリーズ
+*RICOHAP600N    RICOH AFICIO AP600N印刷装置シリーズ
+*RICOHAP900     RICOH AFICIO AP900印刷装置シリーズ
+*RICOHAP3200    RICOH AFICIO AP3200印刷装置シリーズ
+*RICOHAP4510    RICOH AFICIO AP4510印刷装置シリーズ
+*RICOHCL2000    RICOH AFICIO CL2000カラー印刷装置
+                シリーズ
+*RICOHCL3100    RICOH AFICIO CL3000Eカラー印刷装置
+                シリーズ
+                RICOH AFICIO CL3100Nカラー印刷装置
+                シリーズ
+*RICOHCL4000    RICOH AFICIO CL4000カラー印刷装置
+                シリーズ
+*RICOHCL5000    RICOH AFICIO CL5000カラー印刷装置
+                シリーズ
+*RICOHCL7000    RICOH AFICIO CL7000カラー印刷装置
+                シリーズ
+*RICOHCL7100    RICOH AFICIO CL7100カラー印刷装置
+                シリーズ
+*RICOHMP1100    RICOH AFICIO MP1100印刷装置シリーズ
+*RICOHMP1350    RICOH AFICIO MP1350印刷装置シリーズ
+*RICOHMP2352    RICOH AFICIO MP2352印刷装置シリーズ
+*RICOHMP2500    RICOH AFICIO MP2500印刷装置シリーズ
+*RICOHMP5000    RICOH AFICIO MP5000印刷装置シリーズ
+*RICOHMP9000    RICOH AFICIO MP9000印刷装置シリーズ
+*RICOHSP4100N   RICOH AFICIO SP4100N印刷装置シリーズ
+                RICOH AFICIO SP4110N印刷装置シリーズ
+*RICOHSP5200S   RICOH AFICIO SP5200S印刷装置シリーズ
+*RICOHSP6330N   RICOH AFICIO SP6330N印刷装置シリーズ
+*RICOHSP8200DN  RICOH AFICIO SP8200DN印刷装置シリーズ
+*RICOHSP9100DN  RICOH AFICIO SP9100DN印刷装置シリーズ
+*RICOHSPC430DN  RICOH AFICIO SPC430DNカラー印刷装置
+                シリーズ
+*RICOHSPC811DN  RICOH AFICIO SPC811DNカラー印刷装置
+                シリーズ
+*WORKIO_BL      PANASONIC WORKIO DP-23XXシリーズ印刷装置
+                PANASONIC WORKIO DP-30XXシリーズ印刷装置
+*WORKIO_BM      PANASONIC WORKIO DP-35XXシリーズ印刷装置
+*WORKIO_CR      PANASONIC WORKIO DP-CXXXシリーズ・カラー印刷装置
+*XRX4215MRP     XEROX 4215/MRP (HPモード）
+*XRX4219MRP     XEROX 4219/MRP (HPモード）
+*XRX4220MRP     XEROX 4220/MRP (HPモード）
+*XRX4230MRP     XEROX 4230/MRP (HPモード）
+*XRX4235        XEROX 4235 LASERPRINTING (HPモード）
+*XRX4700II      XEROX 4700 IIカラー文書印刷装置
+                (HPモード）
+*WSCSTA3        印刷装置はリストされていない(A3サイズ用紙）
+*WSCSTA4        印刷装置はリストされていない(A4サイズ用紙）
+*WSCSTA5        印刷装置はリストされていない(A5サイズ用紙）
+*WSCSTB4        印刷装置はリストされていない(B4サイズ用紙）
+*WSCSTB5        印刷装置はリストされていない(B5サイズ用紙）
+*WSCSTCONT80    印刷装置はリストされていない(8インチ連続用紙）
+*WSCSTCONT132   印刷装置はリストされていない(13.2インチ連続用紙）
+*WSCSTEXECUTIVE 印刷装置はリストされていない(エグゼクティブ・サイズ用紙）
+*WSCSTLEDGER    印刷装置はリストされていない（レジャー・サイズ用紙）
+*WSCSTLEGAL     印刷装置はリストされていない（リーガル・サイズ用紙）
+*WSCSTLETTER    印刷装置はリストされていない（レターサイズ用紙）
+*WSCSTNONE      印刷装置はリストされていない（用紙サイズ未指定）
+*WSCST          印刷装置はリストされていない
+</pre>
+<p></p>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table15" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#CHGOUTQ.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="CHGOUTQ.WSCST"></a>
+<h2>ワークステーション・カスタマイズ・オブジェクト (WSCST)</h2>
+<p>ワークステーションや印刷装置などの指定のASCII装置をカスタマイズするために使用される属性テーブルからなるオブジェクトを指定します。カスタマイズできる特性の例として，文字表示，フォント仕様，および制御キー順序があります。
+</p>
+<p>このパラメーターのプロンプトが出されるのは，TRANSFORM(*YES)が指定された場合，またはユーザー・データ変換プログラムを使用した場合だけです。
+</p>
+<h3><strong>単一値</strong>
+</h3>
+<dl>
+<dt><strong class="underlined">*SAME</strong></dt>
+<dd>値は変更されません。
+</dd>
+</dl>
+<dl>
+<dt><strong>*NONE</strong></dt>
+<dd>ワークステーション・カスタマイズ・オブジェクトは指定されません。
+</dd>
+</dl>
+<h3><strong>修飾子</strong><strong>1:  ワークステーション・カスタマイズ・オブジェクト</strong>
+</h3>
+<dl>
+<dt><strong class="italic">名前</strong></dt>
+<dd>ワークステーション・カスタマイズ・オブジェクト作成(CRTWSCST)コマンドによって作成されたワークステーション・カスタマイズ・オブジェクトの名前を指定してください。
+</dd>
+</dl>
+<h3><strong>修飾子</strong><strong>2: ライブラリー</strong>
+</h3>
+<dl>
+<dt><strong class="underlined">*LIBL</strong></dt>
+<dd>最初に一致するものが見つかるまで，現行スレッドのライブラリー・リスト内のすべてのライブラリーが検索されます。
+</dd>
+</dl>
+<dl>
+<dt><strong>*CURLIB</strong></dt>
+<dd>スレッドの現行ライブラリーが検索されます。スレッドの現行ライブラリーとして指定されているライブラリーがない場合，QGPLライブラリーが検索されます。
+</dd>
+</dl>
+<dl>
+<dt><strong class="italic">名前</strong></dt>
+<dd>検索するライブラリーの名前を指定してください。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table16" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#CHGOUTQ.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="CHGOUTQ.IMGCFG"></a>
+<h2>イメージ構成 (IMGCFG)</h2>
+<p>この出力待ち行列のイメージ構成を指定します。イメージ構成オブジェクトは，さまざまなイメージおよび印刷データ・ストリーム形式の変換サービスを提供します。このパラメーターが使用されるのは，リモート書き出しプログラムの場合だけです。
+</p>
+<p>提供されるイメージ構成オブジェクトのリストについては，以下のイメージ構成オブジェクト(IMGCFG パラメーター）テーブルを参照してください。
+</p>
+<p>普及している多くの印刷装置について推奨されるIMGCFGについては，以下の印刷装置別推奨イメージ構成オブジェクト・テーブルを参照してください。
+</p>
+<dl>
+<dt><strong class="underlined">*SAME</strong></dt>
+<dd>値は変更されません。
+</dd>
+</dl>
+<dl>
+<dt><strong>*NONE</strong></dt>
+<dd>イメージ構成は指定されません。
+</dd>
+<dt><strong class="italic">文字値</strong></dt>
+<dd>出力待ち行列で使用するイメージ構成を指定してください。
+</dd>
+</dl>
+<h3><strong>イメージ構成オブジェクト・テーブル</strong>
+</h3>
+<p>
+</p><pre> -------------- HP PCLデータ・ストリーム------------------------
+*IMGA01    PCL 300-DPI印刷装置
+*IMGA02    PCL 600-DPI印刷装置
+*IMGA03    PCL 1200-DPI印刷装置
+*IMGA04    PCL 300-DPIカラー印刷装置
+*IMGA05    PCL 600-DPIカラー印刷装置
+*IMGA06    PCL 1200-DPIカラー印刷装置
+*IMGA07    PCL 75-DPI印刷装置（圧縮なし）
+*IMGA08    PCL 600-DPI カラー印刷装置
+           （より大きな印刷余白付き）
+*IMGA09    PCL 300-DPI印刷装置（圧縮なし）
+ -------------ポストスクリプト・データ・ストリーム--------------
+*IMGB01    ポストスクリプト300-DPI印刷装置
+*IMGB02    ポストスクリプト600-DPI印刷装置
+*IMGB03    ポストスクリプト1200-DPI印刷装置
+*IMGB04    ポストスクリプト300-DPIカラー印刷装置
+*IMGB05    ポストスクリプト600-DPIカラー印刷装置
+*IMGB06    ポストスクリプト1200-DPIカラー印刷装置
+*IMGB07    ポストスクリプト600X300-DPIカラー印刷装置
+*IMGB08    ポストスクリプト1200X300-DPIカラー印刷装置
+*IMGB09    ポストスクリプト360-DPIカラー印刷装置
+*IMGB10    ポストスクリプト720-DPIカラー印刷装置
+*IMGB11    ポストスクリプト1440X720-DPIカラー印刷装置
+*IMGB12    ポストスクリプト400-DPI印刷装置
+*IMGB13    ポストスクリプト800-DPIカラー印刷装置
+*IMGB14    ポストスクリプト600-DPIカラー印刷装置
+           （より大きな印刷余白付き）
+*IMGB15    ポストスクリプト300-DPIカラー印刷装置
+           （より大きな印刷余白付き）
+ -------------------- IPDSデータ・ストリーム--------------------
+*IMGC01    IPDS 240-DPI印刷装置
+*IMGC02    IPDS 300-DPI印刷装置
+*IMGC03    IPDS 600-DPI印刷装置
+*IMGC04    IPDS 1200-DPI印刷装置
+*IMGC05    IPDS 240-DPI印刷装置（印刷余白付き）
+*IMGC06    IPDS 300-DPI印刷装置（印刷余白付き）
+*IMGC07    IPDS 600-DPI印刷装置（印刷余白付き）
+*IMGC08    IPDS 1200-DPI印刷装置（印刷余白付き）
+*IMGC09    IPDS 240-DPI印刷装置(IM/1イメージのみ）
+*IMGC10    IPDS 240-DPI印刷装置（印刷余白付き）
+                (IM/1イメージのみ）
+*IMGC11    IPDS 240-DPI印刷装置(CCITT G4圧縮）
+ -------- PCLおよびポストスクリプト・データ・ストリーム---------
+*IMGD01    PCL/ポストスクリプト300-DPI印刷装置
+*IMGD02    PCL/ポストスクリプト600-DPI印刷装置
+*IMGD03    PCL/ポストスクリプト1200-DPI印刷装置
+*IMGD04    PCL/ポストスクリプト300-DPIカラー印刷装置
+*IMGD05    PCL/ポストスクリプト600-DPIカラー印刷装置
+*IMGD06    PCL/ポストスクリプト1200-DPIカラー印刷装置
+*IMGD07    PCL 300-DPI/ポストスクリプト600-DPI印刷装置
+*IMGD08    PCL 300-DPI/ポストスクリプト1200-DPI印刷装置
+*IMGD09    PCL 600-DPI/ポストスクリプト300-DPI印刷装置
+*IMGD10    PCL 600-DPI/ポストスクリプト1200-DPI印刷装置
+*IMGD11    PCL/ポストスクリプト600-DPIカラー印刷装置
+           （より大きな印刷余白付き）
+</pre>
+<p></p>
+<h3><strong>印刷装置テーブルによる，推奨されるイメージ構成オブジェクト</strong>
+</h3>
+<p>
+</p><pre>COMPAQ PAGEMARC 20                                         *IMGD01
+EPSON EPCL-4印刷装置                                       *IMGA01
+EPSON EPCL-5印刷装置                                       *IMGA02
+EPSON STYLUS PHOTO（ポストスクリプト付き）                 *IMGB10
+EPSON STYLUS COLOR 600, 800（ポストスクリプト付き）        *IMGB11
+HP COLOR LASERJET 5                                        *IMGA04
+HP COLOR LASERJET 5M                                       *IMGD04
+HP DESKJET 560C, 820C, 1200C                               *IMGA04
+HP DESKJET 500, 600, 1200                                  *IMGA01
+HP DESKJET 1600C, 1600CN                                   *IMGA04
+HP DESKJET 1600CM                                          *IMGD04
+HP LASERJET II, IID, IIP                                   *IMGA09
+HP LASERJET II, IID, IIP（ポストスクリプト付き）           *IMGB01
+HP LASERJET III, IIID, IIISI, 4L                           *IMGA01
+HP LASERJET III, IIID, IIISI, 4L（ポストスクリプト付き）   *IMGD01
+HP LASERJET 4, 4P, 4V, 4SI, 4 PLUS                         *IMGA02
+HP LASERJET 4M, 4MP, 4MV, 4SI MX, 4M PLUS                  *IMGD02
+HP LASERJET 5, 5P, 5SI                                     *IMGA02
+HP LASERJET 5M, 5MP, 5SI MX                                *IMGD02
+HP LASERJET 6, 6P, 6L                                      *IMGA02
+HP LASERJET 6M, 6MP                                        *IMGD02
+IBM 3112, 3116ページ印刷装置(IPDS機構付き）                *IMGD02
+IBM 3112, 3116ページ印刷装置(ASCII/LAN)                    *IMGA02
+IBM 3112, 3116ページ印刷装置（ポストスクリプト付き）       *IMGD02
+IBM 3130, 3160-1 AF印刷装置(240画素モード）                *IMGC01
+IBM 3130 AF印刷装置(300画素モード）                        *IMGC02
+IBM InfoPrint 20 (IPDS機構付き）                           *IMGC02
+IBM InfoPrint 20 (ASCII)                                   *IMGA02
+IBM InfoPrint 32 (IPDS機構付き）                           *IMGC02
+IBM InfoPrint 32 (ASCII)                                   *IMGA02
+IBM InfoPrint 60                                           *IMGC03
+IBM InfoPrint 62モデル2                                    *IMGC05
+IBM InfoPrint 62モデル3                                    *IMGC06
+IBM INFOCOLOR 70                                           *IMGB05
+IBM InfoPrint 4000                                         *IMGC05
+IBM InfoPrint 4000（高解像度）                             *IMGC06
+IBM 3825, 3827, 3828 AF印刷装置                            *IMGC09
+IBM 3825, 3827, 3828 AF印刷装置(AFIG付き）                 *IMGC01
+IBM 3829 AF印刷装置                                        *IMGC01
+IBM 3835-001 AF印刷装置                                    *IMGC10
+IBM 3835-001 AF印刷装置(AFIG付き）                         *IMGC05
+IBM 3835-002, 3900 AF印刷装置                              *IMGC05
+IBM 3912, 3916ページ印刷装置(ASCII/LAN)                    *IMGA01
+IBM 3912, 3916ページ印刷装置(IPDS機構付き）（平衡型）      *IMGC06
+IBM 3930-02ページ印刷装置(IPDSディスケット）               *IMGC01
+IBM 3930-03ページ印刷装置                                  *IMGA01
+IBM 3930-03ページ印刷装置（ポストスクリプト付き）          *IMGD01
+IBM 3935 AF印刷装置                                        *IMGC02
+IBM 4019レーザー・プリンター(HPモード）                    *IMGA09
+IBM 4019レーザー・プリンター（ポストスクリプト付き）       *IMGB01
+IBM 4028レーザー・プリンター                               *IMGC06
+IBM 4029レーザー・プリンター                               *IMGA01
+IBM 4029レーザー・プリンター（ポストスクリプト付き）       *IMGB02
+IBM 4039レーザー・プリンター                               *IMGA01
+IBM 4039レーザー・プリンター（ポストスクリプト付き）       *IMGD07
+IBM 4049レーザー・プリンター                               *IMGA02
+IBM 4049レーザー・プリンター（ポストスクリプト付き）       *IMGD02
+IBM 4079カラー・ジェット・プリンターPS                     *IMGB09
+IBM 4303ネットワーク・カラー・プリンター                   *IMGB05
+IBM 4312, 4317, 4324 NP (IPDS機構付き）（平衡型）          *IMGC06
+IBM 4312, 4317, 4324 NP (IPDS機構付き）(LAN)               *IMGC06
+IBM 4312, 4317, 4324 NP (ASCII/LAN)                        *IMGA02
+IBM 4312, 4317, 4324 NP（ポストスクリプト付き）(ASCII/LAN) *IMGD02
+LEXMARK 4039PLUS                                           *IMGB02
+LEXMARK OPTRA Cカラー・プリンター                          *IMGD11
+LEXMARK OPTRA E, E+                                        *IMGA02
+LEXMARK OPTRA N                                            *IMGD02
+LEXMARK OPTRA R+, RX+, LX+, LXN+                           *IMGD02
+LEXMARK OPTRA S印刷装置                                    *IMGD02
+LEXMARK OPTRA SCカラー印刷装置                             *IMGD05
+OKIDATA OL400 LEDページ印刷装置                            *IMGA01
+OKIDATA OL800, OL810 LEDページ印刷装置                     *IMGA02
+QMS 2025, 3225                                             *IMGB12
+QMS MAGICOLOR CX                                           *IMGD04
+TEKTRONIX PHASER 140                                       *IMGB09
+TEKTRONIX PHASER 300                                       *IMGB04
+TEKTRONIX PHASER 400                                       *IMGB05
+TEKTRONIX PHASER 540, 550                                  *IMGB05
+TEKTRONIX PHASER 560                                       *IMGB06
+XEROX 4219/MRP                                             *IMGA01
+XEROX 4220/MRP                                             *IMGA02
+XEROX 4230 DOCUPRINTER                                     *IMGA02
+XEROX 4512, 4517ネットワーク・プリンター                   *IMGA02
+XEROX 4520MP印刷装置                                       *IMGB13
+XEROX 4700 IIカラー文書印刷装置                            *IMGD04
+XEROX 4915カラー・レーザー・プリンター                     *IMGB08
+XEROX 4920, 4925カラー・レーザー・プリンター               *IMGB05
+</pre>
+<p></p>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table17" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#CHGOUTQ.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="CHGOUTQ.INTNETADR"></a>
+<h2>IPアドレス (INTNETADR)</h2>
+<p>印刷要求が送られる先のリモート・システムのIPアドレスを指定します。
+</p>
+<p>
+<strong>注:     </strong>このパラメーターが有効なのは，RMTSYS(*INTNETADR)が指定された場合だけです。
+</p>
+<dl>
+<dt><strong class="underlined">*SAME</strong></dt>
+<dd>値は変更されません。
+</dd>
+</dl>
+<dl>
+<dt><strong class="italic">IPアドレス</strong></dt>
+<dd>IPアドレスは<strong>NNN.NNN.NNN.NNN</strong>の形式で指定されます。ここで<strong>NNN</strong>は0から255の範囲の10進数です。そのアドレスのネットワークID部分またはホストID部分のビットがすべて2進数の1または0であるIPアドレスは無効です。
+<p>コマンド入力行から入力する場合には，値をアポストロフィ(')で囲まなければなりません。
+</p>
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table18" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#CHGOUTQ.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="CHGOUTQ.CLASS"></a>
+<h2>VM/MVSクラス (CLASS)</h2>
+<p>VM/MVSホスト・システムに送られるファイルのVM/MVS SYSOUTクラスを指定します。
+</p>
+<p>
+<strong>注:     </strong>このパラメーターは，CNNTYPE(*SNA)およびDESTTYPE(*S390)が指定された時にのみ有効です。
+</p>
+<dl>
+<dt><strong class="underlined">*SAME</strong></dt>
+<dd>値は変更されません。
+</dd>
+</dl>
+<dl>
+<dt><strong class="italic">文字値</strong></dt>
+<dd>配布クラス値を指定してください。有効な値の範囲は，AからZおよび0から9です。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table19" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#CHGOUTQ.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="CHGOUTQ.FCB"></a>
+<h2>用紙制御バッファー (FCB)</h2>
+<p>VM/MVSホスト・システムに送られるファイルの用紙制御バッファーを指定します。
+</p>
+<p>
+<strong>注:     </strong>このパラメーターは，CNNTYPE(*SNA)およびDESTTYPE(*S390)が指定された時にのみ有効です。
+</p>
+<dl>
+<dt><strong class="underlined">*SAME</strong></dt>
+<dd>値は変更されません。
+</dd>
+</dl>
+<dl>
+<dt><strong>*NONE</strong></dt>
+<dd>用紙制御バッファーは使用されません。
+</dd>
+<dt><strong>*USRDTA</strong></dt>
+<dd>ユーザー・データ(USRDTA)スプール・ファイル属性の最初の8文字が用紙制御バッファーの名前になります。ユーザー・データがブランクの場合には，用紙制御バッファーは使用されません。
+</dd>
+<dt><strong>*PRTF</strong></dt>
+<dd>ファイルをスプールするために使用される印刷装置ファイルの最初の8文字が用紙制御バッファーの名前になります。
+</dd>
+<dt><strong class="italic">名前</strong></dt>
+<dd>使用される用紙制御バッファーの名前を指定してください。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table20" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#CHGOUTQ.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="CHGOUTQ.DESTOPT"></a>
+<h2>宛先オプション (DESTOPT)</h2>
+<p>宛先従属オプションを指定します。CNNTYPE(*IP)が指定された場合には，宛先従属オプションが制御ファイル（リモートLPDサーバーに送信される）に追加されます。CNNTYPE(*SNA)が指定されると，スプール・ファイルがリモート・システムに送信された後の処理方法を判別するのにこのフィールドが使用されます。
+</p>
+<dl>
+<dt><strong class="underlined">*SAME</strong></dt>
+<dd>値は変更されません。
+</dd>
+</dl>
+<dl>
+<dt><strong>*NONE</strong></dt>
+<dd>宛先オプションは指定されません。
+</dd>
+<dt><strong>*USRDFNTXT</strong></dt>
+<dd>スプール・ファイルが作成された時点のユーザー・プロファイルのユーザー定義テキストが使用されます。CNNTYPE(*SNA)が指定されている場合には，この値は無視されます。
+</dd>
+<dt><strong>*NOWAIT</strong></dt>
+<dd>CNNTYPE(*SNA)が指定された場合に，*NOWAITの値はオペレーティング・システムがスプール・ファイルを送信した後はそれを記憶しないことを指示します。
+</dd>
+<dt><strong class="italic">'宛先オプション'</strong></dt>
+<dd>アポストロフィで囲まれた128文字を超えない文字を指定してください。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table21" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#CHGOUTQ.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="CHGOUTQ.SEPPAGE"></a>
+<h2>区切りページの印刷 (SEPPAGE)</h2>
+<p>リモート・システムで印刷する時に，区切りページを要求するかしないかを指定します。
+</p>
+<p>
+<strong>注:     </strong>このパラメーターが有効なのは，CNNTYPE(*IP)が指定されている場合だけです。
+</p>
+<dl>
+<dt><strong class="underlined">*SAME</strong></dt>
+<dd>値は変更されません。
+</dd>
+</dl>
+<dl>
+<dt><strong>*YES</strong></dt>
+<dd>区切りページが要求されます。
+</dd>
+<dt><strong>*NO</strong></dt>
+<dd>区切りページは要求されません。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table22" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#CHGOUTQ.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="CHGOUTQ.USRDFNOPT"></a>
+<h2>ユーザー定義オプション (USRDFNOPT)</h2>
+<p>スプール出力の場合にのみ，スプール・ファイルを処理するユーザー・アプリケーションまたはユーザー指定プログラムによって使用される1つまたは複数のユーザー定義オプションを指定します。最大4つのユーザー定義オプションを指定することができます。
+</p>
+<h3><strong>単一値</strong>
+</h3>
+<dl>
+<dt><strong class="underlined">*SAME</strong></dt>
+<dd>値は変更されません。
+</dd>
+</dl>
+<dl>
+<dt><strong>*NONE</strong></dt>
+<dd>ユーザー定義のオプションは指定しません。
+</dd>
+</dl>
+<h3><strong>その他の値（最大</strong><strong>4</strong><strong>個指定可能）</strong>
+</h3>
+<dl>
+<dt><strong class="italic">文字値</strong></dt>
+<dd>スプール・ファイルを処理するユーザー・アプリケーションによって使用されるユーザー定義オプションを指定してください。すべての文字が受け入れ可能です。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table23" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#CHGOUTQ.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="CHGOUTQ.USRDFNOBJ"></a>
+<h2>ユーザー定義オブジェクト (USRDFNOBJ)</h2>
+<p>スプール出力の場合のみ，スプール・ファイルを処理するユーザー・アプリケーションまたはユーザー指定プログラムによって使用されるユーザー定義オブジェクトを指定します。
+</p>
+<h3><strong>単一値</strong>
+</h3>
+<dl>
+<dt><strong class="underlined">*SAME</strong></dt>
+<dd>値は変更されません。
+</dd>
+</dl>
+<dl>
+<dt><strong>*NONE</strong></dt>
+<dd>ユーザー定義オブジェクト名は指定されません。
+</dd>
+</dl>
+<h3><strong>要素</strong><strong>1: </strong><strong>オブジェクト</strong>
+</h3>
+<h3><strong>修飾子</strong><strong>1: </strong><strong>オブジェクト</strong>
+</h3>
+<dl>
+<dt><strong class="italic">名前</strong></dt>
+<dd>ユーザー定義オブジェクトの名前を指定してください。
+</dd>
+</dl>
+
+<dd>
+<h3><strong>修飾子</strong><strong>2: ライブラリー</strong>
+</h3>
+<dl>
+<dt><strong class="underlined">*LIBL</strong></dt>
+<dd>最初に一致するものが見つかるまで，現行スレッドのライブラリー・リスト内のすべてのライブラリーが検索されます。
+</dd>
+</dl>
+<dl>
+<dt><strong>*CURLIB</strong></dt>
+<dd>スレッドの現行ライブラリーが検索されます。スレッドの現行ライブラリーとして指定されているライブラリーがない場合，QGPLライブラリーが検索されます。
+</dd>
+</dl>
+<dl>
+<dt><strong class="italic">名前</strong></dt>
+<dd>検索するライブラリーの名前を指定してください。
+</dd>
+</dl>
+</dd>
+
+<h3><strong>要素</strong><strong>2: </strong><strong>オブジェクト・タイプ</strong>
+</h3>
+<dl>
+<dt><strong class="italic">オブジェクト・タイプ</strong></dt>
+<dd>ユーザー・オブジェクトのタイプは，次の1つとすることができます。
+<ul class="cds--list--unordered">
+<li class="cds--list__item">*DTAARA（データ域）
+</li>
+<li class="cds--list__item">*DTAQ（データ待ち行列）
+</li>
+<li class="cds--list__item">*FILE（ファイル）
+</li>
+<li class="cds--list__item">*PSFCFG (PSF構成）
+</li>
+<li class="cds--list__item">*USRIDX（ユーザー見出し）
+</li>
+<li class="cds--list__item">*USRQ（ユーザー待ち行列）
+</li>
+<li class="cds--list__item">*USRSPC（ユーザー・スペース）
+</li>
+</ul>
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table24" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#CHGOUTQ.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="CHGOUTQ.USRDRVPGM"></a>
+<h2>ユーザー定義ドライバー・プログラム (USRDRVPGM)</h2>
+<p>ユーザー定義のドライバー・プログラムを指定します。
+</p>
+<p>
+<strong>注:     </strong>このパラメーターは，RMTSYSが*NONEでない時にだけ有効です。
+</p>
+<h3><strong>単一値</strong>
+</h3>
+<dl>
+<dt><strong class="underlined">*SAME</strong></dt>
+<dd>値は変更されません。
+</dd>
+</dl>
+<dl>
+<dt><strong>*NONE</strong></dt>
+<dd>ユーザー定義のドライバー・プログラムは指定しません。
+</dd>
+</dl>
+<h3><strong>修飾子</strong><strong>1:  ユーザー・ドライバー・プログラム</strong>
+</h3>
+<dl>
+<dt><strong class="italic">名前</strong></dt>
+<dd>スプール・ファイルを処理するためのユーザー指定のドライバー・プログラムの名前を指定してください。
+</dd>
+</dl>
+<h3><strong>修飾子</strong><strong>2: ライブラリー</strong>
+</h3>
+<dl>
+<dt><strong class="underlined">*LIBL</strong></dt>
+<dd>最初に一致するものが見つかるまで，現行スレッドのライブラリー・リスト内のすべてのライブラリーが検索されます。
+</dd>
+</dl>
+<dl>
+<dt><strong>*CURLIB</strong></dt>
+<dd>スレッドの現行ライブラリーが検索されます。スレッドの現行ライブラリーとして指定されているライブラリーがない場合，QGPLライブラリーが検索されます。
+</dd>
+</dl>
+<dl>
+<dt><strong class="italic">名前</strong></dt>
+<dd>検索するライブラリーの名前を指定してください。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table25" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#CHGOUTQ.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="CHGOUTQ.SPLFASP"></a>
+<h2>スプール・ファイルASP (SPLFASP)</h2>
+<p>スプール・ファイルが物理的に存在する補助記憶域プール(ASP)を指定します。
+</p>
+<dl>
+<dt><strong class="underlined">*SAME</strong></dt>
+<dd>値は変更されません。
+</dd>
+</dl>
+<dl>
+<dt><strong>*OUTQASP</strong></dt>
+<dd>スプール・ファイルは出力待ち行列が入っているのと同じASPにあります。
+</dd>
+<dt><strong>*SYSTEM</strong></dt>
+<dd>スプール・ファイルはシステムASPにあります。出力待ち行列が1次または2次ASP上のライブラリーにある場合には，この値は許可されません。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table26" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#CHGOUTQ.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="CHGOUTQ.TEXT"></a>
+<h2>テキスト'記述' (TEXT)</h2>
+<p>オブジェクトを簡単に記述したテキストを指定します。
+</p>
+<dl>
+<dt><strong class="underlined">*SAME</strong></dt>
+<dd>テキストが指定されている場合，変更されません。
+</dd>
+<dt><strong>*BLANK</strong></dt>
+<dd>テキストは指定されません。
+</dd>
+<dt><strong class="italic">'記述'</strong></dt>
+<dd>50文字以内をアポストロフィで囲んで指定してください。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table27" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#CHGOUTQ.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="CHGOUTQ.DSPDTA"></a>
+<h2>ファイルの表示 (DSPDTA)</h2>
+<p>出力待ち行列の読み取り権限を持っているユーザーが，待ち行列上のすべてのスプール・ファイルのデータを表示することができるか，あるいはユーザー自身のファイルのデータしか表示することができないかを指定します。
+</p>
+<dl>
+<dt><strong class="underlined">*SAME</strong></dt>
+<dd>出力待ち行列に指定されたデータ表示属性の現在の値は変更されません。
+</dd>
+<dt><strong>*NO</strong></dt>
+<dd>待ち行列の使用を認可されたユーザーは，ある種の特殊権限を持っていない限り，ユーザー自身のファイルのデータしか表示，コピー，または送信することができません。
+</dd>
+<dt><strong>*YES</strong></dt>
+<dd>出力待ち行列の読み取り権限を持っているどのユーザーも，待ち行列上のどのファイルからのデータでも表示，コピー，または送信することができます。
+</dd>
+</dl>
+<dl>
+<dt><strong>*OWNER</strong></dt>
+<dd>ファイルの所有者またはスプール制御(*SPLCTL)特殊権限を持つユーザーは，待ち行列上のスプール・ファイルを表示，コピー，または送信することができます。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table28" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#CHGOUTQ.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="CHGOUTQ.JOBSEP"></a>
+<h2>ジョブ区切り (JOBSEP)</h2>
+<p>この出力待ち行列上にスプール・ファイルを持つ各ジョブについて，各ジョブの印刷出力の始めに入れる区切りの数を指定します。各区切りには，ジョブ名，ジョブ・ユーザーの名前，ジョブ番号，およびジョブが実行された時刻および日付など，ジョブを識別する情報が入っています。区切りの数は0から9の範囲とすることができます。
+</p>
+<p>このパラメーターは，印刷装置書出プログラムによってのみ使用されます。他のすべてのタイプの書き出しプログラムは，このパラメーターに指定された値を無視します。
+</p>
+<dl>
+<dt><strong class="underlined">*SAME</strong></dt>
+<dd>ジョブ区切りの数は変更されません。
+</dd>
+<dt><strong>*MSG</strong></dt>
+<dd>各ジョブの出力の前にジョブ区切りを置きません。その代わりに，操作員に各ジョブの終わりを知らせるメッセージを書き出しプログラムのメッセージ待ち行列に送ります。
+</dd>
+<dt><strong class="italic">0から9</strong></dt>
+<dd>各ジョブの出力の前に置く区切りの新しい数を指定します。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table29" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#CHGOUTQ.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="CHGOUTQ.OPRCTL"></a>
+<h2>操作員制御 (OPRCTL)</h2>
+<p>ジョブ制御権限を持つユーザーが，この出力待ち行列上に項目のあるスプール・ファイルを制御および変更することができるかどうかを指定します。
+</p>
+<dl>
+<dt><strong class="underlined">*SAME</strong></dt>
+<dd>出力待ち行列の操作員制御属性に指定された現在の値は変更されません。
+</dd>
+<dt><strong>*YES</strong></dt>
+<dd>ジョブ制御権限を持つユーザーは待ち行列を制御することができ，その待ち行列上の項目に変更を加えることができます。
+</dd>
+<dt><strong>*NO</strong></dt>
+<dd>ジョブ制御権限を持つユーザーは，他にも特殊権限を持っている場合を除いて，この待ち行列およびその項目を操作したり変更したりすることはできません。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table30" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#CHGOUTQ.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="CHGOUTQ.DTAQ"></a>
+<h2>データ待ち行列名 (DTAQ)</h2>
+<p>出力待ち行列に関連したデータ待ち行列を指定します。
+</p>
+<h3><strong>単一値</strong>
+</h3>
+<dl>
+<dt><strong class="underlined">*SAME</strong></dt>
+<dd>値は変更されません。
+</dd>
+</dl>
+<dl>
+<dt><strong>*NONE</strong></dt>
+<dd>出力待ち行列に関連したデータ待ち行列はありません。
+</dd>
+</dl>
+<h3><strong>修飾子</strong><strong>1: </strong><strong>データ待ち行列名</strong>
+</h3>
+<dl>
+<dt><strong class="italic">名前</strong></dt>
+<dd>出力待ち行列と関連したデータ待ち行列の名前を指定してください。
+</dd>
+</dl>
+<h3><strong>修飾子</strong><strong>2: ライブラリー</strong>
+</h3>
+<dl>
+<dt><strong class="underlined">*LIBL</strong></dt>
+<dd>最初に一致するものが見つかるまで，現行スレッドのライブラリー・リスト内のすべてのライブラリーが検索されます。
+</dd>
+</dl>
+<dl>
+<dt><strong>*CURLIB</strong></dt>
+<dd>スレッドの現行ライブラリーが検索されます。スレッドの現行ライブラリーとして指定されているライブラリーがない場合，QGPLライブラリーが検索されます。
+</dd>
+</dl>
+<dl>
+<dt><strong class="italic">名前</strong></dt>
+<dd>データ待ち行列が入っているライブラリーの名前を指定してください。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table31" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#CHGOUTQ.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="CHGOUTQ.AUTCHK"></a>
+<h2>検査権限 (AUTCHK)</h2>
+<p>出力待ち行列に対してどのタイプの権限を持っているユーザーが待ち行列上のすべてのファイルを制御することができるかを指定します。ある種の特殊権限を持つユーザーもスプール・ファイルを制御できる場合があります。
+</p>
+<dl>
+<dt><strong class="underlined">*SAME</strong></dt>
+<dd>出力待ち行列に指定されている検査権限属性の現行の値は変更されません。
+</dd>
+<dt><strong>*OWNER</strong></dt>
+<dd>出力待ち行列権限テストを通過するためには，要求元は出力待ち行列に対する所有権限を必要とします。要求元は，出力待ち行列の所有者となるか，グループ・プロファイルを待ち行列の所有者と共用するか，あるいは所有者の権限に合うプログラムを実行することで所有権限を持つことができます。
+</dd>
+<dt><strong>*DTAAUT</strong></dt>
+<dd>出力待ち行列に対して追加，読み取り，および削除の権限を持っているユーザーが，待ち行列上のすべてのスプール・ファイルを制御することができます。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table32" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#CHGOUTQ.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div><h2><a name="CHGOUTQ.COMMAND.EXAMPLES">例</a> </h2>
+<p>
+</p><pre>CHGOUTQ   OUTQ(QPRINT4)  JOBSEP(4)
+          TEXT('DEFAULT QUEUE FOR FILES USING 4-PART FORMS')
+</pre>
+<p></p>
+<p>このコマンドは，ジョブ区切りページの数およびQPRINT4という名前の出力待ち行列を記述するテキストを変更します。QPRINT4出力待ち行列から作成されたそれぞれのジョブのスプール・ファイルの前に，4つのジョブ区切りページが挿入されます。
+</p>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table33" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#CHGOUTQ.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div><h2><a name="CHGOUTQ.ERROR.MESSAGES">エラー・メッセージ</a> </h2>
+<p><strong class="underlined">*ESCAPE </strong><strong class="underlined">メッセージ</strong>
+</p>
+<dl>
+<dt><strong>CPF0002</strong></dt>
+<dd>コマンドは実行されなかった。妥当性検査プログラムによってエラーが検出されました。
+</dd>
+<dt><strong>CPF2207</strong></dt>
+<dd>ライブラリー&amp;3のタイプ*&amp;2のオブジェクト&amp;1の使用を認可されていない。
+</dd>
+<dt><strong>CPF33F1</strong></dt>
+<dd>ライブラリー&amp;2のデータ待ち行列&amp;1が見つからない。
+</dd>
+<dt><strong>CPF3319</strong></dt>
+<dd>指定したパラメーターを変更することはできない。出力待ち行列&amp;1に対して書き出しプログラムが活動状態になっています。
+</dd>
+<dt><strong>CPF3330</strong></dt>
+<dd>必要な資源が使用できない。
+</dd>
+<dt><strong>CPF3357</strong></dt>
+<dd>ライブラリー&amp;2に出力待ち行列&amp;1が見つかりません。
+</dd>
+<dt><strong>CPF3361</strong></dt>
+<dd>ライブラリー&amp;2の出力待ち行列&amp;1は変更されなかった。出力待ち行列は使用中です。
+</dd>
+<dt><strong>CPF34D7</strong></dt>
+<dd>エラーのために&amp;2中の出力待ち行列&amp;1が変更されなかった。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table34" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#CHGOUTQ.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+</div>
+
+
+</body></html>

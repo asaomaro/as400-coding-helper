@@ -1,0 +1,780 @@
+<!DOCTYPE html>
+<html lang="ja"><head><meta charset="utf-8"><title>Retrieve Data Area  (RTVDTAARA)</title></head>
+<body>
+<main role="main"><article role="article" aria-labelledby="rtvdtaara__title__1"> 
+<h1 class="topictitle1" id="rtvdtaara__title__1">Retrieve Data Area  (RTVDTAARA)</h1><div id="lastModifiedDate"><span>Last Updated</span>: 2026-07-13</div>
+
+<div class="body">
+<p>
+<strong>Retrieve Data Area  (RTVDTAARA)
+</strong></p>
+
+<p>
+<strong>Where allowed to run:  
+</strong>Compiled CL program or interpreted REXX (*BPGM *IPGM *BREXX *IREXX)
+
+</p>
+
+<p>
+<strong>Threadsafe:  </strong>Conditional
+</p>
+
+<p><a href="#rtvdtaara__parameters">Parameters</a></p>
+
+<p><a href="#rtvdtaara__examples">Examples</a></p>
+
+<p><a href="#rtvdtaara__errormsgs">Error messages</a></p>
+
+<div class="div" id="rtvdtaara__rtvdtaara">
+<p>
+The Retrieve Data Area (RTVDTAARA) command is used in a CL program or REXX procedure to retrieve all or part of a specified data area and copy it into a variable.  RTVDTAARA does not retrieve any other attributes of the data area.  Existence of the data area is not required at the time the CL program is compiled.
+
+</p>
+
+<p>
+If the job is a group job, the data area specified may be the group data area (*GDA).  This data area is automatically associated with the group, and it is inaccessible from jobs outside the group.  The length of this character data area is 512 bytes.  More information about group jobs is in the Work management topic collection in the IBM i Information Center at http://www.ibm.com/systems/i/infocenter/.
+
+</p>
+
+<p>
+A local data area (*LDA) is a character data area that is 1024 bytes in length, and it is automatically associated with the job.  Another job cannot access the local data area.
+
+</p>
+
+<p>
+If the job is a prestart job, the data area specified may be the data area that contains program initialization parameter data (*PDA).  This data area is automatically associated with the prestart job and is inaccessible from other jobs.  The length of this character data area is 2000 bytes.  More information about prestart jobs is in the Work management topic collection in the IBM i Information Center at http://www.ibm.com/systems/i/infocenter/.
+
+</p>
+
+<p>
+When a data area other than a local data area, group data area, or program initialization parameter data area must be retrieved during the processing of the RTVDTAARA command, the data area is locked during the retrieval operation so that commands in other jobs cannot change or destroy it until the operation is complete.  If the data area is shared with other jobs and is updated in steps involving more than one command in a job, the data area should be explicitly allocated to that job until all the steps have been performed.  A data area other than a local data area, group data area, or program initialization parameter data area can be explicitly allocated with the Allocate Object (ALCOBJ) command.  No allocation is necessary for a local data area, group data area, or program initialization parameter data area.
+
+</p>
+
+<p>
+<strong>Restrictions
+</strong>
+</p>
+
+<ol class="cds--list--ordered--temporary">
+<li class="cds--list__item">
+To use this command, the user must have *USE authority for the data area and *EXECUTE authority for the library where the data area is located.  No specific authority is required to retrieve the value of a local data area or group data area.
+
+</li>
+
+<li class="cds--list__item">
+This command is conditionally threadsafe.  The following restrictions apply:
+<ol type="a" class="cds--list--ordered--temporary cds--list--nested">
+<li class="cds--list__item">
+Retrieving DDM data areas in a job that allows multiple threads is not threadsafe.
+
+</li>
+
+<li class="cds--list__item">
+Retrieving DDM data areas will fail when more than one thread is active in a job.
+
+</li>
+
+
+</ol>
+
+
+</li>
+
+
+</ol>
+
+</div>
+<section class="section" role="region" aria-labelledby="rtvdtaara__parameters__title__1" id="rtvdtaara__parameters"><h2 class="sectiontitle" id="rtvdtaara__parameters__title__1">Parameters</h2>
+
+
+<div class="tablenoborder"><div class="cds--data-table-container"><table summary="" class="defaultstyle cds--data-table"><colgroup><col><col><col><col></colgroup><thead>
+<tr>
+<th id="rtvdtaara__parameters__entry__1"><div class="cds--table-header-label">
+Keyword
+</div></th>
+
+<th id="rtvdtaara__parameters__entry__2"><div class="cds--table-header-label">
+Description
+</div></th>
+
+<th id="rtvdtaara__parameters__entry__3"><div class="cds--table-header-label">
+Choices
+</div></th>
+
+<th id="rtvdtaara__parameters__entry__4"><div class="cds--table-header-label">
+Notes
+</div></th>
+
+</tr>
+
+</thead>
+<tbody>
+<tr>
+<td rowspan="7" headers="rtvdtaara__parameters__entry__1 "><a href="#rtvdtaara__dtaara"><strong>DTAARA
+</strong></a></td>
+
+<td headers="rtvdtaara__parameters__entry__2 ">Data area specification
+</td>
+
+<td headers="rtvdtaara__parameters__entry__3 "><em>Element list
+</em></td>
+
+<td rowspan="7" headers="rtvdtaara__parameters__entry__4 ">Required, Positional 1
+</td>
+
+</tr>
+
+<tr>
+<td headers="rtvdtaara__parameters__entry__2 ">Element 1: Data area
+</td>
+
+<td headers="rtvdtaara__parameters__entry__3 ">Single values: *LDA, *GDA, *PDA
+
+Other values: 
+<em>Qualified object name
+</em></td>
+
+</tr>
+
+<tr>
+<td headers="rtvdtaara__parameters__entry__2 ">Qualifier 1: Data area
+</td>
+
+<td headers="rtvdtaara__parameters__entry__3 "><em>Name
+</em></td>
+
+</tr>
+
+<tr>
+<td headers="rtvdtaara__parameters__entry__2 ">Qualifier 2: Library
+</td>
+
+<td headers="rtvdtaara__parameters__entry__3 "><em>Name
+</em>, 
+<strong><u>*LIBL
+</u></strong>, *CURLIB
+</td>
+
+</tr>
+
+<tr>
+<td headers="rtvdtaara__parameters__entry__2 ">Element 2: Substring specifications
+</td>
+
+<td headers="rtvdtaara__parameters__entry__3 ">Single values: 
+<strong><u>*ALL
+</u></strong>
+Other values: 
+<em>Element list
+</em></td>
+
+</tr>
+
+<tr>
+<td headers="rtvdtaara__parameters__entry__2 ">Element 1: Substring starting position
+</td>
+
+<td headers="rtvdtaara__parameters__entry__3 ">1-2000
+</td>
+
+</tr>
+
+<tr>
+<td headers="rtvdtaara__parameters__entry__2 ">Element 2: Substring length
+</td>
+
+<td headers="rtvdtaara__parameters__entry__3 ">1-2000
+</td>
+
+</tr>
+
+<tr>
+<td headers="rtvdtaara__parameters__entry__1 "><a href="#rtvdtaara__rtnvar"><strong>RTNVAR
+</strong></a></td>
+
+<td headers="rtvdtaara__parameters__entry__2 ">CL variable for returned value
+</td>
+
+<td headers="rtvdtaara__parameters__entry__3 "><em>Not restricted
+</em></td>
+
+<td headers="rtvdtaara__parameters__entry__4 ">Required, Positional 2
+</td>
+
+</tr>
+
+</tbody>
+</table></div>
+</div>
+
+<div class="div" id="rtvdtaara__dtaara">
+<p>
+<strong>Data area specification (DTAARA)
+</strong></p>
+
+<p>
+Specifies the name of the data area whose value is retrieved.
+
+</p>
+
+<p>
+This is a required parameter.
+
+</p>
+
+<p>
+<strong>Element 1: Data area       
+</strong>
+</p>
+
+<p>
+<strong>Single values
+</strong>
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong>*LDA
+</strong></dt>
+
+<dd class="dlentry">
+The value of the local data area is being retrieved.
+</dd>
+
+<dt class="dlterm">
+<strong>*GDA
+</strong></dt>
+
+<dd class="dlentry">
+The value of the group data area is being retrieved.  This value is valid only if this job is a group job.
+</dd>
+
+<dt class="dlterm">
+<strong>*PDA
+</strong></dt>
+
+<dd class="dlentry">
+The value of the program initialization parameter data area is being retrieved.  This value is valid only if this is a prestart job.
+</dd>
+
+</dl>
+
+<dl>
+<dt class="dlterm">
+<strong></strong></dt>
+
+<dd class="dlentry">
+<p>
+<strong>Qualifier 1: Data area
+</strong>
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><em>name
+</em></strong></dt>
+
+<dd class="dlentry">
+Specify the name of the data area.
+</dd>
+
+</dl>
+
+</dd>
+
+<dt class="dlterm">
+<strong></strong></dt>
+
+<dd class="dlentry">
+<p>
+<strong>Qualifier 2: Library
+</strong>
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><u>*LIBL
+</u></strong></dt>
+
+<dd class="dlentry">
+All libraries in the thread's library list are searched until a match is found.
+</dd>
+
+<dt class="dlterm">
+<strong>*CURLIB
+</strong></dt>
+
+<dd class="dlentry">
+The current library for the thread is used to locate the object.  If no library is specified as the current library for the thread, the QGPL library is used.
+</dd>
+
+</dl>
+
+<dl>
+<dt class="dlterm">
+<strong><em>name
+</em></strong></dt>
+
+<dd class="dlentry">
+Specify the library where the data area is located.
+</dd>
+
+</dl>
+
+</dd>
+
+</dl>
+
+<p>
+<strong>Element 2: Substring specifications       
+</strong>
+</p>
+
+<p>
+<strong>Single values
+</strong>
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><u>*ALL
+</u></strong></dt>
+
+<dd class="dlentry">
+The entire data area is retrieved.
+</dd>
+
+</dl>
+
+<dl>
+<dt class="dlterm">
+<strong></strong></dt>
+
+<dd class="dlentry">
+<p>
+<strong>Element 1: Substring starting position       
+</strong>
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><em>1-2000
+</em></strong></dt>
+
+<dd class="dlentry">
+Specify the starting position of the data area being retrieved.
+</dd>
+
+</dl>
+
+</dd>
+
+<dt class="dlterm">
+<strong></strong></dt>
+
+<dd class="dlentry">
+<p>
+<strong>Element 2: Substring length       
+</strong>
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><em>1-2000
+</em></strong></dt>
+
+<dd class="dlentry">
+Specify the length of the data area substring being retrieved.  It is not possible to retrieve data outside the data area.  The combination of starting position and length must always specify positions within the data area.
+</dd>
+
+</dl>
+
+</dd>
+
+</dl>
+
+</div>
+<div class="div" id="rtvdtaara__rtnvar">
+<p>
+<strong>CL variable for returned value (RTNVAR)
+</strong></p>
+
+<p>
+Specifies the name of the variable that receives the contents of the data area.
+
+</p>
+
+<p>
+No type conversion is performed by the RTVDTAARA command:
+
+</p>
+
+<ul class="cds--list--unordered">
+<li class="cds--list__item">
+If RTNVAR is declared as TYPE(*DEC), the data area retrieved must be TYPE(*DEC).
+
+</li>
+
+<li class="cds--list__item">
+If RTNVAR is declared as TYPE(*CHAR), the data area retrieved must be either TYPE(*CHAR) or TYPE(*LGL).
+
+</li>
+
+<li class="cds--list__item">
+If RTNVAR is declared as TYPE(*LGL), the data area retrieved must be either TYPE(*LGL) or TYPE(*CHAR) with a value of either '0' or '1'.
+
+</li>
+
+</ul>
+
+<p>
+If a retrieved character string is shorter than the length of the variable specified by the RTNVAR parameter, the value is padded on the right with blanks.  The retrieved string length must be less than or equal to the variable length.
+
+</p>
+
+<p>
+When decimal data areas are retrieved, the decimals are aligned.  The value of the integer portion of the data area must fit into the integer portions of the variable.  Fractional data is truncated if the fraction contains more digits than the variable.
+
+</p>
+
+<p>
+This is a required parameter.
+
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><em>unrestricted-value
+</em></strong></dt>
+
+<dd class="dlentry">
+Specify the program variable that will receive the contents of the data area.
+</dd>
+
+</dl>
+
+</div>
+</section>
+
+<section class="section" role="region" aria-labelledby="rtvdtaara__examples__title__1" id="rtvdtaara__examples"><h2 class="sectiontitle" id="rtvdtaara__examples__title__1">Examples</h2>
+
+<p>
+Assume data area DA1 has been created by the following command:
+
+</p>
+
+<div class="p">
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>
+CRTDTAARA   DTAARA(DA1)  TYPE(*CHAR)  LEN(3)  VALUE(ABC)
+
+</code></pre></div><div class="docs--copy-btn"></div></div>
+
+</div>
+
+<p>
+and variable &amp;CLVAR1 has been declared as:
+
+</p>
+
+<div class="p">
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>
+DCL   VAR(&amp;CLVAR1)  TYPE(*CHAR)  LEN(5)  VALUE(VWXYZ)
+
+</code></pre></div><div class="docs--copy-btn"></div></div>
+
+</div>
+
+<p>
+<strong>Example 1: Retrieving a Character Data Area
+</strong>
+</p>
+
+<div class="p">
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>
+RTVDTAARA   DTAARA(DA1)  RTNVAR(&amp;CLVAR1)
+
+</code></pre></div><div class="docs--copy-btn"></div></div>
+
+</div>
+
+<p>
+results in:
+
+</p>
+
+<div class="p">
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>
+&amp;CLVAR1 = 'ABC  '
+
+</code></pre></div><div class="docs--copy-btn"></div></div>
+
+</div>
+
+<p>
+<strong>Example 2: Retrieving a Subset of a Character Data Area
+</strong>
+</p>
+
+<div class="p">
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>
+RTVDTAARA   DTAARA(DA1 (2 1))  RTNVAR(&amp;CLVAR1)
+
+</code></pre></div><div class="docs--copy-btn"></div></div>
+
+</div>
+
+<p>
+results in:
+
+</p>
+
+<div class="p">
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>
+&amp;CLVAR1 = 'B    '
+
+</code></pre></div><div class="docs--copy-btn"></div></div>
+
+</div>
+
+<p>
+<strong>Example 3: Retrieving a Decimal Data Area
+</strong>
+</p>
+
+<p>
+Assume data area DA2 has been created with the following attributes:
+
+</p>
+
+<div class="p">
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>
+CRTDTAARA   DTAARA(DA2)  TYPE(*DEC)  LEN(5 2)  VALUE(12.39)
+
+</code></pre></div><div class="docs--copy-btn"></div></div>
+
+</div>
+
+<p>
+and variable &amp;CLVAR2 has been declared as:
+
+</p>
+
+<div class="p">
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>
+DCL   VAR(&amp;CLVAR2)  TYPE(*DEC)  LEN(5 1)  VALUE(4567.8)
+
+</code></pre></div><div class="docs--copy-btn"></div></div>
+
+</div>
+
+<p>
+Running this command:
+
+</p>
+
+<div class="p">
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>
+RTVDTAARA   DTAARA(DA2)  RTNVAR(&amp;CLVAR2)
+
+</code></pre></div><div class="docs--copy-btn"></div></div>
+
+</div>
+
+<p>
+results in:
+
+</p>
+
+<div class="p">
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>
+&amp;CLVAR2 = 0012.3
+
+</code></pre></div><div class="docs--copy-btn"></div></div>
+
+</div>
+
+<p>
+<strong>Note:
+</strong> Fractional digits are truncated instead of rounded.
+
+</p>
+
+</section>
+
+<section class="section" role="region" aria-labelledby="rtvdtaara__errormsgs__title__1" id="rtvdtaara__errormsgs"><h2 class="sectiontitle" id="rtvdtaara__errormsgs__title__1">Error messages</h2>
+
+<p>
+<strong><u>*ESCAPE Messages
+</u></strong>
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong>CPF0811
+</strong></dt>
+
+<dd class="dlentry">
+RTNVAR parameter has incorrect length for data area.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF0812
+</strong></dt>
+
+<dd class="dlentry">
+RTNVAR parameter type not valid for data area &amp;1.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF0813
+</strong></dt>
+
+<dd class="dlentry">
+Value in data area &amp;1 not logical value.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF101A
+</strong></dt>
+
+<dd class="dlentry">
+Operation on DDM data area &amp;1 in &amp;2 failed.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF1015
+</strong></dt>
+
+<dd class="dlentry">
+Data area &amp;1 in &amp;2 not found.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF1016
+</strong></dt>
+
+<dd class="dlentry">
+No authority to data area &amp;1 in &amp;2.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF1021
+</strong></dt>
+
+<dd class="dlentry">
+Library &amp;1 not found for data area &amp;2.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF1022
+</strong></dt>
+
+<dd class="dlentry">
+No authority to library &amp;1 data area &amp;2.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF1043
+</strong></dt>
+
+<dd class="dlentry">
+Boundary alignment for data area not valid.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF1044
+</strong></dt>
+
+<dd class="dlentry">
+AREA parameter not valid for data area.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF1045
+</strong></dt>
+
+<dd class="dlentry">
+CPYPTR parameter not valid for data area.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF1046
+</strong></dt>
+
+<dd class="dlentry">
+DTAARA(*GDA) not valid because job not group job.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF1063
+</strong></dt>
+
+<dd class="dlentry">
+Cannot allocate data area &amp;1 in library &amp;2.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF1067
+</strong></dt>
+
+<dd class="dlentry">
+Cannot allocate library &amp;1.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF1072
+</strong></dt>
+
+<dd class="dlentry">
+DTAARA(*PDA) not valid because job not prestart job.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF1087
+</strong></dt>
+
+<dd class="dlentry">
+Substring not allowed for decimal or logical data area.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF1088
+</strong></dt>
+
+<dd class="dlentry">
+Starting position outside of data area.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF1089
+</strong></dt>
+
+<dd class="dlentry">
+Substring specified for data area not valid.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF180B
+</strong></dt>
+
+<dd class="dlentry">
+Function &amp;1 not allowed.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF9899
+</strong></dt>
+
+<dd class="dlentry">
+Error occurred during processing of command.
+</dd>
+
+</dl>
+
+</section>
+
+</div>
+
+</article></main>
+</body></html>

@@ -1,0 +1,235 @@
+{
+  "keyword": "DCL",
+  "description": "CL変数宣言 (DCL)",
+  "help": "CL変数宣言(DCL)コマンドは，CLプログラムまたはILE CLプロシージャーで使用される制御言語(CL)プログラム変数を定義します。CL変数は，データを記憶して更新し，呼び出しでの別のプログラムからパラメーターを受け取るために使用されます。CL変数は，それを宣言するプログラム内だけで名前によって知られています。これはCLプログラムまたはILE CLプロシージャーの外側で使用することができませんが，プログラムのデバッグのために一部のコマンド（DSPPGMVARコマンドなど）によって参照される場合は例外です。ただし，変数中の値をパラメーターとして別のプログラムに渡すことはできます。変数が宣言されているが，CLプログラムまたはILE CLプロシージャーの別のコマンドによって参照されない場合には，その変数はコンパイルされる時にプログラムに組み込まれません。各DCLコマンドは1つのCL変数の属性を定義し，それが使用されるプログラム内にその名前を宣言します。\n\nプログラムのCL変数は2つの宣言コマンドの1つによって識別されなければなりません。ファイル宣言(DCLF)コマンドは，表示装置ファイルおよびデータベース・ファイルのCL変数を宣言します。DCLコマンドはその他のすべてのCL変数を宣言します。",
+  "parameters": [
+    {
+      "name": "VAR",
+      "description": "CL変数名",
+      "help": "CLプログラムまたはILE CLプロシージャー内で宣言するCL変数を指定します。変数が存在するのは，それが宣言されたプログラム内だけです。これは呼び出しのパラメーターとして別のプログラムに渡すことができ，その場合，呼び出されるプログラムによってこれを処理することができます。この名前はアンパーサンド(&)で始まっていなければなりません。\n\nこれは必須パラメーターです。",
+      "inputType": "text",
+      "required": true,
+      "positional": 1,
+      "placeholder": "&VAR",
+      "basic": true
+    },
+    {
+      "name": "TYPE",
+      "description": "タイプ",
+      "help": "宣言するCL変数に含まれる値のタイプを指定します。このパラメーターの値はCL変数によって指定することができません。\n\nこれは必須パラメーターです。",
+      "inputType": "dropdown",
+      "required": true,
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*DEC",
+          "value": "*DEC",
+          "help": "パック10進数値を含む10進変数。"
+        },
+        {
+          "label": "*CHAR",
+          "value": "*CHAR",
+          "help": "文字ストリング値を含む文字変数。"
+        },
+        {
+          "label": "*LGL",
+          "value": "*LGL",
+          "help": "論理値'1'または'0'のいずれかを含む論理変数。"
+        },
+        {
+          "label": "*INT",
+          "value": "*INT",
+          "help": "符号付き2進値を含む整変数。"
+        },
+        {
+          "label": "*UINT",
+          "value": "*UINT",
+          "help": "符号なし2進値を含む整変数。"
+        },
+        {
+          "label": "*PTR",
+          "value": "*PTR",
+          "help": "アドレスが入っているポインター変数。"
+        }
+      ],
+      "positional": 2,
+      "basic": true
+    },
+    {
+      "name": "STG",
+      "description": "記憶域",
+      "help": "変数の記憶域タイプを指定します。このパラメーターの値はCL変数によって指定することができません。",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*AUTO",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*AUTO",
+          "value": "*AUTO",
+          "help": "この変数の記憶域は，自動記憶域内で割り振られます。"
+        },
+        {
+          "label": "*BASED",
+          "value": "*BASED",
+          "help": "この変数の記憶域は， 基底 ポインター 変数 (BASPTR) パラメーターに指定されたポインター変数に基づいています。基礎となるCL変数は，基底ポインター変数が有効なアドレスに設定されていない限り，使用することはできません。"
+        },
+        {
+          "label": "*DEFINED",
+          "value": "*DEFINED",
+          "help": "この変数の記憶域は， 変数で定義 (DEFVAR) パラメーターに指定されたCL変数によって提供されます。"
+        }
+      ],
+      "basic": true
+    },
+    {
+      "name": "LEN",
+      "description": "変数の長さ",
+      "help": "宣言するCL変数の長さを指定します。変数が10進数値の場合には，小数点の右側の10進の桁数を任意に指定することができます。このLENパラメーターの値はCL変数によって指定することはできません。\n\n10進数変数の長さ（桁数）が指定され，小数点以下の桁数が指定されない場合には，小数点以下の桁数は0と見なされます。\n\n5つのタイプのそれぞれの最大長は次の通りです。\n\n5つのタイプのそれぞれの省略時の長さは次の通りです。",
+      "inputType": "group",
+      "required": false,
+      "groupKind": "elements",
+      "children": [
+        {
+          "name": "LENGTH",
+          "description": "長さ",
+          "help": "文字または整数のCL変数の場合，CL変数のバイト数を指定してください。10進CL変数の場合，CL変数の最大桁数を指定してください。この長さは，このタイプの変数の最大値より大きくすることはできません。長さは，整数CL変数の場合は2, 4,または8でなければなりません。ILE CLプロシージャーのみ，長さ8の整数CL変数を使用できます。",
+          "inputType": "number",
+          "required": false,
+          "attributes": {
+            "numericOnly": true
+          },
+          "placeholder": "10"
+        },
+        {
+          "name": "DEC",
+          "description": "小数点以下の桁数",
+          "help": "この要素は 10 進 変数の場合にのみ有効です。変数の値の長さには，その値の小数点以下の桁数も含まれます。10進数値の最大長は15桁で，小数点の右側の桁数も含まれます。最大9桁の小数点以下の桁数を指定することができます。9桁の小数点以下の桁数を指定した場合には，15桁のうち6桁だけが整数値に残されているために，小数点の 左 の値は999,999より大きくすることはできません。 10進数変数の長さ（桁数）が指定され，小数点以下の桁数が指定されない場合には，小数点以下の桁数は0と見なされます。",
+          "inputType": "number",
+          "required": false,
+          "attributes": {
+            "numericOnly": true
+          },
+          "placeholder": "0"
+        }
+      ],
+      "positional": 3
+    },
+    {
+      "name": "VALUE",
+      "description": "初期値",
+      "help": "初期値をプログラムで宣言する時に，CL変数に割り当てる初期値を指定します。この値は，TYPEパラメーターによって指定されたタイプでなければなりません。値を指定しない場合には，文字変数はブランクに設定され，10進変数，整変数，または符号なし整変数はゼロの値に設定され，さらに，論理変数は「0」に設定されます。VALUEパラメーターの値はCL変数によって設定することはできません。\n\n*PTR CL変数または 記憶域 (STG) パラメーターに指定された*DEFINEDまたは*BASEDによって宣言されたCL変数には，VALUEパラメーターを指定できない場合があります。\n\n変数が宣言された同じプログラムのPGMコマンドのPARMパラメーターに，宣言された変数の名前を指定した場合には，その変数の初期値を指定する ことはできません 。その場合には，変数は呼び出し側プログラムからその値を受け取ります。",
+      "inputType": "text",
+      "required": false,
+      "positional": 4,
+      "placeholder": "' '"
+    },
+    {
+      "name": "BASPTR",
+      "description": "基底ポインター変数",
+      "help": "*BASEDの記憶域で宣言されたCL変数の基底ポインターを指定します。\n\nこの名前はアンパーサンド(&)で始まっていなければなりません。\n\n宣言する基底付きCL変数の基底ポインターとして機能し，TYPE(*PTR)として宣言されたCL変数の名前を指定してください。基底付き変数を使用するには，このポインターをある値に初期設定する必要があります。 この名前はアンパーサンド(&)で始まっていなければなりません。",
+      "inputType": "text",
+      "required": false,
+      "placeholder": "&PTR"
+    },
+    {
+      "name": "DEFVAR",
+      "description": "変数で定義",
+      "help": "宣言する変数の定義の基礎となるCL変数を指定します。",
+      "inputType": "group",
+      "required": false,
+      "groupKind": "elements",
+      "children": [
+        {
+          "name": "DEFVAR_VAR",
+          "description": "CL変数名",
+          "help": "宣言する変数の定義の基礎となるCL変数の名前を指定してください。",
+          "inputType": "text",
+          "required": false,
+          "placeholder": "&BASE"
+        },
+        {
+          "name": "POS",
+          "description": "位置",
+          "help": "1: 宣言する変数は，定義の基礎となる変数の先頭から始まります。\n定義の基礎となる変数の先頭から数えた宣言する変数の開始位置を指定してください。",
+          "inputType": "number",
+          "required": false,
+          "defaultValue": "1",
+          "attributes": {
+            "numericOnly": true
+          },
+          "placeholder": "1"
+        }
+      ]
+    },
+    {
+      "name": "ADDRESS",
+      "description": "アドレス",
+      "help": "*PTRでTYPE値として宣言されたCL変数の初期アドレスを指定します。\n\nこの名前はアンパーサンド(&)で始まっていなければなりません。",
+      "inputType": "group",
+      "required": false,
+      "groupKind": "elements",
+      "singleValues": [
+        "*NULL"
+      ],
+      "children": [
+        {
+          "name": "ADDRESS_VAR",
+          "description": "CL変数名",
+          "help": "ポインター変数の初期アドレスとなるCL変数の名前を指定します。 この名前はアンパーサンド(&)で始まっていなければなりません。",
+          "inputType": "text",
+          "required": false,
+          "placeholder": "*NULL"
+        },
+        {
+          "name": "OFFSET",
+          "description": "オフセット",
+          "help": "0: ポインター変数は，アドレス指定されるCL変数の先頭バイトに設定されます。\nアドレス指定され，ポインターが設定される変数の先頭からのバイト数を指定してください。",
+          "inputType": "number",
+          "required": false,
+          "defaultValue": "0",
+          "attributes": {
+            "numericOnly": true
+          },
+          "placeholder": "0"
+        }
+      ]
+    }
+  ],
+  "threadSafe": true,
+  "environment": "バッチ・プログラム (*BPGM) 対話式プログラム (*IPGM)",
+  "examples": [
+    {
+      "code": "DCL &ABLE *DEC LEN(5 2)"
+    },
+    {
+      "code": "DCL &SWITCH *LGL"
+    },
+    {
+      "code": "DCL &FILNAM *CHAR VALUE(FILEA)"
+    },
+    {
+      "code": "DCL &QUALOBJ *CHAR LEN(20) DCL &OBJ *CHAR LEN(10) STG(*DEFINED) DEFVAR(&QUALOBJ 1) DCL &LIB *CHAR LEN(10) STG(*DEFINED) DEFVAR(&QUALOBJ 11)"
+    },
+    {
+      "code": "DCL &CHAR *CHAR LEN(10) DCL &PTR *PTR ADDRESS(&CHAR)"
+    },
+    {
+      "code": "DCL &PTR *PTR DCL &CHAR *CHAR LEN(10) STG(*BASED) BASPTR(&PTR)"
+    },
+    {
+      "code": "DCL &CHAR *CHAR LEN(48) DCL &PTR *PTR STG(*DEFINED) DEFVAR(&CHAR 17)"
+    },
+    {
+      "code": "DCL &PAYREC *PTR STG(*AUTO) ADDRESS(*NULL)"
+    }
+  ],
+  "source": {
+    "url": "https://www.ibm.com/docs/ja/ssw_ibm_i_74/cl/dcl.htm",
+    "version": "IBM i 7.4"
+  }
+}

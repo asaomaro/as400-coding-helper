@@ -20,11 +20,14 @@ import { fileURLToPath } from "node:url";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(HERE, "../..");
-const HTML_DIR = path.join(ROOT, "docs/origin/cl");
-const JSON_DIR = path.join(ROOT, "vscode-extension/resources/prompter/cl");
+// 言語ごとに原典と出力先を分ける。既定は日本語。
+const langArg = process.argv.find(a => a.startsWith("--lang="));
+const LANG = langArg ? langArg.slice("--lang=".length) : "ja";
+const HTML_DIR = path.join(ROOT, `docs/origin/cl${LANG === "ja" ? "" : `-${LANG}`}`);
+const JSON_DIR = path.join(ROOT, `vscode-extension/resources/prompter/cl/${LANG}`);
 
 const SOURCE_VERSION = "IBM i 7.4";
-const SOURCE_BASE = "https://www.ibm.com/docs/ja/ssw_ibm_i_74/cl/";
+const SOURCE_BASE = `https://www.ibm.com/docs/${LANG}/ssw_ibm_i_74/cl/`;
 
 // ---------------------------------------------------------------- HTML utils
 
@@ -50,7 +53,13 @@ const matchAll = (text, re) => [...String(text).matchAll(re)];
  * 継続行の「修飾子 N: ラベル」「要素 N: ラベル」が入れ子構造の唯一の手掛かり。
  */
 function parseParameterTable(html) {
-  const table = html.match(/<table[^>]*summary="Parameters"[^>]*>([\s\S]*?)<\/table>/i);
+  // 日本語版は summary="Parameters" を持つが、英語版は summary が空で
+  // 見出し（Keyword/キーワード）でしか判別できない。両方に対応する。
+  const table =
+    html.match(/<table[^>]*summary="Parameters"[^>]*>([\s\S]*?)<\/table>/i) ||
+    [...html.matchAll(/<table[^>]*>([\s\S]*?)<\/table>/gi)].find(m =>
+      /<th[^>]*>[\s\S]{0,120}?(Keyword|キーワード)[\s\S]{0,120}?<\/th>/i.test(m[1])
+    );
   if (!table) return [];
 
   const params = [];
@@ -67,8 +76,10 @@ function parseParameterTable(html) {
         name: keyword[1],
         description: stripTags(cells[1]),
         choicesHtml: cells[2],
-        required: /必須/.test(notes),
-        positional: Number(notes.match(/定位置\s*(\d+)/)?.[1]) || undefined,
+        required: /必須|Required/i.test(notes),
+        positional:
+          Number(notes.match(/定位置\s*(\d+)/)?.[1] ?? notes.match(/Positional\s*(\d+)/i)?.[1]) ||
+          undefined,
         parts: []
       };
       params.push(current);
@@ -77,10 +88,10 @@ function parseParameterTable(html) {
 
     if (!current || cells.length < 2) continue;
     const label = stripTags(cells[0]);
-    const part = label.match(/^(修飾子|要素)\s*(\d+)\s*[:：]\s*(.*)$/);
+    const part = label.match(/^(修飾子|要素|Qualifier|Element)\s*(\d+)\s*[:：]\s*(.*)$/i);
     if (part) {
       current.parts.push({
-        kind: part[1] === "修飾子" ? "qualifier" : "element",
+        kind: /修飾子|Qualifier/i.test(part[1]) ? "qualifier" : "element",
         index: Number(part[2]),
         label: part[3].trim(),
         choicesHtml: cells[1]
@@ -94,17 +105,23 @@ function parseParameterTable(html) {
 /** 選択項目セルから、省略時値・定義済み値・単一値・繰り返し回数を読む。 */
 function readChoices(choicesHtml) {
   const text = stripTags(choicesHtml);
-  const defaults = matchAll(
-    choicesHtml,
-    /<strong class="underlined">\s*([^<\s][^<]*?)\s*<\/strong>/gi
-  ).map(m => stripTags(m[1]));
+  // 省略時値は下線で示される。日本語版は <strong class="underlined">、
+  // 英語版は <strong><u>…</u></strong>。どちらも拾う。
+  const defaults = [
+    ...matchAll(choicesHtml, /<strong class="underlined">\s*([^<]+?)\s*<\/strong>/gi),
+    ...matchAll(choicesHtml, /<u>\s*([^<]+?)\s*<\/u>/gi)
+  ].map(m => stripTags(m[1])).filter(Boolean);
 
-  const singleValuesRaw = text.match(/単一値\s*[:：]\s*([^]*?)(?=その他の値|$)/);
+  const singleValuesRaw = text.match(/(?:単一値|Single values)\s*[:：]\s*([^]*?)(?=その他の値|Other values|$)/i);
   const singleValues = singleValuesRaw
     ? [...new Set(matchAll(singleValuesRaw[1], /\*[A-Z0-9]+/g).map(m => m[0]))]
     : [];
 
-  const repeat = Number(text.match(/最大\s*(\d+)\s*回の繰り返し/)?.[1]) || undefined;
+  const repeat =
+    Number(
+      text.match(/最大\s*(\d+)\s*回の繰り返し/)?.[1] ??
+        text.match(/up to\s*(\d+)\s*repetitions/i)?.[1]
+    ) || undefined;
   // 単独の "*"（DSPFD OUTPUT の既定値など）も定義済み値。`\*[A-Z0-9]+` だけでは拾えない。
   const specials = [...new Set(matchAll(text, /\*[A-Z0-9]*/g).map(m => m[0]))]
     .filter(v => v === "*" || v.length > 1);
@@ -116,9 +133,9 @@ function readChoices(choicesHtml) {
     singleValues,
     repeat,
     specials,
-    isName: /名前/.test(text),
-    isInteger: /整数/.test(text) || Boolean(range),
-    isCharacter: /文字値/.test(text)
+    isName: /名前|\bName\b/i.test(text),
+    isInteger: /整数|\bInteger\b/i.test(text) || Boolean(range),
+    isCharacter: /文字値|Character value/i.test(text)
   };
 }
 
@@ -133,8 +150,18 @@ function parseParameterSections(html, command) {
   const sections = new Map();
   // パラメータ節だけでなく COMMAND.EXAMPLES / ERROR.MESSAGES / Top_Of_Page も
   // 区切りとして扱う。終端を取り違えると例やエラー文が help に混入する。
-  // 見出しアンカーは <a name="X">例</a> のように中身を持つため </a> を要求しない。
-  const anchors = matchAll(html, new RegExp(`<a name="${command}\\.([A-Za-z0-9_.]+)"`, "g"));
+  // パラメータ節のアンカーは版・言語で形式が違う。
+  //   日本語版: <a name="CHGDTAARA.DTAARA"></a>
+  //   英語版  : <div id="chgdtaara__dtaara"> / <h3 id="...">
+  // 片方しか見ないと節が取れず、定義済み値の説明が丸ごと落ちる
+  // （英語版で *GDA/*PDA が拾えず CI が落ちて発覚した）。
+  const lower = command.toLowerCase();
+  const anchors = [
+    ...matchAll(html, new RegExp(`<a name="${command}\\.([A-Za-z0-9_.]+)"`, "g")),
+    ...matchAll(html, new RegExp(`id="${lower}__([a-z0-9_]+)"`, "g"))
+  ]
+    .map(m => Object.assign([m[0], m[1].toUpperCase()], { index: m.index }))
+    .sort((a, b) => a.index - b.index);
   const isParameter = name => /^[A-Z0-9]+$/.test(name);
 
   anchors.forEach((anchor, i) => {
@@ -205,7 +232,7 @@ function valuesForParameter(section) {
  * の形。入れ子リストを含むため、ul/ol の深さを見て終端を決める。
  */
 function parseRestrictions(html) {
-  const heading = html.match(/<h2>(?:(?!<\/h2>)[\s\S])*?制約事項[\s\S]*?<\/h2>/i);
+  const heading = html.match(/<h2>(?:(?!<\/h2>)[\s\S])*?(?:制約事項|Restrictions?)[\s\S]*?<\/h2>/i);
   if (!heading) return [];
 
   const after = html.slice(heading.index + heading[0].length);
@@ -307,7 +334,9 @@ function parseCommandMeta(html, command) {
     : [];
 
   const restrictions = parseRestrictions(html);
-  const help = introParagraphs.filter(text => !/制約事項/.test(text)).join("\n\n");
+  const help = introParagraphs
+    .filter(text => !/制約事項|^Restrictions?:/i.test(text))
+    .join("\n\n");
 
   const examples = matchAll(html, /<pre[^>]*>([\s\S]*?)<\/pre>/gi)
     .map(m => decode(m[1].replace(/<[^>]+>/g, "")).trim())
@@ -478,7 +507,7 @@ function buildParameter(param, section) {
   // （CHGPF.SRCFILE で実際に踏んだ）。JOB(番号/ユーザー/名前) のように
   // 修飾子が3つある場合もあるため、一意性を保つ必要がある。
   const qualifierName = part => {
-    if (/ライブラリー/.test(part.label)) return "LIB";
+    if (/ライブラリー|Library/i.test(part.label)) return "LIB";
     return part.index === 1 ? param.name : `${param.name}_Q${part.index}`;
   };
 
@@ -486,13 +515,39 @@ function buildParameter(param, section) {
     const qualifiers = group.qualifiers.map(q => toChild(q, qualifierName(q)));
 
     if (group.element && qualifiers.length > 0) {
+      // 要素そのものにも単一値がある（例: CHGDTAARA の要素1は
+      // 「単一値: *LDA, *GDA, *PDA ／ その他の値: 修飾オブジェクト名」）。
+      // ここを読まないと、その要素の定義済み値が丸ごと落ちる。
+      const elementChoices = readChoices(group.element.choicesHtml);
+      const ordered = qualifiers.reverse(); // 修飾子は出力順（ライブラリーが先）
+      const primary = ordered[ordered.length - 1];
+
+      if (primary && elementChoices.specials.length > 0) {
+        const helpByValue = new Map(
+          valuesForPart(section, group.element).map(v => [v.value, v.help])
+        );
+        if (primary.options) {
+          primary.options = [
+            ...elementChoices.specials.map(value =>
+              prune({ label: value, value, help: helpByValue.get(value) })
+            ),
+            ...primary.options
+          ];
+        } else {
+          primary.help = [primary.help, `指定できる特殊値: ${elementChoices.specials.join(", ")}`]
+            .filter(Boolean)
+            .join("\n\n");
+        }
+      }
+
       return prune({
         name: `${param.name}_E${group.element.index}`,
         description: group.element.label,
         inputType: "group",
         required: false,
         groupKind: "qualified",
-        children: qualifiers.reverse() // 修飾子は出力順（ライブラリーが先）
+        singleValues: elementChoices.singleValues,
+        children: ordered
       });
     }
 
@@ -665,9 +720,18 @@ function generate(command) {
   });
 
   const jsonPath = path.join(JSON_DIR, `${command}.json`);
-  const existing = fs.existsSync(jsonPath)
-    ? JSON.parse(fs.readFileSync(jsonPath, "utf8"))
-    : undefined;
+
+  // 引き継ぎ元。入力欄の名前・dependsOn・constraints・basic は表示言語に
+  // よらない内部情報なので、日本語版を基準にして全言語で揃える。
+  // （言語ごとに合成名が変わると、同じコマンドなのに欄の名前が食い違う）
+  const baseDir =
+    LANG === "ja" ? JSON_DIR : path.join(ROOT, "vscode-extension/resources/prompter/cl/ja");
+  const basePath = path.join(baseDir, `${command}.json`);
+  const existing = fs.existsSync(basePath)
+    ? JSON.parse(fs.readFileSync(basePath, "utf8"))
+    : fs.existsSync(jsonPath)
+      ? JSON.parse(fs.readFileSync(jsonPath, "utf8"))
+      : undefined;
 
   const result = carryOver(definition, existing);
   if (Array.isArray(result.parameters)) {
@@ -683,14 +747,17 @@ const args = process.argv.slice(2);
 const dryRun = args.includes("--dry-run");
 const targets = args.filter(a => !a.startsWith("--"));
 
+// 対象は原典 HTML があるもの全て（出力先が空でも生成できるようにする）。
 const commands =
   targets.length > 0
     ? targets
     : fs
-        .readdirSync(JSON_DIR)
-        .filter(f => f.endsWith(".json"))
+        .readdirSync(HTML_DIR)
+        .filter(f => f.endsWith(".html"))
         .map(f => f.slice(0, -5))
-        .filter(cmd => fs.existsSync(path.join(HTML_DIR, `${cmd}.html`)));
+        .sort();
+
+fs.mkdirSync(JSON_DIR, { recursive: true });
 
 let written = 0;
 const skipped = [];

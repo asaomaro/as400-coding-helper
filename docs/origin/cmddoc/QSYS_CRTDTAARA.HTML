@@ -1,0 +1,570 @@
+
+  <!doctype html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+  <html>
+<head><META http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>Create Data Area  (CRTDTAARA)</title>
+</head>
+<body bgcolor="white">
+<a name="CRTDTAARA.Top_Of_Page"></a>
+<h2>Create Data Area  (CRTDTAARA)</h2>
+<table width="100%">
+<tr>
+<td align="left" valign="top"><b>Where allowed to run:  </b>All environments (*ALL)<br>
+<b>Threadsafe:  </b>Conditional
+</td>
+<td align="right" valign="top">
+<a href="#CRTDTAARA.PARAMETERS.TABLE">Parameters</a><br>
+<a href="#CRTDTAARA.COMMAND.EXAMPLES">Examples</a><br>
+<a href="#CRTDTAARA.ERROR.MESSAGES">Error messages</a></td>
+</tr>
+</table>
+
+<div> <a name="CRTDTAARA"></a>
+<p>The Create Data Area (CRTDTAARA) command creates a data area and stores it in a specified library.  It also specifies the attributes of the data.  The data area can also be initialized to a specific value.
+</p>
+<p>Data areas are used to communicate and store data used by several programs either within a job or between jobs. A program can use the value of a data area by using the Retrieve Data Area (RTVDTAARA) command.
+</p>
+<p>If a data area is not used by more than one job at a time, it can be explicitly allocated to the appropriate job.  If a data area is used by two or more jobs at the same time, it is protected from simultaneous changes occurring from different jobs.  A data area is changed by using the Change Data Area (CHGDTAARA) command.  The system does not allow two commands to change the same data area at the same time.
+</p>
+<p>A data area is updated in auxiliary storage any time it is changed.  This ensures that the changes are not lost in the event of a program or system failure.
+</p>
+<p>The CRTDTAARA command can optionally create a distributed data management (DDM) data area.  This is done by specifying *DDM for the TYPE parameter.  The DDM data area is used as a reference data area by programs to access data areas located on a remote (target) system in the DDM network.  Programs on the local (source) system reference a remote data area by the DDM data area's name, not by the remote data area's name.  The DDM data area name can be the same as the remote data area name).
+</p>
+<p>The DDM data area on the source system contains the name of the remote data area and the name of the remote (target) system on which the remote data area is located.
+</p>
+<p>The DDM data area can be used with the RTVDTAARA and CHGDTAARA commands to retrieve and update data areas on remote systems.
+</p>
+<p>The data area can be journaled when created. Refer to the Start Journal Library (STRJRNLIB) command for more information.
+</p>
+<p><b>Restrictions:</b>
+</p>
+<ol>
+<li>To use this command, the user must have object operational and add authority for the library in which the data area is placed.
+</li>
+<li>This command is conditionally threadsafe.  The following restrictions apply:
+<ol>
+<li>Creating DDM data areas in a job that allows multiple threads is not threadsafe.
+</li>
+<li>Creating DDM data areas will fail when more than one thread is active in a job.
+</li>
+</ol>
+</li>
+</ol>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#CRTDTAARA.Top_Of_Page">Top</a></td></tr>
+</table>
+<hr width="100%" size="2">
+
+<div>
+<h3><a name="CRTDTAARA.PARAMETERS.TABLE">Parameters</a></h3>
+<table cellspacing="0" cellpadding="4" border="1"><tr>
+<th width="10%" align="left" valign="bottom" bgcolor="aqua">Keyword</th>
+<th width="15%" align="left" valign="bottom" bgcolor="aqua">Description</th>
+<th width="30%" align="left" valign="bottom" bgcolor="aqua">Choices</th>
+<th width="10%" align="left" valign="bottom" bgcolor="aqua">Notes</th>
+</tr>
+<tr>
+<td valign="top" rowspan="3"><a href="#CRTDTAARA.DTAARA"><b>DTAARA</b></a></td>
+<td valign="top">Data area</td>
+<td valign="top"><i>Qualified object name</i></td>
+<td valign="top" rowspan="3">Required, Positional 1</td>
+</tr>
+<tr>
+<td valign="top">Qualifier 1: Data area</td>
+<td valign="top"><i>Name</i></td>
+</tr><tr>
+<td valign="top">Qualifier 2: Library</td>
+<td valign="top"><i>Name</i>, <b><u>*CURLIB</u></b></td>
+</tr><tr>
+<td valign="top"><a href="#CRTDTAARA.TYPE"><b>TYPE</b></a></td>
+<td valign="top">Type</td>
+<td valign="top">*DEC, *CHAR, *LGL, *DDM</td>
+<td valign="top">Required, Positional 2</td>
+</tr>
+<tr>
+<td valign="top" rowspan="3"><a href="#CRTDTAARA.LEN"><b>LEN</b></a></td>
+<td valign="top">Length</td>
+<td valign="top"><i>Element list</i></td>
+<td valign="top" rowspan="3">Optional, Positional 3</td>
+</tr>
+<tr>
+<td valign="top">Element 1: Length</td>
+<td valign="top">
+1-2000</td>
+</tr>
+<tr>
+<td valign="top">Element 2: Decimal positions</td>
+<td valign="top">
+0-9</td>
+</tr>
+<tr>
+<td valign="top"><a href="#CRTDTAARA.VALUE"><b>VALUE</b></a></td>
+<td valign="top">Initial value</td>
+<td valign="top"><i>Not restricted</i></td>
+<td valign="top">Optional, Positional 4</td>
+</tr>
+<tr>
+<td valign="top" rowspan="3"><a href="#CRTDTAARA.RMTDTAARA"><b>RMTDTAARA</b></a></td>
+<td valign="top">Remote data area</td>
+<td valign="top"><i>Qualified object name</i></td>
+<td valign="top" rowspan="3">Optional</td>
+</tr>
+<tr>
+<td valign="top">Qualifier 1: Remote data area</td>
+<td valign="top"><i>Name</i></td>
+</tr><tr>
+<td valign="top">Qualifier 2: Library</td>
+<td valign="top"><i>Name</i>, *LIBL, *CURLIB</td>
+</tr><tr>
+<td valign="top"><a href="#CRTDTAARA.RMTLOCNAME"><b>RMTLOCNAME</b></a></td>
+<td valign="top">Remote location</td>
+<td valign="top"><i>Communications name</i>, *RDB</td>
+<td valign="top">Optional</td>
+</tr>
+<tr>
+<td valign="top"><a href="#CRTDTAARA.RDB"><b>RDB</b></a></td>
+<td valign="top">Relational database</td>
+<td valign="top"><i>Name</i></td>
+<td valign="top">Optional</td>
+</tr>
+<tr>
+<td valign="top"><a href="#CRTDTAARA.DEV"><b>DEV</b></a></td>
+<td valign="top">APPC device description</td>
+<td valign="top"><i>Name</i>, <b><u>*LOC</u></b></td>
+<td valign="top">Optional</td>
+</tr>
+<tr>
+<td valign="top"><a href="#CRTDTAARA.LCLLOCNAME"><b>LCLLOCNAME</b></a></td>
+<td valign="top">Local location</td>
+<td valign="top"><i>Communications name</i>, <b><u>*LOC</u></b>, *NETATR</td>
+<td valign="top">Optional</td>
+</tr>
+<tr>
+<td valign="top"><a href="#CRTDTAARA.MODE"><b>MODE</b></a></td>
+<td valign="top">Mode</td>
+<td valign="top"><i>Communications name</i>, <b><u>*NETATR</u></b></td>
+<td valign="top">Optional</td>
+</tr>
+<tr>
+<td valign="top"><a href="#CRTDTAARA.RMTNETID"><b>RMTNETID</b></a></td>
+<td valign="top">Remote network identifier</td>
+<td valign="top"><i>Communications name</i>, <b><u>*LOC</u></b>, *NETATR, *NONE</td>
+<td valign="top">Optional</td>
+</tr>
+<tr>
+<td valign="top"><a href="#CRTDTAARA.TEXT"><b>TEXT</b></a></td>
+<td valign="top">Text 'description'</td>
+<td valign="top"><i>Character value</i>, <b><u>*BLANK</u></b></td>
+<td valign="top">Optional</td>
+</tr>
+<tr>
+<td valign="top"><a href="#CRTDTAARA.AUT"><b>AUT</b></a></td>
+<td valign="top">Authority</td>
+<td valign="top"><i>Name</i>, <b><u>*LIBCRTAUT</u></b>, *CHANGE, *ALL, *USE, *EXCLUDE</td>
+<td valign="top">Optional</td>
+</tr>
+</table>
+
+<table width="100%">
+<tr><td align="right"><a href="#CRTDTAARA.Top_Of_Page">Top</a></td></tr>
+</table>
+</div>
+<div> <a name="CRTDTAARA.DTAARA"></a>
+<h3>Data area (DTAARA)</h3>
+<p>Specifies the name and library of the data area being created.
+</p>
+<p>This is a required parameter.
+</p>
+<p><b>Qualifier 1: Data area</b>
+</p>
+<dl>
+<dt><b><i>name</i></b></dt>
+<dd>Specify the name of the data area being created.
+</dd>
+</dl>
+<p><b>Qualifier 2: Library</b>
+</p>
+<dl>
+<dt><b><u>*CURLIB</u></b></dt>
+<dd>The data area is created in the current library for the thread.  If no library is specified as the current library for the thread, the QGPL library is used.
+</dd>
+<dt><b><i>name</i></b></dt>
+<dd>Specify the library where the data area is created.
+</dd>
+</dl>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#CRTDTAARA.Top_Of_Page">Top</a></td></tr>
+</table>
+<div> <a name="CRTDTAARA.TYPE"></a>
+<h3>Type (TYPE)</h3>
+<p>Specifies the type of value contained in the data area being created.  The type can contain a character value, a decimal value, or a logical value (1 or 0), or a distributed data management (DDM) data area can be created.
+</p>
+<p>This is a required parameter.
+</p>
+<dl>
+<dt><b>*DEC</b></dt>
+<dd>This data area contains a decimal value.
+</dd>
+<dt><b>*CHAR</b></dt>
+<dd>This data area contains a character string value.
+</dd>
+<dt><b>*LGL</b></dt>
+<dd>This data area contains a logical value of either one (1) or zero (0) that can be used to represent two opposing conditions such as on/off, true/false, or yes/no.
+</dd>
+<dt><b>*DDM</b></dt>
+<dd>The data area being created is a DDM data area.  The data area contains the name of the remote data area accessed and the name of the remote (target) system that the data area is located on.
+</dd>
+</dl>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#CRTDTAARA.Top_Of_Page">Top</a></td></tr>
+</table>
+<div> <a name="CRTDTAARA.LEN"></a>
+<h3>Length (LEN)</h3>
+<p>Specifies the length of the data area being created.  If it is a decimal data area, the number of decimal digits to the right of the decimal point can be optionally specified.  The type of data area determines the maximum length that a value in that area can have and the default length that is assumed when a length is not specified.  The maximum lengths and the defaults for each of the three types are as follows:
+</p>
+<ul>
+<li>Decimal
+<ul>
+<li>Maximum -- 24 digits, 9 decimal positions
+</li>
+<li>Default -- 15 digits, 5 decimal positions
+</li>
+</ul>
+</li>
+<li>Character
+<ul>
+<li>Maximum -- 2000 characters
+</li>
+<li>Default -- 32 characters
+</li>
+</ul>
+</li>
+<li>Logical -- Maximum and default, 1 character
+</li>
+</ul>
+<p>
+<b>Note:     </b>For character types, the default length is the same as the length of the initial value, if one is specified for the <b>Initial value (VALUE)</b> parameter.
+</p>
+<p><b>Element 1: Length</b>
+</p>
+<dl>
+<dt><b><i>1-2000</i></b></dt>
+<dd>Specify the length that the value in this data area can have.  The length of the value in the data area includes the number of decimal positions in the value.  The maximum length of the decimal value is 24 digits, of which no more than 9 can be to the right of the decimal point.  In order to use the data area in CL programs, the total length must be limited to 15 digits.
+</dd>
+</dl>
+<p><b>Element 2: Decimal positions</b>
+</p>
+<dl>
+<dt><b><i>0-9</i></b></dt>
+<dd>Specify the number of digits to the right of the decimal point for <b>decimal</b> (*DEC) data areas.  If this is not specified, a value of 0 is assumed.
+</dd>
+</dl>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#CRTDTAARA.Top_Of_Page">Top</a></td></tr>
+</table>
+<div> <a name="CRTDTAARA.VALUE"></a>
+<h3>Initial value (VALUE)</h3>
+<p>Specifies the initial value that is assigned to the data area when it is created.  The value must be of the type specified for the <b>Type (TYPE)</b> parameter of this command.  If no value is specified, a character data area is initialized to blanks, a decimal data area is initialized to a value of 0, and a logical data area is initialized to 0.
+</p>
+<dl>
+<dt><b><i>unrestricted-value</i></b></dt>
+<dd>Specify the initial value of the data area.
+</dd>
+</dl>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#CRTDTAARA.Top_Of_Page">Top</a></td></tr>
+</table>
+<div> <a name="CRTDTAARA.RMTDTAARA"></a>
+<h3>Remote data area (RMTDTAARA)</h3>
+<p>Specifies the name of the remote data area on the target system.  The data area does not need to exist when the DDM data area is created.
+</p>
+<p><b>Qualifier 1: Remote data area</b>
+</p>
+<dl>
+<dt><b><i>name</i></b></dt>
+<dd>Specify the name of the remote data area.
+</dd>
+</dl>
+<p><b>Qualifier 2: Library</b>
+</p>
+<dl>
+<dt><b>*LIBL</b></dt>
+<dd>The library list of the called thread on the target system is searched to locate the data area.
+</dd>
+<dt><b>*CURLIB</b></dt>
+<dd>The current library of the called thread on the target system is searched to locate the data area.  If the called thread does not have a current library, the QGPL library is used.
+</dd>
+<dt><b><i>name</i></b></dt>
+<dd>Specify the library where the remote data area is located.
+</dd>
+</dl>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#CRTDTAARA.Top_Of_Page">Top</a></td></tr>
+</table>
+<div> <a name="CRTDTAARA.RMTLOCNAME"></a>
+<h3>Remote location (RMTLOCNAME)</h3>
+<p>Specifies the name of the remote location that is used with this object.
+</p>
+<p>
+<b>Note:     </b>Multiple DDM data areas can use the same remote location for the target system.  The remote locations used must point to systems that are at a release of the operating system that supports remote data areas.
+</p>
+<dl>
+<dt><b>*RDB</b></dt>
+<dd>The remote location information from the relational database entry specified for the <b>Relational database (RDB)</b> parameter is used to determine the remote system.
+</dd>
+<dt><b><i>communications-name</i></b></dt>
+<dd>Specify the name of the remote location that is associated with the target system.  The remote location, which is used in accessing the target system, does not need to exist when the DDM data area is created but must exist when the DDM data area is accessed.
+<p>More information on remote locations is in the APPC Programming book, SC41-5443.
+</p>
+</dd>
+</dl>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#CRTDTAARA.Top_Of_Page">Top</a></td></tr>
+</table>
+<div> <a name="CRTDTAARA.RDB"></a>
+<h3>Relational database (RDB)</h3>
+<p>Specifies the relational database entry that is used to determine the remote location information for the DDM data area.
+</p>
+<dl>
+<dt><b><i>communications-name</i></b></dt>
+<dd>Specify the name of the relational database entry that identifies the target system or target ASP group. The relational database name can refer to a remote system or an ASP group that is configured and available on a remote system. The relational database entry does not need to exist when the DDM data area is created but must exist when the DDM data area is opened. This parameter is required when *RDB is specified for the <b>Remote location (RMTLOCNAME)</b> parameter.
+</dd>
+</dl>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#CRTDTAARA.Top_Of_Page">Top</a></td></tr>
+</table>
+<div> <a name="CRTDTAARA.DEV"></a>
+<h3>APPC device description (DEV)</h3>
+<p>Specifies the name of the APPC device description on the source system that is used with this DDM data area.  The device description does not need to exist when the DDM data area is created.
+</p>
+<dl>
+<dt><b><u>*LOC</u></b></dt>
+<dd>The device associated with the remote location is used.  If several devices are associated with the remote location, the system determines which device is used.
+</dd>
+<dt><b><i>name</i></b></dt>
+<dd>Specify the name of a communications device associated with the remote location.  If the device name is not valid for the remote location, a message is sent when the program device entry is acquired.  More information on device names is in the APPC Programming book, SC41-5443.
+</dd>
+</dl>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#CRTDTAARA.Top_Of_Page">Top</a></td></tr>
+</table>
+<div> <a name="CRTDTAARA.LCLLOCNAME"></a>
+<h3>Local location (LCLLOCNAME)</h3>
+<p>Specifies the local location name.
+</p>
+<dl>
+<dt><b><u>*LOC</u></b></dt>
+<dd>The device associated with the remote location is used.  If several devices are associated with the remote location, the system determines which device is used.
+</dd>
+<dt><b>*NETATR</b></dt>
+<dd>The <b>Default local location name (LCLLOCNAME)</b> specified in the system network attributes is used.
+</dd>
+<dt><b><i>communications-name</i></b></dt>
+<dd>Specify the name of the local location that is associated with the remote location.  The local location name is specified only if the user indicates a specific local location for the remote location.  If the local location name is not valid for the remote location, an escape message is sent when the DDM data area is accessed.  More information on local location names is in the APPC Programming book, SC41-5443.
+</dd>
+</dl>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#CRTDTAARA.Top_Of_Page">Top</a></td></tr>
+</table>
+<div> <a name="CRTDTAARA.MODE"></a>
+<h3>Mode (MODE)</h3>
+<p>Specifies the mode name that is used with the remote location name to communicate with the target system.
+</p>
+<dl>
+<dt><b><u>*NETATR</u></b></dt>
+<dd>The <b>Default mode (DFTMODE)</b> specified in the system network attributes is used.
+</dd>
+<dt><b><i>communications-name</i></b></dt>
+<dd>Specify the name of the mode that is used.  If the mode name is not valid for any combination of remote location and local location, an escape message is sent when the DDM data area is accessed.
+<p>More information on mode names is in the APPC Programming book, SC41-5443.
+</p>
+</dd>
+</dl>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#CRTDTAARA.Top_Of_Page">Top</a></td></tr>
+</table>
+<div> <a name="CRTDTAARA.RMTNETID"></a>
+<h3>Remote network identifier (RMTNETID)</h3>
+<p>Specifies the remote network identifier (ID) in which the remote location resides that is used to communicate with the target system.
+</p>
+<dl>
+<dt><b><u>*LOC</u></b></dt>
+<dd>The remote network ID associated with the remote location is used.  If several remote network IDs are associated with the remote location, the system determines which remote network ID is used.
+</dd>
+<dt><b>*NETATR</b></dt>
+<dd>The <b>Local network ID (LCLNETID)</b> specified in the system network attributes is used.
+</dd>
+<dt><b>*NONE</b></dt>
+<dd>A remote network ID is not used.
+</dd>
+<dt><b><i>communications-name</i></b></dt>
+<dd>Specify the remote network ID that is associated with the remote location.  The remote network ID is specified only if the user indicates a specific remote network ID for the remote location.  If the remote network ID is not valid for the remote location, an escape message is sent when the DDM data area is accessed.
+<p>More information on remote network IDs is in the APPC Programming book, SC41-5443.
+</p>
+</dd>
+</dl>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#CRTDTAARA.Top_Of_Page">Top</a></td></tr>
+</table>
+<div> <a name="CRTDTAARA.TEXT"></a>
+<h3>Text 'description' (TEXT)</h3>
+<p>Specifies the text that briefly describes the object.
+</p>
+<dl>
+<dt><b><u>*BLANK</u></b></dt>
+<dd>No text is specified.
+</dd>
+<dt><b><i>'description'</i></b></dt>
+<dd>Specify no more than 50 characters of text, enclosed in apostrophes.
+</dd>
+</dl>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#CRTDTAARA.Top_Of_Page">Top</a></td></tr>
+</table>
+<div> <a name="CRTDTAARA.AUT"></a>
+<h3>Authority (AUT)</h3>
+<p>Specifies the authority you are giving to users who do not have specific authority for the object, who are not on an authorization list, and whose group profile or supplemental group profiles do not have specific authority for the object.
+</p>
+<dl>
+<dt><b><u>*LIBCRTAUT</u></b></dt>
+<dd>The authority for the object is taken from the value specified for the <b>Create authority (CRTAUT)</b> parameter of the library in which the object is being created.  If the value specified for the CRTAUT parameter is changed, the new value will not affect any existing objects.
+</dd>
+</dl>
+<dl>
+<dt><b>*CHANGE</b></dt>
+<dd>The user can perform all operations on the object except those limited to the owner or controlled by object existence (*OBJEXIST) and object management (*OBJMGT) authorities.  The user can change and perform basic functions on the object.  *CHANGE authority provides object operational (*OBJOPR) authority and all data authority.  If the object is an authorization list, the user cannot add, change, or remove users.
+</dd>
+</dl>
+<dl>
+</dl>
+<dl>
+<dt><b>*ALL</b></dt>
+<dd>The user can perform all operations except those limited to the owner or controlled by authorization list management (*AUTLMGT) authority.  The user can control the object's existence, specify the security for the object, change the object, and perform basic functions on the object.  The user also can change ownership of the object.
+</dd>
+</dl>
+<dl>
+</dl>
+<dl>
+<dt><b>*USE</b></dt>
+<dd>The user can perform basic operations on the object, such as running a program or reading a file. The user cannot change the object.  Use (*USE) authority provides object operational (*OBJOPR), read (*READ), and execute (*EXECUTE) authorities.
+</dd>
+</dl>
+<dl>
+</dl>
+<dl>
+<dt><b>*EXCLUDE</b></dt>
+<dd>The user cannot access the object.
+</dd>
+</dl>
+<dl>
+<dt><b><i>name</i></b></dt>
+<dd>Specify the name of an authorization list to be used for authority to the object.  Users included in the authorization list are granted authority to the object as specified in the list.  The authorization list must exist when the object is created.
+</dd>
+</dl>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#CRTDTAARA.Top_Of_Page">Top</a></td></tr>
+</table>
+<hr width="100%" size="2">
+<div><h3><a name="CRTDTAARA.COMMAND.EXAMPLES">Examples</a> </h3>
+<p><b>Example 1: Creating a Data Area with a Value of Zero</b>
+</p>
+<p>
+<pre>
+CRTDTAARA   DTAARA(TOTSALES)  TYPE(*DEC)  LEN(15 2)
+            VALUE(0)  TEXT('Total sales accumulator')
+</pre>
+</p>
+<p>This command creates a data area named TOTSALES and stores it in the current library specified for the thread. TOTSALES has the following data attributes: it is a 15-position numeric data area with two decimal positions and with an initial value of 0.
+</p>
+<p><b>Example 2: Creating a Data Area Initialized to Blanks</b>
+</p>
+<p>
+<pre>
+CRTDTAARA   DTAARA(CUSTOMER)  TYPE(*CHAR)  LEN(148)
+            TEXT('Customer name area')
+</pre>
+</p>
+<p>This command creates the data area named CUSTOMER. It can contain as many as 148 characters in the character string. Because no initial value is specified, the data area is initialized to blanks.
+</p>
+<p><b>Example 3: Creating a DDM Data Area to Access a Data Area at Another System</b>
+</p>
+<p>
+<pre>
+CRTDTAARA   DTAARA(SOURCE/SALES)  TYPE(*DDM)
+            RMTDTAARA(REMOTE/SALES)  RMTLOCNAME(NEWYORK)
+</pre>
+</p>
+<p>This command creates a DDM data area named SALES, and stores it in the SOURCE library on the source system. This DDM data area uses the remote location named NEWYORK to access a remote data area named SALES stored in the REMOTE library on a system in New York.
+</p>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#CRTDTAARA.Top_Of_Page">Top</a></td></tr>
+</table>
+<hr width="100%" size="2">
+<div><h3><a name="CRTDTAARA.ERROR.MESSAGES">Error messages</a> </h3>
+<p><b><u>*ESCAPE Messages</u></b>
+</p>
+<dl>
+<dt><b>CPF1008</b></dt>
+<dd>Data area &amp;2 not created.
+</dd>
+<dt><b>CPF1015</b></dt>
+<dd>Data area &amp;1 in &amp;2 not found.
+</dd>
+<dt><b>CPF1021</b></dt>
+<dd>Library &amp;1 not found for data area &amp;2.
+</dd>
+<dt><b>CPF1022</b></dt>
+<dd>No authority to library &amp;1 data area &amp;2.
+</dd>
+<dt><b>CPF1023</b></dt>
+<dd>Data area &amp;1 exists in &amp;2.
+</dd>
+<dt><b>CPF1024</b></dt>
+<dd>TYPE and VALUE parameters not compatible.
+</dd>
+<dt><b>CPF1025</b></dt>
+<dd>LEN and VALUE parameters not compatible.
+</dd>
+<dt><b>CPF1026</b></dt>
+<dd>VALUE parameter must be '0' or '1'.
+</dd>
+<dt><b>CPF1047</b></dt>
+<dd>Length not valid for data area &amp;1 in &amp;2
+</dd>
+<dt><b>CPF1062</b></dt>
+<dd>Null string not valid as character value.
+</dd>
+<dt><b>CPF1092</b></dt>
+<dd>Cannot create data area &amp;2 in library &amp;1.
+</dd>
+<dt><b>CPF180B</b></dt>
+<dd>Function &amp;1 not allowed.
+</dd>
+<dt><b>CPF4ACF</b></dt>
+<dd>Operation failed for object &amp;1 in &amp;2 type *&amp;3 due to replication errors.
+</dd>
+<dt><b>CPF9802</b></dt>
+<dd>Not authorized to object &amp;2 in &amp;3.
+</dd>
+</dl>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#CRTDTAARA.Top_Of_Page">Top</a></td></tr>
+</table>
+</body>
+</html>

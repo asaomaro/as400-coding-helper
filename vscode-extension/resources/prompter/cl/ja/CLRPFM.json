@@ -1,0 +1,146 @@
+{
+  "keyword": "CLRPFM",
+  "description": "物理ファイル・メンバー消去 (CLRPFM)",
+  "help": "物理ファイル・メンバー消去(CLRPFM)コマンドは，物理ファイルの指定されたメンバーからすべてのデータ（削除済みレコードを含む）を除去します。ファイルの作成時に 記憶域割り振り (ALLOCATE) パラメーターに*NOが指定された場合には，メンバーのレコード・カウントがゼロにセットされ，メンバー・サイズが可能な最小サイズに設定されます。ファイルの作成時にALLOCATEパラメーターに*YESが指定された場合には，CLRPFMコマンドは，メンバー・サイズを，最初にファイルが作成された時に使用された値にリセットします。",
+  "parameters": [
+    {
+      "name": "FILE",
+      "description": "物理ファイル",
+      "help": "消去されるメンバーが入っている物理ファイルを指定します。\n\nこれは必須パラメーターです。",
+      "inputType": "group",
+      "required": true,
+      "groupKind": "qualified",
+      "children": [
+        {
+          "name": "LIB",
+          "description": "ライブラリー",
+          "help": "*LIBL: 最初に一致するものが見つかるまで，現行スレッドのライブラリー・リスト内のすべてのライブラリーが検索されます。\n*CURLIB: ファイルを見つけるために，ジョブの現行ライブラリーが使用されます。現行ライブラリーとして指定されているライブラリーがない場合は，QGPLが使用されます。\n検索するライブラリーの名前を指定してください。",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "*LIBL",
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          },
+          "placeholder": "*LIBL"
+        },
+        {
+          "name": "FILE",
+          "description": "物理ファイル",
+          "help": "物理ファイルの名前を指定してください。",
+          "inputType": "text",
+          "required": true,
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          },
+          "placeholder": "FILE"
+        }
+      ],
+      "positional": 1,
+      "basic": true
+    },
+    {
+      "name": "MBR",
+      "description": "メンバー",
+      "help": "消去されるメンバーの名前を指定します。\n\n*FIRST: 指定された物理ファイルの最初のメンバーが消去されます。\n*LAST: 指定された物理ファイルの最後のメンバーが消去されます。\n*ALL: 指定された物理ファイルのすべてのメンバーが消去されます。\n消去する物理ファイル・メンバーの名前を指定してください。",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*FIRST",
+      "attributes": {
+        "characterSet": "upper",
+        "maxLength": 10
+      },
+      "positional": 2,
+      "placeholder": "*FIRST",
+      "basic": true
+    }
+  ],
+  "environment": "すべての環境 (*ALL)",
+  "restrictions": [
+    "このコマンドは条件付きのスレッド・セーフです。マルチスレッド・ジョブでは，このコマンドは分散ファイルに対してスレッド・セーフではありません。また，このコマンドは*SNAタイプの分散データ管理機能(DDM)ファイルに対してもスレッド・セーフではなく，正常に実行されません。"
+  ],
+  "examples": [
+    {
+      "code": "CLRPFM FILE(*CURLIB/INV) MBR(FEB)"
+    }
+  ],
+  "errorMessages": [
+    {
+      "id": "CPF3130",
+      "text": "メンバー&2は既に使用中である。"
+    },
+    {
+      "id": "CPF3133",
+      "text": "ライブラリー&3のファイル&1にメンバーがない。"
+    },
+    {
+      "id": "CPF3134",
+      "text": "メンバー&2の処理中に参照制約エラー。"
+    },
+    {
+      "id": "CPF3136",
+      "text": "コマンドで&3のファイル&1を使用することはできない。"
+    },
+    {
+      "id": "CPF3137",
+      "text": "メンバー&2の消去，初期設定，またはコピーの権限がない。"
+    },
+    {
+      "id": "CPF3141",
+      "text": "メンバー&2が見つかりません。"
+    },
+    {
+      "id": "CPF3142",
+      "text": "ライブラリー&3にファイル&1が見つからない。"
+    },
+    {
+      "id": "CPF3144",
+      "text": "メンバー&2は消去または初期設定されなかった。"
+    },
+    {
+      "id": "CPF3156",
+      "text": "ライブラリー&3のファイル&1が使用中である。"
+    },
+    {
+      "id": "CPF3157",
+      "text": "トリガーまたシステム期間テンポラル表が要求された操作を妨げました。"
+    },
+    {
+      "id": "CPF3159",
+      "text": "メンバー&2がSTG(*FREE)で保管された。"
+    },
+    {
+      "id": "CPF3160",
+      "text": "メンバー&2に対する操作が終了した。項目をジャーナル処理することができません。"
+    },
+    {
+      "id": "CPF3179",
+      "text": "&3のDDMファイル&1を消去または初期設定することはできなかった。"
+    },
+    {
+      "id": "CPF32B8",
+      "text": "分散ファイル・エラー。理由コードは&3です。"
+    },
+    {
+      "id": "CPF32CF",
+      "text": "分散ファイル・エラー。理由コードは&3です。"
+    },
+    {
+      "id": "CPF32C3",
+      "text": "分散ファイル・エラー，レベルIDが一致していない。"
+    },
+    {
+      "id": "CPF320B",
+      "text": "データベース・ファイル&1に対して操作が正しくない。"
+    },
+    {
+      "id": "CPF3203",
+      "text": "&2のファイル&1のオブジェクトを割り振ることができない。"
+    }
+  ],
+  "source": {
+    "url": "https://www.ibm.com/docs/ja/ssw_ibm_i_74/cl/clrpfm.htm",
+    "version": "IBM i 7.4"
+  }
+}

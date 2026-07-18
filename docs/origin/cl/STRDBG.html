@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="ja"><head><meta charset="utf-8"><title>デバッグ開始  (STRDBG)</title></head>
+<body>
+<div role="main">
+<script type="text/javascript" src="../rzahg/synch.js"></script>
+<a name="STRDBG.Top_Of_Page"></a>
+<h1>デバッグ開始  (STRDBG)</h1><div id="lastModifiedDate"><span>Last Updated</span>: 2021-04-13</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table0" width="100%" class="cds--data-table">
+<tbody><tr>
+<td class="valigntop alignleft"><strong>実行可能場所:  </strong>すべての環境 (*ALL)<br>
+<strong>スレッド・セーフ:  </strong>いいえ
+</td>
+<td class="valigntop alignright">
+<a href="#STRDBG.PARAMETERS.TABLE">パラメーター</a><br>
+<a href="#STRDBG.COMMAND.EXAMPLES">例</a><br>
+<a href="#STRDBG.ERROR.MESSAGES">エラー・メッセージ</a></td>
+</tr>
+</tbody></table></div></div>
+<div> <a name="STRDBG"></a>
+<p>デバッグ開始(STRDBG)コマンドは，ジョブをデバッグ・モードにし，任意指定で最大20のプログラムと20のサービス・プログラムおよび20のクラス・ファイルをデバッグ・モードに追加します。また，デバッグ・セッションの一定の属性を指定します。たとえば，デバッグ・モード中にプロダクション・ライブラリー中のデータベース・ファイルを更新できるかどうかを指定することができます。
+</p>
+<p>STRDBGコマンドがグラフィカル・デバッグに登録されたユーザーによって出された場合には，従来のシステム・デバッガーの代わりにグラフィカル・システム・デバッガーが立ち上げられます。
+</p>
+<p>デバッグは3つの環境で同時に操作することができます。3つの環境とはOPM（オリジナル・プログラム・モデル），ILE（統合言語環境），およびJAVAです。このコマンドの一部のパラメーターは3つの環境すべてに適用可能です。このコマンドの一部のパラメーターはOPM, ILE,またはJAVAだけに適用可能です。各パラメーター記述には，パラメーターが適用可能な環境を指定するステートメントがあります。
+</p>
+<p>デバッグ変更(CHGDBG)コマンドをジョブの中で後から使用して，デバッグ・モードの属性を変更することができます。また，OPMプログラムがプログラム追加(ADDPGM )コマンドまたはプログラム除去(RMVPGM)コマンドで指定された場合には，デバッグ・セッションへの追加またはデバッグ・セッションからの除去を行うことができます。ADDPGMプログラムによって追加されたOPMプログラムはOPMデバッグ環境に入ります。
+</p>
+<p>あるジョブが別のジョブをサービス中であり，STRDBGが入力された時には，サービス中のジョブに対してすべてのデバッグ・コマンドが有効です。そのジョブがジョブ待ち行列で保留中の場合には，ジョブが実行可能となるまでそれ以上のデバッグ・コマンドを入力することはできません。ジョブの開始時に，初期停止点画面が表示されます。この画面で，追加のデバッグ・コマンドを入力することができます。別のジョブにサービスするためには，STRSRVJOB（サービス・ジョブ開始）コマンドを参照してください。別のジョブからのジョブのデバッグに関する詳細は，IBM i Information Center(http://www.ibm.com/systems/i/infocenter/)の「プログラミング」カテゴリーの「制御言語(CL)」トピック・コレクション にあります。
+</p>
+<h2><strong>制約事項</strong><strong>:</strong>
+</h2>
+<ul class="cds--list--unordered">
+<li class="cds--list__item">デバッグ・モードでこのコマンドを使用することはできません。デバッグ・モードを終了するためには，デバッグ終了(ENDDBG)コマンドを参照してください。
+</li>
+<li class="cds--list__item">別のジョブをサービス中で，そのジョブが保留，延期，または終了中の場合には，このコマンドを使用することはできません。
+</li>
+<li class="cds--list__item">このコマンドは共通の*EXCLUDE権限付きで出荷され，QPGMR, QSRV,およびQSRVBASユーザー・プロファイルはこのコマンドを使用する専用権限を持っています。
+</li>
+<li class="cds--list__item">プログラムに対する*CHANGE権限，またはプログラムに対する*USE権限および*SERVICE特殊権限が必要です。
+</li>
+</ul>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table1" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#STRDBG.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div>
+<h2><a name="STRDBG.PARAMETERS.TABLE">パラメーター</a></h2>
+<div class="tablenoborder"><div class="cds--data-table-container"><table id="parm_table2" summary="Parameters" border="1" cellpadding="4" cellspacing="0" class="cds--data-table">
+<!-- col1="10" col2="15" col3="30" col4="10" -->
+<tbody><tr>
+<th scope="col" class="valignbottom alignleft"><div class="cds--table-header-label">キーワード</div></th>
+<th scope="col" class="valignbottom alignleft"><div class="cds--table-header-label">記述</div></th>
+<th scope="col" class="valignbottom alignleft"><div class="cds--table-header-label">選択項目</div></th>
+<th scope="col" class="valignbottom alignleft"><div class="cds--table-header-label">ノーツ</div></th>
+</tr>
+<tr>
+<td class="valigntop" rowspan="3"><a href="#STRDBG.PGM"><strong>PGM</strong></a></td>
+<td class="valigntop">プログラム</td>
+<td class="valigntop">単一値: <strong class="underlined">*NONE</strong><br>その他の値 (最大 20 回の繰り返し): <span class="var">修飾オブジェクト名</span></td>
+<td class="valigntop" rowspan="3">オプショナル, 定位置 1</td>
+</tr>
+<tr>
+<td class="valigntop">修飾子 1: プログラム</td>
+<td class="valigntop"><span class="var">名前</span></td>
+</tr><tr>
+<td class="valigntop">修飾子 2: ライブラリー</td>
+<td class="valigntop"><span class="var">名前</span>, <strong class="underlined">*LIBL</strong>, *CURLIB</td>
+</tr><tr>
+<td class="valigntop"><a href="#STRDBG.DFTPGM"><strong>DFTPGM</strong></a></td>
+<td class="valigntop">省略時のプログラム</td>
+<td class="valigntop"><span class="var">名前</span>, <strong class="underlined">*PGM</strong>, *NONE</td>
+<td class="valigntop">オプショナル</td>
+</tr>
+<tr>
+<td class="valigntop"><a href="#STRDBG.MAXTRC"><strong>MAXTRC</strong></a></td>
+<td class="valigntop">最大トレース・ステートメント数</td>
+<td class="valigntop"><span class="var">整数</span>, <strong class="underlined">200</strong></td>
+<td class="valigntop">オプショナル</td>
+</tr>
+<tr>
+<td class="valigntop"><a href="#STRDBG.TRCFULL"><strong>TRCFULL</strong></a></td>
+<td class="valigntop">トレース・データ満杯時の処理</td>
+<td class="valigntop"><strong class="underlined">*STOPTRC</strong>, *WRAP</td>
+<td class="valigntop">オプショナル</td>
+</tr>
+<tr>
+<td class="valigntop"><a href="#STRDBG.UPDPROD"><strong>UPDPROD</strong></a></td>
+<td class="valigntop">実動ファイルの更新</td>
+<td class="valigntop"><strong class="underlined">*NO</strong>, *YES</td>
+<td class="valigntop">オプショナル</td>
+</tr>
+<tr>
+<td class="valigntop"><a href="#STRDBG.OPMSRC"><strong>OPMSRC</strong></a></td>
+<td class="valigntop">OPMソース・レベル・デバッグ</td>
+<td class="valigntop"><strong class="underlined">*NO</strong>, *YES</td>
+<td class="valigntop">オプショナル</td>
+</tr>
+<tr>
+<td class="valigntop" rowspan="3"><a href="#STRDBG.SRVPGM"><strong>SRVPGM</strong></a></td>
+<td class="valigntop">サービス・プログラム</td>
+<td class="valigntop">単一値: <strong class="underlined">*NONE</strong><br>その他の値 (最大 20 回の繰り返し): <span class="var">修飾オブジェクト名</span></td>
+<td class="valigntop" rowspan="3">オプショナル</td>
+</tr>
+<tr>
+<td class="valigntop">修飾子 1: サービス・プログラム</td>
+<td class="valigntop"><span class="var">名前</span></td>
+</tr><tr>
+<td class="valigntop">修飾子 2: ライブラリー</td>
+<td class="valigntop"><span class="var">名前</span>, <strong class="underlined">*LIBL</strong>, *CURLIB</td>
+</tr><tr>
+<td class="valigntop"><a href="#STRDBG.CLASS"><strong>CLASS</strong></a></td>
+<td class="valigntop">クラス・ファイル</td>
+<td class="valigntop">値 (最大 20 回の繰り返し): <span class="var">パス名</span>, <strong class="underlined">*NONE</strong></td>
+<td class="valigntop">オプショナル</td>
+</tr>
+<tr>
+<td class="valigntop"><a href="#STRDBG.DSPMODSRC"><strong>DSPMODSRC</strong></a></td>
+<td class="valigntop">モジュール・ソースの表示</td>
+<td class="valigntop"><strong class="underlined">*PGMDEP</strong>, *NO, *YES</td>
+<td class="valigntop">オプショナル</td>
+</tr>
+<tr>
+<td class="valigntop" rowspan="3"><a href="#STRDBG.SRCDBGPGM"><strong>SRCDBGPGM</strong></a></td>
+<td class="valigntop">ソース・デバッグ・プログラム</td>
+<td class="valigntop">単一値: <strong class="underlined">*SYSDFT</strong><br>その他の値: <span class="var">修飾オブジェクト名</span></td>
+<td class="valigntop" rowspan="3">オプショナル</td>
+</tr>
+<tr>
+<td class="valigntop">修飾子 1: ソース・デバッグ・プログラム</td>
+<td class="valigntop"><span class="var">名前</span></td>
+</tr><tr>
+<td class="valigntop">修飾子 2: ライブラリー</td>
+<td class="valigntop"><span class="var">名前</span>, <strong class="underlined">*LIBL</strong>, *CURLIB</td>
+</tr><tr>
+<td class="valigntop" rowspan="3"><a href="#STRDBG.UNMONPGM"><strong>UNMONPGM</strong></a></td>
+<td class="valigntop">監視されないメッセージ・プログラム</td>
+<td class="valigntop">単一値: <strong class="underlined">*NONE</strong><br>その他の値: <span class="var">修飾オブジェクト名</span></td>
+<td class="valigntop" rowspan="3">オプショナル</td>
+</tr>
+<tr>
+<td class="valigntop">修飾子 1: 監視されないメッセージ・プログラム</td>
+<td class="valigntop"><span class="var">名前</span></td>
+</tr><tr>
+<td class="valigntop">修飾子 2: ライブラリー</td>
+<td class="valigntop"><span class="var">名前</span>, <strong class="underlined">*LIBL</strong>, *CURLIB</td>
+</tr><tr>
+<td class="valigntop"><a href="#STRDBG.DBGENCKEY"><strong>DBGENCKEY</strong></a></td>
+<td class="valigntop">暗号化解除鍵</td>
+<td class="valigntop"><span class="var">文字値</span>, <strong class="underlined">*NONE</strong></td>
+<td class="valigntop">オプショナル</td>
+</tr>
+</tbody></table></div></div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table3" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#STRDBG.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+</div>
+<div> <a name="STRDBG.PGM"></a>
+<h2>プログラム (PGM)</h2>
+<p>ジョブでデバッグするために，最大20個のプログラムを指定します。プログラムをデバッグする前に，その名前をプログラム追加(ADDPGM)コマンドまたはモジュール・ソース表示(DSPMODSRC)コマンドでこのパラメーターに指定しなければなりません。
+</p>
+<p>このパラメーターはOPM環境およびILE環境の両方で適用可能です。
+</p>
+<h3><strong>単一値</strong>
+</h3>
+<dl>
+<dt><strong class="underlined">*NONE</strong></dt>
+<dd>プログラム名はデバッグ・セッションの開始時に指定しません。プログラム追加(ADDPGM)コマンドまたはモジュール・ソース表示(DSPMODSRC)コマンドは，後からプログラムを追加するために使用することができます。
+</dd>
+</dl>
+<h3><strong>その他の値（最大</strong><strong>20</strong><strong>個指定可能）</strong>
+</h3>
+<h3><strong>修飾子</strong><strong>1: </strong><strong>プログラム</strong>
+</h3>
+<dl>
+<dt><strong class="italic">名前</strong></dt>
+<dd>デバッグするプログラムの名前を指定してください。OPMデバッグ環境では，同じ名前を持つプログラムを同時にデバッグすることはできません。ILEデバッグ環境では，同じ名前を持つ2つのプログラムが別のライブラリーに入っている場合は，それらをデバッグすることができます。
+</dd>
+</dl>
+<h3><strong>修飾子</strong><strong>2: ライブラリー</strong>
+</h3>
+<dl>
+<dt><strong class="underlined">*LIBL</strong></dt>
+<dd>最初に一致するものが見つかるまで，現行スレッドのライブラリー・リスト内のすべてのライブラリーが検索されます。
+</dd>
+</dl>
+<dl>
+<dt><strong>*CURLIB</strong></dt>
+<dd>プログラムを見つけるために，ジョブの現行ライブラリーが使用されます。ジョブの現行ライブラリーとして指定されているライブラリーがない場合は，QGPLが使用されます。
+</dd>
+<dt><strong class="italic">名前</strong></dt>
+<dd>プログラムが入っているライブラリーを指定してください。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table4" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#STRDBG.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="STRDBG.DFTPGM"></a>
+<h2>省略時のプログラム (DFTPGM)</h2>
+<p>デバッグ・モードの時に省略時のプログラムとして使用するオリジナル・プログラム・モデル(OPM)プログラムを指定します。ここで指定したプログラムは，ユーザーが<strong>プログラム</strong><strong> (PGM)</strong>パラメーターに*DFTPGMの値を指定した他のすべてのデバッグ・プログラムの省略時のプログラムとして使用されます。すなわち，省略時のプログラムが前に指定された場合には，このパラメーターはそれを変更することができます。
+</p>
+<p>このパラメーターが適用可能なのはOPM環境だけです。
+</p>
+<dl>
+<dt><strong class="underlined">*PGM</strong></dt>
+<dd>このコマンドのPGMパラメーターに名前を指定したプログラムが，ジョブのデバッグ・セッションの省略時のプログラムとなります。PGMパラメーターに指定されたプログラム名が複数ある場合には，OPMデバッグ環境に追加されたリスト中に名前が指定された最初のOPMプログラムが省略時のプログラムになります。*NONEがPGMパラメーターに指定されるか，またはそれが省略時の値である場合には，この値(*PGM)が指定された時も*NONEと見なされます。
+</dd>
+<dt><strong>*NONE</strong></dt>
+<dd>省略時のプログラムは指定されません。前に省略時のプログラムとして指定されているプログラムがあったとしても，そのプログラムは省略時のプログラムではなくなります。省略時のプログラムのないジョブでは，その他のデバッグ・コマンドのPGMパラメーターに*DFTPGMを指定することはできません。
+</dd>
+<dt><strong class="italic">名前</strong></dt>
+<dd>デバッグ・モード中に省略時のプログラムとして使用するプログラムの名前を指定してください。このコマンドのPGMパラメーターにも，同じ名前を（修飾された形式で）指定しなければなりません。このパラメーターでバインド済みプログラムを指定することはできません。
+<p>
+<strong>注:     </strong>OPMSRC(*YES)が指定された場合には，OPMプログラムは，OPMデバッグ環境またはILEデバッグ環境のいずれか一方に追加することができます。ILEデバッグ環境に追加した場合には，OPMデバッグ環境の省略時のプログラムとすることはできません。
+</p>
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table5" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#STRDBG.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="STRDBG.MAXTRC"></a>
+<h2>最大トレース・ステートメント数 (MAXTRC)</h2>
+<p>システムが，トレースを終了するかまたはトレース・ファイルで折り返し（オーバーレイ）を行う前に，ジョブのトレース・ファイルに入れるトレース・ステートメントの最大数を指定します。トレース・ファイルにこの指定された最大数が含まれていると，システムは，<strong>トレース・データ満杯時の処理</strong><strong> (TRCFULL)</strong>パラメーターに与えられた値によって指定された処置を行います。
+</p>
+<p>
+<strong>注:     </strong>対話式環境でデバッグするプログラムについては，トレース・ステートメントの最大数を<strong>1</strong>に設定し，TRCFULLパラメーターの値を*STOPTRCとすることにより，命令のステップ実行を行うことができます。
+</p>
+<p>このパラメーターが適用可能なのはOPM環境だけです。
+</p>
+<dl>
+<dt><strong class="underlined">200</strong></dt>
+<dd>トレースが停止するか，折り返しが起こる前に，200個のトレース・ステートメントをファイルに入れることができます。
+</dd>
+<dt><strong class="italic">整数</strong></dt>
+<dd>トレース・ファイルに入れることのできるトレース・ステートメントの最大数を指定してください。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table6" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#STRDBG.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="STRDBG.TRCFULL"></a>
+<h2>トレース・データ満杯時の処理 (TRCFULL)</h2>
+<p>ジョブのトレース・ファイルがいっぱいになった時（すなわち，<strong>最大</strong><strong>トレース・ステートメント</strong><strong>数</strong><strong> (MAXTRC)</strong>パラメーターに指定された最大数のトレース・ステートメントが含まれる時）に，どのような処置を行うかを指定します。
+</p>
+<p>このパラメーターが適用可能なのはOPM環境だけです。
+</p>
+<dl>
+<dt><strong class="underlined">*STOPTRC</strong></dt>
+<dd>バッチ環境では，トレースは停止されますが，プログラムの処理は続行されます。また，対話式環境では，停止点が生じた時点でユーザーに制御権が渡されます。ユーザーが処理を続行した場合には，トレース対象のステートメントの範囲内で，以後の各ステートメントの処理の前にそれぞれ停止点が生じ，トレース・ファイルは新しい項目を入れるために拡張されます。
+</dd>
+<dt><strong>*WRAP</strong></dt>
+<dd>トレース・ファイルは，新しいトレース・ステートメントが発生するたびに，ファイルの先頭から折り返してオーバーレイされます。プログラムは，折り返しが起こったことを示すメッセージを出さずに，処理を完了します。トレース・ファイルには指定された最大ステートメント数を超えるステートメントが入ることはなく，また，常に，記録された最新のステートメントが入っていることになります。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table7" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#STRDBG.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="STRDBG.UPDPROD"></a>
+<h2>実動ファイルの更新 (UPDPROD)</h2>
+<p>ジョブがデバッグ・モードになっている時に，プロダクション・ライブラリー中のデータベース・ファイルをレコードの更新または新しいレコードの追加のためにオープンできるかどうかを指定します。できない場合には，ファイルを使用するプログラムの実行を試みる前にファイルをテスト・ライブラリーにコピーしなければなりません。
+</p>
+<p>このパラメーターはOPM環境およびILE環境の両方で適用可能です。
+</p>
+<dl>
+<dt><strong class="underlined">*NO</strong></dt>
+<dd>ジョブがデバッグ・モードになっている時には，プロダクション・ライブラリー中のデータベース・ファイルを更新することはできません。データベース・ファイルは読み取りのためにだけオープンすることができます。これにより，プログラムがデバッグされている時に，データベース・ファイルが不要な更新から保護されます。これに対する例外は，プロダクション・ライブラリーがすでにオープンされた後で，デバッグ・モードを開始する場合です。この値を指定した場合には，一部のコマンド（これには，機能キー，メニュー・オプション，またはプルダウンも含めることができます）は適切に働かないことがあります。
+</dd>
+<dt><strong>*YES</strong></dt>
+<dd>ジョブがデバッグ・モードになっている時には，プロダクション・ライブラリー中のデータベース・ファイルを更新することはできます。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table8" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#STRDBG.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="STRDBG.OPMSRC"></a>
+<h2>OPMソース・レベル・デバッグ (OPMSRC)</h2>
+<p>オリジナル・プログラム・モデル(OPM)プログラムがシステム・ソース・デバッグ・サポート (ILEソース・デバッグと同じ）を使用してデバッグされることを指定します。
+</p>
+<p>このパラメーターは，OPTION(*SRCDBG)を指定したCRTCLPGM, CRTRPGPGM,およびCRTCBLPGMコマンドを使用して作成したOPM CL, OPM RPG,およびOPM COBOLプログラムの場合に有効です。さらに，このパラメーターはOPTION(*LSTDBG)を指定したCRTCLPGM, CRTRPGPGM, CRTCBLPGM, CRTSQLRPG, CRTSQLCBL,およびCRTRPTRPGコマンドによって作成されたOPM CL, OPM RPG,およびOPM COBOLプログラムの場合にも有効です。OPMプログラムがCL, RPG,またはCOBOLではなく，有効なデバッグ・オプションを指定してコンパイルしなかった場合には，このパラメーターは無視されます。
+</p>
+<p>このパラメーターはOPM環境およびILE環境の両方で適用可能です。
+</p>
+<p>現在では，ILE機能はOPMプログラムで操作されます。たとえば，ソース・レベル・デバッグなど。
+</p>
+<dl>
+<dt><strong class="underlined">*NO</strong></dt>
+<dd>OPMデバッグ機能はOPMプログラム用に使用されます。
+</dd>
+<dt><strong>*YES</strong></dt>
+<dd>ILEデバッグ機能はOPMプログラム用に使用されます。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table9" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#STRDBG.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="STRDBG.SRVPGM"></a>
+<h2>サービス・プログラム (SRVPGM)</h2>
+<p>ジョブでデバッグするために，最大20個のサービス・プログラムを指定します。サービス・プログラムをデバッグする前に，その名前をこのパラメーターまたはモジュール・ソース表示(DSPMODSRC)コマンドで指定しなければなりません。
+</p>
+<p>このパラメーターはILE環境で適用されるだけです。
+</p>
+<h3><strong>単一値</strong>
+</h3>
+<dl>
+<dt><strong class="underlined">*NONE</strong></dt>
+<dd>デバッグ・セッションの開始時にサービス・プログラム名は指定されません。後でモジュール・ソース表示(DSPMODSRC)コマンドを使用してサービス・プログラムを追加することができます。
+</dd>
+</dl>
+<h3><strong>その他の値（最大</strong><strong>20</strong><strong>個指定可能）</strong>
+</h3>
+<h3><strong>修飾子</strong><strong>1: </strong><strong>サービス・プログラム</strong>
+</h3>
+<dl>
+<dt><strong class="italic">名前</strong></dt>
+<dd>デバッグするサービス・プログラムの名前を指定してください。
+</dd>
+</dl>
+<h3><strong>修飾子</strong><strong>2: ライブラリー</strong>
+</h3>
+<dl>
+<dt><strong class="underlined">*LIBL</strong></dt>
+<dd>最初に一致するものが見つかるまで，現行スレッドのライブラリー・リスト内のすべてのライブラリーが検索されます。
+</dd>
+</dl>
+<dl>
+<dt><strong>*CURLIB</strong></dt>
+<dd>サービス・プログラムを見つけるためにジョブの現行ライブラリーが使用されます。ジョブの現行ライブラリーとして指定されているライブラリーがない場合は，QGPLが使用されます。
+</dd>
+<dt><strong class="italic">名前</strong></dt>
+<dd>サービス・プログラムが入っているライブラリーを指定してください。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table10" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#STRDBG.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="STRDBG.CLASS"></a>
+<h2>クラス・ファイル (CLASS)</h2>
+<p>ジョブでデバッグするために，最大20個のクラス・ファイルを指定します。クラス・ファイルをデバッグする前に，その名前をこのパラメーターまたはモジュール・ソース表示(DSPMODSRC)コマンドで指定しなければなりません。
+</p>
+<p>このパラメーターはILE環境で適用されるだけです。
+</p>
+<dl>
+<dt><strong class="underlined">*NONE</strong></dt>
+<dd>デバッグ・セッションの開始時にクラス・ファイルは指定されません。後でモジュール・ソース表示(DSPMODSRC)コマンドを使用してクラス・ファイルを追加することができます。
+</dd>
+<dt><strong class="italic">パス名</strong></dt>
+<dd>デバッグするクラス・ファイルのパス名を指定してください。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table11" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#STRDBG.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="STRDBG.DSPMODSRC"></a>
+<h2>モジュール・ソースの表示 (DSPMODSRC)</h2>
+<p>このコマンドが処理されて，エラーが起こらなかった時に，ソース・デバッグ・プログラムの最初の画面が表示されるかどうかを指定します。
+</p>
+<p>このパラメーターはILE環境で適用されるだけです。
+</p>
+<dl>
+<dt><strong class="underlined">*PGMDEP</strong></dt>
+<dd>ソース・デバッグ・プログラム画面の表示は，<strong>プログラム</strong><strong> (PGM)</strong>パラメーターに指定されたプログラムに依存します。プログラムのすべてがILE プログラムである場合には，この画面が表示されます。プログラムのいずれかがソース・デバッグ・データを持つOPMプログラムであり，OPMSRC(*YES)が指定された場合には，この画面が表示されます。プログラムのすべてがOPMプログラムであり，OPMSRC(*NO)が指定された場合には，この画面が表示されません。
+</dd>
+<dt><strong>*NO</strong></dt>
+<dd>ソース・デバッグ・プログラムの最初の画面は表示されません。
+</dd>
+<dt><strong>*YES</strong></dt>
+<dd>ソース・デバッグ・プログラムの最初の画面が表示されます。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table12" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#STRDBG.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="STRDBG.SRCDBGPGM"></a>
+<h2>ソース・デバッグ・プログラム (SRCDBGPGM)</h2>
+<p>使用するソース・デバッグ・プログラムを指定します。このパラメーターの説明については，IBM i Information Center(http://www.ibm.com/systems/i/infocenter/)の「プログラミング」カテゴリーの「API」トピック・コレクションを参照してください。
+</p>
+<p>このパラメーターはILE環境で適用されるだけです。
+</p>
+<h3><strong>単一値</strong>
+</h3>
+<dl>
+<dt><strong class="underlined">*SYSDFT</strong></dt>
+<dd>システム・ソース・デバッグ・プログラムが使用されます。
+</dd>
+</dl>
+<h3><strong>修飾子</strong><strong>1: </strong><strong>ソース・デバッグ・プログラム</strong>
+</h3>
+<dl>
+<dt><strong class="italic">名前</strong></dt>
+<dd>プログラムのデバッグに使用するプログラムの名前を指定してください。
+</dd>
+</dl>
+<h3><strong>修飾子</strong><strong>2: ライブラリー</strong>
+</h3>
+<dl>
+<dt><strong class="underlined">*LIBL</strong></dt>
+<dd>最初に一致するものが見つかるまで，現行スレッドのライブラリー・リスト内のすべてのライブラリーが検索されます。
+</dd>
+</dl>
+<dl>
+<dt><strong>*CURLIB</strong></dt>
+<dd>ジョブの現行ライブラリーが検索されます。ジョブの現行ライブラリーとして指定されているライブラリーがない場合は，QGPLライブラリーが使用されます。
+</dd>
+<dt><strong class="italic">名前</strong></dt>
+<dd>検索するライブラリーの名前を指定してください。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table13" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#STRDBG.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="STRDBG.UNMONPGM"></a>
+<h2>監視されないメッセージ・プログラム (UNMONPGM)</h2>
+<p>監視されていないメッセージがデバッグ中のジョブで起こった時に呼び出されるユーザー提供のプログラムの修飾名を指定します。指定されたプログラムを呼び出す時に，プログラム名，反復レベル，高水準言語ステートメントID,停止点が起こった機械語命令番号，監視されていなかったメッセージ，メッセージ・データ，メッセージ・データの長さ，およびメッセージ参照キーを識別するパラメーターが渡されます。
+</p>
+<p>このパラメーターが適用可能なのはOPM環境だけです。
+</p>
+<p>渡されるパラメーターは次の様式になっています。
+</p>
+<ol class="cds--list--ordered--temporary">
+<li class="cds--list__item">プログラム名(10バイト）。停止点に到達したプログラムの名前を指定します。
+</li>
+<li class="cds--list__item">反復レベル(5バイト）。停止点に到達したプログラムの反復レベル番号を指定します。この値は1から5桁の数字で，右側にブランクが埋め込まれます。
+</li>
+<li class="cds--list__item">ステートメントID (10バイト）。到達した高水準言語プログラムのステートメントIDを指定します。これは，停止点追加(ADDBKP)コマンドで指定されたステートメントIDです。停止点を指定するために機械語命令番号が使用されている場合には，このパラメーターに，スラッシュ(/)とその後に4桁の16進数機械語命令番号が続く値が入っています。
+</li>
+<li class="cds--list__item">命令番号(5バイト）。ブレークポイントが到達した高水準言語ステートメントに対応する機械語命令番号を指定します。この機械語命令番号の前にスラッシュはありません。この値は，MI命令番号（後に1個以上のブランクが続けられた）を表す1から4桁の16進数で構成されます。プログラムが3番目のパラメーターに機械語命令番号を渡した場合には，3番目と4番目のパラメーターの値が同じになります。
+</li>
+<li class="cds--list__item">メッセージID (7バイト）。モニターされていないメッセージのIDを指定します。
+</li>
+<li class="cds--list__item">メッセージ・データ(256バイト）。モニターされていないメッセージと一緒に送られたメッセージ・データの最初の256バイトを指定します。
+</li>
+<li class="cds--list__item">メッセージ・データ長(5バイト）。モニターされていないメッセージと一緒に送られたメッセージ・データの長さを指定します。
+</li>
+<li class="cds--list__item">メッセージ(MRK) (4バイト）。モニターされていないメッセージのメッセージ参照キー(MRK)を指定します。
+</li>
+</ol>
+<p>パラメーター値はすべて左寄せされて，右側にブランクが埋め込まれます。モニターされていないメッセージを持つプログラムに制御が戻されると，処理が続行されます。
+</p>
+<h3><strong>単一値</strong>
+</h3>
+<dl>
+<dt><strong class="underlined">*NONE</strong></dt>
+<dd>モニターされていないメッセージが現れた時に，プログラムは呼び出されません。
+</dd>
+</dl>
+<h3><strong>修飾子</strong><strong>1: </strong><strong>監視されない</strong><strong>メッセージ・プログラム</strong>
+</h3>
+<dl>
+<dt><strong class="italic">名前</strong></dt>
+<dd>デバッグ中のジョブにモニターされていないメッセージが現れた時に呼び出されるユーザー提供プログラムの名前を指定してください。プログラムの実行後に，中断されていたプログラムに制御が戻されます。
+</dd>
+</dl>
+<h3><strong>修飾子</strong><strong>2: ライブラリー</strong>
+</h3>
+<dl>
+<dt><strong class="underlined">*LIBL</strong></dt>
+<dd>最初に一致するものが見つかるまで，現行スレッドのライブラリー・リスト内のすべてのライブラリーが検索されます。
+</dd>
+</dl>
+<dl>
+<dt><strong>*CURLIB</strong></dt>
+<dd>ジョブの現行ライブラリーが検索されます。ジョブの現行ライブラリーとして指定されているライブラリーがない場合は，QGPLライブラリーが使用されます。
+</dd>
+<dt><strong class="italic">名前</strong></dt>
+<dd>検索するライブラリーの名前を指定してください。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table14" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#STRDBG.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="STRDBG.DBGENCKEY"></a>
+<h2>暗号化解除鍵 (DBGENCKEY)</h2>
+<p>プログラムがコンパイルされた時に暗号鍵として指定された鍵を入力します。指定された鍵の値が16バイト未満の場合，16バイトまでX'40'が埋め込まれます。
+</p>
+<p>すべてのコード・ページにわたってインバリアントではない文字が鍵に含まれている場合には，ジョブCCSIDがプログラムのコンパイル時に使用されたジョブCCSIDと同じであることを確認してください。同じでない場合，鍵が一致しない可能性があり，暗号化解除に失敗します。
+</p>
+<h3><strong>単一値</strong>
+</h3>
+<dl>
+<dt><strong class="underlined">*NONE</strong></dt>
+<dd>暗号化解除鍵は，デバッグ・セッションの開始時に指定されません。暗号化解除鍵は「暗号化解除鍵の入力」パネルを使用して後で指定できます。
+</dd>
+</dl>
+<h3><strong>その他の値</strong>
+</h3>
+<h3><strong>修飾子</strong><strong>1:</strong><strong>暗号化解除鍵。</strong>
+</h3>
+<dl>
+<dt><strong class="italic">鍵</strong></dt>
+<dd>暗号化デバッグ・テキスト表示の暗号化解除に使用される16バイトの鍵を指定します。指定された鍵の値が16バイト未満の場合，16バイトまでX'40'が埋め込まれます。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table15" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#STRDBG.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div><h2><a name="STRDBG.COMMAND.EXAMPLES">例</a> </h2>
+<h3><strong>例</strong><strong>1:</strong><strong>プログラムのデバッグの開始</strong>
+</h3>
+<p>
+</p><pre>STRDBG   PGM(TESTLIB/PAYROLL)  UPDPROD(*NO)
+</pre>
+<p></p>
+<p>このコマンドは，テスト・ライブラリーTESTLIBにあるプログラムPAYROLLをデバッグするデバッグ・モードを開始します。トレースが使用される場合に，トレースを停止するまでに最大200のトレース・ステートメントをトレースで保管することができます。プログラムPAYROLLがバインド済みプログラムである場合には，「モジュール・ソースの表示」画面が表示され，プログラム入り口点を含むモジュールのソースが示されます。PAYROLLプログラムによって更新されるデータベース・ファイルは，すべてテスト・ライブラリーの中になければなりません。
+</p>
+<h3><strong>例</strong><strong>2:</strong><strong>クラス・ファイルのデバッグの開始</strong>
+</h3>
+<p>
+</p><pre>STRDBG   CLASS('FINANCIAL.PAYAPPLET')
+</pre>
+<p></p>
+<p>このコマンドは，<strong>FINANCIAL</strong>パッケージ内のクラス<strong>PAYAPPLET</strong>をデバッグするデバッグ・モードを開始します。
+</p>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table16" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#STRDBG.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div><h2><a name="STRDBG.ERROR.MESSAGES">エラー・メッセージ</a> </h2>
+<p><strong class="underlined">*ESCAPE</strong><strong class="underlined">メッセージ</strong>
+</p>
+<dl>
+<dt><strong>CPF1999</strong></dt>
+<dd>コマンドでエラーが起こった。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table17" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#STRDBG.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+</div>
+
+
+</body></html>

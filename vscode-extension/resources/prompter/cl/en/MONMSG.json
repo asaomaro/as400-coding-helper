@@ -1,0 +1,49 @@
+{
+  "keyword": "MONMSG",
+  "description": "Monitor Message (MONMSG)",
+  "parameters": [
+    {
+      "name": "MSGID",
+      "description": "Message identifier",
+      "help": "Message identifier (MSGID)\n\nSpecifies the message identifiers of one or more escape, notify, or status messages that are to be monitored by this command. As many as 50 specific or generic message identifiers can be specified on one command.\n\nNote: Many CL commands issue one escape message for many different error conditions. Details about the error or failure are given in diagnostic messages that precede the escape message. Although diagnostic messages cannot be monitored, they can be received from the job's external message queue after the escape message has activated the user's message monitor.\n\nThe first 3 characters of a message identifier must be a code consisting of an alphabetic character followed by two alphanumeric (alphabetic or decimal) characters; the last 4 characters may consist of the decimal numbers 0 through 9 and the characters A through F.\n\nNote: Message identifiers using the MCH code (MCHnnnn) use only the numbers 0 through 9 in the last four characters.\n\nIf zeros are specified in either two or all four of the rightmost positions, such as USRmm00, a generic message identifier is specified. For example, if CPF0000 is specified, all messages with the prefix 'CPF' are monitored. Generic message identifiers can be used for both command-level MONMSG and procedure-level MONMSG statements.\n\nSpecify the message identifiers of 1 to 50 messages that are monitored when they arrive at this program's message queue. The message identifiers and message text of the escape, notify, and status messages which may be sent by a command can be found in the command's documentation in the Information Center as well as the command's online help. CL variables cannot be used to specify message identifiers.\n\nThis is a required parameter.",
+      "inputType": "text",
+      "required": true,
+      "attributes": {
+        "characterSet": "upper",
+        "maxLength": 10
+      },
+      "positional": 1,
+      "maxOccurrences": 50,
+      "placeholder": "CPF0000",
+      "basic": true
+    },
+    {
+      "name": "CMPDTA",
+      "description": "Comparison data",
+      "help": "Comparison data (CMPDTA)\n\nSpecifies the comparison data that is used to determine whether the monitored message (having one of the specified message identifiers) received on the program's message queue is acted on by this command. The message data specified in the MSGDTA parameter of the Send Program Message (SNDPGMMSG) command is compared with this comparison data. If the first part (up through the first 28 characters, or less) of the message's substitution values matches the comparison data specified, the action specified in the EXEC parameter of this command is taken. The action is also taken if no comparison data is specified.\n\nThe comparison data can be displayed by the Display Program Variable (DSPPGMVAR) command.\n\n指定できる特殊値: *NONE",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*NONE",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "positional": 2,
+      "placeholder": "*NONE",
+      "basic": true
+    },
+    {
+      "name": "EXEC",
+      "description": "Command to execute",
+      "help": "Command to execute (EXEC)\n\nSpecifies the CL command to be processed when a monitored message sent to the program's message queue meets the conditions specified in this command. If no command is specified and a monitored message arrives on the queue, the message is ignored, and control passes to the next command in the program.\n\nIf the MONMSG command is placed at the beginning of the program, the EXEC parameter must specify the GOTO command and the label identifying the command that receives control.\n\nSpecify the CL command, including its parameters to be used, that is run when a message meeting the conditions specified in this command is received. The command specified is not run if the received message does not meet the specified conditions. A CL variable cannot be specified in place of the CL command.\n\nNote: If a DO, DOWHILE, DOUNTIL, DOFOR, or SELECT command is specified on EXEC, the entire group associated with the command is processed if the condition is met.",
+      "inputType": "text",
+      "required": false,
+      "positional": 3,
+      "placeholder": "GOTO ERROR",
+      "basic": true
+    }
+  ],
+  "source": {
+    "url": "https://www.ibm.com/docs/en/ssw_ibm_i_74/cl/monmsg.htm",
+    "version": "IBM i 7.4"
+  }
+}
