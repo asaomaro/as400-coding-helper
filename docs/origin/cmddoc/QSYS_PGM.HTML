@@ -1,0 +1,125 @@
+
+  <!doctype html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+  <html>
+<head><META http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>Program  (PGM)</title>
+</head>
+<body bgcolor="white">
+<a name="PGM.Top_Of_Page"></a>
+<h2>Program  (PGM)</h2>
+<table width="100%">
+<tr>
+<td align="left" valign="top"><b>Where allowed to run:  </b>
+<ul><li>Batch program (*BPGM)</li>
+<li>Interactive program (*IPGM)</li>
+</ul><b>Threadsafe:  </b>Yes
+</td>
+<td align="right" valign="top">
+<a href="#PGM.PARAMETERS.TABLE">Parameters</a><br>
+<a href="#PGM.COMMAND.EXAMPLES">Examples</a><br>
+<a href="#PGM.ERROR.MESSAGES">Error messages</a></td>
+</tr>
+</table>
+
+<div> <a name="PGM"></a>
+<p>The Program (PGM) command is used in a CL source file to identify the start of a CL program or ILE CL procedure that is to be compiled and to specify the parameters that are to be received by the procedure after it is compiled.  If a PGM command is used, it must be the first command in the source file; if a PGM command is not used, a PGM command without parameters is assumed.  The name of the CL program or ILE CL procedure is specified on the CL command used to compile the CL source file.
+</p>
+<p>The PGM command also specifies the parameters to be passed to the CL procedure, if any, when it is called for processing by another program.  For information about how constants are passed, see the PARM parameter description for the Call (CALL) command.
+</p>
+<p>If the CL program or ILE CL procedure source file is compiled to create a program (*PGM) object, the program can be called by a Call (CALL) or Transfer Control (TFRCTL) command, or by a routing entry in a subsystem description.  When the program is called by a CALL or TFRCTL command, the specified parameters can be passed to it.
+</p>
+<p>Parameters defined in this command must be passed when the procedure is called.  The parameters passed must be of the type, length, and order specified in this command.   Each of the parameter values can be a character string, a numeric value, or a CL variable.  When received, each value is given a different CL variable name.  Each CL variable name must be defined in the CL source file by a separate DCL (Declare) command before the procedure is compiled.  Up to 255 parameters can be passed.
+</p>
+<p>ILE programs and procedures will not detect parameter mismatches between the calling program or procedure and the called program or procedure.  If the calling procedure passes more parameters than the called procedure expects, the called procedure will ignore the extra parameters.  If the calling procedure passes fewer parameters than are specified on the called procedures PGM command, the results may be unpredictable.
+</p>
+<p><b>Restrictions:</b> This command is valid only in a CL program or ILE CL procedure.
+</p>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#PGM.Top_Of_Page">Top</a></td></tr>
+</table>
+<hr width="100%" size="2">
+
+<div>
+<h3><a name="PGM.PARAMETERS.TABLE">Parameters</a></h3>
+<table cellspacing="0" cellpadding="4" border="1"><tr>
+<th width="10%" align="left" valign="bottom" bgcolor="aqua">Keyword</th>
+<th width="15%" align="left" valign="bottom" bgcolor="aqua">Description</th>
+<th width="30%" align="left" valign="bottom" bgcolor="aqua">Choices</th>
+<th width="10%" align="left" valign="bottom" bgcolor="aqua">Notes</th>
+</tr>
+<tr>
+<td valign="top"><a href="#PGM.PARM"><b>PARM</b></a></td>
+<td valign="top">Parameter CL variable names</td>
+<td valign="top">Values (up to 255 repetitions): <i>CL variable name</i></td>
+<td valign="top">Optional, Positional 1</td>
+</tr>
+</table>
+
+<table width="100%">
+<tr><td align="right"><a href="#PGM.Top_Of_Page">Top</a></td></tr>
+</table>
+</div>
+<div> <a name="PGM.PARM"></a>
+<h3>Parameter CL variable names (PARM)</h3>
+<p>Specifies one or more CL variables that are to receive the parameter values passed to this procedure.  Specify a CL variable name for each of the values to be received; the name must start with an ampersand (&amp;).
+</p>
+<p>Null values, *N, cannot be specified for any parameter.  The parameter values are associated with the variables in the PARM parameter in the order in which they were specified on the CALL or TFRCTL commands.  The type and length of each value passed must have matching attributes in the calling and receiving programs.  However, for character constants, the receiving program can specify a shorter length; when this is done, the character string passed is truncated to the length declared in the receiving program.  For information on how each data type is passed, see the description of the PARM parameter in the CALL command.
+</p>
+<p>
+<b>Note:     </b>If a parameter value is to be changed by a CL program or ILE CL procedure or specified as a variable on a CL command, it must be in writeable storage.  For example, in C or C++, strings may be read only.  If a read-only string is passed as a parameter to a CL program or ILE CL procedure, and the CL program or ILE CL procedure attempts to change the value of the variable or uses the variable on a CL command, the CL program or ILE CL procedure will fail.
+</p>
+<dl>
+<dt><b><i>CL-variable-name</i></b></dt>
+<dd>Specify the name of the CL variable to receive the value passed from the calling program.  A maximum of 255 variables can be specified.
+</dd>
+</dl>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#PGM.Top_Of_Page">Top</a></td></tr>
+</table>
+<hr width="100%" size="2">
+<div><h3><a name="PGM.COMMAND.EXAMPLES">Examples</a> </h3>
+<p><b>Example 1: CL Procedure Containing No Parameters</b>
+</p>
+<p>
+<pre>
+PGM
+ :
+ENDPGM
+</pre>
+</p>
+<p>This PGM command is the first command in a CL source file for a CL program or ILE CL procedure that contains no parameters.
+</p>
+<p><b>Example 2: CL Procedure Containing Two Parameters</b>
+</p>
+<p>
+<pre>
+PGM   PARM(&amp;X &amp;Y)
+</pre>
+</p>
+<p>This is the first command in a CL source file for a CL program or ILE CL procedure that contains two parameters, &amp;X and &amp;Y, that have values passed to them from the calling program or procedure.
+</p>
+<p><b>Example 3: CL Procedure Containing Two Parameters in Positional Form</b>
+</p>
+<p>
+<pre>
+PGM   (&amp;PARM1 &amp;PARM2)
+</pre>
+</p>
+<p>This is the first command in a CL source file for a CL program or ILE CL procedure that specifies two parameters in positional form, &amp;PARM1 and &amp;PARM2. When this procedure is called, the calling program or procedure passes the parameter values to be used for &amp;PARM1 and &amp;PARM2.
+</p>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#PGM.Top_Of_Page">Top</a></td></tr>
+</table>
+<hr width="100%" size="2">
+<div><h3><a name="PGM.ERROR.MESSAGES">Error messages</a> </h3>
+<p>None
+</p>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#PGM.Top_Of_Page">Top</a></td></tr>
+</table>
+</body>
+</html>

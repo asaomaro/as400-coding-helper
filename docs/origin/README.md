@@ -61,6 +61,38 @@ https://www.ibm.com/docs/api/v1/content/<topic をURLエンコード>?parsebody=
 > **未解決**: `P-SPEC-keywords`（`rzasd/pskwd.htm`）は本文が 149 文字しか返らず gap のまま。
 > 正しいトピックパスの特定が必要。
 
+## 実機のコマンド定義（cmddoc/）
+
+`cmddoc/QSYS_<CMD>.HTML` は **実機のコマンドオブジェクトから `GENCMDDOC` で生成**した
+定義。IBM Documentation のページ（版に固定された文書）と違い、そのシステムで実際に
+受け付けられる定義そのものなので、裏取りに使う。
+
+```sh
+node docs/origin/verify-cl-against-cmddoc.mjs   # 定義と実機の突き合わせ（差分は報告のみ）
+```
+
+取得方法（pub400 は SSH が使える。画面操作より確実で速い）:
+
+```sh
+ssh -p 2222 <user>@pub400.com          # パスワード入力の文言が独自のため
+                                        # sshpass 利用時は -P "password" が要る
+system "GENCMDDOC CMD(QSYS/<CMD>) TODIR('/home/<user>/cmddoc')"
+scp -P 2222 '<user>@pub400.com:/home/<user>/cmddoc/*.HTML' docs/origin/cmddoc/
+```
+
+**定義の正は原典（`cl/`、IBM i 7.4 文書）のまま**で、cmddoc は裏取り用。実機は 7.5 の
+ため版差が出る。現時点の差分は次のとおりで、いずれも 7.5 で追加された項目と確認済み。
+
+| 差分 | 内容 |
+|---|---|
+| 実機にあり定義に無い 6件 | `ALCOBJ.MIRROR` `CRTBNDCL.TGTCCSID` `DLCOBJ.MIRROR` `DLYJOB.RSMDATE` `DLYJOB.CTLEND` `RTVOBJD.BLDID` |
+| 省略時値の差 1件 | `CALL.PARM = *DFT`（7.4 原典には既定値の記載が無い） |
+| required の差 | **0件** |
+| 定義にあり実機に無い | **0件** |
+
+`required` と パラメータ集合が実機と完全一致していることは、原典からの生成が
+正しいことの裏付けになっている。
+
 ## 定義 JSON の生成
 
 CL プロンプター定義 `vscode-extension/resources/prompter/cl/<CMD>.json` は、**原典HTMLから

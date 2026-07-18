@@ -1,0 +1,246 @@
+
+  <!doctype html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+  <html>
+<head><META http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>Add Physical File Member  (ADDPFM)</title>
+</head>
+<body bgcolor="white">
+<a name="ADDPFM.Top_Of_Page"></a>
+<h2>Add Physical File Member  (ADDPFM)</h2>
+<table width="100%">
+<tr>
+<td align="left" valign="top"><b>Where allowed to run:  </b>All environments (*ALL)<br>
+<b>Threadsafe:  </b>Conditional
+</td>
+<td align="right" valign="top">
+<a href="#ADDPFM.PARAMETERS.TABLE">Parameters</a><br>
+<a href="#ADDPFM.COMMAND.EXAMPLES">Examples</a><br>
+<a href="#ADDPFM.ERROR.MESSAGES">Error messages</a></td>
+</tr>
+</table>
+
+<div> <a name="ADDPFM"></a>
+<p>The Add Physical File Member (ADDPFM) command adds a named member to a physical file, which must already exist on the system.  The maximum number of members that can be added to the file is specified for the <b>Maximum members (MAXMBRS)</b> parameter on the Create Physical File (CRTPF) command or the Change Physical File (CHGPF) command.  To add other members to the file, use the ADDPFM command to specify each one.
+</p>
+<p>The number of members that can be added to the physical file is limited to the number specified for the MAXMBRS parameter of the associated CRTPF command.  Each member added has the same attributes as those defined in the physical file, its own set of data records, and its own access path, as specified in the data description specifications (DDS).  The access path determines the order in which the records in that member are processed.
+</p>
+<p><b>Restrictions:</b>
+</p>
+<ul>
+<li>This command is conditionally threadsafe.  In multithreaded jobs, this command is not threadsafe for distributed files and fails for distributed files that use relational databases of type *SNA.  This command is also not threadsafe and fails for Distributed Data Management (DDM) files of type *SNA, when SYSTEM(*RMT) or SYSTEM(*FILETYPE) is specified.
+</li>
+</ul>
+<p>
+<b>Note:     </b>An *EXCLRD lock is required on the file to add a member.  Because this command adds a member to a file in a library, the library must not be locked (*SHRNUP or *EXCLRD in the Allocate Object command) by another job.
+</p>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#ADDPFM.Top_Of_Page">Top</a></td></tr>
+</table>
+<hr width="100%" size="2">
+
+<div>
+<h3><a name="ADDPFM.PARAMETERS.TABLE">Parameters</a></h3>
+<table cellspacing="0" cellpadding="4" border="1"><tr>
+<th width="10%" align="left" valign="bottom" bgcolor="aqua">Keyword</th>
+<th width="15%" align="left" valign="bottom" bgcolor="aqua">Description</th>
+<th width="30%" align="left" valign="bottom" bgcolor="aqua">Choices</th>
+<th width="10%" align="left" valign="bottom" bgcolor="aqua">Notes</th>
+</tr>
+<tr>
+<td valign="top" rowspan="3"><a href="#ADDPFM.FILE"><b>FILE</b></a></td>
+<td valign="top">Physical file</td>
+<td valign="top"><i>Qualified object name</i></td>
+<td valign="top" rowspan="3">Required, Positional 1</td>
+</tr>
+<tr>
+<td valign="top">Qualifier 1: Physical file</td>
+<td valign="top"><i>Name</i></td>
+</tr><tr>
+<td valign="top">Qualifier 2: Library</td>
+<td valign="top"><i>Name</i>, <b><u>*LIBL</u></b>, *CURLIB</td>
+</tr><tr>
+<td valign="top"><a href="#ADDPFM.MBR"><b>MBR</b></a></td>
+<td valign="top">Member</td>
+<td valign="top"><i>Name</i></td>
+<td valign="top">Required, Positional 2</td>
+</tr>
+<tr>
+<td valign="top"><a href="#ADDPFM.TEXT"><b>TEXT</b></a></td>
+<td valign="top">Text 'description'</td>
+<td valign="top"><i>Character value</i>, <b><u>*BLANK</u></b></td>
+<td valign="top">Optional</td>
+</tr>
+<tr>
+<td valign="top"><a href="#ADDPFM.EXPDATE"><b>EXPDATE</b></a></td>
+<td valign="top">Expiration date for member</td>
+<td valign="top"><i>Date</i>, <b><u>*NONE</u></b></td>
+<td valign="top">Optional</td>
+</tr>
+<tr>
+<td valign="top"><a href="#ADDPFM.SHARE"><b>SHARE</b></a></td>
+<td valign="top">Share open data path</td>
+<td valign="top"><b><u>*NO</u></b>, *YES</td>
+<td valign="top">Optional</td>
+</tr>
+<tr>
+<td valign="top"><a href="#ADDPFM.SRCTYPE"><b>SRCTYPE</b></a></td>
+<td valign="top">Source type</td>
+<td valign="top"><i>Simple name</i>, <b><u>*NONE</u></b></td>
+<td valign="top">Optional</td>
+</tr>
+</table>
+
+<table width="100%">
+<tr><td align="right"><a href="#ADDPFM.Top_Of_Page">Top</a></td></tr>
+</table>
+</div>
+<div> <a name="ADDPFM.FILE"></a>
+<h3>Physical file (FILE)</h3>
+<p>Specifies the physical file to which the member is to be added.
+</p>
+<p>This is a required parameter.
+</p>
+<p><b>Qualifier 1: Physical file</b>
+</p>
+<dl>
+<dt><b><i>name</i></b></dt>
+<dd>Specify the name of the physical file.
+</dd>
+</dl>
+<p><b>Qualifier 2: Library</b>
+</p>
+<dl>
+<dt><b><u>*LIBL</u></b></dt>
+<dd>All libraries in the library list for the current thread are searched until the first match is found.
+</dd>
+</dl>
+<dl>
+<dt><b>*CURLIB</b></dt>
+<dd>The current library for the job is used to locate the physical file.  If no library is specified as the current library for the job, QGPL is used.
+</dd>
+<dt><b><i>name</i></b></dt>
+<dd>Specify the library where the physical file is located.
+</dd>
+</dl>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#ADDPFM.Top_Of_Page">Top</a></td></tr>
+</table>
+<div> <a name="ADDPFM.MBR"></a>
+<h3>Member (MBR)</h3>
+<p>Specifies the file member to be added to the physical file.  The file member name must be unique in the file.
+</p>
+<p>If a DDM file is specified for the FILE parameter, and a member name is specified as part of the remote file name of the DDM file, the MBR name specified must match the member name in the remote file name in the DDM file.
+</p>
+<p>This is a required parameter.
+</p>
+<dl>
+<dt><b><i>name</i></b></dt>
+<dd>Specify the name of the file member to be added.
+</dd>
+</dl>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#ADDPFM.Top_Of_Page">Top</a></td></tr>
+</table>
+<div> <a name="ADDPFM.TEXT"></a>
+<h3>Text 'description' (TEXT)</h3>
+<p>Specifies the text that briefly describes the object.
+</p>
+<dl>
+<dt><b><u>*BLANK</u></b></dt>
+<dd>No text is specified.
+</dd>
+<dt><b><i>character-value</i></b></dt>
+<dd>Specify no more than 50 characters of text, enclosed in apostrophes.
+</dd>
+</dl>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#ADDPFM.Top_Of_Page">Top</a></td></tr>
+</table>
+<div> <a name="ADDPFM.EXPDATE"></a>
+<h3>Expiration date for member (EXPDATE)</h3>
+<p>Specifies the expiration date of the physical file member.
+</p>
+<dl>
+<dt><b><u>*NONE</u></b></dt>
+<dd>No expiration date is specified.
+</dd>
+</dl>
+<dl>
+<dt><b><i>date</i></b></dt>
+<dd>Specify the date after which the file member cannot be used.  The date must be enclosed in apostrophes if date separator characters are used in the value.
+</dd>
+</dl>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#ADDPFM.Top_Of_Page">Top</a></td></tr>
+</table>
+<div> <a name="ADDPFM.SHARE"></a>
+<h3>Share open data path (SHARE)</h3>
+<p>Specifies whether the open data path (ODP) is shared with other programs in the same routing step.  When an ODP is shared, the programs accessing the file share facilities such as the file status and the buffer.
+</p>
+<dl>
+<dt><b><u>*NO</u></b></dt>
+<dd>The ODP is not shared with other programs in the routing step.  A new ODP for the file is created and used every time a program opens the file.
+</dd>
+</dl>
+<dl>
+<dt><b>*YES</b></dt>
+<dd>The same ODP is shared with each program in the job that also specifies *YES when it opens the file.
+</dd>
+</dl>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#ADDPFM.Top_Of_Page">Top</a></td></tr>
+</table>
+<div> <a name="ADDPFM.SRCTYPE"></a>
+<h3>Source type (SRCTYPE)</h3>
+<p>Specifies the source type attribute to be assigned to the new member.  A source type can only be specified if the physical file was created using the Create Source Physical File (CRTSRCPF) command, or using the Create Physical File (CRTPF) command with *SRC specified for the <b>File type (FILETYPE)</b> parameter.
+</p>
+<dl>
+<dt><b><u>*NONE</u></b></dt>
+<dd>No source type is specified.
+</dd>
+<dt><b><i>character-value</i></b></dt>
+<dd>Specify the source type for the file member.  The source type is a character string of no more than 10 characters.  The first character must be alphabetic (including the characters $, @, or #), and the remaining characters must be alphanumeric or an underline.
+</dd>
+</dl>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#ADDPFM.Top_Of_Page">Top</a></td></tr>
+</table>
+<hr width="100%" size="2">
+<div><h3><a name="ADDPFM.COMMAND.EXAMPLES">Examples</a> </h3>
+<p>
+<pre>
+ADDPFM   FILE(INVENTX)  MBR(MONDAYTX)
+         TEXT('Monday''s Inventory Transactions')
+</pre>
+</p>
+<p>This command adds a member named MONDAYTX to the physical file named INVENTX. The library list (*LIBL) is used to find the file because the FILE value is not qualified by a library name. The size of the member and the storage allocation values assigned to this member were specified in the CRTPF command that created the physical file. The text, <i>Monday's Inventory Transactions,</i> describes this member of the INVENTX file.
+</p>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#ADDPFM.Top_Of_Page">Top</a></td></tr>
+</table>
+<hr width="100%" size="2">
+<div><h3><a name="ADDPFM.ERROR.MESSAGES">Error messages</a> </h3>
+<p><b><u>*ESCAPE Messages</u></b>
+</p>
+<dl>
+<dt><b>CPF3204</b></dt>
+<dd>Cannot find object needed for file &amp;1 in &amp;2.
+</dd>
+<dt><b>CPF7306</b></dt>
+<dd>Member &amp;1 not added to file &amp;2 in &amp;3.
+</dd>
+</dl>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#ADDPFM.Top_Of_Page">Top</a></td></tr>
+</table>
+</body>
+</html>

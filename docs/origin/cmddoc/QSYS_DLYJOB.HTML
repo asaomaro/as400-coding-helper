@@ -1,0 +1,186 @@
+
+  <!doctype html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+  <html>
+<head><META http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>Delay Job  (DLYJOB)</title>
+</head>
+<body bgcolor="white">
+<a name="DLYJOB.Top_Of_Page"></a>
+<h2>Delay Job  (DLYJOB)</h2>
+<table width="100%">
+<tr>
+<td align="left" valign="top"><b>Where allowed to run:  </b>All environments (*ALL)<br>
+<b>Threadsafe:  </b>Yes
+</td>
+<td align="right" valign="top">
+<a href="#DLYJOB.PARAMETERS.TABLE">Parameters</a><br>
+<a href="#DLYJOB.COMMAND.EXAMPLES">Examples</a><br>
+<a href="#DLYJOB.ERROR.MESSAGES">Error messages</a></td>
+</tr>
+</table>
+
+<div> <a name="DLYJOB"></a>
+<p>The Delay Job (DLYJOB) command causes your current job to wait for a specified number of seconds, or until a specified time of day, before running resumes.
+</p>
+<p>
+<b>Note:     </b>A value must be specified for either the <b>Job delay time</b> (DLY) parameter or the <b>Resume job time</b> (RSMTIME) parameter but not for both.
+</p>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#DLYJOB.Top_Of_Page">Top</a></td></tr>
+</table>
+<hr width="100%" size="2">
+
+<div>
+<h3><a name="DLYJOB.PARAMETERS.TABLE">Parameters</a></h3>
+<table cellspacing="0" cellpadding="4" border="1"><tr>
+<th width="10%" align="left" valign="bottom" bgcolor="aqua">Keyword</th>
+<th width="15%" align="left" valign="bottom" bgcolor="aqua">Description</th>
+<th width="30%" align="left" valign="bottom" bgcolor="aqua">Choices</th>
+<th width="10%" align="left" valign="bottom" bgcolor="aqua">Notes</th>
+</tr>
+<tr>
+<td valign="top"><a href="#DLYJOB.DLY"><b>DLY</b></a></td>
+<td valign="top">Job delay time</td>
+<td valign="top">1-999999</td>
+<td valign="top">Optional, Positional 1</td>
+</tr>
+<tr>
+<td valign="top"><a href="#DLYJOB.RSMTIME"><b>RSMTIME</b></a></td>
+<td valign="top">Resume job time</td>
+<td valign="top"><i>Time</i></td>
+<td valign="top">Optional, Positional 2</td>
+</tr>
+<tr>
+<td valign="top"><a href="#DLYJOB.RSMDATE"><b>RSMDATE</b></a></td>
+<td valign="top">Resume job date</td>
+<td valign="top"><i>Date</i>, <b><u>*NEXT</u></b></td>
+<td valign="top">Optional</td>
+</tr>
+<tr>
+<td valign="top"><a href="#DLYJOB.CTLEND"><b>CTLEND</b></a></td>
+<td valign="top">Controlled end action</td>
+<td valign="top"><b><u>*DFT</u></b>, *DLY, *END, *RTN</td>
+<td valign="top">Optional</td>
+</tr>
+</table>
+
+<table width="100%">
+<tr><td align="right"><a href="#DLYJOB.Top_Of_Page">Top</a></td></tr>
+</table>
+</div>
+<div> <a name="DLYJOB.DLY"></a>
+<h3>Job delay time (DLY)</h3>
+<p>Specifies the number of seconds to delay the job.  The DLY keyword allows a maximum value of 999999 seconds (approximately 11 days, 14 hours).  This is a required parameter if the <b>Resume job time</b> (RSMTIME) parameter is not specified.
+</p>
+<dl>
+<dt><b><i>1-999999</i></b></dt>
+<dd>Specify the number of seconds to delay the job.
+</dd>
+</dl>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#DLYJOB.Top_Of_Page">Top</a></td></tr>
+</table>
+<div> <a name="DLYJOB.RSMTIME"></a>
+<h3>Resume job time (RSMTIME)</h3>
+<p>Specifies the time of day the job resumes running.  When specifying a resume time without specifying a resume date, the date is implied by the time specified.  If the resume time is later than the current time of day, the date is assumed to be the current date.  If the resume time is earlier than the current time of day, then tomorrow's date is assumed (the delay lasts until that time tomorrow).  This is a required parameter if the <b>Job delay time</b> (DLY) parameter is not specified.
+</p>
+<dl>
+<dt><b><i>time</i></b></dt>
+<dd>Specify the time of day the job resumes running.
+</dd>
+</dl>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#DLYJOB.Top_Of_Page">Top</a></td></tr>
+</table>
+<div> <a name="DLYJOB.RSMDATE"></a>
+<h3>Resume job date (RSMDATE)</h3>
+<p>Specifies the date the job resumes running.  This parameter can only be specified when the <b>Resume job time</b> (RSMTIME) parameter is specified.  The resume date and resume time must be later than the current date and time.
+</p>
+<dl>
+<dt><b><u>*NEXT</u></b></dt>
+<dd>The date when the next resume time occurs.  If the resume time is later than the current time of day, the current date is used.  If the resume time is earlier than the current time of day, then tomorrow's date is used.
+</dd>
+<dt><b><i>date</i></b></dt>
+<dd>Specify the date the job resumes running.
+</dd>
+</dl>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#DLYJOB.Top_Of_Page">Top</a></td></tr>
+</table>
+<div> <a name="DLYJOB.CTLEND"></a>
+<h3>Controlled end action (CTLEND)</h3>
+<p>Specifies the action to be taken if the job is ended in a controlled manner before the delay has completed.
+</p>
+<dl>
+<dt><b><u>*DFT</u></b></dt>
+<dd>The value in environment variable QIBM_DLYJOB_CTLEND is used to determine the default action for a controlled end.  If the environment variable is not defined or not set to one of the CTLEND parameter values, then *DLY is the default action.
+</dd>
+<dt><b>*DLY</b></dt>
+<dd>The delay continues until it completes or the controlled end delay time expires and the job is ended.
+</dd>
+<dt><b>*END</b></dt>
+<dd>The job is ended immediately without waiting for the delay to complete or the controlled end delay time to expire.
+</dd>
+<dt><b>*RTN</b></dt>
+<dd>Control returns to the caller of the DLYJOB command without waiting for the delay to complete.
+</dd>
+</dl>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#DLYJOB.Top_Of_Page">Top</a></td></tr>
+</table>
+<hr width="100%" size="2">
+<div><h3><a name="DLYJOB.COMMAND.EXAMPLES">Examples</a> </h3>
+<p><b>Example 1: Delaying a Job for 15 Seconds</b>
+</p>
+<p>
+<pre>
+DLYJOB   DLY(15)
+</pre>
+</p>
+<p>This command delays running of the job for 15 seconds.
+</p>
+<p><b>Example 2: Delaying a Job Until Midnight</b>
+</p>
+<p>
+<pre>
+DLYJOB   RSMTIME('000000')
+</pre>
+</p>
+<p>This command delays running of the job until midnight tonight.
+</p>
+<p><b>Example 3: Delaying Until Future Date or Controlled End</b>
+</p>
+<p>
+<pre>
+DLYJOB   RSMTIME('08:00:00')
+         RSMDATE('06/01/36')
+         CTLEND(*RTN)
+RTVJOBA   ENDSTS(&amp;JOBEND)
+</pre>
+</p>
+<p>This command delays running of the job until June first in the year 2036 or until the job is ended controlled.  The RTVJOBA command gets the controlled end status.
+</p>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#DLYJOB.Top_Of_Page">Top</a></td></tr>
+</table>
+<hr width="100%" size="2">
+<div><h3><a name="DLYJOB.ERROR.MESSAGES">Error messages</a> </h3>
+<p><b><u>*ESCAPE Messages</u></b>
+</p>
+<dl>
+<dt><b>CPF091A</b></dt>
+<dd>Date and time not allowed.
+</dd>
+</dl>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#DLYJOB.Top_Of_Page">Top</a></td></tr>
+</table>
+</body>
+</html>

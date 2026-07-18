@@ -1,0 +1,286 @@
+
+  <!doctype html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+  <html>
+<head><META http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>Send Reply  (SNDRPY)</title>
+</head>
+<body bgcolor="white">
+<a name="SNDRPY.Top_Of_Page"></a>
+<h2>Send Reply  (SNDRPY)</h2>
+<table width="100%">
+<tr>
+<td align="left" valign="top"><b>Where allowed to run:  </b>All environments (*ALL)<br>
+<b>Threadsafe:  </b>Yes
+</td>
+<td align="right" valign="top">
+<a href="#SNDRPY.PARAMETERS.TABLE">Parameters</a><br>
+<a href="#SNDRPY.COMMAND.EXAMPLES">Examples</a><br>
+<a href="#SNDRPY.ERROR.MESSAGES">Error messages</a></td>
+</tr>
+</table>
+
+<div> <a name="SNDRPY"></a>
+<p>The Send Reply (SNDRPY) command sends a reply message to the sender of an inquiry message.  The message that is answered is the one having the specified message reference key that was received at the specified message queue.
+</p>
+<p>A reply handling exit program can be registered in the system registration facility for exit point QIBM_QMH_REPLY_INQ.  A reply handling exit program can accept, reject or replace a reply value.  If the reply is rejected by an exit program, diagnostic message CPD2476 (Reply rejected by a reply handling exit program) is sent to the program running this SNDRPY command.  This is followed by an escape message CPF2422 (Reply not valid).  If the reply is replaced by an exit program, the send reply function sends a diagnostic message to itself.  The message is CPD2479 (Reply handling exit program requested to replace a reply value).  After the reply is sent, CPF2458 (Reply replaced by a reply handling exit program) will be sent as a diagnostic message and a status message to the program running this SNDRPY command.  The status message can be monitored if the program needs to be aware of the condition when a reply value other than what was specified was sent.
+</p>
+<p>If the specified message queue is not allocated to the job in which this command is entered, it is implicitly allocated by this command for the duration of the command.
+</p>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#SNDRPY.Top_Of_Page">Top</a></td></tr>
+</table>
+<hr width="100%" size="2">
+
+<div>
+<h3><a name="SNDRPY.PARAMETERS.TABLE">Parameters</a></h3>
+<table cellspacing="0" cellpadding="4" border="1"><tr>
+<th width="10%" align="left" valign="bottom" bgcolor="aqua">Keyword</th>
+<th width="15%" align="left" valign="bottom" bgcolor="aqua">Description</th>
+<th width="30%" align="left" valign="bottom" bgcolor="aqua">Choices</th>
+<th width="10%" align="left" valign="bottom" bgcolor="aqua">Notes</th>
+</tr>
+<tr>
+<td valign="top"><a href="#SNDRPY.MSGKEY"><b>MSGKEY</b></a></td>
+<td valign="top">Message key</td>
+<td valign="top"><i>Character value</i></td>
+<td valign="top">Required, Positional 1</td>
+</tr>
+<tr>
+<td valign="top" rowspan="3"><a href="#SNDRPY.MSGQ"><b>MSGQ</b></a></td>
+<td valign="top">Message queue</td>
+<td valign="top"><i>Qualified object name</i></td>
+<td valign="top" rowspan="3">Required, Positional 2</td>
+</tr>
+<tr>
+<td valign="top">Qualifier 1: Message queue</td>
+<td valign="top"><i>Name</i></td>
+</tr><tr>
+<td valign="top">Qualifier 2: Library</td>
+<td valign="top"><i>Name</i>, <b><u>*LIBL</u></b>, *CURLIB</td>
+</tr><tr>
+<td valign="top"><a href="#SNDRPY.RPY"><b>RPY</b></a></td>
+<td valign="top">Reply</td>
+<td valign="top"><i>Character value</i>, <b><u>*DFT</u></b></td>
+<td valign="top">Optional, Positional 3</td>
+</tr>
+<tr>
+<td valign="top"><a href="#SNDRPY.RMV"><b>RMV</b></a></td>
+<td valign="top">Remove message</td>
+<td valign="top"><b><u>*YES</u></b>, *NO</td>
+<td valign="top">Optional</td>
+</tr>
+<tr>
+<td valign="top"><a href="#SNDRPY.RJTDFTRPY"><b>RJTDFTRPY</b></a></td>
+<td valign="top">Reject default reply</td>
+<td valign="top"><b><u>*NOALWRJT</u></b>, *ALWRJT</td>
+<td valign="top">Optional</td>
+</tr>
+<tr>
+<td valign="top"><a href="#SNDRPY.CCSID"><b>CCSID</b></a></td>
+<td valign="top">Coded character set ID</td>
+<td valign="top">1-65535, *HEX, <b><u>*JOB</u></b></td>
+<td valign="top">Optional</td>
+</tr>
+</table>
+
+<table width="100%">
+<tr><td align="right"><a href="#SNDRPY.Top_Of_Page">Top</a></td></tr>
+</table>
+</div>
+<div> <a name="SNDRPY.MSGKEY"></a>
+<h3>Message key (MSGKEY)</h3>
+<p>Specifies the message reference key of the message that the reply answers.
+</p>
+<p>This is a required parameter.
+</p>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#SNDRPY.Top_Of_Page">Top</a></td></tr>
+</table>
+<div> <a name="SNDRPY.MSGQ"></a>
+<h3>Message queue (MSGQ)</h3>
+<p>Specifies the message queue that received the inquiry message to be answered.
+</p>
+<p>This is a required parameter.
+</p>
+<p><b>Qualifier 1: Message queue</b>
+</p>
+<dl>
+<dt><b><i>name</i></b></dt>
+<dd>Specify the name of the message queue.
+</dd>
+</dl>
+<p><b>Qualifier 2: Library</b>
+</p>
+<dl>
+<dt><b><u>*LIBL</u></b></dt>
+<dd>All libraries in the library list for the current thread are searched until the first match is found.
+</dd>
+</dl>
+<dl>
+<dt><b>*CURLIB</b></dt>
+<dd>The current library for the job is used to locate the message queue.  If no current library entry exists in the library list, QGPL is used.
+</dd>
+<dt><b><i>name</i></b></dt>
+<dd>Specify the library where the message queue is located.
+</dd>
+</dl>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#SNDRPY.Top_Of_Page">Top</a></td></tr>
+</table>
+<div> <a name="SNDRPY.RPY"></a>
+<h3>Reply (RPY)</h3>
+<p>Specifies the reply that the program sends as a response to the inquiry message.
+</p>
+<dl>
+<dt><b><u>*DFT</u></b></dt>
+<dd>The default reply stored in the message description of the inquiry message that was sent is sent as the reply.  If no default is specified in the message description of the inquiry message, the system default reply, *N, is used.
+</dd>
+<dt><b><i>'reply-text'</i></b></dt>
+<dd>Enter the text (enclosed in apostrophes if it contains blanks or special characters) or a CL variable that contains the text that is sent as the program's reply to the inquiry message.  The number of characters allowed for the reply and their format are defined by the validity specifications given in the Add Message Description (ADDMSGD) command for the specified inquiry message.  However, if no validity specifications are defined for replies in the ADDMSGD command, as many as 132 characters can be used in the reply text.
+<p><b>Coded Character Set Identifier (CCSID) Considerations</b>
+</p>
+<p>If the inquiry message that this reply is being sent to is an immediate message, the text supplied for the RPY parameter is assumed to be in the CCSID of the job running this command unless a coded character set identifier is supplied in the CCSID parameter.  If the inquiry message that this reply is sent to is a predefined message, the text supplied in the RPY parameter is assumed to be 65535 and is not converted.  For more information about the message handler and its use of CCSIDs, see the i5/OS globalization topic collection in the IBM i Information Center at http://www.ibm.com/systems/i/infocenter/.
+</p>
+</dd>
+</dl>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#SNDRPY.Top_Of_Page">Top</a></td></tr>
+</table>
+<div> <a name="SNDRPY.RMV"></a>
+<h3>Remove message (RMV)</h3>
+<p>Specifies whether the inquiry message and its reply are removed from the specified message queue.
+</p>
+<dl>
+<dt><b><u>*YES</u></b></dt>
+<dd>The message and its reply are removed from the message queue when the reply is sent.
+</dd>
+<dt><b>*NO</b></dt>
+<dd>The message and its reply are held in the message queue.  The inquiry message cannot be replied to more than once, but it can be received or displayed multiple times.
+</dd>
+</dl>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#SNDRPY.Top_Of_Page">Top</a></td></tr>
+</table>
+<div> <a name="SNDRPY.RJTDFTRPY"></a>
+<h3>Reject default reply (RJTDFTRPY)</h3>
+<p>Specifies whether a reply handling exit program will be allowed to reject a default reply.  A default reply is requested by using blanks as the value for the reply parameter.  A reply handling exit program can be registered via the system registration facility for exit point QIBM_QMH_REPLY_INQ.  If a default reply is not being sent, this parameter is ignored and a reply handling exit program can reject or replace the reply value.
+</p>
+<dl>
+<dt><b><u>*NOALWRJT</u></b></dt>
+<dd>A reply handling exit program will not be allowed to reject a default reply.
+</dd>
+<dt><b>*ALWRJT</b></dt>
+<dd>A reply handling exit program will be allowed to reject a default reply.  If an exit program rejects the reply, message CPD2476 (Reply rejected by a reply handling exit program) will be sent as a diagnostic message to the program using this command.  The CPD2476 will be followed by a CPF2422 (Reply not valid) escape message that the program using this command should monitor for to handle and recover from error situations.
+</dd>
+</dl>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#SNDRPY.Top_Of_Page">Top</a></td></tr>
+</table>
+<div> <a name="SNDRPY.CCSID"></a>
+<h3>Coded character set ID (CCSID)</h3>
+<p>Specifies the coded character set identifier (CCSID) that the supplied reply text is in.  If the inquiry message that this reply is sent to is a predefined message, this parameter is ignored and the text supplied for the RPY parameter is assumed to be 65535 and is not converted.  For more information about the message handler and its use of CCSIDs, see the i5/OS globalization topic collection in the IBM i Information Center at http://www.ibm.com/systems/i/infocenter/.
+</p>
+<dl>
+<dt><b><u>*JOB</u></b></dt>
+<dd>The reply text is assumed to be in the CCSID of the job running this command.
+</dd>
+<dt><b>*HEX</b></dt>
+<dd>The reply text is not converted.  CCSID 65535 is used.
+</dd>
+<dt><b><i>coded-character-set-identifier</i></b></dt>
+<dd>Specify a valid CCSID in which you want your reply text to be considered in.  Valid values range from 1 through 65535.  This command will validate the CCSID.  See the Globalization information in the iSeries Information Center at http://www.ibm.com/eserver/iseries/infocenter for a list of valid CCSID values.
+</dd>
+</dl>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#SNDRPY.Top_Of_Page">Top</a></td></tr>
+</table>
+<hr width="100%" size="2">
+<div><h3><a name="SNDRPY.COMMAND.EXAMPLES">Examples</a> </h3>
+<p>
+<pre>
+SNDRPY   MSGKEY(&amp;KEY)  MSGQ(SMITH)  RPY(YES)
+</pre>
+</p>
+<p>This command sends a reply of YES to the message whose reference key is specified by &amp;KEY, which was received at message queue SMITH. Because the reply contains only one word, the reply does not have to be enclosed in apostrophes.
+</p>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#SNDRPY.Top_Of_Page">Top</a></td></tr>
+</table>
+<hr width="100%" size="2">
+<div><h3><a name="SNDRPY.ERROR.MESSAGES">Error messages</a> </h3>
+<p><b><u>*ESCAPE Messages</u></b>
+</p>
+<dl>
+<dt><b>CPF2401</b></dt>
+<dd>Not authorized to library &amp;1.
+</dd>
+<dt><b>CPF2403</b></dt>
+<dd>Message queue &amp;1 in &amp;2 not found.
+</dd>
+<dt><b>CPF2408</b></dt>
+<dd>Not authorized to message queue &amp;1.
+</dd>
+<dt><b>CPF2410</b></dt>
+<dd>Message key not found in message queue &amp;1.
+</dd>
+<dt><b>CPF2411</b></dt>
+<dd>Not authorized to message file &amp;1 in &amp;2.
+</dd>
+<dt><b>CPF2420</b></dt>
+<dd>Reply already sent for inquiry or notify message.
+</dd>
+<dt><b>CPF2422</b></dt>
+<dd>Reply not valid.
+</dd>
+<dt><b>CPF2432</b></dt>
+<dd>Cannot send reply to message type other than *INQ or *NOTIFY.
+</dd>
+<dt><b>CPF2433</b></dt>
+<dd>Function not allowed for system log message queue &amp;1.
+</dd>
+<dt><b>CPF2460</b></dt>
+<dd>Message queue &amp;1 could not be extended.
+</dd>
+<dt><b>CPF247E</b></dt>
+<dd>CCSID &amp;1 is not valid.
+</dd>
+<dt><b>CPF2471</b></dt>
+<dd>Length of field not valid.
+</dd>
+<dt><b>CPF2477</b></dt>
+<dd>Message queue &amp;1 currently in use.
+</dd>
+<dt><b>CPF2547</b></dt>
+<dd>Damage to message file QCPFMSG.
+</dd>
+<dt><b>CPF2548</b></dt>
+<dd>Damage to message file &amp;1 in &amp;2.
+</dd>
+<dt><b>CPF9830</b></dt>
+<dd>Cannot assign library &amp;1.
+</dd>
+<dt><b>CPF9838</b></dt>
+<dd>User profile storage limit exceeded.
+</dd>
+</dl>
+<p><b><u>*STATUS Messages</u></b>
+</p>
+<dl>
+<dt><b>CPF2458</b></dt>
+<dd>Reply replaced by reply handling exit program.
+</dd>
+</dl>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#SNDRPY.Top_Of_Page">Top</a></td></tr>
+</table>
+</body>
+</html>

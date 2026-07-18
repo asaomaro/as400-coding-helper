@@ -1,0 +1,236 @@
+
+  <!doctype html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+  <html>
+<head><META http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>Send/Receive File  (SNDRCVF)</title>
+</head>
+<body bgcolor="white">
+<a name="SNDRCVF.Top_Of_Page"></a>
+<h2>Send/Receive File  (SNDRCVF)</h2>
+<table width="100%">
+<tr>
+<td align="left" valign="top"><b>Where allowed to run:  </b>
+<ul><li>Batch program (*BPGM)</li>
+<li>Interactive program (*IPGM)</li>
+</ul><b>Threadsafe:  </b>No
+</td>
+<td align="right" valign="top">
+<a href="#SNDRCVF.PARAMETERS.TABLE">Parameters</a><br>
+<a href="#SNDRCVF.COMMAND.EXAMPLES">Examples</a><br>
+<a href="#SNDRCVF.ERROR.MESSAGES">Error messages</a></td>
+</tr>
+</table>
+
+<div> <a name="SNDRCVF"></a>
+<p>The Send/Receive File (SNDRCVF) command is used by a CL program or ILE CL procedure to send data to and receive data from a device that is being used interactively by a user.  The data is passed between the program in which the SNDRCVF command is used and the display device identified in the command.  The data is passed using the display device file that was declared in the program.  (A Declare File (DCLF) command included in the source used to compile the program was used to declare the file.)  The data for each send/receive operation is passed as one record in a format identified by the RCDFMT parameter of this command (the format is defined in the data description specifications (DDS)).  One CL variable is used for each field of the record format to pass the data.  The CL variables used (including DDS indicators) are declared implicitly.
+</p>
+<p>Of the record formats specified in the DCLF command, only one can be specified in each SNDRCVF command.  If the device file has not been opened, it is opened by this command.  The file and record format specified in this command can be overridden by an Override with Display File (OVRDSPF) command if that command is entered before the file is opened.  However, care should be taken that the fields in the overriding record format correspond to the CL variables declared in the program.
+</p>
+<p><b>Restrictions:</b> This command is valid only within a CL program or ILE CL procedure and only for display files.  It cannot be used with database files.
+</p>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#SNDRCVF.Top_Of_Page">Top</a></td></tr>
+</table>
+<hr width="100%" size="2">
+
+<div>
+<h3><a name="SNDRCVF.PARAMETERS.TABLE">Parameters</a></h3>
+<table cellspacing="0" cellpadding="4" border="1"><tr>
+<th width="10%" align="left" valign="bottom" bgcolor="aqua">Keyword</th>
+<th width="15%" align="left" valign="bottom" bgcolor="aqua">Description</th>
+<th width="30%" align="left" valign="bottom" bgcolor="aqua">Choices</th>
+<th width="10%" align="left" valign="bottom" bgcolor="aqua">Notes</th>
+</tr>
+<tr>
+<td valign="top"><a href="#SNDRCVF.DEV"><b>DEV</b></a></td>
+<td valign="top">Display device</td>
+<td valign="top"><i>Name</i>, <b><u>*FILE</u></b></td>
+<td valign="top">Optional, Positional 1</td>
+</tr>
+<tr>
+<td valign="top"><a href="#SNDRCVF.RCDFMT"><b>RCDFMT</b></a></td>
+<td valign="top">Record format</td>
+<td valign="top"><i>Name</i>, <b><u>*FILE</u></b></td>
+<td valign="top">Optional, Positional 2</td>
+</tr>
+<tr>
+<td valign="top"><a href="#SNDRCVF.OPNID"><b>OPNID</b></a></td>
+<td valign="top">Open file identifier</td>
+<td valign="top"><i>Simple name</i>, <b><u>*NONE</u></b></td>
+<td valign="top">Optional</td>
+</tr>
+<tr>
+<td valign="top"><a href="#SNDRCVF.WAIT"><b>WAIT</b></a></td>
+<td valign="top">Wait</td>
+<td valign="top"><b><u>*YES</u></b>, *NO</td>
+<td valign="top">Optional</td>
+</tr>
+</table>
+
+<table width="100%">
+<tr><td align="right"><a href="#SNDRCVF.Top_Of_Page">Top</a></td></tr>
+</table>
+</div>
+<div> <a name="SNDRCVF.DEV"></a>
+<h3>Display device (DEV)</h3>
+<p>Specifies the name of the display device that the data is to be sent to and the user's data is to be received from.  A CL variable can be specified for this parameter so that the device name can be changed without changing the command.
+</p>
+<dl>
+<dt><b><u>*FILE</u></b></dt>
+<dd>The data is to be sent to and received from the device associated with the device file (the device file that was declared in the FILE parameter of the DCLF command).  If more than one device name is specified in the device file, *FILE cannot be specified.
+</dd>
+<dt><b><i>name</i></b></dt>
+<dd>Specify the name of the device or the name of the CL variable that contains the name of the device that the CL program or ILE CL procedure is to send data to and receive data from.  If a CL variable name is used in this parameter, only one SNDRCVF command is needed in the program to receive data from several devices.
+</dd>
+</dl>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#SNDRCVF.Top_Of_Page">Top</a></td></tr>
+</table>
+<div> <a name="SNDRCVF.RCDFMT"></a>
+<h3>Record format (RCDFMT)</h3>
+<p>Specifies the name of the record format that is to be used to pass the data between the CL program or ILE CL procedure and the user.  The format contains all the fields in the record.  This parameter must be coded with a record format name if there is more than one record format in the device file; *FILE cannot be coded if there is more than one.  SNDRCVF ignores the INVITE DDS keyword.
+</p>
+<dl>
+<dt><b><u>*FILE</u></b></dt>
+<dd>There is only one record format in the device file; that format is to be used to send the data to and receive the data from the user.
+</dd>
+<dt><b><i>name</i></b></dt>
+<dd>Specifies the name of the record format in which the data is to be sent to and received from the user.  A CL variable name cannot be used to specify the record format name.
+</dd>
+</dl>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#SNDRCVF.Top_Of_Page">Top</a></td></tr>
+</table>
+<div> <a name="SNDRCVF.OPNID"></a>
+<h3>Open file identifier (OPNID)</h3>
+<p>Specifies the open file identifier that was declared on a preceding Declare File (DCLF) command in the same CL program or ILE CL procedure.  A CL variable cannot be specified for this parameter value.
+</p>
+<dl>
+<dt><b><u>*NONE</u></b></dt>
+<dd>No open file identifier is provided.  This command will use the file associated with the DCLF command that had *NONE specified for the OPNID parameter. Only one file can be declared in a CL program or ILE CL procedure with *NONE as the open file identifier.
+</dd>
+<dt><b><i>simple-name</i></b></dt>
+<dd>Specify a name that matches the OPNID parameter value on a preceding DCLF command in the same CL program or ILE CL procedure.
+</dd>
+</dl>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#SNDRCVF.Top_Of_Page">Top</a></td></tr>
+</table>
+<div> <a name="SNDRCVF.WAIT"></a>
+<h3>Wait (WAIT)</h3>
+<p>Specifies whether the CL program or ILE CL procedure either waits to receive the data from the user's device or continues to process the commands that follow this SNDRCVF command.  If WAIT(*NO) is specified, the program must issue a WAIT command later in the program to complete the input operation.
+</p>
+<p>
+<b>Note:     </b>A CL variable cannot be coded on this parameter.
+</p>
+<dl>
+<dt><b><u>*YES</u></b></dt>
+<dd>The program waits until the input operation from the device is completed; the next command is not processed until then.
+</dd>
+<dt><b>*NO</b></dt>
+<dd>The program does not wait for the input data; it continues to process commands until a WAIT command is reached later in the program.
+</dd>
+</dl>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#SNDRCVF.Top_Of_Page">Top</a></td></tr>
+</table>
+<hr width="100%" size="2">
+<div><h3><a name="SNDRCVF.COMMAND.EXAMPLES">Examples</a> </h3>
+<p><b>Example 1: Using Display File with One Record Format</b>
+</p>
+<p>
+<pre>
+DCLF   FILE(MENU1)
+ :
+SNDRCVF
+</pre>
+</p>
+<p>This command sends and receives user data by way of the device file MENU1. Only one record format exists in the file. The device used is specified in the file.
+</p>
+<p><b>Example 2: Using Display File with Multiple Record Formats</b>
+</p>
+<p>
+<pre>
+DCLF   FILE(SCR)  RCDFMT(REC8)
+ :
+SNDRCVF   RCDFMT(REC8)
+</pre>
+</p>
+<p>The CL program or ILE CL procedure sends data to a user and receives data for the user who is using the device named in the device file (*FILE is assumed because DEV is not specified). The data is passed in the format specified by REC8 record format in the device file named SCR. The CL program or ILE CL procedure waits for the user data before continuing.
+</p>
+<p><b>Example 3: Using a CL Variable for Device Name</b>
+</p>
+<p>
+<pre>
+DCLF   FILE(DF1)  RCDFMT(REC8)
+ :
+SNDRCVF   DEV(&amp;DN)  RCDFMT(REC8)  WAIT(*NO)
+ :
+WAIT   DEV(&amp;DN)
+</pre>
+</p>
+<p>This command sends and receives user data by way of the device file named DF1. Using the record format REC8, the CL program or ILE CL procedure passes data between itself and the user who is at the device named in the variable &amp;DN, but it does not wait for a response to come back.  If the procedure sends and receives data from several devices, the same SNDRCVF command can be used. Only the device specified by &amp;DN for the DEV parameter must be changed. A WAIT command for each device must be issued later in the procedure to ensure that all the devices respond.
+</p>
+<p><b>Example 4: Using Open File Identifier</b>
+</p>
+<p>
+<pre>
+DCLF   FILE(SCREEN1)  RCDFMT(REC1 REC2)  OPNID(OUTDSP1)
+DCLF   FILE(SCREEN2)  RCDFMT(REC3 REC4)  OPNID(OUTDSP2)
+ :
+SNDRCVF   DEV(*FILE)  RCDFMT(REC2)  OPNID(OUTDSP1)  WAIT(*YES)
+</pre>
+</p>
+<p>The device file named SCREEN1 is used to send data to the display device named in the same device file and wait for input.  The data is presented to the user in the format specified by record format REC2.  The SNDRCVF command is associated with device file SCREEN1 because the open file identifier specified on the SNDRCVF command matches the open file identifier specified on the DCLF command for display file SCREEN1.
+</p>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#SNDRCVF.Top_Of_Page">Top</a></td></tr>
+</table>
+<hr width="100%" size="2">
+<div><h3><a name="SNDRCVF.ERROR.MESSAGES">Error messages</a> </h3>
+<p><b><u>*ESCAPE Messages</u></b>
+</p>
+<dl>
+<dt><b>CPF0859</b></dt>
+<dd>File override caused I/O buffer size to be exceeded.
+</dd>
+<dt><b>CPF0861</b></dt>
+<dd>File &amp;1 in library &amp;2 is not a display file.
+</dd>
+<dt><b>CPF0863</b></dt>
+<dd>Value of binary data too large for decimal CL variable.
+</dd>
+<dt><b>CPF0864</b></dt>
+<dd>End of file detected for file &amp;1 in &amp;2.
+</dd>
+<dt><b>CPF0883</b></dt>
+<dd>*FILE not valid in DEV parameter for file &amp;1.
+</dd>
+<dt><b>CPF0886</b></dt>
+<dd>Record contains a data field that is not valid.
+</dd>
+<dt><b>CPF0887</b></dt>
+<dd>Data available from previous input request.
+</dd>
+<dt><b>CPF4101</b></dt>
+<dd>File &amp;2 in library &amp;3 not found or inline data file missing.
+</dd>
+<dt><b>CPF5068</b></dt>
+<dd>Program device &amp;4 not found in file &amp;2 in library &amp;3.
+</dd>
+<dt><b>CPF5070</b></dt>
+<dd>File &amp;2 in library &amp;3 has no program devices acquired.
+</dd>
+</dl>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#SNDRCVF.Top_Of_Page">Top</a></td></tr>
+</table>
+</body>
+</html>

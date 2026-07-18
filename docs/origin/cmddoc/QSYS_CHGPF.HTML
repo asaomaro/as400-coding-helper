@@ -1,0 +1,1251 @@
+
+  <!doctype html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+  <html>
+<head><META http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>Change Physical File  (CHGPF)</title>
+</head>
+<body bgcolor="white">
+<a name="CHGPF.Top_Of_Page"></a>
+<h2>Change Physical File  (CHGPF)</h2>
+<table width="100%">
+<tr>
+<td align="left" valign="top"><b>Where allowed to run:  </b>All environments (*ALL)<br>
+<b>Threadsafe:  </b>No
+</td>
+<td align="right" valign="top">
+<a href="#CHGPF.PARAMETERS.TABLE">Parameters</a><br>
+<a href="#CHGPF.COMMAND.EXAMPLES">Examples</a><br>
+<a href="#CHGPF.ERROR.MESSAGES">Error messages</a></td>
+</tr>
+</table>
+
+<div> <a name="CHGPF"></a>
+<p>The Change Physical File (CHGPF) command changes the attributes of a physical file and all its members.  The changed attributes are used for all members subsequently added to the file unless other values are specified or default for the add operation.  To change the attributes of a specific member, specify the Change Physical File Member (CHGPFM) command.
+</p>
+<p><b>Restrictions:</b>
+</p>
+<ul>
+<li>You must have object management (*OBJMGT) authority or object alter (*OBJALTER) authority for the file and execute (*EXECUTE) authority to the library.  An exclusive-no-read lock is required, which means no one can be using the file for any purpose.
+</li>
+<li>If a request to make an existing file re-use deleted records is made, but there are logical files over the physical file that specify "FIFO" or "LIFO" ordering for duplicate keys, the change is not allowed.
+</li>
+</ul>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#CHGPF.Top_Of_Page">Top</a></td></tr>
+</table>
+<hr width="100%" size="2">
+
+<div>
+<h3><a name="CHGPF.PARAMETERS.TABLE">Parameters</a></h3>
+<table cellspacing="0" cellpadding="4" border="1"><tr>
+<th width="10%" align="left" valign="bottom" bgcolor="aqua">Keyword</th>
+<th width="15%" align="left" valign="bottom" bgcolor="aqua">Description</th>
+<th width="30%" align="left" valign="bottom" bgcolor="aqua">Choices</th>
+<th width="10%" align="left" valign="bottom" bgcolor="aqua">Notes</th>
+</tr>
+<tr>
+<td valign="top" rowspan="3"><a href="#CHGPF.FILE"><b>FILE</b></a></td>
+<td valign="top">Physical file</td>
+<td valign="top"><i>Qualified object name</i></td>
+<td valign="top" rowspan="3">Required, Key, Positional 1</td>
+</tr>
+<tr>
+<td valign="top">Qualifier 1: Physical file</td>
+<td valign="top"><i>Name</i></td>
+</tr><tr>
+<td valign="top">Qualifier 2: Library</td>
+<td valign="top"><i>Name</i>, <b><u>*LIBL</u></b>, *CURLIB</td>
+</tr><tr>
+<td valign="top"><a href="#CHGPF.SYSTEM"><b>SYSTEM</b></a></td>
+<td valign="top">System</td>
+<td valign="top"><b><u>*LCL</u></b>, *RMT, *FILETYPE</td>
+<td valign="top">Optional, Key</td>
+</tr>
+<tr>
+<td valign="top" rowspan="3"><a href="#CHGPF.SRCFILE"><b>SRCFILE</b></a></td>
+<td valign="top">Source file</td>
+<td valign="top">Single values: <b><u>*NONE</u></b><br>Other values: <i>Qualified object name</i></td>
+<td valign="top" rowspan="3">Optional, Key</td>
+</tr>
+<tr>
+<td valign="top">Qualifier 1: Source file</td>
+<td valign="top"><i>Name</i>, <b><u>QDDSSRC</u></b></td>
+</tr><tr>
+<td valign="top">Qualifier 2: Library</td>
+<td valign="top"><i>Name</i>, <b><u>*LIBL</u></b>, *CURLIB</td>
+</tr><tr>
+<td valign="top"><a href="#CHGPF.SRCMBR"><b>SRCMBR</b></a></td>
+<td valign="top">Source member</td>
+<td valign="top"><i>Name</i>, <b><u>*FILE</u></b></td>
+<td valign="top">Optional</td>
+</tr>
+<tr>
+<td valign="top"><a href="#CHGPF.OPTION"><b>OPTION</b></a></td>
+<td valign="top">Source listing options</td>
+<td valign="top">Values (up to 3 repetitions): *SRC, *NOSRC, *SOURCE, *NOSOURCE, *LIST, *NOLIST, *SECLVL, *NOSECLVL, *EVENTF, *NOEVENTF</td>
+<td valign="top">Optional</td>
+</tr>
+<tr>
+<td valign="top"><a href="#CHGPF.GENLVL"><b>GENLVL</b></a></td>
+<td valign="top">Generation severity level</td>
+<td valign="top">0-30, <b><u>20</u></b></td>
+<td valign="top">Optional</td>
+</tr>
+<tr>
+<td valign="top"><a href="#CHGPF.FLAG"><b>FLAG</b></a></td>
+<td valign="top">Flagging severity level</td>
+<td valign="top">0-30, <b><u>0</u></b></td>
+<td valign="top">Optional</td>
+</tr>
+<tr>
+<td valign="top"><a href="#CHGPF.DLTDEPLF"><b>DLTDEPLF</b></a></td>
+<td valign="top">Delete dependent logical file</td>
+<td valign="top"><b><u>*NO</u></b>, *YES</td>
+<td valign="top">Optional</td>
+</tr>
+<tr>
+<td valign="top"><a href="#CHGPF.RMVCST"><b>RMVCST</b></a></td>
+<td valign="top">Remove constraint</td>
+<td valign="top"><b><u>*RESTRICT</u></b>, *REMOVE</td>
+<td valign="top">Optional</td>
+</tr>
+<tr>
+<td valign="top"><a href="#CHGPF.EXPDATE"><b>EXPDATE</b></a></td>
+<td valign="top">Expiration date for member</td>
+<td valign="top"><i>Date</i>, <b><u>*SAME</u></b>, *NONE</td>
+<td valign="top">Optional</td>
+</tr>
+<tr>
+<td valign="top"><a href="#CHGPF.MAXMBRS"><b>MAXMBRS</b></a></td>
+<td valign="top">Maximum members</td>
+<td valign="top"><i>Integer</i>, <b><u>*SAME</u></b>, *NOMAX</td>
+<td valign="top">Optional</td>
+</tr>
+<tr>
+<td valign="top"><a href="#CHGPF.ACCPTHSIZ"><b>ACCPTHSIZ</b></a></td>
+<td valign="top">Access path size</td>
+<td valign="top"><b><u>*SAME</u></b>, *MAX4GB, *MAX1TB</td>
+<td valign="top">Optional</td>
+</tr>
+<tr>
+<td valign="top"><a href="#CHGPF.MAINT"><b>MAINT</b></a></td>
+<td valign="top">Access path maintenance</td>
+<td valign="top"><b><u>*SAME</u></b>, *IMMED, *REBLD, *DLY</td>
+<td valign="top">Optional</td>
+</tr>
+<tr>
+<td valign="top"><a href="#CHGPF.RECOVER"><b>RECOVER</b></a></td>
+<td valign="top">Access path recovery</td>
+<td valign="top"><b><u>*SAME</u></b>, *NO, *AFTIPL, *IPL</td>
+<td valign="top">Optional</td>
+</tr>
+<tr>
+<td valign="top"><a href="#CHGPF.FRCACCPTH"><b>FRCACCPTH</b></a></td>
+<td valign="top">Force keyed access path</td>
+<td valign="top"><b><u>*SAME</u></b>, *NO, *YES</td>
+<td valign="top">Optional</td>
+</tr>
+<tr>
+<td valign="top" rowspan="4"><a href="#CHGPF.SIZE"><b>SIZE</b></a></td>
+<td valign="top">Member size</td>
+<td valign="top">Single values: *NOMAX<br>Other values: <i>Element list</i></td>
+<td valign="top" rowspan="4">Optional</td>
+</tr>
+<tr>
+<td valign="top">Element 1: Initial number of records</td>
+<td valign="top">
+1-2147483646, <b><u>*SAME</u></b></td>
+</tr>
+<tr>
+<td valign="top">Element 2: Increment number of records</td>
+<td valign="top">
+0-32767, <b><u>*SAME</u></b></td>
+</tr>
+<tr>
+<td valign="top">Element 3: Maximum increments</td>
+<td valign="top">
+0-32767, <b><u>*SAME</u></b></td>
+</tr>
+<tr>
+<td valign="top"><a href="#CHGPF.ALLOCATE"><b>ALLOCATE</b></a></td>
+<td valign="top">Allocate storage</td>
+<td valign="top">*NO, *YES, <b><u>*SAME</u></b></td>
+<td valign="top">Optional</td>
+</tr>
+<tr>
+<td valign="top"><a href="#CHGPF.UNIT"><b>UNIT</b></a></td>
+<td valign="top">Preferred storage unit</td>
+<td valign="top">1-255, <b><u>*SAME</u></b>, *ANY, *SSD</td>
+<td valign="top">Optional</td>
+</tr>
+<tr>
+<td valign="top"><a href="#CHGPF.FRCRATIO"><b>FRCRATIO</b></a></td>
+<td valign="top">Records to force a write</td>
+<td valign="top"><i>Integer</i>, <b><u>*SAME</u></b>, *NONE</td>
+<td valign="top">Optional</td>
+</tr>
+<tr>
+<td valign="top"><a href="#CHGPF.WAITFILE"><b>WAITFILE</b></a></td>
+<td valign="top">Maximum file wait time</td>
+<td valign="top"><i>Integer</i>, <b><u>*SAME</u></b>, *IMMED, *CLS</td>
+<td valign="top">Optional</td>
+</tr>
+<tr>
+<td valign="top"><a href="#CHGPF.WAITRCD"><b>WAITRCD</b></a></td>
+<td valign="top">Maximum record wait time</td>
+<td valign="top"><i>Integer</i>, <b><u>*SAME</u></b>, *IMMED, *NOMAX</td>
+<td valign="top">Optional</td>
+</tr>
+<tr>
+<td valign="top"><a href="#CHGPF.SHARE"><b>SHARE</b></a></td>
+<td valign="top">Share open data path</td>
+<td valign="top"><b><u>*SAME</u></b>, *NO, *YES</td>
+<td valign="top">Optional</td>
+</tr>
+<tr>
+<td valign="top"><a href="#CHGPF.DLTPCT"><b>DLTPCT</b></a></td>
+<td valign="top">Max % deleted records allowed</td>
+<td valign="top">1-100, *NONE, <b><u>*SAME</u></b></td>
+<td valign="top">Optional</td>
+</tr>
+<tr>
+<td valign="top"><a href="#CHGPF.REUSEDLT"><b>REUSEDLT</b></a></td>
+<td valign="top">Reuse deleted records</td>
+<td valign="top"><b><u>*SAME</u></b>, *YES, *NO</td>
+<td valign="top">Optional</td>
+</tr>
+<tr>
+<td valign="top" rowspan="3"><a href="#CHGPF.SRTSEQ"><b>SRTSEQ</b></a></td>
+<td valign="top">Sort sequence</td>
+<td valign="top">Single values: <b><u>*SAME</u></b>, *SRC, *JOB, *LANGIDSHR, *LANGIDUNQ, *HEX<br>Other values: <i>Qualified object name</i></td>
+<td valign="top" rowspan="3">Optional</td>
+</tr>
+<tr>
+<td valign="top">Qualifier 1: Sort sequence</td>
+<td valign="top"><i>Name</i></td>
+</tr><tr>
+<td valign="top">Qualifier 2: Library</td>
+<td valign="top"><i>Name</i>, <b><u>*LIBL</u></b>, *CURLIB</td>
+</tr><tr>
+<td valign="top"><a href="#CHGPF.LANGID"><b>LANGID</b></a></td>
+<td valign="top">Language ID</td>
+<td valign="top"><i>Character value</i>, *JOB, <b><u>*SAME</u></b></td>
+<td valign="top">Optional</td>
+</tr>
+<tr>
+<td valign="top"><a href="#CHGPF.LVLCHK"><b>LVLCHK</b></a></td>
+<td valign="top">Record format level check</td>
+<td valign="top"><b><u>*SAME</u></b>, *YES, *NO</td>
+<td valign="top">Optional</td>
+</tr>
+<tr>
+<td valign="top"><a href="#CHGPF.KEEPINMEM"><b>KEEPINMEM</b></a></td>
+<td valign="top">Keep in memory</td>
+<td valign="top"><b><u>*SAME</u></b>, *NO, *YES</td>
+<td valign="top">Optional</td>
+</tr>
+<tr>
+<td valign="top" rowspan="3"><a href="#CHGPF.NODGRP"><b>NODGRP</b></a></td>
+<td valign="top">Node group</td>
+<td valign="top">Single values: *NONE, <b><u>*SAME</u></b><br>Other values: <i>Qualified object name</i></td>
+<td valign="top" rowspan="3">Optional</td>
+</tr>
+<tr>
+<td valign="top">Qualifier 1: Node group</td>
+<td valign="top"><i>Name</i></td>
+</tr><tr>
+<td valign="top">Qualifier 2: Library</td>
+<td valign="top"><i>Name</i>, <b><u>*LIBL</u></b>, *CURLIB</td>
+</tr><tr>
+<td valign="top"><a href="#CHGPF.PTNKEY"><b>PTNKEY</b></a></td>
+<td valign="top">Partitioning Key</td>
+<td valign="top">Single values: <b><u>*SAME</u></b><br>Other values (up to 300 repetitions): <i>Name</i></td>
+<td valign="top">Optional</td>
+</tr>
+<tr>
+<td valign="top"><a href="#CHGPF.TEXT"><b>TEXT</b></a></td>
+<td valign="top">Text 'description'</td>
+<td valign="top"><i>Character value</i>, <b><u>*SAME</u></b>, *BLANK</td>
+<td valign="top">Optional</td>
+</tr>
+<tr>
+<td valign="top"><a href="#CHGPF.CCSID"><b>CCSID</b></a></td>
+<td valign="top">Coded character set ID</td>
+<td valign="top">1-65535, <b><u>*SAME</u></b>, *HEX</td>
+<td valign="top">Optional</td>
+</tr>
+</table>
+
+<table width="100%">
+<tr><td align="right"><a href="#CHGPF.Top_Of_Page">Top</a></td></tr>
+</table>
+</div>
+<div> <a name="CHGPF.FILE"></a>
+<h3>Physical file (FILE)</h3>
+<p>Specifies the physical file to be changed.
+</p>
+<p>
+<b>Note:     </b>If a Distributed Data Management (DDM) file is specified, the name of the physical file to be changed and the name of the remote system on which the file is to be changed are contained in the DDM file.  For more information, see the <b>System (SYSTEM)</b> parameter of this command.
+</p>
+<p>This is a required parameter.
+</p>
+<p><b>Qualifier 1: Physical file</b>
+</p>
+<dl>
+<dt><b><i>name</i></b></dt>
+<dd>Specify the name of the physical file.
+</dd>
+</dl>
+<p><b>Qualifier 2: Library</b>
+</p>
+<dl>
+<dt><b><u>*LIBL</u></b></dt>
+<dd>All libraries in the library list for the current thread are searched until the first match is found.
+</dd>
+</dl>
+<dl>
+<dt><b>*CURLIB</b></dt>
+<dd>The current library for the thread is used to locate the file.  If no library is specified as the current library for the job, the QGPL library is used.
+</dd>
+</dl>
+<dl>
+<dt><b><i>name</i></b></dt>
+<dd>Specify the name of the library to be searched.
+</dd>
+</dl>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#CHGPF.Top_Of_Page">Top</a></td></tr>
+</table>
+<div> <a name="CHGPF.SYSTEM"></a>
+<h3>System (SYSTEM)</h3>
+<p>Specifies whether the physical file is changed on the local system or the remote system.
+</p>
+<dl>
+<dt><b><u>*LCL</u></b></dt>
+<dd>The physical file is changed on the local system.
+</dd>
+<dt><b>*RMT</b></dt>
+<dd>The physical file is changed on a remote system using distributed data management (DDM).  The physical file name specified on the <b>Physical file (FILE)</b> parameter must be the name of the DDM file that identifies the name of the physical file to be changed and the name of the remote system on which the file is to be changed.
+</dd>
+<dt><b>*FILETYPE</b></dt>
+<dd>If the name specified on the FILE parameter is a DDM file, the physical file is changed on the remote system specified by the <b>Remote location (RMTLOCNAME)</b> parameter of the DDM file.  If the name specified on the FILE parameter is not a DDM file, the physical file on the local system with that name is changed.
+</dd>
+</dl>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#CHGPF.Top_Of_Page">Top</a></td></tr>
+</table>
+<div> <a name="CHGPF.SRCFILE"></a>
+<h3>Source file (SRCFILE)</h3>
+<p>Specifies the source file used to change the physical file.  The source file contains the specifications that describe the record format and its fields, and the access path for the file and its members.  The data description specifications (DDS) that are made are described in the Database category in the IBM i Information Center at http://www.ibm.com/systems/i/infocenter/ and the DDS topic collection in the Programming category in the IBM i Information Center at http://www.ibm.com/systems/i/infocenter/.
+</p>
+<p>If the format attributes are changed, the data in the existing file is converted to the new attributes.
+</p>
+<p><b>Attention:</b>
+</p>
+<ul>
+<li>The data in the existing file is converted to the new format based on field names.  If the name of a field is changed, its existing data is lost.
+</li>
+<li>Because you are converting data, it is strongly recommended that you save the file before you issue this command.
+</li>
+</ul>
+<p>If the access path attributes are changed or the attributes of one of the key fields in the format are changed, a new access path may need to be built.
+</p>
+<p>
+<b>Note:     </b>When the data or the access path attributes are changed, the change file operation can take a long time to complete.  Status messages are sent to keep the interactive user informed of the progress of the operation.
+</p>
+<p><b>Single values</b>
+</p>
+<dl>
+<dt><b><u>*NONE</u></b></dt>
+<dd>No source file is specified.  Neither the format nor the access path attributes for the file are changed.
+</dd>
+</dl>
+<p><b>Qualifier 1: Source file</b>
+</p>
+<dl>
+<dt><b><u>QDDSSRC</u></b></dt>
+<dd>The source file, QDDSSRC, contains the DDS used to change the physical file.
+</dd>
+<dt><b><i>name</i></b></dt>
+<dd>Specify the name of the source file that contains the DDS used to change the physical file.
+</dd>
+</dl>
+<p><b>Qualifier 2: Library</b>
+</p>
+<dl>
+<dt><b><u>*LIBL</u></b></dt>
+<dd>All libraries in the library list for the current thread are searched until the first match is found.
+</dd>
+</dl>
+<dl>
+<dt><b>*CURLIB</b></dt>
+<dd>The current library for the thread is searched.  If no library is specified as the current library for the thread, the QGPL library is searched.
+</dd>
+</dl>
+<dl>
+<dt><b><i>name</i></b></dt>
+<dd>Specify the name of the library to be searched.
+</dd>
+</dl>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#CHGPF.Top_Of_Page">Top</a></td></tr>
+</table>
+<div> <a name="CHGPF.SRCMBR"></a>
+<h3>Source member (SRCMBR)</h3>
+<p>Specifies the source file member that contains the DDS for the physical file being changed.
+</p>
+<p>
+<b>Note:     </b>This parameter is valid only when a source file is specified for the <b>Source file (SRCFILE)</b> parameter.
+</p>
+<dl>
+<dt><b><u>*FILE</u></b></dt>
+<dd>The source file member name is the same as the name of the physical file being changed.
+</dd>
+<dt><b><i>name</i></b></dt>
+<dd>Specify the name of the source file member used to change the physical file.
+</dd>
+</dl>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#CHGPF.Top_Of_Page">Top</a></td></tr>
+</table>
+<div> <a name="CHGPF.OPTION"></a>
+<h3>Source listing options (OPTION)</h3>
+<p>Specifies the type of output produced when the file is changed.  A maximum of four of the following values can be specified in any order on this parameter.  If neither or both of the values on an option are specified, the first value is used.
+</p>
+<p><b>Notes:</b>
+</p>
+<ul>
+<li>This parameter is valid only when a source file is specified on the <b>Source file (SRCFILE)</b> parameter.
+</li>
+<li>The first values on an option are similar to, but are not actually default values, and therefore they cannot be changed with the Change Command Default (CHGCMDDFT) command.
+</li>
+<li>You can specify up to 3 values for this parameter.
+</li>
+</ul>
+<p><b>Source Listing Option</b>
+</p>
+<dl>
+<dt><b><u>*SRC or *SOURCE</u></b></dt>
+<dd>A printout is created of the source statements used to change the file, and of the errors that occur.
+</dd>
+<dt><b>*NOSRC or *NOSOURCE</b></dt>
+<dd>No printout of the source statements is created unless errors are detected.  If errors are detected, they are listed along with the keyword or record format that caused the error.
+</dd>
+</dl>
+<p><b>Program Listing Option</b>
+</p>
+<dl>
+<dt><b><u>*LIST</u></b></dt>
+<dd>An expanded source printout is created, showing a detailed list of the file specifications that result from the source statements and references to other file descriptions.
+</dd>
+</dl>
+<dl>
+<dt><b>*NOLIST</b></dt>
+<dd>The expanded source printout is not created.
+</dd>
+</dl>
+<p><b>Second-Level Message Text Option</b>
+</p>
+<dl>
+<dt><b><u>*NOSECLVL</u></b></dt>
+<dd>The messages section of the DDS printout does not contain the second-level message for the errors found during DDS processing.
+</dd>
+<dt><b>*SECLVL</b></dt>
+<dd>Second-level message text is included in the source listing.
+</dd>
+</dl>
+<p><b>Event File Creation Option</b>
+</p>
+<dl>
+<dt><b><u>*NOEVENTF</u></b></dt>
+<dd>The compiler does not produce an event file for the CoOperative Development Environment (CODE) product.
+</dd>
+<dt><b>*EVENTF</b></dt>
+<dd>The compiler produces an event file that can be used by the CODE product.  The event file is created as a member in the file EVFEVENT in your object library.  The CODE product uses this file to offer error feedback integrated with the CODE editor.  This value is normally specified by the CODE product on your behalf
+</dd>
+</dl>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#CHGPF.Top_Of_Page">Top</a></td></tr>
+</table>
+<div> <a name="CHGPF.GENLVL"></a>
+<h3>Generation severity level (GENLVL)</h3>
+<p>Specifies the severity level of errors at which the change operation fails.  If errors occur that have a severity level greater than or equal to this value, the operation ends.
+</p>
+<p><b>Notes:</b>
+</p>
+<ul>
+<li>This parameter is valid only when a source file is specified on the <b>Source file (SRCFILE)</b> parameter.
+</li>
+<li>This parameter applies only to messages created while processing the DDS source.  Messages created elsewhere in the file change process are not affected by this parameter.
+</li>
+<li>The value on this parameter must be greater than or equal to the value specified on the <b>Flagging severity level (FLAG)</b> parameter.
+</li>
+</ul>
+<dl>
+<dt><b><u>20</u></b></dt>
+<dd>The error severity level of 20 or above ends the change operation.
+</dd>
+<dt><b><i>0-30</i></b></dt>
+<dd>Specify the maximum severity level allowed.  The file is not changed if the severity level specified is 0.
+</dd>
+</dl>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#CHGPF.Top_Of_Page">Top</a></td></tr>
+</table>
+<div> <a name="CHGPF.FLAG"></a>
+<h3>Flagging severity level (FLAG)</h3>
+<p>Specifies the minimum severity level of messages to be listed.
+</p>
+<p>
+<b>Note:     </b>This parameter is valid only when a source file is specified on the <b>Source file (SRCFILE)</b> parameter.
+</p>
+<dl>
+<dt><b><u>0</u></b></dt>
+<dd>All messages are listed.
+</dd>
+</dl>
+<dl>
+<dt><b><i>0-30</i></b></dt>
+<dd>Specify a number indicating the minimum severity of messages to be listed.  The value specified must be greater than or equal to the value specified for the <b>Generation severity level (GENLVL)</b> parameter.
+</dd>
+</dl>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#CHGPF.Top_Of_Page">Top</a></td></tr>
+</table>
+<div> <a name="CHGPF.DLTDEPLF"></a>
+<h3>Delete dependent logical file (DLTDEPLF)</h3>
+<p>Specifies whether the logical files and SQL materialized query tables that are dependent on a field are deleted if that field is removed from the file as part of the change operation.  A field is removed from the file if its definition is not included in the DDS identified in the source file.
+</p>
+<p>
+<b>Note:     </b>This parameter is valid only when a source file is specified on the <b>Source file (SRCFILE)</b> parameter.
+</p>
+<dl>
+<dt><b><u>*NO</u></b></dt>
+<dd>The dependent files are not deleted.  The field on which the access paths are dependent is not removed and the file is not changed.  The command ends.
+</dd>
+<dt><b>*YES</b></dt>
+<dd>The files that are dependent on a field that is removed from the file are deleted.
+</dd>
+</dl>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#CHGPF.Top_Of_Page">Top</a></td></tr>
+</table>
+<div> <a name="CHGPF.RMVCST"></a>
+<h3>Remove constraint (RMVCST)</h3>
+<p>Specifies whether the constraint relationships are removed in the associated set of dependent files when you are deleting a parent file of a referential constraint.
+</p>
+<p>
+<b>Note:     </b>This parameter is valid only when *YES if sepcified for the <b>Delete dependent logical file (DLTDEPLF)</b> parameter.
+</p>
+<dl>
+<dt><b><u>*RESTRICT</u></b></dt>
+<dd>The constraint relationships are not removed.  The parent file is not removed and the file is not changed.  The command ends.
+</dd>
+<dt><b>*REMOVE</b></dt>
+<dd>The constraints that are dependent on a field that is removed from the file are removed.  If a unique constraint is removed, any referential constraints that are dependent on the unique constraint are also removed.
+</dd>
+</dl>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#CHGPF.Top_Of_Page">Top</a></td></tr>
+</table>
+<div> <a name="CHGPF.EXPDATE"></a>
+<h3>Expiration date for member (EXPDATE)</h3>
+<p>Specifies the expiration date of all the file's members.  If an expiration date is specified, all members in the file are changed.  You can specify a new expiration date for a member that has exceeded its expiration date by changing this parameter.  The expiration date must be later than or equal to the current date.
+</p>
+<dl>
+<dt><b><u>*SAME</u></b></dt>
+<dd>The expiration date of the file does not change.
+</dd>
+<dt><b>*NONE</b></dt>
+<dd>No expiration date is specified.
+</dd>
+<dt><b><i>date</i></b></dt>
+<dd>Specify the date after which the file members should not be used.  The date must be specified in the job-date format.
+</dd>
+</dl>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#CHGPF.Top_Of_Page">Top</a></td></tr>
+</table>
+<div> <a name="CHGPF.MAXMBRS"></a>
+<h3>Maximum members (MAXMBRS)</h3>
+<p>Specifies the maximum number of members that the physical file can have at any time.  The maximum number of members specified must be greater than or equal to the current number of members in the file.
+</p>
+<dl>
+<dt><b><u>*SAME</u></b></dt>
+<dd>The maximum number of members in the file does not change.
+</dd>
+<dt><b>*NOMAX</b></dt>
+<dd>No maximum is specified for the number of members; the system maximum of 32,767 members per file is used.
+</dd>
+<dt><b><i>integer</i></b></dt>
+<dd>Specify the maximum number of members that the physical file can have.  Valid values range from 1 through 32767.
+</dd>
+</dl>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#CHGPF.Top_Of_Page">Top</a></td></tr>
+</table>
+<div> <a name="CHGPF.ACCPTHSIZ"></a>
+<h3>Access path size (ACCPTHSIZ)</h3>
+<p>Specifies the maximum size of auxiliary storage that can be occupied by the following kinds of access paths:
+</p>
+<ul>
+<li>The access paths that are associated with a database file that has a keyed sequence access path.
+</li>
+<li>The access paths that are created for referential or unique constraints.
+</li>
+</ul>
+<p>Changing the value for this file causes the access paths that are owned by the file to be rebuilt.
+</p>
+<p>
+<b>Note:     </b>This parameter does not apply to access paths that are created for queries that refer to the data in the file.
+</p>
+<dl>
+<dt><b><u>*SAME</u></b></dt>
+<dd>The value does not change.
+</dd>
+</dl>
+<dl>
+<dt><b>*MAX1TB</b></dt>
+<dd>The maximum amount of auxiliary storage the access paths associated with this file can occupy is determined by the logical page size as shown below:
+<p>
+<pre>
+  Logical      Maximum
+  Page Size    Auxiliary Storage
+  8K           4TB
+  16K          8TB
+  32K-512K     16TB
+</pre>
+</p>
+</dd>
+<dt><b>*MAX4GB</b></dt>
+<dd>The access paths associated with this file can occupy a maximum of four gigabytes (4,294,967,296 bytes) of auxiliary storage.
+</dd>
+</dl>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#CHGPF.Top_Of_Page">Top</a></td></tr>
+</table>
+<div> <a name="CHGPF.MAINT"></a>
+<h3>Access path maintenance (MAINT)</h3>
+<p>Specifies the type of access path maintenance used for all members of the physical file.  This parameter is valid only if the file has a keyed access path.
+</p>
+<dl>
+<dt><b><u>*SAME</u></b></dt>
+<dd>The access path maintenance of the file does not change.
+</dd>
+<dt><b>*IMMED</b></dt>
+<dd>The access path is continuously (immediately) maintained for each physical file member.  The path is changed each time a record is changed, added to, or deleted from the member.  *IMMED is specified for all files requiring unique keys to ensure uniqueness in all inserts and changes.
+</dd>
+<dt><b>*REBLD</b></dt>
+<dd>The access path is rebuilt when a file member is opened.  The access path is continuously maintained until the member is closed; then the access path maintenance is ended.  *REBLD is not valid for access paths that contain unique key values.
+</dd>
+<dt><b>*DLY</b></dt>
+<dd>The maintenance of the access path is delayed until the member is opened for use.  Then the access path is changed only for records that were added, deleted, or changed since the file was last closed.  (While the file is open, all changes made to based-on members are immediately reflected in the access paths of the members of the opened files, no matter what is specified for the <b>Access path maintenance (MAINT)</b> parameter.)  To prevent a lengthy rebuild time when the file is opened, *DLY should be specified only when the number of changes to the access path between a close operation and the next open operation are small (when key fields in records for this access path change infrequently).  *DLY is not valid for access paths that require unique key values.
+<p>If the number of changes between a close operation and the next open operation reaches approximately 10% of the access path size, the system stops saving changes and the access path is completely rebuilt the next time the file is opened.
+</p>
+</dd>
+</dl>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#CHGPF.Top_Of_Page">Top</a></td></tr>
+</table>
+<div> <a name="CHGPF.RECOVER"></a>
+<h3>Access path recovery (RECOVER)</h3>
+<p>Specifies, for files having immediate or delayed maintenance on their access paths, when recovery processing of the file is done if a system failure occurs while the access path is being changed.  This parameter is valid only if a keyed access path is used.
+</p>
+<dl>
+<dt><b><u>*SAME</u></b></dt>
+<dd>The recovery attribute of the file does not change.
+</dd>
+<dt><b>*NO</b></dt>
+<dd>The access path of the file is not rebuilt.  The file's access path, if not valid, is rebuilt when the file is opened.
+</dd>
+<dt><b>*AFTIPL</b></dt>
+<dd>The file has its access path rebuilt after the IPL operation is completed.  This option allows other jobs not using this file to begin processing immediately after the IPL is completed.
+</dd>
+<dt><b>*IPL</b></dt>
+<dd>The file has its access path rebuilt during the IPL operation.  This ensures that the file's access path is rebuilt before the first user program tries to use it; however, no jobs are started until after all files that specify *IPL have their access paths rebuilt.
+</dd>
+</dl>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#CHGPF.Top_Of_Page">Top</a></td></tr>
+</table>
+<div> <a name="CHGPF.FRCACCPTH"></a>
+<h3>Force keyed access path (FRCACCPTH)</h3>
+<p>Specifies, for files with keyed access paths only, whether access path changes are forced to auxiliary storage along with the associated records in the file.  Specifying *YES minimizes (but does not remove) the chance that an abnormal end will cause damage to the access path, which then requires it to be rebuilt.
+</p>
+<dl>
+<dt><b><u>*SAME</u></b></dt>
+<dd>The force access path attribute of the file does not change.
+</dd>
+<dt><b>*NO</b></dt>
+<dd>The changed access path and changed records are not forced to auxiliary storage whenever the access path is changed.
+</dd>
+<dt><b>*YES</b></dt>
+<dd>The changed access path and changed records are forced to auxiliary storage whenever the access path is changed.  If this value is specified, *REBLD must not be specified for the <b>Access path maintenance (MAINT)</b> parameter.
+</dd>
+</dl>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#CHGPF.Top_Of_Page">Top</a></td></tr>
+</table>
+<div> <a name="CHGPF.SIZE"></a>
+<h3>Member size (SIZE)</h3>
+<p>Specifies the initial number of records in each member of the file, the number of records for each increment added to the member, and the number of times the increment is automatically applied.  The number of records for each file member is specified as the number of records that can be placed in it (this number includes any deleted records).
+</p>
+<p>The maximum number of records for the member (initial number of records plus the increment number of records times the maximum increments) must be larger than the current number of records in the member.  If it is smaller than the current number of records in the member, an error message is sent, and the maximum number of records for the member does not change.
+</p>
+<p><b>Single values</b>
+</p>
+<dl>
+<dt><b>*NOMAX</b></dt>
+<dd>The number of records that can be added to each member of the file is not limited by the user.  The maximum number of records for each member is determined by the system.  If *YES is in effect for the ALLOCATE attribute of the physical file, this option cannot be specified
+</dd>
+</dl>
+<p><b>Element 1: Initial number of records</b>
+</p>
+<dl>
+<dt><b><u>*SAME</u></b></dt>
+<dd>The value does not change.
+</dd>
+</dl>
+<dl>
+<dt><b><i>1-2147483646</i></b></dt>
+<dd>Specify the number of records that can be inserted before an automatic extension occurs.  If automatic extensions are not wanted, enter zeros for the second and third values in the list.
+</dd>
+</dl>
+<p><b>Element 2: Increment number of records</b>
+</p>
+<dl>
+<dt><b><u>*SAME</u></b></dt>
+<dd>The value does not change.
+</dd>
+<dt><b><i>0-32767</i></b></dt>
+<dd>Specify a value for the number of additional records that are added to the member when the number of records in the member will exceed the initial number of records, or will exceed the current increment's number of records.
+<p>Enter a 0 value to prevent automatic extensions.  This value must be 0 if the value for the maximum increments is 0.
+</p>
+</dd>
+</dl>
+<p><b>Element 3: Maximum increments</b>
+</p>
+<dl>
+<dt><b><u>*SAME</u></b></dt>
+<dd>The value does not change.
+</dd>
+<dt><b><i>0-32767</i></b></dt>
+<dd>Specify the maximum number of increments that can be automatically added to the member(s).  Enter a 0 value to prevent automatic extensions.  If the increment number of records value is 0, this value must also be 0.
+</dd>
+</dl>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#CHGPF.Top_Of_Page">Top</a></td></tr>
+</table>
+<div> <a name="CHGPF.ALLOCATE"></a>
+<h3>Allocate storage (ALLOCATE)</h3>
+<p>Specifies whether the initial storage space is allocated for each physical file member when it is added to the file.  This change takes effect the next time a new member is added to the file or when a current member is cleared or reorganized.
+</p>
+<dl>
+<dt><b><u>*SAME</u></b></dt>
+<dd>The allocation method does not change.
+</dd>
+<dt><b>*NO</b></dt>
+<dd>When a new member is added, or when an existing member is cleared or reorganized, the system determines the space that is needed and allocates that amount.
+</dd>
+<dt><b>*YES</b></dt>
+<dd>The amount of storage space specified in the first value of the <b>Member size (SIZE)</b> parameter is allocated each time a new member is added, or each time an existing member is cleared or reorganized.  If that amount of storage space is not available, the member is not added, and a message is sent to the user.  If this parameter value is used, *NOMAX cannot be in effect for the SIZE parameter.
+</dd>
+</dl>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#CHGPF.Top_Of_Page">Top</a></td></tr>
+</table>
+<div> <a name="CHGPF.UNIT"></a>
+<h3>Preferred storage unit (UNIT)</h3>
+<p>Specifies the preferred storage media for the file.
+</p>
+<dl>
+<dt><b><u>*ANY</u></b></dt>
+<dd>No storage media is preferred. Storage will be allocated from any available storage media.
+</dd>
+<dt><b><i>*SSD</i></b></dt>
+<dd>Solid state disk storage media is preferred. Storage may be allocated from solid state disk storage media, if available.
+</dd>
+<dt><b><i>integer</i></b></dt>
+<dd>A value ranging from 1 through 254 is equivalent to specifying *ANY.  A value of 255 is equivalent to specifying *SSD.
+</dd>
+</dl>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#CHGPF.Top_Of_Page">Top</a></td></tr>
+</table>
+<div> <a name="CHGPF.FRCRATIO"></a>
+<h3>Records to force a write (FRCRATIO)</h3>
+<p>Specifies the number of inserted, changed, or deleted records that are processed before those records are forced to auxiliary (permanent) storage.  If the physical file is being recorded in a journal, it is recommended that a larger force write ratio, or *NONE, be specified.  More information on journal management is in the Recovering your system book, SC41-5304.
+</p>
+<dl>
+<dt><b><u>*SAME</u></b></dt>
+<dd>The force write ratio of the file does not change.
+</dd>
+<dt><b>*NONE</b></dt>
+<dd>There is no force write ratio; the system determines when the records are written to auxiliary storage.
+</dd>
+<dt><b><i>integer</i></b></dt>
+<dd>Specify the number of new or changed records that are processed before those records are forced into auxiliary storage.
+</dd>
+</dl>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#CHGPF.Top_Of_Page">Top</a></td></tr>
+</table>
+<div> <a name="CHGPF.WAITFILE"></a>
+<h3>Maximum file wait time (WAITFILE)</h3>
+<p>Specifies the number of seconds that the program waits for the file resources and session resources to be allocated when the file is opened, or for the device or session resources to be allocated when an acquire operation is performed to the file.  If the file resources are not allocated in the specified wait time, an error message is sent to the program.
+</p>
+<p>
+<b>Note:     </b>An immediate allocation of the device by the device resource is required when an acquire operation is performed to the file.
+</p>
+<dl>
+<dt><b><u>*SAME</u></b></dt>
+<dd>The wait attribute of the file does not change.
+</dd>
+</dl>
+<dl>
+<dt><b>*IMMED</b></dt>
+<dd>The program does not wait.  Immediate allocation of file resources is required.
+</dd>
+</dl>
+<dl>
+<dt><b>*CLS</b></dt>
+<dd>The default wait time specified in the class description is used as the wait time for the file resources that are allocated.
+</dd>
+</dl>
+<dl>
+<dt><b><i>1-32767</i></b></dt>
+<dd>Specify the number of seconds that the program waits for the file resources to be allocated.
+</dd>
+</dl>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#CHGPF.Top_Of_Page">Top</a></td></tr>
+</table>
+<div> <a name="CHGPF.WAITRCD"></a>
+<h3>Maximum record wait time (WAITRCD)</h3>
+<p>Specifies the number of seconds that the program waits for a record that is changed or deleted.  If the record is not allocated in the specified wait time, an error message is sent to the program.
+</p>
+<dl>
+<dt><b><u>*SAME</u></b></dt>
+<dd>The record wait attribute of the file does not change.
+</dd>
+</dl>
+<dl>
+<dt><b>*IMMED</b></dt>
+<dd>The program does not wait; when a record is locked, an immediate allocation of the record is required.
+</dd>
+</dl>
+<dl>
+<dt><b>*NOMAX</b></dt>
+<dd>The wait time is the maximum allowed by the system (32,767 seconds).
+</dd>
+</dl>
+<dl>
+<dt><b><i>1-32767</i></b></dt>
+<dd>Specify the number of seconds that the program waits for the file resources to be allocated.
+</dd>
+</dl>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#CHGPF.Top_Of_Page">Top</a></td></tr>
+</table>
+<div> <a name="CHGPF.SHARE"></a>
+<h3>Share open data path (SHARE)</h3>
+<p>Specifies whether the open data path (ODP) is shared with other programs in the same routing step.  When an ODP is shared, the programs accessing the file share facilities such as the file status and the buffer.
+</p>
+<dl>
+<dt><b><u>*SAME</u></b></dt>
+<dd>The ODP sharing value of the member does not change.
+</dd>
+</dl>
+<dl>
+<dt><b>*NO</b></dt>
+<dd>The ODP is not shared with other programs in the routing step.  A new ODP for the file is created and used every time a program opens the file.
+</dd>
+</dl>
+<dl>
+</dl>
+<dl>
+<dt><b>*YES</b></dt>
+<dd>The same ODP is shared with each program in the job that also specifies *YES when it opens the file.
+</dd>
+</dl>
+<dl>
+</dl>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#CHGPF.Top_Of_Page">Top</a></td></tr>
+</table>
+<div> <a name="CHGPF.DLTPCT"></a>
+<h3>Max % deleted records allowed (DLTPCT)</h3>
+<p>Specifies the maximum percentage of deleted records that any member in the physical file can have.  The percentage is based on the number of deleted records compared with the total record count in a member.  This change takes effect the next time the file is opened and closed.
+</p>
+<dl>
+<dt><b><u>*SAME</u></b></dt>
+<dd>The deleted record percentage does not change.
+</dd>
+<dt><b>*NONE</b></dt>
+<dd>No percentage is specified; the number of deleted records in the file members is not checked when a member is closed.
+</dd>
+<dt><b><i>1-100</i></b></dt>
+<dd>Specify the largest percentage of deleted records that any member in the file can have.  If a value is larger than this percentage, a message is sent to the system history log (QHST) when the file is closed.
+</dd>
+</dl>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#CHGPF.Top_Of_Page">Top</a></td></tr>
+</table>
+<div> <a name="CHGPF.REUSEDLT"></a>
+<h3>Reuse deleted records (REUSEDLT)</h3>
+<p>Specifies whether the space used by deleted data entries is reclaimed by future insert requests.
+</p>
+<dl>
+<dt><b><u>*SAME</u></b></dt>
+<dd>The setting does not change.
+</dd>
+<dt><b>*NO</b></dt>
+<dd>The file does not reclaim space used by deleted data entries.
+</dd>
+<dt><b>*YES</b></dt>
+<dd>The file reclaims space used by deleted data entries.  More information about the algorithm used to reclaim the deleted data is in Database category in the IBM i Information Center at http://www.ibm.com/systems/i/infocenter/.
+<p>
+<b>Note:     </b>Arrival order becomes meaningless for a file that reuses deleted record space.  Records might not be added at the end of the file.
+</p>
+</dd>
+</dl>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#CHGPF.Top_Of_Page">Top</a></td></tr>
+</table>
+<div> <a name="CHGPF.SRTSEQ"></a>
+<h3>Sort sequence (SRTSEQ)</h3>
+<p>Specifies the sort sequence used for this file.  The sort sequence value is used with the LANGID parameter to determine which sort sequence table is used.
+</p>
+<p>
+<b>Note:     </b>Changing the value for this file causes the access paths that are owned by the file to be rebuilt.
+</p>
+<p><b>Single values</b>
+</p>
+<dl>
+<dt><b><u>*SAME</u></b></dt>
+<dd>The value does not change.
+</dd>
+</dl>
+<dl>
+<dt><b>*SRC</b></dt>
+<dd>The table specified on the ALTSEQ keyword in the data description specification (DDS) is used.  If the ALTSEQ keyword is not used in the DDS, this value defaults to the *JOB value on this parameter.
+</dd>
+<dt><b>*JOB</b></dt>
+<dd>The sort sequence value used is the value for the job issuing this command to change the physical file.
+</dd>
+<dt><b>*LANGIDSHR</b></dt>
+<dd>The sort sequence table uses the same weight for multiple characters, and is the shared-weight sort sequence table associated with the language specified on the LANGID parameter.
+</dd>
+<dt><b>*LANGIDUNQ</b></dt>
+<dd>The sort sequence table must contain a unique weight for each character in the code page.
+</dd>
+<dt><b>*HEX</b></dt>
+<dd>A sort sequence table is not used.  The hexadecimal values of the characters are used to determine the sort sequence.
+</dd>
+</dl>
+<p><b>Qualifier 1: Sort sequence</b>
+</p>
+<dl>
+<dt><b><i>name</i></b></dt>
+<dd>Specify the name of the sort sequence table to use.
+</dd>
+</dl>
+<p><b>Qualifier 2: Library</b>
+</p>
+<dl>
+<dt><b><u>*LIBL</u></b></dt>
+<dd>All libraries in the library list for the current thread are searched until the first match is found.
+</dd>
+</dl>
+<dl>
+<dt><b>*CURLIB</b></dt>
+<dd>The current library for the thread is searched.  If no library is specified as the current library for the thread, the QGPL library is searched.
+</dd>
+</dl>
+<dl>
+<dt><b><i>name</i></b></dt>
+<dd>Specify the name of the library to be searched.
+</dd>
+</dl>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#CHGPF.Top_Of_Page">Top</a></td></tr>
+</table>
+<div> <a name="CHGPF.LANGID"></a>
+<h3>Language ID (LANGID)</h3>
+<p>Specifies the language identifier used when *LANGIDSHR or *LANGIDUNQ is specified for the <b>Sort sequence (SRTSEQ)</b> parameter.  The language identifier is used with the SRTSEQ and <b>Coded character set ID (CCSID)</b> parameters to determine which sort sequence table the file will use.
+</p>
+<p>
+<b>Note:     </b>Changing the value for this file causes the access paths that are owned by the file to be rebuilt unless the SRTSEQ attribute is *HEX.
+</p>
+<dl>
+<dt><b><u>*SAME</u></b></dt>
+<dd>The value does not change.
+</dd>
+</dl>
+<dl>
+<dt><b>*JOB</b></dt>
+<dd>The language identifier specified in the job description is used.
+</dd>
+<dt><b><i>character-value</i></b></dt>
+<dd>Specify a language identifier.
+</dd>
+</dl>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#CHGPF.Top_Of_Page">Top</a></td></tr>
+</table>
+<div> <a name="CHGPF.LVLCHK"></a>
+<h3>Record format level check (LVLCHK)</h3>
+<p>Specifies whether the levels of record format identifiers are checked to verify that the current record format identifier is the same as that specified in the program that opens the physical file.
+</p>
+<dl>
+<dt><b><u>*SAME</u></b></dt>
+<dd>The level check value of the member does not change.
+</dd>
+<dt><b>*YES</b></dt>
+<dd>The level identifiers of the record formats are checked when the file is opened.  If the level identifiers do not match, an error message is sent to the program requesting the open, and the file is not opened.
+</dd>
+</dl>
+<dl>
+<dt><b>*NO</b></dt>
+<dd>The level identifiers are not checked when the file is opened.
+</dd>
+</dl>
+<dl>
+</dl>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#CHGPF.Top_Of_Page">Top</a></td></tr>
+</table>
+<div> <a name="CHGPF.KEEPINMEM"></a>
+<h3>Keep in memory (KEEPINMEM)</h3>
+<p>Specifies whether the data for a file member should be brought into a main storage pool by the SQL Query Engine (SQE) when the data is used in the query to improve the performance.
+</p>
+<dl>
+<dt><b><u>*SAME</u></b></dt>
+<dd>The keep in memory attribute does not change.
+</dd>
+<dt><b>*NO</b></dt>
+<dd>The member's data will not be brought into a main storage pool.
+</dd>
+<dt><b>*YES</b></dt>
+<dd>The member's data may be brought into a main storage pool.
+<p>
+<b>Note:     </b>The Query Options File (QAQQINI) parameter MEMORY_POOL_PREFERENCE can be used to specify the preferred main storage pool that should be used.
+</p>
+</dd>
+</dl>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#CHGPF.Top_Of_Page">Top</a></td></tr>
+</table>
+<div> <a name="CHGPF.NODGRP"></a>
+<h3>Node group (NODGRP)</h3>
+<p>Specifies the name of a node group across which the file is distributed.
+</p>
+<p><b>Single values</b>
+</p>
+<dl>
+<dt><b><u>*SAME</u></b></dt>
+<dd>The value does not change.
+</dd>
+<dt><b>*NONE</b></dt>
+<dd>The file is not a distributed file.  All data associated with the file is on the local system.
+</dd>
+</dl>
+<p><b>Qualifier 1: Node group</b>
+</p>
+<dl>
+<dt><b><i>name</i></b></dt>
+<dd>Specify the name of a node group associated with this file.
+</dd>
+</dl>
+<p><b>Qualifier 2: Library</b>
+</p>
+<dl>
+<dt><b><u>*LIBL</u></b></dt>
+<dd>All libraries in the library list for the current thread are searched until the first match is found.
+</dd>
+</dl>
+<dl>
+<dt><b>*CURLIB</b></dt>
+<dd>The current library for the thread is searched.  If no library is specified as the current library for the thread, the QGPL library is searched.
+</dd>
+</dl>
+<dl>
+<dt><b><i>name</i></b></dt>
+<dd>Specify the name of the library to be searched.
+</dd>
+</dl>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#CHGPF.Top_Of_Page">Top</a></td></tr>
+</table>
+<div> <a name="CHGPF.PTNKEY"></a>
+<h3>Partitioning Key (PTNKEY)</h3>
+<p>Specifies the field, or set of fields, that is used as the partition key for distributing data.
+</p>
+<p>
+<b>Note:     </b>This parameter is not valid when NODGRP(*NONE) is specified.  If a node group name is specified (NODGRP parameter), one or more field names must be specified.
+</p>
+<p><b>Single values</b>
+</p>
+<dl>
+<dt><b><u>*SAME</u></b></dt>
+<dd>The value does not change.
+</dd>
+</dl>
+<p><b>Other values (up to 300 repetitions)</b>
+</p>
+<dl>
+<dt><b><i>name</i></b></dt>
+<dd>Specify the name of a field to be used to define the partition key.
+</dd>
+</dl>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#CHGPF.Top_Of_Page">Top</a></td></tr>
+</table>
+<div> <a name="CHGPF.TEXT"></a>
+<h3>Text 'description' (TEXT)</h3>
+<p>Specifies the text that briefly describes the object.
+</p>
+<dl>
+<dt><b><u>*SAME</u></b></dt>
+<dd>The text that describes the file does not change.
+</dd>
+<dt><b>*BLANK</b></dt>
+<dd>No text is specified.
+</dd>
+</dl>
+<dl>
+<dt><b><i>character-value</i></b></dt>
+<dd>Specify no more than 50 characters of text, enclosed in apostrophes.
+</dd>
+</dl>
+<dl>
+</dl>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#CHGPF.Top_Of_Page">Top</a></td></tr>
+</table>
+<div> <a name="CHGPF.CCSID"></a>
+<h3>Coded character set ID (CCSID)</h3>
+<p>Specifies the coded character set identifier (CCSID) to be used to describe character data in the fields of the file.
+</p>
+<p><b>Notes:</b>
+</p>
+<ul>
+<li>If this parameter is specified, SRCFILE(*NONE) also must be specified.
+</li>
+<li>The CCSID cannot be changed if:
+<ul>
+<li>Any explicit field-level or file-level CCSIDs are specified on the CCSID keyword in the DDS for fields in the physical file, the IDDU, or the SQL.
+</li>
+<li>The physical file is a program-described file.
+</li>
+<li>The physical file's format contains a concatenated field.
+</li>
+</ul>
+</li>
+</ul>
+<dl>
+<dt><b><u>*SAME</u></b></dt>
+<dd>The CCSID does not change.
+</dd>
+<dt><b>*HEX</b></dt>
+<dd>The CCSID 65535 is used, which indicates that character data in the fields is treated as bit data and is not converted.
+</dd>
+<dt><b><i>1-65535</i></b></dt>
+<dd>Specify the CCSID to be used.
+<p>If a DBCS field is in the physical file, the CCSID specified must have a corresponding mixed CCSID.  More information on valid CCSIDs is in the Globalization information in the iSeries Information Center at http://www.ibm.com/eserver/iseries/infocenter.
+</p>
+</dd>
+</dl>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#CHGPF.Top_Of_Page">Top</a></td></tr>
+</table>
+<hr width="100%" size="2">
+<div><h3><a name="CHGPF.COMMAND.EXAMPLES">Examples</a> </h3>
+<p><b>Example 1: Changing Expiration Date for All Members</b>
+</p>
+<p>
+<pre>
+CHGPF   FILE(QGPL/INV)  EXPDATE('10/31/89')
+</pre>
+</p>
+<p>This command changes the expiration date for all members in physical file INV to October 31, 1989.
+</p>
+<p><b>Example 2: Changing File Size</b>
+</p>
+<p>
+<pre>
+CHGPF   FILE(QGPL/DDMF)  SIZE(*NOMAX)  SYSTEM(*RMT)
+</pre>
+</p>
+<p>This command changes the size of file INV located in the QGPL library on the remote system. Prior to specifying the above command, this user had created a DDM file by specifying the command CRTDDMF FILE(QGPL/DDMF) RMTFILE(QGPL/INV) RMTLOCNAME(AS400).
+</p>
+<p><b>Example 3: Adding, Removing, and Changing Fields</b>
+</p>
+<p>
+<pre>
+CHGPF   FILE(QGPL/T1)  SRCFILE(QDDSSRC)
+</pre>
+</p>
+<p>This command adds fields, removes fields, and changes field attributes based on the DDS in the source file member T1 in the source file QDDSSRC. Prior to specifying the above command, the user had edited the source member.
+</p>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#CHGPF.Top_Of_Page">Top</a></td></tr>
+</table>
+<hr width="100%" size="2">
+<div><h3><a name="CHGPF.ERROR.MESSAGES">Error messages</a> </h3>
+<p><b><u>*ESCAPE Messages</u></b>
+</p>
+<dl>
+<dt><b>CPF326A</b></dt>
+<dd>Operation not successful for file &amp;1 in library &amp;2.
+</dd>
+<dt><b>CPF327F</b></dt>
+<dd>Operation not successful for file &amp;1 in library &amp;2.
+</dd>
+<dt><b>CPF7304</b></dt>
+<dd>File &amp;1 in &amp;2 not changed.
+</dd>
+<dt><b>CPF7305</b></dt>
+<dd>File &amp;1 in &amp;2 changed but distributed requests failed.
+</dd>
+</dl>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#CHGPF.Top_Of_Page">Top</a></td></tr>
+</table>
+</body>
+</html>

@@ -1,0 +1,765 @@
+
+  <!doctype html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+  <html>
+<head><META http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>Copy Spooled File  (CPYSPLF)</title>
+</head>
+<body bgcolor="white">
+<a name="CPYSPLF.Top_Of_Page"></a>
+<h2>Copy Spooled File  (CPYSPLF)</h2>
+<table width="100%">
+<tr>
+<td align="left" valign="top"><b>Where allowed to run:  </b>All environments (*ALL)<br>
+<b>Threadsafe:  </b>No
+</td>
+<td align="right" valign="top">
+<a href="#CPYSPLF.PARAMETERS.TABLE">Parameters</a><br>
+<a href="#CPYSPLF.COMMAND.EXAMPLES">Examples</a><br>
+<a href="#CPYSPLF.ERROR.MESSAGES">Error messages</a></td>
+</tr>
+</table>
+
+<div> <a name="CPYSPLF"></a>
+<p>The Copy Spooled File (CPYSPLF) command copies the data records in the specified spooled file either to a user-defined physical database file or to a stream file.  This allows the use of spooled files in applications using microfiche, data communications, or data processing.
+</p>
+<p>When copying a spooled file to a stream file, the spooled file can optionally be converted using a workstation customizing object. This allows the spooled file to be converted to other formats such as Portable Document Format (PDF).  In order to convert a spooled file using the <b>Workstation customizing object (WSCST)</b> parameter, the device type (DEVTYPE) of the spooled file must be *SCS or *AFPDS.
+</p>
+<p>When you copy a spooled file to a physical file or you copy it to a stream file without conversion, certain information is lost or changed. For example:
+</p>
+<ul>
+<li>Print lines that are all blank are not copied.
+</li>
+<li>Graphics data is lost.
+</li>
+<li>Bar code data is lost.
+</li>
+</ul>
+<p>When you copy a spooled file to a stream file with conversion, the information retained and the format of the output is dependent on the workstation customizing obejct specified.
+</p>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#CPYSPLF.Top_Of_Page">Top</a></td></tr>
+</table>
+<hr width="100%" size="2">
+
+<div>
+<h3><a name="CPYSPLF.PARAMETERS.TABLE">Parameters</a></h3>
+<table cellspacing="0" cellpadding="4" border="1"><tr>
+<th width="10%" align="left" valign="bottom" bgcolor="aqua">Keyword</th>
+<th width="15%" align="left" valign="bottom" bgcolor="aqua">Description</th>
+<th width="30%" align="left" valign="bottom" bgcolor="aqua">Choices</th>
+<th width="10%" align="left" valign="bottom" bgcolor="aqua">Notes</th>
+</tr>
+<tr>
+<td valign="top"><a href="#CPYSPLF.FILE"><b>FILE</b></a></td>
+<td valign="top">Spooled file</td>
+<td valign="top"><i>Name</i></td>
+<td valign="top">Required, Positional 1</td>
+</tr>
+<tr>
+<td valign="top" rowspan="3"><a href="#CPYSPLF.TOFILE"><b>TOFILE</b></a></td>
+<td valign="top">To data base file</td>
+<td valign="top">Single values: *TOSTMF<br>Other values: <i>Qualified object name</i></td>
+<td valign="top" rowspan="3">Required, Positional 2</td>
+</tr>
+<tr>
+<td valign="top">Qualifier 1: To data base file</td>
+<td valign="top"><i>Name</i></td>
+</tr><tr>
+<td valign="top">Qualifier 2: Library</td>
+<td valign="top"><i>Name</i>, <b><u>*LIBL</u></b>, *CURLIB</td>
+</tr><tr>
+<td valign="top" rowspan="4"><a href="#CPYSPLF.JOB"><b>JOB</b></a></td>
+<td valign="top">Job name</td>
+<td valign="top">Single values: <b><u>*</u></b><br>Other values: <i>Qualified job name</i></td>
+<td valign="top" rowspan="4">Optional</td>
+</tr>
+<tr>
+<td valign="top">Qualifier 1: Job name</td>
+<td valign="top"><i>Name</i></td>
+</tr><tr>
+<td valign="top">Qualifier 2: User</td>
+<td valign="top"><i>Name</i></td>
+</tr><tr>
+<td valign="top">Qualifier 3: Number</td>
+<td valign="top">000000-999999</td>
+</tr><tr>
+<td valign="top"><a href="#CPYSPLF.SPLNBR"><b>SPLNBR</b></a></td>
+<td valign="top">Spooled file number</td>
+<td valign="top">1-999999, <b><u>*ONLY</u></b>, *LAST, *ANY</td>
+<td valign="top">Optional</td>
+</tr>
+<tr>
+<td valign="top"><a href="#CPYSPLF.JOBSYSNAME"><b>JOBSYSNAME</b></a></td>
+<td valign="top">Job system name</td>
+<td valign="top"><i>Name</i>, <b><u>*ONLY</u></b>, *CURRENT, *ANY</td>
+<td valign="top">Optional</td>
+</tr>
+<tr>
+<td valign="top" rowspan="3"><a href="#CPYSPLF.CRTDATE"><b>CRTDATE</b></a></td>
+<td valign="top">Spooled file created</td>
+<td valign="top">Single values: <b><u>*ONLY</u></b>, *LAST<br>Other values: <i>Element list</i></td>
+<td valign="top" rowspan="3">Optional</td>
+</tr>
+<tr>
+<td valign="top">Element 1: Creation date</td>
+<td valign="top">
+<i>Date</i></td>
+</tr>
+<tr>
+<td valign="top">Element 2: Creation time</td>
+<td valign="top">
+<i>Time</i>, <b><u>*ONLY</u></b>, *LAST</td>
+</tr>
+<tr>
+<td valign="top"><a href="#CPYSPLF.TOMBR"><b>TOMBR</b></a></td>
+<td valign="top">To member</td>
+<td valign="top"><i>Name</i>, <b><u>*FIRST</u></b></td>
+<td valign="top">Optional</td>
+</tr>
+<tr>
+<td valign="top"><a href="#CPYSPLF.MBROPT"><b>MBROPT</b></a></td>
+<td valign="top">Replace or add records</td>
+<td valign="top"><b><u>*REPLACE</u></b>, *ADD</td>
+<td valign="top">Optional</td>
+</tr>
+<tr>
+<td valign="top"><a href="#CPYSPLF.CTLCHAR"><b>CTLCHAR</b></a></td>
+<td valign="top">Control character</td>
+<td valign="top"><b><u>*NONE</u></b>, *FCFC, *PRTCTL, *S36FMT</td>
+<td valign="top">Optional</td>
+</tr>
+<tr>
+<td valign="top" rowspan="3"><a href="#CPYSPLF.CHLVAL"><b>CHLVAL</b></a></td>
+<td valign="top">Channel values</td>
+<td valign="top">Single values: <b><u>*NORMAL</u></b><br>Other values (up to 12 repetitions): <i>Element list</i></td>
+<td valign="top" rowspan="3">Optional</td>
+</tr>
+<tr>
+<td valign="top">Element 1: Channel</td>
+<td valign="top">
+1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12</td>
+</tr>
+<tr>
+<td valign="top">Element 2: Line</td>
+<td valign="top">
+1-255</td>
+</tr>
+<tr>
+<td valign="top"><a href="#CPYSPLF.TOSTMF"><b>TOSTMF</b></a></td>
+<td valign="top">To stream file</td>
+<td valign="top"><i>Path name</i>, <b><u>*NONE</u></b></td>
+<td valign="top">Optional</td>
+</tr>
+<tr>
+<td valign="top" rowspan="3"><a href="#CPYSPLF.WSCST"><b>WSCST</b></a></td>
+<td valign="top">Workstation customizing object</td>
+<td valign="top">Single values: <b><u>*NONE</u></b>, *PDF<br>Other values: <i>Qualified object name</i></td>
+<td valign="top" rowspan="3">Optional</td>
+</tr>
+<tr>
+<td valign="top">Qualifier 1: Workstation customizing object</td>
+<td valign="top"><i>Name</i></td>
+</tr><tr>
+<td valign="top">Qualifier 2: Library</td>
+<td valign="top"><i>Name</i>, <b><u>*LIBL</u></b>, *CURLIB</td>
+</tr><tr>
+<td valign="top"><a href="#CPYSPLF.STMFOPT"><b>STMFOPT</b></a></td>
+<td valign="top">Stream file option</td>
+<td valign="top"><b><u>*NONE</u></b>, *REPLACE</td>
+<td valign="top">Optional</td>
+</tr>
+<tr>
+<td valign="top"><a href="#CPYSPLF.OPNSPLF"><b>OPNSPLF</b></a></td>
+<td valign="top">Copy open spooled file</td>
+<td valign="top"><b><u>*NO</u></b>, *YES</td>
+<td valign="top">Optional</td>
+</tr>
+</table>
+
+<table width="100%">
+<tr><td align="right"><a href="#CPYSPLF.Top_Of_Page">Top</a></td></tr>
+</table>
+</div>
+<div> <a name="CPYSPLF.FILE"></a>
+<h3>Spooled file (FILE)</h3>
+<p>Specifies the spooled file that is to be copied to a database file or stream file.
+</p>
+<p>This is a required parameter.
+</p>
+<dl>
+<dt><b><i>name</i></b></dt>
+<dd>Specify the file name of the spooled file.
+</dd>
+</dl>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#CPYSPLF.Top_Of_Page">Top</a></td></tr>
+</table>
+<div> <a name="CPYSPLF.TOFILE"></a>
+<h3>To data base file (TOFILE)</h3>
+<p>Specifies whether the spooled file's records will be copied to a user-defined physical database file or a stream file. If the user specifies the name of a database file and the file does not exist at the time of the copy, the copy will fail.
+</p>
+<p>This is a required parameter.
+</p>
+<p><b>Single values</b>
+</p>
+<dl>
+<dt><b>*TOSTMF</b></dt>
+<dd>The spooled file will be converted based on the workstation customizing object specified in the <b>Workstation customizing object (WSCST)</b> parameter and the output placed in the stream file specified in the <b>To stream file (TOSTMF)</b> parameter.
+</dd>
+</dl>
+<p><b>Qualifier 1: To data base file</b>
+</p>
+<dl>
+<dt><b><i>name</i></b></dt>
+<dd>Specify the file name of the physical file to receive the copy.
+</dd>
+</dl>
+<p><b>Qualifier 2: Library</b>
+</p>
+<dl>
+<dt><b><u>*LIBL</u></b></dt>
+<dd>All libraries in the library list for the current thread are searched until the first match is found.
+</dd>
+</dl>
+<dl>
+<dt><b>*CURLIB</b></dt>
+<dd>The current library for the job is used to locate the file.  If no current library entry exists in the library list, QGPL is used.
+</dd>
+<dt><b><i>name</i></b></dt>
+<dd>Specify the name of the library where the file is located.
+</dd>
+</dl>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#CPYSPLF.Top_Of_Page">Top</a></td></tr>
+</table>
+<div> <a name="CPYSPLF.JOB"></a>
+<h3>Job name (JOB)</h3>
+<p>Specifies the job that created the spooled file whose data records are to be copied.
+</p>
+<p><b>Single values</b>
+</p>
+<dl>
+<dt><b><u>*</u></b></dt>
+<dd>The job that issued this command is the job that created the spooled file.
+</dd>
+</dl>
+<p><b>Qualifier 1: Job name</b>
+</p>
+<dl>
+<dt><b><i>name</i></b></dt>
+<dd>Specify the name of the job that created the spooled file.
+</dd>
+</dl>
+<p><b>Qualifier 2: User</b>
+</p>
+<dl>
+<dt><b><i>name</i></b></dt>
+<dd>Specify the user name that identifies the user profile under which the job is run.
+</dd>
+</dl>
+<p><b>Qualifier 3: Number</b>
+</p>
+<dl>
+<dt><b><i>000000-999999</i></b></dt>
+<dd>Specify the system-assigned job number.
+</dd>
+</dl>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#CPYSPLF.Top_Of_Page">Top</a></td></tr>
+</table>
+<div> <a name="CPYSPLF.SPLNBR"></a>
+<h3>Spooled file number (SPLNBR)</h3>
+<p>Specifies the number of the spooled file, from the job whose data records are to be copied.
+</p>
+<dl>
+<dt><b><u>*ONLY</u></b></dt>
+<dd>Only one spooled file in the job has the specified file name; therefore, the number of the spooled file is not necessary.
+</dd>
+</dl>
+<dl>
+<dt><b>*LAST</b></dt>
+<dd>The spooled file with the highest number and the specified file name is used.
+</dd>
+</dl>
+<dl>
+<dt><b>*ANY</b></dt>
+<dd>The spooled file number is not used to determine which spooled file is used. Use this value when the job system name parameter or the spooled file create date and time parameter is to take precedence over the spooled file number when selecting a spooled file.
+</dd>
+</dl>
+<dl>
+<dt><b><i>1-999999</i></b></dt>
+<dd>Specify the number of the spooled file whose data records are to be copied.
+</dd>
+</dl>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#CPYSPLF.Top_Of_Page">Top</a></td></tr>
+</table>
+<div> <a name="CPYSPLF.JOBSYSNAME"></a>
+<h3>Job system name (JOBSYSNAME)</h3>
+<p>Specifies the name of the system where the job that created the spooled file (JOB parameter) ran.  This parameter is considered after the job name, user name, job number, spooled file name, and spooled file number parameter requirements have been met.
+</p>
+<dl>
+<dt><b><u>*ONLY</u></b></dt>
+<dd>There is one spooled file with the specified job name, user name, job number, spooled file name, spooled file number, and spooled file create date and time.
+</dd>
+<dt><b>*CURRENT</b></dt>
+<dd>The spooled file created on the current system with the specified job name, user name, job number, spooled file name, spooled file number, and create date and time is used.
+</dd>
+<dt><b>*ANY</b></dt>
+<dd>The job system name is not used to determine which spooled file is used. Use this value when the spooled file create date and time parameter is to take precedence over the job system name when selecting a spooled file.
+</dd>
+<dt><b><i>name</i></b></dt>
+<dd>Specify the name of the system where the job that created the spooled file ran.
+</dd>
+</dl>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#CPYSPLF.Top_Of_Page">Top</a></td></tr>
+</table>
+<div> <a name="CPYSPLF.CRTDATE"></a>
+<h3>Spooled file created (CRTDATE)</h3>
+<p>Specifies the date and time the spooled file was created.  This parameter is considered after the job name, user name, job number, spooled file name, spooled file number, and job system name parameter requirements have been met.
+</p>
+<p><b>Single values</b>
+</p>
+<dl>
+<dt><b><u>*ONLY</u></b></dt>
+<dd>There is one spooled file with the specified job name, user name, job number, spooled file name, spooled file number, and job system name.
+</dd>
+<dt><b>*LAST</b></dt>
+<dd>The spooled file with the latest create date and time of the specified job name, user name, job number, spooled file name, spooled file number, and job system name is used.
+</dd>
+</dl>
+<p><b>Element 1: Creation date</b>
+</p>
+<dl>
+<dt><b><i>date</i></b></dt>
+<dd>Specify the date the spooled file was created.
+</dd>
+</dl>
+<p><b>Element 2: Creation time</b>
+</p>
+<dl>
+<dt><b><u>*ONLY</u></b></dt>
+<dd>There is one spooled file with the specified job name, user name, job number, spooled file name, spooled file number, job system name, and spooled file create date.
+</dd>
+<dt><b>*LAST</b></dt>
+<dd>The spooled file with the latest create time of the specified job name, user name, job number, spooled file name, spooled file number, job system name, and spooled file create date is used.
+</dd>
+<dt><b><i>time</i></b></dt>
+<dd>Specify the time the spooled file was created.
+</dd>
+</dl>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#CPYSPLF.Top_Of_Page">Top</a></td></tr>
+</table>
+<div> <a name="CPYSPLF.TOMBR"></a>
+<h3>To member (TOMBR)</h3>
+<p>Specifies the name of the file member that receives the copied records.
+</p>
+<dl>
+<dt><b><u>*FIRST</u></b></dt>
+<dd>The first member of the specified file is used.
+</dd>
+</dl>
+<dl>
+<dt><b><i>name</i></b></dt>
+<dd>Specify the name of the member of the physical file.  If this member does not exist, a member is created and the copy continues.
+</dd>
+</dl>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#CPYSPLF.Top_Of_Page">Top</a></td></tr>
+</table>
+<div> <a name="CPYSPLF.MBROPT"></a>
+<h3>Replace or add records (MBROPT)</h3>
+<p>Specifies whether the new records replace or are added to the existing records.
+</p>
+<dl>
+<dt><b>*REPLACE</b></dt>
+<dd>The system clears the existing member and adds the new records.
+</dd>
+</dl>
+<dl>
+<dt><b>*ADD</b></dt>
+<dd>The system adds the new records to the end of the existing records.
+</dd>
+</dl>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#CPYSPLF.Top_Of_Page">Top</a></td></tr>
+</table>
+<div> <a name="CPYSPLF.CTLCHAR"></a>
+<h3>Control character (CTLCHAR)</h3>
+<p>Specifies which print control characters (if any) are to replace the spooled file's internal print control characters. This parameter is ignored if the <b>Workstation customizing object (WSCST)</b> parameter is specified and is not *NONE.
+</p>
+<dl>
+<dt><b><u>*NONE</u></b></dt>
+<dd>No print control characters are created.
+</dd>
+<dt><b>*FCFC</b></dt>
+<dd>Specifies that the first character of every record contains one of the ANSI forms control codes. This option may be useful for microfiche production. For more information regarding the ANSI forms control codes, see the Basic printing topic collection in the Printing category in the IBM i Information Center at http://www.ibm.com/systems/i/infocenter/.
+</dd>
+<dt><b>*PRTCTL</b></dt>
+<dd>Specifies that the first four characters of every record contains skip- and space-before values useful in high-level language programs.  This code can be viewed as SSSL, where SSS is the skip-before line value and L is the space-before value.
+</dd>
+<dt><b>*S36FMT</b></dt>
+<dd>Specifies that the format of the records to be copied to a database file is the same as that created on the IBM System/36 for COPYPRT.  This value is not allowed for spooled files which exist on primary or secondary auxiliary storage pools.
+</dd>
+</dl>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#CPYSPLF.Top_Of_Page">Top</a></td></tr>
+</table>
+<div> <a name="CPYSPLF.CHLVAL"></a>
+<h3>Channel values (CHLVAL)</h3>
+<p>Specifies a list of channel numbers with their assigned line numbers.  Specify this parameter only if *FCFC is specified on the <b>Control character (CTLCHAR)</b> parameter).  Channel number refers to a method of determining skipping for reports.  Each assigned channel must have a corresponding line number to provide the correct positioning on a report.
+</p>
+<p><b>Single values</b>
+</p>
+<dl>
+<dt><b><u>*NORMAL</u></b></dt>
+<dd>Indicates channel 1 is the only assigned channel number.  The assigned line number for channel 1 is line 1.
+</dd>
+</dl>
+<p><b>Other values (up to 12 repetitions)</b>
+</p>
+<p><b>Element 1: Channel</b>
+</p>
+<dl>
+<dt><b><i>channel-number</i></b></dt>
+<dd>Specify which channels are used to control skipping on a report.  The only valid values for this parameter are 1 through 12.  Each channel number can be specified only once per Copy Spooled File (CPYSPLF) command.
+</dd>
+</dl>
+<p><b>Element 2: Line</b>
+</p>
+<dl>
+<dt><b><i>1-255</i></b></dt>
+<dd>The line number assigned for the channel number in the same list.  The range of valid line numbers is 1 through 255.  Each line number can be specified only once per Copy Spooled File (CPYSPLF) command.
+</dd>
+</dl>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#CPYSPLF.Top_Of_Page">Top</a></td></tr>
+</table>
+<div> <a name="CPYSPLF.TOSTMF"></a>
+<h3>To stream file (TOSTMF)</h3>
+<p>Specifies the stream file where the output data is to be written.  All directories in the path name must exist. New directories are not created.  This parameter must specify a value other than *NONE if the <b>To data base file (TOFILE)</b> parameter is *TOSTMF.
+</p>
+<dl>
+<dt><b><u>*NONE</u></b></dt>
+<dd>The output is written to a user-defined physical file. This value is only valid if the <b>To data base file (TOFILE)</b> parameter specifies a user-defined physical database file.
+</dd>
+<dt><b><i>path-name</i></b></dt>
+<dd>Specify the path name for the stream file where the output data is to be written. This value is only valid if the <b>To data base file (TOFILE)</b> parameter specifies *TOSTMF.
+<p>
+<b>Note:     </b>If the stream file exists, the CCSID associated with the stream file will not be changed.
+</p>
+</dd>
+</dl>
+<p>For more information on specifying path names, refer to "Object naming rules" in the CL topic collection in the Programming category in the IBM i Information Center at http://www.ibm.com/systems/i/infocenter/.
+</p>
+<p>
+<b>Note:     </b>This parameter is Unicode-enabled.  See "Unicode support in CL" in the CL topic collection in the Programming category in the IBM i Information Center at http://www.ibm.com/systems/i/infocenter/ for additional information.
+</p>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#CPYSPLF.Top_Of_Page">Top</a></td></tr>
+</table>
+<div> <a name="CPYSPLF.WSCST"></a>
+<h3>Workstation customizing object (WSCST)</h3>
+<p>Specifies the workstation customizing object to use to transform the spooled file output to final form before writing it to a stream file.  If the <b>To data base file (TOFILE)</b> parameter specifies a physical database file, the WSCST parameter is ignored.
+</p>
+<p><b>Single values</b>
+</p>
+<dl>
+<dt><b><u>*NONE</u></b></dt>
+<dd>Specifies that no workstation customizing object is to be used.
+<p>If the <b>To data base file (TOFILE)</b> parameter specifies *TOSTMF and the device type of the spooled file is *AFPDS or *USERASCII, the spooled file data will be copied directly to the stream file.  If the stream file does not exist, the associated CCSID of the stream file will be set to 65535.
+</p>
+<p>For other types of spooled files, the spooled file data will be copied to the stream file using the <b>Control character (CTLCHAR)</b> parameter to format the data. Lines will be ended with carriage return and line feed controls to indicate record boundaries.  If the stream file does not exist, a CCSID obtained from the spooled file attributes will be associated with the stream file.  If the spooled file has a CHRID attribute other than *DEVD, the CHRID attribute will be used to select the CCSID to be associated with the stream file. If the spooled file has a CHRID attribute of *DEVD, the CCSID of the job which created the spooled file will be used.
+</p>
+</dd>
+</dl>
+<dl>
+<dt><b>*PDF</b></dt>
+<dd>The output is transformed to Portable Document Format (PDF) before it is written into a stream file. If the stream file does not exist, the CCSID associated with the stream file will be set to 65535.
+</dd>
+</dl>
+<p><b>Qualifier 1: Workstation customizing object</b>
+</p>
+<dl>
+<dt><b><i>name</i></b></dt>
+<dd>Specify the name of the customizing object. When a named customizing object is used and the stream file does not exist, the CCSID associated with the stream file will be set to 65535.
+</dd>
+</dl>
+<p><b>Qualifier 2: Library</b>
+</p>
+<dl>
+<dt><b><u>*LIBL</u></b></dt>
+<dd>All libraries in the library list for the current thread are searched until the first match is found.
+</dd>
+</dl>
+<dl>
+<dt><b>*CURLIB</b></dt>
+<dd>The current library for the job is used to locate the customizing object.  If no current library entry exists in the library list, QGPL is used.
+</dd>
+<dt><b><i>name</i></b></dt>
+<dd>Specify the name of the library where the customizing object is located.
+</dd>
+</dl>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#CPYSPLF.Top_Of_Page">Top</a></td></tr>
+</table>
+<div> <a name="CPYSPLF.STMFOPT"></a>
+<h3>Stream file option (STMFOPT)</h3>
+<p>Specifies whether the copy operation replaces or fails to copy the records to the stream file if a stream file with the specified name already exists. If the stream file does not exist, it is created.
+</p>
+<dl>
+<dt><b><u>*NONE</u></b></dt>
+<dd>No records are copied and the operation will fail.
+</dd>
+<dt><b>*REPLACE</b></dt>
+<dd>The records replace the existing stream file records.
+</dd>
+</dl>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#CPYSPLF.Top_Of_Page">Top</a></td></tr>
+</table>
+<div> <a name="CPYSPLF.OPNSPLF"></a>
+<h3>Copy open spooled file (OPNSPLF)</h3>
+<p>Specifies whether or not the copy operation is allowed to proceed if the spooled file specified in the FILE parameter is still open.
+</p>
+<dl>
+<dt><b><u>*NO</u></b></dt>
+<dd>No records are copied if the spooled file is open, and the copy will fail.
+</dd>
+<dt><b>*YES</b></dt>
+<dd>A diagnostic message is issued if the spooled file is open, and the records are copied.
+</dd>
+</dl>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#CPYSPLF.Top_Of_Page">Top</a></td></tr>
+</table>
+<hr width="100%" size="2">
+<div><h3><a name="CPYSPLF.COMMAND.EXAMPLES">Examples</a> </h3>
+<p><b>Example 1: Replacing Data</b>
+</p>
+<p>
+<pre>
+CPYSPLF   FILE(QPRINT)  JOB(PAYROLL01)  SPLNBR(4)
+          TOFILE(MYFILE)  TOMBR(MYMBR)  CTLCHAR(*PRTCTL)
+</pre>
+</p>
+<p>In this example, file QPRINT (which is the fourth file produced by job PAYROLL01) is copied to member MYMBR of physical file MYFILE (which resides in a library found by searching the library list).  The newly copied data replaces all old data in the member because all old records have been cleared. The 4-byte print control code is created.
+</p>
+<p><b>Example 2: Adding Data</b>
+</p>
+<p>
+<pre>
+CPYSPLF   FILE(QPRINT)  TOFILE(MYLIB/MYFILE)  JOB(PAYROLL02)
+          MBROPT(*ADD)  CTLCHAR(*FCFC)  CHLVAL((1 3) (4 15))
+</pre>
+</p>
+<p>In this example, file QPRINT (the only file of that name left in job PAYROLL02) is copied to the first member of the physical file found in library MYLIB. The newly copied data is added to data existing in the member. The FCFC 1-byte print control character is used and takes advantage of the assigned channel values in formatting the output. The assigned channel values as specified on the command are as follows:
+</p>
+<ul>
+<li>Line 3 assigned to channel 1
+</li>
+<li>Line 15 assigned to channel 4
+</li>
+</ul>
+<p><b>Example 3: Converting to PDF</b>
+</p>
+<p>
+<pre>
+CPYSPLF   FILE(EMAIL)  JOB(123456/BARON/EMAIL01)  SPLNBR(1)
+          TOFILE(*TOSTMF)  TOSTMF('/emailpdfs/email01.pdf')
+          WSCST(*PDF) STMFOPT(*REPLACE)
+</pre>
+</p>
+<p>In this example, spooled file EMAIL (which is the first spooled file produced by job 123456/BARON/EMAIL01) is converted to a PDF and stored in directory '/emailpdfs' with the name email01.pdf where it can be used by another application.  If the stream file already exists, the data in the stream file will be replaced.
+</p>
+<p><b>Example 4: Copying an AFPDS Spooled File to a Stream File</b>
+</p>
+<p>
+<pre>
+CPYSPLF   FILE(MYDOC)  JOB(*)  SPLNBR(*LAST)  TOFILE(*TOSTMF)
+          TOSTMF(mydoc.afp)  WSCST(*NONE)  STMFOPT(*NONE)
+</pre>
+</p>
+<p>In this example, the last spooled file named MYDOC produced by the current job is copied without conversion to a stream file named 'mydoc.afp' in the current working directory.  The spooled file has a DEVTYPE of *AFPDS.  If the stream file already exists, the CPYSPLF command will fail.
+</p>
+<p><b>Example 5: Converting an SCS Spooled File to an ASCII Text Stream File</b>
+</p>
+<p>
+<pre>
+CPYSPLF   FILE(MYDOC)  JOB(*)  SPLNBR(*LAST)  TOFILE(*TOSTMF)
+          TOSTMF(/textfiles/mydoc.txt)  WSCST(QSYS/QWPDEFAULT)
+</pre>
+</p>
+<p>In this example, the last spooled file named MYDOC produced by the current job is converted to ASCII text and placed in the directory '/textfiles' with the file name 'mydoc.txt'.  The spooled file has a DEVTYPE of *SCS.  If the stream file already exists, the CPYSPLF command will fail.
+</p>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#CPYSPLF.Top_Of_Page">Top</a></td></tr>
+</table>
+<hr width="100%" size="2">
+<div><h3><a name="CPYSPLF.ERROR.MESSAGES">Error messages</a> </h3>
+<p><b><u>*ESCAPE Messages</u></b>
+</p>
+<dl>
+<dt><b>CPF2207</b></dt>
+<dd>Not authorized to use object &amp;1 in library &amp;3 type *&amp;2.
+</dd>
+<dt><b>CPF3CF2</b></dt>
+<dd>Error(s) occurred during running of &amp;1 API.
+</dd>
+<dt><b>CPF3207</b></dt>
+<dd>Member not added. Errors occurred.
+</dd>
+<dt><b>CPF3303</b></dt>
+<dd>File &amp;1 not found in job &amp;5/&amp;4/&amp;3.
+</dd>
+<dt><b>CPF3309</b></dt>
+<dd>No files named &amp;1 are active.
+</dd>
+<dt><b>CPF3311</b></dt>
+<dd>Copy request failed for file &amp;6 in &amp;7.
+</dd>
+<dt><b>CPF3330</b></dt>
+<dd>Necessary resource not available.
+</dd>
+<dt><b>CPF3340</b></dt>
+<dd>More than one file with specified name found in job &amp;5/&amp;4/&amp;3.
+</dd>
+<dt><b>CPF3342</b></dt>
+<dd>Job &amp;5/&amp;4/&amp;3 not found.
+</dd>
+<dt><b>CPF3343</b></dt>
+<dd>Duplicate job names found.
+</dd>
+<dt><b>CPF3344</b></dt>
+<dd>File &amp;1 number &amp;8 no longer in the system.
+</dd>
+<dt><b>CPF338A</b></dt>
+<dd>Control character *S36FMT not allowed.
+</dd>
+<dt><b>CPF3394</b></dt>
+<dd>Cannot convert spooled file data.
+</dd>
+<dt><b>CPF3429</b></dt>
+<dd>File &amp;1 number &amp;7 cannot be displayed, copied, or sent.
+</dd>
+<dt><b>CPF3482</b></dt>
+<dd>Copy request failed. Spool file &amp;1 is open.
+</dd>
+<dt><b>CPF3483</b></dt>
+<dd>Copy request failed for file &amp;6 in &amp;7.
+</dd>
+<dt><b>CPF3486</b></dt>
+<dd>CHLVAL parameter value not valid.
+</dd>
+<dt><b>CPF3492</b></dt>
+<dd>Not authorized to spooled file.
+</dd>
+<dt><b>CPF3493</b></dt>
+<dd>CTLCHAR parameter not correct for file &amp;1.
+</dd>
+<dt><b>CPF3499</b></dt>
+<dd>Records in file &amp;1 preceded all assigned channel values.
+</dd>
+<dt><b>CPF5812</b></dt>
+<dd>Member &amp;3 already exists in file &amp;1 in library &amp;2.
+</dd>
+<dt><b>CPF6DF2</b></dt>
+<dd>AFP data stream in user space &amp;1 not valid.
+</dd>
+<dt><b>CPF6DF4</b></dt>
+<dd>Object &amp;2 in library &amp;3 contains unrecognizable data.
+</dd>
+<dt><b>CPF6DF8</b></dt>
+<dd>Data cannot be transformed.
+</dd>
+<dt><b>CPF6DFB</b></dt>
+<dd>Error occurred while transforming data.
+</dd>
+<dt><b>CPF9801</b></dt>
+<dd>Object &amp;2 in library &amp;3 not found.
+</dd>
+<dt><b>CPF9802</b></dt>
+<dd>Not authorized to object &amp;2 in &amp;3.
+</dd>
+<dt><b>CPF9803</b></dt>
+<dd>Cannot allocate object &amp;2 in library &amp;3.
+</dd>
+<dt><b>CPF9804</b></dt>
+<dd>Object &amp;2 in library &amp;3 damaged.
+</dd>
+<dt><b>CPF9812</b></dt>
+<dd>File &amp;1 in library &amp;2 not found.
+</dd>
+<dt><b>CPF9820</b></dt>
+<dd>Not authorized to use library &amp;1.
+</dd>
+<dt><b>CPF9837</b></dt>
+<dd>Attempt made to override file &amp;1 to MBR(*ALL).
+</dd>
+<dt><b>CPF9845</b></dt>
+<dd>Error occurred while opening file &amp;1.
+</dd>
+<dt><b>CPF9846</b></dt>
+<dd>Error while processing file &amp;1 in library &amp;2.
+</dd>
+<dt><b>CPF9872</b></dt>
+<dd>Program or service program &amp;1 in library &amp;2 ended. Reason code &amp;3.
+</dd>
+<dt><b>CPFA09C</b></dt>
+<dd>Not authorized to object.  Object is &amp;1.
+</dd>
+<dt><b>CPFA0A0</b></dt>
+<dd>Object already exists.  Object is &amp;1.
+</dd>
+<dt><b>CPFA0A1</b></dt>
+<dd>An input or output error occurred.
+</dd>
+<dt><b>CPFA0A9</b></dt>
+<dd>Object not found.  Object is &amp;1.
+</dd>
+<dt><b>CPFCE01</b></dt>
+<dd>Required product option not available.
+</dd>
+<dt><b>CPFCE02</b></dt>
+<dd>Unable to access the required transform service.
+</dd>
+<dt><b>CPFCE03</b></dt>
+<dd>A data stream error was detected.
+</dd>
+<dt><b>CPFCE05</b></dt>
+<dd>Transformation task cancelled due to a print fidelity error.
+</dd>
+<dt><b>CPFCE06</b></dt>
+<dd>Error occurred while transforming print data.
+</dd>
+<dt><b>CPFCE07</b></dt>
+<dd>The transform service job terminated due to a critical error.
+</dd>
+<dt><b>CPFCE09</b></dt>
+<dd>SCS data stream is not valid.
+</dd>
+</dl>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#CPYSPLF.Top_Of_Page">Top</a></td></tr>
+</table>
+</body>
+</html>

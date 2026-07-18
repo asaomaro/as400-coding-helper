@@ -1,0 +1,188 @@
+
+  <!doctype html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+  <html>
+<head><META http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>Remove Member  (RMVM)</title>
+</head>
+<body bgcolor="white">
+<a name="RMVM.Top_Of_Page"></a>
+<h2>Remove Member  (RMVM)</h2>
+<table width="100%">
+<tr>
+<td align="left" valign="top"><b>Where allowed to run:  </b>All environments (*ALL)<br>
+<b>Threadsafe:  </b>Conditional
+</td>
+<td align="right" valign="top">
+<a href="#RMVM.PARAMETERS.TABLE">Parameters</a><br>
+<a href="#RMVM.COMMAND.EXAMPLES">Examples</a><br>
+<a href="#RMVM.ERROR.MESSAGES">Error messages</a></td>
+</tr>
+</table>
+
+<div> <a name="RMVM"></a>
+<p>The Remove Member (RMVM) command removes one or more members from the specified physical file or logical file.  If the member is removed from a physical file, both the member and the member data are deleted from the system.  If the member is removed from a logical file, the member and the access path to the data in the physical file member are deleted from the system.
+</p>
+<p><b>Restrictions:</b>
+</p>
+<ul>
+<li>If a member of another file is sharing the data of the member being deleted, the dependent member must be removed first.
+</li>
+<li>You must have object existence (*OBJEXIST) authority for the file that contains the member or members.
+</li>
+<li>This command is conditionally threadsafe.  In multithreaded jobs, this command is not threadsafe for Distributed Data Management (DDM) files of type *SNA, when SYSTEM(*RMT) or SYSTEM(*FILETYPE) is specified.
+</li>
+</ul>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#RMVM.Top_Of_Page">Top</a></td></tr>
+</table>
+<hr width="100%" size="2">
+
+<div>
+<h3><a name="RMVM.PARAMETERS.TABLE">Parameters</a></h3>
+<table cellspacing="0" cellpadding="4" border="1"><tr>
+<th width="10%" align="left" valign="bottom" bgcolor="aqua">Keyword</th>
+<th width="15%" align="left" valign="bottom" bgcolor="aqua">Description</th>
+<th width="30%" align="left" valign="bottom" bgcolor="aqua">Choices</th>
+<th width="10%" align="left" valign="bottom" bgcolor="aqua">Notes</th>
+</tr>
+<tr>
+<td valign="top" rowspan="3"><a href="#RMVM.FILE"><b>FILE</b></a></td>
+<td valign="top">Data base file</td>
+<td valign="top"><i>Qualified object name</i></td>
+<td valign="top" rowspan="3">Required, Positional 1</td>
+</tr>
+<tr>
+<td valign="top">Qualifier 1: Data base file</td>
+<td valign="top"><i>Name</i></td>
+</tr><tr>
+<td valign="top">Qualifier 2: Library</td>
+<td valign="top"><i>Name</i>, <b><u>*LIBL</u></b>, *CURLIB</td>
+</tr><tr>
+<td valign="top"><a href="#RMVM.MBR"><b>MBR</b></a></td>
+<td valign="top">Member</td>
+<td valign="top"><i>Generic name, name</i>, *ALL</td>
+<td valign="top">Required, Positional 2</td>
+</tr>
+</table>
+
+<table width="100%">
+<tr><td align="right"><a href="#RMVM.Top_Of_Page">Top</a></td></tr>
+</table>
+</div>
+<div> <a name="RMVM.FILE"></a>
+<h3>Data base file (FILE)</h3>
+<p>Specifies the physical file or logical file that contains the member or members to be removed.
+</p>
+<p>This is a required parameter.
+</p>
+<p><b>Qualifier 1: Data base file</b>
+</p>
+<dl>
+<dt><b><i>name</i></b></dt>
+<dd>Specify the name of the database file.
+</dd>
+</dl>
+<p><b>Qualifier 2: Library</b>
+</p>
+<dl>
+<dt><b><u>*LIBL</u></b></dt>
+<dd>All libraries in the library list for the current thread are searched until the first match is found.
+</dd>
+</dl>
+<dl>
+<dt><b>*CURLIB</b></dt>
+<dd>The current library for the job is used to locate the file.  If no library is specified as the current library for the job, QGPL is used.
+</dd>
+<dt><b><i>name</i></b></dt>
+<dd>Specify the library where the file is located.
+</dd>
+</dl>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#RMVM.Top_Of_Page">Top</a></td></tr>
+</table>
+<div> <a name="RMVM.MBR"></a>
+<h3>Member (MBR)</h3>
+<p>Specifies the file member or members to be removed.
+</p>
+<p>This is a required parameter.
+</p>
+<dl>
+<dt><b>*ALL</b></dt>
+<dd>All members are to be removed from the specified file.
+</dd>
+<dt><b><i>generic-name</i></b></dt>
+<dd>Specify the generic name of the members to be removed from the file.  A generic name consists of a character string that contains one or more characters followed by an asterisk(*).  If a generic member name is specified, all members in the specified file that have names with the same prefix as the generic member name are removed.
+</dd>
+<dt><b><i>name</i></b></dt>
+<dd>Specify the name of the member to be removed from the file.
+</dd>
+</dl>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#RMVM.Top_Of_Page">Top</a></td></tr>
+</table>
+<hr width="100%" size="2">
+<div><h3><a name="RMVM.COMMAND.EXAMPLES">Examples</a> </h3>
+<p><b>Example 1: Removing a File Member</b>
+</p>
+<p>
+<pre>
+RMVM   FILE(JOBHIST1)  MBR(JOBHIST1A)
+</pre>
+</p>
+<p>This command removes file member JOBHIST1A from file JOBHIST1.  Library list *LIBL is used to find the file and member. If JOBHIST1 contains other members, they remain unchanged.
+</p>
+<p><b>Example 2: Removing Members with Names that Start with SRC</b>
+</p>
+<p>
+<pre>
+RMVM   FILE(QGPL/JOBHISTL) MBR(SRC*)
+</pre>
+</p>
+<p>This command removes all file members with names that start with SRC from file JOBHISTL in library QGPL.
+</p>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#RMVM.Top_Of_Page">Top</a></td></tr>
+</table>
+<hr width="100%" size="2">
+<div><h3><a name="RMVM.ERROR.MESSAGES">Error messages</a> </h3>
+<p><b><u>*ESCAPE Messages</u></b>
+</p>
+<dl>
+<dt><b>CPF32CF</b></dt>
+<dd>Distributed file error, reason code &amp;3.
+</dd>
+<dt><b>CPF32C3</b></dt>
+<dd>Distributed file error, level ID mismatch
+</dd>
+<dt><b>CPF320A</b></dt>
+<dd>Member &amp;3 cannot be removed.
+</dd>
+<dt><b>CPF320B</b></dt>
+<dd>Operation was not valid for database file &amp;1.
+</dd>
+<dt><b>CPF3203</b></dt>
+<dd>Cannot allocate object for file &amp;1 in &amp;2.
+</dd>
+<dt><b>CPF3220</b></dt>
+<dd>Cannot do operation on file &amp;1 in &amp;2.
+</dd>
+<dt><b>CPF3273</b></dt>
+<dd>File or member not created, deleted or changed.
+</dd>
+<dt><b>CPF7301</b></dt>
+<dd>&amp;5 members not removed from file &amp;2 in &amp;3.
+</dd>
+<dt><b>CPF7310</b></dt>
+<dd>Member &amp;1 not removed from file &amp;2 in &amp;3.
+</dd>
+</dl>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#RMVM.Top_Of_Page">Top</a></td></tr>
+</table>
+</body>
+</html>

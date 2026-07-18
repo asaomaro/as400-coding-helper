@@ -1,0 +1,358 @@
+
+  <!doctype html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+  <html>
+<head><META http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>Declare File  (DCLF)</title>
+</head>
+<body bgcolor="white">
+<a name="DCLF.Top_Of_Page"></a>
+<h2>Declare File  (DCLF)</h2>
+<table width="100%">
+<tr>
+<td align="left" valign="top"><b>Where allowed to run:  </b>
+<ul><li>Batch program (*BPGM)</li>
+<li>Interactive program (*IPGM)</li>
+</ul><b>Threadsafe:  </b>Yes
+</td>
+<td align="right" valign="top">
+<a href="#DCLF.PARAMETERS.TABLE">Parameters</a><br>
+<a href="#DCLF.COMMAND.EXAMPLES">Examples</a><br>
+<a href="#DCLF.ERROR.MESSAGES">Error messages</a></td>
+</tr>
+</table>
+
+<div> <a name="DCLF"></a>
+<p>The Declare File (DCLF) command declares one file (by name) to a Control Language (CL) program.  Up to five DCLF commands are allowed in a CL program or ILE CL procedure.  Each DCLF command specifies the name of a display file or database file, the file record formats to be used in the program, and an optional <b>open file identifier</b> which is used to uniquely identify the declared instance of the file within the CL program or ILE CL procedure.  Multiple DCLF commands can reference the same file, so long as the value specified for the <b>Open file identifier (OPNID)</b> parameter is unique.  Following the DCLF command for a file, the CL program or ILE CL procedure can contain data manipulation commands.  For display files, the following commands can be used to send data to a workstation and receive data from a workstation: Send File (SNDF), Receive File (RCVF), Send/Receive File (SNDRCVF), End Receive (ENDRCV), and Wait (WAIT).  For database files, the RCVF command can be used to read records from the file.
+</p>
+<p>When the CL program or ILE CL procedure is compiled, a CL variable is automatically declared for each field in each record format used in the program.  If the file is a record-level database file, the record format contains one field with the name of that record format.  If the value specified for the OPNID parameter is *NONE, the variable name is the field name prefixed with an ampersand (&amp;).  If the OPNID parameter value is not *NONE, the variable name is the field name prefixed with an ampersand (&amp;), the value specified for the OPNID parameter, and an underscore.
+</p>
+<p>For example, if a declared file has a record format with field CUSTNAME and the open file identifier specified on the DCLF command was FILE1, the declared variable would be:
+</p>
+<p>
+<pre>
+  &amp;FILE1_CUSTNAME
+</pre>
+</p>
+<p>The attributes of each declared field are the same as the attributes of the field in the file record format. Fields defined in the record format as numeric are defined as decimal variables.  Indicators defined in the referenced file record format are declared as logical variables with a variable name in the form INnn, where 'nn' is the indicator number.
+</p>
+<p>Variables automatically declared by the DCLF command can be used in the program the same as the variables declared by a DCL command.  For example, indicators can be used in expressions and IF statements because they are declared as logical variables.
+</p>
+<p>The content of the variables, not the variable names, are seen by the user; the display shows one, some, or all of the fields in the record format that can be filled in by the user.  DDS determines the display format.
+</p>
+<p><b>Restrictions:</b>
+</p>
+<ul>
+<li>This command is valid only within a CL program or ILE CL procedure.  All declare commands (DCL, COPYRIGHT, DCLF, and DCLPRCOPT) must follow the PGM (Program) command and must precede all other commands in the program.  The four types of declare commands can be intermixed in any order.
+</li>
+<li>The file must either be a database file with only one record format or be a display file.
+</li>
+<li>The file cannot be a mixed file, even if only display devices are defined for that mixed file.
+</li>
+<li>The database file can be either physical or logical, and can be either field-level or nonfield level.
+</li>
+<li>The referenced file must exist before the program is created.
+</li>
+</ul>
+<p>Because CL variables are automatically declared for each field in a referenced file's record formats, the following restrictions apply:
+</p>
+<ul>
+<li>If the file is changed (and the file description specifies that level checking is to be performed), the CL program or ILE CL procedure must be recompiled to match the new file description.  More information on level checking is in the Database category in the IBM i Information Center at http://www.ibm.com/systems/i/infocenter/ and the Application Display Programming book, SC41-5715.
+</li>
+<li>If any field name is defined in more than one record format of the display file, the attributes in each record format for the commonly named field must match.
+</li>
+<li>Any CL variable declared in the program by a DCL command with the same name as an automatically declared CL variable (for a referenced field) must also have the same attributes specified in DDS for the referenced field.
+</li>
+<li>The variables used in the file must have data types supported for CL variables.  Fields defined as packed decimal format or zoned decimal format are declared as decimal variables.  Fields defined as binary format are declared as decimal variables by default, but will be declared as integer variables only if all of the following conditions are true:
+<ul>
+<li>*INT is specified for the <b>Declare binary fields (DCLBINFLD)</b> parameter.
+</li>
+<li>The field size is less than 10 digits.
+</li>
+<li>The field precision is 0.
+</li>
+</ul>
+<p>The variables used in the file must have attributes that are valid for CL variables.  For decimal variables, the limits are 15 digits and 9 decimal positions.  For variables with more than 15 digits, CL will declare a character variable that is the number of digits, divided by 2, plus 1 (<i>n</i> / 2 + 1) in length.  A CPI0306 message will be issued stating that the conversion has taken place, which can be seen in the program listing.  For character variables, the limit is 32767 bytes.
+</p>
+</li>
+</ul>
+<p><b>Additional Considerations:</b>
+</p>
+<p>File processing is handled differently in a CL program or ILE CL procedure, depending on whether the file specified in the DCLF command is a display file or a database file.
+</p>
+<p>The following statements apply if the file is a <b>display device file</b> at compile time:
+</p>
+<ul>
+<li>The file must be a display device file at run time.
+</li>
+<li>The program may contain any or all of the following commands:  SNDF, RCVF, SNDRCVF, ENDRCV, and WAIT.
+</li>
+<li>The file is opened for input and output.
+</li>
+</ul>
+<p>The following statements apply if the file is a <b>database file</b> at compile time:
+</p>
+<ul>
+<li>The file must be a database file with a single record format at run time.
+</li>
+<li>The program may contain only RCVF commands;  SNDF, SNDRCVF, ENDRCV, and WAIT commands are not allowed.
+</li>
+<li>The file is opened for input only.
+</li>
+<li>The file is implicitly opened when the RCVF command is run, not by using the Open Database File (OPNDBF) command.
+</li>
+<li>The file is implicitly closed when the CL program or ILE CL procedure ends, or explicitly closed by using the Close Database File (CLOSE) command within the same CL program or ILE CL procedure.
+</li>
+</ul>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#DCLF.Top_Of_Page">Top</a></td></tr>
+</table>
+<hr width="100%" size="2">
+
+<div>
+<h3><a name="DCLF.PARAMETERS.TABLE">Parameters</a></h3>
+<table cellspacing="0" cellpadding="4" border="1"><tr>
+<th width="10%" align="left" valign="bottom" bgcolor="aqua">Keyword</th>
+<th width="15%" align="left" valign="bottom" bgcolor="aqua">Description</th>
+<th width="30%" align="left" valign="bottom" bgcolor="aqua">Choices</th>
+<th width="10%" align="left" valign="bottom" bgcolor="aqua">Notes</th>
+</tr>
+<tr>
+<td valign="top" rowspan="3"><a href="#DCLF.FILE"><b>FILE</b></a></td>
+<td valign="top">File</td>
+<td valign="top"><i>Qualified object name</i></td>
+<td valign="top" rowspan="3">Required, Positional 1</td>
+</tr>
+<tr>
+<td valign="top">Qualifier 1: File</td>
+<td valign="top"><i>Name</i></td>
+</tr><tr>
+<td valign="top">Qualifier 2: Library</td>
+<td valign="top"><i>Name</i>, <b><u>*LIBL</u></b>, *CURLIB</td>
+</tr><tr>
+<td valign="top"><a href="#DCLF.RCDFMT"><b>RCDFMT</b></a></td>
+<td valign="top">Record format</td>
+<td valign="top">Single values: <b><u>*ALL</u></b><br>Other values (up to 50 repetitions): <i>Name</i></td>
+<td valign="top">Optional, Positional 2</td>
+</tr>
+<tr>
+<td valign="top"><a href="#DCLF.OPNID"><b>OPNID</b></a></td>
+<td valign="top">Open file identifier</td>
+<td valign="top"><i>Simple name</i>, <b><u>*NONE</u></b></td>
+<td valign="top">Optional</td>
+</tr>
+<tr>
+<td valign="top"><a href="#DCLF.ALWVARLEN"><b>ALWVARLEN</b></a></td>
+<td valign="top">Allow variable length fields</td>
+<td valign="top"><b><u>*NO</u></b>, *YES</td>
+<td valign="top">Optional</td>
+</tr>
+<tr>
+<td valign="top"><a href="#DCLF.ALWNULL"><b>ALWNULL</b></a></td>
+<td valign="top">Allow field value of null</td>
+<td valign="top"><b><u>*NO</u></b>, *YES</td>
+<td valign="top">Optional</td>
+</tr>
+<tr>
+<td valign="top"><a href="#DCLF.ALWGRAPHIC"><b>ALWGRAPHIC</b></a></td>
+<td valign="top">Allow graphic fields</td>
+<td valign="top"><b><u>*NO</u></b>, *YES</td>
+<td valign="top">Optional</td>
+</tr>
+<tr>
+<td valign="top"><a href="#DCLF.DCLBINFLD"><b>DCLBINFLD</b></a></td>
+<td valign="top">Declare binary fields</td>
+<td valign="top"><b><u>*DEC</u></b>, *INT</td>
+<td valign="top">Optional</td>
+</tr>
+</table>
+
+<table width="100%">
+<tr><td align="right"><a href="#DCLF.Top_Of_Page">Top</a></td></tr>
+</table>
+</div>
+<div> <a name="DCLF.FILE"></a>
+<h3>File (FILE)</h3>
+<p>Specifies the file to be used by the CL program or ILE CL procedure.
+</p>
+<p>This is a required parameter.
+</p>
+<p><b>Qualifier 1: File</b>
+</p>
+<dl>
+<dt><b><i>name</i></b></dt>
+<dd>Specify the name of the file.
+</dd>
+</dl>
+<p><b>Qualifier 2: Library</b>
+</p>
+<dl>
+<dt><b><u>*LIBL</u></b></dt>
+<dd>All libraries in the library list for the current thread are searched until the first match is found.
+</dd>
+</dl>
+<dl>
+<dt><b>*CURLIB</b></dt>
+<dd>The current library for the job is used to locate the file.  If no current library entry exists in the library list, QGPL is used.
+</dd>
+<dt><b><i>name</i></b></dt>
+<dd>Specify the library where the file is located.
+</dd>
+</dl>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#DCLF.Top_Of_Page">Top</a></td></tr>
+</table>
+<div> <a name="DCLF.RCDFMT"></a>
+<h3>Record format (RCDFMT)</h3>
+<p>Specifies the names of one or more record formats contained in the file.  These record formats are used by the Send File (SNDF), Receive File (RCVF), and Send/Receive File (SNDRCVF) commands in the CL program or ILE CL procedure.  Database files can be processed only by RCVF.  CL variable names cannot be specified in RCDFMT; only names of record formats can be used.  For every field and indicator in each record format specified in RCDFMT, one CL variable is automatically declared in the program.
+</p>
+<p>
+<b>Note:     </b>A physical file can contain only one record format.  A logical file which has multiple record formats defined in DDS may be used if it is defined over only one physical file member.  If the physical file contains more than one record format, an error message is sent and the compile procedure fails.
+</p>
+<p><b>Single values</b>
+</p>
+<dl>
+<dt><b><u>*ALL</u></b></dt>
+<dd>Every record format in the file, up to a maximum of 99, is to have its fields declared in the CL program as variables.  If there are more than 99 record formats in the file, only the first 99 are used.
+</dd>
+</dl>
+<p><b>Other values (up to 50 repetitions)</b>
+</p>
+<dl>
+<dt><b><i>name</i></b></dt>
+<dd>Specify the name of the file record format whose fields are to be declared as variables in the CL program or ILE CL procedure.  CL variables cannot be used to specify the names.
+</dd>
+</dl>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#DCLF.Top_Of_Page">Top</a></td></tr>
+</table>
+<div> <a name="DCLF.OPNID"></a>
+<h3>Open file identifier (OPNID)</h3>
+<p>Specifies the open file identifier to be associated with the file specified for the <b>File (FILE)</b> parameter.  This identifier must be unique for all files declared in the CL program.
+</p>
+<dl>
+<dt><b><u>*NONE</u></b></dt>
+<dd>The file does not have an open file identifier.  Only one file can be declared in a CL program or ILE CL procedure with *NONE as the open file identifier.
+</dd>
+<dt><b><i>simple-name</i></b></dt>
+<dd>Specify the name to be used as the open file identifier for the file.
+</dd>
+</dl>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#DCLF.Top_Of_Page">Top</a></td></tr>
+</table>
+<div> <a name="DCLF.ALWVARLEN"></a>
+<h3>Allow variable length fields (ALWVARLEN)</h3>
+<p>Specifies whether variable length fields are allowed in record formats.
+</p>
+<dl>
+<dt><b><u>*NO</u></b></dt>
+<dd>Variable length fields are not allowed in record formats.
+</dd>
+<dt><b>*YES</b></dt>
+<dd>Variable length fields are allowed in record formats.  CL variables declared for variable-length fields are handled as type *CHAR with length equal to 2 bytes plus the maximum field length.  Following a RCVF on a variable-length field, the first 2 bytes in the CL variable contain the length of the data.  The data received from the field is padded on the right with blanks to the maximum length allowed (32765 bytes).
+</dd>
+</dl>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#DCLF.Top_Of_Page">Top</a></td></tr>
+</table>
+<div> <a name="DCLF.ALWNULL"></a>
+<h3>Allow field value of null (ALWNULL)</h3>
+<p>Specifies whether a field value of null is allowed.
+</p>
+<dl>
+<dt><b><u>*NO</u></b></dt>
+<dd>Values of null are not allowed.  For each field containing a null value at RCVF time, a diagnostic message is sent with a single escape message for the entire record.  Default values are placed in the CL variables.
+</dd>
+<dt><b>*YES</b></dt>
+<dd>Values of null are allowed.
+</dd>
+</dl>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#DCLF.Top_Of_Page">Top</a></td></tr>
+</table>
+<div> <a name="DCLF.ALWGRAPHIC"></a>
+<h3>Allow graphic fields (ALWGRAPHIC)</h3>
+<p>Specifies whether graphic data fields are allowed in record formats.
+</p>
+<dl>
+<dt><b><u>*NO</u></b></dt>
+<dd>Record formats cannot contain graphic data fields.  A diagnostic message is sent at compile time if graphic data fields are supported in the file.
+</dd>
+<dt><b>*YES</b></dt>
+<dd>Record formats can contain graphic data fields.  CL variables declared for graphic data fields are handled as type *CHAR with length equal (in bytes) to the graphic data field length.
+</dd>
+</dl>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#DCLF.Top_Of_Page">Top</a></td></tr>
+</table>
+<div> <a name="DCLF.DCLBINFLD"></a>
+<h3>Declare binary fields (DCLBINFLD)</h3>
+<p>Specifies whether variables declared for binary fields in the record format should be packed decimal or integer.
+</p>
+<dl>
+<dt><b><u>*DEC</u></b></dt>
+<dd>CL variables declared for binary fields in the record format will use TYPE(*DEC).
+</dd>
+<dt><b>*INT</b></dt>
+<dd>CL variables declared for binary fields, with precision of zero and a length of 9 or less in the record format, will use TYPE(*INT).
+</dd>
+</dl>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#DCLF.Top_Of_Page">Top</a></td></tr>
+</table>
+<hr width="100%" size="2">
+<div><h3><a name="DCLF.COMMAND.EXAMPLES">Examples</a> </h3>
+<p><b>Example 1: Declaring Fields of All Record Formats as Variables</b>
+</p>
+<p>
+<pre>
+DCLF   FILE(ABLE)  RCDFMT(*ALL)
+</pre>
+</p>
+<p>This command specifies that the file named ABLE is used by the CL program to pass data between the user and the program. Because no library was specified, the library list is used to locate the file. All the fields and indicators in all the record formats are automatically declared as variables, and data from any field in any record format (up through the first 99) in the file can be passed between the program and the user.
+</p>
+<p><b>Example 2: Using Multiple Record Formats</b>
+</p>
+<p>
+<pre>
+DCLF   FILE(BAKER)  RCDFMT(REC2 REC6)
+</pre>
+</p>
+<p>Display file BAKER is used by the CL program or ILE CL procedure to pass data between the user and the program.  Assuming the library qualifier for FILE defaults to *LIBL, the library list is used to locate the file. Both the REC2 and REC6 record formats are used.
+</p>
+<p><b>Example 3: Using an Open File Identifier</b>
+</p>
+<p>
+<pre>
+DCLF   FILE(MYLIB/CHARLES)  OPNID(CTLFILE1)
+</pre>
+</p>
+<p>File CHARLES in library MYLIB is used by the the CL program or ILE CL procedure to read records from the database file.  If the record format contains a field named CUSTNUMBER, the following variable will be declared:
+</p>
+<p>
+<pre>
+  &amp;CTLFILE1_CUSTNUMBER
+</pre>
+</p>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#DCLF.Top_Of_Page">Top</a></td></tr>
+</table>
+<hr width="100%" size="2">
+<div><h3><a name="DCLF.ERROR.MESSAGES">Error messages</a> </h3>
+<p>None
+</p>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#DCLF.Top_Of_Page">Top</a></td></tr>
+</table>
+</body>
+</html>

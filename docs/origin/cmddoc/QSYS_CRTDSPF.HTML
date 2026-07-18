@@ -1,0 +1,923 @@
+
+  <!doctype html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+  <html>
+<head><META http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>Create Display File  (CRTDSPF)</title>
+</head>
+<body bgcolor="white">
+<a name="CRTDSPF.Top_Of_Page"></a>
+<h2>Create Display File  (CRTDSPF)</h2>
+<table width="100%">
+<tr>
+<td align="left" valign="top"><b>Where allowed to run:  </b>All environments (*ALL)<br>
+<b>Threadsafe:  </b>No
+</td>
+<td align="right" valign="top">
+<a href="#CRTDSPF.PARAMETERS.TABLE">Parameters</a><br>
+<a href="#CRTDSPF.COMMAND.EXAMPLES">Examples</a><br>
+<a href="#CRTDSPF.ERROR.MESSAGES">Error messages</a></td>
+</tr>
+</table>
+
+<div> <a name="CRTDSPF"></a>
+<p>The Create Display File (CRTDSPF) command creates a display device file.  The device file contains the file description, which identifies the device used and, optionally, the record formats used by the device (if specified in data description specifications (DDS)); the device file does not contain data.  The display device file sends records to one or more display devices associated with the device file, and to receive records from the display devices.
+</p>
+<p>The display file description contains of information that is specified in two places:  (1) in the source file that contains the DDS (if used); and (2) in the CRTDSPF command.  The DDS contains the specifications for each record format in the device file and for the fields in each record format.
+</p>
+<p>The Change Display File (CHGDSPF) or Override Display File (OVRDSPF) command is used in a program to change or override the parameter values specified in the display file description; the override command must be run before the display file is opened by the program.  Overridden values are changed only for the running of the program; once the program ends, the original parameter values specified for the display file are used.
+</p>
+<p>
+<b>Note:     </b>If an application program attempts to acquire a work station on a switched line and the line connection has been lost or has never been established, the application program waits indefinitely until the connection is established.
+</p>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#CRTDSPF.Top_Of_Page">Top</a></td></tr>
+</table>
+<hr width="100%" size="2">
+
+<div>
+<h3><a name="CRTDSPF.PARAMETERS.TABLE">Parameters</a></h3>
+<table cellspacing="0" cellpadding="4" border="1"><tr>
+<th width="10%" align="left" valign="bottom" bgcolor="aqua">Keyword</th>
+<th width="15%" align="left" valign="bottom" bgcolor="aqua">Description</th>
+<th width="30%" align="left" valign="bottom" bgcolor="aqua">Choices</th>
+<th width="10%" align="left" valign="bottom" bgcolor="aqua">Notes</th>
+</tr>
+<tr>
+<td valign="top" rowspan="3"><a href="#CRTDSPF.FILE"><b>FILE</b></a></td>
+<td valign="top">File</td>
+<td valign="top"><i>Qualified object name</i></td>
+<td valign="top" rowspan="3">Required, Positional 1</td>
+</tr>
+<tr>
+<td valign="top">Qualifier 1: File</td>
+<td valign="top"><i>Name</i></td>
+</tr><tr>
+<td valign="top">Qualifier 2: Library</td>
+<td valign="top"><i>Name</i>, <b><u>*CURLIB</u></b></td>
+</tr><tr>
+<td valign="top" rowspan="3"><a href="#CRTDSPF.SRCFILE"><b>SRCFILE</b></a></td>
+<td valign="top">Source file</td>
+<td valign="top">Single values: <b><u>*NONE</u></b><br>Other values: <i>Qualified object name</i></td>
+<td valign="top" rowspan="3">Optional, Positional 2</td>
+</tr>
+<tr>
+<td valign="top">Qualifier 1: Source file</td>
+<td valign="top"><i>Name</i></td>
+</tr><tr>
+<td valign="top">Qualifier 2: Library</td>
+<td valign="top"><i>Name</i>, <b><u>*LIBL</u></b>, *CURLIB</td>
+</tr><tr>
+<td valign="top"><a href="#CRTDSPF.SRCMBR"><b>SRCMBR</b></a></td>
+<td valign="top">Source member</td>
+<td valign="top"><i>Name</i>, <b><u>*FILE</u></b></td>
+<td valign="top">Optional, Positional 3</td>
+</tr>
+<tr>
+<td valign="top"><a href="#CRTDSPF.GENLVL"><b>GENLVL</b></a></td>
+<td valign="top">Generation severity level</td>
+<td valign="top">0-30, <b><u>20</u></b></td>
+<td valign="top">Optional</td>
+</tr>
+<tr>
+<td valign="top"><a href="#CRTDSPF.FLAG"><b>FLAG</b></a></td>
+<td valign="top">Flagging severity level</td>
+<td valign="top">0-30, <b><u>0</u></b></td>
+<td valign="top">Optional</td>
+</tr>
+<tr>
+<td valign="top"><a href="#CRTDSPF.DEV"><b>DEV</b></a></td>
+<td valign="top">Display device</td>
+<td valign="top">Single values: *NONE<br>Other values (up to 50 repetitions): <i>Name</i>, <b><u>*REQUESTER</u></b></td>
+<td valign="top">Optional</td>
+</tr>
+<tr>
+<td valign="top"><a href="#CRTDSPF.IGCDTA"><b>IGCDTA</b></a></td>
+<td valign="top">User specified DBCS data</td>
+<td valign="top"><b><u>*NO</u></b>, *YES</td>
+<td valign="top">Optional</td>
+</tr>
+<tr>
+<td valign="top"><a href="#CRTDSPF.IGCEXNCHR"><b>IGCEXNCHR</b></a></td>
+<td valign="top">DBCS extension characters</td>
+<td valign="top"><b><u>*YES</u></b>, *NO</td>
+<td valign="top">Optional</td>
+</tr>
+<tr>
+<td valign="top"><a href="#CRTDSPF.TEXT"><b>TEXT</b></a></td>
+<td valign="top">Text 'description'</td>
+<td valign="top"><i>Character value</i>, <b><u>*SRCMBRTXT</u></b>, *BLANK</td>
+<td valign="top">Optional</td>
+</tr>
+<tr>
+<td valign="top"><a href="#CRTDSPF.OPTION"><b>OPTION</b></a></td>
+<td valign="top">Source listing options</td>
+<td valign="top">Values (up to 4 repetitions): *SRC, *NOSRC, *SOURCE, *NOSOURCE, *LIST, *NOLIST, *SECLVL, *NOSECLVL, *EVENTF, *NOEVENTF</td>
+<td valign="top">Optional, Positional 4</td>
+</tr>
+<tr>
+<td valign="top"><a href="#CRTDSPF.MAXDEV"><b>MAXDEV</b></a></td>
+<td valign="top">Maximum devices</td>
+<td valign="top">1-256, <b><u>1</u></b></td>
+<td valign="top">Optional</td>
+</tr>
+<tr>
+<td valign="top"><a href="#CRTDSPF.ENHDSP"><b>ENHDSP</b></a></td>
+<td valign="top">Enhanced display</td>
+<td valign="top"><b><u>*YES</u></b>, *NO</td>
+<td valign="top">Optional</td>
+</tr>
+<tr>
+<td valign="top"><a href="#CRTDSPF.RSTDSP"><b>RSTDSP</b></a></td>
+<td valign="top">Restore display</td>
+<td valign="top"><b><u>*NO</u></b>, *YES</td>
+<td valign="top">Optional</td>
+</tr>
+<tr>
+<td valign="top"><a href="#CRTDSPF.DFRWRT"><b>DFRWRT</b></a></td>
+<td valign="top">Defer write</td>
+<td valign="top"><b><u>*YES</u></b>, *NO</td>
+<td valign="top">Optional</td>
+</tr>
+<tr>
+<td valign="top" rowspan="3"><a href="#CRTDSPF.CHRID"><b>CHRID</b></a></td>
+<td valign="top">Character identifier</td>
+<td valign="top">Single values: <b><u>*DEVD</u></b>, *SYSVAL, *JOBCCSID, *CHRIDCTL<br>Other values: <i>Element list</i></td>
+<td valign="top" rowspan="3">Optional</td>
+</tr>
+<tr>
+<td valign="top">Element 1: Graphic character set</td>
+<td valign="top">
+<i>Integer</i></td>
+</tr>
+<tr>
+<td valign="top">Element 2: Code page</td>
+<td valign="top">
+<i>Integer</i></td>
+</tr>
+<tr>
+<td valign="top"><a href="#CRTDSPF.DECFMT"><b>DECFMT</b></a></td>
+<td valign="top">Decimal format</td>
+<td valign="top">*FILE, <b><u>*JOB</u></b></td>
+<td valign="top">Optional</td>
+</tr>
+<tr>
+<td valign="top"><a href="#CRTDSPF.SFLENDTXT"><b>SFLENDTXT</b></a></td>
+<td valign="top">SFLEND text</td>
+<td valign="top">*FILE, <b><u>*MSG</u></b></td>
+<td valign="top">Optional</td>
+</tr>
+<tr>
+<td valign="top"><a href="#CRTDSPF.WAITFILE"><b>WAITFILE</b></a></td>
+<td valign="top">Maximum file wait time</td>
+<td valign="top"><i>Integer</i>, <b><u>*IMMED</u></b>, *CLS</td>
+<td valign="top">Optional</td>
+</tr>
+<tr>
+<td valign="top"><a href="#CRTDSPF.WAITRCD"><b>WAITRCD</b></a></td>
+<td valign="top">Maximum record wait time</td>
+<td valign="top"><i>Integer</i>, <b><u>*NOMAX</u></b>, *IMMED</td>
+<td valign="top">Optional</td>
+</tr>
+<tr>
+<td valign="top" rowspan="3"><a href="#CRTDSPF.DTAQ"><b>DTAQ</b></a></td>
+<td valign="top">Data queue</td>
+<td valign="top">Single values: <b><u>*NONE</u></b><br>Other values: <i>Qualified object name</i></td>
+<td valign="top" rowspan="3">Optional</td>
+</tr>
+<tr>
+<td valign="top">Qualifier 1: Data queue</td>
+<td valign="top"><i>Name</i></td>
+</tr><tr>
+<td valign="top">Qualifier 2: Library</td>
+<td valign="top"><i>Name</i>, <b><u>*LIBL</u></b>, *CURLIB</td>
+</tr><tr>
+<td valign="top"><a href="#CRTDSPF.SHARE"><b>SHARE</b></a></td>
+<td valign="top">Share open data path</td>
+<td valign="top"><b><u>*NO</u></b>, *YES</td>
+<td valign="top">Optional</td>
+</tr>
+<tr>
+<td valign="top" rowspan="3"><a href="#CRTDSPF.SRTSEQ"><b>SRTSEQ</b></a></td>
+<td valign="top">Sort sequence</td>
+<td valign="top">Single values: <b><u>*JOB</u></b>, *LANGIDSHR, *LANGIDUNQ, *HEX<br>Other values: <i>Qualified object name</i></td>
+<td valign="top" rowspan="3">Optional</td>
+</tr>
+<tr>
+<td valign="top">Qualifier 1: Sort sequence</td>
+<td valign="top"><i>Name</i></td>
+</tr><tr>
+<td valign="top">Qualifier 2: Library</td>
+<td valign="top"><i>Name</i>, <b><u>*LIBL</u></b>, *CURLIB</td>
+</tr><tr>
+<td valign="top"><a href="#CRTDSPF.LANGID"><b>LANGID</b></a></td>
+<td valign="top">Language ID</td>
+<td valign="top"><i>Character value</i>, <b><u>*JOB</u></b></td>
+<td valign="top">Optional</td>
+</tr>
+<tr>
+<td valign="top"><a href="#CRTDSPF.LVLCHK"><b>LVLCHK</b></a></td>
+<td valign="top">Record format level check</td>
+<td valign="top"><b><u>*YES</u></b>, *NO</td>
+<td valign="top">Optional</td>
+</tr>
+<tr>
+<td valign="top"><a href="#CRTDSPF.AUT"><b>AUT</b></a></td>
+<td valign="top">Authority</td>
+<td valign="top"><i>Name</i>, <b><u>*LIBCRTAUT</u></b>, *ALL, *CHANGE, *EXCLUDE, *USE</td>
+<td valign="top">Optional</td>
+</tr>
+<tr>
+<td valign="top"><a href="#CRTDSPF.REPLACE"><b>REPLACE</b></a></td>
+<td valign="top">Replace file</td>
+<td valign="top"><b><u>*YES</u></b>, *NO</td>
+<td valign="top">Optional</td>
+</tr>
+</table>
+
+<table width="100%">
+<tr><td align="right"><a href="#CRTDSPF.Top_Of_Page">Top</a></td></tr>
+</table>
+</div>
+<div> <a name="CRTDSPF.FILE"></a>
+<h3>File (FILE)</h3>
+<p>Specifies the display device file to be created.
+</p>
+<p>If the display device file is used in a high-level language program, the file name should be consistent with the naming rules of that language.  Otherwise, the file must be renamed in the program.
+</p>
+<p>This is a required parameter.
+</p>
+<p><b>Qualifier 1: File</b>
+</p>
+<dl>
+<dt><b><i>name</i></b></dt>
+<dd>Specify the name of the display file to be created.
+</dd>
+</dl>
+<p><b>Qualifier 2: Library</b>
+</p>
+<dl>
+<dt><b><u>*CURLIB</u></b></dt>
+<dd>The current library for the job is used to locate the display device file.  If no library is specified as the current library for the job, QGPL is used.
+</dd>
+<dt><b><i>name</i></b></dt>
+<dd>Specify the library where the display file is created.
+</dd>
+</dl>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#CRTDSPF.Top_Of_Page">Top</a></td></tr>
+</table>
+<div> <a name="CRTDSPF.SRCFILE"></a>
+<h3>Source file (SRCFILE)</h3>
+<p>Specifies the source file (if specified) containing the data description specifications (DDS) source used to create the display device file.
+</p>
+<p><b>Single values</b>
+</p>
+<dl>
+<dt><b><u>*NONE</u></b></dt>
+<dd>There is no DDS source for this display device file.
+</dd>
+</dl>
+<p><b>Qualifier 1: Source file</b>
+</p>
+<dl>
+<dt><b><i>name</i></b></dt>
+<dd>Specify the name of the source file that contains the DDS used to create the display device file.
+</dd>
+</dl>
+<p><b>Qualifier 2: Library</b>
+</p>
+<dl>
+<dt><b><u>*LIBL</u></b></dt>
+<dd>All libraries in the library list for the current thread are searched until the first match is found.
+</dd>
+</dl>
+<dl>
+<dt><b>*CURLIB</b></dt>
+<dd>The current library for the job is used to locate the file.  If no library is specified as the current library for the job, QGPL is used.
+</dd>
+<dt><b><i>name</i></b></dt>
+<dd>Specifies the library where the file is located.
+</dd>
+</dl>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#CRTDSPF.Top_Of_Page">Top</a></td></tr>
+</table>
+<div> <a name="CRTDSPF.SRCMBR"></a>
+<h3>Source member (SRCMBR)</h3>
+<p>Specifies the source file member that contains the DDS source for the display device file being created.
+</p>
+<dl>
+<dt><b><u>*FILE</u></b></dt>
+<dd>The source file member name is the same as the name specified for the <b>File (FILE)</b> parameter.
+</dd>
+<dt><b><i>name</i></b></dt>
+<dd>Specify the name of the member in the source file.
+</dd>
+</dl>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#CRTDSPF.Top_Of_Page">Top</a></td></tr>
+</table>
+<div> <a name="CRTDSPF.GENLVL"></a>
+<h3>Generation severity level (GENLVL)</h3>
+<p>Specifies the severity level of data description specifications (DDS) messages that cause file creation to fail.  This parameter applies only to messages created while processing DDS source files.
+</p>
+<dl>
+<dt><b><u>20</u></b></dt>
+<dd>If errors occur in the DDS source file processing with a severity level greater than or equal to 20, the file is not created.
+</dd>
+<dt><b><i>0-30</i></b></dt>
+<dd>Specify the desired severity level value.  If 0 is specified, the file is not created.  The value specified must be greater than or equal to the value specified for the <b>Flagging severity level (FLAG)</b> parameter.
+</dd>
+</dl>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#CRTDSPF.Top_Of_Page">Top</a></td></tr>
+</table>
+<div> <a name="CRTDSPF.FLAG"></a>
+<h3>Flagging severity level (FLAG)</h3>
+<p>Specifies the minimum severity level of messages to be listed.
+</p>
+<dl>
+<dt><b><u>0</u></b></dt>
+<dd>All messages are to be listed.
+</dd>
+<dt><b><i>0-30</i></b></dt>
+<dd>Specify a number indicating the minimum severity of messages to be listed.  The value specified must be less than or equal to the value specified for the <b>Generation severity level (GENLVL)</b> parameter.
+</dd>
+</dl>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#CRTDSPF.Top_Of_Page">Top</a></td></tr>
+</table>
+<div> <a name="CRTDSPF.DEV"></a>
+<h3>Display device (DEV)</h3>
+<p>Specifies the names of one or more display devices that are used with this display file to pass data records between the users of the display devices and their jobs.
+</p>
+<p><b>Single values</b>
+</p>
+<dl>
+<dt><b>*NONE</b></dt>
+<dd>No display device name is specified.  The name of the display device must be specified later in a Change Display File (CHGDSPF) command or Override with Display File (OVRDSPF) command, or in the high-level language program that opens the file.
+</dd>
+</dl>
+<p><b>Other values (up to 50 repetitions)</b>
+</p>
+<dl>
+<dt><b><u>*REQUESTER</u></b></dt>
+<dd>The display device from which the program is called is the device assigned to the file when the file is opened.
+</dd>
+</dl>
+<dl>
+<dt><b><i>name</i></b></dt>
+<dd>Specify the names of one or more display devices.  *REQUESTER can be specified as one of the names.  A maximum of 50 device names (including *REQUESTER) can be specified, but the total number cannot exceed the number specified for the <b>Maximum devices (MAXDEV)</b> parameter when the file is opened.
+</dd>
+</dl>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#CRTDSPF.Top_Of_Page">Top</a></td></tr>
+</table>
+<div> <a name="CRTDSPF.IGCDTA"></a>
+<h3>User specified DBCS data (IGCDTA)</h3>
+<p>Specifies, for program-described files, whether the file processes double-byte character set (DBCS) data.  Specifies, for externally described files, the DBCS attributes of the file.
+</p>
+<p><b>For program-described files</b>
+</p>
+<dl>
+<dt><b><u>*NO</u></b></dt>
+<dd>The file does not process double-byte character set (DBCS) data.
+</dd>
+</dl>
+<dl>
+<dt><b>*YES</b></dt>
+<dd>The file processes double-byte character set (DBCS) data.
+</dd>
+</dl>
+<p><b>For externally-described files</b>
+</p>
+<dl>
+<dt><b><u>*NO</u></b></dt>
+<dd>The only double-byte character set (DBCS) attributes of the file are those specified in the data description specifications (DDS).
+</dd>
+<dt><b>*YES</b></dt>
+<dd>DBCS attributes, in addition to those specified in the DDS, include: (1) putting the DDS keyword for alternative data type (IGCALTTYP) into effect and (2) identifying DBCS attributes of fields, values, or messages.
+</dd>
+</dl>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#CRTDSPF.Top_Of_Page">Top</a></td></tr>
+</table>
+<div> <a name="CRTDSPF.IGCEXNCHR"></a>
+<h3>DBCS extension characters (IGCEXNCHR)</h3>
+<p>Specifies whether the system processes double-byte character set (DBCS) extended characters.  When processing DBCS extended characters, the device requires the assistance of the system.  The system must tell the device what the character looks like before the device can display or print the character.  Extended characters are stored in a DBCS font table, not in the DBCS device.  Extended character processing is a function of the operating system that is required to make characters stored in a DBCS font table available to a DBCS device.
+</p>
+<dl>
+<dt><b><u>*YES</u></b></dt>
+<dd>The system processes DBCS extended characters.
+</dd>
+<dt><b>*NO</b></dt>
+<dd>The system does not process DBCS extended characters; it displays extended characters as the undefined character.
+</dd>
+</dl>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#CRTDSPF.Top_Of_Page">Top</a></td></tr>
+</table>
+<div> <a name="CRTDSPF.TEXT"></a>
+<h3>Text 'description' (TEXT)</h3>
+<p>Specifies the text that briefly describes the object.
+</p>
+<dl>
+<dt><b><u>*SRCMBRTXT</u></b></dt>
+<dd>If the source file is a database file, the text is taken from the source file member used to create the file.  If the source file is an inline file or a device file, the text is blank.
+</dd>
+<dt><b>*BLANK</b></dt>
+<dd>No text is specified.
+</dd>
+<dt><b><i>character-value</i></b></dt>
+<dd>Specify no more than 50 characters of text, enclosed in apostrophes.
+</dd>
+</dl>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#CRTDSPF.Top_Of_Page">Top</a></td></tr>
+</table>
+<div> <a name="CRTDSPF.OPTION"></a>
+<h3>Source listing options (OPTION)</h3>
+<p>Specifies the type of output produced when the file is created.  A maximum of four of the following values can be specified in any order on this parameter.  If neither or both of the values on an option are specified, the first value listed for the option is used.
+</p>
+<p>
+<b>Note:     </b>The first values on each option are similar to, but are not actually default values, and therefore, cannot be changed with the CHGCMDDFT (Change Command Default) command.
+</p>
+<p><b>Source Listing Option</b>
+</p>
+<dl>
+<dt><b><u>*SRC or *SOURCE</u></b></dt>
+<dd>A printout of the source statements, including a list of errors, is created.
+</dd>
+<dt><b>*NOSRC or *NOSOURCE</b></dt>
+<dd>No printout of the source statements is created unless errors are detected.  If errors are detected, they are listed along with the keyword or record format that caused the error.
+</dd>
+</dl>
+<p><b>Program Listing Option</b>
+</p>
+<dl>
+<dt><b><u>*LIST</u></b></dt>
+<dd>An expanded source printout is created, showing a detailed list of the file specifications and the references to other file descriptions.
+</dd>
+</dl>
+<dl>
+<dt><b>*NOLIST</b></dt>
+<dd>The expanded source printout is not created.
+</dd>
+</dl>
+<p><b>Second-Level Message Text Option</b>
+</p>
+<dl>
+<dt><b><u>*NOSECLVL</u></b></dt>
+<dd>The messages section of the data description specifications (DDS) printout does not contain the online help information for messages issued during DDS processing.
+</dd>
+<dt><b>*SECLVL</b></dt>
+<dd>The online help information appears in the DDS printout.
+</dd>
+</dl>
+<p><b>Event File Creation Option</b>
+</p>
+<dl>
+<dt><b><u>*NOEVENTF</u></b></dt>
+<dd>The compiler does not produce an event file for the CoOperative Development Environment (CODE) product.
+</dd>
+<dt><b>*EVENTF</b></dt>
+<dd>The compiler produces an event file that can be used by the CODE product.  The event file is created as a member in the file EVFEVENT in your object library.  The CODE product uses this file to offer error feedback integrated with the CODE editor.  This value is normally specified by the CODE product on your behalf.
+</dd>
+</dl>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#CRTDSPF.Top_Of_Page">Top</a></td></tr>
+</table>
+<div> <a name="CRTDSPF.MAXDEV"></a>
+<h3>Maximum devices (MAXDEV)</h3>
+<p>Specifies the maximum number of display devices that can be connected to the display device file at the same time while the file is open.
+</p>
+<dl>
+<dt><b><u>1</u></b></dt>
+<dd>Only one device name, or *REQUESTER, can be specified for this display device file.
+</dd>
+<dt><b><i>1-256</i></b></dt>
+<dd>Specify the maximum number of devices that can be connected to the display device file at the same time.
+</dd>
+</dl>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#CRTDSPF.Top_Of_Page">Top</a></td></tr>
+</table>
+<div> <a name="CRTDSPF.ENHDSP"></a>
+<h3>Enhanced display (ENHDSP)</h3>
+<p>Specifies whether the data being shown at a display station by this display file is using the enhanced capabilities available on the display station.
+</p>
+<dl>
+<dt><b><u>*YES</u></b></dt>
+<dd>The data for the display file is shown using any enhanced capabilities available on the display station.  These capabilities can include mnemonics, selection cursor, and graphical window borders.
+</dd>
+<dt><b>*NO</b></dt>
+<dd>The data for this display file is shown as it would be on a 5250 display station.  No enhanced capabilities that are available on the display, such as mnemonics, selection cursor, or graphical window borders, are used.  This value is normally used to preserve character-based interaction across all display stations.
+</dd>
+</dl>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#CRTDSPF.Top_Of_Page">Top</a></td></tr>
+</table>
+<div> <a name="CRTDSPF.RSTDSP"></a>
+<h3>Restore display (RSTDSP)</h3>
+<p>Specifies whether data being shown at a display device by this display file is saved at the time the file is suspended (made temporarily inactive) so that another display file can show different data on the same device.  If the data for this file is saved, it is restored to the display of the device when the file is used again.
+</p>
+<dl>
+<dt><b><u>*NO</u></b></dt>
+<dd>The data being shown by this file is not saved when the file is suspended.
+</dd>
+<dt><b>*YES</b></dt>
+<dd>The data being shown when this file is suspended is saved, and it is restored to the device display when the file is used again.
+</dd>
+</dl>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#CRTDSPF.Top_Of_Page">Top</a></td></tr>
+</table>
+<div> <a name="CRTDSPF.DFRWRT"></a>
+<h3>Defer write (DFRWRT)</h3>
+<p>Specifies that the writing of data is delayed until it is written out with other data when a read request is made.  Control is returned to the program immediately after the data is received.
+</p>
+<dl>
+<dt><b><u>*YES</u></b></dt>
+<dd>When the program issues a write request, control is returned after the buffer is processed.  This may result in improved performance.
+</dd>
+<dt><b>*NO</b></dt>
+<dd>After a write operation, the user program does not regain control until the input/output is completed.
+</dd>
+</dl>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#CRTDSPF.Top_Of_Page">Top</a></td></tr>
+</table>
+<div> <a name="CRTDSPF.CHRID"></a>
+<h3>Character identifier (CHRID)</h3>
+<p>Specifies the type of character conversions that may occur for the display file. When necessary, the system converts character data sent to and received from the device.  This ensures that the correct hexadecimal byte values of characters are sent to the device and are returned to the application program.
+</p>
+<p><b>Single values</b>
+</p>
+<dl>
+<dt><b><u>*DEVD</u></b></dt>
+<dd>Specifies the CHRID of the device is used to represent the CCSID of the field data for every named field with the CHRID DDS keyword. No conversion will ever occur since the CCSID of the field data will always be the same as the CHRID of the device.
+</dd>
+<dt><b>*SYSVAL</b></dt>
+<dd>Specifies the QCHRID system value is used to represent the CCSID of the field data for every named field with the CHRID DDS keyword. Conversion will only occur for these specific fields when CCSID of the field data is different than the CHRID of the device.
+</dd>
+<dt><b>*JOBCCSID</b></dt>
+<dd>Specify character conversion occurs when a difference exists between the device CHRID, job CCSID or display file CCSID values.  On input, character data is converted from the device CHRID to the job CCSID when necessary.  On output, character data is converted from the job CCSID to the device CHRID when necessary.  On output, constant character data in the display file is converted from the display file CCSID to the device CHRID when necessary.
+<p>
+<b>Note:     </b>The *JOBCCSID special value, either specified directly on the CHRID command parameter or on the CHRIDCTL job attribute when the *CHRIDCTL special value is specified for the CHRID command parameter, is not allowed if the file was created on a system at an earlier release level than V2R3M0. A file created prior to V2R3M0 will not be tagged with a CCSID and can not be used in combination with the *JOBCCSID support.
+</p>
+</dd>
+<dt><b>*CHRIDCTL</b></dt>
+<dd>Specifies that the system checks the CHRIDCTL job attribute to determine whether to use the *JOBCCSID or *DEVD special values on the CHRID command parameter for this display file.
+</dd>
+</dl>
+<p><b>Element 1: Graphic character set</b>
+</p>
+<dl>
+<dt><b><i>integer</i></b></dt>
+<dd>Specify the number of the graphic character set to be used.  Valid values range from 1 through 32767.
+</dd>
+</dl>
+<p><b>Element 2: Code page</b>
+</p>
+<dl>
+<dt><b><i>integer</i></b></dt>
+<dd>Specify the number of the code page to be used.  Valid values range from 1 through 32767.
+</dd>
+</dl>
+<p>
+<b>Note:     </b>The graphic character set and code page specifies the value used to represent the CCSID of the field data for every named field with the CHRID DDS keyword. Conversion will only occur for these specific fields when CCSID of the field data is different than the CHRID of the device.
+</p>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#CRTDSPF.Top_Of_Page">Top</a></td></tr>
+</table>
+<div> <a name="CRTDSPF.DECFMT"></a>
+<h3>Decimal format (DECFMT)</h3>
+<p>Specifies which decimal format value is used when editing numeric fields with the EDTCDE DDS keyword.  The decimal format value determines the use of commas and periods for the decimal position and three digit positional separators on edited fields.
+</p>
+<dl>
+<dt><b><u>*JOB</u></b></dt>
+<dd>Use the decimal format value from the DECFMT job attribute when the file is opened.
+</dd>
+<dt><b>*FILE</b></dt>
+<dd>Use the decimal format value stored with the file when the file was created.
+</dd>
+</dl>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#CRTDSPF.Top_Of_Page">Top</a></td></tr>
+</table>
+<div> <a name="CRTDSPF.SFLENDTXT"></a>
+<h3>SFLEND text (SFLENDTXT)</h3>
+<p>Specifies where the 'More...' and 'Bottom' text is retrieved from when displaying a subfile. The 'More...' and 'Bottom' text is displayed in a subfile when the SFLEND(*MORE) DDS keyword is specified on the subfile control record.
+</p>
+<dl>
+<dt><b><u>*MSG</u></b></dt>
+<dd>Use the 'More...' and 'Bottom' text retrieved from messages CPX6AB1 and CPX6AB2 which exist in the current active language of the system when the file is opened.
+</dd>
+<dt><b>*FILE</b></dt>
+<dd>Use the 'More...' and 'Bottom' text that is stored in the file during file creation. This text was retrieved from messages CPX6AB1 and CPX6AB2 which exist in the active language of the system when the file was created.
+</dd>
+</dl>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#CRTDSPF.Top_Of_Page">Top</a></td></tr>
+</table>
+<div> <a name="CRTDSPF.WAITFILE"></a>
+<h3>Maximum file wait time (WAITFILE)</h3>
+<p>Specifies the number of seconds that the program waits for the file resources to be allocated when the file is opened, or the device or session resources to be allocated when an acquire operation is performed to the file.  If the file resources cannot be allocated in the specified wait time, an error message is sent to the program.
+</p>
+<dl>
+<dt><b><u>*IMMED</u></b></dt>
+<dd>The program does not wait.  Immediate allocation of file resources is required.
+</dd>
+</dl>
+<dl>
+<dt><b>*CLS</b></dt>
+<dd>The job default wait time is used as the wait time for the file resources to be allocated.
+</dd>
+<dt><b><i>1-32767</i></b></dt>
+<dd>Specify the number of seconds to wait for file resources to be allocated.
+</dd>
+</dl>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#CRTDSPF.Top_Of_Page">Top</a></td></tr>
+</table>
+<div> <a name="CRTDSPF.WAITRCD"></a>
+<h3>Maximum record wait time (WAITRCD)</h3>
+<p>Specifies the number of seconds the program waits for the completion of a read-from-invited-devices operation to a multiple device file in a high-level language program. Refer to the high-level language reference manual to determine when a file is treated as a multiple device file. The program performing the read operation waits for the input form all invited devices currently accessing the file.  If a record is not returned from any of the invited program devices in the specified amount of time, a notify message is sent to the program.  This parameter has no effect on an input operation directed to a single device.
+</p>
+<dl>
+<dt><b><u>*NOMAX</u></b></dt>
+<dd>There is no limit on the time the system waits for the completion of the operation.
+</dd>
+</dl>
+<dl>
+<dt><b>*IMMED</b></dt>
+<dd>The program does not wait.  If a record is not available when the read-from-invited-devices operation is done, a notify message is sent to the program.
+</dd>
+</dl>
+<dl>
+<dt><b><i>integer</i></b></dt>
+<dd>Specify the maximum number of seconds that the program waits.  Valid values range from 1 through 32767 seconds.
+</dd>
+</dl>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#CRTDSPF.Top_Of_Page">Top</a></td></tr>
+</table>
+<div> <a name="CRTDSPF.DTAQ"></a>
+<h3>Data queue (DTAQ)</h3>
+<p>Specifies the data queue on which entries are placed.  The specified data queue must have a minimum length of 80 characters.  The data queue need not exist when the display file is created since the name specified for this parameter is not evaluated until the file is used.
+</p>
+<p>
+<b>Note:     </b>Keyed data queues are not supported for this parameter.  If a keyed data queue is specified, a run-time error will occur; but because it is not required that a data queue exist at the time the command is issued, the error will not be flagged.
+</p>
+<p><b>Single values</b>
+</p>
+<dl>
+<dt><b><u>*NONE</u></b></dt>
+<dd>No data queue is specified.
+</dd>
+</dl>
+<p><b>Qualifier 1: Data queue</b>
+</p>
+<dl>
+<dt><b><i>name</i></b></dt>
+<dd>Specify the name of the data queue on which entries are placed.
+</dd>
+</dl>
+<p><b>Qualifier 2: Library</b>
+</p>
+<dl>
+<dt><b><u>*LIBL</u></b></dt>
+<dd>All libraries in the library list for the current thread are searched until the first match is found.
+</dd>
+</dl>
+<dl>
+<dt><b>*CURLIB</b></dt>
+<dd>The current library is used to locate the data queue.  If no library is specified as the current library for the job, QGPL is used.
+</dd>
+<dt><b><i>name</i></b></dt>
+<dd>Specify the library where the data queue is located.
+</dd>
+</dl>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#CRTDSPF.Top_Of_Page">Top</a></td></tr>
+</table>
+<div> <a name="CRTDSPF.SHARE"></a>
+<h3>Share open data path (SHARE)</h3>
+<p>Specifies whether the open data path (ODP) is shared with other programs in the same routing step.  When an ODP is shared, the programs accessing the file share facilities such as the file status and the buffer.
+</p>
+<dl>
+<dt><b><u>*NO</u></b></dt>
+<dd>The ODP is not shared with other programs in the routing step.  A new ODP for the file is created and used every time a program opens the file.
+</dd>
+</dl>
+<dl>
+<dt><b>*YES</b></dt>
+<dd>The same ODP is shared with each program in the job that also specifies *YES when it opens the file.
+</dd>
+</dl>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#CRTDSPF.Top_Of_Page">Top</a></td></tr>
+</table>
+<div> <a name="CRTDSPF.SRTSEQ"></a>
+<h3>Sort sequence (SRTSEQ)</h3>
+<p>Specifies the sort sequence used for this user profile.  The sort sequence is used in conjunction with the LANGID  parameter to determine which sort sequence table is used.
+</p>
+<p><b>Single values</b>
+</p>
+<dl>
+<dt><b><u>*JOB</u></b></dt>
+<dd>The SRTSEQ value specified on the job attribute is used.
+</dd>
+<dt><b>*LANGIDSHR</b></dt>
+<dd>The sort sequence table can contain the same weight for multiple characters, and is the shared weighted table associated with the language specified in the LANGID parameter.
+</dd>
+<dt><b>*LANGIDUNQ</b></dt>
+<dd>The sort sequence table must contain a unique weight for each character in the code page.
+</dd>
+<dt><b>*HEX</b></dt>
+<dd>A sort sequence table is not used, and the hexadecimal values of the characters are used to determine the sort sequence.
+</dd>
+</dl>
+<p><b>Qualifier 1: Sort sequence</b>
+</p>
+<dl>
+<dt><b><i>name</i></b></dt>
+<dd>Specify the name of the sort sequence table to be used.
+</dd>
+</dl>
+<p><b>Qualifier 2: Library</b>
+</p>
+<dl>
+<dt><b><u>*LIBL</u></b></dt>
+<dd>All libraries in the library list for the current thread are searched until the first match is found.
+</dd>
+</dl>
+<dl>
+<dt><b>*CURLIB</b></dt>
+<dd>The current library for the job is searched.  If no library is specified as the current library for the job, the QGPL library is used.
+</dd>
+<dt><b><i>name</i></b></dt>
+<dd>Specify the name of the library to be searched.
+</dd>
+</dl>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#CRTDSPF.Top_Of_Page">Top</a></td></tr>
+</table>
+<div> <a name="CRTDSPF.LANGID"></a>
+<h3>Language ID (LANGID)</h3>
+<p>Specifies the language identifier used when *LANGIDSHR or *LANGIDUNQ is specified for the <b>Sort sequence (SRTSEQ)</b> parameter.  The language identifier is used with the SRTSEQ parameter to determine which sort sequence table the file uses.
+</p>
+<dl>
+<dt><b><u>*JOB</u></b></dt>
+<dd>The language identifier specified for the job is used.
+</dd>
+</dl>
+<dl>
+<dt><b><i>character-value</i></b></dt>
+<dd>Specify a language identifier.  To see a complete list of identifiers when prompting this command, position the cursor on the field for this parameter and press F4 (Prompt).
+</dd>
+</dl>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#CRTDSPF.Top_Of_Page">Top</a></td></tr>
+</table>
+<div> <a name="CRTDSPF.LVLCHK"></a>
+<h3>Record format level check (LVLCHK)</h3>
+<p>Specifies whether the level identifiers of the record formats in the display device file are checked when the file is opened by a program.
+</p>
+<dl>
+<dt><b><u>*YES</u></b></dt>
+<dd>The level identifiers of the record formats are checked.  If the level identifiers do not all match, an open error message is sent to the program requesting the open operation.
+</dd>
+</dl>
+<dl>
+<dt><b>*NO</b></dt>
+<dd>The level identifiers are not checked when the file is opened.
+</dd>
+</dl>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#CRTDSPF.Top_Of_Page">Top</a></td></tr>
+</table>
+<div> <a name="CRTDSPF.AUT"></a>
+<h3>Authority (AUT)</h3>
+<p>Specifies the authority you are giving to users who do not have specific authority for the object, who are not on an authorization list, and whose group profile or supplemental group profiles do not have specific authority for the object.
+</p>
+<dl>
+<dt><b><u>*LIBCRTAUT</u></b></dt>
+<dd>The system determines the authority for the object by using the value specified for the <b>Create authority (CRTAUT)</b> parameter on the Create Library command (CRTLIB) for the library containing the object to be created.  If the value specified for the CRTAUT parameter is changed, the new value will not affect any existing objects.
+</dd>
+</dl>
+<dl>
+<dt><b>*CHANGE</b></dt>
+<dd>The user can perform all operations on the object except those limited to the owner or controlled by object existence (*OBJEXIST) and object management (*OBJMGT) authorities.  The user can change and perform basic functions on the object.  *CHANGE authority provides object operational (*OBJOPR) authority and all data authority.  If the object is an authorization list, the user cannot add, change, or remove users.
+</dd>
+</dl>
+<dl>
+<dt><b>*ALL</b></dt>
+<dd>The user can perform all operations except those limited to the owner or controlled by authorization list management (*AUTLMGT) authority.  The user can control the object's existence, specify the security for the object, change the object, and perform basic functions on the object.  The user also can change ownership of the object.
+</dd>
+</dl>
+<dl>
+<dt><b>*USE</b></dt>
+<dd>The user can perform basic operations on the object, such as running a program or reading a file. The user cannot change the object.  Use (*USE) authority provides object operational (*OBJOPR), read (*READ), and execute (*EXECUTE) authorities.
+</dd>
+</dl>
+<dl>
+<dt><b>*EXCLUDE</b></dt>
+<dd>The user cannot access the object.
+</dd>
+</dl>
+<dl>
+<dt><b><i>name</i></b></dt>
+<dd>Specify the name of an authorization list to be used for authority to the object.  Users included in the authorization list are granted authority to the object as specified in the list. The authorization list must exist when the object is created.
+</dd>
+</dl>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#CRTDSPF.Top_Of_Page">Top</a></td></tr>
+</table>
+<div> <a name="CRTDSPF.REPLACE"></a>
+<h3>Replace file (REPLACE)</h3>
+<p>Specifies whether an existing file, other than a save or database file, is replaced.
+</p>
+<p>
+<b>Note:     </b>The existing file cannot be replaced if it is in use by this job or another job.
+</p>
+<p>
+<b>Note:     </b>The authority value for the file is determined by the user profile of the user.  If an existing file is replaced, the authority value for the new file is copied from the replaced file.
+</p>
+<dl>
+<dt><b><u>*YES</u></b></dt>
+<dd>An existing file is replaced if the creation of the new display device file with the same name and library is successful.
+</dd>
+<dt><b>*NO</b></dt>
+<dd>The creation of a new display device file is not allowed if there is an existing display device file with the same name and library.
+</dd>
+</dl>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#CRTDSPF.Top_Of_Page">Top</a></td></tr>
+</table>
+<hr width="100%" size="2">
+<div><h3><a name="CRTDSPF.COMMAND.EXAMPLES">Examples</a> </h3>
+<p><b>Example 1: Specifying Default Optional Parameters</b>
+</p>
+<p>
+<pre>
+CRTDSPF   FILE(DSPHIST)  SRCFILE(PRSNNL/JOBHIST)
+</pre>
+</p>
+<p>This command creates a display device file named DSPHIST which is stored in the current library using the source file named JOBHIST that is stored in the PRSNNL library. The defaults for all the other parameters are assumed. Only the device requesting the program that uses this device file (that is, *REQUESTER) is assigned to the device file. The level identifiers of the record formats are checked when the file is opened. The public has only object operational authority for the device file.
+</p>
+<p><b>Example 2: Specifying DBCS Data Processing</b>
+</p>
+<p>
+<pre>
+CRTDSPF  FILE(IGCDSP) SRCFILE(IGCLIB/IGCSRC)  IGCDTA(*YES)
+</pre>
+</p>
+<p>This command creates the display file IGCDSP from the source file IGCSRC in the library IGCLIB. The file processes double-byte character set (DBCS) data.
+</p>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#CRTDSPF.Top_Of_Page">Top</a></td></tr>
+</table>
+<hr width="100%" size="2">
+<div><h3><a name="CRTDSPF.ERROR.MESSAGES">Error messages</a> </h3>
+<p><b><u>*ESCAPE Messages</u></b>
+</p>
+<dl>
+<dt><b>CPF7302</b></dt>
+<dd>File &amp;1 not created in library &amp;2.
+</dd>
+</dl>
+</div>
+<table width="100%">
+<tr><td align="right"><a href="#CRTDSPF.Top_Of_Page">Top</a></td></tr>
+</table>
+</body>
+</html>
