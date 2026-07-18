@@ -34,6 +34,7 @@ var __importStar = (this && this.__importStar) || (function () {
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.registerRuler = registerRuler;
+exports.trimToIndent = trimToIndent;
 exports.buildTensRow = buildTensRow;
 exports.buildSeuRow = buildSeuRow;
 const vscode = __importStar(require("vscode"));
@@ -225,7 +226,7 @@ class RulerCodeLensProvider {
             ? (await this.buildFormatRow(document, line, width)) ?? buildTensRow(width)
             : buildTensRow(width);
         const lens = new vscode.CodeLens(new vscode.Range(line, 0, line, 0), {
-            title: toFixedPitch(trimToIndent(row, lineText)),
+            title: toFixedPitch(trimToIndent(row, lineText, resolveTabSize(editor))),
             command: "rpgClSupport.ruler.cycleMode",
             tooltip: "クリックでルーラー表示を切替 (Off → Cols → Full)"
         });
@@ -253,24 +254,42 @@ class RulerCodeLensProvider {
     }
 }
 /**
- * CodeLens はその行のインデントの位置から描かれる。固定長ソースは先頭に
- * 空白が並ぶ（C 仕様なら 5 桁）ため、ルーラーをそのまま渡すとインデント分だけ
- * 右にずれる。ずれる分を先頭から落として、1 桁目が実際の 1 桁目に来るようにする。
+ * CodeLens はその行のインデントの位置から描かれる（左端からではない）。
+ * 固定長ソースは先頭に空白が並ぶ（C 仕様なら 5 桁）ため、ルーラーをそのまま
+ * 渡すとインデント分だけ右にずれる。ずれる分を先頭から落として、桁が実際の
+ * 桁位置に来るようにする。
  *
- * 空白しか無い行はインデントの基準にならない（CodeLens は左端から描かれる）ので
- * そのまま返す。
+ * 基準にするのは「実測したインデント」であって「あるべきインデント」ではない。
+ * そのため、仕様書コードが誤った桁にある行でも画面上の桁は絶対桁と一致する
+ * （インデントが 3 桁ならルーラーも 4 桁目の文字から出す＝4 桁目の位置に来る）。
+ * ルーラーがコードの誤りに引きずられることはない。
+ *
+ * 代わりにインデント分の桁（固定長なら 1-5 桁の順序番号欄）はルーラーから
+ * 欠ける。CodeLens を左に動かす手段が無いため、この手段を採る限り避けられない。
+ *
+ * 空白しか無い行はインデントの基準にならない（左端から描かれる）のでそのまま返す。
  */
-function trimToIndent(row, lineText) {
+function trimToIndent(row, lineText, tabSize) {
     if (lineText.trim().length === 0) {
         return row;
     }
-    const indent = /^[ \t]*/u.exec(lineText)?.[0].length ?? 0;
-    return indent > 0 ? row.slice(indent) : row;
+    // タブは桁数と文字数が一致しないので、見た目の桁数に直してから落とす。
+    const indent = /^[ \t]*/u.exec(lineText)?.[0] ?? "";
+    let width = 0;
+    for (const char of indent) {
+        width = char === "\t" ? width + (tabSize - (width % tabSize)) : width + 1;
+    }
+    return width > 0 ? row.slice(width) : row;
 }
 /**
  * 桁を保つため、空白を改行なし空白(U+00A0)に置き換える。
  * CodeLens の表題は HTML として描かれるので、素の空白は詰められてしまう。
  */
+/** タブ幅（インデントの見た目の桁数を出すのに要る）。 */
+function resolveTabSize(editor) {
+    const size = editor.options.tabSize;
+    return typeof size === "number" && size > 0 ? size : 4;
+}
 function toFixedPitch(row) {
     return row.replace(/ /gu, "\u00a0");
 }
