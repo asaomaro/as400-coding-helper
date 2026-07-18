@@ -2,6 +2,7 @@ import * as vscode from "vscode";
 import { isInScopeDocument } from "../utils/fileScope";
 import { getRpgKeywordColumns, getClKeywordColumns } from "./keywordColumns";
 import { classifyRpgSpecKeyword } from "../prompter/specClassifier";
+import { resolveDialect } from "../prompter/dialect";
 
 /** ルーラーの表示モード。クリックで off → ruler → full → off と循環する。 */
 type RulerMode = "off" | "ruler" | "full";
@@ -315,8 +316,16 @@ function classifySpec(
   }
 
   // スペック種別判定は specClassifier に集約（positionResolver と共有＝ドリフト防止）。
-  // ルーラー表示は dialect を渡さない（C は従来どおりオペコードで新旧判定）。
-  return classifyRpgSpecKeyword(text);
+  // ルーラー表示は dialect を渡さない（C は従来どおりオペコードで新旧判定）が、
+  // I/O 仕様書の記述種別は F 仕様書（22 桁目）で決まるため前の行は渡す。
+  // 渡さないとルーラーとプロンプターで別の桁を表示してしまう。
+  const precedingLines: string[] = [];
+  for (let above = 0; above < lineIndex; above += 1) {
+    precedingLines.push(document.lineAt(above).text);
+  }
+  // dialect も渡す。RPG III は I/O をレイアウト別に分けていないため、
+  // ここで取り違えるとルーラーが出なくなる。
+  return classifyRpgSpecKeyword(text, resolveDialect(document), precedingLines);
 }
 
 async function getColumnsForKey(

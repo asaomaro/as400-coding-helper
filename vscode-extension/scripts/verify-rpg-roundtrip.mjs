@@ -81,8 +81,13 @@ const SAMPLES = [
   ["ile/C-SPEC", "     C                   MOVEL     NAME          OUTNAME"],
   // 外部記述の 'E' は数値扱いの桁に入るため、詰め直すと右へずれる。
   ["ile/F-SPEC", "     FCUSTFILE  IF   E           K DISK"],
-  ["ile/I-SPEC", "     I              1   10 CUSTNO"],
-  ["ile/O-SPEC", "     OCUSTLIST  H    1P"]
+  // I/O 仕様書は「レコード識別/フィールド記述」×「プログラム記述/外部記述」で
+  // 桁の意味が変わるため、レイアウトごとに検証する。
+  ["ile/I-SPEC-REC-PGM", "     ICUSTFILE  NS  01   1 C5"],
+  ["ile/I-SPEC-FLD-PGM", "     I                                  1   10 CUSTNO"],
+  ["ile/I-SPEC-REC-EXT", "     ICUSTREC   01"],
+  ["ile/O-SPEC-REC-PGM", "     OCUSTLIST  H    1P"],
+  ["ile/O-SPEC-FLD-PGM", "     O                       CUSTNO        10"]
 ];
 
 const failures = [];
