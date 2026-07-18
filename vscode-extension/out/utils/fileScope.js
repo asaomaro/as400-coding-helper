@@ -25,6 +25,7 @@ exports.TARGET_EXTENSIONS = [
     "lf", // 論理ファイル
     "dspf", // 画面ファイル
     "prtf", // 印刷ファイル
+    "mnudds", // メニュー（DSPF と同じ A 仕様書の固定長）
     "dds", // `.dds` と名付ける環境への保険
     // その他
     "cmd", // コマンド定義
