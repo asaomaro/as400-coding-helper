@@ -47,36 +47,46 @@ export const categories = {
   // ILE RPG 固定長仕様書 7 種（concept ページ）。topic 固定 URL。
   ilerpg: {
     items: [
-      { name: 'H-SPEC', url: 'https://www.ibm.com/docs/ja/i/7.4.0?topic=specifications-control',          note: '制御仕様書 (H)' },
-      { name: 'F-SPEC', url: 'https://www.ibm.com/docs/ja/i/7.4.0?topic=specifications-file-description', note: 'ファイル仕様書 (F)' },
-      { name: 'D-SPEC', url: 'https://www.ibm.com/docs/ja/i/7.4.0?topic=specifications-definition',       note: '定義仕様書 (D)' },
-      { name: 'I-SPEC', url: 'https://www.ibm.com/docs/ja/i/7.4.0?topic=specifications-input',            note: '入力仕様 (I)' },
-      { name: 'C-SPEC', url: 'https://www.ibm.com/docs/ja/i/7.4.0?topic=specifications-calculation',      note: '演算仕様書 (C)' },
-      { name: 'O-SPEC', url: 'https://www.ibm.com/docs/ja/i/7.4.0?topic=specifications-output',           note: '出力仕様 (O)' },
-      { name: 'P-SPEC', url: 'https://www.ibm.com/docs/ja/i/7.4.0?topic=specifications-procedure',        note: 'プロシージャー仕様書 (P)' },
+      { name: 'H-SPEC', topic: 'ssw_ibm_i_74/rzasd/conspe9.htm', url: 'https://www.ibm.com/docs/ja/i/7.4.0?topic=specifications-control',          note: '制御仕様書 (H)' },
+      { name: 'F-SPEC', topic: 'ssw_ibm_i_74/rzasd/filedes.htm', url: 'https://www.ibm.com/docs/ja/i/7.4.0?topic=specifications-file-description', note: 'ファイル仕様書 (F)' },
+      { name: 'D-SPEC', topic: 'ssw_ibm_i_74/rzasd/dspec9.htm', url: 'https://www.ibm.com/docs/ja/i/7.4.0?topic=specifications-definition',       note: '定義仕様書 (D)' },
+      { name: 'I-SPEC', topic: 'ssw_ibm_i_74/rzasd/inspec.htm', url: 'https://www.ibm.com/docs/ja/i/7.4.0?topic=specifications-input',            note: '入力仕様 (I)' },
+      { name: 'C-SPEC', topic: 'ssw_ibm_i_74/rzasd/calcul.htm', url: 'https://www.ibm.com/docs/ja/i/7.4.0?topic=specifications-calculation',      note: '演算仕様書 (C)' },
+      { name: 'O-SPEC', topic: 'ssw_ibm_i_74/rzasd/outspe9.htm', url: 'https://www.ibm.com/docs/ja/i/7.4.0?topic=specifications-output',           note: '出力仕様 (O)' },
+      { name: 'P-SPEC', topic: 'ssw_ibm_i_74/rzasd/pspec9.htm', url: 'https://www.ibm.com/docs/ja/i/7.4.0?topic=specifications-procedure',        note: 'プロシージャー仕様書 (P)' },
 
       // --- 第3弾: 桁・主要キーワードの詳細サブページ（後続 JSON 化の桁照合用） ---
       // H 制御
-      { name: 'H-SPEC-keywords',                url: 'https://www.ibm.com/docs/ja/i/7.4.0?topic=specifications-control-specification-keywords',                note: 'H: 制御仕様書キーワード' },
-      { name: 'H-SPEC-compile-option-keywords', url: 'https://www.ibm.com/docs/ja/i/7.4.0?topic=specifications-control-specification-compile-option-keywords', note: 'H: コンパイル・オプション・キーワード' },
+      { name: 'H-SPEC-keywords', topic: 'ssw_ibm_i_74/rzasd/cskw.htm',                url: 'https://www.ibm.com/docs/ja/i/7.4.0?topic=specifications-control-specification-keywords',                note: 'H: 制御仕様書キーワード' },
+      { name: 'H-SPEC-compile-option-keywords', topic: 'ssw_ibm_i_74/rzasd/cscokw.htm', url: 'https://www.ibm.com/docs/ja/i/7.4.0?topic=specifications-control-specification-compile-option-keywords', note: 'H: コンパイル・オプション・キーワード' },
       // F ファイル
-      { name: 'F-SPEC-keywords',                    url: 'https://www.ibm.com/docs/ja/i/7.4.0?topic=specifications-file-description-keywords',     note: 'F: ファイル記述キーワード' },
-      { name: 'F-SPEC-keywords-program-described',  url: 'https://www.ibm.com/docs/ja/i/7.4.0?topic=specifications-keywords-program-described',    note: 'F: プログラム記述ファイルのキーワード' },
-      { name: 'F-SPEC-keywords-externally-described', url: 'https://www.ibm.com/docs/ja/i/7.4.0?topic=specifications-keywords-externally-described', note: 'F: 外部記述ファイルのキーワード' },
+      { name: 'F-SPEC-keywords', topic: 'ssw_ibm_i_74/rzasd/fdkw.htm',                    url: 'https://www.ibm.com/docs/ja/i/7.4.0?topic=specifications-file-description-keywords',     note: 'F: ファイル記述キーワード' },
+      { name: 'F-SPEC-keywords-program-described', topic: 'ssw_ibm_i_74/rzasd/fdspk.htm',  url: 'https://www.ibm.com/docs/ja/i/7.4.0?topic=specifications-keywords-program-described',    note: 'F: プログラム記述ファイルのキーワード' },
+      { name: 'F-SPEC-keywords-externally-described', topic: 'ssw_ibm_i_74/rzasd/fdsek.htm', url: 'https://www.ibm.com/docs/ja/i/7.4.0?topic=specifications-keywords-externally-described', note: 'F: 外部記述ファイルのキーワード' },
       // D 定義
-      { name: 'D-SPEC-keywords',     url: 'https://www.ibm.com/docs/ja/i/7.4.0?topic=specifications-definition-specification-keywords',              note: 'D: 定義仕様書キーワード' },
-      { name: 'D-SPEC-type-summary', url: 'https://www.ibm.com/docs/ja/i/7.4.0?topic=specifications-summary-according-definition-specification-type', note: 'D: 定義仕様書タイプごとの要約（桁）' },
+      { name: 'D-SPEC-keywords', topic: 'ssw_ibm_i_74/rzasd/dskwd.htm',     url: 'https://www.ibm.com/docs/ja/i/7.4.0?topic=specifications-definition-specification-keywords',              note: 'D: 定義仕様書キーワード' },
+      { name: 'D-SPEC-type-summary', topic: 'ssw_ibm_i_74/rzasd/dsumtb.htm', url: 'https://www.ibm.com/docs/ja/i/7.4.0?topic=specifications-summary-according-definition-specification-type', note: 'D: 定義仕様書タイプごとの要約（桁）' },
       // I 入力（桁表）
-      { name: 'I-SPEC-record-id-entries', url: 'https://www.ibm.com/docs/ja/i/7.4.0?topic=specifications-record-identification-entries', note: 'I: レコード識別記入項目（桁）' },
-      { name: 'I-SPEC-field-entries',     url: 'https://www.ibm.com/docs/ja/i/7.4.0?topic=specifications-field-description-entries',     note: 'I: フィールド記述記入項目（桁）' },
+      { name: 'I-SPEC-record-id-entries', topic: 'ssw_ibm_i_74/rzasd/iri.htm', url: 'https://www.ibm.com/docs/ja/i/7.4.0?topic=specifications-record-identification-entries', note: 'I: レコード識別記入項目（桁）' },
+      { name: 'I-SPEC-field-entries', topic: 'ssw_ibm_i_74/rzasd/ifd.htm',     url: 'https://www.ibm.com/docs/ja/i/7.4.0?topic=specifications-field-description-entries',     note: 'I: フィールド記述記入項目（桁）' },
       // C 演算（桁表）
-      { name: 'C-SPEC-traditional-syntax',       url: 'https://www.ibm.com/docs/ja/i/7.4.0?topic=specifications-traditional-syntax',        note: 'C: 従来型構文（桁）' },
-      { name: 'C-SPEC-extended-factor2-syntax',  url: 'https://www.ibm.com/docs/ja/i/7.4.0?topic=specifications-extended-factor-2-syntax', note: 'C: 拡張演算項目2構文（桁）' },
+      { name: 'C-SPEC-traditional-syntax', topic: 'ssw_ibm_i_74/rzasd/calss.htm',       url: 'https://www.ibm.com/docs/ja/i/7.4.0?topic=specifications-traditional-syntax',        note: 'C: 従来型構文（桁）' },
+      { name: 'C-SPEC-extended-factor2-syntax', topic: 'ssw_ibm_i_74/rzasd/calx.htm',  url: 'https://www.ibm.com/docs/ja/i/7.4.0?topic=specifications-extended-factor-2-syntax', note: 'C: 拡張演算項目2構文（桁）' },
       // O 出力（桁表）
-      { name: 'O-SPEC-record-id-control-entries', url: 'https://www.ibm.com/docs/ja/i/7.4.0?topic=specifications-record-identification-control-entries', note: 'O: レコード識別制御記入項目（桁）' },
-      { name: 'O-SPEC-field-control-entries',     url: 'https://www.ibm.com/docs/ja/i/7.4.0?topic=specifications-field-description-control-entries',      note: 'O: フィールド記述制御記入項目（桁）' },
+      { name: 'O-SPEC-record-id-control-entries', topic: 'ssw_ibm_i_74/rzasd/reidco.htm', url: 'https://www.ibm.com/docs/ja/i/7.4.0?topic=specifications-record-identification-control-entries', note: 'O: レコード識別制御記入項目（桁）' },
+      { name: 'O-SPEC-field-control-entries', topic: 'ssw_ibm_i_74/rzasd/opf.htm',     url: 'https://www.ibm.com/docs/ja/i/7.4.0?topic=specifications-field-description-control-entries',      note: 'O: フィールド記述制御記入項目（桁）' },
       // P プロシージャー
-      { name: 'P-SPEC-keywords', url: 'https://www.ibm.com/docs/ja/i/7.4.0?topic=specifications-procedure-specification-keywords', note: 'P: プロシージャー仕様書キーワード' },
+      { name: 'P-SPEC-keywords', topic: 'ssw_ibm_i_74/rzasd/pskwd.htm', url: 'https://www.ibm.com/docs/ja/i/7.4.0?topic=specifications-procedure-specification-keywords', note: 'P: プロシージャー仕様書キーワード' },
+
+      // --- 第4弾: 固定形式の桁レイアウト（各仕様書の全桁を列挙しているトピック） ---
+      // 従来これらを取得しておらず、桁位置を原典照合できない状態だった。
+      { name: 'H-SPEC-layout', topic: 'ssw_ibm_i_74/rzasd/conspss.htm', note: 'H: 従来型の制御仕様ステートメント（桁レイアウト）' },
+      { name: 'F-SPEC-layout', topic: 'ssw_ibm_i_74/rzasd/fdsent.htm',  note: 'F: 従来型のファイル記述仕様書ステートメント（桁レイアウト）' },
+      { name: 'D-SPEC-layout', topic: 'ssw_ibm_i_74/rzasd/dsent.htm',   note: 'D: 従来型の定義仕様書ステートメント（桁レイアウト）' },
+      { name: 'I-SPEC-layout', topic: 'ssw_ibm_i_74/rzasd/inpsstm.htm', note: 'I: 入力仕様ステートメント（桁レイアウト）' },
+      { name: 'C-SPEC-layout', topic: 'ssw_ibm_i_74/rzasd/calss.htm',   note: 'C: 従来型の演算仕様ステートメント（桁レイアウト）' },
+      { name: 'O-SPEC-layout', topic: 'ssw_ibm_i_74/rzasd/outspc.htm',  note: 'O: 出力仕様ステートメント（桁レイアウト）' },
+      { name: 'P-SPEC-layout', topic: 'ssw_ibm_i_74/rzasd/psent.htm',   note: 'P: 従来型のプロシージャー仕様書ステートメント（桁レイアウト）' },
     ],
   },
 

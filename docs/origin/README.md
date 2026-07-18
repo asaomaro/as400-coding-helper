@@ -24,25 +24,42 @@ AS/400 コーディング支援のプロンプター定義（CL コマンド・R
 各ファイルの取得元 URL・取得日時・HTTP status・タイトル・サイズは **`manifest.yml`** に全件記録。
 取得できなかったものは `manifest.yml` の `gaps` に理由付きで残す（捏造しない）。今回の取得は gaps 0。
 
-## 既知のギャップ: ilerpg の桁表が取得できていない
+## ilerpg の取得方法（コンテンツ API 経由）
 
-`ilerpg/*.html` は HTTP 200 で取得できているが、**桁位置の一覧表（`<table>`）が
-1つも含まれていない**（全21ファイルで `<table>` 要素数 0）。`manifest.yml` で
-「（桁）」と注記して取得したページ（`I-SPEC-record-id-entries` など）も同様。
-IBM Documentation は本文を JavaScript で描画するため、表の描画完了前に
-取得したものと考えられる。
+IBM Documentation の `?topic=` 形式のページは、本文を **コンテンツ API から取得して
+JavaScript で描画する**。描画完了の判定が難しく、目次だけが入った状態で保存されて
+しまうことがある（実際に ilerpg は全21ファイルで桁表・桁記述が 0 件だった。
+`innerText.length > 2000` という待機条件を目次だけで満たしていたため）。
 
-このため **RPG 固定長仕様書の定義（`resources/prompter/rpg/**`）の桁位置は、
-原典照合が一度も行われていない**。CL 側で行ったような機械的な突き合わせが
-できない状態にある。
+そのため ilerpg は **API を直接叩いて本文だけを取得する**。`sources.mjs` の item に
+`topic: 'ssw_ibm_i_74/rzasd/<name>.htm'` を指定すると、この経路が使われる。
 
-影響と対処:
-- 桁位置の正誤は未検証。実際に F 仕様書の桁割りには疑義がある
-  （外部記述の `E` が数値項目として扱われる位置に入る）。
-- 桁が誤っていても「読み取りと書き戻しで同じ桁を使う」ため往復は成立し、
-  `verify-rpg-roundtrip.mjs` では検出できない。**別途、原典の再取得が必要**。
-- 再取得の際は `fetch-origin.mjs` の待機条件に「`<table>` が描画されたこと」を
-  加え、取得後に表の有無を検証すること（今回はそれが無かったため気づけなかった）。
+```
+https://www.ibm.com/docs/api/v1/content/<topic をURLエンコード>?parsebody=true&lang=ja
+```
+
+ブラウザ描画に依存しないため速く確実。取得時に **「N 桁目」「N から M 桁目」の
+出現数と `<table>` の数を manifest に記録する**（`columns` / `tables`）。
+桁表を目的に取得したページでこれが 0 なら取りこぼしを疑うこと。今回の見落としは
+「HTTP 200 かつ本文が長い」だけを成功条件にしていたために起きた。
+
+### 固定形式の桁レイアウト
+
+各仕様書の全桁を列挙しているのは `*-SPEC-layout.html`（従来型の〜ステートメント）。
+仕様書の入口ページ（`F-SPEC.html` 等）には桁の一覧が無いため、こちらが桁照合の正本。
+
+| 仕様書 | レイアウトのトピック |
+|---|---|
+| H | `rzasd/conspss.htm` |
+| F | `rzasd/fdsent.htm` |
+| D | `rzasd/dsent.htm` |
+| I | `rzasd/inpsstm.htm`（詳細は `I-SPEC-record-id-entries` / `I-SPEC-field-entries`） |
+| C | `rzasd/calss.htm` |
+| O | `rzasd/outspc.htm`（詳細は `O-SPEC-record-id-control-entries` / `O-SPEC-field-control-entries`） |
+| P | `rzasd/psent.htm` |
+
+> **未解決**: `P-SPEC-keywords`（`rzasd/pskwd.htm`）は本文が 149 文字しか返らず gap のまま。
+> 正しいトピックパスの特定が必要。
 
 ## 定義 JSON の生成
 

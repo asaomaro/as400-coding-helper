@@ -68,7 +68,63 @@ function urlOf(cat, item) {
 const browser = await chromium.launch({ headless: true });
 const ctx = await browser.newContext({ userAgent: UA });
 
+// IBM Documentation は本文をコンテンツ API から取得して描画する。
+// `?topic=` 形式のページは描画完了の判定が難しく、本文が空のまま保存されて
+// しまうことがある（実際に ilerpg で桁表が1つも取れていなかった）。
+// item.topic が指定されている場合は、この API を直接叩いて本文だけを取る。
+const contentApi = (topic) =>
+  `https://www.ibm.com/docs/api/v1/content/${encodeURIComponent(topic)}?parsebody=true&lang=ja`;
+
+async function fetchViaApi(cat, item) {
+  const key = `${cat}/${item.name}`;
+  const outRel = `${cat}/${item.name}.html`;
+  const outAbs = join(HERE, outRel);
+  const url = contentApi(item.topic);
+
+  try {
+    const resp = await fetch(url, { headers: { 'User-Agent': UA } });
+    const body = resp.ok ? await resp.text() : '';
+    const text = body.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
+
+    if (!resp.ok || text.length < 200 || BOT_NOTICE.test(text)) {
+      const reason = !resp.ok ? `http ${resp.status}` : `本文が短い (${text.length})`;
+      gaps.set(key, { category: cat, name: item.name, source_url: url, reason });
+      items.delete(key);
+      console.log(`GAP  ${key}  ${reason}`);
+      return;
+    }
+
+    const title = (body.match(/<h1[^>]*>(.*?)<\/h1>/s) || [, item.name])[1]
+      .replace(/<[^>]+>/g, '').trim();
+    const html = `<!DOCTYPE html>\n<html lang="ja"><head><meta charset="utf-8"><title>${title}</title></head>\n<body>\n${body}\n</body></html>\n`;
+
+    mkdirSync(dirname(outAbs), { recursive: true });
+    writeFileSync(outAbs, html);
+    const bytes = statSync(outAbs).size;
+
+    // 桁位置の記述（「N 桁目」「N から M 桁目」）と表の数を記録する。
+    // これが 0 のまま「取得成功」と扱ったことが、今回の取りこぼしの原因。
+    const columns = (text.match(/\d+\s*(?:から\s*\d+\s*)?桁目/g) || []).length;
+    const tables = (body.match(/<table/g) || []).length;
+
+    items.set(key, {
+      file: outRel, category: cat, name: item.name, source_url: url,
+      topic: item.topic, http_status: resp.status, title, bytes,
+      columns, tables, fetched_at: new Date().toISOString(),
+      ...(item.note ? { note: item.note } : {}),
+    });
+    gaps.delete(key);
+    console.log(`OK   ${outRel}  (${resp.status}, ${bytes}b, 桁記述 ${columns}, 表 ${tables}) ${title}`);
+  } catch (e) {
+    gaps.set(key, { category: cat, name: item.name, source_url: url, reason: String(e.message || e).slice(0, 160) });
+    items.delete(key);
+    console.log(`GAP  ${key}  ${e.message}`);
+  }
+}
+
 async function fetchOne(cat, item) {
+  if (item.topic) return fetchViaApi(cat, item);
+
   const url = urlOf(cat, item);
   const key = `${cat}/${item.name}`;
   const outRel = `${cat}/${item.name}.html`;
