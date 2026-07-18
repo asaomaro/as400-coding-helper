@@ -297,7 +297,8 @@ function buildParameterToken(
   return body ? `${parameter.name}(${body})` : undefined;
 }
 
-function buildRpgLineText(
+// RPG 固定長行の組み立ても vscode API に依存しないため、検証用に公開する。
+export function buildRpgLineText(
   original: string,
   definition: PrompterDefinition,
   values: AppliedValues
@@ -374,6 +375,18 @@ function buildRpgLineText(
     const raw =
       (Array.isArray(rawValue) ? rawValue[0] ?? "" : rawValue ?? "").toString();
     const trimmed = raw.trim();
+
+    // 値が変わっていない項目は、元の桁の中身をそのまま残す。
+    // 取り出すときに前後の空白を落としているため、書き戻しで詰め直すと
+    // 元の寄せ方（右寄せ/中寄せ）が失われ、編集していない項目まで行が
+    // 変形してしまう（F仕様書の外部記述 'E' などで実際に発生していた）。
+    const originalSlice = original.slice(
+      parameter.sourceStart - 1,
+      parameter.sourceStart - 1 + parameter.sourceLength
+    );
+    if (originalSlice.trim() === trimmed) {
+      continue;
+    }
 
     const isNumericField =
       parameter.inputType === "number" || parameter.attributes?.numericOnly;

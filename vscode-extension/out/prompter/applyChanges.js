@@ -35,6 +35,7 @@ var __importStar = (this && this.__importStar) || (function () {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.applyChanges = applyChanges;
 exports.buildClCommandText = buildClCommandText;
+exports.buildRpgLineText = buildRpgLineText;
 const vscode = __importStar(require("vscode"));
 const clContinuation_1 = require("../language/clContinuation");
 const rpgEditGuards_1 = require("../language/rpgEditGuards");
@@ -240,6 +241,7 @@ function buildParameterToken(parameter, values) {
     const body = buildParameterBody(parameter, values);
     return body ? `${parameter.name}(${body})` : undefined;
 }
+// RPG 固定長行の組み立ても vscode API に依存しないため、検証用に公開する。
 function buildRpgLineText(original, definition, values) {
     const hasColumnInfo = definition.parameters.some(parameter => typeof parameter.sourceStart === "number" &&
         typeof parameter.sourceLength === "number" &&
@@ -291,6 +293,14 @@ function buildRpgLineText(original, definition, values) {
         const rawValue = values[parameter.name];
         const raw = (Array.isArray(rawValue) ? rawValue[0] ?? "" : rawValue ?? "").toString();
         const trimmed = raw.trim();
+        // 値が変わっていない項目は、元の桁の中身をそのまま残す。
+        // 取り出すときに前後の空白を落としているため、書き戻しで詰め直すと
+        // 元の寄せ方（右寄せ/中寄せ）が失われ、編集していない項目まで行が
+        // 変形してしまう（F仕様書の外部記述 'E' などで実際に発生していた）。
+        const originalSlice = original.slice(parameter.sourceStart - 1, parameter.sourceStart - 1 + parameter.sourceLength);
+        if (originalSlice.trim() === trimmed) {
+            continue;
+        }
         const isNumericField = parameter.inputType === "number" || parameter.attributes?.numericOnly;
         const padded = (() => {
             if (trimmed.length > parameter.sourceLength) {
