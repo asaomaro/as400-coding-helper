@@ -1,0 +1,144 @@
+<main role="main"><article role="article" aria-labelledby="zzexfmt__title__1">
+<h1 class="topictitle1" id="zzexfmt__title__1">EXFMT (Write/Then Read Format)</h1><div id="lastModifiedDate"><span>Last Updated</span>: 2026-07-13</div>
+
+
+<div class="body">
+
+<div class="tablenoborder"><div class="cds--data-table-container"><table summary="" class="defaultstyle cds--data-table"><colgroup><col><col></colgroup><tbody>
+<tr>
+<td class="tdleft"><strong>Free-Form Syntax</strong></td>
+
+<td class="tdleft">EXFMT{(E)} <span class="ph synph"><span class="ph var">format-name
+{data-structure}</span></span></td>
+</tr>
+
+</tbody>
+</table></div>
+</div>
+
+
+<div class="tablenoborder"><div class="cds--data-table-container"><table summary="" class="defaultstyle cds--data-table"><colgroup><col><col><col><col><col><col><col></colgroup><thead>
+<tr>
+<th id="zzexfmt__entry__3" class="thcenter thbot"><div class="cds--table-header-label"><strong>Code</strong></div></th>
+
+<th id="zzexfmt__entry__4" class="thcenter thbot"><div class="cds--table-header-label"><strong>Factor 1</strong></div></th>
+
+<th id="zzexfmt__entry__5" class="thcenter thbot"><div class="cds--table-header-label"><strong>Factor 2</strong></div></th>
+
+<th id="zzexfmt__entry__6" class="thcenter thbot"><div class="cds--table-header-label"><strong>Result Field</strong></div></th>
+
+<th colspan="3" id="zzexfmt__entry__7" class="thcenter thbot"><div class="cds--table-header-label"><strong>Indicators</strong></div></th>
+</tr>
+
+</thead>
+<tbody>
+<tr>
+<td headers="zzexfmt__entry__3 " class="tdleft"><strong>EXFMT (E)</strong></td>
+
+<td headers="zzexfmt__entry__4 " class="tdleft">&nbsp;</td>
+
+<td headers="zzexfmt__entry__5 " class="tdleft"><u>format-name</u></td>
+
+<td headers="zzexfmt__entry__6 " class="tdleft">data-structure</td>
+
+<td headers="zzexfmt__entry__7 " class="tdcenter">_</td>
+
+<td headers="zzexfmt__entry__7 " class="tdcenter">ER</td>
+
+<td headers="zzexfmt__entry__7 " class="tdcenter">_</td>
+</tr>
+
+</tbody>
+</table></div>
+</div>
+
+<p>The EXFMT operation is a combination of a WRITE followed by a READ
+to the same record format. EXFMT is valid only for a WORKSTN file
+defined as a full procedural combined file that is externally
+described.</p>
+
+<p>The <span class="ph synph"><span class="ph var">format-name</span></span> operand must be the name of
+the record format to be written and then read.</p>
+
+<p>If the data-structure operand is specified, the record
+is written from and read into the data structure. The data structure
+must be a data structure defined with EXTNAME(...:*ALL) or LIKEREC(...:*ALL).
+See <a href="/docs/en/ssw_ibm_i_74/rzasd/filop.htm#filop">File Operations</a> for information on how to define the data
+structure and how data is transferred between the file and the data
+structure. </p>
+
+<p>To handle EXFMT exceptions (<a href="/docs/en/ssw_ibm_i_74/rzasd/stacod9.htm#stacod9">file status codes</a> greater
+than 1000), either the operation code extender 'E' or an error indicator
+ER can be specified, but not both. When an error occurs, the read
+portion of the operation is not processed (record-identifying indicators
+and fields are not modified). For more information on error handling,
+see <a href="/docs/en/ssw_ibm_i_74/rzasd/filexpe.htm#filexpe">File Exception/Errors</a>.</p>
+
+<p>Positions 71, 72, 75, and 76 must be blank.</p>
+
+<p>For the use of EXFMT with multiple device files, see the descriptions
+of the <a href="/docs/en/ssw_ibm_i_74/rzasd/zzread.htm#zzread">READ</a> (by format name) and <a href="/docs/en/ssw_ibm_i_74/rzasd/zzwrite.htm#zzwrite">WRITE</a> operations.</p>
+
+<p>For more information, see <a href="/docs/en/ssw_ibm_i_74/rzasd/filop.htm#filop">File Operations</a>.</p>
+
+<figure class="figborder" id="zzexfmt__cdexfmt"><figcaption>Figure 1. EXFMT Operation</figcaption>
+
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code> *..1....+....2....+....3....+....4....+....5....+....6....+....7...+....
+F*Flename++IPEASFRLen+LKlen+AIDevice+.Keywords+++++++++++++++++++++++++
+ *
+ * PROMTD is a WORKSTN file which prompts the user for an option.
+ * Based on what user enters, this program executes different
+ * subroutines to add, delete, or change a record.
+ *
+FPROMTD    CF   E             WORKSTN
+
+ /free
+    // If user enters F3 function key, indicator *IN03 is set
+    // on and the do while loop is exited.
+    dow not *in03;
+ 
+       // EXFMT writes out the prompt to the screen and expects user to
+       // enter an option. SCR1 is a record format name defined in the
+       // WORKSTN file and OPT is a field defined in the record.
+       exfmt SCR1;
+       select;
+       when opt = 'A';
+          exsr AddRec;
+       when opt = 'D';
+          exsr DelRec;
+       when opt = 'C';
+          exsr ChgRec;
+       endsl;
+    enddo;
+    do_something ();
+    do_more_stuff ();
+ /end-free</code></pre></div><div class="docs--copy-btn"></div></div></figure>
+
+<figure class="figborder"><figcaption>Figure 2. Using a result data structure with
+EXFMT</figcaption>
+
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>  * DDS for display file MYDSPF
+A          R REC
+A            QUESTION      40A  O  5  2
+A            NAME          20A  I  7  5
+A            CITY          20A  B  8  5
+ * RPG program using MYDSPF
+Fmydspf    cf   e             workstn        
+ * Define a data structure for use with EXFMT REC
+D recDs           ds                  likerec(rec : *all)
+ /free     
+        // Set the output-capable fields
+        recDs.question = 'What is your name?';
+        recDs.city = 'Toronto';        // Show the screen to the user
+        exfmt rec recDs;            
+        // Use the input-capable fields
+        // Since the "city" field is both input and output
+        // capable, its value may have changed during EXFMT
+        dsply ('Hello ' + recDs.name + ' in ' + recDs.city);            </code></pre></div><div class="docs--copy-btn"></div></div></figure>
+
+</div>
+<aside role="complementary" aria-labelledby="zzexfmt__title__1"><nav role="navigation" aria-label="bottom related links" class="ibm-padding-top-1 ibm-padding-bottom-2 bx--row bottom-section-parent">
+<div class="familylinks ibm-margin-bottom-1">
+<div class="parentlink"><strong>Parent topic:</strong> <div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a data-hd-product="ssw_ibm_i_74" href="/docs/en/ssw_ibm_i_74/rzasd/operxcl.htm" class="bottom-section-link">Operation Codes</a></div></div>
+</div>
+</nav></aside></article></main>

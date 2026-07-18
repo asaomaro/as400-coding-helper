@@ -1,0 +1,113 @@
+<main role="main"><article role="article" aria-labelledby="bbchk__title__1">
+<h1 class="topictitle1" id="bbchk__title__1">%CHECK (Check Characters)</h1><div id="lastModifiedDate"><span>Last Updated</span>: 2026-07-13</div>
+
+
+<div class="body">
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>%CHECK(comparator : base {: start { : *NATURAL | *STDCHARSIZE}})</code></pre></div><div class="docs--copy-btn"></div></div>
+<p>%CHECK returns the first position of the string <span class="ph synph"><span class="ph var">base</span></span> that
+contains a character that does not appear in string <span class="ph synph"><span class="ph var">comparator</span></span>.
+If all of the characters in <span class="ph synph"><span class="ph var">base</span></span> also appear in <span class="ph synph"><span class="ph var">comparator</span></span>,
+the function returns 0.</p>
+
+<p>The check begins at the starting position and continues to the
+right until a character that is not contained in the comparator string
+is found. The starting position defaults to 1.</p>
+
+<p>The first parameter must be of type character, graphic, or UCS-2,
+fixed or varying length. The second parameter must be the same type
+as the first parameter. The third parameter, if specified, must be
+a non-float numeric with zero decimal positions.</p>
+
+<div class="p">The third or fourth parameter can be *NATURAL or *STDCHARSIZE
+to override the current <a href="/docs/en/ssw_ibm_i_74/rzasd/charcount.htm">CHARCOUNT</a> mode for the statement.
+If this parameter is specified, it must be the last parameter.
+<ul class="cds--list--unordered">
+<li class="cds--list__item">Specify *NATURAL to indicate that %CHECK operates in <span class="keyword" translate="no">CHARCOUNT NATURAL</span> mode.
+The start position and return value are measured in characters rather than bytes or double bytes.
+For example, if the base string is a UTF-8 string with the value 'ábç12',
+and the comparator string is 'çbá',
+the '1' character is the first character in the base string that does not appear in the comparator string.
+With <span class="keyword" translate="no">CHARCOUNT NATURAL</span> mode, %CHECK returns 4, because the character '1' is the fourth
+character in the base string.
+</li>
+
+<li class="cds--list__item">Specify *STDCHARSIZE to indicate that %CHECK operates in <span class="keyword" translate="no">CHARCOUNT STDCHARSIZE</span> mode.
+In the previous example, with <span class="keyword" translate="no">CHARCOUNT STDCHARSIZE</span> mode,
+%CHECK returns 6 because '1' is the 6th byte in the
+string.
+Characters 'á' and 'ç' are 2-byte characters.
+</li>
+
+</ul>
+
+See <a href="/docs/en/ssw_ibm_i_74/rzasd/charcount.htm">Processing string data by the natural size of each character</a>.
+<div class="note border-2 cds--inline-notification--info ibmdocs-note cds--inline-notification cds--inline-notification--low-contrast margin-top-1 margin-bottom-1"><div class="cds--inline-notification__details"><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" class="cds--inline-notification__icon" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M16,2A14,14,0,1,0,30,16,14,14,0,0,0,16,2Zm0,5a1.5,1.5,0,1,1-1.5,1.5A1.5,1.5,0,0,1,16,7Zm4,17.12H12V21.88h2.88V15.12H13V12.88h4.13v9H20Z"></path></svg>
+        <div class="cds--inline-notification__text-wrapper">
+          <div class="cds--inline-notification__subtitle"><span class="notetitle ibm-bold ibm-textcolor-blue-50 background-blue cds--inline-notification__title ibm-padding-top-1 ibm-padding-bottom-1 padding-left-1 padding-right-1">Note:</span> 
+%CHECK can also operate in <span class="keyword" translate="no">CHARCOUNT NATURAL</span> mode due to the
+<span class="keyword" translate="no">/CHARCOUNT</span> compiler directive or the <span class="keyword" translate="no">CHARCOUNT</span> Control keyword.
+</div>
+        </div>
+      </div></div>
+
+</div>
+
+<p>For more information, see <a href="/docs/en/ssw_ibm_i_74/rzasd/yystrng.htm#yystrng">String Operations</a> or <a href="/docs/en/ssw_ibm_i_74/rzasd/bifsint.htm#bifsint">Built-in Functions</a>.</p>
+
+<figure class="figborder"><figcaption>Figure 1. %CHECK Example</figcaption>
+
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code> *..1....+....2....+....3....+....4....+....5....+....6....+....7...+....
+ *--------------------------------------------------
+ * A string contains a series of numbers separated
+ * by blanks and/or commas.
+ * Use %CHECK to extract the numbers
+ *--------------------------------------------------
+D string          s             50a   varying
+D                                     inz('12, 233 17, 1, 234')
+D delimiters      C                   ' ,'
+D digits          C                   '0123456789'
+D num             S             50a   varying
+D pos             S             10i 0
+D len             S             10i 0
+D token           s             50a   varying
+
+ /free
+
+     // make sure the string ends with a delimiter
+     string = string + delimiters;
+
+     dou string = '';
+
+       // Find the beginning of the group of digits
+       pos = %check (delimiters : string);
+       if (pos = 0);
+          leave;
+       endif;
+
+       // skip past the delimiters
+       string = %subst(string : pos);
+
+       // Find the length of the group of digits
+       len = %check (digits : string) - 1;
+
+       // Extract the group of digits
+       token = %subst(string : 1 : len);
+       dsply ' ' ' ' token;
+
+       // Skip past the digits
+       if (len &lt; %len(string));
+         string = %subst (string : len + 1);
+       endif;
+
+     enddo;
+
+ /end-free</code></pre></div><div class="docs--copy-btn"></div></div></figure>
+
+<p>See also <a href="/docs/en/ssw_ibm_i_74/rzasd/bbchkr.htm#bbchkr__bifchkrx">Figure 2</a>.</p>
+
+</div>
+<aside role="complementary" aria-labelledby="bbchk__title__1"><nav role="navigation" aria-label="bottom related links" class="ibm-padding-top-1 ibm-padding-bottom-2 bx--row bottom-section-parent">
+<div class="familylinks ibm-margin-bottom-1">
+<div class="parentlink"><strong>Parent topic:</strong> <div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a data-hd-product="ssw_ibm_i_74" href="/docs/en/ssw_ibm_i_74/rzasd/bifs.htm" class="bottom-section-link">Built-in Functions</a></div></div>
+</div>
+</nav></aside></article></main>

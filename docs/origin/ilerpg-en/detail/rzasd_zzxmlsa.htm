@@ -1,0 +1,135 @@
+<main role="main"><article role="article" aria-labelledby="zzxmlsa__title__1">
+<h1 class="topictitle1" id="zzxmlsa__title__1">XML-SAX (Parse an XML Document)</h1><div id="lastModifiedDate"><span>Last Updated</span>: 2026-07-13</div>
+
+
+<div class="body">
+
+<div class="tablenoborder"><div class="cds--data-table-container"><table summary="" class="defaultstyle cds--data-table"><colgroup><col><col></colgroup><tbody>
+<tr>
+<td class="tdleft"><strong>Free-Form Syntax</strong></td>
+
+<td class="tdleft">XML-SAX{(E)} %HANDLER(<span class="ph synph"><span class="ph var">handlerProc</span></span> : <span class="ph synph"><span class="ph var">commArea</span></span>)
+%XML(<span class="ph synph"><span class="ph var">xmlDoc</span></span> {: <span class="ph synph"><span class="ph var">options</span></span> });</td>
+</tr>
+
+</tbody>
+</table></div>
+</div>
+
+
+<div class="tablenoborder"><div class="cds--data-table-container"><table summary="" class="defaultstyle cds--data-table"><colgroup><col><col><col><col><col><col><col></colgroup><thead>
+<tr>
+<th id="zzxmlsa__entry__3" class="thleft thbot"><div class="cds--table-header-label"><strong>Code</strong></div></th>
+
+<th id="zzxmlsa__entry__4" class="thleft thbot"><div class="cds--table-header-label"><strong>Factor 1</strong></div></th>
+
+<th colspan="5" id="zzxmlsa__entry__5" class="thleft thbot"><div class="cds--table-header-label"><strong>Extended Factor 2</strong></div></th>
+</tr>
+
+</thead>
+<tbody>
+<tr>
+<td headers="zzxmlsa__entry__3 " class="tdleft"><strong>XML-SAX{(E)}</strong></td>
+
+<td headers="zzxmlsa__entry__4 " class="tdleft">&nbsp;</td>
+
+<td colspan="5" headers="zzxmlsa__entry__5 " class="tdleft">%HANDLER(<span class="ph synph"><span class="ph var">handlerProc</span></span> : <span class="ph synph"><span class="ph var">commArea</span></span>)
+%XML(<span class="ph synph"><span class="ph var">xmlDoc</span></span> {: <span class="ph synph"><span class="ph var">options</span></span> })</td>
+</tr>
+
+</tbody>
+</table></div>
+</div>
+
+<p><strong>Tip:</strong> If you are not familiar with the basic
+concepts of XML and of processing XML documents, you may find it helpful
+to read the "Processing XML Documents" section in <cite><span class="keyword">Rational® Development Studio for i: ILE RPG Programmer's Guide</span></cite> before
+reading further in this section.</p>
+
+<p>XML-SAX initiates a SAX parse for an XML document. The XML-SAX
+operation code begins by calling an XML parser which begins to parse
+the document. When an event occurs such as the parser finding the
+start of an element, finding an attribute name, finding the end of
+an element and so on, the parser calls the handling procedure <span class="ph synph"><span class="ph var">handlerProc</span></span> with
+parameters describing the event.  When the handling procedure returns,
+the parser continues to parse until it finds the next event and calls
+the handling procedure again.  When the parser has finished parsing
+the document, control passes to the statement following the XML-SAX
+operation.</p>
+
+<p>The first operand must be the %HANDLER built-in function; <span class="ph synph"><span class="ph var">handlerProc</span></span> is
+a prototype name that specifies the procedure to be called to handle
+the SAX events and <span class="ph synph"><span class="ph var">commArea</span></span> is the communication-area parameter
+to be passed by the parser to the handling procedure. The communication-area
+parameter must be the same type as the first prototyped parameter
+of the handling procedure. It provides a way for the procedure specifying
+the XML-SAX operation code to communicate with the handling procedure,
+and for the handling procedure to save information related to the
+parse from one event to the next. See <a href="/docs/en/ssw_ibm_i_74/rzasd/bbhandl.htm#bbhandl">%HANDLER (handlingProcedure : communicationArea )</a> for more
+information on %HANDLER.</p>
+
+<p>The second operand must be the %XML built-in function, identifying
+the XML document to be parsed and the options controlling the way
+the parsing is done. See <a href="/docs/en/ssw_ibm_i_74/rzasd/bbxml.htm#bbxml">%XML (xmlDocument {:options})</a> for more information
+on %XML.</p>
+
+<div class="p">Operation extender E can be specified to handle the following status
+codes:
+<dl>
+<dt class="dlterm">00351</dt>
+
+<dd class="dlentry">Error in XML parsing</dd>
+
+<dt class="dlterm">00352</dt>
+
+<dd class="dlentry">Invalid XML option</dd>
+
+<dt class="dlterm">00354</dt>
+
+<dd class="dlentry">Error preparing for XML parsing</dd>
+
+</dl>
+</div>
+
+<p>For status 00351, the return code from the parser will be placed
+in the subfield "External return code" in positions 368-371 of the
+PSDS. This subfield will be set to zero at the beginning of the operation
+and set to the value returned by the parser at the end of the operation.
+This subfield is relevant only in a module that has an XML-SAX operation.
+SAX event-handling procedures receive the information from the parser
+as parameters.</p>
+
+<p>The event-handling procedure will not be called if an exception
+occurs before parsing begins. For example, if the specified file is
+not found, the operation will end immediately with status 00354 and
+the event-handling procedure will never get control.</p>
+
+<p>If an error occurs during parsing, the handling procedure will
+be called with a *XML_EXCEPTION event, and when the handling procedure
+returns, parsing will end and the XML-SAX operation will fail with
+status code 00351. The return code from the parser will be placed
+in the "External return code" subfield in positions 368 - 371 of the
+PSDS.</p>
+
+<p>If an unknown, invalid or unrelated option is found in the %XML
+options string, XML-SAX will fail with status code 00352. The External
+return code subfield in positions 368 - 371 of the PSDS will not be
+updated from the initial value of zero, set when the operation begins.</p>
+
+</div>
+<aside role="complementary" aria-labelledby="zzxmlsa__title__1"><nav role="navigation" aria-label="bottom related links" class="ibm-padding-top-1 ibm-padding-bottom-2 bx--row bottom-section-parent">
+<ul class="ullinks cds--list--unordered">
+<li class="ulchildlink cds--list__item" data-hd-product="ssw_ibm_i_74"><strong><a href="/docs/en/ssw_ibm_i_74/rzasd/xmlsaxopts.htm">%XML options for the XML-SAX operation code</a></strong><br>
+</li>
+<li class="ulchildlink cds--list__item" data-hd-product="ssw_ibm_i_74"><strong><a href="/docs/en/ssw_ibm_i_74/rzasd/xmlsaxhdlr.htm">XML-SAX event-handling procedure</a></strong><br>
+</li>
+<li class="ulchildlink cds--list__item" data-hd-product="ssw_ibm_i_74"><strong><a href="/docs/en/ssw_ibm_i_74/rzasd/xmlevent.htm">XML events</a></strong><br>
+</li>
+<li class="ulchildlink cds--list__item" data-hd-product="ssw_ibm_i_74"><strong><a href="/docs/en/ssw_ibm_i_74/rzasd/xmlsaxxmp.htm">Examples of the XML-SAX operation</a></strong><br>
+</li>
+</ul>
+
+<div class="familylinks ibm-margin-bottom-1">
+<div class="parentlink"><strong>Parent topic:</strong> <div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a data-hd-product="ssw_ibm_i_74" href="/docs/en/ssw_ibm_i_74/rzasd/operxcl.htm" class="bottom-section-link">Operation Codes</a></div></div>
+</div>
+</nav></aside></article></main>

@@ -1,0 +1,196 @@
+<main role="main"><article role="article" aria-labelledby="zzread__title__1">
+<h1 class="topictitle1" id="zzread__title__1">READ (Read a Record)</h1><div id="lastModifiedDate"><span>Last Updated</span>: 2026-07-13</div>
+
+
+<div class="body">
+
+<div class="tablenoborder"><div class="cds--data-table-container"><table summary="" class="defaultstyle cds--data-table"><colgroup><col><col></colgroup><tbody>
+<tr>
+<td class="tdleft"><strong>Free-Form Syntax</strong></td>
+
+<td class="tdleft">READ{(EN)} <span class="ph synph"><span class="ph var">name</span></span> {<span class="ph synph"><span class="ph var">data-structure</span></span>}</td>
+
+</tr>
+
+</tbody>
+</table></div>
+</div>
+
+
+<div class="tablenoborder"><div class="cds--data-table-container"><table summary="" class="defaultstyle cds--data-table"><colgroup><col><col><col><col><col><col><col></colgroup><thead>
+<tr>
+<th id="zzread__entry__3" class="thcenter thbot"><div class="cds--table-header-label"><strong>Code</strong></div></th>
+
+<th id="zzread__entry__4" class="thcenter thbot"><div class="cds--table-header-label"><strong>Factor 1</strong></div></th>
+
+<th id="zzread__entry__5" class="thcenter thbot"><div class="cds--table-header-label"><strong>Factor 2</strong></div></th>
+
+<th id="zzread__entry__6" class="thcenter thbot"><div class="cds--table-header-label"><strong>Result Field</strong></div></th>
+
+<th colspan="3" id="zzread__entry__7" class="thcenter thbot"><div class="cds--table-header-label"><strong>Indicators</strong></div></th>
+
+</tr>
+
+</thead>
+<tbody>
+<tr>
+<td headers="zzread__entry__3 " class="tdleft"><strong>READ (E N)</strong></td>
+
+<td headers="zzread__entry__4 " class="tdleft">&nbsp;</td>
+
+<td headers="zzread__entry__5 " class="tdleft"><u>name</u> (file or record format)</td>
+
+<td headers="zzread__entry__6 " class="tdleft">data-structure</td>
+
+<td headers="zzread__entry__7 " class="tdcenter">_</td>
+
+<td headers="zzread__entry__7 " class="tdcenter">ER</td>
+
+<td headers="zzread__entry__7 " class="tdcenter">EOF</td>
+
+</tr>
+
+</tbody>
+</table></div>
+</div>
+
+<p>The READ operation reads the record, currently pointed to, from
+a <a href="/docs/en/ssw_ibm_i_74/rzasd/fullprocfiles.htm">full procedural file</a>.</p>
+
+<p>The <span class="ph synph"><span class="ph var">name</span></span> operand is required
+and must be the name of a file or record format. A record format name
+is allowed only with an <a href="/docs/en/ssw_ibm_i_74/rzasd/filedes.htm#filedes__extdescfile">externally described file</a>.
+It may be the case that a READ-by-format-name operation will receive
+a different format from the one you specified in the <span class="ph synph"><span class="ph var">name</span></span> operand.
+ If so, your READ operation ends in error.</p>
+
+<p>If the <span class="ph synph"><span class="ph var">data-structure</span></span> operand
+is specified, the record is read directly into the data structure.
+If <span class="ph synph"><span class="ph var">name</span></span> refers to a <a href="/docs/en/ssw_ibm_i_74/rzasd/filedes.htm#filedes__pgmdescfile">program-described file</a>,
+the data structure can be any data structure of the same length as
+the file's declared record length. If <span class="ph synph"><span class="ph var">name</span></span> refers
+to an externally-described file or a record format from an externally
+described file, the data structure must be a data structure defined
+with <a href="/docs/en/ssw_ibm_i_74/rzasd/dextnam.htm#dextnam">EXTNAME</a>(...:*INPUT or
+*ALL) or <a href="/docs/en/ssw_ibm_i_74/rzasd/dlikerec.htm#dlikerec">LIKEREC</a>(...:*INPUT
+or *ALL). See <a href="/docs/en/ssw_ibm_i_74/rzasd/filop.htm#filop">File Operations</a> for information
+on how to define the data structure and how data is transferred between
+the file and the data structure.</p>
+
+<p>If a READ operation is successful, the file is positioned
+at the next record that satisfies the read. If there is a record-lock
+error (status 1218), the file is still positioned at the locked record
+and the next read operation will attempt to read that record again.
+Otherwise, if there is any other error or an end of file condition,
+you must reposition the file (using a CHAIN, SETLL, or SETGT operation). </p>
+
+<p>If the file from which you are reading is an update disk file,
+you can specify an N operation extender to indicate that no lock should
+be placed on the record when it is read.  See the <cite><span class="keyword">Rational® Development Studio for i: ILE RPG Programmer's Guide</span></cite> for more
+information.</p>
+
+<p>To handle READ exceptions (<a href="/docs/en/ssw_ibm_i_74/rzasd/stacod9.htm#stacod9">file
+status codes</a> greater than 1000), either the operation code
+extender 'E' or an error indicator ER can be specified, but not both.
+For more information on error handling, see <a href="/docs/en/ssw_ibm_i_74/rzasd/filexpe.htm#filexpe">File Exception/Errors</a>.</p>
+
+<p>You can specify an indicator in positions 75-76 to signal whether
+an end of file occurred on the READ operation. The indicator is either
+set on (an EOF condition) or off every time the READ operation is
+performed. This information can also be obtained from the %EOF built-in
+function, which returns '1' if an EOF condition occurs and '0' otherwise.
+The file must be repositioned after an EOF condition, in order to
+process any further successful sequential operations (for example,
+READ or READP) to the file.</p>
+
+<p><a href="#zzread__readera">Figure 1</a> illustrates the READ operation.</p>
+
+<div class="p">When <span class="ph synph"><span class="ph var">name</span></span> specifies a multiple
+device file, the READ operation does one of the following: <ul class="cds--list--unordered">
+<li class="cds--list__item">Reads data from the device specified in the most recent NEXT operation
+(if such a NEXT operation has been processed).</li>
+
+<li class="cds--list__item">Accepts the first response from any device that has been acquired
+for the file, and that was specified for “invite status”
+with the DDS keyword INVITE.  If
+there are no invited devices, the operation receives an end of file.
+The input is processed according to the corresponding format.  If
+the device is a workstation, the last format written to it is used.
+If the device is a communications device, you can select the format. <p>Refer
+to <cite>ICF Programming, <span class="ph">SC41-5442</span></cite> for more information
+on format selection processing for an ICF file. </p>
+ <div class="p">The
+READ operation will stop waiting after a period of time in which no
+input is provided, or when one of the following CL commands has been
+entered with the controlled option specified: <ul class="cds--list--unordered cds--list--nested">
+<li class="cds--list__item">ENDJOB (End Job)</li>
+
+<li class="cds--list__item">ENDSBS (End Subsystem)</li>
+
+<li class="cds--list__item">PWRDWNSYS (Power Down
+System)</li>
+
+<li class="cds--list__item">ENDSYS (End System).</li>
+
+</ul>
+</div>
+      <p>This
+results in a file exception/error that is handled by the method specified
+in your program (see <a href="/docs/en/ssw_ibm_i_74/rzasd/filexpe.htm#filexpe">File Exception/Errors</a>). See <cite>ICF
+Programming, <span class="ph">SC41-5442</span></cite> for a discussion of the WAITRCD
+parameter on the commands to create or modify a file. This parameter
+controls the length of time the READ operation waits for input.</p>
+</li>
+
+</ul>
+</div>
+
+<p>When <span class="ph synph"><span class="ph var">name</span></span> specifies a format
+name and the format name is associated with a multiple device file,
+data is read from the device identified by the field specified in
+the DEVID keyword in file specifications.  If there is no such entry,
+data is read from the device used in the last successful input operation.</p>
+
+<p>See <a href="/docs/en/ssw_ibm_i_74/rzasd/dbnvs.htm#dbnvs">Database Null Value Support</a> for information on reading
+records with null-capable fields.</p>
+
+<p>For more information, see <a href="/docs/en/ssw_ibm_i_74/rzasd/filop.htm#filop">File Operations</a>.</p>
+
+<figure class="figborder" id="zzread__readera"><figcaption>Figure 1. READ Operation</figcaption>
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>*...1....+....2....+....3....+....4....+....5....+....6....+....7...+....
+CL0N01Factor1+++++++Opcode(E)+Factor2+++++++Result++++++++Len++D+HiLoEq....
+ *
+ *  READ retrieves the next record from the file FILEA, which must
+ *  be a full procedural file.
+ *  %EOF is set to return '1' if an end of file occurs on READ,
+ *  or if an end of file has occurred previously and the file
+ *  has not been repositioned.  When %EOF returns '1',
+ *  the program will leave the loop.
+ *
+C                   DOW       '1'
+C                   READ      FILEA
+C                   IF        %EOF
+C                   LEAVE
+C                   ENDIF
+ *
+ *  READ retrieves the next record of the type REC1 (factor 2)
+ *  from an externally described file.  (REC1 is a record format
+ *  name.)  Indicator 64 is set on if an end of file occurs on READ,
+ *  or if it has occurred previously and the file has not been
+ *  repositioned.  When indicator 64 is set on, the program
+ *  will leave the loop.  The N operation code extender
+ *  indicates that the record is not locked.
+ *
+C                   READ(N)   REC1                                   64
+C   64              LEAVE
+C                   ENDDO</code></pre></div><div class="docs--copy-btn"></div></div>
+</figure>
+
+</div>
+
+
+<aside role="complementary" aria-labelledby="zzread__title__1"><nav role="navigation" aria-label="bottom related links" class="ibm-padding-top-1 ibm-padding-bottom-2 bx--row bottom-section-parent">
+<div class="familylinks ibm-margin-bottom-1">
+<div class="parentlink"><strong>Parent topic:</strong> <div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a data-hd-product="ssw_ibm_i_74" href="/docs/en/ssw_ibm_i_74/rzasd/operxcl.htm" class="bottom-section-link">Operation Codes</a></div></div>
+</div>
+</nav></aside></article></main>

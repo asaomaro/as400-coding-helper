@@ -1,0 +1,147 @@
+<main role="main"><article role="article" aria-labelledby="bbelem__title__1">
+<h1 class="topictitle1" id="bbelem__title__1">%ELEM (Get Number of Elements)</h1><div id="lastModifiedDate"><span>Last Updated</span>: 2026-07-13</div>
+
+
+<div class="body">
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>%ELEM(table_name)
+%ELEM(array_name)
+%ELEM(multiple_occurrence_data_structure_name)
+%ELEM(array_name:*ALLOC)
+%ELEM(array_name:*KEEP)
+%ELEM(array_name:*MAX)
+</code></pre></div><div class="docs--copy-btn"></div></div>
+<p>%ELEM returns the number of elements in the specified array, table,
+or multiple-occurrence data structure. The value returned is in unsigned
+integer format (type U). It may be specified anywhere a numeric constant
+is allowed in the definition specification or in an expression in
+the extended factor 2 field.</p>
+
+<p>The parameter must be the name of an array, table, or multiple
+occurrence data structure.</p>
+
+<div class="p">
+When the array has a variable dimension (the array is defined with DIM(*AUTO) or
+DIM(*VAR), %ELEM can be used in several additional ways.
+<ul class="cds--list--unordered">
+<li class="cds--list__item">%ELEM can be used as the target of an assignment statement to change the
+current number of elements of the varying-dimension array.
+</li>
+
+<li class="cds--list__item">A second parameter can be specified for %ELEM when %ELEM is used for its value.
+<dl>
+<dt class="dlterm">*ALLOC</dt>
+
+<dd class="dlentry">The number of elements allocated to the array is returned.
+</dd>
+
+<dt class="dlterm">*MAX</dt>
+
+<dd class="dlentry">The maximum number of elements for the array is returned.
+</dd>
+
+</dl>
+
+</li>
+
+<li class="cds--list__item">A second parameter can be specified for %ELEM when %ELEM is the target of an assignment
+statement.
+<dl>
+<dt class="dlterm">*ALLOC</dt>
+
+<dd class="dlentry">The number of elements allocated to the array is increased if the value on the right-hand
+side of the assignment statement is greater than the current number of elements of the array.
+The number of elements is not changed if the value is less than the current number of elements.
+The number of elements allocated to the array might be larger than the specified value.
+The current number of elements is not changed.
+</dd>
+
+<dt class="dlterm">*KEEP</dt>
+
+<dd class="dlentry">The value of any new elements in the array is not changed.
+</dd>
+
+</dl>
+
+</li>
+
+</ul>
+
+See <a href="/docs/en/ssw_ibm_i_74/rzasd/vardimarray.htm">Varying-dimension arrays</a>.
+</div>
+
+<div class="p">If the parameter is a complex-qualified name and the data structures
+containing the required subfield are arrays, then the parameter may be specified in
+one of two ways:
+<ul class="cds--list--unordered">
+<li class="cds--list__item">With indexes specified for all of the data structure arrays in the complex qualified name.</li>
+
+<li class="cds--list__item">With indexes specified for none of the data structure arrays in the complex qualified name.</li>
+
+</ul>
+
+See <a href="#bbelem__ebelemcmplx">%ELEM Example with a Complex Data Structure</a>.
+</div>
+
+<p>For more information, see <a href="/docs/en/ssw_ibm_i_74/rzasd/yyarray.htm#yyarray">Array Operations</a> or <a href="/docs/en/ssw_ibm_i_74/rzasd/bifsint.htm#bifsint">Built-in Functions</a>.</p>
+
+<figure class="figborder" id="bbelem__ebelem"><figcaption>Figure 1. %ELEM Example</figcaption>
+
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code> *..1....+....2....+....3....+....4....+....5....+....6....+....7...+....
+D*Name++++++++++ETDsFrom+++To/L+++IDc.Keywords+++++++++++++++++++++++++
+D arr1d           S             20    DIM(10)
+D table           S             10    DIM(20) ctdata
+D mds             DS            20    occurs(30)
+D num             S              5p 0
+
+ * like_array will be defined with a dimension of 10.
+ * array_dims will be defined with a value of 10.
+D like_array      S                   like(arr1d) dim(%elem(arr1d))
+D array_dims      C                   const (%elem (arr1d))
+
+ /FREE
+    num = %elem (arr1d);  // num is now 10
+    num = %elem (table);  // num is now 20
+    num = %elem (mds);    // num is now 30
+ /END-FREE</code></pre></div><div class="docs--copy-btn"></div></div></figure>
+
+<section class="section" role="region" aria-labelledby="bbelem__ebelemcmplx__title__1" id="bbelem__ebelemcmplx"><h2 class="sectiontitle" id="bbelem__ebelemcmplx__title__1">%ELEM Example with a Complex Data Structure</h2>
+
+<div class="p">In the following example, the standard way to reference
+the complex qualified subfield <var class="keyword varname">PET</var> is
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>
+family(x).child(y).pet
+</code></pre></div><div class="docs--copy-btn"></div></div>
+</div>
+
+<p>When specified as the parameter for %ELEM, it can be specified
+either with no indexes specified for the data structure arrays,
+as in statement <span class="keyword calloutlabel">&nbsp;1&nbsp;</span>
+or with all indexes specified for the data structure arrays,
+as in statement <span class="keyword calloutlabel">&nbsp;2&nbsp;</span>.
+</p>
+
+<div class="figborder">
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>
+   DCL-DS family QUALIFIED DIM(3);
+      name VARCHAR(25);
+      numChildren INT(10);
+      DCL-DS child DIM(10);
+         name VARCHAR(25);
+         numPets INT(10);
+         pet VARCHAR(100) DIM(3);
+      END-DS;
+   END-DS;
+   DCL-S x INT(10);
+
+   x = %ELEM(family.child.pet);        // &nbsp;1&nbsp;
+
+   x = %ELEM(family(1).child(1).pet);  // &nbsp;2&nbsp;
+</code></pre></div><div class="docs--copy-btn"></div></div></div>
+</section>
+
+</div>
+<aside role="complementary" aria-labelledby="bbelem__title__1"><nav role="navigation" aria-label="bottom related links" class="ibm-padding-top-1 ibm-padding-bottom-2 bx--row bottom-section-parent">
+<div class="familylinks ibm-margin-bottom-1">
+<div class="parentlink"><strong>Parent topic:</strong> <div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a data-hd-product="ssw_ibm_i_74" href="/docs/en/ssw_ibm_i_74/rzasd/bifs.htm" class="bottom-section-link">Built-in Functions</a></div></div>
+</div>
+</nav></aside></article></main>

@@ -1,0 +1,76 @@
+<div role="main">
+<!-- Java sync-link --><script language="Javascript" src="../rzahg/synch.js" type="text/javascript"></script>
+<h1 class="title topictitle1">%REPLACE (文字ストリングの置換)</h1><div id="lastModifiedDate"><span>Last Updated</span>: 2021-04-13</div>
+<div class="body"><div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code>%REPLACE(replacement string: source string{:start position {:source
+length to replace}})</code></pre></div><div class="docs--copy-btn"></div></div>
+<p class="p">%REPLACE は、開始位置から開始し、指定された文字数を置換して、
+置換ストリングをソース・ストリングに挿入することによって
+生成される文字ストリングを戻します。</p>
+<p class="p">最初と 2 番目のパラメーターのタイプは<span class="ph">文字、図形、また
+は UCS-2</span> でなければなりません。これらのパラメーターは
+固定長または可変長のいずれの形式でもかまいません。2 番目のパラメーターは、1 番目のパラメーターと同じタイプでなければなりません。</p>
+<p class="p">3 番目のパラメーターは置換ストリングの開始位置を、文字数で示します。 開始位置を指定しない場合、開始位置はソース・ストリングの先頭になります。 この値の範囲は、1 から
+ソース・ストリングの現在の長さ + 1 までです。</p>
+<p class="p">4 番目のパラメーターは、置換するソース・ストリング内の文字数を示します。 ゼロを指定した場合、置換ストリングは、指定した開始位置の前に挿入されます。 このパラメーターを指定しない場合、置換される文字数は、置換ストリングの長さと
+同じになります。 このパラメーターの値は、ゼロ以上で、ソース・ストリングの
+現在の長さ以下でなければなりません。</p>
+<p class="p">開始位置および長さは、小数点以下の桁数のない任意の数値または数値式とする
+ことができます。</p>
+<p class="p">ソース・ストリングまたは置換ストリングが可変長である場合、あるいは開始位置
+または置換するソースの長さが変数である場合、戻り値は可変長になります。 他の場合、結果は固定長になります。</p>
+<p class="p">詳細については、<a class="xref" href="/docs/ja/ssw_ibm_i_74/rzasd/yystrng.htm#yystrng">ストリング命令</a>または <a class="xref" href="/docs/ja/ssw_ibm_i_74/rzasd/bifsint.htm#bifsint">組み込み関数</a>を参照してください。</p>
+<div class="fig figborder"><span class="figcap">図 1. %REPLACE の例</span><div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code> *..1....+....2....+....3....+....4....+....5....+....6....+....7...+....
+D*Name++++++++++ETDsFrom+++To/L+++IDc.Keywords+++++++++++++++++++++++++
+D var1            S             30A   INZ('Windsor') VARYING
+D var2            S             30A   INZ('Ontario') VARYING
+D var3            S             30A   INZ('Canada') VARYING
+D fixed1          S             15A   INZ('California')
+D date            S               D   INZ(D'1997-02-03')
+D result          S            100A   VARYING
+
+ /FREE
+     result = var1 + ', ' + 'ON';
+  // result = 'Windsor, ON'
+ 
+  // %REPLACE with 2 parameters to replace text at begining of string:
+     result = %replace ('Toronto': result);
+  // result = 'Toronto, ON'
+ 
+  // %REPLACE with 3 parameters to replace text at specified position:
+     result = %replace (var3: result: %scan(',': result) + 2);
+  // result = 'Toronto, Canada'
+ 
+  // %REPLACE with 4 parameters to insert text:
+     result = %replace (', ' + var2: result: %scan (',': result): 0);
+  // result = 'Toronto, Ontario, Canada'
+ 
+  // %REPLACE with 4 parameters to replace strings with different length
+     result = %replace ('Scarborough': result:
+    1: %scan (',': result) - 1);
+  // result = 'Scarborough, Ontario, Canada'
+ 
+  // %REPLACE with 4 parameters to delete text:
+     result = %replace ('': result: 1: %scan (',': result) + 1);
+  // result = 'Ontario, Canada'
+ 
+  // %REPLACE with 4 parameters to add text to the end of the string:
+     result = %replace (', ' + %char(date): result:
+   %len (result) + 1: 0);
+  // result = 'Ontario, Canada, 1997-02-03'
+ 
+  // %REPLACE with 3 parameters to replace fixed-length text at
+  // specified position:  (fixed1 has fixed-length of 15 chars)
+     result = %replace (fixed1: result: %scan (',': result) + 2);
+  // result = 'Ontario, California     -03'
+ 
+  // %REPLACE with 4 parameters to prefix text at beginning:
+     result = %replace ('Somewhere else: ': result: 1: 0);
+  // result = 'Somewhere else: Ontario, California     -03'
+ /END-FREE</code></pre></div><div class="docs--copy-btn"></div></div>
+</div>
+</div>
+<div class="related-links ibm-padding-top-1 ibm-padding-bottom-2 bx--row bottom-section-parent" aria-label="bottom related links">
+<div class="familylinks ibm-margin-bottom-1">
+<div class="parentlink"><strong>親トピック:</strong> <div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a class="link bottom-section-link" href="/docs/ja/ssw_ibm_i_74/rzasd/bifs.htm">組み込み関数</a></div></div>
+</div>
+</div></div>

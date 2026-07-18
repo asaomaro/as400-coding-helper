@@ -1,0 +1,130 @@
+<main role="main"><article role="article" aria-labelledby="zzdeall__title__1">
+<h1 class="topictitle1" id="zzdeall__title__1">DEALLOC (Free Storage)</h1><div id="lastModifiedDate"><span>Last Updated</span>: 2026-07-13</div>
+
+
+<div class="body">
+
+<div class="tablenoborder"><div class="cds--data-table-container"><table summary="" class="defaultstyle cds--data-table"><colgroup><col><col></colgroup><tbody>
+<tr>
+<td class="tdleft"><strong>Free-Form Syntax</strong></td>
+
+<td class="tdleft">DEALLOC{(EN)} <span class="ph synph"><span class="ph var">pointer-name</span></span></td>
+</tr>
+
+</tbody>
+</table></div>
+</div>
+
+
+<div class="tablenoborder"><div class="cds--data-table-container"><table summary="" class="defaultstyle cds--data-table"><colgroup><col><col><col><col><col><col><col></colgroup><thead>
+<tr>
+<th id="zzdeall__entry__3" class="thcenter thbot"><div class="cds--table-header-label"><strong>Code</strong></div></th>
+
+<th id="zzdeall__entry__4" class="thcenter thbot"><div class="cds--table-header-label"><strong>Factor 1</strong></div></th>
+
+<th id="zzdeall__entry__5" class="thcenter thbot"><div class="cds--table-header-label"><strong>Factor 2</strong></div></th>
+
+<th id="zzdeall__entry__6" class="thcenter thbot"><div class="cds--table-header-label"><strong>Result Field</strong></div></th>
+
+<th colspan="3" id="zzdeall__entry__7" class="thcenter thbot"><div class="cds--table-header-label"><strong>Indicators</strong></div></th>
+</tr>
+
+</thead>
+<tbody>
+<tr>
+<td headers="zzdeall__entry__3 " class="tdleft"><strong>DEALLOC (E/N)</strong></td>
+
+<td headers="zzdeall__entry__4 " class="tdleft">&nbsp;</td>
+
+<td headers="zzdeall__entry__5 " class="tdleft">&nbsp;</td>
+
+<td headers="zzdeall__entry__6 " class="tdleft"><u>pointer-name</u></td>
+
+<td headers="zzdeall__entry__7 " class="tdcenter">_</td>
+
+<td headers="zzdeall__entry__7 " class="tdcenter">ER</td>
+
+<td headers="zzdeall__entry__7 " class="tdcenter">_</td>
+</tr>
+
+</tbody>
+</table></div>
+</div>
+
+<p>The DEALLOC operation frees one previous allocation of heap storage. <span class="ph synph"><span class="ph var">pointer-name</span></span> is a pointer that must be the value
+previously set by a heap-storage allocation operation (either an <a href="/docs/en/ssw_ibm_i_74/rzasd/zzalloc.htm#zzalloc">ALLOC</a> operation in RPG, or some other heap-storage
+allocation mechanism).  It is not sufficient to simply point to heap
+storage; the pointer must be set to the beginning of an allocation.</p>
+
+<p>The storage pointed to by the pointer is freed for subsequent allocation
+by this program or any other in the activation group.</p>
+
+<p>If operation code extender N is specified, the pointer is set to
+*NULL after a successful deallocation.</p>
+
+<p>To handle DEALLOC exceptions (<a href="/docs/en/ssw_ibm_i_74/rzasd/ptacode.htm#ptacode">program status
+code</a> 426), either the operation code extender 'E' or an error
+indicator ER can be specified, but not both. The result field pointer
+will not be changed if an error occurs, even if 'N' is specified.
+For more information on error handling, see <a href="/docs/en/ssw_ibm_i_74/rzasd/progxpe.htm#progxpe">Program Exception/Errors</a>.</p>
+
+<p><span class="ph synph"><span class="ph var">pointer-name</span></span> must be a basing pointer scalar
+variable (a standalone field, data structure subfield, table name
+or array element).</p>
+
+<p>No error is given at runtime if the pointer is already *NULL.</p>
+
+<p>When RPG memory management operations for the module
+are using single-level heap storage due to the <a href="/docs/en/ssw_ibm_i_74/rzasd/halloc.htm#halloc">ALLOC</a> keyword
+on the Control specification, the DEALLOC operation can only handle
+pointers to single-level heap storage. When RPG memory management
+operations for the module are using teraspace heap storage, the DEALLOC
+operation can handle pointers to both single-level and teraspace heap
+storage.</p>
+
+<p>For more information, see <a href="/docs/en/ssw_ibm_i_74/rzasd/mmop.htm#mmop">Memory Management Operations</a>.</p>
+
+<figure class="figborder"><figcaption>Figure 1. DEALLOC operation</figcaption>
+
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code> *..1....+....2....+....3....+....4....+....5....+....6....+....7...+....
+D*Name++++++++++ETDsFrom+++To/L+++IDc.Keywords+++++++++++++++++++++++++
+ *
+D Ptr1            S               *
+D Fld1            S              1A
+D BasedFld        S              7A   BASED(Ptr1)
+
+ /FREE
+    // 7 bytes of storage are allocated from the heap and
+    // Ptr1 is set to point to it
+    Ptr1 = %alloc (7);
+ 
+    // The DEALLOC frees the storage.  This storage is now available
+    // for allocation by this program or any other program in the
+    // activation group.  (Note that the next allocation may or
+    // may not get the same storage back).
+    dealloc Ptr1;
+ 
+    // Ptr1 still points at the deallocated storage, but this pointer
+    // should not be used with its current value.  Any attempt to
+    // access BasedFld which is based on Ptr1 is invalid.
+    Ptr1 = %addr (Fld1);
+ 
+    // The DEALLOC is not valid because the pointer is set to the
+    // address of program storage.  %ERROR is set to return '1',
+    // the program status is set to 00426 (%STATUS returns 00426),
+    // and the pointer is not changed.
+    dealloc(e) Ptr1;
+ 
+    // Allocate and deallocate storage again.  Since operational
+    // extender N is specified, Ptr1 has the value *NULL after the
+    // DEALLOC.
+    Ptr1 = %alloc (7);
+    dealloc(n) Ptr1;
+ /END-FREE</code></pre></div><div class="docs--copy-btn"></div></div></figure>
+
+</div>
+<aside role="complementary" aria-labelledby="zzdeall__title__1"><nav role="navigation" aria-label="bottom related links" class="ibm-padding-top-1 ibm-padding-bottom-2 bx--row bottom-section-parent">
+<div class="familylinks ibm-margin-bottom-1">
+<div class="parentlink"><strong>Parent topic:</strong> <div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a data-hd-product="ssw_ibm_i_74" href="/docs/en/ssw_ibm_i_74/rzasd/operxcl.htm" class="bottom-section-link">Operation Codes</a></div></div>
+</div>
+</nav></aside></article></main>

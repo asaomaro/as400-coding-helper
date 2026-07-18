@@ -1,0 +1,76 @@
+<div role="main">
+<svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 32 32" aria-hidden="true"><path d="M14 16L24 6 25.4 7.4 16.8 16 25.4 24.6 24 26zM8 4H10V28H8z"></path><title></title></svg><!-- Java sync-link --><script language="Javascript" src="../rzahg/synch.js" type="text/javascript"></script>
+<h1 class="title topictitle1">%DATA (文書 {:オプション})</h1><div id="lastModifiedDate"><span>Last Updated</span>: 2021-04-13</div>
+<div class="body"><p class="p">%DATA は、DATA-INTO 命令コードの第 2 オペランドとして使用され、構文解析する文書、およびターゲット RPG 変数に文書情報をどのように入れるかを制御するオプションを指定します。%DATA は値を戻しません。
+また、DATA-INTO 命令コード以外の場所に指定できません。</p>
+<p class="p">%DATA の第 1 オペランドは、構文解析する文書を指定します。このオペランドは、定数あるいは変数文字、または文書あるいは文書を含むファイル名のいずれかを持つ UCS-2 表記の場合があります。</p>
+<div class="p">%DATA の第 2 オペランドは、文書の構文解釈方法、および RPG 変数に文書データをどのように入れるかを制御するオプションを指定します。
+このオペランドは、定数または変数文字式の場合があります。
+文字式の値は、次の形式で指定されたゼロ個以上のオプションのリストです。
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code>optionname1=value1 optionname2=value2</code></pre></div><div class="docs--copy-btn"></div></div>
+</div>
+<div class="p">オプション名および等号の間、または等号および値の間には、スペースは許可されていません。
+ただし、オプションの前後、および間には、任意の数のスペースを指定できます。
+オプションは、大/小文字で指定できます。
+以下は、DATA-INTO の「doc=file」および「allowextra=yes」オプションを指定する有効なすべての方法です。
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code>   'doc=file allowextra=yes'
+   '        doc=file     allowextra=yes     '
+   'ALLOWEXTRA=YES DOC=FILE     '
+   'AllowExtra=Yes Doc=File     '</code></pre></div><div class="docs--copy-btn"></div></div>
+</div>
+<div class="p">以下は<strong class="ph b">無効な</strong>オプション・ストリングです。<div class="tablenoborder"><div class="cds--data-table-container"><table cellpadding="4" cellspacing="0" summary="" class="table cds--data-table" rules="all" frame="border" border="1"><thead class="thead" align="left"><tr class="row"><th class="entry thleft" valign="top" width="50%" id="d9243e59"><div class="cds--table-header-label">オプション・ストリング</div></th>
+<th class="entry thleft" valign="top" width="50%" id="d9243e61"><div class="cds--table-header-label">オプション・ストリングの問題</div></th>
+</tr>
+</thead>
+<tbody class="tbody"><tr class="row"><td class="entry" valign="top" width="50%" headers="d9243e59 ">'doc = file'</td>
+<td class="entry" valign="top" width="50%" headers="d9243e61 ">等号の周辺のスペースは許可されていません。</td>
+</tr>
+<tr class="row"><td class="entry" valign="top" width="50%" headers="d9243e59 ">'allowextra'</td>
+<td class="entry" valign="top" width="50%" headers="d9243e61 ">それぞれのオプションには、等号および値が必要です。</td>
+</tr>
+<tr class="row"><td class="entry" valign="top" width="50%" headers="d9243e59 ">'badopt=yes'</td>
+<td class="entry" valign="top" width="50%" headers="d9243e61 ">有効なオプションのみ許可されています。</td>
+</tr>
+<tr class="row"><td class="entry" valign="top" width="50%" headers="d9243e59 ">'allowextra=ok'</td>
+<td class="entry" valign="top" width="50%" headers="d9243e61 ">「allowextra」値は「yes」または「no」のみです。</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+</div>
+<p class="p">有効なオプションおよび値の完全なリストについては、<a class="xref" href="/docs/ja/ssw_ibm_i_74/rzasd/dataintoopts.htm">DATA-INTO 命令コードの %DATA オプション</a>を参照してください。</p>
+<div class="p">1 つのオプションが複数回指定されていた場合は、最後に指定されている値が使用されます。
+例えば、「options」オペランドの値が <div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code>'doc=file doc=string'</code></pre></div><div class="docs--copy-btn"></div></div>
+ の場合、パーサーは「doc」オプションに値「string」を使用します。</div>
+<p class="p">パーサーが無効なオプションまたは無効な値を発見した場合は、命令は状況コード 00352 で失敗します。</p>
+<div class="section"><h2 class="title sectiontitle">%DATA の例</h2>
+<div class="p">「options」オペランドは省略されています。すべてのオプションにデフォルト値が使用されます。「doc」オプションのデフォルト値は必ず「string」であるために、パーサーは最初のオペランドに文書のテキストが含まれていると正しく想定します。
+以下の例では、形式
+「itemName=itemValue」で架空の言語を想定しています。
+<div class="fig figborder"><div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code>document = 'city=Toronto';
+DATA-INTO city %DATA(document) %PARSER(p);</code></pre></div><div class="docs--copy-btn"></div></div>
+</div>
+</div>
+
+<div class="p">「options」オペランドは 2 つのオプション持つリテラルとして指定されています。
+<div class="fig figborder"><div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code>DATA-INTO myds %DATA(document : 'allowmissing=yes allowextra=yes')
+          %PARSER(p);</code></pre></div><div class="docs--copy-btn"></div></div>
+</div>
+</div>
+
+<div class="p">「options」オペランドは 2 つのオプション持つ変数式として指定されています。
+<div class="fig figborder"><div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code>ccsidOpt = 'ccsid=ucs2';
+DATA-INTO %HANDLER(mySaxHandler : myCommArea)
+          %DATA('mydoc.txt' : 'doc=file ' + ccsidOpt)
+          %PARSER(p);</code></pre></div><div class="docs--copy-btn"></div></div>
+</div>
+</div>
+
+<p class="p">%DATA の例および DATA-INTO 命令について詳しくは、<a class="xref" href="/docs/ja/ssw_ibm_i_74/rzasd/zzdatainto.htm">DATA-INTO (文書の変数への構文解析)</a>を参照してください。</p>
+</div>
+</div>
+<div class="related-links ibm-padding-top-1 ibm-padding-bottom-2 bx--row bottom-section-parent" aria-label="bottom related links">
+<div class="familylinks ibm-margin-bottom-1">
+<div class="parentlink"><strong>親トピック:</strong> <div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a class="link bottom-section-link" href="/docs/ja/ssw_ibm_i_74/rzasd/bifs.htm">組み込み関数</a></div></div>
+</div>
+</div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 16L8 26 6.6 24.6 15.2 16 6.6 7.4 8 6zM22 4H24V28H22z"></path><title></title></svg></div>

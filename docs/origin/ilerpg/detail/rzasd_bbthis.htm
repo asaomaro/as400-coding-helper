@@ -1,0 +1,50 @@
+<div role="main">
+<!-- Java sync-link --><script language="Javascript" src="../rzahg/synch.js" type="text/javascript"></script>
+<h1 class="title topictitle1">%THIS (ネイティブ・メソッド用のクラス・インスタンスの戻し)</h1><div id="lastModifiedDate"><span>Last Updated</span>: 2021-04-13</div>
+<div class="body"><div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code>%THIS</code></pre></div><div class="docs--copy-btn"></div></div>
+<p class="p">%THIS は、ネイティブ・メソッドが呼び出されるように、
+クラス・インスタンスへの参照を含むオブジェクト値を戻します。%THIS
+は、非静的ネイティブ・メソッドでのみ有効です。
+この組み込み関数は、非静的ネイティブ・メソッドからクラス・インスタンスへのアクセスを提供します。</p>
+<p class="p">非静的ネイティブ・メソッドは、自分のクラスの特定のインスタンスを処理します。このオブジェクトは、Java™
+によってパラメーターとしてネイティブ・メソッドに渡されますが、ネイティブ・メソッド用のプロトタイプやプロシージャー・インターフェースには現れません。Java
+メソッドにおいては、このオブジェクト・インスタンスは Java の予約語 <strong class="ph b"><em class="ph i">this</em></strong> によって参照されます。
+RPG
+ネイティブ・メソッドにおいては、このオブジェクト・インスタンスは %THIS 組み込み関数によって参照されます。</p>
+<div class="fig figborder"><span class="figcap">図 1. %THIS の例</span><div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code> * Method "vacationDays" is a method in the class 'Employee'
+D vacationDays    PR            10I 0 EXTPROC(*JAVA
+D                                           : 'Employee'
+D                                           : 'vacationDays')
+
+ * Method "getId" is another method in the class 'Employee'
+D getId           PR            10I 0 EXTPROC(*JAVA
+D                                           : 'Employee'
+D                                           : 'getId')
+...
+ * "vacationDays" is an RPG native method.  Since the STATIC keyword
+ * is not used, it is an instance method.
+P vacationDays    B                   EXPORT
+D vacationDays    PI            10I 0
+
+D id_num          S             10I 0
+
+ * Another Employee method must be called to get the Employee's
+ * id-number.  This method requires an Object of class Employee.
+ * We use %THIS as the Object parameter, to get the id-number for
+ * the object that our native method "vacationDays" is working on.
+C                   eval      id_num = getId(%THIS)
+C     id_num        chain     EMPFILE
+C                   if        %found
+C                   return    VACDAYS
+C                   else
+C                   return    -1
+C                   endif
+
+P vacationDays    E</code></pre></div><div class="docs--copy-btn"></div></div>
+</div>
+</div>
+<div class="related-links ibm-padding-top-1 ibm-padding-bottom-2 bx--row bottom-section-parent" aria-label="bottom related links">
+<div class="familylinks ibm-margin-bottom-1">
+<div class="parentlink"><strong>親トピック:</strong> <div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a class="link bottom-section-link" href="/docs/ja/ssw_ibm_i_74/rzasd/bifs.htm">組み込み関数</a></div></div>
+</div>
+</div></div>

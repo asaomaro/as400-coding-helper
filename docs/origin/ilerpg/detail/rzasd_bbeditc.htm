@@ -1,0 +1,113 @@
+<div role="main">
+<!-- Java sync-link --><script language="Javascript" src="../rzahg/synch.js" type="text/javascript"></script>
+<h1 class="title topictitle1"> %EDITC (編集コードを使用する編集値)</h1><div id="lastModifiedDate"><span>Last Updated</span>: 2021-04-13</div>
+<div class="body"><div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code>%EDITC(numeric : editcode {: *ASTFILL | *CURSYM | currency-symbol})</code></pre></div><div class="docs--copy-btn"></div></div>
+<div class="p">この関数は、編集コードに従って編集された数値を表す
+文字結果を戻します。
+一般に、数値および編集コードの規則は、出力仕様で数値を編集する
+場合の規則と同一です。 3 番目のパラメーターはオプションですが、これを指定する場合は、次の
+いずれかにする必要があります。 
+<dl class="dl"><dt class="dt dlterm">*ASTFILL</dt>
+<dd class="dd">アスタリスク保護が使用されることを示します。 これは、
+戻り値の中の先行ゼロは、アスタリスクによって置き換えられるという
+ことです。たとえ
+ば、%EDITC(<span class="ph">-0012.5</span> : 'K' : *ASTFILL) は '***12.5-' と
+なって戻されます。</dd>
+<dt class="dt dlterm">*CURSYM</dt>
+<dd class="dd">浮動通貨記号が使用されることを示します。 実際の記号は、CURSYM キーワード
+の中で、制御仕様書に指定された記号、あるいはデフォルトの '$' です。 *CURSYM が
+指定されると、通貨記号は、結果の中の最初の有効数字の直前に入れられます。たとえ
+ば、%EDITC(0012.5 : 'K' : *CURSYM)
+は <span class="ph">'&nbsp;&nbsp;&nbsp;$12.5&nbsp;'</span> となって戻されます。</dd>
+<dt class="dt dlterm">通貨記号</dt>
+<dd class="dd">所定の通貨記号とともに浮動通貨が使用されることを示します。 これは、1 バイト文字定数 (コンパイル時に評価することができる
+リテラル、名前付き定数あるいは式) である必要があります。たとえ
+ば、%EDITC(0012.5 : 'K' : 'X') は '&nbsp;&nbsp;&nbsp;X12.5&nbsp;' と
+なって戻されます。</dd>
+</dl>
+</div>
+<p class="p">%EDITC の結果は常に同じ長さで、先行ブランクと後書きブランクを含む場合が
+あります。
+たとえば、%EDITC(NUM : 'A' : '$') は、NUM のある値の
+場合には '$1,234.56CR' を戻し、別の値の場合
+には '&nbsp;&nbsp;&nbsp;&nbsp;$4.56&nbsp;&nbsp;' を戻します。</p>
+<p class="p">浮動式は、1 番目のパラメーターでは使用できません (%DEC を
+使用して浮動形式を編集可能形式に変換することができます)。2 番目の
+パラメーターでは、編集コードは、文字定数として
+指定されます。サポートされている編集コード
+は、'A' から 'D'、'J' から 'Q'、'X' から 'Z'、'1' から '9' です。定数
+は、コンパイル時に値を決めることができるリテラル、名前付き定数、
+あるいは式の場合があります。</p>
+<p class="p">詳細については、<a class="xref" href="/docs/ja/ssw_ibm_i_74/rzasd/yyconv.htm#yyconv">変換命令</a>または <a class="xref" href="/docs/ja/ssw_ibm_i_74/rzasd/bifsint.htm#bifsint">組み込み関数</a>を参照してください。</p>
+<div class="p"><div class="fig figborder"><span class="figcap">図 1. %EDITC の例 1</span><div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code>DName+++++++++++ETDsFrom+++To/L+++IDc.Keywords+++++++++++++++++++++++++++
+D msg             S            100A
+D salary          S              9P 2 INZ(1000)
+ * If the value of salary is 1000, then the value of salary * 12
+ * is 12000.00. The edited version of salary * 12 using the A edit
+ * code with floating currency is ' $12,000.00 '.
+ * The value of msg is 'The annual salary is $12,000.00'
+CL0N01Factor1+++++++Opcode&amp;ExtExtended-factor2+++++++++++++++++++++++++++
+C                   EVAL      msg = 'The annual salary is '
+C                                + %trim(%editc(salary * 12
+C                                              :'A': *CURSYM))
+ * In the next example, the value of msg is 'The annual salary is &amp;12,000.00'
+C                   EVAL      msg = 'The annual salary is '
+C                                + %trim(%editc(salary * 12
+C                                              :'A': '&amp;'))
+
+ * In the next example, the value of msg is 'Salary is $*****12,000.00'
+ * Note that the '$' comes from the text, not from the edit code.
+C                   EVAL      msg = 'Salary is $'
+C                                + %trim(%editc(salary * 12
+C                                               :'B': *ASTFILL))
+
+ * In the next example, the value of msg is 'The date is 1/14/1999'
+C                   EVAL      msg = 'The date is '
+C                                + %trim(%editc(*date : 'Y'))</code></pre></div><div class="docs--copy-btn"></div></div>
+</div>
+</div>
+<div class="p">共通の要求は、フィールドを次のように編集することです。
+<ul class="ul cds--list--unordered"><li class="li cds--list__item">先行ゼロは消去される。</li>
+<li class="li cds--list__item">値が負の場合には、それが括弧で囲まれる。</li>
+</ul>
+</div>
+<p class="p">次の例では、サブプロシージャー内で %EDITC を使用してこれを実行します。</p>
+<div class="fig figborder"><span class="figcap">図 2. %EDITC の例 2</span><div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code>DName+++++++++++ETDsFrom+++To/L+++IDc.Keywords+++++++++++++++++++++++++++
+D neg             S              5P 2      inz(-12.3)
+D pos             S              5P 2      inz(54.32)
+D editparens      PR            50A
+D    val                        30P 2      value
+D editedVal       S             10A
+CL0N01Factor1+++++++Opcode&amp;ExtExtended-factor2+++++++++++++++++++++++++++
+C                   EVAL      editedVal = editparens(neg)
+ * Now editedVal has the value '(12.30)   '
+C                   EVAL      editedVal = editparens(pos)
+ * Now editedVal has the value ' 54.32    '
+ *---------------------------------------------------------------
+ * Subprocedure EDITPARENS
+ *---------------------------------------------------------------
+P editparens      B
+D editparens      PI            50A
+D    val                        30P 2      value
+D lparen          S              1A        inz(' ')
+D rparen          S              1A        inz(' ')
+D res             S             50A
+ * Use parentheses if the value is negative
+C                   IF        val &lt; 0
+C                   EVAL      lparen = '('
+C                   EVAL      rparen = ')'
+C                   ENDIF
+ * Return the edited value
+ * Note that the '1' edit code does not include a sign so we
+ * don't have to calculate the absolute value.
+C                   RETURN    lparen             +
+C                             %editc(val : '1')  +
+C                             rparen
+P editparens      E</code></pre></div><div class="docs--copy-btn"></div></div>
+</div>
+</div>
+<div class="related-links ibm-padding-top-1 ibm-padding-bottom-2 bx--row bottom-section-parent" aria-label="bottom related links">
+<div class="familylinks ibm-margin-bottom-1">
+<div class="parentlink"><strong>親トピック:</strong> <div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a class="link bottom-section-link" href="/docs/ja/ssw_ibm_i_74/rzasd/bifs.htm">組み込み関数</a></div></div>
+</div>
+</div></div>

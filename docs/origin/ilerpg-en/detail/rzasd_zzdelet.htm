@@ -1,0 +1,139 @@
+<main role="main"><article role="article" aria-labelledby="zzdelet__title__1">
+<h1 class="topictitle1" id="zzdelet__title__1">DELETE (Delete Record)</h1><div id="lastModifiedDate"><span>Last Updated</span>: 2026-07-13</div>
+
+
+<div class="body">
+
+<div class="tablenoborder"><div class="cds--data-table-container"><table summary="" role="presentation" class="defaultstyle cds--data-table"><colgroup><col><col></colgroup><tbody>
+<tr>
+<td class="tdleft"><strong>Free-Form Syntax</strong></td>
+
+<td class="tdleft">DELETE{(EHMR)} {<span class="ph synph"><span class="ph var">search-arg</span></span>} <span class="ph synph"><span class="ph var">name</span></span></td>
+</tr>
+
+</tbody>
+</table></div>
+</div>
+
+
+<div class="tablenoborder"><div class="cds--data-table-container"><table summary="" class="defaultstyle cds--data-table"><colgroup><col><col><col><col><col><col><col></colgroup><thead>
+<tr>
+<th id="zzdelet__entry__3" class="thcenter thbot"><div class="cds--table-header-label"><strong>Code</strong></div></th>
+
+<th id="zzdelet__entry__4" class="thcenter thbot"><div class="cds--table-header-label"><strong>Factor 1</strong></div></th>
+
+<th id="zzdelet__entry__5" class="thcenter thbot"><div class="cds--table-header-label"><strong>Factor 2</strong></div></th>
+
+<th id="zzdelet__entry__6" class="thcenter thbot"><div class="cds--table-header-label"><strong>Result Field</strong></div></th>
+
+<th colspan="3" id="zzdelet__entry__7" class="thcenter thbot"><div class="cds--table-header-label"><strong>Indicators</strong></div></th>
+</tr>
+
+</thead>
+<tbody>
+<tr>
+<td headers="zzdelet__entry__3 " class="tdleft"><strong>DELETE (E)</strong></td>
+
+<td headers="zzdelet__entry__4 " class="tdleft">search-arg</td>
+
+<td headers="zzdelet__entry__5 " class="tdleft"><u>name</u> (file
+or record format)</td>
+
+<td headers="zzdelet__entry__6 " class="tdleft">&nbsp;</td>
+
+<td headers="zzdelet__entry__7 " class="tdcenter">NR</td>
+
+<td headers="zzdelet__entry__7 " class="tdcenter">ER</td>
+
+<td headers="zzdelet__entry__7 " class="tdcenter">_</td>
+</tr>
+
+</tbody>
+</table></div>
+</div>
+
+<p>The DELETE operation deletes a record from a database file. The
+file must be an delete-capable file (identified by specifying *DELETE
+in the <a href="/docs/en/ssw_ibm_i_74/rzasd/fkwusage.htm">USAGE</a> keyword of a free-form definition, or by
+a U in <a href="/docs/en/ssw_ibm_i_74/rzasd/f17.htm#f17">position
+17</a> of a fixed-form file description specification).
+The deleted record
+can never be retrieved.</p>
+
+<p>If a  search argument (<span class="ph synph"><span class="ph var">search-arg</span></span>) is not
+specified, the DELETE operation deletes the current record (the last
+record retrieved). The record must have been locked by a previous
+input operation (for example, CHAIN or READ).</p>
+
+<p>The search argument, <span class="ph synph"><span class="ph var">search-arg</span></span>, must be the
+key or relative record number used to retrieve the record to be deleted.
+If access is by key, <span class="ph synph"><span class="ph var">search-arg</span></span> can be a single key in the
+form of a field name, a named constant, a figurative constant, or
+a literal.</p>
+
+<p>If the file is an externally-described file, <span class="ph synph"><span class="ph var">search-arg</span></span> can
+also be a composite key in the form of a KLIST name, a list of values,
+or %KDS. Graphic and UCS-2 key fields must have the same CCSID as
+the key in the file. For an example of %KDS, see the example at the
+end of <a href="/docs/en/ssw_ibm_i_74/rzasd/bbkds.htm#bbkds">%KDS (Search Arguments in Data Structure)</a>. If access is by relative record number, <span class="ph synph"><span class="ph var">search-arg</span></span> must
+be an integer literal or a numeric field with zero decimal positions.
+For an example of using a list of values to search for the record
+to be deleted, see <a href="/docs/en/ssw_ibm_i_74/rzasd/zzchain.htm#zzchain__chainop2">Figure 2</a>.</p>
+
+<p>
+See <a href="/docs/en/ssw_ibm_i_74/rzasd/hexprop.htm#hexprop__strictkeys">*STRICTKEYS</a>
+for information about the effect Control keyword EXPROPTS(*STRICTKEYS)
+has on the rules for specifying keys with a list of values or %KDS.
+</p>
+
+<p>The <span class="ph synph"><span class="ph var">name</span></span> operand must be the name of the update
+file or a record format in the file from which a record is to be deleted.
+ A record format name is valid only with an externally described file.
+If <span class="ph synph"><span class="ph var">search-arg</span></span> is not specified, the record format
+name must be the name of the last record read from the file; otherwise,
+an error occurs.</p>
+
+<p>If <span class="ph synph"><span class="ph var">search-arg</span></span>  is specified, positions 71
+and 72 can contain an indicator that is set on if the record to be
+deleted is not found in the file. If <span class="ph synph"><span class="ph var">search-arg</span></span> is
+not specified, leave these positions blank. This information can also
+be obtained from the %FOUND built-in function, which returns '0' if
+no record is found, and '1' if a record is found.</p>
+
+<p>To handle DELETE exceptions (<a href="/docs/en/ssw_ibm_i_74/rzasd/stacod9.htm#stacod9">file status codes</a> greater
+than 1000), either the operation code extender 'E' or an error indicator
+ER can be specified, but not both. For more information on error handling,
+see <a href="/docs/en/ssw_ibm_i_74/rzasd/filexpe.htm#filexpe">File Exception/Errors</a>.</p>
+
+<p>Under the <span class="keyword">IBM i</span> operating system, if a read operation is done
+on the file specified in <span class="ph synph"><span class="ph var">file-name</span></span> after a successful
+DELETE operation to that file, the next record after the deleted record
+is obtained.</p>
+
+<p>See <a href="/docs/en/ssw_ibm_i_74/rzasd/dbnvs.htm#dbnvs">Database Null Value Support</a> for information on handling records with
+null-capable fields and keys.</p>
+
+<p>For more information, see <a href="/docs/en/ssw_ibm_i_74/rzasd/filop.htm#filop">File Operations</a>.</p>
+
+<div class="note border-2 cds--inline-notification--info ibmdocs-note cds--inline-notification cds--inline-notification--low-contrast margin-top-1 margin-bottom-1"><div class="cds--inline-notification__details"><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" class="cds--inline-notification__icon" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M16,2A14,14,0,1,0,30,16,14,14,0,0,0,16,2Zm0,5a1.5,1.5,0,1,1-1.5,1.5A1.5,1.5,0,0,1,16,7Zm4,17.12H12V21.88h2.88V15.12H13V12.88h4.13v9H20Z"></path></svg>
+        <div class="cds--inline-notification__text-wrapper">
+          <div class="cds--inline-notification__subtitle"><span class="notetitle ibm-bold ibm-textcolor-blue-50 background-blue cds--inline-notification__title ibm-padding-top-1 ibm-padding-bottom-1 padding-left-1 padding-right-1">Note:</span> <ol class="cds--list--ordered--temporary">
+<li class="cds--list__item">Operation code extenders H, M, and R are allowed
+only when the search argument is a list or is %KDS().
+See <a href="/docs/en/ssw_ibm_i_74/rzasd/fileopkeys.htm">Keys for File Operations</a>
+and <a href="/docs/en/ssw_ibm_i_74/rzasd/arithacc.htm">Ensuring Accuracy</a>.
+</li>
+
+<li class="cds--list__item">Leave positions 75 and 76 blank.</li>
+</ol>
+
+</div>
+        </div>
+      </div></div>
+
+</div>
+<aside role="complementary" aria-labelledby="zzdelet__title__1"><nav role="navigation" aria-label="bottom related links" class="ibm-padding-top-1 ibm-padding-bottom-2 bx--row bottom-section-parent">
+<div class="familylinks ibm-margin-bottom-1">
+<div class="parentlink"><strong>Parent topic:</strong> <div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a data-hd-product="ssw_ibm_i_74" href="/docs/en/ssw_ibm_i_74/rzasd/operxcl.htm" class="bottom-section-link">Operation Codes</a></div></div>
+</div>
+</nav></aside></article></main>

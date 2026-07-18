@@ -1,0 +1,85 @@
+<div role="main">
+<!-- Java sync-link --><script language="Javascript" src="../rzahg/synch.js" type="text/javascript"></script>
+<h1 class="title topictitle1">%EOF (ファイルの終わりまたは先頭条件の戻し)</h1><div id="lastModifiedDate"><span>Last Updated</span>: 2021-04-13</div>
+<div class="body"><div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code>%EOF{(file_name)}</code></pre></div><div class="docs--copy-btn"></div></div>
+<p class="p">%EOF は、サブファイルに対して実行された最後の読み取り操作または書き出しが、
+ファイルの終わり条件またはファイルの先頭条件で終了した場合に '1' を戻します。
+他の場合には '0' を戻します。</p>
+<div class="p">%EOF を設定する命令を以下に示します。
+<ul class="ul cds--list--unordered"><li class="li cds--list__item"><a class="xref" href="/docs/ja/ssw_ibm_i_74/rzasd/zzread.htm#zzread">READ (レコードの読み取り)</a></li>
+<li class="li cds--list__item"><a class="xref" href="/docs/ja/ssw_ibm_i_74/rzasd/zzreadc.htm#zzreadc">READC (次の変更レコードの読み取り)</a></li>
+<li class="li cds--list__item"><a class="xref" href="/docs/ja/ssw_ibm_i_74/rzasd/zzreade.htm#zzreade">READE (等しいキーのレコードの読み取り)</a></li>
+<li class="li cds--list__item"><a class="xref" href="/docs/ja/ssw_ibm_i_74/rzasd/zzreadp.htm#zzreadp">READP (前のレコードの読み取り)</a></li>
+<li class="li cds--list__item"><a class="xref" href="/docs/ja/ssw_ibm_i_74/rzasd/zzredpe.htm#zzredpe">READPE (等しいキーの前のレコードの読み取り)</a></li>
+<li class="li cds--list__item"><a class="xref" href="/docs/ja/ssw_ibm_i_74/rzasd/zzwrite.htm#zzwrite">WRITE (新しいレコードの作成)</a> (サブファイルのみ)</li>
+</ul>
+</div>
+<div class="p">次の命令は、成功した場合は %EOF(ファイル名)
+をオフに設定します。命令が成功しなかった場合は、%EOF(ファイル名) は変更されません。パラメーターなしの
+%EOF は、これらの命令によって変更されることはありません。
+<ul class="ul cds--list--unordered"><li class="li cds--list__item"><a class="xref" href="/docs/ja/ssw_ibm_i_74/rzasd/zzchain.htm#zzchain">CHAIN (ファイルからのランダム検索)</a></li>
+<li class="li cds--list__item"><a class="xref" href="/docs/ja/ssw_ibm_i_74/rzasd/zzopen.htm#zzopen">OPEN (処理のためのファイルのオープン)</a></li>
+<li class="li cds--list__item"><a class="xref" href="/docs/ja/ssw_ibm_i_74/rzasd/zzsetgt.htm#zzsetgt">SETGT (より大きい設定)</a></li>
+<li class="li cds--list__item"><a class="xref" href="/docs/ja/ssw_ibm_i_74/rzasd/zzsetll.htm#zzsetll">SETLL (下限の設定)</a></li>
+</ul>
+</div>
+<p class="p">全手順ファイルを指定した場合、指定のファイルに対する上記のリストに示した
+直前の命令の結果が、ファイルの終わり条件またはファイルの先頭条件であれば、
+この関数は '1' を戻します。 1 次ファイルおよび 2 次ファイル
+の場合、%EOF は、ファイル名を指定した場合のみ使用することができます。 この関数は、*GETIN 処理中に実行された最後の入力操作の結果が、ファイルの終わり条件
+またはファイルの先頭条件である場合には、'1' に設定されます。 他の場合には、'0' を戻します。</p>
+<p class="p">この関数は、入力ファイル、更新ファイル、レコード・アドレス・ファイルに使用
+することができ、表示装置ファイルの場合にはサブファイル・レコードへの WRITE に使用することができます。</p>
+<p class="p">詳細については、<a class="xref" href="/docs/ja/ssw_ibm_i_74/rzasd/filop.htm#filop">ファイル命令</a>または <a class="xref" href="/docs/ja/ssw_ibm_i_74/rzasd/bifsint.htm#bifsint">組み込み関数</a>を参照してください。</p>
+<div class="fig figborder"><span class="figcap">図 1. ファイル名パラメーターを指定しない %EOF</span><div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code> *..1....+....2....+....3....+....4....+....5....+....6....+....7...+....
+F*Filename+IPEASFRlen+LKlen+AIDevice+.Keywords+++++++++++++++++++++++++
+ * File INFILE has record format INREC
+FINFILE    IF   E             DISK
+
+ /FREE
+    READ INREC;  // read a record
+    IF  %EOF;
+                 // handle end of file
+    ENDIF;
+ /END-FREE</code></pre></div><div class="docs--copy-btn"></div></div>
+</div>
+<div class="fig figborder"><span class="figcap">図 2. ファイル名パラメーターを指定した %EOF</span><div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code> *..1....+....2....+....3....+....4....+....5....+....6....+....7...+....
+ * This program is comparing two files
+
+F*Filename+IPEASFRlen+LKlen+AIDevice+.Keywords+++++++++++++++++++++++++
+FFILE1     IF   E             DISK
+FFILE2     IF   E             DISK
+
+ * Loop until either FILE1 or FILE2 has reached end-of-file
+ /FREE
+    DOU %EOF(FILE1) OR %EOF(FILE2);
+       // Read a record from each file and compare the records
+ 
+       READ REC1;
+       READ REC2;
+       IF %EOF(FILE1) AND %EOF(FILE2);
+          // Both files have reached end-of-file
+          EXSR EndCompare;
+ 
+       ELSEIF %EOF(FILE1);
+          // FILE1 is shorter than FILE2
+          EXSR F1Short;
+ 
+       ELSEIF %EOF(FILE2);
+          // FILE2 is shorter than FILE1
+          EXSR F2Short;
+ 
+       ELSE;
+          // Both files still have records to be compared
+          EXSR CompareRecs;
+       ENDIF;
+    ENDDO;
+  // ...
+ /END-FREE</code></pre></div><div class="docs--copy-btn"></div></div>
+</div>
+</div>
+<div class="related-links ibm-padding-top-1 ibm-padding-bottom-2 bx--row bottom-section-parent" aria-label="bottom related links">
+<div class="familylinks ibm-margin-bottom-1">
+<div class="parentlink"><strong>親トピック:</strong> <div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a class="link bottom-section-link" href="/docs/ja/ssw_ibm_i_74/rzasd/bifs.htm">組み込み関数</a></div></div>
+</div>
+</div></div>

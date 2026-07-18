@@ -1,0 +1,122 @@
+<main role="main"><article role="article" aria-labelledby="bbchkr__title__1">
+<h1 class="topictitle1" id="bbchkr__title__1">%CHECKR (Check Reverse)</h1><div id="lastModifiedDate"><span>Last Updated</span>: 2026-07-13</div>
+
+
+<div class="body">
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>%CHECKR(comparator : base {: start {: *NATURAL | *STDCHARSIZE}})</code></pre></div><div class="docs--copy-btn"></div></div>
+<p>%CHECKR returns the last position of the string <span class="ph synph"><span class="ph var">base</span></span> that
+contains a character that does not appear in string <span class="ph synph"><span class="ph var">comparator</span></span>.
+If all of the characters in <span class="ph synph"><span class="ph var">base</span></span> also appear in <span class="ph synph"><span class="ph var">comparator</span></span>,
+the function returns 0.</p>
+
+<p>The check begins at the starting position and continues to the
+left until a character that is not contained in the comparator string
+is found. The starting position defaults to the end of the string.</p>
+
+<p>The first parameter must be of type character, graphic, or UCS-2,
+fixed or varying length. The second parameter must be the same type
+as the first parameter. The third parameter, if specified, must be
+a non-float numeric with zero decimal positions.</p>
+
+<div class="p">The third or fourth parameter can be *NATURAL or *STDCHARSIZE
+to override the current <a href="/docs/en/ssw_ibm_i_74/rzasd/charcount.htm">CHARCOUNT</a> mode for the statement.
+If this parameter is specified, it must be the last parameter.
+<ul class="cds--list--unordered">
+<li class="cds--list__item">Specify *NATURAL to indicate that %CHECKR operates in <span class="keyword">CHARCOUNT NATURAL</span> mode.
+The start position and return value are measured in characters rather than bytes or double bytes.
+For example, if the base string is a UTF-8 string with the value 'áxç',
+and the comparator string is 'çbá',
+the 'x' character is the first character found in the base string that does not appear in the comparator string.
+With <span class="keyword">CHARCOUNT NATURAL</span> mode, %CHECKR returns 2, because the character 'x' is the second
+character in the base string.
+</li>
+
+<li class="cds--list__item">Specify *STDCHARSIZE to indicate that %CHECKR operates in <span class="keyword">CHARCOUNT STDCHARSIZE</span> mode.
+In the previous example, with <span class="keyword">CHARCOUNT STDCHARSIZE</span> mode,
+%CHECKR returns 3 because 'x' is the third byte in the
+string.
+Characters 'á' and 'ç' are 2-byte characters.
+</li>
+
+</ul>
+
+See <a href="/docs/en/ssw_ibm_i_74/rzasd/charcount.htm">Processing string data by the natural size of each character</a>.
+<div class="note border-2 cds--inline-notification--info ibmdocs-note cds--inline-notification cds--inline-notification--low-contrast margin-top-1 margin-bottom-1"><div class="cds--inline-notification__details"><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" class="cds--inline-notification__icon" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M16,2A14,14,0,1,0,30,16,14,14,0,0,0,16,2Zm0,5a1.5,1.5,0,1,1-1.5,1.5A1.5,1.5,0,0,1,16,7Zm4,17.12H12V21.88h2.88V15.12H13V12.88h4.13v9H20Z"></path></svg>
+        <div class="cds--inline-notification__text-wrapper">
+          <div class="cds--inline-notification__subtitle"><span class="notetitle ibm-bold ibm-textcolor-blue-50 background-blue cds--inline-notification__title ibm-padding-top-1 ibm-padding-bottom-1 padding-left-1 padding-right-1">Note:</span> 
+%CHECKR can also operate in <span class="keyword">CHARCOUNT NATURAL</span> mode due to the
+<span class="keyword">/CHARCOUNT</span> compiler directive or the <span class="keyword">CHARCOUNT</span> Control keyword.
+</div>
+        </div>
+      </div></div>
+
+</div>
+
+<p>For more information, see <a href="/docs/en/ssw_ibm_i_74/rzasd/yystrng.htm#yystrng">String Operations</a> or <a href="/docs/en/ssw_ibm_i_74/rzasd/bifsint.htm#bifsint">Built-in Functions</a>.</p>
+
+<figure class="figborder"><figcaption>Figure 1. %CHECKR Example</figcaption>
+
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code> *..1....+....2....+....3....+....4....+....5....+....6....+....7...+....
+ *---------------------------------------------
+ * If a string is padded at the end with some
+ * character other than blanks, the characters
+ * cannot be removed using %TRIM.
+ * %CHECKR can be used for this by searching
+ * for the last character in the string that
+ * is not in the list of "pad characters".
+ *---------------------------------------------
+D string1         s             50a   varying
+D                                     inz('My *dog* Spot.* @ * @ *')
+D string2         s             50a   varying
+D                                     inz('someone@somewhere.com')
+D padChars        C                   ' *@'
+
+ /free
+
+    %len(string1) = %checkr(padChars:string1);
+    //  %len(string1) is set to 14 (the position of the last character
+    //  that is not in "padChars").
+
+    //  string1 = 'My *dog* Spot.'
+
+    %len(string2) = %checkr(padChars:string2);
+    //  %len(string2) is set to 21 (the position of the last character
+    //  that is not in "padChars").
+
+    //  string2 = 'someone@somewhere.com'  (the string is not changed)
+
+ /end-free</code></pre></div><div class="docs--copy-btn"></div></div></figure>
+
+<figure class="figborder" id="bbchkr__bifchkrx"><figcaption>Figure 2. %CHECK and %CHECKR Example</figcaption>
+
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code> *..1....+....2....+....3....+....4....+....5....+....6....+....7...+....
+ *------------------------------------------------------
+ * A string contains a numeric value, but it might
+ * be surrounded by blanks and asterisks and might be
+ * preceded by a currency symbol.
+ *------------------------------------------------------
+D string          s             50a   varying inz('$****12.345***  ')
+
+ /free
+    // Find the position of the first character that is not one of ' $*'
+    numStart = %CHECK (' $*' : string);
+    //  = 6
+
+    // Find the position of the last character that is not one of ' *'
+    numEnd = %CHECKR (' *' : string);
+    //  = 11
+
+    // Extract the numeric string
+    string = %SUBST(string : numStart : numEnd - numStart + 1);
+    //  = '12.345'
+
+ /end-free</code></pre></div><div class="docs--copy-btn"></div></div></figure>
+
+<p>&nbsp;</p>
+
+</div>
+<aside role="complementary" aria-labelledby="bbchkr__title__1"><nav role="navigation" aria-label="bottom related links" class="ibm-padding-top-1 ibm-padding-bottom-2 bx--row bottom-section-parent">
+<div class="familylinks ibm-margin-bottom-1">
+<div class="parentlink"><strong>Parent topic:</strong> <div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a data-hd-product="ssw_ibm_i_74" href="/docs/en/ssw_ibm_i_74/rzasd/bifs.htm" class="bottom-section-link">Built-in Functions</a></div></div>
+</div>
+</nav></aside></article></main>

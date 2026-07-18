@@ -1,0 +1,246 @@
+<main role="main"><article role="article" aria-labelledby="zzreade__title__1">
+<h1 class="topictitle1" id="zzreade__title__1">READE (Read Equal Key)</h1><div id="lastModifiedDate"><span>Last Updated</span>: 2026-07-13</div>
+
+
+<div class="body">
+
+<div class="tablenoborder"><div class="cds--data-table-container"><table summary="" role="presentation" class="defaultstyle cds--data-table"><colgroup><col><col></colgroup><tbody>
+<tr>
+<td class="tdleft"><strong>Free-Form Syntax</strong></td>
+
+<td class="tdleft">READE{(ENHMR)} <span class="ph synph"><span class="ph var">search-arg</span></span>|*KEY <span class="ph synph"><span class="ph var">name</span></span> {<span class="ph synph"><span class="ph var">data-structure</span></span>}</td>
+</tr>
+
+</tbody>
+</table></div>
+</div>
+
+
+<div class="tablenoborder"><div class="cds--data-table-container"><table summary="" class="defaultstyle cds--data-table"><colgroup><col><col><col><col><col><col><col></colgroup><thead>
+<tr>
+<th id="zzreade__entry__3" class="thcenter thbot"><div class="cds--table-header-label"><strong>Code</strong></div></th>
+
+<th id="zzreade__entry__4" class="thcenter thbot"><div class="cds--table-header-label"><strong>Factor 1</strong></div></th>
+
+<th id="zzreade__entry__5" class="thcenter thbot"><div class="cds--table-header-label"><strong>Factor 2</strong></div></th>
+
+<th id="zzreade__entry__6" class="thcenter thbot"><div class="cds--table-header-label"><strong>Result Field</strong></div></th>
+
+<th colspan="3" id="zzreade__entry__7" class="thcenter thbot"><div class="cds--table-header-label"><strong>Indicators</strong></div></th>
+</tr>
+
+</thead>
+<tbody>
+<tr>
+<td headers="zzreade__entry__3 " class="tdleft"><strong>READE (E N)</strong></td>
+
+<td headers="zzreade__entry__4 " class="tdleft">search-arg</td>
+
+<td headers="zzreade__entry__5 " class="tdleft"><u>name</u> (file
+or record format)</td>
+
+<td headers="zzreade__entry__6 " class="tdleft">data-structure</td>
+
+<td headers="zzreade__entry__7 " class="tdcenter">_</td>
+
+<td headers="zzreade__entry__7 " class="tdcenter">ER</td>
+
+<td headers="zzreade__entry__7 " class="tdcenter">EOF</td>
+</tr>
+
+</tbody>
+</table></div>
+</div>
+
+<p>The READE operation retrieves the next sequential record from a
+<a href="/docs/en/ssw_ibm_i_74/rzasd/fullprocfiles.htm">full procedural file</a> if the key of the record
+matches the search argument.  If the key of the record does not match
+the search argument, an EOF condition occurs, and the record is <em>not</em> returned to the program. An EOF condition
+also applies when end of file occurs.</p>
+
+<div class="p">The search argument, <span class="ph synph"><span class="ph var">search-arg</span></span>,
+identifies the record to be retrieved. The <span class="ph synph"><span class="ph var">search-arg</span></span> operand
+is optional in traditional syntax but is required in free-form syntax. <span class="ph synph"><span class="ph var">search-arg</span></span> can be:
+<ul class="cds--list--unordered">
+<li class="cds--list__item">A field name, a literal, a named constant, or a figurative constant.</li>
+
+<li class="cds--list__item">A KLIST name for an externally described file.</li>
+
+<li class="cds--list__item">A list of key values enclosed in parentheses. See <a href="/docs/en/ssw_ibm_i_74/rzasd/zzchain.htm#zzchain__chainop2">Figure 2</a> for an example of searching using a list of key
+values. </li>
+
+<li class="cds--list__item">%KDS to indicate that the search arguments are the
+subfields of a data structure. See the example at the end of <a href="/docs/en/ssw_ibm_i_74/rzasd/bbkds.htm#bbkds">%KDS (Search Arguments in Data Structure)</a> for an illustration of search arguments in a data structure. </li>
+
+<li class="cds--list__item">*KEY or (in traditional syntax only) no value. If the full key
+of the next record is equal to that of the current record, the next
+record in the file is retrieved. The full key is defined by the record
+format or file specified in <span class="ph synph"><span class="ph var">name</span></span>.</li>
+
+</ul>
+</div>
+
+<p>
+See <a href="/docs/en/ssw_ibm_i_74/rzasd/hexprop.htm#hexprop__strictkeys">*STRICTKEYS</a>
+for information about the effect Control keyword EXPROPTS(*STRICTKEYS)
+has on the rules for specifying keys with a list of values or %KDS.
+</p>
+
+<div class="note border-2 cds--inline-notification--info ibmdocs-note cds--inline-notification cds--inline-notification--low-contrast margin-top-1 margin-bottom-1"><div class="cds--inline-notification__details"><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" class="cds--inline-notification__icon" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M16,2A14,14,0,1,0,30,16,14,14,0,0,0,16,2Zm0,5a1.5,1.5,0,1,1-1.5,1.5A1.5,1.5,0,0,1,16,7Zm4,17.12H12V21.88h2.88V15.12H13V12.88h4.13v9H20Z"></path></svg>
+        <div class="cds--inline-notification__text-wrapper">
+          <div class="cds--inline-notification__subtitle"><span class="notetitle ibm-bold ibm-textcolor-blue-50 background-blue cds--inline-notification__title ibm-padding-top-1 ibm-padding-bottom-1 padding-left-1 padding-right-1">Note:</span> If a file is defined as update and the
+N operation extender is not specified, occasionally a READE operation
+will be forced to wait for a temporary record lock for a record whose
+key value does not match the search argument. Once the temporary lock
+has been obtained, if the key value does not match the search argument,
+the temporary lock is released.
+<p>In most cases, RPG can perform
+READE by using system support that does not require obtaining a temporary
+record lock to determine whether there is a matching record. However,
+in other cases, RPG cannot use this support, and must request the
+next record before it can determine whether the record matches the
+READE request. </p>
+
+<div class="p">Some of the reasons that would require RPG to
+obtain a temporary lock on the next record for a READE operation are:
+<ul class="cds--list--unordered">
+<li class="cds--list__item">the key of the current record is not the same as the search argument</li>
+
+<li class="cds--list__item">the current record is not the same as the requested record</li>
+
+<li class="cds--list__item">there are null-capable fields in the file</li>
+
+<li class="cds--list__item">ALWNULL(*USRCTL) was specified for the module</li>
+
+<li class="cds--list__item">the file has end-of-file delay</li>
+
+</ul>
+</div>
+</div>
+        </div>
+      </div></div>
+
+<div class="note border-2 cds--inline-notification--info ibmdocs-note cds--inline-notification cds--inline-notification--low-contrast margin-top-1 margin-bottom-1"><div class="cds--inline-notification__details"><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" class="cds--inline-notification__icon" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M16,2A14,14,0,1,0,30,16,14,14,0,0,0,16,2Zm0,5a1.5,1.5,0,1,1-1.5,1.5A1.5,1.5,0,0,1,16,7Zm4,17.12H12V21.88h2.88V15.12H13V12.88h4.13v9H20Z"></path></svg>
+        <div class="cds--inline-notification__text-wrapper">
+          <div class="cds--inline-notification__subtitle"><span class="notetitle ibm-bold ibm-textcolor-blue-50 background-blue cds--inline-notification__title ibm-padding-top-1 ibm-padding-bottom-1 padding-left-1 padding-right-1">Note:</span>         </div>
+        </div>
+      </div></div>
+
+<p>Graphic and UCS-2 keys must have the same CCSID.</p>
+
+<p>The <span class="ph synph"><span class="ph var">name</span></span> operand must be the name of the file
+or record format to be retrieved. A record format name is allowed
+only with an externally described file.</p>
+
+<p>If the <span class="ph synph"><span class="ph var">data-structure</span></span> operand is specified,
+the record is read directly into the data structure. If <span class="ph synph"><span class="ph var">name</span></span> refers
+to a program-described file, the data structure
+can be any data structure of the same length as the file's declared
+record length. If <span class="ph synph"><span class="ph var">name</span></span> refers to an externally-described
+file or a record format from an externally described file, the data
+structure must be a data structure defined with <a href="/docs/en/ssw_ibm_i_74/rzasd/dextnam.htm#dextnam">EXTNAME</a>(...:*INPUT or *ALL)
+or <a href="/docs/en/ssw_ibm_i_74/rzasd/dlikerec.htm#dlikerec">LIKEREC</a>(...:*INPUT or *ALL). See <a href="/docs/en/ssw_ibm_i_74/rzasd/filop.htm#filop">File Operations</a> for
+information on how to define the data structure and how data is transferred
+between the file and the data structure.</p>
+
+<p>If the file you are reading is an update disk file, you can specify
+an N operation extender to indicate that no lock should be placed
+on the record when it is read.  See the <cite><span class="keyword">Rational® Development Studio for i: ILE RPG Programmer's Guide</span></cite> for more
+information.</p>
+
+<p>To handle READE exceptions (<a href="/docs/en/ssw_ibm_i_74/rzasd/stacod9.htm#stacod9">file status codes</a> greater
+than 1000), either the operation code extender 'E' or an error indicator
+ER can be specified, but not both. For more information on error handling,
+see <a href="/docs/en/ssw_ibm_i_74/rzasd/filexpe.htm#filexpe">File Exception/Errors</a>.</p>
+
+<p>You can specify an indicator in positions 75-76 that will be set
+on if an EOF condition occurs: that is, if a record is not found with
+a key equal to the search argument or if an end of file is encountered.
+This information can also be obtained from the %EOF built-in function,
+which returns '1' if an EOF condition occurs and '0' otherwise.</p>
+
+<p>If a READE operation is successful, the file is positioned
+at the next record that satisfies the operation. If there is a record-lock
+error (status 1218), the file is still positioned at the locked record
+and the next read operation will attempt to read that record again.
+Otherwise, if there is any other error or an end of file condition,
+you must reposition the file (using a CHAIN, SETLL, or SETGT operation).
+See <a href="/docs/en/ssw_ibm_i_74/rzasd/zzchain.htm#zzchain">CHAIN (Random Retrieval from a File)</a>, <a href="/docs/en/ssw_ibm_i_74/rzasd/zzsetgt.htm#zzsetgt">SETGT (Set Greater Than)</a>, or <a href="/docs/en/ssw_ibm_i_74/rzasd/zzsetll.htm#zzsetll">SETLL (Set Lower Limit)</a>.</p>
+
+<p>Normally, the comparison between the specified key and
+the actual key in the file is done by data management. In some cases
+this is impossible, causing the comparison to be done using the hexadecimal
+collating sequence. This can give different results than expected.
+For more information, see the section "Unexpected Results Using Keyed
+Files" in <cite><span class="keyword">Rational Development Studio for i: ILE RPG Programmer's Guide</span></cite>.</p>
+
+<p>A READE with the <span class="ph synph"><span class="ph var">search-arg</span></span> operand specified
+that immediately follows an OPEN operation or an EOF condition retrieves
+the first record in the file if the key of the record matches the
+search argument. A READE with <strong>no</strong> <span class="ph synph"><span class="ph var">search-arg</span></span> specified
+that immediately follows an OPEN operation or an EOF condition results
+in an error condition. The error indicator in positions 73 and 74,
+if specified, is set on or the 'E' extender, checked with %ERROR,
+if specified, is set on. No further I/O operations can be issued against
+the file until it is successfully closed and reopened.</p>
+
+<p>See <a href="/docs/en/ssw_ibm_i_74/rzasd/dbnvs.htm#dbnvs">Database Null Value Support</a> for information on handling records with
+null-capable fields and keys.</p>
+
+<p>For more information, see <a href="/docs/en/ssw_ibm_i_74/rzasd/filop.htm#filop">File Operations</a>.</p>
+
+<div class="note border-2 cds--inline-notification--info ibmdocs-note cds--inline-notification cds--inline-notification--low-contrast margin-top-1 margin-bottom-1"><div class="cds--inline-notification__details"><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" class="cds--inline-notification__icon" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M16,2A14,14,0,1,0,30,16,14,14,0,0,0,16,2Zm0,5a1.5,1.5,0,1,1-1.5,1.5A1.5,1.5,0,0,1,16,7Zm4,17.12H12V21.88h2.88V15.12H13V12.88h4.13v9H20Z"></path></svg>
+        <div class="cds--inline-notification__text-wrapper">
+          <div class="cds--inline-notification__subtitle"><span class="notetitle ibm-bold ibm-textcolor-blue-50 background-blue cds--inline-notification__title ibm-padding-top-1 ibm-padding-bottom-1 padding-left-1 padding-right-1">Note:</span> Operation code extenders H, M, and R are allowed
+only when the search argument is a list or is %KDS().
+See <a href="/docs/en/ssw_ibm_i_74/rzasd/fileopkeys.htm">Keys for File Operations</a>
+and <a href="/docs/en/ssw_ibm_i_74/rzasd/arithacc.htm">Ensuring Accuracy</a>.
+</div>
+        </div>
+      </div></div>
+
+<figure class="figborder" id="zzreade__readeop"><figcaption>Figure 1. READE Operation</figcaption>
+
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>*...1....+....2....+....3....+....4....+....5....+....6....+....7...+....
+CL0N01Factor1+++++++Opcode(E)+Factor2+++++++Result++++++++Len++D+HiLoEq....
+ *
+ *  With Factor 1 Specified...
+ *
+ *  The READE operation retrieves the next record from the file
+ *  FILEA and compares its key to the search argument, KEYFLD.
+ *
+ *  The %EOF built-in function is set to return '1' if KEYFLD is
+ *  not equal to the key of the record read or if end of file
+ *  is encountered.
+ *
+C     KEYFLD        READE     FILEA
+ *
+ *  The READE operation retrieves the next record of the type REC1
+ *  from an externally described file and compares the key of the
+ *  record read to the search argument, KEYFLD.  (REC1 is a record
+ *  format name.)  Indicator 56 is set on if KEYFLD is not equal to
+ *  the key of the record read or if end of file is encountered.
+C     KEYFLD        READE     REC1                                   56
+ *
+ *  With No Factor 1 Specified...
+ *
+ *  The READE operation retrieves the next record in the access
+ *  path from the file FILEA if the key value is equal to
+ *  the key value of the record at the current cursor position.
+ *
+ *  If the key values are not equal, %EOF is set to return '1'.
+C                   READE     FILEA
+ *
+ *  The READE operation retrieves the next record in the access
+ *  path from the file FILEA if the key value equals the key value
+ *  of the record at the current position.  REC1 is a record format
+ *  name.  Indicator 56 is set on if the key values are unequal.
+ *  N indicates that the record is not locked.
+C                   READE(N)  REC1                                   56</code></pre></div><div class="docs--copy-btn"></div></div></figure>
+
+</div>
+<aside role="complementary" aria-labelledby="zzreade__title__1"><nav role="navigation" aria-label="bottom related links" class="ibm-padding-top-1 ibm-padding-bottom-2 bx--row bottom-section-parent">
+<div class="familylinks ibm-margin-bottom-1">
+<div class="parentlink"><strong>Parent topic:</strong> <div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a data-hd-product="ssw_ibm_i_74" href="/docs/en/ssw_ibm_i_74/rzasd/operxcl.htm" class="bottom-section-link">Operation Codes</a></div></div>
+</div>
+</nav></aside></article></main>

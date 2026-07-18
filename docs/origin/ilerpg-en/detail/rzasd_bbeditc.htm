@@ -1,0 +1,132 @@
+<main role="main"><article role="article" aria-labelledby="bbeditc__title__1">
+<h1 class="topictitle1" id="bbeditc__title__1">%EDITC (Edit Value Using an Editcode)</h1><div id="lastModifiedDate"><span>Last Updated</span>: 2026-07-13</div>
+
+
+<div class="body">
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>%EDITC(numeric : editcode {: *ASTFILL | *CURSYM | currency-symbol})</code></pre></div><div class="docs--copy-btn"></div></div>
+<div class="p">This function returns a character result representing the numeric
+value edited according to the edit code. In general, the rules for
+the numeric value and edit code are identical to those for editing
+numeric values in output specifications. The third parameter is optional,
+and if specified, must be one of: 
+<dl>
+<dt class="dlterm">*ASTFILL</dt>
+
+<dd class="dlentry">Indicates that asterisk protection is to be used. This means
+that leading zeros are replaced with asterisks in the returned value.
+For example, %EDITC(<span class="ph">-0012.5</span> : 'K' : *ASTFILL) returns '***12.5-'.</dd>
+
+<dt class="dlterm">*CURSYM</dt>
+
+<dd class="dlentry">Indicates that a floating currency symbol is to be used. The
+actual symbol will be the one specified on the control specification
+in the CURSYM keyword, or the default, '$'. When *CURSYM is specified,
+the currency symbol is placed in the the result just before the first
+significant digit. For example, %EDITC(0012.5 : 'K' : *CURSYM) returns <span class="ph">'&nbsp;&nbsp;&nbsp;$12.5&nbsp;'</span>.</dd>
+
+<dt class="dlterm">currency-symbol</dt>
+
+<dd class="dlentry">Indicates that floating currency is to be used with the provided
+currency symbol. It must be a 1-byte character constant (literal,
+named constant or expression that can be evaluated at compile time).
+For example, %EDITC(0012.5 : 'K' : 'X') returns '&nbsp;&nbsp;&nbsp;X12.5&nbsp;'.</dd>
+
+</dl>
+</div>
+
+<p>The result of %EDITC is always the same length, and may contain
+leading and trailing blanks. For example, %EDITC(NUM : 'A' : '$')
+might return '$1,234.56CR' for one value of NUM and '&nbsp;&nbsp;&nbsp;&nbsp;$4.56&nbsp;&nbsp;'
+for another value.</p>
+
+<p>Float expressions are not allowed in the first parameter (you can
+use %DEC to convert a float to an editable format). In the second
+parameter, the edit code is specified as a character constant; supported
+edit codes are: 'A' - 'D', 'J' - 'Q', 'X' - 'Z', '1' - '9'. The constant
+can be a literal, named constant or an expression whose value can
+be determined at compile time.</p>
+
+<p>For more information, see <a href="/docs/en/ssw_ibm_i_74/rzasd/yyconv.htm#yyconv">Conversion Operations</a> or <a href="/docs/en/ssw_ibm_i_74/rzasd/bifsint.htm#bifsint">Built-in Functions</a>.</p>
+
+<div class="p">
+<figure class="figborder"><figcaption>Figure 1. %EDITC Example 1</figcaption>
+
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>DName+++++++++++ETDsFrom+++To/L+++IDc.Keywords+++++++++++++++++++++++++++
+D msg             S            100A
+D salary          S              9P 2 INZ(1000)
+ * If the value of salary is 1000, then the value of salary * 12
+ * is 12000.00. The edited version of salary * 12 using the A edit
+ * code with floating currency is ' $12,000.00 '.
+ * The value of msg is 'The annual salary is $12,000.00'
+CL0N01Factor1+++++++Opcode&amp;ExtExtended-factor2+++++++++++++++++++++++++++
+C                   EVAL      msg = 'The annual salary is '
+C                                + %trim(%editc(salary * 12
+C                                              :'A': *CURSYM))
+ * In the next example, the value of msg is 'The annual salary is &amp;12,000.00'
+C                   EVAL      msg = 'The annual salary is '
+C                                + %trim(%editc(salary * 12
+C                                              :'A': '&amp;'))
+
+ * In the next example, the value of msg is 'Salary is $*****12,000.00'
+ * Note that the '$' comes from the text, not from the edit code.
+C                   EVAL      msg = 'Salary is $'
+C                                + %trim(%editc(salary * 12
+C                                               :'B': *ASTFILL))
+
+ * In the next example, the value of msg is 'The date is 1/14/1999'
+C                   EVAL      msg = 'The date is '
+C                                + %trim(%editc(*date : 'Y'))</code></pre></div><div class="docs--copy-btn"></div></div></figure>
+</div>
+
+<div class="p">A common requirement is to edit a field as follows: 
+<ul class="cds--list--unordered">
+<li class="cds--list__item">Leading zeros are suppressed</li>
+
+<li class="cds--list__item">Parentheses are placed around the value if it is negative</li>
+
+</ul>
+</div>
+
+<p>The following accomplishes this using an %EDITC in a subprocedure:</p>
+
+<figure class="figborder"><figcaption>Figure 2. %EDITC Example 2</figcaption>
+
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>DName+++++++++++ETDsFrom+++To/L+++IDc.Keywords+++++++++++++++++++++++++++
+D neg             S              5P 2      inz(-12.3)
+D pos             S              5P 2      inz(54.32)
+D editparens      PR            50A
+D    val                        30P 2      value
+D editedVal       S             10A
+CL0N01Factor1+++++++Opcode&amp;ExtExtended-factor2+++++++++++++++++++++++++++
+C                   EVAL      editedVal = editparens(neg)
+ * Now editedVal has the value '(12.30)   '
+C                   EVAL      editedVal = editparens(pos)
+ * Now editedVal has the value ' 54.32    '
+ *---------------------------------------------------------------
+ * Subprocedure EDITPARENS
+ *---------------------------------------------------------------
+P editparens      B
+D editparens      PI            50A
+D    val                        30P 2      value
+D lparen          S              1A        inz(' ')
+D rparen          S              1A        inz(' ')
+D res             S             50A
+ * Use parentheses if the value is negative
+C                   IF        val &lt; 0
+C                   EVAL      lparen = '('
+C                   EVAL      rparen = ')'
+C                   ENDIF
+ * Return the edited value
+ * Note that the '1' edit code does not include a sign so we
+ * don't have to calculate the absolute value.
+C                   RETURN    lparen             +
+C                             %editc(val : '1')  +
+C                             rparen
+P editparens      E</code></pre></div><div class="docs--copy-btn"></div></div></figure>
+
+</div>
+<aside role="complementary" aria-labelledby="bbeditc__title__1"><nav role="navigation" aria-label="bottom related links" class="ibm-padding-top-1 ibm-padding-bottom-2 bx--row bottom-section-parent">
+<div class="familylinks ibm-margin-bottom-1">
+<div class="parentlink"><strong>Parent topic:</strong> <div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a data-hd-product="ssw_ibm_i_74" href="/docs/en/ssw_ibm_i_74/rzasd/bifs.htm" class="bottom-section-link">Built-in Functions</a></div></div>
+</div>
+</nav></aside></article></main>

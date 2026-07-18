@@ -1,0 +1,322 @@
+<main role="main"><article role="article" aria-labelledby="zzonexit">
+<h1 class="topictitle1" id="zzonexit">ON-EXIT (On Exit)</h1><div id="lastModifiedDate"><span>Last Updated</span>: 2026-07-13</div>
+
+
+<div class="body">
+
+<div class="tablenoborder"><div class="cds--data-table-container"><table summary="" role="presentation" class="defaultstyle cds--data-table"><colgroup><col><col></colgroup><tbody>
+<tr>
+<td class="tdleft"><strong>Free-Form Syntax</strong></td>
+
+<td class="tdleft">ON-EXIT {<span class="ph synph"><span class="ph var">status</span></span>}</td>
+</tr>
+
+</tbody>
+</table></div>
+</div>
+
+
+<div class="tablenoborder"><div class="cds--data-table-container"><table summary="" class="defaultstyle cds--data-table"><colgroup><col><col><col><col><col><col><col></colgroup><thead>
+<tr>
+<th id="zzonexit__entry__3" class="thleft thbot"><div class="cds--table-header-label"><strong>Code</strong></div></th>
+
+<th id="zzonexit__entry__4" class="thleft thbot"><div class="cds--table-header-label"><strong>Factor 1</strong></div></th>
+
+<th colspan="5" id="zzonexit__entry__5" class="thleft thbot"><div class="cds--table-header-label"><strong>Extended Factor 2</strong></div></th>
+</tr>
+
+</thead>
+<tbody>
+<tr>
+<td headers="zzonexit__entry__3 " class="tdleft"><strong>ON-EXIT</strong></td>
+
+<td headers="zzonexit__entry__4 " class="tdleft">&nbsp;</td>
+
+<td colspan="5" headers="zzonexit__entry__5 " class="tdleft">status indicator</td>
+</tr>
+
+</tbody>
+</table></div>
+</div>
+
+<div class="p">The ON-EXIT operation code begins the ON-EXIT section.
+The ON-EXIT section contains code that runs every time that the procedure ends, whether it ends normally or abnormally.
+The ON-EXIT section runs under the following conditions:
+<ul class="cds--list--unordered">
+<li class="cds--list__item">The procedure reaches the end of the main part of the procedure.</li>
+
+<li class="cds--list__item">The procedure reaches a RETURN operation.</li>
+
+<li class="cds--list__item">The procedure ends with an unhandled exception.</li>
+
+<li class="cds--list__item">The procedure is canceled, due to the end of the job or subsystem, or
+due to an exception message being sent to a procedure higher in the call stack.</li>
+
+</ul>
+
+</div>
+
+<p>
+By placing your clean-up code, such as deleting temporary files and deallocating heap storage, in the ON-EXIT section,
+you ensure that it is always run, even if your procedure ends with an unhandled exception, or if it is canceled.
+</p>
+
+<p>Extended Factor 2 contains an optional indicator variable that indicates whether the procedure ended normally or abnormally.
+If the procedure returned normally, the indicator is set to *OFF. If the procedure ended with an unhandled exception or
+if the procedure was canceled for any other reason, the indicator is set to *ON.
+</p>
+
+<p>
+The ON-EXIT section is coded at the end of the subprocedure, following any subroutines.
+</p>
+
+<p>All variables and files defined in the procedure are available in the ON-EXIT section.
+</p>
+
+<p>Running the ON-EXIT part of the procedure does not change the state of the main part of the procedure.
+If the procedure was canceled due to an unhandled exception, that exception is still active after the
+ON-EXIT part of the procedure runs.
+</p>
+
+<p>
+For a procedure that returns a value, if the procedure ends normally, the value set by the RETURN
+statement can be overridden by a RETURN statement in the ON-EXIT procedure.
+If the ON-EXIT does not have a RETURN statement, then the procedure returns the value set by the RETURN statement
+in the main body of the procedure.
+See <a href="/docs/en/ssw_ibm_i_74/rzasd/zzonexit.htm#zzonexit__onExitReturnValue">Example where the ON-EXIT section returns a new value</a>.
+</p>
+
+<div class="p">If there is an exception during ON-EXIT processing, the effect of the exception depends on
+how the procedure ended.
+<ul class="cds--list--unordered">
+<li class="cds--list__item">If the procedure ended normally, then the procedure now ends with the new exception.
+</li>
+
+<li class="cds--list__item">If the procedure ended abnormally due to an unhandled exception, then the ON-EXIT section ends immediately
+and the exception handling for the original exception continues.
+The new exception has no effect on the exception handling for the original procedure call.
+The procedure is still considered to have ended due to the original exception.
+</li>
+
+<li class="cds--list__item">If the procedure was canceled due to some other reason such as the job ending,
+then the ON-EXIT section ends immediately.
+The exception in the ON-EXIT section has no effect on the overall cancellation processing.
+</li>
+
+</ul>
+
+</div>
+
+<div class="p">An exception during ON-EXIT processing can occur in the following cases:
+<ul class="cds--list--unordered">
+<li class="cds--list__item">An exception that occurs while setting the status indicator.
+This can occur if the status indicator is an array element, and
+the index is out of bounds, or if the status indicator is based on a pointer that is not set.
+</li>
+
+<li class="cds--list__item">An exception that occurs within the code that follows the ON-EXIT statement.
+</li>
+
+</ul>
+
+</div>
+
+<p>
+The ON-EXIT section is run in a separate subprocedure.
+The name of the ON-EXIT subprocedure begins with "_QRNI_ON_EXIT_" and ends with the name of the procedure that contains the
+ON-EXIT operation.
+For example, the external name of the ON-EXIT subprocedure for a
+procedure with the external name "myProc" is "_QRNI_ON_EXIT_myProc".
+</p>
+
+<div class="p">Within the ON-EXIT section, the <a href="/docs/en/ssw_ibm_i_74/rzasd/bbproc.htm">%PROC</a>
+built-in function requires a parameter:
+<ul class="cds--list--unordered">
+<li class="cds--list__item">%PROC(*ONEXIT) returns the external name of the procedure that handles the code in the ON-EXIT.
+</li>
+
+<li class="cds--list__item">%PROC(*OWNER) returns the external name of the procedure that contains the ON-EXIT section.
+</li>
+
+</ul>
+
+</div>
+
+<p>
+The ON-EXIT section is invoked exactly once for each call to the procedure.
+If an exception occurs in the ON-EXIT section after a normal return, the ON-EXIT section is not run again.
+</p>
+
+<section class="section" role="region" aria-labelledby="zzonexit__title__2"><h2 class="sectiontitle" id="zzonexit__title__2">Restrictions for the ON-EXIT section</h2>
+
+<ul class="cds--list--unordered">
+<li class="cds--list__item">The following are not allowed in a procedure with an ON-EXIT section:
+<ul class="cds--list--unordered cds--list--nested">
+<li class="cds--list__item">Local SPECIAL files.</li>
+
+<li class="cds--list__item">Local open access files.</li>
+
+<li class="cds--list__item">*PSSR subroutines. Use a MONITOR group instead.</li>
+
+<li class="cds--list__item">Multiple occurrence data structures. Use a data structure array instead.</li>
+
+<li class="cds--list__item">Tables. Use an array instead.</li>
+
+</ul>
+
+</li>
+
+<li class="cds--list__item">ON-EXIT is not allowed in a Java™ native method. Move the logic for the native method into another procedure that is called by the native method. </li>
+
+<li class="cds--list__item">ON-EXIT is not allowed in a cycle-main procedure.
+Move the logic for the cycle-main procedure into another procedure that is called by the cycle-main procedure,
+or change your module to use a linear-main procedure.
+</li>
+
+<li class="cds--list__item">The following are not allowed in the ON-EXIT section:
+<ul class="cds--list--unordered cds--list--nested">
+<li class="cds--list__item">Calls to the APIs CEEDOD, CEEGSI, and CEETSTA.
+Call these procedures in the main body of the procedure and save the results in local variables.
+</li>
+
+<li class="cds--list__item">Operation codes BEGSR, DUMP, EXSR, GOTO, RESET, TAG.
+</li>
+
+</ul>
+
+</li>
+
+</ul>
+
+</section>
+
+<section class="section" role="region" aria-labelledby="zzonexit__title__3"><h2 class="sectiontitle" id="zzonexit__title__3">Debugging considerations</h2>
+
+<ul class="cds--list--unordered">
+<li class="cds--list__item">When the breakpoint for the ON-EXIT operation is reached, the status indicator is already set.
+</li>
+
+<li class="cds--list__item">The breakpoint for the statement that ends the procedure is reached when the ON-EXIT section ends.
+It is not reached at the end of the main body of the procedure.
+</li>
+
+<li class="cds--list__item">Since the ON-EXIT section is implemented as a separate procedure, it is not possible to simply
+step from the main part of the procedure to the ON-EXIT section by using the step-over debugger command.
+To debug the ON-EXIT section, you can either use the step-into debugger command
+from the last statement in the main body of the procedure,
+or set a breakpoint on the ON-EXIT operation.
+</li>
+
+</ul>
+
+</section>
+
+<section class="section" role="region" aria-labelledby="zzonexit__title__4"><h2 class="sectiontitle" id="zzonexit__title__4">Example of a procedure with an ON-EXIT section</h2>
+
+<p>In the following example, if <var class="keyword varname">num_orders</var> has the value zero at the line marked
+<span class="keyword calloutlabel">&nbsp;1&nbsp;</span>, resulting in a divide-by-zero exception,
+control passes immediately to the ON-EXIT section beginning
+at the line marked <span class="keyword calloutlabel">&nbsp;3&nbsp;</span>.
+The indicator <var class="keyword varname">isAbnormalReturn</var> has the value '1'.
+</p>
+
+<p>
+If <var class="keyword varname">num_orders</var> is not zero, the procedure continues to the return operation
+at the line marked <span class="keyword calloutlabel">&nbsp;2&nbsp;</span> and control passes to the ON-EXIT section
+at <span class="keyword calloutlabel">&nbsp;3&nbsp;</span>.
+The indicator <var class="keyword varname">isAbnormalReturn</var> has the value '0'.
+</p>
+
+<div class="figborder"><div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>
+dcl-proc myproc;
+   dcl-s isAbnormalReturn ind;
+   ...
+   p = %alloc(100);
+   price = total_cost / num_orders; &nbsp;1&nbsp;
+   filename = crtTempFile();
+   return; &nbsp;2&nbsp;
+on-exit isAbnormalReturn; &nbsp;3&nbsp;
+   dealloc(n) p;
+   if filename &lt;&gt; blanks;
+      dltTempFile (filename);
+   endif;
+   if isAbnormalReturn;
+      reportProblem ();
+   endif;
+end-proc;
+</code></pre></div><div class="docs--copy-btn"></div></div></div>
+
+</section>
+
+<section class="section" role="region" aria-labelledby="zzonexit__onExitReturnValue__title__1" id="zzonexit__onExitReturnValue"><h2 class="sectiontitle" id="zzonexit__onExitReturnValue__title__1">Example where the ON-EXIT section returns a new value</h2>
+
+<p>
+In the following example, the procedure has a RETURN operation
+in the main part of the procedure at the line marked <span class="keyword calloutlabel">&nbsp;3&nbsp;</span>,
+and in the ON-EXIT section at the line marked <span class="keyword calloutlabel">&nbsp;4&nbsp;</span>.
+The RETURN in the ON-EXIT section is only run if the
+<var class="keyword varname">returnFromOnExit</var> parameter has the value *ON.
+</p>
+
+<p>The first time the procedure is called, at the line marked <span class="keyword calloutlabel">&nbsp;1&nbsp;</span>,
+the parameter has the value *OFF, so the RETURN operation in the ON-EXIT section is
+not run.
+The procedure returns the value set by the RETURN operation in the main part of the procedure.
+</p>
+
+<p>The second time the procedure is called, at the line marked <span class="keyword calloutlabel">&nbsp;2&nbsp;</span>,
+the parameter has the value *ON, so the RETURN operation in the ON-EXIT section is
+run.
+The procedure returns the value set by the RETURN operation in the ON-EXIT section.
+</p>
+
+<div class="figborder"><div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>
+ctl-opt dftactgrp(*no);
+dcl-s rc packed(5);
+
+rc = myProc2 (*off);  // &nbsp;1&nbsp;
+dsply ('value returned is ' + %char(rc));
+rc = myProc2 (*on);   // &nbsp;2&nbsp;
+dsply ('value returned is ' + %char(rc));
+return;
+
+dcl-proc myproc2;
+   dcl-pi *n packed(5) extproc(*dclcase);
+      returnFromOnExit ind const;
+   end-pi;
+   dsply ('------ ' + %PROC() + ' starting');
+   dsply (%PROC() + ' returning 5');
+   return 5; // &nbsp;3&nbsp;
+on-exit;
+   dsply (%PROC(*ONEXIT) + ' ON-EXIT for ' + %PROC(*OWNER));
+   if returnFromOnExit;
+      dsply (%PROC(*ONEXIT) + ' returning 6');
+      return 6; // &nbsp;4&nbsp;
+   endif;
+end-proc;
+</code></pre></div><div class="docs--copy-btn"></div></div></div>
+
+<div class="p">
+The output from the procedure is
+<div class="figborder"><div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>
+DSPLY  ------ myproc2 starting
+DSPLY  myproc2 returning 5
+DSPLY  _QRNI_ON_EXIT_myproc2 ON-EXIT for myproc2
+DSPLY  value returned is 5
+DSPLY  ------ myproc2 starting
+DSPLY  myproc2 returning 5
+DSPLY  _QRNI_ON_EXIT_myproc2 ON-EXIT for myproc2
+DSPLY  _QRNI_ON_EXIT_myproc2 returning 6
+DSPLY  value returned is 6
+</code></pre></div><div class="docs--copy-btn"></div></div></div>
+
+</div>
+
+</section>
+
+</div>
+<aside role="complementary" aria-labelledby="zzonexit"><nav role="navigation" aria-label="bottom related links" class="ibm-padding-top-1 ibm-padding-bottom-2 bx--row bottom-section-parent">
+<div class="familylinks ibm-margin-bottom-1">
+<div class="parentlink"><strong>Parent topic:</strong> <div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a data-hd-product="ssw_ibm_i_74" href="/docs/en/ssw_ibm_i_74/rzasd/operxcl.htm" class="bottom-section-link">Operation Codes</a></div></div>
+</div>
+</nav></aside></article></main>

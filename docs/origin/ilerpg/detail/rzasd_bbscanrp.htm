@@ -1,0 +1,75 @@
+<div role="main">
+<!-- Java sync-link --><script language="Javascript" src="../rzahg/synch.js" type="text/javascript"></script>
+<h1 class="title topictitle1">%SCANRPL (文字の走査と置換)</h1><div id="lastModifiedDate"><span>Last Updated</span>: 2021-04-13</div>
+<div class="body"><div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code>%SCANRPL(scan string : replacement : source { : scan start  { : scan length  } )</code></pre></div><div class="docs--copy-btn"></div></div>
+<p class="p">%SCANRPL は、ソース・ストリングにおける走査ストリングのすべての出現を置換ストリングに置換して生成されたストリングを戻します。
+走査ストリングの検索は、走査開始位置から走査の長さの分について続けられます。
+ソース・ストリングの中で、走査開始位置と走査の長さで指定された範囲以外の部分も、結果に含まれます。</p>
+<p class="p">最初、2 番目、3 番目のパラメーターのタイプは文字、図形、または UCS-2 でなければなりません。
+これらには、固定長または可変長の形式が可能です。
+これらのパラメーターはすべて、タイプと CCSID が同じでなければなりません。</p>
+<p class="p">4 番目のパラメーターは、走査ストリングの検索の開始位置を文字数で示します。
+開始位置は、指定しないと、デフォルトの 1 になります。
+この値の範囲は、1 からソース・ストリングの現在の長さまでです。</p>
+<p class="p">5 番目のパラメーターは、走査するソース・ストリング内の文字数を示します。
+このパラメーターを指定しない場合、長さはデフォルトとして、
+開始位置からの残りのソース・ストリングになります。
+この値は、ゼロ以上で、開始位置からの残りのソース・ストリングの長さ以下でなければなりません。</p>
+<p class="p">開始位置および長さは、小数点以下の桁数のない任意の数値または数値式とする
+ことができます。</p>
+<p class="p">戻り値は、ソース・ストリングと比べて大きい場合も、等しい場合も、小さい場合もあります。
+結果の長さは、走査ストリングと置換ストリングの長さや、また、置換の実行回数によっても異なります。
+例えば、走査ストリングが 'a' で、置換ストリングが 'bc' であるとします。
+ソース・ストリングが 'ada' の場合、戻り値の長さは 5 になります ('bcdbc')。
+ソース・ストリングが 'ddd' の場合、戻り値の長さは 3 になります ('ddd')。</p>
+<p class="p">ソース・ストリングと置換ストリングの長さが異なる場合、またはストリングのどれかが可変長である場合、戻り値は可変長になります。
+それ以外の場合は、戻り値は固定長になります。
+戻り値のタイプは、ソース・ストリングと同じです。</p>
+<p class="p">ソース・ストリング内の各位置は、一度だけ走査されます。
+例えば、走査ストリングが 'aa'、ソース・ストリングが 'baaaaac' であるとすると、
+位置 2 と 3 が最初の一致です。次の走査は位置 4 から始まり、位置 4 と 5 で一致が見つかります。
+その次の操作は位置 6 から始まり、もう一致は見つかりません。置換ストリングが 'xy' であれば、戻り値は 'bxyxyac' になります。</p>
+<p class="p"><strong class="ph b">ヒント:</strong> 空の置換ストリングを指定することによって、%SCANRPL を使用して、
+ソース・ストリングから走査ストリングの出現を完全に除去することができます。</p>
+<p class="p">詳細については、<a class="xref" href="/docs/ja/ssw_ibm_i_74/rzasd/yystrng.htm#yystrng">ストリング命令</a>または <a class="xref" href="/docs/ja/ssw_ibm_i_74/rzasd/bifsint.htm#bifsint">組み込み関数</a>を参照してください。</p>
+<div class="fig figborder"><span class="figcap">図 1. %SCANRPL の例</span><div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code>//         ....+....1....+....2....+....3....+...string1 = 'See NAME. See NAME run. Run NAME run.';
+
+// 1. All occurrences of "NAME" are replaced by the
+//    replacement value.  In the first case,
+//    the resulting string is shorter than the source
+//    string, since the replacment string is shorter
+//    than the scan string. In the second case, the
+//    resulting string is longer.string2 = %ScanRpl('NAME' : 'Tom' : string1);
+// string2 = 'See Tom. See Tom run. Run Tom run.'string2 = %ScanRpl('NAME' : 'Jenny' : string1);
+// string2 = 'See Jenny. See Jenny run. Run Jenny run.'
+
+// 2. All occurrences of ** are removed from the string.
+//    The replacement string, '', has zero length.string3 = '*Hello**There**Everyone*';
+string2 = %ScanRpl('**' : '' : string3);
+// string2 = '*HelloThereEveryone*'
+
+// 3. All occurrences of "NAME" are replaced by "Tom"
+//    starting at position 6.  Since the first "N" of
+//    the first "NAME" in the string is not part of the
+//    source string that is scanned, the first "NAME"
+//    is not considered replaceable.string2 = %ScanRpl('NAME' : 'Tom' : string1 : 6);
+// string2 = 'See NAME. See Tom run. Run Tom run.'
+
+// 4. All occurrences of "NAME" are replaced by "Tom"
+//    up to length 31.  Since the final "E" of
+//    the last "NAME" in the string is not part of the
+//    source string that is scanned, , the final "NAME"
+//    is not considered replaceable.string2 = %ScanRpl('NAME' : 'Tom' : string1 : 1 : 31);
+// string2 = 'See Tom. See Tom run. Run NAME run.'
+
+// 5. All occurrences of "NAME" are replaced by "Tom"
+//    from position 10 for length 10.  Only the second
+//    "NAME" value falls in that range.string2 = %ScanRpl('NAME' : 'Tom' : string1 : 10 : 10);
+// string2 = 'See NAME. See Tom run. Run NAME run.'</code></pre></div><div class="docs--copy-btn"></div></div>
+</div>
+</div>
+<div class="related-links ibm-padding-top-1 ibm-padding-bottom-2 bx--row bottom-section-parent" aria-label="bottom related links">
+<div class="familylinks ibm-margin-bottom-1">
+<div class="parentlink"><strong>親トピック:</strong> <div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a class="link bottom-section-link" href="/docs/ja/ssw_ibm_i_74/rzasd/bifs.htm">組み込み関数</a></div></div>
+</div>
+</div></div>

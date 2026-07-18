@@ -1,0 +1,120 @@
+<main role="main"><article role="article" aria-labelledby="bbparmnum__title__1">
+<h1 class="topictitle1" id="bbparmnum__title__1">%PARMNUM (Return Parameter Number)</h1><div id="lastModifiedDate"><span>Last Updated</span>: 2026-07-13</div>
+
+
+<div class="body">
+<p><span class="keyword">%PARMNUM</span> returns the number of the parameter in the parameter list.
+The operand for <span class="keyword">%PARMNUM</span> is the name of a parameter defined as part
+of a procedure interface.</p>
+
+<div class="note border-2 cds--inline-notification--info ibmdocs-note cds--inline-notification cds--inline-notification--low-contrast margin-top-1 margin-bottom-1"><div class="cds--inline-notification__details"><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" class="cds--inline-notification__icon" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M16,2A14,14,0,1,0,30,16,14,14,0,0,0,16,2Zm0,5a1.5,1.5,0,1,1-1.5,1.5A1.5,1.5,0,0,1,16,7Zm4,17.12H12V21.88h2.88V15.12H13V12.88h4.13v9H20Z"></path></svg>
+        <div class="cds--inline-notification__text-wrapper">
+          <div class="cds--inline-notification__subtitle"><span class="notetitle ibm-bold ibm-textcolor-blue-50 background-blue cds--inline-notification__title ibm-padding-top-1 ibm-padding-bottom-1 padding-left-1 padding-right-1">Note:</span> <ol class="cds--list--ordered--temporary">
+<li class="cds--list__item">A parameter defined using a <span class="keyword">*ENTRY PLIST</span> cannot be specified as
+the operand for <span class="keyword">%PARMNUM</span>.</li>
+
+<li class="cds--list__item">The parameter must be specified the same way it appears in the
+procedure interface parameter list. If the parameter is an array,
+an index cannot be specified. If the parameter is a data structure,
+a subfield cannot be specified. If the parameter is a file, a record
+format cannot be specified.</li>
+
+<li class="cds--list__item">If the <span class="keyword">RTNPARM</span> keyword is coded for a procedure, the return value
+is handled as an additional first parameter. The other parameters
+have a number one higher than the apparent number. For example, if
+a procedure defined with <span class="keyword">RTNPARM</span> has two parameters P1 and P2, <span class="keyword">%PARMNUM(P1)</span>
+will return 2 and <span class="keyword">%PARMNUM(P2)</span> will return 3.</li>
+</ol>
+
+</div>
+        </div>
+      </div></div>
+
+<p>For more information, see <a href="/docs/en/ssw_ibm_i_74/rzasd/bifsint.htm#bifsint">Built-in Functions</a>.</p>
+
+<figure class="figborder"><figcaption>Figure 1. Example of <span class="keyword">%PARMNUM</span></figcaption>
+
+<div class="p">In the following example, <span class="keyword">%PARMNUM</span> is used with APIs or other
+built-in functions that work with the true parameter number.
+<ol class="cds--list--ordered--temporary">
+
+<li class="cds--list__item">The <span class="keyword apiname">CEEDOD</span> API is used to find the length of the
+<code class="ph codeph">companyName</code> parameter, which is defined
+with <a href="/docs/en/ssw_ibm_i_74/rzasd/doptns.htm#doptns__varsize">OPTIONS(*VARSIZE)</a>.
+</li>
+
+
+<li class="cds--list__item">If the parameter length is less than 25, the passed parameter
+is shorter than the defined length of the parameter.
+</li>
+
+
+<li class="cds--list__item">The <span class="keyword apiname">CEETSTA</span> API is used to determine whether *OMIT
+was passed for the <code class="ph codeph">errorCode</code> parameter,
+which is defined
+with <a href="/docs/en/ssw_ibm_i_74/rzasd/doptns.htm#doptns__omit">OPTIONS(*OMIT)</a>.
+</li>
+
+
+<li class="cds--list__item">The API sets variable <code class="ph codeph">isPresent</code> to *ON if *OMIT
+was not passed for the parameter, so the <code class="ph codeph">errorCode</code>
+parameter can be used.
+</li>
+
+
+<li class="cds--list__item">Built-in function <a href="/docs/en/ssw_ibm_i_74/rzasd/bbpassed.htm"><span class="keyword">%PASSED</span></a>
+can also be used to determine whether the procedure can use the <code class="ph codeph">errorCode</code>,
+which is defined with <a href="/docs/en/ssw_ibm_i_74/rzasd/doptns.htm#doptns__nopass">OPTIONS(*NOPASS)</a>.
+</li>
+
+
+<li class="cds--list__item">If the number of parameters passed (<a href="/docs/en/ssw_ibm_i_74/rzasd/bbparm.htm"><span class="keyword">%PARMS()</span></a> is greater than
+or equal to the parameter number of the <code class="ph codeph">cityName</code> parameter, the
+parameter was passed.
+</li>
+
+
+<li class="cds--list__item">Built-in function <span class="keyword">%PASSED</span>
+can also be used to determine whether the <code class="ph codeph">cityName</code>
+parameter can be used.
+</li>
+
+</ol>
+
+</div>
+
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>D  myProc         pi            10A   RTNPARM OPDESC
+D   companyName                 25A   OPTIONS(*VARSIZE)
+D   errorCode                    1A   OPTIONS(*OMIT)
+D   cityName                    25A   OPTIONS(*NOPASS)
+
+    CEEDOD(%PARMNUM(companyName) : more parameters ... // &nbsp;1&nbsp;
+               : parmlen : *omit);
+    if parmlen &lt; %SIZE(companyName); // &nbsp;2&nbsp;
+       ...
+    endif;
+
+    CEETSTA(isPresent : %PARMNUM(errorCode) : *omit); // &nbsp;3&nbsp;
+    if isPresent = 1; // &nbsp;4&nbsp;
+       ...
+    endif;
+
+    if %PASSED(errorCode);   // &nbsp;5&nbsp;
+       ...
+    endif;
+
+    if %PARMS &gt;= %PARMNUM(cityName); // &nbsp;6&nbsp;
+       ...
+    endif;
+
+    if %PASSED(cityName);   // &nbsp;7&nbsp;
+       ...
+    endif;
+    </code></pre></div><div class="docs--copy-btn"></div></div></figure>
+
+</div>
+<aside role="complementary" aria-labelledby="bbparmnum__title__1"><nav role="navigation" aria-label="bottom related links" class="ibm-padding-top-1 ibm-padding-bottom-2 bx--row bottom-section-parent">
+<div class="familylinks ibm-margin-bottom-1">
+<div class="parentlink"><strong>Parent topic:</strong> <div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a data-hd-product="ssw_ibm_i_74" href="/docs/en/ssw_ibm_i_74/rzasd/bifs.htm" class="bottom-section-link">Built-in Functions</a></div></div>
+</div>
+</nav></aside></article></main>

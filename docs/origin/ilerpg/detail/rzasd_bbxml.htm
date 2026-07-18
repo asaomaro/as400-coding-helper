@@ -1,0 +1,73 @@
+<div role="main">
+<!-- Java sync-link --><script language="Javascript" src="../rzahg/synch.js" type="text/javascript"></script>
+<h1 class="title topictitle1">%XML (xmlDocument {:options })</h1><div id="lastModifiedDate"><span>Last Updated</span>: 2021-04-13</div>
+<div class="body"><p class="p">%XML は、構文解析する XML 文書、および文書の構文解析方法を制御す
+るオプションを指定する XML-SAX および XML-INTO 命令コードの第 2 オペランドとして使用します。%XML は値を戻しません。
+また、XML-SAX および XML-INTO 命令コード以外の場所に指定できません。</p>
+<p class="p">第 1 オペランドは、構文解析する文書を指定します。
+このオペランドは、定数あるいは変数文字、または XML 文書あるいは XML
+文書を含むファイル名のいずれかを持つ UCS-2 表記の場合があります。</p>
+<div class="p">第 2 オペランドは、XML 文書が解釈され、構文解析される方法を制御するオプションを指定します。
+このオペランドは、定数または変数文字式の場合があります。
+文字式の値は、次の形式で指定されたゼロ個以上のオプションのリストです。
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code>    optionname1=value1 optionname2=value2</code></pre></div><div class="docs--copy-btn"></div></div>
+</div>
+<div class="p">オプション名および等号の間、または等号および値の間には、スペースは許可されていません。
+ただし、オプションの前後、および間には、任意の数のスペースを指定できます。
+オプションは、大/小文字で指定できます。
+以下は、XML-INTO の「doc=file」および「allowextra=yes」オプションを指定する有効なすべての方法です。
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code>   'doc=file allowextra=yes'
+   '        doc=file     allowextra=yes     '
+   'ALLOWEXTRA=YES DOC=FILE     '
+   'AllowExtra=Yes Doc=File     '</code></pre></div><div class="docs--copy-btn"></div></div>
+</div>
+<div class="p">以下は<strong class="ph b">無効な</strong>オプション・ストリングです。<div class="tablenoborder"><div class="cds--data-table-container"><table cellpadding="4" cellspacing="0" summary="" class="table cds--data-table" rules="all" frame="border" border="1"><thead class="thead" align="left"><tr class="row"><th class="entry thleft" valign="top" width="50%" id="d24257e58"><div class="cds--table-header-label">オプション・ストリング</div></th>
+<th class="entry thleft" valign="top" width="50%" id="d24257e60"><div class="cds--table-header-label">オプション・ストリングの問題</div></th>
+</tr>
+</thead>
+<tbody class="tbody"><tr class="row"><td class="entry" valign="top" width="50%" headers="d24257e58 ">'doc = file'</td>
+<td class="entry" valign="top" width="50%" headers="d24257e60 ">等号の周辺のスペースは許可されていません。</td>
+</tr>
+<tr class="row"><td class="entry" valign="top" width="50%" headers="d24257e58 ">'allowextra'</td>
+<td class="entry" valign="top" width="50%" headers="d24257e60 ">それぞれのオプションには、等号および値が必要です。</td>
+</tr>
+<tr class="row"><td class="entry" valign="top" width="50%" headers="d24257e58 ">'badopt=yes'</td>
+<td class="entry" valign="top" width="50%" headers="d24257e60 ">有効なオプションのみ許可されています。</td>
+</tr>
+<tr class="row"><td class="entry" valign="top" width="50%" headers="d24257e58 ">'allowextra=ok'</td>
+<td class="entry" valign="top" width="50%" headers="d24257e60 ">「allowextra」値は「yes」または「no」のみです。</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+</div>
+<p class="p">有効なオプションおよび値は、%XML 組み込み関数の内容によって異なります。
+有効なオプションおよび値の完全なリストについては、<a class="xref" href="/docs/ja/ssw_ibm_i_74/rzasd/zzxmlsa.htm#zzxmlsa">XML-SAX (XML 文書の構文解析)</a>および <a class="xref" href="/docs/ja/ssw_ibm_i_74/rzasd/zzxmlin.htm#zzxmlin">XML-INTO (XML 文書の変数への構文解析)</a>を参照してください。</p>
+<div class="p">1 つのオプションが複数回指定されていた場合は、最後に指定されている値が使用されます。
+例えば、オプション・パラメーターの値が <div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code>'doc=file doc=string'</code></pre></div><div class="docs--copy-btn"></div></div>
+ の場合、パーサーは「doc」オプションに値「string」を使用します。</div>
+<p class="p">パーサーが無効なオプションまたは無効な値を発見した場合は、命令は状況コード 00352 で失敗します。</p>
+<div class="fig figborder"><span class="figcap">図 1. %XML の例</span><div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code>// The "options" parameter is omitted.  Default values are used for
+// all options.  Since the default value for the "doc" option is
+// always "string", the parser will correctly assume that the first
+// parameter contains an XML document.
+xmldocument = '&lt;myfld&gt;new value&lt;/myfld&gt;';
+XML-INTO myfld %XML(xmldocument);
+
+// The "options" parameter is specified as a literal with two options.
+XML-INTO myds %XML(xmldocument : 'allowmissing=yes allowextra=yes');
+
+// The "options" parameter is specified as a variable expression
+// with two options.
+ccsidOpt = 'ccsid=' + %char(ccsid);
+XML-SAX %HANDLER(mySaxHandler : myCommArea)
+        %XML('myinfo.xml' : 'doc=file ' + ccsidOpt);</code></pre></div><div class="docs--copy-btn"></div></div>
+</div>
+<p class="p">その他の %XML の例については、<a class="xref" href="/docs/ja/ssw_ibm_i_74/rzasd/zzxmlsa.htm#zzxmlsa">XML-SAX (XML 文書の構文解析)</a>および <a class="xref" href="/docs/ja/ssw_ibm_i_74/rzasd/zzxmlin.htm#zzxmlin">XML-INTO (XML 文書の変数への構文解析)</a>を参照してください。</p>
+<p class="p">詳細については、<a class="xref" href="/docs/ja/ssw_ibm_i_74/rzasd/yyxml.htm#yyxml">XML 命令</a>または <a class="xref" href="/docs/ja/ssw_ibm_i_74/rzasd/bifsint.htm#bifsint">組み込み関数</a>を参照してください。</p>
+</div>
+<div class="related-links ibm-padding-top-1 ibm-padding-bottom-2 bx--row bottom-section-parent" aria-label="bottom related links">
+<div class="familylinks ibm-margin-bottom-1">
+<div class="parentlink"><strong>親トピック:</strong> <div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a class="link bottom-section-link" href="/docs/ja/ssw_ibm_i_74/rzasd/bifs.htm">組み込み関数</a></div></div>
+</div>
+</div></div>

@@ -1,0 +1,180 @@
+<main role="main"><article role="article" aria-labelledby="bbdata__title__1">
+<h1 class="topictitle1" id="bbdata__title__1">%DATA (document {:options})</h1><div id="lastModifiedDate"><span>Last Updated</span>: 2026-07-13</div>
+
+
+<div class="body">
+<p>%DATA is used as the second operand of the DATA-INTO and DATA-GEN
+operations.
+%DATA does not return
+a value, and it cannot be specified anywhere other than for the DATA-INTO and DATA-GEN operation codes.</p>
+
+<p>The first operand of %DATA identifies the document.
+It can be a constant or variable character or UCS-2 expression.</p>
+
+<p>The second operand of %DATA specifies options that control the operation.
+It can be a constant or variable character expression.
+See <a href="#bbdata__specifyoptions">Specifying the options for %DATA</a>.</p>
+
+<div class="p">For the DATA-INTO operation
+<ul class="cds--list--unordered">
+<li class="cds--list__item">%DATA specifies the document to be parsed, and the
+options to control how the information from the document is placed in the
+target RPG variable.</li>
+
+<li class="cds--list__item">The first operand
+can be a constant or variable character or UCS-2 expression. containing either
+an document or the name of a file containing a document.
+</li>
+
+<li class="cds--list__item">The second operand of %DATA specifies options that control how the document
+is to be interpreted, and how the data from the document is to be
+placed in the RPG variable.
+<p>See <a href="/docs/en/ssw_ibm_i_74/rzasd/dataintoopts.htm">%DATA options for the DATA-INTO operation code</a> for
+a complete list of valid options and values.</p>
+
+</li>
+
+</ul>
+
+</div>
+
+<div class="p">For the DATA-GEN operation
+<ul class="cds--list--unordered">
+<li class="cds--list__item">%DATA specifies the location for the document to
+be placed, and the options to control how the document is generated from the RPG variable
+in the first operand of DATA-GEN.</li>
+
+<li class="cds--list__item">The first operand
+can be a constant or variable character or UCS-2 expression. If the "doc=file" option
+is specified, it is the name of the file to receive the generated document.
+If the "doc=file" option is not specified, the generated document is placed
+in the variable.
+</li>
+
+<li class="cds--list__item">The second operand of %DATA specifies options that control how the document
+is to be generated, and how the data from the RPG variable is to be passed to the generator.
+<p>See <a href="/docs/en/ssw_ibm_i_74/rzasd/datagenopts.htm">%DATA options for the DATA-GEN operation code</a> for
+a complete list of valid options and values.
+</p>
+
+</li>
+
+</ul>
+
+</div>
+
+<section class="section" role="region" aria-labelledby="bbdata__specifyoptions__title__1" id="bbdata__specifyoptions"><h2 class="sectiontitle" id="bbdata__specifyoptions__title__1">Specifying the options for %DATA</h2>
+
+<div class="p">
+The value of the character expression is a list
+of zero or more options specified in the form
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>optionname1=value1 optionname2=value2</code></pre></div><div class="docs--copy-btn"></div></div></div>
+
+<div class="p">No spaces are allowed between the option name and the equal sign
+or between the equal sign and the value.
+However, any number of spaces
+can appear before, between or following the options.
+The options can be specified in any case.
+The following are all valid ways to
+specify the "doc=file" and "allowextra=yes" options for DATA-INTO:
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>   'doc=file allowextra=yes'
+   '        doc=file     allowextra=yes     '
+   'ALLOWEXTRA=YES DOC=FILE     '
+   'AllowExtra=Yes Doc=File     '</code></pre></div><div class="docs--copy-btn"></div></div></div>
+
+<div class="p">The following are <strong>not</strong> valid option strings:
+
+<div class="tablenoborder"><div class="cds--data-table-container"><table summary="" class="defaultstyle cds--data-table"><colgroup><col><col></colgroup><thead>
+<tr>
+<th id="bbdata__specifyoptions__entry__1"><div class="cds--table-header-label">Option string</div></th>
+
+<th id="bbdata__specifyoptions__entry__2"><div class="cds--table-header-label">The problem with the option string</div></th>
+</tr>
+
+</thead>
+<tbody>
+<tr>
+<td headers="bbdata__specifyoptions__entry__1 ">'doc = file'</td>
+
+<td headers="bbdata__specifyoptions__entry__2 ">Spaces around the equal sign are not allowed</td>
+</tr>
+
+<tr>
+<td headers="bbdata__specifyoptions__entry__1 ">'allowextra'</td>
+
+<td headers="bbdata__specifyoptions__entry__2 ">Each option must have an equal sign and a value</td>
+</tr>
+
+<tr>
+<td headers="bbdata__specifyoptions__entry__1 ">'badopt=yes'</td>
+
+<td headers="bbdata__specifyoptions__entry__2 ">Only valid options are allowed</td>
+</tr>
+
+<tr>
+<td headers="bbdata__specifyoptions__entry__1 ">'allowextra=ok'</td>
+
+<td headers="bbdata__specifyoptions__entry__2 ">The 'allowextra' value can only be 'yes' or 'no'</td>
+</tr>
+
+</tbody>
+</table></div>
+</div>
+</div>
+
+<div class="p">When an option is specified more than once, the last value specified
+is the value that is used.
+For example, if the "options" operand
+has the value
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>   'doc=file doc=string'</code></pre></div><div class="docs--copy-btn"></div></div> then the parser will
+use the value "string" for the "doc" option.</div>
+
+<p>If the parser discovers an invalid option or invalid value, the
+operation will fail with status code 00352.</p>
+
+</section>
+
+<section class="section" role="region" aria-labelledby="bbdata__title__3"><h2 class="sectiontitle" id="bbdata__title__3">Examples of %DATA</h2>
+
+<div class="p">
+The "options" operand is omitted. Default values are used for
+all options.  Since the default value for the "doc" option is
+always "string", the parser will correctly assume that the first
+operand contains the text of a document.
+The example assumes an imaginary language in the form
+"itemName=itemValue".
+<div class="figborder"><div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>
+document = 'city=Toronto';
+DATA-INTO city %DATA(document) %PARSER(p);
+</code></pre></div><div class="docs--copy-btn"></div></div></div>
+</div>
+
+<div class="p">The "options" operand is specified as a literal with two options.
+<div class="figborder"><div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>
+DATA-INTO myds %DATA(document : 'allowmissing=yes allowextra=yes')
+          %PARSER(p);
+</code></pre></div><div class="docs--copy-btn"></div></div></div>
+</div>
+
+<div class="p">The "options" operand is specified as a variable expression
+with two options.
+<div class="figborder"><div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>
+ccsidOpt = 'ccsid=ucs2';
+DATA-INTO %HANDLER(mySaxHandler : myCommArea)
+          %DATA('mydoc.txt' : 'doc=file ' + ccsidOpt)
+          %PARSER(p);
+</code></pre></div><div class="docs--copy-btn"></div></div></div>
+</div>
+
+<p>For more examples of %DATA, and more information about the DATA-INTO
+and DATA-GEN operations,
+see <a href="/docs/en/ssw_ibm_i_74/rzasd/zzdatainto.htm">DATA-INTO (Parse a Document into a Variable)</a> and <a href="/docs/en/ssw_ibm_i_74/rzasd/zzdatagen.htm">DATA-GEN (Generate a Document from a Variable)</a>.</p>
+
+</section>
+
+</div>
+<aside role="complementary" aria-labelledby="bbdata__title__1"><nav role="navigation" aria-label="bottom related links" class="ibm-padding-top-1 ibm-padding-bottom-2 bx--row bottom-section-parent">
+<div class="familylinks ibm-margin-bottom-1">
+<div class="parentlink"><strong>Parent topic:</strong> <div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a data-hd-product="ssw_ibm_i_74" href="/docs/en/ssw_ibm_i_74/rzasd/bifs.htm" class="bottom-section-link">Built-in Functions</a></div></div>
+</div>
+</nav></aside></article></main>

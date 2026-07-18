@@ -1,0 +1,55 @@
+<div role="main">
+<!-- Java sync-link --><script language="Javascript" src="../rzahg/synch.js" type="text/javascript"></script>
+<h1 class="title topictitle1">%UCS2 (UCS-2 値への変換)</h1><div id="lastModifiedDate"><span>Last Updated</span>: 2021-04-13</div>
+<div class="body"><p class="p">%UCS2 は、文字、図形、または UCS-2 から式の値を変換し、UCS-2 値を
+戻します。結果は、パラメーターが可変長である場合か、パラメーター
+が 1 バイト文字である場合は、可変長になります。</p>
+<p class="p">2 番目のパラメーターの <em class="ph i">ccsid</em> はオプション
+で、結果の式の CCSID を示します。CCSID は、制御キーワード <a class="xref" href="/docs/ja/ssw_ibm_i_74/rzasd/hccsiducs2.htm">CCSID(*UCS2)</a> で
+指定されるように、モジュールのデフォルト UCS-2 CCSID にデフォルト設定されます。</p>
+<p class="p">パラメーターが定数の場合、変換はコンパイル時に行われます。</p>
+<p class="p">変換の結果、置換文字になる場合、コンパイル時に警告メッセージ
+が出されます。
+実行時には状況 00050 が設定され、エラー・メッセージは出されません。</p>
+<p class="p">詳細については、<a class="xref" href="/docs/ja/ssw_ibm_i_74/rzasd/yyconv.htm#yyconv">変換命令</a>または <a class="xref" href="/docs/ja/ssw_ibm_i_74/rzasd/bifsint.htm#bifsint">組み込み関数</a>を参照してください。</p>
+<div class="fig figborder"><span class="figcap">図 1. %UCS2 の例</span><div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code>HKeywords++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+H CCSID(*UCS2 : 13488)
+DName+++++++++++ETDsFrom+++To/L+++IDc.Keywords+++++++++++++++++++++++++
+D  char           S              5A   INZ('abcde')
+D  graph          S              2G   INZ(G'oAABBi')
+ * The %UCS2 built-in function is used to initialize a UCS-2 field.
+D  ufield         S             10C   INZ(%UCS2('abcdefghij'))
+D  ufield2        S              1C   CCSID(61952) INZ(*LOVAL)
+D  isLess                        1N
+D  proc           PR
+D    uparm                       2G   CCSID(13488) CONST
+CL0N01Factor1+++++++Opcode&amp;ExtExtended-factor2+++++++++++++++++++++++++
+C                   EVAL      ufield = %UCS2(char) +  %UCS2(graph)
+ * ufield now has 7 UCS-2 characters representing
+ * 'a.b.c.d.e.AABB' where 'x.' represents the UCS-2 form of 'x'
+C                   EVAL      isLess = ufield &lt; %UCS2(ufield2:13488)
+ * The result of the %UCS2 built-in function is the value of
+ * ufield2, converted from CCSID 61952 to CCSID 13488
+ * for the comparison.
+
+C                   EVAL      ufield = ufield2
+ * The value of ufield2 is converted from CCSID 61952 to
+ * CCSID 13488 and stored in ufield.
+ * This conversion is handled implicitly by the compiler.
+
+C                   CALLP     proc(ufield2)
+ * The value of ufield2 is converted to CCSID 13488
+ * implicitly, as part of passing the parameter by constant reference.</code></pre></div><div class="docs--copy-btn"></div></div>
+<div class="note note border-2 cds--inline-notification--info ibmdocs-note cds--inline-notification cds--inline-notification--low-contrast margin-top-1 margin-bottom-1"><div class="cds--inline-notification__details"><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" class="cds--inline-notification__icon" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M16,2A14,14,0,1,0,30,16,14,14,0,0,0,16,2Zm0,5a1.5,1.5,0,1,1-1.5,1.5A1.5,1.5,0,0,1,16,7Zm4,17.12H12V21.88h2.88V15.12H13V12.88h4.13v9H20Z"></path></svg>
+        <div class="cds--inline-notification__text-wrapper">
+          <div class="cds--inline-notification__subtitle"><span class="notetitle ibm-bold ibm-textcolor-blue-50 background-blue cds--inline-notification__title ibm-padding-top-1 ibm-padding-bottom-1 padding-left-1 padding-right-1">注:</span> この例の GRAPHIC リテラルは、無効な GRAPHIC リテラルです。
+詳しくは、<a class="xref" href="/docs/ja/ssw_ibm_i_74/rzasd/dgraph.htm#dgraph">グラフィック形式</a>を参照してください。</div>
+        </div>
+      </div></div>
+</div>
+</div>
+<div class="related-links ibm-padding-top-1 ibm-padding-bottom-2 bx--row bottom-section-parent" aria-label="bottom related links">
+<div class="familylinks ibm-margin-bottom-1">
+<div class="parentlink"><strong>親トピック:</strong> <div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a class="link bottom-section-link" href="/docs/ja/ssw_ibm_i_74/rzasd/bifs.htm">組み込み関数</a></div></div>
+</div>
+</div></div>

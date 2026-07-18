@@ -1,0 +1,122 @@
+<div role="main">
+<!-- Java sync-link --><script language="Javascript" src="../rzahg/synch.js" type="text/javascript"></script>
+<h1 class="title topictitle1">READ (レコードの読み取り)</h1><div id="lastModifiedDate"><span>Last Updated</span>: 2021-04-13</div>
+<div class="body"><div class="tablenoborder"><div class="cds--data-table-container"><table cellpadding="4" cellspacing="0" summary="" role="presentation" class="table presentation cds--data-table" width="100%" rules="all" frame="border" border="1"><tbody class="tbody"><tr class="row"><td class="entry tdleft" align="left" valign="top" width="25%"><strong class="ph b">自由形式構文</strong></td>
+<td class="entry tdleft" align="left" valign="top" width="75%">READ{(EN) } <span class="ph synph"><span class="ph var">名前</span></span> {<span class="ph synph"><span class="ph var">データ構造</span></span> }</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="tablenoborder"><span class="desc tabledesc"></span><div class="cds--data-table-container"><table cellpadding="4" cellspacing="0" summary="" class="table cds--data-table" width="100%" rules="all" frame="border" border="1"><thead class="thead" align="left"><tr class="row"><th class="entry thcenter thbot" align="center" valign="bottom" width="14.898989898989898%" id="d392252e69"><div class="cds--table-header-label"><strong class="ph b">コード</strong></div></th>
+<th class="entry thcenter thbot" align="center" valign="bottom" width="22.22222222222222%" id="d392252e72"><div class="cds--table-header-label"><strong class="ph b">演算項目 1</strong></div></th>
+<th class="entry thcenter thbot" align="center" valign="bottom" width="26.01010101010101%" id="d392252e75"><div class="cds--table-header-label"><strong class="ph b">演算項目 2</strong></div></th>
+<th class="entry thcenter thbot" align="center" valign="bottom" width="14.898989898989898%" id="d392252e78"><div class="cds--table-header-label"><strong class="ph b">結果フィールド</strong></div></th>
+<th class="entry thcenter thbot" colspan="3" align="center" valign="bottom" id="d392252e81"><div class="cds--table-header-label"><strong class="ph b">標識</strong></div></th>
+</tr>
+</thead>
+<tbody class="tbody"><tr class="row"><td class="entry tdleft" align="left" valign="top" width="14.898989898989898%" headers="d392252e69 "><strong class="ph b">READ (E N)</strong></td>
+<td class="entry tdleft" align="left" valign="top" width="22.22222222222222%" headers="d392252e72 ">&nbsp;</td>
+<td class="entry tdleft" align="left" valign="top" width="26.01010101010101%" headers="d392252e75 "><u class="ph u">名前</u>
+(ファイルまたはレコード様式)</td>
+<td class="entry tdleft" align="left" valign="top" width="14.898989898989898%" headers="d392252e78 ">データ構造</td>
+<td class="entry tdcenter" align="center" valign="top" width="7.3232323232323235%" headers="d392252e81 ">_</td>
+<td class="entry tdcenter" align="center" valign="top" width="7.3232323232323235%" headers="d392252e81 ">ER</td>
+<td class="entry tdcenter" align="center" valign="top" width="7.3232323232323235%" headers="d392252e81 ">EOF</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p class="p">READ 命令は、<a class="xref" href="/docs/ja/ssw_ibm_i_74/rzasd/fullprocfiles.htm">全手順ファイル</a>から、現在ポイントされているレコードを読み取ります。</p>
+<p class="p"><span class="ph synph"><span class="ph var">名前</span></span> オペランドは必須で、ファイルまたはレコード様式の名前でなければなりません。レコード様式名を使用できるのは、<a class="xref" href="/docs/ja/ssw_ibm_i_74/rzasd/filedes.htm#filedes__extdescfile">外部記述ファイル</a>の場合だけです。
+「形式名による READ」命令では、<span class="ph synph"><span class="ph var">名前</span></span> オペランドに指定した形式とは別の形式を受け取る場合があります。その場合には、READ 命令はエラーで終了します。</p>
+<p class="p"><span class="ph synph"><span class="ph var">データ構造</span></span> オペランドが指定されている場合、レコードはデータ構造に直接読み込まれます。
+<span class="ph synph"><span class="ph var">名前</span></span> が<a class="xref" href="/docs/ja/ssw_ibm_i_74/rzasd/filedes.htm#filedes__pgmdescfile">プログラム記述
+ファイル</a>を参照する場合、データ構造は、
+宣言されたファイルのレコード長と同じ長さの任意のデータ構造にできます。
+<span class="ph synph"><span class="ph var">名前</span></span> が外部記述ファイルまたは外部記述ファイルのレコード様式を参照する場合、データ構造は <a class="xref" href="/docs/ja/ssw_ibm_i_74/rzasd/dextnam.htm#dextnam">EXTNAME</a>(...:*INPUT or *ALL) または <a class="xref" href="/docs/ja/ssw_ibm_i_74/rzasd/dlikerec.htm#dlikerec">LIKEREC</a>(...:*INPUT or *ALL) で定義されているデータ構造にする必要があります。
+
+データ構造の定義方法、およびファイルとデータ
+構造の間でどのようにデータが転送されるかについては、<a class="xref" href="/docs/ja/ssw_ibm_i_74/rzasd/filop.htm#filop">ファイル命令</a>を参照してください。</p>
+<p class="p">READ 命令が正常に実行された場合には、ファイルはその読み取りを満たす次のレ
+コードに位置付けられます。 レコード・ロック・エラー (状況コード 1218) が発生した場合、ロックされたレコードにファイルが置かれたままになり、そのレコードの読み取りが次の読み取り操作において再試行されます。
+その他の何らかのエラーが発生するか、ファイルの終わり条件が存在する場合には、(CHAIN 命令、SETLL 命令、または SETGT 命令を使用して) ファイルの位置を変更する必要があります。</p>
+<p class="p">読み取るファイルが更新ディスク・ファイルの場合には、命令拡張 N を指
+定して、読み取り時にレコードをロックする必要がないことを指示することがで
+きます。  詳細については、<cite class="cite"><span class="keyword">Rational® Development Studio for i: ILE RPG プログラマーの手引き</span></cite> を参照してください。</p>
+<p class="p">READ 例外 (<a class="xref" href="/docs/ja/ssw_ibm_i_74/rzasd/stacod9.htm#stacod9">ファイル状況コード</a>が 1000 より大きい) を
+処理するために、命令コード拡張 'E' またはエラー標識 ER を指定できますが、
+両方を指定することはできません。 エラー処理の詳細については、<a class="xref" href="/docs/ja/ssw_ibm_i_74/rzasd/filexpe.htm#filexpe">ファイル例外/エラー</a>を
+参照してください。</p>
+<p class="p">75-76 桁目に、READ 命令でファイルの終わりになったかどうかを知らせる標識を指定
+することができます。 この標識は READ 命令が実行されるたびに
+オン (EOF 条件) またはオフに設定されます。 この情報は %EOF 組み込み関数からも入手することができます。この関数
+は、EOF 条件が発生した場合に '1' を戻します。それ以外の場合には '0' を戻します。
+EOF 条件の後でさらにファイルに対する正常な
+順次操作 (例えば、READ または READP) を処理
+するためには、ファイルの位置を決め直さなければなりません。</p>
+<p class="p"><a class="xref" href="#zzread__readera">図 1</a> に、READ 命令を示します。</p>
+<div class="p"><span class="ph synph"><span class="ph var">名前</span></span> が複数装置ファイルを指定している場合には、READ
+命令によって次のいずれかが実行されます。
+<ul class="ul cds--list--unordered"><li class="li cds--list__item">最後の NEXT 命令で指定された装置からデータが読み取られます (そのよ
+うな NEXT 命令が処理された場合)。</li>
+<li class="li cds--list__item">ファイルに対して入手されていて、DDS の INVITE キーワードによって
+“送信勧誘状態” に指定されている装置から最初の応答を受け入れます。  送信勧誘された装置がない場合には、この命令はファイルの終わりを受け取ります。 入力は対応する形式に従って処理されます。  装置がワークステーションの場合
+には、最後に書き込まれた形式が使用されます。 装置が通信装置の場合には、ユーザーが形式を選択できます。 
+<p class="p">ICF ファイルの形式選択処理について詳しくは、
+「<cite class="cite">ICF Programming</cite>」(<span class="ph">SC41-5442</span>) を
+参照してください。</p>
+ <div class="p">READ 命令は、一定の時間何も入力されない場合、または制御された方式による
+オプションを指定して次の CL コマンドの 1 つが入力された場合には、待機を
+停止します。
+<ul class="ul cds--list--unordered cds--list--nested"><li class="li cds--list__item">ENDJOB (ジョブ終了)</li>
+<li class="li cds--list__item">ENDSBS (サブシステム終了)</li>
+<li class="li cds--list__item">PWRDWNSYS (システム電源遮断)</li>
+<li class="li cds--list__item">ENDSYS (システム終了)</li>
+</ul>
+</div>
+      <p class="p">この結果はファイル例外/エラーとなり、ユーザーのプログラムに指定された方法
+によって処理されます (<a class="xref" href="/docs/ja/ssw_ibm_i_74/rzasd/filexpe.htm#filexpe">ファイル例外/エラー</a>を参照してください)。 ファイルを作成または変更するコマンドの WAITRCD パラメーターについては、「<cite class="cite">ICF Programming</cite>」(<span class="ph">SC41-5442</span>) を
+参照してください。このパラメーターは、READ 命令が入力を待機する時間の長さを制御します。</p>
+</li>
+</ul>
+</div>
+<p class="p"><span class="ph synph"><span class="ph var">名前</span></span> に形式名を指定し、その形式名が複数装置ファイルに対応する場合には、データはファイル仕様書の
+DEVID キーワードに指定されたフィールドによって識別される装置から読み取られます。そのような指定がない場合には、
+データは最後の正常な入力操作で使用された装置から読み取られます。</p>
+<p class="p">ヌル値可能フィールドを持つレコードの読み取りについて
+は、<a class="xref" href="/docs/ja/ssw_ibm_i_74/rzasd/dbnvs.htm#dbnvs">データベースのヌル値サポート</a>を参照してください。</p>
+<p class="p">詳細については、<a class="xref" href="/docs/ja/ssw_ibm_i_74/rzasd/filop.htm#filop">ファイル命令</a>を参照してください。</p>
+<div class="fig figborder" id="zzread__readera"><span class="figcap">図 1. READ 命令</span><div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code>*...1....+....2....+....3....+....4....+....5....+....6....+....7...+....
+CL0N01Factor1+++++++Opcode(E)+Factor2+++++++Result++++++++Len++D+HiLoEq....
+ *
+ *  READ retrieves the next record from the file FILEA, which must
+ *  be a full procedural file.
+ *  %EOF is set to return '1' if an end of file occurs on READ,
+ *  or if an end of file has occurred previously and the file
+ *  has not been repositioned.  When %EOF returns '1',
+ *  the program will leave the loop.
+ *
+C                   DOW       '1'
+C                   READ      FILEA
+C                   IF        %EOF
+C                   LEAVE
+C                   ENDIF
+ *
+ *  READ retrieves the next record of the type REC1 (factor 2)
+ *  from an externally described file.  (REC1 is a record format
+ *  name.)  Indicator 64 is set on if an end of file occurs on READ,
+ *  or if it has occurred previously and the file has not been
+ *  repositioned.  When indicator 64 is set on, the program
+ *  will leave the loop.  The N operation code extender
+ *  indicates that the record is not locked.
+ *
+C                   READ(N)   REC1                                   64
+C   64              LEAVE
+C                   ENDDO</code></pre></div><div class="docs--copy-btn"></div></div>
+</div>
+</div>
+<div class="related-links ibm-padding-top-1 ibm-padding-bottom-2 bx--row bottom-section-parent" aria-label="bottom related links">
+<div class="familylinks ibm-margin-bottom-1">
+<div class="parentlink"><strong>親トピック:</strong> <div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a class="link bottom-section-link" href="/docs/ja/ssw_ibm_i_74/rzasd/operxcl.htm">命令コード</a></div></div>
+</div>
+</div></div>

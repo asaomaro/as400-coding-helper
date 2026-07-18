@@ -1,0 +1,206 @@
+<main role="main"><article role="article" aria-labelledby="zzfor__title__1">
+<h1 class="topictitle1" id="zzfor__title__1">FOR (For)</h1><div id="lastModifiedDate"><span>Last Updated</span>: 2026-07-13</div>
+
+
+<div class="body">
+
+<div class="tablenoborder"><div class="cds--data-table-container"><table summary="" class="defaultstyle cds--data-table"><colgroup><col><col></colgroup><tbody>
+<tr>
+<td class="tdleft"><strong>Free-Form Syntax</strong></td>
+
+<td class="tdleft">FOR{(MR)} <span class="ph synph"><span class="ph var">index-name</span></span> {= <span class="ph synph"><span class="ph var">start-value</span></span>}
+{BY <span class="ph synph"><span class="ph var">increment</span></span>} {TO|DOWNTO <span class="ph synph"><span class="ph var">limit</span></span>}</td>
+</tr>
+
+</tbody>
+</table></div>
+</div>
+
+
+<div class="tablenoborder"><div class="cds--data-table-container"><table summary="" class="defaultstyle cds--data-table"><colgroup><col><col><col><col><col><col><col></colgroup><thead>
+<tr>
+<th id="zzfor__entry__3" class="thleft thbot"><div class="cds--table-header-label"><strong>Code</strong></div></th>
+
+<th id="zzfor__entry__4" class="thleft thbot"><div class="cds--table-header-label"><strong>Factor 1</strong></div></th>
+
+<th colspan="5" id="zzfor__entry__5" class="thleft thbot"><div class="cds--table-header-label"><strong>Extended Factor 2</strong></div></th>
+</tr>
+
+</thead>
+<tbody>
+<tr>
+<td headers="zzfor__entry__3 " class="tdleft"><strong>FOR</strong></td>
+
+<td headers="zzfor__entry__4 " class="tdleft">&nbsp;</td>
+
+<td colspan="5" headers="zzfor__entry__5 " class="tdleft"><u>index-name</u> = start-value BY increment TO |
+DOWNTO limit</td>
+</tr>
+
+</tbody>
+</table></div>
+</div>
+
+<p>The FOR operation begins a group of operations and controls the
+number of times the group will be processed. To indicate the number
+of times the group of operations is to be processed, specify an index
+name, a starting value, an increment value, and a limit value. The
+optional starting, increment, and limit values can be a free-form
+expressions. An associated END or <a href="/docs/en/ssw_ibm_i_74/rzasd/zzendyy.htm#zzendyy">ENDFOR</a> statement
+marks the end of the group. For further information on FOR groups,
+see <a href="/docs/en/ssw_ibm_i_74/rzasd/strupro.htm#strupro">Structured Programming Operations</a>.</p>
+
+<div class="p">The syntax of the FOR operation is as follows:
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>      FOR         index-name { = starting-value }
+                  { BY increment-value }
+                  { TO | DOWNTO limit-value }
+         { loop body }
+      ENDFOR | END</code></pre></div><div class="docs--copy-btn"></div></div></div>
+
+<p> The starting-value, increment-value, and limit-value can be numeric
+values or expressions with zero decimal positions. The increment value,
+if specified, cannot be zero.</p>
+
+<p>The BY and TO (or DOWNTO) clauses can be specified in either order.
+Both "BY 2 TO 10" and "TO 10 BY 2" are allowed.</p>
+
+<p>In addition to the FOR operation itself, the conditioning indicators
+on the FOR and ENDFOR (or END) statements control the FOR group. The
+conditioning indicators on the FOR statement control whether or not
+the FOR operation begins. These indicators are checked only once,
+at the beginning of the for loop. The conditioning indicators on the
+associated END or ENDFOR statement control whether or not the FOR
+group is repeated another time. These indicators are checked at the
+end of each loop.</p>
+
+<div class="p">The FOR operation is performed as follows:
+<ol class="cds--list--ordered--temporary">
+<li class="cds--list__item">If the conditioning indicators on the FOR statement line are satisfied,
+the FOR operation is processed (step 2).  If the indicators are not
+satisfied, control passes to the next operation to be processed following
+the associated END or ENDFOR statement (step 8).</li>
+
+<li class="cds--list__item">If specified, the initial value is assigned to the index name.
+Otherwise, the index name retains the same value it had before the
+start of the loop.</li>
+
+<li class="cds--list__item">If specified, the limit value is evaluated and compared to the
+index name. If no limit value is specified, the loop repeats indefinitely
+until it encounters a statement that exits the loop (such as a LEAVE
+or GOTO) or that ends the program or procedure (such as a RETURN). 
+<p>If
+the TO clause is specified and the index name value is greater than
+the limit value, control passes to the first statement following the
+ENDFOR statement. If DOWNTO is specified and the index name is less
+than the limit value, control passes to the first statement after
+the ENDFOR.</p>
+</li>
+
+<li class="cds--list__item">The operations in the FOR group are processed.</li>
+
+<li class="cds--list__item">If the conditioning indicators on the END or ENDFOR statement
+are not satisfied, control passes to the statement after the associated
+END or ENDFOR and the loop ends.</li>
+
+<li class="cds--list__item">If the increment value is specified, it is evaluated. Otherwise,
+it defaults to 1.</li>
+
+<li class="cds--list__item">The increment value is either added to (for TO) or subtracted
+from (for DOWNTO) the index name. Control passes to step 3. (Note
+that the conditioning indicators on the FOR statement are not tested
+again (step 1) when control passes to step 3.)</li>
+
+<li class="cds--list__item">The statement after the END or ENDFOR statement is processed when
+the conditioning indicators on the FOR, END, or ENDFOR statements
+are not satisfied (step 1 or 5), or when the index value is greater
+than (for TO) or less than (for DOWNTO) the limit value (step 3),
+or when the index value overflows.</li>
+
+</ol>
+</div>
+
+<div class="note border-2 cds--inline-notification--info ibmdocs-note cds--inline-notification cds--inline-notification--low-contrast margin-top-1 margin-bottom-1"><div class="cds--inline-notification__details"><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" class="cds--inline-notification__icon" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M16,2A14,14,0,1,0,30,16,14,14,0,0,0,16,2Zm0,5a1.5,1.5,0,1,1-1.5,1.5A1.5,1.5,0,0,1,16,7Zm4,17.12H12V21.88h2.88V15.12H13V12.88h4.13v9H20Z"></path></svg>
+        <div class="cds--inline-notification__text-wrapper">
+          <div class="cds--inline-notification__subtitle"><span class="notetitle ibm-bold ibm-textcolor-blue-50 background-blue cds--inline-notification__title ibm-padding-top-1 ibm-padding-bottom-1 padding-left-1 padding-right-1">Note:</span> If the FOR loop is performed <em>n</em> times,
+the limit value is evaluated <em>n+1</em> times and
+the increment value is evaluated <em>n</em> times.
+This can be important if the limit value or increment value is complex
+and time-consuming to evaluate, or if the limit value or increment
+value contains calls to subprocedures with side-effects. If multiple
+evaluation of the limit or increment is not desired, calculate the
+values in temporaries before the FOR loop and use the temporaries
+in the FOR loop.</div>
+        </div>
+      </div></div>
+
+<div class="p">Remember the following when specifying the FOR operation:
+<ul class="cds--list--unordered">
+<li class="cds--list__item">The index name cannot be declared on the FOR operation. Variables
+should be declared in the <span class="ph">Definition</span> specifications.</li>
+
+<li class="cds--list__item">The <span class="ph synph"><span class="ph var">index-name</span></span> can be any fully-qualified
+name, including an indexed array element.</li>
+
+</ul>
+</div>
+
+<p>See <a href="/docs/en/ssw_ibm_i_74/rzasd/zzleave.htm#zzleave">LEAVE (Leave a Do/For Group)</a> and <a href="/docs/en/ssw_ibm_i_74/rzasd/zziter.htm#zziter">ITER (Iterate)</a> for information
+on how those operations affect a FOR operation.</p>
+
+<p>For more information, see <a href="/docs/en/ssw_ibm_i_74/rzasd/strupro.htm#strupro">Structured Programming Operations</a>.</p>
+
+<figure class="figborder" id="zzfor__foroper"><figcaption>Figure 1. Examples of the FOR Operation </figcaption>
+
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code> *..1....+....2....+....3....+....4....+....5....+....6....+....7...+....
+ /free
+    // Example 1
+    // Compute n!
+ 
+    factorial = 1;
+    for i = 1 to n;
+       factorial = factorial * i;
+    endfor;
+ 
+    // Example 2
+    // Search for the last nonblank character in a field.
+    // If the field is all blanks, "i" will be zero.
+    // Otherwise, "i" will be the position of nonblank.
+ 
+    for i = %len (field) downto 1;
+       if %subst(field: i: 1) &lt;&gt; ' ';
+          leave;
+       endif;
+    endfor;
+ 
+    // Example 3
+    // Extract all blank-delimited words from a sentence.
+ 
+    WordCnt = 0;
+    for i = 1 by WordIncr to %len (Sentence);
+       // Is there a blank?
+       if %subst(Sentence: i: 1) = ' ';
+          WordIncr = 1;
+          iter;
+       endif;
+ 
+       // We've found a word - determine its length:
+       for j = i+1 to %len(Sentence);
+          if %subst (Sentence: j: 1) = ' ';
+             leave;
+          endif;
+       endfor;
+ 
+       // Store the word:
+       WordIncr = j - i;
+       WordCnt = WordCnt + 1;
+       Word (WordCnt) = %subst (Sentence: i: WordIncr);
+    endfor;
+ 
+ /end-free</code></pre></div><div class="docs--copy-btn"></div></div></figure>
+
+</div>
+<aside role="complementary" aria-labelledby="zzfor__title__1"><nav role="navigation" aria-label="bottom related links" class="ibm-padding-top-1 ibm-padding-bottom-2 bx--row bottom-section-parent">
+<div class="familylinks ibm-margin-bottom-1">
+<div class="parentlink"><strong>Parent topic:</strong> <div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a data-hd-product="ssw_ibm_i_74" href="/docs/en/ssw_ibm_i_74/rzasd/operxcl.htm" class="bottom-section-link">Operation Codes</a></div></div>
+</div>
+</nav></aside></article></main>

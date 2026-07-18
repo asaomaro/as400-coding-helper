@@ -1,5 +1,6 @@
 import * as vscode from "vscode";
 import { registerDdsKeywordCompletion } from "./ddsKeywordCompletion";
+import { registerRpgCompletion } from "./rpgCompletion";
 import { RpgClDiagnostics } from "./diagnostics";
 import { registerRpgCommentToggle } from "./rpgCommentToggle";
 import { registerClCommentToggle } from "./clCommentToggle";
@@ -15,6 +16,8 @@ export function registerLanguageFeatures(
 ): void {
   // DDS のキーワード補完（45 桁目以降の機能欄で候補を出す）。
   context.subscriptions.push(registerDdsKeywordCompletion(context));
+  // RPG の命令コード・組み込み関数・仕様書キーワードの補完。
+  context.subscriptions.push(registerRpgCompletion(context));
 
   if (!diagnosticsInstance) {
     diagnosticsInstance = new RpgClDiagnostics();

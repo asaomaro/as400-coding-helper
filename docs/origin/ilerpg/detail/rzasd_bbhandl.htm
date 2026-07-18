@@ -1,0 +1,157 @@
+<div role="main">
+<!-- Java sync-link --><script language="Javascript" src="../rzahg/synch.js" type="text/javascript"></script>
+<h1 class="title topictitle1">%HANDLER (handlingProcedure : communicationArea )</h1><div id="lastModifiedDate"><span>Last Updated</span>: 2021-04-13</div>
+<div class="body"><p class="p"><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 32 32" aria-hidden="true"><path d="M14 16L24 6 25.4 7.4 16.8 16 25.4 24.6 24 26zM8 4H10V28H8z"></path><title></title></svg>%HANDLER は、1 つのイベントまたは一連のイベントを処理するプロシージャーを識別するために使用します。%HANDLER は、値を戻さず、
+XML-SAX、XML-INTO および DATA-INTO の第 1 オペランドとしてのみ指定することができます。<svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 16L8 26 6.6 24.6 15.2 16 6.6 7.4 8 6zM22 4H24V28H22z"></path><title></title></svg></p>
+<p class="p">第 1 オペランド <em class="ph i">handlingProcedure</em> は、処理プロシージャーのプロトタイプを指定します。プロトタイプによって指定された、またはプロトタイプが明示的に指定されていない場合にはプロシージャー・インターフェースによって指定された戻り値およびパラメーターは、
+処理プロシージャーが必要とするパラメーターと一致している必要があります。
+要件は、%HANDLER が指定されている命令によって決まります。
+処理プロシージャーの定義に関する特定の要件については、<a class="xref" href="/docs/ja/ssw_ibm_i_74/rzasd/zzxmlsa.htm#zzxmlsa">XML-SAX (XML 文書の構文解析)</a>、<a class="xref" href="/docs/ja/ssw_ibm_i_74/rzasd/zzxmlin.htm#zzxmlin">XML-INTO (XML 文書の変数への構文解析)</a>または<a class="xref" href="/docs/ja/ssw_ibm_i_74/rzasd/zzdatainto.htm#zzdatainto">DATA-INTO (文書の変数への構文解析)</a>を参照してください。</p>
+<p class="p">第 2 オペランド <em class="ph i">communicationArea</em> は、処理プロシージャーのすべての呼び出しでパラメーターとして渡される変数を指定します。オペランドは、参照によって渡されるプロトタイプ・パラメーターの検査で使用する規則と同じ規則に従って、
+処理プロシージャーの最初のプロトタイプ・パラメーターに完全に一致してい
+る必要があります。
+通信域パラメーターには、配列やデータ構造など、任意のタイプを使用できます。</p>
+<div class="p">命令コードが %HANDLER 組み込み関数を使用している場合は、以下の一連のイベントが発生します。
+<ol class="ol cds--list--ordered--temporary"><li class="li cds--list__item">%HANDLER 組み込み関数を使用する命令が開始します。</li>
+<li class="li cds--list__item">処理プロシージャーが処理する必要がある命令の最中にイベントが発生した場合は、RPG ランタイムは、%HANDLER
+の第 1 オペランドとして指定されている処理プロシージャーを呼び出します。
+処理プロシージャーに渡される最初のパラメーターは、%HANDLER
+の第 2 オペランドとして指定された通信域です。
+他のパラメーターは、命令および発生したイベントの性質によって異なります。</li>
+<li class="li cds--list__item">処理プロシージャーは、パラメーターを処理する際に通信域パラメーターを更新することがあります。</li>
+<li class="li cds--list__item">処理プロシージャーは、正常終了した場合にはゼロを戻し、正常に終了しなかった場合はゼロ以外の値を戻します。</li>
+<li class="li cds--list__item">戻り値がゼロの場合、RPG ランタイムは、命令が完了するか、他のイベントが発生するまで処理を継続します。
+戻り値がゼロではなかった場合、命令は終了します。</li>
+<li class="li cds--list__item">他のイベントが発生した場合は、処理プロシージャーが再び呼び出されます。
+処理プロシージャーを呼び出した直前の呼び出しが通信域を変更した場合、
+その変更は後続の呼び出しで確認できます。</li>
+<li class="li cds--list__item">命令完了時に、制御は %HANDLER 組み込み関数を使用したその命令の次のステートメントに渡されます。
+処理プロシージャーが通信域を変更した場合は、その変更は、%HANDLER 組み込み関数を使用したプロシージャーで確認できます。</li>
+</ol>
+</div>
+<div class="p">通信域は、複数の目的で使用できます。
+<ol class="ol cds--list--ordered--temporary"><li class="li cds--list__item">%HANDLER 組み込み関数をコード化するプロシージャーから処理プロシージャーに情報を通知します。</li>
+<li class="li cds--list__item">処理プロシージャーから %HANDLER 組み込み関数をコード化するプロシージャーに、情報を通知します。</li>
+<li class="li cds--list__item">処理プロシージャーの連続的な呼び出しの間で、状況情報を保持します。
+状況情報は、処理プロシージャー内の静的変数にも保持できます。
+ただし、静的変数が使用されている場合に、処理プロシージャーが、複数の %HANDLER 命令によって使用可能になっている場合、
+誤った結果になる場合があります。
+処理プロシージャーは、それぞれ独立して使用できるようになります。</li>
+</ol>
+</div>
+<div class="fig figborder"><span class="figcap">図 1. %HANDLER を使用した通信域の使用</span><div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code> * Data structure used as a parameter between
+ * the XML-SAX operation and the handling
+ * procedure.
+ *   - "attrName" is set by the procedure doing the
+ *     XML-SAX operation and used by the handling procedure
+ *   - "attrValue" is set by the handling procedure
+ *     and used by the procedure doing the XML-SAX
+ *     operation
+ *   - "haveAttr" is used internally by the handling
+ *     procedure
+D info            DS
+D   attrName                    20A    VARYING
+D   haveAttr                      N
+D   attrValue                   20A    VARYING
+
+ * Prototype for procedure "myHandler" defining
+ * the communication-area parameter as being
+ * like data structure "info"
+D myHandler       PR            10I 0
+D   commArea                           LIKEDS(info)
+D   event                       10I 0  VALUE
+D   string                        *    VALUE
+D   stringLen                   20I 0  VALUE
+D   exceptionId                 10I 0  VALUE
+ /free
+   // The purpose of the following XML-SAX operation
+   // is to obtain the value of the first "companyname"
+   // attribute found in the XML document.
+
+   // The communication area "info" is initialized with
+   // the name of the attribute whose value is
+   // to be obtained from the XML document.
+   attrName = 'companyname';
+
+   // Start SAX processing.  The procedure "myHandler"
+   // will be called for every SAX event; the first
+   // parameter will be the data structure "info".
+   xml-sax(e) %handler(myHandler : info) %xml(xmldoc);
+   // The XML-SAX operation is complete.  The
+   // communication area can be checked to get the
+   // value of the attribute.
+   if not %error() and attrValue &lt;&gt; '';
+     dsply (attrName + '=' + attrValue);
+   endif;
+:
+:
+ * The SAX handling procedure "myHandler"
+P myHandler       B
+D                 PI            10I 0
+D   comm                               LIKEDS(info)
+D   event                       10I 0  VALUE
+D   string                        *    VALUE
+D   stringLen                   20I 0  VALUE
+D   exceptionId                 10I 0  VALUE
+D value           S          65535A    VARYING
+D                                      BASED(string)
+D ucs2value       S          16383C    VARYING
+D                                      BASED(string)
+D rc              S             10I 0  INZ(0)
+ /free
+
+     select;</code></pre></div><div class="docs--copy-btn"></div></div>
+</div>
+<div class="fig figborder"><div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code>     // When the event is a "start document" event,
+     // the handler can initialize any internal
+     // subfields in the communication area.
+     when event = *XML_START_DOCUMENT;
+        comm.haveAttr = *OFF;
+
+     // When the event is an "attribute name" event,
+     // and the value of the event is the required
+     // name, the internal subfield "haveAttr" is
+     // set to *ON.  If the next event is an
+     // attribute-value event, the value will be
+     // saved in the "attrValue" subfield.
+     when event = *XML_ATTR_NAME
+     and  %subst(value : 1 : stringLen) = comm.attrName;
+        comm.haveAttr = *ON;
+        comm.attrValue = '';
+
+     // When "haveAttr" is on, the data from any
+     // attribute-value should be saved in the "attrValue"
+     // string until the *XML_END_ATTR event occurs
+     when comm.haveAttr;
+        select;
+        when event = *XML_ATTR_CHARS
+        or   event = *XML_ATTR_PREDEF_REF;
+           comm.attrValue +=
+               %subst(value : 1 : stringLen);
+        when event = *XML_ATTR_UCS2_REF;
+           stringLen = stringLen / 2;
+           comm.attrValue +=
+               %char(%subst(ucs2value : 1 : stringLen));
+        when event = *XML_END_ATTR;
+           // We have the entire attribute value
+           // so no further parsing is necessary.
+           // A non-zero return value tells the
+           // RPG runtime that the handler does
+           // not want to continue the operation
+           rc = -1;
+       endsl;
+
+     endsl;
+
+   return rc;
+ /end-free
+P                 E</code></pre></div><div class="docs--copy-btn"></div></div>
+</div>
+<p class="p">その他の %HANDLER の例については、<a class="xref" href="/docs/ja/ssw_ibm_i_74/rzasd/zzxmlsa.htm#zzxmlsa">XML-SAX (XML 文書の構文解析)</a>および <a class="xref" href="/docs/ja/ssw_ibm_i_74/rzasd/zzxmlin.htm#zzxmlin">XML-INTO (XML 文書の変数への構文解析)</a>を参照してください。</p>
+<p class="p">詳細については、<a class="xref" href="/docs/ja/ssw_ibm_i_74/rzasd/yyxml.htm#yyxml">XML 命令</a>または <a class="xref" href="/docs/ja/ssw_ibm_i_74/rzasd/bifsint.htm#bifsint">組み込み関数</a>を参照してください。</p>
+</div>
+<div class="related-links ibm-padding-top-1 ibm-padding-bottom-2 bx--row bottom-section-parent" aria-label="bottom related links">
+<div class="familylinks ibm-margin-bottom-1">
+<div class="parentlink"><strong>親トピック:</strong> <div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a class="link bottom-section-link" href="/docs/ja/ssw_ibm_i_74/rzasd/bifs.htm">組み込み関数</a></div></div>
+</div>
+</div></div>

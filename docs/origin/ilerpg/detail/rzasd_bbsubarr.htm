@@ -1,0 +1,145 @@
+<div role="main">
+<!-- Java sync-link --><script language="Javascript" src="../rzahg/synch.js" type="text/javascript"></script>
+<h1 class="title topictitle1">%SUBARR (配列の部分の設定/入手)</h1><div id="lastModifiedDate"><span>Last Updated</span>: 2021-04-13</div>
+<div class="body"><div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code>%SUBARR(array:start-index{:number-of-elements})</code></pre></div><div class="docs--copy-btn"></div></div>
+<p class="p">組み込み関数 %SUBARR は、指定された配列の、<em class="ph i">開始指標</em> から始まるセクションを戻します。
+戻される要素の数は、オプションの<em class="ph i">要素の数</em> パラメーターで指定します。
+このパラメーターを指定しない場合、<em class="ph i">要素の数</em> のデフォルト値として、
+配列のそれ以降の部分の要素の数が使用されます。</p>
+<p class="p">%SUBARR の最初のパラメーターは配列でなければなりません。
+つまり、配列として定義された独立のフィールド、データ構造、またはサブフィールドを指定する必要があります。
+この最初のパラメーターは、テーブル名またはプロシージャー呼び出しであってはなりません。</p>
+<p class="p"><em class="ph i">開始指標</em> パラメーターは、小数点以下の桁数がゼロである
+数値でなければなりません。
+浮動小数点数値は使用できません。 この値は、1 以上で、かつ配列の要素数以下でなければなりません。</p>
+<p class="p">オプションの<em class="ph i">要素の数</em> パラメーターは、小数点以下の桁数がゼロである
+数値でなければなりません。
+浮動小数点数値は使用できません。 この値は、1 以上で、かつ<em class="ph i">開始指標</em> 値を適用した後で
+配列内に残っている要素の数以下でなければなりません。</p>
+<div class="p">一般に、%SUBARR は、索引のない配列が使用できる式であれば、どのような式でも有効です。
+ただし、%SUBARR を以下の用途で使用することはできません。
+<ul class="ul cds--list--unordered"><li class="li cds--list__item">組み込み関数 %LOOKUPxx の配列引数として </li>
+<li class="li cds--list__item">参照によって受け渡されるパラメーターとして</li>
+</ul>
+%SUBARR は、以下の方法で使用することができます。
+<ul class="ul cds--list--unordered"><li class="li cds--list__item">EVAL または EVALR が使用されている代入の左側で使用する。
+これにより、指定された配列内の指定された要素が変更されます。</li>
+<li class="li cds--list__item">代入のターゲットである配列を含む、EVAL または EVALR が使用されている代入の右側の式で使用する。
+これにより、配列の指定された要素の値が使用されるようになります。
+配列要素が直接使用され、副配列の一時コピーは作成されません。</li>
+<li class="li cds--list__item">SORTA 命令の拡張演算項目 2 で使用する。</li>
+<li class="li cds--list__item">RETURN 命令の拡張演算項目 2 で使用する。</li>
+<li class="li cds--list__item">対応するパラメーターが配列として定義されている場合に、VALUE または読み取り専用参照 (CONST キーワード) によって受け渡される。</li>
+<li class="li cds--list__item">%XFOOT 組み込み関数のパラメーターとして使用する。</li>
+</ul>
+</div>
+<p class="p">詳細については、<a class="xref" href="/docs/ja/ssw_ibm_i_74/rzasd/yyarray.htm#yyarray">配列命令</a>または <a class="xref" href="/docs/ja/ssw_ibm_i_74/rzasd/bifsint.htm#bifsint">組み込み関数</a>を参照してください。</p>
+<div class="fig fignone"><span class="figcap">図 1. %SUBARR を使用する</span><div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code>D a               s             10i 0 dim(5)
+D b               s             10i 0 dim(15)
+D resultArr       s             10i 0 dim(20)
+D sum             s             20i 0
+ /free  
+     a(1)=9;
+     a(2)=5;
+     a(3)=16;
+     a(4)=13;
+     a(5)=3;
+     // Copy part of an array to another array:
+     resultArr = %subarr(a:4:n);     
+          // this is equivalent to:
+          //   resultArr(1) = a(4)
+          //   resultArr(2) = a(5)
+          //   ...
+          //   resultArr(n) = a(4 + n - 1)
+
+     // Copy part of an array to part of another array:
+     %subarr(b:3:n) = %subarr(a:m:n);  
+     // Specifying the array from the start element to the end of the array
+     // B has 15 elements and A has 5 elements.  Starting from element 2
+     // in array A means that only 4 elements will be copied to array B.
+     // The remaining elements in B will not be changed.
+       b = %subarr(a : 2);  
+
+     // Sort a subset of an array:
+     sorta %subarr(a:1:4);     
+          // Now, A=(5 9 13 16 3);
+          // Since only 4 elements were sorted, the fifth element
+          // is out of order.
+          // Using %SUBARR in an implicit array indexing assignment
+     resultArr = b + %subarr(a:2:3)     
+     // this is equivalent to:
+     //   resultArr(1) = b(1) + a(2)
+     //   resultArr(2) = b(2) + a(3)
+     //   resultArr(3) = b(3) + a(4)
+
+     // Using %SUBARR nested within an expression
+     resultArr = %trim(%subst(%subarr(stringArr:i):j));
+          // this is equivalent to:
+          //   resultArr(1) = %trim(%subst(stringArr(i+0):j))
+          //    resultArr(2) = %trim(%subst(stringArr(i+1):j))
+          //   resultArr(3) = %trim(%subst(stringArr(i+2):j))
+
+     // Sum a subset of an array
+     sum = %xfoot (%subarr(a:2:3));     
+          // Now sum = 9 + 13 + 16 = 38</code></pre></div><div class="docs--copy-btn"></div></div>
+</div>
+<div class="fig fignone"><span class="figcap">図 2. 動的に割り振られる配列で %SUBARR を使用する</span><div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code>// Using %SUBARR with dynamically allocated arrays
+D dynArrInfo      ds                  qualified
+D   numAlloc                    10i 0 inz(0)
+D   current                     10i 0 inz(0)
+D   p                             *
+D dynArr          s              5a   dim(32767) based(dynArrInfo.p)
+D otherArray      s              3a   dim(10) inz('xy')
+ /free 
+     // Start the array with an allocation of five elements,
+     // and with two current elements
+     dynArrInfo.numAlloc = 5;
+     dynArrInfo.p = %alloc(%size(dynArr) *
+                    dynarrInfo.numAlloc);
+     dynArrInfo.current = 2;
+     // Initialize to blanks
+     %subarr(dynArr : 1 : dynarrInfo.current) = *blank;
+
+     // Set the two elements to some values
+     dynArr(1) = 'Dog';
+                     dynArr(2) = 'Cat';  
+
+     // Sort the two elements
+     sorta %subarr(dynArr : 1 : dynarrInfo.current);
+          // dynArr(1) = 'Cat'
+          // dynArr(2) = 'Dog'
+
+     // Assign another array to the two elements
+     otherArray(1) = 'ab';
+     otherArray(2) = 'cd';
+     otherArray(3) = 'ef';
+     %subarr(dynArr : 1 : dynarrInfo.current) = otherArray;     
+          // dynArr(1) = 'ab'
+          // dynArr(2) = 'cd'
+
+     // Changing the size of the array
+     oldElems = dynArrInfo.current;
+     dynArrInfo.current = 7;
+     if (dynArrInfo.current &gt; dynArrInfo.numAlloc);
+          dynArrInfo.p = %realloc (dynArrInfo.p : dynArrInfo.current);
+          dynArrInfo.numAlloc = dynArrInfo.current;
+     endif;
+     if (oldElems &lt; dynArrInfo.current);     
+          // Initialize new elements to blanks
+         clear %subarr(dynArr : oldElems + 1 : dynArrInfo.current - oldElems);
+     endif; </code></pre></div><div class="docs--copy-btn"></div></div>
+</div>
+<div class="noteParent border-2 cds--inline-notification--error ibmdocs-note cds--inline-notification cds--inline-notification--low-contrast"><div class="cds--inline-notification__details"><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" class="cds--inline-notification__icon" width="20" height="20" viewBox="0 0 20 20" aria-hidden="true"><path d="M10,1c-5,0-9,4-9,9s4,9,9,9s9-4,9-9S15,1,10,1z M13.5,14.5l-8-8l1-1l8,8L13.5,14.5z"></path><path d="M13.5,14.5l-8-8l1-1l8,8L13.5,14.5z" data-icon-path="inner-path" opacity="0"></path></svg>
+        <div class="cds--inline-notification__text-wrapper">
+          <div class="cds--inline-notification__subtitle"><div class="cautiontitle ibm-bold ibm-background-red-10 cds--inline-notification__title ibm-padding-top-1 ibm-padding-bottom-1 padding-left-1 padding-right-1">注意:</div><div class="note caution">配列の一部を同じ配列内の別の部分に割り当てるために %SUBARR を使用することができます。
+ただし、その配列のソース部分が配列のターゲット部分とオーバーラップしている場合には、
+予測不能な結果が生じる可能性があります。</div></div>
+        </div>
+      </div></div>
+<p class="p">詳細については、<a class="xref" href="/docs/ja/ssw_ibm_i_74/rzasd/bifsint.htm#bifsint">組み込み関数</a>を参照してください。</p>
+</div>
+<div class="related-links ibm-padding-top-1 ibm-padding-bottom-2 bx--row bottom-section-parent" aria-label="bottom related links">
+<div class="familylinks ibm-margin-bottom-1">
+<div class="parentlink"><strong>親トピック:</strong> <div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a class="link bottom-section-link" href="/docs/ja/ssw_ibm_i_74/rzasd/bifs.htm">組み込み関数</a></div></div>
+</div>
+</div></div>

@@ -1,0 +1,132 @@
+<main role="main"><article role="article" aria-labelledby="bbscanrp__title__1">
+<h1 class="topictitle1" id="bbscanrp__title__1">%SCANRPL (Scan and Replace Characters)</h1><div id="lastModifiedDate"><span>Last Updated</span>: 2026-07-13</div>
+
+
+<div class="body">
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>%SCANRPL(scan string : replacement : source { : scan start  { : scan length { : *NATURAL | *STDCHARSIZE} } })</code></pre></div><div class="docs--copy-btn"></div></div>
+<p>%SCANRPL returns the string produced by replacing all occurrences
+of the scan string in the source string with the replacement string.
+The search for the scan string starts at the scan start position and
+continues for the scan length. The parts of the source string that
+are outside the range specified by the scan start position and the
+scan length are included in the result.</p>
+
+<p>The first, second and third parameters must be of type character,
+graphic, or UCS-2. They can be in either fixed-length or variable-length
+format. These parameters must all be of the same type and CCSID.</p>
+
+<p>The fourth parameter represents the starting position, measured
+in characters, where the search for the scan string should begin.
+If it is not specified, the starting position defaults to one. The
+value may range from one to the current length of the source string.
+It may be any numeric value or numeric
+expression with no decimal positions</p>
+
+<p>The fifth parameter represents the number of characters in the
+source string to be scanned. If the parameter is not specified, the
+length defaults to remainder of the source string starting from the
+start position. The value must be greater than or equal to zero, and
+less than or equal to the remaining length of the source string starting
+at the start position.
+It may be any numeric value or numeric
+expression with no decimal positions</p>
+
+<div class="p">The fourth, fifth, or sixth parameter can be *NATURAL or *STDCHARSIZE
+to override the current <a href="/docs/en/ssw_ibm_i_74/rzasd/charcount.htm">CHARCOUNT</a> mode for the statement.
+If this parameter is specified, it must be the last parameter.
+<ul class="cds--list--unordered">
+<li class="cds--list__item">Specify *NATURAL to indicate that %SCANRPL operates in <span class="keyword">CHARCOUNT NATURAL</span> mode.
+The start position and length are measured in characters rather than bytes or double bytes.
+For example, if the source string is a UTF-8 string with the value 'ábç12',
+a start position of 3 refers to 'ç' because it is the third character.
+</li>
+
+<li class="cds--list__item">Specify *STDCHARSIZE to indicate that %SCANRPL operates in <span class="keyword">CHARCOUNT STDCHARSIZE</span> mode.
+In the previous example, with <span class="keyword">CHARCOUNT STDCHARSIZE</span> mode,
+a start position of 3 refers to 'b' because it is the third byte.
+Characters 'á' and 'ç' are 2-byte characters.
+</li>
+
+</ul>
+
+See <a href="/docs/en/ssw_ibm_i_74/rzasd/charcount.htm">Processing string data by the natural size of each character</a> and <a href="/docs/en/ssw_ibm_i_74/rzasd/chartype.htm">Character Data Type</a>.
+<div class="note border-2 cds--inline-notification--info ibmdocs-note cds--inline-notification cds--inline-notification--low-contrast margin-top-1 margin-bottom-1"><div class="cds--inline-notification__details"><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" class="cds--inline-notification__icon" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M16,2A14,14,0,1,0,30,16,14,14,0,0,0,16,2Zm0,5a1.5,1.5,0,1,1-1.5,1.5A1.5,1.5,0,0,1,16,7Zm4,17.12H12V21.88h2.88V15.12H13V12.88h4.13v9H20Z"></path></svg>
+        <div class="cds--inline-notification__text-wrapper">
+          <div class="cds--inline-notification__subtitle"><span class="notetitle ibm-bold ibm-textcolor-blue-50 background-blue cds--inline-notification__title ibm-padding-top-1 ibm-padding-bottom-1 padding-left-1 padding-right-1">Note:</span> 
+%SCANRPL can also operate in <span class="keyword">CHARCOUNT NATURAL</span> mode due to the
+<span class="keyword">/CHARCOUNT</span> compiler directive or the <span class="keyword">CHARCOUNT</span> Control keyword.
+</div>
+        </div>
+      </div></div>
+
+</div>
+
+<p>The returned value may be larger, equal to or smaller than the
+source string. The resulting length depends on the lengths of the
+scan string and the replacement string, and also on the number of
+times the replacement is performed. For example, assume the scan string
+is 'a' and the replacement string is 'bc'. If the source string is
+'ada', the returned value has a length of five ('bcdbc'). If the source
+string is 'ddd', the returned value has a length of three ('ddd').</p>
+
+<p>The returned value is varying length if the source string and replacement
+string have different lengths, or if any of the strings are varying
+length. Otherwise, the returned value is fixed length. The returned
+value has the same type as the source string.</p>
+
+<p>Each position in the source string is scanned only once. For example,
+if the scan string is 'aa', and the source string is 'baaaaac', then
+the first match is in positions 2 and 3. The next scan begins at position
+4, and finds a match in positions 4 and 5. The next scan begins at
+position 6, and does not find any further matches. If the replacement
+string is 'xy', then the returned value is 'bxyxyac'.</p>
+
+<p><strong>Tip:</strong> %SCANRPL can be used to completely remove
+occurrences of the scan string from the source string by specifying
+an empty replacement string.</p>
+
+<p>For more information, see <a href="/docs/en/ssw_ibm_i_74/rzasd/yystrng.htm#yystrng">String Operations</a> or <a href="/docs/en/ssw_ibm_i_74/rzasd/bifsint.htm#bifsint">Built-in Functions</a>.</p>
+
+<figure class="figborder"><figcaption>Figure 1. %SCANRPL Example</figcaption>
+
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>//         ....+....1....+....2....+....3....+...string1 = 'See NAME. See NAME run. Run NAME run.';
+
+// 1. All occurrences of "NAME" are replaced by the
+//    replacement value.  In the first case,
+//    the resulting string is shorter than the source
+//    string, since the replacment string is shorter
+//    than the scan string. In the second case, the
+//    resulting string is longer.string2 = %ScanRpl('NAME' : 'Tom' : string1);
+// string2 = 'See Tom. See Tom run. Run Tom run.'string2 = %ScanRpl('NAME' : 'Jenny' : string1);
+// string2 = 'See Jenny. See Jenny run. Run Jenny run.'
+
+// 2. All occurrences of ** are removed from the string.
+//    The replacement string, '', has zero length.string3 = '*Hello**There**Everyone*';
+string2 = %ScanRpl('**' : '' : string3);
+// string2 = '*HelloThereEveryone*'
+
+// 3. All occurrences of "NAME" are replaced by "Tom"
+//    starting at position 6.  Since the first "N" of
+//    the first "NAME" in the string is not part of the
+//    source string that is scanned, the first "NAME"
+//    is not considered replaceable.string2 = %ScanRpl('NAME' : 'Tom' : string1 : 6);
+// string2 = 'See NAME. See Tom run. Run Tom run.'
+
+// 4. All occurrences of "NAME" are replaced by "Tom"
+//    up to length 31.  Since the final "E" of
+//    the last "NAME" in the string is not part of the
+//    source string that is scanned, , the final "NAME"
+//    is not considered replaceable.string2 = %ScanRpl('NAME' : 'Tom' : string1 : 1 : 31);
+// string2 = 'See Tom. See Tom run. Run NAME run.'
+
+// 5. All occurrences of "NAME" are replaced by "Tom"
+//    from position 10 for length 10.  Only the second
+//    "NAME" value falls in that range.string2 = %ScanRpl('NAME' : 'Tom' : string1 : 10 : 10);
+// string2 = 'See NAME. See Tom run. Run NAME run.'</code></pre></div><div class="docs--copy-btn"></div></div></figure>
+
+</div>
+<aside role="complementary" aria-labelledby="bbscanrp__title__1"><nav role="navigation" aria-label="bottom related links" class="ibm-padding-top-1 ibm-padding-bottom-2 bx--row bottom-section-parent">
+<div class="familylinks ibm-margin-bottom-1">
+<div class="parentlink"><strong>Parent topic:</strong> <div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a data-hd-product="ssw_ibm_i_74" href="/docs/en/ssw_ibm_i_74/rzasd/bifs.htm" class="bottom-section-link">Built-in Functions</a></div></div>
+</div>
+</nav></aside></article></main>

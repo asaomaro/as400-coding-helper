@@ -1,0 +1,121 @@
+<main role="main"><article role="article" aria-labelledby="bbtmst__title__1">
+<h1 class="topictitle1" id="bbtmst__title__1">%TIMESTAMP (Convert to Timestamp)</h1><div id="lastModifiedDate"><span>Last Updated</span>: 2026-07-13</div>
+
+
+<div class="body">
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>
+%TIMESTAMP{(char-num-expression { : *ISO|*ISO0 : {fractional-seconds}})}
+%TIMESTAMP{(date-timestamp-expression { : fractional-seconds})}
+%TIMESTAMP{(*SYS { : fractional-seconds})}
+%TIMESTAMP{(*UNIQUE)}
+</code></pre></div><div class="docs--copy-btn"></div></div>
+<section class="section" role="region" aria-labelledby="bbtmst__title__2"><h2 class="sectiontitle" id="bbtmst__title__2">Using %TIMESTAMP to return the current system timestamp</h2>
+
+<p>If you do not specify a parameter,
+or if you specify *SYS or *UNIQUE as the first parameter, %TIMESTAMP returns
+the current system timestamp, accurate to microsecond precision.</p>
+
+<p>If the first parameter is *SYS, the optional second parameter is the number
+of fractional seconds in the returned timestamp.
+The number of fractional
+seconds can be between 0 and 12.
+It defaults to 6 fractional seconds.</p>
+
+<p>If the first parameter is *UNIQUE, %TIMESTAMP returns the current system
+timestamp, accurate to microsecond precision.
+The first six digits of the fractional
+seconds portion of the timestamp are
+set to the microseconds portion of the timestamp.
+The remaining six fractional seconds are set to a value which makes the resulting timestamp unique.
+However, the remaining six fractional seconds do not provide greater precision for the timestamp.
+</p>
+
+<div class="note tip border-2 cds--inline-notification--info ibmdocs-note cds--inline-notification cds--inline-notification--low-contrast margin-top-1 margin-bottom-1"><div class="cds--inline-notification__details"><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" class="cds--inline-notification__icon" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M16,2A14,14,0,1,0,30,16,14,14,0,0,0,16,2Zm0,5a1.5,1.5,0,1,1-1.5,1.5A1.5,1.5,0,0,1,16,7Zm4,17.12H12V21.88h2.88V15.12H13V12.88h4.13v9H20Z"></path></svg>
+        <div class="cds--inline-notification__text-wrapper">
+          <div class="cds--inline-notification__subtitle"><span class="tiptitle ibm-bold ibm-textcolor-blue-50 background-blue cds--inline-notification__title ibm-padding-top-1 ibm-padding-bottom-1 padding-left-1 padding-right-1">Tip:</span> 
+If unique timestamps are used to determine the elapsed time between two unique timestamps,
+the result should only be calculated to microsecond precision.
+</div>
+        </div>
+      </div></div>
+
+</section>
+
+<section class="section" role="region" aria-labelledby="bbtmst__title__3"><h2 class="sectiontitle" id="bbtmst__title__3">Using %TIMESTAMP to convert an expression to a timestamp</h2>
+
+<ul class="cds--list--unordered">
+<li class="cds--list__item">If the first parameter is a character or numeric expression,
+the second parameter is the format of the character or numeric data.
+Regardless of the input format, the output is returned in *ISO format.
+<p>For character input,
+you can specify either *ISO (the default) or *ISO0. For more information,
+see <a href="/docs/en/ssw_ibm_i_74/rzasd/dtimes.htm#dtimes">Timestamp Data Type</a>.</p>
+
+<p>If the first parameter is numeric, you do not need to specify the
+second parameter. The only allowed value is *ISO (the default).</p>
+
+<p>The optional third parameter is the number of fractional seconds
+in the timestamp.
+The number of fractional
+seconds can be between 0 and 12.
+It defaults to 6 fractional seconds.</p>
+
+</li>
+
+<li class="cds--list__item">If the first parameter a date
+or timestamp expression, the optional second parameter is the number
+of fractional seconds in the returned timestamp.
+<p>If the first operand is a date, the system converts the date
+from its current format to *ISO format
+and adds a time of <code class="ph codeph">00.00.00</code>
+and zero fractional seconds.
+The number of fractional
+seconds can be between 0 and 12.
+It defaults to 6 fractional seconds.</p>
+
+</li>
+
+</ul>
+
+</section>
+
+<div class="section">
+
+<p>For more information, see <a href="/docs/en/ssw_ibm_i_74/rzasd/yyinfo.htm#yyinfo">Information Operations</a> or <a href="/docs/en/ssw_ibm_i_74/rzasd/bifsint.htm#bifsint">Built-in Functions</a>.</p>
+
+</div>
+
+<section class="section" role="region" aria-labelledby="bbtmst__title__4"><h2 class="sectiontitle" id="bbtmst__title__4">%TIMESTAMP Example</h2>
+
+<div class="figborder">
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code> *..1....+....2....+....3....+....4....+....5....+....6....+....7...+....
+
+   string = '1960-09-29-12.34.56.000000';
+   timest =  %timestamp(string);
+    // timest now contains z'1960-09-29-12.34.56.000000'
+
+   date = '2001-03-05';
+   timest =  %timestamp(date);
+    // timest now contains z'2001-03-05-00.00.00.000000'
+
+   dsply (%timestamp(*SYS));
+    // It displays 2014-06-27-01.02.03.421345
+
+   dsply (%timestamp(*SYS : 1));
+    // It displays 2014-06-27-01.02.03.4
+
+   dsply (%timestamp(*SYS : 0));
+    // It displays 2014-06-27-01.02.03
+
+   dsply (%timestamp(*UNIQUE);
+    // It displays 2014-06-27-01.02.03.923481000244
+</code></pre></div><div class="docs--copy-btn"></div></div></div>
+
+</section>
+
+</div>
+<aside role="complementary" aria-labelledby="bbtmst__title__1"><nav role="navigation" aria-label="bottom related links" class="ibm-padding-top-1 ibm-padding-bottom-2 bx--row bottom-section-parent">
+<div class="familylinks ibm-margin-bottom-1">
+<div class="parentlink"><strong>Parent topic:</strong> <div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a data-hd-product="ssw_ibm_i_74" href="/docs/en/ssw_ibm_i_74/rzasd/bifs.htm" class="bottom-section-link">Built-in Functions</a></div></div>
+</div>
+</nav></aside></article></main>

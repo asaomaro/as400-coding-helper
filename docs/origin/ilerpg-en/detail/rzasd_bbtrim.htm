@@ -1,0 +1,140 @@
+<main role="main"><article role="article" aria-labelledby="bbtrim__title__1">
+<h1 class="topictitle1" id="bbtrim__title__1">%TRIM (Trim Characters at Edges)</h1><div id="lastModifiedDate"><span>Last Updated</span>: 2026-07-13</div>
+
+
+<div class="body">
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>%TRIM(string {: characters to trim {: *NATURAL | *STDCHARSIZE}}})</code></pre></div><div class="docs--copy-btn"></div></div>
+<p>%TRIM with only one parameter returns the given string
+with any leading and trailing blanks removed.   </p>
+
+<p>%TRIM with two parameters returns the given string with
+any leading and trailing characters that are in the <em>characters
+to trim parameter</em> removed.</p>
+
+<p>The string can be <span class="ph">character, graphic, or UCS-2</span> data.</p>
+
+<p>If the <em>characters to trim</em> parameter
+is specified, it must be the same type as the <em>string</em> parameter.</p>
+
+<div class="p" id="bbtrim__charcount">The second or third parameter can be *NATURAL or *STDCHARSIZE
+to override the current <a href="/docs/en/ssw_ibm_i_74/rzasd/charcount.htm">CHARCOUNT</a> mode for the statement.
+If this parameter is specified, it must be the last parameter.
+<ul class="cds--list--unordered">
+<li class="cds--list__item">Specify *NATURAL to indicate that %TRIM operates in <span class="keyword">CHARCOUNT NATURAL</span> mode.
+The number of bytes in each character is considered when locating the
+characters to trim.
+<ol class="cds--list--ordered--temporary">
+<li class="cds--list__item">For example, if the <var class="keyword varname">string</var> parameter is a
+UTF-8 string with the value 'áçabc',
+and the <em>characters to trim</em> parameter is a UTF-8 string with the value 'á'
+only 'á' is considered to be a character to trim. The result is 'çabc'.
+</li>
+
+<li class="cds--list__item">If the <var class="keyword varname">string</var> parameter is a
+mixed SBCS/DBCS EBCDIC string with the value x'8182830E4CB14DB10F' ('abcDDEE',
+where 'DD' and 'EE' represents DBCS characters), and the
+<em>characters to trim</em> parameter has the value x'0E4DB10F' ('EE'),
+only the last DBCS character is trimmed. The result is
+x'8182830E4CB10F' ('abcDD').
+</li>
+
+</ol>
+
+</li>
+
+<li class="cds--list__item">Specify *STDCHARSIZE to indicate that %TRIM operates in <span class="keyword">CHARCOUNT STDCHARSIZE</span> mode.
+<ol class="cds--list--ordered--temporary">
+<li class="cds--list__item">
+In the first example of the previous paragraph, with <span class="keyword">CHARCOUNT STDCHARSIZE</span> mode,
+each byte of the <em>characters to trim</em> parameter is considered to be a
+separate character.
+Characters 'á' and 'ç' are 2-byte characters, x'C3A1' and x'C3A7'.
+The first bytes of 'á' and 'ç' are the same, x'C3', so the first
+byte of 'ç' is considered to be a character to trim.
+The bytes x'C3', x'A1' are trimmed from the result, so the result is invalid
+because it begins with the second byte of 'ç'.
+</li>
+
+<li class="cds--list__item">In the second example of the previous paragraph, with <span class="keyword">CHARCOUNT STDCHARSIZE</span>
+mode, each byte of the <em>characters to trim</em> parameter is considered separately, so the
+x'B1' that ends the DBCS character x'4CB1' in the <var class="keyword varname">string</var> parameter is
+trimmed.
+The result is invalid, since it ends with an incomplete DBCS sequence: x'8182830E4C' ('abc??').
+</li>
+
+</ol>
+
+</li>
+
+</ul>
+
+See <a href="/docs/en/ssw_ibm_i_74/rzasd/charcount.htm">Processing string data by the natural size of each character</a> and <a href="/docs/en/ssw_ibm_i_74/rzasd/chartype.htm">Character Data Type</a>.
+<div class="note border-2 cds--inline-notification--info ibmdocs-note cds--inline-notification cds--inline-notification--low-contrast margin-top-1 margin-bottom-1"><div class="cds--inline-notification__details"><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" class="cds--inline-notification__icon" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M16,2A14,14,0,1,0,30,16,14,14,0,0,0,16,2Zm0,5a1.5,1.5,0,1,1-1.5,1.5A1.5,1.5,0,0,1,16,7Zm4,17.12H12V21.88h2.88V15.12H13V12.88h4.13v9H20Z"></path></svg>
+        <div class="cds--inline-notification__text-wrapper">
+          <div class="cds--inline-notification__subtitle"><span class="notetitle ibm-bold ibm-textcolor-blue-50 background-blue cds--inline-notification__title ibm-padding-top-1 ibm-padding-bottom-1 padding-left-1 padding-right-1">Note:</span> 
+%TRIM can also operate in <span class="keyword">CHARCOUNT NATURAL</span> mode due to the
+<span class="keyword">/CHARCOUNT</span> compiler directive or the <span class="keyword">CHARCOUNT</span> Control keyword.
+</div>
+        </div>
+      </div></div>
+
+</div>
+
+<div class="p">When specified as a parameter for a definition specification keyword,
+the string parameter must be a constant.
+<div class="note border-2 cds--inline-notification--info ibmdocs-note cds--inline-notification cds--inline-notification--low-contrast margin-top-1 margin-bottom-1"><div class="cds--inline-notification__details"><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" class="cds--inline-notification__icon" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M16,2A14,14,0,1,0,30,16,14,14,0,0,0,16,2Zm0,5a1.5,1.5,0,1,1-1.5,1.5A1.5,1.5,0,0,1,16,7Zm4,17.12H12V21.88h2.88V15.12H13V12.88h4.13v9H20Z"></path></svg>
+        <div class="cds--inline-notification__text-wrapper">
+          <div class="cds--inline-notification__subtitle"><span class="notetitle ibm-bold ibm-textcolor-blue-50 background-blue cds--inline-notification__title ibm-padding-top-1 ibm-padding-bottom-1 padding-left-1 padding-right-1">Note:</span> Specifying
+%TRIM with two parameters is not supported for parameters of Definition
+keywords.</div>
+        </div>
+      </div></div>
+</div>
+
+<p>For more information, see <a href="/docs/en/ssw_ibm_i_74/rzasd/yystrng.htm#yystrng">String Operations</a> or <a href="/docs/en/ssw_ibm_i_74/rzasd/bifsint.htm#bifsint">Built-in Functions</a>.</p>
+
+<figure class="figborder" id="bbtrim__ebtrim"><figcaption>Figure 1. %TRIM Example</figcaption>
+
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code> *..1....+....2....+....3....+....4....+....5....+....6....+....7...+....
+D*Name++++++++++ETDsFrom+++To/L+++IDc.Keywords+++++++++++++++++++++++++
+D Location        S             16A
+D FirstName       S             10A   inz ('   Chris ')
+D LastName        S             10A   inz ('   Smith ')
+
+D Name            S             20A
+
+ * LOCATION will have the value 'Toronto, Ontario'.
+ /FREE
+     Location = %trim ('  Toronto, Ontario  ');
+ 
+  // Name will have the value 'Chris Smith!        '.
+   Name = %trim (FirstName) + ' ' + %trim (LastName) + '!';
+ /END-FREE</code></pre></div><div class="docs--copy-btn"></div></div></figure>
+
+<figure class="fignone"><figcaption>Figure 2. Trimming characters other than blank </figcaption>
+
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>D edited          S             20A   INZ('$******5.27***      ')
+D trimmed         S             20A   varying
+D numeric         S             15P 3
+ /FREE      
+
+     // Trim '$' and '*' from the edited numeric value
+     // Note: blanks will not be trimmed, since a blank
+     // is not specified in the 'characters to trim' parameter
+
+     trimmed = %trim(edited : '$*');     // trimmed is now '5.27***      '
+
+     // Trim '$' and '*' and blank from the edited numeric value
+
+     trimmed = %trim(edited : '$* ');     // trimmed is now '5.27'
+
+     // Get the numeric value from the edited value
+
+     numeric = %dec(%trim(edited : '$* ') : 31 : 9);     // numeric is now 5.27</code></pre></div><div class="docs--copy-btn"></div></div></figure>
+
+</div>
+<aside role="complementary" aria-labelledby="bbtrim__title__1"><nav role="navigation" aria-label="bottom related links" class="ibm-padding-top-1 ibm-padding-bottom-2 bx--row bottom-section-parent">
+<div class="familylinks ibm-margin-bottom-1">
+<div class="parentlink"><strong>Parent topic:</strong> <div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a data-hd-product="ssw_ibm_i_74" href="/docs/en/ssw_ibm_i_74/rzasd/bifs.htm" class="bottom-section-link">Built-in Functions</a></div></div>
+</div>
+</nav></aside></article></main>

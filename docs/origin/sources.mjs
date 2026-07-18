@@ -134,6 +134,10 @@ export const categories = {
       { name: 'I-SPEC-layout-external', topic: 'ssw_ibm_i_74/rzasd/extlay.htm',  note: 'I: 外部記述ファイルのレイアウト（桁）' },
       { name: 'O-SPEC-layout-program',  topic: 'ssw_ibm_i_74/rzasd/prlay.htm',   note: 'O: プログラム記述ファイルのレイアウト（桁）' },
       { name: 'O-SPEC-layout-external', topic: 'ssw_ibm_i_74/rzasd/exlay.htm',   note: 'O: 外部記述ファイルのレイアウト（桁）' },
+
+      // --- 第6弾: 命令コード・組み込み関数（補完用） ---
+      { name: 'OPCODES',  topic: 'ssw_ibm_i_74/rzasd/operxcl.htm', note: '命令コードの索引（C仕様の補完用）' },
+      { name: 'BIFS',     topic: 'ssw_ibm_i_74/rzasd/bifs.htm',    note: '組み込み関数の索引（%XXX の補完用）' },
     ],
   },
 
