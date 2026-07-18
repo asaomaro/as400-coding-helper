@@ -1,183 +1,631 @@
 {
   "keyword": "CRTDSPF",
-  "description": "表示装置ファイル作成（CRTDSPF）",
-  "help": "DDSソースから、対話式アプリケーションがワークステーション画面の入出力に使う表示装置ファイル(*FILE)を作成します。",
+  "description": "表示装置ファイル作成 (CRTDSPF)",
+  "help": "表示装置ファイル作成(CRTDSPF)コマンドは表示装置ファイルを作成します。装置ファイルには，使用される装置を識別したり，任意指定として装置によって使用されるレコード様式を識別（データ記述仕様(DDS)に指定されている場合）するファイル記述が入っています。装置ファイルにはデータは入っていません。表示装置ファイルは，装置ファイルに関連した1つ以上の表示装置にレコードを送信したり，表示装置からレコードを受信したりします。\n\nファイル記述表示には，次の2つの場所で指定されている情報が入っています。(1) DDS（使用する場合）が入っているソース・ファイル，(2) CRTDSPFコマンドの中。DDSには，装置ファイル中の各レコード様式の仕様，および各レコード様式中のフィールドの仕様が入っています。\n\n表示装置ファイル記述に指定されているパラメーター値を変更または一時変更するためには，プログラム中で表示装置ファイル変更(CHGDSPF)または表示装置ファイル一時変更(OVRDSPF)コマンドを使用します。一時変更コマンドは，表示装置ファイルがプログラムによってオープンされる前に実行しなければなりません。一時変更される値は，そのプログラムが実行中の場合にのみ変更されます。プログラムが終了すると，表示装置ファイルに指定されている元のパラメーター値が使用されます。\n\n注: アプリケーション・プログラムが交換回線上でワークステーションのセッション確立を試みた場合に，回線接続が切られているか，確立されていない場合には，アプリケーション・プログラムは，接続が確立されるまで，いつまでも待ちます。",
   "parameters": [
     {
       "name": "FILE",
       "description": "ファイル",
-      "help": "作成する表示装置ファイルの修飾名（必須・定位置1）。修飾子1=ファイル名、修飾子2=ライブラリー（既定 *CURLIB）。",
+      "help": "作成する表示装置ファイルを指定します。\n\n表示装置ファイルを高水準言語プログラムで使用する場合には，ファイル名はその言語の命名規則に従うものでなければなりません。そうでない場合には，プログラムの中でファイル名を変更しなければなりません。\n\nこれは必須パラメーターです。",
       "inputType": "group",
       "required": true,
+      "groupKind": "qualified",
       "children": [
-        { "name": "LIB", "description": "ライブラリー", "help": "ファイルを作成するライブラリー。*CURLIB / ライブラリー名。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 10 }, "placeholder": "*CURLIB" },
-        { "name": "FILE", "description": "ファイル", "help": "作成するファイルの名前。", "inputType": "text", "required": true, "attributes": { "characterSet": "upper", "maxLength": 10 }, "placeholder": "FILE" }
-      ]
+        {
+          "name": "LIB",
+          "description": "ライブラリー",
+          "help": "*CURLIB: 表示装置ファイルを見つけるためにジョブの現行ライブラリーが使用されます。ジョブの現行ライブラリーとしてライブラリーが指定されていない場合は，QGPLが使用されます。\n表示装置ファイルが作成されたライブラリーを指定します。",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "*CURLIB",
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          },
+          "placeholder": "*CURLIB"
+        },
+        {
+          "name": "FILE",
+          "description": "ファイル",
+          "help": "作成する表示装置ファイルの名前を指定してください。",
+          "inputType": "text",
+          "required": true,
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          },
+          "placeholder": "FILE"
+        }
+      ],
+      "positional": 1
     },
     {
       "name": "SRCFILE",
       "description": "ソース・ファイル",
-      "help": "DDSソースが入っているソース物理ファイル（オプショナル・定位置2）。単一値 *NONE、またはソース・ファイルの修飾名。",
+      "help": "表示装置ファイルの作成に使用されるデータ記述仕様(DDS)ソースが入っているソース・ファイル（指定されている場合）を指定します。",
       "inputType": "group",
       "required": false,
+      "groupKind": "qualified",
+      "singleValues": [
+        "*NONE"
+      ],
       "children": [
-        { "name": "LIB", "description": "ライブラリー", "help": "ソース・ファイルのライブラリー。*LIBL / *CURLIB / ライブラリー名。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 10 }, "placeholder": "*LIBL" },
-        { "name": "SRCFILE", "description": "ソース・ファイル", "help": "*NONE、または DDS ソース・ファイル名。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 10 }, "placeholder": "*NONE" }
-      ]
+        {
+          "name": "SRCFILE_LIB",
+          "description": "ライブラリー",
+          "help": "*LIBL: 最初に一致するものが見つかるまで，現行スレッドのライブラリー・リスト内のすべてのライブラリーが検索されます。\n*CURLIB: ファイルを見つけるために，ジョブの現行ライブラリーが使用されます。ジョブの現行ライブラリーとしてライブラリーが指定されていない場合は，QGPLが使用されます。\nファイルが入っているライブラリーを指定します。",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "*LIBL",
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          },
+          "placeholder": "*LIBL"
+        },
+        {
+          "name": "SRCFILE",
+          "description": "ソース・ファイル",
+          "help": "表示装置ファイルを作成するために使用されるDDSが入っているソース・ファイル名を指定してください。",
+          "inputType": "text",
+          "required": false,
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          },
+          "defaultValue": "*NONE",
+          "placeholder": "*NONE"
+        }
+      ],
+      "positional": 2
     },
-    { "name": "SRCMBR", "description": "ソース・メンバー", "help": "DDSソース・メンバー名（オプショナル・定位置3）。既定 *FILE（ファイル名と同じメンバー）。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 10 }, "placeholder": "*FILE" },
-    { "name": "GENLVL", "description": "生成重大度レベル", "help": "ファイル生成を継続する最大エラー重大度。0-30（既定 20）。", "inputType": "number", "required": false, "attributes": { "numericOnly": true, "maxLength": 2 }, "placeholder": "20" },
-    { "name": "FLAG", "description": "フラグづけ重大度レベル", "help": "リストにフラグを付ける最小メッセージ重大度。0-30（既定 0）。", "inputType": "number", "required": false, "attributes": { "numericOnly": true, "maxLength": 2 }, "placeholder": "0" },
-    { "name": "DEV", "description": "表示装置", "help": "ファイルが使用する表示装置。単一値 *NONE、または装置名／*REQUESTER（最大50回）。", "inputType": "text", "required": false, "maxOccurrences": 50, "attributes": { "characterSet": "upper", "maxLength": 10 }, "placeholder": "*NONE" },
+    {
+      "name": "SRCMBR",
+      "description": "ソース・メンバー",
+      "help": "作成する表示装置ファイルのDDSソースが入っているソース・ファイル・メンバーを指定します。\n\n*FILE: ソース・ファイルのメンバー名は， ファイル (FILE) パラメーターに指定された名前と同じです。\nソース・ファイル中のメンバーの名前を指定してください。",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*FILE",
+      "attributes": {
+        "characterSet": "upper",
+        "maxLength": 10
+      },
+      "positional": 3,
+      "placeholder": "*FILE"
+    },
+    {
+      "name": "GENLVL",
+      "description": "生成重大度レベル",
+      "help": "ファイルが作成されない原因となるデータ記述仕様(DDS)メッセージの重大度レベルを指定します。このパラメーターが適用されるのは，ソースDDSファイルの処理中に作成されたメッセージに対してだけです。\n\n20: DDSソース・ファイルの処理中に重大度レベルが20より大きいか等しいエラーが起こった場合には，ファイルは作成されません。\n所要の重大度レベル値を指定してください。0を指定した場合には，ファイルは作成されません。指定する値は， フラグづけ重大度レベル (FLAG) パラメーターに指定された値に等しいかそれより大きくなければなりません。",
+      "inputType": "number",
+      "required": false,
+      "defaultValue": "20",
+      "attributes": {
+        "numericOnly": true
+      },
+      "placeholder": "20"
+    },
+    {
+      "name": "FLAG",
+      "description": "フラグづけ重大度レベル",
+      "help": "リストするメッセージの最小重大度レベルを指定します。\n\n0: すべてのメッセージがリストされます。\nリストするメッセージの最小重大度を示す数値を指定してください。指定する値は， 生成重大度レベル (GENLVL) パラメーターに指定された値に等しいかそれ以下でなければなりません。",
+      "inputType": "number",
+      "required": false,
+      "defaultValue": "0",
+      "attributes": {
+        "numericOnly": true
+      },
+      "placeholder": "0"
+    },
+    {
+      "name": "DEV",
+      "description": "表示装置",
+      "help": "表示装置のユーザーとそのジョブとの間でデータ・レコードを受け渡しするために，この表示装置ファイルで使用される1つ以上の表示装置名を指定します。\n\n*NONE: 表示装置名は指定されません。表示装置の名前は，表示装置ファイル変更 (CHGDSPF)コマンドまたは表示装置ファイル一時変更(OVRDSPF)コマンド，あるいはファイルをオープンする高水準言語プログラムに後から指定しなければなりません。\n\n指定できる特殊値: *REQUESTER",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*REQUESTER",
+      "attributes": {
+        "characterSet": "upper",
+        "maxLength": 10
+      },
+      "maxOccurrences": 50,
+      "placeholder": "*NONE"
+    },
     {
       "name": "IGCDTA",
       "description": "ユーザー指定のDBCSデータ",
-      "help": "ファイルが2バイト文字(DBCS)データを処理するか。*NO / *YES。",
+      "help": "プログラム記述ファイルの場合には，ファイルが2バイト文字セット(DBCS)データを処理するかどうかを指定します。外部記述ファイルの場合には，ファイルのDBCS属性を指定します。",
       "inputType": "dropdown",
       "required": false,
+      "defaultValue": "*NO",
+      "attributes": {
+        "characterSet": "upper"
+      },
       "options": [
-        { "label": "*NO", "value": "*NO" },
-        { "label": "*YES（DBCSデータを処理）", "value": "*YES" }
+        {
+          "label": "*NO",
+          "value": "*NO"
+        },
+        {
+          "label": "*YES",
+          "value": "*YES"
+        }
       ]
     },
     {
       "name": "IGCEXNCHR",
       "description": "外字",
-      "help": "拡張文字(外字)処理を行うか。*YES / *NO。",
+      "help": "システムが2バイト文字セット(DBCS)の外字を処理するかどうかを指定します。DBCS外字を処理するときには，装置にはシステムの援助が必要です。システムが文字の外観を装置に指示しなければ，装置は文字を表示または印刷できません。外字は，DBCS装置ではなくDBCSフォント・テーブルに記憶されます。外字処理は，DBCS装置に使用可能なDBCSフォント・テーブルに記憶される文字を作成するために必要なオペレーティング・システムの機能です。",
       "inputType": "dropdown",
       "required": false,
+      "defaultValue": "*YES",
+      "attributes": {
+        "characterSet": "upper"
+      },
       "options": [
-        { "label": "*YES", "value": "*YES" },
-        { "label": "*NO", "value": "*NO" }
+        {
+          "label": "*YES",
+          "value": "*YES",
+          "help": "システムはDBCS外字を処理します。"
+        },
+        {
+          "label": "*NO",
+          "value": "*NO",
+          "help": "システムは外字を処理しません。外字は未定義文字として表示されます。"
+        }
       ]
     },
-    { "name": "TEXT", "description": "テキスト'記述'", "help": "ファイルを説明するテキスト記述。*SRCMBRTXT / *BLANK / 文字値。", "inputType": "text", "required": false, "attributes": { "maxLength": 50 }, "placeholder": "*SRCMBRTXT" },
-    { "name": "OPTION", "description": "ソース・リスト・オプション", "help": "ソース・リスト・オプション（オプショナル・定位置4、最大4回）。*SRC/*NOSRC, *SOURCE/*NOSOURCE, *LIST/*NOLIST, *SECLVL/*NOSECLVL, *EVENTF/*NOEVENTF。", "inputType": "text", "required": false, "maxOccurrences": 4, "attributes": { "characterSet": "upper", "maxLength": 12 }, "placeholder": "*SRC" },
-    { "name": "MAXDEV", "description": "装置の最大数", "help": "同時にファイルへ獲得できる装置の最大数。1-256（既定 1）。", "inputType": "number", "required": false, "attributes": { "numericOnly": true, "maxLength": 3 }, "placeholder": "1" },
+    {
+      "name": "TEXT",
+      "description": "テキスト'記述'",
+      "help": "オブジェクトを簡単に記述したテキストを指定します。\n\n*SRCMBRTXT: ソース・ファイルがデータベース・ファイルの場合には，テキストはファイルの作成に使用されたソース・ファイル・メンバーから取られます。ソース・ファイルがインライン・ファイルまたは装置ファイルの場合には，テキストはブランクです。\n*BLANK: テキストは指定されません。\n50文字を超えないテキストを，アポストロフィで囲んで指定してください。",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*SRCMBRTXT",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "placeholder": "*SRCMBRTXT"
+    },
+    {
+      "name": "OPTION",
+      "description": "ソース・リスト・オプション",
+      "help": "ファイルの作成時に生成される出力のタイプを指定します。このパラメーターには，以下の値を4つまで任意の順序で指定することができます。オプションに両方の値を指定した場合，あるいはいずれの値も指定しなかった場合には，そのオプションにリストされている最初の値が使用されます。",
+      "inputType": "dropdown",
+      "required": false,
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*SRC",
+          "value": "*SRC"
+        },
+        {
+          "label": "*NOSRC",
+          "value": "*NOSRC"
+        },
+        {
+          "label": "*SOURCE",
+          "value": "*SOURCE"
+        },
+        {
+          "label": "*NOSOURCE",
+          "value": "*NOSOURCE"
+        },
+        {
+          "label": "*LIST",
+          "value": "*LIST"
+        },
+        {
+          "label": "*NOLIST",
+          "value": "*NOLIST"
+        },
+        {
+          "label": "*SECLVL",
+          "value": "*SECLVL"
+        },
+        {
+          "label": "*NOSECLVL",
+          "value": "*NOSECLVL"
+        },
+        {
+          "label": "*EVENTF",
+          "value": "*EVENTF"
+        },
+        {
+          "label": "*NOEVENTF",
+          "value": "*NOEVENTF"
+        }
+      ],
+      "positional": 4,
+      "maxOccurrences": 4,
+      "placeholder": "*SRC"
+    },
+    {
+      "name": "MAXDEV",
+      "description": "装置の最大数",
+      "help": "ファイルがオープンされている時に，表示装置ファイルに同時に接続することのできる表示装置の最大数を指定します。\n\n1: この表示装置ファイルでは，ただ1つの装置名または*REQUESTERを指定することができます。\n同時に表示装置ファイルに接続できる装置の最大数を指定してください。",
+      "inputType": "number",
+      "required": false,
+      "defaultValue": "1",
+      "attributes": {
+        "numericOnly": true
+      },
+      "placeholder": "1"
+    },
     {
       "name": "ENHDSP",
       "description": "拡張表示",
-      "help": "拡張表示装置機能を使うか。*YES / *NO。",
+      "help": "この表示装置ファイルによって表示装置に表示されるデータがその表示装置で使用可能な拡張機能を使用しているかどうかを指定します。",
       "inputType": "dropdown",
       "required": false,
+      "defaultValue": "*YES",
+      "attributes": {
+        "characterSet": "upper"
+      },
       "options": [
-        { "label": "*YES", "value": "*YES" },
-        { "label": "*NO", "value": "*NO" }
+        {
+          "label": "*YES",
+          "value": "*YES",
+          "help": "表示装置ファイルのデータは，表示装置で使用可能な拡張機能を使用して表示されます。この機能には，略語，選択カーソル，および図形ウィンドウ枠を含めることができます。"
+        },
+        {
+          "label": "*NO",
+          "value": "*NO",
+          "help": "この表示装置ファイルのデータは，5250表示装置上にある場合と同じように表示されます。略語，選択カーソル，または図形ウィンドウ枠など，この表示装置で使用可能な拡張機能は使用されません。この値は通常，すべての表示装置相互間の文字を基礎とした対話を維持するために使用されます。"
+        }
       ]
     },
     {
       "name": "RSTDSP",
       "description": "画面復元",
-      "help": "ファイルが中断後に画面を復元するか。*NO / *YES。",
+      "help": "同じ表示装置で異なる表示装置ファイルが異なるデータを表示できるように，この表示装置ファイルが保留される（一時的に非活動状態にされる）時に，表示されているデータを保管するかどうかを指定します。このファイルのデータを保管した場合には，そのファイルを再び使用する時に，そのデータが装置の画面に復元されます。",
       "inputType": "dropdown",
       "required": false,
+      "defaultValue": "*NO",
+      "attributes": {
+        "characterSet": "upper"
+      },
       "options": [
-        { "label": "*NO", "value": "*NO" },
-        { "label": "*YES（復元する）", "value": "*YES" }
+        {
+          "label": "*NO",
+          "value": "*NO",
+          "help": "ファイルが保留されていると，このファイルによって表示中のデータは保管されません。"
+        },
+        {
+          "label": "*YES",
+          "value": "*YES",
+          "help": "このファイルが保留される時に表示されているデータは保管され，ファイルが再び使用された時に表示装置に復元されます。"
+        }
       ]
     },
     {
       "name": "DFRWRT",
       "description": "書き出し据え置き",
-      "help": "表示装置への書き出しを据え置くか。*YES / *NO。",
+      "help": "読み取り要求が行われた時に，他のデータと一緒に書き出されるまで，データの書き出しを遅延するかどうかを指定します。データを受信した直後に制御権がプログラムに戻されます。",
       "inputType": "dropdown",
       "required": false,
+      "defaultValue": "*YES",
+      "attributes": {
+        "characterSet": "upper"
+      },
       "options": [
-        { "label": "*YES（据え置く）", "value": "*YES" },
-        { "label": "*NO", "value": "*NO" }
+        {
+          "label": "*YES",
+          "value": "*YES",
+          "help": "プログラムが書き出し要求を出した場合には，バッファーの処理後に制御権が戻されます。これにより，パフォーマンスが向上することがあります。"
+        },
+        {
+          "label": "*NO",
+          "value": "*NO",
+          "help": "書き出し操作の後，ユーザー・プログラムは入出力の完了まで制御権を受け取りません。"
+        }
       ]
     },
     {
       "name": "CHRID",
       "description": "文字ID",
-      "help": "文字ID。単一値 *DEVD / *SYSVAL / *JOBCCSID / *CHRIDCTL、または要素リスト（図形文字セット・コード・ページ）。",
+      "help": "表示装置ファイルに対して行うことができる文字変換のタイプを指定します。必要な場合には，システムは装置との間で送受信する文字データを変換します。これにより，文字の正しい16進バイト値が装置に送信され，アプリケーション・プログラムに戻されます。",
       "inputType": "group",
       "required": false,
+      "groupKind": "elements",
+      "singleValues": [
+        "*DEVD",
+        "*SYSVAL",
+        "*JOBCCSID",
+        "*CHRIDCTL"
+      ],
       "children": [
-        { "name": "CHARSET", "description": "図形文字セット", "help": "図形文字セット番号（整数）。単一値を使う場合は空欄。", "inputType": "number", "required": false, "attributes": { "numericOnly": true, "maxLength": 5 }, "placeholder": "*DEVD" },
-        { "name": "CODEPAGE", "description": "コード・ページ", "help": "コード・ページ番号（整数）。", "inputType": "number", "required": false, "attributes": { "numericOnly": true, "maxLength": 5 } }
+        {
+          "name": "CHARSET",
+          "description": "図形文字セット",
+          "help": "使用する図形文字セットの番号を指定してください。有効な値の範囲は1から32767です。",
+          "inputType": "number",
+          "required": false,
+          "attributes": {
+            "numericOnly": true
+          },
+          "defaultValue": "*DEVD",
+          "placeholder": "*DEVD"
+        },
+        {
+          "name": "CODEPAGE",
+          "description": "コード・ページ",
+          "help": "使用するコード・ページの番号を指定してください。有効な値の範囲は1から32767です。",
+          "inputType": "number",
+          "required": false,
+          "attributes": {
+            "numericOnly": true
+          }
+        }
       ]
     },
     {
       "name": "DECFMT",
       "description": "10進数形式",
-      "help": "編集時の10進数形式。*FILE / *JOB。",
+      "help": "EDTCDE DDSキーワードで数字フィールドを編集する時に使用する10進数形式を指定します。10進数形式の値は，小数点としてのコンマおよびピリオドの使用，および編集済みフィールドにおける3桁の定位置区切り記号を決定します。",
       "inputType": "dropdown",
       "required": false,
+      "defaultValue": "*JOB",
+      "attributes": {
+        "characterSet": "upper"
+      },
       "options": [
-        { "label": "*FILE", "value": "*FILE" },
-        { "label": "*JOB", "value": "*JOB" }
+        {
+          "label": "*FILE",
+          "value": "*FILE",
+          "help": "ファイルの作成時にそのファイルと一緒に記憶された10進数形式の値を使用します。"
+        },
+        {
+          "label": "*JOB",
+          "value": "*JOB",
+          "help": "ファイルのオープン時にDECFMTジョブ属性からの10進数形式の値を使用します。"
+        }
       ]
     },
     {
       "name": "SFLENDTXT",
       "description": "SFLENDテキスト",
-      "help": "サブファイル終わりのテキスト表示方法。*FILE / *MSG。",
+      "help": "サブファイルを表示する場合に，「続く...」および「終わり」というテキストが検索される場所を指定します。「続く...」および「終わり」というテキストは，サブファイル制御レコードにSFLEND(*MORE) DDSキーワードが指定されている時にサブファイル中に表示されます。",
       "inputType": "dropdown",
       "required": false,
+      "defaultValue": "*MSG",
+      "attributes": {
+        "characterSet": "upper"
+      },
       "options": [
-        { "label": "*FILE", "value": "*FILE" },
-        { "label": "*MSG", "value": "*MSG" }
+        {
+          "label": "*FILE",
+          "value": "*FILE",
+          "help": "ファイルの作成時に，ファイルに格納された「続く...」および「終わり」というテキストを使用します。このテキストは，ファイルが作成された時にシステムの活動言語に存在するメッセージCPX6AB1およびCPX6AB2から取得されます。"
+        },
+        {
+          "label": "*MSG",
+          "value": "*MSG",
+          "help": "ファイルのオープン時に，システムの現行活動言語に存在するメッセージCPX6AB1およびCPX6AB2から検索された「続く...」および「終わり」というテキストを使用します。"
+        }
       ]
     },
-    { "name": "WAITFILE", "description": "最大ファイル待機時間", "help": "ファイル資源の割り振りを待つ秒数。*IMMED / *CLS / 整数。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 10 }, "placeholder": "*IMMED" },
-    { "name": "WAITRCD", "description": "最大レコード待機時間", "help": "レコードの読み取りを待つ秒数。*NOMAX / *IMMED / 整数。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 10 }, "placeholder": "*NOMAX" },
+    {
+      "name": "WAITFILE",
+      "description": "最大ファイル待機時間",
+      "help": "ファイルのオープン時にファイル資源が割り振られるか，あるいはファイルに対する獲得操作の実行時に装置資源またはセッション資源が割り振られるのを，プログラムが待機する秒数を指定します。指定された待機時間内にファイル資源を割り振ることができない場合には，エラー・メッセージがプログラムに送られます。\n\n*IMMED: プログラムは待機しません。ファイル資源の即時割り振りが必要です。\n*CLS: ジョブの省略時待機時間がファイル資源の割り振りの待機時間として使用されます。\nファイル資源が割り振られるのを待機する秒数を指定してください。",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*IMMED",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "placeholder": "*IMMED"
+    },
+    {
+      "name": "WAITRCD",
+      "description": "最大レコード待機時間",
+      "help": "高水準言語プログラムの複数装置ファイルに対する送信勧誘された装置からの読み取り操作の完了を，プログラムが待機する秒数を指定します。どんなときにファイルが複数装置ファイルとして取り扱われるかを判別するには，高水準言語解説書を参照してください。読み取り操作を実行しているプログラムは，現在ファイルにアクセス中のすべての送信勧誘済み装置からの入力を待ちます。送信勧誘されたプログラム装置のいずれからも指定された時間内にレコードが戻されなかった場合には，通知メッセージがプログラムに送られます。このパラメーターは，単一装置に対して指示された入力操作では何の効果もありません。\n\n*NOMAX: システムが操作の完了を待機する時間に制限はありません。\n*IMMED: プログラムは待機しません。送信勧誘された装置からの読み取り操作が実行された時にレコードが使用可能でない場合には，プログラムに通知メッセージが送られます。\nプログラムが待機する最大秒数を指定してください。有効な値の範囲は1から32767秒です。",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*NOMAX",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "placeholder": "*NOMAX"
+    },
     {
       "name": "DTAQ",
       "description": "データ待ち行列名",
-      "help": "ファイルに関連付けるデータ待ち行列。単一値 *NONE、またはデータ待ち行列の修飾名。",
+      "help": "項目を入れるデータ待ち行列を指定します。指定するデータ待ち行列は最小長80桁でなければなりません。ファイルを使用するまでこのパラメーターに指定された名前が評価されないので，表示装置ファイルが作成される時にデータ待ち行列が存在している必要はありません。",
       "inputType": "group",
       "required": false,
+      "groupKind": "qualified",
+      "singleValues": [
+        "*NONE"
+      ],
       "children": [
-        { "name": "LIB", "description": "ライブラリー", "help": "データ待ち行列のライブラリー。*LIBL / *CURLIB / ライブラリー名。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 10 }, "placeholder": "*LIBL" },
-        { "name": "DTAQ", "description": "データ待ち行列名", "help": "*NONE、またはデータ待ち行列名。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 10 }, "placeholder": "*NONE" }
+        {
+          "name": "DTAQ_LIB",
+          "description": "ライブラリー",
+          "help": "*LIBL: 最初に一致するものが見つかるまで，現行スレッドのライブラリー・リスト内のすべてのライブラリーが検索されます。\n*CURLIB: データ待ち行列を見つけるために，現行ライブラリーが使用されます。ジョブの現行ライブラリーとしてライブラリーが指定されていない場合は，QGPLが使用されます。\nデータ待ち行列を見つけるライブラリーを指定してください。",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "*LIBL",
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          },
+          "placeholder": "*LIBL"
+        },
+        {
+          "name": "DTAQ",
+          "description": "データ待ち行列名",
+          "help": "項目を入れるデータ待ち行列の名前を指定してください。",
+          "inputType": "text",
+          "required": false,
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          },
+          "defaultValue": "*NONE",
+          "placeholder": "*NONE"
+        }
       ]
     },
     {
       "name": "SHARE",
       "description": "オープン・データ・パス共用",
-      "help": "同一ジョブ内でオープン・データ・パスを共用するか。*NO / *YES。",
+      "help": "オープン・データ・パス(ODP)が同じルーティング・ステップの他のプログラムと共用するかどうかを指定します。ODPが共用される時には，ファイルにアクセスしているプログラムはファイル状況およびバッファーなどの機能を共用します。",
       "inputType": "dropdown",
       "required": false,
+      "defaultValue": "*NO",
+      "attributes": {
+        "characterSet": "upper"
+      },
       "options": [
-        { "label": "*NO", "value": "*NO" },
-        { "label": "*YES（共用する）", "value": "*YES" }
+        {
+          "label": "*NO",
+          "value": "*NO",
+          "help": "ODPは，ルーティング・ステップ内の他のプログラムと共用されません。ファイルの新しいODPが作成され，プログラムがファイルをオープンするたびに使用されます。"
+        },
+        {
+          "label": "*YES",
+          "value": "*YES",
+          "help": "ファイルをオープンする時に*YESも指定したジョブで，同じODPを各プログラムと共用することができます。"
+        }
       ]
     },
     {
       "name": "SRTSEQ",
       "description": "分類順序",
-      "help": "分類順序。単一値 *JOB / *LANGIDSHR / *LANGIDUNQ / *HEX、または分類順序表の修飾名。",
+      "help": "このユーザー・プロファイルのために使用される分類順序を指定します。この分類順序とLANGIDパラメーターが一緒に使用されて，使用される分類順序テーブルが決まります。",
       "inputType": "group",
       "required": false,
+      "groupKind": "qualified",
+      "singleValues": [
+        "*JOB",
+        "*LANGIDSHR",
+        "*LANGIDUNQ",
+        "*HEX"
+      ],
       "children": [
-        { "name": "LIB", "description": "ライブラリー", "help": "分類順序表のライブラリー。*LIBL / *CURLIB / ライブラリー名。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 10 }, "placeholder": "*LIBL" },
-        { "name": "SRTSEQ", "description": "分類順序", "help": "*JOB / *LANGIDSHR / *LANGIDUNQ / *HEX、または分類順序表名。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 10 }, "placeholder": "*JOB" }
+        {
+          "name": "SRTSEQ_LIB",
+          "description": "ライブラリー",
+          "help": "*LIBL: 最初に一致するものが見つかるまで，現行スレッドのライブラリー・リスト内のすべてのライブラリーが検索されます。\n*CURLIB: ジョブの現行ライブラリーが検索されます。ジョブの現行ライブラリーとしてライブラリーが指定されていない場合は，QGPLライブラリーが使用されます。\n検索するライブラリーの名前を指定してください。",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "*LIBL",
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          },
+          "placeholder": "*LIBL"
+        },
+        {
+          "name": "SRTSEQ",
+          "description": "分類順序",
+          "help": "使用するソート・シーケンス・テーブルの名前を指定してください。",
+          "inputType": "text",
+          "required": false,
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          },
+          "defaultValue": "*JOB",
+          "placeholder": "*JOB"
+        }
       ]
     },
-    { "name": "LANGID", "description": "言語ID", "help": "SRTSEQ が *LANGIDUNQ/*LANGIDSHR の場合に使う言語ID。*JOB / 文字値。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 3 }, "placeholder": "*JOB" },
+    {
+      "name": "LANGID",
+      "description": "言語ID",
+      "help": "分類順序 (SRTSEQ) パラメーターに*LANGIDSHRまたは*LANGIDUNQが指定された時に使用される言語IDを指定します。この言語IDとSRTSEQパラメーターが一緒に使用されて，ファイルが使用する分類順序テーブルが決められます。\n\n*JOB: ジョブに指定された言語IDが使用されます。\n言語IDを指定してください。このコマンドのプロンプト時にIDの完全なリストを見るには，カーソルをこのパラメーターのフィールドに位置づけて，F4（プロンプト）キーを押してください。",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*JOB",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "placeholder": "*JOB"
+    },
     {
       "name": "LVLCHK",
       "description": "レコード様式レベルの検査",
-      "help": "オープン時にレコード様式レベル識別子を検査するか。*YES / *NO。",
+      "help": "プログラムのオープン時に，表示装置ファイルのレコード様式のレベルIDを検索するかどうかを指定します。",
       "inputType": "dropdown",
       "required": false,
+      "defaultValue": "*YES",
+      "attributes": {
+        "characterSet": "upper"
+      },
       "options": [
-        { "label": "*YES（検査する）", "value": "*YES" },
-        { "label": "*NO", "value": "*NO" }
+        {
+          "label": "*YES",
+          "value": "*YES",
+          "help": "レコード様式のレベルIDが検査されます。レベルIDがすべて一致しない場合は，オープン・エラー・メッセージがオープン操作の要求元のプログラムに送られます。"
+        },
+        {
+          "label": "*NO",
+          "value": "*NO",
+          "help": "ファイルのオープン時にレベルIDは検査されません。"
+        }
       ]
     },
-    { "name": "AUT", "description": "権限", "help": "オブジェクトの共通認可。*LIBCRTAUT / *ALL / *CHANGE / *EXCLUDE / *USE / 認可リスト名。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 10 }, "placeholder": "*LIBCRTAUT" },
+    {
+      "name": "AUT",
+      "description": "権限",
+      "help": "このオブジェクトに対する特定の権限をもっておらず，権限リスト上になく，さらにそのグループ・プロファイルまたは補足グループ・プロファイルがオブジェクトに対する特定の権限をもっていないユーザーに付与する権限を指定します。\n\n*LIBCRTAUT: システムは，作成するオブジェクトが入っているライブラリーに対するライブラリー作成コマンド(CRTLIB)で 作成権限 (CRTAUT) パラメーターに指定された値を使用して，このオブジェクトに対する権限を決定します。CRTAUTパラメーターに指定された値が変更された場合には，新しい値は既存のどのオブジェクトにも影響しません。\n*CHANGE: ユーザーは，所有者に限定されるか，あるいはオブジェクト存在権限(*OBJEXIST)およびオブジェクト管理権限(*OBJMGT)によって制御される以外のオブジェクトで，すべての操作を実行することができます。ユーザーはオブジェクトでの基本的な機能を変更して実行することができます。*CHANGE権限では，オブジェクト操作(*OBJOPR)および全データ権限が提供されます。このオブジェクトが権限リストである場合は，ユーザーの追加，変更，または除去はできません。\n*ALL: ユーザーは，所有者に限定されるか，あるいは権限リスト管理(*AUTLMGT)権限によって管理される以外のオブジェクトで，すべての操作を実行することができます。ユーザーはオブジェクトの存在を制御し，オブジェクトの機密保護を指定し，オブジェクトを変更し，さらにオブジェクトに対して基本的な機能を実行することができます。オブジェクトの所有権を変更することもできます。\n*USE: ユーザーは，プログラムの実行またはファイルの読み取りなど，オブジェクトに対する基本操作を実行することができます。ユーザーはオブジェクトを変更できません。使用(*USE)権限は，オブジェクト操作(*OBJOPR),読み取り(*READ),および実行(*EXECUTE)権限を提供します。\n*EXCLUDE: ユーザーはオブジェクトにアクセスすることはできません。\nオブジェクトに対する権限として使用する権限リストの名前を指定してください。権限リストに載っているユーザーは，リストに指定されているオブジェクトに対する権限が認可されます。オブジェクトが作成される時に権限リストが存在していなければなりません。",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*LIBCRTAUT",
+      "attributes": {
+        "characterSet": "upper",
+        "maxLength": 10
+      },
+      "placeholder": "*LIBCRTAUT"
+    },
     {
       "name": "REPLACE",
       "description": "ファイルの置き換え",
-      "help": "同名の既存ファイルを置き換えるか。*YES / *NO。",
+      "help": "保管またはデータベース・ファイル以外の既存のファイルを置き換えるかどうかを指定します。",
       "inputType": "dropdown",
       "required": false,
+      "defaultValue": "*YES",
+      "attributes": {
+        "characterSet": "upper"
+      },
       "options": [
-        { "label": "*YES（置き換える）", "value": "*YES" },
-        { "label": "*NO（置き換えない）", "value": "*NO" }
+        {
+          "label": "*YES",
+          "value": "*YES",
+          "help": "同じ名前およびライブラリーの新しい表示装置ファイルが正常に作成された場合には，既存のファイルが置き換えられます。"
+        },
+        {
+          "label": "*NO",
+          "value": "*NO",
+          "help": "同じ名前およびライブラリーの既存のファイルがある場合には，新しい表示装置ファイルを作成することはできません。"
+        }
       ]
     }
-  ]
+  ],
+  "threadSafe": false,
+  "environment": "すべての環境 (*ALL)",
+  "examples": [
+    {
+      "code": "CRTDSPF   FILE(DSPHIST)  SRCFILE(PRSNNL/JOBHIST)"
+    },
+    {
+      "code": "CRTDSPF  FILE(IGCDSP) SRCFILE(IGCLIB/IGCSRC)  IGCDTA(*YES)"
+    }
+  ],
+  "errorMessages": [
+    {
+      "id": "CPF7302",
+      "text": "ファイル&1はライブラリー&2に作成されなかった。"
+    }
+  ],
+  "source": {
+    "url": "https://www.ibm.com/docs/ja/ssw_ibm_i_74/cl/crtdspf.htm",
+    "version": "IBM i 7.4",
+    "updated": "2021-04-13"
+  }
 }

@@ -1,43 +1,44 @@
 {
   "keyword": "RLSSPLF",
-  "description": "スプール・ファイル解放（RLSSPLF）",
-  "help": "保留されている1つまたは複数のスプール・ファイルを解放し、印刷できる状態にします。FILE で単一ファイルを指定するか *SELECT で SELECT パラメーターの選択条件に合致するファイルをまとめて解放します。",
+  "description": "スプール・ファイル解放 (RLSSPLF)",
+  "help": "スプール・ファイル解放(RLSSPLF)コマンドは，出力待ち行列に指定されたファイルを解放します。解放されるファイルは，常にファイルの先頭から行われます。RLSSPLFコマンドは，次によって保留されたスプール・ファイルを開放することができます。",
   "parameters": [
     {
       "name": "FILE",
       "description": "スプール・ファイル",
-      "help": "解放するスプール・ファイルを指定します。必須。名前（スプール・ファイル名）／*SELECT（SELECT パラメーターの選択値に合致する全ファイル。JOB/SPLNBR/JOBSYSNAME/CRTDATE と相互排他）。定位置1。",
+      "help": "ここで印刷装置やディスケットなどの出力装置に書き出すことができるように，解放されるスプール・ファイルの名前を指定します。\n\nこれは必須パラメーターです。\n\n*SELECT: ファイル選択 (SELECT) パラメーターに指定された選択値を満たすすべてのスプール・ファイルが解放されます。この値は， ジョブ名 (JOB) パラメーター， スプール・ファイル番号 (SPLNBR) パラメーター， ジョブ・システム名 (JOBSYSNAME) パラメーター，または 作成されたスプール・ファイル (CRTDATE) パラメーターに指定される値と相互に排他的です。\n解放するスプール・ファイルの名前を指定してください。",
       "inputType": "text",
       "required": true,
       "attributes": {
         "characterSet": "upper",
         "maxLength": 10
       },
+      "positional": 1,
       "placeholder": "*SELECT"
     },
     {
       "name": "JOB",
       "description": "ジョブ名",
-      "help": "解放するファイルを作成したジョブを修飾ジョブ名で指定します。単一値 *（このコマンドを出したジョブ）。定位置2。",
+      "help": "さらに処理用に解放しているスプール・ファイルを作成したジョブを指定します。",
       "inputType": "group",
       "required": false,
+      "groupKind": "qualified",
       "children": [
         {
-          "name": "JOB",
-          "description": "ジョブ名",
-          "help": "解放するファイルを作成したジョブの名前。単一値 * も指定可。",
-          "inputType": "text",
+          "name": "JOB_Q3",
+          "description": "番号",
+          "help": "解放しているスプール・ファイルを作成したジョブのシステム割り当てジョブ番号を指定してください。",
+          "inputType": "number",
           "required": false,
           "attributes": {
-            "characterSet": "upper",
-            "maxLength": 10
+            "numericOnly": true
           },
           "placeholder": "*"
         },
         {
-          "name": "USER",
+          "name": "JOB_Q2",
           "description": "ユーザー",
-          "help": "ジョブの実行で使用されるユーザー・プロファイルを識別するユーザー名。",
+          "help": "ジョブの実行で使用されるユーザー・プロファイルを識別するユーザー名を指定してください。",
           "inputType": "text",
           "required": false,
           "attributes": {
@@ -46,71 +47,87 @@
           }
         },
         {
-          "name": "NBR",
-          "description": "番号",
-          "help": "システム割り当てジョブ番号。000000〜999999。",
-          "inputType": "text",
-          "required": false,
-          "attributes": {
-            "characterSet": "upper",
-            "maxLength": 6
-          }
-        }
-      ]
-    },
-    {
-      "name": "SPLNBR",
-      "description": "スプール・ファイル番号",
-      "help": "指定されたジョブで作成されたスプール・ファイル番号を指定します。*ONLY（ジョブ内に該当ファイル名が1つだけ。番号不要）／*LAST（最高番号のファイル）／*ANY（番号で選択しない。JOBSYSNAME/CRTDATE を優先）／1〜999999。定位置3。",
-      "inputType": "text",
-      "required": false,
-      "attributes": {
-        "characterSet": "upper",
-        "maxLength": 7
-      },
-      "defaultValue": "*ONLY"
-    },
-    {
-      "name": "JOBSYSNAME",
-      "description": "ジョブ・システム名",
-      "help": "スプール・ファイルを作成したジョブが実行されたシステム名を指定します。ジョブ名/ユーザー名/ジョブ番号/ファイル名/ファイル番号が一致した後に考慮されます。*ONLY（該当が1つ）／*CURRENT（現行システム上で作成）／*ANY（システム名で選択しない。CRTDATE を優先）／名前。",
-      "inputType": "text",
-      "required": false,
-      "attributes": {
-        "characterSet": "upper",
-        "maxLength": 8
-      },
-      "defaultValue": "*ONLY"
-    },
-    {
-      "name": "CRTDATE",
-      "description": "作成されたスプール・ファイル",
-      "help": "スプール・ファイルが作成された日時を指定します。他のパラメーター要件が一致した後に考慮されます。単一値 *ONLY（該当が1つ）／*LAST（最後の作成日時）。日付・時刻を指定する場合は作成日（要素1）と作成時刻（要素2）を入力します。",
-      "inputType": "group",
-      "required": false,
-      "children": [
-        {
-          "name": "CRTDATE",
-          "description": "作成日",
-          "help": "スプール・ファイルが作成された日付。単一値 *ONLY／*LAST も指定可。",
+          "name": "JOB",
+          "description": "ジョブ名",
+          "help": "解放したいファイルを作成したジョブの名前を指定します。",
           "inputType": "text",
           "required": false,
           "attributes": {
             "characterSet": "upper",
             "maxLength": 10
           },
+          "defaultValue": "*"
+        }
+      ],
+      "positional": 2
+    },
+    {
+      "name": "SPLNBR",
+      "description": "スプール・ファイル番号",
+      "help": "解放したいスプール・ファイルの番号を指定します。\n\n*ONLY: ジョブ内の1つのスプール・ファイルだけが指定されたファイル名をもっています。したがって，スプール・ファイルの番号は不要です。\n*LAST: 指定されたファイル名の最高の番号を持つスプール・ファイルが，解放されるファイルになります。\n*ANY: 使用するスプール・ファイルを決定するのに，スプール・ファイル番号は使用されません。スプール・ファイルの選択時に，スプール・ファイル番号よりジョブ・システム名パラメーターまたはスプール・ファイル作成日時パラメーターが優先されるようにする時には，この値を使用してください。\n指定されたファイル名を持つ，解放するスプール・ファイルの番号を指定してください。",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*ONLY",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "positional": 3
+    },
+    {
+      "name": "JOBSYSNAME",
+      "description": "ジョブ・システム名",
+      "help": "スプール・ファイルを作成したジョブ(JOBパラメーター）が実行されたシステムの名前を指定します。このパラメーターは，ジョブ名，ユーザー名，ジョブ番号，スプール・ファイル名，およびスプール・ファイル番号のパラメーター要件が一致した後に考慮されます。\n\n*ONLY: 指定されたジョブ名，ユーザー名，ジョブ番号，スプール・ファイル名，スプール・ファイル番号，およびスプール・ファイル作成日時を持つスプール・ファイルは，1つです。\n*CURRENT: 指定されたジョブ名，ユーザー名，ジョブ番号，スプール・ファイル名，スプール・ファイル番号，および作成日時を持つ現行システム上で作成されたスプール・ファイルが使用されます。\n*ANY: 使用するスプール・ファイルを決定するのに，ジョブ・システム名は使用されません。スプール・ファイルの選択時に，ジョブ・システム名よりスプール・ファイル作成日時パラメーターが優先されるようにする時には，この値を使用してください。\nスプール・ファイルを作成したジョブが実行されたシステムの名前を指定します。",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*ONLY",
+      "attributes": {
+        "characterSet": "upper",
+        "maxLength": 10
+      }
+    },
+    {
+      "name": "CRTDATE",
+      "description": "作成されたスプール・ファイル",
+      "help": "スプール・ファイルが作成された日時を指定します。このパラメーターは，ジョブ名，ユーザー名，ジョブ番号，スプール・ファイル名，スプール・ファイル番号，およびジョブ・システム名のパラメーター要件が一致した後に考慮されます。",
+      "inputType": "group",
+      "required": false,
+      "groupKind": "elements",
+      "singleValues": [
+        "*ONLY",
+        "*LAST"
+      ],
+      "children": [
+        {
+          "name": "CRTDATE",
+          "description": "作成日",
+          "help": "スプール・ファイルが作成された日付を指定します。",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "*ONLY",
           "placeholder": "*ONLY"
         },
         {
           "name": "CRTTIME",
           "description": "作成時刻",
-          "help": "スプール・ファイルが作成された時刻。*ONLY（該当が1つ）／*LAST（最後の作成時刻）／時刻。",
-          "inputType": "text",
+          "help": "スプール・ファイルが作成された時刻を指定します。",
+          "inputType": "dropdown",
           "required": false,
+          "defaultValue": "*ONLY",
           "attributes": {
-            "characterSet": "upper",
-            "maxLength": 8
+            "characterSet": "upper"
           },
+          "options": [
+            {
+              "label": "*ONLY",
+              "value": "*ONLY",
+              "help": "指定されたジョブ名，ユーザー名，ジョブ番号，スプール・ファイル名，スプール・ファイル番号，ジョブ・システム名，およびスプール・ファイル作成日を持つスプール・ファイルは，1つです。"
+            },
+            {
+              "label": "*LAST",
+              "value": "*LAST",
+              "help": "指定されたジョブ名，ユーザー名，ジョブ番号，スプール・ファイル名，スプール・ファイル番号，ジョブ・システム名，およびスプール・ファイル作成日の最後の作成時刻を持つスプール・ファイルが使用されます。"
+            }
+          ],
           "placeholder": "*ONLY"
         }
       ]
@@ -118,16 +135,18 @@
     {
       "name": "SELECT",
       "description": "ファイル選択",
-      "help": "解放するために選択するファイルのグループを指定します。各要素（ユーザー／印刷装置／用紙タイプ／ユーザー・データ／ASP）すべてと一致するファイルだけが選択されます。FILE(*SELECT) のときに使用します。",
+      "help": "どのファイルのグループを解放するために選択する必要があるかを指定します。次の定位置値を使用して，ファイルを選択することができます。すなわち，ファイルを作成したユーザー，ファイルが待機している装置，指定された用紙タイプ，ファイルと関連したユーザー・データ・タグ，またはファイルが入っている補助記憶域プールです。各値と一致するファイルだけが選択されます。",
       "inputType": "group",
       "required": false,
+      "groupKind": "elements",
       "children": [
         {
           "name": "USER",
           "description": "ユーザー",
-          "help": "ファイルを作成したユーザーで選択します。*CURRENT（このコマンドを実行中のユーザー）／*ALL（全ユーザー）／ユーザー名。",
+          "help": "*CURRENT: このコマンドを実行中のユーザーによって作成されたファイルだけが選択されます。\n*ALL: すべてのユーザーによって作成されたファイルが選択されます。\nユーザー名を指定してください。そのユーザー名によって作成されたファイルだけが選択されます。",
           "inputType": "text",
           "required": false,
+          "defaultValue": "*CURRENT",
           "attributes": {
             "characterSet": "upper",
             "maxLength": 10
@@ -137,9 +156,10 @@
         {
           "name": "DEV",
           "description": "印刷装置",
-          "help": "ファイルが待機している装置で選択します。*ALL（装置作成/ユーザー作成の全出力待ち行列上のファイル）／*OUTQ（ユーザー作成の出力待ち行列の全ファイル）／装置名。",
+          "help": "*ALL: 装置作成またはユーザー作成の出力待ち行列上にあるファイルが選択されます。\n*OUTQ: ユーザー作成の出力待ち行列のすべてのファイルが選択されます。ユーザー作成の出力待ち行列とは，装置によって自動的に作成されない出力待ち行列です。ユーザー作成の出力待ち行列は通常は装置と同じ名前にはなりません。同じ名前の場合には，それはライブラリーQUSRSYS内にはありません。\n装置名を指定してください。その装置の装置作成の出力待ち行列に入れられたファイルだけが選択されます。装置作成の出力待ち行列は装置と同じ名前を持ち，QUSRSYSライブラリーにあります。この出力待ち行列が既に存在していなければ，装置の作成時にシステムによって自動的に作成されます。装置作成の出力待ち行列を削除することはできません。",
           "inputType": "text",
           "required": false,
+          "defaultValue": "*ALL",
           "attributes": {
             "characterSet": "upper",
             "maxLength": 10
@@ -149,34 +169,36 @@
         {
           "name": "FORMTYPE",
           "description": "用紙タイプ",
-          "help": "用紙タイプで選択します。*ALL（全用紙タイプ）／*STD（標準用紙タイプ）／用紙タイプ。",
+          "help": "*ALL: すべての用紙タイプのファイルが選択されます。\n*STD: 標準用紙タイプを指定するファイルだけが選択されます。\nファイルを選択する用紙タイプを指定してください。",
           "inputType": "text",
           "required": false,
+          "defaultValue": "*ALL",
           "attributes": {
-            "maxLength": 10
+            "characterSet": "upper"
           },
           "placeholder": "*ALL"
         },
         {
           "name": "USRDTA",
           "description": "ユーザー・データ",
-          "help": "ファイルに関連したユーザー・データ・タグで選択します。*ALL（タグ指定の全ファイル）／ユーザー・データ・タグ。",
+          "help": "*ALL: ユーザー・データ・タグが指定されているファイルが選択されます。\nファイルを選択するためのユーザー・データ・タグを指定してください。",
           "inputType": "text",
           "required": false,
+          "defaultValue": "*ALL",
           "attributes": {
-            "maxLength": 10
+            "characterSet": "upper"
           },
           "placeholder": "*ALL"
         },
         {
           "name": "ASP",
           "description": "ASP",
-          "help": "ファイルが入っている補助記憶域プールで選択します。*ALL（ASPDEV 指定の全ファイル）／*ASPDEV（ASPDEV パラメーター指定のファイル）／1〜32（ASP番号）。",
+          "help": "*ALL: 補助記憶域プール装置(ASPDEV)パラメーターに指定された通りにすべてのファイルが選択されます。\n*ASPDEV: 補助記憶域プール装置(ASPDEV)パラメーターに指定されたファイルが選択されます。\n選択するファイルの補助記憶域プール(ASP)を指定してください。",
           "inputType": "text",
           "required": false,
+          "defaultValue": "*ALL",
           "attributes": {
-            "characterSet": "upper",
-            "maxLength": 7
+            "characterSet": "upper"
           },
           "placeholder": "*ALL"
         }
@@ -185,14 +207,139 @@
     {
       "name": "ASPDEV",
       "description": "ASP装置",
-      "help": "選択されるスプール・ファイルが入っている補助記憶域プール装置を指定します。有効なのは SELECT の ASP 要素が *ALL または *ASPDEV の場合だけです。*（現スレッドのライブラリー名スペース内のASP）／*SYSBAS（システムASPおよび全定義済みユーザーASP）／*CURASPGRP（スレッドのASPグループの1次/2次ASP）／ASP装置記述名。",
+      "help": "選択されるスプール・ファイルが入っている補助記憶域プール装置名を指定します。このパラメーターが有効なのは，選択パラメーターのASP番号(ASP)要素が*ALLまたは*ASPDEVである場合だけです。\n\n*: 現在スレッドのライブラリー名スペースの一部となっているASPで見つかったファイルが選択されます。これには，システムASP (ASP 1),すべての定義済み基本ユーザーASP (ASP 2から32)が含まれ，また，スレッドにASPグループがある場合には，スレッドのASPグループ内の1次および2次ASPが含まれます。\n*SYSBAS: システムASP (ASP 1)およびすべての定義済みユーザーASP (ASP 2から32)で見つかったファイルが選択されます。\n*CURASPGRP: スレッドのASPグループの1次および2次ASPで見つかったファイルが選択されます。スレッドと関連したASPグループがない場合には，エラーが出されます。\n補助記憶域プール装置記述の名前を指定してください。指定された1次または2次ASPで見つかったファイルが選択されます。スレッドのASPグループ内にある1次または2次ASPのみを指定することができます。スレッドと関連したASPグループがない場合には，エラーが出されます。",
       "inputType": "text",
       "required": false,
+      "defaultValue": "*",
       "attributes": {
         "characterSet": "upper",
         "maxLength": 10
       },
       "placeholder": "*"
+    }
+  ],
+  "threadSafe": false,
+  "environment": "すべての環境 (*ALL)",
+  "examples": [
+    {
+      "code": "RLSSPLF   FILE(STOCK14)  JOB(000047/SMITH/MASTER)"
+    }
+  ],
+  "errorMessages": [
+    {
+      "id": "CPF337E",
+      "text": "ASP装置&1がスレッドの現行ASPグループにありません。"
+    },
+    {
+      "id": "CPF337F",
+      "text": "ASP番号&2ではASP装置&1は使用できません。"
+    },
+    {
+      "id": "CPF33D0",
+      "text": "印刷装置&1が存在していない。"
+    },
+    {
+      "id": "CPF33D1",
+      "text": "ユーザー&1が存在していない。"
+    },
+    {
+      "id": "CPF3303",
+      "text": "ファイル&1はジョブ&5/&4/&3に見つからなかった。"
+    },
+    {
+      "id": "CPF3304",
+      "text": "ファイル&1番号&8を解放することができない。"
+    },
+    {
+      "id": "CPF3309",
+      "text": "&1という名前のファイルは活動状態でない。"
+    },
+    {
+      "id": "CPF3322",
+      "text": "ファイル&1番号&8は解放されなかった。"
+    },
+    {
+      "id": "CPF3330",
+      "text": "必要な資源が使用できない。"
+    },
+    {
+      "id": "CPF3340",
+      "text": "指定された名前のファイルが，ジョブ&5/&4/&3で複数個見つかった。"
+    },
+    {
+      "id": "CPF3342",
+      "text": "ジョブ&5/&4/&3が見つからない。"
+    },
+    {
+      "id": "CPF3343",
+      "text": "重複したジョブ名が見つかった。"
+    },
+    {
+      "id": "CPF3344",
+      "text": "ファイル&1番号&8はもはやシステムにない。"
+    },
+    {
+      "id": "CPF3357",
+      "text": "ライブラリー&2に出力待ち行列&1が見つかりません。"
+    },
+    {
+      "id": "CPF3362",
+      "text": "QTEMPのオブジェクトは，パラメーター値には正しくない。"
+    },
+    {
+      "id": "CPF3492",
+      "text": "スプール・ファイルに対しては許可されていない。"
+    },
+    {
+      "id": "CPF9825",
+      "text": "装置&1は認可されていない。"
+    },
+    {
+      "id": "CPF9833",
+      "text": "*CURASPGRPまたは*ASPGRPPRIが指定されていて，スレッドにASPグループがない。"
+    },
+    {
+      "id": "CPFB8ED",
+      "text": "装置記述&1はこの操作には正しくありません。"
+    }
+  ],
+  "source": {
+    "url": "https://www.ibm.com/docs/ja/ssw_ibm_i_74/cl/rlssplf.htm",
+    "version": "IBM i 7.4",
+    "updated": "2021-04-13"
+  },
+  "constraints": [
+    {
+      "kind": "exclusive",
+      "parameters": [
+        "SELECT",
+        "JOB"
+      ],
+      "note": "SELECT に指定した値は JOB に指定した値と相互に排他的です。"
+    },
+    {
+      "kind": "exclusive",
+      "parameters": [
+        "SELECT",
+        "SPLNBR"
+      ],
+      "note": "SELECT に指定した値は SPLNBR に指定した値と相互に排他的です。"
+    },
+    {
+      "kind": "exclusive",
+      "parameters": [
+        "SELECT",
+        "JOBSYSNAME"
+      ],
+      "note": "SELECT に指定した値は JOBSYSNAME に指定した値と相互に排他的です。"
+    },
+    {
+      "kind": "exclusive",
+      "parameters": [
+        "SELECT",
+        "CRTDATE"
+      ],
+      "note": "SELECT に指定した値は CRTDATE に指定した値と相互に排他的です。"
     }
   ]
 }

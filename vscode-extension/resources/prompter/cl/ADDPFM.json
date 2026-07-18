@@ -1,85 +1,153 @@
 {
   "keyword": "ADDPFM",
-  "description": "物理ファイル・メンバー追加（ADDPFM）",
-  "help": "既存の物理ファイルにメンバーを追加します。",
+  "description": "物理ファイル・メンバー追加 (ADDPFM)",
+  "help": "物理ファイル・メンバー追加（ADDPFMコマンド）は，指定されたメンバーを物理ファイルに追加します。この物理ファイルはシステムに既に存在していなければなりません。ファイルに追加できるメンバーの最大数は，物理ファイル作成(CRTPF)コマンドまたは物理ファイル変更(CHGPF)コマンドで メンバーの最大数 (MAXMBRS) パラメーターに指定されます。他のメンバーをファイルに追加するためには，ADDPFMコマンドを使用してそれぞれを指定してください。\n\n物理ファイルに追加できるメンバーの数は，関連するCRTPFコマンドのMAXMBRSパラメーターに指定された数に限定されます。追加される各メンバーは，データ記述仕様(DDS)に指定されている通り，物理ファイルに定義されているものと同じ属性，それ自身のデータ・レコード・セット，およびそれ自身のアクセス・パスをもっています。アクセス・パスによって，そのメンバー中のレコードが処理される順序が決まります。\n\n注: メンバーを追加するためには，ファイルに*EXCLRDロックが必要です。このコマンドはライブラリー中のファイルにメンバーを追加するので，ライブラリーが別のジョブによってロック（オブジェクト割り振りコマンドで*SHRNUPまたは*EXCLRD)されていてはいけません。",
   "parameters": [
     {
       "name": "FILE",
       "description": "物理ファイル",
-      "help": "メンバーを追加する物理ファイルを指定します。これは必須パラメーターです。",
+      "help": "メンバーを追加する物理ファイルを指定します。\n\nこれは必須パラメーターです。",
       "inputType": "group",
       "required": true,
+      "groupKind": "qualified",
       "children": [
         {
           "name": "LIB",
           "description": "ライブラリー",
-          "help": "物理ファイルのライブラリー名。定義済み値: *LIBL、*CURLIB。",
+          "help": "*LIBL: 最初に一致するものが見つかるまで，現行スレッドのライブラリー・リスト内のすべてのライブラリーが検索されます。\n*CURLIB: 物理ファイルを見つけるためにジョブの現行ライブラリーが使用されます。ジョブの現行ライブラリーとしてライブラリーが指定されていない場合は，QGPLが使用されます。\n物理ファイルが入っているライブラリーを指定します。",
           "inputType": "text",
           "required": false,
           "defaultValue": "*LIBL",
-          "attributes": { "characterSet": "upper", "maxLength": 10 },
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          },
           "placeholder": "*LIBL"
         },
         {
           "name": "FILE",
           "description": "物理ファイル",
-          "help": "物理ファイル名を指定します。",
+          "help": "物理ファイルの名前を指定してください。",
           "inputType": "text",
           "required": true,
-          "attributes": { "characterSet": "upper", "maxLength": 10 },
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          },
           "placeholder": "MYFILE"
         }
-      ]
+      ],
+      "positional": 1
     },
     {
       "name": "MBR",
       "description": "メンバー",
-      "help": "追加するメンバー名を指定します。これは必須パラメーターです。",
+      "help": "物理ファイルに追加するファイル・メンバーを指定します。ファイル・メンバー名はファイル中で固有としなければなりません。\n\nFILEパラメーターにDDMファイルが指定されていて，メンバー名がDDMファイルのリモート・ファイル名の一部として指定されている場合には，指定されたMBR名はDDMファイルのリモート・ファイル名のメンバー名と一致しなければなりません。\n\nこれは必須パラメーターです。\n\n追加するファイル・メンバーの名前を指定してください。",
       "inputType": "text",
       "required": true,
-      "attributes": { "characterSet": "upper", "maxLength": 10 },
+      "attributes": {
+        "characterSet": "upper",
+        "maxLength": 10
+      },
+      "positional": 2,
       "placeholder": "MYMBR"
     },
     {
       "name": "TEXT",
       "description": "テキスト'記述'",
-      "help": "メンバーのテキスト記述（文字値）を指定します。定義済み値: *BLANK。",
+      "help": "オブジェクトを簡単に記述したテキストを指定します。\n\n*BLANK: テキストは指定されません。\n50文字を超えないテキストを，アポストロフィで囲んで指定してください。",
       "inputType": "text",
       "required": false,
       "defaultValue": "*BLANK",
-      "attributes": { "maxLength": 50 },
+      "attributes": {
+        "characterSet": "upper"
+      },
       "placeholder": "'メンバーの説明'"
     },
     {
       "name": "EXPDATE",
       "description": "メンバーの満了日",
-      "help": "メンバーの満了日を指定します。定義済み値: *NONE=満了日なし。",
-      "inputType": "text",
+      "help": "物理ファイル・メンバーの有効期限を指定します。\n\nファイル・メンバーを使用できなくなる日付を指定してください。値に日付区切り文字を使用する場合には，日付をアポストロフィで囲む必要があります。",
+      "inputType": "dropdown",
       "required": false,
       "defaultValue": "*NONE",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*NONE",
+          "value": "*NONE",
+          "help": "満了日は指定されません。"
+        }
+      ],
       "placeholder": "*NONE"
     },
     {
       "name": "SHARE",
       "description": "オープン・データ・パス共用",
-      "help": "同一ジョブ内でオープン・データ・パスを共用するかを指定します。*NO=共用しない、*YES=共用する。",
+      "help": "オープン・データ・パス(ODP)が同じルーティング・ステップの他のプログラムと共用するかどうかを指定します。ODPが共用される時には，ファイルにアクセスしているプログラムはファイル状況およびバッファーなどの機能を共用します。",
       "inputType": "dropdown",
       "required": false,
       "defaultValue": "*NO",
+      "attributes": {
+        "characterSet": "upper"
+      },
       "options": [
-        { "label": "*NO（共用しない）", "value": "*NO" },
-        { "label": "*YES（共用する）", "value": "*YES" }
+        {
+          "label": "*NO",
+          "value": "*NO",
+          "help": "ODPは，ルーティング・ステップ内の他のプログラムと共用されません。ファイルの新しいODPが作成され，プログラムがファイルをオープンするたびに使用されます。"
+        },
+        {
+          "label": "*YES",
+          "value": "*YES",
+          "help": "ファイルをオープンする時に*YESも指定したジョブで，同じODPを各プログラムと共用することができます。"
+        }
       ]
     },
     {
       "name": "SRCTYPE",
       "description": "ソース仕様タイプ",
-      "help": "ソース・メンバーのタイプ（単純名、例 RPGLE/CLP）を指定します。定義済み値: *NONE。",
-      "inputType": "text",
+      "help": "新規メンバーに割り当てられるソース・タイプ属性を指定します。ソース・タイプを指定できるのは，ソース物理ファイル作成(CRTSRCPF)コマンドを使用するか，または ファイル・タイプ (FILETYPE) パラメーターに*SRCを指定した物理ファイル作成(CRTPF)コマンドを使用して，物理ファイルが作成されている場合だけです。\n\nファイル・メンバーのソース・タイプを指定してください。ソース・タイプは10文字以下の文字ストリングです。最初の文字は英字（文字\\, @,または#を含む）でなければならず，残りの文字は英数字または下線でなければなりません。",
+      "inputType": "dropdown",
       "required": false,
       "defaultValue": "*NONE",
-      "attributes": { "characterSet": "upper", "maxLength": 10 },
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*NONE",
+          "value": "*NONE",
+          "help": "ソース・タイプは指定されません。"
+        }
+      ],
       "placeholder": "RPGLE"
     }
-  ]
+  ],
+  "environment": "すべての環境 (*ALL)",
+  "restrictions": [
+    "このコマンドは条件付きのスレッド・セーフです。マルチスレッド・ジョブではこのコマンドは分散ファイルに対してスレッド・セーフではなく，タイプ*SNAのリレーショナル・データベースを使用する分散ファイルに対して正常に実行されません。またこのコマンドは，タイプ*SNAの分散データ管理機能(DDM)ファイルにスレッド・セーフでもなく，SYSTEM(*RMT)またはSYSTEM(*FILETYPE)を指定すると正常に実行されません。"
+  ],
+  "examples": [
+    {
+      "code": "ADDPFM   FILE(INVENTX)  MBR(MONDAYTX)"
+    }
+  ],
+  "errorMessages": [
+    {
+      "id": "CPF3204",
+      "text": "&2のファイル&1に必要なオブジェクトを見つけることができない。"
+    },
+    {
+      "id": "CPF7306",
+      "text": "メンバー&1は&3のファイル&2に追加されなかった。"
+    }
+  ],
+  "source": {
+    "url": "https://www.ibm.com/docs/ja/ssw_ibm_i_74/cl/addpfm.htm",
+    "version": "IBM i 7.4",
+    "updated": "2021-04-13"
+  }
 }

@@ -1,5 +1,5 @@
 import * as vscode from "vscode";
-import type { PrompterDefinition } from "./types";
+import type { ParameterDefinition, PrompterDefinition } from "./types";
 import type { ResolvedPosition } from "./positionResolver";
 import { buildInitialState } from "./model";
 import { toSerializableState, buildHtml } from "./binding";
@@ -66,9 +66,8 @@ export async function openPrompter(
         });
       } else if (message?.type === "help") {
         const name = String(message.name ?? "");
-        const parameter = definition.parameters.find(
-          candidate => candidate.name === name
-        );
+        // group の子（例: PGM の LIBL/OBJ）もヘルプ対象になるため再帰的に探す。
+        const parameter = findParameter(definition.parameters, name);
         if (parameter) {
           showParameterHelp(definition, parameter);
         }
@@ -77,6 +76,22 @@ export async function openPrompter(
       }
     });
   });
+}
+
+function findParameter(
+  parameters: readonly ParameterDefinition[],
+  name: string
+): ParameterDefinition | undefined {
+  for (const parameter of parameters) {
+    if (parameter.name === name) {
+      return parameter;
+    }
+    const child = findParameter(parameter.children ?? [], name);
+    if (child) {
+      return child;
+    }
+  }
+  return undefined;
 }
 
 function createNonce(): string {

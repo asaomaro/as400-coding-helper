@@ -76,7 +76,8 @@ async function openPrompter(context, definition, resolved, initialValues) {
             }
             else if (message?.type === "help") {
                 const name = String(message.name ?? "");
-                const parameter = definition.parameters.find(candidate => candidate.name === name);
+                // group の子（例: PGM の LIBL/OBJ）もヘルプ対象になるため再帰的に探す。
+                const parameter = findParameter(definition.parameters, name);
                 if (parameter) {
                     (0, help_1.showParameterHelp)(definition, parameter);
                 }
@@ -86,6 +87,18 @@ async function openPrompter(context, definition, resolved, initialValues) {
             }
         });
     });
+}
+function findParameter(parameters, name) {
+    for (const parameter of parameters) {
+        if (parameter.name === name) {
+            return parameter;
+        }
+        const child = findParameter(parameter.children ?? [], name);
+        if (child) {
+            return child;
+        }
+    }
+    return undefined;
 }
 function createNonce() {
     const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";

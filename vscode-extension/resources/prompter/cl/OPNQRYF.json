@@ -1,319 +1,1254 @@
 {
   "keyword": "OPNQRYF",
-  "description": "照会ファイルのオープン（OPNQRYF）",
-  "help": "データベース・ファイルのレコードを動的に選択・結合・分類・集計して、その結果セットを HLL プログラム用にオープンします。QRYSLT で選択条件、KEYFLD で分類、JFLD で結合、GRPFLD/GRPSLT で集計、MAPFLD で派生フィールドを定義します。",
+  "description": "QUERYファイル・オープン (OPNQRYF)",
+  "help": "QUERYファイル・オープン(OPNQRYF)コマンドは，データベースQUERY要求を満足させるデータベース・レコードのセットに対して，ファイルをオープンします。一度オープンされると，このファイルはデータベース・ファイル・オープン(OPNDBF)コマンドを使用してオープンされたデータベース・ファイルのように見え，そのファイル中のレコードは，オープン・データ・パス(ODP)を共用している高水準言語プログラムによってアクセスされます。ファイル・クローズ(CLOF)コマンドを使用することによって，このパスはクローズされ，すべてのQUERY資源が割り振り解除されます。追加のヘルプ情報がIBM i Information Center(http://www.ibm.com/systems/i/infocenter/)の「データベース」カテゴリーにあります。\n\nこのコマンドは，次のデータベース機能の任意の組み合わせを実行するために使用されます。",
   "parameters": [
     {
       "name": "FILE",
       "description": "ファイル仕様",
-      "help": "照会対象の1つ以上のファイル（最大32回の繰り返し）。各要素はファイル(修飾名)/メンバー/レコード様式。必須・定位置1。",
+      "help": "QUERYファイル・オープンによって処理される1つまたは複数のファイル，メンバー，およびレコード様式を指定します。指定するファイルはすべて，物理または論理データベース・ファイル，あるいは分散データ管理機能(DDM)ファイルでなければなりません。SQL派生キー索引は指定できません。また分散データ管理機能ファイルを使用する場合には，これらが参照するファイルがすべて同じターゲット・システム上になければなりません。\n\n複数のファイル，メンバー，およびレコード様式が指定されると，QUERYはフィールド値を結合して，レコードのセットを1つ作成します。指定するリスト中のファイルは，結合論理ファイルまたはビュー論理ファイル・メンバーのいずれでも構いません。ビュー論理ファイルの詳細については，IBM i Information Center(http://www.ibm.com/systems/i/infocenter/)の「DB2 for i SQL 解説書」トピック・コレクションを参照してください。\n\nこのパラメーターには32個の値を指定することができます。\n\nこれは必須パラメーターです。",
       "inputType": "group",
       "required": true,
-      "maxOccurrences": 32,
+      "groupKind": "elements",
       "children": [
-        { "name": "FILE", "description": "ファイル", "help": "照会対象のファイル名。", "inputType": "text", "required": true, "attributes": { "characterSet": "upper", "maxLength": 10 }, "placeholder": "FILE" },
-        { "name": "LIB", "description": "ライブラリー", "help": "ファイルのライブラリー。*LIBL / *CURLIB / ライブラリー名。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 10 }, "defaultValue": "*LIBL", "placeholder": "*LIBL" },
-        { "name": "MBR", "description": "メンバー", "help": "メンバー名。*FIRST（先頭）/ *LAST / *ALL / メンバー名。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 10 }, "defaultValue": "*FIRST", "placeholder": "*FIRST" },
-        { "name": "RCDFMT", "description": "レコード様式", "help": "レコード様式名。*ONLY（唯一の様式）/ 様式名。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 10 }, "placeholder": "*ONLY" }
-      ]
+        {
+          "name": "FILE_E1",
+          "description": "ファイル",
+          "inputType": "group",
+          "required": false,
+          "groupKind": "qualified",
+          "children": [
+            {
+              "name": "LIB",
+              "description": "ライブラリー",
+              "help": "*LIBL: データベース・ファイルを見つけるために，ライブラリー・リストが使用されます。\n*CURLIB: データベース・ファイルを見つけるために，ジョブの現行ライブラリーが使用されます。ジョブの現行ライブラリーとして指定されているライブラリーがない場合は，QGPLが使用されます。\nデータベース・ファイルが入っているライブラリーの名前を指定してください。",
+              "inputType": "text",
+              "required": false,
+              "defaultValue": "*LIBL",
+              "attributes": {
+                "characterSet": "upper",
+                "maxLength": 10
+              },
+              "placeholder": "FILE"
+            },
+            {
+              "name": "FILE",
+              "description": "ファイル",
+              "help": "処理するファイルの名前を指定します。",
+              "inputType": "text",
+              "required": true,
+              "attributes": {
+                "characterSet": "upper",
+                "maxLength": 10
+              },
+              "placeholder": "*LIBL"
+            }
+          ]
+        },
+        {
+          "name": "MBR",
+          "description": "メンバー",
+          "help": "*FIRST: 作成された中で最も古いメンバーが使用されます。\n*LAST: 作成された中で最も新しいメンバーが使用されます。\n*ALL: 区分ファイルのすべてのメンバーが使用されます。\n使用するデータベース・ファイル・メンバーの名前を指定してください。",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "*FIRST",
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          },
+          "placeholder": "*FIRST"
+        },
+        {
+          "name": "RCDFMT",
+          "description": "レコード様式",
+          "help": "*ONLY: ファイルの唯一のレコード様式が使用されます。ファイルに複数のレコード様式がある場合には，レコード様式名を指定しなければなりません。\n使用するレコード様式の名前を指定してください。このレコード様式は，このパラメーターの最初の要素で指定されたデータベース・ファイルに存在しなければなりません。",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "*ONLY",
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          },
+          "placeholder": "*ONLY"
+        }
+      ],
+      "positional": 1,
+      "maxOccurrences": 32
     },
     {
       "name": "OPTION",
       "description": "オープン・オプション",
-      "help": "ファイルのオープン方法。単一値 *ALL、またはその他の値（最大4回の繰り返し）から選択。*INP（入力）/ *OUT（出力）/ *UPD（更新）/ *DLT（削除）。既定 *ALL。",
-      "inputType": "text",
+      "help": "QUERYファイルに対して使用されるオープン・オプションを指定してください。ファイルの最初の全オープン時に選択されたオプションは，後続の共用オープンでは変更されません。*ALLまたは，*INP, *OUT, *UPD,および*DLTの4つまでを任意の順序でリストに組み合わせた値のいずれかを指定することができます。",
+      "inputType": "dropdown",
       "required": false,
-      "attributes": { "characterSet": "upper", "maxLength": 10 },
-      "defaultValue": "*ALL",
-      "placeholder": "*ALL",
-      "maxOccurrences": 4
+      "defaultValue": "*INP",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*ALL",
+          "value": "*ALL",
+          "help": "すべての操作(*INP, *OUT, *UPD, *DLT)に備えてファイルがオープンされます。"
+        },
+        {
+          "label": "*INP",
+          "value": "*INP"
+        },
+        {
+          "label": "*OUT",
+          "value": "*OUT"
+        },
+        {
+          "label": "*UPD",
+          "value": "*UPD"
+        },
+        {
+          "label": "*DLT",
+          "value": "*DLT"
+        }
+      ],
+      "positional": 2,
+      "maxOccurrences": 4,
+      "placeholder": "*ALL"
     },
     {
       "name": "FORMAT",
       "description": "様式仕様",
-      "help": "照会結果のレコード様式の定義元。単一値 *FILE（FILE の様式を使用、既定）、またはファイル(修飾名)/レコード様式で別ファイルの様式を使用。",
+      "help": "QUERYファイル・オープンによって使用可能なレコードに使用される，レコード様式を指定してください。QUERYファイル・オープンのレコード様式の単純フィールド名は， マップされたフィールド仕様 (MAPFLD) パラメーターで定義されたフィールドを表すか，あるいは ファイル仕様 (FILE) パラメーターで指定されたファイル，メンバー，およびレコード様式すべてを通じて，固有のフィールド名でなければなりません。MAPFLDパラメーターで指定されたフィールドと同じ名前のフィールドの値は，MAPFLDパラメーターのマップされたフィールド定義によって決まります。MAPFLDパラメーターで定義されていないフィールドの値は，FILEパラメーターで指定された，基礎になっているファイル，メンバー，およびレコード様式の中の，同じ名前を持ったフィールドのマッピングによって決まります。 様式仕様 (FORMAT) パラメーターで識別されるレコード様式で指定された，各フィールドの名前，タイプ，長さ，小数点以下の桁数，キーボード・シフト，および使用状況の属性のみが，QUERYファイル・オープンに使用されます。その他の属性はすべて無視されます。属性は同じである必要はありません。異なる場合には，変数変更(CHGVAR)コマンドに類似した方法で，フィールドがマップされます。",
       "inputType": "group",
       "required": false,
+      "groupKind": "elements",
+      "singleValues": [
+        "*FILE"
+      ],
       "children": [
-        { "name": "FILE", "description": "ファイル", "help": "様式定義元のファイル名。*FILE で FILE の様式を使用。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 10 }, "defaultValue": "*FILE", "placeholder": "*FILE" },
-        { "name": "LIB", "description": "ライブラリー", "help": "様式定義元ファイルのライブラリー。*LIBL / *CURLIB / ライブラリー名。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 10 }, "defaultValue": "*LIBL", "placeholder": "*LIBL" },
-        { "name": "RCDFMT", "description": "レコード様式", "help": "レコード様式名。*ONLY / 様式名。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 10 }, "placeholder": "*ONLY" }
+        {
+          "name": "FORMAT_E1",
+          "description": "ファイル",
+          "inputType": "group",
+          "required": false,
+          "groupKind": "qualified",
+          "children": [
+            {
+              "name": "FORMAT_LIB",
+              "description": "ライブラリー",
+              "help": "*LIBL: データベース・ファイルを見つけるために，ライブラリー・リストが使用されます。\n*CURLIB: データベース・ファイルを見つけるために，ジョブの現行ライブラリーが使用されます。ジョブの現行ライブラリーとして指定されているライブラリーがない場合は，QGPLが使用されます。\nデータベース・ファイルが入っているライブラリーの名前を指定してください。",
+              "inputType": "text",
+              "required": false,
+              "defaultValue": "*LIBL",
+              "attributes": {
+                "characterSet": "upper",
+                "maxLength": 10
+              },
+              "placeholder": "*FILE"
+            },
+            {
+              "name": "FORMAT",
+              "description": "ファイル",
+              "help": "使用するレコード様式が入っている物理または論理データベース・ファイル，または分散データ管理機能(DDM)ファイルの名前を指定してください。",
+              "inputType": "text",
+              "required": false,
+              "attributes": {
+                "characterSet": "upper",
+                "maxLength": 10
+              },
+              "placeholder": "*LIBL"
+            }
+          ],
+          "defaultValue": "*FILE"
+        },
+        {
+          "name": "FORMAT_RCDFMT",
+          "description": "レコード様式",
+          "help": "*ONLY: ファイルのレコード様式のみが使用されます。レコード様式名を指定しないと，*ONLYが省略時の値となります。ファイルに複数のレコード様式がある場合には，レコード様式名を指定しなければなりません。\n使用するレコード様式の名前を指定してください。このレコード様式は，このパラメーターの最初の要素で指定されたデータベース・ファイルに存在しなければなりません。",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "*ONLY",
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          },
+          "placeholder": "*ONLY"
+        }
       ]
     },
     {
       "name": "QRYSLT",
       "description": "QUERY選択式",
-      "help": "レコード選択条件を表す文字値（QUERY選択式）。*ALL で全レコードを選択（既定）。",
+      "help": "QUERYファイル・オープンで使用可能なレコードを決めるために使用する（グループ化する前）選択値を指定します。\n\n各フィールド名はファイル名，あるいはFILEパラメーターで指定されたファイル，メンバー，およびレコード様式のリストの中の，そのフィールドを含んでいる要素を示す番号によって，修飾することができます。フィールドが マップされたフィールド仕様 (MAPFLD) パラメーターで定義されている場合には，*MAPFLDの値を指定してフィールド名の修飾に使用できます。\n\nデータ・タイプの互換性の詳細については，IBM i Information Center(http://www.ibm.com/systems/i/infocenter/)の「データベース」カテゴリーを参照してください。\n\n*ALL: ファイル仕様 (FILE) パラメーターで指定された，物理または論理ファイル，メンバー，およびレコード様式の中のすべてのレコードが（結合処理が必要な場合はその後で）選択されます。\n選択されるレコードを決定するために使用される値を記述する式（アポストロフィで囲む）を指定してください。フィールドと定数値，あるいはフィールドの関数と定数値の関係 (*EQ, *NEなど）からなる論理式を指定することができます。各関係では少なくとも1つのフィールド名が指定されます。しかし，集計機能に依存（フィールド定義で直接に，あるいはマップ・フィールドを参照することによって間接的に依存）するフィールドを指定することはできません。 各フィールド名はファイル名，あるいはFILEパラメーターで指定されたファイル，メンバー，およびレコード様式のリストの中の，そのフィールドを含んでいる要素を示す番号によって，修飾することができます。フィールドが マップされたフィールド仕様 (MAPFLD) パラメーターで定義されている場合には，*MAPFLDの値を指定してフィールド名の修飾に使用できます。 データ・タイプの互換性の詳細については，IBM i Information Center(http://www.ibm.com/systems/i/infocenter/)の「データベース」カテゴリーを参照してください。",
       "inputType": "text",
       "required": false,
-      "attributes": { "maxLength": 2000 },
       "defaultValue": "*ALL",
+      "attributes": {
+        "characterSet": "upper"
+      },
       "placeholder": "*ALL"
     },
     {
       "name": "KEYFLD",
       "description": "キー・フィールド仕様",
-      "help": "分類キーの定義。単一値 *NONE（分類しない、既定）/ *FILE（ファイルのキー使用）、またはその他の値（最大50回の繰り返し）として キー・フィールド(修飾名)/順序/絶対値順序 を平坦化指定。",
+      "help": "QUERYレコードを配置するために使用する1つまたは複数のキー・フィールドの名前を指定するか，あるいは ファイル仕様 (FILE) パラメーターに指定された最初の，または唯一のファイル，メンバー，およびレコード様式のアクセス・パス順を，QUERYレコードの配置用に使用することを指定します。キー・フィールド名を指定する場合には，各キー・フィールドに対応するキーの部分を昇順とするか降順とするかを指示し，また，レコードを数字キー・フィールドの絶対値にしたがって配置するかどうかを指示します。指定したキー・フィールドが2バイト(DBCS)フィールドの場合には，データは1バイトの順序で配置されます。\n\nKEYFLD(*FILE)を指定し，SRTSEQパラメーターに*HEX以外の分類順序を指定してあった場合には，真のファイル順序を反映しない順序でレコードを受け取ることがあります。ファイルがキー付きの場合には，ファイルのキー・フィールドに分類順序が適用されます。ファイル内に分類順序テーブルまたは代替照合順序テーブルがあった場合には，順序付けは無視されます。これによってユーザーは，すべてのフィールド名のリストがなくとも，分類順序を適用するフィールドを指示することができます。QUERYについて分類順序が指定されていない場合には，V2R3M0より前のリリースでの順序と同じにQUERYが順序付けられます。\n\nQUERYレコードを配置するためのキー順アクセス・パスの定義に使用される1つ以上のフィールド名（フィールド名は最大50まで指定可能）を指定してください。各フィールド名はファイル名，あるいは ファイル仕様 (FILE) パラメーターで指定されたファイル，メンバー，およびレコード様式のリストの中の，そのフィールドを含んでいる要素値を示す番号によって，修飾することができます。フィールドが マップされたフィールド仕様 (MAPFLD) パラメーターで定義されている場合には，特殊値*MAPFLDを使用してフィールド名を修飾することもできます。\n\nすべてのキー・フィールドの長さの合計は32766バイト以下でなければなりません。",
       "inputType": "group",
       "required": false,
-      "maxOccurrences": 50,
+      "groupKind": "elements",
+      "singleValues": [
+        "*NONE",
+        "*FILE"
+      ],
       "children": [
-        { "name": "KEYFLD", "description": "キー・フィールド", "help": "分類に使うキー・フィールド名。*NONE / *FILE も可。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 10 }, "defaultValue": "*NONE", "placeholder": "*NONE" },
-        { "name": "FILE", "description": "ファイルまたは要素", "help": "キー・フィールドが属するファイル名、または *MAPFLD、または FILE パラメーターの要素番号(1-32)。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 10 }, "placeholder": "*MAPFLD" },
-        { "name": "ORDER", "description": "キー・フィールド順序", "help": "*ASCEND（昇順、既定）/ *DESCEND（降順）。", "inputType": "dropdown", "required": false, "options": [ { "label": "*ASCEND（昇順）", "value": "*ASCEND" }, { "label": "*DESCEND（降順）", "value": "*DESCEND" } ] },
-        { "name": "ABSVAL", "description": "絶対値による順序", "help": "*ABSVAL を指定すると絶対値で分類する。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 10 }, "placeholder": "*ABSVAL" }
-      ]
+        {
+          "name": "KEYFLD_E1",
+          "description": "キー・フィールド",
+          "inputType": "group",
+          "required": false,
+          "groupKind": "qualified",
+          "children": [
+            {
+              "name": "KEYFLD_Q2",
+              "description": "ファイルまたは要素",
+              "help": "*MAPFLD: このフィールドはMAPFLDパラメーターに指定します。\n使用するFILEパラメーターの要素リスト値の位置を指定してください。要素リスト値は，データベース・ファイル，ファイル・メンバー，およびレコード様式を指定します。\nFILEパラメーターに指定したデータベース・ファイルの名前を指定してください。",
+              "inputType": "text",
+              "required": false,
+              "attributes": {
+                "characterSet": "upper",
+                "maxLength": 10
+              },
+              "placeholder": "*NONE"
+            },
+            {
+              "name": "KEYFLD",
+              "description": "キー・フィールド",
+              "help": "キー・フィールドとして使用するフィールドの名前を指定してください。",
+              "inputType": "text",
+              "required": false,
+              "attributes": {
+                "characterSet": "upper",
+                "maxLength": 10
+              },
+              "placeholder": "*MAPFLD"
+            }
+          ],
+          "defaultValue": "*NONE"
+        },
+        {
+          "name": "ORDER",
+          "description": "キー・フィールド順序",
+          "inputType": "dropdown",
+          "required": false,
+          "defaultValue": "*ASCEND",
+          "attributes": {
+            "characterSet": "upper"
+          },
+          "options": [
+            {
+              "label": "*ASCEND",
+              "value": "*ASCEND",
+              "help": "指定されたキー・フィールドで定義されたキー部分が，昇順キーの値の順序になります。"
+            },
+            {
+              "label": "*DESCEND",
+              "value": "*DESCEND",
+              "help": "指定されたキー・フィールドで定義されたキー部分が，降順キーの値の順序になります。"
+            }
+          ]
+        },
+        {
+          "name": "ABSVAL",
+          "description": "絶対値による順序",
+          "inputType": "dropdown",
+          "required": false,
+          "attributes": {
+            "characterSet": "upper"
+          },
+          "options": [
+            {
+              "label": "*ABSVAL",
+              "value": "*ABSVAL",
+              "help": "指定されたキー・フィールドで定義されたキー部分が，キー・フィールドの絶対値に従って配置されます。*ABSVALは*ASCENDや*DESCENDと合わせて指定できますが，キー・フィールドが数字でないと無視されます。*ABSVALを指定しないと，レコードは数字キー・フィールドの符号付きの値に従って配置されます。"
+            }
+          ],
+          "placeholder": "*ABSVAL"
+        }
+      ],
+      "maxOccurrences": 50
     },
     {
       "name": "UNIQUEKEY",
       "description": "固有キー・フィールド",
-      "help": "重複キーを除く先頭からのキー・フィールド数。1-120 / *NONE（重複除去なし、既定）/ *ALL（全キー・フィールド）。",
+      "help": "QUERYを固有のキー値をもつレコードに制限するかどうかを指定し，また固有としなければならないキー・フィールドの数を指定します。このパラメーターに*ALLまたは数値を指定した場合には，ヌル値は等しいと見なされます。\n\n*NONE: キー・フィールド仕様 (KEYFLD) パラメーターに指定するキー・フィールドは，固有とする必要はありません。キー値に関係なく，すべてのQUERYレコードをQUERYファイル・オープンで使用することができます。\n*ALL: KEYFLDパラメーターで指定されたキー・フィールドは，すべて固有でなければなりません。すべてのキー・フィールドの値が同じQUERYレコードが複数存在する場合には，QUERYファイル・オープンでは最初のレコードだけが使用可能となります。\n固有とするキー・フィールドの数を1から120の範囲で指定してください。この値は，KEYFLDパラメーターで決定されたキー・フィールドの数より大きくてはいけません。指定した数の連続キー・フィールドの中に同じ値の複数のQUERYレコードがある場合には，それらの最初のレコードだけがQUERYファイル・オープンで使用できます。",
       "inputType": "text",
       "required": false,
-      "attributes": { "characterSet": "upper", "maxLength": 10 },
       "defaultValue": "*NONE",
+      "attributes": {
+        "characterSet": "upper"
+      },
       "placeholder": "*NONE"
     },
     {
       "name": "JFLD",
       "description": "結合フィールド仕様",
-      "help": "ファイル結合の対応フィールド定義。単一値 *NONE（結合しない、既定）、またはその他の値（最大50回の繰り返し）として 取り出しフィールド(修飾名)/受け取りフィールド(修飾名)/結合演算子 を平坦化指定。",
+      "help": "QUERYが複数のファイル・メンバーからのレコードを結合するかどうかを指定し，QUERYレコードの組み立てで ファイル仕様 (FILE) パラメーターに指定されたファイル，メンバー，およびレコード様式からのフィールド値を結合する方法を指定します。\n\nFILEパラメーターに指定された最初のファイル，メンバー，およびレコード様式は結合プライマリーと呼ばれ，FILEパラメーターに指定されたその他のすべての要素は結合セカンダリーと呼ばれます。このパラメーターは，対になったフィールド名のリストを指定します。リストでは，各対の最初のフィールドには，各対の2番目のフィールド名に同じ値をもつ結合セカンダリーでレコードを選択するために使用する値が入っています。\n\n結合元および結合先フィールドは，マップされたフィールド( マップされたフィールド仕様 (MAPFLD) パラメーターに指定）にできますが，フィールド定義で直接あるいはマップされたフィールドを参照することによって間接的に集計機能に依存するフィールドを使用できません。\n\n結合元および結合先フィールドが同じフィールド属性をもっている必要はありません。データ・タイプの互換性の詳細については，IBM i Information Center(http://www.ibm.com/systems/i/infocenter/)の「データベース」カテゴリーを参照してください。\n\nFILEパラメーターに複数のファイルが指定され， 省略時の値による結合 (JDFTVAL) パラメーターに*NOが指定され， ファイル結合順序 (JORDER) パラメーターに*ANYが指定された場合には，システムは 結合フィールド仕様 (JFLD) パラメーターおよび QUERY 選択式 (QRYSLT) パラメーターから情報を取り，最終的な結合仕様を派生させます。FILEパラメーターに，QRYSLTパラメーターまたはJFLDパラメーターで参照されないファイルを指定した場合には，そのファイルのすべてのレコードはFILEパラメーターで指定された他方のファイルから作成された他のすべてのレコードと論理的に結合されます。\n\nJDFTVALパラメーターで*YESまたは*ONLYDFTを指定するか，あるいはJORDERパラメーターで*FILEを指定した場合には，結合フィールドはJFLDパラメーターで指定しなければなりません。\n\n最大50の結合フィールドの対を指定できます。\n\n結合セカンダリー・ファイル，メンバー，およびレコード様式のレコードを選択するために使用する値を提供するフィールド名を指定してください。フィールド名はファイル名，あるいはFILEパラメーターで指定されたファイル，メンバー，およびレコード様式のリストの中の，そのフィールドを含んでいる要素を示す番号によって修飾することができます。また，フィールドがMAPFLDパラメーターで定義されている場合には，特殊値*MAPFLDを使用してフィールド名を修飾することもできます。\n\n結合元フィールドは，MAPFLDパラメーターで定義する単純フィールドまたはマップされたフィールドです。JDFTVALパラメーターに*YESまたは*ONLYDFTを指定した場合には，結合元フィールドは，その対の結合先フィールドに対応した結合セカンダリーより前の，FILEパラメーターに指定された結合プライマリーまたは結合セカンダリーに入っているフィールドによって決まります。\n\nQUERYレコードの組み立てで結合セカンダリー・ファイル，メンバー，およびレコード様式からレコードを選択するために使用されるフィールド名を指定してください。フィールド名はファイル名，あるいはFILEパラメーターで指定されたファイル，メンバー，およびレコード様式のリストの中の，そのフィールドを含んでいる要素を示す番号によって修飾されます。また，フィールドがMAPFLDパラメーターで定義されている場合には，特殊値*MAPFLDを使用してフィールド名を修飾することもできます。\n\n結合先フィールドは，MAPFLDパラメーターで定義する単純フィールドまたはマップされたフィールドです。JDFTVALパラメーターに*YESまたは *ONLYDFTが指定されている場合には，結合先フィールドは単一結合セカンダリーに入っているフィールドによって決まります。この結合セカンダリーが結合論理ファイルである場合には，その結合論理ファイルのプライマリー物理ファイル・メンバーに入っているフィールドだけが結合先フィールドの構成要素として使用されます。各結合セカンダリーのすべての結合先フィールドの合計の長さ（結合元および結合先の属性が同じでない場合には変更後）は，JDFTVAL(*NO)が指定されていない限り2000バイトを超えることはできません。JDFTVAL(*NO)が指定されている場合には2000バイトの制限はありません。\n\n指定した結合元フィールドおよび結合先フィールドで実行する結合操作のタイプを指定します。JDFTVALパラメーターで*NOを指定し，JORDERパラメーターで*ANYを指定した場合，あるいは複数の結合フィールドの対を指定した場合には，各対に異なる結合演算子を指定することができます。JDFTVALパラメーターで*YESまたは*ONLYDFTを指定するか，あるいはJORDERパラメーターで*FILEを指定した場合には，結合の対に関係なく，1つの結合演算子しか指定できません。",
       "inputType": "group",
       "required": false,
-      "maxOccurrences": 50,
+      "groupKind": "elements",
+      "singleValues": [
+        "*NONE"
+      ],
       "children": [
-        { "name": "FROMFLD", "description": "取り出しフィールド", "help": "結合元の取り出しフィールド名。*NONE で結合なし。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 10 }, "defaultValue": "*NONE", "placeholder": "*NONE" },
-        { "name": "FROMFILE", "description": "取り出しファイルまたは要素", "help": "取り出しフィールドが属するファイル名、*MAPFLD、または FILE 要素番号(1-32)。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 10 }, "placeholder": "*MAPFLD" },
-        { "name": "TOFLD", "description": "受け取りフィールド", "help": "結合先の受け取りフィールド名。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 10 }, "placeholder": "FIELD" },
-        { "name": "TOFILE", "description": "受け取りファイルまたは要素", "help": "受け取りフィールドが属するファイル名、*MAPFLD、または FILE 要素番号(1-32)。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 10 }, "placeholder": "*MAPFLD" },
-        { "name": "OPERATOR", "description": "結合演算子", "help": "*EQ（=、既定）/ *NE / *LT / *GT / *LE / *GE。", "inputType": "dropdown", "required": false, "options": [ { "label": "*EQ（等しい）", "value": "*EQ" }, { "label": "*NE（等しくない）", "value": "*NE" }, { "label": "*LT（より小さい）", "value": "*LT" }, { "label": "*GT（より大きい）", "value": "*GT" }, { "label": "*LE（以下）", "value": "*LE" }, { "label": "*GE（以上）", "value": "*GE" } ] }
-      ]
+        {
+          "name": "JFLD_E1",
+          "description": "取り出しフィールド",
+          "inputType": "group",
+          "required": false,
+          "groupKind": "qualified",
+          "children": [
+            {
+              "name": "JFLD_Q2",
+              "description": "ファイルまたは要素",
+              "help": "*MAPFLD: このフィールドはMAPFLDパラメーターに指定します。\n使用するFILEパラメーターの要素リスト値の位置を指定してください。要素リスト値は，データベース・ファイル，ファイル・メンバー，およびレコード様式を指定します。\nFILEパラメーターに指定したデータベース・ファイルの名前を指定してください。",
+              "inputType": "text",
+              "required": false,
+              "attributes": {
+                "characterSet": "upper",
+                "maxLength": 10
+              },
+              "placeholder": "*NONE"
+            },
+            {
+              "name": "JFLD",
+              "description": "取り出しフィールド",
+              "help": "結合元フィールドの名前を指定してください。",
+              "inputType": "text",
+              "required": false,
+              "attributes": {
+                "characterSet": "upper",
+                "maxLength": 10
+              },
+              "placeholder": "*MAPFLD"
+            }
+          ],
+          "defaultValue": "*NONE"
+        },
+        {
+          "name": "JFLD_E2",
+          "description": "受け取りフィールド",
+          "inputType": "group",
+          "required": false,
+          "groupKind": "qualified",
+          "children": [
+            {
+              "name": "JFLD_JFLD_Q2",
+              "description": "ファイルまたは要素",
+              "help": "*MAPFLD: このフィールドはMAPFLDパラメーターに指定します。\n使用するFILEパラメーターの要素リスト値の位置を指定してください。要素リスト値は，データベース・ファイル，ファイル・メンバー，およびレコード様式を指定します。\nFILEパラメーターに指定したデータベース・ファイルの名前を指定してください。",
+              "inputType": "text",
+              "required": false,
+              "attributes": {
+                "characterSet": "upper",
+                "maxLength": 10
+              },
+              "placeholder": "FIELD"
+            },
+            {
+              "name": "JFLD_JFLD",
+              "description": "受け取りフィールド",
+              "help": "結合元フィールドの名前を指定してください。",
+              "inputType": "text",
+              "required": false,
+              "attributes": {
+                "characterSet": "upper",
+                "maxLength": 10
+              },
+              "placeholder": "*MAPFLD"
+            }
+          ]
+        },
+        {
+          "name": "OPERATOR",
+          "description": "結合演算子",
+          "inputType": "dropdown",
+          "required": false,
+          "defaultValue": "*EQ",
+          "attributes": {
+            "characterSet": "upper"
+          },
+          "options": [
+            {
+              "label": "*EQ",
+              "value": "*EQ",
+              "help": "「等しい」結合操作が実行されます。"
+            },
+            {
+              "label": "*NE",
+              "value": "*NE",
+              "help": "「等しくない」結合操作が実行されます。"
+            },
+            {
+              "label": "*LT",
+              "value": "*LT",
+              "help": "「より小」結合操作が実行されます。"
+            },
+            {
+              "label": "*GT",
+              "value": "*GT",
+              "help": "「より大」結合操作が実行されます。"
+            },
+            {
+              "label": "*LE",
+              "value": "*LE",
+              "help": "「小さいか等しい」結合操作が実行されます。"
+            },
+            {
+              "label": "*GE",
+              "value": "*GE",
+              "help": "「大きいか等しい」結合操作が実行されます。"
+            }
+          ]
+        }
+      ],
+      "maxOccurrences": 50
     },
     {
       "name": "JDFTVAL",
       "description": "省略時の値による結合",
-      "help": "結合で一致レコードがない場合に省略時値を使うか。*NO（一致のみ、既定）/ *YES（不一致は省略時値）/ *ONLYDFT（省略時値の行のみ）。",
+      "help": "結合フィールド仕様 (JFLD) パラメーターで指定された結合接続を満たす正しいフィールド値をもつレコードが入っていない結合セカンダリー・ファイルからのフィールドに省略時の値を使用する結合レコードを，QUERYファイルに含めるかどうかを指定します。\n\n結合処理では，結合プライマリーおよび結合セカンダリーからのフィールド値の収集が試みられます。これは，結合先フィールドで適切な値を生成する結合セカンダリー中のレコードに結合元フィールドの値を対応させることによって行われます。結合セカンダリーと対応する結合フィールドの対に必要な結合先フィールドを生成するレコードが結合セカンダリー中にない場合には，このパラメーターは結合セカンダリーから獲得したすべてのフィールドに，省略時の値を使用してQUERYレコードを作成すべきかどうかを指定します。\n\nファイル仕様 (FILE) パラメーターに結合論理ファイルが含まれている場合には，そのすべての結合論理ファイルは，このパラメーター値と互換性がなければなりません。照会される結合論理ファイルの作成に使用されるデータ記述仕様(DDS)に，JDFTVALキーワードが入っていない場合には，FILEパラメーターに指定された結合論理ファイルのいずれかで，このパラメーターが使用されないことがあるので，JDFTVAL(*NO)が必要です。FILEパラメーターに指定されたJDFTVALキーワードが結合論理ファイルにある場合には，このQUERYファイル・オープンの結合論理ファイルは，JDFTVALキーワードを使用して作成しなければならないので，*YESが必要です。FILEパラメーターのファイルがビュー論理ファイルである場合には，このパラメーターに*NOを指定しなければなりません。\n\nJDFTVAL属性が，処理される結合論理ファイルの属性と互換性がない場合には，FILEパラメーターで指定された結合またはビュー論理ファイルを，これらの基礎になっている物理ファイル・メンバーと置き換えることができます。どんな方法にしても，物理ファイル・メンバーからのレコードを結合するためには，JFLDパラメーターで正しい追加結合元フィールドおよび結合先フィールドの対を指定することができます。\n\nFILEパラメーターで複数のファイルを指定し，*YESまたは*ONLYDFTを指定した場合には，システムは，JFLDパラメーターで指定された結合フィールドを最終的な結合仕様として使用します。",
       "inputType": "dropdown",
       "required": false,
+      "defaultValue": "*NO",
+      "attributes": {
+        "characterSet": "upper"
+      },
       "options": [
-        { "label": "*NO（一致レコードのみ）", "value": "*NO" },
-        { "label": "*YES（不一致は省略時値で結合）", "value": "*YES" },
-        { "label": "*ONLYDFT（省略時値の行のみ）", "value": "*ONLYDFT" }
+        {
+          "label": "*NO",
+          "value": "*NO",
+          "help": "結合QUERYレコードの構成に省略時の値を使用しません。"
+        },
+        {
+          "label": "*YES",
+          "value": "*YES",
+          "help": "省略時の値を使用したものも，使用しなかったものも含めて，結合のためのレコードがすべて作成されます。FILEパラメーターには，ビュー論理ファイルは許されません。"
+        },
+        {
+          "label": "*ONLYDFT",
+          "value": "*ONLYDFT",
+          "help": "結合の組み立てにおいて，省略時の値を使用して生成されたレコードのみが作成されます。このオプションは例外レコードだけを，QUERYファイル・オープンで使用可能なレコードに組み込むために使用されます。*ONLYDFTを指定した場合は，FILEパラメーターに，結合論理ファイルまたはビュー論理ファイルは指定できません。"
+        }
       ]
     },
     {
       "name": "JORDER",
       "description": "ファイル結合順序",
-      "help": "結合時のファイル処理順序。*ANY（システムに任せる、既定）/ *FILE（FILE の指定順）。",
+      "help": "結合QUERYの場合に，結合順序が， ファイル仕様 (FILE) パラメーターで指定された順序と一致する必要があるかどうかを指定します。結合順序が変わった場合には，QUERYレコードは異なる配置で生成されます。 省略時の値による結合 (JDFTVAL) パラメーターで指定された値が*YESまたは*ONLYDFTである場合には，このパラメーターは無視されます。結合順序を変更すると，結合の省略時の値の処理が必要な時に戻されるレコードが入れ替わることがあるので，FILEパラメーターで指定された順序は常に保存されます。\n\nFILEパラメーターで複数のファイルを指定して，*FILEを指定した場合には，システムは， 結合フィールド仕様 (JFLD) パラメーターで指定された結合フィールドを最終的な結合仕様として使用します。",
       "inputType": "dropdown",
       "required": false,
+      "defaultValue": "*ANY",
+      "attributes": {
+        "characterSet": "upper"
+      },
       "options": [
-        { "label": "*ANY（システムが最適化）", "value": "*ANY" },
-        { "label": "*FILE（FILE の指定順）", "value": "*FILE" }
+        {
+          "label": "*ANY",
+          "value": "*ANY",
+          "help": "どのようなファイル結合順序でも使用できます。そしてこの配置がシステムによって，QUERYレコードの作成に使用されます。同じQUERYを2度続けて実行（対象となるファイルの現在のレコードの数などの要素に基づいて実行）した場合には，そのたびに異なった配置に結果のレコードを戻すことも，QUERYでは可能です。*ANYを指定すると， ファイル結合順序 (JORDER) パラメーターに他のいかなる値を指定するよりも，QUERYファイル・オープンを用いたレコード処理のパフォーマンスを，システムが柔軟に向上させることができるようになります。"
+        },
+        {
+          "label": "*FILE",
+          "value": "*FILE",
+          "help": "FILEパラメーターで指定されたファイル，メンバー，およびレコード様式の要素の順序は結合操作において保存されます。"
+        }
       ]
     },
     {
       "name": "GRPFLD",
       "description": "フィールド名のグループ化",
-      "help": "集計のグループ化キー。単一値 *NONE（グループ化しない、既定）、またはその他の値（最大50回の繰り返し）として フィールド(修飾名) を平坦化指定。",
+      "help": "QUERYの結果をグループ化するために使用されるフィールド名を指定します。 QUERY 選択式 (QRYSLT) パラメーターによって選択されたレコードの各グループに1つのQUERYレコードが（必要により結合処理の後）作成されます。グループは， 様式仕様 (FORMAT) パラメーターで識別されたレコード様式に指定されたフィールドに同じ値のセットをもつレコードの集まりによって定義されます。グループ内のすべてのヌル値は等しいと見なされます。フィールド名が指定されていないで，グループ処理が必要な場合には，ファイル全体が1つのグループと見なされます。作成された各QUERYレコードは， グループ選択式 (GRPSLT) パラメーターに指定された選択値に応じて，QUERYファイル・オープンを介して使用可能になるか，あるいは廃棄されます。順序を確実にするためには， キー・フィールド仕様 (KEYFLD) パラメーター）を指定しなければなりません。\n\nQUERYの結果のグループ化に使用する1つまたは複数（最大50)のフィールド名を指定してください。各フィールド名はファイル名，あるいはFILEパラメーターで指定されたファイル，メンバー，およびレコード様式のリストの中の，そのフィールドを含んでいる要素を示す番号によって，修飾することができます。フィールドがMAPFLDパラメーターに指定されたものである場合には，フィールド名を修飾するために特殊値*MAPFLDを使用することもできます。\n\nMAPFLDパラメーターで定義されたグループ化用のフィールドは，その定義で集計機能を参照できません（直接参照することも，あるいはMAPFLDパラメーターで指定された別のフィールドを使用して間接的に参照することもできません）。また，グループ化用のすべてのフィールドの合計長は，2000バイトを超えることができません。",
       "inputType": "group",
       "required": false,
-      "maxOccurrences": 50,
+      "groupKind": "qualified",
+      "singleValues": [
+        "*NONE"
+      ],
       "children": [
-        { "name": "GRPFLD", "description": "フィールド名のグループ化", "help": "グループ化に使うフィールド名。*NONE でグループ化なし。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 10 }, "defaultValue": "*NONE", "placeholder": "*NONE" },
-        { "name": "FILE", "description": "ファイルまたは要素", "help": "フィールドが属するファイル名、*MAPFLD、または FILE 要素番号(1-32)。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 10 }, "placeholder": "*MAPFLD" }
-      ]
+        {
+          "name": "GRPFLD_Q2",
+          "description": "ファイルまたは要素",
+          "help": "*MAPFLD: このフィールドはMAPFLDパラメーターに指定します。\n使用するFILEパラメーターの要素リスト値の位置を指定してください。要素リスト値は，データベース・ファイル，ファイル・メンバー，およびレコード様式を指定します。\nFILEパラメーターに指定したデータベース・ファイルの名前を指定してください。",
+          "inputType": "text",
+          "required": false,
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          },
+          "placeholder": "*NONE"
+        },
+        {
+          "name": "GRPFLD",
+          "description": "フィールド名のグループ化",
+          "help": "QUERY結果のグループ化に使用するフィールドの名前を指定してください。",
+          "inputType": "text",
+          "required": false,
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          },
+          "defaultValue": "*NONE",
+          "placeholder": "*MAPFLD"
+        }
+      ],
+      "maxOccurrences": 50
     },
     {
       "name": "GRPSLT",
       "description": "グループ選択式",
-      "help": "グループ化後のグループ選択条件を表す文字値。*ALL で全グループを選択（既定）。",
+      "help": "どのレコードがQUERYファイル・オープンで使用可能かを判別するためにグループ化の後で使用する選択値を指定します。\n\n各フィールド名はファイル名，あるいは ファイル仕様 (FILE) パラメーターで指定されたファイル，メンバー，およびレコード様式のリストの中の，そのフィールドを含んでいる要素を示す番号によって，修飾することができます。このフィールドがMAPFLDパラメーターに指定されたものである場合には，フィールド名を修飾するために特殊値*MAPFLDを使用することもできます。\n\nデータ・タイプの互換性の詳細については，IBM i Information Center(http://www.ibm.com/systems/i/infocenter/)の「データベース」カテゴリーを参照してください。\n\n*ALL: フィールド名のグループ化 (GRPFLD) パラメーターに記述されているグループ機能によって定義されているすべてのレコードが選択されます。\n選択するレコードの判別に使用する値を記述する式（アポストロフィで囲む）を指定してください。フィールドと定数値，あるいはフィールドの関数と定数値の関係(*EQ,*NE など）からなる論理式を指定することができます。グループ化フィールド，集計機能，およびリテラルを構成するグループ化フィールド(GRPFLDパラメーターで指定），リテラル，集計機能(%AVG, %STDDEVなど），およびマップされたフィールド( マップされたフィールド仕様 (MAPFLD) パラメーターで指定）だけがいずれかの関係で参照されます。各関係では少なくとも1つのフィールドを指定しなければなりません。 各フィールド名はファイル名，あるいは ファイル仕様 (FILE) パラメーターで指定されたファイル，メンバー，およびレコード様式のリストの中の，そのフィールドを含んでいる要素を示す番号によって，修飾することができます。このフィールドがMAPFLDパラメーターに指定されたものである場合には，フィールド名を修飾するために特殊値*MAPFLDを使用することもできます。 データ・タイプの互換性の詳細については，IBM i Information Center(http://www.ibm.com/systems/i/infocenter/)の「データベース」カテゴリーを参照してください。",
       "inputType": "text",
       "required": false,
-      "attributes": { "maxLength": 2000 },
       "defaultValue": "*ALL",
+      "attributes": {
+        "characterSet": "upper"
+      },
       "placeholder": "*ALL"
     },
     {
       "name": "MAPFLD",
       "description": "マップされたフィールド仕様",
-      "help": "派生（マップ）フィールドの定義。単一値 *NONE（既定）、またはその他の値（最大50回の繰り返し）として フィールド名/定義式/タイプ/長さ/小数桁/CCSID を平坦化指定。",
+      "help": "他のフィールドからマップされるか，または得られるQUERYフィールドの定義を指定してください。他のパラメーターで指定されたフィールド名が， ファイル仕様 (FILE) パラメーターで指定されたファイル，メンバー，およびレコード様式の要素の中の1つにのみ存在する単純フィールド名の場合には，MAPFLDは普通は必要ありません。\n\n最大50個のマップされたフィールド定義を指定することができます。\n\n各フィールド名はファイル名，あるいはFILEパラメーターで指定されたファイル，メンバー，およびレコード様式のリストの中の，そのフィールドを含んでいる要素を示す番号によって，修飾することができます。フィールドが マップされたフィールド仕様 (MAPFLD) パラメーターで指定されている場合には，特殊値*MAPFLDを使用してフィールド名を修飾することもできます。\n\nこのマップされたフィールドに，フィールド・タイプを指定してください。あるいは該当する属性（フィールド・タイプを含める）をシステムに計算させるには，*CALCを指定してください。フィールド・タイプに値を指定しないと*CALCが省略時の値となります。\n\n*CALCを使用した場合には，次の2つのいずれかの方法でフィールド属性が決められます。 様式仕様 (FORMAT) パラメーターで識別されたレコード様式のフィールド定義に一致する属性になるか，あるいは(FORMATパラメーターのレコード様式に該当のフィールドがなければ）このフィールドのマップされたフィールド定義で指定された式に基づいて属性が計算されます。FORMATパラメーターで識別されるレコード様式でマップされたフィールドが使用される場合には，*CALCを使用するか，あるいはFORMATパラメーターで指定されたレコード様式のフィールドのものと同じ属性（フィールド・タイプ，フィールド長，およびフィールドの小数部）を指定しなければなりません。\n\nフィールド・タイプは，マップされたフィールド定義に指定された式の最終結果にとって有効なものでなければなりません。\n\n次は，文字，DBCS混用，DBCS択一，DBCS専用，図形，バイナリー・ストリング，および数値タイプ間の，サポートされないマッピングです。\n\nマッピングの詳細については，IBM i Information Center(http://www.ibm.com/systems/i/infocenter/)の「データベース」カテゴリーを参照してください。\n\nMAPFLD定義のリテラル値がジョブの省略時のCCSIDを伴います。しかし，MAPFLDがリテラル値だけからなり，ユーザーがフィールドのCCSID値を指定した場合には，リテラル値にそのCCSIDが伴います。これによって，リテラルにジョブの省略時のCCSID以外のタグを付けることができます。",
       "inputType": "group",
       "required": false,
-      "maxOccurrences": 50,
+      "groupKind": "elements",
+      "singleValues": [
+        "*NONE"
+      ],
       "children": [
-        { "name": "FIELD", "description": "マップされたフィールド", "help": "新しく定義するマップ・フィールド名。*NONE でマップなし。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 10 }, "defaultValue": "*NONE", "placeholder": "*NONE" },
-        { "name": "EXPR", "description": "フィールド定義式", "help": "マップ・フィールドの値を計算する文字値（式）。", "inputType": "text", "required": false, "attributes": { "maxLength": 2000 }, "placeholder": "FLDA + FLDB" },
-        { "name": "TYPE", "description": "マップされたフィールドのタイプ", "help": "データ・タイプ。*CALC（式から算出、既定）/ *BIN2 / *BIN4 / *FLT4 / *FLT8 / *DEC / *ZONED / *CHAR / *VCHAR / *HEX / *VHEX / *DATE / *TIME / *TIMESTP / *ONLY / *VONLY / *OPEN / *VOPEN / *EITHER / *VEITHER / *GRAPHIC / *VGRAPHIC。", "inputType": "dropdown", "required": false, "options": [
-          { "label": "*CALC（式から算出）", "value": "*CALC" },
-          { "label": "*BIN2", "value": "*BIN2" },
-          { "label": "*BIN4", "value": "*BIN4" },
-          { "label": "*FLT4", "value": "*FLT4" },
-          { "label": "*FLT8", "value": "*FLT8" },
-          { "label": "*DEC", "value": "*DEC" },
-          { "label": "*ZONED", "value": "*ZONED" },
-          { "label": "*CHAR", "value": "*CHAR" },
-          { "label": "*VCHAR", "value": "*VCHAR" },
-          { "label": "*HEX", "value": "*HEX" },
-          { "label": "*VHEX", "value": "*VHEX" },
-          { "label": "*DATE", "value": "*DATE" },
-          { "label": "*TIME", "value": "*TIME" },
-          { "label": "*TIMESTP", "value": "*TIMESTP" },
-          { "label": "*ONLY", "value": "*ONLY" },
-          { "label": "*VONLY", "value": "*VONLY" },
-          { "label": "*OPEN", "value": "*OPEN" },
-          { "label": "*VOPEN", "value": "*VOPEN" },
-          { "label": "*EITHER", "value": "*EITHER" },
-          { "label": "*VEITHER", "value": "*VEITHER" },
-          { "label": "*GRAPHIC", "value": "*GRAPHIC" },
-          { "label": "*VGRAPHIC", "value": "*VGRAPHIC" }
-        ] },
-        { "name": "LEN", "description": "長さ", "help": "フィールドの長さ。0-32766。", "inputType": "number", "required": false, "attributes": { "numericOnly": true, "maxLength": 5 }, "placeholder": "10" },
-        { "name": "DEC", "description": "小数点以下の桁数", "help": "小数点以下の桁数。0-63。", "inputType": "number", "required": false, "attributes": { "numericOnly": true, "maxLength": 2 }, "placeholder": "0" },
-        { "name": "CCSID", "description": "マップされたフィールドのCCSID", "help": "マップ・フィールドの CCSID。1-65535 / *CALC（算出、既定）/ *HEX。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 5 }, "defaultValue": "*CALC", "placeholder": "*CALC" }
-      ]
+        {
+          "name": "FIELD",
+          "description": "マップされたフィールド",
+          "help": "このマップされたフィールドを参照しなければならない，他のパラメーターで使用される単純フィールド名を指定してください。パラメーターのリスト要素の最初の部分には，修飾名は 許されません 。また，マップされたフィールド名の値には，すべて固有のものを指定しなければなりません。",
+          "inputType": "text",
+          "required": false,
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          },
+          "defaultValue": "*NONE",
+          "placeholder": "*NONE"
+        },
+        {
+          "name": "EXPR",
+          "description": "フィールド定義式",
+          "help": "マップされたフィールドを定義する，最大256文字までの式（アポストロフィで囲まれたもの）を指定してください。この指定は，FILEパラメーターで指定されたファイル，メンバー，およびレコード様式の要素のどれか1つに存在する他のフィールドか，あるいはリストの初めの方に現れるマップされたフィールド定義によって定義されている他のフィールドを用いて，定義します。定義に使用されるフィールドのデータ・タイプによって，数値演算あるいはストリング操作が許されます。 各フィールド名はファイル名，あるいはFILEパラメーターで指定されたファイル，メンバー，およびレコード様式のリストの中の，そのフィールドを含んでいる要素を示す番号によって，修飾することができます。フィールドが マップされたフィールド仕様 (MAPFLD) パラメーターで指定されている場合には，特殊値*MAPFLDを使用してフィールド名を修飾することもできます。",
+          "inputType": "text",
+          "required": false,
+          "placeholder": "FLDA + FLDB"
+        },
+        {
+          "name": "MAPFLD_TYPE",
+          "description": "マップされたフィールドのタイプ",
+          "inputType": "dropdown",
+          "required": false,
+          "defaultValue": "*CALC",
+          "attributes": {
+            "characterSet": "upper"
+          },
+          "options": [
+            {
+              "label": "*CALC",
+              "value": "*CALC",
+              "help": "適切なフィールド・タイプ属性を計算します。"
+            },
+            {
+              "label": "*BIN2",
+              "value": "*BIN2",
+              "help": "2バイトの2進数フィールド。"
+            },
+            {
+              "label": "*BIN4",
+              "value": "*BIN4",
+              "help": "4バイトの2進数フィールド。"
+            },
+            {
+              "label": "*FLT4",
+              "value": "*FLT4",
+              "help": "4バイトの浮動小数点フィールド。"
+            },
+            {
+              "label": "*FLT8",
+              "value": "*FLT8",
+              "help": "8バイトの浮動小数点フィールド。"
+            },
+            {
+              "label": "*DEC",
+              "value": "*DEC",
+              "help": "パック10進数フィールド。"
+            },
+            {
+              "label": "*ZONED",
+              "value": "*ZONED",
+              "help": "ゾーン10進数フィールド。"
+            },
+            {
+              "label": "*CHAR",
+              "value": "*CHAR",
+              "help": "文字フィールド。"
+            },
+            {
+              "label": "*VCHAR",
+              "value": "*VCHAR",
+              "help": "可変長文字フィールド。"
+            },
+            {
+              "label": "*HEX",
+              "value": "*HEX",
+              "help": "16進数フィールド。"
+            },
+            {
+              "label": "*VHEX",
+              "value": "*VHEX",
+              "help": "可変長16進数フィールド。"
+            },
+            {
+              "label": "*DATE",
+              "value": "*DATE",
+              "help": "日付フィールド。"
+            },
+            {
+              "label": "*TIME",
+              "value": "*TIME",
+              "help": "時刻フィールド。"
+            },
+            {
+              "label": "*TIMESTP",
+              "value": "*TIMESTP",
+              "help": "タイム・スタンプ・フィールド。"
+            },
+            {
+              "label": "*ONLY",
+              "value": "*ONLY",
+              "help": "DBCS専用フィールド。"
+            },
+            {
+              "label": "*VONLY",
+              "value": "*VONLY",
+              "help": "可変長DBCS専用フィールド。"
+            },
+            {
+              "label": "*OPEN",
+              "value": "*OPEN",
+              "help": "DBCS混用フィールド。"
+            },
+            {
+              "label": "*VOPEN",
+              "value": "*VOPEN",
+              "help": "可変長DBCS混用専用フィールド。"
+            },
+            {
+              "label": "*EITHER",
+              "value": "*EITHER",
+              "help": "DBCS択一フィールド。"
+            },
+            {
+              "label": "*VEITHER",
+              "value": "*VEITHER",
+              "help": "可変長DBCS択一フィールド。"
+            },
+            {
+              "label": "*GRAPHIC",
+              "value": "*GRAPHIC",
+              "help": "DBCS図形フィールド。"
+            },
+            {
+              "label": "*VGRAPHIC",
+              "value": "*VGRAPHIC",
+              "help": "可変長DBCS図形フィールド。"
+            }
+          ]
+        },
+        {
+          "name": "LEN",
+          "description": "長さ",
+          "help": "フィールド長は，数字フィールドの場合には桁数，文字またはDBCSフィールドの場合にはバイト数，図形フィールドの場合には文字数で指定してください。DBCS専用またはDBCS択一フィールド・タイプの場合には，フィールド長は偶数値でなければなりません。各フィールド・タイプの有効な長さの範囲は，テーブル1に示されています。要素3 ( マップされたフィールドのタイプ)に*CALCを使用した場合には，値を指定してはいけません。",
+          "inputType": "number",
+          "required": false,
+          "attributes": {
+            "numericOnly": true
+          },
+          "placeholder": "10"
+        },
+        {
+          "name": "DEC",
+          "description": "小数点以下の桁数",
+          "help": "10進桁数として表現され，フィールド長に指定された合計桁数より大きくない数字フィールドの小数点以下の桁数を指定します。値が指定されない場合には，その値はゼロと見なされます。2進数または文字フィールドの場合，要素3 ( マップされたフィールドのタイプ)に*CALCが指定された場合には，フィールドの10進数の値を指定しないでください。",
+          "inputType": "number",
+          "required": false,
+          "attributes": {
+            "numericOnly": true
+          },
+          "placeholder": "0"
+        },
+        {
+          "name": "MAPFLD_CCSID",
+          "description": "マップされたフィールドのCCSID",
+          "help": "*CALC: コード化文字セットID (CCSID)値は，MAPFLDフィールド定義を構成するフィールドまたはリテラル値のCCSIDによって決定されます。\n*HEX: フィールド・データの変換が行われないように事前定義値が使用されます。\n使用するCCSIDを指定してください。このコマンドのプロンプト時にIDの完全なリストを見るには，カーソルをこのパラメーターのフィールドに位置づけて，F4（プロンプト）キーを押してください。 MAPFLD定義のリテラル値がジョブの省略時のCCSIDを伴います。しかし，MAPFLDがリテラル値だけからなり，ユーザーがフィールドのCCSID値を指定した場合には，リテラル値にそのCCSIDが伴います。これによって，リテラルにジョブの省略時のCCSID以外のタグを付けることができます。 注: 通常，*HEXおよび*VHEXフィールドには対応したCCSIDがありません。このため，フィールドのデータは，そのデータが使用されるシステムの省略時のCCSIDに関係なく同じものとして扱われます。しかし，*HEXおよび*VHEXフィールドにCCSIDを指定した場合には，CCSIDがフィールドの16進属性を一時変更し（この結果フィールドは*CHARまたは*VCHARとして扱われます），フィールドが別の省略時のCCSIDをもつシステムに移動された場合には，フィールドのデータが異なって処理されることがあります。",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "*CALC",
+          "attributes": {
+            "characterSet": "upper"
+          },
+          "placeholder": "*CALC"
+        }
+      ],
+      "maxOccurrences": 50
     },
     {
       "name": "IGNDECERR",
       "description": "10進データ・エラーの無視",
-      "help": "ゾーン10進/パック10進データのデータ・エラーを無視するか。*NO（無視しない、既定）/ *YES。",
+      "help": "システムがQUERY処理時に10進数データ・エラーを無視するかどうかを指定します。",
       "inputType": "dropdown",
       "required": false,
+      "defaultValue": "*NO",
+      "attributes": {
+        "characterSet": "upper"
+      },
       "options": [
-        { "label": "*NO（無視しない）", "value": "*NO" },
-        { "label": "*YES（無視する）", "value": "*YES" }
+        {
+          "label": "*NO",
+          "value": "*NO",
+          "help": "システムは10進数データ・エラーを無視しません。"
+        },
+        {
+          "label": "*YES",
+          "value": "*YES",
+          "help": "システムは10進数データ・エラーを無視します。10進数データにエラーが見つかった場合には，有効でない符号または数字は自動的に有効な値に変更されます。"
+        }
       ]
     },
     {
       "name": "OPNID",
       "description": "オープン・ファイルID",
-      "help": "オープンしたファイルを識別する ID。*FILE（先頭ファイルの名前を使用、既定）/ 名前。",
+      "help": "QUERYファイル・オープンがクローズされた時に，ファイル・クローズ(CLOF)コマンドまたはデータベース・ファイル位置指定(POSDBF)コマンドで参照されるように，QUERYファイル・オープンの呼び名として使用される識別名を指定します。この識別名は，前にデータベース・ファイル・オープン(OPNDBF)コマンドまたはOPNQRYFコマンドを使用してオープンされて，まだクローズされていない他のいかなるファイルに対応した識別名とも，異なるものでなければなりません。\n\n*FILE: ファイル仕様 (FILE) パラメーターで指定された最初，あるいは唯一のファイルの名前が，オープン識別名に使用されます。\nこのQUERYファイル・オープンと対応させたい名前を指定してください。",
       "inputType": "text",
       "required": false,
-      "attributes": { "characterSet": "upper", "maxLength": 10 },
       "defaultValue": "*FILE",
+      "attributes": {
+        "characterSet": "upper",
+        "maxLength": 10
+      },
       "placeholder": "*FILE"
     },
     {
       "name": "SEQONLY",
       "description": "順次のみへの制限",
-      "help": "順次専用処理に制限するか。単一値 *NO（既定）、または要素リスト（順次のみ *YES / レコード数 1-32767）。",
+      "help": "ファイルに対して順次のみ処理を使用するかどうか，および，QUERYファイル・オープンに対して読み取りまたは書き込み操作を実行する時に1グループとして処理されるレコードの数を指定します。QUERYファイル・オープンODPは，このコマンドに指定された他のパラメーター値に応じて，このパラメーターで指定されたものとは異なるSEQONLY値を使用します。SEQONLY値が変更された場合には，メッセージが送信されます。",
       "inputType": "group",
       "required": false,
+      "groupKind": "elements",
+      "singleValues": [
+        "*NO"
+      ],
       "children": [
-        { "name": "SEQONLY", "description": "順次のみ", "help": "*NO（制限しない、既定）/ *YES（順次専用）。", "inputType": "dropdown", "required": false, "options": [ { "label": "*NO（制限しない）", "value": "*NO" }, { "label": "*YES（順次専用）", "value": "*YES" } ] },
-        { "name": "NBRRCDS", "description": "レコード数", "help": "一度に転送するレコード数。1-32767。", "inputType": "number", "required": false, "attributes": { "numericOnly": true, "maxLength": 5 }, "placeholder": "1" }
+        {
+          "name": "SEQONLY",
+          "description": "順次のみ",
+          "inputType": "dropdown",
+          "required": false,
+          "defaultValue": "*YES",
+          "attributes": {
+            "characterSet": "upper"
+          },
+          "options": [
+            {
+              "label": "*NO",
+              "value": "*NO",
+              "help": "ファイルでは順次のみ処理が使用されません。"
+            },
+            {
+              "label": "*YES",
+              "value": "*YES",
+              "help": "QUERYファイル・オープンでは，順次のみ処理が使用されます。"
+            }
+          ]
+        },
+        {
+          "name": "NBRRCDS",
+          "description": "レコード数",
+          "help": "オープンされたQUERYファイルに対して読み取りまたは書き込み操作を実行する時に，1つのグループとして処理するレコード数を指定してください。値を指定しないと，システムは1つのグループとして処理するレコード数を計算します。",
+          "inputType": "number",
+          "required": false,
+          "attributes": {
+            "numericOnly": true
+          },
+          "placeholder": "1"
+        }
       ]
     },
     {
       "name": "COMMIT",
       "description": "コミットメント制御活動中",
-      "help": "コミットメント制御下でオープンするか。*NO（既定）/ *YES。",
+      "help": "このファイルをコミットメント制御の下に入れるかどうかを指定します。\n\nコミットメント制御のもとでデータベース・ファイルをオープンする前に，ユーザーはコミットメント・トランザクションのすべてのファイルがジャーナル処理されることを確認しなければなりません。事後イメージだけがジャーナル処理されている場合には，システムは，変更がこのコミットメント定義のもとでオープンされたファイルの期間中に事前および事後の両方のイメージのジャーナル処理を暗黙に開始します。",
       "inputType": "dropdown",
       "required": false,
+      "defaultValue": "*NO",
+      "attributes": {
+        "characterSet": "upper"
+      },
       "options": [
-        { "label": "*NO（コミットメント制御なし）", "value": "*NO" },
-        { "label": "*YES（コミットメント制御下）", "value": "*YES" }
+        {
+          "label": "*NO",
+          "value": "*NO",
+          "help": "QUERYファイル・オープンがコミットメント制御のもとにおかれません。"
+        },
+        {
+          "label": "*YES",
+          "value": "*YES",
+          "help": "QUERYファイル・オープンがコミットメント制御のもとにおかれます。"
+        }
       ]
     },
     {
       "name": "OPNSCOPE",
       "description": "有効範囲のオープン",
-      "help": "オープンの有効範囲。*ACTGRPDFN（活動化グループ定義、既定）/ *ACTGRP（活動化グループ）/ *JOB（ジョブ）。",
+      "help": "オープン操作の影響の範囲（有効範囲）を指定します。",
       "inputType": "dropdown",
       "required": false,
+      "defaultValue": "*ACTGRPDFN",
+      "attributes": {
+        "characterSet": "upper"
+      },
       "options": [
-        { "label": "*ACTGRPDFN（活動化グループ定義）", "value": "*ACTGRPDFN" },
-        { "label": "*ACTGRP（活動化グループ）", "value": "*ACTGRP" },
-        { "label": "*JOB（ジョブ）", "value": "*JOB" }
+        {
+          "label": "*ACTGRPDFN",
+          "value": "*ACTGRPDFN",
+          "help": "オープン操作の有効範囲は，OPNQRYFコマンド処理プログラムを呼び出したプログラムの活動化グループによって決まります。活動化グループが省略時の活動化グループである場合には，有効範囲は呼び出し元の呼び出しレベルとなります。活動化グループが省略時の活動化グループでない場合には，有効範囲は呼び出し元の活動化グループとなります。マルチスレッド・ジョブでは，このODPが共用できる同一スレッド内および同一の活動化グループ内のそれらだけをオープンします。"
+        },
+        {
+          "label": "*ACTGRP",
+          "value": "*ACTGRP",
+          "help": "オープン・データ・パス(ODP)の有効範囲は活動化グループとなります。同じ活動化グループからの共用オープンだけがこのODPを共用することができます。このODPは，活動化グループが非活動化されるか，あるいはファイル・クローズ(CLOF)コマンドが活動化グループをクローズするまでは再利用されません。"
+        },
+        {
+          "label": "*JOB",
+          "value": "*JOB",
+          "help": "オープン操作の有効範囲は，オープン操作が行われるジョブとなります。ジョブがマルチスレッドである場合には，同じスレッドからオープンされたジョブだけがこのODPを共用できます。"
+        }
       ]
     },
     {
       "name": "DUPKEYCHK",
       "description": "重複キー検査",
-      "help": "重複キーのフィードバックを行うか。*NO（既定）/ *YES。",
+      "help": "このコマンドによってオープンされたファイルの入出力操作について，重複キーのチェックを実行すべきかどうかを示します。",
       "inputType": "dropdown",
       "required": false,
+      "defaultValue": "*NO",
+      "attributes": {
+        "characterSet": "upper"
+      },
       "options": [
-        { "label": "*NO（重複キー検査なし）", "value": "*NO" },
-        { "label": "*YES（重複キー検査あり）", "value": "*YES" }
+        {
+          "label": "*NO",
+          "value": "*NO",
+          "help": "入出力コマンドについて重複キーのフィードバックは提供されません。"
+        },
+        {
+          "label": "*YES",
+          "value": "*YES",
+          "help": "入出力コマンドについて重複キーのフィードバックが提供されます。"
+        }
       ]
     },
     {
       "name": "ALWCPYDTA",
       "description": "データのコピー可能",
-      "help": "結果作成のためにデータのコピーを許すか。*YES（許す、既定）/ *OPTIMIZE（最適化判断）/ *NO（許さない）。",
+      "help": "システムが ファイル仕様 (FILE) パラメーターに指定されたファイル，メンバー，およびレコード様式からデータのコピーを行うことができるかどうかを指定します。できる場合には，システムは，コピーのためにQUERYファイルをオープンすることができます。情報がコピーされた後でコピーがデータベースの変更を反映しないので，システムは通常データのコピーの使用を避けます。しかし，一定の要求では，指定されたQUERY機能を実行するためにデータのコピーを必要とします（結合の基礎となる複数のファイルに含まれるキー・フィールドが指定されている場合など）。\n\n分類では，FILEパラメーターに指定された1つまたは複数のファイルのレコードのほとんどまたはすべてが戻されるので，QUERYのパフォーマンスが向上します。\n\n分類を使用すると，OPNQRYFコマンドの処理に必要な時間が増すことがあります。これは，分類が実行され，QUERYから戻されるすべてのレコードがOPNQRYFコマンドの活動中に処理されるために起こります。しかし，既にレコードが処理されているので，レコードの読み取り（プログラムまたはCPYFRMQRYFコマンドを使用）は非常に高速です。したがって，QUERYの全般的な処理時間は減少します。\n\nOPNQRYFコマンドにKEYFLDパラメーターを指定しても，ALWCPYDTA(*OPTIMIZE)を指定した場合に必ずQUERYが索引を使用するとはかぎりません。分類ルーチンが使用される場合には，ファイルが索引によるアクセスでオープンされません。OPNQRYFコマンドからレコードを読み取るプログラムが索引によるアクセス（順次処理ではなくランダム処理）を必要とする場合には，ALWCPYDTA(*YES)またはALWCPYDTA(*NO)を指定しなければなりません。\n\n分類が使用される時には，ROLLBACKステートメントが出されても，QUERYファイルの位置は変更されません。したがって，パラメーターをもつQUERYがオープンされる時には，後続のROLLBACKステートメントは，回復単位の開始位置にあったQUERY処理されたファイルの位置をリセットしません。\n\nOPNQRYFコマンドで分類が有効となる前に次のことが必要です。\n\nQUERY最適化プログラムは，分類が使用されるかどうかを決定します。この決定は，QUERYから予想されるレコードの数およびOPNQRYFステートメントに指定されたオプションに基づいています。最適化プログラムによる分類の選択には次のことが影響します。",
       "inputType": "dropdown",
       "required": false,
+      "defaultValue": "*YES",
+      "attributes": {
+        "characterSet": "upper"
+      },
       "options": [
-        { "label": "*YES（コピーを許す）", "value": "*YES" },
-        { "label": "*OPTIMIZE（最適化に基づき判断）", "value": "*OPTIMIZE" },
-        { "label": "*NO（コピーを許さない）", "value": "*NO" }
+        {
+          "label": "*YES",
+          "value": "*YES",
+          "help": "システムは， ファイル仕様 (FILE) パラメーターに指定されたファイル，メンバー，およびレコード様式からのデータのコピーを使用する場合があります。データのコピーが使用されるのは，要求されたQUERY機能の実行で必要な場合だけです。"
+        },
+        {
+          "label": "*OPTIMIZE",
+          "value": "*OPTIMIZE",
+          "help": "システムは，分類ルーチンを使用して，FILEパラメーターに指定されたファイル，ファイル・メンバー，およびレコード様式からの出力を順序付けます。分類ルーチンは，KEYFLDパラメーターが指定され，分類ルーチンの使用が他のOPNQRYFオプションと矛盾せずにQUERYのパフォーマンス向上する場合にのみ使用されます。 分類では，FILEパラメーターに指定された1つまたは複数のファイルのレコードのほとんどまたはすべてが戻されるので，QUERYのパフォーマンスが向上します。 分類を使用すると，OPNQRYFコマンドの処理に必要な時間が増すことがあります。これは，分類が実行され，QUERYから戻されるすべてのレコードがOPNQRYFコマンドの活動中に処理されるために起こります。しかし，既にレコードが処理されているので，レコードの読み取り（プログラムまたはCPYFRMQRYFコマンドを使用）は非常に高速です。したがって，QUERYの全般的な処理時間は減少します。 OPNQRYFコマンドにKEYFLDパラメーターを指定しても，ALWCPYDTA(*OPTIMIZE)を指定した場合に必ずQUERYが索引を使用するとはかぎりません。分類ルーチンが使用される場合には，ファイルが索引によるアクセスでオープンされません。OPNQRYFコマンドからレコードを読み取るプログラムが索引によるアクセス（順次処理ではなくランダム処理）を必要とする場合には，ALWCPYDTA(*YES)またはALWCPYDTA(*NO)を指定しなければなりません。 分類が使用される時には，ROLLBACKステートメントが出されても，QUERYファイルの位置は変更されません。したがって，パラメーターをもつQUERYがオープンされる時には，後続のROLLBACKステートメントは，回復単位の開始位置にあったQUERY処理されたファイルの位置をリセットしません。 注: ROLLBACKステートメントによるQUERYファイルの位置変更が必要な場合，あるいは索引によるアクセスでQUERY処理されたファイルのオープンが必要な場合には，ALWCPYDTA(*OPTIMIZE)を指定しないでください。 OPNQRYFコマンドで分類が有効となる前に次のことが必要です。 ALWCPYDTA(*OPTIMIZE)を指定しなければなりません。 OPTIONパラメーターを指定する場合には，*INPでなければなりません。 KEYFLDパラメーターには*FILEまたは*NONE以外の値を指定しなければなりません。 UNIQUEKEYパラメーターは指定してはならず，もし指定するのであれば*NONEを指定しなければなりません。 SEQONLYパラメーターを指定する場合には，*YESでなければなりません。 DUPKEYCHKパラメーターは指定してはならず，もし指定するのであれば*NOを指定しなければなりません。 FORMATパラメーター（またはFORMATパラメーターを指定しない場合にはFILEパラメーター）によって指定されたファイル中のすべてのフィールドの合計バッファー長は32700バイトを超えてはなりません。 QUERY最適化プログラムは，分類が使用されるかどうかを決定します。この決定は，QUERYから予想されるレコードの数およびOPNQRYFステートメントに指定されたオプションに基づいています。最適化プログラムによる分類の選択には次のことが影響します。 OPTIMIZEパラメーターには*ALLIOまたは*MINWAITを指定しなければなりません。*FIRSTIOが指定された場合には，指定するレコードの数はQUERYから予想される結果のレコードの数に近いか，等しくなければなりません。 FILEパラメーターに指定するファイル中のレコードの数は最小でも200レコードでなければなりません。 QUERYの結果には最小でも200レコードが含まれなければなりません。"
+        },
+        {
+          "label": "*NO",
+          "value": "*NO",
+          "help": "システムは， ファイル仕様 (FILE) パラメーターに指定されたファイル，メンバー，およびレコード様式からのデータのコピーを使用しません。要求されたQUERY機能の実行のためにデータのコピーを使用する必要がある場合には，QUERYファイルはオープンされないで，エラー・メッセージが出されます。"
+        }
       ]
     },
     {
       "name": "OPTIMIZE",
       "description": "パフォーマンスの最適化",
-      "help": "最適化の目標。単一値 *ALLIO（全レコード処理向け、既定）/ *MINWAIT、または要素リスト（*FIRSTIO / レコード数 1-2147483647）。",
+      "help": "このコマンド上の他の指定を満足させる選択処理および結合処理の実行方法を決定するために，システムによって使用される最適化の目標を指定してください。\n\nキー・フィールド仕様 (KEYFLD) パラメーターまたは フィールド名のグループ化 (GRPFLD) パラメーターによって，アクセス・パスの構築が必要となる場合には（既存のアクセス・パスを共用できない場合には），このパラメーターに指定された値に関係なく，アクセス・パスは完全に構築されます。最適化は選択処理のタイミングに主に影響します。",
       "inputType": "group",
       "required": false,
+      "groupKind": "elements",
+      "singleValues": [
+        "*ALLIO",
+        "*MINWAIT"
+      ],
       "children": [
-        { "name": "OPTIMIZE", "description": "パフォーマンスの最適化", "help": "*ALLIO（全件処理を最適化、既定）/ *MINWAIT / *FIRSTIO（先頭レコードを早く返す）。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 10 }, "defaultValue": "*ALLIO", "placeholder": "*ALLIO" },
-        { "name": "NBRRCDS", "description": "レコード数", "help": "*FIRSTIO 時に最適化対象とするレコード数。1-2147483647。", "inputType": "number", "required": false, "attributes": { "numericOnly": true, "maxLength": 10 }, "placeholder": "1" }
+        {
+          "name": "OPTIMIZE",
+          "description": "パフォーマンスの最適化",
+          "inputType": "dropdown",
+          "required": false,
+          "defaultValue": "*ALLIO",
+          "attributes": {
+            "characterSet": "upper"
+          },
+          "options": [
+            {
+              "label": "*ALLIO",
+              "value": "*ALLIO",
+              "help": "システムは，すべてのQUERYレコードがファイルから読み取られるものとして，QUERY全体の処理にかかる合計時間を改善するように試みます。"
+            },
+            {
+              "label": "*MINWAIT",
+              "value": "*MINWAIT",
+              "help": "システムは，ファイルからレコードを読み取る場合の遅延を少なくして，QUERYを向上させるようにします。"
+            },
+            {
+              "label": "*FIRSTIO",
+              "value": "*FIRSTIO",
+              "help": "システムは，QUERYファイルのオープンに要する時間，およびファイルからレコードの最初のバッファーを検索する時間を改善するように試みます。"
+            }
+          ],
+          "placeholder": "*ALLIO"
+        },
+        {
+          "name": "OPTIMIZE_NBRRCDS",
+          "description": "レコード数",
+          "help": "検索予定のレコード数を指定します。QUERY最適化プログラムは，この情報を使用して，QUERYの適切なインプリメンテーションを決定します。",
+          "inputType": "number",
+          "required": false,
+          "attributes": {
+            "numericOnly": true
+          },
+          "placeholder": "1"
+        }
       ]
     },
     {
       "name": "OPTALLAP",
       "description": "すべてのアクセス・パスの最適化",
-      "help": "すべてのアクセス・パスを最適化するか。*NO（既定）/ *YES。",
+      "help": "QUERY最適化プログラムがQUERYの実行方法を決定する時に，QUERY処理されるファイルに存在するすべてのアクセス・パスを考慮するかどうかを指定します。",
       "inputType": "dropdown",
       "required": false,
+      "defaultValue": "*NO",
+      "attributes": {
+        "characterSet": "upper"
+      },
       "options": [
-        { "label": "*NO（最適化しない）", "value": "*NO" },
-        { "label": "*YES（すべて最適化）", "value": "*YES" }
+        {
+          "label": "*NO",
+          "value": "*NO",
+          "help": "QUERY最適化プログラムは通常通りに機能することができます。QUERYの開始方法を決定する時には，最適化プログラムは，内部タイムアウト値に達するまで，アクセス・パスを考慮します。QUERY処理されるファイルに多数のアクセス・パスがある場合には，使用可能なすべてのアクセス・パスを考慮する前に最適化プログラムがタイムアウトになることがあります。"
+        },
+        {
+          "label": "*YES",
+          "value": "*YES",
+          "help": "QUERY最適化プログラムに，内部タイムアウト値を強制的に無視させ，QUERYプログラムのすべてのファイルに対して使用可能なすべてのアクセス・パスを考慮させます。ファイルに対して多数のアクセス・パスがある場合には，QUERYプログラムを最適化するために長時間かかる場合があることに注意してください。"
+        }
       ]
     },
     {
       "name": "SRTSEQ",
       "description": "分類順序",
-      "help": "分類順序。単一値 *HEX / *JOB（ジョブの分類順序、既定）/ *LANGIDSHR / *LANGIDUNQ、または分類順序表(修飾名)。",
+      "help": "QRYSLTまたはGRPSLTパラメーターに指定されたソートおよびグループ選択，JFLDパラメーターに指定された結合，KEYFLDパラメーターに指定された順序，GRPFLDパラメーターに指定されたグループ化，%MINまたは%MAX組み込み関数，またはUNIQUEKEYパラメーターに指定された固有キーの値のソートおよびグループ化について使用されるソート・シーケンスを指定します。",
       "inputType": "group",
       "required": false,
+      "groupKind": "qualified",
+      "singleValues": [
+        "*HEX",
+        "*JOB",
+        "*LANGIDSHR",
+        "*LANGIDUNQ"
+      ],
       "children": [
-        { "name": "SRTSEQ", "description": "分類順序", "help": "*JOB（既定）/ *HEX / *LANGIDSHR / *LANGIDUNQ / 分類順序表名。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 10 }, "defaultValue": "*JOB", "placeholder": "*JOB" },
-        { "name": "LIB", "description": "ライブラリー", "help": "分類順序表のライブラリー。*LIBL / *CURLIB / ライブラリー名。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 10 }, "defaultValue": "*LIBL", "placeholder": "*LIBL" }
+        {
+          "name": "SRTSEQ_LIB",
+          "description": "ライブラリー",
+          "help": "*LIBL: ジョブのライブラリー・リストのユーザーとシステム部分のすべてのライブラリーが検索されます。\n*CURLIB: ジョブの現行ライブラリーが検索されます。ジョブの現行ライブラリーとして指定されているライブラリーがない場合は，QGPLライブラリーが使用されます。\n検索するライブラリーの名前を指定してください。",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "*LIBL",
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          },
+          "placeholder": "*JOB"
+        },
+        {
+          "name": "SRTSEQ",
+          "description": "分類順序",
+          "help": "このQUERYで使用される分類順序テーブルの名前を指定してください。",
+          "inputType": "text",
+          "required": false,
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          },
+          "defaultValue": "*JOB",
+          "placeholder": "*LIBL"
+        }
       ]
     },
     {
       "name": "LANGID",
       "description": "言語ID",
-      "help": "*LANGIDSHR/*LANGIDUNQ 使用時の言語ID。*JOB（ジョブの言語ID、既定）/ 言語ID名。",
+      "help": "SRTSEQ(*LANGIDUNQ)またはSRTSEQ(*LANGIDSHR)が指定されている時に使用される言語IDを指定します。\n\n*JOB: ジョブでジョブのLANGID値が検索されます。\nジョブによって使用される言語IDを指定してください。",
       "inputType": "text",
       "required": false,
-      "attributes": { "characterSet": "upper", "maxLength": 10 },
       "defaultValue": "*JOB",
+      "attributes": {
+        "characterSet": "upper",
+        "maxLength": 10
+      },
       "placeholder": "*JOB"
     },
     {
       "name": "CCSID",
       "description": "最終出力のCCSID",
-      "help": "最終結果テキストの CCSID。1-65535 / *JOB（ジョブの CCSID、既定）/ *HEX。",
+      "help": "文字，DBCS混用，DBCS択一，および図形フィールドが戻されるコード化文字セットID (CCSID)を指定します。shift_jis, UCS-2,またはUTF-16フィールドからのデータは変換されません。\n\n*JOB: データは，OPNQRYFコマンドを出しているジョブのCCSIDで戻されます。\n*HEX: データが戻される前に，CCSID変換は実行されません。\nCCSID値を指定してください。データが戻される前に，このCCSIDに変換されます。",
       "inputType": "text",
       "required": false,
-      "attributes": { "characterSet": "upper", "maxLength": 5 },
       "defaultValue": "*JOB",
-      "placeholder": "*JOB"
+      "attributes": {
+        "characterSet": "upper"
+      }
     },
     {
       "name": "TYPE",
       "description": "オープンのタイプ",
-      "help": "オープンのタイプ。*NORMAL（通常、既定）/ *PERM（永続）。",
+      "help": "資源再利用(RCLRSC)コマンドがファイルをクローズするレベルを指定します。",
       "inputType": "dropdown",
       "required": false,
+      "defaultValue": "*NORMAL",
+      "attributes": {
+        "characterSet": "upper"
+      },
       "options": [
-        { "label": "*NORMAL（通常）", "value": "*NORMAL" },
-        { "label": "*PERM（永続）", "value": "*PERM" }
+        {
+          "label": "*NORMAL",
+          "value": "*NORMAL",
+          "help": "資源再利用(RCLRSC)コマンドを実行するプログラム呼び出しがファイルをクローズせずに終了した場合には，このコマンドがファイルをクローズします。"
+        },
+        {
+          "label": "*PERM",
+          "value": "*PERM",
+          "help": "ファイル・クローズ(CLOF)コマンドによってクローズされるか，あるいはルーティング・ステップまたは省略時の活動化グループが終了するまで，ファイルはオープンされたままです。資源再利用(RCLRSC)コマンドを実行したとしても，QUERYファイルはオープンされたままです。"
+        }
       ]
     }
-  ]
+  ],
+  "environment": "すべての環境 (*ALL)",
+  "restrictions": [
+    "ユーザーは，FILEパラメーターに指定されているファイル，ライブラリー，およびメンバー名を変更するために一時変更を使用することができます。FORMAT(*FILE)パラメーターが指定されていない場合には，FORMATパラメーターに指定されているファイルおよびライブラリーに対する一時変更は無視されます。一時変更コマンドに指定されたパラメーター値（TOFILE, MBR, LVLCHK, WAITRCD, SEQONLY,またはINHWRTおよびSHARE以外のもの）はOPNQRYFコマンドによって無視されます。",
+    "OPNQRYFコマンドは，ジョブまたは活動化グループ中の既存のオープン・データ・パス(ODP)を共用しません。ジョブまたは活動化グループ中の既存のSHARE(*YES) ODPに，QUERYファイル・オープンというオープン・データ・パス(ODP)と同じファイル，ライブラリー，およびメンバー名がある場合には，QUERYファイルはオープンされず，エスケープ・メッセージが送られます。",
+    "後続の各共用オープン操作では，OPNQRYFコマンドの実行時に有効となる同じオープン・オプション（SEQONLYなど）を使用しなければなりません。",
+    "一部のシステム機能（物理ファイル・メンバー表示(DSPPFM)およびファイル・コピー(CPYF)コマンドなど）は既存のオープン・データ・パスを共用しません。これらの機能と一緒にOPNQRYFコマンドを使用することはできません。",
+    "BASICは既存のオープン・データ・パスを共用しないので，OPNQRYFコマンドを使用してオープンされたファイルを，BASICで書かれたプログラムの中で使用することはできません。",
+    "このコマンドは条件付きのスレッド・セーフです。マルチスレッド・ジョブでは，このコマンドは分散ファイルに対してスレッド・セーフではなく，タイプ*SNAのリレーショナル・データベースを使用する分散ファイルに対しては正常に実行されません。また，このコマンドは*SNAタイプの分散データ管理機能(DDM)ファイルに対してもスレッド・セーフではなく，正常に実行されません。",
+    "このコマンドのユーザーは次の権限をもっていなければなりません。 FILEおよびFORMATパラメーターで指定されたファイルを見つけるために必要な任意のライブラリーに対する実行(*EXECUTE)権限 FILEパラメーターで指定された任意の物理または論理ファイルに対するオブジェクト操作権(*OBJOPR),および物理ファイル，または論理ファイル・メンバーの基礎になっている物理ファイル・メンバーに対する次の1つまたは複数のデータ権限。 読み取り(*READ)権限−ファイルが入力用にオープンされている場合（オプション*INPを使用） 追加(*ADD)権限−ファイルが出力用にオープンされている場合（オプション*OUTを使用） 更新(*UPD)権限−ファイルが更新用にオープンされている場合（オプション*UPDを使用） 削除(*DLT)権限−ファイルが削除用にオープンされている場合（オプション*DLTを使用） *READ, *ADD, *UPD,および*DLT権限−ファイルがすべての入出力操作用にオープンされている場合（オプション*ALLを使用） FORMATパラメーターで指定されている任意のファイルに対する*OBJOPR権限 MAPFLDパラメーターで指定されている任意の変換テーブルに対する使用(*USE)権限（オプション*USEを使用）"
+  ],
+  "examples": [
+    {
+      "code": "OPNQRYF   FILE(ORDFILE)  OPTION(*ALL)"
+    },
+    {
+      "code": "OPNQRYF   FILE(TELEFILE)"
+    },
+    {
+      "code": "OPNQRYF   FILE(TELEFILE)  QRYSLT('USRNAME *CT ''GEORGE''')"
+    },
+    {
+      "code": "OPNQRYF   FILE((HISTLIB/ORDFILE HIST1))"
+    },
+    {
+      "code": "OPNQRYF   FILE((ROUTELF *FIRST LOCUSR))"
+    },
+    {
+      "code": "OPNQRYF   FILE(PARTPF PARTPF)  FORMAT(PARTJOIN)"
+    },
+    {
+      "code": "OPNQRYF   FILE(PARTPF PARTPF)  FORMAT(PARTJOIN)"
+    },
+    {
+      "code": "OPNQRYF   FILE(CUSMAS ORDFIL)  FORMAT(CUSMAS)"
+    },
+    {
+      "code": "OPNQRYF   FILE(ORDFIL CUSMAS)  FORMAT(ORDFIL)"
+    },
+    {
+      "code": "OPNQRYF   FILE(SCORES)  FORMAT(CLSSTATS)  GRPFLD(CLSID)"
+    },
+    {
+      "code": "OPNQRYF   FILE(ITMMAST)"
+    },
+    {
+      "code": "OPNQRYF   FILE(ITMMAST)  QRYSLT('ITMTYPE=PFIELD')"
+    },
+    {
+      "code": "OPNQRYF   FILE((EMPLOYEE))  KEYFLD((NAME))"
+    },
+    {
+      "code": "OPNQRYF   FILE((EMPLOYEE) (MANAGEMENT))  FORMAT(EMPLOYEE)"
+    },
+    {
+      "code": "OPNQRYF   FILE((STAFF))  QRYSLT('SALARY > \"18357.50\"')"
+    }
+  ],
+  "errorMessages": [
+    {
+      "id": "CPF2115",
+      "text": "&2のタイプ*&3のオブジェクト&1に損傷がある。"
+    },
+    {
+      "id": "CPF2169",
+      "text": "ジョブのソート順序情報を使用することができない。"
+    },
+    {
+      "id": "CPF2619",
+      "text": "テーブル&1が見つからない。"
+    },
+    {
+      "id": "CPF3BCC",
+      "text": "言語ID&1は正しくない。"
+    },
+    {
+      "id": "CPF3BC6",
+      "text": "ソート順序&1が正しくない。"
+    },
+    {
+      "id": "CPF3BC7",
+      "text": "CCSID &1が有効範囲外である。"
+    },
+    {
+      "id": "CPF3BC8",
+      "text": "CCSID &1からCCSID &2への変換はサポートされていない。"
+    },
+    {
+      "id": "CPF3BC9",
+      "text": "CCSID &1からCCSID &2への変換は定義されていない。"
+    },
+    {
+      "id": "CPF3BDD",
+      "text": "UCS2データのソート順序&1が正しくない。"
+    },
+    {
+      "id": "CPF3FC0",
+      "text": "言語IDが正しくない。"
+    },
+    {
+      "id": "CPF4174",
+      "text": "ファイル&1のOPNID(&4)は既に存在している。"
+    },
+    {
+      "id": "CPF8133",
+      "text": "&9のテーブル&4に損傷がある。"
+    },
+    {
+      "id": "CPF9801",
+      "text": "ライブラリー&3にオブジェクト&2が見つからない。"
+    },
+    {
+      "id": "CPF9802",
+      "text": "&3のオブジェクト&2は認可されていない。"
+    },
+    {
+      "id": "CPF9803",
+      "text": "ライブラリー&3のオブジェクト&2を割り振りできません。"
+    },
+    {
+      "id": "CPF9807",
+      "text": "ライブラリー・リストの１つまたは複数のライブラリーが削除された。"
+    },
+    {
+      "id": "CPF9808",
+      "text": "ライブラリー・リストの１つまたは複数のライブラリーを割り振ることができない。"
+    },
+    {
+      "id": "CPF9810",
+      "text": "ライブラリー&1が見つかりません。"
+    },
+    {
+      "id": "CPF9812",
+      "text": "ライブラリー&2にファイル&1が見つからない。"
+    },
+    {
+      "id": "CPF9813",
+      "text": "ファイル&1のレコード様式&3が見つからない。"
+    },
+    {
+      "id": "CPF9815",
+      "text": "ライブラリー&3のファイル&2のメンバー&5が見つからない。"
+    },
+    {
+      "id": "CPF9820",
+      "text": "ライブラリー&1の使用は認可されていない。"
+    },
+    {
+      "id": "CPF9822",
+      "text": "ライブラリー&2のファイル&1は認可されていない。"
+    },
+    {
+      "id": "CPF9826",
+      "text": "ファイル&2を割り振ることができない。"
+    },
+    {
+      "id": "CPF9830",
+      "text": "ライブラリー&1を割り当てることができない。"
+    },
+    {
+      "id": "CPF9899",
+      "text": "コマンドの処理中にエラーが起こった。"
+    },
+    {
+      "id": "CPI4011",
+      "text": "QUERYプログラム実行中。&2レコードが選択され，&1レコードが処理されました。"
+    },
+    {
+      "id": "CPI4301",
+      "text": "QUERYプログラム実行中。"
+    },
+    {
+      "id": "CPI4302",
+      "text": "QUERYプログラム実行中。&1に&2のアクセス・パス作成中。"
+    },
+    {
+      "id": "CPI4303",
+      "text": "QUERYプログラム実行中。&2のファイル&1のコピー作成中。"
+    },
+    {
+      "id": "CPI4304",
+      "text": "QUERYプログラム実行中。&1個のレコードが選択されました。選択が完了しました。"
+    },
+    {
+      "id": "CPI4305",
+      "text": "QUERYプログラム実行中。*Nのファイル*Nのコピー・ソート中。"
+    },
+    {
+      "id": "CPI4306",
+      "text": "QUERYプログラム実行中。&2のファイル&1からアクセス・パス作成中。"
+    },
+    {
+      "id": "CPI4307",
+      "text": "QUERYプログラム実行中。&1の&2からハッシュ・テーブルを作成中。"
+    }
+  ],
+  "source": {
+    "url": "https://www.ibm.com/docs/ja/ssw_ibm_i_74/cl/opnqryf.htm",
+    "version": "IBM i 7.4",
+    "updated": "2021-04-13"
+  }
 }

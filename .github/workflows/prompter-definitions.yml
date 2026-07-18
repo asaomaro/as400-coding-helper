@@ -1,0 +1,43 @@
+name: prompter definitions
+
+# プロンプター定義 JSON が原典（docs/origin）と一致していることを保証する。
+#
+# 定義 JSON は docs/origin/generate-cl-definitions.mjs が原典HTMLから決定的に生成する。
+# 手で編集すると次の再生成で消えるうえ、原典との乖離に気づけないため、
+#   1. 検証スクリプトで原典との差分ゼロを確認し、
+#   2. 再生成しても差分が出ない（＝生成物が最新である）ことを確認する。
+# あわせて拡張のビルドが通ることも見る。
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: 定義 JSON と原典の突き合わせ
+        run: node docs/origin/verify-cl-definitions.mjs
+
+      - name: 再生成しても差分が出ないこと
+        run: |
+          node docs/origin/generate-cl-definitions.mjs
+          if ! git diff --quiet -- vscode-extension/resources/prompter/cl; then
+            echo "::error::定義 JSON が生成結果と一致しません。"
+            echo "::error::JSON を手で直さず、生成スクリプトを直して再生成してください。"
+            git diff --stat -- vscode-extension/resources/prompter/cl
+            exit 1
+          fi
+
+      - name: 拡張のビルド
+        working-directory: vscode-extension
+        run: |
+          npm ci || npm install
+          npx tsc -p ./ --noEmit
