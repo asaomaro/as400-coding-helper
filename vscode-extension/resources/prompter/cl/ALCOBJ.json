@@ -1,101 +1,429 @@
 {
   "keyword": "ALCOBJ",
-  "description": "オブジェクト割り振り（ALCOBJ）",
-  "help": "1つまたは複数のオブジェクトをジョブ・スレッド・ロックスペースに割り振り、指定したロック状態を獲得します。",
+  "description": "オブジェクト割り振り (ALCOBJ)",
+  "help": "オブジェクト割り振り (ALCOBJ)コマンドは，後でジョブまたはスレッド中で使用するオブジェクトまたはオブジェクトのリストを予約するために，そのジョブまたはスレッドの中で使用されます。ジョブで必要なオブジェクトがALCOBJコマンドに指定されていない場合には，そのオブジェクトの使用時に自動的に割り振りが試みられます。\n\nオブジェクトは，オブジェクト割り振り解除 (DLCOBJ)コマンドを使用して割り振り解除することができます。割り振られたジョブ有効範囲のロックはジョブの終了時に自動的に解放されます。割り振られたスレッド有効範囲のロックはスレッドの終了時に自動的に解放されます。スレッドがジョブ有効範囲のロックを受け取った場合には，ジョブは，要求側のスレッドが終了した後もそのロックを維持し続けます。ロック・スペース有効範囲のロックは自動的に解放されることはありません。\n\nDLCOBJコマンドは，ALCOBJコマンドで明示的に割り振られていないオブジェクトに対して出さないでください。DLCOBJコマンドをそのように使用すると，オブジェクトの内部ロックが解除されてオブジェクトが削除可能になります。\n\nこれは，ノード・グループにある各ノードにファイルの部分を割り振ります。\n\nこれは，ローカル・システム上のDDMファイルおよびDDMファイルで識別されるリモート・システム上のファイルの両方を割り振ります。",
   "parameters": [
     {
       "name": "OBJ",
       "description": "オブジェクトの仕様",
-      "help": "割り振るオブジェクトの修飾名・オブジェクトタイプ・ロック状態・メンバー名（DBファイルの場合）を指定します。必須・定位置1。最大50回まで繰り返せます。",
+      "help": "ジョブ，スレッド，またはロック・スペースに割り振られる1つまたは複数のオブジェクトの名前およびライブラリー，指定した各オブジェクトのタイプ，各オブジェクトのロック状態，およびメンバー名（オブジェクトがデータベース・ファイルまたは分散データ管理機能(DDM)ファイルの場合）を指定します。\n\nこれは必須パラメーターです。\n\nこのパラメーターには50個の値を指定することができます。\n\nほとんどのオブジェクト・タイプ（すべてではない）に対して5つのすべてのロック状態(*EXCL, *EXCLRD, *SHRUPD, *SHRNUP,および*SHRRD)を指定することができます。\n\n重複しているかまたは異なるロック状態の同じジョブの同じオブジェクトに複数のロックを指定することができます。それぞれのロックは別個に保持されます。例えば，あるオブジェクトに既に*EXCLロックが保持されていて2番目の*EXCLロック要求が行われた場合には，2番目のロックが獲得されます。別のジョブが同じオブジェクトにアクセスする前に，両方のロックを解除(オブジェクト割り振り解除 (DLCOBJ)コマンドで割り振り解除）する必要があります。あるオブジェクトに既に1つのロック状態が割り振られていてユーザーが別のロック状態を使用したい場合には，まずALCOBJコマンドを使用して必要なロック状態の新しいロックを要求し，その後でDLCOBJコマンドを使用して前のロックを（前のロック状態で）解除します。\n\n論理ファイル・メンバーに排他ロックが要求された場合には，論理ファイル・メンバーと対応する物理ファイル・メンバーの両方でロックが行われます。他のユーザーはこの物理ファイル・メンバーを使用できません（他の論理ファイル・メンバーを介しても使用できません）。\n\n装置記述の割り振りができるかどうかを判別するには，構成状況処理 (WRKCFGSTS)コマンドからの情報を使用することができます。",
       "inputType": "group",
       "required": true,
-      "maxOccurrences": 50,
+      "groupKind": "elements",
       "children": [
         {
-          "name": "LIB",
-          "description": "ライブラリー",
-          "help": "オブジェクトが入っているライブラリー。*LIBL（ライブラリー・リスト検索）/ *CURLIB（現行ライブラリー）/ ライブラリー名。",
-          "inputType": "text",
-          "required": false,
-          "attributes": { "characterSet": "upper", "maxLength": 10 },
-          "defaultValue": "*LIBL",
-          "placeholder": "*LIBL"
-        },
-        {
-          "name": "OBJ",
+          "name": "OBJ_E1",
           "description": "オブジェクト",
-          "help": "割り振るオブジェクトの名前。",
-          "inputType": "text",
-          "required": true,
-          "attributes": { "characterSet": "upper", "maxLength": 10 },
-          "placeholder": "OBJ"
+          "inputType": "group",
+          "required": false,
+          "groupKind": "qualified",
+          "children": [
+            {
+              "name": "LIB",
+              "description": "ライブラリー",
+              "help": "*LIBL: 一致が見つかるまで，スレッドのライブラリー・リストの中のすべてのライブラリーが検索されます。\n*CURLIB: オブジェクトを見つけるためにスレッドの現行ライブラリーが使用されます。スレッドの現行ライブラリーとしてライブラリーが指定されていない場合，QGPLライブラリーが使用されます。\nオブジェクトが入っているライブラリーの名前を指定してください。",
+              "inputType": "text",
+              "required": false,
+              "defaultValue": "*LIBL",
+              "attributes": {
+                "characterSet": "upper",
+                "maxLength": 10
+              },
+              "placeholder": "*LIBL"
+            },
+            {
+              "name": "OBJ",
+              "description": "オブジェクト",
+              "help": "オブジェクトの名前を指定してください。",
+              "inputType": "text",
+              "required": true,
+              "attributes": {
+                "characterSet": "upper",
+                "maxLength": 10
+              },
+              "placeholder": "OBJ"
+            }
+          ]
         },
         {
           "name": "OBJTYPE",
           "description": "オブジェクト・タイプ",
-          "help": "割り振るオブジェクトのタイプ。*AUTL, *BNDDIR, *CLD, *CRQD, *CSI, *CSPMAP, *CSPTBL, *DEVD, *DTAARA, *DTADCT, *DTAQ, *FCT, *FILE, *FNTRSC, *FNTTBL, *FORMDF, *IMGCLG, *IPXD, *LIB, *LOCALE, *MEDDFN, *MENU, *MGTCOL, *MODULE, *MSGQ, *NODL, *NTBD, *NWSCFG, *NWSD, *OVL, *PAGDFN, *PAGSEG, *PDFMAP, *PDG, *PGM, *PNLGRP, *PSFCFG, *QMFORM, *QMQRY, *QRYDFN, *SBSD, *SCHIDX, *SQLPKG, *SQLXSR, *SRVPGM, *SSND, *S36, *TIMZON, *USRIDX, *USRQ, *USRSPC, *VLDL, *WSCST のいずれか。",
-          "inputType": "text",
-          "required": true,
-          "attributes": { "characterSet": "upper", "maxLength": 10 },
+          "help": "割り振るオブジェクトのタイプを指定します。詳細については，「オブジェクト・タイプ別の有効なロック状態」の図を参照してください。",
+          "inputType": "dropdown",
+          "required": false,
+          "attributes": {
+            "characterSet": "upper"
+          },
+          "options": [
+            {
+              "label": "*AUTL",
+              "value": "*AUTL"
+            },
+            {
+              "label": "*BNDDIR",
+              "value": "*BNDDIR"
+            },
+            {
+              "label": "*CLD",
+              "value": "*CLD"
+            },
+            {
+              "label": "*CRQD",
+              "value": "*CRQD"
+            },
+            {
+              "label": "*CSI",
+              "value": "*CSI"
+            },
+            {
+              "label": "*CSPMAP",
+              "value": "*CSPMAP"
+            },
+            {
+              "label": "*CSPTBL",
+              "value": "*CSPTBL"
+            },
+            {
+              "label": "*DEVD",
+              "value": "*DEVD"
+            },
+            {
+              "label": "*DTAARA",
+              "value": "*DTAARA"
+            },
+            {
+              "label": "*DTADCT",
+              "value": "*DTADCT"
+            },
+            {
+              "label": "*DTAQ",
+              "value": "*DTAQ"
+            },
+            {
+              "label": "*FCT",
+              "value": "*FCT"
+            },
+            {
+              "label": "*FILE",
+              "value": "*FILE"
+            },
+            {
+              "label": "*FNTRSC",
+              "value": "*FNTRSC"
+            },
+            {
+              "label": "*FNTTBL",
+              "value": "*FNTTBL"
+            },
+            {
+              "label": "*FORMDF",
+              "value": "*FORMDF"
+            },
+            {
+              "label": "*IMGCLG",
+              "value": "*IMGCLG"
+            },
+            {
+              "label": "*IPXD",
+              "value": "*IPXD"
+            },
+            {
+              "label": "*LIB",
+              "value": "*LIB"
+            },
+            {
+              "label": "*LOCALE",
+              "value": "*LOCALE"
+            },
+            {
+              "label": "*MEDDFN",
+              "value": "*MEDDFN"
+            },
+            {
+              "label": "*MENU",
+              "value": "*MENU"
+            },
+            {
+              "label": "*MGTCOL",
+              "value": "*MGTCOL"
+            },
+            {
+              "label": "*MODULE",
+              "value": "*MODULE"
+            },
+            {
+              "label": "*MSGQ",
+              "value": "*MSGQ"
+            },
+            {
+              "label": "*NODL",
+              "value": "*NODL"
+            },
+            {
+              "label": "*NTBD",
+              "value": "*NTBD"
+            },
+            {
+              "label": "*NWSCFG",
+              "value": "*NWSCFG"
+            },
+            {
+              "label": "*NWSD",
+              "value": "*NWSD"
+            },
+            {
+              "label": "*OVL",
+              "value": "*OVL"
+            },
+            {
+              "label": "*PAGDFN",
+              "value": "*PAGDFN"
+            },
+            {
+              "label": "*PAGSEG",
+              "value": "*PAGSEG"
+            },
+            {
+              "label": "*PDFMAP",
+              "value": "*PDFMAP"
+            },
+            {
+              "label": "*PDG",
+              "value": "*PDG"
+            },
+            {
+              "label": "*PGM",
+              "value": "*PGM"
+            },
+            {
+              "label": "*PNLGRP",
+              "value": "*PNLGRP"
+            },
+            {
+              "label": "*PSFCFG",
+              "value": "*PSFCFG"
+            },
+            {
+              "label": "*QMFORM",
+              "value": "*QMFORM"
+            },
+            {
+              "label": "*QMQRY",
+              "value": "*QMQRY"
+            },
+            {
+              "label": "*QRYDFN",
+              "value": "*QRYDFN"
+            },
+            {
+              "label": "*SBSD",
+              "value": "*SBSD"
+            },
+            {
+              "label": "*SCHIDX",
+              "value": "*SCHIDX"
+            },
+            {
+              "label": "*SQLPKG",
+              "value": "*SQLPKG"
+            },
+            {
+              "label": "*SQLXSR",
+              "value": "*SQLXSR"
+            },
+            {
+              "label": "*SRVPGM",
+              "value": "*SRVPGM"
+            },
+            {
+              "label": "*SSND",
+              "value": "*SSND"
+            },
+            {
+              "label": "*S36",
+              "value": "*S36"
+            },
+            {
+              "label": "*TIMZON",
+              "value": "*TIMZON"
+            },
+            {
+              "label": "*USRIDX",
+              "value": "*USRIDX"
+            },
+            {
+              "label": "*USRQ",
+              "value": "*USRQ"
+            },
+            {
+              "label": "*USRSPC",
+              "value": "*USRSPC"
+            },
+            {
+              "label": "*VLDL",
+              "value": "*VLDL"
+            },
+            {
+              "label": "*WSCST",
+              "value": "*WSCST"
+            }
+          ],
           "placeholder": "*FILE"
         },
         {
           "name": "LCKSTATE",
           "description": "ロック状態",
-          "help": "*SHRRD（読み取り共用）/ *SHRNUP（更新なし共用）/ *SHRUPD（更新共用）/ *EXCLRD（読み取り許可排他）/ *EXCL（読み取りなし排他）。",
           "inputType": "dropdown",
-          "required": true,
+          "required": false,
+          "attributes": {
+            "characterSet": "upper"
+          },
           "options": [
-            { "label": "*SHRRD（読み取り共用）", "value": "*SHRRD" },
-            { "label": "*SHRNUP（更新なし共用）", "value": "*SHRNUP" },
-            { "label": "*SHRUPD（更新共用）", "value": "*SHRUPD" },
-            { "label": "*EXCLRD（読み取り許可排他）", "value": "*EXCLRD" },
-            { "label": "*EXCL（読み取りなし排他）", "value": "*EXCL" }
+            {
+              "label": "*SHRRD",
+              "value": "*SHRRD",
+              "help": "ロック状態は読み取り共用です。"
+            },
+            {
+              "label": "*SHRNUP",
+              "value": "*SHRNUP",
+              "help": "ロック状態は更新なし共用です。"
+            },
+            {
+              "label": "*SHRUPD",
+              "value": "*SHRUPD",
+              "help": "ロック状態は更新共用です。"
+            },
+            {
+              "label": "*EXCLRD",
+              "value": "*EXCLRD",
+              "help": "ロック状態は読み取り許可排他です。"
+            },
+            {
+              "label": "*EXCL",
+              "value": "*EXCL",
+              "help": "ロック状態は読み取りなし排他です。"
+            }
           ]
         },
         {
           "name": "MBR",
-          "description": "メンバー",
-          "help": "オブジェクトがデータベース・ファイルの場合のメンバー名。*FIRST（最初のメンバー）/ メンバー名。",
+          "description": "データベース・ファイルの場合にメンバー",
+          "help": "*FIRST: データベース・ファイルの最初のメンバーが割り振られます。\n割り振られるメンバーの名前を指定します。指定されたファイルが論理ファイルの場合には，論理ファイルのメンバーに対応する物理ファイル・メンバーも割り振られます。",
           "inputType": "text",
           "required": false,
-          "attributes": { "characterSet": "upper", "maxLength": 10 },
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          },
           "placeholder": "*FIRST"
         }
-      ]
+      ],
+      "positional": 1,
+      "maxOccurrences": 50
     },
     {
       "name": "WAIT",
       "description": "待機時間",
-      "help": "オブジェクトの割り振りを待機する秒数。*CLS（クラス記述の省略時値）/ 0（待たない）/ 1〜32767。",
+      "help": "プログラムがオブジェクトの割り振り待機する秒数を指定します。指定された待機時間内にオブジェクトを割り振れない場合には，メッセージがプログラムに送られます。このメッセージは，メッセージ・モニター (MONMSG)コマンドによって検出することができます。1つまたは複数の装置記述が割り振り対象のオブジェクトのリストにある場合には，システムは，すべての割り振りを試みるために指定された時間よりも長く待機することがあります。\n\n分散データ管理機能(DDM)ファイルおよび分散ファイルを割り振る時には，通信およびリモート・システム上でのファイルの割り振りのために追加の時間が必要になります。各リモート・システムごとに別個の待機時間が使用されます。ロック・スペースの有効範囲とともにオブジェクトを割り振る場合は，そのロック・スペースは，指定された待機時間を指定変更することがあります。\n\n*CLS: ルーティング・ステップによって使用されるクラス記述に指定された省略時の待機時間がオブジェクト割り振りの待機時間として使用されます。\n指定されたすべてのオブジェクトの割り振りをプログラムが待機する秒数を指定してください。有効な値は0および1から32767の範囲の数値です。0の値は待機時間はないことを示します。",
       "inputType": "text",
       "required": false,
-      "attributes": { "characterSet": "upper", "maxLength": 10 },
       "defaultValue": "*CLS",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "positional": 2,
       "placeholder": "*CLS"
     },
     {
       "name": "SCOPE",
       "description": "ロック有効範囲",
-      "help": "このロック要求の有効範囲。*JOB（ジョブ）/ *THREAD（スレッド）/ *LCKSPC（ロック・スペース）。",
+      "help": "このロック要求の有効範囲を指定します。\n\nOBJパラメーターによってサポートされるすべてのオブジェクト・タイプは，ジョブ有効範囲のロックをサポートします。OBJパラメーターによってサポートされるすべてのオブジェクト・タイプは，ロック・スペース有効範囲のロックをサポートします。ロック・スペースの有効範囲とともにDDMオブジェクトを割り振る場合は，リモート・システムのロックの有効範囲はジョブとなります。\n\n有効範囲がスレッドであるロックは，それに含まれるジョブが有効範囲であるロックとは決して矛盾することはありませんが，別のジョブまたはその他のスレッドが有効範囲となっているロックとは矛盾することがあります（その時のロック状態による）。",
       "inputType": "dropdown",
       "required": false,
+      "defaultValue": "*JOB",
+      "attributes": {
+        "characterSet": "upper"
+      },
       "options": [
-        { "label": "*JOB（ジョブ）", "value": "*JOB" },
-        { "label": "*THREAD（スレッド）", "value": "*THREAD" },
-        { "label": "*LCKSPC（ロック・スペース）", "value": "*LCKSPC" }
+        {
+          "label": "*JOB",
+          "value": "*JOB",
+          "help": "ロックの有効範囲はジョブとなります。"
+        },
+        {
+          "label": "*THREAD",
+          "value": "*THREAD",
+          "help": "ロックの有効範囲はスレッドとなります。"
+        },
+        {
+          "label": "*LCKSPC",
+          "value": "*LCKSPC",
+          "help": "ロックの有効範囲は，現行のスレッドに付加されたロック・スペースとなります。ロック・スペースが付加されない場合は，そのロックの有効範囲はジョブとなります。"
+        }
       ]
     },
     {
       "name": "CONFLICT",
       "description": "ロック競合処置",
-      "help": "ロック競合時の処置（データベース・ファイルのみ有効）。*NORQSRLS（解放要求を送らない）/ *RQSRLS（競合ロック保持ジョブに解放要求を送る）。",
+      "help": "ロックの競合が存在する場合に実行する処置を指定してください。このパラメーターはデータベース・ファイルだけにサポートされていて，他のすべてのオブジェクトについては無視されます。サポートされているデータベース*FILEオブジェクトは次の通りです。",
       "inputType": "dropdown",
       "required": false,
+      "defaultValue": "*NORQSRLS",
+      "attributes": {
+        "characterSet": "upper"
+      },
       "options": [
-        { "label": "*NORQSRLS（解放要求を送らない）", "value": "*NORQSRLS" },
-        { "label": "*RQSRLS（解放要求を送る）", "value": "*RQSRLS" }
+        {
+          "label": "*NORQSRLS",
+          "value": "*NORQSRLS",
+          "help": "要求は競合するロックを保留している他のジョブまたはスレッドには送られません。"
+        },
+        {
+          "label": "*RQSRLS",
+          "value": "*RQSRLS",
+          "help": "要求は，指定されたオブジェクトの競合するロックを保留している各ジョブまたはスレッドで実行中のシステム・コードに送られます。ロックの競合の通知は，競合するロックを保留しているユーザーのアプリケーションに表示されません。システム・コードによって暗黙に獲得されるロックだけが解放に適しています。ユーザーのアプリケーション・コードによって明示的に獲得されるロックは解放に適していません。分散ファイルに*RQSRLSが指定される場合には，ロックを解放する要求は競合しているロックを保留するノード・グループの各ノードに送られます。"
+        }
       ]
     }
-  ]
+  ],
+  "environment": "すべての環境 (*ALL)",
+  "restrictions": [
+    "このコマンドは，拡張プログラム間通信(APPC)装置またはシステム内(INTRA)装置の装置記述*DEVDを割り振るためには使用できません。",
+    "このコマンドは，次のデータベース*FILEタイプだけを割り振るために使用できます。 物理ファイル 論理ファイル 分散ファイル これは，ノード・グループにある各ノードにファイルの部分を割り振ります。 DDMファイル これは，ローカル・システム上のDDMファイルおよびDDMファイルで識別されるリモート・システム上のファイルの両方を割り振ります。",
+    "オブジェクトはシステム上に存在しなければなりません。",
+    "このコマンドを出すユーザーには，オブジェクトに対するオブジェクト操作(*OBJOPR)権限，およびそのオブジェクトのライブラリーに対する実行(*EXECUTE)権限が必要です。",
+    "割り振りを完了できない場合には，ロックは認可されず，このコマンドを出したスレッドに対してメッセージが送信されます。このコマンドがプログラムから出されている場合には，メッセージ・モニター (MONMSG)コマンドを使用して，割り振りが正常に行われたかどうかを判別することができます。",
+    "マルチスレッド・ジョブでは，このコマンドは分散ファイルに対してスレッド・セーフではありません。このコマンドは，また，タイプ*SNAの分散データ管理機能(DDM)ファイルに対してもスレッド・セーフではありません。"
+  ],
+  "examples": [
+    {
+      "code": "ALCOBJ   OBJ((LIBB/FILEA  *FILE *EXCL MEMBERA))  SCOPE(*JOB)"
+    },
+    {
+      "code": "ALCOBJ   OBJ((LIBY/DATAAREAX  *DTAARA  *EXCL ))"
+    },
+    {
+      "code": "ALCOBJ   OBJ((LIBB/FILEA  *FILE *EXCL MEMBERA))"
+    }
+  ],
+  "errorMessages": [
+    {
+      "id": "CPF1002",
+      "text": "オブジェクト&1を割り振ることができない。"
+    },
+    {
+      "id": "CPF1040",
+      "text": "最大数のオブジェクトがシステムに割り振られた。"
+    },
+    {
+      "id": "CPF1085",
+      "text": "オブジェクトは割り振られなかった。"
+    }
+  ],
+  "source": {
+    "url": "https://www.ibm.com/docs/ja/ssw_ibm_i_74/cl/alcobj.htm",
+    "version": "IBM i 7.4",
+    "updated": "2021-04-13"
+  }
 }

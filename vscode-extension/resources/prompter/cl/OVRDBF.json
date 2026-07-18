@@ -1,189 +1,586 @@
 {
   "keyword": "OVRDBF",
-  "description": "データベース・ファイルの一時変更（OVRDBF）",
-  "help": "プログラムが使用するデータベース・ファイルの属性（コピー先ファイル・メンバー・開始位置・待機時間・共用等）を実行時に一時的に変更（オーバーライド）します。",
+  "description": "データベース・ファイル一時変更 (OVRDBF)",
+  "help": "データベース・ファイル一時変更(OVRDBF)コマンドは，(1)プログラムに指定されているファイルを一時変更する（置き換える）か，(2)プログラムで使用されるファイルの一部のパラメーターを一時変更するか，あるいは(3)プログラムで指定されたファイル および 処理中のファイルの特定のパラメーターを一時変更します。このコマンドによって一時変更されるパラメーターは，ファイル記述，プログラム，または以前に実行された他のファイル一時変更コマンドで指定されます。このコマンドは，物理ファイル，論理ファイル，および分散データ管理機能(DDM)ファイルに適用されます。\n\nプログラムで指定したファイルを一時変更する（置き換える）ためには，そのファイルの名前をFILEパラメーターに指定し，それを一時変更するファイル（プログラムによって処理されるファイル）の名前をTOFILEパラメーターに指定してください。このコマンドの他のパラメーターは，一時変更先のファイルのファイル記述に含まれるパラメーター値を一時変更するために使用することができます。\n\nファイル全体を置き換えるのではなく，プログラムに指定したファイルの一部のパラメーターだけを一時変更するためには，そのファイルの名前をFILEパラメーターに指定し，TOFILEパラメーターに*FILE値を指定してください。次にこのコマンドの他のパラメーターを使用して，ファイルの特定のパラメーターを一時変更してください。指定されなかったパラメーターは，プログラム中のファイル記述に指定されたパラメーターにも，前に出された他のファイル一時変更コマンドに指定されたパラメーターにも影響しません。\n\n注: 一時変更は，すべてのコマンドで使用できるわけではありません。一時変更できないコマンドのリストが一時変更先のファイルの詳細とともにIBM i Information Center(http://www.ibm.com/systems/i/infocenter/)の「ファイルおよびファイル・システム」カテゴリーにあります。\n\n注: このコマンドを使用しても，ただちにファイルが一時変更されるわけではありません。このコマンドで与えられる情報は，ファイルが使用されるまで保存され，その時点にファイルが一時変更されます。",
   "parameters": [
-    { "name": "FILE", "description": "一時変更中のファイル", "help": "この一時変更が適用されるプログラム中のファイル名。", "inputType": "text", "required": true, "attributes": { "characterSet": "upper", "maxLength": 10 } },
+    {
+      "name": "FILE",
+      "description": "一時変更中のファイル",
+      "help": "この一時変更コマンドが適用される使用中のプログラムのファイルを指定します。 データベース・ファイル の一時変更 (TOFILE) パラメーターに*FILEが指定された場合には，指定するファイルはデータベース・ファイルでなければなりません。そうでない場合には，任意の装置ファイルまたはデータベース・ファイル名を指定することができます。\n\nこれは必須パラメーターです。\n\nファイルの名前を指定してください。",
+      "inputType": "text",
+      "required": true,
+      "attributes": {
+        "characterSet": "upper",
+        "maxLength": 10
+      },
+      "positional": 1
+    },
     {
       "name": "TOFILE",
       "description": "データベース・ファイルの一時変更",
-      "help": "FILE の代わりに使用するデータベース・ファイル。単一値 *FILE（FILE と同じファイルの属性のみ変更）または LIB/FILE で修飾したファイル名。",
+      "help": "一時変更中のファイル (FILE) パラメーターに指定されたファイルの代わりに使用されるデータベース・ファイルを指定するか，あるいは*FILEが指定された場合には，このコマンドで指定されたパラメーターによって特定の属性が一時変更されることを指定します。このコマンドで指定されるパラメーターは，データベース・ファイル，プログラム，または以前に実行された他のOVRDBFコマンドで指定された同じパラメーターを一時変更します。",
       "inputType": "group",
       "required": false,
+      "groupKind": "qualified",
+      "singleValues": [
+        "*FILE"
+      ],
       "children": [
-        { "name": "LIB", "description": "ライブラリー", "help": "*LIBL / *CURLIB / ライブラリー名。*FILE 指定時は不要。", "inputType": "text", "required": false, "defaultValue": "*LIBL", "attributes": { "characterSet": "upper", "maxLength": 10 }, "placeholder": "*LIBL" },
-        { "name": "TOFILE", "description": "データベース・ファイルの一時変更", "help": "代わりに使用するファイル名。単一値 *FILE。", "inputType": "text", "required": false, "defaultValue": "*FILE", "attributes": { "characterSet": "upper", "maxLength": 10 }, "placeholder": "*FILE" }
-      ]
+        {
+          "name": "LIB",
+          "description": "ライブラリー",
+          "help": "*LIBL: 最初に一致するものが見つかるまで，現行スレッドのライブラリー・リスト内のすべてのライブラリーが検索されます。\n*CURLIB: データベース・ファイルを見つけるために，ジョブの現行ライブラリーが使用されます。現行ライブラリーとして指定されているライブラリーがない場合は，QGPLが使用されます。\nデータベース・ファイルが入っているライブラリーを指定してください。",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "*LIBL",
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          },
+          "placeholder": "*LIBL"
+        },
+        {
+          "name": "TOFILE",
+          "description": "データベース・ファイルの一時変更",
+          "help": "FILEパラメーターで指定されたファイルの代わりに使用されるデータベース・ファイルの名前を指定してください。",
+          "inputType": "text",
+          "required": false,
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          },
+          "defaultValue": "*FILE",
+          "placeholder": "*FILE"
+        }
+      ],
+      "positional": 2
     },
-    { "name": "MBR", "description": "一時変更しているメンバー", "help": "使用するメンバー名。定義済み値: *FIRST（先頭）, *LAST（最後）, *ALL（全メンバー）。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 10 }, "placeholder": "*FIRST" },
+    {
+      "name": "MBR",
+      "description": "一時変更しているメンバー",
+      "help": "データベース・ファイル内で使用されるメンバーを指定します。このパラメーターは，システム/38またはAS/400システム以外のリモート・システムを参照する分散データ管理機能(DDM)ファイルには無効です。\n\n*FIRST: データベース・ファイルの最初のメンバーが使用されます。\n*LAST: データベース・ファイルの最後のメンバーが使用されます。\n*ALL: ファイルのすべてのメンバーが順序通りに処理されます。すべてのメンバーは，最初のメンバーと同じ一時変更パラメーターでオープンされます。最初のメンバーのオープン前に出された一時変更は処理されますが，最初のメンバーのオープン後に出された一時変更または一時変更削除は処理されません。前に出されたOVRDBFコマンドでMBR(*ALL)が指定され，このコマンドがまだこのファイルに効力を持っている場合には，EOFDLY, FMTSLR, INHWRT,またはPOSITIONパラメーターを指定することはできません。互いに排他的なパラメーターが指定された場合には，エスケープ・メッセージが送られます。\nプログラムの使用で，または呼び出されたその他のOVRDBFコマンドに指定されたメンバー名を（ファイル・オープン時に）一時変更するメンバー名を指定します。メンバー名が指定されないで，*FILEではなくてTOFILEパラメーターが指定された場合には，ファイル中の最初のメンバーが使用されます。",
+      "inputType": "text",
+      "required": false,
+      "attributes": {
+        "characterSet": "upper",
+        "maxLength": 10
+      },
+      "positional": 3,
+      "placeholder": "*FIRST"
+    },
     {
       "name": "POSITION",
       "description": "ファイルの開始桁",
-      "help": "ファイル・オープン後の初期位置。単一値: *NONE / *START（先頭）/ *END（末尾）。その他の値は要素リスト（検索順序・レコード番号またはキーフィールド数・レコード様式・キー値）。",
+      "help": "データベース・ファイルからレコードを読み取る場合の開始位置を指定します。取り出す最初のレコードはファイルの始め(*START)または終わり(*END)にあるもの，ファイルのN番目のレコード(*RRN)，あるいはキー・フィールド値およびキー検索値(*KEY, *KEYA, *KEYAE, *KEYB,または*KEYBE)の1つで指定されたレコードとすることができます。このパラメーターは，プログラム中に指定された値あるいは他の呼び出されたOVRDBFコマンドに指定された値を一時変更します。\n\n例えば，POSITION(*KEY 1 FMT2 X'123F')は，次のことを指定します。\n\nDDMファイルと一緒にPOSITIONパラメーターを使用する影響については，IBM i Information Center(http://www.ibm.com/systems/i/infocenter/)の「分散データベース・プログラミング」トピック・コレクションに詳細があります。",
       "inputType": "group",
       "required": false,
+      "groupKind": "elements",
+      "singleValues": [
+        "*NONE",
+        "*START",
+        "*END"
+      ],
       "children": [
-        { "name": "ORDER", "description": "検索順序", "help": "*RRN（相対レコード番号）, *KEYB, *KEYBE, *KEY, *KEYAE, *KEYA。単一値 *NONE/*START/*END で位置指定なし。", "inputType": "text", "required": false, "defaultValue": "*NONE", "attributes": { "characterSet": "upper", "maxLength": 10 }, "placeholder": "*NONE" },
-        { "name": "NBR", "description": "*RRN-レコードNO / *KEY-キーフィールド数", "help": "*RRN のときレコード番号、*KEY のときキー・フィールドの数（符号なし整数）。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 10 } },
-        { "name": "RCDFMT", "description": "*KEY-レコード様式（キー付き）", "help": "*KEY 指定時のレコード様式名。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 10 } },
-        { "name": "KEYVAL", "description": "*KEY-キー値", "help": "*KEY 指定時のキー値（文字値）。", "inputType": "text", "required": false, "attributes": { "maxLength": 256 } }
+        {
+          "name": "ORDER",
+          "description": "検索順序",
+          "inputType": "dropdown",
+          "required": false,
+          "attributes": {
+            "characterSet": "upper"
+          },
+          "options": [
+            {
+              "label": "*NONE",
+              "value": "*NONE",
+              "help": "特殊な位置指定は不要です。最初の入出力操作は，読み取るレコードを示します。"
+            },
+            {
+              "label": "*START",
+              "value": "*START",
+              "help": "開始位置はファイルの最初のレコードです。前のレコード読み取り操作がプログラムで指定された場合には，ファイルの終わり条件が起こります。"
+            },
+            {
+              "label": "*END",
+              "value": "*END",
+              "help": "開始位置はファイルの最後のレコードです。次のレコードが読み取られた時にファイルの終わり条件に達します。前のレコード読み取り操作が要求された場合には，ファイルの最後のレコードが読み取られます。"
+            },
+            {
+              "label": "*RRN",
+              "value": "*RRN",
+              "help": "開始位置は，このパラメーターの2番目の要素に指定される相対レコード番号となります。"
+            },
+            {
+              "label": "*KEYB",
+              "value": "*KEYB",
+              "help": "残りの検索値（フィールドの数，レコード様式名，およびキーの値）により識別されたレコードより1つ前のレコードが最初に読み取られるレコードです。"
+            },
+            {
+              "label": "*KEYBE",
+              "value": "*KEYBE",
+              "help": "検索値によって識別されたレコードが最初に読み取られるレコードです。それらの値に対応するレコードがない場合には，それらの値に最も近い前のレコードが選択されます。"
+            },
+            {
+              "label": "*KEY",
+              "value": "*KEY",
+              "help": "検索値によって識別されたレコードが最初に読み取られるレコードです。プログラムに前のレコード読み取り操作が指定されている場合には，前のレコードが読み取られます。"
+            },
+            {
+              "label": "*KEYAE",
+              "value": "*KEYAE",
+              "help": "検索値によって識別されたレコードが最初に読み取られるレコードです。それらの値に対応するレコードがない場合には，次の最高値のレコードが選択されます。"
+            },
+            {
+              "label": "*KEYA",
+              "value": "*KEYA",
+              "help": "残りの検索値（フィールドの数，レコード様式名，およびキーの値）により識別されたレコードの後のレコードが最初に読み取られるレコードです。"
+            }
+          ],
+          "placeholder": "*NONE"
+        },
+        {
+          "name": "NBR",
+          "description": "*RRN-レコードNO *KEY-NO キーフィールド",
+          "help": "最初に読み取られるレコードの相対レコード番号（ファイルの始めからの位置）を指定します。このパラメーターの最初の要素に値*RRNが指定されていなければなりません。例えば，POSITION(*RRN 480)はレコード480が次に読み取られることを指定します。前のレコード読み取り操作が要求された場合には，ファイルの479番目のレコードが読み取られます。\nこのパラメーターの最初の要素に*KEYB, *KEYBE, *KEY, *KEYAE,または*KEYAを指定した場合に，検索で使用するキー・フィールドの数を指定してください。指定するフィールドの数は，ファイル用の各キーのフィールドの実際の数と同じである必要はありません。例えば，POSITION(*KEY 1 FMT1 A)を指定した場合には，最初のキー・フィールドにAの値を持つファイル様式FMT1の最初レコードが読み取られます。キーの値ゼロを指定した場合には，すべてのキー・フィールドに基づいて検索が行われます。ゼロを使用した場合には，キーの値には，最大キー・サイズが入れられ，使用しない場合には，一致は起こりません。",
+          "inputType": "number",
+          "required": false,
+          "attributes": {
+            "numericOnly": true
+          }
+        },
+        {
+          "name": "RCDFMT",
+          "description": "*KEY- レコード様式（キー付き）",
+          "help": "指定されたキーの値が含まれているデータベース・ファイルのレコード様式の名前を指定してください。レコード様式の名前が指定されていない場合には，他の検索値と一致する最初のレコードがすべてのレコード様式で検索されます。",
+          "inputType": "text",
+          "required": false,
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          }
+        },
+        {
+          "name": "KEYVAL",
+          "description": "*KEY-キー値",
+          "help": "最初に読み取るレコードを指定します。キーの値は，文字または正のゾーン10進数形式のアポストロフィで囲まれた文字ストリングとして指定するか，あるいは16進数形式(X'値')で指定します。文字ストリングには最大2000桁までを指定することができます。 例えば，POSITION(*KEY 1 FMT2 X'123F')は，次のことを指定します。 システムがレコード様式FMT2からレコードを検索します。 1つのキー・フィールドが検索に使用されます（キーの値に多数のキー・フィールドがあっても）。 レコードに16進数値123F（パック10進数値123.0の16進数等価）が入っています。見つかった時に，このレコードが表示されます。",
+          "inputType": "text",
+          "required": false
+        }
       ]
     },
     {
       "name": "RCDFMTLCK",
       "description": "レコード様式のロック",
-      "help": "レコード様式ごとのロック状態（最大32回繰り返し）。要素: レコード様式名／ロック状態。",
+      "help": "プログラムによって使用される時の，指定のレコード様式のロック状態を指定します。ロック状態は，各様式と対応したデータのロック方法を指示します。次の例には，各レコード様式に指定されるロック状態，およびロックが活動中に他のプログラムで使用可能な操作が示されています。\n\n各ロック状態の説明はIBM i Information Center(http://www.ibm.com/systems/i/infocenter/)の「プログラミング」カテゴリーの「制御言語(CL)」トピック・コレクションにあります。\n\n各レコード様式ごとに，1つのロック状態の値が後に続くレコード様式名を指定してください。オブジェクト割り振り(ALCOBJ)コマンドでファイルに指定したロック状態の方が，このパラメーターで指定されたロック状態より制限が強い場合には，このパラメーターは無視されます。したがって，このパラメーターは，ファイルに指定したより制限が強いロック状態しかレコード様式に指定することができません。\n\nこのパラメーターには32個の値を指定することができます。",
       "inputType": "group",
       "required": false,
-      "maxOccurrences": 32,
+      "groupKind": "elements",
       "children": [
-        { "name": "RCDFMT", "description": "レコード様式", "help": "レコード様式名。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 10 } },
-        { "name": "LCKSTATE", "description": "ロック状態", "help": "ロック状態。", "inputType": "dropdown", "required": false,
+        {
+          "name": "RCDFMTLCK_RCDFMT",
+          "description": "レコード様式",
+          "help": "レコード様式の名前を指定してください。",
+          "inputType": "text",
+          "required": false,
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          }
+        },
+        {
+          "name": "LCKSTATE",
+          "description": "ロック状態",
+          "help": "上記のテーブルからロック状態の値を1つ指定してください。",
+          "inputType": "dropdown",
+          "required": false,
+          "attributes": {
+            "characterSet": "upper"
+          },
           "options": [
-            { "label": "*SHRRD（共用読み取り）", "value": "*SHRRD" },
-            { "label": "*SHRNUP（共用非更新）", "value": "*SHRNUP" },
-            { "label": "*SHRUPD（共用更新）", "value": "*SHRUPD" },
-            { "label": "*EXCLRD（排他許可読み取り）", "value": "*EXCLRD" },
-            { "label": "*EXCL（排他）", "value": "*EXCL" }
-          ] }
-      ]
+            {
+              "label": "*SHRRD",
+              "value": "*SHRRD"
+            },
+            {
+              "label": "*SHRNUP",
+              "value": "*SHRNUP"
+            },
+            {
+              "label": "*SHRUPD",
+              "value": "*SHRUPD"
+            },
+            {
+              "label": "*EXCLRD",
+              "value": "*EXCLRD"
+            },
+            {
+              "label": "*EXCL",
+              "value": "*EXCL"
+            }
+          ]
+        }
+      ],
+      "maxOccurrences": 32
     },
-    { "name": "FRCRATIO", "description": "強制書き出しレコード数", "help": "補助記憶へ強制書き出しするまでのレコード数。整数または *NONE。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 10 }, "placeholder": "*NONE" },
+    {
+      "name": "FRCRATIO",
+      "description": "強制書き出しレコード数",
+      "help": "レコードを補助（永続）記憶域の中に強制的に書き出す前に，これらのレコードに対して実行可能な挿入，削除，または更新操作の数を指定します。この物理ファイルがジャーナル処理されている場合には，大きい数または*NONEを使用してください。*NONEの場合には，ジャーナルと物理ファイルの同期に時間がかかることがあります。このパラメーターの詳細については，IBM i Information Center(http://www.ibm.com/systems/i/infocenter/)の「プログラミング」カテゴリーの「制御言語(CL)」トピック・コレクションの付録Aを参照してください。ジャーナル管理の詳細は，ISERIESバックアップおよび回復(SD88-5008)にあります。\n\nこのパラメーターは，データベース・ファイル，プログラム，または以前に実行された他のOVRDBFコマンドで指定された強制書き出し率を一時変更します。\n\n*NONE: 強制書き出し率はありません。レコードが補助記憶装置にいつ書き出されるかは，システムが決定します。\nディスクへ強制書き出しされるレコード数を指定してください。このデータベース・ファイルと関連した物理ファイルをジャーナルに記録する場合には，大きい強制書き出し率を指定してください。",
+      "inputType": "text",
+      "required": false,
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "placeholder": "*NONE"
+    },
     {
       "name": "FMTSLR",
       "description": "レコード様式選択プログラム",
-      "help": "出力時にレコード様式を選択するプログラム。LIB/PGM で修飾。",
+      "help": "論理ファイル・メンバーに複数の論理レコード様式が入っている時に呼び出されるレコード様式選択プログラムを指定します。レコードがデータベース・ファイルに挿入され，レコード様式名が高水準言語プログラムに含まれていない場合には，ユーザー作成の選択プログラムが呼び出されます。レコード様式選択プログラムの使用についての詳細はIBM i Information Center(http://www.ibm.com/systems/i/infocenter/)の「データベース」カテゴリーにあります。このパラメーターは，データベース・ファイル中に指定された値あるいは前に出された他のOVRDBFコマンドに指定された値を一時変更します。\n\n様式選択プログラムとして指定するプログラムは，CLプログラム作成(CRTCLPGM)コマンドにUSRPRF(*OWNER)を指定して作成することはできません。",
       "inputType": "group",
       "required": false,
+      "groupKind": "qualified",
       "children": [
-        { "name": "LIB", "description": "ライブラリー", "help": "*LIBL / *CURLIB / ライブラリー名。", "inputType": "text", "required": false, "defaultValue": "*LIBL", "attributes": { "characterSet": "upper", "maxLength": 10 }, "placeholder": "*LIBL" },
-        { "name": "FMTSLR", "description": "レコード様式選択プログラム", "help": "プログラム名。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 10 } }
+        {
+          "name": "FMTSLR_LIB",
+          "description": "ライブラリー",
+          "help": "*LIBL: 最初に一致するものが見つかるまで，現行スレッドのライブラリー・リスト内のすべてのライブラリーが検索されます。\n*CURLIB: プログラムを見つけるために，ジョブの現行ライブラリーが使用されます。ライブラリー・リストに現行ライブラリー項目がない場合には，QGPLが使用されます。\nプログラムが入っているライブラリーを指定してください。",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "*LIBL",
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          },
+          "placeholder": "*LIBL"
+        },
+        {
+          "name": "FMTSLR",
+          "description": "レコード様式選択プログラム",
+          "help": "選択プログラムの名前を指定してください。",
+          "inputType": "text",
+          "required": false,
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          }
+        }
       ]
     },
-    { "name": "WAITFILE", "description": "最大ファイル待機時間", "help": "ファイル資源割り振りの待機秒数。整数、*IMMED（即時）, *CLS（クラス値）。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 10 }, "placeholder": "*IMMED" },
-    { "name": "WAITRCD", "description": "最大レコード待機時間", "help": "レコード・ロック解放の待機秒数。整数、*IMMED, *NOMAX。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 10 }, "placeholder": "*IMMED" },
+    {
+      "name": "WAITFILE",
+      "description": "最大ファイル待機時間",
+      "help": "ファイルのオープン時にファイル資源が割り振られるか，あるいはファイルに対する獲得操作の実行時に装置資源またはセッション資源が割り振られるのを，プログラムが待機する秒数を指定します。指定された待機時間内にファイル資源を割り振ることができない場合には，エラー・メッセージがプログラムに送られます。\n\nこのパラメーターは，データベース・ファイル，プログラム，または以前に実行された他のOVRDBFコマンドで指定された待機時間を一時変更します。\n\nこのパラメーターの詳細は，IBM i Information Center(http://www.ibm.com/systems/i/infocenter/)の「プログラミング」カテゴリーの「制御言語(CL)」トピック・コレクションの付録Aにあります。\n\n*IMMED: プログラムは待機しません。ファイルのオープン時に，ファイル資源の即時割り振りが試みられます。\n*CLS: クラス記述で指定された省略時の待機時間が，ファイル資源の割り振りの待機時間として使用されます。\nプログラムが，ファイル資源の割り振りを待機する秒数を指定してください。有効な値の範囲は1から32767秒です。",
+      "inputType": "text",
+      "required": false,
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "placeholder": "*IMMED"
+    },
+    {
+      "name": "WAITRCD",
+      "description": "最大レコード待機時間",
+      "help": "プログラムが，更新または削除するレコード，または指定されたLCKLVL(*ALL)によってコミットメント制御環境で読み取るレコードを待機する秒数を指定します。レコードのロックの詳細は，IBM i Information Center(http://www.ibm.com/systems/i/infocenter/)の「データベース」カテゴリーにあります。指定された待機時間内に当該レコードが割り振られない場合には，エラー・メッセージがプログラムに送られます。\n\n*NOMAX: プログラムはレコード・ロックをいつまでも待機します。\n*IMMED: プログラムは待機しません。レコードの即時ロックは，レコードが読み取られる時に獲得されます。\nプログラムが，レコード・ロックを待機する秒数を指定してください。有効な値の範囲は1から32767秒です。",
+      "inputType": "text",
+      "required": false,
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "placeholder": "*IMMED"
+    },
     {
       "name": "REUSEDLT",
       "description": "削除済みレコードの再使用",
-      "help": "削除済みレコードの領域を再使用するか。",
+      "help": "削除したデータ項目が使用していたスペースを将来の挿入要求で再利用するかどうかを指定します。ファイルがこれを許可するように（つまりREUSEDLT(*YES)として）作成されていない限り，項目の再利用を行うことはできません。このコマンドでは，削除された項目の再利用を*NOから*YESに一時変更することはできません。",
       "inputType": "dropdown",
       "required": false,
-      "defaultValue": "*NO",
+      "attributes": {
+        "characterSet": "upper"
+      },
       "options": [
-        { "label": "*NO（再使用しない）", "value": "*NO" },
-        { "label": "*YES（再使用する）", "value": "*YES" }
+        {
+          "label": "*NO",
+          "value": "*NO",
+          "help": "ファイルは，削除したデータ項目が使用していたスペースを再利用しません。"
+        }
       ]
     },
-    { "name": "NBRRCDS", "description": "一度に検索するレコード", "help": "1回の入出力操作で検索するレコード数（整数）。", "inputType": "number", "required": false, "attributes": { "numericOnly": true } },
-    { "name": "EOFDLY", "description": "EOF再試行遅延(秒数)", "help": "ファイル終わり到達後に再試行するまでの遅延秒数。1-99999 または *NONE。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 10 }, "placeholder": "*NONE" },
+    {
+      "name": "NBRRCDS",
+      "description": "一度に検索するレコード",
+      "help": "補助記憶装置から1単位として読み取られ，主記憶装置に1単位として書き出されるレコード数を指定します。実際に読み取られるデータの量は，レコード数に，論理レコード長ではなく，物理レコード長を掛けたものと等しくなります。\n\nこのパラメーターは順次処理またはランダム処理で有効であり，データ・レコードが処理される順に補助記憶装置に物理的に入っている時にだけ指定されます。このパラメーターは，プログラム，または以前に実行された他のOVRDBFコマンドで指定されたレコード数の値を一時変更します。\n\nレコード数を指定してください。有効な値の範囲は1から32767です。",
+      "inputType": "number",
+      "required": false,
+      "attributes": {
+        "numericOnly": true
+      }
+    },
+    {
+      "name": "EOFDLY",
+      "description": "EOF再試行遅延(秒数)",
+      "help": "ここで遅延の秒数を指定すると，ファイルの終わりに達した時に，この秒数の経過後に追加のレコードの読み取りを試みます。ファイルにレコードを追加する機会を他のジョブに与えて，ジョブを再び開始しないで新しいレコードを処理するために，この遅延が使用されます。遅延時間が終了すると，ジョブが活動状態になり，データ管理機能は新しいレコードが追加されたかどうかを判別します。新しいレコードが追加されていなかった場合には，ジョブはアプリケーション・プログラムに通知しないで，さらにこの遅延時間待機します。秒数が指定された時には，ジョブ終了(ENDJOB)コマンドまたはデータの強制終了(FEOD)が起こるまで，指定のデータベース・ファイルでファイルの終わりが起こりません。\n\nEOFDLYのためにレコード待ちしているジョブを終了するには，いくつかの方法があります。以下にそれらの方法を示します。\n\n*NONE: 通常のファイルの終了処理が行われます。\nファイルの終わり条件が起こった時に，次のレコードのGETを試みるまで，プログラムが待機する秒数を指定します。データの強制終了が起こるまで，あるいはジョブが*CNTRLDオプションで終了するまで，ファイルの終わりの信号は出されません。",
+      "inputType": "text",
+      "required": false,
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "placeholder": "*NONE"
+    },
     {
       "name": "LVLCHK",
       "description": "レコード様式レベルの検査",
-      "help": "オープン時にレコード様式レベル識別コードを検査するか。",
+      "help": "プログラムによってファイルがオープンされた時に，データベース・ファイルのレコード様式に対するレベル識別名が検査されるかどうかを指定します。メンバーがオープンされている時に行われるこの検査では，システムはプログラムによって使用される各レコード様式識別名をデータベース・メンバーの対応する識別名と比較します。プログラムにレコード様式識別名が含まれていない限り，レベル検査を行うことができません。このコマンドでは，レベル検査を*NOから*YESに一時変更することはできません。",
       "inputType": "dropdown",
       "required": false,
-      "defaultValue": "*NO",
+      "attributes": {
+        "characterSet": "upper"
+      },
       "options": [
-        { "label": "*NO（検査しない）", "value": "*NO" },
-        { "label": "*YES（検査する）", "value": "*YES" }
+        {
+          "label": "*NO",
+          "value": "*NO",
+          "help": "ファイルのオープン時にレベルIDは検査されません。"
+        }
       ]
     },
     {
       "name": "EXPCHK",
       "description": "満了日の検査",
-      "help": "メンバーの満了日を検査するか。",
+      "help": "指定したメンバーの満了日を検査するかどうかを指定します。この日付検査は，物理ファイル・メンバーの場合にだけ有効です。このパラメーターは，プログラム中に指定された値あるいは他の呼び出されたOVRDBFコマンドに指定された値を一時変更します。",
       "inputType": "dropdown",
       "required": false,
-      "defaultValue": "*YES",
+      "attributes": {
+        "characterSet": "upper"
+      },
       "options": [
-        { "label": "*YES（検査する）", "value": "*YES" },
-        { "label": "*NO（検査しない）", "value": "*NO" }
+        {
+          "label": "*YES",
+          "value": "*YES",
+          "help": "物理ファイル・メンバーの満了日が検査されます。当日の日付が満了日を過ぎている場合には，エスケープ・メッセージがプログラムに送られます。"
+        },
+        {
+          "label": "*NO",
+          "value": "*NO",
+          "help": "満了日は検査されません。"
+        }
       ]
     },
     {
       "name": "INHWRT",
       "description": "書き込み禁止",
-      "help": "ファイルへの書き込みを禁止するか。",
+      "help": "処理されたレコードがデータベース・ファイルに書き出されるか，削除されるか，あるいは更新されるかを指定します。書き込み禁止パラメーターによって，処理されたレコードをデータベースに保管しないで，プログラムをテストすることができます。このパラメーターは，前に出された他のOVRDBFコマンドのINHWRTパラメーターを一時変更します。",
       "inputType": "dropdown",
       "required": false,
-      "defaultValue": "*NO",
+      "attributes": {
+        "characterSet": "upper"
+      },
       "options": [
-        { "label": "*NO（書き込み許可）", "value": "*NO" },
-        { "label": "*YES（書き込み禁止）", "value": "*YES" }
+        {
+          "label": "*YES",
+          "value": "*YES",
+          "help": "処理されたレコードをデータベース・ファイルに書き出すことはできません。これらは，出力装置に書き出されるだけです。"
+        },
+        {
+          "label": "*NO",
+          "value": "*NO",
+          "help": "実動ファイルの更新 (UPDPROD) パラメーターで*NO が指定され，プログラムがデバッグ・モードになく，ファイルが実動ライブラリーにない場合には，処理されたすべての新規レコードおよび変更されたレコードがデータベースに書き込まれます。この場合には，エスケープ・メッセージがプログラムに送られます。"
+        }
       ]
     },
     {
       "name": "SECURE",
       "description": "他の一時変更からの保護",
-      "help": "上位の一時変更からこのファイルを保護するか。",
+      "help": "前に呼び出されたファイル一時変更コマンドの影響から，このファイルを保護するかどうかを指定します。",
       "inputType": "dropdown",
       "required": false,
       "defaultValue": "*NO",
+      "attributes": {
+        "characterSet": "upper"
+      },
       "options": [
-        { "label": "*NO（保護しない）", "value": "*NO" },
-        { "label": "*YES（保護する）", "value": "*YES" }
+        {
+          "label": "*NO",
+          "value": "*NO",
+          "help": "このファイルは他のファイル一時変更から保護されません。値は，前に呼び出されたファイル一時変更コマンドの影響を受けて一時変更されます。"
+        },
+        {
+          "label": "*YES",
+          "value": "*YES",
+          "help": "このファイルは以前に出されたファイル一時変更コマンドの影響から保護されます。"
+        }
       ]
     },
     {
       "name": "OVRSCOPE",
       "description": "有効範囲の一時変更",
-      "help": "一時変更の有効範囲。",
+      "help": "一時変更の影響の範囲（有効範囲）を指定します。",
       "inputType": "dropdown",
       "required": false,
       "defaultValue": "*ACTGRPDFN",
+      "attributes": {
+        "characterSet": "upper"
+      },
       "options": [
-        { "label": "*ACTGRPDFN（活動化グループ定義）", "value": "*ACTGRPDFN" },
-        { "label": "*CALLLVL（呼び出しレベル）", "value": "*CALLLVL" },
-        { "label": "*JOB（ジョブ）", "value": "*JOB" }
+        {
+          "label": "*ACTGRPDFN",
+          "value": "*ACTGRPDFN",
+          "help": "一時変更の有効範囲は，コマンドを呼び出すプログラムの活動化グループによって判別されます。活動化グループが省略時の活動化グループである場合には，その有効範囲は呼び出し側プログラムの呼び出しレベルと等しくなります。活動化グループが省略時の活動化グループでない場合には，その有効範囲は呼び出し側プログラムの活動化グループと等しくなります。"
+        },
+        {
+          "label": "*CALLLVL",
+          "value": "*CALLLVL",
+          "help": "一時変更の有効範囲は，現行の呼び出しレベルによって決まります。現行の呼び出しレベルと同じか，またはそれ以上の呼び出しレベルで実行されたすべてのオープン操作は，この一時変更によって影響を受けます。"
+        },
+        {
+          "label": "*JOB",
+          "value": "*JOB",
+          "help": "一時変更の有効範囲は，一時変更が行われるジョブとなります。"
+        }
       ]
     },
     {
       "name": "SHARE",
       "description": "オープン・データ・パス共用",
-      "help": "オープン・データ・パス（ODP）を同一ジョブ内で共用するか。",
+      "help": "オープン・データ・パス(ODP)が同じルーティング・ステップの他のプログラムと共用するかどうかを指定します。ODPが共用される時には，ファイルにアクセスしているプログラムはファイル状況およびバッファーなどの機能を共用します。\n\nデータベース・ファイルの詳細は，IBM i Information Center(http://www.ibm.com/systems/i/infocenter/)の「データベース」カテゴリーにあります。",
       "inputType": "dropdown",
       "required": false,
-      "defaultValue": "*NO",
+      "attributes": {
+        "characterSet": "upper"
+      },
       "options": [
-        { "label": "*NO（共用しない）", "value": "*NO" },
-        { "label": "*YES（共用する）", "value": "*YES" }
+        {
+          "label": "*NO",
+          "value": "*NO",
+          "help": "ODPは，ルーティング・ステップ内の他のプログラムと共用されません。ファイルの新しいODPが作成され，プログラムがファイルをオープンするたびに使用されます。"
+        },
+        {
+          "label": "*YES",
+          "value": "*YES",
+          "help": "メンバーが複数回オープンされた場合には，メンバーをオープンする時に， オープン・データ・パス共用 (SHARE) パラメーターにも*YESを指定したジョブの各プログラムと，同じODPが共用されます。これには，同じプログラム中の複数回のオープン操作が含まれます。"
+        }
       ]
     },
     {
       "name": "OPNSCOPE",
       "description": "有効範囲のオープン",
-      "help": "オープン・データ・パスの有効範囲。",
+      "help": "オープン操作の影響の範囲（有効範囲）を指定します。",
       "inputType": "dropdown",
       "required": false,
-      "defaultValue": "*ACTGRPDFN",
+      "attributes": {
+        "characterSet": "upper"
+      },
       "options": [
-        { "label": "*ACTGRPDFN（活動化グループ定義）", "value": "*ACTGRPDFN" },
-        { "label": "*JOB（ジョブ）", "value": "*JOB" }
+        {
+          "label": "*ACTGRPDFN",
+          "value": "*ACTGRPDFN",
+          "help": "オープン操作の有効範囲は，OVRDBFコマンド処理プログラムを呼び出したプログラムの活動化グループによって判別されます。活動化グループが省略時の活動化グループである場合には，有効範囲は呼び出し元の呼び出しレベルとなります。活動化グループが省略時の活動化グループでない場合には，有効範囲は呼び出し元の活動化グループとなります。"
+        },
+        {
+          "label": "*JOB",
+          "value": "*JOB",
+          "help": "オープン操作の有効範囲は，オープン操作が行われるジョブとなります。"
+        }
       ]
     },
     {
       "name": "SEQONLY",
       "description": "順次のみへの制限",
-      "help": "順次専用処理に制限するか。単一値 *NO。その他の値は要素リスト（順次のみ *YES／レコード数またはバッファ・サイズ）。",
+      "help": "レコードが順次でのみ処理されるデータベース・ファイルの場合に，ファイルで順次のみ処理が使用されるかどうかを指定します。このパラメーターは，順次のみ処理が使用される場合には，データベースに対してグループとしての転送が行われるレコード数も指定します。この数字を指定しない場合には，システムが省略時の値を決定します。このパラメーターは，データベース・ファイルを順次に処理するプログラムのパフォーマンスを改善するために使用されます。このパラメーターは，プログラム，または以前に実行された他のOVRDBFコマンドで指定された値を一時変更します。\n\nプログラム中で 入力 専用としてオープンされたファイルの場合には，指定された数のレコードがグループとしてデータベースから内部データ管理バッファーに転送されます。\n\nプログラム中で 出力 専用としてオープンされたファイルの場合には，内部データ管理バッファー中にプログラムから指定された数の処理されるレコードが受け取られる時に，常に1グループのレコードがデータベースに転送されます。出力ファイルの場合には，順次専用処理は，物理ファイル・メンバーおよび1つの物理ファイル・メンバーのみを基礎とする論理ファイル・メンバーに有効です。\n\nSEQONLY(*YES)を指定し，次の条件のいずれかが真であると，SEQONLYパラメーターは無視され，メッセージが出されます。\n\nユーザーは，指定されたバッファー・サイズがプログラムが実行中の記憶域プールのプログラムに対して常に使用可能であること確認しなければなりません。ファイルは順次専用処理を使用します。\n\nレコードが内部データ管理バッファー中にある時には，他のジョブがデータベース中の同じレコードを変更することができ，順次専用入力処理を実行中のプログラムはその更新を関知しません。レコードがバッファー中にある時に他の更新が行われないようにするためには，プログラムでオブジェクト割り振り(ALCOBJ)コマンドを使用して，ファイルの*EXCLRDロックまたは*EXCLロックを指定することができます。\n\nプログラムが順次専用出力処理を実行し，バッファー中のレコードがデータベースに書き込まれる時に起こる可能性があるエラー（キーの重複や変換マッピング・エラーなど）を処理しない場合には，バッファー中でエラーのある最初のレコードより後にあるレコードは書き込まれません。\n\nファイルが出力用にオープンされ，このパラメーターに指定された値がファイルに指定された強制書き出し率と同じでない場合には，システムによって使用される値はいずれか小さいほうになります。変更された値を告げるメッセージがユーザーに送られます。\n\nデータベースへのレコードの書き出しのためにSEQONLY(*YES)を処理する時には，各レコードのフィードバック情報（相対レコード番号など）は，常に変更されるとはかぎりません。このようなフィードバック情報が重要である場合には，SEQONLY(*NO)またはSEQONLY(*YES 1)を指定してください。\n\n順次専用データベース・ファイルの詳細は，IBM i Information Center(http://www.ibm.com/systems/i/infocenter/)の「データベース」カテゴリーにあります。",
       "inputType": "group",
       "required": false,
+      "groupKind": "elements",
+      "singleValues": [
+        "*NO"
+      ],
       "children": [
-        { "name": "SEQ", "description": "順次のみ", "help": "*YES（順次専用に制限）。単一値 *NO で制限なし。", "inputType": "text", "required": false, "defaultValue": "*NO", "attributes": { "characterSet": "upper", "maxLength": 10 }, "placeholder": "*NO" },
-        { "name": "NBRRCDS", "description": "レコード数", "help": "バッファに入れるレコード数（整数）、または *BUF32KB, *BUF64KB, *BUF128KB, *BUF256KB。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 10 } }
+        {
+          "name": "SEQ",
+          "description": "順次のみ",
+          "inputType": "dropdown",
+          "required": false,
+          "attributes": {
+            "characterSet": "upper"
+          },
+          "options": [
+            {
+              "label": "*NO",
+              "value": "*NO",
+              "help": "データベース・ファイルは，順次のみの処理に限定されません。"
+            },
+            {
+              "label": "*YES",
+              "value": "*YES",
+              "help": "このデータベース・ファイルは順次専用処理を使用します。グループとして転送されるレコード数の省略時の値は，ファイルの使用法，含まれるアクセス・パスのタイプ，およびファイルのレコード長に基づいてシステムによって決定されます。 省略時の値は，次の場合にほぼ4Kの内部バッファーに収まるレコード数です。 入力専用にオープンされているすべてのデータベース・ファイル 出力用にオープンされ，到着順または非固有キー順序でのみ処理され，それらを基礎としている論理ファイル・メンバーがない物理ファイル 次の場合には，省略時の値は1レコードです。 出力専用にオープンされているすべての論理ファイル 出力専用にオープンされ， 固有 キー順アクセス・パスを持っているか，あるいはキー順物理ファイル・メンバーのアクセス・パスを共用しないキー順アクセス・パスを持つ少なくとも1つの従属論理ファイルがある物理ファイル"
+            }
+          ],
+          "placeholder": "*NO"
+        },
+        {
+          "name": "SEQONLY_NBRRCDS",
+          "description": "レコード数",
+          "help": "その都度転送されるレコード数を指定してください。有効な値の範囲は1から32767です。ファイルは，順次のみ処理を使用し，データベースと内部バッファーとの間で転送される各グループのレコード数を示す値を指定しなければなりません。\n*BUF32KB: バッファー・サイズは32キロ・バイトになります。\n*BUF64KB: バッファー・サイズは64キロ・バイトになります。\n*BUF128KB: バッファー・サイズは128キロ・バイトになります。\n*BUF256KB: バッファー・サイズは256キロ・バイトになります。 ユーザーは，指定されたバッファー・サイズがプログラムが実行中の記憶域プールのプログラムに対して常に使用可能であること確認しなければなりません。ファイルは順次専用処理を使用します。 レコードが内部データ管理バッファー中にある時には，他のジョブがデータベース中の同じレコードを変更することができ，順次専用入力処理を実行中のプログラムはその更新を関知しません。レコードがバッファー中にある時に他の更新が行われないようにするためには，プログラムでオブジェクト割り振り(ALCOBJ)コマンドを使用して，ファイルの*EXCLRDロックまたは*EXCLロックを指定することができます。 プログラムが順次専用出力処理を実行し，バッファー中のレコードがデータベースに書き込まれる時に起こる可能性があるエラー（キーの重複や変換マッピング・エラーなど）を処理しない場合には，バッファー中でエラーのある最初のレコードより後にあるレコードは書き込まれません。 ファイルが出力用にオープンされ，このパラメーターに指定された値がファイルに指定された強制書き出し率と同じでない場合には，システムによって使用される値はいずれか小さいほうになります。変更された値を告げるメッセージがユーザーに送られます。 データベースへのレコードの書き出しのためにSEQONLY(*YES)を処理する時には，各レコードのフィードバック情報（相対レコード番号など）は，常に変更されるとはかぎりません。このようなフィードバック情報が重要である場合には，SEQONLY(*NO)またはSEQONLY(*YES 1)を指定してください。 順次専用データベース・ファイルの詳細は，IBM i Information Center(http://www.ibm.com/systems/i/infocenter/)の「データベース」カテゴリーにあります。",
+          "inputType": "text",
+          "required": false,
+          "attributes": {
+            "characterSet": "upper"
+          }
+        }
       ]
     },
     {
       "name": "DSTDTA",
       "description": "分散データ",
-      "help": "分散データの取り扱い。",
+      "help": "分散ファイルで使用されるデータ検索方式を指定します。非分散ファイルに対して使用された場合には，このパラメーターは無効です。SEQONLYなどの他のパラメーターは，各システムからデータを検索する方法にまだ影響を及ぼし，このパラメーターは，分散ファイルのアクセス時にすべてのデータを管理する方法を制御します。このパラメーターは，システムによって選択されたか，あるいは前に出された他のOVRDBFコマンドに指定された分散ファイル・データ検索方式を一時変更します。DSTDTAの詳細については，IBM i Information Center(http://www.ibm.com/systems/i/infocenter/)の「DB2マルチシステム」トピック・コレクションを参照してください。",
       "inputType": "dropdown",
       "required": false,
-      "defaultValue": "*BUFFERED",
+      "attributes": {
+        "characterSet": "upper"
+      },
       "options": [
-        { "label": "*BUFFERED（バッファー）", "value": "*BUFFERED" },
-        { "label": "*PROTECTED（保護）", "value": "*PROTECTED" },
-        { "label": "*CURRENT（現行）", "value": "*CURRENT" }
+        {
+          "label": "*BUFFERED",
+          "value": "*BUFFERED",
+          "help": "最高のパフォーマンスを達成するために，リモート・システムおよびローカル・システムからのデータは，ユーザーによって検索されるまで，バッファー内に保管することができます。"
+        },
+        {
+          "label": "*PROTECTED",
+          "value": "*PROTECTED",
+          "help": "データをバッファーに入れることができますが，他のジョブが更新しないようにするためにロックされます。この場合には，*BUFFEREDと同じパフォーマンスが得られますが，現行データは保証されます。あるジョブがこのオプションを使用している時には，他のジョブはこのファイル内のデータを更新することはできません。"
+        },
+        {
+          "label": "*CURRENT",
+          "value": "*CURRENT",
+          "help": "データはバッファーに入れられません。このオプションでは，完全ライブ・データと最大の並行性が提供される結果となりますが，最適なパフォーマンスは得られません。"
+        }
       ]
     }
-  ]
+  ],
+  "environment": "すべての環境 (*ALL)",
+  "restrictions": [
+    "マルチスレッド・ジョブでは，このコマンドは，最初のスレッドからしか出すことができません。",
+    "マルチスレッド・ジョブでは，活動化グループまたは活動化ジョブの有効範囲を設定した一時変更だけが2次スレッドで実行されるオープンに影響します。"
+  ],
+  "examples": [
+    {
+      "code": "OVRDBF   FILE(ORDERSIN)  MBR(MONDAY)"
+    },
+    {
+      "code": "OVRDBF   FILE(ORDERSIN)  SHARE(*YES)"
+    },
+    {
+      "code": "OVRDBF   FILE(INPUT)  TOFILE(PAYROLL)  MBR(MBR1)"
+    }
+  ],
+  "errorMessages": [
+    {
+      "id": "CPF180C",
+      "text": "機能&1は使用できない。"
+    }
+  ],
+  "source": {
+    "url": "https://www.ibm.com/docs/ja/ssw_ibm_i_74/cl/ovrdbf.htm",
+    "version": "IBM i 7.4",
+    "updated": "2021-04-13"
+  }
 }

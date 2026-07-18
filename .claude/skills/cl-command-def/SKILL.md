@@ -14,71 +14,91 @@ PJ固有 skill。aidev ワークフローの実作業（research での仕様取
   `ParameterDefinition`）。作成前に必ず読むこと。実例として `cl/CALL.json` も参照（ただし
   CALL.json は一部機能しか使っていないため、使える機能は types.ts で確認する）。
 - 構造:
-  - トップ: `keyword`, `description`, `help`, `parameters[]`
+  - トップ: `keyword`, `description`, `help`, `parameters[]`,
+    `threadSafe`, `environment`, `examples[{code,note}]`, `errorMessages[{id,text}]`,
+    `source{url,version,updated}`
   - パラメータ: `name`, `description`, `help`, `inputType`(`text` | `dropdown` | `number` | `group`),
-    `required`(bool), `attributes`{`characterSet`, `maxLength` 等}, `placeholder`,
-    `maxOccurrences`(可変), `options[{label,value}]`(dropdown の選択肢), `children[]`(group の下位)
+    `required`(bool), `defaultValue`, `attributes`{`characterSet`, `maxLength` 等}, `placeholder`,
+    `maxOccurrences`(可変), `options[{label,value,help}]`(dropdown の選択肢と値ごとの説明),
+    `children[]`(group の下位。**入れ子可**), `positional`(定位置N),
+    `groupKind`(`qualified` | `elements`), `singleValues[]`, `dependsOn[]`
+  - コマンド単位の相関: `restrictions[]`(制約事項), `constraints[{kind,parameters,note}]`
+    (`exclusive`=同時指定不可 / `together`=相互必須)
 - **定義済み値（*INFO 等）が固定の選択肢のみのパラメータは `inputType: "dropdown"` ＋ `options[]`
   を使う**（help 列挙で済ませない）。固定値＋自由入力が混在する場合は `text`＋help。
+- **例・エラーメッセージ・出典・制約事項は help 文字列に埋め込まず、専用欄に構造化して入れる**
+  （`examples` / `errorMessages` / `source` / `restrictions`）。help に混ぜると機械検証ができなくなる。
 
-## IBM 仕様の参照（正の取得元）
+## 原典の取得（済み。再取得は不要）
 
-- 原典: IBM Documentation の CL コマンド説明ページ
-  `https://www.ibm.com/docs/ja/ssw_ibm_i_74/cl/<cmd小文字>.htm`（版は適宜）。
-- **取得方法（重要）**: IBM Documentation は `WebFetch`（bot）に **HTTP 403**、かつ本文を JavaScript で
-  描画する SPA のため `curl` でも本文を取れない。→ **Playwright + headless ブラウザで描画取得**する。
-  - 準備: `cd /tmp && npm i playwright && npx playwright install chromium`
-    （`msedge` チャネルは OS依存導入に sudo が要るため、bundled chromium を既定とする）
-  - 取得スクリプト例（DOM描画を待って本文テキストを抽出）:
-    ```js
-    // /tmp/fetch-ibm.mjs
-    import { chromium } from 'playwright';
-    const url = process.argv[2];
-    const b = await chromium.launch({ headless: true });
-    const p = await b.newPage();
-    await p.goto(url, { waitUntil: 'domcontentloaded', timeout: 60000 });
-    await p.waitForFunction(() => document.body.innerText.length > 3000, { timeout: 45000 }).catch(()=>{});
-    await p.waitForTimeout(1500);
-    process.stdout.write(await p.evaluate(() => document.body.innerText));
-    await b.close();
-    ```
-    `node /tmp/fetch-ibm.mjs "<URL>" > /tmp/<cmd>.txt` → 出力を Read で読む。
-  - `WebSearch` は正式ページURLの特定にのみ補助利用してよい（本文の正は描画取得テキスト）。
-- 取得すべき項目: 各パラメータの**キーワード / 定位置 / 必須・条件付き必須 / データ型・長さ / 修飾(LIB等) /
-  ELEM(ネスト含む) / 反復回数 / 定義済み値(*INFO 等) / 排他関係 / 説明**。コマンド全体の用途も押さえる。
+- 原典は **`docs/origin/cl/<CMD>.html` にローカル取得済み**（95件）。まずこれを使う。
+- 未取得のコマンドを追加するときだけ `docs/origin/fetch-origin.mjs` で取得する。
+  IBM Documentation は `WebFetch` に HTTP 403、かつ本文を JS 描画する SPA のため
+  `curl` では本文が取れない（Playwright + headless chromium が必要）。
 
-## IBM 仕様 → JSON マッピング規約
+## 生成は手作業ではなくスクリプトで行う
 
-| IBM 仕様 | JSON |
+> **重要**: 定義 JSON を LLM が読んで書き起こしてはならない。
+> 原典の情報は**マークアップにしか存在しないもの**（省略時値の下線、修飾子/要素の別）を含み、
+> テキスト化して読むと必ず落ちる。過去の一括生成では 66 コマンド 553 件の `defaultValue` が
+> 欠落し、13 件の `required` が原典と食い違い、35 コマンドで入力欄の名前が重複していた。
+
+```sh
+node docs/origin/generate-cl-definitions.mjs [CMD ...]   # 省略時は全件。--dry-run で標準出力
+node docs/origin/verify-cl-definitions.mjs   [CMD ...]   # 原典と突き合わせ。差分があれば exit 1
+```
+
+生成スクリプトが原典から決定的に決めるもの（**手で書かない**）:
+
+| 原典 | JSON |
 |---|---|
 | パラメータのキーワード | `name` |
-| 必須 (REQ) | `required: true` |
-| 修飾名（例 LIB/OBJ）・ELEM(要素リスト) | `inputType: "group"` ＋ `children[]` |
-| 複数指定可（最大 N 値） | `maxOccurrences: N` |
-| CHAR/NAME 等の文字型 | `inputType: "text"`, `attributes.characterSet`(英大文字なら `upper`), `attributes.maxLength` |
-| 定義済み値（*INFO/*DIAG 等） | 現スキーマに列挙(enum)欄が無いため `help` に列挙し、代表値を `placeholder` に置く |
-| パラメータ説明 | `description`(短) ＋ `help`(詳細・日本語) |
+| ノーツ欄「必須」 | `required`（**末端の入力欄に落とす**。group に付けても検証されない） |
+| ノーツ欄「定位置 N」 | `positional` |
+| 選択項目欄の**下線付き値** | `defaultValue` |
+| 「修飾子 N:」の並び | `groupKind:"qualified"` ＋ `children`（**出力順に反転**。構文は LIB/OBJ） |
+| 「要素 N:」の並び | `groupKind:"elements"` ＋ `children` |
+| 要素の中の修飾子 | `children` の入れ子（例: ALCOBJ.OBJ） |
+| 「最大 N 回の繰り返し」 | `maxOccurrences`（group なら出力は二重括弧 `OBJ((...))`） |
+| 「単一値: A, B」 | `singleValues` |
+| 定義済み値(*XXX)とその `<dd>` | `options[{label,value,help}]` |
+| 制約事項の節 | `restrictions` |
+| 例 / エラーメッセージ / 実行環境 / スレッドセーフ | `examples` / `errorMessages` / `environment` / `threadSafe` |
 
-> 注意: 現スキーマには「選択肢(enum)」を表す欄が無い。定義済み値が多いコマンドでは help に明記する。
-> もし enum 表現が頻繁に必要と判明したら、スキーマ拡張の提案として記録する（review/retro へ）。
+原典に書かれておらず**スクリプトが決められないもの**（既存 JSON から引き継がれる。ここが人／LLM の仕事）:
+
+- `dependsOn` … 相関規則（表示・必須・入力可否・選択肢の絞り込み）。原典は散文で書いており抽出できない。
+- `constraints` … コマンド単位の排他 / 相互必須。
+- `placeholder` … 入力例。
+- 要素の英名 … 原典は日本語ラベルのみ。合成名 `<PARAM>_E<N>` が入るので、意味のある名前に直す。
 
 ## 手順
 
-1. 対象コマンド `<CMD>` を確認する。
-2. IBM Documentation から仕様を取得し、上記項目を抽出する（出典URLを控える）。
-3. `CALL.json` をテンプレに、マッピング規約へ従って JSON を組み立てる。
-4. 検証:
-   - JSON としてパース可能（`node -e "require('./<path>')"` 等）。
-   - 既存 `cl/*.json` と同じ構造・キー名になっている。
-   - 各パラメータが IBM 仕様（必須/型/長さ/修飾/反復/定義済み値）と一致している。
-   - **正誤の確定は IBM原典の生テキストを直読して行う**（要約・知識・grep の取りこぼしに頼らない）。
-     パラメータ集合・required・定義済み値は**原典の生テキストと機械diff**で突き合わせる。
-     **この照合はサブエージェントに委譲せず主エージェントが実施する**（委譲先の権限劣化で原典照合が
-     できないと幻覚的な指摘になるため。protocol §2.6）。
-5. `vscode-extension/resources/prompter/cl/<CMD>.json` に書き出す。
+1. 原典 `docs/origin/cl/<CMD>.html` があることを確認する（無ければ取得）。
+2. `node docs/origin/generate-cl-definitions.mjs <CMD>` で生成する。
+3. `node docs/origin/verify-cl-definitions.mjs <CMD>` で原典と突き合わせ、**差分ゼロを確認**する。
+4. 差分が出たら **JSON を手で直さず、生成スクリプトを直す**。手で直すと次回の再生成で消える。
+5. 判断が要る項目（`dependsOn` / `constraints` / `placeholder` / 要素の英名）を原典の散文を読んで補う。
+   ここは主エージェントが原典を直読して行う（protocol §2.6。委譲先の権限劣化で幻覚的な指摘になるため）。
+6. 拡張のビルドが通ること（`cd vscode-extension && npx tsc -p ./`）を確認する。
+
+## 既知の落とし穴（いずれも実際に踏んでいる）
+
+- **省略時値は下線でしか表現されない**。`<strong class="underlined">*FIRST</strong>`。
+  テキスト化すると消える。`defaultValue` は `src/prompter/model.ts` が初期値に使うため、
+  欠けると F4 で本来入るべき `*SAME` / `*LIBL` が空欄になる。
+- **修飾子は出力順と逆**。原典「修飾子1: ソース・ファイル / 修飾子2: ライブラリー」に対し
+  構文は `LIB/FILE`。位置対応で既存名を移すと名前と中身がねじれる（CHGPF.SRCFILE で発生）。
+  修飾子名はラベルに「ライブラリー」を含むかで決定的に決める。
+- **入力欄の名前はフォームのキー**。コマンド内で重複すると複数の欄が同じ値を共有する
+  （CHGJOB の OUTQ/JOBQ/SRTSEQ が全て `LIB` を名乗っていた）。生成時に一意化される。
+- **`required` を group に付けても効かない**。`model.ts` は末端の入力欄しか検証しない。
+- **`dependsOn` の判定は TypeScript と WebView JS の2箇所にある**
+  （`visibilityRules.ts` の `dependencyHolds` と `binding.ts` のクライアント側）。
+  片方だけ直すと挙動が食い違う。
 
 ## aidev ワークフローとの関係
 
-- **research 工程**から委譲された場合: 手順1–2（IBM仕様の取得・抽出）を行い、結果を research.md 用に返す。
-- **coding 工程**から委譲された場合: 手順3–5（JSON 生成・検証）を行う。
-- 単独起動の場合: 手順1–5を通して実施する。
+- **research 工程**から委譲された場合: 手順1–3（生成と原典突き合わせ）を行い、結果を research.md 用に返す。
+- **coding 工程**から委譲された場合: 手順4–6（生成スクリプトの修正と判断項目の補完）を行う。
+- 単独起動の場合: 手順1–6を通して実施する。

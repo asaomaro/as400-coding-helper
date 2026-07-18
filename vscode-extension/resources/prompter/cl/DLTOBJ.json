@@ -1,65 +1,536 @@
 {
   "keyword": "DLTOBJ",
-  "description": "オブジェクト削除（DLTOBJ）",
-  "help": "指定したオブジェクト・タイプの1つ以上のオブジェクトをシステムから削除します。",
+  "description": "オブジェクトの削除 (DLTOBJ)",
+  "help": "オブジェクトの削除 (DLTOBJ)コマンドを使用して，オブジェクト・タイプ(OBJTYPE)パラメーターにリストされたオブジェクト・タイプのオブジェクトを削除できます。すべてではありませんが，システム上のライブラリー・ベースの外部オブジェクトの多くは，このコマンドを使用して削除できます。DLTXXXコマンドのいくつかでは，サポートされるオブジェクト・タイプに対して，オブジェクト名とライブラリー名に加えて追加パラメーターを指定できます。例えば，DLTF, DLTIMGCLG,およびDLTJRNRCVコマンドは，*FILE, *IMGCLG,および*JRNRCVオブジェクト・タイプを削除するための追加パラメーターをサポートします。それらのオブジェクト・タイプの場合，DLTOBJコマンドではそのような追加パラメーターを指定することはできません。そのため，オブジェクトを削除するためにオブジェクト固有のパラメーターが必要な場合は，DLTXXXコマンドを使用する必要があります。\n\nDLTOBJコマンドは，以下の点でDLTXXXコマンドより優れています。\n\nオブジェクトとライブラリーの権限およびロックについては，IBM i Information Center(http://www.ibm.com/systems/i/infocenter/)の「プログラミング」カテゴリーの「API」トピック・コレクションのオブジェクトの削除(QLIDLTO) APIを参照してください。QLIDLTO APIは，このコマンドのコマンド処理プログラム(CPP)です。",
   "parameters": [
     {
       "name": "OBJ",
       "description": "オブジェクト",
-      "help": "削除するオブジェクトを LIB/OBJ 形式で指定します（必須・定位置1）。",
+      "help": "削除するオブジェクト，およびオブジェクトを削除する単一または複数のライブラリーを指定します。\n\nこれは必須パラメーターです。\n\nユーザー・ライブラリーは，Q以外の文字で始まる名前を持つライブラリーのうち，次のものを除くすべてのライブラリーです。\n\n英字Qで始まる名前をもつ次のライブラリーはIBMによって提供されますが，一般的に，これらには頻繁に変更されるユーザー・データが入っています。したがって，これらのライブラリーもユーザー・ライブラリーと見なされます。",
       "inputType": "group",
       "required": true,
+      "groupKind": "qualified",
       "children": [
         {
           "name": "LIB",
           "description": "ライブラリー",
-          "help": "オブジェクトが入っているライブラリー。*LIBL / *CURLIB / *USRLIBL / *ALL / *ALLUSR / ライブラリー名。オブジェクト名に *ALL を指定する場合は特定のライブラリー名が必要。",
+          "help": "*LIBL: 最初に一致するものが見つかるまで，現行スレッドのライブラリー・リスト内のすべてのライブラリーが検索されます。特定のオブジェクト名(総称名や*ALLではなく)を指定した場合には，最初に見つかったその名前のオブジェクトだけが削除されます。この値が使用される時に ASP 装置 (ASPDEV) パラメーターが指定される場合，ASPDEV(*)が唯一の有効な値です。\n*CURLIB: スレッドの現行ライブラリーが検索されます。スレッドの現行ライブラリーとして指定されているライブラリーがない場合，QGPLライブラリーが検索されます。この値が使用される時に ASP 装置 (ASPDEV) パラメーターが指定される場合，ASPDEV(*)が唯一の有効な値です。\n*USRLIBL: 現行ライブラリー項目が現行スレッドのライブラリー・リストに存在する場合には，現行ライブラリーおよびライブラリー・リストのユーザー部分にあるライブラリーが検索されます。現行ライブラリー項目がない場合には，ライブラリー・リストのユーザー部分にあるライブラリーが検索されます。特定のオブジェクト名（総称名や*ALLではなく）を指定した場合には，最初に見つかったその名前のオブジェクトだけが削除されます。この値を使用する時に ASP 装置 (ASPDEV) パラメーターを指定した場合には，ASPDEV(*)が唯一の有効な値です。\n*ALL: ASP 装置 (ASPDEV) パラメーターに指定された補助記憶域プール(ASP)内のすべてのライブラリーが検索されます。指定された名前およびオブジェクト・タイプと一致する，すべてのライブラリー内のすべてのオブジェクトが削除されます。\n*ALLUSR: ASP 装置 (ASPDEV) パラメーターによって定義された補助記憶域プール(ASP)内のすべてのユーザー・ライブラリーが検索されます。 ユーザー・ライブラリーは，Q以外の文字で始まる名前を持つライブラリーのうち，次のものを除くすべてのライブラリーです。 #CGULIB #DSULIB #SEULIB #COBLIB #RPGLIB #DFULIB #SDALIB 英字Qで始まる名前をもつ次のライブラリーはIBMによって提供されますが，一般的に，これらには頻繁に変更されるユーザー・データが入っています。したがって，これらのライブラリーもユーザー・ライブラリーと見なされます。 QDSNX QRCLXXXXX QUSRDIRDB QUSRVI QGPL QSRVAGT QUSRIJS QUSRVXRXMX QGPL38 QSYS2 QUSRINFSKR QWQCENT QMGTC QSYS2XXXXX QUSRNOTES QWQREPOS QMGTC2 QS36F QUSROND QMPGDATA QUSER38 QUSRPOSGS QMQMDATA QUSRADSM QUSRPOSSA QMQMPROC QUSRBRM QUSRPYMSVR QPFRDATA QUSRDIRCF QUSRRDARS QRCL QUSRDIRCL QUSRSYS 'XXXXX'は1次補助記憶域プール(ASP)の番号です。 前のリリースのCLプログラム内でコンパイルされるユーザー・コマンドを入れるために，弊社がサポートする前の各リリース用にQUSRVXRXMXの形式の別のライブラリー名を作成することができます。QUSRVXRXMXユーザー・ライブラリーのVXRXMXは弊社が引き続きサポートしている前のリリースのバージョン，リリース，およびモディフィケーション・レベルです。\n単一または複数のオブジェクトが存在するライブラリーを指定します。",
           "inputType": "text",
           "required": false,
-          "attributes": { "characterSet": "upper", "maxLength": 10 },
           "defaultValue": "*LIBL",
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          },
           "placeholder": "*LIBL"
         },
         {
           "name": "OBJ",
           "description": "オブジェクト",
-          "help": "削除するオブジェクトの名前。総称名（末尾 *）/ *ALL も可。",
+          "help": "*ALL: 指定されたオブジェクト・タイプのすべてのオブジェクトが，指定された単一または複数のライブラリーから削除されます。オブジェクト名に*ALLを指定した場合には，ライブラリー名は特定のライブラリー名にする必要があります（特殊値にすることはできません）。 注: ライブラリーQSYSなどのシステム・ライブラリー名も指定できますが，オブジェクト名*ALLを使ってシステム・ライブラリー名を指定する場合には細心の注意を払ってください。\n総称名は，1つ以上の文字（接頭部）とその後にアスタリスク(*)が付いた文字ストリングです。総称名を指定した場合には，総称名と同じ接頭部が含まれた名前を持つ，指定されたオブジェクト・タイプのすべてのオブジェクトが，指定された単一または複数のライブラリーから削除されます。\n削除するオブジェクトの名前を指定します。",
           "inputType": "text",
           "required": true,
-          "attributes": { "characterSet": "upper", "maxLength": 10 },
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          },
           "placeholder": "OBJ"
         }
-      ]
+      ],
+      "positional": 1
     },
     {
       "name": "OBJTYPE",
       "description": "オブジェクト・タイプ",
-      "help": "削除するオブジェクトのタイプ（*PGM, *FILE, *LIB, *DTAARA など）。必須・定位置2。",
-      "inputType": "text",
+      "help": "削除するオブジェクトのタイプを指定します。\n\nこのコマンドについてプロンプトを出す時にオブジェクト・タイプの完全なリストを表示するには，このパラメーターのフィールドにカーソルを位置付け，F4（プロンプト）を押します。オブジェクト・タイプの記述については，IBM i Information Center(http://www.ibm.com/systems/i/infocenter/)の「プログラミング」カテゴリーの「制御言語(CL)」トピック・コレクションの「オブジェクト・タイプ」を参照してください。\n\nこれは必須パラメーターです。\n\n削除するオブジェクトのオブジェクト・タイプを指定します。",
+      "inputType": "dropdown",
       "required": true,
-      "attributes": { "characterSet": "upper", "maxLength": 10 },
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*ALRTBL",
+          "value": "*ALRTBL"
+        },
+        {
+          "label": "*AUTL",
+          "value": "*AUTL"
+        },
+        {
+          "label": "*BNDDIR",
+          "value": "*BNDDIR"
+        },
+        {
+          "label": "*CFGL",
+          "value": "*CFGL"
+        },
+        {
+          "label": "*CHTFMT",
+          "value": "*CHTFMT"
+        },
+        {
+          "label": "*CLD",
+          "value": "*CLD"
+        },
+        {
+          "label": "*CLS",
+          "value": "*CLS"
+        },
+        {
+          "label": "*CMD",
+          "value": "*CMD"
+        },
+        {
+          "label": "*CNNL",
+          "value": "*CNNL"
+        },
+        {
+          "label": "*COSD",
+          "value": "*COSD"
+        },
+        {
+          "label": "*CRQD",
+          "value": "*CRQD"
+        },
+        {
+          "label": "*CSI",
+          "value": "*CSI"
+        },
+        {
+          "label": "*CSPMAP",
+          "value": "*CSPMAP"
+        },
+        {
+          "label": "*CSPTBL",
+          "value": "*CSPTBL"
+        },
+        {
+          "label": "*CTLD",
+          "value": "*CTLD"
+        },
+        {
+          "label": "*DEVD",
+          "value": "*DEVD"
+        },
+        {
+          "label": "*DTAARA",
+          "value": "*DTAARA"
+        },
+        {
+          "label": "*DTADCT",
+          "value": "*DTADCT"
+        },
+        {
+          "label": "*DTAQ",
+          "value": "*DTAQ"
+        },
+        {
+          "label": "*EDTD",
+          "value": "*EDTD"
+        },
+        {
+          "label": "*FCT",
+          "value": "*FCT"
+        },
+        {
+          "label": "*FILE",
+          "value": "*FILE"
+        },
+        {
+          "label": "*FNTRSC",
+          "value": "*FNTRSC"
+        },
+        {
+          "label": "*FNTTBL",
+          "value": "*FNTTBL"
+        },
+        {
+          "label": "*FORMDF",
+          "value": "*FORMDF"
+        },
+        {
+          "label": "*FTR",
+          "value": "*FTR"
+        },
+        {
+          "label": "*GSS",
+          "value": "*GSS"
+        },
+        {
+          "label": "*IGCDCT",
+          "value": "*IGCDCT"
+        },
+        {
+          "label": "*IGCSRT",
+          "value": "*IGCSRT"
+        },
+        {
+          "label": "*IGCTBL",
+          "value": "*IGCTBL"
+        },
+        {
+          "label": "*IMGCLG",
+          "value": "*IMGCLG"
+        },
+        {
+          "label": "*IPXD",
+          "value": "*IPXD"
+        },
+        {
+          "label": "*JOBD",
+          "value": "*JOBD"
+        },
+        {
+          "label": "*JOBQ",
+          "value": "*JOBQ"
+        },
+        {
+          "label": "*JRN",
+          "value": "*JRN"
+        },
+        {
+          "label": "*JRNRCV",
+          "value": "*JRNRCV"
+        },
+        {
+          "label": "*LIB",
+          "value": "*LIB"
+        },
+        {
+          "label": "*LIND",
+          "value": "*LIND"
+        },
+        {
+          "label": "*LOCALE",
+          "value": "*LOCALE"
+        },
+        {
+          "label": "*MEDDFN",
+          "value": "*MEDDFN"
+        },
+        {
+          "label": "*MENU",
+          "value": "*MENU"
+        },
+        {
+          "label": "*MGTCOL",
+          "value": "*MGTCOL"
+        },
+        {
+          "label": "*MODD",
+          "value": "*MODD"
+        },
+        {
+          "label": "*MODULE",
+          "value": "*MODULE"
+        },
+        {
+          "label": "*MSGF",
+          "value": "*MSGF"
+        },
+        {
+          "label": "*MSGQ",
+          "value": "*MSGQ"
+        },
+        {
+          "label": "*NODGRP",
+          "value": "*NODGRP"
+        },
+        {
+          "label": "*NODL",
+          "value": "*NODL"
+        },
+        {
+          "label": "*NTBD",
+          "value": "*NTBD"
+        },
+        {
+          "label": "*NWID",
+          "value": "*NWID"
+        },
+        {
+          "label": "*NWSCFG",
+          "value": "*NWSCFG"
+        },
+        {
+          "label": "*NWSD",
+          "value": "*NWSD"
+        },
+        {
+          "label": "*OUTQ",
+          "value": "*OUTQ"
+        },
+        {
+          "label": "*OVL",
+          "value": "*OVL"
+        },
+        {
+          "label": "*PAGDFN",
+          "value": "*PAGDFN"
+        },
+        {
+          "label": "*PAGSEG",
+          "value": "*PAGSEG"
+        },
+        {
+          "label": "*PDFMAP",
+          "value": "*PDFMAP"
+        },
+        {
+          "label": "*PDG",
+          "value": "*PDG"
+        },
+        {
+          "label": "*PGM",
+          "value": "*PGM"
+        },
+        {
+          "label": "*PNLGRP",
+          "value": "*PNLGRP"
+        },
+        {
+          "label": "*PSFCFG",
+          "value": "*PSFCFG"
+        },
+        {
+          "label": "*QMFORM",
+          "value": "*QMFORM"
+        },
+        {
+          "label": "*QMQRY",
+          "value": "*QMQRY"
+        },
+        {
+          "label": "*QRYDFN",
+          "value": "*QRYDFN"
+        },
+        {
+          "label": "*SBSD",
+          "value": "*SBSD"
+        },
+        {
+          "label": "*SCHIDX",
+          "value": "*SCHIDX"
+        },
+        {
+          "label": "*SPADCT",
+          "value": "*SPADCT"
+        },
+        {
+          "label": "*SQLPKG",
+          "value": "*SQLPKG"
+        },
+        {
+          "label": "*SQLUDT",
+          "value": "*SQLUDT"
+        },
+        {
+          "label": "*SQLXSR",
+          "value": "*SQLXSR"
+        },
+        {
+          "label": "*SRVPGM",
+          "value": "*SRVPGM"
+        },
+        {
+          "label": "*SSND",
+          "value": "*SSND"
+        },
+        {
+          "label": "*TBL",
+          "value": "*TBL"
+        },
+        {
+          "label": "*TIMZON",
+          "value": "*TIMZON"
+        },
+        {
+          "label": "*USRIDX",
+          "value": "*USRIDX"
+        },
+        {
+          "label": "*USRQ",
+          "value": "*USRQ"
+        },
+        {
+          "label": "*USRSPC",
+          "value": "*USRSPC"
+        },
+        {
+          "label": "*VLDL",
+          "value": "*VLDL"
+        },
+        {
+          "label": "*WSCST",
+          "value": "*WSCST"
+        }
+      ],
+      "positional": 2,
       "placeholder": "*FILE"
     },
     {
       "name": "ASPDEV",
       "description": "ASP装置",
-      "help": "オブジェクトが入っているライブラリーに記憶域が割り振られている補助記憶域プール(ASP)装置名。* / *ALLAVL / *CURASPGRP / *SYSBAS / ASP装置名。",
+      "help": "オブジェクトが入っているライブラリーに記憶域が割り振られている補助記憶域プール(ASP)装置名を指定します。このライブラリーがスレッドのライブラリー名スペースの一部でないASPにある場合には，必ず正しいライブラリーが検索されるように，このパラメーターを指定しなければなりません。 オブジェクト (OBJ) パラメーターに指定されたライブラリー修飾子が*CURLIB, *LIBL,または*USRLIBLの時にこのパラメーターを使用する場合には，ASPDEV(*)が唯一の有効な値です。\n\n検索される1次または2次ASP装置の名前を指定します。この1次または2次ASPは活動化されていて(ASP装置をオンに変更することによって），「使用可能」の状況になっていなければなりません。システムASP (ASP 1)および定義済みの基本ユーザーASP (ASP 2から32)は検索されません。\n\n*: 現在，スレッドのライブラリー名スペースの一部であるASPが，ライブラリーを見つけるために検索されます。これには，システムASP (ASP 1),すべての定義済み基本ユーザーASP (ASP 2から32)が含まれ，スレッドにASPグループがある場合には，スレッドのASPグループの中の1次および2次ASPが含まれます。\n*ALLAVL: 使用可能なすべてのASPが検索されます。これには，システムASP (ASP 1),すべての定義済みユーザー基本ASP (ASP 2から32),およびすべての1次および2次ASP（状況が「使用可能」となっているASP 33から255)が含まれます。ASPグループは，1次ASPのアルファベット順で検索されます。システムASPおよびすべての定義された基本ユーザーASPは，ASPグループの後に検索されます。ユーザーに権限が付与されていないASPおよびライブラリーはバイパスされ，権限エラー・メッセージは送信されません。\n*CURASPGRP: スレッドにASPグループがある場合には，スレッドのASPグループ中の1次および2次ASPがライブラリーを見つけるために検索されます。システムASP (ASP 1)および定義済みの基本ユーザーASP (ASP 2から32)は検索されません。スレッドと関連したASPグループがない場合には，エラーが出されます。\n*SYSBAS: システムASP (ASP 1)とすべての定義済み基本ユーザーASP (ASP 2から32)が，ライブラリーを見つけるために検索されます。スレッドにASPグループがあっても，1次または2次ASPは検索されません。\n検索される1次または2次ASP装置の名前を指定します。この1次または2次ASPは活動化されていて(ASP装置をオンに変更することによって），「使用可能」の状況になっていなければなりません。システムASP (ASP 1)および定義済みの基本ユーザーASP (ASP 2から32)は検索されません。",
       "inputType": "text",
       "required": false,
-      "attributes": { "characterSet": "upper", "maxLength": 10 },
       "defaultValue": "*",
+      "attributes": {
+        "characterSet": "upper",
+        "maxLength": 10
+      },
       "placeholder": "*"
     },
     {
       "name": "RMVMSG",
       "description": "メッセージ除去",
-      "help": "オブジェクトの削除に関する完了/通知メッセージをジョブ・ログから除去するか。",
+      "help": "オブジェクトの削除に関する完了メッセージおよび通知メッセージをジョブ・ログから除去するかどうかを指定します。オブジェクトが正常に削除された場合にのみメッセージは除去されます。削除できなかったオブジェクトの診断メッセージおよびエスケープ・メッセージは除去されません。",
       "inputType": "dropdown",
       "required": false,
+      "defaultValue": "*NO",
+      "attributes": {
+        "characterSet": "upper"
+      },
       "options": [
-        { "label": "*NO（除去しない）", "value": "*NO" },
-        { "label": "*YES（正常削除時に除去する）", "value": "*YES" }
+        {
+          "label": "*NO",
+          "value": "*NO",
+          "help": "オブジェクトの削除に関する完了メッセージおよび通知メッセージをジョブ・ログから除去しません。"
+        },
+        {
+          "label": "*YES",
+          "value": "*YES",
+          "help": "オブジェクトの削除が正常終了した場合に，オブジェクトの削除に関する完了メッセージおよび通知メッセージをジョブ・ログから除去します。"
+        }
       ]
     }
-  ]
+  ],
+  "environment": "すべての環境 (*ALL)",
+  "restrictions": [
+    "このコマンドには，各サポート対象オブジェクト・タイプについてオブジェクトの削除(DLTXXX)コマンドに適用されるすべての制約事項も適用されます。"
+  ],
+  "examples": [
+    {
+      "code": "DLTOBJ OBJ(MYLIB/*ALL) OBJTYPE(*USRSPC) ASPDEV(*) RMVMSG(*NO)"
+    },
+    {
+      "code": "DLTOBJ OBJ(QSYS/TESTLIBXY*) OBJTYPE(*LIB) ASPDEV(*ALLAVL)"
+    }
+  ],
+  "errorMessages": [
+    {
+      "id": "CPFA030",
+      "text": "オブジェクトはすでに使用中である。"
+    },
+    {
+      "id": "CPFB8ED",
+      "text": "装置記述&1はこの操作には正しくありません。"
+    },
+    {
+      "id": "CPF210F",
+      "text": "&2のタイプ*&3の&1に対する操作が正常に実行されなかった。"
+    },
+    {
+      "id": "CPF2105",
+      "text": "&2に，タイプ*&3のオブジェクト&1が見つからない。"
+    },
+    {
+      "id": "CPF2110",
+      "text": "ライブラリー&1が見つかりません。"
+    },
+    {
+      "id": "CPF2113",
+      "text": "ライブラリー&1を割り振ることができない。"
+    },
+    {
+      "id": "CPF2114",
+      "text": "&2のオブジェクト&1タイプ*&3を割り振ることができない。"
+    },
+    {
+      "id": "CPF2117",
+      "text": "タイプ*&3の&4個のオブジェクトが削除され，&5個のオブジェクトが削除されなかった。"
+    },
+    {
+      "id": "CPF211A",
+      "text": "ライブラリー&1にオブジェクト*ALLは指定できません。"
+    },
+    {
+      "id": "CPF2125",
+      "text": "オブジェクトは削除されなかった。"
+    },
+    {
+      "id": "CPF2166",
+      "text": "ライブラリー名&1は無効である。"
+    },
+    {
+      "id": "CPF2173",
+      "text": "ライブラリーの特殊値にはASPDEVの値は無効である。"
+    },
+    {
+      "id": "CPF2176",
+      "text": "ライブラリー&1に損傷がある。"
+    },
+    {
+      "id": "CPF2182",
+      "text": "ライブラリー&1は認可されていない。"
+    },
+    {
+      "id": "CPF2189",
+      "text": "&2のオブジェクト&1タイプ*&3に対する権限がありません。"
+    },
+    {
+      "id": "CPF21B7",
+      "text": "タイプ*&3のすべてのオブジェクトは削除されませんでした。"
+    },
+    {
+      "id": "CPF21B8",
+      "text": "ASPグループ&6内の&4個の*&3オブジェクトが削除されました。&5個は削除されませんでした。"
+    },
+    {
+      "id": "CPF21B9",
+      "text": "ASPグループ&4内のオブジェクトは削除されませんでした。"
+    },
+    {
+      "id": "CPF218C",
+      "text": "&1は1次または2次ASPではない。"
+    },
+    {
+      "id": "CPF24B4",
+      "text": "パラメーター・リストのアドレス指定中に重大エラー。"
+    },
+    {
+      "id": "CPF2605",
+      "text": "&1を割り振ることができなかった。"
+    },
+    {
+      "id": "CPF9802",
+      "text": "&3のオブジェクト&2は認可されていない。"
+    },
+    {
+      "id": "CPF9803",
+      "text": "ライブラリー&3のオブジェクト&2を割り振りできません。"
+    },
+    {
+      "id": "CPF9814",
+      "text": "装置&1が見つかりません。"
+    },
+    {
+      "id": "CPF9820",
+      "text": "ライブラリー&1の使用は認可されていない。"
+    },
+    {
+      "id": "CPF9825",
+      "text": "装置&1は認可されていない。"
+    },
+    {
+      "id": "CPF9833",
+      "text": "*CURASPGRPまたは*ASPGRPPRIが指定されていて，スレッドにASPグループがない。"
+    }
+  ],
+  "source": {
+    "url": "https://www.ibm.com/docs/ja/ssw_ibm_i_74/cl/dltobj.htm",
+    "version": "IBM i 7.4",
+    "updated": "2021-04-13"
+  }
 }

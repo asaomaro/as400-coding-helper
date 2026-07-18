@@ -4,8 +4,8 @@ AS/400 コーディング支援のプロンプター定義（CL コマンド・R
 **原典スナップショット**を集めたもの。後続の「定義 JSON 化」作業が、原典をローカルで安定して
 照合できるようにする（再取得コスト削減・bot ブロック回避）。
 
-> **このディレクトリは原典の収集物であり、定義 JSON ではない。** HTML を元にした定義 JSON の作成は
-> 別作業（後続 issue）で行う。
+> **このディレクトリは原典の収集物であり、定義 JSON ではない。** ただし原典から定義 JSON を
+> 生成・検証するスクリプトはここに置く（下記「定義 JSON の生成」）。
 
 ## 構成
 
@@ -17,10 +17,30 @@ AS/400 コーディング支援のプロンプター定義（CL コマンド・R
 | `rpg3/<id>.html` | RPG III(RPG/400) 用 固定長リファレンス（第三者・jaymoseley） | 6 | 下記「rpg3 の出所」参照 |
 | `sources.mjs` | 取得対象リスト（入力） | — | — |
 | `fetch-origin.mjs` | 取得スクリプト（Playwright） | — | — |
+| `generate-cl-definitions.mjs` | CL 定義 JSON の生成スクリプト | — | — |
+| `verify-cl-definitions.mjs` | 生成結果と原典の突き合わせ検査 | — | — |
 | `manifest.yml` | 取得結果（URL・取得日・status・title・bytes・gaps） | — | 生成物 |
 
 各ファイルの取得元 URL・取得日時・HTTP status・タイトル・サイズは **`manifest.yml`** に全件記録。
 取得できなかったものは `manifest.yml` の `gaps` に理由付きで残す（捏造しない）。今回の取得は gaps 0。
+
+## 定義 JSON の生成
+
+CL プロンプター定義 `vscode-extension/resources/prompter/cl/<CMD>.json` は、**原典HTMLから
+決定的に生成する**。LLM や手作業で書き起こさない（下線でしか表現されない省略時値など、
+マークアップにしか無い情報がテキスト化で落ちるため）。
+
+```sh
+node docs/origin/generate-cl-definitions.mjs [CMD ...]   # 省略時は全件。--dry-run で標準出力
+node docs/origin/verify-cl-definitions.mjs   [CMD ...]   # 原典と突き合わせ。差分があれば exit 1
+```
+
+`verify` が差分ゼロ（exit 0）であることが受け入れ条件。差分が出たら **JSON を手で直さず
+生成スクリプトを直す**（手で直しても次の再生成で消える）。
+
+原典に書かれておらず生成できない項目（`dependsOn` の相関規則、`constraints`、`placeholder`、
+要素の英名）は既存 JSON から引き継がれる。これらの追加・修正は `.claude/skills/cl-command-def`
+の手順に従う。
 
 ## 保存形式（重要）
 

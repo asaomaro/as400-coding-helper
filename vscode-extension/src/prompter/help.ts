@@ -9,4 +9,3 @@ export function showParameterHelp(
   const message = `${definition.keyword} - ${parameter.name}: ${helpText}`;
   void vscode.window.showInformationMessage(message);
 }
-

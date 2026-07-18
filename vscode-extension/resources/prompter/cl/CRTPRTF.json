@@ -1,674 +1,2468 @@
 {
   "keyword": "CRTPRTF",
-  "description": "印刷装置ファイル作成（CRTPRTF）",
-  "help": "DDSソースまたはプログラム記述から、印刷出力に使う印刷装置ファイル(*FILE)を作成します。",
+  "description": "印刷装置ファイル作成 (CRTPRTF)",
+  "help": "印刷装置ファイル作成(CRTPRTF)コマンドは，このコマンドに指定された情報および（任意指定として）ソース・ファイルに入っているデータ記述仕様(DDS)から印刷装置ファイルを作成します。\n\n印刷装置ファイルは印刷装置にレコードを送るために使用されます。印刷装置ファイルは使用される印刷装置およびスプーリング要件を識別します。印刷装置ファイルにはデータは入っていません。",
   "parameters": [
     {
       "name": "FILE",
       "description": "ファイル",
-      "help": "作成する印刷装置ファイルの修飾名（必須・定位置1）。修飾子1=ファイル名、修飾子2=ライブラリー（既定 *CURLIB）。",
+      "help": "作成する印刷装置ファイルを指定します。\n\nファイルが高水準言語プログラムで使用される場合には，ファイル名はその言語の命名規則と合っていなければなりません。そうでない場合には，ファイルはプログラム自体の中で名前変更されなければなりません。\n\nこれは必須パラメーターです。",
       "inputType": "group",
       "required": true,
+      "groupKind": "qualified",
       "children": [
-        { "name": "LIB", "description": "ライブラリー", "help": "ファイルを作成するライブラリー。*CURLIB / ライブラリー名。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 10 }, "placeholder": "*CURLIB" },
-        { "name": "FILE", "description": "ファイル", "help": "作成するファイルの名前。", "inputType": "text", "required": true, "attributes": { "characterSet": "upper", "maxLength": 10 }, "placeholder": "FILE" }
-      ]
+        {
+          "name": "LIB",
+          "description": "ライブラリー",
+          "help": "*CURLIB: 印刷装置ファイルを見つけるために，ジョブの現行ライブラリーが使用されます。ジョブの現行ライブラリーとしてライブラリーが指定されていない場合は，QGPLが使用されます。\nファイルのあるライブラリーを指定します。",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "*CURLIB",
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          },
+          "placeholder": "*CURLIB"
+        },
+        {
+          "name": "FILE",
+          "description": "ファイル",
+          "help": "印刷装置ファイルの名前を指定してください。",
+          "inputType": "text",
+          "required": true,
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          },
+          "placeholder": "FILE"
+        }
+      ],
+      "positional": 1
     },
     {
       "name": "SRCFILE",
       "description": "ソース・ファイル",
-      "help": "DDSソースが入っているソース物理ファイル（オプショナル・定位置2）。単一値 *NONE、またはソース・ファイルの修飾名。",
+      "help": "印刷装置ファイルの作成に使用されるデータ記述仕様(DDS)ソースが入っているソース・ファイル（指定されている場合）を指定します。DDS中で指定できる仕様の詳細については，IBM i Information Center(http://www.ibm.com/systems/i/infocenter/)の「印刷」カテゴリーおよびIBM i Information Center(http://www.ibm.com/systems/i/infocenter/)の「プログラミング」カテゴリーの「DDS」トピック・コレクションを参照してください。",
       "inputType": "group",
       "required": false,
+      "groupKind": "qualified",
+      "singleValues": [
+        "*NONE"
+      ],
       "children": [
-        { "name": "LIB", "description": "ライブラリー", "help": "ソース・ファイルのライブラリー。*LIBL / *CURLIB / ライブラリー名。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 10 }, "placeholder": "*LIBL" },
-        { "name": "SRCFILE", "description": "ソース・ファイル", "help": "*NONE（プログラム記述ファイル）、または DDS ソース・ファイル名。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 10 }, "placeholder": "*NONE" }
-      ]
+        {
+          "name": "SRCFILE_LIB",
+          "description": "ライブラリー",
+          "help": "*LIBL: 最初に一致するものが見つかるまで，現行スレッドのライブラリー・リスト内のすべてのライブラリーが検索されます。\n*CURLIB: ジョブの現行ライブラリーが検索されます。ジョブの現行ライブラリーとしてライブラリーが指定されていない場合は，QGPLライブラリーが使用されます。\n検索するライブラリーの名前を指定してください。",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "*LIBL",
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          },
+          "placeholder": "*LIBL"
+        },
+        {
+          "name": "SRCFILE",
+          "description": "ソース・ファイル",
+          "help": "この印刷装置ファイルのDDSが入っているソース・ファイルの名前を指定してください。",
+          "inputType": "text",
+          "required": false,
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          },
+          "defaultValue": "*NONE",
+          "placeholder": "*NONE"
+        }
+      ],
+      "positional": 2
     },
-    { "name": "SRCMBR", "description": "ソース・メンバー", "help": "DDSソース・メンバー名（オプショナル・定位置3）。既定 *FILE（ファイル名と同じメンバー）。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 10 }, "placeholder": "*FILE" },
-    { "name": "GENLVL", "description": "生成重大度レベル", "help": "ファイル生成を継続する最大エラー重大度。0-30（既定 20）。", "inputType": "number", "required": false, "attributes": { "numericOnly": true, "maxLength": 2 }, "placeholder": "20" },
-    { "name": "FLAG", "description": "フラグづけ重大度レベル", "help": "リストにフラグを付ける最小メッセージ重大度。0-30（既定 0）。", "inputType": "number", "required": false, "attributes": { "numericOnly": true, "maxLength": 2 }, "placeholder": "0" },
+    {
+      "name": "SRCMBR",
+      "description": "ソース・メンバー",
+      "help": "作成される印刷装置ファイルのデータ記述仕様(DDS)ソースが入っているソース・ファイル・メンバーを指定します。\n\n*FILE: ソース・ファイルのメンバー名は， ファイル (FILE) パラメーターに指定された名前と同じです。\nソース・ファイル中のメンバーの名前を指定してください。",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*FILE",
+      "attributes": {
+        "characterSet": "upper",
+        "maxLength": 10
+      },
+      "positional": 3,
+      "placeholder": "*FILE"
+    },
+    {
+      "name": "GENLVL",
+      "description": "生成重大度レベル",
+      "help": "ファイルが作成されない原因となるデータ記述仕様(DDS)メッセージの重大度レベルを指定します。このパラメーターが適用されるのは，ソースDDSファイルの処理中に作成されたメッセージに対してだけです。\n\n20: DDSソース・ファイルの処理中に重大度レベルが20より大きいか等しいエラーが起こった場合には，ファイルは作成されません。\n所要の重大度レベル値を指定してください。0を指定した場合には，ファイルは作成されません。指定する値は， フラグづけ重大度レベル (FLAG) パラメーターに指定された値に等しいかそれより大きくなければなりません。",
+      "inputType": "number",
+      "required": false,
+      "defaultValue": "20",
+      "attributes": {
+        "numericOnly": true
+      },
+      "placeholder": "20"
+    },
+    {
+      "name": "FLAG",
+      "description": "フラグづけ重大度レベル",
+      "help": "リストするメッセージの最小重大度レベルを指定します。\n\n0: すべてのメッセージがリストされます。\nリストするメッセージの最小重大度を示す数値を指定してください。指定する値は， 生成重大度レベル (GENLVL) パラメーターに指定された値に等しいかそれより大きくなければなりません。",
+      "inputType": "number",
+      "required": false,
+      "defaultValue": "0",
+      "attributes": {
+        "numericOnly": true
+      },
+      "placeholder": "0"
+    },
     {
       "name": "DEV",
       "description": "装置",
-      "help": "出力先の印刷装置。要素1=印刷装置（*JOB / *SYSVAL / 名前）。",
+      "help": "印刷装置記述の名前を指定します。非スプール出力の場合には，これは印刷出力を作成するために使用される印刷装置を識別します。スプール出力の場合には，ファイルはOUTQパラメーターによって決まる出力待ち行列に入れられます。OUTQ(*DEV)が使用された場合には，ファイルは装置と同じ名前をもつ出力待ち行列に入れられます。",
       "inputType": "group",
       "required": false,
+      "groupKind": "elements",
       "children": [
-        { "name": "PRINTER", "description": "印刷装置", "help": "印刷装置名。*JOB / *SYSVAL / 装置名。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 10 }, "placeholder": "*JOB" }
+        {
+          "name": "PRINTER",
+          "description": "印刷装置",
+          "help": "指定できる特殊値: *JOB, *SYSVAL",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "*JOB",
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          },
+          "placeholder": "*JOB"
+        }
       ]
     },
     {
       "name": "DEVTYPE",
       "description": "印刷装置タイプ",
-      "help": "印刷装置データ・ストリームのタイプ。*SCS / *IPDS / *LINE / *AFPDSLINE / *USERASCII / *AFPDS。",
+      "help": "印刷装置ファイル用に作成されるデータ・ストリームのタイプを指定します。\n\n5553および5583の漢字使用可能印刷装置を使用する時には，DEVTYPE(*SCS)を指定しなければなりません。SNA文字ストリーム(SCS)のデータ・ストリームが作成されます。",
       "inputType": "dropdown",
       "required": false,
+      "defaultValue": "*SCS",
+      "attributes": {
+        "characterSet": "upper"
+      },
       "options": [
-        { "label": "*SCS", "value": "*SCS" },
-        { "label": "*IPDS", "value": "*IPDS" },
-        { "label": "*LINE", "value": "*LINE" },
-        { "label": "*AFPDSLINE", "value": "*AFPDSLINE" },
-        { "label": "*USERASCII", "value": "*USERASCII" },
-        { "label": "*AFPDS", "value": "*AFPDS" }
+        {
+          "label": "*SCS",
+          "value": "*SCS"
+        },
+        {
+          "label": "*IPDS",
+          "value": "*IPDS"
+        },
+        {
+          "label": "*LINE",
+          "value": "*LINE"
+        },
+        {
+          "label": "*AFPDSLINE",
+          "value": "*AFPDSLINE"
+        },
+        {
+          "label": "*USERASCII",
+          "value": "*USERASCII"
+        },
+        {
+          "label": "*AFPDS",
+          "value": "*AFPDS"
+        }
       ]
     },
     {
       "name": "IGCDTA",
       "description": "ユーザー指定のDBCSデータ",
-      "help": "ファイルが2バイト文字(DBCS)データを処理するか。*NO / *YES。",
+      "help": "プログラム記述ファイルの場合には，ファイルが2バイト文字セット(DBCS)データを処理するかどうかを指定します。外部記述ファイルの場合には，ファイルのDBCS属性を指定します。",
       "inputType": "dropdown",
       "required": false,
+      "defaultValue": "*NO",
+      "attributes": {
+        "characterSet": "upper"
+      },
       "options": [
-        { "label": "*NO", "value": "*NO" },
-        { "label": "*YES（DBCSデータを処理）", "value": "*YES" }
+        {
+          "label": "*NO",
+          "value": "*NO"
+        },
+        {
+          "label": "*YES",
+          "value": "*YES"
+        }
       ]
     },
     {
       "name": "IGCEXNCHR",
       "description": "外字",
-      "help": "拡張文字(外字)処理を行うか。*YES / *NO。",
+      "help": "システムが2バイト文字セット(DBCS)の外字を処理するかどうかを指定します。DBCS外字を処理するときには，装置にはシステムの援助が必要です。システムが文字の外観を装置に指示しなければ，装置は文字を表示または印刷できません。外字は，DBCS装置ではなくDBCSフォント・テーブルに記憶されます。外字処理は，DBCS装置に使用可能なDBCSフォント・テーブルに記憶される文字を作成するために必要なオペレーティング・システムの機能です。",
       "inputType": "dropdown",
       "required": false,
+      "defaultValue": "*YES",
+      "attributes": {
+        "characterSet": "upper"
+      },
       "options": [
-        { "label": "*YES", "value": "*YES" },
-        { "label": "*NO", "value": "*NO" }
+        {
+          "label": "*YES",
+          "value": "*YES",
+          "help": "システムはDBCS外字を処理します。"
+        },
+        {
+          "label": "*NO",
+          "value": "*NO",
+          "help": "システムは外字を処理しません。外字は未定義文字として印刷されます。"
+        }
       ]
     },
-    { "name": "TEXT", "description": "テキスト'記述'", "help": "ファイルを説明するテキスト記述。*SRCMBRTXT / *BLANK / 文字値。", "inputType": "text", "required": false, "attributes": { "maxLength": 50 }, "placeholder": "*SRCMBRTXT" },
-    { "name": "OPTION", "description": "ソース・リスト・オプション", "help": "ソース・リスト・オプション（オプショナル・定位置4、最大4回）。*SRC/*NOSRC, *SOURCE/*NOSOURCE, *LIST/*NOLIST, *SECLVL/*NOSECLVL, *EVENTF/*NOEVENTF。", "inputType": "text", "required": false, "maxOccurrences": 4, "attributes": { "characterSet": "upper", "maxLength": 12 }, "placeholder": "*SRC" },
+    {
+      "name": "TEXT",
+      "description": "テキスト'記述'",
+      "help": "オブジェクトを簡単に記述したテキストを指定します。\n\n*SRCMBRTXT: ソース・ファイルがデータベース・ファイルの場合には，テキストはファイルの作成に使用されたソース・ファイル・メンバーから取られます。ソース・ファイルがインライン・ファイルまたは装置ファイルの場合には，テキストはブランクです。\n*BLANK: テキストは指定されません。\n50文字を超えないテキストを，アポストロフィで囲んで指定してください。",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*SRCMBRTXT",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "placeholder": "*SRCMBRTXT"
+    },
+    {
+      "name": "OPTION",
+      "description": "ソース・リスト・オプション",
+      "help": "ファイルの作成時に生成される出力のタイプを指定します。このパラメーターには，以下の値を4つまで任意の順序で指定することができます。オプションに両方の値を指定した場合，あるいはいずれの値も指定しなかった場合には，そのオプションにリストされている最初の値が使用されます。",
+      "inputType": "dropdown",
+      "required": false,
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*SRC",
+          "value": "*SRC"
+        },
+        {
+          "label": "*NOSRC",
+          "value": "*NOSRC"
+        },
+        {
+          "label": "*SOURCE",
+          "value": "*SOURCE"
+        },
+        {
+          "label": "*NOSOURCE",
+          "value": "*NOSOURCE"
+        },
+        {
+          "label": "*LIST",
+          "value": "*LIST"
+        },
+        {
+          "label": "*NOLIST",
+          "value": "*NOLIST"
+        },
+        {
+          "label": "*SECLVL",
+          "value": "*SECLVL"
+        },
+        {
+          "label": "*NOSECLVL",
+          "value": "*NOSECLVL"
+        },
+        {
+          "label": "*EVENTF",
+          "value": "*EVENTF"
+        },
+        {
+          "label": "*NOEVENTF",
+          "value": "*NOEVENTF"
+        }
+      ],
+      "positional": 4,
+      "maxOccurrences": 4,
+      "placeholder": "*SRC"
+    },
     {
       "name": "PAGESIZE",
       "description": "ページ・サイズ",
-      "help": "ページのサイズ。要素1=長さ(1ページ当たりの行数 0.001-255.0、既定 66)、要素2=幅(1行当たりの文字数 0.001-378.0、既定 132)、要素3=測定方法。",
+      "help": "この装置ファイルによって使用される印刷装置用紙の長さおよび幅を指定します。長さは，1ページ当たりの行数またはUOMパラメーターに指定した単位によって指定されます。幅は，1行当たりの印刷桁（文字数）か，または 計測単位 (UOM) パラメーターに指定した単位によって指定されます。\n\nページ・サイズは，データがページ上に印刷される方法を参考にして指定しなければなりません。例えば，8.5インチ幅で11.0インチの長さの用紙を使用し，10ピッチ・フォントで1インチ当たり6行で印刷する場合には，PAGESIZE(66 85) PAGRTT(0)を指定してください。しかし，ページを回転するためには，11.0幅で8.5インチの長さのページのページ・サイズを指定し，PAGESIZE(51 110) PAGRTT(90)を入力してください。\n\nデータが用紙に入りきるがどうかに関係なく自動縮小を実行できるようにするためには，このコマンドにPAGRTT(*COR)を指定してください。",
       "inputType": "group",
       "required": false,
+      "groupKind": "elements",
       "children": [
-        { "name": "LENGTH", "description": "長さ--1ページ当たりの行数", "help": "1ページ当たりの行数。0.001-255.0（既定 66）。", "inputType": "text", "required": false, "attributes": { "maxLength": 7 }, "placeholder": "66" },
-        { "name": "WIDTH", "description": "幅--1行当たりの文字数", "help": "1行当たりの文字数。0.001-378.0（既定 132）。", "inputType": "text", "required": false, "attributes": { "maxLength": 7 }, "placeholder": "132" },
-        { "name": "MEASURE", "description": "測定方法", "help": "ページ・サイズの測定方法。*ROWCOL（行・桁）/ *UOM（計測単位）。", "inputType": "dropdown", "required": false, "options": [ { "label": "*ROWCOL（行・桁）", "value": "*ROWCOL" }, { "label": "*UOM（計測単位）", "value": "*UOM" } ] }
+        {
+          "name": "LENGTH",
+          "description": "長さ--1ページ当たりの行数",
+          "help": "66: ページの長さは66印刷行／ページです。\nこの印刷装置ファイルによって使用されるページの長さを指定してください。指定する値は，使用する用紙の実際の長さを超えるものであってはなりません。",
+          "inputType": "number",
+          "required": false,
+          "defaultValue": "66",
+          "attributes": {
+            "numericOnly": true
+          },
+          "placeholder": "66"
+        },
+        {
+          "name": "WIDTH",
+          "description": "幅--1行当たりの文字数",
+          "help": "132: ページ幅は132印刷文字／行です。\nこの印刷装置ファイルによって使用されるページの幅を指定してください。指定する値は使用する用紙の実際の幅を超えるものであってはなりません。",
+          "inputType": "number",
+          "required": false,
+          "defaultValue": "132",
+          "attributes": {
+            "numericOnly": true
+          },
+          "placeholder": "132"
+        },
+        {
+          "name": "MEASURE",
+          "description": "測定方法",
+          "inputType": "dropdown",
+          "required": false,
+          "defaultValue": "*ROWCOL",
+          "attributes": {
+            "characterSet": "upper"
+          },
+          "options": [
+            {
+              "label": "*ROWCOL",
+              "value": "*ROWCOL",
+              "help": "ページの長さおよびページ幅は，行数とカラム数で測定されます。"
+            },
+            {
+              "label": "*UOM",
+              "value": "*UOM",
+              "help": "ページの長さおよびページ幅は，UOMパラメーターに指定して単位で測定されます。"
+            }
+          ]
+        }
       ]
     },
-    { "name": "LPI", "description": "行／インチ", "help": "1インチ当たりの行数。6 / 6.0 / 3.0 / 4.0 / 7.5 / 8.0 / 9.0 / 12.0（既定 6）。", "inputType": "text", "required": false, "attributes": { "maxLength": 5 }, "placeholder": "6" },
-    { "name": "CPI", "description": "1インチ当たりの文字数", "help": "1インチ当たりの文字数。10 / 5.0 / 12.0 / 13.3 / 15.0 / 16.7 / 18.0 / 20.0（既定 10）。", "inputType": "text", "required": false, "attributes": { "maxLength": 5 }, "placeholder": "10" },
+    {
+      "name": "LPI",
+      "description": "行／インチ",
+      "help": "この装置ファイルで使用される印刷装置の行間隔の設定値（行／インチ）を指定します。\n\n5256印刷装置の行の間隔は手操作で設定しなければなりません。このパラメーターの1インチ当たりの行数(LPI)の値が（前の印刷装置ファイルの値から）変わると，LPI値の変更を要求する照会メッセージが印刷装置に関連したメッセージ待ち行列に送られます。\n\n4214, 4224, 4230, 4234, 4245,および5262印刷装置の行間隔は，印刷コマンドで設定します。これらの印刷装置の場合には，印刷装置のコントロール・パネルで1インチ当たりの行数による行間隔を設定することもできます。1インチ当たりの行数の値は，印刷装置で設定しないでください。LPI値がコントロール・パネルで一時変更された場合には，システムは，次に受け取る印刷装置ファイルのLPI値で設定された値を一時変更します。\n\n6: 印刷装置の行送りは，1インチ当たり6行です。\n3: 印刷装置の行送りは1インチ当たり3行です。この値を使用できるのは，2バイト文字セット(DBCS)印刷装置の場合だけです。\n4: 印刷装置の行送りは1インチ当たり4行です。\n印刷装置の行送りは1インチ当たり7.5行です。この値を使用できるのは，2バイト文字セット(DBCS)印刷装置の場合だけです。\n8: 印刷装置の行送りは1インチ当たり8行です。 注: LPI(8)で指定されたファイルで2バイト文字セット(DBCS)データを印刷する時には，2行間隔を使用してください。そうでない場合には，漢字データが正しく印刷されません。しかし，英数字データはLPI(8)が指定されていても，1行間隔で正しく印刷されます。\n9: 印刷装置の行送りは1インチ当たり9行です。\n12: 印刷装置の行送りは1インチ当たり12行です。",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "6",
+      "placeholder": "6"
+    },
+    {
+      "name": "CPI",
+      "description": "1インチ当たりの文字数",
+      "help": "印刷装置の文字密度(1インチ当たりの文字数）を指定します。\n\n複数フォントをサポートする印刷装置の場合には，フォント特有値に指定する値がCPIを暗黙に示します。FONT(*CPI)を指定した場合には，使用されるフォントはCPI値に基づいて決定されます。次の図は各CPI値の省略時のフォントIDを記述したものです。\n\n10: 文字密度は1インチ当たり10文字です。\n5: 文字密度は1インチ当たり5文字です。\n12: 文字密度は1インチ当たり12文字です。\n文字密度は1インチ当たり13.3文字です。この値を使用できるのは，2バイト文字セット(DBCS)印刷装置の場合だけです。\n15: 文字密度は1インチ当たり15文字です。\n文字密度は1インチ当たり16.7文字です。\n18: 文字密度は1インチ当たり18文字です。この値を使用できるのは，2バイト文字セット(DBCS)印刷装置の場合だけです。\n20: 文字密度は1インチ当たり20文字です。この値を使用できるのは，2バイト文字セット(DBCS)印刷装置の場合だけです。",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "10",
+      "placeholder": "10"
+    },
     {
       "name": "FRONTMGN",
       "description": "フロント・マージン",
-      "help": "前面マージン。単一値 *DEVD、または要素リスト（下方向オフセット・横方向オフセット 0.0-57.79）。",
+      "help": "用紙の表側の端からの起点の下方向および横方向のオフセットを指定します。このオフセットは，UOMパラメーターに指定された測定の単位です。このパラメーターを使用できるのは，DEVTYPE(*AFPDS)が指定された印刷装置ファイルの場合だけです。",
       "inputType": "group",
       "required": false,
+      "groupKind": "elements",
+      "singleValues": [
+        "*DEVD"
+      ],
       "children": [
-        { "name": "DOWN", "description": "下方向オフセット", "help": "下方向のオフセット。0.0-57.79。単一値 *DEVD を使う場合は空欄。", "inputType": "text", "required": false, "attributes": { "maxLength": 6 }, "placeholder": "*DEVD" },
-        { "name": "ACROSS", "description": "横方向オフセット", "help": "横方向のオフセット。0.0-57.79。", "inputType": "text", "required": false, "attributes": { "maxLength": 6 } }
+        {
+          "name": "DOWN",
+          "description": "下方向オフセット",
+          "help": "ページの先頭からの起点のオフセットを指定してください。 計測単位 (UOM) パラメーターに*CMが指定されている場合には，有効な値の範囲は0から57.79です。UOMパラメーターに*INCHが指定されている場合には，有効な値の範囲は0から22.75です。",
+          "inputType": "number",
+          "required": false,
+          "attributes": {
+            "numericOnly": true
+          },
+          "defaultValue": "*DEVD",
+          "placeholder": "*DEVD"
+        },
+        {
+          "name": "ACROSS",
+          "description": "横方向オフセット",
+          "help": "ページの左側からの起点のオフセットを指定してください。 計測単位 (UOM) パラメーターに*CMが指定されている場合には，有効な値の範囲は0から57.79です。UOMパラメーターに*INCHが指定されている場合には，有効な値の範囲は0から22.75です。",
+          "inputType": "number",
+          "required": false,
+          "attributes": {
+            "numericOnly": true
+          }
+        }
       ]
     },
     {
       "name": "BACKMGN",
       "description": "バック・マージン",
-      "help": "背面マージン。単一値 *FRONTMGN / *DEVD、または要素リスト（下方向オフセット・横方向オフセット 0.0-57.79）。",
+      "help": "用紙の裏側の端からの起点の下方向および横方向のオフセットを指定します。このオフセットは，UOMパラメーターに指定された測定の単位です。このパラメーターを使用できるのは，DEVTYPE(*AFPDS)が指定された印刷装置ファイルの場合だけです。",
       "inputType": "group",
       "required": false,
+      "groupKind": "elements",
+      "singleValues": [
+        "*FRONTMGN",
+        "*DEVD"
+      ],
       "children": [
-        { "name": "DOWN", "description": "下方向オフセット", "help": "下方向のオフセット。0.0-57.79。単一値 *FRONTMGN / *DEVD を使う場合は空欄。", "inputType": "text", "required": false, "attributes": { "maxLength": 6 }, "placeholder": "*FRONTMGN" },
-        { "name": "ACROSS", "description": "横方向オフセット", "help": "横方向のオフセット。0.0-57.79。", "inputType": "text", "required": false, "attributes": { "maxLength": 6 } }
+        {
+          "name": "BACKMGN_DOWN",
+          "description": "下方向オフセット",
+          "help": "ページの先頭からの起点のオフセットを指定してください。 計測単位 (UOM) パラメーターに*CMが指定されている場合には，有効な値の範囲は0から57.79です。UOMパラメーターに*INCHが指定されている場合には，有効な値の範囲は0から22.75です。",
+          "inputType": "number",
+          "required": false,
+          "attributes": {
+            "numericOnly": true
+          },
+          "defaultValue": "*FRONTMGN",
+          "placeholder": "*FRONTMGN"
+        },
+        {
+          "name": "BACKMGN_ACROSS",
+          "description": "横方向オフセット",
+          "help": "ページの左側からの起点のオフセットを指定してください。 計測単位 (UOM) パラメーターに*CMが指定されている場合には，有効な値の範囲は0から57.79です。UOMパラメーターに*INCHが指定されている場合には，有効な値の範囲は0から22.75です。",
+          "inputType": "number",
+          "required": false,
+          "attributes": {
+            "numericOnly": true
+          }
+        }
       ]
     },
-    { "name": "OVRFLW", "description": "オーバーフロー行番号", "help": "オーバーフロー行番号。1-255（既定 60）。", "inputType": "number", "required": false, "attributes": { "numericOnly": true, "maxLength": 3 }, "placeholder": "60" },
+    {
+      "name": "OVRFLW",
+      "description": "オーバーフロー行番号",
+      "help": "印刷装置で新しいページへのオーバーフローが起こるページ上の行番号を指定します。指定した行番号が現在行になると，その行で印刷が行われたかどうかに関係なく，オーバーフローが通知されます。\n\n60: 60行目に達するかあるいは60行目が印刷された後で，印刷装置は新しいページにオーバーフローします。\nオーバーフロー行番号を指定してください。指定する値は， ページ・サイズ (PAGESIZE) パラメーターで指定されたページの長さを超えてはなりません。オーバーフローを判別する時には，印刷装置ファイルに指定されたマージンは無視されます。",
+      "inputType": "number",
+      "required": false,
+      "defaultValue": "60",
+      "attributes": {
+        "numericOnly": true
+      },
+      "placeholder": "60"
+    },
     {
       "name": "FOLD",
       "description": "レコードの折り返し",
-      "help": "行幅を超えるレコードを次の行に折り返すか。*NO / *YES。",
+      "help": "レコード長がページ幅より大きい時にレコードのすべての桁を印刷するかどうかを指定します。 印刷装置タイプ (DEVTYPE) パラメーターで*IPDSが指定されている場合には，このパラメーターは無視されます。\n\n折り返しが指定されていて，レコードがページ幅を超える場合には，最初の行に印刷できないレコードの部分は，レコード全体が印刷されるまで，次の行(1行または複数行）に続けられ（折り返され）ます。\n\n次の条件の下ではFOLDパラメーターは無視されます。\n\n2バイト文字セット(DBCS)ファイルを印刷する時には，システムはこのパラメーターを無視します。システムは，DBCSレコードが1行の印刷行に収まるものと想定します。レコードがページ幅を超える場合には，システムは次の行にレコードの印刷を続行します。",
       "inputType": "dropdown",
       "required": false,
+      "defaultValue": "*NO",
+      "attributes": {
+        "characterSet": "upper"
+      },
       "options": [
-        { "label": "*NO", "value": "*NO" },
-        { "label": "*YES（折り返す）", "value": "*YES" }
+        {
+          "label": "*NO",
+          "value": "*NO"
+        },
+        {
+          "label": "*YES",
+          "value": "*YES"
+        }
       ]
     },
     {
       "name": "RPLUNPRT",
       "description": "印刷不能文字の処置",
-      "help": "印刷不能文字の置き換え。単一値 *NO、または要素リスト（要素1=文字の置き換え *YES、要素2=置き換え文字）。",
+      "help": "印刷不能 文字を置き換えるかどうかと，印刷不能文字にどの置き換え文字（もしあれば）を使用するかを指定します。 印刷不能 文字は，印刷装置で印刷できない文字です。\n\n2バイト文字セット(DBCS)の場合に，印刷不能文字とは処理不能な文字のことです。DBCS使用可能印刷装置を使用する時には，次の点を考慮してください。\n\n詳細は，IBM i Information Center(http://www.ibm.com/systems/i/infocenter/)の「印刷」カテゴリーにあります。",
       "inputType": "group",
       "required": false,
+      "groupKind": "elements",
+      "singleValues": [
+        "*NO"
+      ],
       "children": [
-        { "name": "REPLACE", "description": "文字の置き換え", "help": "印刷不能文字を置き換えるか。*YES。単一値 *NO を使う場合は空欄。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 4 }, "placeholder": "*NO" },
-        { "name": "CHAR", "description": "置き換え文字", "help": "置き換えに使う文字。*BLANK / X'40'-X'FE'。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 6 }, "placeholder": "*BLANK" }
+        {
+          "name": "RPLUNPRT_REPLACE",
+          "description": "文字の置き換え",
+          "inputType": "dropdown",
+          "required": false,
+          "defaultValue": "*YES",
+          "attributes": {
+            "characterSet": "upper"
+          },
+          "options": [
+            {
+              "label": "*NO",
+              "value": "*NO",
+              "help": "印刷不能文字は置き換えられません。印刷不能文字が検出されると，プログラムにメッセージが送られます。"
+            },
+            {
+              "label": "*YES",
+              "value": "*YES",
+              "help": "印刷不能文字は置き換えられます。印刷不能文字が検出されても，プログラムには通知されません。"
+            }
+          ],
+          "placeholder": "*NO"
+        },
+        {
+          "name": "CHAR",
+          "description": "置き換え文字",
+          "help": "印刷不能文字が検出されるたびに使用する置換文字を指定してください。この文字は，このパラメーターにも*YESを指定した場合にだけ使用されます。有効な値の範囲は40から99およびA1からFEです。",
+          "inputType": "dropdown",
+          "required": false,
+          "defaultValue": "*BLANK",
+          "attributes": {
+            "characterSet": "upper"
+          },
+          "options": [
+            {
+              "label": "*BLANK",
+              "value": "*BLANK",
+              "help": "印刷不能文字が検出された場合には，置き換え文字としてブランク(X'40')が使用されます。"
+            }
+          ],
+          "placeholder": "*BLANK"
+        }
       ]
     },
     {
       "name": "ALIGN",
       "description": "ページの位置合わせ",
-      "help": "用紙の位置合わせメッセージを出すか。*NO / *YES。",
+      "help": "印刷を開始する前に，各ページを印刷装置内で位置合わせする必要があるかどうかを指定します。ALIGN(*YES)およびSPOOL(*NO)が指定されていて，用紙の位置合わせが必要な場合には，システムは印刷装置記述に指定されたメッセージ待ち行列にメッセージを送り，そのメッセージに対する応答を待ちます。CRTPRTFコマンドにSPOOL(*YES)が指定されていて，STRPRTWTRコマンドにALIGN(*FILE)が指定されている場合には，このパラメーターを使用して，システムが位置合わせメッセージを送信するかどうかを判別します。\n\nこのパラメーターは単票用紙を使用する時には無視されます（スプールおよび直接出力）。ページ位置合わせはテキスト専用ファイルの場合にのみ行うことができます。図形またはバー・コードを含む印刷ジョブの場合には，ページ位置合わせを行うことはできません。",
       "inputType": "dropdown",
       "required": false,
+      "defaultValue": "*NO",
+      "attributes": {
+        "characterSet": "upper"
+      },
       "options": [
-        { "label": "*NO", "value": "*NO" },
-        { "label": "*YES", "value": "*YES" }
+        {
+          "label": "*NO",
+          "value": "*NO",
+          "help": "ページの位置合わせは必要ありません。"
+        },
+        {
+          "label": "*YES",
+          "value": "*YES",
+          "help": "出力を印刷する前にページの位置合わせが必要です。"
+        }
       ]
     },
     {
       "name": "CTLCHAR",
       "description": "制御文字",
-      "help": "印刷制御文字の種類。*NONE / *FCFC / *MACHINE。",
+      "help": "印刷装置ファイルが印刷制御文字を含む入力をサポートするかどうかを指定します。\n\n合わせてTBLREFCHR(*YES)も指定した場合には，レコード長は制御文字とテーブル参照文字のための余分の2桁を加えたものでなければなりません。",
       "inputType": "dropdown",
       "required": false,
+      "defaultValue": "*NONE",
+      "attributes": {
+        "characterSet": "upper"
+      },
       "options": [
-        { "label": "*NONE", "value": "*NONE" },
-        { "label": "*FCFC（先行制御文字）", "value": "*FCFC" },
-        { "label": "*MACHINE（機械制御コード）", "value": "*MACHINE" }
+        {
+          "label": "*NONE",
+          "value": "*NONE",
+          "help": "印刷制御文字は印刷データでは渡されません。"
+        },
+        {
+          "label": "*FCFC",
+          "value": "*FCFC",
+          "help": "すべてのレコードの先頭文字に米国規格協会(ANSI)用紙制御文字が含まれています。*FCFCを指定した場合には，レコード長に，1桁目の文字による用紙制御コード用の1桁が含まれていなければなりません。これは，印刷されるデータに渡されます。"
+        },
+        {
+          "label": "*MACHINE",
+          "value": "*MACHINE",
+          "help": "どのレコードでも先頭の文字にはマシン・コード制御文字が入っています。*MACHINEを指定する場合には，先頭文字用紙制御コード用の余分な1桁をレコード長に含める必要があります。この値は，外部記述の印刷装置ファイルには無効です。 合わせてTBLREFCHR(*YES)も指定した場合には，レコード長は制御文字とテーブル参照文字のための余分の2桁を加えたものでなければなりません。"
+        }
       ]
     },
     {
       "name": "CHLVAL",
       "description": "チャネル値",
-      "help": "チャネルと行番号の対応。単一値 *NORMAL、または要素リスト（要素1=チャネル 1-12、要素2=行番号 1-255）（最大12回）。",
+      "help": "行番号が割り当てられたチャネル番号のリストを指定します。このパラメーターは 制御文字 (CTLCHAR) パラメーターに*FCFCが指定されている場合にのみ使用してください。\n\nチャネルIDに行番号が指定されておらず，そのチャネルIDがデータに見つかった場合には，印刷前に省略時の「1行間隔」が使用されます。各チャネル番号は，1回だけ指定することができます。",
       "inputType": "group",
       "required": false,
-      "maxOccurrences": 12,
+      "groupKind": "elements",
+      "singleValues": [
+        "*NORMAL"
+      ],
       "children": [
-        { "name": "CHANNEL", "description": "チャネル", "help": "チャネル番号。1-12。単一値 *NORMAL を使う場合は空欄。", "inputType": "text", "required": false, "attributes": { "maxLength": 7 }, "placeholder": "*NORMAL" },
-        { "name": "LINE", "description": "チャネルの行番号", "help": "チャネルに割り当てる行番号。1-255。", "inputType": "number", "required": false, "attributes": { "numericOnly": true, "maxLength": 3 } }
-      ]
+        {
+          "name": "CHLVAL_E1",
+          "description": "チャネル",
+          "help": "対応する「スキップ先」行番号と関連付けられる米国標準規格チャネル番号を指定してください。このパラメーターに有効な値の範囲は1から12で，それぞれチャネル1から12に対応しています。CHLVALパラメーターは，チャネル番号をページ行番号と関連付けます。例えば，CHLVAL(2 20)を指定した場合には，チャネルID 2は行番号20で割り振られます。したがって，レコードの最初の桁に用紙制御2を入れた場合には，印刷装置は行印刷の前に20行目にスキップします。 注: 印刷装置が停止し，次に処理されるレコードに，印刷装置が現在ある行番号と同じ値のチャネル値用紙制御番号がある場合には，印刷装置は次のページのその値（行番号）に進みます。ただし，印刷装置がページの先頭（行番号1)に位置設定され，チャネル値用紙制御値が行番号1と対応している場合，印刷装置は新しいページに進みません。 チャネルIDに行番号が指定されておらず，そのチャネルIDがデータに見つかった場合には，印刷前に省略時の「1行間隔」が使用されます。各チャネル番号は，1回だけ指定することができます。",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "*NORMAL"
+        },
+        {
+          "name": "CHLVAL_E2",
+          "description": "チャネルの行番号",
+          "help": "同じリストのチャネル番号に割り当てられた行番号を指定してください。有効な行番号の範囲は1から255です。チャネル番号に割り当てられた行番号がなく，データにそのチャネル番号が見つかった場合には，印刷前に省略時の「1行間隔」が使用されます。",
+          "inputType": "text",
+          "required": false
+        },
+        {
+          "name": "CHLVAL_CHLVAL_E1",
+          "description": "回線",
+          "help": "対応する「スキップ先」行番号と関連付けられる米国標準規格チャネル番号を指定してください。このパラメーターに有効な値の範囲は1から12で，それぞれチャネル1から12に対応しています。CHLVALパラメーターは，チャネル番号をページ行番号と関連付けます。例えば，CHLVAL(2 20)を指定した場合には，チャネルID 2は行番号20で割り振られます。したがって，レコードの最初の桁に用紙制御2を入れた場合には，印刷装置は行印刷の前に20行目にスキップします。 注: 印刷装置が停止し，次に処理されるレコードに，印刷装置が現在ある行番号と同じ値のチャネル値用紙制御番号がある場合には，印刷装置は次のページのその値（行番号）に進みます。ただし，印刷装置がページの先頭（行番号1)に位置設定され，チャネル値用紙制御値が行番号1と対応している場合，印刷装置は新しいページに進みません。 チャネルIDに行番号が指定されておらず，そのチャネルIDがデータに見つかった場合には，印刷前に省略時の「1行間隔」が使用されます。各チャネル番号は，1回だけ指定することができます。",
+          "inputType": "number",
+          "required": false,
+          "attributes": {
+            "numericOnly": true
+          }
+        }
+      ],
+      "maxOccurrences": 12
     },
     {
       "name": "FIDELITY",
       "description": "精度",
-      "help": "印刷時のエラー処理。*CONTENT / *ABSOLUTE。",
+      "help": "AFP(*YES)で構成された印刷装置で印刷エラーが見つかった時に，印刷を続行するかどうかを指定します。",
       "inputType": "dropdown",
       "required": false,
+      "defaultValue": "*CONTENT",
+      "attributes": {
+        "characterSet": "upper"
+      },
       "options": [
-        { "label": "*CONTENT（可能な限り続行）", "value": "*CONTENT" },
-        { "label": "*ABSOLUTE（エラーで停止）", "value": "*ABSOLUTE" }
+        {
+          "label": "*CONTENT",
+          "value": "*CONTENT",
+          "help": "エラーが見つかった時に，印刷は続行されます。"
+        },
+        {
+          "label": "*ABSOLUTE",
+          "value": "*ABSOLUTE",
+          "help": "エラーが見つかった時に，印刷は停止します。"
+        }
       ]
     },
     {
       "name": "PRTQLTY",
       "description": "印刷品質",
-      "help": "印刷品質。*STD / *DEVD / *DRAFT / *NLQ / *FASTDRAFT。",
+      "help": "3812 SCS, 3816 SCS, 4214, 4224, 4230, 4234,および5219印刷装置の場合に，作成される印刷品質を指定します。\n\n一部の非衝撃式のIPDS印刷装置は，トナー節約機能をサポートします。この機能は装置に依存します。PRTQLTY値に*DRAFTを指定すると，トナー節約機能をサポートしている印刷装置でその機能が活動化されます。\n\n5219印刷装置の場合には，印刷リボンが進む速度を変えることによって各種の印刷品質が作成されます。高品質モード(*STDまたは*NLQ)では通常の印刷リボン速度になります。ドラフト・モード(*DRAFT)では，高品質モードで進む1/3の長さでリボンが進みます。5219印刷装置には，このパラメーターで指定された*DRAFTの値を一時変更するリボン保護スイッチがあります。\n\n3812 SCSおよび3816 SCS印刷装置の場合には，PRTQLTYに*DRAFTが指定されていて，PAGRTTが*DEVDである時にのみ，印刷装置のソフト・スイッチで選択した自動ハードウェア選択（コンピューター出力の減少印刷）が行われます。PAGRTT(*COR)が指定されている場合には，PRTQLTYパラメーターは印刷出力に影響を与えません。\n\n4224, 4230,および4234印刷装置の場合には，印刷可能文字を作成するために使用されるドット・マトリックス・パターンの密度を変えることによって標準印刷品質が作成されます。標準モード(*STD)は通常のモードです。高品質モード(*NLQ)では，1行のデータを作成するために印刷装置によって複数回通過することが要求されます。ドラフト・モード(*DRAFT)は，高速印刷になります。\n\n4214印刷装置の場合には，ドラフト(*DRAFT)，高品質(*NLQ),および装置の省略時の値(*DEVD)の各モードだけがサポートされます。その他の値は高品質(*NLQ)モードに設定されます。\n\n4214, 4224, 4230, 4234,および5219印刷装置に有効な値の詳細については，Printer Device Programmingを参照してください。",
       "inputType": "dropdown",
       "required": false,
+      "defaultValue": "*STD",
+      "attributes": {
+        "characterSet": "upper"
+      },
       "options": [
-        { "label": "*STD（標準）", "value": "*STD" },
-        { "label": "*DEVD", "value": "*DEVD" },
-        { "label": "*DRAFT（ドラフト）", "value": "*DRAFT" },
-        { "label": "*NLQ（高品質）", "value": "*NLQ" },
-        { "label": "*FASTDRAFT", "value": "*FASTDRAFT" }
+        {
+          "label": "*STD",
+          "value": "*STD"
+        },
+        {
+          "label": "*DEVD",
+          "value": "*DEVD"
+        },
+        {
+          "label": "*DRAFT",
+          "value": "*DRAFT"
+        },
+        {
+          "label": "*NLQ",
+          "value": "*NLQ"
+        },
+        {
+          "label": "*FASTDRAFT",
+          "value": "*FASTDRAFT"
+        }
       ]
     },
     {
       "name": "FORMFEED",
       "description": "用紙送り",
-      "help": "用紙送り方法。*DEVD / *AUTOCUT / *CONT / *CUT / *CONT2。",
+      "help": "この印刷装置ファイルによって使用される用紙送り機構を指定します。",
       "inputType": "dropdown",
       "required": false,
+      "defaultValue": "*DEVD",
+      "attributes": {
+        "characterSet": "upper"
+      },
       "options": [
-        { "label": "*DEVD", "value": "*DEVD" },
-        { "label": "*AUTOCUT（自動カット紙）", "value": "*AUTOCUT" },
-        { "label": "*CONT（連続用紙）", "value": "*CONT" },
-        { "label": "*CUT（カット紙）", "value": "*CUT" },
-        { "label": "*CONT2（連続用紙2）", "value": "*CONT2" }
+        {
+          "label": "*DEVD",
+          "value": "*DEVD",
+          "help": "用紙は印刷装置記述に指定されている方法で印刷装置に送られます。"
+        },
+        {
+          "label": "*AUTOCUT",
+          "value": "*AUTOCUT",
+          "help": "単票用紙が半自動的に印刷装置に送られます。用紙送り接続機構が印刷装置になければなりません。"
+        },
+        {
+          "label": "*CONT",
+          "value": "*CONT",
+          "help": "印刷装置で連続用紙が使用されます。連続用紙送り接続機構が印刷装置になければなりません。"
+        },
+        {
+          "label": "*CUT",
+          "value": "*CUT",
+          "help": "印刷装置で単票用紙が使用されます。用紙は1枚1枚手動で送らなければなりません。"
+        },
+        {
+          "label": "*CONT2",
+          "value": "*CONT2",
+          "help": "印刷装置で連続用紙が使用されます。用紙は2次連続用紙送り機構から送られます。印刷装置に2次連続用紙送り機構が必要です。"
+        }
       ]
     },
-    { "name": "DRAWER", "description": "ソース用紙入れ", "help": "用紙の給紙元。1-255 / *E1 / *FORMDF（既定 1）。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 7 }, "placeholder": "1" },
-    { "name": "OUTBIN", "description": "出力ビン", "help": "印刷出力の排出先ビン。1-65535 / *DEVD。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 7 }, "placeholder": "*DEVD" },
+    {
+      "name": "DRAWER",
+      "description": "ソース用紙入れ",
+      "help": "単票用紙が印刷装置（FORMFEED(*AUTOCUT)で指定）に送られる時に，使用されるソース用紙入れを指定します。\n\n1: 用紙は最初の給紙トレイから単票送り機構へ送られます。\n*E1: 封筒はカット用紙送り機構の封筒用紙入れから送られます。\n*FORMDF: 用紙は，書式定義に指定された用紙入れから用紙送りされます。書式定義が指定されていない場合には，用紙入れ1が使用されます。\n用紙を供給する用紙入れを指定してください。",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "1",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "placeholder": "1"
+    },
+    {
+      "name": "OUTBIN",
+      "description": "出力ビン",
+      "help": "複数の出力ビンが可能な印刷装置上の出力の宛先を指定します。\n\n*DEVD: 出力の宛先は，その装置の省略時の出力ビンです。\n出力の宛先の出力ビンを指定してください。",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*DEVD",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "placeholder": "*DEVD"
+    },
     {
       "name": "FONT",
       "description": "フォント",
-      "help": "印刷フォント。単一値 *CPI / *DEVD、または要素リスト（要素1=識別コード、要素2=ポイント・サイズ 0.1-999.9 / *NONE）。",
+      "help": "この印刷装置ファイルで使用するフォントIDおよびポイント・サイズを指定します。\n\n有効なフォントID,表示装置の値，各フォント・スタイルに関連した1インチ当たりの文字数，各フォント・スタイルの記述，および特定の印刷装置でフォントがサポートされているかどうかの詳細については，Printer Device Programmingを参照してください。",
       "inputType": "group",
       "required": false,
+      "groupKind": "elements",
+      "singleValues": [
+        "*CPI",
+        "*DEVD"
+      ],
       "children": [
-        { "name": "IDENTIFIER", "description": "識別コード", "help": "フォント識別コード（文字値、例 011）。単一値 *CPI / *DEVD を使う場合は空欄。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 6 }, "placeholder": "*CPI" },
-        { "name": "POINTSIZE", "description": "ポイント・サイズ", "help": "フォントのポイント・サイズ。0.1-999.9 / *NONE。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 6 }, "placeholder": "*NONE" }
+        {
+          "name": "IDENTIFIER",
+          "description": "識別コード",
+          "help": "ID: この印刷装置ファイルで使用するフォントID（数字）を指定してください。",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "*CPI",
+          "placeholder": "*CPI"
+        },
+        {
+          "name": "POINTSIZE",
+          "description": "ポイント・サイズ",
+          "help": "*NONE: ポイント・サイズは指定されません。使用される印刷装置のタイプに基づいてシステムが選択します。\nポイント・サイズを指定してください。",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "*NONE",
+          "attributes": {
+            "characterSet": "upper"
+          },
+          "placeholder": "*NONE"
+        }
       ]
     },
     {
       "name": "CHRID",
       "description": "文字ID",
-      "help": "文字ID。単一値 *DEVD / *SYSVAL / *JOBCCSID / *CHRIDCTL、または要素リスト（図形文字セット・コード・ページ）。",
+      "help": "印刷出力ファイルの文字ID（図形文字セットおよびコード・ページ）を指定します。このパラメーターによって，異なる文字IDをもつテキストを印刷することができます。このパラメーターに指定された値は，印刷装置に，16進バイト・ストリングを変換して，テキスト作成時に予定された同じ文字を印刷するように指示するために使用されます。文字IDの詳細はIBM i Information Center(http://www.ibm.com/systems/i/infocenter/)の「印刷」カテゴリーにあります。",
       "inputType": "group",
       "required": false,
+      "groupKind": "elements",
+      "singleValues": [
+        "*DEVD",
+        "*SYSVAL",
+        "*JOBCCSID",
+        "*CHRIDCTL"
+      ],
       "children": [
-        { "name": "CHARSET", "description": "図形文字セット", "help": "図形文字セット番号（整数）。単一値を使う場合は空欄。", "inputType": "number", "required": false, "attributes": { "numericOnly": true, "maxLength": 5 }, "placeholder": "*DEVD" },
-        { "name": "CODEPAGE", "description": "コード・ページ", "help": "コード・ページ番号（整数）。", "inputType": "number", "required": false, "attributes": { "numericOnly": true, "maxLength": 5 } }
+        {
+          "name": "CHARSET",
+          "description": "図形文字セット",
+          "help": "印刷装置に合った図形文字セットの値を指定してください。",
+          "inputType": "number",
+          "required": false,
+          "attributes": {
+            "numericOnly": true
+          },
+          "defaultValue": "*DEVD",
+          "placeholder": "*DEVD"
+        },
+        {
+          "name": "CODEPAGE",
+          "description": "コード・ページ",
+          "help": "印刷装置に合ったコード・ページの値を指定してください。有効な値の範囲は1から32767です。",
+          "inputType": "number",
+          "required": false,
+          "attributes": {
+            "numericOnly": true
+          }
+        }
       ]
     },
     {
       "name": "DECFMT",
       "description": "10進数形式",
-      "help": "編集時の10進数形式。*FILE / *JOB。",
+      "help": "EDTCDE DDSキーワードで数字フィールドを編集する時に使用する10進数形式を指定します。10進数形式の値は，小数点としてのコンマおよびピリオドの使用，および編集済みフィールドにおける3桁の定位置区切り記号を決定します。",
       "inputType": "dropdown",
       "required": false,
+      "defaultValue": "*JOB",
+      "attributes": {
+        "characterSet": "upper"
+      },
       "options": [
-        { "label": "*FILE", "value": "*FILE" },
-        { "label": "*JOB", "value": "*JOB" }
+        {
+          "label": "*FILE",
+          "value": "*FILE",
+          "help": "ファイルの作成時にそのファイルと一緒に記憶された10進数形式の値を使用します。"
+        },
+        {
+          "label": "*JOB",
+          "value": "*JOB",
+          "help": "ファイルのオープン時にDECFMTジョブ属性からの10進数形式の値を使用します。"
+        }
       ]
     },
     {
       "name": "FNTCHRSET",
       "description": "フォント文字セット",
-      "help": "AFP フォント文字セット。単一値 *FONT、または要素リスト（要素1=文字セット修飾名、要素2=コード・ページ修飾名、要素3=ポイント・サイズ）。",
+      "help": "文字セットとコード・ページからなるダウンロード・フォントを指定します。このパラメーターを使用できるのは，DEVTYPE(*AFPDS)が指定された印刷装置ファイルの場合だけです。",
       "inputType": "group",
       "required": false,
+      "groupKind": "elements",
+      "singleValues": [
+        "*FONT"
+      ],
       "children": [
-        { "name": "CHARSETLIB", "description": "文字セット ライブラリー", "help": "文字セットのライブラリー。*LIBL / *CURLIB / ライブラリー名。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 10 }, "placeholder": "*LIBL" },
-        { "name": "CHARSET", "description": "文字セット", "help": "フォント文字セット名。単一値 *FONT を使う場合は空欄。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 10 }, "placeholder": "*FONT" },
-        { "name": "CODEPAGELIB", "description": "コード・ページ ライブラリー", "help": "コード・ページのライブラリー。*LIBL / *CURLIB / ライブラリー名。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 10 }, "placeholder": "*LIBL" },
-        { "name": "CODEPAGE", "description": "コード・ページ", "help": "コード・ページ名。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 10 } },
-        { "name": "POINTSIZE", "description": "ポイント・サイズ", "help": "ポイント・サイズ。0.1-999.9 / *NONE。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 6 }, "placeholder": "*NONE" }
+        {
+          "name": "FNTCHRSET_E1",
+          "description": "文字セット",
+          "inputType": "group",
+          "required": false,
+          "groupKind": "qualified",
+          "children": [
+            {
+              "name": "FNTCHRSET_LIB",
+              "description": "ライブラリー",
+              "help": "*LIBL: 最初に一致するものが見つかるまで，現行スレッドのライブラリー・リスト内のすべてのライブラリーが検索されます。\n*CURLIB: フォント文字セットを見つけるために，ジョブの現行ライブラリーが使用されます。ジョブの現行ライブラリーとしてライブラリーが指定されていない場合は，QGPLライブラリーが使用されます。\nフォント文字セットが入っているライブラリーの名前を指定してください。",
+              "inputType": "text",
+              "required": false,
+              "defaultValue": "*LIBL",
+              "attributes": {
+                "characterSet": "upper",
+                "maxLength": 10
+              },
+              "placeholder": "*LIBL"
+            },
+            {
+              "name": "FNTCHRSET",
+              "description": "文字セット",
+              "help": "フォント文字セットの名前を指定してください。",
+              "inputType": "text",
+              "required": false,
+              "attributes": {
+                "characterSet": "upper",
+                "maxLength": 10
+              },
+              "placeholder": "*FONT"
+            }
+          ],
+          "defaultValue": "*FONT"
+        },
+        {
+          "name": "FNTCHRSET_E2",
+          "description": "コード・ページ",
+          "inputType": "group",
+          "required": false,
+          "groupKind": "qualified",
+          "children": [
+            {
+              "name": "FNTCHRSET_LIB2",
+              "description": "ライブラリー",
+              "help": "*LIBL: 最初に一致するものが見つかるまで，現行スレッドのライブラリー・リスト内のすべてのライブラリーが検索されます。\n*CURLIB: フォント文字セットを見つけるために，ジョブの現行ライブラリーが使用されます。ジョブの現行ライブラリーとしてライブラリーが指定されていない場合は，QGPLライブラリーが使用されます。\nフォント文字セットが入っているライブラリーの名前を指定してください。",
+              "inputType": "text",
+              "required": false,
+              "defaultValue": "*LIBL",
+              "attributes": {
+                "characterSet": "upper",
+                "maxLength": 10
+              },
+              "placeholder": "*LIBL"
+            },
+            {
+              "name": "FNTCHRSET_FNTCHRSET",
+              "description": "コード・ページ",
+              "help": "フォント文字セットの名前を指定してください。",
+              "inputType": "text",
+              "required": false,
+              "attributes": {
+                "characterSet": "upper",
+                "maxLength": 10
+              }
+            }
+          ]
+        },
+        {
+          "name": "FNTCHRSET_POINTSIZE",
+          "description": "ポイント・サイズ",
+          "help": "*NONE: ポイント・サイズはシステムによって指定され，指定されたフォント文字セットによって決定されます。\n使用するポイント・サイズを指定してください。 注: ポイント・サイズ・パラメーターが使用されるのは，アウトライン・フォントが指定されている場合だけで，その他の場合にはこれは無視されます。",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "*NONE",
+          "attributes": {
+            "characterSet": "upper"
+          },
+          "placeholder": "*NONE"
+        }
       ]
     },
     {
       "name": "CDEFNT",
       "description": "コード化フォント",
-      "help": "AFP コード化フォント。単一値 *FNTCHRSET、または要素リスト（要素1=コード化フォント修飾名、要素2=ポイント・サイズ）。",
+      "help": "1バイト文字セット(SBCS)の印刷にシステムが使用するコード化フォントを指定します。このパラメーターを使用できるのは，DEVTYPE(*AFPDS)が指定された印刷装置ファイルの場合だけです。",
       "inputType": "group",
       "required": false,
+      "groupKind": "elements",
+      "singleValues": [
+        "*FNTCHRSET"
+      ],
       "children": [
-        { "name": "LIB", "description": "ライブラリー", "help": "コード化フォントのライブラリー。*LIBL / *CURLIB / ライブラリー名。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 10 }, "placeholder": "*LIBL" },
-        { "name": "CDEFNT", "description": "コード化フォント", "help": "コード化フォント名。単一値 *FNTCHRSET を使う場合は空欄。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 10 }, "placeholder": "*FNTCHRSET" },
-        { "name": "POINTSIZE", "description": "ポイント・サイズ", "help": "ポイント・サイズ。0.1-999.9 / *NONE。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 6 }, "placeholder": "*NONE" }
+        {
+          "name": "CDEFNT_E1",
+          "description": "コード化フォント",
+          "inputType": "group",
+          "required": false,
+          "groupKind": "qualified",
+          "children": [
+            {
+              "name": "CDEFNT_LIB",
+              "description": "ライブラリー",
+              "help": "*LIBL: 最初に一致するものが見つかるまで，現行スレッドのライブラリー・リスト内のすべてのライブラリーが検索されます。\n*CURLIB: コード化フォント・オブジェクトを見つけるために，ジョブの現行ライブラリーが使用されます。ジョブの現行ライブラリーとしてライブラリーが指定されていない場合は，QGPLライブラリーが使用されます。\nコード化フォント・オブジェクトが入っているライブラリーの名前を指定してください。",
+              "inputType": "text",
+              "required": false,
+              "defaultValue": "*LIBL",
+              "attributes": {
+                "characterSet": "upper",
+                "maxLength": 10
+              },
+              "placeholder": "*LIBL"
+            },
+            {
+              "name": "CDEFNT",
+              "description": "コード化フォント",
+              "help": "コード化フォントの名前を指定してください。",
+              "inputType": "text",
+              "required": false,
+              "attributes": {
+                "characterSet": "upper",
+                "maxLength": 10
+              },
+              "placeholder": "*FNTCHRSET"
+            }
+          ],
+          "defaultValue": "*FNTCHRSET"
+        },
+        {
+          "name": "CDEFNT_POINTSIZE",
+          "description": "ポイント・サイズ",
+          "help": "*NONE: ポイント・サイズはシステムによって指定され，指定されたフォント文字セットによって決定されます。\n使用するポイント・サイズを指定してください。 注: ポイント・サイズ・パラメーターが使用されるのは，アウトライン・フォントが指定されている場合だけで，その他の場合にはこれは無視されます。",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "*NONE",
+          "attributes": {
+            "characterSet": "upper"
+          },
+          "placeholder": "*NONE"
+        }
       ]
     },
     {
       "name": "TBLREFCHR",
       "description": "テーブル参照文字",
-      "help": "テーブル参照文字(TRC)を使うか。*YES / *NO。",
+      "help": "行データにテーブル参照文字が存在するかどうかを指定します。\n\nデータとともに用紙制御文字が使用される場合には，テーブル参照文字は用紙制御文字の後に続きますが，データ・バイトの前にあります。用紙制御文字が使用されない場合には，テーブル参照文字はデータ・レコードの最初のバイトとなります。用紙制御文字と同様に，テーブル参照文字が使用される場合には，すべてのデータ・レコードにTRCバイトが含まれていなければなりません。",
       "inputType": "dropdown",
       "required": false,
+      "defaultValue": "*NO",
+      "attributes": {
+        "characterSet": "upper"
+      },
       "options": [
-        { "label": "*YES", "value": "*YES" },
-        { "label": "*NO", "value": "*NO" }
+        {
+          "label": "*YES",
+          "value": "*YES",
+          "help": "行データにテーブル参照文字があります。 データとともに用紙制御文字が使用される場合には，テーブル参照文字は用紙制御文字の後に続きますが，データ・バイトの前にあります。用紙制御文字が使用されない場合には，テーブル参照文字はデータ・レコードの最初のバイトとなります。用紙制御文字と同様に，テーブル参照文字が使用される場合には，すべてのデータ・レコードにTRCバイトが含まれていなければなりません。"
+        },
+        {
+          "label": "*NO",
+          "value": "*NO",
+          "help": "行データにテーブル参照文字はありません。"
+        }
       ]
     },
     {
       "name": "PAGDFN",
       "description": "ページ定義",
-      "help": "ページ定義。単一値 *NONE、またはページ定義の修飾名。",
+      "help": "行データを形式設定するために使用されるページ定義を指定します。\n\n*LINE, *AFPDSLINE,または*USERASCIIデータを使用してページ定義を指定できます。PSF FOR i5/OSは，行データとページ定義をIPDSに変換します。\n\n印刷装置ファイルにページ定義を指定し，PSF FOR i5/OSによってスプール・ファイルが印刷される場合，一部の印刷装置ファイル・パラメーターは無視されます。次の印刷ファイル・パラメーターが無視されます。\n\nPSF FOR i5/OSでは，*LINEまたは*AFPSDLINEを指定するとページ定義が必要になるため，*NONEを指定した場合は，印刷ファイル・パラメーターからインライン・ページ定義が作成され，PSF FOR i5/OSに渡されます。",
       "inputType": "group",
       "required": false,
+      "groupKind": "qualified",
+      "singleValues": [
+        "*NONE"
+      ],
       "children": [
-        { "name": "LIB", "description": "ライブラリー", "help": "ページ定義のライブラリー。*LIBL / *CURLIB / ライブラリー名。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 10 }, "placeholder": "*LIBL" },
-        { "name": "PAGDFN", "description": "ページ定義", "help": "*NONE、またはページ定義名。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 10 }, "placeholder": "*NONE" }
+        {
+          "name": "PAGDFN_LIB",
+          "description": "ライブラリー",
+          "help": "*LIBL: 最初に一致するものが見つかるまで，現行スレッドのライブラリー・リスト内のすべてのライブラリーが検索されます。\n*CURLIB: スレッドの現行ライブラリーが検索されます。スレッドの現行ライブラリーとして指定されているライブラリーがない場合，QGPLライブラリーが検索されます。\n検索するライブラリーの名前を指定してください。",
+          "inputType": "text",
+          "required": false,
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          },
+          "placeholder": "*LIBL"
+        },
+        {
+          "name": "PAGDFN",
+          "description": "ページ定義",
+          "help": "指定されたライブラリーに存在していなければならないページ定義の名前を指定してください。有効な値は，1文字から8文字です。ページ定義を使用するときには，装置タイプ*AFPDSLINE, *LINE,または*USERASCIIを指定しなければなりません。",
+          "inputType": "text",
+          "required": false,
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          },
+          "defaultValue": "*NONE",
+          "placeholder": "*NONE"
+        }
       ]
     },
     {
       "name": "FORMDF",
       "description": "書式定義",
-      "help": "書式定義。単一値 *NONE / *DEVD、または書式定義の修飾名。",
+      "help": "ファイルを印刷する時に使用する書式定義を指定します。書式定義は，オーバーレイ，用紙上のページ・データの位置，およびページのコピー数と修正を含む用紙の特性を定義する資源オブジェクトです。書式定義は印刷しているファイルとともにインラインにあるか，あるいはライブラリー中にあります。\n\n印刷装置ファイルに書式定義(*DEVDまたは書式定義名）を指定すると，PSF FOR i5/OSでスプール・ファイルが印刷される時に，一部の印刷装置ファイル・パラメーターは無視されます。次の印刷ファイル・パラメーターが無視されます。\n\nPSF FOR i5/OSには書式定義が必要になるため，*NONEを指定した場合は，印刷ファイル・パラメーターからインライン書式定義が作成され，PSF FOR i5/OSに渡されます。",
       "inputType": "group",
       "required": false,
+      "groupKind": "qualified",
+      "singleValues": [
+        "*NONE",
+        "*DEVD"
+      ],
       "children": [
-        { "name": "LIB", "description": "ライブラリー", "help": "書式定義のライブラリー。*LIBL / *CURLIB / ライブラリー名。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 10 }, "placeholder": "*LIBL" },
-        { "name": "FORMDF", "description": "書式定義", "help": "*NONE / *DEVD、または書式定義名。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 10 }, "placeholder": "*NONE" }
+        {
+          "name": "FORMDF_LIB",
+          "description": "ライブラリー",
+          "help": "*LIBL: 最初に一致するものが見つかるまで，現行スレッドのライブラリー・リスト内のすべてのライブラリーが検索されます。\n*CURLIB: スレッドの現行ライブラリーが検索されます。スレッドの現行ライブラリーとして指定されているライブラリーがない場合，QGPLライブラリーが検索されます。\n検索するライブラリーの名前を指定してください。",
+          "inputType": "text",
+          "required": false,
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          },
+          "placeholder": "*LIBL"
+        },
+        {
+          "name": "FORMDF",
+          "description": "書式定義",
+          "help": "指定されたライブラリーに存在しなければならない書式定義の名前を指定してください。有効な値の範囲は1から8文字です。",
+          "inputType": "text",
+          "required": false,
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          },
+          "defaultValue": "*NONE",
+          "placeholder": "*NONE"
+        }
       ]
     },
-    { "name": "AFPCHARS", "description": "AFP文字", "help": "AFP 文字(コード化フォント)識別子。単一値 *NONE、または文字値（最大4回）。", "inputType": "text", "required": false, "maxOccurrences": 4, "attributes": { "characterSet": "upper", "maxLength": 4 }, "placeholder": "*NONE" },
+    {
+      "name": "AFPCHARS",
+      "description": "AFP文字",
+      "help": "行データおよびページ定義で使用される1つまたは複数のAFP文字（コード化フォント）を指定します。\n\n*NONE: AFP文字（コード化フォント）は指定されません。",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*NONE",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "maxOccurrences": 4,
+      "placeholder": "*NONE"
+    },
     {
       "name": "PAGRTT",
       "description": "ページ回転度数",
-      "help": "ページ回転度数。*AUTO / *DEVD / *COR / 0 / 90 / 180 / 270。",
+      "help": "印刷装置への用紙のロードの方法に関連して，ページ上のテキストの回転の角度を指定します。ページを回転する時のページ・サイズの指定の指示については，PAGESIZEパラメーターの下の注を参照してください。\n\nデータが用紙に収まらない場合に自動回転を使用可能にするためには，このコマンドのこのパラメーターおよびPRTQLTY(*DRAFT)に*AUTOまたは*DEVDを指定してください。\n\nコンピューター出力縮小印刷の場合には，カット・シートIPDS印刷装置で次の操作が実行されます。\n\n0: 回転は行われません。\n90: テキストは90度右回りに回転されます。\n180: テキストは180度右回りに回転されます。\n270: テキストは270度右回りに回転されます。",
       "inputType": "dropdown",
       "required": false,
+      "defaultValue": "*AUTO",
+      "attributes": {
+        "characterSet": "upper"
+      },
       "options": [
-        { "label": "*AUTO（自動）", "value": "*AUTO" },
-        { "label": "*DEVD", "value": "*DEVD" },
-        { "label": "*COR（印刷出力の縮小）", "value": "*COR" },
-        { "label": "0", "value": "0" },
-        { "label": "90", "value": "90" },
-        { "label": "180", "value": "180" },
-        { "label": "270", "value": "270" }
+        {
+          "label": "*AUTO",
+          "value": "*AUTO",
+          "help": "用紙に印刷データを収まるようにするために出力の自動回転が実行されることを指示します。回転しても収まらない場合には，使用される印刷品質に関係なく，自動的にコンピューター出力の縮小が行われます。このパラメーターは，回転をサポートする印刷装置の場合にだけ有効です。"
+        },
+        {
+          "label": "*DEVD",
+          "value": "*DEVD",
+          "help": "オペレーティング・システムは，装置の省略時の回転値を印刷装置に送ります。ページ回転は，印刷装置の仕様次第です。ページ回転の影響については，印刷装置または印刷装置エミュレーションの解説書を参照してください。"
+        },
+        {
+          "label": "*COR",
+          "value": "*COR",
+          "help": "コンピューター出力の縮小(COR)が使用されます。CORによって，13.2インチ幅，11.0インチの長さのページで予定していた印刷出力を，11.0インチ幅，8.5インチの長さのページまたは8.5インチ幅，11.0インチの長さのページで印刷することができます。 コンピューター出力縮小印刷の場合には，カット・シートIPDS印刷装置で次の操作が実行されます。 ファイルに図形，バー・コード，可変LPI，可変フォント，可変ページ回転，または可変用紙入れが含まれている場合には，*CORへの自動回転は行われません。 テキストは，0度の回転位置（印刷装置にロードした最初の端の左下隅）から右回りに90度回転されます。 注: 非衝撃式連続用紙印刷装置の横長用紙の場合には，回転は0度の回転位置（印刷装置にロードした最初の端の左下隅）から左回りになります。 印刷出力には0.5インチの上および左マージンが追加されます。 12ピッチ・フォントは15ピッチ・フォントに変更され，15ピッチ・フォントは20ピッチ・フォントに変更されます。その他のすべてのフォント幅は13.3ピッチ・フォントに変更されますが，ただし4028印刷装置の場合には，15ピッチ・フォントに変更されます。 垂直スペーシング(LPIパラメーターで指定）は，通常のスペーシングの70パーセントです。 ページ・サイズは，幅8.5インチ，長さ11インチに設定されます。"
+        }
       ]
     },
-    { "name": "MULTIUP", "description": "面当たりページ数", "help": "用紙の片面に印刷するページ数。1-4（既定 1）。", "inputType": "number", "required": false, "attributes": { "numericOnly": true, "maxLength": 1 }, "placeholder": "1" },
+    {
+      "name": "MULTIUP",
+      "description": "面当たりページ数",
+      "help": "スプール出力の場合にだけ，複数ページの出力を1ページの物理ページに印刷するかどうかを指定します。\n\n詳細および例については，IBM i Information Center(http://www.ibm.com/systems/i/infocenter/)の「印刷」カテゴリーを参照してください。\n\n1: 1ページの出力が用紙の1物理ページに印刷されます。\n2: 2ページの出力が用紙の1物理ページに印刷されます。\n3: 3ページの出力が用紙の1物理ページに印刷されます。\n4: 4ページの出力が用紙の1物理ページに印刷されます。",
+      "inputType": "number",
+      "required": false,
+      "defaultValue": "1",
+      "attributes": {
+        "numericOnly": true
+      },
+      "placeholder": "1"
+    },
     {
       "name": "REDUCE",
       "description": "出力の減少",
-      "help": "MULTIUP 時の出力縮小方法。*TEXT / *NONE。",
+      "help": "マルチプル・アップ印刷を行う時に，出力を減らすかどうかを指定します。\n\n詳細および例については，IBM i Information Center(http://www.ibm.com/systems/i/infocenter/)の「印刷」カテゴリーを参照してください。",
       "inputType": "dropdown",
       "required": false,
+      "defaultValue": "*TEXT",
+      "attributes": {
+        "characterSet": "upper"
+      },
       "options": [
-        { "label": "*TEXT", "value": "*TEXT" },
-        { "label": "*NONE", "value": "*NONE" }
+        {
+          "label": "*TEXT",
+          "value": "*TEXT",
+          "help": "マルチプル・アップ印刷を行う時に，テキスト出力が減らされます。"
+        },
+        {
+          "label": "*NONE",
+          "value": "*NONE",
+          "help": "マルチプル・アップ印刷を行う時に，出力は減らされません。"
+        }
       ]
     },
-    { "name": "PRTTXT", "description": "印刷テキスト", "help": "各ページの下部に印刷するテキスト。*JOB / *BLANK / X'…' / 文字値。", "inputType": "text", "required": false, "attributes": { "maxLength": 50 }, "placeholder": "*JOB" },
+    {
+      "name": "PRTTXT",
+      "description": "印刷テキスト",
+      "help": "印刷出力の各ページの下部および区切りページに印刷されるテキストを指定します。\n\n*JOB: 現行ジョブからの値が使用されます。\n*BLANK: テキストを印刷しません。\n30文字以内のテキストをアポストロフィで囲んで指定してください。",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*JOB",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "placeholder": "*JOB"
+    },
     {
       "name": "JUSTIFY",
       "description": "ハードウェア位置調整",
-      "help": "ハードウェアによる行末位置調整(%)。0 / 50 / 100。",
-      "inputType": "dropdown",
+      "help": "右マージンの印刷位置合わせの度合いを制御するために，ページ上の文字の印刷位置を指定します。調整は，オープンされている印刷装置ファイルのレコード長に合わせて行われます。\n\n0: 行末調整は行われません。\n50: テキスト中のブランクにスペースを追加して，右マージンをある程度そろえます。\n100: 右マージンの位置が揃うまで，テキストのスペースを拡張します（ブランクが既に存在している位置に追加されます）。",
+      "inputType": "text",
       "required": false,
-      "options": [
-        { "label": "0", "value": "0" },
-        { "label": "50", "value": "50" },
-        { "label": "100", "value": "100" }
-      ]
+      "defaultValue": "0"
     },
     {
       "name": "DUPLEX",
       "description": "両面印刷",
-      "help": "両面印刷の指定。*NO / *YES / *TUMBLE / *FORMDF。",
+      "help": "出力が用紙の片面または両面に印刷するかどうかを指定します。",
       "inputType": "dropdown",
       "required": false,
+      "defaultValue": "*NO",
+      "attributes": {
+        "characterSet": "upper"
+      },
       "options": [
-        { "label": "*NO（片面）", "value": "*NO" },
-        { "label": "*YES（両面・長辺とじ）", "value": "*YES" },
-        { "label": "*TUMBLE（両面・短辺とじ）", "value": "*TUMBLE" },
-        { "label": "*FORMDF", "value": "*FORMDF" }
+        {
+          "label": "*NO",
+          "value": "*NO",
+          "help": "出力は用紙の片面に印刷されます。"
+        },
+        {
+          "label": "*YES",
+          "value": "*YES",
+          "help": "出力は，各印刷ページの上部が用紙の同じ側にくるように，用紙の両面に印刷されます。これは通常，用紙の側部でとじられる出力に対して行われます。"
+        },
+        {
+          "label": "*TUMBLE",
+          "value": "*TUMBLE",
+          "help": "出力が用紙の両面に印刷され，印刷されたページの片面の上部が，その裏の印刷されたページの上部とは反対側になります。これは通常，用紙の上部でとじられる出力に対して行われます。"
+        },
+        {
+          "label": "*FORMDF",
+          "value": "*FORMDF",
+          "help": "書式定義に両面値が指定されている場合には，出力は用紙の両面に印刷されます。書式定義が指定されていない場合には，出力は用紙の片面に印刷されます。"
+        }
       ]
     },
     {
       "name": "UOM",
       "description": "計測単位",
-      "help": "マージン・オフセット等で使う計測単位。*INCH / *CM。",
+      "help": "使用する単位を指定します。",
       "inputType": "dropdown",
       "required": false,
+      "defaultValue": "*INCH",
+      "attributes": {
+        "characterSet": "upper"
+      },
       "options": [
-        { "label": "*INCH（インチ）", "value": "*INCH" },
-        { "label": "*CM（センチメートル）", "value": "*CM" }
+        {
+          "label": "*INCH",
+          "value": "*INCH",
+          "help": "単位としてインチが使用されます。"
+        },
+        {
+          "label": "*CM",
+          "value": "*CM",
+          "help": "単位としてセンチメートルが使用されます。"
+        }
       ]
     },
     {
       "name": "FRONTOVL",
       "description": "前面オーバーレイ",
-      "help": "前面オーバーレイ。単一値 *NONE、または要素リスト（オーバーレイ修飾名・下方向オフセット・横方向オフセット）。",
+      "help": "ページの表側に印刷するオーバーレイとオーバーレイが印刷されるときに使用される起点から下および横方向のオフセットの両方が入っているオブジェクトを指定します。",
       "inputType": "group",
       "required": false,
+      "groupKind": "elements",
+      "singleValues": [
+        "*NONE"
+      ],
       "children": [
-        { "name": "LIB", "description": "ライブラリー", "help": "オーバーレイのライブラリー。*LIBL / *CURLIB / ライブラリー名。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 10 }, "placeholder": "*LIBL" },
-        { "name": "OVERLAY", "description": "オーバーレイ", "help": "オーバーレイ名。単一値 *NONE を使う場合は空欄。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 10 }, "placeholder": "*NONE" },
-        { "name": "DOWN", "description": "下方向オフセット", "help": "下方向オフセット。0.0-57.79（既定 0）。", "inputType": "text", "required": false, "attributes": { "maxLength": 6 }, "placeholder": "0" },
-        { "name": "ACROSS", "description": "横方向オフセット", "help": "横方向オフセット。0.0-57.79（既定 0）。", "inputType": "text", "required": false, "attributes": { "maxLength": 6 }, "placeholder": "0" }
+        {
+          "name": "FRONTOVL_E1",
+          "description": "オーバーレイ",
+          "inputType": "group",
+          "required": false,
+          "groupKind": "qualified",
+          "children": [
+            {
+              "name": "FRONTOVL_LIB",
+              "description": "ライブラリー",
+              "help": "*LIBL: 最初に一致するものが見つかるまで，現行スレッドのライブラリー・リスト内のすべてのライブラリーが検索されます。\n*CURLIB: オーバーレイを見つけるためにジョブの現行ライブラリーが使用されます。ジョブの現行ライブラリーとしてライブラリーが指定されていない場合は，QGPLライブラリーが使用されます。\nオーバーレイが入っているライブラリーの名前を指定してください。",
+              "inputType": "text",
+              "required": false,
+              "defaultValue": "*LIBL",
+              "attributes": {
+                "characterSet": "upper",
+                "maxLength": 10
+              },
+              "placeholder": "*LIBL"
+            },
+            {
+              "name": "FRONTOVL",
+              "description": "オーバーレイ",
+              "help": "オーバーレイの名前を指定してください。",
+              "inputType": "text",
+              "required": false,
+              "attributes": {
+                "characterSet": "upper",
+                "maxLength": 10
+              },
+              "placeholder": "*NONE"
+            }
+          ],
+          "defaultValue": "*NONE"
+        },
+        {
+          "name": "FRONTOVL_DOWN",
+          "description": "下方向オフセット",
+          "help": "0: 起点からの下方向オフセットは使用されません。\nオーバーレイの印刷を始める起点からの下方向オフセットを指定してください。UOM(*CM)が指定されている場合に有効な値の範囲は0から57.79で，UOM(*INCH)が指定されている場合に有効な値の範囲は0から22.75です。",
+          "inputType": "number",
+          "required": false,
+          "defaultValue": "0",
+          "attributes": {
+            "numericOnly": true
+          },
+          "placeholder": "0"
+        },
+        {
+          "name": "FRONTOVL_ACROSS",
+          "description": "横方向オフセット",
+          "help": "0: 起点からの横方向オフセットは使用されません。\nオーバーレイの印刷が開始される起点からの横方向のオフセットを指定してください。UOM(*CM)が指定されている場合に有効な値の範囲は0から57.79で，UOM(*INCH)が指定されている場合に有効な値の範囲は0から22.75です。",
+          "inputType": "number",
+          "required": false,
+          "defaultValue": "0",
+          "attributes": {
+            "numericOnly": true
+          },
+          "placeholder": "0"
+        }
       ]
     },
     {
       "name": "BACKOVL",
       "description": "背面オーバーレイ",
-      "help": "背面オーバーレイ。単一値 *FRONTOVL / *NONE、または要素リスト（オーバーレイ修飾名・下方向オフセット・横方向オフセット・コンスタント・バック）。",
+      "help": "ページの 裏 側に印刷するオーバーレイとオーバーレイが印刷されるときに使用される起点から下および横方向のオフセットの両方が入っているオブジェクトを指定します。\n\nコンスタント・バック機能によって，印刷アプリケーションにブランク・ページを追加することなくブランク・ページでオーバーレイを印刷することができます。コンスタント・バック機能を指定すると，アプリケーション・プログラムによって生成された各ページに対してブランク・ページが生成され，指定されたバック・オーバーレイを印刷できるようになります。生成されたブランク・ページは，ユーザー・プログラムからの変数データがページに印刷されないために定数形式と呼ばれます。コンスタント・バック機能は両面印刷だけにサポートされています。これは印刷装置ファイルにDUPLEX(*NO)が指定されていると無視されます。\n\nコンスタント・バックに*CONSTANTが指定されていると，下方向オフセットおよび横方向オフセットの値は無視されることに注意してください。これらの値はオフセット0.0と見なされます。",
       "inputType": "group",
       "required": false,
+      "groupKind": "elements",
+      "singleValues": [
+        "*FRONTOVL",
+        "*NONE"
+      ],
       "children": [
-        { "name": "LIB", "description": "ライブラリー", "help": "オーバーレイのライブラリー。*LIBL / *CURLIB / ライブラリー名。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 10 }, "placeholder": "*LIBL" },
-        { "name": "OVERLAY", "description": "オーバーレイ", "help": "オーバーレイ名。単一値 *FRONTOVL / *NONE を使う場合は空欄。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 10 }, "placeholder": "*FRONTOVL" },
-        { "name": "DOWN", "description": "下方向オフセット", "help": "下方向オフセット。0.0-57.79（既定 0）。", "inputType": "text", "required": false, "attributes": { "maxLength": 6 }, "placeholder": "0" },
-        { "name": "ACROSS", "description": "横方向オフセット", "help": "横方向オフセット。0.0-57.79（既定 0）。", "inputType": "text", "required": false, "attributes": { "maxLength": 6 }, "placeholder": "0" },
-        { "name": "CONSTANT", "description": "コンスタント・バック", "help": "背面を定数印刷するか。*NOCONSTANT / *CONSTANT。", "inputType": "dropdown", "required": false, "options": [ { "label": "*NOCONSTANT", "value": "*NOCONSTANT" }, { "label": "*CONSTANT", "value": "*CONSTANT" } ] }
+        {
+          "name": "BACKOVL_E1",
+          "description": "オーバーレイ",
+          "inputType": "group",
+          "required": false,
+          "groupKind": "qualified",
+          "children": [
+            {
+              "name": "BACKOVL_LIB",
+              "description": "ライブラリー",
+              "help": "*LIBL: 最初に一致するものが見つかるまで，現行スレッドのライブラリー・リスト内のすべてのライブラリーが検索されます。\n*CURLIB: オーバーレイを見つけるためにジョブの現行ライブラリーが使用されます。ジョブの現行ライブラリーとしてライブラリーが指定されていない場合は，QGPLライブラリーが使用されます。\nオーバーレイが入っているライブラリーの名前を指定してください。",
+              "inputType": "text",
+              "required": false,
+              "defaultValue": "*LIBL",
+              "attributes": {
+                "characterSet": "upper",
+                "maxLength": 10
+              },
+              "placeholder": "*LIBL"
+            },
+            {
+              "name": "BACKOVL",
+              "description": "オーバーレイ",
+              "help": "オーバーレイの名前を指定してください。",
+              "inputType": "text",
+              "required": false,
+              "attributes": {
+                "characterSet": "upper",
+                "maxLength": 10
+              },
+              "placeholder": "*FRONTOVL"
+            }
+          ],
+          "defaultValue": "*FRONTOVL"
+        },
+        {
+          "name": "BACKOVL_DOWN",
+          "description": "下方向オフセット",
+          "help": "0: 起点からの下方向オフセットは使用されません。\nオーバーレイの印刷を始める起点からの下方向オフセットを指定してください。UOM(*CM)が指定されている場合に有効な値の範囲は0から57.79で，UOM(*INCH)が指定されている場合に有効な値の範囲は0から22.75です。",
+          "inputType": "number",
+          "required": false,
+          "defaultValue": "0",
+          "attributes": {
+            "numericOnly": true
+          },
+          "placeholder": "0"
+        },
+        {
+          "name": "BACKOVL_ACROSS",
+          "description": "横方向オフセット",
+          "help": "0: 起点からの横方向オフセットは使用されません。\nオーバーレイの印刷が開始される起点からの横方向のオフセットを指定してください。UOM(*CM)が指定されている場合に有効な値の範囲は0から57.79で，UOM(*INCH)が指定されている場合に有効な値の範囲は0から22.75です。",
+          "inputType": "number",
+          "required": false,
+          "defaultValue": "0",
+          "attributes": {
+            "numericOnly": true
+          },
+          "placeholder": "0"
+        },
+        {
+          "name": "CONSTANT",
+          "description": "コンスタント・バック",
+          "inputType": "dropdown",
+          "required": false,
+          "defaultValue": "*NOCONSTANT",
+          "attributes": {
+            "characterSet": "upper"
+          },
+          "options": [
+            {
+              "label": "*NOCONSTANT",
+              "value": "*NOCONSTANT",
+              "help": "コンスタント・バックは指定されません。"
+            },
+            {
+              "label": "*CONSTANT",
+              "value": "*CONSTANT",
+              "help": "コンスタント・バックが指定されます。"
+            }
+          ]
+        }
       ]
     },
     {
       "name": "CVTLINDTA",
       "description": "行データ変換",
-      "help": "行データを AFPDS に変換するか。*NO / *YES。",
+      "help": "データがスプールされる前に回線データおよびページ定義をAFPDSに変換するかどうかを指定します。",
       "inputType": "dropdown",
       "required": false,
+      "defaultValue": "*NO",
+      "attributes": {
+        "characterSet": "upper"
+      },
       "options": [
-        { "label": "*NO", "value": "*NO" },
-        { "label": "*YES", "value": "*YES" }
+        {
+          "label": "*NO",
+          "value": "*NO",
+          "help": "AFPDS変換は行われません。"
+        },
+        {
+          "label": "*YES",
+          "value": "*YES",
+          "help": "データがスプールされる前に回線データおよびページ定義でAFPDS変換が行われることを指定します。"
+        }
       ]
     },
     {
       "name": "IPDSPASTHR",
       "description": "IPDSパススルー",
-      "help": "IPDS パススルーを行うか。*DEVD / *NO / *YES。",
+      "help": "スプール・ファイルに対してIPDS（高機能プリンター・データ・ストリーム）パススルーを実行するかどうかを指定します。\n\nIPDSパススルーはPSF FOR i5/OSがサポートされたすべての印刷装置に有効というわけではありません。常駐フォントをサポートしていない印刷装置（または接続機構）では，IPDSパススルーをサポートすることはできません。これは，データ・ストリーム内で参照される常駐フォントはその印刷装置にダウンロードされるホスト・フォントにマップされなければならないからです。以下を除くすべてのIBM IPDS印刷装置は，IPDSパススルーによってサポートできます。3820, 3825, 3827, 3828, 3829, 3831, 3835, 3900-001およびInfoPrint ManagerまたはPrint Services Facility for OS/2のいずれかによって提供された分散印刷機能を使用してシステムに接続された印刷装置。\n\nV3R7, V4R1およびV4R2では，IPDSPASTHRは印刷装置ファイルのUSRDFNDTAパラメーターで指定できます。印刷装置ファイルでIPDSPASTHR(*DEVD)を指定することにより，既存の印刷装置ファイルおよびPSF構成オブジェクトでのこのサポートの使用を続行できます。IPDSPASTHRパラメーターに*DEVD以外の値を指定すると，USRDFNDTAパラメーターのIPDSパススルー値は無視されます。",
       "inputType": "dropdown",
       "required": false,
+      "defaultValue": "*DEVD",
+      "attributes": {
+        "characterSet": "upper"
+      },
       "options": [
-        { "label": "*DEVD", "value": "*DEVD" },
-        { "label": "*NO", "value": "*NO" },
-        { "label": "*YES", "value": "*YES" }
+        {
+          "label": "*DEVD",
+          "value": "*DEVD",
+          "help": "印刷装置記述に指定されたPSF構成オブジェクトでIPDSPASTHRに指定される値が使用されます。装置用のPSF構成オブジェクトが指定されていない場合には，値*NOが使用されます。"
+        },
+        {
+          "label": "*NO",
+          "value": "*NO",
+          "help": "IPDSパススルーは実行されません。"
+        },
+        {
+          "label": "*YES",
+          "value": "*YES",
+          "help": "スプール・ファイルがIPDSパススルーに適格である場合に，IPDSパススルーを実行することを指定します。"
+        }
       ]
     },
-    { "name": "USRRSCLIBL", "description": "USER資源ライブラリー・リスト", "help": "AFP 資源を検索するユーザー資源ライブラリー・リスト。単一値 *DEVD / *NONE / *JOBLIBL / *CURLIB、またはライブラリー名（最大4回）。", "inputType": "text", "required": false, "maxOccurrences": 4, "attributes": { "characterSet": "upper", "maxLength": 10 }, "placeholder": "*DEVD" },
+    {
+      "name": "USRRSCLIBL",
+      "description": "USER資源ライブラリー・リスト",
+      "help": "スプール・ファイル用のAFP資源を検索するために使用するユーザー資源ライブラリーのリストを指定します。AFP資源がユーザー資源ライブラリー内で見つからない場合には，PSF構成オブジェクトのDEVRSCLIBLパラメーターに指定されたライブラリー・リストが検索されます。装置のPSF構成オブジェクトが指定されていない場合には，ライブラリーQFNTCPL, QFNT01からQFNT19, およびQFNT61から69が検索されます。\n\nV3R7, V4R1,およびV4R2の場合には，USRRSCLIBLは印刷装置ファイルのUSRDFNDTAパラメーターで指定できます。PSF FOR i5/OSは，印刷装置記述に指定されるPSF構成オブジェクトにUSRRSCLIBL(*PRTF)が指定された場合にその値を使用します。印刷装置ファイルにUSRRSCLIBL(*DEVD)を指定することによって，既存の印刷装置ファイルおよびPSF構成オブジェクトでこのサポートの使用を続行することができます。USRRSCLIBLパラメーターに*DEVD以外の値を指定する場合には，USRDFNDTAパラメーターのユーザー資源ライブラリー値はすべて無視されます。\n\n*DEVD: 印刷装置記述に指定されたPSF構成オブジェクトで，USRRSCLIBLに指定された値が使用されます。装置に対してPSF構成オブジェクトが指定されない場合には，値 *JOBLIBLが使用されます。\n*NONE: ユーザー・ライブラリーは指定されません。\n*JOBLIBL: スプール・ファイルを作成したジョブのライブラリー・リストがAFP資源の検索で使用されることを指定します。このライブラリー・リストは，スプール・ファイルの作成時にそのスプール・ファイルと一緒に保管されます。\n*CURLIB: スプール・ファイルを作成したジョブの現行ライブラリーがAFP資源の検索に使用されることを指定します。ジョブの現行ライブラリーとしてライブラリーを指定しない場合には，ライブラリーQGPLが使用されます。",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*DEVD",
+      "attributes": {
+        "characterSet": "upper",
+        "maxLength": 10
+      },
+      "maxOccurrences": 4,
+      "placeholder": "*DEVD"
+    },
     {
       "name": "CORNERSTPL",
       "description": "コーナー・ステープルとじ",
-      "help": "コーナー・ステープルとじの位置。*NONE / *BOTRIGHT / *TOPRIGHT / *TOPLEFT / *BOTLEFT / *DEVD。",
+      "help": "コーナー・ステープルに使用する参照コーナーを指定します。ステープルは参照コーナー位置で媒体に打ち込まれます。どの参照コーナーがサポートされているかについては，印刷装置に関する文書を参照してください。ページ回転はコーナー・ステープルの配置には影響しません。",
       "inputType": "dropdown",
       "required": false,
+      "defaultValue": "*NONE",
+      "attributes": {
+        "characterSet": "upper"
+      },
       "options": [
-        { "label": "*NONE", "value": "*NONE" },
-        { "label": "*BOTRIGHT（右下）", "value": "*BOTRIGHT" },
-        { "label": "*TOPRIGHT（右上）", "value": "*TOPRIGHT" },
-        { "label": "*TOPLEFT（左上）", "value": "*TOPLEFT" },
-        { "label": "*BOTLEFT（左下）", "value": "*BOTLEFT" },
-        { "label": "*DEVD", "value": "*DEVD" }
+        {
+          "label": "*NONE",
+          "value": "*NONE",
+          "help": "コーナー・ステープルは指定されません。"
+        },
+        {
+          "label": "*BOTRIGHT",
+          "value": "*BOTRIGHT",
+          "help": "参照コーナーは，媒体の右下隅です。"
+        },
+        {
+          "label": "*TOPRIGHT",
+          "value": "*TOPRIGHT",
+          "help": "参照コーナーは，媒体の右上隅です。"
+        },
+        {
+          "label": "*TOPLEFT",
+          "value": "*TOPLEFT",
+          "help": "参照コーナーは，媒体の左上隅です。"
+        },
+        {
+          "label": "*BOTLEFT",
+          "value": "*BOTLEFT",
+          "help": "参照コーナーは，媒体の左下隅です。"
+        },
+        {
+          "label": "*DEVD",
+          "value": "*DEVD",
+          "help": "参照コーナーは，装置によって使用される省略時の参照コーナーです。"
+        }
       ]
     },
     {
       "name": "EDGESTITCH",
       "description": "平とじ",
-      "help": "平とじ。単一値 *NONE、または要素リスト（基準縁・基準縁オフセット・ステープルの数・ステープル・オフセット）。",
+      "help": "仕上げ操作軸に沿って1つ以上のステープルを媒体に入れる位置を指定します。このパラメーターのどの要素がサポートされているか，および各要素のどの値がサポートされているかについては，印刷装置の解説書を参照してください。要素に対する値の仕様が印刷装置によってサポートされない場合には，その要素に*DEVDの値を指定してください。ページ回転は平とじの配置には影響しません。\n\n平とじに使用する基準縁を指定します。仕上げ操作軸に沿って媒体に1つ以上のステープルを入れることで平とじになります。\n\n基準縁から媒体の中央に向かう平とじのオフセットを指定します。\n\n仕上げ操作軸に沿って適用されるステープルの数を指定します。\n\n仕上げ操作軸に沿ったステープルのオフセットを指定します。オフセットは，仕上げ操作軸が媒体の下端か左端のいずれかと交差する点から媒体の中央に向かって測定されます。各連続値は，仕上げ操作軸上の指定された点を中心とした単一の仕上げ操作を位置決めするために使用されます。",
       "inputType": "group",
       "required": false,
+      "groupKind": "elements",
+      "singleValues": [
+        "*NONE"
+      ],
       "children": [
-        { "name": "REFEDGE", "description": "基準縁", "help": "とじ位置の基準縁。*BOT / *RIGHT / *TOP / *LEFT / *DEVD。単一値 *NONE を使う場合は空欄。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 8 }, "placeholder": "*NONE" },
-        { "name": "OFFSET", "description": "基準縁オフセット", "help": "基準縁からのオフセット。0.0-57.79 / *DEVD。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 6 }, "placeholder": "*DEVD" },
-        { "name": "NBRSTAPLES", "description": "ステープルの数", "help": "ステープルの数。1-122 / *DEVD。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 5 }, "placeholder": "*DEVD" },
-        { "name": "STAPLEOFFSET", "description": "ステープル・オフセット", "help": "各ステープルのオフセット。単一値 *DEVD、または 0.0-57.79（最大122回）。", "inputType": "text", "required": false, "maxOccurrences": 122, "attributes": { "characterSet": "upper", "maxLength": 6 }, "placeholder": "*DEVD" }
+        {
+          "name": "REFEDGE",
+          "description": "基準縁",
+          "help": "*BOTTOM: 基準縁は，媒体の下端です。",
+          "inputType": "dropdown",
+          "required": false,
+          "attributes": {
+            "characterSet": "upper"
+          },
+          "options": [
+            {
+              "label": "*NONE",
+              "value": "*NONE",
+              "help": "平とじは指定されません。"
+            },
+            {
+              "label": "*BOT",
+              "value": "*BOT"
+            },
+            {
+              "label": "*RIGHT",
+              "value": "*RIGHT",
+              "help": "基準縁は，媒体の右端です。"
+            },
+            {
+              "label": "*TOP",
+              "value": "*TOP",
+              "help": "基準縁は，媒体の上端です。"
+            },
+            {
+              "label": "*LEFT",
+              "value": "*LEFT",
+              "help": "基準縁は，媒体の左端です。"
+            },
+            {
+              "label": "*DEVD",
+              "value": "*DEVD",
+              "help": "基準縁は，装置によって使用される省略時の基準縁です。"
+            }
+          ],
+          "defaultValue": "*NONE",
+          "placeholder": "*NONE"
+        },
+        {
+          "name": "OFFSET",
+          "description": "基準縁オフセット",
+          "help": "*DEVD: 基準縁オフセットは，装置によって使用される省略時の基準縁オフセットです。\n基準縁からの平とじのオフセットを指定してください。UOM(*CM)が指定されている場合に有効な値の範囲は0から57.79で，UOM(*INCH)が指定されている場合に有効な値の範囲は0から22.75です。この値は印刷装置の場合はミリメートルに変換されます。小数点以下のミリメートルはサポートされていないので，ミリメートルへの変換が実行されるときに切り捨てられます。",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "*DEVD",
+          "attributes": {
+            "characterSet": "upper"
+          },
+          "placeholder": "*DEVD"
+        },
+        {
+          "name": "NBRSTAPLES",
+          "description": "ステープルの数",
+          "help": "*DEVD: ステープルの数は，このパラメーターのステープル・オフセット要素の値によって異なります。ステープル・オフセット要素の値でも*DEVDが指定されているか省略時値になっている場合には，ステープルの数は装置で使用されている省略時のステープルの数になります。「ステープル・オフセット」に1つ以上のオフセットを指定した場合には，ステープルの数は指定されたステープル・オフセットの数と同じになります。\n平とじに使用するステープルの数を指定してください。ステープルの数を指定する場合には，ステープル・オフセットに*DEVDを指定しなければなりません。各ステープルのスペーシングには装置の省略時値が使用されます。",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "*DEVD",
+          "attributes": {
+            "characterSet": "upper"
+          },
+          "placeholder": "*DEVD"
+        },
+        {
+          "name": "STAPLEOFFSET",
+          "description": "ステープル・オフセット",
+          "help": "指定できる特殊値: *DEVD",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "*DEVD",
+          "attributes": {
+            "characterSet": "upper"
+          },
+          "placeholder": "*DEVD"
+        }
       ]
     },
     {
       "name": "SADLSTITCH",
       "description": "中とじ",
-      "help": "中とじ。単一値 *NONE、または要素リスト（基準縁・ステープルの数・ステープル・オフセット）。",
+      "help": "基準縁と並行して媒体の中央に位置する仕上げ操作軸に沿って，1つ以上のステープルを媒体に入れる位置を指定します。このパラメーターのどの要素がサポートされているか，および各要素のどの値がサポートされているかについては，印刷装置の解説書を参照してください。要素に対する値の仕様が印刷装置によってサポートされない場合には，その要素に*DEVDの値を指定してください。ページ回転は平とじの配置には影響しません。\n\n中とじに使用する基準縁を指定します。基準縁に並行して媒体の中央に位置する仕上げ操作軸にそって，1つ以上のステープルを媒体に入れることで中とじになります。\n\n仕上げ操作軸に沿って適用されるステープルの数を指定します。\n\n仕上げ操作軸に沿ったステープルのオフセットを指定します。オフセットは，仕上げ操作軸が媒体の下端か左端のいずれかと交差する点から媒体の中央に向かって測定されます。各連続値は，仕上げ操作軸上の指定された点を中心とした単一の仕上げ操作を位置決めするために使用されます。",
       "inputType": "group",
       "required": false,
+      "groupKind": "elements",
+      "singleValues": [
+        "*NONE"
+      ],
       "children": [
-        { "name": "REFEDGE", "description": "基準縁", "help": "とじ位置の基準縁。*TOP / *LEFT / *DEVD。単一値 *NONE を使う場合は空欄。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 6 }, "placeholder": "*NONE" },
-        { "name": "NBRSTAPLES", "description": "ステープルの数", "help": "ステープルの数。1-122 / *DEVD。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 5 }, "placeholder": "*DEVD" },
-        { "name": "STAPLEOFFSET", "description": "ステープル・オフセット", "help": "各ステープルのオフセット。単一値 *DEVD、または 0.0-57.79（最大122回）。", "inputType": "text", "required": false, "maxOccurrences": 122, "attributes": { "characterSet": "upper", "maxLength": 6 }, "placeholder": "*DEVD" }
+        {
+          "name": "SADLSTITCH_REFEDGE",
+          "description": "基準縁",
+          "inputType": "dropdown",
+          "required": false,
+          "attributes": {
+            "characterSet": "upper"
+          },
+          "options": [
+            {
+              "label": "*NONE",
+              "value": "*NONE",
+              "help": "中とじは指定されません。"
+            },
+            {
+              "label": "*TOP",
+              "value": "*TOP",
+              "help": "基準縁は，媒体の上端です。"
+            },
+            {
+              "label": "*LEFT",
+              "value": "*LEFT",
+              "help": "基準縁は，媒体の左端です。"
+            },
+            {
+              "label": "*DEVD",
+              "value": "*DEVD",
+              "help": "基準縁は，装置によって使用される省略時の基準縁です。"
+            }
+          ],
+          "defaultValue": "*NONE",
+          "placeholder": "*NONE"
+        },
+        {
+          "name": "SADLSTITCH_NBRSTAPLES",
+          "description": "ステープルの数",
+          "help": "*DEVD: ステープルの数は，このパラメーターのステープル・オフセット要素の値によって異なります。ステープル・オフセット要素の値でも*DEVDが指定されているか省略時値になっている場合には，ステープルの数は装置で使用されている省略時のステープルの数になります。「ステープル・オフセット」に1つ以上のオフセットを指定した場合には，ステープルの数は指定されたステープル・オフセットの数と同じになります。\n中とじに使用されるステープルの数を指定してください。ステープルの数を指定する場合には，ステープル・オフセットに*DEVDを指定しなければなりません。各ステープルのスペーシングには装置の省略時値が使用されます。",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "*DEVD",
+          "attributes": {
+            "characterSet": "upper"
+          },
+          "placeholder": "*DEVD"
+        },
+        {
+          "name": "SADLSTITCH_STAPLEOFFSET",
+          "description": "ステープル・オフセット",
+          "help": "指定できる特殊値: *DEVD",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "*DEVD",
+          "attributes": {
+            "characterSet": "upper"
+          },
+          "placeholder": "*DEVD"
+        }
       ]
     },
     {
       "name": "FNTRSL",
       "description": "形式設定用フォント解像度",
-      "help": "形式設定に使うフォント解像度。*DEVD / *SEARCH / 240 / 300。",
+      "help": "複数の解像度を報告するために構成された複数解像度印刷装置への印刷時に，スプール・ファイルでフォント・メトリックと解像度が指定されていない場合，あるいはスプール・ファイルに含まれている解像度でフォントを使用できない場合は，PSF FOR i5/OSが使用する解像度を指定します。\n\nフォント資源用のライブラリー・リストの検索に使用されるアルゴリズムに関する詳細については，印刷装置プログラミングの「PSF構成オブジェクトの処理」という章の「ユーザーおよび装置資源ライブラリー・リスト」の項を参照してください。\n\n240: フォント解像度はインチ当たり240ピクセルです。\n300: フォント解像度はインチ当たり300ピクセルです。",
       "inputType": "dropdown",
       "required": false,
+      "defaultValue": "*DEVD",
+      "attributes": {
+        "characterSet": "upper"
+      },
       "options": [
-        { "label": "*DEVD", "value": "*DEVD" },
-        { "label": "*SEARCH", "value": "*SEARCH" },
-        { "label": "240", "value": "240" },
-        { "label": "300", "value": "300" }
+        {
+          "label": "*DEVD",
+          "value": "*DEVD",
+          "help": "装置のPSF構成オブジェクトのFNTRSLパラメーターに指定された値が使用されます。PSF構成オブジェクトが装置に指定されていない場合には，*SEARCHの値が使用されます。"
+        },
+        {
+          "label": "*SEARCH",
+          "value": "*SEARCH",
+          "help": "ライブラリー・リストから，名前が一致するホスト・フォントの最初のオカレンスを検索することを指定します。そのフォントの解像度がスプール・ファイルの印刷のために使用されます。選択されたフォントの解像度を指定するためにメッセージPQT3546が送られます。"
+        }
       ]
     },
     {
       "name": "DFRWRT",
       "description": "書き出し据え置き",
-      "help": "印刷装置への書き出しを据え置くか。*YES / *NO。",
+      "help": "出力を印刷装置に送る前にシステム・バッファーに保持するかどうかを指定します。\n\nこのパラメーターに*NOが指定され，SPOOLパラメーターに*YESが指定されている場合，および スプール出力のスケジュール (SCHEDULE) パラメーターに*IMMEDが指定されている場合には，出力のページが使用可能になるか，あるいはシステム・バッファーがいっぱいになるまで，出力はバッファーに保持されます。\n\nSCHEDULEパラメーターに*IMMEDが指定されていない場合には，このパラメーターに*NOを指定しても影響はありません。",
       "inputType": "dropdown",
       "required": false,
+      "defaultValue": "*YES",
+      "attributes": {
+        "characterSet": "upper"
+      },
       "options": [
-        { "label": "*YES（据え置く）", "value": "*YES" },
-        { "label": "*NO", "value": "*NO" }
+        {
+          "label": "*YES",
+          "value": "*YES",
+          "help": "システムは，印刷装置に送る前にバッファーに保持する出力の大きさを制御します。"
+        },
+        {
+          "label": "*NO",
+          "value": "*NO",
+          "help": "このパラメーターに*NOが指定され， データのスプール (SPOOL) パラメーターに*NOが指定されている場合には，出力はバッファーに保持されません。その代わりに，プログラムが書き出し操作を実行すると，ただちに出力が印刷装置に送られます。 このパラメーターに*NOが指定され，SPOOLパラメーターに*YESが指定されている場合，および スプール出力のスケジュール (SCHEDULE) パラメーターに*IMMEDが指定されている場合には，出力のページが使用可能になるか，あるいはシステム・バッファーがいっぱいになるまで，出力はバッファーに保持されます。 SCHEDULEパラメーターに*IMMEDが指定されていない場合には，このパラメーターに*NOを指定しても影響はありません。"
+        }
       ]
     },
     {
       "name": "SPOOL",
       "description": "データのスプール",
-      "help": "出力をスプールするか。*YES / *NO。",
+      "help": "印刷装置ファイルの出力データをスプールするかどうかを指定します。*NOが指定されている場合には，スプーリングに関連のあるこのコマンドの他のパラメーターは無視されます。 TO ストリーム・ファイル (TOSTMF) パラメーターが*NONEでない場合，このパラメーターは無視されます。",
       "inputType": "dropdown",
       "required": false,
+      "defaultValue": "*YES",
+      "attributes": {
+        "characterSet": "upper"
+      },
       "options": [
-        { "label": "*YES（スプールする）", "value": "*YES" },
-        { "label": "*NO（直接出力）", "value": "*NO" }
+        {
+          "label": "*YES",
+          "value": "*YES",
+          "help": "データはスプールされます。"
+        },
+        {
+          "label": "*NO",
+          "value": "*NO",
+          "help": "データはスプールされません。出力が使用可能になると印刷装置に送られて印刷されます。"
+        }
       ]
     },
     {
       "name": "OUTQ",
       "description": "スプール出力待ち行列",
-      "help": "スプール出力待ち行列。単一値 *JOB / *DEV、または出力待ち行列の修飾名。",
+      "help": "スプール出力ファイルの場合にだけ，印刷装置ファイルの出力待ち行列の名前を指定します。",
       "inputType": "group",
       "required": false,
+      "groupKind": "qualified",
+      "singleValues": [
+        "*JOB",
+        "*DEV"
+      ],
       "children": [
-        { "name": "LIB", "description": "ライブラリー", "help": "出力待ち行列のライブラリー。*LIBL / *CURLIB / ライブラリー名。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 10 }, "placeholder": "*LIBL" },
-        { "name": "OUTQ", "description": "スプール出力待ち行列", "help": "*JOB / *DEV、または出力待ち行列名。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 10 }, "placeholder": "*JOB" }
+        {
+          "name": "OUTQ_LIB",
+          "description": "ライブラリー",
+          "help": "*LIBL: 最初に一致するものが見つかるまで，現行スレッドのライブラリー・リスト内のすべてのライブラリーが検索されます。\n*CURLIB: 出力待ち行列を見つけるために現行ジョブ・ライブラリー・リストが使用されます。ジョブの現行ライブラリーとしてライブラリーが指定されていない場合は，QGPLが使用されます。\n出力待ち行列が入っているライブラリーを指定してください。",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "*LIBL",
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          },
+          "placeholder": "*LIBL"
+        },
+        {
+          "name": "OUTQ",
+          "description": "スプール出力待ち行列",
+          "help": "出力データがスプールされる出力待ち行列の名前を指定してください。",
+          "inputType": "text",
+          "required": false,
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          },
+          "defaultValue": "*JOB",
+          "placeholder": "*JOB"
+        }
       ]
     },
-    { "name": "FORMTYPE", "description": "用紙タイプ", "help": "印刷に使う用紙のタイプ。*STD / 文字値。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 10 }, "placeholder": "*STD" },
-    { "name": "COPIES", "description": "コピー枚数", "help": "印刷するコピー枚数。1-255（既定 1）。", "inputType": "number", "required": false, "attributes": { "numericOnly": true, "maxLength": 3 }, "placeholder": "1" },
-    { "name": "EXPDATE", "description": "ファイルの満了日", "help": "スプール・ファイルの満了日。*NONE / *DAYS / 日付。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 10 }, "placeholder": "*NONE" },
-    { "name": "DAYS", "description": "ファイル満了までの日数", "help": "EXPDATE(*DAYS) のときの満了までの日数。1-366。", "inputType": "number", "required": false, "attributes": { "numericOnly": true, "maxLength": 3 } },
+    {
+      "name": "FORMTYPE",
+      "description": "用紙タイプ",
+      "help": "出力を印刷する用紙のタイプを指定します。用紙のタイプを指示するために使用されるIDはユーザー定義のもので，最大10桁の長さとすることができます。\n\n*STD: コンピューター・システムの標準印刷装置用紙が使用されます。\n印刷出力のためにこの印刷装置ファイルで使用される用紙タイプのIDを指定してください。",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*STD",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "placeholder": "*STD"
+    },
+    {
+      "name": "COPIES",
+      "description": "コピー枚数",
+      "help": "スプール出力専用の場合には，印刷中の出力のコピー数を指定します。\n\n1: 出力は1部だけ印刷されます。\n印刷するコピー枚数を指定してください。",
+      "inputType": "number",
+      "required": false,
+      "defaultValue": "1",
+      "attributes": {
+        "numericOnly": true
+      },
+      "placeholder": "1"
+    },
+    {
+      "name": "EXPDATE",
+      "description": "ファイルの満了日",
+      "help": "スプール・ファイルの満了日を指定します。スプール・ファイルは，指定された日付のシステム現地時間の23:59:59に満了します。\n\nその日からスプール・ファイルが満了スプール・ファイル削除(DLTEXPSPLF)コマンドによってシステムから除去される対象となる日付を指定してください。値に日付区切り文字を使用する場合には，日付をアポストロフィで囲む必要があります。",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*NONE",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*NONE",
+          "value": "*NONE",
+          "help": "満了日は指定されません。"
+        },
+        {
+          "label": "*DAYS",
+          "value": "*DAYS",
+          "help": "満了日は， ファイル満了までの日数 (DAYS) パラメーターに指定された値を使用して計算されます。"
+        }
+      ],
+      "placeholder": "*NONE"
+    },
+    {
+      "name": "DAYS",
+      "description": "ファイル満了までの日数",
+      "help": "スプール・ファイルを保持する日数を指定します。\n\nその間隔以後にスプール・ファイルが満了スプール・ファイル削除(DLTEXPSPLF)コマンドによってシステムから除去することに適格となる日数の間隔を指定してください。スプール・ファイルに適用される実際の満了日は，指定された日数を印刷装置ファイルのオープンの日付に加算することによって計算されます。",
+      "inputType": "number",
+      "required": false,
+      "attributes": {
+        "numericOnly": true
+      }
+    },
     {
       "name": "PAGERANGE",
       "description": "印刷ページ範囲",
-      "help": "印刷するページ範囲。要素1=開始ページ(整数 / 1 / *ENDPAGE)、要素2=終了ページ(整数 / *END)。",
+      "help": "スプール出力ファイルの場合にだけ，印刷する開始ページおよび終了ページを指定します。",
       "inputType": "group",
       "required": false,
+      "groupKind": "elements",
       "children": [
-        { "name": "STARTPAGE", "description": "開始ページ", "help": "開始ページ。整数 / 1 / *ENDPAGE。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 10 }, "placeholder": "1" },
-        { "name": "ENDPAGE", "description": "終了ページ", "help": "終了ページ。整数 / *END。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 10 }, "placeholder": "*END" }
+        {
+          "name": "STARTPAGE",
+          "description": "開始ページ",
+          "help": "1: 印刷はページ1から開始されます。\n*ENDPAGE: 終了ページの値を開始ページとして使用してください。\n開始ページ番号を指定してください。",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "1",
+          "attributes": {
+            "characterSet": "upper"
+          },
+          "placeholder": "1"
+        },
+        {
+          "name": "ENDPAGE",
+          "description": "終了ページ",
+          "help": "*END: 印刷は，スプール・ファイルの終わりまで続行されます。\n終了ページ番号を指定してください。",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "*END",
+          "attributes": {
+            "characterSet": "upper"
+          },
+          "placeholder": "*END"
+        }
       ]
     },
-    { "name": "MAXRCDS", "description": "スプール出力レコードの最大数", "help": "スプール・ファイルの最大レコード数。1-99999999 / *NOMAX（既定 100000）。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 8 }, "placeholder": "100000" },
-    { "name": "FILESEP", "description": "ファイル区切り", "help": "ファイル区切りページの数。0-9（既定 0）。", "inputType": "number", "required": false, "attributes": { "numericOnly": true, "maxLength": 1 }, "placeholder": "0" },
+    {
+      "name": "MAXRCDS",
+      "description": "スプール出力レコードの最大数",
+      "help": "スプール出力の場合だけ，この印刷装置ファイルを使用してジョブのスプール・ファイルに入れることができるレコードの最大数を指定します。この最大数に達した場合には，照会メッセージがプログラム・メッセージ待ち行列に送られます。\n\n100000: この印刷装置ファイルを使用する各ジョブのスプール出力ファイルには，最大100000のレコードを入れることができます。\n*NOMAX: スプール・ファイルに入れることができるレコードの最大数に制限はありません。\n許容されるレコードの最大数を指定してください。",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "100000",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "placeholder": "100000"
+    },
+    {
+      "name": "FILESEP",
+      "description": "ファイル区切り",
+      "help": "スプール出力ファイルの場合にだけ，各印刷ファイルの始めに置かれる区切りページの数（同じ出力の複数のコピーの間に置かれるものを含む）を指定します。\n\n0: 区切りページを使用しません。\n印刷ファイルの間に入れる区切りページの数を指定してください。0を指定した場合には，このファイルに区切りページは印刷されません。この場合には，各ファイルの印刷出力（またはファイルのコピー）は，新しいページの先頭から始まります。",
+      "inputType": "number",
+      "required": false,
+      "defaultValue": "0",
+      "attributes": {
+        "numericOnly": true
+      },
+      "placeholder": "0"
+    },
     {
       "name": "SCHEDULE",
       "description": "スプール出力のスケジュール",
-      "help": "スプール出力を印刷可能にするタイミング。*FILEEND / *IMMED / *JOBEND。",
+      "help": "スプール出力ファイルの場合にだけ，スプール出力ファイルがいつ書き出しプログラムで使用可能となるかを指定します。",
       "inputType": "dropdown",
       "required": false,
+      "defaultValue": "*FILEEND",
+      "attributes": {
+        "characterSet": "upper"
+      },
       "options": [
-        { "label": "*FILEEND（ファイル・クローズ時）", "value": "*FILEEND" },
-        { "label": "*IMMED（即時）", "value": "*IMMED" },
-        { "label": "*JOBEND（ジョブ終了時）", "value": "*JOBEND" }
+        {
+          "label": "*FILEEND",
+          "value": "*FILEEND",
+          "help": "スプール出力ファイルは，ファイルがクローズされると同時に書き出しプログラムで使用可能となります。"
+        },
+        {
+          "label": "*IMMED",
+          "value": "*IMMED",
+          "help": "ファイルがプログラムでオープンされると同時に，スプール出力ファイルが書き出しプログラムに対して使用可能となります。"
+        },
+        {
+          "label": "*JOBEND",
+          "value": "*JOBEND",
+          "help": "スプール出力ファイルは，ジョブが完了した後で書き出しプログラムで使用可能となります。"
+        }
       ]
     },
     {
       "name": "HOLD",
       "description": "スプール・ファイルの保留",
-      "help": "スプール・ファイルを保留状態で作成するか。*NO / *YES。",
+      "help": "スプール出力の場合にのみ，スプール・ファイルが保留されるかどうかを指定します。スプール・ファイルの解放は，スプール・ファイル解放(RLSSPLF)コマンドによって行うことができます。",
       "inputType": "dropdown",
       "required": false,
+      "defaultValue": "*NO",
+      "attributes": {
+        "characterSet": "upper"
+      },
       "options": [
-        { "label": "*NO", "value": "*NO" },
-        { "label": "*YES（保留）", "value": "*YES" }
+        {
+          "label": "*NO",
+          "value": "*NO",
+          "help": "スプール出力ファイルは出力待ち行列に保持されません。"
+        },
+        {
+          "label": "*YES",
+          "value": "*YES",
+          "help": "スプール出力ファイルは，スプール・ファイル解放(RLSSPLF)コマンドによって解放されるまで保持されます。"
+        }
       ]
     },
     {
       "name": "SAVE",
       "description": "スプール・ファイルの保管",
-      "help": "印刷後にスプール・ファイルを保管するか。*NO / *YES。",
+      "help": "スプール出力ファイルの場合にだけ，出力が作成された後でスプール・ファイルを保管するかどうかを指定します。",
       "inputType": "dropdown",
       "required": false,
+      "defaultValue": "*NO",
+      "attributes": {
+        "characterSet": "upper"
+      },
       "options": [
-        { "label": "*NO", "value": "*NO" },
-        { "label": "*YES（保管）", "value": "*YES" }
+        {
+          "label": "*NO",
+          "value": "*NO",
+          "help": "スプール・ファイル・データは出力待ち行列に保管されません。"
+        },
+        {
+          "label": "*YES",
+          "value": "*YES",
+          "help": "スプール・ファイル・データは，スプール・ファイルが削除されるまで出力待ち行列に保管されます。"
+        }
       ]
     },
-    { "name": "OUTPTY", "description": "出力優先順位(OUTQでの)", "help": "出力待ち行列での出力優先順位。*JOB / 1-9。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 4 }, "placeholder": "*JOB" },
-    { "name": "USRDTA", "description": "ユーザー・データ", "help": "スプール・ファイルに関連付けるユーザー・データ。*SOURCE / 文字値。", "inputType": "text", "required": false, "attributes": { "maxLength": 10 }, "placeholder": "*SOURCE" },
+    {
+      "name": "OUTPTY",
+      "description": "出力優先順位(OUTQでの)",
+      "help": "このジョブによって作成されたスプール出力ファイルの出力優先順位を指定します。最高の優先順位は1で，最低の優先順位は9です。\n\n1（最高値）から9（最低値）までの数字を指定してください。",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*JOB",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*JOB",
+          "value": "*JOB",
+          "help": "スプール・ファイルを作成したジョブと対応した出力優先順位が使用されます。"
+        }
+      ],
+      "placeholder": "*JOB"
+    },
+    {
+      "name": "USRDTA",
+      "description": "ユーザー・データ",
+      "help": "スプール・ファイルの場合にかぎり，ファイルを識別する特定のユーザー指定データを指定します。\n\n*SOURCE: スプール・ファイルがアプリケーション・プログラムによって作成されたものである場合には，そのプログラムの名前が使用されます。そうでない場合には，ブランクが使用されます。\n10桁を超えないテキストを，アポストロフィで囲んで指定します。",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*SOURCE",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "placeholder": "*SOURCE"
+    },
     {
       "name": "SPLFOWN",
       "description": "スプール・ファイル所有者",
-      "help": "スプール・ファイルの所有者。*CURUSRPRF / *JOB / *CURGRPPRF / *JOBGRPPRF。",
+      "help": "スプール出力の場合にのみ，スプール・ファイルの所有者を指定します。",
       "inputType": "dropdown",
       "required": false,
+      "defaultValue": "*CURUSRPRF",
+      "attributes": {
+        "characterSet": "upper"
+      },
       "options": [
-        { "label": "*CURUSRPRF（現行ユーザー）", "value": "*CURUSRPRF" },
-        { "label": "*JOB（ジョブ・ユーザー）", "value": "*JOB" },
-        { "label": "*CURGRPPRF（現行グループ）", "value": "*CURGRPPRF" },
-        { "label": "*JOBGRPPRF（ジョブ・グループ）", "value": "*JOBGRPPRF" }
+        {
+          "label": "*CURUSRPRF",
+          "value": "*CURUSRPRF",
+          "help": "スプール・ファイルは，現行ジョブまたはスレッドの現在有効なユーザーによって所有されます。次のAPIのどれかを使用すると，SPLFOWNパラメーターがどのように影響されるかの詳細については，IBM i Information Center(http://www.ibm.com/systems/i/infocenter/)の「印刷」カテゴリーを参照してください。 QWTSETP -プロファイルの設定 QSYSETUID() -ユーザーIDの設定 QSYSETEUID() -有効ユーザーIDの設定 QSYSETREUID() -実ユーザーIDおよび有効ユーザーIDの設定"
+        },
+        {
+          "label": "*JOB",
+          "value": "*JOB",
+          "help": "スプール・ファイルは，ジョブの元のユーザー・プロファイルによって所有されます。ジョブで新しいユーザー・プロファイルに切り替わっても，元のユーザー・プロファイルが依然としてスプール・ファイルの所有者です。"
+        },
+        {
+          "label": "*CURGRPPRF",
+          "value": "*CURGRPPRF",
+          "help": "スプール・ファイルは，現行ジョブまたはスレッドの現在有効なグループ・プロファイルによって所有されます。現在有効なグループ・プロファイルが存在しない場合には，スプール・ファイルの所有権は，*CURUSRPRFと同様に決定されます。次のAPIのどれかを使用すると，SPLFOWNパラメーターがどのように影響されるかの詳細については，IBM i Information Center(http://www.ibm.com/systems/i/infocenter/)の「印刷」カテゴリーを参照してください。 QWTSETP -プロファイルの設定 QSYSETGID() -グループIDの設定 QSYSETEGID() -有効グループIDの設定 QSYSETREGID() -実グループIDおよび有効グループIDの設定"
+        },
+        {
+          "label": "*JOBGRPPRF",
+          "value": "*JOBGRPPRF",
+          "help": "スプール・ファイルは，ジョブの元のユーザー・プロファイルのグループ・プロファイルによって所有されます。ジョブで新しいユーザー・プロファイルに切り替わっても，元のユーザー・プロファイルのグループ・プロファイルが依然としてスプール・ファイルの所有者です。グループ・プロファイルが存在しない場合には，スプール・ファイルの所有権は*JOBと同様に決定されます。"
+        }
       ]
     },
-    { "name": "USRDFNOPT", "description": "ユーザー定義オプション", "help": "ユーザー定義オプション。単一値 *NONE、または文字値（最大4回）。", "inputType": "text", "required": false, "maxOccurrences": 4, "attributes": { "maxLength": 10 }, "placeholder": "*NONE" },
-    { "name": "USRDFNDTA", "description": "ユーザー定義データ", "help": "ユーザー定義データ。*NONE / 文字値。", "inputType": "text", "required": false, "attributes": { "maxLength": 50 }, "placeholder": "*NONE" },
+    {
+      "name": "USRDFNOPT",
+      "description": "ユーザー定義オプション",
+      "help": "スプール出力の場合にのみ，スプール・ファイルを処理するユーザー・アプリケーションまたはユーザー指定プログラムによって使用される1つまたは複数のユーザー定義オプションを指定します。最大4つのユーザー定義オプションを指定することができます。\n\n*NONE: ユーザー定義オプションは指定されません。",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*NONE",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "maxOccurrences": 4,
+      "placeholder": "*NONE"
+    },
+    {
+      "name": "USRDFNDTA",
+      "description": "ユーザー定義データ",
+      "help": "スプール出力の場合のみ，スプール・ファイルを処理するユーザー・アプリケーションまたはユーザー指定プログラムによって使用されるユーザー定義データを指定します。\n\n*NONE: ユーザー定義データは指定されません。\nスプール・ファイルを処理するユーザー・アプリケーションまたはユーザー指定プログラムによって使用されるユーザー定義データを指定してください。すべての文字が受け入れ可能です。",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*NONE",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "placeholder": "*NONE"
+    },
     {
       "name": "USRDFNOBJ",
       "description": "ユーザー定義オブジェクト",
-      "help": "ユーザー定義オブジェクト。単一値 *NONE、または要素リスト（オブジェクト修飾名・オブジェクト・タイプ）。",
       "inputType": "group",
       "required": false,
+      "groupKind": "elements",
+      "singleValues": [
+        "*NONE"
+      ],
       "children": [
-        { "name": "LIB", "description": "ライブラリー", "help": "オブジェクトのライブラリー。*LIBL / *CURLIB / ライブラリー名。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 10 }, "placeholder": "*LIBL" },
-        { "name": "OBJECT", "description": "オブジェクト", "help": "オブジェクト名。単一値 *NONE を使う場合は空欄。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 10 }, "placeholder": "*NONE" },
-        { "name": "OBJTYPE", "description": "オブジェクト・タイプ", "help": "オブジェクトのタイプ。*DTAARA / *DTAQ / *FILE / *PSFCFG / *USRIDX / *USRQ / *USRSPC。", "inputType": "dropdown", "required": false, "options": [ { "label": "*DTAARA", "value": "*DTAARA" }, { "label": "*DTAQ", "value": "*DTAQ" }, { "label": "*FILE", "value": "*FILE" }, { "label": "*PSFCFG", "value": "*PSFCFG" }, { "label": "*USRIDX", "value": "*USRIDX" }, { "label": "*USRQ", "value": "*USRQ" }, { "label": "*USRSPC", "value": "*USRSPC" } ] }
+        {
+          "name": "USRDFNOBJ_E1",
+          "description": "オブジェクト",
+          "inputType": "group",
+          "required": false,
+          "groupKind": "qualified",
+          "children": [
+            {
+              "name": "USRDFNOBJ_LIB",
+              "description": "ライブラリー",
+              "help": "*LIBL: 最初に一致するものが見つかるまで，現行スレッドのライブラリー・リスト内のすべてのライブラリーが検索されます。\n*CURLIB: スレッドの現行ライブラリーが検索されます。スレッドの現行ライブラリーとして指定されているライブラリーがない場合，QGPLライブラリーが検索されます。\n検索するライブラリーの名前を指定してください。",
+              "inputType": "text",
+              "required": false,
+              "defaultValue": "*LIBL",
+              "attributes": {
+                "characterSet": "upper",
+                "maxLength": 10
+              },
+              "placeholder": "*LIBL"
+            },
+            {
+              "name": "USRDFNOBJ",
+              "description": "オブジェクト",
+              "help": "ユーザー・アプリケーションで使用するユーザー定義オブジェクトまたはスプール・ファイルを処理するユーザー指定のプログラムを指定してください。",
+              "inputType": "text",
+              "required": false,
+              "attributes": {
+                "characterSet": "upper",
+                "maxLength": 10
+              },
+              "placeholder": "*NONE"
+            }
+          ],
+          "defaultValue": "*NONE"
+        },
+        {
+          "name": "OBJTYPE",
+          "description": "オブジェクト・タイプ",
+          "help": "ユーザー・オブジェクトのタイプは，次の1つとすることができます。 *DTAARA データ域",
+          "inputType": "dropdown",
+          "required": false,
+          "attributes": {
+            "characterSet": "upper"
+          },
+          "options": [
+            {
+              "label": "*DTAARA",
+              "value": "*DTAARA"
+            },
+            {
+              "label": "*DTAQ",
+              "value": "*DTAQ",
+              "help": "データ待ち行列"
+            },
+            {
+              "label": "*FILE",
+              "value": "*FILE",
+              "help": "ファイル"
+            },
+            {
+              "label": "*PSFCFG",
+              "value": "*PSFCFG",
+              "help": "PSF構成オブジェクト"
+            },
+            {
+              "label": "*USRIDX",
+              "value": "*USRIDX",
+              "help": "ユーザー見出し"
+            },
+            {
+              "label": "*USRQ",
+              "value": "*USRQ",
+              "help": "ユーザー待ち行列"
+            },
+            {
+              "label": "*USRSPC",
+              "value": "*USRSPC",
+              "help": "ユーザー空間"
+            }
+          ]
+        }
       ]
     },
     {
       "name": "IGCCHRRTT",
       "description": "DBCSの回転",
-      "help": "DBCS文字を回転するか。*NO / *YES。",
+      "help": "印刷時に印刷装置が2バイト文字セット(DBCS)文字を左回りに90度回転させるかどうかを指定します。システムは，回転されたDBCS文字を縦書きになるように印刷します。英数字は回転しません。",
       "inputType": "dropdown",
       "required": false,
+      "defaultValue": "*NO",
+      "attributes": {
+        "characterSet": "upper"
+      },
       "options": [
-        { "label": "*NO", "value": "*NO" },
-        { "label": "*YES", "value": "*YES" }
+        {
+          "label": "*NO",
+          "value": "*NO",
+          "help": "システムは，印刷時にDBCS文字を回転しません。"
+        },
+        {
+          "label": "*YES",
+          "value": "*YES",
+          "help": "システムは印刷時にDBCS文字を90度左回りに回転します。印刷装置は各文字を個別に回転させます。"
+        }
       ]
     },
-    { "name": "IGCCPI", "description": "インチ当たりのDBCS数", "help": "1インチ当たりのDBCS文字数。*CPI / *CONDENSED / 5 / 6 / 10。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 10 }, "placeholder": "*CPI" },
+    {
+      "name": "IGCCPI",
+      "description": "インチ当たりのDBCS数",
+      "help": "インチ当たりの文字数(CPI)で2バイト文字セット(DBCS)文字の印刷文字密度を指定します。\n\n5: DBCS文字密度は5文字／インチです。\n6: DBCS文字密度は6文字／インチです。\n10: DBCS文字密度は10文字／インチです。",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*CPI",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*CPI",
+          "value": "*CPI",
+          "help": "DBCS文字の密度は， 1 インチ当たりの文字数 (CPI) パラメーターに指定された値に基づきます。システムは，英数字2桁分に2バイト文字を1字印刷します。 CPI(10)の場合には，DBCS文字は1インチ当たり5文字で印刷されます。 CPI(12)の場合には，DBCS文字は1インチ当たり6文字で印刷されます。 CPI(13.3)の場合には，DBCS文字は1インチ当たり6.7文字で印刷されます(IGCCPI(*CONDENSED)と同じ）。 CPI(15)の場合には，DBCS文字は1インチ当たり7.5文字で印刷されます。 CPI(18)の場合には，DBCS文字は1インチ当たり9文字で印刷されます。 CPI(20)の場合には，DBCS文字は1インチ当たり10文字で印刷されます。"
+        },
+        {
+          "label": "*CONDENSED",
+          "value": "*CONDENSED",
+          "help": "システムが3インチごとに20個のDBCS文字を印刷する，圧縮印刷が使用されます。この値は5553または5583印刷装置の場合にのみ有効です。"
+        }
+      ],
+      "placeholder": "*CPI"
+    },
     {
       "name": "IGCSOSI",
       "description": "DBCSのSO/SIのスペース",
-      "help": "SO/SI 制御文字の表示位置。*YES / *NO / *RIGHT。",
+      "help": "システムがどのようにシフト制御文字を印刷するかを指定します。",
       "inputType": "dropdown",
       "required": false,
+      "defaultValue": "*YES",
+      "attributes": {
+        "characterSet": "upper"
+      },
       "options": [
-        { "label": "*YES", "value": "*YES" },
-        { "label": "*NO", "value": "*NO" },
-        { "label": "*RIGHT", "value": "*RIGHT" }
+        {
+          "label": "*YES",
+          "value": "*YES",
+          "help": "システムはシフト制御文字をブランクとして印刷します。"
+        },
+        {
+          "label": "*NO",
+          "value": "*NO",
+          "help": "システムはシフト制御文字を印刷しません。シフト制御文字は印刷装置出力上で位置を占めません。"
+        },
+        {
+          "label": "*RIGHT",
+          "value": "*RIGHT",
+          "help": "システムはシフトイン文字を印刷する時には2つのブランクを印刷しますが，シフトアウト文字は印刷しません。"
+        }
       ]
     },
     {
       "name": "IGCCDEFNT",
       "description": "DBCSコード化フォント",
-      "help": "DBCS コード化フォント。単一値 *SYSVAL、または要素リスト（コード化フォント修飾名・ポイント・サイズ）。",
+      "help": "2バイト文字セット(DBCS)の印刷にシステムが使用するコード化フォントを指定します。",
       "inputType": "group",
       "required": false,
+      "groupKind": "elements",
+      "singleValues": [
+        "*SYSVAL"
+      ],
       "children": [
-        { "name": "LIB", "description": "ライブラリー", "help": "DBCS コード化フォントのライブラリー。*LIBL / *CURLIB / ライブラリー名。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 10 }, "placeholder": "*LIBL" },
-        { "name": "IGCCDEFNT", "description": "DBCSコード化フォント", "help": "DBCS コード化フォント名。単一値 *SYSVAL を使う場合は空欄。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 10 }, "placeholder": "*SYSVAL" },
-        { "name": "POINTSIZE", "description": "ポイント・サイズ", "help": "ポイント・サイズ。0.1-999.9 / *NONE。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 6 }, "placeholder": "*NONE" }
+        {
+          "name": "IGCCDEFNT_E1",
+          "description": "DBCSコード化フォント",
+          "inputType": "group",
+          "required": false,
+          "groupKind": "qualified",
+          "children": [
+            {
+              "name": "IGCCDEFNT_LIB",
+              "description": "ライブラリー",
+              "help": "*LIBL: 最初に一致するものが見つかるまで，現行スレッドのライブラリー・リスト内のすべてのライブラリーが検索されます。\n*CURLIB: コード化フォント名を見つけるために，ジョブの現行ライブラリーが使用されます。ジョブの現行ライブラリーとしてライブラリーが指定されていない場合は，QGPLライブラリーが使用されます。\nコード化フォント名が入っているライブラリーの名前を指定してください。",
+              "inputType": "text",
+              "required": false,
+              "defaultValue": "*LIBL",
+              "attributes": {
+                "characterSet": "upper",
+                "maxLength": 10
+              },
+              "placeholder": "*LIBL"
+            },
+            {
+              "name": "IGCCDEFNT",
+              "description": "DBCSコード化フォント",
+              "help": "使用するDBCSコード化フォントの名前を指定してください。",
+              "inputType": "text",
+              "required": false,
+              "attributes": {
+                "characterSet": "upper",
+                "maxLength": 10
+              },
+              "placeholder": "*SYSVAL"
+            }
+          ],
+          "defaultValue": "*SYSVAL"
+        },
+        {
+          "name": "IGCCDEFNT_POINTSIZE",
+          "description": "ポイント・サイズ",
+          "help": "*NONE: ポイント・サイズはシステムによって指定され，指定されたフォント文字セットによって決定されます。\nポイント・サイズを指定してください。 注: ポイント・サイズ・パラメーターが使用されるのは，アウトライン・フォントが指定されている場合だけで，その他の場合にはこれは無視されます。",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "*NONE",
+          "attributes": {
+            "characterSet": "upper"
+          },
+          "placeholder": "*NONE"
+        }
       ]
     },
-    { "name": "TOSTMF", "description": "TOストリーム・ファイル", "help": "出力先ストリーム・ファイルのパス名。*NONE / パス名。", "inputType": "text", "required": false, "attributes": { "maxLength": 256 }, "placeholder": "*NONE" },
+    {
+      "name": "TOSTMF",
+      "description": "TOストリーム・ファイル",
+      "help": "出力データが書き出されるディレクトリーまたはストリーム・ファイルを指定します。パス名のすべてのディレクトリーが存在しなければなりません。新規ディレクトリーは作成されません。このパラメーターは， ワークステーション・カスタマイズ・オブジェクト (WSCST) パラメーターが*NONEでない場合，あるいは 印刷装置タイプ (DEVTYPE) パラメーターが*AFPDSの場合に限り有効です。\n\nTOSTMF値がディレクトリーを参照している場合，システムは，印刷装置ファイル名から派生した固有の名前を使用してストリーム・ファイルをそのディレクトリー内に作成します。TOSTMF値がファイル名の場合は，その名前のストリーム・ファイルが既に存在していてはなりません。\n\n出力データを書き出すディレクトリーまたはストリーム・ファイルのパス名を指定します。",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*NONE",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*NONE",
+          "value": "*NONE",
+          "help": "SPOOL パラメーターが*YESの場合，出力はスプール・ファイルに書き出され， SPOOL パラメーターが*NOの場合，出力は印刷装置 (DEV) に直接書き出されます。"
+        }
+      ],
+      "placeholder": "*NONE"
+    },
     {
       "name": "WSCST",
       "description": "ワークステーション・カスタマイズ・オブジェクト",
-      "help": "ワークステーション・カスタマイズ・オブジェクト。単一値 *NONE / *PDF、またはオブジェクトの修飾名。",
+      "help": "印刷装置ファイル出力をストリーム・ファイルに書き出す前に，この出力を最終形式に変換するために使用するワークステーション・カスタマイズ・オブジェクトを指定します。このパラメーターは， TO ストリーム・ファイル (TOSTMF) パラメーターが*NONEでない場合に限り有効です。",
       "inputType": "group",
       "required": false,
+      "groupKind": "qualified",
+      "singleValues": [
+        "*NONE",
+        "*PDF"
+      ],
       "children": [
-        { "name": "LIB", "description": "ライブラリー", "help": "カスタマイズ・オブジェクトのライブラリー。*LIBL / *CURLIB / ライブラリー名。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 10 }, "placeholder": "*LIBL" },
-        { "name": "WSCST", "description": "ワークステーション・カスタマイズ・オブジェクト", "help": "*NONE / *PDF、またはオブジェクト名。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 10 }, "placeholder": "*NONE" }
+        {
+          "name": "WSCST_LIB",
+          "description": "ライブラリー",
+          "help": "*LIBL: 最初に一致するものが見つかるまで，現行スレッドのライブラリー・リスト内のすべてのライブラリーが検索されます。\n*CURLIB: スレッドの現行ライブラリーが検索されます。スレッドの現行ライブラリーとして指定されているライブラリーがない場合，QGPLライブラリーが検索されます。\n検索するライブラリーの名前を指定してください。",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "*LIBL",
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          },
+          "placeholder": "*LIBL"
+        },
+        {
+          "name": "WSCST",
+          "description": "ワークステーション・カスタマイズ・オブジェクト",
+          "help": "カスタマイズ・オブジェクトの名前を指定します。",
+          "inputType": "text",
+          "required": false,
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          },
+          "defaultValue": "*NONE",
+          "placeholder": "*NONE"
+        }
       ]
     },
-    { "name": "WAITFILE", "description": "最大ファイル待機時間", "help": "ファイル資源の割り振りを待つ秒数。*IMMED / *CLS / 整数。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 10 }, "placeholder": "*IMMED" },
+    {
+      "name": "WAITFILE",
+      "description": "最大ファイル待機時間",
+      "help": "ファイルのオープン時にファイル資源が割り振られるか，あるいはファイルに対する獲得操作の実行時に装置資源またはセッション資源が割り振られるのを，プログラムが待機する秒数を指定します。指定された待機時間内にファイル資源を割り振ることができない場合には，エラー・メッセージがプログラムに送られます。\n\n*IMMED: プログラムは待機しません。ファイル資源の即時割り振りが必要です。\n*CLS: ジョブの省略時待機時間がファイル資源の割り振りの待機時間として使用されます。\nファイル資源が割り振られるのを待機する秒数を指定してください。",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*IMMED",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "placeholder": "*IMMED"
+    },
     {
       "name": "SHARE",
       "description": "オープン・データ・パス共用",
-      "help": "同一ジョブ内でオープン・データ・パスを共用するか。*NO / *YES。",
+      "help": "オープン・データ・パス(ODP)が同じルーティング・ステップの他のプログラムと共用するかどうかを指定します。ODPが共用される時には，ファイルにアクセスしているプログラムはファイル状況およびバッファーなどの機能を共用します。",
       "inputType": "dropdown",
       "required": false,
+      "defaultValue": "*NO",
+      "attributes": {
+        "characterSet": "upper"
+      },
       "options": [
-        { "label": "*NO", "value": "*NO" },
-        { "label": "*YES（共用する）", "value": "*YES" }
+        {
+          "label": "*NO",
+          "value": "*NO",
+          "help": "ODPは，ルーティング・ステップ内の他のプログラムと共用されません。ファイルの新しいODPが作成され，プログラムがファイルをオープンするたびに使用されます。"
+        },
+        {
+          "label": "*YES",
+          "value": "*YES",
+          "help": "ファイルをオープンする時に*YESも指定したジョブで，同じODPを各プログラムと共用することができます。"
+        }
       ]
     },
     {
       "name": "LVLCHK",
       "description": "レコード様式レベルの検査",
-      "help": "オープン時にレコード様式レベル識別子を検査するか。*YES / *NO。",
+      "help": "プログラムによるファイルのオープン時に，印刷装置ファイルのレコード様式のレベルIDが検査されるかどうかを指定します。検査する場合には，プログラム中のレコード様式IDは装置ファイル中のものと一致していなければなりません。複数のファイルに同じレコード様式名が存在できるため，各レコード様式にはその作成時に内部システムIDが指定されます。",
       "inputType": "dropdown",
       "required": false,
+      "defaultValue": "*YES",
+      "attributes": {
+        "characterSet": "upper"
+      },
       "options": [
-        { "label": "*YES（検査する）", "value": "*YES" },
-        { "label": "*NO", "value": "*NO" }
+        {
+          "label": "*YES",
+          "value": "*YES",
+          "help": "レコード様式のレベルIDが検査されます。レベルIDがすべて一致しない場合には，オープン・エラー・メッセージがオープン操作の要求元のプログラムに送られます。"
+        },
+        {
+          "label": "*NO",
+          "value": "*NO",
+          "help": "レコード様式のレベルIDは検査されません。"
+        }
       ]
     },
-    { "name": "AUT", "description": "権限", "help": "オブジェクトの共通認可。*LIBCRTAUT / *ALL / *CHANGE / *EXCLUDE / *USE / 認可リスト名。", "inputType": "text", "required": false, "attributes": { "characterSet": "upper", "maxLength": 10 }, "placeholder": "*LIBCRTAUT" },
+    {
+      "name": "AUT",
+      "description": "権限",
+      "help": "このオブジェクトに対する特定の権限をもっておらず，権限リスト上になく，さらにそのグループ・プロファイルまたは補足グループ・プロファイルがオブジェクトに対する特定の権限をもっていないユーザーに付与する権限を指定します。\n\n*LIBCRTAUT: システムは，作成するオブジェクトが入っているライブラリーに対するライブラリー作成コマンド(CRTLIB)で 作成権限 (CRTAUT) パラメーターに指定された値を使用して，このオブジェクトに対する権限を決定します。CRTAUTパラメーターに指定された値が変更された場合には，新しい値は既存のどのオブジェクトにも影響しません。\n*CHANGE: ユーザーは，所有者に限定されるか，あるいはオブジェクト存在権限(*OBJEXIST)およびオブジェクト管理権限(*OBJMGT)によって制御される以外のオブジェクトで，すべての操作を実行することができます。ユーザーはオブジェクトでの基本的な機能を変更して実行することができます。*CHANGE権限では，オブジェクト操作(*OBJOPR)および全データ権限が提供されます。このオブジェクトが権限リストである場合は，ユーザーの追加，変更，または除去はできません。\n*ALL: ユーザーは，所有者に限定されるか，あるいは権限リスト管理(*AUTLMGT)権限によって管理される以外のオブジェクトで，すべての操作を実行することができます。ユーザーはオブジェクトの存在を制御し，オブジェクトの機密保護を指定し，オブジェクトを変更し，さらにオブジェクトに対して基本的な機能を実行することができます。オブジェクトの所有権を変更することもできます。\n*USE: ユーザーは，プログラムの実行またはファイルの読み取りなど，オブジェクトに対する基本操作を実行することができます。ユーザーはオブジェクトを変更できません。使用(*USE)権限は，オブジェクト操作(*OBJOPR),読み取り(*READ),および実行(*EXECUTE)権限を提供します。\n*EXCLUDE: ユーザーはオブジェクトにアクセスすることはできません。\nオブジェクトに対する権限として使用する権限リストの名前を指定してください。権限リストに載っているユーザーは，リストに指定されているオブジェクトに対する権限が認可されます。オブジェクトが作成される時に権限リストが存在していなければなりません。",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*LIBCRTAUT",
+      "attributes": {
+        "characterSet": "upper",
+        "maxLength": 10
+      },
+      "placeholder": "*LIBCRTAUT"
+    },
     {
       "name": "REPLACE",
       "description": "ファイルの置き換え",
-      "help": "同名の既存ファイルを置き換えるか。*YES / *NO。",
+      "help": "保管またはデータベース・ファイル以外の既存のファイルを置き換えるかどうかを指定します。",
       "inputType": "dropdown",
       "required": false,
+      "defaultValue": "*YES",
+      "attributes": {
+        "characterSet": "upper"
+      },
       "options": [
-        { "label": "*YES（置き換える）", "value": "*YES" },
-        { "label": "*NO（置き換えない）", "value": "*NO" }
+        {
+          "label": "*YES",
+          "value": "*YES",
+          "help": "新しい印刷装置ファイルが正常に作成された場合には，同じ名前およびライブラリーの既存のファイルが置き換えられます。"
+        },
+        {
+          "label": "*NO",
+          "value": "*NO",
+          "help": "同じ名前およびライブラリーの既存のファイルがある場合には，新しい印刷装置ファイルを作成することはできません。"
+        }
       ]
     }
-  ]
+  ],
+  "threadSafe": false,
+  "environment": "すべての環境 (*ALL)",
+  "examples": [
+    {
+      "code": "CRTPRTF   FILE(DSPHIST)  SRCFILE(PRSNNL/JOBHIST)  FILESEP(3)"
+    },
+    {
+      "code": "CRTPRTF   FILE(IGCLIB/IGCPRT)  IGCDTA(*YES)"
+    },
+    {
+      "code": "CRTPRTF FILE(QGPL/MYFAXPRT) TOSTMF('.') WSCST(QWPTIFFPB)"
+    }
+  ],
+  "errorMessages": [
+    {
+      "id": "CPF339F",
+      "text": "満了日は今日以降の日付でなければなりません。"
+    },
+    {
+      "id": "CPF7302",
+      "text": "ファイル&1はライブラリー&2に作成されなかった。"
+    }
+  ],
+  "source": {
+    "url": "https://www.ibm.com/docs/ja/ssw_ibm_i_74/cl/crtprtf.htm",
+    "version": "IBM i 7.4",
+    "updated": "2021-04-13"
+  }
 }
