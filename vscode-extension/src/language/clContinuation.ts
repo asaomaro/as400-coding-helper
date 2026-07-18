@@ -1,4 +1,5 @@
 import * as vscode from "vscode";
+import { isContinuedLine } from "../prompter/clCommandParser";
 
 export interface LogicalCommandRange {
   readonly range: vscode.Range;
@@ -12,8 +13,7 @@ export function getLogicalCommandRange(
   let end = lineNumber;
 
   for (let line = lineNumber - 1; line >= 0; line -= 1) {
-    const text = document.lineAt(line).text;
-    if (text.trimEnd().endsWith("+")) {
+    if (isContinuedLine(document.lineAt(line).text)) {
       start = line;
     } else {
       break;
@@ -21,8 +21,7 @@ export function getLogicalCommandRange(
   }
 
   for (let line = lineNumber + 1; line < document.lineCount; line += 1) {
-    const text = document.lineAt(line).text;
-    if (document.lineAt(line - 1).text.trimEnd().endsWith("+")) {
+    if (isContinuedLine(document.lineAt(line - 1).text)) {
       end = line;
     } else {
       break;

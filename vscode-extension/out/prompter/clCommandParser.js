@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.isContinuedLine = isContinuedLine;
 exports.joinContinuationLines = joinContinuationLines;
 exports.extractComments = extractComments;
 exports.splitTopLevel = splitTopLevel;
@@ -15,6 +16,16 @@ const occurrences_1 = require("./occurrences");
  *   `-` … 次行の先頭の空白を保持したまま連結する（リテラル内の継続に使う）
  * どちらも引用符の内側にある場合は継続文字ではない。
  */
+/**
+ * その行が次の行へ続くか（CL の継続記号）。
+ * `+` は次行先頭の空白を詰め、`-` はそのまま繋ぐ。どちらも継続である。
+ * 引用符の中の記号は継続ではないので除く。
+ */
+function isContinuedLine(text) {
+    const trimmed = stripComments(text).trimEnd();
+    const marker = trimmed.slice(-1);
+    return ((marker === "+" || marker === "-") && !isInsideQuotes(trimmed.slice(0, -1)));
+}
 function joinContinuationLines(lines) {
     let result = "";
     for (let index = 0; index < lines.length; index += 1) {

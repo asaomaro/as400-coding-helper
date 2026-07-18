@@ -69,9 +69,12 @@ function cycle(definition, lines) {
   const joined = joinContinuationLines(lines);
   const parsed = parseClCommand(joined);
   const values = parsed ? mapParsedCommandToValues(definition, parsed) : {};
+  // applyChanges と同じものを渡す。ここがずれると、実際の書き戻しでは
+  // 起きない挙動を検証してしまう（元から書いてあったパラメータの保持など）。
   const text = buildClCommandText(definition, values, {
     label: parsed?.label,
-    comments: extractComments(lines)
+    comments: extractComments(lines),
+    presentParameters: Object.keys(parsed?.parameters ?? {})
   });
   return { values, text };
 }

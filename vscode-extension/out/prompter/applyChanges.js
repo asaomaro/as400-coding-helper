@@ -53,7 +53,8 @@ async function applyChanges(editor, definition, resolved, values) {
         const parsed = (0, clCommandParser_1.parseClCommand)((0, clCommandParser_1.joinContinuationLines)(originalLines));
         const newText = buildClCommandText(definition, values, {
             label: parsed?.label,
-            comments: (0, clCommandParser_1.extractComments)(originalLines)
+            comments: (0, clCommandParser_1.extractComments)(originalLines),
+            presentParameters: Object.keys(parsed?.parameters ?? {})
         });
         await editor.edit(editBuilder => {
             editBuilder.replace(logical.range, newText);
@@ -81,6 +82,19 @@ async function applyChanges(editor, definition, resolved, values) {
         success
     }));
 }
+/**
+ * そのパラメータが「既定値のまま＝利用者が触っていない」か。
+ * group は末端まで見て、すべて既定値なら既定値のままとする。
+ */
+function isAtDefault(parameter, values) {
+    const children = parameter.children ?? [];
+    if (parameter.inputType !== "group" || children.length === 0) {
+        const value = readSingle(values[parameter.name]).trim();
+        const fallback = (parameter.defaultValue ?? "").trim();
+        return value.toUpperCase() === fallback.toUpperCase();
+    }
+    return children.every(child => isAtDefault(child, values));
+}
 // CL コマンド行の組み立ては vscode API に依存しない純粋関数のため、検証用に公開する。
 function buildClCommandText(definition, values, context = {}) {
     const keyword = definition.keyword.toUpperCase();
@@ -98,7 +112,16 @@ function buildClCommandText(definition, values, context = {}) {
         line += " ";
     }
     const paramTokens = [];
+    const present = new Set((context.presentParameters ?? []).map(name => name.toUpperCase()));
     for (const parameter of definition.parameters) {
+        // 既定値のままの省略可能パラメータは書かない。CL は省略時に既定値が効くので、
+        // 全部書き出すと元のソースに無かった記述が増え、行数も無駄に伸びる。
+        // 必須のもの、元から書いてあったものは残す。
+        if (!parameter.required &&
+            !present.has(parameter.name.toUpperCase()) &&
+            isAtDefault(parameter, values)) {
+            continue;
+        }
         const token = buildParameterToken(parameter, values);
         if (token) {
             paramTokens.push(token);

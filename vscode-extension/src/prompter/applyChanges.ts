@@ -38,7 +38,8 @@ export async function applyChanges(
 
     const newText = buildClCommandText(definition, values, {
       label: parsed?.label,
-      comments: extractComments(originalLines)
+      comments: extractComments(originalLines),
+      presentParameters: Object.keys(parsed?.parameters ?? {})
     });
     await editor.edit(editBuilder => {
       editBuilder.replace(logical.range, newText);
@@ -87,6 +88,28 @@ export interface ClCommandContext {
   readonly label?: string;
   /** ソース上に書かれていたコメント。失わないよう末尾に付け直す。 */
   readonly comments?: readonly string[];
+  /**
+   * 元のソースに書かれていたパラメータ名。
+   * 触っていない省略可能パラメータを書き出さないための判定に使う
+   * （元から書いてあったものは、既定値と同じでも残す）。
+   */
+  readonly presentParameters?: readonly string[];
+}
+
+/**
+ * そのパラメータが「既定値のまま＝利用者が触っていない」か。
+ * group は末端まで見て、すべて既定値なら既定値のままとする。
+ */
+function isAtDefault(parameter: ParameterDefinition, values: AppliedValues): boolean {
+  const children = parameter.children ?? [];
+
+  if (parameter.inputType !== "group" || children.length === 0) {
+    const value = readSingle(values[parameter.name]).trim();
+    const fallback = (parameter.defaultValue ?? "").trim();
+    return value.toUpperCase() === fallback.toUpperCase();
+  }
+
+  return children.every(child => isAtDefault(child, values));
 }
 
 // CL コマンド行の組み立ては vscode API に依存しない純粋関数のため、検証用に公開する。
@@ -113,7 +136,22 @@ export function buildClCommandText(
 
   const paramTokens: string[] = [];
 
+  const present = new Set(
+    (context.presentParameters ?? []).map(name => name.toUpperCase())
+  );
+
   for (const parameter of definition.parameters) {
+    // 既定値のままの省略可能パラメータは書かない。CL は省略時に既定値が効くので、
+    // 全部書き出すと元のソースに無かった記述が増え、行数も無駄に伸びる。
+    // 必須のもの、元から書いてあったものは残す。
+    if (
+      !parameter.required &&
+      !present.has(parameter.name.toUpperCase()) &&
+      isAtDefault(parameter, values)
+    ) {
+      continue;
+    }
+
     const token = buildParameterToken(parameter, values);
     if (token) {
       paramTokens.push(token);

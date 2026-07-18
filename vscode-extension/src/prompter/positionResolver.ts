@@ -2,6 +2,8 @@ import * as vscode from "vscode";
 import type { Dialect, LanguageId } from "./types";
 import { resolveDialect } from "./dialect";
 import { classifyRpgSpecKeyword } from "./specClassifier";
+import { getLogicalCommandRange } from "../language/clContinuation";
+import { joinContinuationLines, parseClCommand } from "./clCommandParser";
 
 export interface ResolvedPosition {
   readonly language: LanguageId;
@@ -32,11 +34,23 @@ export function resolvePosition(
 
   let keyword = "";
   let dialect: Dialect | undefined;
+  // CL は継続行(+/-)で複数行に跨る。カーソルがどの行にあっても、
+  // コマンドは論理行の先頭にしか無い。行頭の語をそのまま採ると、
+  // 継続行では SRCFILE(...) のような引数を命令名と見なしてしまう。
+  let commandLine = position.line;
 
   if (language === "cl") {
-    const trimmed = text.trimStart();
-    const parts = trimmed.split(/\s+/);
-    keyword = (parts[0] ?? "").toUpperCase();
+    const logical = getLogicalCommandRange(document, position.line).range;
+    commandLine = logical.start.line;
+
+    const lines: string[] = [];
+    for (let line = logical.start.line; line <= logical.end.line; line += 1) {
+      lines.push(document.lineAt(line).text);
+    }
+
+    // ラベル(`TAG1:`)やコメントの扱いは解析器に任せる（書き戻しと同じ経路）。
+    const parsed = parseClCommand(joinContinuationLines(lines));
+    keyword = parsed?.keyword ?? "";
   } else {
     dialect = resolveDialect(document);
 
@@ -64,7 +78,7 @@ export function resolvePosition(
     dialect,
     document,
     position,
-    line: position.line,
+    line: commandLine,
     column: position.character,
     keyword
   };
