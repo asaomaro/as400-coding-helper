@@ -59,7 +59,15 @@ function parseOrigin(html) {
     const keyword = cells[0].match(/<strong>\s*([A-Z0-9]+)\s*<\/strong>/i);
     if (keyword && cells.length >= 4) {
       const notes = stripTags(cells[3]);
-      current = { name: keyword[1], required: /必須|Required/i.test(notes), html: cells[2] };
+      // 選択項目が「コマンド・ストリング」だけの欄は、値そのものがコマンド
+      // （プロンプター内でさらにプロンプターを開ける）。継続行を足す前に見る。
+      const choices = stripTags(cells[2]).trim();
+      current = {
+        name: keyword[1],
+        required: /必須|Required/i.test(notes),
+        commandValued: choices === "コマンド・ストリング" || choices === "Command string",
+        html: cells[2]
+      };
       params.push(current);
     } else if (current && cells.length >= 2) {
       current.html += ` ${cells[1]}`;
@@ -147,6 +155,13 @@ for (const command of commands) {
 
     if (param.defaultValue && ![...walk([target])].some(p => p.defaultValue === param.defaultValue)) {
       report("defaultValue欠落", `${command}.${param.name} = ${param.defaultValue}`);
+    }
+
+    if (param.commandValued !== (target.valueKind === "command")) {
+      report(
+        "valueKind不一致",
+        `${command}.${param.name} 原典=${param.commandValued ? "コマンド" : "通常"}`
+      );
     }
 
     const missing = param.specials.filter(value => !blob.includes(value));

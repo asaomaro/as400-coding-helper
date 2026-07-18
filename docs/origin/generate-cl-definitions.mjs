@@ -459,12 +459,24 @@ function prune(object) {
  * 「修飾子1: オブジェクト / 修飾子2: ライブラリー」の順だが、
  * CL の構文は LIB/OBJ であり並びが逆になる。
  */
+/**
+ * 値そのものがコマンドのパラメータか。
+ * 原典のパラメータ表で選択項目が「コマンド・ストリング」/「Command string」の
+ * ものが該当する（SBMJOB CMD / IF THEN / MONMSG EXEC など 6 件）。
+ * 本文の言い回しではなく表の欄で判定する（本文には説明としても出てくるため）。
+ */
+function isCommandValued(choicesHtml) {
+  const text = stripTags(choicesHtml).trim();
+  return text === "コマンド・ストリング" || text === "Command string";
+}
+
 function buildParameter(param, section) {
   const choices = readChoices(param.choicesHtml);
   const help = section?.paragraphs.join("\n\n") || undefined;
   const base = {
     positional: param.positional,
-    ...(choices.repeat ? { maxOccurrences: choices.repeat } : {})
+    ...(choices.repeat ? { maxOccurrences: choices.repeat } : {}),
+    ...(isCommandValued(param.choicesHtml) ? { valueKind: "command" } : {})
   };
 
   if (param.parts.length === 0) {

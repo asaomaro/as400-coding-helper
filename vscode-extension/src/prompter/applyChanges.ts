@@ -112,6 +112,52 @@ function isAtDefault(parameter: ParameterDefinition, values: AppliedValues): boo
   return children.every(child => isAtDefault(child, values));
 }
 
+function buildParameterTokens(
+  definition: PrompterDefinition,
+  values: AppliedValues,
+  context: ClCommandContext
+): string[] {
+  const present = new Set(
+    (context.presentParameters ?? []).map(name => name.toUpperCase())
+  );
+
+  const tokens: string[] = [];
+  for (const parameter of definition.parameters) {
+    // 既定値のままの省略可能パラメータは書かない。CL は省略時に既定値が効くので、
+    // 全部書き出すと元のソースに無かった記述が増え、行数も無駄に伸びる。
+    // 必須のもの、元から書いてあったものは残す。
+    if (
+      !parameter.required &&
+      !present.has(parameter.name.toUpperCase()) &&
+      isAtDefault(parameter, values)
+    ) {
+      continue;
+    }
+
+    const token = buildParameterToken(parameter, values);
+    if (token) {
+      tokens.push(token);
+    }
+  }
+  return tokens;
+}
+
+/**
+ * 素の 1 行コマンド文字列（`CALL PGM(MYLIB/A) PARM('1')`）を作る。
+ *
+ * ソース行と違い、ラベル欄の桁揃えも 72 桁での折り返しもしない。
+ * 入れ子のプロンプター（SBMJOB の CMD 欄など）に書き戻す値はソース行では
+ * なく値なので、桁揃えを持ち込むと余計な空白が入る。
+ */
+export function buildClCommandBody(
+  definition: PrompterDefinition,
+  values: AppliedValues,
+  context: ClCommandContext = {}
+): string {
+  const tokens = buildParameterTokens(definition, values, context);
+  return [definition.keyword.toUpperCase(), ...tokens].join(" ");
+}
+
 // CL コマンド行の組み立ては vscode API に依存しない純粋関数のため、検証用に公開する。
 export function buildClCommandText(
   definition: PrompterDefinition,
@@ -134,29 +180,7 @@ export function buildClCommandText(
     line += " ";
   }
 
-  const paramTokens: string[] = [];
-
-  const present = new Set(
-    (context.presentParameters ?? []).map(name => name.toUpperCase())
-  );
-
-  for (const parameter of definition.parameters) {
-    // 既定値のままの省略可能パラメータは書かない。CL は省略時に既定値が効くので、
-    // 全部書き出すと元のソースに無かった記述が増え、行数も無駄に伸びる。
-    // 必須のもの、元から書いてあったものは残す。
-    if (
-      !parameter.required &&
-      !present.has(parameter.name.toUpperCase()) &&
-      isAtDefault(parameter, values)
-    ) {
-      continue;
-    }
-
-    const token = buildParameterToken(parameter, values);
-    if (token) {
-      paramTokens.push(token);
-    }
-  }
+  const paramTokens = buildParameterTokens(definition, values, context);
 
   for (const comment of context.comments ?? []) {
     paramTokens.push(`/* ${comment} */`);

@@ -127,6 +127,13 @@ export interface ParameterDefinition {
   // 例: ADDLIBLE POSITION は *FIRST/*LAST を単一値として取り、
   //     *AFTER/*BEFORE/*REPLACE のときのみ参照ライブラリーを伴う要素リストになる。
   readonly singleValues?: readonly string[];
+
+  /**
+   * 値そのものが CL コマンドであるパラメータ（SBMJOB の CMD、IF の THEN など）。
+   * SEU ではこの欄でさらに F4 が押せる。原典のパラメータ表で選択項目が
+   * 「コマンド・ストリング」/「Command string」と書かれているものが該当する。
+   */
+  readonly valueKind?: "command";
   readonly dependsOn?: readonly ParameterDependency[];
 }
 
