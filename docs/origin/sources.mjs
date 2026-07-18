@@ -25,6 +25,8 @@ export const categories = {
       'DCL', 'DCLF', 'CHGVAR', 'IF', 'ELSE', 'DOWHILE', 'DOUNTIL', 'DOFOR', 'SELECT', 'RETURN', 'CALLSUBR',
       // メッセージ
       'SNDPGMMSG', 'RCVMSG', 'MONMSG', 'SNDUSRMSG', 'SNDMSG', 'SNDBRKMSG',
+      // クライアント連携
+      'STRPCO', 'STRPCCMD',
       // ファイル I/O（CL内）/ スプール
       'SNDRCVF', 'RCVF', 'SNDF', 'WRKSPLF', 'CPYSPLF', 'OVRPRTF',
 
