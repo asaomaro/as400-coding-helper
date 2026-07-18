@@ -2,6 +2,11 @@ import * as vscode from "vscode";
 import type { PrompterDefinition } from "./types";
 import type { ResolvedPosition } from "./positionResolver";
 import { getLogicalCommandRange } from "../language/clContinuation";
+import {
+  joinContinuationLines,
+  mapParsedCommandToValues,
+  parseClCommand
+} from "./clCommandParser";
 
 type Values = Record<string, string>;
 
@@ -242,101 +247,18 @@ function extractClInitialValues(
 ): Values {
   const document = resolved.document as vscode.TextDocument;
   const logicalRange = getLogicalCommandRange(document, resolved.line).range;
-  const text = document.getText(logicalRange);
 
-  const tokens = text.trim().split(/\s+/).filter(token => token.length > 0);
-  if (tokens.length === 0) {
+  const lines: string[] = [];
+  for (let line = logicalRange.start.line; line <= logicalRange.end.line; line += 1) {
+    lines.push(document.lineAt(line).text);
+  }
+
+  // 継続行を1本に連結してから解析する。ソース上の折り返し方に依らず
+  // 同じ入力値が得られる必要がある（プロンプターの往復で結果が変わらないこと）。
+  const parsed = parseClCommand(joinContinuationLines(lines));
+  if (!parsed) {
     return {};
   }
 
-  const values: Values = {};
-  const paramNames = new Set<string>();
-  for (const parameter of definition.parameters) {
-    paramNames.add(parameter.name.toUpperCase());
-    if (
-      Array.isArray(parameter.children) &&
-      parameter.children.length > 0
-    ) {
-      for (const child of parameter.children) {
-        paramNames.add(child.name.toUpperCase());
-      }
-    }
-  }
-
-  // tokens[0] is the command name (CALL, etc.)
-  if (tokens.length > 1) {
-    const token = tokens[1] ?? "";
-    const match = /^PGM\((.*)\)$/iu.exec(token);
-    const inside = (match ? match[1] ?? "" : token).trim();
-
-    if (inside.length > 0) {
-      // inside は "LIBL/OBJ" または "OBJ" 形式
-      const slashIndex = inside.indexOf("/");
-      let libl = "";
-      let obj = inside;
-
-      if (slashIndex >= 0) {
-        libl = inside.slice(0, slashIndex).trim();
-        obj = inside.slice(slashIndex + 1).trim();
-      }
-
-      if (libl && paramNames.has("LIBL")) {
-        values.LIBL = libl;
-      }
-
-      if (obj && paramNames.has("OBJ")) {
-        values.OBJ = obj;
-      }
-    }
-  }
-
-  if (tokens.length > 2 && paramNames.has("PARM")) {
-    const parmValues: string[] = [];
-
-    // トークン列から PARM(...) 部分を抽出する。
-    // 旧形式:   PARM('AAA') PARM('BBB')
-    // 新形式:   PARM('AAA' 'BBB' 'CC')
-    for (let i = 2; i < tokens.length; i += 1) {
-      const token = tokens[i] ?? "";
-      const upper = token.toUpperCase();
-
-      if (!upper.startsWith("PARM(")) {
-        continue;
-      }
-
-      // PARM( で始まるトークンから、対応する ) までを結合する
-      let combined = token;
-      while (!combined.trimEnd().endsWith(")") && i + 1 < tokens.length) {
-        i += 1;
-        combined += ` ${tokens[i]}`;
-      }
-
-      const match = /^PARM\((.*)\)$/iu.exec(combined.trim());
-      if (!match || !match[1]) {
-        continue;
-      }
-
-      const inside = match[1].trim();
-      if (!inside) {
-        continue;
-      }
-
-      // 括弧内を空白区切りで分割し、各トークンを 1 行として扱う
-      const innerTokens = inside.split(/\s+/u).filter(part => part.length > 0);
-      for (let part of innerTokens) {
-        if (part.startsWith("(") && part.endsWith(")")) {
-          part = part.slice(1, -1).trim();
-        }
-        if (part.length > 0) {
-          parmValues.push(part);
-        }
-      }
-    }
-
-    if (parmValues.length > 0) {
-      values.PARM = parmValues.join("\n");
-    }
-  }
-
-  return values;
+  return mapParsedCommandToValues(definition, parsed);
 }

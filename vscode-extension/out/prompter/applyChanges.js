@@ -38,11 +38,21 @@ exports.buildClCommandText = buildClCommandText;
 const vscode = __importStar(require("vscode"));
 const clContinuation_1 = require("../language/clContinuation");
 const rpgEditGuards_1 = require("../language/rpgEditGuards");
+const clCommandParser_1 = require("./clCommandParser");
 async function applyChanges(editor, definition, resolved, values) {
     const { document } = editor;
     if (resolved.language === "cl") {
         const logical = (0, clContinuation_1.getLogicalCommandRange)(document, resolved.line);
-        const newText = buildClCommandText(definition, values);
+        // ラベルとコメントは入力欄に現れないため、元のソースから引き継ぐ。
+        const originalLines = [];
+        for (let line = logical.range.start.line; line <= logical.range.end.line; line += 1) {
+            originalLines.push(document.lineAt(line).text);
+        }
+        const parsed = (0, clCommandParser_1.parseClCommand)((0, clCommandParser_1.joinContinuationLines)(originalLines));
+        const newText = buildClCommandText(definition, values, {
+            label: parsed?.label,
+            comments: (0, clCommandParser_1.extractComments)(originalLines)
+        });
         await editor.edit(editBuilder => {
             editBuilder.replace(logical.range, newText);
         });
@@ -70,10 +80,11 @@ async function applyChanges(editor, definition, resolved, values) {
     }));
 }
 // CL コマンド行の組み立ては vscode API に依存しない純粋関数のため、検証用に公開する。
-function buildClCommandText(definition, values) {
+function buildClCommandText(definition, values, context = {}) {
     const keyword = definition.keyword.toUpperCase();
     // Columns 1–13: label area, column 14: command.
-    const labelArea = " ".repeat(13);
+    const label = context.label ? `${context.label}:` : "";
+    const labelArea = label.length >= 13 ? `${label} ` : label.padEnd(13, " ");
     let line = labelArea + keyword;
     // Parameters start at column 25.
     const paramStartColumn = 25; // 1-based
@@ -91,10 +102,42 @@ function buildClCommandText(definition, values) {
             paramTokens.push(token);
         }
     }
-    if (paramTokens.length > 0) {
-        line += paramTokens.join(" ");
+    for (const comment of context.comments ?? []) {
+        paramTokens.push(`/* ${comment} */`);
     }
-    return line;
+    return wrapClCommand(line, paramTokens);
+}
+// CL ソースの桁幅。継続行はパラメータ開始桁に揃える。
+const CL_LINE_WIDTH = 72;
+const CL_PARAM_COLUMN = 25; // 1-based
+/**
+ * コマンド行を CL ソースの桁幅に折り返す。
+ * 1行に収まらない場合は継続文字 `+` を付け、次行をパラメータ開始桁に揃える。
+ *
+ * 折り返しは「パラメータ単位」でのみ行う。トークンの途中で折ると
+ * 再解析したときに値が変わってしまうため（往復で同じ結果になる必要がある）。
+ */
+function wrapClCommand(head, paramTokens) {
+    if (paramTokens.length === 0) {
+        return head.trimEnd();
+    }
+    const indent = " ".repeat(CL_PARAM_COLUMN - 1);
+    const lines = [];
+    let current = head;
+    for (const token of paramTokens) {
+        const candidate = current.trimEnd().length === current.length && current.endsWith(" ")
+            ? current + token
+            : `${current}${current.endsWith(" ") ? "" : " "}${token}`;
+        // `+ ` の分を見込んで幅を判定する。
+        if (candidate.length > CL_LINE_WIDTH - 2 && current.trim().length > 0) {
+            lines.push(`${current.trimEnd()} +`);
+            current = indent + token;
+            continue;
+        }
+        current = candidate;
+    }
+    lines.push(current.trimEnd());
+    return lines.join("\n");
 }
 /** 1つの入力値を、前後空白を落とした文字列として取り出す。 */
 function readSingle(raw) {
