@@ -38,6 +38,21 @@ export interface SerializablePrompterState {
     readonly parameters: readonly string[];
     readonly note?: string;
   }[];
+  readonly constraintFields?: Record<
+    string,
+    { readonly name: string; readonly defaultValue: string }[]
+  >;
+}
+
+/** 相関制約の判定に使う末端パラメータを集める（group は入れ子になりうる）。 */
+function flattenForConstraints(
+  parameters: readonly ParameterDefinition[]
+): ParameterDefinition[] {
+  return parameters.flatMap(parameter =>
+    parameter.inputType === "group" && parameter.children?.length
+      ? flattenForConstraints(parameter.children)
+      : [parameter]
+  );
 }
 
 export interface HtmlOptions {
@@ -89,6 +104,19 @@ export function toSerializableState(
     positionColumn: resolved.column,
     commandHelp: buildCommandHelpText(definition),
     constraints: definition.constraints,
+    // 相関制約の「指定した」判定に既定値が要るため、対象パラメータの末端を渡す。
+    constraintFields: definition.constraints?.length
+      ? Object.fromEntries(
+          [...new Set(definition.constraints.flatMap(c => c.parameters))].map(name => {
+            const parameter = definition.parameters.find(p => p.name === name);
+            const leaves = parameter ? flattenForConstraints([parameter]) : [];
+            return [
+              name,
+              leaves.map(leaf => ({ name: leaf.name, defaultValue: leaf.defaultValue ?? "" }))
+            ];
+          })
+        )
+      : undefined,
     // 非表示項目もマークアップ上は出力し、クライアント側で入力値に追従して
     // 表示/必須を切り替える（除外してしまうと条件成立時に入力できなくなる）。
     fields: state.fields.map(field => ({
@@ -286,6 +314,7 @@ export function buildHtml(
   <script nonce="${options.nonce}">
     const vscode = acquireVsCodeApi();
     const CONSTRAINTS = ${JSON.stringify(state.constraints ?? [])};
+    const CONSTRAINT_FIELDS = ${JSON.stringify(state.constraintFields ?? {})};
 
     function getForm() {
       return document.getElementById('prompter-form');
@@ -557,8 +586,20 @@ export function buildHtml(
       const banner = document.getElementById('constraint-errors');
       const constraints = CONSTRAINTS || [];
       const values = collectValues(form);
+      // 「指定した」＝既定値のままではないこと。model.ts の validateConstraints と
+      // 同じ判定。片方だけ直すとサーバ/クライアントで挙動が食い違う。
       const isFilled = function (name) {
-        return String(values[name] || '').trim().length > 0;
+        const leaves = CONSTRAINT_FIELDS[name];
+        if (!leaves || leaves.length === 0) {
+          return String(values[name] || '').trim().length > 0;
+        }
+        return leaves.some(function (leaf) {
+          const value = String(values[leaf.name] || '').trim();
+          if (value.length === 0) {
+            return false;
+          }
+          return value.toUpperCase() !== String(leaf.defaultValue || '').trim().toUpperCase();
+        });
       };
       const messages = [];
 

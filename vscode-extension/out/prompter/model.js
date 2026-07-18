@@ -59,7 +59,22 @@ function buildInitialState(definition, initialValues) {
  */
 function validateConstraints(definition, values) {
     const errors = [];
-    const isFilled = (name) => (values[name] ?? "").trim().length > 0;
+    const byName = new Map(definition.parameters.map(p => [p.name, p]));
+    // 「指定した」とは、既定値のままではないこと。CL の相関はほぼ全ての
+    // 対象パラメータが既定値を持つため、値の有無で判定すると常に成立してしまう。
+    const isFilled = (name) => {
+        const parameter = byName.get(name);
+        if (!parameter) {
+            return (values[name] ?? "").trim().length > 0;
+        }
+        return flattenParameters([parameter]).some(leaf => {
+            const value = (values[leaf.name] ?? "").trim();
+            if (value.length === 0) {
+                return false;
+            }
+            return value.toUpperCase() !== (leaf.defaultValue ?? "").trim().toUpperCase();
+        });
+    };
     for (const constraint of definition.constraints ?? []) {
         const filled = constraint.parameters.filter(isFilled);
         if (constraint.kind === "exclusive" && filled.length > 1) {
