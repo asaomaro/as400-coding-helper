@@ -47,7 +47,9 @@ const vscode = __importStar(require("vscode"));
 const DIALECTS = new Set(["ile", "rpg3"]);
 /** 既定の拡張子→方言マップ。設定が無い／不正なときのフォールバック。 */
 exports.DEFAULT_DIALECT_BY_EXTENSION = {
+    ".sqlrpgle": "ile", // SQL 組み込み ILE RPG
     ".rpgle": "ile",
+    ".sqlrpg": "rpg3", // SQL 組み込み RPG III
     ".rpg": "rpg3"
 };
 /** 拡張子で判定できなかった場合の既定方言（従来は全 rpg-fixed を ILE 扱い）。 */
