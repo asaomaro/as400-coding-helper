@@ -1,0 +1,272 @@
+{
+  "keyword": "SNDUSRMSG",
+  "description": "ユーザー・メッセージ送信 (SNDUSRMSG)",
+  "help": "ユーザー・メッセージ送信(SNDUSRMSG)コマンドは，メッセージをメッセージ待ち行列に送り，任意選択でそのメッセージに対する応答を受け取るためにプログラムによって使用されます。このコマンドを使用して送られるメッセージは，即時メッセージまたは定義済みメッセージのいずれでもよく，対話式ジョブの表示装置ユーザーまたは特定のメッセージ待ち行列に送ることができます。照会メッセージの場合は，CL変数を指定して，応答の値を受け取ることができ，このコマンドを使用しているプログラムは応答を待ちます。\n\nこのコマンドは，プログラム・メッセージ送信(SNDPGMMSG)コマンドとメッセージ受信(RCVMSG)コマンドで使用可能なパラメーターを組み合わせて使用し，単一のコマンドを使ってプログラムがメッセージの送信および受信を行えるようにします。また，SNDUSRMSGコマンドは，照会メッセージへの応答に対して妥当性検査および大文字変換も行います。",
+  "parameters": [
+    {
+      "name": "MSG",
+      "description": "メッセージ・テキストまたは",
+      "help": "プログラムによって送信される即時メッセージのメッセージ・テキストを指定します。最大512文字まで指定することができます。特殊文字（ブランクを含む）を使用する場合には，テキスト・ストリングをアポストロフィで囲まなければなりません。このパラメーターを指定した場合には， メッセージ ID (MSGID) パラメーター， メッセージ・ファイル (MSGF) パラメーター，または メッセージ・データ・フィールド の値 (MSGDTA) パラメーターに値を指定することはできません。\n\nMSGパラメーターに指定されたテキストは，コード化文字セットIDがCCSIDパラメーターに指定されない限り，このコマンドを実行中のジョブのCCSIDに入っているとみなされます。メッセージ・ハンドラーとそれによるCCSIDの使用の詳細については，IBM i Information Center(http://www.ibm.com/systems/i/infocenter/)の「i5/OSのグローバリゼーション」トピック・コレクションを参照してください。\n\n送られる即時メッセージのテキストを指定します。",
+      "inputType": "text",
+      "required": false,
+      "positional": 1,
+      "placeholder": "'メッセージ・テキスト'",
+      "basic": true
+    },
+    {
+      "name": "MSGID",
+      "description": "メッセージID",
+      "help": "プログラムによってメッセージ待ち行列に送られる事前定義メッセージのメッセージIDを指定します。このパラメーターに値を指定した場合には， メッセージ・ファイル (MSGF) パラメーターにも値を指定する必要があり， メッセージ・テキストまたは (MSG) パラメーターに値を指定することはできません。\n\nID: 送られるメッセージのメッセージIDを指定します。",
+      "inputType": "text",
+      "required": false,
+      "attributes": {
+        "characterSet": "upper",
+        "maxLength": 10
+      },
+      "placeholder": "CPF0000",
+      "basic": true
+    },
+    {
+      "name": "MSGF",
+      "description": "メッセージ・ファイル",
+      "help": "送信される事前定義メッセージが入っているメッセージ・ファイルを指定します。このパラメーターが有効なのは， メッセージ ID (MSGID) パラメーターに値を指定した場合だけです。",
+      "inputType": "group",
+      "required": false,
+      "groupKind": "qualified",
+      "children": [
+        {
+          "name": "LIB",
+          "description": "ライブラリー",
+          "help": "*LIBL: 最初に一致するものが見つかるまで，現行スレッドのライブラリー・リスト内のすべてのライブラリーが検索されます。\n*CURLIB: メッセージ・ファイルを見つけるために，ジョブの現行ライブラリーが使用されます。ライブラリー・リストに現行ライブラリー項目が存在しない場合には，QGPLが使用されます。\nメッセージ・ファイルを見つけるライブラリーを指定してください。",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "*LIBL",
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          },
+          "placeholder": "*LIBL"
+        },
+        {
+          "name": "MSGF",
+          "description": "メッセージ・ファイル",
+          "help": "送信される事前定義メッセージが入っているメッセージ・ファイルの名前を指定してください。",
+          "inputType": "text",
+          "required": false,
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          },
+          "placeholder": "QCPFMSG"
+        }
+      ],
+      "basic": true
+    },
+    {
+      "name": "MSGDTA",
+      "description": "メッセージ・データ・フィールドの値",
+      "help": "定義済みメッセージの中でメッセージ・データとして使用される文字ストリングまたは文字ストリングを含むCL変数を指定します。指定される文字ストリングには，メッセージの定義時にメッセージのテキストの中で定義された置換変数の代わりに使用される1つまたは複数の置き換え値を含みます。MSGDTAパラメーターは，事前定義メッセージが送信される場合にのみ有効です。詳細については，プログラム・メッセージ送信(SNDPGMMSG)コマンドのMSGDTAパラメーターの説明を参照してください。\n\n*CCHARタイプ・フィールドと対応するMSGDTAパラメーターに指定されたテキストは，コード化文字セットIDがCCSIDパラメーターに指定されない限り，このコマンドを実行中のジョブのCCSIDに入っているとみなされます。MSGDTAパラメーターに指定された他のすべてのテキストは65535であるとみなされ，変換されません。メッセージ・ハンドラーとそれによるCCSIDの使用の詳細については，IBM i Information Center(http://www.ibm.com/systems/i/infocenter/)の「i5/OSのグローバリゼーション」トピック・コレクションを参照してください。*CCHARタイプ・フィールドの詳細については，メッセージ記述追加(ADDMSGD)コマンドを参照してください。\n\n*NONE: メッセージ・データは，定義済みメッセージに対して指定されません。",
+      "inputType": "text",
+      "required": false,
+      "placeholder": "&MSGDTA",
+      "basic": true
+    },
+    {
+      "name": "VALUES",
+      "description": "有効な応答値",
+      "help": "このコマンドによって送られる照会メッセージに対する有効な応答のリストを指定します。20以下の応答をリストの中に指定することができます。照会メッセージに対する応答が指定された値の1つに一致しない場合は，エラー・メッセージが応答の送信元に送られ，照会メッセージがふたたび送られます。この値は，MSGRPYパラメーターに値が指定されている場合にのみ有効です。\n\n応答の変換が(TRNTBLパラメーターで）要求されている場合には，応答と指定された値の突き合わせの検証を行う前に，応答の変換が行われます。TRNTBL (*LIBL/QSYSTRNTBL)を使用して応答値を小文字から大文字に変換したにもかかわらず，指定された値に小文字が存在する場合には，値は一致しません。\n\n応答のリストで変数を使用できます。このパラメーターは，MSGTYPE(*INQ)が指定されている場合にのみ有効です。\n\n*NONE: 照会メッセージに対する応答は指定されません。照会メッセージに対する応答はいずれも有効です。\nこのコマンドによって送られる照会メッセージに受け取られた応答と比較される20個までの値を指定してください。各値の最大長は32文字です。この値を指定した場合には， メッセージ応答の CL 変数 (MSGRPY) パラメーターも指定しなければなりません。",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*NONE",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "maxOccurrences": 20,
+      "placeholder": "*NONE",
+      "basic": true
+    },
+    {
+      "name": "DFT",
+      "description": "省略時応答値",
+      "help": "照会メッセージが省略時の転送モードのメッセージ待ち行列に送られた場合，またはその他の理由で省略時の応答が送られた場合は，（このコマンドによって送られた）照会メッセージに対する応答として使用される値を指定します。\n\n*MSGDFT: メッセージID (MSGIDパラメーターに指定）のメッセージ記述に定義された省略時の値が使用されます。メッセージIDが指定されていない場合には，省略時の値は*Nとなります。\n省略時の応答として使用される応答（アポストロフィで囲む）を指定してください。この値を指定できるのは， メッセージ応答の CL 変数 (MSGRPY) パラメーターを指定した場合だけです。事前定義メッセージを送信する場合には，この省略時応答値によって，メッセージ記述に指定された省略時応答が指定変更されます。",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*MSGDFT",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "placeholder": "*MSGDFT",
+      "basic": true
+    },
+    {
+      "name": "MSGTYPE",
+      "description": "MSG タイプ",
+      "help": "送られるメッセージのタイプを指定します。照会メッセージと通知メッセージのみを指定できます。",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*INQ",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*INQ",
+          "value": "*INQ",
+          "help": "照会メッセージが送られて，このメッセージを受け取るメッセージ待ち行列がそれに応答しなければなりません。"
+        },
+        {
+          "label": "*INFO",
+          "value": "*INFO",
+          "help": "通知メッセージが送られます。"
+        }
+      ],
+      "basic": true
+    },
+    {
+      "name": "TOMSGQ",
+      "description": "TOメッセージ待ち行列",
+      "help": "メッセージが送られる先のメッセージ待ち行列の名前を指定します。 TO ユーザー・プロファイル (TOUSR) パラメーターに値が指定されている場合には，このパラメーターを使用することはできません。",
+      "inputType": "group",
+      "required": false,
+      "groupKind": "qualified",
+      "singleValues": [
+        "*EXT",
+        "*SYSOPR"
+      ],
+      "children": [
+        {
+          "name": "TOMSGQ_LIB",
+          "description": "ライブラリー",
+          "help": "*LIBL: 最初に一致するものが見つかるまで，現行スレッドのライブラリー・リスト内のすべてのライブラリーが検索されます。\n*CURLIB: メッセージ待ち行列を見つけるために，ジョブの現行ライブラリーが使用されます。ライブラリー・リストに現行ライブラリー項目が存在しない場合には，QGPLが使用されます。\nメッセージ待ち行列が入っているライブラリーを指定してください。",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "*LIBL",
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          },
+          "placeholder": "*LIBL"
+        },
+        {
+          "name": "TOMSGQ",
+          "description": "TOメッセージ待ち行列",
+          "help": "送られるメッセージを受け取るメッセージ待ち行列の名前を指定してください。",
+          "inputType": "text",
+          "required": false,
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          },
+          "defaultValue": "*",
+          "placeholder": "*SYSOPR"
+        }
+      ],
+      "basic": true
+    },
+    {
+      "name": "TOUSR",
+      "description": "TOユーザー・プロファイル",
+      "help": "メッセージは，このパラメーターで指定したユーザーのユーザー・プロファイル中で指定されているメッセージ待ち行列に送られることを指定します。 TO メッセージ待ち行列 (TOMSGQ) パラメーターに値が指定されている場合には，このパラメーターを使用することはできません。\n\n*SYSOPR: メッセージは，システム操作員のユーザー・プロファイル・メッセージ待ち行列QSYS/QSYSOPRに送られます。\n*REQUESTER: メッセージは，対話式ジョブの場合はユーザー・プロファイル・メッセージ待ち行列に送られ，バッチ・ジョブの場合はシステム操作員のメッセージ待ち行列(QSYS/QSYSOPR)に送られます。\nメッセージが送られる先のユーザーのユーザー・プロファイル名を指定してください。",
+      "inputType": "text",
+      "required": false,
+      "attributes": {
+        "characterSet": "upper",
+        "maxLength": 10
+      },
+      "placeholder": "*REQUESTER",
+      "basic": true
+    },
+    {
+      "name": "MSGRPY",
+      "description": "メッセージ応答のCL変数",
+      "help": "照会メッセージに対する応答として受け取られる応答が入っているCL文字変数（最大132文字まで）を指定します。このパラメーターが有効なのは， MSG タイプ (MSGTYPE) パラメーターに*INQが指定されている場合だけです。応答が変数より長い場合には，応答は切り捨てられます。応答の方が短い場合には，応答の右側にブランクが埋め込まれます。このコマンドは，MSGTYPE(*INQ)が指定されているときにこのパラメーターに値がコーディングされていない場合でも，照会メッセージに対する応答を待ちます。MSGTYPE(*INQ)が指定されているときにこのパラメーターに値がコーディングされていない場合には，コマンドは，照会メッセージに対する応答で操作員の対応を待ちます。",
+      "inputType": "text",
+      "required": false,
+      "placeholder": "&MSGRPY",
+      "basic": true
+    },
+    {
+      "name": "TRNTBL",
+      "description": "変換テーブル",
+      "help": "応答値が変換される場合に使用される変換テーブルの名前を指定します。\n\n英語専用の場合には，弊社提供変換テーブルのQSYSTRNTBLテーブルが，X'81' - X'A9'の範囲のすべての小文字を大文字に変換します。他のすべての文字は変換されません。\n\n別の変換テーブルを使用するためには，テーブル作成(CRTTBL)コマンドを使用して，このパラメーターに特定のテーブルを指定してください。",
+      "inputType": "group",
+      "required": false,
+      "groupKind": "qualified",
+      "singleValues": [
+        "*NONE"
+      ],
+      "children": [
+        {
+          "name": "TRNTBL_LIB",
+          "description": "ライブラリー",
+          "help": "*LIBL: 最初に一致するものが見つかるまで，現行スレッドのライブラリー・リスト内のすべてのライブラリーが検索されます。\n*CURLIB: 変換テーブルを見つけるために，ジョブの現行ライブラリーが使用されます。ライブラリー・リストに現行ライブラリー項目が存在しない場合には，QGPLが使用されます。\n変換テーブルを見つけるライブラリーを指定してください。",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "*LIBL",
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          },
+          "placeholder": "*LIBL"
+        },
+        {
+          "name": "TRNTBL",
+          "description": "変換テーブル",
+          "help": "QSYSTRNTBL: 応答値の変換にはQSYSTRNTBLという名前の変換テーブルが使用されます。 英語専用の場合には，弊社提供変換テーブルのQSYSTRNTBLテーブルが，X'81' - X'A9'の範囲のすべての小文字を大文字に変換します。他のすべての文字は変換されません。 別の変換テーブルを使用するためには，テーブル作成(CRTTBL)コマンドを使用して，このパラメーターに特定のテーブルを指定してください。\n*NONE: 応答は変換されません。\nメッセージ応答を変換するために使用される変換テーブル名を指定します。",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "QSYSTRNTBL",
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          },
+          "placeholder": "*NONE"
+        }
+      ],
+      "basic": true
+    },
+    {
+      "name": "CCSID",
+      "description": "コード化文字セットID",
+      "help": "MSG（メッセージ）またはMSGDTA (メッセージ・データ）パラメーターに指定されたメッセージ・テキストが入っているコード化文字セットID (CCSID)を指定します。メッセージIDが指定された場合に，*CCHARタイプ・フィールドと対応するMSGDTA（メッセージ・データ）パラメーターによって指定されたテキストは，このパラメーターによって指定されたCCSIDになっているとみなされます。*CCHARタイプ・フィールドと対応していない指定されたデータは65535であるとみなされて，変換されません。*CCHARタイプ・フィールドの詳細については，メッセージ記述追加(ADDMSGD)コマンドを参照してください。\n\nメッセージIDが指定されない場合には，MSG（メッセージ）パラメーターによって指定されたテキストは，このパラメーターによって指定されたCCSIDになっているとみなされます。メッセージ・ハンドラーとそれによるCCSIDの使用の詳細については，IBM i Information Center(http://www.ibm.com/systems/i/infocenter/)の「i5/OSのグローバリゼーション」トピック・コレクションを参照してください。\n\n*JOB: MSGDTA(メッセージ・データ)またはMSG(メッセージ)によって指定されたテキストは，このコマンドを実行するジョブのCCSIDに入っているとみなされます。\n*HEX: MSGDTA（メッセージ・データ）またはMSG（メッセージ）によって指定されたテキストは変換されません。CCSID 65535が使用されます。\nMSG（メッセージ）またはMSGDTA（メッセージ・データ）パラメーターに指定されたテキストが入っていると考えられる有効なCCSIDを指定します。有効な値の範囲は1から65535です。このコマンドはCCSIDの妥当性検査を行います。有効なCCSIDの値のリストについては，iSeries Information Center(http://www.ibm.com/eserver/iseries/infocenter)にあるグローバリゼーション情報を参照してください。",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*JOB",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "placeholder": "*JOB"
+    }
+  ],
+  "threadSafe": false,
+  "environment": "コンパイル済み CL プログラムまたはインタープリットされた REXX (*BPGM *IPGM *BREXX *IREXX)",
+  "restrictions": [
+    "このコマンドは，CLプログラム内でのみ有効です。",
+    "SNDUSRMSGコマンドにより，第1レベル・メッセージ・テキストが最大512桁であるメッセージを送ることができます。ただし，メッセージが対話式ジョブの外部メッセージ待ち行列(*EXT)に送られた場合には，プログラム・メッセージの表示画面に76桁しか表示されません。メッセージがユーザー，ワークステーション，またはシステム操作員のメッセージ待ち行列に送られた場合には，メッセージ表示(DSPMSG)コマンドを使って，512桁全部を表示することができます。"
+  ],
+  "examples": [
+    {
+      "code": "SNDUSRMSG MSG('DATA VERIFIED. UPDATE MASTER FILES (Y,N)?') TOMSGQ(*) VALUES(Y N) DFT(N) MSGRPY(&REPLY)"
+    },
+    {
+      "code": "SNDUSRMSG MSG('ENTER ANY RESPONSE WHEN READY TO CONTINUE.') TOMSGQ(WS01)"
+    },
+    {
+      "code": "SNDUSRMSG MSGID(USR0150) TOUSR(FRED) MSGF(QGPL/USRMSGF) MSGDTA(&ACCTNO) MSGTYPE(*INFO)"
+    }
+  ],
+  "errorMessages": [
+    {
+      "id": "CPF247E",
+      "text": "CCSID &1が無効です。"
+    },
+    {
+      "id": "CPF2559",
+      "text": "SNDUSRMSGコマンドでエラーが起こった。"
+    }
+  ],
+  "source": {
+    "url": "https://www.ibm.com/docs/ja/ssw_ibm_i_74/cl/sndusrmsg.htm",
+    "version": "IBM i 7.4"
+  }
+}

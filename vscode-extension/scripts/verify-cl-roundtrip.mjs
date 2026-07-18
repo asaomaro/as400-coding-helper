@@ -55,7 +55,9 @@ const {
   extractComments
 } = require(join(OUT, "clCommandParser"));
 
-const DEF_DIR = join(root, "resources/prompter/cl");
+const langArg = process.argv.find(a => a.startsWith("--lang="));
+const LANG = langArg ? langArg.slice("--lang=".length) : "ja";
+const DEF_DIR = join(root, `resources/prompter/cl/${LANG}`);
 const loadDefinition = command =>
   JSON.parse(readFileSync(join(DEF_DIR, `${command}.json`), "utf8"));
 

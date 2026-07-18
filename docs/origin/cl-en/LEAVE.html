@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="ja"><head><meta charset="utf-8"><title>Leave  (LEAVE)</title></head>
+<body>
+<main role="main"><article role="article" aria-labelledby="leave__title__1"> 
+<h1 class="topictitle1" id="leave__title__1">Leave  (LEAVE)</h1><div id="lastModifiedDate"><span>Last Updated</span>: 2026-07-13</div>
+
+<div class="body">
+<p>
+<strong>Leave  (LEAVE)
+</strong></p>
+
+<div class="p">
+<strong>Where allowed to run:  
+</strong><ul class="cds--list--unordered">
+<li class="cds--list__item">
+Batch program (*BPGM)
+
+</li>
+
+<li class="cds--list__item">
+Interactive program (*IPGM)
+
+</li>
+
+</ul>
+
+</div>
+
+<p>
+<strong>Threadsafe:  </strong>Yes
+</p>
+
+<p><a href="#leave__parameters">Parameters</a></p>
+
+<p><a href="#leave__examples">Examples</a></p>
+
+<p><a href="#leave__errormsgs">Error messages</a></p>
+
+<div class="div" id="leave__leave">
+<p>
+The Leave (LEAVE) command ends the processing of commands in the associated DOWHILE, DOUNTIL, or DOFOR loop and passes control to the first command following the associated ENDDO command.
+
+</p>
+
+<p>
+The following command sequence shows this flow.
+
+</p>
+
+<div class="p">
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>
+L1:     DOWHILE &amp;LGL1
+        ...
+L2:     DOWHILE &amp;LGL2
+        ...
+        IF &amp;LGL3 (LEAVE CMDLBL(L1))
+        IF &amp;LGL4 LEAVE
+        ...
+        ENDDO
+        /* Here if &amp;LGL4 evaluates to true */
+        ...
+        ENDDO
+        /* Here if &amp;LGL3 evaluates to true */
+        ...
+
+</code></pre></div><div class="docs--copy-btn"></div></div>
+
+</div>
+
+<p>
+<strong>Restrictions:
+</strong>
+</p>
+
+<ul class="cds--list--unordered">
+<li class="cds--list__item">
+This command is valid only in a CL program or ILE CL procedure.
+
+</li>
+
+<li class="cds--list__item">
+This command is valid only inside a DOWHILE, DOUNTIL, or DOFOR command group.
+
+</li>
+
+</ul>
+
+</div>
+<section class="section" role="region" aria-labelledby="leave__parameters__title__1" id="leave__parameters"><h2 class="sectiontitle" id="leave__parameters__title__1">Parameters</h2>
+
+
+<div class="tablenoborder"><div class="cds--data-table-container"><table summary="" class="defaultstyle cds--data-table"><colgroup><col><col><col><col></colgroup><thead>
+<tr>
+<th id="leave__parameters__entry__1"><div class="cds--table-header-label">
+Keyword
+</div></th>
+
+<th id="leave__parameters__entry__2"><div class="cds--table-header-label">
+Description
+</div></th>
+
+<th id="leave__parameters__entry__3"><div class="cds--table-header-label">
+Choices
+</div></th>
+
+<th id="leave__parameters__entry__4"><div class="cds--table-header-label">
+Notes
+</div></th>
+
+</tr>
+
+</thead>
+<tbody>
+<tr>
+<td headers="leave__parameters__entry__1 "><a href="#leave__cmdlbl"><strong>CMDLBL
+</strong></a></td>
+
+<td headers="leave__parameters__entry__2 ">Command label
+</td>
+
+<td headers="leave__parameters__entry__3 "><em>Simple name
+</em>, 
+<strong><u>*CURRENT
+</u></strong></td>
+
+<td headers="leave__parameters__entry__4 ">Optional, Positional 1
+</td>
+
+</tr>
+
+</tbody>
+</table></div>
+</div>
+
+<div class="div" id="leave__cmdlbl">
+<p>
+<strong>Command label (CMDLBL)
+</strong></p>
+
+<p>
+The label must be within the same program as the LEAVE command and be a label on an active DOWHILE, DOUNTIL, or DOFOR group.  A CL variable name cannot be used to specify the label name.
+
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><u>*CURRENT
+</u></strong></dt>
+
+<dd class="dlentry">
+Leaves the innermost loop surrounding this LEAVE command.
+</dd>
+
+<dt class="dlterm">
+<strong><em>simple-name
+</em></strong></dt>
+
+<dd class="dlentry">
+Specify the label name of the surrounding DOWHILE, DOUNTIL, or DOFOR command which is being ended.
+</dd>
+
+</dl>
+
+</div>
+</section>
+
+<section class="section" role="region" aria-labelledby="leave__examples__title__1" id="leave__examples"><h2 class="sectiontitle" id="leave__examples__title__1">Examples</h2>
+
+<p>
+<strong>Example 1: Leave Simple DOFOR Loop
+</strong>
+</p>
+
+<div class="p">
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>
+DCL   VAR(&amp;INT)  TYPE(*INT)  LEN(2)
+DCL   VAR(&amp;NAME)  TYPE(*CHAR)  LEN(10)
+ :
+DOFOR   VAR(&amp;INT)  FROM(0)  TO(10)
+ :   (group of CL commands)
+ IF   COND(&amp;NAME *EQ *NONE)   THEN(LEAVE)
+ :   (group of CL commands)
+ENDDO
+
+</code></pre></div><div class="docs--copy-btn"></div></div>
+
+</div>
+
+<p>
+The LEAVE command interrupts processing of the active DOFOR group and processing continues with command following the ENDDO.
+
+</p>
+
+<p>
+<strong>Example 2: Leave with Nested Loops
+</strong>
+</p>
+
+<div class="p">
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>
+DCL   VAR(&amp;INT)  TYPE(*INT)  LEN(2)
+DCL   VAR(&amp;NAME)  TYPE(*CHAR)  LEN(10)
+DCL   VAR(&amp;LGL)  TYPE(*LGL)  VALUE('1')      /* True */
+ :
+LOOP1: DOFOR   VAR(&amp;INT)  FROM(0)  TO(10)
+ :   (group of CL commands)
+ LOOP2: DOUNTIL   COND(&amp;LGL)
+   :   (group of CL commands)
+   IF   COND(&amp;NAME *EQ *NONE)  THEN(LEAVE  CMDLBL(LOOP1))
+   :   (group of CL commands)
+ ENDDO /* DOUNTIL */
+ :   (group of CL commands)
+ENDDO /* DOFOR */
+
+</code></pre></div><div class="docs--copy-btn"></div></div>
+
+</div>
+
+<p>
+The LEAVE command interrupts processing of both the active DOUNTIL and DOFOR groups and processing continues with command following the ENDDO matching the DOFOR command.
+
+</p>
+
+</section>
+
+<section class="section" role="region" aria-labelledby="leave__errormsgs__title__1" id="leave__errormsgs"><h2 class="sectiontitle" id="leave__errormsgs__title__1">Error messages</h2>
+
+<p>
+None
+
+</p>
+
+</section>
+
+</div>
+
+</article></main>
+</body></html>

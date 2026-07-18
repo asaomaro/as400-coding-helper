@@ -1,0 +1,3727 @@
+<!DOCTYPE html>
+<html lang="ja"><head><meta charset="utf-8"><title>Change Job  (CHGJOB)</title></head>
+<body>
+<main role="main"><article role="article" aria-labelledby="chgjob__title__1"> 
+<h1 class="topictitle1" id="chgjob__title__1">Change Job  (CHGJOB)</h1><div id="lastModifiedDate"><span>Last Updated</span>: 2026-07-13</div>
+
+<div class="body">
+<p>
+<strong>Change Job  (CHGJOB)
+</strong></p>
+
+<p>
+<strong>Where allowed to run:  
+</strong>All environments (*ALL)
+
+</p>
+
+<p>
+<strong>Threadsafe:  </strong>Conditional
+</p>
+
+<p><a href="#chgjob__parameters">Parameters</a></p>
+
+<p><a href="#chgjob__examples">Examples</a></p>
+
+<p><a href="#chgjob__errormsgs">Error messages</a></p>
+
+<div class="div" id="chgjob__chgjob">
+<p>
+The Change Job (CHGJOB) command changes some of the attributes of a job.  With the exception of a change in job queue, the job can be in a job queue or in an output queue, or it can be active in a subsystem. The job queue can only be changed when the job is a batch job and is in a job queue.  If the job is in the output queue, only the 
+<strong>Output priority (on OUTQ) (OUTPTY)
+</strong>, the 
+<strong>Job log output (LOGOUTPUT)
+</strong>, and the 
+<strong>Spooled file action (SPLFACN)
+</strong> can be changed. With the exception of the class attributes, the new attributes remain in effect for the duration of the job unless they are changed by another CHGJOB command.  The class attributes remain in effect until the routing step that is currently active ends.  If no routing step is active when the changes are made, they apply to the next routing step that is started. If an attribute that no longer affects the job is changed, a message is sent to the user of the command. For example, if the job has already completed running, it is too late to change the 
+<strong>Output queue (OUTQ)
+</strong> and 
+<strong>Job priority (on JOBQ) (JOBPTY)
+</strong> parameters. If any output files are still on the output queue, however, changing the OUTPTY parameter changes their output priority.
+
+</p>
+
+<p>
+<strong>Restrictions:
+</strong>
+</p>
+
+<ol class="cds--list--ordered--temporary">
+<li class="cds--list__item">
+The command must be issued from within the job being changed, or the issuer of the command must be running under a user profile which is the same as the job user identity of the job being changed, or the issuer of the command must be running under a user profile which has job control (*JOBCTL) special authority.
+<p>
+The job user identity is the name of the user profile by which a job is known to other jobs. It is described in more detail in the Work Management Guide.
+
+</p>
+
+
+</li>
+
+<li class="cds--list__item">
+To use this command, the following authorities are required:
+<ul class="cds--list--unordered cds--list--nested">
+<li class="cds--list__item">
+To change the job queue (JOBQ), you must have use (*USE) authority to the job queue that the job is being changed to and execute (*EXECUTE) authority to the library containing that job queue.
+
+</li>
+
+<li class="cds--list__item">
+To change the output queue (OUTQ), you must have read (*READ) authority to the output queue that is currently allocated to the job and execute (*EXECUTE) authority to the library containing this output queue.  This authority can come from adopted authority.  When a job changes itself, no authority is required to the OUTQ currently allocated to the job.  You also must have read (*READ) authority to the output queue that the job is being changed to use, and execute (*EXECUTE) authority to the library containing that output queue.  This authority cannot come from adopted authority.
+
+</li>
+
+<li class="cds--list__item">
+To change the RUNPTY, TIMESLICE, PURGE, DFTWAIT, TSEPOOL, WLCGRP, CPUTIME, MAXTMPSTG, or PRCRSCPTY values, you must have job control (*JOBCTL) special authority.
+
+</li>
+
+<li class="cds--list__item">
+To change the sort sequence table (SRTSEQ), you must have use (*USE) authority to the new sort sequence table and execute (*EXECUTE) authority to the library that contains that sort sequence table.
+
+</li>
+
+</ul>
+
+
+</li>
+
+<li class="cds--list__item">
+This command is conditionally threadsafe.  Refer to 
+<strong>Considerations for Attribute Thread Safety
+</strong> for additional information.
+
+</li>
+
+
+</ol>
+
+<p>
+<strong>Considerations for Attribute Thread Safety:
+</strong>
+</p>
+
+<p>
+This command is intended to be used to change the job attributes for a job. All of the attributes are scoped to the job.
+
+</p>
+
+<p>
+The Threadsafe column of the following table indicates whether the attributes can be changed in a manner that is threadsafe.
+
+</p>
+
+<p>
+<strong>Yes:
+</strong> - Attributes marked with this value are considered to be threadsafe. These attributes can be changed safely by issuing this command from either the initial thread or from a secondary thread. The target job may also be either single threaded or multi threaded.
+
+</p>
+
+<p>
+<strong>No:
+</strong> - Attributes marked with this value are not threadsafe. An attempt to change these attributes will be denied if multiple threads are active in the job issuing this command or in the target job.
+
+</p>
+
+<p>
+<strong>Attribute and Thread Safety Table:
+</strong>
+</p>
+
+
+<div class="tablenoborder"><div class="cds--data-table-container"><table summary="" class="defaultstyle cds--data-table"><colgroup><col></colgroup><tbody>
+<tr>
+<td><div class="p">
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>
+Attribute                                     Threadsafe
+----------------------------                  ----------
+Break message handling (BRKMSG)                  Yes
+Character identifier control (CHRIDCTL)          Yes
+Coded character set ID (CCSID)                   Yes
+Country or region ID (CNTRYID)                   Yes
+Date format (DATFMT)                             Yes
+Date separator (DATSEP)                          Yes
+DDM conversation (DDMCNV)                        No
+Decimal format (DECFMT)                          Yes
+Default wait time (DFTWAIT)                      Yes
+Device recovery action (DEVRCYACN)               Yes
+Eligible for purge (PURGE)                       Yes
+Inquiry message reply (INQMSGRPY)                Yes
+Job date (DATE)                                  Yes
+Job Log output (LOGOUTPUT)                       Yes
+Job message queue full action (JOBMSGQFL)        Yes
+Job priority (on JOBQ) (JOBPTY)                  Yes
+Job queue (JOBQ)                                 Yes
+Job switches (SWS)                               Yes
+Language ID (LANGID)                             Yes
+Log CL program commands (LOGCLPGM)               Yes
+Maximum processor time (CPUTIME)                 Yes
+Maximum temporary storage (MAXTMPSTG)            Yes
+Message logging (LOG)                            Yes
+Output priority (on OUTQ) (OUTPTY)               Yes
+Output queue (OUTQ)                              Yes
+Print key format (PRTKEYFMT)                     Yes
+Print text (PRTTXT)                              Yes
+Print device (PRTDEV)                            Yes
+Processor resources priority (PRCRSCPTY)         Yes
+Run priority (RUNPTY)                            Yes
+Schedule date (SCDDATE)                          No
+Schedule time (SCDTIME)                          No
+Sort sequence (SRTSEQ)                           Yes
+Spooled file action (SPLFACN)                    Yes
+Status message (STSMSG)                          Yes
+Time separator (TIMSEP)                          Yes
+Time slice (TIMESLICE)                           Yes
+Time slice end pool (TSEPOOL)                    Yes
+Workload group (WLCGRP)                          Yes
+
+</code></pre></div><div class="docs--copy-btn"></div></div>
+
+</div>
+
+</td>
+
+</tr>
+
+</tbody>
+</table></div>
+</div>
+
+</div>
+<section class="section" role="region" aria-labelledby="chgjob__parameters__title__1" id="chgjob__parameters"><h2 class="sectiontitle" id="chgjob__parameters__title__1">Parameters</h2>
+
+
+<div class="tablenoborder"><div class="cds--data-table-container"><table summary="" class="defaultstyle cds--data-table"><colgroup><col><col><col><col></colgroup><thead>
+<tr>
+<th id="chgjob__parameters__entry__1"><div class="cds--table-header-label">
+Keyword
+</div></th>
+
+<th id="chgjob__parameters__entry__2"><div class="cds--table-header-label">
+Description
+</div></th>
+
+<th id="chgjob__parameters__entry__3"><div class="cds--table-header-label">
+Choices
+</div></th>
+
+<th id="chgjob__parameters__entry__4"><div class="cds--table-header-label">
+Notes
+</div></th>
+
+</tr>
+
+</thead>
+<tbody>
+<tr>
+<td rowspan="4" headers="chgjob__parameters__entry__1 "><a href="#chgjob__job"><strong>JOB
+</strong></a></td>
+
+<td headers="chgjob__parameters__entry__2 ">Job name
+</td>
+
+<td headers="chgjob__parameters__entry__3 ">Single values: 
+<strong><u>*
+</u></strong>
+Other values: 
+<em>Qualified job name
+</em></td>
+
+<td rowspan="4" headers="chgjob__parameters__entry__4 ">Optional, Key, Positional 1
+</td>
+
+</tr>
+
+<tr>
+<td headers="chgjob__parameters__entry__2 ">Qualifier 1: Job name
+</td>
+
+<td headers="chgjob__parameters__entry__3 "><em>Name
+</em></td>
+
+</tr>
+
+<tr>
+<td headers="chgjob__parameters__entry__2 ">Qualifier 2: User
+</td>
+
+<td headers="chgjob__parameters__entry__3 "><em>Name
+</em></td>
+
+</tr>
+
+<tr>
+<td headers="chgjob__parameters__entry__2 ">Qualifier 3: Number
+</td>
+
+<td headers="chgjob__parameters__entry__3 ">000000-999999
+</td>
+
+</tr>
+
+<tr>
+<td headers="chgjob__parameters__entry__1 "><a href="#chgjob__jobpty"><strong>JOBPTY
+</strong></a></td>
+
+<td headers="chgjob__parameters__entry__2 ">Job priority (on JOBQ)
+</td>
+
+<td headers="chgjob__parameters__entry__3 ">0-9, 
+<strong><u>*SAME
+</u></strong></td>
+
+<td headers="chgjob__parameters__entry__4 ">Optional
+</td>
+
+</tr>
+
+<tr>
+<td headers="chgjob__parameters__entry__1 "><a href="#chgjob__outpty"><strong>OUTPTY
+</strong></a></td>
+
+<td headers="chgjob__parameters__entry__2 ">Output priority (on OUTQ)
+</td>
+
+<td headers="chgjob__parameters__entry__3 ">1-9, 
+<strong><u>*SAME
+</u></strong></td>
+
+<td headers="chgjob__parameters__entry__4 ">Optional
+</td>
+
+</tr>
+
+<tr>
+<td headers="chgjob__parameters__entry__1 "><a href="#chgjob__prtdev"><strong>PRTDEV
+</strong></a></td>
+
+<td headers="chgjob__parameters__entry__2 ">Print device
+</td>
+
+<td headers="chgjob__parameters__entry__3 "><em>Name
+</em>, 
+<strong><u>*SAME
+</u></strong>, *USRPRF, *SYSVAL, *WRKSTN
+</td>
+
+<td headers="chgjob__parameters__entry__4 ">Optional
+</td>
+
+</tr>
+
+<tr>
+<td rowspan="3" headers="chgjob__parameters__entry__1 "><a href="#chgjob__outq"><strong>OUTQ
+</strong></a></td>
+
+<td headers="chgjob__parameters__entry__2 ">Output queue
+</td>
+
+<td headers="chgjob__parameters__entry__3 ">Single values: 
+<strong><u>*SAME
+</u></strong>, *USRPRF, *DEV, *WRKSTN
+
+Other values: 
+<em>Qualified object name
+</em></td>
+
+<td rowspan="3" headers="chgjob__parameters__entry__4 ">Optional
+</td>
+
+</tr>
+
+<tr>
+<td headers="chgjob__parameters__entry__2 ">Qualifier 1: Output queue
+</td>
+
+<td headers="chgjob__parameters__entry__3 "><em>Name
+</em></td>
+
+</tr>
+
+<tr>
+<td headers="chgjob__parameters__entry__2 ">Qualifier 2: Library
+</td>
+
+<td headers="chgjob__parameters__entry__3 "><em>Name
+</em>, 
+<strong><u>*LIBL
+</u></strong>, *CURLIB
+</td>
+
+</tr>
+
+<tr>
+<td headers="chgjob__parameters__entry__1 "><a href="#chgjob__runpty"><strong>RUNPTY
+</strong></a></td>
+
+<td headers="chgjob__parameters__entry__2 ">Run priority
+</td>
+
+<td headers="chgjob__parameters__entry__3 ">1-99, 
+<strong><u>*SAME
+</u></strong></td>
+
+<td headers="chgjob__parameters__entry__4 ">Optional
+</td>
+
+</tr>
+
+<tr>
+<td rowspan="3" headers="chgjob__parameters__entry__1 "><a href="#chgjob__jobq"><strong>JOBQ
+</strong></a></td>
+
+<td headers="chgjob__parameters__entry__2 ">Job queue
+</td>
+
+<td headers="chgjob__parameters__entry__3 ">Single values: 
+<strong><u>*SAME
+</u></strong>
+Other values: 
+<em>Qualified object name
+</em></td>
+
+<td rowspan="3" headers="chgjob__parameters__entry__4 ">Optional
+</td>
+
+</tr>
+
+<tr>
+<td headers="chgjob__parameters__entry__2 ">Qualifier 1: Job queue
+</td>
+
+<td headers="chgjob__parameters__entry__3 "><em>Name
+</em></td>
+
+</tr>
+
+<tr>
+<td headers="chgjob__parameters__entry__2 ">Qualifier 2: Library
+</td>
+
+<td headers="chgjob__parameters__entry__3 "><em>Name
+</em>, 
+<strong><u>*LIBL
+</u></strong>, *CURLIB
+</td>
+
+</tr>
+
+<tr>
+<td headers="chgjob__parameters__entry__1 "><a href="#chgjob__prttxt"><strong>PRTTXT
+</strong></a></td>
+
+<td headers="chgjob__parameters__entry__2 ">Print text
+</td>
+
+<td headers="chgjob__parameters__entry__3 "><em>Character value
+</em>, 
+<strong><u>*SAME
+</u></strong>, *SYSVAL, *BLANK
+</td>
+
+<td headers="chgjob__parameters__entry__4 ">Optional
+</td>
+
+</tr>
+
+<tr>
+<td rowspan="4" headers="chgjob__parameters__entry__1 "><a href="#chgjob__log"><strong>LOG
+</strong></a></td>
+
+<td headers="chgjob__parameters__entry__2 ">Message logging
+</td>
+
+<td headers="chgjob__parameters__entry__3 "><em>Element list
+</em></td>
+
+<td rowspan="4" headers="chgjob__parameters__entry__4 ">Optional
+</td>
+
+</tr>
+
+<tr>
+<td headers="chgjob__parameters__entry__2 ">Element 1: Level
+</td>
+
+<td headers="chgjob__parameters__entry__3 ">0-4, 
+<strong><u>*SAME
+</u></strong></td>
+
+</tr>
+
+<tr>
+<td headers="chgjob__parameters__entry__2 ">Element 2: Severity
+</td>
+
+<td headers="chgjob__parameters__entry__3 ">0-99, 
+<strong><u>*SAME
+</u></strong></td>
+
+</tr>
+
+<tr>
+<td headers="chgjob__parameters__entry__2 ">Element 3: Text
+</td>
+
+<td headers="chgjob__parameters__entry__3 "><strong><u>*SAME
+</u></strong>, *MSG, *SECLVL, *NOLIST
+</td>
+
+</tr>
+
+<tr>
+<td headers="chgjob__parameters__entry__1 "><a href="#chgjob__logclpgm"><strong>LOGCLPGM
+</strong></a></td>
+
+<td headers="chgjob__parameters__entry__2 ">Log CL program commands
+</td>
+
+<td headers="chgjob__parameters__entry__3 "><strong><u>*SAME
+</u></strong>, *NO, *YES
+</td>
+
+<td headers="chgjob__parameters__entry__4 ">Optional
+</td>
+
+</tr>
+
+<tr>
+<td headers="chgjob__parameters__entry__1 "><a href="#chgjob__logoutput"><strong>LOGOUTPUT
+</strong></a></td>
+
+<td headers="chgjob__parameters__entry__2 ">Job log output
+</td>
+
+<td headers="chgjob__parameters__entry__3 "><strong><u>*SAME
+</u></strong>, *SYSVAL, *JOBLOGSVR, *JOBEND, *PND
+</td>
+
+<td headers="chgjob__parameters__entry__4 ">Optional
+</td>
+
+</tr>
+
+<tr>
+<td headers="chgjob__parameters__entry__1 "><a href="#chgjob__jobmsgqfl"><strong>JOBMSGQFL
+</strong></a></td>
+
+<td headers="chgjob__parameters__entry__2 ">Job message queue full action
+</td>
+
+<td headers="chgjob__parameters__entry__3 "><strong><u>*SAME
+</u></strong>, *SYSVAL, *NOWRAP, *WRAP, *PRTWRAP
+</td>
+
+<td headers="chgjob__parameters__entry__4 ">Optional
+</td>
+
+</tr>
+
+<tr>
+<td headers="chgjob__parameters__entry__1 "><a href="#chgjob__inqmsgrpy"><strong>INQMSGRPY
+</strong></a></td>
+
+<td headers="chgjob__parameters__entry__2 ">Inquiry message reply
+</td>
+
+<td headers="chgjob__parameters__entry__3 "><strong><u>*SAME
+</u></strong>, *RQD, *DFT, *SYSRPYL
+</td>
+
+<td headers="chgjob__parameters__entry__4 ">Optional
+</td>
+
+</tr>
+
+<tr>
+<td headers="chgjob__parameters__entry__1 "><a href="#chgjob__brkmsg"><strong>BRKMSG
+</strong></a></td>
+
+<td headers="chgjob__parameters__entry__2 ">Break message handling
+</td>
+
+<td headers="chgjob__parameters__entry__3 "><strong><u>*SAME
+</u></strong>, *NORMAL, *NOTIFY, *HOLD
+</td>
+
+<td headers="chgjob__parameters__entry__4 ">Optional
+</td>
+
+</tr>
+
+<tr>
+<td headers="chgjob__parameters__entry__1 "><a href="#chgjob__stsmsg"><strong>STSMSG
+</strong></a></td>
+
+<td headers="chgjob__parameters__entry__2 ">Status message
+</td>
+
+<td headers="chgjob__parameters__entry__3 "><strong><u>*SAME
+</u></strong>, *USRPRF, *SYSVAL, *NONE, *NORMAL
+</td>
+
+<td headers="chgjob__parameters__entry__4 ">Optional
+</td>
+
+</tr>
+
+<tr>
+<td headers="chgjob__parameters__entry__1 "><a href="#chgjob__ddmcnv"><strong>DDMCNV
+</strong></a></td>
+
+<td headers="chgjob__parameters__entry__2 ">DDM conversation
+</td>
+
+<td headers="chgjob__parameters__entry__3 "><strong><u>*SAME
+</u></strong>, *KEEP, *DROP
+</td>
+
+<td headers="chgjob__parameters__entry__4 ">Optional
+</td>
+
+</tr>
+
+<tr>
+<td headers="chgjob__parameters__entry__1 "><a href="#chgjob__scddate"><strong>SCDDATE
+</strong></a></td>
+
+<td headers="chgjob__parameters__entry__2 ">Schedule date
+</td>
+
+<td headers="chgjob__parameters__entry__3 "><em>Date
+</em>, 
+<strong><u>*SAME
+</u></strong>, *CURRENT, *MONTHSTR, *MONTHEND, *MON, *TUE, *WED, *THU, *FRI, *SAT, *SUN
+</td>
+
+<td headers="chgjob__parameters__entry__4 ">Optional
+</td>
+
+</tr>
+
+<tr>
+<td headers="chgjob__parameters__entry__1 "><a href="#chgjob__scdtime"><strong>SCDTIME
+</strong></a></td>
+
+<td headers="chgjob__parameters__entry__2 ">Schedule time
+</td>
+
+<td headers="chgjob__parameters__entry__3 "><em>Time
+</em>, 
+<strong><u>*SAME
+</u></strong>, *CURRENT
+</td>
+
+<td headers="chgjob__parameters__entry__4 ">Optional
+</td>
+
+</tr>
+
+<tr>
+<td headers="chgjob__parameters__entry__1 "><a href="#chgjob__date"><strong>DATE
+</strong></a></td>
+
+<td headers="chgjob__parameters__entry__2 ">Job date
+</td>
+
+<td headers="chgjob__parameters__entry__3 "><em>Date
+</em>, 
+<strong><u>*SAME
+</u></strong></td>
+
+<td headers="chgjob__parameters__entry__4 ">Optional
+</td>
+
+</tr>
+
+<tr>
+<td headers="chgjob__parameters__entry__1 "><a href="#chgjob__datfmt"><strong>DATFMT
+</strong></a></td>
+
+<td headers="chgjob__parameters__entry__2 ">Date format
+</td>
+
+<td headers="chgjob__parameters__entry__3 "><strong><u>*SAME
+</u></strong>, *SYSVAL, *YMD, *MDY, *DMY, *JUL
+</td>
+
+<td headers="chgjob__parameters__entry__4 ">Optional
+</td>
+
+</tr>
+
+<tr>
+<td headers="chgjob__parameters__entry__1 "><a href="#chgjob__datsep"><strong>DATSEP
+</strong></a></td>
+
+<td headers="chgjob__parameters__entry__2 ">Date separator
+</td>
+
+<td headers="chgjob__parameters__entry__3 "><strong><u>*SAME
+</u></strong>, *SYSVAL, *BLANK, '/', '-', '.', '&nbsp;', ','
+</td>
+
+<td headers="chgjob__parameters__entry__4 ">Optional
+</td>
+
+</tr>
+
+<tr>
+<td headers="chgjob__parameters__entry__1 "><a href="#chgjob__timsep"><strong>TIMSEP
+</strong></a></td>
+
+<td headers="chgjob__parameters__entry__2 ">Time separator
+</td>
+
+<td headers="chgjob__parameters__entry__3 "><strong><u>*SAME
+</u></strong>, *SYSVAL, *BLANK, ':', '.', '&nbsp;', ','
+</td>
+
+<td headers="chgjob__parameters__entry__4 ">Optional
+</td>
+
+</tr>
+
+<tr>
+<td headers="chgjob__parameters__entry__1 "><a href="#chgjob__sws"><strong>SWS
+</strong></a></td>
+
+<td headers="chgjob__parameters__entry__2 ">Job switches
+</td>
+
+<td headers="chgjob__parameters__entry__3 "><em>Character value
+</em>, 
+<strong><u>*SAME
+</u></strong></td>
+
+<td headers="chgjob__parameters__entry__4 ">Optional
+</td>
+
+</tr>
+
+<tr>
+<td headers="chgjob__parameters__entry__1 "><a href="#chgjob__timeslice"><strong>TIMESLICE
+</strong></a></td>
+
+<td headers="chgjob__parameters__entry__2 ">Time slice
+</td>
+
+<td headers="chgjob__parameters__entry__3 ">1-9999999, 
+<strong><u>*SAME
+</u></strong></td>
+
+<td headers="chgjob__parameters__entry__4 ">Optional
+</td>
+
+</tr>
+
+<tr>
+<td headers="chgjob__parameters__entry__1 "><a href="#chgjob__purge"><strong>PURGE
+</strong></a></td>
+
+<td headers="chgjob__parameters__entry__2 ">Eligible for purge
+</td>
+
+<td headers="chgjob__parameters__entry__3 "><strong><u>*SAME
+</u></strong>, *YES, *NO
+</td>
+
+<td headers="chgjob__parameters__entry__4 ">Optional
+</td>
+
+</tr>
+
+<tr>
+<td headers="chgjob__parameters__entry__1 "><a href="#chgjob__dftwait"><strong>DFTWAIT
+</strong></a></td>
+
+<td headers="chgjob__parameters__entry__2 ">Default wait time
+</td>
+
+<td headers="chgjob__parameters__entry__3 ">1-9999999, 
+<strong><u>*SAME
+</u></strong>, *NOMAX
+</td>
+
+<td headers="chgjob__parameters__entry__4 ">Optional
+</td>
+
+</tr>
+
+<tr>
+<td headers="chgjob__parameters__entry__1 "><a href="#chgjob__devrcyacn"><strong>DEVRCYACN
+</strong></a></td>
+
+<td headers="chgjob__parameters__entry__2 ">Device recovery action
+</td>
+
+<td headers="chgjob__parameters__entry__3 "><strong><u>*SAME
+</u></strong>, *SYSVAL, *MSG, *DSCMSG, *DSCENDRQS, *ENDJOB, *ENDJOBNOLIST
+</td>
+
+<td headers="chgjob__parameters__entry__4 ">Optional
+</td>
+
+</tr>
+
+<tr>
+<td headers="chgjob__parameters__entry__1 "><a href="#chgjob__tsepool"><strong>TSEPOOL
+</strong></a></td>
+
+<td headers="chgjob__parameters__entry__2 ">Time slice end pool
+</td>
+
+<td headers="chgjob__parameters__entry__3 "><strong><u>*SAME
+</u></strong>, *SYSVAL, *NONE, *BASE
+</td>
+
+<td headers="chgjob__parameters__entry__4 ">Optional
+</td>
+
+</tr>
+
+<tr>
+<td headers="chgjob__parameters__entry__1 "><a href="#chgjob__prtkeyfmt"><strong>PRTKEYFMT
+</strong></a></td>
+
+<td headers="chgjob__parameters__entry__2 ">Print key format
+</td>
+
+<td headers="chgjob__parameters__entry__3 "><strong><u>*SAME
+</u></strong>, *SYSVAL, *NONE, *PRTBDR, *PRTHDR, *PRTALL
+</td>
+
+<td headers="chgjob__parameters__entry__4 ">Optional
+</td>
+
+</tr>
+
+<tr>
+<td rowspan="3" headers="chgjob__parameters__entry__1 "><a href="#chgjob__srtseq"><strong>SRTSEQ
+</strong></a></td>
+
+<td headers="chgjob__parameters__entry__2 ">Sort sequence
+</td>
+
+<td headers="chgjob__parameters__entry__3 ">Single values: 
+<strong><u>*SAME
+</u></strong>, *USRPRF, *SYSVAL, *HEX, *LANGIDUNQ, *LANGIDSHR
+
+Other values: 
+<em>Qualified object name
+</em></td>
+
+<td rowspan="3" headers="chgjob__parameters__entry__4 ">Optional
+</td>
+
+</tr>
+
+<tr>
+<td headers="chgjob__parameters__entry__2 ">Qualifier 1: Sort sequence
+</td>
+
+<td headers="chgjob__parameters__entry__3 "><em>Name
+</em></td>
+
+</tr>
+
+<tr>
+<td headers="chgjob__parameters__entry__2 ">Qualifier 2: Library
+</td>
+
+<td headers="chgjob__parameters__entry__3 "><em>Name
+</em>, 
+<strong><u>*LIBL
+</u></strong>, *CURLIB
+</td>
+
+</tr>
+
+<tr>
+<td headers="chgjob__parameters__entry__1 "><a href="#chgjob__langid"><strong>LANGID
+</strong></a></td>
+
+<td headers="chgjob__parameters__entry__2 ">Language ID
+</td>
+
+<td headers="chgjob__parameters__entry__3 "><em>Character value
+</em>, 
+<strong><u>*SAME
+</u></strong>, *USRPRF, *SYSVAL
+</td>
+
+<td headers="chgjob__parameters__entry__4 ">Optional
+</td>
+
+</tr>
+
+<tr>
+<td headers="chgjob__parameters__entry__1 "><a href="#chgjob__cntryid"><strong>CNTRYID
+</strong></a></td>
+
+<td headers="chgjob__parameters__entry__2 ">Country or region ID
+</td>
+
+<td headers="chgjob__parameters__entry__3 "><em>Character value
+</em>, 
+<strong><u>*SAME
+</u></strong>, *USRPRF, *SYSVAL
+</td>
+
+<td headers="chgjob__parameters__entry__4 ">Optional
+</td>
+
+</tr>
+
+<tr>
+<td headers="chgjob__parameters__entry__1 "><a href="#chgjob__ccsid"><strong>CCSID
+</strong></a></td>
+
+<td headers="chgjob__parameters__entry__2 ">Coded character set ID
+</td>
+
+<td headers="chgjob__parameters__entry__3 ">1-65535, 
+<strong><u>*SAME
+</u></strong>, *USRPRF, *SYSVAL, *HEX
+</td>
+
+<td headers="chgjob__parameters__entry__4 ">Optional
+</td>
+
+</tr>
+
+<tr>
+<td headers="chgjob__parameters__entry__1 "><a href="#chgjob__decfmt"><strong>DECFMT
+</strong></a></td>
+
+<td headers="chgjob__parameters__entry__2 ">Decimal format
+</td>
+
+<td headers="chgjob__parameters__entry__3 "><strong><u>*SAME
+</u></strong>, *SYSVAL, *BLANK, I, J
+</td>
+
+<td headers="chgjob__parameters__entry__4 ">Optional
+</td>
+
+</tr>
+
+<tr>
+<td headers="chgjob__parameters__entry__1 "><a href="#chgjob__chridctl"><strong>CHRIDCTL
+</strong></a></td>
+
+<td headers="chgjob__parameters__entry__2 ">Character identifier control
+</td>
+
+<td headers="chgjob__parameters__entry__3 "><strong><u>*SAME
+</u></strong>, *USRPRF, *SYSVAL, *DEVD, *JOBCCSID
+</td>
+
+<td headers="chgjob__parameters__entry__4 ">Optional
+</td>
+
+</tr>
+
+<tr>
+<td headers="chgjob__parameters__entry__1 "><a href="#chgjob__splfacn"><strong>SPLFACN
+</strong></a></td>
+
+<td headers="chgjob__parameters__entry__2 ">Spooled file action
+</td>
+
+<td headers="chgjob__parameters__entry__3 "><strong><u>*SAME
+</u></strong>, *SYSVAL, *KEEP, *DETACH
+</td>
+
+<td headers="chgjob__parameters__entry__4 ">Optional
+</td>
+
+</tr>
+
+<tr>
+<td headers="chgjob__parameters__entry__1 "><a href="#chgjob__wlcgrp"><strong>WLCGRP
+</strong></a></td>
+
+<td headers="chgjob__parameters__entry__2 ">Workload group
+</td>
+
+<td headers="chgjob__parameters__entry__3 "><em>Simple name
+</em>, 
+<strong><u>*SAME
+</u></strong>, *NONE
+</td>
+
+<td headers="chgjob__parameters__entry__4 ">Optional
+</td>
+
+</tr>
+
+<tr>
+<td headers="chgjob__parameters__entry__1 "><a href="#chgjob__cputime"><strong>CPUTIME
+</strong></a></td>
+
+<td headers="chgjob__parameters__entry__2 ">Maximum CPU time
+</td>
+
+<td headers="chgjob__parameters__entry__3 ">1-9999999, 
+<strong><u>*SAME
+</u></strong>, *NOMAX
+</td>
+
+<td headers="chgjob__parameters__entry__4 ">Optional
+</td>
+
+</tr>
+
+<tr>
+<td headers="chgjob__parameters__entry__1 "><a href="#chgjob__maxtmpstg"><strong>MAXTMPSTG
+</strong></a></td>
+
+<td headers="chgjob__parameters__entry__2 ">Maximum temporary storage
+</td>
+
+<td headers="chgjob__parameters__entry__3 ">1-2147483647, 
+<strong><u>*SAME
+</u></strong>, *NOMAX
+</td>
+
+<td headers="chgjob__parameters__entry__4 ">Optional
+</td>
+
+</tr>
+
+<tr>
+<td headers="chgjob__parameters__entry__1 "><a href="#chgjob__prcrscpty"><strong>PRCRSCPTY
+</strong></a></td>
+
+<td headers="chgjob__parameters__entry__2 ">Processor resources priority
+</td>
+
+<td headers="chgjob__parameters__entry__3 "><strong><u>*SAME
+</u></strong>, *SYSCTL, *NORMAL, *HIGH, *LOW
+</td>
+
+<td headers="chgjob__parameters__entry__4 ">Optional
+</td>
+
+</tr>
+
+<tr>
+<td headers="chgjob__parameters__entry__1 "><a href="#chgjob__dupjobopt"><strong>DUPJOBOPT
+</strong></a></td>
+
+<td headers="chgjob__parameters__entry__2 ">Duplicate job option
+</td>
+
+<td headers="chgjob__parameters__entry__3 "><strong><u>*SELECT
+</u></strong>, *MSG
+</td>
+
+<td headers="chgjob__parameters__entry__4 ">Optional
+</td>
+
+</tr>
+
+</tbody>
+</table></div>
+</div>
+
+<div class="div" id="chgjob__job">
+<p>
+<strong>Job name (JOB)
+</strong></p>
+
+<p>
+Specifies the name of the job whose attributes are being changed.
+
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><u>*
+</u></strong></dt>
+
+<dd class="dlentry">
+The attributes of the job that issues this command are changed.
+</dd>
+
+</dl>
+
+<p>
+<strong>Qualifier 1: Job name
+</strong>
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><em>name
+</em></strong></dt>
+
+<dd class="dlentry">
+Specify the name of the job.
+</dd>
+
+</dl>
+
+<p>
+<strong>Qualifier 2: User
+</strong>
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><em>name
+</em></strong></dt>
+
+<dd class="dlentry">
+Specify the name of the user profile under which the job is run.
+</dd>
+
+</dl>
+
+<p>
+<strong>Qualifier 3: Number
+</strong>
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><em>000000-999999
+</em></strong></dt>
+
+<dd class="dlentry">
+Specify the job number assigned by the system.
+</dd>
+
+</dl>
+
+<p>
+If no job qualifier is given, all jobs currently in the system are searched for the job name.  If more than one occurrence of the specified name is found, a qualified job name must be specified.
+
+</p>
+
+</div>
+<div class="div" id="chgjob__jobpty">
+<p>
+<strong>Job priority (on JOBQ) (JOBPTY)
+</strong></p>
+
+<p>
+Specifies the scheduling priority used for the job being changed.  Valid values range from 0 through 9, where 0 is the highest priority and 9 is the lowest priority.
+
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><u>*SAME
+</u></strong></dt>
+
+<dd class="dlentry">
+The scheduling priority does not change.
+</dd>
+
+<dt class="dlterm">
+<strong><em>0-9
+</em></strong></dt>
+
+<dd class="dlentry">
+Specify the scheduling priority for the job.  If the job is currently on the job queue, its position on the queue in relationship to other jobs may be changed.  The scheduling priority specified cannot be higher than the priority specified in the user profile under which the job in which this command is entered, is running.
+</dd>
+
+</dl>
+
+</div>
+<div class="div" id="chgjob__outpty">
+<p>
+<strong>Output priority (on OUTQ) (OUTPTY)
+</strong></p>
+
+<p>
+Specifies the output priority for spooled output files that are produced by this job.  The highest priority is 1 and the lowest priority is 9.
+
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><u>*SAME
+</u></strong></dt>
+
+<dd class="dlentry">
+The job's priority for spooled output does not change.
+</dd>
+
+<dt class="dlterm">
+<strong><em>1-9
+</em></strong></dt>
+
+<dd class="dlentry">
+Specify the priority of the job's output files.  The output priority specified cannot be higher than the priority specified in the user profile under which the job in which this command entered, is running.  Only those spooled output files which are on output queues in the library name space of the thread issuing this command will be changed.
+</dd>
+
+</dl>
+
+</div>
+<div class="div" id="chgjob__prtdev">
+<p>
+<strong>Print device (PRTDEV)
+</strong></p>
+
+<p>
+Specifies the default printer device for this job.
+
+</p>
+
+<p>
+<strong>Note:     
+</strong>This assumes the defaults are specified on the OUTQ parameter for the printer file, job description, user profile and workstation.
+
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><u>*SAME
+</u></strong></dt>
+
+<dd class="dlentry">
+The default printer device does not change.
+</dd>
+
+<dt class="dlterm">
+<strong>*USRPRF
+</strong></dt>
+
+<dd class="dlentry">
+When the job being changed is the job in which this command is running, the printer device is obtained from the user profile under which this thread was initially running.  When the job being changed is a different job, the printer device is obtained from the current user profile associated with that job.
+</dd>
+
+<dt class="dlterm">
+<strong>*SYSVAL
+</strong></dt>
+
+<dd class="dlentry">
+The value in the system value QPRTDEV is used as the printer device.
+</dd>
+
+<dt class="dlterm">
+<strong>*WRKSTN
+</strong></dt>
+
+<dd class="dlentry">
+The default printer device used with this job is the printer device assigned to the work station that is associated with the job.
+</dd>
+
+</dl>
+
+</div>
+<div class="div" id="chgjob__outq">
+<p>
+<strong>Output queue (OUTQ)
+</strong></p>
+
+<p>
+Specifies the output queue used for spooled files that specify OUTQ(*JOB).  This parameter applies only to printer files that have *JOB specified for the OUTQ parameter.
+
+</p>
+
+<p>
+<strong>Single values
+</strong>
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><u>*SAME
+</u></strong></dt>
+
+<dd class="dlentry">
+The default output queue does not change.
+</dd>
+
+<dt class="dlterm">
+<strong>*USRPRF
+</strong></dt>
+
+<dd class="dlentry">
+When the job being changed is the job in which this command is running, the output queue is obtained from the user profile under which this thread was initially running.  When the job being changed is a different job, the output queue is obtained from the current user profile associated with that job.
+</dd>
+
+<dt class="dlterm">
+<strong>*DEV
+</strong></dt>
+
+<dd class="dlentry">
+The DEV parameter is determined by one of these printer file commands:  Create Printer File (CRTPRTF), Change Printer File (CHGPRTF), or Override with Printer File (OVRPRTF).
+<p>
+<strong>Note:     
+</strong>This assumes the defaults were specified on the OUTQ parameter for the printer file, job description, user profile, and workstation.
+
+</p>
+
+</dd>
+
+<dt class="dlterm">
+<strong>*WRKSTN
+</strong></dt>
+
+<dd class="dlentry">
+The default output queue used with this job is the output queue assigned to the work station that is associated with the job at the time the job is started.
+</dd>
+
+</dl>
+
+<p>
+<strong>Qualifier 1: Output queue
+</strong>
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><em>name
+</em></strong></dt>
+
+<dd class="dlentry">
+Specify the name of the default output queue used by the job.
+</dd>
+
+</dl>
+
+<p>
+<strong>Qualifier 2: Library
+</strong>
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><u>*LIBL
+</u></strong></dt>
+
+<dd class="dlentry">
+All libraries in the library list for the current thread are searched until the first match is found.
+</dd>
+
+</dl>
+
+<dl>
+<dt class="dlterm">
+<strong>*CURLIB
+</strong></dt>
+
+<dd class="dlentry">
+The current library for the thread is used to locate the default output queue.  If no library is specified as the current library for the thread, the QGPL library is used.
+</dd>
+
+<dt class="dlterm">
+<strong><em>name
+</em></strong></dt>
+
+<dd class="dlentry">
+Specify the library where the default output queue used by the job is located.
+</dd>
+
+</dl>
+
+</div>
+<div class="div" id="chgjob__runpty">
+<p>
+<strong>Run priority (RUNPTY)
+</strong></p>
+
+<p>
+Specifies the run priority for the job.  Run priority is a value, ranging from 1 (highest priority) through 99 (lowest priority), that represents the priority at which the job competes for the processing unit relative to other jobs that are active at the same time.  This value represents the relative (not the absolute) importance of the job.  For example, a job with a run priority of 25 is not twice as important as one with a run priority of 50.  This value is the highest run priority allowed for any thread within the job.  Individual threads within the job may have a lower priority.  Changing the run priority of the job will affect the run priorities of all threads within the job.  For example, the job is running at priority 10, thread A within the job is running at priority 10 and thread B within the job is running at priority 15.  The priority of the job is changed to 20.  The priority of thread A would then be adjusted to 20 and the priority of thread B would be adjusted to 25.
+
+</p>
+
+<p>
+If the job consists of multiple routing steps, a change to this attribute during a routing step does not apply to subsequent routing steps.
+
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><u>*SAME
+</u></strong></dt>
+
+<dd class="dlentry">
+The run priority does not change.
+</dd>
+
+<dt class="dlterm">
+<strong><em>1-99
+</em></strong></dt>
+
+<dd class="dlentry">
+Specify the run priority of the job.
+</dd>
+
+</dl>
+
+</div>
+<div class="div" id="chgjob__jobq">
+<p>
+<strong>Job queue (JOBQ)
+</strong></p>
+
+<p>
+Specifies the job queue in which this job is placed.
+
+</p>
+
+<p>
+<strong>Single values
+</strong>
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><u>*SAME
+</u></strong></dt>
+
+<dd class="dlentry">
+The job queue does not change.
+</dd>
+
+</dl>
+
+<p>
+<strong>Qualifier 1: Job queue
+</strong>
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><em>name
+</em></strong></dt>
+
+<dd class="dlentry">
+Specify the name of the job queue.
+</dd>
+
+</dl>
+
+<p>
+<strong>Qualifier 2: Library
+</strong>
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><u>*LIBL
+</u></strong></dt>
+
+<dd class="dlentry">
+All libraries in the library list for the current thread are searched until the first match is found.
+</dd>
+
+</dl>
+
+<dl>
+<dt class="dlterm">
+<strong>*CURLIB
+</strong></dt>
+
+<dd class="dlentry">
+The current library for the thread is used to locate the job queue.  If no library is specified as the current library for the thread, the QGPL library is used.
+</dd>
+
+<dt class="dlterm">
+<strong><em>name
+</em></strong></dt>
+
+<dd class="dlentry">
+Specify the library where the job queue is located.
+</dd>
+
+</dl>
+
+</div>
+<div class="div" id="chgjob__prttxt">
+<p>
+<strong>Print text (PRTTXT)
+</strong></p>
+
+<p>
+Specifies the text that is printed at the bottom of each page of printed output and on separator pages.
+
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><u>*SAME
+</u></strong></dt>
+
+<dd class="dlentry">
+The current value of the PRTTXT parameter does not change.
+</dd>
+
+<dt class="dlterm">
+<strong>*SYSVAL
+</strong></dt>
+
+<dd class="dlentry">
+The system value, QPRTTXT, is used.
+</dd>
+
+<dt class="dlterm">
+<strong>*BLANK
+</strong></dt>
+
+<dd class="dlentry">
+No text is printed on printed output.
+</dd>
+
+<dt class="dlterm">
+<strong><em>character-value
+</em></strong></dt>
+
+<dd class="dlentry">
+Specify the character string that is printed at the bottom of each page.  A maximum of 30 characters can be entered, enclosed in apostrophes.
+</dd>
+
+</dl>
+
+</div>
+<div class="div" id="chgjob__log">
+<p>
+<strong>Message logging (LOG)
+</strong></p>
+
+<p>
+Specifies the message logging values used to determine the amount and type of information sent to the job log by this job.  This parameter has three elements:  the message (or logging) level, the message severity, and the level of message text.  If no values are specified on this parameter, the values are not changed.
+
+</p>
+
+<p>
+<strong>Element 1: Level
+</strong>
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><u>*SAME
+</u></strong></dt>
+
+<dd class="dlentry">
+The message logging level of the job does not change.
+</dd>
+
+<dt class="dlterm">
+<strong><em>0-4
+</em></strong></dt>
+
+<dd class="dlentry">
+Specify the message logging level used for the job's messages.  The possible logging levels are:
+<dl>
+<dt class="dlterm">
+<strong>0
+</strong></dt>
+
+<dd class="dlentry">
+No messages are logged.
+</dd>
+
+<dt class="dlterm">
+<strong>1
+</strong></dt>
+
+<dd class="dlentry">
+All messages sent to the job's external message queue with a severity greater than or equal to the message logging severity are logged.  This includes the indications of job start, job end, and job completion status.
+</dd>
+
+<dt class="dlterm">
+<strong>2
+</strong></dt>
+
+<dd class="dlentry">
+The following information is logged:
+<ul class="cds--list--unordered">
+<li class="cds--list__item">
+Logging level 1 information
+
+</li>
+
+<li class="cds--list__item">
+Request messages which result in a high-level message with a severity code greater than or equal to the message logging severity.  Both the request message and all associated messages are logged.
+
+</li>
+
+</ul>
+
+<p>
+<strong>Note:     
+</strong>A high-level message is one that is sent to the program message queue of the program that receives the request message.  For example, QCMD is an IBM-supplied request processing program that receives request messages.
+
+</p>
+
+</dd>
+
+<dt class="dlterm">
+<strong>3
+</strong></dt>
+
+<dd class="dlentry">
+The following information is logged:
+<ul class="cds--list--unordered">
+<li class="cds--list__item">
+Logging level 1 and 2 information
+
+</li>
+
+<li class="cds--list__item">
+All request messages
+
+</li>
+
+<li class="cds--list__item">
+Commands run by a CL program are logged if it is allowed by the logging of CL programs job attribute and the log attribute of the CL program.
+
+</li>
+
+</ul>
+
+</dd>
+
+<dt class="dlterm">
+<strong>4
+</strong></dt>
+
+<dd class="dlentry">
+The following information is logged:
+<ul class="cds--list--unordered">
+<li class="cds--list__item">
+All request messages and all messages with a severity greater than or equal to the message logging severity, including trace messages.
+
+</li>
+
+<li class="cds--list__item">
+Commands run by a CL program are logged if it is allowed by the logging of CL programs job attribute and the log attribute of the CL program.
+
+</li>
+
+</ul>
+
+</dd>
+
+</dl>
+
+</dd>
+
+</dl>
+
+<p>
+<strong>Element 2: Severity
+</strong>
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><u>*SAME
+</u></strong></dt>
+
+<dd class="dlentry">
+The message logging severity does not change.
+</dd>
+
+<dt class="dlterm">
+<strong><em>0-99
+</em></strong></dt>
+
+<dd class="dlentry">
+Specify the message logging severity that is used in conjunction with the logging level to determine which error messages are logged in the job log.
+</dd>
+
+</dl>
+
+<p>
+<strong>Element 3: Text
+</strong>
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><u>*SAME
+</u></strong></dt>
+
+<dd class="dlentry">
+The level of message text does not change.
+</dd>
+
+<dt class="dlterm">
+<strong>*MSG
+</strong></dt>
+
+<dd class="dlentry">
+Only the message text is written to the job log.
+</dd>
+
+<dt class="dlterm">
+<strong>*SECLVL
+</strong></dt>
+
+<dd class="dlentry">
+Both the message text and the message help (cause and recovery) of the error message are written to the job log.
+</dd>
+
+<dt class="dlterm">
+<strong>*NOLIST
+</strong></dt>
+
+<dd class="dlentry">
+If the job ends normally, no job log is produced.  If the job ends abnormally (if the job end code is 20 or higher), a job log is produced.  The messages that appear in the job log contain both the message text and the message help.
+</dd>
+
+</dl>
+
+</div>
+<div class="div" id="chgjob__logclpgm">
+<p>
+<strong>Log CL program commands (LOGCLPGM)
+</strong></p>
+
+<p>
+Specifies whether the commands that are run in a control language program are logged to the job log by way of the CL program's message queue.  This parameter sets the status of the job's logging flag.  If *JOB has been specified for the 
+<strong>Message logging (LOG)
+</strong> parameter in the Create CL Program (CRTCLPGM) command, the flag set in the 
+<strong>Log CL program commands (LOGCLPGM)
+</strong> parameter is used.  Other values for the 
+<strong>Message logging (LOG)
+</strong> parameter override the 
+<strong>Log CL program commands (LOGCLPGM)
+</strong> parameter.  The commands are logged in the same manner as the requests.
+
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><u>*SAME
+</u></strong></dt>
+
+<dd class="dlentry">
+The current state of the job's logging flag does not change.
+</dd>
+
+<dt class="dlterm">
+<strong>*NO
+</strong></dt>
+
+<dd class="dlentry">
+Commands that come later in a CL program are not written to the job log.
+</dd>
+
+<dt class="dlterm">
+<strong>*YES
+</strong></dt>
+
+<dd class="dlentry">
+Commands that come later in a CL program, and are capable of being written, are logged to the job log.
+</dd>
+
+</dl>
+
+</div>
+<div class="div" id="chgjob__logoutput">
+<p>
+<strong>Job log output (LOGOUTPUT)
+</strong></p>
+
+<p>
+Specifies how the job log will be produced when the job completes.  This does not affect job logs produced when the message queue is full and the job message queue full action specifies *PRTWRAP.  Messages in the job message queue are written to a spooled file, from which the job log can be printed, unless the Control Job Log Output (QMHCTLJL) API was used in the job to specify that the messages in the job log are to be written to a database file.
+
+</p>
+
+<p>
+The job log output value can be changed at any time until the job log has been produced or removed.  To change the job log output value for a job, use the Change Job (QWTCHGJB) API or the Change Job (CHGJOB) command.
+
+</p>
+
+<p>
+The job log can be displayed at any time until the job log has been produced or removed.  To display the job log, use the Display Job Log (DSPJOBLOG) command.
+
+</p>
+
+<p>
+The job log can be removed when the job has completed and the job log has not yet been produced or removed.  To remove the job log, use the Remove Pending Job Log (QWTRMVJL) API or the End Job (ENDJOB) command.
+
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><u>*SAME
+</u></strong></dt>
+
+<dd class="dlentry">
+The value does not change.
+</dd>
+
+<dt class="dlterm">
+<strong>*SYSVAL
+</strong></dt>
+
+<dd class="dlentry">
+The value specified in the system value QLOGOUTPUT is used.
+</dd>
+
+<dt class="dlterm">
+<strong>*JOBLOGSVR
+</strong></dt>
+
+<dd class="dlentry">
+The job log will be produced by a job log server.  For more information about job log servers, refer to the Start Job Log Server (STRLOGSVR) command.
+</dd>
+
+<dt class="dlterm">
+<strong>*JOBEND
+</strong></dt>
+
+<dd class="dlentry">
+The job log will be produced by the job itself.  If the job cannot produce its own job log, the job log will be produced by a job log server.  For example, a job does not produce its own job log when the system is processing a Power Down System (PWRDWNSYS) command.
+</dd>
+
+<dt class="dlterm">
+<strong>*PND
+</strong></dt>
+
+<dd class="dlentry">
+The job log will not be produced.  The job log remains pending until removed.
+</dd>
+
+</dl>
+
+</div>
+<div class="div" id="chgjob__jobmsgqfl">
+<p>
+<strong>Job message queue full action (JOBMSGQFL)
+</strong></p>
+
+<p>
+Specifies the action that should be taken when the job message queue is full.
+
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><u>*SAME
+</u></strong></dt>
+
+<dd class="dlentry">
+The job message queue full option does not change.
+</dd>
+
+<dt class="dlterm">
+<strong>*SYSVAL
+</strong></dt>
+
+<dd class="dlentry">
+The value specified for the QJOBMSGQFL system value is used.
+</dd>
+
+<dt class="dlterm">
+<strong>*NOWRAP
+</strong></dt>
+
+<dd class="dlentry">
+The message queue does not wrap when it is full.  This action ends the job.
+</dd>
+
+<dt class="dlterm">
+<strong>*WRAP
+</strong></dt>
+
+<dd class="dlentry">
+The message queue wraps to the start of the message queue when full and starts filling the message queue again.
+</dd>
+
+<dt class="dlterm">
+<strong>*PRTWRAP
+</strong></dt>
+
+<dd class="dlentry">
+The message queue wraps the job message queue when full and prints the messages that are being overlaid because of wrapping.
+</dd>
+
+</dl>
+
+</div>
+<div class="div" id="chgjob__inqmsgrpy">
+<p>
+<strong>Inquiry message reply (INQMSGRPY)
+</strong></p>
+
+<p>
+Specifies the way that predefined messages that are sent as a result of running this job are answered.  You can specify that the inquiry message reply control is taken from the job description, or that all inquiry messages require a reply, or that a default reply is issued, or that the system reply list is checked for a matching reply as each predefined inquiry message is sent.
+
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><u>*SAME
+</u></strong></dt>
+
+<dd class="dlentry">
+The method to use for inquiry message replies does not change.
+</dd>
+
+<dt class="dlterm">
+<strong>*RQD
+</strong></dt>
+
+<dd class="dlentry">
+A reply is required by the receiver of the inquiry message for inquiry messages that are sent during the running of this job.
+</dd>
+
+<dt class="dlterm">
+<strong>*DFT
+</strong></dt>
+
+<dd class="dlentry">
+The default message reply is used to answer any inquiry messages issued during the running of this job.
+</dd>
+
+<dt class="dlterm">
+<strong>*SYSRPYL
+</strong></dt>
+
+<dd class="dlentry">
+The system reply list is checked to see if there is an entry for any inquiry message issued as a result of running this job.  If a match occurs, the reply value in that entry is used.  If no entry exists for that inquiry message, a reply is required.
+</dd>
+
+</dl>
+
+</div>
+<div class="div" id="chgjob__brkmsg">
+<p>
+<strong>Break message handling (BRKMSG)
+</strong></p>
+
+<p>
+Specifies how break messages are handled for the job.  This is determined by the status of the message queue, the message queue severity, and the setting of this value.
+
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><u>*SAME
+</u></strong></dt>
+
+<dd class="dlentry">
+Break message handling does not change.
+</dd>
+
+<dt class="dlterm">
+<strong>*NORMAL
+</strong></dt>
+
+<dd class="dlentry">
+Break message handling is determined by the message queue status.
+</dd>
+
+<dt class="dlterm">
+<strong>*NOTIFY
+</strong></dt>
+
+<dd class="dlentry">
+An audible alarm sounds to indicate the presence of a message.  *NOTIFY is allowed only for interactive jobs.
+</dd>
+
+<dt class="dlterm">
+<strong>*HOLD
+</strong></dt>
+
+<dd class="dlentry">
+Neither break messages, or messages sent to a signed-on work station through the Send Break Message (SNDBRKMSG) command, are shown for message queues in *BREAK delivery mode.  The alarm does not sound for messages sent to message queues in *NOTIFY delivery mode.  The user break message handling program is not started.
+</dd>
+
+</dl>
+
+</div>
+<div class="div" id="chgjob__stsmsg">
+<p>
+<strong>Status message (STSMSG)
+</strong></p>
+
+<p>
+Specifies how status messages are handled for the job.
+
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><u>*SAME
+</u></strong></dt>
+
+<dd class="dlentry">
+Status message handling does not change.
+</dd>
+
+<dt class="dlterm">
+<strong>*USRPRF
+</strong></dt>
+
+<dd class="dlentry">
+When the job being changed is the job in which this command is running, the status message handling is obtained from the user profile under which this thread was initially running.  When the job being changed is a different job, the status message handling is obtained from the current user profile associated with that job.
+</dd>
+
+<dt class="dlterm">
+<strong>*SYSVAL
+</strong></dt>
+
+<dd class="dlentry">
+Status messages are shown or not shown as specified in the QSTSMSG system value.
+</dd>
+
+<dt class="dlterm">
+<strong>*NONE
+</strong></dt>
+
+<dd class="dlentry">
+Status messages are not shown.
+</dd>
+
+<dt class="dlterm">
+<strong>*NORMAL
+</strong></dt>
+
+<dd class="dlentry">
+Status messages are shown.  Text on the bottom line of the display is lost.
+</dd>
+
+</dl>
+
+</div>
+<div class="div" id="chgjob__ddmcnv">
+<p>
+<strong>DDM conversation (DDMCNV)
+</strong></p>
+
+<p>
+Specifies whether the connections using distributed data management (DDM) protocols remain active when they are not being used.  The connections include APPC conversations, active TCP/IP conversations or OptiConnect connections.  The DDM protocols are used in Distributed Relational Database Architecture (DRDA) applications, DDM applications, or DB2 Multisystem applications.
+
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><u>*SAME
+</u></strong></dt>
+
+<dd class="dlentry">
+The current state of the job's DDM conversation attribute does not change.
+</dd>
+
+<dt class="dlterm">
+<strong>*KEEP
+</strong></dt>
+
+<dd class="dlentry">
+The system keeps DDM conversation connections active when there are no users, except when:
+<ul class="cds--list--unordered">
+<li class="cds--list__item">
+The routing step ends on the source system, either at the job or when the job starts a reroute of the job.
+
+</li>
+
+<li class="cds--list__item">
+There is an explicit request that conversations be disconnected, using the Reclaim DDM Conversations (RCLDDMCNV) command or the Reclaim Resources (RCLRSC) command.
+
+</li>
+
+<li class="cds--list__item">
+There is a communications failure or internal failure.
+
+</li>
+
+<li class="cds--list__item">
+A DRDA connection to an application server not running on the System i ends.
+
+</li>
+
+</ul>
+
+</dd>
+
+<dt class="dlterm">
+<strong>*DROP
+</strong></dt>
+
+<dd class="dlentry">
+The system ends a DDM-allocated conversation when there are no users.  Examples include when an application closes a DDM file, or when a DRDA application runs an SQL DISCONNECT statement.
+</dd>
+
+</dl>
+
+</div>
+<div class="div" id="chgjob__scddate">
+<p>
+<strong>Schedule date (SCDDATE)
+</strong></p>
+
+<p>
+Specifies the date on which the submitted job becomes eligible to run.
+
+</p>
+
+<p>
+If your system or your job is configured to use the Julian date format, *MONTHSTR and *MONTHEND are calculated as if the system or job did not use the Julian date format.
+
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><u>*SAME
+</u></strong></dt>
+
+<dd class="dlentry">
+This value does not change.
+</dd>
+
+<dt class="dlterm">
+<strong>*CURRENT
+</strong></dt>
+
+<dd class="dlentry">
+The submitted job becomes eligible to run on the current date.
+</dd>
+
+<dt class="dlterm">
+<strong>*MONTHSTR
+</strong></dt>
+
+<dd class="dlentry">
+The submitted job becomes eligible to run on the first day of the month.  If you specify *MONTHSTR, and if today is the first day of the month and the time you specify on the SCDTIME parameter has not passed, the job becomes eligible to run today.  Otherwise, the job becomes eligible on the first day of the next month.
+</dd>
+
+<dt class="dlterm">
+<strong>*MONTHEND
+</strong></dt>
+
+<dd class="dlentry">
+The submitted job becomes eligible to run on the last day of the month.  If you specify *MONTHEND, and if today is the last day of the month and the time you specify on the SCDTIME parameter has not passed, the job becomes eligible to run today.  Otherwise, the job becomes eligible on the last day of the next month.
+</dd>
+
+<dt class="dlterm">
+<strong>*MON
+</strong></dt>
+
+<dd class="dlentry">
+The job becomes eligible to run on Monday.
+</dd>
+
+<dt class="dlterm">
+<strong>*TUE
+</strong></dt>
+
+<dd class="dlentry">
+The job becomes eligible to run on Tuesday.
+</dd>
+
+<dt class="dlterm">
+<strong>*WED
+</strong></dt>
+
+<dd class="dlentry">
+The job becomes eligible to run on Wednesday.
+</dd>
+
+<dt class="dlterm">
+<strong>*THU
+</strong></dt>
+
+<dd class="dlentry">
+The job becomes eligible to run on Thursday.
+</dd>
+
+<dt class="dlterm">
+<strong>*FRI
+</strong></dt>
+
+<dd class="dlentry">
+The job becomes eligible to run on Friday.
+</dd>
+
+<dt class="dlterm">
+<strong>*SAT
+</strong></dt>
+
+<dd class="dlentry">
+The job becomes eligible to run on Saturday.
+</dd>
+
+<dt class="dlterm">
+<strong>*SUN
+</strong></dt>
+
+<dd class="dlentry">
+The job becomes eligible to run on Sunday.
+</dd>
+
+<dt class="dlterm">
+<strong><em>date
+</em></strong></dt>
+
+<dd class="dlentry">
+Specify a date in the job date format with or without separators.
+</dd>
+
+</dl>
+
+</div>
+<div class="div" id="chgjob__scdtime">
+<p>
+<strong>Schedule time (SCDTIME)
+</strong></p>
+
+<p>
+Specifies the time on the scheduled date at which the job becomes eligible to run.
+
+</p>
+
+<p>
+<strong>Note:     
+</strong>Although the time can be specified to the second, the load on the system may affect the exact time at which the job becomes eligible to run.
+
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><u>*SAME
+</u></strong></dt>
+
+<dd class="dlentry">
+This value does not change.
+</dd>
+
+<dt class="dlterm">
+<strong>*CURRENT
+</strong></dt>
+
+<dd class="dlentry">
+The job is submitted on the current time.
+</dd>
+
+<dt class="dlterm">
+<strong><em>time
+</em></strong></dt>
+
+<dd class="dlentry">
+Specify the time you want the job to start.  The time is specified in 24-hour format and can be specified with or without a time separator:
+<ul class="cds--list--unordered">
+<li class="cds--list__item">
+Without a time separator, specify a string of 4 or 6 digits (hhmm or hhmmss) where 
+<strong>hh
+</strong> = hours, 
+<strong>mm
+</strong> = minutes, and 
+<strong>ss
+</strong> = seconds.  Valid values for 
+<strong>hh
+</strong> range from 00 to 23.  Valid values for 
+<strong>mm
+</strong> and 
+<strong>ss
+</strong> range from 00 to 59.
+
+</li>
+
+<li class="cds--list__item">
+With a time separator, specify a string of 5 or 8 digits where the time separator specified for your job is used to separate the hours, minutes, and seconds.  If this command is entered from the command line, the string must be enclosed in apostrophes.  If a time separator other than the separator specified for your job is used, this command will fail.
+
+</li>
+
+</ul>
+
+</dd>
+
+</dl>
+
+</div>
+<div class="div" id="chgjob__date">
+<p>
+<strong>Job date (DATE)
+</strong></p>
+
+<p>
+Specifies the date that is assigned to the job.  The job date remains the same for the duration of the job, unless it is changed by the user.
+
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><u>*SAME
+</u></strong></dt>
+
+<dd class="dlentry">
+The job date does not change.
+</dd>
+
+<dt class="dlterm">
+<strong><em>date
+</em></strong></dt>
+
+<dd class="dlentry">
+Specify the value that is used as the job date for the job.  The date must be entered in the current job date format.  If no job date is specified for a job, the system date is used as the default for any function requiring a job date.  The date specified in this parameter overrides the system date for the running of the job only.
+</dd>
+
+</dl>
+
+</div>
+<div class="div" id="chgjob__datfmt">
+<p>
+<strong>Date format (DATFMT)
+</strong></p>
+
+<p>
+Specifies the format used for the date.
+
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><u>*SAME
+</u></strong></dt>
+
+<dd class="dlentry">
+The date format used does not change.
+</dd>
+
+<dt class="dlterm">
+<strong>*SYSVAL
+</strong></dt>
+
+<dd class="dlentry">
+The system value, QDATFMT, is used.
+</dd>
+
+<dt class="dlterm">
+<strong>*YMD
+</strong></dt>
+
+<dd class="dlentry">
+The date format used is year, month, and day.
+</dd>
+
+<dt class="dlterm">
+<strong>*MDY
+</strong></dt>
+
+<dd class="dlentry">
+The date format used is month, day, and year.
+</dd>
+
+<dt class="dlterm">
+<strong>*DMY
+</strong></dt>
+
+<dd class="dlentry">
+The date format used is day, month, year.
+</dd>
+
+<dt class="dlterm">
+<strong>*JUL
+</strong></dt>
+
+<dd class="dlentry">
+The date format used is Julian.
+</dd>
+
+</dl>
+
+</div>
+<div class="div" id="chgjob__datsep">
+<p>
+<strong>Date separator (DATSEP)
+</strong></p>
+
+<p>
+Specifies the date separator used for the date.
+
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><u>*SAME
+</u></strong></dt>
+
+<dd class="dlentry">
+The date separator does not change.
+</dd>
+
+<dt class="dlterm">
+<strong>*SYSVAL
+</strong></dt>
+
+<dd class="dlentry">
+The system value for the date separator is used.
+</dd>
+
+<dt class="dlterm">
+<strong>*BLANK
+</strong></dt>
+
+<dd class="dlentry">
+A blank is used for the date separator.
+</dd>
+
+<dt class="dlterm">
+<strong>'/'
+</strong></dt>
+
+<dd class="dlentry">
+A slash (/) is used for the date separator.
+</dd>
+
+<dt class="dlterm">
+<strong>'-'
+</strong></dt>
+
+<dd class="dlentry">
+A dash (-) is used for the date separator.
+</dd>
+
+<dt class="dlterm">
+<strong>'.'
+</strong></dt>
+
+<dd class="dlentry">
+A period (.) is used for the date separator.
+</dd>
+
+<dt class="dlterm">
+<strong>' '
+</strong></dt>
+
+<dd class="dlentry">
+A blank is used for the date separator.
+</dd>
+
+<dt class="dlterm">
+<strong>','
+</strong></dt>
+
+<dd class="dlentry">
+A comma (,) is used for the date separator.
+</dd>
+
+</dl>
+
+</div>
+<div class="div" id="chgjob__timsep">
+<p>
+<strong>Time separator (TIMSEP)
+</strong></p>
+
+<p>
+Specifies the time separator used for the job.
+
+</p>
+
+<p>
+<strong>Note:     
+</strong>When specifying time on other commands, you must use the time separator specified on this parameter or no time separator.  If a time separator different from the time separator specified here is used to specify time on another command, the command will fail.
+
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><u>*SAME
+</u></strong></dt>
+
+<dd class="dlentry">
+The time separator does not change.
+</dd>
+
+<dt class="dlterm">
+<strong>*SYSVAL
+</strong></dt>
+
+<dd class="dlentry">
+The time separator specified in the system value QTIMSEP is used.
+</dd>
+
+<dt class="dlterm">
+<strong>*BLANK
+</strong></dt>
+
+<dd class="dlentry">
+A blank is used for the time separator.
+</dd>
+
+<dt class="dlterm">
+<strong>':'
+</strong></dt>
+
+<dd class="dlentry">
+A colon (:) is used for the time separator.
+</dd>
+
+<dt class="dlterm">
+<strong>'.'
+</strong></dt>
+
+<dd class="dlentry">
+A period (.) is used for the time separator.
+</dd>
+
+<dt class="dlterm">
+<strong>' '
+</strong></dt>
+
+<dd class="dlentry">
+A blank is used for the time separator.
+</dd>
+
+<dt class="dlterm">
+<strong>','
+</strong></dt>
+
+<dd class="dlentry">
+A comma (,) is used for the time separator.
+</dd>
+
+</dl>
+
+</div>
+<div class="div" id="chgjob__sws">
+<p>
+<strong>Job switches (SWS)
+</strong></p>
+
+<p>
+Specifies the switch settings for a group of eight job switches that are used with the job.  These switches can be set or tested in a CL program and used to control the flow of the program.  The only valid values for each 1-digit switch are 0 (off), 1 (on), or X.  The X indicates that a switch value does not change.
+
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><u>*SAME
+</u></strong></dt>
+
+<dd class="dlentry">
+The values in the eight job switches do not change.
+</dd>
+
+<dt class="dlterm">
+<strong><em>character-value
+</em></strong></dt>
+
+<dd class="dlentry">
+Specify any combination (in quotation marks or not) of eight 0's, 1's, or X's to change the job switch settings.  If a switch value is not being changed, enter an X in the position representing that switch.
+</dd>
+
+</dl>
+
+</div>
+<div class="div" id="chgjob__timeslice">
+<p>
+<strong>Time slice (TIMESLICE)
+</strong></p>
+
+<p>
+Specifies the maximum amount of processor time (in milliseconds) given to each thread in the job before other threads in this job and in other jobs are given an opportunity to run.  The time slice establishes the amount of time needed by a thread in the job to accomplish a meaningful amount of processing.  At the end of the time slice, the thread might be put in an inactive state so that other threads can become active in the storage pool.
+
+</p>
+
+<p>
+If the job consists of multiple routing steps, a change to this attribute during a routing step does not apply to subsequent routing steps.
+
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><u>*SAME
+</u></strong></dt>
+
+<dd class="dlentry">
+The value specified for the time slice does not change.
+</dd>
+
+<dt class="dlterm">
+<strong><em>1-9999999
+</em></strong></dt>
+
+<dd class="dlentry">
+Specify the amount of time (in milliseconds) that each thread in the job is allowed to run when it is given processing time.
+<p>
+<strong>Note:     
+</strong>A millisecond is one thousandth of a second.  So, 9 999 999 milliseconds equals 9999.999 seconds.  Although you can specify a value of less than 8, the system takes a minimum of 8 milliseconds to run a process.  If you display a job's run attributes, the time slice value is never less than 8.
+
+</p>
+
+</dd>
+
+</dl>
+
+</div>
+<div class="div" id="chgjob__purge">
+<p>
+<strong>Eligible for purge (PURGE)
+</strong></p>
+
+<p>
+Specifies whether the job is eligible to be moved out of main storage and put into auxiliary storage at the end of a time slice or when entering a long wait (such as waiting for a work station user's response). This attribute is ignored when more than one thread is active within the job.
+
+</p>
+
+<p>
+If the job consists of multiple routing steps, a change to this attribute during a routing step does not apply to subsequent routing steps.
+
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><u>*SAME
+</u></strong></dt>
+
+<dd class="dlentry">
+The value specified for the purge option does not change.
+</dd>
+
+<dt class="dlterm">
+<strong>*YES
+</strong></dt>
+
+<dd class="dlentry">
+The job is eligible to be moved out of main storage and put into auxiliary storage.  However, a job with multiple threads is never purged from main storage.
+</dd>
+
+<dt class="dlterm">
+<strong>*NO
+</strong></dt>
+
+<dd class="dlentry">
+The job is not eligible to be moved out of main storage and put into auxiliary storage.  However, when main storage is needed, pages belonging to a thread in this job may be moved to auxiliary storage.  Then, when a thread in this job runs again, its pages are returned to main storage as they are needed.
+</dd>
+
+</dl>
+
+</div>
+<div class="div" id="chgjob__dftwait">
+<p>
+<strong>Default wait time (DFTWAIT)
+</strong></p>
+
+<p>
+Specifies the default maximum time (in seconds) that a thread in the job waits for a system instruction, such as the LOCK machine interface (MI) instruction, to acquire a resource.  This default wait time is used when a wait time is not otherwise specified for a given situation.  Normally, this is the amount of time the system is willing to wait for the system before the request is ended.  The wait time specified for this parameter is ignored for read operations to database files.
+
+</p>
+
+<p>
+If the job consists of multiple routing steps, a change to this attribute during a routing step does not apply to subsequent routing steps.
+
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><u>*SAME
+</u></strong></dt>
+
+<dd class="dlentry">
+The default maximum wait time does not change.
+</dd>
+
+<dt class="dlterm">
+<strong>*NOMAX
+</strong></dt>
+
+<dd class="dlentry">
+There is no maximum wait time.
+</dd>
+
+<dt class="dlterm">
+<strong><em>1-9999999
+</em></strong></dt>
+
+<dd class="dlentry">
+Specify the number of seconds for the maximum time that the system waits for the instruction to acquire a resource.
+</dd>
+
+</dl>
+
+</div>
+<div class="div" id="chgjob__devrcyacn">
+<p>
+<strong>Device recovery action (DEVRCYACN)
+</strong></p>
+
+<p>
+Specifies the recovery action to take for the job when an I/O error is encountered on the *REQUESTER device for interactive jobs.  This parameter can be specified only for interactive jobs.
+
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><u>*SAME
+</u></strong></dt>
+
+<dd class="dlentry">
+The work station recovery action does not change.
+</dd>
+
+<dt class="dlterm">
+<strong>*SYSVAL
+</strong></dt>
+
+<dd class="dlentry">
+The value in the system value, QDEVRCYACN, is used as the device recovery action for this job.
+</dd>
+
+<dt class="dlterm">
+<strong>*MSG
+</strong></dt>
+
+<dd class="dlentry">
+The application program requesting the I/O operation receives an error message indicating the I/O operation has failed.
+</dd>
+
+<dt class="dlterm">
+<strong>*DSCMSG
+</strong></dt>
+
+<dd class="dlentry">
+The job is automatically disconnected.  When the job is reconnected, it receives an error message indicating that an I/O error has occurred but the device has been recovered.  Although the device has been recovered, the contents of the display prior to the error must be shown again.
+</dd>
+
+<dt class="dlterm">
+<strong>*DSCENDRQS
+</strong></dt>
+
+<dd class="dlentry">
+The job is automatically disconnected.  Once it is reconnected, the ENDRQS command is issued specifying the previous request processor.  If there is no request processor, an error message is issued.
+</dd>
+
+<dt class="dlterm">
+<strong>*ENDJOB
+</strong></dt>
+
+<dd class="dlentry">
+The job is ended with the *IMMED option.  A job log is produced for the job.
+</dd>
+
+<dt class="dlterm">
+<strong>*ENDJOBNOLIST
+</strong></dt>
+
+<dd class="dlentry">
+The job is ended with the *IMMED option.  No job log is produced for the job.
+</dd>
+
+</dl>
+
+</div>
+<div class="div" id="chgjob__tsepool">
+<p>
+<strong>Time slice end pool (TSEPOOL)
+</strong></p>
+
+<p>
+Specifies whether threads in interactive jobs should be moved to another main storage pool when they reach the time slice end.  When a long wait occurs, the thread is moved back to the pool in which it was originally running.  This may minimize the effect on the interactive response time of other interactive jobs.  This parameter can be specified only for interactive jobs.
+
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><u>*SAME
+</u></strong></dt>
+
+<dd class="dlentry">
+The value for the time slice end pool does not change.
+</dd>
+
+<dt class="dlterm">
+<strong>*SYSVAL
+</strong></dt>
+
+<dd class="dlentry">
+The value in the system value, QTSEPOOL, at the time the CHGJOB command is issued is used as the time slice end pool action for this job.
+</dd>
+
+<dt class="dlterm">
+<strong>*NONE
+</strong></dt>
+
+<dd class="dlentry">
+A thread in the job is not moved when it reaches the end of its time slice.
+</dd>
+
+<dt class="dlterm">
+<strong>*BASE
+</strong></dt>
+
+<dd class="dlentry">
+A thread in the job is moved to the base pool when it reaches the end of its time slice.
+</dd>
+
+</dl>
+
+</div>
+<div class="div" id="chgjob__prtkeyfmt">
+<p>
+<strong>Print key format (PRTKEYFMT)
+</strong></p>
+
+<p>
+Specifies whether border and header information is printed when the print key is pressed.
+
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><u>*SAME
+</u></strong></dt>
+
+<dd class="dlentry">
+The value specified for this parameter does not change.
+</dd>
+
+<dt class="dlterm">
+<strong>*SYSVAL
+</strong></dt>
+
+<dd class="dlentry">
+The value specified on the system value QPRTKEYFMT determines whether header or border information is printed.
+</dd>
+
+<dt class="dlterm">
+<strong>*NONE
+</strong></dt>
+
+<dd class="dlentry">
+Border information and header information are not printed.
+</dd>
+
+<dt class="dlterm">
+<strong>*PRTBDR
+</strong></dt>
+
+<dd class="dlentry">
+Border information is printed.
+</dd>
+
+<dt class="dlterm">
+<strong>*PRTHDR
+</strong></dt>
+
+<dd class="dlentry">
+Header information is printed.
+</dd>
+
+<dt class="dlterm">
+<strong>*PRTALL
+</strong></dt>
+
+<dd class="dlentry">
+Border information and header information are printed.
+</dd>
+
+</dl>
+
+</div>
+<div class="div" id="chgjob__srtseq">
+<p>
+<strong>Sort sequence (SRTSEQ)
+</strong></p>
+
+<p>
+Specifies the sort sequence table to be used for string comparisons for this job.
+
+</p>
+
+<p>
+<strong>Single values
+</strong>
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><u>*SAME
+</u></strong></dt>
+
+<dd class="dlentry">
+This value does not change.
+</dd>
+
+<dt class="dlterm">
+<strong>*USRPRF
+</strong></dt>
+
+<dd class="dlentry">
+When the job being changed is the job in which this command is running, the sort table is obtained from the user profile under which this thread was initially running.  When the job being changed is a different job, the sort table is obtained from the current user profile associated with that job.
+</dd>
+
+<dt class="dlterm">
+<strong>*SYSVAL
+</strong></dt>
+
+<dd class="dlentry">
+The system value QSRTSEQ is used.
+</dd>
+
+<dt class="dlterm">
+<strong>*HEX
+</strong></dt>
+
+<dd class="dlentry">
+A sort sequence table is not used.  The hexadecimal values of the characters are used to determine the sort sequence.
+</dd>
+
+<dt class="dlterm">
+<strong>*LANGIDUNQ
+</strong></dt>
+
+<dd class="dlentry">
+A unique-weight sort table is used.
+</dd>
+
+<dt class="dlterm">
+<strong>*LANGIDSHR
+</strong></dt>
+
+<dd class="dlentry">
+A shared-weight sort table is used.
+</dd>
+
+</dl>
+
+<p>
+<strong>Qualifier 1: Sort sequence
+</strong>
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><em>name
+</em></strong></dt>
+
+<dd class="dlentry">
+Specify the name of the sort sequence table to be used with this job.
+</dd>
+
+</dl>
+
+<p>
+<strong>Qualifier 2: Library
+</strong>
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><u>*LIBL
+</u></strong></dt>
+
+<dd class="dlentry">
+All libraries in the library list for the current thread are searched until the first match is found.
+</dd>
+
+</dl>
+
+<dl>
+<dt class="dlterm">
+<strong>*CURLIB
+</strong></dt>
+
+<dd class="dlentry">
+The current library for the thread is searched.  If no library is specified as the current library for the thread, the QGPL library is used.
+</dd>
+
+<dt class="dlterm">
+<strong><em>name
+</em></strong></dt>
+
+<dd class="dlentry">
+Specify the library where the sort sequence table is located.
+</dd>
+
+</dl>
+
+</div>
+<div class="div" id="chgjob__langid">
+<p>
+<strong>Language ID (LANGID)
+</strong></p>
+
+<p>
+Specifies the language identifier to be associated with this job.  The language identifier is used when *LANGIDUNQ or *LANGIDSHR is specified on the 
+<strong>Sort sequence (SRTSEQ)
+</strong> parameter.  If the job CCSID is 65535, this parameter is also used to determine the value of the job default CCSID (DFTCCSID).
+
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><u>*SAME
+</u></strong></dt>
+
+<dd class="dlentry">
+The value does not change.
+</dd>
+
+<dt class="dlterm">
+<strong>*USRPRF
+</strong></dt>
+
+<dd class="dlentry">
+When the job being changed is the job in which this command is running, the language ID is obtained from the user profile under which this thread was initially running.  When the job being changed is a different job, the language ID is obtained from the current user profile associated with that job.
+</dd>
+
+<dt class="dlterm">
+<strong>*SYSVAL
+</strong></dt>
+
+<dd class="dlentry">
+The system value QLANGID is used.
+</dd>
+
+<dt class="dlterm">
+<strong><em>character-value
+</em></strong></dt>
+
+<dd class="dlentry">
+Specify the language identifier to be used by the job.
+</dd>
+
+</dl>
+
+</div>
+<div class="div" id="chgjob__cntryid">
+<p>
+<strong>Country or region ID (CNTRYID)
+</strong></p>
+
+<p>
+Specifies the country or region identifier to be used by the job.
+
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><u>*SAME
+</u></strong></dt>
+
+<dd class="dlentry">
+The value does not change.
+</dd>
+
+<dt class="dlterm">
+<strong>*USRPRF
+</strong></dt>
+
+<dd class="dlentry">
+When the job being changed is the job in which this command is running, the country or region ID is obtained from the user profile under which this thread was initially running.  When the job being changed is a different job, the country or region ID is obtained from the current user profile associated with that job.
+</dd>
+
+<dt class="dlterm">
+<strong>*SYSVAL
+</strong></dt>
+
+<dd class="dlentry">
+The system value QCNTRYID is used.
+</dd>
+
+<dt class="dlterm">
+<strong><em>character-value
+</em></strong></dt>
+
+<dd class="dlentry">
+Specify the country or region identifier to be used by the job.
+</dd>
+
+</dl>
+
+</div>
+<div class="div" id="chgjob__ccsid">
+<p>
+<strong>Coded character set ID (CCSID)
+</strong></p>
+
+<p>
+Specifies the coded character set identifier (CCSID) used for this job.
+
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><u>*SAME
+</u></strong></dt>
+
+<dd class="dlentry">
+The CCSID value does not change.
+</dd>
+
+<dt class="dlterm">
+<strong>*USRPRF
+</strong></dt>
+
+<dd class="dlentry">
+When the job being changed is the job in which this command is running, the CCSID is obtained from the user profile under which this thread was initially running.  When the job being changed is a different job, the CCSID is obtained from the current user profile associated with that job.
+</dd>
+
+<dt class="dlterm">
+<strong>*SYSVAL
+</strong></dt>
+
+<dd class="dlentry">
+The CCSID specified in the system value QCCSID is used.
+</dd>
+
+<dt class="dlterm">
+<strong>*HEX
+</strong></dt>
+
+<dd class="dlentry">
+The CCSID 65535 is used, which indicates that the character data in the fields is treated as bit data and is not converted.
+</dd>
+
+<dt class="dlterm">
+<strong><em>1-65535
+</em></strong></dt>
+
+<dd class="dlentry">
+Specify the CCSID.
+</dd>
+
+</dl>
+
+</div>
+<div class="div" id="chgjob__decfmt">
+<p>
+<strong>Decimal format (DECFMT)
+</strong></p>
+
+<p>
+Specifies the decimal format used for the job.
+
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><u>*SAME
+</u></strong></dt>
+
+<dd class="dlentry">
+The value does not change.
+</dd>
+
+<dt class="dlterm">
+<strong>*SYSVAL
+</strong></dt>
+
+<dd class="dlentry">
+The value specified for the QDECFMT system value is used.
+</dd>
+
+<dt class="dlterm">
+<strong>*BLANK
+</strong></dt>
+
+<dd class="dlentry">
+A period (.) is used for the decimal format, zero suppression.
+</dd>
+
+<dt class="dlterm">
+<strong>I
+</strong></dt>
+
+<dd class="dlentry">
+A comma (,) is used for the decimal format, zero suppression.
+</dd>
+
+<dt class="dlterm">
+<strong>J
+</strong></dt>
+
+<dd class="dlentry">
+A comma (,) is used for the decimal format, one leading zero.
+</dd>
+
+</dl>
+
+</div>
+<div class="div" id="chgjob__chridctl">
+<p>
+<strong>Character identifier control (CHRIDCTL)
+</strong></p>
+
+<p>
+Specifies the character identifier control used for the job.  This attribute controls the type of CCSID conversion that occurs for display files, printer files and panel groups. The *CHRIDCTL special value must be specified on the CHRID command parameter on the create, change or override commands for display files, printer files and panel groups before this attribute will be used.
+
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><u>*SAME
+</u></strong></dt>
+
+<dd class="dlentry">
+The value does not change.
+</dd>
+
+</dl>
+
+<dl>
+<dt class="dlterm">
+<strong>*USRPRF
+</strong></dt>
+
+<dd class="dlentry">
+When the job being changed is the job in which this command is running, the character identifier control is obtained from the user profile under which this thread was initially running.  When the job being changed is a different job, the character identifier control is obtained from the current user profile associated with that job.
+</dd>
+
+<dt class="dlterm">
+<strong>*SYSVAL
+</strong></dt>
+
+<dd class="dlentry">
+The value specified for the QCHRIDCTL system value will be used.
+</dd>
+
+<dt class="dlterm">
+<strong>*DEVD
+</strong></dt>
+
+<dd class="dlentry">
+The *DEVD special value performs the same function as on the CHRID command parameter for display files, printer files and panel groups.
+</dd>
+
+<dt class="dlterm">
+<strong>*JOBCCSID
+</strong></dt>
+
+<dd class="dlentry">
+The *JOBCCSID special value performs the same function as on the CHRID command parameter for display files, printer files and panel groups.
+</dd>
+
+</dl>
+
+</div>
+<div class="div" id="chgjob__splfacn">
+<p>
+<strong>Spooled file action (SPLFACN)
+</strong></p>
+
+<p>
+Specifies whether or not spooled files are accessed through job interfaces after the job ends.  Keeping spooled files with jobs allows job commands such as Work with Submitted Jobs (WRKSBMJOB) to work with the spooled files even after the job has ended.  Detaching spooled files from jobs reduces the use of system resources by allowing job structures to be recycled when the jobs end.
+
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><u>*SAME
+</u></strong></dt>
+
+<dd class="dlentry">
+The value does not change.
+</dd>
+
+</dl>
+
+<dl>
+<dt class="dlterm">
+<strong>*SYSVAL
+</strong></dt>
+
+<dd class="dlentry">
+The value specified in the system value QSPLFACN is used.
+</dd>
+
+<dt class="dlterm">
+<strong>*KEEP
+</strong></dt>
+
+<dd class="dlentry">
+When the job ends, as long as spooled files for the job exist in the system auxiliary storage pool (ASP 1) or in a basic user ASP (ASPs 2-32), the spooled files are kept with the job and the status of the job is updated to indicate that the job has completed.  If all remaining spooled files for the job are in independent ASPs (ASPs 33-255), the spooled files will be detached from the job and the job will be removed from the system.
+</dd>
+
+<dt class="dlterm">
+<strong>*DETACH
+</strong></dt>
+
+<dd class="dlentry">
+When the job ends, the spooled files are detached from the job and the job is removed from the system.  If the job has already ended, this change will immediately detach the spooled files from the job and remove the job from the system.
+</dd>
+
+</dl>
+
+</div>
+<div class="div" id="chgjob__wlcgrp">
+<p>
+<strong>Workload group (WLCGRP)
+</strong></p>
+
+<p>
+Specifies the workload group associated with this job. You can use the Add Workload Group (ADDWLCGRP) command to define a workload group.
+
+</p>
+
+<p>
+If the job consists of multiple routing steps, a change to this attribute during a routing step does not apply to subsequent routing steps.
+
+</p>
+
+<p>
+<strong>Note:     
+</strong>Changes to this parameter may affect the performance of the job being changed.
+
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><u>*SAME
+</u></strong></dt>
+
+<dd class="dlentry">
+The workload group does not change.
+</dd>
+
+<dt class="dlterm">
+<strong>*NONE
+</strong></dt>
+
+<dd class="dlentry">
+The job will not be associated with a workload group.
+</dd>
+
+<dt class="dlterm">
+<strong><em>simple-name
+</em></strong></dt>
+
+<dd class="dlentry">
+Specify the name of a workload group.
+</dd>
+
+</dl>
+
+</div>
+<div class="div" id="chgjob__cputime">
+<p>
+<strong>Maximum CPU time (CPUTIME)
+</strong></p>
+
+<p>
+Specifies the maximum processing unit time (in milliseconds) that the job can use.  If the job consists of multiple routing steps, only the current routing step is affected.  If the job is on a job queue, only the next routing step is affected.  If the maximum time is exceeded, the job is held.
+
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><u>*SAME
+</u></strong></dt>
+
+<dd class="dlentry">
+The maximum processing unit time does not change.
+</dd>
+
+<dt class="dlterm">
+<strong>*NOMAX
+</strong></dt>
+
+<dd class="dlentry">
+There is no limit on the processing unit time used.
+</dd>
+
+<dt class="dlterm">
+<strong><em>1-9999999
+</em></strong></dt>
+
+<dd class="dlentry">
+Specify the maximum amount of processing unit time (in milliseconds) that can be used.
+</dd>
+
+</dl>
+
+</div>
+<div class="div" id="chgjob__maxtmpstg">
+<p>
+<strong>Maximum temporary storage (MAXTMPSTG)
+</strong></p>
+
+<p>
+Specifies the maximum amount of temporary (auxiliary) storage (in megabytes) that the job can use.  If the job consists of multiple routing steps, only the current routing step is affected.  If the job is on a job queue, only the next routing step is affected.
+
+</p>
+
+<p>
+This temporary storage is used for storage required by the program itself and by implicitly created internal system objects used to support the job.  (It does not include storage for objects in the QTEMP library.)  If the maximum temporary storage is exceeded, the job is held.  This parameter does not apply to the use of permanent storage, which is controlled through the user profile.
+
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><u>*SAME
+</u></strong></dt>
+
+<dd class="dlentry">
+The maximum amount of temporary storage allowed for the job does not change.
+</dd>
+
+<dt class="dlterm">
+<strong>*NOMAX
+</strong></dt>
+
+<dd class="dlentry">
+The system maximum is used.
+</dd>
+
+<dt class="dlterm">
+<strong><em>1-2147483647
+</em></strong></dt>
+
+<dd class="dlentry">
+Specify the maximum amount of temporary storage (in megabytes) that can be used.
+</dd>
+
+</dl>
+
+</div>
+<div class="div" id="chgjob__prcrscpty">
+<p>
+<strong>Processor resources priority (PRCRSCPTY)
+</strong></p>
+
+<p>
+If your system has simultaneous multithreading (SMT) enabled, the processor resources priority will be used by the operating system to determine the relative importance of the job when it is dispatched compared to other jobs that are dispatched.
+
+</p>
+
+<p>
+Performance may vary depending on processor model, partition placement, processor utilization and other system settings and configuration.
+
+</p>
+
+<p>
+<strong>Note:     
+</strong>Changes to the processor resources priority may impact overall system performance and utilization.  PRCRSCPTY(*HIGH) should be used conservatively to minimize any potential performance degradation to the rest of the system.
+
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><u>*SAME
+</u></strong></dt>
+
+<dd class="dlentry">
+The processor resources priority does not change.
+</dd>
+
+<dt class="dlterm">
+<strong>*SYSCTL
+</strong></dt>
+
+<dd class="dlentry">
+The system determines the processor resources priority for the job and its threads.
+</dd>
+
+<dt class="dlterm">
+<strong>*NORMAL
+</strong></dt>
+
+<dd class="dlentry">
+The job and its threads will be dispatched uniformly across the maximum number of available processors.
+</dd>
+
+<dt class="dlterm">
+<strong>*HIGH
+</strong></dt>
+
+<dd class="dlentry">
+The operating system will isolate this job and its threads, when possible, to processors with fewer threads running concurrently.
+</dd>
+
+<dt class="dlterm">
+<strong>*LOW
+</strong></dt>
+
+<dd class="dlentry">
+The job and its threads will be dispatched to processors with other low priority jobs executing, when possible.
+</dd>
+
+</dl>
+
+</div>
+<div class="div" id="chgjob__dupjobopt">
+<p>
+<strong>Duplicate job option (DUPJOBOPT)
+</strong></p>
+
+<p>
+Specifies the action taken when duplicate jobs are found by this command.
+
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><u>*SELECT
+</u></strong></dt>
+
+<dd class="dlentry">
+The selection display is shown when duplicate jobs are found during an interactive session.  Otherwise, a message is issued.
+</dd>
+
+<dt class="dlterm">
+<strong>*MSG
+</strong></dt>
+
+<dd class="dlentry">
+A message is issued when duplicate jobs are found.
+</dd>
+
+</dl>
+
+</div>
+</section>
+
+<section class="section" role="region" aria-labelledby="chgjob__examples__title__1" id="chgjob__examples"><h2 class="sectiontitle" id="chgjob__examples__title__1">Examples</h2>
+
+<p>
+<strong>Example 1: Changing Message Logging Values
+</strong>
+</p>
+
+<div class="p">
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>
+CHGJOB   JOB(123581/DEPT2/WS1)  LOG(2 40 *SECLVL)
+
+</code></pre></div><div class="docs--copy-btn"></div></div>
+
+</div>
+
+<p>
+This command changes the job WS1, which is associated with the user profile DEPT2, and has the job number 123581. It receives only commands and associated diagnostic messages (help text) if the messages have a severity level greater than or equal to 40. Help text, in addition to the message text, is logged in the job log.
+
+</p>
+
+<p>
+<strong>Example 2: Changing Scheduling Priority and Job Switches
+</strong>
+</p>
+
+<div class="p">
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>
+CHGJOB   JOB(PAYROLL)  JOBPTY(4)  OUTPTY(3)  SWS(10XXXX00)
+
+</code></pre></div><div class="docs--copy-btn"></div></div>
+
+</div>
+
+<p>
+This command changes the scheduling priority for the job PAYROLL to 4 and the priority of the job's output to 3. Also, four of the eight job switches are changed: switches 1 and 2 are set to 1 and 0, switches 3 through 6 remain the same, and switches 7 and 8 are both set to 0. Because only the simple name of the job is specified, there can be only one job named PAYROLL in the system.
+
+</p>
+
+<p>
+<strong>Example 3: Moving a Job to Another Queue
+</strong>
+</p>
+
+<div class="p">
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>
+CHGJOB   JOB(MYJOB)  JOBQ(MYLIB/MYJOBQ)  INQMSGRPY(*SYSRPYL)
+
+</code></pre></div><div class="docs--copy-btn"></div></div>
+
+</div>
+
+<p>
+This command moves the job from the job queue it is currently in to the job queue MYJOBQ in library MYLIB. For this change to be made, the job must not have begun running and must be a batch job.  Also, the job is changed so that any inquiry message that is issued on behalf of this job that has an entry in the system automatic reply list is answered according to the reply in that system reply list entry. For any inquiry message not represented in the system reply list, a reply is required.
+
+</p>
+
+<p>
+<strong>Example 4: Changing Run Priority and Default Wait Time
+</strong>
+</p>
+
+<div class="p">
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>
+CHGJOB   JOB(MYJOB)  RUNPTY(10)  DFTWAIT(150)
+
+</code></pre></div><div class="docs--copy-btn"></div></div>
+
+</div>
+
+<p>
+This command changes the run priority of the job MYJOB to 10 and the default wait time to 150 seconds, if the issuer of the command has job control authority. If the job is active, these changes take effect immediately. If the job is on a job queue, when the next routing step for the job is started, the run priority and default wait times become these values and not what was specified in the class associated with the routing entry used to start the step.
+
+</p>
+
+</section>
+
+<section class="section" role="region" aria-labelledby="chgjob__errormsgs__title__1" id="chgjob__errormsgs"><h2 class="sectiontitle" id="chgjob__errormsgs__title__1">Error messages</h2>
+
+<p>
+<strong><u>*ESCAPE Messages
+</u></strong>
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong>CPF1317
+</strong></dt>
+
+<dd class="dlentry">
+No response from subsystem for job &amp;3/&amp;2/&amp;1.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF1321
+</strong></dt>
+
+<dd class="dlentry">
+Job &amp;1 user &amp;2 job number &amp;3 not found.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF1332
+</strong></dt>
+
+<dd class="dlentry">
+End of duplicate job names.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF1334
+</strong></dt>
+
+<dd class="dlentry">
+Must be an interactive job for requested change.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF1336
+</strong></dt>
+
+<dd class="dlentry">
+Errors on CHGJOB command for job &amp;3/&amp;2/&amp;1.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF1337
+</strong></dt>
+
+<dd class="dlentry">
+&amp;3/&amp;2/&amp;1 not authorized to change parameters.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF1340
+</strong></dt>
+
+<dd class="dlentry">
+Job control function not performed.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF1341
+</strong></dt>
+
+<dd class="dlentry">
+Reader or writer &amp;3/&amp;2/&amp;1 not allowed as job name.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF1343
+</strong></dt>
+
+<dd class="dlentry">
+Job &amp;3/&amp;2/&amp;1 not valid job type for function.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF1344
+</strong></dt>
+
+<dd class="dlentry">
+Not authorized to control job &amp;3/&amp;2/&amp;1.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF1351
+</strong></dt>
+
+<dd class="dlentry">
+Function check occurred in subsystem for job &amp;3/&amp;2/&amp;1.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF1352
+</strong></dt>
+
+<dd class="dlentry">
+Function not done.  &amp;3/&amp;2/&amp;1 in transition condition.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF1634
+</strong></dt>
+
+<dd class="dlentry">
+Specified date or time has passed.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF1635
+</strong></dt>
+
+<dd class="dlentry">
+Requested change no longer allowed.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF1642
+</strong></dt>
+
+<dd class="dlentry">
+Schedule date &amp;1 not correct.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF1644
+</strong></dt>
+
+<dd class="dlentry">
+Scheduled date and time not changed.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF1650
+</strong></dt>
+
+<dd class="dlentry">
+Both scheduled date and time must be changed.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF1651
+</strong></dt>
+
+<dd class="dlentry">
+Sort sequence table not accessed.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF180E
+</strong></dt>
+
+<dd class="dlentry">
+&amp;4 not changed.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF1846
+</strong></dt>
+
+<dd class="dlentry">
+Request did not complete.  System value not available.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF1854
+</strong></dt>
+
+<dd class="dlentry">
+Value &amp;1 for CCSID not valid.
+</dd>
+
+</dl>
+
+</section>
+
+</div>
+
+</article></main>
+</body></html>

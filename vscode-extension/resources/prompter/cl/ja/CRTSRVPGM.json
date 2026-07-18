@@ -1,0 +1,641 @@
+{
+  "keyword": "CRTSRVPGM",
+  "description": "サービス・プログラムの作成 (CRTSRVPGM)",
+  "help": "サービス・プログラム作成(CRTSRVPGM)コマンドは，1つのセットのモジュールとバインド・ディレクトリーからバインドされたサービス・プログラムを作成します。",
+  "parameters": [
+    {
+      "name": "SRVPGM",
+      "description": "サービス・プログラム",
+      "help": "作成するサービス・プログラム・オブジェクトを指定します。\n\nこれは必須パラメーターです。",
+      "inputType": "group",
+      "required": true,
+      "groupKind": "qualified",
+      "children": [
+        {
+          "name": "LIB",
+          "description": "ライブラリー",
+          "help": "*CURLIB: サービス・プログラムはジョブの現行ライブラリー内に作成されます。ジョブの現行ライブラリーとして指定されているライブラリーがない場合は，QGPLライブラリーが使用されます。\nサービス・プログラムが作成されるライブラリーの名前を指定してください。",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "*CURLIB",
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          }
+        },
+        {
+          "name": "SRVPGM",
+          "description": "サービス・プログラム",
+          "help": "作成するサービス・プログラムの名前を指定してください。",
+          "inputType": "text",
+          "required": true,
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          }
+        }
+      ],
+      "positional": 1
+    },
+    {
+      "name": "MODULE",
+      "description": "モジュール",
+      "help": "サービス・プログラム・オブジェクトを作成するために複写されてバインドされるモジュールのリストを指定します。重複するモジュールおよびライブラリーの指定が見つかった場合には，重複するモジュールおよびライブラリーの最初に見つかったものだけが使用されます。このリストのモジュールは，最終サービス・プログラム・オブジェクトに複写されます。最大300の名前を指定することができます。",
+      "inputType": "group",
+      "required": false,
+      "groupKind": "qualified",
+      "singleValues": [
+        "*SRVPGM"
+      ],
+      "children": [
+        {
+          "name": "MODULE_LIB",
+          "description": "ライブラリー",
+          "help": "*LIBL: 最初に一致するものが見つかるまで，現行スレッドのライブラリー・リスト内のすべてのライブラリーが検索されます。\n*CURLIB: ジョブの現行ライブラリーが検索されます。ジョブの現行ライブラリーとして指定されているライブラリーがない場合は，QGPLライブラリーが使用されます。\n*USRLIBL: ジョブのライブラリー・リストのユーザー部分にあるライブラリーだけが検索されます。\n検索するライブラリーの名前を指定してください。",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "*LIBL",
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          }
+        },
+        {
+          "name": "MODULE",
+          "description": "モジュール",
+          "help": "*ALL: 指定した1つ以上のライブラリーで，すべてのモジュール・オブジェクトを検索します。\n指定した1つ以上のライブラリーで，前に*がある文字で始まるすべてのモジュール・オブジェクトを指定します。\nサービス・プログラム・オブジェクトの作成のために複写されるモジュールの名前を指定してください。",
+          "inputType": "text",
+          "required": false,
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          },
+          "defaultValue": "*SRVPGM"
+        }
+      ],
+      "maxOccurrences": 300
+    },
+    {
+      "name": "EXPORT",
+      "description": "エクスポート",
+      "help": "このサービス・プログラムがエクスポートするデータおよびプロシージャーの名前を指定します。",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*SRCFILE",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*SRCFILE",
+          "value": "*SRCFILE",
+          "help": "ソース・ファイル の エクスポート (SRCFILE) および ソース・メンバー の エクスポート (SRCMBR) パラメーターまたは ソース・ストリーム・ファイル の エクスポート (SRCSTMF) パラメーターで識別されたソース・ファイル・メンバーには，サービス・プログラムからエクスポートするデータとプロシージャーを識別するEXPORTステートメントが含まれています。"
+        },
+        {
+          "label": "*ALL",
+          "value": "*ALL",
+          "help": "また，指定されたモジュールからエクスポートされるすべてのデータおよびプロシージャーも，このサービス・プログラムからエクスポートされます。"
+        }
+      ]
+    },
+    {
+      "name": "SRCFILE",
+      "description": "ソース・ファイルのエクスポート",
+      "help": "このサービス・プログラムからデータおよびプロシージャーをエクスポートするための仕様が入っているソース・ファイルを指定します。このパラメーターは ソース・ストリーム・ファイル の エクスポート (SRCSTMF) パラメーターと一緒には指定できません。",
+      "inputType": "group",
+      "required": false,
+      "groupKind": "qualified",
+      "children": [
+        {
+          "name": "SRCFILE_LIB",
+          "description": "ライブラリー",
+          "help": "*LIBL: 最初に一致するものが見つかるまで，現行スレッドのライブラリー・リスト内のすべてのライブラリーが検索されます。\n*CURLIB: ジョブの現行ライブラリーが検索されます。ジョブの現行ライブラリーとして指定されているライブラリーがない場合は，QGPLライブラリーが使用されます。\n検索するライブラリーの名前を指定してください。",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "*LIBL",
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          }
+        },
+        {
+          "name": "SRCFILE",
+          "description": "ソース・ファイルのエクスポート",
+          "help": "QSRVSRC: データおよびプロシージャーをエクスポートするための仕様が入っているソース・ファイルはQSRVSRCという名前です。\nデータおよびプロシージャーのエクスポートのための仕様が入っているソース・ファイルの名前を指定してください。",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "QSRVSRC",
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          }
+        }
+      ]
+    },
+    {
+      "name": "SRCMBR",
+      "description": "ソース・メンバーのエクスポート",
+      "help": "このサービス・プログラムからデータおよびプロシージャーをエクスポートするための仕様が入っているソース・ファイル・メンバーの名前を指定します。このパラメーターは ソース・ストリーム・ファイル の エクスポート (SRCSTMF) パラメーターと一緒には指定できません。\n\n*SRVPGM: ソース・ファイル・メンバーの名前は， サービス・プログラム (SRVPGM) パラメーターに指定されたサービス・プログラム名と同じです。\nデータおよびプロシージャーをエクスポートするための仕様が入っているソース・ファイルのメンバーの名前を指定してください。",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*SRVPGM",
+      "attributes": {
+        "characterSet": "upper",
+        "maxLength": 10
+      }
+    },
+    {
+      "name": "SRCSTMF",
+      "description": "ソース・ストリーム・ファイルのエクスポート",
+      "help": "このサービス・プログラムからデータとプロシージャーをエクスポートするための仕様が入っているストリーム・ファイルのパス名を指定します。このパラメーターは絶対パス名か相対パス名のいずれかです。絶対パス名は区切り文字（通常は/文字）で始まります。パス名が区切り文字で始まっていないと，それは相対パス名で，システムはそのパスがジョブの現行作業ディレクトリーで始まっているとみなします。 ソース・ストリーム・ファイル の エクスポート (SRCSTMF) パラメーターは， ソース・ファイル の エクスポート (SRCFILE) または ソース・メンバー の エクスポート (SRCMBR) パラメーターと一緒には指定できません。また， ターゲット・リリース (TGTRLS) パラメーターでV7R3M0より前のリリースが指定された場合にも指定できません。\n\nエクスポートされるデータとプロシージャーの仕様が入っているストリーム・ファイルのパス名を指定してください。",
+      "inputType": "text",
+      "required": false
+    },
+    {
+      "name": "TEXT",
+      "description": "テキスト'記述'",
+      "help": "サービス・プログラム・オブジェクトを簡単に説明するテキストを指定します。\n\n*BLANK: テキストは指定されません。\n*EXPORTSRC: エクスポート・ソース・ファイルに関連付けられたテキスト記述がサービス・プログラムに使用されます。 *ALL が エクスポート (EXPORT) パラメーターに指定されている場合，テキストはブランクになります。\n*MODULE: モジュール (MODULE) パラメーターに指定された最初のモジュールに関連付けられているテキスト記述がサービス・プログラムに使用されます。\n50文字を超えないテキストを，アポストロフィで囲んで指定してください。",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*BLANK",
+      "attributes": {
+        "characterSet": "upper"
+      }
+    },
+    {
+      "name": "BNDSRVPGM",
+      "description": "サービス・プログラムのバインド",
+      "help": "モジュールのインポート要求が満たされているかどうかを確認するために，バインド時に調べるサービス・プログラムのエクスポートのリストを指定します。サービス・プログラムのエクスポートが検査されるのは，一連のモジュールのエクスポートによって満たされない未解決のモジュールのインポート要求がある場合だけです。BNDSRVPGMパラメーターに指定したモジュールのインポート要求を満たしているサービス・プログラムは，作成されるサービス・プログラムにバインドされます。BNDSRVPGMパラメーターに指定したサービス・プログラム名およびライブラリーは，実行時に使用するために保存されます。最大300の名前を指定することができます。\n\n各サービス・プログラムの活動化を制御できます。参照サービス・プログラムを，サービス・プログラムの作成と同時に活動化するかどうか，または参照サービス・プログラムからエクスポートされたプロシージャーが呼び出されるまで保留するかどうかを指定できます。活動化の遅延によってアプリケーションのパフォーマンスが向上することがあります。",
+      "inputType": "group",
+      "required": false,
+      "groupKind": "elements",
+      "singleValues": [
+        "*NONE"
+      ],
+      "children": [
+        {
+          "name": "BNDSRVPGM_E1",
+          "description": "サービス・プログラム",
+          "inputType": "group",
+          "required": false,
+          "groupKind": "qualified",
+          "children": [
+            {
+              "name": "BNDSRVPGM_LIB",
+              "description": "ライブラリー",
+              "help": "*LIBL: 指定されたサービス・プログラムのジョブのライブラリー・リストのすべてのライブラリーを検索します。サービス・プログラムの1つに，モジュール・インポートを満たすエクスポートがある場合には，このサービス・プログラムを見つけるために，実行時にライブラリー・リストが検索されます。\nサービス・プログラムを見つけるライブラリーの名前を指定してください。サービス・プログラムの1つに，モジュール・インポートを満たすエクスポートがあり，特定のライブラリーが指定された場合には，実行時に指定されたライブラリーを検索して，このサービス・プログラムを見つけます。 注: QTEMPは，このパラメーターで有効なライブラリー名ではありません。",
+              "inputType": "text",
+              "required": false,
+              "defaultValue": "*LIBL",
+              "attributes": {
+                "characterSet": "upper",
+                "maxLength": 10
+              }
+            },
+            {
+              "name": "BNDSRVPGM",
+              "description": "サービス・プログラム",
+              "help": "*ALL: 指定した1つ以上のライブラリーですべてのサービス・プログラム・オブジェクトを検索します。 注: この値をユーザー制御環境で指定する必要があるのは，何がサービス・プログラムにバインドされるのか正確に分かっている場合だけです。*ALLと一緒に*LIBLを指定すると，サービス・プログラムの実行時に予測できない結果が起こる場合があります。何がサービス・プログラムにバインドされるのかをより正確に制御するには，総称サービス・プログラム名または特定のライブラリーを指定してください。\n指定した1つ以上のライブラリー内で，後ろに*がある文字で始まるすべてのサービス・プログラム・オブジェクトを指定します。\n記号の分析解決時に検査されるサービス・プログラムの名前を指定してください。",
+              "inputType": "text",
+              "required": false,
+              "attributes": {
+                "characterSet": "upper",
+                "maxLength": 10
+              }
+            }
+          ],
+          "defaultValue": "*NONE"
+        },
+        {
+          "name": "BNDSRVPGM_E2",
+          "description": "活動化",
+          "inputType": "dropdown",
+          "required": false,
+          "defaultValue": "*IMMED",
+          "attributes": {
+            "characterSet": "upper"
+          },
+          "options": [
+            {
+              "label": "*IMMED",
+              "value": "*IMMED",
+              "help": "バインド・サービス・プログラムは，作成中のサービス・プログラムが活動化されるとすぐに活動化されます。"
+            },
+            {
+              "label": "*DEFER",
+              "value": "*DEFER",
+              "help": "バインド・サービス・プログラムの活動化は，そのプログラムがエクスポートした関数が呼び出されるまで保留にされることがあります。"
+            }
+          ]
+        }
+      ],
+      "maxOccurrences": 300
+    },
+    {
+      "name": "BNDDIR",
+      "description": "ディレクトリーのバインド",
+      "help": "記号の分析解決に使用されるバインド・ディレクトリーのリストを指定します。最大300の名前を指定することができます。",
+      "inputType": "group",
+      "required": false,
+      "groupKind": "qualified",
+      "singleValues": [
+        "*NONE"
+      ],
+      "children": [
+        {
+          "name": "BNDDIR_LIB",
+          "description": "ライブラリー",
+          "help": "*LIBL: 最初に一致するものが見つかるまで，現行スレッドのライブラリー・リスト内のすべてのライブラリーが検索されます。\n*CURLIB: ジョブの現行ライブラリーが検索されます。ジョブの現行ライブラリーとして指定されているライブラリーがない場合は，QGPLライブラリーが使用されます。\n*USRLIBL: ジョブのライブラリー・リストのユーザー部分にあるライブラリーだけが検索されます。\n検索するライブラリーの名前を指定してください。",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "*LIBL",
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          }
+        },
+        {
+          "name": "BNDDIR",
+          "description": "ディレクトリーのバインド",
+          "help": "記号の分析解決に使用されるバインド・ディレクトリーの名前を指定してください。",
+          "inputType": "text",
+          "required": false,
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          },
+          "defaultValue": "*NONE"
+        }
+      ],
+      "maxOccurrences": 300
+    },
+    {
+      "name": "ACTGRP",
+      "description": "活動化グループ",
+      "help": "活動化グループを呼び出す時に，このサービス・プログラムと関連している活動化グループを指定します。活動化グループは次を提供します。\n\n*CALLER: このサービス・プログラムが呼び出される時に，サービス・プログラムは呼び出し元の活動化グループで活動化されます。\n呼び出されるこのサービス・プログラムと関連したグループの名前を指定してください。サービス・プログラムが呼び出される時に，活動化グループが指定された名前で現在存在している場合には，サービス・プログラムは既に存在している既存の活動化グループと関連付けられます。サービス・プログラムが呼び出される時に，活動化グループが指定された名前で現在存在しない場合には，新しい活動化グループが作成されて，サービス・プログラムは新しく作成された活動化グループと関連付けられます。",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*CALLER",
+      "attributes": {
+        "characterSet": "upper",
+        "maxLength": 10
+      }
+    },
+    {
+      "name": "OPTION",
+      "description": "作成オプション",
+      "help": "サービス・プログラム・オブジェクトを作成する時に使用されるオプションを指定します。\n\nこのパラメーターには最大5個までの値を指定することができます。",
+      "inputType": "dropdown",
+      "required": false,
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*GEN",
+          "value": "*GEN"
+        },
+        {
+          "label": "*NOGEN",
+          "value": "*NOGEN"
+        },
+        {
+          "label": "*NODUPPROC",
+          "value": "*NODUPPROC"
+        },
+        {
+          "label": "*DUPPROC",
+          "value": "*DUPPROC"
+        },
+        {
+          "label": "*NODUPVAR",
+          "value": "*NODUPVAR"
+        },
+        {
+          "label": "*DUPVAR",
+          "value": "*DUPVAR"
+        },
+        {
+          "label": "*WARN",
+          "value": "*WARN"
+        },
+        {
+          "label": "*NOWARN",
+          "value": "*NOWARN"
+        },
+        {
+          "label": "*RSLVREF",
+          "value": "*RSLVREF"
+        },
+        {
+          "label": "*UNRSLVREF",
+          "value": "*UNRSLVREF"
+        }
+      ],
+      "maxOccurrences": 5
+    },
+    {
+      "name": "DETAIL",
+      "description": "明細のリスト",
+      "help": "印刷する詳細のレベルを指定します。",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*NONE",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*NONE",
+          "value": "*NONE",
+          "help": "リストは生成されません。"
+        },
+        {
+          "label": "*BASIC",
+          "value": "*BASIC",
+          "help": "CRTPGMに渡すオプションのリスト，および処理統計が入っています。また，このリストには，簡単な要約表も入っています。"
+        },
+        {
+          "label": "*EXTENDED",
+          "value": "*EXTENDED",
+          "help": "*BASICリストで提供される情報の他に，このリストには，拡張要約表およびバインド情報リストも入っています。"
+        },
+        {
+          "label": "*FULL",
+          "value": "*FULL",
+          "help": "このリストには，*EXTENDEDリストおよび相互参照表が入っています。 注: 印刷リストが要求された場合には，印刷装置ファイル*LIBL/QSYSPRTを使用してリストが生成されます。"
+        }
+      ]
+    },
+    {
+      "name": "ALWUPD",
+      "description": "更新可能",
+      "help": "サービス・プログラム更新(UPDSRVPGM)コマンドを使用した作成中のサービス・プログラムの更新が可能かどうかを指定します。",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*YES",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*YES",
+          "value": "*YES",
+          "help": "サービス・プログラムはUPDSRVPGMコマンドを使用して更新することができます。"
+        },
+        {
+          "label": "*NO",
+          "value": "*NO",
+          "help": "作成中のサービス・プログラムを更新するために，UPDSRVPGMコマンドは使用することができません。"
+        }
+      ]
+    },
+    {
+      "name": "ALWLIBUPD",
+      "description": "*SRVPGMライブラリー更新可能",
+      "help": "UPDSRVPGMコマンドを使用して更新する時に，作成中プログラムのバインドされたサービス・プログラム・ライブラリー名を変更できるかどうかを指定します。",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*NO",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*YES",
+          "value": "*YES",
+          "help": "ALWUPD(*YES)が指定されている時に，UPDSRVPGMコマンドで作成中プログラムのバインドされたサービス・プログラム・ライブラリー名を更新することができます。"
+        },
+        {
+          "label": "*NO",
+          "value": "*NO",
+          "help": "更新可能 (ALWUPD) パラメーターに*YESが指定されている場合であっても，UPDSRVPGMコマンドで作成中サービス・プログラムのバインドされたサービス・プログラム・ライブラリー名を更新することはできません。"
+        }
+      ]
+    },
+    {
+      "name": "USRPRF",
+      "description": "ユーザー・プロファイル",
+      "help": "権限の検査はこのサービス・プログラムを実行しているユーザーについてだけ行うか，あるいはサービス・プログラムを実行しているユーザーとサービス・プログラムの所有者の両方について行うかを指定します。",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*USER",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*USER",
+          "value": "*USER",
+          "help": "サービス・プログラムの実行時に，サービス・プログラム・ユーザーのユーザー・プロファイルが使用されます。"
+        },
+        {
+          "label": "*OWNER",
+          "value": "*OWNER",
+          "help": "サービス・プログラムの実行時に，サービス・プログラム所有者とサービス・プログラム・ユーザーの両方のユーザー・プロファイルが使用されます。"
+        }
+      ]
+    },
+    {
+      "name": "REPLACE",
+      "description": "プログラムの置き換え",
+      "help": "指定したライブラリーに同じ名前のサービス・プログラムが既に存在している場合に，既存のサービス・プログラムを置き換えるかどうかを指定します。",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*YES",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*YES",
+          "value": "*YES",
+          "help": "既存のサービス・プログラムをQRPLOBJライブラリーに移動して，これを置き換えます。サービス・プログラムの現在の活動化は，QRPLOBJライブラリー内のサービス・プログラムのバージョンを使用して実行し続けます。 注: 処理のために置き換えられる両方のサービス・プログラムは，同じユーザーが所有していなければなりません。"
+        },
+        {
+          "label": "*NO",
+          "value": "*NO",
+          "help": "置き換えは行われません。 サービス・プログラム (SRVPGM) パラメーターに指定された名前とライブラリーをもつサービス・プログラムが既に存在している場合は，エラー・メッセージが出されます。"
+        }
+      ]
+    },
+    {
+      "name": "AUT",
+      "description": "権限",
+      "help": "このオブジェクトに対する特定の権限をもっておらず，権限リスト上になく，さらにそのグループ・プロファイルまたは補足グループ・プロファイルがオブジェクトに対する特定の権限をもっていないユーザーに付与する権限を指定します。\n\n*LIBCRTAUT: システムは，作成するオブジェクトが入っているライブラリーに対するライブラリー作成コマンド(CRTLIB)で 作成権限 (CRTAUT) パラメーターに指定された値を使用して，このオブジェクトに対する権限を決定します。CRTAUTパラメーターに指定された値が変更された場合には，新しい値は既存のどのオブジェクトにも影響しません。\n*CHANGE: ユーザーは，所有者に限定されるか，あるいはオブジェクト存在権限(*OBJEXIST)およびオブジェクト管理権限(*OBJMGT)によって制御される以外のオブジェクトで，すべての操作を実行することができます。ユーザーはオブジェクトでの基本的な機能を変更して実行することができます。*CHANGE権限では，オブジェクト操作(*OBJOPR)および全データ権限が提供されます。このオブジェクトが権限リストである場合は，ユーザーの追加，変更，または除去はできません。\n*ALL: ユーザーは，所有者に限定されるか，あるいは権限リスト管理(*AUTLMGT)権限によって管理される以外のオブジェクトで，すべての操作を実行することができます。ユーザーはオブジェクトの存在を制御し，オブジェクトの機密保護を指定し，オブジェクトを変更し，さらにオブジェクトに対して基本的な機能を実行することができます。オブジェクトの所有権を変更することもできます。\n*USE: ユーザーは，プログラムの実行またはファイルの読み取りなど，オブジェクトに対する基本操作を実行することができます。ユーザーはオブジェクトを変更できません。使用(*USE)権限は，オブジェクト操作(*OBJOPR),読み取り(*READ),および実行(*EXECUTE)権限を提供します。\n*EXCLUDE: ユーザーはオブジェクトにアクセスすることはできません。\nオブジェクトに対する権限として使用する権限リストの名前を指定してください。権限リストに載っているユーザーは，リストに指定されているオブジェクトに対する権限が認可されます。オブジェクトが作成される時に権限リストが存在していなければなりません。",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*LIBCRTAUT",
+      "attributes": {
+        "characterSet": "upper",
+        "maxLength": 10
+      }
+    },
+    {
+      "name": "TGTRLS",
+      "description": "ターゲット・リリース",
+      "help": "作成中のオブジェクトの使用を計画しているオペレーティング・システムのリリースを指定します。\n\nターゲット・リリース を指定する時は，形式VXRXMXでリリースを指定します。ここで，VXはバージョン，RXはリリース，MXはモディフィケーション・レベルです。例えば，V5R3M0はバージョン5,リリース3,モディフィケーション・レベル0です。\n\n有効な値は，オペレーティング・システムの現在のバージョン，リリース，およびモディフィケーション・レベルで異なり，リリースが新しくなるたびに変わります。このコマンド・パラメーターのプロンプト時にF4を押して，有効なターゲット・リリースの値のリストを表示することができます。\n\n*CURRENT: オブジェクトは，現在ユーザーのシステムで実行中のオペレーティング・システムのリリースで使用されます。オブジェクトは，後続のリリースのオペレーティング・システムが導入されたシステムでも使用することもできます。\n*PRV: オブジェクトは，オペレーティング・システムの前のリリース（モディフィケーション・レベルは0)で使用されます。オブジェクトは，後続のリリースのオペレーティング・システムが導入されたシステムでも使用することもできます。\nリリースをVXRXMXの形式で指定してください。オブジェクトは，指定したリリースまたはそれ以降のオペレーティング・システムが導入されているシステムで使用することができます。",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*CURRENT",
+      "attributes": {
+        "characterSet": "upper"
+      }
+    },
+    {
+      "name": "ALWRINZ",
+      "description": "再初期設定可能",
+      "help": "サービス・プログラムがまだ活動状態である間に，そのサービス・プログラムの静的記憶域を再初期設定できるかどうかを指定します。",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*NO",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*NO",
+          "value": "*NO",
+          "help": "サービス・プログラムがまだ活動状態である間は，そのサービス・プログラムの静的記憶域を再初期設定することはできません。"
+        },
+        {
+          "label": "*YES",
+          "value": "*YES",
+          "help": "サービス・プログラムがまだ活動状態である間に，そのサービス・プログラムの静的記憶域の再初期設定が可能です。"
+        }
+      ]
+    },
+    {
+      "name": "STGMDL",
+      "description": "ストレージ・モデル",
+      "help": "サービス・プログラムのストレージ・モデル属性を指定します。",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*SNGLVL",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*SNGLVL",
+          "value": "*SNGLVL",
+          "help": "サービス・プログラムは単一レベル・ストレージ・モデルで作成されます。単一レベル・ストレージ・モデル・サービス・プログラムが活動化されて実行されると，これに自動および静的記憶域用の単一レベル・ストレージが提供されます。単一レベル・ストレージ・サービス・プログラムは単一レベル・ストレージ活動化グループ内でのみ実行されます。"
+        },
+        {
+          "label": "*TERASPACE",
+          "value": "*TERASPACE",
+          "help": "サービス・プログラムはテラスペース・ストレージ・モデルで作成されます。テラスペース・ストレージ・モデル・サービス・プログラムが活動化されて実行されると，これに自動および静的記憶域用のテラスペース・ストレージが提供されます。テラスペース・ストレージ・サービス・プログラムはテラスペース・ストレージ活動化グループ内でのみ実行されます。"
+        },
+        {
+          "label": "*INHERIT",
+          "value": "*INHERIT",
+          "help": "サービス・プログラムは継承ストレージ・モデルで作成されます。サービス・プログラムは，活動化されると，それが活動化されて入れられる活動化グループのストレージ・モデルを採用します。言い換えれば，呼び出し元のストレージ・モデルを継承します。*INHERITストレージ・モデルを選択する場合は，*CALLERを 活動化グループ (ACTGRP) パラメーターに指定する必要があります。"
+        }
+      ]
+    },
+    {
+      "name": "ARGOPT",
+      "description": "引数最適化",
+      "help": "引数の最適化(ARGOPT)がサービス・プログラムの作成中に実行されるかどうかを指定します。引数の最適化は，呼び出し集中型アプリケーションのパフォーマンスを向上するために，ILEプロシージャーに引数（パラメーター）を渡す手法です。このオプションによって，サービス・プログラムの作成に必要な時間が増えることがあります。",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*NO",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*NO",
+          "value": "*NO",
+          "help": "引数の最適化はサービス・プログラムの作成中には実行されません。"
+        },
+        {
+          "label": "*YES",
+          "value": "*YES",
+          "help": "引数の最適化はサービス・プログラムの作成中に実行されます。"
+        }
+      ]
+    },
+    {
+      "name": "IPA",
+      "description": "プロシージャー間分析",
+      "help": "サービス・プログラムの作成時にプロシージャー間分析(IPA)を使用するかどうかを指定します。IPAの詳細については，ILE概念(SD88-5033)を参照してください。",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*NO",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*YES",
+          "value": "*YES",
+          "help": "プロシージャー間分析が実行されます。"
+        },
+        {
+          "label": "*NO",
+          "value": "*NO",
+          "help": "プロシージャー間分析は実行されません。"
+        }
+      ]
+    },
+    {
+      "name": "IPACTLFILE",
+      "description": "IPA制御ファイル",
+      "help": "プロシージャー間分析(IPA)サブオプション情報が入っているファイルのパス名を提供します。このパラメーターは，IPA(*YES)が指定された時にだけ有効です。\n\nIPA(*YES)が指定された時に使用するIPA制御ファイルのパス名を指定してください。名前が修飾名の場合には，アポストロフィで囲まなければなりません。修飾IPA制御ファイル名の例は'/DIRECTORY1/DIRECTORY2/MYIPACTLFNAME'などです。",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*NONE",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*NONE",
+          "value": "*NONE",
+          "help": "IPA(*YES)が指定されている時には，IPA制御ファイル情報は使用されません。"
+        }
+      ]
+    }
+  ],
+  "threadSafe": false,
+  "environment": "すべての環境 (*ALL)",
+  "restrictions": [
+    "サービス・プログラムを作成するライブラリーに対する読み取り(*READ)および追加(*ADD)権限が必要です。",
+    "指定されたモジュール，サービス・プログラム，およびバインド・ディレクトリーに対して使用(*USE)権限が必要です。",
+    "ソース・ファイル の エクスポート (SRCFILE) パラメーターに指定されたファイルに対するオブジェクト操作(*OBJOPR) および*READ権限が必要です。",
+    "ソース・ストリーム・ファイル の エクスポート (SRCSTMF) パラメーターに指定されたストリーム・ファイルに対する読み取り(*R)権限が必要です。",
+    "ソース・ストリーム・ファイル の エクスポート (SRCSTMF) パラメーターに指定されたストリーム・ファイルのパス内の各ディレクトリーに対する実行(*X)権限が必要です。"
+  ],
+  "examples": [
+    {
+      "code": "CRTSRVPGM SRVPGM(WORKDOC)"
+    }
+  ],
+  "errorMessages": [
+    {
+      "id": "CPF223E",
+      "text": "借用権限の使用属性の権限チェックが正常に実行されなかった。"
+    },
+    {
+      "id": "CPF5CAC",
+      "text": "ストリーム・ファイルをオープンできなかった。"
+    },
+    {
+      "id": "CPF5D05",
+      "text": "サービス・プログラム&1は作成されなかった。"
+    },
+    {
+      "id": "CPF5D07",
+      "text": "搬出ソース・ファイル・レコード長が240より大きい。"
+    },
+    {
+      "id": "CPF5D12",
+      "text": "プログラムまたはサービス・プログラムの準備中にエラーが起こった。"
+    }
+  ],
+  "source": {
+    "url": "https://www.ibm.com/docs/ja/ssw_ibm_i_74/cl/crtsrvpgm.htm",
+    "version": "IBM i 7.4"
+  }
+}

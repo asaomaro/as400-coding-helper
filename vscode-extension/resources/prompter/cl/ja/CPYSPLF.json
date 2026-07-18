@@ -1,0 +1,597 @@
+{
+  "keyword": "CPYSPLF",
+  "description": "スプール・ファイル・コピー (CPYSPLF)",
+  "help": "スプール・ファイル・コピー(CPYSPLF)コマンドは，指定されたスプール・ファイルのデータ・レコードをユーザー定義の物理データベース・ファイルまたはストリーム・ファイルにコピーします。これにより，マイクロフィッシュ，データ通信，またはデータ処理を使用するアプリケーションでスプール・ファイルを使用することができます。\n\nスプール・ファイルをストリーム・ファイルにコピーする際，ワークステーション・カスタマイズ・オブジェクトを使用してスプール・ファイルを任意に変換できます。これにより，スプール・ファイルをPortable Document Format (PDF)など他のフォーマットに変換することができます。 ワークステーション・カスタマイズ・オブジェクト (WSCST) パラメーターを使用してスプール・ファイルを変換するには，スプール・ファイルの装置タイプ(DEVTYPE)が*SCSまたは*AFPDSでなければなりません。\n\nスプール・ファイルを物理ファイルにコピーするか，または変換せずにストリーム・ファイルにコピーすると，特定の情報は失われるか，あるいは変更されます。例えば，次のようになります。\n\nスプール・ファイルを変換してストリーム・ファイルにコピーすると，その情報は保持されます。出力のフォーマットは，指定されたワークステーション・カスタマイズ・オブジェクトによって異なります。",
+  "parameters": [
+    {
+      "name": "FILE",
+      "description": "スプール・ファイル",
+      "help": "データベース・ファイルまたはストリーム・ファイルにコピーされるスプール・ファイルを指定します。\n\nこれは必須パラメーターです。\n\nスプール・ファイルのファイル名を指定してください。",
+      "inputType": "text",
+      "required": true,
+      "attributes": {
+        "characterSet": "upper",
+        "maxLength": 10
+      },
+      "positional": 1,
+      "basic": true
+    },
+    {
+      "name": "TOFILE",
+      "description": "TOデータベース・ファイル",
+      "help": "スプール・ファイルのレコードのコピー先をユーザー定義の物理データベース・ファイルにするか，ストリーム・ファイルにするかを指定します。ユーザーがデータベース・ファイルの名前を指定し，そのファイルがコピーの時点で存在しない場合，コピーは失敗します。\n\nこれは必須パラメーターです。",
+      "inputType": "group",
+      "required": true,
+      "groupKind": "qualified",
+      "singleValues": [
+        "*TOSTMF"
+      ],
+      "children": [
+        {
+          "name": "LIB",
+          "description": "ライブラリー",
+          "help": "*LIBL: 最初に一致するものが見つかるまで，現行スレッドのライブラリー・リスト内のすべてのライブラリーが検索されます。\n*CURLIB: ファイルを見つけるために，ジョブの現行ライブラリーが使用されます。ライブラリー・リストに現行ライブラリー項目が存在しない場合には，QGPLが使用されます。\nファイルが入っているライブラリーの名前を指定してください。",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "*LIBL",
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          },
+          "placeholder": "*TOSTMF"
+        },
+        {
+          "name": "TOFILE",
+          "description": "TOデータベース・ファイル",
+          "help": "コピーを受け取る物理ファイルのファイル名を指定してください。",
+          "inputType": "text",
+          "required": true,
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          }
+        }
+      ],
+      "positional": 2,
+      "basic": true
+    },
+    {
+      "name": "JOB",
+      "description": "ジョブ名",
+      "help": "データ・レコードをコピーするスプール・ファイルを作成したジョブを指定します。",
+      "inputType": "group",
+      "required": false,
+      "groupKind": "qualified",
+      "children": [
+        {
+          "name": "JOB_Q3",
+          "description": "番号",
+          "help": "システム割り当てジョブ番号を指定してください。",
+          "inputType": "number",
+          "required": false,
+          "attributes": {
+            "numericOnly": true
+          },
+          "placeholder": "*"
+        },
+        {
+          "name": "JOB_Q2",
+          "description": "ユーザー",
+          "help": "ジョブの実行で使用されるユーザー・プロファイルを識別するユーザー名を指定してください。",
+          "inputType": "text",
+          "required": false,
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          }
+        },
+        {
+          "name": "JOB",
+          "description": "ジョブ名",
+          "help": "スプール・ファイルを作成したジョブの名前を指定してください。",
+          "inputType": "text",
+          "required": false,
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          },
+          "defaultValue": "*"
+        }
+      ],
+      "basic": true
+    },
+    {
+      "name": "SPLNBR",
+      "description": "スプール・ファイル番号",
+      "help": "このジョブでデータ・レコードをコピーするスプール・ファイルの番号を指定します。\n\n*ONLY: ジョブ内の1つのスプール・ファイルだけが指定されたファイル名をもっています。したがって，スプール・ファイルの番号は不要です。\n*LAST: 指定されたファイル名で最高の番号が付いているスプール・ファイルが使用されます。\n*ANY: 使用するスプール・ファイルを決定するのに，スプール・ファイル番号は使用されません。スプール・ファイルの選択時に，スプール・ファイル番号よりジョブ・システム名パラメーターまたはスプール・ファイル作成日時パラメーターが優先されるようにする時には，この値を使用してください。\nデータ・レコードをコピーするスプール・ファイルの番号を指定してください。",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*ONLY",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "basic": true
+    },
+    {
+      "name": "JOBSYSNAME",
+      "description": "ジョブ・システム名",
+      "help": "スプール・ファイルを作成したジョブ(JOBパラメーター）が実行されたシステムの名前を指定します。このパラメーターは，ジョブ名，ユーザー名，ジョブ番号，スプール・ファイル名，およびスプール・ファイル番号のパラメーター要件が一致した後に考慮されます。\n\n*ONLY: 指定されたジョブ名，ユーザー名，ジョブ番号，スプール・ファイル名，スプール・ファイル番号，およびスプール・ファイル作成日時を持つスプール・ファイルは，1つです。\n*CURRENT: 指定されたジョブ名，ユーザー名，ジョブ番号，スプール・ファイル名，スプール・ファイル番号，および作成日時を持つ現行システム上で作成されたスプール・ファイルが使用されます。\n*ANY: 使用するスプール・ファイルを決定するのに，ジョブ・システム名は使用されません。スプール・ファイルの選択時に，ジョブ・システム名よりスプール・ファイル作成日時パラメーターが優先されるようにする時には，この値を使用してください。\nスプール・ファイルを作成したジョブが実行されたシステムの名前を指定します。",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*ONLY",
+      "attributes": {
+        "characterSet": "upper",
+        "maxLength": 10
+      },
+      "basic": true
+    },
+    {
+      "name": "CRTDATE",
+      "description": "作成されたスプール・ファイル",
+      "help": "スプール・ファイルが作成された日時を指定します。このパラメーターは，ジョブ名，ユーザー名，ジョブ番号，スプール・ファイル名，スプール・ファイル番号，およびジョブ・システム名のパラメーター要件が一致した後に考慮されます。",
+      "inputType": "group",
+      "required": false,
+      "groupKind": "elements",
+      "singleValues": [
+        "*ONLY",
+        "*LAST"
+      ],
+      "children": [
+        {
+          "name": "CRTDATE",
+          "description": "作成日",
+          "help": "スプール・ファイルが作成された日付を指定します。",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "*ONLY",
+          "placeholder": "*ONLY"
+        },
+        {
+          "name": "CRTTIME",
+          "description": "作成時刻",
+          "help": "スプール・ファイルが作成された時刻を指定します。",
+          "inputType": "dropdown",
+          "required": false,
+          "defaultValue": "*ONLY",
+          "attributes": {
+            "characterSet": "upper"
+          },
+          "options": [
+            {
+              "label": "*ONLY",
+              "value": "*ONLY",
+              "help": "指定されたジョブ名，ユーザー名，ジョブ番号，スプール・ファイル名，スプール・ファイル番号，ジョブ・システム名，およびスプール・ファイル作成日を持つスプール・ファイルは，1つです。"
+            },
+            {
+              "label": "*LAST",
+              "value": "*LAST",
+              "help": "指定されたジョブ名，ユーザー名，ジョブ番号，スプール・ファイル名，スプール・ファイル番号，ジョブ・システム名，およびスプール・ファイル作成日の最後の作成時刻を持つスプール・ファイルが使用されます。"
+            }
+          ],
+          "placeholder": "*ONLY"
+        }
+      ],
+      "basic": true
+    },
+    {
+      "name": "TOMBR",
+      "description": "TOメンバー",
+      "help": "コピー済みレコードを受け取るファイル・メンバーの名前を指定します。\n\n*FIRST: 指定したファイルの最初のメンバーが使用されます。\n物理ファイルのメンバーの名前を指定してください。このメンバーが存在しない場合には，メンバーが作成されてコピーは続行します。",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*FIRST",
+      "attributes": {
+        "characterSet": "upper",
+        "maxLength": 10
+      },
+      "basic": true
+    },
+    {
+      "name": "MBROPT",
+      "description": "レコードの置き換えまたは追加",
+      "help": "新しいレコードで置き換えるか，または既存のレコードに追加するかどうかを指定します。",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*REPLACE",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*REPLACE",
+          "value": "*REPLACE",
+          "help": "システムは，既存のメンバーを消去し，新しいレコードを追加します。"
+        },
+        {
+          "label": "*ADD",
+          "value": "*ADD",
+          "help": "システムは，既存のレコードの終わりに新しいレコードを追加します。"
+        }
+      ],
+      "basic": true
+    },
+    {
+      "name": "CTLCHAR",
+      "description": "制御文字",
+      "help": "スプール・ファイルの内部印刷制御文字を置き換える印刷制御文字（存在する場合）を指定します。 ワークステーション・カスタマイズ・オブジェクト (WSCST) パラメーターが指定され，これが*NONEでない場合，このパラメーターは無視されます。",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*NONE",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*NONE",
+          "value": "*NONE",
+          "help": "印刷制御文字は作成されません。"
+        },
+        {
+          "label": "*FCFC",
+          "value": "*FCFC",
+          "help": "各レコードの最初の文字にANSI用紙制御コードのいずれか1つが含まれることを指定します。このオプションはマイクロフィッシュの作成に役立ちます。ANSI用紙制御コードの詳細については，IBM i Information Center(http://www.ibm.com/systems/i/infocenter/)の「印刷」カテゴリーの「基本印刷」トピック・コレクションを参照してください。"
+        },
+        {
+          "label": "*PRTCTL",
+          "value": "*PRTCTL",
+          "help": "各レコードの最初の4文字に，高水準言語プログラムで役立つ印刷前スキップおよび印刷前スペースの値が含まれることを指定します。このコードはSSSLとして表示することができ，ここでSSSは印刷前スキップ行の値で，Lは印刷前スペースの値です。"
+        },
+        {
+          "label": "*S36FMT",
+          "value": "*S36FMT",
+          "help": "データベース・ファイルにコピーされるレコード様式がCOPYPRTでIBMシステム/36で作成されたものと同じであることを指定します。この値は，1次または2次補助記憶域プールに存在しているスプール・ファイルには許可されません。"
+        }
+      ],
+      "basic": true
+    },
+    {
+      "name": "CHLVAL",
+      "description": "チャネル値",
+      "help": "行番号が割り当てられたチャネル番号のリストを指定します。 制御文字 (CTLCHAR) パラメーターに*FCFCを指定した場合にだけこのパラメーターを指定してください。チャネル番号は報告書のスキップを決定する方法を示します。報告書で正しい位置決めを行うためには，割り当てられた各チャネルが対応する行番号を持っていなければなりません。",
+      "inputType": "group",
+      "required": false,
+      "groupKind": "elements",
+      "singleValues": [
+        "*NORMAL"
+      ],
+      "children": [
+        {
+          "name": "CHANNEL",
+          "description": "チャネル",
+          "help": "報告書でのスキップを制御するために使用するチャネルを指定してください。このパラメーターの有効な値は1から12だけです。各チャネル番号はスプール・ファイル・コピー(CPYSPLF)コマンドごとに1回しか指定できません。",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "*NORMAL",
+          "placeholder": "*NORMAL"
+        },
+        {
+          "name": "LINE",
+          "description": "回線",
+          "help": "同じリストでチャネル番号に割り当てられた行番号。有効な行番号の範囲は1から255です。各行番号はスプール・ファイル・コピー(CPYSPLF)コマンドごとに1回しか指定できません。",
+          "inputType": "number",
+          "required": false,
+          "attributes": {
+            "numericOnly": true
+          }
+        }
+      ],
+      "maxOccurrences": 12,
+      "basic": true
+    },
+    {
+      "name": "TOSTMF",
+      "description": "TOストリーム・ファイル",
+      "help": "出力データが書き出されるストリーム・ファイルを指定します。パス名のディレクトリーはすべて存在していなければなりません。新規ディレクトリーは作成されません。 TO データベース・ファイル (TOFILE) パラメーターが*TOSTMFの場合，このパラメーターには*NONE以外の値を指定する必要があります。\n\nパス名を指定するときの詳細については，IBM i Information Center(http://www.ibm.com/systems/i/infocenter/)の「プログラミング」カテゴリーの「制御言語(CL)」トピック・コレクション の「オブジェクトの命名規則」を参照してください。\n\n出力データを書き出すストリーム・ファイルのパス名を指定してください。この値は， TO データベース・ファイル (TOFILE) パラメーターに*TOSTMFが指定された場合のみ有効です。 注: ストリーム・ファイルが存在する場合，そのストリーム・ファイルに関連付けられたCCSIDは変更されません。",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*NONE",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*NONE",
+          "value": "*NONE",
+          "help": "出力はユーザー定義の物理ファイルに書き出されます。この値は， TO データベース・ファイル (TOFILE) パラメーターにユーザー定義の物理データベース・ファイルが指定された場合のみ有効です。"
+        }
+      ],
+      "basic": true
+    },
+    {
+      "name": "WSCST",
+      "description": "ワークステーション・カスタマイズ・オブジェクト",
+      "help": "スプール・ファイル出力をストリーム・ファイルに書き出す前に，この出力を最終形式に変換するために使用するワークステーション・カスタマイズ・オブジェクトを指定します。 TO データベース・ファイル (TOFILE) パラメーターに物理データベース・ファイルが指定されている場合，WSCSTパラメーターは無視されます。\n\nTO データベース・ファイル (TOFILE) パラメーターに*TOSTMFが指定され，スプール・ファイルの装置タイプが*AFPDSまたは*USERASCIIである場合，スプール・ファイル・データはストリーム・ファイルに直接コピーされます。ストリーム・ファイルが存在しない場合，そのストリーム・ファイルの関連CCSIDは65535に設定されます。\n\n他のスプール・ファイル・タイプの場合，スプール・ファイル・データは，データを形式設定する 制御文字 (CTLCHAR) パラメーターを使用してストリーム・ファイルにコピーされます。行の終わりには，レコードの境界を示すキャリッジ・リターンおよび行送りの制御が付加されます。ストリーム・ファイルが存在しない場合には，スプール・ファイル属性から取得されたCCSIDがストリーム・ファイルに関連付けられます。スプール・ファイルに*DEVD以外のCHRID属性がある場合，CHRID属性は，ストリーム・ファイルに関連付けられるCCSIDを選択するために使用されます。スプール・ファイルに*DEVDのCHRID属性がある場合，スプール・ファイルを作成したジョブのCCSIDが使用されます。",
+      "inputType": "group",
+      "required": false,
+      "groupKind": "qualified",
+      "singleValues": [
+        "*NONE",
+        "*PDF"
+      ],
+      "children": [
+        {
+          "name": "WSCST_LIB",
+          "description": "ライブラリー",
+          "help": "*LIBL: 最初に一致するものが見つかるまで，現行スレッドのライブラリー・リスト内のすべてのライブラリーが検索されます。\n*CURLIB: カスタマイズ・オブジェクトを見つけるために，ジョブの現行ライブラリーが使用されます。ライブラリー・リストに現行ライブラリー項目が存在しない場合には，QGPLが使用されます。\nカスタマイズ・オブジェクトが入っているライブラリーの名前を指定してください。",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "*LIBL",
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          },
+          "placeholder": "*NONE"
+        },
+        {
+          "name": "WSCST",
+          "description": "ワークステーション・カスタマイズ・オブジェクト",
+          "help": "カスタマイズ・オブジェクトの名前を指定してください。指定したカスタマイズ・オブジェクトが使用され，ストリーム・ファイルが存在しない場合，そのストリーム・ファイルに関連付けられたCCSIDは65535に設定されます。",
+          "inputType": "text",
+          "required": false,
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          },
+          "defaultValue": "*NONE"
+        }
+      ],
+      "basic": true
+    },
+    {
+      "name": "STMFOPT",
+      "description": "ストリーム・ファイル・オプション",
+      "help": "指定された名前のストリーム・ファイルが既に存在する場合に，コピー操作でレコードが置き換えられるか，あるいはストリーム・ファイルへのレコードのコピーが失敗するかを指定します。ストリーム・ファイルが存在していない場合には，それが作成されます。",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*NONE",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*NONE",
+          "value": "*NONE",
+          "help": "レコードはコピーされず，操作は失敗します。"
+        },
+        {
+          "label": "*REPLACE",
+          "value": "*REPLACE",
+          "help": "レコードは，既存のストリーム・ファイル・レコードを置き換えます。"
+        }
+      ],
+      "basic": true
+    },
+    {
+      "name": "OPNSPLF",
+      "description": "オープン・スプール・ファイルのコピー",
+      "help": "FILEパラメーターに指定されたスプール・ファイルがまだオープンしている場合でもコピー操作の続行を許可するかどうかを指定します。",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*NO",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*NO",
+          "value": "*NO",
+          "help": "スプール・ファイルがオープンしているとレコードはコピーされず，コピーは失敗します。"
+        },
+        {
+          "label": "*YES",
+          "value": "*YES",
+          "help": "スプール・ファイルがオープンしている場合は診断メッセージが出されて，レコードがコピーされます。"
+        }
+      ]
+    }
+  ],
+  "threadSafe": false,
+  "environment": "すべての環境 (*ALL)",
+  "examples": [
+    {
+      "code": "CPYSPLF FILE(QPRINT) JOB(PAYROLL01) SPLNBR(4) TOFILE(MYFILE) TOMBR(MYMBR) CTLCHAR(*PRTCTL)"
+    },
+    {
+      "code": "CPYSPLF FILE(QPRINT) TOFILE(MYLIB/MYFILE) JOB(PAYROLL02) MBROPT(*ADD) CTLCHAR(*FCFC) CHLVAL((1 3) (4 15))"
+    },
+    {
+      "code": "CPYSPLF FILE(EMAIL) JOB(123456/BARON/EMAIL01) SPLNBR(1) TOFILE(*TOSTMF) TOSTMF('/EMAILPDFS/EMAIL01.PDF') WSCST(*PDF) STMFOPT(*REPLACE)"
+    },
+    {
+      "code": "CPYSPLF FILE(MYDOC) JOB(*) SPLNBR(*LAST) TOFILE(*TOSTMF) TOSTMF(MYDOC.AFP) WSCST(*NONE) STMFOPT(*NONE)"
+    },
+    {
+      "code": "CPYSPLF FILE(MYDOC) JOB(*) SPLNBR(*LAST) TOFILE(*TOSTMF) TOSTMF(/TEXTFILES/MYDOC.TXT) WSCST(QSYS/QWPDEFAULT)"
+    }
+  ],
+  "errorMessages": [
+    {
+      "id": "CPF2207",
+      "text": "ライブラリー&3のタイプ*&2のオブジェクト&1の使用を認可されていない。"
+    },
+    {
+      "id": "CPF3CF2",
+      "text": "&1 APIの実行中にエラーが起こった。"
+    },
+    {
+      "id": "CPF3207",
+      "text": "メンバーは追加されなかった。エラーが起こっています。"
+    },
+    {
+      "id": "CPF3303",
+      "text": "ファイル&1はジョブ&5/&4/&3に見つからなかった。"
+    },
+    {
+      "id": "CPF3309",
+      "text": "&1という名前のファイルは活動状態でない。"
+    },
+    {
+      "id": "CPF3311",
+      "text": "&7のファイル&6に対するコピー要求は正常に実行されなかった。"
+    },
+    {
+      "id": "CPF3330",
+      "text": "必要な資源が使用できない。"
+    },
+    {
+      "id": "CPF3340",
+      "text": "指定された名前のファイルが，ジョブ&5/&4/&3で複数個見つかった。"
+    },
+    {
+      "id": "CPF3342",
+      "text": "ジョブ&5/&4/&3が見つからない。"
+    },
+    {
+      "id": "CPF3343",
+      "text": "重複したジョブ名が見つかった。"
+    },
+    {
+      "id": "CPF3344",
+      "text": "ファイル&1番号&8はもはやシステムにない。"
+    },
+    {
+      "id": "CPF338A",
+      "text": "制御文字*S36FMTは使用できません。"
+    },
+    {
+      "id": "CPF3394",
+      "text": "スプール・ファイル・データを変換することはできない。"
+    },
+    {
+      "id": "CPF3429",
+      "text": "ファイル&1番号&7を表示，コピー，または送信することができない。"
+    },
+    {
+      "id": "CPF3482",
+      "text": "コピー要求は正常に実行されなかった。スプール・ファイル&1はオープンされています。"
+    },
+    {
+      "id": "CPF3483",
+      "text": "&7のファイル&6に対するコピー要求は正常に実行されなかった。"
+    },
+    {
+      "id": "CPF3486",
+      "text": "CHLVALパラメーターの値が正しくない。"
+    },
+    {
+      "id": "CPF3492",
+      "text": "スプール・ファイルに対しては許可されていない。"
+    },
+    {
+      "id": "CPF3493",
+      "text": "ファイル&1に対してCTLCHARパラメーターが正しくない。"
+    },
+    {
+      "id": "CPF3499",
+      "text": "ファイル&1のレコードが割り当てられたすべてのチャネル値に先行する。"
+    },
+    {
+      "id": "CPF5812",
+      "text": "メンバー&3はライブラリー&2のファイル&1に既に存在している。"
+    },
+    {
+      "id": "CPF6DF2",
+      "text": "ユーザー・スペース&1のAFPデータ・ストリームが正しくありません。"
+    },
+    {
+      "id": "CPF6DF4",
+      "text": "ライブラリー&3のオブジェクト&2に認識不可能なデータが入っている。"
+    },
+    {
+      "id": "CPF6DF8",
+      "text": "データを変換することができない。"
+    },
+    {
+      "id": "CPF6DFB",
+      "text": "データの変換中にエラーが起こった。"
+    },
+    {
+      "id": "CPF9801",
+      "text": "ライブラリー&3にオブジェクト&2が見つからない。"
+    },
+    {
+      "id": "CPF9802",
+      "text": "&3のオブジェクト&2は認可されていない。"
+    },
+    {
+      "id": "CPF9803",
+      "text": "ライブラリー&3のオブジェクト&2を割り振りできません。"
+    },
+    {
+      "id": "CPF9804",
+      "text": "ライブラリー&3のオブジェクト&2が損傷している。"
+    },
+    {
+      "id": "CPF9812",
+      "text": "ライブラリー&2にファイル&1が見つからない。"
+    },
+    {
+      "id": "CPF9820",
+      "text": "ライブラリー&1の使用は認可されていない。"
+    },
+    {
+      "id": "CPF9837",
+      "text": "ファイル&1をMBR(*ALL)に一時変更しようとした。"
+    },
+    {
+      "id": "CPF9845",
+      "text": "ファイル&1のオープン中にエラーが起こった。"
+    },
+    {
+      "id": "CPF9846",
+      "text": "ライブラリー&2のファイル&1の処理中にエラーが起こった。"
+    },
+    {
+      "id": "CPF9872",
+      "text": "ライブラリー&2のプログラムまたはサービス・プログラム&1が終了した。理由コードは&3です。"
+    },
+    {
+      "id": "CPFA09C",
+      "text": "オブジェクトが認可されていない。オブジェクトは&1です。"
+    },
+    {
+      "id": "CPFA0A0",
+      "text": "オブジェクトは既に存在しています。オブジェクトは&1です。"
+    },
+    {
+      "id": "CPFA0A1",
+      "text": "入力または出力エラーが起こった。"
+    },
+    {
+      "id": "CPFA0A9",
+      "text": "オブジェクトが見つからない。オブジェクトは&1です。"
+    },
+    {
+      "id": "CPFCE01",
+      "text": "必要なプロダクト・オプションが使用できない。"
+    },
+    {
+      "id": "CPFCE02",
+      "text": "要求された変換サービスにアクセスできない。"
+    },
+    {
+      "id": "CPFCE03",
+      "text": "データ・ストリーム・エラーが検出されました。"
+    },
+    {
+      "id": "CPFCE05",
+      "text": "印刷精度エラーが原因で変換タスクが取り消された。"
+    },
+    {
+      "id": "CPFCE06",
+      "text": "印刷データの変換中にエラーが起こった。"
+    },
+    {
+      "id": "CPFCE07",
+      "text": "変換サービス・ジョブはクリティカル・エラーが原因で終了しました。"
+    },
+    {
+      "id": "CPFCE09",
+      "text": "SCSデータ・ストリームが正しくありません。"
+    }
+  ],
+  "source": {
+    "url": "https://www.ibm.com/docs/ja/ssw_ibm_i_74/cl/cpysplf.htm",
+    "version": "IBM i 7.4"
+  }
+}

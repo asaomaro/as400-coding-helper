@@ -1,0 +1,372 @@
+{
+  "keyword": "CPYSRCF",
+  "description": "ソース・ファイルのコピー (CPYSRCF)",
+  "help": "ソース・ファイル・コピー(CPYSRCF)コマンドは，データベースソース・ファイルまたはDDMファイルをソース物理ファイルまたはDDMファイルにコピーし，文字データを取り出しファイルのCCSIDから受け入れファイルのCCSIDに変換します。TOFILE(*PRINT)が指定された場合には，弊社提供の印刷装置ファイルQSYSPRTを使用して，定様式印刷装置ファイルが作成されます（ソース・レコードのファイルが変更されて，他のコピー・コマンドのファイル形式とは異なる）。取り出しファイルまたは受け入れファイルに対して出された一時変更は，コピー操作に使用されたファイルに適用されます。レコード・データは，取り出しファイルから受け入れファイルにコピーされ，文字データは取り出しファイルCCSIDから受け入れファイルCCSIDに変換されます。レコード様式のこの他の相違（CPYFコマンドのFMTOPT(*NOCHK)パラメーター・オプションの相違点など）は無視されます。\n\n注: DDMファイルの詳細については，IBM i Information Center(http://www.ibm.com/systems/i/infocenter/)の「分散データベース・プログラミング」トピック・コレクションを参照してください。\n\n1つのメンバー，すべてのメンバー，またはメンバーの総称セットは，コマンドを呼び出す度にコピーすることができます。受け入れファイル・メンバーは，類似名の受け入れファイル・メンバーまたは単一の受け入れファイル・メンバーにコピーすることができます。多くのメンバーはアルファベット順にコピーされリストされます。CPYSRCFコマンドの開始時には，受け入れファイルが存在しなければなりません。このコマンドは受け入れファイルを作成しませんが，その受け入れファイルにメンバーがまだ存在しない場合に，既存の物理ファイルにメンバーを追加します。\n\nこのコマンドは，ファイル・コピー(CPYF)コマンドと同様のサポートを提供します。MBROPTパラメーターの省略時の値は*REPLACEである（他のコピー・コマンドとは異なる）ことに注意してください。これは，取り出しファイルからコピーされるレコードと既存のレコードを置き換える前に，受け入れファイルの受け入れメンバーに既にある既存のレコードを消去します。また，TOMBRパラメーターの省略時の値が*FROMMBRの場合には，これによって，取り出しファイル・メンバーを類似名の受け入れファイルのメンバーにコピーすることになります。",
+  "parameters": [
+    {
+      "name": "FROMFILE",
+      "description": "データベース・ソース・ファイル",
+      "help": "コピーされるレコードが入っているデータベース・ソース・ファイルを指定します。\n\nこれは必須パラメーターです。",
+      "inputType": "group",
+      "required": true,
+      "groupKind": "qualified",
+      "children": [
+        {
+          "name": "LIB",
+          "description": "ライブラリー",
+          "help": "*LIBL: 最初に一致するものが見つかるまで，現行スレッドのライブラリー・リスト内のすべてのライブラリーが検索されます。\n*CURLIB: スレッドの現行ライブラリーが検索されます。スレッドの現行ライブラリーとして指定されているライブラリーがない場合，QGPLライブラリーが検索されます。\n検索するライブラリーの名前を指定してください。",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "*LIBL",
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          }
+        },
+        {
+          "name": "FROMFILE",
+          "description": "データベース・ソース・ファイル",
+          "help": "コピーされるレコードが入っているデータベース・ソース・ファイルの名前を指定してください。",
+          "inputType": "text",
+          "required": true,
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          }
+        }
+      ],
+      "positional": 1
+    },
+    {
+      "name": "TOFILE",
+      "description": "TOファイル",
+      "help": "コピーされたレコードを受け取るファイルを指定します。\n\nこれは必須パラメーターです。",
+      "inputType": "group",
+      "required": true,
+      "groupKind": "qualified",
+      "singleValues": [
+        "*PRINT"
+      ],
+      "children": [
+        {
+          "name": "TOFILE_LIB",
+          "description": "ライブラリー",
+          "help": "*LIBL: 最初に一致するものが見つかるまで，現行スレッドのライブラリー・リスト内のすべてのライブラリーが検索されます。\n*CURLIB: スレッドの現行ライブラリーが検索されます。スレッドの現行ライブラリーとして指定されているライブラリーがない場合，QGPLライブラリーが検索されます。\n検索するライブラリーの名前を指定してください。",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "*LIBL",
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          }
+        },
+        {
+          "name": "TOFILE",
+          "description": "TOファイル",
+          "help": "コピー済みレコードを受け取るソース物理ファイルの名前を指定してください。",
+          "inputType": "text",
+          "required": true,
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          }
+        }
+      ],
+      "positional": 2
+    },
+    {
+      "name": "FROMMBR",
+      "description": "FROMメンバー",
+      "help": "取り出しファイルからコピーされるファイル・メンバーを指定します。取り出しファイルの1つのメンバー，メンバーの総称セット，またはすべてのメンバーがコピーされます。メンバーはアルファベット順にコピーされます。\n\nこれは必須パラメーターです。\n\n*ALL: データベース・ファイルのすべてのメンバーがコピーされます。\n*FIRST: 指定したファイルの最初のメンバーが使用されます。\nコピーされるメンバーのグループの総称名を指定してください。\nコピーするデータベース・ファイル・メンバーの名前を指定してください。",
+      "inputType": "text",
+      "required": true,
+      "attributes": {
+        "characterSet": "upper",
+        "maxLength": 10
+      },
+      "positional": 3
+    },
+    {
+      "name": "TOMBR",
+      "description": "TOメンバーまたはラベル",
+      "help": "コピー済みレコードを受け取るファイル・メンバーの名前を指定します。\n\nTO ファイル (TOFILE) パラメーターに*PRINTを指定した場合には，このパラメーターに*FIRSTまたは*FROMMBRのいずれかを指定しなければなりません。\n\nメンバー名または*FIRSTがFROMMBRパラメーターの値として指定された場合には，同じ名前の受け入れファイルのメンバーがコピーされるレコードを受け取ります。*ALLまたは総称メンバー名がFROMMBRパラメーターの値として指定された場合には，取り出しファイルの各メンバーは受け入れファイルの同じ名前のメンバーにコピーされます。取り出しファイルの1つ以上のメンバー（FROMMBRパラメーターによって指定される）からのレコードが受け入れファイルの最初のメンバーにコピーされます。\n\n*FROMMBR: 取り出しファイルおよび受け入れファイル相互間で対応するメンバー名またはラベルIDが使用されます。対応する名前のメンバーが受け入れファイルに存在しない場合には，その名前のメンバーが受け入れファイルに追加されます。 メンバー名または*FIRSTがFROMMBRパラメーターの値として指定された場合には，同じ名前の受け入れファイルのメンバーがコピーされるレコードを受け取ります。*ALLまたは総称メンバー名がFROMMBRパラメーターの値として指定された場合には，取り出しファイルの各メンバーは受け入れファイルの同じ名前のメンバーにコピーされます。取り出しファイルの1つ以上のメンバー（FROMMBRパラメーターによって指定される）からのレコードが受け入れファイルの最初のメンバーにコピーされます。\n*FIRST: 指定したファイルの最初のメンバーが使用されます。\nレコードを受け取る物理受け入れファイル・メンバー名を指定してください。指定された名前のメンバーが存在しない場合には，同じ名前のメンバーが追加されます。",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*FROMMBR",
+      "attributes": {
+        "characterSet": "upper",
+        "maxLength": 10
+      },
+      "positional": 4
+    },
+    {
+      "name": "TOMBRID",
+      "description": "TOメンバーID",
+      "help": "新しいメンバーが受け入れファイルに追加される場合に，メンバー・レベルIDが生成されるようにするか，あるいは取り出しファイルのメンバーのメンバー・レベルIDからコピーされるようにするかを指定します。",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*GEN",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*GEN",
+          "value": "*GEN",
+          "help": "受け入れファイルに入った新しいメンバーのメンバー・レベルIDが生成されます。"
+        },
+        {
+          "label": "*FROMMBR",
+          "value": "*FROMMBR",
+          "help": "受け入れファイルに入った新しいメンバーのメンバー・レベルIDが，コピー元のメンバーのものと同じになります。"
+        }
+      ]
+    },
+    {
+      "name": "MBROPT",
+      "description": "レコードの置き換えまたは追加",
+      "help": "新しいレコードで置き換えるか，または既存のレコードに追加するかどうかを指定します。",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*REPLACE",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*REPLACE",
+          "value": "*REPLACE",
+          "help": "システムは，既存のメンバーを消去し，新しいレコードを追加します。"
+        },
+        {
+          "label": "*ADD",
+          "value": "*ADD",
+          "help": "システムは，既存のレコードの終わりに新しいレコードを追加します。"
+        }
+      ],
+      "positional": 5
+    },
+    {
+      "name": "SRCCHGDATE",
+      "description": "ソース変更日",
+      "help": "新しいメンバーが受け入れファイルに追加される場合，またはMBROPT(*REPLACE)が指定された場合，「ソースの最終更新日付／時刻」が新しい日付／時刻になるようにするか，あるいは取り出しファイルのメンバーの「ソースの最終更新日付／時刻」からコピーされるようにするかを指定します。",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*FROMMBR",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*FROMMBR",
+          "value": "*FROMMBR",
+          "help": "MBROPT(*REPLACE)が指定された場合，あるいは*FROMMBRの値が指定された場合，受け入れファイルにある新しいメンバーの「ソースの最終更新日付／時刻」は，コピーされるメンバーと同じものになります。"
+        },
+        {
+          "label": "*NEW",
+          "value": "*NEW",
+          "help": "MBROPT(*REPLACE)が指定された場合，あるいは*NEWの値が指定された場合，受け入れファイルにある新しいメンバーの「ソースの最終更新日付／時刻」は，新しい日付／時刻になります。"
+        }
+      ]
+    },
+    {
+      "name": "TEXT",
+      "description": "テキスト'記述'",
+      "help": "MBROPT(*REPLACE)が指定されている場合に，メンバーを説明するテキストをFROMメンバーからコピーするかどうかを指定します。",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*SAME",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*SAME",
+          "value": "*SAME",
+          "help": "TOメンバー・テキストは変更されません。"
+        },
+        {
+          "label": "*FROMMBR",
+          "value": "*FROMMBR",
+          "help": "TOメンバーを説明するテキストは，FROMメンバーのテキストに変更されます。"
+        }
+      ]
+    },
+    {
+      "name": "SRCTYPE",
+      "description": "ソース仕様タイプ",
+      "help": "MBROPT(*REPLACE)が指定されている場合に，TOメンバーのソース仕様タイプをFROMメンバーからコピーするかどうかを指定します。",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*SAME",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*SAME",
+          "value": "*SAME",
+          "help": "TOメンバーのソース仕様タイプは変更されません。"
+        },
+        {
+          "label": "*FROMMBR",
+          "value": "*FROMMBR",
+          "help": "TOメンバーのソース仕様タイプは，FROMメンバーのソース仕様タイプに変更されます。"
+        }
+      ]
+    },
+    {
+      "name": "SRCOPT",
+      "description": "ソース更新オプション",
+      "help": "取り出しファイルのレコードを受け入れファイルにコピーする時に，ソース順序番号フィールドおよび日付フィールドに新しい値を割り当てるかどうかを指定します。",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*SAME",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*SAME",
+          "value": "*SAME",
+          "help": "ソース順序番号フィールドおよび日付フィールドに新しい値は割り当てられません。"
+        },
+        {
+          "label": "*SEQNBR",
+          "value": "*SEQNBR"
+        },
+        {
+          "label": "*DATE",
+          "value": "*DATE"
+        }
+      ],
+      "maxOccurrences": 2
+    },
+    {
+      "name": "SRCSEQ",
+      "description": "ソース・ステートメントの順序番号付け",
+      "help": "ソース更新オプション (SRCOPT) パラメーターに*SEQNBRも指定した時に限り，コピーされた最初のレコードに使用する順序番号，およびコピーされた後続のレコードごとの順序番号を計算するために初期の順序番号に増分する値を指定します。順序番号の最大値は9999.99です。値がこの限界より大きい場合には，メンバーの追加のレコードには，すべて順序番号9999.99が割り当てられています。",
+      "inputType": "group",
+      "required": false,
+      "groupKind": "elements",
+      "children": [
+        {
+          "name": "SRCSEQ_E1",
+          "description": "開始順序番号",
+          "help": "受け入れファイルにコピーされる最初のソース・レコードの順序番号が0001.00になります。\n受け入れファイルにコピーされる最初のソース・レコードの順序番号を指定します。",
+          "inputType": "number",
+          "required": false,
+          "defaultValue": "1.00",
+          "attributes": {
+            "numericOnly": true
+          }
+        },
+        {
+          "name": "SRCSEQ_E2",
+          "description": "増分番号",
+          "help": "受け入れファイル中のコピーされたソース・レコードは，整数の増分値1で番号が付け直されます。\n最初のレコードの後でコピーされるすべてのソース・レコードの番号を付け直すために追加される値を指定します。最大値9999.99に達した場合，以降にコピーされる追加レコードの順序番号も9999.99となります。",
+          "inputType": "number",
+          "required": false,
+          "defaultValue": "1.00",
+          "attributes": {
+            "numericOnly": true
+          }
+        }
+      ]
+    }
+  ],
+  "environment": "すべての環境 (*ALL)",
+  "restrictions": [
+    "ファイルのオープン・データ・パス(ODP)は，コピー操作中にジョブ（経路指定ステップ）の他のプログラムと共用することはできません。",
+    "マルチスレッド・ジョブでは，複数のデータベース・ファイル・メンバー，装置ファイル(SPOOL(*YES)印刷ファイルを除く），分散ファイル，または*SNAタイプのDDMファイルとのコピー時に，このコマンドはスレッド・セーフではありません。このコマンドは，*SNAタイプのリレーショナル・データベースおよび*SNAタイプのDDMファイルを使用する分散ファイルに対して正常に実行されません。スレッド・セーフであるのは，単一のデータベース・ファイル・メンバー（ローカルまたは*IPタイプのDDM)あるいはSPOOL(*YES)印刷ファイルとのコピー時だけです。"
+  ],
+  "examples": [
+    {
+      "code": "CPYSRCF FROMFILE(QGPL/QCLSRC) TOFILE(MYLIB/CLSRC) FROMMBR(PGMA)"
+    },
+    {
+      "code": "CPYSRCF FROMFILE(QRPG/QRPGSRC) TOFILE(*PRINT) FROMMBR(INV*)"
+    },
+    {
+      "code": "CPYSRCF FROMFILE(MYLIB/TXTSRC) TOFILE(QIDU/QTXTSRC) FROMMBR(*ALL) SRCOPT(*SEQNBR *DATE) SRCSEQ(1 .25)"
+    }
+  ],
+  "errorMessages": [
+    {
+      "id": "CPF2816",
+      "text": "エラーのために，&2のファイル&1はコピーされなかった。"
+    },
+    {
+      "id": "CPF2817",
+      "text": "エラーのために，コピー・コマンドが終了した。"
+    },
+    {
+      "id": "CPF2858",
+      "text": "印刷出力のファイル属性が正しくない。"
+    },
+    {
+      "id": "CPF2859",
+      "text": "共用オープン・データ・パスを使用することはできない。"
+    },
+    {
+      "id": "CPF2864",
+      "text": "ライブラリー&2のファイル&1は認可されていない。"
+    },
+    {
+      "id": "CPF2875",
+      "text": "正しくないファイル・メンバーまたはラベルがオープンされた。"
+    },
+    {
+      "id": "CPF2888",
+      "text": "エラーのためにメンバー&3はファイルに追加されなかった。"
+    },
+    {
+      "id": "CPF2909",
+      "text": "&2のファイル&1のメンバー&3の消去中にエラー。"
+    },
+    {
+      "id": "CPF2949",
+      "text": "&2のファイル&1のメンバー&3のクローズ中にエラー。"
+    },
+    {
+      "id": "CPF2952",
+      "text": "ライブラリー&2のファイル&1のオープン中にエラー。"
+    },
+    {
+      "id": "CPF2968",
+      "text": "&2のファイル&1のコピー中に位置指定エラーが起こった。"
+    },
+    {
+      "id": "CPF2971",
+      "text": "ファイル&1のメンバー&3の読み取り中にエラー。"
+    },
+    {
+      "id": "CPF2972",
+      "text": "ファイル&1のメンバー&3への書き出し中にエラー。"
+    },
+    {
+      "id": "CPF3140",
+      "text": "メンバー&2の初期設定またはコピーが取り消された。"
+    },
+    {
+      "id": "CPF3143",
+      "text": "メンバー&2に増分値を使用することはできない。"
+    },
+    {
+      "id": "CPF3148",
+      "text": "新しいレコードのためにメンバー&2に必要なスペースが多すぎる。"
+    },
+    {
+      "id": "CPF3150",
+      "text": "メンバー&2のデータベース・コピーが正常に行われなかった。"
+    },
+    {
+      "id": "CPF9212",
+      "text": "&3のDDMファイル&2をロードまたはアンロードすることができない。"
+    }
+  ],
+  "source": {
+    "url": "https://www.ibm.com/docs/ja/ssw_ibm_i_74/cl/cpysrcf.htm",
+    "version": "IBM i 7.4"
+  }
+}

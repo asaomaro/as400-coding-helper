@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="ja"><head><meta charset="utf-8"><title>ソース・ファイルのコピー  (CPYSRCF)</title></head>
+<body>
+<div role="main">
+<script type="text/javascript" src="../rzahg/synch.js"></script>
+<a name="CPYSRCF.Top_Of_Page"></a>
+<h1>ソース・ファイルのコピー  (CPYSRCF)</h1><div id="lastModifiedDate"><span>Last Updated</span>: 2021-04-13</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table0" width="100%" class="cds--data-table">
+<tbody><tr>
+<td class="valigntop alignleft"><strong>実行可能場所:  </strong>すべての環境 (*ALL)<br>
+<strong>スレッド・セーフ:  </strong>条件付き
+</td>
+<td class="valigntop alignright">
+<a href="#CPYSRCF.PARAMETERS.TABLE">パラメーター</a><br>
+<a href="#CPYSRCF.COMMAND.EXAMPLES">例</a><br>
+<a href="#CPYSRCF.ERROR.MESSAGES">エラー・メッセージ</a></td>
+</tr>
+</tbody></table></div></div>
+<div> <a name="CPYSRCF"></a>
+<p>ソース・ファイル・コピー(CPYSRCF)コマンドは，データベースソース・ファイルまたはDDMファイルをソース物理ファイルまたはDDMファイルにコピーし，文字データを取り出しファイルのCCSIDから受け入れファイルのCCSIDに変換します。TOFILE(*PRINT)が指定された場合には，弊社提供の印刷装置ファイルQSYSPRTを使用して，定様式印刷装置ファイルが作成されます（ソース・レコードのファイルが変更されて，他のコピー・コマンドのファイル形式とは異なる）。取り出しファイルまたは受け入れファイルに対して出された一時変更は，コピー操作に使用されたファイルに適用されます。レコード・データは，取り出しファイルから受け入れファイルにコピーされ，文字データは取り出しファイルCCSIDから受け入れファイルCCSIDに変換されます。レコード様式のこの他の相違（CPYFコマンドのFMTOPT(*NOCHK)パラメーター・オプションの相違点など）は無視されます。
+</p>
+<p>
+<strong>注:     </strong>DDMファイルの詳細については，IBM i Information Center(http://www.ibm.com/systems/i/infocenter/)の「分散データベース・プログラミング」トピック・コレクションを参照してください。
+</p>
+<p>1つのメンバー，すべてのメンバー，またはメンバーの総称セットは，コマンドを呼び出す度にコピーすることができます。受け入れファイル・メンバーは，類似名の受け入れファイル・メンバーまたは単一の受け入れファイル・メンバーにコピーすることができます。多くのメンバーはアルファベット順にコピーされリストされます。CPYSRCFコマンドの開始時には，受け入れファイルが存在しなければなりません。このコマンドは受け入れファイルを作成しませんが，その受け入れファイルにメンバーがまだ存在しない場合に，既存の物理ファイルにメンバーを追加します。
+</p>
+<p>このコマンドは，ファイル・コピー(CPYF)コマンドと同様のサポートを提供します。MBROPTパラメーターの省略時の値は*REPLACEである（他のコピー・コマンドとは異なる）ことに注意してください。これは，取り出しファイルからコピーされるレコードと既存のレコードを置き換える前に，受け入れファイルの受け入れメンバーに既にある既存のレコードを消去します。また，TOMBRパラメーターの省略時の値が*FROMMBRの場合には，これによって，取り出しファイル・メンバーを類似名の受け入れファイルのメンバーにコピーすることになります。
+</p>
+<h2><strong>制約事項</strong><strong>:</strong>
+</h2>
+<ul class="cds--list--unordered">
+<li class="cds--list__item">ファイルのオープン・データ・パス(ODP)は，コピー操作中にジョブ（経路指定ステップ）の他のプログラムと共用することはできません。
+</li>
+<li class="cds--list__item">マルチスレッド・ジョブでは，複数のデータベース・ファイル・メンバー，装置ファイル(SPOOL(*YES)印刷ファイルを除く），分散ファイル，または*SNAタイプのDDMファイルとのコピー時に，このコマンドはスレッド・セーフではありません。このコマンドは，*SNAタイプのリレーショナル・データベースおよび*SNAタイプのDDMファイルを使用する分散ファイルに対して正常に実行されません。スレッド・セーフであるのは，単一のデータベース・ファイル・メンバー（ローカルまたは*IPタイプのDDM)あるいはSPOOL(*YES)印刷ファイルとのコピー時だけです。
+</li>
+</ul>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table1" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#CPYSRCF.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div>
+<h2><a name="CPYSRCF.PARAMETERS.TABLE">パラメーター</a></h2>
+<div class="tablenoborder"><div class="cds--data-table-container"><table id="parm_table2" summary="Parameters" border="1" cellpadding="4" cellspacing="0" class="cds--data-table">
+<!-- col1="10" col2="15" col3="30" col4="10" -->
+<tbody><tr>
+<th scope="col" class="valignbottom alignleft"><div class="cds--table-header-label">キーワード</div></th>
+<th scope="col" class="valignbottom alignleft"><div class="cds--table-header-label">記述</div></th>
+<th scope="col" class="valignbottom alignleft"><div class="cds--table-header-label">選択項目</div></th>
+<th scope="col" class="valignbottom alignleft"><div class="cds--table-header-label">ノーツ</div></th>
+</tr>
+<tr>
+<td class="valigntop" rowspan="3"><a href="#CPYSRCF.FROMFILE"><strong>FROMFILE</strong></a></td>
+<td class="valigntop"> データベース・ソース・ファイル</td>
+<td class="valigntop"><span class="var">修飾オブジェクト名</span></td>
+<td class="valigntop" rowspan="3">必須, 定位置 1</td>
+</tr>
+<tr>
+<td class="valigntop">修飾子 1:  データベース・ソース・ファイル</td>
+<td class="valigntop"><span class="var">名前</span></td>
+</tr><tr>
+<td class="valigntop">修飾子 2: ライブラリー</td>
+<td class="valigntop"><span class="var">名前</span>, <strong class="underlined">*LIBL</strong>, *CURLIB</td>
+</tr><tr>
+<td class="valigntop" rowspan="3"><a href="#CPYSRCF.TOFILE"><strong>TOFILE</strong></a></td>
+<td class="valigntop"> TOファイル</td>
+<td class="valigntop">単一値: *PRINT<br>その他の値: <span class="var">修飾オブジェクト名</span></td>
+<td class="valigntop" rowspan="3">必須, 定位置 2</td>
+</tr>
+<tr>
+<td class="valigntop">修飾子 1:  TOファイル</td>
+<td class="valigntop"><span class="var">名前</span></td>
+</tr><tr>
+<td class="valigntop">修飾子 2: ライブラリー</td>
+<td class="valigntop"><span class="var">名前</span>, <strong class="underlined">*LIBL</strong>, *CURLIB</td>
+</tr><tr>
+<td class="valigntop"><a href="#CPYSRCF.FROMMBR"><strong>FROMMBR</strong></a></td>
+<td class="valigntop"> FROMメンバー</td>
+<td class="valigntop"><span class="var">総称名, 名前</span>, *FIRST, *ALL</td>
+<td class="valigntop">必須, 定位置 3</td>
+</tr>
+<tr>
+<td class="valigntop"><a href="#CPYSRCF.TOMBR"><strong>TOMBR</strong></a></td>
+<td class="valigntop"> TOメンバーまたはラベル</td>
+<td class="valigntop"><span class="var">名前</span>, <strong class="underlined">*FROMMBR</strong>, *FIRST</td>
+<td class="valigntop">オプショナル, 定位置 4</td>
+</tr>
+<tr>
+<td class="valigntop"><a href="#CPYSRCF.TOMBRID"><strong>TOMBRID</strong></a></td>
+<td class="valigntop">TOメンバーID</td>
+<td class="valigntop"><strong class="underlined">*GEN</strong>, *FROMMBR</td>
+<td class="valigntop">オプショナル</td>
+</tr>
+<tr>
+<td class="valigntop"><a href="#CPYSRCF.MBROPT"><strong>MBROPT</strong></a></td>
+<td class="valigntop">レコードの置き換えまたは追加</td>
+<td class="valigntop"><strong class="underlined">*REPLACE</strong>, *ADD</td>
+<td class="valigntop">オプショナル, 定位置 5</td>
+</tr>
+<tr>
+<td class="valigntop"><a href="#CPYSRCF.SRCCHGDATE"><strong>SRCCHGDATE</strong></a></td>
+<td class="valigntop">ソース変更日</td>
+<td class="valigntop"><strong class="underlined">*FROMMBR</strong>, *NEW</td>
+<td class="valigntop">オプショナル</td>
+</tr>
+<tr>
+<td class="valigntop"><a href="#CPYSRCF.TEXT"><strong>TEXT</strong></a></td>
+<td class="valigntop">テキスト'記述'</td>
+<td class="valigntop"><strong class="underlined">*SAME</strong>, *FROMMBR</td>
+<td class="valigntop">オプショナル</td>
+</tr>
+<tr>
+<td class="valigntop"><a href="#CPYSRCF.SRCTYPE"><strong>SRCTYPE</strong></a></td>
+<td class="valigntop">ソース仕様タイプ</td>
+<td class="valigntop"><strong class="underlined">*SAME</strong>, *FROMMBR</td>
+<td class="valigntop">オプショナル</td>
+</tr>
+<tr>
+<td class="valigntop"><a href="#CPYSRCF.SRCOPT"><strong>SRCOPT</strong></a></td>
+<td class="valigntop">ソース更新オプション</td>
+<td class="valigntop">単一値: <strong class="underlined">*SAME</strong><br>その他の値 (最大 2 回の繰り返し): *SEQNBR, *DATE</td>
+<td class="valigntop">オプショナル</td>
+</tr>
+<tr>
+<td class="valigntop" rowspan="3"><a href="#CPYSRCF.SRCSEQ"><strong>SRCSEQ</strong></a></td>
+<td class="valigntop">ソース・ステートメントの順序番号付け</td>
+<td class="valigntop"><span class="var">要素リスト</span></td>
+<td class="valigntop" rowspan="3">オプショナル</td>
+</tr>
+<tr>
+<td class="valigntop">要素 1: 開始順序番号</td>
+<td class="valigntop">
+0.01-9999.99, <strong class="underlined">1.00</strong></td>
+</tr>
+<tr>
+<td class="valigntop">要素 2: 増分番号</td>
+<td class="valigntop">
+0.01-9999.99, <strong class="underlined">1.00</strong></td>
+</tr>
+</tbody></table></div></div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table3" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#CPYSRCF.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+</div>
+<div> <a name="CPYSRCF.FROMFILE"></a>
+<h2>データベース・ソース・ファイル (FROMFILE)</h2>
+<p>コピーされるレコードが入っているデータベース・ソース・ファイルを指定します。
+</p>
+<p>これは必須パラメーターです。
+</p>
+<h3><strong>修飾子</strong><strong>1:  データベース・ソース・ファイル</strong>
+</h3>
+<dl>
+<dt><strong class="italic">名前</strong></dt>
+<dd>コピーされるレコードが入っているデータベース・ソース・ファイルの名前を指定してください。
+</dd>
+</dl>
+<h3><strong>修飾子</strong><strong>2: ライブラリー</strong>
+</h3>
+<dl>
+<dt><strong class="underlined">*LIBL</strong></dt>
+<dd>最初に一致するものが見つかるまで，現行スレッドのライブラリー・リスト内のすべてのライブラリーが検索されます。
+</dd>
+</dl>
+<dl>
+<dt><strong>*CURLIB</strong></dt>
+<dd>スレッドの現行ライブラリーが検索されます。スレッドの現行ライブラリーとして指定されているライブラリーがない場合，QGPLライブラリーが検索されます。
+</dd>
+</dl>
+<dl>
+<dt><strong class="italic">名前</strong></dt>
+<dd>検索するライブラリーの名前を指定してください。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table4" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#CPYSRCF.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="CPYSRCF.TOFILE"></a>
+<h2>TOファイル (TOFILE)</h2>
+<p>コピーされたレコードを受け取るファイルを指定します。
+</p>
+<p>これは必須パラメーターです。
+</p>
+<h3><strong>単一値</strong>
+</h3>
+<dl>
+<dt><strong>*PRINT</strong></dt>
+<dd>レコードは弊社提供の印刷装置ファイルQSYSPRTにコピーされます。*PRINTが指定された場合，コード化文字セットID (CCSID)の変換は行われません。この形式ではレコード間にブランク行は入れられません。ソース順序番号フィールドとソース変更日フィールドは，データと区別されます。複数のファイル・メンバーがコピーされた場合，それらのメンバーはアルファベット順にリストされます。16進数形式のリストが必要な場合には，OUTFMT(*HEX)パラメーター値を指定したファイル・コピー(CPYF)コマンドを使用してください。弊社提供の印刷装置ファイルQSYSPRTを別のファイル名に一時変更できないことがあり，これはRPLUNPRT(*YES)およびCTLCHAR(*NONE)の属性でなければなりません。
+</dd>
+</dl>
+<h3><strong>修飾子</strong><strong>1:  TO</strong><strong>ファイル</strong>
+</h3>
+<dl>
+<dt><strong class="italic">名前</strong></dt>
+<dd>コピー済みレコードを受け取るソース物理ファイルの名前を指定してください。
+</dd>
+</dl>
+<h3><strong>修飾子</strong><strong>2: ライブラリー</strong>
+</h3>
+<dl>
+<dt><strong class="underlined">*LIBL</strong></dt>
+<dd>最初に一致するものが見つかるまで，現行スレッドのライブラリー・リスト内のすべてのライブラリーが検索されます。
+</dd>
+</dl>
+<dl>
+<dt><strong>*CURLIB</strong></dt>
+<dd>スレッドの現行ライブラリーが検索されます。スレッドの現行ライブラリーとして指定されているライブラリーがない場合，QGPLライブラリーが検索されます。
+</dd>
+</dl>
+<dl>
+<dt><strong class="italic">名前</strong></dt>
+<dd>検索するライブラリーの名前を指定してください。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table5" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#CPYSRCF.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="CPYSRCF.FROMMBR"></a>
+<h2>FROMメンバー (FROMMBR)</h2>
+<p>取り出しファイルからコピーされるファイル・メンバーを指定します。取り出しファイルの1つのメンバー，メンバーの総称セット，またはすべてのメンバーがコピーされます。メンバーはアルファベット順にコピーされます。
+</p>
+<p>これは必須パラメーターです。
+</p>
+<dl>
+<dt><strong>*ALL</strong></dt>
+<dd>データベース・ファイルのすべてのメンバーがコピーされます。
+</dd>
+</dl>
+<dl>
+<dt><strong>*FIRST</strong></dt>
+<dd>指定したファイルの最初のメンバーが使用されます。
+</dd>
+</dl>
+<dl>
+<dt><strong class="italic">総称名</strong></dt>
+<dd>コピーされるメンバーのグループの総称名を指定してください。
+</dd>
+<dt><strong class="italic">名前</strong></dt>
+<dd>コピーするデータベース・ファイル・メンバーの名前を指定してください。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table6" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#CPYSRCF.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="CPYSRCF.TOMBR"></a>
+<h2>メンバー (TOMBR)</h2>
+<p>コピー済みレコードを受け取るファイル・メンバーの名前を指定します。
+</p>
+<p><strong> TO</strong><strong>ファイル</strong><strong> (TOFILE)</strong>パラメーターに*PRINTを指定した場合には，このパラメーターに*FIRSTまたは*FROMMBRのいずれかを指定しなければなりません。
+</p>
+<dl>
+<dt><strong class="underlined">*FROMMBR</strong></dt>
+<dd>取り出しファイルおよび受け入れファイル相互間で対応するメンバー名またはラベルIDが使用されます。対応する名前のメンバーが受け入れファイルに存在しない場合には，その名前のメンバーが受け入れファイルに追加されます。
+<p>メンバー名または*FIRSTがFROMMBRパラメーターの値として指定された場合には，同じ名前の受け入れファイルのメンバーがコピーされるレコードを受け取ります。*ALLまたは総称メンバー名がFROMMBRパラメーターの値として指定された場合には，取り出しファイルの各メンバーは受け入れファイルの同じ名前のメンバーにコピーされます。取り出しファイルの1つ以上のメンバー（FROMMBRパラメーターによって指定される）からのレコードが受け入れファイルの最初のメンバーにコピーされます。
+</p>
+</dd>
+</dl>
+<dl>
+<dt><strong>*FIRST</strong></dt>
+<dd>指定したファイルの最初のメンバーが使用されます。
+</dd>
+</dl>
+<dl>
+<dt><strong class="italic">受け入れメンバー名</strong></dt>
+<dd>レコードを受け取る物理受け入れファイル・メンバー名を指定してください。指定された名前のメンバーが存在しない場合には，同じ名前のメンバーが追加されます。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table7" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#CPYSRCF.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="CPYSRCF.TOMBRID"></a>
+<h2>TOメンバーID (TOMBRID)</h2>
+<p>新しいメンバーが受け入れファイルに追加される場合に，メンバー・レベルIDが生成されるようにするか，あるいは取り出しファイルのメンバーのメンバー・レベルIDからコピーされるようにするかを指定します。
+</p>
+<dl>
+<dt><strong class="underlined">*GEN</strong></dt>
+<dd>受け入れファイルに入った新しいメンバーのメンバー・レベルIDが生成されます。
+</dd>
+<dt><strong>*FROMMBR</strong></dt>
+<dd>受け入れファイルに入った新しいメンバーのメンバー・レベルIDが，コピー元のメンバーのものと同じになります。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table8" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#CPYSRCF.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="CPYSRCF.MBROPT"></a>
+<h2>レコードの置き換えまたは追加 (MBROPT)</h2>
+<p>新しいレコードで置き換えるか，または既存のレコードに追加するかどうかを指定します。
+</p>
+<dl>
+<dt><strong class="underlined">*REPLACE</strong></dt>
+<dd>システムは，既存のメンバーを消去し，新しいレコードを追加します。
+</dd>
+</dl>
+<dl>
+<dt><strong>*ADD</strong></dt>
+<dd>システムは，既存のレコードの終わりに新しいレコードを追加します。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table9" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#CPYSRCF.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="CPYSRCF.SRCCHGDATE"></a>
+<h2>ソース変更日 (SRCCHGDATE)</h2>
+<p>新しいメンバーが受け入れファイルに追加される場合，またはMBROPT(*REPLACE)が指定された場合，「ソースの最終更新日付／時刻」が新しい日付／時刻になるようにするか，あるいは取り出しファイルのメンバーの「ソースの最終更新日付／時刻」からコピーされるようにするかを指定します。
+</p>
+<dl>
+<dt><strong class="underlined">*FROMMBR</strong></dt>
+<dd>MBROPT(*REPLACE)が指定された場合，あるいは*FROMMBRの値が指定された場合，受け入れファイルにある新しいメンバーの「ソースの最終更新日付／時刻」は，コピーされるメンバーと同じものになります。
+</dd>
+<dt><strong>*NEW</strong></dt>
+<dd>MBROPT(*REPLACE)が指定された場合，あるいは*NEWの値が指定された場合，受け入れファイルにある新しいメンバーの「ソースの最終更新日付／時刻」は，新しい日付／時刻になります。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table10" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#CPYSRCF.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="CPYSRCF.TEXT"></a>
+<h2>テキスト'記述' (TEXT)</h2>
+<p>MBROPT(*REPLACE)が指定されている場合に，メンバーを説明するテキストをFROMメンバーからコピーするかどうかを指定します。
+</p>
+<dl>
+<dt><strong class="underlined">*SAME</strong></dt>
+<dd>TOメンバー・テキストは変更されません。
+</dd>
+<dt><strong>*FROMMBR</strong></dt>
+<dd>TOメンバーを説明するテキストは，FROMメンバーのテキストに変更されます。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table11" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#CPYSRCF.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="CPYSRCF.SRCTYPE"></a>
+<h2>ソース仕様タイプ (SRCTYPE)</h2>
+<p>MBROPT(*REPLACE)が指定されている場合に，TOメンバーのソース仕様タイプをFROMメンバーからコピーするかどうかを指定します。
+</p>
+<dl>
+<dt><strong class="underlined">*SAME</strong></dt>
+<dd>TOメンバーのソース仕様タイプは変更されません。
+</dd>
+<dt><strong>*FROMMBR</strong></dt>
+<dd>TOメンバーのソース仕様タイプは，FROMメンバーのソース仕様タイプに変更されます。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table12" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#CPYSRCF.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="CPYSRCF.SRCOPT"></a>
+<h2>ソース更新オプション (SRCOPT)</h2>
+<p>取り出しファイルのレコードを受け入れファイルにコピーする時に，ソース順序番号フィールドおよび日付フィールドに新しい値を割り当てるかどうかを指定します。
+</p>
+<h3><strong>単一値</strong>
+</h3>
+<dl>
+<dt><strong class="underlined">*SAME</strong></dt>
+<dd>ソース順序番号フィールドおよび日付フィールドに新しい値は割り当てられません。
+</dd>
+</dl>
+<h3><strong>その他の値（最大</strong><strong>2</strong><strong>個指定可能）</strong>
+</h3>
+<dl>
+<dt><strong>*SEQNBR</strong></dt>
+<dd><strong>ソース・ステートメント</strong><strong>の順序番号付け</strong><strong> (SRCSEQ)</strong>パラメーターで指定されたとおりに，順序番号とその順序番号に加えられる増分値が割り当てられます。
+</dd>
+<dt><strong>*DATE</strong></dt>
+<dd>コピーされる各レコードの変更日フィールドは，6個のゼロに設定されます。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table13" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#CPYSRCF.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="CPYSRCF.SRCSEQ"></a>
+<h2>ソース・ステートメントの順序番号付け (SRCSEQ)</h2>
+<p><strong>ソース更新オプション</strong><strong> (SRCOPT)</strong>パラメーターに*SEQNBRも指定した時に限り，コピーされた最初のレコードに使用する順序番号，およびコピーされた後続のレコードごとの順序番号を計算するために初期の順序番号に増分する値を指定します。順序番号の最大値は9999.99です。値がこの限界より大きい場合には，メンバーの追加のレコードには，すべて順序番号9999.99が割り当てられています。
+</p>
+<h3><strong>要素</strong><strong>1: </strong><strong>開始順序番号</strong>
+</h3>
+<dl>
+<dt><strong class="underlined">1.00</strong></dt>
+<dd>受け入れファイルにコピーされる最初のソース・レコードの順序番号が0001.00になります。
+</dd>
+<dt><strong class="italic">0.01から9999.99</strong></dt>
+<dd>受け入れファイルにコピーされる最初のソース・レコードの順序番号を指定します。
+</dd>
+</dl>
+<h3><strong>要素</strong><strong>2: </strong><strong>増分番号</strong>
+</h3>
+<dl>
+<dt><strong class="underlined">1.00</strong></dt>
+<dd>受け入れファイル中のコピーされたソース・レコードは，整数の増分値1で番号が付け直されます。
+</dd>
+<dt><strong class="italic">0.01から9999.99</strong></dt>
+<dd>最初のレコードの後でコピーされるすべてのソース・レコードの番号を付け直すために追加される値を指定します。最大値9999.99に達した場合，以降にコピーされる追加レコードの順序番号も9999.99となります。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table14" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#CPYSRCF.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div><h2><a name="CPYSRCF.COMMAND.EXAMPLES">例</a> </h2>
+<h3><strong>例</strong><strong>1: </strong><strong>既存レコードの置き換え</strong>
+</h3>
+<p>
+</p><pre>CPYSRCF   FROMFILE(QGPL/QCLSRC)  TOFILE(MYLIB/CLSRC)
+          FROMMBR(PGMA)
+</pre>
+<p></p>
+<p>このコマンドは，QGPLライブラリー中にあるデータベース・ソース・ファイルQCLSRCのメンバーPGMAからレコードをコピーします。TOMBRおよびMBROPTパラメーターの省略時の値が取られるので，レコードはライブラリーMYLIB中のCLSRCの同名メンバー(PGMA)にコピーされて，そのメンバーの既存のレコードを置き換えます。メンバーPGMAが受け入れファイル中に存在しない場合は，それがコピー操作の一部として追加されます。QGPL/QCLSRCのCCSIDがMYLIB/CLSRCのCCSIDと異なる場合は，文字データはCLSRCのCCSIDに変換されます。
+</p>
+<h3><strong>例</strong><strong>2: </strong><strong>ファイルの印刷</strong>
+</h3>
+<p>
+</p><pre>CPYSRCF   FROMFILE(QRPG/QRPGSRC)  TOFILE(*PRINT)  FROMMBR(INV*)
+</pre>
+<p></p>
+<p>このコマンドは，ライブラリーQRPG中のデータベース・ソース・ファイルQRPGSRCから，文字INVで始まる名前をもつすべてのファイル・メンバーをコピーします。特殊値*PRINTが受け入れファイルに対して指定されるので，レコードは印刷装置にコピーされて，SEUによって作成される印刷出力のように，ソース・レコードに合わせた形式でリストされます。TOFILE(*PRINT)の指定時には，文字データは変換されません。
+</p>
+<h3><strong>例</strong><strong>3: </strong><strong>増分値の変更</strong>
+</h3>
+<p>
+</p><pre>CPYSRCF   FROMFILE(MYLIB/TXTSRC)  TOFILE(QIDU/QTXTSRC)
+          FROMMBR(*ALL)  SRCOPT(*SEQNBR *DATE)  SRCSEQ(1  .25)
+</pre>
+<p></p>
+<p>このコマンドは，ライブラリーMYLIB中のデータベース・ソース・ファイルTXTSRCのすべてのメンバーをコピーします。これらがコピーされて，ライブラリーQIDU中のデータ・ソース・ファイルQTXTSRCの（省略時のTOMBR(*FROMMBR)を使用して）同名のメンバーの既存レコードを（省略時のMBROPT(*REPLACE)を使用して）置き換えます。受け入れファイル・メンバーが存在しない場合は，コピー操作によってこれらが追加されます。コピーされる各メンバーでは，最初のレコードには1の番号が付けられ，以下の番号のそれぞれは0.25ずつ増分されます。また，ソース日付フィールドは各レコードでゼロに設定されます。MYLIB/TXTSRCのCCSIDがQIDU/QTXTSRCのCCSIDと異なる場合には，文字データはQIDU/QTXTSRCのCCSIDに変換されます。
+</p>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table15" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#CPYSRCF.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div><h2><a name="CPYSRCF.ERROR.MESSAGES">エラー・メッセージ</a> </h2>
+<p><strong class="underlined">*ESCAPE </strong><strong class="underlined">メッセージ</strong>
+</p>
+<dl>
+<dt><strong>CPF2816</strong></dt>
+<dd>エラーのために，&amp;2のファイル&amp;1はコピーされなかった。
+</dd>
+<dt><strong>CPF2817</strong></dt>
+<dd>エラーのために，コピー・コマンドが終了した。
+</dd>
+<dt><strong>CPF2858</strong></dt>
+<dd>印刷出力のファイル属性が正しくない。
+</dd>
+<dt><strong>CPF2859</strong></dt>
+<dd>共用オープン・データ・パスを使用することはできない。
+</dd>
+<dt><strong>CPF2864</strong></dt>
+<dd>ライブラリー&amp;2のファイル&amp;1は認可されていない。
+</dd>
+<dt><strong>CPF2875</strong></dt>
+<dd>正しくないファイル・メンバーまたはラベルがオープンされた。
+</dd>
+<dt><strong>CPF2888</strong></dt>
+<dd>エラーのためにメンバー&amp;3はファイルに追加されなかった。
+</dd>
+<dt><strong>CPF2909</strong></dt>
+<dd>&amp;2のファイル&amp;1のメンバー&amp;3の消去中にエラー。
+</dd>
+<dt><strong>CPF2949</strong></dt>
+<dd>&amp;2のファイル&amp;1のメンバー&amp;3のクローズ中にエラー。
+</dd>
+<dt><strong>CPF2952</strong></dt>
+<dd>ライブラリー&amp;2のファイル&amp;1のオープン中にエラー。
+</dd>
+<dt><strong>CPF2968</strong></dt>
+<dd>&amp;2のファイル&amp;1のコピー中に位置指定エラーが起こった。
+</dd>
+<dt><strong>CPF2971</strong></dt>
+<dd>ファイル&amp;1のメンバー&amp;3の読み取り中にエラー。
+</dd>
+<dt><strong>CPF2972</strong></dt>
+<dd>ファイル&amp;1のメンバー&amp;3への書き出し中にエラー。
+</dd>
+<dt><strong>CPF3140</strong></dt>
+<dd>メンバー&amp;2の初期設定またはコピーが取り消された。
+</dd>
+<dt><strong>CPF3143</strong></dt>
+<dd>メンバー&amp;2に増分値を使用することはできない。
+</dd>
+<dt><strong>CPF3148</strong></dt>
+<dd>新しいレコードのためにメンバー&amp;2に必要なスペースが多すぎる。
+</dd>
+<dt><strong>CPF3150</strong></dt>
+<dd>メンバー&amp;2のデータベース・コピーが正常に行われなかった。
+</dd>
+<dt><strong>CPF9212</strong></dt>
+<dd>&amp;3のDDMファイル&amp;2をロードまたはアンロードすることができない。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table16" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#CPYSRCF.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+</div>
+
+
+</body></html>

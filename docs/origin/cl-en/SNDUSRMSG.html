@@ -1,0 +1,1008 @@
+<!DOCTYPE html>
+<html lang="ja"><head><meta charset="utf-8"><title>Send User Message  (SNDUSRMSG)</title></head>
+<body>
+<main role="main"><article role="article" aria-labelledby="sndusrmsg__title__1"> 
+<h1 class="topictitle1" id="sndusrmsg__title__1">Send User Message  (SNDUSRMSG)</h1><div id="lastModifiedDate"><span>Last Updated</span>: 2026-07-13</div>
+
+<div class="body">
+<p>
+<strong>Send User Message  (SNDUSRMSG)
+</strong></p>
+
+<p>
+<strong>Where allowed to run:  
+</strong>Compiled CL program or interpreted REXX (*BPGM *IPGM *BREXX *IREXX)
+
+</p>
+
+<p>
+<strong>Threadsafe:  </strong>No
+</p>
+
+<p><a href="#sndusrmsg__parameters">Parameters</a></p>
+
+<p><a href="#sndusrmsg__examples">Examples</a></p>
+
+<p><a href="#sndusrmsg__errormsgs">Error messages</a></p>
+
+<div class="div" id="sndusrmsg__sndusrmsg">
+<p>
+The Send User Message (SNDUSRMSG) command is used by a program to send a message to a message queue and optionally receive a reply to that message.  The message sent using this command can be either an impromptu or a predefined message and can be sent to a display station user in an interactive job or a specific message queue.  For inquiry messages, a CL variable can be specified to receive the reply value, and the program using this command will wait for a response.
+
+</p>
+
+<p>
+This command uses a combination of parameters available on the Send Program Message (SNDPGMMSG) and Receive Message (RCVMSG) commands to allow a program to send and receive messages by using a single command.  Also, the SNDUSRMSG command provides validity checking and uppercase translation for replies to inquiry messages.
+
+</p>
+
+<p>
+<strong>Restrictions:
+</strong>
+</p>
+
+<ol class="cds--list--ordered--temporary">
+<li class="cds--list__item">
+This command is valid only in CL programs.
+
+</li>
+
+<li class="cds--list__item">
+The SNDUSRMSG command allows a message of up to 512 characters of first-level message text to be sent.  However, if the message is sent to an external message queue (*EXT) in an interactive job, only 76 characters are shown on the Display Program Messages display.  If the message is sent to a user's, work station's, or system operator's message queue, the Display Message (DSPMSG) command allows all 512 characters to be displayed.
+
+</li>
+
+
+</ol>
+
+</div>
+<section class="section" role="region" aria-labelledby="sndusrmsg__parameters__title__1" id="sndusrmsg__parameters"><h2 class="sectiontitle" id="sndusrmsg__parameters__title__1">Parameters</h2>
+
+
+<div class="tablenoborder"><div class="cds--data-table-container"><table summary="" class="defaultstyle cds--data-table"><colgroup><col><col><col><col></colgroup><thead>
+<tr>
+<th id="sndusrmsg__parameters__entry__1"><div class="cds--table-header-label">
+Keyword
+</div></th>
+
+<th id="sndusrmsg__parameters__entry__2"><div class="cds--table-header-label">
+Description
+</div></th>
+
+<th id="sndusrmsg__parameters__entry__3"><div class="cds--table-header-label">
+Choices
+</div></th>
+
+<th id="sndusrmsg__parameters__entry__4"><div class="cds--table-header-label">
+Notes
+</div></th>
+
+</tr>
+
+</thead>
+<tbody>
+<tr>
+<td headers="sndusrmsg__parameters__entry__1 "><a href="#sndusrmsg__msg"><strong>MSG
+</strong></a></td>
+
+<td headers="sndusrmsg__parameters__entry__2 ">Message text, or
+</td>
+
+<td headers="sndusrmsg__parameters__entry__3 "><em>Character value
+</em></td>
+
+<td headers="sndusrmsg__parameters__entry__4 ">Optional, Positional 1
+</td>
+
+</tr>
+
+<tr>
+<td headers="sndusrmsg__parameters__entry__1 "><a href="#sndusrmsg__msgid"><strong>MSGID
+</strong></a></td>
+
+<td headers="sndusrmsg__parameters__entry__2 ">Message identifier
+</td>
+
+<td headers="sndusrmsg__parameters__entry__3 "><em>Name
+</em></td>
+
+<td headers="sndusrmsg__parameters__entry__4 ">Optional
+</td>
+
+</tr>
+
+<tr>
+<td rowspan="3" headers="sndusrmsg__parameters__entry__1 "><a href="#sndusrmsg__msgf"><strong>MSGF
+</strong></a></td>
+
+<td headers="sndusrmsg__parameters__entry__2 ">Message file
+</td>
+
+<td headers="sndusrmsg__parameters__entry__3 "><em>Qualified object name
+</em></td>
+
+<td rowspan="3" headers="sndusrmsg__parameters__entry__4 ">Optional
+</td>
+
+</tr>
+
+<tr>
+<td headers="sndusrmsg__parameters__entry__2 ">Qualifier 1: Message file
+</td>
+
+<td headers="sndusrmsg__parameters__entry__3 "><em>Name
+</em></td>
+
+</tr>
+
+<tr>
+<td headers="sndusrmsg__parameters__entry__2 ">Qualifier 2: Library
+</td>
+
+<td headers="sndusrmsg__parameters__entry__3 "><em>Name
+</em>, 
+<strong><u>*LIBL
+</u></strong>, *CURLIB
+</td>
+
+</tr>
+
+<tr>
+<td headers="sndusrmsg__parameters__entry__1 "><a href="#sndusrmsg__msgdta"><strong>MSGDTA
+</strong></a></td>
+
+<td headers="sndusrmsg__parameters__entry__2 ">Message data field values
+</td>
+
+<td headers="sndusrmsg__parameters__entry__3 "><em>Character value
+</em></td>
+
+<td headers="sndusrmsg__parameters__entry__4 ">Optional
+</td>
+
+</tr>
+
+<tr>
+<td headers="sndusrmsg__parameters__entry__1 "><a href="#sndusrmsg__values"><strong>VALUES
+</strong></a></td>
+
+<td headers="sndusrmsg__parameters__entry__2 ">Valid reply values
+</td>
+
+<td headers="sndusrmsg__parameters__entry__3 ">Values (up to 20 repetitions): 
+<em>Character value
+</em>, 
+<strong><u>*NONE
+</u></strong></td>
+
+<td headers="sndusrmsg__parameters__entry__4 ">Optional
+</td>
+
+</tr>
+
+<tr>
+<td headers="sndusrmsg__parameters__entry__1 "><a href="#sndusrmsg__dft"><strong>DFT
+</strong></a></td>
+
+<td headers="sndusrmsg__parameters__entry__2 ">Default reply value
+</td>
+
+<td headers="sndusrmsg__parameters__entry__3 "><em>Character value
+</em>, 
+<strong><u>*MSGDFT
+</u></strong></td>
+
+<td headers="sndusrmsg__parameters__entry__4 ">Optional
+</td>
+
+</tr>
+
+<tr>
+<td headers="sndusrmsg__parameters__entry__1 "><a href="#sndusrmsg__msgtype"><strong>MSGTYPE
+</strong></a></td>
+
+<td headers="sndusrmsg__parameters__entry__2 ">Message type
+</td>
+
+<td headers="sndusrmsg__parameters__entry__3 "><strong><u>*INQ
+</u></strong>, *INFO
+</td>
+
+<td headers="sndusrmsg__parameters__entry__4 ">Optional
+</td>
+
+</tr>
+
+<tr>
+<td rowspan="3" headers="sndusrmsg__parameters__entry__1 "><a href="#sndusrmsg__tomsgq"><strong>TOMSGQ
+</strong></a></td>
+
+<td headers="sndusrmsg__parameters__entry__2 ">To message queue
+</td>
+
+<td headers="sndusrmsg__parameters__entry__3 ">Single values: 
+<strong><u>*
+</u></strong>, *EXT, *SYSOPR
+
+Other values: 
+<em>Qualified object name
+</em></td>
+
+<td rowspan="3" headers="sndusrmsg__parameters__entry__4 ">Optional
+</td>
+
+</tr>
+
+<tr>
+<td headers="sndusrmsg__parameters__entry__2 ">Qualifier 1: To message queue
+</td>
+
+<td headers="sndusrmsg__parameters__entry__3 "><em>Name
+</em></td>
+
+</tr>
+
+<tr>
+<td headers="sndusrmsg__parameters__entry__2 ">Qualifier 2: Library
+</td>
+
+<td headers="sndusrmsg__parameters__entry__3 "><em>Name
+</em>, 
+<strong><u>*LIBL
+</u></strong>, *CURLIB
+</td>
+
+</tr>
+
+<tr>
+<td headers="sndusrmsg__parameters__entry__1 "><a href="#sndusrmsg__tousr"><strong>TOUSR
+</strong></a></td>
+
+<td headers="sndusrmsg__parameters__entry__2 ">To user profile
+</td>
+
+<td headers="sndusrmsg__parameters__entry__3 "><em>Name
+</em>, *SYSOPR, *REQUESTER
+</td>
+
+<td headers="sndusrmsg__parameters__entry__4 ">Optional
+</td>
+
+</tr>
+
+<tr>
+<td headers="sndusrmsg__parameters__entry__1 "><a href="#sndusrmsg__msgrpy"><strong>MSGRPY
+</strong></a></td>
+
+<td headers="sndusrmsg__parameters__entry__2 ">CL var for message reply
+</td>
+
+<td headers="sndusrmsg__parameters__entry__3 "><em>Character value
+</em></td>
+
+<td headers="sndusrmsg__parameters__entry__4 ">Optional
+</td>
+
+</tr>
+
+<tr>
+<td rowspan="3" headers="sndusrmsg__parameters__entry__1 "><a href="#sndusrmsg__trntbl"><strong>TRNTBL
+</strong></a></td>
+
+<td headers="sndusrmsg__parameters__entry__2 ">Translate table
+</td>
+
+<td headers="sndusrmsg__parameters__entry__3 ">Single values: *NONE
+
+Other values: 
+<em>Qualified object name
+</em></td>
+
+<td rowspan="3" headers="sndusrmsg__parameters__entry__4 ">Optional
+</td>
+
+</tr>
+
+<tr>
+<td headers="sndusrmsg__parameters__entry__2 ">Qualifier 1: Translate table
+</td>
+
+<td headers="sndusrmsg__parameters__entry__3 "><em>Name
+</em>, 
+<strong><u>QSYSTRNTBL
+</u></strong></td>
+
+</tr>
+
+<tr>
+<td headers="sndusrmsg__parameters__entry__2 ">Qualifier 2: Library
+</td>
+
+<td headers="sndusrmsg__parameters__entry__3 "><em>Name
+</em>, 
+<strong><u>*LIBL
+</u></strong>, *CURLIB
+</td>
+
+</tr>
+
+<tr>
+<td headers="sndusrmsg__parameters__entry__1 "><a href="#sndusrmsg__ccsid"><strong>CCSID
+</strong></a></td>
+
+<td headers="sndusrmsg__parameters__entry__2 ">Coded character set ID
+</td>
+
+<td headers="sndusrmsg__parameters__entry__3 ">1-65535, *HEX, 
+<strong><u>*JOB
+</u></strong></td>
+
+<td headers="sndusrmsg__parameters__entry__4 ">Optional
+</td>
+
+</tr>
+
+</tbody>
+</table></div>
+</div>
+
+<div class="div" id="sndusrmsg__msg">
+<p>
+<strong>Message text, or (MSG)
+</strong></p>
+
+<p>
+Specifies the message text of an immediate message that is sent by the program.  A maximum of 512 characters can be specified.  The text string must be enclosed in apostrophes if special characters (including blanks) are used.  If this parameter is specified, values cannot be specified for the 
+<strong>Message identifier (MSGID)
+</strong> parameter, 
+<strong>Message file (MSGF)
+</strong> parameter, or 
+<strong>Message data field values (MSGDTA)
+</strong> parameter.
+
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><em>'text'
+</em></strong></dt>
+
+<dd class="dlentry">
+Specify the text of the immediate message to be sent.
+</dd>
+
+</dl>
+
+<p>
+<strong>Coded Character Set Identifier (CCSID) Considerations
+</strong>
+</p>
+
+<p>
+The text supplied for the MSG parameter is assumed to be in the CCSID of the job running this command unless a coded character set identifier is supplied in the CCSID parameter.  For more information about the message handler and its use of CCSIDs, see the i5/OS globalization topic collection in the IBM i Information Center at http://www.ibm.com/systems/i/infocenter/.
+
+</p>
+
+</div>
+<div class="div" id="sndusrmsg__msgid">
+<p>
+<strong>Message identifier (MSGID)
+</strong></p>
+
+<p>
+Specifies the message identifier of a predefined message sent by the program to a message queue.  If a value is specified for this parameter, a value must also be specified for the 
+<strong>Message file (MSGF)
+</strong> parameter, and a value cannot be specified for the 
+<strong>Message text, or (MSG)
+</strong> parameter.
+
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><em>identifier
+</em></strong></dt>
+
+<dd class="dlentry">
+Specify the message identifier of the message to be sent.
+</dd>
+
+</dl>
+
+</div>
+<div class="div" id="sndusrmsg__msgf">
+<p>
+<strong>Message file (MSGF)
+</strong></p>
+
+<p>
+Specifies the message file that contains the predefined message to be sent.  This parameter is valid only if a value is specified for the 
+<strong>Message identifier (MSGID)
+</strong> parameter.
+
+</p>
+
+<p>
+<strong>Qualifier 1: Message file
+</strong>
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><em>name
+</em></strong></dt>
+
+<dd class="dlentry">
+Specify the name of the message file which contains the predefined message to be sent.
+</dd>
+
+</dl>
+
+<p>
+<strong>Qualifier 2: Library
+</strong>
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><u>*LIBL
+</u></strong></dt>
+
+<dd class="dlentry">
+All libraries in the library list for the current thread are searched until the first match is found.
+</dd>
+
+</dl>
+
+<dl>
+<dt class="dlterm">
+<strong>*CURLIB
+</strong></dt>
+
+<dd class="dlentry">
+The current library for the job is used to locate the message file.  If no current library entry exists in the library list, QGPL is used.
+</dd>
+
+<dt class="dlterm">
+<strong><em>name
+</em></strong></dt>
+
+<dd class="dlentry">
+Specify the library in which the message file is located.
+</dd>
+
+</dl>
+
+</div>
+<div class="div" id="sndusrmsg__msgdta">
+<p>
+<strong>Message data field values (MSGDTA)
+</strong></p>
+
+<p>
+Specifies the character string or the CL variable that contains a character string used as the message data in the predefined message.  A character string that is specified contains one or more substitution values that are used in place of the substitution variables that were defined in the message's text when the message was defined.  The MSGDTA parameter is valid only if a predefined message is being sent.  For more information, refer to the description of the MSGDTA parameter of the Send Program Message (SNDPGMMSG) command.
+
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><u>*NONE
+</u></strong></dt>
+
+<dd class="dlentry">
+No message data is specified for the predefined message.
+</dd>
+
+<dt class="dlterm">
+<strong><em>message-data
+</em></strong></dt>
+
+<dd class="dlentry">
+Specify the character string that gives the substitution values in the specified predefined message that is sent, or specify the name of the variable that contains the character string.
+<p>
+<strong>Coded Character Set Identifier (CCSID) Considerations
+</strong>
+</p>
+
+<p>
+The text supplied for the MSGDTA parameter that corresponds to the *CCHAR type field is assumed to be in the CCSID of the job running this command unless a coded character set identifier is supplied in the CCSID parameter.  All other text supplied for the MSGDTA parameter is assumed to be 65535 and is not converted.  For more information about the message handler and its use of CCSIDs, see the i5/OS globalization topic collection in the IBM i Information Center at http://www.ibm.com/systems/i/infocenter/.  For more information about the *CCHAR type field, see the Add Message Description (ADDMSGD) command.
+
+</p>
+
+</dd>
+
+</dl>
+
+</div>
+<div class="div" id="sndusrmsg__values">
+<p>
+<strong>Valid reply values (VALUES)
+</strong></p>
+
+<p>
+Specifies a list of valid replies to an inquiry message sent by this command.  No more than 20 replies can be specified in the list.  If the reply to the inquiry message does not match one of the specified values, an error message is sent to the reply's sender and the inquiry message is sent again.  This value is valid only when a value is specified for the MSGRPY parameter.
+
+</p>
+
+<p>
+Translation of the reply, if requested (on the TRNTBL parameter), will occur before verification of a match between the reply and the specified value. If TRNTBL (*LIBL/QSYSTRNTBL) is used to translate the reply values from lowercase to uppercase and lowercase characters still appear in a specified value, there is no match.
+
+</p>
+
+<p>
+Variables can be used in the list of replies. This parameter is valid only if MSGTYPE(*INQ) is specified.
+
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><u>*NONE
+</u></strong></dt>
+
+<dd class="dlentry">
+No replies to inquiry messages are specified.  Any reply to an inquiry message is valid.
+</dd>
+
+<dt class="dlterm">
+<strong><em>allowable-values
+</em></strong></dt>
+
+<dd class="dlentry">
+Specify no more than 20 values that are compared to replies received for inquiry messages sent by this command.  The maximum length of each value is 32 characters.  If this value is specified, the 
+<strong>CL var for message reply (MSGRPY)
+</strong> parameter must also be specified.
+</dd>
+
+</dl>
+
+</div>
+<div class="div" id="sndusrmsg__dft">
+<p>
+<strong>Default reply value (DFT)
+</strong></p>
+
+<p>
+Specifies the value used as the reply to an inquiry message (sent by this command) if the inquiry message is sent to a message queue that is in default delivery mode, or for any other reason the default reply is sent.
+
+</p>
+
+<ul class="cds--list--unordered">
+<li class="cds--list__item">
+This parameter value does not have to match an entry in the list of valid replies specified in the VALUES parameter.
+
+</li>
+
+<li class="cds--list__item">
+This default reply value is not translated to uppercase nor validity-checked.
+
+</li>
+
+</ul>
+
+<dl>
+<dt class="dlterm">
+<strong><u>*MSGDFT
+</u></strong></dt>
+
+<dd class="dlentry">
+The default value defined in the message description of the message ID (specified for the MSGID parameter) is used.  If no message ID is specified, the default value is *N.
+</dd>
+
+<dt class="dlterm">
+<strong><em>'default-reply-value'
+</em></strong></dt>
+
+<dd class="dlentry">
+Specify the reply (enclosed in apostrophes) used as the default reply.  This value can only be specified if the 
+<strong>CL var for message reply (MSGRPY)
+</strong> parameter is specified.  If a predefined message is being sent, this default-reply-value overrides any default reply specified in the message description.
+</dd>
+
+</dl>
+
+</div>
+<div class="div" id="sndusrmsg__msgtype">
+<p>
+<strong>Message type (MSGTYPE)
+</strong></p>
+
+<p>
+Specifies the type of message to be sent.  Only inquiry and informational messages can be specified.
+
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><u>*INQ
+</u></strong></dt>
+
+<dd class="dlentry">
+An inquiry message is sent and the message queue receiving the message must reply to it.
+</dd>
+
+<dt class="dlterm">
+<strong>*INFO
+</strong></dt>
+
+<dd class="dlentry">
+An informational message is sent.
+</dd>
+
+</dl>
+
+</div>
+<div class="div" id="sndusrmsg__tomsgq">
+<p>
+<strong>To message queue (TOMSGQ)
+</strong></p>
+
+<p>
+Specifies the name of the message queue to which the message is to be sent.  This parameter cannot be used if a value is specified for the 
+<strong>To user profile (TOUSR)
+</strong> parameter.
+
+</p>
+
+<p>
+<strong>Single values
+</strong>
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><u>*
+</u></strong></dt>
+
+<dd class="dlentry">
+In an interactive job, the message is to be sent to the external message queue (*EXT).  In a batch job, the message is to be sent to the system operator (message queue QSYSOPR in library QSYS).
+</dd>
+
+<dt class="dlterm">
+<strong>*SYSOPR
+</strong></dt>
+
+<dd class="dlentry">
+The message is to be sent to the system operator (message queue QSYSOPR in library QSYS).
+</dd>
+
+<dt class="dlterm">
+<strong>*EXT
+</strong></dt>
+
+<dd class="dlentry">
+The message is to be sent to the job's external message queue.  For batch job inquiry messages, the default reply is always received.  Messages sent to this queue can be 512 characters in length, but only 76 characters are displayed on the Display Program Messages display.
+</dd>
+
+</dl>
+
+<p>
+<strong>Qualifier 1: To message queue
+</strong>
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><em>name
+</em></strong></dt>
+
+<dd class="dlentry">
+Specify the name of the message queue that is to receive the message being sent.
+</dd>
+
+</dl>
+
+<p>
+<strong>Qualifier 2: Library
+</strong>
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><u>*LIBL
+</u></strong></dt>
+
+<dd class="dlentry">
+All libraries in the library list for the current thread are searched until the first match is found.
+</dd>
+
+</dl>
+
+<dl>
+<dt class="dlterm">
+<strong>*CURLIB
+</strong></dt>
+
+<dd class="dlentry">
+The current library for the job is used to locate the message queue.  If no current library entry exists in the library list, QGPL is used.
+</dd>
+
+<dt class="dlterm">
+<strong><em>name
+</em></strong></dt>
+
+<dd class="dlentry">
+Specify the library where the message queue is located.
+</dd>
+
+</dl>
+
+</div>
+<div class="div" id="sndusrmsg__tousr">
+<p>
+<strong>To user profile (TOUSR)
+</strong></p>
+
+<p>
+Specifies that the message is to be sent to the message queue specified in the user profile for the user named on this parameter.  This parameter cannot be used if a value is specified for the 
+<strong>To message queue (TOMSGQ)
+</strong> parameter.
+
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong>*SYSOPR
+</strong></dt>
+
+<dd class="dlentry">
+The message is to be sent to the system operator user profile message queue, QSYS/QSYSOPR.
+</dd>
+
+<dt class="dlterm">
+<strong>*REQUESTER
+</strong></dt>
+
+<dd class="dlentry">
+The message is to be sent to the user profile message queue for interactive jobs or to the system operator's message queue (QSYS/QSYSOPR) for batch jobs.
+</dd>
+
+<dt class="dlterm">
+<strong><em>name
+</em></strong></dt>
+
+<dd class="dlentry">
+Specify the user profile name of the user to whom the message is to be sent.
+</dd>
+
+</dl>
+
+</div>
+<div class="div" id="sndusrmsg__msgrpy">
+<p>
+<strong>CL var for message reply (MSGRPY)
+</strong></p>
+
+<p>
+Specifies the CL character variable (of up to 132 characters) that contains the reply received in response to an inquiry message.  This parameter is valid only if *INQ is specified for the 
+<strong>Message type (MSGTYPE)
+</strong> parameter.  If the reply is longer than the variable, it is truncated; if it is shorter, it is padded to the right with blanks.  This command will wait for a response to the inquiry message even if no value is coded for this parameter when MSGTYPE(*INQ) is specified.  If no value is coded for this parameter when MSGTYPE(*INQ) is specified, the command awaits a response from the operator in reply to the inquiry message.
+
+</p>
+
+</div>
+<div class="div" id="sndusrmsg__trntbl">
+<p>
+<strong>Translate table (TRNTBL)
+</strong></p>
+
+<p>
+Specifies the name of the translation table that is used if the reply value is being translated.
+
+</p>
+
+<p>
+<strong>Qualifier 1: Translate table
+</strong>
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><u>QSYSTRNTBL
+</u></strong></dt>
+
+<dd class="dlentry">
+The translation table named QSYSTRNTBL is used to translate the reply value.
+<p>
+The IBM-supplied translation table QSYSTRNTBL table translates, for the English language only, all lowercase characters in the range of X'81' to X'A9' to uppercase characters.  All other characters are not translated.
+
+</p>
+
+<p>
+To use a different translation table, use the Create Table (CRTTBL) command and specify that particular table for this parameter.
+
+</p>
+
+</dd>
+
+<dt class="dlterm">
+<strong>*NONE
+</strong></dt>
+
+<dd class="dlentry">
+The reply is not being translated.
+</dd>
+
+<dt class="dlterm">
+<strong><em>name
+</em></strong></dt>
+
+<dd class="dlentry">
+Specify the name of the translation table that is used to translate the message reply.
+</dd>
+
+</dl>
+
+<p>
+<strong>Qualifier 2: Library
+</strong>
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><u>*LIBL
+</u></strong></dt>
+
+<dd class="dlentry">
+All libraries in the library list for the current thread are searched until the first match is found.
+</dd>
+
+</dl>
+
+<dl>
+<dt class="dlterm">
+<strong>*CURLIB
+</strong></dt>
+
+<dd class="dlentry">
+The current library for the job is used to locate the translation table.  If no current library entry exists in the library list, QGPL is used.
+</dd>
+
+<dt class="dlterm">
+<strong><em>name
+</em></strong></dt>
+
+<dd class="dlentry">
+Specify the library where the translation table is located.
+</dd>
+
+</dl>
+
+</div>
+<div class="div" id="sndusrmsg__ccsid">
+<p>
+<strong>Coded character set ID (CCSID)
+</strong></p>
+
+<p>
+Specifies the coded character set identifier (CCSID) that the message text supplied for the MSG (message) or MSGDTA (message data) parameters is in.  If a message identifier is specified, the text supplied by the MSGDTA (message data) parameter that corresponds to the *CCHAR type field is assumed to be in the CCSID supplied by this parameter.  The data supplied that does not correspond to the *CCHAR type field is assumed to be 65535 and is not converted.  For more information about the *CCHAR type field see the Add Message Description (ADDMSGD) command.
+
+</p>
+
+<p>
+If no message identifier is specified, the text supplied by the MSG (message) parameter is assumed to be in the CCSID supplied by this parameter.  For more information about the message handler and its use of CCSIDs, see the i5/OS globalization topic collection in the IBM i Information Center at http://www.ibm.com/systems/i/infocenter/.
+
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><u>*JOB
+</u></strong></dt>
+
+<dd class="dlentry">
+The text supplied by the MSGDTA (message data) or MSG (message) parameter is assumed to be in the CCSID of the job running this command.
+</dd>
+
+<dt class="dlterm">
+<strong>*HEX
+</strong></dt>
+
+<dd class="dlentry">
+The text supplied  by the MSGDTA (message data) or MSG (message) parameter is not converted.  CCSID 65535 is used.
+</dd>
+
+<dt class="dlterm">
+<strong><em>coded-character-set-identifier
+</em></strong></dt>
+
+<dd class="dlentry">
+Specify a valid CCSID in which you want your text specified for the MSG (message) or MSGDTA (message data) parameter to be considered in.  Valid values range from 1 through 65535.  This command validates the CCSID.  See the Globalization information in the iSeries Information Center at http://www.ibm.com/eserver/iseries/infocenter for a list of CCSID values.
+</dd>
+
+</dl>
+
+</div>
+</section>
+
+<section class="section" role="region" aria-labelledby="sndusrmsg__examples__title__1" id="sndusrmsg__examples"><h2 class="sectiontitle" id="sndusrmsg__examples__title__1">Examples</h2>
+
+<p>
+<strong>Example 1: Message Requiring Specific Reply
+</strong>
+</p>
+
+<div class="p">
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>
+SNDUSRMSG   MSG('Data verified. Update master files (Y,N)?')
+            TOMSGQ(*)  VALUES(Y N)  DFT(N)  MSGRPY(&amp;REPLY)
+
+</code></pre></div><div class="docs--copy-btn"></div></div>
+
+</div>
+
+<p>
+This command sends an inquiry message to the display station operator (if it is used in an interactive job) or to the system operator (if it is used in a batch job). The valid replies are Y and N, and any other reply is rejected. The reply is returned in the variable &amp;REPLY. The default translation table, QSYSTRNTBL, is used to translate the reply to uppercase characters.
+
+</p>
+
+<p>
+<strong>Example 2: Message Requiring Any Reply
+</strong>
+</p>
+
+<div class="p">
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>
+SNDUSRMSG   MSG('Enter any response when ready to continue.')
+            TOMSGQ(WS01)
+
+</code></pre></div><div class="docs--copy-btn"></div></div>
+
+</div>
+
+<p>
+This command sends an inquiry message to a specific message queue. Any reply is valid. Because the purpose of this example is simply to wait, no CL variable is provided to receive the reply.
+
+</p>
+
+<p>
+<strong>Example 3: Sending an Information Message
+</strong>
+</p>
+
+<div class="p">
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>
+SNDUSRMSG   MSGID(USR0150)  TOUSR(FRED)  MSGF(QGPL/USRMSGF)
+            MSGDTA(&amp;ACCTNO)  MSGTYPE(*INFO)
+
+</code></pre></div><div class="docs--copy-btn"></div></div>
+
+</div>
+
+<p>
+This command sends a predefined message as an information message to the message queue specified in the user profile of the specified user (FRED). The message data provided is included in the message.
+
+</p>
+
+</section>
+
+<section class="section" role="region" aria-labelledby="sndusrmsg__errormsgs__title__1" id="sndusrmsg__errormsgs"><h2 class="sectiontitle" id="sndusrmsg__errormsgs__title__1">Error messages</h2>
+
+<p>
+<strong><u>*ESCAPE Messages
+</u></strong>
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong>CPF247E
+</strong></dt>
+
+<dd class="dlentry">
+CCSID &amp;1 is not valid.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF2559
+</strong></dt>
+
+<dd class="dlentry">
+Error occurred in SNDUSRMSG command.
+</dd>
+
+</dl>
+
+</section>
+
+</div>
+
+</article></main>
+</body></html>

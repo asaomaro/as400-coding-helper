@@ -1,0 +1,137 @@
+{
+  "keyword": "RLSJOB",
+  "description": "ジョブ解放 (RLSJOB)",
+  "help": "ジョブ解放 (RLSJOB)コマンドは，ジョブ保留 (HLDJOB)コマンドによってジョブが処理を保留された後で，あるいはバッチ・ジョブ (BCHJOB)コマンドまたはジョブ投入 (SBMJOB)コマンドによって保留ジョブとしてジョブがシステムに投入された場合に，処理に適格なジョブにします。解放されるジョブは，保留時にジョブ待ち行列上にあるか，出力待ち行列上にあるか，またはサブシステムで活動状態になっている（システム資源を競合している）場合があります。ジョブを解放すると，そのジョブ中のすべてのスレッドも解放されることになります。また，ジョブ保留 (HLDJOB)コマンドの スプール・ファイルの保留 (SPLFILE)パラメーターに*YESが指定されているために，保留されているスプール出力ファイルも解放されます。このコマンド(RLSJOB)を出すスレッドのライブラリー名スペース内の出力待ち行列にあるスプール出力ファイルのみが解放されます。 スプール・ファイル・アクション (SPLFACN) ジョブ属性が*DETACHで，スプール・ファイルの保留中にジョブが終了された場合は，RLSJOBコマンドを使用してそのスプール・ファイルを解放することはできません。ジョブをシステムから除去した後にスプール・ファイルを解放するには，スプール・ファイル解放 (RLSSPLF)コマンドを使用してください。\n\nジョブ・ユーザー識別はユーザー・プロファイルの名前であり，これによってジョブは他のジョブに認識されます。これについては，Work Managementに詳細な説明があります。",
+  "parameters": [
+    {
+      "name": "JOB",
+      "description": "ジョブ名",
+      "help": "解放するジョブの名前を指定します。\n\nこれは必須パラメーターです。",
+      "inputType": "group",
+      "required": true,
+      "groupKind": "qualified",
+      "children": [
+        {
+          "name": "JOB_Q3",
+          "description": "番号",
+          "help": "システム割り当てジョブ番号を指定してください。",
+          "inputType": "number",
+          "required": false,
+          "attributes": {
+            "numericOnly": true
+          }
+        },
+        {
+          "name": "JOB_Q2",
+          "description": "ユーザー",
+          "help": "そのもとでジョブが開始されるユーザー・プロファイルを識別するユーザー名を指定してください。",
+          "inputType": "text",
+          "required": false,
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          }
+        },
+        {
+          "name": "JOB",
+          "description": "ジョブ名",
+          "help": "解放するジョブの名前を指定します。",
+          "inputType": "text",
+          "required": true,
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          }
+        }
+      ],
+      "positional": 1
+    },
+    {
+      "name": "DUPJOBOPT",
+      "description": "重複ジョブ・オプション",
+      "help": "このコマンドで重複ジョブが見つかった時に取られる処置を指定します。",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*SELECT",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*SELECT",
+          "value": "*SELECT",
+          "help": "対話式セッション中に重複しているジョブが見つかった時には，選択画面が表示されます。そうでない場合には，メッセージが出されます。"
+        },
+        {
+          "label": "*MSG",
+          "value": "*MSG",
+          "help": "重複しているジョブが見つかった時には，メッセージが出されます。"
+        }
+      ]
+    }
+  ],
+  "threadSafe": false,
+  "environment": "すべての環境 (*ALL)",
+  "examples": [
+    {
+      "code": "RLSJOB JOB(PAYROLL)"
+    },
+    {
+      "code": "RLSJOB JOB(DEPTXYZ/PAYROLL)"
+    }
+  ],
+  "errorMessages": [
+    {
+      "id": "CPF1317",
+      "text": "ジョブ&3/&2/&1に対して，サブシステムから応答がない。"
+    },
+    {
+      "id": "CPF1321",
+      "text": "ジョブ&1ユーザー&2ジョブ番号&3が見つからない。"
+    },
+    {
+      "id": "CPF1332",
+      "text": "重複したジョブ名の終わり。"
+    },
+    {
+      "id": "CPF1340",
+      "text": "ジョブ制御機能は実行されなかった。"
+    },
+    {
+      "id": "CPF1341",
+      "text": "読み取りプログラムまたは書き出しプログラム&3/&2/&1は，ジョブ名として使用できない。"
+    },
+    {
+      "id": "CPF1343",
+      "text": "ジョブ&3/&2/&1は，この機能に対して正しくないジョブ・タイプである。"
+    },
+    {
+      "id": "CPF1344",
+      "text": "ジョブ&3/&2/&1を制御する権限がない。"
+    },
+    {
+      "id": "CPF1349",
+      "text": "ジョブ&3/&2/&1は開放されなかった。このジョブは保留されていません。"
+    },
+    {
+      "id": "CPF134C",
+      "text": "ジョブ&3/&2/&1が解放されない。CPUTIME限度を超えた。"
+    },
+    {
+      "id": "CPF134D",
+      "text": "ジョブ&3/&2/&1が解放されない。MAXTMPSTG限度を超えた。"
+    },
+    {
+      "id": "CPF1351",
+      "text": "ジョブ&3/&2/&1のサブシステムで機能チェックが起こった。"
+    },
+    {
+      "id": "CPF1352",
+      "text": "この機能は実行されなかった。&3/&2/&1は移行状態である。"
+    }
+  ],
+  "source": {
+    "url": "https://www.ibm.com/docs/ja/ssw_ibm_i_74/cl/rlsjob.htm",
+    "version": "IBM i 7.4"
+  }
+}

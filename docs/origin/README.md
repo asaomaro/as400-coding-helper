@@ -11,7 +11,8 @@ AS/400 コーディング支援のプロンプター定義（CL コマンド・R
 
 | パス | 内容 | 件数 | 版/出所 |
 |---|---|---|---|
-| `cl/<CMD>.html` | CL コマンドの IBM Documentation ページ | 95 | IBM i 7.4 (`ssw_ibm_i_74`) |
+| `cl/<CMD>.html` | CL コマンドの IBM Documentation ページ（日本語） | 134 | IBM i 7.4 (`ssw_ibm_i_74`) |
+| `cl-en/<CMD>.html` | 同上（英語） | 133 | IBM i 7.4 |
 | `ilerpg/<X>-SPEC.html` | ILE RPG 固定長仕様書（H/F/D/I/C/O/P）の概説ページ | 7 | IBM i 7.4 |
 | `ilerpg/<X>-SPEC-<slug>.html` | 上記の桁・主要キーワード詳細サブページ（桁表を含む） | 14 | IBM i 7.4 |
 | `rpg3/<id>.html` | RPG III(RPG/400) 用 固定長リファレンス（第三者・jaymoseley） | 6 | 下記「rpg3 の出所」参照 |
@@ -92,6 +93,25 @@ scp -P 2222 '<user>@pub400.com:/home/<user>/cmddoc/*.HTML' docs/origin/cmddoc/
 
 `required` と パラメータ集合が実機と完全一致していることは、原典からの生成が
 正しいことの裏付けになっている。
+
+## 言語（日本語 / 英語）
+
+CL の原典は日本語版と英語版の両方を取得し、定義もそれぞれ生成する。
+
+```sh
+node docs/origin/fetch-origin.mjs --only=cl              # 日本語 → docs/origin/cl/
+node docs/origin/fetch-origin.mjs --only=cl --lang=en    # 英語   → docs/origin/cl-en/
+node docs/origin/generate-cl-definitions.mjs             # → resources/prompter/cl/ja/
+node docs/origin/generate-cl-definitions.mjs --lang=en   # → resources/prompter/cl/en/
+```
+
+拡張機能側は設定 `rpgClSupport.language`（`auto`/`ja`/`en`、既定 `auto`）で切り替える。
+`auto` は VS Code の表示言語に従う。
+
+**入力欄の名前は言語によらず共通**にしている。名前は表示語ではなく内部の識別子で、
+`dependsOn` / `constraints` / `basic` もこれを参照するため。英語版の生成時は日本語版を
+引き継ぎ元にして名前を揃えている（揃えないと `LOG_E1` のような合成名になり、
+同じコマンドなのに欄の名前が言語で食い違う）。
 
 ## 定義 JSON の生成
 

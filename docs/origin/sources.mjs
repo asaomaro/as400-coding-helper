@@ -11,6 +11,9 @@ export const categories = {
   cl: {
     base: 'https://www.ibm.com/docs/ja/ssw_ibm_i_74/cl/',
     urlFor: (name) => `https://www.ibm.com/docs/ja/ssw_ibm_i_74/cl/${name.toLowerCase()}.htm`,
+    // コンテンツ API 用のトピックパス。指定があればブラウザ描画ではなく API で取得する
+    // （速く確実で、表がそのまま残る）。lang は取得側で切り替える。
+    topicFor: (name) => `ssw_ibm_i_74/cl/${name.toLowerCase()}.htm`,
     items: [
       // ファイル操作
       'CRTPF', 'CRTLF', 'DLTF', 'OVRDBF', 'CPYF', 'CLRPFM', 'RGZPFM', 'CRTSRCPF',
@@ -41,6 +44,30 @@ export const categories = {
       'CRTCLPGM', 'CRTBNDCL', 'CRTBNDRPG', 'CRTRPGMOD', 'CRTPGM', 'CRTDSPF', 'CRTPRTF',
       // 保存・復元・権限（H）
       'SAVOBJ', 'RSTOBJ', 'GRTOBJAUT', 'RVKOBJAUT',
+
+      // --- 第3弾: 開発・運用でよく使うもの（実機に存在することを確認済み） ---
+      // コンパイル / オブジェクト作成
+      'CRTCLMOD', 'CRTSRVPGM', 'UPDPGM', 'UPDSRVPGM',
+      // ソース操作
+      'CPYSRCF', 'DSPPFM', 'RNMM', 'CHGPFM', 'RTVCLSRC',
+      // ライブラリー・リスト
+      'RMVLIBLE', 'CHGLIBL', 'CHGCURLIB', 'CLRLIB',
+      // 一時変更
+      'DLTOVR', 'OVRDSPF',
+      // SQL
+      'RUNSQLSTM', 'RUNSQL',
+      // デバッグ
+      'STRDBG', 'ENDDBG',
+      // ジョブ
+      'WRKOBJ', 'DSPJOBLOG', 'ENDJOB', 'CHGCMDDFT', 'WRKSBMJOB', 'WRKUSRJOB', 'HLDJOB', 'RLSJOB',
+      // スプール / ライター
+      'CHGOUTQ', 'CRTOUTQ', 'WRKWTR', 'STRPRTWTR',
+      // 保存・復元
+      'SAVLIB', 'SAVCHGOBJ',
+      // 権限
+      'CHGOBJOWN', 'DSPOBJAUT', 'EDTOBJAUT',
+      // 構成・システム値
+      'WRKCFGSTS', 'VRYCFG', 'DSPSYSVAL',
     ].map((name) => ({ name })),
   },
 

@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="ja"><head><meta charset="utf-8"><title>Call Program  (CALL)</title></head>
+<body>
+<main role="main"><article role="article" aria-labelledby="call__title__1"> 
+<h1 class="topictitle1" id="call__title__1">Call Program  (CALL)</h1><div id="lastModifiedDate"><span>Last Updated</span>: 2026-07-13</div>
+
+<div class="body">
+<p>
+<strong>Call Program  (CALL)
+</strong></p>
+
+<p>
+<strong>Where allowed to run:  
+</strong>All environments (*ALL)
+
+</p>
+
+<p>
+<strong>Threadsafe:  </strong>Conditional
+</p>
+
+<p><a href="#call__parameters">Parameters</a></p>
+
+<p><a href="#call__examples">Examples</a></p>
+
+<p><a href="#call__errormsgs">Error messages</a></p>
+
+<div class="div" id="call__call">
+<p>
+The Call (CALL) command calls the program named in the command, and passes control to it.  Optionally, the program or user issuing the CALL command can pass parameters to the called program.  The CALL command can be used in batch jobs, in interactive jobs, and in both compiled and interpreted control language (CL).  When the called program finishes processing, it can return control to the calling program using the RETURN command.
+
+</p>
+
+<p>
+If the CALL command is issued by a CL program or ILE CL procedure, each parameter value passed to the called program can be a character string constant, a numeric constant, a logical constant, a floating-point constant, or a CL variable.  If a floating-point constant is specified, the value is converted to double-precision format and passed to the called program.  If parameters are passed, the value of the constant or variable is available to the program that is called.  Parameters cannot be passed in any of the following forms:  lists of values, qualified names, expressions, null parameters (that is, a parameter whose value is null, specified by *N), or keyword parameters.  Up to 255 parameters can be passed to the called program.
+
+</p>
+
+<p>
+If parameters are passed to a program using the CALL command, the values of the parameters are passed in the order in which they appear on the CALL command; this order must match the order in which they appear in the parameter list in the calling program.
+
+</p>
+
+<p>
+Parameters in a called program can be used in place of its variables.  However, no storage in the called program is associated with the variables it receives.  Instead, if a variable is passed, the storage for the variable is in the program in which it was originally declared.  If a constant is passed, a copy of the constant is made in the calling program and that copy is passed to the called program.
+
+</p>
+
+<p>
+The result is that if a variable is passed, the called program can change its value and the change is reflected in the calling program.  If a constant is passed, and its value is changed by the called program, the changed value is not known to the calling program.  Therefore, if the calling program calls the same program again, the values of constants will be to their original values.
+
+</p>
+
+<p>
+Information on passing variable parameters using the CALL command within a Submit Job (SBMJOB) command is in the Work management topic collection in the IBM i Information Center at http://www.ibm.com/systems/i/infocenter/.
+
+</p>
+
+<p>
+<strong>Restrictions:
+</strong>
+</p>
+
+<ul class="cds--list--unordered">
+<li class="cds--list__item">
+You must have object operational (*OBJOPR) and execute (*EXECUTE) authorities to the program to be called, and *EXECUTE authority to the library where the program is located.
+
+</li>
+
+<li class="cds--list__item">
+The CALL command is threadsafe, meaning that it can be used to call a program when the CALL command is run in a job with multiple threads.  No checking is done whether or not the program to be called is threadsafe.
+
+</li>
+
+</ul>
+
+</div>
+<section class="section" role="region" aria-labelledby="call__parameters__title__1" id="call__parameters"><h2 class="sectiontitle" id="call__parameters__title__1">Parameters</h2>
+
+
+<div class="tablenoborder"><div class="cds--data-table-container"><table summary="" class="defaultstyle cds--data-table"><colgroup><col><col><col><col></colgroup><thead>
+<tr>
+<th id="call__parameters__entry__1"><div class="cds--table-header-label">
+Keyword
+</div></th>
+
+<th id="call__parameters__entry__2"><div class="cds--table-header-label">
+Description
+</div></th>
+
+<th id="call__parameters__entry__3"><div class="cds--table-header-label">
+Choices
+</div></th>
+
+<th id="call__parameters__entry__4"><div class="cds--table-header-label">
+Notes
+</div></th>
+
+</tr>
+
+</thead>
+<tbody>
+<tr>
+<td rowspan="3" headers="call__parameters__entry__1 "><a href="#call__pgm"><strong>PGM
+</strong></a></td>
+
+<td headers="call__parameters__entry__2 ">Program
+</td>
+
+<td headers="call__parameters__entry__3 "><em>Qualified object name
+</em></td>
+
+<td rowspan="3" headers="call__parameters__entry__4 ">Required, Positional 1
+</td>
+
+</tr>
+
+<tr>
+<td headers="call__parameters__entry__2 ">Qualifier 1: Program
+</td>
+
+<td headers="call__parameters__entry__3 "><em>Name
+</em></td>
+
+</tr>
+
+<tr>
+<td headers="call__parameters__entry__2 ">Qualifier 2: Library
+</td>
+
+<td headers="call__parameters__entry__3 "><em>Name
+</em>, 
+<strong><u>*LIBL
+</u></strong>, *CURLIB
+</td>
+
+</tr>
+
+<tr>
+<td headers="call__parameters__entry__1 "><a href="#call__parm"><strong>PARM
+</strong></a></td>
+
+<td headers="call__parameters__entry__2 ">Parameters
+</td>
+
+<td headers="call__parameters__entry__3 ">Values (up to 255 repetitions): 
+<em>Not restricted
+</em></td>
+
+<td headers="call__parameters__entry__4 ">Optional, Positional 2
+</td>
+
+</tr>
+
+</tbody>
+</table></div>
+</div>
+
+<div class="div" id="call__pgm">
+<p>
+<strong>Program (PGM)
+</strong></p>
+
+<p>
+Specifies the program to be called.
+
+</p>
+
+<p>
+This is a required parameter.
+
+</p>
+
+<p>
+<strong>Qualifier 1: Program
+</strong>
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><em>name
+</em></strong></dt>
+
+<dd class="dlentry">
+Specify the name of the program to call.
+</dd>
+
+</dl>
+
+<p>
+<strong>Qualifier 2: Library
+</strong>
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><u>*LIBL
+</u></strong></dt>
+
+<dd class="dlentry">
+All libraries in the library list for the current thread are searched until the first match is found.
+</dd>
+
+</dl>
+
+<dl>
+<dt class="dlterm">
+<strong>*CURLIB
+</strong></dt>
+
+<dd class="dlentry">
+The current library for the thread is used to locate the program.  If no library is specified as the current library for the thread, the QGPL library  is used.
+</dd>
+
+<dt class="dlterm">
+<strong><em>name
+</em></strong></dt>
+
+<dd class="dlentry">
+Specify the name of the library where the program is located.
+</dd>
+
+</dl>
+
+</div>
+<div class="div" id="call__parm">
+<p>
+<strong>Parameters (PARM)
+</strong></p>
+
+<p>
+Specifies one or more parameter values that are passed to the called program.  A maximum of 255 parameter values can be passed.
+
+</p>
+
+<p>
+Each of the values can be specified only in one of the following forms: a character string constant, a numeric constant, a logical constant, double-precision floating point constant, or a program variable.
+
+</p>
+
+<p>
+The type and length of each parameter must be the same in both the calling and receiving programs.  The number of parameters and the order in which they are sent and received must also be the same.  If the CALL command is entered interactively or in a noncompiled batch environment, the type and length expected by the called program must match that of each parameter to be passed on the command.
+
+</p>
+
+<p>
+Parameters can be passed and received as follows:
+
+</p>
+
+<ul class="cds--list--unordered">
+<li class="cds--list__item">
+Character string constants of 32 bytes or less are 
+<em>always
+</em> passed with a length of 
+<em>32
+</em> bytes (padded on the right with blanks).  If a character constant is longer than 32 bytes, the whole length of the constant is passed.  If the parameter is defined to contain more than 32 bytes, the calling program must pass a constant that contains exactly that number of bytes.  Constants longer than 32 characters are 
+<em>not
+</em> padded to the length expected by the receiving program.
+<p>
+The receiving program can receive less than the number of bytes passed (in this case, no message is sent).  For example, if a program specifies that 4 characters are to be received and ABCDEF is passed (padded with blanks in 26 positions), only ABCD is accepted and used by the program.  Quoted character strings can also be passed.
+
+</p>
+
+
+</li>
+
+<li class="cds--list__item">
+Decimal constants are passed in packed form and with a length of (15 5), where the value is 15 digits long, of which 5 digits are decimal positions.  If a parameter of 12345 is passed, the receiving program must declare the decimal field as (15 5); the parameter is received as 1234500000 (which is 12,345.00000).
+
+</li>
+
+<li class="cds--list__item">
+Logical constants are passed as 1 byte with a logical value of '1' or '0'.
+
+</li>
+
+<li class="cds--list__item">
+Floating-point literals and floating-point special values (*NAN, *INF, and *NEGINF) are passed as double-precision floating-point numbers, which occupy 8 bytes and are specified in the form sn.nEsn; where s is a plus sign (+) or a minus sign(-); for example, -2.47E+3 or 3.653E24.  A single-precision floating-point number cannot be passed to a called program.
+
+</li>
+
+<li class="cds--list__item">
+A program variable can be passed if the call is made from a CL program or ILE CL procedure, in which case the receiving program must declare the field to match the variable defined in the calling CL program or ILE CL procedure.  For example, if a CL program or ILE CL procedure defines a decimal variable named &amp;CHKNUM as (5  0), the receiving program must declare the field as packed with 5 digits total, with no decimal positions.
+<p>
+If either a decimal constant or a program variable can be passed to the called program, the parameter should be defined as (15 5), and any calling program must adhere to that definition.  If the type, number, order, and length of the parameters do not match between the calling and receiving programs (other than the length exception noted previously for character constants), unpredictable results will occur.
+
+</p>
+
+<p>
+The value *N cannot be used to specify a null value because a null value cannot be passed to another program.
+
+</p>
+
+
+</li>
+
+</ul>
+
+<p>
+<strong>Note:     
+</strong>If a parameter value is to be changed by a CL program or ILE CL procedure or specified as a variable on a CL command, it must be in writeable storage.  For example, in C or C++, strings may be read only.  If a read only string is passed as a parameter to a CL program or ILE CL procedure, and the CL program or ILE CL procedure attempts to change the value of the variable or uses the variable on a CL command, the CL program or ILE CL procedure will fail.
+
+</p>
+
+</div>
+</section>
+
+<section class="section" role="region" aria-labelledby="call__examples__title__1" id="call__examples"><h2 class="sectiontitle" id="call__examples__title__1">Examples</h2>
+
+<p>
+<strong>Example 1: Calling a Program
+</strong>
+</p>
+
+<div class="p">
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>
+CALL   PGM(PAYROLL)
+
+</code></pre></div><div class="docs--copy-btn"></div></div>
+
+</div>
+
+<p>
+The program named PAYROLL is called with no parameters being passed to it. The library list is used to locate the called program.
+
+</p>
+
+<p>
+<strong>Example 2: Passing a Character Constant
+</strong>
+</p>
+
+<div class="p">
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>
+CALL   PGM(PAYROLL)  PARM('1')
+
+</code></pre></div><div class="docs--copy-btn"></div></div>
+
+</div>
+
+<p>
+The program named PAYROLL is called with a character constant passed as a quoted string. The program must declare a field of up to 32 characters to receive the constant. The library list is used to locate the called program.
+
+</p>
+
+<p>
+<strong>Example 3: Passing Parameters
+</strong>
+</p>
+
+<div class="p">
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>
+CALL   PGM(LIB1/PAYROLL)  PARM(CHICAGO 1234 &amp;VAR1)
+
+</code></pre></div><div class="docs--copy-btn"></div></div>
+
+</div>
+
+<p>
+The program named PAYROLL located in library LIB1 is called. The calling program passes three parameters: a character string (CHICAGO), a decimal value (1234.00000), and the contents of the CL variable &amp;VAR1. The attributes of the variable determine the attributes of the third parameter.
+
+</p>
+
+<p>
+<strong>Example 4: Calling Program with Floating-Point Values
+</strong>
+</p>
+
+<div class="p">
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>
+CALL   PGM(PGM1)  PARM(1.5E3 *INF)
+
+</code></pre></div><div class="docs--copy-btn"></div></div>
+
+</div>
+
+<p>
+The program named PGM1 is called with two double-precision floating-point values being passed to it.
+
+</p>
+
+</section>
+
+<section class="section" role="region" aria-labelledby="call__errormsgs__title__1" id="call__errormsgs"><h2 class="sectiontitle" id="call__errormsgs__title__1">Error messages</h2>
+
+<p>
+<strong><u>*ESCAPE Messages
+</u></strong>
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong>CPD0783
+</strong></dt>
+
+<dd class="dlentry">
+Variable &amp;3 for parameter &amp;2 must be TYPE(*DEC), LEN(&amp;4,&amp;5).
+</dd>
+
+<dt class="dlterm">
+<strong>CPF0005
+</strong></dt>
+
+<dd class="dlentry">
+Returned command string exceeds variable provided length.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF0006
+</strong></dt>
+
+<dd class="dlentry">
+Errors occurred in command.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF0805
+</strong></dt>
+
+<dd class="dlentry">
+Error found when program &amp;1 in &amp;2 started.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF0806
+</strong></dt>
+
+<dd class="dlentry">
+Error found when procedure started.
+</dd>
+
+</dl>
+
+</section>
+
+</div>
+
+</article></main>
+</body></html>

@@ -1,0 +1,877 @@
+{
+  "keyword": "CRTPF",
+  "description": "物理ファイル作成 (CRTPF)",
+  "help": "物理ファイル作成(CRTPF)コマンドは，このコマンドに指定した情報および（任意選択で）ソース・ファイルに入っているデータ記述仕様(DDS)から物理ファイルを作成します。\n\n物理ファイルは，データ・レコードが入っているデータベース・ファイルです。データ・レコードは物理ファイル・メンバーにまとめられ，各メンバーにはそのデータに対する独自のアクセス・パスがあります。通常，データベース・ファイルには1つのメンバーしかなく，そのメンバーはファイルの作成時に省略時の値によってファイルに追加されます。所要の物理ファイルに到着順の1つの文字フィールドのみをもつレコード様式がある場合，あるいはファイルがソース・ファイルである場合には，DDSソース・ファイルは必要ありません。ファイルの作成後にその属性を一時変更するためには，データベース・ファイル一時変更(OVRDBF)コマンドを使用してからファイルをオープンしてください。ファイルの作成後にその属性を変更するためには，物理ファイル変更 (CHGPF)コマンドを使用してください。",
+  "parameters": [
+    {
+      "name": "FILE",
+      "description": "ファイル",
+      "help": "作成する物理ファイルを指定します。\n\nこれは必須パラメーターです。",
+      "inputType": "group",
+      "required": true,
+      "groupKind": "qualified",
+      "children": [
+        {
+          "name": "LIB",
+          "description": "ライブラリー",
+          "help": "*CURLIB: ファイルが入れられる場所は，ジョブの現行ライブラリーです。ジョブの現行ライブラリーとしてライブラリーが指定されていない場合は，QGPLが使用されます。\nファイルを入れるライブラリーを指定してください。",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "*CURLIB",
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          },
+          "placeholder": "*CURLIB"
+        },
+        {
+          "name": "FILE",
+          "description": "ファイル",
+          "help": "作成する物理ファイルの名前を指定してください。",
+          "inputType": "text",
+          "required": true,
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          },
+          "placeholder": "MYFILE"
+        }
+      ],
+      "positional": 1,
+      "basic": true
+    },
+    {
+      "name": "SRCFILE",
+      "description": "ソース・ファイル",
+      "help": "レコード様式とそのフィールド，およびファイルとそのメンバーのアクセス・パスを記述するデータ記述仕様(DDS)が入っているソース・ファイルを指定します。DDSで作成される仕様について，IBM i Information Center(http://www.ibm.com/systems/i/infocenter/)の「データベース」カテゴリーおよびIBM i Information Center(http://www.ibm.com/systems/i/infocenter/)の「プログラミング」カテゴリーの「DDS」トピック・コレクションで説明しています。",
+      "inputType": "group",
+      "required": false,
+      "groupKind": "qualified",
+      "children": [
+        {
+          "name": "SRCFILE_LIB",
+          "description": "ライブラリー",
+          "help": "*CURLIB: ファイルが入れられるのはジョブの現行ライブラリーです。ジョブの現行ライブラリーとしてライブラリーが指定されていない場合は，QGPLが使用されます。\nファイルのあるライブラリーを指定します。\n\n指定できる特殊値: *LIBL",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "*LIBL",
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          },
+          "placeholder": "*LIBL"
+        },
+        {
+          "name": "SRCFILE",
+          "description": "ソース・ファイル",
+          "help": "QDDSSRC: 名前QDDSSRCのDDSソース・ファイルには，物理ファイルの作成に使用されるソース記述が入っています。\n物理ファイルの作成に使用するDDSが入っているソース・ファイルの名前を指定してください。",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "QDDSSRC",
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          },
+          "placeholder": "QDDSSRC"
+        }
+      ],
+      "positional": 2,
+      "basic": true
+    },
+    {
+      "name": "SRCMBR",
+      "description": "ソース・メンバー",
+      "help": "作成される物理ファイルのDDSが入っているソース・ファイル・メンバーの名前を指定します。メンバーはSRCFILEパラメーター（その省略時の値のQDDSSRC）に指定されたソース・ファイルに入っています。SRCMBRを指定した場合には，RCDLENを指定することはできません。\n\n*FILE: ソース・ファイルのメンバー名は， ファイル (FILE) パラメーターに指定された物理ファイルのメンバー名と同じです。\nソース・ファイル中のメンバーの名前を指定してください。",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*FILE",
+      "attributes": {
+        "characterSet": "upper",
+        "maxLength": 10
+      },
+      "positional": 3,
+      "placeholder": "*FILE",
+      "basic": true
+    },
+    {
+      "name": "RCDLEN",
+      "description": "DDSがない場合のレコード長",
+      "help": "物理ファイルに記憶されているレコードの長さ（バイト数）を指定します。RCDLENおよびFILETYPE(*DATA)を指定した場合には，フィールドが1つだけのレコード様式をもつ物理ファイルが作成されます。その結果，このファイルは到着順アクセス・パスに制限されます。レコード様式もフィールドもFILEパラメーターに指定されたファイルの名前と同じ名前を割り当てられます。レコード長には1から32766バイトの範囲の値を指定することができます。\n\nRCDLENおよびFILETYPE(*SRC)を指定した場合には，レコード様式はソース順序番号，日付，およびソース・ステートメントという3つのフィールドをもちます。RCDLENパラメーターでソース順序番号のための6桁，日付フィールドのための6桁，およびソースの開始のための1桁を提供しなければなりません。これらは各レコードで必要です。これらのフィールドは，固定した属性および名前で定義されます。レコードがCPYFコマンドでファイルにコピーされ，レコードが指定された長さより長い場合には，レコードは右端で切り捨てられます。\n\nRCDLENを指定した場合には，SRCFILEおよびSRCMBRを指定することはできません。RCDLENは，ソース・ファイルを必要としない時（各レコードに1つのフィールドしか存在しない時，あるいは作成されるファイルがソース・ファイルである時）にレコード様式の固定レコード長を指定するために使用されます。このファイルを処理する高水準言語プログラムでプログラム中にレコードのフィールドを記述しなければなりません。\n\nIGCDTA(*NO)を指定した場合には，フィールドは文字のデータ・タイプを割り当てられ，その長さは指定されたレコード長と同じになります。レコード長には1から32766バイトの範囲の値を指定することができます。IGCDTA(*YES)を指定した場合には，フィールド漢字混用のデータ・タイプを割り当てられ，4から32766の範囲の値を指定することができます。\n\nFILETYPE(*SRC)およびIGCDTA(*YES)を指定した時には，RCDLENパラメーターでソース順序番号のための6桁，日付フィールドのための6桁，およびソースの開始のための4桁を提供しなければなりません。",
+      "inputType": "number",
+      "required": false,
+      "attributes": {
+        "numericOnly": true
+      },
+      "positional": 4,
+      "placeholder": "80",
+      "basic": true
+    },
+    {
+      "name": "GENLVL",
+      "description": "生成重大度レベル",
+      "help": "作成操作が正常に実行されない重大度レベルを指定します。重大度レベルがこの値に等しいかまたはそれより大きいエラーが起こると，操作は終了します。\n\nこのパラメーターが適用されるのは，ソースDDSファイルの処理中に作成されたメッセージに対してだけです。\n\n20: DDSソース・ファイルの処理中に重大度レベルが20より大きいか等しいエラーが起こった場合には，ファイルは作成されません。\n所要の重大度レベル値を指定してください。0を指定した場合には，ファイルは作成されません。指定する値は， フラグづけ重大度レベル (FLAG) パラメーターに指定された値に等しいかそれより大きくなければなりません。",
+      "inputType": "number",
+      "required": false,
+      "defaultValue": "20",
+      "attributes": {
+        "numericOnly": true
+      },
+      "placeholder": "20",
+      "basic": true
+    },
+    {
+      "name": "FLAG",
+      "description": "フラグづけ重大度レベル",
+      "help": "リストするメッセージの最小重大度レベルを指定します。\n\n0: すべてのメッセージがリストされます。\nリストするメッセージの最小重大度を示す数値を指定してください。指定する値は， 生成重大度レベル (GENLVL) パラメーターに指定された値に等しいかそれより大きくなければなりません。",
+      "inputType": "number",
+      "required": false,
+      "defaultValue": "0",
+      "attributes": {
+        "numericOnly": true
+      },
+      "placeholder": "0",
+      "basic": true
+    },
+    {
+      "name": "FILETYPE",
+      "description": "ファイル・タイプ",
+      "help": "作成中の物理ファイルの各メンバーにデータ・レコードが入るのか，あるいはプログラムまたは別のファイルのソース・レコード（ステートメント）が入るのかを指定します。例えば，ファイルにはRPGプログラムのRPGソース・ステートメントまたは別の物理ファイル，論理ファイル，または装置ファイルのDDSソース・ステートメントを入れることができます。",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*DATA",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*DATA",
+          "value": "*DATA",
+          "help": "物理ファイルにはデータ・レコードが入ります。"
+        },
+        {
+          "label": "*SRC",
+          "value": "*SRC",
+          "help": "物理ファイルにはソース・レコードが入ります。"
+        }
+      ],
+      "basic": true
+    },
+    {
+      "name": "MBR",
+      "description": "必要な場合にはメンバー",
+      "help": "物理ファイルの作成時に追加される物理ファイル・メンバーの名前を指定します。\n\n*FILE: メンバーの名前は，作成する物理ファイルと同じになります。\n*NONE: ファイルの作成時に物理ファイル・メンバーは追加されません。\n新規ファイルに追加する物理ファイル・メンバーの名前を指定してください。",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*FILE",
+      "attributes": {
+        "characterSet": "upper",
+        "maxLength": 10
+      },
+      "placeholder": "*FILE",
+      "basic": true
+    },
+    {
+      "name": "IGCDTA",
+      "description": "ユーザー指定のDBCSデータ",
+      "help": "プログラム記述ファイルの場合には，ファイルが2バイト文字セット(DBCS)データを処理するかどうかを指定します。外部記述ファイルの場合には，ファイルのDBCS属性を指定します。\n\nユーザーが物理ファイルを作成し，RCDLENパラメーターを指定した場合には，システムは省略時のレコード様式を作成します。\n\nRCDLENパラメーターに値が指定されていない場合には，システムはIGCDTAパラメーターの値を無視します。\n\nユーザーは，物理ファイルのIGCDTA値を一時変更することはできません。",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*NO",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*NO",
+          "value": "*NO",
+          "help": "ファイルに2バイト文字セット(DBCS)データが入っていません。"
+        },
+        {
+          "label": "*YES",
+          "value": "*YES",
+          "help": "ファイルにDBCSデータが入っています。"
+        }
+      ]
+    },
+    {
+      "name": "TEXT",
+      "description": "テキスト'記述'",
+      "help": "オブジェクトを簡単に記述したテキストを指定します。\n\n*SRCMBRTXT: テキストは物理ファイルを作成するために使用されているソース・ファイル・メンバーから取られます。ソース・ファイルがデータベース・ファイルである場合には，テキストはそのソース・ファイル・メンバーから取られます。データベース・ソース・メンバーのテキストは，原始ステートメント入力ユーティリティーを使用するか，あるいは物理ファイル・メンバー追加(ADDPFM)コマンドまたは物理ファイル・メンバー変更(CHGPFM)コマンドを使用して，追加または変更できます。ソース・ファイルがインライン・ファイルまたは装置ファイルの場合には，テキストはブランクです。\n*BLANK: テキストは指定されません。\n50文字を超えないテキストを，アポストロフィで囲んで指定してください。",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*SRCMBRTXT",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "placeholder": "*SRCMBRTXT",
+      "basic": true
+    },
+    {
+      "name": "OPTION",
+      "description": "ソース・リスト・オプション",
+      "help": "ファイルの作成時に生成される出力のタイプを指定します。このパラメーターには，以下の値を4つまで任意の順序で指定することができます。オプションに両方の値を指定した場合，あるいはいずれの値も指定しなかった場合には，最初の値が使用されます。",
+      "inputType": "dropdown",
+      "required": false,
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*SRC",
+          "value": "*SRC"
+        },
+        {
+          "label": "*NOSRC",
+          "value": "*NOSRC"
+        },
+        {
+          "label": "*SOURCE",
+          "value": "*SOURCE"
+        },
+        {
+          "label": "*NOSOURCE",
+          "value": "*NOSOURCE"
+        },
+        {
+          "label": "*LIST",
+          "value": "*LIST"
+        },
+        {
+          "label": "*NOLIST",
+          "value": "*NOLIST"
+        },
+        {
+          "label": "*SECLVL",
+          "value": "*SECLVL"
+        },
+        {
+          "label": "*NOSECLVL",
+          "value": "*NOSECLVL"
+        },
+        {
+          "label": "*EVENTF",
+          "value": "*EVENTF"
+        },
+        {
+          "label": "*NOEVENTF",
+          "value": "*NOEVENTF"
+        }
+      ],
+      "positional": 5,
+      "maxOccurrences": 4,
+      "placeholder": "*SRC"
+    },
+    {
+      "name": "SYSTEM",
+      "description": "システム",
+      "help": "物理ファイルがローカル・システムで作成されるかリモート・システムで作成されるかを指定します。",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*LCL",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*LCL",
+          "value": "*LCL",
+          "help": "物理ファイルはローカル・システムに作成されます。"
+        },
+        {
+          "label": "*RMT",
+          "value": "*RMT",
+          "help": "物理ファイルはリモート・システムで作成されます。 ファイル (FILE) パラメーターに指定されたファイルは，リモート・システムおよび作成される物理ファイルの名前を識別する分散データ管理機能(DDM)ファイルの名前でなければなりません。"
+        },
+        {
+          "label": "*FILETYPE",
+          "value": "*FILETYPE",
+          "help": "FILEパラメーターに指定されたファイルがシステムに存在しない場合には，物理ファイルはローカル・システムで作成されます。そうでない場合には，ファイルはDDMファイルでなければならず，物理ファイルはリモート・システムで作成されます。DDMファイルはリモート・システムおよび作成される物理ファイルの名前を識別します。"
+        }
+      ]
+    },
+    {
+      "name": "EXPDATE",
+      "description": "メンバーの満了日",
+      "help": "物理ファイルのメンバーの有効期限を指定します。\n\nファイル・メンバーを使用できなくなる日付を指定してください。値に日付区切り文字を使用する場合には，日付をアポストロフィで囲む必要があります。",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*NONE",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*NONE",
+          "value": "*NONE",
+          "help": "満了日は指定されません。"
+        }
+      ],
+      "placeholder": "*NONE"
+    },
+    {
+      "name": "MAXMBRS",
+      "description": "メンバーの最大数",
+      "help": "物理ファイルに入れることのできるメンバーの最大数を指定します。\n\n1: 物理ファイルにはメンバーを1つしか入れることができません。\n*NOMAX: ファイルに入れることのできるメンバーの数は，システム最大値32,767個のメンバーです。\n物理ファイルに入れることができるメンバーの最大数を指定してください。",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "1",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "placeholder": "1"
+    },
+    {
+      "name": "ACCPTHSIZ",
+      "description": "アクセス・パス・サイズ",
+      "help": "次の種類のアクセス・パスで占有できる補助記憶域の最大サイズを指定します。\n\nこのパラメーターは，論理ファイル用に作成されるアクセス・パスや，物理ファイル中のデータを参照するQUERYのために作成されるアクセス・パスには適用されません。",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*MAX1TB",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*MAX1TB",
+          "value": "*MAX1TB",
+          "help": "このファイルと関連付けられるアクセス・パスは，最大1.7テラバイトの補助記憶域を占有することができます。"
+        },
+        {
+          "label": "*MAX4GB",
+          "value": "*MAX4GB",
+          "help": "このファイルと関連付けられるアクセス・パスは，最大4ギガバイト(4,294,966,272バイト）の補助記憶域を占有することができます。"
+        }
+      ]
+    },
+    {
+      "name": "PAGESIZE",
+      "description": "アクセス・パス論理ページ・サイズ",
+      "help": "アクセス・パスの作成時に使用されるアクセス・パス論理ページ・サイズを指定します。\n\nアクセス・パス論理ページ・サイズは，索引の各ページのサイズを決定するためにシステムによって使用されます。この論理ページ・サイズは，ページ不在の場合に補助記憶域からジョブの記憶域プールに移動できるアクセス・パスのバイト数です。\n\n8: 8Kの論理ページ・サイズ。\n16: 16Kの論理ページ・サイズ。\n32: 32Kの論理ページ・サイズ。\n64: 64Kの論理ページ・サイズ。\n128: 128Kの論理ページ・サイズ。\n256: 256Kの論理ページ・サイズ。\n512: 512Kの論理ページ・サイズ。",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*KEYLEN",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*KEYLEN",
+          "value": "*KEYLEN",
+          "help": "アクセス・パス論理ページ・サイズは，1つ以上のキーの合計長によって決定されます。"
+        }
+      ]
+    },
+    {
+      "name": "MAINT",
+      "description": "アクセス・パスの保守",
+      "help": "キー・フィールドのあるファイルの場合には，物理ファイルのすべてのメンバーに使用されるアクセス・パスの保守のタイプを指定します。\n\nクローズと次のオープンの間の変更の数がほぼアクセス・パスのサイズの10パーセントに達すると，システムは変更の保管を停止し，次にファイルがオープンされる時にアクセス・パス全体が再作成されます。",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*IMMED",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*IMMED",
+          "value": "*IMMED",
+          "help": "アクセス・パスは，メンバー中のレコードの変更，メンバーへのレコードの追加，またはメンバーからのレコードの削除が行われるたびに更新されます。固有キーが必要なファイルの場合には，*IMMEDを指定しなければなりません。"
+        },
+        {
+          "label": "*DLY",
+          "value": "*DLY",
+          "help": "アクセス・パスの保守は，物理ファイル・メンバーが使用のためにオープンされるまでは延期されます。この結果，ファイルが最後にオープンされてから追加，削除，または変更されたレコードに対してのみアクセス・パスが変更されます。ファイルが オープン されている場合には，MAINTに何が指定されているかに関係なく，そのメンバーに行われた変更は即時にメンバーのアクセス・パスに反映されます。ファイルがオープンされる時に再ビルドに時間がかからないようにするためには，後続のオープンとオープンの間のアクセス・パスに対する変更の数が少ない時，すなわちファイルが頻繁にオープンされる時あるいはこのアクセス・パス変更でレコードのキー・フィールドがあまり変更されない時にのみ， *DLYを指定してください。*DLYは固有のキー値が必要なアクセス・パスには正しくありません。 クローズと次のオープンの間の変更の数がほぼアクセス・パスのサイズの10パーセントに達すると，システムは変更の保管を停止し，次にファイルがオープンされる時にアクセス・パス全体が再作成されます。"
+        },
+        {
+          "label": "*REBLD",
+          "value": "*REBLD",
+          "help": "ファイル・メンバーがオープンされるたびにアクセス・パスは完全に再作成されます。アクセス・パスはメンバーがクローズされるまで維持され，メンバーがクローズされると削除されます。固有キーが必要なファイルの場合には，*REBLDを指定することはできません。"
+        }
+      ]
+    },
+    {
+      "name": "RECOVER",
+      "description": "アクセス・パス回復",
+      "help": "アクセス・パスのメインテナンスが即時または遅延であるファイルについて，システム障害が起こった時にアクセス・パスを変更する場合にファイルの回復処理をどの時点で実行するかを指定します。このパラメーターは，キー順アクセス・パスをもつファイルにのみ有効です。\n\nアクセス・パスの保守 (MAINT) パラメーターに*IMMEDが指定されている場合には，初期プログラム・ロード(IPL)中（ユーザーがジョブを実行する前），またはIPLの終了後（同時にジョブが実行中），あるいは次回のファイル・オープン時に，アクセス・パスを再作成することができます。アクセス・パスの再作成中は，ファイルをジョブで使用することはできません。\n\nIPL時に，アクセス・パス回復一時変更画面には回復しなければならないアクセス・パスおよび各アクセス・パスのRECOVERパラメーター値がリストされます。ユーザーは，この画面でRECOVERパラメーター値を一時変更することができます。アクセス・パスの詳細は，ISERIESバックアップおよび回復(SD88-5008)にあります。\n\nMAINTパラメーターに*REBLDを指定すると，アクセス・パスは次にファイルがオープンされるときに再作成されます。",
+      "inputType": "dropdown",
+      "required": false,
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*NO",
+          "value": "*NO",
+          "help": "ファイルのアクセス・パスはファイルのオープン時に再作成されます。*NOは固有キーが必要でないすべてのファイルの省略時の値です。ファイルのアクセス・パスが有効でない場合には，ファイルが次にオープンされる時に再作成されます。 注: *NOは固有キーが必要でないすべてのファイルの省略時の値です。"
+        },
+        {
+          "label": "*AFTIPL",
+          "value": "*AFTIPL",
+          "help": "初期プログラム・ロード(IPL)操作が完了した後で，ファイルのアクセス・パスが再作成されます。このオプションによって，このファイルを使用しない他のジョブがIPLの完了直後に処理を開始できるようになります。ジョブがアクセス・パスの再作成中にファイルを割り振ろうとすると，ファイル・オープン例外が起こります。 注: *AFTIPLは，固有キーが必要なすべてのファイルの省略時の値です。"
+        },
+        {
+          "label": "*IPL",
+          "value": "*IPL",
+          "help": "ファイルのアクセス・パスは，IPL操作時に再作成されます。これにより，最初のユーザー・プログラムがファイルを使用しようとする前に，ファイルのアクセス・パスが再作成されるようになります。しかし，RECOVER(*IPL)を指定するすべてのファイルのアクセス・パスが再作成されるまでは，ジョブは実行を開始することはできません。"
+        }
+      ]
+    },
+    {
+      "name": "FRCACCPTH",
+      "description": "強制キー順アクセス・パス",
+      "help": "キー・フィールドのあるファイルの場合に，アクセス・パスの変更をファイルの関連レコードと一緒に補助記憶装置に強制書き出しするかどうかを指定します。FRCACCPTH(*YES)は，再作成が必要となるようなアクセス・パスの損傷のために異常なジョブ終了が起こる可能性を最小限にします（取り除くわけではありません）。\n\n対話式ジョブでアクセス・パスが変更される場合には，FRCACCPTH(*YES)ではシステムの応答時間が遅くなります。アクセス・パスが頻繁に変更される場合には，システムの全般的なパフォーマンスが低下します。",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*NO",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*NO",
+          "value": "*NO",
+          "help": "アクセス・パスが変更されても，アクセス・パスおよび関連レコードは補助記憶装置に強制書き出しされません。"
+        },
+        {
+          "label": "*YES",
+          "value": "*YES",
+          "help": "アクセス・パスが変更されると，アクセス・パスおよび関連レコードは補助記憶装置に強制書き出しされます。 アクセス・パスの保守 (MAINT) パラメーターで*REBLDが指定されている場合には，*YESを指定することはできません。 対話式ジョブでアクセス・パスが変更される場合には，FRCACCPTH(*YES)ではシステムの応答時間が遅くなります。アクセス・パスが頻繁に変更される場合には，システムの全般的なパフォーマンスが低下します。"
+        }
+      ]
+    },
+    {
+      "name": "SIZE",
+      "description": "メンバー・サイズ",
+      "help": "ファイルの各メンバーの 初期 レコード数，メンバーに追加される各増分のレコード数，および増分が自動的に適用される回数を指定します。各ファイル・メンバーのレコード数は，メンバーに入れることができるレコード数として指定します（この数には削除済みレコードが含まれます）。\n\nレコードの最大数に達すると，（メンバーがいっぱいであることを告げる）メッセージがシステム操作員に送られ，要求を終了するのか，あるいはメンバーのレコード数を拡張するのかを選択できるようにします。操作員がメンバーの拡張を選択すると，メンバーの最大レコード数に対して，増分レコード数X指定した増分数の算出分が増やされます。ただし，この最大レコード数を増加することで，必ずしも実際のメンバー・サイズ（バイト）に同じ効果が得られるわけではありません。\n\n各メンバーの 初期 レコード数を指定してください。\n\nメンバーのレコード数が初期レコード数を超えるか，あるいは現行の増分レコード数を超える場合は，そのメンバーに追加される追加レコード数を指定します。\n\n増分レコード数の値に0を指定した場合，メンバーは自動的に拡張されません。最大増分値が0の場合は，この値も0でなければなりません。\n\nメンバーに自動的に追加することのできる最大増分回数を指定します。",
+      "inputType": "group",
+      "required": false,
+      "groupKind": "elements",
+      "singleValues": [
+        "*NOMAX"
+      ],
+      "children": [
+        {
+          "name": "INIT",
+          "description": "初期レコード数",
+          "help": "10000: 最初に，最大10,000のレコードをファイルの各メンバーに書き出すことができます。\nメンバーが自動的に拡張される前に，ファイルの各メンバーに書き込むことのできるレコード数を指定してください。",
+          "inputType": "number",
+          "required": false,
+          "defaultValue": "10000",
+          "attributes": {
+            "numericOnly": true
+          },
+          "placeholder": "10000"
+        },
+        {
+          "name": "INCR",
+          "description": "増分レコード数",
+          "help": "1000: 最大レコード数は1000レコード分増やされます。\nメンバーに追加される追加レコード数を指定します。 増分レコード数の値に0を指定した場合，メンバーは自動的に拡張されません。最大増分値が0の場合は，この値も0でなければなりません。",
+          "inputType": "number",
+          "required": false,
+          "defaultValue": "1000",
+          "attributes": {
+            "numericOnly": true
+          },
+          "placeholder": "1000"
+        },
+        {
+          "name": "MAXINCR",
+          "description": "最大増分値",
+          "help": "3: 最高3回の増分がメンバーに自動的に追加されます。\nメンバーに自動的に追加することのできる最大増分回数を指定します。有効な値の範囲は0から32767です。0を指定した場合には，メンバーは自動的に拡張されません。",
+          "inputType": "number",
+          "required": false,
+          "defaultValue": "3",
+          "attributes": {
+            "numericOnly": true
+          },
+          "placeholder": "3"
+        }
+      ]
+    },
+    {
+      "name": "ALLOCATE",
+      "description": "記憶域割り振り",
+      "help": "ファイルに追加された各物理ファイル・メンバーに 初期 記憶スペースが割り振られるかどうかを指定します。この割り振りでは， メンバー・サイズ (SIZE) パラメーターに指定されたレコード数を保持するだけの十分なスペースが提供されます。その容量を超えないでメンバーにレコードを追加できない時に起こる割り振りは，システムおよびSIZEパラメーター値によって決定されます。",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*NO",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*NO",
+          "value": "*NO",
+          "help": "ファイルに追加された各メンバーに割り振る記憶スペースの容量は，システムによって決定されます。"
+        },
+        {
+          "label": "*YES",
+          "value": "*YES",
+          "help": "新しいメンバーが追加されるたびに，SIZEパラメーターの最初の値に指定された容量の記憶スペースが割り振られます。*YESが指定された場合には，SIZEパラメーターに*NOMAXを指定してはいけません。"
+        }
+      ]
+    },
+    {
+      "name": "CONTIG",
+      "description": "連続記憶域",
+      "help": "ファイルに追加する各物理ファイル・メンバーに対して，初期記憶域割り振りのすべてのレコードを相互に隣り合わせて保管する必要があるかどうかを指定します。",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*NO",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*NO",
+          "value": "*NO",
+          "help": "レコードを連続して記憶する必要はありません。"
+        },
+        {
+          "label": "*YES",
+          "value": "*YES",
+          "help": "レコードを含む空間では，レコードを連続して記憶することができます。レコードを分離しなければならない場合には，メンバーが追加され，レコードを連続して記憶できないことを示すメッセージがユーザーに送られます。"
+        }
+      ]
+    },
+    {
+      "name": "UNIT",
+      "description": "入れたい記憶装置",
+      "help": "ファイルの優先記憶媒体を指定します。\n\n*ANY: どの記憶媒体も優先しません。記憶域は任意の使用可能な記憶媒体から割り振られます。\n*SSD: 半導体ディスク記憶媒体を優先します。記憶域は，半導体ディスク記憶媒体が使用可能な場合はその媒体から割り振られます。\n1から254の範囲の値を指定すると，*ANYを指定した場合と同じになります。255の値を指定すると，*SSDを指定した場合と同じになります。",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*ANY",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "placeholder": "*ANY"
+    },
+    {
+      "name": "FRCRATIO",
+      "description": "強制書き出しレコード数",
+      "help": "補助記憶域に強制的に書き出される前に処理される挿入または更新済みレコードの数を指定します。この物理ファイルがジャーナル処理されている場合には，大きい数または*NONEを使用してください。*NONEの場合には，ジャーナルと物理ファイルの同期に時間がかかることがあります。\n\n*NONE: 強制書き込み率を指定しません。どの時点でレコードが補助記憶域に書き出されるかは，システムによって決定されます。\n補助記憶域に書き出される前に処理される挿入または更新済みレコードの数を指定してください。",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*NONE",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "placeholder": "*NONE"
+    },
+    {
+      "name": "WAITFILE",
+      "description": "最大ファイル待機時間",
+      "help": "ファイルのオープン時にファイル資源が割り振られるか，あるいはファイルに対する獲得操作の実行時に装置資源またはセッション資源が割り振られるのを，プログラムが待機する秒数を指定します。指定された待機時間内にファイル資源を割り振ることができない場合には，エラー・メッセージがプログラムに送られます。\n\n30: プログラムはファイル資源の割り振りを30秒間待機します。\n*IMMED: プログラムは待機しません。ファイル資源の即時割り振りが必要です。\n*CLS: ジョブの省略時待機時間がファイル資源の割り振りの待機時間として使用されます。\nファイル資源が割り振られるのを待機する秒数を指定してください。",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "30",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "placeholder": "30"
+    },
+    {
+      "name": "WAITRCD",
+      "description": "最大レコード待機時間",
+      "help": "プログラムがレコードの変更または削除を待機する秒数を指定します。指定された待機時間内にレコードを割り振ることができない場合には，エラー・メッセージがプログラムに送られます。\n\n60: プログラムはレコードの変更または削除を60秒間待機します。\n*IMMED: プログラムは待機しません。レコードがロックされた時には，レコードの即時割り振りが必要です。\n*NOMAX: 待機時間は，システムによって許容された最大値(32,767秒）です。\nプログラムがレコードの変更または削除を待機する秒数を指定してください。",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "60",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "placeholder": "60"
+    },
+    {
+      "name": "SHARE",
+      "description": "オープン・データ・パス共用",
+      "help": "オープン・データ・パス(ODP)が同じルーティング・ステップの他のプログラムと共用するかどうかを指定します。ODPが共用される時には，ファイルにアクセスしているプログラムはファイル状況およびバッファーなどの機能を共用します。\n\nこのパラメーターに*NOを指定したファイルをプログラムがオープンするたびに，そのファイルの新しいODPが作成されて使用されます。",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*NO",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*NO",
+          "value": "*NO",
+          "help": "ODPは，ルーティング・ステップ内の他のプログラムと共用されません。ファイルの新しいODPが作成され，プログラムがファイルをオープンするたびに使用されます。"
+        },
+        {
+          "label": "*YES",
+          "value": "*YES",
+          "help": "ファイルをオープンする時に*YESも指定したジョブで，同じODPを各プログラムと共用することができます。"
+        }
+      ]
+    },
+    {
+      "name": "DLTPCT",
+      "description": "許される削除レコードの最大%",
+      "help": "物理ファイル内の各メンバーに対する削除済みレコードの最大許容比率を指定します。比率の検査はメンバーのクローズ時に行われます。削除済みレコードの比率がこのパラメーターで指定した値より大きかった場合には，ユーザーに通知するためにシステム・ヒストリー・ログ(QHST)にメッセージが送られます。\n\n*NONE: ファイル・メンバー中の削除レコードの比率は検査されません。\nファイル内の任意のメンバーに対する削除済みレコードの最大許容比率を指定してください。",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*NONE",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "placeholder": "*NONE"
+    },
+    {
+      "name": "REUSEDLT",
+      "description": "削除済みレコードの再使用",
+      "help": "削除したデータ項目が使用していたスペースを将来の挿入要求で再利用するかどうかを指定します。",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*NO",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*YES",
+          "value": "*YES"
+        },
+        {
+          "label": "*NO",
+          "value": "*NO"
+        }
+      ]
+    },
+    {
+      "name": "SRTSEQ",
+      "description": "分類順序",
+      "help": "このファイルに使用する分類順序を指定します。この分類順序とLANGIDパラメーターが一緒に使用されて，使用される分類順序テーブルが決められます。",
+      "inputType": "group",
+      "required": false,
+      "groupKind": "qualified",
+      "singleValues": [
+        "*SRC",
+        "*JOB",
+        "*LANGIDSHR",
+        "*LANGIDUNQ",
+        "*HEX"
+      ],
+      "children": [
+        {
+          "name": "SRTSEQ_LIB",
+          "description": "ライブラリー",
+          "help": "*LIBL: 最初に一致するものが見つかるまで，現行スレッドのライブラリー・リスト内のすべてのライブラリーが検索されます。\n*CURLIB: ジョブの現行ライブラリーが検索されます。ジョブの現行ライブラリーとしてライブラリーが指定されていない場合は，QGPLライブラリーが使用されます。\n検索するライブラリーの名前を指定してください。",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "*LIBL",
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          },
+          "placeholder": "*LIBL"
+        },
+        {
+          "name": "SRTSEQ",
+          "description": "分類順序",
+          "help": "ソート・シーケンス・テーブルの名前を指定してください。",
+          "inputType": "text",
+          "required": false,
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          },
+          "defaultValue": "*SRC",
+          "placeholder": "*SRC"
+        }
+      ]
+    },
+    {
+      "name": "LANGID",
+      "description": "言語ID",
+      "help": "SRTSEQパラメーターに*LANGIDSHRまたは*LANGIDUNQが指定された時に使用される言語IDを指定します。この言語IDとSRTSEQおよびCCSIDパラメーターが一緒に使用されて，ファイルが使用する分類順序テーブルが決められます。\n\n*JOB: ジョブに指定された言語IDが使用されます。\n言語IDを指定してください。このコマンドのプロンプト時にIDの完全なリストを見るには，カーソルをこのパラメーターのフィールドに位置づけて，F4（プロンプト）キーを押してください。",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*JOB",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "placeholder": "*JOB"
+    },
+    {
+      "name": "CCSID",
+      "description": "コード化文字セットID",
+      "help": "ファイルのフィールドの文字データを記述するために使用するコード化文字セットID (CCSID)を指定します。\n\nこのパラメーターが適用されるのは， ソース・ファイル (SRCFILE) パラメーターに値が指定されていない場合，および レコード長 (RCDLEN) パラメーターに値が指定されている場合だけです。このパラメーターに省略時の値(*JOB)以外の値を指定した場合には，SRCFILEパラメーターは使用されず，RCDLENパラメーターに値を指定する必要があります。\n\n*JOB: 現行ジョブの省略時のCCSIDが使用されます。\n*HEX: CCSID 65535が使用されます。これは，フィールドの文字データがビット・データとして扱われ，変換されないことを示します。\n使用するCCSIDを指定してください。CCSIDの詳細はIBM i Information Center(http://www.ibm.com/systems/i/infocenter/)の「i5/OSのグローバリゼーション」トピック・コレクションにあります。",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*JOB",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "placeholder": "*JOB"
+    },
+    {
+      "name": "ALWUPD",
+      "description": "更新操作可能",
+      "help": "この物理ファイルのレコードを更新できるかどうかを指定します。",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*YES",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*YES",
+          "value": "*YES",
+          "help": "この物理ファイル中のレコードを更新することができます。"
+        },
+        {
+          "label": "*NO",
+          "value": "*NO",
+          "help": "この物理ファイル内のレコード，またはこの物理ファイルのレコードにアクセスする論理ファイル内のレコードは，更新することができません。"
+        }
+      ]
+    },
+    {
+      "name": "ALWDLT",
+      "description": "削除操作可能",
+      "help": "この物理ファイルのレコードが削除できるかどうかを指定します。論理ファイルのレコードは，論理ファイルの基礎となる各物理ファイルのレコードが削除できる場合にのみ削除することができます。",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*YES",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*YES",
+          "value": "*YES",
+          "help": "この物理ファイル中のレコードを削除することができます。"
+        },
+        {
+          "label": "*NO",
+          "value": "*NO",
+          "help": "この物理ファイル内のレコード，またはこの物理ファイル内のレコードにアクセスする論理ファイル内のレコードは，削除することができません。"
+        }
+      ]
+    },
+    {
+      "name": "LVLCHK",
+      "description": "レコード様式レベルの検査",
+      "help": "プログラムが物理ファイルをオープンする時に，そのファイル中のレコード様式のレベルIDを検査するかどうかを指定します。",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*YES",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*YES",
+          "value": "*YES",
+          "help": "レコード様式のレベルIDが検査されます。レベルIDがすべて一致しない場合には，オープン・エラー・メッセージがオープン操作の要求元のプログラムに送られます。"
+        },
+        {
+          "label": "*NO",
+          "value": "*NO",
+          "help": "ファイルのオープン時にレベルIDは検査されません。"
+        }
+      ]
+    },
+    {
+      "name": "NODGRP",
+      "description": "ノード・グループ",
+      "help": "ファイルが配布されるノード・グループを指定します。",
+      "inputType": "group",
+      "required": false,
+      "groupKind": "qualified",
+      "singleValues": [
+        "*NONE"
+      ],
+      "children": [
+        {
+          "name": "NODGRP_LIB",
+          "description": "ライブラリー",
+          "help": "*LIBL: 最初に一致するものが見つかるまで，現行スレッドのライブラリー・リスト内のすべてのライブラリーが検索されます。\n*CURLIB: スレッドの現行ライブラリーが検索されます。スレッドの現行ライブラリーとして指定されているライブラリーがない場合，QGPLライブラリーが検索されます。\n検索するライブラリーの名前を指定してください。",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "*LIBL",
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          },
+          "placeholder": "*LIBL"
+        },
+        {
+          "name": "NODGRP",
+          "description": "ノード・グループ",
+          "help": "このファイルに関連したノード・グループの名前を指定してください。",
+          "inputType": "text",
+          "required": false,
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          },
+          "defaultValue": "*NONE",
+          "placeholder": "*NONE"
+        }
+      ]
+    },
+    {
+      "name": "PTNKEY",
+      "description": "区画キー",
+      "help": "データ配布のための区分キーとして使用されるフィールドまたはフィールドのセットを指定します。最大300のフィールド名を指定することができます。\n\n区画キーに含めるフィールドの名前を指定してください。",
+      "inputType": "text",
+      "required": false,
+      "attributes": {
+        "characterSet": "upper",
+        "maxLength": 10
+      },
+      "maxOccurrences": 300,
+      "placeholder": "FIELD1"
+    },
+    {
+      "name": "AUT",
+      "description": "権限",
+      "help": "このオブジェクトに対する特定の権限をもっておらず，権限リスト上になく，さらにそのグループ・プロファイルまたは補足グループ・プロファイルがオブジェクトに対する特定の権限をもっていないユーザーに付与する権限を指定します。\n\n*LIBCRTAUT: システムは，作成するオブジェクトが入っているライブラリーに対するライブラリー作成コマンド(CRTLIB)で 作成権限 (CRTAUT) パラメーターに指定された値を使用して，このオブジェクトに対する権限を決定します。CRTAUTパラメーターに指定された値が変更された場合には，新しい値は既存のどのオブジェクトにも影響しません。\n*CHANGE: ユーザーは，所有者に限定されるか，あるいはオブジェクト存在権限(*OBJEXIST)およびオブジェクト管理権限(*OBJMGT)によって制御される以外のオブジェクトで，すべての操作を実行することができます。ユーザーはオブジェクトでの基本的な機能を変更して実行することができます。*CHANGE権限では，オブジェクト操作(*OBJOPR)および全データ権限が提供されます。このオブジェクトが権限リストである場合は，ユーザーの追加，変更，または除去はできません。\n*ALL: ユーザーは，所有者に限定されるか，あるいは権限リスト管理(*AUTLMGT)権限によって管理される以外のオブジェクトで，すべての操作を実行することができます。ユーザーはオブジェクトの存在を制御し，オブジェクトの機密保護を指定し，オブジェクトを変更し，さらにオブジェクトに対して基本的な機能を実行することができます。オブジェクトの所有権を変更することもできます。\n*USE: ユーザーは，プログラムの実行またはファイルの読み取りなど，オブジェクトに対する基本操作を実行することができます。ユーザーはオブジェクトを変更できません。使用(*USE)権限は，オブジェクト操作(*OBJOPR),読み取り(*READ),および実行(*EXECUTE)権限を提供します。\n*EXCLUDE: ユーザーはオブジェクトにアクセスすることはできません。\nオブジェクトに対する権限として使用する権限リストの名前を指定してください。権限リストに載っているユーザーは，リストに指定されているオブジェクトに対する権限が認可されます。オブジェクトが作成される時に権限リストが存在していなければなりません。",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*LIBCRTAUT",
+      "attributes": {
+        "characterSet": "upper",
+        "maxLength": 10
+      },
+      "placeholder": "*LIBCRTAUT"
+    }
+  ],
+  "environment": "すべての環境 (*ALL)",
+  "restrictions": [
+    "このコマンドは条件付きのスレッド・セーフです。マルチスレッド・ジョブではこのコマンドは分散ファイルに対してスレッド・セーフではなく，タイプ*SNAのリレーショナル・データベースを使用する分散ファイルに対して正常に実行されません。"
+  ],
+  "examples": [
+    {
+      "code": "CRTPF FILE(PAYLIB/PAYTXS) SRCFILE(SRCLIB/PAYTXS) MBR(*NONE) MAXMBRS(5)"
+    },
+    {
+      "code": "CRTPF FILE(ORDERCTL/ORDERS) SRCFILE(ORDERCTL/ORDERSRC) SRCMBR(MFGORD) MAXMBRS(50) SIZE(1000 100 5) ALLOCATE(*YES)"
+    }
+  ],
+  "errorMessages": [
+    {
+      "id": "CPF3204",
+      "text": "&2のファイル&1に必要なオブジェクトを見つけることができない。"
+    },
+    {
+      "id": "CPF323C",
+      "text": "QRECOVERYライブラリーを割り振ることができなかった。"
+    },
+    {
+      "id": "CPF5702",
+      "text": "ファイルがDDMファイルでないか，あるいは見つからない。"
+    },
+    {
+      "id": "CPF7302",
+      "text": "ファイル&1はライブラリー&2に作成されなかった。"
+    }
+  ],
+  "source": {
+    "url": "https://www.ibm.com/docs/ja/ssw_ibm_i_74/cl/crtpf.htm",
+    "version": "IBM i 7.4"
+  }
+}

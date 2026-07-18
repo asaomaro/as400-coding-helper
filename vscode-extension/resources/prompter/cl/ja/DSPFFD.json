@@ -1,0 +1,294 @@
+{
+  "keyword": "DSPFFD",
+  "description": "ファイル・フィールド記述表示 (DSPFFD)",
+  "help": "ファイル・フィールド記述表示(DSPFFD)コマンドは，特定のライブラリーまたはユーザーがアクセス権限を持つすべてのライブラリー中の1つまたは複数のファイルのフィールド・レベル情報を表示，印刷，またはデータベース・ファイルに出力します。\n\n情報をデータベース・ファイルに出力すると，そのデータベース・ファイルはQWHDRFFDという名前のレコード様式を持ちます。レコード様式QWHDRFFDのフィールドは，ライブラリーQSYSのファイルQADSPFFDにあるIBM提供様式QWHDRFFDのフィールドと同じです。データベース・ファイルには，次の情報が入ります。",
+  "parameters": [
+    {
+      "name": "FILE",
+      "description": "ファイル",
+      "help": "フィールド情報が戻されるファイルを指定します。\n\nこれは必須パラメーターです。\n\n次のQXXXライブラリーは弊社提供のものですが，これらには一般的によく変更されるユーザー・データが収められます。したがって，これらのライブラリーは「ユーザー・ライブラリー」と見なされ，検索されます。",
+      "inputType": "group",
+      "required": true,
+      "groupKind": "qualified",
+      "children": [
+        {
+          "name": "LIB",
+          "description": "ライブラリー",
+          "help": "*LIBL: 最初に一致するものが見つかるまで，現行スレッドのライブラリー・リスト内のすべてのライブラリーが検索されます。\n*CURLIB: スレッドの現行ライブラリーが検索されます。スレッドの現行ライブラリーとして指定されているライブラリーがない場合，QGPLライブラリーが検索されます。\n*USRLIBL: 現行ライブラリー項目が現行スレッドのライブラリー・リストに存在する場合には，現行ライブラリーおよびライブラリー・リストのユーザー部分にあるライブラリーが検索されます。現行ライブラリー項目がない場合には，ライブラリー・リストのユーザー部分にあるライブラリーが検索されます。\n*ALLUSR: すべてのユーザー・ライブラリーが検索されます。次のものを除き，英字Qで始まらない名前のすべてのライブラリーが検索されます。 #CGULIB #DSULIB #SEULIB #COBLIB #RPGLIB #DFULIB #SDALIB 次のQXXXライブラリーは弊社提供のものですが，これらには一般的によく変更されるユーザー・データが収められます。したがって，これらのライブラリーは「ユーザー・ライブラリー」と見なされ，検索されます。 QDSNX QRCLXXXXX QUSRDIRDB QUSRVI QGPL QSRVAGT QUSRIJS QUSRVXRXMX QGPL38 QSYS2 QUSRINFSKR QWQCENT QMGTC QSYS2XXXXX QUSRNOTES QWQREPOS QMGTC2 QS36F QUSROND QMPGDATA QUSER38 QUSRPOSGS QMQMDATA QUSRADSM QUSRPOSSA QMQMPROC QUSRBRM QUSRPYMSVR QPFRDATA QUSRDIRCF QUSRRDARS QRCL QUSRDIRCL QUSRSYS 'XXXXX'は1次補助記憶域プール(ASP)の番号です。 前のリリースのCLプログラム内でコンパイルされるユーザー・コマンドを入れるために，弊社がサポートする前の各リリース用にQUSRVXRXMXの形式の別のライブラリー名を作成することができます。QUSRVXRXMXユーザー・ライブラリーのVXRXMXは弊社が引き続きサポートしている前のリリースのバージョン，リリース，およびモディフィケーション・レベルです。\n*ALL: QSYSを含むシステム上のすべてのライブラリーが検索されます。\n検索するライブラリーの名前を指定してください。",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "*LIBL",
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          },
+          "placeholder": "*LIBL"
+        },
+        {
+          "name": "FILE",
+          "description": "ファイル",
+          "help": "*ALL: 1つまたは複数のライブラリーの中のすべてのファイルの情報が表示されます。\nファイルのフルネームを指定してください。指定したファイルの情報だけが戻されます。\n総称名を指定してください。指定された文字で始まる名前のすべてのファイルの情報が提供されます。",
+          "inputType": "text",
+          "required": true,
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          },
+          "placeholder": "FILE"
+        }
+      ],
+      "positional": 1,
+      "basic": true
+    },
+    {
+      "name": "OUTPUT",
+      "description": "出力",
+      "help": "コマンドからの出力がどこに送られるかを指定します。",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*",
+          "value": "*",
+          "help": "出力は表示されるか（対話式ジョブによって要求された場合），あるいはジョブのスプール出力で印刷されます（バッチ・ジョブによって要求された場合）。"
+        },
+        {
+          "label": "*PRINT",
+          "value": "*PRINT",
+          "help": "出力はジョブのスプール出力で印刷されます。"
+        },
+        {
+          "label": "*OUTFILE",
+          "value": "*OUTFILE",
+          "help": "出力は， 出力を受け取るファイル (OUTFILE) パラメーターで指定されたデータベース・ファイルに送られます。"
+        }
+      ],
+      "positional": 2,
+      "basic": true
+    },
+    {
+      "name": "OUTFILE",
+      "description": "出力を受け取るファイル",
+      "help": "コマンドの出力が送られるデータベース・ファイルを指定します。ファイルが存在しない場合には，このコマンドによって，指定されたライブラリーにデータベース・ファイルが作成されます。ファイルが作成される場合には，ファイルの共通権限は，ファイルが作成されるライブラリーに指定された作成権限と同じものになります。ライブラリーの作成権限を表示するには，ライブラリー記述表示(DSPLIBD)コマンドを使用してください。",
+      "inputType": "group",
+      "required": false,
+      "groupKind": "qualified",
+      "children": [
+        {
+          "name": "OUTFILE_LIB",
+          "description": "ライブラリー",
+          "help": "*LIBL: ファイルを見つけるために，ライブラリー・リストが使用されます。ファイルが見つからない場合には，現行ライブラリーにファイルが作成されます。現行ライブラリーが存在していない場合には，ファイルはQGPLライブラリーに作成されます。\n*CURLIB: ファイルを見つけるためにスレッドの現行ライブラリーが使用されます。スレッドの現行ライブラリーとして指定されているライブラリーがない場合，QGPLライブラリーが使用されます。\n検索するライブラリーの名前を指定してください。",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "*LIBL",
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          },
+          "placeholder": "*LIBL"
+        },
+        {
+          "name": "OUTFILE",
+          "description": "出力を受け取るファイル",
+          "help": "コマンド出力が送られる先のデータベース・ファイルの名前を指定してください。",
+          "inputType": "text",
+          "required": false,
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          },
+          "placeholder": "FILE"
+        }
+      ]
+    },
+    {
+      "name": "OUTMBR",
+      "description": "出力メンバー・オプション",
+      "help": "コマンドの出力を受け取るデータベース・ファイル・メンバーの名前を指定します。",
+      "inputType": "group",
+      "required": false,
+      "groupKind": "elements",
+      "children": [
+        {
+          "name": "MEMBER",
+          "description": "出力を受け取るメンバー",
+          "help": "*FIRST: ファイル内の最初のメンバーが出力を受け取ります。OUTMBR(*FIRST)が指定されていて，メンバーが存在していない場合には，システムが 出力を受け取るファイル (OUTFILE) パラメーターに指定されたファイルの名前を使用してメンバーを作成します。メンバーが既に存在している場合，その既存メンバーの終わりに新規レコードを追加するのか，あるいはそのメンバーをクリアして新規レコードを追加するのかを選択できます。\n出力を受け取るファイル・メンバーの名前を指定してください。存在していない場合には，システムが作成します。",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "*FIRST",
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          },
+          "placeholder": "*FIRST"
+        },
+        {
+          "name": "OPTION",
+          "description": "レコードの置き換えまたは追加",
+          "inputType": "dropdown",
+          "required": false,
+          "defaultValue": "*REPLACE",
+          "attributes": {
+            "characterSet": "upper"
+          },
+          "options": [
+            {
+              "label": "*REPLACE",
+              "value": "*REPLACE",
+              "help": "システムは，既存のメンバーを消去し，新しいレコードを追加します。"
+            },
+            {
+              "label": "*ADD",
+              "value": "*ADD",
+              "help": "システムは，既存のレコードの終わりに新しいレコードを追加します。"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "SYSTEM",
+      "description": "システム",
+      "help": "戻される情報がローカル・システムのファイルについてのものであるか，あるいはリモート・システムのファイルについてのものであるかを指定します。",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*LCL",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*LCL",
+          "value": "*LCL",
+          "help": "ローカル・ファイルについての情報だけが戻されます。"
+        },
+        {
+          "label": "*RMT",
+          "value": "*RMT",
+          "help": "リモート・ファイルについての情報だけが戻されます。"
+        },
+        {
+          "label": "*ALL",
+          "value": "*ALL",
+          "help": "ローカルおよびリモート・ファイルの両方についての情報が戻されます。"
+        }
+      ]
+    }
+  ],
+  "threadSafe": false,
+  "environment": "すべての環境 (*ALL)",
+  "restrictions": [
+    "OUTFILEを作成するには，物理ファイル作成(CRTPF)コマンドに対する*USE権限とライブラリーに対する追加(*ADD)権限が必要です。既存のOUTFILEを使用するには，そのファイルに対するオブジェクト操作(*OBJOPR)および追加*ADD権限が必要です。",
+    "*REPLACEが出力ファイル・メンバーに指定され，ファイル・メンバーが既に存在する場合，オブジェクト管理(*OBJMGT)および削除(*DLT)権限が必要です。",
+    "FILEパラメーターに指定したファイルには*OBJOPR権限が必要です。また，ライブラリー修飾子によって指定されたライブラリーについては，実行(*EXECUTE)権限を持っているライブラリーだけが検索されます。"
+  ],
+  "examples": [
+    {
+      "code": "DSPFFD FILE(LIB1/FILE2)"
+    },
+    {
+      "code": "DSPFFD FILE(*ALL/*ALL) SYSTEM(*ALL)"
+    },
+    {
+      "code": "DSPFFD FILE(QGPL/FLDREF) OUTPUT(*OUTFILE) OUTFILE(QGPL/FLDREFX)"
+    }
+  ],
+  "errorMessages": [
+    {
+      "id": "CPF3012",
+      "text": "ライブラリー&2にファイル&1が見つからない。"
+    },
+    {
+      "id": "CPF3014",
+      "text": "&2の&1として指定されたファイルを表示することができない。"
+    },
+    {
+      "id": "CPF3024",
+      "text": "SYSTEM(&3)の場合にファイル&1を使用することはできない。"
+    },
+    {
+      "id": "CPF3052",
+      "text": "ファイル&1の記述が使用できない。"
+    },
+    {
+      "id": "CPF3061",
+      "text": "出力ファイル&1のレコード様式&3が見つからない。"
+    },
+    {
+      "id": "CPF3063",
+      "text": "&2の出力ファイル&1は物理ファイルではない。"
+    },
+    {
+      "id": "CPF3064",
+      "text": "ライブラリー&1が見つかりません。"
+    },
+    {
+      "id": "CPF3066",
+      "text": "&2の出力ファイル&1の作成中にエラー。"
+    },
+    {
+      "id": "CPF3067",
+      "text": "&2のファイル&1のオープン中にエラー。"
+    },
+    {
+      "id": "CPF3068",
+      "text": "&2のファイル&1への書き出し中にエラー。"
+    },
+    {
+      "id": "CPF3069",
+      "text": "&2のファイル&1のクローズ中にエラー。"
+    },
+    {
+      "id": "CPF3070",
+      "text": "ファイル&1のメンバー&3の作成中にエラー。"
+    },
+    {
+      "id": "CPF3072",
+      "text": "&2のファイル&1はシステム・ファイルである。"
+    },
+    {
+      "id": "CPF3074",
+      "text": "ライブラリー&1の使用は認可されていない。"
+    },
+    {
+      "id": "CPF3075",
+      "text": "ライブラリー&1が使用できません。"
+    },
+    {
+      "id": "CPF3076",
+      "text": "画面上でエラーが起こった。"
+    },
+    {
+      "id": "CPF3077",
+      "text": "表示を取り消そうとした時にエラーが起こった。"
+    },
+    {
+      "id": "CPF3084",
+      "text": "ファイル&1のメンバー&3の消去中にエラー。"
+    },
+    {
+      "id": "CPF326B",
+      "text": "ライブラリー&2のファイル&1に損傷がある。"
+    },
+    {
+      "id": "CPF9851",
+      "text": "&2のファイル&1のオーバーフロー値が小さすぎる。"
+    },
+    {
+      "id": "CPF9852",
+      "text": "ページ・サイズが&2のファイル&1には小さすぎる。"
+    },
+    {
+      "id": "CPF9899",
+      "text": "コマンドの処理中にエラーが起こった。"
+    }
+  ],
+  "source": {
+    "url": "https://www.ibm.com/docs/ja/ssw_ibm_i_74/cl/dspffd.htm",
+    "version": "IBM i 7.4"
+  }
+}

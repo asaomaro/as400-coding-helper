@@ -1,0 +1,673 @@
+<!DOCTYPE html>
+<html lang="ja"><head><meta charset="utf-8"><title>Change Object Owner  (CHGOBJOWN)</title></head>
+<body>
+<main role="main"><article role="article" aria-labelledby="chgobjown__title__1"> 
+<h1 class="topictitle1" id="chgobjown__title__1">Change Object Owner  (CHGOBJOWN)</h1><div id="lastModifiedDate"><span>Last Updated</span>: 2026-07-13</div>
+
+<div class="body">
+<p>
+<strong>Change Object Owner  (CHGOBJOWN)
+</strong></p>
+
+<p>
+<strong>Where allowed to run:  
+</strong>All environments (*ALL)
+
+</p>
+
+<p>
+<strong>Threadsafe:  </strong>No
+</p>
+
+<p><a href="#chgobjown__parameters">Parameters</a></p>
+
+<p><a href="#chgobjown__examples">Examples</a></p>
+
+<p><a href="#chgobjown__errormsgs">Error messages</a></p>
+
+<div class="div" id="chgobjown__chgobjown">
+<p>
+The Change Object Owner (CHGOBJOWN) command transfers object ownership from one user to another.  The authorities that other users have to the object are not changed.
+
+</p>
+
+<p>
+The owner of an object always has all the authorities applicable to the object unless they are explicitly revoked.  The owner of an object has the authority to grant any authorities to any user for that object.  Owners can also grant to themselves authorities that were previously revoked.  Owners may, for example, remove some of their specific authorities as a precautionary measure, and then, when the need arises, grant those same authorities to themselves again.
+
+</p>
+
+<p>
+A user with *ALLOBJ special authority has the authority to transfer ownership of any object in the QSYS.lib file system.
+
+</p>
+
+<p>
+A user authorized to the Database Security Administrator function of IBM i (QIBM_DB_SECADM) has the authority to transfer ownership of any object in the QSYS.lib file system.  However, the users authorized to the QIBM_DB_SECADM function cannot transfer ownership to themselves unless they have the authorities required for the operation.
+
+</p>
+
+<p>
+All users have add and delete authorities for their own user profiles; that is, users can add objects to or delete objects (that they created) from their own user profiles by transferring the ownership of the object.
+
+</p>
+
+<p>
+<strong>Restrictions:
+</strong>
+</p>
+
+<ul class="cds--list--unordered">
+<li class="cds--list__item">
+To transfer ownership, any user (including the object's present owner) must have:
+<ul class="cds--list--unordered cds--list--nested">
+<li class="cds--list__item">
+Object existence (*OBJEXIST) authority for the object (except authorization list)
+
+</li>
+
+<li class="cds--list__item">
+Object operational (*OBJOPR) and *OBJEXIST authorities if the object is a file, library, or subsystem description
+
+</li>
+
+<li class="cds--list__item">
+All object (*ALLOBJ) special authority or ownership if the object is an authorization list
+
+</li>
+
+<li class="cds--list__item">
+Add (*ADD) authority for the new owner's user profile
+
+</li>
+
+<li class="cds--list__item">
+Delete (*DLT) authority for the present owner's user profile
+
+</li>
+
+<li class="cds--list__item">
+All object (*ALLOBJ) and security administrator (*SECADM) special authorities to change the object owner of a program or an SQL (Structured Query Language) package that adopts its owner's authority.
+
+</li>
+
+<li class="cds--list__item">
+Use (*USE) authority to the auxiliary storage pool device if one is specified.
+
+</li>
+
+</ul>
+
+
+</li>
+
+<li class="cds--list__item">
+For display stations, if this command is not run from the device whose ownership is to be changed or whose message queue's ownership is to be changed, this command should be preceded by the Allocate Object (ALCOBJ) command and followed by the Deallocate Object (DLCOBJ) command.
+
+</li>
+
+<li class="cds--list__item">
+Object type *DOC or *FLR cannot be specified; the user must use DLO (document interchange) support.
+
+</li>
+
+<li class="cds--list__item">
+Changing the ownership of an object that has an authority holder associated with it also changes the ownership of the authority holder.
+
+</li>
+
+</ul>
+
+</div>
+<section class="section" role="region" aria-labelledby="chgobjown__parameters__title__1" id="chgobjown__parameters"><h2 class="sectiontitle" id="chgobjown__parameters__title__1">Parameters</h2>
+
+
+<div class="tablenoborder"><div class="cds--data-table-container"><table summary="" class="defaultstyle cds--data-table"><colgroup><col><col><col><col></colgroup><thead>
+<tr>
+<th id="chgobjown__parameters__entry__1"><div class="cds--table-header-label">
+Keyword
+</div></th>
+
+<th id="chgobjown__parameters__entry__2"><div class="cds--table-header-label">
+Description
+</div></th>
+
+<th id="chgobjown__parameters__entry__3"><div class="cds--table-header-label">
+Choices
+</div></th>
+
+<th id="chgobjown__parameters__entry__4"><div class="cds--table-header-label">
+Notes
+</div></th>
+
+</tr>
+
+</thead>
+<tbody>
+<tr>
+<td rowspan="3" headers="chgobjown__parameters__entry__1 "><a href="#chgobjown__obj"><strong>OBJ
+</strong></a></td>
+
+<td headers="chgobjown__parameters__entry__2 ">Object
+</td>
+
+<td headers="chgobjown__parameters__entry__3 "><em>Qualified object name
+</em></td>
+
+<td rowspan="3" headers="chgobjown__parameters__entry__4 ">Required, Positional 1
+</td>
+
+</tr>
+
+<tr>
+<td headers="chgobjown__parameters__entry__2 ">Qualifier 1: Object
+</td>
+
+<td headers="chgobjown__parameters__entry__3 "><em>Name
+</em></td>
+
+</tr>
+
+<tr>
+<td headers="chgobjown__parameters__entry__2 ">Qualifier 2: Library
+</td>
+
+<td headers="chgobjown__parameters__entry__3 "><em>Name
+</em>, 
+<strong><u>*LIBL
+</u></strong>, *CURLIB
+</td>
+
+</tr>
+
+<tr>
+<td headers="chgobjown__parameters__entry__1 "><a href="#chgobjown__objtype"><strong>OBJTYPE
+</strong></a></td>
+
+<td headers="chgobjown__parameters__entry__2 ">Object type
+</td>
+
+<td headers="chgobjown__parameters__entry__3 ">*ALRTBL, *AUTL, *BNDDIR, *CFGL, *CHTFMT, *CLD, *CLS, *CMD, *CNNL, *COSD, *CRG, *CRQD, *CSI, *CSPMAP, *CSPTBL, *CTLD, *DEVD, *DTAARA, *DTADCT, *DTAQ, *EDTD, *FCT, *FILE, *FNTRSC, *FNTTBL, *FORMDF, *FTR, *GSS, *IGCDCT, *IGCSRT, *IMGCLG, *IPXD, *JOBD, *JOBQ, *JRN, *JRNRCV, *LIB, *LIND, *LOCALE, *M36, *M36CFG, *MEDDFN, *MENU, *MGTCOL, *MODD, *MODULE, *MSGF, *MSGQ, *NODGRP, *NODL, *NTBD, *NWID, *NWSCFG, *NWSD, *OUTQ, *OVL, *PAGDFN, *PAGSEG, *PDFMAP, *PDG, *PGM, *PNLGRP, *PRDAVL, *PRDDFN, *PRDLOD, *PSFCFG, *QMFORM, *QMQRY, *QRYDFN, *RCT, *S36, *SBSD, *SCHIDX, *SPADCT, *SQLPKG, *SQLUDT, *SQLXSR, *SRVPGM, *SSND, *SVRSTG, *TBL, *TIMZON, *USRIDX, *USRPRF, *USRQ, *USRSPC, *VLDL, *WSCST
+</td>
+
+<td headers="chgobjown__parameters__entry__4 ">Required, Positional 2
+</td>
+
+</tr>
+
+<tr>
+<td headers="chgobjown__parameters__entry__1 "><a href="#chgobjown__aspdev"><strong>ASPDEV
+</strong></a></td>
+
+<td headers="chgobjown__parameters__entry__2 ">ASP device
+</td>
+
+<td headers="chgobjown__parameters__entry__3 "><em>Name
+</em>, 
+<strong><u>*
+</u></strong>, *SYSBAS
+</td>
+
+<td headers="chgobjown__parameters__entry__4 ">Optional
+</td>
+
+</tr>
+
+<tr>
+<td headers="chgobjown__parameters__entry__1 "><a href="#chgobjown__newown"><strong>NEWOWN
+</strong></a></td>
+
+<td headers="chgobjown__parameters__entry__2 ">New owner
+</td>
+
+<td headers="chgobjown__parameters__entry__3 "><em>Name
+</em></td>
+
+<td headers="chgobjown__parameters__entry__4 ">Required, Positional 3
+</td>
+
+</tr>
+
+<tr>
+<td headers="chgobjown__parameters__entry__1 "><a href="#chgobjown__curownaut"><strong>CUROWNAUT
+</strong></a></td>
+
+<td headers="chgobjown__parameters__entry__2 ">Current owner authority
+</td>
+
+<td headers="chgobjown__parameters__entry__3 "><strong><u>*REVOKE
+</u></strong>, *SAME
+</td>
+
+<td headers="chgobjown__parameters__entry__4 ">Optional
+</td>
+
+</tr>
+
+</tbody>
+</table></div>
+</div>
+
+<div class="div" id="chgobjown__obj">
+<p>
+<strong>Object (OBJ)
+</strong></p>
+
+<p>
+Specifies the object that is to be assigned to a new owner.
+
+</p>
+
+<p>
+This is a required parameter.
+
+</p>
+
+<p>
+<strong>Note:     
+</strong>A library name can be specified to ensure that the correct object changes ownership.
+
+</p>
+
+<p>
+<strong>Qualifier 1: Object
+</strong>
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><em>name
+</em></strong></dt>
+
+<dd class="dlentry">
+Specify the name of the object whose ownership is to be changed.
+</dd>
+
+</dl>
+
+<p>
+<strong>Qualifier 2: Library
+</strong>
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><u>*LIBL
+</u></strong></dt>
+
+<dd class="dlentry">
+All libraries in the library list for the current thread are searched until the first match is found.
+</dd>
+
+<dt class="dlterm">
+<strong>*CURLIB
+</strong></dt>
+
+<dd class="dlentry">
+The current library for the thread is searched.  If no library is specified as the current library for the thread, the QGPL library is used.
+</dd>
+
+<dt class="dlterm">
+<strong><em>name
+</em></strong></dt>
+
+<dd class="dlentry">
+Specify the name of the library to be searched.
+</dd>
+
+</dl>
+
+</div>
+<div class="div" id="chgobjown__objtype">
+<p>
+<strong>Object type (OBJTYPE)
+</strong></p>
+
+<p>
+Specifies the object type of the object whose ownership is to be changed.
+
+</p>
+
+<p>
+For more information, refer to the OBJTYPE parameter description in "Commonly used parameters: Expanded descriptions" in CL topic collection in the Programming category in the IBM i Information Center at http://www.ibm.com/systems/i/infocenter/.
+
+</p>
+
+<p>
+This is a required parameter.
+
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><em>object-type
+</em></strong></dt>
+
+<dd class="dlentry">
+Specify the object type of the object for which ownership is to be changed.
+</dd>
+
+</dl>
+
+</div>
+<div class="div" id="chgobjown__aspdev">
+<p>
+<strong>ASP device (ASPDEV)
+</strong></p>
+
+<p>
+Specifies the auxiliary storage pool (ASP) device name where the library that contains the object (OBJ parameter) is located. If the object's library resides in an ASP that is not part of the library name space associated with the job, this parameter must be specified to ensure the correct object is used as the target of this command's operation.
+
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong>*
+</strong></dt>
+
+<dd class="dlentry">
+The ASPs that are currently part of the job's library name space will be searched to locate the object. This includes the system ASP (ASP number 1), all defined basic user ASPs (ASP numbers 2-32), and, if the job has an ASP group, all independent ASPs in the ASP group.
+</dd>
+
+<dt class="dlterm">
+<strong>*SYSBAS
+</strong></dt>
+
+<dd class="dlentry">
+The system ASP and all basic user ASPs will be searched to locate the object. No independent ASPs will be searched, even if the job has an ASP group.
+</dd>
+
+<dt class="dlterm">
+<strong><em>name
+</em></strong></dt>
+
+<dd class="dlentry">
+Specify the device name of the independent ASP to be searched to locate the object. The independent ASP must have been activated (by varying on the ASP device) and have a status of AVAILABLE.  The system ASP and basic user ASPs will not be searched.
+</dd>
+
+</dl>
+
+</div>
+<div class="div" id="chgobjown__newown">
+<p>
+<strong>New owner (NEWOWN)
+</strong></p>
+
+<p>
+Specifies the user profile of the new owner for the object.  The user profile must exist when this command is run.
+
+</p>
+
+<p>
+This is a required parameter.
+
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><em>name
+</em></strong></dt>
+
+<dd class="dlentry">
+Specify the name of the user profile.
+</dd>
+
+</dl>
+
+</div>
+<div class="div" id="chgobjown__curownaut">
+<p>
+<strong>Current owner authority (CUROWNAUT)
+</strong></p>
+
+<p>
+Specifies whether the authorities for the current owner are revoked when ownership is changed.
+
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><u>*REVOKE
+</u></strong></dt>
+
+<dd class="dlentry">
+The authority of the current owner is revoked when the object ownership is changed to the new owner.
+</dd>
+
+<dt class="dlterm">
+<strong>*SAME
+</strong></dt>
+
+<dd class="dlentry">
+The current owner's authority is retained as a private authority to the object.
+</dd>
+
+</dl>
+
+</div>
+</section>
+
+<section class="section" role="region" aria-labelledby="chgobjown__examples__title__1" id="chgobjown__examples"><h2 class="sectiontitle" id="chgobjown__examples__title__1">Examples</h2>
+
+<div class="p">
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>
+CHGOBJOWN   OBJ(USERLIB/PROGRAM1)  OBJTYPE(*PGM)  NEWOWN(ANN)
+
+</code></pre></div><div class="docs--copy-btn"></div></div>
+
+</div>
+
+<p>
+This command assigns ownership of the program named PROGRAM1, located in the user library named USERLIB, to the user named ANN.  The authority is revoked from the current owner.
+
+</p>
+
+</section>
+
+<section class="section" role="region" aria-labelledby="chgobjown__errormsgs__title__1" id="chgobjown__errormsgs"><h2 class="sectiontitle" id="chgobjown__errormsgs__title__1">Error messages</h2>
+
+<p>
+<strong><u>*ESCAPE Messages
+</u></strong>
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong>CPF0609
+</strong></dt>
+
+<dd class="dlentry">
+Not allowed to use specified user profile.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF22BD
+</strong></dt>
+
+<dd class="dlentry">
+Ownership may not have been changed for object &amp;1 in &amp;3 type *&amp;2.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF22BE
+</strong></dt>
+
+<dd class="dlentry">
+Function not done for user profile &amp;1.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF22DA
+</strong></dt>
+
+<dd class="dlentry">
+Operation on file &amp;1 in &amp;2 not allowed.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF220A
+</strong></dt>
+
+<dd class="dlentry">
+New owner &amp;1 does not have a uid.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF220C
+</strong></dt>
+
+<dd class="dlentry">
+Owner and primary group cannot be the same.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF2204
+</strong></dt>
+
+<dd class="dlentry">
+User profile &amp;1 not found.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF2207
+</strong></dt>
+
+<dd class="dlentry">
+Not authorized to use object &amp;1 in library &amp;3 type *&amp;2.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF2208
+</strong></dt>
+
+<dd class="dlentry">
+Object &amp;1 in library &amp;3 type *&amp;2 not found.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF2209
+</strong></dt>
+
+<dd class="dlentry">
+Library &amp;1 not found.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF2210
+</strong></dt>
+
+<dd class="dlentry">
+Operation not allowed for object type *&amp;1.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF2211
+</strong></dt>
+
+<dd class="dlentry">
+Not able to allocate object &amp;1 in &amp;3 type *&amp;2.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF2213
+</strong></dt>
+
+<dd class="dlentry">
+Not able to allocate user profile &amp;1.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF2216
+</strong></dt>
+
+<dd class="dlentry">
+Not authorized to use library &amp;1.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF2217
+</strong></dt>
+
+<dd class="dlentry">
+Not authorized to user profile &amp;1.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF2222
+</strong></dt>
+
+<dd class="dlentry">
+Storage limit is greater than specified for user profile &amp;1.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF2226
+</strong></dt>
+
+<dd class="dlentry">
+Function not done for user profile &amp;1.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF2230
+</strong></dt>
+
+<dd class="dlentry">
+Not authorized to object &amp;1 in library &amp;3.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF2231
+</strong></dt>
+
+<dd class="dlentry">
+Not authorized to change ownership for program &amp;1.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF2232
+</strong></dt>
+
+<dd class="dlentry">
+Not authorized to user profile &amp;1.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF2233
+</strong></dt>
+
+<dd class="dlentry">
+No delete authority to user profile &amp;1.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF2298
+</strong></dt>
+
+<dd class="dlentry">
+Authority not revoked for object &amp;2 in &amp;3 from user &amp;1.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF4ACF
+</strong></dt>
+
+<dd class="dlentry">
+Operation failed for object &amp;1 in &amp;2 type *&amp;3 due to replication errors.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF4AC0
+</strong></dt>
+
+<dd class="dlentry">
+Owner cannot be changed to &amp;1 for object &amp;2 in &amp;3 type *&amp;4.
+</dd>
+
+</dl>
+
+</section>
+
+</div>
+
+</article></main>
+</body></html>

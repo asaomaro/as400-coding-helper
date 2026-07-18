@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="ja"><head><meta charset="utf-8"><title>Clear Library  (CLRLIB)</title></head>
+<body>
+<main role="main"><article role="article" aria-labelledby="clrlib__title__1"> 
+<h1 class="topictitle1" id="clrlib__title__1">Clear Library  (CLRLIB)</h1><div id="lastModifiedDate"><span>Last Updated</span>: 2026-07-13</div>
+
+<div class="body">
+<p>
+<strong>Clear Library  (CLRLIB)
+</strong></p>
+
+<p>
+<strong>Where allowed to run:  
+</strong>All environments (*ALL)
+
+</p>
+
+<p>
+<strong>Threadsafe:  </strong>Conditional
+</p>
+
+<p><a href="#clrlib__parameters">Parameters</a></p>
+
+<p><a href="#clrlib__examples">Examples</a></p>
+
+<p><a href="#clrlib__errormsgs">Error messages</a></p>
+
+<div class="div" id="clrlib__clrlib">
+<p>
+The Clear Library (CLRLIB) command deletes all of the objects that you have the authority to delete from the specified library.  This command does not delete the specified library, only the objects in it for which you have object existence (*OBJEXIST) authority.  The other objects remain in the library.  If any object in the library is in use (locked by another thread or job), the object cannot be deleted.
+
+</p>
+
+<p>
+<strong>Restrictions:
+</strong>
+</p>
+
+<ol class="cds--list--ordered--temporary">
+<li class="cds--list__item">
+You must have object existence (*OBJEXIST) authority for every object being deleted and use (*USE) authority for the library.
+
+</li>
+
+<li class="cds--list__item">
+This command cannot be used to clear IBM system libraries.  Message CPD2103 is sent if an IBM system library is specified and the CLRLIB command is not run.
+
+</li>
+
+<li class="cds--list__item">
+This command is conditionally threadsafe.  The following restriction applies:
+<ul class="cds--list--unordered cds--list--nested">
+<li class="cds--list__item">
+In multithreaded jobs, this command is not threadsafe for distributed files and fails for distributed files that use relational databases of type *SNA.
+
+</li>
+
+</ul>
+
+
+</li>
+
+
+</ol>
+
+</div>
+<section class="section" role="region" aria-labelledby="clrlib__parameters__title__1" id="clrlib__parameters"><h2 class="sectiontitle" id="clrlib__parameters__title__1">Parameters</h2>
+
+
+<div class="tablenoborder"><div class="cds--data-table-container"><table summary="" class="defaultstyle cds--data-table"><colgroup><col><col><col><col></colgroup><thead>
+<tr>
+<th id="clrlib__parameters__entry__1"><div class="cds--table-header-label">
+Keyword
+</div></th>
+
+<th id="clrlib__parameters__entry__2"><div class="cds--table-header-label">
+Description
+</div></th>
+
+<th id="clrlib__parameters__entry__3"><div class="cds--table-header-label">
+Choices
+</div></th>
+
+<th id="clrlib__parameters__entry__4"><div class="cds--table-header-label">
+Notes
+</div></th>
+
+</tr>
+
+</thead>
+<tbody>
+<tr>
+<td headers="clrlib__parameters__entry__1 "><a href="#clrlib__lib"><strong>LIB
+</strong></a></td>
+
+<td headers="clrlib__parameters__entry__2 ">Library
+</td>
+
+<td headers="clrlib__parameters__entry__3 "><em>Name
+</em>, *CURLIB
+</td>
+
+<td headers="clrlib__parameters__entry__4 ">Required, Positional 1
+</td>
+
+</tr>
+
+<tr>
+<td headers="clrlib__parameters__entry__1 "><a href="#clrlib__aspdev"><strong>ASPDEV
+</strong></a></td>
+
+<td headers="clrlib__parameters__entry__2 ">ASP device
+</td>
+
+<td headers="clrlib__parameters__entry__3 "><em>Name
+</em>, 
+<strong><u>*
+</u></strong>, *CURASPGRP, *SYSBAS
+</td>
+
+<td headers="clrlib__parameters__entry__4 ">Optional
+</td>
+
+</tr>
+
+</tbody>
+</table></div>
+</div>
+
+<div class="div" id="clrlib__lib">
+<p>
+<strong>Library (LIB)
+</strong></p>
+
+<p>
+Specifies the library to be cleared of all objects for which you have object existence (*OBJEXIST) authority.  If you do not have *OBJEXIST authority for an object, that object remains in the library.  If QGPL is specified or defaulted via *CURLIB, an inquiry message (CPA2129) is sent to verify that you want to clear the QGPL library.
+
+</p>
+
+<p>
+This is a required parameter.
+
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong>*CURLIB
+</strong></dt>
+
+<dd class="dlentry">
+The current library for the thread is to be cleared.  If no current library exists in the library list for the current thread, the QGPL library is cleared.
+</dd>
+
+<dt class="dlterm">
+<strong><em>name
+</em></strong></dt>
+
+<dd class="dlentry">
+Specify the name of the library to be cleared.
+</dd>
+
+</dl>
+
+</div>
+<div class="div" id="clrlib__aspdev">
+<p>
+<strong>ASP device (ASPDEV)
+</strong></p>
+
+<p>
+Specifies the auxiliary storage pool (ASP) device where storage is allocated for the library to be cleared.  If the library to be cleared is not part of the thread's library name space, this parameter must be specified to ensure the correct library is the target of the clear library operation.
+
+</p>
+
+<p>
+<strong>Note:     
+</strong>If this parameter is specified when *CURLIB is specified for the 
+<strong>Library (LIB)
+</strong> parameter, ASPDEV(*) is the only valid value.
+
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><u>*
+</u></strong></dt>
+
+<dd class="dlentry">
+The ASPs that are currently part of the thread's library name space will be searched to find the library.  This includes the system ASP (ASP 1), all defined basic user ASPs (ASPs 2-32), and, if the thread has an ASP group, all primary and secondary ASPs in the ASP group.
+</dd>
+
+<dt class="dlterm">
+<strong>*CURASPGRP
+</strong></dt>
+
+<dd class="dlentry">
+If the thread has an ASP group, the primary and secondary ASPs in the ASP group will be searched to find the library.  The system ASP (ASP 1) and defined basic user ASPs (ASPs 2-32) will not be searched.
+</dd>
+
+<dt class="dlterm">
+<strong>*SYSBAS
+</strong></dt>
+
+<dd class="dlentry">
+The system ASP (ASP 1) and all defined basic user ASPs (ASPs 2-32) will be searched to find the library.  No primary or secondary ASPs will be searched, even if the thread has an ASP group.
+</dd>
+
+<dt class="dlterm">
+<strong><em>name
+</em></strong></dt>
+
+<dd class="dlentry">
+Specify the name of the primary or secondary ASP device to be searched to find the library.  The primary or secondary ASP must have been activated (by varying on the ASP device) and have a status of 'Available'.  The system ASP (ASP 1) and defined basic user ASPs (ASPs 2-32) will not be searched.
+<p>
+<strong>Note:     
+</strong>To specify a specific auxiliary storage pool (ASP) device name, you must have use (*USE) authority for each ASP device in the ASP group.
+
+</p>
+
+</dd>
+
+</dl>
+
+</div>
+</section>
+
+<section class="section" role="region" aria-labelledby="clrlib__examples__title__1" id="clrlib__examples"><h2 class="sectiontitle" id="clrlib__examples__title__1">Examples</h2>
+
+<p>
+<strong>Example 1: Clearing a Library
+</strong>
+</p>
+
+<div class="p">
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>
+CLRLIB   LIB(A)
+
+</code></pre></div><div class="docs--copy-btn"></div></div>
+
+</div>
+
+<p>
+This command deletes all objects in library A that are not in use and for which you have object existence (*OBJEXIST) authority.
+
+</p>
+
+<p>
+<strong>Example 2: Deleting a Library in an Independent Auxiliary Storage Pool (ASP)
+</strong>
+</p>
+
+<div class="p">
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>
+CLRLIB   LIB(INVENTORY) ASPDEV(SALES)
+
+</code></pre></div><div class="docs--copy-btn"></div></div>
+
+</div>
+
+<p>
+This command deletes all objects in library INVENTORY in the independent auxiliary storage pool (ASP) named SALES that are not in use and for which you have object existence (*OBJEXIST) authority. The SALES ASP must have been activated (by varying on the ASP device) and have a status of 'Available'.
+
+</p>
+
+</section>
+
+<section class="section" role="region" aria-labelledby="clrlib__errormsgs__title__1" id="clrlib__errormsgs"><h2 class="sectiontitle" id="clrlib__errormsgs__title__1">Error messages</h2>
+
+<p>
+<strong><u>*ESCAPE Messages
+</u></strong>
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong>CPFB8ED
+</strong></dt>
+
+<dd class="dlentry">
+Device description &amp;1 not correct for operation.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF210D
+</strong></dt>
+
+<dd class="dlentry">
+Library &amp;1 in use.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF2110
+</strong></dt>
+
+<dd class="dlentry">
+Library &amp;1 not found.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF2113
+</strong></dt>
+
+<dd class="dlentry">
+Cannot allocate library &amp;1.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF2129
+</strong></dt>
+
+<dd class="dlentry">
+Clear or delete of system library &amp;1 canceled.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF216B
+</strong></dt>
+
+<dd class="dlentry">
+Library &amp;1 cannot be cleared.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF2161
+</strong></dt>
+
+<dd class="dlentry">
+Cannot delete some objects in library &amp;1.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF2173
+</strong></dt>
+
+<dd class="dlentry">
+Value for ASPDEV not valid with special value for library.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF218C
+</strong></dt>
+
+<dd class="dlentry">
+&amp;1 not a primary or secondary ASP.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF2182
+</strong></dt>
+
+<dd class="dlentry">
+Not authorized to library &amp;1.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF8122
+</strong></dt>
+
+<dd class="dlentry">
+&amp;8 damage on library &amp;4.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF9814
+</strong></dt>
+
+<dd class="dlentry">
+Device &amp;1 not found.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF9825
+</strong></dt>
+
+<dd class="dlentry">
+Not authorized to device &amp;1.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF9833
+</strong></dt>
+
+<dd class="dlentry">
+*CURASPGRP or *ASPGRPPRI specified and thread has no ASP group.
+</dd>
+
+</dl>
+
+</section>
+
+</div>
+
+</article></main>
+</body></html>

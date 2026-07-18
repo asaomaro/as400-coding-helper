@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="ja"><head><meta charset="utf-8"><title>Do While  (DOWHILE)</title></head>
+<body>
+<main role="main"><article role="article" aria-labelledby="dowhile__title__1"> 
+<h1 class="topictitle1" id="dowhile__title__1">Do While  (DOWHILE)</h1><div id="lastModifiedDate"><span>Last Updated</span>: 2026-07-13</div>
+
+<div class="body">
+<p>
+<strong>Do While  (DOWHILE)
+</strong></p>
+
+<div class="p">
+<strong>Where allowed to run:  
+</strong><ul class="cds--list--unordered">
+<li class="cds--list__item">
+Batch program (*BPGM)
+
+</li>
+
+<li class="cds--list__item">
+Interactive program (*IPGM)
+
+</li>
+
+</ul>
+
+</div>
+
+<p>
+<strong>Threadsafe:  </strong>Yes
+</p>
+
+<p><a href="#dowhile__parameters">Parameters</a></p>
+
+<p><a href="#dowhile__examples">Examples</a></p>
+
+<p><a href="#dowhile__errormsgs">Error messages</a></p>
+
+<div class="div" id="dowhile__dowhile">
+<p>
+The Do While (DOWHILE) command evaluates a logical expression and conditionally processes CL program or ILE CL procedure commands according to the evaluation of the expression.  If the logical expression is true (a logical 1), the commands in this Do While group are processed as long as the expression continues to evaluate to TRUE.  If the logical expression evaluates to false (a logical 0), control passes to the next command following the associated ENDDO command.
+
+</p>
+
+<p>
+<strong>Restrictions:
+</strong>
+</p>
+
+<ul class="cds--list--unordered">
+<li class="cds--list__item">
+This command is valid only within a CL program or ILE CL procedure.
+
+</li>
+
+<li class="cds--list__item">
+Up to 25 levels of nested DO, DOWHILE, DOUNTIL, and DOFOR commands are allowed.
+
+</li>
+
+</ul>
+
+</div>
+<section class="section" role="region" aria-labelledby="dowhile__parameters__title__1" id="dowhile__parameters"><h2 class="sectiontitle" id="dowhile__parameters__title__1">Parameters</h2>
+
+
+<div class="tablenoborder"><div class="cds--data-table-container"><table summary="" class="defaultstyle cds--data-table"><colgroup><col><col><col><col></colgroup><thead>
+<tr>
+<th id="dowhile__parameters__entry__1"><div class="cds--table-header-label">
+Keyword
+</div></th>
+
+<th id="dowhile__parameters__entry__2"><div class="cds--table-header-label">
+Description
+</div></th>
+
+<th id="dowhile__parameters__entry__3"><div class="cds--table-header-label">
+Choices
+</div></th>
+
+<th id="dowhile__parameters__entry__4"><div class="cds--table-header-label">
+Notes
+</div></th>
+
+</tr>
+
+</thead>
+<tbody>
+<tr>
+<td headers="dowhile__parameters__entry__1 "><a href="#dowhile__cond"><strong>COND
+</strong></a></td>
+
+<td headers="dowhile__parameters__entry__2 ">Condition
+</td>
+
+<td headers="dowhile__parameters__entry__3 "><em>Logical value
+</em></td>
+
+<td headers="dowhile__parameters__entry__4 ">Required, Positional 1
+</td>
+
+</tr>
+
+</tbody>
+</table></div>
+</div>
+
+<div class="div" id="dowhile__cond">
+<p>
+<strong>Condition (COND)
+</strong></p>
+
+<p>
+Specifies the logical expression that is evaluated to determine a condition in the program and whether the loop is processed again.  Refer to "Logical Expressions" in the CL topic collection in the Programming category in the IBM i Information Center at http://www.ibm.com/systems/i/infocenter/ for a description of logical expressions.  Note that variables, constants, and the %SUBSTRING, %SWITCH, and %BINARY built-in functions can be used within the expression.
+
+</p>
+
+<p>
+To test if a pointer has a null value, the CL pointer variable can be compared to the special value *NULL if the CL source is being compiled with the Create CL Module (CRTCLMOD) or Create Bound CL Program (CRTBNDCL) command.  If the CL source is being compiled with the Create CL Program (CRTCLPGM) command, compare the CL pointer variable to another CL pointer variable that was declared with ADDRESS(*NULL) and has not been changed.
+
+</p>
+
+<p>
+This is a required parameter.
+
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><em>logical-value
+</em></strong></dt>
+
+<dd class="dlentry">
+Specify the name of a CL logical variable or a logical expression.
+</dd>
+
+</dl>
+
+</div>
+</section>
+
+<section class="section" role="region" aria-labelledby="dowhile__examples__title__1" id="dowhile__examples"><h2 class="sectiontitle" id="dowhile__examples__title__1">Examples</h2>
+
+<p>
+<strong>Example 1: DOWHILE Command Group That is Never Processed
+</strong>
+</p>
+
+<div class="p">
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>
+DCL   VAR(&amp;LGL)  TYPE(*LGL)  VALUE('0')      /* False */
+ :
+DOWHILE   COND(&amp;LGL)
+ :   (group of CL commands)
+ENDDO
+ :
+
+</code></pre></div><div class="docs--copy-btn"></div></div>
+
+</div>
+
+<p>
+The group of commands between the DOWHILE and ENDDO will not be processed because the initial value of &amp;LGL is false.  Control will pass to the command following the ENDDO.
+
+</p>
+
+<p>
+<strong>Example 2: DOWHILE Forever Command Group
+</strong>
+</p>
+
+<div class="p">
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>
+DCL   VAR(&amp;LGL)  TYPE(*LGL)  VALUE('1') /* True */
+ :
+DOWHILE &amp;LGL
+ :   (group of CL commands)
+ENDDO
+ :
+
+</code></pre></div><div class="docs--copy-btn"></div></div>
+
+</div>
+
+<p>
+The group of commands between the DOWHILE and ENDDO will be processed until the value of &amp;LGL is set to false (a logical 0).  This loop will continue until a LEAVE command or a GOTO command specifying a label outside the DOWHILE group is run.
+
+</p>
+
+</section>
+
+<section class="section" role="region" aria-labelledby="dowhile__errormsgs__title__1" id="dowhile__errormsgs"><h2 class="sectiontitle" id="dowhile__errormsgs__title__1">Error messages</h2>
+
+<p>
+None
+
+</p>
+
+</section>
+
+</div>
+
+</article></main>
+</body></html>

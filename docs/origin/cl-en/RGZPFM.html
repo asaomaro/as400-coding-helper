@@ -1,0 +1,1137 @@
+<!DOCTYPE html>
+<html lang="ja"><head><meta charset="utf-8"><title>Reorganize Physical File Mbr  (RGZPFM)</title></head>
+<body>
+<main role="main"><article role="article" aria-labelledby="rgzpfm__title__1"> 
+<h1 class="topictitle1" id="rgzpfm__title__1">Reorganize Physical File Mbr  (RGZPFM)</h1><div id="lastModifiedDate"><span>Last Updated</span>: 2026-07-13</div>
+
+<div class="body">
+<p>
+<strong>Reorganize Physical File Mbr  (RGZPFM)
+</strong></p>
+
+<p>
+<strong>Where allowed to run:  
+</strong>All environments (*ALL)
+
+</p>
+
+<p>
+<strong>Threadsafe:  </strong>Conditional
+</p>
+
+<p><a href="#rgzpfm__parameters">Parameters</a></p>
+
+<p><a href="#rgzpfm__examples">Examples</a></p>
+
+<p><a href="#rgzpfm__errormsgs">Error messages</a></p>
+
+<div class="div" id="rgzpfm__rgzpfm">
+<p>
+The Reorganize Physical File Member (RGZPFM) command removes deleted records from (compresses) one member of a physical file in the database, and it optionally reorganizes that member.
+
+</p>
+
+<p>
+If a keyed file is identified in the 
+<strong>Key file (KEYFILE)
+</strong> parameter, the system reorganizes the member by changing the physical sequence of the records in storage to either match the keyed sequence of the physical file member's access path, or to match the access path of a logical file member that is defined over the physical file.  Reorganization can decrease file processing time when a program is reading sequentially through a keyed physical file or through a keyed logical file.
+
+</p>
+
+<p>
+When the member is reorganized and KEYFILE(*NONE) is not specified, the sequence in which the records are actually stored is changed, and any deleted records are removed from the file.  If KEYFILE(*NONE) is specified or defaulted, the sequence of the records does not change, but deleted records are removed from the member.  Optionally, new sequence numbers and zero date fields are placed in the source fields of the records.  These fields are changed after the member has been compressed or reorganized.
+
+</p>
+
+<p>
+<strong>Notes:
+</strong>
+</p>
+
+<ul class="cds--list--unordered">
+<li class="cds--list__item">
+If you cancel this command, the system rebuilds any access paths that are not maintained during the reorganize. If ALWCANCEL(*NO) is specified, any updates to a physical file member with a unique access path over it are prevented until the access path is completely rebuilt.
+
+</li>
+
+<li class="cds--list__item">
+If you cancel this command and ALWCANCEL(*YES) is specified, the reorganize will be partially complete. Subsequently, another reorganize with the same parameters may be able to continue from where the last reorganize ended.
+
+</li>
+
+<li class="cds--list__item">
+The RGZPFM command ignores all file overrides that are currently in effect for the job.  The file names specified on the FILE and KEYFILE parameters identify the files actually used in the reorganize operation, regardless of overrides that may exist for these files.
+
+</li>
+
+</ul>
+
+<p>
+<strong>Restrictions:
+</strong>
+</p>
+
+<ul class="cds--list--unordered">
+<li class="cds--list__item">
+During the reorganization of a physical member, the file being reorganized is locked. The 
+<strong>Lock state (LOCK)
+</strong> parameter can be specified to indicate how much concurrent access to the physical file member should be allowed.
+
+</li>
+
+<li class="cds--list__item">
+The user needs object operational authority, object management or alter authority, all data authority to the physical file containing the member to be reorganized, and execute authority to the library.  The user also needs object operational authority to the file specified on the KEYFILE parameter and execute authority to the library.
+
+</li>
+
+<li class="cds--list__item">
+In multi-threaded jobs, this command is not threadsafe for distributed files and fails for distributed files that use relational databases of type *SNA.  This command is also not threadsafe and fails for Distributed Data Management (DDM) files of type *SNA.
+
+</li>
+
+</ul>
+
+</div>
+<section class="section" role="region" aria-labelledby="rgzpfm__parameters__title__1" id="rgzpfm__parameters"><h2 class="sectiontitle" id="rgzpfm__parameters__title__1">Parameters</h2>
+
+
+<div class="tablenoborder"><div class="cds--data-table-container"><table summary="" class="defaultstyle cds--data-table"><colgroup><col><col><col><col></colgroup><thead>
+<tr>
+<th id="rgzpfm__parameters__entry__1"><div class="cds--table-header-label">
+Keyword
+</div></th>
+
+<th id="rgzpfm__parameters__entry__2"><div class="cds--table-header-label">
+Description
+</div></th>
+
+<th id="rgzpfm__parameters__entry__3"><div class="cds--table-header-label">
+Choices
+</div></th>
+
+<th id="rgzpfm__parameters__entry__4"><div class="cds--table-header-label">
+Notes
+</div></th>
+
+</tr>
+
+</thead>
+<tbody>
+<tr>
+<td rowspan="3" headers="rgzpfm__parameters__entry__1 "><a href="#rgzpfm__file"><strong>FILE
+</strong></a></td>
+
+<td headers="rgzpfm__parameters__entry__2 ">Data base file
+</td>
+
+<td headers="rgzpfm__parameters__entry__3 "><em>Qualified object name
+</em></td>
+
+<td rowspan="3" headers="rgzpfm__parameters__entry__4 ">Required, Positional 1
+</td>
+
+</tr>
+
+<tr>
+<td headers="rgzpfm__parameters__entry__2 ">Qualifier 1: Data base file
+</td>
+
+<td headers="rgzpfm__parameters__entry__3 "><em>Name
+</em></td>
+
+</tr>
+
+<tr>
+<td headers="rgzpfm__parameters__entry__2 ">Qualifier 2: Library
+</td>
+
+<td headers="rgzpfm__parameters__entry__3 "><em>Name
+</em>, 
+<strong><u>*LIBL
+</u></strong>, *CURLIB
+</td>
+
+</tr>
+
+<tr>
+<td headers="rgzpfm__parameters__entry__1 "><a href="#rgzpfm__mbr"><strong>MBR
+</strong></a></td>
+
+<td headers="rgzpfm__parameters__entry__2 ">Member
+</td>
+
+<td headers="rgzpfm__parameters__entry__3 "><em>Name
+</em>, 
+<strong><u>*FIRST
+</u></strong>, *LAST
+</td>
+
+<td headers="rgzpfm__parameters__entry__4 ">Optional, Positional 2
+</td>
+
+</tr>
+
+<tr>
+<td rowspan="5" headers="rgzpfm__parameters__entry__1 "><a href="#rgzpfm__keyfile"><strong>KEYFILE
+</strong></a></td>
+
+<td headers="rgzpfm__parameters__entry__2 ">Key file
+</td>
+
+<td headers="rgzpfm__parameters__entry__3 ">Single values: 
+<strong><u>*NONE
+</u></strong>, *FILE, *RPLDLTRCD
+
+Other values: 
+<em>Element list
+</em></td>
+
+<td rowspan="5" headers="rgzpfm__parameters__entry__4 ">Optional
+</td>
+
+</tr>
+
+<tr>
+<td headers="rgzpfm__parameters__entry__2 ">Element 1: Logical file
+</td>
+
+<td headers="rgzpfm__parameters__entry__3 "><em>Qualified object name
+</em></td>
+
+</tr>
+
+<tr>
+<td headers="rgzpfm__parameters__entry__2 ">Qualifier 1: Logical file
+</td>
+
+<td headers="rgzpfm__parameters__entry__3 "><em>Name
+</em></td>
+
+</tr>
+
+<tr>
+<td headers="rgzpfm__parameters__entry__2 ">Qualifier 2: Library
+</td>
+
+<td headers="rgzpfm__parameters__entry__3 "><em>Name
+</em>, 
+<strong><u>*LIBL
+</u></strong>, *CURLIB
+</td>
+
+</tr>
+
+<tr>
+<td headers="rgzpfm__parameters__entry__2 ">Element 2: Member
+</td>
+
+<td headers="rgzpfm__parameters__entry__3 "><em>Name
+</em></td>
+
+</tr>
+
+<tr>
+<td headers="rgzpfm__parameters__entry__1 "><a href="#rgzpfm__rbdaccpth"><strong>RBDACCPTH
+</strong></a></td>
+
+<td headers="rgzpfm__parameters__entry__2 ">Rebuild access paths
+</td>
+
+<td headers="rgzpfm__parameters__entry__3 "><strong><u>*YES
+</u></strong>, *OPTIMIZE, *NO
+</td>
+
+<td headers="rgzpfm__parameters__entry__4 ">Optional
+</td>
+
+</tr>
+
+<tr>
+<td headers="rgzpfm__parameters__entry__1 "><a href="#rgzpfm__alwcancel"><strong>ALWCANCEL
+</strong></a></td>
+
+<td headers="rgzpfm__parameters__entry__2 ">Allow cancel
+</td>
+
+<td headers="rgzpfm__parameters__entry__3 "><strong><u>*NO
+</u></strong>, *YES
+</td>
+
+<td headers="rgzpfm__parameters__entry__4 ">Optional
+</td>
+
+</tr>
+
+<tr>
+<td headers="rgzpfm__parameters__entry__1 "><a href="#rgzpfm__lock"><strong>LOCK
+</strong></a></td>
+
+<td headers="rgzpfm__parameters__entry__2 ">Lock state
+</td>
+
+<td headers="rgzpfm__parameters__entry__3 "><strong><u>*EXCL
+</u></strong>, *EXCLRD, *SHRUPD
+</td>
+
+<td headers="rgzpfm__parameters__entry__4 ">Optional
+</td>
+
+</tr>
+
+<tr>
+<td headers="rgzpfm__parameters__entry__1 "><a href="#rgzpfm__fromrcd"><strong>FROMRCD
+</strong></a></td>
+
+<td headers="rgzpfm__parameters__entry__2 ">From record
+</td>
+
+<td headers="rgzpfm__parameters__entry__3 "><em>Unsigned integer
+</em>, 
+<strong><u>*START
+</u></strong>, *PRVRGZ
+</td>
+
+<td headers="rgzpfm__parameters__entry__4 ">Optional
+</td>
+
+</tr>
+
+<tr>
+<td headers="rgzpfm__parameters__entry__1 "><a href="#rgzpfm__srcopt"><strong>SRCOPT
+</strong></a></td>
+
+<td headers="rgzpfm__parameters__entry__2 ">Source update options
+</td>
+
+<td headers="rgzpfm__parameters__entry__3 ">Single values: 
+<strong><u>*SAME
+</u></strong>
+Other values (up to 2 repetitions): *SEQNBR, *DATE
+</td>
+
+<td headers="rgzpfm__parameters__entry__4 ">Optional
+</td>
+
+</tr>
+
+<tr>
+<td rowspan="3" headers="rgzpfm__parameters__entry__1 "><a href="#rgzpfm__srcseq"><strong>SRCSEQ
+</strong></a></td>
+
+<td headers="rgzpfm__parameters__entry__2 ">Source sequence numbering
+</td>
+
+<td headers="rgzpfm__parameters__entry__3 "><em>Element list
+</em></td>
+
+<td rowspan="3" headers="rgzpfm__parameters__entry__4 ">Optional
+</td>
+
+</tr>
+
+<tr>
+<td headers="rgzpfm__parameters__entry__2 ">Element 1: Starting sequence number
+</td>
+
+<td headers="rgzpfm__parameters__entry__3 ">0.01-9999.99, 
+<strong><u>1.00
+</u></strong></td>
+
+</tr>
+
+<tr>
+<td headers="rgzpfm__parameters__entry__2 ">Element 2: Increment number
+</td>
+
+<td headers="rgzpfm__parameters__entry__3 ">0.01-9999.99, 
+<strong><u>1.00
+</u></strong></td>
+
+</tr>
+
+<tr>
+<td headers="rgzpfm__parameters__entry__1 "><a href="#rgzpfm__rcdfmt"><strong>RCDFMT
+</strong></a></td>
+
+<td headers="rgzpfm__parameters__entry__2 ">Record format
+</td>
+
+<td headers="rgzpfm__parameters__entry__3 "><em>Name
+</em>, 
+<strong><u>*ONLY
+</u></strong></td>
+
+<td headers="rgzpfm__parameters__entry__4 ">Optional
+</td>
+
+</tr>
+
+</tbody>
+</table></div>
+</div>
+
+<div class="div" id="rgzpfm__file">
+<p>
+<strong>Data base file (FILE)
+</strong></p>
+
+<p>
+Specifies the physical file whose member is to be reorganized.
+
+</p>
+
+<p>
+This is a required parameter.
+
+</p>
+
+<p>
+<strong>Qualifier 1: Data base file
+</strong>
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><em>name
+</em></strong></dt>
+
+<dd class="dlentry">
+Specify the name of the physical file.
+</dd>
+
+</dl>
+
+<p>
+<strong>Qualifier 2: Library
+</strong>
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><u>*LIBL
+</u></strong></dt>
+
+<dd class="dlentry">
+All libraries in the library list for the current thread are searched until the first match is found.
+</dd>
+
+</dl>
+
+<dl>
+<dt class="dlterm">
+<strong>*CURLIB
+</strong></dt>
+
+<dd class="dlentry">
+The current library for the thread is used to locate the file.  If no library is specified as the current library for the job, the QGPL library is used.
+</dd>
+
+</dl>
+
+<dl>
+<dt class="dlterm">
+<strong><em>name
+</em></strong></dt>
+
+<dd class="dlentry">
+Specify the name of the library to be searched.
+</dd>
+
+</dl>
+
+</div>
+<div class="div" id="rgzpfm__mbr">
+<p>
+<strong>Member (MBR)
+</strong></p>
+
+<p>
+Specifies the member to be reorganized.
+
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><u>*FIRST
+</u></strong></dt>
+
+<dd class="dlentry">
+The first, or the only, member in the file is reorganized.
+</dd>
+
+<dt class="dlterm">
+<strong>*LAST
+</strong></dt>
+
+<dd class="dlentry">
+The last, or the only, member in the file is reorganized.
+</dd>
+
+<dt class="dlterm">
+<strong><em>name
+</em></strong></dt>
+
+<dd class="dlentry">
+Specify the name of the file member to be reorganized.
+</dd>
+
+</dl>
+
+</div>
+<div class="div" id="rgzpfm__keyfile">
+<p>
+<strong>Key file (KEYFILE)
+</strong></p>
+
+<p>
+Specifies whether the physical file member has its arrival sequence changed to match its keyed sequence, is reorganized in the sequence of a logical file member, or is 
+<em>not
+</em> reorganized.  If this parameter specifies a multiple-format logical file and member, the 
+<strong>Record format (RCDFMT)
+</strong> parameter must also be specified.
+
+</p>
+
+<p>
+<strong>Note:     
+</strong>Join logical files, or an SQL Index with a WHERE clause cannot be specified as key files, and a logical file in this parameter is not allowed to have a select/omit access path.
+
+</p>
+
+<p>
+<strong>Single values
+</strong>
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><u>*NONE
+</u></strong></dt>
+
+<dd class="dlentry">
+The member is not reorganized; it is only compressed by having deleted records removed.
+</dd>
+
+<dt class="dlterm">
+<strong>*RPLDLTRCD
+</strong></dt>
+
+<dd class="dlentry">
+The member will be reorganized by replacing deleted records at the start of the file with valid records from the end of the file.  If the records must exactly match the current arrival sequence, do not use *RPLDLTRCD.
+</dd>
+
+<dt class="dlterm">
+<strong>*FILE
+</strong></dt>
+
+<dd class="dlentry">
+For a physical file member having a keyed sequence access path, the arrival sequence of the records in the member is changed to match their keyed sequence.
+</dd>
+
+</dl>
+
+<p>
+<strong>Element 1: Logical file
+</strong>
+</p>
+
+<p>
+Specify the name and library of the logical file associated with the physical file member.
+
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong></strong></dt>
+
+<dd class="dlentry">
+<p>
+<strong>Qualifier 1: Logical file
+</strong>
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><em>file-name
+</em></strong></dt>
+
+<dd class="dlentry">
+Specify the name of the logical file to use as the key file.
+</dd>
+
+</dl>
+
+</dd>
+
+<dt class="dlterm">
+<strong></strong></dt>
+
+<dd class="dlentry">
+<p>
+<strong>Qualifier 2: Library
+</strong>
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><u>*LIBL
+</u></strong></dt>
+
+<dd class="dlentry">
+All libraries in the job's library list are searched until the first match is found.
+</dd>
+
+<dt class="dlterm">
+<strong>*CURLIB
+</strong></dt>
+
+<dd class="dlentry">
+The current library for the job is used to locate the file.  If no library is specified as the current library for the job, QGPL is used.
+</dd>
+
+<dt class="dlterm">
+<strong><em>library-name
+</em></strong></dt>
+
+<dd class="dlentry">
+Specify the name of the library to be searched.
+</dd>
+
+</dl>
+
+</dd>
+
+</dl>
+
+<p>
+<strong>Element 2: Member
+</strong>
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><em>name
+</em></strong></dt>
+
+<dd class="dlentry">
+Specify the member of the logical file whose sequence is used to reorganize the physical file member.
+</dd>
+
+</dl>
+
+</div>
+<div class="div" id="rgzpfm__rbdaccpth">
+<p>
+<strong>Rebuild access paths (RBDACCPTH)
+</strong></p>
+
+<p>
+Specifies whether to rebuild or maintain any valid access paths (other than an access path specified as the KEYFILE or a MAINT(*REBLD) access path) over the member.
+
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><u>*YES
+</u></strong></dt>
+
+<dd class="dlentry">
+Access paths will be rebuilt synchronously at the end of the reorganize operation.
+</dd>
+
+<dt class="dlterm">
+<strong>*OPTIMIZE
+</strong></dt>
+
+<dd class="dlentry">
+Access paths will either be rebuilt asynchronously at the end of the reorganize operation, or maintained during the reorganize, based on which method will result in the access paths being rebuilt the fastest.
+</dd>
+
+<dt class="dlterm">
+<strong>*NO
+</strong></dt>
+
+<dd class="dlentry">
+Access paths will be maintained during the reorganize.
+<p>
+If *NO is specified, ALWCANCEL(*YES) must also be specified.
+
+</p>
+
+</dd>
+
+</dl>
+
+</div>
+<div class="div" id="rgzpfm__alwcancel">
+<p>
+<strong>Allow cancel (ALWCANCEL)
+</strong></p>
+
+<p>
+Specifies whether to allow the reorganize to be canceled.
+
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><u>*NO
+</u></strong></dt>
+
+<dd class="dlentry">
+The reorganize cannot be canceled.  If the job ends and the reorganize of the data has not finished, any changes up to the point of the failure are discarded.
+<p>
+If *NO is specified, KEYFILE(*RPLDLTRCD) and RDBACCPTH(*NO) must not be specified, and LOCK(*EXCL) must also be specified.
+
+</p>
+
+</dd>
+
+<dt class="dlterm">
+<strong>*YES
+</strong></dt>
+
+<dd class="dlentry">
+The reorganize can be canceled.  If a reorganize is canceled before it is finished, a subsequent reorganize with the same parameters will typically continue the reorganize from where it ended. If the number of changes that have occurred since the reorganize was canceled is too large, the reorganize may be restarted rather than continued.
+</dd>
+
+</dl>
+
+</div>
+<div class="div" id="rgzpfm__lock">
+<p>
+<strong>Lock state (LOCK)
+</strong></p>
+
+<p>
+Specifies the lock to acquire on the physical file member.  The lock state will determine how much concurrent access is allowed by other jobs during the reorganize.
+
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><u>*EXCL
+</u></strong></dt>
+
+<dd class="dlentry">
+An exclusive lock is acquired. No concurrent access to the physical file member is allowed from another job.
+</dd>
+
+<dt class="dlterm">
+<strong>*EXCLRD
+</strong></dt>
+
+<dd class="dlentry">
+An exclusive allow read lock is acquired. Concurrent read access to the physical file member is allowed from another job.
+<p>
+If *EXCLRD is specified, ALWCANCEL(*YES) must also be specified.
+
+</p>
+
+</dd>
+
+<dt class="dlterm">
+<strong>*SHRUPD
+</strong></dt>
+
+<dd class="dlentry">
+A shared update lock is acquired. Concurrent update, delete, and insert access to the physical file member is allowed from another job.
+<p>
+If *SHRUPD is chosen, the resulting order of the records may not exactly match what was requested on the KEYFILE keyword.  The records will be reorganized to closely match the specified order, but concurrent update, delete, and insert operations will cause some records to not be reorganized.  If the records must exactly match the arrival sequence (*NONE) or a keyed file sequence, do not use *SHRUPD.
+
+</p>
+
+<p>
+At the end of the reorganize, an attempt is made to remove deleted records at the end of the file and return storage to the system.  If *SHRUPD is specified, it is possible that a concurrent insert that occurs just prior to removing the deleted records may prevent the removal of some or all of the deleted records at the end of the file.  In this case, the FROMRCD keyword can be used on a subsequent reorganize to attempt the removal of the deleted records without reorganizing the the entire file again.
+
+</p>
+
+<p>
+If *SHRUPD is specified, ALWCANCEL(*YES) must also be specified.
+
+</p>
+
+</dd>
+
+</dl>
+
+<p>
+<strong>Note:     
+</strong>Additional details about lock states can be found in the CL topic collection in the Programming category in the IBM i Information Center at http://www.ibm.com/systems/i/infocenter/.
+
+</p>
+
+</div>
+<div class="div" id="rgzpfm__fromrcd">
+<p>
+<strong>From record (FROMRCD)
+</strong></p>
+
+<p>
+Specifies which records in the file will be reorganized.  Only records from the specified record to the end of the file will be reorganized.
+
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><u>*START
+</u></strong></dt>
+
+<dd class="dlentry">
+All records in the file will be reorganized.
+</dd>
+
+<dt class="dlterm">
+<strong>*PRVRGZ
+</strong></dt>
+
+<dd class="dlentry">
+If the previous reorganize of this file was unable to remove some or all of the deleted records, the reorganize will begin at the record that would have been the last record in the file if a concurrent insert had not prevented the deleted records from being removed.
+<p>
+If the previous reorganize completed normally and was able to remove the deleted records, the reorganize will begin with the first record in the file.
+
+</p>
+
+<p>
+*PRVRGZ is ignored if the reorganize is continued from a previously canceled reorganize.
+
+</p>
+
+<p>
+If *PRVRGZ is specified, ALWCANCEL(*YES) must be specified and either KEYFILE(*RPLDLTRCD) or KEYFILE(*NONE) must be specified.
+
+</p>
+
+</dd>
+
+<dt class="dlterm">
+<strong><em>1-4294967288
+</em></strong></dt>
+
+<dd class="dlentry">
+Specifies the record number of the first record to be reorganized.
+<p>
+If a record number greater than 1 is specified, ALWCANCEL(*YES) must be specified and either KEYFILE(*RPLDLTRCD) or KEYFILE(*NONE) must be specified.
+
+</p>
+
+</dd>
+
+</dl>
+
+</div>
+<div class="div" id="rgzpfm__srcopt">
+<p>
+<strong>Source update options (SRCOPT)
+</strong></p>
+
+<p>
+Specifies, for physical 
+<em>source
+</em> files only, whether the member places new numbers in the sequence number field, places zeros in the date field, or changes both fields.  Changes occur after the records are compressed or reorganized.
+
+</p>
+
+<p>
+<strong>Single values
+</strong>
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><u>*SAME
+</u></strong></dt>
+
+<dd class="dlentry">
+The sequence number field and date field of records do not change.
+</dd>
+
+</dl>
+
+<p>
+<strong>Other values 
+</strong>
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong>*SEQNBR
+</strong></dt>
+
+<dd class="dlentry">
+The records have a new sequence number placed into the sequence number field.  The SRCSEQ parameter specifies a start value and a value to be added.
+</dd>
+
+<dt class="dlterm">
+<strong>*DATE
+</strong></dt>
+
+<dd class="dlentry">
+The records have a null date (000000) placed in the date field.
+</dd>
+
+</dl>
+
+</div>
+<div class="div" id="rgzpfm__srcseq">
+<p>
+<strong>Source sequence numbering (SRCSEQ)
+</strong></p>
+
+<p>
+Specifies, only when *SEQNBR is also specified on the SRCOPT parameter, the sequence number that is given to the first record in the source file member and the increment value that is used to renumber all other records in the member.  If the member is renumbered but this parameter is not specified, 1.00 is assumed for sequence number and increment value.
+
+</p>
+
+<p>
+<strong>Element 1: Starting sequence number 
+</strong>
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><u>1.00
+</u></strong></dt>
+
+<dd class="dlentry">
+The first source record in the member has a sequence number of 0001.00.
+</dd>
+
+<dt class="dlterm">
+<strong><em>0.01-9999.99
+</em></strong></dt>
+
+<dd class="dlentry">
+Specify the sequence number of the first source record in the member.  A whole number of up to 4 digits or a fraction of up to 2 digits can be specified.  If the starting value contains a fraction, a decimal point must be used.
+</dd>
+
+</dl>
+
+<p>
+<strong>Element 2: Increment number 
+</strong>
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><u>1.00
+</u></strong></dt>
+
+<dd class="dlentry">
+The source records are renumbered in the member with whole number increments of 1 (for example, 1.00, 2.00, 3.00...).
+</dd>
+
+<dt class="dlterm">
+<strong><em>0.01-9999.99
+</em></strong></dt>
+
+<dd class="dlentry">
+Specify the increment value  for renumbering all source records following the first record.  A whole number of no more than four digits or a fraction of no more than two digits can be specified.  If the increment value contains a fraction, a decimal point must be used.
+<p>
+For example, if SRCSEQ(5000  10) is specified, the first record in the reorganized member is numbered 5000.00, the second is 5010.00, the third is 5020.00, and so on.  If SRCSEQ(*N  .25) is specified, the records are numbered 1.00, 1.25, 1.50, 1.75, 2.00, and so on.  If a starting value of .01 and an increment value of .01 are specified, there are 999,999 unique sequence numbers possible.  If the maximum sequence number of 9999.99 is reached, the remaining records are also assigned the sequence number 9999.99.
+
+</p>
+
+</dd>
+
+</dl>
+
+</div>
+<div class="div" id="rgzpfm__rcdfmt">
+<p>
+<strong>Record format (RCDFMT)
+</strong></p>
+
+<p>
+Specifies the record format name if the physical file member is reorganized in the sequence of a multiple-format logical file.
+
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><u>*ONLY
+</u></strong></dt>
+
+<dd class="dlentry">
+The logical file specified by the 
+<strong>Key file (KEYFILE)
+</strong> parameter has only one record format.  That format is used to reorganize the physical file member.
+</dd>
+
+<dt class="dlterm">
+<strong><em>name
+</em></strong></dt>
+
+<dd class="dlentry">
+Specify the name of a record format in the multiple-format logical file that is used to reorganize the physical file member.
+</dd>
+
+</dl>
+
+</div>
+</section>
+
+<section class="section" role="region" aria-labelledby="rgzpfm__examples__title__1" id="rgzpfm__examples"><h2 class="sectiontitle" id="rgzpfm__examples__title__1">Examples</h2>
+
+<p>
+<strong>Example 1: Reorganizing by Deleting Records
+</strong>
+</p>
+
+<div class="p">
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>
+RGZPFM   FILE(PAYROLL)  MBR(MBR1)
+
+</code></pre></div><div class="docs--copy-btn"></div></div>
+
+</div>
+
+<p>
+This command compresses member MBR1 of the PAYROLL file by removing the deleted records from the file member.
+
+</p>
+
+<p>
+<strong>Example 2: Reorganizing by Replacing Deleted Records
+</strong>
+</p>
+
+<div class="p">
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>
+RGZPFM   FILE(PAYROLL)  MBR(MBR1)  KEYFILE(*RPLDLTRCD)
+         ALWCANCEL(*YES)  LOCK(*EXCLRD)
+
+</code></pre></div><div class="docs--copy-btn"></div></div>
+
+</div>
+
+<p>
+This command compresses member MBR1 of the PAYROLL file by replacing deleted records at the start of the file with valid records from the end of the file. The command may be canceled and other jobs are allowed to read data from the PAYROLL file while the reorganize is in progress.
+
+</p>
+
+<p>
+<strong>Example 3: Reorganizing in Keyed Sequence
+</strong>
+</p>
+
+<div class="p">
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>
+RGZPFM   FILE(QCLSRC)  MBR(CLMBR2)  SRCOPT(*SEQNBR *DATE)
+         KEYFILE(*FILE)  SRCSEQ(1.00 .25)
+
+</code></pre></div><div class="docs--copy-btn"></div></div>
+
+</div>
+
+<p>
+This command reorganizes the member CLMBR2 of the CL source file QCLSRC in keyed sequence, with the sequence number field used as the key. The reorganized member has new sequence numbers (starting at 1.00 and incrementing by .25) and a null date (000000) placed in all records when the original member is reorganized.
+
+</p>
+
+</section>
+
+<section class="section" role="region" aria-labelledby="rgzpfm__errormsgs__title__1" id="rgzpfm__errormsgs"><h2 class="sectiontitle" id="rgzpfm__errormsgs__title__1">Error messages</h2>
+
+<p>
+<strong><u>*ESCAPE Messages
+</u></strong>
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong>CPF2981
+</strong></dt>
+
+<dd class="dlentry">
+Member &amp;3 file &amp;1 in &amp;2 not reorganized.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF3135
+</strong></dt>
+
+<dd class="dlentry">
+Access path for member &amp;2 already in use.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF32B8
+</strong></dt>
+
+<dd class="dlentry">
+Distributed file error, reason code &amp;3.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF32CF
+</strong></dt>
+
+<dd class="dlentry">
+Distributed file error, reason code &amp;3.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF32C3
+</strong></dt>
+
+<dd class="dlentry">
+Distributed file error, level ID mismatch
+</dd>
+
+<dt class="dlterm">
+<strong>CPF9801
+</strong></dt>
+
+<dd class="dlentry">
+Object &amp;2 in library &amp;3 not found.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF9809
+</strong></dt>
+
+<dd class="dlentry">
+Library &amp;1 cannot be accessed.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF9810
+</strong></dt>
+
+<dd class="dlentry">
+Library &amp;1 not found.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF9820
+</strong></dt>
+
+<dd class="dlentry">
+Not authorized to use library &amp;1.
+</dd>
+
+</dl>
+
+<p>
+<strong><u>*NOTIFY Messages
+</u></strong>
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong>CPF2985
+</strong></dt>
+
+<dd class="dlentry">
+Source sequence numbers exceeded maximum value allowed. (G C)
+</dd>
+
+</dl>
+
+</section>
+
+</div>
+
+</article></main>
+</body></html>

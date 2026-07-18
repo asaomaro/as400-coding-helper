@@ -24,7 +24,9 @@ import { fileURLToPath } from "node:url";
 const HERE = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(HERE, "../..");
 const CMDDOC = join(HERE, "cmddoc");
-const DEFS = join(ROOT, "vscode-extension/resources/prompter/cl");
+const langArg = process.argv.find(a => a.startsWith("--lang="));
+const LANG = langArg ? langArg.slice("--lang=".length) : "ja";
+const DEFS = join(ROOT, `vscode-extension/resources/prompter/cl/${LANG}`);
 
 const decode = text =>
   text

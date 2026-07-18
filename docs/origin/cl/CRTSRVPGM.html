@@ -1,0 +1,868 @@
+<!DOCTYPE html>
+<html lang="ja"><head><meta charset="utf-8"><title>サービス・プログラムの作成  (CRTSRVPGM)</title></head>
+<body>
+<div role="main">
+<script type="text/javascript" src="../rzahg/synch.js"></script>
+<a name="CRTSRVPGM.Top_Of_Page"></a>
+<h1>サービス・プログラムの作成  (CRTSRVPGM)</h1><div id="lastModifiedDate"><span>Last Updated</span>: 2021-04-13</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table0" width="100%" class="cds--data-table">
+<tbody><tr>
+<td class="valigntop alignleft"><strong>実行可能場所:  </strong>すべての環境 (*ALL)<br>
+<strong>スレッド・セーフ:  </strong>いいえ
+</td>
+<td class="valigntop alignright">
+<a href="#CRTSRVPGM.PARAMETERS.TABLE">パラメーター</a><br>
+<a href="#CRTSRVPGM.COMMAND.EXAMPLES">例</a><br>
+<a href="#CRTSRVPGM.ERROR.MESSAGES">エラー・メッセージ</a></td>
+</tr>
+</tbody></table></div></div>
+<div> <a name="CRTSRVPGM"></a>
+<p>サービス・プログラム作成(CRTSRVPGM)コマンドは，1つのセットのモジュールとバインド・ディレクトリーからバインドされたサービス・プログラムを作成します。
+</p>
+<h2><strong>制約事項</strong><strong>:</strong>
+</h2>
+<ul class="cds--list--unordered">
+<li class="cds--list__item">サービス・プログラムを作成するライブラリーに対する読み取り(*READ)および追加(*ADD)権限が必要です。
+</li>
+<li class="cds--list__item">指定されたモジュール，サービス・プログラム，およびバインド・ディレクトリーに対して使用(*USE)権限が必要です。
+</li>
+<li class="cds--list__item"><strong> ソース・ファイル</strong><strong>の</strong><strong>エクスポート (SRCFILE)</strong>パラメーターに指定されたファイルに対するオブジェクト操作(*OBJOPR) および*READ権限が必要です。
+</li>
+<li class="cds--list__item"><strong> ソース・ストリーム・ファイル</strong><strong>の</strong><strong>エクスポート (SRCSTMF)</strong>パラメーターに指定されたストリーム・ファイルに対する読み取り(*R)権限が必要です。
+</li>
+<li class="cds--list__item"><strong> ソース・ストリーム・ファイル</strong><strong>の</strong><strong>エクスポート (SRCSTMF)</strong>パラメーターに指定されたストリーム・ファイルのパス内の各ディレクトリーに対する実行(*X)権限が必要です。
+</li>
+</ul>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table1" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#CRTSRVPGM.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div>
+<h2><a name="CRTSRVPGM.PARAMETERS.TABLE">パラメーター</a></h2>
+<div class="tablenoborder"><div class="cds--data-table-container"><table id="parm_table2" summary="Parameters" border="1" cellpadding="4" cellspacing="0" class="cds--data-table">
+<!-- col1="10" col2="15" col3="30" col4="10" -->
+<tbody><tr>
+<th scope="col" class="valignbottom alignleft"><div class="cds--table-header-label">キーワード</div></th>
+<th scope="col" class="valignbottom alignleft"><div class="cds--table-header-label">記述</div></th>
+<th scope="col" class="valignbottom alignleft"><div class="cds--table-header-label">選択項目</div></th>
+<th scope="col" class="valignbottom alignleft"><div class="cds--table-header-label">ノーツ</div></th>
+</tr>
+<tr>
+<td class="valigntop" rowspan="3"><a href="#CRTSRVPGM.SRVPGM"><strong>SRVPGM</strong></a></td>
+<td class="valigntop">サービス・プログラム</td>
+<td class="valigntop"><span class="var">修飾オブジェクト名</span></td>
+<td class="valigntop" rowspan="3">必須, 定位置 1</td>
+</tr>
+<tr>
+<td class="valigntop">修飾子 1: サービス・プログラム</td>
+<td class="valigntop"><span class="var">名前</span></td>
+</tr><tr>
+<td class="valigntop">修飾子 2: ライブラリー</td>
+<td class="valigntop"><span class="var">名前</span>, <strong class="underlined">*CURLIB</strong></td>
+</tr><tr>
+<td class="valigntop" rowspan="3"><a href="#CRTSRVPGM.MODULE"><strong>MODULE</strong></a></td>
+<td class="valigntop">モジュール</td>
+<td class="valigntop">単一値: <strong class="underlined">*SRVPGM</strong><br>その他の値 (最大 300 回の繰り返し): <span class="var">修飾オブジェクト名</span></td>
+<td class="valigntop" rowspan="3">オプショナル</td>
+</tr>
+<tr>
+<td class="valigntop">修飾子 1: モジュール</td>
+<td class="valigntop"><span class="var">総称名, 名前</span>, *ALL</td>
+</tr><tr>
+<td class="valigntop">修飾子 2: ライブラリー</td>
+<td class="valigntop"><span class="var">名前</span>, <strong class="underlined">*LIBL</strong>, *CURLIB, *USRLIBL</td>
+</tr><tr>
+<td class="valigntop"><a href="#CRTSRVPGM.EXPORT"><strong>EXPORT</strong></a></td>
+<td class="valigntop">エクスポート</td>
+<td class="valigntop"><strong class="underlined">*SRCFILE</strong>, *ALL</td>
+<td class="valigntop">オプショナル</td>
+</tr>
+<tr>
+<td class="valigntop" rowspan="3"><a href="#CRTSRVPGM.SRCFILE"><strong>SRCFILE</strong></a></td>
+<td class="valigntop"> ソース・ファイルのエクスポート</td>
+<td class="valigntop"><span class="var">修飾オブジェクト名</span></td>
+<td class="valigntop" rowspan="3">オプショナル</td>
+</tr>
+<tr>
+<td class="valigntop">修飾子 1:  ソース・ファイルのエクスポート</td>
+<td class="valigntop"><span class="var">名前</span>, <strong class="underlined">QSRVSRC</strong></td>
+</tr><tr>
+<td class="valigntop">修飾子 2: ライブラリー</td>
+<td class="valigntop"><span class="var">名前</span>, <strong class="underlined">*LIBL</strong>, *CURLIB</td>
+</tr><tr>
+<td class="valigntop"><a href="#CRTSRVPGM.SRCMBR"><strong>SRCMBR</strong></a></td>
+<td class="valigntop"> ソース・メンバーのエクスポート</td>
+<td class="valigntop"><span class="var">名前</span>, <strong class="underlined">*SRVPGM</strong></td>
+<td class="valigntop">オプショナル</td>
+</tr>
+<tr>
+<td class="valigntop"><a href="#CRTSRVPGM.SRCSTMF"><strong>SRCSTMF</strong></a></td>
+<td class="valigntop"> ソース・ストリーム・ファイルのエクスポート</td>
+<td class="valigntop"><span class="var">パス名</span></td>
+<td class="valigntop">オプショナル</td>
+</tr>
+<tr>
+<td class="valigntop"><a href="#CRTSRVPGM.TEXT"><strong>TEXT</strong></a></td>
+<td class="valigntop">テキスト'記述'</td>
+<td class="valigntop"><span class="var">文字値</span>, <strong class="underlined">*BLANK</strong>, *EXPORTSRC, *MODULE</td>
+<td class="valigntop">オプショナル</td>
+</tr>
+<tr>
+<td class="valigntop" rowspan="5"><a href="#CRTSRVPGM.BNDSRVPGM"><strong>BNDSRVPGM</strong></a></td>
+<td class="valigntop"> サービス・プログラムのバインド</td>
+<td class="valigntop">単一値: <strong class="underlined">*NONE</strong><br>その他の値 (最大 300 回の繰り返し): <span class="var">要素リスト</span></td>
+<td class="valigntop" rowspan="5">オプショナル</td>
+</tr>
+<tr>
+<td class="valigntop">要素 1: サービス・プログラム</td>
+<td class="valigntop">
+<span class="var">修飾オブジェクト名</span></td>
+</tr>
+<tr>
+<td class="valigntop">修飾子 1: サービス・プログラム</td>
+<td class="valigntop"><span class="var">総称名, 名前</span>, *ALL</td>
+</tr><tr>
+<td class="valigntop">修飾子 2: ライブラリー</td>
+<td class="valigntop"><span class="var">名前</span>, <strong class="underlined">*LIBL</strong></td>
+</tr><tr>
+<td class="valigntop">要素 2: 活動化</td>
+<td class="valigntop">
+<strong class="underlined">*IMMED</strong>, *DEFER</td>
+</tr>
+<tr>
+<td class="valigntop" rowspan="3"><a href="#CRTSRVPGM.BNDDIR"><strong>BNDDIR</strong></a></td>
+<td class="valigntop">ディレクトリーのバインド</td>
+<td class="valigntop">単一値: <strong class="underlined">*NONE</strong><br>その他の値 (最大 300 回の繰り返し): <span class="var">修飾オブジェクト名</span></td>
+<td class="valigntop" rowspan="3">オプショナル</td>
+</tr>
+<tr>
+<td class="valigntop">修飾子 1: ディレクトリーのバインド</td>
+<td class="valigntop"><span class="var">名前</span></td>
+</tr><tr>
+<td class="valigntop">修飾子 2: ライブラリー</td>
+<td class="valigntop"><span class="var">名前</span>, <strong class="underlined">*LIBL</strong>, *CURLIB, *USRLIBL</td>
+</tr><tr>
+<td class="valigntop"><a href="#CRTSRVPGM.ACTGRP"><strong>ACTGRP</strong></a></td>
+<td class="valigntop">活動化グループ</td>
+<td class="valigntop"><span class="var">名前</span>, <strong class="underlined">*CALLER</strong></td>
+<td class="valigntop">オプショナル</td>
+</tr>
+<tr>
+<td class="valigntop"><a href="#CRTSRVPGM.OPTION"><strong>OPTION</strong></a></td>
+<td class="valigntop">作成オプション</td>
+<td class="valigntop">値 (最大 5 回の繰り返し): *GEN, *NOGEN, *NODUPPROC, *DUPPROC, *NODUPVAR, *DUPVAR, *WARN, *NOWARN, *RSLVREF, *UNRSLVREF</td>
+<td class="valigntop">オプショナル</td>
+</tr>
+<tr>
+<td class="valigntop"><a href="#CRTSRVPGM.DETAIL"><strong>DETAIL</strong></a></td>
+<td class="valigntop">明細のリスト</td>
+<td class="valigntop"><strong class="underlined">*NONE</strong>, *BASIC, *EXTENDED, *FULL</td>
+<td class="valigntop">オプショナル</td>
+</tr>
+<tr>
+<td class="valigntop"><a href="#CRTSRVPGM.ALWUPD"><strong>ALWUPD</strong></a></td>
+<td class="valigntop">更新可能</td>
+<td class="valigntop"><strong class="underlined">*YES</strong>, *NO</td>
+<td class="valigntop">オプショナル</td>
+</tr>
+<tr>
+<td class="valigntop"><a href="#CRTSRVPGM.ALWLIBUPD"><strong>ALWLIBUPD</strong></a></td>
+<td class="valigntop">*SRVPGMライブラリー更新可能</td>
+<td class="valigntop">*YES, <strong class="underlined">*NO</strong></td>
+<td class="valigntop">オプショナル</td>
+</tr>
+<tr>
+<td class="valigntop"><a href="#CRTSRVPGM.USRPRF"><strong>USRPRF</strong></a></td>
+<td class="valigntop">ユーザー・プロファイル</td>
+<td class="valigntop"><strong class="underlined">*USER</strong>, *OWNER</td>
+<td class="valigntop">オプショナル</td>
+</tr>
+<tr>
+<td class="valigntop"><a href="#CRTSRVPGM.REPLACE"><strong>REPLACE</strong></a></td>
+<td class="valigntop">プログラムの置き換え</td>
+<td class="valigntop"><strong class="underlined">*YES</strong>, *NO</td>
+<td class="valigntop">オプショナル</td>
+</tr>
+<tr>
+<td class="valigntop"><a href="#CRTSRVPGM.AUT"><strong>AUT</strong></a></td>
+<td class="valigntop">権限</td>
+<td class="valigntop"><span class="var">名前</span>, <strong class="underlined">*LIBCRTAUT</strong>, *CHANGE, *ALL, *USE, *EXCLUDE</td>
+<td class="valigntop">オプショナル</td>
+</tr>
+<tr>
+<td class="valigntop"><a href="#CRTSRVPGM.TGTRLS"><strong>TGTRLS</strong></a></td>
+<td class="valigntop">ターゲット・リリース</td>
+<td class="valigntop"><span class="var">文字値</span>, <strong class="underlined">*CURRENT</strong>, *PRV</td>
+<td class="valigntop">オプショナル</td>
+</tr>
+<tr>
+<td class="valigntop"><a href="#CRTSRVPGM.ALWRINZ"><strong>ALWRINZ</strong></a></td>
+<td class="valigntop">再初期設定可能</td>
+<td class="valigntop"><strong class="underlined">*NO</strong>, *YES</td>
+<td class="valigntop">オプショナル</td>
+</tr>
+<tr>
+<td class="valigntop"><a href="#CRTSRVPGM.STGMDL"><strong>STGMDL</strong></a></td>
+<td class="valigntop">ストレージ・モデル</td>
+<td class="valigntop"><strong class="underlined">*SNGLVL</strong>, *TERASPACE, *INHERIT</td>
+<td class="valigntop">オプショナル</td>
+</tr>
+<tr>
+<td class="valigntop"><a href="#CRTSRVPGM.ARGOPT"><strong>ARGOPT</strong></a></td>
+<td class="valigntop">引数最適化</td>
+<td class="valigntop"><strong class="underlined">*NO</strong>, *YES</td>
+<td class="valigntop">オプショナル</td>
+</tr>
+<tr>
+<td class="valigntop"><a href="#CRTSRVPGM.IPA"><strong>IPA</strong></a></td>
+<td class="valigntop">プロシージャー間分析</td>
+<td class="valigntop">*YES, <strong class="underlined">*NO</strong></td>
+<td class="valigntop">オプショナル</td>
+</tr>
+<tr>
+<td class="valigntop"><a href="#CRTSRVPGM.IPACTLFILE"><strong>IPACTLFILE</strong></a></td>
+<td class="valigntop">IPA制御ファイル</td>
+<td class="valigntop"><span class="var">パス名</span>, <strong class="underlined">*NONE</strong></td>
+<td class="valigntop">オプショナル</td>
+</tr>
+</tbody></table></div></div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table3" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#CRTSRVPGM.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+</div>
+<div> <a name="CRTSRVPGM.SRVPGM"></a>
+<h2>サービス・プログラム (SRVPGM)</h2>
+<p>作成するサービス・プログラム・オブジェクトを指定します。
+</p>
+<p>これは必須パラメーターです。
+</p>
+<h3><strong>修飾子</strong><strong>1: </strong><strong>サービス・プログラム</strong>
+</h3>
+<dl>
+<dt><strong class="italic">名前</strong></dt>
+<dd>作成するサービス・プログラムの名前を指定してください。
+</dd>
+</dl>
+<h3><strong>修飾子</strong><strong>2: ライブラリー</strong>
+</h3>
+<dl>
+<dt><strong class="underlined">*CURLIB</strong></dt>
+<dd>サービス・プログラムはジョブの現行ライブラリー内に作成されます。ジョブの現行ライブラリーとして指定されているライブラリーがない場合は，QGPLライブラリーが使用されます。
+</dd>
+<dt><strong class="italic">名前</strong></dt>
+<dd>サービス・プログラムが作成されるライブラリーの名前を指定してください。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table4" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#CRTSRVPGM.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="CRTSRVPGM.MODULE"></a>
+<h2>モジュール (MODULE)</h2>
+<p>サービス・プログラム・オブジェクトを作成するために複写されてバインドされるモジュールのリストを指定します。重複するモジュールおよびライブラリーの指定が見つかった場合には，重複するモジュールおよびライブラリーの最初に見つかったものだけが使用されます。このリストのモジュールは，最終サービス・プログラム・オブジェクトに複写されます。最大300の名前を指定することができます。
+</p>
+<h3><strong>単一値</strong>
+</h3>
+<dl>
+<dt><strong class="underlined">*SRVPGM</strong></dt>
+<dd><strong>サービス・プログラム</strong><strong> (SRVPGM)</strong>パラメーターに指定されたモジュールおよびライブラリー名が使用されます。
+</dd>
+</dl>
+<h3><strong>修飾子</strong><strong>1: </strong><strong>モジュール</strong>
+</h3>
+<dl>
+<dt><strong>*ALL</strong></dt>
+<dd>指定した1つ以上のライブラリーで，すべてのモジュール・オブジェクトを検索します。
+</dd>
+<dt><strong class="italic">総称名</strong></dt>
+<dd>指定した1つ以上のライブラリーで，前に*がある文字で始まるすべてのモジュール・オブジェクトを指定します。
+</dd>
+<dt><strong class="italic">名前</strong></dt>
+<dd>サービス・プログラム・オブジェクトの作成のために複写されるモジュールの名前を指定してください。
+</dd>
+</dl>
+<h3><strong>修飾子</strong><strong>2: ライブラリー</strong>
+</h3>
+<dl>
+<dt><strong class="underlined">*LIBL</strong></dt>
+<dd>最初に一致するものが見つかるまで，現行スレッドのライブラリー・リスト内のすべてのライブラリーが検索されます。
+</dd>
+</dl>
+<dl>
+<dt><strong>*CURLIB</strong></dt>
+<dd>ジョブの現行ライブラリーが検索されます。ジョブの現行ライブラリーとして指定されているライブラリーがない場合は，QGPLライブラリーが使用されます。
+</dd>
+<dt><strong>*USRLIBL</strong></dt>
+<dd>ジョブのライブラリー・リストのユーザー部分にあるライブラリーだけが検索されます。
+</dd>
+<dt><strong class="italic">名前</strong></dt>
+<dd>検索するライブラリーの名前を指定してください。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table5" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#CRTSRVPGM.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="CRTSRVPGM.EXPORT"></a>
+<h2>エクスポート (EXPORT)</h2>
+<p>このサービス・プログラムがエクスポートするデータおよびプロシージャーの名前を指定します。
+</p>
+<dl>
+<dt><strong class="underlined">*SRCFILE</strong></dt>
+<dd><strong> ソース・ファイル</strong><strong>の</strong><strong>エクスポート (SRCFILE)</strong>および<strong> ソース・メンバー</strong><strong>の</strong><strong>エクスポート (SRCMBR)</strong>パラメーターまたは<strong> ソース・ストリーム・ファイル</strong><strong>の</strong><strong>エクスポート (SRCSTMF)</strong>パラメーターで識別されたソース・ファイル・メンバーには，サービス・プログラムからエクスポートするデータとプロシージャーを識別するEXPORTステートメントが含まれています。
+</dd>
+<dt><strong>*ALL</strong></dt>
+<dd>また，指定されたモジュールからエクスポートされるすべてのデータおよびプロシージャーも，このサービス・プログラムからエクスポートされます。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table6" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#CRTSRVPGM.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="CRTSRVPGM.SRCFILE"></a>
+<h2>ソース・ファイルのエクスポート (SRCFILE)</h2>
+<p>このサービス・プログラムからデータおよびプロシージャーをエクスポートするための仕様が入っているソース・ファイルを指定します。このパラメーターは<strong> ソース・ストリーム・ファイル</strong><strong>の</strong><strong>エクスポート (SRCSTMF)</strong>パラメーターと一緒には指定できません。
+</p>
+<h3><strong>修飾子</strong><strong>1:  ソース・ファイル</strong><strong>の</strong><strong>エクスポート</strong>
+</h3>
+<dl>
+<dt><strong class="underlined">QSRVSRC</strong></dt>
+<dd>データおよびプロシージャーをエクスポートするための仕様が入っているソース・ファイルはQSRVSRCという名前です。
+</dd>
+<dt><strong class="italic">名前</strong></dt>
+<dd>データおよびプロシージャーのエクスポートのための仕様が入っているソース・ファイルの名前を指定してください。
+</dd>
+</dl>
+<h3><strong>修飾子</strong><strong>2: ライブラリー</strong>
+</h3>
+<dl>
+<dt><strong class="underlined">*LIBL</strong></dt>
+<dd>最初に一致するものが見つかるまで，現行スレッドのライブラリー・リスト内のすべてのライブラリーが検索されます。
+</dd>
+</dl>
+<dl>
+<dt><strong>*CURLIB</strong></dt>
+<dd>ジョブの現行ライブラリーが検索されます。ジョブの現行ライブラリーとして指定されているライブラリーがない場合は，QGPLライブラリーが使用されます。
+</dd>
+<dt><strong class="italic">名前</strong></dt>
+<dd>検索するライブラリーの名前を指定してください。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table7" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#CRTSRVPGM.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="CRTSRVPGM.SRCMBR"></a>
+<h2>ソース・メンバーのエクスポート (SRCMBR)</h2>
+<p>このサービス・プログラムからデータおよびプロシージャーをエクスポートするための仕様が入っているソース・ファイル・メンバーの名前を指定します。このパラメーターは<strong> ソース・ストリーム・ファイル</strong><strong>の</strong><strong>エクスポート (SRCSTMF)</strong>パラメーターと一緒には指定できません。
+</p>
+<dl>
+<dt><strong class="underlined">*SRVPGM</strong></dt>
+<dd>ソース・ファイル・メンバーの名前は，<strong>サービス・プログラム</strong><strong> (SRVPGM)</strong>パラメーターに指定されたサービス・プログラム名と同じです。
+</dd>
+<dt><strong class="italic">名前</strong></dt>
+<dd>データおよびプロシージャーをエクスポートするための仕様が入っているソース・ファイルのメンバーの名前を指定してください。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table8" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#CRTSRVPGM.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="CRTSRVPGM.SRCSTMF"></a>
+<h2>ソース・ストリーム・ファイルのエクスポート (SRCSTMF)</h2>
+<p>このサービス・プログラムからデータとプロシージャーをエクスポートするための仕様が入っているストリーム・ファイルのパス名を指定します。このパラメーターは絶対パス名か相対パス名のいずれかです。絶対パス名は区切り文字（通常は/文字）で始まります。パス名が区切り文字で始まっていないと，それは相対パス名で，システムはそのパスがジョブの現行作業ディレクトリーで始まっているとみなします。<strong> ソース・ストリーム・ファイル</strong><strong>の</strong><strong>エクスポート (SRCSTMF)</strong>パラメーターは，<strong> ソース・ファイル</strong><strong>の</strong><strong>エクスポート (SRCFILE)</strong>または<strong> ソース・メンバー</strong><strong>の</strong><strong>エクスポート (SRCMBR)</strong>パラメーターと一緒には指定できません。また，<strong>ターゲット・リリース</strong><strong> (TGTRLS)</strong>パラメーターでV7R3M0より前のリリースが指定された場合にも指定できません。
+</p>
+<dl>
+<dt><strong>パス名</strong></dt>
+<dd>エクスポートされるデータとプロシージャーの仕様が入っているストリーム・ファイルのパス名を指定してください。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table9" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#CRTSRVPGM.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="CRTSRVPGM.TEXT"></a>
+<h2>テキスト'記述' (TEXT)</h2>
+<p>サービス・プログラム・オブジェクトを簡単に説明するテキストを指定します。
+</p>
+<dl>
+<dt><strong class="underlined">*BLANK</strong></dt>
+<dd>テキストは指定されません。
+</dd>
+<dt><strong>*EXPORTSRC</strong></dt>
+<dd>エクスポート・ソース・ファイルに関連付けられたテキスト記述がサービス・プログラムに使用されます。<strong>*ALL</strong>が<strong>エクスポート</strong><strong> (EXPORT)</strong>パラメーターに指定されている場合，テキストはブランクになります。
+</dd>
+<dt><strong>*MODULE</strong></dt>
+<dd><strong>モジュール</strong><strong> (MODULE)</strong>パラメーターに指定された最初のモジュールに関連付けられているテキスト記述がサービス・プログラムに使用されます。
+</dd>
+<dt><strong class="italic">文字値</strong></dt>
+<dd>50文字を超えないテキストを，アポストロフィで囲んで指定してください。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table10" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#CRTSRVPGM.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="CRTSRVPGM.BNDSRVPGM"></a>
+<h2>サービス・プログラムのバインド (BNDSRVPGM)</h2>
+<p>モジュールのインポート要求が満たされているかどうかを確認するために，バインド時に調べるサービス・プログラムのエクスポートのリストを指定します。サービス・プログラムのエクスポートが検査されるのは，一連のモジュールのエクスポートによって満たされない未解決のモジュールのインポート要求がある場合だけです。BNDSRVPGMパラメーターに指定したモジュールのインポート要求を満たしているサービス・プログラムは，作成されるサービス・プログラムにバインドされます。BNDSRVPGMパラメーターに指定したサービス・プログラム名およびライブラリーは，実行時に使用するために保存されます。最大300の名前を指定することができます。
+</p>
+<p>各サービス・プログラムの活動化を制御できます。参照サービス・プログラムを，サービス・プログラムの作成と同時に活動化するかどうか，または参照サービス・プログラムからエクスポートされたプロシージャーが呼び出されるまで保留するかどうかを指定できます。活動化の遅延によってアプリケーションのパフォーマンスが向上することがあります。
+</p>
+<h3><strong>単一値</strong>
+</h3>
+<dl>
+<dt><strong class="underlined">*NONE</strong></dt>
+<dd>記号の分析解決のためにサービス・プログラムは提供されません。
+</dd>
+</dl>
+<h3><strong>要素</strong><strong>1: </strong><strong>サービス・プログラム</strong>
+</h3>
+<h3><strong>修飾子</strong><strong>1: </strong><strong>サービス・プログラム</strong>
+</h3>
+<dl>
+<dt><strong>*ALL</strong></dt>
+<dd>指定した1つ以上のライブラリーですべてのサービス・プログラム・オブジェクトを検索します。
+<p>
+<strong>注:     </strong>この値をユーザー制御環境で指定する必要があるのは，何がサービス・プログラムにバインドされるのか正確に分かっている場合だけです。*ALLと一緒に*LIBLを指定すると，サービス・プログラムの実行時に予測できない結果が起こる場合があります。何がサービス・プログラムにバインドされるのかをより正確に制御するには，総称サービス・プログラム名または特定のライブラリーを指定してください。
+</p>
+</dd>
+<dt><strong class="italic">総称名</strong></dt>
+<dd>指定した1つ以上のライブラリー内で，後ろに*がある文字で始まるすべてのサービス・プログラム・オブジェクトを指定します。
+</dd>
+<dt><strong class="italic">名前</strong></dt>
+<dd>記号の分析解決時に検査されるサービス・プログラムの名前を指定してください。
+</dd>
+</dl>
+
+<dd>
+<h3><strong>修飾子</strong><strong>2: ライブラリー</strong>
+</h3>
+<dl>
+<dt><strong class="underlined">*LIBL</strong></dt>
+<dd>指定されたサービス・プログラムのジョブのライブラリー・リストのすべてのライブラリーを検索します。サービス・プログラムの1つに，モジュール・インポートを満たすエクスポートがある場合には，このサービス・プログラムを見つけるために，実行時にライブラリー・リストが検索されます。
+</dd>
+<dt><strong class="italic">名前</strong></dt>
+<dd>サービス・プログラムを見つけるライブラリーの名前を指定してください。サービス・プログラムの1つに，モジュール・インポートを満たすエクスポートがあり，特定のライブラリーが指定された場合には，実行時に指定されたライブラリーを検索して，このサービス・プログラムを見つけます。
+<p>
+<strong>注:     </strong>QTEMPは，このパラメーターで有効なライブラリー名ではありません。
+</p>
+</dd>
+</dl>
+</dd>
+
+<h3><strong>要素</strong><strong>2:  </strong><strong>活動化</strong>
+</h3>
+<dl>
+<dt><strong class="underlined">*IMMED</strong></dt>
+<dd>バインド・サービス・プログラムは，作成中のサービス・プログラムが活動化されるとすぐに活動化されます。
+</dd>
+<dt><strong>*DEFER</strong></dt>
+<dd>バインド・サービス・プログラムの活動化は，そのプログラムがエクスポートした関数が呼び出されるまで保留にされることがあります。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table11" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#CRTSRVPGM.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="CRTSRVPGM.BNDDIR"></a>
+<h2>ディレクトリーのバインド (BNDDIR)</h2>
+<p>記号の分析解決に使用されるバインド・ディレクトリーのリストを指定します。最大300の名前を指定することができます。
+</p>
+<h3><strong>単一値</strong>
+</h3>
+<dl>
+<dt><strong class="underlined">*NONE</strong></dt>
+<dd>バインド・ディレクトリーは指定されません。
+</dd>
+</dl>
+<h3><strong>修飾子</strong><strong>1: </strong><strong>ディレクトリーのバインド</strong>
+</h3>
+<dl>
+<dt><strong class="italic">名前</strong></dt>
+<dd>記号の分析解決に使用されるバインド・ディレクトリーの名前を指定してください。
+</dd>
+</dl>
+<h3><strong>修飾子</strong><strong>2: ライブラリー</strong>
+</h3>
+<dl>
+<dt><strong class="underlined">*LIBL</strong></dt>
+<dd>最初に一致するものが見つかるまで，現行スレッドのライブラリー・リスト内のすべてのライブラリーが検索されます。
+</dd>
+</dl>
+<dl>
+<dt><strong>*CURLIB</strong></dt>
+<dd>ジョブの現行ライブラリーが検索されます。ジョブの現行ライブラリーとして指定されているライブラリーがない場合は，QGPLライブラリーが使用されます。
+</dd>
+<dt><strong>*USRLIBL</strong></dt>
+<dd>ジョブのライブラリー・リストのユーザー部分にあるライブラリーだけが検索されます。
+</dd>
+<dt><strong class="italic">名前</strong></dt>
+<dd>検索するライブラリーの名前を指定してください。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table12" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#CRTSRVPGM.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="CRTSRVPGM.ACTGRP"></a>
+<h2>活動化グループ (ACTGRP)</h2>
+<p>活動化グループを呼び出す時に，このサービス・プログラムと関連している活動化グループを指定します。活動化グループは次を提供します。
+</p>
+<ul class="cds--list--unordered">
+<li class="cds--list__item">プログラムの実行をサポートするための実行時データ構造
+</li>
+<li class="cds--list__item">アドレッシング保護
+</li>
+<li class="cds--list__item">メッセージを作成するための論理境界
+</li>
+<li class="cds--list__item">アプリケーションのクリーンアップを処理するための論理境界
+</li>
+</ul>
+<dl>
+<dt><strong class="underlined">*CALLER</strong></dt>
+<dd>このサービス・プログラムが呼び出される時に，サービス・プログラムは呼び出し元の活動化グループで活動化されます。
+</dd>
+<dt><strong class="italic">名前</strong></dt>
+<dd>呼び出されるこのサービス・プログラムと関連したグループの名前を指定してください。サービス・プログラムが呼び出される時に，活動化グループが指定された名前で現在存在している場合には，サービス・プログラムは既に存在している既存の活動化グループと関連付けられます。サービス・プログラムが呼び出される時に，活動化グループが指定された名前で現在存在しない場合には，新しい活動化グループが作成されて，サービス・プログラムは新しく作成された活動化グループと関連付けられます。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table13" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#CRTSRVPGM.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="CRTSRVPGM.OPTION"></a>
+<h2>作成オプション (OPTION)</h2>
+<p>サービス・プログラム・オブジェクトを作成する時に使用されるオプションを指定します。
+</p>
+<p>このパラメーターには最大5個までの値を指定することができます。
+</p>
+<h3><strong>サービス・プログラム・オブジェクト</strong>
+</h3>
+<dl>
+<dt><strong class="underlined">*GEN</strong></dt>
+<dd>サービス・プログラム・オブジェクトが生成されます。
+</dd>
+<dt><strong>*NOGEN</strong></dt>
+<dd>サービス・プログラム・オブジェクトは生成されません。
+</dd>
+</dl>
+<h3><strong>重複プロシージャー名</strong>
+</h3>
+<dl>
+<dt><strong class="underlined">*NODUPPROC</strong></dt>
+<dd>バインド・プロセスの記号の分析解決段階では，モジュールおよびサービス・プログラムからエクスポートされる各プロシージャー名は固有でなければなりません。
+</dd>
+<dt><strong>*DUPPROC</strong></dt>
+<dd>バインド・プロセスの記号の分析解決段階では，モジュールおよびサービス・プログラムからエクスポートされるプロシージャー名が固有である必要はありません。追加情報がILE概念(SD88-5033)にある可能性があります。
+</dd>
+</dl>
+<h3><strong>重複変数名</strong>
+</h3>
+<dl>
+<dt><strong class="underlined">*NODUPVAR</strong></dt>
+<dd>バインド・プロセスの記号の分析解決段階では，モジュールおよびサービス・プログラムからエクスポートされる各変数名は固有でなければなりません。
+</dd>
+<dt><strong>*DUPVAR</strong></dt>
+<dd>バインド・プロセスの記号の分析解決段階では，モジュールおよびサービス・プログラムからエクスポートされる変数名が固有である必要はありません。追加情報がILE概念(SD88-5033)にある可能性があります。
+</dd>
+</dl>
+<h3><strong>診断メッセージの発行</strong>
+</h3>
+<dl>
+<dt><strong class="underlined">*WARN</strong></dt>
+<dd>重複している変数またはプロシージャーが見つかった場合には，重複が見つかったことを示す診断メッセージが出されます。
+</dd>
+<dt><strong>*NOWARN</strong></dt>
+<dd>重複している変数またはプロシージャーが見つかった場合には，診断メッセージが出されません。
+</dd>
+</dl>
+<h3><strong>参照の解決（インポート）</strong>
+</h3>
+<dl>
+<dt><strong class="underlined">*RSLVREF</strong></dt>
+<dd>サービス・プログラムを作成するためのエクスポートには，すべてのインポートが分析解決されていなければなりません。
+</dd>
+<dt><strong>*UNRSLVREF</strong></dt>
+<dd>サービス・プログラムを作成するためのエクスポートには，すべてのインポートが分析解決されている必要はありません。実行時にサービス・プログラムがこれら未解決の1つのインポートを使用しようとした場合には，MCH4439実行時例外が出されます。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table14" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#CRTSRVPGM.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="CRTSRVPGM.DETAIL"></a>
+<h2>明細のリスト (DETAIL)</h2>
+<p>印刷する詳細のレベルを指定します。
+</p>
+<dl>
+<dt><strong class="underlined">*NONE</strong></dt>
+<dd>リストは生成されません。
+</dd>
+<dt><strong>*BASIC</strong></dt>
+<dd>CRTPGMに渡すオプションのリスト，および処理統計が入っています。また，このリストには，簡単な要約表も入っています。
+</dd>
+<dt><strong>*EXTENDED</strong></dt>
+<dd>*BASICリストで提供される情報の他に，このリストには，拡張要約表およびバインド情報リストも入っています。
+</dd>
+<dt><strong>*FULL</strong></dt>
+<dd>このリストには，*EXTENDEDリストおよび相互参照表が入っています。
+<p>
+<strong>注:     </strong>印刷リストが要求された場合には，印刷装置ファイル*LIBL/QSYSPRTを使用してリストが生成されます。
+</p>
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table15" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#CRTSRVPGM.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="CRTSRVPGM.ALWUPD"></a>
+<h2>更新可能 (ALWUPD)</h2>
+<p>サービス・プログラム更新(UPDSRVPGM)コマンドを使用した作成中のサービス・プログラムの更新が可能かどうかを指定します。
+</p>
+<dl>
+<dt><strong class="underlined">*YES</strong></dt>
+<dd>サービス・プログラムはUPDSRVPGMコマンドを使用して更新することができます。
+</dd>
+<dt><strong>*NO</strong></dt>
+<dd>作成中のサービス・プログラムを更新するために，UPDSRVPGMコマンドは使用することができません。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table16" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#CRTSRVPGM.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="CRTSRVPGM.ALWLIBUPD"></a>
+<h2>*SRVPGMライブラリー更新可能 (ALWLIBUPD)</h2>
+<p>UPDSRVPGMコマンドを使用して更新する時に，作成中プログラムのバインドされたサービス・プログラム・ライブラリー名を変更できるかどうかを指定します。
+</p>
+<dl>
+<dt><strong class="underlined">*NO</strong></dt>
+<dd><strong>更新可能</strong><strong> (ALWUPD)</strong>パラメーターに*YESが指定されている場合であっても，UPDSRVPGMコマンドで作成中サービス・プログラムのバインドされたサービス・プログラム・ライブラリー名を更新することはできません。
+</dd>
+<dt><strong>*YES</strong></dt>
+<dd>ALWUPD(*YES)が指定されている時に，UPDSRVPGMコマンドで作成中プログラムのバインドされたサービス・プログラム・ライブラリー名を更新することができます。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table17" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#CRTSRVPGM.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="CRTSRVPGM.USRPRF"></a>
+<h2>ユーザー・プロファイル (USRPRF)</h2>
+<p>権限の検査はこのサービス・プログラムを実行しているユーザーについてだけ行うか，あるいはサービス・プログラムを実行しているユーザーとサービス・プログラムの所有者の両方について行うかを指定します。
+</p>
+<dl>
+<dt><strong class="underlined">*USER</strong></dt>
+<dd>サービス・プログラムの実行時に，サービス・プログラム・ユーザーのユーザー・プロファイルが使用されます。
+</dd>
+<dt><strong>*OWNER</strong></dt>
+<dd>サービス・プログラムの実行時に，サービス・プログラム所有者とサービス・プログラム・ユーザーの両方のユーザー・プロファイルが使用されます。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table18" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#CRTSRVPGM.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="CRTSRVPGM.REPLACE"></a>
+<h2>プログラムの置き換え (REPLACE)</h2>
+<p>指定したライブラリーに同じ名前のサービス・プログラムが既に存在している場合に，既存のサービス・プログラムを置き換えるかどうかを指定します。
+</p>
+<dl>
+<dt><strong class="underlined">*YES</strong></dt>
+<dd>既存のサービス・プログラムをQRPLOBJライブラリーに移動して，これを置き換えます。サービス・プログラムの現在の活動化は，QRPLOBJライブラリー内のサービス・プログラムのバージョンを使用して実行し続けます。
+<p>
+<strong>注:     </strong>処理のために置き換えられる両方のサービス・プログラムは，同じユーザーが所有していなければなりません。
+</p>
+</dd>
+<dt><strong>*NO</strong></dt>
+<dd>置き換えは行われません。<strong>サービス・プログラム</strong><strong> (SRVPGM)</strong>パラメーターに指定された名前とライブラリーをもつサービス・プログラムが既に存在している場合は，エラー・メッセージが出されます。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table19" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#CRTSRVPGM.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="CRTSRVPGM.AUT"></a>
+<h2>権限 (AUT)</h2>
+<p>このオブジェクトに対する特定の権限をもっておらず，権限リスト上になく，さらにそのグループ・プロファイルまたは補足グループ・プロファイルがオブジェクトに対する特定の権限をもっていないユーザーに付与する権限を指定します。
+</p>
+<dl>
+<dt><strong class="underlined">*LIBCRTAUT</strong></dt>
+<dd>システムは，作成するオブジェクトが入っているライブラリーに対するライブラリー作成コマンド(CRTLIB)で<strong>作成権限</strong><strong>(CRTAUT)</strong>パラメーターに指定された値を使用して，このオブジェクトに対する権限を決定します。CRTAUTパラメーターに指定された値が変更された場合には，新しい値は既存のどのオブジェクトにも影響しません。
+</dd>
+</dl>
+<dl>
+<dt><strong>*CHANGE</strong></dt>
+<dd>ユーザーは，所有者に限定されるか，あるいはオブジェクト存在権限(*OBJEXIST)およびオブジェクト管理権限(*OBJMGT)によって制御される以外のオブジェクトで，すべての操作を実行することができます。ユーザーはオブジェクトでの基本的な機能を変更して実行することができます。*CHANGE権限では，オブジェクト操作(*OBJOPR)および全データ権限が提供されます。このオブジェクトが権限リストである場合は，ユーザーの追加，変更，または除去はできません。
+</dd>
+</dl>
+<dl>
+<dt><strong>*ALL</strong></dt>
+<dd>ユーザーは，所有者に限定されるか，あるいは権限リスト管理(*AUTLMGT)権限によって管理される以外のオブジェクトで，すべての操作を実行することができます。ユーザーはオブジェクトの存在を制御し，オブジェクトの機密保護を指定し，オブジェクトを変更し，さらにオブジェクトに対して基本的な機能を実行することができます。オブジェクトの所有権を変更することもできます。
+</dd>
+</dl>
+<dl>
+<dt><strong>*USE</strong></dt>
+<dd>ユーザーは，プログラムの実行またはファイルの読み取りなど，オブジェクトに対する基本操作を実行することができます。ユーザーはオブジェクトを変更できません。使用(*USE)権限は，オブジェクト操作(*OBJOPR),読み取り(*READ),および実行(*EXECUTE)権限を提供します。
+</dd>
+</dl>
+<dl>
+<dt><strong>*EXCLUDE</strong></dt>
+<dd>ユーザーはオブジェクトにアクセスすることはできません。
+</dd>
+</dl>
+<dl>
+<dt><strong class="italic">名前</strong></dt>
+<dd>オブジェクトに対する権限として使用する権限リストの名前を指定してください。権限リストに載っているユーザーは，リストに指定されているオブジェクトに対する権限が認可されます。オブジェクトが作成される時に権限リストが存在していなければなりません。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table20" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#CRTSRVPGM.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="CRTSRVPGM.TGTRLS"></a>
+<h2>ターゲット・リリース (TGTRLS)</h2>
+<p>作成中のオブジェクトの使用を計画しているオペレーティング・システムのリリースを指定します。
+</p>
+<p><strong>ターゲット・リリース</strong>を指定する時は，形式VXRXMXでリリースを指定します。ここで，VXはバージョン，RXはリリース，MXはモディフィケーション・レベルです。例えば，V5R3M0はバージョン5,リリース3,モディフィケーション・レベル0です。
+</p>
+<p>有効な値は，オペレーティング・システムの現在のバージョン，リリース，およびモディフィケーション・レベルで異なり，リリースが新しくなるたびに変わります。このコマンド・パラメーターのプロンプト時にF4を押して，有効なターゲット・リリースの値のリストを表示することができます。
+</p>
+<dl>
+<dt><strong class="underlined">*CURRENT</strong></dt>
+<dd>オブジェクトは，現在ユーザーのシステムで実行中のオペレーティング・システムのリリースで使用されます。オブジェクトは，後続のリリースのオペレーティング・システムが導入されたシステムでも使用することもできます。
+</dd>
+<dt><strong>*PRV</strong></dt>
+<dd>オブジェクトは，オペレーティング・システムの前のリリース（モディフィケーション・レベルは0)で使用されます。オブジェクトは，後続のリリースのオペレーティング・システムが導入されたシステムでも使用することもできます。
+</dd>
+<dt><strong class="italic">文字値</strong></dt>
+<dd>リリースをVXRXMXの形式で指定してください。オブジェクトは，指定したリリースまたはそれ以降のオペレーティング・システムが導入されているシステムで使用することができます。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table21" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#CRTSRVPGM.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="CRTSRVPGM.ALWRINZ"></a>
+<h2>再初期設定可能 (ALWRINZ)</h2>
+<p>サービス・プログラムがまだ活動状態である間に，そのサービス・プログラムの静的記憶域を再初期設定できるかどうかを指定します。
+</p>
+<dl>
+<dt><strong class="underlined">*NO</strong></dt>
+<dd>サービス・プログラムがまだ活動状態である間は，そのサービス・プログラムの静的記憶域を再初期設定することはできません。
+</dd>
+<dt><strong>*YES</strong></dt>
+<dd>サービス・プログラムがまだ活動状態である間に，そのサービス・プログラムの静的記憶域の再初期設定が可能です。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table22" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#CRTSRVPGM.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="CRTSRVPGM.STGMDL"></a>
+<h2>ストレージ・モデル (STGMDL)</h2>
+<p>サービス・プログラムのストレージ・モデル属性を指定します。
+</p>
+<dl>
+<dt><strong class="underlined">*SNGLVL</strong></dt>
+<dd>サービス・プログラムは単一レベル・ストレージ・モデルで作成されます。単一レベル・ストレージ・モデル・サービス・プログラムが活動化されて実行されると，これに自動および静的記憶域用の単一レベル・ストレージが提供されます。単一レベル・ストレージ・サービス・プログラムは単一レベル・ストレージ活動化グループ内でのみ実行されます。
+</dd>
+<dt><strong>*TERASPACE</strong></dt>
+<dd>サービス・プログラムはテラスペース・ストレージ・モデルで作成されます。テラスペース・ストレージ・モデル・サービス・プログラムが活動化されて実行されると，これに自動および静的記憶域用のテラスペース・ストレージが提供されます。テラスペース・ストレージ・サービス・プログラムはテラスペース・ストレージ活動化グループ内でのみ実行されます。
+</dd>
+<dt><strong>*INHERIT</strong></dt>
+<dd>サービス・プログラムは継承ストレージ・モデルで作成されます。サービス・プログラムは，活動化されると，それが活動化されて入れられる活動化グループのストレージ・モデルを採用します。言い換えれば，呼び出し元のストレージ・モデルを継承します。*INHERITストレージ・モデルを選択する場合は，*CALLERを<strong>活動化グループ</strong><strong> (ACTGRP)</strong>パラメーターに指定する必要があります。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table23" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#CRTSRVPGM.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="CRTSRVPGM.ARGOPT"></a>
+<h2>引数最適化 (ARGOPT)</h2>
+<p>引数の最適化(ARGOPT)がサービス・プログラムの作成中に実行されるかどうかを指定します。引数の最適化は，呼び出し集中型アプリケーションのパフォーマンスを向上するために，ILEプロシージャーに引数（パラメーター）を渡す手法です。このオプションによって，サービス・プログラムの作成に必要な時間が増えることがあります。
+</p>
+<dl>
+<dt><strong class="underlined">*NO</strong></dt>
+<dd>引数の最適化はサービス・プログラムの作成中には実行されません。
+</dd>
+<dt><strong>*YES</strong></dt>
+<dd>引数の最適化はサービス・プログラムの作成中に実行されます。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table24" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#CRTSRVPGM.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="CRTSRVPGM.IPA"></a>
+<h2>プロシージャー間分析 (IPA)</h2>
+<p>サービス・プログラムの作成時にプロシージャー間分析(IPA)を使用するかどうかを指定します。IPAの詳細については，ILE概念(SD88-5033)を参照してください。
+</p>
+<dl>
+<dt><strong class="underlined">*NO</strong></dt>
+<dd>プロシージャー間分析は実行されません。
+</dd>
+<dt><strong>*YES</strong></dt>
+<dd>プロシージャー間分析が実行されます。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table25" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#CRTSRVPGM.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="CRTSRVPGM.IPACTLFILE"></a>
+<h2>IPA制御ファイル (IPACTLFILE)</h2>
+<p>プロシージャー間分析(IPA)サブオプション情報が入っているファイルのパス名を提供します。このパラメーターは，IPA(*YES)が指定された時にだけ有効です。
+</p>
+<dl>
+<dt><strong class="underlined">*NONE</strong></dt>
+<dd>IPA(*YES)が指定されている時には，IPA制御ファイル情報は使用されません。
+</dd>
+<dt><strong class="italic">パス名</strong></dt>
+<dd>IPA(*YES)が指定された時に使用するIPA制御ファイルのパス名を指定してください。名前が修飾名の場合には，アポストロフィで囲まなければなりません。修飾IPA制御ファイル名の例は'/DIRECTORY1/DIRECTORY2/MYIPACTLFNAME'などです。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table26" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#CRTSRVPGM.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div><h2><a name="CRTSRVPGM.COMMAND.EXAMPLES">例</a> </h2>
+<p>
+</p><pre>CRTSRVPGM   SRVPGM(WORKDOC)
+</pre>
+<p></p>
+<p>このコマンドは，WORKDOCという名前のサービス・プログラム・オブジェクトを現行ライブラリーに作成します。このサービス・プログラムは，これもWORKDOCという名前で，ジョブの現行ライブラリーを使用して見つけられる1つのモジュール・オブジェクトから作成されます。
+</p>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table27" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#CRTSRVPGM.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div><h2><a name="CRTSRVPGM.ERROR.MESSAGES">エラー・メッセージ</a> </h2>
+<p><strong class="underlined">*ESCAPE </strong><strong class="underlined">メッセージ</strong>
+</p>
+<dl>
+<dt><strong>CPF223E</strong></dt>
+<dd>借用権限の使用属性の権限チェックが正常に実行されなかった。
+</dd>
+<dt><strong>CPF5CAC</strong></dt>
+<dd>ストリーム・ファイルをオープンできなかった。
+</dd>
+<dt><strong>CPF5D05</strong></dt>
+<dd>サービス・プログラム&amp;1は作成されなかった。
+</dd>
+<dt><strong>CPF5D07</strong></dt>
+<dd>搬出ソース・ファイル・レコード長が240より大きい。
+</dd>
+<dt><strong>CPF5D12</strong></dt>
+<dd>プログラムまたはサービス・プログラムの準備中にエラーが起こった。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table28" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#CRTSRVPGM.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+</div>
+
+
+</body></html>

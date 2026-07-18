@@ -1,0 +1,1474 @@
+<!DOCTYPE html>
+<html lang="ja"><head><meta charset="utf-8"><title>Vary Configuration  (VRYCFG)</title></head>
+<body>
+<main role="main"><article role="article" aria-labelledby="vrycfg__title__1"> 
+<h1 class="topictitle1" id="vrycfg__title__1">Vary Configuration  (VRYCFG)</h1><div id="lastModifiedDate"><span>Last Updated</span>: 2026-07-13</div>
+
+<div class="body">
+<p>
+<strong>Vary Configuration  (VRYCFG)
+</strong></p>
+
+<p>
+<strong>Where allowed to run:  
+</strong>All environments (*ALL)
+
+</p>
+
+<p>
+<strong>Threadsafe:  </strong>No
+</p>
+
+<p><a href="#vrycfg__parameters">Parameters</a></p>
+
+<p><a href="#vrycfg__examples">Examples</a></p>
+
+<p><a href="#vrycfg__errormsgs">Error messages</a></p>
+
+<div class="div" id="vrycfg__vrycfg">
+<p>
+The Vary Configuration (VRYCFG) command varies on or off one or more configuration objects, with the capability of also varying on the downline attached configuration objects.  The VRYCFG command also optionally resets the input/output processor (IOP) associated with the specified object.
+
+</p>
+
+<p>
+The configuration objects that can be varied on or off are network server descriptions, lines, controllers, and devices.  This command applies to all lines, controllers and devices on the system.
+
+</p>
+
+<p>
+For the configuration object type of media library resource, this command can be used to reset the drives within a tape media library device or change the allocation of drives within a tape media library device or an optical media library device.  To determine the current allocation of drive resources, use the Work with Media Library Status (WRKMLBSTS) command.
+
+</p>
+
+<p>
+Downline attached objects can be varied on or off along with the specified object by specifying the value *NET for the 
+<strong>Range (RANGE)
+</strong> parameter.  Downline attached objects of a line are all the attached controllers and all the devices attached to the controllers.  Downline attached objects of a controller are all the attached devices.  Devices do not have downline attachments.  The RANGE parameter has no affect when varying devices.
+
+</p>
+
+<p>
+Varying on lines synchronously or asynchronously can be controlled by the 
+<strong>Vary on wait (VRYWAIT)
+</strong> parameter.  This applies only to Ethernet, BSC, and Async line descriptions.  The value specified for the VRYWAIT parameter determines how long the system will wait until either the object goes to varied on before completing the vary on command, or until the timer expires.
+
+</p>
+
+<p>
+The VRYCFG command can also be used to reset input/output processors.  An IOP can be a communications controller, a local work station controller, or a magnetic media controller.  An IOP reset is valid only when the following are being varied on:
+
+</p>
+
+<ul class="cds--list--unordered">
+<li class="cds--list__item">
+Communications controllers
+
+</li>
+
+<li class="cds--list__item">
+Lines
+
+</li>
+
+<li class="cds--list__item">
+Local work station controllers
+
+</li>
+
+<li class="cds--list__item">
+Tapes
+
+</li>
+
+</ul>
+
+<p>
+A network server description of type *ISCSI cannot be varied on:
+
+</p>
+
+<ul class="cds--list--unordered">
+<li class="cds--list__item">
+Until the Network Server Host Adapter Device Description is varied on.
+
+</li>
+
+</ul>
+
+<p>
+A line cannot be varied on:
+
+</p>
+
+<ul class="cds--list--unordered">
+<li class="cds--list__item">
+Until the Network Server Description is varied on.
+
+</li>
+
+<li class="cds--list__item">
+Until a dial connection has been completed, in the case of switched lines.
+
+</li>
+
+</ul>
+
+<p>
+A controller cannot be varied on:
+
+</p>
+
+<ul class="cds--list--unordered">
+<li class="cds--list__item">
+If the line to which it is attached is varied off, in the case of nonswitched lines.
+
+</li>
+
+<li class="cds--list__item">
+Until a dial connection has been completed, in the case of switched lines.
+
+</li>
+
+</ul>
+
+<p>
+A device cannot be varied on:
+
+</p>
+
+<ul class="cds--list--unordered">
+<li class="cds--list__item">
+If the controller to which it is attached is varied offline.  In the case of some tape devices, they are not attached to a controller, so this restriction does not apply.
+
+</li>
+
+</ul>
+
+<p>
+A network server description cannot be varied off:
+
+</p>
+
+<ul class="cds--list--unordered">
+<li class="cds--list__item">
+Until all attached devices and controllers are varied off. Varying off the network server description also varies off the attached line descriptions.
+
+</li>
+
+</ul>
+
+<p>
+<strong>Note:     
+</strong>Use the Work with Network Service Status (WRKNWSSTS) command (available from Work with Configuration Status display) to determine the status of network server sessions with other clients.
+
+</p>
+
+<p>
+A line cannot be varied off:
+
+</p>
+
+<ul class="cds--list--unordered">
+<li class="cds--list__item">
+Until all the attached controllers and devices are varied off.
+
+</li>
+
+</ul>
+
+<p>
+A controller cannot be varied off:
+
+</p>
+
+<ul class="cds--list--unordered">
+<li class="cds--list__item">
+If it is being used, or is allocated for use.
+
+</li>
+
+<li class="cds--list__item">
+Until all the attached devices are varied off.
+
+</li>
+
+</ul>
+
+<p>
+A device cannot be varied off:
+
+</p>
+
+<ul class="cds--list--unordered">
+<li class="cds--list__item">
+If it is being used, or is allocated for use.
+
+</li>
+
+</ul>
+
+<p>
+A network server host adapter device cannot be varied off:
+
+</p>
+
+<ul class="cds--list--unordered">
+<li class="cds--list__item">
+If any network server description that is using it is varied on.
+
+</li>
+
+</ul>
+
+<p>
+When the RANGE parameter is used:
+
+</p>
+
+<ul class="cds--list--unordered">
+<li class="cds--list__item">
+For devices:  The value *NET to vary on or off downline attached objects has no effect.  Devices do not have downline attached objects.
+
+</li>
+
+<li class="cds--list__item">
+For switched lines:  The value *NET, only when varying on, has no effect.  The value *NET, when varying off, will vary off the line and its downline attached objects.
+
+</li>
+
+</ul>
+
+<p>
+When the VRYWAIT parameter is used:
+
+</p>
+
+<ul class="cds--list--unordered">
+<li class="cds--list__item">
+The time to vary on a line is the time it takes to put tasks in place to manage the line, the time to activate the communications I/O processor (IOP), including download of the IOP program, the time to establish communications with the data circuit-terminating equipment (DCE), and so on.
+
+</li>
+
+<li class="cds--list__item">
+Line vary on time does not include telephone dialing time; however,  a powered off modem may prevent vary on completion and cause the wait time to expire.  If the timer expires, an informational message will be sent to the QSYSOPR message queue.  This will be followed by the vary on completion message.
+
+</li>
+
+<li class="cds--list__item">
+If the VRYWAIT parameter is specified on the VRYCFG command for a line description that is not Ethernet, or switched BSC, or Async, the parameter is accepted but ignored.
+
+</li>
+
+</ul>
+
+</div>
+<section class="section" role="region" aria-labelledby="vrycfg__parameters__title__1" id="vrycfg__parameters"><h2 class="sectiontitle" id="vrycfg__parameters__title__1">Parameters</h2>
+
+
+<div class="tablenoborder"><div class="cds--data-table-container"><table summary="" class="defaultstyle cds--data-table"><colgroup><col><col><col><col></colgroup><thead>
+<tr>
+<th id="vrycfg__parameters__entry__1"><div class="cds--table-header-label">
+Keyword
+</div></th>
+
+<th id="vrycfg__parameters__entry__2"><div class="cds--table-header-label">
+Description
+</div></th>
+
+<th id="vrycfg__parameters__entry__3"><div class="cds--table-header-label">
+Choices
+</div></th>
+
+<th id="vrycfg__parameters__entry__4"><div class="cds--table-header-label">
+Notes
+</div></th>
+
+</tr>
+
+</thead>
+<tbody>
+<tr>
+<td headers="vrycfg__parameters__entry__1 "><a href="#vrycfg__cfgobj"><strong>CFGOBJ
+</strong></a></td>
+
+<td headers="vrycfg__parameters__entry__2 ">Configuration object
+</td>
+
+<td headers="vrycfg__parameters__entry__3 ">Single values: *APPN, *PRVCFGTYPE
+
+Other values (up to 256 repetitions): 
+<em>Generic name, name
+</em></td>
+
+<td headers="vrycfg__parameters__entry__4 ">Required, Positional 1
+</td>
+
+</tr>
+
+<tr>
+<td headers="vrycfg__parameters__entry__1 "><a href="#vrycfg__cfgtype"><strong>CFGTYPE
+</strong></a></td>
+
+<td headers="vrycfg__parameters__entry__2 ">Type
+</td>
+
+<td headers="vrycfg__parameters__entry__3 ">*NWS, *LIN, *CTL, *DEV, *MLBRSC
+</td>
+
+<td headers="vrycfg__parameters__entry__4 ">Required, Positional 2
+</td>
+
+</tr>
+
+<tr>
+<td headers="vrycfg__parameters__entry__1 "><a href="#vrycfg__status"><strong>STATUS
+</strong></a></td>
+
+<td headers="vrycfg__parameters__entry__2 ">Status
+</td>
+
+<td headers="vrycfg__parameters__entry__3 ">*ON, *OFF, *RESET, *ALLOCATE, *UNPROTECTED, *DEALLOCATE
+</td>
+
+<td headers="vrycfg__parameters__entry__4 ">Required, Positional 3
+</td>
+
+</tr>
+
+<tr>
+<td headers="vrycfg__parameters__entry__1 "><a href="#vrycfg__range"><strong>RANGE
+</strong></a></td>
+
+<td headers="vrycfg__parameters__entry__2 ">Range
+</td>
+
+<td headers="vrycfg__parameters__entry__3 "><strong><u>*NET
+</u></strong>, *OBJ
+</td>
+
+<td headers="vrycfg__parameters__entry__4 ">Optional
+</td>
+
+</tr>
+
+<tr>
+<td headers="vrycfg__parameters__entry__1 "><a href="#vrycfg__vrywait"><strong>VRYWAIT
+</strong></a></td>
+
+<td headers="vrycfg__parameters__entry__2 ">Vary on wait
+</td>
+
+<td headers="vrycfg__parameters__entry__3 ">15-180, 
+<strong><u>*CFGOBJ
+</u></strong>, *NOWAIT
+</td>
+
+<td headers="vrycfg__parameters__entry__4 ">Optional
+</td>
+
+</tr>
+
+<tr>
+<td headers="vrycfg__parameters__entry__1 "><a href="#vrycfg__ascvryoff"><strong>ASCVRYOFF
+</strong></a></td>
+
+<td headers="vrycfg__parameters__entry__2 ">Asynchronous vary off
+</td>
+
+<td headers="vrycfg__parameters__entry__3 "><strong><u>*NO
+</u></strong>, *YES
+</td>
+
+<td headers="vrycfg__parameters__entry__4 ">Optional
+</td>
+
+</tr>
+
+<tr>
+<td headers="vrycfg__parameters__entry__1 "><a href="#vrycfg__reset"><strong>RESET
+</strong></a></td>
+
+<td headers="vrycfg__parameters__entry__2 ">Reset
+</td>
+
+<td headers="vrycfg__parameters__entry__3 "><strong><u>*NO
+</u></strong>, *YES
+</td>
+
+<td headers="vrycfg__parameters__entry__4 ">Optional
+</td>
+
+</tr>
+
+<tr>
+<td headers="vrycfg__parameters__entry__1 "><a href="#vrycfg__rsrcname"><strong>RSRCNAME
+</strong></a></td>
+
+<td headers="vrycfg__parameters__entry__2 ">Resource name
+</td>
+
+<td headers="vrycfg__parameters__entry__3 ">Single values: *ALL
+
+Other values (up to 16 repetitions): 
+<em>Name
+</em></td>
+
+<td headers="vrycfg__parameters__entry__4 ">Optional
+</td>
+
+</tr>
+
+<tr>
+<td headers="vrycfg__parameters__entry__1 "><a href="#vrycfg__frcvryoff"><strong>FRCVRYOFF
+</strong></a></td>
+
+<td headers="vrycfg__parameters__entry__2 ">Forced vary off
+</td>
+
+<td headers="vrycfg__parameters__entry__3 "><strong><u>*NO
+</u></strong>, *YES, *LOCK
+</td>
+
+<td headers="vrycfg__parameters__entry__4 ">Optional
+</td>
+
+</tr>
+
+<tr>
+<td headers="vrycfg__parameters__entry__1 "><a href="#vrycfg__sbmmltjob"><strong>SBMMLTJOB
+</strong></a></td>
+
+<td headers="vrycfg__parameters__entry__2 ">Submit multiple jobs
+</td>
+
+<td headers="vrycfg__parameters__entry__3 "><strong><u>*NO
+</u></strong>, *YES
+</td>
+
+<td headers="vrycfg__parameters__entry__4 ">Optional
+</td>
+
+</tr>
+
+<tr>
+<td rowspan="3" headers="vrycfg__parameters__entry__1 "><a href="#vrycfg__jobd"><strong>JOBD
+</strong></a></td>
+
+<td headers="vrycfg__parameters__entry__2 ">Job description
+</td>
+
+<td headers="vrycfg__parameters__entry__3 "><em>Qualified object name
+</em></td>
+
+<td rowspan="3" headers="vrycfg__parameters__entry__4 ">Optional
+</td>
+
+</tr>
+
+<tr>
+<td headers="vrycfg__parameters__entry__2 ">Qualifier 1: Job description
+</td>
+
+<td headers="vrycfg__parameters__entry__3 "><em>Name
+</em>, 
+<strong><u>QBATCH
+</u></strong></td>
+
+</tr>
+
+<tr>
+<td headers="vrycfg__parameters__entry__2 ">Qualifier 2: Library
+</td>
+
+<td headers="vrycfg__parameters__entry__3 "><em>Name
+</em>, 
+<strong><u>*LIBL
+</u></strong></td>
+
+</tr>
+
+<tr>
+<td headers="vrycfg__parameters__entry__1 "><a href="#vrycfg__genpthcert"><strong>GENPTHCERT
+</strong></a></td>
+
+<td headers="vrycfg__parameters__entry__2 ">Generate path certificate
+</td>
+
+<td headers="vrycfg__parameters__entry__3 "><strong><u>*NO
+</u></strong>, *YES
+</td>
+
+<td headers="vrycfg__parameters__entry__4 ">Optional
+</td>
+
+</tr>
+
+<tr>
+<td headers="vrycfg__parameters__entry__1 "><a href="#vrycfg__resetsys"><strong>RESETSYS
+</strong></a></td>
+
+<td headers="vrycfg__parameters__entry__2 ">Reset system
+</td>
+
+<td headers="vrycfg__parameters__entry__3 "><strong><u>*NO
+</u></strong>, *YES
+</td>
+
+<td headers="vrycfg__parameters__entry__4 ">Optional
+</td>
+
+</tr>
+
+</tbody>
+</table></div>
+</div>
+
+<div class="div" id="vrycfg__cfgobj">
+<p>
+<strong>Configuration object (CFGOBJ)
+</strong></p>
+
+<p>
+Specifies the configuration objects to be varied.
+
+</p>
+
+<p>
+This is a required parameter.
+
+</p>
+
+<p>
+<strong>Single values
+</strong>
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong>*APPN
+</strong></dt>
+
+<dd class="dlentry">
+All objects that use Advanced Peer-to-Peer Networking (APPN) will be varied on or off. This value is only valid if CFGTYPE is *CTL or *DEV.
+</dd>
+
+<dt class="dlterm">
+<strong>*PRVCFGTYPE
+</strong></dt>
+
+<dd class="dlentry">
+Process all objects that were processed the last time this command was run in this job for the specified configuration object type.
+</dd>
+
+</dl>
+
+<p>
+<strong>Other values (up to 256 repetitions)
+</strong>
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><em>generic-name
+</em></strong></dt>
+
+<dd class="dlentry">
+Specify a generic name of the configuration objects to be varied.
+<p>
+<strong>Note:     
+</strong>A generic name is specified as a character string that contains one or more characters followed by an asterisk (*).  If a generic name is specified, then all objects that have names with the same prefix as the generic object name are selected.
+
+</p>
+
+</dd>
+
+<dt class="dlterm">
+<strong><em>name
+</em></strong></dt>
+
+<dd class="dlentry">
+Specify the name of the configuration object to be varied.
+</dd>
+
+</dl>
+
+</div>
+<div class="div" id="vrycfg__cfgtype">
+<p>
+<strong>Type (CFGTYPE)
+</strong></p>
+
+<p>
+Specifies the type of object to be varied.
+
+</p>
+
+<p>
+This is a required parameter.
+
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong>*NWS
+</strong></dt>
+
+<dd class="dlentry">
+The network server description is varied on or off.
+</dd>
+
+<dt class="dlterm">
+<strong>*LIN
+</strong></dt>
+
+<dd class="dlentry">
+A line description is varied on or off.
+</dd>
+
+<dt class="dlterm">
+<strong>*CTL
+</strong></dt>
+
+<dd class="dlentry">
+A controller description is varied on or off.
+</dd>
+
+<dt class="dlterm">
+<strong>*DEV
+</strong></dt>
+
+<dd class="dlentry">
+A device description is varied on or off.
+</dd>
+
+<dt class="dlterm">
+<strong>*MLBRSC
+</strong></dt>
+
+<dd class="dlentry">
+The status for drives within a media library is changed.
+</dd>
+
+</dl>
+
+</div>
+<div class="div" id="vrycfg__status">
+<p>
+<strong>Status (STATUS)
+</strong></p>
+
+<p>
+Specifies whether to vary the object on or off.
+
+</p>
+
+<p>
+This is a required parameter.
+
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong>*ON
+</strong></dt>
+
+<dd class="dlentry">
+The object is varied on.
+</dd>
+
+<dt class="dlterm">
+<strong>*OFF
+</strong></dt>
+
+<dd class="dlentry">
+The object is varied off.
+</dd>
+
+<dt class="dlterm">
+<strong>*RESET
+</strong></dt>
+
+<dd class="dlentry">
+The drive resources of the tape media library device are reset.
+<p>
+<strong>Note:     
+</strong>The drive resources must be specified for the 
+<strong>Resource name (RSRCNAME)
+</strong> parameter.
+
+</p>
+
+<p>
+The media library device must be varied on before this value can be specified.
+
+</p>
+
+</dd>
+
+<dt class="dlterm">
+<strong>*ALLOCATE
+</strong></dt>
+
+<dd class="dlentry">
+For tape, the drive resources of the tape media library device are allocated for use only by this system.  If the library device is shared by multiple systems, other systems cannot use these drives while this device description is varied on.  For optical, the drive resources of the optical media library device are allocated for use. The drive resources are only available for use by this media library device.
+<p>
+<strong>Note:     
+</strong>The drive resources must be specified for the 
+<strong>Resource name (RSRCNAME)
+</strong> parameter.
+
+</p>
+
+</dd>
+
+<dt class="dlterm">
+<strong>*UNPROTECTED
+</strong></dt>
+
+<dd class="dlentry">
+The drive resources of the tape media library device can be used by all systems that share this library device.
+<p>
+<strong>Note:     
+</strong>The drive resources must be specified for the 
+<strong>Resource name (RSRCNAME)
+</strong> parameter.
+
+</p>
+
+</dd>
+
+<dt class="dlterm">
+<strong>*DEALLOCATE
+</strong></dt>
+
+<dd class="dlentry">
+For tape, the drive resources of the tape media library device are deallocated for this system.  If the tape media library is shared by multiple systems, the drives cannot be used by this system, but can be used by other systems.  For optical, the drive resources of the optical media library resource are deallocated for the media library resource. The drives are not available for use by another optical media library device.
+<p>
+<strong>Note:     
+</strong>The drive resources must be specified for the 
+<strong>Resource name (RSRCNAME)
+</strong> parameter.
+
+</p>
+
+</dd>
+
+</dl>
+
+</div>
+<div class="div" id="vrycfg__range">
+<p>
+<strong>Range (RANGE)
+</strong></p>
+
+<p>
+Specifies what configuration elements are varied.
+
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><u>*NET
+</u></strong></dt>
+
+<dd class="dlentry">
+All downline attached configuration elements are varied.
+</dd>
+
+<dt class="dlterm">
+<strong>*OBJ
+</strong></dt>
+
+<dd class="dlentry">
+Only the specified object is varied.
+</dd>
+
+</dl>
+
+</div>
+<div class="div" id="vrycfg__vrywait">
+<p>
+<strong>Vary on wait (VRYWAIT)
+</strong></p>
+
+<p>
+Specifies whether the object is varied on asynchronously or synchronously.  For synchronous vary on, specifies how long the system waits for the vary on to complete.
+
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><u>*CFGOBJ
+</u></strong></dt>
+
+<dd class="dlentry">
+The system uses the value specified for the 
+<strong>Vary on wait (VRYWAIT)
+</strong> parameter in the line description.
+</dd>
+
+<dt class="dlterm">
+<strong>*NOWAIT
+</strong></dt>
+
+<dd class="dlentry">
+Do not wait for vary on completion.  The line will vary on asynchronously.
+</dd>
+
+<dt class="dlterm">
+<strong><em>15-180
+</em></strong></dt>
+
+<dd class="dlentry">
+Specify the number of seconds to wait.  The system will wait until either the timer expires or until the line goes to varied on, before completing the VRYCFG command.
+</dd>
+
+</dl>
+
+</div>
+<div class="div" id="vrycfg__ascvryoff">
+<p>
+<strong>Asynchronous vary off (ASCVRYOFF)
+</strong></p>
+
+<p>
+Specifies whether the object is varied off synchronously or asynchronously.
+
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><u>*NO
+</u></strong></dt>
+
+<dd class="dlentry">
+The object is varied off synchronously.
+</dd>
+
+<dt class="dlterm">
+<strong>*YES
+</strong></dt>
+
+<dd class="dlentry">
+The object is varied off asynchronously.
+</dd>
+
+</dl>
+
+</div>
+<div class="div" id="vrycfg__reset">
+<p>
+<strong>Reset (RESET)
+</strong></p>
+
+<p>
+Specifies if a reset is to be done for the IOP associated with the object.
+
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><u>*NO
+</u></strong></dt>
+
+<dd class="dlentry">
+The associated IOP is not reset.
+</dd>
+
+<dt class="dlterm">
+<strong>*YES
+</strong></dt>
+
+<dd class="dlentry">
+The associated IOP is reset.
+</dd>
+
+</dl>
+
+</div>
+<div class="div" id="vrycfg__rsrcname">
+<p>
+<strong>Resource name (RSRCNAME)
+</strong></p>
+
+<p>
+Specifies the drives within the media library device to be reset or reallocated.
+
+</p>
+
+<p>
+<strong>Single values
+</strong>
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong>*ALL
+</strong></dt>
+
+<dd class="dlentry">
+All drives within the media library device are to be reset or reallocated.
+</dd>
+
+</dl>
+
+<p>
+<strong>Other values (up to 16 repetitions)
+</strong>
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><em>name
+</em></strong></dt>
+
+<dd class="dlentry">
+Specify the name of the drive within the media library device to be reset or reallocated.
+</dd>
+
+</dl>
+
+</div>
+<div class="div" id="vrycfg__frcvryoff">
+<p>
+<strong>Forced vary off (FRCVRYOFF)
+</strong></p>
+
+<p>
+Specifies whether inquiry messages for active jobs will be issued.  This parameter is not allowed when STATUS(*ON) is specified.
+
+</p>
+
+<p>
+<strong><u> Notes: 
+</u></strong>
+</p>
+
+<ol class="cds--list--ordered--temporary">
+<li class="cds--list__item">
+This parameter is valid for STATUS(*DEALLOCATE) only when a tape media library object is specified for the 
+<strong>Configuration object (CFGOBJ)
+</strong> parameter.
+
+</li>
+
+<li class="cds--list__item">
+For any value other than *NO, the ability to reject the vary request through a user exit program is revoked.  See the QIBM_QDC_VRYEXIT exit point documentation in the i5/OS Information Center for additional information on vary configuration exit point processing.
+
+</li>
+
+
+</ol>
+
+<dl>
+<dt class="dlterm">
+<strong><u>*NO
+</u></strong></dt>
+
+<dd class="dlentry">
+Inquiry messages for active jobs will be issued.
+</dd>
+
+<dt class="dlterm">
+<strong>*YES
+</strong></dt>
+
+<dd class="dlentry">
+Inquiry messages for active jobs will not be issued and the jobs will be ended.
+</dd>
+
+<dt class="dlterm">
+<strong>*LOCK
+</strong></dt>
+
+<dd class="dlentry">
+For devices other than APPC, Intra, NWSH, and MLB an attempt will be made to get a lock on the device description no matter what its current status might be.  If the lock is successfully obtained, it will be transferred to the system job assigned to hold the device description lock when the device is in a varied off state.  If the device is in a state other than varied off, an attempt to vary off the device description will also be made.
+</dd>
+
+</dl>
+
+</div>
+<div class="div" id="vrycfg__sbmmltjob">
+<p>
+<strong>Submit multiple jobs (SBMMLTJOB)
+</strong></p>
+
+<p>
+Specifies whether or not to submit multiple batch jobs to vary the specified network server or auxiliary storage pool (ASP) device description objects.  This parameter is valid only when *NWS or *DEV is specified for the 
+<strong>Type (CFGTYPE)
+</strong> parameter.
+
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><u>*NO
+</u></strong></dt>
+
+<dd class="dlentry">
+All specified network server or auxiliary storage pool (ASP) device descriptions will be varied synchronously in the job under which the original VRYCFG command was issued.
+</dd>
+
+<dt class="dlterm">
+<strong> *YES
+</strong></dt>
+
+<dd class="dlentry">
+A new VRYCFG command will be submitted in batch for each network server or auxiliary storage pool (ASP) description specified.
+</dd>
+
+</dl>
+
+</div>
+<div class="div" id="vrycfg__jobd">
+<p>
+<strong>Job description (JOBD)
+</strong></p>
+
+<p>
+Specifies the job description to which multiple VRYCFG commands will be submitted in batch.  This parameter is valid only when CFGTYPE is *NWS or *DEV and SBMMLTJOB is *YES.
+
+</p>
+
+<p>
+<strong>Qualifier 1: Job description
+</strong>
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><u>QBATCH
+</u></strong></dt>
+
+<dd class="dlentry">
+Job description QBATCH is used as the job description of the submitted job. Note that the QBATCH job description, as shipped with the system, specifies job queue QBATCH which is configured to allow a maximum of 1 job to run at a time.
+</dd>
+
+<dt class="dlterm">
+<strong><em>name
+</em></strong></dt>
+
+<dd class="dlentry">
+Specify the name of the job description used for the submitted job. In order to run several varies in parallel a job description could be created to pass jobs to the job queue QSYS/QUSRNOMAX which is shipped with no maximum on the number of active jobs:
+<div class="p">
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>
+CRTJOBD   JOBD(QSYS/QUSRNOMAX)  JOBQ(QSYS/QUSRNOMAX)
+
+</code></pre></div><div class="docs--copy-btn"></div></div>
+
+</div>
+
+<p>
+Other considerations are that the subsystem that allocates the job queue should not have the queue in a held state and the system should not be in a restricted state.
+
+</p>
+
+</dd>
+
+</dl>
+
+<p>
+<strong>Qualifier 2: Library
+</strong>
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><u>*LIBL
+</u></strong></dt>
+
+<dd class="dlentry">
+All libraries in the library list for the current thread are searched until the first match is found.
+</dd>
+
+</dl>
+
+<dl>
+<dt class="dlterm">
+<strong><em>name
+</em></strong></dt>
+
+<dd class="dlentry">
+Specify the name of the library where the job description is located.
+</dd>
+
+</dl>
+
+</div>
+<div class="div" id="vrycfg__genpthcert">
+<p>
+<strong>Generate path certificate (GENPTHCERT)
+</strong></p>
+
+<p>
+Specifies whether to generate a new set of certificates on a remote network server system. This parameter is valid only when CFGTYPE is *NWS and the STATUS is *ON.
+
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><u>*NO
+</u></strong></dt>
+
+<dd class="dlentry">
+The set of certificates is not generated.
+</dd>
+
+<dt class="dlterm">
+<strong>*YES
+</strong></dt>
+
+<dd class="dlentry">
+The set of certificates is generated.
+<p>
+<strong>Note:     
+</strong>You must have input/output system configuration (*IOSYSCFG) and security administrator (*SECADM) special authority to use this parameter value.
+
+</p>
+
+</dd>
+
+</dl>
+
+</div>
+<div class="div" id="vrycfg__resetsys">
+<p>
+<strong>Reset system (RESETSYS)
+</strong></p>
+
+<p>
+Specifies whether to force a reset of the remote network server system, regardless of its current power state. This is an advanced function, caution is advised when this option is selected.  This parameter is valid only when CFGTYPE is *NWS and the network server description is of type *ISCSI and the STATUS is *ON.
+
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><u>*NO
+</u></strong></dt>
+
+<dd class="dlentry">
+The system is not reset.
+</dd>
+
+<dt class="dlterm">
+<strong>*YES
+</strong></dt>
+
+<dd class="dlentry">
+The system is reset.
+<p>
+<strong>Note:     
+</strong>You must have all object (*ALLOBJ) special authority to use this parameter value.
+
+</p>
+
+</dd>
+
+</dl>
+
+</div>
+</section>
+
+<section class="section" role="region" aria-labelledby="vrycfg__examples__title__1" id="vrycfg__examples"><h2 class="sectiontitle" id="vrycfg__examples__title__1">Examples</h2>
+
+<p>
+<strong>Example 1: Varying Off the Line and Attached Downline Objects
+</strong>
+</p>
+
+<div class="p">
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>
+VRYCFG   CFGOBJ(LINE1)  CFGTYPE(*LIN)  STATUS(*OFF)
+
+</code></pre></div><div class="docs--copy-btn"></div></div>
+
+</div>
+
+<p>
+This command varies off the line and all attached downline objects. The RANGE parameter took the default value of *NET.
+
+</p>
+
+<p>
+<strong>Example 2: Varying on the Controller
+</strong>
+</p>
+
+<div class="p">
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>
+VRYCFG   CFGOBJ(CONTROLLER1)  CFGTYPE(*CTL)  STATUS(*ON)
+         RANGE(*OBJ)
+
+</code></pre></div><div class="docs--copy-btn"></div></div>
+
+</div>
+
+<p>
+This command varies on only the controller.
+
+</p>
+
+<p>
+<strong>Example 3: Varying on the Device
+</strong>
+</p>
+
+<div class="p">
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>
+VRYCFG   CFGOBJ(DEVICE1)  CFGTYPE(*DEV)
+         STATUS(*ON)  RANGE(*NET)
+
+</code></pre></div><div class="docs--copy-btn"></div></div>
+
+</div>
+
+<p>
+This command varies on only the device. Note the RANGE parameter value has no effect on devices.
+
+</p>
+
+<p>
+<strong>Example 4: Varying on the Line and Resetting the IOP
+</strong>
+</p>
+
+<div class="p">
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>
+VRYCFG   CFGOBJ(LINE1)  CFGTYPE(*LIN)  STATUS(*ON)
+         RANGE(*OBJ)  RESET(*YES)
+
+</code></pre></div><div class="docs--copy-btn"></div></div>
+
+</div>
+
+<p>
+This command varies on only the line and resets the associated IOP.
+
+</p>
+
+<p>
+<strong>Example 5: Using Line Description Value for Wait Time
+</strong>
+</p>
+
+<div class="p">
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>
+VRYCFG   CFGOBJ(LINE1)  OJBTYPE(*LIN)  STATUS(*ON)
+         RANGE(*OBJ)  VRYWAIT(*CFGOBJ)
+
+</code></pre></div><div class="docs--copy-btn"></div></div>
+
+</div>
+
+<p>
+This command varies on only the line and uses the vary wait time value specified in the line description for LINE1.
+
+</p>
+
+<p>
+<strong>Example 6: Using 80 Seconds as Vary Wait Time
+</strong>
+</p>
+
+<div class="p">
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>
+VRYCFG   CFGOBJ(LINE1)  CFGTYPE(*LIN)  STATUS(*ON)
+         RANGE(*OBJ)  VRYWAIT(80)
+
+</code></pre></div><div class="docs--copy-btn"></div></div>
+
+</div>
+
+<p>
+This command varies on only the line using 80 seconds as the vary wait time value.
+
+</p>
+
+<p>
+<strong>Example 7: Varying on a Network Server Description
+</strong>
+</p>
+
+<div class="p">
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>
+VRYCFG   CFGOBJ(SERVER1)  CFGTYPE(*NWS)  STATUS(*ON)
+
+</code></pre></div><div class="docs--copy-btn"></div></div>
+
+</div>
+
+<p>
+This command varies on the network server description named SERVER1 and its attached line descriptions. The vary on wait value specified in the network server description is used. Note that the RANGE and RESET parameters are ignored for network servers if they are specified.
+
+</p>
+
+<p>
+<strong>Example 8: Resetting Drives Within a Media Library
+</strong>
+</p>
+
+<div class="p">
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>
+VRYCFG   CFGOBJ(MYLIBRARY)  CFGTYPE(*MLBRSC)  STATUS(*RESET)
+         RSRCNAME(TAP01 TAP02)
+
+</code></pre></div><div class="docs--copy-btn"></div></div>
+
+</div>
+
+<p>
+This command resets the drives TAP01 and TAP02 within the media library device MYLIBRARY. The device MYLIBRARY must be varied on to perform this action.
+
+</p>
+
+<p>
+<strong>Example 9: Deallocating Drives Within a Media Library
+</strong>
+</p>
+
+<div class="p">
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>
+VRYCFG   CFGOBJ(MYLIBRARY)  CFGTYPE(*MLBRSC)
+         STATUS(*DEALLOCATE)  RSRCNAME(OPT02)
+
+</code></pre></div><div class="docs--copy-btn"></div></div>
+
+</div>
+
+<p>
+This command deallocates drive OPT02 within the media library device MYLIBRARY. The device MYLIBRARY must be varied on to perform this action.
+
+</p>
+
+<p>
+<strong>Example 10: Varying On Multiple Network Server Descriptions in Parallel
+</strong>
+</p>
+
+<div class="p">
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>
+VRYCFG   CFGOBJ(IPCS*)  CFGTYPE(*NWS)  STATUS(*ON)
+         SBMMLTJOB(*YES) JOBD(*LIBL/QBATCH)
+
+</code></pre></div><div class="docs--copy-btn"></div></div>
+
+</div>
+
+<p>
+This command submits a separate batch job to perform the vary on for each network server description which has a name that begins with IPCS.  The number of jobs that run in parallel depends on the configuration of the subsystem being used.
+
+</p>
+
+<p>
+<strong>Example 11: Reset Certificates when Varying On Network Server Description 
+</strong>
+</p>
+
+<div class="p">
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>
+VRYCFG   CFGOBJ(SERVER1)  CFGTYPE(*NWS) STATUS(*ON)
+         GENPTHCERT(*YES)
+
+</code></pre></div><div class="docs--copy-btn"></div></div>
+
+</div>
+
+<p>
+This command will vary on the network server description and request that a new set of certificates are generated during the vary on.
+
+</p>
+
+<p>
+<strong>Example 12: Restart Remote Integrated Server at Vary on of Server Description
+</strong>
+</p>
+
+<div class="p">
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>
+VRYCFG   CFGOBJ(SERVER1) CFGTYPE(*NWS) STATUS(*ON)
+         RESETSYS(*YES)
+
+</code></pre></div><div class="docs--copy-btn"></div></div>
+
+</div>
+
+<p>
+This command will vary on the network server description and request reset of the remote integrated server during the vary on of SERVER1.
+
+</p>
+
+</section>
+
+<section class="section" role="region" aria-labelledby="vrycfg__errormsgs__title__1" id="vrycfg__errormsgs"><h2 class="sectiontitle" id="vrycfg__errormsgs__title__1">Error messages</h2>
+
+<p>
+<strong><u>*ESCAPE Messages
+</u></strong>
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong>CPF26AF
+</strong></dt>
+
+<dd class="dlentry">
+Status of drive resources in device description &amp;1 not changed.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF26B6
+</strong></dt>
+
+<dd class="dlentry">
+Initialization program has ended with a hard error.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF26B7
+</strong></dt>
+
+<dd class="dlentry">
+Initialization program ended with soft error.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF262E
+</strong></dt>
+
+<dd class="dlentry">
+Error occurred during vary on at IPL processing.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF262F
+</strong></dt>
+
+<dd class="dlentry">
+QDCTRF stopped due to failure.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF2640
+</strong></dt>
+
+<dd class="dlentry">
+Vary command not processed.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF2659
+</strong></dt>
+
+<dd class="dlentry">
+Vary command may not have completed.
+</dd>
+
+</dl>
+
+</section>
+
+</div>
+
+</article></main>
+</body></html>

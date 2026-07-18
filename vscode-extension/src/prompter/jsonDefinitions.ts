@@ -1,6 +1,22 @@
 import * as vscode from "vscode";
 import type { Dialect, LanguageId, PrompterDefinition } from "./types";
 
+/**
+ * CL 定義の表示言語。設定 `rpgClSupport.language` で切り替える。
+ * 既定は VS Code の表示言語に合わせ、日本語環境なら ja、それ以外は en。
+ */
+export function resolveDefinitionLanguage(): "ja" | "en" {
+  const configured = vscode.workspace
+    .getConfiguration("rpgClSupport")
+    .get<string>("language");
+
+  if (configured === "ja" || configured === "en") {
+    return configured;
+  }
+  // "auto"（既定）または未設定
+  return vscode.env.language?.toLowerCase().startsWith("ja") ? "ja" : "en";
+}
+
 export class PrompterDefinitionLoader {
   private async loadDefinitionFromUri(uri: vscode.Uri): Promise<PrompterDefinition> {
     const document = await vscode.workspace.openTextDocument(uri);
@@ -56,9 +72,13 @@ export class PrompterDefinitionLoader {
     workspaceFolder: vscode.WorkspaceFolder | undefined,
     context: vscode.ExtensionContext
   ): Promise<PrompterDefinition[]> {
-    // RPG は方言別サブディレクトリ rpg/{dialect}/ を使う。CL は従来どおり cl/。
+    // RPG は方言別サブディレクトリ rpg/{dialect}/ を使う。
+    // CL は言語別サブディレクトリ cl/{lang}/ を使う（原典が日本語版と英語版で
+    // 別々にあり、プロンプターの表示語もそれに従うため）。
     const subPath =
-      language === "rpg-fixed" ? ["rpg", dialect ?? "ile"] : ["cl"];
+      language === "rpg-fixed"
+        ? ["rpg", dialect ?? "ile"]
+        : ["cl", resolveDefinitionLanguage()];
 
     // 1) Load default definitions bundled with the extension
     const defaultDirUri = vscode.Uri.joinPath(

@@ -1,0 +1,762 @@
+<!DOCTYPE html>
+<html lang="ja"><head><meta charset="utf-8"><title>Change Data Area  (CHGDTAARA)</title></head>
+<body>
+<main role="main"><article role="article" aria-labelledby="chgdtaara__title__1"> 
+<h1 class="topictitle1" id="chgdtaara__title__1">Change Data Area  (CHGDTAARA)</h1><div id="lastModifiedDate"><span>Last Updated</span>: 2026-07-13</div>
+
+<div class="body">
+<p>
+<strong>Change Data Area  (CHGDTAARA)
+</strong></p>
+
+<p>
+<strong>Where allowed to run:  
+</strong>All environments (*ALL)
+
+</p>
+
+<p>
+<strong>Threadsafe:  </strong>Conditional
+</p>
+
+<p><a href="#chgdtaara__parameters">Parameters</a></p>
+
+<p><a href="#chgdtaara__examples">Examples</a></p>
+
+<p><a href="#chgdtaara__errormsgs">Error messages</a></p>
+
+<div class="div" id="chgdtaara__chgdtaara">
+<p>
+The Change Data Area (CHGDTAARA) command changes the value of the local data area (*LDA), the group data area (*GDA), the program initialization parameter data area (*PDA), or the specified data area that is stored in a library.  The new value must have the same type and a length less than or equal to the data area length or the specified substring length.
+
+</p>
+
+<p>
+In group jobs, the data area specified may be the group data area (*GDA).  This data area is automatically associated with the group and cannot be accessed from jobs outside the group.  The length of this character data area is 512 bytes.  More information about group jobs is in the Work management topic collection in the IBM i Information Center at http://www.ibm.com/systems/i/infocenter/.
+
+</p>
+
+<p>
+The local data area (*LDA) is a character data area 1024 bytes in length.  It is automatically associated with your job and other jobs cannot get access to it.
+
+</p>
+
+<p>
+In prestart jobs, the data area specified may be the data area that contains program initialization parameter data (*PDA).  This data area is automatically associated with your prestart job and other jobs cannot get access to it.  The length of this character data area is 2000 bytes.  More information about prestart jobs is in the Work management topic collection in the IBM i Information Center at http://www.ibm.com/systems/i/infocenter/.
+
+</p>
+
+<p>
+For character data areas, a substring of the data area can be changed without affecting the remainder of the data area.  This substring is defined by specifying the starting position and the length of the substring.  In this case, the new value must have a length less than or equal to the substring length.
+
+</p>
+
+<p>
+When this command is run to change a data area other than the local data area, group data area, or program initialization parameter data area, the data area is locked by the job or thread during the change operation so that commands in other jobs cannot change or delete it until the operation is completed.  If the data area is shared with other jobs and it is updated in steps involving more than one command in a job, the data area should be explicitly allocated to that job until all the steps have been performed.  Data areas, other than the group data area , local data area, or program initialization parameter data area can be explicitly allocated with the Allocate Object (ALCOBJ) command; no allocation is necessary when the CHGDTAARA command is run specifying the group data area, local data area, or program initialization parameter data area.
+
+</p>
+
+<p>
+<strong>Restrictions:
+</strong>
+</p>
+
+<ol class="cds--list--ordered--temporary">
+<li class="cds--list__item">
+To use this command, the user must have change (*CHANGE) authority for the data area being changed and execute (*EXECUTE) authority for the library in which it is stored.  No specific authority is required for the local data area, group data area, or program initialization parameter data area.
+
+</li>
+
+<li class="cds--list__item">
+This command is conditionally threadsafe.  The following restrictions apply:
+<ol type="a" class="cds--list--ordered--temporary cds--list--nested">
+<li class="cds--list__item">
+Changing DDM data areas in a job that allows multiple threads is not threadsafe.
+
+</li>
+
+<li class="cds--list__item">
+Changing DDM data areas will fail when more than one thread is active in a job.
+
+</li>
+
+<li class="cds--list__item">
+Changing the special data areas (*LDA, *GDA and *PDA) is allowed from the initial thread only and will fail if attempted from a secondary thread.
+
+</li>
+
+
+</ol>
+
+
+</li>
+
+
+</ol>
+
+</div>
+<section class="section" role="region" aria-labelledby="chgdtaara__parameters__title__1" id="chgdtaara__parameters"><h2 class="sectiontitle" id="chgdtaara__parameters__title__1">Parameters</h2>
+
+
+<div class="tablenoborder"><div class="cds--data-table-container"><table summary="" class="defaultstyle cds--data-table"><colgroup><col><col><col><col></colgroup><thead>
+<tr>
+<th id="chgdtaara__parameters__entry__1"><div class="cds--table-header-label">
+Keyword
+</div></th>
+
+<th id="chgdtaara__parameters__entry__2"><div class="cds--table-header-label">
+Description
+</div></th>
+
+<th id="chgdtaara__parameters__entry__3"><div class="cds--table-header-label">
+Choices
+</div></th>
+
+<th id="chgdtaara__parameters__entry__4"><div class="cds--table-header-label">
+Notes
+</div></th>
+
+</tr>
+
+</thead>
+<tbody>
+<tr>
+<td rowspan="7" headers="chgdtaara__parameters__entry__1 "><a href="#chgdtaara__dtaara"><strong>DTAARA
+</strong></a></td>
+
+<td headers="chgdtaara__parameters__entry__2 ">Data area specification
+</td>
+
+<td headers="chgdtaara__parameters__entry__3 "><em>Element list
+</em></td>
+
+<td rowspan="7" headers="chgdtaara__parameters__entry__4 ">Required, Positional 1
+</td>
+
+</tr>
+
+<tr>
+<td headers="chgdtaara__parameters__entry__2 ">Element 1: Data area
+</td>
+
+<td headers="chgdtaara__parameters__entry__3 ">Single values: *LDA, *GDA, *PDA
+
+Other values: 
+<em>Qualified object name
+</em></td>
+
+</tr>
+
+<tr>
+<td headers="chgdtaara__parameters__entry__2 ">Qualifier 1: Data area
+</td>
+
+<td headers="chgdtaara__parameters__entry__3 "><em>Name
+</em></td>
+
+</tr>
+
+<tr>
+<td headers="chgdtaara__parameters__entry__2 ">Qualifier 2: Library
+</td>
+
+<td headers="chgdtaara__parameters__entry__3 "><em>Name
+</em>, 
+<strong><u>*LIBL
+</u></strong>, *CURLIB
+</td>
+
+</tr>
+
+<tr>
+<td headers="chgdtaara__parameters__entry__2 ">Element 2: Substring specifications
+</td>
+
+<td headers="chgdtaara__parameters__entry__3 ">Single values: 
+<strong><u>*ALL
+</u></strong>
+Other values: 
+<em>Element list
+</em></td>
+
+</tr>
+
+<tr>
+<td headers="chgdtaara__parameters__entry__2 ">Element 1: Substring starting position
+</td>
+
+<td headers="chgdtaara__parameters__entry__3 ">1-2000
+</td>
+
+</tr>
+
+<tr>
+<td headers="chgdtaara__parameters__entry__2 ">Element 2: Substring length
+</td>
+
+<td headers="chgdtaara__parameters__entry__3 ">1-2000
+</td>
+
+</tr>
+
+<tr>
+<td headers="chgdtaara__parameters__entry__1 "><a href="#chgdtaara__value"><strong>VALUE
+</strong></a></td>
+
+<td headers="chgdtaara__parameters__entry__2 ">New value
+</td>
+
+<td headers="chgdtaara__parameters__entry__3 "><em>Not restricted
+</em></td>
+
+<td headers="chgdtaara__parameters__entry__4 ">Required, Positional 2
+</td>
+
+</tr>
+
+</tbody>
+</table></div>
+</div>
+
+<div class="div" id="chgdtaara__dtaara">
+<p>
+<strong>Data area specification (DTAARA)
+</strong></p>
+
+<p>
+Specifies the name and library of the data area whose value is being changed.  It optionally specifies, for character data areas only, the starting position and length of the character string that is changed in the data area.
+
+</p>
+
+<p>
+This is a required parameter.
+
+</p>
+
+<p>
+<strong>Element 1: Data area
+</strong>
+</p>
+
+<p>
+<strong>Single values
+</strong>
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong>*LDA
+</strong></dt>
+
+<dd class="dlentry">
+The local data area associated with your job is changed. The length of this character data area is 1024 bytes.
+</dd>
+
+<dt class="dlterm">
+<strong>*GDA
+</strong></dt>
+
+<dd class="dlentry">
+The group data area associated with your group job is changed. The length of this character data area is 512 bytes.
+</dd>
+
+<dt class="dlterm">
+<strong>*PDA
+</strong></dt>
+
+<dd class="dlentry">
+The program initialization parameter data area associated with your prestart job is changed.  The length of this character data area is 2000 bytes.
+</dd>
+
+</dl>
+
+<dl>
+<dt class="dlterm">
+<strong></strong></dt>
+
+<dd class="dlentry">
+<p>
+<strong>Qualifier 1: Data area
+</strong>
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><em>name
+</em></strong></dt>
+
+<dd class="dlentry">
+Specify the name of the data area to be changed.
+</dd>
+
+</dl>
+
+</dd>
+
+<dt class="dlterm">
+<strong></strong></dt>
+
+<dd class="dlentry">
+<p>
+<strong>Qualifier 2: Library
+</strong>
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><u>*LIBL
+</u></strong></dt>
+
+<dd class="dlentry">
+All libraries in the thread's library list are searched until a match is found.
+</dd>
+
+<dt class="dlterm">
+<strong>*CURLIB
+</strong></dt>
+
+<dd class="dlentry">
+The current library for the thread is used to locate the object.  If no library is specified as the current library for the thread, the QGPL library is used.
+</dd>
+
+</dl>
+
+<dl>
+<dt class="dlterm">
+<strong><em>name
+</em></strong></dt>
+
+<dd class="dlentry">
+Specify the library where the data area is located.
+</dd>
+
+</dl>
+
+</dd>
+
+</dl>
+
+<p>
+<strong>Element 2: Substring specifications
+</strong>
+</p>
+
+<p>
+<strong>Single values
+</strong>
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><u>*ALL
+</u></strong></dt>
+
+<dd class="dlentry">
+The entire data area is changed.
+</dd>
+
+</dl>
+
+<dl>
+<dt class="dlterm">
+<strong></strong></dt>
+
+<dd class="dlentry">
+<p>
+<strong>Element 1: Substring starting position
+</strong>
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><em>1-2000
+</em></strong></dt>
+
+<dd class="dlentry">
+Specify the starting position of the data area being changed.
+</dd>
+
+</dl>
+
+</dd>
+
+<dt class="dlterm">
+<strong></strong></dt>
+
+<dd class="dlentry">
+<p>
+<strong>Element 2: Substring length
+</strong>
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><em>1-2000
+</em></strong></dt>
+
+<dd class="dlentry">
+Specify the length of the data area substring being changed.
+</dd>
+
+</dl>
+
+</dd>
+
+</dl>
+
+</div>
+<div class="div" id="chgdtaara__value">
+<p>
+<strong>New value (VALUE)
+</strong></p>
+
+<p>
+Specifies the new value stored in the data area.  Specify a value that is valid for the data attributes specified in the data area's description.  If *CHAR or *LGL was specified for the 
+<strong>Type (TYPE)
+</strong> parameter of the Create Data Area (CRTDTAARA) command when the data area was created and the value specified here is numeric, the value must be enclosed in apostrophes.  If *DEC was specified for the 
+<strong>Type (TYPE)
+</strong> parameter of the CRTDTAARA command, the value must not be enclosed in apostrophes.
+
+</p>
+
+<p>
+This is a required parameter.
+
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><em>unrestricted-value
+</em></strong></dt>
+
+<dd class="dlentry">
+Specify the value of the data area.
+</dd>
+
+</dl>
+
+</div>
+</section>
+
+<section class="section" role="region" aria-labelledby="chgdtaara__examples__title__1" id="chgdtaara__examples"><h2 class="sectiontitle" id="chgdtaara__examples__title__1">Examples</h2>
+
+<p>
+<strong>Example 1: Changing the Data Area Value
+</strong>
+</p>
+
+<div class="p">
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>
+CHGDTAARA   DTAARA(MYLIB/MYDATA)  VALUE(GOODNIGHT)
+
+</code></pre></div><div class="docs--copy-btn"></div></div>
+
+</div>
+
+<p>
+This command changes the value of the data area named MYDATA in library MYLIB to GOODNIGHT. The data area must be for character data and must be 9 or more characters in length.
+
+</p>
+
+<p>
+<strong>Example 2: Changing the Logical Value of the Data Area
+</strong>
+</p>
+
+<div class="p">
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>
+CHGDTAARA   DTAARA(PAYROLLSW)  VALUE('0')
+
+</code></pre></div><div class="docs--copy-btn"></div></div>
+
+</div>
+
+<p>
+This command changes the logical value of the data area named PAYROLLSW to zero (0). The library search list is used to locate the data area.
+
+</p>
+
+<p>
+<strong>Example 3: Changing Specific Characters of the Local Data Area
+</strong>
+</p>
+
+<div class="p">
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>
+CHGDTAARA   DTAARA(*LDA (5 4))  VALUE('TWO')
+
+</code></pre></div><div class="docs--copy-btn"></div></div>
+
+</div>
+
+<p>
+This command changes characters 5 through 8 of the user's local data area. Because the new value is shorter than the substring, it is padded with a blank.
+
+</p>
+
+</section>
+
+<section class="section" role="region" aria-labelledby="chgdtaara__errormsgs__title__1" id="chgdtaara__errormsgs"><h2 class="sectiontitle" id="chgdtaara__errormsgs__title__1">Error messages</h2>
+
+<p>
+<strong><u>*ESCAPE Messages
+</u></strong>
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong>CPF101A
+</strong></dt>
+
+<dd class="dlentry">
+Operation on DDM data area &amp;1 in &amp;2 failed.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF1015
+</strong></dt>
+
+<dd class="dlentry">
+Data area &amp;1 in &amp;2 not found.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF1018
+</strong></dt>
+
+<dd class="dlentry">
+No authority to change data area.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF1019
+</strong></dt>
+
+<dd class="dlentry">
+VALUE parameter not correct.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF1020
+</strong></dt>
+
+<dd class="dlentry">
+VALUE parameter too long.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF1021
+</strong></dt>
+
+<dd class="dlentry">
+Library &amp;1 not found for data area &amp;2.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF1022
+</strong></dt>
+
+<dd class="dlentry">
+No authority to library &amp;1 data area &amp;2.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF1026
+</strong></dt>
+
+<dd class="dlentry">
+VALUE parameter must be '0' or '1'.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF1043
+</strong></dt>
+
+<dd class="dlentry">
+Boundary alignment for data area not valid.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF1044
+</strong></dt>
+
+<dd class="dlentry">
+AREA parameter not valid for data area.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF1045
+</strong></dt>
+
+<dd class="dlentry">
+CPYPTR parameter not valid for data area.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF1046
+</strong></dt>
+
+<dd class="dlentry">
+DTAARA(*GDA) not valid because job not group job.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF1062
+</strong></dt>
+
+<dd class="dlentry">
+Null string not valid as character value.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF1063
+</strong></dt>
+
+<dd class="dlentry">
+Cannot allocate data area &amp;1 in library &amp;2.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF1067
+</strong></dt>
+
+<dd class="dlentry">
+Cannot allocate library &amp;1.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF1072
+</strong></dt>
+
+<dd class="dlentry">
+DTAARA(*PDA) not valid because job not prestart job.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF1087
+</strong></dt>
+
+<dd class="dlentry">
+Substring not allowed for decimal or logical data area.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF1088
+</strong></dt>
+
+<dd class="dlentry">
+Starting position outside of data area.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF1089
+</strong></dt>
+
+<dd class="dlentry">
+Substring specified for data area not valid.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF1138
+</strong></dt>
+
+<dd class="dlentry">
+VALUE parameter not valid type for data area &amp;1.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF1155
+</strong></dt>
+
+<dd class="dlentry">
+VALUE parameter too long for data area &amp;1.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF1162
+</strong></dt>
+
+<dd class="dlentry">
+Boundary alignment for data area &amp;1 not valid.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF1163
+</strong></dt>
+
+<dd class="dlentry">
+AREA parameter not valid for data area &amp;1.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF1168
+</strong></dt>
+
+<dd class="dlentry">
+CPYPTR parameter not valid for data area &amp;1.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF1170
+</strong></dt>
+
+<dd class="dlentry">
+Starting position outside of data area &amp;1.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF1192
+</strong></dt>
+
+<dd class="dlentry">
+Substring specified for data area &amp;1 not valid.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF180B
+</strong></dt>
+
+<dd class="dlentry">
+Function &amp;1 not allowed.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF180C
+</strong></dt>
+
+<dd class="dlentry">
+Function &amp;1 not allowed.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF18BE
+</strong></dt>
+
+<dd class="dlentry">
+Data area &amp;1 not changed because entry not journaled.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF4ACF
+</strong></dt>
+
+<dd class="dlentry">
+Operation failed for object &amp;1 in &amp;2 type *&amp;3 due to replication errors.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF9899
+</strong></dt>
+
+<dd class="dlentry">
+Error occurred during processing of command.
+</dd>
+
+</dl>
+
+</section>
+
+</div>
+
+</article></main>
+</body></html>

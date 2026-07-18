@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="ja"><head><meta charset="utf-8"><title>Do Until  (DOUNTIL)</title></head>
+<body>
+<main role="main"><article role="article" aria-labelledby="dountil__title__1"> 
+<h1 class="topictitle1" id="dountil__title__1">Do Until  (DOUNTIL)</h1><div id="lastModifiedDate"><span>Last Updated</span>: 2026-07-13</div>
+
+<div class="body">
+<p>
+<strong>Do Until  (DOUNTIL)
+</strong></p>
+
+<div class="p">
+<strong>Where allowed to run:  
+</strong><ul class="cds--list--unordered">
+<li class="cds--list__item">
+Batch program (*BPGM)
+
+</li>
+
+<li class="cds--list__item">
+Interactive program (*IPGM)
+
+</li>
+
+</ul>
+
+</div>
+
+<p>
+<strong>Threadsafe:  </strong>Yes
+</p>
+
+<p><a href="#dountil__parameters">Parameters</a></p>
+
+<p><a href="#dountil__examples">Examples</a></p>
+
+<p><a href="#dountil__errormsgs">Error messages</a></p>
+
+<div class="div" id="dountil__dountil">
+<p>
+The Do Until (DOUNTIL) command processes a group of CL commands one or more times.  After the commands in the group have been processed, the logical condition is evaluated.
+
+</p>
+
+<p>
+If the logical expression is false (a logical 0), the commands in this Do Until group are processed again for as long as the expression continues to evaluate to false.  If the logical expression evaluates to true (a logical 1), control passes to the next command following the associated ENDDO command.
+
+</p>
+
+<p>
+<strong>Restrictions:
+</strong>
+</p>
+
+<ul class="cds--list--unordered">
+<li class="cds--list__item">
+This command is valid only in a CL program or ILE CL procedure.
+
+</li>
+
+<li class="cds--list__item">
+Up to 25 levels of nested DO, DOWHILE, DOUNTIL and DOFOR commands are allowed.
+
+</li>
+
+</ul>
+
+</div>
+<section class="section" role="region" aria-labelledby="dountil__parameters__title__1" id="dountil__parameters"><h2 class="sectiontitle" id="dountil__parameters__title__1">Parameters</h2>
+
+
+<div class="tablenoborder"><div class="cds--data-table-container"><table summary="" class="defaultstyle cds--data-table"><colgroup><col><col><col><col></colgroup><thead>
+<tr>
+<th id="dountil__parameters__entry__1"><div class="cds--table-header-label">
+Keyword
+</div></th>
+
+<th id="dountil__parameters__entry__2"><div class="cds--table-header-label">
+Description
+</div></th>
+
+<th id="dountil__parameters__entry__3"><div class="cds--table-header-label">
+Choices
+</div></th>
+
+<th id="dountil__parameters__entry__4"><div class="cds--table-header-label">
+Notes
+</div></th>
+
+</tr>
+
+</thead>
+<tbody>
+<tr>
+<td headers="dountil__parameters__entry__1 "><a href="#dountil__cond"><strong>COND
+</strong></a></td>
+
+<td headers="dountil__parameters__entry__2 ">Condition
+</td>
+
+<td headers="dountil__parameters__entry__3 "><em>Logical value
+</em></td>
+
+<td headers="dountil__parameters__entry__4 ">Required, Positional 1
+</td>
+
+</tr>
+
+</tbody>
+</table></div>
+</div>
+
+<div class="div" id="dountil__cond">
+<p>
+<strong>Condition (COND)
+</strong></p>
+
+<p>
+Specifies the logical expression that is evaluated to determine a condition in the program and whether the loop is processed again.  Refer to "Logical Expressions" in the CL topic collection in the Programming category in the IBM i Information Center at http://www.ibm.com/systems/i/infocenter/ for a description of logical expressions.  Note that variables, constants, and the %SUBSTRING, %SWITCH, and %BINARY built-in functions can be used within the expression.
+
+</p>
+
+<p>
+To test if a pointer has a null value, the CL pointer variable can be compared to the special value *NULL if the CL source is being compiled with the Create CL Module (CRTCLMOD) or Create Bound CL Program (CRTBNDCL) command.  If the CL source is being compiled with the Create CL Program (CRTCLPGM) command, compare the CL pointer variable to another CL pointer variable that was declared with ADDRESS(*NULL) and has not been changed.
+
+</p>
+
+<p>
+This is a required parameter.
+
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><em>logical-value
+</em></strong></dt>
+
+<dd class="dlentry">
+Specify the name of a CL logical variable or a logical expression.
+</dd>
+
+</dl>
+
+</div>
+</section>
+
+<section class="section" role="region" aria-labelledby="dountil__examples__title__1" id="dountil__examples"><h2 class="sectiontitle" id="dountil__examples__title__1">Examples</h2>
+
+<p>
+<strong>Example 1: DOUNTIL Command Group
+</strong>
+</p>
+
+<div class="p">
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>
+DCL   VAR(&amp;INT)  TYPE(*INT)  LEN(2)  VALUE(10)
+ :
+DOUNTIL  COND(&amp;INT *GT 100)
+ :   (group of CL commands)
+ CHGVAR   VAR(&amp;INT)  VALUE(&amp;INT + &amp;VAL)
+ENDDO
+
+</code></pre></div><div class="docs--copy-btn"></div></div>
+
+</div>
+
+<p>
+The group of commands between the DOUNTIL and ENDDO will be processed until the value of &amp;INT is greater than 100 when the ENDDO command is processed.  The contents of the DOUNTIL group will be processed at least once regardless of the value of &amp;INT at the beginning of the group.
+
+</p>
+
+<p>
+<strong>Example 2: DOUNTIL Forever Command Group
+</strong>
+</p>
+
+<div class="p">
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>
+DOUNTIL   COND('0')
+ :   (group of CL commands)
+ENDDO
+
+</code></pre></div><div class="docs--copy-btn"></div></div>
+
+</div>
+
+<p>
+The group of commands between the DOUNTIL and ENDDO will be processed until either a LEAVE or GOTO command is encountered.
+
+</p>
+
+</section>
+
+<section class="section" role="region" aria-labelledby="dountil__errormsgs__title__1" id="dountil__errormsgs"><h2 class="sectiontitle" id="dountil__errormsgs__title__1">Error messages</h2>
+
+<p>
+None
+
+</p>
+
+</section>
+
+</div>
+
+</article></main>
+</body></html>

@@ -12,8 +12,15 @@
 //   除去（本文・表・桁構造・<style> は保持）。manifest items/gaps は JSON フロー記法
 //   （＝有効な YAML）で書き、再実行時に読み戻してマージできるようにする。
 
-const _pw = await import(process.env.PLAYWRIGHT_PKG || 'playwright');
-const chromium = _pw.chromium || (_pw.default && _pw.default.chromium); // CJS/ESM interop
+// Playwright はブラウザ描画が要る取得先だけで使う。topic(コンテンツAPI)で
+// 取れるものは不要なので、遅延読み込みにする（未導入でも API 取得は動く）。
+let chromium = null;
+async function loadChromium() {
+  if (chromium) return chromium;
+  const pw = await import(process.env.PLAYWRIGHT_PKG || 'playwright');
+  chromium = pw.chromium || (pw.default && pw.default.chromium);
+  return chromium;
+}
 import { readFileSync, writeFileSync, mkdirSync, existsSync, statSync } from 'fs';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
@@ -27,6 +34,11 @@ const { version, categories } = await import('./sources.mjs');
 // --- args ---
 const onlyArg = process.argv.find((a) => a.startsWith('--only='));
 const only = onlyArg ? onlyArg.slice('--only='.length).split(',').map((s) => s.trim()).filter(Boolean) : Object.keys(categories);
+// 取得言語。日本語(ja)が既定。英語(en)は docs/origin/<category>-en/ に保存する。
+const langArg = process.argv.find((a) => a.startsWith('--lang='));
+const lang = langArg ? langArg.slice('--lang='.length) : 'ja';
+const suffix = lang === 'ja' ? '' : `-${lang}`;
+
 const namesArg = process.argv.find((a) => a.startsWith('--names=')); // 特定 name のみ再取得（任意）
 const onlyNames = namesArg ? new Set(namesArg.slice('--names='.length).split(',').map((s) => s.trim()).filter(Boolean)) : null;
 
@@ -65,21 +77,27 @@ function urlOf(cat, item) {
   throw new Error(`no url for ${cat}/${item.name}`);
 }
 
-const browser = await chromium.launch({ headless: true });
-const ctx = await browser.newContext({ userAgent: UA });
+let browser = null;
+let ctx = null;
+async function browserContext() {
+  if (ctx) return ctx;
+  browser = await (await loadChromium()).launch({ headless: true });
+  ctx = await browser.newContext({ userAgent: UA });
+  return ctx;
+}
 
 // IBM Documentation は本文をコンテンツ API から取得して描画する。
 // `?topic=` 形式のページは描画完了の判定が難しく、本文が空のまま保存されて
 // しまうことがある（実際に ilerpg で桁表が1つも取れていなかった）。
 // item.topic が指定されている場合は、この API を直接叩いて本文だけを取る。
 const contentApi = (topic) =>
-  `https://www.ibm.com/docs/api/v1/content/${encodeURIComponent(topic)}?parsebody=true&lang=ja`;
+  `https://www.ibm.com/docs/api/v1/content/${encodeURIComponent(topic)}?parsebody=true&lang=${lang}`;
 
-async function fetchViaApi(cat, item) {
-  const key = `${cat}/${item.name}`;
-  const outRel = `${cat}/${item.name}.html`;
+async function fetchViaApi(cat, item, topic) {
+  const key = `${cat}${suffix}/${item.name}`;
+  const outRel = `${cat}${suffix}/${item.name}.html`;
   const outAbs = join(HERE, outRel);
-  const url = contentApi(item.topic);
+  const url = contentApi(topic);
 
   try {
     const resp = await fetch(url, { headers: { 'User-Agent': UA } });
@@ -109,7 +127,7 @@ async function fetchViaApi(cat, item) {
 
     items.set(key, {
       file: outRel, category: cat, name: item.name, source_url: url,
-      topic: item.topic, http_status: resp.status, title, bytes,
+      topic, lang, http_status: resp.status, title, bytes,
       columns, tables, fetched_at: new Date().toISOString(),
       ...(item.note ? { note: item.note } : {}),
     });
@@ -123,13 +141,15 @@ async function fetchViaApi(cat, item) {
 }
 
 async function fetchOne(cat, item) {
-  if (item.topic) return fetchViaApi(cat, item);
+  // topic 指定（item 個別）またはカテゴリの topicFor があれば API 経由で取る。
+  const topic = item.topic ?? categories[cat].topicFor?.(item.name);
+  if (topic) return fetchViaApi(cat, item, topic);
 
   const url = urlOf(cat, item);
   const key = `${cat}/${item.name}`;
   const outRel = `${cat}/${item.name}.html`;
   const outAbs = join(HERE, outRel);
-  const page = await ctx.newPage();
+  const page = await (await browserContext()).newPage();
   const attempt = async () => {
     const resp = await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 60000 });
     const status = resp ? resp.status() : -1;
@@ -188,7 +208,7 @@ for (const cat of only) {
   }
 }
 
-await browser.close();
+if (browser) await browser.close();
 
 // --- manifest 出力 ---
 function emit(map) {

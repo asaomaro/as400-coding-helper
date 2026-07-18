@@ -1,0 +1,1097 @@
+<!DOCTYPE html>
+<html lang="ja"><head><meta charset="utf-8"><title>Copy Source File  (CPYSRCF)</title></head>
+<body>
+<main role="main"><article role="article" aria-labelledby="cpysrcf__title__1"> 
+<h1 class="topictitle1" id="cpysrcf__title__1">Copy Source File  (CPYSRCF)</h1><div id="lastModifiedDate"><span>Last Updated</span>: 2026-07-13</div>
+
+<div class="body">
+<p>
+<strong>Copy Source File  (CPYSRCF)
+</strong></p>
+
+<p>
+<strong>Where allowed to run:  
+</strong>All environments (*ALL)
+
+</p>
+
+<p>
+<strong>Threadsafe:  </strong>Conditional
+</p>
+
+<p><a href="#cpysrcf__parameters">Parameters</a></p>
+
+<p><a href="#cpysrcf__examples">Examples</a></p>
+
+<p><a href="#cpysrcf__errormsgs">Error messages</a></p>
+
+<div class="div" id="cpysrcf__cpysrcf">
+<p>
+The Copy Source File (CPYSRCF) command copies a database source file or DDM file to a source physical file or DDM file and converts the character data from the from-file CCSID to the to-file CCSID.  If TOFILE(*PRINT) is specified, a formatted printer file is created by using the IBM-supplied printer file QSYSPRT (the file is changed for source records and is different from other copy command file formats).  Any overrides issued for the from-file or to-file apply to the files used in the copy operation.  Record data is copied from the from-file to the to-file, converting character data from the from-file CCSID to the to-file CCSID.  Other differences in record formats (like that of the FMTOPT(*NOCHK) parameter option on the CPYF command) are disregarded.
+
+</p>
+
+<p>
+<strong>Note:     
+</strong>For more information on DDM files, see the Distributed database programming topic collection in the IBM i Information Center at http://www.ibm.com/systems/i/infocenter/.
+
+</p>
+
+<p>
+One member, all members, or a generic set of members can be copied each time the command is called.  From-file members can be copied to like-named to-file members or to a single to-file member.  Many members are copied and listed in alphabetical order.  The to-file must exist when the CPYSRCF command is started.  This command does not create the to-file, but it does add a member to an existing physical file if the member does not already exist in the to-file.
+
+</p>
+
+<p>
+This command provides similar support as the Copy File (CPYF) command.  Note that the default for the MBROPT parameter is *REPLACE (unlike other copy commands), which clears existing records in the receiving member of the to-file before replacing them with records copied from the from-file. Also, the default for the TOMBR parameter is *FROMMBR, which causes from-file members to be copied to like-named to-file members.
+
+</p>
+
+<p>
+<strong>Restrictions:
+</strong>
+</p>
+
+<ul class="cds--list--unordered">
+<li class="cds--list__item">
+A file's open data path (ODP) cannot be shared with any other program in the job (routing step) during the copy operation.
+
+</li>
+
+<li class="cds--list__item">
+In multithreaded jobs, this command is not threadsafe when copying from or to multiple database file members, device files (except SPOOL(*YES) print files), distributed files, or DDM files of type *SNA.  This command fails for distributed files that use relational databases of type *SNA and DDM files of type *SNA.  It is threadsafe ONLY when copying from and to single database file members (local or DDM of type *IP) or SPOOL(*YES) print files.
+
+</li>
+
+</ul>
+
+</div>
+<section class="section" role="region" aria-labelledby="cpysrcf__parameters__title__1" id="cpysrcf__parameters"><h2 class="sectiontitle" id="cpysrcf__parameters__title__1">Parameters</h2>
+
+
+<div class="tablenoborder"><div class="cds--data-table-container"><table summary="" class="defaultstyle cds--data-table"><colgroup><col><col><col><col></colgroup><thead>
+<tr>
+<th id="cpysrcf__parameters__entry__1"><div class="cds--table-header-label">
+Keyword
+</div></th>
+
+<th id="cpysrcf__parameters__entry__2"><div class="cds--table-header-label">
+Description
+</div></th>
+
+<th id="cpysrcf__parameters__entry__3"><div class="cds--table-header-label">
+Choices
+</div></th>
+
+<th id="cpysrcf__parameters__entry__4"><div class="cds--table-header-label">
+Notes
+</div></th>
+
+</tr>
+
+</thead>
+<tbody>
+<tr>
+<td rowspan="3" headers="cpysrcf__parameters__entry__1 "><a href="#cpysrcf__fromfile"><strong>FROMFILE
+</strong></a></td>
+
+<td headers="cpysrcf__parameters__entry__2 ">Data base source file
+</td>
+
+<td headers="cpysrcf__parameters__entry__3 "><em>Qualified object name
+</em></td>
+
+<td rowspan="3" headers="cpysrcf__parameters__entry__4 ">Required, Positional 1
+</td>
+
+</tr>
+
+<tr>
+<td headers="cpysrcf__parameters__entry__2 ">Qualifier 1: Data base source file
+</td>
+
+<td headers="cpysrcf__parameters__entry__3 "><em>Name
+</em></td>
+
+</tr>
+
+<tr>
+<td headers="cpysrcf__parameters__entry__2 ">Qualifier 2: Library
+</td>
+
+<td headers="cpysrcf__parameters__entry__3 "><em>Name
+</em>, 
+<strong><u>*LIBL
+</u></strong>, *CURLIB
+</td>
+
+</tr>
+
+<tr>
+<td rowspan="3" headers="cpysrcf__parameters__entry__1 "><a href="#cpysrcf__tofile"><strong>TOFILE
+</strong></a></td>
+
+<td headers="cpysrcf__parameters__entry__2 ">To file
+</td>
+
+<td headers="cpysrcf__parameters__entry__3 ">Single values: *PRINT
+
+Other values: 
+<em>Qualified object name
+</em></td>
+
+<td rowspan="3" headers="cpysrcf__parameters__entry__4 ">Required, Positional 2
+</td>
+
+</tr>
+
+<tr>
+<td headers="cpysrcf__parameters__entry__2 ">Qualifier 1: To file
+</td>
+
+<td headers="cpysrcf__parameters__entry__3 "><em>Name
+</em></td>
+
+</tr>
+
+<tr>
+<td headers="cpysrcf__parameters__entry__2 ">Qualifier 2: Library
+</td>
+
+<td headers="cpysrcf__parameters__entry__3 "><em>Name
+</em>, 
+<strong><u>*LIBL
+</u></strong>, *CURLIB
+</td>
+
+</tr>
+
+<tr>
+<td headers="cpysrcf__parameters__entry__1 "><a href="#cpysrcf__frommbr"><strong>FROMMBR
+</strong></a></td>
+
+<td headers="cpysrcf__parameters__entry__2 ">From member
+</td>
+
+<td headers="cpysrcf__parameters__entry__3 "><em>Generic name, name
+</em>, *FIRST, *ALL
+</td>
+
+<td headers="cpysrcf__parameters__entry__4 ">Required, Positional 3
+</td>
+
+</tr>
+
+<tr>
+<td headers="cpysrcf__parameters__entry__1 "><a href="#cpysrcf__tombr"><strong>TOMBR
+</strong></a></td>
+
+<td headers="cpysrcf__parameters__entry__2 ">To member or label
+</td>
+
+<td headers="cpysrcf__parameters__entry__3 "><em>Name
+</em>, 
+<strong><u>*FROMMBR
+</u></strong>, *FIRST
+</td>
+
+<td headers="cpysrcf__parameters__entry__4 ">Optional, Positional 4
+</td>
+
+</tr>
+
+<tr>
+<td headers="cpysrcf__parameters__entry__1 "><a href="#cpysrcf__tombrid"><strong>TOMBRID
+</strong></a></td>
+
+<td headers="cpysrcf__parameters__entry__2 ">To member identifier
+</td>
+
+<td headers="cpysrcf__parameters__entry__3 "><strong><u>*GEN
+</u></strong>, *FROMMBR
+</td>
+
+<td headers="cpysrcf__parameters__entry__4 ">Optional
+</td>
+
+</tr>
+
+<tr>
+<td headers="cpysrcf__parameters__entry__1 "><a href="#cpysrcf__mbropt"><strong>MBROPT
+</strong></a></td>
+
+<td headers="cpysrcf__parameters__entry__2 ">Replace or add records
+</td>
+
+<td headers="cpysrcf__parameters__entry__3 "><strong><u>*REPLACE
+</u></strong>, *ADD
+</td>
+
+<td headers="cpysrcf__parameters__entry__4 ">Optional, Positional 5
+</td>
+
+</tr>
+
+<tr>
+<td headers="cpysrcf__parameters__entry__1 "><a href="#cpysrcf__srcchgdate"><strong>SRCCHGDATE
+</strong></a></td>
+
+<td headers="cpysrcf__parameters__entry__2 ">Source change date
+</td>
+
+<td headers="cpysrcf__parameters__entry__3 "><strong><u>*FROMMBR
+</u></strong>, *NEW
+</td>
+
+<td headers="cpysrcf__parameters__entry__4 ">Optional
+</td>
+
+</tr>
+
+<tr>
+<td headers="cpysrcf__parameters__entry__1 "><a href="#cpysrcf__text"><strong>TEXT
+</strong></a></td>
+
+<td headers="cpysrcf__parameters__entry__2 ">Text 'description'
+</td>
+
+<td headers="cpysrcf__parameters__entry__3 "><strong><u>*SAME
+</u></strong>, *FROMMBR
+</td>
+
+<td headers="cpysrcf__parameters__entry__4 ">Optional
+</td>
+
+</tr>
+
+<tr>
+<td headers="cpysrcf__parameters__entry__1 "><a href="#cpysrcf__srctype"><strong>SRCTYPE
+</strong></a></td>
+
+<td headers="cpysrcf__parameters__entry__2 ">Source type
+</td>
+
+<td headers="cpysrcf__parameters__entry__3 "><strong><u>*SAME
+</u></strong>, *FROMMBR
+</td>
+
+<td headers="cpysrcf__parameters__entry__4 ">Optional
+</td>
+
+</tr>
+
+<tr>
+<td headers="cpysrcf__parameters__entry__1 "><a href="#cpysrcf__srcopt"><strong>SRCOPT
+</strong></a></td>
+
+<td headers="cpysrcf__parameters__entry__2 ">Source update options
+</td>
+
+<td headers="cpysrcf__parameters__entry__3 ">Single values: 
+<strong><u>*SAME
+</u></strong>
+Other values (up to 2 repetitions): *SEQNBR, *DATE
+</td>
+
+<td headers="cpysrcf__parameters__entry__4 ">Optional
+</td>
+
+</tr>
+
+<tr>
+<td rowspan="3" headers="cpysrcf__parameters__entry__1 "><a href="#cpysrcf__srcseq"><strong>SRCSEQ
+</strong></a></td>
+
+<td headers="cpysrcf__parameters__entry__2 ">Source sequence numbering
+</td>
+
+<td headers="cpysrcf__parameters__entry__3 "><em>Element list
+</em></td>
+
+<td rowspan="3" headers="cpysrcf__parameters__entry__4 ">Optional
+</td>
+
+</tr>
+
+<tr>
+<td headers="cpysrcf__parameters__entry__2 ">Element 1: Starting sequence number
+</td>
+
+<td headers="cpysrcf__parameters__entry__3 ">0.01-9999.99, 
+<strong><u>1.00
+</u></strong></td>
+
+</tr>
+
+<tr>
+<td headers="cpysrcf__parameters__entry__2 ">Element 2: Increment number
+</td>
+
+<td headers="cpysrcf__parameters__entry__3 ">0.01-9999.99, 
+<strong><u>1.00
+</u></strong></td>
+
+</tr>
+
+</tbody>
+</table></div>
+</div>
+
+<div class="div" id="cpysrcf__fromfile">
+<p>
+<strong>Data base source file (FROMFILE)
+</strong></p>
+
+<p>
+Specifies the database source file that contains the records to be copied.
+
+</p>
+
+<p>
+This is a required parameter.
+
+</p>
+
+<p>
+<strong>Qualifier 1: Data base source file
+</strong>
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><em>name
+</em></strong></dt>
+
+<dd class="dlentry">
+Specify the name of the database source file that contains records being copied.
+</dd>
+
+</dl>
+
+<p>
+<strong>Qualifier 2: Library
+</strong>
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><u>*LIBL
+</u></strong></dt>
+
+<dd class="dlentry">
+All libraries in the library list for the current thread are searched until the first match is found.
+</dd>
+
+</dl>
+
+<dl>
+<dt class="dlterm">
+<strong>*CURLIB
+</strong></dt>
+
+<dd class="dlentry">
+The current library for the thread is searched.  If no library is specified as the current library for the thread, the QGPL library is searched.
+</dd>
+
+</dl>
+
+<dl>
+<dt class="dlterm">
+<strong><em>name
+</em></strong></dt>
+
+<dd class="dlentry">
+Specify the name of the library to be searched.
+</dd>
+
+</dl>
+
+</div>
+<div class="div" id="cpysrcf__tofile">
+<p>
+<strong>To file (TOFILE)
+</strong></p>
+
+<p>
+Specifies the file that receives the copied records.
+
+</p>
+
+<p>
+This is a required parameter.
+
+</p>
+
+<p>
+<strong>Single values
+</strong>
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong>*PRINT
+</strong></dt>
+
+<dd class="dlentry">
+The records are copied to the IBM-supplied printer file QSYSPRT.  No coded character set identifier (CCSID) conversions occur if *PRINT is specified.  The format includes no blank lines between records.  Source sequence number and source change date fields are separated from the data. If multiple file members are copied, members are listed in alphabetic order.  If the listing needs to be in hexadecimal format, use the Copy File (CPYF) command with the OUTFMT(*HEX) parameter value.  The IBM-supplied printer file QSYSPRT may not be overridden to a different file name, and it must have the RPLUNPRT(*YES) and CTLCHAR(*NONE) attributes.
+</dd>
+
+</dl>
+
+<p>
+<strong>Qualifier 1: To file
+</strong>
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><em>name
+</em></strong></dt>
+
+<dd class="dlentry">
+Specify the name of the source physical file that receives the copied records.
+</dd>
+
+</dl>
+
+<p>
+<strong>Qualifier 2: Library
+</strong>
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><u>*LIBL
+</u></strong></dt>
+
+<dd class="dlentry">
+All libraries in the library list for the current thread are searched until the first match is found.
+</dd>
+
+</dl>
+
+<dl>
+<dt class="dlterm">
+<strong>*CURLIB
+</strong></dt>
+
+<dd class="dlentry">
+The current library for the thread is searched.  If no library is specified as the current library for the thread, the QGPL library is searched.
+</dd>
+
+</dl>
+
+<dl>
+<dt class="dlterm">
+<strong><em>name
+</em></strong></dt>
+
+<dd class="dlentry">
+Specify the name of the library to be searched.
+</dd>
+
+</dl>
+
+</div>
+<div class="div" id="cpysrcf__frommbr">
+<p>
+<strong>From member (FROMMBR)
+</strong></p>
+
+<p>
+Specifies the file member(s) copied from the from-file.  A single member, a generic set of members, or all members in the from-file can be copied.  Members are copied in alphabetical order.
+
+</p>
+
+<p>
+This is a required parameter.
+
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong>*ALL
+</strong></dt>
+
+<dd class="dlentry">
+All members in a database file are copied.
+</dd>
+
+</dl>
+
+<dl>
+<dt class="dlterm">
+<strong>*FIRST
+</strong></dt>
+
+<dd class="dlentry">
+The first member of the specified file is used.
+</dd>
+
+</dl>
+
+<dl>
+<dt class="dlterm">
+<strong><em>generic-name
+</em></strong></dt>
+
+<dd class="dlentry">
+Specify the generic name of the group of members to be copied.
+</dd>
+
+<dt class="dlterm">
+<strong><em>name
+</em></strong></dt>
+
+<dd class="dlentry">
+Specify the name of the database file member to be copied.
+</dd>
+
+</dl>
+
+</div>
+<div class="div" id="cpysrcf__tombr">
+<p>
+<strong>Member (TOMBR)
+</strong></p>
+
+<p>
+Specifies the name of the file member that receives the copied records.
+
+</p>
+
+<p>
+If *PRINT is specified for the 
+<strong>To file (TOFILE)
+</strong> parameter, either *FIRST or *FROMMBR must be specified for this parameter.
+
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><u>*FROMMBR
+</u></strong></dt>
+
+<dd class="dlentry">
+Corresponding from-file and to-file member names or label identifiers are used.  If a member with a corresponding name does not exist in the to-file, a member with that name is added to the to-file.
+<p>
+If a member name or *FIRST was specified as a value for the FROMMBR parameter, then a member in the to-file with the same name receives the records copied.  If *ALL or a generic member name is specified as a value for the FROMMBR parameter, each member in the from-file is copied into a member with the same name in the to-file.  Records from one or more members (specified by the FROMMBR parameter) in the from-file are copied to the first member in the to-file.
+
+</p>
+
+</dd>
+
+</dl>
+
+<dl>
+<dt class="dlterm">
+<strong>*FIRST
+</strong></dt>
+
+<dd class="dlentry">
+The first member of the specified file is used.
+</dd>
+
+</dl>
+
+<dl>
+<dt class="dlterm">
+<strong><em>to-member-name
+</em></strong></dt>
+
+<dd class="dlentry">
+Specify the name of the physical to-file member to receive the records.  If a member with the specified name does not exist, one with the same name is added.
+</dd>
+
+</dl>
+
+</div>
+<div class="div" id="cpysrcf__tombrid">
+<p>
+<strong>To member identifier (TOMBRID)
+</strong></p>
+
+<p>
+Specifies, for new members added to the to-file, whether the member level identifer will be generated or copied from the member level identifier of the member in the from-file.
+
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><u>*GEN
+</u></strong></dt>
+
+<dd class="dlentry">
+The member level identifier of the new member in the to-file will be generated.
+</dd>
+
+<dt class="dlterm">
+<strong>*FROMMBR
+</strong></dt>
+
+<dd class="dlentry">
+The member level identifier of the new member in the to-file will be the same as the member being copied.
+</dd>
+
+</dl>
+
+</div>
+<div class="div" id="cpysrcf__mbropt">
+<p>
+<strong>Replace or add records (MBROPT)
+</strong></p>
+
+<p>
+Specifies whether the new records replace or are added to the existing records.
+
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><u>*REPLACE
+</u></strong></dt>
+
+<dd class="dlentry">
+The system clears the existing member and adds the new records.
+</dd>
+
+</dl>
+
+<dl>
+<dt class="dlterm">
+<strong>*ADD
+</strong></dt>
+
+<dd class="dlentry">
+The system adds the new records to the end of the existing records.
+</dd>
+
+</dl>
+
+</div>
+<div class="div" id="cpysrcf__srcchgdate">
+<p>
+<strong>Source change date (SRCCHGDATE)
+</strong></p>
+
+<p>
+Specifies, for new members added to the to-file, or if MBROPT(*REPLACE) was specified, whether the 'Last source update date/time' will be a new date/time, or copied from the 'Last source update date/time' of the member in the from-file.
+
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><u>*FROMMBR
+</u></strong></dt>
+
+<dd class="dlentry">
+The 'Last source update date/time' of the new member in the to-file, or if MBROPT(*REPLACE) was specified, will be the same as the member being copied.
+</dd>
+
+<dt class="dlterm">
+<strong>*NEW
+</strong></dt>
+
+<dd class="dlentry">
+The 'Last source update date/time' of the new member in the to-file, or if MBROPT(*REPLACE) is specified, will be a new date/time.
+</dd>
+
+</dl>
+
+</div>
+<div class="div" id="cpysrcf__text">
+<p>
+<strong>Text 'description' (TEXT)
+</strong></p>
+
+<p>
+Specifies if the MBROPT(*REPLACE) was specified, whether the text describing the member will be copied from the from-member.
+
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><u>*SAME
+</u></strong></dt>
+
+<dd class="dlentry">
+The to-member text will not be changed.
+</dd>
+
+<dt class="dlterm">
+<strong>*FROMMBR
+</strong></dt>
+
+<dd class="dlentry">
+The text describing the to-member will be changed to the text of the from-member.
+</dd>
+
+</dl>
+
+</div>
+<div class="div" id="cpysrcf__srctype">
+<p>
+<strong>Source type (SRCTYPE)
+</strong></p>
+
+<p>
+Specifies if the MBROPT(*REPLACE) was specified, whether the source type of the to-member will be copied from the from-member.
+
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><u>*SAME
+</u></strong></dt>
+
+<dd class="dlentry">
+The source type of the to-member will not be changed.
+</dd>
+
+<dt class="dlterm">
+<strong>*FROMMBR
+</strong></dt>
+
+<dd class="dlentry">
+The source type of the to-member will be changed to the source type of the from-member.
+</dd>
+
+</dl>
+
+</div>
+<div class="div" id="cpysrcf__srcopt">
+<p>
+<strong>Source update options (SRCOPT)
+</strong></p>
+
+<p>
+Specifies whether new values are assigned to the source sequence number and date fields when records from the from-file are copied to the to-file.
+
+</p>
+
+<p>
+<strong>Single values
+</strong>
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><u>*SAME
+</u></strong></dt>
+
+<dd class="dlentry">
+No new values are assigned to the source sequence number and date fields.
+</dd>
+
+</dl>
+
+<p>
+<strong>Other values (up to 2 repetitions)
+</strong>
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong>*SEQNBR
+</strong></dt>
+
+<dd class="dlentry">
+Sequence number and values added for the sequence number are assigned as specified for the 
+<strong>Source sequence numbering (SRCSEQ) 
+</strong> parameter.
+</dd>
+
+<dt class="dlterm">
+<strong>*DATE
+</strong></dt>
+
+<dd class="dlentry">
+The change date field in each record being copied is set to six zeros.
+</dd>
+
+</dl>
+
+</div>
+<div class="div" id="cpysrcf__srcseq">
+<p>
+<strong>Source sequence numbering (SRCSEQ)
+</strong></p>
+
+<p>
+Specifies, only when *SEQNBR is also specified for the 
+<strong>Source update options (SRCOPT)
+</strong> parameter, the sequence number to be used in the first copied record and the value to be added to the initial sequence number to calculate the sequence number for each subsequent copied record.  The maximum value for a sequence number is 9999.99; if a value is larger than this limit, additional records in the member are all assigned the sequence number 9999.99.
+
+</p>
+
+<p>
+<strong>Element 1: Starting sequence number
+</strong>
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><u>1.00
+</u></strong></dt>
+
+<dd class="dlentry">
+The first source record copied to the to-file is to have a sequence number of 0001.00.
+</dd>
+
+<dt class="dlterm">
+<strong><em>0.01-9999.99
+</em></strong></dt>
+
+<dd class="dlentry">
+Specify the sequence number of the first source record copied to the to-file.
+</dd>
+
+</dl>
+
+<p>
+<strong>Element 2: Increment number
+</strong>
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><u>1.00
+</u></strong></dt>
+
+<dd class="dlentry">
+The copied source records are renumbered in the to-file with whole number additions of 1.
+</dd>
+
+<dt class="dlterm">
+<strong><em>0.01-9999.99
+</em></strong></dt>
+
+<dd class="dlentry">
+Specify the value added for renumbering all source records copied after the first record. Once the maximum sequence number of 9999.99 is reached, the sequence number of any additional records copied will also be 9999.99.
+</dd>
+
+</dl>
+
+</div>
+</section>
+
+<section class="section" role="region" aria-labelledby="cpysrcf__examples__title__1" id="cpysrcf__examples"><h2 class="sectiontitle" id="cpysrcf__examples__title__1">Examples</h2>
+
+<p>
+<strong>Example 1: Replacing Existing Records
+</strong>
+</p>
+
+<div class="p">
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>
+CPYSRCF   FROMFILE(QGPL/QCLSRC)  TOFILE(MYLIB/CLSRC)
+          FROMMBR(PGMA)
+
+</code></pre></div><div class="docs--copy-btn"></div></div>
+
+</div>
+
+<p>
+This command copies records from member PGMA of database source file QCLSRC which is in the QGPL library. The defaults for the TOMBR and MBROPT parameters are taken so the records are copied to a like-named member (PGMA) of CLSRC in library MYLIB and replaces existing records in the member. If member PGMA does not exist in the to-file, it is added as part of the copy operation. If the CCSID of QGPL/QCLSRC is different from the CCSID of MYLIB/CLSRC, the character data is converted to the CCSID of CLSRC.
+
+</p>
+
+<p>
+<strong>Example 2: Printing Files
+</strong>
+</p>
+
+<div class="p">
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>
+CPYSRCF   FROMFILE(QRPG/QRPGSRC)  TOFILE(*PRINT)  FROMMBR(INV*)
+
+</code></pre></div><div class="docs--copy-btn"></div></div>
+
+</div>
+
+<p>
+This command copies from database source file QRPGSRC in library QRPG, all file members whose names start with the characters INV.  Special value *PRINT is specified for the to-file, so the records are copied to the printer and listed in a format tailored to source records, much like the printout created by SEU. Character data is not converted when specifying TOFILE(*PRINT).
+
+</p>
+
+<p>
+<strong>Example 3: Changing the Increment Value
+</strong>
+</p>
+
+<div class="p">
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>
+CPYSRCF   FROMFILE(MYLIB/TXTSRC)  TOFILE(QIDU/QTXTSRC)
+          FROMMBR(*ALL)  SRCOPT(*SEQNBR *DATE)  SRCSEQ(1  .25)
+
+</code></pre></div><div class="docs--copy-btn"></div></div>
+
+</div>
+
+<p>
+This command copies all the members of database source file TXTSRC in library MYLIB. They are copied and replace (by using the default MBROPT(*REPLACE)) the existing records in like-named members (by using default TOMBR(*FROMMBR)) of data source file QTXTSRC in library QIDU. If the to-file members do not exist, they are added by the copy operation. For each member copied, the first record is numbered 1 and each following number is incremented by 0.25. Also, the source date field is set to zero in each record. If the CCSID of MYLIB/TXTSRC is different from the CCSID of QIDU/QTXTSRC, the character data is converted to the CCSID of QIDU/QTXTSRC.
+
+</p>
+
+</section>
+
+<section class="section" role="region" aria-labelledby="cpysrcf__errormsgs__title__1" id="cpysrcf__errormsgs"><h2 class="sectiontitle" id="cpysrcf__errormsgs__title__1">Error messages</h2>
+
+<p>
+<strong><u>*ESCAPE Messages
+</u></strong>
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong>CPF2816
+</strong></dt>
+
+<dd class="dlentry">
+File &amp;1 in &amp;2 not copied because of error.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF2817
+</strong></dt>
+
+<dd class="dlentry">
+Copy command ended because of error.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF2858
+</strong></dt>
+
+<dd class="dlentry">
+File attributes not valid for printed output.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF2859
+</strong></dt>
+
+<dd class="dlentry">
+Shared open data path not allowed.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF2864
+</strong></dt>
+
+<dd class="dlentry">
+Not authorized to file &amp;1 in library &amp;2.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF2875
+</strong></dt>
+
+<dd class="dlentry">
+Wrong file member or label opened.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF2888
+</strong></dt>
+
+<dd class="dlentry">
+Member &amp;3 not added to file because of error.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF2909
+</strong></dt>
+
+<dd class="dlentry">
+Error clearing member &amp;3 in file &amp;1 in &amp;2.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF2949
+</strong></dt>
+
+<dd class="dlentry">
+Error closing member &amp;3 in file &amp;1 in &amp;2.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF2952
+</strong></dt>
+
+<dd class="dlentry">
+Error opening file &amp;1 in library &amp;2.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF2968
+</strong></dt>
+
+<dd class="dlentry">
+Position error occurred copying file &amp;1 in &amp;2.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF2971
+</strong></dt>
+
+<dd class="dlentry">
+Error reading member &amp;3 in file &amp;1.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF2972
+</strong></dt>
+
+<dd class="dlentry">
+Error writing to member &amp;3 in file &amp;1.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF3140
+</strong></dt>
+
+<dd class="dlentry">
+Initialize or copy of member &amp;2 canceled.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF3143
+</strong></dt>
+
+<dd class="dlentry">
+Increments not allowed for member &amp;2.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF3148
+</strong></dt>
+
+<dd class="dlentry">
+New records need too much space for member &amp;2.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF3150
+</strong></dt>
+
+<dd class="dlentry">
+Data base copy failed for member &amp;2.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF9212
+</strong></dt>
+
+<dd class="dlentry">
+Cannot load or unload DDM file &amp;2 in &amp;3.
+</dd>
+
+</dl>
+
+</section>
+
+</div>
+
+</article></main>
+</body></html>

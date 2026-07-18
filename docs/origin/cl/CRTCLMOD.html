@@ -1,0 +1,791 @@
+<!DOCTYPE html>
+<html lang="ja"><head><meta charset="utf-8"><title>CLモジュールの作成  (CRTCLMOD)</title></head>
+<body>
+<div role="main">
+<script type="text/javascript" src="../rzahg/synch.js"></script>
+<a name="CRTCLMOD.Top_Of_Page"></a>
+<h1>CLモジュールの作成  (CRTCLMOD)</h1><div id="lastModifiedDate"><span>Last Updated</span>: 2021-04-13</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table0" width="100%" class="cds--data-table">
+<tbody><tr>
+<td class="valigntop alignleft"><strong>実行可能場所:  </strong>すべての環境 (*ALL)<br>
+<strong>スレッド・セーフ:  </strong>いいえ
+</td>
+<td class="valigntop alignright">
+<a href="#CRTCLMOD.PARAMETERS.TABLE">パラメーター</a><br>
+<a href="#CRTCLMOD.COMMAND.EXAMPLES">例</a><br>
+<a href="#CRTCLMOD.ERROR.MESSAGES">エラー・メッセージ</a></td>
+</tr>
+</tbody></table></div></div>
+<div> <a name="CRTCLMOD"></a>
+<p>制御言語モジュール作成(CRTCLMOD)コマンドは，指定されたCLソース・メンバーまたはCLストリーム・ソース・ファイルから制御言語(CL)モジュールを作成します。
+</p>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table1" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#CRTCLMOD.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div>
+<h2><a name="CRTCLMOD.PARAMETERS.TABLE">パラメーター</a></h2>
+<div class="tablenoborder"><div class="cds--data-table-container"><table id="parm_table2" summary="Parameters" border="1" cellpadding="4" cellspacing="0" class="cds--data-table">
+<!-- col1="10" col2="15" col3="30" col4="10" -->
+<tbody><tr>
+<th scope="col" class="valignbottom alignleft"><div class="cds--table-header-label">キーワード</div></th>
+<th scope="col" class="valignbottom alignleft"><div class="cds--table-header-label">記述</div></th>
+<th scope="col" class="valignbottom alignleft"><div class="cds--table-header-label">選択項目</div></th>
+<th scope="col" class="valignbottom alignleft"><div class="cds--table-header-label">ノーツ</div></th>
+</tr>
+<tr>
+<td class="valigntop" rowspan="3"><a href="#CRTCLMOD.MODULE"><strong>MODULE</strong></a></td>
+<td class="valigntop">モジュール</td>
+<td class="valigntop"><span class="var">修飾オブジェクト名</span></td>
+<td class="valigntop" rowspan="3">必須, 定位置 1</td>
+</tr>
+<tr>
+<td class="valigntop">修飾子 1: モジュール</td>
+<td class="valigntop"><span class="var">名前</span></td>
+</tr><tr>
+<td class="valigntop">修飾子 2: ライブラリー</td>
+<td class="valigntop"><span class="var">名前</span>, <strong class="underlined">*CURLIB</strong></td>
+</tr><tr>
+<td class="valigntop" rowspan="3"><a href="#CRTCLMOD.SRCFILE"><strong>SRCFILE</strong></a></td>
+<td class="valigntop">ソース・ファイル</td>
+<td class="valigntop"><span class="var">修飾オブジェクト名</span></td>
+<td class="valigntop" rowspan="3">オプショナル, 定位置 2</td>
+</tr>
+<tr>
+<td class="valigntop">修飾子 1: ソース・ファイル</td>
+<td class="valigntop"><span class="var">名前</span>, <strong class="underlined">QCLSRC</strong></td>
+</tr><tr>
+<td class="valigntop">修飾子 2: ライブラリー</td>
+<td class="valigntop"><span class="var">名前</span>, <strong class="underlined">*LIBL</strong>, *CURLIB</td>
+</tr><tr>
+<td class="valigntop"><a href="#CRTCLMOD.SRCMBR"><strong>SRCMBR</strong></a></td>
+<td class="valigntop">ソース・メンバー</td>
+<td class="valigntop"><span class="var">名前</span>, <strong class="underlined">*MODULE</strong></td>
+<td class="valigntop">オプショナル, 定位置 3</td>
+</tr>
+<tr>
+<td class="valigntop"><a href="#CRTCLMOD.SRCSTMF"><strong>SRCSTMF</strong></a></td>
+<td class="valigntop">ソース・ストリーム・ファイル</td>
+<td class="valigntop"><span class="var">パス名</span></td>
+<td class="valigntop">オプショナル</td>
+</tr>
+<tr>
+<td class="valigntop"><a href="#CRTCLMOD.TEXT"><strong>TEXT</strong></a></td>
+<td class="valigntop">テキスト'記述'</td>
+<td class="valigntop"><span class="var">文字値</span>, <strong class="underlined">*SRCMBRTXT</strong>, *BLANK</td>
+<td class="valigntop">オプショナル</td>
+</tr>
+<tr>
+<td class="valigntop"><a href="#CRTCLMOD.OUTPUT"><strong>OUTPUT</strong></a></td>
+<td class="valigntop">出力</td>
+<td class="valigntop"><strong class="underlined">*PRINT</strong>, *NONE</td>
+<td class="valigntop">オプショナル, 定位置 4</td>
+</tr>
+<tr>
+<td class="valigntop"><a href="#CRTCLMOD.OPTION"><strong>OPTION</strong></a></td>
+<td class="valigntop">ソース・リスト・オプション</td>
+<td class="valigntop">値 (最大 4 回の繰り返し): *XREF, *NOXREF, *GEN, *NOGEN, *SECLVL, *NOSECLVL, *EVENTF, *NOEVENTF, *DOSLTLVL, *NODOSLTLVL</td>
+<td class="valigntop">オプショナル, 定位置 5</td>
+</tr>
+<tr>
+<td class="valigntop"><a href="#CRTCLMOD.LOG"><strong>LOG</strong></a></td>
+<td class="valigntop">ログ・コマンド</td>
+<td class="valigntop"><strong class="underlined">*JOB</strong>, *YES, *NO</td>
+<td class="valigntop">オプショナル</td>
+</tr>
+<tr>
+<td class="valigntop"><a href="#CRTCLMOD.ALWRTVSRC"><strong>ALWRTVSRC</strong></a></td>
+<td class="valigntop"> RTVCLSRC可能</td>
+<td class="valigntop"><strong class="underlined">*YES</strong>, *NO</td>
+<td class="valigntop">オプショナル</td>
+</tr>
+<tr>
+<td class="valigntop"><a href="#CRTCLMOD.REPLACE"><strong>REPLACE</strong></a></td>
+<td class="valigntop"> モジュール・オブジェクトの置き換え</td>
+<td class="valigntop"><strong class="underlined">*YES</strong>, *NO</td>
+<td class="valigntop">オプショナル</td>
+</tr>
+<tr>
+<td class="valigntop"><a href="#CRTCLMOD.TGTRLS"><strong>TGTRLS</strong></a></td>
+<td class="valigntop">ターゲット・リリース</td>
+<td class="valigntop"><span class="var">単純名</span>, <strong class="underlined">*CURRENT</strong>, *PRV</td>
+<td class="valigntop">オプショナル</td>
+</tr>
+<tr>
+<td class="valigntop"><a href="#CRTCLMOD.AUT"><strong>AUT</strong></a></td>
+<td class="valigntop">権限</td>
+<td class="valigntop"><span class="var">名前</span>, <strong class="underlined">*LIBCRTAUT</strong>, *CHANGE, *ALL, *USE, *EXCLUDE</td>
+<td class="valigntop">オプショナル</td>
+</tr>
+<tr>
+<td class="valigntop" rowspan="3"><a href="#CRTCLMOD.SRTSEQ"><strong>SRTSEQ</strong></a></td>
+<td class="valigntop">分類順序</td>
+<td class="valigntop">単一値: <strong class="underlined">*HEX</strong>, *JOB, *JOBRUN, *LANGIDUNQ, *LANGIDSHR<br>その他の値: <span class="var">修飾オブジェクト名</span></td>
+<td class="valigntop" rowspan="3">オプショナル</td>
+</tr>
+<tr>
+<td class="valigntop">修飾子 1: 分類順序</td>
+<td class="valigntop"><span class="var">名前</span></td>
+</tr><tr>
+<td class="valigntop">修飾子 2: ライブラリー</td>
+<td class="valigntop"><span class="var">名前</span>, <strong class="underlined">*LIBL</strong>, *CURLIB</td>
+</tr><tr>
+<td class="valigntop"><a href="#CRTCLMOD.LANGID"><strong>LANGID</strong></a></td>
+<td class="valigntop">言語ID</td>
+<td class="valigntop"><span class="var">文字値</span>, <strong class="underlined">*JOBRUN</strong>, *JOB</td>
+<td class="valigntop">オプショナル</td>
+</tr>
+<tr>
+<td class="valigntop"><a href="#CRTCLMOD.OPTIMIZE"><strong>OPTIMIZE</strong></a></td>
+<td class="valigntop">最適化</td>
+<td class="valigntop"><strong class="underlined">*NONE</strong>, *BASIC, *FULL, 10, 20, 30, 40</td>
+<td class="valigntop">オプショナル</td>
+</tr>
+<tr>
+<td class="valigntop"><a href="#CRTCLMOD.DBGVIEW"><strong>DBGVIEW</strong></a></td>
+<td class="valigntop">デバッグ・ビュー</td>
+<td class="valigntop"><strong class="underlined">*STMT</strong>, *SOURCE, *LIST, *ALL, *NONE</td>
+<td class="valigntop">オプショナル</td>
+</tr>
+<tr>
+<td class="valigntop"><a href="#CRTCLMOD.DBGENCKEY"><strong>DBGENCKEY</strong></a></td>
+<td class="valigntop">デバッグ暗号鍵</td>
+<td class="valigntop"><span class="var">文字値</span>, <strong class="underlined">*NONE</strong></td>
+<td class="valigntop">オプショナル</td>
+</tr>
+<tr>
+<td class="valigntop"><a href="#CRTCLMOD.ENBPFRCOL"><strong>ENBPFRCOL</strong></a></td>
+<td class="valigntop">パフォーマンス収集使用可能</td>
+<td class="valigntop"><strong class="underlined">*PEP</strong>, *FULL, *NONE</td>
+<td class="valigntop">オプショナル</td>
+</tr>
+<tr>
+<td class="valigntop" rowspan="3"><a href="#CRTCLMOD.INCFILE"><strong>INCFILE</strong></a></td>
+<td class="valigntop"> INCLUDEファイル</td>
+<td class="valigntop">単一値: <strong class="underlined">*SRCFILE</strong><br>その他の値: <span class="var">修飾オブジェクト名</span></td>
+<td class="valigntop" rowspan="3">オプショナル</td>
+</tr>
+<tr>
+<td class="valigntop">修飾子 1:  INCLUDEファイル</td>
+<td class="valigntop"><span class="var">名前</span></td>
+</tr><tr>
+<td class="valigntop">修飾子 2: ライブラリー</td>
+<td class="valigntop"><span class="var">名前</span>, <strong class="underlined">*LIBL</strong>, *CURLIB</td>
+</tr><tr>
+<td class="valigntop"><a href="#CRTCLMOD.INCDIR"><strong>INCDIR</strong></a></td>
+<td class="valigntop">組み込みディレクトリー</td>
+<td class="valigntop">値 (最大 32 回の繰り返し): <span class="var">パス名</span>, <strong class="underlined">*NONE</strong></td>
+<td class="valigntop">オプショナル</td>
+</tr>
+</tbody></table></div></div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table3" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#CRTCLMOD.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+</div>
+<div> <a name="CRTCLMOD.MODULE"></a>
+<h2>モジュール (MODULE)</h2>
+<p>作成するモジュール・オブジェクトを指定します。
+</p>
+<p>これは必須パラメーターです。
+</p>
+<h3><strong>修飾子</strong><strong>1: </strong><strong>モジュール</strong>
+</h3>
+<dl>
+<dt><strong class="italic">名前</strong></dt>
+<dd>作成するモジュールの名前を指定してください。
+</dd>
+</dl>
+<h3><strong>修飾子</strong><strong>2: ライブラリー</strong>
+</h3>
+<dl>
+<dt><strong class="underlined">*CURLIB</strong></dt>
+<dd>モジュールはジョブの現行ライブラリーに保管されます。ライブラリー・リストに現行ライブラリー項目が存在しない場合には，QGPLが使用されます。
+</dd>
+<dt><strong class="italic">名前</strong></dt>
+<dd>モジュールを保管するライブラリーを指定してください。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table4" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#CRTCLMOD.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="CRTCLMOD.SRCFILE"></a>
+<h2>ソース・ファイル (SRCFILE)</h2>
+<p>コンパイルするCLソース・メンバーが入っているソース・ファイルを指定します。
+</p>
+<h3><strong>修飾子</strong><strong>1: </strong><strong>ソース・ファイル</strong>
+</h3>
+<dl>
+<dt><strong class="underlined">QCLSRC</strong></dt>
+<dd>コンパイルするCLソース・メンバーが入っている，QCLSRCという名前のソース・ファイルが使用されます。
+</dd>
+<dt><strong class="italic">名前</strong></dt>
+<dd>コンパイルするCLソース・メンバーが入っているソース・ファイルの名前を指定してください。このソース・ファイルは，データベース・ファイル，装置ファイル，またはインライン・データ・ファイルとすることができます。
+</dd>
+</dl>
+<h3><strong>修飾子</strong><strong>2: ライブラリー</strong>
+</h3>
+<dl>
+<dt><strong class="underlined">*LIBL</strong></dt>
+<dd>最初に一致するものが見つかるまで，現行スレッドのライブラリー・リスト内のすべてのライブラリーが検索されます。
+</dd>
+</dl>
+<dl>
+<dt><strong>*CURLIB</strong></dt>
+<dd>ソース・ファイルを見つけるために，スレッドの現行ライブラリーが使用されます。スレッドの現行ライブラリーとして指定されているライブラリーがない場合，QGPLライブラリーが使用されます。
+</dd>
+</dl>
+<dl>
+<dt><strong class="italic">名前</strong></dt>
+<dd>検索するライブラリーの名前を指定してください。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table5" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#CRTCLMOD.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="CRTCLMOD.SRCMBR"></a>
+<h2>ソース・メンバー (SRCMBR)</h2>
+<p>コンパイルするCLソース・メンバーが入っているソース・ファイルのメンバーの名前を指定します。
+</p>
+<dl>
+<dt><strong class="underlined">*MODULE</strong></dt>
+<dd>コンパイルするCLソース・メンバーは，コンパイル済みモジュールのMODULEパラメーターに指定されたのと同じ名前のソース・ファイルのメンバーの中にあります。
+</dd>
+<dt><strong class="italic">名前</strong></dt>
+<dd>メンバー名が作成するモジュールの名前と同じでない場合に，CLソースが入っているメンバーの名前を指定してください。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table6" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#CRTCLMOD.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="CRTCLMOD.SRCSTMF"></a>
+<h2>ソース・ストリーム・ファイル (SRCSTMF)</h2>
+<p>コンパイルするCLソース・コードを含むストリーム・ファイルのパス名を指定します。
+</p>
+<p>パス名は，絶対修飾名と相対修飾名のどちらを指定することもできます。絶対パス名は'/'で始まり，相対パス名は'/'以外の文字で始まります。
+</p>
+<p>絶対修飾の場合は，パス名は完全です。相対修飾の場合には，パス名は，パス名にジョブの現行作業ディレクトリーを付加することによって補完されます。
+</p>
+<p><strong>SRCMBR</strong>パラメーターおよび<strong>SRCFILE</strong>パラメーターは，<strong>SRCSTMF</strong>パラメーターと一緒には指定できません。
+</p>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table7" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#CRTCLMOD.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="CRTCLMOD.TEXT"></a>
+<h2>テキスト'記述' (TEXT)</h2>
+<p>コンパイル済みCLモジュールを簡単に説明するテキストを指定します。
+</p>
+<dl>
+<dt><strong class="underlined">*SRCMBRTXT</strong></dt>
+<dd>テキストは，CLモジュールを作成するために使用されたソース・ファイル・メンバーからとられます。ソース・ファイルがインライン・データ・ファイルまたは装置ファイルであった場合には，このテキストはブランクとなります。
+</dd>
+<dt><strong>*BLANK</strong></dt>
+<dd>テキストは指定されません。
+</dd>
+<dt><strong class="italic">'記述'</strong></dt>
+<dd>50文字を超えないテキストを，アポストロフィで囲んで指定してください。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table8" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#CRTCLMOD.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="CRTCLMOD.OUTPUT"></a>
+<h2>出力 (OUTPUT)</h2>
+<p>コンパイル・リストを作成するかどうかを指定します。
+</p>
+<dl>
+<dt><strong class="underlined">*PRINT</strong></dt>
+<dd>コンパイル・リストが作成されます。このリストに含まれる情報は，<strong>ソース・リスト・オプション</strong><strong> (OPTION)</strong>パラメーターに指定された値によって異なります。
+</dd>
+<dt><strong>*NONE</strong></dt>
+<dd>コンパイル・リストは作成されません。リストが不要な場合には，コンパイル時のパフォーマンスが向上することがあるので，このオプションを使用しなければなりません。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table9" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#CRTCLMOD.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="CRTCLMOD.OPTION"></a>
+<h2>ソース・リスト・オプション (OPTION)</h2>
+<p>このコマンドの処理時に作成される出力リストのタイプ，およびプログラムを作成するかどうかを指定します。このパラメーターには，以下の値を4つまで任意の順序で指定することができます。各グループに値がどちらも指定されないか，あるいは両方の値が指定された場合には，下線のついた値が使用されます。
+</p>
+<p>
+<strong>注:     </strong>このパラメーターの下線のついた値は省略時の値と<span class="var">類似</span>していますが，<span class="var">実際の</span>省略時の値ではありません。したがって，コマンド省略時値変更(CHGCMDDFT)コマンドによって変更することはできません。
+</p>
+<h3><strong>モジュール作成オプション</strong>
+</h3>
+<dl>
+<dt><strong class="underlined">*GEN</strong></dt>
+<dd>コンパイル処理のすべての段階が実行されます。
+</dd>
+<dt><strong>*NOGEN</strong></dt>
+<dd>構文検査の後にコンパイルは停止します。モジュールは作成されません。
+</dd>
+</dl>
+<h3><strong>相互参照オプション</strong>
+</h3>
+<dl>
+<dt><strong class="underlined">*NOXREF</strong></dt>
+<dd>ソース・プログラム中の変数およびデータ項目に対する参照の相互参照表は作成されません。
+</dd>
+<dt><strong>*XREF</strong></dt>
+<dd>ソース・プログラムの相互参照表が作成されます。OUTPUT(*PRINT)を指定しなければなりません。
+</dd>
+</dl>
+<h3><strong>第</strong><strong>2</strong><strong>レベル・メッセージ・テキスト・オプション</strong>
+</h3>
+<dl>
+<dt><strong class="underlined">*NOSECLVL</strong></dt>
+<dd>第2レベル・メッセージ・テキストは印刷されません。
+</dd>
+<dt><strong>*SECLVL</strong></dt>
+<dd>第2レベル・メッセージ・テキストが印刷されます。OUTPUT(*PRINT)を指定しなければなりません。
+</dd>
+</dl>
+<h3><strong>イベント・ファイル作成オプション</strong>
+</h3>
+<dl>
+<dt><strong class="underlined">*NOEVENTF</strong></dt>
+<dd>コンパイラーは，連携開発環境（コード）プロダクトが使用するイベント・ファイルを作成しません。
+</dd>
+<dt><strong>*EVENTF</strong></dt>
+<dd>コンパイラーは，コードプロダクトが使用するイベント・ファイルを作成します。このイベント・ファイルは，ソース・ライブラリーのファイルEVFEVENTのメンバーとして作成されます。コードプロダクトは，このファイルを使用して，コードエディターによって統合されたエラー・フィードバックを提供します。通常，このオプションはユーザーのためにコードプロダクトによって指定されます。
+</dd>
+</dl>
+<h3><strong>DO/SELECT</strong><strong>ネスト・レベル・オプション</strong>
+</h3>
+<dl>
+<dt><strong class="underlined">*NODOSLTLVL</strong></dt>
+<dd>コンパイラーは，印刷されたスプール・ファイルに新しいカラムDO SLTを追加しません。DOおよびSELECTネスト・レベルは指示されません。
+</dd>
+<dt><strong>*DOSLTLVL</strong></dt>
+<dd>コンパイラーは，DOおよびSELECTネスト・レベルを指示するために，スプール・ファイルに新しいカラムDO SLTを追加します。カラムDOは，各DO GROUP, DO FOR, DO UNTIL,およびDO WHILEのDOレベル開始，および対応するEND DO GROUPでの終了を指示します。カラムSLTは，各SELECTのSELECTレベル開始，および対応するEND SELECTでの終了を指示します。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table10" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#CRTCLMOD.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="CRTCLMOD.LOG"></a>
+<h2>ログ・コマンド (LOG)</h2>
+<p>作成されたCLプログラムに対するロギング・オプションを指定します。
+</p>
+<dl>
+<dt><strong class="underlined">*JOB</strong></dt>
+<dd>CLモジュールを実行中のコマンドのロギングは，ジョブのロギング・フラグの状況（ジョブ変更(CHGJOB)コマンドのLOGCLPGMパラメーターを参照）によって決まります。ログされたコマンドをリストするためには，ジョブのロギング・レベルが3または4でなければなりません。
+<p>*YESまたは*NOの値は，CHGJOBコマンドに指定されたどの値よりも優先します。
+</p>
+</dd>
+<dt><strong>*YES</strong></dt>
+<dd>コマンドはすべての場合にログされます。
+</dd>
+<dt><strong>*NO</strong></dt>
+<dd>コマンドはログされません。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table11" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#CRTCLMOD.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="CRTCLMOD.ALWRTVSRC"></a>
+<h2>RTVCLSRC可能 (ALWRTVSRC)</h2>
+<p>CLソースをモジュール・オブジェクトと一緒に保存するかどうかを指定します。保存したソース仕様は，CLソース・ステートメント検索(RTVCLSRC)コマンドを使用して検索することができます。
+</p>
+<p>
+<strong>注:     </strong>このパラメーターは，<strong>ターゲット・リリース</strong><strong> (TGTRLS)</strong>パラメーターに7R1M0より前のリリースが指定された場合には無視されます。
+</p>
+<dl>
+<dt><strong class="underlined">*YES</strong></dt>
+<dd>CLソースはモジュールと一緒に保存されます。
+</dd>
+<dt><strong>*NO</strong></dt>
+<dd>CLソースは，モジュールと一緒に保存されません。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table12" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#CRTCLMOD.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="CRTCLMOD.REPLACE"></a>
+<h2>モジュール・オブジェクトの置き換え (REPLACE)</h2>
+<p>同じ名前のモジュールが指定したライブラリーに既に存在していた場合に，既存のモジュールを置き換えるかどうかを指定します。
+</p>
+<dl>
+<dt><strong class="underlined">*YES</strong></dt>
+<dd>既存のモジュールをQRPLOBJライブラリーに移動させることによって，それが置き換えられます。
+<h3><strong>注</strong><strong>:</strong>
+</h3>
+<ol class="cds--list--ordered--temporary">
+<li class="cds--list__item">REPLACEパラメーターに*YESが指定されている時に実行中のCLモジュールを再コンパイルした場合には，実行中のCLモジュールでメッセージ待ち行列エラーが起こります。
+</li>
+<li class="cds--list__item">このパラメーターに*YESを指定すると，AUTパラメーターの値は無視されることになります。既存のモジュールが権限の情報源として使用されます。モジュールの権限を変更するには，オブジェクト権限認可(GRTOBJAUT)またはオブジェクト権限取り消し(RVKOBJAUT)コマンドを使用することができます。
+</li>
+</ol>
+</dd>
+<dt><strong>*NO</strong></dt>
+<dd>既存のモジュールは置き換えられません。同じ名前のモジュールが指定したライブラリーに存在していた場合には，メッセージが表示され，コンパイルは停止します。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table13" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#CRTCLMOD.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="CRTCLMOD.TGTRLS"></a>
+<h2>ターゲット・リリース (TGTRLS)</h2>
+<p>作成中のオブジェクトの使用を計画しているオペレーティング・システムのリリースを指定します。
+</p>
+<p><strong>ターゲット・リリース</strong>を指定する時は，形式VXRXMXでリリースを指定します。ここで，VXはバージョン，RXはリリース，MXはモディフィケーション・レベルです。例えば，V5R3M0はバージョン5,リリース3,モディフィケーション・レベル0です。
+</p>
+<p>有効な値は，オペレーティング・システムの現在のバージョン，リリース，およびモディフィケーション・レベルで異なり，リリースが新しくなるたびに変わります。このコマンド・パラメーターのプロンプト時にF4を押して，有効なターゲット・リリースの値のリストを表示することができます。
+</p>
+<dl>
+<dt><strong class="underlined">*CURRENT</strong></dt>
+<dd>オブジェクトは，現在ユーザーのシステムで実行中のオペレーティング・システムのリリースで使用されます。オブジェクトは，後続のリリースのオペレーティング・システムが導入されたシステムでも使用することもできます。
+</dd>
+<dt><strong>*PRV</strong></dt>
+<dd>オブジェクトは，オペレーティング・システムの前のリリース（モディフィケーション・レベルは0)で使用されます。オブジェクトは，後続のリリースのオペレーティング・システムが導入されたシステムでも使用することもできます。
+</dd>
+<dt><strong class="italic">文字値</strong></dt>
+<dd>リリースをVXRXMXの形式で指定してください。オブジェクトは，指定したリリースまたはそれ以降のオペレーティング・システムが導入されているシステムで使用することができます。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table14" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#CRTCLMOD.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="CRTCLMOD.AUT"></a>
+<h2>権限 (AUT)</h2>
+<p>このオブジェクトの特定権限をもたず，権限リストにも入っておらず，またこのオブジェクトの特定権限をもたないユーザー・グループに属しているユーザーに対して認可しようとしている権限を指定します。
+</p>
+<dl>
+<dt><strong class="underlined">*LIBCRTAUT</strong></dt>
+<dd>システムは，作成するオブジェクトが入っているライブラリーに対するライブラリー作成(CRTLIB)コマンドで<strong>作成権限</strong><strong>(CRTAUT)</strong>パラメーターに指定された値を使用して，このオブジェクトに対する権限を決定します。CRTAUTパラメーターに指定された値が変更された場合には，新しい値は既存のどのオブジェクトにも影響しません。
+</dd>
+</dl>
+<dl>
+<dt><strong>*CHANGE</strong></dt>
+<dd>ユーザーは，所有者に限定されるか，あるいはオブジェクト存在権限(*OBJEXIST)およびオブジェクト管理権限(*OBJMGT)によって制御される以外のオブジェクトで，すべての操作を実行することができます。ユーザーはオブジェクトでの基本的な機能を変更して実行することができます。*CHANGE権限では，オブジェクト操作(*OBJOPR)および全データ権限が提供されます。このオブジェクトが権限リストである場合は，ユーザーの追加，変更，または除去はできません。
+</dd>
+</dl>
+<dl>
+<dt><strong>*ALL</strong></dt>
+<dd>ユーザーは，所有者に限定されるか，あるいは権限リスト管理(*AUTLMGT)権限によって管理される以外のオブジェクトで，すべての操作を実行することができます。ユーザーはオブジェクトの存在を制御し，オブジェクトの機密保護を指定し，オブジェクトを変更し，さらにオブジェクトに対して基本的な機能を実行することができます。オブジェクトの所有権を変更することもできます。
+</dd>
+</dl>
+<dl>
+<dt><strong>*USE</strong></dt>
+<dd>ユーザーは，プログラムの実行またはファイルの読み取りなど，オブジェクトに対する基本操作を実行することができます。ユーザーはオブジェクトを変更できません。使用(*USE)権限は，オブジェクト操作(*OBJOPR),読み取り(*READ),および実行(*EXECUTE)権限を提供します。
+</dd>
+</dl>
+<dl>
+<dt><strong>*EXCLUDE</strong></dt>
+<dd>ユーザーはオブジェクトにアクセスすることはできません。
+</dd>
+</dl>
+<dl>
+<dt><strong class="italic">名前</strong></dt>
+<dd>オブジェクトに対する権限として使用する権限リストの名前を指定してください。権限リストに載っているユーザーは，リストに指定されているオブジェクトに対する権限が認可されます。オブジェクトが作成される時に権限リストが存在していなければなりません。
+</dd>
+</dl>
+<p>
+<strong>注:     </strong>REPLACE(*YES)が指定されている時には，このパラメーターは無視されます。
+</p>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table15" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#CRTCLMOD.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="CRTCLMOD.SRTSEQ"></a>
+<h2>分類順序 (SRTSEQ)</h2>
+<p>このCLモジュールのストリングの比較に使用される分類順序テーブルを指定します。この分類順序値は，使用する分類順序テーブルを決定するためにジョブの言語IDおよびコード化文字セットIDと一緒に使用されます。
+</p>
+<h3><strong>単一値</strong>
+</h3>
+<dl>
+<dt><strong class="underlined">*HEX</strong></dt>
+<dd>分類順序テーブルは使用されません。分類順序を決定するために，文字の16進数値が使用されます。
+</dd>
+<dt><strong>*JOB</strong></dt>
+<dd>使用される分類順序は，CLモジュールの作成時のジョブと関連したSRTSEQです。
+</dd>
+<dt><strong>*JOBRUN</strong></dt>
+<dd>使用される分類順序は，CLモジュールの実行時のジョブと関連したSRTSEQです。
+</dd>
+<dt><strong>*LANGIDUNQ</strong></dt>
+<dd>分類順序テーブルでは，各文字ごとに固有の重みが使用され，これは，LANGIDパラメーターに指定された言語の順位別分類テーブルです。
+</dd>
+<dt><strong>*LANGIDSHR</strong></dt>
+<dd>分類順序テーブルは，複数の文字に同じ重みを使用する，LANGIDパラメーターに指定された言語に関連付けられた同順位分類順序テーブルです。
+</dd>
+</dl>
+<h3><strong>修飾子</strong><strong>1: </strong><strong>分類順序</strong>
+</h3>
+<dl>
+<dt><strong class="italic">名前</strong></dt>
+<dd>このCLモジュールで使用される分類順序テーブルの名前を指定してください。
+</dd>
+</dl>
+<h3><strong>修飾子</strong><strong>2: ライブラリー</strong>
+</h3>
+<dl>
+<dt><strong class="underlined">*LIBL</strong></dt>
+<dd>最初に一致するものが見つかるまで，現行スレッドのライブラリー・リスト内のすべてのライブラリーが検索されます。
+</dd>
+</dl>
+<dl>
+<dt><strong>*CURLIB</strong></dt>
+<dd>スレッドの現行ライブラリーが検索されます。スレッドの現行ライブラリーとして指定されているライブラリーがない場合，QGPLライブラリーが検索されます。
+</dd>
+</dl>
+<dl>
+<dt><strong class="italic">名前</strong></dt>
+<dd>検索するライブラリーの名前を指定してください。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table16" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#CRTCLMOD.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="CRTCLMOD.LANGID"></a>
+<h2>言語ID (LANGID)</h2>
+<p>SRTSEQ(*LANGIDUNQ)またはSRTSEQ(*LANGIDSHR)が指定されている時に使用される言語IDを指定します。
+</p>
+<dl>
+<dt><strong class="underlined">*JOBRUN</strong></dt>
+<dd>使用される言語IDは，CLモジュールの実行時のジョブと関連したLANGIDです。
+</dd>
+<dt><strong>*JOB</strong></dt>
+<dd>使用される言語IDは，CLモジュールの作成時のジョブと関連したLANGIDです。
+</dd>
+<dt><strong class="italic">言語ID</strong></dt>
+<dd>ジョブによって使用される言語IDを指定してください。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table17" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#CRTCLMOD.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="CRTCLMOD.OPTIMIZE"></a>
+<h2>最適化 (OPTIMIZE)</h2>
+<p>生成されたプログラム・コードの最適化レベルを指定します。ILE CLは最適化できません。互換性については*NONE以外の値は受け入れられますが，最適化は実行されません。ILE CLモジュールおよびプログラムは，*NONEより高い最適化レベルが必要なシステム機能では使用しないでください。
+</p>
+<dl>
+<dt><strong class="underlined">*NONE</strong></dt>
+<dd>生成されたコードは最適化されません。この値は，変換時間の点からは最速の最適化レベルです。このレベルによって，デバッグ中に変数を表示および変更することができます。
+</dd>
+<dt><strong>*BASIC</strong></dt>
+<dd>最適化は実行されません。CPD0861がコンパイル済みリストに表示され，ジョブ・ログに送られます。
+</dd>
+<dt><strong>*FULL</strong></dt>
+<dd>最適化は実行されません。CPD0861がコンパイル済みリストに表示され，ジョブ・ログに送られます。
+</dd>
+<dt><strong>10</strong></dt>
+<dd>最適化は実行されません。CPD0861がコンパイル済みリストに表示され，ジョブ・ログに送られます。
+</dd>
+<dt><strong>20</strong></dt>
+<dd>最適化は実行されません。CPD0861がコンパイル済みリストに表示され，ジョブ・ログに送られます。
+</dd>
+<dt><strong>30</strong></dt>
+<dd>最適化は実行されません。CPD0861がコンパイル済みリストに表示され，ジョブ・ログに送られます。
+</dd>
+<dt><strong>40</strong></dt>
+<dd>最適化は実行されません。CPD0861がコンパイル済みリストに表示され，ジョブ・ログに送られます。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table18" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#CRTCLMOD.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="CRTCLMOD.DBGVIEW"></a>
+<h2>デバッグ・ビュー (DBGVIEW)</h2>
+<p>コンパイル済みモジュールに使用可能なデバッグ・レベル，およびソース・レベルのデバッグに使用可能なソース・ビューを指定します。
+</p>
+<dl>
+<dt><strong class="underlined">*STMT</strong></dt>
+<dd>モジュールのステートメント番号および記号識別名を使用して，コンパイル済みモジュールをデバッグすることができます。
+</dd>
+<dt><strong>*NONE</strong></dt>
+<dd>コンパイル済みモジュールをデバッグするためのデバッグ・オプションは使用できません。
+</dd>
+<dt><strong>*ALL</strong></dt>
+<dd>コンパイル済みモジュールをデバッグするためのデバッグ・オプションはすべて使用できます。ソースおよびデバッグ・リスト・ビューが生成されます。
+</dd>
+<dt><strong>*SOURCE</strong></dt>
+<dd>コンパイル済みモジュールのデバッグのためにソース・ビューが生成されます。
+</dd>
+<dt><strong>*LIST</strong></dt>
+<dd>コンパイル済みモジュールのデバッグのためにリスト・ビューが生成されます。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table19" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#CRTCLMOD.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="CRTCLMOD.DBGENCKEY"></a>
+<h2>デバッグ暗号鍵 (DBGENCKEY)</h2>
+<p>デバッグ・ビューに埋め込まれるプログラム・ソースを暗号化するために使用する暗号鍵を指定します。
+</p>
+<dl>
+<dt><strong class="underlined">*NONE</strong></dt>
+<dd>暗号鍵を指定しません。
+</dd>
+<dt><strong class="italic">文字値</strong></dt>
+<dd>モジュール・オブジェクトに保管されたデバッグ・ビューに埋め込まれるプログラム・ソースを暗号化するために使用する鍵を指定します。鍵の長さは，1バイトから16バイトで指定できます。鍵の長さが1から15バイトの場合は，16バイトになるようにブランクが埋め込まれて，暗号化に使用されます。長さが0の鍵を指定すると，*NONEを指定した場合と同じになります。
+<p>すべてのコード・ページにわたってインバリアントではない文字が鍵に含まれている場合には，ターゲット・システムがソース・システムと同じコード・ページを使用するようにしてください。そうしないと，鍵が一致せず，暗号化解除に失敗することがあります。コード・ページが異なるシステムで暗号鍵を入力する必要がある場合には，すべてのEBCDICコード・ページでインバリアントである文字で鍵を構成することをお勧めします。
+</p>
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table20" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#CRTCLMOD.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="CRTCLMOD.ENBPFRCOL"></a>
+<h2>パフォーマンス収集使用可能 (ENBPFRCOL)</h2>
+<p>このパラメーターは廃止されました。
+</p>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table21" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#CRTCLMOD.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="CRTCLMOD.INCFILE"></a>
+<h2>INCLUDEファイル (INCFILE)</h2>
+<p>CLソースの組み込み(INCLUDE)コマンドを使用してプログラムに組み込まれるメンバーを含むソース・ファイルを指定します。
+</p>
+<h3><strong>単一値</strong>
+</h3>
+<dl>
+<dt><strong class="underlined">*SRCFILE</strong></dt>
+<dd><strong>ソース・ファイル</strong><strong> (SRCFILE)</strong>パラメーターに指定されるソース・ファイルには，すべてのCL INCLUDEコマンドで指定されるソース・ファイル・メンバーが含まれます。
+</dd>
+</dl>
+<h3><strong>修飾子</strong><strong>1:  INCLUDE</strong><strong>ファイル</strong>
+</h3>
+<dl>
+<dt><strong class="italic">名前</strong></dt>
+<dd>すべてのCL INCLUDEコマンドで指定されたソース・ファイル・メンバーが入っているソース・ファイルの名前を指定してください。
+<p>ここで指定するソース・ファイルのレコード長は，SRCFILEパラメーターに指定されたソース・ファイルのレコード長より大きいか等しくなければなりません。
+</p>
+</dd>
+</dl>
+<h3><strong>修飾子</strong><strong>2: ライブラリー</strong>
+</h3>
+<dl>
+<dt><strong class="underlined">*LIBL</strong></dt>
+<dd>最初に一致するものが見つかるまで，現行スレッドのライブラリー・リスト内のすべてのライブラリーが検索されます。
+</dd>
+</dl>
+<dl>
+<dt><strong>*CURLIB</strong></dt>
+<dd>ソース・ファイルを見つけるために，スレッドの現行ライブラリーが使用されます。スレッドの現行ライブラリーとして指定されているライブラリーがない場合，QGPLライブラリーが使用されます。
+</dd>
+</dl>
+<dl>
+<dt><strong class="italic">名前</strong></dt>
+<dd>検索するライブラリーの名前を指定してください。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table22" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#CRTCLMOD.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="CRTCLMOD.INCDIR"></a>
+<h2>組み込みディレクトリー (INCDIR)</h2>
+<p>組み込むファイルを検索するためにコンパイラーで使用される検索パスに追加する１つ以上のディレクトリーを指定します。ソース・プログラム内に組み込まれているファイルを解決できない場合，コンパイラーはここに指定されたディレクトリーを検索します。
+</p>
+<dl>
+<dt><strong>*NONE</strong></dt>
+<dd>組み込まれているファイルを見つけるためにどのディレクトリーも検索されません。省略時の値により，ソース・ディレクトリーは検索されます。
+</dd>
+<dt><strong class="italic">'ディレクトリー'</strong></dt>
+<dd>組み込まれているファイルを検索するディレクトリーを最大32個指定します。指定されたディレクトリーに加え，ソース・ディレクトリーでも組み込まれているファイルが検索されます。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table23" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#CRTCLMOD.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div><h2><a name="CRTCLMOD.COMMAND.EXAMPLES">例</a> </h2>
+<h3><strong>例</strong><strong>1: CL</strong><strong>モジュールの作成</strong>
+</h3>
+<p>
+</p><pre>CRTCLMOD   PAYROLL  TEXT('給与計算プログラム')
+</pre>
+<p></p>
+<p>このコマンドは，ILE CLコンパイラーを呼び出して，PAYROLLという名前のモジュール(*MODULE)を作成します。制御言語プログラムまたはILE CLプロシージャー・ソースは，省略時のソース・ファイルQCLSRCのメンバーPAYROLLに入っています。コンパイラー・リストが作成されます。
+</p>
+<h3><strong>例</strong><strong>2:</strong><strong>ストリーム・ソース・ファイルからの</strong><strong>CL</strong><strong>モジュールの作成</strong>
+</h3>
+<p>
+</p><pre>CRTCLMOD   PAYROLL  SRCSTMF('/HOME/TODD/PAYROLL.CL')
+</pre>
+<p></p>
+<p>このコマンドは，ILE CLコンパイラーを呼び出して，PAYROLLという名前のモジュール(*MODULE)を作成します。CLプログラムまたはILE CLプロシージャー・ソースは，IFSディレクトリー「/HOME/TODD」内のストリーム・ソース・ファイル「PAYROLL.CL」に入っています。
+</p>
+<h3><strong>例</strong><strong>3: IFS</strong><strong>組み込みソースを使用した</strong><strong>CL</strong><strong>モジュールの作成</strong>
+</h3>
+<p>以下のステートメントを含むCLソース「PAYROLL.CL」を使用します。
+</p>
+<p>
+</p><pre>INCLUDE SRCSTMF('PAY_DATA.CL')
+</pre>
+<p></p>
+<p>組み込まれるソース・ファイル「PAY_DATA.CL」はIFSディレクトリー「/INCLUDE_DIRECTORY」内のストリーム・ファイルです。この組み込みディレクトリーをコンパイル・コマンドの<strong>INCDIR</strong>パラメーターに指定できます。
+</p>
+<p>
+</p><pre>CRTCLMOD   PAYROLL  SRCSTMF('/HOME/TODD/PAYROLL.CL')
+           INCDIR('/INCLUDE_DIRECTORY')
+</pre>
+<p></p>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table24" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#CRTCLMOD.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div><h2><a name="CRTCLMOD.ERROR.MESSAGES">エラー・メッセージ</a> </h2>
+<p><strong class="underlined">*ESCAPE </strong><strong class="underlined">メッセージ</strong>
+</p>
+<dl>
+<dt><strong>CPF0C33</strong></dt>
+<dd>ターゲット・リリース&amp;1が正しくない。
+</dd>
+<dt><strong>CPF0C35</strong></dt>
+<dd>ターゲット・リリース&amp;1はサポートされているリリースではない。
+</dd>
+<dt><strong>CPF0807</strong></dt>
+<dd>コンパイラー印刷出力を含むファイルがオープンされなかった。
+</dd>
+<dt><strong>CPF0808</strong></dt>
+<dd>コンパイラー作成のコードにエラー。
+</dd>
+<dt><strong>CPF0814</strong></dt>
+<dd>ライセンス・プログラム5770-SS1のオプション9が導入されていない。
+</dd>
+<dt><strong>CPF0815</strong></dt>
+<dd>&amp;2のＣＬプログラム&amp;1を前のリリース用に作成することはできない。
+</dd>
+<dt><strong>CPF0821</strong></dt>
+<dd>モジュール&amp;1は作成されなかった。
+</dd>
+<dt><strong>CPF0849</strong></dt>
+<dd>アドレス空間のアドレス指定の違反。
+</dd>
+<dt><strong>CPF3202</strong></dt>
+<dd>ライブラリー&amp;2のファイル&amp;1は使用中である。
+</dd>
+<dt><strong>CPF3203</strong></dt>
+<dd>&amp;2のファイル&amp;1のオブジェクトを割り振ることができない。
+</dd>
+<dt><strong>CPF3224</strong></dt>
+<dd>ファイル&amp;1に対する操作の実行は認可されていない。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table25" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#CRTCLMOD.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+</div>
+
+
+</body></html>

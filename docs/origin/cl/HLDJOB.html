@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="ja"><head><meta charset="utf-8"><title>ジョブ保留  (HLDJOB)</title></head>
+<body>
+<div role="main">
+<script type="text/javascript" src="../rzahg/synch.js"></script>
+<a name="HLDJOB.Top_Of_Page"></a>
+<h1>ジョブ保留  (HLDJOB)</h1><div id="lastModifiedDate"><span>Last Updated</span>: 2021-04-13</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table0" width="100%" class="cds--data-table">
+<tbody><tr>
+<td class="valigntop alignleft"><strong>実行可能場所:  </strong>すべての環境 (*ALL)<br>
+<strong>スレッド・セーフ:  </strong>いいえ
+</td>
+<td class="valigntop alignright">
+<a href="#HLDJOB.PARAMETERS.TABLE">パラメーター</a><br>
+<a href="#HLDJOB.COMMAND.EXAMPLES">例</a><br>
+<a href="#HLDJOB.ERROR.MESSAGES">エラー・メッセージ</a></td>
+</tr>
+</tbody></table></div></div>
+<div> <a name="HLDJOB"></a>
+<p>ジョブ保留 (HLDJOB)コマンドは，ジョブをシステムによる処理に不適格とします。ジョブは，次のことが行われるまで，保留されています。
+</p>
+<ul class="cds--list--unordered">
+<li class="cds--list__item">ジョブ解放 (RLSJOB)コマンドによって保留解除される
+</li>
+<li class="cds--list__item">ジョブ待ち行列消去 (CLRJOBQ)コマンドによって消去される
+</li>
+<li class="cds--list__item">ジョブ終了 (ENDJOB)コマンドによって終了される
+</li>
+<li class="cds--list__item">サブシステム終了 (ENDSBS)コマンド，システム終了 (ENDSYS)コマンド，またはシステム電源遮断 (PWRDWNSYS)コマンドによって（ジョブが活動中に）終了される
+</li>
+</ul>
+<p>ジョブを保留すると，そのジョブ中のすべてのスレッドが保留されます。
+</p>
+<p>
+<strong>注:     </strong>このコマンドを使用して，システム上の資源に排他的にアクセスできるジョブを保留すると，それらの資源は他のジョブでは使用できなくなります。それらの資源にアクセスする必要がある他のジョブは，失敗するか，無期限に待機することになります。
+</p>
+<p><strong>制約事項：</strong>コマンド発行側は，保留されるジョブのジョブ・ユーザー識別と同じユーザー・プロファイルで実行しなければなりません。あるいは，コマンド発行側はジョブ制御(*JOBCTL)特殊権限をもつユーザー・プロファイルで実行しなければなりません。
+</p>
+<p>ジョブ・ユーザー識別はユーザー・プロファイルの名前であり，これによってジョブは他のジョブに認識されます。これについては，Work Managementに詳細な説明があります。
+</p>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table1" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#HLDJOB.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div>
+<h2><a name="HLDJOB.PARAMETERS.TABLE">パラメーター</a></h2>
+<div class="tablenoborder"><div class="cds--data-table-container"><table id="parm_table2" summary="Parameters" border="1" cellpadding="4" cellspacing="0" class="cds--data-table">
+<!-- col1="10" col2="15" col3="30" col4="10" -->
+<tbody><tr>
+<th scope="col" class="valignbottom alignleft"><div class="cds--table-header-label">キーワード</div></th>
+<th scope="col" class="valignbottom alignleft"><div class="cds--table-header-label">記述</div></th>
+<th scope="col" class="valignbottom alignleft"><div class="cds--table-header-label">選択項目</div></th>
+<th scope="col" class="valignbottom alignleft"><div class="cds--table-header-label">ノーツ</div></th>
+</tr>
+<tr>
+<td class="valigntop" rowspan="4"><a href="#HLDJOB.JOB"><strong>JOB</strong></a></td>
+<td class="valigntop">ジョブ名</td>
+<td class="valigntop"><span class="var">修飾ジョブ名</span></td>
+<td class="valigntop" rowspan="4">必須, 定位置 1</td>
+</tr>
+<tr>
+<td class="valigntop">修飾子 1: ジョブ名</td>
+<td class="valigntop"><span class="var">名前</span></td>
+</tr><tr>
+<td class="valigntop">修飾子 2: ユーザー</td>
+<td class="valigntop"><span class="var">名前</span></td>
+</tr><tr>
+<td class="valigntop">修飾子 3: 番号</td>
+<td class="valigntop">000000-999999</td>
+</tr><tr>
+<td class="valigntop"><a href="#HLDJOB.SPLFILE"><strong>SPLFILE</strong></a></td>
+<td class="valigntop">スプール・ファイルの保留</td>
+<td class="valigntop"><strong class="underlined">*NO</strong>, *YES</td>
+<td class="valigntop">オプショナル, 定位置 2</td>
+</tr>
+<tr>
+<td class="valigntop"><a href="#HLDJOB.DUPJOBOPT"><strong>DUPJOBOPT</strong></a></td>
+<td class="valigntop">重複ジョブ・オプション</td>
+<td class="valigntop"><strong class="underlined">*SELECT</strong>, *MSG</td>
+<td class="valigntop">オプショナル</td>
+</tr>
+</tbody></table></div></div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table3" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#HLDJOB.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+</div>
+<div> <a name="HLDJOB.JOB"></a>
+<h2>ジョブ名 (JOB)</h2>
+<p>保留するジョブの名前を指定します。
+</p>
+<p>これは必須パラメーターです。
+</p>
+<h3><strong>修飾子</strong><strong>1: </strong><strong>ジョブ名</strong>
+</h3>
+<dl>
+<dt><strong class="italic">名前</strong></dt>
+<dd>ジョブの名前を指定します。
+</dd>
+</dl>
+<h3><strong>修飾子</strong><strong>2: </strong><strong>ユーザー</strong>
+</h3>
+<dl>
+<dt><strong class="italic">名前</strong></dt>
+<dd>そのもとでジョブが開始されるユーザー・プロファイルを識別するユーザー名を指定してください。
+</dd>
+</dl>
+<h3><strong>修飾子</strong><strong>3: </strong><strong>番号</strong>
+</h3>
+<dl>
+<dt><strong class="italic">000000から999999</strong></dt>
+<dd>システム割り当てジョブ番号を指定してください。
+</dd>
+</dl>
+<p>
+<strong>注:     </strong>ユーザー名またはジョブ番号を指定しないと，システムに現在あるすべてのジョブのジョブ名が検索されます。指定した名前が複数個見つかった場合は，修飾ジョブ名は明示的に，または選択表示を介して提供する必要があります。詳細については，<strong>重複ジョブ・オプション</strong><strong> (DUPJOBOPT)</strong>パラメーターを参照してください。
+</p>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table4" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#HLDJOB.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="HLDJOB.SPLFILE"></a>
+<h2>スプール・ファイルの保留 (SPLFILE)</h2>
+<p>保留されるジョブによって作成されたスプール出力ファイルも保留するかどうかを指定します。
+</p>
+<dl>
+<dt><strong class="underlined">*NO</strong></dt>
+<dd>このジョブによって作成されるスプール出力ファイルは保留されません。
+</dd>
+<dt><strong>*YES</strong></dt>
+<dd>このジョブによって作成されるスプール出力ファイルもまた保留されます。このコマンドを出すスレッドのライブラリー名スペース内の出力待ち行列にあるスプール出力ファイルだけが保留されます。<strong>スプール・ファイル・アクション (SPLFACN)</strong>ジョブ属性が*DETACHで，スプール・ファイルの保留中にジョブが終了された場合は，ジョブ解放 (RLSJOB)コマンドを使用してそのスプール・ファイルを解放することはできません。ジョブをシステムから除去した後にスプール・ファイルを解放するには，スプール・ファイル解放 (RLSSPLF)コマンドを使用してください。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table5" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#HLDJOB.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="HLDJOB.DUPJOBOPT"></a>
+<h2>重複ジョブ・オプション (DUPJOBOPT)</h2>
+<p>このコマンドで重複ジョブが見つかった時に取られる処置を指定します。
+</p>
+<dl>
+<dt><strong class="underlined">*SELECT</strong></dt>
+<dd>対話式セッション中に重複しているジョブが見つかった時には，選択画面が表示されます。そうでない場合には，メッセージが出されます。
+</dd>
+<dt><strong>*MSG</strong></dt>
+<dd>重複しているジョブが見つかった時には，メッセージが出されます。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table6" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#HLDJOB.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div><h2><a name="HLDJOB.COMMAND.EXAMPLES">例</a> </h2>
+<h3><strong>例</strong><strong>1:</strong><strong>ジョブを処理不適格にする</strong>
+</h3>
+<p>
+</p><pre>HLDJOB   JOB(PAYROLL)  SPLFILE(*YES)
+</pre>
+<p></p>
+<p>このコマンドは，PAYROLLという名前のジョブを処理に不適格なジョブにします。このジョブのスプール・ファイルもすべて保留されます。
+</p>
+<h3><strong>例</strong><strong>2:</strong><strong>重複名をもつジョブを保留する</strong>
+</h3>
+<p>
+</p><pre>HLDJOB   JOB(DEPTXYZ/PAYROLL)
+</pre>
+<p></p>
+<p>このコマンドは，ユーザー・プロファイルDEPTXYZのもとで活動しているユーザーによって投入された，PAYROLLという名前のジョブを保留します。システム内に重複名をもつジョブが存在する時は，ジョブ名の修飾形式が使用されます。スプール・ファイルは保留されません。
+</p>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table7" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#HLDJOB.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div><h2><a name="HLDJOB.ERROR.MESSAGES">エラー・メッセージ</a> </h2>
+<p><strong class="underlined">*ESCAPE </strong><strong class="underlined">メッセージ</strong>
+</p>
+<dl>
+<dt><strong>CPF1E52</strong></dt>
+<dd>ジョブ&amp;1の保留は認可されていない。
+</dd>
+<dt><strong>CPF1E53</strong></dt>
+<dd>ジョブ&amp;1は終了しているので保留することはできない。
+</dd>
+<dt><strong>CPF1E54</strong></dt>
+<dd>ジョブ&amp;1を保留することはできない。
+</dd>
+<dt><strong>CPF1317</strong></dt>
+<dd>ジョブ&amp;3/&amp;2/&amp;1に対して，サブシステムから応答がない。
+</dd>
+<dt><strong>CPF1321</strong></dt>
+<dd>ジョブ&amp;1ユーザー&amp;2ジョブ番号&amp;3が見つからない。
+</dd>
+<dt><strong>CPF1332</strong></dt>
+<dd>重複したジョブ名の終わり。
+</dd>
+<dt><strong>CPF1340</strong></dt>
+<dd>ジョブ制御機能は実行されなかった。
+</dd>
+<dt><strong>CPF1341</strong></dt>
+<dd>読み取りプログラムまたは書き出しプログラム&amp;3/&amp;2/&amp;1は，ジョブ名として使用できない。
+</dd>
+<dt><strong>CPF1342</strong></dt>
+<dd>このコマンドのジョブ名として現行ジョブを使用することはできない。
+</dd>
+<dt><strong>CPF1343</strong></dt>
+<dd>ジョブ&amp;3/&amp;2/&amp;1は，この機能に対して正しくないジョブ・タイプである。
+</dd>
+<dt><strong>CPF1344</strong></dt>
+<dd>ジョブ&amp;3/&amp;2/&amp;1を制御する権限がない。
+</dd>
+<dt><strong>CPF1345</strong></dt>
+<dd>ジョブ&amp;3/&amp;2/&amp;1を保留することはできない。
+</dd>
+<dt><strong>CPF1346</strong></dt>
+<dd>ジョブ&amp;3/&amp;2/&amp;1は既に保留されている。
+</dd>
+<dt><strong>CPF1347</strong></dt>
+<dd>ジョブ&amp;3/&amp;2/&amp;1を保留することはできない。
+</dd>
+<dt><strong>CPF1348</strong></dt>
+<dd>ジョブ&amp;3/&amp;2/&amp;1は保留されているが，そのファイルを保留することができない。
+</dd>
+<dt><strong>CPF1350</strong></dt>
+<dd>SPLFILE(*NO)が指定されたが，ジョブ&amp;3/&amp;2/&amp;1はOUTQ上にある。
+</dd>
+<dt><strong>CPF1351</strong></dt>
+<dd>ジョブ&amp;3/&amp;2/&amp;1のサブシステムで機能チェックが起こった。
+</dd>
+<dt><strong>CPF1352</strong></dt>
+<dd>この機能は実行されなかった。&amp;3/&amp;2/&amp;1は移行状態である。
+</dd>
+<dt><strong>CPF1378</strong></dt>
+<dd>現時点ではジョブ&amp;3/&amp;2/&amp;1は保留されない。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table8" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#HLDJOB.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+</div>
+
+
+</body></html>

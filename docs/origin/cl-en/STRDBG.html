@@ -1,0 +1,1217 @@
+<!DOCTYPE html>
+<html lang="ja"><head><meta charset="utf-8"><title>Start Debug  (STRDBG)</title></head>
+<body>
+<main role="main"><article role="article" aria-labelledby="strdbg__title__1"> 
+<h1 class="topictitle1" id="strdbg__title__1">Start Debug  (STRDBG)</h1><div id="lastModifiedDate"><span>Last Updated</span>: 2026-07-13</div>
+
+<div class="body">
+<p>
+<strong>Start Debug  (STRDBG)
+</strong></p>
+
+<p>
+<strong>Where allowed to run:  
+</strong>All environments (*ALL)
+
+</p>
+
+<p>
+<strong>Threadsafe:  </strong>No
+</p>
+
+<p><a href="#strdbg__parameters">Parameters</a></p>
+
+<p><a href="#strdbg__examples">Examples</a></p>
+
+<p><a href="#strdbg__errormsgs">Error messages</a></p>
+
+<div class="div" id="strdbg__strdbg">
+<p>
+The Start Debug (STRDBG) command puts a job into debug mode and, optionally, adds as many as 20 programs and 20 service programs and 20 class files to debug mode.  It also specifies certain attributes of the debugging session.  For example, it can specify whether database files in production libraries can be updated while in debug mode.
+
+</p>
+
+<p>
+The graphical system debugger will be launched instead of the traditional system debugger if the STRDBG command is issued by a user registered for graphical debugging.
+
+</p>
+
+<p>
+Debug can operate in three environments at the same time.  They are OPM (Original Program Model), ILE (Integrated Language Environment), and JAVA.  Some parameters for this command are applicable for all three environments.  Some parameters for this command are applicable only for OPM, ILE, or JAVA.  There will be a statement in each parameter description stating the environment in which the parameter is applicable.
+
+</p>
+
+<p>
+The Change Debug (CHGDBG) command can be used later in the job to change the attributes of the debug mode.  Also, OPM programs can be added to or removed from the debugging session if they are specified in the Add Program (ADDPGM) or Remove Program (RMVPGM) commands.  OPM programs added with the ADDPGM command will be in the OPM debug environment.
+
+</p>
+
+<p>
+When one job is servicing another job, and STRDBG is entered, all debug commands are valid for the job being serviced.  If that job is held on a job queue, no further debug commands may be entered until that job is allowed to run.  When the job starts, an initial breakpoint screen is displayed.  From this screen, additional debug commands may be entered.  To service another job, see the STRSRVJOB (Start Service Job) command.  More information about debugging one job from another job is in the CL topic collection in the Programming category in the IBM i Information Center at http://www.ibm.com/systems/i/infocenter/.
+
+</p>
+
+<p>
+<strong>Restrictions:
+</strong>
+</p>
+
+<ul class="cds--list--unordered">
+<li class="cds--list__item">
+You cannot use this command in debug mode.  To end debug mode, refer to the End Debug (ENDDBG) command.
+
+</li>
+
+<li class="cds--list__item">
+You cannot use this command if you are servicing another job, and that job is held, suspended, or ending.
+
+</li>
+
+<li class="cds--list__item">
+This command is shipped with public *EXCLUDE authority and the QPGMR, QSRV, and QSRVBAS user profiles have private authorities to use this command.
+
+</li>
+
+<li class="cds--list__item">
+You must have either *CHANGE authority to the program, or *USE authority to the program and *SERVICE special authority.
+
+</li>
+
+</ul>
+
+</div>
+<section class="section" role="region" aria-labelledby="strdbg__parameters__title__1" id="strdbg__parameters"><h2 class="sectiontitle" id="strdbg__parameters__title__1">Parameters</h2>
+
+
+<div class="tablenoborder"><div class="cds--data-table-container"><table summary="" class="defaultstyle cds--data-table"><colgroup><col><col><col><col></colgroup><thead>
+<tr>
+<th id="strdbg__parameters__entry__1"><div class="cds--table-header-label">
+Keyword
+</div></th>
+
+<th id="strdbg__parameters__entry__2"><div class="cds--table-header-label">
+Description
+</div></th>
+
+<th id="strdbg__parameters__entry__3"><div class="cds--table-header-label">
+Choices
+</div></th>
+
+<th id="strdbg__parameters__entry__4"><div class="cds--table-header-label">
+Notes
+</div></th>
+
+</tr>
+
+</thead>
+<tbody>
+<tr>
+<td rowspan="3" headers="strdbg__parameters__entry__1 "><a href="#strdbg__pgm"><strong>PGM
+</strong></a></td>
+
+<td headers="strdbg__parameters__entry__2 ">Program
+</td>
+
+<td headers="strdbg__parameters__entry__3 ">Single values: 
+<strong><u>*NONE
+</u></strong>
+Other values (up to 20 repetitions): 
+<em>Qualified object name
+</em></td>
+
+<td rowspan="3" headers="strdbg__parameters__entry__4 ">Optional, Positional 1
+</td>
+
+</tr>
+
+<tr>
+<td headers="strdbg__parameters__entry__2 ">Qualifier 1: Program
+</td>
+
+<td headers="strdbg__parameters__entry__3 "><em>Name
+</em></td>
+
+</tr>
+
+<tr>
+<td headers="strdbg__parameters__entry__2 ">Qualifier 2: Library
+</td>
+
+<td headers="strdbg__parameters__entry__3 "><em>Name
+</em>, 
+<strong><u>*LIBL
+</u></strong>, *CURLIB
+</td>
+
+</tr>
+
+<tr>
+<td headers="strdbg__parameters__entry__1 "><a href="#strdbg__dftpgm"><strong>DFTPGM
+</strong></a></td>
+
+<td headers="strdbg__parameters__entry__2 ">Default program
+</td>
+
+<td headers="strdbg__parameters__entry__3 "><em>Name
+</em>, 
+<strong><u>*PGM
+</u></strong>, *NONE
+</td>
+
+<td headers="strdbg__parameters__entry__4 ">Optional
+</td>
+
+</tr>
+
+<tr>
+<td headers="strdbg__parameters__entry__1 "><a href="#strdbg__maxtrc"><strong>MAXTRC
+</strong></a></td>
+
+<td headers="strdbg__parameters__entry__2 ">Maximum trace statements
+</td>
+
+<td headers="strdbg__parameters__entry__3 "><em>Integer
+</em>, 
+<strong><u>200
+</u></strong></td>
+
+<td headers="strdbg__parameters__entry__4 ">Optional
+</td>
+
+</tr>
+
+<tr>
+<td headers="strdbg__parameters__entry__1 "><a href="#strdbg__trcfull"><strong>TRCFULL
+</strong></a></td>
+
+<td headers="strdbg__parameters__entry__2 ">Trace full
+</td>
+
+<td headers="strdbg__parameters__entry__3 "><strong><u>*STOPTRC
+</u></strong>, *WRAP
+</td>
+
+<td headers="strdbg__parameters__entry__4 ">Optional
+</td>
+
+</tr>
+
+<tr>
+<td headers="strdbg__parameters__entry__1 "><a href="#strdbg__updprod"><strong>UPDPROD
+</strong></a></td>
+
+<td headers="strdbg__parameters__entry__2 ">Update production files
+</td>
+
+<td headers="strdbg__parameters__entry__3 "><strong><u>*NO
+</u></strong>, *YES
+</td>
+
+<td headers="strdbg__parameters__entry__4 ">Optional
+</td>
+
+</tr>
+
+<tr>
+<td headers="strdbg__parameters__entry__1 "><a href="#strdbg__opmsrc"><strong>OPMSRC
+</strong></a></td>
+
+<td headers="strdbg__parameters__entry__2 ">OPM source level debug
+</td>
+
+<td headers="strdbg__parameters__entry__3 "><strong><u>*NO
+</u></strong>, *YES
+</td>
+
+<td headers="strdbg__parameters__entry__4 ">Optional
+</td>
+
+</tr>
+
+<tr>
+<td rowspan="3" headers="strdbg__parameters__entry__1 "><a href="#strdbg__srvpgm"><strong>SRVPGM
+</strong></a></td>
+
+<td headers="strdbg__parameters__entry__2 ">Service program
+</td>
+
+<td headers="strdbg__parameters__entry__3 ">Single values: 
+<strong><u>*NONE
+</u></strong>
+Other values (up to 20 repetitions): 
+<em>Qualified object name
+</em></td>
+
+<td rowspan="3" headers="strdbg__parameters__entry__4 ">Optional
+</td>
+
+</tr>
+
+<tr>
+<td headers="strdbg__parameters__entry__2 ">Qualifier 1: Service program
+</td>
+
+<td headers="strdbg__parameters__entry__3 "><em>Name
+</em></td>
+
+</tr>
+
+<tr>
+<td headers="strdbg__parameters__entry__2 ">Qualifier 2: Library
+</td>
+
+<td headers="strdbg__parameters__entry__3 "><em>Name
+</em>, 
+<strong><u>*LIBL
+</u></strong>, *CURLIB
+</td>
+
+</tr>
+
+<tr>
+<td headers="strdbg__parameters__entry__1 "><a href="#strdbg__class"><strong>CLASS
+</strong></a></td>
+
+<td headers="strdbg__parameters__entry__2 ">Class file
+</td>
+
+<td headers="strdbg__parameters__entry__3 ">Values (up to 20 repetitions): 
+<em>Path name
+</em>, 
+<strong><u>*NONE
+</u></strong></td>
+
+<td headers="strdbg__parameters__entry__4 ">Optional
+</td>
+
+</tr>
+
+<tr>
+<td headers="strdbg__parameters__entry__1 "><a href="#strdbg__dspmodsrc"><strong>DSPMODSRC
+</strong></a></td>
+
+<td headers="strdbg__parameters__entry__2 ">Display module source
+</td>
+
+<td headers="strdbg__parameters__entry__3 "><strong><u>*PGMDEP
+</u></strong>, *NO, *YES
+</td>
+
+<td headers="strdbg__parameters__entry__4 ">Optional
+</td>
+
+</tr>
+
+<tr>
+<td rowspan="3" headers="strdbg__parameters__entry__1 "><a href="#strdbg__srcdbgpgm"><strong>SRCDBGPGM
+</strong></a></td>
+
+<td headers="strdbg__parameters__entry__2 ">Source debug program
+</td>
+
+<td headers="strdbg__parameters__entry__3 ">Single values: 
+<strong><u>*SYSDFT
+</u></strong>
+Other values: 
+<em>Qualified object name
+</em></td>
+
+<td rowspan="3" headers="strdbg__parameters__entry__4 ">Optional
+</td>
+
+</tr>
+
+<tr>
+<td headers="strdbg__parameters__entry__2 ">Qualifier 1: Source debug program
+</td>
+
+<td headers="strdbg__parameters__entry__3 "><em>Name
+</em></td>
+
+</tr>
+
+<tr>
+<td headers="strdbg__parameters__entry__2 ">Qualifier 2: Library
+</td>
+
+<td headers="strdbg__parameters__entry__3 "><em>Name
+</em>, 
+<strong><u>*LIBL
+</u></strong>, *CURLIB
+</td>
+
+</tr>
+
+<tr>
+<td rowspan="3" headers="strdbg__parameters__entry__1 "><a href="#strdbg__unmonpgm"><strong>UNMONPGM
+</strong></a></td>
+
+<td headers="strdbg__parameters__entry__2 ">Unmonitored message program
+</td>
+
+<td headers="strdbg__parameters__entry__3 ">Single values: 
+<strong><u>*NONE
+</u></strong>
+Other values: 
+<em>Qualified object name
+</em></td>
+
+<td rowspan="3" headers="strdbg__parameters__entry__4 ">Optional
+</td>
+
+</tr>
+
+<tr>
+<td headers="strdbg__parameters__entry__2 ">Qualifier 1: Unmonitored message program
+</td>
+
+<td headers="strdbg__parameters__entry__3 "><em>Name
+</em></td>
+
+</tr>
+
+<tr>
+<td headers="strdbg__parameters__entry__2 ">Qualifier 2: Library
+</td>
+
+<td headers="strdbg__parameters__entry__3 "><em>Name
+</em>, 
+<strong><u>*LIBL
+</u></strong>, *CURLIB
+</td>
+
+</tr>
+
+<tr>
+<td headers="strdbg__parameters__entry__1 "><a href="#strdbg__dbgenckey"><strong>DBGENCKEY
+</strong></a></td>
+
+<td headers="strdbg__parameters__entry__2 ">Decryption key
+</td>
+
+<td headers="strdbg__parameters__entry__3 "><em>Character value
+</em>, 
+<strong><u>*NONE
+</u></strong></td>
+
+<td headers="strdbg__parameters__entry__4 ">Optional
+</td>
+
+</tr>
+
+</tbody>
+</table></div>
+</div>
+
+<div class="div" id="strdbg__pgm">
+<p>
+<strong>Program (PGM)
+</strong></p>
+
+<p>
+Specifies up to 20 programs to debug in the job.  Before a program can be debugged, its name must be specified on this parameter, in the Add Program (ADDPGM) command, or the Display Module Source (DSPMODSRC) command.
+
+</p>
+
+<p>
+This parameter is applicable in both OPM and ILE environments.
+
+</p>
+
+<p>
+<strong>Single values
+</strong>
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><u>*NONE
+</u></strong></dt>
+
+<dd class="dlentry">
+No program names are specified at the start of the debugging session.  The Add Program (ADDPGM) command or the Display Module Source (DSPMODSRC) command can be used to add programs later.
+</dd>
+
+</dl>
+
+<p>
+<strong>Other values (up to 20 repetitions)
+</strong>
+</p>
+
+<p>
+<strong>Qualifier 1: Program
+</strong>
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><em>name
+</em></strong></dt>
+
+<dd class="dlentry">
+Specify the name of the program to debug.  You cannot debug two programs that have the same name at the same time in the OPM debug environment.  In the ILE debug environment, two programs with the same name can be debugged if they are in different libraries.
+</dd>
+
+</dl>
+
+<p>
+<strong>Qualifier 2: Library
+</strong>
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><u>*LIBL
+</u></strong></dt>
+
+<dd class="dlentry">
+All libraries in the library list for the current thread are searched until the first match is found.
+</dd>
+
+</dl>
+
+<dl>
+<dt class="dlterm">
+<strong>*CURLIB
+</strong></dt>
+
+<dd class="dlentry">
+The current library for the job is used to locate the program.  If no library is specified as the current library for the job, QGPL is used.
+</dd>
+
+<dt class="dlterm">
+<strong><em>name
+</em></strong></dt>
+
+<dd class="dlentry">
+Specify the library where the program is located.
+</dd>
+
+</dl>
+
+</div>
+<div class="div" id="strdbg__dftpgm">
+<p>
+<strong>Default program (DFTPGM)
+</strong></p>
+
+<p>
+Specifies the original program model (OPM) program to use as the default program during debug mode.  The program specified here is used as the default program for any of the other debug commands for which the user specified a value of *DFTPGM for the 
+<strong>Program (PGM)
+</strong> parameter.  That is, if a default program was previously specified, this parameter can change it.
+
+</p>
+
+<p>
+This parameter is applicable only in the OPM environment.
+
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><u>*PGM
+</u></strong></dt>
+
+<dd class="dlentry">
+The program named on the PGM parameter of this command is to be the default program for the job's debugging session.  If there is more than one program name specified on the PGM parameter, the first OPM program named in the list that is added to the OPM debug environment is the default program.  If *NONE is specified on the PGM parameter, or is the default, *NONE is also assumed when this value (*PGM) is specified.
+</dd>
+
+<dt class="dlterm">
+<strong>*NONE
+</strong></dt>
+
+<dd class="dlentry">
+No program is specified as the default program; if a program was specified as a default program, it is no longer the default program.  If the job has no default program, *DFTPGM cannot be specified on the PGM parameter of any other debug commands.
+</dd>
+
+<dt class="dlterm">
+<strong><em>name
+</em></strong></dt>
+
+<dd class="dlentry">
+Specify the name of the program to use as the default program during debug mode.  The same name (in qualified form) must also be specified for the PGM parameter of this command.  You cannot specify a bound program on this parameter.
+<p>
+<strong>Note:     
+</strong>If OPMSRC(*YES) is specified, the OPM program may be added to either the OPM debug environment or the ILE debug environment.  If added to the ILE debug environment, then it cannot be a default program for the OPM debug environment.
+
+</p>
+
+</dd>
+
+</dl>
+
+</div>
+<div class="div" id="strdbg__maxtrc">
+<p>
+<strong>Maximum trace statements (MAXTRC)
+</strong></p>
+
+<p>
+Specifies the maximum number of trace statements that the system puts into the job's trace file before either stopping tracing or wrapping around (overlaying) on the trace file.  When the trace file contains the maximum specified, the system performs the actions specified by the value supplied for the 
+<strong>Trace full (TRCFULL)
+</strong> parameter.
+
+</p>
+
+<p>
+<strong>Note:     
+</strong>Instruction stepping can be performed on a program being debugged in an interactive environment by setting the maximum number of trace statements to 
+<strong>1
+</strong> and the value for the TRCFULL parameter to *STOPTRC.
+
+</p>
+
+<p>
+This parameter is applicable only in the OPM environment.
+
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><u>200
+</u></strong></dt>
+
+<dd class="dlentry">
+Two hundred trace statements can be put into the file before tracing is stopped or wrapping occurs.
+</dd>
+
+<dt class="dlterm">
+<strong><em>integer
+</em></strong></dt>
+
+<dd class="dlentry">
+Specify the maximum number of trace statements that can be in the trace file.
+</dd>
+
+</dl>
+
+</div>
+<div class="div" id="strdbg__trcfull">
+<p>
+<strong>Trace full (TRCFULL)
+</strong></p>
+
+<p>
+Specifies what happens when the job's trace file is full (that is, it contains the maximum number of trace statements specified by the value supplied for the 
+<strong>Maximum trace statements (MAXTRC)
+</strong> parameter.
+
+</p>
+
+<p>
+This parameter is applicable only in the OPM environment.
+
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><u>*STOPTRC
+</u></strong></dt>
+
+<dd class="dlentry">
+In a batch environment, tracing stops but the program continues processing.  In an interactive environment, control is given to the user when a breakpoint occurs.  If the user continues processing, a breakpoint occurs before processing each subsequent statement within the range of statements being traced, and the trace file is extended to contain the new entry.
+</dd>
+
+<dt class="dlterm">
+<strong>*WRAP
+</strong></dt>
+
+<dd class="dlentry">
+The trace file is overlaid with new trace statements as they occur, wrapping from the beginning of the file.  The program will complete processing with no message to indicate that wrapping has occurred.  The trace file never has more than the maximum specified statements, and they are the most recently recorded statements.
+</dd>
+
+</dl>
+
+</div>
+<div class="div" id="strdbg__updprod">
+<p>
+<strong>Update production files (UPDPROD)
+</strong></p>
+
+<p>
+Specifies whether or not database files in a production library can be opened for updating records, or for adding new records, while the job is in debug mode.  If not, the files must be copied into a test library before trying to run a program that uses the files.
+
+</p>
+
+<p>
+This parameter is applicable in both OPM and ILE environments.
+
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><u>*NO
+</u></strong></dt>
+
+<dd class="dlentry">
+Database files in production libraries cannot be updated while the job is in debug mode.  Database files can be opened for reading only.  This protects database files from unwanted updates while a program is being debugged.  The exception to this is starting debug mode after a production library is already opened.  If this value is specified, some commands, which may include function keys, menu options, or pulldowns, may not work properly.
+</dd>
+
+<dt class="dlterm">
+<strong>*YES
+</strong></dt>
+
+<dd class="dlentry">
+Database files in production libraries can be updated while the job is in debug mode.
+</dd>
+
+</dl>
+
+</div>
+<div class="div" id="strdbg__opmsrc">
+<p>
+<strong>OPM source level debug (OPMSRC)
+</strong></p>
+
+<p>
+Specifies that original program model (OPM) programs are debugged using the system source debug support (same as ILE source debug).
+
+</p>
+
+<p>
+This parameter is valid for OPM CL, OPM RPG and OPM COBOL programs that were created with OPTION(*SRCDBG) with CRTCLPGM, CRTRPGPGM and CRTCBLPGM commands.  Additionally, this parameter is valid for OPM CL, OPM RPG and OPM COBOL programs that were created with OPTION(*LSTDBG) with the CRTCLPGM, CRTRPGPGM, CRTCBLPGM, CRTSQLRPG, CRTSQLCBL, and CRTRPTRPG commands.  If the OPM program is not CL, RPG or COBOL and was not compiled with a valid debug option, then this parameter is ignored.
+
+</p>
+
+<p>
+This parameter is applicable in both OPM and ILE environment.
+
+</p>
+
+<p>
+ILE functions will now operate on OPM programs.  For example, source level debug.
+
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><u>*NO
+</u></strong></dt>
+
+<dd class="dlentry">
+OPM debug functions are used for OPM programs.
+</dd>
+
+<dt class="dlterm">
+<strong>*YES
+</strong></dt>
+
+<dd class="dlentry">
+ILE debug functions are used for OPM programs.
+</dd>
+
+</dl>
+
+</div>
+<div class="div" id="strdbg__srvpgm">
+<p>
+<strong>Service program (SRVPGM)
+</strong></p>
+
+<p>
+Specifies up to 20 service programs to debug in the job. Before a service program can be debugged, its name must be specified on this parameter or the Display Module Source (DSPMODSRC) command.
+
+</p>
+
+<p>
+This parameter is applicable only in the ILE environment.
+
+</p>
+
+<p>
+<strong>Single values
+</strong>
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><u>*NONE
+</u></strong></dt>
+
+<dd class="dlentry">
+No service program names are specified at the start of the debugging session.  The Display Module Source (DSPMODSRC) command can be used to add service programs later.
+</dd>
+
+</dl>
+
+<p>
+<strong>Other values (up to 20 repetitions)
+</strong>
+</p>
+
+<p>
+<strong>Qualifier 1: Service program
+</strong>
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><em>name
+</em></strong></dt>
+
+<dd class="dlentry">
+Specify the name of the service program to debug.
+</dd>
+
+</dl>
+
+<p>
+<strong>Qualifier 2: Library
+</strong>
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><u>*LIBL
+</u></strong></dt>
+
+<dd class="dlentry">
+All libraries in the library list for the current thread are searched until the first match is found.
+</dd>
+
+</dl>
+
+<dl>
+<dt class="dlterm">
+<strong>*CURLIB
+</strong></dt>
+
+<dd class="dlentry">
+The current library for the job is used to locate the service program.  If no library is specified as the current library for the job, QGPL is used.
+</dd>
+
+<dt class="dlterm">
+<strong><em>name
+</em></strong></dt>
+
+<dd class="dlentry">
+Specify the library where the service program is located.
+</dd>
+
+</dl>
+
+</div>
+<div class="div" id="strdbg__class">
+<p>
+<strong>Class file (CLASS)
+</strong></p>
+
+<p>
+Specifies up to 20 class files to debug in the job. Before a class file can be debugged, its name must be specified on this parameter or the Display Module Source (DSPMODSRC) command.
+
+</p>
+
+<p>
+This parameter is applicable only in the ILE environment.
+
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><u>*NONE
+</u></strong></dt>
+
+<dd class="dlentry">
+No class files are specified at the start of the debugging session.  The Display Module Source (DSPMODSRC) command can be used to add class files later.
+</dd>
+
+<dt class="dlterm">
+<strong><em>path-name
+</em></strong></dt>
+
+<dd class="dlentry">
+Specify the path names of the class file to debug.
+</dd>
+
+</dl>
+
+</div>
+<div class="div" id="strdbg__dspmodsrc">
+<p>
+<strong>Display module source (DSPMODSRC)
+</strong></p>
+
+<p>
+Specifies whether the first display of the source debug program is shown when this command is processed and no errors occur.
+
+</p>
+
+<p>
+This parameter is applicable only in the ILE environment.
+
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><u>*PGMDEP
+</u></strong></dt>
+
+<dd class="dlentry">
+The showing of the source debug program display is dependent on the programs specified on the 
+<strong>Program (PGM)
+</strong> parameter.  If any of the programs are ILE programs, the display is shown.  If any of the programs are OPM programs with source debug data, and OPMSRC(*YES) is specified, the display is shown.  If all of the programs are OPM programs and OPMSRC(*NO) is specified, the display is not shown.
+</dd>
+
+<dt class="dlterm">
+<strong>*NO
+</strong></dt>
+
+<dd class="dlentry">
+The first display of the source debug program is not shown.
+</dd>
+
+<dt class="dlterm">
+<strong>*YES
+</strong></dt>
+
+<dd class="dlentry">
+The first display of the source debug program is shown.
+</dd>
+
+</dl>
+
+</div>
+<div class="div" id="strdbg__srcdbgpgm">
+<p>
+<strong>Source debug program (SRCDBGPGM)
+</strong></p>
+
+<p>
+Specifies the source debug program to be used.  See the APIs topic collection in the Programming category in the IBM i Information Center at http://www.ibm.com/systems/i/infocenter/ for an explanation of this parameter.
+
+</p>
+
+<p>
+This parameter is applicable only in the ILE environment.
+
+</p>
+
+<p>
+<strong>Single values
+</strong>
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><u>*SYSDFT
+</u></strong></dt>
+
+<dd class="dlentry">
+The system source debug program is used.
+</dd>
+
+</dl>
+
+<p>
+<strong>Qualifier 1: Source debug program
+</strong>
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><em>name
+</em></strong></dt>
+
+<dd class="dlentry">
+Specify the name of the program to be used to debug programs.
+</dd>
+
+</dl>
+
+<p>
+<strong>Qualifier 2: Library
+</strong>
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><u>*LIBL
+</u></strong></dt>
+
+<dd class="dlentry">
+All libraries in the library list for the current thread are searched until the first match is found.
+</dd>
+
+</dl>
+
+<dl>
+<dt class="dlterm">
+<strong>*CURLIB
+</strong></dt>
+
+<dd class="dlentry">
+The current library for the job is searched.  If no library is specified as the current library for the job, the QGPL library is used.
+</dd>
+
+<dt class="dlterm">
+<strong><em>name
+</em></strong></dt>
+
+<dd class="dlentry">
+Specify the name of the library to be searched.
+</dd>
+
+</dl>
+
+</div>
+<div class="div" id="strdbg__unmonpgm">
+<p>
+<strong>Unmonitored message program (UNMONPGM)
+</strong></p>
+
+<p>
+Specifies the qualified name of the user-supplied program called when a message that is not monitored occurs in the job being debugged.  When the program specified is called, it is passed parameters that identify the program name, the recursion level, the high-level language statement identifier, the machine instruction number at which the breakpoint occurred, the message that was not monitored, the message data, the length of the message data, and the message reference key.
+
+</p>
+
+<p>
+This parameter is applicable only in the OPM environment.
+
+</p>
+
+<p>
+The passed parameters have the following formats:
+
+</p>
+
+<ol class="cds--list--ordered--temporary">
+<li class="cds--list__item">
+Program name (10 bytes).  Specifies the name of the program in which the breakpoint was reached.
+
+</li>
+
+<li class="cds--list__item">
+Recursion level (5 bytes).  Specifies the recursion level number of the program in which the breakpoint was reached.  This value is a 1- to 5-digit number padded on the right with blanks.
+
+</li>
+
+<li class="cds--list__item">
+Statement Identifier (10 bytes).  Specifies the high-level language program statement identifier that was reached.  This is the statement identifier specified on the Add Breakpoint (ADDBKP) command.  If a machine instruction number is used to specify the breakpoint, this parameter contains a slash (/) followed by a 4-digit hexadecimal machine instruction number.
+
+</li>
+
+<li class="cds--list__item">
+Instruction number (5 bytes).  Specifies the machine instruction number that corresponds to the high-level language statement at which the breakpoint was reached.  No slash appears in front of the machine instruction number.  The value consists of 1 to 4 hexadecimal characters representing the MI instruction number, followed by one or more blanks.  If a machine instruction number is passed on the third parameter, the numbers in the third and fourth parameters are the same.
+
+</li>
+
+<li class="cds--list__item">
+Message ID (7 bytes).  Specifies the ID of the message that was not monitored.
+
+</li>
+
+<li class="cds--list__item">
+Message data (256 bytes).  Specifies the first 256 bytes of message data sent with the message not monitored.
+
+</li>
+
+<li class="cds--list__item">
+Message data length (5 bytes).  Specifies the length of the message data sent with the message not monitored.
+
+</li>
+
+<li class="cds--list__item">
+Message MRK (4 bytes).  Specifies the message reference key (MRK) of the message not monitored.
+
+</li>
+
+
+</ol>
+
+<p>
+All the parameter values are left-adjusted and padded on the right with blanks.  When control returns to the program with the message that was not monitored, processing continues.
+
+</p>
+
+<p>
+<strong>Single values
+</strong>
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><u>*NONE
+</u></strong></dt>
+
+<dd class="dlentry">
+No program is called when a message that is not monitored occurs.
+</dd>
+
+</dl>
+
+<p>
+<strong>Qualifier 1: Unmonitored message program
+</strong>
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><em>name
+</em></strong></dt>
+
+<dd class="dlentry">
+Specify the name of the user-supplied program called when a message that is not monitored occurs in the job being debugged.  After the program runs, control is returned to the interrupted program.
+</dd>
+
+</dl>
+
+<p>
+<strong>Qualifier 2: Library
+</strong>
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><u>*LIBL
+</u></strong></dt>
+
+<dd class="dlentry">
+All libraries in the library list for the current thread are searched until the first match is found.
+</dd>
+
+</dl>
+
+<dl>
+<dt class="dlterm">
+<strong>*CURLIB
+</strong></dt>
+
+<dd class="dlentry">
+The current library for the job is searched.  If no library is specified as the current library for the job, the QGPL library is used.
+</dd>
+
+<dt class="dlterm">
+<strong><em>name
+</em></strong></dt>
+
+<dd class="dlentry">
+Specify the name of the library to be searched.
+</dd>
+
+</dl>
+
+</div>
+<div class="div" id="strdbg__dbgenckey">
+<p>
+<strong>Decryption key (DBGENCKEY)
+</strong></p>
+
+<p>
+Enter the key that was specified as the encryption key when the program was compiled.  A specified key value of less than 16 bytes will be padded to 16 bytes with x'40'.
+
+</p>
+
+<p>
+If the key contains any characters which are not invariant over all code pages, ensure that the job CCSID is the same as the job CCSID used when the program was compiled, otherwise the key may not match, and the decryption will fail.
+
+</p>
+
+<p>
+<strong>Single values
+</strong>
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><u>*NONE
+</u></strong></dt>
+
+<dd class="dlentry">
+No decryption key is specified at the start of the debugging session.  A decryption key can be specified later using Enter decryption key panel.
+</dd>
+
+</dl>
+
+<p>
+<strong>Other values 
+</strong>
+</p>
+
+<p>
+<strong>Qualifier 1: Decryption key.
+</strong>
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><em>key
+</em></strong></dt>
+
+<dd class="dlentry">
+Specifies the 16 byte key to be used in the decryption of encrypted debug text views.A specified key value of less than 16 bytes will be padded to 16 bytes with x'40'.
+</dd>
+
+</dl>
+
+</div>
+</section>
+
+<section class="section" role="region" aria-labelledby="strdbg__examples__title__1" id="strdbg__examples"><h2 class="sectiontitle" id="strdbg__examples__title__1">Examples</h2>
+
+<p>
+<strong>Example 1: Start Debug for Program
+</strong>
+</p>
+
+<div class="p">
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>
+STRDBG   PGM(TESTLIB/PAYROLL)  UPDPROD(*NO)
+
+</code></pre></div><div class="docs--copy-btn"></div></div>
+
+</div>
+
+<p>
+This command starts debug mode to debug the program PAYROLL, which is in the test library TESTLIB. If tracing is used, up to 200 trace statements can be stored in the trace before tracing stops.  If program PAYROLL is a bound program, the Display Module Source display will be shown, giving the source for the module that contains the program entry point. Any database files updated by the PAYROLL program must be in a test library.
+
+</p>
+
+<p>
+<strong>Example 2: Start Debug for Class File
+</strong>
+</p>
+
+<div class="p">
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>
+STRDBG   CLASS('financial.payapplet')
+
+</code></pre></div><div class="docs--copy-btn"></div></div>
+
+</div>
+
+<p>
+This command starts debug mode to debug the class 
+<strong>payapplet
+</strong> in the 
+<strong>financial
+</strong> package.
+
+</p>
+
+</section>
+
+<section class="section" role="region" aria-labelledby="strdbg__errormsgs__title__1" id="strdbg__errormsgs"><h2 class="sectiontitle" id="strdbg__errormsgs__title__1">Error messages</h2>
+
+<p>
+<strong><u>*ESCAPE Messages
+</u></strong>
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong>CPF1999
+</strong></dt>
+
+<dd class="dlentry">
+Errors occurred on command.
+</dd>
+
+</dl>
+
+</section>
+
+</div>
+
+</article></main>
+</body></html>

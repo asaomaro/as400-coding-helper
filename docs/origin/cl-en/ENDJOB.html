@@ -1,0 +1,836 @@
+<!DOCTYPE html>
+<html lang="ja"><head><meta charset="utf-8"><title>End Job  (ENDJOB)</title></head>
+<body>
+<main role="main"><article role="article" aria-labelledby="endjob__title__1"> 
+<h1 class="topictitle1" id="endjob__title__1">End Job  (ENDJOB)</h1><div id="lastModifiedDate"><span>Last Updated</span>: 2026-07-13</div>
+
+<div class="body">
+<p>
+<strong>End Job  (ENDJOB)
+</strong></p>
+
+<p>
+<strong>Where allowed to run:  
+</strong>All environments (*ALL)
+
+</p>
+
+<p>
+<strong>Threadsafe:  </strong>No
+</p>
+
+<p><a href="#endjob__parameters">Parameters</a></p>
+
+<p><a href="#endjob__examples">Examples</a></p>
+
+<p><a href="#endjob__errormsgs">Error messages</a></p>
+
+<div class="div" id="endjob__endjob">
+<p>
+The End Job (ENDJOB) command ends the specified job and any associated inline data files.  The job can be on a job queue, it can be active, or it can have already completed running.
+
+</p>
+
+<p>
+You can specify that the application program is given time to control end-of-job processing.  If no time is given or if cleanup cannot be performed within the given time, the system performs minimal end-of-job processing, which can include:
+
+</p>
+
+<ul class="cds--list--unordered">
+<li class="cds--list__item">
+Closing the database files.
+
+</li>
+
+<li class="cds--list__item">
+Spooling the job log to an output queue.
+
+</li>
+
+<li class="cds--list__item">
+Cleaning up internal objects in the operating system.
+
+</li>
+
+<li class="cds--list__item">
+Showing the end-of-job display (for interactive jobs).
+
+</li>
+
+<li class="cds--list__item">
+Completing commitment control processing
+<p>
+Before ending the job, you should verify that no logical unit of work is in an in doubt state due to a two-phase commit operation that is in progress.  If it is, then the value of the Action if ENDJOB commitment option can greatly impact the ENDJOB processing.  For example, if the Action if ENDJOB commitment option is the default value of WAIT, this job will be held up and will not complete its end of job processing until the commitment control operation is completed.  This ensures database integrity on all related systems.  For specific instructions on how to determine these conditions, and for a description of all the impacts of ending this job under these conditions, see the Backup and Recovery book.
+
+</p>
+
+
+</li>
+
+</ul>
+
+<p>
+<strong>Restrictions:
+</strong> The issuer of the command must be running under a user profile which is the same as the job user identity of the job being ended, or the issuer of the command must be running under a user profile which has job control (*JOBCTL) special authority.  This restriction is enforced even when ending the current job.
+
+</p>
+
+<p>
+The job user identity is the name of the user profile by which a job is known to other jobs. It is described in more detail in the Work Management book.
+
+</p>
+
+</div>
+<section class="section" role="region" aria-labelledby="endjob__parameters__title__1" id="endjob__parameters"><h2 class="sectiontitle" id="endjob__parameters__title__1">Parameters</h2>
+
+
+<div class="tablenoborder"><div class="cds--data-table-container"><table summary="" class="defaultstyle cds--data-table"><colgroup><col><col><col><col></colgroup><thead>
+<tr>
+<th id="endjob__parameters__entry__1"><div class="cds--table-header-label">
+Keyword
+</div></th>
+
+<th id="endjob__parameters__entry__2"><div class="cds--table-header-label">
+Description
+</div></th>
+
+<th id="endjob__parameters__entry__3"><div class="cds--table-header-label">
+Choices
+</div></th>
+
+<th id="endjob__parameters__entry__4"><div class="cds--table-header-label">
+Notes
+</div></th>
+
+</tr>
+
+</thead>
+<tbody>
+<tr>
+<td rowspan="4" headers="endjob__parameters__entry__1 "><a href="#endjob__job"><strong>JOB
+</strong></a></td>
+
+<td headers="endjob__parameters__entry__2 ">Job name
+</td>
+
+<td headers="endjob__parameters__entry__3 ">Single values: *
+
+Other values: 
+<em>Qualified job name
+</em></td>
+
+<td rowspan="4" headers="endjob__parameters__entry__4 ">Required, Positional 1
+</td>
+
+</tr>
+
+<tr>
+<td headers="endjob__parameters__entry__2 ">Qualifier 1: Job name
+</td>
+
+<td headers="endjob__parameters__entry__3 "><em>Name
+</em></td>
+
+</tr>
+
+<tr>
+<td headers="endjob__parameters__entry__2 ">Qualifier 2: User
+</td>
+
+<td headers="endjob__parameters__entry__3 "><em>Name
+</em></td>
+
+</tr>
+
+<tr>
+<td headers="endjob__parameters__entry__2 ">Qualifier 3: Number
+</td>
+
+<td headers="endjob__parameters__entry__3 ">000000-999999
+</td>
+
+</tr>
+
+<tr>
+<td headers="endjob__parameters__entry__1 "><a href="#endjob__option"><strong>OPTION
+</strong></a></td>
+
+<td headers="endjob__parameters__entry__2 ">How to end
+</td>
+
+<td headers="endjob__parameters__entry__3 "><strong><u>*CNTRLD
+</u></strong>, *IMMED
+</td>
+
+<td headers="endjob__parameters__entry__4 ">Optional, Positional 2
+</td>
+
+</tr>
+
+<tr>
+<td headers="endjob__parameters__entry__1 "><a href="#endjob__delay"><strong>DELAY
+</strong></a></td>
+
+<td headers="endjob__parameters__entry__2 ">Controlled end delay time
+</td>
+
+<td headers="endjob__parameters__entry__3 ">1-999999, 
+<strong><u>30
+</u></strong></td>
+
+<td headers="endjob__parameters__entry__4 ">Optional, Positional 3
+</td>
+
+</tr>
+
+<tr>
+<td headers="endjob__parameters__entry__1 "><a href="#endjob__splfile"><strong>SPLFILE
+</strong></a></td>
+
+<td headers="endjob__parameters__entry__2 ">Delete spooled files
+</td>
+
+<td headers="endjob__parameters__entry__3 "><strong><u>*NO
+</u></strong>, *YES
+</td>
+
+<td headers="endjob__parameters__entry__4 ">Optional, Positional 4
+</td>
+
+</tr>
+
+<tr>
+<td headers="endjob__parameters__entry__1 "><a href="#endjob__loglmt"><strong>LOGLMT
+</strong></a></td>
+
+<td headers="endjob__parameters__entry__2 ">Maximum log entries
+</td>
+
+<td headers="endjob__parameters__entry__3 "><em>Integer
+</em>, 
+<strong><u>*SAME
+</u></strong>, *NOMAX
+</td>
+
+<td headers="endjob__parameters__entry__4 ">Optional
+</td>
+
+</tr>
+
+<tr>
+<td headers="endjob__parameters__entry__1 "><a href="#endjob__adlintjobs"><strong>ADLINTJOBS
+</strong></a></td>
+
+<td headers="endjob__parameters__entry__2 ">Additional interactive jobs
+</td>
+
+<td headers="endjob__parameters__entry__3 "><strong><u>*NONE
+</u></strong>, *GRPJOB, *ALL
+</td>
+
+<td headers="endjob__parameters__entry__4 ">Optional
+</td>
+
+</tr>
+
+<tr>
+<td headers="endjob__parameters__entry__1 "><a href="#endjob__dupjobopt"><strong>DUPJOBOPT
+</strong></a></td>
+
+<td headers="endjob__parameters__entry__2 ">Duplicate job option
+</td>
+
+<td headers="endjob__parameters__entry__3 "><strong><u>*SELECT
+</u></strong>, *MSG
+</td>
+
+<td headers="endjob__parameters__entry__4 ">Optional
+</td>
+
+</tr>
+
+</tbody>
+</table></div>
+</div>
+
+<div class="div" id="endjob__job">
+<p>
+<strong>Job name (JOB)
+</strong></p>
+
+<p>
+Specifies the qualified job name of the job to be ended.
+
+</p>
+
+<p>
+This is a required parameter.
+
+</p>
+
+<p>
+<strong>Single values
+</strong>
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong>*
+</strong></dt>
+
+<dd class="dlentry">
+The job from which this command is run is ended.  Specifying this value is the only way to end the current job.
+</dd>
+
+</dl>
+
+<p>
+<strong>Qualifier 1: Job name
+</strong>
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><em>name
+</em></strong></dt>
+
+<dd class="dlentry">
+Specify the name of the job.
+</dd>
+
+</dl>
+
+<p>
+<strong>Qualifier 2: User
+</strong>
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><em>name
+</em></strong></dt>
+
+<dd class="dlentry">
+Specify the user name that identifies the user profile under which the job is run.
+</dd>
+
+</dl>
+
+<p>
+<strong>Qualifier 3: Number
+</strong>
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><em>000000-999999
+</em></strong></dt>
+
+<dd class="dlentry">
+Specify the system-assigned job number.
+</dd>
+
+</dl>
+
+<p>
+<strong>Note:     
+</strong>If no user name or job number is specified, all jobs currently in the system are searched for the job name.  If more than one occurrence of the specified name is found, a qualified job name must be provided either explicitly or through the selection display.  Refer to the 
+<strong>Duplicate job option (DUPJOBOPT)
+</strong> parameter for more information.
+
+</p>
+
+</div>
+<div class="div" id="endjob__option">
+<p>
+<strong>How to end (OPTION)
+</strong></p>
+
+<p>
+Specifies whether the job ends immediately or in a controlled manner that lets the application program perform end-of-job processing.  In either case, the system performs certain job cleanup processing.
+
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><u>*CNTRLD
+</u></strong></dt>
+
+<dd class="dlentry">
+The job ends in a controlled manner.  This allows the program running to perform cleanup (end-of-job processing).  When a job being ended has a signal handling procedure for the asynchronous signal SIGTERM, the SIGTERM signal is generated for that job.  The application has the amount of time specified on the DELAY parameter to complete cleanup before the job is ended.
+</dd>
+
+<dt class="dlterm">
+<strong>*IMMED
+</strong></dt>
+
+<dd class="dlentry">
+The job ends immediately and the system performs end-of-job cleanup.  System cleanup can take from a brief amount of time to several minutes.  When a job being ended has a signal handling procedure for the asynchronous signal SIGTERM, the SIGTERM signal is generated for that job and the QENDJOBLMT system value specifies the time limit.  Other than by handling the SIGTERM signal, the program that is running is not allowed to perform any cleanup.
+<p>
+<strong>Note:     
+</strong>The *IMMED value might cause undesirable results if data has been partially updated.  This value should be used only after a controlled end has been attempted unsuccessfully.
+
+</p>
+
+<p>
+<strong>Note:     
+</strong>When a SIGTERM signal handler is running during the immediate ending of a job, an ENDJOB command with OPTION(*IMMED) can be used to end the SIGTERM signal handler.  This is only allowed if the SIGTERM signal handler has already had at least two minutes to run.
+
+</p>
+
+</dd>
+
+</dl>
+
+</div>
+<div class="div" id="endjob__delay">
+<p>
+<strong>Controlled end delay time (DELAY)
+</strong></p>
+
+<p>
+Specifies the amount of time (in seconds) allowed for the job to complete its cleanup processing during a controlled end.  If the cleanup is not completed before the end of the delay time, the job is ended immediately.  (Only system cleanup is performed.)
+
+</p>
+
+<p>
+The delay time does not start until the job becomes active if the job is suspended because of one of the following conditions:
+
+</p>
+
+<ul class="cds--list--unordered">
+<li class="cds--list__item">
+The system request option 1 is selected.
+
+</li>
+
+<li class="cds--list__item">
+The job is held by the Hold Job (HLDJOB) command.
+
+</li>
+
+<li class="cds--list__item">
+The job is transferred by the Transfer Secondary Job (TFRSECJOB) command.
+
+</li>
+
+<li class="cds--list__item">
+The job is transferred by the Transfer to Group Job (TFRGRPJOB) command.
+
+</li>
+
+</ul>
+
+<p>
+<strong>Note:     
+</strong>This parameter is valid only when OPTION(*CNTRLD) is specified.
+
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><u>30
+</u></strong></dt>
+
+<dd class="dlentry">
+A maximum delay time of 30 seconds is allowed for cleanup before the job ends.
+</dd>
+
+<dt class="dlterm">
+<strong><em>1-999999
+</em></strong></dt>
+
+<dd class="dlentry">
+Specify the maximum amount of delay time (in seconds) before the job ends.
+</dd>
+
+</dl>
+
+</div>
+<div class="div" id="endjob__splfile">
+<p>
+<strong>Delete spooled files (SPLFILE)
+</strong></p>
+
+<p>
+Specifies whether spooled output files created by this job are kept for normal processing or deleted.  Regardless of whether the spooled files are deleted, the job logs are kept.
+
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><u>*NO
+</u></strong></dt>
+
+<dd class="dlentry">
+The spooled output files created by the job being ended are kept for normal processing by a writer.  When the job ends, the spooled file action (SPLFACN) job attribute determines whether spooled files are detached from the job or kept with the job.
+</dd>
+
+<dt class="dlterm">
+<strong>*YES
+</strong></dt>
+
+<dd class="dlentry">
+The spooled output files created by the job being ended and which are on output queues in the library name space of the thread issuing this command are deleted.  The job log is not deleted.  If the job has already ended and the spooled file action for the job is to detach the spooled files, the End Job (ENDJOB) command will not find the job and the spooled files will not be deleted.
+</dd>
+
+</dl>
+
+</div>
+<div class="div" id="endjob__loglmt">
+<p>
+<strong>Maximum log entries (LOGLMT)
+</strong></p>
+
+<p>
+Specifies the maximum number of entries in the message queue of the job being ended that are written to the job log.  This parameter can be used to limit the number of messages written to the job log printer file, QPJOBLOG, for a job that ends.
+
+</p>
+
+<p>
+The value specified on this parameter can change the logging limit of the job even if the job is already ending or the job has already ended.  The following are examples of how the logging limit can be changed:
+
+</p>
+
+<ol class="cds--list--ordered--temporary">
+<li class="cds--list__item">
+If the value specified is greater than the number of messages written at the time the command is issued, messages continue to be written until the new limit is reached.
+
+</li>
+
+<li class="cds--list__item">
+If the value specified is less than the number of messages already written to the spooled file, a message indicating that the limit has been reached is immediately put in the spooled file as the last entry.  The remaining messages on the queue are ignored.
+
+</li>
+
+<li class="cds--list__item">
+If 0 (zero) is specified before any messages are written to the spooled file, no job log is produced for the job that is ending.  If the job has already ended and the job log has not yet been produced, the job log is removed regardless of the value of the job log output (LOGOUTPUT) job attribute.  For more information on removing pending job logs, refer to the Remove Pending Job Log (QWTRMVJL) API.
+
+</li>
+
+
+</ol>
+
+<dl>
+<dt class="dlterm">
+<strong><u>*SAME
+</u></strong></dt>
+
+<dd class="dlentry">
+The message logging limit does not change.  If the logging limit does not change for this job on a previous command, *NOMAX is the value used by the system.
+</dd>
+
+<dt class="dlterm">
+<strong>*NOMAX
+</strong></dt>
+
+<dd class="dlentry">
+There is no limit to the number of messages logged; 
+<strong>all
+</strong> messages on the job message queue are written to the job log.
+</dd>
+
+<dt class="dlterm">
+<strong><em>integer-number
+</em></strong></dt>
+
+<dd class="dlentry">
+Specify the maximum number of messages that can be written to the job log.
+</dd>
+
+</dl>
+
+</div>
+<div class="div" id="endjob__adlintjobs">
+<p>
+<strong>Additional interactive jobs  (ADLINTJOBS)
+</strong></p>
+
+<p>
+Specifies whether the additional interactive jobs associated with the job specified in the 
+<strong>Job name (JOB)
+</strong> parameter are ended.
+
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><u>*NONE
+</u></strong></dt>
+
+<dd class="dlentry">
+Only the job specified in the JOB parameter is ended.
+</dd>
+
+<dt class="dlterm">
+<strong>*GRPJOB
+</strong></dt>
+
+<dd class="dlentry">
+If the job specified in the JOB parameter is a group job, all group jobs associated with the group are ended.  If the job is not a group job, the job specified in the JOB parameter is ended.
+</dd>
+
+<dt class="dlterm">
+<strong>*ALL
+</strong></dt>
+
+<dd class="dlentry">
+All interactive jobs running on the workstation associated with the job specified in the JOB parameter are ended.  This includes group jobs and secondary jobs.
+</dd>
+
+</dl>
+
+</div>
+<div class="div" id="endjob__dupjobopt">
+<p>
+<strong>Duplicate job option (DUPJOBOPT)
+</strong></p>
+
+<p>
+Specifies the action taken when duplicate jobs are found by this command.
+
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><u>*SELECT
+</u></strong></dt>
+
+<dd class="dlentry">
+The selection display is shown when duplicate jobs are found during an interactive session.  Otherwise, a message is issued.
+</dd>
+
+<dt class="dlterm">
+<strong>*MSG
+</strong></dt>
+
+<dd class="dlentry">
+A message is issued when duplicate jobs are found.
+</dd>
+
+</dl>
+
+</div>
+</section>
+
+<section class="section" role="region" aria-labelledby="endjob__examples__title__1" id="endjob__examples"><h2 class="sectiontitle" id="endjob__examples__title__1">Examples</h2>
+
+<p>
+<strong>Example 1: Ending a Job Immediately
+</strong>
+</p>
+
+<div class="p">
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>
+ENDJOB   JOB(JOB1)  OPTION(*IMMED)  SPLFILE(*YES)
+
+</code></pre></div><div class="docs--copy-btn"></div></div>
+
+</div>
+
+<p>
+This command ends a job named JOB1 immediately. Spooled output produced by the job is deleted; the job log is saved.
+
+</p>
+
+<p>
+<strong>Example 2: Saving Spooled Output
+</strong>
+</p>
+
+<div class="p">
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>
+ENDJOB   JOB(001234/XYZ/JOB2)  OPTION(*CNTRLD)
+         DELAY(50)  SPLFILE(*NO)
+
+</code></pre></div><div class="docs--copy-btn"></div></div>
+
+</div>
+
+<p>
+This command ends a job named 001234/XYZ/JOB2. Spooled output is saved for normal processing by the spooling writer. The job has 50 seconds to perform any cleanup routines, after which it is ended immediately.
+
+</p>
+
+<p>
+<strong>Example 3: Removing a Pending Job Log
+</strong>
+</p>
+
+<div class="p">
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>
+ENDJOB   JOB(543210/ABCDE/JOB3)  LOGLMT(0)
+
+</code></pre></div><div class="docs--copy-btn"></div></div>
+
+</div>
+
+<p>
+This command removes the pending job log for a completed job named 543210/ABCDE/JOB3.  This has the same effect as the Remove Pending Job Log (QWTRMVJL) API.
+
+</p>
+
+<p>
+<strong>Example 4: Ending the Current Job
+</strong>
+</p>
+
+<div class="p">
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>
+ENDJOB   JOB(*)  OPTION(*IMMED)
+
+</code></pre></div><div class="docs--copy-btn"></div></div>
+
+</div>
+
+<p>
+This command ends the job in which the command is issued.  To exit from a SIGTERM signal handling procedure after the required cleanup has been performed, immediately end the current job.  Control may be returned to the command issuer, even though the immediate option has been used.  To handle this situation, the program which issued this command should return.
+
+</p>
+
+</section>
+
+<section class="section" role="region" aria-labelledby="endjob__errormsgs__title__1" id="endjob__errormsgs"><h2 class="sectiontitle" id="endjob__errormsgs__title__1">Error messages</h2>
+
+<p>
+<strong><u>*ESCAPE Messages
+</u></strong>
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong>CPF1317
+</strong></dt>
+
+<dd class="dlentry">
+No response from subsystem for job &amp;3/&amp;2/&amp;1.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF1321
+</strong></dt>
+
+<dd class="dlentry">
+Job &amp;1 user &amp;2 job number &amp;3 not found.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF1332
+</strong></dt>
+
+<dd class="dlentry">
+End of duplicate job names.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF1340
+</strong></dt>
+
+<dd class="dlentry">
+Job control function not performed.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF1341
+</strong></dt>
+
+<dd class="dlentry">
+Reader or writer &amp;3/&amp;2/&amp;1 not allowed as job name.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF1342
+</strong></dt>
+
+<dd class="dlentry">
+Current job not allowed as job name on this command.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF1343
+</strong></dt>
+
+<dd class="dlentry">
+Job &amp;3/&amp;2/&amp;1 not valid job type for function.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF1344
+</strong></dt>
+
+<dd class="dlentry">
+Not authorized to control job &amp;3/&amp;2/&amp;1.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF1351
+</strong></dt>
+
+<dd class="dlentry">
+Function check occurred in subsystem for job &amp;3/&amp;2/&amp;1.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF1352
+</strong></dt>
+
+<dd class="dlentry">
+Function not done.  &amp;3/&amp;2/&amp;1 in transition condition.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF135D
+</strong></dt>
+
+<dd class="dlentry">
+ENDJOB OPTION(*IMMED) not allowed at this time.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF1360
+</strong></dt>
+
+<dd class="dlentry">
+&amp;3/&amp;2/&amp;1 already ending because of ENDJOBABN.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF1361
+</strong></dt>
+
+<dd class="dlentry">
+Job &amp;3/&amp;2/&amp;1 already ending with *IMMED option.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF1362
+</strong></dt>
+
+<dd class="dlentry">
+Job &amp;3/&amp;2/&amp;1 has completed.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF1363
+</strong></dt>
+
+<dd class="dlentry">
+Job &amp;3/&amp;2/&amp;1 is already ending *CNTRLD.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF8172
+</strong></dt>
+
+<dd class="dlentry">
+Spool control block for job &amp;10/&amp;9/&amp;8 damaged.
+</dd>
+
+</dl>
+
+</section>
+
+</div>
+
+</article></main>
+</body></html>

@@ -1,0 +1,1875 @@
+<!DOCTYPE html>
+<html lang="ja"><head><meta charset="utf-8"><title>Override with Data Base File  (OVRDBF)</title></head>
+<body>
+<main role="main"><article role="article" aria-labelledby="ovrdbf__title__1"> 
+<h1 class="topictitle1" id="ovrdbf__title__1">Override with Data Base File  (OVRDBF)</h1><div id="lastModifiedDate"><span>Last Updated</span>: 2026-07-13</div>
+
+<div class="body">
+<p>
+<strong>Override with Data Base File  (OVRDBF)
+</strong></p>
+
+<p>
+<strong>Where allowed to run:  
+</strong>All environments (*ALL)
+
+</p>
+
+<p>
+<strong>Threadsafe:  </strong>Conditional
+</p>
+
+<p><a href="#ovrdbf__parameters">Parameters</a></p>
+
+<p><a href="#ovrdbf__examples">Examples</a></p>
+
+<p><a href="#ovrdbf__errormsgs">Error messages</a></p>
+
+<div class="div" id="ovrdbf__ovrdbf">
+<p>
+The Override with Database File (OVRDBF) command is used to (1) override (replace) the file named in the program, (2) override certain parameters of a file that are used by the program, or (3) override the file named in the program 
+<em>and
+</em> override certain parameters of the file being processed.  Parameters overridden by this command are specified in the file description, in the program, or in other previously issued file override commands.  This command applies to physical files, logical files, and distributed data management (DDM) files.
+
+</p>
+
+<p>
+To override (replace) a file named in the program, specify the name of that file in the FILE parameter, and specify the name of the file that overrides it (the file to be processed by the program) in the TOFILE parameter.  The other parameters of this command can be used to override parameter values contained in the file description of the overriding file.
+
+</p>
+
+<p>
+To override only certain parameters of the file named in the program, instead of replacing the entire file, specify the name of the file in the FILE parameter and specify the *FILE value for the TOFILE parameter.  Then use the other parameters of this command to override specific parameters of the file.  Parameters that are not specified do not affect parameters specified in the file description, in the program, or in other previously issued file override commands.
+
+</p>
+
+<p>
+<strong>Restrictions:
+</strong>
+</p>
+
+<ol class="cds--list--ordered--temporary">
+<li class="cds--list__item">
+In a multithreaded job, this command may only be issued from the initial thread.
+
+</li>
+
+<li class="cds--list__item">
+In a multithreaded job, only Activation Group or Job scoped overrides will affect opens performed in a secondary thread.
+
+</li>
+
+
+</ol>
+
+<p>
+<strong>Note:     
+</strong>The override cannot be used for all commands.  A list of the commands that cannot be overridden, along with more information on overriding files is in the Files and file systems category in the IBM i Information Center at http://www.ibm.com/systems/i/infocenter/.
+
+</p>
+
+<p>
+<strong>Note:     
+</strong>Using this command does not cause a file to be overridden immediately.  Information provided on this command is stored until the file is used, at which time the file is overridden.
+
+</p>
+
+</div>
+<section class="section" role="region" aria-labelledby="ovrdbf__parameters__title__1" id="ovrdbf__parameters"><h2 class="sectiontitle" id="ovrdbf__parameters__title__1">Parameters</h2>
+
+
+<div class="tablenoborder"><div class="cds--data-table-container"><table summary="" class="defaultstyle cds--data-table"><colgroup><col><col><col><col></colgroup><thead>
+<tr>
+<th id="ovrdbf__parameters__entry__1"><div class="cds--table-header-label">
+Keyword
+</div></th>
+
+<th id="ovrdbf__parameters__entry__2"><div class="cds--table-header-label">
+Description
+</div></th>
+
+<th id="ovrdbf__parameters__entry__3"><div class="cds--table-header-label">
+Choices
+</div></th>
+
+<th id="ovrdbf__parameters__entry__4"><div class="cds--table-header-label">
+Notes
+</div></th>
+
+</tr>
+
+</thead>
+<tbody>
+<tr>
+<td headers="ovrdbf__parameters__entry__1 "><a href="#ovrdbf__file"><strong>FILE
+</strong></a></td>
+
+<td headers="ovrdbf__parameters__entry__2 ">File being overridden
+</td>
+
+<td headers="ovrdbf__parameters__entry__3 "><em>Name
+</em></td>
+
+<td headers="ovrdbf__parameters__entry__4 ">Required, Positional 1
+</td>
+
+</tr>
+
+<tr>
+<td rowspan="3" headers="ovrdbf__parameters__entry__1 "><a href="#ovrdbf__tofile"><strong>TOFILE
+</strong></a></td>
+
+<td headers="ovrdbf__parameters__entry__2 ">Overriding to data base file
+</td>
+
+<td headers="ovrdbf__parameters__entry__3 ">Single values: 
+<strong><u>*FILE
+</u></strong>
+Other values: 
+<em>Qualified object name
+</em></td>
+
+<td rowspan="3" headers="ovrdbf__parameters__entry__4 ">Optional, Positional 2
+</td>
+
+</tr>
+
+<tr>
+<td headers="ovrdbf__parameters__entry__2 ">Qualifier 1: Overriding to data base file
+</td>
+
+<td headers="ovrdbf__parameters__entry__3 "><em>Name
+</em></td>
+
+</tr>
+
+<tr>
+<td headers="ovrdbf__parameters__entry__2 ">Qualifier 2: Library
+</td>
+
+<td headers="ovrdbf__parameters__entry__3 "><em>Name
+</em>, 
+<strong><u>*LIBL
+</u></strong>, *CURLIB
+</td>
+
+</tr>
+
+<tr>
+<td headers="ovrdbf__parameters__entry__1 "><a href="#ovrdbf__mbr"><strong>MBR
+</strong></a></td>
+
+<td headers="ovrdbf__parameters__entry__2 ">Overriding member
+</td>
+
+<td headers="ovrdbf__parameters__entry__3 "><em>Name
+</em>, *FIRST, *LAST, *ALL
+</td>
+
+<td headers="ovrdbf__parameters__entry__4 ">Optional, Positional 3
+</td>
+
+</tr>
+
+<tr>
+<td rowspan="5" headers="ovrdbf__parameters__entry__1 "><a href="#ovrdbf__position"><strong>POSITION
+</strong></a></td>
+
+<td headers="ovrdbf__parameters__entry__2 ">Starting position in file
+</td>
+
+<td headers="ovrdbf__parameters__entry__3 ">Single values: *NONE, *START, *END
+
+Other values: 
+<em>Element list
+</em></td>
+
+<td rowspan="5" headers="ovrdbf__parameters__entry__4 ">Optional
+</td>
+
+</tr>
+
+<tr>
+<td headers="ovrdbf__parameters__entry__2 ">Element 1: Retrieve order
+</td>
+
+<td headers="ovrdbf__parameters__entry__3 ">*RRN, *KEYB, *KEYBE, *KEY, *KEYAE, *KEYA
+</td>
+
+</tr>
+
+<tr>
+<td headers="ovrdbf__parameters__entry__2 ">Element 2: *RRN-rcd nbr *KEY-nbr key flds
+</td>
+
+<td headers="ovrdbf__parameters__entry__3 "><em>Unsigned integer
+</em></td>
+
+</tr>
+
+<tr>
+<td headers="ovrdbf__parameters__entry__2 ">Element 3: *KEY-rec format having key
+</td>
+
+<td headers="ovrdbf__parameters__entry__3 "><em>Name
+</em></td>
+
+</tr>
+
+<tr>
+<td headers="ovrdbf__parameters__entry__2 ">Element 4: *KEY-key value
+</td>
+
+<td headers="ovrdbf__parameters__entry__3 "><em>Character value
+</em></td>
+
+</tr>
+
+<tr>
+<td rowspan="3" headers="ovrdbf__parameters__entry__1 "><a href="#ovrdbf__rcdfmtlck"><strong>RCDFMTLCK
+</strong></a></td>
+
+<td headers="ovrdbf__parameters__entry__2 ">Record format lock
+</td>
+
+<td headers="ovrdbf__parameters__entry__3 ">Values (up to 32 repetitions): 
+<em>Element list
+</em></td>
+
+<td rowspan="3" headers="ovrdbf__parameters__entry__4 ">Optional
+</td>
+
+</tr>
+
+<tr>
+<td headers="ovrdbf__parameters__entry__2 ">Element 1: Record format
+</td>
+
+<td headers="ovrdbf__parameters__entry__3 "><em>Name
+</em></td>
+
+</tr>
+
+<tr>
+<td headers="ovrdbf__parameters__entry__2 ">Element 2: Lock state
+</td>
+
+<td headers="ovrdbf__parameters__entry__3 ">*SHRRD, *SHRNUP, *SHRUPD, *EXCLRD, *EXCL
+</td>
+
+</tr>
+
+<tr>
+<td headers="ovrdbf__parameters__entry__1 "><a href="#ovrdbf__frcratio"><strong>FRCRATIO
+</strong></a></td>
+
+<td headers="ovrdbf__parameters__entry__2 ">Records to force a write
+</td>
+
+<td headers="ovrdbf__parameters__entry__3 "><em>Integer
+</em>, *NONE
+</td>
+
+<td headers="ovrdbf__parameters__entry__4 ">Optional
+</td>
+
+</tr>
+
+<tr>
+<td rowspan="3" headers="ovrdbf__parameters__entry__1 "><a href="#ovrdbf__fmtslr"><strong>FMTSLR
+</strong></a></td>
+
+<td headers="ovrdbf__parameters__entry__2 ">Rcd format selector program
+</td>
+
+<td headers="ovrdbf__parameters__entry__3 "><em>Qualified object name
+</em></td>
+
+<td rowspan="3" headers="ovrdbf__parameters__entry__4 ">Optional
+</td>
+
+</tr>
+
+<tr>
+<td headers="ovrdbf__parameters__entry__2 ">Qualifier 1: Rcd format selector program
+</td>
+
+<td headers="ovrdbf__parameters__entry__3 "><em>Name
+</em></td>
+
+</tr>
+
+<tr>
+<td headers="ovrdbf__parameters__entry__2 ">Qualifier 2: Library
+</td>
+
+<td headers="ovrdbf__parameters__entry__3 "><em>Name
+</em>, 
+<strong><u>*LIBL
+</u></strong>, *CURLIB
+</td>
+
+</tr>
+
+<tr>
+<td headers="ovrdbf__parameters__entry__1 "><a href="#ovrdbf__waitfile"><strong>WAITFILE
+</strong></a></td>
+
+<td headers="ovrdbf__parameters__entry__2 ">Maximum file wait time
+</td>
+
+<td headers="ovrdbf__parameters__entry__3 "><em>Integer
+</em>, *IMMED, *CLS
+</td>
+
+<td headers="ovrdbf__parameters__entry__4 ">Optional
+</td>
+
+</tr>
+
+<tr>
+<td headers="ovrdbf__parameters__entry__1 "><a href="#ovrdbf__waitrcd"><strong>WAITRCD
+</strong></a></td>
+
+<td headers="ovrdbf__parameters__entry__2 ">Maximum record wait time
+</td>
+
+<td headers="ovrdbf__parameters__entry__3 "><em>Integer
+</em>, *IMMED, *NOMAX
+</td>
+
+<td headers="ovrdbf__parameters__entry__4 ">Optional
+</td>
+
+</tr>
+
+<tr>
+<td headers="ovrdbf__parameters__entry__1 "><a href="#ovrdbf__reusedlt"><strong>REUSEDLT
+</strong></a></td>
+
+<td headers="ovrdbf__parameters__entry__2 ">Reuse deleted records
+</td>
+
+<td headers="ovrdbf__parameters__entry__3 ">*NO
+</td>
+
+<td headers="ovrdbf__parameters__entry__4 ">Optional
+</td>
+
+</tr>
+
+<tr>
+<td headers="ovrdbf__parameters__entry__1 "><a href="#ovrdbf__nbrrcds"><strong>NBRRCDS
+</strong></a></td>
+
+<td headers="ovrdbf__parameters__entry__2 ">Records retrieved at once
+</td>
+
+<td headers="ovrdbf__parameters__entry__3 "><em>Integer
+</em></td>
+
+<td headers="ovrdbf__parameters__entry__4 ">Optional
+</td>
+
+</tr>
+
+<tr>
+<td headers="ovrdbf__parameters__entry__1 "><a href="#ovrdbf__eofdly"><strong>EOFDLY
+</strong></a></td>
+
+<td headers="ovrdbf__parameters__entry__2 ">EOF retry delay in sec
+</td>
+
+<td headers="ovrdbf__parameters__entry__3 ">1-99999, *NONE
+</td>
+
+<td headers="ovrdbf__parameters__entry__4 ">Optional
+</td>
+
+</tr>
+
+<tr>
+<td headers="ovrdbf__parameters__entry__1 "><a href="#ovrdbf__lvlchk"><strong>LVLCHK
+</strong></a></td>
+
+<td headers="ovrdbf__parameters__entry__2 ">Record format level check
+</td>
+
+<td headers="ovrdbf__parameters__entry__3 ">*NO
+</td>
+
+<td headers="ovrdbf__parameters__entry__4 ">Optional
+</td>
+
+</tr>
+
+<tr>
+<td headers="ovrdbf__parameters__entry__1 "><a href="#ovrdbf__expchk"><strong>EXPCHK
+</strong></a></td>
+
+<td headers="ovrdbf__parameters__entry__2 ">Check expiration date
+</td>
+
+<td headers="ovrdbf__parameters__entry__3 ">*YES, *NO
+</td>
+
+<td headers="ovrdbf__parameters__entry__4 ">Optional
+</td>
+
+</tr>
+
+<tr>
+<td headers="ovrdbf__parameters__entry__1 "><a href="#ovrdbf__inhwrt"><strong>INHWRT
+</strong></a></td>
+
+<td headers="ovrdbf__parameters__entry__2 ">Inhibit write
+</td>
+
+<td headers="ovrdbf__parameters__entry__3 ">*YES, *NO
+</td>
+
+<td headers="ovrdbf__parameters__entry__4 ">Optional
+</td>
+
+</tr>
+
+<tr>
+<td headers="ovrdbf__parameters__entry__1 "><a href="#ovrdbf__secure"><strong>SECURE
+</strong></a></td>
+
+<td headers="ovrdbf__parameters__entry__2 ">Secure from other overrides
+</td>
+
+<td headers="ovrdbf__parameters__entry__3 "><strong><u>*NO
+</u></strong>, *YES
+</td>
+
+<td headers="ovrdbf__parameters__entry__4 ">Optional
+</td>
+
+</tr>
+
+<tr>
+<td headers="ovrdbf__parameters__entry__1 "><a href="#ovrdbf__ovrscope"><strong>OVRSCOPE
+</strong></a></td>
+
+<td headers="ovrdbf__parameters__entry__2 ">Override scope
+</td>
+
+<td headers="ovrdbf__parameters__entry__3 "><strong><u>*ACTGRPDFN
+</u></strong>, *CALLLVL, *JOB
+</td>
+
+<td headers="ovrdbf__parameters__entry__4 ">Optional
+</td>
+
+</tr>
+
+<tr>
+<td headers="ovrdbf__parameters__entry__1 "><a href="#ovrdbf__share"><strong>SHARE
+</strong></a></td>
+
+<td headers="ovrdbf__parameters__entry__2 ">Share open data path
+</td>
+
+<td headers="ovrdbf__parameters__entry__3 ">*NO, *YES
+</td>
+
+<td headers="ovrdbf__parameters__entry__4 ">Optional
+</td>
+
+</tr>
+
+<tr>
+<td headers="ovrdbf__parameters__entry__1 "><a href="#ovrdbf__opnscope"><strong>OPNSCOPE
+</strong></a></td>
+
+<td headers="ovrdbf__parameters__entry__2 ">Open scope
+</td>
+
+<td headers="ovrdbf__parameters__entry__3 ">*ACTGRPDFN, *JOB
+</td>
+
+<td headers="ovrdbf__parameters__entry__4 ">Optional
+</td>
+
+</tr>
+
+<tr>
+<td rowspan="3" headers="ovrdbf__parameters__entry__1 "><a href="#ovrdbf__seqonly"><strong>SEQONLY
+</strong></a></td>
+
+<td headers="ovrdbf__parameters__entry__2 ">Limit to sequential only
+</td>
+
+<td headers="ovrdbf__parameters__entry__3 ">Single values: *NO
+
+Other values: 
+<em>Element list
+</em></td>
+
+<td rowspan="3" headers="ovrdbf__parameters__entry__4 ">Optional
+</td>
+
+</tr>
+
+<tr>
+<td headers="ovrdbf__parameters__entry__2 ">Element 1: Sequential only
+</td>
+
+<td headers="ovrdbf__parameters__entry__3 ">*YES
+</td>
+
+</tr>
+
+<tr>
+<td headers="ovrdbf__parameters__entry__2 ">Element 2: Number of records
+</td>
+
+<td headers="ovrdbf__parameters__entry__3 "><em>Integer
+</em>, *BUF32KB, *BUF64KB, *BUF128KB, *BUF256KB
+</td>
+
+</tr>
+
+<tr>
+<td headers="ovrdbf__parameters__entry__1 "><a href="#ovrdbf__dstdta"><strong>DSTDTA
+</strong></a></td>
+
+<td headers="ovrdbf__parameters__entry__2 ">Distributed Data
+</td>
+
+<td headers="ovrdbf__parameters__entry__3 ">*BUFFERED, *PROTECTED, *CURRENT
+</td>
+
+<td headers="ovrdbf__parameters__entry__4 ">Optional
+</td>
+
+</tr>
+
+</tbody>
+</table></div>
+</div>
+
+<div class="div" id="ovrdbf__file">
+<p>
+<strong>File being overridden (FILE)
+</strong></p>
+
+<p>
+Specifies the file in the using program to which this override command is applied.  The specified file must be a database file when *FILE is specified in the 
+<strong>Overriding to data base file (TOFILE)
+</strong> parameter.  Otherwise, any device file or database file name can be specified.
+
+</p>
+
+<p>
+This is a required parameter.
+
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><em>name
+</em></strong></dt>
+
+<dd class="dlentry">
+Specify the name of the file.
+</dd>
+
+</dl>
+
+</div>
+<div class="div" id="ovrdbf__tofile">
+<p>
+<strong>Overriding to data base file (TOFILE)
+</strong></p>
+
+<p>
+Specifies the database file that is used instead of the file specified on the 
+<strong>File being overridden (FILE)
+</strong> parameter, or, if *FILE is specified, specifies that certain attributes are overridden by parameters specified in this command.  The parameters specified on this command override the same parameters specified in the database file, in the program, or in other previously issued OVRDBF commands.
+
+</p>
+
+<p>
+<strong>Single values
+</strong>
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><u>*FILE
+</u></strong></dt>
+
+<dd class="dlentry">
+The database file named in the 
+<strong>File being overridden (FILE)
+</strong> parameter has some of its parameters overridden by values specified in this command.
+</dd>
+
+</dl>
+
+<p>
+<strong>Qualifier 1: Overriding to data base file
+</strong>
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><em>name
+</em></strong></dt>
+
+<dd class="dlentry">
+Specify the name of the database file that is used instead of the file specified in the FILE parameter.
+</dd>
+
+</dl>
+
+<p>
+<strong>Qualifier 2: Library
+</strong>
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><u>*LIBL
+</u></strong></dt>
+
+<dd class="dlentry">
+All libraries in the library list for the current thread are searched until the first match is found.
+</dd>
+
+</dl>
+
+<dl>
+<dt class="dlterm">
+<strong>*CURLIB
+</strong></dt>
+
+<dd class="dlentry">
+The current library for the job is used to locate the database file.  If no library is specified as the current library, QGPL is used.
+</dd>
+
+<dt class="dlterm">
+<strong><em>name
+</em></strong></dt>
+
+<dd class="dlentry">
+Specify the library where the database file is located.
+</dd>
+
+</dl>
+
+</div>
+<div class="div" id="ovrdbf__mbr">
+<p>
+<strong>Overriding member (MBR)
+</strong></p>
+
+<p>
+Specifies the members used within the database file.  This parameter is not valid for distributed data management (DDM) files that refer to remote systems other than the System/38 or the AS/400 system.
+
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong>*FIRST
+</strong></dt>
+
+<dd class="dlentry">
+The first member of a database file is used.
+</dd>
+
+<dt class="dlterm">
+<strong>*LAST
+</strong></dt>
+
+<dd class="dlentry">
+The last member of a database file is used.
+</dd>
+
+<dt class="dlterm">
+<strong>*ALL
+</strong></dt>
+
+<dd class="dlentry">
+All members in your file are processed in order.  All members are opened with the same override parameters as the first member.  Overrides issued prior to the open of the first member are processed, but overrides or delete overrides issued following the open of the first member are not processed.  EOFDLY, FMTSLR, INHWRT, or the POSITION parameter cannot be specified if MBR(*ALL) has been specified on a previously issued OVRDBF command that is still in effect for this file.  An escape message is sent if any of the mutually exclusive parameters are specified.
+</dd>
+
+<dt class="dlterm">
+<strong><em>name
+</em></strong></dt>
+
+<dd class="dlentry">
+Specify the member name that overrides (at file open time) the member name specified in the using program, or in other called OVRDBF commands.  If the member name is not specified, and a TOFILE parameter other than *FILE has been specified, the first member in the file is used.
+</dd>
+
+</dl>
+
+</div>
+<div class="div" id="ovrdbf__position">
+<p>
+<strong>Starting position in file (POSITION)
+</strong></p>
+
+<p>
+Specifies the starting position for reading records from the database file.  The first record to get can be at the beginning (*START) or at the end (*END) of the file, the nth record in the file (*RRN), or the record indicated by a key field value and one of the key-search values (*KEY, *KEYA, *KEYAE, *KEYB, or *KEYBE).  This parameter overrides the value specified in the program, or in other called OVRDBF commands.
+
+</p>
+
+<p>
+<strong>Note:     
+</strong>This parameter cannot be specified if *ALL was specified previously on the 
+<strong>Overriding member (MBR)
+</strong> parameter.
+
+</p>
+
+<p>
+<strong>Single values
+</strong>
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong>*NONE
+</strong></dt>
+
+<dd class="dlentry">
+No special positioning is required.  The first input/output operation indicates the record that is read.
+</dd>
+
+<dt class="dlterm">
+<strong>*START
+</strong></dt>
+
+<dd class="dlentry">
+The starting position is the first record in the file.  If a read-previous record operation is specified in the program, an end-of-file condition occurs.
+</dd>
+
+<dt class="dlterm">
+<strong>*END
+</strong></dt>
+
+<dd class="dlentry">
+The starting position is the last record in the file.  When the next record is read, an end-of-file condition is reached.  If a read previous record operation is requested, the last record of the file is read.
+</dd>
+
+</dl>
+
+<p>
+<strong>Element 1: Retrieve order
+</strong>
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong>*RRN
+</strong></dt>
+
+<dd class="dlentry">
+The starting position is the relative record number specified for the second element of this parameter.
+</dd>
+
+<dt class="dlterm">
+<strong>*KEYB
+</strong></dt>
+
+<dd class="dlentry">
+A record that precedes the record identified by the remaining search values (number of fields, record format name, and key value) is the first record read.
+</dd>
+
+<dt class="dlterm">
+<strong>*KEYBE
+</strong></dt>
+
+<dd class="dlentry">
+The record identified by the search values is the first record read.  If no record matches those values, the record that matches the largest previous value is selected.
+</dd>
+
+<dt class="dlterm">
+<strong>*KEY
+</strong></dt>
+
+<dd class="dlentry">
+The record identified by the search values is the first record read.  If a read-previous record operation is specified in the program, the preceding record is read.
+</dd>
+
+<dt class="dlterm">
+<strong>*KEYAE
+</strong></dt>
+
+<dd class="dlentry">
+The record identified by the search values is the first record read.  If there is no record that matches those values, the record with the next highest value is selected.
+</dd>
+
+<dt class="dlterm">
+<strong>*KEYA
+</strong></dt>
+
+<dd class="dlentry">
+A record that follows the record identified by the remaining search values (number of fields, record format name, and key value) is the first record read.
+</dd>
+
+</dl>
+
+<p>
+<strong>Element 2: *RRN-rcd nbr *KEY-nbr key flds
+</strong>
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><em>relative-record-number
+</em></strong></dt>
+
+<dd class="dlentry">
+Specify the relative record number (its position from the beginning of the file) of the record that is read first.  The value *RRN must be specified for the first element of this parameter.  For example, POSITION(*RRN 480) specifies that record 480 is read next.  If a read-previous record operation is requested, the 479th record in the file is read.
+</dd>
+
+<dt class="dlterm">
+<strong><em>number-of-key-fields
+</em></strong></dt>
+
+<dd class="dlentry">
+Specify the number of key fields to use in the search, if *KEYB, *KEYBE, *KEY, *KEYAE, or *KEYA is specified for the first element of this parameter.  The number of fields specified does not have to be the same as the actual number of fields in each key for the file.  For example, if you specify POSITION(*KEY  1  FMT1  A), the first record in the file format FMT1 that has a first key field value of A is read.  If you specify a key value of zero, the search is based on all key fields.  If zero is used, the key value contains the maximum key size.  If it does not, no match occurs.
+</dd>
+
+</dl>
+
+<p>
+<strong>Element 3: *KEY-rec format having key
+</strong>
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><em>name
+</em></strong></dt>
+
+<dd class="dlentry">
+Specify the name of the record format in the database file that contains the key value specified.  If no record format name is specified, all record formats are searched for the first record that matches the other search values.
+</dd>
+
+</dl>
+
+<p>
+<strong>Element 4: *KEY-key value
+</strong>
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><em>character-value
+</em></strong></dt>
+
+<dd class="dlentry">
+Specify the first record read.  The key value is specified as a character string enclosed in apostrophes for character or positive zoned decimal formats, or is specified in hexadecimal form (x'value').  You can specify up to 2000 characters in the character string.
+<p>
+For example, POSITION(*KEY 1 FMT2 X'123F') specifies that:
+
+</p>
+
+<ol class="cds--list--ordered--temporary">
+<li class="cds--list__item">
+The system searches for a record from the record format FMT2.
+
+</li>
+
+<li class="cds--list__item">
+A single key field is used in the search (even though the key value may have more key fields).
+
+</li>
+
+<li class="cds--list__item">
+The record contains the hexadecimal value 123F (the hexadecimal equivalent of packed decimal value 123.0).  You get this record when it is found.
+
+</li>
+
+
+</ol>
+
+</dd>
+
+</dl>
+
+<p>
+The Distributed database programming topic collection in the IBM i Information Center at http://www.ibm.com/systems/i/infocenter/ has more information on the effects of using the POSITION parameter with DDM files.
+
+</p>
+
+</div>
+<div class="div" id="ovrdbf__rcdfmtlck">
+<p>
+<strong>Record format lock (RCDFMTLCK)
+</strong></p>
+
+<p>
+Specifies the lock state of the named record format while it is used by the program.  The lock state indicates how the data associated with each format is locked.  The following example shows the lock states that are specified for each record format and the operations allowed to other programs when the lock is in effect:
+
+</p>
+
+<div class="p">
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>
+Lock State               Other Program Operations
+---------------------    -------------------------
+*SHRRD (Shared read)     Read and update allowed
+*SHRNUP (Shared read,    Read allowed, update
+         no update)      not allowed
+*SHRUP (Shared update)   Read and update allowed
+*EXCLRD (Exclusive       Read allowed, update
+         allow read)     not allowed
+*EXCL (Exclusive no      Neither read nor
+       read)             update allowed
+
+</code></pre></div><div class="docs--copy-btn"></div></div>
+
+</div>
+
+<p>
+An explanation of each lock state is in the CL topic collection in the Programming category in the IBM i Information Center at http://www.ibm.com/systems/i/infocenter/.
+
+</p>
+
+<p>
+For each record format, specify the record format name, followed by one lock state value.  If the lock state specified for the file in an Allocate Object (ALCOBJ) command is more restrictive than the lock state specified in this parameter, this parameter is ignored.  Thus, this parameter can only impose a more restrictive lock state on a record format than the lock state specified for the file.
+
+</p>
+
+<p>
+You can specify 32 values for this parameter.
+
+</p>
+
+<p>
+<strong>Element 1: Record format
+</strong>
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><em>name
+</em></strong></dt>
+
+<dd class="dlentry">
+Specify the name of record format.
+</dd>
+
+</dl>
+
+<p>
+<strong>Element 2: Lock state
+</strong>
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><em>lock-state
+</em></strong></dt>
+
+<dd class="dlentry">
+Specify one of the lock state values from the above table.
+</dd>
+
+</dl>
+
+</div>
+<div class="div" id="ovrdbf__frcratio">
+<p>
+<strong>Records to force a write (FRCRATIO)
+</strong></p>
+
+<p>
+Specifies the number of insert, delete, or update operations that can occur on records before those records are forced into auxiliary (permanent) storage.  If this physical file is being journaled, either a large number or *NONE should be used.  *NONE may cause long synchronization of the journal and physical files.  More information on this parameter is in the CL topic collection in the Programming category in the IBM i Information Center at http://www.ibm.com/systems/i/infocenter/, Appendix A.  More information on journal management is in the Recovering your system book, SC41-5304.
+
+</p>
+
+<p>
+This parameter overrides the force-write ratio specified in the database file, in the program, or in other previously issued OVRDBF commands.
+
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong>*NONE
+</strong></dt>
+
+<dd class="dlentry">
+There is no force write ratio; the system determines when the records are written to auxiliary storage.
+</dd>
+
+<dt class="dlterm">
+<strong><em>integer
+</em></strong></dt>
+
+<dd class="dlentry">
+Specify the number of records written the changes are forced to disk.  If a physical file associated with this database file is recorded in a journal, specify a larger force-write ratio.
+</dd>
+
+</dl>
+
+</div>
+<div class="div" id="ovrdbf__fmtslr">
+<p>
+<strong>Rcd format selector program (FMTSLR)
+</strong></p>
+
+<p>
+Specifies the record format selection program that is called when a logical file member contains more than one logical record format.  The user-written selection program is called when a record is inserted into the database file and a record format name is not included in the high-level language program.  More information about the use of format selector programs is in the Database category in the IBM i Information Center at http://www.ibm.com/systems/i/infocenter/.  This parameter overrides the value specified in the database file and in other previously issued OVRDBF commands.
+
+</p>
+
+<p>
+A program specified as the format selector program cannot be created with USRPRF(*OWNER) specified in the Create CL Program (CRTCLPGM) command.
+
+</p>
+
+<p>
+<strong>Note:     
+</strong>This parameter cannot be specified if *ALL was specified previously on the 
+<strong>Overriding member (MBR)
+</strong> parameter.
+
+</p>
+
+<p>
+<strong>Qualifier 1: Rcd format selector program
+</strong>
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><em>name
+</em></strong></dt>
+
+<dd class="dlentry">
+Specify the name of the selection program.
+</dd>
+
+</dl>
+
+<p>
+<strong>Qualifier 2: Library
+</strong>
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><u>*LIBL
+</u></strong></dt>
+
+<dd class="dlentry">
+All libraries in the library list for the current thread are searched until the first match is found.
+</dd>
+
+</dl>
+
+<dl>
+<dt class="dlterm">
+<strong>*CURLIB
+</strong></dt>
+
+<dd class="dlentry">
+The current library for the job is used to locate the program.  If no current library entry exists in the library list, QGPL is used.
+</dd>
+
+<dt class="dlterm">
+<strong><em>name
+</em></strong></dt>
+
+<dd class="dlentry">
+Specify the library where the program is located.
+</dd>
+
+</dl>
+
+</div>
+<div class="div" id="ovrdbf__waitfile">
+<p>
+<strong>Maximum file wait time (WAITFILE)
+</strong></p>
+
+<p>
+Specifies the number of seconds that the program waits for the file resources to be allocated when the file is opened, or the device or session resources to be allocated when an acquire operation is performed to the file.  If the file resources cannot be allocated in the specified wait time, an error message is sent to the program.
+
+</p>
+
+<p>
+This parameter overrides the wait time specified in the database file, in the program, or in other previously issued OVRDBF commands.
+
+</p>
+
+<p>
+More information on this parameter is in CL topic collection in the Programming category in the IBM i Information Center at http://www.ibm.com/systems/i/infocenter/, Appendix A.
+
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong>*IMMED
+</strong></dt>
+
+<dd class="dlentry">
+The program does not wait.  When the file is opened, an immediate allocation of the file resources is attempted.
+</dd>
+
+<dt class="dlterm">
+<strong>*CLS
+</strong></dt>
+
+<dd class="dlentry">
+The default wait time specified in the class description is used as the wait time for the allocation of the file resources.
+</dd>
+
+<dt class="dlterm">
+<strong><em>integer
+</em></strong></dt>
+
+<dd class="dlentry">
+Specify the number of seconds that the program waits for the allocation of the file resources.  Valid values range from 1 through 32767 seconds.
+</dd>
+
+</dl>
+
+</div>
+<div class="div" id="ovrdbf__waitrcd">
+<p>
+<strong>Maximum record wait time (WAITRCD)
+</strong></p>
+
+<p>
+Specifies the number of seconds that a program waits for a record to be updated or deleted, or for a record read in the commitment control environment with LCKLVL(*ALL) specified.  More information on record locking is in the Database category in the IBM i Information Center at http://www.ibm.com/systems/i/infocenter/.  If the record is not allocated in the specified wait time, an error message is sent to the program.
+
+</p>
+
+<p>
+<strong>Note:     
+</strong>This parameter overrides the record wait time specified in the database file, specified in the program, or in other previously issued OVRDBF commands.  The minimum delay for DDM files is 60 seconds.  This value may need to be longer than the delay specified for local database files.
+
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong>*NOMAX
+</strong></dt>
+
+<dd class="dlentry">
+The program waits indefinitely for a record lock.
+</dd>
+
+<dt class="dlterm">
+<strong>*IMMED
+</strong></dt>
+
+<dd class="dlentry">
+The program does not wait.  An immediate lock of the record is obtained when the record is read.
+</dd>
+
+<dt class="dlterm">
+<strong><em>integer
+</em></strong></dt>
+
+<dd class="dlentry">
+Specify the number of seconds that the program waits for the record lock.  Valid values range from 1 through 32767 seconds.
+</dd>
+
+</dl>
+
+</div>
+<div class="div" id="ovrdbf__reusedlt">
+<p>
+<strong>Reuse deleted records (REUSEDLT)
+</strong></p>
+
+<p>
+Specifies whether the space used by deleted data entries is reclaimed by future insert requests.  Entry reuse cannot be done unless the file was created to allow this: REUSEDLT(*YES).  This command cannot override reuse of deleted entries from *NO to *YES.
+
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong>*NO
+</strong></dt>
+
+<dd class="dlentry">
+The file does not reclaim space used by deleted data entries.
+</dd>
+
+</dl>
+
+</div>
+<div class="div" id="ovrdbf__nbrrcds">
+<p>
+<strong>Records retrieved at once (NBRRCDS)
+</strong></p>
+
+<p>
+Specifies the number of records read from auxiliary storage as a unit and written to main storage as a unit.  The amount of data actually read is equal to the number of records times the physical record length, not the logical record length.
+
+</p>
+
+<p>
+This parameter is valid for sequential or random processing and is specified only when the data records are physically located in auxiliary storage in the sequence in which they are processed.  This parameter overrides the number of records value specified in the program, or in other previously issued OVRDBF commands.
+
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><em>integer
+</em></strong></dt>
+
+<dd class="dlentry">
+Specify the number of records. Valid values range from 1 through 32767.
+</dd>
+
+</dl>
+
+</div>
+<div class="div" id="ovrdbf__eofdly">
+<p>
+<strong>EOF retry delay in sec (EOFDLY)
+</strong></p>
+
+<p>
+Specifies the number of seconds of delay before trying to read additional records when end of file is reached.  This delay is used to allow other jobs an opportunity to add records to the file, and have the new records processed without having to start the job again.  When the delay time ends, the job is made active, and data management determines whether any new records were added.  If no new records were added, the job waits for another time delay without informing the application program.  When a number of seconds is given, no end of file occurs on the given database file until an End Job (ENDJOB) command or forced end of data (FEOD) occurs.
+
+</p>
+
+<p>
+<strong>Note:     
+</strong>This parameter cannot be specified if *ALL was specified previously on the 
+<strong>Overriding member (MBR)
+</strong> parameter.
+
+</p>
+
+<p>
+There are several ways to end a job that is waiting for records due to an EOFDLY.  They are:
+
+</p>
+
+<ul class="cds--list--unordered">
+<li class="cds--list__item">
+Write a record to the specified file which is recognized by the application program as a last record.  The application program may then do a force end of data (FEOD) to start the end-of-file processing or close the file.
+
+</li>
+
+<li class="cds--list__item">
+End the job using the controlled value (ENDJOB OPTION(*CNTRLD)) with a delay time greater than the time specified on the EOFDLY time.  The DELAY parameter time specified must allow for the EOFDLY time to run out, plus time to process any new records that may have been added to the file, and any end-of-file processing that is done in the user's application.  The end-of-file is set by database, and a normal end-of-file condition occurs after new records are retrieved.
+
+</li>
+
+<li class="cds--list__item">
+End the job immediately (ENDJOB OPTION(*IMMED)).
+
+</li>
+
+<li class="cds--list__item">
+If the job is interactive, start a system request and end the previous request.
+
+</li>
+
+</ul>
+
+<dl>
+<dt class="dlterm">
+<strong>*NONE
+</strong></dt>
+
+<dd class="dlentry">
+Normal end-of-file processing is done.
+</dd>
+
+<dt class="dlterm">
+<strong><em>1-99999
+</em></strong></dt>
+
+<dd class="dlentry">
+Specify the number of seconds that the program waits between attempts to get a record when an end of file condition occurs.  No end of file is signaled until force end of data occurs, or until the job is ended with the *CNTRLD option.
+</dd>
+
+</dl>
+
+</div>
+<div class="div" id="ovrdbf__lvlchk">
+<p>
+<strong>Record format level check (LVLCHK)
+</strong></p>
+
+<p>
+Specifies whether the level identifiers for the record formats of the database file are checked when the file is opened by a program.  For this check, which is done while the member is opened, the system compares the record format identifiers of each record format used by the program with the corresponding identifiers in the database member.  Level checking cannot be done unless the program contains the record format identifiers.  This command cannot override level checking from *NO to *YES.
+
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong>*NO
+</strong></dt>
+
+<dd class="dlentry">
+The level identifiers are not checked when the file is opened.
+</dd>
+
+</dl>
+
+</div>
+<div class="div" id="ovrdbf__expchk">
+<p>
+<strong>Check expiration date (EXPCHK)
+</strong></p>
+
+<p>
+Specifies whether the expiration date of the named member is checked.  This date check is valid only on a physical file member.  This parameter overrides the value specified in the program, or in other called OVRDBF commands.
+
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong>*YES
+</strong></dt>
+
+<dd class="dlentry">
+The expiration date of the physical file member is checked.  If the current date is later than the expiration date, an escape message is sent to the program.
+</dd>
+
+<dt class="dlterm">
+<strong>*NO
+</strong></dt>
+
+<dd class="dlentry">
+The expiration date is not checked.
+</dd>
+
+</dl>
+
+</div>
+<div class="div" id="ovrdbf__inhwrt">
+<p>
+<strong>Inhibit write (INHWRT)
+</strong></p>
+
+<p>
+Specifies whether the processed records are written, deleted, or updated in the database file.  The inhibit write parameter allows you to test a program without storing the processed records in the database.  This parameter overrides the INHWRT parameter in other previously issued OVRDBF commands.
+
+</p>
+
+<p>
+<strong>Note:     
+</strong>This parameter cannot be specified if *ALL is specified on the 
+<strong>Overriding member (MBR)
+</strong> parameter.
+
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong>*YES
+</strong></dt>
+
+<dd class="dlentry">
+Processed records are prevented from being written into the database.  They are written only to an output device.
+</dd>
+
+<dt class="dlterm">
+<strong>*NO
+</strong></dt>
+
+<dd class="dlentry">
+All new and changed processed records are written into the database unless the program is in debug mode with *NO specified on the 
+<strong>Update production files (UPDPROD)
+</strong> parameter, and the file is in a production library.  In that case, an escape message is sent to the program.
+</dd>
+
+</dl>
+
+</div>
+<div class="div" id="ovrdbf__secure">
+<p>
+<strong>Secure from other overrides (SECURE)
+</strong></p>
+
+<p>
+Specifies whether this file is safe from the effects of previously called file override commands.
+
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><u>*NO
+</u></strong></dt>
+
+<dd class="dlentry">
+This file is not protected from other file overrides.  Its values are overridden by the effects of any file override commands that were previously called.
+</dd>
+
+<dt class="dlterm">
+<strong>*YES
+</strong></dt>
+
+<dd class="dlentry">
+This file is protected from the effects of any file override commands that were previously called.
+</dd>
+
+</dl>
+
+</div>
+<div class="div" id="ovrdbf__ovrscope">
+<p>
+<strong>Override scope (OVRSCOPE)
+</strong></p>
+
+<p>
+Specifies the extent of influence (scope) of the override.
+
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><u>*ACTGRPDFN
+</u></strong></dt>
+
+<dd class="dlentry">
+The scope of the override is determined by the activation group of the program that calls this command.  When the activation group is the default activation group, the scope equals the call level of the calling program.  When the activation group is not the default activation group, the scope equals the activation group of the calling program.
+</dd>
+
+<dt class="dlterm">
+<strong>*CALLLVL
+</strong></dt>
+
+<dd class="dlentry">
+The scope of the override is determined by the current call level.  All open operations done at a call level that is the same as or higher than the current call level are influenced by this override.
+</dd>
+
+<dt class="dlterm">
+<strong>*JOB
+</strong></dt>
+
+<dd class="dlentry">
+The scope of the override is the job in which the override occurs.
+</dd>
+
+</dl>
+
+</div>
+<div class="div" id="ovrdbf__share">
+<p>
+<strong>Share open data path (SHARE)
+</strong></p>
+
+<p>
+Specifies whether the open data path (ODP) is shared with other programs in the same routing step.  When an ODP is shared, the programs accessing the file share facilities such as the file status and the buffer.
+
+</p>
+
+<p>
+More information on shared database files is in the Database category in the IBM i Information Center at http://www.ibm.com/systems/i/infocenter/.
+
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong>*NO
+</strong></dt>
+
+<dd class="dlentry">
+The ODP is not shared with other programs in the routing step.  A new ODP for the file is created and used every time a program opens the file.
+</dd>
+
+</dl>
+
+<dl>
+<dt class="dlterm">
+<strong>*YES
+</strong></dt>
+
+<dd class="dlentry">
+If the member is opened more than once, the same ODP is shared with each program in the job that also specifies *YES on the 
+<strong>Share open data path (SHARE)
+</strong> parameter when it opens the member.  This includes several open operations in the same program.
+</dd>
+
+</dl>
+
+</div>
+<div class="div" id="ovrdbf__opnscope">
+<p>
+<strong>Open scope (OPNSCOPE)
+</strong></p>
+
+<p>
+Specifies the extent of influence (scope) of the open operation.
+
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong>*ACTGRPDFN
+</strong></dt>
+
+<dd class="dlentry">
+The scope of the open operation is determined by the activation group of the program that called the OVRDBF command processing program.  If the activation group is the default activation group, the scope is the call level of the caller.  If the activation group is a non-default activation group, the scope is the activation group of the caller.
+</dd>
+
+<dt class="dlterm">
+<strong>*JOB
+</strong></dt>
+
+<dd class="dlentry">
+The scope of the open operation is the job in which the open operation occurs.
+</dd>
+
+</dl>
+
+</div>
+<div class="div" id="ovrdbf__seqonly">
+<p>
+<strong>Limit to sequential only (SEQONLY)
+</strong></p>
+
+<p>
+Specifies, for database files whose records are processed in sequential order only, whether sequential only processing is used on the file.  This parameter also specifies the number of records transferred as a group to or from the database if sequential only processing is used.  If a number is not specified, a default number is determined by the system.  This parameter is used to improve the performance of programs that process database files in a sequential manner.  This parameter overrides the value specified in the program or in other previously issued OVRDBF commands.
+
+</p>
+
+<p>
+For files opened for 
+<em>input
+</em> only in a program, the specified number of records is transferred as a group from the database to an internal data management buffer.
+
+</p>
+
+<p>
+For files opened for 
+<em>output
+</em> only in a program, a group of records is transferred to the database whenever the internal data management buffer receives the specified number of processed records from the program.  For output files, sequential-only processing is valid for physical file members and for logical file members that are based on one physical file member only.
+
+</p>
+
+<p>
+If SEQONLY(*YES) is specified, and any of the following conditions are true, the SEQONLY parameter is ignored and a message is issued.
+
+</p>
+
+<ul class="cds--list--unordered">
+<li class="cds--list__item">
+The program opened the member for output only and SEQONLY(*YES) is specified with the default number of records, and the member opened is either a logical member, a unique keyed physical member, or other access paths are built over the physical member.
+
+</li>
+
+<li class="cds--list__item">
+The program opened the member for other than input or output.
+
+</li>
+
+<li class="cds--list__item">
+The member opened by the program for output is based on many other members.
+
+</li>
+
+<li class="cds--list__item">
+The record length plus the feedback area sum exceeded 32,767 bytes.
+
+</li>
+
+</ul>
+
+<p>
+<strong>Note:     
+</strong>Unpredictable results occur when this parameter is used for alternate index files for DDM on a system other than an iSeries or AS/400 system.
+
+</p>
+
+<p>
+<strong>Single values
+</strong>
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong>*NO
+</strong></dt>
+
+<dd class="dlentry">
+The database file is not restricted to sequential only processing.
+</dd>
+
+</dl>
+
+<p>
+<strong>Element 1: Sequential only
+</strong>
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong>*YES
+</strong></dt>
+
+<dd class="dlentry">
+The database file uses sequential only processing.  A default value for the number of records transferred as a group is determined by the system based on how the file is used, the type of access path involved, and the file's record length:
+<ul class="cds--list--unordered">
+<li class="cds--list__item">
+The default is approximately the number of records that fit in an internal buffer of 4K for:
+<ul class="cds--list--unordered cds--list--nested">
+<li class="cds--list__item">
+All database files opened for input only
+
+</li>
+
+<li class="cds--list__item">
+Physical files opened for output that are only processed in either arrival sequence or in non-unique keyed sequence and that have no logical file members based on them
+
+</li>
+
+</ul>
+
+
+</li>
+
+<li class="cds--list__item">
+The default is 1 record for:
+<ul class="cds--list--unordered cds--list--nested">
+<li class="cds--list__item">
+All logical files opened for output only
+
+</li>
+
+<li class="cds--list__item">
+Physical files opened for output only that either have 
+<em>unique
+</em> keyed sequence access paths or have at least one dependent logical file with a keyed sequence access path that does not share the access path of the keyed physical file member
+
+</li>
+
+</ul>
+
+
+</li>
+
+</ul>
+
+</dd>
+
+</dl>
+
+<p>
+<strong>Element 2: Number of records
+</strong>
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><em>integer
+</em></strong></dt>
+
+<dd class="dlentry">
+Specify the number of records transferred each time.  Valid values range from 1 through 32767.  The file uses sequential only processing, and you must specify a value indicating the number of records in each group transferred between the database and the internal buffer.
+</dd>
+
+<dt class="dlterm">
+<strong>*BUF32KB
+</strong></dt>
+
+<dd class="dlentry">
+The buffer size will be 32 kilo bytes.
+</dd>
+
+<dt class="dlterm">
+<strong>*BUF64KB
+</strong></dt>
+
+<dd class="dlentry">
+The buffer size will be 64 kilo bytes.
+</dd>
+
+<dt class="dlterm">
+<strong>*BUF128KB
+</strong></dt>
+
+<dd class="dlentry">
+The buffer size will be 128 kilo bytes.
+</dd>
+
+<dt class="dlterm">
+<strong>*BUF256KB
+</strong></dt>
+
+<dd class="dlentry">
+The buffer size will be 256 kilo bytes.
+<p>
+The user must ensure that the buffer size specified is always available to the program in the storage pool in which the program is running.  The file uses sequential-only processing.
+
+</p>
+
+<p>
+While records are in the internal data management buffer, other jobs can make changes to the same records in the database, and the program performing sequential-only input processing does not see the updates.  To ensure that no other updating is done to records while they are in the buffer, the Allocate Object (ALCOBJ) command can be used in the program to specify either an *EXCLRD or an *EXCL lock on the file.
+
+</p>
+
+<p>
+If a program performs sequential-only output processing and does not handle output errors (such as duplicate keys and conversion mapping errors) that may occur when the records in the buffer are written to the database, records in the buffer after the first record in error are not written.
+
+</p>
+
+<p>
+If the file is opened for output and the value specified in this parameter is not the same as the force write ratio specified for the file, the value used by the system is the smaller of the two; a message stating which value is changed is sent to the user.
+
+</p>
+
+<p>
+When processing SEQONLY(*YES) for writing records into a database file, feedback information for each record (such as relative record number) is not always changed.  If such feedback information is important, specify SEQONLY(*NO) or SEQONLY(*YES 1).
+
+</p>
+
+<p>
+More information on sequence-only database files is in the Database category in the IBM i Information Center at http://www.ibm.com/systems/i/infocenter/.
+
+</p>
+
+</dd>
+
+</dl>
+
+</div>
+<div class="div" id="ovrdbf__dstdta">
+<p>
+<strong>Distributed Data (DSTDTA)
+</strong></p>
+
+<p>
+Specifies the data retrieval method used for a distributed file.  This parameter has no effect if used against a non-distributed file.  Other parameters, such as SEQONLY, still affect how the data is retrieved from each system, and this parameter controls how all the data is managed when accessing a distributed file.  This parameter overrides the distributed file data retrieval method selected by the system, or specified in other previously issued OVRDBF commands.  More information on DSTDTA can be found in the DB2 Multisystem topic collection in the IBM i Information Center at http://www.ibm.com/systems/i/infocenter/.
+
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong>*BUFFERED
+</strong></dt>
+
+<dd class="dlentry">
+In order to achieve the best performance, data from the remote system and the local system may be kept in a buffer until retrieved by the user.
+</dd>
+
+<dt class="dlterm">
+<strong>*PROTECTED
+</strong></dt>
+
+<dd class="dlentry">
+Data can be buffered, but the file is locked to prevent updates by other jobs.  This will give the same performance as *BUFFERED, but guarantees current data.  While one job is using this option, other jobs will not be able to update the data in the file.
+</dd>
+
+<dt class="dlterm">
+<strong>*CURRENT
+</strong></dt>
+
+<dd class="dlentry">
+Data is not buffered.  This option results in fully live data, with maximum concurrency, but without optimal performance.
+</dd>
+
+</dl>
+
+</div>
+</section>
+
+<section class="section" role="region" aria-labelledby="ovrdbf__examples__title__1" id="ovrdbf__examples"><h2 class="sectiontitle" id="ovrdbf__examples__title__1">Examples</h2>
+
+<p>
+<strong>Example 1: Overriding An Existing Member
+</strong>
+</p>
+
+<div class="p">
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>
+OVRDBF   FILE(ORDERSIN)  MBR(MONDAY)
+
+</code></pre></div><div class="docs--copy-btn"></div></div>
+
+</div>
+
+<p>
+This command overrides the existing member with member MONDAY.  With the override in effect, the member MONDAY will be processed when the file ORDERSIN is opened.
+
+</p>
+
+<p>
+<strong>Example 2: Overriding a Share Specification
+</strong>
+</p>
+
+<div class="p">
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>
+OVRDBF   FILE(ORDERSIN)  SHARE(*YES)
+
+</code></pre></div><div class="docs--copy-btn"></div></div>
+
+</div>
+
+<p>
+This command overrides the share specification for the file ORDERSIN. Because of this override, any subsequent opens of this file within the routing step share the ODP for the file.
+
+</p>
+
+<p>
+<strong>Example 3: Overriding a File, Member and Lock State
+</strong>
+</p>
+
+<div class="p">
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>
+OVRDBF   FILE(INPUT)  TOFILE(PAYROLL)  MBR(MBR1)
+         RCDFMTLCK((EMPDATA *EXCL))
+
+</code></pre></div><div class="docs--copy-btn"></div></div>
+
+</div>
+
+<p>
+This command overrides the file, the member, and the lock state of the record format EMPDATA. The override will cause the following to occur when the file INPUT is opened:
+
+</p>
+
+<ul class="cds--list--unordered">
+<li class="cds--list__item">
+The file PAYROLL will be processed instead of the file INPUT.
+
+</li>
+
+<li class="cds--list__item">
+The member MBR1 will be processed instead of the previously specified member.
+
+</li>
+
+<li class="cds--list__item">
+The lock *EXCL will be placed on record format EMPDATA instead of the existing lock. (*EXCL prevents another program from using the record format while the override is in effect.)
+
+</li>
+
+</ul>
+
+</section>
+
+<section class="section" role="region" aria-labelledby="ovrdbf__errormsgs__title__1" id="ovrdbf__errormsgs"><h2 class="sectiontitle" id="ovrdbf__errormsgs__title__1">Error messages</h2>
+
+<p>
+<strong><u>*ESCAPE Messages
+</u></strong>
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong>CPF180C
+</strong></dt>
+
+<dd class="dlentry">
+Function &amp;1 not allowed.
+</dd>
+
+</dl>
+
+</section>
+
+</div>
+
+</article></main>
+</body></html>

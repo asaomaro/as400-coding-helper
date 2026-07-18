@@ -1,0 +1,198 @@
+{
+  "keyword": "WRKUSRJOB",
+  "description": "ユーザー・ジョブの処理 (WRKUSRJOB)",
+  "help": "ユーザー・ジョブの処理 (WRKUSRJOB)コマンドによって，選択したユーザー・ジョブのリストを処理することができます。\n\nSTATUS, ASTLVL,およびJOBTYPEパラメーターに指定する値によって，このコマンドを使用して次のタスクを実行することができます。",
+  "parameters": [
+    {
+      "name": "USER",
+      "description": "表示するジョブのユーザー",
+      "help": "このパラメーターによって，ジョブを開始したユーザー・プロファイルによって定義されたユーザー・ジョブを処理することができます。ユーザー・ジョブには，対話式ジョブ，投入バッチ・ジョブ，通信呼び出しバッチ・ジョブ，MRTバッチ・ジョブ，および自動始動ジョブが含まれます。ユーザー・ジョブには，システム・ジョブ，サブシステム・モニター・ジョブ，スプール読み取りプログラム，またはスプール書き出しプログラムは含まれません。\n\n*: 現行のユーザー・プロファイルのユーザー・ジョブが表示されます。\n*ALL: すべてのユーザー・プロファイルのユーザー・ジョブが表示されます。\nユーザー・プロファイルの名前を指定してください。指定されたユーザー・プロファイルを持つユーザー・ジョブが表示されます。",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*",
+      "attributes": {
+        "characterSet": "upper",
+        "maxLength": 10
+      },
+      "positional": 1
+    },
+    {
+      "name": "STATUS",
+      "description": "ユーザー・ジョブの状況",
+      "help": "処理したいユーザー・ジョブの状況を指定します。",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*ALL",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*ALL",
+          "value": "*ALL",
+          "help": "ジョブ待ち行列および出力待ち行列上にあるジョブ，および活動状態にあるジョブも含めて，すべての状況のユーザー・ジョブが表示されます。"
+        },
+        {
+          "label": "*ACTIVE",
+          "value": "*ACTIVE",
+          "help": "すべてのグループ・ジョブおよびシステム要求ジョブを含め，活動状態のユーザー・ジョブだけが表示されます。サインオンしたユーザーの処理画面を表示するためには，STATUS(*ACTIVE)を指定しなければなりません。"
+        },
+        {
+          "label": "*JOBQ",
+          "value": "*JOBQ",
+          "help": "ジョブ待ち行列上のユーザー・ジョブだけが表示されます。"
+        },
+        {
+          "label": "*OUTQ",
+          "value": "*OUTQ",
+          "help": "実行を完了したが，まだ出力待ち行列上に出力を持っているユーザー・ジョブだけが表示されます。"
+        }
+      ],
+      "positional": 2
+    },
+    {
+      "name": "OUTPUT",
+      "description": "出力",
+      "help": "コマンドからの出力を，要求元のワークステーションに表示するか，あるいはジョブのスプール出力で印刷するかを指定します。",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*",
+          "value": "*",
+          "help": "出力は，対話式ジョブの場合には表示され，非対話式ジョブの場合にはジョブのスプール出力で印刷されます。"
+        },
+        {
+          "label": "*PRINT",
+          "value": "*PRINT",
+          "help": "出力はジョブのスプール出力で印刷されます。"
+        }
+      ],
+      "positional": 3
+    },
+    {
+      "name": "JOBTYPE",
+      "description": "ジョブ・タイプ",
+      "help": "表示されたユーザー・ジョブのタイプを指定します。",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*ALL",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*ALL",
+          "value": "*ALL",
+          "help": "対話式ジョブおよびバッチ・ジョブを含む，ユーザー・ジョブのすべてのタイプが表示されます。JOBTYPE(*ALL)を指定した場合には，ASTLVLパラメーターは無視されます。"
+        },
+        {
+          "label": "*INTERACT",
+          "value": "*INTERACT",
+          "help": "対話式ユーザー・ジョブだけが表示されます。サインオンしたユーザーの処理画面を表示するためには，JOBTYPE(*INTERACT)を指定しなければなりません。ASTLVL(*BASIC)も指定した場合には，表示される対話式ジョブに，延期されたグループ・ジョブおよび印刷を待機中の印刷装置出力があるサインオフしたユーザーが含まれます。"
+        },
+        {
+          "label": "*BATCH",
+          "value": "*BATCH",
+          "help": "事前開始ジョブ，バッチ即時ジョブ，および36EE MRTジョブを含む，バッチ・ユーザー・ジョブだけが表示されます。ジョブの処理画面を表示するためには，JOBTYPE(*BATCH)を指定しなければなりません。"
+        }
+      ]
+    },
+    {
+      "name": "ASTLVL",
+      "description": "援助レベル",
+      "help": "使用するユーザー・インターフェースを指定します。",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*PRV",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*PRV",
+          "value": "*PRV",
+          "help": "前に使用されたユーザー・インターフェースが使用されます。"
+        },
+        {
+          "label": "*USRPRF",
+          "value": "*USRPRF",
+          "help": "ユーザー・プロファイルの 援助レベル (ASTLVL)パラメーターに指定されたインターフェースが使用されます。ユーザー・プロファイルに*ADVANCEDが指定されている場合には，*INTERMEDが使用されます。"
+        },
+        {
+          "label": "*BASIC",
+          "value": "*BASIC",
+          "help": "操作援助機能ユーザー・インターフェースが使用されます。"
+        },
+        {
+          "label": "*INTERMED",
+          "value": "*INTERMED",
+          "help": "システム・ユーザー・インターフェースが使用されます。"
+        }
+      ]
+    }
+  ],
+  "threadSafe": false,
+  "environment": "すべての環境 (*ALL)",
+  "examples": [
+    {
+      "code": "WRKUSRJOB USER(PGMR12)"
+    },
+    {
+      "code": "WRKUSRJOB USER(*ALL) STATUS(*JOBQ)"
+    },
+    {
+      "code": "WRKUSRJOB USER(*ALL) STATUS(*ACTIVE) JOBTYPE(*INTERACT) ASTLVL(*BASIC)"
+    }
+  ],
+  "errorMessages": [
+    {
+      "id": "CPF1E50",
+      "text": "すべてのジョブが表示されているわけではない。"
+    },
+    {
+      "id": "CPF1E51",
+      "text": "ライブラリー&2のジョブ待ち行列&1が見つからない。"
+    },
+    {
+      "id": "CPF1E99",
+      "text": "予期しないエラーが起こった。"
+    },
+    {
+      "id": "CPF1003",
+      "text": "サブシステム&1が活動状態でない。"
+    },
+    {
+      "id": "CPF9845",
+      "text": "ファイル&1のオープン中にエラーが起こった。"
+    },
+    {
+      "id": "CPF9846",
+      "text": "ライブラリー&2のファイル&1の処理中にエラーが起こった。"
+    },
+    {
+      "id": "CPF9847",
+      "text": "ライブラリー&2のファイル&1のクローズ中にエラーが起こった。"
+    },
+    {
+      "id": "CPF9850",
+      "text": "印刷装置ファイル&1の一時変更は許されない。"
+    },
+    {
+      "id": "CPF9851",
+      "text": "&2のファイル&1のオーバーフロー値が小さすぎる。"
+    },
+    {
+      "id": "CPF9871",
+      "text": "処理中に，エラーが起こった。"
+    }
+  ],
+  "source": {
+    "url": "https://www.ibm.com/docs/ja/ssw_ibm_i_74/cl/wrkusrjob.htm",
+    "version": "IBM i 7.4"
+  }
+}

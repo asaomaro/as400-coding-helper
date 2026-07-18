@@ -23,8 +23,10 @@ jobs:
         with:
           node-version: "20"
 
-      - name: 定義 JSON と原典の突き合わせ（CL）
-        run: node docs/origin/verify-cl-definitions.mjs
+      - name: 定義 JSON と原典の突き合わせ（CL 日本語 / 英語）
+        run: |
+          node docs/origin/verify-cl-definitions.mjs
+          node docs/origin/verify-cl-definitions.mjs --lang=en
 
       - name: 定義 JSON と原典の突き合わせ（RPG 桁位置）
         run: node docs/origin/verify-rpg-definitions.mjs
@@ -32,6 +34,7 @@ jobs:
       - name: 再生成しても差分が出ないこと
         run: |
           node docs/origin/generate-cl-definitions.mjs
+          node docs/origin/generate-cl-definitions.mjs --lang=en
           if ! git diff --quiet -- vscode-extension/resources/prompter/cl; then
             echo "::error::定義 JSON が生成結果と一致しません。"
             echo "::error::JSON を手で直さず、生成スクリプトを直して再生成してください。"
