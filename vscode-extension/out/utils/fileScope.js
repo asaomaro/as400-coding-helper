@@ -12,15 +12,22 @@ exports.isInScopeUri = isInScopeUri;
  * の拡張子を使う。`.dds` も残しているのは、そう名付ける環境への保険。
  */
 exports.TARGET_EXTENSIONS = [
-    "rpg",
-    "rpgle",
-    "clp",
-    "pf",
-    "lf",
-    "dspf",
-    "prtf",
-    "dds",
-    "cmd",
+    // RPG（固定長）
+    "rpg", // RPG III / RPG400
+    "rpgle", // ILE RPG
+    "sqlrpgle", // SQL 組み込み ILE RPG
+    "sqlrpg", // SQL 組み込み RPG III
+    // CL
+    "clp", // OPM CL
+    "clle", // ILE CL
+    // DDS（オブジェクトの種類ごとに拡張子が分かれる）
+    "pf", // 物理ファイル
+    "lf", // 論理ファイル
+    "dspf", // 画面ファイル
+    "prtf", // 印刷ファイル
+    "dds", // `.dds` と名付ける環境への保険
+    // その他
+    "cmd", // コマンド定義
 ];
 const TARGET_LANGUAGE_IDS = ["rpg-fixed", "cl"];
 function hasTargetExtension(fsPath) {

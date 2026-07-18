@@ -30,7 +30,7 @@
 - SEUによる表示では、固定長フォーマットの桁位置が分かるようにルーラーが表示されている
 - VSCodeによる編集時にもフォーカスしている行の上側にルーラーを表示されるようにする
 - ルーラーはコードを書き換えずに入力補助として表示させる
-- ルーラー表示は、特定のファイル拡張子(rpg,rpgle,clp,pf,lf,dspf,prtf,dds,cmd)の場合に表示させる
+- ルーラー表示は、特定のファイル拡張子(rpg,rpgle,sqlrpgle,sqlrpg,clp,clle,pf,lf,dspf,prtf,dds,cmd)の場合に表示させる
 - ルーラー表示のオンオフを、VSCodeのステータスバークリックで切り替えられるようにする
 
 ### 制御コード(SOSI)表示
@@ -39,7 +39,7 @@
 - VSCodeでの表示では制御コードが表示されず、正しい桁位置で表示がされない
 - VSCode上でも正しい桁位置で表示されるよう、DBCS前後にSOを'{'、SIを'}'で表示させる
 - '{','}'はコードを書き換えずに入力補助として表示させる
-- '{','}'表示は、特定のファイル拡張子(rpg,rpgle,clp,pf,lf,dspf,prtf,dds,cmd)の場合に表示させる
+- '{','}'表示は、特定のファイル拡張子(rpg,rpgle,sqlrpgle,sqlrpg,clp,clle,pf,lf,dspf,prtf,dds,cmd)の場合に表示させる
 - 制御コード表示のオンオフを、VSCodeのステータスバークリックで切り替えられるようにする
 
 ## 開発時の検証規約
@@ -74,7 +74,15 @@
 - **DDS のファイル拡張子は `.dds` ではない**。実務ではオブジェクトの種類ごとに
   `.pf`(物理ファイル) / `.lf`(論理ファイル) / `.dspf`(画面ファイル) / `.prtf`(印刷ファイル)
   を使う。`.dds` も対象に残してあるが、それは保険であって主たる形ではない。
-  対象拡張子は `src/utils/fileScope.ts` の `TARGET_EXTENSIONS` が単一の真実。。
+  対象拡張子は `src/utils/fileScope.ts` の `TARGET_EXTENSIONS` が単一の真実。
+
+- **SQL 組み込み・ILE 版の拡張子を落とさない**。`.sqlrpgle`(SQL組み込み ILE RPG)、
+  `.sqlrpg`(SQL組み込み RPG III)、`.clle`(ILE CL) はいずれも固定長ソースで、
+  `.rpgle` / `.clp` と同じ扱いが要る。拡張子判定は `fileScope.ts` だけでなく
+  **`ruler.ts` の specFamily / `positionResolver.ts` の言語判定 / `dialect.ts` の
+  方言マップ**にもあり、片方だけ足すとルーラーやプロンプターが効かない。
+  実機(pub400)のソースタイプ分布でも RPGLE 3295 / CLP 1086 / CLLE 219 /
+  SQLRPGLE 209 と、いずれも実使用がある。。
 
 ### sh / ps1 二本立て CLI の実装観点（既知の罠）
 

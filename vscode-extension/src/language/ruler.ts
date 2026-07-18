@@ -276,10 +276,12 @@ function specFamily(document: vscode.TextDocument): SpecFamily {
   }
 
   const lower = document.uri.fsPath.toLowerCase();
-  if (lower.endsWith(".rpgle") || lower.endsWith(".rpg")) {
+  // SQL 組み込み(.sqlrpgle/.sqlrpg)も固定長 RPG、ILE CL(.clle)も CL。
+  // 拡張子を1つずつ書くと追加漏れが起きるため、末尾一致でまとめて判定する。
+  if (/\.(sqlrpgle|rpgle|sqlrpg|rpg)$/u.test(lower)) {
     return "rpg";
   }
-  if (lower.endsWith(".clp")) {
+  if (/\.(clle|clp)$/u.test(lower)) {
     return "cl";
   }
   return "other";

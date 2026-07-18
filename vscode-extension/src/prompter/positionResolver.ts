@@ -80,11 +80,11 @@ function getLanguageId(document: vscode.TextDocument): LanguageId | undefined {
   }
 
   const lower = document.uri.fsPath.toLowerCase();
-  if (lower.endsWith(".rpgle")) {
+  if (/\.(sqlrpgle|rpgle|sqlrpg|rpg)$/u.test(lower)) {
     return "rpg-fixed";
   }
 
-  if (lower.endsWith(".clp")) {
+  if (/\.(clle|clp)$/u.test(lower)) {
     return "cl";
   }
 
