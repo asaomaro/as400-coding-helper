@@ -150,8 +150,18 @@ function parseParameterSections(html, command) {
   const sections = new Map();
   // パラメータ節だけでなく COMMAND.EXAMPLES / ERROR.MESSAGES / Top_Of_Page も
   // 区切りとして扱う。終端を取り違えると例やエラー文が help に混入する。
-  // 見出しアンカーは <a name="X">例</a> のように中身を持つため </a> を要求しない。
-  const anchors = matchAll(html, new RegExp(`<a name="${command}\\.([A-Za-z0-9_.]+)"`, "g"));
+  // パラメータ節のアンカーは版・言語で形式が違う。
+  //   日本語版: <a name="CHGDTAARA.DTAARA"></a>
+  //   英語版  : <div id="chgdtaara__dtaara"> / <h3 id="...">
+  // 片方しか見ないと節が取れず、定義済み値の説明が丸ごと落ちる
+  // （英語版で *GDA/*PDA が拾えず CI が落ちて発覚した）。
+  const lower = command.toLowerCase();
+  const anchors = [
+    ...matchAll(html, new RegExp(`<a name="${command}\\.([A-Za-z0-9_.]+)"`, "g")),
+    ...matchAll(html, new RegExp(`id="${lower}__([a-z0-9_]+)"`, "g"))
+  ]
+    .map(m => Object.assign([m[0], m[1].toUpperCase()], { index: m.index }))
+    .sort((a, b) => a.index - b.index);
   const isParameter = name => /^[A-Z0-9]+$/.test(name);
 
   anchors.forEach((anchor, i) => {
@@ -505,13 +515,39 @@ function buildParameter(param, section) {
     const qualifiers = group.qualifiers.map(q => toChild(q, qualifierName(q)));
 
     if (group.element && qualifiers.length > 0) {
+      // 要素そのものにも単一値がある（例: CHGDTAARA の要素1は
+      // 「単一値: *LDA, *GDA, *PDA ／ その他の値: 修飾オブジェクト名」）。
+      // ここを読まないと、その要素の定義済み値が丸ごと落ちる。
+      const elementChoices = readChoices(group.element.choicesHtml);
+      const ordered = qualifiers.reverse(); // 修飾子は出力順（ライブラリーが先）
+      const primary = ordered[ordered.length - 1];
+
+      if (primary && elementChoices.specials.length > 0) {
+        const helpByValue = new Map(
+          valuesForPart(section, group.element).map(v => [v.value, v.help])
+        );
+        if (primary.options) {
+          primary.options = [
+            ...elementChoices.specials.map(value =>
+              prune({ label: value, value, help: helpByValue.get(value) })
+            ),
+            ...primary.options
+          ];
+        } else {
+          primary.help = [primary.help, `指定できる特殊値: ${elementChoices.specials.join(", ")}`]
+            .filter(Boolean)
+            .join("\n\n");
+        }
+      }
+
       return prune({
         name: `${param.name}_E${group.element.index}`,
         description: group.element.label,
         inputType: "group",
         required: false,
         groupKind: "qualified",
-        children: qualifiers.reverse() // 修飾子は出力順（ライブラリーが先）
+        singleValues: elementChoices.singleValues,
+        children: ordered
       });
     }
 

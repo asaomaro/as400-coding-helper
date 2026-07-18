@@ -5,6 +5,7 @@
     {
       "name": "OBJ",
       "description": "Object specifications",
+      "help": "Object specifications (OBJ)\n\nSpecifies the name and library of one or more objects that are allocated to the job, thread, or lock space, the type of each object specified, the lock state of each object, and the member name (if the object is a database file or distributed data management (DDM) file).\n\nThis is a required parameter.\n\nYou can specify 50 values for this parameter.\n\nElement 1: Object\n\nQualifier 1: Object\n\nQualifier 2: Library\n\nElement 2: Object type\n\nElement 3: Lock state\n\nElement 4: Member, if data base file\n\nNote: The following values can only be specified if the object type is a database file.\n\nYou can specify all five lock states (*EXCL, *EXCLRD, *SHRUPD, *SHRNUP, and *SHRRD) for most, but not all, object types.\n\nNote: Additional details about lock states can be found in the CL topic collection in the Programming category in the IBM i Information Center at http://www.ibm.com/systems/i/infocenter/.\n\nMultiple locks can be specified for the same object in the same job with duplicate or different lock states. Each lock is held separately. For example, if an *EXCL lock is already held for an object, and a second *EXCL lock request occurs, the second lock is acquired. Both locks must be released in the job (deallocated with the Deallocate Object (DLCOBJ) command) before another job can access the same object. If an object is already allocated with one lock state and user want to use a different lock state, first use the ALCOBJ command to request the new lock with the desired lock state and then use the DLCOBJ command to release the old lock (with the old lock state).\n\nWhen an exclusive lock is requested on a logical file member, the lock occurs on both the logical file member and the associated physical file members. No other user can use the physical file members (not even through some other logical file member).\n\nTo determine whether a device description can be allocated, use information from the Work with Configuration Status (WRKCFGSTS) command.",
       "inputType": "group",
       "required": true,
       "groupKind": "elements",
@@ -317,7 +318,7 @@
     {
       "name": "WAIT",
       "description": "Wait time",
-      "help": "指定できる特殊値: *CLS",
+      "help": "Wait time (WAIT)\n\nSpecifies the number of seconds that the program waits for the object to be allocated. If the object cannot be allocated in the specified wait time, a message, which can be detected by a Monitor Message (MONMSG) command, is sent to the program. If one or more device descriptions are in the list of objects to be allocated, the system may wait more than the specified amount of time to attempt the allocation.\n\nWhen allocating distributed data management (DDM) files and distributed files, additional time is required for communications and for allocating files on remote systems. A separate wait time is used for each remote system. When allocating objects with a lock-space-scope, the lock space may override the wait time specified.\n\n指定できる特殊値: *CLS",
       "inputType": "text",
       "required": false,
       "defaultValue": "*CLS",
@@ -331,6 +332,7 @@
     {
       "name": "SCOPE",
       "description": "Lock scope",
+      "help": "Lock scope (SCOPE)\n\nSpecify the scope for this lock request.\n\nAll objects types supported by the OBJ parameter support job-scoped locks. All object types supported by the OBJ parameter support lock-space-scoped locks. When allocating DDM objects with a lock-space-scope, the lock on the remote system is scoped to the job.\n\nLocks scoped to a thread can never conflict with a lock scoped to its containing job, but may conflict with a lock scoped to a different job or any other thread (depending on the lock states involved).",
       "inputType": "dropdown",
       "required": false,
       "defaultValue": "*JOB",
@@ -356,6 +358,7 @@
     {
       "name": "CONFLICT",
       "description": "Lock conflict action",
+      "help": "Lock conflict action (CONFLICT)\n\nSpecify the action to be taken if a lock conflict exists. This parameter is only supported for database files and is ignored for all other objects. The supported database *FILE objects are:",
       "inputType": "dropdown",
       "required": false,
       "defaultValue": "*NORQSRLS",

@@ -5,6 +5,7 @@
     {
       "name": "PGMQ",
       "description": "Call stack entry message queue",
+      "help": "Call stack entry message queue (PGMQ)\n\nSpecifies the call stack entry message queue from which a message is received. The call stack entry message queue can be the *EXT queue or it can be a message queue that is associated with a call stack entry for a program or an ILE procedure.\n\nIf values are specified for this parameter, specifying *PGMQ for the Message queue (MSGQ) parameter is allowed.\n\nSingle values\n\nElement 1: Relationship\n\nElement 1 of this parameter specifies whether the message queue is associated with the program or procedure identified by Element 2, or if it is associated with the caller of the program or procedure.\n\nNote: If the message queue previous to the one identified by element 2 is for an ILE program entry procedure (PEP), the message will be received from the message queue immediately previous to the PEP message queue; effectively this would be two message queues previous to the one identified by element 2.\n\nElement 2: Call stack entry identifier\n\nThe second element of this parameter is used to provide the information needed to identify a call stack entry. It has three elements. Element 1 specifies an OPM program or ILE procedure name or a special value. Element 2 specifies an ILE module name which is used as a qualifier for the value specified in element 1. Element 3 can specify either an OPM program name or an ILE program name or a service program name, depending on what is specified in element 1. Element 3 is also used as a qualifier for what is specified in element 1.\n\nElement 1: Call stack entry\n\nA procedure name alone may not identify the correct procedure since several different procedures with the same name can run in a job. A procedure can be further identified by specifying element 2 or by specifying both element 2 and 3.\n\nThe system begins its search for the specified program or procedure name with the most recently called program or procedure.\n\nIf this element identifies an OPM program, the name specified can be a maximum of 10 characters. If this element identifies an ILE procedure, the name specified can be a maximum of 256 characters.\n\nNested procedure names can be specified by separating each procedure name with a colon (:). When specifying nested procedure names, the outermost procedure name is identified first, followed by its contained procedures. The innermost procedure name is identified last in the string.\n\nPartial names of programs or procedures can be specified by placing three less-than symbols (<<<) at the beginning of the name or by placing three greater-than symbols (>>>) at the end of the name. If both the greater-than symbols and the less-than symbols are used, the program or procedure name specified is limited to 250 characters.\n\nWhen searching for a partial program or procedure name:\n\nElement 2: Module\n\nElement 3: Program",
       "inputType": "group",
       "required": false,
       "groupKind": "elements",
@@ -84,6 +85,7 @@
     {
       "name": "MSGQ",
       "description": "Message queue",
+      "help": "Message queue (MSGQ)\n\nSpecifies the message queue (not a program message queue) from which a message is to be received.\n\nSingle values\n\nQualifier 1: Message queue\n\nQualifier 2: Library",
       "inputType": "group",
       "required": false,
       "groupKind": "qualified",
@@ -122,6 +124,7 @@
     {
       "name": "MSGTYPE",
       "description": "Message type",
+      "help": "Message type (MSGTYPE)\n\nSpecifies the type of message received by this program.\n\nWhen a message is received from a message queue associated with a call stack entry, *NEXT works only for one call stack entry. *NEXT cannot be used to receive messages for multiple call stack entries of the same program.\n\nNote: Non-exception messages are received in first-in first-out (FIFO) order.\n\nIf an exception message is received from a message queue for a procedure, the related exception may not be handled at the time the RCVMSG command is run. The RMV parameter can be used to specify whether the exception is to be handled by the RCVMSG command.\n\nThe special value *TOP or hexadecimal zeroes (hex 00000000) can be specified for the message key to return the first message on the program message queue.\n\nNote: This value is only allowed for program message queues, and not allowed for nonprogram message queues (like QSYSOPR).\n\nThe special value hexadecimal zeroes (hex 00000000) can be specified for the message key to return the newest message on the program message queue.\n\nNote: This value is only allowed for program message queues, and not allowed for nonprogram message queues (like QSYSOPR).",
       "inputType": "dropdown",
       "required": false,
       "defaultValue": "*ANY",
@@ -196,7 +199,7 @@
     {
       "name": "MSGKEY",
       "description": "Message key",
-      "help": "指定できる特殊値: *NONE, *TOP",
+      "help": "Message key (MSGKEY)\n\nSpecifies the message reference key of the message that is received.\n\nCoding Relationships: The MSGTYPE and MSGKEY parameters can be used separately in the RCVMSG command, or together.\n\nIf MSGTYPE(*RPY) is specified with a MSGKEY value that refers to either a sender's copy or an inquiry message, any reply to the sender's copy or inquiry message is returned. If there is no reply to that sender's copy or inquiry message, blanks are returned. When the MSGKEY value refers to an inquiry message, the WAIT parameter is ignored (this implies WAIT(0), which is the default value for the WAIT parameter).\n\nIf MSGTYPE(*ANY) is specified with a KEYVAR variable and the first message type found is a reply message, the KEYVAR variable returns the message reference key of the sender's copy message. Similarly, if MSGTYPE(*RPY) is specified with a KEYVAR variable, the message reference key of the sender's copy message is returned.\n\n指定できる特殊値: *NONE, *TOP",
       "inputType": "text",
       "required": false,
       "defaultValue": "*NONE",
@@ -210,7 +213,7 @@
     {
       "name": "WAIT",
       "description": "Wait time",
-      "help": "指定できる特殊値: *MAX",
+      "help": "Wait time (WAIT)\n\nSpecifies, in seconds, the length of time that the program waits for a message of the specified type to arrive in the message queue if it is not there when this command is processed. If the message does not arrive in the specified time, the control language (CL) variables named to receive message fields are filled with blanks (or zeros, if they are decimal variables).\n\nThe program cannot wait for a message from a program message queue unless it is receiving a reply.\n\nIf a wait time is specified (not zero), the message queue is implicitly allocated to the first user whose message is received, and it is not released until the request has been handled by the program.\n\nIf a message is sent to a message queue in the same job, and the message queue is in break delivery mode, this parameter is ignored (that implies WAIT(0), which is the default value for the WAIT parameter).\n\nIf the value specified for MSGKEY refers to an inquiry message, and MSGTYPE(*RPY) has been specified, the program ignores the WAIT parameter (value for Wait is 0).\n\n指定できる特殊値: *MAX",
       "inputType": "text",
       "required": false,
       "defaultValue": "0",
@@ -224,6 +227,7 @@
     {
       "name": "RMV",
       "description": "Remove message",
+      "help": "Remove message (RMV)\n\nSpecifies whether the message received by the program is removed from the message queue. For messages that are unhandled exceptions, this parameter also specifies whether the exception is to be handled. If *INQ is specified for the Message type (MSGTYPE) parameter, then *NO must also be specified for this parameter so a reply to the inquiry message can be sent, otherwise the default reply will be sent before the unanswered inquiry is removed.\n\nNote: Old messages are messages that have been received but not deleted. An old message can be received again in one of the following ways:\n\nTo handle an exception after the RCVMSG has been run, the command can be run a second time by specifying RMV(*YES) or RMV(*NO).",
       "inputType": "dropdown",
       "required": false,
       "defaultValue": "*YES",
@@ -249,7 +253,7 @@
     {
       "name": "CCSID",
       "description": "Coded character set ID",
-      "help": "指定できる特殊値: *HEX, *JOB",
+      "help": "Coded character set ID (CCSID)\n\nSpecifies the coded character set identifier (CCSID) that you want the message text returned in. This only applies to text returned in the MSG, SECLVL and MSGDTA parameters. When replacement data is returned in the MSGDTA parameter or substituted into the text returned in the MSG or SECLVL parameters, only the part of the replacement text that is defined as a character that can be converted (*CCHAR) is converted. The rest of the replacement data is not converted. For more information about the *CCHAR field, see the ADDMSGD command.\n\nFor more information on the message handler and its use of CCSIDs, see the i5/OS globalization topic collection in the IBM i Information Center at http://www.ibm.com/systems/i/infocenter/.\n\n指定できる特殊値: *HEX, *JOB",
       "inputType": "text",
       "required": false,
       "defaultValue": "*JOB",
@@ -262,6 +266,7 @@
     {
       "name": "RJTDFTRPY",
       "description": "Reject default reply",
+      "help": "Reject default reply (RJTDFTRPY)\n\nRemoving an unanswered inquiry message causes the default reply to be sent to the inquiry message. This value indicates whether a reply handling exit program will be allowed to reject a default reply that is sent as a result of using this command. A reply handling exit program can be registered via the system registration facility for exit point QIBM_QMH_REPLY_INQ. This parameter is only applicable when *YES is specified for the RMV parameter.",
       "inputType": "dropdown",
       "required": false,
       "defaultValue": "*NOALWRJT",
@@ -283,6 +288,7 @@
     {
       "name": "KEYVAR",
       "description": "CL var for KEYVAR (4)",
+      "help": "CL var for KEYVAR (4) (KEYVAR)\n\nSpecifies the name of the control language (CL) character variable, if any, that contains the message reference key identifying the message received by the program containing this command. At the time the RCVMSG command is processed, the system returns the message reference key to the variable specified by KEYVAR in this command and changes the received message to an old message. The message reference key can then be used in the MSGKEY parameter in a subsequent RCVMSG command to receive the old message. If the message is not found or is being removed, blanks are returned for the KEYVAR variable. For reply type messages, use the MSGKEY parameter on this command in conjunction with the KEYVAR parameter on the SNDPGMMSG command. The message reference key can also be used by this program for building message subfiles. The CL variable is the name of the field for which the SFLMSGKEY keyword is specified in the DDS for the message subfile.\n\nNote: For message queues not associated with call stack entries, message reference keys can be used again after a message has been received and then removed (by specifying *YES for the RMV parameter).\n\nThe variable must be a character variable having a length of 4 characters.\n\nNote: When using the message reference key (obtained from the CL variable specified by the KEYVAR parameter of the Send Program Message (SNDPGMMSG) command) to receive the reply to an inquiry message, note that the message reference key refers to the sender's copy. The sender's copy message is located on the reply message queue (which defaults to the program message queue that sent the inquiry message), not the message queue to which the inquiry message was sent.",
       "inputType": "text",
       "required": false,
       "placeholder": "&MSGKEY",
@@ -291,6 +297,7 @@
     {
       "name": "MSG",
       "description": "CL var for 1st level text",
+      "help": "CL var for 1st level text (MSG)\n\nSpecifies the name of the control language (CL) character variable, if any, that contains the message when it is received by the program. This includes the message data fields that were substituted for substitution variables in the text before the message was sent (replies and immediate messages contain no message data fields). This is a variable-length field, but most message text is less than 132 characters in length. When a program receives a reply for an inquiry message, this parameter will contain the text of the reply message.",
       "inputType": "text",
       "required": false,
       "placeholder": "&MSG",
@@ -299,6 +306,7 @@
     {
       "name": "MSGLEN",
       "description": "CL var for MSGLEN (5 0)",
+      "help": "CL var for MSGLEN (5 0) (MSGLEN)\n\nSpecifies the name of the control language (CL) decimal variable, if any, that contains the total length of the message text available to be received. The variable must be a decimal variable having a length of 5 positions.",
       "inputType": "text",
       "required": false,
       "placeholder": "&MSGLEN",
@@ -307,6 +315,7 @@
     {
       "name": "SECLVL",
       "description": "CL var for 2nd level text",
+      "help": "CL var for 2nd level text (SECLVL)\n\nSpecifies the name of the CL character variable, if any, that contains the message help received by the program. This includes the message data fields that were substituted for any substitution variables in the text before the message was sent (replies and immediate messages do not have second-level messages). This is a variable-length field, but most online message help is designed to be less than 3000 characters in length.",
       "inputType": "text",
       "required": false,
       "placeholder": "&SECLVL",
@@ -315,6 +324,7 @@
     {
       "name": "SECLVLLEN",
       "description": "CL var for SECLVLLEN (5 0)",
+      "help": "CL var for SECLVLLEN (5 0) (SECLVLLEN)\n\nSpecifies the name of the control language (CL) decimal variable, if any, that contains the total length of the message help available to be received. The variable must be a decimal variable having a length of 5 positions.",
       "inputType": "text",
       "required": false,
       "placeholder": "&SECLEN",
@@ -323,6 +333,7 @@
     {
       "name": "MSGDTA",
       "description": "CL var for msg data",
+      "help": "CL var for msg data (MSGDTA)\n\nSpecifies the name of the control language (CL) character variable, if any, that contains the message data record received by the program as part of the message. The message data record contains the substitution values (in a single character string) that are used in the text of the received message. The amount of data returned and its format depend on the message. Pointers contained in system messages are invalidated.\n\nNote: If you use data that has an invalidated pointer in it an error message can occur.",
       "inputType": "text",
       "required": false,
       "placeholder": "&MSGDTA",
@@ -331,6 +342,7 @@
     {
       "name": "MSGDTALEN",
       "description": "CL var for MSGDTALEN (5 0)",
+      "help": "CL var for MSGDTALEN (5 0) (MSGDTALEN)\n\nSpecifies the name of the control language (CL) decimal variable, if any, that contains the total length of the message data record available to be received. The variable must be a decimal variable having a length of 5 positions.",
       "inputType": "text",
       "required": false,
       "placeholder": "&DTALEN",
@@ -339,6 +351,7 @@
     {
       "name": "MSGID",
       "description": "CL var for MSGID (7)",
+      "help": "CL var for MSGID (7) (MSGID)\n\nSpecifies the name of the control language (CL) character variable, if any, that contains the message identifier of the message received by the program. If the message being received is an immediate message, the message identifier is returned as blanks. The minimum length of the variable is 7 characters.",
       "inputType": "text",
       "required": false,
       "placeholder": "&MSGID",
@@ -347,6 +360,7 @@
     {
       "name": "SEV",
       "description": "CL var for SEV (2 0)",
+      "help": "CL var for SEV (2 0) (SEV)\n\nSpecifies the name of the control language (CL) decimal variable, if any, that contains the severity code of the message received by the program. If the message being received is an immediate message, the message severity is not returned. The variable must be a decimal variable having a length of 2 positions.",
       "inputType": "text",
       "required": false,
       "placeholder": "&SEV",
@@ -355,6 +369,7 @@
     {
       "name": "SENDER",
       "description": "CL var for SENDER (80)",
+      "help": "CL var for SENDER (80) (SENDER)\n\nSpecifies the name of the control language (CL) character variable, if any, that contains the identification of the sender of the message received through the RCVMSG command. The length of the CL variable depends on the SENDERFMT specification. If SENDERFMT(*SHORT) is specified, the variable must be a minimum of 80 characters. If the CL variable is longer than 80 characters, additional information will be returned. If SENDERFMT(*LONG) is specified, the variable must be a minimum of 720 characters.",
       "inputType": "text",
       "required": false,
       "placeholder": "&SENDER",
@@ -363,6 +378,7 @@
     {
       "name": "SENDERFMT",
       "description": "Sender format",
+      "help": "Sender format (SENDERFMT)\n\nSpecifies which format of the sender identification is returned. This parameter is valid only when the SENDER parameter is specified.\n\nNote: A statement number represents a point in the sending program at which the message was sent. For programs and non-optimized procedures, this count is always 1. For optimized procedures, this count can be greater than 1, and each statement number represents a point at which the message could have been sent. If it is not possible to return statement numbers, this count will be 0.\n\nNote: A statement number represents a point at which the sent-to program was suspended (for example, due to a call operation) at the time the message was sent. For programs and non-optimized procedures, this count is always 1. For optimized procedures, this count can be greater than 1, and each statement number represents a point at which the message could have been sent. If it is not possible to return statement numbers, this count will be 0.",
       "inputType": "dropdown",
       "required": false,
       "defaultValue": "*SHORT",
@@ -384,6 +400,7 @@
     {
       "name": "RTNTYPE",
       "description": "CL var for RTNTYPE (2)",
+      "help": "CL var for RTNTYPE (2) (RTNTYPE)\n\nSpecifies the name of the control language (CL) variable, if any, that contains the type code for the message received by the program. The variable must be a character variable having a length of 2 positions.\n\nThe following values are returned to indicate the message type:",
       "inputType": "text",
       "required": false,
       "placeholder": "&RTNTYPE",
@@ -392,6 +409,7 @@
     {
       "name": "ALROPT",
       "description": "CL var for ALROPT (9)",
+      "help": "CL var for ALROPT (9) (ALROPT)\n\nSpecifies the name of the control language (CL) variable, if any, used to return the alert option of the message received by the program. The variable must be a character variable 9 positions in length.",
       "inputType": "text",
       "required": false,
       "placeholder": "&ALROPT",
@@ -400,6 +418,7 @@
     {
       "name": "MSGF",
       "description": "CL var for MSGF (10)",
+      "help": "CL var for MSGF (10) (MSGF)\n\nSpecifies the name of the control language (CL) variable, if any, used to return the message file name of the message received by the program. If the message received is a stored message, the message file name of the file containing the stored message is returned. If the received message is not a stored message, the message file name is returned as blanks. The variable must be a character variable 10 positions in length.\n\nNote: The message file name returned on this parameter is the message file specified or defaulted on the send function, not the overriding message file. If an override was specified when sending the message, the same override should be used when receiving the message.",
       "inputType": "text",
       "required": false,
       "placeholder": "&MSGF",
@@ -408,6 +427,7 @@
     {
       "name": "MSGFLIB",
       "description": "CL var for MSGFLIB (10)",
+      "help": "CL var for MSGFLIB (10) (MSGFLIB)\n\nSpecifies the name of the control language (CL) variable, if any, used to return the message file library name of the message received by the program. If the message received is a stored message, the message file library name of the library containing the message file of the stored message is returned. If *LIBL was specified on the send command, *LIBL is returned. If the received message is not a stored message, the message file library name is returned as blanks. The variable must be a character variable 10 positions in length.\n\nNote: The message file library name returned on this parameter is the message file specified or defaulted on the send function, not the overriding message file library. If an override was specified when sending the message, the same override should be used when receiving the message.",
       "inputType": "text",
       "required": false,
       "placeholder": "&MSGFLIB",
@@ -416,6 +436,7 @@
     {
       "name": "SNDMSGFLIB",
       "description": "CL var for SNDMSGFLIB (10)",
+      "help": "CL var for SNDMSGFLIB (10) (SNDMSGFLIB)\n\nSpecifies the name of the control language (CL) variable, if any, used to return the message file library name used to send the message. If the message received is a stored message, the message file library name of the library containing the message file of the stored message is returned. If *LIBL was specified on the send command, this parameter would have the actual name of the library. If the received message is not a stored message, the message file library name is returned as blanks. If the received message is a stored message and the original message file is destroyed, the message file library name is returned as blanks. If the received message is not a stored message, this parameter is returned as blanks. The variable must be a character variable of 10 positions in length.",
       "inputType": "text",
       "required": false,
       "placeholder": "&SNDLIB",
@@ -424,6 +445,7 @@
     {
       "name": "TXTCCSID",
       "description": "CL var for text CCSID (5 0)",
+      "help": "CL var for text CCSID (5 0) (TXTCCSID)\n\nSpecifies the name of the CL variable, if any, used to return the coded character set identifier (CCSID) associated with the text returned by the MSG and SECLVL parameters. If a conversion error occurs or if the CCSID you requested the text to be converted to is 65535, the CCSID that the message description or the text for an immediate message is stored in is returned. Otherwise, the CCSID you wanted the text converted to is returned. If you do not want the text converted before it is returned to you but you do want to know the CCSID that the message description or the text for an immediate message is stored in, specify 65535 for the CCSID parameter, and the CCSID is returned in the TXTCCSID parameter. You can also check for a conversion error by comparing the CCSID you passed in against the TXTCCSID returned. If they are not equal and they are not 65535, a conversion error occurred. The variable must be a decimal variable having a length of 5 positions.",
       "inputType": "text",
       "required": false,
       "placeholder": "&TXTCCSID",
@@ -432,6 +454,7 @@
     {
       "name": "DTACCSID",
       "description": "CL var for data CCSID (5 0)",
+      "help": "CL var for data CCSID (5 0) (DTACCSID)\n\nSpecifies the name of the CL variable, if any, used to return the coded character set identifier (CCSID) associated with the replacement data defined as *CCHAR. All other replacement data is not converted before it is returned. If a conversion error occurs or if the CCSID you requested the text to be converted to is 65535, the CCSID message data is returned. If there is no *CCHAR replacement data in the data, 65535 is returned. Otherwise, the CCSID you wanted the text converted to is returned. For immediate messages, 0 is returned. You can check for a conversion error by comparing the CCSID you passed in against the DTACCSID returned. If they are not equal and they are not 65535, a conversion error occurred. The variable must be a decimal variable having a length of 5 positions.",
       "inputType": "text",
       "required": false,
       "placeholder": "&DTACCSID",

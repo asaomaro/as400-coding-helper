@@ -5,7 +5,7 @@
     {
       "name": "FILE",
       "description": "File being overridden",
-      "help": "指定できる特殊値: *PRTF",
+      "help": "File being overridden (FILE)\n\nSpecifies the file being used by the program to which this override command is applied. The specified file must be a printer device file when *FILE is specified in the Overriding to printer file (TOFILE) parameter. Otherwise, any device file name or database file name is specified.\n\nThis is a required parameter.\n\n指定できる特殊値: *PRTF",
       "inputType": "text",
       "required": true,
       "attributes": {
@@ -19,6 +19,7 @@
     {
       "name": "TOFILE",
       "description": "Overriding to printer file",
+      "help": "Overriding to printer file (TOFILE)\n\nSpecifies the printer file that is used instead of the file specified in the File being overridden (FILE) parameter; or, if *FILE is specified, specifies that certain attributes are overridden by parameters specified in this command. The parameters specified on this OVRPRTF command override the same parameters specified in the printer file, in the program, or in other called (OVRPRTF) commands.\n\nSingle values\n\nQualifier 1: Overriding to printer file\n\nQualifier 2: Library",
       "inputType": "group",
       "required": false,
       "groupKind": "qualified",
@@ -58,6 +59,7 @@
     {
       "name": "DEV",
       "description": "Device",
+      "help": "Device (DEV)\n\nSpecifies a printer device description. For nonspooled output, this identifies the printer device used to produce the printed output. For spooled output, the file is placed on the output queue determined by the OUTQ parameter. If OUTQ(*DEV) is used, the file is placed on the output queue with the same name as the device.\n\nDouble-byte character set considerations: When printing a file that has double-byte character set (DBCS) data, specify a DBCS printer (5553, 5583).",
       "inputType": "group",
       "required": false,
       "groupKind": "elements",
@@ -81,6 +83,7 @@
     {
       "name": "DEVTYPE",
       "description": "Printer device type",
+      "help": "Printer device type (DEVTYPE)\n\nSpecifies the type of data stream that is created for a printer device file. This parameter indicates whether the resulting data stream is an Intelligent Printer Data Stream (IPDS) or an SNA Character Stream (SCS).\n\nNote: When using double-byte character set (DBCS) printers (the 5553 and 5583 Printers), DEVTYPE(*SCS) must be specified.",
       "inputType": "dropdown",
       "required": false,
       "attributes": {
@@ -117,6 +120,7 @@
     {
       "name": "PAGESIZE",
       "description": "Page size",
+      "help": "Page size (PAGESIZE)\n\nSpecifies the length and width of the printer forms used by this device file. The length is specified in lines per page or by the units specified for the UOM parameter. The width is specified in print positions (characters) per line or by the units specified for the UOM parameter.\n\nThe page size must be specified with reference to the way the data is printed on the page. For example, if using 8.5 inch wide by 11.0 inch long forms and printing at 6 lines per inch with a 10-pitch font, specify PAGESIZE(66 85) PAGRTT(0). However, to rotate the page, specify the page size for an 11.0 inch wide by 8.5 inch long page and enter PAGESIZE(51 110) PAGRTT(90).\n\nNote: Specify PAGRTT(*AUTO) or PAGRTT(*DEVD) and PRTQLTY(*DRAFT) on this command to enable automatic reduction or rotation if the data does not fit on the paper.\n\nSpecify PAGRTT(*COR) on this command to enable automatic reduction whether or not the data fits on the paper.\n\nElement 1: Page length\n\nElement 2: Page width\n\nElement 3: Measurement method",
       "inputType": "group",
       "required": false,
       "groupKind": "elements",
@@ -165,6 +169,7 @@
     {
       "name": "LPI",
       "description": "Lines per inch",
+      "help": "Lines per inch (LPI)\n\nSpecifies the line spacing setting on the printer, in lines per inch, used by this device file.\n\nThe line spacing on the 5256 printer must be set manually. When the lines per inch (LPI) value on this parameter changes (from the value on the previous printer file), an inquiry message is sent to the message queue associated with the printer that requests a change to the LPI value.\n\nThe line spacing on the 4214, 4224, 4230, 4234, 4245, and 5262 Printers is set by a print command. These also allow setting the lines per inch spacing on the control panel of the printer. The lines per inch value must not be set at the printer. If the LPI value is overridden at the control panel, the system overrides the value set with the LPI value of the next printer file received.\n\nNote: When printing double-byte character set (DBCS) data for a file specified with LPI(8), use double spacing. Otherwise, the DBCS data does not print correctly. Alphanumeric data, however, prints correctly in single spacing when LPI(8) is specified.\n\nDouble-byte character set considerations: When printing a file that has double-byte character set (DBCS) data, specify a DBCS printer (5553, 5583).",
       "inputType": "text",
       "required": false,
       "basic": true
@@ -172,6 +177,7 @@
     {
       "name": "CPI",
       "description": "Characters per inch",
+      "help": "Characters per inch (CPI)\n\nSpecifies the printer character density (in characters per inch) used by this device file.\n\nFor the printers that support fonts, the value specified in the font special value implies the CPI. If FONT(*CPI) is specified, the font used is based on the CPI value. The following diagram describes the default font ID for each CPI value:\n\nDouble-byte character set considerations: When printing a file that has double-byte character set (DBCS) data, specify a DBCS printer (5553, 5583).",
       "inputType": "text",
       "required": false,
       "basic": true
@@ -179,6 +185,7 @@
     {
       "name": "FRONTMGN",
       "description": "Front margin",
+      "help": "Front margin (FRONTMGN)\n\nSpecifies the offset, down and across, of the origin from the edge on the front side of the paper. The offsets are in the units of measure specified on the UOM parameter. This parameter can only be used for printer files with DEVTYPE(*AFPDS) specified.\n\nSingle values\n\nElement 1: Offset down\n\nElement 2: Offset across",
       "inputType": "group",
       "required": false,
       "groupKind": "elements",
@@ -211,6 +218,7 @@
     {
       "name": "BACKMGN",
       "description": "Back margin",
+      "help": "Back margin (BACKMGN)\n\nSpecifies the offset, down and across, of the origin from the edge on the back side of the paper. The offsets are in the units of measure specified on the UOM parameter. If UOM(*CM) is specified, valid values range from 0 through 57.79, and if UOM(*INCH) is specified, valid values range from 0 through 22.57. This parameter can only be used for printer files with DEVTYPE(*AFPDS) specified.\n\nSingle values\n\nElement 1: Offset down\n\nElement 2: Offset across",
       "inputType": "group",
       "required": false,
       "groupKind": "elements",
@@ -244,6 +252,7 @@
     {
       "name": "OVRFLW",
       "description": "Overflow line number",
+      "help": "Overflow line number (OVRFLW)\n\nSpecifies the line number on the page at which overflow to a new page occurs. Generally, after the specified line is printed, the printer overflows to the next page before printing continues. Overflow is signaled when the specified line number is made the current line, whether printing has occurred on that line or not. The value specified must not exceed the forms length specified in the Page size (PAGESIZE) parameter for the file. Margins specified for the printer file are ignored when determining overflow. More information is in the Printing category in the IBM i Information Center at http://www.ibm.com/systems/i/infocenter/. This parameter overrides the overflow value specified in the printer file, in the program, or in other called OVRPRTF commands.",
       "inputType": "number",
       "required": false,
       "attributes": {
@@ -254,6 +263,7 @@
     {
       "name": "FOLD",
       "description": "Fold records",
+      "help": "Fold records (FOLD)\n\nSpecifies whether all positions in a record are printed when the record length exceeds the form width. If so, any portion of the record that cannot be printed on the first line is continued (folded) on the next line or lines until the entire record is printed.\n\nThe FOLD parameter is ignored under the following conditions:\n\nDouble-byte character set considerations: The system ignores this parameter when printing double-byte character set (DBCS) files. The system assumes that DBCS records fit on a printed line. If the record exceeds the form width, the system continues printing the record on the next line.\n\nThis parameter overrides the value specified in the printer file, in the program, or in other called OVRPRTF commands.",
       "inputType": "dropdown",
       "required": false,
       "attributes": {
@@ -274,6 +284,7 @@
     {
       "name": "RPLUNPRT",
       "description": "Unprintable character action",
+      "help": "Unprintable character action (RPLUNPRT)\n\nSpecifies whether unprintable characters are replaced and which substitution character (if any) is used. An unprintable character is a character that the printer is unable to print.\n\nNote: If *IPDS is specified in the Printer device type (DEVTYPE) parameter, a hyphen (-) is printed for the unprintable characters. The substitution character is ignored for the 3287 printer.\n\nSingle values\n\nElement 1: Replace character\n\nElement 2: Replacement character\n\nDouble-byte character set considerations: The system ignores the chosen replacement character when you specify *YES. Instead, the system replaces unprintable characters as follows:",
       "inputType": "group",
       "required": false,
       "groupKind": "elements",
@@ -324,6 +335,7 @@
     {
       "name": "ALIGN",
       "description": "Align page",
+      "help": "Align page (ALIGN)\n\nSpecifies whether the forms must be aligned in the printer before printing is started. If *YES is specified and *NO is specified in the Spool the data (SPOOL) parameter, and forms alignment is required, the system sends a message to the message queue specified for the printer, and waits for a reply to the message. If *YES is specified on the SPOOL parameter, and *FILE is specified on the Align page (ALIGN) parameter, of the Start Printer Writer (STRPRTWTR) command, this parameter is used to determine whether an alignment message should be sent by the system.\n\nThis parameter is ignored when cut sheets are used (spooled and direct output). Page alignment can be done only for text-only files. Page alignment cannot be done for print jobs containing graphics or bar codes.",
       "inputType": "dropdown",
       "required": false,
       "attributes": {
@@ -344,7 +356,7 @@
     {
       "name": "DRAWER",
       "description": "Source drawer",
-      "help": "指定できる特殊値: *E1, *FORMDF",
+      "help": "Source drawer (DRAWER)\n\nSpecifies the source drawer used when single-cut sheets are fed into the printer. *AUTOCUT must be specified on the Form feed (FORMFEED) parameter.\n\n指定できる特殊値: *E1, *FORMDF",
       "inputType": "text",
       "required": false,
       "attributes": {
@@ -356,7 +368,7 @@
     {
       "name": "OUTBIN",
       "description": "Output bin",
-      "help": "指定できる特殊値: *DEVD",
+      "help": "Output bin (OUTBIN)\n\nSpecifies the destination of the output on printers capable of multiple output bins.\n\n指定できる特殊値: *DEVD",
       "inputType": "text",
       "required": false,
       "attributes": {
@@ -368,6 +380,7 @@
     {
       "name": "FONT",
       "description": "Font",
+      "help": "Font specifications (FONT)\n\nSpecifies the font identifier and point size used with this printer device file. If a font identifier and point size is not specified, the system automatically sets them.\n\nSingle values\n\nElement 1: Identifier\n\nElement 2: Point size",
       "inputType": "group",
       "required": false,
       "groupKind": "elements",
@@ -401,6 +414,7 @@
     {
       "name": "FORMFEED",
       "description": "Form feed",
+      "help": "Form feed (FORMFEED)\n\nSpecifies the form feed attachment used by this printer device file.",
       "inputType": "dropdown",
       "required": false,
       "attributes": {
@@ -433,6 +447,7 @@
     {
       "name": "PRTQLTY",
       "description": "Print quality",
+      "help": "Print quality (PRTQLTY)\n\nSpecifies, for the 3812 SCS, 3816 SCS, 4214, 4224, 4230, 4234, and 5219 printers, the quality of print produced.\n\nFor the 5219 Printer, different print qualities are produced by varying the speed at which the print ribbon advances. Quality mode (*STD or *NLQ) results in normal print ribbon advancement. In draft mode (*DRAFT), the ribbon advances at a rate of one-third the distance it advances in quality mode. In other words, the 5219 Printer conserves printer ribbon when in draft mode by not advancing it as fast per character printed. The 5219 Printer has a conserve ribbon switch that overrides the value of *DRAFT specified by this parameter.\n\nFor the 3812 SCS and 3816 SCS Printers, the automatic hardware selection of computer output reduction printing selected through soft switches on the printers occurs only when *DRAFT is specified for PRTQLTY and PAGRTT is *DEVD. If PAGRTT(*COR) is specified, the PRTQLTY parameter does not affect the printed output.\n\nFor the 4224, 4230, and 4234 Printers, standard print quality is produced by varying the density of the dot matrix pattern used to create printable characters. Standard mode (*STD) is the normal mode. Quality mode (*NLQ) requires multiple passes by the printer to produce a line of data. Draft mode (*DRAFT) results in high-speed printing.\n\nFor the 4214 printer, only draft (*DRAFT), quality (*NLQ), and device default (*DEVD) modes are supported. Other values are set to quality (*NLQ) mode.\n\nNOTES:",
       "inputType": "dropdown",
       "required": false,
       "attributes": {
@@ -465,6 +480,7 @@
     {
       "name": "CTLCHAR",
       "description": "Control character",
+      "help": "Control character (CTLCHAR)\n\nSpecifies whether the printer device file supports input with print control characters. Any control characters found that are not valid are ignored, and single spacing is assumed.\n\nIf TBLREFCHR(*YES) is also specified, then the record length must include two extra positions for the control character and the table reference character.",
       "inputType": "dropdown",
       "required": false,
       "attributes": {
@@ -489,6 +505,7 @@
     {
       "name": "CHLVAL",
       "description": "Channel values",
+      "help": "Channel values (CHLVAL)\n\nSpecifies a list of channel numbers with their assigned line numbers. Use this parameter only if *FCFC is specified in the Control character (CTLCHAR) parameter.\n\nNote: If one or more channel-number/line-number combinations are changed, all other combinations must be re-entered.\n\nSingle values\n\nElement 1: Channel\n\nNote: If the printer stops and the next record processed has a channel value forms-control number that is the same value as the line number the printer is on, the printer advances to that value (line number) on the next page. However, if the printer is positioned at the top of the page (line number one) and the channel value forms-control value is associated with line number one, the printer does not advance to a new a new page.\n\nIf no line number is specified for a channel identifier, and that channel identifier is encountered in the data, a default of 'space one line' before printing is used. Each channel number can be specified only once.\n\nElement 2: Line number for channel\n\nElement 1: Line",
       "inputType": "group",
       "required": false,
       "groupKind": "elements",
@@ -527,6 +544,7 @@
     {
       "name": "FIDELITY",
       "description": "Fidelity",
+      "help": "Fidelity (FIDELITY)\n\nSpecifies whether printing continues when print errors are found for printers configured with AFP(*YES).",
       "inputType": "dropdown",
       "required": false,
       "attributes": {
@@ -547,6 +565,7 @@
     {
       "name": "CHRID",
       "description": "Character identifier",
+      "help": "Character identifier (CHRID)\n\nSpecifies the character identifier (graphic character set and code page) for the file. This parameter allows you to print text that is in different character identifier (graphic character set and code page) coding. The value specified on this parameter is used to command the printer device to interpret the hexadecimal byte string by printing the same characters that were intended when the text was created.\n\nSingle values\n\nNote: This value is not allowed if the file was created on a system at an earlier release level than V2R3M0.\n\nElement 1: Graphic character set\n\nElement 2: Code page",
       "inputType": "group",
       "required": false,
       "groupKind": "elements",
@@ -582,6 +601,7 @@
     {
       "name": "DECFMT",
       "description": "Decimal format",
+      "help": "Decimal format (DECFMT)\n\nSpecifies which decimal format value is used when editing numeric fields with the EDTCDE DDS keyword. The decimal format value determines the use of commas and periods for the decimal position and three digit positional separators on edited fields.",
       "inputType": "dropdown",
       "required": false,
       "attributes": {
@@ -602,6 +622,7 @@
     {
       "name": "FNTCHRSET",
       "description": "Font character set",
+      "help": "Font character set (FNTCHRSET)\n\nSpecifies a downloaded font consisting of a character set and code page. For an outline font, a point size is required. For a raster font, the point size is ignored. This parameter can only be used for printer files with DEVTYPE(*AFPDS) specified.\n\nSingle values\n\nElement 1: Character set\n\nQualifier 1: Character set\n\nQualifier 2: Library\n\nElement 2: Code page\n\nQualifier 1: Code page\n\nQualifier 2: Library\n\nElement 3: Point size",
       "inputType": "group",
       "required": false,
       "groupKind": "elements",
@@ -692,6 +713,7 @@
     {
       "name": "CDEFNT",
       "description": "Coded font",
+      "help": "Coded font (CDEFNT)\n\nSpecifies the coded font that the system uses for single-byte character set (SBCS) printing. This parameter can only be used for printer files with DEVTYPE(*AFPDS) specified.\n\nSingle values\n\nElement 1: Coded font\n\nQualifier 1: Coded font\n\nQualifier 2: Library\n\nElement 2: Point size",
       "inputType": "group",
       "required": false,
       "groupKind": "elements",
@@ -750,6 +772,7 @@
     {
       "name": "PAGDFN",
       "description": "Page definition",
+      "help": "Page definition (PAGDFN)\n\nSpecifies the page definition to be used to format line data.\n\nYou can specify a page definition with *LINE, *AFPDSLINE, or *USERASCII data. PSF/400 will convert the line data and page definition to IPDS.\n\nWhen you specify a page definition on the printer file, some printer file parameters will be ignored when the spooled file is printed by PSF/400. The following print file parameters will be ignored:\n\nSingle values\n\nBecause PSF/400 requires a page definition when *LINE or *AFPDSLINE is specified, an inline page definition is built from the print file parameters and passed to PSF/400 when *NONE is specified.\n\nQualifier 1: Page definition\n\nQualifier 2: Library",
       "inputType": "group",
       "required": false,
       "groupKind": "qualified",
@@ -787,6 +810,7 @@
     {
       "name": "FORMDF",
       "description": "Form definition",
+      "help": "Form definition (FORMDF)\n\nSpecifies the form definition to use when printing the file. A form definition is a resource object that defines the characteristics of the form, including overlays, position of page data on the form, and number of copies of pages and modifications to pages. The form definition is located inline with the file being printed, or in a library.\n\nWhen you specify a form definition (*DEVD or form definition name) on the printer file, some printer file parameters will be ignored when the spooled file is printed by PSF/400. The following print file parameters will be ignored:\n\nSingle values\n\nBecause PSF/400 requires a form definition, an inline form definition is built from the print file parameters and passed to PSF/400 when *NONE is specified.\n\nQualifier 1: Form definition\n\nQualifier 2: Library",
       "inputType": "group",
       "required": false,
       "groupKind": "qualified",
@@ -825,7 +849,7 @@
     {
       "name": "AFPCHARS",
       "description": "AFP Characters",
-      "help": "指定できる特殊値: *NONE",
+      "help": "AFP Characters (AFPCHARS)\n\nSpecifies one or more AFP characters (coded fonts) to be used with line data and a page definition.\n\nSingle values\n\nOther values (up to 4 repetitions)\n\n指定できる特殊値: *NONE",
       "inputType": "text",
       "required": false,
       "attributes": {
@@ -839,6 +863,7 @@
     {
       "name": "TBLREFCHR",
       "description": "Table Reference Characters",
+      "help": "Table Reference Characters (TBLREFCHR)\n\nSpecifies whether table reference characters are present in the line data.\n\nIf forms control characters are used with the data, the table reference character follows the forms control character but precedes the data bytes. If forms control characters are not used, the table reference character is the first byte of the data record. As with forms control character, if table reference characters are used, every data record must contain a TRC byte.",
       "inputType": "dropdown",
       "required": false,
       "attributes": {
@@ -859,6 +884,7 @@
     {
       "name": "PAGRTT",
       "description": "Degree of page rotation",
+      "help": "Degree of page rotation (PAGRTT)\n\nSpecifies the degree of rotation of the text on the page with respect to the way the form is loaded into the printer.",
       "inputType": "dropdown",
       "required": false,
       "attributes": {
@@ -883,6 +909,7 @@
     {
       "name": "MULTIUP",
       "description": "Pages per side",
+      "help": "Pages per side (MULTIUP)\n\nSpecifies, for spooled output only, whether multiple pages of output are printed on 1 physical page.",
       "inputType": "number",
       "required": false,
       "attributes": {
@@ -894,6 +921,7 @@
     {
       "name": "REDUCE",
       "description": "Reduce output",
+      "help": "Reduce output (REDUCE)\n\nSpecifies whether to reduce the output when doing multiple up printing.\n\nFor examples and more details see the Printing category in the IBM i Information Center at http://www.ibm.com/systems/i/infocenter/.",
       "inputType": "dropdown",
       "required": false,
       "attributes": {
@@ -914,7 +942,7 @@
     {
       "name": "PRTTXT",
       "description": "Print text",
-      "help": "指定できる特殊値: *JOB, *BLANK",
+      "help": "Print text (PRTTXT)\n\nSpecifies the text that is printed at the bottom of each page of printed output and on separator pages.\n\n指定できる特殊値: *JOB, *BLANK",
       "inputType": "text",
       "required": false,
       "attributes": {
@@ -926,6 +954,7 @@
     {
       "name": "JUSTIFY",
       "description": "Hardware justification",
+      "help": "Hardware justification (JUSTIFY)\n\nSpecifies the printing positions of the characters on a page so that the right-hand margin of printing is regular.",
       "inputType": "text",
       "required": false,
       "basic": true
@@ -933,6 +962,7 @@
     {
       "name": "DUPLEX",
       "description": "Print on both sides",
+      "help": "Print on both sides (DUPLEX)\n\nSpecifies whether output is printed on one side or two sides of the paper.",
       "inputType": "dropdown",
       "required": false,
       "attributes": {
@@ -961,6 +991,7 @@
     {
       "name": "UOM",
       "description": "Unit of measure",
+      "help": "Unit of measure (UOM)\n\nSpecifies the unit of measurement to be used.",
       "inputType": "dropdown",
       "required": false,
       "attributes": {
@@ -981,6 +1012,7 @@
     {
       "name": "FRONTOVL",
       "description": "Front side overlay",
+      "help": "Front side overlay (FRONTOVL)\n\nSpecifies the qualified name of the object that contains both the overlay that is printed on the front side of the page and the offset, down and across, from the point of origin used when the overlay is printed.\n\nSingle values\n\nElement 1: Overlay\n\nQualifier 1: Overlay\n\nQualifier 2: Library\n\nElement 2: Offset down\n\nElement 3: Offset across",
       "inputType": "group",
       "required": false,
       "groupKind": "elements",
@@ -1049,6 +1081,7 @@
     {
       "name": "BACKOVL",
       "description": "Back side overlay",
+      "help": "Back side overlay (BACKOVL)\n\nSpecifies the object name and library name containing both the overlay that is printed on the BACK side of the page and the offset, down and across, from the point of origin used when the overlay is printed.\n\nThe constant back function allows you to print overlays on blank pages without adding blank pages to the print application. Specifying the constant back function would cause, for each page generated by the application program, a blank page to be generated onto which the specified back overlay could be printed. The generated blank pages are called constant forms because no variable data from the user's program is printed on the pages. The constant back function is only supported for duplex printing. It is ignored when DUPLEX(*NO) is specified on the printer file.\n\nNote that the offset down and offset across values are ignored when *CONSTANT is specified for constant back. An offset of 0.0 is assumed for these values.\n\nSingle values\n\nElement 1: Overlay\n\nQualifier 1: Overlay\n\nQualifier 2: Library\n\nElement 2: Offset down\n\nElement 3: Offset across\n\nElement 4: Constant back",
       "inputType": "group",
       "required": false,
       "groupKind": "elements",
@@ -1138,6 +1171,7 @@
     {
       "name": "CVTLINDTA",
       "description": "Convert line data",
+      "help": "Convert line data (CVTLINDTA)\n\nSpecifies whether line data and a page definition should be converted to AFPDS before the data is spooled.",
       "inputType": "dropdown",
       "required": false,
       "attributes": {
@@ -1158,6 +1192,7 @@
     {
       "name": "IPDSPASTHR",
       "description": "IPDS pass through",
+      "help": "IPDS pass through (IPDSPASTHR)\n\nSpecifies whether IPDS (intelligent printer data stream) pass-through is done for the spooled file.\n\nNote: Not all SCS or IPDS spooled files are eligible for IPDS pass-through. They may contain special functions that require transform to AFPDS for correct printing. Specifying IPDS pass-through on the printer file allows only those spooled files eligible for IPDS pass-through to bypass the extra transforms. Those spooled files not eligible for IPDS pass-through will still undergo the transforms to AFPDS and back to IPDS.\n\nIPDS pass-through will not be valid for all PSF/400 supported printers. Any printer (or attachment) that does not support resident fonts can not support IPDS pass-through. This is because the resident font references in the data stream must be mapped to host fonts which are downloaded to the printer. All IBM IPDS printers, except for the following, can be supported with IPDS pass-through: 3820, 3825, 3827, 3828, 3829, 3831, 3835, 3900-001 and any printer attached using Print Services Facility for OS/2's Distributed Print Function.\n\nFor V3R7, V4R1 and V4R2, IPDSPASTHR can be specified with the USRDFNDTA parameter in a printer file. You may continue using this support with existing printer files and PSF configuration objects by specifying IPDSPASTHR(*DEVD) in the printer file. If you specify a value of anything other than *DEVD for the IPDSPASTHR parameter, any IPDS pass-through value in the USRDFNDTA parameter is ignored.",
       "inputType": "dropdown",
       "required": false,
       "attributes": {
@@ -1182,7 +1217,7 @@
     {
       "name": "USRRSCLIBL",
       "description": "User resource library list",
-      "help": "指定できる特殊値: *DEVD, *NONE, *JOBLIBL, *CURLIB",
+      "help": "User resource library list (USRRSCLIBL)\n\nSpecifies the list of user resource libraries to be used for searching for AFP resources for a spooled file. If the AFP resource is not found in the user resource libraries, then the library list specified in the DEVRSCLIBL parameter of the PSF configuration object is searched. If no PSF configuration object is specified for the device, then libraries QFNTCPL, QFNT01-QFNT19, and QFNT61-69 are searched.\n\nSingle values\n\nOther values (up to 4 repetitions)\n\nFor V3R7, V4R1 and V4R2, USRRSCLIBL can be specified with the USRDFNDTA parameter in a printer file. PSF/400 uses that value if USRRSCLIBL(*PRTF) is specified in a PSF configuration object which is specified in the printer device description. You may continue using this support with existing printer files and PSF configuration objects by specifying USRRSCLIBL(*DEVD) in the printer file. If you specify a value of anything other than *DEVD for the USRRSCLIBL parameter, any user resource library value in the USRDFNDTA parameter is ignored.\n\n指定できる特殊値: *DEVD, *NONE, *JOBLIBL, *CURLIB",
       "inputType": "text",
       "required": false,
       "attributes": {
@@ -1195,6 +1230,7 @@
     {
       "name": "CORNERSTPL",
       "description": "Corner staple",
+      "help": "Corner staple (CORNERSTPL)\n\nSpecifies the reference corner to be used for a corner staple. A staple is driven into the media at the reference corner. Refer to your printer's documentation for information as to which reference corners are supported. Page rotation does not affect the placement of a corner staple.",
       "inputType": "dropdown",
       "required": false,
       "attributes": {
@@ -1231,6 +1267,7 @@
     {
       "name": "EDGESTITCH",
       "description": "Edge stitch",
+      "help": "Edge stitch (EDGESTITCH)\n\nSpecifies where one or more staples are driven into the media along the finishing operation axis. Refer to your printer's documentation for information about which elements of this parameter are supported and which values for each element are supported. If specification of a value for an element is not supported by a printer, specify a value of *DEVD for that element. Page rotation does not affect the placement of an edge stitch.\n\nSingle values\n\nElement 1: Reference edge\n\nSpecifies the reference edge to be used for an edge stitch. An edge stitch is formed by having one or more staples driven into the media along the finishing operation axis.\n\nElement 2: Reference edge offset\n\nSpecifies the offset of the edge stitch from the reference edge toward the center of the media.\n\nElement 3: Number of staples\n\nSpecifies the number of staples that are to be applied along the finishing operation axis.\n\nElement 4: Staple offsets\n\nSpecifies the offset of the staples along the finishing operation axis. The offset is measured from the point where the finishing operation axis intersects either the bottom edge or the left edge of the media, toward the center of the media. Each consecutive value is used to position a single finishing operation centered on the specified point on the finishing operation axis.",
       "inputType": "group",
       "required": false,
       "groupKind": "elements",
@@ -1313,6 +1350,7 @@
     {
       "name": "SADLSTITCH",
       "description": "Saddle stitch",
+      "help": "Saddle stitch (SADLSTITCH)\n\nSpecifies where one or more staples are driven into the media along the finishing operation axis, which is positioned at the center of the media parallel to the reference edge. Page rotation does not affect the placement of a saddle stitch.\n\nSingle values\n\nElement 1: Reference edge\n\nSpecifies the reference edge to be used for a saddle stitch. A saddle stitch is formed by having one or more staples driven into the media along the finishing operation axis, which is positioned at the center of the media parallel to the reference edge.\n\nElement 2: Number of staples\n\nSpecifies the number of staples that are to be applied along the finishing operation axis.\n\nElement 3: Staple offsets\n\nSpecifies the offset of the staples along the finishing operation axis. The offset is measured from the point where the finishing operation axis intersects either the bottom edge or the left edge of the media, toward the center of the media. Each consecutive value is used to position a single finishing operation centered on the specified point on the finishing operation axis.",
       "inputType": "group",
       "required": false,
       "groupKind": "elements",
@@ -1376,6 +1414,7 @@
     {
       "name": "FNTRSL",
       "description": "Font resolution for formatting",
+      "help": "Font resolution for formatting (RNTRSL)\n\nSpecifies the resolution PSF/400 uses when printing to a multiple resolution printer configured to report multiple resolutions, but the spooled file does not specify the font metrics and resolution or the font is not available at the resolution that is contained in the spooled file.\n\nFor more information regarding the algorithm used for searching a library list for a font resource, see the Printer Device Programming manual section entitled User and Device Resource Library Lists in the chapter called Working With PSF configuration objects.",
       "inputType": "dropdown",
       "required": false,
       "attributes": {
@@ -1396,6 +1435,7 @@
     {
       "name": "DFRWRT",
       "description": "Defer write",
+      "help": "Defer write (DFRWRT)\n\nSpecifies whether output is held in the system buffer before being sent to the printer.\n\nIf *NO is specified on this parameter and if *YES is specified on the SPOOL parameter and if *IMMED is specified on the Spooled output schedule (SCHEDULE) parameter, output is held in the buffer until a page of output is available or until the system buffer is full.",
       "inputType": "dropdown",
       "required": false,
       "attributes": {
@@ -1416,6 +1456,7 @@
     {
       "name": "SPOOL",
       "description": "Spool the data",
+      "help": "Spool the data (SPOOL)\n\nSpecifies whether the output data for the printer device file is spooled.",
       "inputType": "dropdown",
       "required": false,
       "attributes": {
@@ -1436,6 +1477,7 @@
     {
       "name": "OUTQ",
       "description": "Output queue",
+      "help": "Output queue (OUTQ)\n\nSpecifies the output queue used for spooled files that specify OUTQ(*JOB). This parameter applies only to printer files that have *JOB specified for the OUTQ parameter.\n\nSingle values\n\nQualifier 1: Output queue\n\nQualifier 2: Library",
       "inputType": "group",
       "required": false,
       "groupKind": "qualified",
@@ -1474,7 +1516,7 @@
     {
       "name": "FORMTYPE",
       "description": "Form type",
-      "help": "指定できる特殊値: *STD",
+      "help": "Form type (FORMTYPE)\n\nSpecifies the type of forms used in the printer for printed output that is produced using this device file. If a form type other than *STD is specified, the system sends a message that identifies the form type to the system operator when the output is produced, and requests that the specified type of forms be put in the printer. This parameter overrides the form type value specified in the printer file or in other called OVRPRTF commands.\n\n指定できる特殊値: *STD",
       "inputType": "text",
       "required": false,
       "attributes": {
@@ -1486,6 +1528,7 @@
     {
       "name": "COPIES",
       "description": "Copies",
+      "help": "Copies (COPIES)\n\nSpecifies, for spooled output only, the number of copies of the output being printed.",
       "inputType": "number",
       "required": false,
       "attributes": {
@@ -1496,6 +1539,7 @@
     {
       "name": "PAGERANGE",
       "description": "Page range to print",
+      "help": "Page range to print (PAGERANGE)\n\nSpecifies, for spooled output files only, the starting and ending pages to print.\n\nElement 1: Starting page\n\nElement 2: Ending page",
       "inputType": "group",
       "required": false,
       "groupKind": "elements",
@@ -1528,7 +1572,7 @@
     {
       "name": "MAXRCDS",
       "description": "Max spooled output records",
-      "help": "指定できる特殊値: *NOMAX",
+      "help": "Max spooled output records (MAXRCDS)\n\nSpecifies, for spooled output only, the maximum number of records that can be in the spooled file for jobs using the printer file. This parameter overrides the value specified in the printer file or in other called OVRPRTF commands.\n\n指定できる特殊値: *NOMAX",
       "inputType": "text",
       "required": false,
       "attributes": {
@@ -1540,6 +1584,7 @@
     {
       "name": "FILESEP",
       "description": "File separators",
+      "help": "File separators (FILESEP)\n\nSpecifies, for spooled output only, the number of separator pages placed at the beginning of each printed file, including the pages between multiple copies of the same output. Each separator page has the following items printed on it: file name, file number, job name, user name, and the job number. This parameter overrides the separator value specified in the printer file or in other called OVRPRTF commands.",
       "inputType": "number",
       "required": false,
       "attributes": {
@@ -1550,6 +1595,7 @@
     {
       "name": "SCHEDULE",
       "description": "Spooled output schedule",
+      "help": "Spooled output schedule (SCHEDULE)\n\nSpecifies, for spooled output files only, when the spooled output file is made available to a spooling writer. This parameter overrides the scheduling value specified in the printer file or in other called OVRPRTF commands.",
       "inputType": "dropdown",
       "required": false,
       "attributes": {
@@ -1574,6 +1620,7 @@
     {
       "name": "HOLD",
       "description": "Hold spooled file",
+      "help": "Hold spooled file (HOLD)\n\nSpecifies, for spooled output files only, whether the spooled file is held. The spooled file can be released by using the Release Spooled File (RLSSPLF) command.\n\nNote: This parameter overrides the hold value specified in the printer file or in other called OVRPRTF commands.",
       "inputType": "dropdown",
       "required": false,
       "attributes": {
@@ -1594,6 +1641,7 @@
     {
       "name": "SAVE",
       "description": "Save spooled file",
+      "help": "Save spooled file (SAVE)\n\nSpecifies, for spooled output only, whether the spooled file is saved after the output is produced. This parameter overrides the save value specified in the printer file or in other called OVRPRTF commands.",
       "inputType": "dropdown",
       "required": false,
       "attributes": {
@@ -1614,6 +1662,7 @@
     {
       "name": "OUTPTY",
       "description": "Output priority (on OUTQ)",
+      "help": "Output priority (on OUTQ) (OUTPTY)\n\nSpecifies the output priority for spooled output files that are produced by this job. The highest priority is 1 and the lowest priority is 9.",
       "inputType": "dropdown",
       "required": false,
       "attributes": {
@@ -1630,7 +1679,7 @@
     {
       "name": "USRDTA",
       "description": "User data",
-      "help": "指定できる特殊値: *SOURCE",
+      "help": "User data (USRDTA)\n\nSpecifies, for spooled output, user-specified data that identifies the file.\n\n指定できる特殊値: *SOURCE",
       "inputType": "text",
       "required": false,
       "attributes": {
@@ -1642,6 +1691,7 @@
     {
       "name": "SPLFOWN",
       "description": "Spool file owner",
+      "help": "Spool file owner (SPLFOWN)\n\nSpecifies, for spooled output only, who the owner of the spooled file is.",
       "inputType": "dropdown",
       "required": false,
       "attributes": {
@@ -1670,7 +1720,7 @@
     {
       "name": "USRDFNOPT",
       "description": "User Defined Option",
-      "help": "指定できる特殊値: *NONE",
+      "help": "User Defined Option (USRDFNOPT)\n\nSpecifies, for spooled output only, one or more user-defined options to be used by user applications or user-specified programs that process spooled files. A maximum of four user-defined options can be specified.\n\nThis parameter overrides the user-defined options specified in the printer file or in other called OVRPRTF commands.\n\nSingle values\n\nOther values (up to 4 repetitions)\n\n指定できる特殊値: *NONE",
       "inputType": "text",
       "required": false,
       "attributes": {
@@ -1683,7 +1733,7 @@
     {
       "name": "USRDFNDTA",
       "description": "User Defined Data",
-      "help": "指定できる特殊値: *NONE",
+      "help": "User Defined Data (USRDFNDTA)\n\nSpecifies, for spooled output only, the user-defined data to be used by user applications or user-specified programs that process spooled files.\n\nThis parameter overrides the user-defined data specified in the printer file or in other called OVRPRTF commands.\n\n指定できる特殊値: *NONE",
       "inputType": "text",
       "required": false,
       "attributes": {
@@ -1695,6 +1745,7 @@
     {
       "name": "USRDFNOBJ",
       "description": "User Defined Object",
+      "help": "User Defined Object (USRDFNOBJ)\n\nSpecifies, for spooled output only, the user-defined object to be used by user applications or user-specified programs that process spooled files.\n\nThis parameter overrides the user-defined object name specified in the printer file or in other called OVRPRTF commands.\n\nSingle values\n\nElement 1: Object\n\nQualifier 1: Object\n\nQualifier 2: Library\n\nElement 2: Object type",
       "inputType": "group",
       "required": false,
       "groupKind": "elements",
@@ -1780,7 +1831,7 @@
     {
       "name": "SPLFNAME",
       "description": "Spool file name",
-      "help": "指定できる特殊値: *FILE",
+      "help": "Spool file name (SPLFNAME)\n\nSpecifies, for spooled output only, the spooled output file name.\n\n指定できる特殊値: *FILE",
       "inputType": "text",
       "required": false,
       "attributes": {
@@ -1793,6 +1844,7 @@
     {
       "name": "EXPDATE",
       "description": "Expiration date for file",
+      "help": "Expiration date for file (EXPDATE)\n\nSpecifies the expiration date for the spooled file. The spooled file will expire at 23:59:59, system local time on the date specified.",
       "inputType": "dropdown",
       "required": false,
       "attributes": {
@@ -1814,6 +1866,7 @@
     {
       "name": "DAYS",
       "description": "Days until file expires",
+      "help": "Days until file expires (DAYS)\n\nSpecifies the number of days to keep the spooled file.\n\nNote: A value must be specified for this parameter if the Expiration date for file (EXPDATE) parameter has a value of *DAYS. If the EXPDATE parameter has a value other than *DAYS, no value is allowed for this parameter.",
       "inputType": "number",
       "required": false,
       "attributes": {
@@ -1824,6 +1877,7 @@
     {
       "name": "IGCDTA",
       "description": "User specified DBCS data",
+      "help": "User specified DBCS data (IGCDTA)\n\nSpecifies, for program-described files, whether the file processes double-byte character set (DBCS) data. Specifies, for externally described files, the DBCS attributes of the file.\n\nFor program-described files:\n\nFor externally-described files:",
       "inputType": "dropdown",
       "required": false,
       "attributes": {
@@ -1844,6 +1898,7 @@
     {
       "name": "IGCEXNCHR",
       "description": "DBCS extension characters",
+      "help": "DBCS extension characters (IGCEXNCHR)\n\nSpecifies whether the system processes double-byte character set (DBCS) extension characters.",
       "inputType": "dropdown",
       "required": false,
       "attributes": {
@@ -1864,6 +1919,7 @@
     {
       "name": "IGCCHRRTT",
       "description": "DBCS character rotation",
+      "help": "DBCS character rotation (IGCCHRRTT)\n\nSpecifies whether the printer should rotate double-byte character set (DBCS) data 90 degrees counterclockwise when printing. The system prints rotated DBCS characters vertically so that they appear in proper reading sequence. Alphanumeric characters are not rotated.",
       "inputType": "dropdown",
       "required": false,
       "attributes": {
@@ -1884,6 +1940,7 @@
     {
       "name": "IGCCPI",
       "description": "DBCS characters per inch",
+      "help": "DBCS characters per inch (IGCCPI)\n\nSpecifies the printer character density of double-byte character set (DBCS) data, in characters per inch (cpi).",
       "inputType": "dropdown",
       "required": false,
       "attributes": {
@@ -1904,6 +1961,7 @@
     {
       "name": "IGCSOSI",
       "description": "DBCS SO/SI spacing",
+      "help": "DBCS SO/SI spacing (IGCSOSI)\n\nSpecifies how the system prints shift-in and shift-out characters.",
       "inputType": "dropdown",
       "required": false,
       "attributes": {
@@ -1928,6 +1986,7 @@
     {
       "name": "IGCCDEFNT",
       "description": "DBCS coded font",
+      "help": "DBCS coded font (IGCCDEFNT)\n\nSpecifies the coded font that the system uses for double-byte character set (DBCS) printing. This parameter is only used when using printers configured with AFP(*YES).\n\nSingle values\n\nElement 1: DBCS coded font\n\nQualifier 1: DBCS coded font\n\nQualifier 2: Library\n\nElement 2: Point size",
       "inputType": "group",
       "required": false,
       "groupKind": "elements",
@@ -1986,7 +2045,7 @@
     {
       "name": "TOSTMF",
       "description": "To stream file",
-      "help": "指定できる特殊値: *NONE",
+      "help": "To stream file (TOSTMF)\n\nSpecifies the directory or stream file where the output data is to be written. All directories in the path name must exist. New directories are not created. This parameter is only valid when the Workstation customizing object (WSCST) parameter is not *NONE, or the Printer device type (DEVTYPE) parameter is *AFPDS.\n\nIf the TOSTMF value refers to a directory, the system will create a stream file in that directory with a unique name derived from the printer file name. If the TOSTMF value is a file name, a stream file by that name must not already exist.\n\n指定できる特殊値: *NONE",
       "inputType": "text",
       "required": false,
       "attributes": {
@@ -1999,6 +2058,7 @@
     {
       "name": "WSCST",
       "description": "Workstation customizing object",
+      "help": "Workstation customizing object (WSCST)\n\nSpecifies the workstation customizing object to use to transform the printer file output to final form before writing it to a stream file. This parameter is only valid when the To stream file (TOSTMF) parameter is not *NONE.\n\nSingle values\n\nQualifier 1: Workstation customizing object\n\nQualifier 2: Library",
       "inputType": "group",
       "required": false,
       "groupKind": "qualified",
@@ -2037,7 +2097,7 @@
     {
       "name": "WAITFILE",
       "description": "Maximum file wait time",
-      "help": "指定できる特殊値: *IMMED, *CLS",
+      "help": "Maximum file wait time (WAITFILE)\n\nSpecifies the number of seconds that the program waits for the file resources to be allocated when the file is opened, or the device or session resources to be allocated when an acquire operation is performed to the file. If the file resources cannot be allocated in the specified wait time, an error message is sent to the program.\n\n指定できる特殊値: *IMMED, *CLS",
       "inputType": "text",
       "required": false,
       "attributes": {
@@ -2049,6 +2109,7 @@
     {
       "name": "LVLCHK",
       "description": "Record format level check",
+      "help": "Record format level check (LVLCHK)\n\nSpecifies whether the level of the device file is checked when the file is opened by a program. For this check, which is done while the file is opened, the system compares the record format identifiers of each record format used by the program with the corresponding identifiers in the device file. Because the same record format name can exist in more than one file, each record format is given a unique internal system identifier when the format is created. Level checking cannot be done unless the program contains the record format identifiers. This command cannot override level checking from *NO to *YES.",
       "inputType": "dropdown",
       "required": false,
       "attributes": {
@@ -2065,6 +2126,7 @@
     {
       "name": "SECURE",
       "description": "Secure from other overrides",
+      "help": "Secure from other overrides (SECURE)\n\nSpecifies whether this file is safe from the effects of previously called file override commands.",
       "inputType": "dropdown",
       "required": false,
       "defaultValue": "*NO",
@@ -2086,6 +2148,7 @@
     {
       "name": "OVRSCOPE",
       "description": "Override scope",
+      "help": "Override scope (OVRSCOPE)\n\nSpecifies the extent of influence (scope) of the override.",
       "inputType": "dropdown",
       "required": false,
       "defaultValue": "*ACTGRPDFN",
@@ -2111,6 +2174,7 @@
     {
       "name": "SHARE",
       "description": "Share open data path",
+      "help": "Share open data path (SHARE)\n\nSpecifies whether the open data path (ODP) is shared with other programs in the same routing step. When an ODP is shared, the programs accessing the file share facilities such as the file status and the buffer.",
       "inputType": "dropdown",
       "required": false,
       "attributes": {
@@ -2131,6 +2195,7 @@
     {
       "name": "OPNSCOPE",
       "description": "Open scope",
+      "help": "Open scope (OPNSCOPE)\n\nSpecifies the extent of influence (scope) of the open operation.",
       "inputType": "dropdown",
       "required": false,
       "attributes": {
