@@ -1,0 +1,251 @@
+<h1 class="title topictitle1">表示装置ファイルの COLOR (カラー) キーワード</h1><div id="lastModifiedDate"><span>Last Updated</span>: 2021-04-13</div>
+<div class="body refbody"><p class="shortdesc">このキーワードを使用して、カラー表示装置でのフィールドの色を指定します。</p>
+<div class="section"><p class="p">これはフィールド・レベル・キーワードで、カラー表示装置 (3179、3197-C1 型および C2 型、3477-FC 型、3486、3487-HC 型、3488 <a name="fnsrc_1" href="#fntarg_1"><sup>1</sup></a> または 5292 カラー表示装置のみ) でのフィールドの色を指定するために使用します。
+このキーワードは、モノクロ表示装置で表示されるフィールドについて選択された場合には無視されます。
+COLOR キーワードに指定できるパラメーター値は 1 つだけですが、各フィールドについて、複数の COLOR キーワードを指定することができます。</p>
+<p class="p">キーワードの形式は次のとおりです。</p>
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code>COLOR(GRN | WHT | RED | TRQ | YLW | PNK | BLU)</code></pre></div><div class="docs--copy-btn"></div></div>
+<p class="p">指定できるパラメーター値は次のいずれかです。</p>
+<dl class="dl"><dt class="dthd"><strong>値</strong></dt>
+<dd class="ddhd"><strong>意味</strong></dd>
+<dt class="dt dlterm">GRN</dt>
+<dd class="dd">緑</dd>
+<dt class="dt dlterm">WHT</dt>
+<dd class="dd">白</dd>
+<dt class="dt dlterm">RED</dt>
+<dd class="dd">赤</dd>
+<dt class="dt dlterm">TRQ</dt>
+<dd class="dd">空</dd>
+<dt class="dt dlterm">YLW</dt>
+<dd class="dd">黄</dd>
+<dt class="dt dlterm">PNK</dt>
+<dd class="dd">ピンク</dd>
+<dt class="dt dlterm">BLU</dt>
+<dd class="dd">青</dd>
+</dl>
+<p class="p">緑はカラー表示装置におけるフィールドのデフォルトの色なので、COLOR(GRN) を特に指定する必要があるのは、他の指定の影響で変更されるフィールドの色を緑のままにしておきたい場合だけです。
+フィールドに DSPATR(HI)、DSPATR(CS)、または DSPATR(BL) を指定した場合は、COLOR(GRN) も同時に指定しなければ、そのフィールドの色は変更されます。</p>
+<p class="p">このキーワードについては、オプション標識を使用することができます。</p>
+<p class="p">1 つのフィールドに COLOR キーワードを 2 回以上指定する場合には、個々の COLOR キーワードにオプション標識を指定しなければなりません。
+1 つの出力命令について 2 つ以上の COLOR キーワードが有効になっている場合には、<span class="keyword">IBM® i</span> オペレーティング・システムは、DDS で最初に指定されている COLOR キーワードを使用します (<a class="xref" href="#rzakcmstdfcolor__rzakcmstdfcolorex1">例 1</a> を参照)。1 つのフィールドに、同じ色を 2 回以上指定することはできません。</p>
+<p class="p">1 つの表示装置ファイルに指定できる COLOR キーワードの数は、画面属性配列と呼ばれるシステムの内部記憶域の最大サイズによって制限されています。表示装置ファイル全体に対する画面属性配列の最大サイズは 32 763 バイトです。
+ファイルに指定する個々の COLOR キーワードは、この配列内の記憶域の多くの部分を使用します。</p>
+<p class="p">1 つのファイルで、特に条件付けのために、多数の COLOR キーワードを使用する場合、これらのキーワードが必要とする内部記憶域の量を考慮すべきです。32 763 バイトの制限を超えると、ファイルの作成時にメッセージ CPF0673 (<samp class="ph systemoutput">ファイル中の COLOR キーワードまたは DSPATR キーワードが多すぎる</samp>) が出されます。
+特定の COLOR キーワードに必要な記憶域の量を判断するには、次のアルゴリズムを使用してください。</p>
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code>(# of conditions for the keyword) x 2 + 2 + 29 = # of bytes required
+in the screen
+attribute array
+for the keyword</code></pre></div><div class="docs--copy-btn"></div></div>
+<p class="p">例えば、ファイルに 8 個のフィールドがあり、各フィールドに 9 個の COLOR キーワードがあり、各 COLOR キーワードは 3 つの条件を使用してオプション付けされているとします。
+上記のアルゴリズムを使用すると、各 COLOR キーワードの画面属性配列に 520 バイト必要です。</p>
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code>3 x 2 + 2 + 29 = 520 バイト</code></pre></div><div class="docs--copy-btn"></div></div>
+<p class="p">フィールドごとに 9 個の COLOR キーワードがあり、かつそのファイルには 8 個のフィールドがあるため、画面属性配列に必要な記憶域の合計は 37 440 バイト (520 x 9 キーワード x 8 フィールド) です。37 440 は 32 763 より大きいため、ファイルの作成時にメッセージ CPF0673 が出されます。</p>
+</div>
+<div class="section"><h2 class="title sectiontitle">COLOR キーワードと DSPATR キーワードの併用</h2><p class="p">COLOR キーワードと DSPATR キーワードの組み合わせによっては、両方のキーワードが効力を持つ場合があります。そのような組み合わせを以下に示します。</p>
+<dl class="dl"><dt class="dthd"><strong>COLOR</strong></dt>
+<dd class="ddhd"><strong>DSPATR</strong></dd>
+<dt class="dt dlterm">不特定</dt>
+<dd class="dd">RI (反転表示)</dd>
+<dt class="dt dlterm">不特定</dt>
+<dd class="dd">UL (下線)</dd>
+<dt class="dt dlterm">RED</dt>
+<dd class="dd">BL (明滅フィールド)</dd>
+<dt class="dt dlterm">RED</dt>
+<dd class="dd">BL および RI</dd>
+<dt class="dt dlterm">RED</dt>
+<dd class="dd">BL および UL</dd>
+<dt class="dt dlterm">RED</dt>
+<dd class="dd">RI および UL</dd>
+<dt class="dt dlterm">GRN</dt>
+<dd class="dd">RI および UL</dd>
+<dt class="dt dlterm">TRQ</dt>
+<dd class="dd">RI および UL</dd>
+<dt class="dt dlterm">PNK</dt>
+<dd class="dd">RI および UL</dd>
+</dl>
+<p class="p">例えば、COLOR(YLW) と DSPATR(RI) の両方が効力を持っている場合には、フィールドは、黄色の背景に黒い文字で表示されます。</p>
+<p class="p">COLOR キーワードと DSPATR キーワードの組み合わせによっては、パラメーター値のいくつかが無視される場合があります。そのような組み合わせを次の表に示します。</p>
+<div class="tablenoborder"><div class="cds--data-table-container"><table id="parm_table0" summary="Parameters" cellpadding="4" cellspacing="0" class="table cds--data-table" rules="all" frame="border" border="1"><thead class="thead alignleft"><tr class="row"><th scope="col" class="entry" width="33.33333333333333%" id="d19236e205"><div class="cds--table-header-label"> COLOR</div></th>
+<th scope="col" class="entry" width="33.33333333333333%" id="d19236e207"><div class="cds--table-header-label"> DSPATR</div></th>
+<th scope="col" class="entry" width="33.33333333333333%" id="d19236e209"><div class="cds--table-header-label"> 結果</div></th>
+</tr>
+</thead>
+<tbody class="tbody"><tr class="row"><td class="entry valigntop alignleft" width="33.33333333333333%" headers="d19236e205 "><p class="lines">不特定<br>
+不特定<br>
+不特定</p>
+</td>
+<td class="entry valigntop alignleft" width="33.33333333333333%" headers="d19236e207 "><p class="lines">ND (非表示)<br>
+HI (高輝度)<br>
+CS (桁区切り線)</p>
+</td>
+<td class="entry valigntop alignleft" width="33.33333333333333%" headers="d19236e209 "><p class="lines">すべての色が無視されます。<br>
+HI は無視されます。<br>
+CS は無視されます。<sup class="ph sup">1</sup></p>
+</td>
+</tr>
+<tr class="row"><td class="entry valigntop alignleft" width="33.33333333333333%" headers="d19236e205 "><p class="lines">GRN<br>
+WHT<br>
+TRQ<br>
+YLW<br>
+PNK<br>
+BLU</p>
+</td>
+<td class="entry valigntop alignleft" width="33.33333333333333%" headers="d19236e207 "><p class="lines">BL<br>
+BL<br>
+BL<br>
+BL<br>
+BL<br>
+BL</p>
+</td>
+<td class="entry valigntop alignleft" width="33.33333333333333%" headers="d19236e209 "><p class="lines">BL は無視されます。<sup class="ph sup">2</sup><br>
+BL は無視されます。<sup class="ph sup">2</sup><br>
+BL は無視されます。<sup class="ph sup">2</sup><br>
+BL は無視されます。<sup class="ph sup">2</sup><br>
+BL は無視されます。<sup class="ph sup">2</sup><br>
+BL は無視されます。<sup class="ph sup">2</sup></p>
+</td>
+</tr>
+<tr class="row"><td class="entry valigntop alignleft" width="33.33333333333333%" headers="d19236e205 ">RED</td>
+<td class="entry valigntop alignleft" width="33.33333333333333%" headers="d19236e207 ">RI および BL および UL</td>
+<td class="entry valigntop alignleft" width="33.33333333333333%" headers="d19236e209 ">UL は無視されます。<sup class="ph sup">3</sup></td>
+</tr>
+<tr class="row"><td class="entry valigntop alignleft" width="33.33333333333333%" headers="d19236e205 ">YLW BLU WHT</td>
+<td class="entry valigntop alignleft" width="33.33333333333333%" headers="d19236e207 "><p class="lines">RI および UL<br>
+RI および UL<br>
+RI および UL</p>
+</td>
+<td class="entry valigntop alignleft" width="33.33333333333333%" headers="d19236e209 "><p class="lines">RI は無視されます。<br>
+RI は無視されます。<br>
+RI は無視されます。</p>
+</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p class="p"><sup class="ph sup">1</sup>空色および黄色の各フィールドには、DSPATR(CS) の指定がない場合でも、桁区切り線が入ります。
+(桁区切り線は、カラー表示装置では、各文字の間に小さい青いドットとして表示されます。
+表示装置のユーザーがカラー表示装置を行間隔縮小モードにすると、このドットは消えます。)</p>
+<p class="p"><sup class="ph sup">2</sup>明滅させることができる色は、赤だけです。</p>
+<p class="p"><sup class="ph sup">3</sup>下線は入力可能フィールドからも除去されます。デフォルトにより、通常は入力可能フィールドに下線が付いています。</p>
+<p class="p">例えば、COLOR(YLW) と DSPATR(HI) が両方とも同じ出力命令で選択された場合には、フィールドは、黄色にはなりますが、高輝度では表示されません。</p>
+</div>
+<div class="section"><h2 class="title sectiontitle">カラー表示装置での DSPATR キーワードの使用</h2><p class="p">COLOR キーワードを指定せずに DSPATR キーワードを指定すると、フィールドは次の表に示されている色でカラー表示装置に表示され、指定した表示属性は無視されます。</p>
+<div class="tablenoborder"><div class="cds--data-table-container"><table id="parm_table1" summary="Parameters" cellpadding="4" cellspacing="0" class="table cds--data-table" rules="all" frame="border" border="1"><caption class="cds--data-table-header"><span class="tablecap cds--data-table-header__title">表 1. カラー表示装置での DSPATR キーワード</span></caption><thead class="thead alignleft"><tr class="row"><th scope="col" class="entry" width="25%" id="d19236e299"><div class="cds--table-header-label">DSPATR(CS) 表示属性を<br>選択</div></th>
+<th scope="col" class="entry" width="25%" id="d19236e303"><div class="cds--table-header-label">DSPATR(HI) 表示属性を<br>選択</div></th>
+<th scope="col" class="entry" width="25%" id="d19236e307"><div class="cds--table-header-label">DSPATR(BL) 表示属性を<br>選択</div></th>
+<th scope="col" class="entry" width="25%" id="d19236e311"><div class="cds--table-header-label">カラー表示装置における色</div></th>
+</tr>
+</thead>
+<tbody class="tbody"><tr class="row"><td class="entry valigntop alignleft" width="25%" headers="d19236e299 ">&nbsp;</td>
+<td class="entry valigntop alignleft" width="25%" headers="d19236e303 ">&nbsp;</td>
+<td class="entry valigntop alignleft" width="25%" headers="d19236e307 ">&nbsp;</td>
+<td class="entry valigntop alignleft" width="25%" headers="d19236e311 ">緑 (通常)</td>
+</tr>
+<tr class="row"><td class="entry valigntop alignleft" width="25%" headers="d19236e299 ">X</td>
+<td class="entry valigntop alignleft" width="25%" headers="d19236e303 ">&nbsp;</td>
+<td class="entry valigntop alignleft" width="25%" headers="d19236e307 ">&nbsp;</td>
+<td class="entry valigntop alignleft" width="25%" headers="d19236e311 ">空<sup class="ph sup">1</sup></td>
+</tr>
+<tr class="row"><td class="entry valigntop alignleft" width="25%" headers="d19236e299 ">&nbsp;</td>
+<td class="entry valigntop alignleft" width="25%" headers="d19236e303 ">X</td>
+<td class="entry valigntop alignleft" width="25%" headers="d19236e307 ">&nbsp;</td>
+<td class="entry valigntop alignleft" width="25%" headers="d19236e311 ">白</td>
+</tr>
+<tr class="row"><td class="entry valigntop alignleft" width="25%" headers="d19236e299 ">&nbsp;</td>
+<td class="entry valigntop alignleft" width="25%" headers="d19236e303 ">&nbsp;</td>
+<td class="entry valigntop alignleft" width="25%" headers="d19236e307 ">X</td>
+<td class="entry valigntop alignleft" width="25%" headers="d19236e311 ">赤、明滅なし</td>
+</tr>
+<tr class="row"><td class="entry valigntop alignleft" width="25%" headers="d19236e299 ">&nbsp;</td>
+<td class="entry valigntop alignleft" width="25%" headers="d19236e303 ">X</td>
+<td class="entry valigntop alignleft" width="25%" headers="d19236e307 ">X</td>
+<td class="entry valigntop alignleft" width="25%" headers="d19236e311 ">赤、明滅あり</td>
+</tr>
+<tr class="row"><td class="entry valigntop alignleft" width="25%" headers="d19236e299 ">X</td>
+<td class="entry valigntop alignleft" width="25%" headers="d19236e303 ">X</td>
+<td class="entry valigntop alignleft" width="25%" headers="d19236e307 ">&nbsp;</td>
+<td class="entry valigntop alignleft" width="25%" headers="d19236e311 ">黄<sup class="ph sup">1</sup></td>
+</tr>
+<tr class="row"><td class="entry valigntop alignleft" width="25%" headers="d19236e299 ">X</td>
+<td class="entry valigntop alignleft" width="25%" headers="d19236e303 ">&nbsp;</td>
+<td class="entry valigntop alignleft" width="25%" headers="d19236e307 ">X</td>
+<td class="entry valigntop alignleft" width="25%" headers="d19236e311 ">ピンク</td>
+</tr>
+<tr class="row"><td class="entry valigntop alignleft" width="25%" headers="d19236e299 ">X</td>
+<td class="entry valigntop alignleft" width="25%" headers="d19236e303 ">X</td>
+<td class="entry valigntop alignleft" width="25%" headers="d19236e307 ">X</td>
+<td class="entry valigntop alignleft" width="25%" headers="d19236e311 ">青</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<sup class="ph sup">1</sup>ワークステーション・ユーザーがカラー表示装置を行間隔縮小モードにしている場合以外は、空色および黄色の各フィールドは、桁区切り線 (必ず青) とともに表示されます。<p class="p">例えば、あるフィールドについて DSPATR(HI) を選択し、COLOR キーワードを指定しないと、そのフィールドは、カラー表示装置で白で表示され、強調表示されません。</p>
+<p class="p">COLOR キーワードは、モノクロ表示装置用に選択されると無視されます。</p>
+</div>
+<div class="example" id="rzakcmstdfcolor__rzakcmstdfcolorex1"><h2 class="title sectiontitle">例 1</h2><p class="p">次の例では、フィールドに COLOR および DSPATR を指定する影響を示します。</p>
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code>|...+....1....+....2....+....3....+....4....+....5....+....6....+....7....+....8
+00010A          R RECORD                    1
+00020A                                  1  2'Column Heading'
+00030A                                      DSPATR(HI)
+00040A       2  FIELD1         5      3  2
+00050A       3  FIELD2         5   I  5  2COLOR(YLW)
+00060A       4  FIELD3         5      7  2DSPATR(BL)
+00070A       5  FIELD4         5   I  9  2
+00080A  42                                  COLOR(YLW)
+00090A  43                                  COLOR(TRQ)
+00100A  44                                  COLOR(BLU)
+     A</code></pre></div><div class="docs--copy-btn"></div></div>
+<dl class="dl"><dt class="dt dlterm">1</dt>
+<dd class="dd">固定情報フィールド <em class="ph i">Column Heading</em> は、カラー表示装置では白で表示され、モノクロ表示装置では強調表示されます。</dd>
+<dt class="dt dlterm">2</dt>
+<dd class="dd">FIELD1 は、すべての表示画面で緑になります。</dd>
+<dt class="dt dlterm">3</dt>
+<dd class="dd">FIELD2 は、カラー表示装置では黄色で表示され、青の桁区切り線が付きます。
+このフィールドは入力可能フィールドなので、すべての表示画面上で下線が付きます。</dd>
+<dt class="dt dlterm">4</dt>
+<dd class="dd">FIELD3 は、カラー表示装置では赤で、明滅しません。モノクロ表示装置では明滅します。</dd>
+<dt class="dt dlterm">5</dt>
+<dd class="dd">FIELD4 は、カラー表示装置では、次に示す 4 つの色のいずれかで表示されます。<ul class="ul cds--list--unordered"><li class="li cds--list__item">標識がすべてオフの場合には、緑。</li>
+<li class="li cds--list__item">標識 42 がオンの場合には、黄 (他の標識の設定には無関係)。</li>
+<li class="li cds--list__item">標識 43 がオンで標識 42 がオフの場合には、空色。</li>
+<li class="li cds--list__item">標識 44 だけがオンの場合には、青。</li>
+</ul>
+<p class="p">モノクロ表示装置では、FIELD4 は緑です。また、すべての表示装置で、FIELD4 には下線が付きます。</p>
+</dd>
+</dl>
+</div>
+<div class="example"><h2 class="title sectiontitle">例 2</h2> <p class="p">次の例では、色とモノクロの両方の表示装置で入力可能フィールドとして使用するフィールドの指定方法の一例を示します。</p>
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code>|...+....1....+....2....+....3....+....4....+....5....+....6....+....7....+....8
+00010A          R RECORD
+00020A 2 1      FIELDA         5   B  2  2COLOR(TRQ)
+00030A  44                                  ERRMSG('Record not found' 44)
+     A</code></pre></div><div class="docs--copy-btn"></div></div>
+<dl class="dl"><dt class="dt dlterm">1</dt>
+<dd class="dd">カラー表示装置では、FIELDA は空色で、青の桁区切り線が付きます。モノクロ表示装置では緑です。</dd>
+<dt class="dt dlterm">2</dt>
+<dd class="dd">FIELDA が表示される時点でオプション標識 44 がオンの場合には、ERRMSG キーワードが効力を得て、画面は次のようになります。<ul class="ul cds--list--unordered"><li class="li cds--list__item">カラー表示装置では、FIELDA は空色で、反転表示されます。
+(COLOR キーワードを指定しているので、強調表示はされません。)
+エラー・メッセージ <samp class="ph systemoutput">Record not found</samp> は、メッセージ行に白で表示されます。</li>
+<li class="li cds--list__item">モノクロ表示装置では、FIELDA は強調表示され、反転表示されます。
+エラー・メッセージ <samp class="ph systemoutput">Record not found</samp> も、強調表示でメッセージ行に表示されます。</li>
+</ul>
+</dd>
+</dl>
+</div>
+</div>
+<div class="related-links ibm-padding-top-1 ibm-padding-bottom-2 bx--row bottom-section-parent" aria-label="bottom related links">
+<div class="familylinks ibm-margin-bottom-1">
+<div class="parentlink"><strong>親トピック:</strong> <div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a class="link bottom-section-link" href="/docs/ja/ssw_ibm_i_74/rzakc/rzakcmstkeyent.htm" title="表示装置ファイルを定義するキーワード項目は、45 - 80 桁目 (機能欄) に記入します。">表示装置ファイルの DDS キーワード項目 (45 - 80 桁目)</a></div></div>
+</div>
+<div class="relinfo relref ibm-margin-bottom-1"><strong>関連資料</strong>:<br>
+<div><div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a class="link bottom-section-link" href="/docs/ja/ssw_ibm_i_74/rzakc/rzakcmstchcava.htm" title="これはフィールド・レベル・キーワードで、メニュー・バー、押しボタン、選択フィールド、あるいは、サブファイルの単一選択項目選択リストまたは複数選択項目選択リスト内の選択可能な項目を表示するときに使用される色または表示属性を指定するために使用します。">表示装置ファイルの CHCAVAIL (選択可能項目のカラー/表示属性) キーワード</a></div></div>
+<div><div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a class="link bottom-section-link" href="/docs/ja/ssw_ibm_i_74/rzakc/rzakcmstchcslt.htm" title="これはフィールド・レベル・キーワードで、メニュー・バーまたは選択フィールド内の選択された項目の表示時に使用される色または表示属性を指定するのに使用します。">表示装置ファイルの CHCSLT (選択された項目のカラー/表示属性) キーワード</a></div></div>
+<div><div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a class="link bottom-section-link" href="/docs/ja/ssw_ibm_i_74/rzakc/rzakcmstchcuna.htm" title="これはフィールド・レベル・キーワードで、選択フィールドまたは押しボタン・フィールド内の選択不可能な項目の表示時に使用される色または表示属性を指定するのに使用します。">表示装置ファイルの CHCUNAVAIL (選択不可能な項目のカラー/表示属性) キーワード</a></div></div>
+<div><div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a class="link bottom-section-link" href="/docs/ja/ssw_ibm_i_74/rzakc/rzakcmstdfdspat.htm" title="これはフィールド・レベル・キーワードで、定義中のフィールドについての 1 つ以上の表示属性を指定するために使用します。">表示装置ファイルの DSPATR (表示属性) キーワード</a></div></div>
+<div><div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a class="link bottom-section-link" href="/docs/ja/ssw_ibm_i_74/rzakc/rzakcmstentfld.htm" title="これはフィールド・レベル、レコード・レベル、またはファイル・レベル・キーワードであり、フィールドの主要な属性が、カーソルがフィールド内に置かれると、指定された属性に変わることを定義するのに使用します。">表示装置ファイルの ENTFLDATR (入力フィールド属性) キーワード</a></div></div>
+<div><div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a class="link bottom-section-link" href="/docs/ja/ssw_ibm_i_74/rzakc/rzakcmstdfems.htm" title="これらはフィールド・レベル・キーワードであり、メッセージ行に表示し、当該フィールドに関連付けるメッセージを識別するために、どちらか一方を使用します。">表示装置ファイルの ERRMSG (エラー・メッセージ) および ERRMSGID (エラー・メッセージ識別コード) キーワード</a></div></div>
+<div><div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a class="link bottom-section-link" href="/docs/ja/ssw_ibm_i_74/rzakc/rzakcmstmnubrs.htm" title="これはフィールド・レベル・キーワードで、メニュー・バー区切り線を形成するのに使用される色、表示属性、または文字を指定するのに、メニュー・バー・フィールドで使用します。">表示装置ファイルの MNUBARSEP (メニュー・バー区切り記号) キーワード</a></div></div>
+<div><div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a class="link bottom-section-link" href="/docs/ja/ssw_ibm_i_74/rzakc/rzakcmstwdwbord.htm" title="これはファイル・レベルまたはレコード・レベル・キーワードで、ウィンドウの枠を形成するための色、表示属性、および文字を指定するために使用します。">表示装置ファイルの WDWBORDER (ウィンドウ枠) キーワード</a></div></div>
+</div>
+</div><div class="fn"><a name="fntarg_1" href="#fnsrc_1"><sup>1</sup></a>  表示装置に接続されるモニターによって異なります。</div>
+

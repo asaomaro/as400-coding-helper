@@ -1,0 +1,75 @@
+<main role="main"><article role="article" aria-labelledby="rzakcmstdfmapval__title__1">
+<h1 class="topictitle1" id="rzakcmstdfmapval__title__1">MAPVAL (Map Values) keyword for display files</h1><div id="lastModifiedDate"><span>Last Updated</span>: 2026-07-13</div>
+
+
+
+<div class="body refbody"><p class="shortdesc"><span class="ph">You use this field-level keyword
+to map field data to a different value during input and output operations.</span></p>
+
+<div class="section"><p>This keyword is only valid with the date (L), time (T), or timestamp
+(Z) data types.</p>
+<div class="p">The format of the keyword is:  <div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>MAPVAL((program-value-1 system-value-1)
+      [(program-value-2 system-value-2) ...
+       (program-value-100 system-value-100)])]</code></pre></div><div class="docs--copy-btn"></div></div></div>
+<p>You can specify
+the program value and the system value either as explicit values or as the
+*BLANK or *CUR special values.</p>
+<div class="p">You must specify an explicit
+value within single quotation marks that matches the format and separator
+values for the corresponding field. The explicit value must also be a valid
+date or time. The following list indicates how the formats and separators
+are determined: <ul class="cds--list--unordered">
+<li class="cds--list__item">If the explicit value is a date (L) value, you must use
+the format that the DATFMT keyword specifies. If the DATFMT keyword is not
+specified or if DATFMT specifies *JOB, then you must use the *ISO format.
+Also, you must use the separator that the DATSEP keyword specifies. If the
+DATSEP keyword is not specified, or if DATSEP specifies the *JOB separator,
+a slash (/) must be used for the separator.</li>
+
+<li class="cds--list__item">If the explicit value is a time (T) value, you must use the format that
+the TIMFMT keyword specifies. If the TIMFMT keyword is not specified, you
+must use the *ISO format. Also, you must use the separator that the TIMSEP
+keyword specifies. If the TIMSEP keyword is not specified or if TIMSEP specifies
+the *JOB separator, you must use a colon (:)  for the separator.</li>
+
+<li class="cds--list__item">If the explicit value is a timestamp (Z) value, you must use the <var class="keyword varname">yy-mm-dd-hh.mm.ss.mmmmmm</var> format.</li>
+
+</ul>
+</div>
+<p>The *BLANK special value indicates field data that is composed
+of all blanks. The *CUR special value indicates that the date, time, or timestamp
+makes up the current field data, depending on the data type of the field.</p>
+<p>During
+an output operation, the field data is compared to each program-value on the
+MAPVAL keyword in the order in which the program-values are specified. For
+the first match that is found, the corresponding system-value replaces the
+current field data. If a match does not exist, the field data does not change.</p>
+<p>During
+an input operation, the field data is compared to each system-value on the
+MAPVAL keyword in the order in which the system-values are specified. For
+the first match that is found, the corresponding program-value replaces the
+current field data. If a match does not exist, the field data remains the
+same.</p>
+<p>Option indicators are not valid for this keyword, although you
+can use option indicators to condition the field for which it is specified.</p>
+</div>
+
+<div class="example"><h2 class="sectiontitle" id="rzakcmstdfmapval__title__2">Example</h2><p>The following example shows how to specify
+the MAPVAL keyword.</p>
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>|...+....1....+....2....+....3....+....4....+....5....+....6....+....7....+....8
+00010A
+00020A          R RECORD
+00030A            DATFLD1         L         DATFMT(*MDY) DATSEP('/')
+00040A                                      MAPVAL(('01/01/40' *BLANK))
+ </code></pre></div><div class="docs--copy-btn"></div></div><p>On output, if the field data equals '01/01/40', the field
+data is changed to all blanks. On input, if the field data is blank, the field
+data is changed to '01/01/40'.</p>
+</div>
+
+</div>
+
+<aside role="complementary" aria-labelledby="rzakcmstdfmapval__title__1"><nav role="navigation" aria-label="bottom related links" class="ibm-padding-top-1 ibm-padding-bottom-2 bx--row bottom-section-parent">
+<div class="familylinks ibm-margin-bottom-1">
+<div class="parentlink"><strong>Parent topic:</strong> <div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a data-hd-product="ssw_ibm_i_74" href="/docs/en/ssw_ibm_i_74/rzakc/rzakcmstkeyent.htm" title="You type the keyword entries that define display files in positions 45 through 80 (functions)." class="bottom-section-link">DDS keyword entries for display files (positions 45 through 80)</a></div></div>
+</div>
+</nav></aside></article></main>

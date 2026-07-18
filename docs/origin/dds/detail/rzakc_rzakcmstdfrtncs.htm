@@ -1,0 +1,158 @@
+<h1 class="title topictitle1">表示装置ファイルの RTNCSRLOC (カーソル位置戻し) キーワード</h1><div id="lastModifiedDate"><span>Last Updated</span>: 2021-04-13</div>
+<div class="body refbody"><p class="shortdesc"><span class="ph">これはレコード・レベル・キーワードで、カーソルの位置をアプリケーション・プログラムに戻すために使用します。</span></p>
+<div class="section"><div class="p">このキーワードには、指定可能な形式が以下のように 2 つあります。<ul class="ul cds--list--unordered"><li class="li cds--list__item">カーソルが現在位置づけられているレコードおよびフィールドの名前を戻す。
+3 番目のパラメーターを任意に指定して、フィールド内における相対的なカーソル位置を含めることができます。</li>
+<li class="li cds--list__item">表示装置における相対的なカーソルの行および桁の位置を戻す。
+活動ウィンドウ (存在する場合) における相対的なカーソルの行および桁の位置、あるいは 2 イベント・マウス・ボタン定義の開始点におけるカーソルの位置のどちらかを戻すように 2 つの追加パラメーターを任意に指定できます。</li>
+</ul>
+</div>
+<div class="p">キーワードの形式は次のとおりです。<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code>RTNCSRLOC([*RECNAME]
+&amp;cursor-record &amp;cursor-field
+[&amp;cursor-position])
+または
+RTNCSRLOC({*WINDOW | *MOUSE}
+&amp;cursor-row &amp;cursor-column
+[&amp;cursor-row2
+[&amp;cursor-column2]])</code></pre></div><div class="docs--copy-btn"></div></div>
+</div>
+<div class="p">最初の形式のパラメーターは次のとおりです。<ul class="ul cds--list--unordered"><li class="li cds--list__item">*RECNAME パラメーターは、RTNCSRLOC がカーソルの位置付けられているレコードやフィールドの名前を戻すことを示します。
+さらに、フィールドにおけるカーソルの相対位置を任意に戻すこともできます。このパラメーターはオプションです。</li>
+<li class="li cds--list__item">cursor-record パラメーターには潜在フィールドの名前を指定します。このパラメーターを指定すると入力時にカーソルが置かれているレコードの名前が、ここで指定したフィールドに入ります。
+このフィールドは使用目的 H (潜在)、桁数 10 の文字 (35 桁目に A) フィールドとしてレコード様式に定義しなければなりません。
+入力時にカーソルがレコード域に位置していない場合、cursor-record に指定したフィールドにはブランクが入ります。</li>
+<li class="li cds--list__item">cursor-field パラメーターには潜在フィールドの名前を指定します。このパラメーターを指定すると入力時にカーソルが置かれているフィールドの名前が、ここで指定したフィールドに入ります。
+このフィールドは使用目的 H (潜在)、桁数 10 の文字 (35 桁目に A) フィールドとしてレコード様式に定義しなければなりません。
+入力時にカーソルがフィールドに位置していない場合、cursor-field フィールドに指定したフィールドにはブランクが入ります。</li>
+<li class="li cds--list__item">任意指定の cursor-position パラメーターには潜在フィールドの名前を指定します。このパラメーターを指定すると入力時にカーソルが置かれているフィールド内におけるカーソルの相対位置が、ここで指定したフィールドに入ります。
+このフィールドは、使用目的 H (潜在)、小数点以下の桁数 0 の 4 桁の符号付き数字 (35 桁目に S) フィールドとしてレコード様式に定義しなければなりません。カーソルがフィールドの先頭位置にある場合には、カーソル位置フィールドには値 1 が入ります。カーソルが <em class="ph i">i</em> 番目の位置にある場合は、カーソル位置フィールドには値 <em class="ph i">i</em> が入ります。カーソルがフィールドに位置していない場合は、カーソル位置フィールドには値 0 が入ります。カーソルがメニュー・バー・リストまたは選択フィールド・リストに位置している場合、cursor-position パラメーターはカーソルが置かれている選択項目番号に戻ります。</li>
+</ul>
+</div>
+<p class="p">入力時にカーソルが RTNCSRLOC キーワードを含むレコード域の外にある場合には、RTNCSRLOC キーワードに指定された 3 つすべてのフィールドに値が入ります。
+入力時にカーソルがサブファイルに位置する場合にも、フィールドに値が入ります。
+カーソルがサブファイル内のどこかに位置していれば、cursor-record に指定されたフィールドに値が入ります。
+cursor-field および cursor-position に指定されたフィールドに値が入るのは、カーソルがサブファイル内のフィールドにある場合です。</p>
+<div class="p">2 番目の形式のパラメーターは以下のとおりです。<ul class="ul cds--list--unordered"><li class="li cds--list__item">*WINDOW または *MOUSE パラメーターは、cursor-row2 および cursor-column-2 パラメーターを修飾するのに使用します。
+*WINDOW を指定すると、これらのパラメーターは活動ウィンドウの最初の使用可能位置から相対的な位置にカーソルを戻します。
+*MOUSE を指定すると、2 イベント・マウス定義が処理される直前にこれらのパラメーターはカーソルの位置を戻します。</li>
+<li class="li cds--list__item">cursor-row パラメーターには潜在フィールドの名前を指定します。このパラメーターを指定すると、入力時にカーソルが置かれている行番号がここで指定したフィールドに入ります。このフィールドはデータ・タイプ S、フィールド 3、使用目的 H、および小数点以下の桁数を 0 としてレコード様式に定義しなければなりません。
+この潜在フィールドに戻される値は、最初の行が行 1 である表示画面全体からの相対的な値です。</li>
+<li class="li cds--list__item">cursor-column パラメーターには、潜在フィールドの名前を指定します。このパラメーターを指定すると、入力時にカーソルが置かれている桁の番号がここで指定したフィールドに表示されます。このフィールドはデータ・タイプ S、フィールド 3、使用目的 H、および小数点以下の桁数を 0 としてレコード様式に定義しなければなりません。
+この潜在フィールドに戻される値は、最初の桁が桁 1 である表示画面全体からの相対的な値です。</li>
+<li class="li cds--list__item">任意指定の cursor-row2 パラメーターには、潜在フィールドの名前を指定します。*WINDOW を最初のパラメーターとして
+指定した場合、潜在フィールドには活動ウィンドウの最初の使用可能位置との相対的な行がカーソル位置として入ります。
+活動ウィンドウがない場合、この値は &amp;cursor-row と同じになります。カーソルがウィンドウの最初の使用可能位置
+にある場合は、cursor-row2 フィールドに値 1 が入っています。カーソルが活動ウィンドウの範囲外にあると、この値が負の数になる可能性もあります。
+*MOUSE を最初のパラメーターとして指定した場合、潜在フィールドには、2 イベント・マウス定義が呼び出される直前の
+インスタンスにおけるカーソルの行番号が入ります。2 イベント・マウス定義が処理されていない場合、
+このフィールドは 0 に設定されます。
+このフィールドはデータ・タイプ S、3 桁のフィールド、使用目的 H、および小数点以下が 0 としてレコード様式に定義されなければなりません。</li>
+<li class="li cds--list__item">任意指定の cursor-column2 パラメーターには、潜在フィールドの名前を指定します。*WINDOW を最初のパラメーターとして
+指定した場合は、潜在フィールドには活動ウィンドウの最初の使用可能位置との相対的な桁がカーソル位置として入ります。
+活動ウィンドウがない場合は、この値は &amp;cursor-column と同じになります。カーソルがウィンドウの最初の使用可能位置
+にある場合は、cursor-column2 フィールドには値 1 が入っています。カーソルが活動ウィンドウの範囲外にあると、この値が負の数になる可能性もあります。*MOUSE を最初のパラメーターとして指定した場合、潜在フィールドには 2 イベント・マウス定義の最初のイベントが
+発生したときのカーソルの桁番号が入ります。2 イベント・マウス定義が処理されていない場合、
+このフィールドは 0 に設定されます。
+このフィールドはデータ・タイプ S、桁数 3 のフィールド、使用目的 H、および小数点以下が 0 としてレコード様式に定義されなければなりません。</li>
+</ul>
+</div>
+<p class="p">このキーワードの両方の形式が同じレコードに指定されることもあります。
+同じ潜在フィールドがいずれかのパラメーターで複数回使用されていると、予期できない結果になる場合があります。</p>
+<p class="p">オプション標識は、このキーワードでは無効です。</p>
+</div>
+<div class="example"><h2 class="title sectiontitle">例</h2><p class="p">次の例は、RTNCSRLOC キーワードの指定方法を示しています。</p>
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code>|...+....1....+....2....+....3....+....4....+....5....+....6....+....7....+....8
+     A          R REC01                     RTNCSRLOC(&amp;RCD &amp;FLD &amp;POS);
+     A                                      RTNCSRLOC(*MOUSE &amp;ROW &amp;COL);
+     A            FLD           10A  H
+     A            RCD           10A  H
+     A            POS            4S 0H
+     A            FLD1A          2A  I  3  2
+     A  10        FLD2A          6A  O  3 18
+     A N10        FLD3A         10A  O  3 18
+     A*
+     A          R REC02                     OVERLAY
+     A            FLD1A          2A  I  5  2
+     A            FLD2A         10A  O  5  5
+     A            FLD3A          6A  O  5 18
+     A</code></pre></div><div class="docs--copy-btn"></div></div>
+<p class="p">REC01 と REC02 の両方が画面に表示され、オプション標識 10 はオフです。</p>
+<p class="p">次の表は、カーソルが指定された位置にある場合に戻される値を示します。</p>
+<div class="tableborder">
+<div class="tablenoborder"><div class="cds--data-table-container"><table id="parm_table0" summary="Parameters" cellpadding="4" cellspacing="0" class="table cds--data-table" rules="none" frame="hsides" border="1"><thead class="thead alignleft"><tr class="row"><th scope="col" class="entry valigntop alignleft" width="14.393939393939394%" id="d49440e101"><div class="cds--table-header-label">行</div></th>
+<th scope="col" class="entry valigntop alignleft" width="14.393939393939394%" id="d49440e103"><div class="cds--table-header-label">桁</div></th>
+<th scope="col" class="entry valigntop alignleft" width="14.14141414141414%" id="d49440e105"><div class="cds--table-header-label">カーソル・<br>
+レコード</div></th>
+<th scope="col" class="entry valigntop alignleft" width="14.393939393939394%" id="d49440e109"><div class="cds--table-header-label">カーソル・<br>
+フィールド</div></th>
+<th scope="col" class="entry valigntop alignleft" width="14.14141414141414%" id="d49440e113"><div class="cds--table-header-label">カーソル位置</div></th>
+<th scope="col" class="entry valigntop alignleft" width="14.393939393939394%" id="d49440e115"><div class="cds--table-header-label">カーソル行</div></th>
+<th scope="col" class="entry valigntop alignleft" width="14.14141414141414%" id="d49440e117"><div class="cds--table-header-label">カーソル桁</div></th>
+</tr>
+</thead>
+<tbody class="tbody"><tr class="row"><td class="entry valigntop alignleft" width="14.393939393939394%" headers="d49440e101 ">3</td>
+<td class="entry valigntop alignleft" width="14.393939393939394%" headers="d49440e103 ">2</td>
+<td class="entry valigntop alignleft" width="14.14141414141414%" headers="d49440e105 ">REC01</td>
+<td class="entry valigntop alignleft" width="14.393939393939394%" headers="d49440e109 ">FLD1A</td>
+<td class="entry valigntop alignleft" width="14.14141414141414%" headers="d49440e113 ">1</td>
+<td class="entry valigntop alignleft" width="14.393939393939394%" headers="d49440e115 ">3</td>
+<td class="entry valigntop alignleft" width="14.14141414141414%" headers="d49440e117 ">2</td>
+</tr>
+<tr class="row"><td class="entry valigntop alignleft" width="14.393939393939394%" headers="d49440e101 ">3</td>
+<td class="entry valigntop alignleft" width="14.393939393939394%" headers="d49440e103 ">19</td>
+<td class="entry valigntop alignleft" width="14.14141414141414%" headers="d49440e105 ">REC01</td>
+<td class="entry valigntop alignleft" width="14.393939393939394%" headers="d49440e109 ">FLD3A<sup class="ph sup">1</sup></td>
+<td class="entry valigntop alignleft" width="14.14141414141414%" headers="d49440e113 ">2</td>
+<td class="entry valigntop alignleft" width="14.393939393939394%" headers="d49440e115 ">3</td>
+<td class="entry valigntop alignleft" width="14.14141414141414%" headers="d49440e117 ">19</td>
+</tr>
+<tr class="row"><td class="entry valigntop alignleft" width="14.393939393939394%" headers="d49440e101 ">3</td>
+<td class="entry valigntop alignleft" width="14.393939393939394%" headers="d49440e103 ">25</td>
+<td class="entry valigntop alignleft" width="14.14141414141414%" headers="d49440e105 ">REC01</td>
+<td class="entry valigntop alignleft" width="14.393939393939394%" headers="d49440e109 ">FLD3A</td>
+<td class="entry valigntop alignleft" width="14.14141414141414%" headers="d49440e113 ">8</td>
+<td class="entry valigntop alignleft" width="14.393939393939394%" headers="d49440e115 ">3</td>
+<td class="entry valigntop alignleft" width="14.14141414141414%" headers="d49440e117 ">25</td>
+</tr>
+<tr class="row"><td class="entry valigntop alignleft" width="14.393939393939394%" headers="d49440e101 ">3</td>
+<td class="entry valigntop alignleft" width="14.393939393939394%" headers="d49440e103 ">40</td>
+<td class="entry valigntop alignleft" width="14.14141414141414%" headers="d49440e105 ">REC01</td>
+<td class="entry valigntop alignleft" width="14.393939393939394%" headers="d49440e109 ">ブランク</td>
+<td class="entry valigntop alignleft" width="14.14141414141414%" headers="d49440e113 ">0</td>
+<td class="entry valigntop alignleft" width="14.393939393939394%" headers="d49440e115 ">3</td>
+<td class="entry valigntop alignleft" width="14.14141414141414%" headers="d49440e117 ">40</td>
+</tr>
+<tr class="row"><td class="entry valigntop alignleft" width="14.393939393939394%" headers="d49440e101 ">4</td>
+<td class="entry valigntop alignleft" width="14.393939393939394%" headers="d49440e103 ">40</td>
+<td class="entry valigntop alignleft" width="14.14141414141414%" headers="d49440e105 ">ブランク</td>
+<td class="entry valigntop alignleft" width="14.393939393939394%" headers="d49440e109 ">ブランク</td>
+<td class="entry valigntop alignleft" width="14.14141414141414%" headers="d49440e113 ">0</td>
+<td class="entry valigntop alignleft" width="14.393939393939394%" headers="d49440e115 ">4</td>
+<td class="entry valigntop alignleft" width="14.14141414141414%" headers="d49440e117 ">40</td>
+</tr>
+<tr class="row"><td class="entry valigntop alignleft" width="14.393939393939394%" headers="d49440e101 ">5</td>
+<td class="entry valigntop alignleft" width="14.393939393939394%" headers="d49440e103 ">5</td>
+<td class="entry valigntop alignleft" width="14.14141414141414%" headers="d49440e105 ">REC02</td>
+<td class="entry valigntop alignleft" width="14.393939393939394%" headers="d49440e109 ">FLD2A</td>
+<td class="entry valigntop alignleft" width="14.14141414141414%" headers="d49440e113 ">1</td>
+<td class="entry valigntop alignleft" width="14.393939393939394%" headers="d49440e115 ">5</td>
+<td class="entry valigntop alignleft" width="14.14141414141414%" headers="d49440e117 ">5</td>
+</tr>
+<tr class="row"><td class="entry valigntop alignleft" width="14.393939393939394%" headers="d49440e101 ">5</td>
+<td class="entry valigntop alignleft" width="14.393939393939394%" headers="d49440e103 ">40</td>
+<td class="entry valigntop alignleft" width="14.14141414141414%" headers="d49440e105 ">REC02</td>
+<td class="entry valigntop alignleft" width="14.393939393939394%" headers="d49440e109 ">ブランク</td>
+<td class="entry valigntop alignleft" width="14.14141414141414%" headers="d49440e113 ">0</td>
+<td class="entry valigntop alignleft" width="14.393939393939394%" headers="d49440e115 ">5</td>
+<td class="entry valigntop alignleft" width="14.14141414141414%" headers="d49440e117 ">40</td>
+</tr>
+</tbody>
+</table></div></div>
+</div>
+<sup class="ph sup">1</sup> オプション標識 10 がオンで、カーソルが 3 行目の 19 桁目にある場合には、FLD2A が戻されます。</div>
+</div>
+<div class="related-links ibm-padding-top-1 ibm-padding-bottom-2 bx--row bottom-section-parent" aria-label="bottom related links">
+<div class="familylinks ibm-margin-bottom-1">
+<div class="parentlink"><strong>親トピック:</strong> <div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a class="link bottom-section-link" href="/docs/ja/ssw_ibm_i_74/rzakc/rzakcmstkeyent.htm" title="表示装置ファイルを定義するキーワード項目は、45 - 80 桁目 (機能欄) に記入します。">表示装置ファイルの DDS キーワード項目 (45 - 80 桁目)</a></div></div>
+</div>
+</div>
+

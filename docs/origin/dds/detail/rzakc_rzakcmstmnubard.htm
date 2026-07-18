@@ -1,0 +1,64 @@
+<h1 class="title topictitle1">表示装置ファイルの MNUBARDSP (メニュー・バー表示) キーワード</h1><div id="lastModifiedDate"><span>Last Updated</span>: 2021-04-13</div>
+<div class="body refbody"><p class="shortdesc"><span class="ph">これはレコード・レベル・キーワードで、メニュー・バーを表示するのに使用します。</span></p>
+<div class="section"><p class="p">MNUBARDSP キーワードには、2 つの形式があります。
+1 つは、MNUBAR キーワードが含まれているレコード用であり、もう 1 つは、MNUBAR キーワードが含まれていないレコード用です。</p>
+<div class="p">メニュー・バー・レコードではないレコード上に指定する場合の MNUBARDSP の形式は、次のとおりです。<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code>MNUBARDSP(menu-bar-record &amp;choice-field [&amp;pull-down-input])</code></pre></div><div class="docs--copy-btn"></div></div>
+</div>
+<div class="p">メニュー・バー・レコード上に指定する場合の MNUBARDSP の形式は、次のとおりです。<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code>MNUBARDSP[(&amp;pull-down-input)]</code></pre></div><div class="docs--copy-btn"></div></div>
+</div>
+<p class="p">menu-bar-record パラメーターは、このレコードが書き込まれるときに表示されるメニュー・バー・レコードを指定します。メニュー・バー・レコードは、定義中のレコードと同じファイル内に存在しなければなりません。</p>
+<p class="p">&amp;choice-field パラメーターは、入力時にメニュー・バーから選択された選択項目 (もしあれば) の番号が入る潜在フィールドを指定します。
+フィールドは、定義中のレコード内に存在しなければならず、データ・タイプ数字 (35 桁目に Y)、使用目的 H、桁数 2、小数点以下の桁数 0 として定義しなければなりません。</p>
+<div class="p">&amp;pull-down-input パラメーターは任意指定であり、プルダウン・メニューに単一選択項目フィールドだけが入っているときに、プルダウン・メニューからの入力が入る潜在フィールドを指定します。
+フィールドは、定義中のレコード内に存在しなければならず、桁数 2、小数点以下の桁数 0、使用目的 H (潜在) のゾーン (35 桁目に S) フィールドとして定義しなければなりません。このフィールドには、入力時に次のいずれかの値が入ります。<dl class="dl"><dt class="dthd"><strong>値</strong></dt>
+<dd class="ddhd"><strong>意味</strong></dd>
+<dt class="dt dlterm">0</dt>
+<dd class="dd">選択が行われなかった。</dd>
+<dt class="dt dlterm">n</dt>
+<dd class="dd">プルダウン・メニュー内の選択項目 n が選択された。</dd>
+<dt class="dt dlterm">-1</dt>
+<dd class="dd">プルダウン・レコードに、1 つの単一選択項目フィールド以外のものが入っている。プルダウン・レコードを読み取ってその内容を受信しなければならない。</dd>
+</dl>
+</div>
+<p class="p">MNUBARDSP キーワードにはオプション標識が有効であり、すべてをオプション付けするのであればレコード上に複数の MNUBARDSP キーワードを指定することができます。
+レコードが書き込まれているときに 2 つ以上の MNUBARDSP キーワードが効力を持っている場合には、効力を持っている最初のものが使用されます。</p>
+</div>
+<div class="example"><h2 class="title sectiontitle">例 1</h2><p class="p">次の例は、メニュー・バーではないレコードにおける MNUBARDSP キーワードの指定方法を示します。</p>
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code>|...+....1....+....2....+....3....+....4....+....5....+....6....+....7....+....8
+     A
+     A          R RECORD1
+     A  01                                  MNUBARDSP(MENURCD &amp;MNUCHOICE &amp;INPUT);
+     A            FIELD1        10A  B 10 12
+     A            FIELD2         5S 0B 14 12
+     A            MNUCHOICE      2Y 0H
+     A            INPUT          2S 0H
+     A          R MENURCD                   MNUBAR
+     A            F1             2Y 0B  1  2
+     A                                      MNUBARCHC(1 PULLFILE 'File')
+     A                                      :
+     A                                      :
+     A</code></pre></div><div class="docs--copy-btn"></div></div>
+<p class="p">この例では、オプション標識 01 がオンであるときにレコード RECORD1 が表示装置に書き込まれる場合、システムはレコード MENURCD 内のメニュー・バーを表示します。
+メニュー・バーが活動化され、プルダウン・メニューが選択されると、メニュー・バー選択項目の番号がフィールド MNUCHOICE に戻されます。
+選択されたプルダウン・メニューに 1 つの単一選択項目フィールドが入っている場合には、このフィールドについて行われた選択はフィールド INPUT に戻されます。
+それ以外の場合には、フィールド INPUT には -1 が入り、アプリケーション・プログラムがプルダウン入力を受信するためにプルダウン・レコードを読み取らなければならないことを示します。</p>
+</div>
+<div class="example"><h2 class="title sectiontitle">例 2</h2><p class="p">次の例は、メニュー・バー・レコードでの MNUBARDSP キーワードの指定方法を示します。</p>
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code>|...+....1....+....2....+....3....+....4....+....5....+....6....+....7....+....8
+     A          R MENURCD                   MNUBAR
+     A  01                                  MNUBARDSP
+     A            F1             2Y 0B  1  2
+     A                                      MNUBARCHC(1 PULLFILE 'File')
+     A                                      :
+     A                                      :
+     A</code></pre></div><div class="docs--copy-btn"></div></div>
+<p class="p">オプション標識 01 がオンであるときにレコード MENURCD が表示装置に書き込まれる場合には、システムは MENURCD 内に定義されているメニュー・バーを表示します。
+ユーザーがメニュー・バーからプルダウン・メニューを選択すると、選択されたメニュー・バー選択項目の番号が F1 フィールドに戻されます。</p>
+</div>
+</div>
+<div class="related-links ibm-padding-top-1 ibm-padding-bottom-2 bx--row bottom-section-parent" aria-label="bottom related links">
+<div class="familylinks ibm-margin-bottom-1">
+<div class="parentlink"><strong>親トピック:</strong> <div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a class="link bottom-section-link" href="/docs/ja/ssw_ibm_i_74/rzakc/rzakcmstkeyent.htm" title="表示装置ファイルを定義するキーワード項目は、45 - 80 桁目 (機能欄) に記入します。">表示装置ファイルの DDS キーワード項目 (45 - 80 桁目)</a></div></div>
+</div>
+</div>
+

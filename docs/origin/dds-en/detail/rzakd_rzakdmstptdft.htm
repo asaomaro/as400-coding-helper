@@ -1,0 +1,87 @@
+<main role="main"><article role="article" aria-labelledby="rzakdmstptdft__title__1">
+<h1 class="topictitle1" id="rzakdmstptdft__title__1">DFT (Default) keyword in printer files</h1><div id="lastModifiedDate"><span>Last Updated</span>: 2026-07-13</div>
+
+
+
+<div class="body refbody"><p class="shortdesc"><span class="ph">You use the DFT keyword to specify constant values
+for constant fields.</span></p>
+
+<div class="section"><p>The format of the keyword is:</p>
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>DFT('value')
+'value'
+DFT(X'hexadecimal-value')
+X'hexadecimal-value'</code></pre></div><div class="docs--copy-btn"></div></div><p>Constant values can be:</p>
+<ul class="cds--list--unordered">
+<li class="cds--list__item">A character value, in which each character prints as you specify it. The
+number of characters is equal to the printed length of the field. (Within
+the value, two adjacent single quotation marks are printed as one.)  See <a href="#rzakdmstptdft__rzakddft">example 1</a>.</li>
+
+<li class="cds--list__item">A hexadecimal value, in which two characters identify a code point in
+the character set. These characters print in this field (define alternate
+characters using DFNCHR). The printed length is half the number of characters
+you specify between single quotation marks. You must specify the TRNSPY keyword
+if you specify a hexadecimal value for DFT. See <a href="#rzakdmstptdft__constantdft">example
+2</a>.</li>
+
+</ul>
+<p>You can specify DFT implicitly by omitting DFT and the parentheses
+(this is true for both character and hexadecimal values). Specify the value
+within single quotation marks. For hexadecimal values, you must also precede
+the value with an X.</p>
+<p>The EDTCDE and EDTWRD keywords cannot be specified
+with the DFT keyword.</p>
+<p>Option indicators are not valid for this keyword.
+However, they can be used to condition the constant field with which this
+keyword is specified, specifying the last option indicator on the same line
+as the field location.</p>
+</div>
+
+<div class="example" id="rzakdmstptdft__rzakddft"><h2 class="sectiontitle" id="rzakdmstptdft__rzakddft__title__1">Example 1</h2><p>The following example shows
+how to specify DFT using character values.</p>
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>|...+....1....+....2....+....3....+....4....+....5....+....6....+....7....+....8
+00010A          R SUPPLIES
+00020A            PENS          20      2  1
+00030A            INK           20      3  1
+00040A            PAPER         20      4  1
+00050A                                  7  9DFT('ON')
+00060A                                  8  9'ON'
+00070A
+00080A  01                             12  1'Hotel name: 'Terrace Inn'
+00100A
+00110A  02                             12  1'Hotel name: 'Riverview Inn'
+     A</code></pre></div><div class="docs--copy-btn"></div></div><p>The specifications DFT('ON') and 'ON' are equivalent
+and show the difference between specifying DFT explicitly and implicitly.</p>
+<div class="p">If
+indicator 01 is on, this prints:  <div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>Hotel name: 'Terrace Inn'</code></pre></div><div class="docs--copy-btn"></div></div></div>
+<div class="p">If
+indicator 02 is on and indicator 01 is off, this prints:  <div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>Hotel name: 'Riverview Inn'</code></pre></div><div class="docs--copy-btn"></div></div></div>
+</div>
+
+<div class="example" id="rzakdmstptdft__constantdft"><h2 class="sectiontitle" id="rzakdmstptdft__constantdft__title__1">Example 2</h2><p>The following example
+shows how to specify DFT for a constant field containing an alternate character.</p>
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>|...+....1....+....2....+....3....+....4....+....5....+....6....+....7....+....8
+12
+00010A          R RECORD                    DFNCHR(X'7C' X'007E813CC324817E00')
+00020A                          358  4DFT(X'7C')   TRNSPY  4
+00030A                                    +2DFT('1982')
+     A</code></pre></div><div class="docs--copy-btn"></div></div><p>The constant field for which DFT is specified <strong>1</strong> appears
+on line 58, position 4. The character defined for hexadecimal 7C prints in
+this field. DFNCHR <strong>2</strong>, specified at the record level for this example,
+defines hexadecimal 7C as a copyright mark.</p>
+<div class="p">Here are
+some equivalent ways to specify the value as defined in this example <strong>3</strong>:
+ <div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>DFT(X'7C')
+X'7C'
+DFT('©')
+'©'</code></pre></div><div class="docs--copy-btn"></div></div></div>
+<p>The TRNSPY keyword <strong>4</strong> is required when hexadecimal
+values are specified for DFT.</p>
+</div>
+
+</div>
+
+<aside role="complementary" aria-labelledby="rzakdmstptdft__title__1"><nav role="navigation" aria-label="bottom related links" class="ibm-padding-top-1 ibm-padding-bottom-2 bx--row bottom-section-parent">
+<div class="familylinks ibm-margin-bottom-1">
+<div class="parentlink"><strong>Parent topic:</strong> <div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a data-hd-product="ssw_ibm_i_74" href="/docs/en/ssw_ibm_i_74/rzakd/rzakdmstprkey.htm" title="These are valid keyword entries for defining printer files." class="bottom-section-link">Keyword entries for printer files (positions 45 through 80)</a></div></div>
+</div>
+</nav></aside></article></main>

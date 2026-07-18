@@ -1,0 +1,103 @@
+<h1 class="title topictitle1">物理ファイルおよび論理ファイルの CCSID (コード化文字セット識別コード) キーワード</h1><div id="lastModifiedDate"><span>Last Updated</span>: 2021-04-13</div>
+<div class="body refbody"><p class="shortdesc">このキーワードを使用して、文字フィールドにコード化文字セット ID (CCSID) を指定することができます。
+この CCSID キーワードは、物理ファイルではファイル・レベルまたはフィールド・レベルのキーワード、論理ファイルではフィールド・レベルのキーワードです。</p>
+<div class="section"><div class="p">キーワードの形式は次のとおりです。<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code>CCSID(value [field-display-length | *MIN | *LEN display-positions]
+      [*CONVERT | *NOCONVERT] [*NORMALIZE])</code></pre></div><div class="docs--copy-btn"></div></div>
+</div>
+<p class="p">この値は最大 5 桁までの数値です。この値は、エンコード・スキーム識別コード、文字セット識別コード、コード・ページ識別コードと、当該フィールドのデータに使用される
+コード化図形文字表記を個別に識別するその他の関連情報を 1 つの組にして示します。</p>
+<div class="p">論理ファイルの場合、次に示す特性が満たされなければ CCSID キーワードを論理ファイル・フィールドで使用することはできません。<ul class="ul cds--list--unordered"><li class="li cds--list__item">論理ファイル CCSID キーワードに指定された値が Unicode エンコード・スキームを使用している場合は、UCS-2 レベル 1 または UTF-16 エンコード・スキームでは、
+フィールド・データ・タイプが G、UTF-8 エンコード・スキームでは、
+フィールド・データ・タイプが A でなければなりません。
+また、対応する物理ファイル・フィールドのタイプは A、G、または O でなければなりません。</li>
+<li class="li cds--list__item">論理ファイル CCSID キーワードに指定された値が Unicode エンコード・スキームを使用しない場合は、
+フィールド・データ・タイプは A、O、または G でなければなりません。
+さらに、対応する物理ファイル・フィールドを G タイプ・フィールドにして、CCSID キーワードに UCS-2 または UTF-16 値を指定するか、A (文字) タイプ・フィールドにして、UTF-8 CCSID を指定する必要があります。</li>
+</ul>
+</div>
+<p class="p">field-display-length パラメーターはオプショナルで、当該フィールドが表示装置ファイル内のフィールドによって
+参照されるときにだけ使用されます。このパラメーターは、value パラメーターが UCS-2 または UTF-16 であるときのみ有効です。
+field-display-length パラメーターを利用することによって、UCS-2 または UTF-16 データに応じて、
+フィールド・サイズを制御できます。</p>
+<p class="p">field-display-length の代わりに、特殊値 *MIN を指定することができます。
+この特殊値は、表示装置ファイルの DDS レコード様式の参照フィールドによって使用される場合のみ、物理ファイルで定義できます。この値は、表示位置について定義されたフィールド表示桁数の指定に使用されます。この値を指定すると、画面上のフィールド桁数が、DDS で定義されたフィールド桁数と等しくなります。</p>
+<p class="p">field-display-length の代わりに、display-positions 値と一緒に特殊
+値 *LEN を指定することもできます。
+この特殊値は、表示装置ファイルの DDS レコード様式の参照フィールドによって使用される場合のみ、物理ファイルで定義できます。この値は、表示位置について定義されたフィールド表示桁数の指定に使用されます。この値を指定すると、画面上のフィールド桁数が、display-positions 値と等しくなります。</p>
+<p class="p">*CONVERT パラメーターはオプショナルです。このパラメーターは、印刷装置ファイルの DDS レコード様式の
+参照フィールドによって使用される場合のみ、物理ファイルで定義できます。このパラメーターは、
+フィールドを印刷する際に、UCS-2 または UTF-16 データを、CRTPRTF、CHGPRTF または OVRPRTF コマンドの CHRID コマンド・パラメーターで指定されたターゲット CCSID に変換するように指定します。
+このパラメーターを指定しないと、
+キーワードはデフォルトにより *CONVERT に設定されます。*NOCONVERT を指定すると、UCS-2 または UTF-16 データはターゲット CCSID に変換されません。</p>
+<p class="p">*NORMALIZE パラメーターはオプショナルですが、UTF-8 および UTF-16 データを使用しているときの結果が予測しやすくなります。 このパラメーターを使用すると、UTF-8 データと UTF-16 データ内の文字を結合できます。
+この文字の結合サポートによって、結果が複数の文字で構成されるようにできます。
+データ・ストリングの先頭文字の後に、スペースなしで最大 300 個の異なるアクセント付き文字 (ウムラウトやアクセントなど) を続けることができます。
+結果の文字がすでに文字セット内に定義されているものである場合は、
+正規化によって、結合文字のストリングが定義済み文字の 16 進数値に置き換えられます。 結果の文字が定義済み文字でない場合は、結合文字ストリングは正規化が行われても変更されません。
+例えば、後に揚音文字 (X'0301') が続く UTF-16 グラフィック・ストリング 'e' (X'0065') の正規化を行うと、文字 é (X'00E9') に置換されます。</p>
+<p class="p">*NORMALIZE パラメーターを使用できるのは、フィールド・レベルで CCSID キーワードが使用されている場合のみです。
+このキーワードを指定しないと、システムは、UTF-8 および UTF-16 フィールドに挿入したデータ、
+またはこれらのフィールドを更新したデータはすでに正規化されているものと想定します。
+*NORMALIZE は、CCSID キーワードの UTF-16 値 (グラフィックス・フィールド) または UTF-8 値 (文字フィールド) でのみ有効です。</p>
+<p class="p">物理ファイルのファイル・レベルで指定した場合、CCSID キーワードは
+当該ファイル内の各文字フィールドに適用されます。ただし、すでに CCSID キーワードが指定してある
+文字フィールドには適用されません。ファイル・レベルの CCSID が UCS-2 または UTF-16 である場合、
+それは CCSID キーワードを持たない任意の G フィールドに適用されます。
+物理ファイル・フィールドの CCSID 値が UCS-2 エンコード・スキームを使用している
+場合には、このフィールドのデータ・タイプはタイプ G でなければなりません。
+また、物理ファイル・フィールドの CCSID 値が UTF-8 エンコード・スキームを使用している
+場合には、このフィールドのデータ・タイプは文字でなければなりません。
+物理ファイル・フィールドの CCSID 値が UTF-16 エンコード・スキームを使用している
+場合には、このフィールドのデータ・タイプはタイプ G でなければなりません。</p>
+<p class="p">CCSID キーワードがファイル・レベルで指定されておらず、しかも文字フィールド
+すべてに CCSID キーワードが指定されているわけではない場合、それらのフィールド
+には、ファイル作成時にジョブのデフォルトの CCSID が割り当てられます。</p>
+</div>
+<div class="example"><h2 class="title sectiontitle">例</h2><p class="p">次の例は、物理ファイルでの CCSID キーワードの
+指定方法を示します。</p>
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code>|...+....1....+....2....+....3....+....4....+....5....+....6....+....7....+....8
+00010A                                      CCSID(285)
+00020A          R RECORD1
+00030A            FIELD1        75G         CCSID(13488)
+00040A            FIELD2       150A
+00050A            FIELD3        20A
+00060A            FIELD4        10A         CCSID(1208 *NORMALIZE)
+00070A            FIELD5        10G         CCSID(1200)
+     A</code></pre></div><div class="docs--copy-btn"></div></div>
+<p class="p">FIELD1 には 13488 という UCS-2-ccsid の値が割り当てられます。FIELD2 および FIELD3 には 285 と
+いう CCSID の値が割り当てられます。FIELD4 には、UTF-8 CCSID 値 1208 が割り当てられ、
+そのデータは、ファイル内に挿入またはファイルを更新する前に正規化されます。
+FIELD5 には、UTF-16 CCSID 値として 1200 が割り当てられ、
+そのデータは、ファイル内に挿入またはファイルを更新する前には正規化されません。</p>
+</div>
+<div class="example"><p class="p">次の例は、対応する論理ファイルでの CCSID キーワードの
+指定方法を示します。</p>
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code>|...+....1....+....2....+....3....+....4....+....5....+....6....+....7....+....8
+00000A
+00010A          R RECORD1
+00020A            FIELD1        75A         CCSID(37)
+00030A            FIELD2       150G         CCSID(13488 80)
+00040A            FIELD3        20A
+00050A            FIELD4        10G         CCSID(1200 *NORMALIZE)
+00060A            FIELD5        10A
+     A</code></pre></div><div class="docs--copy-btn"></div></div>
+<p class="p">論理ファイルの FIELD1 には 37 という SBCS CCSID の値が割り当てられます。物理ファイル・フィールドに UCS-2 データが入っているため、FIELD1 の
+物理ファイルと論理ファイルとの間で変換が行われます。
+論理ファイルの FIELD2 には 13488 という UCS-2-ccsid の値が割り当てられます。論理ファイルに UCS-2 データが入っているため、FIELD2 の
+物理ファイルと論理ファイルとの間で変換が行われます。FIELD3 には CCSID は指定されません。FIELD4 には、UTF-16 CCSID 値 1200 が割り当てられます。
+物理ファイル・フィールドに UTF-8 文字データが入っているため、物理ファイルと FIELD4 の論理ファイルの間で変換が行われます。
+データは正規化されます。FIELD5 には、ファイルが作成されたジョブの CCSID が割り当てられます。
+物理ファイル・フィールドに UTF-16 文字データが入っているため、物理ファイルと FIELD5 の論理ファイルの間で変換が行われます。
+データは正規化されません。</p>
+</div>
+</div>
+<div class="related-links ibm-padding-top-1 ibm-padding-bottom-2 bx--row bottom-section-parent" aria-label="bottom related links">
+<div class="familylinks ibm-margin-bottom-1">
+<div class="parentlink"><strong>親トピック:</strong> <div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a class="link bottom-section-link" href="/docs/ja/ssw_ibm_i_74/rzakb/rzakbmstlfkeyw.htm" title="キーワード項目は、45 から 80 桁目 (機能欄) に記入します。">物理ファイルおよび論理ファイルのキーワード項目 (45 から 80 桁目)</a></div></div>
+</div>
+<div class="relinfo ibm-margin-bottom-1"><strong>関連情報</strong>:<br>
+<div><div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a class="link bottom-section-link" href="/docs/ja/ssw_ibm_i_74/rzakc/rzakcmstdfusc2.htm">CCSID (コード化文字セット識別コード) キーワード</a></div></div>
+<div><div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a class="link bottom-section-link" href="/docs/ja/ssw_ibm_i_74/nls/rbagsglobalmain.htm">i5/OS グローバリゼーション</a></div></div>
+</div>
+</div>
+

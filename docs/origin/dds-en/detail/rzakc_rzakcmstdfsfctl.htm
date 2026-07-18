@@ -1,0 +1,146 @@
+<main role="main"><article role="article" aria-labelledby="rzakcmstdfsfctl__title__1">
+<h1 class="topictitle1" id="rzakcmstdfsfctl__title__1">SFLCTL (Subfile Control) keyword for display files</h1><div id="lastModifiedDate"><span>Last Updated</span>: 2026-07-13</div>
+
+
+
+<div class="body refbody"><p class="shortdesc">You use this record-level keyword to specify
+that this record format is to be a subfile-control record format.
+This record format must immediately follow the subfile record format.</p>
+
+<div class="section"><div class="p">The format of the keyword is:  <div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>SFLCTL(subfile-record-format-name)</code></pre></div><div class="docs--copy-btn"></div></div></div>
+<p>You
+must specify the name of the subfile record format as the parameter
+value for this keyword. The subfile-control record format can contain
+field descriptions as well as subfile control keywords.</p>
+<p>Your
+program can display subfile records only by issuing an output operation
+to the subfile-control record format.</p>
+<p>The subfile record format
+(SFL keyword) defines the format of the records in the subfile as
+opposed to the subfile-control record format (SFLCTL  keyword), which
+defines how the subfile can be displayed, cleared, deleted, and initialized.
+The program sends output operations to the subfile record format to
+build the subfile. It also sends output operations to the subfile-control
+record format, setting option indicators for various subfile keywords
+to display, clear, delete, and initialize the subfile.</p>
+<p>The following
+tables are a summary of subfile keywords used with the SFLCTL keyword.
+(Field-level keywords are used with fields in the subfile-control
+record format.)</p>
+
+<div class="tablenoborder"><div class="cds--data-table-container"><table summary="" class="cds--data-table"><caption class="cds--data-table-header"><span class="tablecap cds--data-table-header__title">Table 1. Required keywords</span></caption><colgroup><col></colgroup><thead>
+<tr>
+<th id="rzakcmstdfsfctl__entry__1" class="nrule thbot"><div class="cds--table-header-label">Required keywords</div></th>
+
+</tr>
+
+</thead>
+<tbody>
+<tr>
+<td headers="rzakcmstdfsfctl__entry__1 " class="nrule"><div class="lines">SFLCTL<br>
+SFLDSP<br>
+SFLPAG<br>
+SFLSIZ</div>
+</td>
+
+</tr>
+
+</tbody>
+</table></div>
+</div>
+
+<div class="tablenoborder"><div class="cds--data-table-container"><table summary="" class="cds--data-table"><caption class="cds--data-table-header"><span class="tablecap cds--data-table-header__title">Table 2. Optional keywords</span></caption><colgroup><col><col></colgroup><thead>
+<tr>
+<th id="rzakcmstdfsfctl__entry__3" class="nrule thleft thbot"><div class="cds--table-header-label">Optional keywords</div></th>
+
+<th id="rzakcmstdfsfctl__entry__4" class="nrule thleft thbot"><div class="cds--table-header-label">Optional keywords</div></th>
+
+</tr>
+
+</thead>
+<tbody>
+<tr>
+<td headers="rzakcmstdfsfctl__entry__3 " class="nrule tdleft"><div class="lines">CHCAVAIL<br>
+CHCSLT<br>
+CHCUNAVAIL<br>
+SFLCLR<br>
+SFLDLT<br>
+SFLDROP<br>
+SFLDSPCTL<sup>1</sup><br>
+SFLEND<br>
+SFLENTER<br>
+SFLFOLD<br>
+SFLINZ</div>
+</td>
+
+<td headers="rzakcmstdfsfctl__entry__4 " class="nrule tdleft"><div class="lines">SFLLIN<br>
+SFLMCLTCHC<br>
+SFLMSG<br>
+SFLMSGID<br>
+SFLPGMQ<br>
+SFLRCDNBR<br>
+SFLRNA<br>
+SFLROLVAL<br>
+SFLSCROLL<br>
+SFLSNGCHC</div>
+</td>
+
+</tr>
+
+</tbody>
+</table></div>
+</div>
+ <sup>1</sup>The SFLDSPCTL keyword is required if your program
+sends an input operation to the subfile-control record format.<p>If
+subfile size equals subfile page, the following keywords are ignored.
+When several display sizes are used (DSPSIZ keyword specified), these
+keywords are ignored only for display sizes for which subfile size
+equals subfile page:  </p><div class="lines">SFLDROP<br>
+SFLFOLD<br>
+SFLROLVAL</div>
+<p></p>
+<p>If the subfile record format contains field
+selection, the following keywords are not valid on the subfile-control
+record format:  </p><div class="lines">SFLDROP<br>
+SFLFOLD<br>
+SFLINZ<br>
+SFLLIN<br>
+SFLRCDNBR<br>
+SFLRNA (because SFLINZ is not valid)<br>
+SFLROLVAL</div>
+<p></p>
+<p>The USRDFN keyword is not valid for the subfile-control
+record format.</p>
+<p>The keywords CHCAVAIL, CHCSLT, and CHCUNAVAIL
+can be used only if either SFLSNGCHC or SFLMLTCHC is also used.</p>
+<p>Option
+indicators are not valid for this keyword.</p>
+</div>
+
+<div class="example"><h2 class="sectiontitle" id="rzakcmstdfsfctl__title__4">Example</h2><p>The following example shows how
+to specify the SFLCTL keyword.</p>
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>|...+....1....+....2....+....3....+....4....+....5....+....6....+....7....+....8
+00010A          R SFLR                      SFL
+     A*
+     A*            (at least one displayable field)
+     A*
+00020A          R SFLCTLR                   SFLCTL(SFLR)
+00030A                                      SFLPAG(17)
+00040A                                      SFLSIZ(17)
+00050A                                      SFLDSP
+00060A                                      SFLDSPCTL
+     A</code></pre></div><div class="docs--copy-btn"></div></div></div>
+
+</div>
+
+<aside role="complementary" aria-labelledby="rzakcmstdfsfctl__title__1"><nav role="navigation" aria-label="bottom related links" class="ibm-padding-top-1 ibm-padding-bottom-2 bx--row bottom-section-parent">
+<div class="familylinks ibm-margin-bottom-1">
+<div class="parentlink"><strong>Parent topic:</strong> <div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a data-hd-product="ssw_ibm_i_74" href="/docs/en/ssw_ibm_i_74/rzakc/rzakcmstkeyent.htm" title="You type the keyword entries that define display files in positions 45 through 80 (functions)." class="bottom-section-link">DDS keyword entries for display files (positions 45 through 80)</a></div></div>
+</div>
+
+<div class="linklist relinfo relref ibm-margin-bottom-1" lang="en-us"><h2 class="linkheading bottom-section-h2-title">Related reference</h2>
+<ul><li class="cds--list__item"><div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a data-hd-product="ssw_ibm_i_74" href="/docs/en/ssw_ibm_i_74/rzakc/rzakcmstdfsfmky.htm" title="You use this field-level keyword on the first field in the subfile record format for a message subfile (with Subfile (SFL) and Subfile Message Record (SFLMSGRCD) keywords specified)." class="bottom-section-link">SFLMSGKEY (Subfile Message Key) keyword for display files</a></div></li>
+<li class="cds--list__item"><div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a data-hd-product="ssw_ibm_i_74" href="/docs/en/ssw_ibm_i_74/rzakc/rzakcmstdfsfmrc.htm" title="You use this record-level keyword on the subfile record format to specify that this subfile is to be a message subfile and that the records displayed when the subfile is displayed are messages from a program message queue." class="bottom-section-link">SFLMSGRCD (Subfile Message Record) keyword for display files</a></div></li>
+<li class="cds--list__item"><div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a data-hd-product="ssw_ibm_i_74" href="/docs/en/ssw_ibm_i_74/rzakc/rzakcmstdfsfpmq.htm" title="You use this field-level keyword on the second (and last) field in the subfile record format for a message subfile." class="bottom-section-link">SFLPGMQ (Subfile Program Message Queue) keyword for display files</a></div></li>
+</ul></div>
+</nav></aside></article></main>

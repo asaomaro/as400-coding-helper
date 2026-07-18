@@ -1,0 +1,88 @@
+<h1 class="title topictitle1">表示装置ファイルの SFLSIZ (サブファイル・サイズ) キーワード</h1><div id="lastModifiedDate"><span>Last Updated</span>: 2021-04-13</div>
+<div class="body refbody"><p class="shortdesc">これはレコード・レベル・キーワードで、サブファイル内のレコード数を指定するために、サブファイル制御レコード様式で使用します。</p>
+<div class="section"><p class="p">レコードの許容最大数は 9999 です。
+このキーワードは、サブファイル制御レコード様式では必須です。</p>
+<div class="p">キーワードの形式は次のとおりです。<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code>SFLSIZ(number-of-records-in-subfile | &amp;number-of-records-in-subfile-field);</code></pre></div><div class="docs--copy-btn"></div></div>
+</div>
+<p class="p">number-of-records-in-subfile パラメーターは、番号フィールドとして、またはプログラム - システム間フィールドとして指定するという 2 つの方法で指定します。
+プログラム - システム間フィールドは、5 桁、およびデータ・タイプ S で指定しなければなりません。</p>
+<p class="p">P フィールドは、*SCRBAR パラメーターを持つ SFLEND の使用中に、サブファイルのサイズに使用されます。
+アプリケーションは、アプリケーションがサブファイルに追加するレコードの数を <span class="keyword">IBM® i</span> オペレーティング・システムに伝えることができます。
+したがって、スクロール・バーの方が、サブファイルのピクチャーをよりよく表示することができます。</p>
+<div class="note note border-2 cds--inline-notification--info ibmdocs-note cds--inline-notification cds--inline-notification--low-contrast margin-top-1 margin-bottom-1"><div class="cds--inline-notification__details"><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" class="cds--inline-notification__icon" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M16,2A14,14,0,1,0,30,16,14,14,0,0,0,16,2Zm0,5a1.5,1.5,0,1,1-1.5,1.5A1.5,1.5,0,0,1,16,7Zm4,17.12H12V21.88h2.88V15.12H13V12.88h4.13v9H20Z"></path></svg>
+        <div class="cds--inline-notification__text-wrapper">
+          <div class="cds--inline-notification__subtitle"><span class="notetitle ibm-bold ibm-textcolor-blue-50 background-blue cds--inline-notification__title ibm-padding-top-1 ibm-padding-bottom-1 padding-left-1 padding-right-1">注:</span> P フィールドの値は、サブファイル・ページ値より大きくなければなりません。
+P フィールドの値がサブファイル・ページ値より大きくない場合、サブファイルのサイズはページ値に 1 を加えたものになります。</div>
+        </div>
+      </div></div>
+</div>
+<div class="section"><h2 class="title sectiontitle">サブファイル・サイズがサブファイル・ページに等しい場合</h2><p class="p">SFLSIZ キーワードと SFLPAG キーワードに同じパラメーター値を指定した場合には、サブファイル・レコード様式内のフィールドについてのオプション標識を指定することができます。(これは、フィールド選択と呼ばれます。)</p>
+<p class="p">サブファイル作成時には、選択されたフィールドに応じてレコードの桁数が変わり、各出力命令でレコードはサブファイル内の連続した位置に書き込まれます。
+サブファイルの表示時には、各レコードに必要な表示行数が異なることもあります。
+サブファイルに実際に収容できるレコードの数は、サブファイルに書き込まれた各レコードについて選択されたフィールドにより決まります。</p>
+<p class="p">書き込まれた最後のサブファイル・レコードが、サブファイルにちょうど収まった場合には、状況メッセージ (CPF5003) がプログラムに返されます。
+書き込まれる最後のサブファイル・レコードがサブファイルに収まらない場合には、通知メッセージ (CPF5043) がプログラムに返されます。</p>
+<p class="p">表示するサブファイル・レコードの数が画面全体を占めるほど多くない場合には、指定した SFLPAG の値は、画面に収まるレコードの数の最大数に等しくなるように拡大されます。</p>
+<p class="p">SFLSIZ の値も、同じ大きさに拡大されます。
+例えば、SFLPAG(13) と SFLSIZ(13) が指定されていて、サブファイル・レコード様式および SFLLIN の値で 3 つのレコードが 1 つの表示行に収まるように指定されている場合には、SFLPAG および SFLSIZ は、15 に拡大されます。</p>
+<p class="p">オプション標識は、このキーワードでは無効です。
+画面サイズ条件名は画面サイズのサブファイルのレコード番号を変更する場合に有効で必要となります。
+プログラム - システム間フィールドがパラメーターとして使用されている場合は、このキーワードに画面サイズ条件名を使用することができません。</p>
+</div>
+<div class="section"><h2 class="title sectiontitle">サブファイル・サイズがサブファイル・ページに等しくない場合</h2><p class="p">SFLPAG キーワードと SFLSIZ キーワードに異なるパラメーター値を指定した場合には、サブファイルに入れることのできるレコードの数は、SFLSIZ の値で決まります。
+プログラムが、SFLSIZ の値より大きい相対レコード番号を持つレコードをサブファイルに入れる場合には、サブファイルは、それが収容できる大きさに (最大 9999 レコードまで)  自動的に拡張されます。指定するパラメーターの値は、サブファイルに通常入れておきたい最大数のレコードを収容するのに十分な大きさの値でなければなりません。</p>
+</div>
+<div class="example"><h2 class="title sectiontitle">例</h2><p class="p">次の例は、SFLSIZ キーワードの指定方法を示しています。</p>
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code>|...+....1....+....2....+....3....+....4....+....5....+....6....+....7....+....8
+00010A          R SFLR                      SFL
+00020A  21        FIELD1        78      2  2
+00030A  22        FIELD2        40      3  2
+00040A*
+00050A          R SFLCTLR                   SFLCTL(SFLR)
+00060A                                      SFLPAG(5)
+00070A                                      SFLSIZ(5)
+00080A                                      SFLDSP
+00090A                                      SFLDSPCTL
+     A</code></pre></div><div class="docs--copy-btn"></div></div>
+<p class="p">プログラムから出される出力命令は次のとおりです。</p>
+<div class="tablenoborder"><div class="cds--data-table-container"><table id="parm_table0" summary="Parameters" cellpadding="4" cellspacing="0" class="table cds--data-table" rules="none" frame="void" border="0"><thead class="thead alignleft"><tr class="row"><th scope="col" class="entry valigntop" width="33.33333333333333%" id="d55663e81"><div class="cds--table-header-label">出力命令の対象</div></th>
+<th scope="col" class="entry valigntop" width="33.33333333333333%" id="d55663e83"><div class="cds--table-header-label">オプション標識
+の設定</div></th>
+<th scope="col" class="entry valigntop" width="33.33333333333333%" id="d55663e85"><div class="cds--table-header-label">結果</div></th>
+</tr>
+</thead>
+<tbody class="tbody"><tr class="row"><td class="entry valigntop" width="33.33333333333333%" headers="d55663e81 ">SFLR</td>
+<td class="entry valigntop" width="33.33333333333333%" headers="d55663e83 ">21 オン 22 オフ</td>
+<td class="entry valigntop" width="33.33333333333333%" headers="d55663e85 ">FIELD1 だけがサブファイルに書き込まれます。</td>
+</tr>
+<tr class="row"><td class="entry valigntop" width="33.33333333333333%" headers="d55663e81 ">SFLR</td>
+<td class="entry valigntop" width="33.33333333333333%" headers="d55663e83 ">21 オン 22 オン</td>
+<td class="entry valigntop" width="33.33333333333333%" headers="d55663e85 ">FIELD1 と FIELD2 がサブファイルに書き込まれます。</td>
+</tr>
+<tr class="row"><td class="entry valigntop" width="33.33333333333333%" headers="d55663e81 ">SFLR</td>
+<td class="entry valigntop" width="33.33333333333333%" headers="d55663e83 ">21 オフ 22 オン</td>
+<td class="entry valigntop" width="33.33333333333333%" headers="d55663e85 ">FIELD2 だけがサブファイルに書き込まれます。</td>
+</tr>
+<tr class="row"><td class="entry valigntop" width="33.33333333333333%" headers="d55663e81 "> (<span class="keyword">IBM i</span> オペレーティング・システムは、状況メッセージ CPF5003 をユーザー・プログラムに送ります。)</td>
+<td class="entry valigntop" width="33.33333333333333%" headers="d55663e83 ">&nbsp;</td>
+<td class="entry valigntop" width="33.33333333333333%" headers="d55663e85 ">&nbsp;</td>
+</tr>
+<tr class="row"><td class="entry valigntop" width="33.33333333333333%" headers="d55663e81 ">SFLCTLR</td>
+<td class="entry valigntop" width="33.33333333333333%" headers="d55663e83 ">標識は不要</td>
+<td class="entry valigntop" width="33.33333333333333%" headers="d55663e85 ">サブファイルが表示されます。</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p class="p">この結果表示される画面は次のとおりです。</p>
+<div class="fig fignone" id="rzakcmstdfsfsiz__sbfdsp"><span class="figcap">図 1. サブファイル表示画面</span><div class="image"><img class="image ibmdocs-image-downsize" src="/docs/ja/ssw_ibm_i_74/rzakc/rsll737.gif" alt="SFLSIZ の例で生成される画面の図。"></div></div>
+<p class="p"><a class="xref" href="#rzakcmstdfsfsiz__sbfdsp">図 1</a> では、4 番目のレコードがサブファイルに書き込まれません。
+これは、表示画面にそのための場所がないためです (DDS には SFLPAG(5) と指定されています)。</p>
+</div>
+</div>
+<div class="related-links ibm-padding-top-1 ibm-padding-bottom-2 bx--row bottom-section-parent" aria-label="bottom related links">
+<div class="familylinks ibm-margin-bottom-1">
+<div class="parentlink"><strong>親トピック:</strong> <div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a class="link bottom-section-link" href="/docs/ja/ssw_ibm_i_74/rzakc/rzakcmstkeyent.htm" title="表示装置ファイルを定義するキーワード項目は、45 - 80 桁目 (機能欄) に記入します。">表示装置ファイルの DDS キーワード項目 (45 - 80 桁目)</a></div></div>
+</div>
+</div>
+

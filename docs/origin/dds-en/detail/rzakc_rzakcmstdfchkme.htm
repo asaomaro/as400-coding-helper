@@ -1,0 +1,73 @@
+<main role="main"><article role="article" aria-labelledby="rzakcmstdfchkme__title__1">
+<h1 class="topictitle1" id="rzakcmstdfchkme__title__1">CHKMSGID (Check Message Identifier) keyword for display files</h1><div id="lastModifiedDate"><span>Last Updated</span>: 2026-07-13</div>
+
+
+
+<div class="body refbody"><p class="shortdesc"><span class="ph">You use this field-level keyword to identify
+an error message that is issued when a validity check error is detected.</span></p>
+
+<div class="section"><p>If you do not specify the CHKMSGID keyword, the system supplies
+a message. You specify the associated validity checking rules on a CHECK(M10),
+CHECK(M11), CHECK(VN), CHECK(VNE), CMP, COMP, RANGE, or VALUES keyword.</p>
+<p>The
+format of the keyword is:</p>
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>CHKMSGID(message-id [library/]message-file [&amp;message-data-field])</code></pre></div><div class="docs--copy-btn"></div></div><p>The
+message-ID parameter specifies the message description that contains the text
+to be displayed on the message line.</p>
+<p>The message-file and library parameters
+identify the message file containing the message descriptions. The library
+name is optional. If it is not specified, the library list (*LIBL) that is
+in effect at run time is used to search for the message file.</p>
+<p>The message-data-field
+parameter specifies the name of the field that contains the message replacement
+text to be displayed on the message line. The format of the message-data-field
+parameter is &amp;field-name where field-name is the name of the field containing
+the message replacement text. The field name must exist in the record format,
+and the field must be defined as a character field (data type A) with usage
+P.</p>
+<p>CHKMSGID is allowed only on fields which also contain a CHECK(M10),
+CHECK(M11), CHECK(VN), CHECK(VNE), CMP, COMP, RANGE, or VALUES keyword. The
+field must be input-capable (usage B or I).</p>
+<p>Option indicators are not
+valid for this keyword.</p>
+</div>
+
+<div class="example"><h2 class="sectiontitle" id="rzakcmstdfchkme__title__2">Example</h2><p>The following example shows how to specify
+the CHKMSGID keyword.</p>
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>|...+....1....+....2....+....3....+....4....+....5....+....6....+....7....+....8
+00010A                                      MSGLOC(20)
+00020A          R RECORD1
+00030A            FIELD1        10A  B  4  2CHECK(VN) CHKMSGID(USR1234 +
+00040A                                      QGPL/USRMSGS &amp;MSGFLD1);
+00050A            MSGFLD1       12A  P
+00060A            FIELD2         1A  I  4 20VALUES('A' 'B' 'I')
+00070A                                      CHKMSGID(XYZ9999 APPLMSGS)
+00080A            FIELD3         3S OB  4 25RANGE(023 199)
+     A</code></pre></div><div class="docs--copy-btn"></div></div><p>When RECORD1 is read from the display screen:</p>
+<ul class="cds--list--unordered">
+<li class="cds--list__item">If FIELD1 does not contain a valid name, message USR1234 from the message
+file USRMSGS in library QGPL with the replacement text specified in MSGFLD1
+is displayed on line 20.</li>
+
+<li class="cds--list__item">If the data entered into FIELD2 is not the letter A, B, or I, message
+XYZ9999 from *LIBL/APPLMSGS is displayed on line 20.</li>
+
+<li class="cds--list__item">If the data entered into FIELD3 is less than
+023 or greater than 199, the system-supplied message CPF5224 (value for the
+field is not in a valid range) is displayed on line 20 because the CHKMSGID
+keyword is not specified.</li>
+
+</ul>
+</div>
+
+</div>
+
+<aside role="complementary" aria-labelledby="rzakcmstdfchkme__title__1"><nav role="navigation" aria-label="bottom related links" class="ibm-padding-top-1 ibm-padding-bottom-2 bx--row bottom-section-parent">
+<div class="familylinks ibm-margin-bottom-1">
+<div class="parentlink"><strong>Parent topic:</strong> <div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a data-hd-product="ssw_ibm_i_74" href="/docs/en/ssw_ibm_i_74/rzakc/rzakcmstkeyent.htm" title="You type the keyword entries that define display files in positions 45 through 80 (functions)." class="bottom-section-link">DDS keyword entries for display files (positions 45 through 80)</a></div></div>
+</div>
+
+<div class="linklist relinfo relref ibm-margin-bottom-1" lang="en-us"><h2 class="linkheading bottom-section-h2-title">Related reference</h2>
+<ul><li class="cds--list__item"><div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a data-hd-product="ssw_ibm_i_74" href="/docs/en/ssw_ibm_i_74/rzakc/rzakcmstdfval.htm" title="You use this field-level keyword to specify a list of values that are valid for the user to type into the field." class="bottom-section-link">VALUES (Values) keyword for display files</a></div></li>
+</ul></div>
+</nav></aside></article></main>

@@ -1,0 +1,60 @@
+<h1 class="title topictitle1">表示装置ファイルの FRCDTA (データ表示強制) キーワード</h1><div id="lastModifiedDate"><span>Last Updated</span>: 2021-04-13</div>
+<div class="body refbody"><p class="shortdesc"><span class="ph">このレコード・レベル・キーワードは、次の入力または入出力命令を待たずに、即時にレコード様式を表示するために使用します。バッファーが部分的にいっぱいになっているときに、FRCDTA キーワードを使用してバッファーをクリアすることができます。</span></p>
+<div class="section">  <div class="note note border-2 cds--inline-notification--info ibmdocs-note cds--inline-notification cds--inline-notification--low-contrast margin-top-1 margin-bottom-1"><div class="cds--inline-notification__details"><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" class="cds--inline-notification__icon" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M16,2A14,14,0,1,0,30,16,14,14,0,0,0,16,2Zm0,5a1.5,1.5,0,1,1-1.5,1.5A1.5,1.5,0,0,1,16,7Zm4,17.12H12V21.88h2.88V15.12H13V12.88h4.13v9H20Z"></path></svg>
+        <div class="cds--inline-notification__text-wrapper">
+          <div class="cds--inline-notification__subtitle"><span class="notetitle ibm-bold ibm-textcolor-blue-50 background-blue cds--inline-notification__title ibm-padding-top-1 ibm-padding-bottom-1 padding-left-1 padding-right-1">注:</span> 各書き込みステートメントのあとにこのキーワードを使用すると、パフォーマンス問題が起こります。</div>
+        </div>
+      </div></div>
+<p class="p">このキーワードにはパラメーターはありません。</p>
+<p class="p">あるレコード様式についてこのキーワードが効力を持っている場合には、そのレコード様式は、表示装置ファイルの作成 (CRTDSPF) コマンドまたは表示装置ファイルの変更 (CHGDSPF) コマンドで DFRWRT(*NO) を指定した場合と同様の方法で表示されます。</p>
+<p class="p">表示装置ファイルに対して DFRWRT(*YES) が効力を持っていて、プログラムが入力命令の前に複数回の出力命令を行う場合には、このキーワードを使用することができます。
+DFRWRT(*YES) が指定されていると、入力命令が行われるまでは、どのレコード様式も表示されません。
+したがって、プログラムがその処理を完了するまで、ワークステーション・ユーザーはかなり待たなければならないこともあります。
+FRCDTA を指定する場合には、最初に表示されるレコード様式に対して指定するとよいでしょう。そうすれば、
+最初のレコード様式で、遅延が正常な状態であることをワークステーション・ユーザーに示すことができます。各ステップの説明については、次の例を参照してください。</p>
+<p class="p">FRCDTA キーワードは、レコード様式ごとに一度だけ指定することができます。</p>
+<p class="p">このキーワードについては、オプション標識を使用することができます。</p>
+</div>
+<div class="example"><h2 class="title sectiontitle">例</h2> <p class="p">次の例は、FRCDTA キーワードの指定方法を示しています。</p>
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code>|...+....1....+....2....+....3....+....4....+....5....+....6....+....7....+....8
+00010A* Following record format displays in progress message
+00020A          R INPROG                    LOCK
+00030A                                      FRCDTA
+00040A                                 12 21'Please wait; +
+00050A                                      operations in progress'
+     A
+00060A* Following record format uses upper part of screen
+00070A          R RCD1                      OVERLAY
+00080A                                  1 34'Sample Title'
+00090A            FLD1           8  0   3  2
+00100A            FLD2          20      4  2
+     A
+00110A* Following record format uses middle part of screen
+00120A          R RCD2                      OVERLAY
+00120A            FLDA           8     11  2
+00140A            FLDB          18     12  2
+     A
+00150A* Following record format uses lower part of screen
+00160A          R RCD3                      OVERLAY
+00170A            FLDC           8   B 15  2
+00180A            FLDD           8   B 16  2
+     A</code></pre></div><div class="docs--copy-btn"></div></div>
+<p class="p">この例では、1 つの表示画面を作成するために 3 つのレコード様式 (RCD1、RCD2、および RCD3) が使用され、各レコード様式はそれぞれ画面の一部だけを使用します。
+レコード様式 INPROG は、
+他の 3 つのレコード様式の準備が終わるまで、ワークステーション・ユーザーをしばらく待たせます。
+プログラムは次の命令を行います。</p>
+<ul class="ul cds--list--unordered"><li class="li cds--list__item">レコード様式 INPROG を表示します。FRCDTA が指定されているために、処理が進行中であることを示すメッセージが、ただちに表示されます。
+LOCK キーワードが指定されているために、キーボードはロックされたままになります。</li>
+<li class="li cds--list__item">他の 3 つのレコード様式 (RCD1、RCD2、および RCD3) の準備処理を続行し、次にそれらを表示します。
+これらの様式は、レコード様式 INPROG にオーバーラップするため、INPROG は消去されます。</li>
+<li class="li cds--list__item">レコード様式 RCD3 を読み取ります。これにより、キーボードのロックが解除され、
+ワークステーション・ユーザーが画面に応答して入力を行うことができるようになります。</li>
+</ul>
+</div>
+</div>
+<div class="related-links ibm-padding-top-1 ibm-padding-bottom-2 bx--row bottom-section-parent" aria-label="bottom related links">
+<div class="familylinks ibm-margin-bottom-1">
+<div class="parentlink"><strong>親トピック:</strong> <div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a class="link bottom-section-link" href="/docs/ja/ssw_ibm_i_74/rzakc/rzakcmstkeyent.htm" title="表示装置ファイルを定義するキーワード項目は、45 - 80 桁目 (機能欄) に記入します。">表示装置ファイルの DDS キーワード項目 (45 - 80 桁目)</a></div></div>
+</div>
+</div>
+

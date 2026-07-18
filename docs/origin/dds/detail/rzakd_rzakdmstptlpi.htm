@@ -1,0 +1,75 @@
+<h1 class="title topictitle1">印刷装置ファイルの LPI (1 インチ当たりの行数) キーワード</h1><div id="lastModifiedDate"><span>Last Updated</span>: 2021-04-13</div>
+<div class="body refbody"><p class="shortdesc">このレコード・レベルのキーワードは、ファイルの 1 インチ当たりの行数を変更する場合に使用します。</p>
+<div class="section"><p class="p">あるレコードについて LPI を指定しなかった場合
+には、CRTPRTF、CHGPRTF、または OVRPRTF コマンドの LPI の値に従っ
+て LPI の値が設定されます。</p>
+<div class="p">キーワードの形式は次のとおりです。
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code>LPI( 4 | 6 | 8 | 9 | 12)</code></pre></div><div class="docs--copy-btn"></div></div>
+</div>
+<p class="p">指定できる値は 4、6、8、9、または 12 のいずれかです。</p>
+<p class="p">1 つのページについて複数の LPI を使用した場合には、スキップ先の行番号
+(SKIPB または SKIPA で指定したもの) は、すべて絶対位置 (用紙上の固定位置) に
+なります。例えば、ページの長さが 66 行で、ファイルの LPI の値が 6 であるとすれば、用紙の長さは 11.0 インチです。この場合に、行番号 48 へのスキップを指示
+したとすれば、ページの初めから 8 インチ分スキップしてから印刷が行われます。この例で、6 LPI で 24 行 (4 インチ) 印刷し、次に 8 LPI で 24 行 (3 インチ)
+印刷した場合には、48 行目はページの始めから 7 インチの位置にきます。</p>
+<p class="p">上記の 2 つの例では、いずれも 48 行が処理されます。ここで SKIPB(55) という
+キーワードが使用されたとすれば、最初の例では、6 LPI に基づいて、55 行目
+(ページの始めから 55/6 インチの位置) にスキップすることになります。2 番目の例では、8 LPI に基づいて、改ページが行われ、55 行目 (ページの始め
+から 55/8 インチの位置) から印刷が開始されます。2 番目の例で改ページが
+生じるのは、すでにページの始めから 7 インチのところまで印刷してしまっている
+からです。そして、8 LPI に基づく 55 行目へのスキップは 7 インチ未満となる
+ため、55 行目の印刷のためには改ページが必要です。</p>
+<p class="p">データは、行番号ではなく位置に基づいて順次に処理されます。ある行番号への
+スキップを指定した場合に、それが現在位置より前の位置であれば (たとえその
+行番号が現在の行番号より大きくても)、改ページが生じます。そして、次の
+ページに移って印刷が続けられます。</p>
+<p class="p">1 ページについて複数の LPI を指定した場合には、行送り (SPACEA および SPACEB)
+は、すべて現在位置を基準にして行われます。例えば、6 LPI で 24 行 (4 インチ)
+を印刷し、8 LPI で 24 行 (3 インチ) を印刷したとすれば、48 行目はページの始めから 7 インチの位置にきます。次に、SPACEA(4) (LPI は
+まだ 8 LPI のまま) を実行したとすれば、最後の行から 1/2 インチの行送
+りが行われ、ページの始めから合計 7.5 インチの位置になります。LPI キーワードを使用する場合には、SPACEA キーワードおよび SPACEB キーワードを
+使用するようお勧めします。</p>
+<div class="p">LPI、SKIP、および SPACE キーワードは、次の順序で処理されます。<p class="lines">LPI<br>
+SKIPB<br>
+SPACEB<br>
+SPACEA<br>
+SKIPA</p>
+</div>
+<p class="p">したがって、SPACE キーワードおよび SKIP キーワードは新しい LPI を使用します。それ以降の行に適用される LPI は、LPI パラメーターに指定されてい
+る LPI の値です。このパラメーター値は、次のレコード様式が処理されるまで有効です。レコード様式の終わりに達すると、LPI の値はファイル・レベルの値に戻ります。</p>
+<p class="p">LPI は行の境界でのみ効力を持ちます。行の途中で LPI を変更しても、その
+新しい値が効力を持つのはその行の終わりに達したときであり、それについての
+診断メッセージは出ません。</p>
+<p class="p">このキーワードと BLKFOLD、CPI、または DFNCHR キーワードとを、同じレコード
+様式に対して指定することはできません。これらのキーワードのいずれか
+と LPI キーワードを同時に指定した場合には、ファイルは作成されません。</p>
+<p class="p">このキーワードは、IPDS プリンターおよび高機能印刷サポートが可能なプリンター
+に対して有効です。DEVTYPE(*SCS) として作成されるファイルで LPI キーワードを
+指定すると、警告メッセージが表示されます。</p>
+<p class="p">オーバーフロー行番号 (CRTPRTF コマンドの OVRFLW パラメーター) は、ファイル・
+レベルの LPI 値に基づく絶対位置 (インチ単位) には変換されません。
+オーバーフロー位置 (インチ単位) に達したときは、オーバーフロー条件の
+発生によりそれが知らされます。</p>
+<p class="p">例: ページの長さ = 66、LPI = 6、OVRFLW = 60 (10 インチ)。</p>
+<ul class="ul cds--list--unordered"><li class="li cds--list__item">6 LPI で 36 行 (6 インチ) 印刷</li>
+<li class="li cds--list__item">4 LPI で 16 行 (4 インチ) 印刷</li>
+</ul>
+<p class="p">52 行目が処理された後でオーバーフロー条件が生じます。</p>
+<p class="p">オプション標識は、このキーワードでは無効です。</p>
+</div>
+<div class="section"><h2 class="title sectiontitle">例</h2><p class="p">次の例は、LPI キーワードの指定方法を示しています。</p>
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code>|...+....1....+....2....+....3....+....4....+....5....+....6....+....7....+....8
+     A          R RECORD1                   LPI(6)
+     A                                      SPACEB(6)
+     A</code></pre></div><div class="docs--copy-btn"></div></div>
+<p class="p">この例では、CRTPRTF コマンド、CHGPRTF コマンド、または OVRPRTF コマンドで
+指定した LPI の値に関係なく、プリンターでは、次の行の印刷の前に 1 インチ分の
+行送りが行われます。</p>
+</div>
+</div>
+<div class="related-links ibm-padding-top-1 ibm-padding-bottom-2 bx--row bottom-section-parent" aria-label="bottom related links">
+<div class="familylinks ibm-margin-bottom-1">
+<div class="parentlink"><strong>親トピック:</strong> <div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a class="link bottom-section-link" href="/docs/ja/ssw_ibm_i_74/rzakd/rzakdmstprkey.htm" title="これらは印刷装置ファイルの定義に有効なキーワード項目です。">印刷装置ファイルのキーワード項目 (45 から 80 桁目)</a></div></div>
+</div>
+</div>
+

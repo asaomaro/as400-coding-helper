@@ -1,0 +1,61 @@
+<main role="main"><article role="article" aria-labelledby="rzakdmstusrd__title__1">
+<h1 class="topictitle1" id="rzakdmstusrd__title__1">DTASTMCMD (Data Stream Command) keyword in printer files</h1><div id="lastModifiedDate"><span>Last Updated</span>: 2026-07-13</div>
+
+
+
+<div class="body refbody"><p class="shortdesc">You use this record-level or field-level
+keyword to store a data stream command or some other piece of information
+in a spooled file.</p>
+
+<div class="section"><p>This command can be used to determine how to process a record
+or field on a particular page of the spooled file. DTASTMCMD is valid only
+for printer files with device type *AFPDS specified.</p>
+<div class="p">The format of the
+keyword is:  <div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>DTASTMCMD(text |&amp;text-field);</code></pre></div><div class="docs--copy-btn"></div></div></div>
+<p>The
+text must be enclosed in single quotation marks. If the length of the text
+is greater than 255 characters, an error message will be signaled at compile
+time.</p>
+<p>The program-to-system field specified must exist in the same record
+format as the DTASTMCMD keyword. If the length of the program-to-system field
+is greater than 255 characters, an error message will be signaled at compile
+time.</p>
+<p>User applications or user specified programs that need to know
+how to process a particular page in the spooled file can search the data stream
+and retrieve the data stream command. This will be enclosed in an AFPDS (MODCA)
+NOP command. The NOP will be built into the datastream before any printable
+data for the record or field containing the keyword. Since this information
+is just being stored, this keyword will not have a direct effect on the actual
+file. For more information about the NOP command, refer to the <cite>MO:DCA Reference</cite>,
+SC31-6802.</p>
+<p>Option indicators are valid for this keyword.</p>
+<div class="note border-2 cds--inline-notification--info ibmdocs-note cds--inline-notification cds--inline-notification--low-contrast margin-top-1 margin-bottom-1"><div class="cds--inline-notification__details"><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" class="cds--inline-notification__icon" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M16,2A14,14,0,1,0,30,16,14,14,0,0,0,16,2Zm0,5a1.5,1.5,0,1,1-1.5,1.5A1.5,1.5,0,0,1,16,7Zm4,17.12H12V21.88h2.88V15.12H13V12.88h4.13v9H20Z"></path></svg>
+        <div class="cds--inline-notification__text-wrapper">
+          <div class="cds--inline-notification__subtitle"><span class="notetitle ibm-bold ibm-textcolor-blue-50 background-blue cds--inline-notification__title ibm-padding-top-1 ibm-padding-bottom-1 padding-left-1 padding-right-1">Note:</span> You
+can specify this keyword only once for each record and once for each field.</div>
+        </div>
+      </div></div>
+</div>
+
+<section class="section" role="region" aria-labelledby="rzakdmstusrd__title__2"><h2 class="sectiontitle" id="rzakdmstusrd__title__2">Example</h2><p>The following example shows how to specify
+the DTASTMCMD keyword.</p>
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>|...+....1....+....2....+....3....+....4....+....5....+....6....+....7....+....8
+     A          R RECORD1                   DTASTMCMD('TEXT(Record 1)')
+     A            FIELD1        10A     5  5
+     A  01                                  DTASTMCMD('TEXT(Field 1)')
+     A            FIELD2        10A    10  5DTASTMCMD(&amp;DATA);
+     A            DATA          10A  P
+     A</code></pre></div><div class="docs--copy-btn"></div></div><p>The data stream for the record RECORD1 has the text for
+DTASTMCMD as TEXT(Record 1). If indicator 01 is optioned on, the data stream
+for the field FIELD1 has the text for DTASTMCMD as TEXT(Field 1). If indicator
+01 is optioned off, no data stream text is generated for DTASTMCMD on FIELD1.
+FIELD2 will use what is contained in DATA as the text for DTASTMCMD.</p>
+</section>
+
+</div>
+
+<aside role="complementary" aria-labelledby="rzakdmstusrd__title__1"><nav role="navigation" aria-label="bottom related links" class="ibm-padding-top-1 ibm-padding-bottom-2 bx--row bottom-section-parent">
+<div class="familylinks ibm-margin-bottom-1">
+<div class="parentlink"><strong>Parent topic:</strong> <div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a data-hd-product="ssw_ibm_i_74" href="/docs/en/ssw_ibm_i_74/rzakd/rzakdmstprkey.htm" title="These are valid keyword entries for defining printer files." class="bottom-section-link">Keyword entries for printer files (positions 45 through 80)</a></div></div>
+</div>
+</nav></aside></article></main>

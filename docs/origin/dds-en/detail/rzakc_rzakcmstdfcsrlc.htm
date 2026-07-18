@@ -1,0 +1,73 @@
+<main role="main"><article role="article" aria-labelledby="rzakcmstdfcsrlc__title__1">
+<h1 class="topictitle1" id="rzakcmstdfcsrlc__title__1">CSRLOC (Cursor Location) keyword for display files</h1><div id="lastModifiedDate"><span>Last Updated</span>: 2026-07-13</div>
+
+
+
+<div class="body refbody"><p class="shortdesc">You use this record-level keyword to specify
+the cursor location on an output operation to the record format that
+you are defining. Your program sends the output operation after setting
+the cursor location.</p>
+
+<div class="section"><p>The format of the keyword is:</p>
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>CSRLOC(field-name-1 field-name-2)</code></pre></div><div class="docs--copy-btn"></div></div><p>The
+parameter values on the keyword specify the names of two fields whose
+contents are the line number (for field-name-1) and the position number
+(for field-name-2) of the cursor location. Field-name-1 and field-name-2
+are 3-byte, zoned decimal, hidden fields. Your program uses these
+fields to tell the <span class="keyword">IBM i</span> operating
+system where to locate the cursor.</p>
+<p>The cursor is not positioned
+to the required location on an output operation that leaves the keyboard
+locked. The cursor does not move to the required position until your
+program sends an input or an output operation that unlocks the keyboard.
+If your program sets the cursor location fields to values outside
+the range of values valid for the display device, this keyword is
+ignored.</p>
+<p>For any one output operation, the CSRLOC keyword overrides
+any other cursor location specifications, such as DSPATR(PC) and SFLRCDNBR(CURSOR),
+that are in effect. This keyword is in effect until your program sends
+another output operation with DSPATR(PC), CSRLOC, or SFLRCDNBR(CURSOR)
+in effect or until the record in which this keyword is specified is
+overlaid (OVERLAY keyword) or erased (ERASE  keyword), whichever comes
+first.</p>
+<p>On an input operation, the cursor location can be determined
+by looking at the I/O feedback area or specifying the appropriate
+parameter on the RTNCSRLOC keyword. See the <a href="http://public.dhe.ibm.com/systems/power/docs/systemi/v6r1/en_US/sc415715.pdf" rel="noopener" target="_blank" title="(Opens a PDF file)">Application Display
+Programming book</a> for more information about the I/O feedback
+area.</p>
+<p>Specify the CSRLOC keyword only once per record format.</p>
+<p>The
+CSRLOC keyword is not valid for the following record formats:</p>
+<ul class="cds--list--unordered">
+<li class="cds--list__item">Subfile record formats (identified by the SFL keyword)</li>
+
+<li class="cds--list__item">User-defined record formats (identified by the USRDFN keyword)</li>
+
+</ul>
+<p>Option indicators are valid for this keyword. Display size
+condition names are not valid.</p>
+</div>
+
+<div class="example"><h2 class="sectiontitle" id="rzakcmstdfcsrlc__title__2">Example</h2><p>The following example shows how
+to specify the CSRLOC keyword.</p>
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>|...+....1....+....2....+....3....+....4....+....5....+....6....+....7....+....8
+00010A          R RECORD1                   CSRLOC(LINNBR POSNBR)
+00020A            TITLE         40   B  1  2
+00030A            PAGE           5Y OB  1 60
+00040A            TEXT        1760   B  2  1
+00050A            LINNBR         3  OH
+00060A            POSNBR         3  OH
+     A</code></pre></div><div class="docs--copy-btn"></div></div><p>The application program sets the contents of
+LINNBR and POSNBR before issuing an output operation to RECORD1. When
+the record is displayed, the fields <em>Title</em>, <em>Page</em>, and <em>Text</em> appear
+on the display. The cursor can be at some location in a field of RECORD1
+where the workstation user is to make changes.</p>
+</div>
+
+</div>
+
+<aside role="complementary" aria-labelledby="rzakcmstdfcsrlc__title__1"><nav role="navigation" aria-label="bottom related links" class="ibm-padding-top-1 ibm-padding-bottom-2 bx--row bottom-section-parent">
+<div class="familylinks ibm-margin-bottom-1">
+<div class="parentlink"><strong>Parent topic:</strong> <div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a data-hd-product="ssw_ibm_i_74" href="/docs/en/ssw_ibm_i_74/rzakc/rzakcmstkeyent.htm" title="You type the keyword entries that define display files in positions 45 through 80 (functions)." class="bottom-section-link">DDS keyword entries for display files (positions 45 through 80)</a></div></div>
+</div>
+</nav></aside></article></main>

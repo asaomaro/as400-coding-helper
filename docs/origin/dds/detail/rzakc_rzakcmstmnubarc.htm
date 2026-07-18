@@ -1,0 +1,161 @@
+<h1 class="title topictitle1">表示装置ファイルの MNUBARCHC (メニュー・バー選択項目) キーワード</h1><div id="lastModifiedDate"><span>Last Updated</span>: 2021-04-13</div>
+<div class="body refbody"><p class="shortdesc"><span class="ph">これはフィールド・レベル・キーワードで、メニュー・バー・フィールドの選択項目を定義するのに使用します。</span></p>
+<div class="section"><p class="p">メニュー・バー選択項目は、アプリケーション・ユーザーが選択できる、関連するアクションのグループを表します。
+ユーザーがメニュー・バー選択項目を要求すると、プルダウン・メニューにアクションのグループが表示されます。</p>
+<div class="p">キーワードの形式は次のとおりです。<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code>MNUBARCHC(choice-number pull-down-record choice-text
+[&amp;return-field])</code></pre></div><div class="docs--copy-btn"></div></div>
+</div>
+<p class="p">choice-number パラメーターは必須であり、識別番号を指定します。
+選択項目番号は、メニュー・バー内のどの項目が選択されたかを示すためにアプリケーション・プログラムに戻されます。
+選択番号についての有効な値は、1 - 99 の整数です。
+単一のメニュー・バー・フィールド内で重複した値を使用することはできません。</p>
+<p class="p">pull-down-record パラメーターは必須であり、ユーザーがこの選択項目を選択したときに表示されるプルダウン・レコードの名前を指定します。
+指定するレコードは、ファイル内に存在するものでなければならず、PULLDOWN キーワードが含まれていなければなりません。</p>
+<div class="p">choice-text パラメーターは必須であり、メニュー・バー内で選択項目を表すために表示されるテキストを定義します。パラメーターは、次のいずれかの書式で指定できます。<ul class="ul cds--list--unordered"><li class="li cds--list__item">文字ストリングとして:  '選択項目テキスト '</li>
+<li class="li cds--list__item">プログラム - システム間フィールドとして: &amp;フィールド名<p class="p">指定するフィールド名は、メニュー・バー・レコード内に存在しなければならず、使用目的 P の文字フィールドとして定義しなければなりません。</p>
+</li>
+</ul>
+</div>
+<p class="p">選択項目テキストは、このファイルについて指定されている最小の画面サイズの 1 つの表示行に収まらなければなりません。
+行の最初のメニュー・バー選択項目のテキストは 3 桁目で始まり、選択項目テキストの後ろには必ず後書きブランクが挿入されるため、選択項目テキストの最大長は、ファイルについての最小画面サイズが 24 x 80 の場合は 76 であり、27 x 132 の場合は 128 です。</p>
+<p class="p">文字ストリングまたはプログラム - システム間フィールドに入っている選択項目テキストが表示されるときには、テキスト内の後書きブランクは切り捨てられ、選択項目間には 3 つのブランク・スペースが挿入されます。
+しかし、画面上でメニュー・バー・フィールドが占める行の数は、choice-text パラメーターの長さの合計に各選択項目間の 3 つのブランク・スペースを足した数によって決まります。
+choice-text パラメーターの長さは、後書きブランクを除いた文字ストリングの長さか、プログラム - システム間フィールドの長さのいずれかになります。
+メニュー・バー・フィールドが占めることができる最大の行数は、12 行です (これには、区切り線も含まれます)。</p>
+<div class="p">選択項目テキスト内で、略号文字を示す「より大 (&gt;) 文字」を使用することによって、選択項目についての略号を指定することができます。&gt; の右隣の文字が略号になります。以下に例を示します。
+<dl class="dl"><dt class="dthd"><strong>選択項目テキスト</strong></dt>
+<dd class="ddhd"><strong>画面での表示</strong></dd>
+<dt class="dt dlterm">'&gt;File'</dt>
+<dd class="dd"><u class="ph u">F</u>ile</dd>
+<dt class="dt dlterm">'F&gt;inish'</dt>
+<dd class="dd">F<u class="ph u">i</u>nish</dd>
+<dt class="dt dlterm">'Save &gt;As...'</dt>
+<dd class="dd">Save <u class="ph u">A</u>s...</dd>
+<dt class="dt dlterm">'X &gt;= 1'</dt>
+<dd class="dd">X <u class="ph u">=</u> 1</dd>
+</dl>
+</div>
+<div class="p">テキスト内で &gt; を文字として指定するには、テキストに単一のアポストロフィ文字を入れるためにアポストロフィ文字を 2 回指定するのと同様に、&gt; を 2 回指定する必要があります。<dl class="dl"><dt class="dthd"><strong>選択項目テキスト</strong></dt>
+<dd class="ddhd"><strong>画面での表示</strong></dd>
+<dt class="dt dlterm">'X &gt;&gt;= 1'</dt>
+<dd class="dd">X &gt;= 1</dd>
+<dt class="dt dlterm">'X &gt;&gt;&gt;= 1'</dt>
+<dd class="dd">X &gt;<u class="ph u">=</u> 1</dd>
+</dl>
+<div class="note note border-2 cds--inline-notification--info ibmdocs-note cds--inline-notification cds--inline-notification--low-contrast margin-top-1 margin-bottom-1"><div class="cds--inline-notification__details"><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" class="cds--inline-notification__icon" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M16,2A14,14,0,1,0,30,16,14,14,0,0,0,16,2Zm0,5a1.5,1.5,0,1,1-1.5,1.5A1.5,1.5,0,0,1,16,7Zm4,17.12H12V21.88h2.88V15.12H13V12.88h4.13v9H20Z"></path></svg>
+        <div class="cds--inline-notification__text-wrapper">
+          <div class="cds--inline-notification__subtitle"><span class="notetitle ibm-bold ibm-textcolor-blue-50 background-blue cds--inline-notification__title ibm-padding-top-1 ibm-padding-bottom-1 padding-left-1 padding-right-1">注:</span> &gt; を略号文字として指定することはできません。</div>
+        </div>
+      </div></div>
+</div>
+<p class="p">示される略号文字は、1 バイト文字でなければならず、ブランクであってはなりません。1 つの選択項目テキスト内で使用できる略号は 1 つだけであり、また、2 つ以上の選択項目に同じ略号文字を指定してはなりません。</p>
+<p class="p">return-field パラメーターは任意指定であり、あるメニュー・バー選択項目が選択されたときに制御がアプリケーション・プログラムに戻されるかどうかを指定します。
+このパラメーターでは、制御がアプリケーション・プログラムに戻されるときに、選択された選択項目の番号が入る、メニュー・バー・レコード内の潜在フィールドの名前を指定します。
+潜在フィールドは、データ・タイプ Y (数字)、桁数 2、小数点以下の桁数 0 として定義します。このフィールドに選択項目番号が入っている場合には、メニュー・バー選択項目が選択されたために制御がアプリケーションに戻されていることを意味します。
+アプリケーション・プログラムの次の命令により、その選択項目に関連付けられているプルダウン・レコード、つまり、その選択項目についての MNUBARCHC キーワードに指定されているプルダウン・レコードが更新され (必要であれば)、書き込まれます。
+ある選択項目番号がこのフィールドに戻されると、プルダウン入力が受信されたあとで、その選択項目番号が入っているフィールドにゼロが戻されます。
+プルダウン入力が受信されると、このフィールドにゼロが戻されますが、同様に、アプリケーション・プログラム・レコード内のメニュー・バー・フィールドまたは選択項目フィールドに選択項目番号が入っている場合は、アプリケーション・プログラムがプルダウン入力を処理しなければならないことを意味します。</p>
+<p class="p">MNUBARCHC キーワード内に指定するメニュー・バー・フィールドは、データ・タイプ Y (数字) の入力可能フィールドとして定義します。
+フィールドの桁数は 2 であり、小数点以下の桁数は 0 です。メニュー・バー・レコードが読み取られる場合、選択された選択項目 (もしあれば) の番号がメニュー・バー・フィールドに戻されます。メニュー・バー・フィールドは、必ず 1 行目の 2 桁目で始まるように定義しなければなりません。</p>
+<p class="p">フィールドに MNUBARCHC を指定する場合には、レコード・レベルで MNUBAR キーワードを指定しなければなりません。</p>
+<p class="p">1 つのメニュー・バー・フィールドについて複数の MNUBARCHC キーワードを指定することができます。
+指定できる MNUBARCHC キーワードの数は、choice-text パラメーターの長さ (文字ストリング choice-text 内の後書きブランクを除く) と、MNUBAR についての 12 行の制限によってのみ制限されます。1 つの
+メニュー・バー・フィールドについて定義するすべての選択項目は、各選択項目間の 3 スペースも含めて、画面に収まらなければなりません。</p>
+<p class="p">MNUBARCHC キーワードを指定するフィールドには、次のキーワードを指定することができます。</p>
+<div class="tablenoborder"><div class="cds--data-table-container"><table id="parm_table0" cellpadding="4" cellspacing="0" role="presentation" class="table presentation cds--data-table" rules="none" frame="void" border="0"><tbody class="tbody"><tr class="row"><td class="entry valigntop" width="33.33333333333333%"><p class="lines">ALIAS<br>
+CHCAVAIL<br>
+CHCSLT</p>
+</td>
+<td class="entry valigntop" width="33.33333333333333%"><p class="lines">INDTXT<br>
+MNUBARSEP<br>
+TEXT</p>
+</td>
+<td class="entry valigntop" width="33.33333333333333%">&nbsp;</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p class="p">このキーワードについては、オプション標識を使用することができます。</p>
+</div>
+<div class="section"><h2 class="title sectiontitle">例</h2><p class="p">以下に MNUBARCHC キーワードの指定方法の例を示します。</p>
+</div>
+<div class="example"><h2 class="title sectiontitle">例 1</h2><div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code>|...+....1....+....2....+....3....+....4....+....5....+....6....+....7....+....8
+     A                                      DSPSIZ(*DS3 *DS4)
+     A          R MENUBAR                   MNUBAR
+     A            MNUFLD         2Y 0B  1  2
+     A                                      MNUBARCHC(1 PULLFILE +
+     A                                         '&gt;File          ')
+     A  01                                  MNUBARCHC(2 PULLEDIT +
+     A                                         '&gt;Edit          ')
+     A                                      MNUBARCHC(3 PULLVIEW +
+     A                                         '&gt;View          ')
+     A                                      MNUBARCHC(4 PULLOPT +
+     A                                         '&gt;Options       ' &amp;RTNFLD);
+     A                                      MNUBARCHC(5 PULLHELP +
+     A                                         '&gt;Help          ')
+     A            RTNFLD         2Y 0H</code></pre></div><div class="docs--copy-btn"></div></div>
+<p class="p">この例では、1 つのメニュー・バーについて 5 つのメニュー・バー選択項目 (File、Edit、View、Options、および Help) が定義されています。
+オプション標識 01 がオンになっており、メニュー・バー・レコードが、システムがそれを表示する前に書き込まれた場合は、システムがメニュー・バーを表示するときに Edit 選択項目が表示されます。
+オプション標識 01 がオフになっているか、またはメニュー・バー・レコードが、システムがそれを表示する前に書き込まれなかった場合は、Edit 選択項目は表示されません。
+Edit 選択項目が表示されない場合には、選択項目のリストは圧縮され、File 選択項目のあとには View 選択項目が、3 つのブランク・スペースを空けて続きます。</p>
+<p class="p">File 選択項目が選択されると、レコード PULLFILE がプルダウン・メニューとして File 選択項目の下に表示されます。
+Options 選択項目が選択されると、制御がアプリケーション・プログラムに戻されます。
+アプリケーション・プログラムは、PULLOPT レコードを、システムがそれをプルダウン・メニューとして表示する前に更新することができます。</p>
+<p class="p">単一文字の下線が可能な表示装置では、各選択項目についての略号がテキスト内の最初の文字になります。メニュー・バー・レコードが読み取られると、メニュー・バー・フィールド MNUFLD に、選択された選択項目の番号か、または 0 (選択項目が選択されなかった場合) が入ります。</p>
+<p class="p">各選択項目のテキストは、テキストごとに 15 のスペースが使用できる文字ストリングとして定義されています。ただし、後書きブランクが除去されてから、システムは 1 行にいくつの選択項目が収まるかを計算します。
+したがって、メニュー・バーに必要とされる最大のスペースは 87 桁です (文字ストリング内のテキストについての 28 桁と各選択項目間の 3 スペース)。
+メニュー・バー選択項目は 1 行を占めます。メニュー・バー区切り記号がさらに 1 行を占めるため、メニュー・バー全体は 2 行を占めることになります。</p>
+</div>
+<div class="example"><h2 class="title sectiontitle">例 2</h2><div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code>|...+....1....+....2....+....3....+....4....+....5....+....6....+....7....+....8
+     A                                      DSPSIZ(*DS3 *DS4)
+     A          R MENUBAR                   MNUBAR
+     A            MNUFLD         2Y 0B  1  2
+     A                                      MNUBARCHC(1 PULLFILE +
+     A                                         &amp;FILETXT);
+     A  01                                  MNUBARCHC(2 PULLEDIT +
+     A                                         &amp;EDITTXT);
+     A                                      MNUBARCHC(3 PULLVIEW +
+     A                                         &amp;VIEWTXT);
+     A                                      MNUBARCHC(4 PULLOPT +
+     A                                         &amp;OPTTXT &amp;RTNFLD);
+     A                                      MNUBARCHC(5 PULLHELP +
+     A                                         &amp;HELPTXT);
+     A           FILETXT       15A  P
+     A           EDITTXT       15A  P
+     A           VIEWTXT       15A  P
+     A           OPTTXT        15A  P
+     A           HELPTXT       15A  P
+     A           RTNFLD         2Y 0H
+     A</code></pre></div><div class="docs--copy-btn"></div></div>
+<p class="p">この例は、選択項目テキストがプログラム - システム間フィールドを使用して指定されている点を除き、例 1 と同じです。</p>
+<p class="p">各選択項目について表示される選択項目テキストは、実行時にプログラム - システム間フィールドから検索されます。
+実行時にアプリケーション・プログラムによって提供されるテキスト内には、略号が指定されていなければなりません。
+例 1 の場合と同様に、メニュー・バー・レコードが読み取られると、メニュー・バー・フィールド MNUFLD に、選択された選択項目の番号か、または 0 (選択項目が選択されなかった場合) が入ります。</p>
+<p class="p">例 1 の場合と同様に、各選択項目のテキストについて使用できるスペースの数は 15 です。
+メニュー・バーに必要とされる最大のスペースは 87 桁です (5 つの各選択項目についての 15 の使用可能なテキスト桁と選択項目間の 3 スペース)。最小の画面サイズは 24 x 80 (*DS3) であるため、メニュー・バー選択項目は 2 行を占めます。メニュー・バー区切り記号がさらに 1 行を
+占めるため、メニュー・バー全体は 3 行を占めることになります。
+ただし、選択項目を表示するのに使用される実際の行の数はプログラム - システム間フィールドに入っているテキストによって異なります。
+メニュー・バーが表示されるときには、P フィールド内の後書きブランクは切り捨てられ、各選択項目間に 3 つのブランクが挿入されます。</p>
+</div>
+<div class="example"><h2 class="title sectiontitle">例 3</h2><div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code>|...+....1....+....2....+....3....+....4....+....5....+....6....+....7....+....8
+     A          R MENUBAR                   MNUBAR
+     A            MNUFLD         2Y 0B  1  2
+     A                                      MNUBARCHC(1 PULLFILE +
+     A                                         '&gt;File        ')
+     A                                      MNUBARCHC(2 PULLEDIT +
+     A                                         '&gt;Edit        ' &amp;RTNFLD);
+     A            RTNFLD         2Y 0H</code></pre></div><div class="docs--copy-btn"></div></div>
+<p class="p">この例では、メニュー・バー内の選択項目 2 が選択されると、制御がアプリケーションに戻され、フィールド RTNFLD に番号 2 が入ります。フィールド MNUFLD には 0 が入り、プルダウン入力が受信されなかったことを示します。
+アプリケーション・プログラムは、フィールド RTNFLD の内容を入手するためにレコード MENUBAR を読み取らなければなりません。
+その後、アプリケーション・プログラムはレコード PULLEDIT を書き込まなければなりません。
+システムは、メニュー・バー対話の制御を再開します。
+その後、レコード PULLEDIT に入力が行われると、制御がアプリケーション・プログラムに戻され、フィールド MNUFLD に番号 2 が入ります。フィールド RTNFLD には 0 が入り、プルダウン入力が受信されたために制御が戻されたことを示します。 </p>
+<p class="p">選択項目 1 が選択されると、システムはプルダウン・レコード PULLFILE を表示します。PULLFILE に入力が行われると、制御がアプリケーション・プログラムに戻され、フィールド MNUFLD に番号 1 が入ります。フィールド RTNFLD には 0 が入り、プルダウン入力が受信されたために制御が戻されたことを示します。</p>
+</div>
+</div>
+<div class="related-links ibm-padding-top-1 ibm-padding-bottom-2 bx--row bottom-section-parent" aria-label="bottom related links">
+<div class="familylinks ibm-margin-bottom-1">
+<div class="parentlink"><strong>親トピック:</strong> <div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a class="link bottom-section-link" href="/docs/ja/ssw_ibm_i_74/rzakc/rzakcmstkeyent.htm" title="表示装置ファイルを定義するキーワード項目は、45 - 80 桁目 (機能欄) に記入します。">表示装置ファイルの DDS キーワード項目 (45 - 80 桁目)</a></div></div>
+</div>
+</div>
+

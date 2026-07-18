@@ -1,0 +1,44 @@
+<h1 class="title topictitle1">表示装置ファイルの DUP (複写) キーワード</h1><div id="lastModifiedDate"><span>Last Updated</span>: 2021-04-13</div>
+<div class="body conbody"><p class="shortdesc"><span class="ph">これはフィールド・レベル・キーワードで、表示装置のキーボードの Dup キーを活動化するために使用します。</span></p>
+<p class="p">Dup キーは、カーソルがこの入力可能フィールドにあるときに押します。
+これは、前の入力命令で読み取ったレコードから、このフィールドにデータを複写することを示します。
+実際の複写を行うのは、ユーザーのプログラムの責任です。</p>
+<p class="p">システム/36 環境で使用するファイルに DUP キーワードを指定する場合の特殊な考慮事項については、<a class="xref" href="/docs/ja/ssw_ibm_i_74/rzakc/s36env.htm" title="ユーザー画面管理 (USRDSPMGT) キーワードを指定すると、その表示装置ファイルのレコード様式がシステム/36 SFGR 画面様式と同じ働きをします。">表示装置ファイルのシステム/36 環境に関する考慮事項</a>を参照してください。</p>
+<div class="p">キーワードの形式は次のとおりです。<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code>DUP[(response-indicator ['text'])]</code></pre></div><div class="docs--copy-btn"></div></div>
+</div>
+<p class="p">浮動小数点数フィールド (35 桁目が F) には、DUP キーワードを指定することはできません。</p>
+<p class="p">このキーワードを指定して定義した数字フィールドについては、応答標識を必ず指定しなければなりません。
+数字フィールドの場合、16 進数 1C がユーザーのバッファーに返されるのではなく、フィールドの残りの各桁に 16 進数 F0 が返されます。</p>
+<p class="p">このキーワードについては、オプション標識を使用することができます。</p>
+<div class="section"><h2 class="title sectiontitle">妥当性検査に関する制約事項</h2><p class="p">DUP キーワードとともに、妥当性検査キーワード (CHECK、COMP、RANGE、および VALUES) を指定することができます。ただし、Dup キーを押した場合には、妥当性検査キーワードは無効になります。</p>
+<p class="p">同じレコード様式内の別のフィールドが妥当性検査に不合格になると、<span class="keyword">IBM® i</span> オペレーティング・システムは画面をもう一度読み取ろうとします。
+ワークステーション・ユーザーが DUP 文字を上書きしない場合、または Dup キーを再度押した場合でも、DUP 応答標識は引き続き、オンの状態でプログラムに戻されます。</p>
+</div>
+<div class="example"><h2 class="title sectiontitle">例</h2><p class="p">次の例は、DUP キーワードの指定方法を示しています。</p>
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code>|...+....1....+....2....+....3....+....4....+....5....+....6....+....7....+....8
+00010A          R RECORD1
+00020A            FLDA           5   I  3  2
+00030A  15                                  DUP(16 'FLDA was duped')
+00040A            FLDAH          5  2H
+     A</code></pre></div><div class="docs--copy-btn"></div></div>
+<p class="p">この例では、FLDA は、ワークステーション・ユーザーが Dup キーを使用することのできる入力可能な文字フィールド
+または 16 進数フィールドです。
+プログラムでは、FLDA に入っているのが 0 - 9 の数字だけであることを確認するために、FLDA のデータをテストしなければなりません。RPG III の場合には、TESTN 命令コードを使用することができます。COBOL の場合には、数値クラス・テストを使用することができます。
+BASIC の場合には、プログラムで FLDA を FLDAH に割り当てるステートメントより前に、ON CONV ステートメントを指定することができます。
+PL/I の場合には、プログラムで FLDA を FLDAH に割り当てるステートメントより前に、ERROR 条件の付いた ON ステートメントを指定することができます。</p>
+<p class="p">FLDAH は、FLDA と同じ桁数の潜在数字フィールドです。
+アプリケーション・プログラムが RECORD1 を読み取り、しかも応答標識 16 がオフの場合には、プログラムは FLDA を (数字フィールドである) FLDAH に移して、FLDAH を使用します。アプリケーション・プログラムが RECORD1 を読み取り、応答標識 16 がオンの場合には、Dup キーが押されたことを示し、FLDA には 16 進数 1C が入っています。
+プログラムは、FLDAH を、その内容 (前の入力命令で表示装置から受け取った内容) を変更せずにそのまま使用します。</p>
+</div>
+</div>
+<div class="related-links ibm-padding-top-1 ibm-padding-bottom-2 bx--row bottom-section-parent" aria-label="bottom related links">
+<ul class="ullinks cds--list--unordered">
+<li class="link ulchildlink cds--list__item"><span class="ulchildlinktext"><a href="/docs/ja/ssw_ibm_i_74/rzakc/rzakcmstdfdupprogramming.htm">Dup キーのためのプログラミング</a></span><br>
+システムは、以下の手順に従ってフィールド全体を複写します。</li>
+</ul>
+
+<div class="familylinks ibm-margin-bottom-1">
+<div class="parentlink"><strong>親トピック:</strong> <div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a class="link bottom-section-link" href="/docs/ja/ssw_ibm_i_74/rzakc/rzakcmstkeyent.htm" title="表示装置ファイルを定義するキーワード項目は、45 - 80 桁目 (機能欄) に記入します。">表示装置ファイルの DDS キーワード項目 (45 - 80 桁目)</a></div></div>
+</div>
+</div>
+

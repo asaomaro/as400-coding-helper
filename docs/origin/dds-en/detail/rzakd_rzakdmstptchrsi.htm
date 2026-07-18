@@ -1,0 +1,127 @@
+<main role="main"><article role="article" aria-labelledby="rzakdmstptchrsi__title__1">
+<h1 class="topictitle1" id="rzakdmstptchrsi__title__1">CHRSIZ (Character Size) keyword in printer files</h1><div id="lastModifiedDate"><span>Last Updated</span>: 2026-07-13</div>
+
+
+
+<div class="body conbody"><p class="shortdesc">You use this record-level or field-level
+keyword to expand the width and height of a record or field. The CHRSIZ keyword
+is valid only for Intelligent Printer Data Stream (IPDS)
+printers and only for printer files with device type *IPDS or *AFPDS specified.</p>
+
+<div class="p">The format of the keyword is:  <div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>CHRSIZ(width height)</code></pre></div><div class="docs--copy-btn"></div></div></div>
+
+<p>The valid values for the width and height parameters are 1.0 through 20.0.</p>
+
+<p>Any formatting you choose, such as using a specific font
+or editing through the EDTCDE and EDTWRD keywords, is done before the expansion.</p>
+
+<p>If you specify CHRSIZ on a record, it applies to all fields in that record
+for which you do not specify CHRSIZ at the field level. When you specify a
+numeric font (for example: 011–Courier 10 pitch) with CHRSIZ, the printer
+scales the hardware fonts (scaling with integer values only).</p>
+
+<p>Graphics fonts can also be specified with CHRSIZ. When you specify a GDDM graphic
+font (for example:  ADMMVSS) with CHRSIZ, the system scales the graphic font.
+You can use decimal values to scale graphic fonts.</p>
+
+<p>It is recommended that you do not use FONT (*DEVD) (on the CRTPRTF, CHGPRTF,
+or OVRPRTF command) when using CHRSIZ. If you do use FONT (*DEVD), then fields
+specified with CHRSIZ are positioned on the page assuming that the font in
+the device description is a 10-pitch font.</p>
+
+<div class="p">In expanding a field, CHRSIZ uses the current font and lines-per-inch value.
+For example, if you specify FONT(011), a 10-pitch font, and lpi(6) for the
+printer file, specifying CHRSIZ (3 3) for a 10-character field expands the
+field to 3 inches wide (30 characters/10 characters per inch) and 1/2 inch
+high (3 lines/6 lines per inch). <div class="note border-2 cds--inline-notification--info ibmdocs-note cds--inline-notification cds--inline-notification--low-contrast margin-top-1 margin-bottom-1"><div class="cds--inline-notification__details"><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" class="cds--inline-notification__icon" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M16,2A14,14,0,1,0,30,16,14,14,0,0,0,16,2Zm0,5a1.5,1.5,0,1,1-1.5,1.5A1.5,1.5,0,0,1,16,7Zm4,17.12H12V21.88h2.88V15.12H13V12.88h4.13v9H20Z"></path></svg>
+        <div class="cds--inline-notification__text-wrapper">
+          <div class="cds--inline-notification__subtitle"><span class="notetitle ibm-bold ibm-textcolor-blue-50 background-blue cds--inline-notification__title ibm-padding-top-1 ibm-padding-bottom-1 padding-left-1 padding-right-1">Note:</span> If the current font is a coded font
+or font character set/code page, 10-pitch is assumed when positioning the
+field.</div>
+        </div>
+      </div></div>
+</div>
+
+<p>If, however, you specified FONT(222), a 15-pitch font, and lpi(4) on a
+record format, the 10-character field mentioned previously expands to 2 inches
+wide (30 characters/15 characters per inch) and 3/4 inch high (3 lines/4 lines
+per inch).</p>
+
+<div class="p">You cannot specify a hardware font on the FONT keyword when a decimal value
+is specified on the CHRSIZ keyword. If both of these keywords apply to the
+same field (specified either at the record or field level), the file is not
+created. <div class="note border-2 cds--inline-notification--info ibmdocs-note cds--inline-notification cds--inline-notification--low-contrast margin-top-1 margin-bottom-1"><div class="cds--inline-notification__details"><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" class="cds--inline-notification__icon" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M16,2A14,14,0,1,0,30,16,14,14,0,0,0,16,2Zm0,5a1.5,1.5,0,1,1-1.5,1.5A1.5,1.5,0,0,1,16,7Zm4,17.12H12V21.88h2.88V15.12H13V12.88h4.13v9H20Z"></path></svg>
+        <div class="cds--inline-notification__text-wrapper">
+          <div class="cds--inline-notification__subtitle"><span class="notetitle ibm-bold ibm-textcolor-blue-50 background-blue cds--inline-notification__title ibm-padding-top-1 ibm-padding-bottom-1 padding-left-1 padding-right-1">Note:</span> When you specify FONT(*VECTOR) with the CHRSIZ keyword, the
+4234 printer uses a default code page.</div>
+        </div>
+      </div></div>
+</div>
+
+<p>The CHRSIZ keyword does not work if the specified font is a typographic
+font and the printer is either a 3812 or 3816 printer. Typographic fonts are
+not scalable on these printers. This is a limitation of the printer. The typographic
+fonts are as follows:</p>
+
+
+<div class="tablenoborder"><div class="cds--data-table-container"><table summary="" class="cds--data-table"><colgroup><col><col></colgroup><tbody>
+<tr>
+<td class="ncol tdleft"><div class="lines">751<br>
+1051<br>
+1053<br>
+1056</div>
+</td>
+
+<td class="ncol tdleft"><div class="lines">1351<br>
+1653<br>
+2103</div>
+</td>
+
+</tr>
+
+</tbody>
+</table></div>
+</div>
+
+<div class="note border-2 cds--inline-notification--info ibmdocs-note cds--inline-notification cds--inline-notification--low-contrast margin-top-1 margin-bottom-1"><div class="cds--inline-notification__details"><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" class="cds--inline-notification__icon" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M16,2A14,14,0,1,0,30,16,14,14,0,0,0,16,2Zm0,5a1.5,1.5,0,1,1-1.5,1.5A1.5,1.5,0,0,1,16,7Zm4,17.12H12V21.88h2.88V15.12H13V12.88h4.13v9H20Z"></path></svg>
+        <div class="cds--inline-notification__text-wrapper">
+          <div class="cds--inline-notification__subtitle"><span class="notetitle ibm-bold ibm-textcolor-blue-50 background-blue cds--inline-notification__title ibm-padding-top-1 ibm-padding-bottom-1 padding-left-1 padding-right-1">Note:</span> CHRSIZ is not supported on some printers due to printer limitations.
+For example, 3825, 3827, and 3900 only support downloaded fonts.</div>
+        </div>
+      </div></div>
+
+<p>When you create a file, exceeding or overlapping the page length is not
+diagnosed for expanded height. It is diagnosed, however, for expanded width.
+The field length used is the DDS field length multiplied by the expansion
+width that you specify on CHRSIZ and rounded up to the integer value.</p>
+
+<p>Valid data types for this keyword are A, F, and S.</p>
+
+<p>Option indicators are not valid for this keyword.</p>
+
+<section class="section" role="region" aria-labelledby="rzakdmstptchrsi__title__2"><h2 class="sectiontitle" id="rzakdmstptchrsi__title__2">Example</h2><p>The following example shows how to specify
+the CHRSIZ keyword.</p>
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>|...+....1....+....2....+....3....+....4....+....5....+....6....+....7....+....8
+     A          R RECORD1                   CHRSIZ(3  3)
+     A  02 03                               FONT(222)
+     A            FIELD1         3A     6 01
+     A            FIELD2         6A    16 01CHRSIZ(2.5 2)
+     A                                      FONT(ADMMVSS)
+     A            FIELD3         6S 0  20 01CHRISIZ(1 1)
+     A</code></pre></div><div class="docs--copy-btn"></div></div><p>In the example, FIELD1 is printed using CHRSIZ(3 3).
+FIELD2 is printed using CHRSIZ(2.5 2). Note that the decimal CHRSIZ is valid
+because the FONT specified for the field is not numeric. FIELD3 prints using
+CHRSIZ(1 1).</p>
+</section>
+
+</div>
+
+<aside role="complementary" aria-labelledby="rzakdmstptchrsi__title__1"><nav role="navigation" aria-label="bottom related links" class="ibm-padding-top-1 ibm-padding-bottom-2 bx--row bottom-section-parent">
+<div class="familylinks ibm-margin-bottom-1">
+<div class="parentlink"><strong>Parent topic:</strong> <div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a data-hd-product="ssw_ibm_i_74" href="/docs/en/ssw_ibm_i_74/rzakd/rzakdmstprkey.htm" title="These are valid keyword entries for defining printer files." class="bottom-section-link">Keyword entries for printer files (positions 45 through 80)</a></div></div>
+</div>
+
+<div class="linklist relinfo relref ibm-margin-bottom-1" lang="en-us"><h2 class="linkheading bottom-section-h2-title">Related reference</h2>
+<ul><li class="cds--list__item"><div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a data-hd-product="ssw_ibm_i_74" href="/docs/en/ssw_ibm_i_74/rzakd/rzakdmstdbchrs.htm" title="You use this record-level or field-level keyword to expand the printed characters to twice their normal width, their normal height, or their normal size (width and height)." class="bottom-section-link">CHRSIZ (Character Size) keyword</a></div></li>
+</ul></div>
+</nav></aside></article></main>

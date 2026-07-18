@@ -1,0 +1,119 @@
+<main role="main"><article role="article" aria-labelledby="rzakcmstdfptret__title__1">
+<h1 class="topictitle1" id="rzakcmstdfptret__title__1">PUTRETAIN (Put-Retain) keyword for display files</h1><div id="lastModifiedDate"><span>Last Updated</span>: 2026-07-13</div>
+
+
+
+<div class="body refbody"><p class="shortdesc">You use this record-level or field-level keyword
+with the OVERLAY keyword to prevent the <span class="keyword">IBM i</span> operating
+system from deleting data that is already on the display when
+the system displays the record again. The PUTOVR keyword has a function similar
+to, but more effective than, the PUTRETAIN keyword.</p>
+
+<div class="section"><p>This keyword has no parameters.</p>
+<p>To understand what effect
+this keyword has on output operations, consider the following sequence of
+steps:</p>
+<ol class="cds--list--ordered--temporary">
+<li class="cds--list__item">Your program sends an output operation to RECORD1, displaying RECORD1.
+PUTRETAIN, if in effect, is ignored. Any data in the record area for RECORD1
+is deleted before RECORD1 is displayed.</li>
+
+<li class="cds--list__item">At some later time, with RECORD1 still on the display, your program sends
+a second output operation to RECORD1. Two conditions can occur:  <ul class="cds--list--unordered cds--list--nested">
+<li class="cds--list__item">If the PUTRETAIN keyword is not in effect, the <span class="keyword">IBM i</span> operating
+system first deletes the record area for RECORD1, then displays RECORD1. Fields
+selected for display at this time are displayed with new data contents and
+new display attributes, which can be the same as before. The record area includes
+every line on which a field or part of a field for RECORD1 appears.</li>
+
+<li class="cds--list__item">If PUTRETAIN is in effect, the <span class="keyword">IBM i</span> operating
+system does not delete the record area for RECORD1. The data contents of selected
+fields are not changed. However, the display attributes for selected fields
+are sent to the display and can be changed (by selecting which DSPATR keyword
+is in effect for this output operation). Fields not selected for display are
+written over character-by-character by fields selected for display. (For more
+information, see <a href="#rzakcmstdfptret__whenf">When fields are selected
+by option indicators</a>.)</li>
+
+</ul>
+</li>
+
+</ol>
+<div class="note border-2 cds--inline-notification--info ibmdocs-note cds--inline-notification cds--inline-notification--low-contrast margin-top-1 margin-bottom-1"><div class="cds--inline-notification__details"><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" class="cds--inline-notification__icon" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M16,2A14,14,0,1,0,30,16,14,14,0,0,0,16,2Zm0,5a1.5,1.5,0,1,1-1.5,1.5A1.5,1.5,0,0,1,16,7Zm4,17.12H12V21.88h2.88V15.12H13V12.88h4.13v9H20Z"></path></svg>
+        <div class="cds--inline-notification__text-wrapper">
+          <div class="cds--inline-notification__subtitle"><span class="notetitle ibm-bold ibm-textcolor-blue-50 background-blue cds--inline-notification__title ibm-padding-top-1 ibm-padding-bottom-1 padding-left-1 padding-right-1">Note:</span> When using the field-level PUTRETAIN keyword, the entire record
+area is deleted if none of the fields in the record has PUTRETAIN optioned
+on. If you specify at least one field with unoptioned field-level PUTRETAIN
+keyword, this ensures that the record area is not deleted.</div>
+        </div>
+      </div></div>
+<p>If you
+specify the PUTRETAIN keyword, you should also specify RSTDSP(*YES) on the
+Create Display File (CRTDSPF) or Change Display File (CHGDSPF) command. Otherwise,
+data on the display can be lost if the file is suspended.</p>
+<p>Option indicators
+are valid for this keyword.</p>
+</div>
+
+<section class="section" role="region" aria-labelledby="rzakcmstdfptret__title__2"><h2 class="sectiontitle" id="rzakcmstdfptret__title__2">Conditions affecting the PUTRETAIN keyword</h2><p>PUTRETAIN
+applies only to the record format for which it is specified, and then only
+if the record is already displayed. If the record on which PUTRETAIN is specified
+is not on the display, PUTRETAIN is ignored.</p>
+<p>If you specify this keyword
+at the record level, the keyword applies to all fields in the record format
+that are selected for display.</p>
+<p>This keyword can be specified for more
+than one field of a record format, but only once per field. This keyword can
+be specified at the record level and at the field level within the same record
+format.</p>
+<p>PUTRETAIN cannot be specified with the PUTOVR keyword.</p>
+<p>A
+warning message appears at file creation time if the PUTRETAIN keyword is
+specified on a record with the DSPMOD keyword. At run time, the PUTRETAIN
+keyword is ignored when the display mode changes.</p>
+<p>The OVERLAY keyword
+must be specified whenever PUTRETAIN is specified.</p>
+<p>If the OVERLAY keyword
+is not in effect, PUTRETAIN is ignored and the entire display deleted before
+the record is displayed.</p>
+</section>
+
+<section class="section" role="region" aria-labelledby="rzakcmstdfptret__whenf__title__1" id="rzakcmstdfptret__whenf"><h2 class="sectiontitle" id="rzakcmstdfptret__whenf__title__1">When fields are selected by option indicators</h2><p>When
+PUTRETAIN is in effect on an output operation involving field selection, fields
+in the record format that are not selected for redisplay are not deleted;
+they can be partially or completely rewritten by newly selected fields.</p>
+<p>If
+PUTRETAIN is in effect only for a newly selected field (specified at the field
+level), only the beginning attribute character of the field is sent to the
+display; the ending attribute character is not sent. For fields without PUTRETAIN
+in the same record format, the <span class="keyword">IBM i</span> operating
+system sends the display attribute and the data. If PUTRETAIN is in effect
+for the whole record (specified at the record level), only the beginning and
+ending attribute characters are sent to the display. Thus, the display attribute
+of a field can be reset to normal if the field immediately preceding this
+field is selected and this field is not selected.</p>
+<p>For example, assume
+that the DSPATR(UL) keyword is in effect for two consecutive fields with overlapping
+attribute characters. If on an output operation with PUTRETAIN in effect,
+the first of these fields is selected and the second field is not selected,
+the display attribute of the second field is reset to the normal display attribute.
+This is because the <span class="keyword">IBM i</span> operating
+system sends the first field to the display with beginning and ending attribute
+characters, and its ending attribute character overrides the beginning attribute
+character of the second field.</p>
+</section>
+
+<div class="example"><h2 class="sectiontitle" id="rzakcmstdfptret__title__4">Example</h2><p>The following example shows how to specify
+the PUTRETAIN keyword.</p>
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>|...+....1....+....2....+....3....+....4....+....5....+....6....+....7....+....8
+00101A          R CUST
+00102A                                      PUTRETAIN OVERLAY
+     A</code></pre></div><div class="docs--copy-btn"></div></div></div>
+
+</div>
+
+<aside role="complementary" aria-labelledby="rzakcmstdfptret__title__1"><nav role="navigation" aria-label="bottom related links" class="ibm-padding-top-1 ibm-padding-bottom-2 bx--row bottom-section-parent">
+<div class="familylinks ibm-margin-bottom-1">
+<div class="parentlink"><strong>Parent topic:</strong> <div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a data-hd-product="ssw_ibm_i_74" href="/docs/en/ssw_ibm_i_74/rzakc/rzakcmstkeyent.htm" title="You type the keyword entries that define display files in positions 45 through 80 (functions)." class="bottom-section-link">DDS keyword entries for display files (positions 45 through 80)</a></div></div>
+</div>
+</nav></aside></article></main>

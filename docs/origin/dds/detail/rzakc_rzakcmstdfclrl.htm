@@ -1,0 +1,93 @@
+<h1 class="title topictitle1">表示装置ファイルの CLRL (行の消去) キーワード</h1><div id="lastModifiedDate"><span>Last Updated</span>: 2021-04-13</div>
+<div class="body refbody"><p class="shortdesc">これはレコード・レベル・キーワードで、当該レコードを表示する前に指定数の行を画面上で消去することを <span class="keyword">IBM® i</span> オペレーティング・システムに指示するために使用します。
+指定した数の行だけが消去されます。</p>
+<div class="section"> <div class="note note border-2 cds--inline-notification--info ibmdocs-note cds--inline-notification cds--inline-notification--low-contrast margin-top-1 margin-bottom-1"><div class="cds--inline-notification__details"><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" class="cds--inline-notification__icon" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M16,2A14,14,0,1,0,30,16,14,14,0,0,0,16,2Zm0,5a1.5,1.5,0,1,1-1.5,1.5A1.5,1.5,0,0,1,16,7Zm4,17.12H12V21.88h2.88V15.12H13V12.88h4.13v9H20Z"></path></svg>
+        <div class="cds--inline-notification__text-wrapper">
+          <div class="cds--inline-notification__subtitle"><span class="notetitle ibm-bold ibm-textcolor-blue-50 background-blue cds--inline-notification__title ibm-padding-top-1 ibm-padding-bottom-1 padding-left-1 padding-right-1">注:</span> OVERLAY の場合と同様に、その他のレコードは画面に残ります。</div>
+        </div>
+      </div></div>
+<p class="p">システム/36 環境で使用するファイルで CLRL を使用する方法については、「<a class="xref" href="http://publib.boulder.ibm.com/infocenter/iseries/v6r1m0/topic/rzakc/sc415715.pdf" target="_blank" title="(PDF ファイルを開く)">アプリケーション表示プログラミング</a>」 の資料を参照してください。</p>
+<p class="p">キーワードの形式は次のとおりです。</p>
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code>CLRL(nn|*END|*NO|*ALL)</code></pre></div><div class="docs--copy-btn"></div></div>
+<p class="p">CLRL キーワードは、次のいずれかの方法で指定することができます。</p>
+<ul class="ul cds--list--unordered"><li class="li cds--list__item">nn を指定します (nn は、1 - 27 の整数)。
+指定する数は、消去する行の数です。レコードが表示される最初の行から数え始めて、指定した数に達するまでの行が消去されます。
+レコード様式に SLNO (開始行番号) キーワードも指定する場合には、行の消去は、そのレコード様式の表示時点で有効な開始行番号から始まります。<div class="note note border-2 cds--inline-notification--info ibmdocs-note cds--inline-notification cds--inline-notification--low-contrast margin-top-1 margin-bottom-1"><div class="cds--inline-notification__details"><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" class="cds--inline-notification__icon" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M16,2A14,14,0,1,0,30,16,14,14,0,0,0,16,2Zm0,5a1.5,1.5,0,1,1-1.5,1.5A1.5,1.5,0,0,1,16,7Zm4,17.12H12V21.88h2.88V15.12H13V12.88h4.13v9H20Z"></path></svg>
+        <div class="cds--inline-notification__text-wrapper">
+          <div class="cds--inline-notification__subtitle"><span class="notetitle ibm-bold ibm-textcolor-blue-50 background-blue cds--inline-notification__title ibm-padding-top-1 ibm-padding-bottom-1 padding-left-1 padding-right-1">注:</span> nn を指定するときには、レコードに少なくとも 1 つのフィールドが定義されていなければなりません。</div>
+        </div>
+      </div></div>
+</li>
+<li class="li cds--list__item">*END を指定すると、最初の行 (レコードが表示される行) を含め、すべての行が消去されます。
+24 x 80 の表示画面では、24 行目までの行 (24 行目も含む) が消去されます。
+27 x 132 の表示画面では、27 行目までの行 (27 行目も含む) が消去されます。</li>
+<li class="li cds--list__item">*NO を指定すると、定義中のレコードの表示前に、画面上での行の消去はまったく行われません。
+画面にすでに表示されているデータがある場合には、そのデータは表示されるレコードによりオーバーレイ (重ね書き) されます。</li>
+<li class="li cds--list__item">*ALL を指定すると、定義しようとしているレコードの表示前に画面上のすべての行が消去されます。
+レコード様式内に少なくとも 1 つのフィールドが定義されていなければなりません。</li>
+</ul>
+<p class="p">レコード様式が 1 桁目のフィールドから始まる場合には、そのレコード様式の開始属性バイトは、前の行の最後の桁にあります。
+そのため、前の行の行番号が、この様式の開始行番号になります。
+これは、DDS で 1 行目の 1 桁目に定義されているフィールドがある SLNO 様式にも当てはまります。</p>
+<p class="p">CLRL キーワードを指定したレコード様式に 1 つ以上の入力可能フィールドがある場合、オーバーレイされたレコードはすべて、<span class="keyword">IBM i</span> オペレーティング・システムでは認識できなくなります。
+すなわち、オーバーレイされたレコードの入力可能フィールドには、それ以降入力を行うことができなくなり、それらのレコードに書き込まれた入力命令はエラーとなり、また、ERASE キーワードを選択してもそれらのレコードを消去することはできません。</p>
+<p class="p">入力可能フィールドの含まれていないレコード様式に CLRL(nn) キーワードを指定した場合には、オーバーラップされたレコード内の入力可能フィールドは、入力可能フィールドのままで残ります。
+すなわち、オーバーレイされたレコードの入力可能フィールドは入力可能のままであり、そのようなレコード様式に書き込まれた入力命令は引き続き有効です。
+ただし、CLRL キーワードが含まれているレコードに ROLLUP/ROLLDOWN キーワードを指定しても、それらは無視されます。
+CLRL キーワードが指定されていて、入力可能フィールドがないレコードは、OVERLAY キーワードの指定された他のレコードによりオーバーレイされると、消去が正しく行われなくなります。
+すなわち、オーバーラップするレコードに必要な行が消去され、オーバーラップするレコードに必要でない行が画面に残ります。</p>
+<p class="p">CLRL(*NO) キーワードを使用すれば、オーバーラップするレコードが表示画面に書き込まれるときに、オーバーラップされるレコードが消去されてしまうのを防ぐことができます。
+このキーワードを使用すると、現在表示されていてオーバーラップされるレコードは、画面から消去されることはありません。新しいレコードは、それらのレコードの一部または全体をオーバーレイします。
+繰り返し画面に送られる固定情報およびデータが入っている画面を使用する場合には、CLRL(*NO) を指定すると、パフォーマンス上の利点があります。
+固定情報を独立した様式として送り、データが入っている様式に CLRL(*NO) キーワードを指定することにより、レコード様式を画面に送るために必要な時間を節減することができます。</p>
+<p class="p">CLRL キーワードを指定せず、OVERLAY も PUTOVR (明示的な一時変更を伴う PUT) も指定しない場合には、画面全体が消去されます。</p>
+<p class="p">CLRL キーワードが指定されていて、PUTOVR キーワードまたは PUTRETAIN キーワードも効力を持っている場合には、行の消去が PUTOVR または PUTRETAIN の機能に矛盾する場合があります。
+PUTOVR キーワードまたは PUTRETAIN キーワードでは、上書きされるフィールドが画面上にあることが必要です。
+これに対して、CLRL(nn) キーワードまたは CLRL(*END) キーワードでは、そのようなフィールドを最初に消去することができます。
+CLRL(nn) キーワードまたは CLRL(*END) キーワードがあるためにレコードが入力に使用できなくなった場合でも、PUTOVR キーワードが効力を持っていれば、入力可能フィールドは入力可能な状態のままで残ります。
+しかし、そのようなレコードを読み取るための命令をプログラムが出すと、<span class="keyword">IBM i</span> オペレーティング・システムからメッセージが送られます。</p>
+<p class="p">CLRL キーワードを指定する場合には、表示装置ファイルの作成 (CRTDSPF) コマンドまたは表示装置ファイルの変更 (CHGDSPF) コマンドに RSTDSP(*YES) を指定しなければなりません。
+そうしないと、ファイルの処理が中断された場合に、画面上のデータが失われることがあります。</p>
+</div>
+<div class="section"><h2 class="title sectiontitle">オーバーラップされるレコードの消去を防止する</h2><p class="p">CLRL キーワードは、次の各キーワードとともに指定することはできません。</p>
+<div class="tablenoborder"><div class="cds--data-table-container"><table id="parm_table0" cellpadding="4" cellspacing="0" role="presentation" class="table presentation cds--data-table" rules="none" frame="void" border="0"><tbody class="tbody"><tr class="row"><td class="entry valigntop" width="50%"><p class="lines">ASSUME<br>
+KEEP<br>
+SFL</p>
+</td>
+<td class="entry valigntop" width="50%"><p class="lines">SFLCTL<br>
+USRDFN</p>
+</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p class="p">DSPMOD キーワードが指定されているレコードに CLRL キーワードを指定すると、ファイル作成時に警告メッセージが表示されます。実行時に、表示モードが変更されると、CLRL キーワードは無視されます。</p>
+<p class="p">CLRL キーワードは、PASSRCD キーワードによって指定されたレコード様式には指定することはできません。</p>
+<p class="p">オプション標識は、このキーワードでは無効です。</p>
+</div>
+<div class="example"><h2 class="title sectiontitle">例</h2><p class="p">次の例は、CLRL キーワードの指定方法を示しています。</p>
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code>|...+....1....+....2....+....3....+....4....+....5....+....6....+....7....+....8
+00010A          R RECORD1                   CLRL(5)
+00020A            FLD1           5      3  2
+00030A            FLD2          10  OB  5  2
+00040A            FLD3          10   I  6  2
+00050A*
+00060A          R RECORD2                   CLRL(*NO)
+00070A            FLD1           5  2   2  2
+00080A            FLD2           5   H
+00090A            FLD3          10   I  4  2
+00100A*
+00110A          R RECORD3                   CLRL(*END)
+00120A            FLD1           5   B  5  2
+00130A            FLD2           5   I  8  2
+     A</code></pre></div><div class="docs--copy-btn"></div></div>
+<p class="p">この例では、RECORD1 が表示される前に、RECORD1 の 3、4、5、6、および 7 行目が消去されます。RECORD2 では、どの行も消去されず、レコードが表示されるときには、すでに画面上にあるものがそのレコードによりオーバーレイされます。
+RECORD3 が表示される前に、5 行目 - 24 行目までが消去されます。</p>
+</div>
+</div>
+<div class="related-links ibm-padding-top-1 ibm-padding-bottom-2 bx--row bottom-section-parent" aria-label="bottom related links">
+<div class="familylinks ibm-margin-bottom-1">
+<div class="parentlink"><strong>親トピック:</strong> <div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a class="link bottom-section-link" href="/docs/ja/ssw_ibm_i_74/rzakc/rzakcmstkeyent.htm" title="表示装置ファイルを定義するキーワード項目は、45 - 80 桁目 (機能欄) に記入します。">表示装置ファイルの DDS キーワード項目 (45 - 80 桁目)</a></div></div>
+</div>
+</div>
+

@@ -1,0 +1,293 @@
+<main role="main"><article role="article" aria-labelledby="rzakcmstsflmod__title__1">
+<h1 class="topictitle1" id="rzakcmstsflmod__title__1">SFLMODE (Subfile Mode) keyword for display files</h1><div id="lastModifiedDate"><span>Last Updated</span>: 2026-07-13</div>
+
+
+
+<div class="body refbody"><p class="shortdesc">You use this record-level keyword on the subfile-control
+record format to return an indication of whether the subfile was in folded
+or truncated mode on input. You use this keyword with the SFLCSRRRN (Subfile
+Cursor Relative Record Number) keyword to determine the location of the cursor
+within a subfile.</p>
+
+<div class="section"><div class="p">The format of the keyword is:  <div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>SFLMODE(&amp;mode);</code></pre></div><div class="docs--copy-btn"></div></div></div>
+<p>The
+mode parameter is required. It specifies the name of a hidden field that,
+on input, will contain the subfile mode. The field must be defined in the
+subfile-control record format as a character (A in position 35) field of length
+1 with usage H (hidden). The field will contain the value 0 if the subfile
+is in folded mode; it will contain the value 1 if the subfile is in truncated
+mode.</p>
+<p>If a SFLDROP or SFLFOLD keyword is not specified on the subfile
+control record, the mode value returned is 0.</p>
+<p>Option indicators are
+not valid for this keyword.</p>
+</div>
+
+<div class="example"><h2 class="sectiontitle" id="rzakcmstsflmod__title__2">Example</h2><p>The following example shows how to specify
+the SFLMODE and SFLCSRRRN keywords.</p>
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>|...+....1....+....2....+....3....+....4....+....5....+....6....+....7....+....8
+     A          R SFL01                     SFL
+     A            FLD2A          2A  I  3  2
+     A            FLD2B         30A  O  3  5
+     A            FLD2C          6A  O  4 18
+     A          R CTL01                     SFLCTL(SFL01)
+     A                                      SFLSIZ(25)
+     A                                      SFLPAG(4)
+     A                                      SFLDSP
+     A                                      SFLEND
+     A                                      SFLCSRRRN(&amp;RELRCD);
+     A                                      SFLMODE(&amp;MODE);
+     A  10                                  SFLDROP(CF03)
+     A  11                                  SFLFOLD(CF03)
+     A                                      RTNCSRLOC(&amp;CSRRCD &amp;CSRFLD);
+     A            RELRCD         5S 0H
+     A            MODE           1A  H
+     A            CSRFLD        10A  H
+     A            CSRRCD        10A  H
+     A
+     A          R SFL02                     SFL
+     A            FLD2A          2A  I 13  2
+     A            FLD2B         30A  O 13  5
+     A            FLD2C          6A  O 14 18
+     A          R CTL02                     SFLCTL(SFL02)
+     A                                      SFLSIZ(25)
+     A                                      SFLPAG(4)
+     A                                      SFLDSP
+     A                                      SFLEND
+     A                                      SFLCSRRRN(&amp;RELRCD);
+     A                                      SFLMODE(&amp;MODE);
+     A  12                                  SFLDROP(CF03)
+     A  13                                  SFLFOLD(CF03)
+     A                                      RTNCSRLOC(&amp;CSRRCD &amp;CSRFLD);
+     A            RELRCD         5S 0H
+     A            MODE           1A  H
+     A            CSRFLD        10A  H
+     A            CSRRCD        10A  H
+     A</code></pre></div><div class="docs--copy-btn"></div></div><p>Indicators 10 and 13 are on. Two records were added to
+both subfiles. Both subfiles are displayed.</p>
+<p>The following table shows
+the values returned for CTL02 when the cursor is at the specified positions.</p>
+
+<hr>
+<div class="tablenoborder"><div class="cds--data-table-container"><table summary="" class="defaultstyle cds--data-table"><colgroup><col><col><col><col><col><col></colgroup><thead>
+<tr>
+<th id="rzakcmstsflmod__entry__1" class="nrule"><div class="cds--table-header-label">Row</div></th>
+
+<th id="rzakcmstsflmod__entry__2" class="nrule"><div class="cds--table-header-label">Column</div></th>
+
+<th id="rzakcmstsflmod__entry__3" class="nrule"><div class="cds--table-header-label">RELRCD</div></th>
+
+<th id="rzakcmstsflmod__entry__4" class="nrule"><div class="cds--table-header-label">MODE</div></th>
+
+<th id="rzakcmstsflmod__entry__5" class="nrule"><div class="cds--table-header-label">CSRRCD</div></th>
+
+<th id="rzakcmstsflmod__entry__6" class="nrule"><div class="cds--table-header-label">CSRFLD</div></th>
+
+</tr>
+
+</thead>
+<tbody>
+<tr>
+<td headers="rzakcmstsflmod__entry__1 " class="nrule">13</td>
+
+<td headers="rzakcmstsflmod__entry__2 " class="nrule">2</td>
+
+<td headers="rzakcmstsflmod__entry__3 " class="nrule">1</td>
+
+<td headers="rzakcmstsflmod__entry__4 " class="nrule">0</td>
+
+<td headers="rzakcmstsflmod__entry__5 " class="nrule">SFL02</td>
+
+<td headers="rzakcmstsflmod__entry__6 " class="nrule">FLD2A</td>
+
+</tr>
+
+<tr>
+<td headers="rzakcmstsflmod__entry__1 " class="nrule">14</td>
+
+<td headers="rzakcmstsflmod__entry__2 " class="nrule">18</td>
+
+<td headers="rzakcmstsflmod__entry__3 " class="nrule">1</td>
+
+<td headers="rzakcmstsflmod__entry__4 " class="nrule">0</td>
+
+<td headers="rzakcmstsflmod__entry__5 " class="nrule">SFL02</td>
+
+<td headers="rzakcmstsflmod__entry__6 " class="nrule">FLD2C</td>
+
+</tr>
+
+<tr>
+<td headers="rzakcmstsflmod__entry__1 " class="nrule">15</td>
+
+<td headers="rzakcmstsflmod__entry__2 " class="nrule">2</td>
+
+<td headers="rzakcmstsflmod__entry__3 " class="nrule">2</td>
+
+<td headers="rzakcmstsflmod__entry__4 " class="nrule">0</td>
+
+<td headers="rzakcmstsflmod__entry__5 " class="nrule">SFL02</td>
+
+<td headers="rzakcmstsflmod__entry__6 " class="nrule">FLD2A</td>
+
+</tr>
+
+<tr>
+<td headers="rzakcmstsflmod__entry__1 " class="nrule">15</td>
+
+<td headers="rzakcmstsflmod__entry__2 " class="nrule">62</td>
+
+<td headers="rzakcmstsflmod__entry__3 " class="nrule">1</td>
+
+<td headers="rzakcmstsflmod__entry__4 " class="nrule">0</td>
+
+<td headers="rzakcmstsflmod__entry__5 " class="nrule">SFL02</td>
+
+<td headers="rzakcmstsflmod__entry__6 " class="nrule">blanks</td>
+
+</tr>
+
+<tr>
+<td headers="rzakcmstsflmod__entry__1 " class="nrule">17</td>
+
+<td headers="rzakcmstsflmod__entry__2 " class="nrule">2</td>
+
+<td headers="rzakcmstsflmod__entry__3 " class="nrule">0</td>
+
+<td headers="rzakcmstsflmod__entry__4 " class="nrule">0</td>
+
+<td headers="rzakcmstsflmod__entry__5 " class="nrule">SFL02</td>
+
+<td headers="rzakcmstsflmod__entry__6 " class="nrule">blanks</td>
+
+</tr>
+
+<tr>
+<td headers="rzakcmstsflmod__entry__1 " class="nrule">24</td>
+
+<td headers="rzakcmstsflmod__entry__2 " class="nrule">2</td>
+
+<td headers="rzakcmstsflmod__entry__3 " class="nrule">0</td>
+
+<td headers="rzakcmstsflmod__entry__4 " class="nrule">0</td>
+
+<td headers="rzakcmstsflmod__entry__5 " class="nrule">blanks</td>
+
+<td headers="rzakcmstsflmod__entry__6 " class="nrule">blanks</td>
+
+</tr>
+
+<tr>
+<td headers="rzakcmstsflmod__entry__1 " class="nrule">3</td>
+
+<td headers="rzakcmstsflmod__entry__2 " class="nrule">2</td>
+
+<td headers="rzakcmstsflmod__entry__3 " class="nrule">0</td>
+
+<td headers="rzakcmstsflmod__entry__4 " class="nrule">0</td>
+
+<td headers="rzakcmstsflmod__entry__5 " class="nrule">SFL01</td>
+
+<td headers="rzakcmstsflmod__entry__6 " class="nrule">FLD2A</td>
+
+</tr>
+
+</tbody>
+</table></div></div>
+<hr>
+
+<p>The following table shows the values returned for CTL01 when the
+cursor is at the specified positions.</p>
+
+<hr>
+<div class="tablenoborder"><div class="cds--data-table-container"><table summary="" class="defaultstyle cds--data-table"><colgroup><col><col><col><col><col><col></colgroup><thead>
+<tr>
+<th id="rzakcmstsflmod__entry__49" class="nrule"><div class="cds--table-header-label">Row</div></th>
+
+<th id="rzakcmstsflmod__entry__50" class="nrule"><div class="cds--table-header-label">Column</div></th>
+
+<th id="rzakcmstsflmod__entry__51" class="nrule"><div class="cds--table-header-label">RELRCD</div></th>
+
+<th id="rzakcmstsflmod__entry__52" class="nrule"><div class="cds--table-header-label">MODE</div></th>
+
+<th id="rzakcmstsflmod__entry__53" class="nrule"><div class="cds--table-header-label">CSRRCD</div></th>
+
+<th id="rzakcmstsflmod__entry__54" class="nrule"><div class="cds--table-header-label">CSRFLD</div></th>
+
+</tr>
+
+</thead>
+<tbody>
+<tr>
+<td headers="rzakcmstsflmod__entry__49 " class="nrule">3</td>
+
+<td headers="rzakcmstsflmod__entry__50 " class="nrule">2</td>
+
+<td headers="rzakcmstsflmod__entry__51 " class="nrule">1</td>
+
+<td headers="rzakcmstsflmod__entry__52 " class="nrule">1</td>
+
+<td headers="rzakcmstsflmod__entry__53 " class="nrule">SFL01</td>
+
+<td headers="rzakcmstsflmod__entry__54 " class="nrule">FLD2A</td>
+
+</tr>
+
+<tr>
+<td headers="rzakcmstsflmod__entry__49 " class="nrule">4</td>
+
+<td headers="rzakcmstsflmod__entry__50 " class="nrule">18</td>
+
+<td headers="rzakcmstsflmod__entry__51 " class="nrule">2</td>
+
+<td headers="rzakcmstsflmod__entry__52 " class="nrule">1</td>
+
+<td headers="rzakcmstsflmod__entry__53 " class="nrule">SFL01</td>
+
+<td headers="rzakcmstsflmod__entry__54 " class="nrule">FLD2B</td>
+
+</tr>
+
+<tr>
+<td headers="rzakcmstsflmod__entry__49 " class="nrule">5</td>
+
+<td headers="rzakcmstsflmod__entry__50 " class="nrule">18</td>
+
+<td headers="rzakcmstsflmod__entry__51 " class="nrule">0</td>
+
+<td headers="rzakcmstsflmod__entry__52 " class="nrule">1</td>
+
+<td headers="rzakcmstsflmod__entry__53 " class="nrule">SFL01</td>
+
+<td headers="rzakcmstsflmod__entry__54 " class="nrule">blanks</td>
+
+</tr>
+
+<tr>
+<td headers="rzakcmstsflmod__entry__49 " class="nrule">13</td>
+
+<td headers="rzakcmstsflmod__entry__50 " class="nrule">2</td>
+
+<td headers="rzakcmstsflmod__entry__51 " class="nrule">0</td>
+
+<td headers="rzakcmstsflmod__entry__52 " class="nrule">1</td>
+
+<td headers="rzakcmstsflmod__entry__53 " class="nrule">SFL02</td>
+
+<td headers="rzakcmstsflmod__entry__54 " class="nrule">FLD2A</td>
+
+</tr>
+
+</tbody>
+</table></div></div>
+<hr>
+
+</div>
+
+</div>
+
+<aside role="complementary" aria-labelledby="rzakcmstsflmod__title__1"><nav role="navigation" aria-label="bottom related links" class="ibm-padding-top-1 ibm-padding-bottom-2 bx--row bottom-section-parent">
+<div class="familylinks ibm-margin-bottom-1">
+<div class="parentlink"><strong>Parent topic:</strong> <div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a data-hd-product="ssw_ibm_i_74" href="/docs/en/ssw_ibm_i_74/rzakc/rzakcmstkeyent.htm" title="You type the keyword entries that define display files in positions 45 through 80 (functions)." class="bottom-section-link">DDS keyword entries for display files (positions 45 through 80)</a></div></div>
+</div>
+</nav></aside></article></main>

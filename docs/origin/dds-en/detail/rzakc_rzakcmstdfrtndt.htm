@@ -1,0 +1,78 @@
+<main role="main"><article role="article" aria-labelledby="rzakcmstdfrtndt__title__1">
+<h1 class="topictitle1" id="rzakcmstdfrtndt__title__1">RTNDTA (Return Data) keyword for display files</h1><div id="lastModifiedDate"><span>Last Updated</span>: 2026-07-13</div>
+
+
+
+<div class="body refbody"><p class="shortdesc"><span class="ph">You use this record-level keyword to specify
+that when your program sends an input operation to this record
+format, the <span class="keyword">IBM i</span> operating
+system is to return the same data that was returned on the previous input
+operation sent to this record format.</span></p>
+
+<div class="section"><p>The RTNDTA keyword is ignored if the record format has not already
+been read. When the RTNDTA keyword is in effect, your program can reread data
+on the display without requiring the <span class="keyword">IBM i</span> operating
+system to actually pass data from the display device to your program.</p>
+<p>This
+keyword has no parameters.</p>
+<div class="p">The RTNDTA keyword is ignored in the following
+situations:  <ul class="cds--list--unordered">
+<li class="cds--list__item">On the input portion of an input/output operation (Put-Get operation)</li>
+
+<li class="cds--list__item">On an input operation that is preceded by an output operation to the same
+record format</li>
+
+</ul>
+</div>
+<p>The RTNDTA keyword has effect only on an input operation sent
+to the same record format without an intervening output operation to that
+record format.</p>
+<div class="p">You can use RTNDTA as follows:  <ul class="cds--list--unordered">
+<li class="cds--list__item">Use RTNDTA to allow a main program to read a record format that is changed
+by a workstation user. The data read tells the main program which subprogram
+to call. The subprogram sends an input operation to the same record format,
+with RTNDTA in effect, to read the same data. This procedure can substitute
+for passing parameters to subprograms. <div class="note border-2 cds--inline-notification--info ibmdocs-note cds--inline-notification cds--inline-notification--low-contrast margin-top-1 margin-bottom-1"><div class="cds--inline-notification__details"><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" class="cds--inline-notification__icon" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M16,2A14,14,0,1,0,30,16,14,14,0,0,0,16,2Zm0,5a1.5,1.5,0,1,1-1.5,1.5A1.5,1.5,0,0,1,16,7Zm4,17.12H12V21.88h2.88V15.12H13V12.88h4.13v9H20Z"></path></svg>
+        <div class="cds--inline-notification__text-wrapper">
+          <div class="cds--inline-notification__subtitle"><span class="notetitle ibm-bold ibm-textcolor-blue-50 background-blue cds--inline-notification__title ibm-padding-top-1 ibm-padding-bottom-1 padding-left-1 padding-right-1">Note:</span> SHARE(*YES) must be specified
+for both display files.</div>
+        </div>
+      </div></div>
+</li>
+
+<li class="cds--list__item">Use RTNDTA to allow an RPG III program to perform file maintenance with
+less locking of records in the database. For instance, the program reads a
+database record and displays the record at the display device. The workstation
+user reviews the record, makes any required changes, and presses the Enter
+key. While the workstation user is making changes, the database record, if
+locked, is unavailable to other programs. Hence it is recommended to leave
+the database record unlocked. However, when the program reads the record from
+the display and updates the database record, the database record overlays
+the internal representation of the display record in the program. Instead
+of preventing the overlay by using different field names for the display record
+and the database record, the program rereads the display file. With RTNDTA
+specified, the program retrieves the display record again and can then finish
+updating the database.</li>
+
+</ul>
+</div>
+<p>If the UNLOCK keyword is specified, the RTNDTA keyword cannot
+be specified.</p>
+<p>Option indicators are not valid for this keyword.</p>
+</div>
+
+<div class="example"><h2 class="sectiontitle" id="rzakcmstdfrtndt__title__2">Example</h2><p>The following example shows how to specify
+the RTNDTA keyword.</p>
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>|...+....1....+....2....+....3....+....4....+....5....+....6....+....7....+....8
+00010A          R RECORD1                   RTNDTA
+00020A            FLD1           5   I  2  2
+00030A            FLD2           5   B  3  2
+     A</code></pre></div><div class="docs--copy-btn"></div></div></div>
+
+</div>
+
+<aside role="complementary" aria-labelledby="rzakcmstdfrtndt__title__1"><nav role="navigation" aria-label="bottom related links" class="ibm-padding-top-1 ibm-padding-bottom-2 bx--row bottom-section-parent">
+<div class="familylinks ibm-margin-bottom-1">
+<div class="parentlink"><strong>Parent topic:</strong> <div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a data-hd-product="ssw_ibm_i_74" href="/docs/en/ssw_ibm_i_74/rzakc/rzakcmstkeyent.htm" title="You type the keyword entries that define display files in positions 45 through 80 (functions)." class="bottom-section-link">DDS keyword entries for display files (positions 45 through 80)</a></div></div>
+</div>
+</nav></aside></article></main>

@@ -1,0 +1,41 @@
+<h1 class="title topictitle1">表示装置ファイルの MAPVAL (マップ値) キーワード</h1><div id="lastModifiedDate"><span>Last Updated</span>: 2021-04-13</div>
+<div class="body refbody"><p class="shortdesc"><span class="ph">これはフィールド・レベル・キーワードで、入出力命令時にフィールド・データを別の値にマップするために使用します。</span></p>
+<div class="section"><p class="p">このキーワードは、日付 (L)、時刻 (T)、または時刻スタンプ (Z) データ・タイプの場合にのみ有効です。</p>
+<div class="p">キーワードの形式は次のとおりです。<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code>MAPVAL((program-value-1 system-value-1)
+      [(program-value-2 system-value-2) ...
+       (program-value-100 system-value-100)])]</code></pre></div><div class="docs--copy-btn"></div></div>
+</div>
+<p class="p">program-value と system-value を、明示値、*BLANK、または *CUR 特殊値として指定することができます。</p>
+<div class="p">該当のフィールドの形式および区切り記号値に適合する明示値を、単一引用符で囲んで指定する必要があります。明示値はまた、有効な日付か時刻でなければなりません。次のリストに、形式と区切り記号の決め方を示します。<ul class="ul cds--list--unordered"><li class="li cds--list__item">明示値が日付 (L) 値である場合、DATFMT キーワードで指定する形式を使用する必要があります。
+DATFMT キーワードが指定されていないか、または DATFMT に *JOB が指定されている場合、*ISO 形式を使用する必要があります。また、DATSEP キーワードに指定された区切り記号を使用する必要があります。DATSEP キーワードが指定されていないか、または DATSEP に *JOB が区切り記号として指定されている場合、区切り記号にはスラッシュ (/) を使用する必要があります。</li>
+<li class="li cds--list__item">明示値が時刻 (T) 値である場合、TIMFMT キーワードで指定した形式を使用する必要があります。
+TIMFMT キーワードが指定されていない場合、*ISO 形式を使用する必要があります。
+また、TIMSEP キーワードで指定する区切り記号を使用する必要があります。
+TIMSEP キーワードが指定されていないか、または TIMSEP で *JOB 区切り記号が指定されている場合、区切り記号にコロン (:) を指定する必要があります。</li>
+<li class="li cds--list__item">明示値が時刻スタンプ (Z) 値である場合、<var class="keyword varname">yy-mm-dd-hh.mm.ss.mmmmmm</var> 形式を使用する必要があります。</li>
+</ul>
+</div>
+<p class="p">*BLANK 特殊値は、すべてブランクで構成されるフィールド・データを示します。
+*CUR 特殊値は、フィールドのデータ・タイプに応じて、日付、時刻、または時刻スタンプが現行フィールド・データを構成することを示します。</p>
+<p class="p">出力命令時に、フィールド・データは、プログラム値が指定されている順序で MAPVAL キーワードの各プログラム値と比較されます。
+適合する値が最初に見つかった時点で、現行フィールド・データが対応するシステム値によって置換されます。適合する値がない場合、フィールド・データは変更されません。</p>
+<p class="p">入力命令時に、フィールド・データは、システム値が指定されている順序で MAPVAL キーワードの各プログラム値と比較されます。適合する値が最初に見つかった時点で、現行フィールド・データが対応するプログラム値によって置換されます。適合する値がない場合、フィールド・データはそのままです。</p>
+<p class="p">オプション標識は、このキーワードでは無効です。
+ただし、オプション標識を使用して、このキーワードが指定されているフィールドの条件付けを行うことはできます。</p>
+</div>
+<div class="example"><h2 class="title sectiontitle">例</h2><p class="p">次の例は、MAPVAL キーワードの指定方法を示しています。</p>
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code>|...+....1....+....2....+....3....+....4....+....5....+....6....+....7....+....8
+00010A
+00020A          R RECORD
+00030A            DATFLD1         L         DATFMT(*MDY) DATSEP('/')
+00040A                                      MAPVAL(('01/01/40' *BLANK))
+ </code></pre></div><div class="docs--copy-btn"></div></div>
+<p class="p">出力時に、フィールド・データが「01/01/40」と等しい場合、フィールド・データはすべてブランクに変更されます。入力時に、フィールド・データがブランクである場合、フィールド・データは「01/01/40」に変更されます。</p>
+</div>
+</div>
+<div class="related-links ibm-padding-top-1 ibm-padding-bottom-2 bx--row bottom-section-parent" aria-label="bottom related links">
+<div class="familylinks ibm-margin-bottom-1">
+<div class="parentlink"><strong>親トピック:</strong> <div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a class="link bottom-section-link" href="/docs/ja/ssw_ibm_i_74/rzakc/rzakcmstkeyent.htm" title="表示装置ファイルを定義するキーワード項目は、45 - 80 桁目 (機能欄) に記入します。">表示装置ファイルの DDS キーワード項目 (45 - 80 桁目)</a></div></div>
+</div>
+</div>
+

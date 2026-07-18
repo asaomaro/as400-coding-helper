@@ -1,0 +1,137 @@
+<h1 class="title topictitle1">JDUPSEQ (結合における重複レコードの順序付け) キーワード - 結合論理ファイルのみ</h1><div id="lastModifiedDate"><span>Last Updated</span>: 2021-04-13</div>
+<div class="body refbody"><p class="shortdesc"><span class="ph">これは結合レベル・キーワードで、プログラムが結合論理ファイルを読み取る際に、値が重複する結合フィールドを持つレコードをどのような順序でプログラムに渡すかを指定するために使用します。</span></p>
+<div class="section"><div class="p">キーワードの形式は次のとおりです。<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code>JDUPSEQ(sequencing-field-name [*DESCEND])</code></pre></div><div class="docs--copy-btn"></div></div>
+</div>
+<p class="p">このキーワードは、固有レコードの順序には影響を及ぼしません。
+このキーワードを指定しなかった場合には、結合フィールドに重複する値を
+持つレコードをシステムがプログラムに渡す順序は特定されません。</p>
+<p class="p">1 つの結合仕様で複数の JDUPSEQ キーワードを指定した場合には、JDUPSEQ キーワードを指定した順序によって、重複するレコードの検索順序が
+決まります。これは、重複キーを持つレコードの検索順序を決めるために、さらに別のキー・フィールドの指定を追加する場合に似ています。</p>
+<p class="p">このキーワードは、結合論理ファイルに対してだけ有効です。</p>
+<p class="p">1 つの結合仕様では、JFLD キーワードで<em class="ph i">結合先</em> フィールドとして
+指定したすべてのフィールドと、JDUPSEQ キーワードで指定したすべての
+フィールドの長さの合計が、120 バイトを超えてはなりません。</p>
+<p class="p">順序付けフィールド名は、(1) この結合仕様の<em class="ph i">結合先</em> ファイルに
+存在するフィールドであり、かつ、(2) この結合仕様の JFLD キーワードの<em class="ph i">結合先</em> フィールドとして
+指定されていないフィールドでなければなりません。順序付けフィールド名として連結フィールドまたは SST フィールドを指定することもできます。順序付けフィールド名は、結合論理ファイルのレコード様式内に指定する必要はありません。</p>
+<div class="p">必要に応じて、*DESCEND を指定することにより、重複するレコードの
+検索順序を変更することができます。*DESCEND を指定しなかった場合には、重複レコードは次のデフォルトの順序
+で検索されます。<ul class="ul cds--list--unordered"><li class="li cds--list__item">順序付けフィールドが数字フィールドである場合には、符号も含めた昇順。</li>
+<li class="li cds--list__item">順序付けフィールドが文字フィールドである場合には、昇順。</li>
+</ul>
+</div>
+</div>
+<div class="example"><h2 class="title sectiontitle">例</h2><p class="p">次の例は、JDUPSEQ キーワードの指定方法を示します。</p>
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code>|...+....1....+....2....+....3....+....4....+....5....+....6....+....7....+....8
+00010A          R JREC                      JFILE(PF1 PF2)
+00020A          J                           JOIN(PF1 PF2)
+00030A                                      JFLD(NAME1 NAME2)
+00040A                                      JDUPSEQ(PHONE)
+00050A            NAME1
+00060A            ADDR
+00070A            PHONE</code></pre></div><div class="docs--copy-btn"></div></div>
+<p class="p">この例で、PF1 および PF2 に次のレコードがあるものとします。</p>
+<div class="tablenoborder"><div class="cds--data-table-container"><table cellpadding="4" cellspacing="0" class="table cds--data-table" rules="none" frame="void" border="0"><thead class="thead alignleft"><tr class="row"><th scope="col" class="entry valigntop" width="20%" id="d38005e76"><div class="cds--table-header-label">PF1 NAME1</div></th>
+<th scope="col" class="entry valigntop" width="40%" id="d38005e78"><div class="cds--table-header-label">ADDR</div></th>
+<th scope="col" class="entry valigntop" width="20%" id="d38005e80"><div class="cds--table-header-label">PF2 NAME2</div></th>
+<th scope="col" class="entry valigntop" width="20%" id="d38005e82"><div class="cds--table-header-label">TELEPHONE</div></th>
+</tr>
+</thead>
+<tbody class="tbody"><tr class="row"><td class="entry valigntop" width="20%" headers="d38005e76 ">Anne</td>
+<td class="entry valigntop" width="40%" headers="d38005e78 ">120 1st St.</td>
+<td class="entry valigntop" width="20%" headers="d38005e80 ">Anne</td>
+<td class="entry valigntop" width="20%" headers="d38005e82 ">555-1111</td>
+</tr>
+<tr class="row"><td class="entry valigntop" width="20%" headers="d38005e76 ">Doug</td>
+<td class="entry valigntop" width="40%" headers="d38005e78 ">40 Pillsbury</td>
+<td class="entry valigntop" width="20%" headers="d38005e80 ">Anne</td>
+<td class="entry valigntop" width="20%" headers="d38005e82 ">555-6666</td>
+</tr>
+<tr class="row"><td class="entry valigntop" width="20%" headers="d38005e76 ">Mark</td>
+<td class="entry valigntop" width="40%" headers="d38005e78 ">2 Lakeside Dr.</td>
+<td class="entry valigntop" width="20%" headers="d38005e80 ">Anne</td>
+<td class="entry valigntop" width="20%" headers="d38005e82 ">555-2222</td>
+</tr>
+<tr class="row"><td class="entry valigntop" width="20%" headers="d38005e76 ">&nbsp;</td>
+<td class="entry valigntop" width="40%" headers="d38005e78 ">&nbsp;</td>
+<td class="entry valigntop" width="20%" headers="d38005e80 ">Doug</td>
+<td class="entry valigntop" width="20%" headers="d38005e82 ">555-5555</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p class="p">PF2 には、Anne について、それぞれ異なる電話番号を示す 3 つのレコードが
+あります。例のように JDUPSEQ を指定すると、これらのレコードは次の
+順序で検索されます。</p>
+<div class="tablenoborder"><div class="cds--data-table-container"><table cellpadding="4" cellspacing="0" class="table cds--data-table" rules="none" frame="void" border="0"><thead class="thead alignleft"><tr class="row"><th scope="col" class="entry valigntop" width="29.411764705882355%" id="d38005e128"><div class="cds--table-header-label">NAME</div></th>
+<th scope="col" class="entry valigntop" width="41.17647058823529%" id="d38005e130"><div class="cds--table-header-label">ADDR</div></th>
+<th scope="col" class="entry valigntop" width="29.411764705882355%" id="d38005e132"><div class="cds--table-header-label">TELEPHONE</div></th>
+</tr>
+</thead>
+<tbody class="tbody"><tr class="row"><td class="entry valigntop" width="29.411764705882355%" headers="d38005e128 ">Anne</td>
+<td class="entry valigntop" width="41.17647058823529%" headers="d38005e130 ">120 1st St.</td>
+<td class="entry valigntop" width="29.411764705882355%" headers="d38005e132 ">555-1111</td>
+</tr>
+<tr class="row"><td class="entry valigntop" width="29.411764705882355%" headers="d38005e128 ">Anne</td>
+<td class="entry valigntop" width="41.17647058823529%" headers="d38005e130 ">120 1st St.</td>
+<td class="entry valigntop" width="29.411764705882355%" headers="d38005e132 ">555-2222</td>
+</tr>
+<tr class="row"><td class="entry valigntop" width="29.411764705882355%" headers="d38005e128 ">Anne</td>
+<td class="entry valigntop" width="41.17647058823529%" headers="d38005e130 ">120 1st St.</td>
+<td class="entry valigntop" width="29.411764705882355%" headers="d38005e132 ">555-6666</td>
+</tr>
+<tr class="row"><td class="entry valigntop" width="29.411764705882355%" headers="d38005e128 ">Doug</td>
+<td class="entry valigntop" width="41.17647058823529%" headers="d38005e130 ">40 Pillsbury</td>
+<td class="entry valigntop" width="29.411764705882355%" headers="d38005e132 ">555-5555</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p class="p">JDUPSEQ キーワードがレコードの順序に影響を及ぼすのは、重複がある場合だけであることに注意してください。</p>
+</div>
+<div class="example"><p class="p">次の例では、例 1 と同じ物理ファイルを基にした論理ファイルを想定しています。PF2 には、Anne について、
+それぞれ異なる電話番号を示す 3 つのレコードがあります。</p>
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code>|...+....1....+....2....+....3....+....4....+....5....+....6....+....7....+....8
+00010A          R JREC                      JFILE(PF1 PF2)
+00020A          J                           JOIN(PF1 PF2)
+00030A                                      JFLD(NAME1 NAME2)
+00040A                                      JDUPSEQ(PHONE *DESCEND)
+00050A            NAME1
+00060A            ADDR
+00070A            PHONE
+     A</code></pre></div><div class="docs--copy-btn"></div></div>
+<p class="p">JDUPSEQ に *DESCEND を指定した場合には、レコードは次の順序で
+検索されます。</p>
+<div class="tablenoborder"><div class="cds--data-table-container"><table cellpadding="4" cellspacing="0" class="table cds--data-table" rules="none" frame="void" border="0"><thead class="thead alignleft"><tr class="row"><th scope="col" class="entry valigntop" width="29.411764705882355%" id="d38005e179"><div class="cds--table-header-label">NAME1</div></th>
+<th scope="col" class="entry valigntop" width="41.17647058823529%" id="d38005e181"><div class="cds--table-header-label">ADDR</div></th>
+<th scope="col" class="entry valigntop" width="29.411764705882355%" id="d38005e183"><div class="cds--table-header-label">TELEPHONE</div></th>
+</tr>
+</thead>
+<tbody class="tbody"><tr class="row"><td class="entry valigntop" width="29.411764705882355%" headers="d38005e179 ">Anne</td>
+<td class="entry valigntop" width="41.17647058823529%" headers="d38005e181 ">120 1st St.</td>
+<td class="entry valigntop" width="29.411764705882355%" headers="d38005e183 ">555-6666</td>
+</tr>
+<tr class="row"><td class="entry valigntop" width="29.411764705882355%" headers="d38005e179 ">Anne</td>
+<td class="entry valigntop" width="41.17647058823529%" headers="d38005e181 ">120 1st St.</td>
+<td class="entry valigntop" width="29.411764705882355%" headers="d38005e183 ">555-2222</td>
+</tr>
+<tr class="row"><td class="entry valigntop" width="29.411764705882355%" headers="d38005e179 ">Anne</td>
+<td class="entry valigntop" width="41.17647058823529%" headers="d38005e181 ">120 1st St.</td>
+<td class="entry valigntop" width="29.411764705882355%" headers="d38005e183 ">555-1111</td>
+</tr>
+<tr class="row"><td class="entry valigntop" width="29.411764705882355%" headers="d38005e179 ">Doug</td>
+<td class="entry valigntop" width="41.17647058823529%" headers="d38005e181 ">40 Pillsbury</td>
+<td class="entry valigntop" width="29.411764705882355%" headers="d38005e183 ">555-5555</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p class="p">リストには、Anne の電話番号が降順に示されています。</p>
+</div>
+</div>
+<div class="related-links ibm-padding-top-1 ibm-padding-bottom-2 bx--row bottom-section-parent" aria-label="bottom related links">
+<div class="familylinks ibm-margin-bottom-1">
+<div class="parentlink"><strong>親トピック:</strong> <div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a class="link bottom-section-link" href="/docs/ja/ssw_ibm_i_74/rzakb/rzakbmstlfkeyw.htm" title="キーワード項目は、45 から 80 桁目 (機能欄) に記入します。">物理ファイルおよび論理ファイルのキーワード項目 (45 から 80 桁目)</a></div></div>
+</div>
+</div>
+

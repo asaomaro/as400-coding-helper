@@ -1,0 +1,60 @@
+<h1 class="title topictitle1">表示装置ファイルの ERRSFL (エラー・サブファイル) キーワード</h1><div id="lastModifiedDate"><span>Last Updated</span>: 2021-04-13</div>
+<div class="body refbody"><p class="shortdesc"><span class="ph">これはファイル・レベル・キーワードで、メッセージの表示にシステム提供のエラー・サブファイルを使用することを指定します。</span></p>
+<div class="section"><p class="p">エラー・サブファイルで表示されるメッセージは、システムの妥当性検査メッセージ、および次のキーワードに対応するメッセージです。</p>
+<div class="tablenoborder"><div class="cds--data-table-container"><table id="parm_table0" cellpadding="4" cellspacing="0" role="presentation" class="table presentation cds--data-table" rules="rows" frame="void" border="0"><tbody class="tbody"><tr class="row"><td class="entry valigntop alignleft" width="50%"><p class="lines">ERRMSG<br>
+ERRMSGID<br>
+SFLMSG<br>
+SFLMSGID<br>
+CHECK(M10)<br>
+CHECK(M11)</p>
+</td>
+<td class="entry valigntop alignleft" width="50%"><p class="lines">CHECK(VN)<br>
+CHECK(VNE)<br>
+COMP<br>
+RANGE<br>
+VALUES</p>
+</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="p">また、次の入力エラーに対応する妥当性検査メッセージもエラー・サブファイルで表示されます。<ul class="ul cds--list--unordered"><li class="li cds--list__item">浮動小数点演算におけるエラー</li>
+<li class="li cds--list__item">小数部の桁の入力エラー</li>
+</ul>
+</div>
+<p class="p">このキーワードを指定しておくと、レコードが表示装置に書き込まれるときに出されたすべてのエラー・メッセージ、およびレコードが表示装置から読み取られるときに出されたすべての妥当性検査エラー・メッセージを、ページ送りして見ることができます。エラー・サブファイルはシステムによりメッセージ行に表示されます。
+メッセージ行が、すでに画面上に表示されているレコードとオーバーラップする場合は、ERRSFL キーワードは無視されます。</p>
+<p class="p">このキーワードにはパラメーターはありません。</p>
+<p class="p">オプション標識は、このキーワードでは無効です。</p>
+</div>
+<div class="example"><h2 class="title sectiontitle">例</h2><p class="p">次の例は、ERRSFL キーワードの指定方法を示しています。</p>
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code>|...+....1....+....2....+....3....+....4....+....5....+....6....+....7....+....8
+00010A                                      MSGLOC(24)
+00020A                                      ERRSFL
+00030A          R RCD1
+00040A            FIELD1        5A   B  2  3
+00050A  10                                  ERRMSGID(MSG0001 MSGF1 10 &amp;MDTA);
+00060A            FIELD2        5A   B  5  7
+00070A                                      ERRMSG('ERROR MSG 1' 11)
+00080A            FIELD3        4S   I  7  7RANGE(1000 9999)
+00090A                                      CHKMSGID(MSG0002 MSGF1 &amp;MDTA1);
+00100A            FIELD4       10A   B  8  7CHECK(VN)
+00110A            MDTA         78A   P
+00120A            MDTA1         4A   P
+     A</code></pre></div><div class="docs--copy-btn"></div></div>
+<p class="p">この例では、RCD1 が表示装置から読み取られるときに、エラー・サブファイル内の以前のメッセージはすべて消去されます。
+そのあと、FIELD3 に 1000 - 9999 の範囲の値が入っておらず、しかも FIELD4 に有効な名前が入っていない場合には、システムはメッセージ MSG0002 と、CHECK(VN) に関連付けられているシステム・メッセージをエラー・サブファイル内に置き、そのエラー・サブファイルを表示画面の 24 行目に表示します。
+ユーザーは、前ページおよび次ページ・キーを押すことによって、エラー・サブファイル内のメッセージを 1 つずつ参照することができます。</p>
+<p class="p">RCD1 が再び表示装置から読み取られるとき、エラー・サブファイル内の以前のメッセージは消去されます。
+そのあと、FIELD3 および FIELD4 が有効であれば、制御権はアプリケーション・プログラムに戻ります。
+FIELD1 および FIELD2 が有効でない場合は、標識 10 および標識 11 がオンでアプリケーション・プログラムが RCD1 を表示装置に書き込むときに、システムはメッセージ MSG0001 と <samp class="ph codeph">ERROR
+MSG 1</samp> のテキストをエラー・サブファイルに入れ、表示画面の 24 行目にそのエラー・サブファイルを表示します。
+ユーザーは、前ページおよび次ページ・キーを押すことによって、エラー・サブファイル内のメッセージを 1 つずつ参照することができます。</p>
+</div>
+</div>
+<div class="related-links ibm-padding-top-1 ibm-padding-bottom-2 bx--row bottom-section-parent" aria-label="bottom related links">
+<div class="familylinks ibm-margin-bottom-1">
+<div class="parentlink"><strong>親トピック:</strong> <div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a class="link bottom-section-link" href="/docs/ja/ssw_ibm_i_74/rzakc/rzakcmstkeyent.htm" title="表示装置ファイルを定義するキーワード項目は、45 - 80 桁目 (機能欄) に記入します。">表示装置ファイルの DDS キーワード項目 (45 - 80 桁目)</a></div></div>
+</div>
+</div>
+

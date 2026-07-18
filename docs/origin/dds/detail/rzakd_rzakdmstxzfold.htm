@@ -1,0 +1,80 @@
+<h1 class="title topictitle1">印刷装置ファイルの ZFOLD (Z 折り返し) キーワード</h1><div id="lastModifiedDate"><span>Last Updated</span>: 2021-04-13</div>
+<div class="body refbody"><p class="shortdesc">このレコード・レベルのキーワードは、現行用紙で Z 折り返し操作の実行を指定する場合に使用します。</p>
+<div class="section"><p class="p">Z 折り返し操作を行うと、まず現行の用紙は、基準縁の平行線に沿って
+半分に谷折りされます (つまり、用紙の表側が折り返しの内側になります)。次に、用紙の基準縁から遠い方の半分が、基準縁の平行線に沿って
+再び半分に山折りされます。例えば、基準縁を短辺に沿って指定した 11 x 17 インチの用紙にこの操作を適用すると、8.5 x 11 インチの折り込みページが作成されます。</p>
+<p class="p">それぞれの媒体 (用紙) に対して、この仕上げ操作が適用されます。</p>
+<p class="p">キーワードの形式は次のとおりです。</p>
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code>ZFOLD(reference-edge paper-type)</code></pre></div><div class="docs--copy-btn"></div></div>
+<p class="p">reference-edge パラメーターと paper-type パラメーターは必須です。</p>
+<p class="p">これらの 2 つのパラメーターには、以下の値を指定することができます。</p>
+<ul class="ul cds--list--unordered"><li class="li cds--list__item"><strong class="ph b">reference-edge:</strong><dl class="dl"><dt class="dt dlterm">*BOT</dt>
+<dd class="dd">基準縁は媒体の下端。</dd>
+<dt class="dt dlterm">*RIGHT</dt>
+<dd class="dd">基準縁は媒体の右端。</dd>
+<dt class="dt dlterm">*TOP</dt>
+<dd class="dd">基準縁は媒体の上端。</dd>
+<dt class="dt dlterm">*LEFT</dt>
+<dd class="dd">基準縁は媒体の左端。</dd>
+<dt class="dt dlterm">*DEVD</dt>
+<dd class="dd">基準縁は装置が使用しているデフォルトの基準縁。</dd>
+</dl>
+</li>
+<li class="li cds--list__item"><strong class="ph b">paper-type:</strong><dl class="dl"><dt class="dt dlterm">*LEDGER </dt>
+<dd class="dd">使用する用紙はレジャー・サイズ (11 x 17 インチ)。</dd>
+<dt class="dt dlterm">*A3 </dt>
+<dd class="dd">使用する用紙は A3 サイズ (297 mm x 420 mm)。</dd>
+</dl>
+</li>
+</ul>
+<p class="p">ファイルに ZFOLD が指定される場合には、CRTPRTF コマンドで DEVTYPE(*AFPDS) を
+指定してください。DEVTYPE が *AFPDS 以外に変更された場合には、キーワードは
+無視され、印刷時に警告メッセージが出ます。 </p>
+<p class="p">Z 折り返し操作をサポートしないプリンターに対して ZFOLD を指定した場合は、
+印刷装置ファイル内で FIDELITY に指定された値が、ファイルの印刷を行うかどうかを制御します。</p>
+<p class="p">ZFOLD はページの境界で指定されていないと、実行時に無視されます。あるページについて、名前付きのフィールドまたは固定情報フィールドが 1 つも
+処理されていなければ、プリンターはページの境界にあります。名前付きフィールド
+または固定情報フィールドが 1 つでも処理されると、プリンターはもうページの
+境界にはありません。プリンターに改ページを生じさせる SKIP、SPACE、または ENDPAGE キーワードが処理されると、プリンターは再びページの境界に位置します。</p>
+<p class="p">ZFOLD、SKIP、および SPACE の各キーワードは、次の順序で処理されます。</p>
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code>SKIPB
+SPACEB
+ZFOLD
+SPACEA
+SKIPA</code></pre></div><div class="docs--copy-btn"></div></div>
+<p class="p">ZFOLD は、それを指定したレコード様式に対してだけ効力を持ちます。レコード様式に対して ZFOLD が指定されている場合、ページ・サイズは ZFOLD に
+指定されている paper-type のサイズ (レジャーまたは A3) に変更されます。指定のレコード様式を持つレコードが処理された後、次のレコード様式 (ZFOLD キーワードが指定されていない場合) に
+使用されるページ・サイズは、ファイル・レベル (CRTPRTF コマンド、CHGPRTF コマンド、または OVRPRTF コマンド) で指定されているページ・サイズです。</p>
+<p class="p">ZFOLD は、単一の用紙に対してのみ有効です。連続した用紙に対して Z 折り返し操作を適用する場合は、それぞれの用紙ごとに ZFOLD を指定する必要があります。スプール・ファイル 1 つにつき、Z 折り返し操作を適用できる用紙の最大枚数は、プリンターによって異なります。
+これについてはご使用のプリンターのハードウェア解説書を参照してください。</p>
+<p class="p">サポートされる基準縁はプリンターによって異なります。
+これについてはご使用のプリンターのハードウェア解説書を参照してください。</p>
+</div>
+<div class="section"><h2 class="title sectiontitle">例</h2><div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code>|...+....1....+....2....+....3....+....4....+....5....+....6....+....7....+....8
+     A*
+     A          R REC1                      ZFOLD(*DEVD *LEDGER)
+     A*</code></pre></div><div class="docs--copy-btn"></div></div>
+<p class="p">REC1 の印刷時に、プリンターのポストプロセッサーによって Z 折り返し
+操作が行われます。</p>
+<p class="p">常に、各レコード様式ごとに 1 つの ZFOLD キーワードだけが有効です。オプション標識がある場合でも、1 つのレコード様式に複数の ZFOLD キーワード
+を指定すると無効になります。</p>
+<p class="p">ページ・サイズはレジャーまたは A3 のどちらかなので、ZFOLD を指定した場合はオーバーフロー行番号が再計算されます。新しいオーバーフロー行番号は、印刷装置ファイルに指定されているとおりに、オーバーフロー行からページの下端までの距離を維持します。ZFOLD の処理が完了すると、印刷装置ファイルに指定されている
+オーバーフロー番号が復元されます。したがって、ページの下端から 1" のオーバーフロー行がファイル・レベルで
+指定されている場合は、ZFOLD が指定されているページのオーバーフロー行も、ページの下端から 1" になります。</p>
+<p class="p">Z 折り返し操作についての追加情報については、ご使用のプリンターの資料を参照してください。</p>
+<p class="p">このキーワードについては、オプション標識を使用できます。</p>
+<div class="note note border-2 cds--inline-notification--info ibmdocs-note cds--inline-notification cds--inline-notification--low-contrast margin-top-1 margin-bottom-1"><div class="cds--inline-notification__details"><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" class="cds--inline-notification__icon" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M16,2A14,14,0,1,0,30,16,14,14,0,0,0,16,2Zm0,5a1.5,1.5,0,1,1-1.5,1.5A1.5,1.5,0,0,1,16,7Zm4,17.12H12V21.88h2.88V15.12H13V12.88h4.13v9H20Z"></path></svg>
+        <div class="cds--inline-notification__text-wrapper">
+          <div class="cds--inline-notification__subtitle"><span class="notetitle ibm-bold ibm-textcolor-blue-50 background-blue cds--inline-notification__title ibm-padding-top-1 ibm-padding-bottom-1 padding-left-1 padding-right-1">注:</span> <svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 32 32" aria-hidden="true"><path d="M14 16L24 6 25.4 7.4 16.8 16 25.4 24.6 24 26zM8 4H10V28H8z"></path><title></title></svg> <svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 32 32" aria-hidden="true"><path d="M14 16L24 6 25.4 7.4 16.8 16 25.4 24.6 24 26zM8 4H10V28H8z"></path><title></title></svg> MVS™ にスプール・ファイルを送信する際にこの DDS キーワードを使用すると、生成される <span class="keyword">IBM® i</span> スプール・ファイルは正しく印刷されません。
+スプール・ファイルは印刷されず、PSF/MVS によって
+出力キューに保留されます。 <svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 16L8 26 6.6 24.6 15.2 16 6.6 7.4 8 6zM22 4H24V28H22z"></path><title></title></svg> <svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 16L8 26 6.6 24.6 15.2 16 6.6 7.4 8 6zM22 4H24V28H22z"></path><title></title></svg></div>
+        </div>
+      </div></div>
+</div>
+</div>
+<div class="related-links ibm-padding-top-1 ibm-padding-bottom-2 bx--row bottom-section-parent" aria-label="bottom related links">
+<div class="familylinks ibm-margin-bottom-1">
+<div class="parentlink"><strong>親トピック:</strong> <div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a class="link bottom-section-link" href="/docs/ja/ssw_ibm_i_74/rzakd/rzakdmstprkey.htm" title="これらは印刷装置ファイルの定義に有効なキーワード項目です。">印刷装置ファイルのキーワード項目 (45 から 80 桁目)</a></div></div>
+</div>
+</div>
+

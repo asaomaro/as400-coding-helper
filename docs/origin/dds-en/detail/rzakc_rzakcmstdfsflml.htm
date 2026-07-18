@@ -1,0 +1,141 @@
+<main role="main"><article role="article" aria-labelledby="rzakcmstdfsflml__title__1">
+<h1 class="topictitle1" id="rzakcmstdfsflml__title__1">SFLMLTCHC (Subfile Multiple Choice Selection List) keyword
+for display files</h1><div id="lastModifiedDate"><span>Last Updated</span>: 2026-07-13</div>
+
+
+
+<div class="body refbody"><p class="shortdesc">You use this record-level keyword to define
+a subfile as a multiple-choice selection list. A <dfn class="term">multiple-choice
+selection list</dfn> is a scrollable group of items from which the
+user can select multiple items.</p>
+
+<div class="section"><div class="p">The format of this keyword is:  <div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>SFLMLTCHC[(&amp;number-selected] [*NORSTCSR | *RSTCSR]
+[*NOSLTIND | *SLTIND])]
+</code></pre></div><div class="docs--copy-btn"></div></div></div>
+<p>Parameters are optional and can be entered in any
+order.</p>
+<p>The &amp;number-selected parameter allows the application
+to find the number of items that were selected in the multiple-selection
+list. This parameter must name a hidden field with a length of 4,
+data type of Y, and zero decimal positions.</p>
+<p>The *RSTCSR parameter
+specifies whether the arrow keys should be allowed to move the selection
+cursor outside of the selection list. *RSTCSR specifies that the arrow
+keys will not cause the selection cursor to move outside of the push
+button field. *NORSTCSR specifies that the arrow keys will cause the
+selection cursor to leave the field. If the SFLMLTCHC subfile control
+record is defined in a pulldown, the default is <code class="ph codeph">*RSTCSR</code>.
+Otherwise, the default is <code class="ph codeph">*NORSTCSR</code>.</p>
+<p>The *SLTIND
+parameter specifies whether selection indicators are used when this
+selection list is displayed on a graphical display. *SLTIND specifies
+that the check boxes should be used on color graphical displays as
+selection indicator. *NOSLTIND specifies that no selection indicator
+should be used on a color graphical display and only a selection cursor
+can be used to make a selection. The default is <code class="ph codeph">*NOSLTIND</code>.</p>
+<div class="p">A
+subfile containing the SFLMLTCHC keyword must:  <ul class="cds--list--unordered">
+<li class="cds--list__item">Contain only one output field</li>
+
+<li class="cds--list__item">Cannot contain input capable fields</li>
+
+<li class="cds--list__item">Might contain hidden fields</li>
+
+</ul>
+</div>
+<p>This optional keyword is valid only for the subfile-control
+record format.</p>
+<p>The following subfile control record keywords
+cannot be specified on a record with the SFLMLTCHC keyword:</p>
+
+<div class="tablenoborder"><div class="cds--data-table-container"><table summary="" role="presentation" class="presentation cds--data-table"><colgroup><col><col></colgroup><tbody>
+<tr>
+<td class="nrule"><div class="lines">SFLDROP<br>
+SFLFOLD<br>
+SFLSNGCHC</div>
+</td>
+
+<td class="nrule">&nbsp;</td>
+
+</tr>
+
+</tbody>
+</table></div>
+</div>
+<p>The CHCAVAIL, CHCSLT, and CHCUNAVAIL keywords can be used
+to indicate the color of the items within the selection list, when
+the list is displayed on a color display station. The CHCAVAIL keyword
+ indicates the color of the items within the list which are available
+for selection. The CHCSLT keyword indicates the color of the selected
+items. The CHCUNAVAIL keyword indicates the items on the list which
+are not available for selection. These keywords can be used in a subfile
+control record only if SFLSNGCHC or SFLMLTCHC keywords are also used.</p>
+<p>Option
+indicators are not valid for this keyword.</p>
+
+<p>If selection indicators are used, then colors/attributes are not to be used to indicate selection of a choice. 
+This was done according to the Common User Access specifications, which say that choice selection is to be indicated using a single method for any given field. Doing both can lead to unpredictable results.</p>
+</div>
+
+<div class="example"><h2 class="sectiontitle" id="rzakcmstdfsflml__title__2">Example 1</h2><p>The following example shows how
+to specify the SFLMLTCHC keyword:</p>
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>|...+....1....+....2....+....3....+....4....+....5....+....6....+....7....+....8
+     A
+     A          R SFLRCD                    SFL
+     A            CTLFLD         1Y 0H      SFLCHCCTL
+     A            F1            10A  O  6 10
+     A          R SFLCTLRCD                 SFLCTL(SFLRCD)
+     A                                      SFLMLTCHC
+     A                                      SFLPAG(5) SFLSIZ(&amp;SFLSIZ);
+     A                                      SFLDSP SFLDSPCTL
+     A                                      ROLLUP(10)
+     A   10                                 SFLEND(*SCRBAR)
+     A            F3             5S 0H      SFLSCROLL
+     A            F2             4S 0H      SFLRCDNBR(CURSOR *TOP)
+     A            SFLSIZ         5S 0P
+     A                                  1 30'Panel Title'
+     A                                  4  5'Select Multiple Items:'</code></pre></div><div class="docs--copy-btn"></div></div><p>In
+this example, when using a graphical display station attached to a
+controller that supports an enhanced interface for nonprogrammable
+workstations, a multiple-choice list looks like this:</p>
+<div class="image"><img src="/docs/en/ssw_ibm_i_74/gifs/rv3f073.gif" alt="A figure of the example specification displayed on a graphical display station." class="ibmdocs-image-downsize"></div></div>
+
+<div class="example"><h2 class="sectiontitle" id="rzakcmstdfsflml__title__3">Example 2</h2><p>The following example shows how
+to specify what color the items on the list should have on a color
+display. Available items are displayed in red. Selected items are
+displayed in blue. Unavailable items are displayed in yellow. The
+CHCAVAIL, CHCSLT, and CHCUNAVAIL keywords can also be used to set
+the display attributes of the items on the list.</p>
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>|...+....1....+....2....+....3....+....4....+....5....+....6....+....7....+....8
+     A
+     A          R SFLRCD                    SFL
+     A            CTLFLD         1Y 0H      SFLCHCCTL
+     A            F1            10A  O  6 10
+     A          R SFLCTLRCD                 SFLCTL(SFLRCD)
+     A                                      SFLMLTCHC
+     A                                      SFLPAG(5) SFLSIZ(&amp;SFLSIZ);
+     A                                      SFLDSP SFLDSPCTL
+     A                                      ROLLUP(10)
+     A                                      CHCAVAIL((*COLOR RED))
+     A                                      CHCSLT((*COLOR BLU))
+     A                                      CHCUNAVAIL((*COLOR YLW))
+     A   10                                 SFLEND(*SCRBAR)
+     A            F3             5S 0H      SFLSCROLL
+     A            F2             4S 0H      SFLRCDNBR(CURSOR *TOP)
+     A            SFLSIZ         5S 0P
+     A                                  1 30'Panel Title'
+     A                                  4  5'Select Multiple Items:'</code></pre></div><div class="docs--copy-btn"></div></div></div>
+
+</div>
+
+<aside role="complementary" aria-labelledby="rzakcmstdfsflml__title__1"><nav role="navigation" aria-label="bottom related links" class="ibm-padding-top-1 ibm-padding-bottom-2 bx--row bottom-section-parent">
+<div class="familylinks ibm-margin-bottom-1">
+<div class="parentlink"><strong>Parent topic:</strong> <div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a data-hd-product="ssw_ibm_i_74" href="/docs/en/ssw_ibm_i_74/rzakc/rzakcmstkeyent.htm" title="You type the keyword entries that define display files in positions 45 through 80 (functions)." class="bottom-section-link">DDS keyword entries for display files (positions 45 through 80)</a></div></div>
+</div>
+
+<div class="linklist relinfo relref ibm-margin-bottom-1" lang="en-us"><h2 class="linkheading bottom-section-h2-title">Related reference</h2>
+<ul><li class="cds--list__item"><div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a data-hd-product="ssw_ibm_i_74" href="/docs/en/ssw_ibm_i_74/rzakc/rzakcmstchcava.htm" title="You use this field-level keyword to specify the color or display attributes to be used when the system is displaying the available choices in a menu bar, push button, selection field, or subfile single-choice or multiple-choice selection list." class="bottom-section-link">CHCAVAIL (Choice Color/Display Attribute when Available) keyword for display files</a></div></li>
+<li class="cds--list__item"><div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a data-hd-product="ssw_ibm_i_74" href="/docs/en/ssw_ibm_i_74/rzakc/rzakcmstchcslt.htm" title="You use this field-level keyword to specify the color or display attributes to be used when the system is displaying a selected choice in a menu bar or selection field." class="bottom-section-link">CHCSLT (Choice Color/Display Attribute when Selected) keyword for display files</a></div></li>
+<li class="cds--list__item"><div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a data-hd-product="ssw_ibm_i_74" href="/docs/en/ssw_ibm_i_74/rzakc/rzakcmstchcuna.htm" title="You use this field-level keyword to specify the color or display attributes to be used when the system displays the unavailable choices in a selection field or a push button field." class="bottom-section-link">CHCUNAVAIL (Choice Color/Display Attribute when Unavailable) keyword for display files</a></div></li>
+</ul></div>
+</nav></aside></article></main>

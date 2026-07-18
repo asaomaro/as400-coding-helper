@@ -1,0 +1,65 @@
+<h1 class="title topictitle1">表示装置ファイルの HLPCMDKEY (ヘルプ・コマンド・キー) キーワード</h1><div id="lastModifiedDate"><span>Last Updated</span>: 2021-04-13</div>
+<div class="body refbody"><p class="shortdesc">これはレコード・レベル・キーワードで、アプリケーション・ヘルプ・レコード様式についてコマンド・アテンション (CA) キーまたはコマンド機能 (CF) キーが押されたあとに、アプリケーション・プログラムに制御権を返すために使用します。</p>
+<div class="section"><p class="p">このキーワードは、アプリケーション・ヘルプ・レコード様式に指定します。
+アプリケーション・プログラムに制御権を返すためには、該当のコマンド・キーをアプリケーション・レコード様式とアプリケーション・ヘルプ・レコード様式の両方に定義しておく必要があります。</p>
+<p class="p">このキーワードにはパラメーターはありません。</p>
+<p class="p">CA キーまたは CF キーは、ファイル・レベルまたは HLPCMDKEY キーワードを含むヘルプ・レコードのいずれかで指定しておく必要があります。
+CA<var class="keyword varname">nn</var> キーまたは CF<var class="keyword varname">nn</var> キーがファイル・レベルにもヘルプ・レコードにも定義されていなければ、警告メッセージ (重大度 10) が出ます。
+ファイル・レベルおよび HLPCMDKEY キーワードを指定したヘルプ・レコードで定義した CA<var class="keyword varname">nn</var> および CF<var class="keyword varname">nn</var> キーのいずれにもオプション標識が付いていると、警告メッセージ (重大度 10) が出されます。
+アプリケーション・ヘルプ・レコード様式で定義した CA キーまたは CF キーに応答標識が定義されていると、警告メッセージ (重大度 10) が出され、その応答標識は無視されます。</p>
+<div class="p">このキーワードがヘルプ・レコードに定義されており、アプリケーション・レコードとアプリケーション・ヘルプ・レコードの両方に指定されているコマンド・キーのうちの 1 つのキーを表示装置のユーザーが押すと、次のことが行われます。<ul class="ul cds--list--unordered"><li class="li cds--list__item">押されたコマンド・キーが CAnn キーの場合、入力データは、アプリケーション・レコード様式からアプリケーション・プログラムへ転送されません。</li>
+<li class="li cds--list__item">押されたコマンド・キーが CFnn キーの場合、アプリケーション・レコード様式からアプリケーション・プログラムに入力データが転送されます。</li>
+<li class="li cds--list__item">押されたコマンド・キーは、アプリケーション・プログラムに返されます。</li>
+</ul>
+</div>
+<p class="p">当該コマンド・キーは、アプリケーション・レコード様式とアプリケーション・ヘルプ・レコード様式の両方に定義されていなければなりません。
+当該コマンド・キーがアプリケーション・レコード様式にだけしか定義されていなかった場合は、当該のアプリケーション・ヘルプ・レコード様式が表示されても当該コマンド・キーは使えません。
+当該コマンド・キーがアプリケーション・ヘルプ・レコード様式にだけしか定義されていなかった場合、当該コマンド・キーは Enter キーとして機能しますが、アプリケーション・プログラムには制御権は返されません。</p>
+<p class="p">サブファイル (SFL キーワード)、サブファイル制御 (SFLCTL キーワード)、またはユーザー定義 (USRDFN キーワード) の各レコード様式では、HLPCMDKEY を指定することができません。</p>
+<p class="p">USRDSPMGT キーワードを含むファイルでは、HLPCMDKEY キーワードを指定することはできません。</p>
+<p class="p">オプション標識は、このキーワードでは無効です。</p>
+</div>
+<div class="example"><h2 class="title sectiontitle">例</h2><p class="p">次の例は、HLPCMDKEY キーワードの指定方法を示しています。
+最初がアプリケーション・レコード様式で、2 番目がアプリケーション・ヘルプ・レコード様式です。</p>
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code>|...+....1....+....2....+....3....+....4....+....5....+....6....+....7....+....8
+00010A          R APPRCD                    CA01
+00020A                                      CA03
+00030A                                      CF12(12)
+00040A                                      CA04
+00050A                                      HELP
+00060A          H                           HLPRCD(HELPRCD)
+00070A                                      HLPARA(1 1 24 80)
+00080A                                  8  2'THIS IS THE APPLICATION'
+00090A                                  9  2'RECORD FORMAT'
+00100A            INPUT1        10   B 12 10
+00110A            INPUT2        10   B 13 10
+00120A            INPUT3        10   B 14 20
+00130A*
+00140A          R HELPRCD                   HLPCMDKEY
+00150A                                      CA01(11)
+00160A                                      CF03
+00170A                                      CF05
+00180A                                      CF12
+00190A                                  5  8'SPECIFY COMPANY NAME'
+00200A                                  6  9'SPECIFY STREET'
+00210A                                  7 10'SPECIFY CITY, STATE, ZIP'
+     A</code></pre></div><div class="docs--copy-btn"></div></div>
+<p class="p">ユーザーがアプリケーション・ヘルプ表示を行う場合は、次のことが行われます。</p>
+<ul class="ul cds--list--unordered"><li class="li cds--list__item">ユーザーが CMD1 キーを押すと、制御権はアプリケーション・プログラムに返されますが、アプリケーション・レコード様式からアプリケーション・プログラムへのデータ転送はありません。
+応答標識 11 はヘルプ・レコード様式で指定されていて、アプリケーション・レコード様式では指定されていないので、オンにはなりません。</li>
+<li class="li cds--list__item">ユーザーが CMD12 キーを押すと、制御権はアプリケーション・プログラムに返され、アプリケーション・レコード様式からアプリケーション・プログラムにデータが転送されます。
+応答標識 12 はオンになります。</li>
+<li class="li cds--list__item">ユーザーが CMD5 キーを押すと、Enter キーを押したことと同じになります。
+アプリケーション・プログラムに制御権を返すためには、アプリケーション・レコード様式とアプリケーション・ヘルプ・レコード様式の両方に、同一の CA キーまたは同一の CF キーを定義しておく必要があります。</li>
+<li class="li cds--list__item">ユーザーが CMD3 キーを押すと、Enter キーを押したことと同じになります。
+制御権をアプリケーション・プログラムに返すためには、アプリケーション・レコード様式とアプリケーション・ヘルプ・レコード様式の両方に、同一の CA キーまたは同一の CF キーを定義しておく必要があります。</li>
+<li class="li cds--list__item">ユーザーが CMD4 キーを押すと、CMD4 キーが使えないことを示すメッセージが表示されます。制御権がアプリケーション・プログラムに返されるようにするためには、アプリケーション・レコード様式とアプリケーション・ヘルプ・レコード様式の両方に、同一の CA キーまたは同一の CF キーを指定しておく必要があります。</li>
+</ul>
+</div>
+</div>
+<div class="related-links ibm-padding-top-1 ibm-padding-bottom-2 bx--row bottom-section-parent" aria-label="bottom related links">
+<div class="familylinks ibm-margin-bottom-1">
+<div class="parentlink"><strong>親トピック:</strong> <div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a class="link bottom-section-link" href="/docs/ja/ssw_ibm_i_74/rzakc/rzakcmstkeyent.htm" title="表示装置ファイルを定義するキーワード項目は、45 - 80 桁目 (機能欄) に記入します。">表示装置ファイルの DDS キーワード項目 (45 - 80 桁目)</a></div></div>
+</div>
+</div>
+

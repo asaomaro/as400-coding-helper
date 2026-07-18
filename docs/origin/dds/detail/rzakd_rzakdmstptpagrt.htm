@@ -1,0 +1,75 @@
+<h1 class="title topictitle1">印刷装置ファイルの PAGRTT (ページの回転) キーワード</h1><div id="lastModifiedDate"><span>Last Updated</span>: 2021-04-13</div>
+<div class="body refbody"><p class="shortdesc"><span class="ph">このレコード・レベル・キーワードは、
+ページがプリンターにロードされた方向に対してテキストの回転角度を指定する場合に使用します。</span></p>
+<div class="section"><p class="p">PAGRTT キーワードは、3812、3816、3820、3825、3827、3835、および 4028 プリンターの場合に限り有効です。レコード様式に PAGRTT キーワードを指定しなかった場合、ページの回転は、印刷装置ファイルの作成 (CRTPRTF) コマンド、印刷装置ファイルの変更 (CHGPRTF) コマンド、または印刷装置ファイルの指定変更 (OVRPRTF) コマンドで指定されて
+いる値にしたがって設定されます。</p>
+<p class="p">キーワードの形式は次のとおりです。</p>
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code>PAGRTT(0 | 90 | 180 | 270)</code></pre></div><div class="docs--copy-btn"></div></div>
+<p class="p">このキーワードで指定できるパラメーター値は 0、90、180、または 270 のいずれかです。0 は回転しないことを示し、その他の値は、0 の回転桁から時計回りへの
+回転の度数を指定します。</p>
+<div class="note note border-2 cds--inline-notification--info ibmdocs-note cds--inline-notification cds--inline-notification--low-contrast margin-top-1 margin-bottom-1"><div class="cds--inline-notification__details"><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" class="cds--inline-notification__icon" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M16,2A14,14,0,1,0,30,16,14,14,0,0,0,16,2Zm0,5a1.5,1.5,0,1,1-1.5,1.5A1.5,1.5,0,0,1,16,7Zm4,17.12H12V21.88h2.88V15.12H13V12.88h4.13v9H20Z"></path></svg>
+        <div class="cds--inline-notification__text-wrapper">
+          <div class="cds--inline-notification__subtitle"><span class="notetitle ibm-bold ibm-textcolor-blue-50 background-blue cds--inline-notification__title ibm-padding-top-1 ibm-padding-bottom-1 padding-left-1 padding-right-1">注:</span> 横長の用紙を使用する 3835 プリンターでは、DDS ファイルに対して反時計回りの回転が行われます。</div>
+        </div>
+      </div></div>
+<p class="p">PAGRTT によって暗黙の改ページが生じることはありません。用紙がページの境界上に
+ない場合には、このキーワードは使用されず、診断メッセージが表示されます。</p>
+<p class="p">PAGRTT、SKIP、および SPACE の各キーワードは、次の順序で処理されます。</p>
+<p class="lines">SKIPB<br>
+SPACEB<br>
+PAGRTT<br>
+SPACEA<br>
+SKIPA</p>
+<p class="p">PAGRTT キーワードの効力は、該当のレコード様式の処理が終わるまで持続します。次のレコード様式について PAGRTT キーワードが指定されていない場合には、ファイル・レベルで指定されている PAGRTT の値に戻ることになります。</p>
+<div class="note note border-2 cds--inline-notification--info ibmdocs-note cds--inline-notification cds--inline-notification--low-contrast margin-top-1 margin-bottom-1"><div class="cds--inline-notification__details"><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" class="cds--inline-notification__icon" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M16,2A14,14,0,1,0,30,16,14,14,0,0,0,16,2Zm0,5a1.5,1.5,0,1,1-1.5,1.5A1.5,1.5,0,0,1,16,7Zm4,17.12H12V21.88h2.88V15.12H13V12.88h4.13v9H20Z"></path></svg>
+        <div class="cds--inline-notification__text-wrapper">
+          <div class="cds--inline-notification__subtitle"><span class="notetitle ibm-bold ibm-textcolor-blue-50 background-blue cds--inline-notification__title ibm-padding-top-1 ibm-padding-bottom-1 padding-left-1 padding-right-1">注:</span> <ol class="ol cds--list--ordered--temporary"><li class="li cds--list__item">PAGRTT キーワードの効力はページ全体に及びます。PAGRTT の指定された
+レコード様式の終わりに達しても、次のページが処理されるまでは、ファイルは
+ファイル・レベルの回転角度には戻りません。例えば、ファイル・レベルの
+パラメーターで PAGRTT(0) が指定されているときに、次のレコード様式のいずれかを書き込む場合は、レコード E が書き込まれるまで、ファイルは回転角度 0 には戻りません。<ul class="ul cds--list--unordered cds--list--nested"><li class="li cds--list__item">レコード様式 A (PAGRTT (90))。</li>
+<li class="li cds--list__item">レコード様式 B (レコード A と同じページ)。</li>
+<li class="li cds--list__item">レコード様式 C (レコード A と同じページ)。</li>
+<li class="li cds--list__item">レコード様式 D (レコード A と同じページ)。</li>
+<li class="li cds--list__item">レコード様式 E (次のページ)。</li>
+</ul>
+</li>
+<li class="li cds--list__item">DEVTYPE(*SCS) で作成されたファイルの場合、数ページにまたがる
+レコード様式に対して PAGRTT キーワードを指定した場合には、そのキーワードの効力が及ぶのはそれが指定されているページだけです。</li>
+</ol>
+</div>
+        </div>
+      </div></div>
+<p class="p">ページが回転すると、ページの長さと幅が入れ替わり、長さが幅に、幅が長さになります。ただし、この入れ替えは次の条件下では
+行われません。</p>
+<ul class="ul cds--list--unordered"><li class="li cds--list__item">CRTPRTF コマンド、CHGPRTF コマンド、または OVRPRTF コマンドで、PAGRTT が *DEVD または *COR に設定されている場合。</li>
+<li class="li cds--list__item">CRTPRTF コマンド、CHGPRTF コマンド、または OVRPRTF コマンドで、フォントが *DEVD に設定されている場合。</li>
+</ul>
+<p class="p">長さと幅の入れ替えができない場合には、診断メッセージが表示されます。</p>
+<p class="p">ページの回転が行われる場合は、改行および切り捨ての機能は実行されません。
+すなわち、DDS の BLKFOLD キーワード、および、CRTPRTF コマンド、CHGPRTF コマンド、または OVRPRTF コマンドの FOLD パラメーターは使用されません。</p>
+<p class="p">このキーワードについては、オプション標識を使用できます。</p>
+</div>
+<div class="section"><h2 class="title sectiontitle">例</h2><p class="p">次の例は、PAGRTT キーワードの指定方法を示しています。</p>
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code>|...+....1....+....2....+....3....+....4....+....5....+....6....+....7....+....8
+     A          R RECORD1
+     A  02                                  SKIPB(1)
+     A  02                                  PAGRTT(270)
+     A            FIELD1         3A     2 01
+     A          R RECORD2
+     A            FIELD1         3A     6 01
+     A          R RECORD3
+     A            FIELD1         3A     5 01
+     A</code></pre></div><div class="docs--copy-btn"></div></div>
+<p class="p">この例で標識 02 がオンであれば、RECORD1 は 270 度回転します。SKIPB(1) が
+指定されているので、このレコードは新しいページに印刷されます。</p>
+<p class="p">RECORD2 は RECORD1 と同じページにあるので、やはり 270 度回転して印刷されます。</p>
+<p class="p">RECORD3 は新しいページから始まるので、このレコードについては、CRTPRTF コマンド、CHGPRTF コマンド、または OVRPRTF コマンドの PAGRTT の値が
+適用されます。</p>
+</div>
+</div>
+<div class="related-links ibm-padding-top-1 ibm-padding-bottom-2 bx--row bottom-section-parent" aria-label="bottom related links">
+<div class="familylinks ibm-margin-bottom-1">
+<div class="parentlink"><strong>親トピック:</strong> <div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a class="link bottom-section-link" href="/docs/ja/ssw_ibm_i_74/rzakd/rzakdmstprkey.htm" title="これらは印刷装置ファイルの定義に有効なキーワード項目です。">印刷装置ファイルのキーワード項目 (45 から 80 桁目)</a></div></div>
+</div>
+</div>
+

@@ -1,0 +1,78 @@
+<h1 class="title topictitle1">PFILE (物理ファイル) キーワード - 論理ファイルのみ</h1><div id="lastModifiedDate"><span>Last Updated</span>: 2021-04-13</div>
+<div class="body refbody"><p class="shortdesc"><span class="ph">これはレコード・レベルのキーワードで、定義中のレコード様式を介してアクセスされるデータが入っている物理ファイルを識別するために使用します。</span></p>
+<div class="section"><div class="p">キーワードの形式は次のとおりです。<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code>PFILE([library-name/]physical-file-name [.32])</code></pre></div><div class="docs--copy-btn"></div></div>
+</div>
+<p class="p">PFILE キーワードは、単一様式論理ファイルまたは複数様式論理ファイル
+のすべてのレコード様式について必須です。
+このキーワードは、このファイルを単一様式論理ファイルまたは複数様式論理ファイル
+として識別する点を除けば、JFILE キーワードと同じです。PFILE キーワードは、JFILE キーワードと同時に指定することはできません。1 つの論理ファイルでは、PFILE キーワードを用いて最高 32 個の物理ファイル名を指定することができます。
+最大数の物理ファイルを使用する場合には、1 つのレコード様式で (つまり PFILE キーワード
+を 1 つだけ使用して) 32 個の物理ファイル名を指定することもできますし、32 個の
+レコード様式に 1 つずつ物理ファイル名を指定することもできます。あるいは、複数のレコード様式に適当に分散させて物理ファイル名を指定すること
+もできます (各レコード様式に指定する物理ファイルの数は同数である必要はありません)。どの方法をとっても、指定できる物理ファイル名は最高 32 個です。
+論理ファイル作成時に複数の物理ファイルを指定する場合の制約事項
+については、該当の高水準言語の解説書を参照してください。</p>
+<p class="p">各物理ファイル名について、ライブラリー名はオプショナルです。
+ライブラリー名を指定しなかった場合には、ファイル作成時点で有効な
+ライブラリー・リスト (*LIBL) が使用されます。</p>
+<div class="p">複数様式論理ファイルの 1 つのレコード様式に複数の物理ファイル名を
+指定する場合には、その論理ファイルのレコード様式のすべてのフィールドは、指定するすべての物理ファイルに入っていなければなりません。
+この種のファイルは、RPG で外部記述することはできません。なぜなら、様式名の重複を招く結果となるためです。
+PFILE キーワードに指定された物理ファイルが複数の場合に、
+そのうちの一部の物理ファイルだけに入っているフィールドをプログラムでアクセスするためには、
+次のいずれかの作業を行います。<ul class="ul cds--list--unordered"><li class="li cds--list__item">結合論理ファイルを指定する。この方法の場合には、PFILE キーワードではなく、JFILE キーワードを使用します。</li>
+<li class="li cds--list__item">論理ファイルに、最初の物理ファイルに入っていないフィールドを含む
+別のレコード様式を指定する。<p class="p">例えば、FLD1 と FLD2 は物理ファイル PF1、PF2、および PF3 の
+すべてに入っているが、FLD3 は PF3 だけに入っているという
+場合には、PF1 および PF2 を基礎とする論理ファイル・レコード様式で FLD3 を
+指定することはできません。FLD3 にアクセスしたい場合には、FLD3 を含む
+別のレコード様式を指定するようにするか、または結合論理ファイルを使用します。</p>
+<p class="p">単一様式または複数様式の論理ファイルを用いて、異なる物理ファイルのフィールドを 1 つのレコード様式に
+組み込むことはできません。これを行うには、結合論理ファイルを使用します。
+単一様式または複数様式の論理ファイルの 1 つのレコード様式を
+介して読み取るレコードに含めることができるのは、1 つの物理ファイルから
+取り出したデータだけです。また、論理ファイルの 1 つのレコード様式を介して
+書き込むレコードは、1 つの物理ファイルにだけ保管されます。</p>
+</li>
+</ul>
+</div>
+<p class="p">PFILE キーワードで分散データ管理 (DDM) ファイルが指定できるのは、論理ファイル
+をリモート・システムで作成している場合だけです。</p>
+</div>
+<div class="section"><h2 class="title sectiontitle">例</h2><p class="p">以下に PFILE キーワードの指定方法の例を示します。</p>
+</div>
+<div class="example"><h2 class="title sectiontitle">例 1</h2> <div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code>|...+....1....+....2....+....3....+....4....+....5....+....6....+....7....+....8
+00010A          R LOGRCD1                   PFILE(PF1)
+     A</code></pre></div><div class="docs--copy-btn"></div></div>
+<p class="p">この例では、LOGRCD1 は PF1 の中にあるフィールドだけを使用できます。</p>
+</div>
+<div class="example"><h2 class="title sectiontitle">例 2</h2><div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code>|...+....1....+....2....+....3....+....4....+....5....+....6....+....7....+....8
+00010A          R LOGRCD2                   PFILE(PF1 PF2)
+     A               :
+     A               :
+00020A          R LOGRCD3                   PFILE(PF1 PF2 PF3)
+     A               :
+     A               :
+     A</code></pre></div><div class="docs--copy-btn"></div></div>
+<p class="p">この例では、LOGRCD2 は PF1 と PF2 に共通のフィールドを
+使用しなければならず、LOGRCD3 は PF1、PF2、および PF3 に
+共通のフィールドを使用しなければなりません。</p>
+</div>
+<div class="example"><h2 class="title sectiontitle">例 3</h2><div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code>|...+....1....+....2....+....3....+....4....+....5....+....6....+....7....+....8
+00010A          R LOGRCD4                   PFILE(PF1)
+     A               :
+     A               :
+00020A          R LOGRCD5                   PFILE(PF2)
+     A               :
+     A               :
+00030A          R LOGRCD6                   PFILE(LIB1/PF6)
+     A</code></pre></div><div class="docs--copy-btn"></div></div>
+<p class="p">この例では、LOGRCD4、LOGRCD5、および LOGRCD6 は、固有のフィールドを持つことができます。LOGRCD6 には、修飾物理ファイル名が指定されています。</p>
+</div>
+</div>
+<div class="related-links ibm-padding-top-1 ibm-padding-bottom-2 bx--row bottom-section-parent" aria-label="bottom related links">
+<div class="familylinks ibm-margin-bottom-1">
+<div class="parentlink"><strong>親トピック:</strong> <div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a class="link bottom-section-link" href="/docs/ja/ssw_ibm_i_74/rzakb/rzakbmstlfkeyw.htm" title="キーワード項目は、45 から 80 桁目 (機能欄) に記入します。">物理ファイルおよび論理ファイルのキーワード項目 (45 から 80 桁目)</a></div></div>
+</div>
+</div>
+

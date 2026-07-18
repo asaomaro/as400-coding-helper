@@ -1,0 +1,142 @@
+<h1 class="title topictitle1">表示装置ファイルの SFLEND (サブファイル終了) キーワード</h1><div id="lastModifiedDate"><span>Last Updated</span>: 2021-04-13</div>
+<div class="body refbody"><p class="shortdesc">これは、レコード・レベル・キーワードで、画面上でサブファイルまたはスクロール・バーが占めている部分の右下の隅に正符号 (+) またはテキスト (「続く」または「終わり」) を表示するために、サブファイル制御レコード様式で使用します。</p>
+<div class="section"><p class="p">正符号またはテキスト「続く」は、前ページ・キーを押すことによりサブファイルのテキスト行を移動させて、
+後続レコードを表示することができることをワークステーション・ユーザーに示すものです。</p>
+<div class="p">キーワードの形式は次のとおりです。<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code>SFLEND[(*PLUS | *MORE | {*SCRBAR [*SCRBAR | *PLUS |*MORE ]})]</code></pre></div><div class="docs--copy-btn"></div></div>
+</div>
+<div class="p">スクロール・バーは、サブファイルについて異なるタイプの情報を示します。<ul class="ul cds--list--unordered"><li class="li cds--list__item">ユーザーのサブファイル中での位置</li>
+<li class="li cds--list__item">サブファイルの大きさ</li>
+<li class="li cds--list__item">ユーザーが表示しているサブファイルの部分</li>
+</ul>
+</div>
+<p class="p">パラメーター値 *PLUS、*SCRBAR、および *MORE は任意指定です。
+パラメーターを指定しない場合は *PLUS が使用されます。
+2 番目のパラメーターでの *PLUS、*MORE、および *SCRBAR は、*SCRBAR が最初のパラメーターとして指定される場合にのみ指定できます。
+*SCRBAR は 2 番目のパラメーターのデフォルトです。</p>
+<p class="p">*PLUS を指定すると、システムは正符号を使用して、次ページ・キーを使用してさらにレコードを見ることができることを示します。</p>
+<p class="p">*MORE を指定すると、システムは「続く」というテキストを使用して、さらにレコードを見るために次ページ・キーが使用できることを示します。
+*MORE は、最後のサブファイル・レコードが表示されているときに「終わり」というテキストを使用するということも指定します。</p>
+<p class="p">*MORE が指定された場合には、サブファイルは画面上でもう 1 行 (SFLPAG + 1) を使用します。この行はテキスト「続く」および「終わり」のために必要です。
+画面またはウィンドウに 1 行追加する場所がない場合には、ファイル作成時にメッセージが出て、ファイルは作成されません。</p>
+<p class="p">*SCRBAR は、システムに図形表示で図形スクロール・バーを使用するように通知します。
+*SCRBAR が指定されると、サブファイルが使用している行の最後の 3 桁がスクロール・バー用に予約されます。
+*SCRBAR が使用される場合、2 番目のパラメーターを指定できます。
+2 番目のパラメーターは非図形表示に使用されるスクロール標識をシステムに通知します。*SCRBAR はこれらの表示のデフォルトです。
+*MORE および *PLUS は 2 番目のパラメーターに使用できます。
+*SCRBAR が使用される場合、サブファイルは少なくとも 3 行を占める必要があります。SFLFOLD または SFLDROP はスクロール・バーと一緒に作動します。
+サブファイルの両方のバージョン (折り返しまたは切り捨てされたもの) は、3 行を占める必要があります。</p>
+<p class="p">使用中の入出力装置構成がポインター装置をサポートしている場合、スクロール・バーもサブファイルを通してナビゲートすることができます。さまざまな装置構成をサポートする方法、ならびに PAGEUP キーワード、PAGEDOWN キーワード、および SFLSIZ キーワードを使用してスクロール・バーを制御する方法の詳細については、「<a class="xref" href="http://publib.boulder.ibm.com/infocenter/iseries/v6r1m0/topic/rzakc/sc415715.pdf" target="_blank" title="(PDF ファイルを開く)">アプリケーション表示プログラミング</a>」 の資料を参照してください。</p>
+<p class="p">このキーワードには、オプション標識を指定しなければなりません。</p>
+</div>
+<div class="section"><h2 class="title sectiontitle">プログラムによるページング (SFLPAG が SFLSIZ に等しい場合)</h2><p class="p">プログラムでは、SFLEND キーワードで標識を使用することによって、正符号もしくはテキスト「続く」または「終わり」の表示の有無を制御します。
+正符号またはテキスト「続く」を表示するには標識をオフにします。
+正符号を画面から取り除くかテキスト「終わり」を表示するには標識をオンにします。
+前ページ・キーを押すと、プログラムが処理を実行します。プログラムは、例えば、サブファイルを読み取り、一度消去し、新しいレコードによりサブファイルを書き直して、再び表示します。プログラムがこのような処理を実行する場合には、正符号またはテキスト「続く」を示します。
+実行しない場合には、正符号を画面から除去するか「終わり」テキストを示します。</p>
+<div class="note note border-2 cds--inline-notification--info ibmdocs-note cds--inline-notification cds--inline-notification--low-contrast margin-top-1 margin-bottom-1"><div class="cds--inline-notification__details"><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" class="cds--inline-notification__icon" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M16,2A14,14,0,1,0,30,16,14,14,0,0,0,16,2Zm0,5a1.5,1.5,0,1,1-1.5,1.5A1.5,1.5,0,0,1,16,7Zm4,17.12H12V21.88h2.88V15.12H13V12.88h4.13v9H20Z"></path></svg>
+        <div class="cds--inline-notification__text-wrapper">
+          <div class="cds--inline-notification__subtitle"><span class="notetitle ibm-bold ibm-textcolor-blue-50 background-blue cds--inline-notification__title ibm-padding-top-1 ibm-padding-bottom-1 padding-left-1 padding-right-1">注:</span> *SCRBAR は、SFLPAG が SFLSIZ と等しい場合に使用できます。
+スクロール・バーはボタン、シャフト、およびシャフト全体を覆うスクロール・ボックスを伴って表示されます。</div>
+        </div>
+      </div></div>
+</div>
+<div class="section"><h2 class="title sectiontitle"><span class="keyword">IBM i</span> によるページング (SFLPAG
+が SFLSIZ に等しくない場合)</h2><p class="p"><span class="keyword">IBM® i</span> オペレーティング・システムはオプション標識の設定に関係なく、サブファイル内に表示するレコードが残っている間は正符号を表示します。スクロール・バーは、ユーザーのサブファイル中での位置を最も良く示すスクロール・バー上のある位置に配置されるスクロール・ボックスと一緒に表示されます。
+サブファイルの最終ページが表示された時点で、オペレーティング・システムはオプション標識がオフであれば正符号、テキスト「続く」、またはスクロール・ボタンより 1 ページ・サイズ上のスクロール・ボックスを持つスクロール・バーを表示します。 標識がオンであれば、正符号、「終わり」テキスト、または下部のスクロール・ボタンの最上部にあるスクロール・ボックスを持つスクロール・バーを表示しません。</p>
+<p class="p">サブファイルを表示する際は、標識のオン/オフの設定をプログラムで行わなければなりません。
+(ただし、<span class="keyword">IBM i</span> オペレーティング・システムでサブファイルがページングされている最中には、サブファイルのどのページが表示されているかをプログラムで判断することはできません。)</p>
+<p class="p">サブファイルの表示時にプログラムで SFLEND の表示がオフに設定されると、サブファイルの最終ページに正符号、テキスト「続く」、またはスクロール・ボタンより 1 ページ・サイズ上のスクロール・ボックスを持つスクロール・バーのいずれかが表示されます。
+この場合、正符号が表示されてはいますが <span class="keyword">IBM i</span> オペレーティング・システムでそれ以上サブファイルのページングを行うことはできないため、それ以上のページングはプログラムで行わなければなりません。
+サブファイル制御レコード様式に PAGEDOWN キーワードを指定することにより、次ページ・キーをもう一度押した時点で制御権がユーザーのプログラムに移るようにすることができます。
+プログラムは制御権を受け取るとサブファイルの最後にレコードを追加し、SFLRCDNBR キーワードを用いて新しいページを表示することができます。</p>
+<div class="note note border-2 cds--inline-notification--info ibmdocs-note cds--inline-notification cds--inline-notification--low-contrast margin-top-1 margin-bottom-1"><div class="cds--inline-notification__details"><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" class="cds--inline-notification__icon" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M16,2A14,14,0,1,0,30,16,14,14,0,0,0,16,2Zm0,5a1.5,1.5,0,1,1-1.5,1.5A1.5,1.5,0,0,1,16,7Zm4,17.12H12V21.88h2.88V15.12H13V12.88h4.13v9H20Z"></path></svg>
+        <div class="cds--inline-notification__text-wrapper">
+          <div class="cds--inline-notification__subtitle"><span class="notetitle ibm-bold ibm-textcolor-blue-50 background-blue cds--inline-notification__title ibm-padding-top-1 ibm-padding-bottom-1 padding-left-1 padding-right-1">注:</span> PAGEDOWN キーワードがスクロール・バーで指定されると、PAGEDOWN キーが押されたとき、または図形スクロール・バーの命令によりページの一部分が表示されるときに、制御がプログラムに戻されます。</div>
+        </div>
+      </div></div>
+</div>
+<div class="section"><h2 class="title sectiontitle">*PLUS オプション時の正符号の位置</h2><p class="p">24 x 80 画面サイズの場合には、サブファイルが占めている最終行の 78 - 80 桁目が、開始属性文字、正符号、および終了属性文字のために使用されます。
+27 x 132 の画面サイズの場合には、サブファイルが占めている最終行の 130 - 132 桁目が、開始属性文字、正符号、および終了属性文字のために使用されます。</p>
+<div class="note note border-2 cds--inline-notification--info ibmdocs-note cds--inline-notification cds--inline-notification--low-contrast margin-top-1 margin-bottom-1"><div class="cds--inline-notification__details"><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" class="cds--inline-notification__icon" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M16,2A14,14,0,1,0,30,16,14,14,0,0,0,16,2Zm0,5a1.5,1.5,0,1,1-1.5,1.5A1.5,1.5,0,0,1,16,7Zm4,17.12H12V21.88h2.88V15.12H13V12.88h4.13v9H20Z"></path></svg>
+        <div class="cds--inline-notification__text-wrapper">
+          <div class="cds--inline-notification__subtitle"><span class="notetitle ibm-bold ibm-textcolor-blue-50 background-blue cds--inline-notification__title ibm-padding-top-1 ibm-padding-bottom-1 padding-left-1 padding-right-1">注:</span> 入力フィールドが正符号の位置を占めており、そのフィールドが変更された場合には、正符号および属性文字はそのフィールドのデータとしてプログラムに渡されます。
+選択リストについては、正符号がリストの選択項目の右に位置付けられます。</div>
+        </div>
+      </div></div>
+</div>
+<div class="section"><h2 class="title sectiontitle">*MORE オプション時のテキスト「続く」および「終わり」の位置</h2><p class="p">24 x 80 画面サイズの場合には、サブファイルが占めている最終行のすぐ次の行の 67 - 80 桁目が、開始属性文字、右寄せされたテキスト「続く」または「終わり」、および終了属性文字のために使用されます。
+27 x 132 画面サイズの場合には、サブファイルが占めている最終行のすぐ次の行の 119 - 132 桁目が、開始属性文字、右寄せされたテキスト「続く」または「終わり」、および終了属性文字のために使用されます。 選択リストについては、「続く」および「終わり」テキストが選択項目の右に位置付けられます。</p>
+</div>
+<div class="section"><h2 class="title sectiontitle">*SCRBAR オプション時のスクロール・バーの位置</h2><p class="p">24 x 80 画面サイズの場合には、サブファイルの毎行の 77 - 80 桁目が、スクロール・バーに予約されます。
+サブファイルのフィールドは、これらの桁を使用することができません。
+したがって、サブファイルを 2 行以上占めることのできるフィールドはありません。複数行サブファイルは使用できます。
+27 x 132 画面サイズの場合には、サブファイルの毎行の 129 - 132 桁目が、スクロール・バーに予約されます。選択リストについては、スクロール・バーがリストの選択項目の右に位置付けられます。他のサブファイルの場合、スクロール・バーは 79 桁目に位置付けられます。</p>
+</div>
+<div class="example"><h2 class="title sectiontitle">例 1</h2><p class="p">次の例は、パラメーターなしの SFLEND キーワードの指定方法を示しています。</p>
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code>|...+....1....+....2....+....3....+....4....+....5....+....6....+....7....+....8
+00010A          R SETSFL1                   SFL
+00020A  50                                  SFLNXTCHG
+00030A            SETSEL         1Y 0B  6  2VALUES(1 2 9) CHECK(AB)
+00040A            SETNAME       10A  O  6  4
+00050A          R SETCTL1                   SFLCTL(SETSFL1)
+00060A                                      SFLSIZ(34)
+00070A                                      SFLPAG(17)
+00080A  40                                  SFLDSP
+00090A  41                                  SFLDSPCTL
+00100A  42                                  SFLDLT
+00110A  43                                  SFLCLR
+00120A  49                                  SFLEND
+00130A N49                                  ROLLUP(26)
+00140A            SETRRN         4S 0H      SFLRCDNBR(CURSOR)
+     A</code></pre></div><div class="docs--copy-btn"></div></div>
+<p class="p">この例では、ページングは  <span class="keyword">IBM i</span> オペレーティング・システムにより行われ、画面の右下の隅に正符号 (+) が表示されます。当該サブファイルに最後のレコードが書き込まれた時点で、標識 49 がオンになり、次ページ・キーを使用禁止にし、画面から正符号を取り除きます。</p>
+</div>
+<div class="example"><h2 class="title sectiontitle">例 2</h2><p class="p">次の例は、パラメーターとして *MORE を指定する SFLEND キーワードの指定方法を示しています。</p>
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code>|...+....1....+....2....+....3....+....4....+....5....+....6....+....7....+....8
+00010A          R SETSFL2                   SFL
+00020A  50                                  SFLNXTCHG
+00030A            SETSEL         1Y 0B  6  2VALUES(1 2 9) CHECK(AB)
+00040A            SETNAM        10A  O  6  4
+00050A          R SETCTL2                   SFLCTL(SETSFL2)
+00060A                                      SFLSIZ(34)
+00070A                                      SFLPAG(17)
+00080A  40                                  SFLDSP
+00090A  41                                  SFLDSPCTL
+00100A  42                                  SFLDLT
+00110A  43                                  SFLCLR
+00120A  49                                  SFLEND(*MORE)
+00130A N49                                  ROLLUP(26)
+00140A            SETRRN         4S 0H      SFLRCDNBR(CURSOR)
+     A</code></pre></div><div class="docs--copy-btn"></div></div>
+<p class="p">ページングは <span class="keyword">IBM i</span> オペレーティング・システムによって行われます。サブファイル中にさらに表示するレコードがあれば、サブファイルの直後につづく行の、画面の右下隅にテキスト「続く」が表示されます。 最後のレコードがサブファイルに書き込まれた時点で、標識 49 がオンになり、次ページ・キーが使用禁止になり、テキスト「続く」ではなくテキスト「終わり」が現れるようにします。</p>
+</div>
+<div class="example"><h2 class="title sectiontitle">例 3</h2><p class="p">次の例は、パラメーターとして *SCRBAR を指定する SFLEND キーワードの指定方法を示しています。</p>
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code>|...+....1....+....2....+....3....+....4....+....5....+....6....+....7....+....8
+00010A          R SETSFL2                   SFL
+00020A  50                                  SFLNXTCHG
+00030A            SETSEL         1Y 0B  6  2VALUES(1 2 9) CHECK(AB)
+00040A            SETNAM        10A  O  6  4
+00050A          R SETCTL2                   SFLCTL(SETSFL2)
+00060A                                      SFLSIZ(34)
+00070A                                      SFLPAG(17)
+00080A  40                                  SFLDSP
+00090A  41                                  SFLDSPCTL
+00100A  42                                  SFLDLT
+00110A  43                                  SFLCLR
+00120A  49                                  SFLEND(*SCRBAR *MORE)
+00130A N49                                  ROLLUP(26)
+00140A            SETRRN         4S 0H      SFLRCDNBR(CURSOR)
+     A</code></pre></div><div class="docs--copy-btn"></div></div>
+<p class="p">ページングは <span class="keyword">IBM i</span> オペレーティング・システムによって行われます。スクロール・バーは、図形表示用に表示されます。 図形表示が使用されない場合は、サブファイル中にさらに表示するレコードがあれば、サブファイルの直後につづく行の、画面の右下隅にテキスト「続く」が表示されます。 最後のレコードがサブファイルに書き込まれた時点で、標識 49 がオンになり、次ページ・キーが使用禁止になり、テキスト「続く」ではなくテキスト「終わり」が現れるようにします。
+最下部のスクロール・ボタンのすぐ上に、スクロール・バーがスクロール・ボックスを伴って表示されます。</p>
+</div>
+</div>
+<div class="related-links ibm-padding-top-1 ibm-padding-bottom-2 bx--row bottom-section-parent" aria-label="bottom related links">
+<div class="familylinks ibm-margin-bottom-1">
+<div class="parentlink"><strong>親トピック:</strong> <div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a class="link bottom-section-link" href="/docs/ja/ssw_ibm_i_74/rzakc/rzakcmstkeyent.htm" title="表示装置ファイルを定義するキーワード項目は、45 - 80 桁目 (機能欄) に記入します。">表示装置ファイルの DDS キーワード項目 (45 - 80 桁目)</a></div></div>
+</div>
+<div class="relinfo relref ibm-margin-bottom-1"><strong>関連資料</strong>:<br>
+<div><div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a class="link bottom-section-link" href="/docs/ja/ssw_ibm_i_74/rzakc/rzakcmstdfsfrol.htm" title="これはフィールド・レベル・キーワードであり、ワークステーション・ユーザーがこのフィールドに値を入力できることを指定するために、サブファイル制御レコード様式で使用します。 この値は、該当のページ・キーを押したときにページを前後に送るレコード数を IBM i オペレーティング・システムに伝えるためのものです。">表示装置ファイルの SFLROLVAL (サブファイル・ロール値) キーワード</a></div></div>
+</div>
+</div>
+

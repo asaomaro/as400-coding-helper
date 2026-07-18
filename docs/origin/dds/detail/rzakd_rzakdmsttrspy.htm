@@ -1,0 +1,73 @@
+<h1 class="title topictitle1">印刷装置ファイルの TRNSPY (透過) キーワード</h1><div id="lastModifiedDate"><span>Last Updated</span>: 2021-04-13</div>
+<div class="body refbody"><p class="shortdesc">これはフィールド・レベル・キーワードで、DFNCHR キーワードを使用して
+再定義したコード・ポイントが、定義中のフィールドを印刷するための出力命令を
+プログラムが送ったときに、SCS プリンター制御コマンドとして解釈されないようにします。</p>
+<div class="section"><p class="p">このキーワードにはパラメーターはありません。</p>
+<p class="p">ユーザーのプログラムは SCS プリンターへの 16 進数データを渡すフィールドに
+ついて TRNSPY キーワードが指定されていないと、コード・ポイントが SCS コマンドと
+して解釈され、プリンターの動作に影響を与えることがあります。
+コード・ポイントとは、文字セットの中の文字を割り当てることのできる 256 個の値のうちの 1 つをいいます。
+<span class="keyword">IBM® i</span> オペレーティング・システムでは、
+コード・ポイントは 2 桁の 16 進数で識別されます。</p>
+<div class="p">次の場合には、TRNSPY キーワードを指定しなければなりません。<ul class="ul cds--list--unordered"><li class="li cds--list__item">DEVTYPE(*SCS) として作成される印刷装置ファイルで CVTDTA キーワードを指定する場合。</li>
+<li class="li cds--list__item">16 進数値を指定する場合 (DFT キーワードの明示的な指定の有無に関係なく)。</li>
+</ul>
+</div>
+<p class="p">DEVTYPE(*IPDS) として作成されるファイルについては、CVTDTA キーワードと
+ともに TRNSPY キーワードを指定する必要はありません。ただし、その場合は、DEVTYPE を *SCS に変更してはならないということを示す警告メッセージが
+表示されます。</p>
+<p class="p">DEVTYPE(*AFPDS) で作成されたファイルに TRNSPY を指定する場合、作成時に警告メッセージが表示されます。</p>
+<p class="p">TRNSPY キーワードは、データ・タイプが文字である場合に限り有効です。</p>
+<p class="p">TRNSPY キーワードを CVTDTA キーワードとともに指定した場合には、ユーザーの
+プログラムは文字データを該当のフィールドに入れることができ、<span class="keyword">IBM i</span> オペレーティング・システムは、そのフィールドをプリンターに渡す時点でそのデータを 16 進数データに変換します。
+2 桁で 1 組の 16 進数字が、ユーザーのシステムの文字セット内で個々
+のコード・ポイントに対応しています。ユーザーは、DFNCHR キーワードを用いて、5224 プリンターまたは 5225 プリンターで使用するために独自に設計した文字を
+定義することができます。また、フィールドの印刷桁数は指定した桁数の 2 分の 1 になる
+ので、フィールドの桁数は偶数でなければなりません。</p>
+<p class="p">CVTDTA キーワードを指定せずに TRNSPY キーワードを指定した場合には、指定したフィールド桁数がそのまま印刷桁数になります。</p>
+<p class="p">このキーワードの対象となるのは、5224 プリンターまたは 5225 プリンターだけです。</p>
+<p class="p">オプション標識は、このキーワードでは無効です。</p>
+</div>
+<div class="section"><h2 class="title sectiontitle">例</h2><p class="p">以下に TRNSPY キーワードの指定方法の例を示します。</p>
+</div>
+<div class="example"><h2 class="title sectiontitle">例 1</h2><p class="p">次の例では、CVTDTA キーワードと一緒に TRNSPY キーワードを指定する
+方法を示します。ユーザーのプログラムが文字データをフィールドに入れる
+と、<span class="keyword">IBM i</span> オペレーション・システムはそのデータを 16 進数データに変換して渡します。</p>
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code>|...+....1....+....2....+....3....+....4....+....5....+....6....+....7....+....8
+00010A          R RECORD                    SPACEB(1)
+00020A            FLD1          10         1TRNSPY CVTDTA
+00030A            FLD2          20         6TRNSPY CVTDTA
+     A</code></pre></div><div class="docs--copy-btn"></div></div>
+<p class="p">この例では、プログラムは FLD1 および FLD2 に文字データを入れて渡すこと
+ができます。<span class="keyword">IBM i</span> オペレーティング・システムは、そのデータを 16 進数データに変換して
+プリンターに渡します。有効な文字は 0 から 9 と A から F だけであり、
+ブランクは無効です。</p>
+<p class="p">FLD1 および FLD2 の印刷桁数は、指定した桁数の 2 分の 1 になります
+(FLD1 は 5 桁、FLD2 は 10 桁)。</p>
+<p class="p">ユーザー定義の文字を印刷するためには、TRNSPY キーワードと
+ともに DFNCHR キーワードも指定しなければなりません。</p>
+<p class="p">FLD1 の内容が「C1C1C1C1C1」であり、FLD2 の内容が「C2C2C2C2C2C2C2C2C2C2」であるとすれば、RECORD は次のように印刷されます。</p>
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code>AAAAABBBBBBBBBB</code></pre></div><div class="docs--copy-btn"></div></div>
+</div>
+<div class="example"><h2 class="title sectiontitle">例 2</h2><p class="p">次の例では、CVTDTA キーワードを指定せずに TRNSPY キーワードを指定する
+方法を示します。この例の場合には、ユーザーのプログラムは 16 進数データ
+をフィールドに入れて渡さなければなりません。</p>
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code>|...+....1....+....2....+....3....+....4....+....5....+....6....+....7....+....8
+00010A          R RECORD2                   SPACEB(1)
+00020A            FLD3           5         1TRNSPY
+00030A            FLD4          10         6TRNSPY
+     A</code></pre></div><div class="docs--copy-btn"></div></div>
+<p class="p">この例では、プログラムは FLD3 および FLD4 に 16 進数データを入れて
+渡さなければなりません。有効な文字は 16 進数文字 0 から 9 および A から F だけであり、
+ブランクは無効です。この例では CVTDTA キーワードが指定されていないので、どちらのフィールドについても、指定した桁数がそのまま印刷桁数になります。</p>
+</div>
+</div>
+<div class="related-links ibm-padding-top-1 ibm-padding-bottom-2 bx--row bottom-section-parent" aria-label="bottom related links">
+<div class="familylinks ibm-margin-bottom-1">
+<div class="parentlink"><strong>親トピック:</strong> <div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a class="link bottom-section-link" href="/docs/ja/ssw_ibm_i_74/rzakd/rzakdmstprkey.htm" title="これらは印刷装置ファイルの定義に有効なキーワード項目です。">印刷装置ファイルのキーワード項目 (45 から 80 桁目)</a></div></div>
+</div>
+<div class="relinfo relconcepts ibm-margin-bottom-1"><strong>関連概念</strong>:<br>
+<div><div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a class="link bottom-section-link" href="/docs/ja/ssw_ibm_i_74/rzakd/rzakdmstptcvtct.htm" title="これはフィールド・レベル・キーワードで、フィールドがプリンターに渡されるときに、文字データを 16 進数データに変換することを指定するために使用します。">印刷装置ファイルの CVTDTA (データ変換) キーワード</a></div></div>
+</div>
+</div>
+

@@ -1,0 +1,162 @@
+<h1 class="title topictitle1">表示装置ファイルの SFLMODE (サブファイル・モード) キーワード</h1><div id="lastModifiedDate"><span>Last Updated</span>: 2021-04-13</div>
+<div class="body refbody"><p class="shortdesc">これはサブファイル制御レコード様式のレコード・レベル・キーワードで、入力時にサブファイルが継続と切り捨てのいずれのモードにあったかを示す値を戻すために使用します。サブファイル内のカーソルの位置を判別するために、SFLCSRRRN (サブファイル・カーソル相対レコード番号) キーワードと一緒にこのキーワードを使用します。</p>
+<div class="section"><div class="p">キーワードの形式は次のとおりです。<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code>SFLMODE(&amp;mode);</code></pre></div><div class="docs--copy-btn"></div></div>
+</div>
+<p class="p">mode パラメーターは必須です。このパラメーターには、入力時にサブファイル・モードが入る潜在フィールドの名前を指定します。
+フィールドは使用目的 H (潜在)、桁数 1 の文字 (35 桁目に A) フィールドとしてサブファイル制御レコード様式に定義されなければなりません。 サブファイルが継続モードの場合には、フィールドに値 0 が入ります。サブファイルが切り捨てモードの場合には、フィールドに値 1 が入ります。</p>
+<p class="p">サブファイル制御レコードに SFLDROP または SFLFOLD キーワードが指定されていない場合には、戻されるモード値は 0 です。</p>
+<p class="p">オプション標識は、このキーワードでは無効です。</p>
+</div>
+<div class="example"><h2 class="title sectiontitle">例</h2><p class="p">次の例は、SFLMODE キーワードおよび SFLCSRRRN キーワードの指定方法を示しています。</p>
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code>|...+....1....+....2....+....3....+....4....+....5....+....6....+....7....+....8
+     A          R SFL01                     SFL
+     A            FLD2A          2A  I  3  2
+     A            FLD2B         30A  O  3  5
+     A            FLD2C          6A  O  4 18
+     A          R CTL01                     SFLCTL(SFL01)
+     A                                      SFLSIZ(25)
+     A                                      SFLPAG(4)
+     A                                      SFLDSP
+     A                                      SFLEND
+     A                                      SFLCSRRRN(&amp;RELRCD);
+     A                                      SFLMODE(&amp;MODE);
+     A  10                                  SFLDROP(CF03)
+     A  11                                  SFLFOLD(CF03)
+     A                                      RTNCSRLOC(&amp;CSRRCD &amp;CSRFLD);
+     A            RELRCD         5S 0H
+     A            MODE           1A  H
+     A            CSRFLD        10A  H
+     A            CSRRCD        10A  H
+     A
+     A          R SFL02                     SFL
+     A            FLD2A          2A  I 13  2
+     A            FLD2B         30A  O 13  5
+     A            FLD2C          6A  O 14 18
+     A          R CTL02                     SFLCTL(SFL02)
+     A                                      SFLSIZ(25)
+     A                                      SFLPAG(4)
+     A                                      SFLDSP
+     A                                      SFLEND
+     A                                      SFLCSRRRN(&amp;RELRCD);
+     A                                      SFLMODE(&amp;MODE);
+     A  12                                  SFLDROP(CF03)
+     A  13                                  SFLFOLD(CF03)
+     A                                      RTNCSRLOC(&amp;CSRRCD &amp;CSRFLD);
+     A            RELRCD         5S 0H
+     A            MODE           1A  H
+     A            CSRFLD        10A  H
+     A            CSRRCD        10A  H
+     A</code></pre></div><div class="docs--copy-btn"></div></div>
+<p class="p">標識 10 および 13 はオンです。
+両方のサブファイルに 2 つのレコードが追加されました。サブファイルは両方とも表示されます。</p>
+<p class="p">次の表は、カーソルが指定された位置にある場合に CTL02 に戻される値を示します。</p>
+<div class="tableborder">
+<div class="tablenoborder"><div class="cds--data-table-container"><table id="parm_table0" summary="Parameters" cellpadding="4" cellspacing="0" class="table cds--data-table" rules="none" frame="hsides" border="1"><thead class="thead alignleft"><tr class="row"><th scope="col" class="entry valigntop" width="16.666666666666664%" id="d66087e59"><div class="cds--table-header-label">行</div></th>
+<th scope="col" class="entry valigntop" width="16.666666666666664%" id="d66087e61"><div class="cds--table-header-label">カラム</div></th>
+<th scope="col" class="entry valigntop" width="16.666666666666664%" id="d66087e63"><div class="cds--table-header-label">RELRCD</div></th>
+<th scope="col" class="entry valigntop" width="16.666666666666664%" id="d66087e65"><div class="cds--table-header-label">MODE</div></th>
+<th scope="col" class="entry valigntop" width="16.666666666666664%" id="d66087e67"><div class="cds--table-header-label">CSRRCD</div></th>
+<th scope="col" class="entry valigntop" width="16.666666666666664%" id="d66087e69"><div class="cds--table-header-label">CSRFLD</div></th>
+</tr>
+</thead>
+<tbody class="tbody"><tr class="row"><td class="entry valigntop" width="16.666666666666664%" headers="d66087e59 ">13</td>
+<td class="entry valigntop" width="16.666666666666664%" headers="d66087e61 ">2</td>
+<td class="entry valigntop" width="16.666666666666664%" headers="d66087e63 ">1</td>
+<td class="entry valigntop" width="16.666666666666664%" headers="d66087e65 ">0</td>
+<td class="entry valigntop" width="16.666666666666664%" headers="d66087e67 ">SFL02</td>
+<td class="entry valigntop" width="16.666666666666664%" headers="d66087e69 ">FLD2A</td>
+</tr>
+<tr class="row"><td class="entry valigntop" width="16.666666666666664%" headers="d66087e59 ">14</td>
+<td class="entry valigntop" width="16.666666666666664%" headers="d66087e61 ">18</td>
+<td class="entry valigntop" width="16.666666666666664%" headers="d66087e63 ">1</td>
+<td class="entry valigntop" width="16.666666666666664%" headers="d66087e65 ">0</td>
+<td class="entry valigntop" width="16.666666666666664%" headers="d66087e67 ">SFL02</td>
+<td class="entry valigntop" width="16.666666666666664%" headers="d66087e69 ">FLD2C</td>
+</tr>
+<tr class="row"><td class="entry valigntop" width="16.666666666666664%" headers="d66087e59 ">15</td>
+<td class="entry valigntop" width="16.666666666666664%" headers="d66087e61 ">2</td>
+<td class="entry valigntop" width="16.666666666666664%" headers="d66087e63 ">2</td>
+<td class="entry valigntop" width="16.666666666666664%" headers="d66087e65 ">0</td>
+<td class="entry valigntop" width="16.666666666666664%" headers="d66087e67 ">SFL02</td>
+<td class="entry valigntop" width="16.666666666666664%" headers="d66087e69 ">FLD2A</td>
+</tr>
+<tr class="row"><td class="entry valigntop" width="16.666666666666664%" headers="d66087e59 ">15</td>
+<td class="entry valigntop" width="16.666666666666664%" headers="d66087e61 ">62</td>
+<td class="entry valigntop" width="16.666666666666664%" headers="d66087e63 ">1</td>
+<td class="entry valigntop" width="16.666666666666664%" headers="d66087e65 ">0</td>
+<td class="entry valigntop" width="16.666666666666664%" headers="d66087e67 ">SFL02</td>
+<td class="entry valigntop" width="16.666666666666664%" headers="d66087e69 ">ブランク</td>
+</tr>
+<tr class="row"><td class="entry valigntop" width="16.666666666666664%" headers="d66087e59 ">17</td>
+<td class="entry valigntop" width="16.666666666666664%" headers="d66087e61 ">2</td>
+<td class="entry valigntop" width="16.666666666666664%" headers="d66087e63 ">0</td>
+<td class="entry valigntop" width="16.666666666666664%" headers="d66087e65 ">0</td>
+<td class="entry valigntop" width="16.666666666666664%" headers="d66087e67 ">SFL02</td>
+<td class="entry valigntop" width="16.666666666666664%" headers="d66087e69 ">ブランク</td>
+</tr>
+<tr class="row"><td class="entry valigntop" width="16.666666666666664%" headers="d66087e59 ">24</td>
+<td class="entry valigntop" width="16.666666666666664%" headers="d66087e61 ">2</td>
+<td class="entry valigntop" width="16.666666666666664%" headers="d66087e63 ">0</td>
+<td class="entry valigntop" width="16.666666666666664%" headers="d66087e65 ">0</td>
+<td class="entry valigntop" width="16.666666666666664%" headers="d66087e67 ">ブランク</td>
+<td class="entry valigntop" width="16.666666666666664%" headers="d66087e69 ">ブランク</td>
+</tr>
+<tr class="row"><td class="entry valigntop" width="16.666666666666664%" headers="d66087e59 ">3</td>
+<td class="entry valigntop" width="16.666666666666664%" headers="d66087e61 ">2</td>
+<td class="entry valigntop" width="16.666666666666664%" headers="d66087e63 ">0</td>
+<td class="entry valigntop" width="16.666666666666664%" headers="d66087e65 ">0</td>
+<td class="entry valigntop" width="16.666666666666664%" headers="d66087e67 ">SFL01</td>
+<td class="entry valigntop" width="16.666666666666664%" headers="d66087e69 ">FLD2A</td>
+</tr>
+</tbody>
+</table></div></div>
+</div>
+<p class="p">次の表は、カーソルが指定された位置にある場合に CTL01 に戻される値を示します。</p>
+<div class="tableborder">
+<div class="tablenoborder"><div class="cds--data-table-container"><table id="parm_table1" summary="Parameters" cellpadding="4" cellspacing="0" class="table cds--data-table" rules="none" frame="hsides" border="1"><thead class="thead alignleft"><tr class="row"><th scope="col" class="entry valigntop" width="16.666666666666664%" id="d66087e175"><div class="cds--table-header-label">行</div></th>
+<th scope="col" class="entry valigntop" width="16.666666666666664%" id="d66087e177"><div class="cds--table-header-label">カラム</div></th>
+<th scope="col" class="entry valigntop" width="16.666666666666664%" id="d66087e179"><div class="cds--table-header-label">RELRCD</div></th>
+<th scope="col" class="entry valigntop" width="16.666666666666664%" id="d66087e181"><div class="cds--table-header-label">MODE</div></th>
+<th scope="col" class="entry valigntop" width="16.666666666666664%" id="d66087e183"><div class="cds--table-header-label">CSRRCD</div></th>
+<th scope="col" class="entry valigntop" width="16.666666666666664%" id="d66087e185"><div class="cds--table-header-label">CSRFLD</div></th>
+</tr>
+</thead>
+<tbody class="tbody"><tr class="row"><td class="entry valigntop" width="16.666666666666664%" headers="d66087e175 ">3</td>
+<td class="entry valigntop" width="16.666666666666664%" headers="d66087e177 ">2</td>
+<td class="entry valigntop" width="16.666666666666664%" headers="d66087e179 ">1</td>
+<td class="entry valigntop" width="16.666666666666664%" headers="d66087e181 ">1</td>
+<td class="entry valigntop" width="16.666666666666664%" headers="d66087e183 ">SFL01</td>
+<td class="entry valigntop" width="16.666666666666664%" headers="d66087e185 ">FLD2A</td>
+</tr>
+<tr class="row"><td class="entry valigntop" width="16.666666666666664%" headers="d66087e175 ">4</td>
+<td class="entry valigntop" width="16.666666666666664%" headers="d66087e177 ">18</td>
+<td class="entry valigntop" width="16.666666666666664%" headers="d66087e179 ">2</td>
+<td class="entry valigntop" width="16.666666666666664%" headers="d66087e181 ">1</td>
+<td class="entry valigntop" width="16.666666666666664%" headers="d66087e183 ">SFL01</td>
+<td class="entry valigntop" width="16.666666666666664%" headers="d66087e185 ">FLD2B</td>
+</tr>
+<tr class="row"><td class="entry valigntop" width="16.666666666666664%" headers="d66087e175 ">5</td>
+<td class="entry valigntop" width="16.666666666666664%" headers="d66087e177 ">18</td>
+<td class="entry valigntop" width="16.666666666666664%" headers="d66087e179 ">0</td>
+<td class="entry valigntop" width="16.666666666666664%" headers="d66087e181 ">1</td>
+<td class="entry valigntop" width="16.666666666666664%" headers="d66087e183 ">SFL01</td>
+<td class="entry valigntop" width="16.666666666666664%" headers="d66087e185 ">ブランク</td>
+</tr>
+<tr class="row"><td class="entry valigntop" width="16.666666666666664%" headers="d66087e175 ">13</td>
+<td class="entry valigntop" width="16.666666666666664%" headers="d66087e177 ">2</td>
+<td class="entry valigntop" width="16.666666666666664%" headers="d66087e179 ">0</td>
+<td class="entry valigntop" width="16.666666666666664%" headers="d66087e181 ">1</td>
+<td class="entry valigntop" width="16.666666666666664%" headers="d66087e183 ">SFL02</td>
+<td class="entry valigntop" width="16.666666666666664%" headers="d66087e185 ">FLD2A</td>
+</tr>
+</tbody>
+</table></div></div>
+</div>
+</div>
+</div>
+<div class="related-links ibm-padding-top-1 ibm-padding-bottom-2 bx--row bottom-section-parent" aria-label="bottom related links">
+<div class="familylinks ibm-margin-bottom-1">
+<div class="parentlink"><strong>親トピック:</strong> <div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a class="link bottom-section-link" href="/docs/ja/ssw_ibm_i_74/rzakc/rzakcmstkeyent.htm" title="表示装置ファイルを定義するキーワード項目は、45 - 80 桁目 (機能欄) に記入します。">表示装置ファイルの DDS キーワード項目 (45 - 80 桁目)</a></div></div>
+</div>
+</div>
+

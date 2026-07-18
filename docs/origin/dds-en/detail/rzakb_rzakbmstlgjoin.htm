@@ -1,0 +1,176 @@
+<main role="main"><article role="article" aria-labelledby="lgjoin__title__1">
+<h1 class="topictitle1" id="lgjoin__title__1">JOIN (Join) keyword—join logical files only</h1><div id="lastModifiedDate"><span>Last Updated</span>: 2026-07-13</div>
+
+
+
+<div class="body refbody"><p class="shortdesc">You can use this join-level keyword to identify which
+pair of  files are joined by the join specification in which you specify this
+keyword.</p>
+
+<div class="section"><div class="p">The format of the keyword is:  <div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>JOIN(from-file to-file)</code></pre></div><div class="docs--copy-btn"></div></div></div>
+<p>This
+keyword is valid only for join logical files.</p>
+<p>You can use file names
+or relative file numbers to indicate which files are to be joined. You must
+specify a relative file number if the same file is specified more than once
+on the JFILE keyword.</p>
+<p>If you specify file names, you must select files
+that you have specified only once on the JFILE keyword. On each JFILE keyword,
+the <em>from</em> file must occur before the <em>to</em> file.</p>
+<div class="p">If you specify
+numbers, they correspond to the files specified on the JFILE keyword. The
+following values are valid:  <dl>
+
+<dt class="dthd"><strong>File</strong></dt>
+<dd class="ddhd"><strong>Valid values</strong></dd>
+
+
+
+<dt class="dlterm">From-file number</dt>
+
+<dd class="dlentry">1 through 255</dd>
+
+
+<dt class="dlterm">To-file number</dt>
+
+<dd class="dlentry">2 through 256</dd>
+
+</dl>
+</div>
+<p>The <em>from-file</em> number must always be less than
+the <em>to-file</em> number.</p>
+<p>Special rules apply to the order in which
+you specify <em>from</em> and <em>to</em> files. See example 3 in this topic for
+details.</p>
+<p>In a join logical file, each secondary file can be a <em>to</em> file
+only once.</p>
+</div>
+
+<section class="section" role="region" aria-labelledby="lgjoin__title__2"><h2 class="sectiontitle" id="lgjoin__title__2">Join specifications for physical and logical files</h2><div class="p">To
+describe a join specification, follow these steps:  <ol class="cds--list--ordered--temporary">
+<li class="cds--list__item">Specify J in position 17 immediately after the record level (before the
+first field name in positions 19 through 28). J in position 17 indicates the
+beginning of a join specification.</li>
+
+<li class="cds--list__item">Specify the JOIN  keyword. The JOIN keyword is optional when only two
+files are specified on the JFILE keyword. When more than two physical files
+are specified on the JFILE keyword, one JOIN keyword is required for each
+secondary file.</li>
+
+<li class="cds--list__item">Specify the JFLD keyword at least once for each join specification.</li>
+
+<li class="cds--list__item">The end of the join specification is indicated by another J in position
+17 or by a field name specified in positions 19 through 28.</li>
+
+</ol>
+</div>
+<p>There must be one join specification for each secondary file specified
+on the JFILE keyword. Therefore, at least one join specification is required
+in a join logical file.</p>
+<p>You can specify the JOIN keyword only once within
+a join specification.</p>
+</section>
+
+<section class="section" role="region" aria-labelledby="lgjoin__title__3"><h2 class="sectiontitle" id="lgjoin__title__3">Examples</h2><p>The following examples show how to specify
+the JOIN keyword.</p>
+</section>
+
+<div class="example"><h2 class="sectiontitle" id="lgjoin__title__4">Example 1</h2><div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>|...+....1....+....2....+....3....+....4....+....5....+....6....+....7....+....8
+00010A          R RECORD1                   JFILE(PFA PFB PFC)
+00020A          J                           JOIN(PFA PFB)
+00030A                                      JFLD(NAME1 NAME2)
+00040A          J                           JOIN(PFA PFC)
+00050A                                      JFLD(NAME1 NAME3)
+00060A            NAME1
+     A</code></pre></div><div class="docs--copy-btn"></div></div><p>In this example, PFA is joined to PFB and also to PFC.</p>
+</div>
+
+<div class="example"><h2 class="sectiontitle" id="lgjoin__title__5">Example 2</h2><p>The following example shows how to specify
+JOIN using relative file numbers.</p>
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>|...+....1....+....2....+....3....+....4....+....5....+....6....+....7....+....8
+00010A          R RECORD1                   JFILE(PFA PFB PFC)
+00020A          J                           JOIN(1 2)
+00030A                                      JFLD(NAME1 NAME2)
+00040A          J                           JOIN(1 3)
+00050A                                      JFLD(NAME1 NAME3)
+00060A            NAME1
+     A</code></pre></div><div class="docs--copy-btn"></div></div><p>Example 2 is equivalent to example 1. PFA is the first
+physical file specified on the JFILE keyword and has relative file number
+1. PFB and PFC are the second and third files specified on the JFILE keyword.
+PFB has relative file number 2, and PFC relative file number 3.</p>
+</div>
+
+<div class="example"><h2 class="sectiontitle" id="lgjoin__title__6">Example 3</h2><p>The following example shows the order
+of associated physical files.</p>
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>|...+....1....+....2....+....3....+....4....+....5....+....6....+....7....+....8
+00010A          R J3                        JFILE(VENDORS PARTS PARTWARE +
+00020A                                            WAREHOUSE
+1
+00030A          J                           JOIN(1   2)   2
+00040A                                      JFLD(VNBR VNUM)
+00050A          J                           JOIN(2   3)   3
+00060A                                      JFLD(PNBR PNBR)
+00070A          J                           JOIN(3   4)   3
+00080A                                      JFLD(WNBR WNBR)
+00090A            VNAME
+00100A            VAD1
+00110A            VAD2
+00120A            PNBR                      JREF(2)
+00130A            WNBR                      JREF(4)
+00140A            BIN
+00150A            QOH
+     A</code></pre></div><div class="docs--copy-btn"></div></div><p>The join logical file in this example is based on four
+physical files. The VENDORS file, which is specified first on the JFILE keyword,
+is the primary file and has relative file number 1. The PARTS, PARTWARE, and
+WAREHOUSE files are secondary files. PARTS has relative file number 2, PARTWARE
+relative file number 3, and WAREHOUSE relative file number 4.</p>
+<div class="p">Notice
+the pattern of numbers specified on the JOIN keywords:  <dl>
+<dt class="dlterm"><span class="ph">1</span></dt>
+
+<dd class="dlentry">The first parameter value on the first JOIN keyword (the first <em>from</em> file)
+must be the primary file.</dd>
+
+
+<dt class="dlterm"><span class="ph">2</span></dt>
+
+<dd class="dlentry">The second parameter values specified on the JOIN keywords
+(<em>to</em> files) must reflect the same order as the secondary files on the
+JFILE keyword. If file names are specified instead of relative file numbers,
+they should be specified in the following order:  <div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>J    JOIN(VENDORS PARTS)
+J    JOIN(PARTS PARTWARE)
+J    JOIN(PARTWARE WAREHOUSE)</code></pre></div><div class="docs--copy-btn"></div></div></dd>
+
+
+<dt class="dlterm"><span class="ph">3</span></dt>
+
+<dd class="dlentry">On each JOIN keyword, the <em>from</em> and <em>to</em> files must be specified
+in ascending order.</dd>
+
+</dl>
+<div class="note border-2 cds--inline-notification--info ibmdocs-note cds--inline-notification cds--inline-notification--low-contrast margin-top-1 margin-bottom-1"><div class="cds--inline-notification__details"><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" class="cds--inline-notification__icon" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M16,2A14,14,0,1,0,30,16,14,14,0,0,0,16,2Zm0,5a1.5,1.5,0,1,1-1.5,1.5A1.5,1.5,0,0,1,16,7Zm4,17.12H12V21.88h2.88V15.12H13V12.88h4.13v9H20Z"></path></svg>
+        <div class="cds--inline-notification__text-wrapper">
+          <div class="cds--inline-notification__subtitle"><span class="notetitle ibm-bold ibm-textcolor-blue-50 background-blue cds--inline-notification__title ibm-padding-top-1 ibm-padding-bottom-1 padding-left-1 padding-right-1">Note:</span> A file can be specified as a <em>from</em> file more than
+once. For example, the parameters on the JOIN keywords before might be specified
+as follows:  <div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>J    JOIN(1 2)
+J    JOIN(2 3)
+J    JOIN(2 4)</code></pre></div><div class="docs--copy-btn"></div></div></div>
+        </div>
+      </div></div>
+</div>
+<p>However, a file can be specified as
+a <em>to</em> file only once.</p>
+</div>
+
+</div>
+
+<aside role="complementary" aria-labelledby="lgjoin__title__1"><nav role="navigation" aria-label="bottom related links" class="ibm-padding-top-1 ibm-padding-bottom-2 bx--row bottom-section-parent">
+<div class="familylinks ibm-margin-bottom-1">
+<div class="parentlink"><strong>Parent topic:</strong> <div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a data-hd-product="ssw_i5_72" href="/docs/en/ssw_ibm_i_74/rzakb/rzakbmstlfkeyw.htm" title="Keyword entries are typed in positions 45 through 80 (functions)." class="bottom-section-link">Keyword entries for physical and logical files (positions 45 through 80)</a></div></div>
+</div>
+
+<div class="linklist relinfo relref ibm-margin-bottom-1" lang="en-us"><h2 class="linkheading bottom-section-h2-title">Related reference</h2>
+<ul><li class="cds--list__item"><div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a data-hd-product="ssw_i5_72" href="/docs/en/ssw_ibm_i_74/rzakb/lftype.htm" title="For physical files, type a value in this position to identify the type of name. For logical files, type a value to identify the type of specification. If you specify a name type, the name is specified in positions 19 through 28." class="bottom-section-link">Type of name or specification for physical and logical files (position 17)</a></div></li>
+<li class="cds--list__item"><div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a data-hd-product="ssw_i5_72" href="/docs/en/ssw_ibm_i_74/rzakb/rzakbmstljfile.htm" title="You can use this record-level keyword to identify the physical files that contain the data to be accessed through the join logical file you are defining." class="bottom-section-link">JFILE (Joined Files) keyword—join logical files only</a></div></li>
+</ul></div>
+</nav></aside></article></main>

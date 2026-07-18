@@ -1,0 +1,164 @@
+<main role="main"><article role="article" aria-labelledby="rzakcmstdfmsgid__title__1">
+<h1 class="topictitle1" id="rzakcmstdfmsgid__title__1">MSGID (Message Identifier) keyword for display files</h1><div id="lastModifiedDate"><span>Last Updated</span>: 2026-07-13</div>
+
+
+
+<div class="body refbody"><p class="shortdesc">You use this field-level keyword to allow
+an application program to identify, at program run time, the message
+description that contains text for a named field.</p>
+
+<div class="section"><p>The parameter values on this keyword can specify fields
+that contain the message identifier, message file, and library. After
+the program sets the fields to the values you want, an output operation
+causes the message to be retrieved from the message file and displayed.
+The retrieved message is truncated if it is longer than the MSGID
+field. The retrieved message is padded with blanks if it is shorter
+than the MSGID field.</p>
+<p>See <a href="/docs/en/ssw_ibm_i_74/rzakc/s36env.htm" title="The User Display Management (USRDSPMGT) keyword causes the record formats in the display file to function similarly to System/36 SFGR display formats.">System/36 environment considerations for display files</a> for
+information about how to specify the MSGID keyword in files that are
+used in the System/36 environment.</p>
+<div class="p">The format
+of the keyword is:  <div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>MSGID(message-identifier [library-name/]message-file)
+or
+MSGID(*NONE)</code></pre></div><div class="docs--copy-btn"></div></div></div>
+<div class="p">The message-identifier parameter describes
+the message description containing the text for the named field. You
+can specify this parameter in one of two ways:  <ul class="cds--list--unordered">
+<li class="cds--list__item"><code class="ph codeph">[msg-prefix] &amp;field-name</code>  <p>A message-prefix
+and a field-name. The field-name must exist in the same record format
+as the MSGID field. If you specify a prefix, the length of the prefix
+must be three, and you must define the field-name as a character field
+of length four (4), and usage H, P, B, or O. If you do not specify
+a prefix, you must define the field-name as a character field length
+of seven (7), and usage H, P, B, or O.</p>
+</li>
+
+<li class="cds--list__item"><code class="ph codeph">[msgid-prefix] msg-id</code>  <p>You can also use a
+value or a combination of values to specify the message identifier.
+If you specify a prefix, the prefix length must be three (3), and
+the msg-id length must be four (4). If you do not specify a prefix,
+the msg-id length must be seven (7).</p>
+</li>
+
+</ul>
+</div>
+<p>The message-identifier is a required parameter.</p>
+<div class="p">The
+message-file and library parameters identify the message file containing
+the message description. You can specify the message-file and library
+parameters in one of the following forms:  <ul class="cds--list--unordered">
+<li class="cds--list__item"><code class="ph codeph">[library-name/]file-name</code></li>
+
+<li class="cds--list__item"><code class="ph codeph">[&amp;field1/]&amp;field2</code>  <p>where the lengths
+of field1 and field2 are ten (10).</p>
+<p>The field names must exist
+in the same record format as the MSGID field, and the fields must
+be defined as having character lengths of ten (10) and usage H, P,
+B, or O.</p>
+</li>
+
+<li class="cds--list__item">Combination of field names and constants:  <ul class="cds--list--unordered cds--list--nested">
+<li class="cds--list__item"><code class="ph codeph">library-name/&amp;field1</code> (length of field1 is
+10)</li>
+
+<li class="cds--list__item"><code class="ph codeph">&amp;field2/file-name</code> (length of field2 is 10)</li>
+
+</ul>
+</li>
+
+</ul>
+</div>
+<p>The message-file is a required parameter. If you do not
+specify the library parameter, *LIBL is used to search for the message
+file at program runtime. The library is an optional parameter.</p>
+<p>The
+*NONE parameter indicates that no message text is to be displayed.</p>
+<p>The
+user or program can override the message file name by using the OVRMSGF
+command.</p>
+<p>You can specify multiple MSGID keywords on a field.
+When more than one MSGID keyword is specified, option indicators are
+required on all except the last MSGID keyword on a field. Option indicators
+are not allowed on the last (or only) MSGID keyword specified on a
+field. If more than one MSGID keyword is in effect for a field, the
+first MSGID specified is used.</p>
+<p>You can specify multiple MSGID
+keywords within a record format. You can specify field names used
+as parameters on more than one MSGID keyword.</p>
+<p>You must have
+use authority to the message file at program runtime.</p>
+<p>The MSGID
+field must be output-capable (usage B or O). The length specified
+for the field is the length of the message text that is to be displayed.
+It should be the length of the longest message to be displayed.</p>
+<p>The
+MSGID field itself does not appear in the output buffer, but it does
+appear in the input buffer if it is defined as input/output (usage
+B). MSGID fields that are defined as output-only cannot be used in
+high-level language programs.</p>
+<p>The MSGID parameter fields (if
+any) appear in the output buffer, but they appear in the input buffer
+only if they are defined as hidden or input/output (usage H or B)
+fields.</p>
+<p>A program-to-system field can be specified as the message-id,
+file, or library name.</p>
+<p>You cannot specify MSGID in a subfile
+record format (SFL keyword).</p>
+<p>The following keywords cannot be
+specified on a field with the MSGID keyword:</p>
+<div class="lines">DFT<br>
+DFTVAL<br>
+FLTFIXDEC<br>
+FLTPCN<br>
+MSGCON</div>
+</div>
+
+<div class="example"><h2 class="sectiontitle" id="rzakcmstdfmsgid__title__2">Example</h2><p>The following example shows how
+to specify the MSGID keyword.</p>
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>|...+....1....+....2....+....3....+....4....+....5....+....6....+....7....+....8
+     A          R RECORD1
+     A            MSGFIELD1     40A  B 02 10MSGID(CPD0001 QGPL/USRMSG)
+     A  01        MSGFIELD2     10A  O 02 60
+     A  25                                  MSGID(&amp;MSGIDNUM &amp;MSGFILENM)
+     A                                      MSGID(CPD1234 QGPL/USRMSG)
+     A            MSGFIELD3     80A  B 03 01
+     A                                      MSGID(USR &amp;MSGNBR +
+     A                                      QGPL/&amp;MSGFILENM)
+     A            MSGIDNUM       7A  P
+     A            MSGFILENM     10A  H
+     A            MSGNBR         4A  B 07 01
+     A</code></pre></div><div class="docs--copy-btn"></div></div><div class="p">When RECORD1 is displayed:  <ul class="cds--list--unordered">
+<li class="cds--list__item">MSGFIELD1 contains the first 40 characters of message
+CPD0001 from message file USRMSG in library QGPL. Because the field
+is input/output (usage B), the value of the field can be changed by
+the user.</li>
+
+<li class="cds--list__item">If option indicator 01 is off, MSGFIELD2 is not displayed. When
+option indicators 01 and 25 are on, MSGFIELD2 contains the first 10
+characters of the message identified by the fields MSGIDNUM and MSGFILENM.
+Values for MSGIDNUM (the message identifier) and MSGFILENM (the message
+file) must be set in the program before the display of RECORD1. <p>When option indicator 01 is on but option indicator
+25 is off, MSGFIELD2 contains the first 10 characters of message CPD1234
+from the message file USRMSG in library QGPL. Because MSGFIELD2 is
+an output-only field (usage O), it cannot be used in the program.</p>
+</li>
+
+<li class="cds--list__item">MSGFIELD3 contains the first 80 characters of the message identified
+by the prefix USR, the message number set in field MSGNBR, and the
+message file set in field MSGFILENM.</li>
+
+</ul>
+</div>
+</div>
+
+</div>
+
+<aside role="complementary" aria-labelledby="rzakcmstdfmsgid__title__1"><nav role="navigation" aria-label="bottom related links" class="ibm-padding-top-1 ibm-padding-bottom-2 bx--row bottom-section-parent">
+<div class="familylinks ibm-margin-bottom-1">
+<div class="parentlink"><strong>Parent topic:</strong> <div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a data-hd-product="ssw_ibm_i_74" href="/docs/en/ssw_ibm_i_74/rzakc/rzakcmstkeyent.htm" title="You type the keyword entries that define display files in positions 45 through 80 (functions)." class="bottom-section-link">DDS keyword entries for display files (positions 45 through 80)</a></div></div>
+</div>
+
+<div class="linklist relinfo relref ibm-margin-bottom-1" lang="en-us"><h2 class="linkheading bottom-section-h2-title">Related reference</h2>
+<ul><li class="cds--list__item"><div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a data-hd-product="ssw_ibm_i_74" href="/docs/en/ssw_ibm_i_74/rzakc/msfidf.htm" title="You use this field-level keyword to allow an application program to identify, at program run time, the message description that contains text for a named field." class="bottom-section-link">MSGID keyword</a></div></li>
+</ul></div>
+</nav></aside></article></main>

@@ -1,0 +1,45 @@
+<h1 class="title topictitle1">表示装置ファイルの ALWGPH (図形表示) キーワード</h1><div id="lastModifiedDate"><span>Last Updated</span>: 2021-04-13</div>
+<div class="body refbody"><p class="shortdesc"><span class="ph">これはファイル・レベル・キーワードまたはレコード・レベル・キーワードで、
+図形表示とレコード様式により表示される英数字コンテンツとを 5292-2 型カラー表示装置で、
+同時に表示できるようにするために使用します。</span></p>
+<div class="section"><p class="p">このキーワードは、他のタイプの表示装置で表示されるファイルに対して指定しても、無視されます。</p>
+<p class="p">このキーワードにはパラメーターはありません。</p>
+<p class="p">このキーワードが効力を持っているレコードが 5292-2 型カラー表示装置に送られると、その表示装置は (まだ図形表示モードになっていなければ) 図形表示モードになります。
+このモードの切り替えは、当該表示装置に表示される他のレコードについてもこのキーワードが有効であるかどうかにかかわらず行われます。
+ALWGPH キーワードが選択され、それによって表示されるレコードがある限り、当該表示装置は図形表示モードのままです。ALWGPH キーワードが指定されていないレコードを表示しても、そのために図形表示モードが終了することはありません。</p>
+<p class="p">図形表示をオフにするためには、ALWGPH キーワードの指定のあるレコードをすべて画面から削除する (または、これらのレコードの ALWGPH キーワードのオプションをオフにする) ことが必要です。図形表示をオフにしても、その時点ですでに画面上にある図形が<em class="ph i">削除されるのではなく</em>、それ以降画面に表示されなくなるだけです。
+図形画面は削除されず (GDDM® 機能を使用して)、システム要求メニューから呼び出された 2 次対話式ジョブからのものを含む、ALWGPH の指定があるレコードが次に表示されるときに再び表示されます。</p>
+<div class="p">図形表示モードでは、次のことが行われます。<ul class="ul cds--list--unordered"><li class="li cds--list__item">表示装置は、自動的に行間のスペースを縮小し、行スペース縮小モードになります。
+これは、ワークステーション・ユーザーがキーボードで (ローカル・モードで) 行スペース縮小モードを選択したかどうかに関係なく行われます。ユーザーは、これを指定変更することはできません。</li>
+<li class="li cds--list__item">DDS のレコード様式が表示される時点で画面に表示されていた図形は、そのレコード様式により表示される英数字の背景として、画面上に残ります。</li>
+</ul>
+</div>
+<p class="p">このキーワードについては、オプション標識を使用することができます。</p>
+<p class="p">このキーワードは、SFL キーワードまたは USRDFN キーワードとともに指定することはできません。</p>
+</div>
+<div class="example"><h2 class="title sectiontitle">例 1</h2><p class="p">次の例は、ALWGPH キーワードの指定方法を示しています。</p>
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code>|...+....1....+....2....+....3....+....4....+....5....+....6....+....7....+....8
+00010A          R RECORD1                   ALWGPH
+00020A                                 23  2'Enter account number:'
+00030A            ACCT           5   B    +2
+     A</code></pre></div><div class="docs--copy-btn"></div></div>
+<p class="p">この例では、RECORD1 を図形と一緒に表示することが可能です。
+固定情報の <em class="ph i">Enter account number:</em> およびフィールド ACCT が画面に表示されます。
+図形は、GDDM ルーチンを介して、英数字の<em class="ph i">背景</em> として表示されます。
+つまり、図形の線またはパターンが英数字と重なる場合には、重なる部分の図形が文字の下に隠れます。</p>
+</div>
+<div class="example"><h2 class="title sectiontitle">例 2</h2><p class="p">次の例では、オプション標識 01 がオンの場合にだけ図形とともに RECORD2 を表示する方法を示します。</p>
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code>|...+....1....+....2....+....3....+....4....+....5....+....6....+....7....+....8
+00010A          R RECORD2
+00020A  01                                  ALWGPH
+00030A                                  1 34'Sample Title'
+     A</code></pre></div><div class="docs--copy-btn"></div></div>
+<p class="p">この例では、オプション標識 01 がオフの場合には、すでに表示されていたすべての図形が画面から消え (削除はされない)、DDS を介して指定された英数字 (例えば <em class="ph i">Sample Title</em>) のみが表示されます。以降の出力命令で、オプション標識 01 がオンになると、英数字と一緒に図形が再表示されます。</p>
+</div>
+</div>
+<div class="related-links ibm-padding-top-1 ibm-padding-bottom-2 bx--row bottom-section-parent" aria-label="bottom related links">
+<div class="familylinks ibm-margin-bottom-1">
+<div class="parentlink"><strong>親トピック:</strong> <div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a class="link bottom-section-link" href="/docs/ja/ssw_ibm_i_74/rzakc/rzakcmstkeyent.htm" title="表示装置ファイルを定義するキーワード項目は、45 - 80 桁目 (機能欄) に記入します。">表示装置ファイルの DDS キーワード項目 (45 - 80 桁目)</a></div></div>
+</div>
+</div>
+

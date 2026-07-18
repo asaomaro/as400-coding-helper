@@ -1,0 +1,48 @@
+<h1 class="title topictitle1">表示装置ファイルの SFLRNA (サブファイル・レコード非活動) キーワード</h1><div id="lastModifiedDate"><span>Last Updated</span>: 2021-04-13</div>
+<div class="body refbody"><p class="shortdesc">これはレコード・レベル・キーワードで、プログラムが活動レコードを持たないサブファイルを初期設定できるようにするために、サブファイル制御レコード様式でサブファイル初期設定 (SFLINZ) キーワードとともに使用します。
+活動レコードを持たないサブファイルを初期設定するためには、プログラムは、SFLINZ キーワードを選択し、サブファイル制御レコード様式に対する出力命令を送らなければなりません。</p>
+<div class="section"><div class="p">サブファイル自体は活動状態になりますが、サブファイル・レコードは、次のいずれかが起こらない限り、活動状態とは見なされません。<ul class="ul cds--list--unordered"><li class="li cds--list__item">プログラムが、サブファイル・レコード様式に対する出力命令を出し、サブファイル・レコードの 1 つにデータを入れる。当該サブファイル・レコードは、活動状態になりますが、SFLNXTCHG キーワードが効力を持っていない限り、変更されたものとは見なされません。</li>
+<li class="li cds--list__item">プログラムがサブファイルを表示した後で、ワークステーション・ユーザーがサブファイル・レコードにデータを入力する。データが入力されたレコードは、活動状態になり、しかも変更された状態となります。</li>
+</ul>
+</div>
+<p class="p">このキーワードにはパラメーターはありません。</p>
+<p class="p">SFLRNA は、通常、サブファイルの表示に先立って、プログラムによりサブファイルへのレコードの書き込みを行うことができるようにし、そのあとでワークステーション・ユーザーがサブファイルにレコードを追加できるようにするのに使用されます。</p>
+<div class="p">プログラムが、SFLINZ キーワードおよび SFLRNA キーワードを使用して初期設定されたサブファイルを表示する場合には、非活動レコード内のフィールドは次の値になります。<ul class="ul cds--list--unordered"><li class="li cds--list__item">文字フィールドはブランク。</li>
+<li class="li cds--list__item">数字フィールドは全桁ゼロ。</li>
+<li class="li cds--list__item">固定情報値が指定されている入力専用フィールドは、その固定情報値。</li>
+</ul>
+</div>
+<p class="p">非活動状態のサブファイル・レコードに対して、プログラムから入力命令を出すことはできません。
+サブファイル・レコードの 1 つに get-next-changed 命令を出した場合に、当該レコードが返されるのは、そのレコードが活動化され変更された場合だけです。</p>
+<p class="p">活動状態のレコード (SFLRNA の指定がない) に対して、プログラムから出力命令を出すことはできません。
+この場合には、更新命令を送らなければなりません。
+一方、非活動状態のレコード (SFLRNA の指定がある) に対しては、プログラムから更新命令を送ることはできず、出力命令を送らなければなりません。</p>
+<p class="p">SFLRNA を指定する場合には、SFLINZ キーワードも必ず指定しなければなりません。</p>
+<p class="p">メッセージ・サブファイル (サブファイル・レコード様式の SFLMSGRCD キーワードで識別されるもの) には、SFLRNA を指定することはできません。</p>
+<p class="p">サブファイル・レコード様式にフィールド選択が含まれている場合には、SFLRNA は無効です。</p>
+<p class="p">オプション標識は、このキーワードでは無効です。</p>
+</div>
+<div class="example"><h2 class="title sectiontitle">例</h2><p class="p">次の例は、SFLRNA キーワードの指定方法を示しています。</p>
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code>|...+....1....+....2....+....3....+....4....+....5....+....6....+....7....+....8
+00010A          R SFLR                      SFL
+     A*
+     A*           (at least one displayable field)
+     A*
+00040A          R SFLCTLR                   SFLCTL(SFLR)
+00050A                                      SFLPAG(17)
+00060A                                      SFLSIZ(17)
+00070A                                      SFLDSP SFLDSPCTL
+00080A                                      SFLINZ
+00090A                                      SFLRNA
+     A</code></pre></div><div class="docs--copy-btn"></div></div>
+</div>
+</div>
+<div class="related-links ibm-padding-top-1 ibm-padding-bottom-2 bx--row bottom-section-parent" aria-label="bottom related links">
+<div class="familylinks ibm-margin-bottom-1">
+<div class="parentlink"><strong>親トピック:</strong> <div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a class="link bottom-section-link" href="/docs/ja/ssw_ibm_i_74/rzakc/rzakcmstkeyent.htm" title="表示装置ファイルを定義するキーワード項目は、45 - 80 桁目 (機能欄) に記入します。">表示装置ファイルの DDS キーワード項目 (45 - 80 桁目)</a></div></div>
+</div>
+<div class="relinfo relref ibm-margin-bottom-1"><strong>関連資料</strong>:<br>
+<div><div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a class="link bottom-section-link" href="/docs/ja/ssw_ibm_i_74/rzakc/rzakcmstdfsflnz.htm" title="これはレコード・レベル・キーワードで、SFLCTL (サブファイル制御) キーワードで識別されるサブファイル制御レコード様式に対する出力命令の時点で、IBM i オペレーティング・システムがサブファイル内のすべてのレコードを初期設定するよう指定するために、サブファイル制御レコード様式で使用します。">表示装置ファイルの SFLINZ (サブファイル初期設定) キーワード</a></div></div>
+</div>
+</div>
+

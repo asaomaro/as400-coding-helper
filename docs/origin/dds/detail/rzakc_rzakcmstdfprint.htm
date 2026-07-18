@@ -1,0 +1,113 @@
+<h1 class="title topictitle1">表示装置ファイルの PRINT (印刷) キーワード</h1><div id="lastModifiedDate"><span>Last Updated</span>: 2021-04-13</div>
+<div class="body refbody"><p class="shortdesc">これはファイル・レベルまたはレコード・レベル・キーワードで、
+ワークステーション・ユーザーがページ印刷キーを押すことにより現行画面を印刷できることを指定するのに使用します。</p>
+<div class="section"><p class="p">システム/36 環境で使用するファイルに PRINT キーワードを指定する場合の特殊な考慮事項については、<a class="xref" href="/docs/ja/ssw_ibm_i_74/rzakc/s36env.htm" title="ユーザー画面管理 (USRDSPMGT) キーワードを指定すると、その表示装置ファイルのレコード様式がシステム/36 SFGR 画面様式と同じ働きをします。">表示装置ファイルのシステム/36 環境に関する考慮事項</a>を参照してください。</p>
+<div class="p">キーワードの形式は次のとおりです。<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code>PRINT[(response-indicator ['text']) ∨ (*PGM) ∨
+&nbsp;&nbsp;([library-name/]printer-file-name)]</code></pre></div><div class="docs--copy-btn"></div></div>
+</div>
+<p class="p">次の 4 つの例は、PRINT キーワードを指定する 4 つの方法を示すものです。</p>
+<div class="tablenoborder"><div class="cds--data-table-container"><table id="parm_table0" cellpadding="4" cellspacing="0" role="presentation" class="table presentation cds--data-table" rules="none" frame="void" border="0"><tbody class="tbody"><tr class="row"><td class="entry valigntop" width="50%"><samp class="ph codeph">PRINT</samp></td>
+<td class="entry valigntop" width="50%">ワークステーションに対して、CRTDEVDSP コマンドまたは CHGDEVDSP コマンドの PRTFILE パラメーターに
+別の印刷装置ファイルを指定しない限り、<span class="keyword">IBM® i</span> オペレーティング・システムは出力を印刷装置ファイル QSYSPRT にスプールします。
+<a class="xref" href="#rzakcmstdfprint__printk">パラメーター値が指定されていない PRINT キーワード</a>を参照してください。</td>
+</tr>
+<tr class="row"><td class="entry valigntop" width="50%"><samp class="ph codeph">PRINT(01 'User presses Print key')</samp></td>
+<td class="entry valigntop" width="50%">ユーザーのプログラムは、制御権を受け取り、何を行うか (例えば、定様式の印刷出力の生成) を判別します。応答標識がオンにセットされます。
+入出力装置からのデータの送信は行われません。</td>
+</tr>
+<tr class="row"><td class="entry valigntop" width="50%"><samp class="ph codeph">PRINT(*PGM)</samp></td>
+<td class="entry valigntop" width="50%">ページ印刷キーを押すと、制御権がユーザーのプログラムに戻ります。</td>
+</tr>
+<tr class="row"><td class="entry valigntop" width="50%"><samp class="ph codeph">PRINT(LIB1/PRINTFILE1)</samp></td>
+<td class="entry valigntop" width="50%"><span class="keyword">IBM i</span> オペレーティング・システムは、指定された印刷装置ファイル (DDS を用いるかまたは CRTDEVDSP コマンドまたは CHGDEVDSP コマンドの PRTFILE パラメーターを用いて定義できます) に出力をスプールします。
+印刷装置ファイル一時変更 (OVRPRTF) コマンドを印刷装置ファイルのオープン (つまりページ印刷キーを押す) より前に実行することによって、印刷装置名を変更することができます。</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p class="p">PRINT キーワードの指定方法に関する考慮事項について、下記の各項でさらに詳しく説明します。</p>
+<p class="p">PRINT キーワードを上記のどの形式で指定した場合も、ワークステーション・ユーザーは、
+メッセージ・ヘルプが表示されている画面の内容を印刷することができます。この場合、印刷命令は、パラメーターのない PRINT キーワードを指定した場合と同じように行われます。</p>
+</div>
+<div class="section" id="rzakcmstdfprint__printk"><h2 class="title sectiontitle">ローカル・ワークステーション用のパラメーター値が指定されていない PRINT キーワード</h2><p class="p"><span class="keyword">IBM i</span> オペレーティング・システムは、指定された印刷装置ファイル (DDS を用いるかまたは CRTDEVDSP コマンドまたは CHGDEVDSP コマンドの PRTFILE パラメーターを用いて定義できます) に出力をスプールします。</p>
+<p class="p">非表示フィールドはブランクで示されます。
+Dup キーの使用により入力された複写文字はアスタリスク (*) で示されます。表示属性はブランクとして示されます。
+印刷機能を正しく実行することができない場合には、<span class="keyword">IBM i</span> オペレーティング・システムは、表示装置をシステムに対して記述するために使用される CRTDEVDSP コマンドまたは CHGDEVDSP コマンドの PRTFILE パラメーターに指定されている印刷装置ファイルを使用して、印刷機能を実行しようとします。</p>
+<p class="p">ワークステーション制御装置を介して接続されているワークステーション印刷装置の場合には、
+問題があることを示すメッセージが、印刷機能を要求したワークステーション・ユーザーに対して出されます。
+ワークステーション・ユーザーは、印刷装置を作動可能にするか、または Reset キーを押します。
+印刷要求の完了前にその要求を取り消したい場合には、
+ワークステーション・ユーザーはシフト・キーを押したままでページ印刷キーを押します。</p>
+<div class="note note border-2 cds--inline-notification--info ibmdocs-note cds--inline-notification cds--inline-notification--low-contrast margin-top-1 margin-bottom-1"><div class="cds--inline-notification__details"><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" class="cds--inline-notification__icon" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M16,2A14,14,0,1,0,30,16,14,14,0,0,0,16,2Zm0,5a1.5,1.5,0,1,1-1.5,1.5A1.5,1.5,0,0,1,16,7Zm4,17.12H12V21.88h2.88V15.12H13V12.88h4.13v9H20Z"></path></svg>
+        <div class="cds--inline-notification__text-wrapper">
+          <div class="cds--inline-notification__subtitle"><span class="notetitle ibm-bold ibm-textcolor-blue-50 background-blue cds--inline-notification__title ibm-padding-top-1 ibm-padding-bottom-1 padding-left-1 padding-right-1">注:</span> 現行画面の印刷が終わると、用紙は、現行画面サイズの行数の 2 倍分 (24 x 80 の画面では 48 行、27 x 132 の画面では 54 行) 送られます。</div>
+        </div>
+      </div></div>
+</div>
+<div class="section"><h2 class="title sectiontitle">リモート・ワークステーション用のパラメーター値が指定されていない PRINT キーワード</h2><p class="p"><span class="keyword">IBM i</span> オペレーティング・システムは、システムを介してデータを送るのではなく、
+関連付けられたワークステーション印刷装置で表示イメージを印刷しようとします。
+関連付けられたワークステーション印刷装置とは、システムに対してローカル表示装置を記述するために
+使用した CRTDEVDSP または CHGDEVDSP コマンドの PRINTER パラメーターで指定した印刷装置です。</p>
+<div class="p">ページ印刷キーを押した時点で印刷装置が作動可能になっていない場合でも、ユーザーに対して特にメッセージは送られません。
+印刷機能を要求したワークステーションは、印刷装置が作動可能になるまで、
+または (シフト・キーとページ印刷キーを同時に押すことにより) その印刷要求が取り消されるまで、操作不能になります。
+<div class="note note border-2 cds--inline-notification--info ibmdocs-note cds--inline-notification cds--inline-notification--low-contrast margin-top-1 margin-bottom-1"><div class="cds--inline-notification__details"><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" class="cds--inline-notification__icon" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M16,2A14,14,0,1,0,30,16,14,14,0,0,0,16,2Zm0,5a1.5,1.5,0,1,1-1.5,1.5A1.5,1.5,0,0,1,16,7Zm4,17.12H12V21.88h2.88V15.12H13V12.88h4.13v9H20Z"></path></svg>
+        <div class="cds--inline-notification__text-wrapper">
+          <div class="cds--inline-notification__subtitle"><span class="notetitle ibm-bold ibm-textcolor-blue-50 background-blue cds--inline-notification__title ibm-padding-top-1 ibm-padding-bottom-1 padding-left-1 padding-right-1">注:</span> 現行画面の印刷が終わると、用紙は、現行画面サイズの行数と同じ行数分だけ (24 x 80 の画面では 24 行、27 x 132 の画面では 27 行) 送られます。</div>
+        </div>
+      </div></div>
+</div>
+<p class="p">このキーワードについては、オプション標識を使用することができます。</p>
+</div>
+<div class="example"><h2 class="title sectiontitle">例: パラメーター値が指定されていない PRINT キーワード</h2><p class="p">次の例は、パラメーター値を指定しない PRINT キーワードの指定方法を示します。</p>
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code>|...+....1....+....2....+....3....+....4....+....5....+....6....+....7....+....8
+00010A                                      PRINT
+00020A          R RECORD1
+     A</code></pre></div><div class="docs--copy-btn"></div></div>
+</div>
+<div class="example"><h2 class="title sectiontitle">例: 応答標識または *PGM 特殊値が指定されている PRINT キーワード</h2><p class="p">応答標識を指定した PRINT キーワードを使用した場合には、<span class="keyword">IBM i</span> オペレーティング・システムは、
+指定の応答標識をオンにセットして制御権をユーザーのプログラムに返します。
+該当装置からはデータを受け取りません。キーボードは、ユーザーのプログラムがその表示装置ファイルに別の出力命令を出すまで、
+ロックされます。ローカル・ワークステーションとリモート・ワークステーションの間で印刷機能に差異はありません。
+*PGM を指定すると、<span class="keyword">IBM i</span> オペレーティング・システムはユーザーのプログラムに制御権を返します。
+この 2 つの形式のただ 1 つの違いは応答標識だけで、その他の処理はすべて同じです。</p>
+<p class="p">応答標識形式のための任意指定のテキストは、標識の用途を示すために、プログラムのコンパイル時に作成される
+コンピューター印刷出力に組み込まれます。このテキストは、注釈としての役割しか果たしません。単一引用符は必須です。
+単一引用符で囲んだテキストが 50 文字を超えていた場合には、
+プログラム式コンピューター印刷出力では 50 文字に切り捨てられます。</p>
+<p class="p">次の例は、応答標識をもつ PRINT キーワードの指定方法を示しています。</p>
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code>|...+....1....+....2....+....3....+....4....+....5....+....6....+....7....+....8
+00010A                                      PRINT(01 'User presses Print key')
+00020A          R RECORD1
+     A</code></pre></div><div class="docs--copy-btn"></div></div>
+<p class="p">次の例は、*PGM 特殊値をもつ PRINT キーワードの指定方法を示しています。</p>
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code>|...+....1....+....2....+....3....+....4....+....5....+....6....+....7....+....8
+00010A                                      PRINT(*PGM)
+00020A          R RECORD1
+     A</code></pre></div><div class="docs--copy-btn"></div></div>
+</div>
+<div class="example"><h2 class="title sectiontitle">例: 印刷装置ファイルが指定された PRINT キーワード</h2><p class="p"><span class="keyword">IBM i</span> プログラムは、画面バッファーを読み取り、指定された印刷装置ファイルを
+用いて表示イメージを印刷します。このキーワードのパラメーター値として指定する印刷装置ファイルは、外部記述ファイルでもプログラム記述ファイルでも差し支えありません。
+また、スプール・ファイルでも非スプール・ファイルでも指定することができます。
+外部記述印刷装置ファイルを指定する場合、そのファイルには、そのファイルと同じ名前のレコード様式が含まれていなければなりません。</p>
+<p class="p">ページ印刷キーを押す時点で、指定した印刷装置ファイルが存在していなければならず、また、表示装置のユーザーはそのファイルの使用権限を持っていなければなりません。
+ライブラリー名を指定した場合には、そのライブラリー名についてもこの規則があてはまります。
+<span class="keyword">IBM i</span> オペレーティング・システムでは、指定された印刷装置ファイルで印刷機能を実行することができない場合には、CRTDEVDSP コマンドまたは CHGDEVDSP コマンドの PRTFILE パラメーターに指定されている印刷装置ファイルの使用を試みます。
+キーボードがロックされるのを避けるには、CRTPRTF コマンドまたは CHGPRTF コマンドで SPOOL(*YES) を指定しておく必要があります。</p>
+<p class="p">ライブラリー名を指定しなかった場合には、プログラム実行時の現行ライブラリー・リストが使用されます。</p>
+<p class="p">次の例は、画面が印刷装置ファイル LIB1/PRINTFILE1 に送られるように指定する方法を示しています。</p>
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code>|...+....1....+....2....+....3....+....4....+....5....+....6....+....7....+....8
+00010A                                      PRINT(LIB1/PRINTFILE1)
+00020A          R RECORD1
+     A</code></pre></div><div class="docs--copy-btn"></div></div>
+</div>
+</div>
+<div class="related-links ibm-padding-top-1 ibm-padding-bottom-2 bx--row bottom-section-parent" aria-label="bottom related links">
+<div class="familylinks ibm-margin-bottom-1">
+<div class="parentlink"><strong>親トピック:</strong> <div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a class="link bottom-section-link" href="/docs/ja/ssw_ibm_i_74/rzakc/rzakcmstkeyent.htm" title="表示装置ファイルを定義するキーワード項目は、45 - 80 桁目 (機能欄) に記入します。">表示装置ファイルの DDS キーワード項目 (45 - 80 桁目)</a></div></div>
+</div>
+<div class="relinfo relref ibm-margin-bottom-1"><strong>関連資料</strong>:<br>
+<div><div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a class="link bottom-section-link" href="/docs/ja/ssw_ibm_i_74/rzakc/rzakcmstdfopprt.htm" title="これはファイル・レベル・キーワードで、(最初にページ印刷キーを押した時点で) 一度オープンされた印刷装置ファイルは、関連の表示装置ファイルがクローズされるまで、オープンのままにしておくことを指定するために使用します。">表示装置ファイルの OPENPRT (印刷ファイル・オープン) キーワード</a></div></div>
+</div>
+</div>
+

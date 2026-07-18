@@ -1,0 +1,157 @@
+<main role="main"><article role="article" aria-labelledby="pdft__title__1">
+<h1 class="topictitle1" id="pdft__title__1">DFT (Default) keyword—physical files only</h1><div id="lastModifiedDate"><span>Last Updated</span>: 2026-07-13</div>
+
+
+
+<div class="body refbody"><p class="shortdesc">You can use this field-level keyword to specify a
+default value for a field.</p>
+
+<div class="section"><div class="p">The format of the keyword is:  <div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>DFT('value' | numeric-value | X'hexadecimal-value' | *NULL)</code></pre></div><div class="docs--copy-btn"></div></div></div>
+<p>Without
+this keyword, character and hexadecimal fields are set to blanks as default
+and numeric fields are set to zeros as default. However, if you specify the
+ALWNULL keyword for the field, then the character, hexadecimal, and numeric
+fields are set to the null value as default.</p>
+<div class="p">The following rules apply
+to the specified value:  <ul class="cds--list--unordered">
+<li class="cds--list__item">If the field being defined is a character field, specify a character constant,
+hexadecimal value, or *NULL. Specify character strings within single quotation
+marks. If the field is variable length (VARLEN), then the length of the string
+must be less than or equal to the allocated length.  <p>Specify hexadecimal
+values as an X followed by a combination of the digits 0 through 9 and the
+letters A through F. Enclose the combination in single quotation marks. The
+number of hexadecimal digits in single quotation marks must be exactly twice
+the specified length of the field. If the field is variable length (VARLEN),
+then the number of hexadecimal digits in single quotation marks must be exactly
+twice the allocated length.</p>
+</li>
+
+<li class="cds--list__item">If the field being defined is a hexadecimal field, specify a character
+constant, hexadecimal value, or *NULL.  <div class="note border-2 cds--inline-notification--info ibmdocs-note cds--inline-notification cds--inline-notification--low-contrast margin-top-1 margin-bottom-1"><div class="cds--inline-notification__details"><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" class="cds--inline-notification__icon" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M16,2A14,14,0,1,0,30,16,14,14,0,0,0,16,2Zm0,5a1.5,1.5,0,1,1-1.5,1.5A1.5,1.5,0,0,1,16,7Zm4,17.12H12V21.88h2.88V15.12H13V12.88h4.13v9H20Z"></path></svg>
+        <div class="cds--inline-notification__text-wrapper">
+          <div class="cds--inline-notification__subtitle"><span class="notetitle ibm-bold ibm-textcolor-blue-50 background-blue cds--inline-notification__title ibm-padding-top-1 ibm-padding-bottom-1 padding-left-1 padding-right-1">Note:</span> If a character constant is specified,
+the hexadecimal representation of the character constant is the default value.</div>
+        </div>
+      </div></div>
+<p>Specify
+character strings within single quotation marks. If the field is variable
+length (VARLEN), then the length of the string must be less than or equal
+to the allocated length.</p>
+<p>Specify hexadecimal values as an X followed
+by a combination of the digits 0 through 9 and the letters A through F. Enclose
+the combination in single quotation marks. The number of hexadecimal digits
+in single quotation marks must be exactly twice the specified length of the
+field. If the field is variable length (VARLEN), then the number of hexadecimal
+digits in single quotation marks must be exactly twice the allocated length.</p>
+</li>
+
+<li class="cds--list__item">If you are defining a numeric field, specify a numeric value (digits 0
+through 9 specified without single quotation marks) or *NULL. For a value
+other than zero in positions 36 and 37, specify the decimal character with
+a numeric constant in the appropriate position in the DDS.</li>
+
+<li class="cds--list__item">If you specify *NULL, then you must also specify the ALWNULL keyword on
+the field.</li>
+
+<li class="cds--list__item">If you do not specify any value (DFT('')), this indicates a default of
+a 0 length string and is valid only when the field is variable length (the
+VARLEN keyword must also be specified).</li>
+
+<li class="cds--list__item">If you are defining a date field, specify a valid date in the same format
+specified on the DATFMT keyword and use the same separator as specified on
+the DATSEP keyword. For example, <code class="ph codeph">DFT('12/15/05')</code> is
+the default value if *MDY is specified for DATFMT and '/' is specified for
+DATSEP.  <p>If the DFT keyword is not specified, the default value is the
+current date.</p>
+</li>
+
+<li class="cds--list__item">If you are defining a time field, specify a valid time in the same format
+specified on the TIMFMT keyword and use the same separator as specified on
+the TIMSEP keyword. For example, <code class="ph codeph">DFT('11.00.00')</code> is the default
+value if *ISO is specified for TIMFMT. The default separator for *ISO is a
+period (.).  <p>If the DFT keyword is not specified, the default value is
+the current time.</p>
+</li>
+
+<li class="cds--list__item">If you are defining a timestamp field, you must specify the default value
+in the following format:  <div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>DFT('YYYY-MM-DD-HH.MM.SS.UUUUUU')</code></pre></div><div class="docs--copy-btn"></div></div><p>If
+the DFT keyword is not specified, the default value is the current time.</p>
+</li>
+
+</ul>
+</div>
+<div class="p">The value specified is assigned to the field in the following
+cases:  <ul class="cds--list--unordered">
+<li class="cds--list__item">When the program does an output operation to a logical file based on this
+physical file and the record format in the logical file does not name this
+field.</li>
+
+<li class="cds--list__item">When
+you use the Initialize Physical File Member (INZPFM) command for a member
+in this file.</li>
+
+<li class="cds--list__item">When you use the Copy File (CPYF) command with FMTOPT(*MAP) specified
+and a field in the to-file is not in the from-file.</li>
+
+</ul>
+</div>
+<div class="p">The specified value is supplied to the program when
+the program does an input operation to a join logical file and all of the
+following situations are true:  <ul class="cds--list--unordered">
+<li class="cds--list__item">You specify the JDFTVAL keyword for the join logical file.</li>
+
+<li class="cds--list__item">The file being defined is specified as a secondary file in the join logical
+file.</li>
+
+<li class="cds--list__item">When the input operation occurs and the link to the secondary file produces
+no records.</li>
+
+</ul>
+</div>
+<p>This keyword does not affect the physical file on input operations.</p>
+</div>
+
+<div class="example"><h2 class="sectiontitle" id="pdft__title__2">Example</h2><p>The following example shows how to specify
+the DFT keyword.</p>
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>|...+....1....+....2....+....3....+....4....+....5....+....6....+....7....+....8
+00010A          R RECORD1
+00020A            CHARFLD1      20A         DFT('Sample field')
+00030A            CHARFLD2       5A         DFT(X'D985955185')
+00040A            HEXFLD1        3H         DFT('ABC')
+00050A            HEXFLD2        3H         DFT(X'C1C2C3')
+00060A            NUMFLD1        5S 0       DFT(99999)
+00070A            NUMFLD2        5S 2       DFT(999.99)
+00080A            NUMFLD3        5S 2       DFT(999)
+00090A            NUMFLD4        5S 2       DFT(*NULL)
+00100A                                      ALWNULL
+00110A            NUMFLD5        5S 2       DFT(999.99)
+00120A                                      ALWNULL
+00130A            DATFLD1         L         DATFMT(*MDY) DATSEP('-')
+00140A                                      DFT('12-31-05')
+00150A            TIMFLD1         T         DFT('11.15.00')
+     A</code></pre></div><div class="docs--copy-btn"></div></div><p>The default value for CHARFLD1 is 'Sample field'. The
+default value for CHARFLD2 is hexadecimal D985955185. The default value for
+HEXFLD1 is C1C2C3 (the hexadecimal representation of the character constant).
+The default value for HEXFLD2 is C1C2C3. The default value for NUMFLD1 is
+99999 (no decimal character is required because the field has zero decimal
+positions). The default value for NUMFLD2 is 999.99. The default value for
+NUMFLD3 is 999 (no decimal character is required if you do not need to specify
+decimal values). The default value for NUMFLD4 is the null value (ALWNULL
+is a required keyword for the field if DFT(*NULL) is specified). The default
+value for NUMFLD5 is 999.99; the field also allows the null value. The default
+value for DATFLD1 is 12-31-05. The default value for TIMFLD1 is 11.15.00 (*ISO
+format).</p>
+</div>
+
+</div>
+
+<aside role="complementary" aria-labelledby="pdft__title__1"><nav role="navigation" aria-label="bottom related links" class="ibm-padding-top-1 ibm-padding-bottom-2 bx--row bottom-section-parent">
+<div class="familylinks ibm-margin-bottom-1">
+<div class="parentlink"><strong>Parent topic:</strong> <div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a data-hd-product="ssw_i5_72" href="/docs/en/ssw_ibm_i_74/rzakb/rzakbmstlfkeyw.htm" title="Keyword entries are typed in positions 45 through 80 (functions)." class="bottom-section-link">Keyword entries for physical and logical files (positions 45 through 80)</a></div></div>
+</div>
+
+<div class="linklist relinfo relref ibm-margin-bottom-1" lang="en-us"><h2 class="linkheading bottom-section-h2-title">Related reference</h2>
+<ul><li class="cds--list__item"><div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a data-hd-product="ssw_i5_72" href="/docs/en/ssw_ibm_i_74/rzakb/lfusg.htm" title="You use this field to specify that a named field is to be an input-only, both (both input and output are allowed), or neither (neither input nor output is allowed) field." class="bottom-section-link">Usage for physical and logical files (position 38)</a></div></li>
+<li class="cds--list__item"><div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a data-hd-product="ssw_i5_72" href="/docs/en/ssw_ibm_i_74/rzakb/rzakbmsttdjdftv.htm" title="The JDFTVAL keyword is valid only for join logical files. If this keyword is in effect, the system provides default values for fields when a join to a secondary file does not produce any records." class="bottom-section-link">JDFTVAL (Join Default Values) keyword—join logical files only</a></div></li>
+</ul></div>
+</nav></aside></article></main>

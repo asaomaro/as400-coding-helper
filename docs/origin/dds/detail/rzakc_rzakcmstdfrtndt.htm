@@ -1,0 +1,47 @@
+<h1 class="title topictitle1">表示装置ファイルの RTNDTA (データ返送) キーワード</h1><div id="lastModifiedDate"><span>Last Updated</span>: 2021-04-13</div>
+<div class="body refbody"><p class="shortdesc"><span class="ph">このレコード・レベル・キーワードは、プログラムからレコード様式に対する入力命令が
+送られると、同じレコード様式に対して送られた直前の入力命令で返されたものと同じ
+データを <span class="keyword">IBM® i</span> オペレーティング・システムから返すことを指定するために使用します。</span></p>
+<div class="section"><p class="p">レコード様式がまだ読み取られていない場合には、RTNDTA キーワードは無視されます。
+RTNDTA キーワードが効力を持っている場合には、ユーザー・プログラムは、表示装置からのデータを実際に渡すように <span class="keyword">IBM i</span> オペレーティング・システムに要求せずに、画面上のデータを再読み取りすることができます。</p>
+<p class="p">このキーワードにはパラメーターはありません。</p>
+<div class="p">次の状況下では RTNDTA キーワードは無視されます。<ul class="ul cds--list--unordered"><li class="li cds--list__item">出力/入力命令 (PUT-GET 命令) の入力部分</li>
+<li class="li cds--list__item">同じレコード様式に対して直前に出力命令が行われた場合の入力命令</li>
+</ul>
+</div>
+<p class="p">RTNDTA キーワードは、あるレコード様式に対して行われた入力命令の直後に、(間に出力命令をはさまずに) 同じレコード様式に対して出された入力命令の場合に限って有効です。</p>
+<div class="p">RTNDTA キーワードには次の用法があります。<ul class="ul cds--list--unordered"><li class="li cds--list__item">ワークステーション・ユーザーが変更したレコード様式を、RTNDTA を用いて、主プログラムで読み取れるようにすることができます。主プログラムは、読み取ったデータにより、どのサブプログラムを呼び出せばよいかを判断します。
+呼び出されたサブプログラムは、RTNDTA が効力を持っている同じレコード様式に対して入力命令を送り、同じデータを読み取ります。
+この手順により、サブプログラムにパラメーターを渡す手順を省くことができます。<div class="note note border-2 cds--inline-notification--info ibmdocs-note cds--inline-notification cds--inline-notification--low-contrast margin-top-1 margin-bottom-1"><div class="cds--inline-notification__details"><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" class="cds--inline-notification__icon" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M16,2A14,14,0,1,0,30,16,14,14,0,0,0,16,2Zm0,5a1.5,1.5,0,1,1-1.5,1.5A1.5,1.5,0,0,1,16,7Zm4,17.12H12V21.88h2.88V15.12H13V12.88h4.13v9H20Z"></path></svg>
+        <div class="cds--inline-notification__text-wrapper">
+          <div class="cds--inline-notification__subtitle"><span class="notetitle ibm-bold ibm-textcolor-blue-50 background-blue cds--inline-notification__title ibm-padding-top-1 ibm-padding-bottom-1 padding-left-1 padding-right-1">注:</span> 両方の表示装置ファイルについて、SHARE(*YES) が指定されていなければなりません。</div>
+        </div>
+      </div></div>
+</li>
+<li class="li cds--list__item">RTNDTA を用いることによって、RPG III のプログラムでファイルの保守を行う際に、データベースのレコードをロックする頻度が低くなります。
+例えば、プログラムでデータベース・レコードを読み取り、表示装置に表示するとします。ワークステーション・ユーザーは、
+このレコードを見て、必要に応じて変更を加え、Enter キーを押します。この場合、ワークステーション・ユーザーが
+変更を加えている間、データベース・レコードがロックされるとすると、他のプログラムはそのデータベース・レコードを使用することができません。
+したがって、データベース・レコードはロックしない状態のままにしておく方が望ましいです。
+ただし、プログラムが画面からレコードを読み取って、データベース・レコードを更新すると、このデータベース・レコードは、プログラム内の表示装置レコードの内部表現をオーバーレイすることになります。
+表示装置レコードとデータベース・レコードに異なるフィールド名を使用してオーバーレイが生じるのを避けるという処置をとらず、プログラムは、表示装置ファイルを再び読み取ります。
+RTNDTA が指定されているので、プログラムはその表示装置レコードを再検索し、データベースの更新を完了することができます。</li>
+</ul>
+</div>
+<p class="p">UNLOCK キーワードを指定した場合には、RTNDTA キーワードを指定することはできません。</p>
+<p class="p">オプション標識は、このキーワードでは無効です。</p>
+</div>
+<div class="example"><h2 class="title sectiontitle">例</h2><p class="p">次の例は、RTNDTA キーワードの指定方法を示しています。</p>
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code>|...+....1....+....2....+....3....+....4....+....5....+....6....+....7....+....8
+00010A          R RECORD1                   RTNDTA
+00020A            FLD1           5   I  2  2
+00030A            FLD2           5   B  3  2
+     A</code></pre></div><div class="docs--copy-btn"></div></div>
+</div>
+</div>
+<div class="related-links ibm-padding-top-1 ibm-padding-bottom-2 bx--row bottom-section-parent" aria-label="bottom related links">
+<div class="familylinks ibm-margin-bottom-1">
+<div class="parentlink"><strong>親トピック:</strong> <div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a class="link bottom-section-link" href="/docs/ja/ssw_ibm_i_74/rzakc/rzakcmstkeyent.htm" title="表示装置ファイルを定義するキーワード項目は、45 - 80 桁目 (機能欄) に記入します。">表示装置ファイルの DDS キーワード項目 (45 - 80 桁目)</a></div></div>
+</div>
+</div>
+

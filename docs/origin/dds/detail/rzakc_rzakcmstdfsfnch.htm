@@ -1,0 +1,49 @@
+<h1 class="title topictitle1">表示装置ファイルの SFLNXTCHG (次に変更するサブファイル) キーワード</h1><div id="lastModifiedDate"><span>Last Updated</span>: 2021-04-13</div>
+<div class="body refbody"><p class="shortdesc">これは、サブファイル・レコード様式のレコード・レベル・キーワードであり、プログラムによって読み取られたサブファイル・レコードの中でプログラムが検出したキー入力エラーをワークステーション・ユーザーが訂正しなければならないということを指定します。</p>
+<div class="section"><p class="p">そのために、プログラムでは、以下に説明するように、レコードに変更を加えて、get-next-changed 命令でそのレコードを読み取らなければならないようにします。</p>
+<p class="p">このキーワードにはパラメーターはありません。</p>
+</div>
+<div class="section"><h2 class="title sectiontitle">SFLNXTCHG を用いるサブファイル操作</h2><p class="p">SFLNXTCHG の代表的な使用法は次のとおりです。</p>
+<p class="p">ワークステーション・ユーザーが、表示されたサブファイルのいくつかのレコードを変更します (これは、
+データ入力アプリケーションまたはデータ更新アプリケーションに対して行われます)。いくつかのレコードの変更後、
+ワークステーション・ユーザーは、Enter キーを押します。すると、
+プログラムは、変更されたレコードのみを get-next-changed 命令によって読み取ります。
+(例えば、RPG III では READC、
+COBOL では READ-SUBFILE-NEXT-MODIFIED。)</p>
+<p class="p">プログラムは、変更レコードに入力エラーを見つけると、エラーのあるサブファイル・レコードに対する更新命令 (RPG IV では UPDATE、COBOL では REWRITE SUBFILE) を送ることができ、標識をセットして、更新命令の間 SFLNXTCHG が効力を持つようにします。
+更新命令は、サブファイル・レコード様式に対して出されます。</p>
+<p class="p">すべてのエラー・レコードの更新が終わると、プログラムは、サブファイル制御レコード様式に対する入出力命令を出し、サブファイルを再び表示します。</p>
+<p class="p">サブファイルが再表示されたら、ワークステーション・ユーザーは、データを再度タイプし、Enter キーを押します。入力されたデータが正しければ、プログラムは、サブファイルを再び表示しません。</p>
+<p class="p">エラーのあるレコードは (およびワークステーション・ユーザーにより変更された他のどのようなレコードも)、
+次回の get-next-changed 命令でプログラムに返されます。
+これは、SFLNXTCHG が指定されているために、ワークステーション・ユーザーが変更しなかった場合にも、
+このサブファイル・レコードが変更されたものと見なされるためです。
+これにより、サブファイル・レコード内で見つかったプログラム検出の入力エラーをワークステーション・ユーザーが見落としてしまう事態を、
+プログラムにより防止することができます。</p>
+</div>
+<div class="section"><h2 class="title sectiontitle">SFLNXTCHG を用いないサブファイル操作</h2><p class="p">SFLNXTCHG を指定しなかった場合、または指定したがサブファイル・レコードに対する更新命令で選択されなかった場合には、
+ワークステーション・ユーザーは、プログラム検出のエラーを修正する代わりに、Enter キーを押すだけにすることができます。
+この場合、二度目に Enter キーが押されたときには、get-next-changed 命令で変更レコードが見つからないために、プログラムではレコードの読み取りは行われません。</p>
+<p class="p">このキーワードについては、オプション標識を使用することができます。</p>
+<p class="p">SFLNXTCHG キーワードを SFLMSGRCD キーワードと同時に指定することはできません。</p>
+</div>
+<div class="example"><h2 class="title sectiontitle">例</h2><p class="p">次の例は、SFLNXTCHG キーワードの指定方法を示しています。</p>
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code>|...+....1....+....2....+....3....+....4....+....5....+....6....+....7....+....8
+00010A          R SFLR                      SFL
+00020A  14                                  SFLNXTCHG
+     A*
+     A*           (at least one input-capable field should be specified)
+     A*
+00040A          R SFLCTLR                   SFLCTL(SFLR)
+00050A                                      SFLPAG(17)
+00060A                                      SFLSIZ(17)
+00070A                                      SFLDSP SFLDSPCTL
+     A</code></pre></div><div class="docs--copy-btn"></div></div>
+</div>
+</div>
+<div class="related-links ibm-padding-top-1 ibm-padding-bottom-2 bx--row bottom-section-parent" aria-label="bottom related links">
+<div class="familylinks ibm-margin-bottom-1">
+<div class="parentlink"><strong>親トピック:</strong> <div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a class="link bottom-section-link" href="/docs/ja/ssw_ibm_i_74/rzakc/rzakcmstkeyent.htm" title="表示装置ファイルを定義するキーワード項目は、45 - 80 桁目 (機能欄) に記入します。">表示装置ファイルの DDS キーワード項目 (45 - 80 桁目)</a></div></div>
+</div>
+</div>
+

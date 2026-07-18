@@ -1,0 +1,67 @@
+<h1 class="title topictitle1">印刷装置ファイルの DATE (日付) キーワード</h1><div id="lastModifiedDate"><span>Last Updated</span>: 2021-04-13</div>
+<div class="body conbody"><p class="shortdesc">このフィールド・レベルのキーワードは、
+現行の日付またはシステム日付を桁数が 6 または 8 バイトの固定情報フィールドとして表示する場合に使用します。</p>
+<p class="p">DATE キーワードとフィールドの位置を指定できます。
+フィールドの位置を指定するためにレコードで POSITION キーワードが使用される場合は、特殊名 *NONE を使用してフィールドに名前を付けることもできます。
+また、オプションとして CDEFNT、CHRSIZ、COLOR、EDTCDE、EDTWRD、FNTCHRSET、FONT、HIGHLIGHT、
+UNDERLINE、または TEXT キーワードを指定することができます。</p>
+<p class="p">POSITION キーワードが使用される場合は、名前 *NONE を指定する必要があります (19 から 29 桁目)。
+POSITION キーワードを使用しない場合、17 から 38 桁目はブランクでなければなりません。</p>
+<div class="p">キーワードの形式は次のとおりです。
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code>DATE([*JOB | *SYS] [*Y|*YY])</code></pre></div><div class="docs--copy-btn"></div></div>
+</div>
+<p class="p">*JOB 値を指定すると、現行ジョブ日付が印刷されます。パラメーターを指定しない
+と、*JOB が使用されます。*SYS パラメーターにより現行のシステム
+日付が印刷されます。</p>
+<p class="p">*Y を指定すると、年が 2 桁の DATFMT ジョブ属性が指定する日付形式を表します。*YY を指定すると、年が 4 桁の DATFMT ジョブ属性が指定する
+日付形式を表します。パラメーターが指定されない
+場合には、デフォルトで *Y が指定されます。</p>
+<p class="p">EDTCDE キーワードの W 編集コードを指定すると、要求されている年号が 4 桁 (*YY) で、かつジョブ属性 DATFMT が YMD である
+場合にだけ、正しい形式の日付が戻されます。</p>
+<div class="p">DATE フィールドに EDTCDE(Y) を指定した場合には、DATFMT ジョブ属性の
+日付形式にしたがって、区切り記号が追加されます。例えば、DATFMT ジョブ属性に *MDY を指定しているときに EDTCDE(Y) を使うと、日付形式は
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code>mmddyy</code></pre></div><div class="docs--copy-btn"></div></div>
+から次のように変わります。<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code>mm/dd/yy</code></pre></div><div class="docs--copy-btn"></div></div>
+</div>
+<p class="p">スラッシュ (/) は、実行時のジョブ属性 DATSEP で指定され、ジョブ属性 DATFMT は月、日、および年の順序を判別します。(DATFMT は、ユーザー・
+プログラムがシステム値 QDATFMT から日付を検索することを示す *SYSVAL か、あるいは、MDY、DMY、YMD、または JUL のいずれかです。ここでは、M= 月、D= 日、Y= 年、JUL= 年間通算日です。)</p>
+<p class="p">フィールド桁数は、以下の要素によって変わります。</p>
+<ol class="ol cds--list--ordered--temporary"><li class="li cds--list__item">DATFMT ジョブ属性の形式。</li>
+<li class="li cds--list__item">日付フィールドに区切り記号が組み込まれているかどうか。EDTCDE キーワードが
+区切り記号を制御します。</li>
+<li class="li cds--list__item">年を表す数字の桁数。DATE キーワードが年の桁数を制御します。</li>
+</ol>
+<p class="p">ジョブに指定された DATFMT が *JUL (年間通算) の場合には、結果を編集するために EDTWRD キーワードを使用することはできません。</p>
+<p class="p">オプション標識は、このキーワードでは無効です。
+ただし、オプション標識を使用して、このキーワードが指定されているフィールドの条件付けを行うことはできます。</p>
+<div class="section"><h2 class="title sectiontitle">例</h2><p class="p">次の例は、DATE キーワードの指定方法を示しています。</p>
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code>|...+....1....+....2....+....3....+....4....+....5....+....6....+....7....+....8
+     A          R REC01
+     A                                  1 56
+     A                                      DATE
+     A  21                              2 56
+     A                                      DATE(*JOB *Y)
+     A  22                              2 56
+     A                                      DATE EDTCDE(Y)
+     A  23                              2 56
+     A                                      DATE(*JOB) EDTCDE(Y)
+     A  24                              2 56
+     A                                      DATE(*SYS)
+     A  25                              2 56
+     A                                      DATE(*SYS *YY) EDTCDE(Y)
+     A</code></pre></div><div class="docs--copy-btn"></div></div>
+<p class="p">ジョブ日付は編集されずに 56 桁目に印刷されます。</p>
+<p class="p">オプション標識 21 がオンの場合にも、ジョブ日付は編集されずに印刷されます。オプション標識 22 または 23 がオンの場合には、ジョブ日付は編集されて
+印刷されます。オプション標識 24 がオンの場合には、システム日付は編集されずに印刷されます。オプション標識 25 がオンの場合には、システム日付は編集されて
+年 4 桁で印刷されます。</p>
+</div>
+</div>
+<div class="related-links ibm-padding-top-1 ibm-padding-bottom-2 bx--row bottom-section-parent" aria-label="bottom related links">
+<div class="familylinks ibm-margin-bottom-1">
+<div class="parentlink"><strong>親トピック:</strong> <div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a class="link bottom-section-link" href="/docs/ja/ssw_ibm_i_74/rzakd/rzakdmstprkey.htm" title="これらは印刷装置ファイルの定義に有効なキーワード項目です。">印刷装置ファイルのキーワード項目 (45 から 80 桁目)</a></div></div>
+</div>
+<div class="relinfo relconcepts ibm-margin-bottom-1"><strong>関連概念</strong>:<br>
+<div><div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a class="link bottom-section-link" href="/docs/ja/ssw_ibm_i_74/rzakd/constantfields.htm" title="固定情報フィールドは、名前のないフィールド (19 から 28 桁目はブランクでなければなりません) であるか、 POSITION キーワードがレコードで使用されるときに特殊名 (*NONE) を持つフィールドです。">印刷装置ファイル内の固定情報フィールド</a></div></div>
+</div>
+</div>
+

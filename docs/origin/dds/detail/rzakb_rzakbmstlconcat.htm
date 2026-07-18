@@ -1,0 +1,125 @@
+<h1 class="title topictitle1">CONCAT (連結) キーワード - 論理ファイルのみ</h1><div id="lastModifiedDate"><span>Last Updated</span>: 2021-04-13</div>
+<div class="body refbody"><p class="shortdesc"><span class="ph">これはフィールド・レベルのキーワードで、物理ファイルのレコード様式の複数のフィールドを組み合わせて、定義中の論理ファイルのレコード様式内で 1 つのフィールドとして用いる場合に使用します。連結後にできるフィールドの名前を 19 から 28 桁目に指定しなければなりません。</span></p>
+<div class="section"><div class="p">キーワードの形式は次のとおりです。<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code>CONCAT(field-1 field-2...)</code></pre></div><div class="docs--copy-btn"></div></div>
+</div>
+<p class="p">物理ファイルのフィールドの名前は、連結したい順に指定し、各フィールド名をブランクで区切ります。</p>
+<p class="p">論理ファイルの 1 つのレコード様式の中で、
+同じ物理フィールドを (RENAME または CONCAT を使用して) 複数回指定した場合、
+更新操作または挿入操作では、
+論理ファイル内でそのフィールドの指定順序と同じ順序でその物理ファイルにデータが渡されます。したがって、その物理フィールドの最後の指定が、物理レコード
+に入れられる値であり、その物理フィールドをキー・フィールドとするすべてのキーで使用される値です。同じフィールドのそれ以前の値はすべて
+無視されます。</p>
+<p class="p">CONCAT キーワードを用いて定義したフィールド、
+または CONCAT キーワードのパラメーター値として指定したフィールドをキー・フィールドとして使用したい場合は、
+キー・フィールド名の項を参照してください。</p>
+<p class="p">2 進文字フィールドは、
+別の 2 進文字フィールドとのみ連結できます。
+UTF-8 フィールドは、別の UTF-8 フィールドとのみ連結できます。
+UCS-2 および UTF-16 フィールドは、同じタイプのフィールドでのみ、または相互に連結できます。</p>
+<p class="p">小数点以下の桁数としてゼロ以外の値が指定されているフィールドを連結フィールドに含めることはできません。
+小数点以下の桁数がゼロのフィールドは、連結フィールドに含めることが
+でき、そのフィールドは整数フィールドとして取り扱われます。</p>
+<p class="p"><span class="keyword">IBM® i</span> プログラムは、連結したすべてのフィールドの合計長 (数字および文字) として、連結フィールドの長さを割り当てます。</p>
+<div class="p">オペレーティング・システムは、連結するフィールドに基づいて、
+フィールドを固定長フィールドまたは可変長フィールドになるように割り当てます。その場合の一般的な規則は次のとおりです。<ul class="ul cds--list--unordered"><li class="li cds--list__item">可変長フィールドを固定長フィールドまたは別の可変長フィールドに連結する場合、
+連結後のフィールドは、可変長フィールドとなります。</li>
+<li class="li cds--list__item">固定長フィールドを固定長フィールドに連結する場合、連結後のフィールドは、CONCAT キーワードと同じフィールドで VARLEN キーワードが指定されていなければ、固定長フィールドとなります。<div class="note note border-2 cds--inline-notification--info ibmdocs-note cds--inline-notification cds--inline-notification--low-contrast margin-top-1 margin-bottom-1"><div class="cds--inline-notification__details"><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" class="cds--inline-notification__icon" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M16,2A14,14,0,1,0,30,16,14,14,0,0,0,16,2Zm0,5a1.5,1.5,0,1,1-1.5,1.5A1.5,1.5,0,0,1,16,7Zm4,17.12H12V21.88h2.88V15.12H13V12.88h4.13v9H20Z"></path></svg>
+        <div class="cds--inline-notification__text-wrapper">
+          <div class="cds--inline-notification__subtitle"><span class="notetitle ibm-bold ibm-textcolor-blue-50 background-blue cds--inline-notification__title ibm-padding-top-1 ibm-padding-bottom-1 padding-left-1 padding-right-1">注:</span> 連結の結果が、
+ヌル値を許容する可変長フィールド、UCS-2 フィールド、UTF-16 フィールド、UTF-8 フィールド、
+または 2 進文字フィールドである場合には、CONCAT フィールドは入力専用 (38 桁目が I) でなければなりません。
+論理ファイル・レコード様式に連結が含まれる場合、
+基本ファイルの物理ファイル・レコード様式からのヌル値を許容するフィールドは含めることはできません。</div>
+        </div>
+      </div></div>
+</li>
+</ul>
+</div>
+<div class="p">オペレーティング・システムは、
+連結しようとするフィールドのデータ・タイプに基づいてデータ・タイプを割り当てます。その場合の一般的な規則は次のとおりです。<ul class="ul cds--list--unordered"><li class="li cds--list__item">連結の対象に 1 つまたは複数の 16 進数 (H) フィールドが
+含まれている場合は、結果のデータ・タイプは 16 進数 (H) です。</li>
+<li class="li cds--list__item">連結の対象に 1 つまたは複数の文字 (A) フィールドが含まれており、16 進数フィールドが含まれていない場合は、結果のデータ・タイプは文字 (A) です。</li>
+<li class="li cds--list__item">連結の対象が数値 (S、P、B) フィールドだけである場合は、結果のデータ・タイプはゾーン 10 進数 (S) です。</li>
+<li class="li cds--list__item">連結に UTF-8 フィールドが含まれている場合、結果は UTF-8 フィールドになります。</li>
+<li class="li cds--list__item">連結に UCS-2 または UTF-16 フィールドが含まれている場合は、
+リストに 1 つでも UTF-16 があれば結果は UTF-16 になり、そうでなければ、UCS-2 になります。</li>
+<li class="li cds--list__item">連結に 2 進文字フィールドが含まれている場合、結果は 2 進文字になります。</li>
+</ul>
+</div>
+<p class="p">数字フィールドを連結する場合には、連結される右端のフィールドの符号が連結
+フィールドの符号として使用されます。その他のフィールドの符号は無視されますが、連結フィールド内にそのまま残っています。
+したがって、連結の最後にあるフィールド以外のフィールドに負の値が入る可能性がある場合には、
+適切な処置 (連結フィールドをパック 10 進数に変換するなど) を行うことにより、
+最後のフィールド以外のフィールドの符号を削除しなければなりません。</p>
+<p class="p">連結フィールドの最大長は、連結フィールドのデータ・タイプおよび連結対象フィールドの長さによって異なります。
+連結フィールドがゾーン 10 進数 (S) である場合には、
+その合計長は 63 バイト以下でなければなりません。このフィールドが文字 (A) または 16 進数 (H) の場合、合計長は 32 766 バイト以下でなければなりません。連結フィールドが可変長フィールドの場合、合計長は 32 740 (ヌル値も使用可能なフィールドの場合は 32 739) 以下でなければなりません。</p>
+<p class="p">連結フィールドに浮動小数点数、日付、時刻、または時刻スタンプ・フィールド
+を含めることはできません。</p>
+<p class="p">結合論理ファイルの場合には、連結するフィールドはすべて同じ物理ファイル
+からのフィールドでなければなりません。CONCAT キーワードで最初に指定するフィールドにより、どの物理ファイルを
+使用するかが識別されます。そのため、最初のフィールドは、結合論理ファイル
+の基礎となる物理ファイルの中で固有になっていなければならないか、またはどの
+物理ファイルを使用するか指定するために CONCAT キーワードに続いて JREF キーワードも
+指定しなければなりません。</p>
+</div>
+<div class="section"><h2 class="title sectiontitle">例</h2><p class="p">以下に CONCAT キーワードの指定方法の例を示します。</p>
+</div>
+<div class="example"><h2 class="title sectiontitle">例 1</h2> <p class="p">以下の例では、MTH、DAY、および YEAR は物理ファイル内の
+フィールドであり、論理ファイル内で DATE という 1 つのフィールドに連結されます。</p>
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code>|...+....1....+....2....+....3....+....4....+....5....+....6....+....7....+....8
+00010A          R RECORD1                   PFILE(PF1)
+00020A            DATE                      CONCAT(MTH DAY YEAR)
+     A</code></pre></div><div class="docs--copy-btn"></div></div>
+</div>
+<div class="example"><h2 class="title sectiontitle">例 2</h2><p class="p">次の例では、プログラムで DATE が 01 03 81 から 02 05 81 に
+変更されても、物理レコードに置かれる値は変わりません。これは、最後に指定されたフィールドが、MTH (値 01)、DAY (値 03)、および YEAR (値 81) で
+あるためです。ただし、MTH、DAY、および YEAR が新しい値に変更された場合には、物理レコード内の DATE の値も変更されます。</p>
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code>|...+....1....+....2....+....3....+....4....+....5....+....6....+....7....+....8
+00010A          R RECORD2                   PFILE(PF1)
+00020A            DATE                      CONCAT(MTH DAY YEAR)
+00030A            MTH
+00040A            DAY
+00050A            YEAR
+     A</code></pre></div><div class="docs--copy-btn"></div></div>
+</div>
+<div class="example"><h2 class="title sectiontitle">例 3</h2><p class="p">次の例では、物理ファイルのフィールドが論理ファイル内で
+複数のフィールドに連結されます。</p>
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code>|...+....1....+....2....+....3....+....4....+....5....+....6....+....7....+....8
+00010A          R RECORD3                   PFILE(PF1)
+00020A            DATE                      CONCAT(MTH DAY YEAR)
+00030A            CMPDAT                    CONCAT(DAY MTH YEAR)
+     A</code></pre></div><div class="docs--copy-btn"></div></div>
+</div>
+<div class="example"><h2 class="title sectiontitle">例 4</h2> <div class="p">この例で、PF1 からのフィールドが次のとおりであったとします。<ul class="ul cds--list--unordered"><li class="li cds--list__item">FIXED1 は固定長フィールド。</li>
+<li class="li cds--list__item">FIXED2 は固定長フィールド。</li>
+<li class="li cds--list__item">VARLEN1 は可変長フィールド。</li>
+</ul>
+</div>
+<div class="p">この場合、結果的に各フィールドは次のようになります。<ul class="ul cds--list--unordered"><li class="li cds--list__item">FIELD1 は可変長フィールド。</li>
+<li class="li cds--list__item">FIELD2 は固定長フィールド。</li>
+<li class="li cds--list__item">FIELD3 は可変長フィールド。</li>
+</ul>
+</div>
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code>|...+....1....+....2....+....3....+....4....+....5....+....6....+....7....+....8
+00010A          R RECORD4                   PFILE(PF1)
+00020A            FIELD1                    CONCAT(FIXED1 VARLEN1)
+00030A            FIELD2                    CONCAT(FIXED1 FIXED2)
+00040A            FIELD3                    CONCAT(FIXED1 FIXED2)
+00050A                                      VARLEN
+     A</code></pre></div><div class="docs--copy-btn"></div></div>
+</div>
+</div>
+<div class="related-links ibm-padding-top-1 ibm-padding-bottom-2 bx--row bottom-section-parent" aria-label="bottom related links">
+<div class="familylinks ibm-margin-bottom-1">
+<div class="parentlink"><strong>親トピック:</strong> <div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a class="link bottom-section-link" href="/docs/ja/ssw_ibm_i_74/rzakb/rzakbmstlfkeyw.htm" title="キーワード項目は、45 から 80 桁目 (機能欄) に記入します。">物理ファイルおよび論理ファイルのキーワード項目 (45 から 80 桁目)</a></div></div>
+</div>
+<div class="relinfo relconcepts ibm-margin-bottom-1"><strong>関連概念</strong>:<br>
+<div><div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a class="link bottom-section-link" href="/docs/ja/ssw_ibm_i_74/rzakb/fieldname.htm" title="17 桁目をブランクのままにした場合には、19 から 28 桁目に指定する名前はフィールド名になります。">フィールド名</a></div></div>
+<div><div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a class="link bottom-section-link" href="/docs/ja/ssw_ibm_i_74/rzakb/lkeynm.htm" title="17 桁目に K を指定した場合には、19 から 28 桁目に指定する名前はキー・フィールド名に なります。">キー・フィールド名</a></div></div>
+</div>
+<div class="relinfo relref ibm-margin-bottom-1"><strong>関連資料</strong>:<br>
+<div><div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a class="link bottom-section-link" href="/docs/ja/ssw_ibm_i_74/rzakb/dbcconcat.htm" title="これはフィールド・レベルのキーワードで、物理ファイルのレコード様式の複数のフィールドを組み合わせて、定義中の論理ファイルのレコード様式内で 1 つのフィールドとして用いる場合に使用します。">CONCAT (連結) キーワード</a></div></div>
+</div>
+</div>
+

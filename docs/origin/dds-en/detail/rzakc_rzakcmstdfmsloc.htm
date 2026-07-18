@@ -1,0 +1,112 @@
+<main role="main"><article role="article" aria-labelledby="rzakcmstdfmsloc__title__1">
+<h1 class="topictitle1" id="rzakcmstdfmsloc__title__1">MSGLOC (Message Location) keyword for display files</h1><div id="lastModifiedDate"><span>Last Updated</span>: 2026-07-13</div>
+
+
+
+<div class="body refbody"><p class="shortdesc"><span class="ph">You use this file-level keyword
+to move the message line to the specified line number.</span></p>
+
+<div class="section"><div class="p">The format of the keyword is:  <div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>MSGLOC(line-number)</code></pre></div><div class="docs--copy-btn"></div></div></div>
+<p>The
+parameter value is required and must be in the range 1 through 28. Any of
+these numbers are always valid, regardless of the display sizes specified
+on the DSPSIZ keyword. A diagnostic will be issued when the file is opened
+if a message location is in the 26 to 28 range for a 24 x 80 display size.</p>
+<div class="p">If
+MSGLOC is not specified, the message line is the last line of the display.
+The message line is the display location for the following messages:  <ul class="cds--list--unordered">
+<li class="cds--list__item">Validity check errors</li>
+
+<li class="cds--list__item">Invalid function key messages</li>
+
+<li class="cds--list__item">Messages defined as parameter values for the ERRMSG and SFLMSG keywords</li>
+
+<li class="cds--list__item">Messages identified by the ERRMSGID and SFLMSGID keywords (the entire
+display is used for message help)</li>
+
+<li class="cds--list__item">Message fields</li>
+
+<li class="cds--list__item">Operator error codes and their associated messages</li>
+
+</ul>
+</div>
+<p>Display size condition names must be specified if the message
+line for the secondary display size is different from the default message
+line.</p>
+<div class="p">If you do not specify the MSGLOC keyword, the following default
+values are to be established:  <dl>
+<dt class="dlterm">24 x 80 display size:</dt>
+
+<dd class="dlentry">line 25</dd>
+
+
+<dt class="dlterm">27 x 132 display size:</dt>
+
+<dd class="dlentry">line 28</dd>
+
+</dl>
+</div>
+<div class="p">The default of line 25 for the 24 x 80
+display size gives the following results:  <ul class="cds--list--unordered">
+<li class="cds--list__item">If the display is sent to a 5250 device or a 5251 model 12, line 24 is
+used as the message line.</li>
+
+<li class="cds--list__item">If the display is sent to a 3180-2 device or a 3197 model D1, D2, W1,
+or W2 attached to a local 6040 or 6041 controller, or remotely attached to
+a 5294 or 5394 controller, line 25 is used as the message line.</li>
+
+</ul>
+</div>
+<div class="p">If the ERRSFL keyword is specified in the file, you cannot specify
+a message location value of 25 for the 24 x 80 display size or 28 for the
+27 x 132 display size. When the ERRSFL keyword is in the file, but MSGLOC
+is not specified, the following default values are to be established:  <dl>
+
+<dt class="dlterm">24 x 80 display size:</dt>
+
+<dd class="dlentry">line 24</dd>
+
+
+<dt class="dlterm">27 x 132 display size:</dt>
+
+<dd class="dlentry">line 27</dd>
+
+</dl>
+</div>
+<p>The MSGLOC keyword specification is in effect continuously
+from file opening to file closing. It can be temporarily overridden if the
+file you are defining is suspended while another file is opened to the same
+workstation device. The message location in effect for the other file is used
+until the file that you are defining is restored.</p>
+<p>Any data on the message
+line before the message appears is saved and restored after the Reset key
+is pressed.</p>
+<p>Option indicators are not valid for this keyword.</p>
+</div>
+
+<section class="section" role="region" aria-labelledby="rzakcmstdfmsloc__title__2"><h2 class="sectiontitle" id="rzakcmstdfmsloc__title__2">Examples</h2><p>The following examples show how to specify
+the MSGLOC keyword.</p>
+</section>
+
+<div class="example"><h2 class="sectiontitle" id="rzakcmstdfmsloc__title__3">Example 1</h2><div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>|...+....1....+....2....+....3....+....4....+....5....+....6....+....7....+....8
+     A                                      MSGLOC(1)
+     A</code></pre></div><div class="docs--copy-btn"></div></div><p>In this example, the message line is moved to line 1
+for the primary display size. (Without the DSPSIZ keyword, the primary display
+size is the 24 x 80 display.)</p>
+</div>
+
+<div class="example"><h2 class="sectiontitle" id="rzakcmstdfmsloc__title__4">Example 2</h2><div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>|...+....1....+....2....+....3....+....4....+....5....+....6....+....7....+....8
+     A                                      DSPSIZ(*DS3 *DS4)
+     A                                      MSGLOC(1)
+     A  *DS4                                MSGLOC(1)
+     A</code></pre></div><div class="docs--copy-btn"></div></div><p>The message line is moved to line 1 for both the primary
+display size 1 and the secondary display size 2.</p>
+</div>
+
+</div>
+
+<aside role="complementary" aria-labelledby="rzakcmstdfmsloc__title__1"><nav role="navigation" aria-label="bottom related links" class="ibm-padding-top-1 ibm-padding-bottom-2 bx--row bottom-section-parent">
+<div class="familylinks ibm-margin-bottom-1">
+<div class="parentlink"><strong>Parent topic:</strong> <div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a data-hd-product="ssw_ibm_i_74" href="/docs/en/ssw_ibm_i_74/rzakc/rzakcmstkeyent.htm" title="You type the keyword entries that define display files in positions 45 through 80 (functions)." class="bottom-section-link">DDS keyword entries for display files (positions 45 through 80)</a></div></div>
+</div>
+</nav></aside></article></main>

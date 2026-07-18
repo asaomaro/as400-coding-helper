@@ -1,0 +1,67 @@
+<h1 class="title topictitle1">表示装置ファイルの SFLPAG (サブファイル・ページ) キーワード</h1><div id="lastModifiedDate"><span>Last Updated</span>: 2021-04-13</div>
+<div class="body refbody"><p class="shortdesc"><span class="ph">これはレコード・レベル・キーワードで、同時に表示するサブファイル・レコードの数を指定するために、サブファイル制御レコード様式で使用します。</span></p>
+<div class="section"><p class="p">例外事項については、『<a class="xref" href="#rzakcmstdfsfpag__sfldsel">フィールド選択</a>』を参照してください。</p>
+<div class="p">キーワードの形式は次のとおりです。<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code>SFLPAG(number-of-records-to-be-displayed)</code></pre></div><div class="docs--copy-btn"></div></div>
+</div>
+<p class="p">SFLPAG パラメーター値および各サブファイル・レコードに必要な行数により、1 ページのレコードを表示するために
+必要な実際の表示行の数が決まります。
+サブファイル内のレコードすべてを同時に表示する必要はなく、また、1 ページ分のサブファイル・レコードを
+表示するために画面上のすべての行が必要となるわけでもありません。</p>
+<p class="p">このキーワードは、サブファイル制御レコード様式では必須です。</p>
+</div>
+<div class="section"><h2 class="title sectiontitle">サブファイル・ページがサブファイル・サイズに等しい場合</h2><p class="p">SFLPAG と SFLSIZ のパラメーターに対して同じ値を指定した場合には、サブファイルに入るレコードの最大数は、
+画面に同時に表示できるサブファイル・レコードの最大数に等しくなります。
+この場合には、前ページ・キーまたは次ページ・キーを押しても、<span class="keyword">IBM® i</span> プログラムによりサブファイルが自動的にページングされることはありません。
+ROLLUP キーワードおよび ROLLDOWN キーワードが指定されている場合には、どちらかのページ・キーを押すと、
+ページングは行われず、制御権が <span class="keyword">IBM i</span> オペレーティング・システムからユーザーのプログラムに戻ります。ROLLUP および ROLLDOWN の
+指定がない場合には、キーがサポートされていないことを示すメッセージが、ワークステーション・ユーザーに送られます。</p>
+<div class="p">サブファイル・サイズがサブファイル・ページに等しい場合には、以下に示すキーワードは無視されます。<p class="lines">SFLDROP<br>
+SFLFOLD<br>
+SFLROLVAL</p>
+</div>
+<p class="p">複数の画面サイズを使用している場合 (DSPSIZ キーワードで指定されている場合) には、上記のキーワードが無視されるのは、サブファイル・サイズがサブファイル・ページと同じになる画面サイズを使用する場合だけです。</p>
+</div>
+<div class="section" id="rzakcmstdfsfpag__sfldsel"><h2 class="title sectiontitle">フィールド選択</h2><p class="p">サブファイル・ページがサブファイル・サイズに等しい場合には、サブファイル・レコード様式内のフィールドについてオプション標識を指定することができます。これは、<dfn class="term">フィールド選択</dfn> と呼ばれます。
+サブファイル・レコードでフィールド選択を使用する場合には、SFLPAG (値) は、このサブファイルのレコードを表示するために使用できる表示行数を示します。 (フィールド選択を使用しない場合には、SFLPAG (値) は、一時点で表示できるサブファイル・レコードの数を示します。)
+1 つのサブファイル・レコードが複数の表示行を占める場合には、フィールド選択を指定することを考慮しなければなりません。
+SFLPAG に指定する値は、サブファイルが占める表示行数より大きいか、またはそれに等しい値でなければなりません。</p>
+<div class="p">サブファイル・レコード様式にフィールド選択の指定が含まれている場合には、次のキーワードは、そのサブファイル制御レコード様式では無効です。  <p class="lines">SFLDROP<br>
+SFLFOLD<br>
+SFLINZ<br>
+SFLLIN<br>
+SFLRCDNBR<br>
+SFLRNA (SFLINZ が無効なため)<br>
+SFLROLVAL</p>
+</div>
+</div>
+<div class="section"><h2 class="title sectiontitle">サブファイル・ページがサブファイル・サイズに等しくない場合</h2><p class="p">SFLPAG および SFLSIZ に異なるパラメーター値を指定した場合には、<span class="keyword">IBM i</span> オペレーティング・システムは前ページ・キーおよび次ページ・キーを認識し、SFLROLVAL キーワードが指定されているフィールドの値に応じて、サブファイルのページ送りを自動的に行います。
+SFLROLVAL キーワードの指定がない場合には、<span class="keyword">IBM i</span> プログラムは、SFLDROP を使用するサブファイルの場合を除き、SFLPAG キーワードに指定されたパラメーター値に従って、サブファイルをページ送りします。
+SFLDROP を使用するサブファイルで、レコードが切り捨て形式で表示される場合には、SFLPAG の指定値よりも多くのレコードが表示されます。
+切り捨て形式のレコードを表示する場合は、切り捨て形式で表示するレコードの数だけ、<span class="keyword">IBM i</span> オペレーティング・システムにより画面がページ送りされます。</p>
+<p class="p">オプション標識は、このキーワードでは無効です。
+画面サイズ条件名は指定することができます。
+同時に表示できるレコードの数が、画面サイズに応じて変わるようにしたい場合には、画面サイズ条件名は必須です。</p>
+</div>
+<div class="example"><h2 class="title sectiontitle">例</h2><p class="p">次の例は、SFLPAG キーワードの指定方法を示しています。</p>
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code>|...+....1....+....2....+....3....+....4....+....5....+....6....+....7....+....8
+00010A          R SFLR                      SFL
+     A*
+     A*           (at least one displayable field)
+     A*
+00040A          R SFLCTLR                   SFLCTL(SFLR)
+00050A                                      SFLPAG(17)
+00060A                                      SFLSIZ(17)
+00070A                                      SFLDSP SFLDSPCTL
+     A</code></pre></div><div class="docs--copy-btn"></div></div>
+<p class="p">SFLPAG キーワードに指定された値が SFLSIZ(17) に指定された値と同じであるため、サブファイル・ページはサブファイル・サイズと同じです。</p>
+</div>
+</div>
+<div class="related-links ibm-padding-top-1 ibm-padding-bottom-2 bx--row bottom-section-parent" aria-label="bottom related links">
+<div class="familylinks ibm-margin-bottom-1">
+<div class="parentlink"><strong>親トピック:</strong> <div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a class="link bottom-section-link" href="/docs/ja/ssw_ibm_i_74/rzakc/rzakcmstkeyent.htm" title="表示装置ファイルを定義するキーワード項目は、45 - 80 桁目 (機能欄) に記入します。">表示装置ファイルの DDS キーワード項目 (45 - 80 桁目)</a></div></div>
+</div>
+<div class="relinfo relref ibm-margin-bottom-1"><strong>関連資料</strong>:<br>
+<div><div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a class="link bottom-section-link" href="/docs/ja/ssw_ibm_i_74/rzakc/rzakcmstdfsfl.htm" title="これはレコード・レベル・キーワードで、このレコード様式がサブファイル制御レコード様式であることを指定するために使用します。">表示装置ファイルの SFL (サブファイル) キーワード</a></div></div>
+</div>
+</div>
+

@@ -1,0 +1,117 @@
+<h1 class="title topictitle1">表示装置ファイルの HLPARA (ヘルプ域) キーワード</h1><div id="lastModifiedDate"><span>Last Updated</span>: 2021-04-13</div>
+<div class="body refbody"><p class="shortdesc"><span class="ph">これはヘルプ仕様レベル・キーワードで、表示画面上の長方形の区域を定義するために使用します。</span></p>
+<div class="section"><p class="p">Help キーを押したときにカーソルがこの区域にあれば、そのヘルプ (H) 仕様について (HLPDOC キーワード、HLPPNLGRP キーワード、または HLPRCD キーワードのいずれかで) 定義したオンライン・ヘルプ情報が表示されます。</p>
+<div class="p">キーワードの形式は次のとおりです。<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code>HLPARA(top-line left-position bottom-line right-position)
+または
+HLPARA(*RCD)
+または
+HLPARA(*NONE)
+または
+HLPARA(*FLD field-name [choice-number])
+または
+HLPARA(*CNST help-identifier)</code></pre></div><div class="docs--copy-btn"></div></div>
+</div>
+<p class="p">行および桁の値をパラメーターとして指定する際には、次の規則に従ってください。</p>
+<ul class="ul cds--list--unordered"><li class="li cds--list__item">行および桁の値は、画面サイズの範囲に入っていなければなりません。</li>
+<li class="li cds--list__item">2 次画面サイズについて HLPARA を指定していない場合には、1 次画面サイズの HLPARA が 2 次画面サイズについても有効であれば、それが適用されます。1 次画面サイズの HLPARA が 2 次画面サイズには無効な場合には、HLPARA(*NONE) が適用されます。</li>
+<li class="li cds--list__item">上端行の値は下端行の値より大きくなってはなりません。また、左端桁の値は右端桁の値より大きくなってはなりません。</li>
+<li class="li cds--list__item">レコードに SLNO(n) キーワードを指定した場合には、上端行および下端行の値は調整され、作成時にエラーの診断が行われます。
+レコードに SLNO(*VAR) キーワードを指定した場合には、処理時に上端行および下端行の調整が行われます。</li>
+</ul>
+<p class="p">特殊値 *RCD は、ヘルプ域が H 仕様の入っているレコード区域であることを示します。
+この区域には、レコードが占めるすべての行のすべての表示桁が含まれます。</p>
+<p class="p">HLPARA(*RCD) は、サブファイル制御 (SFLCTL) レコード様式またはユーザー定義 (USRDFN) レコード様式の場合には無効です。</p>
+<p class="p">H 仕様で HLPARA(*RCD) を指定した場合には、H 仕様の入っているレコード様式に、1 次画面サイズにおける表示可能フィールドが少なくとも 1 つは含まれていなければなりません。
+潜在フィールド (38 桁目が H)、メッセージ・フィールド (38 桁目が M)、プログラム - システム間フィールド (38 桁目が P)、および SFLPGMQ キーワードまたは SFLMSGKEY キーワードを指定したフィールドは、表示されません。</p>
+<p class="p">特殊値 *NONE はこの H 仕様に定義されているヘルプ情報にはヘルプ域が関連していないことを示します。
+ヘルプ情報が UIM (HLPPNLGRP キーワード) を使用して定義されている場合には、Help キーが押されたときに、それは項目特定ヘルプとしては表示されず、全般ヘルプとして表示される可能性があります。
+ヘルプ情報が DDS (HLPRCD キーワード) を使用して定義されている場合には、Help キーが押されたときに、それは 1 次ヘルプとしては表示されず、別のヘルプ画面で前ページ・キーまたは次ページ・キーが押されたときに 2 次ヘルプとして表示される可能性があります。
+ヘルプ情報が文書 (HLPDOC) で定義されている場合には、Help キーが押されてもこの情報は表示されないので、*NONE 値は効果がありません。</p>
+<p class="p">特殊値 *FLD は、ヘルプ域がフィールドの区域であることを示します。
+フィールドが 1 つの行だけを占める場合には、ヘルプ域は行の最初と最後の文字および間のすべての文字から構成されます。</p>
+<p class="p">フィールドがある行から別の行にまたがっている場合には、ヘルプ域はフィールドのすべての行の桁全体から構成されます。
+例えば、フィールドが 3 行目の 4 桁目から始まって、5 行目の 10 桁目で終わっている場合、ヘルプ域は 3 行目の 1 桁目から始まり、5 行目の 80 桁目で終わります。</p>
+<p class="p">フィールドが選択項目または継続入力フィールドである場合には、ヘルプ域は、選択項目または継続入力フィールドによって占められている長方形域から構成されます。</p>
+<p class="p">field-name パラメーターは、ヘルプ域が定義されるフィールドの名前を指定します。
+そのフィールドは、H 仕様が入っているレコード内に存在しなければなりません。</p>
+<p class="p">choice-number パラメーターを指定する場合には、ヘルプ域は、指定するフィールド内の選択項目の区域です。
+選択項目番号を指定するときには、フィールド名はメニュー・バーまたは選択フィールドの名前でなければならず、指定する選択項目番号はそのフィールドについての MNUBARCHC または CHOICE キーワードにも指定するものでなければなりません。選択項目についての有効な値は 1 以上 99 以下の正の整数です。</p>
+<p class="p">*CNST 特殊値は、ヘルプ域が固定情報フィールドの区域であることを示します。
+この区域には、フィールドの開始属性バイトおよび終了属性バイトが入っています。</p>
+<p class="p">help-id パラメーターは、このヘルプ域が定義される固定情報フィールドを識別する番号です。その固定情報フィールドは、H 仕様が入っているレコード内に存在しなければならず、同じヘルプ識別番号で指定された HLPID キーワードを持っていなければなりません。</p>
+<p class="p">1 つの H 仕様には少なくとも 1 つは HLPARA キーワードを指定しなければなりません。
+1 つの H 仕様について複数の HLPARA キーワードを指定する場合には、画面サイズの条件付けを行うことが必要です。</p>
+<div class="p">1 つのレコードに複数の H 仕様を指定した場合には、ヘルプ域がオーバーラップすることがあります。
+複数の H 仕様を指定した場合には、下記の 2 つの特性を両方とも備えている H 仕様のうちの最初のものが使用されます。<ul class="ul cds--list--unordered"><li class="li cds--list__item">HLPARA キーワードで指定されたヘルプ域に現在のカーソル位置が含まれている。</li>
+<li class="li cds--list__item">アプリケーション・レコードが表示画面に書き込まれた時点で、HLPRCD キーワード、HLPPNLGRP キーワード、または HLPDOC キーワードのオプション標識が効力を持っていた。</li>
+</ul>
+</div>
+<div class="p">H 仕様には次の規則が適用されます。<ul class="ul cds--list--unordered"><li class="li cds--list__item">17 桁目に H を指定すると、そこから H 仕様が始まることを示します。
+H 仕様の DDS 内の位置は、レコード・レベル・キーワードの後で、該当のレコードの最初のフィールドの前でなければなりません。</li>
+<li class="li cds--list__item">各 H 仕様には、HLPRCD キーワード、HLPPNLGRP キーワード、または HLPDOC キーワードが必ず 1 つだけ含まれていなければならず、必要に応じて HLPBDY キーワードまたは HLPEXCLD キーワードを 1 つだけ指定することができ、また、少なくとも 1 つは HLPARA キーワードが指定されていなければなりません。</li>
+<li class="li cds--list__item">H 仕様の終わりは、17 桁目に別の H を指定するか、またはこのレコードの最初のフィールドを指定することによって示します。</li>
+<li class="li cds--list__item">サブファイル (SFL キーワード) レコード様式では、H 仕様を用いることはできません。
+また、メッセージ・サブファイル (SFLMSGRCD キーワード) と関連するサブファイル制御様式でも、H 仕様を用いることはできません。</li>
+</ul>
+</div>
+<p class="p">オプション標識は、このキーワードでは無効です。</p>
+</div>
+<div class="example"><h2 class="title sectiontitle">例 1</h2><p class="p">次の例は、HLPARA キーワードの指定方法を示しています。</p>
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code>|...+....1....+....2....+....3....+....4....+....5....+....6....+....7....+....8
+     A                                      HELP
+     A                                      HLPRCD(DFTHELP)
+     A          R RECORD1
+     A          H                           HLPARA(1 5 3 15)
+     A                                      HLPDOC(FLDHELP DOC1 FOLDER1)
+     A
+     A          H                           HLPARA(*RCD)
+     A                                      HLPRCD(HELPRCD1)
+     A
+     A          H                           HLPARA(*NONE)
+     A                                      HLPRCD(HELPRCD2)
+     A            FIELD1        10A     2  5
+     A            FIELD2        40A    10 10
+     A</code></pre></div><div class="docs--copy-btn"></div></div>
+<p class="p">この例では、最初の H 仕様の HLPARA キーワードは、1 行目の 5 桁目 - 3 行目の 15 桁目までの区域がオンライン・ヘルプ情報文書 DOC1 と関連付けられることを示しています。
+Help キーを押した時点で、カーソルがこの区域にあれば、文書 DOC1 がラベル FLDHELP から表示されます。</p>
+<p class="p">2 番目の H 仕様の HLPARA キーワードは、RECORD1 によって示されている区域 (2 行目 - 10 行目) がオンライン・ヘルプ情報レコード HELPRCD1 と関連付けられることを示しています。
+カーソルが 2 行目 - 10 行目のどこか (最初の H 仕様によって定義された区域以外) に置かれているときに Help キーが押されると、HELPRCD1 が表示されます。</p>
+<p class="p">3 番目の H 仕様の HLPARA キーワードは、オンライン・ヘルプ情報 HELPRCD2 に区域が関連付けられないことを示しています。
+HELPRCD2 は、オンライン・ヘルプ情報画面で前ページ・キーまたは次ページ・キーを押すことによってのみ表示されます。</p>
+</div>
+<div class="example"><h2 class="title sectiontitle">例 2</h2><div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code>|...+....1....+....2....+....3....+....4....+....5....+....6....+....7....+....8
+     A                                      HELP HLPRCD(DFTHELP)
+     A          R RECORD
+     A          H                           HLPARA(*FLD F1 1)
+     A                                      HLPRCD(UNDOHLP HLPLIB/HLPFILE)
+     A          H                           HLPARA(*FLD F1 2)
+     A                                      HLPRCD(MARKHLP HLPLIB/HLPFILE)
+     A          H                           HLPARA(*FLD F1 3)
+     A                                      HLPRCD(COPYHLP HLPLIB/HLPFILE)
+     A          H                           HLPARA(*FLD F2)
+     A                                      HLPRCD(F2HLP HLPLIB/HLPFILE)
+     A          H                           HLPARA(*CNST 1)
+     A                                      HLPRCD(TITLEHLP HLPLIB/HLPFILE)
+     A                                  1 37'Title' HLPID(1)
+     A            F1             2Y 0B 10  2SNGCHCFLD
+     A                                      CHOICE(1 'Choice 1')
+     A  01                                  CHOICE(2 'Choice 2')
+     A                                      CHOICE(3 'Choice 3')
+     A            F2            10A  B 10 30
+     A</code></pre></div><div class="docs--copy-btn"></div></div>
+<p class="p">最初の 3 つの H 仕様の HLPARA キーワードは、それぞれ選択項目 1、選択項目 2、選択項目 3 によって占められている区域がオンライン・ヘルプ情報と関連付けられることを示しています。
+選択項目 2 がオフにされて選択項目 3 が 1 行上に移動した場合、選択項目 3 についてのヘルプ域は、自動的にその選択項目と一緒に移動します。</p>
+<p class="p">4 番目の H 仕様の HLPARA キーワードは、F2 の区域がオンライン・ヘルプ情報と関連付けられることを示します。この区域は、10 行目の 29 桁目 - 40 桁目までです。</p>
+<p class="p">5 番目の H 仕様の HLPARA キーワードは、固定タイトルの区域がオンライン・ヘルプ情報と関連付けられることを示します。この区域は、1 行目の 36 桁目 - 42 桁目までです。</p>
+</div>
+</div>
+<div class="related-links ibm-padding-top-1 ibm-padding-bottom-2 bx--row bottom-section-parent" aria-label="bottom related links">
+<div class="familylinks ibm-margin-bottom-1">
+<div class="parentlink"><strong>親トピック:</strong> <div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a class="link bottom-section-link" href="/docs/ja/ssw_ibm_i_74/rzakc/rzakcmstkeyent.htm" title="表示装置ファイルを定義するキーワード項目は、45 - 80 桁目 (機能欄) に記入します。">表示装置ファイルの DDS キーワード項目 (45 - 80 桁目)</a></div></div>
+</div>
+<div class="relinfo relref ibm-margin-bottom-1"><strong>関連資料</strong>:<br>
+<div><div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a class="link bottom-section-link" href="/docs/ja/ssw_ibm_i_74/rzakc/rzakcmstdfhprtn.htm" title="これはファイル・レベルまたはレコード・レベル・キーワードで、Help キーを押した時点でユーザーのプログラムに制御権が戻るようにするために使用します。">表示装置ファイルの HLPRTN (ヘルプからの戻り) キーワード</a></div></div>
+<div><div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a class="link bottom-section-link" href="/docs/ja/ssw_ibm_i_74/rzakc/rzakcmstdfhelp.htm" title="これはファイル・レベルまたはレコード・レベル・キーワードで、Help キーを使用可能にするために使用します。">表示装置ファイルの HELP (ヘルプ) キーワード</a></div></div>
+</div>
+</div>
+

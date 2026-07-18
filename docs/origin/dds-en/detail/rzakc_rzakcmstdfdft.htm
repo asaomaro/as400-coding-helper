@@ -1,0 +1,106 @@
+<main role="main"><article role="article" aria-labelledby="rzakcmstdfdft__title__1">
+<h1 class="topictitle1" id="rzakcmstdfdft__title__1">DFT (Default) keyword for display files</h1><div id="lastModifiedDate"><span>Last Updated</span>: 2026-07-13</div>
+
+
+
+<div class="body refbody"><p class="shortdesc"><span class="ph">You use this field-level keyword
+to specify the constant value for constant fields (unnamed fields) and to
+specify a default value for named fields.</span></p>
+
+<div class="section"><p>The format of the keyword is:</p>
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>DFT('value') | 'value'</code></pre></div><div class="docs--copy-btn"></div></div><p>The
+maximum number of characters you can specify in the literal is set by the
+size of the display on which the field is to be displayed as follows:</p>
+<dl>
+
+<dt class="dthd"><strong>Size of display</strong></dt>
+<dd class="ddhd"><strong>Maximum characters</strong></dd>
+
+
+
+<dt class="dlterm">24 x 80</dt>
+
+<dd class="dlentry">1919</dd>
+
+
+<dt class="dlterm">27 x 132</dt>
+
+<dd class="dlentry">3563</dd>
+
+</dl>
+</div>
+
+<section class="section" role="region" aria-labelledby="rzakcmstdfdft__title__2"><h2 class="sectiontitle" id="rzakcmstdfdft__title__2">Constant fields</h2><p>The value of a constant field can
+be specified as a value enclosed by single quotation marks. (For other ways
+to specify a constant field, see the DATE, MSGCON, and TIME keywords.) You
+can omit the DFT keyword itself, as well as the parentheses, to simplify the
+DDS.  Whether you specify the DFT keyword explicitly or implicitly, the <span class="keyword">IBM i</span> operating system displays
+the specified value as a constant field on the display. See <a href="/docs/en/ssw_ibm_i_74/rzakc/pos1928.htm" title="You use these positions to specify record format names and field names.">Name for display files (positions 19 through 28)</a> for
+a description of constant fields.</p>
+</section>
+
+<section class="section" role="region" aria-labelledby="rzakcmstdfdft__title__3"><h2 class="sectiontitle" id="rzakcmstdfdft__title__3">Named fields</h2><p>For input-only fields, the specified
+value is displayed each time the field is displayed. The displayed value can
+then be changed by the workstation user and returned to your program.</p>
+<p>For
+output-only and input/output fields, you must also specify PUTOVR at the record
+level and OVRDTA at the field level with the DFT keyword. The specified value
+is displayed only on the first output operation. On subsequent output operations,
+the program value is displayed.</p>
+<p>The DFTVAL, EDTCDE, and EDTWRD keywords
+cannot be specified with the DFT keyword.</p>
+<p>The DFT keyword is not valid
+on floating point fields.</p>
+<p>Option indicators are not valid for this keyword,
+although option indicators can be used to condition the field (whether constant
+or named) on which it is specified.</p>
+</section>
+
+<div class="example"><h2 class="sectiontitle" id="rzakcmstdfdft__title__4">Example 1</h2><p>The following example shows how to specify
+the DFT keyword.</p>
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>|...+....1....+....2....+....3....+....4....+....5....+....6....+....7....+....8
+00030A            HOTTYP         1   I  7  9DFT('D')
+00040A                                      VALUES('D' 'S')
+00050A                                  8  9'ON'
+00060A        01                       12  1'HOTEL NAME: 'TERRACE INN'
+00070A                                      TEXT('Constant field is +
+00080A                                      conditioned, not the implicit +
+00090A                                      DFT keyword')
+00100A        02                       12  1'HOTEL NAME: 'RIVER VIEW INN'
+00110A                                      TEXT('Either 'TERRACE INN' or +
+00120A                                          'RIVER VIEW INN' could +
+00130A                                          appear in line 12, position 1')
+     A</code></pre></div><div class="docs--copy-btn"></div></div><p>The constant field <em>ON</em>, having no option indicators,
+is always displayed.</p>
+<p>If indicator 01 is on, the following
+information is displayed:</p>
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>HOTEL NAME:  'TERRACE INN'</code></pre></div><div class="docs--copy-btn"></div></div><p>If indicator 02 is on and indicator 01 is off, the following
+information is displayed:</p>
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>HOTEL NAME:  'RIVER VIEW INN'</code></pre></div><div class="docs--copy-btn"></div></div></div>
+
+<div class="example"><h2 class="sectiontitle" id="rzakcmstdfdft__title__5">Example 2</h2> <p>If you are specifying a constant field
+for more than one display size, and you are changing the location of the field
+but not the contents of the field for the different display sizes, then do
+not repeat the value. The following example shows how to do this.</p>
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>|...+....1....+....2....+....3....+....4....+....5....+....6....+....7....+....8
+00010A                                      DSPSIZ(*DS3 *DS4)
+     A                                      :
+     A                                      :
+00080A                                 22  2'Constant data'
+00090A                                 26  2
+     A</code></pre></div><div class="docs--copy-btn"></div></div><p>The constant field <em>Constant data</em> appears on line
+22, position 2, on the 24 x 80 display screen, and it appears on line 26,
+position 2, on the 27 x 132 display.</p>
+</div>
+
+</div>
+
+<aside role="complementary" aria-labelledby="rzakcmstdfdft__title__1"><nav role="navigation" aria-label="bottom related links" class="ibm-padding-top-1 ibm-padding-bottom-2 bx--row bottom-section-parent">
+<div class="familylinks ibm-margin-bottom-1">
+<div class="parentlink"><strong>Parent topic:</strong> <div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a data-hd-product="ssw_ibm_i_74" href="/docs/en/ssw_ibm_i_74/rzakc/rzakcmstkeyent.htm" title="You type the keyword entries that define display files in positions 45 through 80 (functions)." class="bottom-section-link">DDS keyword entries for display files (positions 45 through 80)</a></div></div>
+</div>
+
+<div class="linklist relinfo relref ibm-margin-bottom-1" lang="en-us"><h2 class="linkheading bottom-section-h2-title">Related reference</h2>
+<ul><li class="cds--list__item"><div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a data-hd-product="ssw_ibm_i_74" href="/docs/en/ssw_ibm_i_74/rzakc/rzakcmstdfputov.htm" title="You use this record-level keyword to enable the override of either display attributes or data contents (or both) of specific fields within a record that is displayed on a workstation device. By using the PUTOVR keyword, you can reduce the amount of data sent to the display device." class="bottom-section-link">PUTOVR (Put with Explicit Override) keyword for display files</a></div></li>
+</ul></div>
+</nav></aside></article></main>

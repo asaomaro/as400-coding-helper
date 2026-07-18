@@ -1,0 +1,43 @@
+<h1 class="title topictitle1">表示装置ファイルの CSRLOC (カーソル位置) キーワード</h1><div id="lastModifiedDate"><span>Last Updated</span>: 2021-04-13</div>
+<div class="body refbody"><p class="shortdesc">これはレコード・レベル・キーワードで、定義中のレコード様式に対する出力命令時のカーソル位置を指定するために使用します。ユーザーのプログラムは、カーソル位置を設定してから、出力命令を出します。</p>
+<div class="section"><p class="p">キーワードの形式は次のとおりです。</p>
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code>CSRLOC(field-name-1 field-name-2)</code></pre></div><div class="docs--copy-btn"></div></div>
+<p class="p">このキーワードには、それぞれカーソル位置の行番号 (field-name-1) と桁番号 (field-name-2) を指定する 2 つのフィールドの名前をパラメーター値として指定します。
+field-name-1 および field-name-2 は、3 バイトのゾーン 10 進数の潜在フィールドです。
+プログラムは、これらのフィールドを用いて、カーソル位置を <span class="keyword">IBM® i</span> オペレーティング・システムに指示します。</p>
+<p class="p">キーボードをロックしたままにする出力命令が出された場合には、カーソルは指定した位置に置かれません。キーボードのロックを解除する入力命令または出力命令がプログラムから送られるまで、カーソルは指定した位置に移動しません。
+プログラムで、カーソル位置を示すフィールドに、表示装置について有効な値の範囲外の値が設定されると、このキーワードは無視されます。</p>
+<p class="p">どのような出力命令の場合でも、CSRLOC キーワードは、DSPATR(PC) や SFLRCDNBR(CURSOR) など、ほかの有効なカーソル位置仕様を指定変更します。
+このキーワードは、有効な DSPATR(PC)、
+CSRLOC、または SFLRCDNBR(CURSOR) の指定がある別の出力命令がプログラムから出されるまで、
+あるいは、このキーワードが指定されたレコードが (OVERLAY キーワードにより) オーバーレイされるか、
+または (ERASE キーワードにより) 消去されるまで有効です。</p>
+<p class="p">入力命令では、カーソル位置は、入出力フィードバック域を調べるか RTNCSRLOC キーワードの適切なパラメーターを指定して決めることができます。入出力フィードバック域の詳細については、<a class="xref" href="http://publib.boulder.ibm.com/infocenter/iseries/v6r1m0/topic/rzakc/sc415715.pdf" target="_blank" title="(PDF ファイルを開く)">Application Display Programming</a> 資料を参照してください。</p>
+<p class="p">CSRLOC キーワードは、1 つのレコード様式について一度しか指定できません。</p>
+<p class="p">CSRLOC キーワードは、次に示すレコード様式に対しては無効です。</p>
+<ul class="ul cds--list--unordered"><li class="li cds--list__item">サブファイル・レコード様式 (SFL キーワードにより識別されるもの)</li>
+<li class="li cds--list__item">ユーザー定義のレコード様式 (USRDFN キーワードにより識別されるもの)</li>
+</ul>
+<p class="p">このキーワードについては、オプション標識を使用することができます。
+画面サイズ条件名は指定できません。</p>
+</div>
+<div class="example"><h2 class="title sectiontitle">例</h2><p class="p">次の例は、CSRLOC キーワードの指定方法を示しています。</p>
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code>|...+....1....+....2....+....3....+....4....+....5....+....6....+....7....+....8
+00010A          R RECORD1                   CSRLOC(LINNBR POSNBR)
+00020A            TITLE         40   B  1  2
+00030A            PAGE           5Y OB  1 60
+00040A            TEXT        1760   B  2  1
+00050A            LINNBR         3  OH
+00060A            POSNBR         3  OH
+     A</code></pre></div><div class="docs--copy-btn"></div></div>
+<p class="p">この例では、アプリケーション・プログラムは、RECORD1 に対する出力命令を出す前に LINNBR および POSNBR の内容を設定します。
+レコードが表示されるときには、<em class="ph i">Title</em>、<em class="ph i">Page</em>、および <em class="ph i">Text</em> の各フィールドが画面に表示されます。
+カーソルは、ワークステーション・ユーザーが変更を行うことができる、RECORD1 のフィールド内のある位置に置かれます。</p>
+</div>
+</div>
+<div class="related-links ibm-padding-top-1 ibm-padding-bottom-2 bx--row bottom-section-parent" aria-label="bottom related links">
+<div class="familylinks ibm-margin-bottom-1">
+<div class="parentlink"><strong>親トピック:</strong> <div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a class="link bottom-section-link" href="/docs/ja/ssw_ibm_i_74/rzakc/rzakcmstkeyent.htm" title="表示装置ファイルを定義するキーワード項目は、45 - 80 桁目 (機能欄) に記入します。">表示装置ファイルの DDS キーワード項目 (45 - 80 桁目)</a></div></div>
+</div>
+</div>
+

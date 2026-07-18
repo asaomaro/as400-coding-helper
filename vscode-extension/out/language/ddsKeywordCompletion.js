@@ -115,12 +115,22 @@ function registerDdsKeywordCompletion(context) {
                 const item = new vscode.CompletionItem(keyword.name, vscode.CompletionItemKind.Keyword);
                 item.detail = keyword.title;
                 item.range = range;
+                // パラメータを取るキーワードは括弧まで入れて中にカーソルを置く。
+                // 取らないものに括弧を付けると構文誤りになるため付けない。
+                if (keyword.hasParameters) {
+                    item.insertText = new vscode.SnippetString(`${keyword.name}($0)`);
+                }
+                const documentation = new vscode.MarkdownString();
+                if (keyword.syntax?.length) {
+                    documentation.appendCodeblock(keyword.syntax.join("\n"), "text");
+                }
+                if (keyword.level) {
+                    documentation.appendMarkdown(`\n\`${keyword.level.join(" / ")}\`\n\n`);
+                }
                 if (keyword.description) {
-                    const documentation = new vscode.MarkdownString();
-                    if (keyword.level) {
-                        documentation.appendMarkdown(`\`${keyword.level.join(" / ")}\`\n\n`);
-                    }
                     documentation.appendText(keyword.description);
+                }
+                if (documentation.value.length > 0) {
                     item.documentation = documentation;
                 }
                 return item;

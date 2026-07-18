@@ -1,0 +1,83 @@
+<main role="main"><article role="article" aria-labelledby="rzakdmstoutbin__title__1">
+<h1 class="topictitle1" id="rzakdmstoutbin__title__1">OUTBIN (Output Bin) keyword in printer files</h1><div id="lastModifiedDate"><span>Last Updated</span>: 2026-07-13</div>
+
+
+<div class="body refbody"><p class="shortdesc">You use this record-level keyword to
+specify the destination of the output on printers capable of multiple output
+bins.</p>
+
+<div class="section"><p> The format of the keyword is:</p>
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>OUTBIN(output-bin number | &amp;output-bin number)</code></pre></div><div class="docs--copy-btn"></div></div><p>The
+possible values are:</p>
+<dl>
+<dt class="dlterm">*DEVD</dt>
+
+<dd class="dlentry">The destination of the output is the device default output bin.</dd>
+
+
+<dt class="dlterm">output-bin</dt>
+
+<dd class="dlentry">Specify the output bin for the destination of the output. Valid values
+range from 1 through 65535.</dd>
+
+</dl>
+<p>You can specify the output bin number as a constant or a
+ program-to-system field. When you specify the output bin number as a program-to-system
+field, the field must exist in the same record format as the OUTBIN keyword.
+It must be defined as a length of 5 with 0 decimal positions, data type  S
+and usage P.</p>
+<p>If you do not specify the OUTBIN keyword, the value specified
+on the OUTBIN parameter on the CRTPRTF, CHGPRTF, or OVRPRTF command determines
+ the output bin value.</p>
+<p>Specify DEVTYPE(*AFPDS) on the CRTPRTF command
+when OUTBIN is specified in the file. If DEVTYPE is changed to anything other
+than *AFPDS, the keyword is ignored and a warning message is issued at print
+time.</p>
+<p>OUTBIN is ignored at run time if it is not specified
+on a page boundary. The printer is on a page boundary when no named or constant
+ fields are processed for a page. As soon as a named or constant field is
+processed, the printer is no longer on a page boundary. The printer is on
+a page boundary again when a SKIP, SPACE, ENDPAGE, or INVMMAP keyword is processed,
+which causes the printer to move to a new page.</p>
+<p>OUTBIN, SKIP, and SPACE
+keywords are processed in the following order:</p>
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>SKIPB
+SPACEB
+OUTBIN
+SPACEA
+SKIPA  </code></pre></div><div class="docs--copy-btn"></div></div><p>OUTBIN is in effect only for the record
+format specified. After records with the specified record format are processed,
+the output bin for the next record format (if the OUTBIN keyword is not specified)
+is the outbin specified at the file level (CRTPRTF, CHGPRTF, or OVRPRTF )
+command.</p>
+<p>Job and file separator pages will only be placed into the output
+bin specified on the printer file.</p>
+<p>Option indicators are valid for this
+keyword.</p>
+<div class="note border-2 cds--inline-notification--info ibmdocs-note cds--inline-notification cds--inline-notification--low-contrast margin-top-1 margin-bottom-1"><div class="cds--inline-notification__details"><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" class="cds--inline-notification__icon" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M16,2A14,14,0,1,0,30,16,14,14,0,0,0,16,2Zm0,5a1.5,1.5,0,1,1-1.5,1.5A1.5,1.5,0,0,1,16,7Zm4,17.12H12V21.88h2.88V15.12H13V12.88h4.13v9H20Z"></path></svg>
+        <div class="cds--inline-notification__text-wrapper">
+          <div class="cds--inline-notification__subtitle"><span class="notetitle ibm-bold ibm-textcolor-blue-50 background-blue cds--inline-notification__title ibm-padding-top-1 ibm-padding-bottom-1 padding-left-1 padding-right-1">Note:</span> Using this DDS keyword can cause the system to
+generate a spooled file that cannot be correctly printed when sent to MVS.
+The spooled file does not print and is held on the output queue by PSF or MVS.</div>
+        </div>
+      </div></div>
+</div>
+
+<section class="section" role="region" aria-labelledby="rzakdmstoutbin__title__2"><h2 class="sectiontitle" id="rzakdmstoutbin__title__2">Example</h2><p>The following example shows how to specify
+the OUTBIN keyword.</p>
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>|...+....1....+....2....+....3....+....4....+....5....+....6....+....7....+....8
+     A*
+     A          R REC1                      OUTBIN(2)
+     A            FLD1           5A    60 10
+     A*
+</code></pre></div><div class="docs--copy-btn"></div></div><p>When REC1 is printed, it is directed to output bin
+2.</p>
+</section>
+
+</div>
+
+<aside role="complementary" aria-labelledby="rzakdmstoutbin__title__1"><nav role="navigation" aria-label="bottom related links" class="ibm-padding-top-1 ibm-padding-bottom-2 bx--row bottom-section-parent">
+<div class="familylinks ibm-margin-bottom-1">
+<div class="parentlink"><strong>Parent topic:</strong> <div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a data-hd-product="ssw_ibm_i_74" href="/docs/en/ssw_ibm_i_74/rzakd/rzakdmstprkey.htm" title="These are valid keyword entries for defining printer files." class="bottom-section-link">Keyword entries for printer files (positions 45 through 80)</a></div></div>
+</div>
+</nav></aside></article></main>

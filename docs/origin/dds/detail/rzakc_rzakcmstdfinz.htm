@@ -1,0 +1,105 @@
+<h1 class="title topictitle1">表示装置ファイルの INZINP (入力初期設定) キーワード</h1><div id="lastModifiedDate"><span>Last Updated</span>: 2021-04-13</div>
+<div class="body conbody"><p class="shortdesc"><span class="ph">これはレコード・レベル・キーワードで、PUTOVR キーワードと ERASEINP (*ALL) キーワードが両方とも効力を持っている場合に、画面に初期設定済みのデータを必ずしも送らなくても、入出力共用フィールドが初期設定できるようにするために使用します。</span></p>
+<p class="p">このキーワードにはパラメーターはありません。</p>
+<p class="p">INZINP は、リモート・ワークステーションからのデータ入力を行うアプリケーションで特に役立ちます。
+このキーワードを使用することによって、システム装置とリモート・ワークステーションとの間の回線上の回線トラフィックを減らすことができます。</p>
+<p class="p">次に、このキーワードの使用法を示します。</p>
+<ol class="ol cds--list--ordered--temporary"><li class="li cds--list__item">出力命令では、OVRDTA キーワードまたは OVRATR キーワードが効力を持っている入出力共用フィールドが表示されます。
+システムは、入力保管域をフィールドのプログラム値に初期設定します。
+例えば、プログラムが NAME1 を Bob という名前にセットする場合には、入力保管域に Bob という名前が入ります。</li>
+<li class="li cds--list__item">入力命令では、ワークステーションからのデータが入力バッファーに入れられます。
+ワークステーション・ユーザーが入力可能フィールドに入力を行わず、しかもそのフィールドに対して DSPATR(MDT) キーワード
+が効力を持っていない場合には、フィールドはワークステーションからのデータを返しません。
+システムは、入力保管域からデータを検索し、プログラムが使用できるように、そのデータを入力バッファーに入れます。
+したがって、すべての入力可能フィールドは、
+ワークステーションまたは入力保管域のいずれかからのデータを入力バッファーに持っています。</li>
+<li class="li cds--list__item">別の出力命令により、次のことが起こる可能性があります。<ul class="ul cds--list--unordered cds--list--nested"><li class="li cds--list__item">INZINP キーワードおよび OVRDTA キーワードに効力がない場合には、プログラムがフィールドの値を変更しても、
+入力保管域は変更されません。
+例えば、プログラムがフィールド値を Tom という名前に変更したとしても、入力保管域には、
+ワークステーション・ユーザーが入力した値、または前のプログラム値である Bob という名前が入っています。</li>
+<li class="li cds--list__item">INZINP キーワードが効力を持っている場合には、入力保管域には現行のプログラム値が入れられます。
+フィールドに対して OVRDTA キーワードが効力を持っている場合には、現行のプログラム値が画面に送られます。<p class="p">出力命令で OVRDTA キーワードが効力を持っていない場合には、プログラムで、OVRDTA キーワードの指定のあるフィールドについての出力バッファーを消去して、入力保管域が画面上のフィールドに一致するようにする必要があります。(画面上のフィールドは、出力命令の後はすべてブランクになります。)</p>
+</li>
+</ul>
+</li>
+</ol>
+<div class="note note border-2 cds--inline-notification--info ibmdocs-note cds--inline-notification cds--inline-notification--low-contrast margin-top-1 margin-bottom-1"><div class="cds--inline-notification__details"><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" class="cds--inline-notification__icon" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M16,2A14,14,0,1,0,30,16,14,14,0,0,0,16,2Zm0,5a1.5,1.5,0,1,1-1.5,1.5A1.5,1.5,0,0,1,16,7Zm4,17.12H12V21.88h2.88V15.12H13V12.88h4.13v9H20Z"></path></svg>
+        <div class="cds--inline-notification__text-wrapper">
+          <div class="cds--inline-notification__subtitle"><span class="notetitle ibm-bold ibm-textcolor-blue-50 background-blue cds--inline-notification__title ibm-padding-top-1 ibm-padding-bottom-1 padding-left-1 padding-right-1">注:</span> 出力命令で ERASEINP(*ALL) キーワードが効力を持っている場合には、表示装置の (画面上の) 入力可能フィールドは消去されますが、入力保管域は消去されません。
+入力保管域の内容については、<br>
+<a class="xref" href="#rzakcmstdfinz__exoutin">表 1</a> および <a class="xref" href="#rzakcmstdfinz__exinout">表 2</a> を参照してください。
+DFT キーワードが指定されたフィールドは、そのフィールドが表示用に選択されない場合でも、DFT キーワードに指定された値に初期設定されます。
+この値は、アプリケーション・プログラムがそのフィールドを表示用に選択した上でデータ値を変更しない限り、保持されます。
+このキーワードを使用する場合には、レコード・レベルで PUTOVR、
+OVERLAY、および ERASEINP(*ALL) キーワードが指定されていなければなりません。</div>
+        </div>
+      </div></div>
+<p class="p">以下の表は、INZINP、OVRATR、または OVRDTA キーワードを指定した場合と指定しない場合の ERASEINP(*ALL) キーワードおよび PUTOVR キーワードの効果を示しています。</p>
+<div class="tableborder">
+<div class="tablenoborder"><div class="cds--data-table-container"><table id="parm_table0" summary="Parameters" cellpadding="4" cellspacing="0" class="table cds--data-table" rules="none" frame="hsides" border="1"><caption class="cds--data-table-header"><span class="tablecap cds--data-table-header__title">表 1. INZINP が指定された入出力共用フィールド</span></caption><thead class="thead alignleft"><tr class="row"><th scope="col" class="entry" width="33.33333333333333%" id="d43239e64"><div class="cds--table-header-label">OVRATR または OVRDTA
+キーワード</div></th>
+<th scope="col" class="entry" width="33.33333333333333%" id="d43239e66"><div class="cds--table-header-label">INZINP キーワード</div></th>
+<th scope="col" class="entry" width="33.33333333333333%" id="d43239e68"><div class="cds--table-header-label">入力保管域の内容</div></th>
+</tr>
+</thead>
+<tbody class="tbody"><tr class="row"><td class="entry valigntop alignleft" width="33.33333333333333%" headers="d43239e64 ">指定されていない</td>
+<td class="entry valigntop alignleft" width="33.33333333333333%" headers="d43239e66 ">適用されない</td>
+<td class="entry valigntop alignleft" width="33.33333333333333%" headers="d43239e68 ">前の内容</td>
+</tr>
+<tr class="row"><td class="entry valigntop alignleft" width="33.33333333333333%" headers="d43239e64 ">指定されているが効力を持たない</td>
+<td class="entry valigntop alignleft" width="33.33333333333333%" headers="d43239e66 ">指定されているが効力を持たない</td>
+<td class="entry valigntop alignleft" width="33.33333333333333%" headers="d43239e68 ">前の内容</td>
+</tr>
+<tr class="row"><td class="entry valigntop alignleft" width="33.33333333333333%" headers="d43239e64 ">指定されているが効力を持たない</td>
+<td class="entry valigntop alignleft" width="33.33333333333333%" headers="d43239e66 ">指定されており効力を持つ</td>
+<td class="entry valigntop alignleft" width="33.33333333333333%" headers="d43239e68 ">プログラム値 (画面には送られない)</td>
+</tr>
+<tr class="row"><td class="entry valigntop alignleft" width="33.33333333333333%" headers="d43239e64 ">OVRATR が指定されており
+効力を持つ</td>
+<td class="entry valigntop alignleft" width="33.33333333333333%" headers="d43239e66 ">適用されない</td>
+<td class="entry valigntop alignleft" width="33.33333333333333%" headers="d43239e68 ">プログラム値 (画面にも送られる)</td>
+</tr>
+<tr class="row"><td class="entry valigntop alignleft" width="33.33333333333333%" headers="d43239e64 ">OVRATR が指定されており効力を持つ、OVRDTA が指定されていないか
+または効力を持たない</td>
+<td class="entry valigntop alignleft" width="33.33333333333333%" headers="d43239e66 ">適用されない</td>
+<td class="entry valigntop alignleft" width="33.33333333333333%" headers="d43239e68 ">前の内容 (画面には送られない)</td>
+</tr>
+</tbody>
+</table></div></div>
+</div>
+<div class="tableborder">
+<div class="tablenoborder"><div class="cds--data-table-container"><table id="parm_table1" summary="Parameters" cellpadding="4" cellspacing="0" class="table cds--data-table" rules="none" frame="hsides" border="1"><caption class="cds--data-table-header"><span class="tablecap cds--data-table-header__title">表 2. INZINP が指定された入力専用フィールド</span></caption><thead class="thead alignleft"><tr class="row"><th scope="col" class="entry" width="33.33333333333333%" id="d43239e115"><div class="cds--table-header-label">OVRATR キーワード</div></th>
+<th scope="col" class="entry" width="33.33333333333333%" id="d43239e117"><div class="cds--table-header-label">INZINP キーワード</div></th>
+<th scope="col" class="entry" width="33.33333333333333%" id="d43239e119"><div class="cds--table-header-label">入力保管域の内容</div></th>
+</tr>
+</thead>
+<tbody class="tbody"><tr class="row"><td class="entry valigntop alignleft" width="33.33333333333333%" headers="d43239e115 ">指定されていない</td>
+<td class="entry valigntop alignleft" width="33.33333333333333%" headers="d43239e117 ">適用されない</td>
+<td class="entry valigntop alignleft" width="33.33333333333333%" headers="d43239e119 ">前の内容</td>
+</tr>
+<tr class="row"><td class="entry valigntop alignleft" width="33.33333333333333%" headers="d43239e115 ">指定されており効力を持つ</td>
+<td class="entry valigntop alignleft" width="33.33333333333333%" headers="d43239e117 ">適用されない</td>
+<td class="entry valigntop alignleft" width="33.33333333333333%" headers="d43239e119 ">前の内容</td>
+</tr>
+<tr class="row"><td class="entry valigntop alignleft" width="33.33333333333333%" headers="d43239e115 ">指定されているが効力を持たない</td>
+<td class="entry valigntop alignleft" width="33.33333333333333%" headers="d43239e117 ">適用されない</td>
+<td class="entry valigntop alignleft" width="33.33333333333333%" headers="d43239e119 "><p class="lines">文字フィールド:ブランク<br>
+数字フィールド:ゼロ</p>
+</td>
+</tr>
+</tbody>
+</table></div></div>
+</div>
+</div>
+<div class="related-links ibm-padding-top-1 ibm-padding-bottom-2 bx--row bottom-section-parent" aria-label="bottom related links">
+<ul class="ullinks cds--list--unordered">
+<li class="link ulchildlink cds--list__item"><span class="ulchildlinktext"><a href="/docs/ja/ssw_ibm_i_74/rzakc/rzakcmstdfinzeraseinp.htm">ERASEINP(*ALL) キーワード</a></span><br>
+<span class="ph">ERASEINP(*ALL) キーワードにより消去されたワークステーションのフィールド
+に一致させ、入力保管域をブランクおよびゼロに設定するには、このステップの指示に従います。</span></li>
+</ul>
+
+<div class="familylinks ibm-margin-bottom-1">
+<div class="parentlink"><strong>親トピック:</strong> <div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a class="link bottom-section-link" href="/docs/ja/ssw_ibm_i_74/rzakc/rzakcmstkeyent.htm" title="表示装置ファイルを定義するキーワード項目は、45 - 80 桁目 (機能欄) に記入します。">表示装置ファイルの DDS キーワード項目 (45 - 80 桁目)</a></div></div>
+</div>
+</div>
+
