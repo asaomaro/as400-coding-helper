@@ -1,0 +1,131 @@
+<div role="main">
+<!-- Java sync-link --><script language="Javascript" src="../rzahg/synch.js" type="text/javascript"></script>
+<h1 class="title topictitle1">RETURN (呼び出し元への戻し)</h1><div id="lastModifiedDate"><span>Last Updated</span>: 2021-04-13</div>
+<div class="body"><div class="tablenoborder"><div class="cds--data-table-container"><table cellpadding="4" cellspacing="0" summary="" role="presentation" class="table presentation cds--data-table" width="100%" rules="all" frame="border" border="1"><tbody class="tbody"><tr class="row"><td class="entry tdleft" align="left" valign="top" width="25%"><strong class="ph b">自由形式構文</strong></td>
+<td class="entry tdleft" align="left" valign="top" width="75%">RETURN{(HMR) } <span class="ph synph"><span class="ph var">式</span></span></td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="tablenoborder"><span class="desc tabledesc"></span><div class="cds--data-table-container"><table cellpadding="4" cellspacing="0" summary="" class="table cds--data-table" width="100%" rules="all" frame="border" border="1"><thead class="thead" align="left"><tr class="row"><th class="entry thleft thbot" align="left" valign="bottom" width="14.898989898989898%" id="d396953e74"><div class="cds--table-header-label"><strong class="ph b">コード</strong></div></th>
+<th class="entry thleft thbot" align="left" valign="bottom" width="22.22222222222222%" id="d396953e77"><div class="cds--table-header-label"><strong class="ph b">演算項目 1</strong></div></th>
+<th class="entry thleft thbot" colspan="5" align="left" valign="bottom" id="d396953e80"><div class="cds--table-header-label"><strong class="ph b">拡張演算項目 2</strong></div></th>
+</tr>
+</thead>
+<tbody class="tbody"><tr class="row"><td class="entry tdleft" align="left" valign="top" width="14.898989898989898%" headers="d396953e74 "><strong class="ph b">RETURN (H M/R)</strong></td>
+<td class="entry tdleft" align="left" valign="top" width="22.22222222222222%" headers="d396953e77 ">&nbsp;</td>
+<td class="entry tdleft" colspan="5" align="left" valign="top" headers="d396953e80 ">式</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p class="p">RETURN 命令は呼び出し元へ戻します。 呼び出し元に値が戻されると、<span class="ph synph"><span class="ph var">式</span></span> オペランドに戻り値が示されます。</p>
+<div class="p">RETURN 命令の結果として行われる処置は、その命令が<span class="ph">サイクル・メイン</span>・プロシージャーとサブプロシージャーのどちらで行われたかによって異なります。
+<span class="ph">サイクル・メイン</span>・プロシージャーが戻した場合、以下のことが行われます。
+<ol class="ol cds--list--ordered--temporary"><li class="li cds--list__item">停止標識が検査されます。 停止標識がオンになっている場合には、プロシージャーは異常終了
+します (オープンされているファイルはすべてクローズされて、呼び出し元ルーチンに
+プロシージャーが異常終了したことを示すエラー戻りコードが設定され、呼び出し元ルーチンに制御が戻されます)。</li>
+<li class="li cds--list__item">停止標識がオンになっていない場合には、LR 標識が検査されます。LR がオンになっている場合には、プログラムは正常に
+終了します (ロックされたデータ域構造、配列、およびテーブルが書き出されて、外部標
+識がリセットされます)。</li>
+<li class="li cds--list__item">停止標識がオンでなく LR がオンもなっていない場合には、プロシージャ
+ーは呼び出し元ルーチンに戻します。 データは次回のプロシージャーの実行に備えて保存されます。 ファイルおよびデータ域は書き出されません。 *NEW 活動化グループでの
+実行が RETURN の操作にどのような影響を与えるかについて
+は、「<cite class="cite"><span class="keyword">Rational® Development Studio for i: ILE RPG プログラマーの手引き</span></cite>」の呼び出し元のプログラムおよびプロシージャー
+の章を参照してください。</li>
+</ol>
+</div>
+<p class="p">サブプロシージャーが戻すと、戻り値 (呼び出されたプログラムまたはプロシ
+ージャーのプロトタイプで指定された場合) が呼び出し元に渡されます。 自動ファイルがクローズされます。
+自動的には何も行われません。 静的ファイルまたはグローバル・ファイルおよびデータ域はすべて手操作でクローズしなければなりません。LR などの標識を設定できますが、
+これでプログラムの終了を行うことはできません。 </p>
+<p class="p">命令拡張 H、M、および R がどのように使用されるかについて
+は、<a class="xref" href="/docs/ja/ssw_ibm_i_74/rzasd/prcsnr.htm#prcsnr">数値演算の精度の規則</a>を参照してください。</p>
+<p class="p">値を戻すサブプロシージャーでは、RETURN 命令はそのサブプロシージャー内で
+コーディングしなければなりません。 実際に戻された値は EVAL 式の左側と同じ働きをし、RETURN 命令の拡張演算項目 2 は右側と同じ働きをします。 配列を戻すことができるのは、プロトタイプが戻り値を配列として定義してい
+る場合だけです。</p>
+<div class="section"><h2 class="title sectiontitle">注意!</h2>
+<p class="p">サブプロシージャーが値を戻した場合には、プロシージャーの終わりに達する
+前に RETURN 命令が実行されていることを確認してください。 サブプロシージャーが RETURN 命令を
+見付けないで終了している場合には、呼び出し元に例外が通知されます。</p>
+</div>
+<div class="section"><h2 class="title sectiontitle">パフォーマンスのヒント</h2>
+<p class="p">プロトタイプに RTNPARM キーワードを指定すると、大きな値を戻す場合に、パフォーマンスが著しく向上する可能性があります。
+詳しくは、<a class="xref" href="/docs/ja/ssw_ibm_i_74/rzasd/drtnparm.htm#drtnparm">RTNPARM</a>を参照してください。</p>
+</div>
+<p class="p">詳細については、<a class="xref" href="/docs/ja/ssw_ibm_i_74/rzasd/yycall.htm#yycall">呼び出し命令</a>を参照してください。</p>
+<div class="fig figborder" id="zzretrn__retrnop"><span class="figcap">図 1. RETURN 命令の例</span><div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code>      * This is the prototype for subprocedure RETNONE. Since the
+      * prototype specification does not have a data type, this
+      * subprocedure does not return a value.
+     D RetNone         PR
+      * This is the prototype for subprocedure RETFLD. Since the
+      * prototype specification has the type 5P 2, this subprocedure
+      * returns a packed value with 5 digits and 2 decimals.
+      * The subprocedure has a 5-digit integer parameter, PARM,
+      * passed by reference.
+     D RetFld          PR             5P 2
+     D   Parm                         5I 0
+      * This is the prototype for subprocedure RETARR. The data
+      * type entries for the prototype specification show that
+      * this subprocedure returns a date array with 3 elements.
+      * The dates are in *YMD/ format.
+     D RetArr          PR              D   DIM(3) DATFMT(*YMD/)
+      * This procedure (P) specification indicates the beginning of
+      * subprocedure RETNONE. The data specification (D) specification
+      * immediately following is the procedure-interface
+      * specification for this subprocedure. Note that the
+      * procedure interface is the same as the prototype except for
+      * the definition type (PI vs PR).
+     P RetNone         B
+     D RetNone         PI
+      * RetNone does not return a value, so the RETURN
+      * operation does not have factor 2 specified.
+     C                   RETURN
+     P RetNone         E
+      * The following 3 specifications contain the beginning of
+      * the subprocedure RETFLD as well as its procedure interface.
+     P RetFld          B
+     D RetFld          PI             5P 2
+     D   Parm                         5I 0
+     D Fld             S             12S 1 INZ(13.8)
+      * RetFld returns a numeric value.  The following RETURN
+      * operations show returning a literal, an expression and a
+      * variable. Note that the variable is not exactly the same
+      * format or length as the actual return value.
+     C                   RETURN       7
+     C                   RETURN       Parm * 15
+     C                   RETURN       Fld
+     P RetFld          E</code></pre></div><div class="docs--copy-btn"></div></div>
+</div>
+<div class="fig figborder"><div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code>      * The following 3 specifications contain the beginning of the
+      * subprocedure RETARR as well as its procedure interface.
+     P RetArr          B
+     D RetArr          PI              D   DIM(3)
+     D SmallArr        S               D   DIM(2) DATFMT(*ISO)
+     D BigArr          S               D   DIM(4) DATFMT(*USA)
+      * RetArr returns a date array.  Note that the date
+      * format of the value specified on the RETURN operation
+      * does not have to be the same as the defined return
+      * value.
+      * The following RETURN operation specifies a literal.
+      * The caller receives an array with the value of the
+      * literal in every element of the array.
+     C                   RETURN        D'1995-06-27'
+      * The following return operation returns an array
+      * with a smaller dimension than the actual return value.
+      * In this case, the third element would be set to the
+      * default value for the array.
+     C                   RETURN        SmallArr
+      * The following return operation returns an array
+      * with a larger dimension than the actual return
+      * value.  In this case, the fourth element of BigArr
+      * would be ignored.
+     C                   RETURN        BigArr
+     P RetArr          E</code></pre></div><div class="docs--copy-btn"></div></div>
+</div>
+</div>
+<div class="related-links ibm-padding-top-1 ibm-padding-bottom-2 bx--row bottom-section-parent" aria-label="bottom related links">
+<div class="familylinks ibm-margin-bottom-1">
+<div class="parentlink"><strong>親トピック:</strong> <div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a class="link bottom-section-link" href="/docs/ja/ssw_ibm_i_74/rzasd/operxcl.htm">命令コード</a></div></div>
+</div>
+</div></div>

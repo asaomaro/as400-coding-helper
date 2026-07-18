@@ -1,0 +1,154 @@
+<main role="main"><article role="article" aria-labelledby="bbdif__title__1">
+<h1 class="topictitle1" id="bbdif__title__1">%DIFF (Difference Between Two Date, Time, or Timestamp Values)</h1><div id="lastModifiedDate"><span>Last Updated</span>: 2026-07-13</div>
+
+
+<div class="body">
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>
+%DIFF(op1 : op2 : unit {: frac })
+</code></pre></div><div class="docs--copy-btn"></div></div>
+<p>The unit can be
+*MSECONDS, *SECONDS, *MINUTES, *HOURS, *DAYS, *MONTHS, or *YEARS.
+You can also use the following abbreviated forms of the unit:
+*MS, *S, *MN, *H, *D, *M, or *Y.</p>
+
+<div class="p">%DIFF produces the difference (duration) between two date or time
+values. <span class="ph">The first and second parameters must have
+the same, or compatible types.</span> The following combinations are
+possible:
+<ul class="cds--list--unordered">
+<li class="cds--list__item">Date and date</li>
+
+<li class="cds--list__item">Time and time</li>
+
+<li class="cds--list__item">Timestamp and timestamp</li>
+
+<li class="cds--list__item">Date and timestamp (only the date portion of the timestamp is
+considered)</li>
+
+<li class="cds--list__item">Time and timestamp (only the time portion of the timestamp is
+considered).</li>
+
+</ul>
+</div>
+
+<div class="p">The third parameter specifies the unit. The following units are
+valid:
+<ul class="cds--list--unordered">
+<li class="cds--list__item">For two dates or a date and a timestamp: *DAYS, *MONTHS, and *YEARS</li>
+
+<li class="cds--list__item">For two times or a time and a timestamp: *SECONDS, *MINUTES, and
+*HOURS</li>
+
+<li class="cds--list__item">For two timestamps: *MSECONDS, *SECONDS, *MINUTES, *HOURS, *DAYS,
+*MONTHS, and *YEARS</li>
+</ul>
+</div>
+
+<p>The results for *MONTHS and *YEARS may be surprising.
+See <a href="/docs/en/ssw_ibm_i_74/rzasd/dtz_unexp.htm">Unexpected Results</a>.</p>
+
+<p>If the third operand is *SECONDS or *S,
+and both of the operands
+are timestamps, you can specify a fourth parameter indicating
+the number of fractional seconds to return.
+You can specify a value between 0 and 12.
+This represents the number of decimal positions in the returned
+number of seconds.
+</p>
+
+<p><span class="ph">The difference is calculated by subtracting the
+second operand from the first.</span></p>
+
+<p>The result is rounded down, with any remainder discarded.
+For example, 61 minutes is equal to 1 hour, and 59 minutes is equal
+to 0 hours.</p>
+
+<p>The value returned by the function is compatible with both type
+numeric and type duration. You can add the result to a number (type
+numeric) or a date, time, or timestamp (type duration).</p>
+
+<p>If you ask for the difference in microseconds between two timestamps
+that are more than 32 years 9 months apart, you will exceed the 15-digit
+limit for duration values. This will result in an error or truncation.
+However, you can obtain the number of microseconds
+between any two dates by asking for the difference
+in seconds with 6 fractional seconds,
+and then multiply the resulting value
+by 1000000.
+For example, if the difference in seconds is
+1041379205.123456,
+then the difference in microseconds is 1041379205123456.</p>
+
+<p>For more information, see <a href="/docs/en/ssw_ibm_i_74/rzasd/yydate.htm#yydate">Date Operations</a> or <a href="/docs/en/ssw_ibm_i_74/rzasd/bifsint.htm#bifsint">Built-in Functions</a>.</p>
+
+<figure class="figborder"><figcaption>Figure 1. Using the result of %DIFF as a numeric
+value</figcaption>
+
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>D due_date        S               D   INZ(D'2005-06-01')
+D today           S               D   INZ(D'2004-09-23')
+D num_days        S             15P 0
+
+D start_time      S               Z
+
+D time_taken      S             15P 0                
+
+ /FREE
+
+     // Determine the number of days between two dates.
+
+     // If due_date has the value 2005-06-01 and
+     // today has the value 2004-09-23, then
+     // num_days will have the value 251.
+
+     num_days = %DIFF (due_date: today: *DAYS);      
+
+     // If the arguments are coded in the reverse order,
+     // num_days will have the value -251.
+
+     num_days = %DIFF (today: due_date: *DAYS);  
+
+     // Determine the number of seconds required to do a task:
+     //  1. Get the starting timestamp
+     //  2. Do the task
+     //  3. Calculate the difference between the current
+     //     timestamp and the starting timestamp
+
+     start_time = %timestamp();
+     process();
+     time_taken = %DIFF (%timestamp() : start_time : *SECONDS);
+
+ /END-FREE</code></pre></div><div class="docs--copy-btn"></div></div></figure>
+
+<figure class="figborder"><figcaption>Figure 2. Using the result of %DIFF as a duration </figcaption>
+
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>D estimated_end...
+D                 S               D
+D prev_start      S               D   INZ(D'2003-06-21')
+D prev_end        S               D   INZ(D'2003-06-24')
+
+ /FREE     
+
+     // Add the number of days between two dates
+     // to a third date
+
+     // prev_start is the date a previous task began
+     // prev_end is the date a previous task ended.
+
+     // The following calculation will estimate the
+     // date a similar task will end, if it begins
+     // today.
+
+     // If the current date, returned by %date(), is
+     // 2003-08-15, then estimated_end will be
+     // 2003-08-18.
+
+     estimated_end = %date() + %DIFF(prev_end : prev_start : *days);
+
+ /END-FREE</code></pre></div><div class="docs--copy-btn"></div></div></figure>
+
+</div>
+<aside role="complementary" aria-labelledby="bbdif__title__1"><nav role="navigation" aria-label="bottom related links" class="ibm-padding-top-1 ibm-padding-bottom-2 bx--row bottom-section-parent">
+<div class="familylinks ibm-margin-bottom-1">
+<div class="parentlink"><strong>Parent topic:</strong> <div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a data-hd-product="ssw_ibm_i_74" href="/docs/en/ssw_ibm_i_74/rzasd/bifs.htm" class="bottom-section-link">Built-in Functions</a></div></div>
+</div>
+</nav></aside></article></main>

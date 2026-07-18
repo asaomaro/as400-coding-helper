@@ -1,0 +1,112 @@
+<main role="main"><article role="article" aria-labelledby="bbxml__title__1">
+<h1 class="topictitle1" id="bbxml__title__1">%XML (xmlDocument {:options})</h1><div id="lastModifiedDate"><span>Last Updated</span>: 2026-07-13</div>
+
+
+<div class="body">
+<p>%XML is used as the second operand of the XML-SAX and XML-INTO
+operation codes to specify the XML document to be parsed, and the
+options to control how the document is parsed.  %XML does not return
+a value, and it cannot be specified anywhere other than for the XML-SAX
+and XML-INTO operation codes.</p>
+
+<p>The first operand specifies the document to be parsed. It can be
+a constant or variable character or UCS-2 expression containing either
+an XML document or the name of a file containing an XML document.</p>
+
+<div class="p">The second operand specifies options that control how the XML document
+is to be interpreted and parsed.  It can be a constant or variable
+character expression. The value of the character expression is a list
+of zero or more options specified in the form 
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>    optionname1=value1 optionname2=value2</code></pre></div><div class="docs--copy-btn"></div></div></div>
+
+<div class="p">No spaces are allowed between the option name and the equal sign
+or between the equal sign and the value.  However, any number of spaces
+can appear before, between or following the options.  The options
+can be specified in any case.  The following are all valid ways to
+specify the "doc=file" and "allowextra=yes" options for XML-INTO: 
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>   'doc=file allowextra=yes'
+   '        doc=file     allowextra=yes     '
+   'ALLOWEXTRA=YES DOC=FILE     '
+   'AllowExtra=Yes Doc=File     '</code></pre></div><div class="docs--copy-btn"></div></div></div>
+
+<div class="p">The following are <strong>not</strong> valid option strings: 
+
+<div class="tablenoborder"><div class="cds--data-table-container"><table summary="" class="defaultstyle cds--data-table"><colgroup><col><col></colgroup><thead>
+<tr>
+<th id="bbxml__entry__1"><div class="cds--table-header-label">Option string</div></th>
+
+<th id="bbxml__entry__2"><div class="cds--table-header-label">The problem with the option string</div></th>
+</tr>
+
+</thead>
+<tbody>
+<tr>
+<td headers="bbxml__entry__1 ">'doc = file'</td>
+
+<td headers="bbxml__entry__2 ">Spaces around the equal sign are not allowed</td>
+</tr>
+
+<tr>
+<td headers="bbxml__entry__1 ">'allowextra'</td>
+
+<td headers="bbxml__entry__2 ">Each option must have an equal sign and a value</td>
+</tr>
+
+<tr>
+<td headers="bbxml__entry__1 ">'badopt=yes'</td>
+
+<td headers="bbxml__entry__2 ">Only valid options are allowed</td>
+</tr>
+
+<tr>
+<td headers="bbxml__entry__1 ">'allowextra=ok'</td>
+
+<td headers="bbxml__entry__2 ">The 'allowextra' value can only be 'yes' or 'no'</td>
+</tr>
+
+</tbody>
+</table></div>
+</div>
+</div>
+
+<p>The valid options and values depend on the context of the %XML
+built-in function. See <a href="/docs/en/ssw_ibm_i_74/rzasd/zzxmlsa.htm#zzxmlsa">XML-SAX (Parse an XML Document)</a> and <a href="/docs/en/ssw_ibm_i_74/rzasd/zzxmlin.htm#zzxmlin">XML-INTO (Parse an XML Document into a Variable)</a> for
+a complete list of valid options and values.</p>
+
+<div class="p">When an option is specified more than once, the last value specified
+is the value that is used.  For example, if the options parameter
+has the value
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>   'doc=file doc=string'</code></pre></div><div class="docs--copy-btn"></div></div> then the parser will
+use the value "string" for the "doc" option.</div>
+
+<p>If the parser discovers an invalid option or invalid value, the
+operation will fail with status code 00352.</p>
+
+<figure class="figborder"><figcaption>Figure 1. Examples of %XML</figcaption>
+
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>// The "options" parameter is omitted.  Default values are used for
+// all options.  Since the default value for the "doc" option is
+// always "string", the parser will correctly assume that the first
+// parameter contains an XML document.
+xmldocument = '&lt;myfld&gt;new value&lt;/myfld&gt;';
+XML-INTO myfld %XML(xmldocument);
+
+// The "options" parameter is specified as a literal with two options.
+XML-INTO myds %XML(xmldocument : 'allowmissing=yes allowextra=yes');
+
+// The "options" parameter is specified as a variable expression
+// with two options.
+ccsidOpt = 'ccsid=' + %char(ccsid);
+XML-SAX %HANDLER(mySaxHandler : myCommArea)
+        %XML('myinfo.xml' : 'doc=file ' + ccsidOpt);</code></pre></div><div class="docs--copy-btn"></div></div></figure>
+
+<p>For more examples of %XML, see <a href="/docs/en/ssw_ibm_i_74/rzasd/zzxmlsa.htm#zzxmlsa">XML-SAX (Parse an XML Document)</a> and <a href="/docs/en/ssw_ibm_i_74/rzasd/zzxmlin.htm#zzxmlin">XML-INTO (Parse an XML Document into a Variable)</a>.</p>
+
+<p>For more information, see <a href="/docs/en/ssw_ibm_i_74/rzasd/yyxml.htm#yyxml">XML Operations</a> or <a href="/docs/en/ssw_ibm_i_74/rzasd/bifsint.htm#bifsint">Built-in Functions</a>.</p>
+
+</div>
+<aside role="complementary" aria-labelledby="bbxml__title__1"><nav role="navigation" aria-label="bottom related links" class="ibm-padding-top-1 ibm-padding-bottom-2 bx--row bottom-section-parent">
+<div class="familylinks ibm-margin-bottom-1">
+<div class="parentlink"><strong>Parent topic:</strong> <div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a data-hd-product="ssw_ibm_i_74" href="/docs/en/ssw_ibm_i_74/rzasd/bifs.htm" class="bottom-section-link">Built-in Functions</a></div></div>
+</div>
+</nav></aside></article></main>

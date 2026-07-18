@@ -1,0 +1,129 @@
+<main role="main"><article role="article" aria-labelledby="bbproc__title__1">
+<h1 class="topictitle1" id="bbproc__title__1">%PROC (Return Name of Current Procedure)</h1><div id="lastModifiedDate"><span>Last Updated</span>: 2026-07-13</div>
+
+
+<div class="body">
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>%PROC({*OWNER | *ONEXIT})</code></pre></div><div class="docs--copy-btn"></div></div>
+<p><span class="keyword" translate="no">%PROC</span> returns the external name of the current procedure.
+</p>
+
+<p><span class="keyword" translate="no">%PROC</span> can only be specified in calculation statements.
+</p>
+
+<p>A parameter is not allowed for <span class="keyword" translate="no">%PROC</span>
+unless it specified in the <span class="keyword" translate="no">ON-EXIT</span>
+section of a procedure.
+</p>
+
+<div class="p">In the <a href="/docs/en/ssw_ibm_i_74/rzasd/zzonexit.htm"><span class="keyword" translate="no">ON-EXIT</span></a>
+section of a procedure, a
+parameter is required.
+<ul class="cds--list--unordered">
+<li class="cds--list__item"><span class="keyword" translate="no">%PROC(*OWNER)</span> returns
+the external name of the procedure containing the
+<span class="keyword" translate="no">ON-EXIT</span> section.
+</li>
+
+<li class="cds--list__item"><span class="keyword" translate="no">%PROC(*ONEXIT)</span> returns
+the external name of the procedure that implements the
+<span class="keyword" translate="no">ON-EXIT</span> section.
+</li>
+
+</ul>
+
+</div>
+
+<div class="p">The value returned by <span class="keyword" translate="no">%PROC</span>
+depends on where it is specified:
+<ul class="cds--list--unordered">
+<li class="cds--list__item">For a cycle-main procedure,
+the external name of the procedure is the name of the module when it was compiled.
+</li>
+
+<li class="cds--list__item">For a linear-main procedure,
+the external name of the procedure is the uppercase form of name of the main procedure.
+See <span class="keyword calloutlabel">&nbsp;1&nbsp;</span> in the example below.
+</li>
+
+<li class="cds--list__item">For a subprocedure where EXTPROC was not specified,
+the external name of the procedure is the uppercase form of the name of the procedure.
+See <span class="keyword calloutlabel">&nbsp;2&nbsp;</span> in the example below.
+</li>
+
+<li class="cds--list__item">For a subprocedure where <span class="keyword" translate="no">EXTPROC</span> was specified,
+the external name of the procedure is the value specified by <span class="keyword" translate="no">EXTPROC</span>.
+See <span class="keyword calloutlabel">&nbsp;3&nbsp;</span> in the example below.
+</li>
+
+<li class="cds--list__item">For a Java procedure,
+the external name of the procedure is in the form "Java_classname_methodname".
+See <span class="keyword calloutlabel">&nbsp;4&nbsp;</span> in the example below.
+</li>
+
+<li class="cds--list__item">For examples of <span class="keyword" translate="no">%PROC(*OWNER)</span>,
+see <span class="keyword calloutlabel">&nbsp;5&nbsp;</span> in the procedures below.
+</li>
+
+<li class="cds--list__item">For examples of <span class="keyword" translate="no">%PROC(*ONEXIT)</span>,
+see <span class="keyword calloutlabel">&nbsp;6&nbsp;</span> in the procedures below.
+</li>
+
+</ul>
+
+</div>
+
+<figure class="figborder"><figcaption>Figure 1. Examples of <span class="keyword" translate="no">%PROC</span></figcaption>
+
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>
+CTL-OPT MAIN(myPgm) DFTACTGRP(*NO);
+DCL-S x VARCHAR(100);
+
+DCL-PR myPgm EXTPGM('MYLIB/MYPGM345') END-PR;
+DCL-PR proc1 END-PR;
+DCL-PR proc2 EXTPROC('myProc2') END-PR;
+DCL-PR proc3 EXTPROC(*JAVA:'MyClass':'proc3') END-PR;
+
+DCL-PROC myPgm;  // &nbsp;1&nbsp;
+   x = %PROC();
+   // x = "MYPGM"
+ON-EXIT;
+   x = %PROC(*OWNER); // &nbsp;5&nbsp;
+   // x = "MYPGM"
+   x = %PROC(*ONEXIT); // &nbsp;6&nbsp;
+   // x = "_QRNI_ON_EXIT_MYPGM"
+END-PROC;
+
+DCL-PROC proc1;  // &nbsp;2&nbsp;
+   x = %PROC();
+   // x = "PROC1"
+ON-EXIT;
+   x = %PROC(*OWNER); // &nbsp;5&nbsp;
+   // x = "PROC1"
+   x = %PROC(*ONEXIT); // &nbsp;6&nbsp;
+   // x = "_QRNI_ON_EXIT_PROC1"
+END-PROC;
+
+DCL-PROC proc2;  // &nbsp;3&nbsp;
+   x = %PROC();
+   // x = "myProc2"
+ON-EXIT;
+   x = %PROC(*OWNER); // &nbsp;5&nbsp;
+   // x = "myProc2"
+   x = %PROC(*ONEXIT); // &nbsp;6&nbsp;
+   // x = "_QRNI_ON_EXIT_myProc2"
+END-PROC;
+
+DCL-PROC proc3 EXPORT; // &nbsp;4&nbsp;
+   x = %PROC();
+   // x = "Java_MyClass_proc3"
+END-PROC;
+
+
+</code></pre></div><div class="docs--copy-btn"></div></div></figure>
+
+</div>
+<aside role="complementary" aria-labelledby="bbproc__title__1"><nav role="navigation" aria-label="bottom related links" class="ibm-padding-top-1 ibm-padding-bottom-2 bx--row bottom-section-parent">
+<div class="familylinks ibm-margin-bottom-1">
+<div class="parentlink"><strong>Parent topic:</strong> <div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a data-hd-product="ssw_ibm_i_74" href="/docs/en/ssw_ibm_i_74/rzasd/bifs.htm" class="bottom-section-link">Built-in Functions</a></div></div>
+</div>
+</nav></aside></article></main>

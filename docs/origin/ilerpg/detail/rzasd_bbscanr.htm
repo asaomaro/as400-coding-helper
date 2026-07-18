@@ -1,0 +1,107 @@
+<div role="main">
+<svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 32 32" aria-hidden="true"><path d="M14 16L24 6 25.4 7.4 16.8 16 25.4 24.6 24 26zM8 4H10V28H8z"></path><title></title></svg><!-- Java sync-link --><script language="Javascript" src="../rzahg/synch.js" type="text/javascript"></script>
+<h1 class="title topictitle1">%SCANR (文字の逆方向走査)</h1><div id="lastModifiedDate"><span>Last Updated</span>: 2021-04-13</div>
+<div class="body"><div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code>%SCANR(検索引数 : ソース・ストリング {: 開始位置 {: 長さ}})</code></pre></div><div class="docs--copy-btn"></div></div>
+<p class="p">%SCANR は、ソース・ストリングの中で見つかった検索引数の最後の位置を戻します。検索引数が見つからなければ 0 を戻します。</p>
+<p class="p">開始位置と長さは、検索するソース・ストリングのサブストリングを指定します。
+開始位置のデフォルトは 1 であり、長さのデフォルトはソース・ストリングの残り部分です。
+結果は、開始位置が指定されている場合でも、常にソース・ストリング内の
+位置です。 </p>
+<p class="p">1 番目のパラメーターのタイプは、文字、図形、また
+は UCS-2 でなければなりません。2 番目
+のパラメーターは、1 番目のパラメーターと同じタイプである必要があります。 3 番目と 4 番目のパラメーター (指定された場合) は、小数点以下の桁数がゼロの数値でなければなりません。</p>
+<p class="p">いずれかのパラメーターが可変長である場合、他のパラメーターの値は、
+最大長ではなく、現在の長さに対して検査されます。</p>
+<p class="p">戻り値のタイプは符号なしの整数です。この組み込み関数は、符号なしの整数式が有効で
+あればどこでも使用することができます。</p>
+<p class="p">検索引数に後書きブランクが含まれている場合、走査はそれらの後書きブランクを含めて行われます。
+例えば、'b' がブランクを表すとして、%SCANR('12b':'12b312') は 1 を戻します。後書きブランクを走査の対象から除外する場合は、検索引数で %TRIMR を使用します。
+例えば、%SCAN(%TRIMR('12b'):'12b312') は 5 を戻します。</p>
+<p class="p">詳細については、<a class="xref" href="/docs/ja/ssw_ibm_i_74/rzasd/yystrng.htm#yystrng">ストリング命令</a>または <a class="xref" href="/docs/ja/ssw_ibm_i_74/rzasd/bifsint.htm#bifsint">組み込み関数</a>を参照してください。</p>
+<div class="section"><h2 class="title sectiontitle">%SCANR の例</h2>
+<ul class="ul cds--list--unordered"><li class="li cds--list__item">最も簡単な %SCANR の形式 (オペランドが 2 つの場合)
+<p class="p">次の例はパスの中で最後にある名前を見つけるものです。</p>
+
+<ol class="ol cds--list--ordered--temporary"><li class="li cds--list__item"><var class="keyword varname">lastSlash</var> の値は、これに %SCANR 組み込み関数の結果が代入されると、27 になります。</li>
+<li class="li cds--list__item"><var class="keyword varname">lastSlash</var> はゼロでないため、ファイル名を取得するために %SUBST 組み込み関数が使用されます。
+コードが完了すると、<var class="keyword varname">filename</var> の値が "a.txt" になります。</li>
+</ol>
+
+<div class="fig figborder"><div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code>   path = '/home/locations/manchester/a.txt';
+   lastSlash = %SCANR('/' : path); &nbsp;1&nbsp;
+   if lastSlash = 0;
+      filename = path;
+   else;
+      filename = %SUBST(path : lastSlash + 1); &nbsp;2&nbsp;
+   endif;</code></pre></div><div class="docs--copy-btn"></div></div>
+</div>
+</li>
+<li class="li cds--list__item">%SCANR の第 3 オペランドを使用してソース・ストリング中の検索対象部分の開始位置を指定する
+<p class="p">次の例はパス内のファイル名の接尾部を見つけるものです (接尾部がある場合)。</p>
+
+<ol class="ol cds--list--ordered--temporary"><li class="li cds--list__item">ファイル名の先頭を示す最後のスラッシュの位置を見つけるために %SCANR が使用されます。</li>
+<li class="li cds--list__item">ファイル名の先頭から始めて最後のピリオドの位置を見つけるために %SCANR が使用されます。
+%SCANR 組み込み関数に開始位置を指定することによって、プログラムはパス内の無関係なピリオド ("st.johns" ディレクトリー内のピリオドなど) の検索を回避します。</li>
+<li class="li cds--list__item">この例では、<var class="keyword varname">path</var> 内の最後のスラッシュ以降にはピリオドがないため、<var class="keyword varname">suffix</var> の値は空ストリングになります。</li>
+<li class="li cds--list__item">しかし、<var class="keyword varname">path</var> の値が "/home/locations/st.johns/report.txt" であった場合、<var class="keyword varname">suffix</var> の値は "txt" になります。</li>
+</ol>
+
+<div class="fig figborder"><div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code>   path = '/home/locations/st.johns/report';
+   p = %SCANR('/' : path); &nbsp;1&nbsp;
+   if p = 0;
+      p = 1; // start the next search at the beginning
+   endif;
+   dot = %SCANR('.' : path : p + 1); &nbsp;2&nbsp;
+   if dot = 0;
+      suffix = ''; &nbsp;3&nbsp;
+   else;
+        suffix = %SUBST(path : dot + 1);  &nbsp;4&nbsp;
+   endif;</code></pre></div><div class="docs--copy-btn"></div></div>
+</div>
+</li>
+<li class="li cds--list__item">%SCANR の第 4 オペランドを使用して検索対象部分の長さを指定する
+<p class="p">次の例はパス内の最後にあるディレクトリーの名前を見つけるものです。</p>
+
+<ol class="ol cds--list--ordered--temporary"><li class="li cds--list__item">最終スラッシュがパスの 27 桁目に見つかります。</li>
+<li class="li cds--list__item">2 番目の %SCANR 組み込み関数は、スラッシュの検索を 1 桁目と 26 桁目の間でのみ行うことを示します。</li>
+<li class="li cds--list__item">この例では <var class="keyword varname">p</var> がゼロではないため、ディレクトリー名を取得するために %SUBST 組み込み関数が使用されます。
+コードが終了すると、<var class="keyword varname">dir</var> の値が "manchester" になります。</li>
+</ol>
+
+<div class="fig figborder"><div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code>   path = '/home/locations/manchester/a.txt';
+   dir = '';
+   p = %SCANR('/' : path);  &nbsp;1&nbsp;
+   if p &gt; 0;
+      p2 = %SCANR('/' : path : 1 : p - 1);
+      if p2 &gt; 0;
+         dir = %SUBST(path : p2 + 1 : (p - p2 - 1));
+      endif;
+   endif;</code></pre></div><div class="docs--copy-btn"></div></div>
+</div>
+</li>
+</ul>
+</div>
+<div class="section" id="bbscanr__examp"><h2 class="title sectiontitle">%SCAN と %SCANR を一緒に使用する例</h2>
+<p class="p">次の例では、%SCAN と %SCANR が、同じオペランドを指定して使用されます。
+%SCAN は先頭から検索し、%SCANR は末尾から検索するので、検索ストリング中に検索引数のオカレンスが複数ある場合は、これらの組み込み関数はそれぞれ異なる結果を戻します。</p>
+
+<ol class="ol cds--list--ordered--temporary"><li class="li cds--list__item">%SCAN 組み込み関数によって戻される値は 1 です。</li>
+<li class="li cds--list__item">%SCANR 組み込み関数によって戻される値は 24 です。</li>
+<li class="li cds--list__item">これらの値は同じではありません。
+つまり、ストリング中に "VALUE" のオカレンスが少なくとも 2 つあるということです。</li>
+</ol>
+
+<div class="fig figborder"><div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code>   string = 'VALUE 9.56, VALUE 7.3, VALUE 4.71';
+   p1 = %SCAN ('VALUE' : string); &nbsp;1&nbsp;
+   p2 = %SCANR ('VALUE' : string); &nbsp;2&nbsp;
+   if p1 &lt;&gt; p2;
+      moreThanOne = *ON; &nbsp;3&nbsp;
+   endif;</code></pre></div><div class="docs--copy-btn"></div></div>
+</div>
+</div>
+</div>
+<div class="related-links ibm-padding-top-1 ibm-padding-bottom-2 bx--row bottom-section-parent" aria-label="bottom related links">
+<div class="familylinks ibm-margin-bottom-1">
+<div class="parentlink"><strong>親トピック:</strong> <div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a class="link bottom-section-link" href="/docs/ja/ssw_ibm_i_74/rzasd/bifs.htm">組み込み関数</a></div></div>
+</div>
+</div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 16L8 26 6.6 24.6 15.2 16 6.6 7.4 8 6zM22 4H24V28H22z"></path><title></title></svg></div>

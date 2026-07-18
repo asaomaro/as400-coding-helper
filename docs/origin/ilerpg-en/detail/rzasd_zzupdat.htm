@@ -1,0 +1,182 @@
+<main role="main"><article role="article" aria-labelledby="zzupdat__title__1">
+<h1 class="topictitle1" id="zzupdat__title__1">UPDATE (Modify Existing Record)</h1><div id="lastModifiedDate"><span>Last Updated</span>: 2026-07-13</div>
+
+
+<div class="body">
+
+<div class="tablenoborder"><div class="cds--data-table-container"><table summary="" role="presentation" class="defaultstyle cds--data-table"><colgroup><col><col></colgroup><tbody>
+<tr>
+<td class="tdleft"><strong>Free-Form Syntax</strong></td>
+
+<td class="tdleft">UPDATE{(E)} <span class="ph synph"><span class="ph var">name</span></span> {<span class="ph synph"><span class="ph var">data-structure</span></span> |
+%FIELDS(<span class="ph synph"><span class="ph var">name{:name...}</span></span>)}</td>
+</tr>
+
+</tbody>
+</table></div>
+</div>
+
+
+<div class="tablenoborder"><div class="cds--data-table-container"><table summary="" class="defaultstyle cds--data-table"><colgroup><col><col><col><col><col><col><col></colgroup><thead>
+<tr>
+<th id="zzupdat__entry__3" class="thcenter thbot"><div class="cds--table-header-label"><strong>Code</strong></div></th>
+
+<th id="zzupdat__entry__4" class="thcenter thbot"><div class="cds--table-header-label"><strong>Factor 1</strong></div></th>
+
+<th id="zzupdat__entry__5" class="thcenter thbot"><div class="cds--table-header-label"><strong>Factor 2</strong></div></th>
+
+<th id="zzupdat__entry__6" class="thcenter thbot"><div class="cds--table-header-label"><strong>Result Field</strong></div></th>
+
+<th colspan="3" id="zzupdat__entry__7" class="thcenter thbot"><div class="cds--table-header-label"><strong>Indicators</strong></div></th>
+</tr>
+
+</thead>
+<tbody>
+<tr>
+<td headers="zzupdat__entry__3 " class="tdleft"><strong>UPDATE (E)</strong></td>
+
+<td headers="zzupdat__entry__4 " class="tdleft">&nbsp;</td>
+
+<td headers="zzupdat__entry__5 " class="tdleft"><u>name</u> (file
+or record format)</td>
+
+<td headers="zzupdat__entry__6 " class="tdleft">data-structure</td>
+
+<td headers="zzupdat__entry__7 " class="tdcenter">_</td>
+
+<td headers="zzupdat__entry__7 " class="tdcenter">ER</td>
+
+<td headers="zzupdat__entry__7 " class="tdcenter">_</td>
+</tr>
+
+</tbody>
+</table></div>
+</div>
+
+<p>The UPDATE operation modifies the last locked record retrieved
+for processing from an update disk file or subfile. No other operation
+should be performed on the file between the input operation that retrieved
+the record and the UPDATE operation.</p>
+
+<p>The <span class="ph synph"><span class="ph var">name</span></span> operand must be the name of a file
+or record format to be updated. A record format name is required with
+an externally described file.  The record format name must be the
+name of the last record read from the file; otherwise, an error occurs.
+A file name as the <span class="ph synph"><span class="ph var">name</span></span> operand is required with
+a program described file.</p>
+
+<div class="p">If the data-structure operand is specified, the record
+is updated directly from the data structure.  The data structure must
+conform to the rules below:
+<ol class="cds--list--ordered--temporary">
+<li class="cds--list__item">If the <em>data-structure</em> operand is specified,
+the record is updated directly from the data structure. </li>
+
+<li class="cds--list__item">If <em>name</em> refers to a program-described
+file, the data structure can be any data
+structure of the same length as the file's declared record length. </li>
+
+<li class="cds--list__item">If <em>name</em> refers to an externally-described
+file or a record format from an externally described database file,
+the data structure must be a data structure defined from the same
+file or record format, with *INPUT, *OUTPUT, or *ALL specified as the second
+parameter of the LIKEREC or EXTNAME keyword, or no second parameter
+specified for the LIKEREC keyword.</li>
+
+<li class="cds--list__item">If <em>name</em> refers to a subfile
+record format from an externally described display file, the data
+structure must be a data structure defined from the same file or record
+format, with *OUTPUT or *ALL specified as the second parameter of the LIKEREC
+or EXTNAME keyword.</li>
+
+<li class="cds--list__item">See <a href="/docs/en/ssw_ibm_i_74/rzasd/filop.htm#filop">File Operations</a> for information on how to define the
+data structure and how data is transferred between the data structure
+and the file.</li>
+
+</ol>
+</div>
+
+<p>A list of the fields to update can be specified using
+%FIELDS. The parameter to %FIELDS is a list of the field names to
+update. See the example at the end of <a href="/docs/en/ssw_ibm_i_74/rzasd/bbfieldsupdate.htm">%FIELDS (Fields to update)</a> for
+an illustration of updating fields.  </p>
+
+<p>To handle UPDATE exceptions (<a href="/docs/en/ssw_ibm_i_74/rzasd/stacod9.htm#stacod9">file status codes</a> greater
+than 1000), either the operation code extender 'E' or an error indicator
+ER can be specified, but not both. For more information on error handling,
+see <a href="/docs/en/ssw_ibm_i_74/rzasd/filexpe.htm#filexpe">File Exception/Errors</a>.</p>
+
+<div class="p">Remember the following when using the UPDATE operation:
+<ul class="cds--list--unordered">
+<li class="cds--list__item">When <span class="ph synph"><span class="ph var">name</span></span> is a record format name, the current
+values in the program for the fields in the record definition are
+used to modify the record.</li>
+
+<li class="cds--list__item">If some but not all fields in a record are to be updated, either
+use the output specifications without an UPDATE operation or use %FIELDS
+to identify which fields to update.</li>
+
+<li class="cds--list__item">Before UPDATE is issued to a file or record, a valid input operation
+with lock (READ, READC, READE, READP, READPE, CHAIN, or primary/secondary
+file) must be issued to the same file or record. If the read operation
+returns with an error condition or if it was read without locking,
+the record is not locked and UPDATE cannot be issued. The record must
+be read again with the default of a blank operation extender to specify
+a lock request.</li>
+
+<li class="cds--list__item">Consecutive UPDATE operations to the same file or record are not
+valid. Intervening successful read operations must be issued to position
+to and lock the record to be updated.</li>
+
+<li class="cds--list__item">Beware of using the UPDATE operation on primary or secondary files
+during total calculations.  At this stage in the <span class="keyword">RPG IV</span> cycle, the
+fields from the current record (the record that is about to be processed)
+have not yet been moved to the processing area. Therefore, the UPDATE
+operation updates the current record with the fields from the preceding
+record.  Also, when the fields from the current record are moved to
+the processing area, they are the fields that were updated from the
+preceding record.</li>
+
+<li class="cds--list__item">For multiple device files, specify a subfile record format as
+the <span class="ph synph"><span class="ph var">name</span></span> operand. The operation is processed
+for the program device identified in the fieldname specified using
+the DEVID keyword in the file specification. If the program device
+is not specified, the device used in the last successful input operation
+is used. This device must be the same one you specified for the input
+operation that must precede the UPDATE operation.  You must not process
+input or output operations to other devices in between the input and
+UPDATE operations.  If you do, your UPDATE operation will fail.</li>
+
+<li class="cds--list__item">For a display file which has multiple subfile record formats,
+you must not process read-for-update operations to one subfile record
+in between the input and UPDATE operations to another subfile in the
+same display file. If you do, the  UPDATE operation will fail.</li>
+
+<li class="cds--list__item">An UPDATE operation is valid to a subfile record format
+as long as at least one successful input operation (READC, CHAIN)
+has occurred to that format name without an intervening input operation
+to a different format name. The record updated will be the record
+retrieved on the last successful input operation. This means that
+if you read a record successfully, then read unsuccessfully to the
+same format, an update will succeed, but will update the first record.
+This is different from the behavior of DISK files.
+<p>To avoid updating
+the wrong record, check the resulting indicator or record-identifying
+indicator to ensure that a successful input operation has occurred
+before doing the update operation.</p>
+</li>
+
+</ul>
+</div>
+
+<p>See <a href="/docs/en/ssw_ibm_i_74/rzasd/dbnvs.htm#dbnvs">Database Null Value Support</a> for information on updating records with
+null-capable fields containing null values.</p>
+
+<p>For more information, see <a href="/docs/en/ssw_ibm_i_74/rzasd/filop.htm#filop">File Operations</a>.</p>
+
+</div>
+<aside role="complementary" aria-labelledby="zzupdat__title__1"><nav role="navigation" aria-label="bottom related links" class="ibm-padding-top-1 ibm-padding-bottom-2 bx--row bottom-section-parent">
+<div class="familylinks ibm-margin-bottom-1">
+<div class="parentlink"><strong>Parent topic:</strong> <div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a data-hd-product="ssw_ibm_i_74" href="/docs/en/ssw_ibm_i_74/rzasd/operxcl.htm" class="bottom-section-link">Operation Codes</a></div></div>
+</div>
+</nav></aside></article></main>

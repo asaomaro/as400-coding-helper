@@ -1,0 +1,86 @@
+<div role="main">
+<svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 32 32" aria-hidden="true"><path d="M14 16L24 6 25.4 7.4 16.8 16 25.4 24.6 24 26zM8 4H10V28H8z"></path><title></title></svg><!-- Java sync-link --><script language="Javascript" src="../rzahg/synch.js" type="text/javascript"></script>
+<h1 class="title topictitle1">%PARSER(パーサー {: オプション})</h1><div id="lastModifiedDate"><span>Last Updated</span>: 2021-04-13</div>
+<div class="body"><p class="p">%PARSER は、DATA-INTO 命令コードの第 3 オペランドとして使用され、
+構文解析を行うプログラムとプロシージャー、およびパーサーによりサポートされるオプションを指定します。
+%PARSER は値を戻しません。
+また、DATA-INTO 命令コード以外の場所に指定できません。</p>
+<div class="p">第 1 オペランドは構文解析を行うプログラムまたはプロシージャーを指定します。以下のいずれかになります。
+<ul class="ul cds--list--unordered"><li class="li cds--list__item">プロシージャー・ポインター式</li>
+<li class="li cds--list__item">%PADDR 組み込み関数</li>
+<li class="li cds--list__item">プログラムを特定する文字式です。これは，次の形式のうちの 1 つを使用しなければなりません
+<ul class="ul cds--list--unordered cds--list--nested"><li class="li cds--list__item">MYPGM</li>
+<li class="li cds--list__item">MYLIB/MYPGM</li>
+<li class="li cds--list__item">*LIBL/MYPGM</li>
+</ul>
+</li>
+<li class="li cds--list__item">サービス・プログラム内のプロシージャーを特定する文字式です。これは，次の形式のうちの 1 つを使用しなければなりません
+<ul class="ul cds--list--unordered cds--list--nested"><li class="li cds--list__item">MYSRVPGM(myProcedure)</li>
+<li class="li cds--list__item">MYLIB/MYSRVPGM(myProcedure)</li>
+<li class="li cds--list__item">*LIBL/MYSRVPGM(myProcedure)</li>
+</ul>
+</li>
+</ul>
+
+<div class="note note border-2 cds--inline-notification--info ibmdocs-note cds--inline-notification cds--inline-notification--low-contrast margin-top-1 margin-bottom-1"><div class="cds--inline-notification__details"><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" class="cds--inline-notification__icon" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M16,2A14,14,0,1,0,30,16,14,14,0,0,0,16,2Zm0,5a1.5,1.5,0,1,1-1.5,1.5A1.5,1.5,0,0,1,16,7Zm4,17.12H12V21.88h2.88V15.12H13V12.88h4.13v9H20Z"></path></svg>
+        <div class="cds--inline-notification__text-wrapper">
+          <div class="cds--inline-notification__subtitle"><span class="notetitle ibm-bold ibm-textcolor-blue-50 background-blue cds--inline-notification__title ibm-padding-top-1 ibm-padding-bottom-1 padding-left-1 padding-right-1">注:</span> プロトタイプ名が指定された場合、それはプロシージャー・ポインター値または文字値のいずれかを返すプロシージャーであると想定されます。
+パーサーがプロトタイプ・プロシージャーの場合は %PADDR 組み込み関数を使用します。</div>
+        </div>
+      </div></div>
+</div>
+<p class="p">第 2 オペランドは、パーサーに直接渡されるオプションを指定します。
+パーサーは、サポートするオプションの性質を判別します。</p>
+<p class="p">第 2 オペランドが、変更可能な変数の名前である場合、その変数のアドレスがパーサーに直接渡されます。</p>
+<p class="p">第 2 オペランドが、変更できない文字変数の名前を含む文字式である場合、
+その式の内容を含むヌル文字終了ストリングを指すポインターがパーサーに渡されます。</p>
+<p class="p">パーサーは、ポインターがヌル文字終了ストリングであるかどうかを示す情報を受け取ります。</p>
+<div class="section"><h2 class="title sectiontitle">%PARSER の例</h2>
+<div class="p">第 1 オペランドにはプログラム名が指定されています。
+第 2 オペランドは省略されています。
+パーサー・プログラム「MYPARSER」はオプションを受け取りません。
+<div class="fig figborder"><div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code>DATA-INTO myfld %DATA(document) %PARSER('MYPARSER');</code></pre></div><div class="docs--copy-btn"></div></div>
+</div>
+</div>
+
+<div class="p">第 1 オペランドには、サービス・プログラムのプロシージャーが指定されています。
+第 2 オペランドには変更可能な変数が指定されています。
+プロシージャー「myProcedure」は、「parserOptions」データ構造を指すポインターを受け取ります。
+<div class="fig figborder"><div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code>DCL-DS parserOptions LIKEDS(myParserOpts_T);
+DATA-INTO myDs %DATA('myData.txt' : 'doc=file')
+               %PARSER('MYPARSERS(myProcedure)' : parserOptions);</code></pre></div><div class="docs--copy-btn"></div></div>
+</div>
+</div>
+
+<div class="p">第 1 オペランドにはプロシージャー・ポインターが指定されています。
+第 2 オペランドには文字式が指定されています。
+プロシージャー・ポインターに指定されたプロシージャーは、値「sep=comma」を含むヌル文字終了ストリングを指すポインターを受け取ります。
+<div class="fig figborder"><div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code>DCL-S p POINTER(*PROC);
+DCL-S sep CHAR(1) INZ(',');
+DATA-INTO myds %DATA('myData.txt' : 'doc=file')
+               %PARSER(p : 'sep=' + sep);</code></pre></div><div class="docs--copy-btn"></div></div>
+</div>
+</div>
+
+<div class="p">第 1 オペランドには組み込み関数 %PADDR が指定されています。
+第 2 オペランドには変更不可能な文字変数「constParm」が指定されています。
+「constParm」の値は「boolean=indicator」です。
+プロトタイプ「myProc」によって指定されたプロシージャーは、第 2 オペランドとして指定された値「boolean=indicator」を含むヌル文字終了ストリングを指すポインターを受け取ります。
+<div class="fig figborder"><div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code>DCL-PI *N;
+   constParm VARCHAR(20) CONST;
+END-PI;
+DATA-INTO myds %DATA('myData.txt' : 'doc=file')
+               %PARSER(%PADDR(myProc) : constParm);</code></pre></div><div class="docs--copy-btn"></div></div>
+</div>
+</div>
+
+<p class="p">%PARSER の例および DATA-INTO 命令について詳しくは、<a class="xref" href="/docs/ja/ssw_ibm_i_74/rzasd/zzdatainto.htm">DATA-INTO (文書の変数への構文解析)</a>を参照してください。</p>
+</div>
+<p class="p">パーサーの作成については、トピック
+『<span class="keyword">Rational® Open Access: RPG 版</span>』を参照してください。</p>
+</div>
+<div class="related-links ibm-padding-top-1 ibm-padding-bottom-2 bx--row bottom-section-parent" aria-label="bottom related links">
+<div class="familylinks ibm-margin-bottom-1">
+<div class="parentlink"><strong>親トピック:</strong> <div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a class="link bottom-section-link" href="/docs/ja/ssw_ibm_i_74/rzasd/bifs.htm">組み込み関数</a></div></div>
+</div>
+</div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 16L8 26 6.6 24.6 15.2 16 6.6 7.4 8 6zM22 4H24V28H22z"></path><title></title></svg></div>

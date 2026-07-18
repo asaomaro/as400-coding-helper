@@ -1,0 +1,75 @@
+<div role="main">
+<!-- Java sync-link --><script language="Javascript" src="../rzahg/synch.js" type="text/javascript"></script>
+<h1 class="title topictitle1">%EQUAL (完全な一致条件の戻し)</h1><div id="lastModifiedDate"><span>Last Updated</span>: 2021-04-13</div>
+<div class="body"><div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code>%EQUAL{(file_name)}</code></pre></div><div class="docs--copy-btn"></div></div>
+<p class="p">%EQUAL は、最後に実行された関係のある命令が正確な一致を見付けた場合には '1' を
+戻します。他の場合には '0' を戻します。</p>
+<div class="p">%EQUAL を設定する命令を以下に示します。
+<ul class="ul cds--list--unordered"><li class="li cds--list__item"><a class="xref" href="/docs/ja/ssw_ibm_i_74/rzasd/zzsetll.htm#zzsetll">SETLL (下限の設定)</a></li>
+<li class="li cds--list__item"><a class="xref" href="/docs/ja/ssw_ibm_i_74/rzasd/zzlokup.htm#zzlokup">LOOKUP (テーブルまたは配列要素の検索)</a></li>
+</ul>
+</div>
+<p class="p">任意指定のファイル名パラメーターを指定しないで %EQUAL を使用した場合、この
+関数は、最後に実行された関係のある命令について設定された値を戻します。</p>
+<p class="p">SETLL 命令の場合、この関数は、そのキーまたは相対レコード番号が検索引数に
+等しいレコードが存在する場合に '1' を戻します。</p>
+<p class="p">EQ 標識を指定した LOOKUP 命令の場合、この関数は、検索引数に正確に一致する
+要素が見付かった場合に '1' を戻します。</p>
+<p class="p">ファイル名を指定した場合、この関数は、指定したファイルに対して最後に実行
+された SETLL 命令に適用されます。 この関数は、SETLL 命令コードを使用できる
+ファイルに対してのみ使用することができます。</p>
+<p class="p">詳しい例については、<a class="xref" href="/docs/ja/ssw_ibm_i_74/rzasd/zzlokup.htm#zzlokup__lokupar">図 1</a> および <a class="xref" href="/docs/ja/ssw_ibm_i_74/rzasd/zzsetll.htm#zzsetll__setllop">図 1</a> を
+参照してください。</p>
+<p class="p">詳細については、<a class="xref" href="/docs/ja/ssw_ibm_i_74/rzasd/filop.htm#filop">ファイル命令</a>、<a class="xref" href="/docs/ja/ssw_ibm_i_74/rzasd/yyrslt.htm#yyrslt">結果命令</a>、
+または <a class="xref" href="/docs/ja/ssw_ibm_i_74/rzasd/bifsint.htm#bifsint">組み込み関数</a>を参照してください。</p>
+<div class="fig figborder"><span class="figcap">図 1. SETLL を使用した場合の %EQUAL の例</span><div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code> *..1....+....2....+....3....+....4....+....5....+....6....+....7...+....
+F*Filename+IPEASFRlen+LKlen+AIDevice+.Keywords+++++++++++++++++++++++++
+ * File CUSTS has record format CUSTREC
+FCUSTSIF   E           K DISK
+
+ /FREE
+    // Check if the file contains a record with a key matching Cust
+    setll Cust CustRec;
+    if %equal;
+    // an exact match was found in the file
+    endif;
+ /END-FREE</code></pre></div><div class="docs--copy-btn"></div></div>
+</div>
+<div class="fig figborder" id="bbequal__eqfdlu"><span class="figcap">図 2. LOOKUP を使用した場合の %EQUAL および %FOUND の例</span><div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code>     DName+++++++++++ETDsFrom+++To/L+++IDc.Keywords+++++++++++++++++++++++++++++
+     D TabNames        S             10A   DIM(5) CTDATA ASCEND
+     D SearchName      S             10A                        
+      * Position the table at or near SearchName
+      * Here are the results of this program for different values
+      * of SearchName:
+      *   SearchName   |   DSPLY
+      *   -------------+-------------------------------
+      *   'Catherine ' |   'Next greater     Martha'
+      *   'Andrea    ' |   'Exact            Andrea'
+      *   'Thomas    ' |   'Not found        Thomas'
+     CL0N01Factor1+++++++Opcode(E)+Factor2+++++++Result++++++++Len++D+HiLoEq....
+     C     SearchName    LOOKUP    TabNames                           10  10
+     C                   SELECT
+     C                   WHEN      %EQUAL
+      * An exact match was found
+     C     'Exact       'DSPLY                   TabNames
+     C                   WHEN      %FOUND
+      * A name was found greater than SearchName
+     C     'Next greater'DSPLY                   TabNames
+     C                   OTHER
+      * Not found.  SearchName is greater than all the names in the table
+     C     'Not found   'DSPLY                   SearchName
+     C                   ENDSL
+     C                   RETURN
+**CTDATA TabNames
+Alexander
+Andrea
+Bohdan
+Martha
+Samuel                          </code></pre></div><div class="docs--copy-btn"></div></div>
+</div>
+</div>
+<div class="related-links ibm-padding-top-1 ibm-padding-bottom-2 bx--row bottom-section-parent" aria-label="bottom related links">
+<div class="familylinks ibm-margin-bottom-1">
+<div class="parentlink"><strong>親トピック:</strong> <div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a class="link bottom-section-link" href="/docs/ja/ssw_ibm_i_74/rzasd/bifs.htm">組み込み関数</a></div></div>
+</div>
+</div></div>

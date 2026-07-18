@@ -1,0 +1,93 @@
+<main role="main"><article role="article" aria-labelledby="bbequal__title__1">
+<h1 class="topictitle1" id="bbequal__title__1">%EQUAL (Return Exact Match Condition)</h1><div id="lastModifiedDate"><span>Last Updated</span>: 2026-07-13</div>
+
+
+<div class="body">
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>%EQUAL{(file_name)}</code></pre></div><div class="docs--copy-btn"></div></div>
+<p>%EQUAL returns '1' if the most recent relevant operation found
+an exact match; otherwise, it returns '0'.</p>
+
+<div class="p">The operations that set %EQUAL are:
+<ul class="cds--list--unordered">
+<li class="cds--list__item"><a href="/docs/en/ssw_ibm_i_74/rzasd/zzsetll.htm#zzsetll">SETLL (Set Lower Limit)</a></li>
+
+<li class="cds--list__item"><a href="/docs/en/ssw_ibm_i_74/rzasd/zzlokup.htm#zzlokup">LOOKUP (Look Up a Table or Array Element)</a></li>
+
+</ul>
+</div>
+
+<p>If %EQUAL is used without the optional file_name parameter, then
+it returns the value set for the most recent relevant operation.</p>
+
+<p>For the SETLL operation, this function returns '1' if a record
+is present whose key or relative record number is equal to the search
+argument.</p>
+
+<p>For the LOOKUP operation with the EQ indicator specified, this
+function returns '1' if an element is found that exactly matches the
+search argument.</p>
+
+<p>If a file name is specified, this function applies to the most
+recent SETLL operation for the specified file. This function is allowed
+only for files that allow the SETLL operation code.</p>
+
+<p>For more examples, see <a href="/docs/en/ssw_ibm_i_74/rzasd/zzlokup.htm#zzlokup__lokupar">Figure 1</a> and <a href="/docs/en/ssw_ibm_i_74/rzasd/zzsetll.htm#zzsetll__setllop">Figure 1</a>.</p>
+
+<p>For more information, see <a href="/docs/en/ssw_ibm_i_74/rzasd/filop.htm#filop">File Operations</a>, <a href="/docs/en/ssw_ibm_i_74/rzasd/yyrslt.htm#yyrslt">Result Operations</a>,
+or <a href="/docs/en/ssw_ibm_i_74/rzasd/bifsint.htm#bifsint">Built-in Functions</a>.</p>
+
+<figure class="figborder"><figcaption>Figure 1. %EQUAL with SETLL Example</figcaption>
+
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code> *..1....+....2....+....3....+....4....+....5....+....6....+....7...+....
+F*Filename+IPEASFRlen+LKlen+AIDevice+.Keywords+++++++++++++++++++++++++
+ * File CUSTS has record format CUSTREC
+FCUSTSIF   E           K DISK
+
+ /FREE
+    // Check if the file contains a record with a key matching Cust
+    setll Cust CustRec;
+    if %equal;
+    // an exact match was found in the file
+    endif;
+ /END-FREE</code></pre></div><div class="docs--copy-btn"></div></div></figure>
+
+<figure class="figborder" id="bbequal__eqfdlu"><figcaption>Figure 2. %EQUAL and %FOUND with LOOKUP Example</figcaption>
+
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>     DName+++++++++++ETDsFrom+++To/L+++IDc.Keywords+++++++++++++++++++++++++++++
+     D TabNames        S             10A   DIM(5) CTDATA ASCEND
+     D SearchName      S             10A                        
+      * Position the table at or near SearchName
+      * Here are the results of this program for different values
+      * of SearchName:
+      *   SearchName   |   DSPLY
+      *   -------------+-------------------------------
+      *   'Catherine ' |   'Next greater     Martha'
+      *   'Andrea    ' |   'Exact            Andrea'
+      *   'Thomas    ' |   'Not found        Thomas'
+     CL0N01Factor1+++++++Opcode(E)+Factor2+++++++Result++++++++Len++D+HiLoEq....
+     C     SearchName    LOOKUP    TabNames                           10  10
+     C                   SELECT
+     C                   WHEN      %EQUAL
+      * An exact match was found
+     C     'Exact       'DSPLY                   TabNames
+     C                   WHEN      %FOUND
+      * A name was found greater than SearchName
+     C     'Next greater'DSPLY                   TabNames
+     C                   OTHER
+      * Not found.  SearchName is greater than all the names in the table
+     C     'Not found   'DSPLY                   SearchName
+     C                   ENDSL
+     C                   RETURN
+**CTDATA TabNames
+Alexander
+Andrea
+Bohdan
+Martha
+Samuel                          </code></pre></div><div class="docs--copy-btn"></div></div></figure>
+
+</div>
+<aside role="complementary" aria-labelledby="bbequal__title__1"><nav role="navigation" aria-label="bottom related links" class="ibm-padding-top-1 ibm-padding-bottom-2 bx--row bottom-section-parent">
+<div class="familylinks ibm-margin-bottom-1">
+<div class="parentlink"><strong>Parent topic:</strong> <div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a data-hd-product="ssw_ibm_i_74" href="/docs/en/ssw_ibm_i_74/rzasd/bifs.htm" class="bottom-section-link">Built-in Functions</a></div></div>
+</div>
+</nav></aside></article></main>

@@ -1,0 +1,135 @@
+<main role="main"><article role="article" aria-labelledby="zzklist__title__1">
+<h1 class="topictitle1" id="zzklist__title__1">KLIST (Define a Composite Key)</h1><div id="lastModifiedDate"><span>Last Updated</span>: 2026-07-13</div>
+
+
+<div class="body">
+
+<div class="tablenoborder"><div class="cds--data-table-container"><table summary="" class="defaultstyle cds--data-table"><colgroup><col><col></colgroup><tbody>
+<tr>
+<td class="tdleft"><strong>Free-Form Syntax</strong></td>
+
+<td class="tdleft">(not allowed - use <a href="/docs/en/ssw_ibm_i_74/rzasd/bbkds.htm#bbkds">%KDS</a>)</td>
+</tr>
+
+</tbody>
+</table></div>
+</div>
+
+
+<div class="tablenoborder"><div class="cds--data-table-container"><table summary="" class="defaultstyle cds--data-table"><colgroup><col><col><col><col><col><col><col></colgroup><thead>
+<tr>
+<th id="zzklist__entry__3" class="thcenter thbot"><div class="cds--table-header-label"><strong>Code</strong></div></th>
+
+<th id="zzklist__entry__4" class="thcenter thbot"><div class="cds--table-header-label"><strong>Factor 1</strong></div></th>
+
+<th id="zzklist__entry__5" class="thcenter thbot"><div class="cds--table-header-label"><strong>Factor 2</strong></div></th>
+
+<th id="zzklist__entry__6" class="thcenter thbot"><div class="cds--table-header-label"><strong>Result Field</strong></div></th>
+
+<th colspan="3" id="zzklist__entry__7" class="thcenter thbot"><div class="cds--table-header-label"><strong>Indicators</strong></div></th>
+</tr>
+
+</thead>
+<tbody>
+<tr>
+<td headers="zzklist__entry__3 " class="tdleft"><strong>KLIST</strong></td>
+
+<td headers="zzklist__entry__4 " class="tdleft"><u>KLIST name</u></td>
+
+<td headers="zzklist__entry__5 " class="tdleft">&nbsp;</td>
+
+<td headers="zzklist__entry__6 " class="tdleft">&nbsp;</td>
+
+<td headers="zzklist__entry__7 " class="tdcenter">&nbsp;</td>
+
+<td headers="zzklist__entry__7 ">&nbsp;</td>
+
+<td headers="zzklist__entry__7 ">&nbsp;</td>
+</tr>
+
+</tbody>
+</table></div>
+</div>
+
+<p>The KLIST operation is a declarative operation that gives a name
+to a list of KFLDs. This list can be used as a search argument to
+retrieve records from files that have a composite key.</p>
+
+<p>You can specify a KLIST anywhere within calculations. The control
+level entry <a href="/docs/en/ssw_ibm_i_74/rzasd/c78.htm#c78">(positions 7 and 8)</a> can be blank
+or can contain an L1 through L9 indicator, an LR indicator, or an
+L0 entry to group the statement within the appropriate section of
+the program. Conditioning indicator entries (positions 9 through 11)
+are not permitted.  Factor 1 must contain a unique name.</p>
+
+<div class="p">Remember the following when specifying a KLIST operation: 
+<ul class="cds--list--unordered">
+<li class="cds--list__item">If a search argument is composed of more than one field (a composite
+key), you must specify a KLIST with multiple KFLDs.</li>
+
+<li class="cds--list__item">A KLIST name can be specified as a search argument only for externally
+described files.</li>
+
+<li class="cds--list__item">A KLIST and its associated KFLD fields can appear anywhere in
+calculations.</li>
+
+<li class="cds--list__item">A KLIST must be followed immediately by at least one KFLD.</li>
+
+<li class="cds--list__item">A KLIST is ended when a non-KFLD operation is encountered.</li>
+
+<li class="cds--list__item">A KLIST name can appear in factor 1 of a CHAIN, DELETE, READE,
+READPE, SETGT, or SETLL operation.</li>
+
+<li class="cds--list__item">The same KLIST name can be used as the search argument for multiple
+files, or it can be used multiple times as the search argument for
+the same file.</li>
+
+<li class="cds--list__item">A KLIST in a cycle-main procedure can have only
+global KFLDs associated with it.  A KLIST in a subprocedure can have
+local and global KFLDs. For more information, see <a href="/docs/en/ssw_ibm_i_74/rzasd/hsbscp.htm#hsbscp">Scope of Definitions</a>.</li>
+
+</ul>
+</div>
+
+<p>For more information, see <a href="/docs/en/ssw_ibm_i_74/rzasd/yydecl.htm#yydecl">Declarative Operations</a>.</p>
+
+<figure class="figborder" id="zzklist__klop"><figcaption>Figure 1. KLIST and
+KFLD Operations</figcaption>
+
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>*...1....+....2....+....3....+....4....+....5....+....6....+....7....+....
+A*  DDS source
+A          R RECORD
+A            FLDA           4
+A            SHIFT          1  0
+A            FLDB          10
+A            CLOCK#         5  0
+A            FLDC          10
+A            DEPT           4
+A            FLDD           8
+A          K DEPT
+A          K SHIFT
+A          K CLOCK#
+A*
+A*  End of DDS source
+A*
+A***********************************************************************
+*...1....+....2....+....3....+....4....+....5....+....6....+....7....+....
+CL0N01Factor1+++++++Opcode(E)+Factor2+++++++Result++++++++Len++D+HiLoEq....
+ *
+ *  The KLIST operation indicates the name, FILEKY, by which the
+ *  search argument can be specified.
+ *
+C     FILEKY        KLIST
+C                   KFLD                    DEPT
+C                   KFLD                    SHIFT
+C                   KFLD                    CLOCK#</code></pre></div><div class="docs--copy-btn"></div></div>
+<p>The following diagram shows what the search argument looks like.
+The fields DEPT, SHIFT, and CLOCK# are key fields in this record.</p>
+<div class="image"><img src="/docs/en/ssw_ibm_i_74/gifs/rpgrkfld.gif" alt="search argument" class="ibmdocs-image-downsize"></div></figure>
+
+</div>
+<aside role="complementary" aria-labelledby="zzklist__title__1"><nav role="navigation" aria-label="bottom related links" class="ibm-padding-top-1 ibm-padding-bottom-2 bx--row bottom-section-parent">
+<div class="familylinks ibm-margin-bottom-1">
+<div class="parentlink"><strong>Parent topic:</strong> <div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a data-hd-product="ssw_ibm_i_74" href="/docs/en/ssw_ibm_i_74/rzasd/operxcl.htm" class="bottom-section-link">Operation Codes</a></div></div>
+</div>
+</nav></aside></article></main>

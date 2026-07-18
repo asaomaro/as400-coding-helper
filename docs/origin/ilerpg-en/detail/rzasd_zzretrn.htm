@@ -1,0 +1,178 @@
+<main role="main"><article role="article" aria-labelledby="zzretrn__title__1">
+<h1 class="topictitle1" id="zzretrn__title__1">RETURN (Return to Caller)</h1><div id="lastModifiedDate"><span>Last Updated</span>: 2026-07-13</div>
+
+
+<div class="body">
+
+<div class="tablenoborder"><div class="cds--data-table-container"><table summary="" class="defaultstyle cds--data-table"><colgroup><col><col></colgroup><tbody>
+<tr>
+<td class="tdleft"><strong>Free-Form Syntax</strong></td>
+
+<td class="tdleft">RETURN{(HMR)} <span class="ph synph"><span class="ph var">expression</span></span></td>
+</tr>
+
+</tbody>
+</table></div>
+</div>
+
+
+<div class="tablenoborder"><div class="cds--data-table-container"><table summary="" class="defaultstyle cds--data-table"><colgroup><col><col><col><col><col><col><col></colgroup><thead>
+<tr>
+<th id="zzretrn__entry__3" class="thleft thbot"><div class="cds--table-header-label"><strong>Code</strong></div></th>
+
+<th id="zzretrn__entry__4" class="thleft thbot"><div class="cds--table-header-label"><strong>Factor 1</strong></div></th>
+
+<th colspan="5" id="zzretrn__entry__5" class="thleft thbot"><div class="cds--table-header-label"><strong>Extended Factor 2</strong></div></th>
+</tr>
+
+</thead>
+<tbody>
+<tr>
+<td headers="zzretrn__entry__3 " class="tdleft"><strong>RETURN (H M/R)</strong></td>
+
+<td headers="zzretrn__entry__4 " class="tdleft">&nbsp;</td>
+
+<td colspan="5" headers="zzretrn__entry__5 " class="tdleft">expression</td>
+</tr>
+
+</tbody>
+</table></div>
+</div>
+
+<p>The RETURN operation causes a return to the caller. If a value
+is returned to the caller, the return value is specified in the <span class="ph synph"><span class="ph var">expression</span></span> operand.</p>
+
+<div class="p">The actions which occur as a result of the RETURN operation differ
+depending on whether the operation is in a <span class="ph">cycle-main</span> procedure
+or subprocedure. When a <span class="ph">cycle-main</span> procedure returns,
+the following occurs:
+<ol class="cds--list--ordered--temporary">
+<li class="cds--list__item">The halt indicators are checked. If a halt indicator is on, the
+procedure ends abnormally. (All open files are closed, an error return
+code is set to indicate to the calling routine that the procedure
+has ended abnormally, and control returns to the calling routine.)</li>
+
+<li class="cds--list__item">If no halt indicators are on, the LR indicator is checked. If
+LR is on, the program ends normally. (Locked data area structures,
+arrays, and tables are written, and external indicators are reset.)</li>
+
+<li class="cds--list__item">If no halt indicator is on and LR is not on, the procedure returns
+to the calling routine. Data is preserved for the next time the procedure
+is run. Files and data areas are not written out. See the chapter
+on calling programs and procedures in the <cite><span class="keyword">Rational® Development Studio for i: ILE RPG Programmer's Guide</span></cite> for
+information on how running in a *NEW activation group affects the
+operation of RETURN.</li>
+
+</ol>
+</div>
+
+<p>When a subprocedure returns, the return value, if specified
+on the prototype of the called program or procedure, is passed to
+the caller. Automatic files are closed. Nothing else occurs automatically.
+All static or global files and data areas must be closed manually.
+You can set on indicators such as LR, but this will not cause program
+termination to occur.</p>
+
+<p>For information on how operation extenders H, M, and R are used,
+see <a href="/docs/en/ssw_ibm_i_74/rzasd/prcsnr.htm#prcsnr">Precision Rules for Numeric Operations</a>.</p>
+
+<p>In a subprocedure that returns a value, a RETURN operation must
+be coded within the subprocedure. The actual returned value has the
+same role as the left-hand side of the EVAL expression, while the
+extended factor 2 of the RETURN operation has the same role as the
+right-hand side. An array may be returned only if the prototype has
+defined the return value as an array.</p>
+
+<section class="section" role="region" aria-labelledby="zzretrn__title__2"><h2 class="sectiontitle" id="zzretrn__title__2">Attention!</h2>
+<p>If the subprocedure returns a value, you should ensure that a RETURN
+operation is performed before reaching the end of the procedure. If
+the subprocedure ends without encountering a RETURN operation, an
+exception is signalled to the caller.</p>
+</section>
+
+<section class="section" role="region" aria-labelledby="zzretrn__title__3"><h2 class="sectiontitle" id="zzretrn__title__3">Performance tip</h2>
+<p>Specifying the RTNPARM keyword on your prototype may significantly
+improve the performance for returning large values. See <a href="/docs/en/ssw_ibm_i_74/rzasd/drtnparm.htm#drtnparm">RTNPARM</a> for more information.</p>
+</section>
+
+<p>For more information, see <a href="/docs/en/ssw_ibm_i_74/rzasd/yycall.htm#yycall">Call Operations</a>.</p>
+
+<figure class="figborder" id="zzretrn__retrnop"><figcaption>Figure 1. Examples of the RETURN Operation</figcaption>
+
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>      * This is the prototype for subprocedure RETNONE. Since the
+      * prototype specification does not have a data type, this
+      * subprocedure does not return a value.
+     D RetNone         PR
+      * This is the prototype for subprocedure RETFLD. Since the
+      * prototype specification has the type 5P 2, this subprocedure
+      * returns a packed value with 5 digits and 2 decimals.
+      * The subprocedure has a 5-digit integer parameter, PARM,
+      * passed by reference.
+     D RetFld          PR             5P 2
+     D   Parm                         5I 0
+      * This is the prototype for subprocedure RETARR. The data
+      * type entries for the prototype specification show that
+      * this subprocedure returns a date array with 3 elements.
+      * The dates are in *YMD/ format.
+     D RetArr          PR              D   DIM(3) DATFMT(*YMD/)
+      * This procedure (P) specification indicates the beginning of
+      * subprocedure RETNONE. The data specification (D) specification
+      * immediately following is the procedure-interface
+      * specification for this subprocedure. Note that the
+      * procedure interface is the same as the prototype except for
+      * the definition type (PI vs PR).
+     P RetNone         B
+     D RetNone         PI
+      * RetNone does not return a value, so the RETURN
+      * operation does not have factor 2 specified.
+     C                   RETURN
+     P RetNone         E
+      * The following 3 specifications contain the beginning of
+      * the subprocedure RETFLD as well as its procedure interface.
+     P RetFld          B
+     D RetFld          PI             5P 2
+     D   Parm                         5I 0
+     D Fld             S             12S 1 INZ(13.8)
+      * RetFld returns a numeric value.  The following RETURN
+      * operations show returning a literal, an expression and a
+      * variable. Note that the variable is not exactly the same
+      * format or length as the actual return value.
+     C                   RETURN       7
+     C                   RETURN       Parm * 15
+     C                   RETURN       Fld
+     P RetFld          E</code></pre></div><div class="docs--copy-btn"></div></div>
+</figure>
+
+<div class="figborder">
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>      * The following 3 specifications contain the beginning of the
+      * subprocedure RETARR as well as its procedure interface.
+     P RetArr          B
+     D RetArr          PI              D   DIM(3)
+     D SmallArr        S               D   DIM(2) DATFMT(*ISO)
+     D BigArr          S               D   DIM(4) DATFMT(*USA)
+      * RetArr returns a date array.  Note that the date
+      * format of the value specified on the RETURN operation
+      * does not have to be the same as the defined return
+      * value.
+      * The following RETURN operation specifies a literal.
+      * The caller receives an array with the value of the
+      * literal in every element of the array.
+     C                   RETURN        D'1995-06-27'
+      * The following return operation returns an array
+      * with a smaller dimension than the actual return value.
+      * In this case, the third element would be set to the
+      * default value for the array.
+     C                   RETURN        SmallArr
+      * The following return operation returns an array
+      * with a larger dimension than the actual return
+      * value.  In this case, the fourth element of BigArr
+      * would be ignored.
+     C                   RETURN        BigArr
+     P RetArr          E</code></pre></div><div class="docs--copy-btn"></div></div></div>
+
+</div>
+<aside role="complementary" aria-labelledby="zzretrn__title__1"><nav role="navigation" aria-label="bottom related links" class="ibm-padding-top-1 ibm-padding-bottom-2 bx--row bottom-section-parent">
+<div class="familylinks ibm-margin-bottom-1">
+<div class="parentlink"><strong>Parent topic:</strong> <div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a data-hd-product="ssw_ibm_i_74" href="/docs/en/ssw_ibm_i_74/rzasd/operxcl.htm" class="bottom-section-link">Operation Codes</a></div></div>
+</div>
+</nav></aside></article></main>

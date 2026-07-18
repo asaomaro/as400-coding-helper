@@ -1,0 +1,83 @@
+<div role="main">
+<!-- Java sync-link --><script language="Javascript" src="../rzahg/synch.js" type="text/javascript"></script>
+<h1 class="title topictitle1">LEAVE (Do/For グループからの抜け出し)</h1><div id="lastModifiedDate"><span>Last Updated</span>: 2021-04-13</div>
+<div class="body"><div class="tablenoborder"><div class="cds--data-table-container"><table cellpadding="4" cellspacing="0" summary="" role="presentation" class="table presentation cds--data-table" width="100%" rules="all" frame="border" border="1"><tbody class="tbody"><tr class="row"><td class="entry tdleft" align="left" valign="top" width="25%"><strong class="ph b">自由形式構文</strong></td>
+<td class="entry tdleft" align="left" valign="top" width="75%">LEAVE</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="tablenoborder"><span class="desc tabledesc"></span><div class="cds--data-table-container"><table cellpadding="4" cellspacing="0" summary="" class="table cds--data-table" width="100%" rules="all" frame="border" border="1"><thead class="thead" align="left"><tr class="row"><th class="entry thcenter thbot" align="center" valign="bottom" width="14.898989898989898%" id="d369847e63"><div class="cds--table-header-label"><strong class="ph b">コード</strong></div></th>
+<th class="entry thcenter thbot" align="center" valign="bottom" width="22.22222222222222%" id="d369847e66"><div class="cds--table-header-label"><strong class="ph b">演算項目 1</strong></div></th>
+<th class="entry thcenter thbot" align="center" valign="bottom" width="26.01010101010101%" id="d369847e69"><div class="cds--table-header-label"><strong class="ph b">演算項目 2</strong></div></th>
+<th class="entry thcenter thbot" align="center" valign="bottom" width="14.898989898989898%" id="d369847e72"><div class="cds--table-header-label"><strong class="ph b">結果フィールド</strong></div></th>
+<th class="entry thcenter thbot" colspan="3" align="center" valign="bottom" id="d369847e75"><div class="cds--table-header-label"><strong class="ph b">標識</strong></div></th>
+</tr>
+</thead>
+<tbody class="tbody"><tr class="row"><td class="entry tdleft" align="left" valign="top" width="14.898989898989898%" headers="d369847e63 "><strong class="ph b">LEAVE</strong></td>
+<td class="entry tdleft" align="left" valign="top" width="22.22222222222222%" headers="d369847e66 ">&nbsp;</td>
+<td class="entry tdleft" align="left" valign="top" width="26.01010101010101%" headers="d369847e69 ">&nbsp;</td>
+<td class="entry tdleft" align="left" valign="top" width="14.898989898989898%" headers="d369847e72 ">&nbsp;</td>
+<td class="entry tdcenter" align="center" valign="top" width="7.3232323232323235%" headers="d369847e75 ">&nbsp;</td>
+<td class="entry" valign="top" width="7.3232323232323235%" headers="d369847e75 ">&nbsp;</td>
+<td class="entry" valign="top" width="7.3232323232323235%" headers="d369847e75 ">&nbsp;</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p class="p">LEAVE 命令は、DO または FOR グループの中から ENDDO または ENDFOR
+命令の後のステートメントに制御を渡します。</p>
+<p class="p">LEAVE は、DO、DOU、DOUxx、DOW、DOWxx、または FOR
+ループの中で、一番内側のループから、一番内側のループの ENDDO または ENDFOR
+命令の後のステートメントにただちに制御を渡すために使用できます。DO
+または FOR グループから抜けるために LEAVE を使用しても指標の増分は行われません。</p>
+<p class="p">ネストされたループでは、LEAVE によって 1 レベルだけ “外側” へ
+制御が渡されます。 DO または FOR グループの外側では LEAVE は使用できません。</p>
+<p class="p"><a class="xref" href="/docs/ja/ssw_ibm_i_74/rzasd/zziter.htm#zziter">ITER (繰り返し)</a>命令は LEAVE 命令に似ていますが、ITER
+は ENDDO または
+ENDFOR ステートメント<strong class="ph b"><em class="ph i">に</em></strong> 制御を渡します。</p>
+<p class="p">詳細については、<a class="xref" href="/docs/ja/ssw_ibm_i_74/rzasd/yybrnch.htm#yybrnch">分岐命令</a>または <a class="xref" href="/docs/ja/ssw_ibm_i_74/rzasd/strupro.htm#strupro">構造化プログラミング命令</a>を参照してください。</p>
+<div class="fig figborder" id="zzleave__leavop"><span class="figcap">図 1. LEAVE 命令</span><div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code>*...1....+....2....+....3....+....4....+....5....+....6....+....7....+....
+CL0N01Factor1+++++++Opcode(E)+Factor2+++++++Result++++++++Len++D+HiLoEq....
+ *
+ * The following example uses an infinite loop.  When the user
+ * types 'q', control transfers to the LEAVE operation, which in
+ * turn transfers control out of the loop to the Z-ADD operation.
+ *
+C     2             DOWNE     1
+C                   :
+C                   IF        ANSWER = 'q'
+C                   LEAVE
+C                   ENDIF
+C                   :
+C                   ENDDO
+C                   Z-ADD     A             B
+ *
+ * The following example uses a DOUxx loop containing a DOWxx.
+ * The IF statement checks indicator 1. If it is ON, indicator
+ * 99 is turned ON, control passes to the LEAVE operation and
+ * out of the inner DOWxx loop.
+ *
+ * A second LEAVE instruction is then executed because indicator 99
+ * is ON, which in turn transfers control out of the DOUxx loop.
+ *
+C                   :
+C     FLDA          DOUEQ     FLDB
+C     NUM           DOWLT     10
+C     *IN01         IFEQ      *ON
+C                   SETON                                        99
+C                   LEAVE
+C                   :
+C                   ENDIF
+C                   ENDDO
+C  99               LEAVE
+C                   :
+C                   ENDDO
+C                   :</code></pre></div><div class="docs--copy-btn"></div></div>
+</div>
+</div>
+<div class="related-links ibm-padding-top-1 ibm-padding-bottom-2 bx--row bottom-section-parent" aria-label="bottom related links">
+<div class="familylinks ibm-margin-bottom-1">
+<div class="parentlink"><strong>親トピック:</strong> <div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a class="link bottom-section-link" href="/docs/ja/ssw_ibm_i_74/rzasd/operxcl.htm">命令コード</a></div></div>
+</div>
+</div></div>

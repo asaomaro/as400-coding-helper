@@ -1,0 +1,239 @@
+<main role="main"><article role="article" aria-labelledby="bbloo__title__1">
+<h1 class="topictitle1" id="bbloo__title__1">%LOOKUPxx (Look Up an Array Element)</h1><div id="lastModifiedDate"><span>Last Updated</span>: 2026-07-13</div>
+
+
+<div class="body">
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>%LOOKUP(arg : array | keyed_array_DS {: start_index {: number_of_elements}})
+%LOOKUPLT(arg : array  {: start_index {: number_of_elements}})
+%LOOKUPGE(arg : array  {: start_index {: number_of_elements}})
+%LOOKUPGT(arg : array  {: start_index {: number_of_elements}})
+%LOOKUPLE(arg : array  {: start_index {: number_of_elements}})</code></pre></div><div class="docs--copy-btn"></div></div>
+<div class="p">The following functions return the array index of the
+item in the array that matches that matches <span class="ph synph"><span class="ph var">arg</span></span>.
+%LOOKUP can also be used to return the array index of the item in
+a keyed array data structure. <dl>
+<dt class="dlterm">%LOOKUP</dt>
+
+<dd class="dlentry">An exact match.</dd>
+
+
+<dt class="dlterm">%LOOKUPLT</dt>
+
+<dd class="dlentry">The value that is closest to <span class="ph synph"><span class="ph var">arg</span></span> but
+less than <span class="ph synph"><span class="ph var">arg</span></span>.</dd>
+
+
+<dt class="dlterm">%LOOKUPLE</dt>
+
+<dd class="dlentry">An exact match, or the value that is closest to <span class="ph synph"><span class="ph var">arg</span></span> but
+less than <span class="ph synph"><span class="ph var">arg</span></span>.</dd>
+
+
+<dt class="dlterm">%LOOKUPGT</dt>
+
+<dd class="dlentry">The value that is closest to <span class="ph synph"><span class="ph var">arg</span></span> but
+greater than <span class="ph synph"><span class="ph var">arg</span></span>.</dd>
+
+
+<dt class="dlterm">%LOOKUPGE</dt>
+
+<dd class="dlentry">An exact match, or the value that is closest to <span class="ph synph"><span class="ph var">arg</span></span> but
+greater than <span class="ph synph"><span class="ph var">arg</span></span>.</dd>
+
+</dl>
+</div>
+
+<p>If no value matches the specified condition, zero is
+returned. The value returned is in unsigned integer format (type U).</p>
+
+<div class="p">There could be more than one element that matches
+the specified condition. For the following discussion, assume the
+following values for the ascending and descending arrays.
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>
+           +---+---+---+---+---+---+---+
+           | 1 | 2 | 3 | 4 | 5 | 6 | 7 |
+-----------+---+---+---+---+---+---+---+
+ASCEND     | A | C | C | C | E | E | G |
+-----------+---+---+---+---+---+---+---+
+DESCEND    | G | E | E | E | C | C | A |
+-----------+---+---+---+---+---+---+---+
+</code></pre></div><div class="docs--copy-btn"></div></div>
+<ul class="cds--list--unordered">
+<li class="cds--list__item">For %LOOKUP, %LOOKUPLE, or %LOOKUPGE, if there is more than one
+element that is equal to the search argument, then the index of the
+first matching element is returned.
+For example, if the search argument is C, these built-in
+functions will return 2 for the ascending array and 5 for
+the descending array.</li>
+
+<li class="cds--list__item">For %LOOKUPLE for ascending arrays, if there is no element that
+is equal to the search argument, then the built-in function returns
+the index of the last element less than the search argument.
+For example, if the search argument is D, %LOOKUPLE
+returns 4.</li>
+
+<li class="cds--list__item">For %LOOKUPLE for descending arrays, if there is no element that
+is equal to the search argument, then the built-in function returns
+the index of the first element less than the search argument.
+For example, if the search argument is D, %LOOKUPLE
+returns 5.</li>
+
+<li class="cds--list__item">For %LOOKUPGE for ascending arrays, if there is no element that
+is equal to the search argument, then the built-in function returns
+the index of the first element greater than the search argument.
+For example, if the search argument is D, %LOOKUPGE
+returns 5.</li>
+
+<li class="cds--list__item">For %LOOKUPGE for descending arrays, if there is no element that
+is equal to the search argument, then the built-in function returns
+the index of the last element greater than the search argument.
+For example, if the search argument is D, %LOOKUPGE
+returns 4.</li>
+
+<li class="cds--list__item">For %LOOKUPLT for ascending arrays, the built-in function returns
+the index of the last element less than the search argument.
+For example, if the search argument is D, %LOOKUPLT
+returns 4.</li>
+
+<li class="cds--list__item">For %LOOKUPLT for descending arrays, the built-in function returns
+the index of the first element less than the search argument.
+For example, if the search argument is D, %LOOKUPLT
+returns 5.</li>
+
+<li class="cds--list__item">For %LOOKUPGT for ascending arrays, the built-in function returns
+the index of the first element greater than the search argument.
+For example, if the search argument is D, %LOOKUPGT
+returns 5.</li>
+
+<li class="cds--list__item">For %LOOKUPGT for descending arrays, the built-in function returns
+the index of the last element greater than the search argument.
+For example, if the search argument is D, %LOOKUPGT
+returns 4.</li>
+
+</ul>
+ </div>
+
+<p>The search starts at index <span class="ph synph"><span class="ph var">start_index</span></span> and
+continues for <span class="ph synph"><span class="ph var">number_of_elems</span></span> elements.
+By default, the entire array is searched.</p>
+
+<p>The second parameter can be a scalar array in the form
+ARRAY_NAME. For %LOOKUP, it can also be a <a href="/docs/en/ssw_ibm_i_74/rzasd/arrds.htm#arrds__keyed">keyed array data structure</a>
+in the form ARRAY_DS_NAME(*).SUBFIELD_NAME.</p>
+
+<p>To search an array data structure, specify the data
+structure name with an index of (*), then specify the subfield to
+be used as the key for the search. For example, to search for a value
+of 'XP2' in the CODE subfield of array data structure INFO, specify
+'XP2' as the first parameter and specify INFO(*).CODE as the second
+parameter. The part of the qualified name up to the (*) index must
+represent an array, and the part of the qualified name after the (*)
+must represent a scalar subfield, or indexed array of scalars.</p>
+
+<p>The first two parameters can have any type but must
+have the same type. For a keyed data structure array, the first parameter
+must have the same type as the key. They do not need to have the same
+length or number of decimal positions. The third and fourth parameters
+must be non-float numeric values with zero decimal positions.</p>
+
+<p>For %LOOKUPLT, %LOOKUPLE, %LOOKUPGT, and %LOOKUPGE, the array must
+be defined with keyword ASCEND or DESCEND. The ALTSEQ table is used,
+unless <span class="ph synph"><span class="ph var">arg</span></span> or <span class="ph synph"><span class="ph var">array</span></span> is
+defined with ALTSEQ(*NONE).</p>
+
+<p>Built-in functions %FOUND and %EQUAL are not set following a %LOOKUP
+operation.</p>
+
+<p>The %LOOKUPxx built-in functions use a binary search
+for sequenced arrays (arrays that have the ASCEND or DESCEND keyword
+specified).</p>
+
+<div class="note border-2 cds--inline-notification--info ibmdocs-note cds--inline-notification cds--inline-notification--low-contrast margin-top-1 margin-bottom-1"><div class="cds--inline-notification__details"><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" class="cds--inline-notification__icon" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M16,2A14,14,0,1,0,30,16,14,14,0,0,0,16,2Zm0,5a1.5,1.5,0,1,1-1.5,1.5A1.5,1.5,0,0,1,16,7Zm4,17.12H12V21.88h2.88V15.12H13V12.88h4.13v9H20Z"></path></svg>
+        <div class="cds--inline-notification__text-wrapper">
+          <div class="cds--inline-notification__subtitle"><span class="notetitle ibm-bold ibm-textcolor-blue-50 background-blue cds--inline-notification__title ibm-padding-top-1 ibm-padding-bottom-1 padding-left-1 padding-right-1">Note:</span> Unlike the LOOKUP operation code, %LOOKUP applies only to arrays.
+To look up a value in a table, use the %TLOOKUP built-in function.</div>
+        </div>
+      </div></div>
+
+<div class="p">For more information, see: <ul class="cds--list--unordered">
+<li class="cds--list__item"><a href="/docs/en/ssw_ibm_i_74/rzasd/yyarray.htm#yyarray">Array Operations</a></li>
+
+<li class="cds--list__item"><a href="/docs/en/ssw_ibm_i_74/rzasd/bifsint.htm#bifsint">Built-in Functions</a></li>
+
+<li class="cds--list__item"><a href="/docs/en/ssw_ibm_i_74/rzasd/arrds.htm#arrds">Array Data Structures</a></li>
+
+</ul>
+</div>
+
+<figure class="figborder"><figcaption>Figure 1. %LOOKUPxx with a scalar array</figcaption>
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code> *..1....+....2....+....3....+....4....+....5....+....6....+....7...+....
+ /FREE
+   arr(1) = 'Cornwall';
+   arr(2) = 'Kingston';
+   arr(3) = 'London';
+   arr(4) = 'Paris';
+   arr(5) = 'Scarborough';
+   arr(6) = 'York';
+
+   n = %LOOKUP('Paris':arr);
+   // n = 4
+
+   n = %LOOKUP('Thunder Bay':arr);
+   // n = 0 (not found)
+
+   n = %LOOKUP('Kingston':arr:3);
+   // n = 0 (not found after start index)
+
+   n = %LOOKUPLE('Paris':arr);
+   // n = 4
+
+   n = %LOOKUPLE('Milton':arr);
+   // n = 3
+
+   n = %LOOKUPGT('Sudbury':arr);
+   // n = 6
+
+   n = %LOOKUPGT('Yorks':arr:2:4);
+   // n = 0 (not found between elements 2 and 5)
+ /END-FREE</code></pre></div><div class="docs--copy-btn"></div></div>
+</figure>
+
+<figure class="figborder"><figcaption>Figure 2. %LOOKUP with an array data structure</figcaption>
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>D emps            DS                  QUALIFIED DIM(20)
+D    name                       25A   VARYING
+D    id                          9S 0
+D numEmps         S             10I 0
+ /FREE
+   emps(1).name = 'Mary';
+   emps(1).id = 00138;
+   emps(2).name = 'Patrick';
+   emps(2).id = 10379;
+   emps(3).name = 'Juan';
+   emps(3).id = 06254;
+   numEmps = 3;
+
+   // Search for employee 'Patrick'
+   n = %lookup('Patrick' : emps(*).name : 1 : numEmps);
+   // n = 2
+
+   // Search for the employee with id 06254
+   n = %lookup(06254 : emps(*).id : 1 : numEmps);
+   // n = 3
+
+   // Search for employee 'Bill' (not found)
+   n = %lookup('Bill' : emps(*).name : 1 : numEmps);
+   // n = 0</code></pre></div><div class="docs--copy-btn"></div></div>
+</figure>
+
+</div>
+
+<aside role="complementary" aria-labelledby="bbloo__title__1"><nav role="navigation" aria-label="bottom related links" class="ibm-padding-top-1 ibm-padding-bottom-2 bx--row bottom-section-parent">
+<ul class="ullinks cds--list--unordered">
+<li class="ulchildlink cds--list__item" data-hd-product="ssw_ibm_i_74"><strong><a href="/docs/en/ssw_ibm_i_74/rzasd/seqarray.htm">Sequenced arrays that are not in the correct sequence</a></strong><br>
+</li>
+</ul>
+
+<div class="familylinks ibm-margin-bottom-1">
+<div class="parentlink"><strong>Parent topic:</strong> <div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a data-hd-product="ssw_ibm_i_74" href="/docs/en/ssw_ibm_i_74/rzasd/bifs.htm" class="bottom-section-link">Built-in Functions</a></div></div>
+</div>
+</nav></aside></article></main>

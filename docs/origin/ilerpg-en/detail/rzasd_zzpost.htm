@@ -1,0 +1,178 @@
+<main role="main"><article role="article" aria-labelledby="zzpost__title__1">
+<h1 class="topictitle1" id="zzpost__title__1">POST (Post)</h1><div id="lastModifiedDate"><span>Last Updated</span>: 2026-07-13</div>
+
+
+<div class="body">
+
+<div class="tablenoborder"><div class="cds--data-table-container"><table summary="" class="defaultstyle cds--data-table"><colgroup><col><col></colgroup><tbody>
+<tr>
+<td class="tdleft"><strong>Free-Form Syntax</strong></td>
+
+<td class="tdleft">POST{(E)} {<span class="ph synph"><span class="ph var">program-device</span></span>} <span class="ph synph"><span class="ph var">file-name</span></span></td>
+</tr>
+
+</tbody>
+</table></div>
+</div>
+
+
+<div class="tablenoborder"><div class="cds--data-table-container"><table summary="" class="defaultstyle cds--data-table"><colgroup><col><col><col><col><col><col><col></colgroup><thead>
+<tr>
+<th id="zzpost__entry__3" class="thcenter thbot"><div class="cds--table-header-label"><strong>Code</strong></div></th>
+
+<th id="zzpost__entry__4" class="thcenter thbot"><div class="cds--table-header-label"><strong>Factor 1</strong></div></th>
+
+<th id="zzpost__entry__5" class="thcenter thbot"><div class="cds--table-header-label"><strong>Factor 2</strong></div></th>
+
+<th id="zzpost__entry__6" class="thcenter thbot"><div class="cds--table-header-label"><strong>Result Field</strong></div></th>
+
+<th colspan="3" id="zzpost__entry__7" class="thcenter thbot"><div class="cds--table-header-label"><strong>Indicators</strong></div></th>
+</tr>
+
+</thead>
+<tbody>
+<tr>
+<td headers="zzpost__entry__3 " class="tdleft"><strong>POST (E)</strong></td>
+
+<td headers="zzpost__entry__4 " class="tdleft">program-device</td>
+
+<td headers="zzpost__entry__5 " class="tdleft">file-name</td>
+
+<td headers="zzpost__entry__6 " class="tdleft">INFDS name</td>
+
+<td headers="zzpost__entry__7 " class="tdcenter">_</td>
+
+<td headers="zzpost__entry__7 " class="tdcenter">ER</td>
+
+<td headers="zzpost__entry__7 " class="tdcenter">_</td>
+</tr>
+
+</tbody>
+</table></div>
+</div>
+
+<div class="p">The POST operation puts information in an INFDS (file information
+data structure).  This information contains the following:
+<ul class="cds--list--unordered">
+<li class="cds--list__item">File Feedback Information specific to RPG I/O for the file</li>
+
+<li class="cds--list__item">Open Feedback Information for the file</li>
+
+<li class="cds--list__item">Input/Output Feedback Information and Device Dependent Feedback
+Information for the file OR Get Attribute Information</li>
+
+</ul>
+</div>
+
+<p>The <span class="ph synph"><span class="ph var">program-device</span></span> operand specifies a program
+device name to get information about that specific program device.
+If you specify a program device, the file must be defined as a WORKSTN
+file. If <span class="ph synph"><span class="ph var">program-device</span></span> is specified, then the
+INFDS will contain Get Attribute Information following the Open Feedback
+Information. Use either a character field of length 10 or less, a
+character literal, or a character named constant. If <span class="ph synph"><span class="ph var">program-device</span></span> is
+not specified, then the INFDS will contain Input/Output Feedback Information
+and Device Dependent Feedback Information following the Open Feedback
+Information.</p>
+
+<p>Specify the name of a file in the <span class="ph synph"><span class="ph var">file-name</span></span> operand.
+ Information for this file is posted in the INFDS associated with
+this file.</p>
+
+<div class="p">In free-form syntax, you must specify a <span class="ph synph"><span class="ph var">file-name</span></span> and
+cannot specify an INFDS name. In traditional syntax, you can specify
+a <span class="ph synph"><span class="ph var">file-name</span></span>, an INFDS name, or both.
+<ul class="cds--list--unordered">
+<li class="cds--list__item">If you do not specify <span class="ph">an INFDS name</span>, the
+INFDS associated with this file using the INFDS keyword in the file
+specification will be used.</li>
+
+<li class="cds--list__item">If you do not specify <span class="ph">an INFDS name</span> in traditional
+syntax, you must specify the data structure name that has been used
+in the INFDS keyword for the file specification in the result field;
+information from the associated file in the file specification will
+be posted.</li>
+
+</ul>
+</div>
+
+<p>To handle POST exceptions (<a href="/docs/en/ssw_ibm_i_74/rzasd/stacod9.htm#stacod9">file status codes</a> greater
+than 1000), either the operation code extender 'E' or an error indicator
+ER can be specified, but not both. For more information on error handling,
+see <a href="/docs/en/ssw_ibm_i_74/rzasd/filexpe.htm#filexpe">File Exception/Errors</a>.</p>
+
+<div class="p">Even when a POST operation code is not processed, its
+existence in your program can affect the way the <span class="keyword">RPG IV</span> language
+operates. The presence of a POST operation with no program-device
+specified can affect the posting of feedback to one or more files.
+<ul class="cds--list--unordered">
+<li class="cds--list__item">The presence of a POST operation with no program-device specified
+for a file defined on a global File specification will affect the
+implicit posting of feedback to the INFDS for all global files in
+the module.   </li>
+
+<li class="cds--list__item">The presence of a POST operation with no program-device specified
+for a global file will have no effect on the implicit posting of feedback
+to the INFDS for files defined in subprocedures.   </li>
+
+<li class="cds--list__item">The presence of a POST operation with no program-device specified
+for a locally-defined file will only affect the implicit posting of
+feedback to the INFDS for that file; it will have no effect for global
+files, or for other files defined in that subprocedure.   </li>
+
+<li class="cds--list__item">The implicit posting of feedback to the INFDS for a file that
+is passed as a parameter is determined by the module in which the
+file is defined. A POST operation with no program-device specified
+to a file parameter may be redundant if the feedback information is
+always posted to that file's INFDS.   </li>
+
+<li class="cds--list__item">If a global file is passed as a parameter to another procedure
+in the same module, and that procedure does a POST operation to its
+parameter, that POST operation will not be considered to be a POST
+operation to a global file. </li>
+
+</ul>
+</div>
+
+<p>Usually, the INFDS is updated at each input and output
+operation or block of operations. However, if the presence of a POST
+operation affects the posting of feedback to the INFDS of a file,
+then RPG IV updates the I/O Feedback Information area and the Device
+Dependent Feedback Information area in the INFDS of the file only
+when you process a POST operation for the file. The File Dependent
+Information in the INFDS is updated on all Input/Output operations.
+If you have opened a file for multiple-member processing, the Open
+Feedback Information in the INFDS will be updated when an input operation
+(READ, READP, READE READPE) causes a new member to be opened.</p>
+
+<p>Note that DUMP retrieves its information directly from the Open
+Data Path and not from the INFDS, so the file information sections
+of the DUMP do not depend on POST.</p>
+
+<p>If a program has no POST operation code, or if it has only POST
+operation codes with <span class="ph synph"><span class="ph var">program-device</span></span> specified,
+the Input/Output Feedback and Device Dependent Feedback section is
+updated with each input/output operation or block of operations. If
+RPG is blocking records, most of the information in the INFDS will
+be valid only for the last complete block of records processed. When
+doing blocked input, from a data base file, RPG will update the relative
+record number and key information in the INFDS for each read, not
+just the last block of records processed. If you require more accurate
+information, do not use record blocking. See <a href="/docs/en/ssw_ibm_i_74/rzasd/filinda.htm#filinda">File Information Data Structure</a> for
+more information on record blocking. If you do not require feedback
+information after every input/output operation, you may be able to
+improve performance by using the POST operation only when you require
+the feedback information.</p>
+
+<p>When a POST operation is processed, the associated file must be
+open. If you specify a program device on the POST operation, it does
+not have to be acquired by the file.</p>
+
+<p>For more information, see <a href="/docs/en/ssw_ibm_i_74/rzasd/filop.htm#filop">File Operations</a>.</p>
+
+</div>
+<aside role="complementary" aria-labelledby="zzpost__title__1"><nav role="navigation" aria-label="bottom related links" class="ibm-padding-top-1 ibm-padding-bottom-2 bx--row bottom-section-parent">
+<div class="familylinks ibm-margin-bottom-1">
+<div class="parentlink"><strong>Parent topic:</strong> <div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a data-hd-product="ssw_ibm_i_74" href="/docs/en/ssw_ibm_i_74/rzasd/operxcl.htm" class="bottom-section-link">Operation Codes</a></div></div>
+</div>
+</nav></aside></article></main>

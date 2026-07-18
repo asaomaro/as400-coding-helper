@@ -1,0 +1,362 @@
+<main role="main"><article role="article" aria-labelledby="zzxmlin__title__1">
+<h1 class="topictitle1" id="zzxmlin__title__1">XML-INTO (Parse an XML Document into a Variable)</h1><div id="lastModifiedDate"><span>Last Updated</span>: 2026-07-13</div>
+
+
+<div class="body">
+
+<div class="tablenoborder"><div class="cds--data-table-container"><table summary="" class="defaultstyle cds--data-table"><colgroup><col><col></colgroup><tbody>
+<tr>
+<td rowspan="2" class="tdleft"><strong>Free-Form
+Syntax</strong> </td>
+
+<td class="tdleft">XML-INTO{(EH)} <span class="ph synph"><span class="ph var">receiver</span></span> %XML(<span class="ph synph"><span class="ph var">xmlDoc</span></span> {: <span class="ph synph"><span class="ph var">options</span></span> });</td>
+</tr>
+
+<tr>
+<td class="tdleft">XML-INTO{(EH)} %HANDLER(<span class="ph synph"><span class="ph var">handlerProc</span></span> : <span class="ph synph"><span class="ph var">commArea</span></span>)
+%XML(<span class="ph synph"><span class="ph var">xmlDoc</span></span> {: <span class="ph synph"><span class="ph var">options</span></span> });</td>
+</tr>
+
+</tbody>
+</table></div>
+</div>
+
+
+<div class="tablenoborder"><div class="cds--data-table-container"><table summary="" class="defaultstyle cds--data-table"><colgroup><col><col><col><col><col><col><col></colgroup><thead>
+<tr>
+<th id="zzxmlin__entry__4" class="thleft thbot"><div class="cds--table-header-label"><strong>Code</strong></div></th>
+
+<th id="zzxmlin__entry__5" class="thleft thbot"><div class="cds--table-header-label"><strong>Factor 1</strong></div></th>
+
+<th colspan="5" id="zzxmlin__entry__6" class="thleft thbot"><div class="cds--table-header-label"><strong>Extended Factor 2</strong></div></th>
+</tr>
+
+</thead>
+<tbody>
+<tr>
+<td headers="zzxmlin__entry__4 " class="tdleft"><strong>XML-INTO</strong></td>
+
+<td headers="zzxmlin__entry__5 " class="tdleft">&nbsp;</td>
+
+<td colspan="5" headers="zzxmlin__entry__6 " class="tdleft"><span class="ph synph"><span class="ph var">receiver</span></span> %XML(<span class="ph synph"><span class="ph var">xmlDoc</span></span> {: <span class="ph synph"><span class="ph var">options</span></span> })</td>
+</tr>
+
+<tr>
+<td headers="zzxmlin__entry__4 " class="tdleft"><strong>XML-INTO</strong></td>
+
+<td headers="zzxmlin__entry__5 " class="tdleft">&nbsp;</td>
+
+<td colspan="5" headers="zzxmlin__entry__6 " class="tdleft">%HANDLER(<span class="ph synph"><span class="ph var">handlerProc</span></span> : <span class="ph synph"><span class="ph var">commArea</span></span>)
+%XML(<span class="ph synph"><span class="ph var">xmlDoc</span></span> {: <span class="ph synph"><span class="ph var">options</span></span> })</td>
+</tr>
+
+</tbody>
+</table></div>
+</div>
+
+<p><strong>Tip:</strong> If you are not familiar with the basic
+concepts of XML and of processing XML documents, you may find it helpful
+to read the "Processing XML Documents" section in <cite><span class="keyword">Rational® Development Studio for i: ILE RPG Programmer's Guide</span></cite> before
+reading further in this section.</p>
+
+<div class="p">XML-INTO can operate in two different ways:
+<ul class="cds--list--unordered">
+<li class="cds--list__item">Reading XML data directly into an RPG variable  </li>
+
+<li class="cds--list__item">Reading XML data gradually into an array parameter that it passes
+to the procedure specified by %HANDLER(handlerProc). </li>
+
+</ul>
+</div>
+
+<p>The first operand specifies the target of the parsed data. It can
+contain a variable name or the %HANDLER built-in function.</p>
+
+<p>The second operand must be the %XML built-in function, identifying
+the XML document to be parsed and the options controlling the way
+the parsing is done. See <a href="/docs/en/ssw_ibm_i_74/rzasd/bbxml.htm#bbxml">%XML (xmlDocument {:options})</a> for more information
+on %XML.</p>
+
+<div class="p">If the first operand is a variable name:
+<ul class="cds--list--unordered">
+<li class="cds--list__item">Parsing will be done directly into the variable.</li>
+
+<li class="cds--list__item">The name of the variable will be used to establish the name of
+the XML element to parse; this can be overridden using the <a href="/docs/en/ssw_ibm_i_74/rzasd/pathopt.htm#pathopt">path option</a>.</li>
+
+<li class="cds--list__item">If the variable is a data structure, some subfields may be set
+by the operation even if the operation ends in error.</li>
+
+<li class="cds--list__item">If the variable is an array, the parsing will only search for
+as much data as will fit in the array.  The "Number of XML Elements"
+subfield in positions 372 - 379 of the PSDS will be set to the number
+of elements successfully set by the operation. For an array of data
+structures, this value will not include the element being set if a
+parsing error occurs while parsing the data for the subfields of the
+element; however, this array element may have some of its subfields
+set by the operation.</li>
+
+</ul>
+</div>
+
+<div class="p">If the first operand is the %HANDLER built-in function:
+<ul class="cds--list--unordered">
+<li class="cds--list__item">The procedure specified as the first operand of %HANDLER will
+be called when the parser has parsed enough XML data to fill the specified
+number of RPG array elements handled by the procedure. When the handler
+returns, the parser will continue to parse the XML data until it has
+parsed enough XML data to again fill the specified number of array
+elements to call the handling procedure. This continues until the
+document is completely parsed, or until the procedure returns a return
+code indicating that the parsing should halt.
+<p>The final call to
+the handling procedure may have fewer RPG array elements than the
+handling procedure can handle. The handling procedure should always
+refer to the "number of elements" parameter to ensure it does not
+access array elements that do not have any XML data.</p>
+
+<p>The communication-area
+variable specified as the second operand of %HANDLER will be passed
+by the parser as the first parameter to the handling procedure, allowing
+the procedure coding the XML-INTO operation to communicate with the
+handling procedure, and allowing the handling procedure to save information
+from one call to the next.</p>
+</li>
+
+<li class="cds--list__item">Each element of the temporary variable used to hold the array
+parameter for the procedure will be cleared to its default value before
+it is loaded from the XML data.</li>
+
+<li class="cds--list__item">The <span class="ph synph"><span class="ph var">path</span></span> option must be used to specify the name of the
+XML element to search for. See <a href="/docs/en/ssw_ibm_i_74/rzasd/xmlin1.htm#xmlin1">%DATA and %XML options for DATA-GEN, DATA-INTO, and XML-INTO</a> and <a href="/docs/en/ssw_ibm_i_74/rzasd/xmlin2.htm#xmlin2">Expected format of XML data</a> and for information about the <span class="ph synph"><span class="ph var">path</span></span> option.</li>
+
+<li class="cds--list__item">The array-handling procedure may be called several times during
+the XML-INTO operaton. When the parser has found the number of elements
+specified by the DIM keyword on the second parameter, the procedure
+will be called. The final time the procedure is called may have fewer
+elements than specified by the DIM keyword. If there are no elements
+found, the procedure will not be called.
+<div class="p">The handling procedure
+must have the following parameters and return type:
+
+<div class="tablenoborder"><div class="cds--data-table-container"><table summary="" class="defaultstyle cds--data-table"><colgroup><col><col><col></colgroup><thead>
+<tr>
+<th id="zzxmlin__entry__13"><div class="cds--table-header-label">Parameter number or return value</div></th>
+
+<th id="zzxmlin__entry__14"><div class="cds--table-header-label">Data type and passing mode</div></th>
+
+<th id="zzxmlin__entry__15"><div class="cds--table-header-label">Description</div></th>
+</tr>
+
+</thead>
+<tbody>
+<tr>
+<td headers="zzxmlin__entry__13 ">Return value</td>
+
+<td headers="zzxmlin__entry__14 ">4-byte integer (10I 0)</td>
+
+<td headers="zzxmlin__entry__15 ">Returning a value of zero indicates that parsing should continue;
+returning any other value indictes that parsing should end.</td>
+</tr>
+
+<tr>
+<td headers="zzxmlin__entry__13 ">1</td>
+
+<td headers="zzxmlin__entry__14 ">Any type, passed by reference</td>
+
+<td headers="zzxmlin__entry__15 ">Used to communicate between the XML-INTO operation and the
+handler, and between successive calls to the handler.</td>
+</tr>
+
+<tr>
+<td headers="zzxmlin__entry__13 ">2</td>
+
+<td headers="zzxmlin__entry__14 ">Array, or array of data structures, passed by read-only reference
+(CONST keyword)</td>
+
+<td headers="zzxmlin__entry__15 ">The array elements contain the data from the XML elements specified
+by the <span class="ph synph"><span class="ph var">path</span></span> option.</td>
+</tr>
+
+<tr>
+<td headers="zzxmlin__entry__13 ">3</td>
+
+<td headers="zzxmlin__entry__14 ">4-byte unsigned (10U 0), passed by value</td>
+
+<td headers="zzxmlin__entry__15 ">The number of array elements in the second parameter that represent
+XML data.</td>
+</tr>
+
+</tbody>
+</table></div>
+</div>
+</div>
+</li>
+
+<li class="cds--list__item">See <a href="/docs/en/ssw_ibm_i_74/rzasd/bbhandl.htm#bbhandl">%HANDLER (handlingProcedure : communicationArea )</a> for more information on %HANDLER.</li>
+
+</ul>
+</div>
+
+<p>Subfields of a data structure will be set in the order they appear
+in the XML document; the order could be important if subfields overlap
+within the data structure.</p>
+
+<p>%NULLIND is not updated for any field or subfield during an XML-INTO
+operation.</p>
+
+<div class="p">Operation extender H can be specified to cause numeric data to
+be assigned half-adjusted. Operation extender E can be specified to
+handle the following status codes:
+<dl>
+<dt class="dlterm">00351</dt>
+
+<dd class="dlentry">Error in XML parsing</dd>
+
+<dt class="dlterm">00352</dt>
+
+<dd class="dlentry">Invalid XML option</dd>
+
+<dt class="dlterm">00353</dt>
+
+<dd class="dlentry">XML document does not match RPG variable</dd>
+
+<dt class="dlterm">00354</dt>
+
+<dd class="dlentry">Error preparing for XML parsing</dd>
+
+</dl>
+</div>
+
+<div class="note border-2 cds--inline-notification--info ibmdocs-note cds--inline-notification cds--inline-notification--low-contrast margin-top-1 margin-bottom-1"><div class="cds--inline-notification__details"><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" class="cds--inline-notification__icon" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M16,2A14,14,0,1,0,30,16,14,14,0,0,0,16,2Zm0,5a1.5,1.5,0,1,1-1.5,1.5A1.5,1.5,0,0,1,16,7Zm4,17.12H12V21.88h2.88V15.12H13V12.88h4.13v9H20Z"></path></svg>
+        <div class="cds--inline-notification__text-wrapper">
+          <div class="cds--inline-notification__subtitle"><span class="notetitle ibm-bold ibm-textcolor-blue-50 background-blue cds--inline-notification__title ibm-padding-top-1 ibm-padding-bottom-1 padding-left-1 padding-right-1">Note:</span>  Operation extenders can be specified only when Free-form
+syntax is used.</div>
+        </div>
+      </div></div>
+
+<p>For status 00351, the return code from the parser will be placed
+in the subfield "External return code" in positions 368-371 of the
+PSDS. This subfield will be set to zero at the beginning of the operation
+and set to the value returned by the parser at the end of the operation.</p>
+
+<p>If an unknown, invalid or unrelated option is found in the options
+parameter of the %XML built-in function, the operation will fail with
+status code 00352 (Error in XML options).  The External return code
+subfield in the PSDS will not be updated from the initial value of
+zero, set when the operation begins.</p>
+
+<div class="p">The XML document is expected to match the RPG variable with respect
+to the names of the XML elements or attributes.
+<ul class="cds--list--unordered">
+<li class="cds--list__item">The XML data for an RPG data structure is expected to have an
+XML element with the same name as the data structure and child elements
+and/or attributes with the same names as the RPG subfields. </li>
+
+<li class="cds--list__item">The XML data for an RPG array is expected to have a series of
+elements with the same name as the RPG array.</li>
+
+</ul>
+The <span class="ph synph"><span class="ph var">path</span></span> option can be used to set the name of the XML
+element matching the name of the specified variable, but it cannot
+be used to set the names of the XML elements and/or attributes matching
+a specified variable's subfields. For example, if variable DS1 has
+a subfield SF1, the XML element for DS1 can have any name, but the
+XML element or attribute for SF1 must have the name "sf1" (or "SF1",
+"Sf1", etc., depending on the <span class="ph synph"><span class="ph var">case</span></span> option).<div class="image"><img src="/docs/en/ssw_ibm_i_74/gifs/rpgrxml1.gif" alt="" class="ibmdocs-image-downsize"></div></div>
+
+<div class="p">When the RPG variable is an array or array of data structures,
+or when the %HANDLER built-in function is specified, the XML elements
+corresponding to the array elements are expected to be contained in
+another XML element. By default, the XML elements will be expected
+to be child elements of the outermost XML element in the document.
+The <span class="ph synph"><span class="ph var">path</span></span> option can be used to specify the exact path to
+the XML elements corresponding to the array elements. For example,
+if the outermost XML element is named "transaction", and it has a
+child element named "parts" which itself has several child elements
+named "part", then to read the "part" XML elements into an array,
+you would specify the option 'path=transaction/parts/part'.
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>  &lt;transaction&gt;
+    &lt;parts&gt;
+       &lt;part type = "bracket" size="15" num="100"/&gt;
+       &lt;part type="frame" size="2" num="500"/&gt;
+    &lt;/parts&gt;
+  &lt;transaction&gt;</code></pre></div><div class="docs--copy-btn"></div></div></div>
+
+<p>When the XML document does not match the RPG variable, for example
+if the XML document does not contain the default or specified path,
+or if it is missing some XML elements or attributes to match the subfields
+of an RPG data structure, the XML-INTO operation will fail with status
+00353. The <span class="ph synph"><span class="ph var">allowextra</span></span> and <span class="ph synph"><span class="ph var">allowmissing</span></span> options can
+be used to specify whether an XML element can have more or less data
+than is required to fully set the RPG variable.</p>
+
+<p>For some RPG data types, XML attributes can be specified to control
+how the XML data is assigned to the RPG variable. See <a href="/docs/en/ssw_ibm_i_74/rzasd/xmlin3.htm#xmlin3">Rules for transferring data to RPG variables for XML-INTO and DATA-INTO</a> for more information on these attributes.</p>
+
+<p>If an XML reference other than the predefined references &amp;amp, &amp;apos, &amp;lt, &amp;gt, &amp;quot,
+or the hexadecimal unicode references &amp;#xxxx is found, the result
+will contain the reference itself, in the form "&amp;refname;".  If
+this value is not valid for the data type, the operation will fail.
+For example, if an XML element has the value &lt;data&gt;1&amp;decpoint;50/data&gt;
+the string "1<span class="ph">&amp;decpoint;</span>50" would be built up from the
+three pieces "1", <span class="ph">"&amp;decpoint;"</span>, and "0". This data is
+valid for a character or UCS-2 variable, but it would cause an error
+if converted to other types.</p>
+
+<p><strong>Tip:</strong> If XML data is known to
+contain such references, then following the completion of the XML-INTO
+operation, character and UCS-2 data should be inspected for the presence
+of references, and the correct value for the reference substituted
+using string operations such as %SCANRPL, or %SCAN and %REPLACE.</p>
+
+<p>If XML data is not valid for the type of the RPG variable it matches,
+the operation will fail with status 0353; the specific status code
+for the assignment error will appear in the replacement text for message
+RNX0353.</p>
+
+<p><strong>Tip:</strong> To avoid the XML-INTO operation failing
+because the data cannot be successfully assigned to RPG fields with
+types such as Date or Numeric, the receiver variable can be defined
+with subfields that are all of type character or UCS-2. Then the data
+can be converted to other data types by the RPG program using the
+conversion built-in functions %DATE, %INT, and so on.</p>
+
+<p>The XML-INTO operation ignores the DOCTYPE declaration. The DOCTYPE
+declaration may contain the values of entity references that your
+program will have to handle manually. If you want to have access to
+the DOCTYPE declaration of the XML document, you can use the XML-SAX
+operation. Your XML-SAX handling procedure can halt the parsing as
+soon as it has found the DOCTYPE declaration value, or as soon as
+it knows that there will be no DOCTYPE declaration.</p>
+
+<p>The following links provide more information on XML-INTO.</p>
+
+<ul class="cds--list--unordered">
+<li class="cds--list__item"><a href="/docs/en/ssw_ibm_i_74/rzasd/xmlin1.htm#xmlin1">%DATA and %XML options for DATA-GEN, DATA-INTO, and XML-INTO</a></li>
+
+<li class="cds--list__item"><a href="/docs/en/ssw_ibm_i_74/rzasd/xmlin2.htm#xmlin2">Expected format of XML data</a></li>
+
+<li class="cds--list__item"><a href="/docs/en/ssw_ibm_i_74/rzasd/xmlin3.htm#xmlin3">Rules for transferring data to RPG variables for XML-INTO and DATA-INTO</a></li>
+
+<li class="cds--list__item"><a href="/docs/en/ssw_ibm_i_74/rzasd/xmlin4.htm#xmlin4">Examples of the XML-INTO operation</a></li>
+
+</ul>
+
+</div>
+<aside role="complementary" aria-labelledby="zzxmlin__title__1"><nav role="navigation" aria-label="bottom related links" class="ibm-padding-top-1 ibm-padding-bottom-2 bx--row bottom-section-parent">
+<ul class="ullinks cds--list--unordered">
+<li class="ulchildlink cds--list__item" data-hd-product="ssw_ibm_i_74"><strong><a href="/docs/en/ssw_ibm_i_74/rzasd/xmlin2.htm">Expected format of XML data</a></strong><br>
+</li>
+<li class="ulchildlink cds--list__item" data-hd-product="ssw_ibm_i_74"><strong><a href="/docs/en/ssw_ibm_i_74/rzasd/xmlin3.htm">Rules for transferring data to RPG variables for XML-INTO and DATA-INTO</a></strong><br>
+</li>
+<li class="ulchildlink cds--list__item" data-hd-product="ssw_ibm_i_74"><strong><a href="/docs/en/ssw_ibm_i_74/rzasd/xmlin4.htm">Examples of the XML-INTO operation</a></strong><br>
+</li>
+<li class="ulchildlink cds--list__item" data-hd-product="ssw_ibm_i_74"><strong><a href="/docs/en/ssw_ibm_i_74/rzasd/xmlin1.htm">%DATA and %XML options for DATA-GEN, DATA-INTO, and XML-INTO</a></strong><br>
+</li>
+</ul>
+
+<div class="familylinks ibm-margin-bottom-1">
+<div class="parentlink"><strong>Parent topic:</strong> <div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a data-hd-product="ssw_ibm_i_74" href="/docs/en/ssw_ibm_i_74/rzasd/operxcl.htm" class="bottom-section-link">Operation Codes</a></div></div>
+</div>
+</nav></aside></article></main>

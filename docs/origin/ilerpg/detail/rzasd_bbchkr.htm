@@ -1,0 +1,74 @@
+<div role="main">
+<!-- Java sync-link --><script language="Javascript" src="../rzahg/synch.js" type="text/javascript"></script>
+<h1 class="title topictitle1">%CHECKR (逆向きの検査)</h1><div id="lastModifiedDate"><span>Last Updated</span>: 2021-04-13</div>
+<div class="body"><div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code>%CHECKR(comparator : base {: start})</code></pre></div><div class="docs--copy-btn"></div></div>
+<p class="p">%CHECKR
+は、ストリング・<span class="ph synph"><span class="ph var">コンパレーター</span></span> の中に現れない文字を含むストリング <span class="ph synph"><span class="ph var">基底</span></span> の、末尾の位置を戻します。<span class="ph synph"><span class="ph var">基底</span></span> のすべての文字が <span class="ph synph"><span class="ph var">コンパレーター</span></span> にも現れていれば、関数は
+0 を戻します。</p>
+<p class="p">検査は開始位置から始められ、コンパレーター・ストリングに含まれていない文字が見付かるまで、左方へと続けられます。
+開始位置のデフォルトの値は、ストリングの末尾です。</p>
+<p class="p">1 番目のパラメーターのタイプは、文字、図形、UCS-2、固定または可変長でなければなりません。2 番目
+のパラメーターは、1 番目のパラメーターと同じタイプである必要があります。 3
+番目のパラメーターが指定されている場合、それは、小数点以下の桁数がゼロである非浮動数値でなければなりません。</p>
+<p class="p">詳細については、<a class="xref" href="/docs/ja/ssw_ibm_i_74/rzasd/yystrng.htm#yystrng">ストリング命令</a>または <a class="xref" href="/docs/ja/ssw_ibm_i_74/rzasd/bifsint.htm#bifsint">組み込み関数</a>を参照してください。</p>
+<div class="fig figborder"><span class="figcap">図 1. %CHECKR の例</span><div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code> *..1....+....2....+....3....+....4....+....5....+....6....+....7...+....
+ *---------------------------------------------
+ * If a string is padded at the end with some
+ * character other than blanks, the characters
+ * cannot be removed using %TRIM.
+ * %CHECKR can be used for this by searching
+ * for the last character in the string that
+ * is not in the list of "pad characters".
+ *---------------------------------------------
+D string1         s             50a   varying
+D                                     inz('My *dog* Spot.* @ * @ *')
+D string2         s             50a   varying
+D                                     inz('someone@somewhere.com')
+D padChars        C                   ' *@'
+
+ /free
+
+    %len(string1) = %checkr(padChars:string1);
+    //  %len(string1) is set to 14 (the position of the last character
+    //  that is not in "padChars").
+
+    //  string1 = 'My *dog* Spot.'
+
+    %len(string2) = %checkr(padChars:string2);
+    //  %len(string2) is set to 21 (the position of the last character
+    //  that is not in "padChars").
+
+    //  string2 = 'someone@somewhere.com'  (the string is not changed)
+
+ /end-free</code></pre></div><div class="docs--copy-btn"></div></div>
+</div>
+<div class="fig figborder" id="bbchkr__bifchkrx"><span class="figcap">図 2. %CHECK と %CHECKR の例</span><div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code> *..1....+....2....+....3....+....4....+....5....+....6....+....7...+....
+ *------------------------------------------------------
+ * A string contains a numeric value, but it might
+ * be surrounded by blanks and asterisks and might be
+ * preceded by a currency symbol.
+ *------------------------------------------------------
+D string          s             50a   varying inz('$****12.345***  ')
+
+ /free
+    // Find the position of the first character that is not one of ' $*'
+    numStart = %CHECK (' $*' : string);
+    //  = 6
+
+    // Find the position of the last character that is not one of ' *'
+    numEnd = %CHECKR (' *' : string);
+    //  = 11
+
+    // Extract the numeric string
+    string = %SUBST(string : numStart : numEnd - numStart + 1);
+    //  = '12.345'
+
+ /end-free</code></pre></div><div class="docs--copy-btn"></div></div>
+</div>
+<p class="p">&nbsp;</p>
+</div>
+<div class="related-links ibm-padding-top-1 ibm-padding-bottom-2 bx--row bottom-section-parent" aria-label="bottom related links">
+<div class="familylinks ibm-margin-bottom-1">
+<div class="parentlink"><strong>親トピック:</strong> <div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a class="link bottom-section-link" href="/docs/ja/ssw_ibm_i_74/rzasd/bifs.htm">組み込み関数</a></div></div>
+</div>
+</div></div>

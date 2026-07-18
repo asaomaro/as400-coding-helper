@@ -1,0 +1,71 @@
+<div role="main">
+<!-- Java sync-link --><script language="Javascript" src="../rzahg/synch.js" type="text/javascript"></script>
+<h1 class="title topictitle1">%GRAPH (図形値への変換)</h1><div id="lastModifiedDate"><span>Last Updated</span>: 2021-04-13</div>
+<div class="body"><div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code>%GRAPH(char-expr | graph-expr | UCS-2-expr { : ccsid })</code></pre></div><div class="docs--copy-btn"></div></div>
+<p class="p">%GRAPH は、文字、図形、または UCS-2 から式の値を変換し、図形値を
+戻します。
+結果は、パラメーターが可変長であれば可変長になります。</p>
+<p class="p">2 番目のパラメーターの <em class="ph i">ccsid</em> はオプション
+で、結果の式の CCSID を示します。CCSID は、
+制御キーワード  <a class="xref" href="/docs/ja/ssw_ibm_i_74/rzasd/hccsidgraph.htm">CCSID(*GRAPH)</a> で指定されるように、モジュールのデフォルト図形 CCSID に
+デフォルト設定されます。
+制御仕様書で CCSID(*GRAPH : *IGNORE) が指定されている場合、または
+モジュールについて想定されている場合、%GRAPH 組み込み関数は使用できません。</p>
+<p class="p">パラメーターが定数の場合、変換はコンパイル時に行われます。この
+場合、CCSID は、ソース・ファイルの CCSID に関連した図形 CCSID です。</p>
+<div class="p">パラメーターが EBCDIC CCSID の文字データである場合、文字データは次の
+形式でなければなりません。
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code>shift-out graphic-data shift-in </code></pre></div><div class="docs--copy-btn"></div></div>
+例えば、'oAABBCCi' のように指定します。</div>
+<p class="p">データからグラフィックへの変換で、すべてのデータを正常に変換できない場合があることについては、<a class="xref" href="/docs/ja/ssw_ibm_i_74/rzasd/ccsidconv.htm">変換</a>を
+参照してください。</p>
+<p class="p">詳細については、<a class="xref" href="/docs/ja/ssw_ibm_i_74/rzasd/dgraph.htm#dgraph">グラフィック形式</a>、<a class="xref" href="/docs/ja/ssw_ibm_i_74/rzasd/yyconv.htm#yyconv">変換命令</a>、
+または <a class="xref" href="/docs/ja/ssw_ibm_i_74/rzasd/bifsint.htm#bifsint">組み込み関数</a>を参照してください。</p>
+<div class="fig figborder"><span class="figcap">図 1. %GRAPH の例</span><div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code> *..1....+....2....+....3....+....4....+....5....+....6....+....7...+....
+H*Keywords+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+H ccsid (*graph: 300)
+
+D*Name++++++++++ETDsFrom+++To/L+++IDc.Keywords++++++++++++++++++++++++
+D  char           S              8A   inz('oXXYYZZi')
+ * The %GRAPH built-in function is used to initialize a graphic field
+D  graph          S             10G   inz (%graph ('oAABBCCDDEEi'))
+D  ufield         S              2C   inz (%ucs2 ('oFFGGi'))
+D  graph2         S              2G   ccsid (4396) inz (*hival)
+D  isEqual        S              1N
+D  proc           PR
+D    gparm                       2G   ccsid (4396) value
+
+ /FREE
+    graph = %graph (char) + %graph (ufield);
+    // graph now has the value XXYYZZFFGG.
+    // %graph(char) removes the shift characters from the
+    // character data, and treats the non-shift data as
+    // graphic data.
+ 
+    isEqual = graph = %graph (graph2 : 300);
+    // The result of the %GRAPH built-in function is the value of
+    // graph2, converted from CCSID 4396 to CCSID 300.
+ 
+    graph2 = graph;
+    // The value of graph is converted from CCSID 300 to CCSID 4396
+    // and stored in graph2.
+    // This conversion is performed implicitly by the compiler.
+ 
+    proc (graph);
+    // The value of graph is converted from CCSID 300 to CCSID 4396
+    // implicitly, as part of passing the parameter by value.
+ /END-FREE</code></pre></div><div class="docs--copy-btn"></div></div>
+</div>
+<div class="note note border-2 cds--inline-notification--info ibmdocs-note cds--inline-notification cds--inline-notification--low-contrast margin-top-1 margin-bottom-1"><div class="cds--inline-notification__details"><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" class="cds--inline-notification__icon" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M16,2A14,14,0,1,0,30,16,14,14,0,0,0,16,2Zm0,5a1.5,1.5,0,1,1-1.5,1.5A1.5,1.5,0,0,1,16,7Zm4,17.12H12V21.88h2.88V15.12H13V12.88h4.13v9H20Z"></path></svg>
+        <div class="cds--inline-notification__text-wrapper">
+          <div class="cds--inline-notification__subtitle"><span class="notetitle ibm-bold ibm-textcolor-blue-50 background-blue cds--inline-notification__title ibm-padding-top-1 ibm-padding-bottom-1 padding-left-1 padding-right-1">注:</span> この例で、例えば 'oFFGGi' のような、DBCS データ
+を含んでいるリテラルは、有効な DBCS データまたは有効なシフト文字を含んでいません。
+ 詳しくは、<a class="xref" href="/docs/ja/ssw_ibm_i_74/rzasd/dgraph.htm#dgraph">グラフィック形式</a>を参照してください。</div>
+        </div>
+      </div></div>
+</div>
+<div class="related-links ibm-padding-top-1 ibm-padding-bottom-2 bx--row bottom-section-parent" aria-label="bottom related links">
+<div class="familylinks ibm-margin-bottom-1">
+<div class="parentlink"><strong>親トピック:</strong> <div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a class="link bottom-section-link" href="/docs/ja/ssw_ibm_i_74/rzasd/bifs.htm">組み込み関数</a></div></div>
+</div>
+</div></div>

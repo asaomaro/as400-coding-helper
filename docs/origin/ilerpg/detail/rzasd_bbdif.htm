@@ -1,0 +1,111 @@
+<div role="main">
+<!-- Java sync-link --><script language="Javascript" src="../rzahg/synch.js" type="text/javascript"></script>
+<h1 class="title topictitle1">%DIFF (2 つの日付、時刻、またはタイム・スタンプ値の差)</h1><div id="lastModifiedDate"><span>Last Updated</span>: 2021-04-13</div>
+<div class="body"><div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code>%DIFF(オペランド 1 : オペランド 2 : 単位 {: 秒の小数部の桁数 })</code></pre></div><div class="docs--copy-btn"></div></div>
+<p class="p">単位に指定できるのは、
+*MSECONDS、*SECONDS、*MINUTES、*HOURS、*DAYS、*MONTHS、または *YEARS です。
+単位の省略形を使用して、*MS、*S、*MN、*H、*D、*M、または *Y と指定することもできます。</p>
+<div class="p">%DIFF は、2 つの日付、または時刻の値の間の差 (期間) を生成します。<span class="ph">最初のパラメーターと 2
+番目のパラメーターは、同じタイプかまたは互換性のあるタイプでなければなりません。</span> 可能な組み合わせは以下のとおりです。
+<ul class="ul cds--list--unordered"><li class="li cds--list__item">日付と日付</li>
+<li class="li cds--list__item">時刻と時刻</li>
+<li class="li cds--list__item">タイム・スタンプとタイム・スタンプ</li>
+<li class="li cds--list__item">日付とタイム・スタンプ (タイム・スタンプの日付の部分だけが考慮されます)</li>
+<li class="li cds--list__item">時刻とタイム・スタンプ (タイム・スタンプの時刻の部分だけが考慮されます)</li>
+</ul>
+</div>
+<div class="p">3 番目のパラメーターには単位を指定します。次の単位が有効です。
+<ul class="ul cds--list--unordered"><li class="li cds--list__item">2 つの日付または日付とタイム・スタンプの場合: *DAYS、*MONTHS、および *YEARS</li>
+<li class="li cds--list__item">2 つの時刻または時刻とタイム・スタンプの場合: *SECONDS、*MINUTES、および *HOURS</li>
+<li class="li cds--list__item">2 つのタイム・スタンプの場合: *MSECONDS、*SECONDS、*MINUTES、
+*HOURS、*DAYS、*MONTHS、および
+*YEARS</li>
+</ul>
+</div>
+<p class="p"><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 32 32" aria-hidden="true"><path d="M14 16L24 6 25.4 7.4 16.8 16 25.4 24.6 24 26zM8 4H10V28H8z"></path><title></title></svg>*MONTHS と *YEARS の結果は意外なものになる可能性があります。
+<a class="xref" href="/docs/ja/ssw_ibm_i_74/rzasd/dtz_unexp.htm">予期しない結果</a>を参照してください。<svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 16L8 26 6.6 24.6 15.2 16 6.6 7.4 8 6zM22 4H24V28H22z"></path><title></title></svg></p>
+<p class="p">3 番目のオペランドが *SECONDS または *S で、
+両方のオペランドがタイム・スタンプの場合、戻される秒数の小数点以下の桁数を示す 4 番目のパラメーターを
+指定できます。
+指定できるのは 0 から 12 までの値です。
+これは、戻される秒数の小数部の桁数を表します。</p>
+<p class="p"><span class="ph">差異は、第 1 オペランドから第 2 オペランドを減算することによって計算されます。</span></p>
+<p class="p">結果は、すべての剰余を廃棄して切り捨てられます。たとえば、61
+分は 1 時間と等しく、59 分は 0 時間に等しくなります。</p>
+<p class="p">関数によって戻り値は、数字タイプと期間タイプの両方と互換性があります。
+結果は、数 (数値タイプ) あるいは日付、時刻、またはタイム・スタンプ
+(期間タイプ) に加算することができます。</p>
+<p class="p">32 年 9 カ月よりも離れている 2
+つのタイム・スタンプの間の差をマイクロ秒単位で得たい場合は、期間の値の限界である 15
+桁を超えます。この結果はエラーになるかまたは切り捨てが行なわれます。
+ただし、小数点以下が 6 桁の秒単位で差を求めた後、結果として得た値
+に 1000000 を掛けることにより、任意の 2 つの日付の差をマイクロ秒単位で得ることができます。
+例えば、秒単位の差が 1041379205.123456 の場合、
+マイクロ秒単位の差は 1041379205123456 です。</p>
+<p class="p">詳細については、<a class="xref" href="/docs/ja/ssw_ibm_i_74/rzasd/yydate.htm#yydate">日付命令</a>または <a class="xref" href="/docs/ja/ssw_ibm_i_74/rzasd/bifsint.htm#bifsint">組み込み関数</a>を参照してください。</p>
+<div class="fig figborder"><span class="figcap">図 1. %DIFF の結果を数値として使用する</span><div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code>D due_date        S               D   INZ(D'2005-06-01')
+D today           S               D   INZ(D'2004-09-23')
+D num_days        S             15P 0
+
+D start_time      S               Z
+
+D time_taken      S             15P 0                
+
+ /FREE
+
+     // Determine the number of days between two dates.
+
+     // If due_date has the value 2005-06-01 and
+     // today has the value 2004-09-23, then
+     // num_days will have the value 251.
+
+     num_days = %DIFF (due_date: today: *DAYS);      
+
+     // If the arguments are coded in the reverse order,
+     // num_days will have the value -251.
+
+     num_days = %DIFF (today: due_date: *DAYS);  
+
+     // Determine the number of seconds required to do a task:
+     //  1. Get the starting timestamp
+     //  2. Do the task
+     //  3. Calculate the difference between the current
+     //     timestamp and the starting timestamp
+
+     start_time = %timestamp();
+     process();
+     time_taken = %DIFF (%timestamp() : start_time : *SECONDS);
+
+ /END-FREE</code></pre></div><div class="docs--copy-btn"></div></div>
+</div>
+<div class="fig figborder"><span class="figcap">図 2. %DIFF の結果を期間として使用する</span><div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code>D estimated_end...
+D                 S               D
+D prev_start      S               D   INZ(D'2003-06-21')
+D prev_end        S               D   INZ(D'2003-06-24')
+
+ /FREE     
+
+     // Add the number of days between two dates
+     // to a third date
+
+     // prev_start is the date a previous task began
+     // prev_end is the date a previous task ended.
+
+     // The following calculation will estimate the
+     // date a similar task will end, if it begins
+     // today.
+
+     // If the current date, returned by %date(), is
+     // 2003-08-15, then estimated_end will be
+     // 2003-08-18.
+
+     estimated_end = %date() + %DIFF(prev_end : prev_start : *days);
+
+ /END-FREE</code></pre></div><div class="docs--copy-btn"></div></div>
+</div>
+</div>
+<div class="related-links ibm-padding-top-1 ibm-padding-bottom-2 bx--row bottom-section-parent" aria-label="bottom related links">
+<div class="familylinks ibm-margin-bottom-1">
+<div class="parentlink"><strong>親トピック:</strong> <div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a class="link bottom-section-link" href="/docs/ja/ssw_ibm_i_74/rzasd/bifs.htm">組み込み関数</a></div></div>
+</div>
+</div></div>

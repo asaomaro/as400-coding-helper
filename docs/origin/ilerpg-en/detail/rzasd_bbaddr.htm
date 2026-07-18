@@ -1,0 +1,138 @@
+<main role="main"><article role="article" aria-labelledby="bbaddr__title__1">
+<h1 class="topictitle1" id="bbaddr__title__1">%ADDR (Get Address of Variable)</h1><div id="lastModifiedDate"><span>Last Updated</span>: 2026-07-13</div>
+
+
+<div class="body">
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>%ADDR(variable)
+%ADDR(varying-length variable : *DATA)</code></pre></div><div class="docs--copy-btn"></div></div>
+<p>%ADDR returns a value of type basing pointer. The value is the
+address of the specified variable. It may only be compared with and
+assigned to items of type basing pointer.</p>
+
+<p>%ADDR returns the address of the data portion of a variable-length
+field when *DATA is specified as the second parameter of %ADDR. </p>
+
+<p>If %ADDR with an array index parameter is specified as parameter
+for definition specification keywords INZ or CONST, the array index
+must be known at compile-time. The index must be either a numeric
+literal or a numeric constant.</p>
+
+<p>In an EVAL operation where the result of the assignment is an array
+with no index, %ADDR on the right hand side of the assignment operator
+has a different meaning depending on the argument for the %ADDR. 
+If the argument for %ADDR is an array name without an index and the
+result is an array name, each element of the result array will contain
+the address of the beginning of the argument array. If the argument
+for %ADDR is an array name with an index of (*), then each element
+of the result array will contain the address of the corresponding
+element in the argument array. This is illustrated in <a href="#bbaddr__ebaddr">Figure 1</a>.</p>
+
+<p>If the variable specified as parameter is a table, multiple occurrence
+data structure, or subfield of a multiple occurrence data structure,
+the address will be the address of the current table index or occurrence
+number.</p>
+
+<p>If the variable is based, %ADDR returns the value of the basing
+pointer for the variable. If the variable is a subfield of a based
+data structure, the value of %ADDR is the value of the basing pointer
+plus the offset of the subfield.</p>
+
+<p>If the variable is specified as a PARM of the *ENTRY PLIST, %ADDR
+returns the address passed to the program by the caller.</p>
+
+<p>When the argument of %ADDR cannot be modified, %ADDR
+can only be used in a comparison operation. An example of an argument
+that cannot be modified is a read-only reference parameter (CONST
+keyword specified on the Procedure Interface).</p>
+
+<figure class="figborder" id="bbaddr__ebaddr"><figcaption>Figure 1. %ADDR Example</figcaption>
+
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code> *..1....+....2....+....3....+....4....+....5....+....6....+....7...+....
+D*Name++++++++++ETDsFrom+++To/L+++IDc.Keywords+++++++++++++++++++++++++
+ *
+ * The following set of definitions is valid since the array
+ * index has a compile-time value
+ *
+D   ARRAY         S             20A   DIM (100)
+ * Set the pointer to the address of the seventh element of the array.
+D   PTR           S               *   INZ (%ADDR(ARRAY(SEVEN)))
+D   SEVEN         C                   CONST (7)
+ *
+D DS1             DS                  OCCURS (100)D                               20A
+D   SUBF                        10A
+D                               30A
+D CHAR10          S             10A   BASED (P)
+D PARRAY          S               *   DIM(100)
+
+
+  /FREE
+    %OCCUR(DS1) = 23;
+    SUBF = *ALL'abcd';
+    P = %ADDR (SUBF);
+    IF CHAR10 = SUBF;
+       // This condition is true.
+    ENDIF;
+    IF %ADDR (CHAR10) = %ADDR (SUBF);
+       // This condition is also true.
+    ENDIF;
+    // The following statement also changes the value of SUBF.
+    CHAR10 = *ALL'efgh';
+    IF CHAR10 = SUBF;
+       // This condition is still true.
+    ENDIF;
+    //--------------------------------------------------------------
+    %OCCUR(DS1) = 24;
+    IF CHAR10 = SUBF;
+      // This condition is no longer true.
+    ENDIF;
+    //--------------------------------------------------------------
+    // The address of an array element is taken using an expression
+    // as the array index.
+    P = %ADDR (ARRAY (X + 10));
+    //--------------------------------------------------------------
+    // Each element of the array PARRAY contains the address of the
+    // first element of the array ARRAY.
+    PARRAY = %ADDR(ARRAY);
+    // Each element of the array PARRAY contains the address of the
+    // corresponding element of the array ARRAY.
+    PARRAY = %ADDR(ARRAY(*));
+
+    // The first three elements of the array PARRAY
+    // contain the addresses of the first three elements
+    // of the array ARRAY.
+    %SUBARR(PARRAY : 1 : 3) = %ADDR(ARRAY(*));
+  /END-FREE     </code></pre></div><div class="docs--copy-btn"></div></div></figure>
+
+<figure class="figborder"><figcaption>Figure 2. Example of %ADDR with *DATA</figcaption>
+
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>1. Use %ADDR(fld:*DATA) to call a procedure with the
+   address of the data portion of a varying field.
+
+// Assume procedure "uppercaseData" requires a pointer and a length.
+// %ADDR(fld:*DATA) returns the pointer to the data portion of
+// the varying field, and %LEN(fld) returns the length.
+uppercaseData (%ADDR(fld : *DATA) : %LEN(fld));
+
+2. Use %ADDR(fld:*DATA) to determine the maximum size
+   of the data portion of a varying field.
+
+// The number of bytes used for the prefix is the
+// offset between the address of the field and the
+// address of the data.
+prefix_size = %addr(fld : *data) - %addr(fld);
+
+// The number of bytes used for the data is the
+// difference between the total bytes and the
+// bytes used for the prefix.
+data_size = %size(fld) - prefix_size;
+
+// If variable "fld" is UCS-2 or DBCS, the number
+// of characters is half the number of bytes
+max_dbcs_chars = data_size / 2;</code></pre></div><div class="docs--copy-btn"></div></div></figure>
+
+</div>
+<aside role="complementary" aria-labelledby="bbaddr__title__1"><nav role="navigation" aria-label="bottom related links" class="ibm-padding-top-1 ibm-padding-bottom-2 bx--row bottom-section-parent">
+<div class="familylinks ibm-margin-bottom-1">
+<div class="parentlink"><strong>Parent topic:</strong> <div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a data-hd-product="ssw_ibm_i_74" href="/docs/en/ssw_ibm_i_74/rzasd/bifs.htm" class="bottom-section-link">Built-in Functions</a></div></div>
+</div>
+</nav></aside></article></main>

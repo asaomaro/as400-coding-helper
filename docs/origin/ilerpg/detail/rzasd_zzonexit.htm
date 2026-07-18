@@ -1,0 +1,170 @@
+<div role="main">
+<svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 32 32" aria-hidden="true"><path d="M14 16L24 6 25.4 7.4 16.8 16 25.4 24.6 24 26zM8 4H10V28H8z"></path><title></title></svg><!-- Java sync-link --><script language="Javascript" src="../rzahg/synch.js" type="text/javascript"></script>
+<h1 class="title topictitle1">ON-EXIT (終了時)</h1><div id="lastModifiedDate"><span>Last Updated</span>: 2021-04-13</div>
+<div class="body"><div class="tablenoborder"><div class="cds--data-table-container"><table cellpadding="4" cellspacing="0" summary="" role="presentation" class="table presentation cds--data-table" width="100%" rules="all" frame="border" border="1"><tbody class="tbody"><tr class="row"><td class="entry tdleft" align="left" valign="top" width="25%"><strong class="ph b">自由形式構文</strong></td>
+<td class="entry tdleft" align="left" valign="top" width="75%">ON-EXIT {<span class="ph synph"><span class="ph var">status</span></span>}</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="tablenoborder"><span class="desc tabledesc"></span><div class="cds--data-table-container"><table cellpadding="4" cellspacing="0" summary="" class="table cds--data-table" width="100%" rules="all" frame="border" border="1"><thead class="thead" align="left"><tr class="row"><th class="entry thleft thbot" align="left" valign="bottom" width="14.898989898989898%" id="d388197e72"><div class="cds--table-header-label"><strong class="ph b">コード</strong></div></th>
+<th class="entry thleft thbot" align="left" valign="bottom" width="22.22222222222222%" id="d388197e75"><div class="cds--table-header-label"><strong class="ph b">演算項目 1</strong></div></th>
+<th class="entry thleft thbot" colspan="5" align="left" valign="bottom" id="d388197e78"><div class="cds--table-header-label"><strong class="ph b">拡張演算項目 2</strong></div></th>
+</tr>
+</thead>
+<tbody class="tbody"><tr class="row"><td class="entry tdleft" align="left" valign="top" width="14.898989898989898%" headers="d388197e72 "><strong class="ph b">ON-EXIT </strong></td>
+<td class="entry tdleft" align="left" valign="top" width="22.22222222222222%" headers="d388197e75 ">&nbsp;</td>
+<td class="entry tdleft" colspan="5" align="left" valign="top" headers="d388197e78 ">状況標識</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="p">ON-EXIT 命令コードが ON-EXIT セクションを開始します。
+ON-EXIT セクションには、プロシージャーが終了 (正常終了でも異常終了でも) するたびに実行されるコードが含まれています。
+ON-EXIT セクションは、以下の条件下で実行されます。
+<ul class="ul cds--list--unordered"><li class="li cds--list__item">プロシージャーが、プロシージャーのメイン部分の終わりに達したとき。</li>
+<li class="li cds--list__item">プロシージャーが RETURN 命令に達したとき。</li>
+<li class="li cds--list__item">プロシージャーが未処理の例外で終了したとき。</li>
+<li class="li cds--list__item">プロシージャーが、ジョブやサブシステムが終了したために、あるいは呼び出しスタック内でより高い優先順位でプロシージャーに送信される例外メッセージのためにキャンセルされたとき。</li>
+</ul>
+</div>
+<p class="p">ON-EXIT セクションにクリーンアップ・コード (一時ファイルの削除やヒープ記憶域の割り振り解除など) を入れることで、プロシージャーが未処理の例外で終了したり、キャンセルされた場合でも、常にこのセクションが実行されるように設定できます。</p>
+<p class="p">拡張演算項目 2 には、プロシージャーの終了が正常だったか異常だったかを示すオプションの標識変数が含まれています。
+プロシージャーが正常に返された場合、標識は *OFF に設定されます。プロシージャーが未処理の例外で終了したり、その他の理由でキャンセルされたりした場合、標識は *ON に設定されます。</p>
+<p class="p">ON-EXIT セクションは、サブルーチンの後、サブプロシージャーの終わりにコーディングされます。</p>
+<p class="p">ON-EXIT セクションでは、プロシージャーで定義されるすべての変数とファイルを利用できます。</p>
+<p class="p">プロシージャーの ON-EXIT 部分を実行しても、プロシージャーのメインの部分の状態は変更されません。
+プロシージャーが未処理の例外のためにキャンセルされた場合、その例外はプロシージャーの ON-EXIT 部分が実行された後も活動状態のままです。</p>
+<p class="p">値を返すプロシージャーの場合、そのプロシージャーが正常に終了すると、RETURN ステートメントによって設定された値は
+ON-EXIT プロシージャーの RETURN ステートメントにオーバーライドされる可能性があります。
+ON-EXIT に RETURN ステートメントが含まれていない場合は、プロシージャーはメインの本体の RETURN によって設定された値を返します。
+<a class="xref" href="/docs/ja/ssw_ibm_i_74/rzasd/zzonexit.htm#zzonexit__onExitReturnValue">ON-EXIT セクションが新規値を返す場合の例</a>を参照してください。</p>
+<div class="p">ON-EXIT の処理中に例外が発生した場合、その例外の影響はプロシージャーが終了した状況により異なります。
+<ul class="ul cds--list--unordered"><li class="li cds--list__item">プロシージャーが正常に終了した場合、そのプロシージャーは新規例外で終了します。</li>
+<li class="li cds--list__item">プロシージャーが処理できない例外によって異常終了していた場合、ON-EXIT セクションは即座に終了し、元の例外の例外処理が続行されます。
+新規例外は、元のプロシージャー呼び出しの例外処理に影響しません。
+このプロシージャーはそのまま元の例外のために終了したと見なされます。</li>
+<li class="li cds--list__item">プロシージャーがその他の理由 (ジョブの終了など) のためにキャンセルされていた場合、ON-EXIT セクションは即座に終了します。
+ON-EXIT セクションでの例外は、キャンセル処理全体に影響しません。</li>
+</ul>
+</div>
+<div class="p">ON-EXIT 処理中の例外は、次のような場合に発生します。
+<ul class="ul cds--list--unordered"><li class="li cds--list__item">状況標識の設定中に発生する例外。
+これは、状況標識が配列要素であり指標が境界外にある場合、または設定されていないポインターに状況標識が基づいている場合に発生する可能性があります。</li>
+<li class="li cds--list__item">ON-EXIT ステートメントに続くコード内で発生する例外。</li>
+</ul>
+</div>
+<p class="p">ON-EXIT セクションは別個のサブプロシージャーで実行されます。
+ON-EXIT サブプロシージャーの名前は「_QRNI_ON_EXIT_」で開始し、
+ON-EXIT 命令を含むプロシージャーの名前で終了します。
+例えば、外部名が「myProc」のプロシージャーの ON-EXIT サブプロシージャーの外部名は「_QRNI_ON_EXIT_myProc」となります。</p>
+<p class="p">ON-EXIT セクションは、プロシージャーへの呼び出しごとに 1 回ずつ起動されます。
+正常な戻りの後に ON-EXIT セクションで例外が発生した場合、その ON-EXIT セクションは再実行されません。</p>
+<div class="section"><h2 class="title sectiontitle">ON-EXIT セクションの制約事項</h2>
+<ul class="ul cds--list--unordered"><li class="li cds--list__item">ON-EXIT セクションを含むプロシージャーで許可されていないものを以下に示します。
+<ul class="ul cds--list--unordered cds--list--nested"><li class="li cds--list__item">ローカルの SPECIAL ファイル</li>
+<li class="li cds--list__item">ローカルのオープン・アクセス・ファイル</li>
+<li class="li cds--list__item">*PSSR サブルーチン。代わりに MONITOR グループを使用してください。</li>
+<li class="li cds--list__item">複数オカレンス・データ構造。代わりにデータ構造配列を使用してください。</li>
+<li class="li cds--list__item">テーブル。代わりに配列を使用してください。</li>
+</ul>
+</li>
+<li class="li cds--list__item">Java™ ネイティブ・メソッドでは ON-EXIT は許可されていません。ネイティブ・メソッドの論理を、そのネイティブ・メソッドによって呼び出される別のプロシージャーに移動してください。</li>
+<li class="li cds--list__item">サイクル・メイン・プロシージャーでは ON-EXIT は許可されていません。
+サイクル・メイン・プロシージャーの論理を、そのサイクル・メイン・プロシージャーによって呼び出される別のプロシージャーに移動するか、リニア・メイン・プロシージャーを使用するようにモジュールを変更してください。</li>
+<li class="li cds--list__item">ON-EXIT セクションで許可されていないものを以下に示します。
+<ul class="ul cds--list--unordered cds--list--nested"><li class="li cds--list__item">API の CEEDOD、CEEGSI、および CEETSTA への呼び出し。
+これらのプロシージャーは、プロシージャーのメインの本体内で呼び出し、結果をローカル変数に保存してください。</li>
+<li class="li cds--list__item">命令コードの BEGSR、DUMP、EXSR、GOTO、RESET、TAG。</li>
+</ul>
+</li>
+</ul>
+</div>
+<div class="section"><h2 class="title sectiontitle">デバッグの注意点</h2>
+<ul class="ul cds--list--unordered"><li class="li cds--list__item">ON-EXIT 命令の停止点に達したときには、すでに状況標識が設定されています。</li>
+<li class="li cds--list__item">ON-EXIT セクションが終了すると、プロシージャーを終了するステートメントの停止点に達します。
+プロシージャーのメインの本体の終了時にはこの停止点に達しません。</li>
+<li class="li cds--list__item">ON-EXIT セクションは別個のプロシージャーとして実装されているため、step-over デバッガー・コマンドを使用してプロシージャーのメイン部分から ON-EXIT セクションに簡単に移動することはできません。
+ON-EXIT セクションをデバッグするには、プロシージャーメインの本体の最後のステートメントで step-into debugger コマンドを使用するか、ON-EXIT 命令に停止点を設定するかのいずれかを実行します。</li>
+</ul>
+</div>
+<div class="section"><h2 class="title sectiontitle">ON-EXIT セクションを使用したプロシージャーの例</h2>
+<p class="p">以下の例では、<var class="keyword varname">num_orders</var> で <span class="keyword calloutlabel">&nbsp;1&nbsp;</span> とマークされた行の値がゼロである場合、
+ゼロ除算例外となり、制御は、<span class="keyword calloutlabel">&nbsp;3&nbsp;</span> とマークされた行で開始する ON-EXIT セクションにすぐに渡されます。
+標識 <var class="keyword varname">isAbnormalReturn</var> の値は「1」です。</p>
+
+<p class="p"><var class="keyword varname">num_orders</var> がゼロではない場合、プロシージャーは <span class="keyword calloutlabel">&nbsp;2&nbsp;</span> とマークされている行の RETURN 命令まで続行し、制御は <span class="keyword calloutlabel">&nbsp;3&nbsp;</span> の ON-EXIT セクションに渡されます。
+標識 <var class="keyword varname">isAbnormalReturn</var> の値は「0」です。</p>
+
+<div class="fig figborder"><div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code>dcl-proc myproc;
+   dcl-s isAbnormalReturn ind;
+   ...
+   p = %alloc(100);
+   price = total_cost / num_orders; &nbsp;1&nbsp;
+   filename = crtTempFile();
+   return; &nbsp;2&nbsp;
+on-exit isAbnormalReturn; &nbsp;3&nbsp;
+   dealloc(n) p;
+   if filename &lt;&gt; blanks;
+      dltTempFile (filename);
+   endif;
+   if isAbnormalReturn;
+      reportProblem ();
+   endif;
+end-proc;</code></pre></div><div class="docs--copy-btn"></div></div>
+</div>
+</div>
+<div class="section" id="zzonexit__onExitReturnValue"><h2 class="title sectiontitle">ON-EXIT セクションが新規値を返す場合の例</h2>
+<p class="p">以下の例では、プロシージャーで <span class="keyword calloutlabel">&nbsp;3&nbsp;</span> とマークされた行のプロシージャーのメイン部分と、<span class="keyword calloutlabel">&nbsp;4&nbsp;</span> とマークされた ON-EXIT セクションに RETURN 命令が含まれています。
+ON-EXIT セクションの RETURN は、<var class="keyword varname">returnFromOnExit</var> パラメーターの値が *ON である場合のみ実行されます。</p>
+
+<p class="p">最初にこのプロシージャーが <span class="keyword calloutlabel">&nbsp;1&nbsp;</span> とマークされた行で呼び出され、パラメーターの値が *OFF である場合、ON-EXIT セクションの RETURN 命令は実行されません。
+このプロシージャーは、プロシージャーのメイン部分の RETURN 命令により設定された値を返します。</p>
+
+<p class="p">2 回目にこのプロシージャーが <span class="keyword calloutlabel">&nbsp;2&nbsp;</span> とマークされた行で呼び出され、パラメーターの値が *ON である場合、ON-EXIT セクションの RETURN 命令は実行されます。
+このプロシージャーは、ON-EXIT セクションの RETURN 命令により設定された値を返します。</p>
+
+<div class="fig figborder"><div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code>ctl-opt dftactgrp(*no);
+dcl-s rc packed(5);
+
+rc = myProc2 (*off);  // &nbsp;1&nbsp;
+dsply ('value returned is ' + %char(rc));
+rc = myProc2 (*on);   // &nbsp;2&nbsp;
+dsply ('value returned is ' + %char(rc));
+return;
+
+dcl-proc myproc2;
+   dcl-pi *n packed(5);
+      returnFromOnExit ind const;
+   end-pi;
+   dsply 'myproc2';
+   dsply 'myproc2 returning 5';
+   return 5; // &nbsp;3&nbsp;
+on-exit;
+   dsply 'myproc2 on-exit';
+   if returnFromOnExit;
+      dsply 'myproc2 ON-EXIT returning 6';
+      return 6; // &nbsp;4&nbsp;
+   endif;
+end-proc;</code></pre></div><div class="docs--copy-btn"></div></div>
+</div>
+
+<div class="p">プロシージャーからの出力値は次のようになります
+<div class="fig figborder"><div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code>DSPLY  myproc2
+DSPLY  myproc2 returning 5
+DSPLY  myproc2 on-exit
+DSPLY  value returned is 5
+DSPLY  myproc2
+DSPLY  myproc2 returning 5
+DSPLY  myproc2 on-exit
+DSPLY  myproc2 ON-EXIT returning 6
+DSPLY  value returned is 6</code></pre></div><div class="docs--copy-btn"></div></div>
+</div>
+</div>
+</div>
+</div>
+<div class="related-links ibm-padding-top-1 ibm-padding-bottom-2 bx--row bottom-section-parent" aria-label="bottom related links">
+<div class="familylinks ibm-margin-bottom-1">
+<div class="parentlink"><strong>親トピック:</strong> <div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a class="link bottom-section-link" href="/docs/ja/ssw_ibm_i_74/rzasd/operxcl.htm">命令コード</a></div></div>
+</div>
+</div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 16L8 26 6.6 24.6 15.2 16 6.6 7.4 8 6zM22 4H24V28H22z"></path><title></title></svg></div>

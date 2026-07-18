@@ -1,0 +1,128 @@
+<main role="main"><article role="article" aria-labelledby="zzreadc__title__1">
+<h1 class="topictitle1" id="zzreadc__title__1">READC (Read Next Changed Record)</h1><div id="lastModifiedDate"><span>Last Updated</span>: 2026-07-13</div>
+
+
+<div class="body">
+
+<div class="tablenoborder"><div class="cds--data-table-container"><table summary="" class="defaultstyle cds--data-table"><colgroup><col><col></colgroup><tbody>
+<tr>
+<td class="tdleft"><strong>Free-Form Syntax</strong></td>
+
+<td class="tdleft">READC{(E)} <span class="ph synph"><span class="ph var">record-name {data-structure}</span></span> </td>
+</tr>
+
+</tbody>
+</table></div>
+</div>
+
+
+<div class="tablenoborder"><div class="cds--data-table-container"><table summary="" class="defaultstyle cds--data-table"><colgroup><col><col><col><col><col><col><col></colgroup><thead>
+<tr>
+<th id="zzreadc__entry__3" class="thcenter thbot"><div class="cds--table-header-label"><strong>Code</strong></div></th>
+
+<th id="zzreadc__entry__4" class="thcenter thbot"><div class="cds--table-header-label"><strong>Factor 1</strong></div></th>
+
+<th id="zzreadc__entry__5" class="thcenter thbot"><div class="cds--table-header-label"><strong>Factor 2</strong></div></th>
+
+<th id="zzreadc__entry__6" class="thcenter thbot"><div class="cds--table-header-label"><strong>Result Field</strong></div></th>
+
+<th colspan="3" id="zzreadc__entry__7" class="thcenter thbot"><div class="cds--table-header-label"><strong>Indicators</strong></div></th>
+</tr>
+
+</thead>
+<tbody>
+<tr>
+<td headers="zzreadc__entry__3 " class="tdleft"><strong>READC (E)</strong></td>
+
+<td headers="zzreadc__entry__4 " class="tdleft">&nbsp;</td>
+
+<td headers="zzreadc__entry__5 " class="tdleft"><u>record-name</u></td>
+
+<td headers="zzreadc__entry__6 " class="tdleft">data structure</td>
+
+<td headers="zzreadc__entry__7 " class="tdcenter">_</td>
+
+<td headers="zzreadc__entry__7 " class="tdcenter">ER</td>
+
+<td headers="zzreadc__entry__7 " class="tdcenter">EOF</td>
+</tr>
+
+</tbody>
+</table></div>
+</div>
+
+<p>The READC operation can be used only with an externally described
+WORKSTN file to obtain the next changed record in a subfile.  The <span class="ph synph"><span class="ph var">record-name</span></span> operand is required and must be the name
+of a record format defined as a subfile by the SFILE keyword on the
+file description specifications. (See <a href="/docs/en/ssw_ibm_i_74/rzasd/fsfile.htm#fsfile">SFILE(recformat:rrnfield)</a> for information
+on the SFILE keyword.)</p>
+
+<p>For a multiple device file, data is read from the subfile record
+associated with a program device; the program device is identified
+by the field specified in the DEVID keyword on the file specifications.
+If there is no such entry, data is read from the program device used
+for the last successful input operation.</p>
+
+<p>To handle READC exceptions (<a href="/docs/en/ssw_ibm_i_74/rzasd/stacod9.htm#stacod9">file status codes</a> greater
+than 1000), either the operation code extender 'E' or an error indicator
+ER can be specified, but not both. For more information on error handling,
+see <a href="/docs/en/ssw_ibm_i_74/rzasd/filexpe.htm#filexpe">File Exception/Errors</a>.</p>
+
+<p>You can specify an indicator in positions 75-76 that will be set
+on when there are no more changed records in the subfile. This information
+can also be obtained from the %EOF built-in function, which returns
+'1' if there are no more changed records in the subfile and '0' otherwise.</p>
+
+<p>If the <span class="ph synph"><span class="ph var">data-structure</span></span> operand is specified,
+the record is read directly into the data structure. The data structure
+must be a data structure defined with <a href="/docs/en/ssw_ibm_i_74/rzasd/dextnam.htm#dextnam">EXTNAME</a>(...:*INPUT or *ALL)
+or <a href="/docs/en/ssw_ibm_i_74/rzasd/dlikerec.htm#dlikerec">LIKEREC</a>(...:*INPUT or *ALL). See <a href="/docs/en/ssw_ibm_i_74/rzasd/filop.htm#filop">File Operations</a> for
+information on how to define the data structure and how data is transferred
+between the file and the data structure.</p>
+
+<figure class="figborder"><figcaption>Figure 1. READC example</figcaption>
+
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>*...1....+....2....+....3....+....4....+....5....+....6....+....7...+....
+FFilename++IPEASFRlen+LKlen+AIDevice+.Keywords++++++++++++++++++++++++++++
+ * CUSSCR is a WORKSTN file which displays a list of records from
+ * the CUSINFO file. SFCUSR is the subfile name.
+ *
+FCUSINFO   UF   E             DISK
+FCUSSCR    CF   E             WORKSTN SFILE(SFCUSR:RRN)
+F
+CL0N01Factor1+++++++Opcode(E)+Factor2+++++++Result++++++++Len++D+HiLoEq....
+ * After the subfile has been loaded with the records from the
+ * CUSINFO file. It is written out to the screen using EXFMT with
+ * the subfile control record, CTLCUS. If there are any changes in
+ * any one of the records listed on the screen, the READC operation
+ * will read the changed records one by one in the do while loop.
+ * The corresponding record in the CUSINFO file will be located
+ * with the CHAIN operation and will be updated with the changed
+ * field.
+C                   :
+C                   EXFMT     CTLCUS
+C                   :
+ * SCUSNO, SCUSNAM, SCUSADR, and SCUSTEL are fields defined in the
+ * subfile. CUSNAM, CUSADR, and CUSTEL are fields defined in a
+ * record, CUSREC which is defined in the file CUSINFO.
+ *
+C                   READC     SFCUSR
+C                   DOW       %EOF = *OFF
+C     SCUSNO        CHAIN (E) CUSINFO                            
+ * Update the record only if the record is found in the file.
+C                   :
+C                   IF        NOT %ERROR
+C                   EVAL      CUSNAM = SCUSNAM
+C                   EVAL      CUSADR = SCUSADR
+C                   EVAL      CUSTEL = SCUSTEL
+C                   UPDATE    CUSREC
+C                   ENDIF
+C                   READC (E) SFCUSR
+C                   ENDDO</code></pre></div><div class="docs--copy-btn"></div></div></figure>
+
+</div>
+<aside role="complementary" aria-labelledby="zzreadc__title__1"><nav role="navigation" aria-label="bottom related links" class="ibm-padding-top-1 ibm-padding-bottom-2 bx--row bottom-section-parent">
+<div class="familylinks ibm-margin-bottom-1">
+<div class="parentlink"><strong>Parent topic:</strong> <div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a data-hd-product="ssw_ibm_i_74" href="/docs/en/ssw_ibm_i_74/rzasd/operxcl.htm" class="bottom-section-link">Operation Codes</a></div></div>
+</div>
+</nav></aside></article></main>

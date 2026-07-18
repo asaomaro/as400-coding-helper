@@ -1,0 +1,101 @@
+<div role="main">
+<!-- Java sync-link --><script language="Javascript" src="../rzahg/synch.js" type="text/javascript"></script>
+<h1 class="title topictitle1">MONITOR (監視グループの始め)</h1><div id="lastModifiedDate"><span>Last Updated</span>: 2021-04-13</div>
+<div class="body"><div class="tablenoborder"><div class="cds--data-table-container"><table cellpadding="4" cellspacing="0" summary="" role="presentation" class="table presentation cds--data-table" width="100%" rules="all" frame="border" border="1"><tbody class="tbody"><tr class="row"><td class="entry tdleft" align="left" valign="top" width="25%"><strong class="ph b">自由形式構文</strong></td>
+<td class="entry tdleft" align="left" valign="top" width="75%">MONITOR</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="tablenoborder"><span class="desc tabledesc"></span><div class="cds--data-table-container"><table cellpadding="4" cellspacing="0" summary="" class="table cds--data-table" width="100%" rules="all" frame="border" border="1"><thead class="thead" align="left"><tr class="row"><th class="entry thcenter thbot" align="center" valign="bottom" width="14.898989898989898%" id="d373274e55"><div class="cds--table-header-label"><strong class="ph b">コード</strong></div></th>
+<th class="entry thcenter thbot" align="center" valign="bottom" width="22.22222222222222%" id="d373274e58"><div class="cds--table-header-label"><strong class="ph b">演算項目 1</strong></div></th>
+<th class="entry thcenter thbot" align="center" valign="bottom" width="26.01010101010101%" id="d373274e61"><div class="cds--table-header-label"><strong class="ph b">演算項目 2</strong></div></th>
+<th class="entry thcenter thbot" align="center" valign="bottom" width="14.898989898989898%" id="d373274e64"><div class="cds--table-header-label"><strong class="ph b">結果フィールド</strong></div></th>
+<th class="entry thcenter thbot" colspan="3" align="center" valign="bottom" id="d373274e67"><div class="cds--table-header-label"><strong class="ph b">標識</strong></div></th>
+</tr>
+</thead>
+<tbody class="tbody"><tr class="row"><td class="entry tdleft" align="left" valign="top" width="14.898989898989898%" headers="d373274e55 "><strong class="ph b">MONITOR</strong></td>
+<td class="entry tdleft" align="left" valign="top" width="22.22222222222222%" headers="d373274e58 ">&nbsp;</td>
+<td class="entry tdleft" align="left" valign="top" width="26.01010101010101%" headers="d373274e61 ">&nbsp;</td>
+<td class="entry tdleft" align="left" valign="top" width="14.898989898989898%" headers="d373274e64 ">&nbsp;</td>
+<td class="entry tdcenter" align="center" valign="top" width="7.3232323232323235%" headers="d373274e67 ">&nbsp;</td>
+<td class="entry" valign="top" width="7.3232323232323235%" headers="d373274e67 ">&nbsp;</td>
+<td class="entry" valign="top" width="7.3232323232323235%" headers="d373274e67 ">&nbsp;</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="p">MONITOR グループは、状況コードに基づいて、条件付きエラー処理を実行します。グループは次のものから構成されます。
+<ul class="ul cds--list--unordered"><li class="li cds--list__item">MONITOR ステートメント</li>
+<li class="li cds--list__item">1 つまたは複数の <a class="xref" href="/docs/ja/ssw_ibm_i_74/rzasd/zzonerr.htm#zzonerr">ON-ERROR</a> グループ</li>
+<li class="li cds--list__item">1 つの <a class="xref" href="/docs/ja/ssw_ibm_i_74/rzasd/zzendyy.htm#zzendyy">ENDMON</a> ステートメント</li>
+</ul>
+</div>
+<p class="p">MONITOR ステートメントの後は、制御は次のステートメントに渡されます。
+MONITOR ブロックは、MONITOR ステートメントから最初の ON-ERROR
+ステートメントまでのすべてのステートメントで構成されます。MONITOR ブロックの処理の際にエラーが発生すると、適切な
+ON-ERROR グループに制御が渡ります。</p>
+<p class="p">MONITOR ブロックのすべてのステートメントがエラーなしに処理された場合は、
+ENDMON ステートメントの次のステートメントへ制御が渡されます。</p>
+<p class="p">MONITOR グループは演算の中の任意の場所に指定することができます。
+IF、DO、SELECT、または他の MONITOR グループの中でネストすることもできます。
+IF、DO、および SELECT グループは、MONITOR グループの中でネストすることができます。</p>
+<p class="p">MONITOR グループが別の MONITOR グループの中でネストされている場合、エラーが起こると、最も深いグループが最初に考慮されます。
+その MONITOR グループがそのエラー条件を処理しない場合は、次のグループが考慮されます。</p>
+<p class="p">MONITOR 命令ではレベル標識が使用され、MONITOR
+グループが合計演算の一部であることを示します。文書化を目的としてレベル標識を
+ON-ERROR または ENDMON
+命令に指定することもできますが、このレベル標識は無視されることになります。</p>
+<p class="p">MONITOR ステートメントでは、条件付け標識を使用することができます。
+条件付け標識が満たされない場合には、MONITOR グループの ENDMON
+命令の後のステートメントに即時に制御が渡されます。ON-ERROR
+命令に単独で条件付け標識を使用することはできません。</p>
+<p class="p">MONITOR ブロックがサブプロシージャーの呼び出しを含んでおり、かつそのサブプロシージャーにエラーがある場合は、そのサブプロシージャーのエラー処理が優先順位を有します。
+例えば、サブプロシージャーに *PSSR サブルーチンがあれば呼び出されます。呼び出しを含む
+MONITOR グループは、サブプロシージャーがエラー処理に失敗し、00202
+の「呼び出し中のエラー」
+状況で呼び出しが失敗した場合にのみ、考慮されることになります。</p>
+<p class="p">MONITOR グループはサブルーチンで発生したエラーを処理します。サブルーチンが自分自身の
+MONITOR グループを持っている場合は、それらが最初に考慮されます。</p>
+<p class="p">MONITOR ブロックの中での分岐命令は許されませんが、ON-ERROR
+ブロックの中であれば許されます。</p>
+<p class="p">MONITOR ブロックの中での LEAVE 命令または ITER 命令は、その
+MONITOR ブロックを含んでいるすべての活動状態の DO グループに対して適用されます。MONITOR
+ブロックの中での LEAVESR 命令または RETURN 命令は、その MONITOR
+ブロックを含んでいるすべてのサブルーチン、サブプロシージャー、またはプロシージャーに対して適用されます。</p>
+<p class="p">詳細については、<a class="xref" href="/docs/ja/ssw_ibm_i_74/rzasd/yyerror.htm#yyerror">エラー処理命令</a>を参照してください。</p>
+<div class="fig figborder" id="zzmonit__monit"><span class="figcap">図 1. MONITOR 命令</span><div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code> * MONITOR ブロックは、READ ステートメントと IF グループで
+ * 構成されています。
+ * - 最初の ON-ERROR ブロックは、ファイルがオープンされていない
+ *   場合に READ 命令に対して出される状況 1211 を処理します。
+ * - 2 番目の ON-ERROR ブロックは、その他のすべてのファイル・エラーを処理します。
+ * - 3 番目の ON-ERROR ブロックは、ストリング命令状況コード 00100
+ *   および配列指標状況コード 00121 を処理します。
+ * - 4 番目の ON-ERROR ブロック (演算項目 2 が *ALL) は、
+ *   指定された ON-ERROR 命令では処理されないエラーを
+ *
+ *
+ * MONITOR ブロックでエラーが発生しない場合は、制御は
+ * ENDIF から ENDMON に渡されます。
+C                  MONITOR
+C                  READ       FILE1
+C                  IF         NOT %EOF
+C                  EVAL       Line = %SUBST(Line(i) :
+C                                           %SCAN('***': Line(i)) + 1)
+C                  ENDIF
+C                  ON-ERROR   1211
+C                   ... file-not-open の処理
+C                  ON-ERROR   *FILE
+C                   ... その他のファイル・エラーの処理
+C                  ON-ERROR   00100 : 00121
+C                   ... ストリング・エラーおよび配列指標エラーの処理
+C                  ON-ERROR
+C                   ... その他のすべてのエラーの処理
+C                  ENDMON</code></pre></div><div class="docs--copy-btn"></div></div>
+</div>
+</div>
+<div class="related-links ibm-padding-top-1 ibm-padding-bottom-2 bx--row bottom-section-parent" aria-label="bottom related links">
+<div class="familylinks ibm-margin-bottom-1">
+<div class="parentlink"><strong>親トピック:</strong> <div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a class="link bottom-section-link" href="/docs/ja/ssw_ibm_i_74/rzasd/operxcl.htm">命令コード</a></div></div>
+</div>
+</div></div>

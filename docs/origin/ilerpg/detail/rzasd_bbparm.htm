@@ -1,0 +1,100 @@
+<div role="main">
+<!-- Java sync-link --><script language="Javascript" src="../rzahg/synch.js" type="text/javascript"></script>
+<h1 class="title topictitle1">%PARMS (パラメーター数の戻り)</h1><div id="lastModifiedDate"><span>Last Updated</span>: 2021-04-13</div>
+<div class="body"><p class="p">%PARMS は、%PARMS が使用されたプロシージャーに渡されているパラメーターの
+数を戻します。 サイクル・メイン・プロシージャーの %PARMS は、プログラム状況データ構造の *PARMS と同じです。</p>
+<p class="p">バインド呼び出しによって呼び出されたプロシージャーで %PARMS が使用される場合、
+呼び出し側のプログラムまたはプロシージャーが最小操作記述子を渡さないと、%PARMS によって戻される値は使用可能になりません。
+他の言語とは異なり、<span class="keyword">ILE RPG</span>
+コンパイラーは常に 1 つの操作記述子を渡します。したがって、呼び出し元が別の ILE 言語で作成されていた場合には、呼び出し時に操
+作記述子を渡すことが必要になります。 <span class="ph">操作記述子が渡されない場合、%PARMS によって戻された値は信頼できません。 操作記述子が渡されなかったとシステムによって判断された場合、%PARMS によって戻される値は -1 になります。
+しかし、場合によっては、システムがそのことを検出できず、%PARMS によって戻される値が不正な値 (0 以上) になることがあります。</span></p>
+<p class="p">%PARMS で戻される値には、RTNPARM キーワードが指定されたときに戻り値の処理に使用される追加の最初のパラメーターが含まれます。
+詳細については、<a class="xref" href="/docs/ja/ssw_ibm_i_74/rzasd/drtnparm.htm#drtnparm">RTNPARM</a>を参照してください。</p>
+<p class="p">詳細については、<a class="xref" href="/docs/ja/ssw_ibm_i_74/rzasd/yycall.htm#yycall">呼び出し命令</a>または <a class="xref" href="/docs/ja/ssw_ibm_i_74/rzasd/bifsint.htm#bifsint">組み込み関数</a>を参照してください。</p>
+<div class="fig figborder" id="bbparm__ebprms"><span class="figcap">図 1. %PARMS の例</span><div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code>DName+++++++++++ETDsFrom+++To/L+++IDc.Keywords+++++++++++++++++++++++++++
+ * Prototype for procedure MaxInt which calculates the maximum
+ * value of its parameters (at least 2 parameters must be passed)
+D MaxInt          PR            10I 0
+D  p1                           10I 0 VALUE
+D  p2                           10I 0 VALUE
+D  p3                           10I 0 VALUE OPTIONS(*NOPASS)
+D  p4                           10I 0 VALUE OPTIONS(*NOPASS)
+D  p5                           10I 0 VALUE OPTIONS(*NOPASS)
+D Fld1            S             10A   DIM(40)
+D Fld2            S             20A
+D Fld3            S            100A
+CL0N01Factor1+++++++Opcode(E)+Factor2+++++++Result++++++++Len++D+HiLoEq..
+CL0N01Factor1+++++++Opcode(E)+Extended-factor2+++++++++++++++++++++++++++
+C     *ENTRY        PLIST
+C                   PARM                    MaxSize          10 0
+ * Make sure the main procedure was passed a parameter
+C                   IF        %PARMS &lt; 1
+C     'No parms'    DSPLY
+C                   RETURN
+C                   ENDIF
+ * Determine the maximum size of Fld1, Fld2 and Fld3
+C                   EVAL      MaxSize = MaxInt(%size(Fld1:*ALL) :
+C                                             %size(Fld2) :
+C                                             %size(Fld3))
+C     'MaxSize is'  DSPLY                   MaxSize
+C                   RETURN</code></pre></div><div class="docs--copy-btn"></div></div>
+</div>
+<div class="fig figborder"><div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code>DName+++++++++++ETDsFrom+++To/L+++IDc.Keywords+++++++++++++++++++++++++++
+ *----------------------------------------------------------------
+ * MaxInt - return the maximum value of the passed parameters
+ *----------------------------------------------------------------
+P MaxInt          B
+D MaxInt          PI            10I 0
+D  p1                           10I 0 VALUE
+D  p2                           10I 0 VALUE
+D  p3                           10I 0 VALUE OPTIONS(*NOPASS)
+D  p4                           10I 0 VALUE OPTIONS(*NOPASS)
+D  p5                           10I 0 VALUE OPTIONS(*NOPASS)
+D Max             S             10I 0 INZ(*LOVAL)
+CL0N01Factor1+++++++Opcode(E)+Factor2+++++++Result++++++++Len++D+HiLoEq..
+CL0N01Factor1+++++++Opcode(E)+Extended-factor2+++++++++++++++++++++++++++
+ * Branch to the point in the calculations where we will never
+ * access unpassed parameters.
+C                   SELECT
+C                   WHEN      %PARMS = 2
+C                   GOTO      PARMS2
+C                   WHEN      %PARMS = 3
+C                   GOTO      PARMS3
+C                   WHEN      %PARMS = 4
+C                   GOTO      PARMS4
+C                   WHEN      %PARMS = 5
+C                   GOTO      PARMS5
+C                   ENDSL
+ * Determine the maximum value.  Max was initialized to *LOVAL.
+C     PARMS5        TAG
+C                   IF        p5 &gt; Max
+C                   EVAL      Max = p5
+C                   ENDIF
+ *
+C     PARMS4        TAG
+C                   IF        p4 &gt; Max
+C                   EVAL      Max = p4
+C                   ENDIF
+ *
+C     PARMS3        TAG
+C                   IF        p3 &gt; Max
+C                   EVAL      Max = p3
+C                   ENDIF
+ *
+C     PARMS2        TAG
+C                   IF        p2 &gt; Max
+C                   EVAL      Max = p2
+C                   ENDIF
+C                   IF        p1 &gt; Max
+C                   EVAL      Max = p1
+C                   ENDIF
+C                   RETURN    Max
+P MaxInt          E</code></pre></div><div class="docs--copy-btn"></div></div>
+</div>
+</div>
+<div class="related-links ibm-padding-top-1 ibm-padding-bottom-2 bx--row bottom-section-parent" aria-label="bottom related links">
+<div class="familylinks ibm-margin-bottom-1">
+<div class="parentlink"><strong>親トピック:</strong> <div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a class="link bottom-section-link" href="/docs/ja/ssw_ibm_i_74/rzasd/bifs.htm">組み込み関数</a></div></div>
+</div>
+</div></div>

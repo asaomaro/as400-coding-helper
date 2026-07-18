@@ -1,0 +1,88 @@
+<main role="main"><article role="article" aria-labelledby="bbgraph__title__1">
+<h1 class="topictitle1" id="bbgraph__title__1">%GRAPH (Convert to Graphic Value)</h1><div id="lastModifiedDate"><span>Last Updated</span>: 2026-07-13</div>
+
+
+<div class="body">
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>%GRAPH(char-expr | graph-expr | UCS-2-expr { : ccsid })</code></pre></div><div class="docs--copy-btn"></div></div>
+<p>%GRAPH converts the value of the expression from character, graphic,
+or UCS-2 and returns a graphic value. The result is varying length
+if the parameter is varying length.</p>
+
+<p>The second parameter, <em>ccsid</em>, is optional
+and indicates the CCSID of the resulting expression. The CCSID defaults
+to the default graphic CCSID of the module
+as specified by control
+keyword <a href="/docs/en/ssw_ibm_i_74/rzasd/hccsidgraph.htm">CCSID(*GRAPH)</a>.
+If CCSID(*GRAPH : *IGNORE) is specified on the control specification or assumed for
+the module, the %GRAPH built-in is not allowed.</p>
+
+<p>If the parameter is a constant, the conversion will be done at
+compile time. In this case, the CCSID is the graphic CCSID related
+to the CCSID of the source file.</p>
+
+<div class="p">If the parameter is character
+data with an EBCDIC CCSID, the character data must be in the
+form
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>shift-out graphic-data shift-in </code></pre></div><div class="docs--copy-btn"></div></div>For example,
+'oAABBCCi'.</div>
+
+<p>See <a href="/docs/en/ssw_ibm_i_74/rzasd/ccsidconv.htm">Conversions</a> for
+information about the possibility that converting some data
+to graphic may not be able to convert all
+the data successfully.</p>
+
+<p>For more information, see <a href="/docs/en/ssw_ibm_i_74/rzasd/dgraph.htm#dgraph">Graphic Format</a>, <a href="/docs/en/ssw_ibm_i_74/rzasd/yyconv.htm#yyconv">Conversion Operations</a>, or <a href="/docs/en/ssw_ibm_i_74/rzasd/bifsint.htm#bifsint">Built-in Functions</a>.</p>
+
+<figure class="figborder"><figcaption>Figure 1. %GRAPH Examples</figcaption>
+
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code> *..1....+....2....+....3....+....4....+....5....+....6....+....7...+....
+H*Keywords+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+H ccsid (*graph: 300)
+
+D*Name++++++++++ETDsFrom+++To/L+++IDc.Keywords++++++++++++++++++++++++
+D  char           S              8A   inz('oXXYYZZi')
+ * The %GRAPH built-in function is used to initialize a graphic field
+D  graph          S             10G   inz (%graph ('oAABBCCDDEEi'))
+D  ufield         S              2C   inz (%ucs2 ('oFFGGi'))
+D  graph2         S              2G   ccsid (4396) inz (*hival)
+D  isEqual        S              1N
+D  proc           PR
+D    gparm                       2G   ccsid (4396) value
+
+ /FREE
+    graph = %graph (char) + %graph (ufield);
+    // graph now has the value XXYYZZFFGG.
+    // %graph(char) removes the shift characters from the
+    // character data, and treats the non-shift data as
+    // graphic data.
+ 
+    isEqual = graph = %graph (graph2 : 300);
+    // The result of the %GRAPH built-in function is the value of
+    // graph2, converted from CCSID 4396 to CCSID 300.
+ 
+    graph2 = graph;
+    // The value of graph is converted from CCSID 300 to CCSID 4396
+    // and stored in graph2.
+    // This conversion is performed implicitly by the compiler.
+ 
+    proc (graph);
+    // The value of graph is converted from CCSID 300 to CCSID 4396
+    // implicitly, as part of passing the parameter by value.
+ /END-FREE</code></pre></div><div class="docs--copy-btn"></div></div></figure>
+
+ <div class="note border-2 cds--inline-notification--info ibmdocs-note cds--inline-notification cds--inline-notification--low-contrast margin-top-1 margin-bottom-1"><div class="cds--inline-notification__details"><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" class="cds--inline-notification__icon" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M16,2A14,14,0,1,0,30,16,14,14,0,0,0,16,2Zm0,5a1.5,1.5,0,1,1-1.5,1.5A1.5,1.5,0,0,1,16,7Zm4,17.12H12V21.88h2.88V15.12H13V12.88h4.13v9H20Z"></path></svg>
+        <div class="cds--inline-notification__text-wrapper">
+          <div class="cds--inline-notification__subtitle"><span class="notetitle ibm-bold ibm-textcolor-blue-50 background-blue cds--inline-notification__title ibm-padding-top-1 ibm-padding-bottom-1 padding-left-1 padding-right-1">Note:</span> The literals containing DBCS
+ data in this example, such as 'oFFGGi', do not have valid DBCS data
+ or valid shift characters.
+ See <a href="/docs/en/ssw_ibm_i_74/rzasd/dgraph.htm#dgraph">Graphic Format</a>
+ for more information.</div>
+        </div>
+      </div></div>
+
+</div>
+<aside role="complementary" aria-labelledby="bbgraph__title__1"><nav role="navigation" aria-label="bottom related links" class="ibm-padding-top-1 ibm-padding-bottom-2 bx--row bottom-section-parent">
+<div class="familylinks ibm-margin-bottom-1">
+<div class="parentlink"><strong>Parent topic:</strong> <div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a data-hd-product="ssw_ibm_i_74" href="/docs/en/ssw_ibm_i_74/rzasd/bifs.htm" class="bottom-section-link">Built-in Functions</a></div></div>
+</div>
+</nav></aside></article></main>

@@ -1,0 +1,138 @@
+<main role="main"><article role="article" aria-labelledby="bbparser__title__1">
+<h1 class="topictitle1" id="bbparser__title__1">%PARSER (parser {: options})</h1><div id="lastModifiedDate"><span>Last Updated</span>: 2026-07-13</div>
+
+
+<div class="body">
+<p>%PARSER is used as the third operand of the DATA-INTO
+operation code to specify the program or procedure to do the parsing, and any
+options supported by the parser.
+%PARSER does not return
+a value, and it cannot be specified anywhere other than for the DATA-INTO operation code.</p>
+
+<div class="p">The first operand specifies the program or procedure to do the parsing. It can be
+<ul class="cds--list--unordered">
+<li class="cds--list__item">A procedure pointer expression</li>
+
+<li class="cds--list__item">The %PADDR built-in function</li>
+
+<li class="cds--list__item">A character expression identifying a program. It must be in one of the following forms
+<ul class="cds--list--unordered cds--list--nested">
+<li class="cds--list__item">MYPGM</li>
+
+<li class="cds--list__item">MYLIB/MYPGM</li>
+
+<li class="cds--list__item">*LIBL/MYPGM</li>
+
+</ul>
+
+</li>
+
+<li class="cds--list__item">A character expression identifying a procedure in a service program. It must be in one of the following forms
+<ul class="cds--list--unordered cds--list--nested">
+<li class="cds--list__item">MYSRVPGM(myProcedure)</li>
+
+<li class="cds--list__item">MYLIB/MYSRVPGM(myProcedure)</li>
+
+<li class="cds--list__item">*LIBL/MYSRVPGM(myProcedure)</li>
+
+</ul>
+
+</li>
+
+</ul>
+
+<div class="note border-2 cds--inline-notification--info ibmdocs-note cds--inline-notification cds--inline-notification--low-contrast margin-top-1 margin-bottom-1"><div class="cds--inline-notification__details"><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" class="cds--inline-notification__icon" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M16,2A14,14,0,1,0,30,16,14,14,0,0,0,16,2Zm0,5a1.5,1.5,0,1,1-1.5,1.5A1.5,1.5,0,0,1,16,7Zm4,17.12H12V21.88h2.88V15.12H13V12.88h4.13v9H20Z"></path></svg>
+        <div class="cds--inline-notification__text-wrapper">
+          <div class="cds--inline-notification__subtitle"><span class="notetitle ibm-bold ibm-textcolor-blue-50 background-blue cds--inline-notification__title ibm-padding-top-1 ibm-padding-bottom-1 padding-left-1 padding-right-1">Note:</span> If a prototype name is specified, it is assumed to be a procedure
+returning either a procedure pointer value or a character value.
+If the parser is a prototyped procedure, you use the %PADDR built-in function.</div>
+        </div>
+      </div></div>
+
+</div>
+
+<p>The second operand specifies options that are passed
+directly to the parser.
+The parser determines the nature of the options that it supports.</p>
+
+<p>If the second operand is the name of a variable which can be modified,
+the address of the variable is passed directly to the parser.</p>
+
+<p>If the second operand is a character expression, including
+the name of a character variable that cannot be modified,
+a pointer to a null-terminated string containing the content
+of the expression is passed to the parser.
+</p>
+
+<p>
+The parser receives information that indicates whether
+the pointer the pointer is a null-terminated string.
+</p>
+
+<section class="section" role="region" aria-labelledby="bbparser__title__2"><h2 class="sectiontitle" id="bbparser__title__2">Examples of %PARSER</h2>
+
+<div class="p">
+A program name is specified for the first operand.
+The second operand is omitted.
+The parser program 'MYPARSER' does not receive any options.
+<div class="figborder"><div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>
+DATA-INTO myfld %DATA(document) %PARSER('MYPARSER');
+</code></pre></div><div class="docs--copy-btn"></div></div></div>
+
+</div>
+
+<div class="p">
+A procedure in a service program is specified for the first operand.
+A modifiable variable is specified for the second operand.
+Procedure 'myProcedure' receives a pointer to the "parserOptions" data structure.
+<div class="figborder"><div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>
+DCL-DS parserOptions LIKEDS(myParserOpts_T);
+DATA-INTO myDs %DATA('myData.txt' : 'doc=file')
+               %PARSER('MYPARSERS(myProcedure)' : parserOptions);
+</code></pre></div><div class="docs--copy-btn"></div></div></div>
+</div>
+
+<div class="p">
+A procedure pointer is specified for the first operand.
+A character expression is specified for the second operand.
+The procedure specified by the procedure pointer receives a
+pointer to a null-terminated string with the value "sep=comma".
+<div class="figborder"><div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>
+DCL-S p POINTER(*PROC);
+DCL-S sep CHAR(1) INZ(',');
+DATA-INTO myds %DATA('myData.txt' : 'doc=file')
+               %PARSER(p : 'sep=' + sep);
+</code></pre></div><div class="docs--copy-btn"></div></div></div>
+</div>
+
+<div class="p">
+Built-in function %PADDR is specified for the first operand.
+A non-modifiable character variable "constParm" is specified for the second operand.
+The value of "constParm" is "boolean=indicator".
+The procedure specified by prototype "myProc" receives a
+pointer to a null-terminated string with the value "boolean=indicator".
+specified as the second operand.
+<div class="figborder"><div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>
+DCL-PI *N;
+   constParm VARCHAR(20) CONST;
+END-PI;
+DATA-INTO myds %DATA('myData.txt' : 'doc=file')
+               %PARSER(%PADDR(myProc) : constParm);
+</code></pre></div><div class="docs--copy-btn"></div></div></div>
+</div>
+
+<p>For more examples of %PARSER, and more information about the DATA-INTO operation,
+see <a href="/docs/en/ssw_ibm_i_74/rzasd/zzdatainto.htm">DATA-INTO (Parse a Document into a Variable)</a>.</p>
+
+</section>
+
+<p>See the <span class="keyword">Rational Open Access: RPG Edition</span>
+topic for information on writing an parser.
+</p>
+
+</div>
+<aside role="complementary" aria-labelledby="bbparser__title__1"><nav role="navigation" aria-label="bottom related links" class="ibm-padding-top-1 ibm-padding-bottom-2 bx--row bottom-section-parent">
+<div class="familylinks ibm-margin-bottom-1">
+<div class="parentlink"><strong>Parent topic:</strong> <div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a data-hd-product="ssw_ibm_i_74" href="/docs/en/ssw_ibm_i_74/rzasd/bifs.htm" class="bottom-section-link">Built-in Functions</a></div></div>
+</div>
+</nav></aside></article></main>

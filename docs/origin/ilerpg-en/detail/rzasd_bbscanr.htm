@@ -1,0 +1,211 @@
+<main role="main"><article role="article" aria-labelledby="bbscanr__title__1">
+<h1 class="topictitle1" id="bbscanr__title__1">%SCANR (Scan Reverse for Characters)</h1><div id="lastModifiedDate"><span>Last Updated</span>: 2026-07-13</div>
+
+
+<div class="body">
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>%SCANR(search argument : source string {: start position {: length {: *NATURAL | *STDCHARSIZE}}})</code></pre></div><div class="docs--copy-btn"></div></div>
+<p>%SCANR returns the last position of the search argument in the
+source string, or 0 if it was not found.</p>
+
+<p>The start position and length specify the substring of
+the source string to be searched. The start position defaults to 1 and
+the length defaults to the remainder of the source string. The result
+is always the position in the source string even if the starting position
+is specified.</p>
+
+<p>The first parameter must be of type character, graphic, or
+UCS-2. The second parameter must be the same type as the first
+parameter. The third and fourth parameters, if specified, must be numeric with
+zero decimal positions.</p>
+
+<div class="p">The third, fourth, or fifth parameter can be *NATURAL or *STDCHARSIZE
+to override the current <a href="/docs/en/ssw_ibm_i_74/rzasd/charcount.htm">CHARCOUNT</a> mode for the statement.
+If this parameter is specified, it must be the last parameter.
+<ul class="cds--list--unordered">
+<li class="cds--list__item">Specify *NATURAL to indicate that %SCANR operates in <span class="keyword">CHARCOUNT NATURAL</span> mode.
+The start position, length, and return value are measured in characters rather than bytes or double bytes.
+For example, if the source string is a UTF-8 string with the value 'ábç12',
+a start position of 3 refers to 'ç' because it is the third character.
+</li>
+
+<li class="cds--list__item">Specify *STDCHARSIZE to indicate that %SCANR operates in <span class="keyword">CHARCOUNT STDCHARSIZE</span> mode.
+In the previous example, with <span class="keyword">CHARCOUNT STDCHARSIZE</span> mode,
+a start position of 3 refers to 'b' because it is the third byte.
+Characters 'á' and 'ç' are 2-byte characters.
+</li>
+
+</ul>
+
+See <a href="/docs/en/ssw_ibm_i_74/rzasd/charcount.htm">Processing string data by the natural size of each character</a> and <a href="/docs/en/ssw_ibm_i_74/rzasd/chartype.htm">Character Data Type</a>.
+<div class="note border-2 cds--inline-notification--info ibmdocs-note cds--inline-notification cds--inline-notification--low-contrast margin-top-1 margin-bottom-1"><div class="cds--inline-notification__details"><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" class="cds--inline-notification__icon" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M16,2A14,14,0,1,0,30,16,14,14,0,0,0,16,2Zm0,5a1.5,1.5,0,1,1-1.5,1.5A1.5,1.5,0,0,1,16,7Zm4,17.12H12V21.88h2.88V15.12H13V12.88h4.13v9H20Z"></path></svg>
+        <div class="cds--inline-notification__text-wrapper">
+          <div class="cds--inline-notification__subtitle"><span class="notetitle ibm-bold ibm-textcolor-blue-50 background-blue cds--inline-notification__title ibm-padding-top-1 ibm-padding-bottom-1 padding-left-1 padding-right-1">Note:</span> 
+%SCANR can also operate in <span class="keyword">CHARCOUNT NATURAL</span> mode due to the
+<span class="keyword">/CHARCOUNT</span> compiler directive or the <span class="keyword">CHARCOUNT</span> Control keyword.
+</div>
+        </div>
+      </div></div>
+
+</div>
+
+<p>When any parameter is variable in length, the values of the other
+parameters are checked against the current length, not the maximum
+length.</p>
+
+<p>The type of the return value is numeric. This built-in
+function can be used anywhere that a numeric expression
+is valid.</p>
+
+<p>If the search argument contains trailing blanks, the
+scan will include those trailing blanks. For example if 'b' represents
+a blank, %SCANR('12b':'12b312') would return 1. If trailing blanks
+should not be considered in the scan, use %TRIMR on the search argument.
+For example %SCAN(%TRIMR('12b'):'12b312') would return 5.</p>
+
+<p>For more information, see <a href="/docs/en/ssw_ibm_i_74/rzasd/yystrng.htm#yystrng">String Operations</a> or <a href="/docs/en/ssw_ibm_i_74/rzasd/bifsint.htm#bifsint">Built-in Functions</a>.</p>
+
+<section class="section" role="region" aria-labelledby="bbscanr__title__2"><h2 class="sectiontitle" id="bbscanr__title__2">%SCANR Examples</h2>
+
+<ul class="cds--list--unordered">
+<li class="cds--list__item">The simplest form of %SCANR, with two operands
+<p>The following example finds the final name in a path.</p>
+
+<ol class="cds--list--ordered--temporary">
+<li class="cds--list__item">
+The value of <var class="keyword varname">lastSlash</var> is 27 after it is assigned the result
+of the %SCANR built-in function.</li>
+
+<li class="cds--list__item">
+Since <var class="keyword varname">lastSlash</var> is not zero, the %SUBST built-in function
+is used to obtain the file name.
+The value of <var class="keyword varname">filename</var> "a.txt" after the code completes.</li>
+
+</ol>
+
+<div class="figborder"><div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>
+   path = '/home/locations/manchester/a.txt';
+   lastSlash = %SCANR('/' : path); &nbsp;1&nbsp;
+   if lastSlash = 0;
+      filename = path;
+   else;
+      filename = %SUBST(path : lastSlash + 1); &nbsp;2&nbsp;
+   endif;
+</code></pre></div><div class="docs--copy-btn"></div></div></div>
+
+</li>
+<li class="cds--list__item">Using the third operand of %SCANR to specify the starting position of the
+part of the source string to be searched
+<p>The following example finds the suffix of the filename in a path, if it exists.</p>
+
+<ol class="cds--list--ordered--temporary">
+<li class="cds--list__item">
+%SCANR is used to find the location of the last slash, which indicates the
+beginning of the file name.</li>
+
+<li class="cds--list__item">
+%SCANR is used to find the location of the last period, starting at the beginning
+of the file name.
+By specifying the start position for the %SCANR built-in function, the
+program avoids finding any irrelevant periods in the path,
+such as the period in the "st.johns" directory.</li>
+
+<li class="cds--list__item">
+In this example, there is no period following the last slash in <var class="keyword varname">path</var>
+so the value of <var class="keyword varname">suffix</var> will be the empty string.</li>
+
+<li class="cds--list__item">
+However, if the value of <var class="keyword varname">path</var> was "/home/locations/st.johns/report.txt",
+then the value of <var class="keyword varname">suffix</var> will be "txt".</li>
+
+</ol>
+
+<div class="figborder"><div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>
+   path = '/home/locations/st.johns/report';
+   p = %SCANR('/' : path); &nbsp;1&nbsp;
+   if p = 0;
+      p = 1; // start the next search at the beginning
+   endif;
+   dot = %SCANR('.' : path : p + 1); &nbsp;2&nbsp;
+   if dot = 0;
+      suffix = ''; &nbsp;3&nbsp;
+   else;
+        suffix = %SUBST(path : dot + 1);  &nbsp;4&nbsp;
+   endif;
+</code></pre></div><div class="docs--copy-btn"></div></div></div>
+
+</li>
+
+<li class="cds--list__item">Using the fourth operand of %SCANR to specify the length to be searched
+<p>The following example finds the name of the final directory in the path.</p>
+
+<ol class="cds--list--ordered--temporary">
+<li class="cds--list__item">
+The final slash is found at position 27.</li>
+
+<li class="cds--list__item">
+The second %SCANR built-in function indicates the search for the slash
+should only be done between positions 1 and 26.</li>
+
+<li class="cds--list__item">
+Since <var class="keyword varname">p</var> is not zero in this example,
+the %SUBST built-in function will be used to obtain
+the directory name.
+At the end of the code, <var class="keyword varname">dir</var> will have the value "manchester".</li>
+
+</ol>
+
+<div class="figborder"><div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>
+   path = '/home/locations/manchester/a.txt';
+   dir = '';
+   p = %SCANR('/' : path);  &nbsp;1&nbsp;
+   if p &gt; 0;
+      p2 = %SCANR('/' : path : 1 : p - 1);
+      if p2 &gt; 0;
+         dir = %SUBST(path : p2 + 1 : (p - p2 - 1));
+      endif;
+   endif;
+</code></pre></div><div class="docs--copy-btn"></div></div></div>
+
+</li>
+
+</ul>
+
+</section>
+
+<section class="section" role="region" aria-labelledby="bbscanr__examp__title__1" id="bbscanr__examp"><h2 class="sectiontitle" id="bbscanr__examp__title__1">Example using %SCAN and %SCANR together</h2>
+
+<p>In the following example, %SCAN and %SCANR are used with the same operands.
+Since %SCAN searches from the beginning and %SCANR searches from the end, they will
+return different results if there is more than one occurrence of the search argument
+in the search string.</p>
+
+<ol class="cds--list--ordered--temporary">
+<li class="cds--list__item">
+The value returned by the %SCAN built-in function is 1.</li>
+
+<li class="cds--list__item">
+The value returned by the %SCANR built-in function is 24.</li>
+
+<li class="cds--list__item">
+The values are not the same.
+This indicates that there are at least two occurrences of "VALUE" in the string.</li>
+
+</ol>
+
+<div class="figborder"><div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>
+   string = 'VALUE 9.56, VALUE 7.3, VALUE 4.71';
+   p1 = %SCAN ('VALUE' : string); &nbsp;1&nbsp;
+   p2 = %SCANR ('VALUE' : string); &nbsp;2&nbsp;
+   if p1 &lt;&gt; p2;
+      moreThanOne = *ON; &nbsp;3&nbsp;
+   endif;
+</code></pre></div><div class="docs--copy-btn"></div></div></div>
+
+</section>
+
+</div>
+<aside role="complementary" aria-labelledby="bbscanr__title__1"><nav role="navigation" aria-label="bottom related links" class="ibm-padding-top-1 ibm-padding-bottom-2 bx--row bottom-section-parent">
+<div class="familylinks ibm-margin-bottom-1">
+<div class="parentlink"><strong>Parent topic:</strong> <div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a data-hd-product="ssw_ibm_i_74" href="/docs/en/ssw_ibm_i_74/rzasd/bifs.htm" class="bottom-section-link">Built-in Functions</a></div></div>
+</div>
+</nav></aside></article></main>

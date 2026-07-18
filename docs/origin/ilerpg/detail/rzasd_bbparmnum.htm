@@ -1,0 +1,51 @@
+<div role="main">
+<!-- Java sync-link --><script language="Javascript" src="../rzahg/synch.js" type="text/javascript"></script>
+<h1 class="title topictitle1">%PARMNUM (パラメーター番号を戻す)</h1><div id="lastModifiedDate"><span>Last Updated</span>: 2021-04-13</div>
+<div class="body"><p class="p">%PARMNUM は、パラメーター・リストにおけるパラメーターの番号を戻します。
+%PARMNUM のオペランドは、プロシージャー・インターフェースの中で定義されたパラメーターの名前です。</p>
+<div class="note note border-2 cds--inline-notification--info ibmdocs-note cds--inline-notification cds--inline-notification--low-contrast margin-top-1 margin-bottom-1"><div class="cds--inline-notification__details"><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" class="cds--inline-notification__icon" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M16,2A14,14,0,1,0,30,16,14,14,0,0,0,16,2Zm0,5a1.5,1.5,0,1,1-1.5,1.5A1.5,1.5,0,0,1,16,7Zm4,17.12H12V21.88h2.88V15.12H13V12.88h4.13v9H20Z"></path></svg>
+        <div class="cds--inline-notification__text-wrapper">
+          <div class="cds--inline-notification__subtitle"><span class="notetitle ibm-bold ibm-textcolor-blue-50 background-blue cds--inline-notification__title ibm-padding-top-1 ibm-padding-bottom-1 padding-left-1 padding-right-1">注:</span> <ol class="ol cds--list--ordered--temporary"><li class="li cds--list__item">*ENTRY PLIST を使用して定義されたパラメーターは、%PARMNUM のオペランドとして指定できません。</li>
+<li class="li cds--list__item">パラメーターは、プロシージャー・インターフェース・パラメーター・リスト内と同じように指定してください。
+パラメーターが配列の場合、指標は指定できません。
+パラメーターがデータ構造の場合、サブフィールドは指定できません。
+パラメーターがファイルの場合、レコード様式は指定できません。</li>
+<li class="li cds--list__item">プロシージャーに対して RTNPARM キーワードがコーディングされた場合、戻り値は、追加の最初のパラメーターとして処理されます。
+それ以外のパラメーターの番号は、見かけ上の番号より 1 つ大きくなります。
+例えば、RTNPARM を指定して定義されたプロシージャーに P1 と
+P2 という 2 つのパラメーターがある場合、%PARMNUM(P1) は 2 を戻し、%PARMNUM(P2) は 3 を戻します。</li>
+</ol>
+</div>
+        </div>
+      </div></div>
+<p class="p">詳細については、<a class="xref" href="/docs/ja/ssw_ibm_i_74/rzasd/bifsint.htm#bifsint">組み込み関数</a>を参照してください。</p>
+<div class="fig figborder"><span class="figcap">図 1. %PARMNUM の例</span><div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="pre codeblock"><code>D  myProc         pi            10A   RTNPARM OPDESC
+D   companyName                 25A   OPTIONS(*VARSIZE)
+D   errorCode                    1A   OPTIONS(*OMIT)
+D   cityName                    25A   OPTIONS(*NOPASS)
+ /free
+
+    // test the length of companyName
+    callp CEEDOD(%parmnum(companyName) : more parameters ...
+               : parmlen : *omit);
+    if parmlen &lt; 25;
+      // the full parameter was not passed
+    endif;
+
+    // test the presence of the omissible errorCode parameter
+    callp CEETSTA(isPresent : %parmnum(errorCode) : *omit);
+    if isPresent = 1;
+       // errorCode was not omitted
+    endif;
+
+    // test the presence of the optional city parameter
+    if %parms &gt;= %parmnum(cityName);
+       // cityName was passed
+    endif;</code></pre></div><div class="docs--copy-btn"></div></div>
+</div>
+</div>
+<div class="related-links ibm-padding-top-1 ibm-padding-bottom-2 bx--row bottom-section-parent" aria-label="bottom related links">
+<div class="familylinks ibm-margin-bottom-1">
+<div class="parentlink"><strong>親トピック:</strong> <div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a class="link bottom-section-link" href="/docs/ja/ssw_ibm_i_74/rzasd/bifs.htm">組み込み関数</a></div></div>
+</div>
+</div></div>
