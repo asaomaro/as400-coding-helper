@@ -50,10 +50,22 @@ function resolveDefinitionLanguage() {
     // "auto"（既定）または未設定
     return vscode.env.language?.toLowerCase().startsWith("ja") ? "ja" : "en";
 }
+/**
+ * 読み込み済みの既定定義（拡張機能に同梱するもの）。
+ * 同梱物は動かないので、一度読んだら保持してよい。
+ * 利用者の上書き（.rpg-cl/）は毎回読む（1 ファイルなので安い）。
+ */
+const bundledCache = new Map();
+/** 定義ファイル名はキーワードそのもの（全 288 定義で一致することを検査済み）。 */
+function definitionFileName(keyword) {
+    return `${keyword}.json`;
+}
 class PrompterDefinitionLoader {
     async loadDefinitionFromUri(uri) {
-        const document = await vscode.workspace.openTextDocument(uri);
-        const raw = document.getText();
+        // openTextDocument は VS Code の文書モデルに登録され、数が増えると重い。
+        // 定義は編集対象ではないので生読みで足りる。
+        const bytes = await vscode.workspace.fs.readFile(uri);
+        const raw = new TextDecoder("utf-8").decode(bytes);
         let parsed;
         try {
             parsed = JSON.parse(raw);
@@ -88,6 +100,66 @@ class PrompterDefinitionLoader {
             }
         }
         return definitions;
+    }
+    /**
+     * キーワードから定義を 1 件だけ読む。
+     *
+     * F4 のたびにディレクトリ全体（CL なら 134 ファイル・3.5MB）を読んで
+     * 1 件だけ使っていたため表示が遅かった。ファイル名はキーワードそのものなので、
+     * 直接引けば 1 ファイルで済む。
+     *
+     * 見つからない場合だけ全走査に落とす（ファイル名とキーワードがずれた定義を
+     * 利用者が置いた場合の保険）。
+     */
+    async loadDefinition(keyword, language, dialect, workspaceFolder, context) {
+        const subPath = this.resolveSubPath(language, dialect);
+        const fileName = definitionFileName(keyword);
+        // 上書きが最優先。1 ファイルなので毎回見てよい。
+        for (const dirUri of this.overrideDirs(language, dialect, workspaceFolder)) {
+            try {
+                return await this.loadDefinitionFromUri(vscode.Uri.joinPath(dirUri, fileName));
+            }
+            catch {
+                // 無ければ次を見る
+            }
+        }
+        const bundledUri = vscode.Uri.joinPath(context.extensionUri, "resources", "prompter", ...subPath, fileName);
+        const cacheKey = bundledUri.toString();
+        const cached = bundledCache.get(cacheKey);
+        if (cached !== undefined) {
+            return cached ?? undefined;
+        }
+        try {
+            const definition = await this.loadDefinitionFromUri(bundledUri);
+            bundledCache.set(cacheKey, definition);
+            return definition;
+        }
+        catch {
+            // ファイル名とキーワードがずれている場合に備えて全走査で拾う。
+            const all = await this.loadForLanguage(language, dialect, workspaceFolder, context);
+            const found = all.find(candidate => candidate.keyword === keyword);
+            bundledCache.set(cacheKey, found ?? null);
+            return found;
+        }
+    }
+    resolveSubPath(language, dialect) {
+        return language === "rpg-fixed"
+            ? ["rpg", dialect ?? "ile"]
+            : ["cl", resolveDefinitionLanguage()];
+    }
+    overrideDirs(language, dialect, workspaceFolder) {
+        const baseUri = workspaceFolder?.uri ?? vscode.workspace.workspaceFolders?.[0]?.uri;
+        if (!baseUri) {
+            return [];
+        }
+        // 高優先から順に返す（loadForLanguage 側は低→高で重ねるので順序が逆）。
+        const dirs = [
+            vscode.Uri.joinPath(baseUri, ".rpg-cl", ...this.resolveSubPath(language, dialect))
+        ];
+        if (language === "rpg-fixed" && (dialect ?? "ile") === "ile") {
+            dirs.push(vscode.Uri.joinPath(baseUri, ".rpg-cl", "rpg"));
+        }
+        return dirs;
     }
     async loadForLanguage(language, dialect, workspaceFolder, context) {
         // RPG は方言別サブディレクトリ rpg/{dialect}/ を使う。

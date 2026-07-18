@@ -73,13 +73,9 @@ function registerShowPrompterCommand(context) {
         }
         const loader = new jsonDefinitions_1.PrompterDefinitionLoader();
         const workspaceFolder = vscode.workspace.getWorkspaceFolder(document.uri);
-        const definitions = await loader.loadForLanguage(resolved.language, resolved.dialect, workspaceFolder, context);
-        console.log("[rpgClSupport] loaded definitions", JSON.stringify({
-            language: resolved.language,
-            count: definitions.length,
-            keywords: definitions.map(def => def.keyword)
-        }));
-        const definition = definitions.find(candidate => candidate.keyword === resolved.keyword);
+        // キーワードで 1 件だけ読む。全件読むと CL では 134 ファイル・3.5MB になり、
+        // F4 の表示がそのぶん待たされる。
+        const definition = await loader.loadDefinition(resolved.keyword, resolved.language, resolved.dialect, workspaceFolder, context);
         if (!definition) {
             void vscode.window.showInformationMessage(`No prompter definition found for ${resolved.keyword}.`);
             editor.selection = originalSelection;
@@ -101,11 +97,6 @@ function registerShowPrompterCommand(context) {
             });
             return;
         }
-        console.log("[rpgClSupport] applyChanges request", JSON.stringify({
-            line: resolved.line,
-            keyword: definition.keyword,
-            values: result.values
-        }));
         const targetEditor = vscode.window.visibleTextEditors.find(e => e.document.uri.toString() === document.uri.toString()) ?? editor;
         if (targetEditor.document.isClosed) {
             console.log("[rpgClSupport] target editor is closed; skipping applyChanges", JSON.stringify({ uri: targetEditor.document.uri.toString() }));
