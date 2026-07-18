@@ -105,7 +105,13 @@ export function buildInitialState(
       slot.parameter,
       resolvedValues
     );
-    const error = validate(slot.parameter, raw, required, allowedValues);
+    // 初期表示では「必須なのに空」をエラーにしない。開いた瞬間に赤字が並ぶと
+    // 警告として機能しなくなる（実機の F4 も入力前は何も出さない）。
+    // 未入力は必須マーク（*）で示し、送信時にクライアント側が検証する。
+    const error =
+      raw.trim().length === 0 && required
+        ? undefined
+        : validate(slot.parameter, raw, required, allowedValues);
 
     return {
       parameter: slot.parameter,
@@ -198,32 +204,42 @@ export function validate(
   const required = requiredOverride ?? parameter.required;
 
   if (required && trimmed.length === 0) {
-    return "A value is required.";
+    return "値の入力が必要です。";
   }
 
   if (parameter.attributes?.maxLength !== undefined) {
     if (trimmed.length > parameter.attributes.maxLength) {
-      return `Value must be at most ${parameter.attributes.maxLength} characters.`;
+      return `${parameter.attributes.maxLength} 文字以内で入力してください。`;
     }
   }
 
-  if (parameter.attributes?.numericOnly && trimmed.length > 0) {
-    if (!/^[0-9]+$/u.test(trimmed)) {
-      return "Only numeric characters are allowed.";
+  // 数値項目でも、定義済み値（*DEVD 等）・小数・符号は正当に現れる。
+  // 整数だけに限ると CPYF の STARTNBR(1.00) や CRTPRTF の DOWN(*DEVD) を誤って弾く。
+  if (parameter.attributes?.numericOnly && trimmed.length > 0 && !trimmed.startsWith("*")) {
+    if (!/^[+-]?[0-9]+(?:\.[0-9]+)?$/u.test(trimmed)) {
+      return "数値を入力してください。";
     }
   }
 
   if (parameter.attributes?.characterSet && trimmed.length > 0) {
     if (parameter.attributes.characterSet === "upper") {
       if (trimmed !== trimmed.toUpperCase()) {
-        return "Value must be upper case.";
+        return "英大文字で入力してください。";
       }
     }
   }
 
   // コメント以外の項目については、数値専用でなく、かつ
-  // characterSet が英数字系 (alpha/alnum/upper) の場合のみ
-  // 英数字と空白/アンダースコアに制限する。
+  // characterSet が英数字系 (alpha/alnum/upper) の場合のみ文字種を制限する。
+  //
+  // CL の値には英数字以外が正当に現れる。取りこぼすと正しい値を誤って
+  // 弾いてしまう（実際に全入力欄 1,542 のうち 1,013 が初期表示でエラーに
+  // なっていた。*FILE / *EXCL / *SAME などの定義済み値がすべて弾かれていた）。
+  //   *     定義済み値              例: *FILE, *SAME
+  //   /     修飾名の区切り          例: QGPL/MYFILE
+  //   &     CL 変数                 例: &LIBNAME
+  //   . -   限定名・日付・負数      例: MYLIB.MYOBJ, -1
+  //   ' "   文字リテラル            例: 'ABC'
   const charset = parameter.attributes?.characterSet;
   if (
     parameter.name !== "COMMENT" &&
@@ -232,15 +248,15 @@ export function validate(
     charset &&
     (charset === "alpha" || charset === "alnum" || charset === "upper")
   ) {
-    if (!/^[A-Za-z0-9_ ]+$/u.test(trimmed)) {
-      return "Only alphanumeric characters are allowed.";
+    if (!/^[A-Za-z0-9_ *\/&.\-'"()#@$]+$/u.test(trimmed)) {
+      return "使用できない文字が含まれています。";
     }
   }
 
   if (parameter.options && parameter.options.length > 0) {
     const allowed = parameter.options.map(option => option.value);
     if (trimmed.length > 0 && !allowed.includes(trimmed)) {
-      return "Value is not in the allowed set.";
+      return "指定できない値です。";
     }
   }
 

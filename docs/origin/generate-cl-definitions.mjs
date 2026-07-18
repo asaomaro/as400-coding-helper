@@ -105,7 +105,9 @@ function readChoices(choicesHtml) {
     : [];
 
   const repeat = Number(text.match(/最大\s*(\d+)\s*回の繰り返し/)?.[1]) || undefined;
-  const specials = [...new Set(matchAll(text, /\*[A-Z0-9]+/g).map(m => m[0]))];
+  // 単独の "*"（DSPFD OUTPUT の既定値など）も定義済み値。`\*[A-Z0-9]+` だけでは拾えない。
+  const specials = [...new Set(matchAll(text, /\*[A-Z0-9]*/g).map(m => m[0]))]
+    .filter(v => v === "*" || v.length > 1);
   const range = text.match(/(\d+)\s*-\s*(\d+)/);
 
   return {

@@ -56,6 +56,19 @@ function toSerializableState(definition, state, resolved) {
         }
     };
     registerGroup(definition.parameters);
+    // 追加パラメータ（実機の F10 側）の末端入力欄を集める。
+    // basic を持つパラメータが1つも無い定義では折りたたまない（情報が無いだけで
+    // 全部が追加なわけではなく、全項目を隠すと何も入力できなくなるため）。
+    const hasBasicInfo = definition.parameters.some(p => p.basic);
+    const additionalNames = new Set();
+    if (hasBasicInfo) {
+        for (const parameter of definition.parameters) {
+            if (parameter.basic)
+                continue;
+            for (const leaf of flattenForConstraints([parameter]))
+                additionalNames.add(leaf.name);
+        }
+    }
     return {
         keyword: definition.keyword,
         positionLine: resolved.line,
@@ -91,6 +104,7 @@ function toSerializableState(definition, state, resolved) {
             hasHelp: Boolean((0, commandHelp_1.buildParameterHelpText)(field.parameter)),
             help: (0, commandHelp_1.buildParameterHelpText)(field.parameter),
             maxOccurrences: field.parameter.maxOccurrences,
+            maxLength: field.parameter.attributes?.maxLength,
             groupName: (() => {
                 const info = groupInfoByChildName.get(field.parameter.name);
                 return info ? (0, occurrences_1.occurrenceName)(info.groupName, field.occurrence) : undefined;
@@ -104,6 +118,7 @@ function toSerializableState(definition, state, resolved) {
                     : info.groupLabel;
             })(),
             visible: field.visible,
+            additional: additionalNames.has(field.parameter.name),
             dependsOn: field.parameter.dependsOn,
             disabled: field.disabled,
             allowedValues: field.allowedValues
@@ -161,8 +176,9 @@ function buildHtml(state, options) {
         const addButton = repeat
             ? `<button type="button" class="group-add" data-group="${escapeHtml(repeat.base)}" data-max="${repeat.max}">追加</button>`
             : "";
+        const groupAdditional = group.fields.every(f => f.additional);
         return `
-      <fieldset class="field group-field" data-group-name="${escapeHtml(groupName)}">
+      <fieldset class="field group-field" data-group-name="${escapeHtml(groupName)}"${groupAdditional ? ' data-additional="true" style="display:none"' : ""}>
         <legend>${escapeHtml(group.label)}</legend>
         ${childrenHtml}
         ${addButton}
@@ -197,10 +213,17 @@ function buildHtml(state, options) {
   <title>F4 プロンプター - ${escapeHtml(state.keyword)}</title>
   <style>
     body { font-family: sans-serif; padding: 8px; }
-    .field { margin-bottom: 8px; }
+    .field { margin-bottom: 6px; }
+    .field label > span { display: inline-block; min-width: 15em; }
+    .required-mark { color: #d97; font-weight: bold; }
+    .help-indicator {
+      display: inline-block; width: 1.1em; height: 1.1em; line-height: 1.1em;
+      text-align: center; border: 1px solid currentColor; border-radius: 50%;
+      font-size: 0.8em; vertical-align: middle;
+    }
     .error { color: #be1100; font-size: 0.9em; }
     .buttons { margin-top: 12px; }
-    .help-indicator { margin-left: 4px; color: #888; cursor: pointer; font-weight: bold; }
+    .help-indicator { margin-left: 6px; color: #8ab; cursor: pointer; }
     .help-overlay {
       position: fixed;
       inset: 0;
@@ -233,6 +256,7 @@ function buildHtml(state, options) {
       border: 1px solid #be1100;
     }
     .constraint-errors { margin-bottom: 8px; white-space: pre-wrap; }
+    .toggle-additional { margin: 8px 0; }
     .group-add { margin-top: 4px; }
     .multi-field { margin-top: 4px; }
     .multi-items { display: flex; flex-direction: column; gap: 4px; margin-bottom: 4px; }
@@ -252,6 +276,9 @@ function buildHtml(state, options) {
   <form id="prompter-form">
     <div id="constraint-errors" class="error constraint-errors" style="display:none"></div>
     ${fieldsHtml}
+    ${state.fields.some(f => f.additional)
+        ? `<button type="button" id="toggle-additional" class="toggle-additional">追加パラメーターを表示 (F10)</button>`
+        : ""}
     <div class="buttons">
       <button type="submit">OK</button>
       <button type="button" id="cancel">Cancel</button>
@@ -498,7 +525,12 @@ function buildHtml(state, options) {
       const inputs = form.querySelectorAll('input[name], select[name], textarea[name]');
       for (const input of inputs) {
         const field = input.closest('.field');
-        if (field && field.style.display === 'none') {
+        // 非表示の項目（dependsOn で隠れている / 未展開の追加パラメーター）は
+        // 検証しない。見えない欄でエラーにすると原因が分からなくなる。
+        if (field && field.offsetParent === null && field.style.display === 'none') {
+          continue;
+        }
+        if (field && field.getAttribute('data-additional') === 'true' && !additionalShown) {
           continue;
         }
         const required = input.getAttribute('data-required') === 'true';
@@ -506,7 +538,7 @@ function buildHtml(state, options) {
         clearFieldError(input);
         if (required && value.trim().length === 0) {
           hasError = true;
-          setFieldError(input, 'A value is required.');
+          setFieldError(input, '値の入力が必要です。');
           continue;
         }
 
@@ -737,6 +769,36 @@ function buildHtml(state, options) {
       });
     }
 
+    // 追加パラメーターの表示/非表示。実機の F4 は基本パラメーターだけを見せ、
+    // F10 で追加分を出す。同じ操作感に合わせる。
+    let additionalShown = false;
+    function setAdditionalVisible(show) {
+      additionalShown = show;
+      const form = getForm();
+      if (!form) {
+        return;
+      }
+      for (const el of form.querySelectorAll('[data-additional="true"]')) {
+        el.style.display = show ? '' : 'none';
+      }
+      const button = document.getElementById('toggle-additional');
+      if (button) {
+        button.textContent = show
+          ? '追加パラメーターを隠す (F10)'
+          : '追加パラメーターを表示 (F10)';
+      }
+      // 表示を変えたら依存関係を評価し直す（隠れていた項目の必須判定を反映）。
+      applyDependencyRules();
+    }
+
+    const toggleButton = document.getElementById('toggle-additional');
+    if (toggleButton) {
+      toggleButton.addEventListener('click', function (event) {
+        event.preventDefault();
+        setAdditionalVisible(!additionalShown);
+      });
+    }
+
     // 初期フォーカスと複数項目ボタンのセットアップ
     focusFirstField();
     setupMultiFieldButtons();
@@ -819,6 +881,16 @@ function buildHtml(state, options) {
           return;
         }
 
+        if (event.key === 'F10') {
+          const button = document.getElementById('toggle-additional');
+          if (button) {
+            event.preventDefault();
+            event.stopPropagation();
+            setAdditionalVisible(!additionalShown);
+          }
+          return;
+        }
+
         if (event.key === 'Escape') {
           if (isHelpVisible()) {
             event.preventDefault();
@@ -890,10 +962,14 @@ function buildFieldRuleAttributes(field) {
         ` data-field-name="${escapeHtml(field.name)}"`,
         ` data-static-required="${field.required ? "true" : "false"}"`
     ];
+    // 追加パラメータ（実機の F10 側）は既定で畳む。
+    if (field.additional) {
+        attributes.push(' data-additional="true"');
+    }
     if (field.dependsOn?.length) {
         attributes.push(` data-depends-on="${escapeHtml(JSON.stringify(field.dependsOn))}"`);
     }
-    if (!field.visible) {
+    if (!field.visible || field.additional) {
         attributes.push(' style="display:none"');
     }
     return attributes.join("");
@@ -933,8 +1009,11 @@ ${itemsHtml}
   <button type="button" class="multi-add" data-name="${escapeHtml(field.name)}">追加</button>
 </div>`;
     }
-    // number / text / group は単一行テキスト入力として扱う
-    return `<input type="text" name="${escapeHtml(field.name)}" value="${escapeHtml(field.value)}"${requiredAttr} />`;
+    // number / text / group は単一行テキスト入力として扱う。
+    // 幅は最大長に合わせる（固定長を扱うため、桁数の目安として意味がある）。
+    const size = field.maxLength && field.maxLength > 0 ? Math.min(field.maxLength, 40) : undefined;
+    const sizeAttr = size ? ` size="${size}" maxlength="${field.maxLength}"` : "";
+    return `<input type="text" name="${escapeHtml(field.name)}" value="${escapeHtml(field.value)}"${sizeAttr}${requiredAttr} />`;
 }
 function escapeHtml(value) {
     return value
