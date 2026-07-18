@@ -72,6 +72,19 @@ export const categories = {
   },
 
   // ILE RPG 固定長仕様書 7 種（concept ページ）。topic 固定 URL。
+  // DDS（データ記述仕様）。1-44 桁の定位置項目は用途ごとに意味が異なるため、
+  // 物理/論理・表示装置・印刷装置をそれぞれ取得する。
+  dds: {
+    items: [
+      { name: 'PF-LF-POSITIONAL', topic: 'ssw_ibm_i_74/rzakb/rzakbmstlfpos.htm', note: '物理/論理ファイルの定位置項目 (1-44桁)' },
+      { name: 'DSPF-POSITIONAL',  topic: 'ssw_ibm_i_74/rzakc/rzakcmstpsnent.htm', note: '表示装置ファイルの定位置項目 (1-44桁)' },
+      { name: 'PRTF-POSITIONAL',  topic: 'ssw_ibm_i_74/rzakd/rzakdmstposy1.htm',  note: '印刷装置ファイルの定位置項目 (1-44桁)' },
+      { name: 'PF-LF-KEYWORDS',   topic: 'ssw_ibm_i_74/rzakb/rzakbmstlfkeyw.htm', note: '物理/論理ファイルのキーワード項目 (45-80桁)' },
+      { name: 'DSPF-KEYWORDS',    topic: 'ssw_ibm_i_74/rzakc/rzakcmstkeyent.htm', note: '表示装置ファイルのキーワード項目 (45-80桁)' },
+      { name: 'PRTF-KEYWORDS',    topic: 'ssw_ibm_i_74/rzakd/rzakdmstprkey.htm',  note: '印刷装置ファイルのキーワード項目 (45-80桁)' },
+    ],
+  },
+
   ilerpg: {
     items: [
       { name: 'H-SPEC', topic: 'ssw_ibm_i_74/rzasd/conspe9.htm', url: 'https://www.ibm.com/docs/ja/i/7.4.0?topic=specifications-control',          note: '制御仕様書 (H)' },

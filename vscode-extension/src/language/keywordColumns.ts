@@ -8,6 +8,43 @@ export type RpgKeywordColumns = Map<string, readonly number[]>;
 
 let cachedRpgKeywordColumns: RpgKeywordColumns | undefined;
 let cachedClKeywordColumns: readonly number[] | undefined;
+let cachedDdsKeywordColumns: RpgKeywordColumns | undefined;
+
+/**
+ * DDS の定位置項目の桁定義を読み込む（種別 → 桁）。
+ * DDS は用途（物理/論理・表示装置・印刷装置）で桁の意味が変わるため、
+ * 種別ごとに別のエントリーを持つ。
+ */
+export async function getDdsKeywordColumns(
+  context: vscode.ExtensionContext
+): Promise<RpgKeywordColumns> {
+  if (cachedDdsKeywordColumns) {
+    return cachedDdsKeywordColumns;
+  }
+
+  const map: RpgKeywordColumns = new Map();
+  try {
+    const uri = vscode.Uri.joinPath(
+      context.extensionUri,
+      "resources",
+      "navigation",
+      "dds-keyword-columns.json"
+    );
+    const document = await vscode.workspace.openTextDocument(uri);
+    const parsed = JSON.parse(document.getText()) as Record<string, unknown>;
+    for (const [key, value] of Object.entries(parsed)) {
+      const columns = parseColumnsValue(value);
+      if (columns.length > 0) {
+        map.set(key.toUpperCase(), columns);
+      }
+    }
+  } catch (error) {
+    console.log("[rpgClSupport] failed to load DDS keyword column definitions", String(error));
+  }
+
+  cachedDdsKeywordColumns = map;
+  return map;
+}
 
 /**
  * RPG 固定フォーマットのスペック種別ごとのキーワード桁定義を読み込む。
