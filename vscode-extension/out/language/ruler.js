@@ -225,7 +225,7 @@ class RulerCodeLensProvider {
             ? (await this.buildFormatRow(document, line, width)) ?? buildTensRow(width)
             : buildTensRow(width);
         const lens = new vscode.CodeLens(new vscode.Range(line, 0, line, 0), {
-            title: toFixedPitch(row),
+            title: toFixedPitch(trimToIndent(row, lineText)),
             command: "rpgClSupport.ruler.cycleMode",
             tooltip: "クリックでルーラー表示を切替 (Off → Cols → Full)"
         });
@@ -251,6 +251,21 @@ class RulerCodeLensProvider {
         const labels = await getLabelsForKey(this.context, key);
         return buildSeuRow(columns, labels, width);
     }
+}
+/**
+ * CodeLens はその行のインデントの位置から描かれる。固定長ソースは先頭に
+ * 空白が並ぶ（C 仕様なら 5 桁）ため、ルーラーをそのまま渡すとインデント分だけ
+ * 右にずれる。ずれる分を先頭から落として、1 桁目が実際の 1 桁目に来るようにする。
+ *
+ * 空白しか無い行はインデントの基準にならない（CodeLens は左端から描かれる）ので
+ * そのまま返す。
+ */
+function trimToIndent(row, lineText) {
+    if (lineText.trim().length === 0) {
+        return row;
+    }
+    const indent = /^[ \t]*/u.exec(lineText)?.[0].length ?? 0;
+    return indent > 0 ? row.slice(indent) : row;
 }
 /**
  * 桁を保つため、空白を改行なし空白(U+00A0)に置き換える。
