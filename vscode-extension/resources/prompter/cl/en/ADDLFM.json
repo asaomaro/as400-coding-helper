@@ -1,0 +1,150 @@
+{
+  "keyword": "ADDLFM",
+  "description": "Add Logical File Member (ADDLFM)",
+  "parameters": [
+    {
+      "name": "FILE",
+      "description": "Logical file",
+      "help": "Logical file (FILE)\n\nSpecifies the logical file to which the member is to be added.\n\nThis is a required parameter.\n\nQualifier 1: Logical file\n\nQualifier 2: Library",
+      "inputType": "group",
+      "required": true,
+      "groupKind": "qualified",
+      "children": [
+        {
+          "name": "LIB",
+          "description": "Library",
+          "help": "指定できる特殊値: *LIBL, *CURLIB",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "*LIBL",
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          }
+        },
+        {
+          "name": "FILE",
+          "description": "Logical file",
+          "inputType": "text",
+          "required": true,
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          }
+        }
+      ],
+      "positional": 1
+    },
+    {
+      "name": "MBR",
+      "description": "Logical file member",
+      "help": "Logical file member (MBR)\n\nSpecifies the logical file member to be added. The member name must be unique in the file.\n\nIf the FILE parameter specifies a DDM file and a member name is specified as part of the remote file name in the DDM file, the member names must be the same.\n\nThis is a required parameter.",
+      "inputType": "text",
+      "required": true,
+      "attributes": {
+        "characterSet": "upper",
+        "maxLength": 10
+      },
+      "positional": 2
+    },
+    {
+      "name": "DTAMBRS",
+      "description": "Physical file data members",
+      "help": "Physical file data members (DTAMBRS)\n\nSpecifies the physical files and members that contain the data associated with the logical file member being added by this command. A logical file member can be based on all (*ALL) of the physical files and members on which the logical file itself is based, or the member can be based on a subset of the total files and members.\n\nNote: When adding a member to a logical file that is a DDM file, the physical file, if specified, must also be a DDM file with its library and member(s) specified explicitly. *CURRENT is not supported when the logical file is a DDM file.\n\nWhen a logical file is created, the physical files specified for the PFILE or JFILE DDS keyword are used to create the logical file. If no library name is specified for the physical files on the PFILE or JFILE keyword, the library list (*LIBL) at file creation time is used to find the physical files; the physical files from the library list are used to create the logical file. The qualified physical files from the PFILE or JFILE keyword (regardless of whether a library name was specified or if the library list was used to find the files) are the physical files associated with the logical file. The names of the physical files associated with the logical file are saved in the description of the logical file. When a member is added to the logical file, the DTAMBRS parameter is used to specify the physical file members associated with the logical file member. Each physical file name specified on the DTAMBRS parameter must be the name of a physical file that is associated with the logical file (saved in the description of the logical file).\n\nSingle values\n\nElement 1: Physical file\n\nQualifier 1: Physical file\n\nThe physical file names must match a name on the PFILE or JFILE keywords in the DDS and cannot be specified more often on the DTAMBRS parameter than on the PFILE or JFILE keywords in the DDS. For join logical files, all physical files specified for the JFILE keyword must be specified for the DTAMBRS parameter and each physical file must contain only one member. If a physical file name is not specified for a physical file that is on a PFILE or JFILE keyword in the DDS, the logical file member is not based on any member of that physical file.\n\nQualifier 2: Library\n\nIf a library name is not specified, the current library name (*CURRENT) from the logical file description is used. If the library name is specified, the physical file must be a physical file associated with the logical file. If the logical file is associated with more than one physical file of the same name, the library name must be specified.\n\nElement 2: Member\n\nSingle values\n\nOther values (up to 32 repetitions)\n\nWhen the FILE parameter specifies a join logical file or an arrival sequence logical file, only one data member must be specified for the DTAMBRS parameter for each physical file that was specified for the PFILE or JFILE keyword in the DDS. *ALL is valid only if each based-on physical file has only one member. If any of the physical files has more than one member, the specific physical file member must be specified for the DTAMBRS parameter.\n\nThe same physical file name can be specified more than once on the JFILE keyword. In this case, each occurrence of the file name is treated as a different based-on physical file, and must be specified for the DTAMBRS parameter.\n\nUp to 32 qualified physical file names and physical file member names can be specified. Also, the total number of member names cannot exceed 32. For example, one file can specify 32 members, two files can each have 16 members, or 32 files can each have one member specified.\n\nFor DDM file:",
+      "inputType": "group",
+      "required": false,
+      "groupKind": "elements",
+      "singleValues": [
+        "*ALL"
+      ],
+      "children": [
+        {
+          "name": "DTAMBRS_E1",
+          "description": "Physical file",
+          "inputType": "group",
+          "required": false,
+          "groupKind": "qualified",
+          "children": [
+            {
+              "name": "DTAMBRS_LIB",
+              "description": "Library",
+              "help": "指定できる特殊値: *CURRENT",
+              "inputType": "text",
+              "required": false,
+              "defaultValue": "*CURRENT",
+              "attributes": {
+                "characterSet": "upper",
+                "maxLength": 10
+              }
+            },
+            {
+              "name": "DTAMBRS",
+              "description": "Physical file",
+              "inputType": "text",
+              "required": false,
+              "attributes": {
+                "characterSet": "upper",
+                "maxLength": 10
+              }
+            }
+          ],
+          "defaultValue": "*ALL"
+        },
+        {
+          "name": "DTAMBRS_E2",
+          "description": "Member",
+          "help": "指定できる特殊値: *NONE",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "*NONE",
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          }
+        }
+      ],
+      "maxOccurrences": 32
+    },
+    {
+      "name": "TEXT",
+      "description": "Text 'description'",
+      "help": "Text 'description' (TEXT)\n\nSpecifies the text that briefly describes the object.\n\n指定できる特殊値: *BLANK",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*BLANK",
+      "attributes": {
+        "characterSet": "upper"
+      }
+    },
+    {
+      "name": "SHARE",
+      "description": "Share open data path",
+      "help": "Share open data path (SHARE)\n\nSpecifies whether the open data path (ODP) is shared with other programs in the same routing step. When an ODP is shared, the programs accessing the file share facilities such as the file status and the buffer.",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*NO",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*NO",
+          "value": "*NO"
+        },
+        {
+          "label": "*YES",
+          "value": "*YES"
+        }
+      ]
+    }
+  ],
+  "examples": [
+    {
+      "code": "ADDLFM FILE(INVENLIB/STOCKTXS) MBR(JANUARY) DTAMBRS((INVENTXS (JANUARY))) TEXT('JANUARY STOCK ACTIVITY BY LOCATION')"
+    }
+  ],
+  "source": {
+    "url": "https://www.ibm.com/docs/en/ssw_ibm_i_74/cl/addlfm.htm",
+    "version": "IBM i 7.4"
+  }
+}

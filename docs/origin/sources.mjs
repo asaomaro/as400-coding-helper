@@ -46,7 +46,7 @@ export const categories = {
       // データ域・取得系（C）
       'DLTDTAARA', 'RTVMBRD', 'RTVOBJD', 'RTVSYSVAL', 'DSPOBJD',
       // ファイル / DB（D）
-      'OPNQRYF', 'CLOF', 'ALCOBJ', 'DLCOBJ', 'ADDPFM', 'RMVM', 'CHGPF', 'DSPFD', 'DSPFFD',
+      'OPNQRYF', 'CLOF', 'ALCOBJ', 'DLCOBJ', 'ADDPFM', 'ADDLFM', 'RMVM', 'CHGPF', 'DSPFD', 'DSPFFD',
       // ジョブ制御（E）
       'CHGJOB', 'DLYJOB', 'WRKACTJOB', 'WRKJOB',
       // スプール / 出力（F）

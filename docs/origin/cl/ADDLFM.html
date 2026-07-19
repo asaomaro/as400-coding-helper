@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="ja"><head><meta charset="utf-8"><title>論理ファイル・メンバー追加  (ADDLFM)</title></head>
+<body>
+<div role="main">
+<script type="text/javascript" src="../rzahg/synch.js"></script>
+<a name="ADDLFM.Top_Of_Page"></a>
+<h1>論理ファイル・メンバー追加  (ADDLFM)</h1><div id="lastModifiedDate"><span>Last Updated</span>: 2021-04-13</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table0" width="100%" class="cds--data-table">
+<tbody><tr>
+<td class="valigntop alignleft"><strong>実行可能場所:  </strong>すべての環境 (*ALL)<br>
+<strong>スレッド・セーフ:  </strong>条件付き
+</td>
+<td class="valigntop alignright">
+<a href="#ADDLFM.PARAMETERS.TABLE">パラメーター</a><br>
+<a href="#ADDLFM.COMMAND.EXAMPLES">例</a><br>
+<a href="#ADDLFM.ERROR.MESSAGES">エラー・メッセージ</a></td>
+</tr>
+</tbody></table></div></div>
+<div> <a name="ADDLFM"></a>
+<p>論理ファイル・メンバー追加（ADDLFMコマンド）は，指定されたファイル・メンバーを論理ファイルに追加します。この論理ファイルはシステムに既に存在していなければなりません。ファイルに追加できるメンバーの最大数は，論理ファイル作成(CRTLF)コマンドまたは論理ファイル変更(CHGLF)コマンドで<strong>メンバーの最大数</strong><strong>(MAXMBRS)</strong>パラメーターに指定されます。ファイルにその他のメンバーを追加するためには，ADDLFMコマンドを使用してそれぞれを指定してください。
+</p>
+<p>論理ファイル・メンバーは，論理ファイルによって参照されるすべての物理ファイルまたはそのサブセットからのデータを使用することができます。各メンバーはそれ自身のデータ・セットをもっており，また，そのデータまでの編成を提供するアクセス・パスをもつことができます。システムは，既にシステム上にあるアクセス・バスを暗黙に共用しようとします。
+</p>
+<p>追加される各メンバーは，論理ファイルに定義されているものと同じ属性をもっています。
+</p>
+<h2><strong>制約事項</strong><strong>:</strong>
+</h2>
+<ul class="cds--list--unordered">
+<li class="cds--list__item">キー付き論理ファイルにメンバーを追加するには，その論理ファイル・メンバーの基礎となっている物理ファイル(DTAMBRSパラメーターで明示的に指定するか，あるいはDDSで指定されたPFILEまたはJFILEキーワードで暗黙に指定された）のオブジェクト操作(*OBJOPR)権限と，オブジェクト管理(*OBJMGT)またはオブジェクト変更(*OBJALTER)権限のいずれかが必要です。
+</li>
+<li class="cds--list__item">非キー付き論理ファイルにメンバーを追加する場合には，それぞれの物理ファイルに対する*OBJOPR権限が必要です。
+</li>
+<li class="cds--list__item">このコマンドは条件付きのスレッド・セーフです。マルチスレッド・ジョブではこのコマンドは分散ファイルに対してスレッド・セーフではなく，タイプ*SNAのリレーショナル・データベースを使用する分散ファイルに対して正常に実行されません。またこのコマンドは，タイプ*SNAの分散データ管理機能(DDM)ファイルにスレッド・セーフでもなく，SYSTEM(*RMT)またはSYSTEM(*FILETYPE)を指定すると正常に実行されません。
+</li>
+</ul>
+<p>
+<strong>注:     </strong>メンバーを追加するためには，ファイルに*EXCLRDロックが必要です。このコマンドはライブラリー中のファイルにメンバーを追加するので，そのライブラリーは他のジョブでロック（オブジェクト割り振り(ALCOBJ)コマンドに*SHRNUPまたは*EXCLRD）されていてはいけません。
+</p>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table1" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#ADDLFM.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div>
+<h2><a name="ADDLFM.PARAMETERS.TABLE">パラメーター</a></h2>
+<div class="tablenoborder"><div class="cds--data-table-container"><table id="parm_table2" summary="Parameters" border="1" cellpadding="4" cellspacing="0" class="cds--data-table">
+<!-- col1="10" col2="15" col3="30" col4="10" -->
+<tbody><tr>
+<th scope="col" class="valignbottom alignleft"><div class="cds--table-header-label">キーワード</div></th>
+<th scope="col" class="valignbottom alignleft"><div class="cds--table-header-label">記述</div></th>
+<th scope="col" class="valignbottom alignleft"><div class="cds--table-header-label">選択項目</div></th>
+<th scope="col" class="valignbottom alignleft"><div class="cds--table-header-label">ノーツ</div></th>
+</tr>
+<tr>
+<td class="valigntop" rowspan="3"><a href="#ADDLFM.FILE"><strong>FILE</strong></a></td>
+<td class="valigntop">論理ファイル</td>
+<td class="valigntop"><span class="var">修飾オブジェクト名</span></td>
+<td class="valigntop" rowspan="3">必須, 定位置 1</td>
+</tr>
+<tr>
+<td class="valigntop">修飾子 1: 論理ファイル</td>
+<td class="valigntop"><span class="var">名前</span></td>
+</tr><tr>
+<td class="valigntop">修飾子 2: ライブラリー</td>
+<td class="valigntop"><span class="var">名前</span>, <strong class="underlined">*LIBL</strong>, *CURLIB</td>
+</tr><tr>
+<td class="valigntop"><a href="#ADDLFM.MBR"><strong>MBR</strong></a></td>
+<td class="valigntop">論理ファイル・メンバー</td>
+<td class="valigntop"><span class="var">名前</span></td>
+<td class="valigntop">必須, 定位置 2</td>
+</tr>
+<tr>
+<td class="valigntop" rowspan="5"><a href="#ADDLFM.DTAMBRS"><strong>DTAMBRS</strong></a></td>
+<td class="valigntop">物理ファイル・データ・メンバー</td>
+<td class="valigntop">単一値: <strong class="underlined">*ALL</strong><br>その他の値 (最大 32 回の繰り返し): <span class="var">要素リスト</span></td>
+<td class="valigntop" rowspan="5">オプショナル</td>
+</tr>
+<tr>
+<td class="valigntop">要素 1: 物理ファイル</td>
+<td class="valigntop">
+<span class="var">修飾オブジェクト名</span></td>
+</tr>
+<tr>
+<td class="valigntop">修飾子 1: 物理ファイル</td>
+<td class="valigntop"><span class="var">名前</span></td>
+</tr><tr>
+<td class="valigntop">修飾子 2: ライブラリー</td>
+<td class="valigntop"><span class="var">名前</span>, <strong class="underlined">*CURRENT</strong></td>
+</tr><tr>
+<td class="valigntop">要素 2: メンバー</td>
+<td class="valigntop">
+単一値: <strong class="underlined">*NONE</strong><br>その他の値 (最大 32 回の繰り返し): <span class="var">名前</span></td>
+</tr>
+<tr>
+<td class="valigntop"><a href="#ADDLFM.TEXT"><strong>TEXT</strong></a></td>
+<td class="valigntop">テキスト'記述'</td>
+<td class="valigntop"><span class="var">文字値</span>, <strong class="underlined">*BLANK</strong></td>
+<td class="valigntop">オプショナル</td>
+</tr>
+<tr>
+<td class="valigntop"><a href="#ADDLFM.SHARE"><strong>SHARE</strong></a></td>
+<td class="valigntop">オープン・データ・パス共用</td>
+<td class="valigntop"><strong class="underlined">*NO</strong>, *YES</td>
+<td class="valigntop">オプショナル</td>
+</tr>
+</tbody></table></div></div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table3" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#ADDLFM.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+</div>
+<div> <a name="ADDLFM.FILE"></a>
+<h2>論理ファイル (FILE)</h2>
+<p>メンバーを追加する論理ファイルを指定します。
+</p>
+<p>これは必須パラメーターです。
+</p>
+<h3><strong>修飾子</strong><strong>1: </strong><strong>論理ファイル</strong>
+</h3>
+<dl>
+<dt><strong class="italic">名前</strong></dt>
+<dd>論理ファイルの名前を指定してください。
+</dd>
+</dl>
+<h3><strong>修飾子</strong><strong>2: ライブラリー</strong>
+</h3>
+<dl>
+<dt><strong class="underlined">*LIBL</strong></dt>
+<dd>最初に一致するものが見つかるまで，現行スレッドのライブラリー・リスト内のすべてのライブラリーが検索されます。
+</dd>
+</dl>
+<dl>
+<dt><strong>*CURLIB</strong></dt>
+<dd>論理ファイルを見つけるために現行ライブラリーが使用されます。ジョブの現行ライブラリーとして指定されているライブラリーがない場合は，QGPLが使用されます。
+</dd>
+<dt><strong class="italic">名前</strong></dt>
+<dd>論理ファイルが入っているライブラリーを指定します。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table4" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#ADDLFM.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="ADDLFM.MBR"></a>
+<h2>論理ファイル・メンバー (MBR)</h2>
+<p>追加する論理ファイル・メンバーを指定します。メンバー名はファイル中で固有としなければなりません。
+</p>
+<p>FILEパラメーターがDDMファイルを指定していて，メンバー名をDDMファイル中のリモート・ファイル名の一部として指定する場合には，そのメンバー名は同じものでなければなりません。
+</p>
+<p>これは必須パラメーターです。
+</p>
+<dl>
+<dt><strong class="italic">名前</strong></dt>
+<dd>追加する論理ファイル・メンバーの名前を指定してください。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table5" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#ADDLFM.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="ADDLFM.DTAMBRS"></a>
+<h2>物理ファイル・データ・メンバー (DTAMBRS)</h2>
+<p>このコマンドで追加する論理ファイル・メンバーに関連したデータが入っている物理ファイルおよびメンバーを指定します。論理ファイル・メンバーは，論理ファイル自体の基礎となっているすべての物理ファイルおよびメンバー(*ALL)に基づかせるか，または合計ファイルおよびメンバーのサブセットに基づかせることができます。
+</p>
+<p>
+<strong>注:     </strong>DDMファイルである論理ファイルにメンバーを追加する時は，物理ファイル（指定された場合）も明示的にそのライブラリーおよびメンバー(1つ以上）の指定があるDDMファイルでなければなりません。論理ファイルがDDMファイルである場合には，*CURRENTはサポートされていません。
+</p>
+<p>論理ファイルが作成される場合には，PFILEまたはJFILE DDSキーワードに指定された物理ファイルが使用されて論理ファイルが作成されます。PFILEまたはJFILEキーワード上の物理ファイルにライブラリー名が指定されていない場合には，ファイル作成時のライブラリー・リスト(*LIBL)を使用して物理ファイルを検索し，ライブラリー・リストの物理ファイルを使用して論理ファイルを作成します。PFILEまたはJFILEキーワードの修飾済み物理ファイルは（ライブラリー名が指定されているかどうかにかかわらず，あるいはファイルを検索するためにライブラリーが使用されたかどうかにかかわらず），論理ファイルに対応した物理ファイルです。論理ファイルに対応した物理ファイルの名前は，論理ファイルの記述の中に保管されます。論理ファイルにメンバーが追加される時には，論理ファイル・メンバーに対応した物理ファイル・メンバーを指定するためにDTAMBRSパラメーターが使用されます。DTAMBRSパラメーターに指定する各物理ファイル名は，論理ファイル（論理ファイルの記述に保管されている）に対応した物理ファイルの名前でなければなりません。
+</p>
+<h3><strong>単一値</strong>
+</h3>
+<dl>
+<dt><strong class="underlined">*ALL</strong></dt>
+<dd>追加される論理ファイル・メンバーは，論理ファイルによって使用されるすべての物理ファイルおよびメンバー（このCRTLFコマンドの入力時に存在するもの）に基づいています。物理ファイルの中の少なくとも1つに，少なくとも1つのメンバーが存在していなければなりません。物理ファイルの名前は，DDSのPFILEまたはJFILEパラメーターに指定されます。
+</dd>
+</dl>
+<h3><strong>要素</strong><strong>1: </strong><strong>物理ファイル</strong>
+</h3>
+<h3><strong>修飾子</strong><strong>1: </strong><strong>物理ファイル</strong>
+</h3>
+<dl>
+<dt><strong class="italic">名前</strong></dt>
+<dd>追加される論理ファイル・メンバーによってアクセスされるデータが入っている物理ファイルの名前を指定してください。
+<p>物理ファイル名はDDS中のPFILEまたはJFILEキーワード上の名前と一致していなければならず，DDS中のPFILEまたはJFILEパラメーターに指定された回数よりも多くDTAMBRSパラメーターに指定することはできません。結合論理ファイルの場合には，JFILEキーワードに指定されたすべての物理ファイルがDTAMBRSパラメーターに指定されなければならず，それぞれの物理ファイルにはメンバーが1つだけ入っていなければなりません。DDS中のPFILEまたはJFILEキーワード上の物理ファイルの物理ファイル名が指定されていない場合には，論理ファイル・メンバーはその物理ファイルのどのメンバーにも対応していません。
+</p>
+</dd>
+</dl>
+
+<dd>
+<h3><strong>修飾子</strong><strong>2: ライブラリー</strong>
+</h3>
+<dl>
+<dt><strong class="underlined">*CURRENT</strong></dt>
+<dd>ジョブの現行ライブラリーが検索されます。ジョブの現行ライブラリーとして指定されているライブラリーがない場合は，QGPLライブラリーが使用されます。
+<p>ライブラリー名を指定しない場合には，論理ファイル記述からの現行ライブラリー名(*CURRENT)が使用されます。ライブラリー名を指定する場合には，その物理ファイルは論理ファイルに関連した物理ファイルでなければなりません。論理ファイルが同じ名前をもつ複数の物理ファイルと対応している場合には，ライブラリー名を指定しなければなりません。
+</p>
+</dd>
+<dt><strong class="italic">名前</strong></dt>
+<dd>検索するライブラリーの名前を指定してください。
+</dd>
+</dl>
+</dd>
+
+<h3><strong>要素</strong><strong>2: </strong><strong>メンバー</strong>
+</h3>
+<h3><strong>単一値</strong>
+</h3>
+<dl>
+<dt><strong class="underlined">*NONE</strong></dt>
+<dd>メンバー名は指定されません。
+</dd>
+</dl>
+<h3><strong>その他の値（最大</strong><strong>32</strong><strong>個指定可能）</strong>
+</h3>
+<dl>
+<dt><strong class="italic">名前</strong></dt>
+<dd>追加される論理ファイルによってアクセスされるデータが入っている物理ファイル・メンバーの名前を指定してください。
+<p>FILEパラメーターが結合論理ファイルまたは到着順論理ファイルを指定している場合には，DDSのPFILEまたはJFILEキーワードに指定されている各物理ファイルのDTAMBRSパラメーターにデータ・メンバーを1つだけ指定しなければなりません。*ALLは，基礎となるそれぞれの物理ファイルの中に1つしかメンバーが入っていない場合にのみ有効です。物理ファイルのいずれかが複数のメンバーを持っている場合には，DTAMBRSパラメーターに特定の物理ファイル・メンバーを指定しなければなりません。
+</p>
+<p>JFILEキーワードには，同じ物理ファイル名を複数回指定することができます。この場合には，現われるそれぞれのファイル名は基礎となる別の物理ファイルとして扱われるので，DTAMBRSパラメーターに指定する必要があります。
+</p>
+<p>最大32個までの修飾済み物理ファイル名および物理ファイル・メンバー名を指定することができます。また，メンバー名の合計数が32を超えてはいけません。例えば，1つのファイルが32個のメンバーを指定するか，2つのファイルがそれぞれ16個ずつのメンバーを指定するか，あるいは32個のファイルがメンバーをそれぞれ1つずつ指定することができます。
+</p>
+<p>DDMファイルの場合:
+</p>
+<ul class="cds--list--unordered">
+<li class="cds--list__item">DTAMBRSパラメーターに指定するファイル名は，基礎となるリモート物理ファイルを表すDDMファイルの名前でなければなりません。メンバー名がDDMファイルのリモート・ファイル名の一部として指定されている場合には，DTAMBRSパラメーターにそのメンバー名だけを指定しなければなりません。このメンバー名は実際のリモート・ファイル・メンバー名でなければなりません。
+</li>
+<li class="cds--list__item">基礎となる物理ファイルは，メンバーが追加される論理ファイルと同じシステム位置になければなりません。
+</li>
+<li class="cds--list__item">DDMファイル中のリモート・ファイル名にメンバー名が指定されていない時には，すべてのメンバーがアクセス可能です。1つのメンバー名だけが指定されている時には，そのメンバーだけが，そのDDMファイルを通してアクセス可能です。
+</li>
+</ul>
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table6" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#ADDLFM.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="ADDLFM.TEXT"></a>
+<h2>テキスト'記述' (TEXT)</h2>
+<p>オブジェクトを簡単に記述したテキストを指定します。
+</p>
+<dl>
+<dt><strong class="underlined">*BLANK</strong></dt>
+<dd>テキストは指定されません。
+</dd>
+<dt><strong class="italic">文字値</strong></dt>
+<dd>50文字を超えないテキストを，アポストロフィで囲んで指定してください。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table7" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#ADDLFM.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="ADDLFM.SHARE"></a>
+<h2>オープン・データ・パス共用 (SHARE)</h2>
+<p>オープン・データ・パス(ODP)が同じルーティング・ステップの他のプログラムと共用するかどうかを指定します。ODPが共用される時には，ファイルにアクセスしているプログラムはファイル状況およびバッファーなどの機能を共用します。
+</p>
+<dl>
+<dt><strong class="underlined">*NO</strong></dt>
+<dd>ODPは，ルーティング・ステップ内の他のプログラムと共用されません。ファイルの新しいODPが作成され，プログラムがファイルをオープンするたびに使用されます。
+</dd>
+</dl>
+<dl>
+<dt><strong>*YES</strong></dt>
+<dd>ファイルをオープンする時に*YESも指定したジョブで，同じODPを各プログラムと共用することができます。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table8" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#ADDLFM.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div><h2><a name="ADDLFM.COMMAND.EXAMPLES">例</a> </h2>
+<p>
+</p><pre>ADDLFM   FILE(INVENLIB/STOCKTXS)  MBR(JANUARY)
+         DTAMBRS((INVENTXS (JANUARY)))
+         TEXT('JANUARY STOCK ACTIVITY BY LOCATION')
+</pre>
+<p></p>
+<p>このコマンドは，JANUARYという名前のメンバーをINVENLIB ライブラリーのSTOCKTXSという名前の論理ファイルに追加します。論理ファイルは，INVENTXS物理ファイルのJANUARYメンバーに保管されたデータへのアクセス権を持っています。
+</p>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table9" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#ADDLFM.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div><h2><a name="ADDLFM.ERROR.MESSAGES">エラー・メッセージ</a> </h2>
+<p><strong class="underlined">*ESCAPE </strong><strong class="underlined">メッセージ</strong>
+</p>
+<dl>
+<dt><strong>CPF3204</strong></dt>
+<dd>&amp;2のファイル&amp;1に必要なオブジェクトを見つけることができない。
+</dd>
+<dt><strong>CPF7306</strong></dt>
+<dd>メンバー&amp;1は&amp;3のファイル&amp;2に追加されなかった。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table10" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#ADDLFM.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+</div>
+
+
+</body></html>

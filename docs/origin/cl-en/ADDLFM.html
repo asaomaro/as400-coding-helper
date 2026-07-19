@@ -1,0 +1,647 @@
+<!DOCTYPE html>
+<html lang="ja"><head><meta charset="utf-8"><title>Add Logical File Member  (ADDLFM)</title></head>
+<body>
+<main role="main"><article role="article" aria-labelledby="addlfm__title__1"> 
+<h1 class="topictitle1" id="addlfm__title__1">Add Logical File Member  (ADDLFM)</h1><div id="lastModifiedDate"><span>Last Updated</span>: 2026-07-13</div>
+
+<div class="body">
+<p>
+<strong>Add Logical File Member  (ADDLFM)
+</strong></p>
+
+<p>
+<strong>Where allowed to run:  
+</strong>All environments (*ALL)
+
+</p>
+
+<p>
+<strong>Threadsafe:  </strong>Conditional
+</p>
+
+<p><a href="#addlfm__parameters">Parameters</a></p>
+
+<p><a href="#addlfm__examples">Examples</a></p>
+
+<p><a href="#addlfm__errormsgs">Error messages</a></p>
+
+<div class="div" id="addlfm__addlfm">
+<p>
+The Add Logical File Member (ADDLFM) command adds a named file member to a logical file which must already exist on the system.  The maximum number of members that can be added to the file is specified for the 
+<strong>Maximum members (MAXMBRS)
+</strong> parameter on the Create Logical File (CRTLF) command or the Change Logical File (CHGLF) command.  To add other members to the file, use the ADDLFM command to specify each one.
+
+</p>
+
+<p>
+A logical file member can use the data from all, or a subset of, the physical files referenced by the logical file.  Each member has its own set of data and can have its own access path that provides an organization to that data.  The system attempts to implicitly share an access path already on the system.
+
+</p>
+
+<p>
+Each added member has the same attributes as those defined in the logical file.
+
+</p>
+
+<p>
+<strong>Restrictions:
+</strong>
+</p>
+
+<ul class="cds--list--unordered">
+<li class="cds--list__item">
+To add a member to a keyed logical file, you must have object operational (*OBJOPR) authority and either object management (*OBJMGT) or object alter (*OBJALTER) authority for each of the physical files on which the logical file member is based (specified explicitly by the DTAMBRS parameter or implicitly by the PFILE or JFILE keyword specified in DDS).
+
+</li>
+
+<li class="cds--list__item">
+For a member added to a non-keyed logical file, *OBJOPR authority for each of the physical files is required.
+
+</li>
+
+<li class="cds--list__item">
+This command is conditionally threadsafe.  In multithreaded jobs, this command is not threadsafe for distributed files and fails for distributed files that use relational databases of type *SNA.  This command is also not threadsafe and fails for Distributed Data Management (DDM) files of type *SNA, when SYSTEM(*RMT) or SYSTEM(*FILETYPE) is specified.
+
+</li>
+
+</ul>
+
+<p>
+<strong>Note:     
+</strong>An *EXCLRD lock is required on the file to add a member.  Because this command adds a member to a file in a library, the library must not be locked (*SHRNUP or *EXCLRD with the Allocate Object (ALCOBJ) command) in another job.
+
+</p>
+
+</div>
+<section class="section" role="region" aria-labelledby="addlfm__parameters__title__1" id="addlfm__parameters"><h2 class="sectiontitle" id="addlfm__parameters__title__1">Parameters</h2>
+
+
+<div class="tablenoborder"><div class="cds--data-table-container"><table summary="" class="defaultstyle cds--data-table"><colgroup><col><col><col><col></colgroup><thead>
+<tr>
+<th id="addlfm__parameters__entry__1"><div class="cds--table-header-label">
+Keyword
+</div></th>
+
+<th id="addlfm__parameters__entry__2"><div class="cds--table-header-label">
+Description
+</div></th>
+
+<th id="addlfm__parameters__entry__3"><div class="cds--table-header-label">
+Choices
+</div></th>
+
+<th id="addlfm__parameters__entry__4"><div class="cds--table-header-label">
+Notes
+</div></th>
+
+</tr>
+
+</thead>
+<tbody>
+<tr>
+<td rowspan="3" headers="addlfm__parameters__entry__1 "><a href="#addlfm__file"><strong>FILE
+</strong></a></td>
+
+<td headers="addlfm__parameters__entry__2 ">Logical file
+</td>
+
+<td headers="addlfm__parameters__entry__3 "><em>Qualified object name
+</em></td>
+
+<td rowspan="3" headers="addlfm__parameters__entry__4 ">Required, Positional 1
+</td>
+
+</tr>
+
+<tr>
+<td headers="addlfm__parameters__entry__2 ">Qualifier 1: Logical file
+</td>
+
+<td headers="addlfm__parameters__entry__3 "><em>Name
+</em></td>
+
+</tr>
+
+<tr>
+<td headers="addlfm__parameters__entry__2 ">Qualifier 2: Library
+</td>
+
+<td headers="addlfm__parameters__entry__3 "><em>Name
+</em>, 
+<strong><u>*LIBL
+</u></strong>, *CURLIB
+</td>
+
+</tr>
+
+<tr>
+<td headers="addlfm__parameters__entry__1 "><a href="#addlfm__mbr"><strong>MBR
+</strong></a></td>
+
+<td headers="addlfm__parameters__entry__2 ">Logical file member
+</td>
+
+<td headers="addlfm__parameters__entry__3 "><em>Name
+</em></td>
+
+<td headers="addlfm__parameters__entry__4 ">Required, Positional 2
+</td>
+
+</tr>
+
+<tr>
+<td rowspan="5" headers="addlfm__parameters__entry__1 "><a href="#addlfm__dtambrs"><strong>DTAMBRS
+</strong></a></td>
+
+<td headers="addlfm__parameters__entry__2 ">Physical file data members
+</td>
+
+<td headers="addlfm__parameters__entry__3 ">Single values: 
+<strong><u>*ALL
+</u></strong>
+Other values (up to 32 repetitions): 
+<em>Element list
+</em></td>
+
+<td rowspan="5" headers="addlfm__parameters__entry__4 ">Optional
+</td>
+
+</tr>
+
+<tr>
+<td headers="addlfm__parameters__entry__2 ">Element 1: Physical file
+</td>
+
+<td headers="addlfm__parameters__entry__3 "><em>Qualified object name
+</em></td>
+
+</tr>
+
+<tr>
+<td headers="addlfm__parameters__entry__2 ">Qualifier 1: Physical file
+</td>
+
+<td headers="addlfm__parameters__entry__3 "><em>Name
+</em></td>
+
+</tr>
+
+<tr>
+<td headers="addlfm__parameters__entry__2 ">Qualifier 2: Library
+</td>
+
+<td headers="addlfm__parameters__entry__3 "><em>Name
+</em>, 
+<strong><u>*CURRENT
+</u></strong></td>
+
+</tr>
+
+<tr>
+<td headers="addlfm__parameters__entry__2 ">Element 2: Member
+</td>
+
+<td headers="addlfm__parameters__entry__3 ">Single values: 
+<strong><u>*NONE
+</u></strong>
+Other values (up to 32 repetitions): 
+<em>Name
+</em></td>
+
+</tr>
+
+<tr>
+<td headers="addlfm__parameters__entry__1 "><a href="#addlfm__text"><strong>TEXT
+</strong></a></td>
+
+<td headers="addlfm__parameters__entry__2 ">Text 'description'
+</td>
+
+<td headers="addlfm__parameters__entry__3 "><em>Character value
+</em>, 
+<strong><u>*BLANK
+</u></strong></td>
+
+<td headers="addlfm__parameters__entry__4 ">Optional
+</td>
+
+</tr>
+
+<tr>
+<td headers="addlfm__parameters__entry__1 "><a href="#addlfm__share"><strong>SHARE
+</strong></a></td>
+
+<td headers="addlfm__parameters__entry__2 ">Share open data path
+</td>
+
+<td headers="addlfm__parameters__entry__3 "><strong><u>*NO
+</u></strong>, *YES
+</td>
+
+<td headers="addlfm__parameters__entry__4 ">Optional
+</td>
+
+</tr>
+
+</tbody>
+</table></div>
+</div>
+
+<div class="div" id="addlfm__file">
+<p>
+<strong>Logical file (FILE)
+</strong></p>
+
+<p>
+Specifies the logical file to which the member is to be added.
+
+</p>
+
+<p>
+This is a required parameter.
+
+</p>
+
+<p>
+<strong>Qualifier 1: Logical file
+</strong>
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><em>name
+</em></strong></dt>
+
+<dd class="dlentry">
+Specify the name of the logical file.
+</dd>
+
+</dl>
+
+<p>
+<strong>Qualifier 2: Library
+</strong>
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><u>*LIBL
+</u></strong></dt>
+
+<dd class="dlentry">
+All libraries in the library list for the current thread are searched until the first match is found.
+</dd>
+
+</dl>
+
+<dl>
+<dt class="dlterm">
+<strong>*CURLIB
+</strong></dt>
+
+<dd class="dlentry">
+The current library is used to locate the logical file.  If no library is specified as the current library for the job, QGPL is used.
+</dd>
+
+<dt class="dlterm">
+<strong><em>name
+</em></strong></dt>
+
+<dd class="dlentry">
+Specify the library where the logical file is located.
+</dd>
+
+</dl>
+
+</div>
+<div class="div" id="addlfm__mbr">
+<p>
+<strong>Logical file member (MBR)
+</strong></p>
+
+<p>
+Specifies the logical file member to be added.  The member name must be unique in the file.
+
+</p>
+
+<p>
+If the FILE parameter specifies a DDM file and a member name is specified as part of the remote file name in the DDM file, the member names must be the same.
+
+</p>
+
+<p>
+This is a required parameter.
+
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><em>name
+</em></strong></dt>
+
+<dd class="dlentry">
+Specify the name of the logical file member to be added.
+</dd>
+
+</dl>
+
+</div>
+<div class="div" id="addlfm__dtambrs">
+<p>
+<strong>Physical file data members (DTAMBRS)
+</strong></p>
+
+<p>
+Specifies the physical files and members that contain the data associated with the logical file member being added by this command.  A logical file member can be based on all (*ALL) of the physical files and members on which the logical file itself is based, or the member can be based on a subset of the total files and members.
+
+</p>
+
+<p>
+<strong>Note:     
+</strong>When adding a member to a logical file that is a DDM file, the physical file, if specified, must also be a DDM file with its library and member(s) specified explicitly.  *CURRENT is not supported when the logical file is a DDM file.
+
+</p>
+
+<p>
+When a logical file is created, the physical files specified for the PFILE or JFILE DDS keyword are used to create the logical file.  If no library name is specified for the physical files on the PFILE or JFILE keyword, the library list (*LIBL) at file creation time is used to find the physical files; the physical files from the library list are used to create the logical file.  The qualified physical files from the PFILE or JFILE keyword (regardless of whether a library name was specified or if the library list was used to find the files) are the physical files associated with the logical file.  The names of the physical files associated with the logical file are saved in the description of the logical file.  When a member is added to the logical file, the DTAMBRS parameter is used to specify the physical file members associated with the logical file member.  Each physical file name specified on the DTAMBRS parameter must be the name of a physical file that is associated with the logical file (saved in the description of the logical file).
+
+</p>
+
+<p>
+<strong>Single values
+</strong>
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><u>*ALL
+</u></strong></dt>
+
+<dd class="dlentry">
+The logical file member being added is based on all the physical files and members (that exist at the time this CRTLF command is entered) used by the logical file.  At least one member must exist in at least one of the physical files.  The physical file names are specified for the PFILE or JFILE parameter in the DDS.
+</dd>
+
+</dl>
+
+<p>
+<strong>Element 1: Physical file
+</strong>
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong></strong></dt>
+
+<dd class="dlentry">
+<p>
+<strong>Qualifier 1: Physical file
+</strong>
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><em>name
+</em></strong></dt>
+
+<dd class="dlentry">
+Specify the names of the physical files that contain the data being accessed by the logical file member being added.
+<p>
+The physical file names must match a name on the PFILE or JFILE keywords in the DDS and cannot be specified more often on the DTAMBRS parameter than on the PFILE or JFILE keywords in the DDS.  For join logical files, all physical files specified for the JFILE keyword must be specified for the DTAMBRS parameter and each physical file must contain only one member.  If a physical file name is not specified for a physical file that is on a PFILE or JFILE keyword in the DDS, the logical file member is not based on any member of that physical file.
+
+</p>
+
+</dd>
+
+</dl>
+
+</dd>
+
+<dt class="dlterm">
+<strong></strong></dt>
+
+<dd class="dlentry">
+<p>
+<strong>Qualifier 2: Library
+</strong>
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><u>*CURRENT
+</u></strong></dt>
+
+<dd class="dlentry">
+The current library for the job is searched.  If no library is specified as the current library for the job, the QGPL library is used.
+<p>
+If a library name is not specified, the current library name (*CURRENT) from the logical file description is used.  If the library name is specified, the physical file must be a physical file associated with the logical file.  If the logical file is associated with more than one physical file of the same name, the library name must be specified.
+
+</p>
+
+</dd>
+
+<dt class="dlterm">
+<strong><em>name
+</em></strong></dt>
+
+<dd class="dlentry">
+Specify the name of the library to be searched.
+</dd>
+
+</dl>
+
+</dd>
+
+</dl>
+
+<p>
+<strong>Element 2: Member
+</strong>
+</p>
+
+<p>
+<strong>Single values
+</strong>
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><u>*NONE
+</u></strong></dt>
+
+<dd class="dlentry">
+A member name is not specified.
+</dd>
+
+</dl>
+
+<p>
+<strong>Other values (up to 32 repetitions)
+</strong>
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><em>name
+</em></strong></dt>
+
+<dd class="dlentry">
+Specify the names of the physical file members that contain the data being accessed by the logical file member being added.
+<p>
+When the FILE parameter specifies a join logical file or an arrival sequence logical file, only one data member must be specified for the DTAMBRS parameter for each physical file that was specified for the PFILE or JFILE keyword in the DDS.  *ALL is valid only if each based-on physical file has only one member.  If any of the physical files has more than one member, the specific physical file member must be specified for the DTAMBRS parameter.
+
+</p>
+
+<p>
+The same physical file name can be specified more than once on the JFILE keyword.  In this case, each occurrence of the file name is treated as a different based-on physical file, and must be specified for the DTAMBRS parameter.
+
+</p>
+
+<p>
+Up to 32 qualified physical file names and physical file member names can be specified.  Also, the total number of member names cannot exceed 32.  For example, one file can specify 32 members, two files can each have 16 members, or 32 files can each have one member specified.
+
+</p>
+
+<p>
+For DDM file:
+
+</p>
+
+<ul class="cds--list--unordered">
+<li class="cds--list__item">
+The file names specified in the DTAMBRS parameter must be the names of the DDM files that represent the remote based-on physical files.  If a member name was specified as part of the remote file name in the DDM file, only that member name can be specified for the DTAMBRS parameter.  The member names must be the actual remote file member names.
+
+</li>
+
+<li class="cds--list__item">
+The based-on physical files must be at the same system location as the logical file to which the member is being added.
+
+</li>
+
+<li class="cds--list__item">
+When no member name is specified for the remote file name in the DDM file, all members are accessible.  When only one member name is specified, only that member is accessible through that DDM file.
+
+</li>
+
+</ul>
+
+</dd>
+
+</dl>
+
+</div>
+<div class="div" id="addlfm__text">
+<p>
+<strong>Text 'description' (TEXT)
+</strong></p>
+
+<p>
+Specifies the text that briefly describes the object.
+
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><u>*BLANK
+</u></strong></dt>
+
+<dd class="dlentry">
+No text is specified.
+</dd>
+
+<dt class="dlterm">
+<strong><em>character-value
+</em></strong></dt>
+
+<dd class="dlentry">
+Specify no more than 50 characters of text, enclosed in apostrophes.
+</dd>
+
+</dl>
+
+</div>
+<div class="div" id="addlfm__share">
+<p>
+<strong>Share open data path (SHARE)
+</strong></p>
+
+<p>
+Specifies whether the open data path (ODP) is shared with other programs in the same routing step.  When an ODP is shared, the programs accessing the file share facilities such as the file status and the buffer.
+
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><u>*NO
+</u></strong></dt>
+
+<dd class="dlentry">
+The ODP is not shared with other programs in the routing step.  A new ODP for the file is created and used every time a program opens the file.
+</dd>
+
+</dl>
+
+<dl>
+<dt class="dlterm">
+<strong>*YES
+</strong></dt>
+
+<dd class="dlentry">
+The same ODP is shared with each program in the job that also specifies *YES when it opens the file.
+</dd>
+
+</dl>
+
+</div>
+</section>
+
+<section class="section" role="region" aria-labelledby="addlfm__examples__title__1" id="addlfm__examples"><h2 class="sectiontitle" id="addlfm__examples__title__1">Examples</h2>
+
+<div class="p">
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>
+ADDLFM   FILE(INVENLIB/STOCKTXS)  MBR(JANUARY)
+         DTAMBRS((INVENTXS (JANUARY)))
+         TEXT('JANUARY STOCK ACTIVITY BY LOCATION')
+
+</code></pre></div><div class="docs--copy-btn"></div></div>
+
+</div>
+
+<p>
+This command adds a member named JANUARY to the logical file named STOCKTXS in the INVENLIB library. The logical file has access to the data stored in the JANUARY member of the INVENTXS physical file.
+
+</p>
+
+</section>
+
+<section class="section" role="region" aria-labelledby="addlfm__errormsgs__title__1" id="addlfm__errormsgs"><h2 class="sectiontitle" id="addlfm__errormsgs__title__1">Error messages</h2>
+
+<p>
+<strong><u>*ESCAPE Messages
+</u></strong>
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong>CPF3204
+</strong></dt>
+
+<dd class="dlentry">
+Cannot find object needed for file &amp;1 in &amp;2.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF7306
+</strong></dt>
+
+<dd class="dlentry">
+Member &amp;1 not added to file &amp;2 in &amp;3.
+</dd>
+
+</dl>
+
+</section>
+
+</div>
+
+</article></main>
+</body></html>
