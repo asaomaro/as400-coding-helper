@@ -1,6 +1,11 @@
 import * as vscode from "vscode";
 import { isInScopeDocument } from "../utils/fileScope";
 
+/** 表示の状態。ステータスバーのクリックで切り替える。 */
+const STATE_KEY = "rpgClSupport.sosi.enabled";
+let enabled = true;
+let statusBarItem: vscode.StatusBarItem | undefined;
+
 let shiftOutDecoration: vscode.TextEditorDecorationType | undefined;
 let shiftInDecoration: vscode.TextEditorDecorationType | undefined;
 
@@ -37,7 +42,15 @@ export function registerDbcsShiftMarkers(
     }
   });
 
-  context.subscriptions.push(shiftOutDecoration, shiftInDecoration);
+  statusBarItem = vscode.window.createStatusBarItem(
+    vscode.StatusBarAlignment.Right,
+    99
+  );
+  statusBarItem.command = "rpgClSupport.sosi.toggle";
+
+  enabled = context.workspaceState.get<boolean>(STATE_KEY) ?? true;
+
+  context.subscriptions.push(shiftOutDecoration, shiftInDecoration, statusBarItem);
 
   const updateForEditor = (editor: vscode.TextEditor | undefined): void => {
     if (!editor || !shiftOutDecoration || !shiftInDecoration) {
@@ -47,6 +60,18 @@ export function registerDbcsShiftMarkers(
     const { document } = editor;
 
     if (!isInScopeDocument(document)) {
+      editor.setDecorations(shiftOutDecoration, []);
+      editor.setDecorations(shiftInDecoration, []);
+      statusBarItem?.hide();
+      return;
+    }
+
+    updateStatusBar();
+    statusBarItem?.show();
+
+    // 消しているときは装飾を外す。桁は SO/SI の分だけ変わるので、
+    // 出す・出さないで見え方が変わるのが正しい（実機は SO/SI が実在する）。
+    if (!enabled) {
       editor.setDecorations(shiftOutDecoration, []);
       editor.setDecorations(shiftInDecoration, []);
       return;
@@ -102,7 +127,17 @@ export function registerDbcsShiftMarkers(
     editor.setDecorations(shiftInDecoration, shiftInRanges);
   };
 
+  const toggleCommand = vscode.commands.registerCommand(
+    "rpgClSupport.sosi.toggle",
+    async () => {
+      enabled = !enabled;
+      await context.workspaceState.update(STATE_KEY, enabled);
+      updateForEditor(vscode.window.activeTextEditor);
+    }
+  );
+
   context.subscriptions.push(
+    toggleCommand,
     vscode.window.onDidChangeActiveTextEditor(editor => {
       updateForEditor(editor ?? undefined);
     }),
@@ -117,4 +152,14 @@ export function registerDbcsShiftMarkers(
   if (vscode.window.activeTextEditor) {
     updateForEditor(vscode.window.activeTextEditor);
   }
+}
+
+function updateStatusBar(): void {
+  if (!statusBarItem) {
+    return;
+  }
+  statusBarItem.text = `$(symbol-text) SOSI: ${enabled ? "On" : "Off"}`;
+  statusBarItem.tooltip = enabled
+    ? "DBCS の前後に { } を表示しています。クリックで消す"
+    : "DBCS の { } を表示していません。クリックで出す";
 }
