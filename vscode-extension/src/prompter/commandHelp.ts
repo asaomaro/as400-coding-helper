@@ -9,11 +9,16 @@ export function buildCommandHelpText(definition: PrompterDefinition): string {
   const sections: string[] = [];
 
   // description に既にキーワードが含まれる定義が多いため、重複表示を避ける。
-  sections.push(
-    definition.description.includes(definition.keyword)
-      ? definition.description
-      : `${definition.description} (${definition.keyword})`
-  );
+  // 説明が空のときは見出しを作らない。作ると「 (CMD)」だけのヘルプが出て、
+  // 中身が無いのにボタンだけ出ることになる。
+  const description = definition.description?.trim();
+  if (description) {
+    sections.push(
+      description.includes(definition.keyword)
+        ? description
+        : `${description} (${definition.keyword})`
+    );
+  }
 
   if (definition.help?.trim()) {
     sections.push(definition.help.trim());
