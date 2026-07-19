@@ -161,6 +161,35 @@ suite("プロンプターの描画", () => {
     assert.ok(kwd < group, "囲みより前に単独の欄が出ること");
   });
 
+  test("2 組目以降に削除ボタンが出る", () => {
+    const definition = load("cmd/ja/PARM.json");
+    const parsed = parseClCommand("PARM KWD(X) TYPE(*CHAR) SNGVAL((*ALL 'A') (*NONE 'B'))");
+    assert.ok(parsed);
+
+    const state = buildInitialState(definition, mapParsedCommandToValues(definition, parsed));
+    const html = buildHtml(
+      toSerializableState(definition, state, {
+        keyword: "PARM",
+        language: "cmd",
+        line: 0
+      } as never),
+      { cspSource: "x", nonce: "n" }
+    );
+
+    const boxes = [...html.matchAll(/data-group-name="(SNGVAL[^"]*)"[\s\S]*?<\/fieldset>/gu)];
+    assert.equal(boxes.length, 2, "2 組そろっていること");
+    assert.ok(!/class="group-remove"/u.test(boxes[0][0]), "1 組目は消せない");
+    assert.ok(/class="group-remove"/u.test(boxes[1][0]), "2 組目には削除が出る");
+  });
+
+  test("追加した組にも削除ボタンを作る（複製任せにしない）", () => {
+    // 追加は複製で作るため、複製元に削除が無ければ増えた組にも出ない。
+    // 実際そうなっていた。複製後に作り直す処理があることを固定する。
+    const html = render("cmd/ja/PARM.json");
+    assert.match(html, /removeButton\.className = 'group-remove'/u);
+    assert.match(html, /clone\.querySelector\('\.group-remove'\)/u, "引き継ぎは外すこと");
+  });
+
   test("繰り返しの入力欄がラベルの右に並ぶ（次の行に回らない）", () => {
     const html = render("cmd/ja/PARM.json");
     assert.match(

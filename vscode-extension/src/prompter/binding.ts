@@ -890,6 +890,24 @@ export function buildHtml(
         const oldButton = fieldset.querySelector('.group-add');
         if (oldButton) oldButton.remove();
 
+        // 追加した組には削除ボタンを付ける。複製元から引き継ぐと data-group が
+        // 前の組のままになるので、いったん外して作り直す。
+        const inherited = clone.querySelector('.group-remove');
+        if (inherited) inherited.remove();
+
+        const removeButton = document.createElement('button');
+        removeButton.type = 'button';
+        removeButton.className = 'group-remove';
+        removeButton.setAttribute('data-group', base + '#' + next);
+        removeButton.textContent = '削除';
+
+        const addButton = clone.querySelector('.group-add');
+        if (addButton && addButton.parentNode === clone) {
+          clone.insertBefore(removeButton, addButton.nextSibling);
+        } else {
+          clone.appendChild(removeButton);
+        }
+
         fieldset.parentNode.insertBefore(clone, fieldset.nextSibling);
         applyDependencyRules();
       });
