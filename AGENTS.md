@@ -124,6 +124,17 @@
   折り返しを持ち込むと余計な空白が入るため、`buildClCommandBody`（素の 1 行）を
   使う。ソース行用の `buildClCommandText` と取り違えないこと。
 
+### テストの走らせ方
+
+- `npm test`（`vscode-extension/`）でユニットテストが走る。`tsconfig.test.json` で
+  src とテストを `out-test/` へ出し、mocha(tdd) で `out-test/test/unit/**` を実行する。
+- **`vscode` API はスタブで差し替える**（`test/support/vscode-stub.js`）。拡張機能ホストを
+  起こさずに動かすため。WebView や装飾の描画など実物が要るものは `test/integration` 側。
+- 一度出た欠陥は `test/unit/prompterRegressions.test.ts` に足す。どれも「黙って壊れる」
+  種類（値が消える・規則が効かない・桁がずれる）で、動かして気付くのが難しい。
+- **テストを足したら、直す前の状態に戻して落ちることを確かめる**。落ちないテストは
+  何も守っていない。実際 2 件とも欠陥を戻すと落ちることを確認済み。
+
 ### 外部原典と同じだけ「PJ 内部の仕様」を先に読む
 
 - 上流（research / spec）で調べるのは外部原典だけではない。**出力先の仕様**、すなわち
