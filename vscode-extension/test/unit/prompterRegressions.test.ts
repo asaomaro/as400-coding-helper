@@ -9,6 +9,7 @@ import {
 } from "../../src/prompter/clCommandParser";
 import { buildClCommandText } from "../../src/prompter/applyChanges";
 import { buildInitialState } from "../../src/prompter/model";
+import { buildCommandHelpText } from "../../src/prompter/commandHelp";
 import { resolveDdsLevel } from "../../src/language/ddsKeywordCompletion";
 import { resolveCompletionKind } from "../../src/language/rpgCompletion";
 import type { PrompterDefinition } from "../../src/prompter/types";
@@ -103,5 +104,23 @@ suite("Prompter regressions", () => {
     const line = "     C           %SUB";
     assert.equal(resolveCompletionKind(line, 21, "C-NEW", "ile")?.kind, "bif");
     assert.equal(resolveCompletionKind(line, 21, "C-SPEC", "rpg3"), undefined);
+  });
+});
+
+suite("コマンド全体ヘルプ", () => {
+  test("説明も help も無ければヘルプを作らない（ボタンを出さない）", () => {
+    const empty = buildCommandHelpText({
+      keyword: "X",
+      description: "",
+      parameters: []
+    } as unknown as PrompterDefinition);
+    assert.equal(empty, "", "中身が無いのにボタンだけ出てはいけない");
+  });
+
+  test("定義があればコマンド全体のヘルプが作られる", () => {
+    const definition = load("cl/ja/SNDBRKMSG.json");
+    const help = buildCommandHelpText(definition);
+    assert.ok(help.includes("SNDBRKMSG"), "コマンド名が含まれる");
+    assert.ok(help.length > 100, "本文が入っている");
   });
 });
