@@ -49,8 +49,14 @@ const { buildRpgLineText } = require(join(OUT, "applyChanges"));
 const { extractInitialValues } = require(join(OUT, "initialValues"));
 
 const DEF_DIR = join(root, "resources/prompter/rpg");
-const loadDefinition = rel =>
-  JSON.parse(readFileSync(join(DEF_DIR, `${rel}.json`), "utf8"));
+// 定義は方言と言語で分かれている（rpg/{dialect}/{lang}/）。往復は言語に依らないので
+// 日本語版で確かめる。英語版は表示に出る文字だけが違い、桁も欄の名前も同じ。
+const loadDefinition = rel => {
+  const [dialect, ...rest] = rel.split("/");
+  return JSON.parse(
+    readFileSync(join(DEF_DIR, dialect, "ja", `${rest.join("/")}.json`), "utf8")
+  );
+};
 
 const fakeDocument = lines => ({
   lineCount: lines.length,

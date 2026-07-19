@@ -25,7 +25,7 @@ import { fileURLToPath } from "node:url";
 const HERE = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(HERE, "../..");
 const ORIGIN = join(ROOT, "docs/origin/ilerpg");
-const DEFS = join(ROOT, "vscode-extension/resources/prompter/rpg/ile");
+const DEFS = join(ROOT, "vscode-extension/resources/prompter/rpg/ile/ja");
 
 const decode = text =>
   text
