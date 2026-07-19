@@ -26,6 +26,15 @@ const LANG = langArg ? langArg.slice("--lang=".length) : "ja";
 const HTML_DIR = path.join(ROOT, `docs/origin/cl${LANG === "ja" ? "" : `-${LANG}`}`);
 const JSON_DIR = path.join(ROOT, `vscode-extension/resources/prompter/cl/${LANG}`);
 
+/**
+ * コマンド定義ステートメントは原典が CL と同じ場所にあるが、定義の置き場所は
+ * prompter/cmd/ に分けてある（CL のプロンプターに PARM や QUAL を出さないため）。
+ * 検査は原典が同じなので同じ経路で行い、JSON の在り処だけ切り替える。
+ */
+const CMD_STATEMENTS = new Set(["CMD", "PARM", "ELEM", "QUAL", "DEP", "PMTCTL"]);
+const CMD_JSON_DIR = path.join(ROOT, `vscode-extension/resources/prompter/cmd/${LANG}`);
+const jsonDirFor = command => (CMD_STATEMENTS.has(command) ? CMD_JSON_DIR : JSON_DIR);
+
 const decode = text =>
   text
     .replace(/&lt;/g, "<")
@@ -105,7 +114,12 @@ const targets = process.argv.slice(2).filter(a => !a.startsWith("--"));
 const commands = (
   targets.length > 0
     ? targets
-    : fs.readdirSync(JSON_DIR).filter(f => f.endsWith(".json")).map(f => f.slice(0, -5))
+    : [
+        ...fs.readdirSync(JSON_DIR).filter(f => f.endsWith(".json")).map(f => f.slice(0, -5)),
+        ...(fs.existsSync(CMD_JSON_DIR)
+          ? fs.readdirSync(CMD_JSON_DIR).filter(f => f.endsWith(".json")).map(f => f.slice(0, -5))
+          : [])
+      ]
 ).filter(cmd => fs.existsSync(path.join(HTML_DIR, `${cmd}.html`)));
 
 let checked = 0;
@@ -113,7 +127,7 @@ let checked = 0;
 for (const command of commands) {
   const origin = parseOrigin(fs.readFileSync(path.join(HTML_DIR, `${command}.html`), "utf8"));
   const definition = JSON.parse(
-    fs.readFileSync(path.join(JSON_DIR, `${command}.json`), "utf8")
+    fs.readFileSync(path.join(jsonDirFor(command), `${command}.json`), "utf8")
   );
   const parameters = definition.parameters ?? [];
 
