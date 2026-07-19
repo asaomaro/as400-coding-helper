@@ -1,0 +1,437 @@
+{
+  "keyword": "STRQMQRY",
+  "description": "QUERY管理機能プログラム開始 (STRQMQRY)",
+  "help": "QUERY管理機能プログラム開始(STRQMQRY)コマンドは，QUERYを実行するために使用されます。\n\nこのコマンドを使用するためには，処理するQUERYを最初に識別しなければなりません。QUERYは，QMQRYオブジェクト中の単一の構造化照会言語(SQL)ステートメントです。SQLステートメントは，QMQRYオブジェクトが存在しない場合にはQUERY 定義(QRYDFN)オブジェクトから取り出すこともできます。\n\n出力は，画面上に表示したり，印刷したり，あるいはデータベース・ファイルに保管することができます。\n\nQUERY内部のSQLステートメントが応答セットを作成しない場合には，報告書または出力ファイルは作成されません。これは，QUERY内部のSQLステートメントが正しくないかまたはSQLステートメントがSELECT文節でない場合に起こります。\n\nQUERYに置換変数が入っている場合には，SETVARパラメーターを使用してQUERY用の変数を設定することができます。プロンプトが使用可能な場合には，QUERY管理機能は設定されていないそれぞれの変数に値を指定するように求めます。",
+  "parameters": [
+    {
+      "name": "QMQRY",
+      "description": "QUERY管理機能プログラム",
+      "help": "実行するQUERY管理機能プログラム(QMQRY)を指定します。\n\nこれは必須パラメーターです。",
+      "inputType": "group",
+      "required": true,
+      "groupKind": "qualified",
+      "children": [
+        {
+          "name": "LIB",
+          "description": "ライブラリー",
+          "help": "*LIBL: 最初に一致するものが見つかるまで，現行スレッドのライブラリー・リスト内のすべてのライブラリーが検索されます。\n*CURLIB: ジョブの現行ライブラリーが検索されます。ジョブの現行ライブラリーとしてライブラリーが指定されていない場合には，QGPLライブラリーが使用されます。\nQUERYが入っているライブラリーの名前を指定します。",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "*LIBL",
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          }
+        },
+        {
+          "name": "QMQRY",
+          "description": "QUERY管理機能プログラム",
+          "help": "実行するQUERYの名前を指定します。",
+          "inputType": "text",
+          "required": true,
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          }
+        }
+      ],
+      "positional": 1
+    },
+    {
+      "name": "OUTPUT",
+      "description": "出力",
+      "help": "コマンドからの出力を要求元ワークステーションに表示するか，ジョブのスプール出力で印刷するか，あるいはデータベース・ファイルに送るかを指定します。",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*",
+          "value": "*",
+          "help": "QUERYによって作成された出力は，指定された報告書書式で様式設定されて，コマンドを実行するワークステーションに対話モードで送られます。コマンドがバッチ・モードで実行される場合には，出力は，QUERY管理機能が使用している省略時の印刷装置に送られます。"
+        },
+        {
+          "label": "*PRINT",
+          "value": "*PRINT",
+          "help": "QUERYによって作成された出力は，指定されたQUERY管理機能の書式で様式設定されて，QUERY管理機能が使用している省略時の印刷装置に送られます。"
+        },
+        {
+          "label": "*OUTFILE",
+          "value": "*OUTFILE",
+          "help": "QUERYによって作成された出力は，データベース・ファイル（テーブル）に書き出されてコレクションに挿入されます。"
+        }
+      ],
+      "positional": 2
+    },
+    {
+      "name": "QMFORM",
+      "description": "QUERY管理機能報告書書式",
+      "help": "応答セットに適用して印刷出力または表示出力の様式を設定するQUERY管理機能報告書の書式を指定します。",
+      "inputType": "group",
+      "required": false,
+      "groupKind": "qualified",
+      "singleValues": [
+        "*SYSDFT",
+        "*QMQRY"
+      ],
+      "children": [
+        {
+          "name": "QMFORM_LIB",
+          "description": "ライブラリー",
+          "help": "*LIBL: 報告書書式を見つけるためにライブラリー・リストが使用されます。\n*CURLIB: ジョブの現行ライブラリーが検索されます。ジョブの現行ライブラリーとしてライブラリーが指定されていない場合には，QGPLライブラリーが使用されます。\n検索するライブラリーの名前を指定してください。",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "*LIBL",
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          }
+        },
+        {
+          "name": "QMFORM",
+          "description": "QUERY管理機能報告書書式",
+          "help": "報告書書式の名前を指定します。",
+          "inputType": "text",
+          "required": false,
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          },
+          "defaultValue": "*SYSDFT"
+        }
+      ]
+    },
+    {
+      "name": "OUTFILE",
+      "description": "出力を受け取るファイル",
+      "help": "QUERYの出力を受け取るデータベース・ファイルを指定します。指定されたファイルが存在しない場合には，システムはコレクション中のテーブルとして指定されたライブラリー内にこれを作成します。この機能によってファイルが作成される場合には，特定権限を持たないユーザーの権限は*EXCLUDEになります。",
+      "inputType": "group",
+      "required": false,
+      "groupKind": "qualified",
+      "children": [
+        {
+          "name": "OUTFILE_LIB",
+          "description": "ライブラリー",
+          "help": "*LIBL: 最初に一致するものが見つかるまで，ジョブのライブラリー・リスト内のすべてのライブラリーが検索されます。\n*CURLIB: ジョブの現行ライブラリーが検索されます。ジョブの現行ライブラリーとしてライブラリーが指定されていない場合には，QGPLライブラリーが使用されます。\n検索するライブラリーの名前を指定してください。",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "*LIBL",
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          }
+        },
+        {
+          "name": "OUTFILE",
+          "description": "出力を受け取るファイル",
+          "help": "コマンドの出力を受け取るデータベース・ファイルの名前を指定してください。",
+          "inputType": "text",
+          "required": false,
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          }
+        }
+      ]
+    },
+    {
+      "name": "OUTMBR",
+      "description": "出力メンバー・オプション",
+      "help": "出力が送られるデータベース・ファイル・メンバーを指定します。",
+      "inputType": "group",
+      "required": false,
+      "groupKind": "elements",
+      "children": [
+        {
+          "name": "OUTMBR_E1",
+          "description": "メンバー",
+          "inputType": "dropdown",
+          "required": false,
+          "defaultValue": "*FIRST",
+          "attributes": {
+            "characterSet": "upper"
+          },
+          "options": [
+            {
+              "label": "*FIRST",
+              "value": "*FIRST",
+              "help": "ファイルの最初のメンバーが出力を受け取ります。"
+            }
+          ]
+        },
+        {
+          "name": "OUTMBR_E2",
+          "description": "レコードの置き換えまたは追加",
+          "inputType": "dropdown",
+          "required": false,
+          "defaultValue": "*REPLACE",
+          "attributes": {
+            "characterSet": "upper"
+          },
+          "options": [
+            {
+              "label": "*REPLACE",
+              "value": "*REPLACE",
+              "help": "ファイルは，新しいレコードが挿入される前に消去されます。"
+            },
+            {
+              "label": "*ADD",
+              "value": "*ADD",
+              "help": "既存のレコードの後に新規レコードが追加されます。"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "DATETIME",
+      "description": "日付および時刻",
+      "help": "システム日付および時刻を各ページの終わりに印刷するかどうかを指定します。",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*YES",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*YES",
+          "value": "*YES",
+          "help": "それぞれのページの下部に，システム日付および時刻が印刷されます。"
+        },
+        {
+          "label": "*NO",
+          "value": "*NO",
+          "help": "それぞれのページの下部に，システム日付および時刻は印刷されません。"
+        }
+      ]
+    },
+    {
+      "name": "PAGNBR",
+      "description": "ページ番号",
+      "help": "ページ番号を各ページの終わりに印刷するかどうかを指定します。",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*YES",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*YES",
+          "value": "*YES",
+          "help": "それぞれのページの下部にページ番号が印刷されます。"
+        },
+        {
+          "label": "*NO",
+          "value": "*NO",
+          "help": "ページ番号は印刷されません。"
+        }
+      ]
+    },
+    {
+      "name": "RDB",
+      "description": "リレーショナル・データベース",
+      "help": "このコマンドの処理時にアクセスされるリレーショナル・データベースを指定します。\n\n*RUW接続管理では，ユーザーがリモート・データベースに接続されている場合には，OUPUTパラメーターに*OUTFILEを指定することはできません。\n\n*DUW接続管理では，ユーザーがリモート・データベースに接続されていて，OUTPUT(*OUTFILE)が指定された場合には，*OUTFILE処理で接続はローカルにセットされ，STRQMQRYコマンドを完了した時にリモート接続が復元されます。\n\n*RUW接続管理では，指定されたリレーショナル・データベースがリモート・データベースで，OUTPUT(*OUTFILE)が指定された場合には，*OUTFILE処理で接続はローカルにセットされ，STRQMQRYコマンドを完了した時にもローカルのままとなります。\n\n*DUW接続管理では，リレーショナル・データベースおよびOUTPUT(*OUTFILE)が指定された場合には，*OUTFILE処理で接続はローカルにセットされ，STRQMQRYコマンドを完了した時にリモート接続が復元されます。\n\nアクセスされるリレーショナル・データベースの名前を指定します。指定するデータベースには，リレーショナル・データベース・ディレクトリーの項目が入っていなければなりません。 *RUW接続管理では，指定されたリレーショナル・データベースがリモート・データベースで，OUTPUT(*OUTFILE)が指定された場合には，*OUTFILE処理で接続はローカルにセットされ，STRQMQRYコマンドを完了した時にもローカルのままとなります。 *DUW接続管理では，リレーショナル・データベースおよびOUTPUT(*OUTFILE)が指定された場合には，*OUTFILE処理で接続はローカルにセットされ，STRQMQRYコマンドを完了した時にリモート接続が復元されます。",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*NONE",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*NONE",
+          "value": "*NONE",
+          "help": "ローカル・データベースがアクセスされます。リモート・データベースに接続されている場合には，接続は，ローカルにリセットされ，このコマンドの完了までローカルのままです。接続管理方式が*DUWの場合には，リモート接続は休止状態のままとなります。"
+        },
+        {
+          "label": "*CURRENT",
+          "value": "*CURRENT",
+          "help": "現在接続されているリレーショナル・データベースがアクセスされます。 *RUW接続管理では，ユーザーがリモート・データベースに接続されている場合には，OUPUTパラメーターに*OUTFILEを指定することはできません。 *DUW接続管理では，ユーザーがリモート・データベースに接続されていて，OUTPUT(*OUTFILE)が指定された場合には，*OUTFILE処理で接続はローカルにセットされ，STRQMQRYコマンドを完了した時にリモート接続が復元されます。"
+        }
+      ]
+    },
+    {
+      "name": "RDBCNNMTH",
+      "description": "接続方式",
+      "help": "使用する接続方法を指定します。",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*DUW",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*DUW",
+          "value": "*DUW",
+          "help": "複数のリレーショナル・データベースに接続することができます。追加のリレーショナル・データベースへの連続したCONNECTステートメントがあっても，前の接続が切断される結果とはなりません。"
+        },
+        {
+          "label": "*RUW",
+          "value": "*RUW",
+          "help": "リレーショナル・データベースへの1つの接続だけを使用することができます。連続したCONNECTステートメントの結果として，新しい接続が確立される前に，前の接続が切断されます。"
+        }
+      ]
+    },
+    {
+      "name": "USER",
+      "description": "ユーザー",
+      "help": "会話を開始した時にリモート・システムに送られるユーザー名を指定します。\n\n*CURRENT: 現行ジョブと関連したユーザー名が使用されます。\nアプリケーション・リクエスター・ジョブに使用されるユーザー名を指定してください。",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*CURRENT",
+      "attributes": {
+        "characterSet": "upper",
+        "maxLength": 10
+      }
+    },
+    {
+      "name": "PASSWORD",
+      "description": "パスワード",
+      "help": "リモート・システムで使用されるパスワードを指定します。\n\n*NONE: パスワードは送られません。この値が指定された場合には，USERパラメーターに指定されたユーザー名は無効です。\nUSERパラメーターに指定されたユーザー名のパスワードを指定してください。",
+      "inputType": "text",
+      "required": false,
+      "attributes": {
+        "characterSet": "upper"
+      }
+    },
+    {
+      "name": "NAMING",
+      "description": "命名規則",
+      "help": "オブジェクトの命名に使用される命名規則を指定します。",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*SYS",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*SYS",
+          "value": "*SYS",
+          "help": "システムの命名規則（ライブラリー名／オブジェクト名）が使用されます。"
+        },
+        {
+          "label": "*SQL",
+          "value": "*SQL",
+          "help": "SQLの命名規則（データベース名．オブジェクト名）が使用されます。NAMING(*SQL)が指定された場合には，このコマンドの他のパラメーターに指定されたオブジェクトを見つけるための省略時の値として*LIBLの値を指定したり使用することはできません。"
+        },
+        {
+          "label": "*SAA",
+          "value": "*SAA",
+          "help": "SQLの命名規則（データベース名．オブジェクト名）が使用されます。NAMING(*SAA)が指定された場合には，このコマンドの他のパラメーターで指定されたオブジェクトを見つけるために，省略時の値として*LIBL値を指定したり使用することはできません。"
+        }
+      ]
+    },
+    {
+      "name": "ALWQRYDFN",
+      "description": "QRYDFNからの情報使用可能",
+      "help": "指定されたオブジェクト名を使用してQUERY管理機能プログラム(QMQRY)またはQUERY管理機能書式(QMFORM)オブジェクトを見つけることができない時に，QUERYまたは書式情報をQUERY定義(QRYDFN)オブジェクトから取り出すかどうかを指定します。この方法で得られた情報は，コマンドが完了した時に破棄されます。QUERY 管理機能オブジェクトは作成されません。",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*NO",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*NO",
+          "value": "*NO",
+          "help": "情報はQRYDFNオブジェクトから取り出されません。"
+        },
+        {
+          "label": "*YES",
+          "value": "*YES",
+          "help": "指定されたQMQRYまたはQMFORMオブジェクト名が見つからない時に，QRYDFN オブジェクトから情報が取り出されます。"
+        },
+        {
+          "label": "*ONLY",
+          "value": "*ONLY",
+          "help": "情報はQRYDFNオブジェクトからのみ取り出されます。QUERY管理機能オブジェクトは無視されます。"
+        }
+      ]
+    },
+    {
+      "name": "SETVAR",
+      "description": "集合変数",
+      "help": "QUERYが実行される前にQUERY管理機能によって設定される変数を指定します。最大50個の変数を設定することができます。",
+      "inputType": "group",
+      "required": false,
+      "groupKind": "elements",
+      "children": [
+        {
+          "name": "SETVAR_E1",
+          "description": "変数名",
+          "help": "1 から 30 文字の変数名を指定してください。変数名の中の小文字はコマンド処理プログラムに渡される時に大文字に変更されるので，このパラメーターを使用して大文字と小文字が混ざった変数の値を設定することはできません。",
+          "inputType": "text",
+          "required": false
+        },
+        {
+          "name": "SETVAR_E2",
+          "description": "変数値",
+          "help": "0 から 55 文字の変数の値を指定してください。値をアポストロフィで囲むと，値がコマンド処理プログラムに渡される時に，アポストロフィが除去されて値の中の二重アポストロフィは単一アポストロフィに圧縮されます。",
+          "inputType": "text",
+          "required": false
+        }
+      ],
+      "maxOccurrences": 50
+    }
+  ],
+  "threadSafe": false,
+  "environment": "すべての環境 (*ALL)",
+  "examples": [
+    {
+      "code": "STRQMQRY QMQRY(MYLIB/MYQRY) QMFORM(FORM1)"
+    },
+    {
+      "code": "STRQMQRY QMQRY(MYLIB/MYQRY) QMFORM(FORM1) ALWQRYDFN(*YES)"
+    },
+    {
+      "code": "STRQMQRY QMQRY(MYLIB/QUERY1) OUTPUT(*PRINT)"
+    },
+    {
+      "code": "STRQMQRY QMQRY(*CURLIB/MYQRY) OUTPUT(*OUTFILE) OUTFILE(MYTAB) OUTMBR(*FIRST *ADD)"
+    },
+    {
+      "code": "STRQMQRY QMQRY(MYQUERY) SETVAR((VAR1 'SELECT * FROM MYTABLE') (VAR2 'WHERE SALARY > 15000'))"
+    },
+    {
+      "code": "STRQMQRY QMQRY(QRYNAME) SETVAR((LASTNAME '''SMITH'''))"
+    }
+  ],
+  "errorMessages": [
+    {
+      "id": "QWM2701",
+      "text": "&1コマンドが正しく実行されなかった。"
+    },
+    {
+      "id": "QWM2703",
+      "text": "&1コマンドは終了した。"
+    },
+    {
+      "id": "QWM2707",
+      "text": "SQL命名規則が適用されるときには*LIBLを使用できない。"
+    },
+    {
+      "id": "QWM2709",
+      "text": "リレーショナル・データベース値に対してユーザーまたはパスワードが正しくない。"
+    },
+    {
+      "id": "QWM2710",
+      "text": "パスワード値*NONEに対して正しいのはユーザー値*CURRENTだけである。"
+    },
+    {
+      "id": "QWM2712",
+      "text": "ユーザー名の文字が正しくない。"
+    }
+  ],
+  "source": {
+    "url": "https://www.ibm.com/docs/ja/ssw_ibm_i_74/cl/strqmqry.htm",
+    "version": "IBM i 7.4"
+  }
+}

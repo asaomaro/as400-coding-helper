@@ -25,6 +25,10 @@ export const categories = {
       'DCL', 'DCLF', 'CHGVAR', 'IF', 'ELSE', 'DOWHILE', 'DOUNTIL', 'DOFOR', 'SELECT', 'RETURN', 'CALLSUBR',
       // メッセージ
       'SNDPGMMSG', 'RCVMSG', 'MONMSG', 'SNDUSRMSG', 'SNDMSG', 'SNDBRKMSG',
+      // クエリー管理 / Query/400 / SQL
+      'STRQMQRY', 'STRQMPRC', 'CRTQMQRY', 'CRTQMFORM', 'DLTQMQRY', 'DLTQMFORM',
+      'WRKQMQRY', 'WRKQMFORM', 'RTVQMQRY', 'RTVQMFORM',
+      'RUNQRY', 'WRKQRY', 'DLTQRY', 'STRSQL', 'RUNSQLSTM',
       // クライアント連携
       'STRPCO', 'STRPCCMD',
       // ファイル I/O（CL内）/ スプール

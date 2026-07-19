@@ -88,11 +88,29 @@ const commands = readdirSync(DEF_DIR)
   .filter(name => name.endsWith(".json"))
   .map(name => name.slice(0, -5));
 
+/**
+ * 原典の使用例そのものが誤っているもの。実機で確かめた根拠を必ず添える。
+ * 定義側を原典の誤りに合わせてはいけないので、例の方を対象外にする。
+ */
+const BROKEN_EXAMPLES = {
+  DLTQMFORM:
+    "原典の例が DLTQMFORM QMQRY(...) となっているが、実機は " +
+    "CPD0043『Keyword QMQRY not valid for this command』を返す（日英とも同じ誤り）。" +
+    "正しいキーワードは QMFORM で、実機では CPF2105（オブジェクト無し）まで進む。"
+};
+
 let checked = 0;
 let noExample = 0;
+let brokenExample = 0;
 
 for (const command of commands) {
   const definition = loadDefinition(command);
+
+  if (BROKEN_EXAMPLES[command]) {
+    brokenExample += 1;
+    continue;
+  }
+
   const example = definition.examples?.[0];
   if (!example) {
     noExample += 1;
@@ -266,5 +284,6 @@ if (failures.length > 0) {
 
 console.log(
   `✓ CL 往復検証 OK（定義 ${checked} 件 / 記述パターン ${PATTERNS.length} 件）` +
-    `${noExample > 0 ? ` ※原典に使用例が無い ${noExample} 件は対象外` : ""}`
+    `${noExample > 0 ? ` ※原典に使用例が無い ${noExample} 件は対象外` : ""}` +
+    `${brokenExample > 0 ? ` / 原典の例が誤っている ${brokenExample} 件は対象外` : ""}`
 );

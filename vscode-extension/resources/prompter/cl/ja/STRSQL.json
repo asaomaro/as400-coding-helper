@@ -1,0 +1,557 @@
+{
+  "keyword": "STRSQL",
+  "description": "SQL対話式セッションの開始 (STRSQL)",
+  "help": "SQL開始(STRSQL)コマンドは対話式SQLプログラムを開始します。このプログラムは，SQLステートメント入力画面をただちに表示する対話式SQLプログラムのステートメント入力を開始します。この画面によって，SQLステートメントを対話式環境で作成，編集，入力，および実行することができます。プログラム実行中のメッセージはすべてこの画面に表示されます。",
+  "parameters": [
+    {
+      "name": "COMMIT",
+      "description": "コミットメント制御",
+      "help": "SQLステートメントがコミットメント制御によって実行されるかどうかを指定します。\n\nコミットメント制御は使用されないことを指定します。他のジョブのコミットされていない変更は表示することができます。プログラム中にSQL DROP SCHEMAステートメントが組み込まれている場合には，*NONEまたは*NCを使用しなければなりません。\nSQL ALTER, CALL, COMMENT ON, CREATE, DROP, GRANT, LABEL ON, RENAME,およびREVOKEステートメント中で参照されたオブジェクトと，更新，削除，および挿入された行が，作業単位（トランザクション）の終わりまでロックされることを指定します。他のジョブのコミットされていない変更は表示することができます。\nSQL ALTER, CALL, COMMENT ON, CREATE, DROP, GRANT, LABEL ON, RENAME,およびREVOKEステートメント中で参照されたオブジェクトと，選択，更新，削除，および挿入された行が，作業単位（トランザクション）の終わりまでロックされることを指定します。他のジョブのコミットされていない変更を表示することはできません。",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*NONE",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*NONE",
+          "value": "*NONE"
+        },
+        {
+          "label": "*CHG",
+          "value": "*CHG"
+        },
+        {
+          "label": "*CS",
+          "value": "*CS",
+          "help": "SQL ALTER, CALL, COMMENT ON, CREATE, DROP, GRANT, LABEL ON, RENAME,およびREVOKEステートメント中で参照されたオブジェクトと，更新，削除，および挿入された行が，作業単位（トランザクション）の終わりまでロックされることを指定します。選択されたが更新されていない行は，次の行が選択されるまでロックされます。他のジョブのコミットされていない変更を表示することはできません。"
+        },
+        {
+          "label": "*ALL",
+          "value": "*ALL"
+        },
+        {
+          "label": "*RR",
+          "value": "*RR",
+          "help": "SQL ALTER, CALL, COMMENT ON, CREATE, DROP, GRANT, LABEL ON, RENAME,およびREVOKEステートメント中で参照されたオブジェクトと，選択，更新，削除，および挿入された行が，作業単位（トランザクション）の終わりまでロックされることを指定します。他のジョブのコミットされていない変更を表示することはできません。SELECT, UPDATE, DELETE, およびINSERTステートメント中で参照されたすべてのテーブルは，作業単位（トランザクション）の終わりまで排他的にロックされます。"
+        },
+        {
+          "label": "*NC",
+          "value": "*NC"
+        },
+        {
+          "label": "*UR",
+          "value": "*UR"
+        },
+        {
+          "label": "*RS",
+          "value": "*RS"
+        }
+      ],
+      "positional": 1
+    },
+    {
+      "name": "NAMING",
+      "description": "命名規則",
+      "help": "SQLステートメントでオブジェクトに使用する命名規則を指定します。",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*SYS",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*SYS",
+          "value": "*SYS",
+          "help": "システムの命名規則（ライブラリー名／ファイル名）が使用されます。"
+        },
+        {
+          "label": "*SQL",
+          "value": "*SQL",
+          "help": "SQL命名規則（スキーマ名．テーブル名）が使用されます。"
+        }
+      ],
+      "positional": 2
+    },
+    {
+      "name": "PROCESS",
+      "description": "ステートメント処理",
+      "help": "ステートメントの処理に使用する値を指定します。",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*RUN",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*RUN",
+          "value": "*RUN",
+          "help": "ステートメントは，構文検査とデータ検査を行ってから，実行されます。"
+        },
+        {
+          "label": "*VLD",
+          "value": "*VLD",
+          "help": "ステートメントは，構文検査とデータ検査を行いますが，実行されません。"
+        },
+        {
+          "label": "*SYN",
+          "value": "*SYN",
+          "help": "ステートメントの構文検査だけが行われます。"
+        }
+      ],
+      "positional": 3
+    },
+    {
+      "name": "LIBOPT",
+      "description": "ライブラリー・オプション",
+      "help": "SQLステートメント入力画面からリスト・サポートを要求(F4, F16, F17, F18)した時に表示されるライブラリーのリストを指定します。指定したライブラリーに対する*EXECUTE権限がない場合には，そのライブラリーは表示されません。\n\n以下のQXXXライブラリーはIBM提供のライブラリーですが，通常これらのライブラリーには頻繁に変更されるユーザー・データが入っています。したがって，これらのライブラリーは「ユーザー・ライブラリー」と見なされ，検索されます。\n\n*LIBL: 最初の一致が見つかるまで，ジョブのライブラリー・リスト中のすべてのライブラリーが検索されます。\n*CURLIB: ジョブの現行ライブラリーが表示されます。\n*USRLIBL: ジョブのライブラリー・リストのユーザー部分にあるライブラリーだけが表示されます。\n*ALL: QSYSを含むシステム上のすべてのライブラリーが表示されます。\n*ALLUSR: すべてのユーザー・ライブラリーが検索されます。その名前が英字Qで始まっていないすべてのライブラリー（ただし，次のライブラリーを除く）が検索されます。 #CGULIB #DSULIB #SEULIB #COBLIB #RPGLIB #DFULIB #SDALIB 以下のQXXXライブラリーはIBM提供のライブラリーですが，通常これらのライブラリーには頻繁に変更されるユーザー・データが入っています。したがって，これらのライブラリーは「ユーザー・ライブラリー」と見なされ，検索されます。 QDSNX QRCL QUSRSYS QGPL QS36F QUSRVXRXMX QGPL38 QUSER38 QPFRDATA QUSRINFSKR 注: ユーザーは，各リリースごとにQUSRVXRXMXの形式をもった異なるライブラリー名を作成することができます。VXRXMXは，そのライブラリーのバージョン，リリース，およびモディフィケーション・レベルです。\n表示するライブラリーの名前を指定してください。",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*LIBL",
+      "attributes": {
+        "characterSet": "upper",
+        "maxLength": 10
+      },
+      "positional": 4
+    },
+    {
+      "name": "LISTTYPE",
+      "description": "リスト・タイプ",
+      "help": "「SQLステートメントの入力」画面（F16, F17,およびF18）またはプロンプト(F4)画面からリスト・サポートを要求した時に表示されるオブジェクトのタイプを指定します。",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*ALL",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*ALL",
+          "value": "*ALL",
+          "help": "すべてのオブジェクトが表示されます。"
+        },
+        {
+          "label": "*SQL",
+          "value": "*SQL",
+          "help": "SQLで作成されたオブジェクトだけが表示されます。"
+        }
+      ],
+      "positional": 5
+    },
+    {
+      "name": "REFRESH",
+      "description": "データの最新表示",
+      "help": "画面選択出力データの最新表示の時期を指定します。このパラメーターは，一時的な結果の作成を要求するSQL SELECTステートメントには適用されません。",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*ALWAYS",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*ALWAYS",
+          "value": "*ALWAYS",
+          "help": "データは常に最新表示されます。このパラメーターに*ALWAYSを指定し， データのコピー可能 (ALWCPYDTA) パラメーターに*OPTIMIZEを指定することはできません。"
+        },
+        {
+          "label": "*FORWARD",
+          "value": "*FORWARD",
+          "help": "データが最新表示されるのは，ユーザーが最初にデータの終わりへ順方向にページ送りした時だけです。その後では，データは最新表示されません。"
+        }
+      ],
+      "positional": 6
+    },
+    {
+      "name": "ALWCPYDTA",
+      "description": "データのコピー可能",
+      "help": "SELECTステートメントの実行時にデータのコピーを使用できるかどうかを指定します。\n\nこの値によって，全体のQUERYに必要な時間が減少します。データのコピーは，結果のテーブルの最初の行を戻す前に作成されていなければならないので，最初の行を取り出すための時間が増える場合があります。",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*YES",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*YES",
+          "value": "*YES",
+          "help": "SELECTステートメントを実行するために必要な場合にのみ，データのコピーを使用することができます。"
+        },
+        {
+          "label": "*OPTIMIZE",
+          "value": "*OPTIMIZE",
+          "help": "システムは，データベースから取り出されたデータを直接使用するか，あるいはデータのコピーを使用するかを選択します。どちらを選択した方がパフォーマンスが良いかによって，選択が決定されます。 この値によって，全体のQUERYに必要な時間が減少します。データのコピーは，結果のテーブルの最初の行を戻す前に作成されていなければならないので，最初の行を取り出すための時間が増える場合があります。"
+        },
+        {
+          "label": "*NO",
+          "value": "*NO",
+          "help": "データのコピーを使用することはできません。SELECTステートメント中の文節にデータのコピーが必要な場合には，エラー・メッセージが戻されます。SELECTステートメントが正常に実行された場合には，それは現行データが使用されたためです。"
+        }
+      ]
+    },
+    {
+      "name": "DATFMT",
+      "description": "日付形式",
+      "help": "結果の日付のカラムにアクセスする時に使用する形式を指定します。すべての出力日付フィールドは指定した形式で戻されます。この値の指定によって，入力日付ストリングに対して，日付が有効な形式であるかどうかを判別します。\n\nIBM I以外のシステム上にあるリレーショナル・データベースと接続する場合には，この形式は*USA, *ISO, *EUR,または*JISでなければなりません。\n\nジョブの現行日付形式を判別するためには，ジョブ表示(DSPJOB)コマンドを使用してください。",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*JOB",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*JOB",
+          "value": "*JOB",
+          "help": "プリコンパイル時，または新しい対話式SQLセッションの確立時にジョブに対して指定された形式が使用されます。 ジョブの現行日付形式を判別するためには，ジョブ表示(DSPJOB)コマンドを使用してください。"
+        },
+        {
+          "label": "*USA",
+          "value": "*USA",
+          "help": "米国日付形式 MM/DD/YYYY が使用されます。"
+        },
+        {
+          "label": "*ISO",
+          "value": "*ISO",
+          "help": "国際標準化機構(ISO)日付形式 YYYY-MM-DD が使用されます。"
+        },
+        {
+          "label": "*EUR",
+          "value": "*EUR",
+          "help": "欧州日付形式 DD.MM.YYYY が使用されます。"
+        },
+        {
+          "label": "*JIS",
+          "value": "*JIS",
+          "help": "日本工業規格日付形式 YYYY-MM-DD が使用されます。"
+        },
+        {
+          "label": "*MDY",
+          "value": "*MDY",
+          "help": "日付形式 MM/DD/YY が使用されます。"
+        },
+        {
+          "label": "*DMY",
+          "value": "*DMY",
+          "help": "日付形式 DD/MM/YY が使用されます。"
+        },
+        {
+          "label": "*YMD",
+          "value": "*YMD",
+          "help": "日付形式 YY/MM/DD が使用されます。"
+        },
+        {
+          "label": "*JUL",
+          "value": "*JUL",
+          "help": "年間通算日形式 YY/DDD が使用されます。"
+        }
+      ]
+    },
+    {
+      "name": "DATSEP",
+      "description": "日付区切り文字",
+      "help": "日付の結果のカラムにアクセスする時に使用する区切り記号を指定します。\n\nジョブの現行日付の区切り記号の値を判別するためには，ジョブ表示(DSPJOB)コマンドを使用してください。\n\nスラッシュが日付区切り記号として使用されます。\nピリオドが日付区切り記号として使用されます。\nダッシュが日付区切り記号として使用されます。\nコンマが日付区切り記号として使用されます。\nブランクが日付区切り記号として使用されます。",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*JOB",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*JOB",
+          "value": "*JOB",
+          "help": "プリコンパイル時，新しい対話式SQLセッションの作成時，またはSQLステートメント実行(RUNSQLSTM)コマンドの実行時にジョブに対して指定された日付区切り記号。 ジョブの現行日付の区切り記号の値を判別するためには，ジョブ表示(DSPJOB)コマンドを使用してください。"
+        },
+        {
+          "label": "*BLANK",
+          "value": "*BLANK"
+        }
+      ]
+    },
+    {
+      "name": "TIMFMT",
+      "description": "時刻形式",
+      "help": "時刻の結果のカラムにアクセスする時に使用する形式を指定します。すべての出力時刻フィールドはユーザー指定の形式で戻されます。この値の指定によって，入力時刻ストリングに対して，時刻が有効な形式で指定されたかどうかを判別します。\n\n別のIBM Iではないシステム上にあるリレーショナル・データベースに接続する場合には，時刻形式はコロンまたはピリオドの時刻区切り記号を使用する*USA, *ISO, *EUR, *JIS,または*HMSでなければなりません。",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*HMS",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*HMS",
+          "value": "*HMS",
+          "help": "HH:MM:SS の形式が使用されます。"
+        },
+        {
+          "label": "*USA",
+          "value": "*USA",
+          "help": "米国の時刻形式 HH:MM XX が使用されます。ここで XX はAMまたはPMです。"
+        },
+        {
+          "label": "*ISO",
+          "value": "*ISO",
+          "help": "国際標準化機構(ISO)時刻形式 HH.MM.SS が使用されます。"
+        },
+        {
+          "label": "*EUR",
+          "value": "*EUR",
+          "help": "欧州時刻形式 HH.MM.SS が使用されます。"
+        },
+        {
+          "label": "*JIS",
+          "value": "*JIS",
+          "help": "日本工業規格時刻形式 HH:MM:SS が使用されます。"
+        }
+      ]
+    },
+    {
+      "name": "TIMSEP",
+      "description": "時刻区切り文字",
+      "help": "時刻の結果のカラムにアクセスする時に使用される区切り記号を指定します。\n\nジョブの現在の時刻区切り記号値を判別するためには，ジョブ表示(DSPJOB)コマンドを使用してください。\n\nコロンが時刻区切り記号として使用されます。\nピリオドが時刻区切り記号として使用されます。\nコンマが時刻区切り記号として使用されます。\nブランクが時刻区切り記号として使用されます。",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*JOB",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*JOB",
+          "value": "*JOB",
+          "help": "プリコンパイル時，新しい対話式SQLセッションの作成時，またはRUNSQLSTMの実行時にジョブに対して指定された時刻区切り記号が使用されます。 ジョブの現在の時刻区切り記号値を判別するためには，ジョブ表示(DSPJOB)コマンドを使用してください。"
+        },
+        {
+          "label": "*BLANK",
+          "value": "*BLANK"
+        }
+      ]
+    },
+    {
+      "name": "DECPNT",
+      "description": "小数点",
+      "help": "SQLステートメントの数字定数に使用される小数点文字を指定します。この値は，文字と数値との間のキャストの時にも小数点文字として使用されます。",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*JOB",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*JOB",
+          "value": "*JOB",
+          "help": "小数点の表現は，ステートメントを実行中のジョブによって使用された値です。"
+        },
+        {
+          "label": "*PERIOD",
+          "value": "*PERIOD",
+          "help": "ピリオドによって小数点を表します。"
+        },
+        {
+          "label": "*COMMA",
+          "value": "*COMMA",
+          "help": "コンマによって小数点を表します。"
+        },
+        {
+          "label": "*SYSVAL",
+          "value": "*SYSVAL",
+          "help": "QDECFMTシステム値が小数点文字として使用されます。"
+        }
+      ]
+    },
+    {
+      "name": "SRTSEQ",
+      "description": "ソート順序",
+      "help": "SQLステートメント入力画面でSQLステートメントのストリングの比較で使用される分類順序テーブルを指定します。",
+      "inputType": "group",
+      "required": false,
+      "groupKind": "qualified",
+      "singleValues": [
+        "*HEX",
+        "*JOB",
+        "*JOBRUN",
+        "*LANGIDUNQ",
+        "*LANGIDSHR"
+      ],
+      "children": [
+        {
+          "name": "LIB",
+          "description": "ライブラリー",
+          "help": "*LIBL: 最初の一致が見つかるまで，ジョブのライブラリー・リスト中のすべてのライブラリーが検索されます。\n*CURLIB: ジョブの現行ライブラリーが検索されます。ジョブの現行ライブラリーとしてライブラリーが指定されていない場合には，QGPLライブラリーが使用されます。\n検索するライブラリーの名前を指定してください。",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "*LIBL",
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          }
+        },
+        {
+          "name": "SRTSEQ",
+          "description": "ソート順序",
+          "help": "対話式SQLセッションで使用される分類順序テーブルの名前を指定します。",
+          "inputType": "text",
+          "required": false,
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          },
+          "defaultValue": "*JOB"
+        }
+      ]
+    },
+    {
+      "name": "LANGID",
+      "description": "言語ID",
+      "help": "SRTSEQ(*LANGIDUNQ)またはSRTSEQ(*LANGIDSHR)が指定された時に使用される言語識別コードを指定します。\n\n*JOB: ユーザーが新しい対話式SQLを開始する時に，ジョブに指定されたLANGID値が使用されます。\n*JOBRUN: ユーザーが対話式SQLを開始する度に，ジョブのLANGID値が検索されます。\n使用される言語識別コードを指定します。",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*JOB",
+      "attributes": {
+        "characterSet": "upper"
+      }
+    },
+    {
+      "name": "PGMLNG",
+      "description": "プログラム言語",
+      "help": "使用するプログラム言語構文規則を指定します。このパラメーターを使用するためには， ステートメント処理 (PROCESS) パラメーターに*SYNを指定しなければなりません。",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*NONE",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*NONE",
+          "value": "*NONE",
+          "help": "特定言語の構文検査規則を使用しないことを指定します。"
+        },
+        {
+          "label": "*C",
+          "value": "*C",
+          "help": "C言語の構文規則を使用して構文検査を行うことを指定します。"
+        },
+        {
+          "label": "*CBL",
+          "value": "*CBL",
+          "help": "COBOL言語の構文規則を使用して構文検査を行うことを指定します。"
+        },
+        {
+          "label": "*PLI",
+          "value": "*PLI",
+          "help": "PL/I言語の構文規則を使用して構文検査を行うことを指定します。"
+        },
+        {
+          "label": "*RPG",
+          "value": "*RPG",
+          "help": "RPG言語の構文規則を使用して構文検査を行うことを指定します。"
+        },
+        {
+          "label": "*FTN",
+          "value": "*FTN",
+          "help": "FORTRAN言語の構文規則を使用して構文検査を行うことを指定します。"
+        }
+      ]
+    },
+    {
+      "name": "SQLSTRDLM",
+      "description": "SQLストリング区切り文字",
+      "help": "プログラム言語 (PGMLNG) パラメーターに*CBLを指定した場合には，SQLストリング区切り文字を指定します。",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*QUOTESQL",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*QUOTESQL",
+          "value": "*QUOTESQL",
+          "help": "SQLストリング区切り文字は引用符(\")で表現されます。"
+        },
+        {
+          "label": "*APOSTSQL",
+          "value": "*APOSTSQL",
+          "help": "SQLストリング区切り文字はアポストロフィ(')で表現されます。"
+        }
+      ]
+    }
+  ],
+  "threadSafe": false,
+  "environment": "対話環境 (*INTERACT *IPGM *IREXX *EXEC)",
+  "examples": [
+    {
+      "code": "STRSQL"
+    }
+  ],
+  "errorMessages": [
+    {
+      "id": "CPF9801",
+      "text": "ライブラリー&3にオブジェクト&2が見つからない。"
+    },
+    {
+      "id": "CPF9802",
+      "text": "&3のオブジェクト&2は認可されていない。"
+    },
+    {
+      "id": "CPF9810",
+      "text": "ライブラリー&1が見つかりません。"
+    },
+    {
+      "id": "CPF9820",
+      "text": "ライブラリー&1の使用は認可されていない。"
+    },
+    {
+      "id": "CPF9822",
+      "text": "ライブラリー&2のファイル&1は認可されていない。"
+    },
+    {
+      "id": "CPF9830",
+      "text": "ライブラリー&1を割り当てることができない。"
+    },
+    {
+      "id": "SQL0113",
+      "text": "名前&1を使用することはできない。"
+    },
+    {
+      "id": "SQL6141",
+      "text": "現在対話式SQLを使用することはできない。"
+    },
+    {
+      "id": "SQL6145",
+      "text": "対話式SQLセッションがシステムの限界を超えた。"
+    },
+    {
+      "id": "SQL6332",
+      "text": "権限リスト&1が存在していない。"
+    },
+    {
+      "id": "SQL6342",
+      "text": "ソート順序&1が正しくない。"
+    },
+    {
+      "id": "SQL6343",
+      "text": "言語識別コード&1が正しくない。"
+    },
+    {
+      "id": "SQL9006",
+      "text": "DB2 Query Manager and SQL Development Kitのインストール・レベルがオペレーティング・システムと同じでない。"
+    },
+    {
+      "id": "SQL9012",
+      "text": "IBM DB2 Query Manager and SQL Development Kit for iが使用可能ではありません。"
+    }
+  ],
+  "source": {
+    "url": "https://www.ibm.com/docs/ja/ssw_ibm_i_74/cl/strsql.htm",
+    "version": "IBM i 7.4"
+  }
+}
