@@ -124,6 +124,14 @@
   折り返しを持ち込むと余計な空白が入るため、`buildClCommandBody`（素の 1 行）を
   使う。ソース行用の `buildClCommandText` と取り違えないこと。
 
+### ビルド成果物 out/ は追跡しない
+
+- `out/`（tsc の出力）は `.gitignore` 対象。以前はコミットしており、ソースを直すたびに
+  手で同期する必要があった（漏れると古い成果物が残る）。
+- 動かすには `npm install` → `npm run compile`。F5 起動は `preLaunchTask` が、
+  vsix 作成は `vscode:prepublish` が compile するので、通常は意識しなくてよい。
+- clone してすぐ拡張機能を読み込むことはできない。読み込む前に compile が要る。
+
 ### テストの走らせ方
 
 - `npm test`（`vscode-extension/`）でユニットテストが走る。`tsconfig.test.json` で
