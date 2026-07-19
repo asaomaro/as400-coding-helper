@@ -64,7 +64,8 @@ async function applyChanges(editor, definition, resolved, values) {
     }
     const line = document.lineAt(resolved.line);
     const range = new vscode.Range(new vscode.Position(resolved.line, 0), new vscode.Position(resolved.line, line.text.length));
-    if (!(0, rpgEditGuards_1.isEditAllowedRange)(document, range)) {
+    // 編集の可否は RPG の桁規則で見ている。DDS は別の固定長なので対象外。
+    if (resolved.language !== "dds" && !(0, rpgEditGuards_1.isEditAllowedRange)(document, range)) {
         console.log("[rpgClSupport] RPG edit not allowed", JSON.stringify({
             uri: document.uri.toString(),
             line: resolved.line,
@@ -73,6 +74,7 @@ async function applyChanges(editor, definition, resolved, values) {
         }));
         return;
     }
+    // 桁で書き戻すのは RPG も DDS も同じ（sourceStart / sourceLength を使う）。
     const newText = buildRpgLineText(line.text, definition, values);
     const edit = new vscode.WorkspaceEdit();
     edit.replace(document.uri, range, newText);

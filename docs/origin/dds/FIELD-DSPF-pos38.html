@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="ja"><head><meta charset="utf-8"><title>表示装置ファイルの使用目的 (38 桁目)</title></head>
+<body>
+<h1 class="title topictitle1">表示装置ファイルの使用目的 (38 桁目)</h1><div id="lastModifiedDate"><span>Last Updated</span>: 2021-04-13</div>
+<div class="body conbody"><p class="shortdesc"><span class="ph">この欄には、名前を指定したフィールドが、出力専用フィールド、入力専用フィールド、入出力共用フィールド、潜在フィールド、プログラム - システム間フィールド、またはメッセージ・フィールドのいずれであるかを指定します。</span></p>
+<p class="p">固定情報フィールド (名前のないフィールド) については、この欄には何も記入しないでください。</p>
+<div class="section"><p class="p">表示装置ファイルの場合に、この欄に指定できる項目は次のとおりです。</p>
+<dl class="dl"><dt class="dthd"><strong>項目</strong></dt>
+<dd class="ddhd"><strong>意味</strong></dd>
+<dt class="dt dlterm">ブランクまたは 0</dt>
+<dd class="dd">出力専用<p class="p">出力専用フィールドは、プログラムがレコードを表示装置に書き出す際に、プログラムからのデータを表示装置に渡すためのフィールドです。
+ある名前付き出力フィールドについて OVRDTA キーワードを指定する場合には、DFT (デフォルト値) キーワードを用いて、そのフィールドの初期値を指定することができます。
+OVRDTA キーワードに効力がなければ、そのフィールドの初期値が使用されます。
+OVRDTA キーワードに効力がある場合、そのフィールドのデータは出力バッファーから取られます。</p>
+</dd>
+<dt class="dt dlterm">I</dt>
+<dd class="dd">入力専用<p class="p">入力専用フィールドは、プログラムがレコードを読み取る際に、装置からのデータをプログラムに渡すためのフィールドです。入力フィールドは、省略時値 (DFT キーワードで指定した) によって初期設定することができます。
+そのフィールドを変更せず、そのフィールドが入力として選択された場合には、デフォルト値がプログラムに渡されます。デフォルトに従った場合、画面上では入力フィールドに下線が付けられます。
+下線を付けないようにしたい場合には、入力のデフォルトの変更 (CHGINPDFT) キーワードまたは表示属性 (下線) (DSPATR(UL)) キーワードを使用します。</p>
+</dd>
+<dt class="dt dlterm">B</dt>
+<dd class="dd">入出力共用<p class="p">入出力共用フィールドは、プログラムが表示装置にレコードを書き出す場合にはそのプログラムから渡され、プログラムが表示装置
+からレコードを読み取る際にそのフィールドが入力として選択された場合には、そのプログラムに渡されます。
+入出力共用フィールドは、通常、プログラムがユーザーによる変更が可能なデータを表示する場合に使用されます。
+該当フィールドの初期値は、DFT キーワードで指定できます。
+DFT を指定する場合は OVRDTA キーワードの指定も必要であり、これによって、該当フィールドに表示するデータを出力バッファー
+から取るのか (OVRDTA に効力がある場合)、あるいは DFT キーワードから取るのか (OVRDTA に効力がない場合) を指示しなければなりません。
+画面上では、入出力共用フィールドにはデフォルトにより下線が付けられます。</p>
+</dd>
+<dt class="dt dlterm">H</dt>
+<dd class="dd">潜在 (特殊な入出力フィールド)<p class="p">潜在フィールドは、名前の付いた数字フィールド、英数字フィールド、日付フィールド、時刻フィールド、または時刻スタンプ・フィールドで、画面には表示されません。
+プログラムでは、出力命令によってこのフィールドにデータを送ったり、入力命令によってこのフィールドからデータを取り出したりすることができますが、ユーザー自身はこのフィールドの内容を見たり変更したりすることはできません。</p>
+<div class="p">潜在フィールドについては次のような規則があります。<ul class="ul cds--list--unordered"><li class="li cds--list__item">潜在フィールドは必ず名前のあるフィールドです。</li>
+<li class="li cds--list__item">潜在フィールドについては位置の指定は無効です。</li>
+<li class="li cds--list__item">桁数、データ・タイプ、および小数点以下の桁数は、他の名前付きのフィールドの場合と同様に指定します。</li>
+<li class="li cds--list__item">1 つの表示装置ファイルについての複数の潜在フィールドを指定することができます。</li>
+</ul>
+</div>
+<p class="p">潜在フィールドは、プログラムとの間でのデータのやりとりは可能ですが、表示されないため、入力可能フィールドまたは出力可能フィールドとは見なされません。</p>
+<p class="p"> キーワード DATFMT および DATSEP は日付潜在フィールドで、また、キーワード TIMFMT および TIMSEP は時刻潜在フィールドで使用できます。
+ただし、隠れた日付または時刻フィールドが含まれているレコードが作成または読み取られるときにシステムによって形式設定されることはありません。</p>
+<p class="p">潜在フィールドは、サブファイルの関連するアプリケーション・プログラムで使用すると便利です。
+例えば、サブファイル・レコードの中に潜在フィールドを設け、その中にレコード・キー情報を入れておくといったことが可能です。ユーザーは潜在フィールドを見ることはできませんが、そのフィールドはサブファイル・レコードとともにプログラムに戻されるので、プログラムはそのレコードをデータベースに戻すことができます。</p>
+</dd>
+<dt class="dt dlterm">M</dt>
+<dd class="dd">メッセージ (特殊な出力フィールド)<p class="p">メッセージ・フィールドは、名前の付いた出力専用の文字フィールドです。</p>
+<div class="p">メッセージ・フィールドについては次のような規則があります。<ul class="ul cds--list--unordered"><li class="li cds--list__item">オプション標識を用いて、メッセージ・フィールドを選択することができます。ただし、処理時には一度に 1 つのメッセージしか表示されません。つまり、最初に選択されたメッセージ・フィールドのメッセージだけが表示され、その命令ではそれ以外のメッセージはすべて無視されます。</li>
+<li class="li cds--list__item">メッセージ・フィールドが表示された場合、該当のレコードについて指定してあるその他のフィールドは、すべて通常の方式で処理されます。
+装置はエラーの状態になります (すなわち、キーボードがロックされ、カーソルが明滅し、メッセージが高輝度 (HI) 表示属性で表示されます)。Reset (リセット) キーを押すと、通常の処理が再開されます。</li>
+<li class="li cds--list__item">メッセージのテキストは、プログラムによりメッセージ・フィールドに値が転送された時点で設定されます。</li>
+<li class="li cds--list__item">画面上でメッセージが表示される位置は、メッセージ行 (MSGLOC キーワードが効力を持っている場合を除き画面の最後の行) です。</li>
+<li class="li cds--list__item">メッセージ・フィールドの桁数として指定する値は、24 x 80 のワークステーションの場合は 79 未満で、27 x 132 のワークステーションの場合は 131 未満でなければなりません。
+78 桁 (24 x 80 のワークステーションの場合) または 130 桁 (27 x 132 ワークステーションの場合) を超えるメッセージ・テキストは、メッセージ行に収まるように切り捨てられます。</li>
+<li class="li cds--list__item">メッセージ・フィールドに関しては Help キーを使用することはできません。
+Help キーを押しても、そのメッセージについてのメッセージ・ヘルプは表示されません。</li>
+<li class="li cds--list__item">メッセージ・フィールドに対して有効なキーワードには次のものがあります。<div class="tablenoborder"><div class="cds--data-table-container"><table id="parm_table0" cellpadding="4" cellspacing="0" role="presentation" class="table presentation cds--data-table" rules="none" frame="void" border="0"><tbody class="tbody"><tr class="row"><td class="entry valigntop" width="50%"><p class="lines">ALIAS<br>
+INDTXT<br>
+OVRDTA</p>
+</td>
+<td class="entry valigntop" width="50%"><p class="lines">REFFLD<br>
+TEXT</p>
+</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+</li>
+<li class="li cds--list__item">サブファイル・レコード様式の一部となっているフィールドの場合には、38 桁目に M を指定することはできません。</li>
+</ul>
+<div class="note note border-2 cds--inline-notification--info ibmdocs-note cds--inline-notification cds--inline-notification--low-contrast margin-top-1 margin-bottom-1"><div class="cds--inline-notification__details"><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" class="cds--inline-notification__icon" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M16,2A14,14,0,1,0,30,16,14,14,0,0,0,16,2Zm0,5a1.5,1.5,0,1,1-1.5,1.5A1.5,1.5,0,0,1,16,7Zm4,17.12H12V21.88h2.88V15.12H13V12.88h4.13v9H20Z"></path></svg>
+        <div class="cds--inline-notification__text-wrapper">
+          <div class="cds--inline-notification__subtitle"><span class="notetitle ibm-bold ibm-textcolor-blue-50 background-blue cds--inline-notification__title ibm-padding-top-1 ibm-padding-bottom-1 padding-left-1 padding-right-1">注:</span> 入力可能フィールドのないレコードに対して入力命令を要求することは有効です。このため、出力レコードに対する応答として機能キーを押すことができます。</div>
+        </div>
+      </div></div>
+</div>
+</dd>
+<dt class="dt dlterm">P</dt>
+<dd class="dd">プログラム - システム間 (特殊な出力フィールド)<p class="p">プログラム - システム間フィールドは、名前の付いた数字または英数字の出力専用フィールドで、プログラムとシステムとの間でデータの受け渡しを行うために使用されます。 このフィールドは、画面には表示されません。
+プログラムによる出力命令でこのフィールドにデータを送ることはできますが、ワークステーション・ユーザーがこのフィールドの内容を見ることはできません。
+プログラム - システム間フィールドは、プログラムからデータを送ることができても画面には表示されないため、出力可能フィールドとは見なされません。</p>
+<div class="p">表示装置ファイル内のプログラム - システム間フィールドには、次のような規則が適用されます。<ul class="ul cds--list--unordered"><li class="li cds--list__item">プログラム - システム間フィールドは必ず名前付きのフィールドです。</li>
+<li class="li cds--list__item">プログラム - システム間フィールドについては位置の指定は無効です。</li>
+<li class="li cds--list__item">桁数、データ・タイプ、および小数点以下の桁数は、他の名前付きのフィールドの場合と同様に指定します。</li>
+<li class="li cds--list__item">プログラム - システム間フィールドは、同じレコード様式の CHCACCEL、CHCCTL、
+CHKMSGID、CHOICE、ERRMSGID、GRDATR、GRDBOX、GRDCLR、GRDLIN、HTML、
+MNUBARCHC、MSGID、PSHBTNCHC、SFLCHCCTL、SFLMSGID、SFLSIZ、WDWTITLE、または WINDOW キーワードのパラメーターとして指定しなければなりません。使用目的が P であるフィールドを、他のキーワードのパラメーターとして指定するのは無効です。
+少なくとも 1 つの MSGID キーワードでこのフィールドを指定しないと、重大なエラーが生じます。</li>
+<li class="li cds--list__item">ICF ファイルにおける使用目的 P のフィールドと異なり、表示装置ファイルにおける使用目的 P のフィールドは、バッファー内のどこにでも配置することができます。
+ICF ファイルでは、P フィールドはすべてのデータ・フィールド (使用目的 B のフィールド) の後に指定しなければなりません。</li>
+<li class="li cds--list__item">使用目的 P のフィールドについて桁数などの属性が適切に指定されていれば、そのフィールドは、MSGID キーワードで、メッセージ識別コード、メッセージ・ファイル、またはライブラリー名として指定することができます。</li>
+<li class="li cds--list__item">使用目的 P のフィールドが含まれているレコードは、使用目的 P のフィールドの中にあるデータをシステムに知らせる前に作成しなければなりません。</li>
+</ul>
+</div>
+<p class="p">プログラム - システム間フィールドについて使用できるキーワードは次のとおりです。</p>
+<div class="tablenoborder"><div class="cds--data-table-container"><table id="parm_table1" cellpadding="4" cellspacing="0" role="presentation" class="table presentation cds--data-table" rules="none" frame="void" border="0"><tbody class="tbody"><tr class="row"><td class="entry valigntop" width="50%"><p class="lines">ALIAS<br>
+INDTXT</p>
+</td>
+<td class="entry valigntop" width="50%"><p class="lines">TEXT<br>
+REFFLD</p>
+</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+</dd>
+</dl>
+<div class="note note border-2 cds--inline-notification--info ibmdocs-note cds--inline-notification cds--inline-notification--low-contrast margin-top-1 margin-bottom-1"><div class="cds--inline-notification__details"><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" class="cds--inline-notification__icon" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M16,2A14,14,0,1,0,30,16,14,14,0,0,0,16,2Zm0,5a1.5,1.5,0,1,1-1.5,1.5A1.5,1.5,0,0,1,16,7Zm4,17.12H12V21.88h2.88V15.12H13V12.88h4.13v9H20Z"></path></svg>
+        <div class="cds--inline-notification__text-wrapper">
+          <div class="cds--inline-notification__subtitle"><span class="notetitle ibm-bold ibm-textcolor-blue-50 background-blue cds--inline-notification__title ibm-padding-top-1 ibm-padding-bottom-1 padding-left-1 padding-right-1">注:</span> <ol class="ol cds--list--ordered--temporary"><li class="li cds--list__item">入力専用フィールドおよび入出力共用フィールドは、入力可能フィールドです。</li>
+<li class="li cds--list__item">出力専用フィールドおよび入出力共用フィールドは、出力可能フィールドです。</li>
+<li class="li cds--list__item">この欄をブランクのままにした場合のデフォルトは出力専用です。</li>
+</ol>
+</div>
+        </div>
+      </div></div>
+</div>
+</div>
+<div class="related-links ibm-padding-top-1 ibm-padding-bottom-2 bx--row bottom-section-parent" aria-label="bottom related links">
+<div class="familylinks ibm-margin-bottom-1">
+<div class="parentlink"><strong>親トピック:</strong> <div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a class="link bottom-section-link" href="/docs/ja/ssw_ibm_i_74/rzakc/rzakcmstpsnent.htm" title="表示装置ファイルのデータ記述仕様書 (DDS) の最初の 44 桁に定位置項目を指定します。">表示装置ファイルの定位置項目 (1 - 44 桁目)</a></div></div>
+</div>
+</div>
+
+
+</body></html>

@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="ja"><head><meta charset="utf-8"><title>Decimal positions for physical and logical files (positions 36 and
+37)</title></head>
+<body>
+<main role="main"><article role="article" aria-labelledby="ldec__title__1">
+<h1 class="topictitle1" id="ldec__title__1">Decimal positions for physical and logical files (positions 36 and
+37)</h1><div id="lastModifiedDate"><span>Last Updated</span>: 2026-07-13</div>
+
+
+
+<div class="body refbody"><p class="shortdesc">You use these positions to specify the decimal placement
+within a packed decimal, zoned decimal, binary, or floating-point field.</p>
+
+<div class="section"><p>If you specify the CONCAT keyword for the field you are defining,
+you cannot specify decimal positions. A field in the physical file that contains
+decimal positions cannot be included in a concatenated field.</p>
+<div class="note border-2 cds--inline-notification--info ibmdocs-note cds--inline-notification cds--inline-notification--low-contrast margin-top-1 margin-bottom-1"><div class="cds--inline-notification__details"><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" class="cds--inline-notification__icon" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M16,2A14,14,0,1,0,30,16,14,14,0,0,0,16,2Zm0,5a1.5,1.5,0,1,1-1.5,1.5A1.5,1.5,0,0,1,16,7Zm4,17.12H12V21.88h2.88V15.12H13V12.88h4.13v9H20Z"></path></svg>
+        <div class="cds--inline-notification__text-wrapper">
+          <div class="cds--inline-notification__subtitle"><span class="notetitle ibm-bold ibm-textcolor-blue-50 background-blue cds--inline-notification__title ibm-padding-top-1 ibm-padding-bottom-1 padding-left-1 padding-right-1">Note:</span> High-level
+languages can impose specific length and value restrictions on the decimal
+positions. Observe these restrictions for files used by those high-level languages.</div>
+        </div>
+      </div></div>
+</div>
+
+<section class="section" role="region" aria-labelledby="ldec__title__2"><h2 class="sectiontitle" id="ldec__title__2">Using decimal position with physical files</h2><p>For a
+physical file, use these positions to specify the decimal placement within
+a packed decimal, zoned decimal, binary, or floating-point field. Specify
+a decimal number from 0 through 63 for the number of decimal positions to
+the right of the decimal point. (The number must not be greater than the number
+of digits specified in the field length.) The Positional entries for physical
+and logical files (positions 1 through 44) topic shows how to code the decimal
+positions field. If the field length is greater than 9 for a binary field,
+the decimal positions value must be 0.</p>
+<p>The data is actually stored in
+the system without a decimal point. The decimal point is only implied. For
+example, the value stored for 1.23 is 123. This is what appears in display
+or printer files if editing is not specified.</p>
+<p>To override the position
+of a referenced field (R in position 29), specify either a new value or a
+change in position. To increase the position, specify <em>+n</em>, where n is
+the amount of increase. To decrease the position, specify <em>-n</em>, where <em>n</em> is
+the amount of decrease. For example, an entry of +4 indicates that there are
+4 more digits to the right of the decimal point than were in the referenced
+field. An error message is sent if the number of decimal positions is greater
+than the maximum allowed.</p>
+</section>
+
+<section class="section" role="region" aria-labelledby="ldec__title__3"><h2 class="sectiontitle" id="ldec__title__3">Using decimal position with logical files</h2><p>For logical
+files, specify decimal positions only to override or change the decimal positions
+of the corresponding field in the physical file on which this logical file
+is based. If you leave these positions blank, the field you are defining has
+the same decimal positions as the corresponding field in the physical file
+on which this logical file is based.</p>
+<p>To override or change the placement
+of the decimal point within a packed decimal or zoned decimal field, specify
+a number from 0 through 63 to indicate the number of decimal positions to
+the right of the decimal point. The number here must not be greater than the
+number of digits specified in the field length. You cannot override or change
+decimals when the corresponding field in the physical file is binary (data
+type B) and contains decimal positions greater than zero. When the logical
+file field is binary and the corresponding field in the physical file is not
+binary (B specified in position 35 in the logical file), the decimal positions
+must be zero for the binary field.</p>
+<p>You can override the position of
+the field by specifying a new value or by specifying an increase or decrease
+in position. To increase the position, specify <em>+n</em>, where n is the amount
+of increase. To decrease the position, specify <em>-n</em>, where n is the amount
+of decrease. For example, an entry of +4 indicates that there are 4 more digits
+to the right of the decimal point than were in the referenced field.</p>
+<div class="p">If
+you specify a value in positions 36 through 37 and your program writes or
+retrieves data through the logical file field to the physical file field,
+the operating system aligns the data on the decimal point. Depending on the
+case, this can cause the decimal values to be truncated, or it can cause a
+data conversion error. Decimal values are truncated in the following cases:
+ <ul class="cds--list--unordered">
+<li class="cds--list__item">When reading from a logical file that reduces the number of decimal positions
+specified in the physical file</li>
+
+<li class="cds--list__item">When writing to a logical file that increases the number of decimal positions
+specified in the physical file</li>
+
+</ul>
+</div>
+<p>For example, if the physical file field is defined as 4 digits
+long with 2 decimal positions, and the logical file field decreases the decimal
+positions to 0 decimal positions, a value of 0.20 in the physical file becomes
+a value of 0 in the logical file, and a value of 2.52 in the physical file
+becomes a value of 2 in the logical file.</p>
+<p>When decimal values are truncated,
+the left side of the field is filled with zeros.</p>
+<div class="p">A data conversion error
+can occur in the following cases:  <ul class="cds--list--unordered">
+<li class="cds--list__item">When writing to a logical file that reduces the number of decimal positions
+specified in the physical file</li>
+
+<li class="cds--list__item">When reading from a logical file that increases the number of decimal
+positions specified in the physical file</li>
+
+</ul>
+</div>
+<p>The data conversion error occurs because too many
+digits might be moved into the space available to the left of the decimal
+point. For example, if, as in the previous example, the physical file field
+is defined as 4 digits long with 2 decimal positions and the logical file
+field decreases the decimal positions to 0 decimal positions, a value of 3322
+written to the logical file cannot fit in the physical file. This value does
+not fit because only 2 digits are allowed left of the decimal point in the
+physical file.</p>
+<p>To avoid data conversion errors, increase or decrease
+the length (positions 30 through 34) of the logical file field by the same
+amount that you increase or decrease the decimal positions.</p>
+</section>
+
+</div>
+
+<aside role="complementary" aria-labelledby="ldec__title__1"><nav role="navigation" aria-label="bottom related links" class="ibm-padding-top-1 ibm-padding-bottom-2 bx--row bottom-section-parent">
+<div class="familylinks ibm-margin-bottom-1">
+<div class="parentlink"><strong>Parent topic:</strong> <div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a data-hd-product="ssw_i5_72" href="/docs/en/ssw_ibm_i_74/rzakb/rzakbmstlfpos.htm" title="The first 44 positions of the DDS form are called positional entries." class="bottom-section-link">Positional entries for physical and logical files (positions 1 through 44)</a></div></div>
+</div>
+
+<div class="linklist relinfo relref ibm-margin-bottom-1" lang="en-us"><h2 class="linkheading bottom-section-h2-title">Related reference</h2>
+<ul><li class="cds--list__item"><div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a data-hd-product="ssw_i5_72" href="/docs/en/ssw_ibm_i_74/rzakb/rzakbmsttdjfld.htm" title="You can use this join-level keyword to identify the from and to fields whose values are used to join physical files in a join logical file. These fields are both referred to as join fields." class="bottom-section-link">JFLD (Joined Fields) keyword—join logical files only</a></div></li>
+</ul></div>
+</nav></aside></article></main>
+</body></html>
