@@ -111,6 +111,18 @@
   折り返しを持ち込むと余計な空白が入るため、`buildClCommandBody`（素の 1 行）を
   使う。ソース行用の `buildClCommandText` と取り違えないこと。
 
+### 拡張子を足したら「発火条件」まで足す（配線漏れ）
+
+- **定義を用意しただけでは機能しない**。F4 は `contributes.keybindings` の `when` で
+  発火条件が決まっており、そこに拡張子が無ければ押しても何も起きない。
+  実際、DDS と `.cmd` のプロンプター定義を作り、言語判定も書き戻しも通したのに、
+  キーバインドが `rpg-fixed` / `cl` と `.rpgle` / `.clp` にしか効かず、
+  **DDS も `.cmd` も `.rpg` も `.sqlrpgle` も `.clle` も F4 が発火しない**状態だった。
+- 真実源は `fileScope.ts` の `TARGET_EXTENSIONS`。`when` 句はそこから作り、
+  一致を `verify-contributes.mjs` で検査する（issue #41 の再発防止）。
+- 表示系（ルーラー / SOSI / 補完）は登録時に拡張子で絞っているため同種の漏れは
+  起きにくいが、**キーバインドとコマンドは package.json 側に条件がある**ことを忘れない。
+
 ### languageId / アクティベーション変更時の下流波及チェック
 
 - VSCode 拡張では `languageId` が**診断・キーバインド・スニペット・補完などの発火条件**を兼ねる。
