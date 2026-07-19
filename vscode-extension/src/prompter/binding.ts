@@ -19,6 +19,10 @@ export interface SerializableField {
   readonly hasHelp?: boolean;
   /** 値そのものがコマンドの欄（この欄でさらにプロンプターを開ける）。 */
   readonly commandValued?: boolean;
+  /** 件数の接尾辞を付ける前のラベル。組を消したときの番号振り直しに使う。 */
+  readonly labelBase?: string;
+  /** 同じく囲みの見出しの素の値。 */
+  readonly groupLabelBase?: string;
   readonly help?: string;
   readonly maxOccurrences?: number;
   readonly maxLength?: number;
@@ -177,6 +181,8 @@ export function toSerializableState(
         field.occurrence > 0
           ? `${field.parameter.description} (${field.occurrence + 1})`
           : field.parameter.description,
+      labelBase: field.parameter.description,
+      groupLabelBase: groupInfoByChildName.get(field.parameter.name)?.groupLabel,
       value: field.value,
       // 静的な定義値ではなく dependsOn 評価後の実効必須を UI に渡す。
       required: field.required,
@@ -268,9 +274,11 @@ export function buildHtml(
       : "";
 
     return `
-      <div class="field"${buildFieldRuleAttributes(field)}>
+      <div class="field" data-label-base="${escapeHtml(
+        field.labelBase ?? field.label
+      )}"${buildFieldRuleAttributes(field)}>
         <label>
-          <span>${escapeHtml(field.label)}<span class="required-mark">${
+          <span class="field-label">${escapeHtml(field.label)}<span class="required-mark">${
             field.required ? " *" : ""
           }</span>${helpIcon}${promptButton}</span>
           ${controlHtml}
@@ -304,7 +312,11 @@ export function buildHtml(
 
       const groupAdditional = block.fields.every(f => f.additional);
       return `
-      <fieldset class="field group-field" data-group-name="${escapeHtml(block.name)}"${
+      <fieldset class="field group-field" data-group-name="${escapeHtml(
+        block.name
+      )}" data-label-base="${escapeHtml(
+        block.fields[0]?.groupLabelBase ?? block.label
+      )}"${
         groupAdditional ? ' data-additional="true" style="display:none"' : ""
       }>
         <legend>${escapeHtml(block.label)}</legend>
@@ -834,6 +846,70 @@ export function buildHtml(
         return;
       }
 
+
+    // 繰り返し指定の組は、消したり増やしたりするたびに番号を振り直す。
+    // 途中の組を消しても連番が飛ばないようにするため。番号は入力欄の名前
+    // （NAME / NAME#2 …）と対応しており、飛ぶと値の対応が崩れる。
+    function renumberGroup(base) {
+      const boxes = Array.prototype.slice.call(
+        form.querySelectorAll('.group-field[data-group-name="' + base + '"], .group-field[data-group-name^="' + base + '#"]')
+      );
+
+      boxes.forEach(function (box, index) {
+        const suffix = index === 0 ? '' : '#' + (index + 1);
+        const shown = index === 0 ? '' : ' (' + (index + 1) + ')';
+
+        box.setAttribute('data-group-name', base + suffix);
+
+        const legend = box.querySelector('legend');
+        if (legend) {
+          legend.textContent = (box.getAttribute('data-label-base') || legend.textContent) + shown;
+        }
+
+        // 入力欄の名前と、見出しの件数表示を振り直す。
+        const controls = box.querySelectorAll('input, select, textarea');
+        Array.prototype.forEach.call(controls, function (control) {
+          const name = control.getAttribute('name');
+          if (name) control.setAttribute('name', name.split('#')[0] + suffix);
+        });
+
+        const fields = box.querySelectorAll('.field[data-label-base]');
+        Array.prototype.forEach.call(fields, function (field) {
+          const span = field.querySelector('.field-label');
+          if (!span) return;
+          const mark = span.querySelector('.required-mark');
+          const rest = mark ? mark.outerHTML + span.innerHTML.split(mark.outerHTML)[1] : '';
+          span.innerHTML = escapeForDom(field.getAttribute('data-label-base') || '') + shown + rest;
+        });
+
+        // 追加は最後の組だけ、削除は 2 組目以降に置く。
+        const isLast = index === boxes.length - 1;
+        const add = box.querySelector('.group-add');
+        const remove = box.querySelector('.group-remove');
+
+        if (add && !isLast) add.remove();
+        if (isLast && !add && boxes[0]) {
+          const source = boxes[0].querySelector('.group-add');
+          if (source) box.appendChild(source);
+        }
+
+        if (index === 0 && remove) remove.remove();
+        if (index > 0 && !remove) {
+          const button = document.createElement('button');
+          button.type = 'button';
+          button.className = 'group-remove';
+          button.textContent = '削除';
+          box.appendChild(button);
+        }
+      });
+    }
+
+    function escapeForDom(text) {
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
       form.addEventListener('click', function (event) {
         const target = event.target;
         if (!target || typeof target.matches !== 'function' || !target.matches('.group-add')) {
@@ -890,30 +966,17 @@ export function buildHtml(
         const oldButton = fieldset.querySelector('.group-add');
         if (oldButton) oldButton.remove();
 
-        // 追加した組には削除ボタンを付ける。複製元から引き継ぐと data-group が
-        // 前の組のままになるので、いったん外して作り直す。
+        // 引き継いだ削除ボタンは番号がずれるので外す。並べ直しは renumberGroup。
         const inherited = clone.querySelector('.group-remove');
         if (inherited) inherited.remove();
 
-        const removeButton = document.createElement('button');
-        removeButton.type = 'button';
-        removeButton.className = 'group-remove';
-        removeButton.setAttribute('data-group', base + '#' + next);
-        removeButton.textContent = '削除';
-
-        const addButton = clone.querySelector('.group-add');
-        if (addButton && addButton.parentNode === clone) {
-          clone.insertBefore(removeButton, addButton.nextSibling);
-        } else {
-          clone.appendChild(removeButton);
-        }
-
         fieldset.parentNode.insertBefore(clone, fieldset.nextSibling);
+        renumberGroup(base);
         applyDependencyRules();
       });
 
-      // 追加した組を消す。追加しかないと押し間違えを戻せない。
-      // 消せるのは最後の組だけ（間を抜くと連番が飛んで対応が崩れる）。
+      // 追加した組を消す。どの組でも消せる。消したあとは番号を振り直すので、
+      // 途中を消しても連番が飛ばない（飛ぶと入力欄の名前と値の対応が崩れる）。
       form.addEventListener('click', function (event) {
         const target = event.target;
         if (!target || typeof target.matches !== 'function' || !target.matches('.group-remove')) {
@@ -926,28 +989,22 @@ export function buildHtml(
           return;
         }
 
-        const name = fieldset.getAttribute('data-group-name') || '';
-        const base = name.split('#')[0];
-        const previous = form.querySelector(
-          '.group-field[data-group-name="' + base + '"]'
+        const base = (fieldset.getAttribute('data-group-name') || '').split('#')[0];
+        const boxes = form.querySelectorAll(
+          '.group-field[data-group-name="' + base + '"], .group-field[data-group-name^="' + base + '#"]'
         );
+        if (boxes.length <= 1) {
+          return; // 1 組しかないときは消さない（パラメータ自体が無くなる）
+        }
 
-        // すべての組を集めて、最後の一組かどうかを見る。
-        const all = form.querySelectorAll('.group-field[data-group-name^="' + base + '"]');
-        if (all.length <= 1 || all[all.length - 1] !== fieldset) {
-          return;
+        // 追加ボタンを持って消えると増やせなくなるので、先に外に出す。
+        const add = fieldset.querySelector('.group-add');
+        if (add && boxes[0] !== fieldset) {
+          boxes[0].appendChild(add);
         }
 
         fieldset.remove();
-
-        // 追加ボタンは常に最後の一組に置く。消した結果の最後へ戻す。
-        const remaining = form.querySelectorAll('.group-field[data-group-name^="' + base + '"]');
-        const last = remaining[remaining.length - 1] || previous;
-        if (last && !last.querySelector('.group-add')) {
-          const source = fieldset.querySelector('.group-add');
-          if (source) last.appendChild(source);
-        }
-
+        renumberGroup(base);
         applyDependencyRules();
       });
     }
