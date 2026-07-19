@@ -42,7 +42,14 @@ const fileScope_1 = require("../utils/fileScope");
 const keywordColumns_1 = require("./keywordColumns");
 const specClassifier_1 = require("../prompter/specClassifier");
 const dialect_1 = require("../prompter/dialect");
-const CYCLE = ["off", "ruler", "full"];
+/**
+ * ステータスバーのクリックで回す順序。off は含めない。
+ * ルーラーは入力補助なので、切り替えたいのは「目盛りか書式行か」であって
+ * 消すことではない。消したいときはコマンド（ルーラー: 表示の切り替え）を使う。
+ */
+const CYCLE = ["ruler", "full"];
+/** 保存値として妥当なモード。off も含む（コマンドで消せるため）。 */
+const MODES = ["off", "ruler", "full"];
 const STATE_KEY = "rpgClSupport.ruler.mode";
 /** ルーラー文字列の最小桁数（行が短くても最低この幅まで目盛りを出す）。 */
 const MIN_WIDTH = 80;
@@ -73,7 +80,7 @@ function registerRuler(context) {
     lensProvider = new RulerCodeLensProvider(context);
     // 初期モード: 保存値があればそれ、無ければ設定 defaultMode。
     const stored = context.workspaceState.get(STATE_KEY);
-    if (stored && CYCLE.includes(stored)) {
+    if (stored && MODES.includes(stored)) {
         mode = stored;
         modePinned = true;
     }
@@ -82,14 +89,29 @@ function registerRuler(context) {
         modePinned = false;
     }
     const cycleCommand = vscode.commands.registerCommand("rpgClSupport.ruler.cycleMode", async () => {
+        // 消えている状態からクリックしたら、まず出す。
         const index = CYCLE.indexOf(mode);
-        mode = CYCLE[(index + 1) % CYCLE.length];
+        mode = index === -1 ? "full" : CYCLE[(index + 1) % CYCLE.length];
+        modePinned = true;
+        await context.workspaceState.update(STATE_KEY, mode);
+        refresh();
+    });
+    // 消す／戻すは別のコマンドにする。戻すときは消す前のモードに戻す。
+    let lastVisible = mode === "off" ? "full" : mode;
+    const toggleCommand = vscode.commands.registerCommand("rpgClSupport.ruler.toggleVisible", async () => {
+        if (mode === "off") {
+            mode = lastVisible;
+        }
+        else {
+            lastVisible = mode;
+            mode = "off";
+        }
         modePinned = true;
         await context.workspaceState.update(STATE_KEY, mode);
         refresh();
     });
     const alignCommand = vscode.commands.registerCommand("rpgClSupport.ruler.alignFont", () => alignCodeLensFont());
-    context.subscriptions.push(cycleCommand, alignCommand, 
+    context.subscriptions.push(cycleCommand, toggleCommand, alignCommand, 
     // 対象拡張子だけに絞る（言語登録に依らないのは表示系の方針どおり）。
     vscode.languages.registerCodeLensProvider({ scheme: "file", pattern: `**/*.{${fileScope_1.TARGET_EXTENSIONS.join(",")}}` }, lensProvider), vscode.window.onDidChangeActiveTextEditor(() => refresh()), 
     // カーソル行が変われば書式行も変わる。SEU も現在行に対して出すため追従させる。
@@ -228,7 +250,7 @@ class RulerCodeLensProvider {
         const lens = new vscode.CodeLens(new vscode.Range(line, 0, line, 0), {
             title: toFixedPitch(trimToIndent(row, lineText, resolveTabSize(editor))),
             command: "rpgClSupport.ruler.cycleMode",
-            tooltip: "クリックでルーラー表示を切替 (Off → Cols → Full)"
+            tooltip: "クリックで目盛り(Cols)と書式行(Full)を切り替え"
         });
         return [lens];
     }
@@ -309,7 +331,7 @@ function updateStatusBar() {
         ? "rpgClSupport.ruler.cycleMode"
         : "rpgClSupport.ruler.alignFont";
     statusBarItem.tooltip = aligned
-        ? "クリックでルーラー表示を切替 (Off → Cols → Full)"
+        ? "クリックで目盛り(Cols)と書式行(Full)を切り替え。消すときはコマンド「ルーラー: 表示の切り替え」"
         : `ルーラーの桁がコードとずれています。クリックで揃えます。\n${describeFonts()}`;
 }
 /**
