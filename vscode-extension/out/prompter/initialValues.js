@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.extractInitialValues = extractInitialValues;
+exports.extractByColumns = extractByColumns;
 const clContinuation_1 = require("../language/clContinuation");
 const clCommandParser_1 = require("./clCommandParser");
 function extractInitialValues(resolved, definition) {
@@ -48,6 +49,7 @@ function extractRpgInitialValues(resolved, definition) {
     }
     return {};
 }
+// 桁で読み出す純粋関数。全定義の往復検証から使うため公開する。
 function extractByColumns(text, definition) {
     const values = {};
     for (const parameter of definition.parameters) {
