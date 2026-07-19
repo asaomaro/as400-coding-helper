@@ -33,6 +33,7 @@ var __importStar = (this && this.__importStar) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.resolveDdsLevel = resolveDdsLevel;
 exports.resolveDdsType = resolveDdsType;
 exports.isKeywordArea = isKeywordArea;
 exports.registerDdsKeywordCompletion = registerDdsKeywordCompletion;
@@ -40,6 +41,41 @@ const vscode = __importStar(require("vscode"));
 const jsonDefinitions_1 = require("../prompter/jsonDefinitions");
 /** キーワード項目の開始桁（1 始まり）。ここより手前では補完を出さない。 */
 const KEYWORD_COLUMN = 45;
+/** 名前タイプ欄（17 桁目）の値 → レベル。 */
+const NAME_TYPE_LEVEL = {
+    R: "record",
+    K: "key",
+    S: "select",
+    O: "select",
+    J: "join",
+    H: "help"
+};
+/**
+ * その行が属するレベルを求める。
+ *
+ * レベルはその行だけでは決まらない。キーワードだけの行（17 桁目も名前欄も空）は
+ * 直前のレコードやフィールドの続きなので、レベルを決めた行まで遡る必要がある。
+ * 遡っても見つからなければファイル・レベル（最初のレコードより前）。
+ */
+function resolveDdsLevel(lineAt, lineIndex) {
+    for (let index = lineIndex; index >= 0; index -= 1) {
+        const text = lineAt(index);
+        // 注記行は桁の意味を持たないので飛ばす。
+        if (text.length > 6 && text.charAt(6) === "*") {
+            continue;
+        }
+        const nameType = (text.charAt(16) ?? " ").toUpperCase();
+        const level = NAME_TYPE_LEVEL[nameType];
+        if (level) {
+            return level;
+        }
+        // 17 桁目が空でも名前があればフィールド。名前も無ければ続きの行なので遡る。
+        if (text.slice(18, 28).trim().length > 0) {
+            return "field";
+        }
+    }
+    return "file";
+}
 let cache;
 let cacheLanguage;
 /** 拡張子から DDS の種別を決める（ルーラーの specFamily と同じ規約）。 */
@@ -105,16 +141,21 @@ function registerDdsKeywordCompletion(context) {
             if (!isKeywordArea(line, position.character)) {
                 return undefined;
             }
-            const keywords = (await loadKeywords(context)).get(type) ?? [];
-            if (keywords.length === 0) {
+            const all = (await loadKeywords(context)).get(type) ?? [];
+            if (all.length === 0) {
                 return undefined;
             }
+            // その行のレベルで書けるものだけに絞る。レベルが分からないものは残す。
+            const level = resolveDdsLevel(index => document.lineAt(index).text, position.line);
+            const keywords = all.filter(keyword => !keyword.level?.length || keyword.level.includes(level));
             const word = currentWord(line, position.character);
             const range = new vscode.Range(new vscode.Position(position.line, word.start), position);
             return keywords.map(keyword => {
                 const item = new vscode.CompletionItem(keyword.name, vscode.CompletionItemKind.Keyword);
                 item.detail = keyword.title;
                 item.range = range;
+                // 同じレベルで書けるものを上に出す（絞り込みの結果が見て分かるように）。
+                item.sortText = keyword.level?.length ? `0${keyword.name}` : `1${keyword.name}`;
                 // パラメータを取るキーワードは括弧まで入れて中にカーソルを置く。
                 // 取らないものに括弧を付けると構文誤りになるため付けない。
                 if (keyword.hasParameters) {
