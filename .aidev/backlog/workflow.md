@@ -16,7 +16,8 @@ priority: 2           # cl(1) の次。設計書: docs/workflow/ibmi-dev-workflo
       EVFEVENT メンバーを SELECT → `@ibm/ibmi-eventf-parser` で解析まで通す。
       pub400 復旧後最初に実施（設計書 7 章 #1）
 - [ ] RPGUnit の pub400 導入可否を確認する — RPGUNIT ライブラリの導入を試み、
-      `@ibm/itest` で 1 本実行する（設計書 7 章 #2）
+      `@ibm/itest` で 1 本実行する。あわせて **`RUCALLTST` の結果出力の形**を採取する
+      （失敗は CPF9897 例外で伝わるため EVFEVENT とは別経路。設計書 4.2 / 7 章 #2）
 - [ ] 実機操作レシピを skill 化する — メンバー送受信（CCSID レシピ）・コンパイル
       （liblist + *EVENTF）・エラー取得の 3 レシピを `.claude/skills/` に。
       資格情報は環境変数のみ（設計書 4.1）(needs: EVFEVENT の SQL 取得を実機確認する)
