@@ -265,12 +265,28 @@ const leafOf = (parameter: ParameterDefinition): boolean =>
   parameter.inputType !== "group" || !parameter.children?.length;
 
 /** group の「主」となる入力欄。単一値はここに入る（生成側と同じ規則）。 */
+/**
+ * 単一値（*SAME 等）を入れる欄を返す。
+ *
+ * 入れ子の末端まで降りること。要素リストの要素がさらに修飾名になっている場合
+ * （CHGPRTF の USRDFNOBJ）、途中の group に値を入れても、group は入力欄を持たない
+ * ため書き戻しで拾われず、値が黙って消える。
+ *
+ * 修飾名は最後の子（LIB が先、オブジェクトが後）、要素リストは最初の子が主。
+ */
 function primaryChild(parameter: ParameterDefinition): ParameterDefinition | undefined {
-  const children = parameter.children ?? [];
-  if (children.length === 0) return undefined;
-  return (parameter.groupKind ?? "qualified") === "qualified"
-    ? children[children.length - 1]
-    : children[0];
+  let current: ParameterDefinition | undefined = parameter;
+
+  while (current && !leafOf(current)) {
+    const children: readonly ParameterDefinition[] = current.children ?? [];
+    if (children.length === 0) return undefined;
+    current =
+      (current.groupKind ?? "qualified") === "qualified"
+        ? children[children.length - 1]
+        : children[0];
+  }
+
+  return current;
 }
 
 /**

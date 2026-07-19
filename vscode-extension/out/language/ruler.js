@@ -238,8 +238,11 @@ class RulerCodeLensProvider {
         if (!key) {
             return undefined;
         }
-        // RPG III は実機の書式行がそのまま使える（合成より正確）。
-        if ((0, dialect_1.resolveDialect)(document) === "rpg3" && specFamily(document) === "rpg") {
+        // 実機の SEU 書式行があるものはそれをそのまま出す。合成より正確で、
+        // 何より実機と同じ表記になる（DDS で欄名が日本語になっていたのを直した）。
+        const family = specFamily(document);
+        const useSeu = ((0, dialect_1.resolveDialect)(document) === "rpg3" && family === "rpg") || family.startsWith("dds-");
+        if (useSeu) {
             const template = await getSeuFormatLine(this.context, key, document, line);
             if (template) {
                 return template.slice(0, width).padEnd(width, ".");
@@ -383,6 +386,11 @@ async function getSeuFormatLine(context, key, document, line) {
         const text = document.lineAt(line).text;
         const hasRecordName = text.slice(6, 14).trim().length > 0;
         return cachedSeuFormatLines[hasRecordName ? "O-SPEC-RECORD" : "O-SPEC-FIELD"];
+    }
+    // 論理ファイルは物理ファイルと書式行が違う（参照欄 29 桁目が無い）。
+    // 拡張子で分かれるが、桁定義は DDS-PF にまとめてあるのでここで分ける。
+    if (key === "DDS-PF" && /\.lf$/u.test(document.uri.fsPath.toLowerCase())) {
+        return cachedSeuFormatLines["DDS-LF"] ?? cachedSeuFormatLines[key];
     }
     return cachedSeuFormatLines[key];
 }

@@ -75,7 +75,8 @@ function extractRpgInitialValues(
   return {};
 }
 
-function extractByColumns(
+// 桁で読み出す純粋関数。全定義の往復検証から使うため公開する。
+export function extractByColumns(
   text: string,
   definition: PrompterDefinition
 ): Values {

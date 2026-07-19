@@ -20,6 +20,7 @@ const ROOT = join(HERE, "../..");
 const OUT = join(ROOT, "vscode-extension/resources/navigation");
 
 const origin = JSON.parse(readFileSync(join(HERE, "rpg3-seu-format-lines.json"), "utf8"));
+const dds = JSON.parse(readFileSync(join(HERE, "dds-seu-format-lines.json"), "utf8"));
 
 /**
  * 書式行のキーはルーラー側の仕様書キーに合わせる。
@@ -46,9 +47,23 @@ for (const [origKey, template] of Object.entries(origin.templates)) {
   templates[key] = template.replace(/\s+$/u, "");
 }
 
+// DDS の書式行は実機のメッセージ・ファイル QEDTMSG から取得したもの。
+// SEU が実際に出している文字列そのものなので、欄名を合成せずこれをそのまま出す。
+// ルーラーが日本語の欄名を出していたのを、実機と同じ表記に合わせるため。
+for (const [key, id] of Object.entries(dds.mapping)) {
+  const template = dds.templates[id];
+  if (!template) {
+    throw new Error(`DDS の書式行が見つからない: ${key} (${id})`);
+  }
+  templates[key] = template.line.replace(/\s+$/u, "");
+}
+
 const result = {
-  note: `RPG III(RPG/400) の SEU 書式行。実機 ${origin.source.host} (${origin.source.osVersion}) の SEU から実測したもの。`,
+  note:
+    `SEU の書式行。RPG III は実機 ${origin.source.host} の SEU から実測、` +
+    `DDS は実機のメッセージ・ファイル QEDTMSG から取得したもの。`,
   method: origin.source.method,
+  ddsMethod: dds.method,
   templates
 };
 
