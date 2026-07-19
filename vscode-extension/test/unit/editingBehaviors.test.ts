@@ -1,13 +1,13 @@
 import { strict as assert } from "node:assert";
 import * as vscode from "vscode";
-import { getNextTabStop } from "../../language/rpgLayout";
-import { isEditAllowedRange } from "../../language/rpgEditGuards";
+import { getNextTabStop } from "../../src/language/rpgLayout";
+import { isEditAllowedRange } from "../../src/language/rpgEditGuards";
 import {
   isInScopeUri,
   isInScopeDocument,
   TARGET_EXTENSIONS
-} from "../../utils/fileScope";
-import { getLogicalCommandRange } from "../../language/clContinuation";
+} from "../../src/utils/fileScope";
+import { getLogicalCommandRange } from "../../src/language/clContinuation";
 
 suite("Editing behaviors", () => {
   test("getNextTabStop returns increasing stops", () => {
@@ -104,14 +104,14 @@ suite("Editing behaviors", () => {
       "ENDPGM"
     ];
 
+    // lineAt は number と Position の 2 つの形を持つ。テストでは行番号しか
+    // 使わないので、番号を受ける形だけ用意して型を合わせる。
     const document: Partial<vscode.TextDocument> = {
       lineCount: lines.length,
-      lineAt(index: number) {
-        return {
-          lineNumber: index,
-          text: lines[index]
-        } as vscode.TextLine;
-      }
+      lineAt: ((index: number | vscode.Position) => {
+        const line = typeof index === "number" ? index : index.line;
+        return { lineNumber: line, text: lines[line] } as vscode.TextLine;
+      }) as vscode.TextDocument["lineAt"]
     };
 
     const rangeWrapper = getLogicalCommandRange(

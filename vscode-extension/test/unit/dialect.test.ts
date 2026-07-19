@@ -1,5 +1,5 @@
 import { strict as assert } from "node:assert";
-import { resolveDialectFromPath } from "../../prompter/dialect";
+import { resolveDialectFromPath } from "../../src/prompter/dialect";
 
 suite("RPG dialect resolution", () => {
   test("derives ile from .rpgle and rpg3 from .rpg by default", () => {
