@@ -7,7 +7,6 @@ import * as vscode from "vscode";
 export type RpgKeywordColumns = Map<string, readonly number[]>;
 
 let cachedRpgKeywordColumns: RpgKeywordColumns | undefined;
-let cachedClKeywordColumns: readonly number[] | undefined;
 let cachedDdsKeywordColumns: RpgKeywordColumns | undefined;
 
 /**
@@ -87,14 +86,20 @@ export async function getRpgKeywordColumns(
   return map;
 }
 
+const cachedKeywordColumnsByKind = new Map<string, readonly number[]>();
+
 /**
- * CL のキーワード桁定義を読み込む。
+ * CL / コマンド定義ソースのキーワード桁定義を読み込む。
+ * どちらも「ラベル 1-13 / 文 14 / パラメータ 25」だが、欄の呼び名が違うため
+ * 定義ファイルを分けてある（CL は Command、.cmd は Statement）。
  */
 export async function getClKeywordColumns(
-  context: vscode.ExtensionContext
+  context: vscode.ExtensionContext,
+  kind: "CL" | "CMD" = "CL"
 ): Promise<readonly number[] | undefined> {
-  if (cachedClKeywordColumns) {
-    return cachedClKeywordColumns;
+  const cached = cachedKeywordColumnsByKind.get(kind);
+  if (cached) {
+    return cached;
   }
 
   try {
@@ -102,7 +107,7 @@ export async function getClKeywordColumns(
       context.extensionUri,
       "resources",
       "navigation",
-      "cl-keyword-columns.json"
+      kind === "CMD" ? "cmd-keyword-columns.json" : "cl-keyword-columns.json"
     );
     const document = await vscode.workspace.openTextDocument(uri);
     const raw = document.getText();
@@ -110,18 +115,18 @@ export async function getClKeywordColumns(
     const columns = parseColumnsValue(parsed);
 
     if (columns.length > 0) {
-      cachedClKeywordColumns = columns;
+      cachedKeywordColumnsByKind.set(kind, columns);
       return columns;
     }
   } catch (error) {
     console.log(
-      "[rpgClSupport] failed to load CL keyword column definitions",
+      "[rpgClSupport] failed to load keyword column definitions",
       String(error)
     );
   }
 
-  cachedClKeywordColumns = [];
-  return cachedClKeywordColumns;
+  cachedKeywordColumnsByKind.set(kind, []);
+  return cachedKeywordColumnsByKind.get(kind);
 }
 
 export function parseColumnsValue(value: unknown): number[] {
