@@ -12,9 +12,10 @@ priority: 2           # cl(1) の次。設計書: docs/workflow/ibmi-dev-workflo
 
 ## P1: 自律ループ成立に必須
 
-- [ ] EVFEVENT の SQL 取得を実機確認する — `CRTBNDRPG OPTION(*EVENTF)` →
-      EVFEVENT メンバーを SELECT → `@ibm/ibmi-eventf-parser` で解析まで通す。
-      pub400 復旧後最初に実施（設計書 7 章 #1）
+- [x] EVFEVENT の取得を実機確認する — 2026-07-19 pub400(7.5) で全段確認。
+      **SQL は不可**（`RUNSQLSTM` は SQL0084 / PASE `db2` は権限なし）で
+      `CPYTOSTMF` を使う。行・桁・msgId・重大度が取れることまで確認。
+      コマンド列は skill `ibmi-remote` に、訂正は設計書 4.1 に反映
 - [ ] RPGUnit の pub400 導入可否を確認する — RPGUNIT ライブラリの導入を試み、
       `@ibm/itest` で 1 本実行する。あわせて **`RUCALLTST` の結果出力の形**を採取する
       （失敗は CPF9897 例外で伝わるため EVFEVENT とは別経路。設計書 4.2 / 7 章 #2）
