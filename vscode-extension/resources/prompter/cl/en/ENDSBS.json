@@ -1,0 +1,110 @@
+{
+  "keyword": "ENDSBS",
+  "description": "End Subsystem (ENDSBS)",
+  "parameters": [
+    {
+      "name": "SBS",
+      "description": "Subsystem",
+      "help": "Subsystem (SBS)\n\nSpecifies the name of the subsystem to be ended, or it specifies that all active subsystems are to be ended.\n\nThis is a required parameter.\n\n指定できる特殊値: *ALL",
+      "inputType": "text",
+      "required": true,
+      "attributes": {
+        "characterSet": "upper",
+        "maxLength": 10
+      },
+      "positional": 1
+    },
+    {
+      "name": "OPTION",
+      "description": "How to end",
+      "help": "How to end (OPTION)\n\nSpecifies whether jobs in the subsystem are ended in a controlled manner (ending jobs in a controlled manner lets the application programs perform end-of-job processing) or immediately.\n\nNote: The *IMMED value might cause undesirable results if data has been partially updated. This value should be used only after a controlled end has been attempted unsuccessfully.",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*CNTRLD",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*CNTRLD",
+          "value": "*CNTRLD"
+        },
+        {
+          "label": "*IMMED",
+          "value": "*IMMED"
+        }
+      ],
+      "positional": 2
+    },
+    {
+      "name": "DELAY",
+      "description": "Controlled end delay time",
+      "help": "Controlled end delay time (DELAY)\n\nSpecifies the amount of time (in seconds) that is allowed to complete the controlled subsystem end operation. If this amount of time is exceeded and the end operation is not complete, any jobs still being processed in the subsystem are ended immediately.\n\n指定できる特殊値: *NOLIMIT",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*NOLIMIT",
+      "attributes": {
+        "characterSet": "upper"
+      }
+    },
+    {
+      "name": "ENDSBSOPT",
+      "description": "End subsystem option",
+      "help": "End subsystem option (ENDSBSOPT)\n\nSpecifies the options to take when ending the active subsystems. In general, specifying these options will improve the performance of the ENDSBS command. Each option has certain side effects that you need to analyze before using that option.\n\nThis parameter has no effect on jobs that are already in the ending status.\n\nNote: Specifying *CHGPTY and *CHGTSL will reduce the impact on other active jobs on the system, but this may cause undesirable delays if there are active workstations that were allocated to the ending subsystem. It may take longer for those workstations to have their signon screens re-displayed since the job using the display must end before the workstation is ready to be allocated to another subsystem.",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*DFT",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*DFT",
+          "value": "*DFT"
+        },
+        {
+          "label": "*NOJOBLOG",
+          "value": "*NOJOBLOG"
+        },
+        {
+          "label": "*CHGPTY",
+          "value": "*CHGPTY"
+        },
+        {
+          "label": "*CHGTSL",
+          "value": "*CHGTSL"
+        }
+      ],
+      "maxOccurrences": 3
+    },
+    {
+      "name": "BCHTIMLMT",
+      "description": "Batch time limit",
+      "help": "Batch time limit (BCHTIMLMT)\n\nSpecifies the amount of time (in minutes) that the system will run in batch restricted state. This parameter is only valid when ending all subsystems from a batch job running in the controlling subsystem. Under this condition, a parameter value must be specified. When this parameter is specified, the system will be ended to the restricted state, with only the batch job running the ENDSBS command remaining active. While the system is in this restricted state, system reference code A900 3C70 is displayed. If the specified time limit is reached, the batch job will be ended and the controlling subsystem restarted. When the job ends, the controlling subsystem will start.\n\nNote: This parameter is recommended only for an application that requires no operator interaction.\n\n指定できる特殊値: *NOMAX",
+      "inputType": "text",
+      "required": false,
+      "attributes": {
+        "characterSet": "upper"
+      }
+    },
+    {
+      "name": "ABNENDDLY",
+      "description": "Abnormal end delay time",
+      "help": "Abnormal end delay time (ABNENDDLY)\n\nSpecifies the amount of time (in minutes) that is allowed for the immediate subsystem end operation to complete. If this amount of time is exceeded and the end operation is not complete, any jobs still being processed in the subsystem are ended abnormally. If a job is ended abnormally, the next system end is marked as abnormal. The delay time may be extended if there are jobs with SIGTERM handlers active that have not ended.\n\n指定できる特殊値: *NOLIMIT",
+      "inputType": "text",
+      "required": false,
+      "attributes": {
+        "characterSet": "upper"
+      }
+    }
+  ],
+  "examples": [
+    {
+      "code": "ENDSBS SBS(QBATCH) OPTION(*CNTRLD) DELAY(60)"
+    }
+  ],
+  "source": {
+    "url": "https://www.ibm.com/docs/en/ssw_ibm_i_74/cl/endsbs.htm",
+    "version": "IBM i 7.4"
+  }
+}

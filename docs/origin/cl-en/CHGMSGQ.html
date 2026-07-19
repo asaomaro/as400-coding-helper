@@ -1,0 +1,1268 @@
+<!DOCTYPE html>
+<html lang="ja"><head><meta charset="utf-8"><title>Change Message Queue  (CHGMSGQ)</title></head>
+<body>
+<main role="main"><article role="article" aria-labelledby="chgmsgq__title__1"> 
+<h1 class="topictitle1" id="chgmsgq__title__1">Change Message Queue  (CHGMSGQ)</h1><div id="lastModifiedDate"><span>Last Updated</span>: 2026-07-13</div>
+
+<div class="body">
+<p>
+<strong>Change Message Queue  (CHGMSGQ)
+</strong></p>
+
+<p>
+<strong>Where allowed to run:  
+</strong>All environments (*ALL)
+
+</p>
+
+<p>
+<strong>Threadsafe:  </strong>Yes
+</p>
+
+<p><a href="#chgmsgq__parameters">Parameters</a></p>
+
+<p><a href="#chgmsgq__examples">Examples</a></p>
+
+<p><a href="#chgmsgq__errormsgs">Error messages</a></p>
+
+<div class="div" id="chgmsgq__chgmsgq">
+<p>
+The Change Message Queue (CHGMSGQ) command changes the attributes of the specified message queue.  If the delivery mode is being changed to *BREAK or *NOTIFY and if the message queue is not already in *BREAK or *NOTIFY mode or specifically allocated to another job, it is implicitly allocated by this command.  The DLVRY, PGM, and SEV parameters are not contained in the Create Message Queue (CRTMSGQ) command, but default values are assigned to them by the system when the message queue is created.  This command can also be used to reset the status of old messages to that of new messages so they can be received again without the use of message reference keys.
+
+</p>
+
+<p>
+<strong>Restrictions:
+</strong>
+</p>
+
+<ol class="cds--list--ordered--temporary">
+<li class="cds--list__item">
+You must have use (*USE) and delete (*DLT) authorities for the queue.
+
+</li>
+
+<li class="cds--list__item">
+The message queues being changed cannot be allocated with either a *SHRRD, or *EXCL lock by another job.  If the queue is allocated by another job when the CHGMSGQ command is attempted, an error message will be sent.  One exception to this is that no lock is required when changing the CCSID of a workstation message queue.
+
+</li>
+
+<li class="cds--list__item">
+If you are changing multiple message queues with the generic support you are not allowed to change the value for the DLVRY parameter to *BREAK or to *NOTIFY.
+
+</li>
+
+<li class="cds--list__item">
+The QHST message queue has a message queue full action of *SNDMSG and this value cannot be changed. The CPF2433 message (Function not allowed for system log message queue QHST.)  is issued if the message queue full action is changed for QHST.
+
+</li>
+
+<li class="cds--list__item">
+Message queue QSYSOPR is shipped with a message queue full action of *WRAP.  If the value is changed to *SNDMSG and the queue needs to be recreated because it was damaged, the value is reset to the shipped value of *WRAP.
+
+</li>
+
+
+</ol>
+
+</div>
+<section class="section" role="region" aria-labelledby="chgmsgq__parameters__title__1" id="chgmsgq__parameters"><h2 class="sectiontitle" id="chgmsgq__parameters__title__1">Parameters</h2>
+
+
+<div class="tablenoborder"><div class="cds--data-table-container"><table summary="" class="defaultstyle cds--data-table"><colgroup><col><col><col><col></colgroup><thead>
+<tr>
+<th id="chgmsgq__parameters__entry__1"><div class="cds--table-header-label">
+Keyword
+</div></th>
+
+<th id="chgmsgq__parameters__entry__2"><div class="cds--table-header-label">
+Description
+</div></th>
+
+<th id="chgmsgq__parameters__entry__3"><div class="cds--table-header-label">
+Choices
+</div></th>
+
+<th id="chgmsgq__parameters__entry__4"><div class="cds--table-header-label">
+Notes
+</div></th>
+
+</tr>
+
+</thead>
+<tbody>
+<tr>
+<td rowspan="3" headers="chgmsgq__parameters__entry__1 "><a href="#chgmsgq__msgq"><strong>MSGQ
+</strong></a></td>
+
+<td headers="chgmsgq__parameters__entry__2 ">Message queue
+</td>
+
+<td headers="chgmsgq__parameters__entry__3 ">Single values: *USRPRF, *WRKSTN
+
+Other values: 
+<em>Qualified object name
+</em></td>
+
+<td rowspan="3" headers="chgmsgq__parameters__entry__4 ">Required, Positional 1
+</td>
+
+</tr>
+
+<tr>
+<td headers="chgmsgq__parameters__entry__2 ">Qualifier 1: Message queue
+</td>
+
+<td headers="chgmsgq__parameters__entry__3 "><em>Generic name, name
+</em>, *ALL
+</td>
+
+</tr>
+
+<tr>
+<td headers="chgmsgq__parameters__entry__2 ">Qualifier 2: Library
+</td>
+
+<td headers="chgmsgq__parameters__entry__3 "><em>Name
+</em>, 
+<strong><u>*LIBL
+</u></strong>, *CURLIB, *USRLIBL, *ALLUSR, *ALL
+</td>
+
+</tr>
+
+<tr>
+<td headers="chgmsgq__parameters__entry__1 "><a href="#chgmsgq__dlvry"><strong>DLVRY
+</strong></a></td>
+
+<td headers="chgmsgq__parameters__entry__2 ">Delivery
+</td>
+
+<td headers="chgmsgq__parameters__entry__3 "><strong><u>*SAME
+</u></strong>, *HOLD, *BREAK, *NOTIFY, *DFT
+</td>
+
+<td headers="chgmsgq__parameters__entry__4 ">Optional, Positional 2
+</td>
+
+</tr>
+
+<tr>
+<td headers="chgmsgq__parameters__entry__1 "><a href="#chgmsgq__sev"><strong>SEV
+</strong></a></td>
+
+<td headers="chgmsgq__parameters__entry__2 ">Severity code filter
+</td>
+
+<td headers="chgmsgq__parameters__entry__3 ">0-99, 
+<strong><u>*SAME
+</u></strong></td>
+
+<td headers="chgmsgq__parameters__entry__4 ">Optional, Positional 4
+</td>
+
+</tr>
+
+<tr>
+<td headers="chgmsgq__parameters__entry__1 "><a href="#chgmsgq__text"><strong>TEXT
+</strong></a></td>
+
+<td headers="chgmsgq__parameters__entry__2 ">Text 'description'
+</td>
+
+<td headers="chgmsgq__parameters__entry__3 "><em>Character value
+</em>, 
+<strong><u>*SAME
+</u></strong>, *BLANK
+</td>
+
+<td headers="chgmsgq__parameters__entry__4 ">Optional
+</td>
+
+</tr>
+
+<tr>
+<td rowspan="5" headers="chgmsgq__parameters__entry__1 "><a href="#chgmsgq__pgm"><strong>PGM
+</strong></a></td>
+
+<td headers="chgmsgq__parameters__entry__2 ">Break handling attributes
+</td>
+
+<td headers="chgmsgq__parameters__entry__3 ">Single values: 
+<strong><u>*SAME
+</u></strong>, *DSPMSG
+
+Other values: 
+<em>Element list
+</em></td>
+
+<td rowspan="5" headers="chgmsgq__parameters__entry__4 ">Optional, Positional 3
+</td>
+
+</tr>
+
+<tr>
+<td headers="chgmsgq__parameters__entry__2 ">Element 1: Break handling program
+</td>
+
+<td headers="chgmsgq__parameters__entry__3 "><em>Qualified object name
+</em></td>
+
+</tr>
+
+<tr>
+<td headers="chgmsgq__parameters__entry__2 ">Qualifier 1: Break handling program
+</td>
+
+<td headers="chgmsgq__parameters__entry__3 "><em>Name
+</em></td>
+
+</tr>
+
+<tr>
+<td headers="chgmsgq__parameters__entry__2 ">Qualifier 2: Library
+</td>
+
+<td headers="chgmsgq__parameters__entry__3 "><em>Name
+</em>, 
+<strong><u>*LIBL
+</u></strong>, *CURLIB
+</td>
+
+</tr>
+
+<tr>
+<td headers="chgmsgq__parameters__entry__2 ">Element 2: Allow other jobs to reply
+</td>
+
+<td headers="chgmsgq__parameters__entry__3 "><strong><u>*NOALWRPY
+</u></strong>, *ALWRPY
+</td>
+
+</tr>
+
+<tr>
+<td headers="chgmsgq__parameters__entry__1 "><a href="#chgmsgq__reset"><strong>RESET
+</strong></a></td>
+
+<td headers="chgmsgq__parameters__entry__2 ">Reset old messages
+</td>
+
+<td headers="chgmsgq__parameters__entry__3 "><strong><u>*NO
+</u></strong>, *YES
+</td>
+
+<td headers="chgmsgq__parameters__entry__4 ">Optional
+</td>
+
+</tr>
+
+<tr>
+<td headers="chgmsgq__parameters__entry__1 "><a href="#chgmsgq__force"><strong>FORCE
+</strong></a></td>
+
+<td headers="chgmsgq__parameters__entry__2 ">Force to auxiliary storage
+</td>
+
+<td headers="chgmsgq__parameters__entry__3 "><strong><u>*SAME
+</u></strong>, *NO, *YES
+</td>
+
+<td headers="chgmsgq__parameters__entry__4 ">Optional
+</td>
+
+</tr>
+
+<tr>
+<td headers="chgmsgq__parameters__entry__1 "><a href="#chgmsgq__alwalr"><strong>ALWALR
+</strong></a></td>
+
+<td headers="chgmsgq__parameters__entry__2 ">Allow alerts
+</td>
+
+<td headers="chgmsgq__parameters__entry__3 "><strong><u>*SAME
+</u></strong>, *NO, *YES
+</td>
+
+<td headers="chgmsgq__parameters__entry__4 ">Optional
+</td>
+
+</tr>
+
+<tr>
+<td headers="chgmsgq__parameters__entry__1 "><a href="#chgmsgq__ccsid"><strong>CCSID
+</strong></a></td>
+
+<td headers="chgmsgq__parameters__entry__2 ">Coded character set ID
+</td>
+
+<td headers="chgmsgq__parameters__entry__3 ">1-65535, 
+<strong><u>*SAME
+</u></strong>, *MSG, *HEX, *JOB
+</td>
+
+<td headers="chgmsgq__parameters__entry__4 ">Optional
+</td>
+
+</tr>
+
+<tr>
+<td headers="chgmsgq__parameters__entry__1 "><a href="#chgmsgq__msgqfull"><strong>MSGQFULL
+</strong></a></td>
+
+<td headers="chgmsgq__parameters__entry__2 ">Message queue full action
+</td>
+
+<td headers="chgmsgq__parameters__entry__3 "><strong><u>*SAME
+</u></strong>, *SNDMSG, *WRAP
+</td>
+
+<td headers="chgmsgq__parameters__entry__4 ">Optional
+</td>
+
+</tr>
+
+</tbody>
+</table></div>
+</div>
+
+<div class="div" id="chgmsgq__msgq">
+<p>
+<strong>Message queue (MSGQ)
+</strong></p>
+
+<p>
+Specifies the name of the message queue whose attributes are being changed.
+
+</p>
+
+<p>
+This is a required parameter.
+
+</p>
+
+<p>
+<strong>Single values
+</strong>
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong>*WRKSTN
+</strong></dt>
+
+<dd class="dlentry">
+The attributes of the work station's message queue are being changed.  (This parameter is not valid for a batch job.)
+</dd>
+
+<dt class="dlterm">
+<strong>*USRPRF
+</strong></dt>
+
+<dd class="dlentry">
+The attributes of the message queue associated with the currrent user profile are being changed.
+</dd>
+
+</dl>
+
+<p>
+<strong>Qualifier 1: Message queue
+</strong>
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong>*ALL
+</strong></dt>
+
+<dd class="dlentry">
+All message queues in the libraries identified in the library qualifier are changed.
+</dd>
+
+<dt class="dlterm">
+<strong><em>generic*-message-queue-name
+</em></strong></dt>
+
+<dd class="dlentry">
+Specify the generic name of the message queue whose attributes are being changed.  A generic name is a character string of one or more characters followed by an asterisk (*); for example, ABC*.  The asterisk (*) is a substitute for any valid character.  A generic name specifies all objects with names that begin with the generic prefix for which the user has authority.  If an asterisk is not included with the generic (prefix) name, the system assumes it to be the complete object name.  If the complete object name is specified and the library qualifier is *USRLIBL, *ALL, or *ALLUSR, all message queues of the specified name are changed.
+</dd>
+
+<dt class="dlterm">
+<strong><em>name
+</em></strong></dt>
+
+<dd class="dlentry">
+Specify the name of the message queue whose attributes are to be changed.
+</dd>
+
+</dl>
+
+<p>
+<strong>Qualifier 2: Library
+</strong>
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><u>*LIBL
+</u></strong></dt>
+
+<dd class="dlentry">
+All libraries in the library list for the current thread are searched until the first match is found.
+</dd>
+
+</dl>
+
+<dl>
+<dt class="dlterm">
+<strong>*CURLIB
+</strong></dt>
+
+<dd class="dlentry">
+The current library for the job is used to locate the message queue.  If no current library entry exists in the library list, QGPL is used.
+</dd>
+
+<dt class="dlterm">
+<strong>*USRLIBL
+</strong></dt>
+
+<dd class="dlentry">
+Only the libraries in the user portion of the thread's library list are searched.
+</dd>
+
+</dl>
+
+<dl>
+<dt class="dlterm">
+<strong>*ALL
+</strong></dt>
+
+<dd class="dlentry">
+All libraries in the system, including QSYS, are searched.
+</dd>
+
+</dl>
+
+<dl>
+<dt class="dlterm">
+<strong>*ALLUSR
+</strong></dt>
+
+<dd class="dlentry">
+All user libraries are searched.  All libraries with names that do not begin with the letter Q are searched except for the following:
+<div class="p">
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>
+#CGULIB     #DSULIB     #SEULIB
+#COBLIB     #RPGLIB
+#DFULIB     #SDALIB
+
+</code></pre></div><div class="docs--copy-btn"></div></div>
+
+</div>
+
+<p>
+Although the following Qxxx libraries are provided by IBM, they typically contain user data that changes frequently.  Therefore, these libraries are considered user libraries and are also searched:
+
+</p>
+
+<div class="p">
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>
+QDSNX       QRCLxxxxx   QUSRDIRDB   QUSRVI
+QGPL        QSRVAGT     QUSRIJS     QUSRVxRxMx
+QGPL38      QSYS2       QUSRINFSKR  QWQCENT
+QMGTC       QSYS2xxxxx  QUSRNOTES   QWQREPOS
+QMGTC2      QS36F       QUSROND
+QMPGDATA    QUSER38     QUSRPOSGS
+QMQMDATA    QUSRADSM    QUSRPOSSA
+QMQMPROC    QUSRBRM     QUSRPYMSVR
+QPFRDATA    QUSRDIRCF   QUSRRDARS
+QRCL        QUSRDIRCL   QUSRSYS
+
+</code></pre></div><div class="docs--copy-btn"></div></div>
+
+</div>
+
+<ol class="cds--list--ordered--temporary">
+<li class="cds--list__item">
+'xxxxx' is the number of a primary auxiliary storage pool (ASP).
+
+</li>
+
+<li class="cds--list__item">
+A different library name, in the format QUSRVxRxMx, can be created by the user for each previous release supported by IBM to contain any user commands to be compiled in a CL program for the previous release.  For the QUSRVxRxMx user library, VxRxMx is the version, release, and modification level of a previous release that IBM continues to support.
+
+</li>
+
+
+</ol>
+
+</dd>
+
+</dl>
+
+<dl>
+<dt class="dlterm">
+<strong><em>name
+</em></strong></dt>
+
+<dd class="dlentry">
+Specify the library where the message queue is located.
+</dd>
+
+</dl>
+
+</div>
+<div class="div" id="chgmsgq__dlvry">
+<p>
+<strong>Delivery (DLVRY)
+</strong></p>
+
+<p>
+Specifies how the messages that are sent to this message queue are delivered.  The method of delivery is in effect only as long as the message queue is allocated to the job.  When the queue is no longer allocated, the delivery mode is changed to *HOLD for work station, system operator, and user message queues.  However, if *DFT is specified for a system operator or user message queue, the delivery mode remains *DFT.
+
+</p>
+
+<p>
+<strong>Note:     
+</strong>When the delivery mode of a message queue is changed to *BREAK or *NOTIFY, the message queue is allocated with an *EXCL lock.  The *EXCL lock will remain on the queue until the delivery mode is changed to *HOLD or *DFT, or the job that contains the lock on the queue ends.
+
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><u>*SAME
+</u></strong></dt>
+
+<dd class="dlentry">
+The method of message delivery is not changed.  If this parameter has not been changed in a previous command, *SAME means that *HOLD is the method of delivery.  However, if the specified message queue is a display station message queue, it is automatically changed to *NOTIFY by the system at sign-on.
+</dd>
+
+<dt class="dlterm">
+<strong>*HOLD
+</strong></dt>
+
+<dd class="dlentry">
+The messages are held in the message queue until they are requested by the user or program.  The display station user uses the Display Messages (DSPMSG) command to show the messages.  A program must issue a Receive Message (RCVMSG) command to receive a message and handle it.
+</dd>
+
+<dt class="dlterm">
+<strong>*BREAK
+</strong></dt>
+
+<dd class="dlentry">
+When a message arrives at the message queue, the job to which the message queue is allocated is interrupted, and the program specified for the 
+<strong>Break handling program (PGM)
+</strong> parameter is called, or the Display Message (DSPMSG) command is processed.  If the job is an interactive job, the audible alarm is sounded (if installed).  The delivery mode cannot be changed to *BREAK if the message queue is also being used by another job.
+<p>
+When changing to *BREAK mode, if a program name is not specified or if PGM(*SAME) is specified the PGM parameter defaults to *DSPMSG for the break program and *ALWRPY for the allow other jobs to reply attribute.
+
+</p>
+
+</dd>
+
+<dt class="dlterm">
+<strong>*NOTIFY
+</strong></dt>
+
+<dd class="dlentry">
+When a message arrives at the message queue, an interactive job to which the message queue is allocated is notified by the message light turning on and a buzzer sounding (if you have that feature).  For batch jobs, no notification occurs; the message is simply held in the queue (the same as for *HOLD).  The delivery mode cannot be changed to *NOTIFY if the message queue is also being used by another job.
+</dd>
+
+<dt class="dlterm">
+<strong>*DFT
+</strong></dt>
+
+<dd class="dlentry">
+Messages requiring replies are answered with their default reply.  If no default reply is specified in the message description of the inquiry message, the system default reply, *N, is used.  No messages are added to the message queue unless the message queue is QSYSOPR.
+</dd>
+
+</dl>
+
+</div>
+<div class="div" id="chgmsgq__sev">
+<p>
+<strong>Severity code filter (SEV)
+</strong></p>
+
+<p>
+Specifies the lowest severity level that a message can have and still be delivered to a user in break or notify mode.  Messages arriving at the message queue whose severities are lower than that specified here do not interrupt the job or turn on the audible alarm or the Message Waiting light; they are held in the queue until they are displayed by the Display Message (DSPMSG) command.  If *BREAK or *NOTIFY is specified on the DLVRY parameter, and is in effect when a message arrives at the queue, the message is delivered if the severity code associated with the message is equal to or greater than the value specified here.  Otherwise, the message is held in the queue until it is requested.
+
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><u>*SAME
+</u></strong></dt>
+
+<dd class="dlentry">
+The severity code is not changed.
+</dd>
+
+<dt class="dlterm">
+<strong><em>severity-code
+</em></strong></dt>
+
+<dd class="dlentry">
+Specify a value, 0 through 99, that specifies the lowest severity code that a message can have and still be delivered to a user if the message queue is in break or notify delivery mode.
+</dd>
+
+</dl>
+
+</div>
+<div class="div" id="chgmsgq__text">
+<p>
+<strong>Text 'description' (TEXT)
+</strong></p>
+
+<p>
+Specifies the user-defined text that describes the message queue.  The text specified here replaces any previous text.
+
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><u>*SAME
+</u></strong></dt>
+
+<dd class="dlentry">
+The text is not changed.
+</dd>
+
+<dt class="dlterm">
+<strong>*BLANK
+</strong></dt>
+
+<dd class="dlentry">
+No text is specified.
+</dd>
+
+<dt class="dlterm">
+<strong><em>'description'
+</em></strong></dt>
+
+<dd class="dlentry">
+Specify no more than 50 characters, enclosed in apostrophes.
+</dd>
+
+</dl>
+
+</div>
+<div class="div" id="chgmsgq__pgm">
+<p>
+<strong>Break handling attributes (PGM)
+</strong></p>
+
+<p>
+Two elements are used to specify the program parameter. The first element specifies the program called when a message arrives at the message queue and break delivery has been specified.  The second element indicates whether or not to allow other jobs to reply to messages on the message queue when it is placed in *BREAK delivery mode with a break handling program other than *DSPMSG specified.
+
+</p>
+
+<p>
+Because the QSYSOPR message queue receives messages that require manual operator action, only *DSPMSG should be specified or assumed if the message queue being changed is QSYSOPR.
+
+</p>
+
+<p>
+The following parameters are passed to the program:
+
+</p>
+
+<ul class="cds--list--unordered">
+<li class="cds--list__item">
+Message queue name (10 characters).  The name of the message queue to which the message was sent.
+
+</li>
+
+<li class="cds--list__item">
+Library name (10 characters).  The name of the library containing the message queue.
+
+</li>
+
+<li class="cds--list__item">
+Message reference key (4 characters).  The reference key of the message sent to the message queue.
+
+</li>
+
+</ul>
+
+<p>
+<strong>Single values
+</strong>
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><u>*SAME
+</u></strong></dt>
+
+<dd class="dlentry">
+The same program, if any, is called.  (If this parameter has not been changed previously in another Change Message Queue (CHGMSGQ) command, *SAME means that *DSPMSG and *ALWRPY are assumed.)  When changing to *BREAK mode and if this parameter is not specified or if *SAME is specified, then the break program defaults to *DSPMSG and the allow other jobs to reply value is set to *ALWRPY.
+</dd>
+
+<dt class="dlterm">
+<strong>*DSPMSG
+</strong></dt>
+
+<dd class="dlentry">
+The Display Message (DSPMSG command) is processed when a message arrives for break delivery and the allow other jobs to reply value is set to *ALWRPY.  For interactive jobs, the messages are shown on the display.  At the display station, the audible alarm is sounded (if installed) and the Message Waiting light is turned on.  For batch jobs, the message is sent to a spooled printer file.
+</dd>
+
+</dl>
+
+<p>
+<strong>Element 1: Break handling program
+</strong>
+</p>
+
+<p>
+Specify the program that is called when a message arrives for break delivery.
+
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong></strong></dt>
+
+<dd class="dlentry">
+<p>
+<strong>Qualifier 1: Break handling program
+</strong>
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><em>name
+</em></strong></dt>
+
+<dd class="dlentry">
+Specify the name of the program to be called.
+</dd>
+
+</dl>
+
+</dd>
+
+<dt class="dlterm">
+<strong></strong></dt>
+
+<dd class="dlentry">
+<p>
+<strong>Qualifier 2: Library
+</strong>
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><u>*LIBL
+</u></strong></dt>
+
+<dd class="dlentry">
+All libraries in the library list for the current thread are searched until the first match is found.
+</dd>
+
+</dl>
+
+<dl>
+<dt class="dlterm">
+<strong>*CURLIB
+</strong></dt>
+
+<dd class="dlentry">
+The current library for the job is used to locate the program.  If no current library entry exists in the library list, QGPL is used.
+</dd>
+
+<dt class="dlterm">
+<strong><em>name
+</em></strong></dt>
+
+<dd class="dlentry">
+Specify the library where the program is located.
+</dd>
+
+</dl>
+
+</dd>
+
+</dl>
+
+<p>
+<strong>Element 2: Allow other jobs to reply
+</strong>
+</p>
+
+<p>
+Specifies whether other jobs can reply to inquiry messages on the message queue when it is placed in *BREAK delivery mode with a break handling program other than *DSPMSG specified.  If *DSPMSG is specified for the break handling program then *ALWRPY is assumed for this attribute.  If QMHDSMSS is specified for the break handling program in a library other than QSYS, then *ALWRPY will also be assumed for this attribute unless *NOALWRPY is explicitly specified.
+
+</p>
+
+<p>
+<strong>Note:
+</strong> If a value is specified for this element, you must also specify a break handling program for element 1 of this parameter.
+
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><u>*NOALWRPY
+</u></strong></dt>
+
+<dd class="dlentry">
+When the message queue is in *BREAK mode with a break handling program other than *DSPMSG specified, other jobs can display the message queue, but cannot reply to inquiry messages on the message queue.
+</dd>
+
+<dt class="dlterm">
+<strong>*ALWRPY
+</strong></dt>
+
+<dd class="dlentry">
+When the message queue is in *BREAK mode with a break handling program other than *DSPMSG specified, other jobs can reply to inquiry messages on the message queue.
+</dd>
+
+</dl>
+
+</div>
+<div class="div" id="chgmsgq__reset">
+<p>
+<strong>Reset old messages (RESET)
+</strong></p>
+
+<p>
+Specifies whether old messages (messages that have been received once and were not removed from the message queue) held in the message queue are reset to the new message status.  The messages can then be received in first-in, first-out (FIFO) order as they were originally.  This parameter applies only to messages received by a program; it does not affect message displays. If all messages are being cleared, refer to the RMVMSG (Remove Message) command description.
+
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><u>*NO
+</u></strong></dt>
+
+<dd class="dlentry">
+Old messages in the message queue are not reset to new message status.  To receive an old message, reply to it, or remove it, you must enter the message reference key.
+</dd>
+
+<dt class="dlterm">
+<strong>*YES
+</strong></dt>
+
+<dd class="dlentry">
+All messages in the message queue, except inquiry messages that have been sent a reply, are reset to the new message status.  These messages can then be received as new messages in the same order that they were sent to the message queue.
+</dd>
+
+</dl>
+
+</div>
+<div class="div" id="chgmsgq__force">
+<p>
+<strong>Force to auxiliary storage (FORCE)
+</strong></p>
+
+<p>
+Specifies whether changes made to the message queue description or messages added to or removed from the queue are immediately forced into auxiliary storage; this ensures that changes to the queue, or messages sent or received, are not lost if a system failure occurs.
+
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><u>*SAME
+</u></strong></dt>
+
+<dd class="dlentry">
+The value specified in the referred to message queue is not changed.
+</dd>
+
+<dt class="dlterm">
+<strong>*NO
+</strong></dt>
+
+<dd class="dlentry">
+Changes made to the message queue, including its messages, are not immediately forced to auxiliary storage.
+</dd>
+
+<dt class="dlterm">
+<strong>*YES
+</strong></dt>
+
+<dd class="dlentry">
+All changes to the message queue description and to the messages in the queue are immediately forced to auxiliary storage.  Warning: This could result in program performance problems.
+</dd>
+
+</dl>
+
+</div>
+<div class="div" id="chgmsgq__alwalr">
+<p>
+<strong>Allow alerts (ALWALR)
+</strong></p>
+
+<p>
+Specifies whether the queue being changed allows alerts to be generated from alert messages that are sent to it.
+
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><u>*SAME
+</u></strong></dt>
+
+<dd class="dlentry">
+The value is not changed.
+</dd>
+
+<dt class="dlterm">
+<strong>*NO
+</strong></dt>
+
+<dd class="dlentry">
+Does not allow alerts to be generated from this message queue.
+</dd>
+
+<dt class="dlterm">
+<strong>*YES
+</strong></dt>
+
+<dd class="dlentry">
+Allows alerts to be generated from this message queue.
+</dd>
+
+</dl>
+
+</div>
+<div class="div" id="chgmsgq__ccsid">
+<p>
+<strong>Coded character set ID (CCSID)
+</strong></p>
+
+<p>
+Specifies the coded character set identifier (CCSID) associated with this message queue.  This applies only to immediate messages and message data that is defined as a character field that can be converted (*CCHAR).
+
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><u>*SAME
+</u></strong></dt>
+
+<dd class="dlentry">
+The value is not changed.
+</dd>
+
+<dt class="dlterm">
+<strong>*HEX
+</strong></dt>
+
+<dd class="dlentry">
+Messages sent, received, or displayed from this message queue are not converted.  The message queue CCSID is 65535.
+</dd>
+
+<dt class="dlterm">
+<strong>*MSG
+</strong></dt>
+
+<dd class="dlentry">
+Messages sent to this message queue are not converted.  The CCSID specified by the sending job is saved in case a conversion is needed for a display or receive function.  The message queue CCSID is 65534.
+</dd>
+
+<dt class="dlterm">
+<strong>*JOB
+</strong></dt>
+
+<dd class="dlentry">
+The CCSID of the message queue is changed to the CCSID of the job running this command.
+</dd>
+
+<dt class="dlterm">
+<strong><em>coded-character-set-identifier
+</em></strong></dt>
+
+<dd class="dlentry">
+Specify the CCSID associated with this message queue.  Messages sent to this message queue are converted to this CCSID.  Valid values range from 1 through 65535.  See the i5/OS globalization topic collection in the IBM i Information Center at http://www.ibm.com/systems/i/infocenter/ for a list of valid CCSID values.
+<p>
+<strong>Note:     
+</strong>When changing the CCSID of a message queue, the messages on the queue are not converted and the CCSID associated with each individual message is not changed.  If the message queue is changed back to *MSG the original CCSID of each message is then used.
+
+</p>
+
+<p>
+Changing the CCSID of a message queue that already has messages on it can cause unpredictable results.  This can occur when the encoding of the messages does not match the CCSID you specify.  Only change the CCSID of a message queue when the CCSID of a message queue does not match the encoding of the messages on it.
+
+</p>
+
+<p>
+For more information on the message handler and its use of CCSIDs, see the i5/OS globalization topic collection in the IBM i Information Center at http://www.ibm.com/systems/i/infocenter/.
+
+</p>
+
+</dd>
+
+</dl>
+
+</div>
+<div class="div" id="chgmsgq__msgqfull">
+<p>
+<strong>Message queue full action (MSGQFULL)
+</strong></p>
+
+<p>
+Specifies the action to take when the message queue is full.
+
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><u>*SAME
+</u></strong></dt>
+
+<dd class="dlentry">
+The value does not change.
+</dd>
+
+</dl>
+
+<dl>
+<dt class="dlterm">
+<strong>*SNDMSG
+</strong></dt>
+
+<dd class="dlentry">
+When the message queue is full, CPF2460 (Message queue could not be extended.) is sent to the program or user that is sending a message to the full message queue.
+</dd>
+
+<dt class="dlterm">
+<strong>*WRAP
+</strong></dt>
+
+<dd class="dlentry">
+When the message queue is full, the oldest informational and answered messages are removed from the message queue to allow space for new messages to be added.  If the removing of the informational and answered messages does not provide enough space to add the requested message, then unanswered inquiry messages are removed until there is space to add the requested message.  The default reply is sent before an unanswered inquiry message is removed.  When the message queue is wrapped, CPI2420 or CPI2421 is sent to the queue that was full to indicate it was wrapped.  If there is no space on the queue to send these messages they are sent to the joblog of the user that was sending the message to the queue and they are sent to QHST if the full queue was QSYSOPR.
+<p>
+<strong>NOTE:
+</strong> When a queue uses *WRAP and a job sends a message to the queue that causes a wrap, messages are removed for the following conditions in order to perform the wrap:
+
+</p>
+
+<ul class="cds--list--unordered">
+<li class="cds--list__item">
+the queue is in break or notify mode for a job
+
+</li>
+
+<li class="cds--list__item">
+a job is in a message wait state because it did a receive function on the queue with a wait time specified
+
+</li>
+
+<li class="cds--list__item">
+the queue is allocated by a job via the ALCOBJ command
+
+</li>
+
+</ul>
+
+<p>
+Only the system wrap function can remove messages from queues in these conditions.  Other jobs still are not allowed to remove messages from the queues during these conditions.  With *SNDMSG, these conditions do not allow another job to remove messages from the queue.
+
+</p>
+
+<p>
+Also when a queue specifies *WRAP and it is in break mode, the wrap function only removes messages that have been received by the break-handling program.  For example, if the break-handling program did not receive all messages from the queue and it was becoming full, CPF2460 could be issued because messages could not be removed to perform the wrap.
+
+</p>
+
+</dd>
+
+</dl>
+
+</div>
+</section>
+
+<section class="section" role="region" aria-labelledby="chgmsgq__examples__title__1" id="chgmsgq__examples"><h2 class="sectiontitle" id="chgmsgq__examples__title__1">Examples</h2>
+
+<p>
+<strong>Example 1: Changing Method of Delivery to Notify Mode
+</strong>
+</p>
+
+<div class="p">
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>
+CHGMSGQ   MSGQ(JONES)  DLVRY(*NOTIFY)
+
+</code></pre></div><div class="docs--copy-btn"></div></div>
+
+</div>
+
+<p>
+This command changes the method of delivery of the message queue named JONES to notify mode. The user is immediately notified by the attention light and audible alarm (if installed) when a message has been sent to his queue.
+
+</p>
+
+<p>
+<strong>Example 2: Changing Method of Delivery to Break Mode
+</strong>
+</p>
+
+<div class="p">
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>
+CHGMSGQ   MSGQ(INV)  DLVRY(*BREAK)  PGM(INVUPDT)
+
+</code></pre></div><div class="docs--copy-btn"></div></div>
+
+</div>
+
+<p>
+This command changes the delivery mode of the message queue named INV to *BREAK and calls a program named INVUPDT when a message arrives at INV. Other jobs will not be allowed to reply to inquiry messages on message queue INV.
+
+</p>
+
+</section>
+
+<section class="section" role="region" aria-labelledby="chgmsgq__errormsgs__title__1" id="chgmsgq__errormsgs"><h2 class="sectiontitle" id="chgmsgq__errormsgs__title__1">Error messages</h2>
+
+<p>
+<strong><u>*ESCAPE Messages
+</u></strong>
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong>CPF2401
+</strong></dt>
+
+<dd class="dlentry">
+Not authorized to library &amp;1.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF2403
+</strong></dt>
+
+<dd class="dlentry">
+Message queue &amp;1 in &amp;2 not found.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF2406
+</strong></dt>
+
+<dd class="dlentry">
+Authority error occurred on call to break program &amp;1 in &amp;2 for message queue &amp;3 in &amp;4.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF2408
+</strong></dt>
+
+<dd class="dlentry">
+Not authorized to message queue &amp;1.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF2437
+</strong></dt>
+
+<dd class="dlentry">
+MSGQ(*WRKSTN) not allowed unless done interactively.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF244E
+</strong></dt>
+
+<dd class="dlentry">
+The delivery specified is not valid with a generic message queue
+</dd>
+
+<dt class="dlterm">
+<strong>CPF2446
+</strong></dt>
+
+<dd class="dlentry">
+Delivery mode specified not valid for system log message queue.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF2450
+</strong></dt>
+
+<dd class="dlentry">
+Work station message queue &amp;1 not allocated to job.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF2451
+</strong></dt>
+
+<dd class="dlentry">
+Message queue &amp;1 is allocated to another job.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF247E
+</strong></dt>
+
+<dd class="dlentry">
+CCSID &amp;1 is not valid.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF2477
+</strong></dt>
+
+<dd class="dlentry">
+Message queue &amp;1 currently in use.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF2485
+</strong></dt>
+
+<dd class="dlentry">
+Number of parameters for break program &amp;1 in &amp;2 message queue &amp;3 in &amp;4 not valid.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF2507
+</strong></dt>
+
+<dd class="dlentry">
+MODE(*NOTIFY) not allowed in batch mode.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF2522
+</strong></dt>
+
+<dd class="dlentry">
+Break program &amp;1 in &amp;2 for message queue &amp;3 in &amp;4 cannot be called.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF2534
+</strong></dt>
+
+<dd class="dlentry">
+MSGQ(*USRPRF) specified and no msg queue with user profile.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF8127
+</strong></dt>
+
+<dd class="dlentry">
+&amp;8 damage on message queue &amp;4 in &amp;9. VLIC log-&amp;7.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF8176
+</strong></dt>
+
+<dd class="dlentry">
+Message queue for device description &amp;4 damaged.
+</dd>
+
+</dl>
+
+</section>
+
+</div>
+
+</article></main>
+</body></html>

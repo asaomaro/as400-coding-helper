@@ -1,0 +1,165 @@
+{
+  "keyword": "CHGWTR",
+  "description": "Change Writer (CHGWTR)",
+  "parameters": [
+    {
+      "name": "WTR",
+      "description": "Writer",
+      "help": "Writer (WTR)\n\nSpecifies the printer writer being changed.\n\nThis is a required parameter.\n\n指定できる特殊値: *SYSVAL",
+      "inputType": "text",
+      "required": true,
+      "attributes": {
+        "characterSet": "upper",
+        "maxLength": 10
+      },
+      "positional": 1
+    },
+    {
+      "name": "OUTQ",
+      "description": "Output queue",
+      "help": "Output queue (OUTQ)\n\nSpecifies the output queue which this writer will use to process spooled files. The output queue must be available before the writer is changed. If the output queue is in a primary or secondary auxiliary storage pool, the output queue must be in the library name space of the writer job.\n\nSingle values\n\nQualifier 1: Output queue\n\nQualifier 2: Library",
+      "inputType": "group",
+      "required": false,
+      "groupKind": "qualified",
+      "singleValues": [
+        "*SAME",
+        "*DEV"
+      ],
+      "children": [
+        {
+          "name": "LIB",
+          "description": "Library",
+          "help": "指定できる特殊値: *LIBL, *CURLIB",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "*LIBL",
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          }
+        },
+        {
+          "name": "OUTQ",
+          "description": "Output queue",
+          "inputType": "text",
+          "required": false,
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          },
+          "defaultValue": "*SAME"
+        }
+      ],
+      "positional": 2
+    },
+    {
+      "name": "FORMTYPE",
+      "description": "Form type options",
+      "help": "Form type options (FORMTYPE)\n\nSpecifies the form type to be used when processing output for the writer. A file's form type is originally derived from the form type that was used to produce the spooled file.\n\nNote: The form load message is issued when the spooled file to be printed has a form type different from the form type of the last spooled file that was printed on the device. The last form type printed is kept from the last STRPRTWTR, CHGWTR, or VRYCFG command issued.\n\nConsider the following example:\n\nThe form load message would be issued if a spooled file with the form type XYZ were actually printed on PRT01.\n\nElement 1: Form type\n\nElement 2: Message option",
+      "inputType": "group",
+      "required": false,
+      "groupKind": "elements",
+      "children": [
+        {
+          "name": "FORMTYPE_E1",
+          "description": "Form type",
+          "help": "指定できる特殊値: *SAME, *ALL, *STD, *FORMS",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "*SAME",
+          "attributes": {
+            "characterSet": "upper"
+          }
+        },
+        {
+          "name": "FORMTYPE_E2",
+          "description": "Message option",
+          "inputType": "dropdown",
+          "required": false,
+          "defaultValue": "*SAME",
+          "attributes": {
+            "characterSet": "upper"
+          },
+          "options": [
+            {
+              "label": "*SAME",
+              "value": "*SAME"
+            },
+            {
+              "label": "*INQMSG",
+              "value": "*INQMSG"
+            },
+            {
+              "label": "*MSG",
+              "value": "*MSG"
+            },
+            {
+              "label": "*NOMSG",
+              "value": "*NOMSG"
+            },
+            {
+              "label": "*INFOMSG",
+              "value": "*INFOMSG"
+            }
+          ]
+        }
+      ],
+      "positional": 3
+    },
+    {
+      "name": "FILESEP",
+      "description": "File separators",
+      "help": "File separators (FILESEP)\n\nSpecifies the number of file separator pages to print before each file.\n\n指定できる特殊値: *SAME, *FILE",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*SAME",
+      "attributes": {
+        "characterSet": "upper"
+      }
+    },
+    {
+      "name": "SEPDRAWER",
+      "description": "Drawer for separators",
+      "help": "Drawer for separators (SEPDRAWER)\n\nSpecifies which paper drawer is selected for printing separators.\n\nNote: For some printers, SEPDRAWER(3) implies an envelope drawer.\n\n指定できる特殊値: *SAME, *DEVD, *FILE",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*SAME",
+      "attributes": {
+        "characterSet": "upper"
+      }
+    },
+    {
+      "name": "OPTION",
+      "description": "When to change writer",
+      "help": "When to change writer (OPTION)\n\nSpecifies when the change occurs.",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*NORDYF",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*NORDYF",
+          "value": "*NORDYF"
+        },
+        {
+          "label": "*FILEEND",
+          "value": "*FILEEND"
+        }
+      ]
+    }
+  ],
+  "examples": [
+    {
+      "code": "CHGWTR PRT01 FORMTYPE(XYZ)"
+    },
+    {
+      "code": "CHGWTR WTR(MYWTR) FORMTYPE(MYFORM *NOMSG) OPTION(*FILEEND)"
+    }
+  ],
+  "source": {
+    "url": "https://www.ibm.com/docs/en/ssw_ibm_i_74/cl/chgwtr.htm",
+    "version": "IBM i 7.4"
+  }
+}

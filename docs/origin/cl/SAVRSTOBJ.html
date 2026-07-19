@@ -1,0 +1,1390 @@
+<!DOCTYPE html>
+<html lang="ja"><head><meta charset="utf-8"><title>オブジェクトの保管復元  (SAVRSTOBJ)</title></head>
+<body>
+<div role="main">
+<script type="text/javascript" src="../rzahg/synch.js"></script>
+<a name="SAVRSTOBJ.Top_Of_Page"></a>
+<h1>オブジェクトの保管復元  (SAVRSTOBJ)</h1><div id="lastModifiedDate"><span>Last Updated</span>: 2021-04-13</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table0" width="100%" class="cds--data-table">
+<tbody><tr>
+<td class="valigntop alignleft"><strong>実行可能場所:  </strong>すべての環境 (*ALL)<br>
+<strong>スレッド・セーフ:  </strong>いいえ
+</td>
+<td class="valigntop alignright">
+<a href="#SAVRSTOBJ.PARAMETERS.TABLE">パラメーター</a><br>
+<a href="#SAVRSTOBJ.COMMAND.EXAMPLES">例</a><br>
+<a href="#SAVRSTOBJ.ERROR.MESSAGES">エラー・メッセージ</a></td>
+</tr>
+</tbody></table></div></div>
+<div> <a name="SAVRSTOBJ"></a>
+<p>オブジェクト保管/復元(SAVRSTOBJ)コマンドは，単一のオブジェクトまたは同じライブラリーにある1グループのオブジェクトを別のシステムに保管および復元します。オブジェクトは，同じライブラリーまたは別のライブラリーに復元することができます。保管および復元できるオブジェクトのタイプは，オブジェクト保管(SAVOBJ)コマンドに使用可能なのと同じオブジェクトのセットです。オブジェクトが保管されるシステムのオブジェクトは，SAVRSTOBJコマンドの影響を受けません。
+</p>
+<p>ジョブ待ち行列，メッセージ待ち行列，および論理ファイルの場合には，オブジェクト記述だけが保管および復元され，内容は保管も復元もされません。論理ファイルのアクセス・パスは，ACCPTH(*YES)を指定して保管および復元することができます。保管ファイルの内容は，SAVFDTA(*YES)を指定して保管および復元することができます。出力待ち行列上のスプール・ファイルの内容は，SPLFDTA(*ALL)を指定して保管および復元することができます。データ待ち行列の内容は，QDTA(*DTAQ)を指定して保管および復元することができます。
+</p>
+<p>
+<strong>注:     </strong>このコマンドは，ジョブで現在有効となっているすべてのファイルの一時変更を無視します。
+</p>
+<h2><strong>制約事項</strong><strong>:</strong>
+</h2>
+<ol class="cds--list--ordered--temporary">
+<li class="cds--list__item">このコマンドを使用するには，SPCAUTパラメーターによってユーザー・プロファイルに指定された特殊権限*SAVSYSが必要であるか，あるいは指定された各オブジェクトのオブジェクト存在権限と指定されたライブラリーの読み取り権限が必要です。指定されたオブジェクトに対する必要な権限をもっていない場合には，それを除くすべてのオブジェクトが保管および復元されます。
+</li>
+<li class="cds--list__item">保管および復元操作を行う両方のシステムは，同じAPPNネットワークに接続されていなければなりません。また，OPTICONNECT FOR IBM Iオプションを使用する場合には，両方のシステムがOPTICONNECT FOR IBM Iハードウェアおよびソフトウェアによって結合されていなければなりません。
+</li>
+</ol>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table1" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#SAVRSTOBJ.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div>
+<h2><a name="SAVRSTOBJ.PARAMETERS.TABLE">パラメーター</a></h2>
+<div class="tablenoborder"><div class="cds--data-table-container"><table id="parm_table2" summary="Parameters" border="1" cellpadding="4" cellspacing="0" class="cds--data-table">
+<!-- col1="10" col2="15" col3="30" col4="10" -->
+<tbody><tr>
+<th scope="col" class="valignbottom alignleft"><div class="cds--table-header-label">キーワード</div></th>
+<th scope="col" class="valignbottom alignleft"><div class="cds--table-header-label">記述</div></th>
+<th scope="col" class="valignbottom alignleft"><div class="cds--table-header-label">選択項目</div></th>
+<th scope="col" class="valignbottom alignleft"><div class="cds--table-header-label">ノーツ</div></th>
+</tr>
+<tr>
+<td class="valigntop"><a href="#SAVRSTOBJ.OBJ"><strong>OBJ</strong></a></td>
+<td class="valigntop">オブジェクト</td>
+<td class="valigntop">単一値: *ALL<br>その他の値 (最大 300 回の繰り返し): <span class="var">総称名, 名前</span></td>
+<td class="valigntop">必須, 定位置 1</td>
+</tr>
+<tr>
+<td class="valigntop"><a href="#SAVRSTOBJ.LIB"><strong>LIB</strong></a></td>
+<td class="valigntop">保管されたライブラリー</td>
+<td class="valigntop">単一値: *ALLUSR<br>その他の値 (最大 300 回の繰り返し): <span class="var">総称名, 名前</span></td>
+<td class="valigntop">必須, 定位置 2</td>
+</tr>
+<tr>
+<td class="valigntop"><a href="#SAVRSTOBJ.RMTLOCNAME"><strong>RMTLOCNAME</strong></a></td>
+<td class="valigntop">リモート ロケーション名</td>
+<td class="valigntop"><span class="var">名前</span></td>
+<td class="valigntop">必須, 定位置 3</td>
+</tr>
+<tr>
+<td class="valigntop"><a href="#SAVRSTOBJ.OBJTYPE"><strong>OBJTYPE</strong></a></td>
+<td class="valigntop">オブジェクト・タイプ</td>
+<td class="valigntop">単一値: <strong class="underlined">*ALL</strong><br>その他の値 (最大 73 回の繰り返し): *ALRTBL, *BNDDIR, *CHTFMT, *CLD, *CLS, *CMD, *CRG, *CRQD, *CSI, *CSPMAP, *CSPTBL, *DTAARA, *DTAQ, *EDTD, *EXITRG, *FCT, *FILE, *FNTRSC, *FNTTBL, *FORMDF, *FTR, *GSS, *IGCDCT, *IGCSRT, *IGCTBL, *IMGCLG, *JOBD, *JOBQ, *JOBSCD, *JRN, *JRNRCV, *LOCALE, *MEDDFN, *MENU, *MGTCOL, *MODULE, *MSGF, *MSGQ, *NODGRP, *NODL, *ORTBL, *OUTQ, *OVL, *PAGDFN, *PAGSEG, *PDFMAP, *PDG, *PGM, *PNLGRP, *PRDAVL, *PRTIMG, *PSFCFG, *QMFORM, *QMQRY, *QRYDFN, *RCT, *SBSD, *SCHIDX, *SPADCT, *SQLPKG, *SQLUDT, *SQLXSR, *SRVPGM, *SSND, *SVRSTG, *S36, *TBL, *USRIDX, *TIMZON, *USRQ, *USRSPC, *VLDL, *WSCST</td>
+<td class="valigntop">オプショナル</td>
+</tr>
+<tr>
+<td class="valigntop"><a href="#SAVRSTOBJ.OUTPUT"><strong>OUTPUT</strong></a></td>
+<td class="valigntop">出力</td>
+<td class="valigntop"><strong class="underlined">*NONE</strong>, *PRINT</td>
+<td class="valigntop">オプショナル</td>
+</tr>
+<tr>
+<td class="valigntop"><a href="#SAVRSTOBJ.STRLIB"><strong>STRLIB</strong></a></td>
+<td class="valigntop">開始ライブラリー</td>
+<td class="valigntop"><span class="var">名前</span>, <strong class="underlined">*FIRST</strong></td>
+<td class="valigntop">オプショナル</td>
+</tr>
+<tr>
+<td class="valigntop"><a href="#SAVRSTOBJ.OMITLIB"><strong>OMITLIB</strong></a></td>
+<td class="valigntop">除外するライブラリー</td>
+<td class="valigntop">単一値: <strong class="underlined">*NONE</strong><br>その他の値 (最大 300 回の繰り返し): <span class="var">総称名, 名前</span></td>
+<td class="valigntop">オプショナル</td>
+</tr>
+<tr>
+<td class="valigntop" rowspan="5"><a href="#SAVRSTOBJ.OMITOBJ"><strong>OMITOBJ</strong></a></td>
+<td class="valigntop">除外するオブジェクト</td>
+<td class="valigntop">値 (最大 300 回の繰り返し): <span class="var">要素リスト</span></td>
+<td class="valigntop" rowspan="5">オプショナル</td>
+</tr>
+<tr>
+<td class="valigntop">要素 1: オブジェクト</td>
+<td class="valigntop">
+<span class="var">修飾オブジェクト名</span></td>
+</tr>
+<tr>
+<td class="valigntop">修飾子 1: オブジェクト</td>
+<td class="valigntop"><span class="var">総称名, 名前</span>, *ALL, <strong class="underlined">*NONE</strong></td>
+</tr><tr>
+<td class="valigntop">修飾子 2: ライブラリー</td>
+<td class="valigntop"><span class="var">総称名, 名前</span>, <strong class="underlined">*ALL</strong></td>
+</tr><tr>
+<td class="valigntop">要素 2: オブジェクト・タイプ</td>
+<td class="valigntop">
+<span class="var">文字値</span>, <strong class="underlined">*ALL</strong>, *ALRTBL, *BNDDIR, *CHTFMT, *CLD, *CLS, *CMD, *CRG, *CRQD, *CSI, *CSPMAP, *CSPTBL, *DTAARA, *DTAQ, *EDTD, *EXITRG, *FCT, *FILE, *FNTRSC, *FNTTBL, *FORMDF, *FTR, *GSS, *IGCDCT, *IGCSRT, *IGCTBL, *JOBD, *JOBQ, *JOBSCD, *JRN, *JRNRCV, *LOCALE, *MEDDFN, *MENU, *MGTCOL, *MODULE, *MSGF, *MSGQ, *M36, *M36CFG, *NODGRP, *NODL, *ORTBL, *OUTQ, *OVL, *PAGDFN, *PAGSEG, *PDFMAP, *PDG, *PGM, *PNLGRP, *PRDAVL, *PSFCFG, *QMFORM, *QMQRY, *QRYDFN, *RCT, *SBSD, *SCHIDX, *SPADCT, *SQLPKG, *SQLUDT, *SQLXSR, *SRVPGM, *SSND, *SVRSTG, *S36, *TBL, *USRIDX, *TIMZON, *USRQ, *USRSPC, *VLDL, *WSCST</td>
+</tr>
+<tr>
+<td class="valigntop" rowspan="8"><a href="#SAVRSTOBJ.SELECT"><strong>SELECT</strong></a></td>
+<td class="valigntop">SELECT</td>
+<td class="valigntop">値 (最大 300 回の繰り返し): <span class="var">要素リスト</span></td>
+<td class="valigntop" rowspan="8">オプショナル</td>
+</tr>
+<tr>
+<td class="valigntop">要素 1: 組み込みまたは除外</td>
+<td class="valigntop">
+<strong class="underlined">*INCLUDE</strong>, *OMIT</td>
+</tr>
+<tr>
+<td class="valigntop">要素 2: オブジェクト</td>
+<td class="valigntop">
+<span class="var">修飾オブジェクト名</span></td>
+</tr>
+<tr>
+<td class="valigntop">修飾子 1: オブジェクト</td>
+<td class="valigntop"><span class="var">総称名, 名前</span>, <strong class="underlined">*ALL</strong></td>
+</tr><tr>
+<td class="valigntop">修飾子 2: ライブラリー</td>
+<td class="valigntop"><span class="var">総称名, 名前</span>, <strong class="underlined">*ALL</strong></td>
+</tr><tr>
+<td class="valigntop">要素 3: オブジェクト・タイプ</td>
+<td class="valigntop">
+<span class="var">文字値</span>, <strong class="underlined">*ALL</strong>, *ALRTBL, *BNDDIR, *CHTFMT, *CLD, *CLS, *CMD, *CRG, *CRQD, *CSI, *CSPMAP, *CSPTBL, *DTAARA, *DTAQ, *EDTD, *EXITRG, *FCT, *FILE, *FNTRSC, *FNTTBL, *FORMDF, *FTR, *GSS, *IGCDCT, *IGCSRT, *IGCTBL, *JOBD, *JOBQ, *JOBSCD, *JRN, *JRNRCV, *LOCALE, *MEDDFN, *MENU, *MGTCOL, *MODULE, *MSGF, *MSGQ, *NODGRP, *NODL, *ORTBL, *OUTQ, *OVL, *PAGDFN, *PAGSEG, *PDFMAP, *PDG, *PGM, *PNLGRP, *PRDAVL, *PSFCFG, *QMFORM, *QMQRY, *QRYDFN, *RCT, *SBSD, *SCHIDX, *SPADCT, *SQLPKG, *SQLUDT, *SQLXSR, *SRVPGM, *SSND, *SVRSTG, *S36, *TBL, *USRIDX, *USRQ, *USRSPC, *VLDL, *WSCST</td>
+</tr>
+<tr>
+<td class="valigntop">要素 4: オブジェクトの属性</td>
+<td class="valigntop">
+<span class="var">文字値</span>, <strong class="underlined">*ALL</strong>, *BLANK</td>
+</tr>
+<tr>
+<td class="valigntop">要素 5: ファイル・メンバー</td>
+<td class="valigntop">
+<span class="var">総称名, 名前</span>, <strong class="underlined">*ALL</strong>, *ALLMBR</td>
+</tr>
+<tr>
+<td class="valigntop"><a href="#SAVRSTOBJ.ASPDEV"><strong>ASPDEV</strong></a></td>
+<td class="valigntop">ASP装置</td>
+<td class="valigntop"><span class="var">名前</span>, <strong class="underlined">*</strong>, *SYSBAS, *CURASPGRP</td>
+<td class="valigntop">オプショナル</td>
+</tr>
+<tr>
+<td class="valigntop"><a href="#SAVRSTOBJ.TGTRLS"><strong>TGTRLS</strong></a></td>
+<td class="valigntop">ターゲット・リリース</td>
+<td class="valigntop"><span class="var">単純名</span>, <strong class="underlined">*CURRENT</strong>, *PRV</td>
+<td class="valigntop">オプショナル</td>
+</tr>
+<tr>
+<td class="valigntop"><a href="#SAVRSTOBJ.PRECHK"><strong>PRECHK</strong></a></td>
+<td class="valigntop">オブジェクト事前検査</td>
+<td class="valigntop"><strong class="underlined">*NO</strong>, *YES</td>
+<td class="valigntop">オプショナル</td>
+</tr>
+<tr>
+<td class="valigntop"><a href="#SAVRSTOBJ.SAVACT"><strong>SAVACT</strong></a></td>
+<td class="valigntop">活動状態保管</td>
+<td class="valigntop"><strong class="underlined">*NO</strong>, *LIB, *SYSDFN</td>
+<td class="valigntop">オプショナル</td>
+</tr>
+<tr>
+<td class="valigntop" rowspan="4"><a href="#SAVRSTOBJ.SAVACTWAIT"><strong>SAVACTWAIT</strong></a></td>
+<td class="valigntop">活動状態保管待ち時間</td>
+<td class="valigntop"><span class="var">要素リスト</span></td>
+<td class="valigntop" rowspan="4">オプショナル</td>
+</tr>
+<tr>
+<td class="valigntop">要素 1: オブジェクト・ロック</td>
+<td class="valigntop">
+0-99999, <strong class="underlined">120</strong>, *NOMAX</td>
+</tr>
+<tr>
+<td class="valigntop">要素 2: 保留中のレコード変更</td>
+<td class="valigntop">
+0-99999, <strong class="underlined">*LOCKWAIT</strong>, *NOCMTBDY, *NOMAX</td>
+</tr>
+<tr>
+<td class="valigntop">要素 3: 他の保留中の変更</td>
+<td class="valigntop">
+0-99999, <strong class="underlined">*LOCKWAIT</strong>, *NOMAX</td>
+</tr>
+<tr>
+<td class="valigntop" rowspan="3"><a href="#SAVRSTOBJ.SAVACTMSGQ"><strong>SAVACTMSGQ</strong></a></td>
+<td class="valigntop">活動状態保管メッセージ待ち行列</td>
+<td class="valigntop"><span class="var">修飾オブジェクト名</span></td>
+<td class="valigntop" rowspan="3">オプショナル</td>
+</tr>
+<tr>
+<td class="valigntop">修飾子 1: 活動状態保管メッセージ待ち行列</td>
+<td class="valigntop"><span class="var">名前</span>, <strong class="underlined">*NONE</strong>, *WRKSTN</td>
+</tr><tr>
+<td class="valigntop">修飾子 2: ライブラリー</td>
+<td class="valigntop"><span class="var">名前</span>, <strong class="underlined">*LIBL</strong>, *CURLIB</td>
+</tr><tr>
+<td class="valigntop" rowspan="3"><a href="#SAVRSTOBJ.FILEMBR"><strong>FILEMBR</strong></a></td>
+<td class="valigntop">ファイル・メンバー</td>
+<td class="valigntop">値 (最大 300 回の繰り返し): <span class="var">要素リスト</span></td>
+<td class="valigntop" rowspan="3">オプショナル</td>
+</tr>
+<tr>
+<td class="valigntop">要素 1: ファイル</td>
+<td class="valigntop">
+<span class="var">名前</span>, <strong class="underlined">*ALL</strong></td>
+</tr>
+<tr>
+<td class="valigntop">要素 2: メンバー</td>
+<td class="valigntop">
+単一値: <strong class="underlined">*ALL</strong>, *NONE<br>その他の値 (最大 50 回の繰り返し): <span class="var">総称名, 名前</span></td>
+</tr>
+<tr>
+<td class="valigntop"><a href="#SAVRSTOBJ.ACCPTH"><strong>ACCPTH</strong></a></td>
+<td class="valigntop">アクセス・パス保管</td>
+<td class="valigntop"><strong class="underlined">*SYSVAL</strong>, *NO, *YES</td>
+<td class="valigntop">オプショナル</td>
+</tr>
+<tr>
+<td class="valigntop"><a href="#SAVRSTOBJ.SAVFDTA"><strong>SAVFDTA</strong></a></td>
+<td class="valigntop">保管ファイル・データ</td>
+<td class="valigntop"><strong class="underlined">*YES</strong>, *NO</td>
+<td class="valigntop">オプショナル</td>
+</tr>
+<tr>
+<td class="valigntop"><a href="#SAVRSTOBJ.SPLFDTA"><strong>SPLFDTA</strong></a></td>
+<td class="valigntop">スプール・ファイル・データ</td>
+<td class="valigntop"><strong class="underlined">*NONE</strong>, *ALL</td>
+<td class="valigntop">オプショナル</td>
+</tr>
+<tr>
+<td class="valigntop"><a href="#SAVRSTOBJ.QDTA"><strong>QDTA</strong></a></td>
+<td class="valigntop">待ち行列データ</td>
+<td class="valigntop"><strong class="underlined">*NONE</strong>, *DTAQ</td>
+<td class="valigntop">オプショナル</td>
+</tr>
+<tr>
+<td class="valigntop"><a href="#SAVRSTOBJ.PVTAUT"><strong>PVTAUT</strong></a></td>
+<td class="valigntop">専用権限</td>
+<td class="valigntop"><strong class="underlined">*NO</strong>, *YES</td>
+<td class="valigntop">オプショナル</td>
+</tr>
+<tr>
+<td class="valigntop"><a href="#SAVRSTOBJ.STG"><strong>STG</strong></a></td>
+<td class="valigntop">記憶域</td>
+<td class="valigntop"><strong class="underlined">*KEEP</strong>, *FREE</td>
+<td class="valigntop">オプショナル</td>
+</tr>
+<tr>
+<td class="valigntop"><a href="#SAVRSTOBJ.OPTION"><strong>OPTION</strong></a></td>
+<td class="valigntop">オプション</td>
+<td class="valigntop"><strong class="underlined">*ALL</strong>, *NEW, *OLD, *FREE</td>
+<td class="valigntop">オプショナル</td>
+</tr>
+<tr>
+<td class="valigntop"><a href="#SAVRSTOBJ.MBROPT"><strong>MBROPT</strong></a></td>
+<td class="valigntop"> DBメンバー・オプション</td>
+<td class="valigntop"><strong class="underlined">*MATCH</strong>, *ALL, *NEW, *OLD</td>
+<td class="valigntop">オプショナル</td>
+</tr>
+<tr>
+<td class="valigntop"><a href="#SAVRSTOBJ.ALWOBJDIF"><strong>ALWOBJDIF</strong></a></td>
+<td class="valigntop">オブジェクト差異可能</td>
+<td class="valigntop">単一値: <strong class="underlined">*NONE</strong>, *ALL, *COMPATIBLE<br>その他の値 (最大 4 回の繰り返し): *AUTL, *FILELVL, *OWNER, *PGP</td>
+<td class="valigntop">オプショナル</td>
+</tr>
+<tr>
+<td class="valigntop"><a href="#SAVRSTOBJ.RSTLIB"><strong>RSTLIB</strong></a></td>
+<td class="valigntop">復元先ライブラリー</td>
+<td class="valigntop"><span class="var">名前</span>, <strong class="underlined">*LIB</strong></td>
+<td class="valigntop">オプショナル</td>
+</tr>
+<tr>
+<td class="valigntop"><a href="#SAVRSTOBJ.RSTASPDEV"><strong>RSTASPDEV</strong></a></td>
+<td class="valigntop">復元先ASP装置</td>
+<td class="valigntop"><span class="var">名前</span>, <strong class="underlined">*SAVASPDEV</strong></td>
+<td class="valigntop">オプショナル</td>
+</tr>
+<tr>
+<td class="valigntop"><a href="#SAVRSTOBJ.RSTASP"><strong>RSTASP</strong></a></td>
+<td class="valigntop">復元先ASP番号</td>
+<td class="valigntop">1-32, <strong class="underlined">*SAVASP</strong></td>
+<td class="valigntop">オプショナル</td>
+</tr>
+<tr>
+<td class="valigntop" rowspan="3"><a href="#SAVRSTOBJ.FRCOBJCVN"><strong>FRCOBJCVN</strong></a></td>
+<td class="valigntop">強制オブジェクト変換</td>
+<td class="valigntop">単一値: <strong class="underlined">*SYSVAL</strong>, *NO<br>その他の値: <span class="var">要素リスト</span></td>
+<td class="valigntop" rowspan="3">オプショナル</td>
+</tr>
+<tr>
+<td class="valigntop">要素 1: 復元中変換</td>
+<td class="valigntop">
+<strong class="underlined">*YES</strong></td>
+</tr>
+<tr>
+<td class="valigntop">要素 2: 変換するオブジェクト</td>
+<td class="valigntop">
+<strong class="underlined">*RQD</strong>, *ALL</td>
+</tr>
+<tr>
+<td class="valigntop"><a href="#SAVRSTOBJ.STRJRN"><strong>STRJRN</strong></a></td>
+<td class="valigntop">ジャーナル処理の開始</td>
+<td class="valigntop"><strong class="underlined">*YES</strong>, *NO</td>
+<td class="valigntop">オプショナル</td>
+</tr>
+</tbody></table></div></div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table3" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#SAVRSTOBJ.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+</div>
+<div> <a name="SAVRSTOBJ.OBJ"></a>
+<h2>オブジェクト (OBJ)</h2>
+<p>保管する1つまたは複数のオブジェクトの名前または各オブジェクト・グループの総称名を指定します。すべてのオブジェクトが<strong>ライブラリー</strong><strong> (LIB)</strong>パラメーターに指定したライブラリーの中になければなりません。<strong>オブジェクト・タイプ</strong><strong> (OBJTYPE)</strong>パラメーターに*ALLを指定するか，あるいは省略時の値とした場合には，そのパラメーターの記述にリストされているすべてのオブジェクト・タイプが指定されたライブラリーにあり，しかも指定された名前を持っていれば，それらがすべて保管されます。
+</p>
+<p>これは必須パラメーターです。
+</p>
+<h3><strong>単一値</strong>
+</h3>
+<dl>
+<dt><strong>*ALL</strong></dt>
+<dd>OBJTYPEパラメーターに指定された値に基づいて，指定されたライブラリーにあるすべてのオブジェクトが保管されます。
+</dd>
+</dl>
+<h3><strong>その他の値（最大</strong><strong>300</strong><strong>個指定可能）</strong>
+</h3>
+<dl>
+<dt><strong class="italic">総称名</strong></dt>
+<dd>指定したライブラリー中の保管するオブジェクト・グループの1つまたは複数の総称名を指定してください。総称名は，1つ以上の文字とその後にアスタリスク(*)が付いた文字ストリングです。名前に*が指定されていない場合には，システムはその名前が完全なオブジェクト名であるとみなします。
+</dd>
+<dt><strong class="italic">名前</strong></dt>
+<dd>保管する特定のオブジェクトの1つ以上の名前を指定します。総称名と特定名の両方を同じコマンドに指定することができます。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table4" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#SAVRSTOBJ.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="SAVRSTOBJ.LIB"></a>
+<h2>保管されたライブラリー (LIB)</h2>
+<p>保管および復元されるオブジェクトが入っているライブラリーを指定します。
+</p>
+<h3><strong>単一値</strong>
+</h3>
+<dl>
+<dt><strong>*ALLUSR</strong></dt>
+<dd>すべてのユーザー・ライブラリーが保管および復元されます。文字Qで始まらない名前をもつすべてのライブラリーが保管および復元されますが，次のものは除きます。
+<p>
+</p><pre>#CGULIB     #DSULIB     #SEULIB
+#COBLIB     #RPGLIB
+#DFULIB     #SDALIB
+</pre>
+<p></p>
+<p>次のQXXXライブラリーは弊社提供のものですが，これらには一般的に，頻繁に変更されるユーザー・データが入れられます。したがって，これらのライブラリーは「ユーザー・ライブラリー」と見なされ，保管および復元されます。
+</p>
+<p>
+</p><pre>QDSNX       QRCLXXXXX   QUSRDIRDB   QUSRVI
+QGPL        QSRVAGT     QUSRIJS     QUSRVXRXMX
+QGPL38      QSYS2       QUSRINFSKR  QWQCENT
+QMGTC       QSYS2XXXXX  QUSRNOTES   QWQREPOS
+QMGTC2      QS36F       QUSROND
+QMPGDATA    QUSER38     QUSRPOSGS
+QMQMDATA    QUSRADSM    QUSRPOSSA
+QMQMPROC    QUSRBRM     QUSRPYMSVR
+QPFRDATA    QUSRDIRCF   QUSRRDARS
+QRCL        QUSRDIRCL   QUSRSYS
+</pre>
+<p></p>
+<p>
+<strong>注:     </strong>前のリリースのCLプログラム内でコンパイルされるユーザー・コマンドを入れるために，弊社がサポートする前の各リリース用にQUSRVXRXMXの形式の別のライブラリー名を作成することができます。QUSRVXRXMXユーザー・ライブラリーのVXRXMXは弊社が引き続きサポートしている前のリリースのバージョン，リリース，およびモディフィケーション・レベルです。
+</p>
+</dd>
+</dl>
+<h3><strong>その他の値（最大</strong><strong>300</strong><strong>個指定可能）</strong>
+</h3>
+<dl>
+<dt><strong class="italic">総称名</strong></dt>
+<dd>ライブラリーの総称名を指定してください。総称名は1つまたは複数の文字とその後にアスタリスク(*)が付いた文字ストリング（例えば，ABC*)です。アスタリスク(*)は，有効な任意の文字と置き換えられます。総称名の指定は，名前がその総称接頭部で始まる，ユーザーが権限を持っているすべてのライブラリーです。総称（接頭部）名にアスタリスクが含まれていない場合には，システムはそれを完全なライブラリー名とみなします。最大300の総称ライブラリー名を指定することができます。
+</dd>
+<dt><strong class="italic">名前</strong></dt>
+<dd>保管および復元されるライブラリーの名前を指定してください。最大300のライブラリー名を指定することができます。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table5" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#SAVRSTOBJ.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="SAVRSTOBJ.RMTLOCNAME"></a>
+<h2>リモート・ロケーション (RMTLOCNAME)</h2>
+<p>接続するリモート・ロケーションを指定します。CCCCCCCCまたはNNNNNNNN.CCCCCCCCという形式を使用してリモート・ロケーション名を指定してください。NNNNNNNNはネットワーク識別コード(ID)で，CCCCCCCCはリモート・ロケーション名です。
+</p>
+<dl>
+<dt><strong class="italic">リモート・ロケーション名</strong></dt>
+<dd>オブジェクトを復元したいシステムと関連したリモート・ロケーション名を指定してください。ローカル・ネットワークID (LCLNETID)ネットワーク属性がネットワークIDの値として使用されます。
+</dd>
+<dt><strong class="italic">ネットワークID.ロケーション名</strong></dt>
+<dd>オブジェクトを復元したいシステムと関連したネットワークIDおよびリモート・ロケーション名を指定してください。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table6" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#SAVRSTOBJ.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="SAVRSTOBJ.OBJTYPE"></a>
+<h2>オブジェクト・タイプ (OBJTYPE)</h2>
+<p>保管するシステム・オブジェクトのタイプを指定します。
+</p>
+<h3><strong>単一値</strong>
+</h3>
+<dl>
+<dt><strong class="underlined">*ALL</strong></dt>
+<dd>指定した名前で，指定したライブラリーに入っているすべてのオブジェクト・タイプが保管されます。<strong>オブジェクト</strong><strong> (OBJ)</strong>パラメーターにも*ALLが指定されている場合には，ライブラリーに入っているオブジェクトのうち，保管できるタイプのすべてのオブジェクトが保管されます。
+</dd>
+</dl>
+<h3><strong>その他の値（最大</strong><strong>300</strong><strong>個指定可能）</strong>
+</h3>
+<dl>
+<dt><strong class="italic">オブジェクト・タイプ</strong></dt>
+<dd>コマンド(*CMD),ファイル(*FILE),またはプログラム(*PGM)など，保管するオブジェクトの各タイプの値を指定します。
+<p>このコマンドについてプロンプトを出す時にオブジェクト・タイプの完全なリストを表示するには，このパラメーターのフィールドにカーソルを位置付け，F4（プロンプト）を押します。オブジェクト・タイプの記述については，IBM i Information Center(http://www.ibm.com/systems/i/infocenter/)の「プログラミング」カテゴリーの「制御言語(CL)」トピック・コレクションの「オブジェクト・タイプ」を参照してください。
+</p>
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table7" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#SAVRSTOBJ.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="SAVRSTOBJ.OUTPUT"></a>
+<h2>出力 (OUTPUT)</h2>
+<p>保管されたオブジェクトと復元されたオブジェクトに関する情報を印刷するかどうかを指定します。
+</p>
+<dl>
+<dt><strong class="underlined">*NONE</strong></dt>
+<dd>出力は作成されません。
+</dd>
+<dt><strong>*PRINT</strong></dt>
+<dd>保管されたオブジェクトに関する情報は，ジョブのスプール出力を使用して印刷されます。復元されたオブジェクトに関する情報は，リモート・ロケーションでジョブのスプール出力を使用して印刷されます。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table8" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#SAVRSTOBJ.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="SAVRSTOBJ.STRLIB"></a>
+<h2>開始ライブラリー (STRLIB)</h2>
+<p>保管操作を開始するライブラリーを指定します。
+</p>
+<p>保管操作中に回復不能媒体エラーが起こった場合には，このパラメーターを使用して，操作を再開することができます。
+</p>
+<p>保管操作再開の基本ステップは次の通りです。
+</p>
+<ol class="cds--list--ordered--temporary">
+<li class="cds--list__item">ジョブ・ログを調べて，前の保管操作が正常に行われなかったライブラリーを判別してください。最後に保管されたライブラリーを見つけてください。これは，正常完了メッセージによって示されます。
+</li>
+<li class="cds--list__item">次のテープが初期設定されていることを確認して，そのテープを装てんしてください。
+</li>
+<li class="cds--list__item">以下をオリジナルの保管操作に追加します。
+<p>
+</p><pre>  STRLIB(ライブラリー名)  OMITLIB(ライブラリー名)
+</pre>
+<p></p>
+<p>ここで，STRLIBおよびOMITLIBパラメーターの<span class="var">ライブラリー名</span>は正常に保管された最後のライブラリーです。これにより，保管操作は正常に保管された最後のライブラリーの後のライブラリーから始まります。
+</p>
+<p>ライブラリーを復元するには，実行されたそれぞれの保管操作ごとに別個の復元操作を実行する必要があります。
+</p>
+</li>
+</ol>
+<dl>
+<dt><strong class="underlined">*FIRST</strong></dt>
+<dd>保管操作は，<strong>ライブラリー</strong><strong> (LIB)</strong>パラメーターに指定された最初のライブラリー値から始まります。最初の値が総称名または特殊値であった場合には，保管操作はこの値と一致する最初のライブラリーから始まります。
+</dd>
+<dt><strong class="italic">名前</strong></dt>
+<dd>保管操作を開始するライブラリーの名前を指定してください。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table9" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#SAVRSTOBJ.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="SAVRSTOBJ.OMITLIB"></a>
+<h2>除外するライブラリー (OMITLIB)</h2>
+<p>保管操作から除外する，1つまたは複数のライブラリーの名前またはライブラリーの各グループの総称名を指定します。
+</p>
+<h3><strong>単一値</strong>
+</h3>
+<dl>
+<dt><strong class="underlined">*NONE</strong></dt>
+<dd>どのライブラリーも保管操作から除外されません。
+</dd>
+</dl>
+<h3><strong>その他の値（最大</strong><strong>300</strong><strong>個指定可能）</strong>
+</h3>
+<dl>
+<dt><strong class="italic">総称名</strong></dt>
+<dd>除外するライブラリーの総称名を指定します。総称名は1つまたは複数の文字とその後にアスタリスク(*)が付いた文字ストリング（例えば，ABC*)です。アスタリスク(*)は，有効な任意の文字と置き換えられます。総称名の指定は，名前がその総称接頭部で始まる，ユーザーが権限を持っているすべてのライブラリーです。総称（接頭部）名にアスタリスクが含まれていない場合には，システムはそれを完全なライブラリー名とみなします。
+</dd>
+<dt><strong class="italic">名前</strong></dt>
+<dd>保管操作から除外するライブラリーの名前を指定してください。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table10" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#SAVRSTOBJ.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="SAVRSTOBJ.OMITOBJ"></a>
+<h2>除外するオブジェクト (OMITOBJ)</h2>
+<p>操作から除外するオブジェクトを指定します。最大300までのオブジェクトまたは総称オブジェクトの値を指定することができます。
+</p>
+<h3><strong>要素</strong><strong>1: </strong><strong>オブジェクト</strong>
+</h3>
+<h3><strong>修飾子</strong><strong>1: </strong><strong>オブジェクト</strong>
+</h3>
+<dl>
+<dt><strong class="underlined">*NONE</strong></dt>
+<dd>操作から除外されるオブジェクトはありません。
+</dd>
+<dt><strong>*ALL</strong></dt>
+<dd>指定されたオブジェクト・タイプのすべてのオブジェクトが操作から除外されます。
+</dd>
+<dt><strong class="italic">総称名</strong></dt>
+<dd>除外するオブジェクトの総称名を指定します。
+<p>
+<strong>注:     </strong>総称名は，1つまたは複数の文字の後にアスタリスク(*)が付いた文字ストリングとして指定されます。総称名を指定した場合には，その総称オブジェクト名と同じ接頭部を持つ名前のついたすべてのオブジェクトが選択されます。
+</p>
+</dd>
+<dt><strong class="italic">名前</strong></dt>
+<dd>操作から除外するオブジェクトの名前を指定します。
+</dd>
+</dl>
+
+<h3><strong>修飾子</strong><strong>2: ライブラリー</strong>
+</h3>
+<dl>
+<dt><strong class="underlined">*ALL</strong></dt>
+<dd>指定されたオブジェクトは，操作部位のすべてのライブラリーから除外されます。
+</dd>
+<dt><strong class="italic">総称名</strong></dt>
+<dd>除外するオブジェクトが入っているライブラリーの総称名を指定します。
+<p>
+<strong>注:     </strong>総称名は，1つまたは複数の文字の後にアスタリスク(*)が付いた文字ストリングとして指定されます。総称名を指定した場合には，その総称オブジェクト名と同じ接頭部を持つ名前のついたすべてのオブジェクトが選択されます。
+</p>
+</dd>
+<dt><strong class="italic">名前</strong></dt>
+<dd>操作から除外するオブジェクトが入っているライブラリーの名前を指定します。
+</dd>
+</dl>
+
+<h3><strong>要素</strong><strong>2: </strong><strong>オブジェクト・タイプ</strong>
+</h3>
+<dl>
+<dt><strong class="underlined">*ALL</strong></dt>
+<dd>オブジェクト名に指定された値に基づいて，すべてのオブジェクト・タイプが操作から除外されます。
+</dd>
+<dt><strong class="italic">文字値</strong></dt>
+<dd>操作から除外するオブジェクトのオブジェクト・タイプを指定します。
+<p>このコマンドについてプロンプトを出す時にオブジェクト・タイプの完全なリストを表示するには，このパラメーターのフィールドにカーソルを位置付け，F4（プロンプト）を押します。オブジェクト・タイプの記述については，IBM i Information Center(http://www.ibm.com/systems/i/infocenter/)の「プログラミング」カテゴリーの「制御言語(CL)」トピック・コレクションの「オブジェクト・タイプ」を参照してください。
+</p>
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table11" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#SAVRSTOBJ.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="SAVRSTOBJ.SELECT"></a>
+<h2>SELECT (SELECT)</h2>
+<p>保管するオブジェクトの選択基準を指定します。<strong>オブジェクト</strong><strong> (OBJ)</strong>,<strong>ライブラリー</strong><strong> (LIB)</strong>,および<strong>オブジェクト・タイプ</strong><strong> (OBJTYPE)</strong>パラメーターに指定されたオブジェクトから選択できます。
+</p>
+<h3><strong>要素</strong><strong>1: </strong><strong>組み込みまたは除外</strong>
+</h3>
+<p>選択したオブジェクトを保管操作に含めるか，またはこの操作から除外するかを指定します。
+</p>
+<dl>
+<dt><strong class="underlined">*INCLUDE</strong></dt>
+<dd>選択したオブジェクトが保管されます(*OMITの指定によって一時変更された場合，および<strong>除外するライブラリー</strong><strong> (OMITLIB)</strong>パラメーターまたは<strong>除外するオブジェクト</strong><strong>(OMITOBJ)</strong>パラメーターによって除外された場合を除く）。
+</dd>
+<dt><strong>*OMIT</strong></dt>
+<dd>選択したオブジェクトは保管操作に含まれません。
+</dd>
+</dl>
+<h3><strong>要素</strong><strong>2: </strong><strong>オブジェクト</strong>
+</h3>
+<h3><strong>修飾子</strong><strong>1: </strong><strong>オブジェクト</strong>
+</h3>
+<dl>
+<dt><strong class="underlined">*ALL</strong></dt>
+<dd><strong>オブジェクト</strong><strong> (OBJ)</strong>パラメーターに指定されたすべてのオブジェクト名が選択されます。
+</dd>
+<dt><strong class="italic">総称名</strong></dt>
+<dd>選択するオブジェクトの総称名を指定してください。
+<p>
+<strong>注:     </strong>総称名は，1つまたは複数の文字の後にアスタリスク(*)が付いた文字ストリングとして指定されます。総称名を指定した場合には，その総称オブジェクト名と同じ接頭部を持つ名前のついたすべてのオブジェクトが選択されます。
+</p>
+</dd>
+<dt><strong class="italic">名前</strong></dt>
+<dd>選択されるオブジェクトの名前を指定してください。
+</dd>
+</dl>
+
+<h3><strong>修飾子</strong><strong>2: ライブラリー</strong>
+</h3>
+<dl>
+<dt><strong class="underlined">*ALL</strong></dt>
+<dd><strong>ライブラリー</strong><strong> (LIB)</strong>パラメーターに指定されたすべてのライブラリー名が選択されます。
+</dd>
+<dt><strong class="italic">総称名</strong></dt>
+<dd>選択するライブラリーの総称名を指定してください。
+</dd>
+<dt><strong class="italic">名前</strong></dt>
+<dd>選択するライブラリーの名前を指定してください。
+</dd>
+</dl>
+
+<h3><strong>要素</strong><strong>3: </strong><strong>オブジェクト・タイプ</strong>
+</h3>
+<dl>
+<dt><strong class="underlined">*ALL</strong></dt>
+<dd><strong>オブジェクト・タイプ</strong><strong> (OBJTYPE)</strong>パラメーターに指定されたすべてのオブジェクト・タイプが選択されます。
+</dd>
+<dt><strong class="italic">文字値</strong></dt>
+<dd>選択するオブジェクト・タイプを指定してください。
+<p>このコマンドについてプロンプトを出す時にオブジェクト・タイプの完全なリストを表示するには，このパラメーターのフィールドにカーソルを位置付け，F4（プロンプト）を押します。オブジェクト・タイプの記述については，IBM i Information Center(http://www.ibm.com/systems/i/infocenter/)の「プログラミング」カテゴリーの「制御言語(CL)」トピック・コレクションの「オブジェクト・タイプ」を参照してください。
+</p>
+</dd>
+</dl>
+<h3><strong>要素</strong><strong>4: </strong><strong>オブジェクトの属性</strong>
+</h3>
+<dl>
+<dt><strong class="underlined">*ALL</strong></dt>
+<dd>すべてのオブジェクト属性が選択されます。
+</dd>
+<dt><strong>*BLANK</strong></dt>
+<dd>属性値がないオブジェクトのみが選択されます。
+</dd>
+<dt><strong class="italic">属性値</strong></dt>
+<dd>選択するオブジェクトの属性を指定してください。
+</dd>
+<dt><strong class="italic">総称属性値</strong></dt>
+<dd>選択するオブジェクトの総称属性を指定してください。
+</dd>
+</dl>
+<h3><strong>要素</strong><strong>5: </strong><strong>ファイル・メンバー</strong>
+</h3>
+<p>選択するデータベース・ファイル・メンバーを指定します。
+</p>
+<p>*ALLが指定された場合，前の要素によって選択されたオブジェクトが含まれるか，または除外されます。
+</p>
+<p>*ALL以外の値を指定した場合には，<strong>ファイル・メンバー</strong><strong> (FILEMBR)</strong>パラメーターを指定することはできません。前の要素によって選択されたオブジェクトが含まれます。そのオブジェクトがデータベース・ファイルでない場合でも同様です。選択されたオブジェクトがデータベース・ファイルの場合は，選択されたファイル・メンバーが含まれるか，あるいは除外されます。
+</p>
+<dl>
+<dt><strong class="underlined">*ALL</strong></dt>
+<dd>すべてのファイル・メンバーが選択されます。*OMIT指定の場合，選択されたファイルまたはオブジェクトも除外されます。
+</dd>
+<dt><strong>*ALLMBR</strong></dt>
+<dd>すべてのファイル・メンバーが選択されます。*OMIT指定の場合，選択されたファイルまたはオブジェクトが含まれ，すべてのファイル・メンバーが除外されます。
+</dd>
+<dt><strong class="italic">総称名</strong></dt>
+<dd>選択するファイル・メンバーの総称名を指定してください。選択されたファイルまたはオブジェクトに指定のメンバーが含まれていない場合でも，そのファイルまたはオブジェクトが含まれます。
+</dd>
+<dt><strong class="italic">名前</strong></dt>
+<dd>選択するファイル・メンバーの名前を指定してください。選択されたファイルまたはオブジェクトに指定のメンバーが含まれていない場合でも，そのファイルまたはオブジェクトが含まれます。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table12" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#SAVRSTOBJ.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="SAVRSTOBJ.ASPDEV"></a>
+<h2>ASP装置 (ASPDEV)</h2>
+<p>保管操作に組み込まれる補助記憶域プール(ASP)装置を指定します。このパラメーターは，OBJパラメーターに基づいてSAVに適格のオブジェクトのリストをサブセット化するのに使用されます。
+</p>
+<dl>
+<dt><strong class="underlined">*</strong></dt>
+<dd>操作には，システムASP (ASP番号1),すべての基本ユーザーASP (ASP番号2から32),さらに現行スレッドにASPグループがある場合には．そのASPグループ中のすべての独立ASPが組み込まれます。
+</dd>
+<dt><strong>*SYSBAS</strong></dt>
+<dd>システムASPおよびすべての基本ユーザーASPが保管操作に組み込まれます。
+</dd>
+<dt><strong>*CURASPGRP</strong></dt>
+<dd>現行スレッドにASPグループがある場合には，そのASPグループ中のすべての独立ASPが保管操作に組み込まれます。
+</dd>
+<dt><strong class="italic">名前</strong></dt>
+<dd>保管操作に組み込むASP装置の名前を指定します。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table13" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#SAVRSTOBJ.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="SAVRSTOBJ.TGTRLS"></a>
+<h2>ターゲット・リリース (TGTRLS)</h2>
+<p>保管しようとするオブジェクトを使用する予定のオペレーティング・システムのリリース・レベルを指定します。
+</p>
+<p><strong>ターゲット・リリース</strong>を指定する時は，形式VXRXMXでリリースを指定します。ここで，VXはバージョン，RXはリリース，MXはモディフィケーション・レベルです。例えば，V5R3M0はバージョン5,リリース3,モディフィケーション・レベル0です。
+</p>
+<p>有効な値は，オペレーティング・システムの現在のバージョン，リリース，およびモディフィケーション・レベルで異なり，リリースが新しくなるたびに変わります。このコマンド・パラメーターのプロンプト時にF4を押して，有効なターゲット・リリースの値のリストを表示することができます。
+</p>
+<dl>
+<dt><strong class="underlined">*CURRENT</strong></dt>
+<dd>オブジェクトは，現在ユーザーのシステムで実行中のオペレーティング・システムのリリースに復元され，使用されます。オブジェクトは，後続のリリースのオペレーティング・システムが導入されたシステムに復元することもできます。
+</dd>
+<dt><strong>*PRV</strong></dt>
+<dd>オブジェクトは，オペレーティング・システムの前のリリース（モディフィケーション・レベルは0)に復元されます。オブジェクトは，後続のリリースのオペレーティング・システムが導入されたシステムに復元することもできます。
+</dd>
+<dt><strong class="italic">文字値</strong></dt>
+<dd>リリースをVXRXMXの形式で指定してください。オブジェクトは，指定したリリースまたはそれ以降のオペレーティング・システムが導入されているシステムに復元することができます。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table14" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#SAVRSTOBJ.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="SAVRSTOBJ.PRECHK"></a>
+<h2>オブジェクト事前検査 (PRECHK)</h2>
+<p>次のいずれかが真の場合に，ライブラリーの保管操作を終了するかどうかを指定します。
+</p>
+<ol class="cds--list--ordered--temporary">
+<li class="cds--list__item">オブジェクトが存在していない。
+</li>
+<li class="cds--list__item">ライブラリーまたはオブジェクトに損傷があることが前に判明している。
+</li>
+<li class="cds--list__item">ライブラリーまたはオブジェクトが他のジョブによってロックされている。
+</li>
+<li class="cds--list__item">保管操作の要求元に，そのライブラリーの権限がないか，あるいはオブジェクトの保管権限がない。
+</li>
+</ol>
+<dl>
+<dt><strong class="underlined">*NO</strong></dt>
+<dd>ライブラリーに対する保管操作は続行し，保管できるオブジェクトのみを保管します。
+</dd>
+<dt><strong>*YES</strong></dt>
+<dd>指定されたすべてのオブジェクトが検査された後で1つまたは複数のオブジェクトが保管できない場合には，ライブラリーに対する保管操作はデータが書き出される前に終了します。複数のライブラリーが指定された場合には，保管操作は次のライブラリーから続行します。ただし，PRECHK(*YES)およびSAVACT(*SYNCLIB)が指定され，保管するライブラリーの中に予備検査条件を満たしていないオブジェクトがある場合には，保管操作は終了し，オブジェクトはいずれも保管されません。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table15" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#SAVRSTOBJ.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="SAVRSTOBJ.SAVACT"></a>
+<h2>活動状態保管 (SAVACT)</h2>
+<p>オブジェクトを保管中にこれを更新できるかどうかを指定します。
+</p>
+<p>
+<strong>注:     </strong>ユーザーのシステムが制限状態であり，SAVACTパラメーターが指定された場合には，SAVACT(*NO)が指定されたかのように保管操作は実行されます。
+</p>
+<dl>
+<dt><strong class="underlined">*NO</strong></dt>
+<dd>使用中のオブジェクトは保管されません。保管中のオブジェクトを更新することはできません。
+</dd>
+<dt><strong>*LIB</strong></dt>
+<dd>ライブラリー内のオブジェクトは，別のジョブで使用中であっても，保管することができます。ライブラリー中のすべてのオブジェクトが同時にチェックポイントに達し，オブジェクト相互の関係に一貫性のある状態で保管されます。
+</dd>
+<dt><strong>*SYSDFN</strong></dt>
+<dd>ライブラリー内のオブジェクトは，別のジョブで使用中であっても，保管することができます。ライブラリー中のオブジェクトはそれぞれ異なる時点にチェックポイントに達することがあり，オブジェクト相互の関係が一貫性のある状態にならないことがあります。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table16" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#SAVRSTOBJ.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="SAVRSTOBJ.SAVACTWAIT"></a>
+<h2>活動状態保管待ち時間 (SAVACTWAIT)</h2>
+<p>保管操作を続行する前に，使用中のオブジェクトまたは変更が保留中になっているトランザクションがコミット境界に達するのを待つ時間の長さを指定します。
+</p>
+<h3><strong>要素</strong><strong>1: </strong><strong>オブジェクト・ロック</strong>
+</h3>
+<p>使用中の各オブジェクトについては，そのオブジェクトが使用可能になるのを待つ時間の長さを指定します。オブジェクトが指定された時間内使用中のままになっている場合には，そのオブジェクトは保管されません。
+</p>
+<dl>
+<dt><strong class="underlined">120</strong></dt>
+<dd>システムは，保管操作を続行する前に，それぞれの個別オブジェクト・ロックを120秒まで待ちます。
+</dd>
+<dt><strong>*NOMAX</strong></dt>
+<dd>最大待ち時間が存在していません。
+</dd>
+<dt><strong class="italic">0から99999</strong></dt>
+<dd>保管操作を続行する前に，それぞれの個別オブジェクト・ロックを待つ秒数を指定します。
+</dd>
+</dl>
+<h3><strong>要素</strong><strong>2: </strong><strong>保留中のレコード変更</strong>
+</h3>
+<p>一緒にチェックポイント処理されるオブジェクトの各グループごとに，レコードの変更が保留中になっているトランザクションがコミット境界に達するのを待つ時間の長さを指定します。一緒にチェックポイント処理されるオブジェクトは，<strong>活動状態保管</strong><strong> (SAVACT)</strong>パラメーターで決定されます。0が指定された場合には，保管中のすべてのオブジェクトがコミット境界になければなりません。その他の値が指定された場合には，保管中のオブジェクトと同じジャーナルにジャーナル処理されたすべてのオブジェクトがコミット境界に達していなければなりません。指定された時間以内にコミット境界に達しない場合には，*NOCMTBDYが指定されていない限り，保管操作は終了します。
+</p>
+<dl>
+<dt><strong class="underlined">*LOCKWAIT</strong></dt>
+<dd>システムは，レコードの変更が保留中になっているトランザクションがコミット境界に達するのを，「要素1」に指定された値まで待ちます。
+</dd>
+<dt><strong>*NOCMTBDY</strong></dt>
+<dd>システムは，レコードの変更が保留中になっているトランザクションがコミット境界に達することを必要とせずに，オブジェクトを保管します。したがって，オブジェクトは部分トランザクションとともに保管されることがあります。
+<p>部分トランザクションとともに保管されたオブジェクトを復元した場合には，ジャーナル変更を適用または除去(APYJRNCHGまたはRMVJRNCHGコマンド）して，コミット境界に達するまで，そのオブジェクトは使用できません。変更を適用または除去するには，部分トランザクションに関する情報を含むすべてのジャーナル・レシーバーが必要になります。変更を適用または除去するまでは，*NOCMTBDYを指定しない場合であっても，そのオブジェクトの今後の保管には部分トランザクションが組み込まれることになります。
+</p>
+</dd>
+<dt><strong>*NOMAX</strong></dt>
+<dd>最大待ち時間が存在していません。
+</dd>
+<dt><strong class="italic">0から99999</strong></dt>
+<dd>レコードの変更が保留中になっているトランザクションがコミット境界に達するのを待つ秒数を指定します。
+</dd>
+</dl>
+<h3><strong>要素</strong><strong>3: </strong><strong>他の保留中の変更</strong>
+</h3>
+<p>各ライブラリーごとに，保留中になっているその他の変更があるトランザクションがコミット境界に達するのを待つ時間の長さを指定します。その他の保留中の変更には以下のものがあります。
+</p>
+<ul class="cds--list--unordered">
+<li class="cds--list__item">そのライブラリーに対するデータ定義言語(DDL)オブジェクト・レベルの変更。
+</li>
+<li class="cds--list__item">通常の保管処理を可能にするオプションを指定しないで追加されたすべてのAPIコミットメント資源。詳細については，IBM i Information Center(http://www.ibm.com/systems/i/infocenter/)の「プログラミング」カテゴリーの「API」トピック・コレクションのコミットメント資源追加(QTNADDCR) APIを参照してください。
+</li>
+</ul>
+<p>ライブラリーについて指定された時間以内にコミット境界に達しない場合には，ライブラリーは保管されません。
+</p>
+<dl>
+<dt><strong class="underlined">*LOCKWAIT</strong></dt>
+<dd>システムは，上記のトランザクションのタイプがコミット境界に達するのを，「要素1」に指定された値まで待ちます。
+</dd>
+<dt><strong>*NOMAX</strong></dt>
+<dd>最大待ち時間が存在していません。
+</dd>
+<dt><strong class="italic">0から99999</strong></dt>
+<dd>上記のトランザクションのタイプがコミット境界に達するのを待つ秒数を指定します。
+</dd>
+</dl>
+<p>0が指定され，1つの名前だけが<strong>オブジェクト</strong><strong> (OBJ)</strong>パラメーターに指定され，*FILEが<strong>オブジェクト・タイプ</strong><strong> (OBJTYPE)</strong>パラメーターに指定された唯一の値である場合には，システムは，上記のトランザクションのタイプがコミット境界に達することを必要とせずに，オブジェクトを保管します。
+</p>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table17" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#SAVRSTOBJ.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="SAVRSTOBJ.SAVACTMSGQ"></a>
+<h2>活動状態保管メッセージ待ち行列 (SAVACTMSGQ)</h2>
+<p>ライブラリーのチェックポイント処理が完了していることをユーザーに通知するために保管操作で使用されるメッセージ待ち行列を指定します。<strong>活動状態保管</strong><strong> (SAVACT)</strong>パラメーターに*SYSDFNまたは*LIB値が指定されている時に，保管されるライブラリーごとに別々のメッセージが送られます。SAVACTパラメーターに*SYNCLIBが指定された場合には，保管操作ですべてのライブラリーに1つのメッセージが送られます。
+</p>
+<p>このパラメーターは，既知の一貫性のある境界でオブジェクトを保管して，復元操作の後の追加回復手順を避けるために使用することができます。アプリケーションは，チェックポイント処理完了メッセージを受信するまで停止することができます。
+</p>
+<h3><strong>単一値</strong>
+</h3>
+<dl>
+<dt><strong class="underlined">*NONE</strong></dt>
+<dd>通知メッセージは送信されません。
+</dd>
+<dt><strong>*WRKSTN</strong></dt>
+<dd>通知メッセージがワークステーション・メッセージ待ち行列に送られます。この値はバッチ・モードでは無効です。
+</dd>
+</dl>
+<h3><strong>修飾子</strong><strong>1: </strong><strong>活動状態保管</strong><strong>メッセージ</strong><strong>待ち行列</strong>
+</h3>
+<dl>
+<dt><strong class="italic">名前</strong></dt>
+<dd>使用するメッセージ待ち行列の名前を指定します。
+</dd>
+</dl>
+<h3><strong>修飾子</strong><strong>2: ライブラリー</strong>
+</h3>
+<dl>
+<dt><strong class="underlined">*LIBL</strong></dt>
+<dd>最初に一致するものが見つかるまで，現行スレッドのライブラリー・リスト内のすべてのライブラリーが検索されます。
+</dd>
+</dl>
+<dl>
+<dt><strong>*CURLIB</strong></dt>
+<dd>メッセージ待ち行列を見つけるために，ジョブの現行ライブラリーが使用されます。ジョブの現行ライブラリーとして指定されているライブラリーがない場合は，QGPLライブラリーが使用されます。
+</dd>
+<dt><strong class="italic">名前</strong></dt>
+<dd>メッセージ待ち行列が入っているライブラリーの名前を指定してください。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table18" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#SAVRSTOBJ.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="SAVRSTOBJ.FILEMBR"></a>
+<h2>ファイル・メンバー (FILEMBR)</h2>
+<p>保管されるデータベース・ファイル・メンバーを指定します。このパラメーターは，ファイル名およびメンバー名の2つの部分からなります。
+</p>
+<p>ここで指定した各データベース・ファイルは，完全な名前，総称名，または*ALLのいずれかによって<strong>オブジェクト</strong><strong>(OBJ)</strong>パラメーターにも指定しなければなりません。<strong>オブジェクト・タイプ</strong><strong> (OBJTYPE)</strong>パラメーター値は，*ALLであるか*FILEを含んでいるかのいずれかでなければなりません。
+</p>
+<p>
+<strong>注:     </strong>STG(*FREE)が指定されている時には，このパラメーターを指定することはできません。
+</p>
+<h3><strong>要素</strong><strong>1: </strong><strong>ファイル</strong>
+</h3>
+<dl>
+<dt><strong class="underlined">*ALL</strong></dt>
+<dd>この値に続くメンバー名の値のリストは，OBJパラメーターに指定されたすべてのファイルに適用されます。
+</dd>
+<dt><strong class="italic">名前</strong></dt>
+<dd>保管するためにリストしたメンバーが入っているデータベース・ファイルの名前を指定します。各ファイルのメンバー・リストを使用して，最大50のファイルを指定することができます。
+<p>
+<strong>注:     </strong>総称名は，データベース・ファイル名には無効ですが，メンバー名には使用することができます。
+</p>
+<p>
+<strong>注:     </strong>重複ファイル名は使用することができません。
+</p>
+</dd>
+</dl>
+<h3><strong>要素</strong><strong>2: </strong><strong>メンバー</strong>
+</h3>
+<h3><strong>単一値</strong>
+</h3>
+<dl>
+<dt><strong class="underlined">*ALL</strong></dt>
+<dd>すべてのメンバーが，指定されたファイルから保管されます。
+</dd>
+<dt><strong>*NONE</strong></dt>
+<dd>メンバーは，指定されたファイルから保管されません。ファイル記述だけが保管されます。
+</dd>
+</dl>
+<h3><strong>その他の値（最大</strong><strong>50</strong><strong>個指定可能）</strong>
+</h3>
+<dl>
+<dt><strong class="italic">総称名</strong></dt>
+<dd>指定したファイルから保管するメンバーの総称名を指定してください。総称名は，1つ以上の文字とその後にアスタリスク(*)が付いた文字ストリングです。名前に*が指定されていない場合には，システムはその名前が完全なメンバー名であるとみなします。
+<p>
+<strong>注:     </strong>総称メンバー名を指定した場合には，ファイルに保管するファイルの総称名と一致するメンバー名が含まれていなければなりません。例えば，総称メンバー名としてPAY*を指定し，システムがPAYで始まるメンバーを検出することができない場合には，ファイルは保管されません。指定した総称名をもつメンバーが検出できないために，FILEMBRパラメーターによって指定されたファイルが保管されない場合には，診断メッセージが送られ，保管操作を終了し，保管されなかったファイル数を指定したエスケープ・メッセージが送られます。FILEMBRパラメーターに応じて処理されるファイルのうちの少なくとも1つに，指定された総称名をもつメンバーが含まれている場合には，診断メッセージは送られず，保管されなかったファイル数は最終完了メッセージに入ります。
+</p>
+</dd>
+<dt><strong class="italic">名前</strong></dt>
+<dd>指定のファイルから保管されるメンバーの名前を指定してください。
+<p>
+<strong>注:     </strong>特定のメンバー名を指定した場合には，指定したメンバーが，保管または復元するファイルの任意の部分に応じてファイル中に存在していなければなりません。
+</p>
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table19" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#SAVRSTOBJ.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="SAVRSTOBJ.ACCPTH"></a>
+<h2>アクセス・パス保管 (ACCPTH)</h2>
+<p>保管しようとしている物理ファイルに従属する論理ファイル・アクセス・パスも一緒に保管されるかどうかを指定します。アクセス・パスが保管されるのは，次の場合だけです。
+</p>
+<ul class="cds--list--unordered">
+<li class="cds--list__item">アクセス・パスが作成されているすべてのメンバーがこの保管操作に組み込まれた場合。
+</li>
+<li class="cds--list__item">保管時点でアクセス・パスが無効でないか，または損傷を受けていない場合。
+</li>
+</ul>
+<p>システムでは，アクセス・パスの保全性を確認するための検査が行われます。システムによって相違が見つかった場合には，アクセス・パスが再作成される結果となります。
+</p>
+<p>各物理ファイルと一緒に保管される論理ファイル・アクセス・パスの数を示す通知メッセージが送られます。アクセス・パスが作成される物理ファイルはすべて同じライブラリー内になければなりません。このパラメーターは，論理ファイル・オブジェクトを保管するものではなく，アクセス・パスの保管を制御するだけです。保管されたアクセス・パスの復元の詳細は，ISERIESバックアップおよび回復(SD88-5008)にあります。
+</p>
+<h3><strong>重要：基礎になっている物理ファイルと論理ファイルが異なるライブラリーに入っている場合には，アクセス・パスが保管されます。しかし，論理ファイルおよび基礎になっている物理ファイルが異なるライブラリーに入っていて，論理ファイルまたは物理ファイルが復元時に存在していない（災害時回復や，ファイルが削除されていたなど）場合には，アクセス・パスは復元されません。これらは再作成されます。論理ファイルに対してできるだけ速い復元操作を実行するためには，論理ファイルおよび基礎になっている物理ファイルが同じライブラリーに入っていなければならず，同時に保管しなければなりません。</strong>
+</h3>
+<dl>
+<dt><strong class="underlined">*SYSVAL</strong></dt>
+<dd>QSAVACCPTHシステム値は，保管しようとしている物理ファイルに従属する論理ファイル・アクセス・パスを保管するかどうかを決定します。
+</dd>
+<dt><strong>*NO</strong></dt>
+<dd>このコマンドで指定されたオブジェクトのみが保管されます。論理ファイルのアクセス・パスは保管されません。
+</dd>
+<dt><strong>*YES</strong></dt>
+<dd>指定された物理ファイルとその上にあるすべての適切な論理ファイル・アクセス・パスが保管されます。
+<p>
+<strong>注:     </strong>この値を指定しても，論理ファイルは保管されません。
+</p>
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table20" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#SAVRSTOBJ.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="SAVRSTOBJ.SAVFDTA"></a>
+<h2>保管ファイル・データ (SAVFDTA)</h2>
+<p>保管ファイル・オブジェクトの場合に，保管ファイルの記述を保管するか，あるいは保管ファイルの記述と内容の両方とも保管するかを指定します。
+</p>
+<dl>
+<dt><strong class="underlined">*YES</strong></dt>
+<dd>保管ファイルの記述と内容を保管します。
+</dd>
+<dt><strong>*NO</strong></dt>
+<dd>保管ファイルの記述だけを保管します。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table21" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#SAVRSTOBJ.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="SAVRSTOBJ.SPLFDTA"></a>
+<h2>スプール・ファイル・データ (SPLFDTA)</h2>
+<p>保管される出力待ち行列のスプール・ファイル・データおよび属性を保管するかどうかを指定します。
+</p>
+<dl>
+<dt><strong class="underlined">*NONE</strong></dt>
+<dd>スプール・ファイル・データは保管されません。
+</dd>
+<dt><strong>*ALL</strong></dt>
+<dd>保管される出力待ち行列ごとに，出力待ち行列で使用可能なスプール・ファイル・データがすべて保管されます。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table22" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#SAVRSTOBJ.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="SAVRSTOBJ.QDTA"></a>
+<h2>待ち行列データ (QDTA)</h2>
+<p>待ち行列オブジェクトの場合に，待ち行列の記述を保管するか，あるいは待ち行列の記述と内容の両方とも保管するかを指定します。
+</p>
+<dl>
+<dt><strong class="underlined">*NONE</strong></dt>
+<dd>待ち行列の記述だけが保管されます。
+</dd>
+<dt><strong>*DTAQ</strong></dt>
+<dd>標準データ待ち行列の記述と内容を保管します。分散データ管理機能(DDM)データ待ち行列の記述だけが保管されます。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table23" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#SAVRSTOBJ.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="SAVRSTOBJ.PVTAUT"></a>
+<h2>専用権限 (PVTAUT)</h2>
+<p>保管または復元されたオブジェクトで，専用権限を保管および復元するかどうかを指定します。
+</p>
+<dl>
+<dt><strong class="underlined">*NO</strong></dt>
+<dd>どの専用権限も，保管も復元もされませんでした。
+</dd>
+<dt><strong>*YES</strong></dt>
+<dd>専用権限は，オブジェクトで保管および復元されました。
+<p>
+<strong>注:     </strong>この値を指定するには，オブジェクトが保管されている元のシステムでシステム保管(*SAVSYS)またはすべてのオブジェクト(*ALLOBJ)特殊権限，および復元システムで*ALLOBJ特殊権限が必要です。
+</p>
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table24" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#SAVRSTOBJ.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="SAVRSTOBJ.STG"></a>
+<h2>記憶域 (STG)</h2>
+<p>保管しようとしているライブラリー中の指定されたメンバー（保管ファイルを除く），モジュール，プログラム，サービス・プログラム，SQLパッケージ，およびジャーナル・レシーバーのデータ部分によって占められているシステム記憶域が保管操作の一部として解放されるかどうかを指定します。これらのオブジェクトのデータ部分のみが解放され，オブジェクトの記述は解放されません。
+</p>
+<dl>
+<dt><strong class="underlined">*KEEP</strong></dt>
+<dd>保管しようとしているオブジェクトのデータ部分によって占められている記憶域は解放されません。
+</dd>
+<dt><strong>*FREE</strong></dt>
+<dd>保管しようとしている指定されたオブジェクトのデータ部分によって占められている記憶域が保管操作の一部として解放されます。ライブラリー中のすべてのオブジェクトが占めている記憶域は，そのライブラリー中のすべてのオブジェクトが正常に保管された後でのみ解放されます。
+<p>
+<strong>注:     </strong>起こる可能性があるプログラムの異常終了を防止するためには，*FREEが指定された時に，保管しようとしているプログラムがシステムで実行中であってはなりません。
+</p>
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table25" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#SAVRSTOBJ.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="SAVRSTOBJ.OPTION"></a>
+<h2>オプション (OPTION)</h2>
+<p>各オブジェクトの復元の処理方法を指定します。
+</p>
+<dl>
+<dt><strong class="underlined">*ALL</strong></dt>
+<dd>保管済みライブラリー内のすべてのオブジェクトはそのライブラリーに復元されます。保管済みライブラリー内のオブジェクトは，システム・ライブラリー内の現行バージョンを置き換えます。現行バージョンがないオブジェクトはシステム・ライブラリーに追加されます。現在ライブラリー内にあるが，媒体上にないオブジェクトはライブラリー内に残ります。
+</dd>
+<dt><strong>*NEW</strong></dt>
+<dd>保管済みライブラリー内の，システム・ライブラリーの現行バージョンに存在していないオブジェクトだけがライブラリーに追加されます。システム・ライブラリーに認識されていないオブジェクトだけが復元されて，認識されているオブジェクトは復元されません。このオプションは，保管後に削除されたオブジェクトまたはこのライブラリーに対して新規のオブジェクトを復元します。システム・ライブラリーに既に入っているバージョンが保管済みオブジェクトにある場合には，それらは復元されず，それぞれに関する通知メッセージが送信されますが，復元操作は続行されます。
+</dd>
+<dt><strong>*OLD</strong></dt>
+<dd>保管済みバージョンがあるライブラリー内のオブジェクトだけが復元されます。すなわち，現在ライブラリーに入っている各オブジェクトのバージョンが保管済みバージョンで置き換えられます。ライブラリーに対して認識されているオブジェクトだけが復元されます。すべての保管済みオブジェクトがもはやライブラリーのオンライン・バージョンの一部でない場合には，それぞれに関する通知メッセージが送信されますが，復元操作は続行されます。
+</dd>
+<dt><strong>*FREE</strong></dt>
+<dd>保管済みオブジェクトが復元されるのは，システム・ライブラリー内に存在していて，その空きスペースが解放されている場合だけです。各オブジェクトの保管済みバージョンはシステム上で以前に解放されたスペースに復元されます。このオプションは，保管時にスペースが解放されたオブジェクトを復元します。保管済みオブジェクトが既にライブラリーの現行バージョンの一部でない場合，あるいはオブジェクト用のスペースが解放されていない場合には，そのオブジェクトは復元されず，それぞれに関する通知メッセージが送信されます。復元操作は続行されて，すべての解放済みオブジェクトが復元されます。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table26" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#SAVRSTOBJ.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="SAVRSTOBJ.MBROPT"></a>
+<h2>DBメンバー・オプション (MBROPT)</h2>
+<p>システム上に存在しているデータベース・ファイルに対しては，復元するメンバーを指定します。*MATCHが使用されている場合には，保管されたファイルのメンバー・リストがシステム上の現行バージョンとメンバーごとに一致していなければなりません。ファイルを復元する場合には，存在していないファイルのすべてのメンバーが復元されます。
+</p>
+<dl>
+<dt><strong class="underlined">*MATCH</strong></dt>
+<dd>保管されたメンバーは，それらの存在しているメンバーのリストが現行システム・バージョンのリストとメンバーごとに一致している場合に復元されます。<strong>オブジェクト差異可能</strong><strong> (ALWOBJDIF)</strong>パラメーターで*ALLが指定されている場合には，MBROPT(*MATCH)は無効です。
+</dd>
+<dt><strong>*ALL</strong></dt>
+<dd>保管されたファイルにあるすべてのメンバーが復元されます。
+</dd>
+<dt><strong>*NEW</strong></dt>
+<dd>新しいメンバー（システムに認識されていないメンバー）のみが復元されます。
+</dd>
+<dt><strong>*OLD</strong></dt>
+<dd>システムにとって既知のメンバーのみが復元されます。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table27" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#SAVRSTOBJ.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="SAVRSTOBJ.ALWOBJDIF"></a>
+<h2>オブジェクト差異可能 (ALWOBJDIF)</h2>
+<p>保管したオブジェクトと復元されたオブジェクトとの間の相違が許されるかどうかを指定します。
+</p>
+<h3><strong>注</strong><strong>:</strong>
+</h3>
+<ol class="cds--list--ordered--temporary">
+<li class="cds--list__item">このパラメーターに*NONE以外の値を指定するには，全オブジェクト(*ALLOBJ)特殊権限が必要です。
+</li>
+<li class="cds--list__item">相違が検出された場合には，復元操作に関する最終メッセージは正常完了メッセージではなくエスケープ・メッセージになります。
+</li>
+</ol>
+<p>相違のタイプには以下のものがあります。
+</p>
+<ul class="cds--list--unordered">
+<li class="cds--list__item">権限リスト：保管されたオブジェクトには権限リストがあり，オブジェクトがシステム上にあるが同じ権限リストをもたないか，あるいはオブジェクトが存在せず保管システムと異なるシステムに復元されているかのどちらかです。
+<p>
+<strong>注:     </strong>保管されるオブジェクトに権限リストがなかった場合には，このパラメーターは影響しません。オブジェクトが存在している場合には，既存のオブジェクトの権限リストとともにこれが復元されます。存在しない場合には，これは権限リストなしで復元されます。
+</p>
+</li>
+</ul>
+<ul class="cds--list--unordered">
+<li class="cds--list__item">ファイル・レベルID : システム上のデータベース・ファイルの作成日時が，保管されたファイルの作成日時と一致しません。
+</li>
+</ul>
+<ul class="cds--list--unordered">
+<li class="cds--list__item">メンバー・レベルID : システム上のデータベース・ファイル・メンバーの作成日時が，保管されたメンバーの作成日時と一致しません。
+</li>
+</ul>
+<ul class="cds--list--unordered">
+<li class="cds--list__item">所有権：システム上のオブジェクトの所有者が，保管操作からのオブジェクトの所有者と異なっている。
+</li>
+</ul>
+<ul class="cds--list--unordered">
+<li class="cds--list__item">1次グループ：システム上のオブジェクトの1次グループが保管操作の時のオブジェクトの1次グループと異なっている。
+</li>
+</ul>
+<h3><strong>単一値</strong>
+</h3>
+<dl>
+<dt><strong class="underlined">*NONE</strong></dt>
+<dd>前述の相違のどれも復元操作では許可されません。個々の値のそれぞれの説明を参照して，相違の取り扱い方法を決定してください。
+</dd>
+</dl>
+<dl>
+<dt><strong>*COMPATIBLE</strong></dt>
+<dd>前述の相違のすべてが復元操作で許可されます。個々の値のそれぞれの説明を参照して，相違の取り扱い方法を決定してください。この値は，既存の物理データベース・ファイルと互換性のある相違を許可します。この値はまた，既存の論理データベース・ファイルとのファイル・レベルの相違も許可します。この値は通常，既存のデータベース・ファイルと互換性がない相違も許可する値*ALLよりも望ましいといえます。
+</dd>
+<dt><strong>*ALL</strong></dt>
+<dd>前述の相違のすべてが復元操作で許可されます。ファイル・レベルIDおよびメンバー・レベルIDの相違は，*FILELVL値と異なる取り扱いになります。ファイル・レベルの相違があって，<strong> DB</strong><strong>メンバー・オプション</strong><strong> (MBROPT)</strong>パラメーターに*ALLが指定された場合には，ファイルの既存のバージョンは名前変更され，ファイルの保管バージョンが復元されます。メンバー・レベルの相違があった場合には，メンバーの既存のバージョンは名前変更され，メンバーの保管バージョンが復元されます。この値では，保管されたデータは復元されますが，結果は正しくない可能性があります。復元されたデータと名前変更されたデータのどちらが正しいかを選択する必要があり，また，データベースに対して必要な訂正を行うことが必要になります。その他の相違の場合には，個々の値のそれぞれの説明を参照して，相違の取り扱い方法を決定してください。
+</dd>
+</dl>
+<h3><strong>その他の値（最大</strong><strong>4</strong><strong>個指定可能）</strong>
+</h3>
+<dl>
+<dt><strong>*AUTL</strong></dt>
+<dd>権限リストの相違は許可されます。保管されたオブジェクトに権限リストがあり，オブジェクトがシステム上にあるが同じ権限リストをもたない場合には，オブジェクトは既存のオブジェクトの権限リストともに復元されます。保管されたオブジェクトに権限リストがあり，オブジェクトが存在せず，これが保管システムと異なるシステムに復元されている場合には，このオブジェクトは復元され，権限リストにリンクされます。権限リストが存在していない場合には，共通権限は*EXCLUDEに設定されます。
+<p>この値が指定されない場合には，権限リストの相違は許可されません。保管されたオブジェクトに権限リストがあり，オブジェクトがシステム上にあるが同じ権限リストをもたない場合には，オブジェクトは復元されます。保管されたオブジェクトに権限リストがあり，オブジェクトが存在せず，これが保管システムと異なるシステムに復元されている場合には，このオブジェクトは復元されますが，権限リストにはリンクされず共通権限が*EXCLUDEに設定されます。
+</p>
+</dd>
+</dl>
+<dl>
+<dt><strong>*FILELVL</strong></dt>
+<dd>ファイル・レベルIDおよびメンバー・レベルIDの相違は許可されます。保管媒体上の物理ファイルがシステム上の物理ファイルとは異なるファイル・レベルIDまたはメンバー・レベルIDを持っていても，既存の物理ファイルの復元は試行されます。保管媒体上の形式レベルIDがシステム上の対応する物理ファイルの形式レベルIDと一致する物理ファイルの物理ファイル・データだけが復元されます。
+<p>この値が指定されない場合には，ファイル・レベルIDおよびメンバー・レベルIDの相違は許可されません。保管したオブジェクトと異なるファイル・レベルIDおよびメンバー・レベルIDをもつオブジェクトがシステム上に既に存在している場合には，オブジェクトは復元されません。
+</p>
+</dd>
+</dl>
+<dl>
+<dt><strong>*OWNER</strong></dt>
+<dd>所有権の相違は許可されます。オブジェクトが保管したオブジェクトと異なる所有者でシステム上に既に存在している場合には，オブジェクトはそのシステム上のオブジェクトの所有者で復元されます。
+<p>この値が指定されない場合には，所有権の相違は許可されません。保管したオブジェクトと異なる所有者をもつオブジェクトがシステム上に既に存在している場合には，オブジェクトは復元されません。
+</p>
+</dd>
+</dl>
+<dl>
+<dt><strong>*PGP</strong></dt>
+<dd>1次グループの相違は許可されます。保管したオブジェクトと異なる1次グループがシステム上に既に存在している場合には，オブジェクトはそのシステム上のオブジェクトの1次グループとともに復元されます。
+<p>この値が指定されない場合には，1次グループの相違は許可されません。保管したオブジェクトと異なる1次グループをもつオブジェクトがシステム上に既に存在している場合には，オブジェクトは復元されません。
+</p>
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table28" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#SAVRSTOBJ.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="SAVRSTOBJ.RSTLIB"></a>
+<h2>復元先ライブラリー (RSTLIB)</h2>
+<p>オブジェクトが復元されるライブラリーを指定します。
+</p>
+<dl>
+<dt><strong>*LIB</strong></dt>
+<dd>LIBパラメーターに指定されたライブラリーの名前が使用されます。
+</dd>
+<dt><strong class="italic">名前</strong></dt>
+<dd>オブジェクトを復元先のライブラリーの名前を指定してください。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table29" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#SAVRSTOBJ.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="SAVRSTOBJ.RSTASPDEV"></a>
+<h2>復元先ASP装置 (RSTASPDEV)</h2>
+<p>データが復元される補助記憶域プール(ASP)装置を指定します。
+</p>
+<p>
+<strong>注:     </strong>RSTASPDEVパラメーターかRSTASPパラメーターのいずれか一方を指定するか，両方とも指定しないことができます。
+</p>
+<dl>
+<dt><strong class="underlined">*SAVASPDEV</strong></dt>
+<dd>データは，保管された時と同じASPに復元されます。
+</dd>
+<dt><strong class="italic">名前</strong></dt>
+<dd>使用するASP装置の名前を指定します。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table30" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#SAVRSTOBJ.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="SAVRSTOBJ.RSTASP"></a>
+<h2>復元先ASP番号 (RSTASP)</h2>
+<p>オブジェクトが，その保管元の補助記憶域プール(ASP),システムASP (ASP番号1),または基本ユーザーASP (ASP番号2から32)に復元されるかどうかを指定します。
+</p>
+<p>一部のオブジェクトはユーザーASPには復元できません。ユーザーASPに復元できるオブジェクト・タイプの詳細は，ISERIESバックアップおよび回復(SD88-5008)にあります。ライブラリーがシステムASPに存在しているか，あるいはシステムASPに復元しようとしている場合には，ジャーナル，ジャーナル・レシーバー，および保管ファイルを基本ユーザーASPに復元することができます。その他のすべてのオブジェクト・タイプがライブラリーのASPに復元されます。
+</p>
+<h3><strong>重要：システム・ライブラリーまたはプロダクト・ライブラリー</strong><strong>(Q</strong><strong>または</strong><strong>#</strong><strong>で始まるライブラリー）は，ユーザー</strong><strong>ASP</strong><strong>内に作成されたり，ユーザー</strong><strong>ASP</strong><strong>に復元されてはいけません。それが行われると，予測できない結果の原因になる可能性があります。</strong>
+</h3>
+<dl>
+<dt><strong class="underlined">*SAVASP</strong></dt>
+<dd>オブジェクトは保管前と同じASPに復元されます。
+</dd>
+<dt><strong class="italic">1から32</strong></dt>
+<dd>ASP番号を指定します。指定したASPが1の場合には，指定したオブジェクトはシステムASPに復元され，指定したASPが2から32の場合には，オブジェクトは指定された基本ユーザーASPに復元されます。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table31" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#SAVRSTOBJ.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="SAVRSTOBJ.FRCOBJCVN"></a>
+<h2>強制オブジェクト変換 (FRCOBJCVN)</h2>
+<p>ユーザー・オブジェクトを，そのオブジェクトの復元時に，現行バージョンのオペレーティング・システムでの使用に必要な形式に変換するのか，または現行マシンと互換になるように変換するのかを指定します。
+</p>
+<h3><strong>注</strong><strong>:</strong>
+</h3>
+<ol class="cds--list--ordered--temporary">
+<li class="cds--list__item">このパラメーターが適用されるのは，*MODULE, *PGM, *SRVPGM,および*SQLPKGオブジェクト・タイプのユーザー・オブジェクトの場合だけです。
+</li>
+<li class="cds--list__item">オブジェクトには変換する作成データ（識別可能または不能）が入っていなければなりません。
+</li>
+<li class="cds--list__item">変換が必要なオブジェクトである（古いバージョンのオペレーティング・システム用に形式設定されているか，または現行マシンと非互換であるため）が，この復元操作中に変換されない場合，そのオブジェクトは最初に使用されるときに自動的に変換されます。
+</li>
+</ol>
+<h3><strong>単一値</strong>
+</h3>
+<dl>
+<dt><strong class="underlined">*SYSVAL</strong></dt>
+<dd>オブジェクトはQFRCCVNRSTシステム値の値に基づいて変換されます。
+</dd>
+<dt><strong>*NO</strong></dt>
+<dd>オブジェクトは復元操作中に変換されません。
+<p>
+<strong>注:     </strong>FRCOBJCVN(*NO)が指定されている場合には，QFRCCVNRSTシステム値の値は"0"または"1"のいずれかでなければなりません。
+</p>
+</dd>
+</dl>
+<h3><strong>要素</strong><strong>1: </strong><strong>復元中変換</strong>
+</h3>
+<dl>
+<dt><strong class="underlined">*YES</strong></dt>
+<dd>オブジェクトは復元操作中に変換されます。
+<h3><strong>注</strong><strong>:</strong>
+</h3>
+<ol class="cds--list--ordered--temporary">
+<li class="cds--list__item">FRCOBJCVN(*YES *RQD)が指定されている場合には，QFRCCVNRSTシステム値は値"0", "1",または"2"でなければなりません。FRCOBJCVN(*YES *RQD)はQFRCCVNRST値"0"または"1"を指定変更します。FRCOBJCVN(*YES *ALL)が指定されている場合には，QFRCCVNRSTは任意の有効な値をもつことができ，FRCOBJCVN(*YES *ALL)はQFRCCVNRSTシステム値を指定変更します。
+</li>
+<li class="cds--list__item">この値を指定すると，復元操作の時間は増加しますが，最初に使用するとき変換する必要性がなくなります。
+</li>
+</ol>
+</dd>
+</dl>
+<h3><strong>要素</strong><strong>2: </strong><strong>変換するオブジェクト</strong>
+</h3>
+<dl>
+<dt><strong class="underlined">*RQD</strong></dt>
+<dd>オブジェクトの変換は，現行オペレーティング・システムで使用されるため，または現行マシンと互換にするために変換が必要な場合のみ行われます。オブジェクトにすべての作成データ（識別可能または不能）が入っていない場合には，そのオブジェクトは変換することができず，復元されません。
+</dd>
+<dt><strong>*ALL</strong></dt>
+<dd>既に現行形式になっている互換のオブジェクトも含めて，すべてのオブジェクトが現行の形式およびマシン互換性に関係なく変換されます。ただし，オブジェクトにすべての作成データ（識別可能または不能）が入っていない場合には，そのオブジェクトは変換することができず，復元されません。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table32" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#SAVRSTOBJ.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="SAVRSTOBJ.STRJRN"></a>
+<h2>ジャーナル処理の開始 (STRJRN)</h2>
+<p>復元された新しいオブジェクトのジャーナル処理を開始するかどうかを指定します。
+</p>
+<h3><strong>注</strong><strong>:</strong>
+</h3>
+<ol class="cds--list--ordered--temporary">
+<li class="cds--list__item">ジャーナル処理が開始されるかどうかに関係なく，保管されたジャーナル情報は新しいオブジェクト用に復元されます。
+</li>
+<li class="cds--list__item">既存オブジェクトのジャーナル処理は変更されません。
+</li>
+</ol>
+<dl>
+<dt><strong class="underlined">*YES</strong></dt>
+<dd>保管時にジャーナル処理されていた新しいオブジェクトのジャーナル処理を開始します。
+</dd>
+<dt><strong>*NO</strong></dt>
+<dd>復元されたオブジェクトのジャーナル処理は開始されません。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table33" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#SAVRSTOBJ.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div><h2><a name="SAVRSTOBJ.COMMAND.EXAMPLES">例</a> </h2>
+<h3><strong>例</strong><strong>1:</strong><strong>総称オブジェクトの保管および復元</strong>
+</h3>
+<p>
+</p><pre>SAVRSTOBJ   OBJ(ABCD*)  LIB(ACE)  RMTLOCNAME(SYSTEM1)
+            OBJTYPE(*PGM)  ALWOBJDIF(*NONE)
+</pre>
+<p></p>
+<p>このコマンドは，ACEという名前のライブラリーにある文字ABCDで始まるオブジェクトを保管し，それらをSYSTEM1という名前のリモート・システムに復元します。
+</p>
+<h3><strong>例</strong><strong>2:</strong><strong>特定のオブジェクトの保管および復元</strong>
+</h3>
+<p>
+</p><pre>SAVRSTOBJ   OBJ(FLETCH)  LIB(CHASE)  RMTLOCNAME(SYSTEM1)
+            ALWOBJDIF(*ALL)  OPTION(*NEW)
+</pre>
+<p></p>
+<p>このコマンドは，CHASEという名前のライブラリーにあるFLETCHという名前のオブジェクトを保管し，そのオブジェクトがSYSTEM1という名前のリモート・システムにまだ存在しない場合には，そのリモート・システムにそれを復元します。
+</p>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table34" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#SAVRSTOBJ.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div><h2><a name="SAVRSTOBJ.ERROR.MESSAGES">エラー・メッセージ</a> </h2>
+<p><strong class="underlined">*ESCAPE </strong><strong class="underlined">メッセージ</strong>
+</p>
+<dl>
+<dt><strong>CPCAD80</strong></dt>
+<dd>&amp;1個のオブジェクトが保管され，復元された。
+</dd>
+<dt><strong>CPFAD8D</strong></dt>
+<dd>&amp;1操作時にエラーが起こった。
+</dd>
+<dt><strong>CPFAD80</strong></dt>
+<dd>&amp;1から&amp;2への接続を確立できない。
+</dd>
+<dt><strong>CPFAD81</strong></dt>
+<dd>リモート・ロケーション&amp;2にユーザー・プロファイル&amp;1が見つからない。
+</dd>
+<dt><strong>CPFAD82</strong></dt>
+<dd>リモート・ロケーション&amp;1が見つからない
+</dd>
+<dt><strong>CPFAD83</strong></dt>
+<dd>リモート・ロケーション&amp;1をソースのロケーションとすることはできない。
+</dd>
+<dt><strong>CPFAD84</strong></dt>
+<dd>OBJECTCONNECT内部エラー，機能コード&amp;1，戻りコード&amp;2。
+</dd>
+<dt><strong>CPFAD86</strong></dt>
+<dd>ロケーション名&amp;1が&amp;2をクローズすることはできない。
+</dd>
+<dt><strong>CPFAD88</strong></dt>
+<dd>&amp;1から&amp;2への接続を確立できない。
+</dd>
+<dt><strong>CPFAD93</strong></dt>
+<dd>APPCの障害が起こった。障害コードは&amp;3です。
+</dd>
+<dt><strong>CPF389C</strong></dt>
+<dd>OBJECTCONNECTが終了しました。機能コード: &amp;1,戻りコード: &amp;2。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table35" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#SAVRSTOBJ.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+</div>
+
+
+</body></html>

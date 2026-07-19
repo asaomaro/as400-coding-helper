@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="ja"><head><meta charset="utf-8"><title>従属定義  (DEP)</title></head>
+<body>
+<div role="main">
+<script type="text/javascript" src="../rzahg/synch.js"></script>
+<a name="DEP.Top_Of_Page"></a>
+<h1>従属定義  (DEP)</h1><div id="lastModifiedDate"><span>Last Updated</span>: 2021-04-13</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table0" width="100%" class="cds--data-table">
+<tbody><tr>
+<td class="valigntop alignleft"></td>
+<td class="valigntop alignright">
+<a href="#DEP.PARAMETERS.TABLE">パラメーター</a><br>
+<a href="#DEP.COMMAND.EXAMPLES">例</a><br>
+<a href="#DEP.ERROR.MESSAGES">エラー・メッセージ</a></td>
+</tr>
+</tbody></table></div></div>
+<div> <a name="DEP"></a>
+<p>従属定義(DEP)コマンド定義ステートメントは，チェックしなければならないパラメーターとパラメーター値との間の必要な関係を定義します。この関係は，1つ以上のパラメーターに特定の値が必要なことを示すこともあれば，パラメーター自体の存在が必要であることを示すこともあります。
+</p>
+<p>DEPステートメントは，CLコマンドの第2レベル・パラメーター構文検査を行います。第1レベルは，値のタイプ(*NAMEや*DATEなど）を定義するPARM, QUAL,および ELEMステートメント，さらには有効な値の範囲や有効な値のリストなどのパラメーター値制限によって行われます。DEPステートメントによって，パラメーター値の組み合わせがコマンド・ストリング内で構文的に正しいかを検証することができます。
+</p>
+<p>DEPステートメントは，指定されたパラメーターの最初の値しかチェックできません。値のリストを受け入れるパラメーターまたは複数の要素または修飾子をもつパラメーターの構文検査を行いたい場合には，コマンド・ストリングに第3レベルの構文検査を行う妥当性検査出口プログラムを作成することができます。PARM, QUAL, ELEM,または DEPステートメント，あるいは妥当性検査プログラムで構文検査を行うと，コマンド処理プログラムでパラメーター構文検査コードを除外するか，大幅に単純化できます。
+</p>
+<p>パラメーターに省略時の値があり，パラメーターが指定されていない場合には，DEPステートメントが仕様チェックを実行するのか，関係の検査を実行するのかによって検査方法が異なります。未指定のパラメーターについて<span class="var">仕様</span>の検査（そのパラメーターに値があるかどうかの検査）が行われる場合には，システムは値が指定されていないものと見なし，省略時の値は<span class="var">使用されません</span>。未指定のパラメーターについて<span class="var">関係</span>の検査が行われる場合には，その関係の検査でそのパラメーター値として省略時の値が使用されます。
+</p>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table1" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#DEP.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div>
+<h2><a name="DEP.PARAMETERS.TABLE">パラメーター</a></h2>
+<div class="tablenoborder"><div class="cds--data-table-container"><table id="parm_table2" summary="Parameters" border="1" cellpadding="4" cellspacing="0" class="cds--data-table">
+<!-- col1="10" col2="15" col3="30" col4="10" -->
+<tbody><tr>
+<th scope="col" class="valignbottom alignleft"><div class="cds--table-header-label">キーワード</div></th>
+<th scope="col" class="valignbottom alignleft"><div class="cds--table-header-label">記述</div></th>
+<th scope="col" class="valignbottom alignleft"><div class="cds--table-header-label">選択項目</div></th>
+<th scope="col" class="valignbottom alignleft"><div class="cds--table-header-label">ノーツ</div></th>
+</tr>
+<tr>
+<td class="valigntop" rowspan="4"><a href="#DEP.CTL"><strong>CTL</strong></a></td>
+<td class="valigntop">制御条件</td>
+<td class="valigntop">単一値: *ALWAYS<br>その他の値: <span class="var">要素リスト</span></td>
+<td class="valigntop" rowspan="4">必須, 定位置 1</td>
+</tr>
+<tr>
+<td class="valigntop">要素 1:  キーワードまたはキーワード参照</td>
+<td class="valigntop">
+<span class="var">文字値</span></td>
+</tr>
+<tr>
+<td class="valigntop">要素 2: 比較演算子</td>
+<td class="valigntop">
+*GT, *EQ, *GE, *NL, *LT, *NE, *LE, *NG</td>
+</tr>
+<tr>
+<td class="valigntop">要素 3: 値またはキーワード参照</td>
+<td class="valigntop">
+<span class="var">文字値</span></td>
+</tr>
+<tr>
+<td class="valigntop" rowspan="4"><a href="#DEP.PARM"><strong>PARM</strong></a></td>
+<td class="valigntop">従属パラメーター</td>
+<td class="valigntop">値 (最大 25 回の繰り返し): <span class="var">要素リスト</span></td>
+<td class="valigntop" rowspan="4">必須, 定位置 2</td>
+</tr>
+<tr>
+<td class="valigntop">要素 1:  キーワードまたはキーワード参照</td>
+<td class="valigntop">
+<span class="var">文字値</span></td>
+</tr>
+<tr>
+<td class="valigntop">要素 2: 比較演算子</td>
+<td class="valigntop">
+*GT, *EQ, *GE, *NL, *LT, *NE, *LE, *NG</td>
+</tr>
+<tr>
+<td class="valigntop">要素 3: 値またはキーワード参照</td>
+<td class="valigntop">
+<span class="var">文字値</span></td>
+</tr>
+<tr>
+<td class="valigntop" rowspan="3"><a href="#DEP.NBRTRUE"><strong>NBRTRUE</strong></a></td>
+<td class="valigntop">真の従属の数</td>
+<td class="valigntop">単一値: <strong class="underlined">*ALL</strong><br>その他の値: <span class="var">要素リスト</span></td>
+<td class="valigntop" rowspan="3">オプショナル, 定位置 3</td>
+</tr>
+<tr>
+<td class="valigntop">要素 1: 比較演算子</td>
+<td class="valigntop">
+*GT, *EQ, *GE, *NL, *LT, *NE, *LE, *NG</td>
+</tr>
+<tr>
+<td class="valigntop">要素 2: 真となる番号</td>
+<td class="valigntop">
+0-25</td>
+</tr>
+<tr>
+<td class="valigntop"><a href="#DEP.MSGID"><strong>MSGID</strong></a></td>
+<td class="valigntop">メッセージID</td>
+<td class="valigntop"><span class="var">名前</span>, <strong class="underlined">*NONE</strong></td>
+<td class="valigntop">オプショナル, 定位置 4</td>
+</tr>
+</tbody></table></div></div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table3" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#DEP.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+</div>
+<div> <a name="DEP.CTL"></a>
+<h2>制御条件 (CTL)</h2>
+<p>PARMステートメントに定義されたパラメーターの依存関係が真となる前に，真でなければならない制御条件を指定します。最初に指定されたキーワードは，制御パラメーターを示します。制御条件は，キーワード名だけで指定するか，あるいはキーワード名および制御条件に依存するパラメーターの存在が必要であるかどうかを決定するテスト関係で指定することができます。制御パラメーターと指定された値との関係は，指定された条件と一致しているかどうかを調べるために，テストすることができます。その場合には，制御パラメーターが依存するパラメーターは，PARMキーワードおよびNBRTRUEキーワードに指定された要件と一致していなければなりません。
+</p>
+<h3><strong>単一値</strong>
+</h3>
+<dl>
+<dt><strong>*ALWAYS</strong></dt>
+<dd>パラメーターの依存関係は，コマンドの形式に関係なく常に検査されます。
+</dd>
+</dl>
+<h3><strong>その他の値</strong>
+</h3>
+<dl>
+<dt><strong class="italic">キーワード名</strong></dt>
+<dd>依存関係を制御するために値を指定しなければならないパラメーターのキーワード名を指定してください。キーワード名は，これを定義するPARMステートメントの<strong>キーワード</strong><strong> (KWD)</strong>パラメーターに指定されたパラメーターの名前です。キーワードが指定された場合には，パラメーターの依存関係が検査されます。キーワード名は，TYPE(*NULL)で定義されたコマンド・パラメーターを参照することはできません。
+</dd>
+</dl>
+<dl>
+<dt><strong class="italic">&amp;キーワード名　比較演算子　値</strong></dt>
+<dd>制御パラメーターのキーワード名を指定し，その後に比較演算子(*LE, *EQなど）とテストする値を指定してください。テスト条件が一致していた場合には，制御パラメーターが依存しているパラメーターは，PARMキーワードに指定された要件と一致していなければなりません。値は32バイトを超えてはいけません。キーワード名は，TYPE(*NULL)で定義されたコマンド・パラメーターを参照することはできません。
+<p>PARMステートメントのSPCVALパラメーターまたはSNGVALパラメーターを使用して，テストの対象とする値が特殊値または単一値として指定されている場合は，置き換え値ではなく比較値を使用しなければなりません。
+</p>
+<p>比較演算子および値を指定した場合には，キーワードの値がテストされることを示すために，キーワード名の前にアンパーサンド(&amp;)を付けなければなりません。比較演算子および値を指定しない場合には，アンパーサンドを使用してはいけません。
+</p>
+</dd>
+</dl>
+<dl>
+<dt><strong class="italic"> (&amp;キーワード名比較演算子  &amp;キーワード名)</strong></dt>
+<dd>制御パラメーターのキーワード名を指定し，その後に比較演算子(*EQなど）と，値が制御パラメーターの値と比較される別のパラメーターのキーワード名を指定してください。キーワード名は，TYPE(*NULL)またはPASSVAL(*NULL)で定義されたコマンド・パラメーターを参照することはできません。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table4" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#DEP.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="DEP.PARM"></a>
+<h2>従属パラメーター (PARM)</h2>
+<p>CTLパラメーターによって定義された制御条件が真である場合にテストしなければならないパラメーターの依存関係を指定します。依存関係には，存在をテストされる1つ以上のパラメーターの名前，あるいはキーワード値と他のキーワード値または定数値との1つ以上のテスト関係を指定することができます。最大25のパラメーター依存関係をこのパラメーターに指定することができます。キーワード名は，TYPE(*NULL)で定義されたコマンド・パラメーターを参照することはできません。
+</p>
+<dl>
+<dt><strong class="italic">キーワード名</strong></dt>
+<dd>値が指定されていなければならない各パラメーターのキーワード名を指定してください。
+</dd>
+</dl>
+<dl>
+<dt><strong class="italic">&amp;キーワード名　比較演算子　値</strong></dt>
+<dd>各パラメーターのキーワード名を，比較演算子およびテストする値を後に付けて指定してください。キーワードの値がテストされることを示すために，キーワード名の前にアンパーサンドを付けなければなりません。値は32バイトを超えてはいけません。
+<p>比較の対象とする値が，PARMステートメントの<strong>特殊値</strong><strong> (SPCVAL)</strong>パラメーターまたは<strong>単一値</strong><strong> (SNGVAL)</strong>パラメーターを用いて特殊値または単一値として指定されている場合には，比較値ではなく置き換え値を使用しなければなりません。
+</p>
+</dd>
+</dl>
+<dl>
+<dt><strong class="italic">&amp;キーワード名比較演算子  &amp;キーワード名</strong></dt>
+<dd>1つのパラメーターのキーワード名の後に，比較演算子と別のパラメーターのキーワード名とを続けて指定してください。最初のパラメーターと2番目のパラメーターの値が比較されます。キーワード名は，PASSVAL(*NULL)で定義されたコマンド・パラメーターを参照することはできません。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table5" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#DEP.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="DEP.NBRTRUE"></a>
+<h2>真の従属の数 (NBRTRUE)</h2>
+<p>真となければならないパラメーター依存関係（このDEPステートメントのPARMパラメーターで定義）の数を指定します。真とならないと，診断メッセージ (このDEPステートメントのMSGIDパラメーターで定義）が送られ，コマンドは実行されません。
+</p>
+<p>このパラメーターのいずれの要素にもCL変数をコーディングすることはできません。
+</p>
+<h3><strong>単一値</strong>
+</h3>
+<dl>
+<dt><strong class="underlined">*ALL</strong></dt>
+<dd>すべてのパラメーター依存関係が真でなければなりません。これは，NBRTRUE(*EQ <strong>N</strong>)を指定することと同じです。<strong>N</strong>は，PARMパラメーターに定義されたパラメーター依存関係の数です。
+</dd>
+</dl>
+<h3><strong>要素</strong><strong>1: </strong><strong>比較演算子</strong>
+</h3>
+<dl>
+<dt><strong class="italic">比較演算子</strong></dt>
+<dd>比較演算子を指定してください。有効な値は*GT, *EQ, *GE, *NL, *LT, *NE, *LE,および*NGです。
+</dd>
+</dl>
+<h3><strong>要素</strong><strong>2: </strong><strong>真となる番号</strong>
+</h3>
+<dl>
+<dt><strong class="italic">0から25</strong></dt>
+<dd>指定した関係を満たすために真でなければならないパラメーター依存関係の数を指定してください。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table6" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#DEP.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="DEP.MSGID"></a>
+<h2>メッセージID (MSGID)</h2>
+<p>NBRTRUEパラメーターによって指定された論理式が<strong>偽</strong>として評価された場合に，ユーザーに送られる診断メッセージを指定します。
+</p>
+<dl>
+<dt><strong class="underlined">*NONE</strong></dt>
+<dd>特定の診断メッセージが送られません。代わりに，汎用メッセージCPD0150が送られます。コマンドのパラメーターの数によっては，汎用メッセージのテキストからパラメーター間構文エラーの原因を判別することが非常に困難になる場合があります。
+</dd>
+<dt><strong class="italic">メッセージID</strong></dt>
+<dd>ユーザーに送られる診断メッセージのメッセージIDを指定してください。
+<p>IDが3文字の接頭部<span class="var">CPF</span>または<span class="var">CPD</span>で始まるメッセージは，弊社提供のメッセージ・ファイルQCPFMSGから検索されます。ここに指定された他のすべてのメッセージは，これらの依存関係によって定義中のコマンドを作成するために使用されるCRTCMDコマンドのMSGFパラメーターによって識別されるメッセージ・ファイルから検索されます。このパラメーターには変数をコーディングすることはできません。
+</p>
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table7" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#DEP.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div><h2><a name="DEP.COMMAND.EXAMPLES">例</a> </h2>
+<h3><strong>例</strong><strong>1:</strong><strong>パラメーターの存在の検査</strong>
+</h3>
+<p>
+</p><pre>DEP   CTL(&amp;TYPE *EQ LIST)  PARM(ELEMLIST)
+</pre>
+<p></p>
+<p>TYPE(LIST)を指定する場合は，ELEMLISTパラメーターを指定する必要があります。TYPE(LIST)を指定したが，ELEMLISTパラメーターに値を指定しない場合には，汎用診断メッセージCPD0150が送られ，コマンドは実行されません。
+</p>
+<h3><strong>例</strong><strong>2:</strong><strong>複数パラメーターの存在の検査</strong>
+</h3>
+<p>
+</p><pre>DEP   CTL(FILE)  PARM(VOL LABEL) +
+      NBRTRUE(*EQ 2)  MSGID(USR1234)
+</pre>
+<p></p>
+<p>FILEパラメーターを指定する場合は，VOLパラメーターとLABELパラメーターの両方を指定する必要があります。VOLパラメーターとLABELパラメーターのうちの一方しか値を指定しない場合，あるいはいずれのパラメーターも指定しない場合には，診断メッセージUSR1234が送られ，コマンドは実行されません。コマンド分析プログラムは，CRTCMDコマンドのMSGFパラメーターに指定されたメッセージ・ファイルでメッセージ USR1234を検索します。
+</p>
+<h3><strong>例</strong><strong>3:</strong><strong>一緒には指定できないパラメーターの検査</strong>
+</h3>
+<p>
+</p><pre>DEP   CTL(*ALWAYS)  PARM(J1 D J2)  NBRTRUE(*EQ 1)
+</pre>
+<p></p>
+<p>J1, D,およびJ2パラメーターのうち1つだけに値を指定しなければなりません。これらのパラメーターのどれも指定しない場合，あるいは複数を指定した場合には，汎用診断メッセージCPD0150が送られ，コマンドは実行されません。
+</p>
+<h3><strong>例</strong><strong>4:1</strong><strong>つ以上の条件が真であるかどうかの検査</strong>
+</h3>
+<p>
+</p><pre>DEP   CTL(&amp;LIB *EQ MYLIB) +
+      PARM((&amp;PASSWORD *EQ XYZ5) (&amp;USRPRF *EQ B0BJ)) +
+      NBRTRUE(*GE 1)  MSGID(MSG1001)
+</pre>
+<p></p>
+<p>LIBパラメーター値がMYLIBである場合には，PASSWORDパラメーター値がXYZ5であるか，USRPRFパラメーター値がBOBJであるか，両方をPASSWORD(XYZ5)とUSRPRF(BOBJ)として指定する必要があります。LIB(MYLIB)であり，指定された依存関係条件のどちらも真でない場合は，診断メッセージMSG1001が送られ，コマンドは実行されません。
+</p>
+<h3><strong>例</strong><strong>5: </strong><strong>条件付き必要パラメーターの検査</strong>
+</h3>
+<p>
+</p><pre>DEP   CTL(&amp;OUTPUT *EQ *OUTFILE) PARM((&amp;OUTFILE *NE ' ')) +
+      NBRTRUE(*EQ 1) MSGID(CPD9861)
+DEP   CTL(&amp;OUTPUT *NE *OUTFILE) PARM((&amp;OUTFILE *EQ ' ')) +
+      NBRTRUE(*EQ 1) MSGID(CPD9862)
+DEP   CTL(&amp;OUTMBR *NE *FIRST) PARM((&amp;OUTFILE *EQ ' ')) +
+      NBRTRUE(*EQ 0) MSGID(CPD9867)
+</pre>
+<p></p>
+<p>関連する3つのパラメーター間の関係は次のようにチェックされます。
+</p>
+<ol class="cds--list--ordered--temporary">
+<li class="cds--list__item">OUTPUTパラメーターが*OUTFILEである場合は，OUTFILEパラメーターにブランクでない値を指定する必要があります。さもないと，メッセージCPD9861が送られます。メッセージIDは「CPD」で始まるので，オペレーティング・システムは, メッセージ・ファイルQCPFMSG内でこのメッセージを検索します。OUTFILEパラメーターが修飾オブジェクト名であると，最初のQUALの値だけがチェックされます。
+</li>
+<li class="cds--list__item">OUTFILEパラメーターがMIN(0)としてコーディングされていて，省略時の値(DFT)がないと，OUTPUTパラメーターの値が*OUTFILE以外である場合は，OUTFILEパラメーターはブランクでなければなりません。さもないと，メッセージCPD9862が送られます。
+</li>
+<li class="cds--list__item">OUTMBRパラメーターの値が*FIRST以外の値である場合には，OUTFILEパラメーターにはブランクでない値を指定する必要があります。さもないと，メッセージCPD9867が送られます。OUTMBRパラメーターが2つの要素からなる値のリストであると，最初のELEMの値だけがチェックされます。
+</li>
+</ol>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table8" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#DEP.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div><h2><a name="DEP.ERROR.MESSAGES">エラー・メッセージ</a> </h2>
+<p>なし
+</p>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table9" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#DEP.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+</div>
+
+
+</body></html>

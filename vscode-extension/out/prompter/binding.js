@@ -102,6 +102,7 @@ function toSerializableState(definition, state, resolved) {
             options: field.parameter.options,
             error: field.error,
             hasHelp: Boolean((0, commandHelp_1.buildParameterHelpText)(field.parameter)),
+            commandValued: field.parameter.valueKind === "command",
             help: (0, commandHelp_1.buildParameterHelpText)(field.parameter),
             maxOccurrences: field.parameter.maxOccurrences,
             maxLength: field.parameter.attributes?.maxLength,
@@ -194,10 +195,15 @@ function buildHtml(state, options) {
         const helpIcon = field.hasHelp
             ? `<span class="help-indicator" data-parameter-name="${escapeHtml(field.name)}" data-help="${escapeHtml(field.help ?? "")}" title="F1 でヘルプを表示">?</span>`
             : "";
+        // 値そのものがコマンドの欄（SBMJOB の CMD など）は、そこでさらに
+        // プロンプターを開ける。SEU の F4 in F4 に相当する。
+        const promptButton = field.commandValued
+            ? `<span class="prompt-indicator" data-parameter-name="${escapeHtml(field.name)}" title="F4 でコマンドのプロンプターを開く">F4</span>`
+            : "";
         return `
       <div class="field"${buildFieldRuleAttributes(field)}>
         <label>
-          <span>${escapeHtml(field.label)}<span class="required-mark">${field.required ? " *" : ""}</span>${helpIcon}</span>
+          <span>${escapeHtml(field.label)}<span class="required-mark">${field.required ? " *" : ""}</span>${helpIcon}${promptButton}</span>
           ${controlHtml}
         </label>
         ${errorHtml}
@@ -224,6 +230,15 @@ function buildHtml(state, options) {
     .error { color: #be1100; font-size: 0.9em; }
     .buttons { margin-top: 12px; }
     .help-indicator { margin-left: 6px; color: #8ab; cursor: pointer; }
+    .prompt-indicator {
+      margin-left: 6px;
+      padding: 0 4px;
+      border: 1px solid #8ab;
+      border-radius: 3px;
+      color: #8ab;
+      cursor: pointer;
+      font-size: 0.85em;
+    }
     .help-overlay {
       position: fixed;
       inset: 0;
@@ -939,6 +954,38 @@ function buildHtml(state, options) {
       });
     }
 
+    // 値そのものがコマンドの欄で、さらにプロンプターを開く（F4 in F4）。
+    // 開くのは拡張機能側。結果は setValue メッセージで返ってくる。
+    function openCommandPrompter(name) {
+      const input = document.querySelector('[name="' + name + '"]');
+      vscode.postMessage({
+        type: 'promptCommand',
+        name: name,
+        value: input ? input.value : ''
+      });
+    }
+
+    const promptIcons = document.querySelectorAll('.prompt-indicator');
+    for (const icon of promptIcons) {
+      icon.addEventListener('click', function () {
+        openCommandPrompter(this.getAttribute('data-parameter-name'));
+      });
+    }
+
+    // コマンドの欄にフォーカスがある状態の F4 でも開く（SEU と同じ操作）。
+    document.addEventListener('keydown', function (event) {
+      if (event.key !== 'F4') return;
+      const active = document.activeElement;
+      if (!active || !active.name) return;
+      const indicator = document.querySelector(
+        '.prompt-indicator[data-parameter-name="' + active.name + '"]'
+      );
+      if (indicator) {
+        event.preventDefault();
+        openCommandPrompter(active.name);
+      }
+    });
+
     // バックドロップのクリックでヘルプを閉じる
     const backdrop = document.querySelector('.help-backdrop');
     if (backdrop) {
@@ -946,6 +993,17 @@ function buildHtml(state, options) {
         hideHelp();
       });
     }
+
+    // 入れ子のプロンプターで確定した値を欄に戻す。
+    window.addEventListener('message', function (event) {
+      const message = event.data;
+      if (!message || message.type !== 'setValue') return;
+      const input = document.querySelector('[name="' + message.name + '"]');
+      if (input) {
+        input.value = message.value;
+        input.dispatchEvent(new Event('input', { bubbles: true }));
+      }
+    });
 
     // 起動確認用
     vscode.postMessage({ type: 'ready' });

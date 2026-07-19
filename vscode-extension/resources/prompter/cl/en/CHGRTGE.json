@@ -1,0 +1,278 @@
+{
+  "keyword": "CHGRTGE",
+  "description": "Change Routing Entry (CHGRTGE)",
+  "parameters": [
+    {
+      "name": "SBSD",
+      "description": "Subsystem description",
+      "help": "Subsystem description (SBSD)\n\nSpecifies the name and library of the subsystem description containing the routing entry that is being changed.\n\nThis is a required parameter.\n\nQualifier 1: Subsystem description\n\nQualifier 2: Library",
+      "inputType": "group",
+      "required": true,
+      "groupKind": "qualified",
+      "children": [
+        {
+          "name": "LIB",
+          "description": "Library",
+          "help": "指定できる特殊値: *LIBL, *CURLIB",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "*LIBL",
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          }
+        },
+        {
+          "name": "SBSD",
+          "description": "Subsystem description",
+          "inputType": "text",
+          "required": true,
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          }
+        }
+      ],
+      "positional": 1
+    },
+    {
+      "name": "SEQNBR",
+      "description": "Routing entry sequence number",
+      "help": "Routing entry sequence number (SEQNBR)\n\nSpecifies the sequence number of the routing entry that is added or changed. Routing data is matched against the routing entry compare values in ascending sequence number order. Searching ends when a match occurs or the last routing entry is reached. Therefore, if more than one match possibility exists, only the first match is processed.\n\nThis is a required parameter.",
+      "inputType": "number",
+      "required": true,
+      "attributes": {
+        "numericOnly": true
+      },
+      "positional": 2
+    },
+    {
+      "name": "CMPVAL",
+      "description": "Comparison data",
+      "help": "Comparison data (CMPVAL)\n\nSpecifies a value that is compared with the routing data to determine whether this routing entry is used for starting a routing step for the job. If the routing data matches the routing entry compare value, that routing entry is used. A starting position in the starting data character string can be used to specify the starting position in the routing data for comparison against the routing entry compare value.\n\nSingle values\n\nElement 1: Compare value\n\nElement 2: Starting position",
+      "inputType": "group",
+      "required": false,
+      "groupKind": "elements",
+      "singleValues": [
+        "*SAME",
+        "*ANY"
+      ],
+      "children": [
+        {
+          "name": "CMPVAL_E1",
+          "description": "Compare value",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "*SAME"
+        },
+        {
+          "name": "CMPVAL_E2",
+          "description": "Starting position",
+          "help": "指定できる特殊値: *SAME",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "*SAME",
+          "attributes": {
+            "characterSet": "upper"
+          }
+        }
+      ],
+      "positional": 3
+    },
+    {
+      "name": "PGM",
+      "description": "Program to call",
+      "help": "Program to call (PGM)\n\nSpecifies the name and library of the program called as the first program run in the routing step. No parameters can be passed to the specified program. The program name can be either explicitly specified in the routing entry, or extracted from the routing data. If a program name is specified in a routing entry, selection of that routing entry results in the routing entry program being called (regardless of the program name passed in an EVOKE function). If the program specified in the EVOKE function is called, *RTGDTA must be specified. If the program does not exist when the routing entry is added or changed, a library qualifier must be specified because the qualified program name is kept in the subsystem description.\n\nSingle values\n\nQualifier 1: Program to call\n\nQualifier 2: Library\n\nNote: If the program does not exist when this routing entry is changed, a library qualifier must be specified because the qualified program name is kept in the subsystem description.",
+      "inputType": "group",
+      "required": false,
+      "groupKind": "qualified",
+      "singleValues": [
+        "*SAME",
+        "*RTGDTA"
+      ],
+      "children": [
+        {
+          "name": "PGM_LIB",
+          "description": "Library",
+          "help": "指定できる特殊値: *LIBL, *CURLIB",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "*LIBL",
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          }
+        },
+        {
+          "name": "PGM",
+          "description": "Program to call",
+          "inputType": "text",
+          "required": false,
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          },
+          "defaultValue": "*SAME"
+        }
+      ],
+      "positional": 4
+    },
+    {
+      "name": "CLS",
+      "description": "Class",
+      "help": "Class (CLS)\n\nSpecifies the name and library of the class used for the routing steps started through this routing entry. The class defines the attributes of the routing step's running environment. If the class does not exist when the routing entry is added, a library qualifier must be specified because the qualified class name is kept in the subsystem description.\n\nSingle values\n\nQualifier 1: Class\n\nQualifier 2: Library",
+      "inputType": "group",
+      "required": false,
+      "groupKind": "qualified",
+      "singleValues": [
+        "*SAME",
+        "*SBSD"
+      ],
+      "children": [
+        {
+          "name": "CLS_LIB",
+          "description": "Library",
+          "help": "指定できる特殊値: *LIBL, *CURLIB",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "*LIBL",
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          }
+        },
+        {
+          "name": "CLS",
+          "description": "Class",
+          "inputType": "text",
+          "required": false,
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          },
+          "defaultValue": "*SAME"
+        }
+      ]
+    },
+    {
+      "name": "MAXACT",
+      "description": "Maximum active routing steps",
+      "help": "Maximum active routing steps (MAXACT)\n\nSpecifies the maximum number of routing steps (jobs) that can be active at the same time through this routing entry. In a job, only one routing step is active at a time. When a subsystem is active and the maximum number of routing steps is reached, any subsequent attempt to start a routing step through this routing entry fails. The job that attempted to start the routing step is ended, and a message is sent by the subsystem to the job's log.\n\n指定できる特殊値: *SAME, *NOMAX",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*SAME",
+      "attributes": {
+        "characterSet": "upper"
+      }
+    },
+    {
+      "name": "POOLID",
+      "description": "Storage pool identifier",
+      "help": "Storage pool identifier (POOLID)\n\nSpecifies the pool identifier of the storage pool in which the program runs. The pool identifier specified here relates to the storage pools in the subsystem description.\n\n指定できる特殊値: *SAME",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*SAME",
+      "attributes": {
+        "characterSet": "upper"
+      }
+    },
+    {
+      "name": "THDRSCAFN",
+      "description": "Thread resources affinity",
+      "help": "Thread resources affinity (THDRSCAFN)\n\nSpecifies the affinity of threads to system resources.\n\nSingle values\n\nElement 1: Group\n\nElement 2: Level",
+      "inputType": "group",
+      "required": false,
+      "groupKind": "elements",
+      "singleValues": [
+        "*SAME",
+        "*SYSVAL"
+      ],
+      "children": [
+        {
+          "name": "THDRSCAFN_E1",
+          "description": "Group",
+          "inputType": "dropdown",
+          "required": false,
+          "attributes": {
+            "characterSet": "upper"
+          },
+          "options": [
+            {
+              "label": "*SAME",
+              "value": "*SAME"
+            },
+            {
+              "label": "*SYSVAL",
+              "value": "*SYSVAL"
+            },
+            {
+              "label": "*NOGROUP",
+              "value": "*NOGROUP"
+            },
+            {
+              "label": "*GROUP",
+              "value": "*GROUP"
+            }
+          ],
+          "defaultValue": "*SAME"
+        },
+        {
+          "name": "THDRSCAFN_E2",
+          "description": "Level",
+          "inputType": "dropdown",
+          "required": false,
+          "attributes": {
+            "characterSet": "upper"
+          },
+          "options": [
+            {
+              "label": "*NORMAL",
+              "value": "*NORMAL"
+            },
+            {
+              "label": "*HIGH",
+              "value": "*HIGH"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "RSCAFNGRP",
+      "description": "Resources affinity group",
+      "help": "Resources affinity group (RSCAFNGRP)\n\nSpecifies whether or not jobs using this routing entry will be grouped together having affinity to the same system resources (processors and memory). A value of *YES for this parameter will take precedence over the QTHDRSCAFN system value when set to *NOGROUP.",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*SAME",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*SAME",
+          "value": "*SAME"
+        },
+        {
+          "label": "*NO",
+          "value": "*NO"
+        },
+        {
+          "label": "*YES",
+          "value": "*YES"
+        }
+      ]
+    }
+  ],
+  "examples": [
+    {
+      "code": "CHGRTGE SBSD(LIB5/ORDER) SEQNBR(1478) CLS(LIB6/SOFAST) POOLID(3)"
+    },
+    {
+      "code": "CHGRTGE SBSD(T7/PGMR) SEQNBR(157) PGM(T7/INTDEV)"
+    }
+  ],
+  "source": {
+    "url": "https://www.ibm.com/docs/en/ssw_ibm_i_74/cl/chgrtge.htm",
+    "version": "IBM i 7.4"
+  }
+}

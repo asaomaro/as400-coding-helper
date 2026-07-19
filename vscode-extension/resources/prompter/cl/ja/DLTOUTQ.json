@@ -1,0 +1,100 @@
+{
+  "keyword": "DLTOUTQ",
+  "description": "出力待ち行列削除 (DLTOUTQ)",
+  "help": "出力待ち行列削除(DLTOUTQ)コマンドは，指定された出力待ち行列(1つまたは複数）をシステムから削除します。",
+  "parameters": [
+    {
+      "name": "OUTQ",
+      "description": "出力待ち行列",
+      "help": "削除する出力待ち行列を指定します。特定の出力待ち行列または総称出力待ち行列を指定することができます。いずれのタイプの場合も，任意にライブラリー名によって修飾することができます。\n\nこれは必須パラメーターです。\n\n次のQXXXライブラリーは弊社提供のものですが，これらには一般的によく変更されるユーザー・データが収められます。したがって，これらのライブラリーは「ユーザー・ライブラリー」と見なされ，検索されます。",
+      "inputType": "group",
+      "required": true,
+      "groupKind": "qualified",
+      "children": [
+        {
+          "name": "LIB",
+          "description": "ライブラリー",
+          "help": "*LIBL: 最初に一致するものが見つかるまで，現行スレッドのライブラリー・リスト内のすべてのライブラリーが検索されます。\n*USRLIBL: 現行ライブラリー項目が現行スレッドのライブラリー・リストに存在する場合には，現行ライブラリーおよびライブラリー・リストのユーザー部分にあるライブラリーが検索されます。現行ライブラリー項目がない場合には，ライブラリー・リストのユーザー部分にあるライブラリーが検索されます。\n*ALL: QSYSを含むシステム上のすべてのライブラリーが検索されます。\n*ALLUSR: すべてのユーザー・ライブラリーが検索されます。次のものを除き，英字Qで始まらない名前のすべてのライブラリーが検索されます。 #CGULIB #DSULIB #SEULIB #COBLIB #RPGLIB #DFULIB #SDALIB 次のQXXXライブラリーは弊社提供のものですが，これらには一般的によく変更されるユーザー・データが収められます。したがって，これらのライブラリーは「ユーザー・ライブラリー」と見なされ，検索されます。 QDSNX QRCLXXXXX QUSRDIRDB QUSRVI QGPL QSRVAGT QUSRIJS QUSRVXRXMX QGPL38 QSYS2 QUSRINFSKR QWQCENT QMGTC QSYS2XXXXX QUSRNOTES QWQREPOS QMGTC2 QS36F QUSROND QMPGDATA QUSER38 QUSRPOSGS QMQMDATA QUSRADSM QUSRPOSSA QMQMPROC QUSRBRM QUSRPYMSVR QPFRDATA QUSRDIRCF QUSRRDARS QRCL QUSRDIRCL QUSRSYS 'XXXXX'は1次補助記憶域プール(ASP)の番号です。 前のリリースのCLプログラム内でコンパイルされるユーザー・コマンドを入れるために，弊社がサポートする前の各リリース用にQUSRVXRXMXの形式の別のライブラリー名を作成することができます。QUSRVXRXMXユーザー・ライブラリーのVXRXMXは弊社が引き続きサポートしている前のリリースのバージョン，リリース，およびモディフィケーション・レベルです。\n*CURLIB: 出力待ち行列を見つけるために，ジョブの現行ライブラリーが使用されます。ライブラリー・リストに現行ライブラリー項目が存在しない場合には，QGPLが使用されます。\n出力待ち行列が入っているライブラリーの名前を指定してください。",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "*LIBL",
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          }
+        },
+        {
+          "name": "OUTQ",
+          "description": "出力待ち行列",
+          "help": "削除する出力待ち行列の総称名を指定してください。総称名は，'AR*'などのように1つ以上の文字とその後にアスタリスク(*)が付いた文字ストリングです。総称名を指定した場合には，総称出力待ち行列名と同じ接頭部の名前を持つすべての出力待ち行列が削除されます。削除する出力待ち行列名を検索されるライブラリーは，指定したか，あるいは省略時の値として使用されるライブラリー修飾子によって決まります。\n削除する出力待ち行列の名前を指定します。",
+          "inputType": "text",
+          "required": true,
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          }
+        }
+      ],
+      "positional": 1
+    }
+  ],
+  "threadSafe": false,
+  "environment": "すべての環境 (*ALL)",
+  "restrictions": [
+    "削除する出力待ち行列にはなにも項目を入れることはできません。各ファイルの出力は印刷されるか，削除されるか，または別の出力待ち行列に移動しなければなりません。",
+    "サブシステムは活動状態であってはなりません。",
+    "待ち行列はスプール書き出しプログラムで使用中であってはなりません。",
+    "待ち行列がシステムによって特定の印刷装置用に作成された場合は，それを削除することはできません。"
+  ],
+  "examples": [
+    {
+      "code": "DLTOUTQ OUTQ(PUNCH2)"
+    }
+  ],
+  "errorMessages": [
+    {
+      "id": "CPF1763",
+      "text": "１つまたは複数のライブラリーを割り振ることができない。"
+    },
+    {
+      "id": "CPF2105",
+      "text": "&2に，タイプ*&3のオブジェクト&1が見つからない。"
+    },
+    {
+      "id": "CPF2110",
+      "text": "ライブラリー&1が見つかりません。"
+    },
+    {
+      "id": "CPF2117",
+      "text": "タイプ*&3の&4個のオブジェクトが削除され，&5個のオブジェクトが削除されなかった。"
+    },
+    {
+      "id": "CPF2182",
+      "text": "ライブラリー&1は認可されていない。"
+    },
+    {
+      "id": "CPF2207",
+      "text": "ライブラリー&3のタイプ*&2のオブジェクト&1の使用を認可されていない。"
+    },
+    {
+      "id": "CPF3330",
+      "text": "必要な資源が使用できない。"
+    },
+    {
+      "id": "CPF3360",
+      "text": "&2の出力待ち行列&1は削除されなかった。出力待ち行列は使用中です。"
+    },
+    {
+      "id": "CPF3467",
+      "text": "出力待ち行列&1が削除されてから，再作成された。"
+    },
+    {
+      "id": "CPF3469",
+      "text": "出力待ち行列に対する操作は認められない。"
+    }
+  ],
+  "source": {
+    "url": "https://www.ibm.com/docs/ja/ssw_ibm_i_74/cl/dltoutq.htm",
+    "version": "IBM i 7.4"
+  }
+}

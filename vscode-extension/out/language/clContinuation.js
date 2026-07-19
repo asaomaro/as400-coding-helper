@@ -35,12 +35,12 @@ var __importStar = (this && this.__importStar) || (function () {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getLogicalCommandRange = getLogicalCommandRange;
 const vscode = __importStar(require("vscode"));
+const clCommandParser_1 = require("../prompter/clCommandParser");
 function getLogicalCommandRange(document, lineNumber) {
     let start = lineNumber;
     let end = lineNumber;
     for (let line = lineNumber - 1; line >= 0; line -= 1) {
-        const text = document.lineAt(line).text;
-        if (text.trimEnd().endsWith("+")) {
+        if ((0, clCommandParser_1.isContinuedLine)(document.lineAt(line).text)) {
             start = line;
         }
         else {
@@ -48,8 +48,7 @@ function getLogicalCommandRange(document, lineNumber) {
         }
     }
     for (let line = lineNumber + 1; line < document.lineCount; line += 1) {
-        const text = document.lineAt(line).text;
-        if (document.lineAt(line - 1).text.trimEnd().endsWith("+")) {
+        if ((0, clCommandParser_1.isContinuedLine)(document.lineAt(line - 1).text)) {
             end = line;
         }
         else {

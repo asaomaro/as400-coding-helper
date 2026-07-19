@@ -1,0 +1,242 @@
+{
+  "keyword": "CHGSBSD",
+  "description": "サブシステム記述変更 (CHGSBSD)",
+  "help": "サブシステム記述変更 (CHGSBSD)コマンドは，指定されたサブシステム記述の操作属性を変更します。サブシステム記述は，サブシステムが活動状態である間に変更することができます。ただし，ジョブが中断される可能性があるので，サブシステムが活動状態である間に 記憶域プール (POOLS) パラメーターに*RMV値を指定することはできません。",
+  "parameters": [
+    {
+      "name": "SBSD",
+      "description": "サブシステム記述",
+      "help": "変更するサブシステム記述の名前およびライブラリーを指定します。\n\nこれは必須パラメーターです。",
+      "inputType": "group",
+      "required": true,
+      "groupKind": "qualified",
+      "children": [
+        {
+          "name": "LIB",
+          "description": "ライブラリー",
+          "help": "*LIBL: 一致が見つかるまで，スレッドのライブラリー・リストの中のすべてのライブラリーが検索されます。\n*CURLIB: オブジェクトを見つけるためにスレッドの現行ライブラリーが使用されます。スレッドの現行ライブラリーとしてライブラリーが指定されていない場合，QGPLライブラリーが使用されます。\nサブシステム記述が入っているライブラリーを指定します。",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "*LIBL",
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          }
+        },
+        {
+          "name": "SBSD",
+          "description": "サブシステム記述",
+          "help": "変更するサブシステム記述の名前を指定します。",
+          "inputType": "text",
+          "required": true,
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          }
+        }
+      ],
+      "positional": 1
+    },
+    {
+      "name": "POOLS",
+      "description": "記憶域プール",
+      "help": "1つまたは複数の記憶域プール定義のIDおよびこれらに対する変更データを指定します。\n\n既存のプール定義を除去する時には，サブシステムは非活動状態でなければなりません。\n\n指定されない各既存のプール定義のサイズおよび活動レベルは変わりません。",
+      "inputType": "group",
+      "required": false,
+      "groupKind": "elements",
+      "singleValues": [
+        "*SAME"
+      ],
+      "children": [
+        {
+          "name": "POOLS_E1",
+          "description": "プールID",
+          "help": "変更する記憶域プール定義のプールIDを指定します。",
+          "inputType": "number",
+          "required": false,
+          "attributes": {
+            "numericOnly": true
+          },
+          "defaultValue": "*SAME"
+        },
+        {
+          "name": "POOLS_E2",
+          "description": "記憶域サイズ",
+          "help": "*BASE: 指定されたプール定義は，他のサブシステムと共用できる基本システム・プールとして定義されます。基本プールの最小サイズおよび活動レベルは，システム値QBASPOOLおよびQBASACTLVLに指定します。\n*NOSTG: 最初は，記憶域も活動レベルもプールに割り当てられません（非活動状態）。\n*RMV: 指定されたプール定義がサブシステム記述から除去されます。\n*INTERACT: 指定されたプール定義は，対話式作業で使用される共用プールとして定義されます。共用プールのサイズおよび活動レベルは，共用記憶域プールの変更 (CHGSHRPOOL)コマンドを使用して指定されます。\n*SPOOL: 指定されたプール定義は，スプール書き出しプログラムで使用される共用プールとして定義されます。共用プールのサイズおよび活動レベルはCHGSHRPOOLコマンドを使用して指定します。\n*SHRPOOLNN: 指定されたプール定義は汎用共用プールとして定義されます。60個の汎用共用プールがあり，特殊値*SHRPOOL1から*SHRPOOL60によって識別されます。共用プールのサイズおよび活動レベルは，CHGSHRPOOLコマンドを使用して指定されます。\n指定された記憶域プールの記憶域サイズを指定してください。少なくとも256キロバイトの値を指定しなければなりません。サイズは，要素4: サイズ計測単位を使用してキロバイトまたはメガバイトで指定されます。 注: プールのサイズを変更すると，補助記憶域に書き込むページが必要になることがあります。システムが大規模の変更を完了するために必要な時間は，省略時の待ち時間を上回る可能性があります。これが起こる場合は，変更が完了してもメッセージCPF1001 (システム応答の待機時間が満了した。)が出されます。\n\n指定できる特殊値: *SHRPOOL1, *SHRPOOL2, *SHRPOOL3, *SHRPOOL4, *SHRPOOL5, *SHRPOOL6, *SHRPOOL7, *SHRPOOL8, *SHRPOOL9, *SHRPOOL10, *SHRPOOL11, *SHRPOOL12, *SHRPOOL13, *SHRPOOL14, *SHRPOOL15, *SHRPOOL16, *SHRPOOL17, *SHRPOOL18, *SHRPOOL19, *SHRPOOL20, *SHRPOOL21, *SHRPOOL22, *SHRPOOL23, *SHRPOOL24, *SHRPOOL25, *SHRPOOL26, *SHRPOOL27, *SHRPOOL28, *SHRPOOL29, *SHRPOOL30, *SHRPOOL31, *SHRPOOL32, *SHRPOOL33, *SHRPOOL34, *SHRPOOL35, *SHRPOOL36, *SHRPOOL37, *SHRPOOL38, *SHRPOOL39, *SHRPOOL40, *SHRPOOL41, *SHRPOOL42, *SHRPOOL43, *SHRPOOL44, *SHRPOOL45, *SHRPOOL46, *SHRPOOL47, *SHRPOOL48, *SHRPOOL49, *SHRPOOL50, *SHRPOOL51, *SHRPOOL52, *SHRPOOL53, *SHRPOOL54, *SHRPOOL55, *SHRPOOL56, *SHRPOOL57, *SHRPOOL58, *SHRPOOL59, *SHRPOOL60",
+          "inputType": "text",
+          "required": false,
+          "attributes": {
+            "characterSet": "upper"
+          }
+        },
+        {
+          "name": "POOLS_E3",
+          "description": "活動レベル",
+          "help": "プール内で同時に実行できるスレッドの最大数を指定します。",
+          "inputType": "number",
+          "required": false,
+          "attributes": {
+            "numericOnly": true
+          }
+        },
+        {
+          "name": "POOLS_E4",
+          "description": "サイズ計測単位",
+          "inputType": "dropdown",
+          "required": false,
+          "defaultValue": "*KB",
+          "attributes": {
+            "characterSet": "upper"
+          },
+          "options": [
+            {
+              "label": "*KB",
+              "value": "*KB",
+              "help": "指定されたプール記憶域サイズはキロバイト単位です。"
+            },
+            {
+              "label": "*MB",
+              "value": "*MB",
+              "help": "指定されたプール記憶域サイズはメガバイト単位です。"
+            }
+          ]
+        }
+      ],
+      "positional": 2,
+      "maxOccurrences": 10
+    },
+    {
+      "name": "MAXJOBS",
+      "description": "ジョブの最大数",
+      "help": "このサブシステム記述によって制御されるサブシステムで同時に活動状態にできるジョブの最大数を指定します。この最大数は，開始され，待機または実行中であるすべてのジョブに適用されますが，ジョブ待ち行列にあるジョブまたは実行を終了したジョブには適用されません。\n\n*SAME: サブシステム中で同時に使用できるジョブの最大数は変更されません。\n*NOMAX: このサブシステムで同時に活動状態にできるジョブの最大数に制限はありません。\nこのサブシステムで実行可能なジョブの最大数を指定してください。",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*SAME",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "positional": 3
+    },
+    {
+      "name": "TEXT",
+      "description": "テキスト'記述'",
+      "help": "オブジェクトを簡単に記述したテキストを指定します。\n\n*SAME: テキスト（存在している場合）は変更されません。\n*BLANK: テキストは指定されません。\n50文字を超えないテキストを，アポストロフィで囲んで指定してください。",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*SAME",
+      "attributes": {
+        "characterSet": "upper"
+      }
+    },
+    {
+      "name": "SGNDSPF",
+      "description": "サインオン表示装置ファイル",
+      "help": "サブシステムに割り振られたワークステーションでサインオン画面を表示する時に使用するサインオン表示ファイルの名前およびライブラリーを指定します。指定したサインオン表示ファイルが，サブシステム記述の作成または変更時に存在していない場合には，ライブラリー修飾子を指定しなければなりません（修飾されたサインオン表示ファイルの名前がシステムによって保管されるため）。サインオン表示ファイルには，SIGNONというレコード様式が入っていなければなりません。",
+      "inputType": "group",
+      "required": false,
+      "groupKind": "qualified",
+      "singleValues": [
+        "*SAME",
+        "*QDSIGNON"
+      ],
+      "children": [
+        {
+          "name": "SGNDSPF_LIB",
+          "description": "ライブラリー",
+          "help": "*LIBL: 一致が見つかるまで，スレッドのライブラリー・リストの中のすべてのライブラリーが検索されます。\n*CURLIB: オブジェクトを見つけるためにスレッドの現行ライブラリーが使用されます。スレッドの現行ライブラリーとしてライブラリーが指定されていない場合，QGPLライブラリーが使用されます。\nサインオン表示ファイルが入っているライブラリーを指定してください。",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "*LIBL",
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          }
+        },
+        {
+          "name": "SGNDSPF",
+          "description": "サインオン表示装置ファイル",
+          "help": "使用されるサインオン画面ファイルの名前を指定します。",
+          "inputType": "text",
+          "required": false,
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          },
+          "defaultValue": "*SAME"
+        }
+      ]
+    },
+    {
+      "name": "SYSLIBLE",
+      "description": "サブシステム・ライブラリー",
+      "help": "サブシステムで開始されたジョブのライブラリー・リストのシステム部分の，他のライブラリーの前に追加されるライブラリーを指定します。このパラメーターによって，2次言語ライブラリーを使用することができます。\n\n指定できる特殊値: *SAME, *NONE",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*SAME",
+      "attributes": {
+        "characterSet": "upper",
+        "maxLength": 10
+      }
+    },
+    {
+      "name": "ASPGRP",
+      "description": "ASPグループ",
+      "help": "サブシステム・モニター・ジョブのライブラリー名前空間に組み込まれる補助記憶域プール(ASP)グループの名前を指定します。このASPグループ名は，そのASPグループ中の1次ASP装置の名前です。\n\nサブシステム・モニター・ジョブがユーザー・ジョブを作成すると，サブシステム・モニター・ジョブのライブラリー名前空間によってジョブ記述が見つかります。ジョブ待ち行列，サインオン表示装置ファイル，およびサブシステム・ライブラリーが，サブシステム・モニター・ジョブのライブラリー名前空間で見つかります。\n\nサブシステム・モニター・ジョブが，ユーザー・ジョブの代行処理をする場合は，サブシステムがユーザー・ジョブのライブラリー名前空間を使用します。プログラムおよびクラスが，ユーザー・ジョブのライブラリー名前空間で見つかります。これらのオブジェクトの場合，サブシステム記述でのASPGRPパラメーターは効果がありません。\n\nサブシステム・モニター・ジョブがASPグループを使用すると，そのサブシステム内のジョブが同じASPグループを使用します。ASPグループがジョブ作成中に設定され，他のオブジェクトを見つけるために使用できるよう，ジョブ記述に初期ASPグループ(INLASPGRP)パラメーターを使用します。使用するジョブ記述を決めるためにサブシステムがプログラムを見つける必要があるため，サブシステム・モニター・ジョブとユーザー・ジョブ間の整合性は，事前開始ジョブ項目には特に重要です。\n\n指定できる特殊値: *SAME, *NONE",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*SAME",
+      "attributes": {
+        "characterSet": "upper",
+        "maxLength": 10
+      }
+    },
+    {
+      "name": "WLCGRP",
+      "description": "作業負荷グループ",
+      "help": "サブシステム内のジョブに対して使用する作業負荷グループの名前を指定します。\n\n指定できる特殊値: *SAME, *NONE",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*SAME",
+      "attributes": {
+        "characterSet": "upper",
+        "maxLength": 10
+      }
+    }
+  ],
+  "threadSafe": false,
+  "environment": "すべての環境 (*ALL)",
+  "restrictions": [
+    "このコマンドを使用するには，以下が必要です。 指定されたサブシステム記述に対するオブジェクト操作(*OBJOPR),オブジェクト管理(*OBJMGT),および読み取り(*READ)権限と，そのサブシステム記述が入っているライブラリーに対する実行(*EXECUTE)権限。 システム・ライブラリー・リスト項目を指定するには，全オブジェクト(*ALLOBJ)および機密保護管理(*SECADM)特殊権限。 補助記憶域プール(ASP)グループ名を指定するには，全オブジェクト(*ALLOBJ)および機密保護管理 (*SECADM)特殊権限。",
+    "ジョブが中断される可能性があるので，サブシステムが活動状態である間はPOOLSパラメーターに*RMV値を指定することはできません。",
+    "サブシステムが活動状態である間は，ASPGRPパラメーターの値を変更することはできません。"
+  ],
+  "examples": [
+    {
+      "code": "CHGSBSD SBSD(QGPL/PAYCTL) POOLS((2 1500 3)) SGNDSPF(QGPL/COMPANYA)"
+    },
+    {
+      "code": "CHGSBSD SBSD(LIB6/ORDER) POOLS((1 *BASE)(2 750 4)(3 *RMV)(4 *NOSTG)) MAXJOBS(5)"
+    },
+    {
+      "code": "CHGSBSD SBSD(QGPL/SPANISH) SGNDSPF(QSYS2931/QDSIGNON) SYSLIBLE(QSYS2931)"
+    }
+  ],
+  "errorMessages": [
+    {
+      "id": "CPF1619",
+      "text": "ライブラリー&2のサブシステム記述&1に損傷がある。"
+    },
+    {
+      "id": "CPF1691",
+      "text": "活動サブシステム記述は変更されることも変更されないこともある。"
+    },
+    {
+      "id": "CPF1697",
+      "text": "サブシステム記述&1は変更されなかった。"
+    }
+  ],
+  "source": {
+    "url": "https://www.ibm.com/docs/ja/ssw_ibm_i_74/cl/chgsbsd.htm",
+    "version": "IBM i 7.4"
+  }
+}

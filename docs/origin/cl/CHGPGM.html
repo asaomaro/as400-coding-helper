@@ -1,0 +1,658 @@
+<!DOCTYPE html>
+<html lang="ja"><head><meta charset="utf-8"><title>プログラム変更  (CHGPGM)</title></head>
+<body>
+<div role="main">
+<script type="text/javascript" src="../rzahg/synch.js"></script>
+<a name="CHGPGM.Top_Of_Page"></a>
+<h1>プログラム変更  (CHGPGM)</h1><div id="lastModifiedDate"><span>Last Updated</span>: 2021-04-13</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table0" width="100%" class="cds--data-table">
+<tbody><tr>
+<td class="valigntop alignleft"><strong>実行可能場所:  </strong>すべての環境 (*ALL)<br>
+<strong>スレッド・セーフ:  </strong>いいえ
+</td>
+<td class="valigntop alignright">
+<a href="#CHGPGM.PARAMETERS.TABLE">パラメーター</a><br>
+<a href="#CHGPGM.COMMAND.EXAMPLES">例</a><br>
+<a href="#CHGPGM.ERROR.MESSAGES">エラー・メッセージ</a></td>
+</tr>
+</tbody></table></div></div>
+<div> <a name="CHGPGM"></a>
+<p>プログラム変更(CHGPGM)コマンドは，プログラムの再コンパイルを必要とせずにプログラムの属性を変更します。また，指定する属性が現行の属性と同じであっても，ユーザーはプログラムの再作成を強制することができます。
+</p>
+<p>
+<strong>注:     </strong>CHGPGMコマンドがDMT（ディクショナリー・マッピング・テーブル）をもつOPMプログラムで実行され，V3R6M0で作成され，しかもすべての監視機能が除去されている場合には，プログラム・オブジェクトからDMTが除去されて，変更が成功したことを示すメッセージが出されます。
+</p>
+<h2><strong>制約事項</strong><strong>:</strong>
+</h2>
+<ul class="cds--list--unordered">
+<li class="cds--list__item">変更するプログラムに対してはオブジェクト管理(*OBJMGT)および使用(*USE)権限が必要です。
+</li>
+<li class="cds--list__item">変更するプログラムが入っているライブラリーに対しては少なくとも*USE権限が必要です。また，最適化属性(OPTIMIZEパラメーター），パフォーマンス収集属性(ENBPFRCOLパラメーター），プロファイル作成データ属性(PRFDTAパラメーター），ライセンス内部コード・オプション(LICOPTパラメーター），ストレージ・モデル属性(STGMDLパラメーター），またはテラスペース・ストレージ使用可能(TERASPACEパラメーター）を変更したり，FRCCRT(*YES)を指定することによってプログラムの再作成を強制したりするためには，ライブラリーに対する削除(*DLT)および追加(*ADD)権限も必要です。
+</li>
+<li class="cds--list__item">ユーザー・プロファイル属性(USRPRFパラメーター）または借用権限の使用属性(USEADPAUTパラメーター）を変更するには，ユーザーまたはユーザーのグループ・プロファイルの1つが，プログラムの所有者であるか，すべてのオブジェクト(*ALLOBJ)特殊権限およびセキュリティー管理者(*SECADM)特殊権限を備えている必要があります。
+</li>
+<li class="cds--list__item">観測可能情報を除去(RMVOBSパラメーター）する時以外は，QSYSおよびQGDDMライブラリー内のプログラムを変更できません。
+</li>
+<li class="cds--list__item"><strong>プログラムの最適化</strong><strong> (OPTIMIZE)</strong>パラメーター，<strong>借用権限の使用</strong><strong> (USEADPAUT)</strong>パラメーター，<strong>パフォーマンス収集使用可能</strong><strong> (ENBPFRCOL)</strong>パラメーター，<strong>プロファイリング・データ</strong><strong> (PRFDTA)</strong>パラメーター，<strong>ユーザー・プロファイル</strong><strong> (USRPRF)</strong>パラメーター，<strong> LIC</strong><strong>オプション</strong><strong> (LICOPT)</strong>パラメーター，<strong>テラスペース</strong><strong> (TERASPACE)</strong>パラメーター，または<strong>ストレージ・モデル</strong><strong> (STGMDL)</strong>パラメーターが変更されるか，FRCCRT(*YES)の指定によりプログラムの再作成が強制された場合には，プログラムを実行している他のジョブが失敗することがあります。
+</li>
+</ul>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table1" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#CHGPGM.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div>
+<h2><a name="CHGPGM.PARAMETERS.TABLE">パラメーター</a></h2>
+<div class="tablenoborder"><div class="cds--data-table-container"><table id="parm_table2" summary="Parameters" border="1" cellpadding="4" cellspacing="0" class="cds--data-table">
+<!-- col1="10" col2="15" col3="30" col4="10" -->
+<tbody><tr>
+<th scope="col" class="valignbottom alignleft"><div class="cds--table-header-label">キーワード</div></th>
+<th scope="col" class="valignbottom alignleft"><div class="cds--table-header-label">記述</div></th>
+<th scope="col" class="valignbottom alignleft"><div class="cds--table-header-label">選択項目</div></th>
+<th scope="col" class="valignbottom alignleft"><div class="cds--table-header-label">ノーツ</div></th>
+</tr>
+<tr>
+<td class="valigntop" rowspan="3"><a href="#CHGPGM.PGM"><strong>PGM</strong></a></td>
+<td class="valigntop">プログラム</td>
+<td class="valigntop"><span class="var">修飾オブジェクト名</span></td>
+<td class="valigntop" rowspan="3">必須, キー, 定位置 1</td>
+</tr>
+<tr>
+<td class="valigntop">修飾子 1: プログラム</td>
+<td class="valigntop"><span class="var">総称名, 名前</span>, *ALL</td>
+</tr><tr>
+<td class="valigntop">修飾子 2: ライブラリー</td>
+<td class="valigntop"><span class="var">名前</span>, <strong class="underlined">*USRLIBL</strong></td>
+</tr><tr>
+<td class="valigntop"><a href="#CHGPGM.OPTIMIZE"><strong>OPTIMIZE</strong></a></td>
+<td class="valigntop">プログラムの最適化</td>
+<td class="valigntop"><strong class="underlined">*SAME</strong>, *YES, *FULL, *BASIC, *NONE, 40, 30, 20, 10, *NO</td>
+<td class="valigntop">オプショナル</td>
+</tr>
+<tr>
+<td class="valigntop"><a href="#CHGPGM.USRPRF"><strong>USRPRF</strong></a></td>
+<td class="valigntop">ユーザー・プロファイル</td>
+<td class="valigntop"><strong class="underlined">*SAME</strong>, *USER, *OWNER</td>
+<td class="valigntop">オプショナル</td>
+</tr>
+<tr>
+<td class="valigntop"><a href="#CHGPGM.USEADPAUT"><strong>USEADPAUT</strong></a></td>
+<td class="valigntop">借用権限の使用</td>
+<td class="valigntop"><strong class="underlined">*SAME</strong>, *YES, *NO</td>
+<td class="valigntop">オプショナル</td>
+</tr>
+<tr>
+<td class="valigntop"><a href="#CHGPGM.RMVOBS"><strong>RMVOBS</strong></a></td>
+<td class="valigntop">識別情報の除去</td>
+<td class="valigntop">単一値: <strong class="underlined">*SAME</strong>, *ALL, *NONE<br>その他の値 (最大 4 回の繰り返し): *CRTDTA, *DBGDTA, *BLKORD, *PRCORD</td>
+<td class="valigntop">オプショナル</td>
+</tr>
+<tr>
+<td class="valigntop"><a href="#CHGPGM.PRFDTA"><strong>PRFDTA</strong></a></td>
+<td class="valigntop">プロファイリング・データ</td>
+<td class="valigntop"><strong class="underlined">*SAME</strong>, *NOCOL, *COL, *CLR, *APYBLKORD, *APYPRCORD, *APYALL</td>
+<td class="valigntop">オプショナル</td>
+</tr>
+<tr>
+<td class="valigntop"><a href="#CHGPGM.FRCCRT"><strong>FRCCRT</strong></a></td>
+<td class="valigntop">プログラム再作成の強制</td>
+<td class="valigntop"><strong class="underlined">*NO</strong>, *YES, *NOCRT</td>
+<td class="valigntop">オプショナル</td>
+</tr>
+<tr>
+<td class="valigntop"><a href="#CHGPGM.TEXT"><strong>TEXT</strong></a></td>
+<td class="valigntop">テキスト'記述'</td>
+<td class="valigntop"><span class="var">文字値</span>, <strong class="underlined">*SAME</strong>, *BLANK</td>
+<td class="valigntop">オプショナル</td>
+</tr>
+<tr>
+<td class="valigntop" rowspan="3"><a href="#CHGPGM.LICOPT"><strong>LICOPT</strong></a></td>
+<td class="valigntop"> LICオプション</td>
+<td class="valigntop">単一値: <strong class="underlined">*SAME</strong>, *NONE<br>その他の値: <span class="var">要素リスト</span></td>
+<td class="valigntop" rowspan="3">オプショナル</td>
+</tr>
+<tr>
+<td class="valigntop">要素 1: オプション</td>
+<td class="valigntop">
+<span class="var">文字値</span></td>
+</tr>
+<tr>
+<td class="valigntop">要素 2: 処置</td>
+<td class="valigntop">
+<strong class="underlined">*REPLACE</strong>, *ADD</td>
+</tr>
+<tr>
+<td class="valigntop"><a href="#CHGPGM.NBRTHD"><strong>NBRTHD</strong></a></td>
+<td class="valigntop">スレッドの数</td>
+<td class="valigntop">1-256, <strong class="underlined">1</strong>, *CALC</td>
+<td class="valigntop">オプショナル</td>
+</tr>
+<tr>
+<td class="valigntop" rowspan="3"><a href="#CHGPGM.ENBPFRCOL"><strong>ENBPFRCOL</strong></a></td>
+<td class="valigntop">パフォーマンス収集使用可能</td>
+<td class="valigntop">単一値: <strong class="underlined">*SAME</strong>, *NONE, *PEP<br>その他の値: <span class="var">要素リスト</span></td>
+<td class="valigntop" rowspan="3">オプショナル</td>
+</tr>
+<tr>
+<td class="valigntop">要素 1: 収集レベル</td>
+<td class="valigntop">
+<strong class="underlined">*FULL</strong>, *ENTRYEXIT</td>
+</tr>
+<tr>
+<td class="valigntop">要素 2: プロシージャー</td>
+<td class="valigntop">
+<strong class="underlined">*ALLPRC</strong>, *NONLEAF</td>
+</tr>
+<tr>
+<td class="valigntop"><a href="#CHGPGM.TERASPACE"><strong>TERASPACE</strong></a></td>
+<td class="valigntop">テラスペース</td>
+<td class="valigntop">*NO, *YES, <strong class="underlined">*SAME</strong></td>
+<td class="valigntop">オプショナル</td>
+</tr>
+<tr>
+<td class="valigntop"><a href="#CHGPGM.STGMDL"><strong>STGMDL</strong></a></td>
+<td class="valigntop">ストレージ・モデル</td>
+<td class="valigntop"><strong class="underlined">*SAME</strong>, *INHERIT</td>
+<td class="valigntop">オプショナル</td>
+</tr>
+</tbody></table></div></div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table3" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#CHGPGM.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+</div>
+<div> <a name="CHGPGM.PGM"></a>
+<h2>プログラム (PGM)</h2>
+<p>属性を変更する1つ以上のプログラムを指定します。プログラム修飾子に総称名または*ALLを指定した時には，ライブラリー修飾子に*USRLIBLを指定できず，また省略時の値として使用することはできません。
+</p>
+<p>これは必須パラメーターです。
+</p>
+<h3><strong>修飾子</strong><strong>1: </strong><strong>プログラム</strong>
+</h3>
+<dl>
+<dt><strong class="italic">名前</strong></dt>
+<dd>属性を変更するプログラムの名前を指定してください。
+</dd>
+<dt><strong class="italic">総称名</strong></dt>
+<dd>属性が変更するすべてのプログラムの総称名を指定してください。総称検索値を満たすすべてのプログラムが変更のために選択されます。総称名は，1つ以上の文字の後にアスタリスク(*)が付いた文字ストリングとして指定されます。
+</dd>
+<dt><strong>*ALL</strong></dt>
+<dd>ユーザーが何らかの権限（除外(*EXCLUDE)権限を除く）を持っている指定されたライブラリー内のすべてのプログラムが，変更の対象として選択されます。
+</dd>
+</dl>
+<h3><strong>修飾子</strong><strong>2: ライブラリー</strong>
+</h3>
+<dl>
+<dt><strong class="underlined">*USRLIBL</strong></dt>
+<dd>ライブラリー・リスト上のユーザー部分の中で最初に見つかったプログラムが変更されます。
+</dd>
+<dt><strong class="italic">名前</strong></dt>
+<dd>プログラムが入っているライブラリーを指定してください。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table4" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#CHGPGM.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="CHGPGM.OPTIMIZE"></a>
+<h2>プログラムの最適化 (OPTIMIZE)</h2>
+<p>冗長な命令を除去することによって，プログラムを最適化するかどうかを指定します。統合化言語環境(ILE)プログラムの現在の最適化レベルを変更することにより，システムが新しい最適化レベルでILEプログラムを再作成します。
+</p>
+<p>最適化レベルを変更するためには，プログラムを再作成しなければなりません。再作成に適格であるためには，OPMプログラムがすべてのプログラム識別情報をもち，ILEプログラムがすべての作成データをもち，作成データが識別可能でなければなりません。プログラム表示(DSPPGM)コマンドを使用して，プログラムがすべてのプログラム識別情報をもっているか，あるいはすべての作成データをもっているかを判別してください。
+</p>
+<dl>
+<dt><strong class="underlined">*SAME</strong></dt>
+<dd>プログラムの最適化属性は変更されません。
+</dd>
+<dt><strong>*YES</strong></dt>
+<dd>プログラムは，そのプログラムが作成されたリリースおよび言語（プログラム作成時のTGTRLSパラメーター）で使用可能な最高の最適化レベルにあります。多くの場合に，最適化されたプログラムはシステム資源をより効率的に使用します。ILEプログラムの場合にOPTIMIZE(YES)を指定することで，OPTIMIZE(40)を指定したのと同じ効果が得られます。
+</dd>
+<dt><strong>*NO</strong></dt>
+<dd>プログラムは最適化されません。この最適化レベルでのILEプログラムの場合には，デバッグ時に変数を表示および変更することができます。
+</dd>
+<dt><strong>40</strong></dt>
+<dd>このレベルには，最適化レベル30 (*FULL)で実行されたすべての最適化が含まれます。さらに，呼び出しおよび命令のトレースを使用不能にする最適化も含まれます。したがって，この最適化レベルで作成されたモジュールのトレースを実行することはできません。OPMプログラムにOPTIMIZE(40)を指定すると，OPTIMIZE(*YES)を指定した場合と同じ効果があります。
+</dd>
+<dt><strong>*FULLまたは30</strong></dt>
+<dd>最適化レベル20 (*BASIC)で実行されたものに加えてさらに多くの最適化が実行されます。プログラムのデバッグ時には，変数を変更することはできませんが表示することはできます。ただし，デバッグ時に表示された変数の値は実際の値と異なっている場合があります。OPMプログラムにOPTIMIZE(*FULL)を指定しても効果はありません。診断メッセージが出されます。
+</dd>
+<dt><strong>*BASICまたは20</strong></dt>
+<dd>ILEプログラムの場合には，ILEプログラムに一部の最適化が実行されます。この最適化レベルでのILEプログラムのデバッグ時には，変数を表示することができますが，表示された値が現在の値でない場合があります。変数を変更することもできますが，このレベルで変更した変数を使用すると予期しない結果が起こる場合があります。元のプログラム・モデル(OPM)のプログラムにOPTIMIZE(*BASIC)が指定されていると，通知メッセージが送られて何の操作も実行されません。
+</dd>
+<dt><strong>*NONEまたは10</strong></dt>
+<dd>この値は*NOと同じです。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table5" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#CHGPGM.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="CHGPGM.USRPRF"></a>
+<h2>ユーザー・プロファイル (USRPRF)</h2>
+<p>このプログラムの実行中に行われる権限の検査に，プログラムを実行中のユーザー(*USER)のみを組み込むか，あるいはプログラムを実行中のユーザーおよびプログラム所有者(*OWNER)の両方を組み込むかどうかを指定します。プログラム・ユーザーのプロファイルまたはプログラム・ユーザーとプログラム所有者の両方のプロファイルを使用して，各オブジェクトについてプログラムがもつ権限を含め，プログラムで使用できるオブジェクトを制御します。
+</p>
+<p>ユーザー・プロファイル属性を変更するには，ユーザーまたはユーザーのグループ・プロファイルの1つが，プログラムの所有者であるか，すべてのオブジェクト(*ALLOBJ)特殊権限およびセキュリティー管理者(*SECADM)特殊権限を備えている必要があります。
+</p>
+<p>ユーザー・プロファイルを変更するには，プログラムを再作成しなければなりません。再作成に適格であるためには，OPMプログラムがすべてのプログラム識別情報をもち，ILEプログラムがすべての作成データをもち，作成データが識別可能でなければなりません。プログラム表示(DSPPGM)コマンドを使用して，プログラムがすべてのプログラム識別情報をもっているか，あるいはすべての作成データをもっているかを判別してください。
+</p>
+<dl>
+<dt><strong class="underlined">*SAME</strong></dt>
+<dd>ユーザー・プロファイル属性は変更されません。
+</dd>
+</dl>
+<dl>
+<dt><strong>*USER</strong></dt>
+<dd>プログラムはプログラム・ユーザーのユーザー・プロファイルのもとで実行されます。
+</dd>
+</dl>
+<dl>
+<dt><strong>*OWNER</strong></dt>
+<dd>プログラムの実行時には，プログラムの所有者とプログラムのユーザーの両方のユーザー・プロファイルが使用されます。プログラムの実行中にオブジェクトを検索してアクセスするために，両方のユーザー・プロファイルにあるオブジェクト権限の集合セットが使用されます。所有ユーザー・プロファイルのグループ・プロファイルからの権限は，実行プログラムの権限には組み込まれません。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table6" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#CHGPGM.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="CHGPGM.USEADPAUT"></a>
+<h2>借用権限の使用 (USEADPAUT)</h2>
+<p>呼び出しスタックの前のプログラムのプログラム借用権限を，このプログラムの実行時に権限のソースとして使用するかどうかを指定します。
+</p>
+<p>借用権限の使用属性を変更するには，ユーザーまたはユーザーのグループ・プロファイルの1つが，プログラムの所有者であるか，すべてのオブジェクト(*ALLOBJ)特殊権限およびセキュリティー管理者(*SECADM)特殊権限を備えている必要があります。
+</p>
+<p>借用権限の使用属性を変更するためには，プログラムを再作成しなければなりません。再作成に適格であるためには，OPMプログラムがすべてのプログラム識別情報をもち，ILEプログラムがすべての作成データをもち，作成データが識別可能でなければなりません。プログラム表示(DSPPGM)コマンドを使用して，プログラムがすべてのプログラム識別情報をもっているか，あるいはすべての作成データをもっているかを判別してください。
+</p>
+<dl>
+<dt><strong class="underlined">*SAME</strong></dt>
+<dd>借用権限の使用属性は変更されません。
+</dd>
+<dt><strong>*YES</strong></dt>
+<dd>このプログラムの実行時に，前の呼び出しレベルからのプログラム借用権限が使用されます。QUSEADPAUTシステム値に権限リストが指定され，ユーザーがその権限リストを認可されていない場合には，*NOが使用されます。
+</dd>
+<dt><strong>*NO</strong></dt>
+<dd>このプログラムの実行時に，前の呼び出しレベルからのプログラム借用権限は使用されません。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table7" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#CHGPGM.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="CHGPGM.RMVOBS"></a>
+<h2>識別情報の除去 (RMVOBS)</h2>
+<p>除去されるプログラム識別情報を指定します。
+</p>
+<dl>
+<dt><strong class="underlined">*SAME</strong></dt>
+<dd>識別情報は除去されません。
+</dd>
+<dt><strong>*ALL</strong></dt>
+<dd>可能な場合には，プログラムと関連したすべてのプログラム識別情報が除去されます。正しく実行していることを確認するためにプログラムに識別情報が必要な場合には，その情報は除去されません。
+<h3><strong>注</strong><strong>:</strong>
+</h3>
+<ol class="cds--list--ordered--temporary">
+<li class="cds--list__item">ブロック順序プロファイル作成データが以前にこのILEプログラムに適用されている場合には，RMVOBSパラメーターに*ALLを指定すると*BLKORDプログラム識別情報が除去されます。
+</li>
+<li class="cds--list__item">OPTION(*LSTDBG)でコンパイルされたOPMプログラムからプログラム識別情報を除去しても，デバッグ情報は完全には除去されません。すべてのデバッグ情報を完全に除去するためには，プログラムをOPTION(*NOLSTDBG)で再コンパイルしなければなりません。
+</li>
+</ol>
+<p>*CRTDTA特殊値の説明も参照してください。
+</p>
+</dd>
+<dt><strong>*NONE</strong></dt>
+<dd>プログラムに関連した識別情報は除去されません。
+</dd>
+<dt><strong>*DBGDTA</strong></dt>
+<dd>デバッグ情報がILEプログラムから除去されます。プログラムをデバッグできるようにするには，デバッグ情報が必要です。オリジナル・プログラム・モデル(OPM)のプログラムにRMVOBS(*DBGDTA)が指定されている場合には，通知メッセージが送信され，何の操作も実行されません。
+</dd>
+<dt><strong>*CRTDTA</strong></dt>
+<dd>作成データ識別情報がILEプログラムから除去されます。作成データのプログラム識別情報は，CHGPGMを使用してプログラムを再作成できるようにするため，またOPTIMIZE, USRPRF, USEADPAUT, ENBPFRCOL, PRFDTA, LICOPT, TERASPACE,またはSTGMDLのいずれかのコマンド・パラメーターを使用してプログラム属性を変更するために必要です。オリジナル・プログラム・モデル(OPM)のプログラムにRMVOBS(*CRTDTA)が指定されている場合には，通知メッセージが送信され，何の操作も実行されません。
+<h3><strong>注</strong><strong>:</strong>
+</h3>
+<ol class="cds--list--ordered--temporary">
+<li class="cds--list__item">ILEプログラムがプロファイリング・データを収集できる場合には，*CRTDTAを指定することができません。
+</li>
+<li class="cds--list__item">作成データ（識別可能または識別不能）は，例えば，CISC（複合命令セット・コンピューター）テクノロジーとRISC（縮小命令セット・コンピューター）テクノロジーの間など，プログラムを別のハードウェア・テクノロジーに変換するために必要です。
+</li>
+<li class="cds--list__item">一部のプログラムは，識別可能作成データが除去されても，識別不能作成データを保存します。リリースV5R1M0以降用に作成されたOPMプログラム（モジュール作成時のTGTRLSパラメーター）には，*ALL識別情報が除去されていたとしても常に作成データが含まれます。リリースV5R1M0以降用に作成されたモジュールのみから作成されたILEプログラムには，*ALL識別情報または*CRTDTA識別情報が除去されていたとしても作成データが常に含まれます。
+</li>
+<li class="cds--list__item">V5R1M0より前のリリースでプログラムが作成されている場合，またはプログラムにV5R1M0より前のリリース用に作成されたバインド済みモジュールが含まれている場合には，*ALLプログラム識別情報および*CRTDTAプログラム識別情報は除去できません。
+</li>
+<li class="cds--list__item">ALWRTVSRC(*YES)を使用して作成されたOPM CLプログラム，およびALWRTVSRC(*YES)を使用して作成されたバインド済みCLモジュールを含むILEプログラムは，*ALLプログラム識別情報または*CRTDTAプログラム識別情報を除去した後でも，RTVCLSRC (CLソース検索）コマンドを使用してCLソースを取得できます。
+</li>
+</ol>
+</dd>
+<dt><strong>*BLKORD</strong></dt>
+<dd>ブロック順序プロファイル作成データがILEプログラムから除去されます。RMVOBS(*BLKORD)がオリジナル・プログラム・モデル(OPM)のプログラムに指定されている時には，通知メッセージが送信されてプログラム識別情報は除去されません。
+</dd>
+<dt><strong>*PRCORD</strong></dt>
+<dd>プロシージャー順序プロファイル作成データがILEプログラムから除去されます。RMVOBS(*PRCORD)がオリジナル・プログラム・モデル(OPM)のプログラムに指定されている時には，通知メッセージが送信されてプログラム識別情報は除去されません。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table8" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#CHGPGM.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="CHGPGM.PRFDTA"></a>
+<h2>プロファイリング・データ (PRFDTA)</h2>
+<p>ILEプログラムにプログラム・プロファイリング・データ属性を指定します。プログラム・プロファイリングとは，統計データ(プロファイリング・データ)に基づいてプロシージャーとプロシージャー内のコードを並べ替える高度な最適化手法です。*SAME以外の値がオリジナル・プログラム・モデル(OPM)のプログラムのPRFDTAパラメーターに指定されている場合には，通知メッセージが送信されて*SAMEが使用されます。
+</p>
+<p>プロファイリング・データ属性を変更するためには，プログラムを再作成しなければなりません。再作成に適格であるためには，プログラムがすべての作成データをもち，作成データが識別可能でなければなりません。プログラム表示(DSPPGM)コマンドを使用して，プログラムがすべての作成データをもっているかどうかを判別してください。
+</p>
+<dl>
+<dt><strong class="underlined">*SAME</strong></dt>
+<dd>値は変更されません。
+</dd>
+<dt><strong>*NOCOL</strong></dt>
+<dd>プロファイリング・データを収集できず，プロファイリング・データが適用されません。
+</dd>
+<dt><strong>*COL</strong></dt>
+<dd>適格モジュール用にプロファイリング・データの収集ができます。
+<p>
+<strong>注:     </strong>ILEプログラムがプロファイリング・データを適用する場合には，*COLを指定すると適用されたすべてのプロファイリング・データを除去します。
+</p>
+</dd>
+<dt><strong>*CLR</strong></dt>
+<dd>前に収集されたすべてのプロファイリング・データが破棄されます。プログラムはプロファイリング・データ収集が可能のままです。
+</dd>
+<dt><strong>*APYBLKORD</strong></dt>
+<dd>ブロック順序プロファイリング・データが，前にプロファイリング・データを収集できたこのILEプログラムにバインドされたすべてのモジュールに適用されます。プロファイリング・データの収集はこれ以上できません。
+</dd>
+<dt><strong>*APYPRCORD</strong></dt>
+<dd>ブロック順序およびプロシージャー順序プロファイリング・データが適用されます。プロファイリング・データの収集はこれ以上できません。
+</dd>
+<dt><strong>*APYALL</strong></dt>
+<dd>ブロック順序およびプロシージャー順序プロファイリング・データが適用されます。プロファイリング・データの収集はこれ以上できません。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table9" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#CHGPGM.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="CHGPGM.FRCCRT"></a>
+<h2>プログラム再作成の強制 (FRCCRT)</h2>
+<p>プログラムを強制的に再作成するかどうかを指定します。
+</p>
+<p>再作成に適格にするためには，OPMプログラムにはすべてのプログラム識別情報が必要であり，ILEプログラムにはすべての識別情報作成データが必要です。プログラム表示(DSPPGM)コマンドを使用して，プログラムが識別可能であるか，あるいはすべての識別可能作成データをもっているかを判別してください。識別不能作成データはCHGPGMによって使用することはできません。
+</p>
+<dl>
+<dt><strong class="underlined">*NO</strong></dt>
+<dd><strong>プログラムの最適化</strong><strong> (OPTIMIZE)</strong>パラメーター，<strong>借用権限の使用</strong><strong> (USEADPAUT)</strong>パラメーター，<strong>パフォーマンス収集使用可能</strong><strong> (ENBPFRCOL)</strong>パラメーター，<strong>プロファイリング・データ</strong><strong> (PRFDTA)</strong>パラメーター，<strong>ユーザー・プロファイル</strong><strong> (USRPRF)</strong>パラメーター，<strong> LIC</strong><strong>オプション</strong><strong> (LICOPT)</strong>パラメーター，<strong>テラスペース</strong><strong> (TERASPACE)</strong>パラメーター，または<strong>ストレージ・モデル</strong><strong> (STGMDL)</strong>パラメーターが変更されていない限り，プログラムの再作成は強制されません。このオプションによって，システムは変更が必要かどうかを判別できます。
+</dd>
+<dt><strong>*YES</strong></dt>
+<dd>プログラムの再作成が強制されます。
+</dd>
+<dt><strong>*NOCRT</strong></dt>
+<dd>プログラムは再作成されません。プログラムの再作成を暗黙に必要とするプログラム属性を変更しようとすると，エラー・メッセージが出され，プログラムの属性は変更されません。次のパラメーターのいずれかを変更すると，プログラムが再作成されることがあります。<strong>プログラムの最適化</strong><strong> (OPTIMIZE)</strong>パラメーター，<strong>借用権限の使用</strong><strong> (USEADPAUT)</strong>パラメーター，<strong>パフォーマンス収集使用可能</strong><strong> (ENBPFRCOL)</strong>パラメーター，<strong>プロファイリング・データ</strong><strong> (PRFDTA)</strong>パラメーター，<strong>ユーザー・プロファイル</strong><strong> (USRPRF)</strong>，パラメーター，<strong> LIC</strong><strong>オプション</strong><strong> (LICOPT)</strong>パラメーター，<strong>テラスペース</strong><strong> (TERASPACE)</strong>パラメーター，または<strong>ストレージ・モデル</strong><strong> (STGMDL)</strong>パラメーター。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table10" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#CHGPGM.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="CHGPGM.TEXT"></a>
+<h2>テキスト'記述' (TEXT)</h2>
+<p>オブジェクトを簡単に記述したテキストを指定します。
+</p>
+<dl>
+<dt><strong class="underlined">*SAME</strong></dt>
+<dd>テキストは変更されていません。
+</dd>
+<dt><strong>*BLANK</strong></dt>
+<dd>テキストは指定されません。
+</dd>
+<dt><strong class="italic">'記述'</strong></dt>
+<dd>50文字を超えないテキストを，単一引用符で囲んで指定してください。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table11" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#CHGPGM.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="CHGPGM.LICOPT"></a>
+<h2>LICオプション (LICOPT)</h2>
+<p>ライセンス内部コードの個々のコンパイル時オプションが選択されることを指定するのもので，選択されたそれぞれのコンパイラー・オプションの潜在的な利点と欠点を理解した上級プログラマーを対象にしています。統合言語環境(ILE)プログラムのライセンス内部コード・オプションを*SAME以外の値に変更すると，システムはILEプログラムを再作成します。
+</p>
+<p>ライセンス内部コード・オプションを変更するには，プログラムを再作成しなければなりません。再作成に適格であるためには，プログラムがすべての作成データをもち，作成データが識別可能でなければなりません。プログラム表示(DSPPGM)コマンドを使用して，プログラムがすべての作成データをもっているかどうかを判別してください。
+</p>
+<p>注：LICOPTオプションについての詳細は，ILE概念(SD88-5033)にあります。
+</p>
+<h3><strong>要素</strong><strong>1: </strong><strong>オプション</strong>
+</h3>
+<dl>
+<dt><strong class="underlined">*SAME</strong></dt>
+<dd>プログラム・オブジェクトが再作成される場合には，既存のライセンス内部コード・コンパイル時オプションがオブジェクト再作成のための入力となります。そうでない場合には，ライセンス内部コードのコンパイル時オプションは変更されません。
+</dd>
+<dt><strong>*NONE</strong></dt>
+<dd>プログラムの再作成が強制され，ライセンス内部コード・オプションは使用されません。
+</dd>
+<dt><strong class="italic">文字値</strong></dt>
+<dd>1つ以上のライセンス内部コード・コンパイル時オプションを指定します。統合言語環境(ILE)プログラムのライセンス内部コード・オプションを変更すると，システムはILEプログラムを再作成します。
+</dd>
+</dl>
+<h3><strong>要素</strong><strong>2: </strong><strong>処置</strong>
+</h3>
+<dl>
+<dt><strong class="underlined">*REPLACE</strong></dt>
+<dd>バインド済みモジュールの既存のライセンス内部コード・オプションは，指定した値で置き換えられます。
+</dd>
+<dt><strong>*ADD</strong></dt>
+<dd>指定したライセンス内部コード・オプションは，それぞれのバインド済みモジュールの既存のライセンス内部コード・オプション・ストリングの終わりに追加されます。ライセンス内部コード・オプション値の間の矛盾は，最後に指定した値が優先されることで解決されます。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table12" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#CHGPGM.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="CHGPGM.NBRTHD"></a>
+<h2>スレッドの数 (NBRTHD)</h2>
+<p>バインド済みモジュールを再作成するときに使用するスレッドの最大数を指定します。1以上の数値を指定することによって，マルチプロセッサー・システムでは特に，コマンドで使用可能なCPUサイクルを利用することができます。
+</p>
+<dl>
+<dt><strong class="underlined">1</strong></dt>
+<dd>バインド済みモジュールを作成するときに，単一スレッドが使用されます。
+</dd>
+<dt><strong>*CALC</strong></dt>
+<dd>システムは，資源を過剰に使用しないスレッドの適切な最大数を計算して使用します。通常，これは，使用可能な各プロセッサーで1または2個のスレッドです。
+</dd>
+<dt><strong class="italic">1から256</strong></dt>
+<dd>使用するスレッドの最大数を指定します。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table13" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#CHGPGM.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="CHGPGM.ENBPFRCOL"></a>
+<h2>パフォーマンス収集使用可能 (ENBPFRCOL)</h2>
+<p>このパラメーターは廃止されました。
+</p>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table14" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#CHGPGM.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="CHGPGM.TERASPACE"></a>
+<h2>テラスペース (TERASPACE)</h2>
+<p>プログラム・オブジェクトを使用可能にしてテラスペース・ストレージを処理するかどうかを指定します。これには，他のテラスペース対応のプログラムおよびサービス・プログラム・オブジェクトから受け渡されたモジュール・オブジェクトおよびパラメーターによって割り振られるテラスペース・ストレージが含まれます。
+</p>
+<p>変更中のプログラムがTGTRLS(V6R1M0)以降のリリースに対して作成された場合，プログラムは，このパラメーターに対して指定された値にかかわらず，テラスペースの使用が可能です。変更中のプログラムがV6R1M0よりも前のリリースに対して作成された場合，指定されるTERASPACE値はプログラムで保管され，プログラムがV6R1M0よりも前のリリースに提供されるときに使用されます。ただし，プログラムがV6R1M0以降のリリース上にある場合は，そのプログラムをテラスペースで使用することができます。
+</p>
+<p>変更中のプログラムにV6R1M0よりも前のターゲット・リリース(TGTRLS)の値がある場合は，現在のTERASPACE属性値以外の値を指定すると，プログラムが再作成され，指定された値はオブジェクト・テンプレート情報に保存されます。
+</p>
+<dl>
+<dt><strong class="underlined">*SAME</strong></dt>
+<dd>テラスペース・ストレージ使用可能化は変わりません。
+</dd>
+<dt><strong>*NO</strong></dt>
+<dd>プログラムがV6R1M0より前のリリースで作成されている場合には，テラスペース・ストレージ使用可能化が「いいえ」に変更されます。ILEプログラムの場合には，適格なバインド済みモジュールのテラスペース・ストレージ使用可能化が「いいえ」に変更されます。TERASPACE(*NO)に変更するためには，バインド済みモジュールが単一レベル・ストレージ・モデルでなければなりません。
+</dd>
+<dt><strong>*YES</strong></dt>
+<dd>プログラムがV6R1M0よりも前のリリースに対して作成された場合は，テラスペース・ストレージの使用可能化が,「はい」に変更されます。ILEプログラムの場合には，適格なバインド済みモジュールのテラスペース・ストレージ使用可能化が「はい」に変更されます。TERASPACE(*YES)に変更するためには，バインド済みモジュールが少なくともV4R4M0以降でなければなりません。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table15" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#CHGPGM.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="CHGPGM.STGMDL"></a>
+<h2>ストレージ・モデル (STGMDL)</h2>
+<p>プログラムのストレージ・モデル属性を指定します。
+</p>
+<dl>
+<dt><strong class="underlined">*SAME</strong></dt>
+<dd>プログラムのストレージ・モデルは変更されません。
+</dd>
+<dt><strong>*INHERIT</strong></dt>
+<dd>プログラムは，単一レベル・ストレージまたはテラスペース・ストレージを使用できます。記憶域のタイプは，呼び出し元が必要とする記憶域のタイプに応じて異なります。
+<h3><strong>制約事項</strong><strong>:</strong>
+</h3>
+<ol class="cds--list--ordered--temporary">
+<li class="cds--list__item">プログラムは，統合言語環境(ILE)バインド済みプログラムである必要があります。
+</li>
+<li class="cds--list__item">プログラムの活動化グループ属性は*CALLERである必要があります。
+</li>
+<li class="cds--list__item">プログラムの現行ストレージ・モデルは*TERASPACEにすることはできません。
+</li>
+<li class="cds--list__item">プログラムのターゲット・リリースはV6R1M0以降である必要があります。
+</li>
+<li class="cds--list__item">プログラム内のすべてのバインド済みモジュールのターゲット・リリースはV5R1M0以降である必要があります。
+</li>
+</ol>
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table16" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#CHGPGM.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div><h2><a name="CHGPGM.COMMAND.EXAMPLES">例</a> </h2>
+<h3><strong>例</strong><strong>1: </strong><strong>プログラムの最適化</strong>
+</h3>
+<p>
+</p><pre>CHGPGM   PGM(PROG1/SERVICE)  OPTIMIZE(*YES)  USRPRF(*OWNER)
+</pre>
+<p></p>
+<p>ライブラリーPROG1内のプログラムSERVICEが最適化され，プログラムの処理時に使用されるユーザー・プロファイルが，プログラム所有者のユーザー・プロファイルを含むように変更されます。指定された属性が現行プログラムの属性と異なる場合にのみ，プログラムは再作成されます。
+</p>
+<h3><strong>例</strong><strong>2:</strong><strong>プログラムのテキストの変更</strong>
+</h3>
+<p>
+</p><pre>CHGPGM   PGM(*USRLIBL/KNUTE)  TEXT('プログラム記述')
+</pre>
+<p></p>
+<p>このコマンドは，プログラムKNUTEのテキストを変更します。ライブラリー・リストのユーザー部分を使用してプログラムを見つけます。
+</p>
+<h3><strong>例</strong><strong>3:</strong><strong>複数のプログラムの最適化</strong>
+</h3>
+<p>
+</p><pre>CHGPGM   PGM(PROG1/ACE*)  OPTIMIZE(*YES)
+</pre>
+<p></p>
+<p>ライブラリーPROG1内のプログラムのうち，ACEで始まる名前を持つすべてのプログラムが，それぞれの最大最適化レベルに最適化されます。
+</p>
+<h3><strong>例</strong><strong>4:</strong><strong>複数のプログラムのテキストの変更</strong>
+</h3>
+<p>
+</p><pre>CHGPGM   PGM(PROG2/*ALL)  TEXT('総称テキスト')
+</pre>
+<p></p>
+<p>このコマンドは，ライブラリーPROG2に入っているすべてのプログラムのテキストを，’総称テキスト’に変更します。
+</p>
+<h3><strong>例</strong><strong>5:</strong><strong>プロファイル作成データの収集の使用可能化</strong>
+</h3>
+<p>
+</p><pre>CHGPGM   PGM(PROG1/PROFPGM)  PRFDTA(*COL)
+</pre>
+<p></p>
+<p>このコマンドは，ライブラリーPROG1にあるプログラムPROFPGMのプロファイル作成データの収集を使用可能にします。このコマンドを出す前に，ライブラリーPROG1内のPROFPGMにプロファイル作成データが適用されていた場合は，適用されていたすべてのプロファイル作成データが除去されます。
+</p>
+<h3><strong>例</strong><strong>6:</strong><strong>プロファイル作成データの適用</strong>
+</h3>
+<p>
+</p><pre>CHGPGM   PGM(PROG1/PROFPGM)  PRFDTA(*APYALL)
+</pre>
+<p></p>
+<p>このコマンドは，ブロック順序およびプロシージャー順序プロファイル作成データを，ライブラリーPROG1内のプログラムPROFPGMに適用します。ライブラリーPROG1内のプログラムPROFPGMに対するプロファイル作成データの収集は，もはや使用可能になっていません。
+</p>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table17" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#CHGPGM.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div><h2><a name="CHGPGM.ERROR.MESSAGES">エラー・メッセージ</a> </h2>
+<p><strong class="underlined">*ESCAPE </strong><strong class="underlined">メッセージ</strong>
+</p>
+<dl>
+<dt><strong>CPF0540</strong></dt>
+<dd>*USRLIBLを総称名または*ALLと同時に便用することはできない。
+</dd>
+<dt><strong>CPF0541</strong></dt>
+<dd>&amp;2のプログラム&amp;1は変更されていません。
+</dd>
+<dt><strong>CPF0542</strong></dt>
+<dd>ライブラリー&amp;2のライブラリー&amp;1は変更されていません。
+</dd>
+<dt><strong>CPF0543</strong></dt>
+<dd>ユーザー&amp;3には&amp;1の変更が認可されていない。
+</dd>
+<dt><strong>CPF0544</strong></dt>
+<dd>ライブラリーQSYSおよびQGDDMのプログラムを変更できません。
+</dd>
+<dt><strong>CPF0545</strong></dt>
+<dd>プログラムは変更されていません。
+</dd>
+<dt><strong>CPF0546</strong></dt>
+<dd>&amp;1が変更された。&amp;2は変更が不要です。&amp;3は変更されていません。
+</dd>
+<dt><strong>CPF0547</strong></dt>
+<dd>識別情報を除去することはできない。
+</dd>
+<dt><strong>CPF0549</strong></dt>
+<dd>ユーザー&amp;3には&amp;1の変更が認可されていない。
+</dd>
+<dt><strong>CPF223C</strong></dt>
+<dd>&amp;2のタイプ*&amp;3の&amp;1に対する借用権限の使用(USEADPAUT)属性の変更を認可されていない。
+</dd>
+<dt><strong>CPF223E</strong></dt>
+<dd>借用権限の使用属性の権限チェックが正常に実行されなかった。
+</dd>
+<dt><strong>CPF5D0A</strong></dt>
+<dd>オブジェクト&amp;1タイプ*&amp;3から要求されたプログラム識別情報を削除できない。
+</dd>
+<dt><strong>CPF5D40</strong></dt>
+<dd>*&amp;3 &amp;2/&amp;1をSTGMDL(*INHERIT)にすることはできません。
+</dd>
+<dt><strong>CPF9803</strong></dt>
+<dd>ライブラリー&amp;3のオブジェクト&amp;2を割り振りできません。
+</dd>
+<dt><strong>CPF9804</strong></dt>
+<dd>ライブラリー&amp;3のオブジェクト&amp;2が損傷している。
+</dd>
+<dt><strong>CPF9806</strong></dt>
+<dd>ライブラリー&amp;3のオブジェクト&amp;2に対して機能を実行することはできない。
+</dd>
+<dt><strong>CPF9810</strong></dt>
+<dd>ライブラリー&amp;1が見つかりません。
+</dd>
+<dt><strong>CPF9811</strong></dt>
+<dd>ライブラリー&amp;2でプログラム&amp;1が見つからない。
+</dd>
+<dt><strong>CPF9818</strong></dt>
+<dd>オブジェクト&amp;2はライブラリー&amp;3に作成されなかった。
+</dd>
+<dt><strong>CPF9819</strong></dt>
+<dd>オブジェクト&amp;2はライブラリー&amp;3に作成されなかった。
+</dd>
+<dt><strong>CPF9820</strong></dt>
+<dd>ライブラリー&amp;1の使用は認可されていない。
+</dd>
+<dt><strong>CPF9821</strong></dt>
+<dd>ライブラリー&amp;2のプログラム&amp;1は認可されていない。
+</dd>
+<dt><strong>CPF9830</strong></dt>
+<dd>ライブラリー&amp;1を割り当てることができない。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table18" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#CHGPGM.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+</div>
+
+
+</body></html>

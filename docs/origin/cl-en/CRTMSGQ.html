@@ -1,0 +1,811 @@
+<!DOCTYPE html>
+<html lang="ja"><head><meta charset="utf-8"><title>Create Message Queue  (CRTMSGQ)</title></head>
+<body>
+<main role="main"><article role="article" aria-labelledby="crtmsgq__title__1"> 
+<h1 class="topictitle1" id="crtmsgq__title__1">Create Message Queue  (CRTMSGQ)</h1><div id="lastModifiedDate"><span>Last Updated</span>: 2026-07-13</div>
+
+<div class="body">
+<p>
+<strong>Create Message Queue  (CRTMSGQ)
+</strong></p>
+
+<p>
+<strong>Where allowed to run:  
+</strong>All environments (*ALL)
+
+</p>
+
+<p>
+<strong>Threadsafe:  </strong>Yes
+</p>
+
+<p><a href="#crtmsgq__parameters">Parameters</a></p>
+
+<p><a href="#crtmsgq__examples">Examples</a></p>
+
+<p><a href="#crtmsgq__errormsgs">Error messages</a></p>
+
+<div class="div" id="crtmsgq__crtmsgq">
+<p>
+The Create Message Queue (CRTMSGQ) command creates a user-defined message queue and stores it in a specified library.  The message queue should be put in a library for which all users who are to send messages to and receive messages from the queue have *USE authority.  The messages sent can be either predefined messages or immediate messages.  The message queue has the following attributes initialized when it is created:  the DLVRY parameter is set to *HOLD, the first element of the PGM parameter is set to *DSPMSG and the second element of the PGM parameter is set to *ALWRPY, SEV is set to 00, and RESET is set to *NO.  These initialized attributes cannot be specified on the CRTMSGQ command and the CHGMSGQ command must be used to change them after the queue is created.
+
+</p>
+
+<p>
+<strong>Note:     
+</strong>Message queue QSYSOPR is shipped with a message queue full action of *WRAP.  If the value is changed to *SNDMSG and the queue needs to be recreated because it was damaged, the value is reset to the shipped value of *WRAP.
+
+</p>
+
+</div>
+<section class="section" role="region" aria-labelledby="crtmsgq__parameters__title__1" id="crtmsgq__parameters"><h2 class="sectiontitle" id="crtmsgq__parameters__title__1">Parameters</h2>
+
+
+<div class="tablenoborder"><div class="cds--data-table-container"><table summary="" class="defaultstyle cds--data-table"><colgroup><col><col><col><col></colgroup><thead>
+<tr>
+<th id="crtmsgq__parameters__entry__1"><div class="cds--table-header-label">
+Keyword
+</div></th>
+
+<th id="crtmsgq__parameters__entry__2"><div class="cds--table-header-label">
+Description
+</div></th>
+
+<th id="crtmsgq__parameters__entry__3"><div class="cds--table-header-label">
+Choices
+</div></th>
+
+<th id="crtmsgq__parameters__entry__4"><div class="cds--table-header-label">
+Notes
+</div></th>
+
+</tr>
+
+</thead>
+<tbody>
+<tr>
+<td rowspan="3" headers="crtmsgq__parameters__entry__1 "><a href="#crtmsgq__msgq"><strong>MSGQ
+</strong></a></td>
+
+<td headers="crtmsgq__parameters__entry__2 ">Message queue
+</td>
+
+<td headers="crtmsgq__parameters__entry__3 "><em>Qualified object name
+</em></td>
+
+<td rowspan="3" headers="crtmsgq__parameters__entry__4 ">Required, Positional 1
+</td>
+
+</tr>
+
+<tr>
+<td headers="crtmsgq__parameters__entry__2 ">Qualifier 1: Message queue
+</td>
+
+<td headers="crtmsgq__parameters__entry__3 "><em>Name
+</em></td>
+
+</tr>
+
+<tr>
+<td headers="crtmsgq__parameters__entry__2 ">Qualifier 2: Library
+</td>
+
+<td headers="crtmsgq__parameters__entry__3 "><em>Name
+</em>, 
+<strong><u>*CURLIB
+</u></strong></td>
+
+</tr>
+
+<tr>
+<td headers="crtmsgq__parameters__entry__1 "><a href="#crtmsgq__text"><strong>TEXT
+</strong></a></td>
+
+<td headers="crtmsgq__parameters__entry__2 ">Text 'description'
+</td>
+
+<td headers="crtmsgq__parameters__entry__3 "><em>Character value
+</em>, 
+<strong><u>*BLANK
+</u></strong></td>
+
+<td headers="crtmsgq__parameters__entry__4 ">Optional
+</td>
+
+</tr>
+
+<tr>
+<td headers="crtmsgq__parameters__entry__1 "><a href="#crtmsgq__force"><strong>FORCE
+</strong></a></td>
+
+<td headers="crtmsgq__parameters__entry__2 ">Force to auxiliary storage
+</td>
+
+<td headers="crtmsgq__parameters__entry__3 "><strong><u>*NO
+</u></strong>, *YES
+</td>
+
+<td headers="crtmsgq__parameters__entry__4 ">Optional
+</td>
+
+</tr>
+
+<tr>
+<td rowspan="4" headers="crtmsgq__parameters__entry__1 "><a href="#crtmsgq__size"><strong>SIZE
+</strong></a></td>
+
+<td headers="crtmsgq__parameters__entry__2 ">Queue size
+</td>
+
+<td headers="crtmsgq__parameters__entry__3 "><em>Element list
+</em></td>
+
+<td rowspan="4" headers="crtmsgq__parameters__entry__4 ">Optional
+</td>
+
+</tr>
+
+<tr>
+<td headers="crtmsgq__parameters__entry__2 ">Element 1: Initial storage size
+</td>
+
+<td headers="crtmsgq__parameters__entry__3 "><em>Integer
+</em>, 
+<strong><u>3
+</u></strong></td>
+
+</tr>
+
+<tr>
+<td headers="crtmsgq__parameters__entry__2 ">Element 2: Increment storage size
+</td>
+
+<td headers="crtmsgq__parameters__entry__3 "><em>Integer
+</em>, 
+<strong><u>1
+</u></strong></td>
+
+</tr>
+
+<tr>
+<td headers="crtmsgq__parameters__entry__2 ">Element 3: Maximum increments
+</td>
+
+<td headers="crtmsgq__parameters__entry__3 "><em>Integer
+</em>, 
+<strong><u>*NOMAX
+</u></strong></td>
+
+</tr>
+
+<tr>
+<td headers="crtmsgq__parameters__entry__1 "><a href="#crtmsgq__aut"><strong>AUT
+</strong></a></td>
+
+<td headers="crtmsgq__parameters__entry__2 ">Authority
+</td>
+
+<td headers="crtmsgq__parameters__entry__3 "><em>Name
+</em>, 
+<strong><u>*LIBCRTAUT
+</u></strong>, *CHANGE, *ALL, *USE, *EXCLUDE
+</td>
+
+<td headers="crtmsgq__parameters__entry__4 ">Optional
+</td>
+
+</tr>
+
+<tr>
+<td headers="crtmsgq__parameters__entry__1 "><a href="#crtmsgq__alwalr"><strong>ALWALR
+</strong></a></td>
+
+<td headers="crtmsgq__parameters__entry__2 ">Allow alerts
+</td>
+
+<td headers="crtmsgq__parameters__entry__3 "><strong><u>*NO
+</u></strong>, *YES
+</td>
+
+<td headers="crtmsgq__parameters__entry__4 ">Optional
+</td>
+
+</tr>
+
+<tr>
+<td headers="crtmsgq__parameters__entry__1 "><a href="#crtmsgq__ccsid"><strong>CCSID
+</strong></a></td>
+
+<td headers="crtmsgq__parameters__entry__2 ">Coded character set ID
+</td>
+
+<td headers="crtmsgq__parameters__entry__3 ">1-65535, *MSG, 
+<strong><u>*HEX
+</u></strong>, *JOB
+</td>
+
+<td headers="crtmsgq__parameters__entry__4 ">Optional
+</td>
+
+</tr>
+
+<tr>
+<td headers="crtmsgq__parameters__entry__1 "><a href="#crtmsgq__msgqfull"><strong>MSGQFULL
+</strong></a></td>
+
+<td headers="crtmsgq__parameters__entry__2 ">Message queue full action
+</td>
+
+<td headers="crtmsgq__parameters__entry__3 "><strong><u>*SNDMSG
+</u></strong>, *WRAP
+</td>
+
+<td headers="crtmsgq__parameters__entry__4 ">Optional
+</td>
+
+</tr>
+
+</tbody>
+</table></div>
+</div>
+
+<div class="div" id="crtmsgq__msgq">
+<p>
+<strong>Message queue (MSGQ)
+</strong></p>
+
+<p>
+Specifies the message queue to be created.
+
+</p>
+
+<p>
+This is a required parameter.
+
+</p>
+
+<p>
+<strong>Qualifier 1: Message queue
+</strong>
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><em>name
+</em></strong></dt>
+
+<dd class="dlentry">
+Specify the name of the message queue being created.
+</dd>
+
+</dl>
+
+<p>
+<strong>Qualifier 2: Library
+</strong>
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><u>*CURLIB
+</u></strong></dt>
+
+<dd class="dlentry">
+The current library for the job is used to create the message queue.  If no current library entry exists in the library list, the QGPL library is used.
+</dd>
+
+<dt class="dlterm">
+<strong><em>name
+</em></strong></dt>
+
+<dd class="dlentry">
+Specify the library where the message queue is to be created.
+</dd>
+
+</dl>
+
+</div>
+<div class="div" id="crtmsgq__text">
+<p>
+<strong>Text 'description' (TEXT)
+</strong></p>
+
+<p>
+Specifies the text that briefly describes the object.
+
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><u>*BLANK
+</u></strong></dt>
+
+<dd class="dlentry">
+No text is specified.
+</dd>
+
+<dt class="dlterm">
+<strong><em>'description'
+</em></strong></dt>
+
+<dd class="dlentry">
+Enter no more than 50 characters, enclosed in apostrophes.
+</dd>
+
+</dl>
+
+</div>
+<div class="div" id="crtmsgq__force">
+<p>
+<strong>Force to auxiliary storage (FORCE)
+</strong></p>
+
+<p>
+Specifies whether changes made to the message queue description or messages added to or removed from the queue are immediately forced into auxiliary storage; this ensures that changes to the queue, or messages sent or received, are not lost if a system failure occurs.
+
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><u>*NO
+</u></strong></dt>
+
+<dd class="dlentry">
+Changes made to the message queue, including its messages, are not immediately forced to auxiliary storage.
+</dd>
+
+<dt class="dlterm">
+<strong>*YES
+</strong></dt>
+
+<dd class="dlentry">
+All changes to the message queue description and to the messages in the queue are immediately forced to auxiliary storage.
+</dd>
+
+</dl>
+
+</div>
+<div class="div" id="crtmsgq__size">
+<p>
+<strong>Queue size (SIZE)
+</strong></p>
+
+<p>
+Specifies the initial storage size of the message queue, the size of each addition to its storage, and the number of times the size can be increased.  The storage size is expressed in kilobytes (KB).
+
+</p>
+
+<p>
+<strong>Element 1: Initial storage size
+</strong>
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><u>3
+</u></strong></dt>
+
+<dd class="dlentry">
+Initially, the message queue has 3 KB of storage assigned to it.  (1 KB equals 1024 bytes of storage.)
+</dd>
+
+<dt class="dlterm">
+<strong><em>initial-Kilobytes
+</em></strong></dt>
+
+<dd class="dlentry">
+Specify the initial size of the queue (must be greater than 0).
+</dd>
+
+</dl>
+
+<p>
+<strong>Element 2: Increment storage size
+</strong>
+</p>
+
+<p>
+One of the following is used to specify the amount of storage in kilobytes added to the message queue's size each time the size is increased.
+
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><u>1
+</u></strong></dt>
+
+<dd class="dlentry">
+One KB of storage is added to the message queue each time its size is increased.
+</dd>
+
+<dt class="dlterm">
+<strong><em>increment-value
+</em></strong></dt>
+
+<dd class="dlentry">
+Specify the number of kilobytes added each time the message queue's size is increased.
+</dd>
+
+</dl>
+
+<p>
+<strong>Element 3: Maximum increments
+</strong>
+</p>
+
+<p>
+One of the following is used to specify the maximum number of times the message queue's size can be increased.
+
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><u>*NOMAX
+</u></strong></dt>
+
+<dd class="dlentry">
+The number of times storage can be added to the message queue is not limited by the user.  The maximum size is determined by the system.
+</dd>
+
+<dt class="dlterm">
+<strong><em>number-of-increments
+</em></strong></dt>
+
+<dd class="dlentry">
+Specify the maximum number of times storage can be added to the queue.  Enter a 0 to prevent any additions to the initial size of the queue.
+</dd>
+
+</dl>
+
+</div>
+<div class="div" id="crtmsgq__aut">
+<p>
+<strong>Authority (AUT)
+</strong></p>
+
+<p>
+Specifies the authority you are giving to users who do not have specific authority for the object, who are not on an authorization list, and whose group profile or supplemental group profiles do not have specific authority for the object.
+
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><u>*LIBCRTAUT
+</u></strong></dt>
+
+<dd class="dlentry">
+The system determines the authority for the object by using the value specified for the 
+<strong>Create authority (CRTAUT)
+</strong> parameter on the Create Library command (CRTLIB) for the library containing the object to be created.  If the value specified for the CRTAUT parameter is changed, the new value will not affect any existing objects.
+</dd>
+
+</dl>
+
+<dl>
+<dt class="dlterm">
+<strong>*CHANGE
+</strong></dt>
+
+<dd class="dlentry">
+The user can perform all operations on the object except those limited to the owner or controlled by object existence (*OBJEXIST) and object management (*OBJMGT) authorities.  The user can change and perform basic functions on the object.  *CHANGE authority provides object operational (*OBJOPR) authority and all data authority.  If the object is an authorization list, the user cannot add, change, or remove users.
+</dd>
+
+</dl>
+
+<dl>
+<dt class="dlterm">
+<strong>*ALL
+</strong></dt>
+
+<dd class="dlentry">
+The user can perform all operations except those limited to the owner or controlled by authorization list management (*AUTLMGT) authority.  The user can control the object's existence, specify the security for the object, change the object, and perform basic functions on the object.  The user also can change ownership of the object.
+</dd>
+
+</dl>
+
+<dl>
+<dt class="dlterm">
+<strong>*USE
+</strong></dt>
+
+<dd class="dlentry">
+The user can perform basic operations on the object, such as running a program or reading a file. The user cannot change the object.  Use (*USE) authority provides object operational (*OBJOPR), read (*READ), and execute (*EXECUTE) authorities.
+</dd>
+
+</dl>
+
+<dl>
+<dt class="dlterm">
+<strong>*EXCLUDE
+</strong></dt>
+
+<dd class="dlentry">
+The user cannot access the object.
+</dd>
+
+</dl>
+
+<dl>
+<dt class="dlterm">
+<strong><em>name
+</em></strong></dt>
+
+<dd class="dlentry">
+Specify the name of an authorization list to be used for authority to the object.  Users included in the authorization list are granted authority to the object as specified in the list. The authorization list must exist when the object is created.
+</dd>
+
+</dl>
+
+</div>
+<div class="div" id="crtmsgq__alwalr">
+<p>
+<strong>Allow alerts (ALWALR)
+</strong></p>
+
+<p>
+Specifies whether the queue being created allows alerts to be generated from alert messages that are sent to it.
+
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><u>*NO
+</u></strong></dt>
+
+<dd class="dlentry">
+Does not allow alerts to be generated from this message queue.
+</dd>
+
+<dt class="dlterm">
+<strong>*YES
+</strong></dt>
+
+<dd class="dlentry">
+Allows alerts to be generated from this message queue.
+</dd>
+
+</dl>
+
+</div>
+<div class="div" id="crtmsgq__ccsid">
+<p>
+<strong>Coded character set ID (CCSID)
+</strong></p>
+
+<p>
+Specifies the coded character set identifier (CCSID) associated with this message queue.  The CCSID applies only to immediate messages and message data that is defined as a character field that can be converted (*CCHAR).
+
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><u>*HEX
+</u></strong></dt>
+
+<dd class="dlentry">
+Messages sent to, received from, or displayed from this message queue are not converted.  The message queue CCSID is 65535.
+</dd>
+
+<dt class="dlterm">
+<strong>*MSG
+</strong></dt>
+
+<dd class="dlentry">
+Messages sent to this message queue are not converted.  The CCSID specified by the sending job is saved in case a conversion is needed for a display or receive function.  The message queue CCSID is 65534.
+</dd>
+
+<dt class="dlterm">
+<strong>*JOB
+</strong></dt>
+
+<dd class="dlentry">
+The CCSID of the message queue will be the CCSID of the job running this command.
+</dd>
+
+<dt class="dlterm">
+<strong><em>coded-character-set-identifier
+</em></strong></dt>
+
+<dd class="dlentry">
+Specify the CCSID associated with this message queue.  Messages sent to this message queue are converted to this CCSID.  Valid values range from 1 through 65535.  See the Globalization information in the iSeries Information Center at http://www.ibm.com/eserver/iseries/infocenter for a list of valid CCSID values.
+<p>
+For more information about the message handler and its use of CCSIDs, see the i5/OS globalization topic collection in the IBM i Information Center at http://www.ibm.com/systems/i/infocenter/.
+
+</p>
+
+</dd>
+
+</dl>
+
+</div>
+<div class="div" id="crtmsgq__msgqfull">
+<p>
+<strong>Message queue full action (MSGQFULL)
+</strong></p>
+
+<p>
+Specifies the action to take when the message queue is full.
+
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><u>*SNDMSG
+</u></strong></dt>
+
+<dd class="dlentry">
+When the message queue is full, CPF2460 (Message queue could not be extended.) is sent to the program or user that is sending a message to the full message queue.
+</dd>
+
+<dt class="dlterm">
+<strong>*WRAP
+</strong></dt>
+
+<dd class="dlentry">
+When the message queue is full, the oldest informational and answered messages are removed from the message queue to allow space for new messages to be added.  If the removing of the informational and answered messages does not provide enough space to add the requested message, then unanswered inquiry messages are removed until there is space to add the requested message.  The default reply is sent before an unanswered inquiry message is removed.  When the message queue is wrapped, CPI2420 or CPI2421 will be sent to the queue that was full to indicate it was wrapped.  If there is no space on the queue to send these messages they are sent to the joblog of the user that was sending the message to the queue and they are sent to QHST if the full queue is QSYSOPR.
+<p>
+<strong>NOTE:
+</strong>
+</p>
+
+<p>
+When a queue uses *WRAP and a job sends a message to the queue that causes a wrap, messages are removed for the following conditions in order to perform the wrap:
+
+</p>
+
+<ul class="cds--list--unordered">
+<li class="cds--list__item">
+the queue is in break or notify mode for a job
+
+</li>
+
+<li class="cds--list__item">
+a job is in a message wait state because it did a receive function on the queue with a wait time specified
+
+</li>
+
+<li class="cds--list__item">
+the queue is allocated by a job via the ALCOBJ command
+
+</li>
+
+</ul>
+
+<p>
+Only the system wrap function can remove messages from queues in these conditions.  Other jobs still are not allowed to remove messages from the queues during these conditions.  With *SNDMSG, these conditions do not allow another job to remove messages from the queue.
+
+</p>
+
+<p>
+Also when a queue specifies *WRAP and it is in break mode, the wrap function only removes messages that have been received by the break-handling program.  For example, if the break-handling program did not receive all messages from the the queue and it was becoming full, CPF2460 could be issued because messages could not be removed to perform the wrap.
+
+</p>
+
+</dd>
+
+</dl>
+
+</div>
+</section>
+
+<section class="section" role="region" aria-labelledby="crtmsgq__examples__title__1" id="crtmsgq__examples"><h2 class="sectiontitle" id="crtmsgq__examples__title__1">Examples</h2>
+
+<div class="p">
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>
+CRTMSGQ   MSGQ(MYQ)  SIZE(3 3 *NOMAX)
+          TEXT('Message queue for inventory transactions')
+          AUT(*CHANGE)
+
+</code></pre></div><div class="docs--copy-btn"></div></div>
+
+</div>
+
+<p>
+This command creates the message queue MYQ and stores it in the current library (*CURLIB) by default. All users are authorized to send messages to the queue and to read its messages.
+
+</p>
+
+<p>
+The message queue is created with an initial size of 3 kilobytes (KB) and increased in size in 3 KB increments. The restriction on its maximum size is the system limit for objects, which is about 16,000 KB.
+
+</p>
+
+</section>
+
+<section class="section" role="region" aria-labelledby="crtmsgq__errormsgs__title__1" id="crtmsgq__errormsgs"><h2 class="sectiontitle" id="crtmsgq__errormsgs__title__1">Error messages</h2>
+
+<p>
+<strong><u>*ESCAPE Messages
+</u></strong>
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong>CPF2108
+</strong></dt>
+
+<dd class="dlentry">
+Object &amp;1 type *&amp;3 not added to library &amp;2.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF2112
+</strong></dt>
+
+<dd class="dlentry">
+Object &amp;1 in &amp;2 type *&amp;3 already exists.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF2113
+</strong></dt>
+
+<dd class="dlentry">
+Cannot allocate library &amp;1.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF2151
+</strong></dt>
+
+<dd class="dlentry">
+Operation failed for &amp;2 in &amp;1 type *&amp;3.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF2182
+</strong></dt>
+
+<dd class="dlentry">
+Not authorized to library &amp;1.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF2283
+</strong></dt>
+
+<dd class="dlentry">
+Authorization list &amp;1 does not exist.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF2402
+</strong></dt>
+
+<dd class="dlentry">
+Library &amp;1 not found
+</dd>
+
+<dt class="dlterm">
+<strong>CPF247E
+</strong></dt>
+
+<dd class="dlentry">
+CCSID &amp;1 is not valid.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF2497
+</strong></dt>
+
+<dd class="dlentry">
+Size for &amp;1 in &amp;2 exceeds machine limit.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF9838
+</strong></dt>
+
+<dd class="dlentry">
+User profile storage limit exceeded.
+</dd>
+
+</dl>
+
+</section>
+
+</div>
+
+</article></main>
+</body></html>

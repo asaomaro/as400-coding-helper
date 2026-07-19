@@ -1,0 +1,451 @@
+{
+  "keyword": "CRTMNU",
+  "description": "メニュー作成 (CRTMNU)",
+  "help": "メニュー作成(CRTMNU)コマンドは，メニュー・オブジェクトを作成するために使用します。このコマンドを使用して，表示装置ファイル(*DSPF)メニュー，およびプログラム(*PGM)メニューの両方を作成することができます。 また，メニューは，メニュー表示(GO)コマンドを使用して表示することができます。",
+  "parameters": [
+    {
+      "name": "MENU",
+      "description": "メニュー",
+      "help": "作成するメニューを指定します。\n\nこれは必須パラメーターです。",
+      "inputType": "group",
+      "required": true,
+      "groupKind": "qualified",
+      "children": [
+        {
+          "name": "LIB",
+          "description": "ライブラリー",
+          "help": "*CURLIB: 新しいメニューを保管するために，ジョブの現行ライブラリーが使用されます。ジョブの現行ライブラリーとしてライブラリーが指定されていない場合には，QGPLが使用されます。\nメニューを保管するライブラリーを指定してください。",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "*CURLIB",
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          }
+        },
+        {
+          "name": "MENU",
+          "description": "メニュー",
+          "help": "メニューの名前を指定します。",
+          "inputType": "text",
+          "required": true,
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          }
+        }
+      ],
+      "positional": 1
+    },
+    {
+      "name": "TYPE",
+      "description": "メニュー・タイプ",
+      "help": "作成されるメニューのタイプを指定します。\n\nこれは必須パラメーターです。",
+      "inputType": "dropdown",
+      "required": true,
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*DSPF",
+          "value": "*DSPF",
+          "help": "メニューを作成するために，既存の表示装置ファイルおよびメッセージ・ファイルが使用されます。"
+        },
+        {
+          "label": "*PGM",
+          "value": "*PGM",
+          "help": "作成中のメニューが，メニューの要求時にプログラムを呼び出します。"
+        },
+        {
+          "label": "*UIM",
+          "value": "*UIM",
+          "help": "メニューは， ソース・ファイル (SRCFILE) および ソース・メンバー (SRCMBR) パラメーターに指定されたファイルで見つかったUIMタグ言語を使用して作成されます。"
+        }
+      ],
+      "positional": 2
+    },
+    {
+      "name": "DSPF",
+      "description": "表示装置ファイル",
+      "help": "メニュー・オブジェクトの作成に使用する表示装置ファイルを指定します。 この表示装置ファイルには，メニュー様式と呼ばれる，表示装置ファイル自体と同じ名前の1つのレコード様式が含まれていなければなりません。ファイルにはヘルプ様式も含めることができます。\n\nヘルプ様式は，命名規則#HXXYYに従っています。ここで，XXはヘルプ様式が適用される最初のメニュー・オプションであり，YYはその最後のメニュー・オプションです。（例えば，#H0306はメニュー・オプションの3から6までに適用されます。#H0000は，メニューの一般ヘルプを指定します。\n\n表示装置ファイルは，独立標識域(INDARAキーワード）を持ち，サブファイル記述を含んでいてはなりません。\n\nこのパラメーターを指定できるのは， メニュー・タイプ (TYPE) パラメーターに*DSPFが指定された場合だけです。",
+      "inputType": "group",
+      "required": false,
+      "groupKind": "qualified",
+      "children": [
+        {
+          "name": "DSPF_LIB",
+          "description": "ライブラリー",
+          "help": "*LIBL: 最初に一致するものが見つかるまで，現行スレッドのライブラリー・リスト内のすべてのライブラリーが検索されます。\n*CURLIB: 表示装置ファイルを見つけるために，ジョブの現行ライブラリー使用されます。ジョブの現行ライブラリーとしてライブラリーが指定されていない場合には，QGPLが使用されます。\n表示装置ファイルが入っているライブラリーを指定してください。",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "*LIBL",
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          }
+        },
+        {
+          "name": "DSPF",
+          "description": "表示装置ファイル",
+          "help": "*MENU: 表示装置ファイルは， メニュー (MENU) パラメーターに指定されたメニュー名と同じ名前です。\n使用する表示装置ファイルの名前を指定してください。",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "*MENU",
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          }
+        }
+      ]
+    },
+    {
+      "name": "MSGF",
+      "description": "メッセージ・ファイル",
+      "help": "メニュー・オプションが選択された時に実行するコマンドが入っているメッセージ・ファイルを指定します。このファイル中のメッセージのMSGIDはUSRXXXXの書式になります。ここで，XXXXはコマンド入力行に入力されたメニュー・オプションの番号です。",
+      "inputType": "group",
+      "required": false,
+      "groupKind": "qualified",
+      "children": [
+        {
+          "name": "MSGF_LIB",
+          "description": "ライブラリー",
+          "help": "*LIBL: 最初に一致するものが見つかるまで，現行スレッドのライブラリー・リスト内のすべてのライブラリーが検索されます。\n*CURLIB: メッセージ・ファイルを見つけるために，ジョブの現行ライブラリー使用されます。ジョブの現行ライブラリーとしてライブラリーが指定されていない場合には，QGPLが使用されます。\nメッセージ・ファイルが入っているライブラリーを指定してください。",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "*LIBL",
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          }
+        },
+        {
+          "name": "MSGF",
+          "description": "メッセージ・ファイル",
+          "help": "*MENU: 実行するコマンドを含むメッセージ・ファイルは， メニュー (MENU) パラメーターに指定したメニュー名と同じ名前です。\n使用するメッセージ・ファイルの名前を指定します。",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "*MENU",
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          }
+        }
+      ]
+    },
+    {
+      "name": "CMDLIN",
+      "description": "コマンド入力行",
+      "help": "長いコマンド入力行を使用するか，短いコマンド入力行を使用するか，それともコマンド入力行（オプション行）を使用しないかを指定します。",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*LONG",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*LONG",
+          "value": "*LONG",
+          "help": "153バイトの長さのコマンド入力行が使用されます。"
+        },
+        {
+          "label": "*SHORT",
+          "value": "*SHORT",
+          "help": "73バイトの長さのコマンド入力行が使用されます。"
+        },
+        {
+          "label": "*NONE",
+          "value": "*NONE",
+          "help": "コマンド入力行は使用されません。 4バイトのオプション行が使用されます。"
+        }
+      ]
+    },
+    {
+      "name": "DSPKEY",
+      "description": "機能キーの表示",
+      "help": "メニューを表示する時に，機能キーの凡例をメニューの下部に表示するかどうかを指定します。",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*NO",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*NO",
+          "value": "*NO",
+          "help": "機能キーの凡例は画面の下部に表示されません。"
+        },
+        {
+          "label": "*YES",
+          "value": "*YES",
+          "help": "機能キーの凡例が画面の下部に表示されます。"
+        }
+      ]
+    },
+    {
+      "name": "PGM",
+      "description": "プログラム",
+      "help": "メニューの表示時に呼び出すプログラムを指定します。\n\n次の3つのパラメーターがプログラムに渡されます。",
+      "inputType": "group",
+      "required": false,
+      "groupKind": "qualified",
+      "children": [
+        {
+          "name": "PGM_LIB",
+          "description": "ライブラリー",
+          "help": "*LIBL: 最初に一致するものが見つかるまで，現行スレッドのライブラリー・リスト内のすべてのライブラリーが検索されます。\n*CURLIB: プログラムを見つけるために，ジョブの現行ライブラリーが使用されます。ジョブの現行ライブラリーとしてライブラリーが指定されていない場合には，QGPLが使用されます。\nプログラムが入っているライブラリーを指定してください。",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "*LIBL",
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          }
+        },
+        {
+          "name": "PGM",
+          "description": "プログラム",
+          "help": "*MENU: 呼び出されるプログラムは， メニュー (MENU) パラメーターに指定されたメニュー名と同じ名前です。\n呼び出されるプログラムの名前を指定してください。",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "*MENU",
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          }
+        }
+      ]
+    },
+    {
+      "name": "SRCFILE",
+      "description": "ソース・ファイル",
+      "help": "メニュー記述ソース・ステートメントが入っているソース・ファイルを指定します。",
+      "inputType": "group",
+      "required": false,
+      "groupKind": "qualified",
+      "children": [
+        {
+          "name": "SRCFILE_Q2",
+          "description": "",
+          "help": "*LIBL: 最初に一致するものが見つかるまで，現行スレッドのライブラリー・リスト内のすべてのライブラリーが検索されます。\n*CURLIB: ソース・ファイルを見つけるために，ジョブの現行ライブラリーが使用されます。ジョブの現行ライブラリーとしてライブラリーが指定されていない場合には，QGPLライブラリーが使用されます。\nソース・ファイルが入っているライブラリーの名前を指定してください。",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "*LIBL",
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          }
+        },
+        {
+          "name": "SRCFILE",
+          "description": "ソース・ファイル",
+          "help": "QMNUSRC: ソース・ファイルQMNUSRCにはメニュー記述ソース・ステートメントが入っています。\nメニュー記述ソース・ステートメントが入っているソース・ファイルの名前を指定します。",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "QMNUSRC",
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          }
+        }
+      ]
+    },
+    {
+      "name": "SRCMBR",
+      "description": "ソース・メンバー",
+      "help": "メニュー記述が入っているソース・ファイルのメンバーを指定します。\n\n*MENU: メンバー名は， メニュー (MENU) パラメーターに指定されたメニュー名と同じ名前です。\nメニュー記述が入っているソース・ファイル・メンバーの名前を指定します。",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*MENU",
+      "attributes": {
+        "characterSet": "upper",
+        "maxLength": 10
+      }
+    },
+    {
+      "name": "OPTION",
+      "description": "ソース・リスト・オプション",
+      "help": "コンパイル時に作成される出力のオプションを指定します。このパラメーターには，複数のオプション値を任意の順序で指定できます。各グループに値がどちらも指定されないか，あるいは両方の値が指定された場合には，下線のついた値が使用されます。",
+      "inputType": "dropdown",
+      "required": false,
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*SOURCE",
+          "value": "*SOURCE"
+        },
+        {
+          "label": "*NOSOURCE",
+          "value": "*NOSOURCE"
+        },
+        {
+          "label": "*SRC",
+          "value": "*SRC"
+        },
+        {
+          "label": "*NOSRC",
+          "value": "*NOSRC"
+        },
+        {
+          "label": "*NOSECLVL",
+          "value": "*NOSECLVL"
+        },
+        {
+          "label": "*SECLVL",
+          "value": "*SECLVL"
+        },
+        {
+          "label": "*NOEVENTF",
+          "value": "*NOEVENTF"
+        },
+        {
+          "label": "*EVENTF",
+          "value": "*EVENTF"
+        }
+      ],
+      "maxOccurrences": 3
+    },
+    {
+      "name": "INCFILE",
+      "description": "組み込みファイル",
+      "help": "組み込むメンバーが入っているソース・ファイルを指定します。",
+      "inputType": "group",
+      "required": false,
+      "groupKind": "qualified",
+      "singleValues": [
+        "*SRCFILE"
+      ],
+      "children": [
+        {
+          "name": "INCFILE_LIB",
+          "description": "ライブラリー",
+          "help": "*LIBL: 最初に一致するものが見つかるまで，現行スレッドのライブラリー・リスト内のすべてのライブラリーが検索されます。\n*CURLIB: ソース・ファイルを見つけるために，ジョブの現行ライブラリーが使用されます。ジョブの現行ライブラリーとしてライブラリーが指定されていない場合には，QGPLライブラリーが使用されます。\nソース・ファイルが入っているライブラリーの名前を指定してください。",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "*LIBL",
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          }
+        },
+        {
+          "name": "INCFILE",
+          "description": "組み込みファイル",
+          "help": "組み込むメンバーが入っているソース・ファイルの名前を指定します。",
+          "inputType": "text",
+          "required": false,
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          },
+          "defaultValue": "*SRCFILE"
+        }
+      ]
+    },
+    {
+      "name": "CURLIB",
+      "description": "現行ライブラリー",
+      "help": "メニューを表示する時に，現行ライブラリーとして使用するライブラリーを指定します。\n\n*NOCHG: このメニューの処理によって現行ライブラリーが変更されることはありません。\n*MNULIB: 現行ライブラリーは，メニューの表示中にはそのメニューが入っているライブラリーに変更されます。\n*CRTDFT: メニューの表示時には，現行ライブラリーはありません。\nメニューの表示時に現行ライブラリーとして使用するライブラリーの名前を指定してください。",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*NOCHG",
+      "attributes": {
+        "characterSet": "upper",
+        "maxLength": 10
+      }
+    },
+    {
+      "name": "PRDLIB",
+      "description": "実行ライブラリー",
+      "help": "メニューの表示時にプロダクト・ライブラリーとして使用するライブラリーの名前を指定します。\n\n*NOCHG: プロダクト・ライブラリーは，メニューの表示時に変更されず，メニューの終了後も復元されません。\n*NONE: メニューの表示中に，ライブラリー・リストのプロダクト・ライブラリー項目は使用されません。\nメニューの表示時にプロダクト・ライブラリーとして使用するライブラリーの名前を指定してください。",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*NOCHG",
+      "attributes": {
+        "characterSet": "upper",
+        "maxLength": 10
+      }
+    },
+    {
+      "name": "CHRID",
+      "description": "文字ID",
+      "help": "メニューが表示される時にメニュー・オブジェクトの文字ID（図形文字セットおよびコード・ページ）が装置の文字IDに変更されるかどうかを指定します。\n\n*DEVD: 変更は行われません。 メニュー・オブジェクトの文字IDは，装置の文字IDと同じです。\n*JOBCCSID: メニュー・オブジェクトの文字IDは， ソース・ファイル (SRCFILE) パラメーターに指定されたファイルのCCSIDから装置の文字IDに変更されます。\n*CHRIDCTL: システムはCHRIDCTLジョブ属性を検査して，このメニューのCHRIDコマンド・パラメーターに*JOBCCSIDまたは*DEVDを使用するかどうかを決定します。",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*DEVD",
+      "attributes": {
+        "characterSet": "upper"
+      }
+    },
+    {
+      "name": "REPLACE",
+      "description": "メニューの置き換え",
+      "help": "同じ名前の既存のメニューを置き換えるかどうかを指定します。",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*YES",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*YES",
+          "value": "*YES",
+          "help": "既存のメニューがシステム・ライブラリーQRPLOBJに移動されて，新しいメニューで置き換えられます。"
+        },
+        {
+          "label": "*NO",
+          "value": "*NO",
+          "help": "既存のメニューは新しいメニューで置き換えられません。"
+        }
+      ]
+    },
+    {
+      "name": "TEXT",
+      "description": "テキスト'記述'",
+      "help": "メニューに関連したテキスト記述を指定します。\n\n*SRCMBRTXT: メニューのテキストは，ソース・ファイル・メンバーと対応したテキストから取り出されます。メニューが*UIMのタイプの場合には，この特殊値がテキストを取り出すのはソース・ファイル・メンバーからだけであることに注意してください。その他メニュー・タイプでは，テキストはブランクに設定されます。\n*BLANK: メニューにはテキスト記述は指定されません。\n50文字を超えないテキストを，アポストロフィで囲んで指定してください。",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*SRCMBRTXT",
+      "attributes": {
+        "characterSet": "upper"
+      }
+    },
+    {
+      "name": "AUT",
+      "description": "権限",
+      "help": "このオブジェクトに対する特定の権限をもっておらず，権限リスト上になく，さらにそのグループ・プロファイルまたは補足グループ・プロファイルがオブジェクトに対する特定の権限をもっていないユーザーに付与する権限を指定します。\n\n*LIBCRTAUT: システムは，作成するオブジェクトが入っているライブラリーに対するライブラリー作成コマンド(CRTLIB)で 作成権限 (CRTAUT) パラメーターに指定された値を使用して，このオブジェクトに対する権限を決定します。CRTAUTパラメーターに指定された値が変更された場合には，新しい値は既存のどのオブジェクトにも影響しません。\n*CHANGE: ユーザーは，所有者に限定されるか，あるいはオブジェクト存在権限(*OBJEXIST)およびオブジェクト管理権限(*OBJMGT)によって制御される以外のオブジェクトで，すべての操作を実行することができます。ユーザーはオブジェクトでの基本的な機能を変更して実行することができます。*CHANGE権限では，オブジェクト操作(*OBJOPR)および全データ権限が提供されます。このオブジェクトが権限リストである場合は，ユーザーの追加，変更，または除去はできません。\n*ALL: ユーザーは，所有者に限定されるか，あるいは権限リスト管理(*AUTLMGT)権限によって管理される以外のオブジェクトで，すべての操作を実行することができます。ユーザーはオブジェクトの存在を制御し，オブジェクトの機密保護を指定し，オブジェクトを変更し，さらにオブジェクトに対して基本的な機能を実行することができます。オブジェクトの所有権を変更することもできます。\n*USE: ユーザーは，プログラムの実行またはファイルの読み取りなど，オブジェクトに対する基本操作を実行することができます。ユーザーはオブジェクトを変更できません。使用(*USE)権限は，オブジェクト操作(*OBJOPR),読み取り(*READ),および実行(*EXECUTE)権限を提供します。\n*EXCLUDE: ユーザーはオブジェクトにアクセスすることはできません。\nオブジェクトに対する権限として使用する権限リストの名前を指定してください。権限リストに載っているユーザーは，リストに指定されているオブジェクトに対する権限が認可されます。オブジェクトが作成される時に権限リストが存在していなければなりません。",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*LIBCRTAUT",
+      "attributes": {
+        "characterSet": "upper",
+        "maxLength": 10
+      }
+    }
+  ],
+  "threadSafe": false,
+  "environment": "すべての環境 (*ALL)",
+  "restrictions": [
+    "メニューを作成するライブラリーに対する変更(*CHANGE),読み取り(*READ),および追加 (*ADD)権限が必要です。"
+  ],
+  "examples": [
+    {
+      "code": "CRTMNU MENU(ARLIB/ARPERS) TYPE(*PGM)"
+    }
+  ],
+  "errorMessages": [
+    {
+      "id": "CPF6AC3",
+      "text": "メニューは作成されなかった。"
+    }
+  ],
+  "source": {
+    "url": "https://www.ibm.com/docs/ja/ssw_ibm_i_74/cl/crtmnu.htm",
+    "version": "IBM i 7.4"
+  }
+}

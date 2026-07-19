@@ -1,0 +1,290 @@
+{
+  "keyword": "STRQMPRC",
+  "description": "QUERY管理機能プロシージャー開始 (STRQMPRC)",
+  "help": "QUERY管理プロシージャー開始(STRQMPRC)コマンドによって，ソース・ファイルにメンバーとして保管されたQUERY管理プロシージャーを実行することができます。",
+  "parameters": [
+    {
+      "name": "SRCMBR",
+      "description": "ソース・メンバー",
+      "help": "実行するQUERY管理機能プロシージャーが入っているソース・ファイル・メンバーを指定します。\n\nこれは必須パラメーターです。\n\nメンバーの名前を指定します。",
+      "inputType": "text",
+      "required": true,
+      "attributes": {
+        "characterSet": "upper",
+        "maxLength": 10
+      },
+      "positional": 1
+    },
+    {
+      "name": "SRCFILE",
+      "description": "ソース・ファイル",
+      "help": "実行するQUERY管理機能プロシージャーが入っているソース・ファイルを指定します。\n\nこれは必須パラメーターです。",
+      "inputType": "group",
+      "required": false,
+      "groupKind": "qualified",
+      "children": [
+        {
+          "name": "LIB",
+          "description": "ライブラリー",
+          "help": "*LIBL: 最初に一致するものが見つかるまで，現行スレッドのライブラリー・リスト内のすべてのライブラリーが検索されます。\n*CURLIB: ジョブの現行ライブラリーが検索されます。ジョブの現行ライブラリーとしてライブラリーが指定されていない場合には，QGPLライブラリーが使用されます。\n検索するライブラリーの名前を指定してください。",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "*LIBL",
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          }
+        },
+        {
+          "name": "SRCFILE",
+          "description": "ソース・ファイル",
+          "help": "QQMPRCSRC: IBM提供のそー不・ファイルQQMPRCSRCが使用されます。\nソース・ファイルの名前を指定してください。",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "QQMPRCSRC",
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          }
+        }
+      ],
+      "positional": 2
+    },
+    {
+      "name": "RDB",
+      "description": "リレーショナル・データベース",
+      "help": "このコマンドの処理時にアクセスされるリレーショナル・データベースを指定します。\n\nアクセスされるリレーショナル・データベースの名前を指定します。データベースには，リレーショナル・データベース・ディレクトリーの項目が入っていなければなりません。",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*NONE",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*NONE",
+          "value": "*NONE",
+          "help": "ローカル・データベースがアクセスされます。ユーザーがリモート・データベースに接続している場合には，その接続はローカルにリセットされ，このコマンドの完了までローカルのままとなります。"
+        },
+        {
+          "label": "*CURRENT",
+          "value": "*CURRENT",
+          "help": "ユーザーが現在接続されているリレーショナル・データベースがアクセスされます。"
+        }
+      ]
+    },
+    {
+      "name": "RDBCNNMTH",
+      "description": "接続方式",
+      "help": "使用する接続方法を指定します。",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*DUW",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*DUW",
+          "value": "*DUW",
+          "help": "複数のリレーショナル・データベースに接続することができます。追加のリレーショナル・データベースへの連続したCONNECTステートメントがあっても，前の接続が切断されることはありません。"
+        },
+        {
+          "label": "*RUW",
+          "value": "*RUW",
+          "help": "リレーショナル・データベースへの1つの接続だけを使用することができます。連続したCONNECTステートメントの結果として，新しい接続が確立される前に，前の接続が切断されます。"
+        }
+      ]
+    },
+    {
+      "name": "USER",
+      "description": "ユーザー",
+      "help": "会話を開始した時にリモート・システムに送られるユーザー名を指定します。\n\n*CURRENT: 現行ジョブと関連したユーザー名が使用されます。\nアプリケーション・リクエスター・ジョブに使用されるユーザー名を指定してください。",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*CURRENT",
+      "attributes": {
+        "characterSet": "upper",
+        "maxLength": 10
+      }
+    },
+    {
+      "name": "PASSWORD",
+      "description": "パスワード",
+      "help": "リモート・システムで使用されるパスワードを指定します。\n\n*NONE: パスワードは送られません。この値が指定された場合には，USERパラメーターに指定されたユーザー名は無効です。\nUSERパラメーターに指定されたユーザー名のパスワードを指定してください。",
+      "inputType": "text",
+      "required": false,
+      "attributes": {
+        "characterSet": "upper"
+      }
+    },
+    {
+      "name": "NAMING",
+      "description": "命名規則",
+      "help": "オブジェクトの命名に使用される命名規則を指定します。",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*SYS",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*SYS",
+          "value": "*SYS",
+          "help": "システムの命名規則（名前／オブジェクト名）が使用されます。"
+        },
+        {
+          "label": "*SQL",
+          "value": "*SQL",
+          "help": "SQLの命名規則（データベース名．オブジェクト名）が使用されます。NAMING(*SQL)が指定された場合には，このコマンドの他のパラメーターに指定されたオブジェクトを見つけるための省略時の値としてCMDSRCFILE(*LIBL)を指定したり使用することはできません。"
+        },
+        {
+          "label": "*SAA",
+          "value": "*SAA",
+          "help": "SQLの命名規則（データベース名．オブジェクト名）が使用されます。NAMING(*SAA)が指定された場合には，このコマンドの他のパラメーターで指定されたオブジェクトを見つけるために，省略時の値としてCMDSRCFILE(*LIBL)を指定したり使用することはできません。"
+        }
+      ]
+    },
+    {
+      "name": "ALWQRYDFN",
+      "description": "QRYDFNからの情報使用可能",
+      "help": "指定されたオブジェクト名を使用してQUERY管理機能プログラム(QMQRY)またはQUERY管理機能書式(QMFORM)オブジェクトを見つけることができない時に，QUERYまたは書式情報をQUERY定義(QRYDFN)オブジェクトから取り出すかどうかを指定します。この方法で得られた情報は，プロシージャー内のコマンド・プログラミング・インターフェース(CPI)コマンドが完了した時に破棄されます。QUERY管理機能オブジェクトは作成されません。",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*NO",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*NO",
+          "value": "*NO",
+          "help": "情報はQRYDFNオブジェクトから取り出されません。"
+        },
+        {
+          "label": "*YES",
+          "value": "*YES",
+          "help": "指定されたQMQRYまたはQMFORMオブジェクトが見つからない時に，QRYDFNオブジェクトから情報が取り出されます。"
+        },
+        {
+          "label": "*ONLY",
+          "value": "*ONLY",
+          "help": "情報をQRYDFNオブジェクトからのみ派生することができます。QUERY管理機能オブジェクトは無視されます。"
+        }
+      ]
+    },
+    {
+      "name": "CMDSRCFILE",
+      "description": "コマンド・ソース・ファイル",
+      "help": "QUERY管理機能がコマンド・プロシージャーの実行に使用するコマンド・ソース・ファイルを指定します。コマンド・プロシージャーに入れることができるのは，'DSQ'値で始まるアプリケーションの変数とQUERY管理機能の変数を設定できるQUERY管理機能設定コマンドだけです。\n\nサポートされているDSQ変数は次の通りです。",
+      "inputType": "group",
+      "required": false,
+      "groupKind": "qualified",
+      "singleValues": [
+        "*NONE"
+      ],
+      "children": [
+        {
+          "name": "CMDSRCFILE_LIB",
+          "description": "ライブラリー",
+          "help": "*LIBL: 最初に一致するものが見つかるまで，現行スレッドのライブラリー・リスト内のすべてのライブラリーが検索されます。\n*CURLIB: ジョブの現行ライブラリーが検索されます。ジョブの現行ライブラリーとしてライブラリーが指定されていない場合には，QGPLライブラリーが使用されます。\n検索するライブラリーの名前を指定してください。",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "*LIBL",
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          }
+        },
+        {
+          "name": "CMDSRCFILE",
+          "description": "コマンド・ソース・ファイル",
+          "help": "コマンド・ソース・ファイルの名前を指定します。",
+          "inputType": "text",
+          "required": false,
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          },
+          "defaultValue": "*NONE"
+        }
+      ]
+    },
+    {
+      "name": "CMDSRCMBR",
+      "description": "ソース・メンバー",
+      "help": "QUERY管理機能がコマンド・プロシージャーの実行に使用するコマンド・ソース・メンバーを指定します。コマンド・プロシージャーに入れることができるのは，'DSQ'値で始まる変数を設定するQUERY管理機能設定コマンドだけです。\n\n*FIRST: 最初のメンバーが使用されます。\nコマンド・ソース・メンバーの名前を指定してください。",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*FIRST",
+      "attributes": {
+        "characterSet": "upper",
+        "maxLength": 10
+      }
+    },
+    {
+      "name": "ALWDSPLAY",
+      "description": "表示画面",
+      "help": "使用する画面モードを指定します。QUERY管理セッションは，ALWDSPLAY(*YES)が指定されている場合には対話モードに設定されます。ALWDSPLAY(*NO)が指定されている場合にはバッチ・モードに設定されます。バッチ環境でこのコマンドを実行する場合には，モードは自動的にバッチに設定されます。",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*YES",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*YES",
+          "value": "*YES",
+          "help": "対話式セッションでの使用時に画面が表示されます。このモードによって，プロシージャーのQUERY管理コマンドと対話することができます。"
+        },
+        {
+          "label": "*NO",
+          "value": "*NO",
+          "help": "画面は表示されません。"
+        }
+      ]
+    }
+  ],
+  "threadSafe": false,
+  "environment": "すべての環境 (*ALL)",
+  "examples": [
+    {
+      "code": "STRQMPRC SRCMBR(MYPROC) SRCFILE(RPTLIB/PROCFILE)"
+    },
+    {
+      "code": "STRQMPRC SRCMBR(MYPROC) SRCFILE(PROCFILE) ALWQRYDFN(*YES) ALWDSPLAY(*NO)"
+    }
+  ],
+  "errorMessages": [
+    {
+      "id": "QWM2701",
+      "text": "&1コマンドが正しく実行されなかった。"
+    },
+    {
+      "id": "QWM2703",
+      "text": "&1コマンドは終了した。"
+    },
+    {
+      "id": "QWM2707",
+      "text": "SQL命名規則が適用されるときには*LIBLを使用できない。"
+    },
+    {
+      "id": "QWM2709",
+      "text": "リレーショナル・データベース値に対してユーザーまたはパスワードが正しくない。"
+    },
+    {
+      "id": "QWM2710",
+      "text": "パスワード値*NONEに対して正しいのはユーザー値*CURRENTだけである。"
+    },
+    {
+      "id": "QWM2712",
+      "text": "ユーザー名の文字が正しくない。"
+    }
+  ],
+  "source": {
+    "url": "https://www.ibm.com/docs/ja/ssw_ibm_i_74/cl/strqmprc.htm",
+    "version": "IBM i 7.4"
+  }
+}

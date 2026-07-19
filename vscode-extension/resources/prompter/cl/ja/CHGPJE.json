@@ -1,0 +1,491 @@
+{
+  "keyword": "CHGPJE",
+  "description": "事前開始ジョブ項目の変更 (CHGPJE)",
+  "help": "事前開始ジョブ項目の変更 (CHGPJE)コマンドは，指定されたサブシステム記述中の事前開始ジョブ項目を変更します。\n\n事前開始ジョブ項目を変更する時には，サブシステムは活動状態であっても構いません。サブシステムが活動状態の時に項目に対して行われた変更は，時間を超えて反映されます。このコマンドが出された後で作成された新しい事前開始ジョブは，すべて新しいジョブ関連値を使用します。このコマンドは，サブシステムの開始時または事前開始ジョブの開始 (STRPJ)コマンドが出された時に開始される事前開始ジョブを識別します。",
+  "parameters": [
+    {
+      "name": "SBSD",
+      "description": "サブシステム記述",
+      "help": "変更する事前開始ジョブ項目が入っているサブシステム記述の名前およびライブラリーを指定します。\n\nこれは必須パラメーターです。",
+      "inputType": "group",
+      "required": true,
+      "groupKind": "qualified",
+      "children": [
+        {
+          "name": "LIB",
+          "description": "ライブラリー",
+          "help": "*LIBL: 一致が見つかるまで，スレッドのライブラリー・リストの中のすべてのライブラリーが検索されます。\n*CURLIB: オブジェクトを見つけるためにスレッドの現行ライブラリーが使用されます。スレッドの現行ライブラリーとしてライブラリーが指定されていない場合，QGPLライブラリーが使用されます。\n事前開始ジョブ項目が変更されるサブシステム記述のライブラリーを指定します。",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "*LIBL",
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          }
+        },
+        {
+          "name": "SBSD",
+          "description": "サブシステム記述",
+          "help": "事前開始ジョブ項目が変更されるサブシステム記述の名前を指定します。",
+          "inputType": "text",
+          "required": true,
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          }
+        }
+      ],
+      "positional": 1
+    },
+    {
+      "name": "PGM",
+      "description": "プログラム",
+      "help": "変更する事前開始ジョブ項目を識別するプログラムの名前およびライブラリーを指定します。このプログラム名は，入力される要求と使用可能な事前開始ジョブを突き合わせるために使用されます。1つのサブシステム記述の中に同じプログラム名の2つの項目が存在しても構いませんが，それらのライブラリー名は異なっていなければなりません。項目を追加する時にプログラムが存在していない場合には，修飾名がサブシステム記述に保管されるので，ライブラリー修飾子を指定しなければなりません。\n\nこれは必須パラメーターです。",
+      "inputType": "group",
+      "required": true,
+      "groupKind": "qualified",
+      "children": [
+        {
+          "name": "PGM_LIB",
+          "description": "ライブラリー",
+          "help": "*LIBL: 一致が見つかるまで，スレッドのライブラリー・リストの中のすべてのライブラリーが検索されます。\n*CURLIB: オブジェクトを見つけるためにスレッドの現行ライブラリーが使用されます。スレッドの現行ライブラリーとしてライブラリーが指定されていない場合，QGPLライブラリーが使用されます。\n事前開始ジョブによって実行されるプログラムのライブラリーを指定します。",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "*LIBL",
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          }
+        },
+        {
+          "name": "PGM",
+          "description": "プログラム",
+          "help": "事前開始ジョブによって実行されるプログラムの名前を指定します。",
+          "inputType": "text",
+          "required": true,
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          }
+        }
+      ],
+      "positional": 2
+    },
+    {
+      "name": "USER",
+      "description": "ユーザー・プロファイル",
+      "help": "事前開始ジョブが開始される時のユーザー・プロファイルを指定します。さらに，事前開始ジョブの現行ユーザー・プロファイルは，処理する要求をジョブが待機する時には，このユーザーに設定されます。\n\n*SAME: このパラメーターの値は変更されません。\n事前開始ジョブに使用されるユーザー・プロファイルの名前を指定してください。",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*SAME",
+      "attributes": {
+        "characterSet": "upper",
+        "maxLength": 10
+      }
+    },
+    {
+      "name": "STRJOBS",
+      "description": "ジョブ開始",
+      "help": "サブシステムの開始時に事前開始ジョブを開始するかどうかを指定します。",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*SAME",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*SAME",
+          "value": "*SAME",
+          "help": "事前開始ジョブの開始の値は変更されません。"
+        },
+        {
+          "label": "*YES",
+          "value": "*YES",
+          "help": "事前開始ジョブはサブシステムの開始時に開始されます。"
+        },
+        {
+          "label": "*NO",
+          "value": "*NO",
+          "help": "事前開始ジョブはサブシステムの開始時に開始されません。これらの事前開始ジョブを開始するには，事前開始ジョブの開始 (STRPJ)コマンドが使用されます。"
+        }
+      ]
+    },
+    {
+      "name": "INLJOBS",
+      "description": "初期ジョブ数",
+      "help": "サブシステム記述 (SBSD) パラメーターに指定されたサブシステムが開始された時に開始される事前開始ジョブの初期数を指定します。\n\n指定できる特殊値: *SAME",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*SAME",
+      "attributes": {
+        "characterSet": "upper"
+      }
+    },
+    {
+      "name": "THRESHOLD",
+      "description": "しきい値",
+      "help": "追加の事前開始ジョブが開始される時点を指定します。使用可能なジョブ（サービス要求に使用できるジョブ）のプールが減らされてこの数値を下回った時には，さらなるジョブ( 追加のジョブ数 (ADLJOBS) パラメーターに指定）が開始され，使用可能なプールに追加されます。事前開始ジョブがプロシージャー開始要求に接続されると，この数値がチェックされます。\n\n*SAME: このパラメーターの値は変更されません。\n追加の事前開始ジョブを開始する前に使用可能となっていなければならない事前開始ジョブの最小数を指定します。有効な値の範囲は1から9999です。",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*SAME",
+      "attributes": {
+        "characterSet": "upper"
+      }
+    },
+    {
+      "name": "ADLJOBS",
+      "description": "追加のジョブ数",
+      "help": "事前開始ジョブの数が しきい値 (THRESHOLD) パラメーターに指定された値を下回った時に開始される事前開始ジョブの追加数を指定します。\n\n*SAME: 開始される事前開始ジョブの追加の数は変更されません。\n開始する追加の事前開始ジョブの数を指定してください。有効な値の範囲は0から999です。",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*SAME",
+      "attributes": {
+        "characterSet": "upper"
+      }
+    },
+    {
+      "name": "MAXJOBS",
+      "description": "ジョブの最大数",
+      "help": "この事前開始ジョブ項目で同時に活動状態にできる事前開始ジョブの最大数を指定します。\n\n指定できる特殊値: *SAME, *NOMAX",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*SAME",
+      "attributes": {
+        "characterSet": "upper"
+      }
+    },
+    {
+      "name": "JOB",
+      "description": "ジョブ名",
+      "help": "事前開始ジョブの名前を指定します。\n\n*SAME: ジョブ名は変更されません。\n*PGM: ジョブ名は， プログラム (PGM) パラメーターに指定されたプログラム名です。\n事前開始ジョブの名前を指定してください。",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*SAME",
+      "attributes": {
+        "characterSet": "upper",
+        "maxLength": 10
+      }
+    },
+    {
+      "name": "JOBD",
+      "description": "ジョブ記述",
+      "help": "事前開始ジョブで使用されるジョブ記述の名前およびライブラリーを指定します。項目が変更される時にジョブ記述が存在していない場合には，修飾されたジョブ記述名がサブシステム記述に保存されているので，ライブラリー修飾子を指定しなければなりません。",
+      "inputType": "group",
+      "required": false,
+      "groupKind": "qualified",
+      "singleValues": [
+        "*SAME",
+        "*USRPRF",
+        "*SBSD"
+      ],
+      "children": [
+        {
+          "name": "JOBD_LIB",
+          "description": "ライブラリー",
+          "help": "*LIBL: 一致が見つかるまで，スレッドのライブラリー・リストの中のすべてのライブラリーが検索されます。\n*CURLIB: オブジェクトを見つけるためにスレッドの現行ライブラリーが使用されます。スレッドの現行ライブラリーとしてライブラリーが指定されていない場合，QGPLライブラリーが使用されます。\nジョブ記述のライブラリー名を指定します。",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "*LIBL",
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          }
+        },
+        {
+          "name": "JOBD",
+          "description": "ジョブ記述",
+          "help": "この事前開始ジョブで使用するジョブ記述の名前を指定してください。",
+          "inputType": "text",
+          "required": false,
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          },
+          "defaultValue": "*SAME"
+        }
+      ]
+    },
+    {
+      "name": "MAXUSE",
+      "description": "最大使用数",
+      "help": "サブシステムが 終了方法 (OPTION) パラメーターに*CNTRLDを指定したジョブ終了 (ENDJOB)コマンドを出すことによって，制御された方法でジョブを終了する前に，各事前開始ジョブによって処理できる要求の最大数を指定します。\n\n*SAME: 値は変更されません。\n*NOMAX: 事前開始ジョブが処理できるプログラム開始要求の最大数に制限はありません。ジョブは，サブシステムによって終了されません。\n終了する前に，事前開始ジョブが処理できる要求の最大数を指定してください。有効な値の範囲は1から1000です。",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*SAME",
+      "attributes": {
+        "characterSet": "upper"
+      }
+    },
+    {
+      "name": "WAIT",
+      "description": "ジョブの待機",
+      "help": "プロシージャー開始要求を受け取った時に事前開始ジョブが直ちに使用可能とならない場合に，プログラム開始要求が，事前開始ジョブが使用可能となるまで待機するか，あるいは拒否されるかを指定します。",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*SAME",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*SAME",
+          "value": "*SAME",
+          "help": "このパラメーターの値は変更されません。"
+        },
+        {
+          "label": "*YES",
+          "value": "*YES",
+          "help": "プログラム開始要求は，事前開始ジョブが使用可能となるまで待機するか，あるいは要求を処理するための事前開始ジョブが開始されるまで待機します。"
+        },
+        {
+          "label": "*NO",
+          "value": "*NO",
+          "help": "プロシージャー開始要求を受け取った時に事前開始ジョブが直ちに使用可能とならない場合には，プログラム開始要求は拒否されます。"
+        }
+      ]
+    },
+    {
+      "name": "POOLID",
+      "description": "プールID",
+      "help": "事前開始ジョブが実行されるサブシステム・プールのIDを指定します。\n\n*SAME: 事前開始ジョブが実行されるサブシステム・プールIDは変更されません。\n事前開始ジョブが実行されるサブシステム・プールのIDを指定してください。有効な値の範囲は1から10です。",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*SAME",
+      "attributes": {
+        "characterSet": "upper"
+      }
+    },
+    {
+      "name": "CLS",
+      "description": "クラス",
+      "help": "事前開始ジョブが実行される時のクラスの名前およびライブラリー，および各クラスを使用して実行される事前開始ジョブの数を指定します。ジョブは，最初のクラスに指定されたジョブの数に達するまでは，指定された最初のクラスを使用して開始されます。最初のクラスに指定されたジョブの数に達した後は，ジョブは2番目のクラスを使用して開始されます。項目が追加される時にクラスが存在していない場合には，ライブラリー修飾子を指定しなければなりません（修飾されるクラス名がサブシステム記述に保管されるため）。",
+      "inputType": "group",
+      "required": false,
+      "groupKind": "elements",
+      "children": [
+        {
+          "name": "CLS_E1",
+          "description": "クラス",
+          "inputType": "group",
+          "required": false,
+          "groupKind": "qualified",
+          "singleValues": [
+            "*SAME",
+            "*SBSD"
+          ],
+          "children": [
+            {
+              "name": "CLS_LIB",
+              "description": "ライブラリー",
+              "help": "*LIBL: 一致が見つかるまで，スレッドのライブラリー・リストの中のすべてのライブラリーが検索されます。\n*CURLIB: オブジェクトを見つけるためにスレッドの現行ライブラリーが使用されます。スレッドの現行ライブラリーとしてライブラリーが指定されていない場合，QGPLライブラリーが使用されます。\n事前開始ジョブに使用されるクラスのライブラリー名を指定します。",
+              "inputType": "text",
+              "required": false,
+              "defaultValue": "*LIBL",
+              "attributes": {
+                "characterSet": "upper",
+                "maxLength": 10
+              }
+            },
+            {
+              "name": "CLS",
+              "description": "クラス",
+              "help": "事前開始ジョブで使用するクラスの名前を指定してください。\n\n指定できる特殊値: *SAME, *SBSD",
+              "inputType": "text",
+              "required": false,
+              "attributes": {
+                "characterSet": "upper",
+                "maxLength": 10
+              },
+              "defaultValue": "*SAME"
+            }
+          ]
+        },
+        {
+          "name": "CLS_E2",
+          "description": "クラスを使用するジョブの数",
+          "help": "*SAME: このクラスを使用するジョブの数は変更されません。\n*CALC: システムは，このクラスを使用する事前開始ジョブの数を計算します。クラスを1つしか指定しないで，*CALCを指定した場合には，すべてのジョブがそのクラスを使用します。2つのクラスを指定し，その両方に*CALCを指定する場合には，最初のクラスは ジョブの最大数 (MAXJOBS) パラメーターに指定された値を2で除算した値であり，2番目のクラスはMAXJOBSパラメーターの値から最初のクラスに計算された値を減算した値です。一方のクラスに特定のジョブ数を指定して，他方のクラスに*CALCを指定した場合には，システムは，MAXJOBSパラメーターとその特定のジョブ数の差を*CALC指定として計算します。\n*MAXJOBS: すべての事前開始ジョブが指定されたクラスを使用します。\nこのクラスを使用するジョブの数を指定してください。両方のクラスに指定された値の合計は，MAXJOBSパラメーターに指定された値を合計したものでなければなりません。",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "*SAME",
+          "attributes": {
+            "characterSet": "upper"
+          }
+        },
+        {
+          "name": "CLS_E3",
+          "description": "クラス",
+          "inputType": "group",
+          "required": false,
+          "groupKind": "qualified",
+          "singleValues": [
+            "*SAME",
+            "*NONE",
+            "*SBSD"
+          ],
+          "children": [
+            {
+              "name": "CLS_LIB2",
+              "description": "ライブラリー",
+              "help": "*LIBL: 一致が見つかるまで，スレッドのライブラリー・リストの中のすべてのライブラリーが検索されます。\n*CURLIB: オブジェクトを見つけるためにスレッドの現行ライブラリーが使用されます。スレッドの現行ライブラリーとしてライブラリーが指定されていない場合，QGPLライブラリーが使用されます。\n事前開始ジョブに使用されるクラスのライブラリー名を指定します。",
+              "inputType": "text",
+              "required": false,
+              "defaultValue": "*LIBL",
+              "attributes": {
+                "characterSet": "upper",
+                "maxLength": 10
+              }
+            },
+            {
+              "name": "CLS_CLS",
+              "description": "クラス",
+              "help": "事前開始ジョブで使用するクラスの名前を指定してください。\n\n指定できる特殊値: *SAME, *NONE, *SBSD",
+              "inputType": "text",
+              "required": false,
+              "attributes": {
+                "characterSet": "upper",
+                "maxLength": 10
+              },
+              "defaultValue": "*SAME"
+            }
+          ]
+        },
+        {
+          "name": "CLS_E4",
+          "description": "クラスを使用するジョブの数",
+          "help": "*SAME: 2番目のクラスを使用するジョブの数は変更されません。\n*CALC: システムは，このクラスを使用する事前開始ジョブの数を計算します。クラスを1つしか指定しないで，*CALCを指定した場合には，すべてのジョブがそのクラスを使用します。2つのクラスを指定し，その両方に*CALCを指定する場合には，最初のクラスは ジョブの最大数 (MAXJOBS) パラメーターに指定された値を2で除算した値であり，2番目のクラスはMAXJOBSパラメーターの値から最初のクラスに計算された値を減算した値です。一方のクラスに特定のジョブ数を指定して，他方のクラスに*CALCを指定した場合には，システムは，MAXJOBSパラメーターとその特定のジョブ数の差を*CALC指定として計算します。\n*MAXJOBS: すべての事前開始ジョブが指定されたクラスを使用します。\nこのクラスを使用するジョブの数を指定してください。両方のクラスに指定された値の合計は，MAXJOBSパラメーターに指定された値を合計したものでなければなりません。",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "*SAME",
+          "attributes": {
+            "characterSet": "upper"
+          }
+        }
+      ]
+    },
+    {
+      "name": "THDRSCAFN",
+      "description": "スレッド資源類縁性",
+      "help": "システム資源へのスレッドの類縁性を指定します。",
+      "inputType": "group",
+      "required": false,
+      "groupKind": "elements",
+      "singleValues": [
+        "*SAME",
+        "*SYSVAL"
+      ],
+      "children": [
+        {
+          "name": "THDRSCAFN_E1",
+          "description": "グループ",
+          "inputType": "dropdown",
+          "required": false,
+          "attributes": {
+            "characterSet": "upper"
+          },
+          "options": [
+            {
+              "label": "*SAME",
+              "value": "*SAME",
+              "help": "スレッド資源の類縁性は変更されません。"
+            },
+            {
+              "label": "*SYSVAL",
+              "value": "*SYSVAL",
+              "help": "事前開始ジョブが開始される時には，QTHDRSCAFNシステム値からのスレッド資源類縁性の値が使用されます。"
+            },
+            {
+              "label": "*NOGROUP",
+              "value": "*NOGROUP",
+              "help": "事前開始ジョブには，プロセッサーおよびメモリーのグループへの類縁性が備わります。このジョブの下で実行される2次スレッドには，必ずしも同じプロセッサーおよびメモリーのグループへの類縁性はありません。"
+            },
+            {
+              "label": "*GROUP",
+              "value": "*GROUP",
+              "help": "事前開始ジョブには，プロセッサーおよびメモリーのグループへの類縁性が備わります。このジョブの下で実行される2次スレッドは，すべてその開始スレッドと同じプロセッサーおよびメモリーのグループへの類縁性を持ちます。"
+            }
+          ],
+          "defaultValue": "*SAME"
+        },
+        {
+          "name": "THDRSCAFN_E2",
+          "description": "レベル",
+          "inputType": "dropdown",
+          "required": false,
+          "attributes": {
+            "characterSet": "upper"
+          },
+          "options": [
+            {
+              "label": "*NORMAL",
+              "value": "*NORMAL",
+              "help": "スレッドは，それが類縁性を持つ資源が容易に使用可能でなくなった場合に，システム内の任意のプロセッサーまたはメモリーを使用します。"
+            },
+            {
+              "label": "*HIGH",
+              "value": "*HIGH",
+              "help": "スレッドは，それが類縁性を持つ資源をのみ使用し，必要な場合は，それらの資源が使用可能になるまで待機します。"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "RSCAFNGRP",
+      "description": "資源類縁性グループ",
+      "help": "この項目を使用する事前開始ジョブが，同じシステム資源（プロセッサーおよびメモリー）への類縁性を持つグループに1つにまとめられるかどうかを指定します。このパラメーターの値が*YESの場合は，QTHDRSCAFNシステム値が*NOGROUPに設定されていてもそれに優先します。",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*SAME",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*SAME",
+          "value": "*SAME",
+          "help": "資源の類縁性グループは変更されません。"
+        },
+        {
+          "label": "*NO",
+          "value": "*NO",
+          "help": "この項目を使用する事前開始ジョブは1つにグループ化されません。"
+        },
+        {
+          "label": "*YES",
+          "value": "*YES",
+          "help": "この項目を使用する事前開始ジョブは，同じシステム資源への類縁性を持つようなグループに1つにまとめられます。メモリー中のデータを共用するジョブは，それらが同じ資源への類縁性を持っていればより良好に実行されます。"
+        }
+      ]
+    }
+  ],
+  "threadSafe": false,
+  "environment": "すべての環境 (*ALL)",
+  "restrictions": [
+    "このコマンドを使用するには，以下が必要です。 指定されたサブシステム記述に対するオブジェクト操作(*OBJOPR),オブジェクト管理(*OBJMGT),および読み取り(*READ)権限と，そのサブシステム記述が入っているライブラリーに対する実行(*EXECUTE)権限。 ジョブ記述に対するオブジェクト操作(*OBJOPR)および読み取り(*READ)権限と，そのジョブ記述が入っているライブラリーに対する実行(*EXECUTE)権限。 ユーザー・プロファイルに対する使用(*USE)権限。",
+    "ジョブ記述が存在していない項目の変更は，全オブジェクト(*ALLOBJ)特殊権限をもつユーザーだけに許可されます。"
+  ],
+  "examples": [
+    {
+      "code": "CHGPJE SBSD(QGPL/PJSBS) PGM(QGPL/PGM1) STRJOBS(*NO) THRESHOLD(1) ADLJOBS(1)"
+    }
+  ],
+  "errorMessages": [
+    {
+      "id": "CPF1619",
+      "text": "ライブラリー&2のサブシステム記述&1に損傷がある。"
+    },
+    {
+      "id": "CPF1691",
+      "text": "活動サブシステム記述は変更されることも変更されないこともある。"
+    },
+    {
+      "id": "CPF1697",
+      "text": "サブシステム記述&1は変更されなかった。"
+    }
+  ],
+  "source": {
+    "url": "https://www.ibm.com/docs/ja/ssw_ibm_i_74/cl/chgpje.htm",
+    "version": "IBM i 7.4"
+  }
+}

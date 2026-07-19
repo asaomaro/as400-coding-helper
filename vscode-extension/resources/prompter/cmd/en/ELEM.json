@@ -1,0 +1,609 @@
+{
+  "keyword": "ELEM",
+  "description": "Element Definition (ELEM)",
+  "parameters": [
+    {
+      "name": "TYPE",
+      "description": "Type of value",
+      "help": "Type of value (TYPE)\n\nSpecifies the type of list item being defined. The element can be an integer, a decimal or logical value, or a quoted or not quoted character string that can be a name, label, date, or time.\n\n指定できる特殊値: *DEC, *CHAR, *LGL, *NAME, *VARNAME, *INT2, *GENERIC, *INT4, *DATE, *TIME, *ZEROELEM, *HEX, *SNAME, *PNAME, *UINT2, *UINT4, *X, *CNAME",
+      "inputType": "text",
+      "required": true,
+      "attributes": {
+        "characterSet": "upper",
+        "maxLength": 10
+      },
+      "positional": 1
+    },
+    {
+      "name": "LEN",
+      "description": "Value length",
+      "help": "Value length (LEN)\n\nSpecifies the length of the list item value that is passed to the command processing program (CPP). Depending on the value specified for the Type of value (TYPE) parameter, the LEN parameter may allow up to three length values to be specified.\n\nSee the description of the CCSID and Varying length (VARY) parameters for more information related to handling values in UTF16 form.\n\nIf the LEN parameter is allowed but not specified, a default length will be used based on the value specified for the TYPE parameter. The following table shows the default length value for each TYPE and the maximum value that can be specified for the LEN parameter.",
+      "inputType": "number",
+      "required": false,
+      "attributes": {
+        "numericOnly": true
+      },
+      "positional": 2,
+      "maxOccurrences": 3
+    },
+    {
+      "name": "CONSTANT",
+      "description": "Constant value",
+      "help": "Constant value (CONSTANT)\n\nSpecifies that a value is passed to the CPP as a constant for the list item when the command being defined is processed; the element is not to appear externally on the command. If specified, the value must satisfy the requirements specified by the following parameters:\n\nIf a character constant is specified in this parameter, it can be no longer than 32 bytes. This parameter is not valid in the following cases:\n\nIf a constant is specified for the element being defined, no prompt text can be specified for the Prompt text or message ID (PROMPT) parameter. However, the other elements of the list parameter (of which this list item is a part) are still prompted, and their values along with this constant value are still passed to the CPP as a list.\n\nVariables cannot be coded for this parameter.",
+      "inputType": "text",
+      "required": false
+    },
+    {
+      "name": "RSTD",
+      "description": "Restricted values",
+      "help": "Restricted values (RSTD)\n\nSpecifies whether the value entered for the list item (specified in the ELEM statement) is restricted to only one of the values given in the Valid values (VALUES) parameter, the Special values (SPCVAL) parameter, or the Single values (SNGVAL) parameter; or if the value can be any value that satisfies the requirements specified by the following parameters:",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*NO",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*YES",
+          "value": "*YES"
+        },
+        {
+          "label": "*NO",
+          "value": "*NO"
+        }
+      ]
+    },
+    {
+      "name": "DFT",
+      "description": "Default value",
+      "help": "Default value (DFT)\n\nSpecifies the default value that is assigned to the list item if the user does not specify a value. That is, the default value is used as the value of the list item if the user omits the parameter that represents this list item, or specifies *N for the element, while coding or entering the command. The default value must satisfy one of the following:\n\nThis parameter is valid only if the Minimum values required (MIN) parameter is 0, which means the element defined by this ELEM statement for this list is optional. This parameter is not allowed if the Constant value (CONSTANT) parameter is specified. A default cannot be specified if *ZEROELEM is specified for the Type of value (TYPE) parameter; in that case, an assumed default is passed.\n\nAn assumed default value is not displayed by the command prompt; a blank input field is shown instead. If a default is specified in this parameter, it is displayed by the prompt exactly as specified.\n\nVariables cannot be coded for this value.",
+      "inputType": "text",
+      "required": false
+    },
+    {
+      "name": "VALUES",
+      "description": "Valid values",
+      "help": "Valid values (VALUES)\n\nSpecifies a list of up to 300 constants (fixed values) from which one constant can be specified as the value of the list item. This parameter is valid only if all of the following are true:\n\nCharacter constants specified in this parameter can be no longer than 32 bytes. Specify up to 300 constants that can be specified as the value of the list item. This parameter is not valid if a statement label or *ZEROELEM is specified for the TYPE parameter;\n\nIf this ELEM statement is defining the first element in a list, the value specified for this parameter cannot be the same as the value specified in the Single values (SNGVAL) parameter on either the PARM or ELEM statement that points to this ELEM statement.",
+      "inputType": "text",
+      "required": false,
+      "maxOccurrences": 300
+    },
+    {
+      "name": "REL",
+      "description": "Relational expression",
+      "help": "Relational expression (REL)\n\nSpecifies the relationship between the list item value and the value of another parameter or constant. The value associated with the referred to keyword is the value passed to the CPP, not the user-specified value. To specify the relationship, enter one of the following relational operators followed by a constant or the value of another parameter.\n\nThis parameter is not valid if *LGL, *VARNAME, *ZEROELEM, or a statement label is specified for the Type of value (TYPE) parameter, or if either the Range of values (RANGE) parameter or the Valid values (VALUES) parameter is specified. If *CHAR (character type) is specified by the Type of value (TYPE) parameter, the EBCDIC value of the character string is used as an unsigned integer in the comparison. If a character constant is specified in this parameter, it can be no longer than 32 bytes.",
+      "inputType": "group",
+      "required": false,
+      "groupKind": "elements",
+      "children": [
+        {
+          "name": "REL_E1",
+          "description": "Relational operator",
+          "inputType": "dropdown",
+          "required": false,
+          "attributes": {
+            "characterSet": "upper"
+          },
+          "options": [
+            {
+              "label": "*GT",
+              "value": "*GT"
+            },
+            {
+              "label": "*EQ",
+              "value": "*EQ"
+            },
+            {
+              "label": "*GE",
+              "value": "*GE"
+            },
+            {
+              "label": "*NL",
+              "value": "*NL"
+            },
+            {
+              "label": "*LT",
+              "value": "*LT"
+            },
+            {
+              "label": "*NE",
+              "value": "*NE"
+            },
+            {
+              "label": "*LE",
+              "value": "*LE"
+            },
+            {
+              "label": "*NG",
+              "value": "*NG"
+            }
+          ]
+        },
+        {
+          "name": "REL_E2",
+          "description": "Value",
+          "inputType": "text",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "RANGE",
+      "description": "Range of values",
+      "help": "Range of values (RANGE)\n\nSpecifies the range, or the limits, for the value of the list item. The list item value must be greater than or equal to the lower limit value specified, and it must be less than or equal to the upper limit value specified. The value tested is the value sent to the CPP, not the user-specified value.\n\nFor nonnumeric data types, such as *CHAR, the range of values and the data specified will be right-justified and padded on the left with blanks. A numeric range should not be used to define an interval for nonnumeric data unless leading zeros are specified or the data is only 1 character in length.\n\nThis parameter is not valid if either the Relational expression (REL) parameter or the Valid values (VALUES) parameter is specified, or if *LGL, *VARNAME, *ZEROELEM, or statement label is specified on the Type of value (TYPE) parameter. Character constants specified in this parameter can be no longer than 32 bytes.",
+      "inputType": "group",
+      "required": false,
+      "groupKind": "elements",
+      "children": [
+        {
+          "name": "RANGE_E1",
+          "description": "Lower value",
+          "inputType": "text",
+          "required": false
+        },
+        {
+          "name": "RANGE_E2",
+          "description": "Upper value",
+          "inputType": "text",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "SPCVAL",
+      "description": "Special values",
+      "help": "Special values (SPCVAL)\n\nSpecifies a list of up to 300 entries that define special values that can be entered for the element defined by this ELEM statement. Each entry specifies a character string (from value) that can be entered even though it may not meet all validity checking requirements. If the entered character string matches the from-value of one of the entries, and the to-value is specified, the string is replaced with the to-value and is then passed to the command processing program (CPP) without further checking. If the to-value is omitted, the from-value is passed to the CPP. This parameter is not valid if a statement label or *ZEROELEM is specified for the Type of value (TYPE) parameter.\n\nIf a to-value of *CURLIB is specified, the name of the current library is passed to the CPP rather than the value *CURLIB. If the from-value is *CURLIB and no to-value is specified, or if the to-value is *CURLIB and it is enclosed in apostrophes, the value *CURLIB is passed to the CPP.\n\nThe from-value is a character string, but the to-value can be anything that is passable. However, if *DATE is specified for the Type of value (TYPE) parameter, the to-value must be specified not quoted in one of the following formats: mmddyy , mmddyyyy , or cyymmdd. . If a CL variable is used for the from-value, its type must be *CHAR. If this ELEM statement is defining the first element in a list, the value specified for the from-value cannot be the same as the value specified in the Single values (SNGVAL) parameter on either the PARM or ELEM statement that points to this ELEM statement.\n\nThe to-value must be no longer than is specified on the Value length (LEN) parameter; and, if *DEC, *INT2, *INT4, *UINT2 or *UINT4 is specified for the Type of value (TYPE) parameter, the type of the to-value must be the same. If a character type (such as *CHAR, *LGL, or *DATE) is specified for the Type of value (TYPE) parameter, the to-value must be a character string. Character constants specified in this parameter can be no longer than 32 bytes. If a to-value is not specified, the from-value must be passable.\n\nVariables cannot be coded for this element.",
+      "inputType": "group",
+      "required": false,
+      "groupKind": "elements",
+      "children": [
+        {
+          "name": "SPCVAL_E1",
+          "description": "From value",
+          "inputType": "text",
+          "required": false
+        },
+        {
+          "name": "SPCVAL_E2",
+          "description": "To replacement value",
+          "inputType": "text",
+          "required": false
+        }
+      ],
+      "maxOccurrences": 300
+    },
+    {
+      "name": "SNGVAL",
+      "description": "Single values",
+      "help": "Single values (SNGVAL)\n\nSpecifies a list of up to 300 single values that can be specified for an element being defined as a statement label, or that is to have two or more list items in its nested list (defined by the Maximum values allowed (MAX) parameter). Any one of the single values can be used instead of a nested list of values or a qualified name that the element is defined to accept. Each entry specifies a character string (from-value) that can be entered. If an entered character string matches the from-value of one of the entries and the to-value is specified, the data is replaced with the to-value and is then passed to the command processing program (CPP) without further checking. If the to-value is omitted, the from-value is passed to the CPP. If this ELEM statement is defining the first element in a list, the value specified for the from-value cannot be the same as the value specified in the Single values (SNGVAL) parameter on either the PARM or ELEM statement that points to this ELEM statement.\n\nThe to-value (or the from-value, if the to-value is omitted) must be passable, as specified in the Special values (SPCVAL) parameter. Character constants specified in this parameter can be no longer than 32 bytes. This parameter can be specified only if the Maximum values allowed (MAX) parameter is greater than one or if a statement label is specified for the Type of value (TYPE) parameter. It is not valid if *ZEROELEM is specified for the Type of value (TYPE) parameter. Each single value can only substitute for a list of values or a qualified name; it cannot be a list item or qualifier. It is passed as the first element of the list.\n\nIf a to-value of *CURLIB is specified, the name of the current library is passed to the CPP rather than the value *CURLIB. If the from-value is *CURLIB and no to-value is specified, or if the to-value is *CURLIB and it is enclosed in apostrophes, the value *CURLIB is passed to the CPP.\n\nVariables cannot be coded for this element.",
+      "inputType": "group",
+      "required": false,
+      "groupKind": "elements",
+      "children": [
+        {
+          "name": "SNGVAL_E1",
+          "description": "From value",
+          "inputType": "text",
+          "required": false
+        },
+        {
+          "name": "SNGVAL_E2",
+          "description": "To replacement value",
+          "inputType": "text",
+          "required": false
+        }
+      ],
+      "maxOccurrences": 300
+    },
+    {
+      "name": "MIN",
+      "description": "Minimum values required",
+      "help": "Minimum values required (MIN)\n\nSpecifies the minimum number of values that must be entered for the element being defined. For an element that does not allow multiple like values, only zero (0) for optional and one (1) for required can be specified as the minimum number of values.\n\nFor an element that allows multiple like values (because a value greater than one is specified in the Maximum values allowed (MAX) parameter), zero (0) indicates that no values must be entered; therefore, it is an optional element. A value of one (1) or greater than one indicates the minimum number of values that must be entered for the element, and therefore it is a required element. The value specified for this parameter cannot exceed the value specified for the Maximum values allowed (MAX) parameter. The number specified tells how many list items are required in another list. If this parameter is not specified, zero (0) is assumed, which means that the element is optional.",
+      "inputType": "number",
+      "required": false,
+      "defaultValue": "0",
+      "attributes": {
+        "numericOnly": true
+      }
+    },
+    {
+      "name": "MAX",
+      "description": "Maximum values allowed",
+      "help": "Maximum values allowed (MAX)\n\nSpecifies, if this ELEM statement is defining a simple list item, the maximum number of elements that this list item can have in its nested list. If a value greater than 1 is specified, the element is capable of accepting multiple like values (that is, a simple nested list). All values entered for this element (at the time the command is run) must satisfy the validity checking requirements specified by the other parameter values on this ELEM statement.\n\nNote: The values for a nested list are passed consecutively, preceded by a 2-byte binary value that indicates the number of values entered in the list item by the user. CL programs do not support the handling of binary values in variables.",
+      "inputType": "number",
+      "required": false,
+      "defaultValue": "1",
+      "attributes": {
+        "numericOnly": true
+      }
+    },
+    {
+      "name": "ALWUNPRT",
+      "description": "Allow unprintable characters",
+      "help": "Allow unprintable characters (ALWUNPRT)\n\nSpecifies whether this ELEM statement should accept the hexadecimal value X'FF' and those hexadecimal values in the range X'00' to X'3F'. This parameter is valid only if *CHAR or *X is specified for the Type of value (TYPE) parameter.",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*YES",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*YES",
+          "value": "*YES"
+        },
+        {
+          "label": "*NO",
+          "value": "*NO"
+        }
+      ]
+    },
+    {
+      "name": "ALWVAR",
+      "description": "Allow variable names",
+      "help": "Allow variable names (ALWVAR)\n\nSpecifies whether variable names are allowed for the element. *NO is not allowed if *VARNAME, *ZEROELEM, *NULL, or a statement label is specified for the Type of value (TYPE) parameter.",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*YES",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*YES",
+          "value": "*YES"
+        },
+        {
+          "label": "*NO",
+          "value": "*NO"
+        }
+      ]
+    },
+    {
+      "name": "PGM",
+      "description": "Is ELEM a program",
+      "help": "Is ELEM a program (PGM)\n\nSpecifies whether this element is a program name. *YES is valid only if a statement label, *CHAR, *NAME, *SNAME, *CNAME, or *GENERIC is specified for the Type of value (TYPE) parameter. The specification of *YES on this parameter does not have any effect on the element being defined by the ELEM statement; it only indicates to the compiler that the value for this element is a program name. This information is stored so that it can be included in the output of the Display Program References (DSPPGMREF) command.",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*NO",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*NO",
+          "value": "*NO"
+        },
+        {
+          "label": "*YES",
+          "value": "*YES"
+        }
+      ]
+    },
+    {
+      "name": "DTAARA",
+      "description": "Is ELEM a data area",
+      "help": "Is ELEM a data area (DTAARA)\n\nSpecifies whether the element is a data area name. *YES is valid only if a statement label, *CHAR, *NAME, *SNAME, *CNAME, or *GENERIC is specified for the Type of value (TYPE) parameter. The specification of *YES on this parameter does not have any effect on the element being defined by the ELEM statement; it only indicates to the compiler that the value for this element is a data area. This information is stored so that it can be included in the output of the Display Program References (DSPPGMREF) command.",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*NO",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*NO",
+          "value": "*NO"
+        },
+        {
+          "label": "*YES",
+          "value": "*YES"
+        }
+      ]
+    },
+    {
+      "name": "FILE",
+      "description": "If a file parameter, how used",
+      "help": "If a file parameter, how used (FILE)\n\nSpecifies whether if the list item is a file name and the expected use of the file. The element can be specified as the name of a file that has a specific use so that, at compile time, the names can be used to get file reference information about where the files are used. This parameter is valid only if a statement label, *CHAR, *NAME, *SNAME, *CNAME, or *GENERIC value is specified for the Type of value (TYPE) parameter. The specification in this parameter does not have any effect on the list item being defined by the ELEM statement; it only indicates to the compiler that the value for this element is a file name and what type of file it is. This information is stored so that it can be included in the output of the DSPPGMREF (Display Program References) command. One of the following types of files can be specified:",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*NO",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*NO",
+          "value": "*NO"
+        },
+        {
+          "label": "*IN",
+          "value": "*IN"
+        },
+        {
+          "label": "*OUT",
+          "value": "*OUT"
+        },
+        {
+          "label": "*UPD",
+          "value": "*UPD"
+        },
+        {
+          "label": "*INOUT",
+          "value": "*INOUT"
+        },
+        {
+          "label": "*UNSPFD",
+          "value": "*UNSPFD"
+        }
+      ]
+    },
+    {
+      "name": "FULL",
+      "description": "Full field required",
+      "help": "Full field required (FULL)\n\nSpecifies whether the number of bytes in the list item must be exactly the same as the number specified in the Value length (LEN) parameter (if specified) or its default length (if LEN is not specified).",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*NO",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*YES",
+          "value": "*YES"
+        },
+        {
+          "label": "*NO",
+          "value": "*NO"
+        }
+      ]
+    },
+    {
+      "name": "EXPR",
+      "description": "Value an expression",
+      "help": "Value an expression (EXPR)\n\nSpecifies whether the element can accept an expression containing a character concatenation.",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*NO",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*NO",
+          "value": "*NO"
+        },
+        {
+          "label": "*YES",
+          "value": "*YES"
+        }
+      ]
+    },
+    {
+      "name": "VARY",
+      "description": "Varying length",
+      "help": "Varying length (VARY)\n\nSpecifies whether the list item value that is passed to the CPP is preceded by a length value that indicates the number of bytes entered for the element's value.\n\nSingle values\n\nElement 1: Return length value\n\nNote: The length value is the actual number of bytes entered for the list item with trailing blanks removed. The length value passed may be different than the defined parameter length or the declared variable length. The length of the field containing the character string data is determined by the defined length for the parameter or the declared LEN for CL variables. The length value defines how many bytes in the character string data field were actually entered for the command parameter. If *PNAME or *CHAR is specified for the TYPE parameter and *UTF16 is specified for the CCSID of value (CCSID) parameter, the length value passed to the command processing program represents the number of bytes for the element value. This could be up to twice the number specified for the Value length (LEN) parameter because the element value will be converted to UTF16 format and most UTF16 characters require two bytes. See the description of the CCSID and LEN parameters for more information related to handling values in UTF16 format.\n\nElement 2: Value length",
+      "inputType": "group",
+      "required": false,
+      "groupKind": "elements",
+      "singleValues": [
+        "*NO"
+      ],
+      "children": [
+        {
+          "name": "VARY_E1",
+          "description": "Return length value",
+          "inputType": "dropdown",
+          "required": false,
+          "attributes": {
+            "characterSet": "upper"
+          },
+          "options": [
+            {
+              "label": "*NO",
+              "value": "*NO"
+            },
+            {
+              "label": "*YES",
+              "value": "*YES"
+            }
+          ],
+          "defaultValue": "*NO"
+        },
+        {
+          "name": "VARY_E2",
+          "description": "Value length",
+          "inputType": "dropdown",
+          "required": false,
+          "defaultValue": "*INT2",
+          "attributes": {
+            "characterSet": "upper"
+          },
+          "options": [
+            {
+              "label": "*INT2",
+              "value": "*INT2"
+            },
+            {
+              "label": "*INT4",
+              "value": "*INT4"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "PASSATR",
+      "description": "Pass attribute byte",
+      "help": "Pass attribute byte (PASSATR)\n\nSpecifies whether an attribute byte is to be passed to the command processing program (CPP) with the list item data. This parameter is not valid if a statement label or *ZEROELEM is specified for the Type of value (TYPE) parameter.\n\nThe attribute byte precedes the list item data. If the list item allows multiple values to be specified, an attribute byte precedes each value.\n\nThe attribute byte has two fields:",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*NO",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*YES",
+          "value": "*YES"
+        },
+        {
+          "label": "*NO",
+          "value": "*NO"
+        }
+      ]
+    },
+    {
+      "name": "CASE",
+      "description": "Case of value",
+      "help": "Case of value (CASE)\n\nSpecifies whether the value that is passed to the CPP is changed from lowercase to uppercase, or is preserved in the case specified on for the command parameter.",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*MONO",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*MONO",
+          "value": "*MONO"
+        },
+        {
+          "label": "*MIXED",
+          "value": "*MIXED"
+        }
+      ]
+    },
+    {
+      "name": "CCSID",
+      "description": "CCSID of value",
+      "help": "CCSID of value (CCSID)\n\nSpecifies the coded character set identifier (CCSID) to use when passing the element value to the command processing program.\n\nNote: If the command string is run in batch using the Start Database Reader (STRDBRDR) or Submit Database Jobs (SBMDBJOB) command from a source file created with a CCSID of 1208 (UTF8) or was compiled from a CL source file created with a CCSID of 1208 or is being run using the QCAPCMD API and specifies that the CCSID of the command is either 1200 (UTF16) or 1208, the command string is assumed to be in Unicode format.\n\nIf the parameter is optional and no value is specified in the command string, the defined default value will be converted to UTF16 format before it is passed to the CPP. If the parameter is a constant, the defined constant value will be converted to UTF16 format before it is passed to the CPP. If the parameter value is specified as a hexadecimal literal in the command string, the hexadecimal string is first converted to a character string using the CCSID of the job and the resulting character string is converted to UTF16 format before it is passed to the CPP.\n\n*UTF16 is only allowed if *CHAR or *PNAME was specified for TYPE.\n\nSee the description of the Value length (LEN) parameter and Varying length (VARY) parameter for more information related to handling values in UTF16 format.",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*JOB",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*JOB",
+          "value": "*JOB"
+        },
+        {
+          "label": "*UTF16",
+          "value": "*UTF16"
+        }
+      ]
+    },
+    {
+      "name": "DSPINPUT",
+      "description": "Display input",
+      "help": "Display input (DSPINPUT)\n\nIdentifies if the keyword value is to be shown in the job log or in a prompt display.\n\nNote: The DSPINPUT parameter has no effect on the job log entries for a database reader job, for imbedded commands (for example, a command submitted on the SBMJOB command), or for commands run using the QCAPCMD, QCMDEXC or QCAEXEC APIs.",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*YES",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*YES",
+          "value": "*YES"
+        },
+        {
+          "label": "*PROMPT",
+          "value": "*PROMPT"
+        },
+        {
+          "label": "*NO",
+          "value": "*NO"
+        }
+      ]
+    },
+    {
+      "name": "CHOICE",
+      "description": "Choice text",
+      "help": "Choice text (CHOICE)\n\nSpecifies the choices text that is displayed to the right of the input field on the prompt screen. Up to 30 characters of text can be displayed.\n\nThe following are examples of possible choices text generated by CHOICE(*VALUES):\n\n指定できる特殊値: *VALUES, *NONE, *PGM",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*VALUES",
+      "attributes": {
+        "characterSet": "upper"
+      }
+    },
+    {
+      "name": "CHOICEPGM",
+      "description": "Choice program",
+      "help": "Choice program (CHOICEPGM)\n\nSpecifies the program to be called during command prompting to fill in the possible choices text and the permissible values. This parameter must be specified if *PGM is specified on the Choice text (CHOICE) parameter and may not be specified otherwise.\n\nSingle values\n\nQualifier 1: Choice program\n\nQualifier 2: Library",
+      "inputType": "group",
+      "required": false,
+      "groupKind": "qualified",
+      "singleValues": [
+        "*NONE"
+      ],
+      "children": [
+        {
+          "name": "LIB",
+          "description": "Library",
+          "help": "指定できる特殊値: *LIBL, *CURLIB",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "*LIBL",
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          }
+        },
+        {
+          "name": "CHOICEPGM",
+          "description": "Choice program",
+          "inputType": "text",
+          "required": false,
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          },
+          "defaultValue": "*NONE"
+        }
+      ]
+    },
+    {
+      "name": "INLPMTLEN",
+      "description": "Initial prompt length",
+      "help": "Initial prompt length (INLPMTLEN)\n\nSpecifies the length of the input field initially displayed for the element when the command is prompted. The user can extend the field to a maximum length of 512 bytes by entering an ampersand (&) in the first position of the field, followed by a blank. INLPMTLEN is valid only if TYPE is specified as *CHAR, *NAME, *SNAME, *CNAME, *PNAME, *GENERIC, or *HEX. If FULL(*YES), RSTD(*YES), or CONSTANT are specified, INLPMTLEN(*CALC) must be specified or defaulted.",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*CALC",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*CALC",
+          "value": "*CALC"
+        },
+        {
+          "label": "*PWD",
+          "value": "*PWD"
+        }
+      ]
+    },
+    {
+      "name": "PROMPT",
+      "description": "Prompt text or message ID",
+      "help": "Prompt text or message ID (PROMPT)\n\nSpecifies the prompt text, if any, is that used for the list item (defined in this ELEM statement). The prompt text gives a short description of the element which appears next to the element input field when the command is prompted. Prompt text cannot be specified if *ZEROELEM is specified for the Type of value (TYPE) parameter, or if a constant value is specified for the Constant value (CONSTANT) parameter.\n\n指定できる特殊値: *NONE",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*NONE",
+      "attributes": {
+        "characterSet": "upper"
+      }
+    }
+  ],
+  "source": {
+    "url": "https://www.ibm.com/docs/en/ssw_ibm_i_74/cl/elem.htm",
+    "version": "IBM i 7.4"
+  }
+}

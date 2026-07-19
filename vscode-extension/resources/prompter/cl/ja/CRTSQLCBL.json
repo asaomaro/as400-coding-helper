@@ -1,0 +1,1171 @@
+{
+  "keyword": "CRTSQLCBL",
+  "description": "SQL COBOLプログラムの作成 (CRTSQLCBL)",
+  "help": "SQL COBOLプログラムの作成 (CRTSQLCBL)コマンドは，構造化照会言語(SQL)プリコンパイラーを呼び出します。このプリコンパイラーはSQLステートメントが入っているCOBOLソースをプリコンパイルし，一時ソース・メンバーを作成してから，任意指定でCOBOLコンパイラーを呼び出してプログラムをコンパイルします。\n\nリレーショナル・データベース (RDB) パラメーターが指定されて，プログラムが作成された場合には，SQLパッケージが指定されたリレーショナル・データベースに作成されます。",
+  "parameters": [
+    {
+      "name": "PGM",
+      "description": "プログラム",
+      "help": "作成するプログラムを指定します。\n\nこれは必須パラメーターです。",
+      "inputType": "group",
+      "required": true,
+      "groupKind": "qualified",
+      "children": [
+        {
+          "name": "LIB",
+          "description": "ライブラリー",
+          "help": "*CURLIB: コンパイル済みプログラムを置くために，ジョブの現行ライブラリーが使用されます。ライブラリー・リストに現行ライブラリー項目が存在しない場合には，QGPLが使用されます。\nコンパイル済みプログラムを置くライブラリーの名前を指定してください。",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "*CURLIB",
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          }
+        },
+        {
+          "name": "PGM",
+          "description": "プログラム",
+          "help": "作成するプログラムの名前を指定してください。",
+          "inputType": "text",
+          "required": true,
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          }
+        }
+      ],
+      "positional": 1
+    },
+    {
+      "name": "SRCFILE",
+      "description": "ソース・ファイル",
+      "help": "COBOLソース・ステートメントとSQLステートメントが入っているソース・ファイルを指定します。",
+      "inputType": "group",
+      "required": false,
+      "groupKind": "qualified",
+      "children": [
+        {
+          "name": "SRCFILE_LIB",
+          "description": "ライブラリー",
+          "help": "*LIBL: 最初の一致が見つかるまで，ジョブのライブラリー・リスト中のすべてのライブラリーが検索されます。\n*CURLIB: ジョブの現行ライブラリーが検索されます。ジョブの現行ライブラリーとしてライブラリーが指定されていない場合には，QGPLライブラリーが使用されます。\n検索するライブラリーの名前を指定してください。",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "*LIBL",
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          }
+        },
+        {
+          "name": "SRCFILE",
+          "description": "ソース・ファイル",
+          "help": "QLBLSRC: ソース・ファイルQLBLSRCにCOBOLソースが入っています。\nCOBOLソースが入っているソース・ファイルの名前を指定してください。このソース・ファイルはレコード長が92桁でなければなりません。ソース・ファイルはデータベース・ファイル，装置ファイル，またはインライン・データ・ファイルとすることができます。",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "QLBLSRC",
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          }
+        }
+      ],
+      "positional": 2
+    },
+    {
+      "name": "SRCMBR",
+      "description": "ソース・メンバー",
+      "help": "入力ソースが入っているソース・ファイル・メンバーを指定します。このパラメーターを使用するのは， ソース・ファイル (SRCFILE) パラメーターに指定したソース・ファイルがデータベース・ファイルの場合だけです。\n\n*PGM: プログラム (PGM) パラメーターに指定したプログラム名と同じ名前のソース・ファイル・メンバーに入力ソースが入っています。\n入力ソースを含むソース・ファイル・メンバーの名前を指定してください。",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*PGM",
+      "attributes": {
+        "characterSet": "upper",
+        "maxLength": 10
+      },
+      "positional": 3
+    },
+    {
+      "name": "COMMIT",
+      "description": "コミットメント制御",
+      "help": "コンパイル済みプログラムの中のSQLステートメントがコミットメント制御によって実行されるかどうかを指定します。ホスト言語のソース仕様中で参照されるファイルは，このオプションの影響を受けません。SQLテーブル，SQLビュー，SQLパッケージ，SQL順序，SQL別名，SQLタイプ，SQLプロシージャー，SQL関数，SQL索引，SQLスキーマ，SQLトリガー，およびSQLステートメント中で参照されたSQLビューのみが影響を受けます。\n\nSQL ALTER, CALL, COMMENT ON, CREATE, DROP, GRANT, LABEL ON, RENAME,およびREVOKEステートメント中で参照されたオブジェクトと，更新，削除，および挿入された行が，作業単位（トランザクション）の終わりまでロックされることを指定します。他のジョブのコミットされていない変更は表示することができます。\nSQL ALTER, CALL, COMMENT ON, CREATE, DROP, GRANT, LABEL ON, RENAME,およびREVOKEステートメント中で参照されたオブジェクトと，選択，更新，削除，および挿入された行が，作業単位（トランザクション）の終わりまでロックされることを指定します。他のジョブのコミットされていない変更を表示することはできません。\nコミットメント制御は使用されないことを指定します。他のジョブのコミットされていない変更は表示することができます。プログラム中にSQL DROP SCHEMAステートメントが組み込まれている場合には，*NONEまたは*NCを使用しなければなりません。 リレーショナル・データベース (RDB) パラメーターにリレーショナル・データベースが指定され，そのリレーショナル・データベースがIBM I以外のシステム上にある場合には，*NONEまたは*NCを指定することはできません。",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*CHG",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*CHG",
+          "value": "*CHG"
+        },
+        {
+          "label": "*ALL",
+          "value": "*ALL"
+        },
+        {
+          "label": "*CS",
+          "value": "*CS",
+          "help": "SQL ALTER, CALL, COMMENT ON, CREATE, DROP, GRANT, LABEL ON, RENAME,およびREVOKEステートメント中で参照されたオブジェクトと，更新，削除，および挿入された行が，作業単位（トランザクション）の終わりまでロックされることを指定します。選択されたが更新されていない行は，次の行が選択されるまでロックされます。他のジョブのコミットされていない変更を表示することはできません。"
+        },
+        {
+          "label": "*NONE",
+          "value": "*NONE"
+        },
+        {
+          "label": "*RR",
+          "value": "*RR",
+          "help": "SQL ALTER, CALL, COMMENT ON, CREATE, DROP, GRANT, LABEL ON, RENAME,およびREVOKEステートメント中で参照されたオブジェクトと，選択，更新，削除，および挿入された行が，作業単位（トランザクション）の終わりまでロックされることを指定します。他のジョブのコミットされていない変更を表示することはできません。SELECT, UPDATE, DELETE, およびINSERTステートメント中で参照されたすべてのテーブルは，作業単位（トランザクション）の終わりまで排他的にロックされます。"
+        },
+        {
+          "label": "*UR",
+          "value": "*UR"
+        },
+        {
+          "label": "*RS",
+          "value": "*RS"
+        },
+        {
+          "label": "*NC",
+          "value": "*NC"
+        }
+      ]
+    },
+    {
+      "name": "RDB",
+      "description": "リレーショナル・データベース",
+      "help": "SQLパッケージが作成されるリレーショナル・データベースの名前を指定します。\n\n新しいSQLパッケージ・オブジェクトが作成されるリレーショナル・データベースの名前を指定してください。ローカル・リレーショナル・データベースの名前を指定しても，作成されるプログラムは分散SQLプログラムです。SQLステートメントはローカル・データベースにアクセスします。",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*LOCAL",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*LOCAL",
+          "value": "*LOCAL",
+          "help": "プログラムは，分散SQLプログラムとして作成されます。SQLステートメントはローカル・データベースにアクセスします。SQLパッケージ・オブジェクトは，プリコンパイル処理の一部としては作成されません。SQLパッケージ作成(CRTSQLPKG)コマンドを使用することができます。"
+        },
+        {
+          "label": "*NONE",
+          "value": "*NONE",
+          "help": "SQLパッケージ・オブジェクトは作成されません。プログラム・オブジェクトは分散プログラムではなく，SQLパッケージ作成(CRTSQLPKG)コマンドを使用することはできません。"
+        }
+      ]
+    },
+    {
+      "name": "TEXT",
+      "description": "テキスト'記述'",
+      "help": "プログラムおよびその機能を簡単に説明するテキストを指定します。\n\n*SRCMBRTXT: テキストはプログラムの作成に使用されるソース・ファイル・メンバーからとられます。ソース・ファイルがインライン・ファイルまたは装置ファイルの場合には，テキストはブランクです。\n*BLANK: テキストは指定されません。\n50桁以内の文字をアポストロフィで囲んで指定してください。",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*SRCMBRTXT",
+      "attributes": {
+        "characterSet": "upper"
+      }
+    },
+    {
+      "name": "USER",
+      "description": "RDBユーザー",
+      "help": "会話の開始時にリモート・システムに送られるユーザー名を指定します。このパラメーターを使用できるのは， リレーショナル・データベース (RDB) が指定された場合だけです。\n\n*CURRENT: 現行ジョブに関連したユーザー名が使用されます。\nアプリケーション・サーバー・ジョブとして使用されるユーザー名を指定してください。",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*CURRENT",
+      "attributes": {
+        "characterSet": "upper",
+        "maxLength": 10
+      }
+    },
+    {
+      "name": "PASSWORD",
+      "description": "RDBユーザー・パスワード",
+      "help": "リモート・システムで使用されるパスワードを指定します。このパラメーターを使用できるのは， リレーショナル・データベース (RDB) が指定された場合だけです。\n\n*NONE: パスワードは送信されません。この値を指定した場合には， RDB ユーザー (USER) パラメーターにユーザー名を指定できません。 注: パスワードにブランクを指定するのは，*NONEを指定するのと同じことです。\nRDB ユーザー (USER) パラメーターに指定したユーザー名のパスワードを指定してください。",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*NONE",
+      "attributes": {
+        "characterSet": "upper"
+      }
+    },
+    {
+      "name": "OPTION",
+      "description": "プリコンパイラー・オプション",
+      "help": "COBOLソースがプリコンパイルされる時に，次のオプションが使用されるかどうかを指定します。オプションが2回以上指定されたか，あるいは2つのオプションが矛盾している場合には，指定された最後のオプションが使用されます。\n\nソース・リスト ・オプション:\n\n相互参照 オプション:\n\nホスト言語コンパイラー呼び出し オプション:\n\nSQL ストリング区切り文字 オプション:\n\nCOBOL ストリング区切り文字 オプション:\n\n小数点 オプション:\n\n命名規則 オプション:\n\nリレーショナル・データベース (RDB) パラメーターにリレーショナル・データベースが指定され，そのデータベースがIBM I以外のシステム上にある場合には，命名規則として*SQLを指定しなければなりません。\n\n第 2 レベル・メッセージ・テキスト ・オプション:\n\nデバッグ・リスト・ビュー ・オプション:\n\n拡張標識 オプション:\n\nシステム時間依存 オプション:\n\nプリコンパイラーは，プリコンパイル時またはパッケージの作成時にエラーを検出しない限り，ソース仕様の印刷出力を作成しません。\nプリコンパイラーは，ソース仕様の印刷出力を作成します。",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*NOSRC",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*NOSRC",
+          "value": "*NOSRC"
+        },
+        {
+          "label": "*NOSOURCE",
+          "value": "*NOSOURCE"
+        },
+        {
+          "label": "*SRC",
+          "value": "*SRC"
+        },
+        {
+          "label": "*SOURCE",
+          "value": "*SOURCE"
+        },
+        {
+          "label": "*XREF",
+          "value": "*XREF",
+          "help": "プリコンパイラーは，プログラムに宣言された項目と，それらの項目を参照するユーザー・プログラム中のステートメント番号との間の相互参照を作成します。"
+        },
+        {
+          "label": "*NOXREF",
+          "value": "*NOXREF",
+          "help": "プリコンパイラーは，名前の相互参照を作成しません。"
+        },
+        {
+          "label": "*GEN",
+          "value": "*GEN",
+          "help": "プリコンパイラーはCOBOLコンパイラーを呼び出します。 リレーショナル・データベース (RDB) パラメーターにリレーショナル・データベース名が指定されていて，コンパイルが正常に行われた場合には，SQL パッケージも作成されます。"
+        },
+        {
+          "label": "*NOGEN",
+          "value": "*NOGEN",
+          "help": "プリコンパイラーはCOBOLコンパイラーを呼び出しません。プログラムもSQLパッケージも作成されません。"
+        },
+        {
+          "label": "*COMMA",
+          "value": "*COMMA",
+          "help": "数値定数で小数点として使用される値はコンマです。リスト（SELECT文節およびVALUES 文節など）の中のすべての数字定数をコンマとそれに続くブランクで区切らなければなりません。例えば，VALUES(1,1, 2,23, 4,1)は，小数点がピリオドであるVALUES(1.1,2.23,4.1)と同じです。"
+        },
+        {
+          "label": "*PERIOD",
+          "value": "*PERIOD",
+          "help": "SQLステートメント中で使用される数字定数の小数点として使用される値はピリオドです。この値は，数値を文字にキャストする時にも，小数点文字として使用されます。"
+        },
+        {
+          "label": "*JOB",
+          "value": "*JOB",
+          "help": "プリコンパイル時にジョブに指定された小数点の表現が使用されます。 注: QDECFMTで小数点として使用される値がコンマであることを指定している場合には，リスト中（SELECT文節やVALUES文節中など）の数値固定情報は，コンマとその後に続くブランクで区切らなければなりません。例えば，VALUES(1,1, 2,23, 4,1)は，小数点がピリオドであるVALUES(1.1,2.23,4.1)と同じです。"
+        },
+        {
+          "label": "*SYSVAL",
+          "value": "*SYSVAL",
+          "help": "数値定数で小数点として使用される値はQDECFMTシステム値からのものです。この値は，数値を文字にキャストする時にも，小数点文字として使用されます。 注: 小数点として使用される値はコンマであることをQDECFMTが指定している場合には，リスト（SELECT文節およびVALUES文節など）の中のすべての数字定数をコンマとそれに続くブランクで区切らなければなりません。例えば，VALUES(1,1, 2,23, 4,1)は，小数点がピリオドであるVALUES(1.1,2.23,4.1)と同じです。"
+        },
+        {
+          "label": "*QUOTESQL",
+          "value": "*QUOTESQL",
+          "help": "ストリング区切り文字としてSQLステートメントで使用される文字は，引用符(\")です。"
+        },
+        {
+          "label": "*APOSTSQL",
+          "value": "*APOSTSQL",
+          "help": "ストリング区切り文字としてSQLステートメントで使用される文字は，アポストロフィ(')です。"
+        },
+        {
+          "label": "*QUOTE",
+          "value": "*QUOTE",
+          "help": "非数値リテラルおよびブール・リテラルとしてCOBOLステートメントで使用される文字は，引用符(\")です。"
+        },
+        {
+          "label": "*APOST",
+          "value": "*APOST",
+          "help": "非数値リテラルおよびブール・リテラルとしてCOBOLステートメントで使用される文字は，アポストロフィ(')です。"
+        },
+        {
+          "label": "*SECLVL",
+          "value": "*SECLVL",
+          "help": "置き換えデータをもつ第2レベルのテキストがリストのすべてのメッセージに追加されます。"
+        },
+        {
+          "label": "*NOSECLVL",
+          "value": "*NOSECLVL",
+          "help": "第2レベルのテキスト記述はリストに追加されません。"
+        },
+        {
+          "label": "*LSTDBG",
+          "value": "*LSTDBG",
+          "help": "SQLプリコンパイラーは，リスト・ビューと，このビューに必要なエラーおよびデバッグ情報を生成します。 注: CODEプロダクトを使用してプログラムをコンパイルしている場合には，*LSTDBGのみを使用することができます。"
+        },
+        {
+          "label": "*NOLSTDBG",
+          "value": "*NOLSTDBG",
+          "help": "エラーおよびデバッグ情報は生成されません。"
+        },
+        {
+          "label": "*SQL",
+          "value": "*SQL",
+          "help": "SQLの命名規則（スキーマ名．テーブル名）が使用されることを指定します。 リレーショナル・データベース (RDB) パラメーターにリレーショナル・データベースが指定され，そのデータベースがIBM I以外のシステム上にある場合には，命名規則として*SQLを指定しなければなりません。"
+        },
+        {
+          "label": "*SYS",
+          "value": "*SYS",
+          "help": "システムの命名規則が使用されることを指定します（ライブラリー名／ファイル名）。"
+        },
+        {
+          "label": "*NOEXTIND",
+          "value": "*NOEXTIND",
+          "help": "拡張標識サポートが使用可能になっていません。"
+        },
+        {
+          "label": "*EXTIND",
+          "value": "*EXTIND",
+          "help": "拡張標識サポートが使用可能になっています。"
+        },
+        {
+          "label": "*SYSTIME",
+          "value": "*SYSTIME",
+          "help": "静的および動的両方のSQLステートメント内のシステム期間一時表への参照はCURRENT TEMPORAL SYSTEM_TIME特殊レジスターの値に影響されることを指定します。"
+        },
+        {
+          "label": "*NOSYSTIME",
+          "value": "*NOSYSTIME",
+          "help": "静的および動的両方のSQLステートメント内のシステム期間一時表への参照はCURRENT TEMPORAL SYSTEM_TIME特殊レジスターの値に影響されないことを指定します。"
+        }
+      ],
+      "maxOccurrences": 18
+    },
+    {
+      "name": "TGTRLS",
+      "description": "ターゲット・リリース",
+      "help": "作成中のオブジェクトを使用する予定のオペレーティング・システムのリリース・レベルを指定します。\n\nターゲット・リリース 値を指定する時には，VXRXMXの形式を使用してリリースを指定しますが，このVXはバージョン・レベル，RXはリリース・レベル，MX はモディフィケーション・レベルです。例えば，V5R3M0はバージョン・レベルが5,リリース・レベルが3,モディフィケーション・レベルが0です。\n\n有効な値は，オペレーティング・システムの現行のバージョン，リリース，およびモディフィケーション・レベルによって異なり，それぞれの新規リリースによってこれが変わります。有効なターゲット・リリースのリストを表示するには，このコマンド・パラメーターのプロンプト中にF4キーを押してください。\n\nリリースはVXRXMXの形式で指定します。オブジェクトは，オペレーティング・システムの指定されたリリースまたはそれ以降の任意のリリースが導入されたシステムで使用することができます。",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*CURRENT",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*CURRENT",
+          "value": "*CURRENT",
+          "help": "オブジェクトは，使用中のシステムで現在実行中のオペレーティング・システムのリリースで使用されることになります。また，このオブジェクトは，それ以降のリリースのオペレーティング・システムが導入されたシステムで使用することもできます。"
+        },
+        {
+          "label": "*PRV",
+          "value": "*PRV",
+          "help": "オブジェクトは，オペレーティング・システムのモディフィケーション・レベル0 の前のリリースで使用されることになります。また，このオブジェクトは，それ以降のリリースのオペレーティング・システムが導入されたシステムで使用することもできます。"
+        }
+      ]
+    },
+    {
+      "name": "INCFILE",
+      "description": "INCLUDEファイル",
+      "help": "SQL INCLUDEステートメントでプログラムに含めたいメンバーが入っているソース・ファイルを指定します。\n\nここで指定するソース・ファイルのレコード長は， ソース・ファイル (SRCFILE) パラメーターに指定したソース・ファイルのレコード長以上でなければなりません。",
+      "inputType": "group",
+      "required": false,
+      "groupKind": "qualified",
+      "children": [
+        {
+          "name": "INCFILE_LIB",
+          "description": "ライブラリー",
+          "help": "*LIBL: 最初の一致が見つかるまで，ジョブのライブラリー・リスト中のすべてのライブラリーが検索されます。\n*CURLIB: ジョブの現行ライブラリーが検索されます。ジョブの現行ライブラリーとしてライブラリーが指定されていない場合には，QGPLライブラリーが使用されます。\nソース・ファイルが入っているライブラリーの名前を指定してください。",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "*LIBL",
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          }
+        },
+        {
+          "name": "INCFILE",
+          "description": "INCLUDEファイル",
+          "help": "SQL INCLUDEステートメントで指定したソース・ファイル・メンバーが入っているソース・ファイルの名前を指定してください。 ここで指定するソース・ファイルのレコード長は， ソース・ファイル (SRCFILE) パラメーターに指定したソース・ファイルのレコード長以上でなければなりません。\n\n指定できる特殊値: *SRCFILE",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "*SRCFILE",
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          }
+        }
+      ]
+    },
+    {
+      "name": "ALWCPYDTA",
+      "description": "データのコピー可能",
+      "help": "SELECTステートメントにデータのコピーを使用できるかどうかを指定します。",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*OPTIMIZE",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*OPTIMIZE",
+          "value": "*OPTIMIZE",
+          "help": "データベースから直接検索したデータを使用するか，あるいはデータのコピーを使用するかどうかをシステムが判別します。この判別は，どの方式が最上のパフォーマンスを提供するかによって決められます。 コミットメント制御 (COMMIT) パラメーターが*NONEでない場合に，最高のパフォーマンスを得るには， ブロック化可能 (ALWBLK) パラメーターを*ALLREADに設定する必要があります（可能な場合）。"
+        },
+        {
+          "label": "*YES",
+          "value": "*YES",
+          "help": "データのコピーが使用されるのは，必要な場合だけです。"
+        },
+        {
+          "label": "*NO",
+          "value": "*NO",
+          "help": "データのコピーは使用されません。データの一時的コピーがQUERYプログラムの実行に必要である場合には，エラー・メッセージが戻されます。"
+        }
+      ]
+    },
+    {
+      "name": "CLOSQLCSR",
+      "description": "SQLカーソルのクローズ",
+      "help": "SQLカーソルが暗黙にクローズされ，SQL準備完了ステートメントが暗黙に破棄され，LOCK TABLEのロックが解放される時期を指定します。SQLカーソルは，CLOSE, COMMIT（HOLDは指定しない），ROLLBACK（HOLDは指定しない），またはCONNECT （タイプ１）SQLステートメントを出すことによって，明示的にクローズされます。",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*ENDPGM",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*ENDPGM",
+          "value": "*ENDPGM",
+          "help": "プログラムの終了時にSQLカーソルがクローズされ，SQL準備完了ステートメントが破棄されます。LOCK TABLEのロックは，呼び出しスタック上の最初のSQLプログラムが終了した時に解放されます。"
+        },
+        {
+          "label": "*ENDSQL",
+          "value": "*ENDSQL",
+          "help": "SQLカーソルは呼び出しと呼び出しの間はオープンされたままとなり，行は別のSQL OPEN ステートメントを実行しなくても取り出すことができます。呼び出しスタック上の高位のプログラムの１つが，少なくとも１つのSQLステートメントを実行していなければなりません。呼び出しスタック上の最初のSQLプログラムが終了したときに，SQLカーソルがクローズされ，SQL準備完了ステートメントが破棄され，そしてLOCK TABLEのロックが解放されます。呼び出される最初のプログラム（呼び出しスタック上の最初のSQLプログラム）に*ENDSQLを指定した場合には，そのプログラムは*ENDPGMが指定されているかのように取り扱われます。"
+        },
+        {
+          "label": "*ENDJOB",
+          "value": "*ENDJOB",
+          "help": "SQLカーソルは呼び出しと呼び出しの間はオープンされたままとなり，別のSQL OPEN ステートメントを実行しなくても取り出すことができます。呼び出しスタック上の高位のプログラムはいずれも，SQLステートメントを実行している必要はありません。呼び出しスタック上の最初のSQLプログラムが終了した時には，SQLカーソルはオープンされたままで，SQL準備完了ステートメントは持続され，LOCK TABLEのロックは保留されたままです。ジョブが終了した時に，SQLカーソルはクローズされ，SQL準備完了ステートメントは破棄され，LOCK TABLEのロックが解放されます。"
+        }
+      ]
+    },
+    {
+      "name": "ALWBLK",
+      "description": "ブロック化可能",
+      "help": "データベース管理機能がレコードのブロック化を使用できるかどうか，およびどのブロック化に対するエクステントを読み取り専用カーソル用に使用できるかを指定します。\n\n*ALLREADを指定することにより，次のようになります。\n\n*NONEを指定することにより，次のようになります。",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*ALLREAD",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*ALLREAD",
+          "value": "*ALLREAD",
+          "help": "行は読み取り専用カーソルに対してブロック化されます。プログラム中にEXECUTEまたはEXECUTE IMMEDIATEステートメントがある場合でも，明らかに変更することがないプログラム中のすべてのカーソルは読み取り専用処理用にオープンされます。 *ALLREADを指定することにより，次のようになります。 すべての読み取り専用カーソルに対してレコードのブロック化が可能になります。 プログラム中のほとんどすべての読み取り専用カーソルのパフォーマンスが向上しますが，次の点でQUERYに制約があります。 *ALLREADが指定されている時には，ロールバック(ROLLBACK)コマンド，ホスト言語のROLLBACKステートメント，またはROLLBACK HOLD SQLステートメントは読み取り専用カーソルの位置指定を変更しません。 カーソル用のDECLAREステートメントにFOR UPDATE文節が入っていない限り，カーソルの行を更新するために，位置指定されたUPDATEまたはDELETEステートメントの動的な実行（例えば，EXECUTE IMMEDIATEを使用した場合）を使用することはできません。"
+        },
+        {
+          "label": "*NONE",
+          "value": "*NONE",
+          "help": "データ検索用の行は，カーソルに対してブロック化されません。 *NONEを指定することにより，次のようになります。 検索されたデータが最新であることを保証します。 QUERY用のデータの最初の行を検索するために必要な時間が減少する場合があります。 データベース管理機能が，QUERYをクローズする前に最初の数行だけを検索する時に，プログラムが使用しないデータ行のブロックの検索を停止します。 多数の行を検索するQUERYの総合的なパフォーマンスが低下する場合があります。"
+        },
+        {
+          "label": "*READ",
+          "value": "*READ",
+          "help": "次の場合に，データの読み取り専用検索用レコードがカーソルに対してブロック化されます。 コミットメント制御 (COMMIT) パラメーターに*NONEが指定され，これはコミットメント制御が使用されないことを指示します。 FOR READ ONLY文節を使用してカーソルが宣言されているか，あるいはカーソル用に位置指定されたUPDATEまたはDELETEステートメントを実行できる動的なステートメントがない場合。"
+        }
+      ]
+    },
+    {
+      "name": "DLYPRP",
+      "description": "PREPARE遅延",
+      "help": "PREPAREステートメントの動的ステートメント妥当性検査を，OPEN, EXECUTE,またはDESCRIBEステートメントの実行時まで延期するかどうかを指定します。妥当性検査を延期することにより，余計な妥当性検査が排除されて，パフォーマンスが向上します。",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*NO",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*NO",
+          "value": "*NO",
+          "help": "動的ステートメント妥当性検査は延期されません。動的ステートメントの準備が完了した時に，アクセス・プランが妥当性検査されます。動的ステートメントがOPENまたはEXECUTEステートメントで使用される時には，アクセス・プランが再び妥当性検査されます。動的ステートメントによって参照されるオブジェクトの権限または存在は変更されることがあるので，動的ステートメントがまだ有効であるかどうかを確かめるために，OPENまたはEXECUTEステートメントを出した後で，SQLCODEまたはSQLSTATEをさらにチェックしなければなりません。"
+        },
+        {
+          "label": "*YES",
+          "value": "*YES",
+          "help": "動的ステートメント妥当性検査は，動的ステートメントがOPEN, EXECUTE,またはDESCRIBE SQLステートメントで使用されるまで延期されます。動的ステートメントが使用された時点で，妥当性検査が完了し，アクセス・プランが作成されます。プリコンパイルされたプログラムでこのパラメーターに*YESを指定した場合には，動的ステートメントが有効であるかどうかを確かめるために，OPEN, EXECUTE,またはDESCRIBEステートメントの実行後に，SQLCODEおよびSQLSTATEをチェックしなければなりません。 注: *YESを指定した場合には，PREPAREステートメントにINTO文節が使用されているか，あるいはDESCRIBEステートメントにOPENが出される前に，DESCRIBEステートメントで動的ステートメントが使用されている場合は，パフォーマンスは向上しません。"
+        }
+      ]
+    },
+    {
+      "name": "CONACC",
+      "description": "同時アクセス解決",
+      "help": "データベース管理機能が更新中のデータに対するレコード・ロック競合をどう処理するかを指定します。",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*DFT",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*DFT",
+          "value": "*DFT",
+          "help": "このプログラムに対する同時アクセス・オプションは明示的に設定されないことを指定します。プログラムの呼び出し時に有効である値が使用されます。この値は，QUERYオプション・ファイルQAQQINI内のSQL_CONCURRENT_ACCESS_RESOLUTIONオプションを使用して設定できます。"
+        },
+        {
+          "label": "*CURCMT",
+          "value": "*CURCMT",
+          "help": "データベース管理機能に対して，読み取り専用QUERYのレコード・ロック競合の場合は，可能であれば現在コミットされているデータを使用するように指示します。これは，コミット・レベルが*CSの時にのみ適用されます。"
+        },
+        {
+          "label": "*WAIT",
+          "value": "*WAIT",
+          "help": "データベース管理機能に対して，レコード・ロック競合の場合は結果を待つように指示します。"
+        }
+      ]
+    },
+    {
+      "name": "GENLVL",
+      "description": "重大度レベル",
+      "help": "SQLプリコンパイラーで見つかるエラーの結果として作成されるメッセージの重大度に応じて，コンパイラーを呼び出すかどうかを指定します。このパラメーターに指定した値より大きいメッセージ重大度レベルをもったプリコンパイラー・エラーが生成された場合には，コンパイラーは呼び出されません。\n\nリレーショナル・データベース (RDB) パラメーターが指定されていて，パッケージ作成の結果として生成されたメッセージの重大度がこのパラメーターに指定した重大度レベルより大きい場合には，SQLパッケージは作成されません。\n\n10: 10より大きいメッセージ重大度をもったSQLプリコンパイラー・メッセージが生成された場合には，コンパイラーを呼び出しません。\nコンパイラーを呼び出すかどうかの制御に使用するSQLプリコンパイラー・メッセージの最大重大度レベルを指定してください。",
+      "inputType": "number",
+      "required": false,
+      "defaultValue": "10",
+      "attributes": {
+        "numericOnly": true
+      }
+    },
+    {
+      "name": "DATFMT",
+      "description": "日付形式",
+      "help": "結果の日付のカラムにアクセスする時に使用する形式を指定します。すべての出力日付フィールドは指定した形式で戻されます。この値の指定によって，入力日付ストリングに対して，日付が有効な形式であるかどうかを判別します。\n\nIBM I以外のシステム上にあるリレーショナル・データベースと接続する場合には，この形式は*USA, *ISO, *EUR,または*JISでなければなりません。\n\nジョブの現行日付形式を判別するためには，ジョブ表示(DSPJOB)コマンドを使用してください。",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*JOB",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*JOB",
+          "value": "*JOB",
+          "help": "プリコンパイル時，または新しい対話式SQLセッションの確立時にジョブに対して指定された形式が使用されます。 ジョブの現行日付形式を判別するためには，ジョブ表示(DSPJOB)コマンドを使用してください。"
+        },
+        {
+          "label": "*USA",
+          "value": "*USA",
+          "help": "米国日付形式 MM/DD/YYYY が使用されます。"
+        },
+        {
+          "label": "*ISO",
+          "value": "*ISO",
+          "help": "国際標準化機構(ISO)日付形式 YYYY-MM-DD が使用されます。"
+        },
+        {
+          "label": "*EUR",
+          "value": "*EUR",
+          "help": "欧州日付形式 DD.MM.YYYY が使用されます。"
+        },
+        {
+          "label": "*JIS",
+          "value": "*JIS",
+          "help": "日本工業規格日付形式 YYYY-MM-DD が使用されます。"
+        },
+        {
+          "label": "*MDY",
+          "value": "*MDY",
+          "help": "日付形式 MM/DD/YY が使用されます。"
+        },
+        {
+          "label": "*DMY",
+          "value": "*DMY",
+          "help": "日付形式 DD/MM/YY が使用されます。"
+        },
+        {
+          "label": "*YMD",
+          "value": "*YMD",
+          "help": "日付形式 YY/MM/DD が使用されます。"
+        },
+        {
+          "label": "*JUL",
+          "value": "*JUL",
+          "help": "年間通算日形式 YY/DDD が使用されます。"
+        }
+      ]
+    },
+    {
+      "name": "DATSEP",
+      "description": "日付区切り文字",
+      "help": "日付の結果のカラムにアクセスする時に使用する区切り記号を指定します。\n\nジョブの現行日付の区切り記号の値を判別するためには，ジョブ表示(DSPJOB)コマンドを使用してください。\n\nスラッシュが日付区切り記号として使用されます。\nピリオドが日付区切り記号として使用されます。\nダッシュが日付区切り記号として使用されます。\nコンマが日付区切り記号として使用されます。\nブランクが日付区切り記号として使用されます。",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*JOB",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*JOB",
+          "value": "*JOB",
+          "help": "プリコンパイル時，新しい対話式SQLセッションの作成時，またはSQLステートメント実行(RUNSQLSTM)コマンドの実行時にジョブに対して指定された日付区切り記号。 ジョブの現行日付の区切り記号の値を判別するためには，ジョブ表示(DSPJOB)コマンドを使用してください。"
+        },
+        {
+          "label": "*BLANK",
+          "value": "*BLANK"
+        }
+      ]
+    },
+    {
+      "name": "TIMFMT",
+      "description": "時刻形式",
+      "help": "時刻の結果のカラムにアクセスする時に使用する形式を指定します。すべての出力時刻フィールドはユーザー指定の形式で戻されます。この値の指定によって，入力時刻ストリングに対して，時刻が有効な形式で指定されたかどうかを判別します。\n\n別のIBM Iではないシステム上にあるリレーショナル・データベースに接続する場合には，時刻形式はコロンまたはピリオドの時刻区切り記号を使用する*USA, *ISO, *EUR, *JIS,または*HMSでなければなりません。",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*HMS",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*HMS",
+          "value": "*HMS",
+          "help": "HH:MM:SS の形式が使用されます。"
+        },
+        {
+          "label": "*USA",
+          "value": "*USA",
+          "help": "米国の時刻形式 HH:MM XX が使用されます。ここで XX はAMまたはPMです。"
+        },
+        {
+          "label": "*ISO",
+          "value": "*ISO",
+          "help": "国際標準化機構(ISO)時刻形式 HH.MM.SS が使用されます。"
+        },
+        {
+          "label": "*EUR",
+          "value": "*EUR",
+          "help": "欧州時刻形式 HH.MM.SS が使用されます。"
+        },
+        {
+          "label": "*JIS",
+          "value": "*JIS",
+          "help": "日本工業規格時刻形式 HH:MM:SS が使用されます。"
+        }
+      ]
+    },
+    {
+      "name": "TIMSEP",
+      "description": "時刻区切り文字",
+      "help": "時刻の結果のカラムにアクセスする時に使用される区切り記号を指定します。\n\nジョブの現在の時刻区切り記号値を判別するためには，ジョブ表示(DSPJOB)コマンドを使用してください。\n\nコロンが時刻区切り記号として使用されます。\nピリオドが時刻区切り記号として使用されます。\nコンマが時刻区切り記号として使用されます。\nブランクが時刻区切り記号として使用されます。",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*JOB",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*JOB",
+          "value": "*JOB",
+          "help": "プリコンパイル時，新しい対話式SQLセッションの作成時，またはRUNSQLSTMの実行時にジョブに対して指定された時刻区切り記号が使用されます。 ジョブの現在の時刻区切り記号値を判別するためには，ジョブ表示(DSPJOB)コマンドを使用してください。"
+        },
+        {
+          "label": "*BLANK",
+          "value": "*BLANK"
+        }
+      ]
+    },
+    {
+      "name": "REPLACE",
+      "description": "置き換え",
+      "help": "同じライブラリーに同じ名前の既存のSQLプログラムまたはSQLパッケージが存在しているときに，SQLプログラムまたはSQLパッケージを作成するかどうかを指定します。 リレーショナル・データベース (RDB) パラメーターが指定されている場合には，この値はCRTXXXPGMコマンド（ただし，XXXは作成中のプログラム言語）およびSQLパッケージ作成(CRTSQLPKG) コマンドに渡されます。",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*YES",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*YES",
+          "value": "*YES",
+          "help": "SQLプログラムまたはSQLパッケージが作成され，指定されたライブラリーの中の同じ名前の既存のSQLプログラムまたはSQLパッケージはQRPLOBJに移されます。既存のSQLパッケージに対する権限は，新しいSQLパッケージに対しても有効です。"
+        },
+        {
+          "label": "*NO",
+          "value": "*NO",
+          "help": "同じ名前のSQLプログラムまたはパッケージが指定されたライブラリー内に既に存在している場合には，SQLプログラムまたはパッケージが作成されません。"
+        }
+      ]
+    },
+    {
+      "name": "RDBCNNMTH",
+      "description": "RDB接続方式",
+      "help": "CONNECTステートメントに使用されるセマンティクスを指定します。",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*DUW",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*DUW",
+          "value": "*DUW",
+          "help": "分散作業単位をサポートするために，CONNECT（タイプ２）セマンティクスが使用されます。追加のリレーショナル・データベースに対する連続したCONNECTステートメントであっても，前の接続の切断という結果にはなりません。"
+        },
+        {
+          "label": "*RUW",
+          "value": "*RUW",
+          "help": "分散作業単位をサポートするために，CONNECT（タイプ１）セマンティクスが使用されます。連続したCONNECTステートメントの結果として，新しい接続が確立される前に，前の接続が切断されます。"
+        }
+      ]
+    },
+    {
+      "name": "DFTRDBCOL",
+      "description": "省略時のコレクション",
+      "help": "テーブル，ビュー，索引，SQLパッケージ，別名，制約，外部プログラム，ノード・グループ，およびトリガーの修飾されていない名前に使用されるスキーマIDの名前を指定します。このパラメーターが適用されるのは，静的SQLステートメントに対してだけです。\n\n*NONE: プリコンパイラー・オプション (OPTION) パラメーターに指定された命名規則が使用されます。\nプリコンパイラー・オプション (OPTION) パラメーターに指定した命名規則の代わりに使用するスキーマIDの名前を指定してください。",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*NONE",
+      "attributes": {
+        "characterSet": "upper",
+        "maxLength": 10
+      }
+    },
+    {
+      "name": "DYNDFTCOL",
+      "description": "動的省略時コレクション",
+      "help": "省略時のコレクション (DFTRDBCOL) パラメーターに指定された省略時のスキーマ名が動的ステートメントにも使用されるかどうかを指定します。",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*NO",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*NO",
+          "value": "*NO",
+          "help": "動的SQLステートメントのテーブル，ビュー，索引，SQLパッケージ，別名，制約，外部プログラム，ノード・グループ，およびトリガーの修飾されていない名前に， 省略時のコレクション (DFTRDBCOL) パラメーターに指定した値を使用しません。 プリコンパイラー・オプション (OPTION) パラメーターに指定された命名規則が使用されます。"
+        },
+        {
+          "label": "*YES",
+          "value": "*YES",
+          "help": "動的SQLステートメントのテーブル，ビュー，索引，SQLパッケージ，別名，制約，外部プログラム，ノード・グループ，およびトリガーの修飾されていない名前に， 省略時のコレクション (DFTRDBCOL) パラメーターに指定したスキーマ名が使用されることになります。"
+        }
+      ]
+    },
+    {
+      "name": "SQLPKG",
+      "description": "パッケージ",
+      "help": "このコマンドの リレーショナル・データベース (RDB) パラメーターに指定されたリモート・リレーショナル・データベースに作成されるSQLパッケージの名前およびライブラリーを指定します。",
+      "inputType": "group",
+      "required": false,
+      "groupKind": "qualified",
+      "children": [
+        {
+          "name": "SQLPKG_LIB",
+          "description": "ライブラリー",
+          "help": "*PGMLIB: SQLパッケージは，プログラムが入っているライブラリーと同じ名前のスキーマに入れられます。\nSQLパッケージを入れるスキーマの名前を指定してください。リモート・システムがIBM Iでない場合には，最大８桁を指定することができます。",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "*PGMLIB",
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          }
+        },
+        {
+          "name": "SQLPKG",
+          "description": "パッケージ",
+          "help": "*PGM: SQLパッケージの名前はプログラム名と同じです。\nSQLパッケージの名前を指定してください。リモート・システムがIBM Iでない場合には，最大８桁を指定することができます。",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "*PGM",
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          }
+        }
+      ]
+    },
+    {
+      "name": "SQLPATH",
+      "description": "SQLパス",
+      "help": "静的SQLステートメント中のプロシージャー，関数，およびユーザー定義のタイプを見つけるために使用されるパスを指定します。\n\n*SYS命名の場合，使用されるパスは*LIBL（実行時の現行ライブラリー・リスト）です。\n\n*SQL命名の場合，使用されるパスは\"QSYS\", \"QSYS2\", \"SYSPROC\", \"SYSIBMADM\", \"USERID\" (\"USERID\"はUSER特殊レジスターの値）です。 省略時のコレクション (DFTRDBCOL) パラメーターにスキーマ名が指定されている場合には，スキーマ名がUSERIDの代わりになります。\n\n*NAMING: 使用されるパスは プリコンパイラー・オプション (OPTION) パラメーターに指定された命名規則によって決まります。 *SYS命名の場合，使用されるパスは*LIBL（実行時の現行ライブラリー・リスト）です。 *SQL命名の場合，使用されるパスは\"QSYS\", \"QSYS2\", \"SYSPROC\", \"SYSIBMADM\", \"USERID\" (\"USERID\"はUSER特殊レジスターの値）です。 省略時のコレクション (DFTRDBCOL) パラメーターにスキーマ名が指定されている場合には，スキーマ名がUSERIDの代わりになります。\n*LIBL: 使用されるパスは実行時のライブラリー・リストです。\n1つ以上のスキーマ名を指定してください。最大268個のスキーマ名を指定できます。",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*NAMING",
+      "attributes": {
+        "characterSet": "upper",
+        "maxLength": 10
+      },
+      "maxOccurrences": 268
+    },
+    {
+      "name": "SQLCURRULE",
+      "description": "SQL規則",
+      "help": "SQLステートメントに使用されるセマンティクスを指定します。\n\n16進定数は文字データとして取り扱われます。\n\nユニコード・グラフィックス・ストリング定数はUCS-2 (CCSID 13488)です。\n\nルーチンまたはトリガーの本体内でのSQL変数およびSQLパラメーターへの割り当てでは，検索割り当て規則が使用されます。\n\nSQLDAおよびSQLNへのSELECTステートメントの記述が必要なSQLVAR項目の数より少ない時は，結果テーブルにLOBまたはUDTが含まれている時に限りSQLSTATE 01005が戻されます。\n\n16進定数は２進データとし取り扱われます。\n\nユニコード・グラフィックス・ストリング定数はUTF-16 (CCSID 1200)です。\n\nルーチンまたはトリガーの本体内でのSQL変数およびSQLパラメーターへの割り当てでは，保管割り当て規則が使用されます。\n\nSQLDAおよびSQLNへのSELECTステートメントの記述が必要なSQLVAR項目の数より少ない時は，常にSQLSTATE 01005が戻されます。",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*DB2",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*DB2",
+          "value": "*DB2",
+          "help": "すべてのSQLステートメントのセマンティクスが，DB2用に設定されるルールの省略時値として使用されます。次のセマンティクスは，このオプションによって制御されます。 16進定数は文字データとして取り扱われます。 ユニコード・グラフィックス・ストリング定数はUCS-2 (CCSID 13488)です。 ルーチンまたはトリガーの本体内でのSQL変数およびSQLパラメーターへの割り当てでは，検索割り当て規則が使用されます。 SQLDAおよびSQLNへのSELECTステートメントの記述が必要なSQLVAR項目の数より少ない時は，結果テーブルにLOBまたはUDTが含まれている時に限りSQLSTATE 01005が戻されます。"
+        },
+        {
+          "label": "*STD",
+          "value": "*STD",
+          "help": "すべてのSQLステートメントのセマンティクスが，ISOおよびANSI SQL規格によって設定されるルールの省略時値として使用されます。次のセマンティクスは，このオプションによって制御されます。 16進定数は２進データとし取り扱われます。 ユニコード・グラフィックス・ストリング定数はUTF-16 (CCSID 1200)です。 ルーチンまたはトリガーの本体内でのSQL変数およびSQLパラメーターへの割り当てでは，保管割り当て規則が使用されます。 SQLDAおよびSQLNへのSELECTステートメントの記述が必要なSQLVAR項目の数より少ない時は，常にSQLSTATE 01005が戻されます。"
+        }
+      ]
+    },
+    {
+      "name": "SAAFLAG",
+      "description": "IBM SQLフラグづけ",
+      "help": "IBM SQLフラグ付け機能を指定します。このパラメーターによって，SQLステートメントがIBM SQL構文に従っているかどうかを確認するために，SQLステートメントにフラグを付けることができます。",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*NOFLAG",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*NOFLAG",
+          "value": "*NOFLAG",
+          "help": "SQLステートメントがIBM SQL構文に適合しているかどうかを確認する検査は行われません。"
+        },
+        {
+          "label": "*FLAG",
+          "value": "*FLAG",
+          "help": "SQLステートメントがIBM SQL構文に適合しているかどうかを確認する検査が行われます。"
+        }
+      ]
+    },
+    {
+      "name": "FLAGSTD",
+      "description": "ANSフラグ付け",
+      "help": "標準以外のステートメントにフラグを付けるかどうかを指定します。このパラメーターによって，SQLステートメントがISO/IEC 9075-2003標準のコア・レベルに従っているかどうかを確認するために，それらにフラグを付けることができます。",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*NONE",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*NONE",
+          "value": "*NONE",
+          "help": "SQLステートメントがANSI標準に適合しているかどうかを確認する検査は行われません。"
+        },
+        {
+          "label": "*ANS",
+          "value": "*ANS",
+          "help": "SQLステートメントが標準に適合しているかどうかを確認する検査が行われます。"
+        }
+      ]
+    },
+    {
+      "name": "PRTFILE",
+      "description": "印刷ファイル",
+      "help": "プリコンパイラー出力リストに使用する印刷装置ファイルを指定します。",
+      "inputType": "group",
+      "required": false,
+      "groupKind": "qualified",
+      "children": [
+        {
+          "name": "PRTFILE_LIB",
+          "description": "ライブラリー",
+          "help": "*LIBL: 最初の一致が見つかるまで，ジョブのライブラリー・リスト中のすべてのライブラリーが検索されます。\n*CURLIB: ジョブの現行ライブラリーが検索されます。ジョブの現行ライブラリーとしてライブラリーが指定されていない場合には，QGPLライブラリーが使用されます。\n印刷ファイルが入っているライブラリーの名前を指定してください。",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "*LIBL",
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          }
+        },
+        {
+          "name": "PRTFILE",
+          "description": "印刷ファイル",
+          "help": "QSYSPRT: プリコンパイラー出力ファイルは，IBM提供の印刷装置ファイルQSYSPRTに向けられます。ファイルQSYSPRTのレコード長は132桁です。レコード長が132より小さいファイルを指定した場合には，情報が失われます。\nプリコンパイラーの出力が送られる印刷装置ファイルの名前を指定してください。",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "QSYSPRT",
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          }
+        }
+      ]
+    },
+    {
+      "name": "USRPRF",
+      "description": "ユーザー・プロファイル",
+      "help": "静的SQLステートメントにおいて各オブジェクトについてプログラム・オブジェクトまたはSQLパッケージがもっている権限を含めて，コンパイル済みプログラム・オブジェクトおよびSQLパッケージ・オブジェクトの実行時に使用されるユーザー・プロファイルを指定します。オブジェクトへのアクセスを制御するために，所有者かまたはユーザーのどちらかのプロファイルが使用されます。",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*NAMING",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*NAMING",
+          "value": "*NAMING",
+          "help": "ユーザー・プロファイルは，命名規則によって決まります。命名規則が*SQLの場合には，USRPRF(*OWNER)が使用されます。命名規則が*SYSの場合には，USRPRF(*USER)が使用されます。"
+        },
+        {
+          "label": "*USER",
+          "value": "*USER",
+          "help": "プログラムまたはSQLパッケージを実行中のユーザーのプロファイルが使用されます。"
+        },
+        {
+          "label": "*OWNER",
+          "value": "*OWNER",
+          "help": "プログラムまたはSQLパッケージの実行時には，所有者とユーザーの両方のユーザー・プロファイルが使用されます。"
+        }
+      ]
+    },
+    {
+      "name": "DYNUSRPRF",
+      "description": "動的ユーザー・プロファイル",
+      "help": "動的SQLステートメントで使用されるユーザー・プロファイルを指定します。",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*USER",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*USER",
+          "value": "*USER",
+          "help": "ローカル動的SQLステートメントはそのプログラムのユーザーのプロファイルによって実行されます。分散動的SQLステートメントはアプリケーション・サーバー・ジョブのプロファイルによって実行されます。"
+        },
+        {
+          "label": "*OWNER",
+          "value": "*OWNER",
+          "help": "ローカル動的SQLステートメントはそのプログラムの所有者のプロファイルによって実行されます。分散動的SQLステートメントはSQLパッケージの所有者のプロファイルによって実行されます。"
+        }
+      ]
+    },
+    {
+      "name": "SRTSEQ",
+      "description": "ソート順序",
+      "help": "SQLステートメントのストリングの比較に使用される分類順序テーブルを指定します。",
+      "inputType": "group",
+      "required": false,
+      "groupKind": "qualified",
+      "singleValues": [
+        "*JOB",
+        "*HEX",
+        "*JOBRUN",
+        "*LANGIDUNQ",
+        "*LANGIDSHR"
+      ],
+      "children": [
+        {
+          "name": "SRTSEQ_LIB",
+          "description": "ライブラリー",
+          "help": "*LIBL: 最初の一致が見つかるまで，ジョブのライブラリー・リスト中のすべてのライブラリーが検索されます。\n*CURLIB: ジョブの現行ライブラリーが検索されます。ジョブの現行ライブラリーとしてライブラリーが指定されていない場合には，QGPLライブラリーが使用されます。\n検索するライブラリーの名前を指定してください。",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "*LIBL",
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          }
+        },
+        {
+          "name": "SRTSEQ",
+          "description": "ソート順序",
+          "help": "このプログラムで使用される分類順序テーブルの名前を指定します。",
+          "inputType": "text",
+          "required": false,
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          },
+          "defaultValue": "*JOB"
+        }
+      ]
+    },
+    {
+      "name": "LANGID",
+      "description": "言語ID",
+      "help": "SRTSEQ(*LANGIDUNQ)またはSRTSEQ(*LANGIDSHR)が指定された時に使用される言語識別コードを指定します。\n\n*JOB: ジョブのLANGID値がプリコンパイル中に検索されます。\n*JOBRUN: ジョブのLANGID値はプログラムの実行時に検索されます。分散アプリケーションでは，LANGID(*JOBRUN)が有効なのは，SRTSEQ(*JOBRUN)も指定されている時だけです。\nプログラムによって使用される言語識別コードを指定します。",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*JOB",
+      "attributes": {
+        "characterSet": "upper"
+      }
+    },
+    {
+      "name": "TOSRCFILE",
+      "description": "TOソース・ファイル",
+      "help": "SQLプリコンパイラーによって処理された出力ソース・メンバーを入れるソース・ファイルを指定します。指定したソース・ファイルが見つからない場合には，作成されます。出力メンバーは オブジェクト (OBJ) または プログラム (PGM) パラメーターに指定したのと同じ名前になります。",
+      "inputType": "group",
+      "required": false,
+      "groupKind": "qualified",
+      "children": [
+        {
+          "name": "TOSRCFILE_LIB",
+          "description": "ライブラリー",
+          "help": "QTEMP: ライブラリーQTEMPが使用されます。\n*LIBL: 指定したファイルがジョブのライブラリー・リストで検索されます。ライブラリー・リストのどのライブラリーにもそのファイルが見つからない場合には，現行ライブラリー中にそのファイルが作成されます。\n*CURLIB: ジョブの現行ライブラリーが使用されます。ジョブの現行ライブラリーとしてライブラリーが指定されていない場合には，QGPLライブラリーが使用されます。\n出力ソース・ファイルを入れるライブラリーの名前を指定します。",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "QTEMP",
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          }
+        },
+        {
+          "name": "TOSRCFILE",
+          "description": "TOソース・ファイル",
+          "help": "QSQLTEMP: ソース・ファイルQSQLTEMPが使用されます。\n出力ソース・メンバーを入れるソース・ファイルの名前を指定します。",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "QSQLTEMP",
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          }
+        }
+      ]
+    },
+    {
+      "name": "DECRESULT",
+      "description": "10進数結果オプション",
+      "help": "10進数演算機構などの10進演算で使用する最大精度，最大位取り，および最小除算位取りを指定します。指定された制限はNUMERICおよびDECIMALのデータ・タイプのみに適用されます。",
+      "inputType": "group",
+      "required": false,
+      "groupKind": "elements",
+      "children": [
+        {
+          "name": "DECRESULT_E1",
+          "description": "最大精度",
+          "help": "31: 10進演算から戻す最大精度（長さ）は31桁です。\n63: 10進演算から戻す最大精度（長さ）は63桁です。",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "31"
+        },
+        {
+          "name": "DECRESULT_E2",
+          "description": "最大位取り",
+          "help": "31: 10 進演算から戻す最大位取り（小数点以下の桁数）は31桁です。\n10進演算から戻す最大位取り（小数点以下の桁数）を指定します。この値は，0から最大精度までの範囲とすることができます。",
+          "inputType": "number",
+          "required": false,
+          "defaultValue": "31",
+          "attributes": {
+            "numericOnly": true
+          }
+        },
+        {
+          "name": "DECRESULT_E3",
+          "description": "割り算の最小位取り",
+          "help": "0: 最小除算位取りは使用されません。\n10進演算から戻す最小除算位取り（小数点以下の桁数）を指定します。この値は，最大位取りを超えることはできません。最大位取りに0を指定した場合には，除算の最小位取りは使用されません。",
+          "inputType": "number",
+          "required": false,
+          "defaultValue": "0",
+          "attributes": {
+            "numericOnly": true
+          }
+        }
+      ]
+    },
+    {
+      "name": "DECFLTRND",
+      "description": "10 進浮動小数点丸めモード",
+      "help": "静的SQLステートメントに対して使用される10進浮動小数点丸めモードを指定します。",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*HALFEVEN",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*HALFEVEN",
+          "value": "*HALFEVEN",
+          "help": "最も近い値に丸めます。どちらの値にも等距離にある場合は，最終桁が偶数になるように丸めます。破棄された桁がその左隣にある桁の値の半分(0.5)より大きい値を表す場合，結果の係数は1増やされます（切り上げられます）。半分より小さい値を表す場合，結果の係数は調整されません（つまり，破棄された桁は無視されます）。上記以外の場合（破棄された桁が正確に半分を表す場合），結果の係数は，右端の桁が偶数であれば変更されず，右端の桁が奇数であれば（偶数にするために）1増やされます（切り上げられます）。"
+        },
+        {
+          "label": "*HALFUP",
+          "value": "*HALFUP",
+          "help": "最も近い値に丸めます。どちらの値にも等距離にある場合は，切り上げます。破棄された桁がその左隣にある桁の値の半分(0.5)以上を表す場合，結果の係数は1増やされます（切り上げられます）。その他の場合，破棄された桁は無視されます。"
+        },
+        {
+          "label": "*DOWN",
+          "value": "*DOWN",
+          "help": "ゼロ(0)の方向に丸めます（切り捨て）。破棄された桁は無視されます。"
+        },
+        {
+          "label": "*CEILING",
+          "value": "*CEILING",
+          "help": "正(+)の無限大の方向に丸めます。破棄されたすべての桁がゼロの場合，または符号が負の場合，破棄された桁が除去される以外，結果は変わりません。その他の場合，結果の係数は1増やされます（切り上げられます）。"
+        },
+        {
+          "label": "*FLOOR",
+          "value": "*FLOOR",
+          "help": "負(-)の無限大の方向に丸めます。破棄されたすべての桁がゼロの場合，または符号が正の場合，破棄された桁が除去される以外，結果は変わりません。その他の場合，符号は負になり，結果の係数は1増やされます。"
+        },
+        {
+          "label": "*HALFDOWN",
+          "value": "*HALFDOWN",
+          "help": "最も近い値に丸めます。どちらの値にも等距離にある場合は，切り捨てます。破棄された桁がその左隣にある桁の値の半分(0.5)より大きい値を表す場合，結果の係数は1増やされます（切り上げられます）。その他の場合（破棄された桁が0.5以下である場合），破棄された桁は無視されます。"
+        },
+        {
+          "label": "*UP",
+          "value": "*UP",
+          "help": "ゼロ(0)から離れる方向に丸めます。破棄されたすべての桁がゼロの場合，破棄された桁が除去される以外，結果は変わりません。その他の場合，結果の係数は1増やされます（切り上げられます）。"
+        }
+      ]
+    },
+    {
+      "name": "COMPILEOPT",
+      "description": "コンパイラー・オプション",
+      "help": "コンパイラー・コマンドで使用する追加のパラメーターを指定します。COMPILEOPTストリングは，プリコンパイラーが作成するコンパイラー・コマンドに追加されます。このストリングの妥当性検査は行われません。いずれかのパラメーターが正しくない場合には，コンパイラー・コマンドがエラーを出すことになります。プリコンパイラーがコンパイラー・コマンド用に生成するパラメーターのリストについては，IBM i Information Center(http://www.ibm.com/systems/i/infocenter/)の「DB2 for i SQL プログラミング」トピック・コレクションを参照してください。プリコンパイラーがコンパイラーに渡すキーワードのいずれかを使用すると，重複パラメーターのためにコンパイラー・コマンドが失敗する原因になります。\n\n*NONE: コンパイラー・コマンドで追加のパラメーターを使用しません。\n5000桁以内の文字をアポストロフィで囲んで指定してください。",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*NONE",
+      "attributes": {
+        "characterSet": "upper"
+      }
+    }
+  ],
+  "threadSafe": false,
+  "environment": "すべての環境 (*ALL)",
+  "errorMessages": [
+    {
+      "id": "SQL9001",
+      "text": "SQLのプリコンパイルが正常に実行されなかった。"
+    },
+    {
+      "id": "SQL9002",
+      "text": "SQLプリコンパイルと&7コンパイルのTGTRLSパラメーターが矛盾している。"
+    },
+    {
+      "id": "SQL9003",
+      "text": "このSQLソースには，&7コンパイルのレベルが正しくない。"
+    },
+    {
+      "id": "SQL9004",
+      "text": "SQLパッケージの作成が正常に実行されなかった。"
+    },
+    {
+      "id": "SQL9006",
+      "text": "DB2 Query Manager and SQL Development Kitのインストール・レベルがオペレーティング・システムと同じでない。"
+    }
+  ],
+  "source": {
+    "url": "https://www.ibm.com/docs/ja/ssw_ibm_i_74/cl/crtsqlcbl.htm",
+    "version": "IBM i 7.4"
+  }
+}

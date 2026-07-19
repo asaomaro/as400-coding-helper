@@ -1,0 +1,168 @@
+{
+  "keyword": "RMVBNDDIRE",
+  "description": "バインド・ディレクトリー項目の除去 (RMVBNDDIRE)",
+  "help": "バインド・ディレクトリー項目の除去(RMVBNDDIRE)コマンドは，バインド・ディレクトリーから項目を除去します。",
+  "parameters": [
+    {
+      "name": "BNDDIR",
+      "description": "ディレクトリーのバインド",
+      "help": "項目を除去するバインド・ディレクトリーを指定します。\n\nこれは必須パラメーターです。",
+      "inputType": "group",
+      "required": true,
+      "groupKind": "qualified",
+      "children": [
+        {
+          "name": "LIB",
+          "description": "ライブラリー",
+          "help": "*LIBL: 最初に一致するものが見つかるまで，現行スレッドのライブラリー・リスト内のすべてのライブラリーが検索されます。\n*CURLIB: ジョブの現行ライブラリーが検索されます。ジョブの現行ライブラリーとして指定されているライブラリーがない場合は，QGPLライブラリーが使用されます。\n*USRLIBL: ジョブのライブラリー・リストのユーザー部分にあるライブラリーだけが検索されます。\n検索するライブラリーの名前を指定してください。",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "*LIBL",
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          }
+        },
+        {
+          "name": "BNDDIR",
+          "description": "ディレクトリーのバインド",
+          "help": "更新するバインド・ディレクトリーの名前を指定してください。",
+          "inputType": "text",
+          "required": true,
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          }
+        }
+      ],
+      "positional": 1
+    },
+    {
+      "name": "OBJ",
+      "description": "オブジェクトの仕様",
+      "help": "バインド・ディレクトリーから除去する1つ以上のオブジェクト名を指定します。\n\nこのパラメーターには50個の値を指定することができます。",
+      "inputType": "group",
+      "required": false,
+      "groupKind": "elements",
+      "children": [
+        {
+          "name": "OBJ_E1",
+          "description": "オブジェクト",
+          "inputType": "group",
+          "required": false,
+          "groupKind": "qualified",
+          "children": [
+            {
+              "name": "OBJ_LIB",
+              "description": "ライブラリー",
+              "help": "*LIBL: 最初に一致するものが見つかるまで，現行スレッドのライブラリー・リスト内のすべてのライブラリーが検索されます。\n検索するライブラリーの名前を指定してください。",
+              "inputType": "text",
+              "required": false,
+              "defaultValue": "*LIBL",
+              "attributes": {
+                "characterSet": "upper",
+                "maxLength": 10
+              }
+            },
+            {
+              "name": "OBJ",
+              "description": "オブジェクト",
+              "help": "*ALL: 指定されたタイプのすべてのオブジェクトが指定されたディレクトリーから除去されます。\n除去するオブジェクトの総称名を指定してください。総称名は1つまたは複数の文字の後にアスタリスク(*)を付けた文字ストリング（例えば，ABC*など）です。アスタリスクは任意の有効な文字で置き換えられます。総称名は，名前が総称接頭部で始まる，ユーザーが権限を持っているすべてのオブジェクトを指定します。総称（接頭部）名にアスタリスクが入っていないと，システムはその名前を完全なオブジェクト名と見なします。完全なオブジェクト名が指定されて，複数のライブラリーが検索される場合には，その名前に*ALLまたは*ALLUSR ライブラリー値を指定できる場合にかぎり，複数のオブジェクトを除去することができます。\n除去するオブジェクトの名前を指定してください。",
+              "inputType": "text",
+              "required": false,
+              "attributes": {
+                "characterSet": "upper",
+                "maxLength": 10
+              }
+            }
+          ]
+        },
+        {
+          "name": "OBJ_E2",
+          "description": "オブジェクト・タイプ",
+          "inputType": "dropdown",
+          "required": false,
+          "defaultValue": "*SRVPGM",
+          "attributes": {
+            "characterSet": "upper"
+          },
+          "options": [
+            {
+              "label": "*SRVPGM",
+              "value": "*SRVPGM",
+              "help": "除去しようとするオブジェクトがサービス・プログラムであることを指示します。"
+            },
+            {
+              "label": "*MODULE",
+              "value": "*MODULE",
+              "help": "除去しているオブジェクトがモジュールであることを示します。"
+            }
+          ]
+        }
+      ],
+      "positional": 2,
+      "maxOccurrences": 50
+    }
+  ],
+  "threadSafe": false,
+  "environment": "すべての環境 (*ALL)",
+  "restrictions": [
+    "更新しているバインド・ディレクトリーが入っているライブラリーに対して，読み取り(*READ)権限およびオブジェクト操作(*OBJOPR)権限が必要です。",
+    "バインド・ディレクトリーに対する*OBJOPRおよび削除(*DLT)権限が必要です。"
+  ],
+  "examples": [
+    {
+      "code": "RMVBNDDIRE BNDDIR(SOURCE) OBJ(LIST)"
+    }
+  ],
+  "errorMessages": [
+    {
+      "id": "CPF5D01",
+      "text": "ライブラリー&2のバインド・ディレクトリー&1は使用不能である。"
+    },
+    {
+      "id": "CPF5D09",
+      "text": "ライブラリー&5のバインド・ディレクトリー&4にオブジェクト&2/&1 タイプ&3が見つかりません。"
+    },
+    {
+      "id": "CPF980F",
+      "text": "ライブラリー&2にバインド・ディレクトリー&1が見つからない。"
+    },
+    {
+      "id": "CPF9801",
+      "text": "ライブラリー&3にオブジェクト&2が見つからない。"
+    },
+    {
+      "id": "CPF9802",
+      "text": "&3のオブジェクト&2は認可されていない。"
+    },
+    {
+      "id": "CPF9803",
+      "text": "ライブラリー&3のオブジェクト&2を割り振りできません。"
+    },
+    {
+      "id": "CPF9807",
+      "text": "ライブラリー・リストの１つまたは複数のライブラリーが削除された。"
+    },
+    {
+      "id": "CPF9808",
+      "text": "ライブラリー・リストの１つまたは複数のライブラリーを割り振ることができない。"
+    },
+    {
+      "id": "CPF9810",
+      "text": "ライブラリー&1が見つかりません。"
+    },
+    {
+      "id": "CPF9820",
+      "text": "ライブラリー&1の使用は認可されていない。"
+    },
+    {
+      "id": "CPF9830",
+      "text": "ライブラリー&1を割り当てることができない。"
+    }
+  ],
+  "source": {
+    "url": "https://www.ibm.com/docs/ja/ssw_ibm_i_74/cl/rmvbnddire.htm",
+    "version": "IBM i 7.4"
+  }
+}

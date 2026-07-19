@@ -38,6 +38,9 @@ const vscode = __importStar(require("vscode"));
 const model_1 = require("./model");
 const binding_1 = require("./binding");
 const help_1 = require("./help");
+const jsonDefinitions_1 = require("./jsonDefinitions");
+const clCommandParser_1 = require("./clCommandParser");
+const applyChanges_1 = require("./applyChanges");
 async function openPrompter(context, definition, resolved, initialValues) {
     const initialState = (0, model_1.buildInitialState)(definition, initialValues);
     const serializable = (0, binding_1.toSerializableState)(definition, initialState, resolved);
@@ -82,10 +85,65 @@ async function openPrompter(context, definition, resolved, initialValues) {
                     (0, help_1.showParameterHelp)(definition, parameter);
                 }
             }
+            else if (message?.type === "promptCommand") {
+                // 値そのものがコマンドの欄（SBMJOB の CMD など）から、さらに
+                // プロンプターを開く。SEU の F4 in F4 に相当する。
+                void openNestedPrompter(context, resolved, String(message.name ?? ""), String(message.value ?? "")).then(built => {
+                    if (built !== undefined) {
+                        void panel.webview.postMessage({
+                            type: "setValue",
+                            name: String(message.name ?? ""),
+                            value: built
+                        });
+                    }
+                    // 親のプロンプターに操作を戻す。
+                    panel.reveal(panel.viewColumn, false);
+                });
+            }
             else if (message?.type === "ready") {
                 // WebView 起動確認。特に処理は不要。
             }
         });
+    });
+}
+/**
+ * コマンドの欄から入れ子のプロンプターを開き、確定した値（素の 1 行コマンド）を返す。
+ * 取り消し・命令名が決まらない場合は undefined。
+ *
+ * 命令名は欄の値から読む。空欄のときは何を開けばよいか決まらないので尋ねる
+ * （SEU も先に命令名を書いてから F4 を押す）。
+ */
+async function openNestedPrompter(context, resolved, name, currentValue) {
+    const parsed = (0, clCommandParser_1.parseClCommand)(currentValue.trim());
+    let keyword = parsed?.keyword;
+    if (!keyword) {
+        const typed = await vscode.window.showInputBox({
+            title: `${name} で実行するコマンド`,
+            prompt: "プロンプターを開くコマンド名を入力してください（例: CALL）",
+            validateInput: value => /^[A-Za-z][A-Za-z0-9]*$/u.test(value.trim()) ? undefined : "コマンド名を入力してください"
+        });
+        keyword = typed?.trim().toUpperCase();
+    }
+    if (!keyword) {
+        return undefined;
+    }
+    const loader = new jsonDefinitions_1.PrompterDefinitionLoader();
+    const definition = await loader.loadDefinition(keyword, "cl", undefined, vscode.workspace.getWorkspaceFolder(resolved.document.uri), context);
+    if (!definition) {
+        void vscode.window.showInformationMessage(`${keyword} のプロンプター定義がありません。`);
+        return undefined;
+    }
+    // 欄に既に書かれているコマンドがあれば、その値を初期値として持ち込む。
+    const initialValues = parsed && parsed.keyword === definition.keyword
+        ? (0, clCommandParser_1.mapParsedCommandToValues)(definition, parsed)
+        : {};
+    const result = await openPrompter(context, definition, resolved, initialValues);
+    if (!result?.confirmed) {
+        return undefined;
+    }
+    // 欄に入るのは値であってソース行ではないので、桁揃えも折り返しもしない。
+    return (0, applyChanges_1.buildClCommandBody)(definition, result.values, {
+        presentParameters: Object.keys(parsed?.parameters ?? {})
     });
 }
 function findParameter(parameters, name) {

@@ -1,0 +1,452 @@
+{
+  "keyword": "CHGPJE",
+  "description": "Change Prestart Job Entry (CHGPJE)",
+  "parameters": [
+    {
+      "name": "SBSD",
+      "description": "Subsystem description",
+      "help": "Subsystem description (SBSD)\n\nSpecifies the name and library of the subsystem description that contains the prestart job entry being changed.\n\nThis is a required parameter.\n\nQualifier 1: Subsystem description\n\nQualifier 2: Library",
+      "inputType": "group",
+      "required": true,
+      "groupKind": "qualified",
+      "children": [
+        {
+          "name": "LIB",
+          "description": "Library",
+          "help": "指定できる特殊値: *LIBL, *CURLIB",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "*LIBL",
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          }
+        },
+        {
+          "name": "SBSD",
+          "description": "Subsystem description",
+          "inputType": "text",
+          "required": true,
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          }
+        }
+      ],
+      "positional": 1
+    },
+    {
+      "name": "PGM",
+      "description": "Program",
+      "help": "Program (PGM)\n\nSpecifies the name and library of the program that identifies the prestart job entry that is changed. This program name is used to match an incoming request with an available prestart job. Two entries with the same program name can exist in a single subsystem description, but they must have different library names. If the program does not exist when the entry is added, a library qualifier must be specified because the qualified name is kept in the subsystem description.\n\nThis is a required parameter.\n\nQualifier 1: Program\n\nQualifier 2: Library",
+      "inputType": "group",
+      "required": true,
+      "groupKind": "qualified",
+      "children": [
+        {
+          "name": "PGM_LIB",
+          "description": "Library",
+          "help": "指定できる特殊値: *LIBL, *CURLIB",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "*LIBL",
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          }
+        },
+        {
+          "name": "PGM",
+          "description": "Program",
+          "inputType": "text",
+          "required": true,
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          }
+        }
+      ],
+      "positional": 2
+    },
+    {
+      "name": "USER",
+      "description": "User profile",
+      "help": "User profile (USER)\n\nSpecifies the user profile under which the prestart job is initiated. In addition, the current user profile of the prestart job is set to this user whenever the job waits for a request to handle.\n\nNote: When a prestart job is given a request to handle, the current user profile of the job is updated. Refer to the Work Management guide for information on how this profile is determined. This change in current user profile is for authority checking only. None of the other attributes of the user profile, such as the current library (CURLIB) or the initial program to call (INLPGM), are given to the prestart job.\n\n指定できる特殊値: *SAME",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*SAME",
+      "attributes": {
+        "characterSet": "upper",
+        "maxLength": 10
+      }
+    },
+    {
+      "name": "STRJOBS",
+      "description": "Start jobs",
+      "help": "Start jobs (STRJOBS)\n\nSpecifies whether the prestart jobs are started at the time the subsystem is started.",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*SAME",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*SAME",
+          "value": "*SAME"
+        },
+        {
+          "label": "*YES",
+          "value": "*YES"
+        },
+        {
+          "label": "*NO",
+          "value": "*NO"
+        }
+      ]
+    },
+    {
+      "name": "INLJOBS",
+      "description": "Initial number of jobs",
+      "help": "Initial number of jobs (INLJOBS)\n\nSpecifies the initial number of prestart jobs that are started when the subsystem specified on the Subsystem description (SBSD) parameter is started.\n\nNotes.\n\n指定できる特殊値: *SAME",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*SAME",
+      "attributes": {
+        "characterSet": "upper"
+      }
+    },
+    {
+      "name": "THRESHOLD",
+      "description": "Threshold",
+      "help": "Threshold (THRESHOLD)\n\nSpecifies when additional prestart jobs are started. When the pool of available jobs (jobs available to service a requests) is reduced below this number, more jobs (specified on the Additional number of jobs (ADLJOBS) parameter) are started and added to the available pool. This number is checked after a prestart job is attached to a procedure start request.\n\nNote: The value specified on this parameter must be less than or equal to the value specified on the Initial number of jobs (INLJOBS) parameter.\n\n指定できる特殊値: *SAME",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*SAME",
+      "attributes": {
+        "characterSet": "upper"
+      }
+    },
+    {
+      "name": "ADLJOBS",
+      "description": "Additional number of jobs",
+      "help": "Additional number of jobs (ADLJOBS)\n\nSpecifies the additional number of prestart jobs that are started when the number of prestart jobs drops below the value specified on the Threshold (THRESHOLD) parameter.\n\nNote: The value of this parameter must be less than the value specified on the Maximum number of jobs (MAXJOBS) parameter.\n\n指定できる特殊値: *SAME",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*SAME",
+      "attributes": {
+        "characterSet": "upper"
+      }
+    },
+    {
+      "name": "MAXJOBS",
+      "description": "Maximum number of jobs",
+      "help": "Maximum number of jobs (MAXJOBS)\n\nSpecifies the maximum number of prestart jobs that can be active at the same time for this prestart job entry.\n\nNotes\n\n指定できる特殊値: *SAME, *NOMAX",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*SAME",
+      "attributes": {
+        "characterSet": "upper"
+      }
+    },
+    {
+      "name": "JOB",
+      "description": "Job name",
+      "help": "Job name (JOB)\n\nSpecifies the name of the prestart job.\n\n指定できる特殊値: *SAME, *PGM",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*SAME",
+      "attributes": {
+        "characterSet": "upper",
+        "maxLength": 10
+      }
+    },
+    {
+      "name": "JOBD",
+      "description": "Job description",
+      "help": "Job description (JOBD)\n\nSpecifies the name and library of the job description that is used for the prestart job. If the job description does not exist when the entry is changed, a library qualifier must be specified because the qualified job description name is kept in the subsystem description.\n\nNote: Only a user with all object (*ALLOBJ) special authority is allowed to add or change an entry for which the job description does not exist.\n\nSingle values\n\nQualifier 1: Job description\n\nQualifier 2: Library",
+      "inputType": "group",
+      "required": false,
+      "groupKind": "qualified",
+      "singleValues": [
+        "*SAME",
+        "*USRPRF",
+        "*SBSD"
+      ],
+      "children": [
+        {
+          "name": "JOBD_LIB",
+          "description": "Library",
+          "help": "指定できる特殊値: *LIBL, *CURLIB",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "*LIBL",
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          }
+        },
+        {
+          "name": "JOBD",
+          "description": "Job description",
+          "inputType": "text",
+          "required": false,
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          },
+          "defaultValue": "*SAME"
+        }
+      ]
+    },
+    {
+      "name": "MAXUSE",
+      "description": "Maximum number of uses",
+      "help": "Maximum number of uses (MAXUSE)\n\nSpecifies the maximum number of requests that can be handled by each prestart job before the subsystem ends the job in a controlled manner by issuing an End Job (ENDJOB) command with a value of *CNTRLD on the How to end (OPTION) parameter.\n\n指定できる特殊値: *SAME, *NOMAX",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*SAME",
+      "attributes": {
+        "characterSet": "upper"
+      }
+    },
+    {
+      "name": "WAIT",
+      "description": "Wait for job",
+      "help": "Wait for job (WAIT)\n\nSpecifies whether program start requests wait for a prestart job to become available or are rejected if a prestart job is not immediately available when the procedure start request is received.\n\nNote: Refer to the manual for the communications type being used to determine the timing considerations for program start requests.",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*SAME",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*SAME",
+          "value": "*SAME"
+        },
+        {
+          "label": "*YES",
+          "value": "*YES"
+        },
+        {
+          "label": "*NO",
+          "value": "*NO"
+        }
+      ]
+    },
+    {
+      "name": "POOLID",
+      "description": "Pool identifier",
+      "help": "Pool identifier (POOLID)\n\nSpecifies the subsystem pool identifier in which the prestart jobs will run.\n\n指定できる特殊値: *SAME",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*SAME",
+      "attributes": {
+        "characterSet": "upper"
+      }
+    },
+    {
+      "name": "CLS",
+      "description": "Class",
+      "help": "Class (CLS)\n\nSpecifies the name and library of the classes that the prestart jobs run under and how many prestart jobs should run using each class. Jobs start by using the first class specified until the number of jobs specified for the first class is reached. After the number of jobs specified for the first class is reached, then jobs are started using the second class. If the class does not exist when the entry is added, a library qualifier must be specified because the qualified class name is kept in the subsystem description.\n\nNotes\n\nElement 1: Class\n\nSingle values\n\nQualifier 1: Class\n\nQualifier 2: Library\n\nElement 2: Number of jobs to use class\n\nElement 3: Class\n\nSingle values\n\nQualifier 1: Class\n\nQualifier 2: Library\n\nElement 4: Number of jobs to use class",
+      "inputType": "group",
+      "required": false,
+      "groupKind": "elements",
+      "children": [
+        {
+          "name": "CLS_E1",
+          "description": "Class",
+          "inputType": "group",
+          "required": false,
+          "groupKind": "qualified",
+          "singleValues": [
+            "*SAME",
+            "*SBSD"
+          ],
+          "children": [
+            {
+              "name": "CLS_LIB",
+              "description": "Library",
+              "help": "指定できる特殊値: *LIBL, *CURLIB",
+              "inputType": "text",
+              "required": false,
+              "defaultValue": "*LIBL",
+              "attributes": {
+                "characterSet": "upper",
+                "maxLength": 10
+              }
+            },
+            {
+              "name": "CLS",
+              "description": "Class",
+              "inputType": "text",
+              "required": false,
+              "attributes": {
+                "characterSet": "upper",
+                "maxLength": 10
+              },
+              "defaultValue": "*SAME",
+              "help": "指定できる特殊値: *SAME, *SBSD"
+            }
+          ]
+        },
+        {
+          "name": "CLS_E2",
+          "description": "Number of jobs to use class",
+          "help": "指定できる特殊値: *SAME, *CALC, *MAXJOBS",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "*SAME",
+          "attributes": {
+            "characterSet": "upper"
+          }
+        },
+        {
+          "name": "CLS_E3",
+          "description": "Class",
+          "inputType": "group",
+          "required": false,
+          "groupKind": "qualified",
+          "singleValues": [
+            "*SAME",
+            "*NONE",
+            "*SBSD"
+          ],
+          "children": [
+            {
+              "name": "CLS_LIB2",
+              "description": "Library",
+              "help": "指定できる特殊値: *LIBL, *CURLIB",
+              "inputType": "text",
+              "required": false,
+              "defaultValue": "*LIBL",
+              "attributes": {
+                "characterSet": "upper",
+                "maxLength": 10
+              }
+            },
+            {
+              "name": "CLS_CLS",
+              "description": "Class",
+              "inputType": "text",
+              "required": false,
+              "attributes": {
+                "characterSet": "upper",
+                "maxLength": 10
+              },
+              "defaultValue": "*SAME",
+              "help": "指定できる特殊値: *SAME, *NONE, *SBSD"
+            }
+          ]
+        },
+        {
+          "name": "CLS_E4",
+          "description": "Number of jobs to use class",
+          "help": "指定できる特殊値: *SAME, *CALC, *MAXJOBS",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "*SAME",
+          "attributes": {
+            "characterSet": "upper"
+          }
+        }
+      ]
+    },
+    {
+      "name": "THDRSCAFN",
+      "description": "Thread resources affinity",
+      "help": "Thread resources affinity (THDRSCAFN)\n\nSpecifies the affinity of threads to system resources.\n\nSingle values\n\nElement 1: Group\n\nElement 2: Level",
+      "inputType": "group",
+      "required": false,
+      "groupKind": "elements",
+      "singleValues": [
+        "*SAME",
+        "*SYSVAL"
+      ],
+      "children": [
+        {
+          "name": "THDRSCAFN_E1",
+          "description": "Group",
+          "inputType": "dropdown",
+          "required": false,
+          "attributes": {
+            "characterSet": "upper"
+          },
+          "options": [
+            {
+              "label": "*SAME",
+              "value": "*SAME"
+            },
+            {
+              "label": "*SYSVAL",
+              "value": "*SYSVAL"
+            },
+            {
+              "label": "*NOGROUP",
+              "value": "*NOGROUP"
+            },
+            {
+              "label": "*GROUP",
+              "value": "*GROUP"
+            }
+          ],
+          "defaultValue": "*SAME"
+        },
+        {
+          "name": "THDRSCAFN_E2",
+          "description": "Level",
+          "inputType": "dropdown",
+          "required": false,
+          "attributes": {
+            "characterSet": "upper"
+          },
+          "options": [
+            {
+              "label": "*NORMAL",
+              "value": "*NORMAL"
+            },
+            {
+              "label": "*HIGH",
+              "value": "*HIGH"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "RSCAFNGRP",
+      "description": "Resources affinity group",
+      "help": "Resources affinity group (RSCAFNGRP)\n\nSpecifies whether or not prestart jobs using this entry will be grouped together having affinity to the same system resources (processors and memory). A value of *YES for this parameter will take precedence over the QTHDRSCAFN system value when set to *NOGROUP.",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*SAME",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*SAME",
+          "value": "*SAME"
+        },
+        {
+          "label": "*NO",
+          "value": "*NO"
+        },
+        {
+          "label": "*YES",
+          "value": "*YES"
+        }
+      ]
+    }
+  ],
+  "examples": [
+    {
+      "code": "CHGPJE SBSD(QGPL/PJSBS) PGM(QGPL/PGM1) STRJOBS(*NO) THRESHOLD(1) ADLJOBS(1)"
+    }
+  ],
+  "source": {
+    "url": "https://www.ibm.com/docs/en/ssw_ibm_i_74/cl/chgpje.htm",
+    "version": "IBM i 7.4"
+  }
+}

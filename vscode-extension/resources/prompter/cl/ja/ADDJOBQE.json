@@ -1,0 +1,227 @@
+{
+  "keyword": "ADDJOBQE",
+  "description": "ジョブ待ち行列項目追加 (ADDJOBQE)",
+  "help": "ジョブ待ち行列項目追加 (ADDJOBQE)コマンドは，指定されたサブシステム記述にジョブ待ち行列項目を追加します。ジョブ待ち行列項目は，サブシステムで実行するジョブがどのジョブ待ち行列から選択されるかを識別します。ジョブは，スプーリング読み取りプログラムによって，あるいは次のコマンドを使用することによってジョブ待ち行列に入れることができます。\n\nジョブ待ち行列から開始されるジョブはバッチ・ジョブです（ただし，TFRJOBコマンドを使用する対話式ジョブは除きます）。サブシステムでは，順序番号の小さいジョブ待ち行列が最初に処理されます。詳細については， 順序番号 (SEQNBR) パラメーターを参照してください。",
+  "parameters": [
+    {
+      "name": "SBSD",
+      "description": "サブシステム記述",
+      "help": "ジョブ待ち行列項目が追加されるサブシステム記述の名前およびライブラリーを指定します。\n\nこれは必須パラメーターです。",
+      "inputType": "group",
+      "required": true,
+      "groupKind": "qualified",
+      "children": [
+        {
+          "name": "LIB",
+          "description": "ライブラリー",
+          "help": "*LIBL: 一致が見つかるまで，スレッドのライブラリー・リストの中のすべてのライブラリーが検索されます。\n*CURLIB: オブジェクトを見つけるためにスレッドの現行ライブラリーが使用されます。スレッドの現行ライブラリーとしてライブラリーが指定されていない場合，QGPLライブラリーが使用されます。\nサブシステム記述が入っているライブラリーを指定します。",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "*LIBL",
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          }
+        },
+        {
+          "name": "SBSD",
+          "description": "サブシステム記述",
+          "help": "ジョブ待ち行列項目が追加されるサブシステム記述の名前を指定します。 注 : IBM提供オブジェクトQSYSSBSDはこのパラメーターには正しくありません。",
+          "inputType": "text",
+          "required": true,
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          }
+        }
+      ],
+      "positional": 1
+    },
+    {
+      "name": "JOBQ",
+      "description": "ジョブ待ち行列",
+      "help": "サブシステムによって開始されるバッチ・ジョブの送信元であるジョブ待ち行列の名前およびライブラリーを指定します。ジョブ待ち行列名がサブシステム記述で保持されるので，項目の追加または変更時にジョブ待ち行列が存在していない場合には，*LIBL以外のライブラリー修飾子を指定しなければなりません。\n\nこれは必須パラメーターです。",
+      "inputType": "group",
+      "required": true,
+      "groupKind": "qualified",
+      "children": [
+        {
+          "name": "JOBQ_LIB",
+          "description": "ライブラリー",
+          "help": "*LIBL: 一致が見つかるまで，スレッドのライブラリー・リストの中のすべてのライブラリーが検索されます。\n*CURLIB: オブジェクトを見つけるためにスレッドの現行ライブラリーが使用されます。スレッドの現行ライブラリーとしてライブラリーが指定されていない場合，QGPLライブラリーが使用されます。\nそのジョブ待ち行列があるライブラリーを指定してください。",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "*LIBL",
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          }
+        },
+        {
+          "name": "JOBQ",
+          "description": "ジョブ待ち行列",
+          "help": "サブシステムによって開始されるバッチ・ジョブのソースであるジョブ待ち行列の名前を指定します。",
+          "inputType": "text",
+          "required": true,
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          }
+        }
+      ],
+      "positional": 2
+    },
+    {
+      "name": "MAXACT",
+      "description": "活動ジョブの最大数",
+      "help": "このジョブ待ち行列を介して同時に活動状態にできるジョブの最大数を指定します。\n\n1: 一時点でジョブ待ち行列から活動状態にできるジョブは1つだけです。\n*NOMAX: このジョブ待ち行列項目を介して同時に開始できるジョブの最大数には制限がありません。しかし，ルーティング項目の最大活動レベル，サブシステム，または特定のジョブ優先順位レベルによって，ジョブの開始が妨げられる場合があります。*NOMAXを指定した場合には，使用中の記憶域プールの活動レベルのためにジョブが同時に実行できない可能性があっても，ジョブ待ち行列上のすべてのジョブが開始されます。\nこのジョブ待ち行列項目を介して同時に活動状態にできるジョブの最大数を指定してください。",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "1",
+      "attributes": {
+        "characterSet": "upper"
+      }
+    },
+    {
+      "name": "SEQNBR",
+      "description": "順序番号",
+      "help": "このジョブ待ち行列の順序番号を指定します。これは，ジョブ待ち行列が処理される順序を決定するためにサブシステムによって使用されます。\n\nサブシステムは，まず最低の順序番号を持つジョブ待ち行列からジョブを選択します。その待ち行列上のすべてのジョブが処理されるか，あるいは 活動ジョブの最大数 (MAXACT) パラメーターに指定されたジョブの数に達すると，サブシステムは，次に高い順序番号を持つ待ち行列上のジョブを処理します。この手順は，すべてのジョブ待ち行列項目が処理されるか，あるいはサブシステムが一般最大ジョブ数の限界に達するまで続けられます。場合によっては，この順序が中断され，サブシステムはより低い優先順位のジョブ待ち行列を処理します。このサブシステムでこれが起こるのは，次のいずれかの条件が起こった場合です。\n\n10: このジョブ待ち行列には順序番号10が割り当てられます。\nこのジョブ待ち行列に割り当てられた順序番号を指定してください。順序番号はサブシステム記述内で固有としなければなりません。",
+      "inputType": "number",
+      "required": false,
+      "defaultValue": "10",
+      "attributes": {
+        "numericOnly": true
+      }
+    },
+    {
+      "name": "MAXPTY1",
+      "description": "最大活動優先順位１",
+      "help": "指定されたジョブ優先順位レベルで開始できるジョブの数を指定します。\n\n*NOMAX: 特定の優先順位レベルで開始されるジョブの数に制限を設けません。\n特定の優先順位レベルで開始されるジョブの数を指定してください。0の値は，特定の優先順位レベルから開始されるジョブはないことを示します。",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*NOMAX",
+      "attributes": {
+        "characterSet": "upper"
+      }
+    },
+    {
+      "name": "MAXPTY2",
+      "description": "最大活動優先順位２",
+      "help": "指定されたジョブ優先順位レベルで開始できるジョブの数を指定します。\n\n*NOMAX: 特定の優先順位レベルで開始されるジョブの数に制限を設けません。\n特定の優先順位レベルで開始されるジョブの数を指定してください。0の値は，特定の優先順位レベルから開始されるジョブはないことを示します。",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*NOMAX",
+      "attributes": {
+        "characterSet": "upper"
+      }
+    },
+    {
+      "name": "MAXPTY3",
+      "description": "最大活動優先順位３",
+      "help": "指定されたジョブ優先順位レベルで開始できるジョブの数を指定します。\n\n*NOMAX: 特定の優先順位レベルで開始されるジョブの数に制限を設けません。\n特定の優先順位レベルで開始されるジョブの数を指定してください。0の値は，特定の優先順位レベルから開始されるジョブはないことを示します。",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*NOMAX",
+      "attributes": {
+        "characterSet": "upper"
+      }
+    },
+    {
+      "name": "MAXPTY4",
+      "description": "最大活動優先順位４",
+      "help": "指定されたジョブ優先順位レベルで開始できるジョブの数を指定します。\n\n*NOMAX: 特定の優先順位レベルで開始されるジョブの数に制限を設けません。\n特定の優先順位レベルで開始されるジョブの数を指定してください。0の値は，特定の優先順位レベルから開始されるジョブはないことを示します。",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*NOMAX",
+      "attributes": {
+        "characterSet": "upper"
+      }
+    },
+    {
+      "name": "MAXPTY5",
+      "description": "最大活動優先順位５",
+      "help": "指定されたジョブ優先順位レベルで開始できるジョブの数を指定します。\n\n*NOMAX: 特定の優先順位レベルで開始されるジョブの数に制限を設けません。\n特定の優先順位レベルで開始されるジョブの数を指定してください。0の値は，特定の優先順位レベルから開始されるジョブはないことを示します。",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*NOMAX",
+      "attributes": {
+        "characterSet": "upper"
+      }
+    },
+    {
+      "name": "MAXPTY6",
+      "description": "最大活動優先順位６",
+      "help": "指定されたジョブ優先順位レベルで開始できるジョブの数を指定します。\n\n*NOMAX: 特定の優先順位レベルで開始されるジョブの数に制限を設けません。\n特定の優先順位レベルで開始されるジョブの数を指定してください。0の値は，特定の優先順位レベルから開始されるジョブはないことを示します。",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*NOMAX",
+      "attributes": {
+        "characterSet": "upper"
+      }
+    },
+    {
+      "name": "MAXPTY7",
+      "description": "最大活動優先順位７",
+      "help": "指定されたジョブ優先順位レベルで開始できるジョブの数を指定します。\n\n*NOMAX: 特定の優先順位レベルで開始されるジョブの数に制限を設けません。\n特定の優先順位レベルで開始されるジョブの数を指定してください。0の値は，特定の優先順位レベルから開始されるジョブはないことを示します。",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*NOMAX",
+      "attributes": {
+        "characterSet": "upper"
+      }
+    },
+    {
+      "name": "MAXPTY8",
+      "description": "最大活動優先順位８",
+      "help": "指定されたジョブ優先順位レベルで開始できるジョブの数を指定します。\n\n*NOMAX: 特定の優先順位レベルで開始されるジョブの数に制限を設けません。\n特定の優先順位レベルで開始されるジョブの数を指定してください。0の値は，特定の優先順位レベルから開始されるジョブはないことを示します。",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*NOMAX",
+      "attributes": {
+        "characterSet": "upper"
+      }
+    },
+    {
+      "name": "MAXPTY9",
+      "description": "最大活動優先順位９",
+      "help": "指定されたジョブ優先順位レベルで開始できるジョブの数を指定します。\n\n*NOMAX: 特定の優先順位レベルで開始されるジョブの数に制限を設けません。\n特定の優先順位レベルで開始されるジョブの数を指定してください。0の値は，特定の優先順位レベルから開始されるジョブはないことを示します。",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*NOMAX",
+      "attributes": {
+        "characterSet": "upper"
+      }
+    }
+  ],
+  "threadSafe": false,
+  "environment": "すべての環境 (*ALL)",
+  "restrictions": [
+    "このコマンドを使用するには，指定されたサブシステム記述に対するオブジェクト操作(*OBJOPR),オブジェクト管理(*OBJMGT),および読み取り(*READ)権限と，そのサブシステム記述が入っているライブラリーに対する実行(*EXECUTE)権限が必要です。"
+  ],
+  "examples": [
+    {
+      "code": "ADDJOBQE SBSD(QGPL/NIGHTSBS) JOBQ(QGPL/NIGHT) MAXACT(3)"
+    },
+    {
+      "code": "ADDJOBQE SBSD(QBASE) JOBQ(JOBQ1) MAXPTY1(2) MAXPTY7(0) MAXPTY8(0) MAXPTY9(0) SEQNBR(99)"
+    }
+  ],
+  "errorMessages": [
+    {
+      "id": "CPF1619",
+      "text": "ライブラリー&2のサブシステム記述&1に損傷がある。"
+    },
+    {
+      "id": "CPF1691",
+      "text": "活動サブシステム記述は変更されることも変更されないこともある。"
+    },
+    {
+      "id": "CPF1697",
+      "text": "サブシステム記述&1は変更されなかった。"
+    }
+  ],
+  "source": {
+    "url": "https://www.ibm.com/docs/ja/ssw_ibm_i_74/cl/addjobqe.htm",
+    "version": "IBM i 7.4"
+  }
+}

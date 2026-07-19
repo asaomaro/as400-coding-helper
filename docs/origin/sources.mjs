@@ -24,7 +24,18 @@ export const categories = {
       // CL ロジック / 変数
       'DCL', 'DCLF', 'CHGVAR', 'IF', 'ELSE', 'DOWHILE', 'DOUNTIL', 'DOFOR', 'SELECT', 'RETURN', 'CALLSUBR',
       // メッセージ
-      'SNDPGMMSG', 'RCVMSG', 'MONMSG', 'SNDUSRMSG', 'SNDMSG',
+      'SNDPGMMSG', 'RCVMSG', 'MONMSG', 'SNDUSRMSG', 'SNDMSG', 'SNDBRKMSG',
+      // 待ち行列（メッセージ / ジョブ / 出力 / データ）
+      'CRTMSGQ', 'CHGMSGQ', 'DLTMSGQ', 'WRKMSGQ', 'CLRMSGQ', 'DSPMSG',
+      'CRTJOBQ', 'CHGJOBQ', 'DLTJOBQ', 'WRKJOBQ', 'CLRJOBQ', 'HLDJOBQ', 'RLSJOBQ',
+      'DLTOUTQ', 'CLROUTQ', 'HLDOUTQ', 'RLSOUTQ',
+      'CRTDTAQ', 'DLTDTAQ', 'WRKDTAQ',
+      // クエリー管理 / Query/400 / SQL
+      'STRQMQRY', 'STRQMPRC', 'CRTQMQRY', 'CRTQMFORM', 'DLTQMQRY', 'DLTQMFORM',
+      'WRKQMQRY', 'WRKQMFORM', 'RTVQMQRY', 'RTVQMFORM',
+      'RUNQRY', 'WRKQRY', 'DLTQRY', 'STRSQL', 'RUNSQLSTM',
+      // クライアント連携
+      'STRPCO', 'STRPCCMD',
       // ファイル I/O（CL内）/ スプール
       'SNDRCVF', 'RCVF', 'SNDF', 'WRKSPLF', 'CPYSPLF', 'OVRPRTF',
 
@@ -35,7 +46,7 @@ export const categories = {
       // データ域・取得系（C）
       'DLTDTAARA', 'RTVMBRD', 'RTVOBJD', 'RTVSYSVAL', 'DSPOBJD',
       // ファイル / DB（D）
-      'OPNQRYF', 'CLOF', 'ALCOBJ', 'DLCOBJ', 'ADDPFM', 'RMVM', 'CHGPF', 'DSPFD', 'DSPFFD',
+      'OPNQRYF', 'CLOF', 'ALCOBJ', 'DLCOBJ', 'ADDPFM', 'ADDLFM', 'RMVM', 'CHGPF', 'DSPFD', 'DSPFFD',
       // ジョブ制御（E）
       'CHGJOB', 'DLYJOB', 'WRKACTJOB', 'WRKJOB',
       // スプール / 出力（F）
@@ -64,10 +75,30 @@ export const categories = {
       'CHGOUTQ', 'CRTOUTQ', 'WRKWTR', 'STRPRTWTR',
       // 保存・復元
       'SAVLIB', 'SAVCHGOBJ',
+      // 保管復元（DDM 経由で他システムへ）
+      'SAVRSTLIB', 'SAVRSTOBJ',
       // 権限
       'CHGOBJOWN', 'DSPOBJAUT', 'EDTOBJAUT',
       // 構成・システム値
       'WRKCFGSTS', 'VRYCFG', 'DSPSYSVAL',
+
+      // コマンド定義ステートメント（.cmd ソースに書く文。CL コマンドではないが
+      // 原典の書式も構文も CL コマンドと同じなので同じ経路で扱う）
+      'CMD', 'PARM', 'ELEM', 'QUAL', 'DEP', 'PMTCTL',
+      // 第4弾: コンパイル / オブジェクト作成の残り
+      'ADDBNDDIRE', 'ADDMSGD', 'CHGMSGD', 'CRTBNDDIR', 'CRTCBLMOD', 'CRTCBLPGM', 'CRTCMD', 'CRTDTADCT',
+      'CRTMNU', 'CRTMSGF', 'CRTPNLGRP', 'CRTRPGPGM', 'CRTRPTPGM', 'CRTSBSD', 'CRTSQLCBL', 'CRTSQLCBLI',
+      'CRTSQLPKG', 'CRTSQLRPG', 'CRTSQLRPGI', 'RMVBNDDIRE', 'RMVMSGD',
+      // 第4弾: サブシステム関連
+      'ADDAJE', 'ADDCMNE', 'ADDJOBQE', 'ADDPJE', 'ADDRTGE', 'ADDWSE', 'CHGAJE', 'CHGJOBQE',
+      'CHGPJE', 'CHGRTGE', 'CHGSBSD', 'CHGWSE', 'DLTSBSD', 'DSPSBSD', 'ENDSBS', 'RMVAJE',
+      'RMVCMNE', 'RMVJOBQE', 'RMVPJE', 'RMVRTGE', 'RMVWSE', 'STRSBS', 'WRKSBS', 'WRKSBSD',
+      'WRKSBSJOB',
+      // 第4弾: 既存対象物の動詞の穴埋め
+      'CHGDSPF', 'CHGJOBD', 'CHGLF', 'CHGLIB', 'CHGPGM', 'CHGPRTF', 'CHGSRCPF', 'CHGWTR',
+      'DLTMOD', 'DLTPGM', 'DLTSRVPGM', 'DSPDTAARA', 'DSPF', 'DSPJOB', 'DSPJOBD', 'DSPLIB',
+      'DSPMOD', 'DSPPGM', 'DSPSPLF', 'DSPSRVPGM', 'EDTF', 'ENDWTR', 'HLDWTR', 'RLSWTR',
+      'WRKDTAARA', 'WRKF', 'WRKJOBD', 'WRKLIB', 'WRKMOD', 'WRKPGM', 'WRKSRVPGM',
     ].map((name) => ({ name })),
   },
 

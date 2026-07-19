@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="ja"><head><meta charset="utf-8"><title>メッセージ待ち行列変更  (CHGMSGQ)</title></head>
+<body>
+<div role="main">
+<script type="text/javascript" src="../rzahg/synch.js"></script>
+<a name="CHGMSGQ.Top_Of_Page"></a>
+<h1>メッセージ待ち行列変更  (CHGMSGQ)</h1><div id="lastModifiedDate"><span>Last Updated</span>: 2021-04-13</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table0" width="100%" class="cds--data-table">
+<tbody><tr>
+<td class="valigntop alignleft"><strong>実行可能場所:  </strong>すべての環境 (*ALL)<br>
+<strong>スレッド・セーフ:  </strong>はい
+</td>
+<td class="valigntop alignright">
+<a href="#CHGMSGQ.PARAMETERS.TABLE">パラメーター</a><br>
+<a href="#CHGMSGQ.COMMAND.EXAMPLES">例</a><br>
+<a href="#CHGMSGQ.ERROR.MESSAGES">エラー・メッセージ</a></td>
+</tr>
+</tbody></table></div></div>
+<div> <a name="CHGMSGQ"></a>
+<p>メッセージ待ち行列変更(CHGMSGQ)コマンドは，指定されたメッセージ待ち行列の属性を変更します。転送モードが*BREAKまたは*NOTIFYに変更されているところで，メッセージ待ち行列が既に*BREAKまたは*NOTIFYモードになっていないか，別のジョブに明確に割り振られたりしていない場合は，このコマンドによって暗黙に割り振られます。DLVRY, PGM,およびSEVパラメーターはメッセージ待ち行列作成(CRTMSGQ)コマンドには含まれていませんが，メッセージ待ち行列の作成時にシステムによってこれらのパラメーターに省略時の値が割り当てられます。このコマンドはまた，古いメッセージの状況を新しいメッセージの状況にリセットして，メッセージ参照キーを使わなくても再びメッセージを受け取れるようにするために使用することもできます。
+</p>
+<h2><strong>制約事項</strong><strong>:</strong>
+</h2>
+<ol class="cds--list--ordered--temporary">
+<li class="cds--list__item">待ち行列に対する使用(*USE)および削除(*DLT)権限が必要です。
+</li>
+<li class="cds--list__item">変更されるメッセージ待ち行列は，別のジョブによる*SHRRDまたは*EXCLロックで割り振ることはできません。CHGMSGQコマンドが試みられた時に別のジョブによってこの待ち行列が割り振られた場合には，エラー・メッセージが送られます。これに対する1つの例外は，ワークステーション・メッセージ待ち行列のCCSIDを変更する時にはロックが不要であるということです。
+</li>
+<li class="cds--list__item">総称サポートを使用して複数のメッセージ待ち行列を変更している場合には，DLVRYパラメーターの値を*BREAKまたは*NOTIFYに変更することは許可されません。
+</li>
+<li class="cds--list__item">QHSTメッセージ待ち行列のメッセージ待ち行列満杯時の処置は*SNDMSGであり，この値を変更することはできません。QHSTのメッセージ待ち行列満杯時の処置が変更されると，CPF2433メッセージ（機能はシステム・ログ・メッセージ待ち行列QHSTに使用できない）が出されます。
+</li>
+<li class="cds--list__item">メッセージ待ち行列QSYSOPRは，「メッセージ待ち行列満杯時の処置」が*WRAPとして出荷されます。値を*SNDMSGに変更した後で，損傷したために待ち行列を再作成する必要がある場合には，その値は出荷時の値の*WRAPにリセットされます。
+</li>
+</ol>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table1" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#CHGMSGQ.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div>
+<h2><a name="CHGMSGQ.PARAMETERS.TABLE">パラメーター</a></h2>
+<div class="tablenoborder"><div class="cds--data-table-container"><table id="parm_table2" summary="Parameters" border="1" cellpadding="4" cellspacing="0" class="cds--data-table">
+<!-- col1="10" col2="15" col3="30" col4="10" -->
+<tbody><tr>
+<th scope="col" class="valignbottom alignleft"><div class="cds--table-header-label">キーワード</div></th>
+<th scope="col" class="valignbottom alignleft"><div class="cds--table-header-label">記述</div></th>
+<th scope="col" class="valignbottom alignleft"><div class="cds--table-header-label">選択項目</div></th>
+<th scope="col" class="valignbottom alignleft"><div class="cds--table-header-label">ノーツ</div></th>
+</tr>
+<tr>
+<td class="valigntop" rowspan="3"><a href="#CHGMSGQ.MSGQ"><strong>MSGQ</strong></a></td>
+<td class="valigntop">MSG 待ち行列</td>
+<td class="valigntop">単一値: *USRPRF, *WRKSTN<br>その他の値: <span class="var">修飾オブジェクト名</span></td>
+<td class="valigntop" rowspan="3">必須, 定位置 1</td>
+</tr>
+<tr>
+<td class="valigntop">修飾子 1: MSG 待ち行列</td>
+<td class="valigntop"><span class="var">総称名, 名前</span>, *ALL</td>
+</tr><tr>
+<td class="valigntop">修飾子 2: ライブラリー</td>
+<td class="valigntop"><span class="var">名前</span>, <strong class="underlined">*LIBL</strong>, *CURLIB, *USRLIBL, *ALLUSR, *ALL</td>
+</tr><tr>
+<td class="valigntop"><a href="#CHGMSGQ.DLVRY"><strong>DLVRY</strong></a></td>
+<td class="valigntop">配布</td>
+<td class="valigntop"><strong class="underlined">*SAME</strong>, *HOLD, *BREAK, *NOTIFY, *DFT</td>
+<td class="valigntop">オプショナル, 定位置 2</td>
+</tr>
+<tr>
+<td class="valigntop"><a href="#CHGMSGQ.SEV"><strong>SEV</strong></a></td>
+<td class="valigntop">重大度コード・フィルター</td>
+<td class="valigntop">0-99, <strong class="underlined">*SAME</strong></td>
+<td class="valigntop">オプショナル, 定位置 4</td>
+</tr>
+<tr>
+<td class="valigntop"><a href="#CHGMSGQ.TEXT"><strong>TEXT</strong></a></td>
+<td class="valigntop">テキスト'記述'</td>
+<td class="valigntop"><span class="var">文字値</span>, <strong class="underlined">*SAME</strong>, *BLANK</td>
+<td class="valigntop">オプショナル</td>
+</tr>
+<tr>
+<td class="valigntop" rowspan="5"><a href="#CHGMSGQ.PGM"><strong>PGM</strong></a></td>
+<td class="valigntop">ハンドル属性の中断</td>
+<td class="valigntop">単一値: <strong class="underlined">*SAME</strong>, *DSPMSG<br>その他の値: <span class="var">要素リスト</span></td>
+<td class="valigntop" rowspan="5">オプショナル, 定位置 3</td>
+</tr>
+<tr>
+<td class="valigntop">要素 1: 中断処理プログラム</td>
+<td class="valigntop">
+<span class="var">修飾オブジェクト名</span></td>
+</tr>
+<tr>
+<td class="valigntop">修飾子 1: 中断処理プログラム</td>
+<td class="valigntop"><span class="var">名前</span></td>
+</tr><tr>
+<td class="valigntop">修飾子 2: ライブラリー</td>
+<td class="valigntop"><span class="var">名前</span>, <strong class="underlined">*LIBL</strong>, *CURLIB</td>
+</tr><tr>
+<td class="valigntop">要素 2: 他のジョブが応答可能</td>
+<td class="valigntop">
+<strong class="underlined">*NOALWRPY</strong>, *ALWRPY</td>
+</tr>
+<tr>
+<td class="valigntop"><a href="#CHGMSGQ.RESET"><strong>RESET</strong></a></td>
+<td class="valigntop">古いメッセージのリセット</td>
+<td class="valigntop"><strong class="underlined">*NO</strong>, *YES</td>
+<td class="valigntop">オプショナル</td>
+</tr>
+<tr>
+<td class="valigntop"><a href="#CHGMSGQ.FORCE"><strong>FORCE</strong></a></td>
+<td class="valigntop">補助記憶域への強制書き込み</td>
+<td class="valigntop"><strong class="underlined">*SAME</strong>, *NO, *YES</td>
+<td class="valigntop">オプショナル</td>
+</tr>
+<tr>
+<td class="valigntop"><a href="#CHGMSGQ.ALWALR"><strong>ALWALR</strong></a></td>
+<td class="valigntop">警報可能</td>
+<td class="valigntop"><strong class="underlined">*SAME</strong>, *NO, *YES</td>
+<td class="valigntop">オプショナル</td>
+</tr>
+<tr>
+<td class="valigntop"><a href="#CHGMSGQ.CCSID"><strong>CCSID</strong></a></td>
+<td class="valigntop">コード化文字セットID</td>
+<td class="valigntop">1-65535, <strong class="underlined">*SAME</strong>, *MSG, *HEX, *JOB</td>
+<td class="valigntop">オプショナル</td>
+</tr>
+<tr>
+<td class="valigntop"><a href="#CHGMSGQ.MSGQFULL"><strong>MSGQFULL</strong></a></td>
+<td class="valigntop">メッセージ待ち行列満杯時処置</td>
+<td class="valigntop"><strong class="underlined">*SAME</strong>, *SNDMSG, *WRAP</td>
+<td class="valigntop">オプショナル</td>
+</tr>
+</tbody></table></div></div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table3" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#CHGMSGQ.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+</div>
+<div> <a name="CHGMSGQ.MSGQ"></a>
+<h2>MSG 待ち行列 (MSGQ)</h2>
+<p>属性を変更するメッセージ待ち行列の名前を指定します。
+</p>
+<p>これは必須パラメーターです。
+</p>
+<h3><strong>単一値</strong>
+</h3>
+<dl>
+<dt><strong>*WRKSTN</strong></dt>
+<dd>ワークステーションのメッセージ待ち行列の属性が変更されます（このパラメーターは，バッチ・ジョブの場合は使用できません）。
+</dd>
+<dt><strong>*USRPRF</strong></dt>
+<dd>現行のユーザー・プロファイルに関連したメッセージ待ち行列の属性が変更されます。
+</dd>
+</dl>
+<h3><strong>修飾子</strong><strong>1: MSG </strong><strong>待ち行列</strong>
+</h3>
+<dl>
+<dt><strong>*ALL</strong></dt>
+<dd>ライブラリー修飾子で識別されるライブラリー中のすべてのメッセージ待ち行列が変更されます。
+</dd>
+<dt><strong class="italic">総称*メッセージ待ち行列名</strong></dt>
+<dd>属性を変更するメッセージ待ち行列の総称名を指定してください。総称名は1つまたは複数の文字の後にアスタリスク(*)を付けた文字ストリング（例えば，ABC*など）です。アスタリスク(*)は任意の有効な文字の代わりをするものです。総称名は，ユーザーが権限をもち，総称接頭部で始まる名前をもつすべてのオブジェクトを指定します。総称（接頭部）名にアスタリスクが入っていなければ，システムはその名前を完全なオブジェクト名と見なします。完全なオブジェクト名を指定して，ライブラリー修飾子が*USRLIBL, *ALL,または*ALLUSRである場合には，指定した名前のすべてのメッセージ待ち行列が変更されます。
+</dd>
+<dt><strong class="italic">名前</strong></dt>
+<dd>属性を変更するメッセージ待ち行列の名前を指定してください。
+</dd>
+</dl>
+<h3><strong>修飾子</strong><strong>2: ライブラリー</strong>
+</h3>
+<dl>
+<dt><strong class="underlined">*LIBL</strong></dt>
+<dd>最初に一致するものが見つかるまで，現行スレッドのライブラリー・リスト内のすべてのライブラリーが検索されます。
+</dd>
+</dl>
+<dl>
+<dt><strong>*CURLIB</strong></dt>
+<dd>メッセージ待ち行列を見つけるために，ジョブの現行ライブラリーが使用されます。ライブラリー・リストに現行ライブラリー項目が存在しない場合には，QGPLが使用されます。
+</dd>
+<dt><strong>*USRLIBL</strong></dt>
+<dd>スレッドのライブラリー・リストのユーザー部分のライブラリーだけが検索されます。
+</dd>
+</dl>
+<dl>
+<dt><strong>*ALL</strong></dt>
+<dd>QSYSを含むシステム上のすべてのライブラリーが検索されます。
+</dd>
+</dl>
+<dl>
+<dt><strong>*ALLUSR</strong></dt>
+<dd>すべてのユーザー・ライブラリーが検索されます。次のものを除き，英字Qで始まらない名前のすべてのライブラリーが検索されます。
+<p>
+</p><pre>#CGULIB     #DSULIB     #SEULIB
+#COBLIB     #RPGLIB
+#DFULIB     #SDALIB
+</pre>
+<p></p>
+<p>次のQXXXライブラリーは弊社提供のものですが，これらには一般的によく変更されるユーザー・データが収められます。したがって，これらのライブラリーは「ユーザー・ライブラリー」と見なされ，検索されます。
+</p>
+<p>
+</p><pre>QDSNX       QRCLXXXXX   QUSRDIRDB   QUSRVI
+QGPL        QSRVAGT     QUSRIJS     QUSRVXRXMX
+QGPL38      QSYS2       QUSRINFSKR  QWQCENT
+QMGTC       QSYS2XXXXX  QUSRNOTES   QWQREPOS
+QMGTC2      QS36F       QUSROND
+QMPGDATA    QUSER38     QUSRPOSGS
+QMQMDATA    QUSRADSM    QUSRPOSSA
+QMQMPROC    QUSRBRM     QUSRPYMSVR
+QPFRDATA    QUSRDIRCF   QUSRRDARS
+QRCL        QUSRDIRCL   QUSRSYS
+</pre>
+<p></p>
+<ol class="cds--list--ordered--temporary">
+<li class="cds--list__item">'XXXXX'は1次補助記憶域プール(ASP)の番号です。
+</li>
+<li class="cds--list__item">前のリリースのCLプログラム内でコンパイルされるユーザー・コマンドを入れるために，弊社がサポートする前の各リリース用にQUSRVXRXMXの形式の別のライブラリー名を作成することができます。QUSRVXRXMXユーザー・ライブラリーのVXRXMXは弊社が引き続きサポートしている前のリリースのバージョン，リリース，およびモディフィケーション・レベルです。
+</li>
+</ol>
+</dd>
+</dl>
+<dl>
+<dt><strong class="italic">名前</strong></dt>
+<dd>メッセージ待ち行列が入っているライブラリーを指定してください。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table4" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#CHGMSGQ.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="CHGMSGQ.DLVRY"></a>
+<h2>配布 (DLVRY)</h2>
+<p>このメッセージ待ち行列に送られるメッセージを転送する方法を指定します。メッセージ待ち行列がジョブに割り振られている限り，この転送方法が有効となります。待ち行列がもはや割り振られていない時には，ワークステーション，システム操作員，およびユーザー・メッセージ待ち行列に対して転送モードは*HOLDに変更されます。ただし，システム操作員メッセージ待ち行列またはユーザー・メッセージ待ち行列に*DFTが指定されている場合には，転送モードは*DFTのままになります。
+</p>
+<p>
+<strong>注:     </strong>メッセージ待ち行列の転送モードが*BREAKまたは*NOTIFYに変更されると，メッセージ待ち行列は*EXCLロック付きで割り振られます。*EXCLロックは，転送モードが*HOLDまたは*DFTに変更されるか，待ち行列上のロックを含んでいるジョブが終了するまで，待ち行列で維持されます。
+</p>
+<dl>
+<dt><strong class="underlined">*SAME</strong></dt>
+<dd>メッセージの転送方法は変更されません。このパラメーターが前のコマンドで変更されていない場合には，*SAMEは，*HOLDが転送方法であることを意味します。しかし，指定されたメッセージ待ち行列が表示装置メッセージ待ち行列である場合には，システムによってサインオン時に自動的に*NOTIFYに変更されます。
+</dd>
+<dt><strong>*HOLD</strong></dt>
+<dd>メッセージは，ユーザーまたはプログラムによって要求されるまで，メッセージ待ち行列の中に保留されます。表示装置ユーザーは，メッセージ表示(DSPMSG)コマンドを使用して，メッセージを表示します。プログラムは，メッセージ受信(RCVMSG)コマンドを発行して，メッセージを受け取って処理する必要があります。
+</dd>
+<dt><strong>*BREAK</strong></dt>
+<dd>メッセージがメッセージ待ち行列に到着すると，そのメッセージ待ち行列が割り振られているジョブは中断され，<strong>中断処理プログラム</strong><strong> (PGM)</strong>パラメーターに指定されたプログラムが呼び出されるか，あるいはメッセージ表示(DSPMSG)コマンドが処理されます。ジョブが対話式ジョブの場合には，音響アラームが鳴ります（導入済みの場合）。メッセージ待ち行列が別のジョブによっても使用されている場合には，転送モードを*BREAKに変更することはできません。
+<p>*BREAKモードに変わると，プログラム名が指定されていない場合，またはPGM(*SAME)が指定されている場合には，PGMパラメーターは，省略時の値として，中断プログラムに対して*DSPMSGが使用され，他のジョブの応答を許可属性に対して*ALWRPYが使用されます。
+</p>
+</dd>
+<dt><strong>*NOTIFY</strong></dt>
+<dd>メッセージがメッセージ待ち行列に到着した時に，メッセージ待ち行列が割り振られる対話式ジョブに，メッセージ・ライトがオンにかわるか，またはブザーの音（その機能がある場合）によって通知されます。バッチ・ジョブの場合は，通知は行われず，(*HOLDと同様に）メッセージは待ち行列内で保留されるだけです。メッセージ待ち行列が別のジョブによって使用されている場合には，転送モードを*NOTIFYに変更することはできません。
+</dd>
+<dt><strong>*DFT</strong></dt>
+<dd>応答を必要とするメッセージには，省略時の応答によって応答されます。照会メッセージのメッセージ記述に省略時の応答が指定されていない場合には，システムの省略時の応答の*Nが使用されます。メッセージ待ち行列がQSYSOPRでない限り，メッセージ待ち行列にメッセージは追加されません。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table5" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#CHGMSGQ.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="CHGMSGQ.SEV"></a>
+<h2>重大度コード・フィルター (SEV)</h2>
+<p>中断または通知モードでユーザーに転送することができる最低のメッセージの重大度レベルを指定します。重大度がここに指定されているよりも低いメッセージがメッセージ待ち行列に到着する際には，ジョブを中断せず，音響アラームおよびメッセージ待機ライトをオンにもしません。メッセージ表示(DSPMSG)コマンドによって表示されるまで，待ち行列に保留されています。DLVRYパラメーターに*BREAKまたは*NOTIFYが指定されており，それがメッセージが待ち行列に到着したときに有効になっている場合には，メッセージに関連した重大度コードがここで指定された値以上であれば，メッセージは配信されます。そうでない場合には，メッセージは要求されるまで待ち行列に保留されます。
+</p>
+<dl>
+<dt><strong class="underlined">*SAME</strong></dt>
+<dd>重大度コードは変更されません。
+</dd>
+<dt><strong class="italic">重大度コード</strong></dt>
+<dd>メッセージが持つことができ，メッセージ待ち行列が中断または通知転送モードの場合には，ユーザーに転送される最低の重大度コードを0から99の値で指定してください。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table6" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#CHGMSGQ.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="CHGMSGQ.TEXT"></a>
+<h2>テキスト'記述' (TEXT)</h2>
+<p>メッセージ待ち行列を記述するユーザー定義のテキストを指定します。前のテキストがあれば，ここで指定されたテキストがそれに置き換わります。
+</p>
+<dl>
+<dt><strong class="underlined">*SAME</strong></dt>
+<dd>テキストは変更されていません。
+</dd>
+<dt><strong>*BLANK</strong></dt>
+<dd>テキストは指定されません。
+</dd>
+<dt><strong class="italic">'記述'</strong></dt>
+<dd>50文字以内をアポストロフィで囲んで指定してください。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table7" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#CHGMSGQ.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="CHGMSGQ.PGM"></a>
+<h2>ハンドル属性の中断 (PGM)</h2>
+<p>プログラム・パラメーターを指定するために2つの要素が使用されます。最初の要素は，メッセージがメッセージ待ち行列に到着し，中断転送が指定されていた場合に呼び出されるプログラムを指定します。2番目の要素は，メッセージ待ち行列が*BREAK転送モードになり，*DSPMSG以外の中断処理プログラムが指定されていた場合に，他のジョブがそのメッセージ待ち行列上のメッセージに応答できるかどうかを指示します。
+</p>
+<p>QSYSOPRメッセージ待ち行列は操作員の手動処置を必要とするメッセージを受け取るので，変更されるメッセージ待ち行列がQSYSOPRの場合には，*DSPMSGのみが指定または想定されるようにしなければなりません。
+</p>
+<p>次のパラメーターがプログラムに渡されます。
+</p>
+<ul class="cds--list--unordered">
+<li class="cds--list__item">メッセージ待ち行列名(10桁）。メッセージが送られるメッセージ待ち行列の名前です。
+</li>
+<li class="cds--list__item">ライブラリー名(10桁）。メッセージ待ち行列が入っているライブラリーの名前です。
+</li>
+<li class="cds--list__item">メッセージ参照キー(4文字）。メッセージ待ち行列に送られるメッセージの参照キーです。
+</li>
+</ul>
+<h3><strong>単一値</strong>
+</h3>
+<dl>
+<dt><strong class="underlined">*SAME</strong></dt>
+<dd>同じプログラムが，もしあれば，呼び出されます  （このパラメーターが別のメッセージ待ち行列変更(CHGMSGQ)コマンドで前に変更されていない場合は，*SAMEは，*DSPMSGおよび*ALWRPYが想定されることを意味します）。*BREAKモードに変更すると，このパラメーターが指定されていない場合，または*SAMEが指定されている場合は，中断プログラムは，省略時の値として*DSPMSGが使用され，他のジョブの応答を許可の値は*ALWRPYに設定されます。
+</dd>
+<dt><strong>*DSPMSG</strong></dt>
+<dd>メッセージが中断転送中に到着し，他のジョブの応答を許可の値が*ALWRPYに設定されていると，メッセージ表示(DSPMSGコマンド）が処理されます。対話式ジョブの場合には，メッセージは画面に表示されます。表示装置で，音響アラームが鳴り（導入済みの場合），メッセージ待機中ライトがオンになります。バッチ・ジョブの場合には，メッセージはスプール印刷装置ファイルに送られます。
+</dd>
+</dl>
+<h3><strong>要素</strong><strong>1: </strong><strong>中断処理プログラム</strong>
+</h3>
+<p>中断転送の場合にメッセージが到着した時に呼び出されるプログラムを指定します。
+</p>
+<h3><strong>修飾子</strong><strong>1: </strong><strong>中断処理プログラム</strong>
+</h3>
+<dl>
+<dt><strong class="italic">名前</strong></dt>
+<dd>呼び出されるプログラムの名前を指定してください。
+</dd>
+</dl>
+
+<dd>
+<h3><strong>修飾子</strong><strong>2: ライブラリー</strong>
+</h3>
+<dl>
+<dt><strong class="underlined">*LIBL</strong></dt>
+<dd>最初に一致するものが見つかるまで，現行スレッドのライブラリー・リスト内のすべてのライブラリーが検索されます。
+</dd>
+</dl>
+<dl>
+<dt><strong>*CURLIB</strong></dt>
+<dd>プログラムを見つけるために，ジョブの現行ライブラリーが使用されます。ライブラリー・リストに現行ライブラリー項目が存在しない場合には，QGPLが使用されます。
+</dd>
+<dt><strong class="italic">名前</strong></dt>
+<dd>プログラムが入っているライブラリーを指定してください。
+</dd>
+</dl>
+</dd>
+
+<h3><strong>要素</strong><strong>2: </strong><strong>他のジョブが応答可能</strong>
+</h3>
+<p>メッセージ待ち行列が*BREAK転送モードになり，*DSPMSG以外の中断処理プログラムが指定されていた場合に，他のジョブがそのメッセージ待ち行列上の照会メッセージに応答できるかどうかを指定します。中断処理プログラムに*DSPMSGが指定されていると，この属性には*ALWRPYが想定されます。QSYS以外のライブラリーで中断処理プログラムにQMHDSMSSが指定されている場合にも，*NOALWRPYが明示的に指定されていない限り，この属性には*ALWRPYが想定されます。
+</p>
+<p><strong>注</strong><strong>:</strong>この要素に値を指定する場合には，このパラメーターの要素1にも中断処理プログラムを指定しなければなりません。
+</p>
+<dl>
+<dt><strong class="underlined">*NOALWRPY</strong></dt>
+<dd>*DSPMSGが指定されたもの以外の中断処理プログラムによってメッセージ待ち行列が*BREAK転送モードになっている時に，他のジョブは，メッセージ待ち行列上を表示できますが，メッセージ待ち行列上の照会メッセージに応答することはできません。
+</dd>
+<dt><strong>*ALWRPY</strong></dt>
+<dd>*DSPMSGが指定されたもの以外の中断処理プログラムによってメッセージ待ち行列が*BREAK転送モードになっている時に，他のジョブは，メッセージ待ち行列上の照会メッセージに応答することができます。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table8" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#CHGMSGQ.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="CHGMSGQ.RESET"></a>
+<h2>古いメッセージのリセット (RESET)</h2>
+<p>メッセージ待ち行列に保留中の古いメッセージ（一度受け取ってその後メッセージ待ち行列から除去されなかったメッセージ）を新しいメッセージ状況にリセットするかどうかを指定します。そして，メッセージは，元の通りにFIFO（先入れ先出し）順で受け取ることができます。このパラメーターは，プログラムが受け取るメッセージにのみ適用されます。メッセージの表示は影響を受けません。すべてのメッセージを消去する場合には，RMVMSG（メッセージ除去）コマンドの説明を参照してください。
+</p>
+<dl>
+<dt><strong class="underlined">*NO</strong></dt>
+<dd>メッセージ待ち行列の中の古いメッセージは，新しいメッセージ状況にリセットされません。古いメッセージを受け取ったり，それに応答したり，それを除去したりするためには，メッセージ参照キーを入力しなければなりません。
+</dd>
+<dt><strong>*YES</strong></dt>
+<dd>メッセージ待ち行列の中のすべてのメッセージは，既に応答が送られている照会メッセージを除いて新しいメッセージ状況にリセットされます。そして，これらのメッセージは，メッセージ待ち行列に送信されたのと同じ順序で，新しいメッセージとして受け取ることができます。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table9" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#CHGMSGQ.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="CHGMSGQ.FORCE"></a>
+<h2>補助記憶域への強制書き込み (FORCE)</h2>
+<p>メッセージ待ち行列記述に施された変更，または待ち行列に追加または待ち行列から除去されたメッセージをただちに補助記憶装置に強制記憶するかどうかを指定します。これによって，たとえシステム障害が起こっても，待ち行列に対する変更または送受したメッセージが失われないようにすることができます。
+</p>
+<dl>
+<dt><strong class="underlined">*SAME</strong></dt>
+<dd>参照されたメッセージ待ち行列の中で指定された値は変更されません。
+</dd>
+<dt><strong>*NO</strong></dt>
+<dd>メッセージ待ち行列およびその中のメッセージに対して施された変更は，すぐには補助記憶装置に強制記憶されません。
+</dd>
+<dt><strong>*YES</strong></dt>
+<dd>メッセージ待ち行列記述および待ち行列の中のメッセージに対する変更は，すべてただちに補助記憶装置に強制記憶されます。警告: この結果，パフォーマンス上の問題となる可能性があります。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table10" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#CHGMSGQ.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="CHGMSGQ.ALWALR"></a>
+<h2>警報可能 (ALWALR)</h2>
+<p>変更する待ち行列がそこに送られる警報メッセージから警報が生成されることを許可するかどうかを指定します。
+</p>
+<dl>
+<dt><strong class="underlined">*SAME</strong></dt>
+<dd>値は変更されません。
+</dd>
+<dt><strong>*NO</strong></dt>
+<dd>このメッセージ待ち行列から警報が生成されることを許可しません。
+</dd>
+<dt><strong>*YES</strong></dt>
+<dd>このメッセージ待ち行列から警報が生成されることを許可します。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table11" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#CHGMSGQ.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="CHGMSGQ.CCSID"></a>
+<h2>コード化文字セットID (CCSID)</h2>
+<p>このメッセージ待ち行列と関連付けられているコード化文字セットID (CCSID)を指定します。これは，即時メッセージと，変換可能な文字フィールド(*CCHAR)として定義されているメッセージ・データにのみ，適用されます。
+</p>
+<dl>
+<dt><strong class="underlined">*SAME</strong></dt>
+<dd>値は変更されません。
+</dd>
+<dt><strong>*HEX</strong></dt>
+<dd>このメッセージ待ち行列に送られたり，このメッセージ待ち行列から受け取ったり，このメッセージ待ち行列から表示されるメッセージは，変換されません。このメッセージ待ち行列のCCSIDは65535です。
+</dd>
+<dt><strong>*MSG</strong></dt>
+<dd>このメッセージ待ち行列に送られたメッセージは変換されません。表示または受信機能で変換が必要になる場合に備えて，送信元ジョブによって指定されたCCSIDが保管されます。このメッセージ待ち行列のCCSIDは65534です。
+</dd>
+<dt><strong>*JOB</strong></dt>
+<dd>メッセージ待ち行列のCCSIDは，このコマンドを実行するジョブのCCSIDに変更されます。
+</dd>
+<dt><strong class="italic">コード化文字セットID</strong></dt>
+<dd>このメッセージ待ち行列と関連付けられたCCSIDを指定してください。このメッセージ待ち行列に送られたメッセージは，このCCSIDに変換されます。有効な値の範囲は1から65535です。有効なCCSIDの値のリストについては，IBM i Information Center(http://www.ibm.com/systems/i/infocenter/)の「i5/OSのグローバリゼーション」トピック・コレクションを参照してください。
+<p>
+<strong>注:     </strong>メッセージ待ち行列のCCSIDを変更しても，その待ち行列に入っているメッセージは変換されず，個々のメッセージと関連付けられているCCSIDは変更されません。メッセージ待ち行列が*MSGに変更し直された場合には，各メッセージの元のCCSIDが使用されます。
+</p>
+<p>既にメッセージが入っているメッセージ待ち行列のCCSIDを変更すると，予測できない結果が起こることがあります。これは，メッセージのエンコードが指定されたCCSIDと一致しない時に起こる可能性があります。メッセージ待ち行列のCCSIDを変更するのは，メッセージ待ち行列のCCSIDがそこに入っているメッセージのエンコードと合わない時だけにしてください。
+</p>
+<p>メッセージ・ハンドラーとそれによるCCSIDの使用の詳細については，IBM i Information Center(http://www.ibm.com/systems/i/infocenter/)の「i5/OSのグローバリゼーション」トピック・コレクションを参照してください。
+</p>
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table12" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#CHGMSGQ.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="CHGMSGQ.MSGQFULL"></a>
+<h2>メッセージ待ち行列満杯時処置 (MSGQFULL)</h2>
+<p>メッセージ待ち行列がいっぱいの時に取る処置を指定してください。
+</p>
+<dl>
+<dt><strong class="underlined">*SAME</strong></dt>
+<dd>値は変更されません。
+</dd>
+</dl>
+<dl>
+<dt><strong>*SNDMSG</strong></dt>
+<dd>メッセージ待ち行列がいっぱいの時に，CPF2460（メッセージ待ち行列を拡張することはできない。）がいっぱいのメッセージ待ち行列にメッセージを送信しているプログラムまたはユーザーに対して送信されます。
+</dd>
+<dt><strong>*WRAP</strong></dt>
+<dd>メッセージ待ち行列が満杯の場合には，最も古い通知および回答済みメッセージから順にメッセージ待ち行列から除去され，新しいメッセージを追加するスペースが使用できるようになります。通知メッセージと応答済みメッセージを除去しても要求されたメッセージを追加する十分なスペースが得られない場合には，要求されたメッセージを追加するスペースができるまで，未応答の照会メッセージが除去されます。未応答の照会メッセージが除去される前に，省略時の応答が送られます。メッセージ待ち行列が折り返されると，CPI2420またはCPI2421がいっぱいだった待ち行列に送られ，折り返されたことを示します。これらのメッセージを送るのに待ち行列に空きがない場合には，待ち行列にメッセージを送ったユーザーのジョブ・ログに送られ，待ち行列QSYSOPRがいっぱいの時にはQHSTに送られます。
+<p><strong>注</strong><strong>:</strong>待ち行列が*WRAPを使用しており，ジョブがメッセージを送ると待ち行列が折り返される時には，折り返しを実行するために次の条件の場合にメッセージが除去されます。
+</p>
+<ul class="cds--list--unordered">
+<li class="cds--list__item">待ち行列がジョブの中断モードまたは通知モードである。
+</li>
+<li class="cds--list__item">待ち行列が待ち時間を指定された受け取り機能であったため，ジョブがメッセージ待機状態である。
+</li>
+<li class="cds--list__item">待ち行列がALCOBJコマンドを経由してジョブにより割り振られる。
+</li>
+</ul>
+<p>システム折り返し機能だけが，これらの条件の時に待ち行列からメッセージを除去できます。その他のジョブはまだ，これらの条件の時でも待ち行列からメッセージを除去することができません。*SNDMSGでは，これらの条件で他のジョブが待ち行列からメッセージを除去することはできません。
+</p>
+<p>また，待ち行列が*WRAPを指定し，中断モードの時には，折り返し機能は中断処理プログラムが受け取ったメッセージだけを除去します。例えば，中断処理プログラムが待ち行列からすべてのメッセージを受け取らないうちにいっぱいになるような場合には，折り返しを実行するためにメッセージを除去することができないので，CPF2460が出される場合があります。
+</p>
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table13" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#CHGMSGQ.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div><h2><a name="CHGMSGQ.COMMAND.EXAMPLES">例</a> </h2>
+<h3><strong>例</strong><strong>1:</strong><strong>通知モードへの転送方法の変更</strong>
+</h3>
+<p>
+</p><pre>CHGMSGQ   MSGQ(JONES)  DLVRY(*NOTIFY)
+</pre>
+<p></p>
+<p>このコマンドは，JONESという名前のメッセージ待ち行列の転送方法を通知モードに変更します。メッセージがユーザーの待ち行列に送られると，ユーザーにはただちにアテンション・ライトと音響警報によって通知されます（導入されている場合）。
+</p>
+<h3><strong>例</strong><strong>2:</strong><strong>中断モードへの転送方法の変更</strong>
+</h3>
+<p>
+</p><pre>CHGMSGQ   MSGQ(INV)  DLVRY(*BREAK)  PGM(INVUPDT)
+</pre>
+<p></p>
+<p>このコマンドは，INVという名前のメッセージ待ち行列の転送モードを*BREAKに変更し，メッセージがINVに到着した時にINVUPDTという名前のプログラムを呼び出します。他のジョブがメッセージ待ち行列INVの照会メッセージに応答することはできません。
+</p>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table14" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#CHGMSGQ.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div><h2><a name="CHGMSGQ.ERROR.MESSAGES">エラー・メッセージ</a> </h2>
+<p><strong class="underlined">*ESCAPE </strong><strong class="underlined">メッセージ</strong>
+</p>
+<dl>
+<dt><strong>CPF2401</strong></dt>
+<dd>ライブラリー&amp;1は認可されていない。
+</dd>
+<dt><strong>CPF2403</strong></dt>
+<dd>&amp;2にメッセージ待ち行列&amp;1が見つからない。
+</dd>
+<dt><strong>CPF2406</strong></dt>
+<dd>&amp;4のメッセージ待ち行列&amp;3の&amp;2の中断プログラム&amp;1の呼び出しで権限エラーが起こった。
+</dd>
+<dt><strong>CPF2408</strong></dt>
+<dd>メッセージ待ち行列&amp;1は認可されていない。
+</dd>
+<dt><strong>CPF2437</strong></dt>
+<dd>MSGQ(*WRKSTN)は対話式以外には使用することができない。
+</dd>
+<dt><strong>CPF244E</strong></dt>
+<dd>総称メッセージ待ち行列の場合に指定した転送が正しくない。
+</dd>
+<dt><strong>CPF2446</strong></dt>
+<dd>システム・ログ・メッセージ待ち行列に指定した転送モードが正しくない。
+</dd>
+<dt><strong>CPF2450</strong></dt>
+<dd>ワークステーション・メッセージ待ち行列&amp;1がジョブに割り振られていない。
+</dd>
+<dt><strong>CPF2451</strong></dt>
+<dd>メッセージ待ち行列&amp;1は別のジョブに割り振られている。
+</dd>
+<dt><strong>CPF247E</strong></dt>
+<dd>CCSID &amp;1が無効です。
+</dd>
+<dt><strong>CPF2477</strong></dt>
+<dd>メッセージ待ち行列&amp;1は現在使用中である。
+</dd>
+<dt><strong>CPF2485</strong></dt>
+<dd>&amp;4の&amp;2メッセージ待ち行列&amp;3の中断プログラム&amp;1のパラメーターの数が正しくない。
+</dd>
+<dt><strong>CPF2507</strong></dt>
+<dd>バッチ・モードでMODE(*NOTIFY)を使用することはできない。
+</dd>
+<dt><strong>CPF2522</strong></dt>
+<dd>&amp;4のメッセージ待ち行列&amp;3のための&amp;2の中断プログラム&amp;1を呼び出すことができない。
+</dd>
+<dt><strong>CPF2534</strong></dt>
+<dd>MSGQ(*USRPRF)が指定されたが，ユーザー・プロファイルのメッセージ待ち行列がない。
+</dd>
+<dt><strong>CPF8127</strong></dt>
+<dd>&amp;9のメッセージ待ち行列&amp;4に&amp;8の損傷がある。VLICログは&amp;7です。
+</dd>
+<dt><strong>CPF8176</strong></dt>
+<dd>装置記述&amp;4のメッセージ待ち行列に損傷がある。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table15" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#CHGMSGQ.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+</div>
+
+
+</body></html>

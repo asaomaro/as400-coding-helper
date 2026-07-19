@@ -26,7 +26,7 @@ export async function applyChanges(
 ): Promise<void> {
   const { document } = editor;
 
-  if (resolved.language === "cl") {
+  if (resolved.language === "cl" || resolved.language === "cmd") {
     const logical = getLogicalCommandRange(document, resolved.line);
 
     // ラベルとコメントは入力欄に現れないため、元のソースから引き継ぐ。
@@ -38,7 +38,8 @@ export async function applyChanges(
 
     const newText = buildClCommandText(definition, values, {
       label: parsed?.label,
-      comments: extractComments(originalLines)
+      comments: extractComments(originalLines),
+      presentParameters: Object.keys(parsed?.parameters ?? {})
     });
     await editor.edit(editBuilder => {
       editBuilder.replace(logical.range, newText);
@@ -87,6 +88,74 @@ export interface ClCommandContext {
   readonly label?: string;
   /** ソース上に書かれていたコメント。失わないよう末尾に付け直す。 */
   readonly comments?: readonly string[];
+  /**
+   * 元のソースに書かれていたパラメータ名。
+   * 触っていない省略可能パラメータを書き出さないための判定に使う
+   * （元から書いてあったものは、既定値と同じでも残す）。
+   */
+  readonly presentParameters?: readonly string[];
+}
+
+/**
+ * そのパラメータが「既定値のまま＝利用者が触っていない」か。
+ * group は末端まで見て、すべて既定値なら既定値のままとする。
+ */
+function isAtDefault(parameter: ParameterDefinition, values: AppliedValues): boolean {
+  const children = parameter.children ?? [];
+
+  if (parameter.inputType !== "group" || children.length === 0) {
+    const value = readSingle(values[parameter.name]).trim();
+    const fallback = (parameter.defaultValue ?? "").trim();
+    return value.toUpperCase() === fallback.toUpperCase();
+  }
+
+  return children.every(child => isAtDefault(child, values));
+}
+
+function buildParameterTokens(
+  definition: PrompterDefinition,
+  values: AppliedValues,
+  context: ClCommandContext
+): string[] {
+  const present = new Set(
+    (context.presentParameters ?? []).map(name => name.toUpperCase())
+  );
+
+  const tokens: string[] = [];
+  for (const parameter of definition.parameters) {
+    // 既定値のままの省略可能パラメータは書かない。CL は省略時に既定値が効くので、
+    // 全部書き出すと元のソースに無かった記述が増え、行数も無駄に伸びる。
+    // 必須のもの、元から書いてあったものは残す。
+    if (
+      !parameter.required &&
+      !present.has(parameter.name.toUpperCase()) &&
+      isAtDefault(parameter, values)
+    ) {
+      continue;
+    }
+
+    const token = buildParameterToken(parameter, values);
+    if (token) {
+      tokens.push(token);
+    }
+  }
+  return tokens;
+}
+
+/**
+ * 素の 1 行コマンド文字列（`CALL PGM(MYLIB/A) PARM('1')`）を作る。
+ *
+ * ソース行と違い、ラベル欄の桁揃えも 72 桁での折り返しもしない。
+ * 入れ子のプロンプター（SBMJOB の CMD 欄など）に書き戻す値はソース行では
+ * なく値なので、桁揃えを持ち込むと余計な空白が入る。
+ */
+export function buildClCommandBody(
+  definition: PrompterDefinition,
+  values: AppliedValues,
+  context: ClCommandContext = {}
+): string {
+  const tokens = buildParameterTokens(definition, values, context);
+  return [definition.keyword.toUpperCase(), ...tokens].join(" ");
 }
 
 // CL コマンド行の組み立ては vscode API に依存しない純粋関数のため、検証用に公開する。
@@ -111,14 +180,7 @@ export function buildClCommandText(
     line += " ";
   }
 
-  const paramTokens: string[] = [];
-
-  for (const parameter of definition.parameters) {
-    const token = buildParameterToken(parameter, values);
-    if (token) {
-      paramTokens.push(token);
-    }
-  }
+  const paramTokens = buildParameterTokens(definition, values, context);
 
   for (const comment of context.comments ?? []) {
     paramTokens.push(`/* ${comment} */`);

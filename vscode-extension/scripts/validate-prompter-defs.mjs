@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // プロンプター定義 JSON の構造検証ツール。
-// resources/prompter/{cl,rpg/**}/*.json を走査し、src/prompter/types.ts の
+// resources/prompter/{cl,cmd,rpg/**}/*.json を走査し、src/prompter/types.ts の
 // PrompterDefinition / ParameterDefinition 形に適合するか機械チェックする。
 //
 // ローダー（jsonDefinitions.ts）は不正 JSON を console ログのみでスキップする

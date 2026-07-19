@@ -1,0 +1,691 @@
+{
+  "keyword": "CHGJOBD",
+  "description": "Change Job Description (CHGJOBD)",
+  "parameters": [
+    {
+      "name": "JOBD",
+      "description": "Job description",
+      "help": "Job description (JOBD)\n\nSpecifies the name and library of the job description being changed.\n\nNote: You cannot specify the job description QSYSJOBD on this parameter. This job description is the backup job description for the system and cannot be changed by the user.\n\nThis is a required parameter.\n\nQualifier 1: Job description\n\nQualifier 2: Library",
+      "inputType": "group",
+      "required": true,
+      "groupKind": "qualified",
+      "children": [
+        {
+          "name": "LIB",
+          "description": "Library",
+          "help": "指定できる特殊値: *LIBL, *CURLIB",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "*LIBL",
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          }
+        },
+        {
+          "name": "JOBD",
+          "description": "Job description",
+          "inputType": "text",
+          "required": true,
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          }
+        }
+      ],
+      "positional": 1
+    },
+    {
+      "name": "JOBQ",
+      "description": "Job queue",
+      "help": "Job queue (JOBQ)\n\nSpecifies the name and library of the default job queue where jobs submitted using this job description are placed.\n\nSingle values\n\nQualifier 1: Job queue\n\nQualifier 2: Library\n\nNote: If the job queue does not exist when the job description is changed, a library qualifier must be specified because the qualified job queue name is kept in the job description.",
+      "inputType": "group",
+      "required": false,
+      "groupKind": "qualified",
+      "singleValues": [
+        "*SAME"
+      ],
+      "children": [
+        {
+          "name": "JOBQ_LIB",
+          "description": "Library",
+          "help": "指定できる特殊値: *LIBL, *CURLIB",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "*LIBL",
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          }
+        },
+        {
+          "name": "JOBQ",
+          "description": "Job queue",
+          "inputType": "text",
+          "required": false,
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          },
+          "defaultValue": "*SAME"
+        }
+      ],
+      "positional": 3
+    },
+    {
+      "name": "JOBPTY",
+      "description": "Job priority (on JOBQ)",
+      "help": "Job priority (on JOBQ) (JOBPTY)\n\nSpecifies the job queue scheduling priority used for jobs that use this job description. The highest priority is 1 and the lowest priority is 9.\n\n指定できる特殊値: *SAME",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*SAME",
+      "attributes": {
+        "characterSet": "upper"
+      }
+    },
+    {
+      "name": "OUTPTY",
+      "description": "Output priority (on OUTQ)",
+      "help": "Output priority (on OUTQ) (OUTPTY)\n\nSpecifies the output priority of spooled output files produced by jobs that use this job description. The highest priority is 1 and the lowest priority is 9.\n\n指定できる特殊値: *SAME",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*SAME",
+      "attributes": {
+        "characterSet": "upper"
+      }
+    },
+    {
+      "name": "PRTDEV",
+      "description": "Print device",
+      "help": "Print device (PRTDEV)\n\nSpecifies the qualified name of the default printer device for this job. If the printer file being used to create the output specifies to spool the file, the spooled file is placed on the device's output queue, which is named the same as the device.\n\nNote: This assumes the defaults are specified on the Output queue (OUTQ) parameter for the printer file, job description, user profile and workstation.\n\n指定できる特殊値: *SAME, *USRPRF, *SYSVAL, *WRKSTN",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*SAME",
+      "attributes": {
+        "characterSet": "upper",
+        "maxLength": 10
+      }
+    },
+    {
+      "name": "OUTQ",
+      "description": "Output queue",
+      "help": "Output queue (OUTQ)\n\nSpecifies the name and library of the output queue used as the default output queue for jobs that use this job description. This parameter applies only to spooled printer files that specify *JOB for the output queue.\n\nSingle values\n\nNote: This assumes the defaults were specified on the Output queue (OUTQ) parameter for the printer file, job description, user profile, and workstation.\n\nQualifier 1: Output queue\n\nQualifier 2: Library\n\nNote: If the output queue does not exist when the job description is changed, a library qualifier must be specified, because the qualified output queue name is kept in the job description.",
+      "inputType": "group",
+      "required": false,
+      "groupKind": "qualified",
+      "singleValues": [
+        "*SAME",
+        "*USRPRF",
+        "*DEV",
+        "*WRKSTN"
+      ],
+      "children": [
+        {
+          "name": "OUTQ_LIB",
+          "description": "Library",
+          "help": "指定できる特殊値: *LIBL, *CURLIB",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "*LIBL",
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          }
+        },
+        {
+          "name": "OUTQ",
+          "description": "Output queue",
+          "inputType": "text",
+          "required": false,
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          },
+          "defaultValue": "*SAME"
+        }
+      ]
+    },
+    {
+      "name": "TEXT",
+      "description": "Text 'description'",
+      "help": "Text 'description' (TEXT)\n\nSpecifies the text that briefly describes the object.\n\n指定できる特殊値: *SAME, *BLANK",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*SAME",
+      "attributes": {
+        "characterSet": "upper"
+      }
+    },
+    {
+      "name": "USER",
+      "description": "User",
+      "help": "User (USER)\n\nSpecifies the name of the user profile associated with this job description. The names QSECOFR, QSPL, QDOC, QDBSHR, QRJE, QSYS, QLPAUTO, QLPINSTALL, QTSTRQS, and QDFTOWN are not valid entries for this parameter.\n\n指定できる特殊値: *SAME, *RQD",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*SAME",
+      "attributes": {
+        "characterSet": "upper",
+        "maxLength": 10
+      },
+      "positional": 2
+    },
+    {
+      "name": "ACGCDE",
+      "description": "Accounting code",
+      "help": "Accounting code (ACGCDE)\n\nSpecifies the accounting code that is used when logging system resource use for jobs that use this description. To specify an accounting code other than *USRPRF, you must be authorized to the Change Accounting Code (CHGACGCDE) command.\n\n指定できる特殊値: *SAME, *USRPRF, *BLANK",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*SAME",
+      "attributes": {
+        "characterSet": "upper"
+      }
+    },
+    {
+      "name": "PRTTXT",
+      "description": "Print text",
+      "help": "Print text (PRTTXT)\n\nSpecifies the printing of a line of text at the bottom of each page.\n\n指定できる特殊値: *SAME, *SYSVAL, *BLANK",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*SAME",
+      "attributes": {
+        "characterSet": "upper"
+      }
+    },
+    {
+      "name": "RTGDTA",
+      "description": "Routing data",
+      "help": "Routing data (RTGDTA)\n\nSpecifies the routing data used with this job description to start jobs.\n\n指定できる特殊値: *SAME, *RQSDTA",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*SAME",
+      "attributes": {
+        "characterSet": "upper"
+      }
+    },
+    {
+      "name": "RQSDTA",
+      "description": "Request data or command",
+      "help": "Request data or command (RQSDTA)\n\nSpecifies the request data that is placed as the last entry in the job's message queue for jobs using this job description.\n\n指定できる特殊値: *SAME, *NONE, *RTGDTA",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*SAME",
+      "attributes": {
+        "characterSet": "upper"
+      }
+    },
+    {
+      "name": "INLLIBL",
+      "description": "Initial library list",
+      "help": "Initial library list (INLLIBL)\n\nSpecifies the initial user part of the library list to be used for jobs using this job description.\n\nNote: Duplication of library names in the library list is not allowed.\n\nOther values (up to 250 repetitions)\n\nNote: Libraries are searched in the same order as they are listed here.\n\n指定できる特殊値: *SAME, *SYSVAL, *NONE",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*SAME",
+      "attributes": {
+        "characterSet": "upper",
+        "maxLength": 10
+      },
+      "maxOccurrences": 250
+    },
+    {
+      "name": "INLASPGRP",
+      "description": "Initial ASP group",
+      "help": "Initial ASP group (INLASPGRP)\n\nSpecifies the initial setting for the auxiliary storage pool (ASP) group name for the initial thread of jobs using this job description. A thread can use the Set ASP Group (SETASPGRP) command to change its library name space. When an ASP group is associated with a thread, all libraries in the independent ASPs in the ASP group are accessible and objects in those libraries can be referenced using regular library-qualified object name syntax. The libraries in the independent ASPs in the specified ASP group plus the libraries in the system ASP (ASP number 1) and basic user ASPs (ASP numbers 2 - 32) form the library name space for the thread.\n\nRestrictions:\n\n指定できる特殊値: *SAME, *NONE",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*SAME",
+      "attributes": {
+        "characterSet": "upper",
+        "maxLength": 10
+      }
+    },
+    {
+      "name": "LOG",
+      "description": "Message logging",
+      "help": "Message logging (LOG)\n\nSpecifies the message logging values used to determine the amount and type of information sent to the job log by this job. This parameter has three elements: the message (or logging) level, the message severity, and the level of message text.\n\nElement 1: Level\n\nNote: A high-level message is one that is sent to the program message queue of the program that receives the request message. For example, QCMD is an IBM-supplied request processing program that receives request messages.\n\nElement 2: Severity\n\nElement 3: Text",
+      "inputType": "group",
+      "required": false,
+      "groupKind": "elements",
+      "children": [
+        {
+          "name": "LOG_E1",
+          "description": "Level",
+          "help": "指定できる特殊値: *SAME",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "*SAME",
+          "attributes": {
+            "characterSet": "upper"
+          }
+        },
+        {
+          "name": "LOG_E2",
+          "description": "Severity",
+          "help": "指定できる特殊値: *SAME",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "*SAME",
+          "attributes": {
+            "characterSet": "upper"
+          }
+        },
+        {
+          "name": "LOG_E3",
+          "description": "Text",
+          "inputType": "dropdown",
+          "required": false,
+          "defaultValue": "*SAME",
+          "attributes": {
+            "characterSet": "upper"
+          },
+          "options": [
+            {
+              "label": "*SAME",
+              "value": "*SAME"
+            },
+            {
+              "label": "*MSG",
+              "value": "*MSG"
+            },
+            {
+              "label": "*SECLVL",
+              "value": "*SECLVL"
+            },
+            {
+              "label": "*NOLIST",
+              "value": "*NOLIST"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "LOGCLPGM",
+      "description": "Log CL program commands",
+      "help": "Log CL program commands (LOGCLPGM)\n\nSpecifies whether the commands that can be logged and were run in a control language program are logged to the job log by way of the CL program's message queue. This parameter sets the status of the job's logging flag. If *NO is specified, the logging flag status is off and CL commands are not logged. If *YES is specified here and *JOB is specified on the Message logging (LOG) parameter of the Create CL Program (CRTCLPGM) command, all commands in the CL program that can be logged are logged to the job log.",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*SAME",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*SAME",
+          "value": "*SAME"
+        },
+        {
+          "label": "*NO",
+          "value": "*NO"
+        },
+        {
+          "label": "*YES",
+          "value": "*YES"
+        }
+      ]
+    },
+    {
+      "name": "LOGOUTPUT",
+      "description": "Job log output",
+      "help": "Job log output (LOGOUTPUT)\n\nSpecifies how the job log will be produced when the job completes. This does not affect job logs produced when the message queue is full and the job message queue full action specifies *PRTWRAP. Messages in the job message queue are written to a spooled file, from which the job log can be printed, unless the Control Job Log Output (QMHCTLJL) API was used in the job to specify that the messages in the job log are to be written to a database file.\n\nThe job log output value can be changed at any time until the job log has been produced or removed. To change the job log output value for a job, use the Change Job (QWTCHGJB) API or the Change Job (CHGJOB) command.\n\nThe job log can be displayed at any time until the job log has been produced or removed. To display the job log, use the Display Job Log (DSPJOBLOG) command.\n\nThe job log can be removed when the job has completed and the job log has not yet been produced or removed. To remove the job log, use the Remove Pending Job Log (QWTRMVJL) API or the End Job (ENDJOB) command.",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*SAME",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*SAME",
+          "value": "*SAME"
+        },
+        {
+          "label": "*SYSVAL",
+          "value": "*SYSVAL"
+        },
+        {
+          "label": "*JOBLOGSVR",
+          "value": "*JOBLOGSVR"
+        },
+        {
+          "label": "*JOBEND",
+          "value": "*JOBEND"
+        },
+        {
+          "label": "*PND",
+          "value": "*PND"
+        }
+      ]
+    },
+    {
+      "name": "JOBMSGQMX",
+      "description": "Job message queue maximum size",
+      "help": "Job message queue maximum size (JOBMSGQMX)\n\nSpecifies the maximum size of the job message queue.\n\n指定できる特殊値: *SAME, *SYSVAL",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*SAME",
+      "attributes": {
+        "characterSet": "upper"
+      }
+    },
+    {
+      "name": "JOBMSGQFL",
+      "description": "Job message queue full action",
+      "help": "Job message queue full action (JOBMSGQFL)\n\nSpecifies the action that should be taken when the job message queue is full.",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*SAME",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*SAME",
+          "value": "*SAME"
+        },
+        {
+          "label": "*SYSVAL",
+          "value": "*SYSVAL"
+        },
+        {
+          "label": "*NOWRAP",
+          "value": "*NOWRAP"
+        },
+        {
+          "label": "*WRAP",
+          "value": "*WRAP"
+        },
+        {
+          "label": "*PRTWRAP",
+          "value": "*PRTWRAP"
+        }
+      ]
+    },
+    {
+      "name": "SYNTAX",
+      "description": "CL syntax check",
+      "help": "CL syntax check (SYNTAX)\n\nSpecifies whether requests placed on the job message queue (for jobs using this job description) are checked for syntax as CL commands. When syntax checking is specified, the commands are checked for syntax as they are submitted instead of when the job is run, thus providing an earlier diagnosis of syntax errors. If checking is specified, the message severity that causes a syntax error to end processing of a job is also specified.\n\n指定できる特殊値: *SAME, *NOCHK",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*SAME",
+      "attributes": {
+        "characterSet": "upper"
+      }
+    },
+    {
+      "name": "ENDSEV",
+      "description": "End severity",
+      "help": "End severity (ENDSEV)\n\nSpecifies the message severity level of escape messages that can cause a batch job to be ended. The batch job is ended when a request in the batch input stream results in an escape message whose severity code is equal to or greater than that specified here being sent to the request processing program QCMD or QCL. This parameter value is compared with the severity of any escape message not monitored that occurs as a result of running a noncompiled CL command in a batch job.\n\n指定できる特殊値: *SAME",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*SAME",
+      "attributes": {
+        "characterSet": "upper"
+      }
+    },
+    {
+      "name": "INQMSGRPY",
+      "description": "Inquiry message reply",
+      "help": "Inquiry message reply (INQMSGRPY)\n\nSpecifies the way that inquiry messages are answered for jobs that use this job description. You can specify that inquiry messages are to be answered in the usual manner, that a default reply be issued, or that if certain conditions are met, an answer is issued to the inquiry based on those conditions. The conditions met are listed in the system reply list entries of the Add Reply List Entry (ADDRPYLE) command.",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*SAME",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*SAME",
+          "value": "*SAME"
+        },
+        {
+          "label": "*RQD",
+          "value": "*RQD"
+        },
+        {
+          "label": "*DFT",
+          "value": "*DFT"
+        },
+        {
+          "label": "*SYSRPYL",
+          "value": "*SYSRPYL"
+        }
+      ]
+    },
+    {
+      "name": "HOLD",
+      "description": "Hold on job queue",
+      "help": "Hold on job queue (HOLD)\n\nSpecifies whether jobs using this job description are put on the job queue in the hold condition. A job placed on the job queue in the hold condition is held until it is released by the Release Job (RLSJOB) command, or it is ended, either by the End Job (ENDJOB) command or by the Clear Job Queue (CLRJOBQ) command.",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*SAME",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*SAME",
+          "value": "*SAME"
+        },
+        {
+          "label": "*NO",
+          "value": "*NO"
+        },
+        {
+          "label": "*YES",
+          "value": "*YES"
+        }
+      ]
+    },
+    {
+      "name": "DATE",
+      "description": "Job date",
+      "help": "Job date (DATE)\n\nSpecifies the date that is assigned to the job that uses this job description when the job is started.",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*SAME",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*SAME",
+          "value": "*SAME"
+        },
+        {
+          "label": "*SYSVAL",
+          "value": "*SYSVAL"
+        }
+      ]
+    },
+    {
+      "name": "SWS",
+      "description": "Job switches",
+      "help": "Job switches (SWS)\n\nSpecifies the initial switch settings for a group of eight job switches used for jobs that use this job description. These switches can be set or tested in a CL program and used to control the flow of the program. The only values that are valid for each single-digit switch are 0 (off) or 1 (on).\n\n指定できる特殊値: *SAME",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*SAME",
+      "attributes": {
+        "characterSet": "upper"
+      }
+    },
+    {
+      "name": "DEVRCYACN",
+      "description": "Device recovery action",
+      "help": "Device recovery action (DEVRCYACN)\n\nSpecifies the recovery action to take for the job when an I/O error is encountered on the *REQUESTOR device for interactive jobs that use this job description. This attribute is ignored for non-interactive jobs.",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*SAME",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*SAME",
+          "value": "*SAME"
+        },
+        {
+          "label": "*SYSVAL",
+          "value": "*SYSVAL"
+        },
+        {
+          "label": "*MSG",
+          "value": "*MSG"
+        },
+        {
+          "label": "*DSCMSG",
+          "value": "*DSCMSG"
+        },
+        {
+          "label": "*DSCENDRQS",
+          "value": "*DSCENDRQS"
+        },
+        {
+          "label": "*ENDJOB",
+          "value": "*ENDJOB"
+        },
+        {
+          "label": "*ENDJOBNOLIST",
+          "value": "*ENDJOBNOLIST"
+        }
+      ]
+    },
+    {
+      "name": "TSEPOOL",
+      "description": "Time slice end pool",
+      "help": "Time slice end pool (TSEPOOL)\n\nSpecifies whether interactive jobs are moved to another main storage pool when the end of the time slice is reached. When a long wait occurs, the job is moved back to the pool in which it was originally running. This may help minimize the effect on interactive response time.",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*SAME",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*SAME",
+          "value": "*SAME"
+        },
+        {
+          "label": "*SYSVAL",
+          "value": "*SYSVAL"
+        },
+        {
+          "label": "*NONE",
+          "value": "*NONE"
+        },
+        {
+          "label": "*BASE",
+          "value": "*BASE"
+        }
+      ]
+    },
+    {
+      "name": "ALWMLTTHD",
+      "description": "Allow multiple threads",
+      "help": "Allow multiple threads (ALWMLTTHD)\n\nSpecifies whether or not the job can run with multiple user threads. This attribute does not prevent the operating system from creating system threads in the job. This job attribute is not allowed to be changed once a job starts. This attribute applies to autostart jobs, prestart jobs, batch jobs submitted from job schedule entries and jobs started using the Submit Job (SBMJOB) and Batch Job (BCHJOB) commands. This attribute is ignored when starting all other types of jobs. This attribute should be set to *YES only in job descriptions used exclusively with functions that create multiple user threads.",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*SAME",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*SAME",
+          "value": "*SAME"
+        },
+        {
+          "label": "*NO",
+          "value": "*NO"
+        },
+        {
+          "label": "*YES",
+          "value": "*YES"
+        }
+      ]
+    },
+    {
+      "name": "SPLFACN",
+      "description": "Spooled file action",
+      "help": "Spooled file action (SPLFACN)\n\nSpecifies whether or not spooled files are accessed through job interfaces after the job ends. Keeping spooled files with jobs allows job commands such as the Work with Submitted Jobs (WRKSBMJOB) command to work with the spooled files even after the job has ended. Detaching spooled files from jobs reduces the use of system resources by allowing job structures to be recycled when the jobs end.",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*SAME",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*SAME",
+          "value": "*SAME"
+        },
+        {
+          "label": "*SYSVAL",
+          "value": "*SYSVAL"
+        },
+        {
+          "label": "*KEEP",
+          "value": "*KEEP"
+        },
+        {
+          "label": "*DETACH",
+          "value": "*DETACH"
+        }
+      ]
+    },
+    {
+      "name": "DDMCNV",
+      "description": "DDM conversation",
+      "help": "DDM conversation (DDMCNV)\n\nSpecifies whether the connections using distributed data management (DDM) protocols remain active when they are not being used. The connections include APPC conversations, active TCP/IP conversations or OptiConnect connections. The DDM protocols are used in Distributed Relational Database Architecture (DRDA) applications, DDM applications, or DB2 Multisystem applications. For more information on distributed data management, see the IBM i Information Center at http://www.ibm.com/systems/i/infocenter/.",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*SAME",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*SAME",
+          "value": "*SAME"
+        },
+        {
+          "label": "*KEEP",
+          "value": "*KEEP"
+        },
+        {
+          "label": "*DROP",
+          "value": "*DROP"
+        }
+      ]
+    },
+    {
+      "name": "WLCGRP",
+      "description": "Workload group",
+      "help": "Workload group (WLCGRP)\n\nSpecifies the workload group to be used by jobs using this job description. See the Add Workload Group (ADDWLCGRP) command for more information about workload groups.\n\n指定できる特殊値: *SAME, *SBSD, *NONE",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*SAME",
+      "attributes": {
+        "characterSet": "upper",
+        "maxLength": 10
+      }
+    }
+  ],
+  "examples": [
+    {
+      "code": "CHGJOBD JOBD(QGPL/QPGMR) JOBPTY(2) OUTPTY(2)"
+    },
+    {
+      "code": "CHGJOBD JOBD(BATCH5) USER(JLRAY) JOBPTY(1) OUTPTY(1)"
+    },
+    {
+      "code": "CHGJOBD JOBD(INT4) USER(*RQD) RTGDTA(QCMDI) LOG(*SAME) ACGCDE('USERXYZ CODE123') TEXT(*BLANK)"
+    },
+    {
+      "code": "CHGJOBD JOBD(BATCH3) JOBQ(NIGHTQ) JOBPTY(4) OUTPTY(4) RTGDTA(QCMDB) INQMSGRPY(*DFT) TEXT('Batch #3 JOBD for high priority night work')"
+    }
+  ],
+  "source": {
+    "url": "https://www.ibm.com/docs/en/ssw_ibm_i_74/cl/chgjobd.htm",
+    "version": "IBM i 7.4"
+  }
+}

@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="ja"><head><meta charset="utf-8"><title>ジョブ表示  (DSPJOB)</title></head>
+<body>
+<div role="main">
+<script type="text/javascript" src="../rzahg/synch.js"></script>
+<a name="DSPJOB.Top_Of_Page"></a>
+<h1>ジョブ表示  (DSPJOB)</h1><div id="lastModifiedDate"><span>Last Updated</span>: 2021-04-13</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table0" width="100%" class="cds--data-table">
+<tbody><tr>
+<td class="valigntop alignleft"><strong>実行可能場所:  </strong>すべての環境 (*ALL)<br>
+<strong>スレッド・セーフ:  </strong>条件付き
+</td>
+<td class="valigntop alignright">
+<a href="#DSPJOB.PARAMETERS.TABLE">パラメーター</a><br>
+<a href="#DSPJOB.COMMAND.EXAMPLES">例</a><br>
+<a href="#DSPJOB.ERROR.MESSAGES">エラー・メッセージ</a></td>
+</tr>
+</tbody></table></div></div>
+<div> <a name="DSPJOB"></a>
+<p>ジョブ表示 (DSPJOB)コマンドは，指定されたジョブについて次のいずれかの情報を表示します。
+</p>
+<ul class="cds--list--unordered">
+<li class="cds--list__item">ジョブ状況属性
+</li>
+<li class="cds--list__item">ジョブ定義属性
+</li>
+<li class="cds--list__item">ジョブ実行属性
+</li>
+<li class="cds--list__item">スプール・ファイル情報
+</li>
+<li class="cds--list__item">ジョブ・ログ情報
+</li>
+<li class="cds--list__item">呼び出しスタック情報
+</li>
+<li class="cds--list__item">ジョブ・ロック情報
+</li>
+<li class="cds--list__item">ライブラリー・リスト情報
+</li>
+<li class="cds--list__item">オープン・ファイル情報
+</li>
+<li class="cds--list__item">ファイル一時変更情報
+</li>
+<li class="cds--list__item">コミットメント制御状況
+</li>
+<li class="cds--list__item">通信状況
+</li>
+<li class="cds--list__item">活動化グループ情報
+</li>
+<li class="cds--list__item">相互除外情報
+</li>
+<li class="cds--list__item">スレッド情報
+</li>
+<li class="cds--list__item">媒体ライブラリー属性情報
+</li>
+<li class="cds--list__item">環境変数
+</li>
+</ul>
+<p>ジョブがジョブ待ち行列上にあっても，出力待ち行列にあっても，あるいはシステムで活動状態であっても，情報を表示することができます。しかし，ジョブは，すべての入力が完全に読み込まれるまで，システムにあるとは見なされないことに注意してください。すべての入力が読み込まれて，はじめて項目がジョブ待ち行列に置かれます。
+</p>
+<h2><strong>制約事項</strong><strong>:</strong>
+</h2>
+<ol class="cds--list--ordered--temporary">
+<li class="cds--list__item">コマンド発行側は，表示しているジョブのジョブ・ユーザー識別と同じユーザー・プロファイルのもとで実行しなければなりません。あるいはコマンド発行側は，ジョブ制御(*JOBCTL)特殊権限を持つユーザー・プロファイルのもとで実行しなければなりません。
+<p>ジョブ・ユーザー識別はユーザー・プロファイルの名前であり，これによってジョブは他のジョブに認識されます。ジョブ・ユーザー識別の詳細は，IBM i Information Center(http://www.ibm.com/systems/i/infocenter/)の「実行管理機能」トピック・コレクションにあります。
+</p>
+</li>
+<li class="cds--list__item">このコマンドの実行時にジョブが保留中である場合には，ジョブに関する活動化グループ情報を表示できません。
+</li>
+<li class="cds--list__item">OPTION(*FILOVR)またはOPTION(*ALL)が指定されている場合には，このコマンドは複数のスレッドを使用できるジョブでは失敗します。
+</li>
+<li class="cds--list__item">別のユーザー・プロファイルで実行されているジョブの環境変数を表示するには，サービス(*SERVICE)特殊権限を持っている必要があります。
+</li>
+</ol>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table1" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#DSPJOB.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div>
+<h2><a name="DSPJOB.PARAMETERS.TABLE">パラメーター</a></h2>
+<div class="tablenoborder"><div class="cds--data-table-container"><table id="parm_table2" summary="Parameters" border="1" cellpadding="4" cellspacing="0" class="cds--data-table">
+<!-- col1="10" col2="15" col3="30" col4="10" -->
+<tbody><tr>
+<th scope="col" class="valignbottom alignleft"><div class="cds--table-header-label">キーワード</div></th>
+<th scope="col" class="valignbottom alignleft"><div class="cds--table-header-label">記述</div></th>
+<th scope="col" class="valignbottom alignleft"><div class="cds--table-header-label">選択項目</div></th>
+<th scope="col" class="valignbottom alignleft"><div class="cds--table-header-label">ノーツ</div></th>
+</tr>
+<tr>
+<td class="valigntop" rowspan="4"><a href="#DSPJOB.JOB"><strong>JOB</strong></a></td>
+<td class="valigntop">ジョブ名</td>
+<td class="valigntop">単一値: <strong class="underlined">*</strong><br>その他の値: <span class="var">修飾ジョブ名</span></td>
+<td class="valigntop" rowspan="4">オプショナル, 定位置 1</td>
+</tr>
+<tr>
+<td class="valigntop">修飾子 1: ジョブ名</td>
+<td class="valigntop"><span class="var">名前</span></td>
+</tr><tr>
+<td class="valigntop">修飾子 2: ユーザー</td>
+<td class="valigntop"><span class="var">名前</span></td>
+</tr><tr>
+<td class="valigntop">修飾子 3: 番号</td>
+<td class="valigntop">000000-999999</td>
+</tr><tr>
+<td class="valigntop"><a href="#DSPJOB.OUTPUT"><strong>OUTPUT</strong></a></td>
+<td class="valigntop">出力</td>
+<td class="valigntop"><strong class="underlined">*</strong>, *PRINT</td>
+<td class="valigntop">オプショナル, 定位置 2</td>
+</tr>
+<tr>
+<td class="valigntop"><a href="#DSPJOB.OPTION"><strong>OPTION</strong></a></td>
+<td class="valigntop">オプション</td>
+<td class="valigntop"><strong class="underlined">*SELECT</strong>, *STSA, *DFNA, *RUNA, *SPLF, *JOBLOG, *PGMSTK, *JOBLCK, *LIBL, *OPNF, *FILOVR, *CMTCTL, *CMNSTS, *ACTGRP, *MUTEX, *THREAD, *MLBA, *ENVVAR, *ALL</td>
+<td class="valigntop">オプショナル</td>
+</tr>
+<tr>
+<td class="valigntop"><a href="#DSPJOB.SLTTHD"><strong>SLTTHD</strong></a></td>
+<td class="valigntop">組み込むスレッドID</td>
+<td class="valigntop">単一値: *ALL, *SELECT<br>その他の値 (最大 20 回の繰り返し): <span class="var">文字値</span>, <strong class="underlined">*INITIAL</strong>, *CURRENT</td>
+<td class="valigntop">オプショナル</td>
+</tr>
+<tr>
+<td class="valigntop"><a href="#DSPJOB.DUPJOBOPT"><strong>DUPJOBOPT</strong></a></td>
+<td class="valigntop">重複ジョブ・オプション</td>
+<td class="valigntop"><strong class="underlined">*SELECT</strong>, *MSG</td>
+<td class="valigntop">オプショナル</td>
+</tr>
+</tbody></table></div></div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table3" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#DSPJOB.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+</div>
+<div> <a name="DSPJOB.JOB"></a>
+<h2>ジョブ名(JOB)</h2>
+<p>情報が表示されるジョブの名前を指定します。
+</p>
+<h3><strong>単一値</strong>
+</h3>
+<dl>
+<dt><strong class="underlined">*</strong></dt>
+<dd>情報が表示されるジョブは，この表示コマンドが実行されたジョブです。
+</dd>
+</dl>
+<h3><strong>修飾子</strong><strong>1: </strong><strong>ジョブ名</strong>
+</h3>
+<dl>
+<dt><strong class="italic">名前</strong></dt>
+<dd>表示されるジョブの名前を指定してください。ジョブ修飾子を指定しない場合には，現在システムにあるすべてのジョブから単純ジョブ名が検索されます。指定された名前と重複するものが見つかった場合には，すべての重複を示す修飾ジョブ名の入ったメッセージのリストが表示されます。
+</dd>
+</dl>
+<h3><strong>修飾子</strong><strong>2: </strong><strong>ユーザー</strong>
+</h3>
+<dl>
+<dt><strong class="italic">名前</strong></dt>
+<dd>ジョブの実行に使用されるユーザー・プロファイルを識別する名前を指定してください。
+</dd>
+</dl>
+<h3><strong>修飾子</strong><strong>3: </strong><strong>番号</strong>
+</h3>
+<dl>
+<dt><strong class="italic">000000から999999</strong></dt>
+<dd>システムによって割り当てられたジョブ番号を指定してください。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table4" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#DSPJOB.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="DSPJOB.OUTPUT"></a>
+<h2>出力 (OUTPUT)</h2>
+<p>コマンドからの出力を，要求元のワークステーションに表示するか，あるいはジョブのスプール出力で印刷するかを指定します。
+</p>
+<dl>
+<dt><strong class="underlined">*</strong></dt>
+<dd>出力は，対話式ジョブの場合には表示され，非対話式ジョブの場合にはジョブのスプール出力で印刷されます。
+</dd>
+</dl>
+<dl>
+<dt><strong>*PRINT</strong></dt>
+<dd>出力はジョブのスプール出力で印刷されます。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table5" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#DSPJOB.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="DSPJOB.OPTION"></a>
+<h2>オプション (OPTION)</h2>
+<p>表示される情報を指定します。
+</p>
+<dl>
+<dt><strong class="underlined">*SELECT</strong></dt>
+<dd>メニューが表示され，すべてのオプションおよび機能キーを使用することができます。
+</dd>
+<dt><strong>*STSA</strong></dt>
+<dd>ジョブの識別特性および状況が表示されます。
+</dd>
+<dt><strong>*DFNA</strong></dt>
+<dd>ジョブに関連するジョブ記述中の定義属性が表示されます。
+</dd>
+<dt><strong>*RUNA</strong></dt>
+<dd>ジョブの実行属性が表示されます。
+</dd>
+<dt><strong>*SPLF</strong></dt>
+<dd>ジョブによって所有されるスプール・ファイルが表示されます。このコマンドを出したスレッドのライブラリー名前空間の出力待ち行列上にあるスプール出力ファイルのみが表示されます。
+</dd>
+<dt><strong>*JOBLOG</strong></dt>
+<dd>ジョブによって処理されたコマンドおよびそのコマンドの実行から戻されたメッセージが表示されます。
+</dd>
+<dt><strong>*PGMSTK</strong></dt>
+<dd>呼び出しスタック中のすべてのプログラムのすべての情報が表示されます。
+</dd>
+<dt><strong>*JOBLCK</strong></dt>
+<dd>保留ロックおよび待機中のロックを含め，ジョブによって保留されたすべての外部オブジェクト・ロックが表示されます。
+</dd>
+<dt><strong>*LIBL</strong></dt>
+<dd><strong>ジョブ名</strong><strong>(JOB)</strong>パラメーターに指定されたジョブが，コマンドの実行されたジョブである場合には，スレッドのライブラリー・リストが表示されます。その他のジョブの場合には，初期スレッドのライブラリー・リストが表示されます。
+</dd>
+<dt><strong>*OPNF</strong></dt>
+<dd>ジョブでオープン状態のファイル，およびシステム・ファイルとユーザー・ファイルの状況が表示されます。
+</dd>
+<dt><strong>*FILOVR</strong></dt>
+<dd>ジョブの活動中の呼び出しレベルにおけるファイル一時変更が表示されます。
+</dd>
+<dt><strong>*CMTCTL</strong></dt>
+<dd>ジョブのコミットメント制御状況が表示されます。
+</dd>
+<dt><strong>*CMNSTS</strong></dt>
+<dd>ジョブの通信状況が表示されます。
+</dd>
+<dt><strong>*ACTGRP</strong></dt>
+<dd>ジョブと対応する活動化グループが表示されます。
+</dd>
+<dt><strong>*MUTEX</strong></dt>
+<dd>ジョブの初期スレッドと関連した相互除外情報が表示されます。
+</dd>
+<dt><strong>*THREAD</strong></dt>
+<dd>ジョブのスレッドについての情報が表示されます。
+</dd>
+<dt><strong>*MLBA</strong></dt>
+<dd>ジョブの媒体ライブラリー属性に関する情報が表示されます。
+</dd>
+<dt><strong>*ENVVAR</strong></dt>
+<dd>ジョブの環境変数が表示されます。
+</dd>
+<dt><strong>*ALL</strong></dt>
+<dd>すべてのオプションが表示されます。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table6" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#DSPJOB.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="DSPJOB.SLTTHD"></a>
+<h2>組み込むスレッドID (SLTTHD)</h2>
+<p>情報が組み込まれるスレッドIDのリストを指定します。
+</p>
+<h3><strong>単一値</strong>
+</h3>
+<dl>
+<dt><strong class="underlined">*ALL</strong></dt>
+<dd>指定されたジョブ内のすべてのスレッドが含められます。
+</dd>
+<dt><strong>*SELECT</strong></dt>
+<dd>組み込みたい最高20までを選択することができるスレッドIDのリストが表示されます。この値は，コマンドが対話式ジョブで実行される場合にのみ有効です。
+</dd>
+</dl>
+<h3><strong>その他の値（最大</strong><strong>20</strong><strong>個指定可能）</strong>
+</h3>
+<dl>
+<dt><strong>*INITIAL</strong></dt>
+<dd>指定されたジョブ内の初期スレッドが含められます。
+</dd>
+<dt><strong>*CURRENT</strong></dt>
+<dd>コマンドを実行するスレッドが含められます。この値は，指定されたジョブがコマンドを実行するジョブの場合のみ有効です。
+</dd>
+<dt><strong class="italic">スレッドID</strong></dt>
+<dd>情報を組み込みたい最高20までのスレッドのIDを指定してください。これは，ジョブ処理(WRKJOB)コマンドで表示されるスレッドIDです。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table7" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#DSPJOB.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="DSPJOB.DUPJOBOPT"></a>
+<h2>重複ジョブ・オプション (DUPJOBOPT)</h2>
+<p>このコマンドで重複ジョブが見つかった時に取られる処置を指定します。
+</p>
+<dl>
+<dt><strong class="underlined">*SELECT</strong></dt>
+<dd>対話式セッション中に重複しているジョブが見つかった時には，選択画面が表示されます。そうでない場合には，メッセージが出されます。
+</dd>
+<dt><strong>*MSG</strong></dt>
+<dd>重複しているジョブが見つかった時には，メッセージが出されます。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table8" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#DSPJOB.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div><h2><a name="DSPJOB.COMMAND.EXAMPLES">例</a> </h2>
+<h3><strong>例</strong><strong>1:</strong><strong>スプール出力の印刷</strong>
+</h3>
+<p>
+</p><pre>DSPJOB   JOB(SMITH/PAYROLL)  OUTPUT(*PRINT)
+</pre>
+<p></p>
+<p>このコマンドは，SMITHという名前のユーザーによって投入されたPAYROLLという名前のジョブに関する情報を，印刷のためにジョブの出力スプーリング待ち行列に送ります。
+</p>
+<h3><strong>例</strong><strong>2:</strong><strong>ジョブのスプール出力の表示</strong>
+</h3>
+<p>
+</p><pre>DSPJOB   OPTION(*SPLF)
+</pre>
+<p></p>
+<p>このコマンドは，現行ジョブのスプール出力を表示します。
+</p>
+<h3><strong>例</strong><strong>3:</strong><strong>ジョブのすべての情報の表示</strong>
+</h3>
+<p>
+</p><pre>DSPJOB   OPTION(*ALL)
+</pre>
+<p></p>
+<p>このコマンドは，現行ジョブに関するすべての情報を表示します。
+</p>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table9" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#DSPJOB.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div><h2><a name="DSPJOB.ERROR.MESSAGES">エラー・メッセージ</a> </h2>
+<p><strong class="underlined">*ESCAPE </strong><strong class="underlined">メッセージ</strong>
+</p>
+<dl>
+<dt><strong>CPF0941</strong></dt>
+<dd>ジョブ&amp;3/&amp;2/&amp;1はもはやシステムにない。
+</dd>
+<dt><strong>CPF1069</strong></dt>
+<dd>重複名の終わり。
+</dd>
+<dt><strong>CPF1070</strong></dt>
+<dd>ジョブ&amp;3/&amp;2/&amp;1が見つからない。
+</dd>
+<dt><strong>CPF1071</strong></dt>
+<dd>ジョブ&amp;3/&amp;2/&amp;1に対する権限がない。
+</dd>
+<dt><strong>CPF2443</strong></dt>
+<dd>ジョブが終了したため，ジョブ・ログは表示またはリストされなかった。
+</dd>
+<dt><strong>CPF3330</strong></dt>
+<dd>必要な資源が使用できない。
+</dd>
+<dt><strong>CPF3336</strong></dt>
+<dd>ジョブ&amp;5/&amp;4/&amp;3は既にシステムにはない。
+</dd>
+<dt><strong>CPF9845</strong></dt>
+<dd>ファイル&amp;1のオープン中にエラーが起こった。
+</dd>
+<dt><strong>CPF9846</strong></dt>
+<dd>ライブラリー&amp;2のファイル&amp;1の処理中にエラーが起こった。
+</dd>
+<dt><strong>CPF9847</strong></dt>
+<dd>ライブラリー&amp;2のファイル&amp;1のクローズ中にエラーが起こった。
+</dd>
+<dt><strong>CPF9850</strong></dt>
+<dd>印刷装置ファイル&amp;1の一時変更は許されない。
+</dd>
+<dt><strong>CPF9851</strong></dt>
+<dd>&amp;2のファイル&amp;1のオーバーフロー値が小さすぎる。
+</dd>
+<dt><strong>CPF9871</strong></dt>
+<dd>処理中に，エラーが起こった。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table10" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#DSPJOB.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+</div>
+
+
+</body></html>

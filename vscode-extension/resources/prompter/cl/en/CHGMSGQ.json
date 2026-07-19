@@ -1,0 +1,287 @@
+{
+  "keyword": "CHGMSGQ",
+  "description": "Change Message Queue (CHGMSGQ)",
+  "parameters": [
+    {
+      "name": "MSGQ",
+      "description": "Message queue",
+      "help": "Message queue (MSGQ)\n\nSpecifies the name of the message queue whose attributes are being changed.\n\nThis is a required parameter.\n\nSingle values\n\nQualifier 1: Message queue\n\nQualifier 2: Library\n\nAlthough the following Qxxx libraries are provided by IBM, they typically contain user data that changes frequently. Therefore, these libraries are considered user libraries and are also searched:",
+      "inputType": "group",
+      "required": true,
+      "groupKind": "qualified",
+      "singleValues": [
+        "*USRPRF",
+        "*WRKSTN"
+      ],
+      "children": [
+        {
+          "name": "LIB",
+          "description": "Library",
+          "help": "指定できる特殊値: *LIBL, *CURLIB, *USRLIBL, *ALLUSR, *ALL",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "*LIBL",
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          }
+        },
+        {
+          "name": "MSGQ",
+          "description": "Message queue",
+          "help": "指定できる特殊値: *ALL",
+          "inputType": "text",
+          "required": true,
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          }
+        }
+      ],
+      "positional": 1
+    },
+    {
+      "name": "DLVRY",
+      "description": "Delivery",
+      "help": "Delivery (DLVRY)\n\nSpecifies how the messages that are sent to this message queue are delivered. The method of delivery is in effect only as long as the message queue is allocated to the job. When the queue is no longer allocated, the delivery mode is changed to *HOLD for work station, system operator, and user message queues. However, if *DFT is specified for a system operator or user message queue, the delivery mode remains *DFT.\n\nNote: When the delivery mode of a message queue is changed to *BREAK or *NOTIFY, the message queue is allocated with an *EXCL lock. The *EXCL lock will remain on the queue until the delivery mode is changed to *HOLD or *DFT, or the job that contains the lock on the queue ends.\n\nWhen changing to *BREAK mode, if a program name is not specified or if PGM(*SAME) is specified the PGM parameter defaults to *DSPMSG for the break program and *ALWRPY for the allow other jobs to reply attribute.",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*SAME",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*SAME",
+          "value": "*SAME"
+        },
+        {
+          "label": "*HOLD",
+          "value": "*HOLD"
+        },
+        {
+          "label": "*BREAK",
+          "value": "*BREAK"
+        },
+        {
+          "label": "*NOTIFY",
+          "value": "*NOTIFY"
+        },
+        {
+          "label": "*DFT",
+          "value": "*DFT"
+        }
+      ],
+      "positional": 2
+    },
+    {
+      "name": "SEV",
+      "description": "Severity code filter",
+      "help": "Severity code filter (SEV)\n\nSpecifies the lowest severity level that a message can have and still be delivered to a user in break or notify mode. Messages arriving at the message queue whose severities are lower than that specified here do not interrupt the job or turn on the audible alarm or the Message Waiting light; they are held in the queue until they are displayed by the Display Message (DSPMSG) command. If *BREAK or *NOTIFY is specified on the DLVRY parameter, and is in effect when a message arrives at the queue, the message is delivered if the severity code associated with the message is equal to or greater than the value specified here. Otherwise, the message is held in the queue until it is requested.\n\n指定できる特殊値: *SAME",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*SAME",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "positional": 4
+    },
+    {
+      "name": "TEXT",
+      "description": "Text 'description'",
+      "help": "Text 'description' (TEXT)\n\nSpecifies the user-defined text that describes the message queue. The text specified here replaces any previous text.\n\n指定できる特殊値: *SAME, *BLANK",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*SAME",
+      "attributes": {
+        "characterSet": "upper"
+      }
+    },
+    {
+      "name": "PGM",
+      "description": "Break handling attributes",
+      "help": "Break handling attributes (PGM)\n\nTwo elements are used to specify the program parameter. The first element specifies the program called when a message arrives at the message queue and break delivery has been specified. The second element indicates whether or not to allow other jobs to reply to messages on the message queue when it is placed in *BREAK delivery mode with a break handling program other than *DSPMSG specified.\n\nBecause the QSYSOPR message queue receives messages that require manual operator action, only *DSPMSG should be specified or assumed if the message queue being changed is QSYSOPR.\n\nThe following parameters are passed to the program:\n\nSingle values\n\nElement 1: Break handling program\n\nSpecify the program that is called when a message arrives for break delivery.\n\nQualifier 1: Break handling program\n\nQualifier 2: Library\n\nElement 2: Allow other jobs to reply\n\nSpecifies whether other jobs can reply to inquiry messages on the message queue when it is placed in *BREAK delivery mode with a break handling program other than *DSPMSG specified. If *DSPMSG is specified for the break handling program then *ALWRPY is assumed for this attribute. If QMHDSMSS is specified for the break handling program in a library other than QSYS, then *ALWRPY will also be assumed for this attribute unless *NOALWRPY is explicitly specified.\n\nNote: If a value is specified for this element, you must also specify a break handling program for element 1 of this parameter.",
+      "inputType": "group",
+      "required": false,
+      "groupKind": "elements",
+      "singleValues": [
+        "*SAME",
+        "*DSPMSG"
+      ],
+      "children": [
+        {
+          "name": "PGM_E1",
+          "description": "Break handling program",
+          "inputType": "group",
+          "required": false,
+          "groupKind": "qualified",
+          "children": [
+            {
+              "name": "PGM_LIB",
+              "description": "Library",
+              "help": "指定できる特殊値: *LIBL, *CURLIB",
+              "inputType": "text",
+              "required": false,
+              "defaultValue": "*LIBL",
+              "attributes": {
+                "characterSet": "upper",
+                "maxLength": 10
+              }
+            },
+            {
+              "name": "PGM",
+              "description": "Break handling program",
+              "inputType": "text",
+              "required": false,
+              "attributes": {
+                "characterSet": "upper",
+                "maxLength": 10
+              }
+            }
+          ],
+          "defaultValue": "*SAME"
+        },
+        {
+          "name": "PGM_E2",
+          "description": "Allow other jobs to reply",
+          "inputType": "dropdown",
+          "required": false,
+          "defaultValue": "*NOALWRPY",
+          "attributes": {
+            "characterSet": "upper"
+          },
+          "options": [
+            {
+              "label": "*NOALWRPY",
+              "value": "*NOALWRPY"
+            },
+            {
+              "label": "*ALWRPY",
+              "value": "*ALWRPY"
+            }
+          ]
+        }
+      ],
+      "positional": 3
+    },
+    {
+      "name": "RESET",
+      "description": "Reset old messages",
+      "help": "Reset old messages (RESET)\n\nSpecifies whether old messages (messages that have been received once and were not removed from the message queue) held in the message queue are reset to the new message status. The messages can then be received in first-in, first-out (FIFO) order as they were originally. This parameter applies only to messages received by a program; it does not affect message displays. If all messages are being cleared, refer to the RMVMSG (Remove Message) command description.",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*NO",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*NO",
+          "value": "*NO"
+        },
+        {
+          "label": "*YES",
+          "value": "*YES"
+        }
+      ]
+    },
+    {
+      "name": "FORCE",
+      "description": "Force to auxiliary storage",
+      "help": "Force to auxiliary storage (FORCE)\n\nSpecifies whether changes made to the message queue description or messages added to or removed from the queue are immediately forced into auxiliary storage; this ensures that changes to the queue, or messages sent or received, are not lost if a system failure occurs.",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*SAME",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*SAME",
+          "value": "*SAME"
+        },
+        {
+          "label": "*NO",
+          "value": "*NO"
+        },
+        {
+          "label": "*YES",
+          "value": "*YES"
+        }
+      ]
+    },
+    {
+      "name": "ALWALR",
+      "description": "Allow alerts",
+      "help": "Allow alerts (ALWALR)\n\nSpecifies whether the queue being changed allows alerts to be generated from alert messages that are sent to it.",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*SAME",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*SAME",
+          "value": "*SAME"
+        },
+        {
+          "label": "*NO",
+          "value": "*NO"
+        },
+        {
+          "label": "*YES",
+          "value": "*YES"
+        }
+      ]
+    },
+    {
+      "name": "CCSID",
+      "description": "Coded character set ID",
+      "help": "Coded character set ID (CCSID)\n\nSpecifies the coded character set identifier (CCSID) associated with this message queue. This applies only to immediate messages and message data that is defined as a character field that can be converted (*CCHAR).\n\nNote: When changing the CCSID of a message queue, the messages on the queue are not converted and the CCSID associated with each individual message is not changed. If the message queue is changed back to *MSG the original CCSID of each message is then used.\n\nChanging the CCSID of a message queue that already has messages on it can cause unpredictable results. This can occur when the encoding of the messages does not match the CCSID you specify. Only change the CCSID of a message queue when the CCSID of a message queue does not match the encoding of the messages on it.\n\nFor more information on the message handler and its use of CCSIDs, see the i5/OS globalization topic collection in the IBM i Information Center at http://www.ibm.com/systems/i/infocenter/.\n\n指定できる特殊値: *SAME, *MSG, *HEX, *JOB",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*SAME",
+      "attributes": {
+        "characterSet": "upper"
+      }
+    },
+    {
+      "name": "MSGQFULL",
+      "description": "Message queue full action",
+      "help": "Message queue full action (MSGQFULL)\n\nSpecifies the action to take when the message queue is full.\n\nNOTE: When a queue uses *WRAP and a job sends a message to the queue that causes a wrap, messages are removed for the following conditions in order to perform the wrap:\n\nOnly the system wrap function can remove messages from queues in these conditions. Other jobs still are not allowed to remove messages from the queues during these conditions. With *SNDMSG, these conditions do not allow another job to remove messages from the queue.\n\nAlso when a queue specifies *WRAP and it is in break mode, the wrap function only removes messages that have been received by the break-handling program. For example, if the break-handling program did not receive all messages from the queue and it was becoming full, CPF2460 could be issued because messages could not be removed to perform the wrap.",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*SAME",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*SAME",
+          "value": "*SAME"
+        },
+        {
+          "label": "*SNDMSG",
+          "value": "*SNDMSG"
+        },
+        {
+          "label": "*WRAP",
+          "value": "*WRAP"
+        }
+      ]
+    }
+  ],
+  "examples": [
+    {
+      "code": "CHGMSGQ MSGQ(JONES) DLVRY(*NOTIFY)"
+    },
+    {
+      "code": "CHGMSGQ MSGQ(INV) DLVRY(*BREAK) PGM(INVUPDT)"
+    }
+  ],
+  "source": {
+    "url": "https://www.ibm.com/docs/en/ssw_ibm_i_74/cl/chgmsgq.htm",
+    "version": "IBM i 7.4"
+  }
+}

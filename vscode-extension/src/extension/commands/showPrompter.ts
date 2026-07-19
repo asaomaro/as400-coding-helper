@@ -60,23 +60,14 @@ export function registerShowPrompterCommand(
 
       const loader = new PrompterDefinitionLoader();
       const workspaceFolder = vscode.workspace.getWorkspaceFolder(document.uri);
-      const definitions = await loader.loadForLanguage(
+      // キーワードで 1 件だけ読む。全件読むと CL では 134 ファイル・3.5MB になり、
+      // F4 の表示がそのぶん待たされる。
+      const definition = await loader.loadDefinition(
+        resolved.keyword,
         resolved.language,
         resolved.dialect,
         workspaceFolder,
         context
-      );
-      console.log(
-        "[rpgClSupport] loaded definitions",
-        JSON.stringify({
-          language: resolved.language,
-          count: definitions.length,
-          keywords: definitions.map(def => def.keyword)
-        })
-      );
-
-      const definition = definitions.find(
-        candidate => candidate.keyword === resolved.keyword
       );
 
       if (!definition) {
@@ -120,15 +111,6 @@ export function registerShowPrompterCommand(
         });
         return;
       }
-
-      console.log(
-        "[rpgClSupport] applyChanges request",
-        JSON.stringify({
-          line: resolved.line,
-          keyword: definition.keyword,
-          values: result.values
-        })
-      );
 
       const targetEditor =
         vscode.window.visibleTextEditors.find(

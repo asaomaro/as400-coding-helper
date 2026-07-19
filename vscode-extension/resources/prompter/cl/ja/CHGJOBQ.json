@@ -1,0 +1,134 @@
+{
+  "keyword": "CHGJOBQ",
+  "description": "ジョブ待ち行列の変更 (CHGJOBQ)",
+  "help": "ジョブ待ち行列変更(CHGOUTQ)コマンドによって，ユーザーは指定したジョブ待ち行列の属性を変更することができます。",
+  "parameters": [
+    {
+      "name": "JOBQ",
+      "description": "ジョブ待ち行列",
+      "help": "属性を変更したいジョブ待ち行列を指定します。\n\nこれは必須パラメーターです。",
+      "inputType": "group",
+      "required": true,
+      "groupKind": "qualified",
+      "children": [
+        {
+          "name": "LIB",
+          "description": "ライブラリー",
+          "help": "*LIBL: 最初に一致するものが見つかるまで，現行スレッドのライブラリー・リスト内のすべてのライブラリーが検索されます。\n*CURLIB: スレッドの現行ライブラリーが検索されます。スレッドの現行ライブラリーとして指定されているライブラリーがない場合，QGPLライブラリーが検索されます。\nジョブ待ち行列が入っているライブラリーの名前を指定してください。",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "*LIBL",
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          }
+        },
+        {
+          "name": "JOBQ",
+          "description": "ジョブ待ち行列",
+          "help": "変更するジョブ待ち行列の名前を指定します。",
+          "inputType": "text",
+          "required": true,
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          }
+        }
+      ],
+      "positional": 1
+    },
+    {
+      "name": "TEXT",
+      "description": "テキスト'記述'",
+      "help": "オブジェクトを簡単に記述したテキストを指定します。\n\n*SAME: テキストが指定されている場合，変更されません。\n*BLANK: テキストは指定されません。\n50文字以内をアポストロフィで囲んで指定してください。",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*SAME",
+      "attributes": {
+        "characterSet": "upper"
+      }
+    },
+    {
+      "name": "OPRCTL",
+      "description": "操作員制御",
+      "help": "ジョブ制御権限を持つユーザーが，このジョブ待ち行列上に項目のあるジョブを制御および変更することができるかどうかを指定します。",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*SAME",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*SAME",
+          "value": "*SAME",
+          "help": "ジョブ待ち行列の操作員制御属性に指定された現在の値は変更されません。"
+        },
+        {
+          "label": "*YES",
+          "value": "*YES",
+          "help": "ジョブ制御権限を持つユーザーは待ち行列を制御することができ，その待ち行列上の項目に変更を加えることができます。"
+        },
+        {
+          "label": "*NO",
+          "value": "*NO",
+          "help": "ジョブ制御権限を持つユーザーは，他にも特殊権限を持っている場合を除いて，この待ち行列およびその項目を操作したり変更したりすることはできません。"
+        }
+      ],
+      "positional": 2
+    },
+    {
+      "name": "AUTCHK",
+      "description": "検査権限",
+      "help": "ジョブ待ち行列に対してどのタイプの権限を持つユーザーが，ジョブ待ち行列を保留または解放することによって待ち行列を制御できるかを指定します。特殊権限を持つユーザーもジョブ待ち行列を制御できる場合があります。",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*SAME",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*SAME",
+          "value": "*SAME",
+          "help": "ジョブ待ち行列に指定されている検査権限属性の現行の値は変更されません。"
+        },
+        {
+          "label": "*OWNER",
+          "value": "*OWNER",
+          "help": "ジョブ待ち行列権限テストを通過するためには，要求元はジョブ待ち行列に対する所有権限を必要とします。要求元は，ジョブ待ち行列の所有者となるか，グループ・プロファイルを待ち行列所有者と共用するか，あるいはジョブ待ち行列所有者の権限を借用するプログラムを実行することによって所有権限を持つことができます。"
+        },
+        {
+          "label": "*DTAAUT",
+          "value": "*DTAAUT",
+          "help": "ジョブ待ち行列に対して追加，読み取り，および削除の各権限を持つユーザーが待ち行列を制御することができます。"
+        }
+      ]
+    }
+  ],
+  "threadSafe": true,
+  "environment": "すべての環境 (*ALL)",
+  "examples": [
+    {
+      "code": "CHGJOBQ JOBQ(QBATCH) OPRCTL(*NO)"
+    }
+  ],
+  "errorMessages": [
+    {
+      "id": "CPF2207",
+      "text": "ライブラリー&3のタイプ*&2のオブジェクト&1の使用を認可されていない。"
+    },
+    {
+      "id": "CPF3330",
+      "text": "必要な資源が使用できない。"
+    },
+    {
+      "id": "CPF3307",
+      "text": "ジョブ待ち行列&1が&2に見つからなかった。"
+    }
+  ],
+  "source": {
+    "url": "https://www.ibm.com/docs/ja/ssw_ibm_i_74/cl/chgjobq.htm",
+    "version": "IBM i 7.4"
+  }
+}

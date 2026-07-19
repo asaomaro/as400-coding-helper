@@ -1,0 +1,383 @@
+{
+  "keyword": "CHGLF",
+  "description": "Change Logical File (CHGLF)",
+  "parameters": [
+    {
+      "name": "FILE",
+      "description": "Logical file",
+      "help": "Logical file (FILE)\n\nSpecifies the logical file to be changed.\n\nThis is a required parameter.\n\nNote: If a Distributed Data Management (DDM) file is specified, the logical file and the remote system are contained in the DDM file. For more information, see the System (SYSTEM) parameter description.\n\nQualifier 1: Logical file\n\nQualifier 2: Library",
+      "inputType": "group",
+      "required": true,
+      "groupKind": "qualified",
+      "children": [
+        {
+          "name": "LIB",
+          "description": "Library",
+          "help": "指定できる特殊値: *LIBL, *CURLIB",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "*LIBL",
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          }
+        },
+        {
+          "name": "FILE",
+          "description": "Logical file",
+          "inputType": "text",
+          "required": true,
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          }
+        }
+      ],
+      "positional": 1
+    },
+    {
+      "name": "SYSTEM",
+      "description": "System",
+      "help": "System (SYSTEM)\n\nSpecifies whether the logical file is changed on the local system or on a remote system.",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*LCL",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*LCL",
+          "value": "*LCL"
+        },
+        {
+          "label": "*RMT",
+          "value": "*RMT"
+        },
+        {
+          "label": "*FILETYPE",
+          "value": "*FILETYPE"
+        }
+      ]
+    },
+    {
+      "name": "FRCRBDAP",
+      "description": "Force rebuild of access path",
+      "help": "Force rebuild of access path (FRCRBDAP)\n\nSpecifies whether to force the rebuild of access paths that are associated with join logical files or with files that have keyed sequence access paths.\n\nNote: For a join logical file, this parameter applies to all join secondary access paths even if the join logical file is not a keyed file.",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*NO",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*NO",
+          "value": "*NO"
+        },
+        {
+          "label": "*YES",
+          "value": "*YES"
+        }
+      ]
+    },
+    {
+      "name": "MAXMBRS",
+      "description": "Maximum members",
+      "help": "Maximum members (MAXMBRS)\n\nSpecifies the maximum number of members that the logical file can have at any time. The maximum number of members specified must be greater than or equal to the current number of members in the file.\n\n指定できる特殊値: *SAME, *NOMAX",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*SAME",
+      "attributes": {
+        "characterSet": "upper"
+      }
+    },
+    {
+      "name": "ACCPTHSIZ",
+      "description": "Access path size",
+      "help": "Access path size (ACCPTHSIZ)\n\nSpecifies the maximum size of auxiliary storage that can be occupied by the following kinds of access paths:\n\nChanging the value for this file causes the access paths that are owned by the file to be rebuilt.\n\nNote: This parameter does not apply to access paths that are created for queries that refer to the data in the file.\n\nPerformance Tip\n\nFor optimum performance, consider whether there is high contention for keys within the access path when selecting the value on this parameter:",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*SAME",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*SAME",
+          "value": "*SAME"
+        },
+        {
+          "label": "*MAX4GB",
+          "value": "*MAX4GB"
+        },
+        {
+          "label": "*MAX1TB",
+          "value": "*MAX1TB"
+        }
+      ]
+    },
+    {
+      "name": "MAINT",
+      "description": "Access path maintenance",
+      "help": "Access path maintenance (MAINT)\n\nSpecifies the type of access path maintenance used for all members of the logical file. This parameter is valid only for keyed files or join files.\n\nNote: For a join logical file, this parameter applies to all join secondary access paths, even if the join file is not a keyed file.",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*SAME",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*SAME",
+          "value": "*SAME"
+        },
+        {
+          "label": "*IMMED",
+          "value": "*IMMED"
+        },
+        {
+          "label": "*REBLD",
+          "value": "*REBLD"
+        },
+        {
+          "label": "*DLY",
+          "value": "*DLY"
+        }
+      ]
+    },
+    {
+      "name": "RECOVER",
+      "description": "Access path recovery",
+      "help": "Access path recovery (RECOVER)\n\nSpecifies, for files having immediate or delayed maintenance on their access paths, when recovery processing of the file is done if a system failure occurs while the access path is being changed. This parameter is valid only if a keyed access path is used.",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*SAME",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*SAME",
+          "value": "*SAME"
+        },
+        {
+          "label": "*NO",
+          "value": "*NO"
+        },
+        {
+          "label": "*AFTIPL",
+          "value": "*AFTIPL"
+        },
+        {
+          "label": "*IPL",
+          "value": "*IPL"
+        }
+      ]
+    },
+    {
+      "name": "FRCACCPTH",
+      "description": "Force keyed access path",
+      "help": "Force keyed access path (FRCACCPTH)\n\nSpecifies, for files with keyed access paths only, whether access path changes are forced to auxiliary storage along with the associated records in the file. Specifying *YES minimizes (but does not remove) the chance that an abnormal end will cause damage to the access path, which then requires it to be rebuilt.",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*SAME",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*SAME",
+          "value": "*SAME"
+        },
+        {
+          "label": "*NO",
+          "value": "*NO"
+        },
+        {
+          "label": "*YES",
+          "value": "*YES"
+        }
+      ]
+    },
+    {
+      "name": "UNIT",
+      "description": "Preferred storage unit",
+      "help": "Preferred storage unit (UNIT)\n\nSpecifies the preferred storage media for the file.\n\n指定できる特殊値: *SAME, *ANY, *SSD",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*SAME",
+      "attributes": {
+        "characterSet": "upper"
+      }
+    },
+    {
+      "name": "FMTSLR",
+      "description": "Rcd format selector program",
+      "help": "Rcd format selector program (FMTSLR)\n\nSpecifies the record format selector program that is called when the logical file member contains more than one logical record format. The user-written selector program is called when a record is inserted into the database file and a record format name is not included in the high-level-language program. This parameter is not valid if the logical file has only one record format.\n\nSingle values\n\nQualifier 1: Rcd format selector program\n\nQualifier 2: Library",
+      "inputType": "group",
+      "required": false,
+      "groupKind": "qualified",
+      "singleValues": [
+        "*SAME",
+        "*NONE"
+      ],
+      "children": [
+        {
+          "name": "FMTSLR_LIB",
+          "description": "Library",
+          "help": "指定できる特殊値: *LIBL, *CURLIB",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "*LIBL",
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          }
+        },
+        {
+          "name": "FMTSLR",
+          "description": "Rcd format selector program",
+          "inputType": "text",
+          "required": false,
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          },
+          "defaultValue": "*SAME"
+        }
+      ]
+    },
+    {
+      "name": "FRCRATIO",
+      "description": "Records to force a write",
+      "help": "Records to force a write (FRCRATIO)\n\nSpecifies the number of inserted, changed, or deleted records that are processed before they are forced to auxiliary (permanent) storage. The force write ratio specified for a logical file is less than or equal to the smallest force write ratio of its physical files. If a larger force write ratio is specified, it is ignored and a message is sent informing you of the action. If a physical file associated with this logical file is being recorded in the journal, it is recommended that a larger force write ratio, or *NONE, be specified.\n\n指定できる特殊値: *SAME, *NONE",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*SAME",
+      "attributes": {
+        "characterSet": "upper"
+      }
+    },
+    {
+      "name": "WAITFILE",
+      "description": "Maximum file wait time",
+      "help": "Maximum file wait time (WAITFILE)\n\nSpecifies the number of seconds that the program waits for the file resources and session resources to be allocated when the file is opened, or for the device or session resources to be allocated when an acquire operation is performed to the file. If the file resources are not allocated in the specified wait time, an error message is sent to the program.\n\nNote: An immediate allocation of the device by the device resource is required when an acquire operation is performed to the file.\n\n指定できる特殊値: *SAME, *IMMED, *CLS",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*SAME",
+      "attributes": {
+        "characterSet": "upper"
+      }
+    },
+    {
+      "name": "WAITRCD",
+      "description": "Maximum record wait time",
+      "help": "Maximum record wait time (WAITRCD)\n\nSpecifies the number of seconds that the program waits for a record that is changed or deleted. If the record is not allocated in the specified wait time, an error message is sent to the program.\n\n指定できる特殊値: *SAME, *IMMED, *NOMAX",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*SAME",
+      "attributes": {
+        "characterSet": "upper"
+      }
+    },
+    {
+      "name": "SHARE",
+      "description": "Share open data path",
+      "help": "Share open data path (SHARE)\n\nSpecifies whether the open data path (ODP) is shared with other programs in the same routing step. When an ODP is shared, the programs accessing the file share facilities such as the file status and the buffer.",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*SAME",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*SAME",
+          "value": "*SAME"
+        },
+        {
+          "label": "*NO",
+          "value": "*NO"
+        },
+        {
+          "label": "*YES",
+          "value": "*YES"
+        }
+      ]
+    },
+    {
+      "name": "LVLCHK",
+      "description": "Record format level check",
+      "help": "Record format level check (LVLCHK)\n\nSpecifies whether the record format level identifiers in the program are checked against those in the logical file when the file is opened. If so, the record format identifiers in the program must match those in the logical file. This value can be overridden by the Override with Database File (OVRDBF) command at run time.",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*SAME",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*SAME",
+          "value": "*SAME"
+        },
+        {
+          "label": "*YES",
+          "value": "*YES"
+        },
+        {
+          "label": "*NO",
+          "value": "*NO"
+        }
+      ]
+    },
+    {
+      "name": "KEEPINMEM",
+      "description": "Keep in memory",
+      "help": "Keep in memory (KEEPINMEM)\n\nSpecifies whether one or more access paths for a file member should be brought into a main storage pool by the SQL Query Engine (SQE) when the access path(s) are used in the query to improve the performance.\n\nNote: The Query Options File (QAQQINI) parameter MEMORY_POOL_PREFERENCE can be used to specify the preferred main storage pool that should be used.",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*SAME",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*SAME",
+          "value": "*SAME"
+        },
+        {
+          "label": "*NO",
+          "value": "*NO"
+        },
+        {
+          "label": "*YES",
+          "value": "*YES"
+        }
+      ]
+    },
+    {
+      "name": "TEXT",
+      "description": "Text 'description'",
+      "help": "Text 'description' (TEXT)\n\nSpecifies the text that briefly describes the object.\n\n指定できる特殊値: *SAME, *BLANK",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*SAME",
+      "attributes": {
+        "characterSet": "upper"
+      }
+    }
+  ],
+  "examples": [
+    {
+      "code": "CHGLF FILE(QGPL/INV) FMTSLR(INVFMTS)"
+    },
+    {
+      "code": "CHGLF FILE(QGPL/DDMF) FMTSLR(INVFMTS) SYSTEM(*RMT)"
+    }
+  ],
+  "source": {
+    "url": "https://www.ibm.com/docs/en/ssw_ibm_i_74/cl/chglf.htm",
+    "version": "IBM i 7.4"
+  }
+}

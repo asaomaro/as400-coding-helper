@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="ja"><head><meta charset="utf-8"><title>書き出しプログラム変更  (CHGWTR)</title></head>
+<body>
+<div role="main">
+<script type="text/javascript" src="../rzahg/synch.js"></script>
+<a name="CHGWTR.Top_Of_Page"></a>
+<h1>書き出しプログラム変更  (CHGWTR)</h1><div id="lastModifiedDate"><span>Last Updated</span>: 2021-04-13</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table0" width="100%" class="cds--data-table">
+<tbody><tr>
+<td class="valigntop alignleft"><strong>実行可能場所:  </strong>すべての環境 (*ALL)<br>
+<strong>スレッド・セーフ:  </strong>いいえ
+</td>
+<td class="valigntop alignright">
+<a href="#CHGWTR.PARAMETERS.TABLE">パラメーター</a><br>
+<a href="#CHGWTR.COMMAND.EXAMPLES">例</a><br>
+<a href="#CHGWTR.ERROR.MESSAGES">エラー・メッセージ</a></td>
+</tr>
+</tbody></table></div></div>
+<div> <a name="CHGWTR"></a>
+<p>書き出しプログラム変更(CHGWTR)コマンドにより，活動状態の印刷装置書出プログラムの次の属性を変更することができます。
+</p>
+<ul class="cds--list--unordered">
+<li class="cds--list__item">この書き出しプログラムによって処理される用紙タイプの変更。
+</li>
+<li class="cds--list__item">この書き出しプログラムのファイル区切りの数の変更。
+</li>
+<li class="cds--list__item">この書き出しプログラムが使用する出力待ち行列の変更。
+</li>
+</ul>
+<p>このコマンドによって，指定された用紙タイプのすべてのファイルをまとめて処理することができます。出力待ち行列にある時にはスプール・ファイルは必ずしも用紙タイプの順序になっていませんから，操作員は用紙を連続的に変更する必要なく出力を管理することができます。また，そのつど書き出しプログラムを終了して開始することなく，この印刷装置に別の出力待ち行列を変更して使用することができます。
+</p>
+<p>書き出しプログラムが保留(HLD)状況になっている時に変更が行われた場合には，書き出しプログラムが解放されるまで，変更は効力を持ちません。変更は，OPTIONパラメーターに指定された値に基づいて行われます。
+</p>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table1" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#CHGWTR.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div>
+<h2><a name="CHGWTR.PARAMETERS.TABLE">パラメーター</a></h2>
+<div class="tablenoborder"><div class="cds--data-table-container"><table id="parm_table2" summary="Parameters" border="1" cellpadding="4" cellspacing="0" class="cds--data-table">
+<!-- col1="10" col2="15" col3="30" col4="10" -->
+<tbody><tr>
+<th scope="col" class="valignbottom alignleft"><div class="cds--table-header-label">キーワード</div></th>
+<th scope="col" class="valignbottom alignleft"><div class="cds--table-header-label">記述</div></th>
+<th scope="col" class="valignbottom alignleft"><div class="cds--table-header-label">選択項目</div></th>
+<th scope="col" class="valignbottom alignleft"><div class="cds--table-header-label">ノーツ</div></th>
+</tr>
+<tr>
+<td class="valigntop"><a href="#CHGWTR.WTR"><strong>WTR</strong></a></td>
+<td class="valigntop">書き出しプログラム</td>
+<td class="valigntop"><span class="var">名前</span>, *SYSVAL</td>
+<td class="valigntop">必須, 定位置 1</td>
+</tr>
+<tr>
+<td class="valigntop" rowspan="3"><a href="#CHGWTR.OUTQ"><strong>OUTQ</strong></a></td>
+<td class="valigntop">出力待ち行列</td>
+<td class="valigntop">単一値: <strong class="underlined">*SAME</strong>, *DEV<br>その他の値: <span class="var">修飾オブジェクト名</span></td>
+<td class="valigntop" rowspan="3">オプショナル, 定位置 2</td>
+</tr>
+<tr>
+<td class="valigntop">修飾子 1: 出力待ち行列</td>
+<td class="valigntop"><span class="var">名前</span></td>
+</tr><tr>
+<td class="valigntop">修飾子 2: ライブラリー</td>
+<td class="valigntop"><span class="var">名前</span>, <strong class="underlined">*LIBL</strong>, *CURLIB</td>
+</tr><tr>
+<td class="valigntop" rowspan="3"><a href="#CHGWTR.FORMTYPE"><strong>FORMTYPE</strong></a></td>
+<td class="valigntop">用紙タイプ・オプション</td>
+<td class="valigntop"><span class="var">要素リスト</span></td>
+<td class="valigntop" rowspan="3">オプショナル, 定位置 3</td>
+</tr>
+<tr>
+<td class="valigntop">要素 1: 用紙タイプ</td>
+<td class="valigntop">
+<span class="var">文字値</span>, <strong class="underlined">*SAME</strong>, *ALL, *STD, *FORMS</td>
+</tr>
+<tr>
+<td class="valigntop">要素 2: メッセージ・オプション</td>
+<td class="valigntop">
+<strong class="underlined">*SAME</strong>, *INQMSG, *MSG, *NOMSG, *INFOMSG</td>
+</tr>
+<tr>
+<td class="valigntop"><a href="#CHGWTR.FILESEP"><strong>FILESEP</strong></a></td>
+<td class="valigntop">ファイル区切り</td>
+<td class="valigntop">0-9, <strong class="underlined">*SAME</strong>, *FILE</td>
+<td class="valigntop">オプショナル</td>
+</tr>
+<tr>
+<td class="valigntop"><a href="#CHGWTR.SEPDRAWER"><strong>SEPDRAWER</strong></a></td>
+<td class="valigntop">区切りページの用紙入れ</td>
+<td class="valigntop">1-255, <strong class="underlined">*SAME</strong>, *DEVD, *FILE</td>
+<td class="valigntop">オプショナル</td>
+</tr>
+<tr>
+<td class="valigntop"><a href="#CHGWTR.OPTION"><strong>OPTION</strong></a></td>
+<td class="valigntop">書き出しプログラム変更時点</td>
+<td class="valigntop"><strong class="underlined">*NORDYF</strong>, *FILEEND</td>
+<td class="valigntop">オプショナル</td>
+</tr>
+</tbody></table></div></div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table3" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#CHGWTR.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+</div>
+<div> <a name="CHGWTR.WTR"></a>
+<h2>書き出しプログラム (WTR)</h2>
+<p>変更する印刷装置書出プログラムを指定します。
+</p>
+<p>これは必須パラメーターです。
+</p>
+<dl>
+<dt><strong>*SYSVAL</strong></dt>
+<dd>システムの省略時の印刷装置に開始された書き出しプログラムを変更します。
+</dd>
+<dt><strong class="italic">名前</strong></dt>
+<dd>変更したい印刷装置書出プログラムの名前を指定してください。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table4" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#CHGWTR.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="CHGWTR.OUTQ"></a>
+<h2>出力待ち行列 (OUTQ)</h2>
+<p>この書き出しプログラムがスプール・ファイルの処理に使用する出力待ち行列を指定します。書き出しプログラムを変更する前に，その出力待ち行列が使用可能でなければなりません。出力待ち行列が1次または2次補助記憶域プールにある場合には，その出力待ち行列が書き出しプログラムのライブラリー名前空間内になければなりません。
+</p>
+<h3><strong>単一値</strong>
+</h3>
+<dl>
+<dt><strong class="underlined">*SAME</strong></dt>
+<dd>使用中の出力待ち行列は同じままで，変更されません。
+</dd>
+</dl>
+<dl>
+<dt><strong>*DEV</strong></dt>
+<dd>スプール・ファイルの印刷装置に関連した出力待ち行列が使用されます。
+</dd>
+</dl>
+<h3><strong>修飾子</strong><strong>1: </strong><strong>出力待ち行列</strong>
+</h3>
+<dl>
+<dt><strong class="italic">名前</strong></dt>
+<dd>出力待ち行列の名前を指定してください。
+</dd>
+</dl>
+<h3><strong>修飾子</strong><strong>2: ライブラリー</strong>
+</h3>
+<dl>
+<dt><strong class="underlined">*LIBL</strong></dt>
+<dd>最初に一致するものが見つかるまで，現行スレッドのライブラリー・リスト内のすべてのライブラリーが検索されます。
+</dd>
+</dl>
+<dl>
+<dt><strong>*CURLIB</strong></dt>
+<dd>出力待ち行列を見つけるために，ジョブの現行ライブラリーが使用されます。ジョブの現行ライブラリーとしてライブラリーが指定されていない場合は，QGPLが使用されます。
+</dd>
+<dt><strong class="italic">名前</strong></dt>
+<dd>出力待ち行列が入っているライブラリーの名前を指定してください。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table5" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#CHGWTR.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="CHGWTR.FORMTYPE"></a>
+<h2>用紙タイプ・オプション (FORMTYPE)</h2>
+<p>書き出しプログラムの出力を処理する時に使用する用紙タイプを指定します。ファイルの用紙タイプは，最初は，スプール・ファイルを作成するために使用された用紙タイプから得られます。
+</p>
+<p>
+<strong>注:     </strong>印刷されるスプール・ファイルの用紙タイプが装置で印刷された最後のスプール・ファイルの用紙タイプと異なっている時には，用紙装てんメッセージが出されます。最後に印刷された用紙タイプは最後に出されたSTRPRTWTR, CHGWTR,またはVRYCFG以降のものが保持されます。
+</p>
+<p>次の例を考慮してください。
+</p>
+<ol class="cds--list--ordered--temporary">
+<li class="cds--list__item">印刷装置PRT01で最後に印刷されたスプール・ファイルの用紙タイプは*STDです。
+</li>
+<li class="cds--list__item">ユーザーは，次のコマンドを使用してPRT01の用紙タイプをXYZに変更します。
+<p>
+</p><pre>CHGWTR  PRT01  FORMTYPE(XYZ)
+</pre>
+<p></p>
+</li>
+<li class="cds--list__item">用紙タイプXYZのスプール・ファイルはPRT01で印刷されません。
+</li>
+<li class="cds--list__item">その後ユーザーは，用紙タイプ*STDのスプール・ファイルをPRT01に送ります。PRT01で最後に印刷されたスプール・ファイルの用紙タイプは印刷中のスプール・ファイルの用紙タイプと同じであるので，介在するCHGWTRコマンドにもかかわらず，用紙装てんメッセージが出されません。
+<p>用紙タイプXYZのスプール・ファイルが実際にPRT01で印刷される場合には，用紙装てんメッセージが出されることになります。
+</p>
+</li>
+</ol>
+<h3><strong>要素</strong><strong>1: </strong><strong>用紙タイプ</strong>
+</h3>
+<dl>
+<dt><strong class="underlined">*SAME</strong></dt>
+<dd>現行の用紙タイプの値は変更されません。
+</dd>
+<dt><strong>*ALL</strong></dt>
+<dd>すべての用紙タイプが書き出しプログラムによって処理されます。
+</dd>
+<dt><strong>*FORMS</strong></dt>
+<dd>同じ用紙タイプをもつ使用可能なすべてのファイルは，書き出しプログラムが次の用紙タイプに移る前にグループとして処理されます。書き出しプログラムはまず，待ち行列で最初に使用可能なファイルを選択します。最初のファイルが完了すると，最初のファイルと同じ用紙タイプをもつすべてのファイルが処理されます。その後で，書き出しプログラムは再び，待ち行列で最初に使用可能なファイルを選択し，この処理が繰り返されます。
+</dd>
+<dt><strong>*STD</strong></dt>
+<dd>書き出しプログラムは，用紙タイプが*STDのスプール・ファイルを処理します。
+</dd>
+<dt><strong class="italic">用紙タイプ</strong></dt>
+<dd>書き出しプログラムが使用する用紙のタイプを指定してください。この用紙タイプのファイルだけが処理されます。
+</dd>
+</dl>
+<h3><strong>要素</strong><strong>2: </strong><strong>メッセージ・オプション</strong>
+</h3>
+<dl>
+<dt><strong class="underlined">*SAME</strong></dt>
+<dd>現行のメッセージ属性は変更されません。
+</dd>
+<dt><strong>*INQMSG</strong></dt>
+<dd>スプール・ファイルの用紙タイプが印刷装置の用紙タイプと異なっている時には，照会メッセージがメッセージ待ち行列に送られます。
+</dd>
+<dt><strong>*INFOMSG</strong></dt>
+<dd>この用紙タイプを必要とするスプール・ファイルが出力待ち行列に残っていない時には，通知メッセージがメッセージ待ち行列に送られます。
+</dd>
+<dt><strong>*MSG</strong></dt>
+<dd>スプール・ファイルの用紙タイプが印刷装置の用紙タイプと異なっている時には，照会メッセージがメッセージ待ち行列に送られ，この用紙タイプを必要とするスプール・ファイルが出力待ち行列に残っていない時には，通知メッセージが送られます。
+</dd>
+<dt><strong>*NOMSG</strong></dt>
+<dd>照会メッセージも，通知メッセージもメッセージ待ち行列に送られません。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table6" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#CHGWTR.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="CHGWTR.FILESEP"></a>
+<h2>ファイル区切り (FILESEP)</h2>
+<p>各ファイルの前に印刷するファイル区切りページの数を指定します。
+</p>
+<dl>
+<dt><strong class="underlined">*SAME</strong></dt>
+<dd>ファイル区切りの数は同じままです。
+</dd>
+<dt><strong>*FILE</strong></dt>
+<dd>それぞれのファイルに指定されているファイル区切りページ数を印刷します。
+</dd>
+<dt><strong class="italic">0から9</strong></dt>
+<dd>印刷するファイル区切りページの数を指定します。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table7" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#CHGWTR.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="CHGWTR.SEPDRAWER"></a>
+<h2>区切りページの用紙入れ (SEPDRAWER)</h2>
+<p>区切りページの印刷用に選択する用紙入れを指定します。
+</p>
+<dl>
+<dt><strong class="underlined">*SAME</strong></dt>
+<dd>区切りページ用に指定された用紙入れは変更されません。
+</dd>
+<dt><strong>*DEVD</strong></dt>
+<dd>印刷装置の装置記述に記憶された値が使用されます。
+</dd>
+<dt><strong>*FILE</strong></dt>
+<dd>区切りページはスプール・ファイルと同じ用紙入れから印刷されます。
+</dd>
+<dt><strong>1</strong></dt>
+<dd>区切りページは用紙入れ1から印刷されます。
+</dd>
+<dt><strong>2</strong></dt>
+<dd>区切りページは用紙入れ2から印刷されます。
+</dd>
+<dt><strong>3</strong></dt>
+<dd>区切りページは用紙入れ3から印刷されます。
+</dd>
+<dt><strong class="italic">1から255</strong></dt>
+<dd>区切りページを印刷する用紙入れを指示する番号を指定してください。
+<p>
+<strong>注:     </strong>一部の印刷装置の場合には，SEPDRAWER(3)は封筒引き出しを暗黙のうちに指定します。
+</p>
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table8" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#CHGWTR.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="CHGWTR.OPTION"></a>
+<h2>書き出しプログラム変更時点 (OPTION)</h2>
+<p>変更を行う時期を指定します。
+</p>
+<dl>
+<dt><strong class="underlined">*NORDYF</strong></dt>
+<dd>出力待ち行列上に書き出しプログラムの現行の用紙タイプ選択値に合うファイルがなくなった時点で，変更を行います。
+</dd>
+<dt><strong>*FILEEND</strong></dt>
+<dd>現行ファイルの終わり（例えば現行の報告書の印刷を終了した時点）で，変更を行います。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table9" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#CHGWTR.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div><h2><a name="CHGWTR.COMMAND.EXAMPLES">例</a> </h2>
+<p>
+</p><pre>CHGWTR   WTR(MYWTR)  FORMTYPE(MYFORM *NOMSG)  OPTION(*FILEEND)
+</pre>
+<p></p>
+<p>このコマンドは，他の用紙タイプのファイルを作成していた書き出しプログラムMYWTRを，現在作成されているファイルの終わりでMYFORMの用紙タイプのファイルを作成するように変更します。書き出しプログラムが用紙タイプMYFORMの適格なファイルを使用し終わった場合には，通知メッセージを送ることもできなくなります。
+</p>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table10" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#CHGWTR.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div><h2><a name="CHGWTR.ERROR.MESSAGES">エラー・メッセージ</a> </h2>
+<p><strong class="underlined">*ESCAPE </strong><strong class="underlined">メッセージ</strong>
+</p>
+<dl>
+<dt><strong>CPF1842</strong></dt>
+<dd>システム値&amp;1をアクセスすることができない。
+</dd>
+<dt><strong>CPF2207</strong></dt>
+<dd>ライブラリー&amp;3のタイプ*&amp;2のオブジェクト&amp;1の使用を認可されていない。
+</dd>
+<dt><strong>CPF3313</strong></dt>
+<dd>書き出しプログラム&amp;1は，活動状態でなく，またジョブ待ち行列上にもない。
+</dd>
+<dt><strong>CPF3330</strong></dt>
+<dd>必要な資源が使用できない。
+</dd>
+<dt><strong>CPF3331</strong></dt>
+<dd>書き出しプログラム&amp;3/&amp;2/&amp;1の制御は認可されていない。
+</dd>
+<dt><strong>CPF3357</strong></dt>
+<dd>ライブラリー&amp;2に出力待ち行列&amp;1が見つかりません。
+</dd>
+<dt><strong>CPF3456</strong></dt>
+<dd>書き出しプログラム&amp;1をライブラリー&amp;5の出力待ち行列&amp;4に変更することはできない。
+</dd>
+<dt><strong>CPF3457</strong></dt>
+<dd>書き出しプログラム&amp;1を変更することはできない。
+</dd>
+<dt><strong>CPF3458</strong></dt>
+<dd>書き出しプログラム&amp;1を変更することはできない。書き出しプログラムの終了が保留中です。
+</dd>
+<dt><strong>CPF3459</strong></dt>
+<dd>書き出しプログラム&amp;1は変更に適していない。
+</dd>
+<dt><strong>CPF3460</strong></dt>
+<dd>書き出しプログラム&amp;1を変更することはできない。
+</dd>
+<dt><strong>CPF3463</strong></dt>
+<dd>装置&amp;1の出力待ち行列が見つからない。
+</dd>
+<dt><strong>CPF3464</strong></dt>
+<dd>ライブラリー&amp;2の出力待ち行列&amp;1に対する権限がない。
+</dd>
+<dt><strong>CPF9803</strong></dt>
+<dd>ライブラリー&amp;3のオブジェクト&amp;2を割り振りできません。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table11" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#CHGWTR.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+</div>
+
+
+</body></html>

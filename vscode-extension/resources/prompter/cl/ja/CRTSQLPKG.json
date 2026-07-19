@@ -1,0 +1,254 @@
+{
+  "keyword": "CRTSQLPKG",
+  "description": "SQLパッケージの作成 (CRTSQLPKG)",
+  "help": "SQLパッケージ作成(CRTSQLPKG)コマンドによって，既存の配布SQLプログラムからリレーショナル・データベースに関するSQLパッケージを作成（または再作成）することができます。分散SQLプログラムは，CRTSQLXXXコマンド（ここで，XXX = CBL, CBLI, CI, CPPI, PLI, RPG,またはRPGI)コマンドに リレーショナル・データベース (RDB) パラメーターを指定することによって作成されたプログラムです。\n\n詳細な情報は，IBM i Information Center(http://www.ibm.com/systems/i/infocenter/)の「DB2 for i SQL プログラミング」トピック・コレクションにあります。",
+  "parameters": [
+    {
+      "name": "PGM",
+      "description": "プログラム",
+      "help": "SQLパッケージが作成されるプログラムの名前を指定します。このプログラムは，CRTSQLXXX（ここで，XXX = CBL, CBLI, CI, CPPI, PLI, RPG,またはRPGI)コマンドの1つを使用した作成された分散SQLプログラムでなければなりません。",
+      "inputType": "group",
+      "required": true,
+      "groupKind": "qualified",
+      "children": [
+        {
+          "name": "LIB",
+          "description": "ライブラリー",
+          "help": "*LIBL: 最初に一致するものが見つかるまで，現行スレッドのライブラリー・リスト内のすべてのライブラリーが検索されます。\n*CURLIB: プログラムを見つけるために，ジョブの現行ライブラリーが使用されます。ジョブの現行ライブラリーとして現行ライブラリーを指定しない場合には，QGPLが使用されます。\nプログラムが入っているライブラリーの名前を指定してください。",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "*LIBL",
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          }
+        },
+        {
+          "name": "PGM",
+          "description": "プログラム",
+          "help": "SQLパッケージが作成されるプログラムの名前を指定してください。",
+          "inputType": "text",
+          "required": true,
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          }
+        }
+      ],
+      "positional": 1
+    },
+    {
+      "name": "RDB",
+      "description": "リレーショナル・データベース",
+      "help": "SQLパッケージが作成されるリレーショナル・データベースの名前を指定してください。\n\nSQLパッケージが作成されるリレーショナル・データベースの名前を指定します。リレーショナル・データベース・ディレクトリー項目処理(WRKRDBDIRE)コマンドを使用して，このパラメーターに有効なリレーショナル・データベース名を表示してください。",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*PGM",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*PGM",
+          "value": "*PGM",
+          "help": "最初にプログラムを作成したCRTSQLXXX（ここで，XXX = CBL, CBLI, CI, CPPI, PLI, RPG,またはRPGI)コマンドの リレーショナル・データベース (RDB) パラメーターに指定されたリレーショナル・データベース名が使用されます。"
+        }
+      ],
+      "positional": 2
+    },
+    {
+      "name": "USER",
+      "description": "RDBユーザー",
+      "help": "会話を開始した時にリモート・システムに送られるユーザー名を指定します。\n\n*CURRENT: 現行ジョブと関連したユーザー名が使用されます。\nアプリケーション・リクエスター・ジョブに使用されるユーザー名を指定してください。",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*CURRENT",
+      "attributes": {
+        "characterSet": "upper",
+        "maxLength": 10
+      }
+    },
+    {
+      "name": "PASSWORD",
+      "description": "RDBユーザー・パスワード",
+      "help": "リモート・システムで使用されるパスワードを指定します。\n\n*NONE: パスワードは送られません。この値が指定された場合には， RDB ユーザー (USER) パラメーターに指定されたユーザー名は無効です。\nUSERパラメーターに指定されたユーザー名のパスワードを指定します。ブランクのパスワードは，*NONEの指定と同じに扱われます。",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*NONE",
+      "attributes": {
+        "characterSet": "upper"
+      }
+    },
+    {
+      "name": "DFTRDBCOL",
+      "description": "省略時のコレクション",
+      "help": "テーブル，ビュー，索引，SQLパッケージ，別名，制約，外部プログラム，ノード・グループ，およびトリガーの修飾されていない名前に使用されるスキーマ名を指定します。このパラメーターが適用されるのは，パッケージ内の静的SQLステートメントに対してだけです。\n\n*PGM: SQLパッケージが作成されるプログラムを作成するために使用されるCRTSQLXXX（ここで，XXX = CBL, CBLI, CI, CPPI, PLI, RPG,またはRPGI)コマンドの 省略時のコレクション パラメーターに指定されたスキーマ名が使用されます。\n*NONE: プログラムをプリコンパイルするために使用されるCRTSQLXXX（ここで，XXX = CBL, CBLI, CI, CPPI, PLI, RPG,またはRPGI)コマンドの プリコンパイラー・オプション (OPTION) パラメーターに指定された 命名規則 を使用して，スキーマ名が決定されます。\n修飾されていないテーブル，ビュー，索引，SQLパッケージ，別名，制約，外部プログラム，ノード・グループ，およびトリガーに使用されるスキーマ名を指定します。",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*PGM",
+      "attributes": {
+        "characterSet": "upper",
+        "maxLength": 10
+      }
+    },
+    {
+      "name": "OBJTYPE",
+      "description": "オブジェクト・タイプ",
+      "help": "作成されるSQLパッケージが関係するプログラムのタイプを指定します。",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*PGM",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*PGM",
+          "value": "*PGM",
+          "help": "プログラム (PGM) パラメーターに指定されたプログラムからSQLパッケージを作成します。"
+        },
+        {
+          "label": "*SRVPGM",
+          "value": "*SRVPGM",
+          "help": "PGMパラメーターに指定されたサービス・プログラムからSQLパッケージを作成します。"
+        }
+      ]
+    },
+    {
+      "name": "MODULE",
+      "description": "モジュール・リスト",
+      "help": "結合済みプログラムのモジュールのリストを指定します。\n\n同じプログラムで重複モジュール名を使用することができます。このコマンドは，プログラム中の各モジュールを検索し，MODULEパラメーターに*ALLまたはモジュール名が指定されている場合には，処理が続行され，SQLパッケージを作成する必要があるかどうかが判断されます。モジュールがSQLを使用して作成され，プリコンパイル・コマンドに リレーショナル・データベース (RDB) パラメーターが指定されている場合には，そのモジュールにSQLパッケージが作成されます。そのSQLパッケージは結合済みプログラムのモジュールと関連付けられます。\n\n*ALL: プログラム中のすべてのモジュールにSQLパッケージが作成されます。プログラム中のどのモジュールにもSQLステートメントが含まれていない場合，あるいはモジュールのどれも配布プログラムでない場合には，エラー・メッセージが送られます。",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*ALL",
+      "attributes": {
+        "characterSet": "upper",
+        "maxLength": 10
+      },
+      "maxOccurrences": 256
+    },
+    {
+      "name": "TEXT",
+      "description": "テキスト'記述'",
+      "help": "SQLパッケージおよびその機能を簡単に記述するテキストを指定します。\n\n*PGMTXT: SQLパッケージが作成されるプログラムのテキストが使用されます。\n*BLANK: テキストは指定されません。\n50文字を超えないテキストを，アポストロフィで囲んで指定してください。",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*PGMTXT",
+      "attributes": {
+        "characterSet": "upper"
+      }
+    },
+    {
+      "name": "GENLVL",
+      "description": "重大度レベル",
+      "help": "SQLパッケージの作成時に検出されたエラーに使用可能な最大の重大度レベルを指定します。指定したレベルを超えるレベルでエラーが起こった場合には，SQLパッケージは作成されません。\n\n10: 最大の重大度レベルは10です。\n最大の重大度レベルを指定してください。",
+      "inputType": "number",
+      "required": false,
+      "defaultValue": "10",
+      "attributes": {
+        "numericOnly": true
+      }
+    },
+    {
+      "name": "REPLACE",
+      "description": "置き換え",
+      "help": "指定したライブラリー中の同じ名前の既存のSQLパッケージを新しいSQLパッケージで置き換えるかどうかを指定します。",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*YES",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*YES",
+          "value": "*YES",
+          "help": "同じ名前の既存のSQLパッケージは，新しいSQLパッケージで置き換えられます。"
+        },
+        {
+          "label": "*NO",
+          "value": "*NO",
+          "help": "同じ名前の既存のSQLパッケージは置き換えられません。既に存在している場合には，新しいSQLパッケージは作成されません。"
+        }
+      ]
+    },
+    {
+      "name": "OPTION",
+      "description": "ソース・リスト・オプション",
+      "help": "コマンドによって生成されるリストのオプションを指定します。",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*LIST",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*LIST",
+          "value": "*LIST",
+          "help": "ソースの内容とすべてのエラーを示す完全なリストが生成されます。SQLパッケージの作成中にエラーが検出されなかった場合には，リストは作成されません。"
+        },
+        {
+          "label": "*ERRLIST",
+          "value": "*ERRLIST",
+          "help": "処理中にGENLVLパラメーターを超えるエラーが発生した場合にのみ，完全なリストが生成されます。"
+        }
+      ]
+    },
+    {
+      "name": "PRTFILE",
+      "description": "印刷ファイル",
+      "help": "SQLパッケージの作成のエラー・リストが送られる印刷装置ファイルを指定します。SQLパッケージの作成中にエラーが検出されなかった場合には，リストは作成されません。",
+      "inputType": "group",
+      "required": false,
+      "groupKind": "qualified",
+      "children": [
+        {
+          "name": "PRTFILE_LIB",
+          "description": "ライブラリー",
+          "help": "*LIBL: 最初に一致するものが見つかるまで，現行スレッドのライブラリー・リスト内のすべてのライブラリーが検索されます。\n*CURLIB: 印刷装置ファイルを見つけるためにジョブの現行ライブラリーが使用されます。ジョブの現行ライブラリーとしてライブラリーが指定されていない場合は，QGPLが使用されます。\n印刷装置ファイルが入っているライブラリーの名前を指定してください。",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "*LIBL",
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          }
+        },
+        {
+          "name": "PRTFILE",
+          "description": "印刷ファイル",
+          "help": "QSYSPRT: SQLパッケージの作成のエラー・リストは，IBM提供の印刷装置ファイルQSYSPRTに送られます。\nSQLパッケージの作成のエラー・リストが送られる印刷装置ファイルの名前を指定してください。",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "QSYSPRT",
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          }
+        }
+      ]
+    }
+  ],
+  "threadSafe": false,
+  "environment": "すべての環境 (*ALL)",
+  "examples": [
+    {
+      "code": "CRTSQLPKG PGM(PAYROLL) RDB(SYSTEMA) TEXT('PAYROLL PROGRAM')"
+    }
+  ],
+  "errorMessages": [
+    {
+      "id": "SQL9004",
+      "text": "SQLパッケージの作成が正常に実行されなかった。"
+    },
+    {
+      "id": "SQL9006",
+      "text": "DB2 Query Manager and SQL Development Kitのインストール・レベルがオペレーティング・システムと同じでない。"
+    }
+  ],
+  "source": {
+    "url": "https://www.ibm.com/docs/ja/ssw_ibm_i_74/cl/crtsqlpkg.htm",
+    "version": "IBM i 7.4"
+  }
+}

@@ -44,7 +44,13 @@ const onlyNames = namesArg ? new Set(namesArg.slice('--names='.length).split(','
 
 // IBM の bot ブロック等は status 200・十分な本文長で「The page you requested cannot be displayed」
 // 通知ページを返すことがある。これを成功と誤判定しないための検出。
-const BOT_NOTICE = /cannot be displayed|IBM notice|HTTP response code 5\d\d|要求されたページを表示できません/i;
+// ボット遮断ページの文言。本文の「先頭」だけを見る。
+// コマンドのページはエラー・メッセージ一覧を持っており、そこに
+// 「CPF2513 Message queue &1 cannot be displayed.」のような文が入る。
+// 本文全体を見ると正しいページを遮断と誤判定する（実際 DSPMSG で踏んだ）。
+const BOT_NOTICE = /page (you requested )?cannot be displayed|IBM notice|HTTP response code 5\d\d|要求されたページを表示できません/i;
+const BOT_NOTICE_SCAN = 600;
+const looksBlocked = text => BOT_NOTICE.test(String(text).slice(0, BOT_NOTICE_SCAN));
 
 // --- 既存 manifest を読み戻す（他カテゴリの結果をマージ保持） ---
 function loadExisting() {
@@ -104,8 +110,12 @@ async function fetchViaApi(cat, item, topic) {
     const body = resp.ok ? await resp.text() : '';
     const text = body.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
 
-    if (!resp.ok || text.length < 200 || BOT_NOTICE.test(text)) {
-      const reason = !resp.ok ? `http ${resp.status}` : `本文が短い (${text.length})`;
+    if (!resp.ok || text.length < 200 || looksBlocked(text)) {
+      const reason = !resp.ok
+        ? `http ${resp.status}`
+        : text.length < 200
+          ? `本文が短い (${text.length})`
+          : "ボット遮断ページ";
       gaps.set(key, { category: cat, name: item.name, source_url: url, reason });
       items.delete(key);
       console.log(`GAP  ${key}  ${reason}`);
@@ -166,7 +176,7 @@ async function fetchOne(cat, item) {
         finalUrl: location.href,
       };
     });
-    const botBlocked = BOT_NOTICE.test(info.title) || BOT_NOTICE.test(info.bodyText);
+    const botBlocked = looksBlocked(info.title) || looksBlocked(info.bodyText);
     return { status, botBlocked, ...info };
   };
   try {

@@ -1,0 +1,834 @@
+<!DOCTYPE html>
+<html lang="ja"><head><meta charset="utf-8"><title>Display Messages  (DSPMSG)</title></head>
+<body>
+<main role="main"><article role="article" aria-labelledby="dspmsg__title__1"> 
+<h1 class="topictitle1" id="dspmsg__title__1">Display Messages  (DSPMSG)</h1><div id="lastModifiedDate"><span>Last Updated</span>: 2026-07-13</div>
+
+<div class="body">
+<p>
+<strong>Display Messages  (DSPMSG)
+</strong></p>
+
+<p>
+<strong>Where allowed to run:  
+</strong>All environments (*ALL)
+
+</p>
+
+<p>
+<strong>Threadsafe:  </strong>No
+</p>
+
+<p><a href="#dspmsg__parameters">Parameters</a></p>
+
+<p><a href="#dspmsg__examples">Examples</a></p>
+
+<p><a href="#dspmsg__errormsgs">Error messages</a></p>
+
+<div class="div" id="dspmsg__dspmsg">
+<p>
+The Display Messages (DSPMSG) command is used by the display station user to show the messages received at the specified message queue.  If the message queue is not allocated to the job in which this command is entered or to any other job, it is implicitly allocated by this command for the duration of the command.  When the messages are shown, options are also shown that allow the user to either remove one or more messages from the queue or to enter a reply to each inquiry message.
+
+</p>
+
+<p>
+<strong>Note:     
+</strong>Refer to the section entitled "Handling Messages" in the Basic system operations topic collection in the IBM i Information Center at http://www.ibm.com/systems/i/infocenter/ for a description of how to print a single message description or a group of message descriptions.
+
+</p>
+
+<p>
+<strong>Restrictions:
+</strong>
+</p>
+
+<ol class="cds--list--ordered--temporary">
+<li class="cds--list__item">
+DSPMSG cannot be specified when another job has already allocated the message queue by specifying the ALCOBJ command operating in the *EXCL lock state.
+
+</li>
+
+<li class="cds--list__item">
+The DSPMSG command allows the user to see, but not remove, messages for the job when the message queue is in the *BREAK or *NOTIFY mode for another job.
+
+</li>
+
+<li class="cds--list__item">
+When the message queue is in the *BREAK mode for another job, the break handling program for the message queue determines whether the user is allowed to respond to inquiry messages.  If PGM(*DSPMSG) is specified, the user can reply to inquiry messages, but if PGM(user-program) is specified, no reply to inquiry messages is allowed.
+
+</li>
+
+<li class="cds--list__item">
+If multiple jobs show the same inquiry message, and all jobs reply to the message, only the first reply to the message is valid.  Subsequent replies from other jobs cause error messages to be issued.
+
+</li>
+
+
+</ol>
+
+</div>
+<section class="section" role="region" aria-labelledby="dspmsg__parameters__title__1" id="dspmsg__parameters"><h2 class="sectiontitle" id="dspmsg__parameters__title__1">Parameters</h2>
+
+
+<div class="tablenoborder"><div class="cds--data-table-container"><table summary="" class="defaultstyle cds--data-table"><colgroup><col><col><col><col></colgroup><thead>
+<tr>
+<th id="dspmsg__parameters__entry__1"><div class="cds--table-header-label">
+Keyword
+</div></th>
+
+<th id="dspmsg__parameters__entry__2"><div class="cds--table-header-label">
+Description
+</div></th>
+
+<th id="dspmsg__parameters__entry__3"><div class="cds--table-header-label">
+Choices
+</div></th>
+
+<th id="dspmsg__parameters__entry__4"><div class="cds--table-header-label">
+Notes
+</div></th>
+
+</tr>
+
+</thead>
+<tbody>
+<tr>
+<td rowspan="3" headers="dspmsg__parameters__entry__1 "><a href="#dspmsg__msgq"><strong>MSGQ
+</strong></a></td>
+
+<td headers="dspmsg__parameters__entry__2 ">Message queue
+</td>
+
+<td headers="dspmsg__parameters__entry__3 ">Single values: 
+<strong><u>*WRKUSR
+</u></strong>, *SYSOPR, *USRPRF, *WRKSTN
+
+Other values: 
+<em>Qualified object name
+</em></td>
+
+<td rowspan="3" headers="dspmsg__parameters__entry__4 ">Optional, Positional 1
+</td>
+
+</tr>
+
+<tr>
+<td headers="dspmsg__parameters__entry__2 ">Qualifier 1: Message queue
+</td>
+
+<td headers="dspmsg__parameters__entry__3 "><em>Name
+</em></td>
+
+</tr>
+
+<tr>
+<td headers="dspmsg__parameters__entry__2 ">Qualifier 2: Library
+</td>
+
+<td headers="dspmsg__parameters__entry__3 "><em>Name
+</em>, 
+<strong><u>*LIBL
+</u></strong>, *CURLIB
+</td>
+
+</tr>
+
+<tr>
+<td headers="dspmsg__parameters__entry__1 "><a href="#dspmsg__output"><strong>OUTPUT
+</strong></a></td>
+
+<td headers="dspmsg__parameters__entry__2 ">Output
+</td>
+
+<td headers="dspmsg__parameters__entry__3 "><strong><u>*
+</u></strong>, *PRINT, *PRTWRAP
+</td>
+
+<td headers="dspmsg__parameters__entry__4 ">Optional
+</td>
+
+</tr>
+
+<tr>
+<td headers="dspmsg__parameters__entry__1 "><a href="#dspmsg__msgtype"><strong>MSGTYPE
+</strong></a></td>
+
+<td headers="dspmsg__parameters__entry__2 ">Message type
+</td>
+
+<td headers="dspmsg__parameters__entry__3 "><strong><u>*ALL
+</u></strong>, *INFO, *INQ, *COPY
+</td>
+
+<td headers="dspmsg__parameters__entry__4 ">Optional
+</td>
+
+</tr>
+
+<tr>
+<td headers="dspmsg__parameters__entry__1 "><a href="#dspmsg__start"><strong>START
+</strong></a></td>
+
+<td headers="dspmsg__parameters__entry__2 ">Messages to display first
+</td>
+
+<td headers="dspmsg__parameters__entry__3 "><strong><u>*LAST
+</u></strong>, *FIRST
+</td>
+
+<td headers="dspmsg__parameters__entry__4 ">Optional
+</td>
+
+</tr>
+
+<tr>
+<td headers="dspmsg__parameters__entry__1 "><a href="#dspmsg__sev"><strong>SEV
+</strong></a></td>
+
+<td headers="dspmsg__parameters__entry__2 ">Severity code filter
+</td>
+
+<td headers="dspmsg__parameters__entry__3 ">0-99, 
+<strong><u>0
+</u></strong>, *MSGQ
+</td>
+
+<td headers="dspmsg__parameters__entry__4 ">Optional
+</td>
+
+</tr>
+
+<tr>
+<td headers="dspmsg__parameters__entry__1 "><a href="#dspmsg__astlvl"><strong>ASTLVL
+</strong></a></td>
+
+<td headers="dspmsg__parameters__entry__2 ">Assistance level
+</td>
+
+<td headers="dspmsg__parameters__entry__3 "><strong><u>*PRV
+</u></strong>, *USRPRF, *BASIC, *INTERMED
+</td>
+
+<td headers="dspmsg__parameters__entry__4 ">Optional
+</td>
+
+</tr>
+
+</tbody>
+</table></div>
+</div>
+
+<div class="div" id="dspmsg__msgq">
+<p>
+<strong>Message queue (MSGQ)
+</strong></p>
+
+<p>
+Specifies the message queue from which messages are shown.
+
+</p>
+
+<p>
+<strong>Note:
+</strong>  The special values *WRKSTN and *WRKUSR should be specified for this parameter only when you are in an interactive job.
+
+</p>
+
+<p>
+<strong>Single values
+</strong>
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><u>*WRKUSR
+</u></strong></dt>
+
+<dd class="dlentry">
+Messages are shown from the work station's message queue if there are any messages on it. After the user exits that display, messages are shown from the current user's user profile message queue.  If there are no messages on the work station's message queue, only the messages from the user profile message queue are shown.
+</dd>
+
+<dt class="dlterm">
+<strong>*SYSOPR
+</strong></dt>
+
+<dd class="dlentry">
+Messages from the system operator message queue (QSYSOPR) are shown.
+</dd>
+
+<dt class="dlterm">
+<strong>*WRKSTN
+</strong></dt>
+
+<dd class="dlentry">
+Messages are shown from the work station's own message queue.
+</dd>
+
+<dt class="dlterm">
+<strong>*USRPRF
+</strong></dt>
+
+<dd class="dlentry">
+Messages from the current user profile message queue are shown.
+</dd>
+
+</dl>
+
+<p>
+<strong>Qualifier 1: Message queue
+</strong>
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><em>message-queue-name
+</em></strong></dt>
+
+<dd class="dlentry">
+Specify the name of the message queue from which messages are shown.
+</dd>
+
+</dl>
+
+<p>
+<strong>Qualifier 2: Library
+</strong>
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><u>*LIBL
+</u></strong></dt>
+
+<dd class="dlentry">
+All libraries in the library list for the current thread are searched until the first match is found.
+</dd>
+
+</dl>
+
+<dl>
+<dt class="dlterm">
+<strong>*CURLIB
+</strong></dt>
+
+<dd class="dlentry">
+The current library for the job is used to locate the message queue.  If no current library entry exists in the library list, QGPL is used.
+</dd>
+
+<dt class="dlterm">
+<strong><em>library-name
+</em></strong></dt>
+
+<dd class="dlentry">
+Specify the library where the message queue is located.
+</dd>
+
+</dl>
+
+</div>
+<div class="div" id="dspmsg__output">
+<p>
+<strong>Output (OUTPUT)
+</strong></p>
+
+<p>
+Specifies whether the output from the command is displayed at the requesting work station or printed with the job's spooled output.
+
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><u>*
+</u></strong></dt>
+
+<dd class="dlentry">
+The output is shown (if requested by an interactive job) or printed with the job's spooled output (if requested by a batch job).  Immediate messages can be 512 bytes long.
+</dd>
+
+</dl>
+
+<dl>
+<dt class="dlterm">
+<strong>*PRINT
+</strong></dt>
+
+<dd class="dlentry">
+The output is printed with the job's spooled output.
+</dd>
+
+</dl>
+
+<p>
+Only one line of message text will be printed for each message.  This will be the first 105 bytes of the first level message text.
+
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong>*PRTWRAP
+</strong></dt>
+
+<dd class="dlentry">
+The output is printed with the job's spooled output. If the message  does not fit on one line, additional lines are printed to accommodate up to 512 bytes of the first level message text.
+</dd>
+
+</dl>
+
+<p>
+When the output is printed, two or more lines are printed for each message.  The last line contains the following information:
+
+</p>
+
+<ul class="cds--list--unordered">
+<li class="cds--list__item">
+Qualified job name of the job that sent the message.  This consists of the following three fields:
+<ul class="cds--list--unordered cds--list--nested">
+<li class="cds--list__item">
+Job name
+
+</li>
+
+<li class="cds--list__item">
+User name
+
+</li>
+
+<li class="cds--list__item">
+Job number
+
+</li>
+
+</ul>
+
+
+</li>
+
+<li class="cds--list__item">
+Name of the program that sent the message
+
+</li>
+
+<li class="cds--list__item">
+Instruction number in program that sent the message.  For non-program message queues this is always zeroes.
+
+</li>
+
+<li class="cds--list__item">
+The date and time the message was sent.
+
+</li>
+
+<li class="cds--list__item">
+The name of the user profile that the thread was running under when the message was sent.
+
+</li>
+
+</ul>
+
+</div>
+<div class="div" id="dspmsg__msgtype">
+<p>
+<strong>Message type (MSGTYPE)
+</strong></p>
+
+<p>
+Specifies the type of messages in the message queue that are shown.
+
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><u>*ALL
+</u></strong></dt>
+
+<dd class="dlentry">
+All messages that are in the message queue are shown.
+</dd>
+
+<dt class="dlterm">
+<strong>*INFO
+</strong></dt>
+
+<dd class="dlentry">
+Only informational messages (those not requiring a reply) are shown.
+</dd>
+
+<dt class="dlterm">
+<strong>*INQ
+</strong></dt>
+
+<dd class="dlentry">
+Only inquiry messages (those requiring a reply) are shown.
+</dd>
+
+<dt class="dlterm">
+<strong>*COPY
+</strong></dt>
+
+<dd class="dlentry">
+Copies of the inquiry messages that were sent to other message queues and still require replies are shown.
+</dd>
+
+</dl>
+
+</div>
+<div class="div" id="dspmsg__start">
+<p>
+<strong>Messages to display first (START)
+</strong></p>
+
+<p>
+Specifies, whether the newest messages or the oldest messages in the message queue are shown first.  The display station user can use the Page Up or Page Down key to see other messages if the message list occupies more than one display screen.  This parameter is ignored if the output is directed to a spooled printer file.
+
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><u>*LAST
+</u></strong></dt>
+
+<dd class="dlentry">
+If the intermediate view (Display Message) is displayed, the last (newest) message on the message queue is shown on the bottom line of the display.  The display station user can press the Page Up key to show older messages.
+<p>
+If the Basic view (Work with Messages) is displayed, the last (newest) message on the MSGQ is shown on the top line of the display.  The display station user can press the Page Down key to show older messages.
+
+</p>
+
+</dd>
+
+<dt class="dlterm">
+<strong>*FIRST
+</strong></dt>
+
+<dd class="dlentry">
+If the intermediate view (Display Message) is displayed, the first (oldest) message on the message queue is shown on the top line of the display.  The display station user can press the Page Down key to show newer messages.
+<p>
+If the basic view (Work with Messages) is displayed the first (oldest) message on the message queue is shown on the bottom of the display.  The display station user can press the Page Up key to show newer messages.
+
+</p>
+
+</dd>
+
+</dl>
+
+</div>
+<div class="div" id="dspmsg__sev">
+<p>
+<strong>Severity code filter (SEV)
+</strong></p>
+
+<p>
+Specifies the lowest severity level that a message can have and still be delivered to a user in break or notify mode.  Messages arriving at the message queue whose severities are lower than that specified here do not interrupt the job or turn on the message-waiting light; they are held in the queue until they are displayed by the Display Message (DSPMSG) command.
+
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><u>00
+</u></strong></dt>
+
+<dd class="dlentry">
+All messages in the specified message queue are shown.
+</dd>
+
+<dt class="dlterm">
+<strong>*MSGQ
+</strong></dt>
+
+<dd class="dlentry">
+All messages having a severity code greater than or equal to the severity code specified for the message queue are shown.
+</dd>
+
+<dt class="dlterm">
+<strong><em>severity-code
+</em></strong></dt>
+
+<dd class="dlentry">
+Specify a value, 00 through 99, that specifies the lowest severity code that a message can have and still be shown.
+</dd>
+
+</dl>
+
+</div>
+<div class="div" id="dspmsg__astlvl">
+<p>
+<strong>Assistance level (ASTLVL)
+</strong></p>
+
+<p>
+Specifies which user interface to display.
+
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><u>*PRV
+</u></strong></dt>
+
+<dd class="dlentry">
+The previous user interface used is displayed.
+</dd>
+
+<dt class="dlterm">
+<strong>*USRPRF
+</strong></dt>
+
+<dd class="dlentry">
+The user interface stored in the current user profile is used.
+</dd>
+
+</dl>
+
+<dl>
+<dt class="dlterm">
+<strong>*BASIC
+</strong></dt>
+
+<dd class="dlentry">
+The Operational Assistant user interface is used.
+</dd>
+
+</dl>
+
+<p>
+<strong>Note:     
+</strong>This user interface separates messages into two categories: (1) messages needing a reply and (2) messages not needing a reply.  New messages are shown at the top of each list.
+
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong>*INTERMED
+</strong></dt>
+
+<dd class="dlentry">
+The system user interface is used.
+</dd>
+
+</dl>
+
+<p>
+<strong>Note:     
+</strong>The DSPMSG command online help information assumes the *INTERMED user interface is shown.  If the *BASIC user interface is shown, see the online help information for the Work with Messages (WRKMSG) command.
+
+</p>
+
+</div>
+</section>
+
+<section class="section" role="region" aria-labelledby="dspmsg__examples__title__1" id="dspmsg__examples"><h2 class="sectiontitle" id="dspmsg__examples__title__1">Examples</h2>
+
+<p>
+<strong>Example 1: Displaying Messages From Work Station Message Queue and User Profile Message Queue
+</strong>
+</p>
+
+<div class="p">
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>
+DSPMSG
+
+</code></pre></div><div class="docs--copy-btn"></div></div>
+
+</div>
+
+<p>
+This command displays messages in the requester's work station message queue followed by the user profile message queue. If there are no messages in the work station queue, the user profile message queue is shown immediately.
+
+</p>
+
+<p>
+<strong>Example 2: Displaying Informational Messages
+</strong>
+</p>
+
+<div class="p">
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>
+DSPMSG   MSGQ(SMITH)  MSGTYPE(*INFO)
+
+</code></pre></div><div class="docs--copy-btn"></div></div>
+
+</div>
+
+<p>
+This command displays, at the requester's work station, any informational messages in the message queue named SMITH.
+
+</p>
+
+</section>
+
+<section class="section" role="region" aria-labelledby="dspmsg__errormsgs__title__1" id="dspmsg__errormsgs"><h2 class="sectiontitle" id="dspmsg__errormsgs__title__1">Error messages</h2>
+
+<p>
+<strong><u>*ESCAPE Messages
+</u></strong>
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong>CPF2203
+</strong></dt>
+
+<dd class="dlentry">
+User profile &amp;1 not correct.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF2204
+</strong></dt>
+
+<dd class="dlentry">
+User profile &amp;1 not found.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF2213
+</strong></dt>
+
+<dd class="dlentry">
+Not able to allocate user profile &amp;1.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF2217
+</strong></dt>
+
+<dd class="dlentry">
+Not authorized to user profile &amp;1.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF2225
+</strong></dt>
+
+<dd class="dlentry">
+Not able to allocate internal system object.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF2401
+</strong></dt>
+
+<dd class="dlentry">
+Not authorized to library &amp;1.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF2403
+</strong></dt>
+
+<dd class="dlentry">
+Message queue &amp;1 in &amp;2 not found.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF2408
+</strong></dt>
+
+<dd class="dlentry">
+Not authorized to message queue &amp;1.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF2433
+</strong></dt>
+
+<dd class="dlentry">
+Function not allowed for system log message queue &amp;1.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF2450
+</strong></dt>
+
+<dd class="dlentry">
+Work station message queue &amp;1 not allocated to job.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF2451
+</strong></dt>
+
+<dd class="dlentry">
+Message queue &amp;1 is allocated to another job.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF2477
+</strong></dt>
+
+<dd class="dlentry">
+Message queue &amp;1 currently in use.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF2513
+</strong></dt>
+
+<dd class="dlentry">
+Message queue &amp;1 cannot be displayed.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF2537
+</strong></dt>
+
+<dd class="dlentry">
+Too many records written to file &amp;2 in &amp;3.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF8127
+</strong></dt>
+
+<dd class="dlentry">
+&amp;8 damage on message queue &amp;4 in &amp;9. VLIC log-&amp;7.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF8176
+</strong></dt>
+
+<dd class="dlentry">
+Message queue for device description &amp;4 damaged.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF9830
+</strong></dt>
+
+<dd class="dlentry">
+Cannot assign library &amp;1.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF9845
+</strong></dt>
+
+<dd class="dlentry">
+Error occurred while opening file &amp;1.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF9846
+</strong></dt>
+
+<dd class="dlentry">
+Error while processing file &amp;1 in library &amp;2.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF9847
+</strong></dt>
+
+<dd class="dlentry">
+Error occurred while closing file &amp;1 in library &amp;2.
+</dd>
+
+</dl>
+
+</section>
+
+</div>
+
+</article></main>
+</body></html>

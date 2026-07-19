@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="ja"><head><meta charset="utf-8"><title>サブシステム終了  (ENDSBS)</title></head>
+<body>
+<div role="main">
+<script type="text/javascript" src="../rzahg/synch.js"></script>
+<a name="ENDSBS.Top_Of_Page"></a>
+<h1>サブシステム終了  (ENDSBS)</h1><div id="lastModifiedDate"><span>Last Updated</span>: 2021-04-13</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table0" width="100%" class="cds--data-table">
+<tbody><tr>
+<td class="valigntop alignleft"><strong>実行可能場所:  </strong>すべての環境 (*ALL)<br>
+<strong>スレッド・セーフ:  </strong>いいえ
+</td>
+<td class="valigntop alignright">
+<a href="#ENDSBS.PARAMETERS.TABLE">パラメーター</a><br>
+<a href="#ENDSBS.COMMAND.EXAMPLES">例</a><br>
+<a href="#ENDSBS.ERROR.MESSAGES">エラー・メッセージ</a></td>
+</tr>
+</tbody></table></div></div>
+<div> <a name="ENDSBS"></a>
+<p>サブシステム終了 (ENDSBS)コマンドは，指定されたサブシステム（またはすべての活動サブシステム）を終了し，処理中の活動作業に対して起こることを指定します。このコマンドが実行された後では，サブシステムで新しいジョブまたはルーティング・ステップは開始されません。
+</p>
+<p>ジョブ転送 (TFRJOB)コマンドによってジョブ待ち行列に転送された対話式ジョブは，サブシステムの終了の一部として終了されます。バッチか対話式のいずれかのジョブがジョブ待ち行列上にある間に(TFRJOBコマンドのために）初期プログラム・ロード(IPL)が行われた場合には，ジョブはIPL時にジョブ待ち行列から除去され，そのジョブ・ログが作成されます。
+</p>
+<p>サブシステムで実行中のアプリケーション・プログラムがジョブの終わり処理を制御するための時間を与えられるように指定することができます。時間が与えられていない場合，あるいは与えられた時間内にクリーンアップを実行できない場合には，システムは最小限のジョブの終わり処理を実行します。これには次のものが含まれます。
+</p>
+<ul class="cds--list--unordered">
+<li class="cds--list__item">データベース・ファイルのクローズ。
+</li>
+<li class="cds--list__item">ジョブ・ログの出力待ち行列へのスプーリング。
+</li>
+<li class="cds--list__item">オペレーティング・システムの内部オブジェクトのクリーンアップ。
+</li>
+<li class="cds--list__item">ジョブ終了画面の表示（対話式ジョブの場合）。
+</li>
+<li class="cds--list__item">コミットメント制御処理の完了。
+</li>
+</ul>
+<h2><strong>制約事項</strong><strong>:</strong>
+</h2>
+<ol class="cds--list--ordered--temporary">
+<li class="cds--list__item">このコマンドを使用するためには，ジョブ制御(*JOBCTL)特殊権限が必要です。
+</li>
+<li class="cds--list__item">制御サブシステムが終了している場合には，その名前か*ALLのいずれかが<strong>サブシステム</strong>(SBS)パラメーターに指定されているので，このコマンドは以下でのみ実行することができます。
+<ul class="cds--list--unordered cds--list--nested">
+<li class="cds--list__item">制御サブシステムにある対話式ジョブで，および制御サブシステム記述のワークステーション項目で<strong>割り振り</strong>(AT)パラメーターに*SIGNONが指定されているワークステーション（この対話式ジョブに関連するもの）からのみ。詳細については，ワークステーション項目追加 (ADDWSE)コマンドを参照してください。
+</li>
+<li class="cds--list__item">あるいは，ジョブ待ち行列から開始され，BCHTIMLMTパラメーターおよびSBS(*ALL)が指定されて，制御サブシステムで実行中のバッチ・ジョブ。
+</li>
+</ul>
+<p>ENDSBS SBS(*ALL)は，TELNETジョブ，パススルー・ジョブ，またはワークステーション機能ジョブでは使用できません。
+</p>
+</li>
+<li class="cds--list__item">ENDSBS SBS(*ALL)は，複数のスレッドが可能なバッチ・ジョブでは使用することができません。
+</li>
+</ol>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table1" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#ENDSBS.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div>
+<h2><a name="ENDSBS.PARAMETERS.TABLE">パラメーター</a></h2>
+<div class="tablenoborder"><div class="cds--data-table-container"><table id="parm_table2" summary="Parameters" border="1" cellpadding="4" cellspacing="0" class="cds--data-table">
+<!-- col1="10" col2="15" col3="30" col4="10" -->
+<tbody><tr>
+<th scope="col" class="valignbottom alignleft"><div class="cds--table-header-label">キーワード</div></th>
+<th scope="col" class="valignbottom alignleft"><div class="cds--table-header-label">記述</div></th>
+<th scope="col" class="valignbottom alignleft"><div class="cds--table-header-label">選択項目</div></th>
+<th scope="col" class="valignbottom alignleft"><div class="cds--table-header-label">ノーツ</div></th>
+</tr>
+<tr>
+<td class="valigntop"><a href="#ENDSBS.SBS"><strong>SBS</strong></a></td>
+<td class="valigntop">サブシステム</td>
+<td class="valigntop"><span class="var">名前</span>, *ALL</td>
+<td class="valigntop">必須, 定位置 1</td>
+</tr>
+<tr>
+<td class="valigntop"><a href="#ENDSBS.OPTION"><strong>OPTION</strong></a></td>
+<td class="valigntop">終了方法</td>
+<td class="valigntop"><strong class="underlined">*CNTRLD</strong>, *IMMED</td>
+<td class="valigntop">オプショナル, 定位置 2</td>
+</tr>
+<tr>
+<td class="valigntop"><a href="#ENDSBS.DELAY"><strong>DELAY</strong></a></td>
+<td class="valigntop">制御された終了遅延時間</td>
+<td class="valigntop">0-99999, <strong class="underlined">*NOLIMIT</strong></td>
+<td class="valigntop">オプショナル</td>
+</tr>
+<tr>
+<td class="valigntop"><a href="#ENDSBS.ENDSBSOPT"><strong>ENDSBSOPT</strong></a></td>
+<td class="valigntop">サブシステム終了オプション</td>
+<td class="valigntop">単一値: <strong class="underlined">*DFT</strong><br>その他の値 (最大 3 回の繰り返し): *NOJOBLOG, *CHGPTY, *CHGTSL</td>
+<td class="valigntop">オプショナル</td>
+</tr>
+<tr>
+<td class="valigntop"><a href="#ENDSBS.BCHTIMLMT"><strong>BCHTIMLMT</strong></a></td>
+<td class="valigntop">バッチ時間制限</td>
+<td class="valigntop">5-9999, *NOMAX</td>
+<td class="valigntop">オプショナル</td>
+</tr>
+<tr>
+<td class="valigntop"><a href="#ENDSBS.ABNENDDLY"><strong>ABNENDDLY</strong></a></td>
+<td class="valigntop">異常終了遅延時間</td>
+<td class="valigntop">10-999, *NOLIMIT</td>
+<td class="valigntop">オプショナル</td>
+</tr>
+</tbody></table></div></div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table3" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#ENDSBS.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+</div>
+<div> <a name="ENDSBS.SBS"></a>
+<h2>サブシステム (SBS)</h2>
+<p>終了するサブシステムの名前を指定するか，またはすべての活動サブシステムを終了することを指定します。
+</p>
+<p>これは必須パラメーターです。
+</p>
+<dl>
+<dt><strong>*ALL</strong></dt>
+<dd>現在活動状態であるすべてのサブシステムが終了されます。このコマンドが入力されたジョブを除くすべてのジョブが終了します。この値を指定した時には，QSYSOPRメッセージ待ち行列がサブシステム終了コマンドを出したジョブで中断転送モードになります。
+</dd>
+<dt><strong class="italic">名前</strong></dt>
+<dd>終了するサブシステムの単純名を指定します。指定したサブシステムが制御サブシステムである場合には，このコマンドを出した対話式ジョブは活動状態のままで残ります。また，指定したサブシステムが制御サブシステムで，かつ，このコマンドを出したジョブがワークステーションで活動状態にある2つの2次ジョブの1つである場合には，2つの2次ジョブはどちらも強制終了されません。制御サブシステムは，(1つのジョブでサインオフすることによって，あるいは別のジョブからジョブを終了することによって）ジョブの1つを終了するまで終了しません。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table4" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#ENDSBS.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="ENDSBS.OPTION"></a>
+<h2>終了方法 (OPTION)</h2>
+<p>サブシステム中のジョブを制御された方式で終了するか（制御された方式でジョブを終了すると，アプリケーション・プログラムはジョブ終了処理を実行することができます），あるいは即時に終了するかを指定します。
+</p>
+<dl>
+<dt><strong class="underlined">*CNTRLD</strong></dt>
+<dd>ジョブは制御された方式で終了します。これにより，実行中のプログラムはクリーンアップ（ジョブ終了処理）を行うことができます。終了中のジョブに非同期信号SIGTERM用の信号処理プロシージャーがある場合は，そのジョブに対してSIGTERM信号が生成されます。アプリケーションには，ジョブが終了する前にクリーンアップするための，DELAYパラメーターに指定されただけの時間の長さがあります。
+</dd>
+<dt><strong>*IMMED</strong></dt>
+<dd>ジョブは即時に終了します。終了中のジョブに非同期信号SIGTERM用の信号処理プロシージャーがある場合は，そのジョブに対してSIGTERM信号が生成され，QENDJOBLMTシステム値が時間制限を指定します。SIGTERM信号を処理する以外に，実行中のプログラムはいかなるクリーンアップも実行できません。
+<p>
+<strong>注:     </strong>*IMMED値は，データが部分的に更新されている場合に好ましくない結果をもたらす可能性があります。この値は，制御された終了が正常に試みられなかった後に限り使用してください。
+</p>
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table5" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#ENDSBS.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="ENDSBS.DELAY"></a>
+<h2>制御された終了遅延時間 (DELAY)</h2>
+<p>制御方式によるサブシステム終了操作を完了するのに許される時間（秒数）を指定します。この時間が過ぎても終了操作が完了しない場合には，サブシステムでまだ処理中のジョブはすべて即時に終了します。
+</p>
+<dl>
+<dt><strong class="underlined">*NOLIMIT</strong></dt>
+<dd>制御方式による終了を完了する時間に制限を設けません。
+</dd>
+<dt><strong class="italic">0から99999</strong></dt>
+<dd>終了操作が完了可能である秒数を指定してください。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table6" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#ENDSBS.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="ENDSBS.ENDSBSOPT"></a>
+<h2>サブシステム終了オプション (ENDSBSOPT)</h2>
+<p>活動サブシステムの終了時に取られるオプションを指定します。一般に，これらのオプションを指定すると，ENDSBSコマンドのパフォーマンスが改善されます。各オプションには特定の副次作用があるので，それらのオプションの使用の前にそれを分析する必要があります。
+</p>
+<p>このパラメーターは，既に終了状況にあるジョブには影響しません。
+</p>
+<dl>
+<dt><strong class="underlined">*DFT</strong></dt>
+<dd>サブシステムは特殊な終了オプションなしで終了されます。
+<ul class="cds--list--unordered">
+<li class="cds--list__item">ジョブ・ログが生成されます。
+</li>
+<li class="cds--list__item">実行優先順位は変わりません。
+</li>
+<li class="cds--list__item">タイム・スライス値は変わりません。
+</li>
+</ul>
+</dd>
+<dt><strong>*NOJOBLOG</strong></dt>
+<dd>このコマンドの呼び出しによって，終了されるジョブのジョブ・ログは作成されません。これには，サブシステム・モニター・ジョブおよびサブシステムのすべてのユーザー・ジョブが含まれます。このオプションによって，ENDSBSコマンドの完了に必要な時間を大幅に削減することができます。ただし，ジョブ内で問題が起こった場合には，その問題を記録するジョブ・ログがないので，問題の診断が困難になるかまたは不可能になる可能性があります。
+</dd>
+<dt><strong>*CHGPTY</strong></dt>
+<dd>終了中のジョブのCPU優先順位が高い値（より劣る優先順位）に変わります。*CHGPTYを指定すると，システム上の残りの活動ジョブのパフォーマンスが改善されることがあります。ただし，終了中のジョブはその完了までに時間がかかる場合があります。サブシステムが制御付きで終了される場合には，このオプションは無視されます。しかし，DELAY時間制限が満了すると，このオプションは即時に有効となります。
+</dd>
+<dt><strong>*CHGTSL</strong></dt>
+<dd>終了しているジョブのタイム・スライスはより低い値に変更されます。*CHGTSLを指定すると，システム上の残りの活動ジョブのパフォーマンスが改善されることがあります。ただし，終了中のジョブはその完了までに時間がかかる場合があります。サブシステムが制御付きで終了される場合には，このオプションは無視されます。しかし，DELAY時間制限が満了すると，このオプションは即時に有効となります。
+<p>
+<strong>注:     </strong>*CHGPTYおよび*CHGTSLを指定すると，システム上の他の活動ジョブに対する影響は軽減されますが，終了中のサブシステムに割り当てられている活動ワークステーションが複数ある場合には，望ましくない遅延の原因になることがあります。終了中のサブシステムに割り当てられている活動ワークステーションを他のサブシステムに対して割り当て可能とする前に，その表示を使用しているジョブを終了しなければならないので，それらのワークステーションでそのサインオン画面を再表示するまでに長くかかる場合があります。
+</p>
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table7" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#ENDSBS.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="ENDSBS.BCHTIMLMT"></a>
+<h2>バッチ時間制限 (BCHTIMLMT)</h2>
+<p>システムがバッチ制限状態で実行される時間の長さ（分数）を指定します。このパラメーターは，制御サブシステムで実行中のバッチ・ジョブからすべてのサブシステムを終了している場合にのみ有効です。この状態では，パラメーター値を指定する必要があります。このパラメーターが指定された場合には，システムは終了して制限状態になり，ENDSBSコマンドを実行中のバッチ・ジョブだけが活動状態のままとなります。システムがこの制限状態にある間は，システム参照コードA900 3C70が表示されます。指定された時間制限に達すると，バッチ・ジョブは終了され，制御サブシステムが再始動されます。このジョブが終了すると，制御サブシステムが開始されます。
+</p>
+<p>
+<strong>注:     </strong>このパラメーターは，操作員の対話を必要としないアプリケーションにのみお勧めします。
+</p>
+<dl>
+<dt><strong>*NOMAX</strong></dt>
+<dd>バッチ制限機能には時間制限はありません。システムは，ジョブが終了するか，サブシステム開始 (STRSBS)コマンドが使用されるか，あるいはバッチ制限状態を終了するための専用保守ツール(DST)オプションが使用されるまで，制限状態のままとなります。
+</dd>
+<dt><strong class="italic">5から9999</strong></dt>
+<dd>バッチ制限機能の実行を許可する時間制限（分数）を指定します。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table8" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#ENDSBS.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="ENDSBS.ABNENDDLY"></a>
+<h2>異常終了遅延時間 (ABNENDDLY)</h2>
+<p>サブシステム即時終了操作を完了するのに許される時間（分数）を指定します。この時間が過ぎても終了操作が完了しない場合，サブシステムでまだ処理中のジョブはすべて異常終了します。ジョブが異常終了すると，その次のシステム終了は異常としてマークされます。活動状態のSIGTERMハンドラーを持つ未終了のジョブがある場合は，遅延時間を拡張することができます。
+</p>
+<dl>
+<dt><strong>*NOLIMIT</strong></dt>
+<dd>即時終了を完了する時間に制限を設けません。
+</dd>
+<dt><strong class="italic">10から999</strong></dt>
+<dd>即時終了操作を完了できる分数を指定してください。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table9" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#ENDSBS.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div><h2><a name="ENDSBS.COMMAND.EXAMPLES">例</a> </h2>
+<p>
+</p><pre>ENDSBS   SBS(QBATCH)  OPTION(*CNTRLD)  DELAY(60)
+</pre>
+<p></p>
+<p>このコマンドは，QBATCHサブシステム内のすべての活動ジョブ終了し，そのサブシステムを終了します。活動ジョブには，アプリケーション提供のジョブ終了処理を実行するために60秒が許可されます。
+</p>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table10" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#ENDSBS.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div><h2><a name="ENDSBS.ERROR.MESSAGES">エラー・メッセージ</a> </h2>
+<p><strong class="underlined">*ESCAPE </strong><strong class="underlined">メッセージ</strong>
+</p>
+<dl>
+<dt><strong>CPF1001</strong></dt>
+<dd>システム応答の待機時間が満了した。
+</dd>
+<dt><strong>CPF1032</strong></dt>
+<dd>*CNTRLDオプションでシステムが終了中である。
+</dd>
+<dt><strong>CPF1033</strong></dt>
+<dd>*IMMEDオプションでシステムが終了中である。
+</dd>
+<dt><strong>CPF1034</strong></dt>
+<dd>*CNTRLDオプションですべてのサブシステムが終了中である。
+</dd>
+<dt><strong>CPF1035</strong></dt>
+<dd>*IMMEDオプションでサブシステムが終了中である。
+</dd>
+<dt><strong>CPF1036</strong></dt>
+<dd>*CNTRLDオプションでシステムの電源が切られた。
+</dd>
+<dt><strong>CPF1037</strong></dt>
+<dd>*IMMEDオプションでシステムの電源が切られた。
+</dd>
+<dt><strong>CPF1038</strong></dt>
+<dd>コマンドを使用する権限がない。
+</dd>
+<dt><strong>CPF1052</strong></dt>
+<dd>現在の環境では，ENDSBS *ALLを使用することはできない。
+</dd>
+<dt><strong>CPF1053</strong></dt>
+<dd>制御サブシステム&amp;1の終了は認められない。
+</dd>
+<dt><strong>CPF1054</strong></dt>
+<dd>サブシステム&amp;1は活動状態ではない。
+</dd>
+<dt><strong>CPF1055</strong></dt>
+<dd>サブシステム&amp;1が*CNTRLDオプションで終了中である。
+</dd>
+<dt><strong>CPF1056</strong></dt>
+<dd>サブシステム&amp;1が*IMMEDオプションで既に終了中である。
+</dd>
+<dt><strong>CPF1081</strong></dt>
+<dd>制御サブシステムが既に単一ジョブに終了中である。
+</dd>
+<dt><strong>CPF1091</strong></dt>
+<dd>システム・アービターで機能チェックが起こった。
+</dd>
+<dt><strong>CPF18C3</strong></dt>
+<dd>出口点プログラム&amp;1は制限状態に入ることができません。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table11" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#ENDSBS.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+</div>
+
+
+</body></html>

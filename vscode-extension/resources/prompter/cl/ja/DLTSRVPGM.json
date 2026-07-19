@@ -1,0 +1,114 @@
+{
+  "keyword": "DLTSRVPGM",
+  "description": "サービス・プログラムの削除 (DLTSRVPGM)",
+  "help": "サービス・プログラム削除(DLTSRVPGM)コマンドは，バインドされたサービス・プログラムまたはサービス・プログラムのグループを，モジュールとバインド・ディレクトリーの1つのセットから削除します。",
+  "parameters": [
+    {
+      "name": "SRVPGM",
+      "description": "サービス・プログラム",
+      "help": "削除するサービス・プログラムを指定します。特定サービス・プログラムまたは総称サービス・プログラムを指定することができます。\n\nこれは必須パラメーターです。\n\n次のQXXXライブラリーは弊社提供のものですが，これらには一般的によく変更されるユーザー・データが収められます。したがって，これらのライブラリーは「ユーザー・ライブラリー」と見なされ，検索されます。",
+      "inputType": "group",
+      "required": true,
+      "groupKind": "qualified",
+      "children": [
+        {
+          "name": "LIB",
+          "description": "ライブラリー",
+          "help": "*LIBL: 最初に一致するものが見つかるまで，現行スレッドのライブラリー・リスト内のすべてのライブラリーが検索されます。\n*CURLIB: ジョブの現行ライブラリーが検索されます。ジョブの現行ライブラリーとして指定されているライブラリーがない場合は，QGPLライブラリーが使用されます。\n*USRLIBL: ジョブのライブラリー・リストのユーザー部分にあるライブラリーだけが検索されます。\n*ALL: QSYSを含むシステム上のすべてのライブラリーが検索されます。\n*ALLUSR: すべてのユーザー・ライブラリーが検索されます。次のものを除き，英字Qで始まらない名前のすべてのライブラリーが検索されます。 #CGULIB #DSULIB #SEULIB #COBLIB #RPGLIB #DFULIB #SDALIB 次のQXXXライブラリーは弊社提供のものですが，これらには一般的によく変更されるユーザー・データが収められます。したがって，これらのライブラリーは「ユーザー・ライブラリー」と見なされ，検索されます。 QDSNX QRCLXXXXX QUSRDIRDB QUSRVI QGPL QSRVAGT QUSRIJS QUSRVXRXMX QGPL38 QSYS2 QUSRINFSKR QWQCENT QMGTC QSYS2XXXXX QUSRNOTES QWQREPOS QMGTC2 QS36F QUSROND QMPGDATA QUSER38 QUSRPOSGS QMQMDATA QUSRADSM QUSRPOSSA QMQMPROC QUSRBRM QUSRPYMSVR QPFRDATA QUSRDIRCF QUSRRDARS QRCL QUSRDIRCL QUSRSYS 'XXXXX'は1次補助記憶域プール(ASP)の番号です。 前のリリースのCLプログラム内でコンパイルされるユーザー・コマンドを入れるために，弊社がサポートする前の各リリース用にQUSRVXRXMXの形式の別のライブラリー名を作成することができます。QUSRVXRXMXユーザー・ライブラリーのVXRXMXは弊社が引き続きサポートしている前のリリースのバージョン，リリース，およびモディフィケーション・レベルです。\n検索するライブラリーの名前を指定してください。",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "*LIBL",
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          }
+        },
+        {
+          "name": "SRVPGM",
+          "description": "サービス・プログラム",
+          "help": "削除するサービス・プログラムの総称名を指定してください。総称名は1つ以上の文字の後にアスタリスク(*)を付けた文字ストリング（例えば，ABC*）です。総称名が指定された場合には，その総称名で始まる名前のサービス・プログラムで，それに対してユーザーが権限をもっているすべてのサービス・プログラムが削除されます。総称（接頭部）名にアスタリスクが含まれていない場合には，システムはこれを完全なサービス・プログラム名と見なします。\n削除するサービス・プログラムの名前を指定してください。",
+          "inputType": "text",
+          "required": true,
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          }
+        }
+      ],
+      "positional": 1
+    }
+  ],
+  "threadSafe": false,
+  "environment": "すべての環境 (*ALL)",
+  "restrictions": [
+    "サービス・プログラムに対するオブジェクト存在(*OBJEXIST)権限が必要です。",
+    "サービス・プログラムを削除するライブラリーに対して実行(*EXECUTE)権限が必要です。"
+  ],
+  "examples": [
+    {
+      "code": "DLTSRVPGM SRVPGM(XYZ/S*)"
+    }
+  ],
+  "errorMessages": [
+    {
+      "id": "CPF210F",
+      "text": "&2のタイプ*&3の&1に対する操作が正常に実行されなかった。"
+    },
+    {
+      "id": "CPF2105",
+      "text": "&2に，タイプ*&3のオブジェクト&1が見つからない。"
+    },
+    {
+      "id": "CPF2110",
+      "text": "ライブラリー&1が見つかりません。"
+    },
+    {
+      "id": "CPF2113",
+      "text": "ライブラリー&1を割り振ることができない。"
+    },
+    {
+      "id": "CPF2114",
+      "text": "&2のオブジェクト&1タイプ*&3を割り振ることができない。"
+    },
+    {
+      "id": "CPF2117",
+      "text": "タイプ*&3の&4個のオブジェクトが削除され，&5個のオブジェクトが削除されなかった。"
+    },
+    {
+      "id": "CPF2125",
+      "text": "オブジェクトは削除されなかった。"
+    },
+    {
+      "id": "CPF2160",
+      "text": "オブジェクト・タイプ*&1は，要求された機能に適切でない。"
+    },
+    {
+      "id": "CPF2176",
+      "text": "ライブラリー&1に損傷がある。"
+    },
+    {
+      "id": "CPF2182",
+      "text": "ライブラリー&1は認可されていない。"
+    },
+    {
+      "id": "CPF2189",
+      "text": "&2のオブジェクト&1タイプ*&3に対する権限がありません。"
+    },
+    {
+      "id": "CPFA030",
+      "text": "オブジェクトはすでに使用中である。"
+    },
+    {
+      "id": "CPFE007",
+      "text": "コマンドの処理中にエラーが起こった。"
+    },
+    {
+      "id": "CPF9803",
+      "text": "ライブラリー&3のオブジェクト&2を割り振りできません。"
+    }
+  ],
+  "source": {
+    "url": "https://www.ibm.com/docs/ja/ssw_ibm_i_74/cl/dltsrvpgm.htm",
+    "version": "IBM i 7.4"
+  }
+}

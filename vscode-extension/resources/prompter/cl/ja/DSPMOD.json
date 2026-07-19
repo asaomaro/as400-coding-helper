@@ -1,0 +1,255 @@
+{
+  "keyword": "DSPMOD",
+  "description": "モジュールの表示 (DSPMOD)",
+  "help": "モジュールの表示(DSPMOD)コマンドは，モジュールに関する情報を表示します。この表示には，コンパイラーに関する情報，モジュールを作成した元のソース，モジュールの処理属性，およびモジュールのサイズが含まれます。",
+  "parameters": [
+    {
+      "name": "MODULE",
+      "description": "モジュール",
+      "help": "情報を表示する対象のモジュールを指定します。\n\nこれは必須パラメーターです。",
+      "inputType": "group",
+      "required": true,
+      "groupKind": "qualified",
+      "children": [
+        {
+          "name": "LIB",
+          "description": "ライブラリー",
+          "help": "*LIBL: 最初に一致するものが見つかるまで，現行スレッドのライブラリー・リスト内のすべてのライブラリーが検索されます。\n*CURLIB: ジョブの現行ライブラリーが検索されます。ジョブの現行ライブラリーとして指定されているライブラリーがない場合は，QGPLライブラリーが使用されます。\n検索するライブラリーの名前を指定してください。",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "*LIBL",
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          }
+        },
+        {
+          "name": "MODULE",
+          "description": "モジュール",
+          "help": "情報が表示されるモジュールの名前を指定してください。",
+          "inputType": "text",
+          "required": true,
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          }
+        }
+      ],
+      "positional": 1
+    },
+    {
+      "name": "DETAIL",
+      "description": "詳細",
+      "help": "モジュールのどの情報セットを表示するかを指定します。",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*ALL",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*ALL",
+          "value": "*ALL",
+          "help": "指定されたモジュールに適用可能なすべての情報が表示または印刷されます。 注: DETAIL(*ALL)が有効となるのは，情報を表示または印刷する場合だけです。*OUTFILEが 出力 (OUTPUT) パラメーターに指定する場合は，無効です。"
+        },
+        {
+          "label": "*BASIC",
+          "value": "*BASIC"
+        },
+        {
+          "label": "*SIZE",
+          "value": "*SIZE"
+        },
+        {
+          "label": "*EXPORT",
+          "value": "*EXPORT"
+        },
+        {
+          "label": "*IMPORT",
+          "value": "*IMPORT"
+        },
+        {
+          "label": "*PROCLIST",
+          "value": "*PROCLIST"
+        },
+        {
+          "label": "*REFSYSOBJ",
+          "value": "*REFSYSOBJ"
+        },
+        {
+          "label": "*COPYRIGHT",
+          "value": "*COPYRIGHT"
+        }
+      ],
+      "positional": 2,
+      "maxOccurrences": 7
+    },
+    {
+      "name": "OUTPUT",
+      "description": "出力",
+      "help": "このコマンドからの出力を表示するか，印刷するか，またはデータベース・ファイルに送るかを指定します。",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*",
+          "value": "*",
+          "help": "対話式ジョブによって要求された出力は画面に表示されます。バッチ・ジョブによって要求された出力は，ジョブのスプール出力で印刷されます。"
+        },
+        {
+          "label": "*PRINT",
+          "value": "*PRINT",
+          "help": "出力はジョブのスプール出力で印刷されます。"
+        },
+        {
+          "label": "*OUTFILE",
+          "value": "*OUTFILE",
+          "help": "出力は， 出力を受け取るファイル (OUTFILE) パラメーターで指定されたデータベース・ファイルに送られます。 注: 256桁を超えるプロシージャー名が見つかって値*OUTFILEが指定されている場合には，プロシージャー名の最後の253文字が出力ファイルに入れられて，その前に3つの不等号(<<<)文字が付けられます。この不等号(<<<)文字は，この名前が部分名のみであることを示します。ジョブ・ログには，使用可能なすべての情報が戻されていないことを示す診断メッセージCPD5D12が送られます。同じメッセージが，モニター可能なコマンド処理プログラム(CPP)の呼び出し側プログラムに，状況メッセージとして送られます。ユーザーは，モジュール情報検索(QBNRMODI)またはモジュール情報リスト(QBNLMODI) APIを使用して，このプロシージャーの完全な名前を見つけることができます。 注: DETAIL(*ALL)が有効なのは，OUTPUT(*OUTFILE)が指定された場合だけです。"
+        }
+      ],
+      "positional": 3
+    },
+    {
+      "name": "OUTFILE",
+      "description": "出力を受け取るファイル",
+      "help": "このコマンドの出力が送られるデータベース・ファイルを指定します。出力ファイルが存在していない場合には，このコマンドは，指定されたライブラリーにデータベース・ファイルを作成します。ファイルが作成される場合には，このテキストは「DSPMODの出力ファイル」となります。このファイルの一般ユーザー権限は，ファイルを作成するライブラリーに指定した作成権限と同じです。出力ファイルのレコード様式は，弊社提供のデータベース・ファイルで使用されるものと同じです。\n\n弊社提供データベース・ファイルおよびレコード様式は次の通りです。",
+      "inputType": "group",
+      "required": false,
+      "groupKind": "qualified",
+      "children": [
+        {
+          "name": "OUTFILE_LIB",
+          "description": "ライブラリー",
+          "help": "*LIBL: 最初に一致するものが見つかるまで，現行スレッドのライブラリー・リスト内のすべてのライブラリーが検索されます。\n*CURLIB: ジョブの現行ライブラリーが検索されます。ジョブの現行ライブラリーとして指定されているライブラリーがない場合は，QGPLライブラリーが使用されます。\n検索するライブラリーの名前を指定してください。",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "*LIBL",
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          }
+        },
+        {
+          "name": "OUTFILE",
+          "description": "出力を受け取るファイル",
+          "help": "このコマンドの出力を受け取るデータベース・ファイルの名前を指定してください。",
+          "inputType": "text",
+          "required": false,
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          }
+        }
+      ]
+    },
+    {
+      "name": "OUTMBR",
+      "description": "出力メンバー・オプション",
+      "help": "出力が送られる先のデータベース・ファイル・メンバーの名前を指定します。メンバーが既に存在している場合には，システムがこのパラメーターの2番目の要素を使用して，新しいレコードが追加される前にそのメンバーが消去されるかどうかを判別します。メンバーが存在していなくて，メンバー名を指定しない場合は，システムが 出力を受け取るファイル (OUTFILE) パラメーターに指定された出力ファイルの名前でメンバーを作成します。出力ファイル・メンバー名を指定しているが，メンバーが存在していない場合は，システムがそれを作成します。",
+      "inputType": "group",
+      "required": false,
+      "groupKind": "elements",
+      "children": [
+        {
+          "name": "OUTMBR_E1",
+          "description": "出力を受け取るメンバー",
+          "help": "*FIRST: ファイル内の最初のメンバーが出力を受け取ります。OUTMBR(*FIRST)が指定されていて，ファイル・メンバーが存在していない場合には，システムがOUTFILEパラメーターに指定されたファイルの名前を使用してメンバーを作成します。\n出力を受け取るファイル・メンバーの名前を指定してください。このメンバーが存在していない場合には，システムがそれを作成します。",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "*FIRST",
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          }
+        },
+        {
+          "name": "OUTMBR_E2",
+          "description": "レコードの置き換えまたは追加",
+          "inputType": "dropdown",
+          "required": false,
+          "defaultValue": "*REPLACE",
+          "attributes": {
+            "characterSet": "upper"
+          },
+          "options": [
+            {
+              "label": "*REPLACE",
+              "value": "*REPLACE",
+              "help": "システムは，既存のメンバーを消去し，新しいレコードを追加します。"
+            },
+            {
+              "label": "*ADD",
+              "value": "*ADD",
+              "help": "システムは，既存のレコードの終わりに新しいレコードを追加します。"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "threadSafe": false,
+  "environment": "すべての環境 (*ALL)",
+  "restrictions": [
+    "表示しようとするモジュールに対する使用(*USE)権限およびそのモジュールの保管先のライブラリーに対する実行(*EXECUTE)権限が必要です。"
+  ],
+  "examples": [
+    {
+      "code": "DSPMOD MODULE(MYMOD)"
+    }
+  ],
+  "errorMessages": [
+    {
+      "id": "CPF5CE7",
+      "text": "*MODULEデータの検索中にエラーが起こった。"
+    },
+    {
+      "id": "CPF9801",
+      "text": "ライブラリー&3にオブジェクト&2が見つからない。"
+    },
+    {
+      "id": "CPF9802",
+      "text": "&3のオブジェクト&2は認可されていない。"
+    },
+    {
+      "id": "CPF9803",
+      "text": "ライブラリー&3のオブジェクト&2を割り振りできません。"
+    },
+    {
+      "id": "CPF9807",
+      "text": "ライブラリー・リストの１つまたは複数のライブラリーが削除された。"
+    },
+    {
+      "id": "CPF9808",
+      "text": "ライブラリー・リストの１つまたは複数のライブラリーを割り振ることができない。"
+    },
+    {
+      "id": "CPF9810",
+      "text": "ライブラリー&1が見つかりません。"
+    },
+    {
+      "id": "CPF9820",
+      "text": "ライブラリー&1の使用は認可されていない。"
+    },
+    {
+      "id": "CPF9830",
+      "text": "ライブラリー&1を割り当てることができない。"
+    },
+    {
+      "id": "CPF9871",
+      "text": "処理中に，エラーが起こった。"
+    },
+    {
+      "id": "CPD5D12",
+      "text": "１つまたは複数のレコードに不完全な値がある。"
+    }
+  ],
+  "source": {
+    "url": "https://www.ibm.com/docs/ja/ssw_ibm_i_74/cl/dspmod.htm",
+    "version": "IBM i 7.4"
+  }
+}

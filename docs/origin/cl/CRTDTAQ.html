@@ -1,0 +1,713 @@
+<!DOCTYPE html>
+<html lang="ja"><head><meta charset="utf-8"><title>データ待ち行列作成  (CRTDTAQ)</title></head>
+<body>
+<div role="main">
+<script type="text/javascript" src="../rzahg/synch.js"></script>
+<a name="CRTDTAQ.Top_Of_Page"></a>
+<h1>データ待ち行列作成  (CRTDTAQ)</h1><div id="lastModifiedDate"><span>Last Updated</span>: 2021-04-13</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table0" width="100%" class="cds--data-table">
+<tbody><tr>
+<td class="valigntop alignleft"><strong>実行可能場所:  </strong>すべての環境 (*ALL)<br>
+<strong>スレッド・セーフ:  </strong>はい
+</td>
+<td class="valigntop alignright">
+<a href="#CRTDTAQ.PARAMETERS.TABLE">パラメーター</a><br>
+<a href="#CRTDTAQ.COMMAND.EXAMPLES">例</a><br>
+<a href="#CRTDTAQ.ERROR.MESSAGES">エラー・メッセージ</a></td>
+</tr>
+</tbody></table></div></div>
+<div> <a name="CRTDTAQ"></a>
+<p>データ待ち行列作成(CRTDTAQ)コマンドでは，データ待ち行列を作成し，それを指定したライブラリーに記憶します。
+</p>
+<p>i5/OSシステム・オブジェクトの1つのタイプであるデータ待ち行列は，ジョブの中でかまたはジョブの間で複数のプログラムによって使用されるデータを伝え，記憶するために使用されます。単一の待ち行列との間で複数のジョブがデータを送受信することができます。
+</p>
+<p>出力待ち行列上のデータ待ち行列の詳細については，IBM i Information Center(http://www.ibm.com/systems/i/infocenter/)の「印刷」カテゴリーを参照してください。
+</p>
+<p>データ待ち行列作成(CRTDTAQ)コマンドでは，TYPE(*DDM)が指定された場合に，任意選択で分散データ管理機能(DDM)データ待ち行列が作成されます。DDMデータ待ち行列は，DDMネットワーク内のリモート（ターゲット）システムにあるデータ待ち行列にアクセスするために，プログラムによって参照データ待ち行列として使用されます。ローカル（ソース）システムのプログラムは，リモート・データ待ち行列の名前ではなく，DDMデータ待ち行列の名前によってリモート・データ待ち行列を参照します。しかし，DDMデータ待ち行列名をリモート・データ待ち行列名と同じにすることができます。
+</p>
+<p>ソース・システムのDDMデータ待ち行列には，リモート・データ待ち行列の名前と，そのリモート・データ待ち行列が置かれているリモート（ターゲット）システムの名前が入れられます。
+</p>
+<p><strong>制約事項</strong><strong>:</strong>このコマンドのユーザーは，データ待ち行列が入っているライブラリーに対する追加(*ADD)権限を持っている必要があります。
+</p>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table1" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#CRTDTAQ.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div>
+<h2><a name="CRTDTAQ.PARAMETERS.TABLE">パラメーター</a></h2>
+<div class="tablenoborder"><div class="cds--data-table-container"><table id="parm_table2" summary="Parameters" border="1" cellpadding="4" cellspacing="0" class="cds--data-table">
+<!-- col1="10" col2="15" col3="30" col4="10" -->
+<tbody><tr>
+<th scope="col" class="valignbottom alignleft"><div class="cds--table-header-label">キーワード</div></th>
+<th scope="col" class="valignbottom alignleft"><div class="cds--table-header-label">記述</div></th>
+<th scope="col" class="valignbottom alignleft"><div class="cds--table-header-label">選択項目</div></th>
+<th scope="col" class="valignbottom alignleft"><div class="cds--table-header-label">ノーツ</div></th>
+</tr>
+<tr>
+<td class="valigntop" rowspan="3"><a href="#CRTDTAQ.DTAQ"><strong>DTAQ</strong></a></td>
+<td class="valigntop">データ待ち行列名</td>
+<td class="valigntop"><span class="var">修飾オブジェクト名</span></td>
+<td class="valigntop" rowspan="3">必須, 定位置 1</td>
+</tr>
+<tr>
+<td class="valigntop">修飾子 1: データ待ち行列名</td>
+<td class="valigntop"><span class="var">名前</span></td>
+</tr><tr>
+<td class="valigntop">修飾子 2: ライブラリー</td>
+<td class="valigntop"><span class="var">名前</span>, <strong class="underlined">*CURLIB</strong></td>
+</tr><tr>
+<td class="valigntop"><a href="#CRTDTAQ.TYPE"><strong>TYPE</strong></a></td>
+<td class="valigntop">タイプ</td>
+<td class="valigntop"><strong class="underlined">*STD</strong>, *DSP, *DDM</td>
+<td class="valigntop">オプショナル</td>
+</tr>
+<tr>
+<td class="valigntop"><a href="#CRTDTAQ.MAXLEN"><strong>MAXLEN</strong></a></td>
+<td class="valigntop">最大項目長</td>
+<td class="valigntop">1-64512</td>
+<td class="valigntop">オプショナル, 定位置 2</td>
+</tr>
+<tr>
+<td class="valigntop"><a href="#CRTDTAQ.FORCE"><strong>FORCE</strong></a></td>
+<td class="valigntop">補助記憶域への強制書き込み</td>
+<td class="valigntop"><strong class="underlined">*NO</strong>, *YES</td>
+<td class="valigntop">オプショナル</td>
+</tr>
+<tr>
+<td class="valigntop"><a href="#CRTDTAQ.SEQ"><strong>SEQ</strong></a></td>
+<td class="valigntop">順序</td>
+<td class="valigntop"><strong class="underlined">*FIFO</strong>, *LIFO, *KEYED</td>
+<td class="valigntop">オプショナル</td>
+</tr>
+<tr>
+<td class="valigntop"><a href="#CRTDTAQ.KEYLEN"><strong>KEYLEN</strong></a></td>
+<td class="valigntop">キーの長さ</td>
+<td class="valigntop">1-256</td>
+<td class="valigntop">オプショナル</td>
+</tr>
+<tr>
+<td class="valigntop"><a href="#CRTDTAQ.SENDERID"><strong>SENDERID</strong></a></td>
+<td class="valigntop">送信元IDの組み込み</td>
+<td class="valigntop"><strong class="underlined">*NO</strong>, *YES</td>
+<td class="valigntop">オプショナル</td>
+</tr>
+<tr>
+<td class="valigntop" rowspan="3"><a href="#CRTDTAQ.SIZE"><strong>SIZE</strong></a></td>
+<td class="valigntop">待ち行列サイズ</td>
+<td class="valigntop"><span class="var">要素リスト</span></td>
+<td class="valigntop" rowspan="3">オプショナル</td>
+</tr>
+<tr>
+<td class="valigntop">要素 1: 最大項目数</td>
+<td class="valigntop">
+<span class="var">整数</span>, <strong class="underlined">*MAX16MB</strong>, *MAX2GB</td>
+</tr>
+<tr>
+<td class="valigntop">要素 2: 初期項目数</td>
+<td class="valigntop">
+<span class="var">整数</span>, <strong class="underlined">16</strong></td>
+</tr>
+<tr>
+<td class="valigntop"><a href="#CRTDTAQ.AUTORCL"><strong>AUTORCL</strong></a></td>
+<td class="valigntop">自動再利用</td>
+<td class="valigntop"><strong class="underlined">*NO</strong>, *YES</td>
+<td class="valigntop">オプショナル</td>
+</tr>
+<tr>
+<td class="valigntop" rowspan="3"><a href="#CRTDTAQ.RMTDTAQ"><strong>RMTDTAQ</strong></a></td>
+<td class="valigntop">リモート・データ待ち行列</td>
+<td class="valigntop"><span class="var">修飾オブジェクト名</span></td>
+<td class="valigntop" rowspan="3">オプショナル</td>
+</tr>
+<tr>
+<td class="valigntop">修飾子 1: リモート・データ待ち行列</td>
+<td class="valigntop"><span class="var">名前</span></td>
+</tr><tr>
+<td class="valigntop">修飾子 2: ライブラリー</td>
+<td class="valigntop"><span class="var">名前</span>, *LIBL, *CURLIB</td>
+</tr><tr>
+<td class="valigntop"><a href="#CRTDTAQ.RMTLOCNAME"><strong>RMTLOCNAME</strong></a></td>
+<td class="valigntop">リモート・ロケーション</td>
+<td class="valigntop"><span class="var">通信名</span>, *RDB</td>
+<td class="valigntop">オプショナル</td>
+</tr>
+<tr>
+<td class="valigntop"><a href="#CRTDTAQ.RDB"><strong>RDB</strong></a></td>
+<td class="valigntop">リレーショナル・データベース</td>
+<td class="valigntop"><span class="var">名前</span></td>
+<td class="valigntop">オプショナル</td>
+</tr>
+<tr>
+<td class="valigntop"><a href="#CRTDTAQ.DEV"><strong>DEV</strong></a></td>
+<td class="valigntop"> APPC装置記述</td>
+<td class="valigntop"><span class="var">名前</span>, <strong class="underlined">*LOC</strong></td>
+<td class="valigntop">オプショナル</td>
+</tr>
+<tr>
+<td class="valigntop"><a href="#CRTDTAQ.LCLLOCNAME"><strong>LCLLOCNAME</strong></a></td>
+<td class="valigntop">ローカル・ロケーション</td>
+<td class="valigntop"><span class="var">通信名</span>, <strong class="underlined">*LOC</strong>, *NETATR</td>
+<td class="valigntop">オプショナル</td>
+</tr>
+<tr>
+<td class="valigntop"><a href="#CRTDTAQ.MODE"><strong>MODE</strong></a></td>
+<td class="valigntop">モード</td>
+<td class="valigntop"><span class="var">通信名</span>, <strong class="underlined">*NETATR</strong></td>
+<td class="valigntop">オプショナル</td>
+</tr>
+<tr>
+<td class="valigntop"><a href="#CRTDTAQ.RMTNETID"><strong>RMTNETID</strong></a></td>
+<td class="valigntop">リモート・ ネットワーク ID</td>
+<td class="valigntop"><span class="var">通信名</span>, <strong class="underlined">*LOC</strong>, *NETATR, *NONE</td>
+<td class="valigntop">オプショナル</td>
+</tr>
+<tr>
+<td class="valigntop"><a href="#CRTDTAQ.TEXT"><strong>TEXT</strong></a></td>
+<td class="valigntop">テキスト'記述'</td>
+<td class="valigntop"><span class="var">文字値</span>, <strong class="underlined">*BLANK</strong></td>
+<td class="valigntop">オプショナル</td>
+</tr>
+<tr>
+<td class="valigntop"><a href="#CRTDTAQ.AUT"><strong>AUT</strong></a></td>
+<td class="valigntop">権限</td>
+<td class="valigntop"><span class="var">名前</span>, <strong class="underlined">*LIBCRTAUT</strong>, *CHANGE, *ALL, *USE, *EXCLUDE</td>
+<td class="valigntop">オプショナル</td>
+</tr>
+</tbody></table></div></div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table3" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#CRTDTAQ.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+</div>
+<div> <a name="CRTDTAQ.DTAQ"></a>
+<h2>データ待ち行列名 (DTAQ)</h2>
+<p>作成するデータ待ち行列を指定します。
+</p>
+<p>これは必須パラメーターです。
+</p>
+<h3><strong>修飾子</strong><strong>1: </strong><strong>データ待ち行列名</strong>
+</h3>
+<dl>
+<dt><strong class="italic">名前</strong></dt>
+<dd>データ待ち行列の名前を指定してください。
+</dd>
+</dl>
+<h3><strong>修飾子</strong><strong>2: ライブラリー</strong>
+</h3>
+<dl>
+<dt><strong class="underlined">*CURLIB</strong></dt>
+<dd>データ待ち行列を見つけるために，ジョブの現行ライブラリーが使用されます。ライブラリー・リストに現行ライブラリー項目が存在しない場合には，QGPLが使用されます。
+</dd>
+<dt><strong class="italic">名前</strong></dt>
+<dd>データ待ち行列を見つけるライブラリーを指定してください。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table4" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#CRTDTAQ.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="CRTDTAQ.TYPE"></a>
+<h2>タイプ (TYPE)</h2>
+<p>作成されるデータ待ち行列のタイプを指定します。標準データ待ち行列，分散データ管理機能(DDM)データ待ち行列，または表示データ待ち行列を作成することができます。
+</p>
+<dl>
+<dt><strong class="underlined">*STD</strong></dt>
+<dd>標準データ待ち行列が作成されます。この値の使用には，MAXLENパラメーターが必要です。
+</dd>
+<dt><strong>*DDM</strong></dt>
+<dd>DDMデータ待ち行列が作成されます。この値には，アクセスされるリモート・データ待ち行列の名前(RMTDTAQパラメーター）とそのデータ待ち行列が入っているリモート（ターゲット）システムの名前(RMTLOCNAMEパラメーター）が必要です。
+</dd>
+<dt><strong>*DSP</strong></dt>
+<dd>表示データ待ち行列が作成されます。このデータ待ち行列は表示ファイルと一緒に使用されます。このデータ待ち行列で待機中の対話式ジョブは非活動ジョブ・タイムアウトの対象となります。この値の使用には，MAXLENパラメーターが必要です。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table5" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#CRTDTAQ.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="CRTDTAQ.MAXLEN"></a>
+<h2>最大項目長 (MAXLEN)</h2>
+<p>データ待ち行列に送られる項目の最大長を指定します。
+</p>
+<h3><strong>注</strong><strong>:</strong>
+</h3>
+<ol class="cds--list--ordered--temporary">
+<li class="cds--list__item">データ待ち行列を出力待ち行列と関連付ける場合には，最大長値が少なくとも128必要です。
+</li>
+<li class="cds--list__item">このパラメーターは，TYPE(*STD)が指定された場合にだけ有効です。
+</li>
+</ol>
+<dl>
+<dt><strong class="italic">1から64512</strong></dt>
+<dd>最大項目長を指定します。有効なのは1から64512の範囲内の値です。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table6" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#CRTDTAQ.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="CRTDTAQ.FORCE"></a>
+<h2>補助記憶域への強制書き込み (FORCE)</h2>
+<p>データ待ち行列は，このデータ待ち行列に関して項目が送受信された時に補助記憶装置に強制記憶されるかどうかを指定します。
+</p>
+<p>
+<strong>注:     </strong>このパラメーターは，TYPE(*STD)が指定された場合にだけ有効です。
+</p>
+<dl>
+<dt><strong class="underlined">*NO</strong></dt>
+<dd>送受信命令はすぐには補助記憶装置に強制記憶されません。
+</dd>
+<dt><strong>*YES</strong></dt>
+<dd>送受信命令はただちに補助記憶装置に強制記憶されます。これにより，プログラムまたはシステムに障害が起こった場合でも，確実に変更は失われません。これには，追加のシステム・オーバーヘッドが必要です。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table7" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#CRTDTAQ.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="CRTDTAQ.SEQ"></a>
+<h2>順序 (SEQ)</h2>
+<p>項目がデータ待ち行列から受け取られる順序を指定します。
+</p>
+<h3><strong>注</strong><strong>:</strong>
+</h3>
+<ol class="cds--list--ordered--temporary">
+<li class="cds--list__item">データ待ち行列を出力待ち行列と関連付ける場合には，順序値が*FIFOまたは*LIFOである必要があります。
+</li>
+<li class="cds--list__item">このパラメーターは，TYPE(*STD)が指定された場合にだけ有効です。
+</li>
+</ol>
+<dl>
+<dt><strong class="underlined">*FIFO</strong></dt>
+<dd>データ待ち行列項目は先入れ先出し順序で受け取られます。
+</dd>
+<dt><strong>*LIFO</strong></dt>
+<dd>データ待ち行列項目は後入れ先出し順序で受け取られます。
+</dd>
+<dt><strong>*KEYED</strong></dt>
+<dd>データ待ち行列項目はキーによって受け取られます。キーは，その送信元によって項目に追加された接頭部です。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table8" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#CRTDTAQ.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="CRTDTAQ.KEYLEN"></a>
+<h2>キーの長さ (KEYLEN)</h2>
+<p>キーの文字数を指定します。
+</p>
+<p>
+<strong>注:     </strong>このパラメーターは，<strong>SEQ(*KEYED)</strong>および<strong>TYPE(*STD)</strong>が指定された場合にだけ有効です。
+</p>
+<dl>
+<dt><strong class="italic">1から256</strong></dt>
+<dd>キーの長さを指定します。有効な値の範囲は1から256です。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table9" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#CRTDTAQ.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="CRTDTAQ.SENDERID"></a>
+<h2>送信元IDの組み込み (SENDERID)</h2>
+<p>データ待ち行列に送られる各メッセージに付けられる送信元IDを指定します。このIDには，ジョブ名および送信元の現在のユーザー・プロファイルが入っています。
+</p>
+<p>
+<strong>注:     </strong>このパラメーターは，TYPE(*STD)が指定された場合にだけ有効です。
+</p>
+<dl>
+<dt><strong class="underlined">*NO</strong></dt>
+<dd>送信済みメッセージには送信元IDが組み込まれません。
+</dd>
+<dt><strong>*YES</strong></dt>
+<dd>送信済みメッセージには送信元IDが組み込まれます。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table10" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#CRTDTAQ.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="CRTDTAQ.SIZE"></a>
+<h2>待ち行列サイズ (SIZE)</h2>
+<p>データ待ち行列用に割り振られる記憶域の容量を指定します。パラメーター要素は，データ待ち行列の最大項目数および初期項目数から構成されます。
+</p>
+<p>
+<strong>注:     </strong>このパラメーターは，TYPE(*STD)が指定された場合にだけ有効です。
+</p>
+<h3><strong>要素</strong><strong>1: </strong><strong>最大項目数</strong>
+</h3>
+<p>データ待ち行列に追加できる最大項目数を指定するために，次のいずれかが使用されます。
+</p>
+<dl>
+<dt><strong class="underlined">*MAX16MB</strong></dt>
+<dd>システムは待ち行列に追加できる最大項目数を計算し，約16メガバイト(MB)の最大サイズまで拡張することができます。1 MBは1,048,576バイトと等しくなります。この値は初期項目数16を持ち，バージョン4リリース5モディフィケーション0 (V4R5M0)より前のオペレーティング・システムのリリースとの互換性を提供します。
+</dd>
+<dt><strong>*MAX2GB</strong></dt>
+<dd>システムは，データ待ち行列に追加できる最大項目数を計算します。データ待ち行列は約2ギガバイト(GB)の最大サイズまで拡張することができます。1 GBは1,073,741,824バイトと等しくなります。
+</dd>
+<dt><strong class="italic">項目数</strong></dt>
+<dd>データ待ち行列には，少なくともこの項目数を保持することができます。マシンによって使用される拡張サイズを基にして，データ待ち行列の最大項目数は指定された値よりわずかに大きい場合があります。指定する値は0より大きくしなければなりません。
+</dd>
+</dl>
+<h3><strong>要素</strong><strong>2: </strong><strong>初期項目数</strong>
+</h3>
+<p>データ待ち行列に最初に割り振られる記憶域の容量を指定します。待ち行列は，最大項目長の初期項目数を保持するように作成されます。
+</p>
+<dl>
+<dt><strong class="underlined">16</strong></dt>
+<dd>最初に，記憶域は16項目の最大項目長が保持されるように割り振られます。
+</dd>
+<dt><strong class="italic">初期項目数</strong></dt>
+<dd>データ待ち行列に保持できる初期項目数の値を指定してください。この値は0より大きくしなければなりません。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table11" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#CRTDTAQ.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="CRTDTAQ.AUTORCL"></a>
+<h2>自動再利用(AUTORCL)</h2>
+<p>データ待ち行列が空になっている時に，データ待ち行列用に割り振られた記憶域が自動的に再利用（解放）されるかどうかを指定します。
+</p>
+<p>
+<strong>注:     </strong>このパラメーターは，TYPE(*STD)が指定された場合にだけ有効です。
+</p>
+<dl>
+<dt><strong class="underlined">*NO</strong></dt>
+<dd>データ待ち行列が空になっている時に，データ待ち行列用に割り振られた記憶域は解放されません。
+</dd>
+<dt><strong>*YES</strong></dt>
+<dd>データ待ち行列が空になっている時に，データ待ち行列用に割り振られた記憶域が解放されます。初期項目数のための記憶域が割り振られたままになります。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table12" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#CRTDTAQ.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="CRTDTAQ.RMTDTAQ"></a>
+<h2>リモート・データ待ち行列 (RMTDTAQ)</h2>
+<p>ターゲット・システム上のリモート・データ待ち行列を指定します。このデータ待ち行列は，DDMデータ待ち行列の作成時に存在している必要はありません。
+</p>
+<h3><strong>修飾子</strong><strong>1: </strong><strong>リモート・データ待ち行列</strong>
+</h3>
+<dl>
+<dt><strong class="italic">名前</strong></dt>
+<dd>アクセスされるリモート・データ待ち行列を識別するデータ待ち行列の名前を指定してください。名前が10文字を超えることはできません。
+</dd>
+</dl>
+<h3><strong>修飾子</strong><strong>2: ライブラリー</strong>
+</h3>
+<dl>
+<dt><strong class="underlined">*LIBL</strong></dt>
+<dd>最初に一致するものが見つかるまで，現行スレッドのライブラリー・リスト内のすべてのライブラリーが検索されます。
+</dd>
+</dl>
+<dl>
+<dt><strong>*CURLIB</strong></dt>
+<dd>スレッドの現行ライブラリーが検索されます。スレッドの現行ライブラリーとして指定されているライブラリーがない場合，QGPLライブラリーが検索されます。
+</dd>
+</dl>
+<dl>
+<dt><strong class="italic">名前</strong></dt>
+<dd>検索するライブラリーの名前を指定してください。
+</dd>
+</dl>
+<ul class="cds--list--unordered">
+<li class="cds--list__item">*LIBL（省略時のライブラリー修飾子）とみなされるかまたはそれが指定された場合には，データ待ち行列を見つけるために，ターゲット・システム上の呼び出されたジョブのライブラリー・リストが検索されます。
+</li>
+<li class="cds--list__item">*CURLIBが指定された場合には，データ待ち行列を見つけるために，ターゲット・システム上の呼び出されたジョブの現行ライブラリーが検索されます。
+</li>
+</ul>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table13" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#CRTDTAQ.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="CRTDTAQ.RMTLOCNAME"></a>
+<h2>リモート・ロケーション (RMTLOCNAME)</h2>
+<p>このオブジェクトで使用されるリモート・ロケーションの名前を指定します。
+</p>
+<p>
+<strong>注:     </strong>複数のDDMデータ待ち行列で，ターゲット・システムに対して同じリモート・ロケーションを使用することができます。使用されるリモート・ロケーションは，リモート・データ待ち行列をサポートするi5/OSのリリースにあるシステムを指し示していなければなりません。
+</p>
+<dl>
+<dt><strong>*RDB</strong></dt>
+<dd>リモート・システムを判別するために，<strong>リレーショナル・データベース</strong><strong> (RDB)</strong>パラメーターに指定されたリレーショナル・データベース項目からのリモート・ロケーション情報が使用されます。
+</dd>
+<dt><strong class="italic">名前</strong></dt>
+<dd>ターゲット・システムと関連したリモート・ロケーションの名前を指定してください。DDMデータ待ち行列が作成される場合には，ターゲット・システムのアクセスに使用されるリモート・ロケーションが存在している必要はありませんが，DDMデータ待ち行列がアクセスされる場合には，それが存在していなければなりません。
+<p>リモート・ロケーションの詳細については，AS/400 APPCプログラミング(SD88-5032)を参照してください。
+</p>
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table14" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#CRTDTAQ.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="CRTDTAQ.RDB"></a>
+<h2>リレーショナル・データベース (RDB)</h2>
+<p>DDMデータ待ち行列のリモート・ロケーション情報の判別に使用されるリレーショナル・データベース項目を指定します。
+</p>
+<dl>
+<dt><strong class="italic">通信名</strong></dt>
+<dd>ターゲット・システムまたはターゲットASPグループを識別するリレーショナル・データベース項目の名前を指定します。リレーショナル・データベース名は，リモート・システム上で構成されて使用できるリモート・システムまたはASPグループを参照できます。リレーショナル・データベース項目は，DDMデータ待ち行列の作成時に存在している必要はありませんが，DDMデータ待ち行列の使用時には存在している必要があります。<strong>リモート・ロケーション</strong><strong> (RMTLOCNAME)</strong>パラメーターに*RDBが指定されている場合には，このパラメーターは必須です。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table15" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#CRTDTAQ.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="CRTDTAQ.DEV"></a>
+<h2>APPC装置記述 (DEV)</h2>
+<p>このDDMデータ待ち行列で使用されるソース・システム上のAPPC装置記述の名前を指定します。DDMデータ待ち行列が作成される場合には，この装置記述が存在している必要はありません。
+</p>
+<dl>
+<dt><strong class="underlined">*LOC</strong></dt>
+<dd>リモート・ロケーションと関連した装置が使用されます。複数の装置がリモート・ロケーションと関連付けられている場合には，どの装置を使用するかをシステムが決定します。
+</dd>
+<dt><strong class="italic">名前</strong></dt>
+<dd>リモート・ロケーションと関連した通信装置の名前を指定してください。その装置名がリモート・ロケーションに対して有効でない場合には，プログラム装置項目が必要とされた時にメッセージが送られます。装置名の詳細は，AS/400 APPCプログラミング(SD88-5032)にあります。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table16" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#CRTDTAQ.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="CRTDTAQ.LCLLOCNAME"></a>
+<h2>ローカル・ロケーション (LCLLOCNAME)</h2>
+<p>ローカル・ロケーション名を指定します。
+</p>
+<dl>
+<dt><strong class="underlined">*LOC</strong></dt>
+<dd>リモート・ロケーションと関連した装置が使用されます。複数の装置がリモート・ロケーションと関連付けられている場合には，どの装置を使用するかをシステムが決定します。
+</dd>
+<dt><strong>*NETATR</strong></dt>
+<dd>システム・ネットワーク属性に指定されたLCLLOCNAME値が使用されます。
+</dd>
+<dt><strong class="italic">名前</strong></dt>
+<dd>リモート・ロケーションと関連したローカル・ロケーションの名前を指定してください。ローカル・ロケーション名は，ユーザーがリモート・ロケーションに対して特定のローカル・ロケーションを指示する場合にだけ指定されます。ローカル・ロケーション名がリモート・ロケーションに対して有効でない場合には，DDMデータ待ち行列がアクセスされた時にエスケープ・メッセージが送られます。
+<p>ローカル・ロケーション名の詳細は，AS/400 APPCプログラミング(SD88-5032)にあります。
+</p>
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table17" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#CRTDTAQ.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="CRTDTAQ.MODE"></a>
+<h2>モード (MODE)</h2>
+<p>ターゲット・システムと通信するためにリモート・ロケーション名で使用されるモード名を指定します。
+</p>
+<dl>
+<dt><strong class="underlined">*NETATR</strong></dt>
+<dd>ネットワーク属性で指定されたモード名が使用されます。
+</dd>
+<dt><strong class="italic">名前</strong></dt>
+<dd>リモート・システムと通信をするために使用されるモードの名前を指定してください。モード名がリモート・ロケーションとローカル・ロケーションのどの組み合わせに対しても有効でない場合には，DDMデータ待ち行列がアクセスされた時にエスケープ・メッセージが送られます。
+<p>モード名の詳細は，AS/400 APPCプログラミング(SD88-5032)にあります。
+</p>
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table18" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#CRTDTAQ.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="CRTDTAQ.RMTNETID"></a>
+<h2>リモート・ ネットワーク ID (RMTNETID)</h2>
+<p>リモート・ロケーションが置かれており，ターゲット・システムとの通信に使用されるリモート・ネットワーク識別コード(ID)を指定します。
+</p>
+<dl>
+<dt><strong class="underlined">*LOC</strong></dt>
+<dd>リモート・ロケーションと関連したリモート・ネットワークIDが使用されます。リモート・ロケーションに複数のリモート・ネットワークIDが関連付けられている場合には，どのリモート・ネットワークIDを使用するかをシステムが決定します。
+</dd>
+<dt><strong>*NETATR</strong></dt>
+<dd>システム・ネットワーク属性に指定されたRMTNETID値が使用されます。
+</dd>
+<dt><strong>*NONE</strong></dt>
+<dd>リモート・ネットワークIDは使用されません。
+</dd>
+<dt><strong class="italic">リモート・ネットワークID</strong></dt>
+<dd>リモート・ロケーションと関連したリモート・ネットワークIDを指定してください。リモート・ネットワークIDは，ユーザーがリモート・ロケーションに対して特定のリモート・ネットワークIDを指示する場合にだけ指定されます。リモート・ネットワークIDがリモート・ロケーションに対して有効でない場合には，DDMデータ待ち行列がアクセスされた時にエスケープ・メッセージが送られます。
+<p>リモート・ネットワークIDの詳細については，AS/400 APPCプログラミング(SD88-5032)を参照してください。
+</p>
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table19" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#CRTDTAQ.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="CRTDTAQ.TEXT"></a>
+<h2>テキスト'記述' (TEXT)</h2>
+<p>データ待ち行列を簡単に説明するテキストを指定します。
+</p>
+<dl>
+<dt><strong class="underlined">*BLANK</strong></dt>
+<dd>テキストは指定されません。
+</dd>
+<dt><strong class="italic">'記述'</strong></dt>
+<dd>50文字以内をアポストロフィで囲んで指定してください。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table20" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#CRTDTAQ.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="CRTDTAQ.AUT"></a>
+<h2>権限(AUT)</h2>
+<p>このオブジェクトに対する特定の権限をもっておらず，権限リスト上になく，さらにそのグループ・プロファイルまたは補足グループ・プロファイルがオブジェクトに対する特定の権限をもっていないユーザーに付与する権限を指定します。
+</p>
+<dl>
+<dt><strong class="underlined">*LIBCRTAUT</strong></dt>
+<dd>システムは，作成するオブジェクトが入っているライブラリーに対するライブラリー作成コマンド(CRTLIB)で<strong>作成権限</strong><strong>(CRTAUT)</strong>パラメーターに指定された値を使用して，このオブジェクトに対する権限を決定します。CRTAUTパラメーターに指定された値が変更された場合には，新しい値は既存のどのオブジェクトにも影響しません。
+</dd>
+</dl>
+<dl>
+<dt><strong>*CHANGE</strong></dt>
+<dd>ユーザーは，所有者に限定されるか，あるいはオブジェクト存在権限(*OBJEXIST)およびオブジェクト管理権限(*OBJMGT)によって制御される以外のオブジェクトで，すべての操作を実行することができます。ユーザーはオブジェクトでの基本的な機能を変更して実行することができます。*CHANGE権限では，オブジェクト操作(*OBJOPR)および全データ権限が提供されます。このオブジェクトが権限リストである場合は，ユーザーの追加，変更，または除去はできません。
+</dd>
+</dl>
+<dl>
+<dt><strong>*ALL</strong></dt>
+<dd>ユーザーは，所有者に限定されるか，あるいは権限リスト管理(*AUTLMGT)権限によって管理される以外のオブジェクトで，すべての操作を実行することができます。ユーザーはオブジェクトの存在を制御し，オブジェクトの機密保護を指定し，オブジェクトを変更し，さらにオブジェクトに対して基本的な機能を実行することができます。オブジェクトの所有権を変更することもできます。
+</dd>
+</dl>
+<dl>
+<dt><strong>*USE</strong></dt>
+<dd>ユーザーは，プログラムの実行またはファイルの読み取りなど，オブジェクトに対する基本操作を実行することができます。ユーザーはオブジェクトを変更できません。使用(*USE)権限は，オブジェクト操作(*OBJOPR),読み取り(*READ),および実行(*EXECUTE)権限を提供します。
+</dd>
+</dl>
+<dl>
+<dt><strong>*EXCLUDE</strong></dt>
+<dd>ユーザーはオブジェクトにアクセスすることはできません。
+</dd>
+</dl>
+<dl>
+<dt><strong class="italic">名前</strong></dt>
+<dd>オブジェクトに対する権限として使用する権限リストの名前を指定してください。権限リストに載っているユーザーは，リストに指定されているオブジェクトに対する権限が認可されます。オブジェクトが作成される時に権限リストが存在していなければなりません。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table21" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#CRTDTAQ.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div><h2><a name="CRTDTAQ.COMMAND.EXAMPLES">例</a> </h2>
+<h3><strong>例</strong><strong>1:</strong><strong>標準データ待ち行列の作成</strong>
+</h3>
+<p>
+</p><pre>CRTDTAQ   DTAQ(DEPTADTA)  MAXLEN(100)  AUT(*EXCLUDE)
+          TEXT('SPECIAL DATA + FILES FOR DEPTA')
+</pre>
+<p></p>
+<p>このコマンドは，DEPTADTAという名前のデータ待ち行列を作成し，それを現行ライブラリーに書き込みます。最大長項目は100です。AUT(*EXCLUDE)が指定されているので，このデータ待ち行列は，待ち行列を作成したユーザーおよび特殊権限の与えられたユーザーだけが使用し，制御することができます。部門Aのユーザーには，オブジェクト権限認可(GTROBJAUT)コマンドを使用して，このデータ待ち行列を使用する権限を与えることができます。
+</p>
+<h3><strong>例</strong><strong>2:</strong><strong>別のシステムのデータ待ち行列にアクセスするための</strong><strong>DDM</strong><strong>データ待ち行列の作成</strong>
+</h3>
+<p>
+</p><pre>CRTDTAQ   DTAQ(SOURCE/SALES)  TYPE(*DDM)
+          RMTDTAQ(REMOTE/SALES)  RMTLOCNAME(NEWYORK)
+</pre>
+<p></p>
+<p>このコマンドは，SALESという名前のDDMデータ待ち行列を作成し，それをソース・システムのSOURCEライブラリーに保管します。このDDMデータ待ち行列は，NEWYORKという名前のリモート・ロケーションを使用して，ニューヨークのシステムのREMOTEライブラリーに保管されているSALESという名前のリモート・データ待ち行列にアクセスします。
+</p>
+<h3><strong>例</strong><strong>3:</strong><strong>サイズ属性および自動再利用を指定したデータ待ち行列の作成</strong>
+</h3>
+<p>
+</p><pre>CRTDTAQ   DTAQ(MYLIB/MYDTAQ) MAXLEN(80)
+          SIZE(*MAX2GB 100)  AUTORCL(*YES)
+</pre>
+<p></p>
+<p>このコマンドは，MYDTAQという名前のデータ待ち行列を作成し，それをMYLIBライブラリーに保管します。最大項目長は80バイトであり，待ち行列項目は先入れ先出し(FIFO)順で受け取られます。このデータ待ち行列には，最初は100項目を保留するための記憶域が割り振られます。データ待ち行列は約２ギガバイトの最大サイズまで拡張することができます。すべての待ち行列項目が受け取られた場合には，このデータ待ち行列用の記憶域が自動的に再利用されます。
+</p>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table22" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#CRTDTAQ.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div><h2><a name="CRTDTAQ.ERROR.MESSAGES">エラー・メッセージ</a> </h2>
+<p><strong class="underlined">*ESCAPE </strong><strong class="underlined">メッセージ</strong>
+</p>
+<dl>
+<dt><strong>CPF2105</strong></dt>
+<dd>&amp;2に，タイプ*&amp;3のオブジェクト&amp;1が見つからない。
+</dd>
+<dt><strong>CPF2108</strong></dt>
+<dd>オブジェクト&amp;1タイプ*&amp;3はライブラリー&amp;2に追加されませんでした。
+</dd>
+<dt><strong>CPF2109</strong></dt>
+<dd>OBJパラメーターが*ALLまたは総称名の場合は，NEWOBJの値は*SAMEでなければならない。
+</dd>
+<dt><strong>CPF2110</strong></dt>
+<dd>ライブラリー&amp;1が見つかりません。
+</dd>
+<dt><strong>CPF2113</strong></dt>
+<dd>ライブラリー&amp;1を割り振ることができない。
+</dd>
+<dt><strong>CPF2116</strong></dt>
+<dd>DATA (*YES)が指定されたが，*ALLまたは*FILEがOBJTYPEリストにない。
+</dd>
+<dt><strong>CPF2122</strong></dt>
+<dd>ユーザー・プロファイル&amp;1の記憶域限界を超えた。
+</dd>
+<dt><strong>CPF2123</strong></dt>
+<dd>指定した名前またはタイプのオブジェクトはライブラリー&amp;2に存在していない。
+</dd>
+<dt><strong>CPF2130</strong></dt>
+<dd>&amp;1個のオブジェクトが複製された。&amp;2個のオブジェクトが複製されていません。
+</dd>
+<dt><strong>CPF2151</strong></dt>
+<dd>&amp;1のタイプ*&amp;3の&amp;2に対する操作が正常に行われなかった。
+</dd>
+<dt><strong>CPF2152</strong></dt>
+<dd>タイプ*&amp;1のオブジェクトをQTEMPの中に作成することはできない。
+</dd>
+<dt><strong>CPF2162</strong></dt>
+<dd>ライブラリー&amp;1のすべてのオブジェクトを複製することはできない。
+</dd>
+<dt><strong>CPF2176</strong></dt>
+<dd>ライブラリー&amp;1に損傷がある。
+</dd>
+<dt><strong>CPF2182</strong></dt>
+<dd>ライブラリー&amp;1は認可されていない。
+</dd>
+<dt><strong>CPF2185</strong></dt>
+<dd>TOLIB, TOASPDEV,またはNEWOBJパラメーターが正しくない。
+</dd>
+<dt><strong>CPF2186</strong></dt>
+<dd>オブジェクト&amp;1をライブラリー&amp;2に作成することができない。
+</dd>
+<dt><strong>CPF2283</strong></dt>
+<dd>権限リスト&amp;1が存在していない。
+</dd>
+<dt><strong>CPF6565</strong></dt>
+<dd>ユーザー・プロファイルの記憶域限界を超えた。
+</dd>
+<dt><strong>CPF9517</strong></dt>
+<dd>SIZEパラメーターが正しくない。
+</dd>
+<dt><strong>CPF9518</strong></dt>
+<dd>項目の最大数が大きすぎる。
+</dd>
+<dt><strong>CPF980D</strong></dt>
+<dd>&amp;2のタイプ*&amp;3の&amp;1に対するミラー保護操作が正常に実行されませんでした。
+</dd>
+<dt><strong>CPF9810</strong></dt>
+<dd>ライブラリー&amp;1が見つかりません。
+</dd>
+<dt><strong>CPF9820</strong></dt>
+<dd>ライブラリー&amp;1の使用は認可されていない。
+</dd>
+<dt><strong>CPF9827</strong></dt>
+<dd>オブジェクト&amp;1を作成したり&amp;2に移動することはできない。
+</dd>
+<dt><strong>CPF9830</strong></dt>
+<dd>ライブラリー&amp;1を割り当てることができない。
+</dd>
+<dt><strong>CPF9870</strong></dt>
+<dd>タイプ*&amp;5のオブジェクト&amp;2はライブラリー&amp;3に既に存在している。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table23" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#CRTDTAQ.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+</div>
+
+
+</body></html>
