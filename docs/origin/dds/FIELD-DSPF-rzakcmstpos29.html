@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="ja"><head><meta charset="utf-8"><title>表示装置ファイルの参照 (29 桁目)</title></head>
+<body>
+<h1 class="title topictitle1">表示装置ファイルの参照 (29 桁目)</h1><div id="lastModifiedDate"><span>Last Updated</span>: 2021-04-13</div>
+<div class="body conbody"><p class="shortdesc"><span class="ph"><span class="keyword">IBM® i</span> オペレーティング・システムの参照機能を使用する場合は、この欄に R を指定することができます。この参照機能は、事前に定義されている名前付きフィールド (<dfn class="term">参照フィールド</dfn> といいます) の属性を定義中のフィールドにコピーします。</span></p>
+<div class="p">参照フィールドとしては、定義中の表示装置ファイル内か、以前に作成されたデータベース・ファイル内で定義されているフィールドを使用できます (参照するデータベース・ファイルは REF キーワードまたは REFFLD キーワードに指定します)。
+参照の対象となるフィールド属性には、フィールドの桁数、データ・タイプ、および小数点以下の桁数のほか、以下のキーワードがあります。<ul class="ul cds--list--unordered"><li class="li cds--list__item">ALIAS (別名)</li>
+<li class="li cds--list__item">CCSID (コード化文字セット識別コード)</li>
+<li class="li cds--list__item">FLTPCN (浮動小数点数の精度)</li>
+<li class="li cds--list__item">TEXT</li>
+<li class="li cds--list__item">DATFMT</li>
+<li class="li cds--list__item">DATSEP</li>
+<li class="li cds--list__item">TIMFMT</li>
+<li class="li cds--list__item">TIMSEP</li>
+<li class="li cds--list__item">編集および妥当性検査の各キーワード</li>
+</ul>
+</div>
+<p class="p">R を指定しない場合には、そのフィールドについては参照機能を使用することができないので、そのフィールドのフィールド属性を指定しなければなりません。</p>
+<p class="p">ファイル・レベル、レコード・レベル、およびヘルプ・レベルでは、29 桁目はブランクでなければなりません。</p>
+<p class="p">参照フィールドの名前が定義中のフィールドと同じ場合には、必要なのは 29 桁目に R を指定することだけです (ただし、定義中のフィールドの名前を 19 - 28 桁目に指定することは必要です)。
+参照フィールドの名前が定義中のフィールドと異なる場合には、REFFLD (参照フィールド) キーワードで参照フィールドの名前を指定しなければなりません。</p>
+<p class="p">参照フィールドが定義されているファイルの名前は、REF (参照) キーワードまたは REFFLD キーワードのパラメーター値として指定することができます。</p>
+<div class="p">前に定義されているフィールド (参照フィールド) の属性を、定義中のフィールドにすべて複写する必要はありません。参照フィールドの属性のいくつかを指定変更したい場合には、定義中のフィールドでそれらの属性を次のように指定します。<ul class="ul cds--list--unordered"><li class="li cds--list__item">EDTCDE (編集コード) キーワードまたは EDTWRD (編集語) キーワードを変更するためには、定義中のフィールドについて EDTCDE または EDTWRD を指定します。また、定義中のフィールドについて DLTEDT (編集削除) キーワードを指定すれば、これらのキーワードを削除することができます。</li>
+<li class="li cds--list__item">CHECK (検査)、COMP (比較)、RANGE (範囲)、および VALUES (値) の各妥当性検査キーワードおよび CHKMSGID (検査メッセージ識別コード) キーワードを指定変更するためには、定義中のフィールドについてこれらの妥当性検査キーワードのどれかを指定します。定義中のフィールドについて DLTCHK (検査削除) キーワードを指定すれば、これらのキーワードを削除することができます。</li>
+</ul>
+</div>
+<p class="p">ある種の仕様を指定変更すると、次のようにその影響が他の仕様にまで及びます。</p>
+<ul class="ul cds--list--unordered"><li class="li cds--list__item">定義中のフィールドについて、キーボード・シフト属性、フィールド桁数、または小数点以下の桁数を指定した場合には、編集キーワードも妥当性検査キーワードも参照フィールドから複写されません。</li>
+<li class="li cds--list__item">以前に定義されているデータ・タイプを文字タイプに指定変更 (35 桁目に M、A、X、または W を指定) した場合には、小数点以下の桁数は複写されません。
+ただし、35 桁目に N、D、または I を指定し、36 および 37 桁目 (小数点以下の桁数) をブランクにした場合には、参照フィールドの小数点以下の桁数が定義中フィールドに適用されます。D の場合には、小数点以下の桁数は 0 でなければなりません。</li>
+<li class="li cds--list__item">表示装置ファイルの場合は、パック 10 進数フィールドおよび 2 進数フィールドは使用できません。 したがって、これらのタイプのフィールドを参照した場合、割り当てられるデータ・タイプはゾーン 10 進数であり、キーボード・シフトは次のようになります。<ul class="ul cds--list--unordered cds--list--nested"><li class="li cds--list__item">定義中のフィールドについて編集が効力を持っている場合は、キーボード・シフトは数字のみ (35 桁目が Y) となります。</li>
+<li class="li cds--list__item">定義中のフィールドについて編集が効力を持っていない場合は、キーボード・シフトは符号付きの数字 (35 桁目が S) となります。</li>
+</ul>
+</li>
+<li class="li cds--list__item">参照フィールドに REFSHIFT (参照シフト) キーワードが指定されている場合には、REFSHIFT に指定されている値が表示装置ファイルのキーボード・シフトとして使用されます。
+ただし、新しいフィールドに対して指定したデータ・タイプと REFSHIFT キーワードで指定したキーボード・シフトとの間に互換性がない場合には、そのキーワードは新しいフィールドに複写されません。</li>
+</ul>
+<div class="note note border-2 cds--inline-notification--info ibmdocs-note cds--inline-notification cds--inline-notification--low-contrast margin-top-1 margin-bottom-1"><div class="cds--inline-notification__details"><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" class="cds--inline-notification__icon" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M16,2A14,14,0,1,0,30,16,14,14,0,0,0,16,2Zm0,5a1.5,1.5,0,1,1-1.5,1.5A1.5,1.5,0,0,1,16,7Zm4,17.12H12V21.88h2.88V15.12H13V12.88h4.13v9H20Z"></path></svg>
+        <div class="cds--inline-notification__text-wrapper">
+          <div class="cds--inline-notification__subtitle"><span class="notetitle ibm-bold ibm-textcolor-blue-50 background-blue cds--inline-notification__title ibm-padding-top-1 ibm-padding-bottom-1 padding-left-1 padding-right-1">注:</span> 表示装置ファイルが作成された後は、参照ファイルを削除または変更しても、表示装置ファイルのフィールド記述がその影響を受けることはありません。
+参照ファイルへの変更が表示装置ファイルにも適用されるようにしたい場合には、その表示装置ファイルを一度削除した上で、あらためて作り直さなければなりません。</div>
+        </div>
+      </div></div>
+</div>
+<div class="related-links ibm-padding-top-1 ibm-padding-bottom-2 bx--row bottom-section-parent" aria-label="bottom related links">
+<div class="familylinks ibm-margin-bottom-1">
+<div class="parentlink"><strong>親トピック:</strong> <div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a class="link bottom-section-link" href="/docs/ja/ssw_ibm_i_74/rzakc/rzakcmstpsnent.htm" title="表示装置ファイルのデータ記述仕様書 (DDS) の最初の 44 桁に定位置項目を指定します。">表示装置ファイルの定位置項目 (1 - 44 桁目)</a></div></div>
+</div>
+<div class="relinfo relconcepts ibm-margin-bottom-1"><strong>関連概念</strong>:<br>
+<div><div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a class="link bottom-section-link" href="/docs/ja/ssw_ibm_i_74/rzakc/pos3034.htm" title="名前を付けたフィールドについては、参照フィールドから桁数を複写する場合を除いて、必ず桁数を指定しなければなりません。">表示装置ファイルの桁数 (30 - 34 桁目)</a></div></div>
+</div>
+<div class="relinfo relref ibm-margin-bottom-1"><strong>関連資料</strong>:<br>
+<div><div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a class="link bottom-section-link" href="/docs/ja/ssw_ibm_i_74/rzakc/rzakcmstdfref.htm" title="これはファイル・レベル・キーワードで、フィールド記述を取り出すファイルの名前を指定するために使用します。また、前に記述したレコード様式内のいくつかのフィールドから記述情報を複写する場合にもこのキーワードを使用します。">表示装置ファイルの REF (参照) キーワード</a></div></div>
+<div><div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a class="link bottom-section-link" href="/docs/ja/ssw_ibm_i_74/rzakc/rzakcmstdfrefld.htm" title="これはフィールド・レベル・キーワードで、参照フィールドの名前、レコード様式、ファイル、またはライブラリーが 19 - 28 桁で指定されたものとは異なる場合にフィールドを参照するために使用します。">表示装置ファイルの REFFLD (参照フィールド) キーワード</a></div></div>
+</div>
+<div class="relinfo ibm-margin-bottom-1"><strong>関連情報</strong>:<br>
+<div><div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a class="link bottom-section-link" href="/docs/ja/ssw_ibm_i_74/dds/specref.htm">REF および REFLD キーワードを DDS ファイルに指定する時期</a></div></div>
+</div>
+</div>
+
+
+</body></html>

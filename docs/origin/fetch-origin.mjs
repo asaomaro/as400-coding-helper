@@ -50,6 +50,7 @@ const onlyNames = namesArg ? new Set(namesArg.slice('--names='.length).split(','
 // 本文全体を見ると正しいページを遮断と誤判定する（実際 DSPMSG で踏んだ）。
 const BOT_NOTICE = /page (you requested )?cannot be displayed|IBM notice|HTTP response code 5\d\d|要求されたページを表示できません/i;
 const BOT_NOTICE_SCAN = 600;
+const MIN_BODY = 120;
 const looksBlocked = text => BOT_NOTICE.test(String(text).slice(0, BOT_NOTICE_SCAN));
 
 // --- 既存 manifest を読み戻す（他カテゴリの結果をマージ保持） ---
@@ -110,10 +111,13 @@ async function fetchViaApi(cat, item, topic) {
     const body = resp.ok ? await resp.text() : '';
     const text = body.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
 
-    if (!resp.ok || text.length < 200 || looksBlocked(text)) {
+    // 短さで弾く閾値。DDS の欄の説明のように、正しく取れていても 200 字に
+    // 満たないページがある（「順序番号 (1-5 桁目)」は 178 字）。
+    // 遮断ページは本文がほぼ無いので、判定はもっと下で足りる。
+    if (!resp.ok || text.length < MIN_BODY || looksBlocked(text)) {
       const reason = !resp.ok
         ? `http ${resp.status}`
-        : text.length < 200
+        : text.length < MIN_BODY
           ? `本文が短い (${text.length})`
           : "ボット遮断ページ";
       gaps.set(key, { category: cat, name: item.name, source_url: url, reason });

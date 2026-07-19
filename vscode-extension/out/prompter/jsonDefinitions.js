@@ -147,8 +147,9 @@ class PrompterDefinitionLoader {
             return ["rpg", dialect ?? "ile"];
         }
         // .cmd の文は CL コマンドではないので別に置く。混ぜると CL の
-        // プロンプターに PARM や QUAL が出てしまう。
-        return [language === "cmd" ? "cmd" : "cl", resolveDefinitionLanguage()];
+        // プロンプターに PARM や QUAL が出てしまう。DDS も同様に分ける。
+        const kind = language === "cmd" ? "cmd" : language === "dds" ? "dds" : "cl";
+        return [kind, resolveDefinitionLanguage()];
     }
     overrideDirs(language, dialect, workspaceFolder) {
         const baseUri = workspaceFolder?.uri ?? vscode.workspace.workspaceFolders?.[0]?.uri;

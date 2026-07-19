@@ -7,6 +7,10 @@ function extractInitialValues(resolved, definition) {
     if (resolved.language === "rpg-fixed") {
         return extractRpgInitialValues(resolved, definition);
     }
+    // DDS も桁で読む。RPG のような仕様書ごとの後処理は無いので単純に桁で切る。
+    if (resolved.language === "dds") {
+        return extractByColumns(resolved.document.lineAt(resolved.line).text, definition);
+    }
     return extractClInitialValues(resolved, definition);
 }
 function extractRpgInitialValues(resolved, definition) {

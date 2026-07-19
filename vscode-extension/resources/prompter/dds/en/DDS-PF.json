@@ -1,0 +1,264 @@
+{
+  "keyword": "DDS-PF",
+  "description": "物理/論理ファイルの定位置項目（A 仕様書）",
+  "help": "物理/論理ファイルの 1-44 桁は定位置項目、45-80 桁はキーワード項目。同じ A 仕様書でも用途で桁の意味が変わるため、種別ごとに定義を分けている。",
+  "source": "IBM Documentation PF-LF-POSITIONAL.html",
+  "parameters": [
+    {
+      "name": "C1",
+      "description": "順序番号（1-5 桁目）",
+      "help": "You can use the first five positions to indicate the sequence number for each line on the form. The sequence number is optional and is used for documentation purposes only.",
+      "required": false,
+      "sourceStart": 1,
+      "sourceLength": 5,
+      "attributes": {
+        "characterSet": "upper",
+        "maxLength": 5
+      },
+      "inputType": "text"
+    },
+    {
+      "name": "C6",
+      "description": "仕様書タイプ（6 桁目）",
+      "help": "You type an A in this position to designate this as a DDS form. The form type is optional and is for documentation purposes only.",
+      "required": false,
+      "sourceStart": 6,
+      "sourceLength": 1,
+      "attributes": {
+        "characterSet": "upper",
+        "maxLength": 1
+      },
+      "inputType": "text"
+    },
+    {
+      "name": "C7",
+      "description": "注記（7 桁目）",
+      "help": "You type an asterisk (*) in this position to identify this line as a comment, and then use positions 8 through 80 for comment text. A blank line (no characters specified in positions 7 through 80) is treated as a comment. Comments can appear anywhere in DDS and are kept only in the source file. Comments are printed on the source computer printout but not on the expanded source computer printout.",
+      "required": false,
+      "sourceStart": 7,
+      "sourceLength": 1,
+      "attributes": {
+        "characterSet": "upper",
+        "maxLength": 1
+      },
+      "inputType": "text"
+    },
+    {
+      "name": "C8",
+      "description": "条件付け（8-16 桁目）",
+      "help": "These positions do not apply to physical or logical files. Leave these positions blank unless you use them for comment text.",
+      "required": false,
+      "sourceStart": 8,
+      "sourceLength": 9,
+      "attributes": {
+        "characterSet": "upper",
+        "maxLength": 9
+      },
+      "inputType": "text"
+    },
+    {
+      "name": "C17",
+      "description": "名前または仕様のタイプ（17 桁目）",
+      "help": "For physical files, type a value in this position to identify the type of name. For logical files, type a value to identify the type of specification. If you specify a name type, the name is specified in positions 19 through 28. The valid entries for physical files are: Entry Meaning R Record format name Blank Field name K Key field name Note: Specify only one R because a physical file can contain only one record format. The valid entries for logical files are: Entry Meaning R Record format name J Join specification Blank Field name or select/omit AND condition K Key field name S Select field name O Omit field name",
+      "required": false,
+      "sourceStart": 17,
+      "sourceLength": 1,
+      "attributes": {
+        "characterSet": "upper",
+        "maxLength": 1
+      },
+      "inputType": "dropdown",
+      "options": [
+        {
+          "label": "（ブランク）Field name",
+          "value": ""
+        },
+        {
+          "label": "R（Record format name）",
+          "value": "R"
+        },
+        {
+          "label": "K（Key field name）",
+          "value": "K"
+        },
+        {
+          "label": "J（Join specification）",
+          "value": "J"
+        },
+        {
+          "label": "S（Select field name）",
+          "value": "S"
+        },
+        {
+          "label": "O（Omit field name）",
+          "value": "O"
+        }
+      ]
+    },
+    {
+      "name": "C18",
+      "description": "予約済み（18 桁目）",
+      "help": "This position does not apply to any file type. Leave this position blank unless you use it for comment text.",
+      "required": false,
+      "sourceStart": 18,
+      "sourceLength": 1,
+      "attributes": {
+        "characterSet": "upper",
+        "maxLength": 1
+      },
+      "inputType": "text"
+    },
+    {
+      "name": "C19",
+      "description": "名前（19-28 桁目）",
+      "help": "You use these positions to specify record or field names. You can specify the names of the following items: The record format for this physical file or formats for this logical file The field name or field names that make up the record format (unless you specify the FORMAT or PFILE keyword at the record level) The field or fields used as key fields For logical files, the field or fields to be used for select/omit specifications Note: The file name is specified through the Create Physical File (CRTPF) command, not in the DDS. Names must begin in position 19. You must specify the name type in position 17, unless you are specifying a field name or select/omit AND condition. Record format When you specify R in position 17, the name specified in positions 19 through 28 is a record format name. Field name When position 17 is left blank, the name specified in positions 19 through 28 is a field name. Key field name When you specify K in position 17, the name specified in positions 19 through 28 is a key field name. Select/omit field name You use select/omit fields to tell the operating system how to select or omit records when your program retrieves them using this record format. The only records affected are those from the physical files specified for the PFILE or JFILE keyword for this record format.",
+      "required": false,
+      "sourceStart": 19,
+      "sourceLength": 10,
+      "attributes": {
+        "characterSet": "upper",
+        "maxLength": 10
+      },
+      "inputType": "text"
+    },
+    {
+      "name": "C29",
+      "description": "参照（29 桁目）",
+      "help": "You use this position to specify reference for physical files only. For a logical file, leave this position blank. All logical files automatically provide the reference capability for all specified fields. Any attributes that are not specified explicitly in the logical file are furnished from the corresponding field in the physical file record format. For a physical file, specify R in this position to refer to the attributes of a previously defined named field (called the referenced field ). You must specify the REF or the REFFLD keyword. The referenced field can be previously defined in either the physical file you are defining or a previously created database file. The field attributes referred to are the length, data type, and decimal positions of the field, as well as the ALIAS, COLHDG, DATFMT, DATSEP, FLTPCN, REFSHIFT, TEXT, TIMFMT, TIMSEP, VARLEN, editing, and validity checking keywords. If R is not specified, you must specify the field attributes for this field. Note: If the DATFMT keyword is overridden on a reference field to *ISO, *EUR, *USA, or *JIS, the DATSEP keyword is not referenced. Position 29 must be blank at the file and record levels. The referenced field name cannot be the same as the field you are defining if that field is in the file you are defining. If the names are the same, specify the name of the file defining the referenced field as a parameter value with the REF or REFFLD keyword. If the names are different, specify the name of the referenced field with the REFFLD keyword. To override specific attributes of the referenced field, specify those attributes for the field you are defining. In addition: If you specify Edit Code (EDTCDE) or Edit Word (EDTWRD) on the field, no editing specifications are copied from the referenced field. If you specify CHECK (AB, ME, MF, M10, M10F, M11, M11F, VN, or VNE), CHKMSGID, COMP, RANGE, or VALUES on the field, no validity checking specifications are copied from the referenced field. If you specify data type, field length, or decimal positions for the field you are defining, then neither editing nor validity checking keywords are copied from the referenced field. Note: After the physical file is created, the referenced file can be deleted or changed without affecting the field descriptions in the physical file. To incorporate changes made in the referenced file, delete and re-create the physical file.",
+      "required": false,
+      "sourceStart": 29,
+      "sourceLength": 1,
+      "attributes": {
+        "characterSet": "upper",
+        "maxLength": 1
+      },
+      "inputType": "text"
+    },
+    {
+      "name": "C30",
+      "description": "長さ（30-34 桁目）",
+      "help": "You use these positions to specify the length of a physical or logical file field. For a physical file, use these positions to specify the field length for each named field (unless you copy it from a referenced field). Specify the number of digits for a numeric type field, or specify the number of characters for a character type field. For a logical file, use these positions to specify the length of a logical field. Specify the length only to override or change the length of the corresponding field in the physical file on which this logical file is based. If you leave this position blank, the field you are defining has the same length as the corresponding field in the physical file(s) on which the logical file(s) is based. If the field in the physical file is variable length and you leave the length blank, the field is also variable length in the logical file. If you do specify a length, the field in the logical file is fixed length unless you also specify the VARLEN keyword. Additionally, the SST (Substring) keyword can be used to control the length of a logical file field by specifying a character string that is a subset of another field. If you specify length, it must be right-aligned; leading zeros are optional. Figure 1 shows correct and incorrect field length specifications for a physical file. Figure 1. Correct and incorrect length specifications for physical files |...+....1....+....2....+....3....+....4....+....5 00010A FIELD1 7 A 00020A FIELD2 7 A 00030A FIELD3 R +7 A Note: FIELD1 shows the field length specified incorrectly. FIELD2 and FIELD3 show the field length specified correctly. Valid length specifications are: Data type Valid lengths Character 1 through 32 766 characters Hexadecimal 1 through 32 766 bytes Binary 1 through 18 digits Binary character 1 through 32 766 characters Zoned decimal 1 through 63 digits Packed decimal 1 through 63 digits Floating-point (single precision) 1 through 9 digits Floating-point (double precision) 1 through 17 digits Date 6, 8, or 10 characters Time 8 characters Timestamp 26 characters The length for fields with data type L (date), T (time), or Z (timestamp) is determined by the system. You should not enter a field length in positions 30 through 34. The field length for date and time includes the separator. A timestamp has a fixed format that has the following form: YYYY-MM-DD-hh.mm.ss.uuuuuu Type in a maximum of 9 digits for single precision and 17 digits for double precision. The IBM i program supports a floating-point accuracy of 7 digits for single precision and 15 digits for double precision. The total number of bytes occupied by all the fields in a record must not exceed 32 766 (in storage). See Table 1 for rules on determining the total length of the record format. The system determines the number of bytes actually occupied in storage as follows: Data type Bytes occupied in storage Character Number of characters Hexadecimal Number of bytes Binary 1 through 4 digits 2 bytes 5 through 9 digits 4 bytes 10 through 18 digits 8 bytes Binary character Number of characters Zoned decimal Number of digits Packed decimal (Number of digits/2) + 1 (truncated if fractional) Floating-point (single precision) 4 bytes Floating-point (double precision) 8 bytes Date 10 characters without DATFMT keyword 6, 8 or 10 characters with DATFMT keyword Time 8 characters Timestamp 26 characters Note: The system performs arithmetic operations more efficiently for a packed decimal than for a zoned decimal data type. Table 1 describes the rules for determining total format length. Table 1. Rules for determining total format length Situation Action Does the record format contain any variable-length fields? Add an extra 24 bytes to the total format length. Add an extra 2 bytes to the format length for each field that is variable length. Does the record format contain any fields that allow the null value? Divide the total number of fields in the format by 8, round up to the next highest whole byte, then add to format length. To override the length of a referenced field (R in position 29) in a physical file or the length of the field in a logical file, specify either a new value or a change in length. To increase the length, specify +n , where n is the amount of increase. To decrease the length, specify -n , where n is the amount of decrease. For example, type +4 to indicate that a numeric field is to be 4 digits longer than the referenced field. See Positional entries for physical and logical files (positions 1 through 44) for the example that shows how to override the field length for a physical file. If the corresponding field in the physical file record format has a data type of binary with decimal positions greater than zero, the length cannot be overridden in the logical file. If the field you are describing is a concatenation of fields from the associated physical record format, you cannot specify the length in the logical file. The sum of the physical field lengths is calculated by the system. If you specify a value in positions 30 through 34, your program sees the specified length. However, the length of the field in the corresponding physical file field does not change. This can cause data conversion errors. When attempting to add a member to a file or to open a member of a file, the operating system might send a mapping error message. The operating system might also send a mapping error message to your program in the following cases: When reading from a logical file that reduces the length specified in the corresponding physical file When writing to a logical file that increases the length specified in the corresponding physical file For example, if the physical file field is defined as 4 characters long and the logical file field decreases the length to 2 characters, a value of ABCD in the physical file cannot be read by the program, although a value of AB can. In this case, the program can always write successfully. For character fields, the data is left-aligned and filled with blanks in the physical file field. For numeric fields, the data is right-aligned and filled with zeros in the physical file field. Positions 30 through 34 are valid only for field specifications. You must leave these positions blank at the key field, select/omit field, join, record, and file level. Note: High-level languages can impose restrictions on the field length. Any length restrictions should be observed for files used by these high-level languages.",
+      "required": false,
+      "sourceStart": 30,
+      "sourceLength": 5,
+      "attributes": {
+        "characterSet": "upper",
+        "maxLength": 5,
+        "numericOnly": true
+      },
+      "inputType": "text"
+    },
+    {
+      "name": "C35",
+      "description": "データ・タイプ（35-37 桁目）",
+      "help": "For a physical file, you use this position to specify the data type of the field within the database. You specify data type in a logical file only to override or change the data type of the corresponding field in the physical file on which this logical file is based. If you leave this position blank, the field you are defining has the same data type as the corresponding field in the physical files on which the logical files are based. Valid data type entries are as follows: Entry Meaning P Packed decimal S Zoned decimal B Binary F Floating-point A Character H Hexadecimal L Date T Time Z Timestamp 5 Binary character Note: The data types J (only), E (either), O (open), and G (graphic) support DDS database files that use DBCS. The G (graphic) data type also supports DDS database files that use UCS-2 or UTF-16. The A (character) data type also supports database files that use UTF-8. For physical files, if you do not specify a data type or duplicate one from a referenced field, the operating system assigns the following defaults: A (character) if the decimal positions 36 through 37 are blank. P (packed decimal) if the decimal positions 36 through 37 contain a number in the range 0 through 63. Notes: Specify 0 in position 37 to indicate an integer numeric field for packed decimal, zoned decimal, or binary fields. Specify an F in position 35 for a single precision floating-point field. Use the FLTPCN keyword to specify double precision or to change the precision of an already specified floating-point field. Specify an H (hexadecimal) in position 35 to indicate a field whose contents are not interpreted by the system. In most cases, hexadecimal fields are treated as character fields, except that the contents of a hexadecimal field are not translated to any character set or code page. The following table shows what types of data conversion are valid between the data types of physical and logical file fields, where valid conversions are marked with an X or with a reference to the table notes: Data type of physical file field Data type of logical file field A H S P B F L T Z UTF8 UTF16 UCS2 O J E G 5 Character ( A ) X X 1 X X X X X X Hexadecimal ( H ) X X 1 X X X X Zoned ( S ) 1 1 X X 2 X 1 Packed ( P ) X X 2 X Binary ( B ) 2 2 3 2 Floating Point ( F ) X X 2 X Date ( L ) 6,7 6 6 X Time ( T ) 4 X Timestamp ( Z ) 5 5 X UTF-8 X X X X X X UTF-16 X X X X X X UCS-2 X X X X X X Open ( O ) X X X X X X Only ( J ) X X X X X X Either ( E ) X X X X Graphic ( G ) X X X X X X X Binary character X X 1 X X X X Notes: Valid only if the number of characters (or bytes) equals the number of digits and the character (or hexadecimal) field is not defined as a variable-length field. Valid only if the binary field has a decimal precision of zero. Valid only if both fields have the same decimal precision. The system generates the field length for you so do not enter a length in columns 30 through 34. The length does not include the separator character. Valid only if the field is input only. You can specify a field length (columns 30 to 34) for these data types on a logical file field. If you do not specify a length, the system generates a default length. Valid lengths for these data types are documented with the DATFMT keyword. DBCS field types are not allowed to be mapped over DATE fields. Conversion of one numeric data type to another in a DDS file Any conversion of data types from the physical file record format is permitted within the numeric types. For example, a binary field in the physical file can be converted to zoned decimal in the logical file. Conversion between zoned decimal and character or hexadecimal in a DDS file You can convert zoned decimal fields to character or hexadecimal fields and the converse, provided that the field lengths are the same. Conversion of a field from floating point to packed decimal, zoned decimal, or binary in DDS If you are converting a floating-point field (in a physical file) to a packed decimal, zoned decimal, or binary field (in a logical file), you must explicitly specify the length and decimal positions. When converting floating-point data to fixed-point format, make sure that the values you specify for length and decimal positions are large enough to accommodate the data. Conversion of data types when concatenating fields in DDS If the field you are defining is a concatenation of fields from the associated physical file (specified by the CONCAT keyword), you cannot specify the data type. The operating system assigns the data type based on the data types of the fields that are being concatenated. Conversion of data types when substringing fields in DDS If the field you are defining is a substring of a field (specified by the SST keyword) from the logical file or the associated physical file, the original field must be character, hexadecimal, zoned, DBCS-graphic or binary character (A, H, S, or G).",
+      "required": false,
+      "sourceStart": 35,
+      "sourceLength": 3,
+      "attributes": {
+        "characterSet": "upper",
+        "maxLength": 3
+      },
+      "inputType": "dropdown",
+      "options": [
+        {
+          "label": "P（Packed decimal）",
+          "value": "P"
+        },
+        {
+          "label": "S（Zoned decimal）",
+          "value": "S"
+        },
+        {
+          "label": "B（Binary）",
+          "value": "B"
+        },
+        {
+          "label": "F（Floating-point）",
+          "value": "F"
+        },
+        {
+          "label": "A（Character）",
+          "value": "A"
+        },
+        {
+          "label": "H（Hexadecimal）",
+          "value": "H"
+        },
+        {
+          "label": "L（Date）",
+          "value": "L"
+        },
+        {
+          "label": "T（Time）",
+          "value": "T"
+        },
+        {
+          "label": "Z（Timestamp）",
+          "value": "Z"
+        },
+        {
+          "label": "5（Binary character）",
+          "value": "5"
+        }
+      ]
+    },
+    {
+      "name": "C38",
+      "description": "使用目的（38 桁目）",
+      "help": "You use this field to specify that a named field is to be an input-only, both (both input and output are allowed), or neither (neither input nor output is allowed) field. For physical files, you can specify the following entries: Entry Meaning Blank Defaults to B (both input and output allowed) B Both input and output allowed Because the default is the same as the only value, you do not need to make an entry in this field. Entries in position 38 are not referred to by the REF or REFFLD keywords. Therefore, a B in position 38 for a field in a physical file has no effect when that field is referred to in a display file. The valid entries for logical files are described as follows: Blank (Default) If position 38 is blank, the following situation occurs: For simple and multiple format logical files (PFILE specified at the record level), the field is a both (B) field. For join logical files (JFILE specified at the record level), the field is an input-only (I) field. B (Both) If position 38 is B, the field is a both field and can be used for both input and output operations. That is, your program can read data from the field and write data to the field. Both fields are not valid for join logical files, because join logical files are read-only files. I (Input-Only) If position 38 is I, the field is an input-only field and can be used for input operations only. That is, your program can read data from the field, but cannot change the field. Typical cases of input-only fields are key fields (to reduce maintenance of access paths), sensitive fields that a user can see but not change (such as, in employee records, salary), and fields for which the SST or TRNTBL keyword is specified. If your program performs a change to a record format in which you have specified input-only fields, the input-only fields are not updated and no message is sent. If your program performs an output operation to a record format in which you have specified input-only fields, the input-only fields take default values (see the DFT (Default) keyword-physical files only topic). Input-only fields are not valid in physical files. N (Neither) If position 38 is N, the field is a neither field (neither input nor output) and is valid only for join logical files. A neither field can be used as a join field in a join logical file, but your program cannot read a neither field. Use neither fields when the attributes of join fields in the physical files do not match. In this case, one or both join fields must be redefined. However, you might not want to include the redefined fields in the record format (that is, you might not want the application program to see the redefined fields). Therefore, code the redefined join fields as N and they do not appear in the record format. A field with N in position 38 does not appear in the buffer used by your program. However, the field description is displayed with the Display File Field Description (DSPFFD) command. Neither fields cannot be used as select/omit or key fields. Entries in position 38 are not referred to using the REF or REFFLD keyword. Therefore, a B or an I in position 38 for a field in a logical file has no effect when that field is referred to in a display file.",
+      "required": false,
+      "sourceStart": 38,
+      "sourceLength": 1,
+      "attributes": {
+        "characterSet": "upper",
+        "maxLength": 1
+      },
+      "inputType": "dropdown",
+      "options": [
+        {
+          "label": "（ブランク）Defaults to B (both input and output",
+          "value": ""
+        },
+        {
+          "label": "B（Both input and output allowed）",
+          "value": "B"
+        },
+        {
+          "label": "I（If position 38 is I, the field is an inp）",
+          "value": "I"
+        },
+        {
+          "label": "N（If position 38 is N, the field is a neit）",
+          "value": "N"
+        }
+      ]
+    },
+    {
+      "name": "C39",
+      "description": "位置（39-44 桁目）",
+      "help": "These positions do not apply to physical or logical files. Leave these positions blank unless you use them for comment text.",
+      "required": false,
+      "sourceStart": 39,
+      "sourceLength": 6,
+      "attributes": {
+        "characterSet": "upper",
+        "maxLength": 6
+      },
+      "inputType": "text"
+    },
+    {
+      "name": "C45",
+      "description": "キーワード項目（45-80 桁目）",
+      "help": "キーワードを書く欄。キーワードの一覧と構文は補完（Ctrl+Space）で出る。",
+      "required": false,
+      "sourceStart": 45,
+      "sourceLength": 36,
+      "attributes": {
+        "characterSet": "upper",
+        "maxLength": 36
+      },
+      "inputType": "text"
+    }
+  ]
+}

@@ -4,6 +4,7 @@ import { resolveDialect } from "./dialect";
 import { classifyRpgSpecKeyword } from "./specClassifier";
 import { getLogicalCommandRange } from "../language/clContinuation";
 import { joinContinuationLines, parseClCommand } from "./clCommandParser";
+import { resolveDdsType } from "../language/ddsKeywordCompletion";
 
 export interface ResolvedPosition {
   readonly language: LanguageId;
@@ -39,7 +40,13 @@ export function resolvePosition(
   // 継続行では SRCFILE(...) のような引数を命令名と見なしてしまう。
   let commandLine = position.line;
 
-  if (language === "cl" || language === "cmd") {
+  if (language === "dds") {
+    // 注記行（7 桁目が *）は 8-80 桁が本文なので桁の意味が無い。
+    if (text.length > 6 && text.charAt(6) === "*") {
+      return undefined;
+    }
+    keyword = resolveDdsType(document.uri.fsPath) ?? "";
+  } else if (language === "cl" || language === "cmd") {
     const logical = getLogicalCommandRange(document, position.line).range;
     commandLine = logical.start.line;
 
@@ -94,11 +101,16 @@ function getLanguageId(document: vscode.TextDocument): LanguageId | undefined {
   }
 
   // .cmd はコマンド定義ソース。言語登録はしていない（表示系と同じく拡張子で扱う）。
-  if (/\.cmd$/u.test(document.uri.fsPath.toLowerCase())) {
+  const lower = document.uri.fsPath.toLowerCase();
+  if (/\.cmd$/u.test(lower)) {
     return "cmd";
   }
 
-  const lower = document.uri.fsPath.toLowerCase();
+  // DDS。同じ A 仕様書でも用途で桁の意味が変わるので、種別は keyword 側で決める。
+  if (/\.(pf|lf|dspf|prtf|mnudds|dds)$/u.test(lower)) {
+    return "dds";
+  }
+
   if (/\.(sqlrpgle|rpgle|sqlrpg|rpg)$/u.test(lower)) {
     return "rpg-fixed";
   }

@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="ja"><head><meta charset="utf-8"><title>物理ファイルおよび論理ファイルの使用目的 (38 桁目)</title></head>
+<body>
+<h1 class="title topictitle1">物理ファイルおよび論理ファイルの使用目的 (38 桁目)</h1><div id="lastModifiedDate"><span>Last Updated</span>: 2021-04-13</div>
+<div class="body refbody"><p class="shortdesc">この欄は、名前を付けたフィールドを、入力専用にするか、入出力共用フィールドにするか、あるいは非入出力 (入力も出力も行わない) フィールドにするかを指定するのに使用します。</p>
+<div class="section"><div class="p">物理ファイルの場合に指定できる項目は次のとおりです。<dl class="dl"><dt class="dthd"><strong>項目</strong></dt>
+<dd class="ddhd"><strong>意味</strong></dd>
+<dt class="dt dlterm">ブランク</dt>
+<dd class="dd">デフォルトにより B (入力および出力の両方が可能) </dd>
+<dt class="dt dlterm">B</dt>
+<dd class="dd">入力と出力の両方が可能</dd>
+</dl>
+</div>
+<p class="p">デフォルト値が唯一の有効な値と同じであるため、この欄への入力は必要ありません。</p>
+<p class="p">38 桁目の項目は REF または REFFLD キーワードにより参照されません。したがって、物理ファイル
+のフィールドについて 38 桁目に B を指定しても、表示装置ファイルでその
+フィールドが参照されるさいには、その指定は効力はありません。</p>
+<div class="p">論理ファイルに有効な項目は、次に説明されているとおりです。<dl class="dl parml"><dt class="dt pt dlterm">ブランク (デフォルト)</dt>
+<dd class="dd pd">38 桁目をブランクにすると、次のデフォルト値が使用されます。<ul class="ul cds--list--unordered"><li class="li cds--list__item">単一様式論理ファイルおよび複数様式論理ファイル (PFILE がレコード・レベル
+で指定されたもの) の場合には、当該フィールドは入出力共用 (B) フィールドに
+なります。</li>
+<li class="li cds--list__item">結合論理ファイル (JFILE がレコード・レベルで指定されたもの) の場合には、当該フィールドは入力専用 (I) フィールドになります。</li>
+</ul>
+</dd>
+<dt class="dt pt dlterm">B (入出力共用)</dt>
+<dd class="dd pd">38 桁目に B を指定すると、当該フィールドは<em class="ph i">入出力共用</em> フィールドと
+なり、入力操作および出力操作の両方に使用することができます。
+つまり、プログラムでは、そのフィールドからデータを読み取ることも、そのフィールドにデータを
+書き込むこともできます。結合論理ファイルは読み取り専用ファイルであるため、結合論理ファイルに
+対して入出力共用フィールドを指定することはできません。</dd>
+<dt class="dt pt dlterm">I (入力専用)</dt>
+<dd class="dd pd">38 桁目に I を指定すると、そのフィールドは<em class="ph i">入力専用</em> と
+なり、入力操作だけに使用できるフィールドになります。
+つまり、プログラムでは、そのフィールドからデータを読み取ることはできますが、フィールド内のデータを変更することはできません。入力専用フィールドの代表的な
+例としては、アクセス・パスの保守を軽減するために使用されるキー・フィールド、ユーザーが見ることはできるが変更はできない重要フィールド (従業員レコード
+の給与フィールドなど)、および SST キーワードまたは TRNTBL キーワードが
+指定されているフィールドなどが挙げられます。<p class="p">入力専用フィールドを指定したレコード様式に対してプログラムで変更を
+行った場合には、入力専用フィールドは更新されず、メッセージも出されません。
+入力専用フィールドを指定したレコード様式に対してプログラムで出力操作を行った場合には、
+入力専用フィールドにデフォルト値 (DFT (デフォルト) を参照) が入ります。</p>
+<p class="p">入力専用フィールドは、
+物理ファイル内に指定することはできません。</p>
+</dd>
+<dt class="dt pt dlterm">N (非入出力)</dt>
+<dd class="dd pd">38 桁目に N を指定した場合には、そのフィールドが<em class="ph i">非入出力</em> フィールド
+(入力用でも出力用でもないフィールド) となります。このフィールドは、結合論理ファイルの場合にだけ有効です。
+非入出力フィールドは、結合論理ファイル内の結合フィールドとして使用することができますが、非入出力フィールドをプログラムで読み取ることはできません。<p class="p">非入出力フィールドは、物理ファイル内の結合されるフィールドの属性が合致しない
+場合に使用します。この場合には、一方または両方の結合フィールドを再定義
+しなければなりません。しかし、再定義したフィールドをレコード様式に入れる必要が
+ない (すなわち、アプリケーション・プログラムで再定義したフィールドを見る必要がない) 場合もあります。
+このような場合に、再定義する結合フィールドについて
+この欄に N を指定することによって、それらの結合フィールドがレコード様式に
+入らないようにすることができます。</p>
+<p class="p">38 桁目に N を指定したフィールドは、プログラムにより使用されるバッファーには入りません。ただし、ファイル・フィールド記述表示 (DSPFFD) コマンドを用いれば、フィールド記述は表示されます。</p>
+<p class="p"><em class="ph i">非入出力</em> フィールドは、選択/除外フィールドまたはキー・フィールドとして使用することはできません。</p>
+</dd>
+</dl>
+</div>
+<p class="p">38 桁目の項目は、REF キーワードまたは REFFLD キーワードを使用して行う
+参照の対象にはなりません。したがって、論理ファイル内
+のフィールドについて 38 桁目に B または 1 を指定しても、そのフィールドが
+表示装置ファイルで参照されるさいには、その指定は効力はありません。</p>
+</div>
+</div>
+<div class="related-links ibm-padding-top-1 ibm-padding-bottom-2 bx--row bottom-section-parent" aria-label="bottom related links">
+<div class="familylinks ibm-margin-bottom-1">
+<div class="parentlink"><strong>親トピック:</strong> <div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a class="link bottom-section-link" href="/docs/ja/ssw_ibm_i_74/rzakb/rzakbmstlfpos.htm" title="DDS 形式の最初の 44 桁は定位置項目と呼ばれます。">物理ファイルおよび論理ファイルの定位置項目 (1 から 44 桁目)</a></div></div>
+</div>
+<div class="relinfo relref ibm-margin-bottom-1"><strong>関連資料</strong>:<br>
+<div><div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a class="link bottom-section-link" href="/docs/ja/ssw_ibm_i_74/rzakb/rzakbmstpdft.htm" title="これはフィールド・レベルのキーワードで、フィールドのデフォルト値を指定するために使用します。">DFT (デフォルト) キーワード - 物理ファイルのみ</a></div></div>
+<div><div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a class="link bottom-section-link" href="/docs/ja/ssw_ibm_i_74/rzakb/rzakbmsttdjfld.htm" title="これは結合レベル・キーワードで、結合元 フィールドと結合先 フィールドの名前を識別するために使用します。これらのフィールドの値は、複数の物理ファイルを 1 つの結合論理ファイルで結合するために用いられます。結合元フィールドおよび結合先フィールドは、どちらも結合フィールドと呼ばれています。">JFLD (結合フィールド) キーワード - 結合論理ファイルのみ</a></div></div>
+</div>
+</div>
+
+
+</body></html>
