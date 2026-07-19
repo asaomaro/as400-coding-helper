@@ -1,0 +1,186 @@
+{
+  "keyword": "PMTCTL",
+  "description": "プロンプト制御定義 (PMTCTL)",
+  "help": "プロンプト制御(PMTCTL)ステートメントは，関連するPARMステートメントがこのPMTCTLステートメントを参照するパラメーターについて，プロンプト表示を行うかどうかを決定するためにテストされる条件を指定します。PMTCTLステートメントには，コマンド定義のソース中の1つ以上のPARMステートメントの プロンプト制御 (PMTCTL) パラメーターで参照されたラベルと一致するステートメント・ラベルがなければなりません。",
+  "parameters": [
+    {
+      "name": "CTL",
+      "description": "制御キーワード",
+      "help": "プロンプト表示を制御するパラメーターの名前を指定します。ここで指定するパラメーターの値は， 制御条件 (COND) パラメーターに指定された値と比較されます。ここで指定したパラメーターについてPARMステートメントの プロンプト制御プログラム プロンプト(PMTCTLPGMパラメーター）をコーディングした場合には，そのPMTCTLPGMパラメーターで指定されたプログラムによって戻される値が 制御条件 (COND) パラメーターで指定された値と比較されます。ここで指定したパラメーターがリストまたは修飾名の場合には，最初のリスト項目または修飾子だけが比較されます。",
+      "inputType": "text",
+      "required": true,
+      "attributes": {
+        "characterSet": "upper",
+        "maxLength": 10
+      },
+      "positional": 1
+    },
+    {
+      "name": "COND",
+      "description": "制御条件",
+      "help": "制御キーワード (CTL) パラメーターに指定されたパラメーターをテストするための条件を指定します。指定できる条件の数は最大50個です。",
+      "inputType": "group",
+      "required": true,
+      "groupKind": "elements",
+      "children": [
+        {
+          "name": "COND_E1",
+          "description": "比較演算子",
+          "inputType": "dropdown",
+          "required": true,
+          "attributes": {
+            "characterSet": "upper"
+          },
+          "options": [
+            {
+              "label": "*GT",
+              "value": "*GT"
+            },
+            {
+              "label": "*EQ",
+              "value": "*EQ"
+            },
+            {
+              "label": "*GE",
+              "value": "*GE"
+            },
+            {
+              "label": "*NL",
+              "value": "*NL"
+            },
+            {
+              "label": "*LT",
+              "value": "*LT"
+            },
+            {
+              "label": "*NE",
+              "value": "*NE"
+            },
+            {
+              "label": "*LE",
+              "value": "*LE"
+            },
+            {
+              "label": "*NG",
+              "value": "*NG"
+            },
+            {
+              "label": "*SPCFD",
+              "value": "*SPCFD"
+            },
+            {
+              "label": "*UNSPCFD",
+              "value": "*UNSPCFD"
+            }
+          ]
+        },
+        {
+          "name": "COND_E2",
+          "description": "制御キーワード値",
+          "inputType": "text",
+          "required": false
+        }
+      ],
+      "positional": 2,
+      "maxOccurrences": 50
+    },
+    {
+      "name": "NBRTRUE",
+      "description": "真条件の数",
+      "help": "パラメーターのプロンプトが表示される場合に真とならなければならない 制御条件 (COND) パラメーターに指定された条件の数を指定します。",
+      "inputType": "group",
+      "required": false,
+      "groupKind": "elements",
+      "singleValues": [
+        "*ALL"
+      ],
+      "children": [
+        {
+          "name": "NBRTRUE_E1",
+          "description": "比較演算子",
+          "inputType": "dropdown",
+          "required": false,
+          "attributes": {
+            "characterSet": "upper"
+          },
+          "options": [
+            {
+              "label": "*ALL",
+              "value": "*ALL",
+              "help": "すべての条件が真でなければなりません。"
+            },
+            {
+              "label": "*GT",
+              "value": "*GT"
+            },
+            {
+              "label": "*EQ",
+              "value": "*EQ"
+            },
+            {
+              "label": "*GE",
+              "value": "*GE"
+            },
+            {
+              "label": "*NL",
+              "value": "*NL"
+            },
+            {
+              "label": "*LT",
+              "value": "*LT"
+            },
+            {
+              "label": "*NE",
+              "value": "*NE"
+            },
+            {
+              "label": "*LE",
+              "value": "*LE"
+            },
+            {
+              "label": "*NG",
+              "value": "*NG"
+            }
+          ],
+          "defaultValue": "*ALL"
+        },
+        {
+          "name": "NBRTRUE_E2",
+          "description": "真条件の数",
+          "inputType": "number",
+          "required": false,
+          "attributes": {
+            "numericOnly": true
+          }
+        }
+      ]
+    },
+    {
+      "name": "LGLREL",
+      "description": "論理関係",
+      "help": "PMTCTLステートメントがグループになっている時に，このPMTCTLステートメントとグループ中の前のPMTCTLステートメントとの間の論理比較を指定します。これにより，1つ以上の制御パラメーターを使用して条件つきプロンプト表示を使用することができます。",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*AND",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*AND",
+          "value": "*AND",
+          "help": "このPMTCTLステートメントと前のPMTCTLステートメントとの論理AND演算を実行し，結果の条件を作成します。"
+        },
+        {
+          "label": "*OR",
+          "value": "*OR",
+          "help": "このPMTCTLステートメントと前のPMTCTLステートメントとの論理OR演算を実行し，結果の条件を作成します。"
+        }
+      ]
+    }
+  ],
+  "source": {
+    "url": "https://www.ibm.com/docs/ja/ssw_ibm_i_74/cl/pmtctl.htm",
+    "version": "IBM i 7.4"
+  }
+}

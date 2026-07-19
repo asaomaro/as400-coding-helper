@@ -1,4 +1,9 @@
-export type LanguageId = "rpg-fixed" | "cl";
+/**
+ * プロンプターが扱う対象。
+ * "cmd" は .cmd ソースに書くコマンド定義ステートメント（CMD/PARM/ELEM/QUAL/DEP/PMTCTL）。
+ * CL コマンドではないが、構文は同じなので解析と書き戻しは CL と同じ経路を通る。
+ */
+export type LanguageId = "rpg-fixed" | "cl" | "cmd";
 
 // RPG 固定長の方言。languageId(`rpg-fixed`) とは直交する別次元で、
 // 拡張子から導出する（.rpgle→ile / .rpg→rpg3、設定で上書き可）。

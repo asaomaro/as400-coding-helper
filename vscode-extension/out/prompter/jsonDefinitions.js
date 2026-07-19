@@ -143,9 +143,12 @@ class PrompterDefinitionLoader {
         }
     }
     resolveSubPath(language, dialect) {
-        return language === "rpg-fixed"
-            ? ["rpg", dialect ?? "ile"]
-            : ["cl", resolveDefinitionLanguage()];
+        if (language === "rpg-fixed") {
+            return ["rpg", dialect ?? "ile"];
+        }
+        // .cmd の文は CL コマンドではないので別に置く。混ぜると CL の
+        // プロンプターに PARM や QUAL が出てしまう。
+        return [language === "cmd" ? "cmd" : "cl", resolveDefinitionLanguage()];
     }
     overrideDirs(language, dialect, workspaceFolder) {
         const baseUri = workspaceFolder?.uri ?? vscode.workspace.workspaceFolders?.[0]?.uri;
@@ -165,9 +168,7 @@ class PrompterDefinitionLoader {
         // RPG は方言別サブディレクトリ rpg/{dialect}/ を使う。
         // CL は言語別サブディレクトリ cl/{lang}/ を使う（原典が日本語版と英語版で
         // 別々にあり、プロンプターの表示語もそれに従うため）。
-        const subPath = language === "rpg-fixed"
-            ? ["rpg", dialect ?? "ile"]
-            : ["cl", resolveDefinitionLanguage()];
+        const subPath = this.resolveSubPath(language, dialect);
         // 1) Load default definitions bundled with the extension
         const defaultDirUri = vscode.Uri.joinPath(context.extensionUri, "resources", "prompter", ...subPath);
         const definitions = await this.loadFromDirectory(defaultDirUri);

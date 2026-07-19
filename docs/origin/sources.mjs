@@ -82,6 +82,9 @@ export const categories = {
       // 構成・システム値
       'WRKCFGSTS', 'VRYCFG', 'DSPSYSVAL',
 
+      // コマンド定義ステートメント（.cmd ソースに書く文。CL コマンドではないが
+      // 原典の書式も構文も CL コマンドと同じなので同じ経路で扱う）
+      'CMD', 'PARM', 'ELEM', 'QUAL', 'DEP', 'PMTCTL',
       // 第4弾: コンパイル / オブジェクト作成の残り
       'ADDBNDDIRE', 'ADDMSGD', 'CHGMSGD', 'CRTBNDDIR', 'CRTCBLMOD', 'CRTCBLPGM', 'CRTCMD', 'CRTDTADCT',
       'CRTMNU', 'CRTMSGF', 'CRTPNLGRP', 'CRTRPGPGM', 'CRTRPTPGM', 'CRTSBSD', 'CRTSQLCBL', 'CRTSQLCBLI',

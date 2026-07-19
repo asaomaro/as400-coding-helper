@@ -21,7 +21,7 @@ function resolvePosition(document, position) {
     // コマンドは論理行の先頭にしか無い。行頭の語をそのまま採ると、
     // 継続行では SRCFILE(...) のような引数を命令名と見なしてしまう。
     let commandLine = position.line;
-    if (language === "cl") {
+    if (language === "cl" || language === "cmd") {
         const logical = (0, clContinuation_1.getLogicalCommandRange)(document, position.line).range;
         commandLine = logical.start.line;
         const lines = [];
@@ -67,6 +67,10 @@ function getLanguageId(document) {
     }
     if (document.languageId === "cl") {
         return "cl";
+    }
+    // .cmd はコマンド定義ソース。言語登録はしていない（表示系と同じく拡張子で扱う）。
+    if (/\.cmd$/u.test(document.uri.fsPath.toLowerCase())) {
+        return "cmd";
     }
     const lower = document.uri.fsPath.toLowerCase();
     if (/\.(sqlrpgle|rpgle|sqlrpg|rpg)$/u.test(lower)) {

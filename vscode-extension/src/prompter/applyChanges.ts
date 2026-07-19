@@ -26,7 +26,7 @@ export async function applyChanges(
 ): Promise<void> {
   const { document } = editor;
 
-  if (resolved.language === "cl") {
+  if (resolved.language === "cl" || resolved.language === "cmd") {
     const logical = getLogicalCommandRange(document, resolved.line);
 
     // ラベルとコメントは入力欄に現れないため、元のソースから引き継ぐ。

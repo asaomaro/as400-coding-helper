@@ -39,7 +39,7 @@ export function resolvePosition(
   // 継続行では SRCFILE(...) のような引数を命令名と見なしてしまう。
   let commandLine = position.line;
 
-  if (language === "cl") {
+  if (language === "cl" || language === "cmd") {
     const logical = getLogicalCommandRange(document, position.line).range;
     commandLine = logical.start.line;
 
@@ -91,6 +91,11 @@ function getLanguageId(document: vscode.TextDocument): LanguageId | undefined {
 
   if (document.languageId === "cl") {
     return "cl";
+  }
+
+  // .cmd はコマンド定義ソース。言語登録はしていない（表示系と同じく拡張子で扱う）。
+  if (/\.cmd$/u.test(document.uri.fsPath.toLowerCase())) {
+    return "cmd";
   }
 
   const lower = document.uri.fsPath.toLowerCase();

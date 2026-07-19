@@ -44,7 +44,7 @@ const clCommandParser_1 = require("./clCommandParser");
 const occurrences_1 = require("./occurrences");
 async function applyChanges(editor, definition, resolved, values) {
     const { document } = editor;
-    if (resolved.language === "cl") {
+    if (resolved.language === "cl" || resolved.language === "cmd") {
         const logical = (0, clContinuation_1.getLogicalCommandRange)(document, resolved.line);
         // ラベルとコメントは入力欄に現れないため、元のソースから引き継ぐ。
         const originalLines = [];

@@ -1,0 +1,459 @@
+{
+  "keyword": "QUAL",
+  "description": "Qualifier Definition (QUAL)",
+  "parameters": [
+    {
+      "name": "TYPE",
+      "description": "Type of value",
+      "help": "Type of value (TYPE)\n\nSpecifies the type of qualifier used to qualify a parameter name or list element name. The qualifier can be a name or generic name, a quoted or not quoted character string, or an integer. Enter one of the following options to specify the type of qualifier. The first qualifier for any qualified name must have a type of name (*NAME) or generic name (*GENERIC).\n\n指定できる特殊値: *NAME, *GENERIC, *CHAR, *INT2, *INT4, *SNAME, *CNAME, *UINT2, *UINT4",
+      "inputType": "text",
+      "required": true,
+      "attributes": {
+        "characterSet": "upper",
+        "maxLength": 10
+      },
+      "positional": 1
+    },
+    {
+      "name": "LEN",
+      "description": "Length specification",
+      "help": "Length specification (LEN)\n\nSpecifies the maximum length of the qualifier, if *NAME, *SNAME, *CNAME, *GENERIC, or *CHAR is specified for the Type of value (TYPE) parameter.\n\nThe value specified for this parameter will be the number of bytes passed for the qualifier value to the command processing program. If a shorter value is specified for this qualifier, the value will be padded on the right with blanks.\n\nIf the LEN parameter is allowed but not specified, a default length will be used based on the value specified for the TYPE parameter. The following table shows the default length value for each TYPE and the maximum value that can be specified for the LEN parameter.",
+      "inputType": "group",
+      "required": false,
+      "groupKind": "elements",
+      "children": [
+        {
+          "name": "LEN_E1",
+          "description": "Value length",
+          "inputType": "number",
+          "required": false,
+          "attributes": {
+            "numericOnly": true
+          }
+        }
+      ],
+      "positional": 2
+    },
+    {
+      "name": "CONSTANT",
+      "description": "Constant value",
+      "help": "Constant value (CONSTANT)\n\nSpecifies that a value is passed to the command processing program as a constant for the qualifier when the command being defined is processed; the qualifier is not to appear externally on the command. If specified, the value must satisfy the requirements specified by the following parameters:\n\nIf a character constant is specified in this parameter, it can be no longer than 32 bytes.\n\nIf a constant is specified in this QUAL statement and other QUAL statements immediately follow it, they must also be defined as constants, unless a label precedes one of them. A label indicates the beginning of a new group of QUAL statements, which can be defined differently.\n\nAlso, if a constant is specified for the qualifier being defined, no prompt text can be specified for the Prompt text or message ID (PROMPT) parameter of this QUAL statement. However, any other qualifiers or groups of qualifiers are still prompted, and their values are still passed to the command processing program as a qualified name.\n\nThis parameter is not valid if the Default value (DFT) parameter is specified or if *YES is specified for the Value an expression (EXPR) parameter.\n\nVariables cannot be coded for this parameter.",
+      "inputType": "text",
+      "required": false
+    },
+    {
+      "name": "RSTD",
+      "description": "Restricted values",
+      "help": "Restricted values (RSTD)\n\nSpecifies whether the value entered for the qualifier is restricted to only one of the values given in the Valid values (VALUES) parameter or the Single values (SNGVAL) parameter, or whether any value can be used that satisfies the requirements specified by the following parameters:",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*NO",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*NO",
+          "value": "*NO"
+        },
+        {
+          "label": "*YES",
+          "value": "*YES"
+        }
+      ]
+    },
+    {
+      "name": "DFT",
+      "description": "Default value",
+      "help": "Default value (DFT)\n\nSpecifies the default value assigned to the qualifier if a value is not specified by the user. The default value must satisfy one of the following:\n\nThis parameter is valid only if the Minimum values required (MIN) parameter is 0, which means the qualifier defined by this QUAL statement for this list is optional. A default is not meaningful on this QUAL statement if it is the first one (defining the first part) for a qualified name and if a default is specified on the PARM or ELEM statement that this QUAL statement further defines. If this parameter is not specified, it has a default of its own: the default is blank if *CHAR, *NAME, *SNAME, *CNAME, or *GENERIC is specified for the Type of value (TYPE) parameter. The default is zero (0) if *INT2, *INT4, *UINT2 or *UINT4 is specified for the Type of value (TYPE) parameter. An assumed default value is not displayed by the command prompt; a blank input field is shown instead. If a default is specified in this parameter, it is displayed by the prompt exactly as specified.\n\nThe DFT parameter is not valid if the Constant value (CONSTANT) parameter is specified.\n\nVariables cannot be coded for this value.",
+      "inputType": "text",
+      "required": false
+    },
+    {
+      "name": "VALUES",
+      "description": "Valid values",
+      "help": "Valid values (VALUES)\n\nSpecifies a list of up to 300 constants (fixed values) from which one constant can be entered as the value of the qualifier. This parameter is valid only if all of the following are true:\n\nCharacter constants specified in this parameter can be no longer than 32 bytes. Specify the constants (not more than 300) that can be entered as the value of the qualifier.",
+      "inputType": "text",
+      "required": false,
+      "maxOccurrences": 300
+    },
+    {
+      "name": "REL",
+      "description": "Relational expression",
+      "help": "Relational expression (REL)\n\nSpecifies the relationship between the qualifier value and the value of another parameter or constant. To specify the relationship, enter one of the following relational operators followed by a constant or the value of another parameter.\n\nThis parameter is not valid if either the Valid values (VALUES) parameter or the Range of values (RANGE) parameter is specified. If *CHAR (character type) is specified by Type of value (TYPE) parameter, the EBCDIC value of the character string is used as an unsigned integer in the comparison. If a character constant is specified in this parameter, it can be no longer than 32 bytes.",
+      "inputType": "group",
+      "required": false,
+      "groupKind": "elements",
+      "children": [
+        {
+          "name": "REL_E1",
+          "description": "Relational operator",
+          "inputType": "dropdown",
+          "required": false,
+          "attributes": {
+            "characterSet": "upper"
+          },
+          "options": [
+            {
+              "label": "*GT",
+              "value": "*GT"
+            },
+            {
+              "label": "*EQ",
+              "value": "*EQ"
+            },
+            {
+              "label": "*GE",
+              "value": "*GE"
+            },
+            {
+              "label": "*NL",
+              "value": "*NL"
+            },
+            {
+              "label": "*LT",
+              "value": "*LT"
+            },
+            {
+              "label": "*NE",
+              "value": "*NE"
+            },
+            {
+              "label": "*LE",
+              "value": "*LE"
+            },
+            {
+              "label": "*NG",
+              "value": "*NG"
+            }
+          ]
+        },
+        {
+          "name": "REL_E2",
+          "description": "Value",
+          "inputType": "text",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "RANGE",
+      "description": "Range of values",
+      "help": "Range of values (RANGE)\n\nSpecifies the range, or limits, for the value of the qualifier. The qualifier value must be greater than or equal to the lower limit value specified, and it must be less than or equal to the upper limit value specified. For nonnumeric data types, such as *CHAR, the range of values and the data specified is right-justified and padded on the left with blanks. A numeric range should not be used to define an interval for nonnumeric data unless leading zeros are specified or the data is only 1 character in length. This parameter is not valid if either the Valid values (VALUES) parameter, or the Relational expression (REL) parameter is specified. Character constants specified in this parameter can be no longer than 32 bytes.",
+      "inputType": "group",
+      "required": false,
+      "groupKind": "elements",
+      "children": [
+        {
+          "name": "RANGE_E1",
+          "description": "Lower value",
+          "inputType": "text",
+          "required": false
+        },
+        {
+          "name": "RANGE_E2",
+          "description": "Upper value",
+          "inputType": "text",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "SPCVAL",
+      "description": "Special values",
+      "help": "Special values (SPCVAL)\n\nSpecifies a list of up to 300 entries that define special values that can be entered on the parameter named in the Keyword (KWD) parameter on the PARM statement. Each entry specifies a character string (a from-value) that can be entered even though it may not meet all validity checking requirements. If the entered character string matches the from-value of one of the entries, and the to-value is specified, the string is replaced with the to-value and is then passed to the command processing program without further checking. If the to-value is omitted, the from-value is passed to the command processing program. The from-value is a character string, but the to-value can be anything that is passable. If a CL variable is used for the from-value, its type must be *CHAR. However, the first qualifier can only have special to-values with the from-values that are a name, a generic name, or an asterisk (*) followed by a name such as *ALL.\n\nEach to-value must be passable to the command processing program. The to-value must be no longer than is specified on the Length specification (LEN) parameter and, if *INT2, *INT4, *UINT2 or *UINT4 is specified for the Type of value (TYPE) parameter, the type of the to-value must be the same. If a character type (such as *CHAR or *NAME) is specified for the Type of value (TYPE) parameter, the to-value must be a character string. Character constants specified in this parameter can be no longer than 32 bytes. If a to-value is not specified, the from-value must be passable.\n\nIf a to-value of *CURLIB is specified, the name of the current library is passed to the command processing program rather than the value *CURLIB. If the from-value is *CURLIB and no to-value is specified, or if the to-value is *CURLIB and it is enclosed in apostrophes, the value *CURLIB is passed to the command processing program.\n\nVariables cannot be coded for this value.",
+      "inputType": "group",
+      "required": false,
+      "groupKind": "elements",
+      "children": [
+        {
+          "name": "SPCVAL_E1",
+          "description": "From value",
+          "inputType": "text",
+          "required": false
+        },
+        {
+          "name": "SPCVAL_E2",
+          "description": "To replacement value",
+          "inputType": "text",
+          "required": false
+        }
+      ],
+      "maxOccurrences": 300
+    },
+    {
+      "name": "MIN",
+      "description": "Minimum values required",
+      "help": "Minimum values required (MIN)\n\nSpecifies whether the qualifier being defined in this QUAL statement is required or optional. If this parameter is not specified, 0 is assumed, which means the qualifier is optional. If a required qualified name is needed, 1 must be specified for this parameter on both the first QUAL and on the PARM or ELEM that refers to it.",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "0"
+    },
+    {
+      "name": "ALWUNPRT",
+      "description": "Allow unprintable characters",
+      "help": "Allow unprintable characters (ALWUNPRT)\n\nSpecifies whether the qualifier value should accept the hexadecimal character X'FF' or those hexadecimal characters in the range of X'00' to X'3F'. This parameter is valid only if *CHAR or *X is specified for the Type of value (TYPE) parameter,",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*YES",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*YES",
+          "value": "*YES"
+        },
+        {
+          "label": "*NO",
+          "value": "*NO"
+        }
+      ]
+    },
+    {
+      "name": "ALWVAR",
+      "description": "Allow variable names",
+      "help": "Allow variable names (ALWVAR)\n\nSpecifies whether variable names are allowed for the qualifier. *NO is not allowed if *VARNAME, *ZEROELEM, *NULL, or a statement label is specified for the Type of value (TYPE) parameter,",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*YES",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*YES",
+          "value": "*YES"
+        },
+        {
+          "label": "*NO",
+          "value": "*NO"
+        }
+      ]
+    },
+    {
+      "name": "FULL",
+      "description": "Full field required",
+      "help": "Full field required (FULL)\n\nSpecifies whether the number of characters in the qualifier value must be exactly the same as the number specified in the Length specification (LEN) parameter (if specified) or its default length (if LEN is not specified).",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*NO",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*NO",
+          "value": "*NO"
+        },
+        {
+          "label": "*YES",
+          "value": "*YES"
+        }
+      ]
+    },
+    {
+      "name": "EXPR",
+      "description": "Value an expression",
+      "help": "Value an expression (EXPR)\n\nSpecifies whether the qualifier can accept an expression containing a character concatenation.",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*NO",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*NO",
+          "value": "*NO"
+        },
+        {
+          "label": "*YES",
+          "value": "*YES"
+        }
+      ]
+    },
+    {
+      "name": "VARY",
+      "description": "Varying length",
+      "help": "Varying length (VARY)\n\nSpecifies whether the qualifier value that is passed to the command processing program is preceded by a length value that indicates the number of bytes entered for the qualifier's value.\n\nSingle values\n\nElement 1: Return length value\n\nNote: The length value is the actual number of bytes entered for the command parameter with trailing blanks removed. The length value passed may be different than the defined parameter length or the declared variable length. The length of the field containing the character string data is determined by the defined length for the parameter or the declared LEN for CL Program variables. The length value defines how many bytes in the character string data field were actually entered for the command parameter.\n\nElement 2: Value length",
+      "inputType": "group",
+      "required": false,
+      "groupKind": "elements",
+      "singleValues": [
+        "*NO"
+      ],
+      "children": [
+        {
+          "name": "VARY_E1",
+          "description": "Return length value",
+          "inputType": "dropdown",
+          "required": false,
+          "attributes": {
+            "characterSet": "upper"
+          },
+          "options": [
+            {
+              "label": "*NO",
+              "value": "*NO"
+            },
+            {
+              "label": "*YES",
+              "value": "*YES"
+            }
+          ],
+          "defaultValue": "*NO"
+        },
+        {
+          "name": "VARY_E2",
+          "description": "Value length",
+          "inputType": "dropdown",
+          "required": false,
+          "defaultValue": "*INT2",
+          "attributes": {
+            "characterSet": "upper"
+          },
+          "options": [
+            {
+              "label": "*INT2",
+              "value": "*INT2"
+            },
+            {
+              "label": "*INT4",
+              "value": "*INT4"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "PASSATR",
+      "description": "Pass attribute byte",
+      "help": "Pass attribute byte (PASSATR)\n\nSpecifies whether an attribute byte is to be passed to the command processing program with the qualifier. The attribute byte precedes the qualifier data.\n\nThe attribute byte has two fields:",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*NO",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*NO",
+          "value": "*NO"
+        },
+        {
+          "label": "*YES",
+          "value": "*YES"
+        }
+      ]
+    },
+    {
+      "name": "DSPINPUT",
+      "description": "Display input",
+      "help": "Display input (DSPINPUT)\n\nIdentifies whether the keyword value is to be shown in the job log or in a prompt display.\n\nNote: The DSPINPUT parameter has no effect on the job log entries for a database reader job, for imbedded commands (for example, a command submitted on the SBMJOB command), or for commands run using the QCAPCMD, QCMDEXC or QCAEXEC APIs.",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*YES",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*YES",
+          "value": "*YES"
+        },
+        {
+          "label": "*PROMPT",
+          "value": "*PROMPT"
+        },
+        {
+          "label": "*NO",
+          "value": "*NO"
+        }
+      ]
+    },
+    {
+      "name": "CHOICE",
+      "description": "Choice text",
+      "help": "Choice text (CHOICE)\n\nSpecifies the choices text that is displayed to the right of the input field on the prompt screen. Up to 30 characters of text can be displayed.\n\nThe following are examples of possible choices text generated by CHOICE(*VALUES):\n\n指定できる特殊値: *VALUES, *NONE, *PGM",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*VALUES",
+      "attributes": {
+        "characterSet": "upper"
+      }
+    },
+    {
+      "name": "CHOICEPGM",
+      "description": "Choice program",
+      "help": "Choice program (CHOICEPGM)\n\nSpecifies the program to be called during command prompting to fill in the possible choices text and the permissible values. This parameter must be specified if *PGM is specified on the Choice text (CHOICE) parameter and may not be specified otherwise.\n\nSingle values\n\nQualifier 1: Choice program\n\nQualifier 2: Library",
+      "inputType": "group",
+      "required": false,
+      "groupKind": "qualified",
+      "singleValues": [
+        "*NONE"
+      ],
+      "children": [
+        {
+          "name": "LIB",
+          "description": "Library",
+          "help": "指定できる特殊値: *LIBL, *CURLIB",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "*LIBL",
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          }
+        },
+        {
+          "name": "CHOICEPGM",
+          "description": "Choice program",
+          "inputType": "text",
+          "required": false,
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          },
+          "defaultValue": "*NONE"
+        }
+      ]
+    },
+    {
+      "name": "INLPMTLEN",
+      "description": "Initial prompt length",
+      "help": "Initial prompt length (INLPMTLEN)\n\nSpecifies the length of the input field initially displayed for the qualifier when the command is prompted. The user can extend the field to a maximum length of 512 bytes by entering an ampersand (&) in the first position of the field, followed by a blank. INLPMTLEN is valid only if TYPE is specified as *NAME, *SNAME, *CNAME, *GENERIC, or *CHAR. If FULL(*YES), RSTD(*YES), or CONSTANT are specified, INLPMTLEN(*CALC) must be specified or defaulted.",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*CALC",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*CALC",
+          "value": "*CALC"
+        },
+        {
+          "label": "*PWD",
+          "value": "*PWD"
+        }
+      ]
+    },
+    {
+      "name": "PROMPT",
+      "description": "Prompt text or message ID",
+      "help": "Prompt text or message ID (PROMPT)\n\nSpecifies the prompt text, if any, that is used for the qualifier (defined in this QUAL statement). This parameter is not allowed for the first qualifier or for a qualifier for which the Constant value (CONSTANT) parameter is specified. The prompt text for the first qualifier comes from the PROMPT parameter of the PARM or ELEM statement pointing to the qualifier. The prompt text gives a short description of the qualifier which appears next to the qualifier input field when the command is prompted.\n\n指定できる特殊値: *NONE",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*NONE",
+      "attributes": {
+        "characterSet": "upper"
+      }
+    }
+  ],
+  "source": {
+    "url": "https://www.ibm.com/docs/en/ssw_ibm_i_74/cl/qual.htm",
+    "version": "IBM i 7.4"
+  }
+}

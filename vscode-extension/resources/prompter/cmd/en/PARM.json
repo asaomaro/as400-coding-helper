@@ -1,0 +1,788 @@
+{
+  "keyword": "PARM",
+  "description": "Parameter Definition (PARM)",
+  "parameters": [
+    {
+      "name": "KWD",
+      "description": "Keyword",
+      "help": "Keyword (KWD)\n\nSpecifies the keyword name of the parameter being defined. Every CL command parameter has an associated keyword name. Command parameters specified using the parameter keyword can be specified in any order. Parameters may be specified in positional form (without a keyword name) up to the positional limit specified by the MAXPOS parameter on the Create Command (CRTCMD) command.",
+      "inputType": "text",
+      "required": true,
+      "attributes": {
+        "characterSet": "upper",
+        "maxLength": 10
+      },
+      "positional": 1
+    },
+    {
+      "name": "TYPE",
+      "description": "Type of value",
+      "help": "Type of value (TYPE)\n\nSpecifies the type of the value that can be specified for the parameter named in Keyword (KWD) . The value can be an integer, a decimal, hexadecimal, or logical value, or a character string (optionally enclosed in apostrophes) that can be a name, date, or time. The value can also be a command. Type one of the following options to specify the parameter type:\n\nThe command analyzer rebuilds the command string when it checks it for validity. When the command is rebuilt, keywords are added to parameters that were specified positionally, parameters can be reordered, and parameters that contain characters that cannot be printed (X'FF' and X'00 - X'3F') are converted to hexadecimal notation. As a result, the rebuilt command string may be substantially longer than the original command string. If the length of the rebuilt command is longer than the allowed length specified with the LEN keyword, the command will fail.\n\nNote: Selective prompting is not allowed with the *CMDSTR parameter.\n\n指定できる特殊値: *DEC, *LGL, *CHAR, *INT2, *INT4, *NAME, *GENERIC, *VARNAME, *DATE, *TIME, *CMD, *X, *HEX, *ZEROELEM, *NULL, *CMDSTR, *PNAME, *UINT2, *UINT4, *SNAME, *CNAME",
+      "inputType": "text",
+      "required": true,
+      "attributes": {
+        "characterSet": "upper",
+        "maxLength": 10
+      },
+      "positional": 2
+    },
+    {
+      "name": "LEN",
+      "description": "Value length",
+      "help": "Value length (LEN)\n\nSpecifies the length of the parameter value that is passed to the command processing program (CPP). Depending on the value specified for the Type of value (TYPE) parameter, the LEN parameter may allow up to three length values to be specified.\n\nSee the description of the CCSID and Varying length (VARY) parameters for more information related to handling values in UTF16 form.\n\nIf the LEN parameter is allowed but not specified, a default length will be used based on the value specified for the TYPE parameter. The following table shows the default length value for each TYPE and the maximum value that can be specified for the LEN parameter.",
+      "inputType": "number",
+      "required": false,
+      "attributes": {
+        "numericOnly": true
+      },
+      "positional": 3,
+      "maxOccurrences": 3
+    },
+    {
+      "name": "RTNVAL",
+      "description": "Return value",
+      "help": "Return value (RTNVAL)\n\nSpecifies whether a value is returned by the command processing program through the parameter being defined in this PARM statement.",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*NO",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*NO",
+          "value": "*NO"
+        },
+        {
+          "label": "*YES",
+          "value": "*YES"
+        }
+      ]
+    },
+    {
+      "name": "CONSTANT",
+      "description": "Constant value",
+      "help": "Constant value (CONSTANT)\n\nSpecifies that a value is passed to the command processing program as a constant when the command being defined is processed; the parameter does not appear externally on the command. The value specified in this parameter (if any) must satisfy the requirements specified by the following parameters:\n\nIf a character constant is specified in this parameter, it can be no longer than 32 bytes.\n\nIf a constant is specified for the parameter being defined, no prompt text can be specified for the Prompt specifications (PROMPT) parameter because the parameter will not be prompted.\n\nThis parameter is not valid for the following:\n\nVariables cannot be coded for this parameter.",
+      "inputType": "text",
+      "required": false
+    },
+    {
+      "name": "RSTD",
+      "description": "Restricted values",
+      "help": "Restricted values (RSTD)\n\nSpecifies whether the value entered for the parameter (specified in the PARM statement) is restricted to only one of the values given in the Valid values (VALUES) parameter, the Special values (SPCVAL) parameter, or the Single values (SNGVAL) parameter, or whether the value can be any value that satisfies the requirements specified by the following parameters:",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*NO",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*NO",
+          "value": "*NO"
+        },
+        {
+          "label": "*YES",
+          "value": "*YES"
+        }
+      ]
+    },
+    {
+      "name": "DFT",
+      "description": "Default value",
+      "help": "Default value (DFT)\n\nSpecifies the default value that is assigned to the parameter if a value is not specified by the user. That is, the default value is used as the value of the parameter if the user omits the parameter while entering the command or if the user specifies *N as the parameter value. The default value must satisfy one of the following:\n\nThis parameter is not valid if the Constant value (CONSTANT) parameter is specified. This parameter is valid only if 0 is specified for the Minimum values required (MIN) parameter, which means the parameter named in the Keyword (KWD) parameter is optional. No default can be specified if RTNVAL(*YES) is specified on the Return value (RTNVAL) parameter; instead, a null pointer is passed for the default. A default cannot be specified if *CMD, *ZEROELEM, or *NULL is specified on the Type of value (TYPE) parameter. If *VARNAME is specified on the Type of value (TYPE) parameter, a default special value can be specified; a default variable name cannot be specified.\n\nAn assumed default value is not displayed by the command prompt; a blank input field is shown instead. If a default is specified, it is displayed by the prompt exactly as specified.\n\nVariables cannot be coded for this value.",
+      "inputType": "text",
+      "required": false
+    },
+    {
+      "name": "VALUES",
+      "description": "Valid values",
+      "help": "Valid values (VALUES)\n\nSpecifies a list of up to 300 constants (fixed values) from which one constant can be entered as the value of the parameter named on the Keyword (KWD) parameter. This parameter is valid only if all of the following are true:\n\nCharacter constants specified in this parameter can be no longer than 32 bytes. Type the constants (not more than 300) that can be specified as the value of the parameter. This parameter is not valid if *CMD, *CMDSTR, *X, *NULL, statement label, *VARNAME, or *ZEROELEM is specified on the Type of value (TYPE) parameter, or if *YES is specified on the Return value (RTNVAL) parameter.",
+      "inputType": "text",
+      "required": false,
+      "maxOccurrences": 300
+    },
+    {
+      "name": "REL",
+      "description": "Relational expression",
+      "help": "Relational expression (REL)\n\nSpecifies the relationship between the parameter value of this parameter and the value of a constant or another parameter. If a keyword is specified, it must be preceded by an ampersand (&) to indicate that it is the value of the keyword that is to be tested. The value associated with the referred to keyword is the value passed to the command processing program, not the user-specified value. If the relationship is with another parameter whose value is a list of values or a qualified name, the first value only is used in the comparison.\n\nTo specify the relationship, enter one of the following relational operators followed by either a constant or the keyword name of the other parameter (which must be preceded by an &).\n\nThe REL parameter is not valid in the following cases:\n\nIf a *CHAR (character type) is specified on the Type of value (TYPE) parameter, the EBCDIC value of the character string is used as an unsigned integer in the comparison. If a character constant is specified in this parameter, it can be no longer than 32 bytes.\n\nVariables can be coded for this element.",
+      "inputType": "group",
+      "required": false,
+      "groupKind": "elements",
+      "children": [
+        {
+          "name": "REL_E1",
+          "description": "Relational operator",
+          "inputType": "dropdown",
+          "required": false,
+          "attributes": {
+            "characterSet": "upper"
+          },
+          "options": [
+            {
+              "label": "*GT",
+              "value": "*GT"
+            },
+            {
+              "label": "*EQ",
+              "value": "*EQ"
+            },
+            {
+              "label": "*GE",
+              "value": "*GE"
+            },
+            {
+              "label": "*NL",
+              "value": "*NL"
+            },
+            {
+              "label": "*LT",
+              "value": "*LT"
+            },
+            {
+              "label": "*NE",
+              "value": "*NE"
+            },
+            {
+              "label": "*LE",
+              "value": "*LE"
+            },
+            {
+              "label": "*NG",
+              "value": "*NG"
+            }
+          ]
+        },
+        {
+          "name": "REL_E2",
+          "description": "Value or keyword reference",
+          "inputType": "text",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "RANGE",
+      "description": "Range of values",
+      "help": "Range of values (RANGE)\n\nSpecifies the range, or limits, for the parameter value. The parameter value must be greater than or equal to the lower limit value specified, and it must be less than or equal to the upper limit value specified. For example, 15 would be valid if RANGE was specified as (0 16).\n\nFor nonnumeric data types, such as character, the range of values and the data specified are right-justified and padded on the left with blanks. A numeric range should not be used to define an interval for nonnumeric data unless leading zeros are specified or the data is only 1 character in length.\n\nVariables can be coded for this element.\n\nThe upper and lower limits of the range can be specified either by a keyword representing the value or by the value itself. If a keyword is specified, it must be preceded by an ampersand (&) to indicate that the value of the keyword is to be tested. The value of its parameter at the time of the check is used to determine the range. The value that is tested is the value passed to the command processing program, not the user-specified value. If the keyword identifies a list of values or a qualified name, only the first value is used as the range limit. A keyword may not refer to a parameter that is defined with *NULL specified on the Value to pass if unspecified (PASSVAL) parameter. This parameter is not valid with *NULL specified on the Value to pass if unspecified (PASSVAL) parameter.\n\nThis parameter is also not valid in the following cases:\n\nCharacter constants specified in this parameter can be no longer than 32 bytes.\n\nVariables can be coded for this element.",
+      "inputType": "group",
+      "required": false,
+      "groupKind": "elements",
+      "children": [
+        {
+          "name": "RANGE_E1",
+          "description": "Lower value or keyword ref",
+          "inputType": "text",
+          "required": false
+        },
+        {
+          "name": "RANGE_E2",
+          "description": "Upper value or keyword ref",
+          "inputType": "text",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "SPCVAL",
+      "description": "Special values",
+      "help": "Special values (SPCVAL)\n\nSpecifies a list of up to 300 entries that define special values that can be entered on the parameter. Each entry specifies a character string (a from-value) that can be entered even though it may not meet all validity checking requirements. If the entered character string matches the from-value of one of the entries, and the to-value is specified, the string is replaced with the to-value and is then passed to the command processing program (CPP) without further checking. If the to-value is omitted, the from-value is passed to the CPP. This parameter is not valid if *YES is specified on the Return value (RTNVAL) parameter, or if *CMD, *CMDSTR, *X, *ZEROELEM, *NULL, or a statement label is specified for the Type of value (TYPE) parameter.\n\nThe from-value is a character string, but the to-value can be anything that is passable. However, for TYPE(*DATE) the to-value must be specified not quoted in the mmddyy , mmddyyyy , or the Cyymmdd format. If a CL variable is used for the from-value, its type must be *CHAR. The to-value must be no longer than specified on the Value length (LEN) parameter, and, if *DEC, *INT2, *INT4, *UINT2 or *UINT4 is specified for the Type of value (TYPE) parameter, the type of the to-value must be the same. If the Type of value (TYPE) parameter is a character type (such as *CHAR, *LGL or *DATE), the to-value must be a character string. Character constants specified in this parameter can be no longer than 32 bytes. If a to-value is not specified, the from-value must be passable.\n\nIf a to-value of *CURLIB is specified, the name of the current library, rather than the value *CURLIB, is passed to the CPP. If the from-value is *CURLIB and no to-value is specified, or if the to-value is *CURLIB and it is enclosed in apostrophes, the value *CURLIB is passed to the CPP.\n\nVariables cannot be coded for this element.",
+      "inputType": "group",
+      "required": false,
+      "groupKind": "elements",
+      "children": [
+        {
+          "name": "SPCVAL_E1",
+          "description": "From value",
+          "inputType": "text",
+          "required": false
+        },
+        {
+          "name": "SPCVAL_E2",
+          "description": "To replacement value",
+          "inputType": "text",
+          "required": false
+        }
+      ],
+      "maxOccurrences": 300
+    },
+    {
+      "name": "SNGVAL",
+      "description": "Single values",
+      "help": "Single values (SNGVAL)\n\nSpecifies a list of up to 300 single values that can be specified for a parameter being defined as a mixed list or as a qualified name, when a statement label is specified for the Type of value (TYPE) parameter, or specifies that it is to accept two or more values as defined by the Maximum values allowed (MAX) parameter. Any one of the single values can be entered instead of a list of values or a qualified name that the parameter is defined to accept. Each entry specifies a character string (a from-value) that can be entered. If an entered character string matches the from-value of one of the entries and the to-value is specified, the data is replaced with the to-value and is then passed to the command processing program without further checking. If the to-value is omitted, the from-value is passed to the command processing program.\n\nThe to-value (or the from-value, if the to-value is omitted) must be passable, as specified in the Special values (SPCVAL) parameter. Character constants specified in this parameter can be no longer than 32 bytes. This parameter can be specified only if the Maximum values allowed (MAX) parameter is greater than 1 or if TYPE is specified as a statement label of a QUAL or ELEM statement. Each single value can only be substituted for a list of values or a qualified name; it cannot be a list item or qualifier. It is passed as the first and only element of the list.\n\nThis parameter is not valid if *YES is specified on the Return value (RTNVAL) parameter, or if *CMD, *CMDSTR, *X, *ZEROELEM, *NULL, or a statement label is specified for the Type of value (TYPE) parameter.\n\nIf a to-value of *CURLIB is specified, the name of the current library, rather than the value *CURLIB, is passed to the command processing program. If the from-value is *CURLIB and no to-value is specified, or if the to-value is *CURLIB and it is enclosed in apostrophes, the value *CURLIB is passed to the command processing program.\n\nVariables cannot be coded for this element.",
+      "inputType": "group",
+      "required": false,
+      "groupKind": "elements",
+      "children": [
+        {
+          "name": "SNGVAL_E1",
+          "description": "From value",
+          "inputType": "text",
+          "required": false
+        },
+        {
+          "name": "SNGVAL_E2",
+          "description": "To replacement value",
+          "inputType": "text",
+          "required": false
+        }
+      ],
+      "maxOccurrences": 300
+    },
+    {
+      "name": "MIN",
+      "description": "Minimum values required",
+      "help": "Minimum values required (MIN)\n\nSpecifies the minimum number of values that must be entered for the parameter being defined. For a parameter that does not allow multiple like values, only zero (0) for optional and 1 for required can be specified as the minimum number of values.\n\nNote: Required parameter statements must precede optional statements. If required parameter statements are not specified first, the system assumes that the specified parameter is optional, and the minimum number of values for required parameters is ignored.\n\nFor a parameter that allows multiple like values, because a value greater than 1 is specified for the Maximum values allowed (MAX) parameter, zero (0) indicates that no values need be entered; therefore, it is an optional parameter. A value of 1 or greater than 1 indicates the minimum number of values that must be entered for the parameter, and, therefore, it is a required parameter. The value cannot exceed 1 if *NULL is specified for the Type of value (TYPE) parameter.",
+      "inputType": "number",
+      "required": false,
+      "defaultValue": "0",
+      "attributes": {
+        "numericOnly": true
+      }
+    },
+    {
+      "name": "MAX",
+      "description": "Maximum values allowed",
+      "help": "Maximum values allowed (MAX)\n\nSpecifies, if this PARM statement is defining a simple list parameter, the maximum number of list items that this list parameter can contain. If a value greater than 1 is specified, the parameter is capable of accepting multiple like values (that is, a simple list). This support is primarily intended for IBM-supplied commands. All values entered for this parameter (at the time the command is run) must satisfy the validity checking requirements specified by the other parameter values on this PARM statement.\n\nNote: The values for a list parameter are passed consecutively, preceded by a 2-byte binary value that indicates the number of values entered in the parameter by the user. CL programs do not support the handling of binary values in variables.",
+      "inputType": "number",
+      "required": false,
+      "defaultValue": "1",
+      "attributes": {
+        "numericOnly": true
+      }
+    },
+    {
+      "name": "ALWUNPRT",
+      "description": "Allow unprintable characters",
+      "help": "Allow unprintable characters (ALWUNPRT)\n\nSpecifies whether this parameter will accept the hexadecimal character X'FF' or those hexadecimal characters in the range of X'00' through X'3F'. This parameter is valid only if *CHAR or *X is specified for the Type of value (TYPE) parameter.",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*YES",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*YES",
+          "value": "*YES"
+        },
+        {
+          "label": "*NO",
+          "value": "*NO"
+        }
+      ]
+    },
+    {
+      "name": "ALWVAR",
+      "description": "Allow variable names",
+      "help": "Allow variable names (ALWVAR)\n\nSpecifies whether to allow variable names for the parameter. *NO is not allowed on this parameter if *VARNAME, *ZEROELEM, *NULL, or a statement label is specified on the Type of value (TYPE) parameter.",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*YES",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*YES",
+          "value": "*YES"
+        },
+        {
+          "label": "*NO",
+          "value": "*NO"
+        }
+      ]
+    },
+    {
+      "name": "PGM",
+      "description": "Is PARM a program name",
+      "help": "Is PARM a program name (PGM)\n\nSpecifies whether this parameter element is a program name. *YES is valid only if a statement label, *CHAR, *NAME, *SNAME, *CNAME, or *GENERIC is specified for the Type of value (TYPE) parameter. Specifying *YES here does not have any effect on the parameter element being defined by the PARM statement; it only indicates to the compiler that the value for this parameter is a program name. This information is stored so that it can be included in the output of the Display Program References (DSPPGMREF) command.",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*NO",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*NO",
+          "value": "*NO"
+        },
+        {
+          "label": "*YES",
+          "value": "*YES"
+        }
+      ]
+    },
+    {
+      "name": "DTAARA",
+      "description": "Is PARM a data area name",
+      "help": "Is PARM a data area name (DTAARA)\n\nSpecifies whether the parameter is a data area name. *YES is valid only if a statement label, *CHAR, *NAME, *SNAME, *CNAME, or *GENERIC is specified for the Type of value (TYPE) parameter. Specifying *YES here does not have any effect on the parameter being defined by the PARM statement; it only indicates to the compiler that the value for this parameter is a data area. This information is stored so that it can be included in the output of the Display Program References (DSPPGMREF) command.",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*NO",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*NO",
+          "value": "*NO"
+        },
+        {
+          "label": "*YES",
+          "value": "*YES"
+        }
+      ]
+    },
+    {
+      "name": "FILE",
+      "description": "If a file parameter, how used",
+      "help": "If a file parameter, how used (FILE)\n\nSpecifies the expected use of the file and whether the parameter is a file name. The parameter can be specified as the name of a file that has a specific use so that, at compile time, the names can be used to get file reference information about where the files are used. The specification in this parameter does not have any effect on the operation of the parameter being defined; it only indicates to the compiler that the value for this parameter is a file name and what type of file it is. This information is stored so it can be included in the output of the Display Program References (DSPPGMREF) command. This parameter is valid only if a statement label, *CHAR, *NAME, *SNAME, *CNAME, or *GENERIC is specified for the Type of value (TYPE) parameter. It is not valid if *YES is specified on the Return value (RTNVAL) parameter.\n\nThe use of the file must match the type of file specified. For example, if *IN is specified, the file can be used only for input; if *UPD is specified, it can be used only to update existing records.",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*NO",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*NO",
+          "value": "*NO"
+        },
+        {
+          "label": "*IN",
+          "value": "*IN"
+        },
+        {
+          "label": "*OUT",
+          "value": "*OUT"
+        },
+        {
+          "label": "*UPD",
+          "value": "*UPD"
+        },
+        {
+          "label": "*INOUT",
+          "value": "*INOUT"
+        },
+        {
+          "label": "*UNSPFD",
+          "value": "*UNSPFD"
+        }
+      ]
+    },
+    {
+      "name": "FULL",
+      "description": "Full field required",
+      "help": "Full field required (FULL)\n\nSpecifies whether the number of bytes in the parameter value must be exactly the same as the number specified on the Value length (LEN) parameter (if specified) or its default length (if LEN is not specified).",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*NO",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*NO",
+          "value": "*NO"
+        },
+        {
+          "label": "*YES",
+          "value": "*YES"
+        }
+      ]
+    },
+    {
+      "name": "EXPR",
+      "description": "Value an expression",
+      "help": "Value an expression (EXPR)\n\nSpecifies whether the parameter named in the KWD parameter can accept an expression containing a character concatenation or a built-in function (%SUBSTRING or %BIN).\n\nRestrictions: Expressions are not allowed on parameters where *CMD, *ZEROELEM, *NULL, or a statement label is specified for the Type of value (TYPE) parameter.",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*NO",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*NO",
+          "value": "*NO"
+        },
+        {
+          "label": "*YES",
+          "value": "*YES"
+        }
+      ]
+    },
+    {
+      "name": "VARY",
+      "description": "Varying length",
+      "help": "Varying length (VARY)\n\nSpecifies whether the parameter value that is passed to the command processing program is preceded by a length value that indicates the number of bytes entered for the command parameter.\n\nNote: The length value is the actual number of bytes entered for the command parameter, with trailing blanks removed. The length value passed may be different than the defined parameter length or the declared variable length. The length of the field containing the character string data is determined by the defined length for the parameter or the declared LEN for CL program variables. The length value defines how many bytes were actually entered for the command parameter. If *PNAME or *CHAR is specified for the TYPE parameter and *UTF16 is specified for the CCSID of value (CCSID) parameter, the length value passed to the command processing program represents the number of bytes for the parameter value. This could be up to twice the number specified for the Value length (LEN) parameter because the parameter value will be converted to UTF16 format and most UTF16 characters require two bytes. See the description of the CCSID and LEN parameters for more information related to handling values in UTF16 format.\n\nSingle values\n\nElement 1: Return length value\n\nElement 2: Value length",
+      "inputType": "group",
+      "required": false,
+      "groupKind": "elements",
+      "singleValues": [
+        "*NO"
+      ],
+      "children": [
+        {
+          "name": "VARY_E1",
+          "description": "Return length value",
+          "inputType": "dropdown",
+          "required": false,
+          "attributes": {
+            "characterSet": "upper"
+          },
+          "options": [
+            {
+              "label": "*NO",
+              "value": "*NO"
+            },
+            {
+              "label": "*YES",
+              "value": "*YES"
+            }
+          ],
+          "defaultValue": "*NO"
+        },
+        {
+          "name": "VARY_E2",
+          "description": "Value length",
+          "inputType": "dropdown",
+          "required": false,
+          "defaultValue": "*INT2",
+          "attributes": {
+            "characterSet": "upper"
+          },
+          "options": [
+            {
+              "label": "*INT2",
+              "value": "*INT2"
+            },
+            {
+              "label": "*INT4",
+              "value": "*INT4"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "PASSATR",
+      "description": "Pass attribute byte",
+      "help": "Pass attribute byte (PASSATR)\n\nSpecifies whether an attribute byte is passed to the command processing program with the parameter data.\n\nThe attribute byte precedes the parameter data. If the parameter allows multiple values to be specified, an attribute byte precedes each value.\n\nThe attribute byte has two fields:",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*NO",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*NO",
+          "value": "*NO"
+        },
+        {
+          "label": "*YES",
+          "value": "*YES"
+        }
+      ]
+    },
+    {
+      "name": "PASSVAL",
+      "description": "Value to pass if unspecified",
+      "help": "Value to pass if unspecified (PASSVAL)\n\nSpecifies whether a value is passed to the command processing program for this parameter. *NULL is not valid if the parameter is a constant parameter (a parameter in which a value has been specified for the Constant value (CONSTANT) parameter, or a parameter for which *ZEROELEM or *NULL has been specified for the Type of value (TYPE) parameter, or a list/qualified name defined by all constant ELEM or QUAL statements). *NULL also is not valid if *YES has been specified on the Return value (RTNVAL) parameter, or if the value specified for the Minimum values required (MIN) parameter is greater than zero. A DEP statement or the REL and RANGE keywords of other PARM statements may not refer to the value of a parameter defined with *NULL.",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*DFT",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*DFT",
+          "value": "*DFT"
+        },
+        {
+          "label": "*NULL",
+          "value": "*NULL"
+        }
+      ]
+    },
+    {
+      "name": "CASE",
+      "description": "Case of value",
+      "help": "Case of value (CASE)\n\nSpecifies whether the value that is passed to the CPP is changed from lowercase to uppercase, or is preserved in the case specified on for the command parameter.",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*MONO",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*MONO",
+          "value": "*MONO"
+        },
+        {
+          "label": "*MIXED",
+          "value": "*MIXED"
+        }
+      ]
+    },
+    {
+      "name": "CCSID",
+      "description": "CCSID of value",
+      "help": "CCSID of value (CCSID)\n\nSpecifies the coded character set identifier (CCSID) to use when passing the parameter value to the command processing program.\n\nNote: If the command string is run in batch using the Start Database Reader (STRDBRDR) or Submit Database Jobs (SBMDBJOB) command from a source file created with a CCSID of 1208 (UTF8) or was compiled from a CL source file created with a CCSID of 1208 or is being run using the QCAPCMD API and specifies that the CCSID of the command is either 1200 (UTF16) or 1208, the command string is assumed to be in Unicode format.\n\nIf the parameter is optional and no value is specified in the command string, the defined default value will be converted to UTF16 format before it is passed to the CPP. If the parameter is a constant, the defined constant value will be converted to UTF16 format before it is passed to the CPP. If the parameter value is specified as a hexadecimal literal in the command string, the hexadecimal string is first converted to a character string using the CCSID of the job and the resulting character string is converted to UTF16 format before it is passed to the CPP.\n\n*UTF16 is only allowed if *CHAR or *PNAME was specified for TYPE.\n\nSee the description of the Value length (LEN) parameter and Varying length (VARY) parameter for more information related to handling values in UTF16 format.",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*JOB",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*JOB",
+          "value": "*JOB"
+        },
+        {
+          "label": "*UTF16",
+          "value": "*UTF16"
+        }
+      ]
+    },
+    {
+      "name": "LISTDSPL",
+      "description": "List displacement",
+      "help": "List displacement (LISTDSPL)\n\nSpecifies whether the displacement to a list within a list is 2-bytes or 4-bytes long. These displacements are generated when a parameter being passed to a CPP has a list within a list. This parameter is ignored if the value being built for the CPP does not contain a list within a list.",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*INT2",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*INT2",
+          "value": "*INT2"
+        },
+        {
+          "label": "*INT4",
+          "value": "*INT4"
+        }
+      ]
+    },
+    {
+      "name": "DSPINPUT",
+      "description": "Display input",
+      "help": "Display input (DSPINPUT)\n\nSpecifies whether the keyword value is shown in the job log or in a prompt display.\n\nNote: The DSPINPUT parameter has no effect on the job log entries for a database reader job, for imbedded commands (for example, a command submitted on the SBMJOB command), or for commands run using the QCAPCMD, QCMDEXC or QCAEXEC APIs.",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*YES",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*YES",
+          "value": "*YES"
+        },
+        {
+          "label": "*PROMPT",
+          "value": "*PROMPT"
+        },
+        {
+          "label": "*NO",
+          "value": "*NO"
+        }
+      ]
+    },
+    {
+      "name": "CHOICE",
+      "description": "Choice text",
+      "help": "Choice text (CHOICE)\n\nSpecifies the choices text that is displayed to the right of the input field on the prompt screen. Up to 30 characters of text can be displayed.\n\nThe following are examples of possible choices text generated by CHOICE(*VALUES):\n\n指定できる特殊値: *VALUES, *NONE, *PGM",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*VALUES",
+      "attributes": {
+        "characterSet": "upper"
+      }
+    },
+    {
+      "name": "CHOICEPGM",
+      "description": "Choice program",
+      "help": "Choice program (CHOICEPGM)\n\nSpecifies the program to be called during command prompting to fill in the possible choices text and the permissible values. This parameter must be specified if *PGM is specified on the Choice text (CHOICE) parameter and may not be specified otherwise.\n\nSingle values\n\nQualifier 1: Choice program\n\nQualifier 2: Library",
+      "inputType": "group",
+      "required": false,
+      "groupKind": "qualified",
+      "singleValues": [
+        "*NONE"
+      ],
+      "children": [
+        {
+          "name": "LIB",
+          "description": "Library",
+          "help": "指定できる特殊値: *LIBL, *CURLIB",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "*LIBL",
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          }
+        },
+        {
+          "name": "CHOICEPGM",
+          "description": "Choice program",
+          "inputType": "text",
+          "required": false,
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          },
+          "defaultValue": "*NONE"
+        }
+      ]
+    },
+    {
+      "name": "PMTCTL",
+      "description": "Prompt control",
+      "help": "Prompt control (PMTCTL)\n\nSpecifies how prompting is be controlled for this parameter. Prompting may be controlled by another parameter, specified by a Prompt Control (PMTCTL) statement referred to by label in this parameter, or by user request by pressing the F10 key.\n\n指定できる特殊値: *NONE, *PMTRQS",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*NONE",
+      "attributes": {
+        "characterSet": "upper",
+        "maxLength": 10
+      }
+    },
+    {
+      "name": "PMTCTLPGM",
+      "description": "Prompt control program",
+      "help": "Prompt control program (PMTCTLPGM)\n\nSpecifies the program to be called to convert the value specified for the parameter into a value used on a Prompt Control (PMTCTL) statement. This parameter is valid only on parameters that are referred to in the Controlling keyword (CTL) parameter of a PMTCTL statement.\n\nSingle values\n\nQualifier 1: Prompt control program\n\nQualifier 2: Library",
+      "inputType": "group",
+      "required": false,
+      "groupKind": "qualified",
+      "singleValues": [
+        "*NONE"
+      ],
+      "children": [
+        {
+          "name": "PMTCTLPGM_LIB",
+          "description": "Library",
+          "help": "指定できる特殊値: *LIBL, *CURLIB",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "*LIBL",
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          }
+        },
+        {
+          "name": "PMTCTLPGM",
+          "description": "Prompt control program",
+          "inputType": "text",
+          "required": false,
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          },
+          "defaultValue": "*NONE"
+        }
+      ]
+    },
+    {
+      "name": "KEYPARM",
+      "description": "Key parameter",
+      "help": "Key parameter (KEYPARM)\n\nSpecifies that this parameter is initially displayed when the command is prompted and a prompt override program was specified when the command was created or changed. If no prompt override program is specified, KEYPARM(*NO) is assumed for all parameters.",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*NO",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*NO",
+          "value": "*NO"
+        },
+        {
+          "label": "*YES",
+          "value": "*YES"
+        }
+      ]
+    },
+    {
+      "name": "INLPMTLEN",
+      "description": "Initial prompt length",
+      "help": "Initial prompt length (INLPMTLEN)\n\nSpecifies the length of the input field initially displayed for the parameter when the command is prompted. The user can extend the field to a maximum length of 512 bytes by entering an ampersand (&) in the first position of the field, followed by a blank. INLPMTLEN is valid only if TYPE is specified as *CHAR, *NAME, *SNAME, *CNAME, *PNAME, *GENERIC, *CMDSTR, *HEX, *X, or *CMD. If FULL(*YES), RSTD(*YES), or CONSTANT are specified, INLPMTLEN(*CALC) must be specified or defaulted.",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*CALC",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*CALC",
+          "value": "*CALC"
+        },
+        {
+          "label": "*PWD",
+          "value": "*PWD"
+        }
+      ]
+    },
+    {
+      "name": "PROMPT",
+      "description": "Prompt specifications",
+      "help": "Prompt specifications (PROMPT)\n\nSpecifies what prompt text is used for the parameter. The prompt text gives a short description of the parameter which appears next to the parameter keyword and input field when the command is prompted. Prompt text cannot be specified if *ZEROELEM or *NULL is specified for the Type of value (TYPE) parameter, or if a constant value is specified in the Constant value (CONSTANT) parameter.\n\nSingle values\n\nElement 1: Prompt text or message ID\n\nElement 2: Order prompt is displayed",
+      "inputType": "group",
+      "required": false,
+      "groupKind": "elements",
+      "singleValues": [
+        "*NONE"
+      ],
+      "children": [
+        {
+          "name": "PROMPT_E1",
+          "description": "Prompt text or message ID",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "*NONE"
+        },
+        {
+          "name": "PROMPT_E2",
+          "description": "Order prompt is displayed",
+          "inputType": "number",
+          "required": false,
+          "attributes": {
+            "numericOnly": true
+          }
+        }
+      ]
+    }
+  ],
+  "examples": [
+    {
+      "code": "PARM KWD(X) TYPE(*DEC) LEN(2) MIN(1) REL(*GT 5)"
+    },
+    {
+      "code": "PARM KWD(CLASS) TYPE(*CHAR) LEN(1) DFT(A) VALUES(A B C) RSTD(*YES)"
+    },
+    {
+      "code": "PARM KWD(MAXREC) TYPE(*DEC) LEN(3 0) MIN(1) RANGE(&MINREC 500)"
+    },
+    {
+      "code": "PARM KWD(FILES) TYPE(*NAME) MIN(2) MAX(5)"
+    },
+    {
+      "code": "PARM KWD(INVFNAME) TYPE(*NAME) DFT(*ALL) SNGVAL((*ALL XXX)) VALUES(DEPT1 DEPT2 DEPT3) FILE(*UPD) MIN(0) MAX(3) RSTD(*YES) PROMPT(USR0002 1)"
+    }
+  ],
+  "source": {
+    "url": "https://www.ibm.com/docs/en/ssw_ibm_i_74/cl/parm.htm",
+    "version": "IBM i 7.4"
+  }
+}

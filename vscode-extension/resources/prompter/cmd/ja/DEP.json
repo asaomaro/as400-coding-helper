@@ -1,0 +1,251 @@
+{
+  "keyword": "DEP",
+  "description": "従属定義 (DEP)",
+  "help": "従属定義(DEP)コマンド定義ステートメントは，チェックしなければならないパラメーターとパラメーター値との間の必要な関係を定義します。この関係は，1つ以上のパラメーターに特定の値が必要なことを示すこともあれば，パラメーター自体の存在が必要であることを示すこともあります。\n\nDEPステートメントは，CLコマンドの第2レベル・パラメーター構文検査を行います。第1レベルは，値のタイプ(*NAMEや*DATEなど）を定義するPARM, QUAL,および ELEMステートメント，さらには有効な値の範囲や有効な値のリストなどのパラメーター値制限によって行われます。DEPステートメントによって，パラメーター値の組み合わせがコマンド・ストリング内で構文的に正しいかを検証することができます。\n\nDEPステートメントは，指定されたパラメーターの最初の値しかチェックできません。値のリストを受け入れるパラメーターまたは複数の要素または修飾子をもつパラメーターの構文検査を行いたい場合には，コマンド・ストリングに第3レベルの構文検査を行う妥当性検査出口プログラムを作成することができます。PARM, QUAL, ELEM,または DEPステートメント，あるいは妥当性検査プログラムで構文検査を行うと，コマンド処理プログラムでパラメーター構文検査コードを除外するか，大幅に単純化できます。\n\nパラメーターに省略時の値があり，パラメーターが指定されていない場合には，DEPステートメントが仕様チェックを実行するのか，関係の検査を実行するのかによって検査方法が異なります。未指定のパラメーターについて 仕様 の検査（そのパラメーターに値があるかどうかの検査）が行われる場合には，システムは値が指定されていないものと見なし，省略時の値は 使用されません 。未指定のパラメーターについて 関係 の検査が行われる場合には，その関係の検査でそのパラメーター値として省略時の値が使用されます。",
+  "parameters": [
+    {
+      "name": "CTL",
+      "description": "制御条件",
+      "help": "PARMステートメントに定義されたパラメーターの依存関係が真となる前に，真でなければならない制御条件を指定します。最初に指定されたキーワードは，制御パラメーターを示します。制御条件は，キーワード名だけで指定するか，あるいはキーワード名および制御条件に依存するパラメーターの存在が必要であるかどうかを決定するテスト関係で指定することができます。制御パラメーターと指定された値との関係は，指定された条件と一致しているかどうかを調べるために，テストすることができます。その場合には，制御パラメーターが依存するパラメーターは，PARMキーワードおよびNBRTRUEキーワードに指定された要件と一致していなければなりません。\n\nPARMステートメントのSPCVALパラメーターまたはSNGVALパラメーターを使用して，テストの対象とする値が特殊値または単一値として指定されている場合は，置き換え値ではなく比較値を使用しなければなりません。\n\n比較演算子および値を指定した場合には，キーワードの値がテストされることを示すために，キーワード名の前にアンパーサンド(&)を付けなければなりません。比較演算子および値を指定しない場合には，アンパーサンドを使用してはいけません。",
+      "inputType": "group",
+      "required": true,
+      "groupKind": "elements",
+      "singleValues": [
+        "*ALWAYS"
+      ],
+      "children": [
+        {
+          "name": "CTL_E1",
+          "description": "キーワードまたはキーワード参照",
+          "inputType": "text",
+          "required": true
+        },
+        {
+          "name": "CTL_E2",
+          "description": "比較演算子",
+          "inputType": "dropdown",
+          "required": false,
+          "attributes": {
+            "characterSet": "upper"
+          },
+          "options": [
+            {
+              "label": "*GT",
+              "value": "*GT"
+            },
+            {
+              "label": "*EQ",
+              "value": "*EQ"
+            },
+            {
+              "label": "*GE",
+              "value": "*GE"
+            },
+            {
+              "label": "*NL",
+              "value": "*NL"
+            },
+            {
+              "label": "*LT",
+              "value": "*LT"
+            },
+            {
+              "label": "*NE",
+              "value": "*NE"
+            },
+            {
+              "label": "*LE",
+              "value": "*LE"
+            },
+            {
+              "label": "*NG",
+              "value": "*NG"
+            }
+          ]
+        },
+        {
+          "name": "CTL_E3",
+          "description": "値またはキーワード参照",
+          "inputType": "text",
+          "required": false
+        }
+      ],
+      "positional": 1
+    },
+    {
+      "name": "PARM",
+      "description": "従属パラメーター",
+      "help": "CTLパラメーターによって定義された制御条件が真である場合にテストしなければならないパラメーターの依存関係を指定します。依存関係には，存在をテストされる1つ以上のパラメーターの名前，あるいはキーワード値と他のキーワード値または定数値との1つ以上のテスト関係を指定することができます。最大25のパラメーター依存関係をこのパラメーターに指定することができます。キーワード名は，TYPE(*NULL)で定義されたコマンド・パラメーターを参照することはできません。\n\n比較の対象とする値が，PARMステートメントの 特殊値 (SPCVAL) パラメーターまたは 単一値 (SNGVAL) パラメーターを用いて特殊値または単一値として指定されている場合には，比較値ではなく置き換え値を使用しなければなりません。",
+      "inputType": "group",
+      "required": true,
+      "groupKind": "elements",
+      "children": [
+        {
+          "name": "PARM_E1",
+          "description": "キーワードまたはキーワード参照",
+          "inputType": "text",
+          "required": true
+        },
+        {
+          "name": "PARM_E2",
+          "description": "比較演算子",
+          "inputType": "dropdown",
+          "required": false,
+          "attributes": {
+            "characterSet": "upper"
+          },
+          "options": [
+            {
+              "label": "*GT",
+              "value": "*GT"
+            },
+            {
+              "label": "*EQ",
+              "value": "*EQ"
+            },
+            {
+              "label": "*GE",
+              "value": "*GE"
+            },
+            {
+              "label": "*NL",
+              "value": "*NL"
+            },
+            {
+              "label": "*LT",
+              "value": "*LT"
+            },
+            {
+              "label": "*NE",
+              "value": "*NE"
+            },
+            {
+              "label": "*LE",
+              "value": "*LE"
+            },
+            {
+              "label": "*NG",
+              "value": "*NG"
+            }
+          ]
+        },
+        {
+          "name": "PARM_E3",
+          "description": "値またはキーワード参照",
+          "inputType": "text",
+          "required": false
+        }
+      ],
+      "positional": 2,
+      "maxOccurrences": 25
+    },
+    {
+      "name": "NBRTRUE",
+      "description": "真の従属の数",
+      "help": "真となければならないパラメーター依存関係（このDEPステートメントのPARMパラメーターで定義）の数を指定します。真とならないと，診断メッセージ (このDEPステートメントのMSGIDパラメーターで定義）が送られ，コマンドは実行されません。\n\nこのパラメーターのいずれの要素にもCL変数をコーディングすることはできません。",
+      "inputType": "group",
+      "required": false,
+      "groupKind": "elements",
+      "singleValues": [
+        "*ALL"
+      ],
+      "children": [
+        {
+          "name": "NBRTRUE_E1",
+          "description": "比較演算子",
+          "help": "比較演算子を指定してください。有効な値は*GT, *EQ, *GE, *NL, *LT, *NE, *LE,および*NGです。",
+          "inputType": "dropdown",
+          "required": false,
+          "attributes": {
+            "characterSet": "upper"
+          },
+          "options": [
+            {
+              "label": "*ALL",
+              "value": "*ALL",
+              "help": "すべてのパラメーター依存関係が真でなければなりません。これは，NBRTRUE(*EQ N )を指定することと同じです。 N は，PARMパラメーターに定義されたパラメーター依存関係の数です。"
+            },
+            {
+              "label": "*GT",
+              "value": "*GT"
+            },
+            {
+              "label": "*EQ",
+              "value": "*EQ"
+            },
+            {
+              "label": "*GE",
+              "value": "*GE"
+            },
+            {
+              "label": "*NL",
+              "value": "*NL"
+            },
+            {
+              "label": "*LT",
+              "value": "*LT"
+            },
+            {
+              "label": "*NE",
+              "value": "*NE"
+            },
+            {
+              "label": "*LE",
+              "value": "*LE"
+            },
+            {
+              "label": "*NG",
+              "value": "*NG"
+            }
+          ],
+          "defaultValue": "*ALL"
+        },
+        {
+          "name": "NBRTRUE_E2",
+          "description": "真となる番号",
+          "help": "指定した関係を満たすために真でなければならないパラメーター依存関係の数を指定してください。",
+          "inputType": "number",
+          "required": false,
+          "attributes": {
+            "numericOnly": true
+          }
+        }
+      ],
+      "positional": 3
+    },
+    {
+      "name": "MSGID",
+      "description": "メッセージID",
+      "help": "NBRTRUEパラメーターによって指定された論理式が 偽 として評価された場合に，ユーザーに送られる診断メッセージを指定します。\n\nIDが3文字の接頭部 CPF または CPD で始まるメッセージは，弊社提供のメッセージ・ファイルQCPFMSGから検索されます。ここに指定された他のすべてのメッセージは，これらの依存関係によって定義中のコマンドを作成するために使用されるCRTCMDコマンドのMSGFパラメーターによって識別されるメッセージ・ファイルから検索されます。このパラメーターには変数をコーディングすることはできません。\n\n*NONE: 特定の診断メッセージが送られません。代わりに，汎用メッセージCPD0150が送られます。コマンドのパラメーターの数によっては，汎用メッセージのテキストからパラメーター間構文エラーの原因を判別することが非常に困難になる場合があります。\nユーザーに送られる診断メッセージのメッセージIDを指定してください。 IDが3文字の接頭部 CPF または CPD で始まるメッセージは，弊社提供のメッセージ・ファイルQCPFMSGから検索されます。ここに指定された他のすべてのメッセージは，これらの依存関係によって定義中のコマンドを作成するために使用されるCRTCMDコマンドのMSGFパラメーターによって識別されるメッセージ・ファイルから検索されます。このパラメーターには変数をコーディングすることはできません。",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*NONE",
+      "attributes": {
+        "characterSet": "upper",
+        "maxLength": 10
+      },
+      "positional": 4
+    }
+  ],
+  "examples": [
+    {
+      "code": "DEP CTL(&TYPE *EQ LIST) PARM(ELEMLIST)"
+    },
+    {
+      "code": "DEP CTL(FILE) PARM(VOL LABEL) NBRTRUE(*EQ 2) MSGID(USR1234)"
+    },
+    {
+      "code": "DEP CTL(*ALWAYS) PARM(J1 D J2) NBRTRUE(*EQ 1)"
+    },
+    {
+      "code": "DEP CTL(&LIB *EQ MYLIB) PARM((&PASSWORD *EQ XYZ5) (&USRPRF *EQ B0BJ)) NBRTRUE(*GE 1) MSGID(MSG1001)"
+    },
+    {
+      "code": "DEP CTL(&OUTPUT *EQ *OUTFILE) PARM((&OUTFILE *NE ' ')) NBRTRUE(*EQ 1) MSGID(CPD9861) DEP CTL(&OUTPUT *NE *OUTFILE) PARM((&OUTFILE *EQ ' ')) NBRTRUE(*EQ 1) MSGID(CPD9862) DEP CTL(&OUTMBR *NE *FIRST) PARM((&OUTFILE *EQ ' ')) NBRTRUE(*EQ 0) MSGID(CPD9867)"
+    }
+  ],
+  "source": {
+    "url": "https://www.ibm.com/docs/ja/ssw_ibm_i_74/cl/dep.htm",
+    "version": "IBM i 7.4"
+  }
+}

@@ -26,6 +26,21 @@ const LANG = langArg ? langArg.slice("--lang=".length) : "ja";
 const HTML_DIR = path.join(ROOT, `docs/origin/cl${LANG === "ja" ? "" : `-${LANG}`}`);
 const JSON_DIR = path.join(ROOT, `vscode-extension/resources/prompter/cl/${LANG}`);
 
+/**
+ * コマンド定義ステートメント。.cmd ソースに書く文で、CL コマンドではない。
+ * 原典の置き場所（cl/）も書式も構文も CL コマンドと同じなので取得と生成は
+ * 同じ経路を通すが、出力先は分ける。混ぜると CL のプロンプターに
+ * PARM や QUAL が出てしまう。
+ */
+const CMD_STATEMENTS = new Set(["CMD", "PARM", "ELEM", "QUAL", "DEP", "PMTCTL"]);
+const CMD_JSON_DIR = path.join(ROOT, `vscode-extension/resources/prompter/cmd/${LANG}`);
+
+const outDirFor = command => (CMD_STATEMENTS.has(command) ? CMD_JSON_DIR : JSON_DIR);
+const baseDirFor = command =>
+  CMD_STATEMENTS.has(command)
+    ? path.join(ROOT, "vscode-extension/resources/prompter/cmd/ja")
+    : path.join(ROOT, "vscode-extension/resources/prompter/cl/ja");
+
 const SOURCE_VERSION = "IBM i 7.4";
 const SOURCE_BASE = `https://www.ibm.com/docs/${LANG}/ssw_ibm_i_74/cl/`;
 
@@ -738,13 +753,12 @@ function generate(command) {
     source: prune(meta.source)
   });
 
-  const jsonPath = path.join(JSON_DIR, `${command}.json`);
+  const jsonPath = path.join(outDirFor(command), `${command}.json`);
 
   // 引き継ぎ元。入力欄の名前・dependsOn・constraints・basic は表示言語に
   // よらない内部情報なので、日本語版を基準にして全言語で揃える。
   // （言語ごとに合成名が変わると、同じコマンドなのに欄の名前が食い違う）
-  const baseDir =
-    LANG === "ja" ? JSON_DIR : path.join(ROOT, "vscode-extension/resources/prompter/cl/ja");
+  const baseDir = LANG === "ja" ? outDirFor(command) : baseDirFor(command);
   const basePath = path.join(baseDir, `${command}.json`);
   const existing = fs.existsSync(basePath)
     ? JSON.parse(fs.readFileSync(basePath, "utf8"))
@@ -805,6 +819,7 @@ for (const command of commands) {
     continue;
   }
 
+  fs.mkdirSync(path.dirname(jsonPath), { recursive: true });
   fs.writeFileSync(jsonPath, `${JSON.stringify(definition, null, 2)}\n`, "utf8");
   written += 1;
 }
