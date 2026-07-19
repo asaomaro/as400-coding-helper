@@ -25,6 +25,11 @@ export const categories = {
       'DCL', 'DCLF', 'CHGVAR', 'IF', 'ELSE', 'DOWHILE', 'DOUNTIL', 'DOFOR', 'SELECT', 'RETURN', 'CALLSUBR',
       // メッセージ
       'SNDPGMMSG', 'RCVMSG', 'MONMSG', 'SNDUSRMSG', 'SNDMSG', 'SNDBRKMSG',
+      // 待ち行列（メッセージ / ジョブ / 出力 / データ）
+      'CRTMSGQ', 'CHGMSGQ', 'DLTMSGQ', 'WRKMSGQ', 'CLRMSGQ', 'DSPMSG',
+      'CRTJOBQ', 'CHGJOBQ', 'DLTJOBQ', 'WRKJOBQ', 'CLRJOBQ', 'HLDJOBQ', 'RLSJOBQ',
+      'DLTOUTQ', 'CLROUTQ', 'HLDOUTQ', 'RLSOUTQ',
+      'CRTDTAQ', 'DLTDTAQ', 'WRKDTAQ',
       // クエリー管理 / Query/400 / SQL
       'STRQMQRY', 'STRQMPRC', 'CRTQMQRY', 'CRTQMFORM', 'DLTQMQRY', 'DLTQMFORM',
       'WRKQMQRY', 'WRKQMFORM', 'RTVQMQRY', 'RTVQMFORM',

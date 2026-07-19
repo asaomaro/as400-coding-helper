@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="ja"><head><meta charset="utf-8"><title>メッセージ待ち行列作成  (CRTMSGQ)</title></head>
+<body>
+<div role="main">
+<script type="text/javascript" src="../rzahg/synch.js"></script>
+<a name="CRTMSGQ.Top_Of_Page"></a>
+<h1>メッセージ待ち行列作成  (CRTMSGQ)</h1><div id="lastModifiedDate"><span>Last Updated</span>: 2021-04-13</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table0" width="100%" class="cds--data-table">
+<tbody><tr>
+<td class="valigntop alignleft"><strong>実行可能場所:  </strong>すべての環境 (*ALL)<br>
+<strong>スレッド・セーフ:  </strong>はい
+</td>
+<td class="valigntop alignright">
+<a href="#CRTMSGQ.PARAMETERS.TABLE">パラメーター</a><br>
+<a href="#CRTMSGQ.COMMAND.EXAMPLES">例</a><br>
+<a href="#CRTMSGQ.ERROR.MESSAGES">エラー・メッセージ</a></td>
+</tr>
+</tbody></table></div></div>
+<div> <a name="CRTMSGQ"></a>
+<p>メッセージ待ち行列作成(CRTMSGQ)コマンドは，ユーザー定義のメッセージ待ち行列を作成し，それを指定されたライブラリーに記憶します。メッセージ待ち行列は，その待ち行列との間でメッセージを送受信するすべてのユーザーが*USE権限を持っているライブラリーに入れなければなりません。送られるメッセージは，事前定義メッセージまたは即時メッセージのいずれかとすることができます。メッセージ待ち行列には，その作成時に次の属性が初期設定されます。すなわち，DLVRYパラメーターは*HOLDに設定され，PGMパラメーターの第1要素は*DSPMSGに設定され，PGMパラメーターの第2要素は*ALWRPYに設定され，SEVは00に設定され，RESETは*NOに設定されます。これらの初期設定された属性はCRTMSGQコマンドでは指定できず，待ち行列が作成された後で，CHGMSGQコマンドを使って変更しなければなりません。
+</p>
+<p>
+<strong>注:     </strong>メッセージ待ち行列QSYSOPRは，「メッセージ待ち行列満杯時の処置」が*WRAPとして出荷されます。値を*SNDMSGに変更した後で，損傷したために待ち行列を再作成する必要がある場合には，その値は出荷時の値の*WRAPにリセットされます。
+</p>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table1" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#CRTMSGQ.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div>
+<h2><a name="CRTMSGQ.PARAMETERS.TABLE">パラメーター</a></h2>
+<div class="tablenoborder"><div class="cds--data-table-container"><table id="parm_table2" summary="Parameters" border="1" cellpadding="4" cellspacing="0" class="cds--data-table">
+<!-- col1="10" col2="15" col3="30" col4="10" -->
+<tbody><tr>
+<th scope="col" class="valignbottom alignleft"><div class="cds--table-header-label">キーワード</div></th>
+<th scope="col" class="valignbottom alignleft"><div class="cds--table-header-label">記述</div></th>
+<th scope="col" class="valignbottom alignleft"><div class="cds--table-header-label">選択項目</div></th>
+<th scope="col" class="valignbottom alignleft"><div class="cds--table-header-label">ノーツ</div></th>
+</tr>
+<tr>
+<td class="valigntop" rowspan="3"><a href="#CRTMSGQ.MSGQ"><strong>MSGQ</strong></a></td>
+<td class="valigntop">MSG 待ち行列</td>
+<td class="valigntop"><span class="var">修飾オブジェクト名</span></td>
+<td class="valigntop" rowspan="3">必須, 定位置 1</td>
+</tr>
+<tr>
+<td class="valigntop">修飾子 1: MSG 待ち行列</td>
+<td class="valigntop"><span class="var">名前</span></td>
+</tr><tr>
+<td class="valigntop">修飾子 2: ライブラリー</td>
+<td class="valigntop"><span class="var">名前</span>, <strong class="underlined">*CURLIB</strong></td>
+</tr><tr>
+<td class="valigntop"><a href="#CRTMSGQ.TEXT"><strong>TEXT</strong></a></td>
+<td class="valigntop">テキスト'記述'</td>
+<td class="valigntop"><span class="var">文字値</span>, <strong class="underlined">*BLANK</strong></td>
+<td class="valigntop">オプショナル</td>
+</tr>
+<tr>
+<td class="valigntop"><a href="#CRTMSGQ.FORCE"><strong>FORCE</strong></a></td>
+<td class="valigntop">補助記憶域への強制書き込み</td>
+<td class="valigntop"><strong class="underlined">*NO</strong>, *YES</td>
+<td class="valigntop">オプショナル</td>
+</tr>
+<tr>
+<td class="valigntop" rowspan="4"><a href="#CRTMSGQ.SIZE"><strong>SIZE</strong></a></td>
+<td class="valigntop">待ち行列サイズ</td>
+<td class="valigntop"><span class="var">要素リスト</span></td>
+<td class="valigntop" rowspan="4">オプショナル</td>
+</tr>
+<tr>
+<td class="valigntop">要素 1: 初期記憶域サイズ</td>
+<td class="valigntop">
+<span class="var">整数</span>, <strong class="underlined">3</strong></td>
+</tr>
+<tr>
+<td class="valigntop">要素 2: 記憶域増分サイズ</td>
+<td class="valigntop">
+<span class="var">整数</span>, <strong class="underlined">1</strong></td>
+</tr>
+<tr>
+<td class="valigntop">要素 3: 最大増分値</td>
+<td class="valigntop">
+<span class="var">整数</span>, <strong class="underlined">*NOMAX</strong></td>
+</tr>
+<tr>
+<td class="valigntop"><a href="#CRTMSGQ.AUT"><strong>AUT</strong></a></td>
+<td class="valigntop">権限</td>
+<td class="valigntop"><span class="var">名前</span>, <strong class="underlined">*LIBCRTAUT</strong>, *CHANGE, *ALL, *USE, *EXCLUDE</td>
+<td class="valigntop">オプショナル</td>
+</tr>
+<tr>
+<td class="valigntop"><a href="#CRTMSGQ.ALWALR"><strong>ALWALR</strong></a></td>
+<td class="valigntop">警報可能</td>
+<td class="valigntop"><strong class="underlined">*NO</strong>, *YES</td>
+<td class="valigntop">オプショナル</td>
+</tr>
+<tr>
+<td class="valigntop"><a href="#CRTMSGQ.CCSID"><strong>CCSID</strong></a></td>
+<td class="valigntop">コード化文字セットID</td>
+<td class="valigntop">1-65535, *MSG, <strong class="underlined">*HEX</strong>, *JOB</td>
+<td class="valigntop">オプショナル</td>
+</tr>
+<tr>
+<td class="valigntop"><a href="#CRTMSGQ.MSGQFULL"><strong>MSGQFULL</strong></a></td>
+<td class="valigntop">メッセージ待ち行列満杯時処置</td>
+<td class="valigntop"><strong class="underlined">*SNDMSG</strong>, *WRAP</td>
+<td class="valigntop">オプショナル</td>
+</tr>
+</tbody></table></div></div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table3" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#CRTMSGQ.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+</div>
+<div> <a name="CRTMSGQ.MSGQ"></a>
+<h2>MSG 待ち行列 (MSGQ)</h2>
+<p>作成するメッセージ待ち行列を指定します。
+</p>
+<p>これは必須パラメーターです。
+</p>
+<h3><strong>修飾子</strong><strong>1: MSG </strong><strong>待ち行列</strong>
+</h3>
+<dl>
+<dt><strong class="italic">名前</strong></dt>
+<dd>作成するメッセージ待ち行列の名前を指定してください。
+</dd>
+</dl>
+<h3><strong>修飾子</strong><strong>2: ライブラリー</strong>
+</h3>
+<dl>
+<dt><strong class="underlined">*CURLIB</strong></dt>
+<dd>メッセージ待ち行列を作成するために，ジョブの現行ライブラリーが使用されます。ライブラリー・リストに現行ライブラリー項目が存在しない場合には，QGPLライブラリーが使用されます。
+</dd>
+<dt><strong class="italic">名前</strong></dt>
+<dd>メッセージ待ち行列が作成されるライブラリーを指定します。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table4" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#CRTMSGQ.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="CRTMSGQ.TEXT"></a>
+<h2>テキスト'記述' (TEXT)</h2>
+<p>オブジェクトを簡単に記述したテキストを指定します。
+</p>
+<dl>
+<dt><strong class="underlined">*BLANK</strong></dt>
+<dd>テキストは指定されません。
+</dd>
+<dt><strong class="italic">'記述'</strong></dt>
+<dd>50文字以下をアポストロフィで囲んで入力します。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table5" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#CRTMSGQ.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="CRTMSGQ.FORCE"></a>
+<h2>補助記憶域への強制書き込み (FORCE)</h2>
+<p>メッセージ待ち行列記述に施された変更，または待ち行列に追加または待ち行列から除去されたメッセージをただちに補助記憶装置に強制記憶するかどうかを指定します。これによって，たとえシステム障害が起こっても，待ち行列に対する変更または送受したメッセージが失われないようにすることができます。
+</p>
+<dl>
+<dt><strong class="underlined">*NO</strong></dt>
+<dd>メッセージ待ち行列およびその中のメッセージに対して施された変更は，すぐには補助記憶装置に強制記憶されません。
+</dd>
+<dt><strong>*YES</strong></dt>
+<dd>メッセージ待ち行列記述および待ち行列の中のメッセージに対する変更は，すべてただちに補助記憶装置に強制記憶されます。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table6" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#CRTMSGQ.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="CRTMSGQ.SIZE"></a>
+<h2>待ち行列サイズ (SIZE)</h2>
+<p>メッセージ待ち行列の初期記憶域サイズ，その記憶域に対する各追加時のサイズ，およびサイズを増分できる回数を指定します。記憶域サイズは，Kバイト(KB)単位で表現されます。
+</p>
+<h3><strong>要素</strong><strong>1: </strong><strong>初期記憶域サイズ</strong>
+</h3>
+<dl>
+<dt><strong class="underlined">3</strong></dt>
+<dd>最初，メッセージ待ち行列は3KBの記憶域を割り当てられています。(1KBは1024バイトの記憶域と等しいものです。）
+</dd>
+<dt><strong class="italic">初期Kバイト</strong></dt>
+<dd>待ち行列の初期サイズ(0より大であることが必要）を指定します。
+</dd>
+</dl>
+<h3><strong>要素</strong><strong>2: </strong><strong>記憶域増分サイズ</strong>
+</h3>
+<p>次の1つを使用して，サイズを増分するたびにメッセージ待ち行列のサイズに追加される記憶域の量をキロバイトで指定します。
+</p>
+<dl>
+<dt><strong class="underlined">1</strong></dt>
+<dd>メッセージ待ち行列のサイズが増分されるたびに，1KBの記憶域がそのメッセージ待ち行列に追加されます。
+</dd>
+<dt><strong class="italic">増分値</strong></dt>
+<dd>メッセージ待ち行列のサイズが増分されるたびに追加されるKバイト数を指定してください。
+</dd>
+</dl>
+<h3><strong>要素</strong><strong>3: </strong><strong>最大増分値</strong>
+</h3>
+<p>次の1つを使用して，メッセージ待ち行列のサイズを増分することができる最大回数を指定します。
+</p>
+<dl>
+<dt><strong class="underlined">*NOMAX</strong></dt>
+<dd>メッセージ待ち行列に記憶域を追加できる回数は，ユーザーによって制限されません。最大サイズはシステムによって決定されます。
+</dd>
+<dt><strong class="italic">増分回数</strong></dt>
+<dd>記憶域を待ち行列に追加できる最大回数を指定してください。待ち行列の初期サイズに対して追加できないようにするためには，0を入力してください。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table7" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#CRTMSGQ.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="CRTMSGQ.AUT"></a>
+<h2>権限(AUT)</h2>
+<p>このオブジェクトに対する特定の権限をもっておらず，権限リスト上になく，さらにそのグループ・プロファイルまたは補足グループ・プロファイルがオブジェクトに対する特定の権限をもっていないユーザーに付与する権限を指定します。
+</p>
+<dl>
+<dt><strong class="underlined">*LIBCRTAUT</strong></dt>
+<dd>システムは，作成するオブジェクトが入っているライブラリーに対するライブラリー作成コマンド(CRTLIB)で<strong>作成権限</strong><strong>(CRTAUT)</strong>パラメーターに指定された値を使用して，このオブジェクトに対する権限を決定します。CRTAUTパラメーターに指定された値が変更された場合には，新しい値は既存のどのオブジェクトにも影響しません。
+</dd>
+</dl>
+<dl>
+<dt><strong>*CHANGE</strong></dt>
+<dd>ユーザーは，所有者に限定されるか，あるいはオブジェクト存在権限(*OBJEXIST)およびオブジェクト管理権限(*OBJMGT)によって制御される以外のオブジェクトで，すべての操作を実行することができます。ユーザーはオブジェクトでの基本的な機能を変更して実行することができます。*CHANGE権限では，オブジェクト操作(*OBJOPR)および全データ権限が提供されます。このオブジェクトが権限リストである場合は，ユーザーの追加，変更，または除去はできません。
+</dd>
+</dl>
+<dl>
+<dt><strong>*ALL</strong></dt>
+<dd>ユーザーは，所有者に限定されるか，あるいは権限リスト管理(*AUTLMGT)権限によって管理される以外のオブジェクトで，すべての操作を実行することができます。ユーザーはオブジェクトの存在を制御し，オブジェクトの機密保護を指定し，オブジェクトを変更し，さらにオブジェクトに対して基本的な機能を実行することができます。オブジェクトの所有権を変更することもできます。
+</dd>
+</dl>
+<dl>
+<dt><strong>*USE</strong></dt>
+<dd>ユーザーは，プログラムの実行またはファイルの読み取りなど，オブジェクトに対する基本操作を実行することができます。ユーザーはオブジェクトを変更できません。使用(*USE)権限は，オブジェクト操作(*OBJOPR),読み取り(*READ),および実行(*EXECUTE)権限を提供します。
+</dd>
+</dl>
+<dl>
+<dt><strong>*EXCLUDE</strong></dt>
+<dd>ユーザーはオブジェクトにアクセスすることはできません。
+</dd>
+</dl>
+<dl>
+<dt><strong class="italic">名前</strong></dt>
+<dd>オブジェクトに対する権限として使用する権限リストの名前を指定してください。権限リストに載っているユーザーは，リストに指定されているオブジェクトに対する権限が認可されます。オブジェクトが作成される時に権限リストが存在していなければなりません。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table8" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#CRTMSGQ.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="CRTMSGQ.ALWALR"></a>
+<h2>警報可能 (ALWALR)</h2>
+<p>作成する待ち行列がそこに送られる警報メッセージから警報が生成されることを許可するかどうかを指定します。
+</p>
+<dl>
+<dt><strong class="underlined">*NO</strong></dt>
+<dd>このメッセージ待ち行列から警報が生成されることを許可しません。
+</dd>
+<dt><strong>*YES</strong></dt>
+<dd>このメッセージ待ち行列から警報が生成されることを許可します。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table9" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#CRTMSGQ.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="CRTMSGQ.CCSID"></a>
+<h2>コード化文字セットID (CCSID)</h2>
+<p>このメッセージ待ち行列と関連付けられているコード化文字セットID (CCSID)を指定します。このCCSIDは，即時メッセージと，変換可能な文字フィールド(*CCHAR)として定義されているメッセージ・データにのみ，適用されます。
+</p>
+<dl>
+<dt><strong class="underlined">*HEX</strong></dt>
+<dd>このメッセージ待ち行列に送られたり，このメッセージ待ち行列から受け取ったり，このメッセージ待ち行列から表示されるメッセージは，変換されません。このメッセージ待ち行列のCCSIDは65535です。
+</dd>
+<dt><strong>*MSG</strong></dt>
+<dd>このメッセージ待ち行列に送られたメッセージは変換されません。表示または受信機能で変換が必要になる場合に備えて，送信元ジョブによって指定されたCCSIDが保管されます。このメッセージ待ち行列のCCSIDは65534です。
+</dd>
+<dt><strong>*JOB</strong></dt>
+<dd>メッセージ待ち行列のCCSIDは，このコマンドを実行するジョブのCCSIDになります。
+</dd>
+<dt><strong class="italic">コード化文字セットID</strong></dt>
+<dd>このメッセージ待ち行列と関連付けられたCCSIDを指定してください。このメッセージ待ち行列に送られたメッセージは，このCCSIDに変換されます。有効な値の範囲は1から65535です。有効なCCSIDの値のリストについては，iSeries Information Center(http://www.ibm.com/eserver/iseries/infocenter)にあるグローバリゼーション情報を参照してください。
+<p>メッセージ・ハンドラーとそれによるCCSIDの使用の詳細については，IBM i Information Center(http://www.ibm.com/systems/i/infocenter/)の「i5/OSのグローバリゼーション」トピック・コレクションを参照してください。
+</p>
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table10" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#CRTMSGQ.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="CRTMSGQ.MSGQFULL"></a>
+<h2>メッセージ待ち行列満杯時処置 (MSGQFULL)</h2>
+<p>メッセージ待ち行列がいっぱいの時に取る処置を指定してください。
+</p>
+<dl>
+<dt><strong class="underlined">*SNDMSG</strong></dt>
+<dd>メッセージ待ち行列が満杯の場合には，満杯のメッセージ待ち行列に対してメッセージを送信しているプログラムまたはユーザーにCPF2460 (メッセージ待ち行列を拡張することはできません。）がいっぱいのメッセージ待ち行列にメッセージを送信しているプログラムまたはユーザーに対して送信されます。
+</dd>
+<dt><strong>*WRAP</strong></dt>
+<dd>メッセージ待ち行列が満杯の場合には，最も古い通知および回答済みメッセージから順にメッセージ待ち行列から除去され，新しいメッセージを追加するスペースが使用できるようになります。通知メッセージと応答済みメッセージを除去しても要求されたメッセージを追加する十分なスペースが得られない場合には，要求されたメッセージを追加するスペースができるまで，未応答の照会メッセージが除去されます。未回答の照会メッセージが除去される前に，省略時の応答が送られます。メッセージ待ち行列が折り返しされると，CPI2420またはCPI2421がいっぱいだった待ち行列に送られ，折り返されたことを示します。これらのメッセージを送るのに待ち行列に空きがない場合には，待ち行列にメッセージを送ったユーザーのジョブ・ログに送られ，待ち行列QSYSOPRがいっぱいの時にはQHSTに送られます。
+<h3><strong>注</strong><strong>:</strong>
+</h3>
+<p>待ち行列が*WRAPを使用しており，ジョブがメッセージを送ると待ち行列が折り返される時には，折り返しを実行するために次の条件の場合にメッセージが除去されます。
+</p>
+<ul class="cds--list--unordered">
+<li class="cds--list__item">待ち行列がジョブの中断モードまたは通知モードである。
+</li>
+<li class="cds--list__item">待ち行列が待ち時間を指定された受け取り機能であったため，ジョブがメッセージ待機状態である。
+</li>
+<li class="cds--list__item">待ち行列がALCOBJコマンドを経由してジョブにより割り振られる。
+</li>
+</ul>
+<p>システム折り返し機能だけが，これらの条件の時に待ち行列からメッセージを除去できます。その他のジョブはまだ，これらの条件の時でも待ち行列からメッセージを除去することができません。*SNDMSGでは，これらの条件で他のジョブが待ち行列からメッセージを除去することはできません。
+</p>
+<p>また，待ち行列が*WRAPを指定し，中断モードの時には，折り返し機能は中断処理プログラムが受け取ったメッセージだけを除去します。例えば，中断処理プログラムが待ち行列からすべてのメッセージを受け取らないうちにいっぱいになるような場合には，折り返しを実行するためにメッセージを除去することができないので，CPF2460が出される場合があります。
+</p>
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table11" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#CRTMSGQ.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div><h2><a name="CRTMSGQ.COMMAND.EXAMPLES">例</a> </h2>
+<p>
+</p><pre>CRTMSGQ   MSGQ(MYQ)  SIZE(3 3 *NOMAX)
+          TEXT('MESSAGE QUEUE FOR INVENTORY TRANSACTIONS')
+          AUT(*CHANGE)
+</pre>
+<p></p>
+<p>このコマンドは，MYQという名前のメッセージ待ち行列を作成し，それを省略時の値によって現行ライブラリー(*CURLIB)に保管します。すべてのユーザーに，メッセージを待ち行列に送り，そのメッセージを読み取ることが許可されます。
+</p>
+<p>メッセージ待ち行列は，3キロバイト(KB)の初期サイズで作成され，そのサイズは3 KBの増分で増加されます。その最大サイズに対する制限は，オブジェクトに対するシステムの限界であり，約16,000 KBとなります。
+</p>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table12" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#CRTMSGQ.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div><h2><a name="CRTMSGQ.ERROR.MESSAGES">エラー・メッセージ</a> </h2>
+<p><strong class="underlined">*ESCAPE </strong><strong class="underlined">メッセージ</strong>
+</p>
+<dl>
+<dt><strong>CPF2108</strong></dt>
+<dd>オブジェクト&amp;1タイプ*&amp;3はライブラリー&amp;2に追加されませんでした。
+</dd>
+<dt><strong>CPF2112</strong></dt>
+<dd>&amp;2のオブジェクト&amp;1タイプ*&amp;3が既に存在している。
+</dd>
+<dt><strong>CPF2113</strong></dt>
+<dd>ライブラリー&amp;1を割り振ることができない。
+</dd>
+<dt><strong>CPF2151</strong></dt>
+<dd>&amp;1のタイプ*&amp;3の&amp;2に対する操作が正常に行われなかった。
+</dd>
+<dt><strong>CPF2182</strong></dt>
+<dd>ライブラリー&amp;1は認可されていない。
+</dd>
+<dt><strong>CPF2283</strong></dt>
+<dd>権限リスト&amp;1が存在していない。
+</dd>
+<dt><strong>CPF2402</strong></dt>
+<dd>ライブラリー&amp;1が見つかりません。
+</dd>
+<dt><strong>CPF247E</strong></dt>
+<dd>CCSID &amp;1が無効です。
+</dd>
+<dt><strong>CPF2497</strong></dt>
+<dd>&amp;2の&amp;1のサイズがマシンの限界を超えている。
+</dd>
+<dt><strong>CPF9838</strong></dt>
+<dd>ユーザー・プロファイルの記憶域限界を超えた。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table13" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#CRTMSGQ.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+</div>
+
+
+</body></html>

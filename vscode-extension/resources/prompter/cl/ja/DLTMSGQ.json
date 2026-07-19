@@ -1,0 +1,99 @@
+{
+  "keyword": "DLTMSGQ",
+  "description": "メッセージ待ち行列削除 (DLTMSGQ)",
+  "help": "メッセージ待ち行列削除(DLTMSGQ)コマンドでは，指定されたメッセージ待ち行列およびそれらのメッセージ待ち行列の中のすべてのメッセージを削除します。待ち行列の中の応答を必要とするメッセージは，そのメッセージによって指定された省略時の応答を用いて応答されます。メッセージ待ち行列が別のジョブによって使用中である場合は，メッセージ待ち行列は削除できません。",
+  "parameters": [
+    {
+      "name": "MSGQ",
+      "description": "MSG 待ち行列",
+      "help": "削除する1つ以上のメッセージ待ち行列を指定します。\n\nこれは必須パラメーターです。\n\n次のQXXXライブラリーは弊社提供のものですが，これらには一般的によく変更されるユーザー・データが収められます。したがって，これらのライブラリーは「ユーザー・ライブラリー」と見なされ，検索されます。",
+      "inputType": "group",
+      "required": true,
+      "groupKind": "qualified",
+      "children": [
+        {
+          "name": "LIB",
+          "description": "ライブラリー",
+          "help": "*LIBL: 最初に一致するものが見つかるまで，現行スレッドのライブラリー・リスト内のすべてのライブラリーが検索されます。\n*CURLIB: ジョブの現行ライブラリーが検索されます。ライブラリー・リストに現行ライブラリーが存在しない場合には，QGPLが使用されます。\n*USRLIBL: 現行ライブラリー項目が現行スレッドのライブラリー・リストに存在する場合には，現行ライブラリーおよびライブラリー・リストのユーザー部分にあるライブラリーが検索されます。現行ライブラリー項目がない場合には，ライブラリー・リストのユーザー部分にあるライブラリーが検索されます。\n*ALL: QSYSを含むシステム上のすべてのライブラリーが検索されます。\n*ALLUSR: すべてのユーザー・ライブラリーが検索されます。次のものを除き，英字Qで始まらない名前のすべてのライブラリーが検索されます。 #CGULIB #DSULIB #SEULIB #COBLIB #RPGLIB #DFULIB #SDALIB 次のQXXXライブラリーは弊社提供のものですが，これらには一般的によく変更されるユーザー・データが収められます。したがって，これらのライブラリーは「ユーザー・ライブラリー」と見なされ，検索されます。 QDSNX QRCLXXXXX QUSRDIRDB QUSRVI QGPL QSRVAGT QUSRIJS QUSRVXRXMX QGPL38 QSYS2 QUSRINFSKR QWQCENT QMGTC QSYS2XXXXX QUSRNOTES QWQREPOS QMGTC2 QS36F QUSROND QMPGDATA QUSER38 QUSRPOSGS QMQMDATA QUSRADSM QUSRPOSSA QMQMPROC QUSRBRM QUSRPYMSVR QPFRDATA QUSRDIRCF QUSRRDARS QRCL QUSRDIRCL QUSRSYS 'XXXXX'は1次補助記憶域プール(ASP)の番号です。 前のリリースのCLプログラム内でコンパイルされるユーザー・コマンドを入れるために，弊社がサポートする前の各リリース用にQUSRVXRXMXの形式の別のライブラリー名を作成することができます。QUSRVXRXMXユーザー・ライブラリーのVXRXMXは弊社が引き続きサポートしている前のリリースのバージョン，リリース，およびモディフィケーション・レベルです。\n検索するライブラリーを指定してください。",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "*LIBL",
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          }
+        },
+        {
+          "name": "MSGQ",
+          "description": "MSG 待ち行列",
+          "help": "削除するメッセージ待ち行列の名前を指定してください。\n削除するメッセージ待ち行列の総称名を指定します。総称名は，1つ以上の文字とその後にアスタリスク(*)が付いた文字ストリングです。総称名を指定した場合には，総称メッセージ待ち行列名と同じ接頭部の付いた名前を持つすべてのメッセージ待ち行列が削除されます。",
+          "inputType": "text",
+          "required": true,
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          }
+        }
+      ],
+      "positional": 1
+    }
+  ],
+  "threadSafe": true,
+  "environment": "すべての環境 (*ALL)",
+  "restrictions": [
+    "メッセージ待ち行列に対する使用(*USE),オブジェクト存在(*OBJEXIST),および削除(*DLT)権限が必要です。",
+    "メッセージ待ち行列が入っているライブラリーに対する実行(*EXECUTE)権限が必要です。",
+    "システム操作員メッセージ待ち行列(QSYSOPR)およびワークステーション・メッセージ待ち行列を削除することはできません。"
+  ],
+  "examples": [
+    {
+      "code": "DLTMSGQ MSGQ(JONES)"
+    }
+  ],
+  "errorMessages": [
+    {
+      "id": "CPF2105",
+      "text": "&2に，タイプ*&3のオブジェクト&1が見つからない。"
+    },
+    {
+      "id": "CPF2110",
+      "text": "ライブラリー&1が見つかりません。"
+    },
+    {
+      "id": "CPF2117",
+      "text": "タイプ*&3の&4個のオブジェクトが削除され，&5個のオブジェクトが削除されなかった。"
+    },
+    {
+      "id": "CPF2182",
+      "text": "ライブラリー&1は認可されていない。"
+    },
+    {
+      "id": "CPF2403",
+      "text": "&2にメッセージ待ち行列&1が見つからない。"
+    },
+    {
+      "id": "CPF2408",
+      "text": "メッセージ待ち行列&1は認可されていない。"
+    },
+    {
+      "id": "CPF2451",
+      "text": "メッセージ待ち行列&1は別のジョブに割り振られている。"
+    },
+    {
+      "id": "CPF2477",
+      "text": "メッセージ待ち行列&1は現在使用中である。"
+    },
+    {
+      "id": "CPF2505",
+      "text": "ワークステーション・メッセージ待ち行列を削除することはできない。"
+    },
+    {
+      "id": "CPF9830",
+      "text": "ライブラリー&1を割り当てることができない。"
+    }
+  ],
+  "source": {
+    "url": "https://www.ibm.com/docs/ja/ssw_ibm_i_74/cl/dltmsgq.htm",
+    "version": "IBM i 7.4"
+  }
+}

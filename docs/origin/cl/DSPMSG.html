@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="ja"><head><meta charset="utf-8"><title>メッセージ表示  (DSPMSG)</title></head>
+<body>
+<div role="main">
+<script type="text/javascript" src="../rzahg/synch.js"></script>
+<a name="DSPMSG.Top_Of_Page"></a>
+<h1>メッセージ表示  (DSPMSG)</h1><div id="lastModifiedDate"><span>Last Updated</span>: 2021-04-13</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table0" width="100%" class="cds--data-table">
+<tbody><tr>
+<td class="valigntop alignleft"><strong>実行可能場所:  </strong>すべての環境 (*ALL)<br>
+<strong>スレッド・セーフ:  </strong>いいえ
+</td>
+<td class="valigntop alignright">
+<a href="#DSPMSG.PARAMETERS.TABLE">パラメーター</a><br>
+<a href="#DSPMSG.COMMAND.EXAMPLES">例</a><br>
+<a href="#DSPMSG.ERROR.MESSAGES">エラー・メッセージ</a></td>
+</tr>
+</tbody></table></div></div>
+<div> <a name="DSPMSG"></a>
+<p>メッセージ表示(DSPMSG)コマンドは，指定されたメッセージ待ち行列で受け取ったメッセージを表示するために，表示装置ユーザーによって使用されます。メッセージ待ち行列がこのコマンドの入力されるジョブにも，また他のどのジョブにも割り振られていない場合には，このコマンドの処理中，このコマンドによってメッセージ待ち行列が暗黙に割り振られます。メッセージが表示される時には，ユーザーが待ち行列から1つまたは複数のメッセージを除去したり，各照会メッセージに対する応答を入力したりできるオプションも表示されます。
+</p>
+<p>
+<strong>注:     </strong>1つまたは1グループのメッセージ記述を印刷する方法については，IBM i Information Center(http://www.ibm.com/systems/i/infocenter/)の「システム操作の基本」カテゴリーにある「メッセージの処理」というタイトルを持つセクションを参照してください。
+</p>
+<h2><strong>制約事項</strong><strong>:</strong>
+</h2>
+<ol class="cds--list--ordered--temporary">
+<li class="cds--list__item">*EXCLロック状態で作動するALCOBJコマンドを指定することによって別のジョブがすでにメッセージ待ち行列を割り振っている時には，DSPMSGを指定することはできません。
+</li>
+<li class="cds--list__item">メッセージ待ち行列が別のジョブに対して*BREAKまたは*NOTIFYモードになっている時には，ユーザーはDSPMSGコマンドを使ってジョブのメッセージを表示できますが，除去することはできません。
+</li>
+<li class="cds--list__item">メッセージ待ち行列が別のジョブに対して*BREAKモードになっている時には，ユーザーが照会メッセージに応答できるかどうかは，メッセージ待ち行列の中断処理プログラムによって決まります。PGM(*DSPMSG)が指定されている場合には，ユーザーは照会メッセージに応答できますが，PGM(ユーザー・プログラム)が指定されている場合には，照会メッセージに応答できません。
+</li>
+<li class="cds--list__item">複数のジョブが同じ照会メッセージを表示し，すべてのジョブがそのメッセージに応答した場合には，そのメッセージに対する最初の応答のみが有効となります。他のジョブから後続の応答があると，エラー・メッセージが出されます。
+</li>
+</ol>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table1" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#DSPMSG.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div>
+<h2><a name="DSPMSG.PARAMETERS.TABLE">パラメーター</a></h2>
+<div class="tablenoborder"><div class="cds--data-table-container"><table id="parm_table2" summary="Parameters" border="1" cellpadding="4" cellspacing="0" class="cds--data-table">
+<!-- col1="10" col2="15" col3="30" col4="10" -->
+<tbody><tr>
+<th scope="col" class="valignbottom alignleft"><div class="cds--table-header-label">キーワード</div></th>
+<th scope="col" class="valignbottom alignleft"><div class="cds--table-header-label">記述</div></th>
+<th scope="col" class="valignbottom alignleft"><div class="cds--table-header-label">選択項目</div></th>
+<th scope="col" class="valignbottom alignleft"><div class="cds--table-header-label">ノーツ</div></th>
+</tr>
+<tr>
+<td class="valigntop" rowspan="3"><a href="#DSPMSG.MSGQ"><strong>MSGQ</strong></a></td>
+<td class="valigntop">MSG 待ち行列</td>
+<td class="valigntop">単一値: <strong class="underlined">*WRKUSR</strong>, *SYSOPR, *USRPRF, *WRKSTN<br>その他の値: <span class="var">修飾オブジェクト名</span></td>
+<td class="valigntop" rowspan="3">オプショナル, 定位置 1</td>
+</tr>
+<tr>
+<td class="valigntop">修飾子 1: MSG 待ち行列</td>
+<td class="valigntop"><span class="var">名前</span></td>
+</tr><tr>
+<td class="valigntop">修飾子 2: ライブラリー</td>
+<td class="valigntop"><span class="var">名前</span>, <strong class="underlined">*LIBL</strong>, *CURLIB</td>
+</tr><tr>
+<td class="valigntop"><a href="#DSPMSG.OUTPUT"><strong>OUTPUT</strong></a></td>
+<td class="valigntop">出力</td>
+<td class="valigntop"><strong class="underlined">*</strong>, *PRINT, *PRTWRAP</td>
+<td class="valigntop">オプショナル</td>
+</tr>
+<tr>
+<td class="valigntop"><a href="#DSPMSG.MSGTYPE"><strong>MSGTYPE</strong></a></td>
+<td class="valigntop">MSG タイプ</td>
+<td class="valigntop"><strong class="underlined">*ALL</strong>, *INFO, *INQ, *COPY</td>
+<td class="valigntop">オプショナル</td>
+</tr>
+<tr>
+<td class="valigntop"><a href="#DSPMSG.START"><strong>START</strong></a></td>
+<td class="valigntop">最初に表示するメッセージ</td>
+<td class="valigntop"><strong class="underlined">*LAST</strong>, *FIRST</td>
+<td class="valigntop">オプショナル</td>
+</tr>
+<tr>
+<td class="valigntop"><a href="#DSPMSG.SEV"><strong>SEV</strong></a></td>
+<td class="valigntop">重大度コード・フィルター</td>
+<td class="valigntop">0-99, <strong class="underlined">0</strong>, *MSGQ</td>
+<td class="valigntop">オプショナル</td>
+</tr>
+<tr>
+<td class="valigntop"><a href="#DSPMSG.ASTLVL"><strong>ASTLVL</strong></a></td>
+<td class="valigntop">援助レベル</td>
+<td class="valigntop"><strong class="underlined">*PRV</strong>, *USRPRF, *BASIC, *INTERMED</td>
+<td class="valigntop">オプショナル</td>
+</tr>
+</tbody></table></div></div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table3" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#DSPMSG.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+</div>
+<div> <a name="DSPMSG.MSGQ"></a>
+<h2>MSG 待ち行列 (MSGQ)</h2>
+<p>表示されるメッセージが入っているメッセージ待ち行列を指定します。
+</p>
+<p><strong>注</strong><strong>:</strong>このパラメーターに特殊値*WRKSTNおよび*WRKUSRを指定する必要があるのは，対話式ジョブを行っている時だけです。
+</p>
+<h3><strong>単一値</strong>
+</h3>
+<dl>
+<dt><strong class="underlined">*WRKUSR</strong></dt>
+<dd>ワークステーションのメッセージ待ち行列にメッセージがある場合は，メッセージはそこから示されます。ユーザーがその画面を終了した後に，現行ユーザーのユーザー・プロファイル・メッセージ待ち行列からメッセージが示されます。ワークステーションのメッセージ待ち行列にメッセージがない場合は，ユーザー・プロファイル・メッセージ待ち行列からのメッセージだけが示されます。
+</dd>
+<dt><strong>*SYSOPR</strong></dt>
+<dd>システム操作員メッセージ待ち行列(QSYSOPR)からのメッセージが表示されます。
+</dd>
+<dt><strong>*WRKSTN</strong></dt>
+<dd>メッセージは，ワークステーション自体のメッセージ待ち行列から示されます。
+</dd>
+<dt><strong>*USRPRF</strong></dt>
+<dd>現行のユーザー・プロファイル・メッセージ待ち行列からのメッセージが表示されます。
+</dd>
+</dl>
+<h3><strong>修飾子</strong><strong>1: MSG </strong><strong>待ち行列</strong>
+</h3>
+<dl>
+<dt><strong class="italic">メッセージ待ち行列名</strong></dt>
+<dd>表示されるメッセージが入っているメッセージ待ち行列の名前を指定してください。
+</dd>
+</dl>
+<h3><strong>修飾子</strong><strong>2: ライブラリー</strong>
+</h3>
+<dl>
+<dt><strong class="underlined">*LIBL</strong></dt>
+<dd>最初に一致するものが見つかるまで，現行スレッドのライブラリー・リスト内のすべてのライブラリーが検索されます。
+</dd>
+</dl>
+<dl>
+<dt><strong>*CURLIB</strong></dt>
+<dd>メッセージ待ち行列を見つけるために，ジョブの現行ライブラリーが使用されます。ライブラリー・リストに現行ライブラリー項目が存在しない場合には，QGPLが使用されます。
+</dd>
+<dt><strong class="italic">ライブラリー名</strong></dt>
+<dd>メッセージ待ち行列が入っているライブラリーを指定してください。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table4" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#DSPMSG.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="DSPMSG.OUTPUT"></a>
+<h2>出力 (OUTPUT)</h2>
+<p>コマンドからの出力を，要求元のワークステーションに表示するか，あるいはジョブのスプール出力で印刷するかを指定します。
+</p>
+<dl>
+<dt><strong class="underlined">*</strong></dt>
+<dd>出力は表示される（対話式ジョブによって要求された場合）か，あるいはジョブのスプール出力で印刷されます（バッチ・ジョブによって要求された場合）。即時メッセージは長さを512バイトとすることができます。
+</dd>
+</dl>
+<dl>
+<dt><strong>*PRINT</strong></dt>
+<dd>出力はジョブのスプール出力で印刷されます。
+</dd>
+</dl>
+<p>各メッセージごとに1行のメッセージ・テキストだけが印刷されます。これは，第1レベル・メッセージ・テキストの最初の105バイトになります。
+</p>
+<dl>
+<dt><strong>*PRTWRAP</strong></dt>
+<dd>出力はジョブのスプール出力で印刷されます。メッセージが1行に収まらない場合には，第1レベル・メッセージ・テキストの最大512バイトまでを収容できるように追加の行が印刷されます。
+</dd>
+</dl>
+<p>出力が印刷される時には，各メッセージごとに2行以上が印刷されます。最後の行には，次の情報が含まれます。
+</p>
+<ul class="cds--list--unordered">
+<li class="cds--list__item">メッセージを送ったジョブの修飾ジョブ名。これは次の3つのフィールドから構成されます。
+<ul class="cds--list--unordered cds--list--nested">
+<li class="cds--list__item">ジョブ名
+</li>
+<li class="cds--list__item">ユーザー名
+</li>
+<li class="cds--list__item">ジョブ番号
+</li>
+</ul>
+</li>
+<li class="cds--list__item">メッセージを送ったプログラムの名前。
+</li>
+<li class="cds--list__item">メッセージを送ったプログラム内の命令番号。非プログラム・メッセージ待ち行列の場合には，これは常にゼロです。
+</li>
+<li class="cds--list__item">メッセージが送られた日付および時刻。
+</li>
+<li class="cds--list__item">メッセージが送られた時にスレッドが実行されていたユーザー・プロファイルの名前。
+</li>
+</ul>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table5" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#DSPMSG.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="DSPMSG.MSGTYPE"></a>
+<h2>MSG タイプ (MSGTYPE)</h2>
+<p>表示されるメッセージ待ち行列中のメッセージのタイプを指定します。
+</p>
+<dl>
+<dt><strong class="underlined">*ALL</strong></dt>
+<dd>メッセージ待ち行列中のすべてのメッセージが表示されます。
+</dd>
+<dt><strong>*INFO</strong></dt>
+<dd>通知メッセージ（応答を必要としないもの）だけが示されます。
+</dd>
+<dt><strong>*INQ</strong></dt>
+<dd>照会メッセージ（応答を必要とするもの）だけが示されます。
+</dd>
+<dt><strong>*COPY</strong></dt>
+<dd>他のメッセージ待ち行列に送られ，なお応答を必要とした照会メッセージのコピーが示されます。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table6" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#DSPMSG.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="DSPMSG.START"></a>
+<h2>最初に表示するメッセージ (START)</h2>
+<p>最初に示されるのは，メッセージ待ち行列の中の最も新しいメッセージか最も古いメッセージかを指定します。表示装置ユーザーは，メッセージ・リストが1画面に収まらない場合には，PAGE UP（前ページ）キーまたはPAGE DOWN（次ページ）キーを使用して，他のメッセージを表示できます。出力がスプール印刷出力ファイルに送られる場合には，このパラメーターは無視されます。
+</p>
+<dl>
+<dt><strong class="underlined">*LAST</strong></dt>
+<dd>中間ビュー（メッセージの表示）が表示される場合には，メッセージ待ち行列上の最後の（最も新しい）メッセージが画面の最下行に表示されます。表示装置ユーザーはPAGE UP（前ページ）キーを押してより古いメッセージを表示することができます。
+<p>基本ビュー（メッセージの処理）が表示される場合には，MSGQ上の最後の（最も新しい）メッセージが画面の最上行に表示されます。表示装置ユーザーはPAGE DOWN（次ページ）キーを押してより古いメッセージを表示することができます。
+</p>
+</dd>
+<dt><strong>*FIRST</strong></dt>
+<dd>中間ビュー（メッセージの表示）が表示される場合には，メッセージ待ち行列上の最初の（最も古い）メッセージが画面の最上行に表示されます。表示装置ユーザーはPAGE DOWN（次ページ）キーを押してより新しいメッセージを表示することができます。
+<p>基本ビュー（メッセージの処理）が表示される場合には，メッセージ待ち行列上の最初の（最も古い）メッセージが画面の最後に表示されます。表示装置ユーザーはPAGE UP（前ページ）キーを押してより新しいメッセージを表示することができます。
+</p>
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table7" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#DSPMSG.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="DSPMSG.SEV"></a>
+<h2>重大度コード・フィルター (SEV)</h2>
+<p>メッセージがもっている，中断または通知モードでユーザーに配布される最低の重大度レベルを指定します。ここで指定された重大度レベルより低い重大度レベルをもつメッセージがメッセージ待ち行列に到着した場合には，ジョブは中断されず，メッセージ待機中ライトはオンになりません。このようなメッセージはメッセージ表示(DSPMSG)コマンドによって表示されるまで，待ち行列に保留されます。
+</p>
+<dl>
+<dt><strong class="underlined">00</strong></dt>
+<dd>指定されたメッセージ待ち行列中のすべてのメッセージが表示されます。
+</dd>
+<dt><strong>*MSGQ</strong></dt>
+<dd>メッセージ待ち行列に指定された重大度コードより大きいか等しい重大度コードを持つすべてのメッセージが表示されます。
+</dd>
+<dt><strong class="italic">重大度コード</strong></dt>
+<dd>メッセージが持つことができ，しかも示され得る最低の重大度コードを指定する00から99の範囲の値を指定します。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table8" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#DSPMSG.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="DSPMSG.ASTLVL"></a>
+<h2>援助レベル (ASTLVL)</h2>
+<p>表示するユーザー・インターフェースを指定します。
+</p>
+<dl>
+<dt><strong class="underlined">*PRV</strong></dt>
+<dd>使用された前のユーザー・インターフェースが表示されます。
+</dd>
+<dt><strong>*USRPRF</strong></dt>
+<dd>現行ユーザー・プロファイルに記憶されているユーザー・インターフェースが使用されます。
+</dd>
+</dl>
+<dl>
+<dt><strong>*BASIC</strong></dt>
+<dd>操作援助機能ユーザー・インターフェースが使用されます。
+</dd>
+</dl>
+<p>
+<strong>注:     </strong>このユーザー・インターフェースはメッセージを次の2つのカテゴリーに分類します。(1)応答が必要なメッセージ，および(2)応答が必要でないメッセージ。新しいメッセージは各リストの先頭に表示されます。
+</p>
+<dl>
+<dt><strong>*INTERMED</strong></dt>
+<dd>システム・ユーザー・インターフェースが使用されます。
+</dd>
+</dl>
+<p>
+<strong>注:     </strong>DSPMSGコマンドのオンライン・ヘルプ情報は，*INTERMEDユーザー・インターフェースが表示されていると見なします。*BASICユーザー・インターフェースが表示された場合には，メッセージ処理(WRKMSG)コマンドのオンライン・ヘルプ情報を参照してください。
+</p>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table9" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#DSPMSG.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div><h2><a name="DSPMSG.COMMAND.EXAMPLES">例</a> </h2>
+<h3><strong>例</strong><strong>1:</strong><strong>ワークステーション・メッセージ待ち行列およびユーザー・プロファイル・メッセージ待ち行列からのメッセージの表示</strong>
+</h3>
+<p>
+</p><pre>DSPMSG
+</pre>
+<p></p>
+<p>このコマンドは，要求元のワークステーション・メッセージ待ち行列のメッセージに続いて，ユーザー・プロファイル・メッセージ待ち行列のメッセージを表示します。ワークステーション待ち行列にメッセージがない場合には，ユーザー・プロファイル・メッセージ待ち行列がただちに表示されます。
+</p>
+<h3><strong>例</strong><strong>2:</strong><strong>通知メッセージの表示</strong>
+</h3>
+<p>
+</p><pre>DSPMSG   MSGQ(SMITH)  MSGTYPE(*INFO)
+</pre>
+<p></p>
+<p>このコマンドは，要求元のワークステーションで，SMITHという名前のメッセージ待ち行列のすべての通知メッセージを表示します。
+</p>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table10" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#DSPMSG.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div><h2><a name="DSPMSG.ERROR.MESSAGES">エラー・メッセージ</a> </h2>
+<p><strong class="underlined">*ESCAPE </strong><strong class="underlined">メッセージ</strong>
+</p>
+<dl>
+<dt><strong>CPF2203</strong></dt>
+<dd>ユーザー・プロファイル&amp;1が正しくない。
+</dd>
+<dt><strong>CPF2204</strong></dt>
+<dd>ユーザー・プロファイル&amp;1が見つからない。
+</dd>
+<dt><strong>CPF2213</strong></dt>
+<dd>ユーザー・プロファイル&amp;1を割り振ることができない。
+</dd>
+<dt><strong>CPF2217</strong></dt>
+<dd>ユーザー・プロファイル&amp;1には認可されていません。
+</dd>
+<dt><strong>CPF2225</strong></dt>
+<dd>内部システム・オブジェクトを割り振ることができない。
+</dd>
+<dt><strong>CPF2401</strong></dt>
+<dd>ライブラリー&amp;1は認可されていない。
+</dd>
+<dt><strong>CPF2403</strong></dt>
+<dd>&amp;2にメッセージ待ち行列&amp;1が見つからない。
+</dd>
+<dt><strong>CPF2408</strong></dt>
+<dd>メッセージ待ち行列&amp;1は認可されていない。
+</dd>
+<dt><strong>CPF2433</strong></dt>
+<dd>システム・ログ・メッセージ待ち行列&amp;1にこの機能を使用することはできない。
+</dd>
+<dt><strong>CPF2450</strong></dt>
+<dd>ワークステーション・メッセージ待ち行列&amp;1がジョブに割り振られていない。
+</dd>
+<dt><strong>CPF2451</strong></dt>
+<dd>メッセージ待ち行列&amp;1は別のジョブに割り振られている。
+</dd>
+<dt><strong>CPF2477</strong></dt>
+<dd>メッセージ待ち行列&amp;1は現在使用中である。
+</dd>
+<dt><strong>CPF2513</strong></dt>
+<dd>メッセージ待ち行列&amp;1を表示することができない。
+</dd>
+<dt><strong>CPF2537</strong></dt>
+<dd>&amp;3のファイル&amp;2に書き込まれたレコード数が多すぎる。
+</dd>
+<dt><strong>CPF8127</strong></dt>
+<dd>&amp;9のメッセージ待ち行列&amp;4に&amp;8の損傷がある。VLICログは&amp;7です。
+</dd>
+<dt><strong>CPF8176</strong></dt>
+<dd>装置記述&amp;4のメッセージ待ち行列に損傷がある。
+</dd>
+<dt><strong>CPF9830</strong></dt>
+<dd>ライブラリー&amp;1を割り当てることができない。
+</dd>
+<dt><strong>CPF9845</strong></dt>
+<dd>ファイル&amp;1のオープン中にエラーが起こった。
+</dd>
+<dt><strong>CPF9846</strong></dt>
+<dd>ライブラリー&amp;2のファイル&amp;1の処理中にエラーが起こった。
+</dd>
+<dt><strong>CPF9847</strong></dt>
+<dd>ライブラリー&amp;2のファイル&amp;1のクローズ中にエラーが起こった。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table11" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#DSPMSG.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+</div>
+
+
+</body></html>

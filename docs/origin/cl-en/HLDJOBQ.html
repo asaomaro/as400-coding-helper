@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="ja"><head><meta charset="utf-8"><title>Hold Job Queue  (HLDJOBQ)</title></head>
+<body>
+<main role="main"><article role="article" aria-labelledby="hldjobq__title__1"> 
+<h1 class="topictitle1" id="hldjobq__title__1">Hold Job Queue  (HLDJOBQ)</h1><div id="lastModifiedDate"><span>Last Updated</span>: 2026-07-13</div>
+
+<div class="body">
+<p>
+<strong>Hold Job Queue  (HLDJOBQ)
+</strong></p>
+
+<p>
+<strong>Where allowed to run:  
+</strong>All environments (*ALL)
+
+</p>
+
+<p>
+<strong>Threadsafe:  </strong>No
+</p>
+
+<p><a href="#hldjobq__parameters">Parameters</a></p>
+
+<p><a href="#hldjobq__examples">Examples</a></p>
+
+<p><a href="#hldjobq__errormsgs">Error messages</a></p>
+
+<div class="div" id="hldjobq__hldjobq">
+<p>
+The Hold Job Queue (HLDJOBQ) command prevents the processing of all jobs currently waiting on the job queue and of all jobs that are added to the queue after the command is issued.  This command has no effect on jobs that are running.  Additional jobs can be placed on the job queue while it is held, but they are not processed.  The jobs are held until a Release Job Queue (RLSJOBQ) command is issued.  When a job queue is held, the jobs can be cleared with the Clear Job Queue (CLRJOBQ) command or a specific job can be canceled by the End Job (ENDJOB) command.
+
+</p>
+
+<p>
+<strong>Restriction:
+</strong>  The QLPINSTALL job queue cannot be held.
+
+</p>
+
+</div>
+<section class="section" role="region" aria-labelledby="hldjobq__parameters__title__1" id="hldjobq__parameters"><h2 class="sectiontitle" id="hldjobq__parameters__title__1">Parameters</h2>
+
+
+<div class="tablenoborder"><div class="cds--data-table-container"><table summary="" class="defaultstyle cds--data-table"><colgroup><col><col><col><col></colgroup><thead>
+<tr>
+<th id="hldjobq__parameters__entry__1"><div class="cds--table-header-label">
+Keyword
+</div></th>
+
+<th id="hldjobq__parameters__entry__2"><div class="cds--table-header-label">
+Description
+</div></th>
+
+<th id="hldjobq__parameters__entry__3"><div class="cds--table-header-label">
+Choices
+</div></th>
+
+<th id="hldjobq__parameters__entry__4"><div class="cds--table-header-label">
+Notes
+</div></th>
+
+</tr>
+
+</thead>
+<tbody>
+<tr>
+<td rowspan="3" headers="hldjobq__parameters__entry__1 "><a href="#hldjobq__jobq"><strong>JOBQ
+</strong></a></td>
+
+<td headers="hldjobq__parameters__entry__2 ">Job queue
+</td>
+
+<td headers="hldjobq__parameters__entry__3 "><em>Qualified object name
+</em></td>
+
+<td rowspan="3" headers="hldjobq__parameters__entry__4 ">Required, Positional 1
+</td>
+
+</tr>
+
+<tr>
+<td headers="hldjobq__parameters__entry__2 ">Qualifier 1: Job queue
+</td>
+
+<td headers="hldjobq__parameters__entry__3 "><em>Name
+</em></td>
+
+</tr>
+
+<tr>
+<td headers="hldjobq__parameters__entry__2 ">Qualifier 2: Library
+</td>
+
+<td headers="hldjobq__parameters__entry__3 "><em>Name
+</em>, 
+<strong><u>*LIBL
+</u></strong>, *CURLIB
+</td>
+
+</tr>
+
+</tbody>
+</table></div>
+</div>
+
+<div class="div" id="hldjobq__jobq">
+<p>
+<strong>Job queue (JOBQ)
+</strong></p>
+
+<p>
+Specifies the job queue that will have its current and future entries withheld from further processing.
+
+</p>
+
+<p>
+This is a required parameter.
+
+</p>
+
+<p>
+<strong>Qualifier 1: Job queue
+</strong>
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><em>name
+</em></strong></dt>
+
+<dd class="dlentry">
+Specify the name of the job queue to be held.
+</dd>
+
+</dl>
+
+<p>
+<strong>Qualifier 2: Library
+</strong>
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><u>*LIBL
+</u></strong></dt>
+
+<dd class="dlentry">
+All libraries in the library list for the current thread are searched until the first match is found.
+</dd>
+
+</dl>
+
+<dl>
+<dt class="dlterm">
+<strong>*CURLIB
+</strong></dt>
+
+<dd class="dlentry">
+The current library for the job is used to locate the job queue.  If no current library entry exists in the library list, QGPL is used.
+</dd>
+
+<dt class="dlterm">
+<strong><em>name
+</em></strong></dt>
+
+<dd class="dlentry">
+Specify the name of the library where the job queue is located.
+</dd>
+
+</dl>
+
+</div>
+</section>
+
+<section class="section" role="region" aria-labelledby="hldjobq__examples__title__1" id="hldjobq__examples"><h2 class="sectiontitle" id="hldjobq__examples__title__1">Examples</h2>
+
+<div class="p">
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>
+HLDJOBQ   JOBQ(QBATCH)
+
+</code></pre></div><div class="docs--copy-btn"></div></div>
+
+</div>
+
+<p>
+This command prevents the processing of the jobs currently on the QBATCH job queue and any jobs added to the queue. They are held until the queue is released or cleared. Individual jobs can also be ended with the ENDJOB command, which removes the job from the job queue.
+
+</p>
+
+</section>
+
+<section class="section" role="region" aria-labelledby="hldjobq__errormsgs__title__1" id="hldjobq__errormsgs"><h2 class="sectiontitle" id="hldjobq__errormsgs__title__1">Error messages</h2>
+
+<p>
+<strong><u>*ESCAPE Messages
+</u></strong>
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong>CPF2207
+</strong></dt>
+
+<dd class="dlentry">
+Not authorized to use object &amp;1 in library &amp;3 type *&amp;2.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF2240
+</strong></dt>
+
+<dd class="dlentry">
+User &amp;7 not authorized to use *&amp;5 &amp;6/&amp;4.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF3307
+</strong></dt>
+
+<dd class="dlentry">
+Job queue &amp;1 in &amp;2 not found.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF3330
+</strong></dt>
+
+<dd class="dlentry">
+Necessary resource not available.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF3425
+</strong></dt>
+
+<dd class="dlentry">
+Job queue &amp;1 in &amp;2 already held.
+</dd>
+
+</dl>
+
+</section>
+
+</div>
+
+</article></main>
+</body></html>
