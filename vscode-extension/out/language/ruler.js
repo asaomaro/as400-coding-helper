@@ -65,7 +65,7 @@ let mode = "full";
 /** mode がユーザー操作で確定済みか（false の間は設定 defaultMode に追従する）。 */
 let modePinned = false;
 let cachedRpgFieldLabels;
-let cachedClFieldLabels;
+const cachedFieldLabelsByKind = new Map();
 function registerRuler(context) {
     statusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Right, 100);
     statusBarItem.command = "rpgClSupport.ruler.cycleMode";
@@ -403,6 +403,12 @@ function specFamily(document) {
     if (/\.(clle|clp)$/u.test(lower)) {
         return "cl";
     }
+    // .cmd はコマンド定義ソース。CL コマンドではないが、桁の使い方は同じ
+    // （ラベル 1-13 / 文 14 / パラメータ 25）。原典に桁の規定は無く、
+    // これは SEU の書き方であり、プロンプターが書き出す形でもある。
+    if (/\.cmd$/u.test(lower)) {
+        return "cmd";
+    }
     // DDS は同じ A 仕様書でも用途で桁の意味が変わるため、拡張子で種別まで決める。
     if (/\.(pf|lf)$/u.test(lower)) {
         return "dds-pf";
@@ -422,9 +428,13 @@ function specFamily(document) {
  */
 function classifySpec(document, lineIndex) {
     const family = specFamily(document);
-    if (family === "cl") {
+    if (family === "cl" || family === "cmd") {
         const text = document.lineAt(lineIndex).text;
-        return text.trim().length > 0 ? "CL" : undefined;
+        if (text.trim().length === 0) {
+            return undefined;
+        }
+        // どちらも注記は /* */ で、桁で決まらないため行の中身では絞らない。
+        return family === "cmd" ? "CMD" : "CL";
     }
     if (family.startsWith("dds-")) {
         const text = document.lineAt(lineIndex).text;
@@ -461,8 +471,8 @@ function classifySpec(document, lineIndex) {
     return (0, specClassifier_1.classifyRpgSpecKeyword)(text, (0, dialect_1.resolveDialect)(document), precedingLines);
 }
 async function getColumnsForKey(context, key) {
-    if (key === "CL") {
-        return (0, keywordColumns_1.getClKeywordColumns)(context);
+    if (key === "CL" || key === "CMD") {
+        return (0, keywordColumns_1.getClKeywordColumns)(context, key);
     }
     if (key.startsWith("DDS-")) {
         return (await (0, keywordColumns_1.getDdsKeywordColumns)(context)).get(key);
@@ -471,8 +481,8 @@ async function getColumnsForKey(context, key) {
     return map.get(key);
 }
 async function getLabelsForKey(context, key) {
-    if (key === "CL") {
-        return getClFieldLabels(context);
+    if (key === "CL" || key === "CMD") {
+        return getClFieldLabels(context, key);
     }
     if (key.startsWith("DDS-")) {
         return (await getDdsFieldLabels(context)).get(key) ?? [];
@@ -524,13 +534,14 @@ async function getRpgFieldLabels(context) {
     cachedRpgFieldLabels = map;
     return map;
 }
-async function getClFieldLabels(context) {
-    if (cachedClFieldLabels) {
-        return cachedClFieldLabels;
+async function getClFieldLabels(context, kind = "CL") {
+    const cached = cachedFieldLabelsByKind.get(kind);
+    if (cached) {
+        return cached;
     }
     let labels = [];
     try {
-        const uri = vscode.Uri.joinPath(context.extensionUri, "resources", "navigation", "cl-field-labels.json");
+        const uri = vscode.Uri.joinPath(context.extensionUri, "resources", "navigation", kind === "CMD" ? "cmd-field-labels.json" : "cl-field-labels.json");
         const document = await vscode.workspace.openTextDocument(uri);
         const parsed = JSON.parse(document.getText());
         if (Array.isArray(parsed)) {
@@ -540,7 +551,7 @@ async function getClFieldLabels(context) {
     catch (error) {
         console.log("[rpgClSupport] failed to load CL field label definitions", String(error));
     }
-    cachedClFieldLabels = labels;
+    cachedFieldLabelsByKind.set(kind, labels);
     return labels;
 }
 //# sourceMappingURL=ruler.js.map

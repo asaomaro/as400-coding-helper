@@ -39,7 +39,6 @@ exports.getClKeywordColumns = getClKeywordColumns;
 exports.parseColumnsValue = parseColumnsValue;
 const vscode = __importStar(require("vscode"));
 let cachedRpgKeywordColumns;
-let cachedClKeywordColumns;
 let cachedDdsKeywordColumns;
 /**
  * DDS の定位置項目の桁定義を読み込む（種別 → 桁）。
@@ -95,29 +94,33 @@ async function getRpgKeywordColumns(context) {
     cachedRpgKeywordColumns = map;
     return map;
 }
+const cachedKeywordColumnsByKind = new Map();
 /**
- * CL のキーワード桁定義を読み込む。
+ * CL / コマンド定義ソースのキーワード桁定義を読み込む。
+ * どちらも「ラベル 1-13 / 文 14 / パラメータ 25」だが、欄の呼び名が違うため
+ * 定義ファイルを分けてある（CL は Command、.cmd は Statement）。
  */
-async function getClKeywordColumns(context) {
-    if (cachedClKeywordColumns) {
-        return cachedClKeywordColumns;
+async function getClKeywordColumns(context, kind = "CL") {
+    const cached = cachedKeywordColumnsByKind.get(kind);
+    if (cached) {
+        return cached;
     }
     try {
-        const uri = vscode.Uri.joinPath(context.extensionUri, "resources", "navigation", "cl-keyword-columns.json");
+        const uri = vscode.Uri.joinPath(context.extensionUri, "resources", "navigation", kind === "CMD" ? "cmd-keyword-columns.json" : "cl-keyword-columns.json");
         const document = await vscode.workspace.openTextDocument(uri);
         const raw = document.getText();
         const parsed = JSON.parse(raw);
         const columns = parseColumnsValue(parsed);
         if (columns.length > 0) {
-            cachedClKeywordColumns = columns;
+            cachedKeywordColumnsByKind.set(kind, columns);
             return columns;
         }
     }
     catch (error) {
-        console.log("[rpgClSupport] failed to load CL keyword column definitions", String(error));
+        console.log("[rpgClSupport] failed to load keyword column definitions", String(error));
     }
-    cachedClKeywordColumns = [];
-    return cachedClKeywordColumns;
+    cachedKeywordColumnsByKind.set(kind, []);
+    return cachedKeywordColumnsByKind.get(kind);
 }
 function parseColumnsValue(value) {
     if (typeof value === "string") {

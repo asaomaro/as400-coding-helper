@@ -41,7 +41,7 @@ let mode: RulerMode = "full";
 /** mode がユーザー操作で確定済みか（false の間は設定 defaultMode に追従する）。 */
 let modePinned = false;
 let cachedRpgFieldLabels: Map<string, readonly string[]> | undefined;
-let cachedClFieldLabels: readonly string[] | undefined;
+const cachedFieldLabelsByKind = new Map<string, readonly string[]>();
 
 export function registerRuler(context: vscode.ExtensionContext): void {
   statusBarItem = vscode.window.createStatusBarItem(
@@ -452,7 +452,7 @@ async function getSeuFormatLine(
 }
 
 
-type SpecFamily = "rpg" | "cl" | "dds-pf" | "dds-dspf" | "dds-prtf" | "other";
+type SpecFamily = "rpg" | "cl" | "cmd" | "dds-pf" | "dds-dspf" | "dds-prtf" | "other";
 
 function specFamily(document: vscode.TextDocument): SpecFamily {
   const languageId = document.languageId;
@@ -471,6 +471,12 @@ function specFamily(document: vscode.TextDocument): SpecFamily {
   }
   if (/\.(clle|clp)$/u.test(lower)) {
     return "cl";
+  }
+  // .cmd はコマンド定義ソース。CL コマンドではないが、桁の使い方は同じ
+  // （ラベル 1-13 / 文 14 / パラメータ 25）。原典に桁の規定は無く、
+  // これは SEU の書き方であり、プロンプターが書き出す形でもある。
+  if (/\.cmd$/u.test(lower)) {
+    return "cmd";
   }
   // DDS は同じ A 仕様書でも用途で桁の意味が変わるため、拡張子で種別まで決める。
   if (/\.(pf|lf)$/u.test(lower)) {
@@ -496,9 +502,13 @@ function classifySpec(
 ): string | undefined {
   const family = specFamily(document);
 
-  if (family === "cl") {
+  if (family === "cl" || family === "cmd") {
     const text = document.lineAt(lineIndex).text;
-    return text.trim().length > 0 ? "CL" : undefined;
+    if (text.trim().length === 0) {
+      return undefined;
+    }
+    // どちらも注記は /* */ で、桁で決まらないため行の中身では絞らない。
+    return family === "cmd" ? "CMD" : "CL";
   }
 
   if (family.startsWith("dds-")) {
@@ -544,8 +554,8 @@ async function getColumnsForKey(
   context: vscode.ExtensionContext,
   key: string
 ): Promise<readonly number[] | undefined> {
-  if (key === "CL") {
-    return getClKeywordColumns(context);
+  if (key === "CL" || key === "CMD") {
+    return getClKeywordColumns(context, key);
   }
   if (key.startsWith("DDS-")) {
     return (await getDdsKeywordColumns(context)).get(key);
@@ -558,8 +568,8 @@ async function getLabelsForKey(
   context: vscode.ExtensionContext,
   key: string
 ): Promise<readonly string[]> {
-  if (key === "CL") {
-    return getClFieldLabels(context);
+  if (key === "CL" || key === "CMD") {
+    return getClFieldLabels(context, key);
   }
   if (key.startsWith("DDS-")) {
     return (await getDdsFieldLabels(context)).get(key) ?? [];
@@ -638,10 +648,12 @@ async function getRpgFieldLabels(
 }
 
 async function getClFieldLabels(
-  context: vscode.ExtensionContext
+  context: vscode.ExtensionContext,
+  kind: "CL" | "CMD" = "CL"
 ): Promise<readonly string[]> {
-  if (cachedClFieldLabels) {
-    return cachedClFieldLabels;
+  const cached = cachedFieldLabelsByKind.get(kind);
+  if (cached) {
+    return cached;
   }
 
   let labels: readonly string[] = [];
@@ -650,7 +662,7 @@ async function getClFieldLabels(
       context.extensionUri,
       "resources",
       "navigation",
-      "cl-field-labels.json"
+      kind === "CMD" ? "cmd-field-labels.json" : "cl-field-labels.json"
     );
     const document = await vscode.workspace.openTextDocument(uri);
     const parsed = JSON.parse(document.getText()) as unknown;
@@ -664,6 +676,6 @@ async function getClFieldLabels(
     );
   }
 
-  cachedClFieldLabels = labels;
+  cachedFieldLabelsByKind.set(kind, labels);
   return labels;
 }
