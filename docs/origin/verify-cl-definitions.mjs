@@ -153,6 +153,19 @@ for (const command of commands) {
     if (!origin.some(p => p.name === name)) report("原典に無いパラメータ", `${command}.${name}`);
   }
 
+  // 並び順は原典の表と同じでなければならない。プロンプターは定義の順に
+  // 入力欄を出すため、ここがずれると実機と違う順で表示される。
+  const originOrder = origin.map(p => p.name);
+  const jsonOrder = parameters.map(p => p.name).filter(name => originOrder.includes(name));
+  const expected = originOrder.filter(name => jsonOrder.includes(name));
+  if (jsonOrder.join(",") !== expected.join(",")) {
+    const at = jsonOrder.findIndex((name, index) => name !== expected[index]);
+    report(
+      "並び順が原典と違う",
+      `${command}: ${at + 1} 番目が ${jsonOrder[at]}（原典は ${expected[at]}）`
+    );
+  }
+
   for (const param of origin) {
     const target = topLevel.get(param.name);
     if (!target) {

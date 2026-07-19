@@ -212,107 +212,62 @@ export function buildHtml(
   state: SerializablePrompterState,
   options: HtmlOptions
 ): string {
-  const standaloneFields: SerializableField[] = [];
-  const groups = new Map<
-    string,
-    { readonly label: string; readonly fields: SerializableField[] }
-  >();
-  const groupOrder: string[] = [];
+  // 入力欄は「定義の順」＝原典のパラメータ表の順に出す。
+  // 以前はグループを全部先に出してから単独の欄を出していたため、
+  // PARM なら先頭のはずの KWD が、囲みのある SNGVAL などの後ろに回っていた。
+  type Block =
+    | { readonly kind: "field"; readonly field: SerializableField }
+    | {
+        readonly kind: "group";
+        readonly name: string;
+        readonly label: string;
+        readonly fields: SerializableField[];
+      };
+
+  const blocks: Block[] = [];
+  const groups = new Map<string, Extract<Block, { kind: "group" }>>();
 
   for (const field of state.fields) {
-    if (field.groupName) {
-      let group = groups.get(field.groupName);
-      if (!group) {
-        group = {
-          label: field.groupLabel ?? field.groupName,
-          fields: []
-        };
-        groups.set(field.groupName, group);
-        groupOrder.push(field.groupName);
-      }
-      group.fields.push(field);
-    } else {
-      standaloneFields.push(field);
+    if (!field.groupName) {
+      blocks.push({ kind: "field", field });
+      continue;
     }
+
+    const existing = groups.get(field.groupName);
+    if (existing) {
+      existing.fields.push(field);
+      continue;
+    }
+
+    const group = {
+      kind: "group" as const,
+      name: field.groupName,
+      label: field.groupLabel ?? field.groupName,
+      fields: [field]
+    };
+    groups.set(field.groupName, group);
+    blocks.push(group);
   }
 
-  const groupHtml = groupOrder
-    .map(groupName => {
-      const group = groups.get(groupName);
-      if (!group) {
-        return "";
-      }
+  const renderField = (field: SerializableField): string => {
+    const controlHtml = buildFieldControlHtml(field);
+    const errorHtml = field.error
+      ? `<div class="error">${escapeHtml(field.error)}</div>`
+      : "";
+    const helpIcon = field.hasHelp
+      ? `<span class="help-indicator" data-parameter-name="${escapeHtml(
+          field.name
+        )}" data-help="${escapeHtml(field.help ?? "")}" title="F1 でヘルプを表示">?</span>`
+      : "";
+    // 値そのものがコマンドの欄（SBMJOB の CMD など）は、そこでさらに
+    // プロンプターを開ける。SEU の F4 in F4 に相当する。
+    const promptButton = field.commandValued
+      ? `<span class="prompt-indicator" data-parameter-name="${escapeHtml(
+          field.name
+        )}" title="F4 でコマンドのプロンプターを開く">F4</span>`
+      : "";
 
-      const childrenHtml = group.fields
-        .map(child => {
-          const controlHtml = buildFieldControlHtml(child);
-          const errorHtml = child.error
-            ? `<div class="error">${escapeHtml(child.error)}</div>`
-            : "";
-          const helpIcon = child.hasHelp
-            ? `<span class="help-indicator" data-parameter-name="${escapeHtml(
-                child.name
-              )}" data-help="${escapeHtml(
-                child.help ?? ""
-              )}" title="F1 でヘルプを表示">?</span>`
-            : "";
-
-          return `
-          <div class="field"${buildFieldRuleAttributes(child)}>
-            <label>
-              <span>${escapeHtml(child.label)}<span class="required-mark">${
-                child.required ? " *" : ""
-              }</span>${helpIcon}</span>
-              ${controlHtml}
-            </label>
-            ${errorHtml}
-          </div>`;
-        })
-        .join("\n");
-
-      // 繰り返し指定の group は、最後の一組にだけ「追加」ボタンを出す。
-      const repeat = state.repeatableGroups?.[groupName];
-      const addButton = repeat
-        ? `<button type="button" class="group-add" data-group="${escapeHtml(
-            repeat.base
-          )}" data-max="${repeat.max}">追加</button>`
-        : "";
-
-      const groupAdditional = group.fields.every(f => f.additional);
-      return `
-      <fieldset class="field group-field" data-group-name="${escapeHtml(groupName)}"${
-        groupAdditional ? ' data-additional="true" style="display:none"' : ""
-      }>
-        <legend>${escapeHtml(group.label)}</legend>
-        ${childrenHtml}
-        ${addButton}
-      </fieldset>`;
-    })
-    .join("\n");
-
-  const standaloneHtml = standaloneFields
-    .map(field => {
-      const controlHtml = buildFieldControlHtml(field);
-      const errorHtml = field.error
-        ? `<div class="error">${escapeHtml(field.error)}</div>`
-        : "";
-      const helpIcon = field.hasHelp
-        ? `<span class="help-indicator" data-parameter-name="${escapeHtml(
-            field.name
-          )}" data-help="${escapeHtml(
-            field.help ?? ""
-          )}" title="F1 でヘルプを表示">?</span>`
-        : "";
-
-      // 値そのものがコマンドの欄（SBMJOB の CMD など）は、そこでさらに
-      // プロンプターを開ける。SEU の F4 in F4 に相当する。
-      const promptButton = field.commandValued
-        ? `<span class="prompt-indicator" data-parameter-name="${escapeHtml(
-            field.name
-          )}" title="F4 でコマンドのプロンプターを開く">F4</span>`
-        : "";
-
-      return `
+    return `
       <div class="field"${buildFieldRuleAttributes(field)}>
         <label>
           <span>${escapeHtml(field.label)}<span class="required-mark">${
@@ -322,10 +277,42 @@ export function buildHtml(
         </label>
         ${errorHtml}
       </div>`;
+  };
+
+  const fieldsHtml = blocks
+    .map(block => {
+      if (block.kind === "field") {
+        return renderField(block.field);
+      }
+
+      const childrenHtml = block.fields.map(renderField).join("\n");
+
+      // 繰り返し指定の group は、最後の一組にだけ「追加」「削除」を出す。
+      // 追加しかないと、押し間違えた組を戻せない。
+      const repeat = state.repeatableGroups?.[block.name];
+      const buttons = repeat
+        ? `<button type="button" class="group-add" data-group="${escapeHtml(
+            repeat.base
+          )}" data-max="${repeat.max}">追加</button>` +
+          // 2 組目以降にだけ削除を出す。1 組目は消せない（パラメータ自体が消える）。
+          (block.name !== repeat.base
+            ? `<button type="button" class="group-remove" data-group="${escapeHtml(
+                block.name
+              )}">削除</button>`
+            : "")
+        : "";
+
+      const groupAdditional = block.fields.every(f => f.additional);
+      return `
+      <fieldset class="field group-field" data-group-name="${escapeHtml(block.name)}"${
+        groupAdditional ? ' data-additional="true" style="display:none"' : ""
+      }>
+        <legend>${escapeHtml(block.label)}</legend>
+        ${childrenHtml}
+        ${buttons}
+      </fieldset>`;
     })
     .join("\n");
-
-  const fieldsHtml = [groupHtml, standaloneHtml].filter(Boolean).join("\n");
 
   return `<!DOCTYPE html>
 <html lang="ja">
@@ -389,7 +376,9 @@ export function buildHtml(
     .constraint-errors { margin-bottom: 8px; white-space: pre-wrap; }
     .toggle-additional { margin: 8px 0; }
     .group-add { margin-top: 4px; }
-    .multi-field { margin-top: 4px; }
+    .group-remove { margin-top: 4px; margin-left: 4px; }
+    /* ラベルの右に並べる。ブロックのままだと入力欄が次の行へ回る。 */
+    .multi-field { display: inline-block; vertical-align: top; }
     .multi-items { display: flex; flex-direction: column; gap: 4px; margin-bottom: 4px; }
     .multi-item { display: flex; gap: 4px; }
   </style>
@@ -902,6 +891,45 @@ export function buildHtml(
         if (oldButton) oldButton.remove();
 
         fieldset.parentNode.insertBefore(clone, fieldset.nextSibling);
+        applyDependencyRules();
+      });
+
+      // 追加した組を消す。追加しかないと押し間違えを戻せない。
+      // 消せるのは最後の組だけ（間を抜くと連番が飛んで対応が崩れる）。
+      form.addEventListener('click', function (event) {
+        const target = event.target;
+        if (!target || typeof target.matches !== 'function' || !target.matches('.group-remove')) {
+          return;
+        }
+        event.preventDefault();
+
+        const fieldset = target.closest('.group-field');
+        if (!fieldset || !fieldset.parentNode) {
+          return;
+        }
+
+        const name = fieldset.getAttribute('data-group-name') || '';
+        const base = name.split('#')[0];
+        const previous = form.querySelector(
+          '.group-field[data-group-name="' + base + '"]'
+        );
+
+        // すべての組を集めて、最後の一組かどうかを見る。
+        const all = form.querySelectorAll('.group-field[data-group-name^="' + base + '"]');
+        if (all.length <= 1 || all[all.length - 1] !== fieldset) {
+          return;
+        }
+
+        fieldset.remove();
+
+        // 追加ボタンは常に最後の一組に置く。消した結果の最後へ戻す。
+        const remaining = form.querySelectorAll('.group-field[data-group-name^="' + base + '"]');
+        const last = remaining[remaining.length - 1] || previous;
+        if (last && !last.querySelector('.group-add')) {
+          const source = fieldset.querySelector('.group-add');
+          if (source) last.appendChild(source);
+        }
+
         applyDependencyRules();
       });
     }

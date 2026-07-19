@@ -10,6 +10,7 @@ import {
 import { buildClCommandText } from "../../src/prompter/applyChanges";
 import { buildInitialState } from "../../src/prompter/model";
 import { buildCommandHelpText } from "../../src/prompter/commandHelp";
+import { buildHtml, toSerializableState } from "../../src/prompter/binding";
 import { resolveDdsLevel } from "../../src/language/ddsKeywordCompletion";
 import { resolveCompletionKind } from "../../src/language/rpgCompletion";
 import type { PrompterDefinition } from "../../src/prompter/types";
@@ -122,5 +123,50 @@ suite("コマンド全体ヘルプ", () => {
     const help = buildCommandHelpText(definition);
     assert.ok(help.includes("SNDBRKMSG"), "コマンド名が含まれる");
     assert.ok(help.length > 100, "本文が入っている");
+  });
+});
+
+suite("プロンプターの描画", () => {
+  const render = (rel: string) => {
+    const definition = load(rel);
+    const state = buildInitialState(definition, {});
+    return buildHtml(
+      toSerializableState(definition, state, {
+        keyword: definition.keyword,
+        language: "cl",
+        line: 0
+      } as never),
+      { cspSource: "x", nonce: "n" }
+    );
+  };
+
+  /** 画面に出てくる順に、入力欄名と囲みの見出しを拾う。 */
+  const order = (html: string): string[] => {
+    const found: string[] = [];
+    for (const match of html.matchAll(/<legend>([^<]+)<\/legend>|name="([A-Z][A-Z0-9_]*)"/gu)) {
+      const name = match[1] ? `[${match[1]}]` : match[2];
+      if (name && !found.includes(name)) found.push(name);
+    }
+    return found;
+  };
+
+  test("入力欄は定義の順（＝原典の順）に出る", () => {
+    // 以前は囲みのある項目を全部先に出しており、PARM では先頭のはずの KWD が
+    // SNGVAL などの後ろに回っていた。
+    const rendered = order(render("cmd/ja/PARM.json"));
+    assert.equal(rendered[0], "KWD", `先頭は KWD のはず: ${rendered.slice(0, 4)}`);
+
+    const kwd = rendered.indexOf("KWD");
+    const group = rendered.findIndex(name => name.startsWith("["));
+    assert.ok(kwd < group, "囲みより前に単独の欄が出ること");
+  });
+
+  test("繰り返しの入力欄がラベルの右に並ぶ（次の行に回らない）", () => {
+    const html = render("cmd/ja/PARM.json");
+    assert.match(
+      html,
+      /\.multi-field \{ display: inline-block/u,
+      "ブロックのままだと入力欄がラベルの次の行へ回る"
+    );
   });
 });
