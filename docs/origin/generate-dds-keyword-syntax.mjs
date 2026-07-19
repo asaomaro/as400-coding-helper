@@ -118,12 +118,49 @@ function parseSyntax(file, keyword) {
   return undefined;
 }
 
+/**
+ * 使用レベル。索引から取れなかったものを詳細ページの本文で補う。
+ * 本文は「これはフィールド・レベル・キーワードで…」の形で書かれている。
+ * 語は日英で違うので両方の言い回しを見る。
+ */
+const LEVEL_PATTERNS = [
+  { level: "file", re: /ファイル・レベル|file[- ]level/iu },
+  { level: "record", re: /レコード・レベル|record[- ]level/iu },
+  { level: "field", re: /フィールド・レベル|field[- ]level/iu },
+  { level: "help", re: /ヘルプ・レベル|help[- ]level/iu },
+  { level: "key", re: /キー・フィールド・レベル|key field[- ]level/iu },
+  { level: "join", re: /結合レベル|join[- ]level/iu },
+  { level: "select", re: /選択\/省略レベル|select\/omit[- ]level/iu }
+];
+
+/** 詳細ページの本文から使用レベルを読む。 */
+function parseLevels(file) {
+  const path = join(DETAIL, file);
+  if (!existsSync(path)) return [];
+
+  const text = strip(readFileSync(path, "utf8"));
+  // 「キー・フィールド・レベル」は「フィールド・レベル」を含むため、
+  // 長い方から先に消してから判定する。順番を誤ると field が過剰に付く。
+  let rest = text;
+  const found = [];
+  for (const { level, re } of [...LEVEL_PATTERNS].sort(
+    (a, b) => b.re.source.length - a.re.source.length
+  )) {
+    if (re.test(rest)) {
+      found.push(level);
+      rest = rest.replace(new RegExp(re.source, "giu"), " ");
+    }
+  }
+  return found;
+}
+
 const suffix = LANG === "ja" ? "" : `.${LANG}`;
 const dataPath = join(COMPLETION, `dds-keywords${suffix}.json`);
 const data = JSON.parse(readFileSync(dataPath, "utf8"));
 
 let filled = 0;
 let missing = 0;
+let levelFilled = 0;
 
 for (const { key, file } of TYPES) {
   const paths = detailPaths(file);
@@ -136,6 +173,16 @@ for (const { key, file } of TYPES) {
       keyword.syntax = parsed.syntax;
       keyword.hasParameters = parsed.hasParameters;
       filled += 1;
+    }
+
+    // 使用レベルは索引から取れないものがある（COLOR / EDTCDE など）。
+    // 補完で出す・出さないの判定に使うので、詳細ページから補う。
+    if (!keyword.level?.length && detail) {
+      const levels = parseLevels(detail);
+      if (levels.length > 0) {
+        keyword.level = levels;
+        levelFilled += 1;
+      }
     } else {
       missing += 1;
     }
@@ -147,4 +194,5 @@ for (const { key, file } of TYPES) {
 
 writeFileSync(dataPath, `${JSON.stringify(data, null, 2)}\n`, "utf8");
 console.log(`\n構文を付与 ${filled} 件 / 取れず ${missing} 件`);
+console.log(`使用レベルを補った ${levelFilled} 件`);
 console.log(`出力: resources/completion/dds-keywords${suffix}.json`);

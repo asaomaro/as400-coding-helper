@@ -16,7 +16,11 @@ interface DdsKeyword {
   readonly name: string;
   /** 和名・英名（「音響警報」「Audible Alarm」）。 */
   readonly title: string;
-  /** 使用レベル（file/record/field/help/key/join）。原典から判別できた分だけ。 */
+  /**
+   * 使用レベル。原典の索引と各キーワードの詳細ページから取る。
+   * 判別できなかったものは未設定で、その場合はどのレベルでも出す
+   * （出すべきものを隠すより、余分に出す方が害が少ない）。
+   */
   readonly level?: readonly string[];
   readonly description?: string;
   /** 構文。複数の書き方があるキーワードは複数行になる。 */
@@ -29,6 +33,56 @@ type DdsType = "DDS-PF" | "DDS-DSPF" | "DDS-PRTF";
 
 /** キーワード項目の開始桁（1 始まり）。ここより手前では補完を出さない。 */
 const KEYWORD_COLUMN = 45;
+
+/**
+ * DDS の使用レベル。キーワードはどのレベルで書けるかが決まっている。
+ * 例: DSPSIZ はファイル・レベル、OVERLAY はレコード・レベル、COLOR はフィールド・レベル。
+ */
+export type DdsLevel = "file" | "record" | "field" | "key" | "join" | "select" | "help";
+
+/** 名前タイプ欄（17 桁目）の値 → レベル。 */
+const NAME_TYPE_LEVEL: Readonly<Record<string, DdsLevel>> = {
+  R: "record",
+  K: "key",
+  S: "select",
+  O: "select",
+  J: "join",
+  H: "help"
+};
+
+/**
+ * その行が属するレベルを求める。
+ *
+ * レベルはその行だけでは決まらない。キーワードだけの行（17 桁目も名前欄も空）は
+ * 直前のレコードやフィールドの続きなので、レベルを決めた行まで遡る必要がある。
+ * 遡っても見つからなければファイル・レベル（最初のレコードより前）。
+ */
+export function resolveDdsLevel(
+  lineAt: (index: number) => string,
+  lineIndex: number
+): DdsLevel {
+  for (let index = lineIndex; index >= 0; index -= 1) {
+    const text = lineAt(index);
+
+    // 注記行は桁の意味を持たないので飛ばす。
+    if (text.length > 6 && text.charAt(6) === "*") {
+      continue;
+    }
+
+    const nameType = (text.charAt(16) ?? " ").toUpperCase();
+    const level = NAME_TYPE_LEVEL[nameType];
+    if (level) {
+      return level;
+    }
+
+    // 17 桁目が空でも名前があればフィールド。名前も無ければ続きの行なので遡る。
+    if (text.slice(18, 28).trim().length > 0) {
+      return "field";
+    }
+  }
+
+  return "file";
+}
 
 let cache: Map<DdsType, readonly DdsKeyword[]> | undefined;
 let cacheLanguage: string | undefined;
@@ -109,10 +163,16 @@ export function registerDdsKeywordCompletion(
         return undefined;
       }
 
-      const keywords = (await loadKeywords(context)).get(type) ?? [];
-      if (keywords.length === 0) {
+      const all = (await loadKeywords(context)).get(type) ?? [];
+      if (all.length === 0) {
         return undefined;
       }
+
+      // その行のレベルで書けるものだけに絞る。レベルが分からないものは残す。
+      const level = resolveDdsLevel(index => document.lineAt(index).text, position.line);
+      const keywords = all.filter(
+        keyword => !keyword.level?.length || keyword.level.includes(level)
+      );
 
       const word = currentWord(line, position.character);
       const range = new vscode.Range(
@@ -127,6 +187,8 @@ export function registerDdsKeywordCompletion(
         );
         item.detail = keyword.title;
         item.range = range;
+        // 同じレベルで書けるものを上に出す（絞り込みの結果が見て分かるように）。
+        item.sortText = keyword.level?.length ? `0${keyword.name}` : `1${keyword.name}`;
 
         // パラメータを取るキーワードは括弧まで入れて中にカーソルを置く。
         // 取らないものに括弧を付けると構文誤りになるため付けない。

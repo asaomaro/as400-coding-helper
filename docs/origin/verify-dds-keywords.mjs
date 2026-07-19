@@ -37,6 +37,13 @@ function countOriginLinks(lang, file) {
 }
 
 const failures = [];
+
+/**
+ * 使用レベルの集合。補完はこの値で絞り込むので、知らない値が入ると
+ * その語はどのレベルでも出なくなる（絞り込みで必ず外れる）。
+ */
+const LEVELS = new Set(["file", "record", "field", "key", "join", "select", "help"]);
+let unknownLevel = 0;
 const counts = {};
 
 for (const lang of ["ja", "en"]) {
@@ -68,6 +75,14 @@ for (const lang of ["ja", "en"]) {
     }
     if (keywords.some(k => !k.title || k.title.trim().length === 0)) {
       failures.push(`${lang}/${key}: 和名/英名が空のものがある`);
+    }
+
+    for (const keyword of keywords) {
+      const bad = (keyword.level ?? []).filter(level => !LEVELS.has(level));
+      if (bad.length > 0) {
+        failures.push(`${lang}/${key}.${keyword.name}: 未知の使用レベル（${bad.join(", ")}）`);
+      }
+      if (!keyword.level?.length) unknownLevel += 1;
     }
 
     // 構文はほぼ全件で取れるはず（原典に構文の記載が無いものが少数ある）。
@@ -107,6 +122,7 @@ for (const { key } of TYPES) {
 }
 
 console.log("DDS キーワード補完データの検査");
+console.log(`  使用レベル不明: ${unknownLevel} 件（どのレベルでも出す扱い）`);
 for (const { key } of TYPES) {
   console.log(`  ${key.padEnd(9)} ja=${counts.ja?.[key] ?? "-"}  en=${counts.en?.[key] ?? "-"}`);
 }
