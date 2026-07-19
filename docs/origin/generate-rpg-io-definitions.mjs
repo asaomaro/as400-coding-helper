@@ -23,7 +23,7 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
-const OUT = join(HERE, "../../vscode-extension/resources/prompter/rpg/ile");
+const OUT = join(HERE, "../../vscode-extension/resources/prompter/rpg/ile/ja");
 
 const COMMENT = ["COMMENT", "注記", 81, 100, "仕様書の注記部分（81 から 100 桁目）。"];
 

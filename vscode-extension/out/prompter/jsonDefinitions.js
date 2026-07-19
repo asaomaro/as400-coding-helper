@@ -135,6 +135,19 @@ class PrompterDefinitionLoader {
             return definition;
         }
         catch {
+            // 英語版を持たないもの（RPG III は英語原典が無い）は日本語版で出す。
+            // 出せないより、日本語でも出る方がよい。
+            if (subPath[subPath.length - 1] === "en") {
+                const jaUri = vscode.Uri.joinPath(context.extensionUri, "resources", "prompter", ...subPath.slice(0, -1), "ja", fileName);
+                try {
+                    const definition = await this.loadDefinitionFromUri(jaUri);
+                    bundledCache.set(cacheKey, definition);
+                    return definition;
+                }
+                catch {
+                    // 日本語版も無ければ下の全走査へ
+                }
+            }
             // ファイル名とキーワードがずれている場合に備えて全走査で拾う。
             const all = await this.loadForLanguage(language, dialect, workspaceFolder, context);
             const found = all.find(candidate => candidate.keyword === keyword);
@@ -144,7 +157,9 @@ class PrompterDefinitionLoader {
     }
     resolveSubPath(language, dialect) {
         if (language === "rpg-fixed") {
-            return ["rpg", dialect ?? "ile"];
+            // RPG も言語別に分ける。ただし RPG III は英語原典が無く英語版を作れない
+            // ため、読み込み側で日本語版に落ちる（loadDefinition の fallback）。
+            return ["rpg", dialect ?? "ile", resolveDefinitionLanguage()];
         }
         // .cmd の文は CL コマンドではないので別に置く。混ぜると CL の
         // プロンプターに PARM や QUAL が出てしまう。DDS も同様に分ける。
