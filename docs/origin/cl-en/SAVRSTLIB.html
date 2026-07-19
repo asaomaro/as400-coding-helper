@@ -1,0 +1,3200 @@
+<!DOCTYPE html>
+<html lang="ja"><head><meta charset="utf-8"><title>Save Restore Library  (SAVRSTLIB)</title></head>
+<body>
+<main role="main"><article role="article" aria-labelledby="savrstlib__title__1"> 
+<h1 class="topictitle1" id="savrstlib__title__1">Save Restore Library  (SAVRSTLIB)</h1><div id="lastModifiedDate"><span>Last Updated</span>: 2026-07-13</div>
+
+<div class="body">
+<p>
+<strong>Save Restore Library  (SAVRSTLIB)
+</strong></p>
+
+<p>
+<strong>Where allowed to run:  
+</strong>All environments (*ALL)
+
+</p>
+
+<p>
+<strong>Threadsafe:  </strong>No
+</p>
+
+<p><a href="#savrstlib__parameters">Parameters</a></p>
+
+<p><a href="#savrstlib__examples">Examples</a></p>
+
+<p><a href="#savrstlib__errormsgs">Error messages</a></p>
+
+<div class="div" id="savrstlib__savrstlib">
+<p>
+The Save/Restore Library (SAVRSTLIB) command allows the user to save and restore a copy of one or more libraries to another system.  The system must have a supported communication link with the restoring system.
+
+</p>
+
+<p>
+Documents and folders contained in the QDOC library can be saved and restored by using the Save/Restore Document Library Object (SAVRSTDLO) command.
+
+</p>
+
+<p>
+The SAVRSTLIB command saves and restores the entire library; this includes the library description, the object descriptions, and the contents of the objects in the library.  For job queues, message queues, and logical files, only the object definitions are saved and restored, not the contents.  Logical file access paths can be saved and restored by specifying ACCPTH(*YES).  The contents of a save file can be saved and restored by specifying SAVFDTA(*YES).  The contents of spooled files on output queues can be saved and restored by specifying SPLFDTA(*ALL).  The contents of a data queue can be saved and restored by specifying QDTA(*DTAQ).
+
+</p>
+
+<p>
+The libraries and their objects are not affected on the system unless the command specifies that the storage is to be freed.
+
+</p>
+
+<p>
+The types of objects saved and restored by this command are the same as those listed in the OBJTYPE parameter description in "Commonly used parameters: Expanded descriptions" in the CL topic collection in the Programming category in the IBM i Information Center at http://www.ibm.com/systems/i/infocenter/, with the addition of *DTADCT.  Certain IBM i system objects that are not contained in user libraries (such as user profiles) are not saved and restored by this command.  They can be saved by the Save System (SAVSYS) or Save Security Data (SAVSECDTA) commands, and restored by using the Restore User Profile (RSTUSRPRF) command.
+
+</p>
+
+<p>
+<strong>Notes:
+</strong>
+</p>
+
+<ol class="cds--list--ordered--temporary">
+<li class="cds--list__item">
+When the address type is *IP, this command communicates with remote system using TCP/IP, Enterprise Extender is not used. The ObjectConnect server is required to be active on the remote system.
+
+</li>
+
+<li class="cds--list__item">
+When the address type is *SNA, RMTPORT, RMTUSER and RMTPWD are ignored.  If an OptiConnect connection is active, OptiConnect is preferred to access the remote system.
+
+</li>
+
+
+</ol>
+
+<p>
+<strong>Restrictions:
+</strong>
+</p>
+
+<ol class="cds--list--ordered--temporary">
+<li class="cds--list__item">
+To use this command, the user must have either the special authority *SAVSYS specified in the user profile by the SPCAUT parameter, or the user must have:
+<ul class="cds--list--unordered cds--list--nested">
+<li class="cds--list__item">
+Read authority for, or be the owner of, each library specified.
+
+</li>
+
+<li class="cds--list__item">
+Object existence authority for each object in the library.
+
+</li>
+
+</ul>
+
+<p>
+If the user does not have the correct authorities for all of the libraries and objects specified, only those for which the user does have authority are saved and restored.
+
+</p>
+
+
+</li>
+
+<li class="cds--list__item">
+No library that is being saved and restored, or the objects in the library being saved and restored, can be updated by a job that is running at the time the save and restore operation occurs unless save-while-active (SAVACT) is used.
+
+</li>
+
+<li class="cds--list__item">
+When the contents of a save file are saved and restored by specifying SAVFDTA(*YES), the save file must be restored before objects contained in it can be restored.
+
+</li>
+
+<li class="cds--list__item">
+Both systems intended to participate in the save and restore operation must be connected to the interworking ethernet network or, the same APPN network or, if the OptiConnect for IBM i option is to be used, both systems must be joined by the OptiConnect for IBM i hardware and software.
+
+</li>
+
+
+</ol>
+
+</div>
+<section class="section" role="region" aria-labelledby="savrstlib__parameters__title__1" id="savrstlib__parameters"><h2 class="sectiontitle" id="savrstlib__parameters__title__1">Parameters</h2>
+
+
+<div class="tablenoborder"><div class="cds--data-table-container"><table summary="" class="defaultstyle cds--data-table"><colgroup><col><col><col><col></colgroup><thead>
+<tr>
+<th id="savrstlib__parameters__entry__1"><div class="cds--table-header-label">
+Keyword
+</div></th>
+
+<th id="savrstlib__parameters__entry__2"><div class="cds--table-header-label">
+Description
+</div></th>
+
+<th id="savrstlib__parameters__entry__3"><div class="cds--table-header-label">
+Choices
+</div></th>
+
+<th id="savrstlib__parameters__entry__4"><div class="cds--table-header-label">
+Notes
+</div></th>
+
+</tr>
+
+</thead>
+<tbody>
+<tr>
+<td headers="savrstlib__parameters__entry__1 "><a href="#savrstlib__lib"><strong>LIB
+</strong></a></td>
+
+<td headers="savrstlib__parameters__entry__2 ">Library
+</td>
+
+<td headers="savrstlib__parameters__entry__3 ">Single values: *NONSYS, *ALLUSR, *IBM
+
+Other values (up to 300 repetitions): 
+<em>Generic name, name
+</em></td>
+
+<td headers="savrstlib__parameters__entry__4 ">Required, Positional 1
+</td>
+
+</tr>
+
+<tr>
+<td rowspan="3" headers="savrstlib__parameters__entry__1 "><a href="#savrstlib__rmtlocname"><strong>RMTLOCNAME
+</strong></a></td>
+
+<td headers="savrstlib__parameters__entry__2 ">Remote location name
+</td>
+
+<td headers="savrstlib__parameters__entry__3 "><em>Element list
+</em></td>
+
+<td rowspan="3" headers="savrstlib__parameters__entry__4 ">Required, Positional 2
+</td>
+
+</tr>
+
+<tr>
+<td headers="savrstlib__parameters__entry__2 ">Element 1: Name or address
+</td>
+
+<td headers="savrstlib__parameters__entry__3 "><em>Character value
+</em></td>
+
+</tr>
+
+<tr>
+<td headers="savrstlib__parameters__entry__2 ">Element 2: Type
+</td>
+
+<td headers="savrstlib__parameters__entry__3 "><strong><u>*SNA
+</u></strong>, *IP
+</td>
+
+</tr>
+
+<tr>
+<td headers="savrstlib__parameters__entry__1 "><a href="#savrstlib__rmtport"><strong>RMTPORT
+</strong></a></td>
+
+<td headers="savrstlib__parameters__entry__2 ">Remote port
+</td>
+
+<td headers="savrstlib__parameters__entry__3 ">1-65534, 
+<strong><u>*DFT
+</u></strong></td>
+
+<td headers="savrstlib__parameters__entry__4 ">Optional
+</td>
+
+</tr>
+
+<tr>
+<td headers="savrstlib__parameters__entry__1 "><a href="#savrstlib__rmtuser"><strong>RMTUSER
+</strong></a></td>
+
+<td headers="savrstlib__parameters__entry__2 ">Remote user ID
+</td>
+
+<td headers="savrstlib__parameters__entry__3 "><em>Name
+</em>, 
+<strong><u>*NONE
+</u></strong>, *CURRENT, *KERBEROS
+</td>
+
+<td headers="savrstlib__parameters__entry__4 ">Optional
+</td>
+
+</tr>
+
+<tr>
+<td headers="savrstlib__parameters__entry__1 "><a href="#savrstlib__rmtpwd"><strong>RMTPWD
+</strong></a></td>
+
+<td headers="savrstlib__parameters__entry__2 ">Remote password
+</td>
+
+<td headers="savrstlib__parameters__entry__3 "><em>Character value
+</em>, 
+<strong><u>*NONE
+</u></strong></td>
+
+<td headers="savrstlib__parameters__entry__4 ">Optional
+</td>
+
+</tr>
+
+<tr>
+<td headers="savrstlib__parameters__entry__1 "><a href="#savrstlib__output"><strong>OUTPUT
+</strong></a></td>
+
+<td headers="savrstlib__parameters__entry__2 ">Output
+</td>
+
+<td headers="savrstlib__parameters__entry__3 "><strong><u>*NONE
+</u></strong>, *PRINT
+</td>
+
+<td headers="savrstlib__parameters__entry__4 ">Optional
+</td>
+
+</tr>
+
+<tr>
+<td headers="savrstlib__parameters__entry__1 "><a href="#savrstlib__strlib"><strong>STRLIB
+</strong></a></td>
+
+<td headers="savrstlib__parameters__entry__2 ">Starting library
+</td>
+
+<td headers="savrstlib__parameters__entry__3 "><em>Name
+</em>, 
+<strong><u>*FIRST
+</u></strong></td>
+
+<td headers="savrstlib__parameters__entry__4 ">Optional
+</td>
+
+</tr>
+
+<tr>
+<td headers="savrstlib__parameters__entry__1 "><a href="#savrstlib__omitlib"><strong>OMITLIB
+</strong></a></td>
+
+<td headers="savrstlib__parameters__entry__2 ">Libraries to omit
+</td>
+
+<td headers="savrstlib__parameters__entry__3 ">Single values: 
+<strong><u>*NONE
+</u></strong>
+Other values (up to 300 repetitions): 
+<em>Generic name, name
+</em></td>
+
+<td headers="savrstlib__parameters__entry__4 ">Optional
+</td>
+
+</tr>
+
+<tr>
+<td rowspan="5" headers="savrstlib__parameters__entry__1 "><a href="#savrstlib__omitobj"><strong>OMITOBJ
+</strong></a></td>
+
+<td headers="savrstlib__parameters__entry__2 ">Objects to omit
+</td>
+
+<td headers="savrstlib__parameters__entry__3 ">Values (up to 300 repetitions): 
+<em>Element list
+</em></td>
+
+<td rowspan="5" headers="savrstlib__parameters__entry__4 ">Optional
+</td>
+
+</tr>
+
+<tr>
+<td headers="savrstlib__parameters__entry__2 ">Element 1: Object
+</td>
+
+<td headers="savrstlib__parameters__entry__3 "><em>Qualified object name
+</em></td>
+
+</tr>
+
+<tr>
+<td headers="savrstlib__parameters__entry__2 ">Qualifier 1: Object
+</td>
+
+<td headers="savrstlib__parameters__entry__3 "><em>Generic name, name
+</em>, *ALL, 
+<strong><u>*NONE
+</u></strong></td>
+
+</tr>
+
+<tr>
+<td headers="savrstlib__parameters__entry__2 ">Qualifier 2: Library
+</td>
+
+<td headers="savrstlib__parameters__entry__3 "><em>Generic name, name
+</em>, 
+<strong><u>*ALL
+</u></strong></td>
+
+</tr>
+
+<tr>
+<td headers="savrstlib__parameters__entry__2 ">Element 2: Object type
+</td>
+
+<td headers="savrstlib__parameters__entry__3 "><em>Character value
+</em>, 
+<strong><u>*ALL
+</u></strong>, *ALRTBL, *BNDDIR, *CHTFMT, *CLD, *CLS, *CMD, *CRG, *CRQD, *CSI, *CSPMAP, *CSPTBL, *DTAARA, *DTAQ, *EDTD, *EXITRG, *FCT, *FILE, *FNTRSC, *FNTTBL, *FORMDF, *FTR, *GSS, *IGCDCT, *IGCSRT, *IGCTBL, *JOBD, *JOBQ, *JOBSCD, *JRN, *JRNRCV, *LOCALE, *MEDDFN, *MENU, *MGTCOL, *MODULE, *MSGF, *MSGQ, *NODGRP, *NODL, *ORTBL, *OUTQ, *OVL, *PAGDFN, *PAGSEG, *PDFMAP, *PDG, *PGM, *PNLGRP, *PRDAVL, *PSFCFG, *QMFORM, *QMQRY, *QRYDFN, *RCT, *SBSD, *SCHIDX, *SPADCT, *SQLPKG, *SQLUDT, *SQLXSR, *SRVPGM, *SSND, *SVRSTG, *S36, *TBL, *USRIDX, *USRQ, *USRSPC, *VLDL, *WSCST
+</td>
+
+</tr>
+
+<tr>
+<td rowspan="8" headers="savrstlib__parameters__entry__1 "><a href="#savrstlib__select"><strong>SELECT
+</strong></a></td>
+
+<td headers="savrstlib__parameters__entry__2 ">Select
+</td>
+
+<td headers="savrstlib__parameters__entry__3 ">Values (up to 300 repetitions): 
+<em>Element list
+</em></td>
+
+<td rowspan="8" headers="savrstlib__parameters__entry__4 ">Optional
+</td>
+
+</tr>
+
+<tr>
+<td headers="savrstlib__parameters__entry__2 ">Element 1: Include or omit
+</td>
+
+<td headers="savrstlib__parameters__entry__3 "><strong><u>*INCLUDE
+</u></strong>, *OMIT
+</td>
+
+</tr>
+
+<tr>
+<td headers="savrstlib__parameters__entry__2 ">Element 2: Object
+</td>
+
+<td headers="savrstlib__parameters__entry__3 "><em>Qualified object name
+</em></td>
+
+</tr>
+
+<tr>
+<td headers="savrstlib__parameters__entry__2 ">Qualifier 1: Object
+</td>
+
+<td headers="savrstlib__parameters__entry__3 "><em>Generic name, name
+</em>, 
+<strong><u>*ALL
+</u></strong></td>
+
+</tr>
+
+<tr>
+<td headers="savrstlib__parameters__entry__2 ">Qualifier 2: Library
+</td>
+
+<td headers="savrstlib__parameters__entry__3 "><em>Generic name, name
+</em>, 
+<strong><u>*ALL
+</u></strong></td>
+
+</tr>
+
+<tr>
+<td headers="savrstlib__parameters__entry__2 ">Element 3: Object type
+</td>
+
+<td headers="savrstlib__parameters__entry__3 "><em>Character value
+</em>, 
+<strong><u>*ALL
+</u></strong>, *ALRTBL, *BNDDIR, *CHTFMT, *CLD, *CLS, *CMD, *CRG, *CRQD, *CSI, *CSPMAP, *CSPTBL, *DTAARA, *DTAQ, *EDTD, *EXITRG, *FCT, *FILE, *FNTRSC, *FNTTBL, *FORMDF, *FTR, *GSS, *IGCDCT, *IGCSRT, *IGCTBL, *JOBD, *JOBQ, *JOBSCD, *JRN, *JRNRCV, *LOCALE, *MEDDFN, *MENU, *MGTCOL, *MODULE, *MSGF, *MSGQ, *NODGRP, *NODL, *ORTBL, *OUTQ, *OVL, *PAGDFN, *PAGSEG, *PDFMAP, *PDG, *PGM, *PNLGRP, *PRDAVL, *PSFCFG, *QMFORM, *QMQRY, *QRYDFN, *RCT, *SBSD, *SCHIDX, *SPADCT, *SQLPKG, *SQLUDT, *SQLXSR, *SRVPGM, *SSND, *SVRSTG, *S36, *TBL, *USRIDX, *USRQ, *USRSPC, *VLDL, *WSCST
+</td>
+
+</tr>
+
+<tr>
+<td headers="savrstlib__parameters__entry__2 ">Element 4: Object attribute
+</td>
+
+<td headers="savrstlib__parameters__entry__3 "><em>Character value
+</em>, 
+<strong><u>*ALL
+</u></strong>, *BLANK
+</td>
+
+</tr>
+
+<tr>
+<td headers="savrstlib__parameters__entry__2 ">Element 5: File member
+</td>
+
+<td headers="savrstlib__parameters__entry__3 "><em>Generic name, name
+</em>, 
+<strong><u>*ALL
+</u></strong>, *ALLMBR
+</td>
+
+</tr>
+
+<tr>
+<td headers="savrstlib__parameters__entry__1 "><a href="#savrstlib__aspdev"><strong>ASPDEV
+</strong></a></td>
+
+<td headers="savrstlib__parameters__entry__2 ">ASP device
+</td>
+
+<td headers="savrstlib__parameters__entry__3 "><em>Name
+</em>, 
+<strong><u>*
+</u></strong>, *SYSBAS, *CURASPGRP
+</td>
+
+<td headers="savrstlib__parameters__entry__4 ">Optional
+</td>
+
+</tr>
+
+<tr>
+<td headers="savrstlib__parameters__entry__1 "><a href="#savrstlib__tgtrls"><strong>TGTRLS
+</strong></a></td>
+
+<td headers="savrstlib__parameters__entry__2 ">Target release
+</td>
+
+<td headers="savrstlib__parameters__entry__3 "><em>Simple name
+</em>, 
+<strong><u>*CURRENT
+</u></strong>, *PRV
+</td>
+
+<td headers="savrstlib__parameters__entry__4 ">Optional
+</td>
+
+</tr>
+
+<tr>
+<td headers="savrstlib__parameters__entry__1 "><a href="#savrstlib__prechk"><strong>PRECHK
+</strong></a></td>
+
+<td headers="savrstlib__parameters__entry__2 ">Object pre-check
+</td>
+
+<td headers="savrstlib__parameters__entry__3 "><strong><u>*NO
+</u></strong>, *YES
+</td>
+
+<td headers="savrstlib__parameters__entry__4 ">Optional
+</td>
+
+</tr>
+
+<tr>
+<td headers="savrstlib__parameters__entry__1 "><a href="#savrstlib__savact"><strong>SAVACT
+</strong></a></td>
+
+<td headers="savrstlib__parameters__entry__2 ">Save active
+</td>
+
+<td headers="savrstlib__parameters__entry__3 "><strong><u>*NO
+</u></strong>, *LIB, *SYSDFN
+</td>
+
+<td headers="savrstlib__parameters__entry__4 ">Optional
+</td>
+
+</tr>
+
+<tr>
+<td rowspan="4" headers="savrstlib__parameters__entry__1 "><a href="#savrstlib__savactwait"><strong>SAVACTWAIT
+</strong></a></td>
+
+<td headers="savrstlib__parameters__entry__2 ">Save active wait time
+</td>
+
+<td headers="savrstlib__parameters__entry__3 "><em>Element list
+</em></td>
+
+<td rowspan="4" headers="savrstlib__parameters__entry__4 ">Optional
+</td>
+
+</tr>
+
+<tr>
+<td headers="savrstlib__parameters__entry__2 ">Element 1: Object locks
+</td>
+
+<td headers="savrstlib__parameters__entry__3 ">0-99999, 
+<strong><u>120
+</u></strong>, *NOMAX
+</td>
+
+</tr>
+
+<tr>
+<td headers="savrstlib__parameters__entry__2 ">Element 2: Pending record changes
+</td>
+
+<td headers="savrstlib__parameters__entry__3 ">0-99999, 
+<strong><u>*LOCKWAIT
+</u></strong>, *NOCMTBDY, *NOMAX
+</td>
+
+</tr>
+
+<tr>
+<td headers="savrstlib__parameters__entry__2 ">Element 3: Other pending changes
+</td>
+
+<td headers="savrstlib__parameters__entry__3 ">0-99999, 
+<strong><u>*LOCKWAIT
+</u></strong>, *NOMAX
+</td>
+
+</tr>
+
+<tr>
+<td rowspan="3" headers="savrstlib__parameters__entry__1 "><a href="#savrstlib__savactmsgq"><strong>SAVACTMSGQ
+</strong></a></td>
+
+<td headers="savrstlib__parameters__entry__2 ">Save active message queue
+</td>
+
+<td headers="savrstlib__parameters__entry__3 "><em>Qualified object name
+</em></td>
+
+<td rowspan="3" headers="savrstlib__parameters__entry__4 ">Optional
+</td>
+
+</tr>
+
+<tr>
+<td headers="savrstlib__parameters__entry__2 ">Qualifier 1: Save active message queue
+</td>
+
+<td headers="savrstlib__parameters__entry__3 "><em>Name
+</em>, 
+<strong><u>*NONE
+</u></strong>, *WRKSTN
+</td>
+
+</tr>
+
+<tr>
+<td headers="savrstlib__parameters__entry__2 ">Qualifier 2: Library
+</td>
+
+<td headers="savrstlib__parameters__entry__3 "><em>Name
+</em>, 
+<strong><u>*LIBL
+</u></strong>, *CURLIB
+</td>
+
+</tr>
+
+<tr>
+<td headers="savrstlib__parameters__entry__1 "><a href="#savrstlib__accpth"><strong>ACCPTH
+</strong></a></td>
+
+<td headers="savrstlib__parameters__entry__2 ">Save access paths
+</td>
+
+<td headers="savrstlib__parameters__entry__3 "><strong><u>*SYSVAL
+</u></strong>, *NO, *YES
+</td>
+
+<td headers="savrstlib__parameters__entry__4 ">Optional
+</td>
+
+</tr>
+
+<tr>
+<td headers="savrstlib__parameters__entry__1 "><a href="#savrstlib__savfdta"><strong>SAVFDTA
+</strong></a></td>
+
+<td headers="savrstlib__parameters__entry__2 ">Save file data
+</td>
+
+<td headers="savrstlib__parameters__entry__3 "><strong><u>*YES
+</u></strong>, *NO
+</td>
+
+<td headers="savrstlib__parameters__entry__4 ">Optional
+</td>
+
+</tr>
+
+<tr>
+<td headers="savrstlib__parameters__entry__1 "><a href="#savrstlib__splfdta"><strong>SPLFDTA
+</strong></a></td>
+
+<td headers="savrstlib__parameters__entry__2 ">Spooled file data
+</td>
+
+<td headers="savrstlib__parameters__entry__3 "><strong><u>*NONE
+</u></strong>, *ALL
+</td>
+
+<td headers="savrstlib__parameters__entry__4 ">Optional
+</td>
+
+</tr>
+
+<tr>
+<td headers="savrstlib__parameters__entry__1 "><a href="#savrstlib__qdta"><strong>QDTA
+</strong></a></td>
+
+<td headers="savrstlib__parameters__entry__2 ">Queue data
+</td>
+
+<td headers="savrstlib__parameters__entry__3 "><strong><u>*NONE
+</u></strong>, *DTAQ
+</td>
+
+<td headers="savrstlib__parameters__entry__4 ">Optional
+</td>
+
+</tr>
+
+<tr>
+<td headers="savrstlib__parameters__entry__1 "><a href="#savrstlib__pvtaut"><strong>PVTAUT
+</strong></a></td>
+
+<td headers="savrstlib__parameters__entry__2 ">Private authorities
+</td>
+
+<td headers="savrstlib__parameters__entry__3 "><strong><u>*NO
+</u></strong>, *YES
+</td>
+
+<td headers="savrstlib__parameters__entry__4 ">Optional
+</td>
+
+</tr>
+
+<tr>
+<td headers="savrstlib__parameters__entry__1 "><a href="#savrstlib__stg"><strong>STG
+</strong></a></td>
+
+<td headers="savrstlib__parameters__entry__2 ">Storage
+</td>
+
+<td headers="savrstlib__parameters__entry__3 "><strong><u>*KEEP
+</u></strong>, *FREE
+</td>
+
+<td headers="savrstlib__parameters__entry__4 ">Optional
+</td>
+
+</tr>
+
+<tr>
+<td headers="savrstlib__parameters__entry__1 "><a href="#savrstlib__option"><strong>OPTION
+</strong></a></td>
+
+<td headers="savrstlib__parameters__entry__2 ">Option
+</td>
+
+<td headers="savrstlib__parameters__entry__3 "><strong><u>*ALL
+</u></strong>, *NEW, *OLD, *FREE
+</td>
+
+<td headers="savrstlib__parameters__entry__4 ">Optional
+</td>
+
+</tr>
+
+<tr>
+<td headers="savrstlib__parameters__entry__1 "><a href="#savrstlib__mbropt"><strong>MBROPT
+</strong></a></td>
+
+<td headers="savrstlib__parameters__entry__2 ">Data base member option
+</td>
+
+<td headers="savrstlib__parameters__entry__3 "><strong><u>*MATCH
+</u></strong>, *ALL, *NEW, *OLD
+</td>
+
+<td headers="savrstlib__parameters__entry__4 ">Optional
+</td>
+
+</tr>
+
+<tr>
+<td headers="savrstlib__parameters__entry__1 "><a href="#savrstlib__alwobjdif"><strong>ALWOBJDIF
+</strong></a></td>
+
+<td headers="savrstlib__parameters__entry__2 ">Allow object differences
+</td>
+
+<td headers="savrstlib__parameters__entry__3 ">Single values: 
+<strong><u>*NONE
+</u></strong>, *ALL, *COMPATIBLE
+
+Other values (up to 4 repetitions): *AUTL, *FILELVL, *OWNER, *PGP
+</td>
+
+<td headers="savrstlib__parameters__entry__4 ">Optional
+</td>
+
+</tr>
+
+<tr>
+<td headers="savrstlib__parameters__entry__1 "><a href="#savrstlib__rstlib"><strong>RSTLIB
+</strong></a></td>
+
+<td headers="savrstlib__parameters__entry__2 ">Restore to library
+</td>
+
+<td headers="savrstlib__parameters__entry__3 "><em>Name
+</em>, 
+<strong><u>*LIB
+</u></strong></td>
+
+<td headers="savrstlib__parameters__entry__4 ">Optional
+</td>
+
+</tr>
+
+<tr>
+<td headers="savrstlib__parameters__entry__1 "><a href="#savrstlib__rstaspdev"><strong>RSTASPDEV
+</strong></a></td>
+
+<td headers="savrstlib__parameters__entry__2 ">Restore to ASP device
+</td>
+
+<td headers="savrstlib__parameters__entry__3 "><em>Name
+</em>, 
+<strong><u>*SAVASPDEV
+</u></strong></td>
+
+<td headers="savrstlib__parameters__entry__4 ">Optional
+</td>
+
+</tr>
+
+<tr>
+<td headers="savrstlib__parameters__entry__1 "><a href="#savrstlib__rstasp"><strong>RSTASP
+</strong></a></td>
+
+<td headers="savrstlib__parameters__entry__2 ">Restore to ASP number
+</td>
+
+<td headers="savrstlib__parameters__entry__3 ">1-32, 
+<strong><u>*SAVASP
+</u></strong></td>
+
+<td headers="savrstlib__parameters__entry__4 ">Optional
+</td>
+
+</tr>
+
+<tr>
+<td rowspan="3" headers="savrstlib__parameters__entry__1 "><a href="#savrstlib__frcobjcvn"><strong>FRCOBJCVN
+</strong></a></td>
+
+<td headers="savrstlib__parameters__entry__2 ">Force object conversion
+</td>
+
+<td headers="savrstlib__parameters__entry__3 ">Single values: 
+<strong><u>*SYSVAL
+</u></strong>, *NO
+
+Other values: 
+<em>Element list
+</em></td>
+
+<td rowspan="3" headers="savrstlib__parameters__entry__4 ">Optional
+</td>
+
+</tr>
+
+<tr>
+<td headers="savrstlib__parameters__entry__2 ">Element 1: Convert during restore
+</td>
+
+<td headers="savrstlib__parameters__entry__3 "><strong><u>*YES
+</u></strong></td>
+
+</tr>
+
+<tr>
+<td headers="savrstlib__parameters__entry__2 ">Element 2: Objects to convert
+</td>
+
+<td headers="savrstlib__parameters__entry__3 "><strong><u>*RQD
+</u></strong>, *ALL
+</td>
+
+</tr>
+
+<tr>
+<td headers="savrstlib__parameters__entry__1 "><a href="#savrstlib__strjrn"><strong>STRJRN
+</strong></a></td>
+
+<td headers="savrstlib__parameters__entry__2 ">Start journaling
+</td>
+
+<td headers="savrstlib__parameters__entry__3 "><strong><u>*YES
+</u></strong>, *NO
+</td>
+
+<td headers="savrstlib__parameters__entry__4 ">Optional
+</td>
+
+</tr>
+
+</tbody>
+</table></div>
+</div>
+
+<div class="div" id="savrstlib__lib">
+<p>
+<strong>Library (LIB)
+</strong></p>
+
+<p>
+Specifies which libraries to save and restore.
+
+</p>
+
+<p>
+<strong>Notes:
+</strong>
+</p>
+
+<ol class="cds--list--ordered--temporary">
+<li class="cds--list__item">
+If using *NONSYS, or *IBM keywords some libraries will not be saved and restored, because they are being used for this operation.
+
+</li>
+
+<li class="cds--list__item">
+If the user specifies *ALLUSR on this parameter, this command should be run when the specified libraries are not being used.  If objects in a library are in use while the library is being saved and restored, the objects are not saved and restored.  To ensure a complete save and restore of all libraries, run the SAVLIB command with the system in a restricted state.  For example, if SAVRSTLIB LIB(*ALLUSR) is run when the subsystem QSNADS is active, the QAO* files are not saved and restored in library QUSRSYS.  To save and restore the *QAO files, end the QSNADS subsystem before running SAVRSTLIB LIB(*ALLUSR).  Some subsystems cannot be ended when using the SAVRSTLIB command. The libraries associated with these subsystems will not be saved and restored using the SAVRSTLIB command.
+<dl>
+<dt class="dlterm">
+<strong>QSOC
+</strong></dt>
+
+<dd class="dlentry">
+if using the optical bus transport with the SAVRSTLIB command
+</dd>
+
+<dt class="dlterm">
+<strong>QCMN
+</strong></dt>
+
+<dd class="dlentry">
+if using the communications transport with the SAVRSTLIB command
+</dd>
+
+</dl>
+
+
+</li>
+
+
+</ol>
+
+<dl>
+<dt class="dlterm">
+<strong>*NONSYS
+</strong></dt>
+
+<dd class="dlentry">
+All user-created libraries, the QGPL and QUSRSYS libraries, and licensed program libraries such as QRPG and QIDU are saved.  All subsystems must be ended by the End Subsystem (ENDSBS) or End System (ENDSYS) command before this option is specified.  When *NONSYS is specified, the libraries are saved in alphabetical order on the media.
+</dd>
+
+<dt class="dlterm">
+<strong>*ALLUSR
+</strong></dt>
+
+<dd class="dlentry">
+All user libraries are saved and restored. All libraries with names that do not begin with the letter Q are saved and restored except for the following:
+<div class="p">
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>
+#CGULIB     #DSULIB     #SEULIB
+#COBLIB     #RPGLIB
+#DFULIB     #SDALIB
+
+</code></pre></div><div class="docs--copy-btn"></div></div>
+
+</div>
+
+<p>
+Although the following Qxxx libraries are provided by IBM, they typically contain user data that changes frequently.  Therefore, these libraries are considered user libraries and are also saved and restored:
+
+</p>
+
+<div class="p">
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>
+QDSNX       QRCLxxxxx   QUSRDIRDB   QUSRVI
+QGPL        QSRVAGT     QUSRIJS     QUSRVxRxMx
+QGPL38      QSYS2       QUSRINFSKR  QWQCENT
+QMGTC       QSYS2xxxxx  QUSRNOTES   QWQREPOS
+QMGTC2      QS36F       QUSROND
+QMPGDATA    QUSER38     QUSRPOSGS
+QMQMDATA    QUSRADSM    QUSRPOSSA
+QMQMPROC    QUSRBRM     QUSRPYMSVR
+QPFRDATA    QUSRDIRCF   QUSRRDARS
+QRCL        QUSRDIRCL   QUSRSYS
+
+</code></pre></div><div class="docs--copy-btn"></div></div>
+
+</div>
+
+<p>
+<strong>Note:     
+</strong>A different library name, in the format QUSRVxRxMx, can be created by the user for each previous release supported by IBM to contain any user commands to be compiled in a CL program for the previous release.  For the QUSRVxRxMx user library, VxRxMx is the version, release, and modification level of a previous release that IBM continues to support.
+
+</p>
+
+</dd>
+
+<dt class="dlterm">
+<strong>*IBM
+</strong></dt>
+
+<dd class="dlentry">
+Saves all system (IBM) libraries except for the following Q libraries:
+<div class="p">
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>
+QDOC        QRCL        QSYS2xxxxx  QUSRPOSGS
+QDOCxxxx    QRCLxxxxx   QS36F       QUSRPOSSA
+QDSNX       QRCYxxxxx   QTEMP       QUSRPYMSVR
+QGPL        QRECOVERY   QUSER38     QUSRRDARS
+QGPL38      QRPLOBJ     QUSRADSM    QUSRSYS
+QMGTC       QRPLxxxxx   QUSRBRM     QUSRVI
+QMGTC2      QSPL        QUSRDIRCF   QUSRVxRxMx
+QMPGDATA    QSPLxxxx    QUSRDIRCL   QWQCENT
+QMQMDATA    QSRV        QUSRDIRDB   QWQREPOS
+QMQMPROC    QSRVAGT     QUSRIJS
+QPFRDATA    QSYS        QUSRINFSKR
+QPTFOBJ1    QSYSxxxxx   QUSRNOTES
+QPTFOBJ2    QSYS2       QUSROND
+
+</code></pre></div><div class="docs--copy-btn"></div></div>
+
+</div>
+
+<p>
+<strong>Note:     
+</strong>A different library name, in the format QUSRVxRxMx, can be created by the user for each previous release supported by IBM to contain any user commands to be compiled in a CL program for the previous release.  For the QUSRVxRxMx user library, VxRxMx is the version, release, and modification level of a previous release that IBM continues to support.
+
+</p>
+
+<p>
+The following libraries with names that do not begin with the letter Q are also saved:
+
+</p>
+
+<div class="p">
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>
+#CGULIB     #DSULIB     #SEULIB
+#COBLIB     #RPGLIB
+#DFULIB     #SDALIB
+
+</code></pre></div><div class="docs--copy-btn"></div></div>
+
+</div>
+
+</dd>
+
+<dt class="dlterm">
+<strong><em>generic-name
+</em></strong></dt>
+
+<dd class="dlentry">
+Specify the generic name of the library.  A generic name is a character string of one or more characters followed by an asterisk (*); for example, ABC*.  The asterisk (*) substitutes for any valid characters.  A generic name specifies all libraries with names that begin with the generic prefix, for which the user has authority.  If an asterisk is not included with the generic (prefix) name, the system assumes it to be the complete library name.  A maximum of 300 generic library names can be specified.
+</dd>
+
+<dt class="dlterm">
+<strong><em>name
+</em></strong></dt>
+
+<dd class="dlentry">
+Specify the names of the library to be saved and restored.  A maximum of 300 library names can be specified.
+</dd>
+
+</dl>
+
+</div>
+<div class="div" id="savrstlib__rmtlocname">
+<p>
+<strong>Remote location (RMTLOCNAME)
+</strong></p>
+
+<p>
+Specifies the target system and the type of connection used to connect to the target system.
+
+</p>
+
+<p>
+This is a required parameter.
+
+</p>
+
+<p>
+<strong>Element 1: Name or address
+</strong>
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><em>character-value
+</em></strong></dt>
+
+<dd class="dlentry">
+The syntax for this element is dependent on the value specified for the second element:
+<ul class="cds--list--unordered">
+<li class="cds--list__item">
+When the address type is *SNA, specify the name of the target system using the format nnnnnnnn.cccccccc, where nnnnnnnn is the network identifier (ID) and cccccccc is the remote location name.  If no network ID is specified, the network attributes are used to determine the default network ID.
+
+</li>
+
+<li class="cds--list__item">
+When the address type is *IP, specify a host name or an internet address to identify the target system.  Host names must follow these conventions:
+<ul class="cds--list--unordered cds--list--nested">
+<li class="cds--list__item">
+The first character must be either A through Z or 0 through 9.
+
+</li>
+
+<li class="cds--list__item">
+The last character must be either A through Z, 0 through 9, or a period (.).
+
+</li>
+
+<li class="cds--list__item">
+Blanks ( ) are not allowed.
+
+</li>
+
+<li class="cds--list__item">
+The special characters, period (.), underscore (_), and minus (-) are allowed.
+
+</li>
+
+<li class="cds--list__item">
+Parts of the name separated by periods (.) cannot exceed 63 characters in length.
+<p>
+<strong>Note:     
+</strong>Each part of the name separated by periods (.) must begin and end with an English alphabetic character or a numeric character.
+
+</p>
+
+
+</li>
+
+<li class="cds--list__item">
+Names must be from 1 to 255 characters in length.
+
+</li>
+
+</ul>
+
+<p>
+The IPv4 address is specified in the form 
+<u> nnn.nnn.nnn.nnn
+</u>  where 
+<u> nnn
+</u>  is a decimal number ranging from 0 through 255.  An IPv4 Internet address is not valid if it has a value of all binary ones or all binary zeros for the network identifier (ID) portion or the host ID portion of the address.
+
+</p>
+
+<p>
+The IPv6 address is specified in the form 
+<u> x:x:x:x:x:x:x:x
+</u>  where 
+<u> x
+</u>  is a hexadecimal number ranging from 0 through X'FFFF'.  "::" may be used once in the IPv6 address to indicate one or more groups of 16 bits of zeros.  The "::" may be used to compress leading, imbedded, or trailing zeros in the address.
+
+</p>
+
+<p>
+If the Internet address is entered from a command line, the address must be enclosed in single quotation marks.
+
+</p>
+
+
+</li>
+
+</ul>
+
+</dd>
+
+</dl>
+
+<p>
+<strong>Element 2: Type
+</strong>
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><u>*SNA
+</u></strong></dt>
+
+<dd class="dlentry">
+The target system is accessed using a Systems Network Architecture (SNA) address and protocol.
+</dd>
+
+<dt class="dlterm">
+<strong>*IP
+</strong></dt>
+
+<dd class="dlentry">
+The target system is found using a host name or an internet address over a TCP/IP connection.
+</dd>
+
+</dl>
+
+</div>
+<div class="div" id="savrstlib__rmtport">
+<p>
+<strong>Remote port (RMTPORT)
+</strong></p>
+
+<p>
+Specifies a certain port that an application on the remote server system is listening on (if it's other than a default port for ObjectConnect server).
+
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><u>*DFT
+</u></strong></dt>
+
+<dd class="dlentry">
+This default value uses the port configured in TCPIP service table.
+</dd>
+
+<dt class="dlterm">
+<strong><em>1-65534
+</em></strong></dt>
+
+<dd class="dlentry">
+Specify the port number to be used.  You should be aware of the specific port the remote server is listening on.  Otherwise, a port that is specified can result in the remote host rejecting the open attempt.
+</dd>
+
+</dl>
+
+</div>
+<div class="div" id="savrstlib__rmtuser">
+<p>
+<strong>Remote user ID (RMTUSER)
+</strong></p>
+
+<p>
+Specifies the user profile being sent to the remote server system.  If a profile is specified for this parameter and password security is active on the remote system, *NONE is not valid for the Remote password (RMTPWD) parameter.
+
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><u>*NONE
+</u></strong></dt>
+
+<dd class="dlentry">
+No user ID is sent. If authentication type on the remote system is configured to require a user ID, the command will fail.
+</dd>
+
+<dt class="dlterm">
+<strong>*CURRENT
+</strong></dt>
+
+<dd class="dlentry">
+The user profile of the job using this command is sent.
+</dd>
+
+<dt class="dlterm">
+<strong>*KERBEROS
+</strong></dt>
+
+<dd class="dlentry">
+Authentication occurs using Kerberos.  The default credentials cache file for the current user is used to locate existing Kerberos ticket-granting tickets.  The Add Kerberos Ticket (ADDKRBTKT) command or the Qshell kinit tool can be used to create or refresh expired tickets.
+<p>
+<strong>Note:     
+</strong>Kerberos needs to be configured on both systems for this authentication type to be used.
+
+</p>
+
+</dd>
+
+<dt class="dlterm">
+<strong><em>name
+</em></strong></dt>
+
+<dd class="dlentry">
+Specify the name of the user profile to use (that exists) on the remote system. If a profile is specified and password security is active on the remote system, a password must be specified, even if the profile specified is the same as the current profile.
+</dd>
+
+</dl>
+
+</div>
+<div class="div" id="savrstlib__rmtpwd">
+<p>
+<strong>Remote password (RMTPWD)
+</strong></p>
+
+<p>
+Specifies the password being sent to the remote system.
+
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><em>character-value
+</em></strong></dt>
+
+<dd class="dlentry">
+Specify a password to be sent to the remote system to verify the user specified for the RMTUSER parameter.
+<p>
+<strong>Note:     
+</strong>If specifying *KERBEROS in RMTUSER parameter, the RMTPWD parameter is ignored.
+
+</p>
+
+</dd>
+
+</dl>
+
+</div>
+<div class="div" id="savrstlib__output">
+<p>
+<strong>Output (OUTPUT)
+</strong></p>
+
+<p>
+Specifies whether information about the saved and restored objects is printed.
+
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><u>*NONE
+</u></strong></dt>
+
+<dd class="dlentry">
+No output is created.
+</dd>
+
+<dt class="dlterm">
+<strong>*PRINT
+</strong></dt>
+
+<dd class="dlentry">
+Information about the saved objects is printed with the spooled output of the job. Information about the restored objects is printed with the spooled output of the job at the remote location.
+</dd>
+
+</dl>
+
+</div>
+<div class="div" id="savrstlib__strlib">
+<p>
+<strong>Starting library (STRLIB)
+</strong></p>
+
+<p>
+Specifies the library with which to begin the *NONSYS, *IBM, or *ALLUSR save operation.
+
+</p>
+
+<p>
+<strong>Note:     
+</strong>This parameter is valid only if *NONSYS, *IBM, or *ALLUSR is specified on the 
+<strong>Library (LIB)
+</strong> parameter.
+
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><u>*FIRST
+</u></strong></dt>
+
+<dd class="dlentry">
+The save operation begins with the first library in alphabetical order.
+</dd>
+
+<dt class="dlterm">
+<strong><em>name
+</em></strong></dt>
+
+<dd class="dlentry">
+Specify the name of the library with which to begin the save operation.
+</dd>
+
+</dl>
+
+</div>
+<div class="div" id="savrstlib__omitlib">
+<p>
+<strong>Libraries to omit (OMITLIB)
+</strong></p>
+
+<p>
+Specifies the names of one of more libraries, or the generic names of each group of libraries, to be excluded from the save operation.
+
+</p>
+
+<p>
+<strong>Single values
+</strong>
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><u>*NONE
+</u></strong></dt>
+
+<dd class="dlentry">
+No libraries are excluded from the save operation.
+</dd>
+
+</dl>
+
+<p>
+<strong>Other values (up to 300 repetitions)
+</strong>
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><em>generic-name
+</em></strong></dt>
+
+<dd class="dlentry">
+Specify the generic name of the libraries to be excluded.  A generic name is a character string of one or more characters followed by an asterisk (*); for example, ABC*.  The asterisk (*) substitutes for any valid characters.  A generic name specifies all libraries with names that begin with the generic prefix, for which the user has authority.  If an asterisk is not included with the generic (prefix) name, the system assumes it to be the complete library name.
+</dd>
+
+<dt class="dlterm">
+<strong><em>name
+</em></strong></dt>
+
+<dd class="dlentry">
+Specify the name of the library to be excluded from the save operation.
+</dd>
+
+</dl>
+
+</div>
+<div class="div" id="savrstlib__omitobj">
+<p>
+<strong>Objects to omit (OMITOBJ)
+</strong></p>
+
+<p>
+Specifies the objects to be excluded from the operation. Up to 300 objects or generic object values can be specified.
+
+</p>
+
+<p>
+<strong>Element 1: Object
+</strong>
+</p>
+
+<p>
+<strong>Qualifier 1: Object
+</strong>
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><u>*NONE
+</u></strong></dt>
+
+<dd class="dlentry">
+No objects are excluded from the operation.
+</dd>
+
+<dt class="dlterm">
+<strong>*ALL
+</strong></dt>
+
+<dd class="dlentry">
+All objects of the specified object type are excluded from the operation.
+</dd>
+
+<dt class="dlterm">
+<strong><em>generic-name
+</em></strong></dt>
+
+<dd class="dlentry">
+Specify the generic name of the objects to be excluded.
+<p>
+<strong>Note:     
+</strong>A generic name is specified as a character string that contains one or more characters followed by an asterisk (*).  If a generic name is specified, then all objects that have names with the same prefix as the generic object name are selected.
+
+</p>
+
+</dd>
+
+<dt class="dlterm">
+<strong><em>name
+</em></strong></dt>
+
+<dd class="dlentry">
+Specify the name of the object to be excluded from the operation.
+</dd>
+
+</dl>
+
+<p>
+<strong>Qualifier 2: Library
+</strong>
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><u>*ALL
+</u></strong></dt>
+
+<dd class="dlentry">
+The specified objects are excluded from all libraries that are part of the operation.
+</dd>
+
+<dt class="dlterm">
+<strong><em>generic-name
+</em></strong></dt>
+
+<dd class="dlentry">
+Specify the generic name of the libraries that contain objects to be excluded.
+<p>
+<strong>Note:     
+</strong>A generic name is specified as a character string that contains one or more characters followed by an asterisk (*).  If a generic name is specified, then all objects that have names with the same prefix as the generic object name are selected.
+
+</p>
+
+</dd>
+
+<dt class="dlterm">
+<strong><em>name
+</em></strong></dt>
+
+<dd class="dlentry">
+Specify the name of the library that contains the object to be excluded from the operation.
+</dd>
+
+</dl>
+
+<p>
+<strong>Element 2: Object type
+</strong>
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><u>*ALL
+</u></strong></dt>
+
+<dd class="dlentry">
+All object types are excluded from the operation, depending on the value specified for the object name.
+</dd>
+
+<dt class="dlterm">
+<strong><em>character-value
+</em></strong></dt>
+
+<dd class="dlentry">
+Specify the object type of the objects to be excluded from the operation.
+<p>
+To see a complete list of object types when prompting this command, position the cursor on the field for this parameter and press F4 (Prompt).  For a description of the object types, see "Object types" in the CL topic collection in the Programming category in the IBM i Information Center at http://www.ibm.com/systems/i/infocenter/.
+
+</p>
+
+</dd>
+
+</dl>
+
+</div>
+<div class="div" id="savrstlib__select">
+<p>
+<strong>Select (SELECT)
+</strong></p>
+
+<p>
+Specifies the selection criteria for the objects to be saved.  You can select from objects in libraries specified for the 
+<strong>Library (LIB)
+</strong> parameter.
+
+</p>
+
+<p>
+<strong>Element 1: Include or omit 
+</strong>
+</p>
+
+<p>
+Specifies whether the selected objects should be included or omitted from the save operation.
+
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><u>*INCLUDE
+</u></strong></dt>
+
+<dd class="dlentry">
+The selected objects are saved, unless overridden by an *OMIT specification, or unless omitted by the 
+<strong>Libraries to omit (OMITLIB)
+</strong> parameter or the 
+<strong>Objects to omit (OMITOBJ)
+</strong> parameter.
+</dd>
+
+<dt class="dlterm">
+<strong>*OMIT
+</strong></dt>
+
+<dd class="dlentry">
+The selected objects are not included in the save operation.
+</dd>
+
+</dl>
+
+<p>
+<strong>Element 2: Object
+</strong>
+</p>
+
+<p>
+<strong>Qualifier 1: Object
+</strong>
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><u>*ALL
+</u></strong></dt>
+
+<dd class="dlentry">
+All object names are selected.
+</dd>
+
+<dt class="dlterm">
+<strong><em>generic-name
+</em></strong></dt>
+
+<dd class="dlentry">
+Specify the generic name of the objects to be selected.
+<p>
+<strong>Note:     
+</strong>A generic name is specified as a character string that contains one or more characters followed by an asterisk (*).  If a generic name is specified, then all objects that have names with the same prefix as the generic object name are selected.
+
+</p>
+
+</dd>
+
+<dt class="dlterm">
+<strong><em>name
+</em></strong></dt>
+
+<dd class="dlentry">
+Specify the name of the object to be selected.
+</dd>
+
+</dl>
+
+<p>
+<strong>Qualifier 2: Library
+</strong>
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><u>*ALL
+</u></strong></dt>
+
+<dd class="dlentry">
+All library names specified for the 
+<strong>Library (LIB)
+</strong> parameter are selected.
+</dd>
+
+<dt class="dlterm">
+<strong><em>generic-name
+</em></strong></dt>
+
+<dd class="dlentry">
+Specify the generic name of the libraries to be selected.
+</dd>
+
+<dt class="dlterm">
+<strong><em>name
+</em></strong></dt>
+
+<dd class="dlentry">
+Specify the name of the library to be selected.
+</dd>
+
+</dl>
+
+<p>
+<strong>Element 3: Object type
+</strong>
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><u>*ALL
+</u></strong></dt>
+
+<dd class="dlentry">
+All object types are selected.
+</dd>
+
+<dt class="dlterm">
+<strong><em>character-value
+</em></strong></dt>
+
+<dd class="dlentry">
+Specify the object type to be selected.
+<p>
+To see a complete list of object types when prompting this command, position the cursor on the field for this parameter and press F4 (Prompt).  For a description of the object types, see "Object types" in the CL topic collection in the Programming category in the IBM i Information Center at http://www.ibm.com/systems/i/infocenter/.
+
+</p>
+
+</dd>
+
+</dl>
+
+<p>
+<strong>Element 4: Object attribute
+</strong>
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><u>*ALL
+</u></strong></dt>
+
+<dd class="dlentry">
+All object attributes are selected.
+</dd>
+
+<dt class="dlterm">
+<strong>*BLANK
+</strong></dt>
+
+<dd class="dlentry">
+Only objects that have no attribute value are selected.
+</dd>
+
+<dt class="dlterm">
+<strong><em>attribute-value
+</em></strong></dt>
+
+<dd class="dlentry">
+Specify the attribute of the objects to be selected.
+</dd>
+
+<dt class="dlterm">
+<strong><em>generic-attribute-value
+</em></strong></dt>
+
+<dd class="dlentry">
+Specify the generic attribute of the objects to be selected.
+</dd>
+
+</dl>
+
+<p>
+<strong>Element 5: File member
+</strong>
+</p>
+
+<p>
+Specifies the database file members to select.
+
+</p>
+
+<p>
+If *ALL is specified, the objects selected by the previous elements are included or omitted.
+
+</p>
+
+<p>
+If any value other than *ALL is specified, the objects selected by the previous elements are included, even if the objects are not database files.  If the objects selected are database files, the file members selected are included or omitted.
+
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><u>*ALL
+</u></strong></dt>
+
+<dd class="dlentry">
+All file members are selected.  For an *OMIT specification, the selected file or object is also omitted.
+</dd>
+
+<dt class="dlterm">
+<strong>*ALLMBR
+</strong></dt>
+
+<dd class="dlentry">
+All file members are selected.  For an *OMIT specification, the selected file or object is included and all file members are omitted.
+</dd>
+
+<dt class="dlterm">
+<strong><em>generic-name
+</em></strong></dt>
+
+<dd class="dlentry">
+Specify the generic name of the file members to be selected.  The selected file or object is included even if it does not contain the specified members.
+</dd>
+
+<dt class="dlterm">
+<strong><em>name
+</em></strong></dt>
+
+<dd class="dlentry">
+Specify the name of the file member to be selected.  The selected file or object is included even if it does not contain the specified member.
+</dd>
+
+</dl>
+
+</div>
+<div class="div" id="savrstlib__aspdev">
+<p>
+<strong>ASP device (ASPDEV)
+</strong></p>
+
+<p>
+Specifies the auxiliary storage pool (ASP) device to be included in the save operation.  This parameter is used to subset the list of objects which qualify for the SAV based on the OBJ parameter.
+
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><u>*
+</u></strong></dt>
+
+<dd class="dlentry">
+The operation includes the system ASP (ASP number 1), all basic user ASPs (ASP numbers 2-32), and, if the current thread has an ASP group, all independent ASPs in the ASP group.
+</dd>
+
+<dt class="dlterm">
+<strong>*SYSBAS
+</strong></dt>
+
+<dd class="dlentry">
+The system ASP and all basic user ASPs are included in the save operation.
+</dd>
+
+<dt class="dlterm">
+<strong>*CURASPGRP
+</strong></dt>
+
+<dd class="dlentry">
+If the current thread has an ASP group, all independent ASPs in the ASP group are included in the save operation.
+</dd>
+
+<dt class="dlterm">
+<strong><em>name
+</em></strong></dt>
+
+<dd class="dlentry">
+Specify the name of the ASP device to be included in the save operation.
+</dd>
+
+</dl>
+
+</div>
+<div class="div" id="savrstlib__tgtrls">
+<p>
+<strong>Target release (TGTRLS)
+</strong></p>
+
+<p>
+Specifies the release level of the operating system on which you intend to use the object being saved.
+
+</p>
+
+<p>
+When specifying the 
+<strong>target-release
+</strong> value, the format VxRxMx is used to specify the release, where Vx is the version, Rx is the release, and Mx is the modification level.  For example, V5R3M0 is version 5, release 3, modification 0.
+
+</p>
+
+<p>
+Valid values depend on the current version, release, and modification level of the operating system, and they change with each new release.  You can press F4 while prompting this command parameter to see a list of valid target release values.
+
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><u>*CURRENT
+</u></strong></dt>
+
+<dd class="dlentry">
+The object is to be restored to, and used on, the release of the operating system currently running on your system.  The object can also be restored to a system with any subsequent release of the operating system installed.
+</dd>
+
+<dt class="dlterm">
+<strong>*PRV
+</strong></dt>
+
+<dd class="dlentry">
+The object is to be restored to the previous release with modification level 0 of the operating system.  The object can also be restored to a system with any subsequent release of the operating system installed.
+</dd>
+
+<dt class="dlterm">
+<strong><em>character-value
+</em></strong></dt>
+
+<dd class="dlentry">
+Specify the release in the format VxRxMx.  The object can be restored to a system with the specified release or with any subsequent release of the operating system installed.
+</dd>
+
+</dl>
+
+</div>
+<div class="div" id="savrstlib__prechk">
+<p>
+<strong>Object pre-check (PRECHK)
+</strong></p>
+
+<p>
+Specifies whether the save operation for a library ends if any of the following are true:
+
+</p>
+
+<ol class="cds--list--ordered--temporary">
+<li class="cds--list__item">
+The objects do not exist
+
+</li>
+
+<li class="cds--list__item">
+The library or the objects were previously found to be damaged
+
+</li>
+
+<li class="cds--list__item">
+The library or the objects are locked by another job
+
+</li>
+
+<li class="cds--list__item">
+The requester of the save operation does not have authority for the library or to save the objects.
+
+</li>
+
+
+</ol>
+
+<dl>
+<dt class="dlterm">
+<strong><u>*NO
+</u></strong></dt>
+
+<dd class="dlentry">
+The save operation for a library continues, saving only those objects that can be saved.
+</dd>
+
+<dt class="dlterm">
+<strong>*YES
+</strong></dt>
+
+<dd class="dlentry">
+If, after all specified objects are checked, one or more objects cannot be saved, the save operation for a library ends before any data is written.  If multiple libraries are specified, the save operation continues with the next library.  However, if PRECHK(*YES) and SAVACT(*SYNCLIB) are specified and an object in any library to be saved does not meet the preliminary check conditions, the save operation ends and no objects are saved.
+</dd>
+
+</dl>
+
+</div>
+<div class="div" id="savrstlib__savact">
+<p>
+<strong>Save active (SAVACT)
+</strong></p>
+
+<p>
+Specifies whether an object can be updated while it is being saved.
+
+</p>
+
+<p>
+<strong>Note:     
+</strong>If your system is in a restricted state and the SAVACT parameter is specified, the save operation is performed as if SAVACT(*NO) was specified.
+
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><u>*NO
+</u></strong></dt>
+
+<dd class="dlentry">
+Objects that are in use are not saved.  Objects cannot be updated while being saved.
+</dd>
+
+<dt class="dlterm">
+<strong>*LIB
+</strong></dt>
+
+<dd class="dlentry">
+Objects in a library can be saved while they are in use by another job. All the objects in a library reach a checkpoint together and are saved in a consistent state in relationship to each other.
+</dd>
+
+<dt class="dlterm">
+<strong>*SYSDFN
+</strong></dt>
+
+<dd class="dlentry">
+Objects in a library can be saved while they are in use by another job. Objects in a library may reach checkpoints at different times and may not be in a consistent state in relationship to each other.
+</dd>
+
+</dl>
+
+</div>
+<div class="div" id="savrstlib__savactwait">
+<p>
+<strong>Save active wait time (SAVACTWAIT)
+</strong></p>
+
+<p>
+Specifies the amount of time to wait for an object that is in use, or for transactions with pending changes to reach a commit boundary, before continuing the save operation.
+
+</p>
+
+<p>
+<strong>Element 1: Object locks
+</strong>
+</p>
+
+<p>
+For each object that is in use, specifies the amount of time to wait for the object to become available.  If an object remains in use for the specified time, the object is not saved.
+
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><u>120
+</u></strong></dt>
+
+<dd class="dlentry">
+The system waits up to 120 seconds for each individual object lock before continuing the save operation.
+</dd>
+
+<dt class="dlterm">
+<strong>*NOMAX
+</strong></dt>
+
+<dd class="dlentry">
+No maximum wait time exists.
+</dd>
+
+<dt class="dlterm">
+<strong><em>0-99999
+</em></strong></dt>
+
+<dd class="dlentry">
+Specify the number of seconds to wait for each individual object lock before continuing the save operation.
+</dd>
+
+</dl>
+
+<p>
+<strong>Element 2: Pending record changes
+</strong>
+</p>
+
+<p>
+For each group of objects that are checkpointed together, specifies the amount of time to wait for transactions with pending record changes to reach a commit boundary.  The 
+<strong>Save active (SAVACT)
+</strong> parameter determines which objects are checkpointed together.  If 0 is specified, all objects being saved must be at commit boundaries.  If any other value is specified, all objects that are journaled to the same journals as the objects being saved must reach commit boundaries.  If a commit boundary is not reached in the specified time, the save operation is ended, unless the value *NOCMTBDY is specified.
+
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><u>*LOCKWAIT
+</u></strong></dt>
+
+<dd class="dlentry">
+The system waits up to the value specified for Element 1 for transactions with pending record changes to reach a commit boundary.
+</dd>
+
+<dt class="dlterm">
+<strong>*NOCMTBDY
+</strong></dt>
+
+<dd class="dlentry">
+The system will save objects without requiring transactions with pending record changes to reach a commit boundary.  Therefore, objects may be saved with partial transactions.
+<p>
+If you restore an object that was saved with partial transactions, you cannot use the object until you apply or remove journal changes (APYJRNCHG or RMVJRNCHG command) to reach commit boundaries.  You will need all journal receivers that contain information about the partial transactions to apply or remove the changes.  Until you apply or remove the changes, any future save of that object will include the partial transactions, even if you do not specify *NOCMTBDY.
+
+</p>
+
+</dd>
+
+<dt class="dlterm">
+<strong>*NOMAX
+</strong></dt>
+
+<dd class="dlentry">
+No maximum wait time exists.
+</dd>
+
+<dt class="dlterm">
+<strong><em>0-99999
+</em></strong></dt>
+
+<dd class="dlentry">
+Specify the number of seconds to wait for transactions with pending record changes to reach a commit boundary.
+</dd>
+
+</dl>
+
+<p>
+<strong>Element 3: Other pending changes
+</strong>
+</p>
+
+<p>
+For each library, specifies the amount of time to wait for transactions with other pending changes to reach a commit boundary.  Other pending changes include the following:
+
+</p>
+
+<ul class="cds--list--unordered">
+<li class="cds--list__item">
+Data Definition Language (DDL) object level changes for that library.
+
+</li>
+
+<li class="cds--list__item">
+Any API commitment resource that was added without the option to allow normal save processing.  For more information, see the Add Commitment Resource (QTNADDCR) API in the APIs topic collection in the Programming category in the IBM i Information Center at http://www.ibm.com/systems/i/infocenter/.
+
+</li>
+
+</ul>
+
+<p>
+If a commit boundary is not reached for a library in the specified time, the library is not saved.
+
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><u>*LOCKWAIT
+</u></strong></dt>
+
+<dd class="dlentry">
+The system waits up to the value specified for Element 1 for the types of transactions that are listed above to reach a commit boundary.
+</dd>
+
+<dt class="dlterm">
+<strong>*NOMAX
+</strong></dt>
+
+<dd class="dlentry">
+No maximum wait time exists.
+</dd>
+
+<dt class="dlterm">
+<strong><em>0-99999
+</em></strong></dt>
+
+<dd class="dlentry">
+Specify the number of seconds to wait for the types of transactions that are listed above to reach a commit boundary.
+</dd>
+
+</dl>
+
+</div>
+<div class="div" id="savrstlib__savactmsgq">
+<p>
+<strong>Save active message queue (SAVACTMSGQ)
+</strong></p>
+
+<p>
+Specifies the message queue that the save operation uses to notify the user that the checkpoint processing for a library is complete.  A separate message is sent for each library to be saved when the *SYSDFN or *LIB value is specified for the 
+<strong>Save active (SAVACT)
+</strong> parameter.  When *SYNCLIB is specified for the SAVACT parameter, one message is sent for all libraries in the save operation.
+
+</p>
+
+<p>
+This parameter can be used to save the objects at a known, consistent boundary to avoid additional recovery procedures following a restore operation.  Applications can be stopped until the checkpoint processing complete message is received.
+
+</p>
+
+<p>
+<strong>Single values
+</strong>
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><u>*NONE
+</u></strong></dt>
+
+<dd class="dlentry">
+No notification message is sent.
+</dd>
+
+<dt class="dlterm">
+<strong>*WRKSTN
+</strong></dt>
+
+<dd class="dlentry">
+The notification message is sent to the work station message queue.  This value is not valid in batch mode.
+</dd>
+
+</dl>
+
+<p>
+<strong>Qualifier 1: Save active message queue
+</strong>
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><em>name
+</em></strong></dt>
+
+<dd class="dlentry">
+Specify the name of the message queue to be used.
+</dd>
+
+</dl>
+
+<p>
+<strong>Qualifier 2: Library
+</strong>
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><u>*LIBL
+</u></strong></dt>
+
+<dd class="dlentry">
+All libraries in the library list for the current thread are searched until the first match is found.
+</dd>
+
+</dl>
+
+<dl>
+<dt class="dlterm">
+<strong>*CURLIB
+</strong></dt>
+
+<dd class="dlentry">
+The current library for the job is used to locate the message queue.  If no library is specified as the current library for the job, the QGPL library is used.
+</dd>
+
+<dt class="dlterm">
+<strong><em>name
+</em></strong></dt>
+
+<dd class="dlentry">
+Specify the name of the library where the message queue is located.
+</dd>
+
+</dl>
+
+</div>
+<div class="div" id="savrstlib__accpth">
+<p>
+<strong>Save access paths (ACCPTH)
+</strong></p>
+
+<p>
+Specifies whether the logical file access paths that are dependent on the physical files being saved are also saved.  The access paths are saved only in the case of the following:
+
+</p>
+
+<ul class="cds--list--unordered">
+<li class="cds--list__item">
+All members on which the access paths are built are included in this save operation.
+
+</li>
+
+<li class="cds--list__item">
+The access paths are not invalid or damaged at the time of the save.
+
+</li>
+
+</ul>
+
+<p>
+The system checks to ensure the integrity of the access paths.  Any discrepancies found by the system will result in the access paths being rebuilt.
+
+</p>
+
+<p>
+Informational messages are sent indicating the number of logical file access paths saved with each physical file.  All physical files on which an access path is built must be in the same library.  This parameter does not save logical file objects; it only controls the saving of the access paths.  More information on the restoring of saved access paths is in the Recovering your system book, SC41-5304.
+
+</p>
+
+<p>
+<strong>ATTENTION: If the based-on physical files and the logical files are in different libraries, the access paths are saved.  However, if the logical files and the based-on physical files are in different libraries and the logical files or physical files do not exist at restore time (such as during disaster recovery or the files were deleted) the access paths are not restored.  They are rebuilt.  For the fastest possible restore operation for logical files, the logical files and the based-on physical files must be in the same library and must be saved at the same time.
+</strong>
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><u>*SYSVAL
+</u></strong></dt>
+
+<dd class="dlentry">
+The QSAVACCPTH system value determines whether to save the logical file access paths that are dependent on the physical files that are being saved.
+</dd>
+
+<dt class="dlterm">
+<strong>*NO
+</strong></dt>
+
+<dd class="dlentry">
+Only those objects specified on the command are saved.  No logical file access paths are saved.
+</dd>
+
+<dt class="dlterm">
+<strong>*YES
+</strong></dt>
+
+<dd class="dlentry">
+The specified physical files and all eligible logical file access paths over them are saved.
+<p>
+<strong>Note:     
+</strong>Specifying this value does not save the logical files.
+
+</p>
+
+</dd>
+
+</dl>
+
+</div>
+<div class="div" id="savrstlib__savfdta">
+<p>
+<strong>Save file data (SAVFDTA)
+</strong></p>
+
+<p>
+Specifies, for save file objects, whether the description of a save file, or both the description and the contents of a save file, are saved.
+
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><u>*YES
+</u></strong></dt>
+
+<dd class="dlentry">
+The description and contents of a save file are saved.
+</dd>
+
+<dt class="dlterm">
+<strong>*NO
+</strong></dt>
+
+<dd class="dlentry">
+Only the description of a save file is saved.
+</dd>
+
+</dl>
+
+</div>
+<div class="div" id="savrstlib__splfdta">
+<p>
+<strong>Spooled file data (SPLFDTA)
+</strong></p>
+
+<p>
+Specifies whether to save spooled file data and attributes for output queues that are saved.
+
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><u>*NONE
+</u></strong></dt>
+
+<dd class="dlentry">
+No spooled file data is saved.
+</dd>
+
+<dt class="dlterm">
+<strong>*ALL
+</strong></dt>
+
+<dd class="dlentry">
+For each output queue that is saved, all available spooled file data on the output queue is saved.
+</dd>
+
+</dl>
+
+</div>
+<div class="div" id="savrstlib__qdta">
+<p>
+<strong>Queue data (QDTA)
+</strong></p>
+
+<p>
+Specifies, for queue objects, whether the description of a queue, or both the description and the contents of a queue, are saved.
+
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><u>*NONE
+</u></strong></dt>
+
+<dd class="dlentry">
+Only the description of a queue is saved.
+</dd>
+
+<dt class="dlterm">
+<strong>*DTAQ
+</strong></dt>
+
+<dd class="dlentry">
+The description and contents of a standard data queue are saved.  Only the description of a Distributed Data Management (DDM) data queue is saved.
+</dd>
+
+</dl>
+
+</div>
+<div class="div" id="savrstlib__pvtaut">
+<p>
+<strong>Private authorities (PVTAUT)
+</strong></p>
+
+<p>
+Specifies whether to save and restore private authorities with the objects that are saved and restored.
+
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><u>*NO
+</u></strong></dt>
+
+<dd class="dlentry">
+No private authorities are saved or restored.
+</dd>
+
+<dt class="dlterm">
+<strong>*YES
+</strong></dt>
+
+<dd class="dlentry">
+Private authorities are saved and restored with the objects.
+<p>
+<strong>Note:     
+</strong>You must have save system (*SAVSYS) or all object (*ALLOBJ) special authority on the system from which objects are being saved, and *ALLOBJ special authority on the restore system, to specify this value.
+
+</p>
+
+</dd>
+
+</dl>
+
+</div>
+<div class="div" id="savrstlib__stg">
+<p>
+<strong>Storage (STG)
+</strong></p>
+
+<p>
+Specifies whether the system storage that is occupied by the data portion of the specified members (except for save files), modules, programs, service programs, Structured Query Language (SQL) packages, and journal receivers in the library being saved is freed as part of the save operation.  Only the data portion of the objects is freed, not the descriptions of the objects.
+
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><u>*KEEP
+</u></strong></dt>
+
+<dd class="dlentry">
+The storage occupied by the data portion of the objects being saved is not freed.
+</dd>
+
+<dt class="dlterm">
+<strong>*FREE
+</strong></dt>
+
+<dd class="dlentry">
+The storage occupied by the data portion of the specified objects being saved is freed as part of the save operation.  The storage for all the objects in a library is freed only after all the objects in that library are saved successfully.
+<p>
+<strong>Note:     
+</strong>To prevent the possible abnormal end of a program, the program being saved must not be running in the system when *FREE is specified.
+
+</p>
+
+</dd>
+
+</dl>
+
+</div>
+<div class="div" id="savrstlib__option">
+<p>
+<strong>Option (OPTION)
+</strong></p>
+
+<p>
+Specifies how to handle restoring each object.
+
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><u>*ALL
+</u></strong></dt>
+
+<dd class="dlentry">
+All the objects in the saved library are restored to the library.  Objects in the saved library replace the current versions in the system library.  Objects not having a current version are added to the system library.  Objects presently in the library, but not on the media, remain in the library.
+</dd>
+
+<dt class="dlterm">
+<strong>*NEW
+</strong></dt>
+
+<dd class="dlentry">
+Only the objects in the saved library that do not exist in the current version of the system library are added to the library.  Only objects not known to the system library are restored;  known objects are not restored.  This option restores objects that were deleted after they were saved or that are new to this library.  If any saved objects have a version already in the system library, they are not restored, and an informational message is sent for each one, but the restore operation continues.
+</dd>
+
+<dt class="dlterm">
+<strong>*OLD
+</strong></dt>
+
+<dd class="dlentry">
+Only the objects in the library having a saved version are restored; that is, the version of each object currently in the library is replaced by the saved version.  Only objects known to the library are restored.  If any saved objects are no longer part of the online version of the library, they are not added to the library;  an informational message is sent for each one, but the restore continues.
+</dd>
+
+<dt class="dlterm">
+<strong>*FREE
+</strong></dt>
+
+<dd class="dlentry">
+The saved objects are restored only if they exist in the system library with their space freed.  The saved version of each object is restored on the system in its previously freed space.  This option restores objects that had their space freed when they were saved.  If any saved objects are no longer part of the current version of the library, or if the space is not free for any object, the object is not restored and an informational message is sent for each one.  The restore operation continues, and all of the freed objects are restored.
+</dd>
+
+</dl>
+
+</div>
+<div class="div" id="savrstlib__mbropt">
+<p>
+<strong>Data base member option (MBROPT)
+</strong></p>
+
+<p>
+Specifies, for database files that exist on the system, which members are restored.  If *MATCH is used, the member list in the saved file must match, member for member, the current version on the system.  All members are restored for files that do not exist, if the file is restored.
+
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><u>*MATCH
+</u></strong></dt>
+
+<dd class="dlentry">
+The saved members are restored if the lists of the members where they exist match, member for member, the lists of the current system version.  MBROPT(*MATCH) is not valid when *ALL is specified for the 
+<strong>Allow object differences (ALWOBJDIF)
+</strong> parameter.
+</dd>
+
+<dt class="dlterm">
+<strong>*ALL
+</strong></dt>
+
+<dd class="dlentry">
+All members in the saved file are restored.
+</dd>
+
+<dt class="dlterm">
+<strong>*NEW
+</strong></dt>
+
+<dd class="dlentry">
+Only new members (members not known to the system) are restored.
+</dd>
+
+<dt class="dlterm">
+<strong>*OLD
+</strong></dt>
+
+<dd class="dlentry">
+Only members already known to the system are restored.
+</dd>
+
+</dl>
+
+</div>
+<div class="div" id="savrstlib__alwobjdif">
+<p>
+<strong>Allow object differences (ALWOBJDIF)
+</strong></p>
+
+<p>
+Specifies whether differences are allowed between the saved objects and the restored objects.
+
+</p>
+
+<p>
+<strong>Notes:
+</strong>
+</p>
+
+<ol class="cds--list--ordered--temporary">
+<li class="cds--list__item">
+You must have all object (*ALLOBJ) special authority to specify any value other than *NONE for this parameter.
+
+</li>
+
+<li class="cds--list__item">
+If differences are found, the final message for the restore operation is an escape message rather than the normal completion message.
+
+</li>
+
+
+</ol>
+
+<p>
+The types of differences include:
+
+</p>
+
+<ul class="cds--list--unordered">
+<li class="cds--list__item">
+Authorization list:  The saved object had an authorization list, and either the object exists on the system but does not have the same authorization list, or the object does not exist and it is being restored to a different system than the save system.
+<p>
+<strong>Note:     
+</strong>This parameter has no effect when the saved object did not have an authorization list. If the object exists, it is restored with the authorization list of the existing object. If it does not exist, it is restored with no authorization list.
+
+</p>
+
+
+</li>
+
+</ul>
+
+<ul class="cds--list--unordered">
+<li class="cds--list__item">
+File level id:  The creation date and time of the database file on the system does not match the creation date and time of the file that was saved.
+
+</li>
+
+</ul>
+
+<ul class="cds--list--unordered">
+<li class="cds--list__item">
+Member level id:  The creation date and time of the database file member on the system does not match the creation date and time of the member that was saved.
+
+</li>
+
+</ul>
+
+<ul class="cds--list--unordered">
+<li class="cds--list__item">
+Ownership:  The owner of an object on the system is different than the owner of an object from the save operation.
+
+</li>
+
+</ul>
+
+<ul class="cds--list--unordered">
+<li class="cds--list__item">
+Primary Group:  The primary group of an object on the system is different than the primary group of an object from the save operation.
+
+</li>
+
+</ul>
+
+<p>
+<strong>Single values
+</strong>
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><u>*NONE
+</u></strong></dt>
+
+<dd class="dlentry">
+None of the differences listed above are allowed on the restore operation.  See the description of each individual value to determine how differences are handled.
+</dd>
+
+</dl>
+
+<dl>
+<dt class="dlterm">
+<strong>*COMPATIBLE
+</strong></dt>
+
+<dd class="dlentry">
+All of the differences listed above are allowed on the restore operation.  See the description of each individual value to determine how differences are handled.  This value allows differences that are compatible with existing physical database files.  This value also allows file level differences with existing logical database files.  This value is usually preferable to the value *ALL, which also allows differences that are not compatible with existing database files.
+</dd>
+
+<dt class="dlterm">
+<strong>*ALL
+</strong></dt>
+
+<dd class="dlentry">
+All of the differences listed above are allowed on the restore operation.  File level id and member level id differences are handled differently than the *FILELVL value.  If there is a file level difference and *ALL is specified for the 
+<strong>Data base member option (MBROPT)
+</strong> parameter, the existing version of the file is renamed and the saved version of the file is restored.  If there is a member level difference, the existing version of  the member is renamed and the saved version of the member is restored.  This value will restore the saved data, but the result may not be correct.  You will need to choose whether the restored data or the renamed data is correct, and you will need to make the necessary corrections to the database.  For other differences, see the description of each individual value to determine how differences are handled.
+</dd>
+
+</dl>
+
+<p>
+<strong>Other values (up to 4 repetitions)
+</strong>
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong>*AUTL
+</strong></dt>
+
+<dd class="dlentry">
+Authorization list differences are allowed.  If the saved object had an authorization list and the object exists on the system but does not have the same authorization list, the object is restored with the authorization list of the existing object.  If the saved object had an authorization list and the object does not exist and it is being restored to a different system than the save system, the object is restored and it is linked to the authorization list.  If the authorization list does not exist, the public authority is set to *EXCLUDE.
+<p>
+If this value is not specified, authorization list differences are not allowed.  If the saved object had an authorization list and the object exists on the system but does not have the same authorization list, the object is not restored.  If the saved object had an authorization list and the object does not exist and it is being restored to a different system than the save system, the object is restored, but it is not linked to the authorization list, and the public authority is set to *EXCLUDE.
+
+</p>
+
+</dd>
+
+</dl>
+
+<dl>
+<dt class="dlterm">
+<strong>*FILELVL
+</strong></dt>
+
+<dd class="dlentry">
+File level id and member level id differences are allowed.  An attempt will be made to restore existing physical files even though the physical file on the save media may have a different file level id or member level id than the physical file on the system.  The physical file data will only be restored for those physical files whose format level identifiers on the save media match the format level identifiers of the corresponding physical file on the system.
+<p>
+If this value is not specified, file level id and member level id differences are not allowed.  If an object already exists on the system with a different file level id or member level id than the saved object, the object is not restored.
+
+</p>
+
+</dd>
+
+</dl>
+
+<dl>
+<dt class="dlterm">
+<strong>*OWNER
+</strong></dt>
+
+<dd class="dlentry">
+Ownership differences are allowed.  If an object already exists on the system with a different owner than the saved object, the object is restored with the owner of the object on the system.
+<p>
+If this value is not specified, ownership differences are not allowed.  If an object already exists on the system with a different owner than the saved object, the object is not restored.
+
+</p>
+
+</dd>
+
+</dl>
+
+<dl>
+<dt class="dlterm">
+<strong>*PGP
+</strong></dt>
+
+<dd class="dlentry">
+Primary group differences are allowed.  If an object already exists on the system with a different primary group than the saved object, the object is restored with the primary group of the object on the system.
+<p>
+If this value is not specified, primary group differences are not allowed.  If an object already exists on the system with a different primary group than the saved object, the object is not restored.
+
+</p>
+
+</dd>
+
+</dl>
+
+</div>
+<div class="div" id="savrstlib__rstlib">
+<p>
+<strong>Restore to library (RSTLIB)
+</strong></p>
+
+<p>
+Specifies whether the library contents are restored to the same library from which they were saved, or to a different library.  If a different library is specified, you cannot specify *NONSYS, *ALLUSR, or *IBM for the 
+<strong>Library (LIB)
+</strong> parameter.
+
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><u>*LIB
+</u></strong></dt>
+
+<dd class="dlentry">
+The library contents are restored to the same library or libraries from which they were saved.
+</dd>
+
+<dt class="dlterm">
+<strong><em>name
+</em></strong></dt>
+
+<dd class="dlentry">
+Specify the name of the library where the saved library contents are being restored.  If *NONSYS, *ALLUSR, or *IBM is specified on the LIB parameter, a library name cannot be specified on this parameter.
+<p>
+<strong>Note:     
+</strong>If an SQL database is restored to a library other than the one in which it was saved, the journals are not restored.
+
+</p>
+
+</dd>
+
+</dl>
+
+</div>
+<div class="div" id="savrstlib__rstaspdev">
+<p>
+<strong>Restore to ASP device (RSTASPDEV)
+</strong></p>
+
+<p>
+Specifies the auxiliary storage pool (ASP) device to which the data is to be restored.
+
+</p>
+
+<p>
+<strong>Note:     
+</strong>You can specify either the RSTASPDEV parameter or the RSTASP parameter, but not both.
+
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><u>*SAVASPDEV
+</u></strong></dt>
+
+<dd class="dlentry">
+The data is restored to the same ASP from which it was saved.
+</dd>
+
+<dt class="dlterm">
+<strong><em>name
+</em></strong></dt>
+
+<dd class="dlentry">
+Specify the name of the ASP device to be used.
+</dd>
+
+</dl>
+
+</div>
+<div class="div" id="savrstlib__rstasp">
+<p>
+<strong>Restore to ASP number (RSTASP)
+</strong></p>
+
+<p>
+Specifies whether objects are restored to the auxiliary storage pool (ASP) from which they were saved or to the system ASP (ASP number 1) or to a basic user ASP (ASP numbers 2 through 32).
+
+</p>
+
+<p>
+Some objects cannot be restored to user ASPs.  More information about object types which can be restored to user ASPs is in the Recovering your system book, SC41-5304.  If the library exists in, or is being restored to the system ASP, journals, journal receivers, and save files can be restored to basic user ASPs.  All other object types will be restored to the ASP of the library.
+
+</p>
+
+<p>
+<strong>ATTENTION: System or product libraries (libraries that begin with a Q or #) must not be created in or restored to a user ASP.  Doing so can cause unpredictable results.
+</strong>
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><u>*SAVASP
+</u></strong></dt>
+
+<dd class="dlentry">
+The objects are restored to the ASP from which they were saved.
+</dd>
+
+<dt class="dlterm">
+<strong><em>1-32
+</em></strong></dt>
+
+<dd class="dlentry">
+Specifies the ASP number.  When the specified ASP is 1, the specified objects are restored to the system ASP, and when the specified ASP is 2 through 32, the objects are restored to the basic user ASP specified.
+</dd>
+
+</dl>
+
+</div>
+<div class="div" id="savrstlib__frcobjcvn">
+<p>
+<strong>Force object conversion (FRCOBJCVN)
+</strong></p>
+
+<p>
+Specifies whether to convert user objects to the format required for use in the current version of the operating system, or to be compatible with the current machine, when the objects are restored.
+
+</p>
+
+<p>
+<strong>Notes:
+</strong>
+</p>
+
+<ol class="cds--list--ordered--temporary">
+<li class="cds--list__item">
+This parameter applies only to user objects of the *MODULE, *PGM, *SRVPGM, and *SQLPKG object types.
+
+</li>
+
+<li class="cds--list__item">
+An object must have creation data (either observable or unobservable) to be converted.
+
+</li>
+
+<li class="cds--list__item">
+If an object needs to be converted (because it is formatted for an earlier version of the operating system or is incompatible with the current machine), but is not converted during this restore operation, the object is automatically converted the first time it is used.
+
+</li>
+
+
+</ol>
+
+<p>
+<strong>Single values
+</strong>
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><u>*SYSVAL
+</u></strong></dt>
+
+<dd class="dlentry">
+The objects are converted based on the value of the QFRCCVNRST system value.
+</dd>
+
+<dt class="dlterm">
+<strong>*NO
+</strong></dt>
+
+<dd class="dlentry">
+The objects are not converted during the restore operation.
+<p>
+<strong>Note:     
+</strong>If FRCOBJCVN(*NO) is specified, then the QFRCCVNRST system value must have a value of either "0" or "1".
+
+</p>
+
+</dd>
+
+</dl>
+
+<p>
+<strong>Element 1: Convert during restore
+</strong>
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><u>*YES
+</u></strong></dt>
+
+<dd class="dlentry">
+The objects are converted during the restore operation.
+<p>
+<strong>Notes:
+</strong>
+</p>
+
+<ol class="cds--list--ordered--temporary">
+<li class="cds--list__item">
+If FRCOBJCVN(*YES *RQD) is specified, then the QFRCCVNRST system value must have a value of "0", "1", or "2".  FRCOBJCVN(*YES *RQD) will override a QFRCCVNRST value of "0" or "1".  If FRCOBJCVN(*YES *ALL) is specfied, then QFRCCVNRST can have any valid value and FRCOBJCVN(*YES *ALL) overrides the QFRCCVNRST system value.
+
+</li>
+
+<li class="cds--list__item">
+Specifying this value increases the time of the restore operation, but avoids the need to convert the objects when they are first used.
+
+</li>
+
+
+</ol>
+
+</dd>
+
+</dl>
+
+<p>
+<strong>Element 2: Objects to convert
+</strong>
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong><u>*RQD
+</u></strong></dt>
+
+<dd class="dlentry">
+The objects are converted only if they require conversion to be used by the current operating system or to be compatible with the current machine.  If the objects do not have all creation data (either observable or unobservable), the objects cannot be converted and will not be restored.
+</dd>
+
+<dt class="dlterm">
+<strong>*ALL
+</strong></dt>
+
+<dd class="dlentry">
+All objects are converted regardless of their current format and machine compatibility, including compatible objects already in the current format.  However, if the objects do not have all creation data (either observable or unobservable), the objects cannot be converted and will not be restored.
+</dd>
+
+</dl>
+
+</div>
+<div class="div" id="savrstlib__strjrn">
+<p>
+<strong>Start journaling (STRJRN)
+</strong></p>
+
+<p>
+Specifies whether to start journaling for new objects that are restored.
+
+</p>
+
+<p>
+<strong>Notes:
+</strong>
+</p>
+
+<ol class="cds--list--ordered--temporary">
+<li class="cds--list__item">
+Journal information that was saved will be restored for new objects whether journaling is started or not.
+
+</li>
+
+<li class="cds--list__item">
+Journaling will not be changed for existing objects.
+
+</li>
+
+
+</ol>
+
+<dl>
+<dt class="dlterm">
+<strong><u>*YES
+</u></strong></dt>
+
+<dd class="dlentry">
+Journaling will be started for new objects that were being journaled when they were saved.
+</dd>
+
+<dt class="dlterm">
+<strong>*NO
+</strong></dt>
+
+<dd class="dlentry">
+Journaling will not be started for the objects that are restored.
+</dd>
+
+</dl>
+
+</div>
+</section>
+
+<section class="section" role="region" aria-labelledby="savrstlib__examples__title__1" id="savrstlib__examples"><h2 class="sectiontitle" id="savrstlib__examples__title__1">Examples</h2>
+
+<p>
+<strong>Example 1: Saving and Restoring All User Libraries using *IP with user profile and password
+</strong>
+</p>
+
+<div class="p">
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>
+SAVRSTLIB   LIB(*ALLUSR)  RMTLOCNAME(SYSTEM1 *IP)
+            RMTUSER(USRPRF1) RMTPWD(MYPASSWORD)
+            STRLIB(GFM1)  OPTION(*OLD)
+
+</code></pre></div><div class="docs--copy-btn"></div></div>
+
+</div>
+
+<p>
+This command saves all user libraries beginning with the GFM1 library and restores them on a remote system named SYSTEM1 using address type *IP with valid user profile USRPRF1 and password MYPASSWORD on the system SYSTEM1. Only the objects in the library having a saved version are restored.
+
+</p>
+
+<p>
+<strong>Example 2: Saving and Restoring Specific Libraries using *IP with Kerberos
+</strong>
+</p>
+
+<div class="p">
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>
+SAVRSTLIB   LIB(GRUNBOK TIMON VASEK)  RMTLOCNAME(SYSTEM1 *IP)
+            RMTUSER(*KERBEROS)
+
+</code></pre></div><div class="docs--copy-btn"></div></div>
+
+</div>
+
+<p>
+This command saves the following libraries GRUNBOK, TIMON and VASEK and restores them on a remote system named SYSTEM1 using address type *IP and Kerberos ticket-granting tickets in default credentials cache file.
+
+</p>
+
+<p>
+<strong>Example 3: Saving and Restoring All User Libraries using *SNA
+</strong>
+</p>
+
+<div class="p">
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>
+SAVRSTLIB   LIB(*ALLUSR)  RMTLOCNAME(SYSTEM1)
+            STRLIB(GFM1)  OPTION(*OLD)
+
+</code></pre></div><div class="docs--copy-btn"></div></div>
+
+</div>
+
+<p>
+This command saves all user libraries beginning with the GFM1 library and restores them on a remote system named SYSTEM1 using address type *SNA. Only the objects in the library having a saved version are restored.
+
+</p>
+
+<p>
+<strong>Example 4: Saving and Restoring Specific Libraries using *SNA
+</strong>
+</p>
+
+<div class="p">
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" tabindex="0" aria-label="Code snippet"><pre class="codeblock"><code>
+SAVRSTLIB   LIB(GRUNBOK TIMON VASEK)  RMTLOCNAME(SYSTEM1)
+
+</code></pre></div><div class="docs--copy-btn"></div></div>
+
+</div>
+
+<p>
+This command saves the following libraries GRUNBOK, TIMON and VASEK and restores them on a remote system named SYSTEM1  using address type *SNA.
+
+</p>
+
+</section>
+
+<section class="section" role="region" aria-labelledby="savrstlib__errormsgs__title__1" id="savrstlib__errormsgs"><h2 class="sectiontitle" id="savrstlib__errormsgs__title__1">Error messages</h2>
+
+<p>
+<strong><u>*ESCAPE Messages
+</u></strong>
+</p>
+
+<dl>
+<dt class="dlterm">
+<strong>CPCAD81
+</strong></dt>
+
+<dd class="dlentry">
+&amp;1 libraries saved and restored.
+</dd>
+
+<dt class="dlterm">
+<strong>CPFAD8B
+</strong></dt>
+
+<dd class="dlentry">
+An error occurred during the SAVRSTLIB operation.
+</dd>
+
+<dt class="dlterm">
+<strong>CPFAD80
+</strong></dt>
+
+<dd class="dlentry">
+Unable to establish connection from &amp;1 to &amp;2.
+</dd>
+
+<dt class="dlterm">
+<strong>CPFAD81
+</strong></dt>
+
+<dd class="dlentry">
+User profile &amp;1 not found on remote location &amp;2.
+</dd>
+
+<dt class="dlterm">
+<strong>CPFAD82
+</strong></dt>
+
+<dd class="dlentry">
+Remote location &amp;1 not found.
+</dd>
+
+<dt class="dlterm">
+<strong>CPFAD83
+</strong></dt>
+
+<dd class="dlentry">
+Remote location &amp;1 cannot be source location.
+</dd>
+
+<dt class="dlterm">
+<strong>CPFAD84
+</strong></dt>
+
+<dd class="dlentry">
+ObjectConnect internal error, function code &amp;1, return code &amp;2.
+</dd>
+
+<dt class="dlterm">
+<strong>CPFAD86
+</strong></dt>
+
+<dd class="dlentry">
+Location name &amp;1 unable to close &amp;2.
+</dd>
+
+<dt class="dlterm">
+<strong>CPFAD88
+</strong></dt>
+
+<dd class="dlentry">
+Unable to establish connection from &amp;1 to &amp;2.
+</dd>
+
+<dt class="dlterm">
+<strong>CPFAD93
+</strong></dt>
+
+<dd class="dlentry">
+APPC failure. Failure code is &amp;3.
+</dd>
+
+<dt class="dlterm">
+<strong>CPF389C
+</strong></dt>
+
+<dd class="dlentry">
+ObjectConnect ended, function code &amp;1, return code &amp;2.
+</dd>
+
+</dl>
+
+</section>
+
+</div>
+
+</article></main>
+</body></html>

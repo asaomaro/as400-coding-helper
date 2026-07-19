@@ -66,6 +66,8 @@ export const categories = {
       'CHGOUTQ', 'CRTOUTQ', 'WRKWTR', 'STRPRTWTR',
       // 保存・復元
       'SAVLIB', 'SAVCHGOBJ',
+      // 保管復元（DDM 経由で他システムへ）
+      'SAVRSTLIB', 'SAVRSTOBJ',
       // 権限
       'CHGOBJOWN', 'DSPOBJAUT', 'EDTOBJAUT',
       // 構成・システム値
