@@ -37,10 +37,6 @@ jobs:
       - name: DDS キーワード補完データの検査
         run: node docs/origin/verify-dds-keywords.mjs
 
-      - name: ユニットテスト
-        run: npm test
-        working-directory: vscode-extension
-
       - name: RPG 補完データの検査
         run: node docs/origin/verify-rpg-completion.mjs
 
@@ -82,3 +78,9 @@ jobs:
         run: |
           npm ci || npm install
           npm run verify
+
+      # ユニットテストは依存（mocha / 型定義）が要るので、依存を入れる
+      # このジョブで走らせる。verify ジョブは素の node で原典照合をするだけ。
+      - name: ユニットテスト
+        working-directory: vscode-extension
+        run: npm test
