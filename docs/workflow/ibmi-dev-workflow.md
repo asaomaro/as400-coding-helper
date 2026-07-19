@@ -162,6 +162,53 @@ sequenceDiagram
 
 テストデータの書き込みは 6 章の安全規則（対象スキーマ制限）に従う。
 
+#### RPGUnit の仕組み（ユニット層の前提）
+
+出典は `tools-400/irpgunit` のソース直読
+（`host/iRPGUnit/QINCLUDE/TESTCASE.RPGLE` / `host/iRPGUnit/QSRC/EXTTST.RPGLE`）。
+自律ループがテスト結果をどう受け取るかに直結するため、要点を残す。
+
+**テストスイート = 1 サービスプログラム。発見は名前だけで行う。**
+`ctl-opt NoMain` ＋ `/include qinclude,TESTCASE` で書き、`*SRVPGM` にコンパイルする。
+ランナーは実行時にエクスポートされた手続きを走査し、名前で振り分ける（`EXTTST.RPGLE`）。
+アノテーションに相当する仕掛けは無い。
+
+| 名前 | 役割 |
+|---|---|
+| `test` で始まる（前方一致） | テストケース |
+| `setUpSuite` | スイート開始前に 1 回 |
+| `setUp` | 各テストの前 |
+| `tearDown` | 各テストの後 |
+| `tearDownSuite` | スイート終了後に 1 回 |
+
+COBOL 用に 10 文字へ切り詰めた別名（`SETUPSTE` / `TEARDWN` / `TEARDWNSTE`）も
+ランナーが受理する。RPG 専用の仕組みではない。
+
+**失敗は戻り値ではなく `CPF9897` エスケープメッセージで伝わる。**
+アサーションは値を返さず例外を投げ、ランナーが捕捉して結果にする
+（`TESTCASE.RPGLE` の各 `dcl-pr` に `@throws CPF9897 …` と明記）。
+失敗した時点でその手続きは中断する。
+
+**設計上の含意**: テスト結果の取得は、コンパイルエラー（EVFEVENT を SQL で読む）とは
+**別経路**になる。自律ループ（4.1）の 6 段目は EVFEVENT ではなく `RUCALLTST` の
+出力・ジョブログを解釈する必要がある。実装時に取り違えないこと。
+
+主なアサーション: `aEqual`（文字列）/ `iEqual`（整数）/ `nEqual`（真偽）/
+`assert(条件 : メッセージ)` / `fail(メッセージ)`。加えて
+**`assertJobLogContains` / `assertMessageQueueContains`**（メッセージ ID と時刻で
+ジョブログ・メッセージ待ち行列を検査）があり、IBM i アプリ特有の検証に効く。
+例外を投げるべき処理の検証は `monitor` / `on-error` で囲み、来なければ `fail` を呼ぶ。
+
+`TESTCASE.RPGLE` は補助手続きも公開している（`clrpfm` / `runCmd`(CL 実行) /
+`rclActGrp` / `waitSeconds`）。テストデータの準備をテスト内から CL 経由で行える。
+
+実行は CL コマンドなので ssh から叩ける（AI から実行できる根拠。F5）:
+
+```
+RUCRTRPG  TSTPGM(<lib>/<name>) SRCFILE(<lib>/<file>) SRCMBR(<mbr>)   # スイートを作る
+RUCALLTST TSTPGM(<lib>/<name>) [TSTPRC(<proc>)]                      # 実行（省略で全件）
+```
+
 ### 4.3 役割 3: コードレビュー・リンティング
 
 - **ローカル層**（オフライン・即時）: 本 PJ の桁定義・キーワードレベル・方言語彙による
