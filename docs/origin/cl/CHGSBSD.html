@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="ja"><head><meta charset="utf-8"><title>サブシステム記述変更  (CHGSBSD)</title></head>
+<body>
+<div role="main">
+<script type="text/javascript" src="../rzahg/synch.js"></script>
+<a name="CHGSBSD.Top_Of_Page"></a>
+<h1>サブシステム記述変更  (CHGSBSD)</h1><div id="lastModifiedDate"><span>Last Updated</span>: 2021-04-13</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table0" width="100%" class="cds--data-table">
+<tbody><tr>
+<td class="valigntop alignleft"><strong>実行可能場所:  </strong>すべての環境 (*ALL)<br>
+<strong>スレッド・セーフ:  </strong>いいえ
+</td>
+<td class="valigntop alignright">
+<a href="#CHGSBSD.PARAMETERS.TABLE">パラメーター</a><br>
+<a href="#CHGSBSD.COMMAND.EXAMPLES">例</a><br>
+<a href="#CHGSBSD.ERROR.MESSAGES">エラー・メッセージ</a></td>
+</tr>
+</tbody></table></div></div>
+<div> <a name="CHGSBSD"></a>
+<p>サブシステム記述変更 (CHGSBSD)コマンドは，指定されたサブシステム記述の操作属性を変更します。サブシステム記述は，サブシステムが活動状態である間に変更することができます。ただし，ジョブが中断される可能性があるので，サブシステムが活動状態である間に<strong>記憶域プール</strong><strong> (POOLS)</strong>パラメーターに*RMV値を指定することはできません。
+</p>
+<h2><strong>制約事項</strong><strong>:</strong>
+</h2>
+<ol class="cds--list--ordered--temporary">
+<li class="cds--list__item">このコマンドを使用するには，以下が必要です。
+<ul class="cds--list--unordered cds--list--nested">
+<li class="cds--list__item">指定されたサブシステム記述に対するオブジェクト操作(*OBJOPR),オブジェクト管理(*OBJMGT),および読み取り(*READ)権限と，そのサブシステム記述が入っているライブラリーに対する実行(*EXECUTE)権限。
+</li>
+<li class="cds--list__item">システム・ライブラリー・リスト項目を指定するには，全オブジェクト(*ALLOBJ)および機密保護管理(*SECADM)特殊権限。
+</li>
+<li class="cds--list__item">補助記憶域プール(ASP)グループ名を指定するには，全オブジェクト(*ALLOBJ)および機密保護管理 (*SECADM)特殊権限。
+</li>
+</ul>
+</li>
+<li class="cds--list__item">ジョブが中断される可能性があるので，サブシステムが活動状態である間はPOOLSパラメーターに*RMV値を指定することはできません。
+</li>
+<li class="cds--list__item">サブシステムが活動状態である間は，ASPGRPパラメーターの値を変更することはできません。
+</li>
+</ol>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table1" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#CHGSBSD.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div>
+<h2><a name="CHGSBSD.PARAMETERS.TABLE">パラメーター</a></h2>
+<div class="tablenoborder"><div class="cds--data-table-container"><table id="parm_table2" summary="Parameters" border="1" cellpadding="4" cellspacing="0" class="cds--data-table">
+<!-- col1="10" col2="15" col3="30" col4="10" -->
+<tbody><tr>
+<th scope="col" class="valignbottom alignleft"><div class="cds--table-header-label">キーワード</div></th>
+<th scope="col" class="valignbottom alignleft"><div class="cds--table-header-label">記述</div></th>
+<th scope="col" class="valignbottom alignleft"><div class="cds--table-header-label">選択項目</div></th>
+<th scope="col" class="valignbottom alignleft"><div class="cds--table-header-label">ノーツ</div></th>
+</tr>
+<tr>
+<td class="valigntop" rowspan="3"><a href="#CHGSBSD.SBSD"><strong>SBSD</strong></a></td>
+<td class="valigntop">サブシステム記述</td>
+<td class="valigntop"><span class="var">修飾オブジェクト名</span></td>
+<td class="valigntop" rowspan="3">必須, 定位置 1</td>
+</tr>
+<tr>
+<td class="valigntop">修飾子 1: サブシステム記述</td>
+<td class="valigntop"><span class="var">名前</span></td>
+</tr><tr>
+<td class="valigntop">修飾子 2: ライブラリー</td>
+<td class="valigntop"><span class="var">名前</span>, <strong class="underlined">*LIBL</strong>, *CURLIB</td>
+</tr><tr>
+<td class="valigntop" rowspan="5"><a href="#CHGSBSD.POOLS"><strong>POOLS</strong></a></td>
+<td class="valigntop">記憶域プール</td>
+<td class="valigntop">単一値: <strong class="underlined">*SAME</strong><br>その他の値 (最大 10 回の繰り返し): <span class="var">要素リスト</span></td>
+<td class="valigntop" rowspan="5">オプショナル, 定位置 2</td>
+</tr>
+<tr>
+<td class="valigntop">要素 1: プールID</td>
+<td class="valigntop">
+1-10</td>
+</tr>
+<tr>
+<td class="valigntop">要素 2: 記憶域サイズ</td>
+<td class="valigntop">
+<span class="var">整数</span>, *BASE, *NOSTG, *RMV, *INTERACT, *SPOOL, *SHRPOOL1, *SHRPOOL2, *SHRPOOL3, *SHRPOOL4, *SHRPOOL5, *SHRPOOL6, *SHRPOOL7, *SHRPOOL8, *SHRPOOL9, *SHRPOOL10, *SHRPOOL11, *SHRPOOL12, *SHRPOOL13, *SHRPOOL14, *SHRPOOL15, *SHRPOOL16, *SHRPOOL17, *SHRPOOL18, *SHRPOOL19, *SHRPOOL20, *SHRPOOL21, *SHRPOOL22, *SHRPOOL23, *SHRPOOL24, *SHRPOOL25, *SHRPOOL26, *SHRPOOL27, *SHRPOOL28, *SHRPOOL29, *SHRPOOL30, *SHRPOOL31, *SHRPOOL32, *SHRPOOL33, *SHRPOOL34, *SHRPOOL35, *SHRPOOL36, *SHRPOOL37, *SHRPOOL38, *SHRPOOL39, *SHRPOOL40, *SHRPOOL41, *SHRPOOL42, *SHRPOOL43, *SHRPOOL44, *SHRPOOL45, *SHRPOOL46, *SHRPOOL47, *SHRPOOL48, *SHRPOOL49, *SHRPOOL50, *SHRPOOL51, *SHRPOOL52, *SHRPOOL53, *SHRPOOL54, *SHRPOOL55, *SHRPOOL56, *SHRPOOL57, *SHRPOOL58, *SHRPOOL59, *SHRPOOL60</td>
+</tr>
+<tr>
+<td class="valigntop">要素 3: 活動レベル</td>
+<td class="valigntop">
+<span class="var">整数</span></td>
+</tr>
+<tr>
+<td class="valigntop">要素 4: サイズ計測単位</td>
+<td class="valigntop">
+<strong class="underlined">*KB</strong>, *MB</td>
+</tr>
+<tr>
+<td class="valigntop"><a href="#CHGSBSD.MAXJOBS"><strong>MAXJOBS</strong></a></td>
+<td class="valigntop">ジョブの最大数</td>
+<td class="valigntop">0-32000, <strong class="underlined">*SAME</strong>, *NOMAX</td>
+<td class="valigntop">オプショナル, 定位置 3</td>
+</tr>
+<tr>
+<td class="valigntop"><a href="#CHGSBSD.TEXT"><strong>TEXT</strong></a></td>
+<td class="valigntop">テキスト'記述'</td>
+<td class="valigntop"><span class="var">文字値</span>, <strong class="underlined">*SAME</strong>, *BLANK</td>
+<td class="valigntop">オプショナル</td>
+</tr>
+<tr>
+<td class="valigntop" rowspan="3"><a href="#CHGSBSD.SGNDSPF"><strong>SGNDSPF</strong></a></td>
+<td class="valigntop">サインオン表示装置ファイル</td>
+<td class="valigntop">単一値: <strong class="underlined">*SAME</strong>, *QDSIGNON<br>その他の値: <span class="var">修飾オブジェクト名</span></td>
+<td class="valigntop" rowspan="3">オプショナル</td>
+</tr>
+<tr>
+<td class="valigntop">修飾子 1: サインオン表示装置ファイル</td>
+<td class="valigntop"><span class="var">名前</span></td>
+</tr><tr>
+<td class="valigntop">修飾子 2: ライブラリー</td>
+<td class="valigntop"><span class="var">名前</span>, <strong class="underlined">*LIBL</strong>, *CURLIB</td>
+</tr><tr>
+<td class="valigntop"><a href="#CHGSBSD.SYSLIBLE"><strong>SYSLIBLE</strong></a></td>
+<td class="valigntop">サブシステム・ライブラリー</td>
+<td class="valigntop"><span class="var">名前</span>, <strong class="underlined">*SAME</strong>, *NONE</td>
+<td class="valigntop">オプショナル</td>
+</tr>
+<tr>
+<td class="valigntop"><a href="#CHGSBSD.ASPGRP"><strong>ASPGRP</strong></a></td>
+<td class="valigntop">ASPグループ</td>
+<td class="valigntop"><span class="var">名前</span>, <strong class="underlined">*SAME</strong>, *NONE</td>
+<td class="valigntop">オプショナル</td>
+</tr>
+<tr>
+<td class="valigntop"><a href="#CHGSBSD.WLCGRP"><strong>WLCGRP</strong></a></td>
+<td class="valigntop">作業負荷グループ</td>
+<td class="valigntop"><span class="var">名前</span>, <strong class="underlined">*SAME</strong>, *NONE</td>
+<td class="valigntop">オプショナル</td>
+</tr>
+</tbody></table></div></div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table3" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#CHGSBSD.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+</div>
+<div> <a name="CHGSBSD.SBSD"></a>
+<h2>サブシステム記述 (SBSD)</h2>
+<p>変更するサブシステム記述の名前およびライブラリーを指定します。
+</p>
+<p>これは必須パラメーターです。
+</p>
+<h3><strong>修飾子</strong><strong>1: </strong><strong>サブシステム記述</strong>
+</h3>
+<dl>
+<dt><strong class="italic">名前</strong></dt>
+<dd>変更するサブシステム記述の名前を指定します。
+</dd>
+</dl>
+<h3><strong>修飾子</strong><strong>2: ライブラリー</strong>
+</h3>
+<dl>
+<dt><strong class="underlined">*LIBL</strong></dt>
+<dd>一致が見つかるまで，スレッドのライブラリー・リストの中のすべてのライブラリーが検索されます。
+</dd>
+<dt><strong>*CURLIB</strong></dt>
+<dd>オブジェクトを見つけるためにスレッドの現行ライブラリーが使用されます。スレッドの現行ライブラリーとしてライブラリーが指定されていない場合，QGPLライブラリーが使用されます。
+</dd>
+</dl>
+<dl>
+<dt><strong class="italic">名前</strong></dt>
+<dd>サブシステム記述が入っているライブラリーを指定します。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table4" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#CHGSBSD.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="CHGSBSD.POOLS"></a>
+<h2>記憶域プール (POOLS)</h2>
+<p>1つまたは複数の記憶域プール定義のIDおよびこれらに対する変更データを指定します。
+</p>
+<p>既存のプール定義を除去する時には，サブシステムは非活動状態でなければなりません。
+</p>
+<p>指定されない各既存のプール定義のサイズおよび活動レベルは変わりません。
+</p>
+<h3><strong>単一値</strong>
+</h3>
+<dl>
+<dt><strong class="underlined">*SAME</strong></dt>
+<dd>サブシステム記述の中の記憶域プール定義は変更されません。
+</dd>
+</dl>
+<h3><strong>その他の値（最大</strong><strong>10</strong><strong>個指定可能）</strong>
+</h3>
+<h3><strong>要素</strong><strong>1: </strong><strong>プール</strong><strong>ID</strong>
+</h3>
+<dl>
+<dt><strong class="italic">1から10</strong></dt>
+<dd>変更する記憶域プール定義のプールIDを指定します。
+</dd>
+</dl>
+<h3><strong>要素</strong><strong>2: </strong><strong>記憶域サイズ</strong>
+</h3>
+<dl>
+<dt><strong>*BASE</strong></dt>
+<dd>指定されたプール定義は，他のサブシステムと共用できる基本システム・プールとして定義されます。基本プールの最小サイズおよび活動レベルは，システム値QBASPOOLおよびQBASACTLVLに指定します。
+</dd>
+<dt><strong>*NOSTG</strong></dt>
+<dd>最初は，記憶域も活動レベルもプールに割り当てられません（非活動状態）。
+</dd>
+<dt><strong>*RMV</strong></dt>
+<dd>指定されたプール定義がサブシステム記述から除去されます。
+</dd>
+<dt><strong>*INTERACT</strong></dt>
+<dd>指定されたプール定義は，対話式作業で使用される共用プールとして定義されます。共用プールのサイズおよび活動レベルは，共用記憶域プールの変更 (CHGSHRPOOL)コマンドを使用して指定されます。
+</dd>
+<dt><strong>*SPOOL</strong></dt>
+<dd>指定されたプール定義は，スプール書き出しプログラムで使用される共用プールとして定義されます。共用プールのサイズおよび活動レベルはCHGSHRPOOLコマンドを使用して指定します。
+</dd>
+<dt><strong>*SHRPOOLNN</strong></dt>
+<dd>指定されたプール定義は汎用共用プールとして定義されます。60個の汎用共用プールがあり，特殊値*SHRPOOL1から*SHRPOOL60によって識別されます。共用プールのサイズおよび活動レベルは，CHGSHRPOOLコマンドを使用して指定されます。
+</dd>
+<dt><strong class="italic">整数</strong></dt>
+<dd>指定された記憶域プールの記憶域サイズを指定してください。少なくとも256キロバイトの値を指定しなければなりません。サイズは，要素4: サイズ計測単位を使用してキロバイトまたはメガバイトで指定されます。
+<p>
+<strong>注:     </strong>プールのサイズを変更すると，補助記憶域に書き込むページが必要になることがあります。システムが大規模の変更を完了するために必要な時間は，省略時の待ち時間を上回る可能性があります。これが起こる場合は，変更が完了してもメッセージCPF1001 (システム応答の待機時間が満了した。)が出されます。
+</p>
+</dd>
+</dl>
+<h3><strong>要素</strong><strong>3: </strong><strong>活動レベル</strong>
+</h3>
+<dl>
+<dt><strong class="italic">整数</strong></dt>
+<dd>プール内で同時に実行できるスレッドの最大数を指定します。
+</dd>
+</dl>
+<h3><strong>要素</strong><strong>4: </strong><strong>サイズ計測単位</strong>
+</h3>
+<dl>
+<dt><strong class="underlined">*KB</strong></dt>
+<dd>指定されたプール記憶域サイズはキロバイト単位です。
+</dd>
+<dt><strong>*MB</strong></dt>
+<dd>指定されたプール記憶域サイズはメガバイト単位です。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table5" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#CHGSBSD.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="CHGSBSD.MAXJOBS"></a>
+<h2>ジョブの最大数 (MAXJOBS)</h2>
+<p>このサブシステム記述によって制御されるサブシステムで同時に活動状態にできるジョブの最大数を指定します。この最大数は，開始され，待機または実行中であるすべてのジョブに適用されますが，ジョブ待ち行列にあるジョブまたは実行を終了したジョブには適用されません。
+</p>
+<dl>
+<dt><strong class="underlined">*SAME</strong></dt>
+<dd>サブシステム中で同時に使用できるジョブの最大数は変更されません。
+</dd>
+<dt><strong>*NOMAX</strong></dt>
+<dd>このサブシステムで同時に活動状態にできるジョブの最大数に制限はありません。
+</dd>
+<dt><strong class="italic">0-32000</strong></dt>
+<dd>このサブシステムで実行可能なジョブの最大数を指定してください。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table6" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#CHGSBSD.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="CHGSBSD.TEXT"></a>
+<h2>テキスト'記述' (TEXT)</h2>
+<p>オブジェクトを簡単に記述したテキストを指定します。
+</p>
+<dl>
+<dt><strong class="underlined">*SAME</strong></dt>
+<dd>テキスト（存在している場合）は変更されません。
+</dd>
+</dl>
+<dl>
+<dt><strong>*BLANK</strong></dt>
+<dd>テキストは指定されません。
+</dd>
+<dt><strong class="italic">文字値</strong></dt>
+<dd>50文字を超えないテキストを，アポストロフィで囲んで指定してください。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table7" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#CHGSBSD.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="CHGSBSD.SGNDSPF"></a>
+<h2>サインオン表示装置ファイル (SGNDSPF)</h2>
+<p>サブシステムに割り振られたワークステーションでサインオン画面を表示する時に使用するサインオン表示ファイルの名前およびライブラリーを指定します。指定したサインオン表示ファイルが，サブシステム記述の作成または変更時に存在していない場合には，ライブラリー修飾子を指定しなければなりません（修飾されたサインオン表示ファイルの名前がシステムによって保管されるため）。サインオン表示ファイルには，SIGNONというレコード様式が入っていなければなりません。
+</p>
+<p>
+<strong>注:     </strong>サブシステムが活動状態である時には，サインオン表示ファイルを変更することができます。しかし新しいサインオン表示ファイルは，次回にサブシステムが開始されるまで，使用されません。
+</p>
+<p>
+<strong>注:     </strong>表示ファイルの形式検査を完了するには，使用(*USE)が必要です。これは，サブシステムの開始時に表示が正しく機能するであろうことを予測するのに役立ちます。表示ファイルまたはそのライブラリーが許可されていない場合には，それらの形式検査は行われません。
+</p>
+<h3><strong>単一値</strong>
+</h3>
+<dl>
+<dt><strong class="underlined">*SAME</strong></dt>
+<dd>現行のサインオン表示ファイルの値は変更されません。
+</dd>
+<dt><strong>*QDSIGNON</strong></dt>
+<dd>サブシステムに割り振られたワークステーションにサインオン画面を表示する際に，QSYSの中のサインオン画面ファイル値QDSIGNONが使用されます。
+</dd>
+</dl>
+<h3><strong>修飾子</strong><strong>1: </strong><strong>サインオン表示装置ファイル</strong>
+</h3>
+<dl>
+<dt><strong class="italic">名前</strong></dt>
+<dd>使用されるサインオン画面ファイルの名前を指定します。
+</dd>
+</dl>
+<h3><strong>修飾子</strong><strong>2: ライブラリー</strong>
+</h3>
+<dl>
+<dt><strong class="underlined">*LIBL</strong></dt>
+<dd>一致が見つかるまで，スレッドのライブラリー・リストの中のすべてのライブラリーが検索されます。
+</dd>
+<dt><strong>*CURLIB</strong></dt>
+<dd>オブジェクトを見つけるためにスレッドの現行ライブラリーが使用されます。スレッドの現行ライブラリーとしてライブラリーが指定されていない場合，QGPLライブラリーが使用されます。
+</dd>
+</dl>
+<dl>
+<dt><strong class="italic">名前</strong></dt>
+<dd>サインオン表示ファイルが入っているライブラリーを指定してください。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table8" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#CHGSBSD.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="CHGSBSD.SYSLIBLE"></a>
+<h2>サブシステム・ライブラリー (SYSLIBLE)</h2>
+<p>サブシステムで開始されたジョブのライブラリー・リストのシステム部分の，他のライブラリーの前に追加されるライブラリーを指定します。このパラメーターによって，2次言語ライブラリーを使用することができます。
+</p>
+<h3><strong>制約事項</strong><strong>:</strong>
+</h3>
+<ol class="cds--list--ordered--temporary">
+<li class="cds--list__item">このパラメーターは，サブシステムが活動状態である間に変更することができます。行う変更はすべて，開始される新しいジョブに対して有効となります。サブシステム内の活動ジョブのライブラリー・リストは変更されません。
+</li>
+<li class="cds--list__item">QSYSLIBLまたはQUSRLIBLシステム値に2次言語ライブラリーを指定してはなりません。ライブラリー・リストのシステム部分に2次言語ライブラリーを追加できるように，QSYSLIBLに含まれるライブラリーは15個より少なくなければなりません。
+</li>
+<li class="cds--list__item">システム・ライブラリー・リスト項目に*NONE以外の値を指定するには，*ALLOBJおよび*SECADM特殊権限が必要です。
+</li>
+</ol>
+<dl>
+<dt><strong class="underlined">*SAME</strong></dt>
+<dd>システム・ライブラリー・リストは変更されません。
+</dd>
+<dt><strong>*NONE</strong></dt>
+<dd>2次言語ライブラリーがシステム・ライブラリー・リストから除去されます。
+</dd>
+<dt><strong class="italic">名前</strong></dt>
+<dd>システム・ライブラリー・リストに追加するライブラリーの名前を指定してください。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table9" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#CHGSBSD.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="CHGSBSD.ASPGRP"></a>
+<h2>ASPグループ (ASPGRP)</h2>
+<p>サブシステム・モニター・ジョブのライブラリー名前空間に組み込まれる補助記憶域プール(ASP)グループの名前を指定します。このASPグループ名は，そのASPグループ中の1次ASP装置の名前です。
+</p>
+<p>サブシステム・モニター・ジョブがユーザー・ジョブを作成すると，サブシステム・モニター・ジョブのライブラリー名前空間によってジョブ記述が見つかります。ジョブ待ち行列，サインオン表示装置ファイル，およびサブシステム・ライブラリーが，サブシステム・モニター・ジョブのライブラリー名前空間で見つかります。
+</p>
+<p>サブシステム・モニター・ジョブが，ユーザー・ジョブの代行処理をする場合は，サブシステムがユーザー・ジョブのライブラリー名前空間を使用します。プログラムおよびクラスが，ユーザー・ジョブのライブラリー名前空間で見つかります。これらのオブジェクトの場合，サブシステム記述でのASPGRPパラメーターは効果がありません。
+</p>
+<p>サブシステム・モニター・ジョブがASPグループを使用すると，そのサブシステム内のジョブが同じASPグループを使用します。ASPグループがジョブ作成中に設定され，他のオブジェクトを見つけるために使用できるよう，ジョブ記述に初期ASPグループ(INLASPGRP)パラメーターを使用します。使用するジョブ記述を決めるためにサブシステムがプログラムを見つける必要があるため，サブシステム・モニター・ジョブとユーザー・ジョブ間の整合性は，事前開始ジョブ項目には特に重要です。
+</p>
+<h3><strong>制約事項</strong><strong>:</strong>
+</h3>
+<ol class="cds--list--ordered--temporary">
+<li class="cds--list__item">制御サブシステムのサブシステム・モニター・ジョブのライブラリー名前空間は，ASPGRPを含むことができません。*NONE以外の値が，制御サブシステムのサブシステム記述で指定される場合，その値は無視されます。
+</li>
+<li class="cds--list__item">QSYSWRKサブシステムのサブシステム・モニター・ジョブのライブラリー名前空間は，ASPGRPを含むことができません。*NONE以外の値が，QSYSWRKサブシステムのサブシステム記述で指定される場合，その値は無視されます。
+</li>
+<li class="cds--list__item">サブシステムが始動される前に，ASPグループがオンに変更され，状況は「AVAILABLE」になる必要があります。
+</li>
+<li class="cds--list__item">ASPグループがオフに変更される前に，サブシステムを終了する必要があります。
+</li>
+<li class="cds--list__item">このパラメーターは，サブシステムが活動状態である間に変更することはできません。
+</li>
+</ol>
+<dl>
+<dt><strong class="underlined">*SAME</strong></dt>
+<dd>ASPグループ値は変更されません。
+</dd>
+<dt><strong>*NONE</strong></dt>
+<dd>サブシステム・モニター・ジョブのライブラリー名前空間は，ASPグループを含んでいません。
+</dd>
+<dt><strong class="italic">名前</strong></dt>
+<dd>サブシステム・モニター・ジョブのライブラリー名前空間に組み込まれるASPグループの名前を指定します。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table10" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#CHGSBSD.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="CHGSBSD.WLCGRP"></a>
+<h2>作業負荷グループ (WLCGRP)</h2>
+<p>サブシステム内のジョブに対して使用する作業負荷グループの名前を指定します。
+</p>
+<h3><strong>制約事項</strong><strong>:</strong>
+</h3>
+<ol class="cds--list--ordered--temporary">
+<li class="cds--list__item">このパラメーターは，サブシステムが活動状態である間に変更することができます。行う変更はすべて，開始される新しいジョブに対して有効となります。サブシステム内の活動ジョブの作業負荷グループは変更されません。
+</li>
+<li class="cds--list__item">制御サブシステムは，制御サブシステム内のジョブの作業負荷グループを使用しません。*NONE以外の値が，制御サブシステムのサブシステム記述で指定される場合，その値は無視されます。
+</li>
+</ol>
+<dl>
+<dt><strong class="underlined">*SAME</strong></dt>
+<dd>作業負荷グループ値は変更されません。
+</dd>
+<dt><strong>*NONE</strong></dt>
+<dd>サブシステム内のジョブには作業負荷グループは使用されません。
+</dd>
+<dt><strong class="italic">名前</strong></dt>
+<dd>サブシステム内のジョブに対して使用する作業負荷グループの名前を指定してください。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table11" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#CHGSBSD.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div><h2><a name="CHGSBSD.COMMAND.EXAMPLES">例</a> </h2>
+<h3><strong>例</strong><strong>1:</strong><strong>記憶域サイズおよび活動レベルの変更</strong>
+</h3>
+<p>
+</p><pre>CHGSBSD   SBSD(QGPL/PAYCTL)  POOLS((2 1500 3))
+          SGNDSPF(QGPL/COMPANYA)
+</pre>
+<p></p>
+<p>このコマンドは，サブシステムPAYCTLによって使用される記憶域プール2の定義を1500Kの記憶域サイズおよび3の活動レベルに変更します。サインオン画面ファイルは，ファイルCOMPANYAを表示するように変更され，QGPLライブラリーに入れられます。このコマンドが出された時にサブシステムが活動状態であった場合には，次回サブシステムが開始されるまで，COMPANYAは使用されません。
+</p>
+<h3><strong>例</strong><strong>2:</strong><strong>複数の属性の変更</strong>
+</h3>
+<p>
+</p><pre>CHGSBSD   SBSD(LIB6/ORDER)
+          POOLS((1 *BASE)(2 750 4)(3 *RMV)(4 *NOSTG))
+          MAXJOBS(5)
+</pre>
+<p></p>
+<p>このコマンドは，サブシステムORDERがサポートできるジョブの最大数を5に変更します。（サブシステムの記述はライブラリーLIB6に保管されます。）記憶域プール1の定義は基本共用システム・プールに変更され，プール2の定義は750Kの記憶域サイズと4の活動レベルを持つように変更され，プール3の定義はサブシステムから除去され，また，プール4の定義は記憶域および活動レベルを持たないように変更されます。
+</p>
+<h3><strong>例</strong><strong>3:</strong><strong>言語ライブラリーの変更</strong>
+</h3>
+<p>
+</p><pre>CHGSBSD   SBSD(QGPL/SPANISH)  SGNDSPF(QSYS2931/QDSIGNON)
+          SYSLIBLE(QSYS2931)
+</pre>
+<p></p>
+<p>このコマンドは，サブシステム記述SPANISHをスペイン語2次言語に変更します。
+</p>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table12" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#CHGSBSD.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div><h2><a name="CHGSBSD.ERROR.MESSAGES">エラー・メッセージ</a> </h2>
+<p><strong class="underlined">*ESCAPE </strong><strong class="underlined">メッセージ</strong>
+</p>
+<dl>
+<dt><strong>CPF1619</strong></dt>
+<dd>ライブラリー&amp;2のサブシステム記述&amp;1に損傷がある。
+</dd>
+<dt><strong>CPF1691</strong></dt>
+<dd>活動サブシステム記述は変更されることも変更されないこともある。
+</dd>
+<dt><strong>CPF1697</strong></dt>
+<dd>サブシステム記述&amp;1は変更されなかった。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table13" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#CHGSBSD.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+</div>
+
+
+</body></html>

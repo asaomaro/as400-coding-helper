@@ -534,6 +534,13 @@ function buildParameter(param, section) {
       const ordered = qualifiers.reverse(); // 修飾子は出力順（ライブラリーが先）
       const primary = ordered[ordered.length - 1];
 
+      // 要素の省略時値（原典で下線が引かれた値）は末端に入れる。
+      // 修飾名の group 自体は入力欄を持たないため、group に持たせても
+      // 画面に出ず、書き出しにも効かない（ADDPJE の CLS(*SBSD) で踏んだ）。
+      if (primary && elementChoices.defaultValue && !primary.defaultValue) {
+        primary.defaultValue = elementChoices.defaultValue;
+      }
+
       if (primary && elementChoices.specials.length > 0) {
         const helpByValue = new Map(
           valuesForPart(section, group.element).map(v => [v.value, v.help])

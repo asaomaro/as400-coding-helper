@@ -1,0 +1,533 @@
+{
+  "keyword": "CHGMSGD",
+  "description": "Change Message Description (CHGMSGD)",
+  "parameters": [
+    {
+      "name": "MSGID",
+      "description": "Message identifier",
+      "help": "Message identifier (MSGID)\n\nSpecifies the message identifier of the message being changed. The message identifier must be 7 characters long and in the following format: pppnnnn\n\nThe first 3 characters (ppp) must be a code consisting of an alphabetic character followed by two alphanumeric (alphabetic or decimal) characters. The last 4 characters (nnnn) must consist of the decimal numbers 0 through 9 and the characters A through F.\n\nThis is a required parameter.",
+      "inputType": "text",
+      "required": true,
+      "attributes": {
+        "characterSet": "upper",
+        "maxLength": 10
+      },
+      "positional": 1
+    },
+    {
+      "name": "MSGF",
+      "description": "Message file",
+      "help": "Message file (MSGF)\n\nSpecifies the message file where the message description being changed is stored.\n\nNote: This command ignores any message file overrides in effect for the job.\n\nThis is a required parameter.\n\nQualifier 1: Message file\n\nQualifier 2: Library",
+      "inputType": "group",
+      "required": true,
+      "groupKind": "qualified",
+      "children": [
+        {
+          "name": "LIB",
+          "description": "Library",
+          "help": "指定できる特殊値: *LIBL, *CURLIB",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "*LIBL",
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          }
+        },
+        {
+          "name": "MSGF",
+          "description": "Message file",
+          "inputType": "text",
+          "required": true,
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          }
+        }
+      ],
+      "positional": 2
+    },
+    {
+      "name": "MSG",
+      "description": "First-level message text",
+      "help": "First-level message text (MSG)\n\nSpecifies the new text for the message.\n\nNote: If the message text is changing, the entire message text is replaced with the specified change.\n\nOne or more substitution variables can be embedded in the message text string to indicate positional replacement fields that allow the program to substitute variable data in the message before the message is sent. The rules below must be followed when variables are used.\n\nNote: The data fields are described positionally in the FMT parameter and are specified positionally in the MSGDTA parameter of the Send Program Message (SNDPGMMSG) and Send User Message (SNDUSRMSG) commands. More details on substituting data fields in message text are in the CL topic collection in the Programming category in the IBM i Information Center at http://www.ibm.com/systems/i/infocenter/.\n\nDouble-Byte Character Set Considerations\n\nWhen entering double-byte characters on this parameter, several combinations of characters may cause errors to occur on this command. If the double-byte characters contain the string X'50Fn' (where n is a 1-digit number, 0-9), error messages CPF2424 or CPF2431 may result. Examples are: X'50F0', X'50F4', X'50F9'.\n\nCoded Character Set Identifier (CCSID) Considerations\n\nThe text supplied for the MSG parameter is assumed to be in the CCSID of the job calling this command unless the CCSID parameter is coded. If the CCSID parameter is coded, the text is assumed to be in the CCSID specified. For more information about the message handler and its use of CCSIDs, see the i5/OS globalization topic collection in the IBM i Information Center at http://www.ibm.com/systems/i/infocenter/.\n\n指定できる特殊値: *SAME",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*SAME",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "positional": 3
+    },
+    {
+      "name": "SECLVL",
+      "description": "Second-level message text",
+      "help": "Second-level message text (SECLVL)\n\nSpecifies any message help changes. Message help can also be written to the job log, if *SECLVL is specified for the Log in service log (LOG) parameter of the job commands.\n\nMessage help can be formatted for the work station using three format control characters. Each must be followed by a blank.\n\nDouble-Byte Character Set Considerations\n\nWhen entering double-byte characters on this parameter, several combinations of characters may cause errors to occur on this command. The double-byte characters should not contain the string, X'50Fn' (where n is a 1-digit number, 0-9). Examples are: X'50F0', X'50F4', X'50F9'.\n\nCoded Character Set Identifier (CCSID) Considerations\n\nThe text supplied for the SECLVL parameter is assumed to be in the CCSID of the job calling this command unless the CCSID parameter is coded. If the CCSID parameter is coded, the text is assumed to be in the CCSID specified. For more information about the message handler and its use of CCSIDs, see the i5/OS globalization topic collection in the IBM i Information Center at http://www.ibm.com/systems/i/infocenter/.\n\n指定できる特殊値: *SAME, *NONE",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*SAME",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "positional": 4
+    },
+    {
+      "name": "SEV",
+      "description": "Severity code",
+      "help": "Severity code (SEV)\n\nSpecifies the severity code of the message being changed. The severity code indicates the severity level of the condition that causes the message to be sent.\n\n指定できる特殊値: *SAME",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*SAME",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "positional": 5
+    },
+    {
+      "name": "FMT",
+      "description": "Message data fields formats",
+      "help": "Message data fields formats (FMT)\n\nSpecifies the formats of from one to 99 message data fields being changed. Each field is described in this parameter by a list of attributes. All 99 of the message data fields can be used as substitution values in the message and message help defined in this message description. They can also be specified for the Data to be dumped (DMPLST) parameter of this command. When specified for the Message data field values (MSGDTA) parameter of the Send Program Message (SNDPGMMSG) or Send User Message (SNDUSRMSG) command, the data fields must be concatenated to form one character string of no more than 512 characters and must match the format and sequence specified here.\n\nNote: If any of the previously defined formats are being changed, all existing formats must be included in this parameter. For example, if seven formats had been previously defined and now the third of the seven formats is to be changed from *CHAR 24 to *HEX 8, all seven of the formats (including their types and lengths) must be included in the FMT parameter.\n\nSingle values\n\nNote: If a format had been originally specified, but *NONE is specified, all referrals to those formats must be removed from the message and message help and from the dump list.\n\ntype [length [decimal-positions]] Specify a list of attributes that define each message data field (up to 99 fields) in this message description. These attributes specify the type of data in the field, the total length of the field, and, optionally, the number of decimal digits to the right of the decimal point. Certain data types do not require a length field. Boundary alignment requirements must be considered (for example, pointers are always aligned on 16-byte boundaries). Fields &1 through &99 can be defined in and can appear in, the message text. Fields beyond that number can appear only in the dump list.\n\nElement 1: Data type\n\nThe first element specifies the type of data the substitution field contains and how the data is to be formatted in the message text. The contents of the second and third elements vary depending on the type specified. One of the following types can be specified for each field described by this parameter:\n\nThe following formats are valid only in IBM-provided message descriptions and should not be used for other messages.\n\nElement 2: Length\n\nAfter the type specification, a second element can be specified to indicate the number of characters or digits that are passed in the message data. How the second element is used depends on the type specified in the first element.\n\nElement 3: *VARY bytes or dec pos\n\nThe third element is used in one of two ways, depending on the type specified in the first element: (1) if *QTDCHAR, *CHAR, *CCHAR, *HEX, or *SPP is specified, and if *VARY is specified or assumed for the second element, the third element is used with *VARY to indicate the size of the length field actually passed. The third element can be either a 2 or a 4, which is the number of bytes specifying the length (in binary) of the passed value; (2) if *DEC is specified, the third element indicates the number of decimal positions in the decimal value. If not specified for a decimal substitution value, the default is 0 decimal positions.\n\nNote: If an object has been damaged or deleted, the substitution variable, when displayed, is not replaced by the name of the object. Instead, the object appears as &n (where n = number).",
+      "inputType": "group",
+      "required": false,
+      "groupKind": "elements",
+      "singleValues": [
+        "*SAME",
+        "*NONE"
+      ],
+      "children": [
+        {
+          "name": "FMT_E1",
+          "description": "Data type",
+          "inputType": "dropdown",
+          "required": false,
+          "attributes": {
+            "characterSet": "upper"
+          },
+          "options": [
+            {
+              "label": "*SAME",
+              "value": "*SAME"
+            },
+            {
+              "label": "*NONE",
+              "value": "*NONE"
+            },
+            {
+              "label": "*QTDCHAR",
+              "value": "*QTDCHAR"
+            },
+            {
+              "label": "*CHAR",
+              "value": "*CHAR"
+            },
+            {
+              "label": "*HEX",
+              "value": "*HEX"
+            },
+            {
+              "label": "*SPP",
+              "value": "*SPP"
+            },
+            {
+              "label": "*DEC",
+              "value": "*DEC"
+            },
+            {
+              "label": "*BIN",
+              "value": "*BIN"
+            },
+            {
+              "label": "*UBIN",
+              "value": "*UBIN"
+            },
+            {
+              "label": "*CCHAR",
+              "value": "*CCHAR"
+            },
+            {
+              "label": "*UTC",
+              "value": "*UTC"
+            },
+            {
+              "label": "*UTCD",
+              "value": "*UTCD"
+            },
+            {
+              "label": "*UTCT",
+              "value": "*UTCT"
+            },
+            {
+              "label": "*DTS",
+              "value": "*DTS"
+            },
+            {
+              "label": "*SYP",
+              "value": "*SYP"
+            },
+            {
+              "label": "*ITV",
+              "value": "*ITV"
+            }
+          ],
+          "defaultValue": "*SAME"
+        },
+        {
+          "name": "FMT_E2",
+          "description": "Length",
+          "help": "指定できる特殊値: *VARY",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "*VARY",
+          "attributes": {
+            "characterSet": "upper"
+          }
+        },
+        {
+          "name": "FMT_E3",
+          "description": "*VARY bytes or dec pos",
+          "inputType": "number",
+          "required": false,
+          "defaultValue": "0",
+          "attributes": {
+            "numericOnly": true
+          }
+        }
+      ],
+      "maxOccurrences": 99
+    },
+    {
+      "name": "TYPE",
+      "description": "Reply type",
+      "help": "Reply type (TYPE)\n\nSpecifies, only if the message is sent as an inquiry or notify message, the type of valid reply to this message.\n\nIf the message is sent as an inquiry (*INQ) message or as a notify (*NOTIFY) message and a reply is expected, seven parameters can be used to specify some requirements that relate to the allowed values in the reply received. The seven validity checking parameters are: TYPE, LEN, VALUES, SPCVAL, RANGE, REL, and DFT. These parameters are not necessary for a message to allow a reply, but they can be used to define valid replies that can be made to the message. Also note that the VALUES, RANGE, and REL parameters are mutually exclusive, and only one of them may be specified on this command.\n\nNote: If the reply type or length is changed, and if VALUES, RANGE, or REL had been previously specified, the existing VALUES, RANGE, REL, SPCVAL and DFT must also be changed to be compatible with the new reply type and/or length. If the reply type is changed, LEN must be changed also. If the reply type is changed to *NONE, then LEN and (if they were coded previously) VALUES, SPCVAL, RANGE, REL, and DFT must be coded as *NONE.\n\n指定できる特殊値: *SAME, *NONE, *CHAR, *DEC, *ALPHA, *NAME",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*SAME",
+      "attributes": {
+        "characterSet": "upper",
+        "maxLength": 10
+      }
+    },
+    {
+      "name": "LEN",
+      "description": "Maximum reply length",
+      "help": "Maximum reply length (LEN)\n\nSpecifies, only if the message is sent as an inquiry or notify message, the maximum reply length.\n\nSingle values\n\nElement 1: Length\n\nElement 2: Decimal positions",
+      "inputType": "group",
+      "required": false,
+      "groupKind": "elements",
+      "singleValues": [
+        "*SAME",
+        "*NONE",
+        "*TYPE"
+      ],
+      "children": [
+        {
+          "name": "LEN_E1",
+          "description": "Length",
+          "inputType": "number",
+          "required": false,
+          "attributes": {
+            "numericOnly": true
+          },
+          "defaultValue": "*SAME"
+        },
+        {
+          "name": "LEN_E2",
+          "description": "Decimal positions",
+          "inputType": "number",
+          "required": false,
+          "attributes": {
+            "numericOnly": true
+          }
+        }
+      ]
+    },
+    {
+      "name": "VALUES",
+      "description": "Valid reply values",
+      "help": "Valid reply values (VALUES)\n\nSpecifies, only if the message is sent as an inquiry or notify message, a list of values of which one can be received as a valid reply. No more than 20 values can be specified in the list. Each value in the list must meet the requirements specified for message replies on the Reply type (TYPE) parameter and the Maximum reply length (LEN) parameter. If this parameter is specified, the Range of reply values (RANGE) parameter and the Relationship for valid replies (REL) parameter cannot be specified.\n\nSingle values\n\nOther values\n\n指定できる特殊値: *SAME, *NONE",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*SAME",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "maxOccurrences": 20
+    },
+    {
+      "name": "SPCVAL",
+      "description": "Special reply values",
+      "help": "Special reply values (SPCVAL)\n\nSpecifies, only if the message is sent as an inquiry or notify message, a list of up to 20 sets of special values of which one set (if the from-value is matched by the sent reply) is used as the reply. These values are special in that they may not meet all the validity checking specifications given in the other reply-oriented parameters. The reply sent is compared to the from-value in each set. If a match is found, and a to-value was specified in that set, the to-value is sent as the reply. If no to-value was specified, the from-value is sent as the reply. If the reply sent does not match any from-value, then the reply is validity-checked by the specifications in the other reply-oriented parameters.\n\nSingle values\n\nElement 1: Original from-value\n\nElement 2: Replacement to-value",
+      "inputType": "group",
+      "required": false,
+      "groupKind": "elements",
+      "singleValues": [
+        "*SAME",
+        "*NONE"
+      ],
+      "children": [
+        {
+          "name": "SPCVAL_E1",
+          "description": "Original from-value",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "*SAME"
+        },
+        {
+          "name": "SPCVAL_E2",
+          "description": "Replacement to-value",
+          "inputType": "text",
+          "required": false
+        }
+      ],
+      "maxOccurrences": 20
+    },
+    {
+      "name": "RANGE",
+      "description": "Range of reply values",
+      "help": "Range of reply values (RANGE)\n\nSpecifies, only if the message is sent as an inquiry or notify message, the upper and lower value limits for valid replies to this message. These values must meet the requirements specified for replies by the TYPE and LEN parameters, and both values must be of the same type. If both values are not of the same length, the shorter value is padded on the right with blanks. For type *CHAR and *ALPHA replies, the reply is padded on the right with blanks or truncated on the right (to the length of the specified values) before the value range is validity-checked. If this parameter is specified, the Valid reply values (VALUES) parameter and the Relationship for valid replies (REL) parameter cannot be specified.\n\nSingle values\n\nElement 1: Lower value\n\nElement 2: Upper value",
+      "inputType": "group",
+      "required": false,
+      "groupKind": "elements",
+      "singleValues": [
+        "*SAME",
+        "*NONE"
+      ],
+      "children": [
+        {
+          "name": "RANGE_E1",
+          "description": "Lower value",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "*SAME"
+        },
+        {
+          "name": "RANGE_E2",
+          "description": "Upper value",
+          "inputType": "text",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "REL",
+      "description": "Relationship for valid replies",
+      "help": "Relationship for valid replies (REL)\n\nSpecifies, only if the message is sent as an inquiry or notify message, the relationship that must exist for a reply to be valid. The value specified must meet the requirements specified for replies on the Reply type (TYPE) parameter and the Maximum reply length (LEN) parameter. For replies of the types *CHAR and *ALPHA, the reply is padded on the right with blanks or truncated on the right to match the length of the value specified, before the system performs the test on the reply value sent.\n\nSingle values\n\nElement 1: Relational operator\n\nElement 2: Value\n\nNote: If VALUES, RANGE, or REL had been specified on the existing message, and they are being changed to another type of reply validity-checking, then the existing check must be removed by specifying *NONE. For example, if VALUES had been specified originally, but now the user wants to specify a RANGE, then VALUES(*NONE) and RANGE(lower-value upper-value) must be specified in the CHGMSGD command.",
+      "inputType": "group",
+      "required": false,
+      "groupKind": "elements",
+      "singleValues": [
+        "*SAME",
+        "*NONE"
+      ],
+      "children": [
+        {
+          "name": "REL_E1",
+          "description": "Relational operator",
+          "inputType": "dropdown",
+          "required": false,
+          "attributes": {
+            "characterSet": "upper"
+          },
+          "options": [
+            {
+              "label": "*SAME",
+              "value": "*SAME"
+            },
+            {
+              "label": "*NONE",
+              "value": "*NONE"
+            },
+            {
+              "label": "*EQ",
+              "value": "*EQ"
+            },
+            {
+              "label": "*LE",
+              "value": "*LE"
+            },
+            {
+              "label": "*GE",
+              "value": "*GE"
+            },
+            {
+              "label": "*GT",
+              "value": "*GT"
+            },
+            {
+              "label": "*LT",
+              "value": "*LT"
+            },
+            {
+              "label": "*NE",
+              "value": "*NE"
+            },
+            {
+              "label": "*NL",
+              "value": "*NL"
+            },
+            {
+              "label": "*NG",
+              "value": "*NG"
+            }
+          ],
+          "defaultValue": "*SAME"
+        },
+        {
+          "name": "REL_E2",
+          "description": "Value",
+          "inputType": "text",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "DFT",
+      "description": "Default reply value",
+      "help": "Default reply value (DFT)\n\nSpecifies, only if the message is sent as an inquiry or notify message, the default reply (enclosed in apostrophes, if it contains special characters) used when the receiver of the message has indicated that all messages to him are to use default replies, or when a message is deleted from a message queue and no reply was specified. The default reply can also be used to answer notify messages that are not monitored. The default reply must meet the requirements specified for replies by the validity-checking parameters.\n\n指定できる特殊値: *SAME, *NONE",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*SAME",
+      "attributes": {
+        "characterSet": "upper"
+      }
+    },
+    {
+      "name": "DFTPGM",
+      "description": "Default program to call",
+      "help": "Default program to call (DFTPGM)\n\nSpecifies the default program (if any) to take default action when this message is sent as an escape message to a program that is not monitoring for it. This parameter is ignored if the message is not sent as an escape message. If it is sent as an escape message, the following parameters are passed to the default program:\n\nSingle values\n\nQualifier 1: Default program to call\n\nQualifier 2: Library",
+      "inputType": "group",
+      "required": false,
+      "groupKind": "qualified",
+      "singleValues": [
+        "*SAME",
+        "*NONE"
+      ],
+      "children": [
+        {
+          "name": "DFTPGM_LIB",
+          "description": "Library",
+          "help": "指定できる特殊値: *LIBL, *CURLIB",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "*LIBL",
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          }
+        },
+        {
+          "name": "DFTPGM",
+          "description": "Default program to call",
+          "inputType": "text",
+          "required": false,
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          },
+          "defaultValue": "*SAME"
+        }
+      ]
+    },
+    {
+      "name": "DMPLST",
+      "description": "Data to be dumped",
+      "help": "Data to be dumped (DMPLST)\n\nSpecifies the data dumped when this message is sent as an escape message to a program that is not monitoring for it. This parameter can specify that data related to the job be dumped, that data from message data fields be dumped, or that a combination of these be dumped. When data from message data fields is dumped, this parameter specifies one or more numbers that identify, by position, the data fields being dumped.\n\nThe system objects indicated by system pointers are dumped. The data in a space object, indicated by a space pointer, is dumped starting from the offset indicated by the space pointer for the length indicated in the field description. The standard job dump can also be requested.\n\nNote:\n\nSingle values\n\nOther values\n\n指定できる特殊値: *SAME, *NONE, *JOB, *JOBINT, *JOBDMP",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*SAME",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "maxOccurrences": 102
+    },
+    {
+      "name": "ALROPT",
+      "description": "Alert options",
+      "help": "Alert options (ALROPT)\n\nSpecifies the alert option associated with messages sent to the QHST log and the system operator message queue.\n\nSingle values\n\nElement 1: Alert type\n\nElement 2: Resource name variable",
+      "inputType": "group",
+      "required": false,
+      "groupKind": "elements",
+      "singleValues": [
+        "*SAME"
+      ],
+      "children": [
+        {
+          "name": "ALROPT_E1",
+          "description": "Alert type",
+          "help": "指定できる特殊値: *IMMED, *DEFER, *UNATTEND, *NO",
+          "inputType": "text",
+          "required": false,
+          "attributes": {
+            "characterSet": "upper"
+          },
+          "defaultValue": "*SAME"
+        },
+        {
+          "name": "ALROPT_E2",
+          "description": "Resource name variable",
+          "help": "指定できる特殊値: *NONE",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "*NONE",
+          "attributes": {
+            "characterSet": "upper"
+          }
+        }
+      ]
+    },
+    {
+      "name": "LOGPRB",
+      "description": "Log problem",
+      "help": "Log problem (LOGPRB)\n\nSpecifies, for IBM-supplied messages, whether or not an entry can be put into the problem log. If there is an error log ID for the message and *YES is specified for this parameter, you can request problem analysis by pressing F14 from the system operator message queue display (by running DSPMSG *SYSOPR command).",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*SAME",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*SAME",
+          "value": "*SAME"
+        },
+        {
+          "label": "*NO",
+          "value": "*NO"
+        },
+        {
+          "label": "*YES",
+          "value": "*YES"
+        }
+      ]
+    },
+    {
+      "name": "CCSID",
+      "description": "Coded character set ID",
+      "help": "Coded character set ID (CCSID)\n\nSpecifies the coded character set identifier (CCSID) that the text supplied for the MSG and SECLVL parameters is in.\n\nIf the MSG and SECLVL parameters are not coded, the value supplied for the CCSID parameter is used to change the CCSID tag associated with the message description. No text conversion occurs in this case. Use the CCSID parameter in this way to correct a message description that has an incorrect CCSID tag.\n\nIf either the MSG or the SECLVL parameters are coded along with the CCSID parameter, the text supplied for the MSG and SECLVL parameters will be assumed to be in the CCSID specified. If only one of the MSG or SECLVL parameters is coded, but not both, any existing text associated with the parameter that is not coded is converted to the specified CCSID so that all the text is in the same CCSID.\n\nIf the message file is anything other than 65535 or 65534, the text is converted from the CCSID specified to the CCSID of the message file. Otherwise, the CCSID specified is saved with the MSG description in the event a conversion is needed during a retrieve or display function.\n\nIf the CCSID specified does not match the character encoding of the message description, unpredictable results may occur.\n\nTo use the CCSID associated with the message description, the CCSID associated with the message file must be 65534. See the Change Message File (CHGMSGF) command for details on how to change the CCSID associated with the message file.\n\nThe CCSID only applies to the first level message text and the second level message text of the message description.\n\nIf the MSG and SECLVL parameters are specified, the text supplied in these parameters is assumed to be in the CCSID specified. For more information about the message handler and its use of CCSIDs, see the i5/OS globalization topic collection in the IBM i Information Center at http://www.ibm.com/systems/i/infocenter/.\n\n指定できる特殊値: *SAME, *HEX, *JOB",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*JOB",
+      "attributes": {
+        "characterSet": "upper"
+      }
+    }
+  ],
+  "examples": [
+    {
+      "code": "CHGMSGD MSGID(UIN0115) MSGF(INV) MSG('Enter your name') SEV(55)"
+    },
+    {
+      "code": "CHGMSGD MSGID(UPY0047) MSGF(PAYLIB/TIMECARD) VALUES(*NONE) RANGE(0300 8900)"
+    },
+    {
+      "code": "CHGMSGD MSGID(XYZ0202) MSGF(XYZMSGF) VALUES(*NONE) RANGE(AAA ZZZ)"
+    },
+    {
+      "code": "CHGMSGD MSGID(XYZ0202) MSGF(XYZMSGF) LEN(3) VALUES(*NONE) RANGE(AAA ZZZ)"
+    }
+  ],
+  "source": {
+    "url": "https://www.ibm.com/docs/en/ssw_ibm_i_74/cl/chgmsgd.htm",
+    "version": "IBM i 7.4"
+  }
+}

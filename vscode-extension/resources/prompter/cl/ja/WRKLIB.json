@@ -1,0 +1,103 @@
+{
+  "keyword": "WRKLIB",
+  "description": "ライブラリー処理 (WRKLIB)",
+  "help": "ライブラリーの処理(WRKLIB)コマンドは，ライブラリーのリストを表示し，これによって指定されたライブラリーをコピー，削除，表示，印刷，保管，復元，変更，および消去することができます。",
+  "parameters": [
+    {
+      "name": "LIB",
+      "description": "ライブラリー",
+      "help": "「ライブラリーの処理」画面に表示されるライブラリーの名前を指定します。\n\n次のQXXXライブラリーは弊社提供のものですが，これらには一般的によく変更されるユーザー・データが収められます。したがって，これらのライブラリーはユーザー・ライブラリーとみなされて，表示もされます。",
+      "inputType": "group",
+      "required": false,
+      "groupKind": "qualified",
+      "children": [
+        {
+          "name": "LIB",
+          "description": "ライブラリー",
+          "help": "指定できる特殊値: *LIBL, *CURLIB, *USRLIBL, *ALLUSR, *ALL",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "*LIBL",
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          }
+        }
+      ],
+      "positional": 1
+    },
+    {
+      "name": "ASP",
+      "description": "ASP番号",
+      "help": "「ライブラリーの処理」画面に表示されるライブラリーの補助記憶域プール(ASP)を指定します。このパラメーターは，ライブラリー・パラメーターで値*LIBL, *CURLIB,または*USRLIBLが入力されると無視されます。数値をこのパラメーターに指定する場合は， ASP 装置 (ASPDEV) パラメーター値は＊でなければなりません。\n\n*ALL: ASP 装置 (ASPDEV) パラメーターに対する値によって定義されたすべてのASPが検索されます。\n検索するシステムASPまたは基本ユーザーASPの番号を指定してください。ASP 1は，常時構成されているシステムASPです。基本ユーザーASPは2から32であり，システムで構成されているASPを指定しなければなりません。ASPの構成については，ISERIESバックアップおよび回復(SD88-5008)を参照してください。",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*ALL",
+      "attributes": {
+        "characterSet": "upper"
+      }
+    },
+    {
+      "name": "ASPDEV",
+      "description": "ASP装置",
+      "help": "表示しようとしているライブラリーの記憶域が割り振られている補助記憶域プール(ASP)装置名を指定します。このライブラリーがスレッドのライブラリー名スペースの一部でないASPにある場合には，必ず正しいライブラリーが表示されるようにするために，このパラメーターを指定しなければなりません。数値を ASP 番号 (ASP) パラメーターに指定する場合は，ASPDEVパラメーターは＊でなければなりません。\n\n*: 現在，スレッドのライブラリー名スペースの一部であるASPが，ライブラリーを見つけるために検索されます。これには，システムASP (ASP 1),すべての定義済み基本ユーザーASP (ASP 2から32)が含まれ，スレッドにASPグループがある場合には，スレッドのASPグループの中の1次および2次ASPが含まれます。\n*SYSBAS: システムASP (ASP 1)とすべての定義済み基本ユーザーASP (ASP 2から32)が，ライブラリーを見つけるために検索されます。スレッドにASPグループがあっても，1次または2次ASPは検索されません。\n*CURASPGRP: スレッドにASPグループがある場合には，スレッドのASPグループ中の1次および2次ASPがライブラリーを見つけるために検索されます。システムASP (ASP 1)および定義済みの基本ユーザーASP (ASP 2から32)は検索されません。スレッドと関連したASPグループがない場合には，エラーが出されます。\n検索する1次ASPまたは2次ASPの装置名を指定してください。この1次または2次ASPは活動化されていて(ASP装置をオンに変更することによって），「使用可能」の状況になっていなければなりません。システムASP (ASP 1)および構成済みの基本ユーザーASP (ASP 2から32)は検索されません。",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*",
+      "attributes": {
+        "characterSet": "upper",
+        "maxLength": 10
+      }
+    }
+  ],
+  "threadSafe": false,
+  "environment": "対話環境 (*INTERACT *IPGM *IREXX *EXEC)",
+  "restrictions": [
+    "何らかの権限をもっているライブラリーだけが，画面に表示されます。",
+    "IBM Iのデータベース機密保護管理者機能(QIBM_DB_SECADM)が認可されていると，すべてのライブラリーが画面に表示されます。",
+    "ライブラリーに対して操作を実行するためには，その操作で使用されるコマンドに対する使用(*USE)権限，およびその操作の実行対象であるライブラリーに対する適切な権限が必要です。"
+  ],
+  "examples": [
+    {
+      "code": "WRKLIB LIB(QJ*) ASP(2)"
+    }
+  ],
+  "errorMessages": [
+    {
+      "id": "CPF218C",
+      "text": "&1は1次または2次ASPではない。"
+    },
+    {
+      "id": "CPF2302",
+      "text": "装置&1がASPグループ&2に見つからない。"
+    },
+    {
+      "id": "CPF9809",
+      "text": "ライブラリー&1をアクセスすることができない。"
+    },
+    {
+      "id": "CPF9814",
+      "text": "装置&1が見つかりません。"
+    },
+    {
+      "id": "CPF9820",
+      "text": "ライブラリー&1の使用は認可されていない。"
+    },
+    {
+      "id": "CPF9825",
+      "text": "装置&1は認可されていない。"
+    },
+    {
+      "id": "CPF9833",
+      "text": "*CURASPGRPまたは*ASPGRPPRIが指定されていて，スレッドにASPグループがない。"
+    },
+    {
+      "id": "CPFB8ED",
+      "text": "装置記述&1はこの操作には正しくありません。"
+    }
+  ],
+  "source": {
+    "url": "https://www.ibm.com/docs/ja/ssw_ibm_i_74/cl/wrklib.htm",
+    "version": "IBM i 7.4"
+  }
+}

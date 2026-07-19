@@ -1,0 +1,386 @@
+{
+  "keyword": "CHGSRCPF",
+  "description": "Change Source Physical File (CHGSRCPF)",
+  "parameters": [
+    {
+      "name": "FILE",
+      "description": "Physical file",
+      "help": "Physical file (FILE)\n\nSpecifies the physical file to be changed.\n\nNote: If a Distributed Data Management (DDM) file is specified, the name of the physical file to be changed and the name of the remote system on which the file is to be changed are contained in the DDM file. For more information, see the System (SYSTEM) parameter of this command.\n\nThis is a required parameter.\n\nQualifier 1: Physical file\n\nQualifier 2: Library",
+      "inputType": "group",
+      "required": true,
+      "groupKind": "qualified",
+      "children": [
+        {
+          "name": "LIB",
+          "description": "Library",
+          "help": "指定できる特殊値: *LIBL, *CURLIB",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "*LIBL",
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          }
+        },
+        {
+          "name": "FILE",
+          "description": "Physical file",
+          "inputType": "text",
+          "required": true,
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          }
+        }
+      ],
+      "positional": 1
+    },
+    {
+      "name": "SYSTEM",
+      "description": "System",
+      "help": "System (SYSTEM)\n\nSpecifies whether the physical file is changed on the local system or the remote system.",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*LCL",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*LCL",
+          "value": "*LCL"
+        },
+        {
+          "label": "*RMT",
+          "value": "*RMT"
+        },
+        {
+          "label": "*FILETYPE",
+          "value": "*FILETYPE"
+        }
+      ]
+    },
+    {
+      "name": "EXPDATE",
+      "description": "Expiration date for member",
+      "help": "Expiration date for member (EXPDATE)\n\nSpecifies the expiration date of all the file's members. If an expiration date is specified, all members in the file are changed. You can specify a new expiration date for a member that has exceeded its expiration date by changing this parameter. The expiration date must be later than or equal to the current date.",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*SAME",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*SAME",
+          "value": "*SAME"
+        },
+        {
+          "label": "*NONE",
+          "value": "*NONE"
+        }
+      ]
+    },
+    {
+      "name": "MAXMBRS",
+      "description": "Maximum members",
+      "help": "Maximum members (MAXMBRS)\n\nSpecifies the maximum number of members that the physical file can have at any time. The maximum number of members specified must be greater than or equal to the current number of members in the file.\n\n指定できる特殊値: *SAME, *NOMAX",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*SAME",
+      "attributes": {
+        "characterSet": "upper"
+      }
+    },
+    {
+      "name": "ACCPTHSIZ",
+      "description": "Access path size",
+      "help": "Access path size (ACCPTHSIZ)\n\nSpecifies the maximum size of auxiliary storage that can be occupied by the following kinds of access paths:\n\nChanging the value for this file causes the access paths that are owned by the file to be rebuilt.\n\nNote: This parameter does not apply to access paths that are created for queries that refer to the data in the file.\n\nPerformance Tip\n\nFor optimum performance, consider whether there is high contention for keys within the access path when selecting the value on this parameter:",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*SAME",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*SAME",
+          "value": "*SAME"
+        },
+        {
+          "label": "*MAX4GB",
+          "value": "*MAX4GB"
+        },
+        {
+          "label": "*MAX1TB",
+          "value": "*MAX1TB"
+        }
+      ]
+    },
+    {
+      "name": "MAINT",
+      "description": "Access path maintenance",
+      "help": "Access path maintenance (MAINT)\n\nSpecifies the type of access path maintenance used for all members of the physical file. This parameter is valid only if the file has a keyed access path.\n\nIf the number of changes between a close operation and the next open operation reaches approximately 10% of the access path size, the system stops saving changes and the access path is completely rebuilt the next time the file is opened.",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*SAME",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*SAME",
+          "value": "*SAME"
+        },
+        {
+          "label": "*IMMED",
+          "value": "*IMMED"
+        },
+        {
+          "label": "*REBLD",
+          "value": "*REBLD"
+        },
+        {
+          "label": "*DLY",
+          "value": "*DLY"
+        }
+      ]
+    },
+    {
+      "name": "RECOVER",
+      "description": "Access path recovery",
+      "help": "Access path recovery (RECOVER)\n\nSpecifies, for files having immediate or delayed maintenance on their access paths, when recovery processing of the file is done if a system failure occurs while the access path is being changed. This parameter is valid only if a keyed access path is used.",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*SAME",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*SAME",
+          "value": "*SAME"
+        },
+        {
+          "label": "*NO",
+          "value": "*NO"
+        },
+        {
+          "label": "*AFTIPL",
+          "value": "*AFTIPL"
+        },
+        {
+          "label": "*IPL",
+          "value": "*IPL"
+        }
+      ]
+    },
+    {
+      "name": "FRCACCPTH",
+      "description": "Force keyed access path",
+      "help": "Force keyed access path (FRCACCPTH)\n\nSpecifies, for files with keyed access paths only, whether access path changes are forced to auxiliary storage along with the associated records in the file. Specifying *YES minimizes (but does not remove) the chance that an abnormal end will cause damage to the access path, which then requires it to be rebuilt.",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*SAME",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*SAME",
+          "value": "*SAME"
+        },
+        {
+          "label": "*NO",
+          "value": "*NO"
+        },
+        {
+          "label": "*YES",
+          "value": "*YES"
+        }
+      ]
+    },
+    {
+      "name": "SIZE",
+      "description": "Member size",
+      "help": "Member size (SIZE)\n\nSpecifies the initial number of records in each member of the file, the number of records for each increment added to the member, and the number of times the increment is automatically applied. The number of records for each file member is specified as the number of records that can be placed in it (this number includes any deleted records).\n\nThe maximum number of records for the member (initial number of records plus the increment number of records times the maximum increments) must be larger than the current number of records in the member. If it is smaller than the current number of records in the member, an error message is sent, and the maximum number of records for the member does not change.\n\nSingle values\n\nElement 1: Initial number of records\n\nElement 2: Increment number of records\n\nEnter a 0 value to prevent automatic extensions. This value must be 0 if the value for the maximum increments is 0.\n\nElement 3: Maximum increments",
+      "inputType": "group",
+      "required": false,
+      "groupKind": "elements",
+      "singleValues": [
+        "*NOMAX"
+      ],
+      "children": [
+        {
+          "name": "SIZE_E1",
+          "description": "Initial number of records",
+          "help": "指定できる特殊値: *SAME",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "*SAME",
+          "attributes": {
+            "characterSet": "upper"
+          }
+        },
+        {
+          "name": "SIZE_E2",
+          "description": "Increment number of records",
+          "help": "指定できる特殊値: *SAME",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "*SAME",
+          "attributes": {
+            "characterSet": "upper"
+          }
+        },
+        {
+          "name": "SIZE_E3",
+          "description": "Maximum increments",
+          "help": "指定できる特殊値: *SAME",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "*SAME",
+          "attributes": {
+            "characterSet": "upper"
+          }
+        }
+      ]
+    },
+    {
+      "name": "ALLOCATE",
+      "description": "Allocate storage",
+      "help": "Allocate storage (ALLOCATE)\n\nSpecifies whether the initial storage space is allocated for each physical file member when it is added to the file. This change takes effect the next time a new member is added to the file or when a current member is cleared or reorganized.",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*SAME",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*NO",
+          "value": "*NO"
+        },
+        {
+          "label": "*YES",
+          "value": "*YES"
+        },
+        {
+          "label": "*SAME",
+          "value": "*SAME"
+        }
+      ]
+    },
+    {
+      "name": "UNIT",
+      "description": "Preferred storage unit",
+      "help": "Preferred storage unit (UNIT)\n\nSpecifies the preferred storage media for the file.\n\n指定できる特殊値: *SAME, *ANY, *SSD",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*SAME",
+      "attributes": {
+        "characterSet": "upper"
+      }
+    },
+    {
+      "name": "FRCRATIO",
+      "description": "Records to force a write",
+      "help": "Records to force a write (FRCRATIO)\n\nSpecifies the number of inserted, changed, or deleted records that are processed before those records are forced to auxiliary (permanent) storage. If the physical file is being recorded in a journal, it is recommended that a larger force write ratio, or *NONE, be specified. More information on journal management is in the Recovering your system book, SC41-5304.\n\n指定できる特殊値: *SAME, *NONE",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*SAME",
+      "attributes": {
+        "characterSet": "upper"
+      }
+    },
+    {
+      "name": "WAITFILE",
+      "description": "Maximum file wait time",
+      "help": "Maximum file wait time (WAITFILE)\n\nSpecifies the number of seconds that the program waits for the file resources and session resources to be allocated when the file is opened, or for the device or session resources to be allocated when an acquire operation is performed to the file. If the file resources are not allocated in the specified wait time, an error message is sent to the program.\n\nNote: An immediate allocation of the device by the device resource is required when an acquire operation is performed to the file.\n\n指定できる特殊値: *SAME, *IMMED, *CLS",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*SAME",
+      "attributes": {
+        "characterSet": "upper"
+      }
+    },
+    {
+      "name": "WAITRCD",
+      "description": "Maximum record wait time",
+      "help": "Maximum record wait time (WAITRCD)\n\nSpecifies the number of seconds that the program waits for a record that is changed or deleted. If the record is not allocated in the specified wait time, an error message is sent to the program.\n\n指定できる特殊値: *SAME, *IMMED, *NOMAX",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*SAME",
+      "attributes": {
+        "characterSet": "upper"
+      }
+    },
+    {
+      "name": "SHARE",
+      "description": "Share open data path",
+      "help": "Share open data path (SHARE)\n\nSpecifies whether the open data path (ODP) is shared with other programs in the same routing step. When an ODP is shared, the programs accessing the file share facilities such as the file status and the buffer.",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*SAME",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*SAME",
+          "value": "*SAME"
+        },
+        {
+          "label": "*NO",
+          "value": "*NO"
+        },
+        {
+          "label": "*YES",
+          "value": "*YES"
+        }
+      ]
+    },
+    {
+      "name": "DLTPCT",
+      "description": "Max % deleted records allowed",
+      "help": "Max % deleted records allowed (DLTPCT)\n\nSpecifies the maximum percentage of deleted records that any member in the physical file can have. The percentage is based on the number of deleted records compared with the total record count in a member. This change takes effect the next time the file is opened and closed.\n\n指定できる特殊値: *NONE, *SAME",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*SAME",
+      "attributes": {
+        "characterSet": "upper"
+      }
+    },
+    {
+      "name": "TEXT",
+      "description": "Text 'description'",
+      "help": "Text 'description' (TEXT)\n\nSpecifies the text that briefly describes the object.\n\n指定できる特殊値: *SAME, *BLANK",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*SAME",
+      "attributes": {
+        "characterSet": "upper"
+      }
+    },
+    {
+      "name": "CCSID",
+      "description": "Coded character set ID",
+      "help": "Coded character set ID (CCSID)\n\nSpecifies the coded character set identifier (CCSID) used to describe character data in the fields of the file.\n\n指定できる特殊値: *SAME, *HEX",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*SAME",
+      "attributes": {
+        "characterSet": "upper"
+      }
+    }
+  ],
+  "examples": [
+    {
+      "code": "CHGSRCPF FILE(QGPL/INV) EXPDATE('10/31/88')"
+    }
+  ],
+  "source": {
+    "url": "https://www.ibm.com/docs/en/ssw_ibm_i_74/cl/chgsrcpf.htm",
+    "version": "IBM i 7.4"
+  }
+}

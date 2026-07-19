@@ -81,6 +81,21 @@ export const categories = {
       'CHGOBJOWN', 'DSPOBJAUT', 'EDTOBJAUT',
       // 構成・システム値
       'WRKCFGSTS', 'VRYCFG', 'DSPSYSVAL',
+
+      // 第4弾: コンパイル / オブジェクト作成の残り
+      'ADDBNDDIRE', 'ADDMSGD', 'CHGMSGD', 'CRTBNDDIR', 'CRTCBLMOD', 'CRTCBLPGM', 'CRTCMD', 'CRTDTADCT',
+      'CRTMNU', 'CRTMSGF', 'CRTPNLGRP', 'CRTRPGPGM', 'CRTRPTPGM', 'CRTSBSD', 'CRTSQLCBL', 'CRTSQLCBLI',
+      'CRTSQLPKG', 'CRTSQLRPG', 'CRTSQLRPGI', 'RMVBNDDIRE', 'RMVMSGD',
+      // 第4弾: サブシステム関連
+      'ADDAJE', 'ADDCMNE', 'ADDJOBQE', 'ADDPJE', 'ADDRTGE', 'ADDWSE', 'CHGAJE', 'CHGJOBQE',
+      'CHGPJE', 'CHGRTGE', 'CHGSBSD', 'CHGWSE', 'DLTSBSD', 'DSPSBSD', 'ENDSBS', 'RMVAJE',
+      'RMVCMNE', 'RMVJOBQE', 'RMVPJE', 'RMVRTGE', 'RMVWSE', 'STRSBS', 'WRKSBS', 'WRKSBSD',
+      'WRKSBSJOB',
+      // 第4弾: 既存対象物の動詞の穴埋め
+      'CHGDSPF', 'CHGJOBD', 'CHGLF', 'CHGLIB', 'CHGPGM', 'CHGPRTF', 'CHGSRCPF', 'CHGWTR',
+      'DLTMOD', 'DLTPGM', 'DLTSRVPGM', 'DSPDTAARA', 'DSPF', 'DSPJOB', 'DSPJOBD', 'DSPLIB',
+      'DSPMOD', 'DSPPGM', 'DSPSPLF', 'DSPSRVPGM', 'EDTF', 'ENDWTR', 'HLDWTR', 'RLSWTR',
+      'WRKDTAARA', 'WRKF', 'WRKJOBD', 'WRKLIB', 'WRKMOD', 'WRKPGM', 'WRKSRVPGM',
     ].map((name) => ({ name })),
   },
 

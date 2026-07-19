@@ -1,0 +1,115 @@
+{
+  "keyword": "ADDAJE",
+  "description": "自動開始ジョブ項目追加 (ADDAJE)",
+  "help": "自動開始ジョブ項目追加 (ADDAJE)コマンドは，指定されたサブシステム記述に自動始動ジョブ項目を追加します。この項目は，ジョブを自動始動するために使用されるジョブ名およびジョブ記述を識別します。",
+  "parameters": [
+    {
+      "name": "SBSD",
+      "description": "サブシステム記述",
+      "help": "自動始動ジョブ項目を追加するサブシステム記述の名前およびライブラリーを指定します。\n\nこれは必須パラメーターです。",
+      "inputType": "group",
+      "required": true,
+      "groupKind": "qualified",
+      "children": [
+        {
+          "name": "LIB",
+          "description": "ライブラリー",
+          "help": "*LIBL: 一致が見つかるまで，スレッドのライブラリー・リストの中のすべてのライブラリーが検索されます。\n*CURLIB: オブジェクトを見つけるためにスレッドの現行ライブラリーが使用されます。スレッドの現行ライブラリーとしてライブラリーが指定されていない場合，QGPLライブラリーが使用されます。\nサブシステム記述が入っているライブラリーを指定します。",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "*LIBL",
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          }
+        },
+        {
+          "name": "SBSD",
+          "description": "サブシステム記述",
+          "help": "自動始動ジョブ項目が追加されるサブシステム記述の名前を指定します。 注 : IBM提供オブジェクトQSYSSBSDはこのパラメーターには正しくありません。",
+          "inputType": "text",
+          "required": true,
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          }
+        }
+      ],
+      "positional": 1
+    },
+    {
+      "name": "JOB",
+      "description": "ジョブ名",
+      "help": "サブシステム記述 (SBSD) パラメーターに指定されたサブシステム記述を使用してサブシステムが開始された時に自動始動されるジョブの単純名を指定します。\n\nこれは必須パラメーターです。\n\n自動始動されるジョブの単純名を指定します。",
+      "inputType": "text",
+      "required": true,
+      "attributes": {
+        "characterSet": "upper",
+        "maxLength": 10
+      },
+      "positional": 2
+    },
+    {
+      "name": "JOBD",
+      "description": "ジョブ記述",
+      "help": "この自動始動ジョブ項目によって開始されるジョブで使用するジョブ記述の名前を指定します。項目の追加または変更時にジョブ記述が存在していない場合には，修飾されたジョブ記述名がサブシステム記述に保持されるため，ライブラリー修飾子を指定する必要があります。",
+      "inputType": "group",
+      "required": false,
+      "groupKind": "qualified",
+      "singleValues": [
+        "*SBSD"
+      ],
+      "children": [
+        {
+          "name": "JOBD_LIB",
+          "description": "ライブラリー",
+          "help": "*LIBL: 一致が見つかるまで，スレッドのライブラリー・リストの中のすべてのライブラリーが検索されます。\n*CURLIB: オブジェクトを見つけるためにスレッドの現行ライブラリーが使用されます。スレッドの現行ライブラリーとしてライブラリーが指定されていない場合，QGPLライブラリーが使用されます。\nジョブ記述が入っているライブラリーを指定してください。",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "*LIBL",
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          }
+        },
+        {
+          "name": "JOBD",
+          "description": "ジョブ記述",
+          "help": "この自動始動ジョブ項目によって開始されるジョブに使用されるジョブ記述の名前を指定します。",
+          "inputType": "text",
+          "required": false,
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          },
+          "defaultValue": "*SBSD"
+        }
+      ]
+    }
+  ],
+  "threadSafe": false,
+  "environment": "すべての環境 (*ALL)",
+  "restrictions": [
+    "このコマンドを使用するには，以下が必要です。 指定されたサブシステム記述に対するオブジェクト操作(*OBJOPR),オブジェクト管理(*OBJMGT),および読み取り(*READ)権限と，そのサブシステム記述が入っているライブラリーに対する実行(*EXECUTE)権限。 ジョブ記述に対するオブジェクト操作(*OBJOPR)および読み取り(*READ)権限と，そのジョブ記述が入っているライブラリーに対する実行(*EXECUTE)権限。",
+    "ジョブ記述が存在していない項目の追加は，全オブジェクト(*ALLOBJ)特殊権限をもつユーザーだけに許可されます。"
+  ],
+  "examples": [
+    {
+      "code": "ADDAJE SBSD(ACCTLIB/ACCTINT) JOB(ACCTINIT) JOBD(ACCTLIB/INITSBS)"
+    }
+  ],
+  "errorMessages": [
+    {
+      "id": "CPF1619",
+      "text": "ライブラリー&2のサブシステム記述&1に損傷がある。"
+    },
+    {
+      "id": "CPF1697",
+      "text": "サブシステム記述&1は変更されなかった。"
+    }
+  ],
+  "source": {
+    "url": "https://www.ibm.com/docs/ja/ssw_ibm_i_74/cl/addaje.htm",
+    "version": "IBM i 7.4"
+  }
+}

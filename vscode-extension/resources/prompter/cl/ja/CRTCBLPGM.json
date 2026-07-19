@@ -1,0 +1,936 @@
+{
+  "keyword": "CRTCBLPGM",
+  "description": "COBOLプログラム作成 (CRTCBLPGM)",
+  "help": "CRTCBLPGMコマンドは，COBOLソース・プログラムをコンパイルしてプログラム・オブジェクトを作成します。このコマンドは対話式でも，バッチ・モードでも，またCLプログラムに組み込んでも使用することができます。\n\nCRTCBLPGMコマンドに指定するすべてのオブジェクト名は英数字で構成しなければならず，また最初の文字は英字でなければなりません。名前の長さは10桁を超えることはできません。",
+  "parameters": [
+    {
+      "name": "PGM",
+      "description": "プログラム",
+      "help": "作成中のCOBOLプログラム・オブジェクトのプログラム名およびライブラリー名を指定します。考えられる値は次の通りです。\n\n使用できるライブラリーの値は次の通りです。",
+      "inputType": "group",
+      "required": false,
+      "groupKind": "qualified",
+      "children": [
+        {
+          "name": "LIB",
+          "description": "ライブラリー",
+          "help": "指定できる特殊値: *CURLIB",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "*CURLIB",
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          }
+        },
+        {
+          "name": "PGM",
+          "description": "プログラム",
+          "help": "指定できる特殊値: *PGMID",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "*PGMID",
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          }
+        }
+      ],
+      "positional": 1
+    },
+    {
+      "name": "SRCFILE",
+      "description": "ソース・ファイル",
+      "help": "コンパイルしたいCOBOLソースが入っているソース・ファイルの名前を指定します。考えられる値は次の通りです。\n\n使用できるライブラリーの値は次の通りです。",
+      "inputType": "group",
+      "required": false,
+      "groupKind": "qualified",
+      "children": [
+        {
+          "name": "SRCFILE_LIB",
+          "description": "ライブラリー",
+          "help": "指定できる特殊値: *LIBL, *CURLIB",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "*LIBL",
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          }
+        },
+        {
+          "name": "SRCFILE",
+          "description": "ソース・ファイル",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "QLBLSRC",
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          }
+        }
+      ],
+      "positional": 2
+    },
+    {
+      "name": "SRCMBR",
+      "description": "ソース・メンバー",
+      "help": "コンパイルしたいCOBOLソースが入っているメンバーの名前を指定します。このパラメーターを指定できるのは，SRCFILEパラメーターで参照したソース・ファイルがデータベース・ファイルの場合だけです。考えられる値は次の通りです。\n\nPGMパラメーターにプログラム名を指定しなかった場合には，コンパイラーはデータベース・ソース・ファイルの最初のメンバーでプログラム・ソースを探し，PROGRAM-ID段落に指定された名前を使用してオブジェクト・プログラムを作成します。\n\n*PGM: PGMパラメーターにプログラム名を指定した場合には，コンパイラーはそのプログラムと同じ名前のメンバーのソース・プログラムを探し，そのプログラムおよびメンバーと同じ名前のオブジェクト・プログラムを作成します。 PGMパラメーターにプログラム名を指定しなかった場合には，コンパイラーはデータベース・ソース・ファイルの最初のメンバーでプログラム・ソースを探し，PROGRAM-ID段落に指定された名前を使用してオブジェクト・プログラムを作成します。\nCOBOLソース・プログラムが入っているメンバー名を入力してください。",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*PGM",
+      "attributes": {
+        "characterSet": "upper",
+        "maxLength": 10
+      },
+      "positional": 3
+    },
+    {
+      "name": "GENLVL",
+      "description": "生成重大度レベル",
+      "help": "プログラム・オブジェクトを作成するかどうかを決定する重大度レベルを指定します。この重大度レベルはプログラムのコンパイル時に作成されるメッセージの重大度レベルに対応します。エラー・メッセージの重大度レベルが指定した値より大きい場合には，プログラム・オブジェクトは作成されません。たとえば，このパラメーターに19 を指定した場合には，メッセージのどれかの重大度レベルが20以上であれば，プログラム・オブジェクトは作成されません。\n\n考えられる値は次の通りです。\n\n29: 重大度レベルが29より大きいエラーが起こった場合には，プログラム・オブジェクトは作成されません。\n１桁または２桁の数字(0-29)を指定してください。このレベルより大きい重大度レベルのエラーが起こった場合には，プログラム・オブジェクトは作成されません。",
+      "inputType": "number",
+      "required": false,
+      "defaultValue": "29",
+      "attributes": {
+        "numericOnly": true
+      }
+    },
+    {
+      "name": "TEXT",
+      "description": "テキスト'記述'",
+      "help": "プログラムとその機能についての簡単な説明。考えられる値は次の通りです。\n\n*SRCMBRTXT: プログラム・オブジェクトのテキストには，COBOLソースが入っているデータベース・ファイル・メンバーを記述するテキストと同じものを使用します。ソースが装置またはインライン・ファイルから入力された場合には，*SRCMBRTXTの指定は，*BLANKの指定と同じ効果となります。\n*BLANK: テキストは指定されません。\nプログラムおよびその機能を簡単に説明するテキストを入力してください。テキストは最長で50桁とすることができますが，アポストロフィで囲まなければなりません。アポストロフィは50桁のストリングの一部にはなりません。",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*SRCMBRTXT",
+      "attributes": {
+        "characterSet": "upper"
+      }
+    },
+    {
+      "name": "OPTION",
+      "description": "ソース・リスト・オプション",
+      "help": "COBOLソースのコンパイル時に使用するオプションを指定します。考えられる値は次の通りです。\n\nコンパイラーは，ソース・レベル・デバッグ情報を作成しません。*NOLSTDBGも有効となっている場合には，コンパイラーはソース・レベル・エラー情報も作成しません。\n\nコンパイラーは，ソース・レベル・エラー情報およびソース・レベル・デバッグ情報を作成します。\n\n*SRCDBGと*LSTDBGを同時に指定することはできません。いずれか一方のみを指定してください。\n\nコンパイラーは，リスト・ビューまたはリスト・レベル・デバッグ情報を作成しません。*NOSRCDBGも有効であれば，コンパイラーはソース・レベル・エラー情報も作成しません。\n\nコンパイラーは，リスト・ビュー，ソース・レベル・エラー情報，およびリスト・レベル・デバッグ情報を作成します。\n\n*SRCDBGと*LSTDBGを同時に指定することはできません。いずれか一方のみを指定してください。\n\nコンパイラーは，COBOLソース・コードおよびすべてのコンパイル時エラー・メッセージから構成されるソース・リストを作成します。\nコンパイラーは，リストのソース部分を作成しません。ソース・リストが不要な場合には，このオプションを使用してください。コンパイル時間が短くなることがあります。",
+      "inputType": "dropdown",
+      "required": false,
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*SOURCE",
+          "value": "*SOURCE"
+        },
+        {
+          "label": "*NOSOURCE",
+          "value": "*NOSOURCE"
+        },
+        {
+          "label": "*SRC",
+          "value": "*SRC"
+        },
+        {
+          "label": "*NOSRC",
+          "value": "*NOSRC"
+        },
+        {
+          "label": "*NOXREF",
+          "value": "*NOXREF",
+          "help": "コンパイラーは，ソース・プログラムの相互参照表を作成しません。"
+        },
+        {
+          "label": "*XREF",
+          "value": "*XREF",
+          "help": "コンパイラーは，ソース・プログラムの相互参照表を作成します。"
+        },
+        {
+          "label": "*GEN",
+          "value": "*GEN",
+          "help": "コンパイラーは，ソース・プログラムのコンパイル後にプログラム・オブジェクトを作成します。"
+        },
+        {
+          "label": "*NOGEN",
+          "value": "*NOGEN",
+          "help": "コンパイラーは，ソース・プログラムのコンパイル後にプログラム・オブジェクトを作成しません。この時点でエラー・リストだけが必要な場合には，このオプションを指定することができます。"
+        },
+        {
+          "label": "*NOSEQUENCE",
+          "value": "*NOSEQUENCE",
+          "help": "参照番号のシーケンス・エラーは検査されません。"
+        },
+        {
+          "label": "*SEQUENCE",
+          "value": "*SEQUENCE",
+          "help": "参照番号のシーケンス・エラーが検査されます。*LINENUMBERオプションを指定した場合には，シーケンス・エラーは起こりません。"
+        },
+        {
+          "label": "*NOVBSUM",
+          "value": "*NOVBSUM",
+          "help": "動詞使用カウントは印刷されません。"
+        },
+        {
+          "label": "*VBSUM",
+          "value": "*VBSUM",
+          "help": "動詞使用カウントが印刷されます。"
+        },
+        {
+          "label": "*NONUMBER",
+          "value": "*NONUMBER",
+          "help": "ソース・ファイルの順序番号が参照番号として使用されます。"
+        },
+        {
+          "label": "*NUMBER",
+          "value": "*NUMBER",
+          "help": "参照番号としてユーザー提供の順序番号（1-6桁目）が使用されます。"
+        },
+        {
+          "label": "*LINENUMBER",
+          "value": "*LINENUMBER",
+          "help": "コンパイラーによって作成される順序番号が参照番号に使用されます。このオプションはプログラム・ソース・コードとCOPYステートメントによって取り入れられるソース・コードを結合して，１つの連続番号順序を生成します。FIPS（連邦情報処理標準）フラグ付けまたは，SAA*フラグ付けを指定する場合には，このオプションを使用してください。"
+        },
+        {
+          "label": "*NOMAP",
+          "value": "*NOMAP",
+          "help": "コンパイラーは，データ部マップをリストしません。"
+        },
+        {
+          "label": "*MAP",
+          "value": "*MAP",
+          "help": "コンパイラーは，データ部マップをリストします。"
+        },
+        {
+          "label": "*NOOPTIONS",
+          "value": "*NOOPTIONS",
+          "help": "このコンパイルでは，有効なオプションはリストされません。"
+        },
+        {
+          "label": "*OPTIONS",
+          "value": "*OPTIONS",
+          "help": "このコンパイルでは，有効なオプションがリストされます。"
+        },
+        {
+          "label": "*QUOTE",
+          "value": "*QUOTE",
+          "help": "区切り引用符(\")が非数値リテラルおよびブール・リテラルに使用されることを指定します。これはまた，表意定数QUOTEの値が引用符のEBCDIC値をもつことをも指定します。"
+        },
+        {
+          "label": "*APOST",
+          "value": "*APOST",
+          "help": "区切りアポストロフィ(')が非数値リテラルおよびブール・リテラルに使用されることを指定します。これはまた，表意定数QUOTEの値がアポストロフィのEBCDIC 値をもつことをも指定します。"
+        },
+        {
+          "label": "*SECLVL",
+          "value": "*SECLVL",
+          "help": "このコンパイルでは第２レベル・メッセージ・テキストがリストされます。"
+        },
+        {
+          "label": "*NOSECLVL",
+          "value": "*NOSECLVL",
+          "help": "このコンパイルでは第２レベル・メッセージ・テキストはリストされません。"
+        },
+        {
+          "label": "*PRTCORR",
+          "value": "*PRTCORR",
+          "help": "コンパイラーは，CORRESPONDING句を使用した結果としてどの基本項目が組み込まれたかを示す注記行を，コンパイル・リストに挿入します。"
+        },
+        {
+          "label": "*NOPRTCORR",
+          "value": "*NOPRTCORR",
+          "help": "コンパイラーは，CORRESPONDING句が使用されても，注記行をコンパイル・リストに挿入しません。"
+        },
+        {
+          "label": "*NOSRCDBG",
+          "value": "*NOSRCDBG",
+          "help": "このオプションは，クライアント・ツールを使用してCOBOLプログラムをコンパイルした場合にプログラム式ワークステーションに表示される情報の種類を決めます。 コンパイラーは，ソース・レベル・デバッグ情報を作成しません。*NOLSTDBGも有効となっている場合には，コンパイラーはソース・レベル・エラー情報も作成しません。"
+        },
+        {
+          "label": "*SRCDBG",
+          "value": "*SRCDBG",
+          "help": "このオプションは，クライアント・ツールを使用してCOBOLプログラムをコンパイルした場合にプログラム式ワークステーションに表示される情報の種類を決めます。 コンパイラーは，ソース・レベル・エラー情報およびソース・レベル・デバッグ情報を作成します。 *SRCDBGと*LSTDBGを同時に指定することはできません。いずれか一方のみを指定してください。"
+        },
+        {
+          "label": "*NOLSTDBG",
+          "value": "*NOLSTDBG",
+          "help": "このオプションは，クライアント・ツールを使用してCOBOLプログラムをコンパイルした場合にプログラム式ワークステーションに表示される情報の種類を決めます。 コンパイラーは，リスト・ビューまたはリスト・レベル・デバッグ情報を作成しません。*NOSRCDBGも有効であれば，コンパイラーはソース・レベル・エラー情報も作成しません。"
+        },
+        {
+          "label": "*LSTDBG",
+          "value": "*LSTDBG",
+          "help": "このオプションは，クライアント・ツールを使用してCOBOLプログラムをコンパイルした場合にプログラム式ワークステーションに表示される情報の種類を決めます。 コンパイラーは，リスト・ビュー，ソース・レベル・エラー情報，およびリスト・レベル・デバッグ情報を作成します。 *SRCDBGと*LSTDBGを同時に指定することはできません。いずれか一方のみを指定してください。"
+        },
+        {
+          "label": "*PRINT",
+          "value": "*PRINT",
+          "help": "コンパイラーはスプール・リストを作成します。"
+        },
+        {
+          "label": "*NOPRINT",
+          "value": "*NOPRINT",
+          "help": "コンパイラーはスプール・リストを作成しません。"
+        }
+      ],
+      "positional": 4,
+      "maxOccurrences": 50
+    },
+    {
+      "name": "GENOPT",
+      "description": "生成オプション",
+      "help": "プログラム・オブジェクトの作成時に使用するオプションを指定します。COBOLに問題がある場合には，リストが必要になることがあります。考えられる値は次の通りです。\n\nBLOCK CONTAINS文節が指定されている場合，テープ・ファイルを除いてBLOCK CONTAINS文節は無視されます。\n\nBLOCK CONTAINS文節は，ブロック化するレコードの数を制御します。\n\nBLOCK CONTAINS文節を指定しない場合には，コンパイラーはSTARTステートメントのない順次アクセス・ファイルのみのブロック化を許します。オペレーティング・システムがブロック化するレコードの数を決定します。",
+      "inputType": "dropdown",
+      "required": false,
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*NOLIST",
+          "value": "*NOLIST",
+          "help": "IRP（プログラムの中間表現），関連した16進コード，またはエラー・メッセージはリストされません。"
+        },
+        {
+          "label": "*LIST",
+          "value": "*LIST",
+          "help": "IRP,関連した16進コード，およびエラー・メッセージがリストされます。"
+        },
+        {
+          "label": "*NOXREF",
+          "value": "*NOXREF",
+          "help": "IRPに定義されているオブジェクトの相互参照表は作成されません。"
+        },
+        {
+          "label": "*XREF",
+          "value": "*XREF",
+          "help": "IRPに定義されているすべてのオブジェクトの相互参照表が作成されます。"
+        },
+        {
+          "label": "*NOPATCH",
+          "value": "*NOPATCH",
+          "help": "コンパイル済みプログラムにプログラム・パッチ域のスペースは予約されません。"
+        },
+        {
+          "label": "*PATCH",
+          "value": "*PATCH",
+          "help": "コンパイル済みプログラムにプログラム・パッチ域のスペースが予約されます。プログラム・パッチ域はデバッグ用に使用することができます。"
+        },
+        {
+          "label": "*NODUMP",
+          "value": "*NODUMP",
+          "help": "プログラム・テンプレートはリストされません。"
+        },
+        {
+          "label": "*DUMP",
+          "value": "*DUMP",
+          "help": "プログラム・テンプレートがリストされます。"
+        },
+        {
+          "label": "*NOATR",
+          "value": "*NOATR",
+          "help": "IRPソースの属性はリストされません。"
+        },
+        {
+          "label": "*ATR",
+          "value": "*ATR",
+          "help": "IRPソースの属性がリストされます。"
+        },
+        {
+          "label": "*RANGE",
+          "value": "*RANGE",
+          "help": "実行時に，システムは添え字が正しい範囲内にあるかどうかを検査しますが，指標の範囲は検査しません。また，参照変更およびコンパイラー生成のサブストリング操作も検査します。"
+        },
+        {
+          "label": "*NORANGE",
+          "value": "*NORANGE",
+          "help": "実行時に範囲は検査されません。"
+        },
+        {
+          "label": "*UNREF",
+          "value": "*UNREF",
+          "help": "参照されていないデータ項目がコンパイル済みプログラムに含められます。"
+        },
+        {
+          "label": "*NOUNREF",
+          "value": "*NOUNREF",
+          "help": "参照されていないデータ項目はコンパイル済みプログラムに含められません。これにより，使用されるODT（オブジェクト定義テーブル）の数が減るので，より大きなプログラムのコンパイルが可能になります。ただし，*XREFオプションによって作成される相互参照表には，参照されていないデータ項目が現われます。"
+        },
+        {
+          "label": "*NOOPTIMIZE",
+          "value": "*NOOPTIMIZE",
+          "help": "コンパイラーはプログラム用の標準最適化だけを実行します。"
+        },
+        {
+          "label": "*OPTIMIZE",
+          "value": "*OPTIMIZE",
+          "help": "作成されたプログラム・オブジェクトをより効率的に実行することができ，また必要な記憶域も少なくて済みます。ただし，*OPTIMIZEを指定すると，プログラムのコンパイルに必要な時間が大幅に増えることがあります。"
+        },
+        {
+          "label": "*NODDSFILLER",
+          "value": "*NODDSFILLER",
+          "help": "COPY DDSステートメントによって突き合わせフィールドが見つからない場合には，フィールド記述は作成されません。"
+        },
+        {
+          "label": "*DDSFILLER",
+          "value": "*DDSFILLER",
+          "help": "COPY DDSステートメントによって突き合わせフィールドが見つからない場合には，単一文字のFILLERフィールド記述\"07 FILLER PIC X\"が常に作成されます。"
+        },
+        {
+          "label": "*NOSYNC",
+          "value": "*NOSYNC",
+          "help": "SYNCHRONIZED文節が構文検査されます。"
+        },
+        {
+          "label": "*SYNC",
+          "value": "*SYNC",
+          "help": "SYNCHRONIZED文節によって，記憶域の自然境界で基本項目の位置合わせが行われます。"
+        },
+        {
+          "label": "*NOCRTF",
+          "value": "*NOCRTF",
+          "help": "OPEN操作の時点で使用可能でないファイルは，動的に作成されません。"
+        },
+        {
+          "label": "*CRTF",
+          "value": "*CRTF",
+          "help": "OPEN操作の時点で使用可能でないファイルが，動的に作成されます。"
+        },
+        {
+          "label": "*NODUPKEYCHK",
+          "value": "*NODUPKEYCHK",
+          "help": "索引付きファイルの重複キー検査は行われません。"
+        },
+        {
+          "label": "*DUPKEYCHK",
+          "value": "*DUPKEYCHK",
+          "help": "索引付きファイルの重複キー検査が行われます。"
+        },
+        {
+          "label": "*STDERR",
+          "value": "*STDERR",
+          "help": "標準エラー処理が使用されます。エラー処理の詳細については，COBOL/400ユーザーの手引きのエラー処理に関する章を参照してください。"
+        },
+        {
+          "label": "*NOSTDERR",
+          "value": "*NOSTDERR",
+          "help": "バージョン１，リリース１および２のエラー処理方式が使用されます。エラー処理の詳細については，COBOL/400ユーザーの手引きのエラー処理に関する章を参照してください。"
+        },
+        {
+          "label": "*NOEXTACCDSP",
+          "value": "*NOEXTACCDSP",
+          "help": "コンパイラーで，拡張ACCEPTまたは拡張DISPLAYステートメントを使用することができません。"
+        },
+        {
+          "label": "*EXTACCDSP",
+          "value": "*EXTACCDSP",
+          "help": "コンパイラーで，拡張ACCEPTおよび拡張DISPLAYステートメントを使用することができます。"
+        },
+        {
+          "label": "*NOINZDLT",
+          "value": "*NOINZDLT",
+          "help": "順次アクセスの相対ファイルが，OUTPUT用にオープンされた場合に，CLOSE操作時に削除済みレコードについて初期設定されません。すなわち，レコード境界はOPEN OUTPUT時に書き出されたレコード数によって決まります。後続のOPEN操作では，このレコード境界までしかアクセスすることができません。"
+        },
+        {
+          "label": "*INZDLT",
+          "value": "*INZDLT",
+          "help": "順次アクセスの相対ファイルが，OUTPUT用にオープンされた場合に，CLOSE操作時に削除済みレコードについて初期設定されます。ファイル中の活動レコードは影響を受けません。すなわち，レコード境界は後続のOPEN操作用のファイル・サイズとして定義されます。"
+        },
+        {
+          "label": "*NOBLK",
+          "value": "*NOBLK",
+          "help": "コンパイラーは，STARTステートメントのない順次アクセス・ファイルのみのブロック化を許します。 BLOCK CONTAINS文節が指定されている場合，テープ・ファイルを除いてBLOCK CONTAINS文節は無視されます。"
+        },
+        {
+          "label": "*BLK",
+          "value": "*BLK",
+          "help": "BLOCK CONTAINSとともに使用すると，コンパイラーは動的アクセス・ファイルおよびSTARTステートメントのある順次アクセス・ファイルからのブロック化を許します。出力操作用にオープンされた相対ファイルのブロック化は許されません。 BLOCK CONTAINS文節は，ブロック化するレコードの数を制御します。 BLOCK CONTAINS文節を指定しない場合には，コンパイラーはSTARTステートメントのない順次アクセス・ファイルのみのブロック化を許します。オペレーティング・システムがブロック化するレコードの数を決定します。"
+        },
+        {
+          "label": "*STDINZ",
+          "value": "*STDINZ",
+          "help": "コンパイラーは，データ項目がVALUE文節に依存していなければ，そのデータ項目をシステムの省略時の値に初期設定します。"
+        },
+        {
+          "label": "*NOSTDINZ",
+          "value": "*NOSTDINZ",
+          "help": "VALUE文節のない項目については，コンパイラーはデータ項目をシステム省略時値に初期設定しません。"
+        },
+        {
+          "label": "*FS21DUPKY",
+          "value": "*FS21DUPKY",
+          "help": "必須のREADステートメントと後続のREWRITEまたはDELETEステートメントの間でキーの値が変更された場合には，コンパイラーは，重複キーを含む索引付きファイルをランダムまたは動的アクセス・モードで処理している時に，ファイル状況21を報告します。"
+        },
+        {
+          "label": "*NOFS21DUPKY",
+          "value": "*NOFS21DUPKY",
+          "help": "コンパイラーは，重複キーを含む索引付きファイルをランダムまたは動的アクセス・モードで処理している時に，ファイル状況21を報告しません。REWRITEステートメントはレコードのキーを変更することができます。"
+        }
+      ],
+      "positional": 5,
+      "maxOccurrences": 50
+    },
+    {
+      "name": "CVTOPT",
+      "description": "変換オプション",
+      "help": "外部記述ファイルからCOPY DDSによってプログラムに渡されたシステム・アプリケーション体系(SAA)の日付，時刻，ならびにタイム・スタンプのデータ・タイプ，DBCSグラフィック・データ・タイプ，および可変長文字フィールドを，コンパイラーがどのように処理するかを指定します。考えられる値は次の通りです。\n\n*VARCHARオプションも使用中の場合には，可変長DBCSグラフィック・データ・タイプは固定長グループ項目として宣言され，プログラムでアクセスすることができます。",
+      "inputType": "dropdown",
+      "required": false,
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*NOVARCHAR",
+          "value": "*NOVARCHAR",
+          "help": "可変長フィールドは無視され，FILLERフィールドとして宣言されます。"
+        },
+        {
+          "label": "*VARCHAR",
+          "value": "*VARCHAR",
+          "help": "可変長フィールドは固定長グループ項目として宣言され，プログラムでアクセスすることができます。"
+        },
+        {
+          "label": "*NODATETIME",
+          "value": "*NODATETIME",
+          "help": "日付，時刻，およびタイム・スタンプのデータ・タイプは無視され，FILLERフィールドとして宣言されます。"
+        },
+        {
+          "label": "*DATETIME",
+          "value": "*DATETIME",
+          "help": "日付，時刻，および，タイム・スタンプのデータ・タイプは固定長文字フィールドとして宣言され，プログラムでアクセスすることができます。"
+        },
+        {
+          "label": "*NOGRAPHIC",
+          "value": "*NOGRAPHIC",
+          "help": "グラフィック・データ・タイプは無視され，FILLERフィールドとして宣言されます。"
+        },
+        {
+          "label": "*GRAPHIC",
+          "value": "*GRAPHIC",
+          "help": "固定長グラフィック・データ・タイプは固定長英数字フィールドとして宣言され，プログラムでアクセスすることができます。 *VARCHARオプションも使用中の場合には，可変長DBCSグラフィック・データ・タイプは固定長グループ項目として宣言され，プログラムでアクセスすることができます。"
+        }
+      ],
+      "maxOccurrences": 50
+    },
+    {
+      "name": "SRTSEQ",
+      "description": "ソート順序",
+      "help": "ALPHABET文節のアルファベット名がNLSSORTと関連付けられている場合に使用されるソート順序を指定します。SRTSEQパラメーターは，LANGIDパラメーターと一緒に使用して，プログラムがシステム定義のソート順序テーブルを使用するかまたはユーザー定義のソート順序テーブルを使用するかを判別します。考えられる値は次の通りです。",
+      "inputType": "group",
+      "required": false,
+      "groupKind": "qualified",
+      "singleValues": [
+        "*HEX",
+        "*JOB",
+        "*JOBRUN",
+        "*LANGIDUNQ",
+        "*LANGIDSHR"
+      ],
+      "children": [
+        {
+          "name": "SRTSEQ_LIB",
+          "description": "ライブラリー",
+          "help": "指定できる特殊値: *LIBL, *CURLIB",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "*LIBL",
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          }
+        },
+        {
+          "name": "SRTSEQ",
+          "description": "ソート順序",
+          "inputType": "text",
+          "required": false,
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          },
+          "defaultValue": "*HEX"
+        }
+      ]
+    },
+    {
+      "name": "LANGID",
+      "description": "言語識別コード",
+      "help": "ソート順序と一緒に使用する言語識別コードを指定します。LANGIDパラメーターが使用されるのは，有効なSRTSEQ値が*LANGIDUNQまたは*LANGIDSHRの場合だけです。考えられる値は次の通りです。\n\n*JOBRUN: プログラムの言語識別コードは，実行時に分析解決されます。コンパイル済みプログラムが実行される場合には，ジョブの言語識別コードが使用されます。この値によってプログラムが１回コンパイルされ，実行時に別の言語識別コードで使用されます。\n*JOB: プログラムの言語識別コードは，コンパイル時に分析解決されます。\n有効な3文字の言語識別コードを入力してください。",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*JOBRUN",
+      "attributes": {
+        "characterSet": "upper"
+      }
+    },
+    {
+      "name": "MSGLMT",
+      "description": "メッセージ限界",
+      "help": "一定のエラー重大度レベルのエラー・メッセージがいくつ出されるまでコンパイルを停止しないかを示す，発生してよいエラー・メッセージの最大数を指定して，コンパイルを制御します。\n\nたとえば，重大度レベル20以上のエラーが４つ以上起こった場合にコンパイルを停止するよう指定することができます。この例の場合には，エラー・メッセージの最大数に３を，最大エラー重大度レベルに20を指定します。重大度レベルが20以上のエラーが３つ起こった場合コンパイルは続行されますが，４つ目のエラーが検出された時点でコンパイルは停止します。最大重大度レベルに達しないメッセージの場合には，検出されたエラーの数に関係なくコンパイルは続行されます。",
+      "inputType": "group",
+      "required": false,
+      "groupKind": "elements",
+      "children": [
+        {
+          "name": "MSGLMT_E1",
+          "description": "メッセージの数",
+          "help": "指定できる特殊値: *NOMAX",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "*NOMAX",
+          "attributes": {
+            "characterSet": "upper"
+          }
+        },
+        {
+          "name": "MSGLMT_E2",
+          "description": "メッセージ限界重大度",
+          "inputType": "number",
+          "required": false,
+          "defaultValue": "29",
+          "attributes": {
+            "numericOnly": true
+          }
+        }
+      ]
+    },
+    {
+      "name": "PRTFILE",
+      "description": "印刷ファイル",
+      "help": "コンパイル・リストの送り先のファイルの名前，およびそのファイルが入っているライブラリーを指定します。このファイルのレコード長は最小でも132が必要です。132より小さいレコード長のファイルを指定した場合には，情報が失われます。\n\n考えられる値は次の通りです。\n\n使用できるライブラリーの値は次の通りです。",
+      "inputType": "group",
+      "required": false,
+      "groupKind": "qualified",
+      "children": [
+        {
+          "name": "PRTFILE_LIB",
+          "description": "ライブラリー",
+          "help": "指定できる特殊値: *LIBL, *CURLIB",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "*LIBL",
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          }
+        },
+        {
+          "name": "PRTFILE",
+          "description": "印刷ファイル",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "QSYSPRT",
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          }
+        }
+      ]
+    },
+    {
+      "name": "FLAGSTD",
+      "description": "FIPSフラグ付け",
+      "help": "FIPSフラグ付けのオプションを指定します。考えられる値は次の通りです。",
+      "inputType": "dropdown",
+      "required": false,
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*NOFIPS",
+          "value": "*NOFIPS",
+          "help": "ソース・プログラムにFIPSフラグがありません。"
+        },
+        {
+          "label": "*MINIMUM",
+          "value": "*MINIMUM",
+          "help": "最低サブセット以上のFIPSフラグです。"
+        },
+        {
+          "label": "*INTERMEDIATE",
+          "value": "*INTERMEDIATE",
+          "help": "中間サブセット以上のFIPSフラグです。"
+        },
+        {
+          "label": "*HIGH",
+          "value": "*HIGH",
+          "help": "高サブセットのFIPSフラグです。"
+        },
+        {
+          "label": "*NOSEG",
+          "value": "*NOSEG",
+          "help": "任意選択モジュールSEGMENTATIONはFIPSフラグが付けられません。"
+        },
+        {
+          "label": "*SEG1",
+          "value": "*SEG1",
+          "help": "任意選択モジュールSEGMENTATIONレベル１以上のFIPSフラグです。"
+        },
+        {
+          "label": "*SEG2",
+          "value": "*SEG2",
+          "help": "任意選択モジュールSEGMENTATIONレベル２のFIPSフラグです。"
+        },
+        {
+          "label": "*NODEB",
+          "value": "*NODEB",
+          "help": "任意選択モジュールDEBUGは，FIPSフラグが付けられません。"
+        },
+        {
+          "label": "*DEB1",
+          "value": "*DEB1",
+          "help": "任意選択モジュールDEBUGレベル１以上のFIPSフラグです。"
+        },
+        {
+          "label": "*DEB2",
+          "value": "*DEB2",
+          "help": "任意選択モジュールDEBUGレベル２のFIPSフラグです。"
+        },
+        {
+          "label": "*NOOBSOLETE",
+          "value": "*NOOBSOLETE",
+          "help": "使用されなくなった言語要素には，フラグが付けられません。"
+        },
+        {
+          "label": "*OBSOLETE",
+          "value": "*OBSOLETE",
+          "help": "使用されなくなった言語要素にフラグが付けられます。"
+        }
+      ],
+      "maxOccurrences": 24
+    },
+    {
+      "name": "SAAFLAG",
+      "description": "SAAフラグ付け",
+      "help": "SAA COBOLでサポートされていないCOBOL/400*機能のフラグ付けが必要であるかどうかを指定します。考えられる値は次の通りです。",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*NOFLAG",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*NOFLAG",
+          "value": "*NOFLAG",
+          "help": "SAA COBOLフラグ付けは実行されません。"
+        },
+        {
+          "label": "*FLAG",
+          "value": "*FLAG",
+          "help": "SAA COBOLフラグ付けが実行されます。"
+        }
+      ]
+    },
+    {
+      "name": "EXTDSPOPT",
+      "description": "拡張表示オプション",
+      "help": "ワークステーション入出力用の拡張ACCEPTおよびDISPLAYステートメントのために使用するオプションを指定します。考えられる値は次の通りです。\n\n拡張ACCEPTステートメントが検出されないうちにバッファーがいっぱいになった場合には，バッファーの内容が画面に書き出されます。拡張ACCEPTステートメントが検出されると，その時点のバッファーの内容が画面に書き出されます。\n\nこのオプションはリモート3174および3274制御装置に接続された表示装置について使用するものですが，ローカル・ワークステーションについても使用することができます。このオプションを使用する場合には，データに表示可能文字が入っていなければなりません。データに16進20より小さい値が入っているとその結果は予期できず，予期しない画面様式になる場合から重大エラーになる場合まであります。",
+      "inputType": "dropdown",
+      "required": false,
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*DFRWRT",
+          "value": "*DFRWRT",
+          "help": "拡張DISPLAYステートメントは，拡張ACCEPTステートメントが検出されるまで，またはバッファーがいっぱいになるまで，バッファーに保持されます。 拡張ACCEPTステートメントが検出されないうちにバッファーがいっぱいになった場合には，バッファーの内容が画面に書き出されます。拡張ACCEPTステートメントが検出されると，その時点のバッファーの内容が画面に書き出されます。"
+        },
+        {
+          "label": "*NODFRWRT",
+          "value": "*NODFRWRT",
+          "help": "拡張DISPLAYステートメントは，それぞれが見つかった時に実行されます。"
+        },
+        {
+          "label": "*UNDSPCHR",
+          "value": "*UNDSPCHR",
+          "help": "表示可能文字と表示不能文字が拡張ACCEPTおよび拡張DISPLAYステートメントによって処理されます。"
+        },
+        {
+          "label": "*NOUNDSPCHR",
+          "value": "*NOUNDSPCHR",
+          "help": "表示可能文字だけが拡張ACCEPTおよび拡張DISPLAYステートメントによって処理されます。 このオプションはリモート3174および3274制御装置に接続された表示装置について使用するものですが，ローカル・ワークステーションについても使用することができます。このオプションを使用する場合には，データに表示可能文字が入っていなければなりません。データに16進20より小さい値が入っているとその結果は予期できず，予期しない画面様式になる場合から重大エラーになる場合まであります。"
+        },
+        {
+          "label": "*ACCUPDALL",
+          "value": "*ACCUPDALL",
+          "help": "UPDATE句の有無にかかわらず，すべてのタイプのデータが拡張ACCEPTステートメントで事前表示されます。"
+        },
+        {
+          "label": "*ACCUPDNE",
+          "value": "*ACCUPDNE",
+          "help": "数字編集データのみが，UPDATE句を含まない拡張ACCEPTステートメントで事前表示されます。"
+        }
+      ],
+      "maxOccurrences": 3
+    },
+    {
+      "name": "FLAG",
+      "description": "フラグ重大度",
+      "help": "印刷されるメッセージの最低重大度レベルを指定します。考えられる値は次の通りです。\n\n0: すべてのメッセージが印刷されます。\n印刷されるメッセージの最低重大度レベルを指定する１桁または２桁の数字を入力してください。指定した値以上の重大度レベルをもつメッセージがリストされます。",
+      "inputType": "number",
+      "required": false,
+      "defaultValue": "0",
+      "attributes": {
+        "numericOnly": true
+      }
+    },
+    {
+      "name": "REPLACE",
+      "description": "プログラムの置き換え",
+      "help": "同じライブラリーに同じ名前のプログラム・オブジェクトがすでに存在している場合に，新しいプログラム・オブジェクトを作成するかどうかを指定します。考えられる値は次の通りです。",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*YES",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*NO",
+          "value": "*NO",
+          "help": "同じ名前のプログラム・オブジェクトが指定したライブラリーにすでに存在している場合には，新しいプログラム・オブジェクトは作成されません。"
+        },
+        {
+          "label": "*YES",
+          "value": "*YES",
+          "help": "新しいプログラム・オブジェクトが作成され，指定したライブラリー中の同じ名前の既存のプログラム・オブジェクトはライブラリーQRPLOBJに移動されます。"
+        }
+      ]
+    },
+    {
+      "name": "TGTRLS",
+      "description": "ターゲット・リリース",
+      "help": "作成中のオブジェクトを使用したいオペレーティング・システムのリリース・レベルを指定します。\n\n正確なリリース・レベルはVXRXMXの形式で指定することができます。ここで，VX はバージョン，RXはリリース，およびMXはモディフィケーション・レベルです。たとえば，V3R1M0はバージョン３，リリース１，モディフィケーション・レベル０です。\n\nたとえば，システムがV3R1M0を実行中に，V2R3M0システムに配布するプログラム・オブジェクトを作成したい場合には，そのプログラムをTGTRLS(V2R3M0)またはTGTRLS(*PRV)で作成し，プログラムをTGTRLS(V2R3M0)またはTGTRLS(*PRV)で保管して，V2R3M0システムで復元しなければなりません。また，このプログラム・オブジェクトは，V3R1M0システムでも復元することもできます。\n\n有効な値は現行のバージョン，リリース，およびモディフィケーション・レベルによって決まり，新しいリリースごとに変わります。有効な値のリストを参照するためには，そのコマンドのTGTRLSパラメーターでF4=プロンプトを押してください。\n\nリリースをVXRXMXの形式で指定してください。オブジェクトは，指定されたリリースのシステムまたはオペレーティング・システムの後続のリリースが導入されたシステムで使用することができます。 有効な値は現行のバージョン，リリース，およびモディフィケーション・レベルによって決まり，新しいリリースごとに変わります。有効な値のリストを参照するためには，そのコマンドのTGTRLSパラメーターでF4=プロンプトを押してください。",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*CURRENT",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*CURRENT",
+          "value": "*CURRENT",
+          "help": "このオブジェクトは，現在ユーザーのシステムで実行中のオペレーティング・システムのリリースで使用するためのものです。たとえば，システムでV3R1M0が実行中の場合には，*CURRENTは，V3R1M0が導入されているシステムでこのオブジェクトを使用することを意味します。また，オペレーティング・システムの後続のリリースが導入されたシステムでもこのオブジェクトを使用することができます。"
+        },
+        {
+          "label": "*PRV",
+          "value": "*PRV",
+          "help": "このオブジェクトは，オペレーティング・システムのモディフィケーション・レベルが０である前のリリースで使用するためのものです。たとえば，システムでV3R1M0 が実行中の場合には，*PRVは，V2R3M0が導入されているシステムでこのオブジェクトを使用することを意味します。また，オペレーティング・システムの後続のリリースが導入されたシステムでもこのオブジェクトを使用することができます。"
+        }
+      ]
+    },
+    {
+      "name": "USRPRF",
+      "description": "ユーザー・プロファイル",
+      "help": "コンパイル済みCOBOLプログラムを実行するユーザー・プロファイルを指定します。プログラムを実行し，プログラム（プログラムが各オブジェクトに対してもっている権限を含む）によって使用できるオブジェクトを制御するために，プログラム所有者またはプログラム・ユーザーのプロファイルが使用されます。\n\n考えられる値は次の通りです。",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*USER",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*USER",
+          "value": "*USER",
+          "help": "プログラムの実行時に，プログラムの使用者のユーザー・プロファイルが使用されます。"
+        },
+        {
+          "label": "*OWNER",
+          "value": "*OWNER",
+          "help": "プログラムの実行時に，プログラムの所有者と使用者の両方のユーザー・プロファイルが使用されます。プログラムの実行中にオブジェクトを見つけてアクセスするためには，両方のユーザー・プロファイルのオブジェクト権限が一括して使用されます。プログラムの実行中に作成されたオブジェクトはそのプログラムのユーザーが所有します。"
+        }
+      ]
+    },
+    {
+      "name": "AUT",
+      "description": "権限",
+      "help": "プログラム・オブジェクトに対して特定権限をもっていないか，権限リスト上にないか，あるいはグループがプログラム・オブジェクトに対して特定権限をもっていないユーザーに認可される権限を指定します。この権限は，プログラム・オブジェクトの作成後に，GRTOBJAUT（オブジェクト権限認可）またはRVKOBJAUT（オブジェクト権限取り消し）コマンドを使用して，すべてのユーザーまたは個々のユーザーについて変更することができます。\n\n考えられる値は次の通りです。\n\n一部のユーザーが変数のダンプができることを望まない場合は，ユーザーに*OBJOPRだけに加えてプログラムに*EXECUTE権限を与えてください。これはユーザーにプログラムの呼び出しは許可しますが，その変数をダンプすることは許可しません。\n\nすべてのユーザーに変数のダンプができることを望まない場合は，プログラムの変更(CHGPGM)を使用して，プログラムの検討可能な情報を除去してください。\n\n*LIBCRTAUT: オブジェクトの共通権限は，ターゲット・ライブラリー（作成されたプログラム・オブジェクトが入れられるライブラリー）のCRTAUTキーワードから取られます。この値はプログラム・オブジェクトの作成時に決まります。プログラム・オブジェクトの作成後にライブラリーのCRTAUT値が変わっても，新しい値が既存のオブジェクトに影響を及ぼすことはありません。\n*ALL: 所有者だけに限定されるかまたは権限リスト管理権限によって制御される操作を除くすべての操作をプログラム・オブジェクトに対して実行できる権限を提供します。ユーザーは，プログラム・オブジェクトの存在の制御，プログラム・オブジェクトの機密保護の指定，プログラム・オブジェクトの変更，およびプログラム・オブジェクトに対する基本的な機能の実行を行うことができますが，プログラム・オブジェクトの所有権を移すことはできません。\n*CHANGE: すべてのデータ権限と，所有者にだけ限定されるかまたはオブジェクト権限およびオブジェクト管理権限によって制御される操作を除くすべての操作をプログラム・オブジェクトに対して実行できる権限を提供します。ユーザーは，プログラム・オブジェクトを変更したり，プログラム・オブジェクトの実行やデバッグなどの基本的な機能をプログラム・オブジェクトに対して実行したりすることができます。\n*USE: オブジェクト操作権限および読み取り権限（プログラムの実行などの基本的な操作をプログラム・オブジェクトに対して実行できる権限）を提供します。ユーザーはオブジェクトを変更することができません。 注: プログラムの変数の定様式ダンプを取得するには，プログラムに対して*USE権限を持っていなければなりません。変数をダンプするには，さらにプログラムが検討可能な情報も持っていなければなりません。 一部のユーザーが変数のダンプができることを望まない場合は，ユーザーに*OBJOPRだけに加えてプログラムに*EXECUTE権限を与えてください。これはユーザーにプログラムの呼び出しは許可しますが，その変数をダンプすることは許可しません。 すべてのユーザーに変数のダンプができることを望まない場合は，プログラムの変更(CHGPGM)を使用して，プログラムの検討可能な情報を除去してください。\n*EXCLUDE: ユーザーはプログラム・オブジェクトにアクセスすることができません。\nプログラムが追加されるユーザーおよび権限の権限リストの名前を入力してください。プログラム・オブジェクトはこの権限リストによって保護され，プログラム・オブジェクトの共通権限は*AUTLに設定されます。この権限リストは，CRTCBLPGMコマンドが出される時にシステム上に存在していなければなりません。",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*LIBCRTAUT",
+      "attributes": {
+        "characterSet": "upper",
+        "maxLength": 10
+      }
+    },
+    {
+      "name": "DUMP",
+      "description": "コンパイラー・デバッグ・ダンプ",
+      "help": "IBM COBOLデバッグ援助機能。（弊社技術員用）",
+      "inputType": "group",
+      "required": false,
+      "groupKind": "elements",
+      "children": [
+        {
+          "name": "DUMP_E1",
+          "description": "",
+          "help": "指定できる特殊値: *",
+          "inputType": "text",
+          "required": false,
+          "attributes": {
+            "characterSet": "upper"
+          }
+        },
+        {
+          "name": "DUMP_E2",
+          "description": "",
+          "inputType": "number",
+          "required": false,
+          "attributes": {
+            "numericOnly": true
+          }
+        }
+      ]
+    },
+    {
+      "name": "ITDUMP",
+      "description": "中間テキスト・ダンプ",
+      "help": "コンパイル中の一定の時点にコンパイラーに内部テキストをダンプさせるIBMデバッグ援助機能。（弊社技術員用）",
+      "inputType": "number",
+      "required": false,
+      "defaultValue": "0",
+      "attributes": {
+        "numericOnly": true
+      }
+    }
+  ],
+  "threadSafe": false,
+  "environment": "すべての環境 (*ALL)",
+  "examples": [
+    {
+      "code": "CRTCBLPGM PGM(MYLIB/XMPLE1) SRCFILE(MYLIB/QLBLSRC) SRCMBR(XMPLE1) OPTION(*SOURCE) TEXT('MY COBOL PROGRAM')"
+    }
+  ],
+  "errorMessages": [
+    {
+      "id": "LBL9001",
+      "text": "コンパイルは正常に行われませんでした。プログラムは作成されません。"
+    },
+    {
+      "id": "LBL9004",
+      "text": "プログラムはすでに存在している。コンパイルは正常に行われませんでした。"
+    },
+    {
+      "id": "LBL9006",
+      "text": "TGTRLS(&1)が指定されたが，前のコンパイラーが導入されていない。"
+    },
+    {
+      "id": "LBL9007",
+      "text": "プロダクト・ライブラリーに損傷があるか，あるいはユーザーにはその使用が認可されていない。"
+    },
+    {
+      "id": "SQL9002",
+      "text": "SQLプリコンパイルと&7コンパイルのTGTRLSパラメーターが矛盾している。"
+    },
+    {
+      "id": "SQL9003",
+      "text": "このSQLソースには，&7コンパイルのレベルが正しくない。"
+    }
+  ],
+  "source": {
+    "url": "https://www.ibm.com/docs/ja/ssw_ibm_i_74/cl/crtcblpgm.htm",
+    "version": "IBM i 7.4"
+  }
+}

@@ -1,0 +1,726 @@
+{
+  "keyword": "CRTRPTPGM",
+  "description": "AUTO REPORT RPG プログラム作成 (CRTRPTPGM)",
+  "help": "報告書簡易作成機能のRPG/400コンパイラーを開始するためには，報告書簡易作成プログラム作成(CRTRPTPGM)コマンドが使用されます。",
+  "parameters": [
+    {
+      "name": "PGM",
+      "description": "プログラム",
+      "help": "コンパイル済みRPGプログラムのプログラム名およびライブラリーを指定します。",
+      "inputType": "group",
+      "required": false,
+      "groupKind": "qualified",
+      "children": [
+        {
+          "name": "LIB",
+          "description": "ライブラリー",
+          "help": "指定できる特殊値: *CURLIB",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "*CURLIB",
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          }
+        },
+        {
+          "name": "PGM",
+          "description": "プログラム",
+          "help": "指定できる特殊値: *CTLSPEC",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "*CTLSPEC",
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          }
+        }
+      ],
+      "positional": 1
+    },
+    {
+      "name": "SRCFILE",
+      "description": "ソース・ファイル",
+      "help": "ソース・プログラムが入っているソース・ファイルの名前を指定します。",
+      "inputType": "group",
+      "required": false,
+      "groupKind": "qualified",
+      "children": [
+        {
+          "name": "SRCFILE_LIB",
+          "description": "ライブラリー",
+          "help": "指定できる特殊値: *LIBL, *CURLIB",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "*LIBL",
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          }
+        },
+        {
+          "name": "SRCFILE",
+          "description": "ソース・ファイル",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "QRPGSRC",
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          }
+        }
+      ],
+      "positional": 2
+    },
+    {
+      "name": "SRCMBR",
+      "description": "ソース・メンバー",
+      "help": "ソース・ファイルのメンバーの名前を指定します。\n\n*PGM: ソース・ファイル・メンバー名としてPGMパラメーターで指定した名前。\nソース・プログラムが入っているメンバーの名前を入力してください。",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*PGM",
+      "attributes": {
+        "characterSet": "upper",
+        "maxLength": 10
+      },
+      "positional": 3
+    },
+    {
+      "name": "GENLVL",
+      "description": "生成重大度レベル",
+      "help": "プログラム・オブジェクトの作成を停止する診断メッセージの重大度レベルを指定します。\n\n省略時の重大度レベルは９です。\n01-50の２桁の数字を入力してください。",
+      "inputType": "number",
+      "required": false,
+      "defaultValue": "9",
+      "attributes": {
+        "numericOnly": true
+      }
+    },
+    {
+      "name": "TEXT",
+      "description": "テキスト'記述'",
+      "help": "プログラム機能の説明に使用するテキストを指定します。\n\n*SRCMBRTXT: ソース・ファイル・メンバーのテキスト記述を使用します。\n*BLANK: テキストはありません。",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*SRCMBRTXT",
+      "attributes": {
+        "characterSet": "upper"
+      }
+    },
+    {
+      "name": "OPTION",
+      "description": "ソース・リスト・オプション",
+      "help": "ソース・プログラムをコンパイルする時に使用するオプションを指定します。\n\nコンパイラーがソース・リストを提供します。\nコンパイラーはソース・リストを提供しません。",
+      "inputType": "dropdown",
+      "required": false,
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*SOURCE",
+          "value": "*SOURCE"
+        },
+        {
+          "label": "*NOSOURCE",
+          "value": "*NOSOURCE"
+        },
+        {
+          "label": "*SRC",
+          "value": "*SRC"
+        },
+        {
+          "label": "*NOSRC",
+          "value": "*NOSRC"
+        },
+        {
+          "label": "*XREF",
+          "value": "*XREF",
+          "help": "コンパイラーが相互参照表を提供します。"
+        },
+        {
+          "label": "*NOXREF",
+          "value": "*NOXREF",
+          "help": "コンパイラーは相互参照表を提供しません。"
+        },
+        {
+          "label": "*GEN",
+          "value": "*GEN",
+          "help": "プログラムのコンパイル後に実行可能なプログラム・オブジェクトが作成されます。"
+        },
+        {
+          "label": "*NOGEN",
+          "value": "*NOGEN",
+          "help": "プログラム・オブジェクトは作成されません。"
+        },
+        {
+          "label": "*DUMP",
+          "value": "*DUMP",
+          "help": "エラーが起こった時にプログラム・テンプレートを印刷します。"
+        },
+        {
+          "label": "*NODUMP",
+          "value": "*NODUMP",
+          "help": "エラーが起こった時にプログラム・テンプレートを印刷しません。"
+        },
+        {
+          "label": "*SECLVL",
+          "value": "*SECLVL",
+          "help": "メッセージ・テキストが印刷されます。"
+        },
+        {
+          "label": "*NOSECLVL",
+          "value": "*NOSECLVL",
+          "help": "メッセージ・テキストは印刷されません。"
+        },
+        {
+          "label": "*LSTDBG",
+          "value": "*LSTDBG",
+          "help": "コンパイラーは，クライアント・ツールで使用するためのリスト・ビュー，ソース・レベルのエラー情報，およびリスト・レベルのデバッグ情報を作成します。また，システム・デバッガー(STRDBG OPMSRC(*YES))を使用してOPMプログラムとILEプログラムを同時にデバッグしたい場合には，リスト・レベルのデバッグ情報が必要です。"
+        },
+        {
+          "label": "*NOLSTDBG",
+          "value": "*NOLSTDBG",
+          "help": "リスト・ビューまたはリスト・レベルのデバッグ情報，あるいはソース・レベルのエラー情報は作成されません。"
+        }
+      ],
+      "maxOccurrences": 14
+    },
+    {
+      "name": "GENOPT",
+      "description": "生成オプション",
+      "help": "オブジェクト・コードの作成に使用するオプションを指定してください。",
+      "inputType": "dropdown",
+      "required": false,
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*LIST",
+          "value": "*LIST",
+          "help": "プログラムの中間表現(IRP)をリストします。"
+        },
+        {
+          "label": "*NOLIST",
+          "value": "*NOLIST",
+          "help": "プログラムの中間表現(IRP)リストを作成しません。"
+        },
+        {
+          "label": "*XREF",
+          "value": "*XREF",
+          "help": "プログラムの中間表現(IRP)に定義されたすべてのオブジェクトの相互参照リストを作成します。"
+        },
+        {
+          "label": "*NOXREF",
+          "value": "*NOXREF",
+          "help": "プログラムの中間表現(IRP)の相互参照リストを作成しません。"
+        },
+        {
+          "label": "*ATR",
+          "value": "*ATR",
+          "help": "プログラムの中間表現(IRP)ソース・プログラムの属性をリストします。"
+        },
+        {
+          "label": "*NOATR",
+          "value": "*NOATR",
+          "help": "属性リストを作成しません。"
+        },
+        {
+          "label": "*DUMP",
+          "value": "*DUMP",
+          "help": "プログラム・テンプレートを印刷します。"
+        },
+        {
+          "label": "*NODUMP",
+          "value": "*NODUMP",
+          "help": "エラーが起こった時にプログラム・テンプレートを印刷しません。"
+        },
+        {
+          "label": "*PATCH",
+          "value": "*PATCH",
+          "help": "コンパイル済みプログラムにプログラム・パッチ域のスペースを予約します。"
+        },
+        {
+          "label": "*NOPATCH",
+          "value": "*NOPATCH",
+          "help": "コンパイル済みプログラムにプログラム・パッチ域を予約しません。"
+        },
+        {
+          "label": "*OPTIMIZE",
+          "value": "*OPTIMIZE",
+          "help": "コンパイラーは処理効率の高いプログラムを作成します。"
+        },
+        {
+          "label": "*NOOPTIMIZE",
+          "value": "*NOOPTIMIZE",
+          "help": "コンパイラーはプログラムの最適化を実行しません。"
+        }
+      ],
+      "maxOccurrences": 10
+    },
+    {
+      "name": "INDENT",
+      "description": "ソース・リストの字下げ",
+      "help": "DOステートメントおよびIF-ELSE文節は，読みやすいように字下げを指定します。また，対応するDO-ENDDOの対とIF-ELSEの対の結合に使用される文字も指定します。\n\n*NONE: DOステートメントまたはIF-ELSE文節の中では，リストは字下げされません。\n対応するネスト・レベルを結合するためには所定の文字ストリングを使用します。",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*NONE",
+      "attributes": {
+        "characterSet": "upper"
+      }
+    },
+    {
+      "name": "CVTOPT",
+      "description": "タイプ変換オプション",
+      "help": "日付，時刻，およびタイム・スタンプ・データベースのデータ・タイプ，および外部記述ファイルから検索される可変長データ・タイプをRPG/400コンパイラーで処理する方法を指定します。",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*NONE",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*NONE",
+          "value": "*NONE",
+          "help": "日付，時刻，タイム・スタンプ，および可変長データベースのデータ・タイプは無視されて，RPG/400プログラムでアクセスすることはできません。"
+        },
+        {
+          "label": "*DATETIME",
+          "value": "*DATETIME",
+          "help": "日付，時刻，タイム・スタンプのデータベースのデータ・タイプは固定長文字フィールドとして宣言されて，RPG/400プログラムでアクセスすることができます。"
+        },
+        {
+          "label": "*VARCHAR",
+          "value": "*VARCHAR",
+          "help": "可変長データベースのデータ・タイプは固定長文字フィールドとして宣言されて，RPG/400プログラムでアクセスすることができます。"
+        },
+        {
+          "label": "*GRAPHIC",
+          "value": "*GRAPHIC",
+          "help": "DBCSグラフィック・データ・タイプは固定長の文字フィールドとして宣言され，RPG/400プログラムでアクセス可能です。"
+        }
+      ],
+      "maxOccurrences": 3
+    },
+    {
+      "name": "SRTSEQ",
+      "description": "ソート順序",
+      "help": "使用するソート順序テーブルを指定します。",
+      "inputType": "group",
+      "required": false,
+      "groupKind": "qualified",
+      "singleValues": [
+        "*HEX",
+        "*JOB",
+        "*JOBRUN",
+        "*LANGIDUNQ",
+        "*LANGIDSHR"
+      ],
+      "children": [
+        {
+          "name": "SRTSEQ_LIB",
+          "description": "ライブラリー",
+          "help": "指定できる特殊値: *LIBL, *CURLIB",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "*LIBL",
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          }
+        },
+        {
+          "name": "SRTSEQ",
+          "description": "ソート順序",
+          "inputType": "text",
+          "required": false,
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          },
+          "defaultValue": "*HEX"
+        }
+      ]
+    },
+    {
+      "name": "LANGID",
+      "description": "言語ID",
+      "help": "ソート順序が*LANGIDUNQまたは*LANGIDSHRの時に使用する言語IDを指定します。LANGIDパラメーターは，ソート順序テーブルの選択で，SRTSEQパラメーターと一緒に使用されます。\n\n*JOBRUN: RPGプログラムの実行時に，ジョブに対応したLANGID値を使用します。 これが省略時の値です。\n*JOB: RPGプログラムの作成時に，ジョブに対応したLANGID値を使用します。\n使用する言語ID（たとえば，フランス語の場合にはFRA,ドイツ語の場合にはDEU)を入力してください。",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*JOBRUN",
+      "attributes": {
+        "characterSet": "upper",
+        "maxLength": 10
+      }
+    },
+    {
+      "name": "PRTFILE",
+      "description": "印刷ファイル",
+      "help": "コンパイル・リストを入れるファイルの名前およびファイルが入っているライブラリーを指定します。",
+      "inputType": "group",
+      "required": false,
+      "groupKind": "qualified",
+      "children": [
+        {
+          "name": "PRTFILE_LIB",
+          "description": "ライブラリー",
+          "help": "指定できる特殊値: *LIBL, *CURLIB",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "*LIBL",
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          }
+        },
+        {
+          "name": "PRTFILE",
+          "description": "印刷ファイル",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "QSYSPRT",
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          }
+        }
+      ]
+    },
+    {
+      "name": "RPTOPT",
+      "description": "報告書簡易作成機能オプション",
+      "help": "報告書簡易作成機能ソース・プログラムのコンパイル時に使用するオプションを指定します。\n\nコンパイラーはソース・リストを提供しません。\nコンパイラーがソース・リストを提供します。",
+      "inputType": "dropdown",
+      "required": false,
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*SOURCE",
+          "value": "*SOURCE"
+        },
+        {
+          "label": "*NOSOURCE",
+          "value": "*NOSOURCE"
+        },
+        {
+          "label": "*SRC",
+          "value": "*SRC"
+        },
+        {
+          "label": "*NOSRC",
+          "value": "*NOSRC"
+        },
+        {
+          "label": "*FLOW",
+          "value": "*FLOW",
+          "help": "メジャー・ルーチンの実行の流れが書き出されます。"
+        },
+        {
+          "label": "*NOFLOW",
+          "value": "*NOFLOW",
+          "help": "メジャー・ルーチンの実行の流れは書き出されません。"
+        },
+        {
+          "label": "*AST",
+          "value": "*AST",
+          "help": "合計書き出し行のアスタリスクは生成されます。"
+        },
+        {
+          "label": "*NOAST",
+          "value": "*NOAST",
+          "help": "合計書き出し行のアスタリスクは生成されません。"
+        },
+        {
+          "label": "*DATE",
+          "value": "*DATE",
+          "help": "最初の*AUTOページ見出し行に日付およびページ番号が印刷されます。"
+        },
+        {
+          "label": "*NODATE",
+          "value": "*NODATE",
+          "help": "最初の*AUTOページ見出し行に日付およびページ番号は印刷されません。"
+        },
+        {
+          "label": "*COMPILE",
+          "value": "*COMPILE",
+          "help": "報告書簡易作成機能のソース・コンパイルの後に，RPG/400コンパイラーが呼び出されます。"
+        },
+        {
+          "label": "*NOCOMPILE",
+          "value": "*NOCOMPILE",
+          "help": "RPG/400コンパイラーは呼び出されません。"
+        },
+        {
+          "label": "*SECLVL",
+          "value": "*SECLVL",
+          "help": "メッセージ・テキストが印刷されます。"
+        },
+        {
+          "label": "*NOSECLVL",
+          "value": "*NOSECLVL",
+          "help": "メッセージ・テキストは印刷されません。"
+        }
+      ],
+      "maxOccurrences": 10
+    },
+    {
+      "name": "OUTFILE",
+      "description": "報告書簡易作成機能出力ファイル",
+      "help": "報告書簡易作成機能で作成されるRPGソース・プログラムの出力ファイルの名前を指定します。",
+      "inputType": "group",
+      "required": false,
+      "groupKind": "qualified",
+      "children": [
+        {
+          "name": "OUTFILE_LIB",
+          "description": "ライブラリー",
+          "help": "指定できる特殊値: *LIBL, *CURLIB",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "*LIBL",
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          }
+        },
+        {
+          "name": "OUTFILE",
+          "description": "報告書簡易作成機能出力ファイル",
+          "help": "指定できる特殊値: *NONE",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "*NONE",
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          }
+        }
+      ]
+    },
+    {
+      "name": "OUTMBR",
+      "description": "報告書簡易作成機能出力メンバー",
+      "help": "出力ファイルのメンバーの名前を指定します。\n\n*NONE: メンバー名としてソース・メンバー名を使用します。\n報告書簡易作成機能プログラムからの出力を受け取るメンバーの名前を入力します。",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*NONE",
+      "attributes": {
+        "characterSet": "upper",
+        "maxLength": 10
+      }
+    },
+    {
+      "name": "REPLACE",
+      "description": "プログラムの置き換え",
+      "help": "同じライブラリーに同じ名前の既存のプログラム・オブジェクトがある時に，新しいプログラム・オブジェクトを作成するかどうかを指定します。",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*YES",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*YES",
+          "value": "*YES",
+          "help": "新しいプログラム・オブジェクトが作成され，指定したライブラリーにある同じ名前の既存のプログラム・オブジェクトはライブラリーQRPLOBJに移動されます。"
+        },
+        {
+          "label": "*NO",
+          "value": "*NO",
+          "help": "同じ名前のプログラム・オブジェクトが指定したライブラリーにすでに存在している場合には，新しいプログラム・オブジェクトは作成されません。"
+        }
+      ]
+    },
+    {
+      "name": "TGTRLS",
+      "description": "ターゲット・リリース",
+      "help": "作成されるオブジェクトが使用されるオペレーティング・システムのリリースを指定します。*CURRENTおよび*PRV値の例の場合で， ターゲット・リリース を指定する時には，VXRXMXの形式を使用してリリースを指定します。ここで，VXはバージョン，RXはリリース，MXはモディフィケーション・レベルです。たとえば，V2R3M0は，バージョン２，リリース３，モディフィケーション・レベル０です。\n\nこのパラメーターに対する有効な値はリリースごとに変わります。\n\n考えられる値は次の通りです。\n\n有効な値は，現行のバージョン，リリース，およびモディフィケーション・レベルによって異なり，新しいリリースごとに変わります。このコマンドでサポートされている最も古いリリースよりも前のリリース・レベルを指定した場合には，エラー・メッセージが出されて，サポートされる最も古いリリースを表示します。\n\nリリースをVXRXMXの形式で指定してください。 オブジェクトは，指定されたリリースのシステムまたはオペレーティング・システムの後続のリリースが導入されているシステムで使用することができます。 有効な値は，現行のバージョン，リリース，およびモディフィケーション・レベルによって異なり，新しいリリースごとに変わります。このコマンドでサポートされている最も古いリリースよりも前のリリース・レベルを指定した場合には，エラー・メッセージが出されて，サポートされる最も古いリリースを表示します。",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*CURRENT",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*CURRENT",
+          "value": "*CURRENT",
+          "help": "オブジェクトは，現在ユーザーのシステムで実行中のオペレーティング・システムのリリースで使用されます。たとえば，V2R3M5がシステムで実行されている場合には，*CURRENTは，ユーザーはV2R3M5が導入されているシステムでオブジェクトを使用することを意味します。 また，オペレーティング・システムの後続のリリースが導入されたシステム上でこのオブジェクトを使用することもできます。"
+        },
+        {
+          "label": "*PRV",
+          "value": "*PRV",
+          "help": "オブジェクトは，前のリリースのモディフィケーション・レベル0のオペレーティング・システムで使用されます。たとえば，V2R3M5がシステムで実行されている場合には，*PRVはV2R2M0が導入されているシステムでオブジェクトを使用することを意味します。 また，オペレーティング・システムの後続のリリースが導入されたシステムで，このオブジェクトを使用することもできます。"
+        }
+      ]
+    },
+    {
+      "name": "USRPRF",
+      "description": "ユーザー・プロファイル",
+      "help": "コンパイル済みRPGプログラムを実行するユーザー・プロファイルを指定します。",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*USER",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*USER",
+          "value": "*USER",
+          "help": "プログラムはプログラム・ユーザーのユーザー・プロファイルのもとで実行されます。"
+        },
+        {
+          "label": "*OWNER",
+          "value": "*OWNER",
+          "help": "プログラムは，プログラムの所有者とユーザーの両方のユーザー・プロファイルで実行されます。プログラムがすでに存在している場合には，USRPRFパラメーターは更新されません。"
+        }
+      ]
+    },
+    {
+      "name": "AUT",
+      "description": "権限",
+      "help": "このプログラムのために認可する権限を指定します。\n\n一部のユーザーが変数のダンプができることを望まない場合は，ユーザーに*OBJOPRだけに加えてプログラムに*EXECUTE権限を与えてください。これはユーザーにプログラムの呼び出しは許可しますが，その変数をダンプすることは許可しません。\n\nすべてのユーザーに変数のダンプができることを望まない場合は，プログラムの変更(CHGPGM)を使用して，プログラムの検討可能な情報を除去してください。\n\n*LIBCRTAUT: 作成されるオブジェクトの省略時の共通権限は，ターゲット・ライブラリーと関連のあるCRTAUTキーワードからとられます。 この値は作成時に決定されます。 ライブラリーのCRTAUTキーワードの値が作成後に変更された場合には，その新しい値は既存のオブジェクトに影響しません。\n*ALL: オブジェクト所有権の転送の場合を除き，プログラムの権限を完了します。\n*CHANGE: オブジェクトの存在および管理を取り扱う操作以外のすべての操作が認められます。\n*USE: デバッグまたは変更権限を除く，コンパイル済みプログラムの読み取りまたは実行権限。 注: プログラムの変数の定様式ダンプを取得するには，プログラムに対して*USE権限を持っていなければなりません。変数をダンプするには，さらにプログラムが検討可能な情報も持っていなければなりません。 一部のユーザーが変数のダンプができることを望まない場合は，ユーザーに*OBJOPRだけに加えてプログラムに*EXECUTE権限を与えてください。これはユーザーにプログラムの呼び出しは許可しますが，その変数をダンプすることは許可しません。 すべてのユーザーに変数のダンプができることを望まない場合は，プログラムの変更(CHGPGM)を使用して，プログラムの検討可能な情報を除去してください。\n*EXCLUDE: 権限なし。\nオブジェクトを保護する権限リストの名前。共通権限は*AUTLになります。",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*LIBCRTAUT",
+      "attributes": {
+        "characterSet": "upper",
+        "maxLength": 10
+      }
+    },
+    {
+      "name": "PHSTRC",
+      "description": "フェーズ・トレース",
+      "help": "コンパイラーについてのフェーズのトレース情報をリストに含めるかどうかを指定します。",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*NO",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*NO",
+          "value": "*NO",
+          "help": "コンパイラー・フェーズの情報を作成しません。"
+        },
+        {
+          "label": "*YES",
+          "value": "*YES",
+          "help": "コンパイラー・フェーズの情報を作成します。"
+        }
+      ]
+    },
+    {
+      "name": "ITDUMP",
+      "description": "中間テキスト・ダンプ",
+      "help": "中間テキストの動的リストの作成を指定します。\n\n*NONE: 中間テキスト・ダンプを作成しません。\n各フェーズ名の最後の２桁を入力してください。",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*NONE",
+      "attributes": {
+        "characterSet": "upper"
+      }
+    },
+    {
+      "name": "SNPDUMP",
+      "description": "スナップ・ダンプ",
+      "help": "主要データ域および中間テキストのリストを作成するかどうかを指定します。\n\n*NONE: スナップ・ダンプを作成しません。\n各フェーズ名の最後の２桁を入力してください。",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*NONE",
+      "attributes": {
+        "characterSet": "upper"
+      }
+    },
+    {
+      "name": "CODELIST",
+      "description": "コード・リスト",
+      "help": "特定のフェーズに対してIRPの動的リストを作成するかどうかを指定します。\n\n*NONE: 中間IRPダンプを作成しません。\n*ALL: 中間IRPダンプを作成します。\n各フェーズ名の最後の２桁を入力してください。",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*NONE",
+      "attributes": {
+        "characterSet": "upper"
+      }
+    },
+    {
+      "name": "IGNDECERR",
+      "description": "10進データ・エラーの無視",
+      "help": "１０進数データ・エラーを無視するかどうかを指定します。",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*NO",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*NO",
+          "value": "*NO",
+          "help": "１０進数データ・エラーは無視されません。"
+        },
+        {
+          "label": "*YES",
+          "value": "*YES",
+          "help": "１０進数データ・エラーは無視されます。"
+        }
+      ]
+    },
+    {
+      "name": "ALWNULL",
+      "description": "ヌル値使用可能",
+      "help": "RPG/400プログラムが外部記述入力ファイルのヌル可能フィールドからヌル値を受け入れるかどうかを指定します。",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*NO",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*NO",
+          "value": "*NO",
+          "help": "RPG/400プログラムがヌル値フィールドを受け入れないことを指定します。"
+        },
+        {
+          "label": "*YES",
+          "value": "*YES",
+          "help": "RPG/400プログラムが外部記述入力ファイルのヌル値フィールドを受け入れることを指定します。"
+        }
+      ]
+    }
+  ],
+  "threadSafe": false,
+  "environment": "すべての環境 (*ALL)",
+  "examples": [
+    {
+      "code": "CRTRPTPGM PGM(MYLIB/XMPLE1) SRCFILE(MYLIB/QRPGSRC) SRCMBR(XMPLE1) OPTION(*SOURCE) TEXT('MY RPG III AUTO REPORT PROGRAM')"
+    }
+  ],
+  "errorMessages": [
+    {
+      "id": "RPT9001",
+      "text": "報告書簡易作成機能が正常に実行されなかった。"
+    },
+    {
+      "id": "RPT0082",
+      "text": "重大なエラーが起こったため，報告書簡易作成機能の生成は打ち切られた。"
+    },
+    {
+      "id": "QRG9004",
+      "text": "TGTRLSオプションに指定されたリリース&1はサポートされていない。"
+    }
+  ],
+  "source": {
+    "url": "https://www.ibm.com/docs/ja/ssw_ibm_i_74/cl/crtrptpgm.htm",
+    "version": "IBM i 7.4"
+  }
+}

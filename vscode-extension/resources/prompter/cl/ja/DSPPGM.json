@@ -1,0 +1,199 @@
+{
+  "keyword": "DSPPGM",
+  "description": "プログラム表示 (DSPPGM)",
+  "help": "プログラム表示(DSPPGM)コマンドは，プログラムに関する情報を表示します。表示されるのは，コンパイラーに関する情報，そこからプログラムが作成されたソース，プログラムの特定の処理属性，プログラムのサイズ，および，プログラムを呼び出したときに渡さなければならないパラメーターの数などです。",
+  "parameters": [
+    {
+      "name": "PGM",
+      "description": "プログラム",
+      "help": "情報が表示されるプログラムを指定します。\n\nこれは必須パラメーターです。",
+      "inputType": "group",
+      "required": true,
+      "groupKind": "qualified",
+      "children": [
+        {
+          "name": "LIB",
+          "description": "ライブラリー",
+          "help": "*LIBL: 最初に一致するものが見つかるまで，現行スレッドのライブラリー・リスト内のすべてのライブラリーが検索されます。\n*CURLIB: プログラムを見つけるために，スレッドの現行ライブラリーが使用されます。スレッドの現行ライブラリーとして指定されているライブラリーがない場合，QGPLライブラリーが使用されます。\nプログラムが入っているライブラリーの名前を指定してください。",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "*LIBL",
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          }
+        },
+        {
+          "name": "PGM",
+          "description": "プログラム",
+          "help": "プログラムの名前を指定してください。",
+          "inputType": "text",
+          "required": true,
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          }
+        }
+      ],
+      "positional": 1
+    },
+    {
+      "name": "OUTPUT",
+      "description": "出力",
+      "help": "コマンドからの出力を，要求元のワークステーションに表示するか，あるいはジョブのスプール出力で印刷するかを指定します。",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*",
+          "value": "*",
+          "help": "出力は表示される（対話式ジョブによって要求された場合）か，あるいはジョブのスプール出力で印刷されます（バッチ・ジョブによって要求された場合）。"
+        },
+        {
+          "label": "*PRINT",
+          "value": "*PRINT",
+          "help": "出力はジョブのスプール出力で印刷されます。"
+        }
+      ],
+      "positional": 2
+    },
+    {
+      "name": "DETAIL",
+      "description": "詳細",
+      "help": "サービス・プログラムについて表示される情報のタイプを指定します。複数の値を指定することができますが，値のリストに*ALLを含めないでください。*ALLは単一値として指定しなければなりません。",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*ALL",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*ALL",
+          "value": "*ALL",
+          "help": "すべてのDETAIL情報タイプ(*BASIC, *SIZE, *MODULE, *SRVPGM, *ACTGRPEXP, *ACTGRPIMP, および*COPYRIGHT)が画面に表示されます。ユーザーが画面に表示する情報を選択している場合には，それぞれのDETAILの情報をスクロールすることができますが，DETAILからDETAILに進むためには実行キー（またはPF12)を押す必要があります。"
+        },
+        {
+          "label": "*BASIC",
+          "value": "*BASIC",
+          "help": "一般的なプログラム情報が表示されます。"
+        },
+        {
+          "label": "*SIZE",
+          "value": "*SIZE",
+          "help": "このプログラムのサイズおよびサイズの限界が表示されます。"
+        },
+        {
+          "label": "*MODULE",
+          "value": "*MODULE",
+          "help": "このプログラムによってバインドされたモジュール・オブジェクトのリストが表示されます。各モジュールに示されているライブラリーは，プログラムが最初に作成された時に入っていたライブラリーです。このモジュールが異なるライブラリーからのモジュールによって置き換えられた場合にも，このライブラリー名は，プログラムが作成された時にモジュールが入っていたライブラリーの名前のままです。モジュールの作成の元となったソースを判別するためには，オプション5=記述の表示を使用して，ソース・ファイル，ライブラリー，およびメンバー名を調べてください。"
+        },
+        {
+          "label": "*ACTGRPEXP",
+          "value": "*ACTGRPEXP",
+          "help": "バインド仕様のデータ・エクスポート項目に指定された活動化グループにエクスポートされたデータ項目のリストが表示されます。"
+        },
+        {
+          "label": "*ACTGRPIMP",
+          "value": "*ACTGRPIMP",
+          "help": "活動化グループ・ディレクトリーにエクスポートされたウィーク・エクスポートによって解決されたインポートのリストが表示されます。"
+        },
+        {
+          "label": "*SRVPGM",
+          "value": "*SRVPGM",
+          "help": "このプログラムによってバインドされたサービス・プログラムのリストが表示されます。"
+        },
+        {
+          "label": "*COPYRIGHT",
+          "value": "*COPYRIGHT",
+          "help": "このサービス・プログラムの版権のリストが表示されます。 注: DETAIL値の*SIZE, *MODULE, *SRVPGM,および*COPYRIGHTが有効となるのは，統合化言語環境(ILE)プログラムの場合だけです。オリジナル・プログラム・モデル(OPM)に対してこれらの値の1つを指定すると，*BASIC情報が表示される結果となります。"
+        }
+      ],
+      "maxOccurrences": 7
+    }
+  ],
+  "threadSafe": false,
+  "environment": "すべての環境 (*ALL)",
+  "restrictions": [
+    "このコマンドを使用するためには，プログラムに対する読み取り(*READ)権限およびライブラリーに対する実行(*EXECUTE)権限が必要です。",
+    "DETAIL(*MODULE)を指定する時には，プログラムに対する使用(*USE)権限が必要です。"
+  ],
+  "examples": [
+    {
+      "code": "DSPPGM PGM(LIB01/PAYROLL)"
+    },
+    {
+      "code": "DSPPGM PGM(CUSINQ) OUTPUT(*PRINT)"
+    }
+  ],
+  "errorMessages": [
+    {
+      "id": "CPF2150",
+      "text": "オブジェクト情報機能に障害。"
+    },
+    {
+      "id": "CPF2151",
+      "text": "&1のタイプ*&3の&2に対する操作が正常に行われなかった。"
+    },
+    {
+      "id": "CPF8122",
+      "text": "ライブラリー&4に&8の損傷がある。"
+    },
+    {
+      "id": "CPF8123",
+      "text": "ライブラリー&4のオブジェクト情報に損傷がある。"
+    },
+    {
+      "id": "CPF8129",
+      "text": "&9のプログラム&4に損傷がある。"
+    },
+    {
+      "id": "CPF9803",
+      "text": "ライブラリー&3のオブジェクト&2を割り振りできません。"
+    },
+    {
+      "id": "CPF9806",
+      "text": "ライブラリー&3のオブジェクト&2に対して機能を実行することはできない。"
+    },
+    {
+      "id": "CPF9807",
+      "text": "ライブラリー・リストの１つまたは複数のライブラリーが削除された。"
+    },
+    {
+      "id": "CPF9808",
+      "text": "ライブラリー・リストの１つまたは複数のライブラリーを割り振ることができない。"
+    },
+    {
+      "id": "CPF9810",
+      "text": "ライブラリー&1が見つかりません。"
+    },
+    {
+      "id": "CPF9811",
+      "text": "ライブラリー&2でプログラム&1が見つからない。"
+    },
+    {
+      "id": "CPF9820",
+      "text": "ライブラリー&1の使用は認可されていない。"
+    },
+    {
+      "id": "CPF9821",
+      "text": "ライブラリー&2のプログラム&1は認可されていない。"
+    },
+    {
+      "id": "CPF9830",
+      "text": "ライブラリー&1を割り当てることができない。"
+    },
+    {
+      "id": "CPF9871",
+      "text": "処理中に，エラーが起こった。"
+    }
+  ],
+  "source": {
+    "url": "https://www.ibm.com/docs/ja/ssw_ibm_i_74/cl/dsppgm.htm",
+    "version": "IBM i 7.4"
+  }
+}

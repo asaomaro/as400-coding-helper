@@ -1,0 +1,1235 @@
+<!DOCTYPE html>
+<html lang="ja"><head><meta charset="utf-8"><title>コマンド作成  (CRTCMD)</title></head>
+<body>
+<div role="main">
+<script type="text/javascript" src="../rzahg/synch.js"></script>
+<a name="CRTCMD.Top_Of_Page"></a>
+<h1>コマンド作成  (CRTCMD)</h1><div id="lastModifiedDate"><span>Last Updated</span>: 2021-04-13</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table0" width="100%" class="cds--data-table">
+<tbody><tr>
+<td class="valigntop alignleft"><strong>実行可能場所:  </strong>すべての環境 (*ALL)<br>
+<strong>スレッド・セーフ:  </strong>いいえ
+</td>
+<td class="valigntop alignright">
+<a href="#CRTCMD.PARAMETERS.TABLE">パラメーター</a><br>
+<a href="#CRTCMD.COMMAND.EXAMPLES">例</a><br>
+<a href="#CRTCMD.ERROR.MESSAGES">エラー・メッセージ</a></td>
+</tr>
+</tbody></table></div></div>
+<div> <a name="CRTCMD"></a>
+<p>コマンド作成(CRTCMD)コマンドは，弊社提供コマンドによって使用されるのと同じコマンド処理サポートを使用できる新しいユーザー定義コマンド（すなわちコマンド定義）を作成します。コマンド定義とは，汎用ライブラリー(QGPL)またはユーザー・ライブラリーに記憶できるオブジェクトです。既存のコマンドを更新する（例えば1つのパラメーター・キーワードの名前を変更する）ためには，まずコマンド削除(DLTCMD)コマンドによって既存のコマンドを削除してから，コマンド作成(CRTCMD)コマンドで作成し直さなければなりません。ただし，値の中には，コマンド変更(CHGCMD)コマンドによって変更できるものもあります。
+</p>
+<p>コマンドを作成するためには，一連のコマンド定義ステートメントをソース・ファイルに入力します。次に，コマンド作成(CRTCMD)コマンドを用いてそのソース・ファイルが処理され，コマンド定義オブジェクトが作成されます。次のコマンド定義ステートメントは必要に応じて使用されます。
+</p>
+<ul class="cds--list--unordered">
+<li class="cds--list__item">コマンド・ステートメント(CMD):  定義中の各コマンドに対して1つのCMDステートメントが必要です。
+</li>
+<li class="cds--list__item">パラメーター・ステートメント(PARM):  定義中の各コマンド・パラメーターに対して1つのPARMステートメントが必要です。これは，コマンド処理プログラム(CPP)に渡されるパラメーターを定義します。
+</li>
+<li class="cds--list__item">要素ステートメント(ELEM):  ELEMステートメントは値のリストにあるパラメーターをさらに詳細に定義します。リストの使用可能な各要素に対して1つのステートメントが必要です。
+</li>
+<li class="cds--list__item">修飾子ステートメント(QUAL):  QUALステートメントは，パラメーター（PARMステートメントに定義される）または値のリストの要素(ELEM要素に定義される）で受け入れ可能な修飾された名前の各部分を記述するために必要です。
+</li>
+<li class="cds--list__item">従属ステートメント(DEP):  DEPステートメントはどのパラメーターが相互依存であるかを示します。
+</li>
+<li class="cds--list__item">プロンプト制御ステートメント(PMTCTL):  PMTCTLステートメントは，プロンプトのパラメーターを選択するために使用する条件を記述します。
+</li>
+</ul>
+<p>コマンド定義ステートメントの説明は，IBM i Information Center(http://www.ibm.com/systems/i/infocenter/)の「プログラミング」カテゴリーの「制御言語(CL)」トピック・コレクションにあります。
+</p>
+<p><strong>制約事項：</strong> CRTCMDコマンドを使用できるのは，実際のCLコマンドのコマンド定義を作成する場合だけです。すなわち，コマンド定義ステートメントそれ自体などの，<span class="var">ステートメント</span>の定義の作成には使用できません。
+</p>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table1" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#CRTCMD.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div>
+<h2><a name="CRTCMD.PARAMETERS.TABLE">パラメーター</a></h2>
+<div class="tablenoborder"><div class="cds--data-table-container"><table id="parm_table2" summary="Parameters" border="1" cellpadding="4" cellspacing="0" class="cds--data-table">
+<!-- col1="10" col2="15" col3="30" col4="10" -->
+<tbody><tr>
+<th scope="col" class="valignbottom alignleft"><div class="cds--table-header-label">キーワード</div></th>
+<th scope="col" class="valignbottom alignleft"><div class="cds--table-header-label">記述</div></th>
+<th scope="col" class="valignbottom alignleft"><div class="cds--table-header-label">選択項目</div></th>
+<th scope="col" class="valignbottom alignleft"><div class="cds--table-header-label">ノーツ</div></th>
+</tr>
+<tr>
+<td class="valigntop" rowspan="3"><a href="#CRTCMD.CMD"><strong>CMD</strong></a></td>
+<td class="valigntop">コマンド</td>
+<td class="valigntop"><span class="var">修飾オブジェクト名</span></td>
+<td class="valigntop" rowspan="3">必須, 定位置 1</td>
+</tr>
+<tr>
+<td class="valigntop">修飾子 1: コマンド</td>
+<td class="valigntop"><span class="var">名前</span></td>
+</tr><tr>
+<td class="valigntop">修飾子 2: ライブラリー</td>
+<td class="valigntop"><span class="var">名前</span>, <strong class="underlined">*CURLIB</strong></td>
+</tr><tr>
+<td class="valigntop" rowspan="3"><a href="#CRTCMD.PGM"><strong>PGM</strong></a></td>
+<td class="valigntop">コマンドを処理するプログラム</td>
+<td class="valigntop">単一値: *REXX<br>その他の値: <span class="var">修飾オブジェクト名</span></td>
+<td class="valigntop" rowspan="3">必須, 定位置 2</td>
+</tr>
+<tr>
+<td class="valigntop">修飾子 1: コマンドを処理するプログラム</td>
+<td class="valigntop"><span class="var">名前</span></td>
+</tr><tr>
+<td class="valigntop">修飾子 2: ライブラリー</td>
+<td class="valigntop"><span class="var">名前</span>, <strong class="underlined">*LIBL</strong>, *CURLIB</td>
+</tr><tr>
+<td class="valigntop" rowspan="3"><a href="#CRTCMD.SRCFILE"><strong>SRCFILE</strong></a></td>
+<td class="valigntop">ソース・ファイル</td>
+<td class="valigntop"><span class="var">修飾オブジェクト名</span></td>
+<td class="valigntop" rowspan="3">オプショナル, 定位置 3</td>
+</tr>
+<tr>
+<td class="valigntop">修飾子 1: ソース・ファイル</td>
+<td class="valigntop"><span class="var">名前</span>, <strong class="underlined">QCMDSRC</strong></td>
+</tr><tr>
+<td class="valigntop">修飾子 2: ライブラリー</td>
+<td class="valigntop"><span class="var">名前</span>, <strong class="underlined">*LIBL</strong>, *CURLIB</td>
+</tr><tr>
+<td class="valigntop"><a href="#CRTCMD.SRCMBR"><strong>SRCMBR</strong></a></td>
+<td class="valigntop">ソース・メンバー</td>
+<td class="valigntop"><span class="var">名前</span>, <strong class="underlined">*CMD</strong></td>
+<td class="valigntop">オプショナル, 定位置 4</td>
+</tr>
+<tr>
+<td class="valigntop"><a href="#CRTCMD.SRCSTMF"><strong>SRCSTMF</strong></a></td>
+<td class="valigntop">ソース・ストリーム・ファイル</td>
+<td class="valigntop"><span class="var">パス名</span></td>
+<td class="valigntop">オプショナル</td>
+</tr>
+<tr>
+<td class="valigntop" rowspan="3"><a href="#CRTCMD.REXSRCFILE"><strong>REXSRCFILE</strong></a></td>
+<td class="valigntop"> REXXソース・ファイル</td>
+<td class="valigntop"><span class="var">修飾オブジェクト名</span></td>
+<td class="valigntop" rowspan="3">オプショナル</td>
+</tr>
+<tr>
+<td class="valigntop">修飾子 1:  REXXソース・ファイル</td>
+<td class="valigntop"><span class="var">名前</span>, <strong class="underlined">QREXSRC</strong></td>
+</tr><tr>
+<td class="valigntop">修飾子 2: ライブラリー</td>
+<td class="valigntop"><span class="var">名前</span>, <strong class="underlined">*LIBL</strong>, *CURLIB</td>
+</tr><tr>
+<td class="valigntop"><a href="#CRTCMD.REXSRCMBR"><strong>REXSRCMBR</strong></a></td>
+<td class="valigntop"> REXXソース・メンバー</td>
+<td class="valigntop"><span class="var">名前</span>, <strong class="underlined">*CMD</strong></td>
+<td class="valigntop">オプショナル</td>
+</tr>
+<tr>
+<td class="valigntop" rowspan="3"><a href="#CRTCMD.REXCMDENV"><strong>REXCMDENV</strong></a></td>
+<td class="valigntop"> REXXコマンド環境</td>
+<td class="valigntop">単一値: <strong class="underlined">*COMMAND</strong>, *CPICOMM, *EXECSQL<br>その他の値: <span class="var">修飾オブジェクト名</span></td>
+<td class="valigntop" rowspan="3">オプショナル</td>
+</tr>
+<tr>
+<td class="valigntop">修飾子 1:  REXXコマンド環境</td>
+<td class="valigntop"><span class="var">名前</span></td>
+</tr><tr>
+<td class="valigntop">修飾子 2: ライブラリー</td>
+<td class="valigntop"><span class="var">名前</span>, <strong class="underlined">*LIBL</strong>, *CURLIB</td>
+</tr><tr>
+<td class="valigntop" rowspan="5"><a href="#CRTCMD.REXEXITPGM"><strong>REXEXITPGM</strong></a></td>
+<td class="valigntop"> REXX出口プログラム</td>
+<td class="valigntop">単一値: <strong class="underlined">*NONE</strong><br>その他の値 (最大 8 回の繰り返し): <span class="var">要素リスト</span></td>
+<td class="valigntop" rowspan="5">オプショナル</td>
+</tr>
+<tr>
+<td class="valigntop">要素 1: プログラム</td>
+<td class="valigntop">
+<span class="var">修飾オブジェクト名</span></td>
+</tr>
+<tr>
+<td class="valigntop">修飾子 1: プログラム</td>
+<td class="valigntop"><span class="var">名前</span></td>
+</tr><tr>
+<td class="valigntop">修飾子 2: ライブラリー</td>
+<td class="valigntop"><span class="var">名前</span>, <strong class="underlined">*LIBL</strong>, *CURLIB</td>
+</tr><tr>
+<td class="valigntop">要素 2: 出口コード</td>
+<td class="valigntop">
+2, 3, 4, 5, 7, 8, 9, 10</td>
+</tr>
+<tr>
+<td class="valigntop"><a href="#CRTCMD.THDSAFE"><strong>THDSAFE</strong></a></td>
+<td class="valigntop">スレッド・セーフ</td>
+<td class="valigntop">*YES, <strong class="underlined">*NO</strong>, *COND</td>
+<td class="valigntop">オプショナル</td>
+</tr>
+<tr>
+<td class="valigntop"><a href="#CRTCMD.MLTTHDACN"><strong>MLTTHDACN</strong></a></td>
+<td class="valigntop">マルチスレッド・ジョブの処置</td>
+<td class="valigntop"><strong class="underlined">*SYSVAL</strong>, *RUN, *MSG, *NORUN</td>
+<td class="valigntop">オプショナル</td>
+</tr>
+<tr>
+<td class="valigntop"><a href="#CRTCMD.TEXT"><strong>TEXT</strong></a></td>
+<td class="valigntop">テキスト'記述'</td>
+<td class="valigntop"><span class="var">文字値</span>, <strong class="underlined">*SRCMBRTXT</strong>, *CMDPMT, *BLANK</td>
+<td class="valigntop">オプショナル</td>
+</tr>
+<tr>
+<td class="valigntop"><a href="#CRTCMD.OPTION"><strong>OPTION</strong></a></td>
+<td class="valigntop">ソース・リスト・オプション</td>
+<td class="valigntop">値 (最大 2 回の繰り返し): *EVENTF, *NOEVENTF</td>
+<td class="valigntop">オプショナル</td>
+</tr>
+<tr>
+<td class="valigntop" rowspan="3"><a href="#CRTCMD.VLDCKR"><strong>VLDCKR</strong></a></td>
+<td class="valigntop">妥当性検査プログラム</td>
+<td class="valigntop">単一値: <strong class="underlined">*NONE</strong><br>その他の値: <span class="var">修飾オブジェクト名</span></td>
+<td class="valigntop" rowspan="3">オプショナル</td>
+</tr>
+<tr>
+<td class="valigntop">修飾子 1: 妥当性検査プログラム</td>
+<td class="valigntop"><span class="var">名前</span></td>
+</tr><tr>
+<td class="valigntop">修飾子 2: ライブラリー</td>
+<td class="valigntop"><span class="var">名前</span>, <strong class="underlined">*LIBL</strong>, *CURLIB</td>
+</tr><tr>
+<td class="valigntop"><a href="#CRTCMD.MODE"><strong>MODE</strong></a></td>
+<td class="valigntop">有効なモード</td>
+<td class="valigntop">単一値: <strong class="underlined">*ALL</strong><br>その他の値 (最大 3 回の繰り返し): *PROD, *DEBUG, *SERVICE</td>
+<td class="valigntop">オプショナル</td>
+</tr>
+<tr>
+<td class="valigntop"><a href="#CRTCMD.ALLOW"><strong>ALLOW</strong></a></td>
+<td class="valigntop">実行可能な環境</td>
+<td class="valigntop">単一値: <strong class="underlined">*ALL</strong><br>その他の値 (最大 9 回の繰り返し): *BATCH, *INTERACT, *BPGM, *IPGM, *BREXX, *IREXX, *EXEC, *BMOD, *IMOD</td>
+<td class="valigntop">オプショナル</td>
+</tr>
+<tr>
+<td class="valigntop"><a href="#CRTCMD.ALWLMTUSR"><strong>ALWLMTUSR</strong></a></td>
+<td class="valigntop">制限ユーザー可能</td>
+<td class="valigntop"><strong class="underlined">*NO</strong>, *YES</td>
+<td class="valigntop">オプショナル</td>
+</tr>
+<tr>
+<td class="valigntop"><a href="#CRTCMD.MAXPOS"><strong>MAXPOS</strong></a></td>
+<td class="valigntop">最大定位置パラメーター数</td>
+<td class="valigntop">0-75, <strong class="underlined">*NOMAX</strong></td>
+<td class="valigntop">オプショナル</td>
+</tr>
+<tr>
+<td class="valigntop" rowspan="5"><a href="#CRTCMD.PMTFILE"><strong>PMTFILE</strong></a></td>
+<td class="valigntop"> プロンプト・テキスト用メッセージ・ファイル</td>
+<td class="valigntop">単一値: <strong class="underlined">*NONE</strong><br>その他の値: <span class="var">要素リスト</span></td>
+<td class="valigntop" rowspan="5">オプショナル</td>
+</tr>
+<tr>
+<td class="valigntop">要素 1: メッセージ・ファイル</td>
+<td class="valigntop">
+<span class="var">修飾オブジェクト名</span></td>
+</tr>
+<tr>
+<td class="valigntop">修飾子 1: メッセージ・ファイル</td>
+<td class="valigntop"><span class="var">名前</span></td>
+</tr><tr>
+<td class="valigntop">修飾子 2: ライブラリー</td>
+<td class="valigntop"><span class="var">名前</span>, <strong class="underlined">*LIBL</strong>, *CURLIB</td>
+</tr><tr>
+<td class="valigntop">要素 2: メッセージ・テキスト</td>
+<td class="valigntop">
+<strong class="underlined">*STATIC</strong>, *DYNAMIC</td>
+</tr>
+<tr>
+<td class="valigntop" rowspan="3"><a href="#CRTCMD.MSGF"><strong>MSGF</strong></a></td>
+<td class="valigntop">メッセージ・ファイル</td>
+<td class="valigntop"><span class="var">修飾オブジェクト名</span></td>
+<td class="valigntop" rowspan="3">オプショナル</td>
+</tr>
+<tr>
+<td class="valigntop">修飾子 1: メッセージ・ファイル</td>
+<td class="valigntop"><span class="var">名前</span>, <strong class="underlined">QCPFMSG</strong></td>
+</tr><tr>
+<td class="valigntop">修飾子 2: ライブラリー</td>
+<td class="valigntop"><span class="var">名前</span>, <strong class="underlined">*LIBL</strong>, *CURLIB</td>
+</tr><tr>
+<td class="valigntop"><a href="#CRTCMD.HLPSHELF"><strong>HLPSHELF</strong></a></td>
+<td class="valigntop">ヘルプ・ブックシェルフ</td>
+<td class="valigntop"><span class="var">単純名</span>, <strong class="underlined">*NONE</strong>, *LIST</td>
+<td class="valigntop">オプショナル</td>
+</tr>
+<tr>
+<td class="valigntop" rowspan="3"><a href="#CRTCMD.HLPPNLGRP"><strong>HLPPNLGRP</strong></a></td>
+<td class="valigntop">ヘルプ・パネル・グループ</td>
+<td class="valigntop">単一値: <strong class="underlined">*NONE</strong><br>その他の値: <span class="var">修飾オブジェクト名</span></td>
+<td class="valigntop" rowspan="3">オプショナル</td>
+</tr>
+<tr>
+<td class="valigntop">修飾子 1: ヘルプ・パネル・グループ</td>
+<td class="valigntop"><span class="var">名前</span></td>
+</tr><tr>
+<td class="valigntop">修飾子 2: ライブラリー</td>
+<td class="valigntop"><span class="var">名前</span>, <strong class="underlined">*LIBL</strong>, *CURLIB</td>
+</tr><tr>
+<td class="valigntop"><a href="#CRTCMD.HLPID"><strong>HLPID</strong></a></td>
+<td class="valigntop">ヘルプID</td>
+<td class="valigntop"><span class="var">文字値</span>, *CMD, <strong class="underlined">*NONE</strong></td>
+<td class="valigntop">オプショナル</td>
+</tr>
+<tr>
+<td class="valigntop" rowspan="3"><a href="#CRTCMD.HLPSCHIDX"><strong>HLPSCHIDX</strong></a></td>
+<td class="valigntop">ヘルプ検索見出し</td>
+<td class="valigntop">単一値: <strong class="underlined">*NONE</strong><br>その他の値: <span class="var">修飾オブジェクト名</span></td>
+<td class="valigntop" rowspan="3">オプショナル</td>
+</tr>
+<tr>
+<td class="valigntop">修飾子 1: ヘルプ検索見出し</td>
+<td class="valigntop"><span class="var">名前</span></td>
+</tr><tr>
+<td class="valigntop">修飾子 2: ライブラリー</td>
+<td class="valigntop"><span class="var">名前</span>, <strong class="underlined">*LIBL</strong>, *CURLIB</td>
+</tr><tr>
+<td class="valigntop"><a href="#CRTCMD.CURLIB"><strong>CURLIB</strong></a></td>
+<td class="valigntop">現行ライブラリー</td>
+<td class="valigntop"><span class="var">名前</span>, <strong class="underlined">*NOCHG</strong>, *CRTDFT</td>
+<td class="valigntop">オプショナル</td>
+</tr>
+<tr>
+<td class="valigntop"><a href="#CRTCMD.PRDLIB"><strong>PRDLIB</strong></a></td>
+<td class="valigntop">実行ライブラリー</td>
+<td class="valigntop"><span class="var">名前</span>, <strong class="underlined">*NOCHG</strong>, *NONE</td>
+<td class="valigntop">オプショナル</td>
+</tr>
+<tr>
+<td class="valigntop" rowspan="3"><a href="#CRTCMD.PMTOVRPGM"><strong>PMTOVRPGM</strong></a></td>
+<td class="valigntop">プロンプト一時変更プログラム</td>
+<td class="valigntop">単一値: <strong class="underlined">*NONE</strong><br>その他の値: <span class="var">修飾オブジェクト名</span></td>
+<td class="valigntop" rowspan="3">オプショナル</td>
+</tr>
+<tr>
+<td class="valigntop">修飾子 1: プロンプト一時変更プログラム</td>
+<td class="valigntop"><span class="var">名前</span></td>
+</tr><tr>
+<td class="valigntop">修飾子 2: ライブラリー</td>
+<td class="valigntop"><span class="var">名前</span>, <strong class="underlined">*LIBL</strong>, *CURLIB</td>
+</tr><tr>
+<td class="valigntop"><a href="#CRTCMD.AUT"><strong>AUT</strong></a></td>
+<td class="valigntop">権限</td>
+<td class="valigntop"><span class="var">名前</span>, <strong class="underlined">*LIBCRTAUT</strong>, *USE, *ALL, *CHANGE, *EXCLUDE</td>
+<td class="valigntop">オプショナル</td>
+</tr>
+<tr>
+<td class="valigntop"><a href="#CRTCMD.REPLACE"><strong>REPLACE</strong></a></td>
+<td class="valigntop">コマンドの置き換え</td>
+<td class="valigntop"><strong class="underlined">*YES</strong>, *NO</td>
+<td class="valigntop">オプショナル</td>
+</tr>
+<tr>
+<td class="valigntop"><a href="#CRTCMD.ENBGUI"><strong>ENBGUI</strong></a></td>
+<td class="valigntop"> GUI使用可能</td>
+<td class="valigntop">*YES, <strong class="underlined">*NO</strong></td>
+<td class="valigntop">オプショナル</td>
+</tr>
+</tbody></table></div></div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table3" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#CRTCMD.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+</div>
+<div> <a name="CRTCMD.CMD"></a>
+<h2>コマンド (CMD)</h2>
+<p>作成するコマンドを指定します。
+</p>
+<h3><strong>修飾子</strong><strong>1: </strong><strong>コマンド</strong>
+</h3>
+<dl>
+<dt><strong class="italic">名前</strong></dt>
+<dd>作成するコマンドの名前を指定してください。
+</dd>
+</dl>
+<p>これは必須パラメーターです。
+</p>
+<h3><strong>修飾子</strong><strong>2: ライブラリー</strong>
+</h3>
+<dl>
+<dt><strong class="underlined">*CURLIB</strong></dt>
+<dd>コマンドは，ジョブの現行ライブラリーに作成されます。ジョブの現行ライブラリーとして指定されているライブラリーがない場合は，QGPLが使用されます。
+</dd>
+<dt><strong class="italic">名前</strong></dt>
+<dd>コマンドを探し出すライブラリーの名前を指定してください。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table4" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#CRTCMD.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="CRTCMD.PGM"></a>
+<h2>コマンドを処理するプログラム (PGM)</h2>
+<p>コマンドの処理に使用されるコマンド処理プログラム(CPP)の名前およびライブラリーを指定します。コマンド処理プログラムはコマンドの実行時まで必要ありません。
+</p>
+<p>コマンド処理プログラムに渡されるパラメーターは，<strong>ソース・ファイル</strong><strong> (SRCFILE)</strong>パラメーターに指定されたソース・ファイル中のコマンド定義ステートメントによって定義されたものです。
+</p>
+<p>これは必須パラメーターです。
+</p>
+<h3><strong>単一値</strong>
+</h3>
+<dl>
+<dt><strong>*REXX</strong></dt>
+<dd>このコマンドのCPPは，<strong> REXX</strong><strong>ソース・メンバー</strong><strong> (REXSRCMBR)</strong>パラメーターで識別されるREXXプロシージャーです。
+</dd>
+</dl>
+<h3><strong>修飾子</strong><strong>1: </strong><strong>コマンドを処理するプログラム</strong>
+</h3>
+<dl>
+<dt><strong class="italic">名前</strong></dt>
+<dd>コマンドを処理するCPPの名前を指定してください。
+</dd>
+</dl>
+<h3><strong>修飾子</strong><strong>2: ライブラリー</strong>
+</h3>
+<dl>
+<dt><strong class="underlined">*LIBL</strong></dt>
+<dd>最初に一致するものが見つかるまで，現行スレッドのライブラリー・リスト内のすべてのライブラリーが検索されます。
+</dd>
+</dl>
+<dl>
+<dt><strong>*CURLIB</strong></dt>
+<dd>プログラムを見つけるために，ジョブの現行ライブラリーが使用されます。ジョブの現行ライブラリーとして指定されているライブラリーがない場合は，QGPLが使用されます。
+</dd>
+<dt><strong class="italic">名前</strong></dt>
+<dd>プログラムが入っているライブラリーの名前を指定してください。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table5" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#CRTCMD.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="CRTCMD.SRCFILE"></a>
+<h2>ソース・ファイル (SRCFILE)</h2>
+<p>コマンド定義ステートメントが入っているソース・ファイルを指定します。
+</p>
+<h3><strong>修飾子</strong><strong>1: </strong><strong>ソース・ファイル</strong>
+</h3>
+<dl>
+<dt><strong class="underlined">QCMDSRC</strong></dt>
+<dd>QCMDSRCという名前のソース・ファイルには，コマンド定義ステートメントが入っています。
+</dd>
+<dt><strong class="italic">名前</strong></dt>
+<dd>作成されるコマンドのコマンド定義ステートメントが入っているソース・ファイルの名前を指定してください。
+</dd>
+</dl>
+<h3><strong>修飾子</strong><strong>2: ライブラリー</strong>
+</h3>
+<dl>
+<dt><strong class="underlined">*LIBL</strong></dt>
+<dd>最初に一致するものが見つかるまで，現行スレッドのライブラリー・リスト内のすべてのライブラリーが検索されます。
+</dd>
+</dl>
+<dl>
+<dt><strong>*CURLIB</strong></dt>
+<dd>ソース・ファイルを見つけるために，ジョブの現行ライブラリーが使用されます。ジョブの現行ライブラリーとして指定されているライブラリーがない場合は，QGPLが使用されます。
+</dd>
+<dt><strong class="italic">名前</strong></dt>
+<dd>作成されるコマンドのコマンド定義ステートメントが入っているソース・ファイルのライブラリー名を指定してください。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table6" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#CRTCMD.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="CRTCMD.SRCMBR"></a>
+<h2>ソース・メンバー (SRCMBR)</h2>
+<p>コマンドを作成するために使用されるコマンド定義ステートメントが入っているソース・ファイル・メンバーを指定します。
+</p>
+<dl>
+<dt><strong class="underlined">*CMD</strong></dt>
+<dd><strong>ソース・ファイル</strong><strong> (SRCFILE)</strong>パラメーターに指定されたファイルがデータベース・ファイルである場合には，ソース・ファイルのメンバーの名前は，このコマンドの<strong>コマンド</strong><strong> (CMD)</strong>パラメーターに指定した名前です。
+</dd>
+<dt><strong class="italic">名前</strong></dt>
+<dd>SRCFILEパラメーターに指定されたソース・ファイル中のメンバーの名前を指定してください。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table7" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#CRTCMD.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="CRTCMD.SRCSTMF"></a>
+<h2>ソース・ストリーム・ファイル (SRCSTMF)</h2>
+<p>コマンドを作成するために使用されるコマンド定義ステートメントを含むストリーム・ファイルのパス名を指定します。
+</p>
+<p>パス名は，絶対修飾名と相対修飾名のどちらを指定することもできます。絶対パス名は'/'で始まり，相対パス名は'/'以外の文字で始まります。
+</p>
+<p>絶対修飾の場合は，パス名は完全です。相対修飾の場合には，パス名は，パス名にジョブの現行作業ディレクトリーを付加することによって補完されます。
+</p>
+<p><strong>SRCMBR</strong>パラメーターおよび<strong>SRCFILE</strong>パラメーターは，<strong>SRCSTMF</strong>パラメーターと一緒には指定できません。
+</p>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table8" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#CRTCMD.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="CRTCMD.REXSRCFILE"></a>
+<h2>REXXソース・ファイル (REXSRCFILE)</h2>
+<p>REXXコマンド処理プログラム(CPP)が入っているソース・ファイルを指定します。
+</p>
+<h3><strong>修飾子</strong><strong>1:  REXX</strong><strong>ソース・ファイル</strong>
+</h3>
+<dl>
+<dt><strong class="underlined">QREXSRC</strong></dt>
+<dd>QREXSRCという名前のファイルにはREXX CPPソース・ファイルが入ります。
+</dd>
+<dt><strong class="italic">名前</strong></dt>
+<dd>使用するソース・メンバーが入っているソース・ファイルの名前を指定してください。
+</dd>
+</dl>
+<h3><strong>修飾子</strong><strong>2: ライブラリー</strong>
+</h3>
+<dl>
+<dt><strong class="underlined">*LIBL</strong></dt>
+<dd>最初に一致するものが見つかるまで，現行スレッドのライブラリー・リスト内のすべてのライブラリーが検索されます。
+</dd>
+</dl>
+<dl>
+<dt><strong>*CURLIB</strong></dt>
+<dd>ソース・ファイルを見つけるために現行ライブラリーが使用されます。ジョブの現行ライブラリーとして指定されているライブラリーがない場合は，QGPLが使用されます。
+</dd>
+<dt><strong class="italic">名前</strong></dt>
+<dd>REXXソース・ファイルを探し出すために使用するライブラリーの名前を指定してください。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table9" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#CRTCMD.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="CRTCMD.REXSRCMBR"></a>
+<h2>REXXソース・メンバー (REXSRCMBR)</h2>
+<p>見かけ上のコマンド処理プログラム(CPP)として機能するREXXプロシージャーが入っているソース・ファイル・メンバーを指定します。
+</p>
+<dl>
+<dt><strong class="underlined">*CMD</strong></dt>
+<dd>省略時のメンバー名は，このコマンドの<strong>コマンド</strong><strong> (CMD)</strong>パラメーターに指定された名前です。
+</dd>
+<dt><strong class="italic">名前</strong></dt>
+<dd>見かけ上のコマンド処理プログラムとして機能するREXXプロシージャーが入っているソース・ファイル・メンバーの名前を指定してください。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table10" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#CRTCMD.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="CRTCMD.REXCMDENV"></a>
+<h2>REXXコマンド環境 (REXCMDENV)</h2>
+<p>REXXコマンド処理プログラム(CPP)が実行を開始する時に活動状態であるコマンド環境を指定します。システムの制御言語(CL)環境が使用されない場合には，REXXプロシージャーで見つかるコマンドを処理するためのプログラムを指定することができます。REXX解釈プログラムは，プロシージャーに組み込まれているコマンドを処理するために，このプログラムを呼び出します。この環境はREXX ADDRESS命令によって変更することができます。
+</p>
+<h3><strong>単一値</strong>
+</h3>
+<dl>
+<dt><strong class="underlined">*COMMAND</strong></dt>
+<dd>制御言語(CL)コマンド環境が使用されます。
+</dd>
+<dt><strong>*CPICOMM</strong></dt>
+<dd>通信コマンド環境用の共通プログラミング・インターフェース(CPI)が使用されます。CPICOMMは，REXXプロシージャー内に組み込まれたCLコマンドで使用されるコマンド環境です。
+</dd>
+<dt><strong>*EXECSQL</strong></dt>
+<dd>構造化照会言語(SQL)コマンド環境が使用されます。EXECSQLは，SQLプロシージャーに組み込まれたCLコマンドに使用されるコマンド環境です。
+</dd>
+</dl>
+<h3><strong>修飾子</strong><strong>1:  REXX</strong><strong>コマンド環境</strong>
+</h3>
+<dl>
+<dt><strong class="italic">名前</strong></dt>
+<dd>REXXプロシージャーに組み込まれているコマンドを処理するために呼び出すプログラムの名前を指定してください。
+</dd>
+</dl>
+<h3><strong>修飾子</strong><strong>2: ライブラリー</strong>
+</h3>
+<dl>
+<dt><strong class="underlined">*LIBL</strong></dt>
+<dd>最初に一致するものが見つかるまで，現行スレッドのライブラリー・リスト内のすべてのライブラリーが検索されます。
+</dd>
+</dl>
+<dl>
+<dt><strong>*CURLIB</strong></dt>
+<dd>プログラムを見つけるために，ジョブの現行ライブラリーが使用されます。ジョブの現行ライブラリーとして指定されているライブラリーがない場合は，QGPLが使用されます。
+</dd>
+<dt><strong class="italic">名前</strong></dt>
+<dd>プログラムが入っているライブラリーの名前を指定してください。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table11" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#CRTCMD.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="CRTCMD.REXEXITPGM"></a>
+<h2>REXX出口プログラム (REXEXITPGM)</h2>
+<p>REXXコマンド処理プログラム(CPP)を開始する時に使用する出口プログラムを指定します。プログラムと出口コードの組合わせを最大8組まで指定することができます。
+</p>
+<h3><strong>単一値</strong>
+</h3>
+<dl>
+<dt><strong class="underlined">*NONE</strong></dt>
+<dd>REXX CPPには出口プログラムがありません。
+</dd>
+</dl>
+<h3><strong>要素</strong><strong>1: </strong><strong>プログラム</strong>
+</h3>
+<h3><strong>修飾子</strong><strong>1: </strong><strong>プログラム</strong>
+</h3>
+<dl>
+<dt><strong class="italic">名前</strong></dt>
+<dd>出口プログラムの名前を指定してください。
+</dd>
+</dl>
+
+<dd>
+<h3><strong>修飾子</strong><strong>2: ライブラリー</strong>
+</h3>
+<dl>
+<dt><strong class="underlined">*LIBL</strong></dt>
+<dd>最初に一致するものが見つかるまで，現行スレッドのライブラリー・リスト内のすべてのライブラリーが検索されます。
+</dd>
+</dl>
+<dl>
+<dt><strong>*CURLIB</strong></dt>
+<dd>プログラムを見つけるためにジョブの現行ライブラリーが使用されます。ジョブの現行ライブラリーとして指定されているライブラリーがない場合は，QGPLが使用されます。
+</dd>
+<dt><strong class="italic">名前</strong></dt>
+<dd>検索するライブラリーの名前を指定してください。
+</dd>
+</dl>
+</dd>
+
+<h3><strong>要素</strong><strong>2: </strong><strong>出口コード</strong>
+</h3>
+<dl>
+<dt><strong>2</strong></dt>
+<dd>外部関数またはサブルーチンがREXXプログラムによって呼び出された時には，常に関連したプログラムが呼び出されます。その後で，要求されたルーチンの検出および呼び出しは出口プログラムの責任となります。
+</dd>
+<dt><strong>3</strong></dt>
+<dd>解釈プログラムがコマンドを呼び出そうとしている時には，常に関連したプログラムが呼び出されます。コマンド・ストリングおよび現行の環境名を指定するコマンドの検出および呼び出しは出口プログラムの責任となります。
+</dd>
+<dt><strong>4</strong></dt>
+<dd>REXX命令または関数がREXX外部データ待ち行列に対する操作を試みた時には，常に関連したプログラムが呼び出されます。
+</dd>
+<dt><strong>5</strong></dt>
+<dd>セッション入出力操作が試みられた時には，常に関連したプログラムが呼び出されます。
+</dd>
+<dt><strong>7</strong></dt>
+<dd>REXXプロシージャーの各文節を停止する必要があるかどうかを判別するために，これの実行の後に，関連したプログラムが呼び出されます。
+</dd>
+<dt><strong>8</strong></dt>
+<dd>トレースをオンまたはオフにする必要があるかどうかを検査するために，REXXプログラムの各文節の実行後に，関連したプログラムが呼び出されます。
+</dd>
+<dt><strong>9</strong></dt>
+<dd>REXXプロシージャー（外部関数およびサブルーチンとして呼び出されるREXXプロシージャーを含む）の最初の命令を解釈する前に，関連したプログラムが呼び出されます。
+</dd>
+<dt><strong>10</strong></dt>
+<dd>REXXプロシージャー（外部関数およびサブルーチンとして呼び出されるREXXプロシージャーを含む）の最後の命令を解釈した後に，関連したプログラムが呼び出されます。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table12" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#CRTCMD.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="CRTCMD.THDSAFE"></a>
+<h2>スレッド・セーフ (THDSAFE)</h2>
+<p>コマンドがスレッド・セーフかどうかと，複数のスレッドがあるジョブで安全に使用できるかどうかを指定します。
+</p>
+<dl>
+<dt><strong class="underlined">*NO</strong></dt>
+<dd>コマンドはスレッド・セーフでなく，複数のスレッドがあるジョブで使用してはいけません。
+</dd>
+<dt><strong>*YES</strong></dt>
+<dd>コマンドはスレッド・セーフで，複数のスレッドがあるジョブで安全に使用することができます。
+</dd>
+<dt><strong>*COND</strong></dt>
+<dd>コマンドは一定の条件付きでスレッド・セーフです。コマンドがスレッド・セーフとなる条件を判別するためには，そのコマンドのオンライン・ヘルプまたはその他の文書を参照してください。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table13" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#CRTCMD.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="CRTCMD.MLTTHDACN"></a>
+<h2>マルチスレッド・ジョブの処置 (MLTTHDACN)</h2>
+<p>このコマンドのマルチスレッド・ジョブの処置を指定します。マルチスレッド・ジョブで取る処置が分からない場合には，省略時の値*SYSVALを使用してください。
+</p>
+<dl>
+<dt><strong class="underlined">*SYSVAL</strong></dt>
+<dd>QMLTTHDACNシステム値で指定されたマルチスレッド・ジョブの処置が使用されます。
+</dd>
+<dt><strong>*RUN</strong></dt>
+<dd>コマンドを実行します。
+</dd>
+<dt><strong>*MSG</strong></dt>
+<dd>コマンドを実行し，診断メッセージを送ります。
+</dd>
+<dt><strong>*NORUN</strong></dt>
+<dd>コマンドを実行しません。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table14" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#CRTCMD.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="CRTCMD.TEXT"></a>
+<h2>テキスト'記述' (TEXT)</h2>
+<p>オブジェクトを簡単に記述したテキストを指定します。
+</p>
+<dl>
+<dt><strong class="underlined">*SRCMBRTXT</strong></dt>
+<dd>テキストは，CLコマンドを作成するために使用されるソース・ファイル・メンバーから取得されます。
+</dd>
+</dl>
+<dl>
+<dt><strong>*CMDPMT</strong></dt>
+<dd>テキスト記述は，コマンドのプロンプトが表示される場合に示されるコマンド・タイトルと同じになります。
+</dd>
+</dl>
+<dl>
+<dt><strong>*BLANK</strong></dt>
+<dd>テキストは指定されません。
+</dd>
+<dt><strong class="italic">文字値</strong></dt>
+<dd>50バイトを超えないテキストを，アポストロフィで囲んで指定してください。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table15" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#CRTCMD.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="CRTCMD.OPTION"></a>
+<h2>ソース・リスト・オプション (OPTION)</h2>
+<p>ソース・メンバーのコンパイル時に使用するオプションを指定します。一部またはすべてのオプションをどのような順序でも指定することができます。オプションは 1 つ以上のブランク・スペースで区切ってください。オプションが複数回指定された場合には，最後のものが使用されます。
+</p>
+<h3><strong>イベント・ファイル作成オプション</strong>
+</h3>
+<dl>
+<dt><strong>*NOEVENTF</strong></dt>
+<dd>クライアント・ツールで使用するイベント・ファイルを作成しません。
+</dd>
+<dt><strong>*EVENTF</strong></dt>
+<dd>クライアント・ツールで使用するイベント・ファイルを作成します。イベント・ファイルは，作成されたコマンドが保管されるライブラリー内のEVFEVENTファイルのメンバーとして作成されます。ファイルEVFEVENT が存在しない場合には，自動的に作成されます。イベント・ファイルのメンバー名は，作成されるオブジェクトの名前と同じです。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table16" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#CRTCMD.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="CRTCMD.VLDCKR"></a>
+<h2>妥当性検査プログラム (VLDCKR)</h2>
+<p>作成されるコマンドのパラメーターで追加のユーザー定義妥当性検査を実行するプログラムを指定します。また，コマンド処理プログラム(CPP)に渡すのと同じパラメーターが妥当性検査プログラムにも渡されます。妥当性検査プログラムは，ソース・ファイル中のコマンド定義ステートメントによって指定されたものを超えて，さらに通常の制御言語構文検査を超えて追加のパラメーター検査を実行します。妥当性検査の詳細については，IBM i Information Center(http://www.ibm.com/systems/i/infocenter/)の「プログラミング」カテゴリーの「制御言語(CL)」トピック・コレクションにあります。
+</p>
+<h3><strong>単一値</strong>
+</h3>
+<dl>
+<dt><strong class="underlined">*NONE</strong></dt>
+<dd>このコマンドに対して別個の妥当性検査プログラムはありません。すべての妥当性検査は，コマンド分析プログラムおよびコマンド処理プログラムによって実行されます。妥当性検査でコマンドが処理または検査される時には常に，指定された変数および式は使用されません。
+</dd>
+</dl>
+<h3><strong>修飾子</strong><strong>1: </strong><strong>妥当性検査プログラム</strong>
+</h3>
+<dl>
+<dt><strong class="italic">名前</strong></dt>
+<dd>コマンドの妥当性を検査する妥当性検査プログラムの名前およびライブラリーを指定してください。
+</dd>
+</dl>
+<h3><strong>修飾子</strong><strong>2: ライブラリー</strong>
+</h3>
+<dl>
+<dt><strong class="underlined">*LIBL</strong></dt>
+<dd>最初に一致するものが見つかるまで，現行スレッドのライブラリー・リスト内のすべてのライブラリーが検索されます。
+</dd>
+</dl>
+<dl>
+<dt><strong>*CURLIB</strong></dt>
+<dd>プログラムを見つけるために，ジョブの現行ライブラリーが使用されます。ジョブの現行ライブラリーとして指定されているライブラリーがない場合は，QGPLが使用されます。
+</dd>
+<dt><strong class="italic">名前</strong></dt>
+<dd>妥当性検査プログラムが入っているライブラリーの名前を指定してください。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table17" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#CRTCMD.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="CRTCMD.MODE"></a>
+<h2>有効なモード (MODE)</h2>
+<p>新しく定義するコマンドに適用する操作環境のモードを指定します。
+</p>
+<h3><strong>単一値</strong>
+</h3>
+<dl>
+<dt><strong class="underlined">*ALL</strong></dt>
+<dd>コマンドは実行，デバッグ，および保守のすべてのタイプのモードで有効です。
+</dd>
+</dl>
+<h3><strong>その他の値（最大</strong><strong>3</strong><strong>個指定可能）</strong>
+</h3>
+<dl>
+<dt><strong>*PROD</strong></dt>
+<dd>コマンドは，実行モードの操作で有効です。
+</dd>
+<dt><strong>*DEBUG</strong></dt>
+<dd>コマンドは，デバッグ・モードの操作で有効です。
+</dd>
+<dt><strong>*SERVICE</strong></dt>
+<dd>コマンドは，保守モードの操作で有効です。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table18" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#CRTCMD.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="CRTCMD.ALLOW"></a>
+<h2>実行可能な環境 (ALLOW)</h2>
+<p>コマンドを処理できる環境を指定します。
+</p>
+<h3><strong>単一値</strong>
+</h3>
+<dl>
+<dt><strong class="underlined">*ALL</strong></dt>
+<dd>コマンドは，バッチ入力ストリーム，CLプログラム，REXXプロシージャー，またはCL ILEモジュール中で処理するか，あるいは対話式に処理することができます。また，処理のためにシステムAPIプログラムQCMDEXC, QCAEXEC, およびQCAPCMDに渡すことができます。
+</dd>
+</dl>
+<h3><strong>その他の値（最大</strong><strong>9</strong><strong>個指定可能）</strong>
+</h3>
+<dl>
+<dt><strong>*BATCH</strong></dt>
+<dd>コマンドは，コンパイルされたCLプログラムの外部でバッチ入力ストリーム中で処理することができます。
+</dd>
+<dt><strong>*INTERACT</strong></dt>
+<dd>コマンドは，コンパイルされたCLプログラムの外部で対話式に処理することができます。
+</dd>
+<dt><strong>*BPGM</strong></dt>
+<dd>コマンドは，バッチ入力から呼び出されるコンパイル済みCLプログラムの中で処理することができます。
+</dd>
+<dt><strong>*IPGM</strong></dt>
+<dd>コマンドは，対話式入力から呼び出されるコンパイル済みCLプログラムの中で処理することができます。
+</dd>
+<dt><strong>*BREXX</strong></dt>
+<dd>コマンドは，バッチ・ジョブで実行されるREXXプロシージャー中で使用することができます。
+</dd>
+<dt><strong>*IREXX</strong></dt>
+<dd>コマンドは，対話式ジョブで実行されるREXXプロシージャー中で使用することができます。
+</dd>
+<dt><strong>*BMOD</strong></dt>
+<dd>コマンドは，バッチCL ILEプログラムでのみ使用することができます。
+</dd>
+<dt><strong>*IMOD</strong></dt>
+<dd>コマンドは，対話式CL ILEプログラムでのみ使用することができます。
+</dd>
+<dt><strong>*EXEC</strong></dt>
+<dd>コマンドは，CALLコマンドのパラメーターとして使用することができ，システムAPIプログラムQCMDEXC, QCAEXEC, およびQCAPCMDに文字ストリングの形で渡して処理することができます。*EXECを指定した場合には，*BATCHまたは*INTERACTも指定しなければなりません。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table19" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#CRTCMD.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="CRTCMD.ALWLMTUSR"></a>
+<h2>制限ユーザー可能 (ALWLMTUSR)</h2>
+<p>プロファイルで権限が制限されているユーザーが，メニューのコマンド入力行にコマンドを入力してそのコマンドを使用可能にできるかどうかを指定します。
+</p>
+<dl>
+<dt><strong class="underlined">*NO</strong></dt>
+<dd>プロファイルで権限が制限されているユーザーは，このコマンドをメニューのコマンド入力行に入力することはできません。
+</dd>
+<dt><strong>*YES</strong></dt>
+<dd>プロファイルで権限が制限されているユーザーでも，このコマンドをメニューのコマンド入力行に入力することができます。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table20" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#CRTCMD.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="CRTCMD.MAXPOS"></a>
+<h2>最大定位置パラメーター数 (MAXPOS)</h2>
+<p>このコマンドに対して定位置に（パラメーター・キーワードなしで）指定できるパラメーターの最大数を指定します。このパラメーター値は非定数の必須パラメーター数より大きく，非定数パラメーターの合計数より小さくなければなりません。TYPE(*ZEROELEM)のパラメーター，CONSTANT属性のパラメーター，およびそのELEMおよびQUALにCONSTANT属性があるリストおよび修飾名，あるいはTYPE(*ZEROELEM)のパラメーターは，このコマンドに定位置コーディングできるパラメーター数に含められません。
+</p>
+<dl>
+<dt><strong class="underlined">*NOMAX</strong></dt>
+<dd>このコマンドには定位置コーディングの最大限界値の指定はありません。
+</dd>
+<dt><strong class="italic">0から99</strong></dt>
+<dd>定位置パラメーターの最大数を指定します。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table21" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#CRTCMD.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="CRTCMD.PMTFILE"></a>
+<h2>プロンプト・テキスト用メッセージ・ファイル (PMTFILE)</h2>
+<p>コマンドのプロンプト・テキストを検索するためのメッセージ・ファイルを指定します。
+</p>
+<h3><strong>単一値</strong>
+</h3>
+<dl>
+<dt><strong class="underlined">*NONE</strong></dt>
+<dd>プロンプト・テキストにメッセージ・ファイルは必要ありません。テキストが必要な場合には，コマンドを定義する定義ステートメントで提供されます。
+</dd>
+</dl>
+<h3><strong>要素</strong><strong>1:  プロンプト・テキスト</strong><strong>用</strong><strong>メッセージ・ファイル</strong>
+</h3>
+<h3><strong>修飾子</strong><strong>1: </strong><strong>メッセージ・ファイル</strong>
+</h3>
+<dl>
+<dt><strong class="italic">名前</strong></dt>
+<dd>メッセージ・ファイルの名前を指定してください。
+</dd>
+</dl>
+
+<dd>
+<h3><strong>修飾子</strong><strong>2: ライブラリー</strong>
+</h3>
+<dl>
+<dt><strong class="underlined">*LIBL</strong></dt>
+<dd>最初に一致するものが見つかるまで，現行スレッドのライブラリー・リスト内のすべてのライブラリーが検索されます。
+</dd>
+</dl>
+<dl>
+<dt><strong>*CURLIB</strong></dt>
+<dd>メッセージ・ファイルを見つけるために，ジョブの現行ライブラリーが使用されます。ジョブの現行ライブラリーとして指定されているライブラリーがない場合は，QGPLが使用されます。
+</dd>
+<dt><strong class="italic">名前</strong></dt>
+<dd>メッセージ・ファイルが入っているライブラリーの名前を指定してください。
+</dd>
+</dl>
+</dd>
+
+<h3><strong>要素</strong><strong>2:  </strong><strong>メッセージ・テキスト</strong>
+</h3>
+<p>作成中のコマンドのプロンプトが表示されるときに，コマンド・オブジェクトに保管されたプロンプト・メッセージ情報がその作成中のコマンドによってどのように使用されるかを指定します。
+</p>
+<dl>
+<dt><strong class="underlined">*STATIC</strong></dt>
+<dd>コマンドのプロンプトが表示されると，そのコマンドが作成されたときに*CMDオブジェクトに保管されたメッセージの静的コピーからプロンプト・テキストが検索されます。コマンドのプロンプト・テキストを2つ以上の各国語で表示する場合は，それぞれの各国語に別々の*CMDを作成する必要があります。
+</dd>
+<dt><strong>*DYNAMIC</strong></dt>
+<dd>コマンドのプロンプトが表示されると，そのコマンドが作成されたときに*CMDオブジェクトに保管されたメッセージIDが使用され，このパラメーターに指定されたメッセージ・ファイルからプロンプト・テキスト・メッセージが動的に検索されます。コマンドのプロンプトが表示されている場合は，CMD, PARM, QUAL,またはELEMコマンド定義ステートメントでPROMPTまたはCHOICEパラメーターに指定されたメッセージIDをプロンプト・テキスト・メッセージ・ファイルで見つける必要があります。
+<p>コマンドのプロンプトの表示時にメッセージ・ファイルを検索していてエラーが発生した場合，*CMDオブジェクトに保管されたプロンプト・メッセージの静的コピーからすべてのプロンプト・テキストが取得されます。メッセージ・ファイルが見つかっても，そのメッセージ・ファイルの中に個々のプロンプト・テキスト・メッセージが見つからない場合は，*CMDオブジェクトに保管されたプロンプト・テキストの静的コピーがその1つのメッセージに使用されます。
+</p>
+<p>PROMPTとCHOICEに指定されたメッセージID,このパラメーターの最初の要素に指定されたメッセージ・ファイル，および2番目の要素に指定された*DYNAMICを指定してコマンドを作成すると，複数の各国語のプロンプト・テキストを持てる単一のコマンドが作成されます。プロンプトの表示時に，ライブラリー・リストにある所要の各国語でプロンプト・テキスト・メッセージ・ファイルをコピーすると，同じコマンドのプロンプトをその各国語で表示することができます。オペレーティング・システムおよびほとんどのIBM製品のCLコマンドでは，*DYNAMICオプションを使用して，コマンドの1つのコピーによってすべての導入済みの各国語バージョンを処理することができます。
+</p>
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table22" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#CRTCMD.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="CRTCMD.MSGF"></a>
+<h2>メッセージ・ファイル (MSGF)</h2>
+<p>依存関係(DEP)コマンド定義ステートメントで識別されたメッセージの検索元のメッセージ・ファイルを指定します。DEPステートメント上の<strong>メッセージ</strong><strong>ID (MSGID)</strong>パラメーターによって，パラメーター構文エラーが検出されると送信するメッセージIDを指定することができます。'CPF'以外の3文字の接頭部付きのメッセージ識別の場合は，このパラメーターに指定されたメッセージ・ファイルが使用されます。接頭部'CPF付きのメッセージでは，QCPFMSGがメッセージ・ファイルとして常に使用されます。
+</p>
+<h3><strong>修飾子</strong><strong>1: </strong><strong>メッセージ・ファイル</strong>
+</h3>
+<dl>
+<dt><strong class="underlined">QCPFMSG</strong></dt>
+<dd>メッセージ・ファイルQCPFMSGが，DEPエラー・メッセージの検索元のファイルです。
+</dd>
+<dt><strong class="italic">名前</strong></dt>
+<dd>DEPエラー・メッセージの検索元のメッセージ・ファイルの名前を指定してください。
+</dd>
+</dl>
+<h3><strong>修飾子</strong><strong>2: ライブラリー</strong>
+</h3>
+<dl>
+<dt><strong class="underlined">*LIBL</strong></dt>
+<dd>最初に一致するものが見つかるまで，現行スレッドのライブラリー・リスト内のすべてのライブラリーが検索されます。
+</dd>
+</dl>
+<dl>
+<dt><strong>*CURLIB</strong></dt>
+<dd>メッセージ・ファイルを見つけるために，ジョブの現行ライブラリーが使用されます。ジョブの現行ライブラリーとして指定されているライブラリーがない場合は，QGPLが使用されます。
+</dd>
+<dt><strong class="italic">名前</strong></dt>
+<dd>メッセージ・ファイルが入っているライブラリーの名前を指定してください。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table23" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#CRTCMD.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="CRTCMD.HLPSHELF"></a>
+<h2>ヘルプ・ブックシェルフ (HLPSHELF)</h2>
+<p>このパラメーターはもはやサポートされていません。
+</p>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table24" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#CRTCMD.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="CRTCMD.HLPPNLGRP"></a>
+<h2>ヘルプ・パネル・グループ (HLPPNLGRP)</h2>
+<p>このコマンドのヘルプ・パネル・グループを指定します。
+</p>
+<h3><strong>単一値</strong>
+</h3>
+<dl>
+<dt><strong class="underlined">*NONE</strong></dt>
+<dd>ヘルプ・パネル・グループは指定されません。
+</dd>
+</dl>
+<h3><strong>修飾子</strong><strong>1: </strong><strong>ヘルプ・パネル・グループ</strong>
+</h3>
+<dl>
+<dt><strong class="italic">名前</strong></dt>
+<dd>このコマンド用のヘルプ・パネル・グループの名前を指定してください。
+</dd>
+</dl>
+<h3><strong>修飾子</strong><strong>2: ライブラリー</strong>
+</h3>
+<dl>
+<dt><strong class="underlined">*LIBL</strong></dt>
+<dd>最初に一致するものが見つかるまで，現行スレッドのライブラリー・リスト内のすべてのライブラリーが検索されます。
+</dd>
+</dl>
+<dl>
+<dt><strong>*CURLIB</strong></dt>
+<dd>パネル・グループを見つけるためにジョブの現行ライブラリーが使用されます。ジョブの現行ライブラリーとして指定されているライブラリーがない場合は，QGPLが使用されます。
+</dd>
+<dt><strong class="italic">名前</strong></dt>
+<dd>パネル・グループが入っているライブラリーの名前を指定してください。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table25" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#CRTCMD.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="CRTCMD.HLPID"></a>
+<h2>ヘルプID (HLPID)</h2>
+<p>このコマンドに対するヘルプ・セクションIDのすべてのルート名を指定します。このコマンドと関連したヘルプ・パネル・グループ内のすべてのヘルプ・セクションがこの名前で始まります。
+</p>
+<dl>
+<dt><strong class="underlined">*NONE</strong></dt>
+<dd>ヘルプIDは指定されません。パネル・グループ名を<strong>ヘルプ・パネル・グループ</strong><strong> (HLPPNLGRP)</strong>パラメーターに指定すると，*NONEは許されません。
+</dd>
+</dl>
+<dl>
+<dt><strong>*CMD</strong></dt>
+<dd>コマンドの名前は，ヘルプ・パネル・グループ内のヘルプ・セクションIDのルートとして使用するためのものです。
+</dd>
+<dt><strong class="italic">名前</strong></dt>
+<dd>このコマンドに対するヘルプ・セクションIDのすべてのルート名を指定してください。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table26" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#CRTCMD.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="CRTCMD.HLPSCHIDX"></a>
+<h2>ヘルプ検索見出し (HLPSCHIDX)</h2>
+<p>ヘルプ画面から検索見出し機能キーが押された時に使用されるヘルプ検索見出しを指定します。
+</p>
+<h3><strong>単一値</strong>
+</h3>
+<dl>
+<dt><strong class="underlined">*NONE</strong></dt>
+<dd>このコマンドと関連したヘルプ検索見出しはありません。
+</dd>
+</dl>
+<h3><strong>修飾子</strong><strong>1: </strong><strong>ヘルプ検索見出し</strong>
+</h3>
+<dl>
+<dt><strong class="italic">名前</strong></dt>
+<dd>検索見出し機能キーが押された時に使用される検索見出しの名前を指定してください。
+</dd>
+</dl>
+<h3><strong>修飾子</strong><strong>2: ライブラリー</strong>
+</h3>
+<dl>
+<dt><strong class="underlined">*LIBL</strong></dt>
+<dd>最初に一致するものが見つかるまで，現行スレッドのライブラリー・リスト内のすべてのライブラリーが検索されます。
+</dd>
+</dl>
+<dl>
+<dt><strong>*CURLIB</strong></dt>
+<dd>検索見出しを見つけるためにジョブの現行ライブラリーが使用されます。ジョブの現行ライブラリーとして指定されているライブラリーがない場合は，QGPLライブラリーが使用されます。
+</dd>
+<dt><strong class="italic">名前</strong></dt>
+<dd>検索見出しが入っているライブラリーの名前を指定してください。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table27" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#CRTCMD.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="CRTCMD.CURLIB"></a>
+<h2>現行ライブラリー (CURLIB)</h2>
+<p>実行中のジョブと関連した現行ライブラリーの名前を指定します。
+</p>
+<p>
+<strong>注:     </strong>また，このライブラリーは，コマンドの妥当性検査プログラム（ある場合）が処理される時の現行ライブラリーでもあります。
+</p>
+<dl>
+<dt><strong class="underlined">*NOCHG</strong></dt>
+<dd>現行ライブラリーは，このコマンドの処理のために変更されません。コマンドの処理中に現行ライブラリーが変更された場合には，そのコマンドの処理が完了した後もその変更は有効となります。
+</dd>
+<dt><strong>*CRTDFT</strong></dt>
+<dd>コマンドの処理中に活動状態の現行ライブラリーはありません。コマンド処理の開始前に活動状態であった現行ライブラリーが処理完了時に復元されます。
+<p>このコマンドの単一値または特殊値に，あるいは活動状態の現行のライブラリーがない時に処理されるコマンドに置き換え値として*CURLIBが指定された場合には，現行ライブラリーとしてQGPLライブラリーが使用されます。
+</p>
+</dd>
+<dt><strong class="italic">名前</strong></dt>
+<dd>現行ライブラリーとして使用するライブラリーの名前を指定してください。コマンドの作成時にはライブラリーの存在は必要ありませんが，コマンドの処理時には存在しなければなりません。コマンド処理が完了すると，現行ライブラリーがその前の値に復元されます。ライブラリー・リスト変更(CHGLIBL)コマンドまたは現行ライブラリー変更(CHGCURLIB)コマンドによってコマンドの処理中に現行ライブラリーが変更された場合には，その変更が有効となるのは，そのコマンドが処理されるまでです。現行ライブラリーにQTEMPを指定することはできません。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table28" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#CRTCMD.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="CRTCMD.PRDLIB"></a>
+<h2>実行ライブラリー (PRDLIB)</h2>
+<p>コマンドの処理時に有効にするプロダクト・ライブラリーを指定します。
+</p>
+<p>
+<strong>注:     </strong>コマンドまたはメニューのプロダクト・ライブラリーは，コマンドまたはメニューが活動状態の間，別のコマンドまたはメニューでそのプロダクト・ライブラリーが変更されない限り，ライブラリー・リスト内に残されます。プロダクト・ライブラリーを変更したコマンドまたはメニューが終了すると，プロダクト・ライブラリーはそのコマンドまたはメニューを開始した時のものに復元されます。
+</p>
+<dl>
+<dt><strong class="underlined">*NOCHG</strong></dt>
+<dd>コマンドの処理が開始される時点ではプロダクト・ライブラリーは変更されません。コマンドの処理中にプロダクト・ライブラリーが変更された場合には，その変更は，そのコマンド処理が完了した後も有効となります。
+</dd>
+<dt><strong>*NONE</strong></dt>
+<dd>ジョブのライブラリー・リストにはプロダクト・ライブラリーがありません。プロダクト・ライブラリーはそのコマンド処理が完了した時にその前の値に復元されます。
+</dd>
+<dt><strong class="italic">名前</strong></dt>
+<dd>コマンドの処理時にプロダクト・ライブラリーとして使用するライブラリーの名前を指定してください。コマンドの作成時にはライブラリーの存在は必要ありませんが，コマンドの処理時には存在しなければなりません。コマンド処理が完了すると，プロダクト・ライブラリーがその前の値に復元されます。プロダクト・ライブラリーにQTEMPを指定することはできません。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table29" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#CRTCMD.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="CRTCMD.PMTOVRPGM"></a>
+<h2>プロンプト一時変更プログラム (PMTOVRPGM)</h2>
+<p>省略時の値をパラメーターに指定された現行の実際の値で（プロンプト画面で）置き換えるプロンプト一時変更プログラム(POP)の名前およびライブラリーを指定します。POPを指定した場合には，(コマンド定義ソース中のPARMステートメントでKEYPARM(*YES)として指定された)キー・パラメーターが初期プロンプト画面で見ることのできる唯一のパラメーターになります。値がキー・パラメーターに対する入力である時には，残りのパラメーターは省略時の値ではなく実際の値で画面に表示されます。
+</p>
+<dl>
+<dt><strong class="underlined">*NONE</strong></dt>
+<dd>プロンプト一時変更プログラムは指定されません。
+<p>
+<strong>注:     </strong>コマンド定義ソース中にキー・パラメーターが存在している（すなわち，PARMステートメントでKEYPARM(*YES)を指定している）時に*NONEを指定した場合には，コマンドの作成時に警告メッセージが出され，すべてのパラメーターについてKEYPARM(*NO)と見なされます。
+</p>
+</dd>
+<dt><strong class="italic">名前</strong></dt>
+<dd>コマンドのプロンプト一時変更プログラムの名前を指定してください。
+</dd>
+</dl>
+<h3><strong>修飾子</strong><strong>2: ライブラリー</strong>
+</h3>
+<dl>
+<dt><strong class="underlined">*LIBL</strong></dt>
+<dd>最初に一致するものが見つかるまで，現行スレッドのライブラリー・リスト内のすべてのライブラリーが検索されます。
+</dd>
+</dl>
+<dl>
+<dt><strong>*CURLIB</strong></dt>
+<dd>プロンプト一時変更プログラムを見つけるためにジョブの現行ライブラリーが使用されます。ジョブの現行ライブラリーとして指定されているライブラリーがない場合は，QGPLが使用されます。
+</dd>
+<dt><strong class="italic">名前</strong></dt>
+<dd>プロンプト一時変更プログラムが入っているライブラリーの名前を指定してください。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table30" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#CRTCMD.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="CRTCMD.AUT"></a>
+<h2>権限 (AUT)</h2>
+<p>このオブジェクトに対する特定の権限をもっておらず，権限リスト上になく，さらにそのグループ・プロファイルまたは補足グループ・プロファイルがオブジェクトに対する特定の権限をもっていないユーザーに付与する権限を指定します。
+</p>
+<dl>
+<dt><strong class="underlined">*LIBCRTAUT</strong></dt>
+<dd>システムは，作成するオブジェクトが入っているライブラリーに対するライブラリー作成コマンド(CRTLIB)で<strong>作成権限</strong><strong>(CRTAUT)</strong>パラメーターに指定された値を使用して，このオブジェクトに対する権限を決定します。<strong>作成権限</strong><strong> (CRTAUT)</strong>パラメーターに指定された値を変更した場合には，新しい値は既存のオブジェクトに影響しません。
+</dd>
+</dl>
+<dl>
+<dt><strong>*CHANGE</strong></dt>
+<dd>ユーザーは，所有者に限定されるか，あるいはオブジェクト存在権限(*OBJEXIST)およびオブジェクト管理権限(*OBJMGT)によって制御される以外のオブジェクトで，すべての操作を実行することができます。ユーザーはオブジェクトでの基本的な機能を変更して実行することができます。*CHANGE権限では，オブジェクト操作(*OBJOPR)および全データ権限が提供されます。このオブジェクトが権限リストである場合は，ユーザーの追加，変更，または除去はできません。
+</dd>
+</dl>
+<dl>
+<dt><strong>*ALL</strong></dt>
+<dd>ユーザーは，所有者に限定されるか，あるいは権限リスト管理(*AUTLMGT)権限によって管理される以外のオブジェクトで，すべての操作を実行することができます。ユーザーはオブジェクトの存在を制御し，オブジェクトの機密保護を指定し，オブジェクトを変更し，さらにオブジェクトに対して基本的な機能を実行することができます。オブジェクトの所有権を変更することもできます。
+</dd>
+</dl>
+<dl>
+<dt><strong>*USE</strong></dt>
+<dd>ユーザーは，プログラムの実行またはファイルの読み取りなど，オブジェクトに対する基本操作を実行することができます。ユーザーはオブジェクトを変更できません。使用(*USE)権限は，オブジェクト操作(*OBJOPR),読み取り(*READ),および実行(*EXECUTE)権限を提供します。
+</dd>
+</dl>
+<dl>
+<dt><strong>*EXCLUDE</strong></dt>
+<dd>ユーザーはオブジェクトにアクセスすることはできません。
+</dd>
+</dl>
+<dl>
+<dt><strong class="italic">名前</strong></dt>
+<dd>権限リストの名前を指定してください。権限リストに含まれているユーザーには，リストで指定されたオブジェクトに対する権限が認可されます。この権限リストはオブジェクトの作成時に存在していなければなりません。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table31" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#CRTCMD.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="CRTCMD.REPLACE"></a>
+<h2>コマンドの置き換え (REPLACE)</h2>
+<p>作成されるコマンドと同じ名前で，同じライブラリーにある既存のコマンド・オブジェクトを置き換えるかどうかを指定します。
+</p>
+<p>*YESを指定した場合，同じ名前のコマンド・オブジェクトが同じライブラリーに既に存在していると，既存のコマンドは名前変更されてライブラリーQRPLOBJに移動され，次回にオペレーティング・システムのIPLが行われると削除されます。
+</p>
+<dl>
+<dt><strong class="underlined">*YES</strong></dt>
+<dd>作成の命令が正常に実行された場合には，既存のコマンドは同じコマンドの新しいバージョンで置き換えられます。
+</dd>
+<dt><strong>*NO</strong></dt>
+<dd>既存のコマンドは置き換えられないで，既存のコマンドと同じ名前，タイプ，およびライブラリーの新しいコマンドを作成することはできません。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table32" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#CRTCMD.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div> <a name="CRTCMD.ENBGUI"></a>
+<h2>GUI使用可能 (ENBGUI)</h2>
+<p>コマンド・プロンプト・パネルをグラフィカル・ユーザー・インターフェースへの変換に使用できるかどうかを指定します。
+</p>
+<dl>
+<dt><strong class="underlined">*NO</strong></dt>
+<dd>コマンド・プロンプト・パネルは，グラフィカル・ユーザー・インターフェースへの変換には使用できなくなります。
+</dd>
+<dt><strong>*YES</strong></dt>
+<dd>パネルの内容に関する情報を5250データ・ストリームに組み込むことによって，コマンド・プロンプト・パネルをグラフィカル・ユーザー・インターフェースへの変換に使用できるようになります。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table33" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#CRTCMD.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div><h2><a name="CRTCMD.COMMAND.EXAMPLES">例</a> </h2>
+<p>
+</p><pre>CRTCMD   CMD(PAYROLL)  PGM(PAY076)  SRCFILE(PAYSOURCE)
+         AUT(*EXCLUDE)
+</pre>
+<p></p>
+<p>PAYROLLという名前のコマンドはソース・ファイルPAYSOURCEから作成されます。このコマンドは専用であり，PAY076という名前のコマンド処理プログラム(CPP)を呼び出します。バッチ入力ストリームに入力された場合，制御言語プログラムでコンパイルされた場合，対話式に入力された場合，またはQCMDEXCプログラムに渡された場合は，これは有効なコマンドです。
+</p>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table34" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#CRTCMD.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div><h2><a name="CRTCMD.ERROR.MESSAGES">エラー・メッセージ</a> </h2>
+<p><strong class="underlined">*ESCAPE </strong><strong class="underlined">メッセージ</strong>
+</p>
+<dl>
+<dt><strong>CPF0201</strong></dt>
+<dd>コマンド&amp;2はライブラリー&amp;3に作成されなかった。
+</dd>
+<dt><strong>CPF0210</strong></dt>
+<dd>印刷装置ファイルをオープンすることができない。
+</dd>
+<dt><strong>CPF0212</strong></dt>
+<dd>ソース・ファイルをオープンすることができない。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table35" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#CRTCMD.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+</div>
+
+
+</body></html>

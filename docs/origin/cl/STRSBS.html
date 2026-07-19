@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="ja"><head><meta charset="utf-8"><title>サブシステム開始  (STRSBS)</title></head>
+<body>
+<div role="main">
+<script type="text/javascript" src="../rzahg/synch.js"></script>
+<a name="STRSBS.Top_Of_Page"></a>
+<h1>サブシステム開始  (STRSBS)</h1><div id="lastModifiedDate"><span>Last Updated</span>: 2021-04-13</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table0" width="100%" class="cds--data-table">
+<tbody><tr>
+<td class="valigntop alignleft"><strong>実行可能場所:  </strong>すべての環境 (*ALL)<br>
+<strong>スレッド・セーフ:  </strong>いいえ
+</td>
+<td class="valigntop alignright">
+<a href="#STRSBS.PARAMETERS.TABLE">パラメーター</a><br>
+<a href="#STRSBS.COMMAND.EXAMPLES">例</a><br>
+<a href="#STRSBS.ERROR.MESSAGES">エラー・メッセージ</a></td>
+</tr>
+</tbody></table></div></div>
+<div> <a name="STRSBS"></a>
+<p>サブシステム開始 (STRSBS)コマンドは，コマンドに指定されたサブシステム記述を使用してサブシステムを開始します。サブシステムが開始されると，システムは，サブシステム記述に指定された必要で，しかも使用可能な資源（記憶域，ワークステーション，およびジョブ待ち行列）を割り振ります。
+</p>
+<p><strong>記憶域の割り振り：</strong>記憶域は，サブシステム記述に指定された記憶域プールの定義に従って，番号の小さい記憶域プールの定義から順にサブシステムに割り振られます。システム上の記憶域プールの最大数に達したため，あるいは使用可能な記憶域が不十分であったためにすべてのプール定義を割り振ることができない場合には，プールを割り振ることができなかったことを示すメッセージがシステム操作員に送られます。記憶域が後で使用可能になったり，あるいは活動記憶域プールの数が少なくなった場合に，使用可能な資源がサブシステムに自動的に割り振られ，満たされていなかった要件が満たされます。通常は割り振られていない記憶域プールで実行されるすべてのジョブは，共用記憶域プール*BASEで実行されます。
+</p>
+<p><strong>ワークステーションの割り振り：</strong>ワークステーションは，サブシステム記述内のワークステーション項目に従ってサブシステムに割り振られます。その名前（または，名前によって指定されていなければタイプ）がサブシステム記述の1つのワークステーション項目の1つに含まれ，その項目にAT(*SIGNON)の指定された各ワークステーションが現在別のサブシステムへサインオンされていなければ，それらがこのサブシステムに割り振られます。割り振られる各ワークステーションについてサインオン・プロンプトが表示されます。既に別のサブシステムでサインオンされているワークステーションは，サインオンの可能なサブシステムが終了するか，あるいはユーザーがジョブをこのシステムに転送するまで，そのサブシステムに割り振られたままとなります。
+</p>
+<p>複数のサブシステムのワークステーション項目に同じワークステーションが指定されていた場合には，開始された時に各サブシステムでそのワークステーションの割り振りが試みられます。ワークステーションが前に開始された1つのサブシステムに割り振られている間にユーザーがサインオンしなければ，後続の各サブシステムでそのワークステーションが割り振られます。サインオンされたワークステーションがサインオフされた場合には，そのワークステーションを指定した別のサブシステムが開始されるまで，ワークステーションは同じサブシステムに割り振られたままとなります。しかし，ワークステーションがオフラインに構成変更され，複数の活動サブシステムでそのワークステーションが指定されている場合には，ワークステーションがオンラインに構成変更された時にそのワークステーションが割り振られる先のサブシステムは予測できません。
+</p>
+<p><strong>ジョブ待ち行列の割り振り：</strong>ジョブ待ち行列がサブシステム記述の作業項目に指定されている場合には，そのジョブ待ち行列がサブシステムに割り振られます。このジョブ待ち行列が存在していないか，あるいはそれが既に活動サブシステムに割り振られていた場合には，ジョブ待ち行列はサブシステムに割り振られず，メッセージがシステム操作員に送られます。ジョブ待ち行列が後で使用可能になると，それがサブシステムに自動的に割り振られます。
+</p>
+<h2><strong>制約事項</strong><strong>:</strong>
+</h2>
+<ol class="cds--list--ordered--temporary">
+<li class="cds--list__item">このコマンドを使用するには，以下が必要です。
+<ul class="cds--list--unordered cds--list--nested">
+<li class="cds--list__item">サブシステム記述に対する使用(*USE)権限，およびそのサブシステム記述が入っているライブラリーに対する実行(*EXECUTE)権限。
+</li>
+<li class="cds--list__item">ジョブ制御(*JOBCTL)特殊権限。
+</li>
+<li class="cds--list__item">サブシステム記述がASPグループを指定している場合の，ASPグループのすべての補助記憶域プール(ASP)装置記述に対する使用(*USE)権限。
+</li>
+</ul>
+</li>
+<li class="cds--list__item">サブシステム記述がASPグループを指定している場合は，指定したASPグループはオンに構成変更する必要があり，また「使用可能」の状況でなければなりません。
+</li>
+</ol>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table1" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#STRSBS.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div>
+<h2><a name="STRSBS.PARAMETERS.TABLE">パラメーター</a></h2>
+<div class="tablenoborder"><div class="cds--data-table-container"><table id="parm_table2" summary="Parameters" border="1" cellpadding="4" cellspacing="0" class="cds--data-table">
+<!-- col1="10" col2="15" col3="30" col4="10" -->
+<tbody><tr>
+<th scope="col" class="valignbottom alignleft"><div class="cds--table-header-label">キーワード</div></th>
+<th scope="col" class="valignbottom alignleft"><div class="cds--table-header-label">記述</div></th>
+<th scope="col" class="valignbottom alignleft"><div class="cds--table-header-label">選択項目</div></th>
+<th scope="col" class="valignbottom alignleft"><div class="cds--table-header-label">ノーツ</div></th>
+</tr>
+<tr>
+<td class="valigntop" rowspan="3"><a href="#STRSBS.SBSD"><strong>SBSD</strong></a></td>
+<td class="valigntop">サブシステム記述</td>
+<td class="valigntop"><span class="var">修飾オブジェクト名</span></td>
+<td class="valigntop" rowspan="3">必須, 定位置 1</td>
+</tr>
+<tr>
+<td class="valigntop">修飾子 1: サブシステム記述</td>
+<td class="valigntop"><span class="var">名前</span></td>
+</tr><tr>
+<td class="valigntop">修飾子 2: ライブラリー</td>
+<td class="valigntop"><span class="var">名前</span>, <strong class="underlined">*LIBL</strong>, *CURLIB</td>
+</tr></tbody></table></div></div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table3" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#STRSBS.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+</div>
+<div> <a name="STRSBS.SBSD"></a>
+<h2>サブシステム記述 (SBSD)</h2>
+<p>開始する操作環境（サブシステム）を定義するサブシステム記述の名前およびライブラリーを指定します。
+</p>
+<p>サブシステム記述が別のライブラリーに入っている場合でも，サブシステム記述の名前は，現在活動状態になっているサブシステムの名前と同じにすることはできません。
+</p>
+<p>これは必須パラメーターです。
+</p>
+<h3><strong>修飾子</strong><strong>1: </strong><strong>サブシステム記述</strong>
+</h3>
+<dl>
+<dt><strong class="italic">名前</strong></dt>
+<dd>開始するサブシステムを定義するサブシステム記述の名前を指定してください。
+<p>
+<strong>注:     </strong>IBM提供のQLPINSTALLという名前のオブジェクトはサブシステム記述名には使用できません。
+</p>
+</dd>
+</dl>
+<h3><strong>修飾子</strong><strong>2: ライブラリー</strong>
+</h3>
+<dl>
+<dt><strong class="underlined">*LIBL</strong></dt>
+<dd>一致が見つかるまで，スレッドのライブラリー・リストの中のすべてのライブラリーが検索されます。
+</dd>
+<dt><strong>*CURLIB</strong></dt>
+<dd>オブジェクトを見つけるためにスレッドの現行ライブラリーが使用されます。スレッドの現行ライブラリーとしてライブラリーが指定されていない場合，QGPLライブラリーが使用されます。
+</dd>
+</dl>
+<dl>
+<dt><strong class="italic">名前</strong></dt>
+<dd>サブシステム記述が入っているライブラリーを指定します。
+<p>
+<strong>注:     </strong>ライブラリーQTEMPはライブラリー名には使用できません。
+</p>
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table4" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#STRSBS.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div><h2><a name="STRSBS.COMMAND.EXAMPLES">例</a> </h2>
+<h3><strong>例</strong><strong>1:</strong><strong>バッチ・サブシステムの開始</strong>
+</h3>
+<p>
+</p><pre>STRSBS   SBSD(QBATCH)
+</pre>
+<p></p>
+<p>このコマンドは，QBATCHという名前のバッチ・サブシステムを開始します。
+</p>
+<h3><strong>例</strong><strong>2:</strong><strong>ユーザー・サブシステムの開始</strong>
+</h3>
+<p>
+</p><pre>STRSBS   SBSD(QGPL/TELLER)
+</pre>
+<p></p>
+<p>このコマンドは，QGPLライブラリーのTELLERサブシステム記述と関連したサブシステムを開始します。サブシステム名はTELLERです。
+</p>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table5" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#STRSBS.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+<div><h2><a name="STRSBS.ERROR.MESSAGES">エラー・メッセージ</a> </h2>
+<p><strong class="underlined">*ESCAPE </strong><strong class="underlined">メッセージ</strong>
+</p>
+<dl>
+<dt><strong>CPF1001</strong></dt>
+<dd>システム応答の待機時間が満了した。
+</dd>
+<dt><strong>CPF1004</strong></dt>
+<dd>サブシステムの開始中に，機能チェックが起こった。
+</dd>
+<dt><strong>CPF101B</strong></dt>
+<dd>サブシステム&amp;1が開始されなかった。ASPグループ&amp;3が利用不能。
+</dd>
+<dt><strong>CPF101C</strong></dt>
+<dd>装置&amp;1は認可されていない。
+</dd>
+<dt><strong>CPF1010</strong></dt>
+<dd>サブシステム名&amp;1が活動している。
+</dd>
+<dt><strong>CPF1011</strong></dt>
+<dd>ライブラリー&amp;2のSBSD &amp;1でサブシステム開始が正常に行なわれなかった。
+</dd>
+<dt><strong>CPF1012</strong></dt>
+<dd>サブシステムを開始する権限がない。
+</dd>
+<dt><strong>CPF1013</strong></dt>
+<dd>ライブラリー&amp;2にサブシステム&amp;1が見つからない。
+</dd>
+<dt><strong>CPF1014</strong></dt>
+<dd>サブシステム&amp;1が開始されなかった。
+</dd>
+<dt><strong>CPF1031</strong></dt>
+<dd>ライブラリー&amp;1の使用は認可されていない。
+</dd>
+<dt><strong>CPF1038</strong></dt>
+<dd>コマンドを使用する権限がない。
+</dd>
+<dt><strong>CPF1049</strong></dt>
+<dd>ライブラリー&amp;2のサブシステム&amp;1を割り振ることができない。
+</dd>
+<dt><strong>CPF1050</strong></dt>
+<dd>サブシステムを開始するための記憶域が不十分である。
+</dd>
+<dt><strong>CPF1057</strong></dt>
+<dd>ライブラリー&amp;2のサブシステム&amp;1が損傷している。
+</dd>
+<dt><strong>CPF1067</strong></dt>
+<dd>ライブラリー&amp;1を割り振ることができない。
+</dd>
+<dt><strong>CPF1080</strong></dt>
+<dd>ライブラリー&amp;1が見つかりません。
+</dd>
+<dt><strong>CPF1086</strong></dt>
+<dd>&amp;2のサブシステム&amp;1がユーザーのジョブに割り振られた。
+</dd>
+<dt><strong>CPF1099</strong></dt>
+<dd>システムが終了中のために，サブシステムは開始されなかった。
+</dd>
+<dt><strong>CPF3D87</strong></dt>
+<dd>QSYSのシステム・プログラムQLPCTLINを使用しようとした。
+</dd>
+</dl>
+</div>
+<div class="tablenoborder"><div class="cds--data-table-container"><table role="presentation" id="parm_table6" width="100%" class="cds--data-table">
+<tbody><tr><td class="alignright"><a href="#STRSBS.Top_Of_Page">上</a></td></tr>
+</tbody></table></div></div>
+</div>
+
+
+</body></html>

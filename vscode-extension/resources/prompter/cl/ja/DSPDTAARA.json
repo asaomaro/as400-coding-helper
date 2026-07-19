@@ -1,0 +1,199 @@
+{
+  "keyword": "DSPDTAARA",
+  "description": "データ域表示 (DSPDTAARA)",
+  "parameters": [
+    {
+      "name": "DTAARA",
+      "description": "データ域",
+      "help": "属性および値が表示されるデータ域の名前およびライブラリーを指定します。\n\nこれは必須パラメーターです。",
+      "inputType": "group",
+      "required": true,
+      "groupKind": "qualified",
+      "singleValues": [
+        "*LDA",
+        "*GDA",
+        "*PDA"
+      ],
+      "children": [
+        {
+          "name": "LIB",
+          "description": "ライブラリー",
+          "help": "*LIBL: 一致が見つかるまで，スレッドのライブラリー・リストの中のすべてのライブラリーが検索されます。\n*CURLIB: オブジェクトを見つけるためにスレッドの現行ライブラリーが使用されます。スレッドの現行ライブラリーとしてライブラリーが指定されていない場合，QGPLライブラリーが使用されます。\nデータ域があるライブラリーを指定してください。",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "*LIBL",
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          }
+        },
+        {
+          "name": "DTAARA",
+          "description": "データ域",
+          "help": "データ域の名前を指定します。",
+          "inputType": "text",
+          "required": true,
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          }
+        }
+      ],
+      "positional": 1
+    },
+    {
+      "name": "OUTPUT",
+      "description": "出力",
+      "help": "コマンドからの出力を，要求元のワークステーションに表示するか，あるいはジョブのスプール出力で印刷するかを指定します。",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*",
+          "value": "*",
+          "help": "出力は，対話式ジョブの場合には表示され，非対話式ジョブの場合にはジョブのスプール出力で印刷されます。"
+        },
+        {
+          "label": "*PRINT",
+          "value": "*PRINT",
+          "help": "出力はジョブのスプール出力で印刷されます。"
+        }
+      ],
+      "positional": 2
+    },
+    {
+      "name": "OUTFMT",
+      "description": "出力形式",
+      "help": "データ域の値が表示される形式を指定します。表示できない文字の16進数値を表示するためには，文字データ域の文字表現と16進数表現の両方を表示することができます。",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*CHAR",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*CHAR",
+          "value": "*CHAR",
+          "help": "出力は文字形式で示されます。"
+        },
+        {
+          "label": "*HEX",
+          "value": "*HEX",
+          "help": "出力は，16進数形式と文字形式の両方で示されます。この値は，文字データ域の場合にだけ有効です。"
+        }
+      ]
+    },
+    {
+      "name": "SYSTEM",
+      "description": "システム",
+      "help": "提供される情報がローカル・システム(*LCL)上のデータ域にあるか，リモート・システム(*RMT)上にあるかを指定します。",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*LCL",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*LCL",
+          "value": "*LCL",
+          "help": "表示されるデータは，ローカル・システムのデータ域に関するものです。"
+        },
+        {
+          "label": "*RMT",
+          "value": "*RMT",
+          "help": "表示されるデータは，正常に出されたデータ域作成 (CRTDTAARA)コマンドのRMTDTAARAパラメーターに名前が指定されたリモート・データ域からのものです。このデータを表示するためには，リモート・データ域の名前ではなく，CRTDTAARAコマンドで作成されたデータ域の名前を指定してください。"
+        }
+      ]
+    }
+  ],
+  "threadSafe": false,
+  "environment": "すべての環境 (*ALL)",
+  "examples": [
+    {
+      "code": "DSPDTAARA DTAARA(HEXDATA) OUTPUT(*) OUTFMT(*HEX)"
+    },
+    {
+      "code": "DSPDTAARA DTAARA(TIME) OUTPUT(*)"
+    }
+  ],
+  "errorMessages": [
+    {
+      "id": "CPF1015",
+      "text": "&2にデータ域&1が見つからない。"
+    },
+    {
+      "id": "CPF1016",
+      "text": "&2のデータ域&1に対する権限がない。"
+    },
+    {
+      "id": "CPF1021",
+      "text": "データ域&2のライブラリー&1が見つからない。"
+    },
+    {
+      "id": "CPF1022",
+      "text": "ライブラリー&1データ域&2に対する権限がない。"
+    },
+    {
+      "id": "CPF104A",
+      "text": "SYSTEM(*RMT)をライブラリー&2のデータ域&1で使用することはできない。"
+    },
+    {
+      "id": "CPF1046",
+      "text": "ジョブがグループ・ジョブでないので，DTAARA(*GDA)は正しくない。"
+    },
+    {
+      "id": "CPF1048",
+      "text": "ライブラリー&2のデータ域&1のOUTFMT(*HEX)が正しくない。"
+    },
+    {
+      "id": "CPF1063",
+      "text": "ライブラリー&2のデータ域&1を割り振ることができない。"
+    },
+    {
+      "id": "CPF1067",
+      "text": "ライブラリー&1を割り振ることができない。"
+    },
+    {
+      "id": "CPF1072",
+      "text": "ジョブが事前開始ジョブでないので，DTAARA(*PDA)は正しくない。"
+    },
+    {
+      "id": "CPF9845",
+      "text": "ファイル&1のオープン中にエラーが起こった。"
+    },
+    {
+      "id": "CPF9846",
+      "text": "ライブラリー&2のファイル&1の処理中にエラーが起こった。"
+    },
+    {
+      "id": "CPF9847",
+      "text": "ライブラリー&2のファイル&1のクローズ中にエラーが起こった。"
+    },
+    {
+      "id": "CPF9850",
+      "text": "印刷装置ファイル&1の一時変更は許されない。"
+    },
+    {
+      "id": "CPF9851",
+      "text": "&2のファイル&1のオーバーフロー値が小さすぎる。"
+    },
+    {
+      "id": "CPF9871",
+      "text": "処理中に，エラーが起こった。"
+    },
+    {
+      "id": "CPF9899",
+      "text": "コマンドの処理中にエラーが起こった。"
+    }
+  ],
+  "source": {
+    "url": "https://www.ibm.com/docs/ja/ssw_ibm_i_74/cl/dspdtaara.htm",
+    "version": "IBM i 7.4"
+  }
+}

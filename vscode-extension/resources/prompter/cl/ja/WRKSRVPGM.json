@@ -1,0 +1,67 @@
+{
+  "keyword": "WRKSRVPGM",
+  "description": "サービス・プログラムの処理 (WRKSRVPGM)",
+  "help": "サービス・プログラムの処理(WRKSRVPGM)コマンドによって，1つ以上のライブラリーからサービス・プログラムのリストを表示して処理することができます。",
+  "parameters": [
+    {
+      "name": "SRVPGM",
+      "description": "サービス・プログラム",
+      "help": "リストに入れたいサービス・プログラムの検索処理を指定します。指定されたパラメーター値と対応する名前をもつサービス・プログラムで，ユーザーに権限があるすべてのサービス・プログラムが表示されます。\n\nこれは必須パラメーターです。\n\n次のQXXXライブラリーは弊社提供のものですが，これらには一般的によく変更されるユーザー・データが収められます。したがって，これらのライブラリーは「ユーザー・ライブラリー」と見なされ，検索されます。",
+      "inputType": "group",
+      "required": true,
+      "groupKind": "qualified",
+      "children": [
+        {
+          "name": "LIB",
+          "description": "ライブラリー",
+          "help": "*LIBL: 現行スレッドのライブラリー・リスト内のすべてのライブラリーが検索されます。これらのライブラリーに入っているオブジェクトのうち，指定されたオブジェクト名をもつすべてのオブジェクトが表示されます。\n*CURLIB: ジョブの現行ライブラリーが検索されます。ジョブの現行ライブラリーとして指定されているライブラリーがない場合は，QGPLライブラリーが使用されます。\n*USRLIBL: ジョブのライブラリー・リストのユーザー部分にあるライブラリーだけが検索されます。\n*ALL: QSYSも含めて，ジョブのライブラリー・リストのシステム部分のすべてのライブラリーが検索されます。\n*ALLUSR: すべてのユーザー・ライブラリーが検索されます。次のものを除き，英字Qで始まらない名前のすべてのライブラリーが検索されます。 #CGULIB #DSULIB #SEULIB #COBLIB #RPGLIB #DFULIB #SDALIB 次のQXXXライブラリーは弊社提供のものですが，これらには一般的によく変更されるユーザー・データが収められます。したがって，これらのライブラリーは「ユーザー・ライブラリー」と見なされ，検索されます。 QDSNX QRCLXXXXX QUSRDIRDB QUSRVI QGPL QSRVAGT QUSRIJS QUSRVXRXMX QGPL38 QSYS2 QUSRINFSKR QWQCENT QMGTC QSYS2XXXXX QUSRNOTES QWQREPOS QMGTC2 QS36F QUSROND QMPGDATA QUSER38 QUSRPOSGS QMQMDATA QUSRADSM QUSRPOSSA QMQMPROC QUSRBRM QUSRPYMSVR QPFRDATA QUSRDIRCF QUSRRDARS QRCL QUSRDIRCL QUSRSYS 'XXXXX'は1次補助記憶域プール(ASP)の番号です。 前のリリースのCLプログラム内でコンパイルされるユーザー・コマンドを入れるために，弊社がサポートする前の各リリース用にQUSRVXRXMXの形式の別のライブラリー名を作成することができます。QUSRVXRXMXユーザー・ライブラリーのVXRXMXは弊社が引き続きサポートしている前のリリースのバージョン，リリース，およびモディフィケーション・レベルです。\n検索するライブラリーの名前を指定してください。",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "*LIBL",
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          }
+        },
+        {
+          "name": "SRVPGM",
+          "description": "サービス・プログラム",
+          "help": "*ALL: ライブラリー修飾子で識別されるライブラリーのすべてのサービス・プログラムが表示されます。\n処理するサービス・プログラムの総称名を指定してください。総称名は1つまたは複数の文字の後にアスタリスク(*)を付けた文字ストリング（例えば，ABC*など）です。総称名が指定された場合には，その総称名で始まる名前のサービス・プログラムで，それに対してユーザーが権限をもっているすべてのサービス・プログラムが表示されます。総称（接頭部）名にアスタリスクが含まれていない場合には，システムはこれを完全なサービス・プログラム名と見なします。\n処理するサービス・プログラムの名前を指定してください。",
+          "inputType": "text",
+          "required": true,
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          }
+        }
+      ],
+      "positional": 1
+    }
+  ],
+  "threadSafe": false,
+  "environment": "対話環境 (*INTERACT *IPGM *IREXX *EXEC)",
+  "restrictions": [
+    "使用(*USE)権限があるライブラリーだけが検索されます。",
+    "ユーザーに権限があるサービス・プログラムだけが画面に表示されます。",
+    "サービス・プログラムで操作を行うためには，その操作で使用するコマンドに対して*USE権限と，操作を行いたいサービス・プログラムに対して適切な権限が必要です。"
+  ],
+  "examples": [
+    {
+      "code": "WRKSRVPGM SRVPGM(COMPLETE)"
+    }
+  ],
+  "errorMessages": [
+    {
+      "id": "CPF9809",
+      "text": "ライブラリー&1をアクセスすることができない。"
+    },
+    {
+      "id": "CPF9820",
+      "text": "ライブラリー&1の使用は認可されていない。"
+    }
+  ],
+  "source": {
+    "url": "https://www.ibm.com/docs/ja/ssw_ibm_i_74/cl/wrksrvpgm.htm",
+    "version": "IBM i 7.4"
+  }
+}

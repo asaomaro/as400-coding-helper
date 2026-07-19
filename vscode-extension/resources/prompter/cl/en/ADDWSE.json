@@ -1,0 +1,162 @@
+{
+  "keyword": "ADDWSE",
+  "description": "Add Work Station Entry (ADDWSE)",
+  "parameters": [
+    {
+      "name": "SBSD",
+      "description": "Subsystem description",
+      "help": "Subsystem description (SBSD)\n\nSpecifies the name and library of the subsystem description to which the work station job entry is added.\n\nThis is a required parameter.\n\nQualifier 1: Subsystem description\n\nNote: The following IBM-supplied objects are not valid on this parameter:\n\nQualifier 2: Library",
+      "inputType": "group",
+      "required": true,
+      "groupKind": "qualified",
+      "children": [
+        {
+          "name": "LIB",
+          "description": "Library",
+          "help": "指定できる特殊値: *LIBL, *CURLIB",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "*LIBL",
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          }
+        },
+        {
+          "name": "SBSD",
+          "description": "Subsystem description",
+          "inputType": "text",
+          "required": true,
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          }
+        }
+      ],
+      "positional": 1
+    },
+    {
+      "name": "WRKSTN",
+      "description": "Work station name",
+      "help": "Work station name (WRKSTN)\n\nSpecifies the name of the work station used by the subsystem. The device description name that was specified in the Create Device Desc (Display) (CRTDEVDSP) command associated with the work station is the name used.\n\nDouble-Byte Character Set Considerations: For double-byte character set (DBCS), a work station whose type is 5555 must be specified for either this parameter or the Work station type (WRKSTNTYPE) parameter, but not for both.\n\nNote: Specifying a generic work station name does not result in multiple entries being added, changed, or removed.\n\nA value must be specified on either this parameter or the Work station type (WRKSTNTYP) parameter, but not for both.",
+      "inputType": "text",
+      "required": false,
+      "attributes": {
+        "characterSet": "upper",
+        "maxLength": 10
+      },
+      "positional": 2
+    },
+    {
+      "name": "WRKSTNTYPE",
+      "description": "Work station type",
+      "help": "Work station type (WRKSTNTYPE)\n\nSpecifies the type of work station associated with the entry being added, changed, or removed. This entry applies to all work stations of this type that do not have specific entries for an individual work station.\n\nA value must be specified on either this parameter or the Work station name (WRKSTN) parameter, but not for both.",
+      "inputType": "dropdown",
+      "required": false,
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*ALL",
+          "value": "*ALL"
+        },
+        {
+          "label": "*ASCII",
+          "value": "*ASCII"
+        },
+        {
+          "label": "*CONS",
+          "value": "*CONS"
+        },
+        {
+          "label": "*NONASCII",
+          "value": "*NONASCII"
+        }
+      ],
+      "positional": 3
+    },
+    {
+      "name": "JOBD",
+      "description": "Job description",
+      "help": "Job description (JOBD)\n\nSpecifies the name and library of the job description used for jobs started through this work station entry. If the job description does not exist when the entry is added, a library qualifier must be specified because the qualified job description name is kept in the subsystem description.\n\nNote: Only a user with all object (*ALLOBJ) special authority is allowed to add or change an entry for which the job description does not exist.\n\nSingle values\n\nQualifier 1: Job description\n\nQualifier 2: Library",
+      "inputType": "group",
+      "required": false,
+      "groupKind": "qualified",
+      "singleValues": [
+        "*USRPRF",
+        "*SBSD"
+      ],
+      "children": [
+        {
+          "name": "JOBD_LIB",
+          "description": "Library",
+          "help": "指定できる特殊値: *LIBL, *CURLIB",
+          "inputType": "text",
+          "required": false,
+          "defaultValue": "*LIBL",
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          }
+        },
+        {
+          "name": "JOBD",
+          "description": "Job description",
+          "inputType": "text",
+          "required": false,
+          "attributes": {
+            "characterSet": "upper",
+            "maxLength": 10
+          },
+          "defaultValue": "*USRPRF"
+        }
+      ],
+      "positional": 4
+    },
+    {
+      "name": "MAXACT",
+      "description": "Maximum active jobs",
+      "help": "Maximum active jobs (MAXACT)\n\nSpecifies, for work stations that use this work station job entry, the maximum number of work station jobs that can be active at the same time.\n\n指定できる特殊値: *NOMAX",
+      "inputType": "text",
+      "required": false,
+      "defaultValue": "*NOMAX",
+      "attributes": {
+        "characterSet": "upper"
+      }
+    },
+    {
+      "name": "AT",
+      "description": "Allocation",
+      "help": "Allocation (AT)\n\nSpecifies how the work stations associated with this job entry are allocated. For more information on how work stations are allocated to subsystems, see the Start Subsystem (STRSBS) command.",
+      "inputType": "dropdown",
+      "required": false,
+      "defaultValue": "*SIGNON",
+      "attributes": {
+        "characterSet": "upper"
+      },
+      "options": [
+        {
+          "label": "*SIGNON",
+          "value": "*SIGNON"
+        },
+        {
+          "label": "*ENTER",
+          "value": "*ENTER"
+        }
+      ]
+    }
+  ],
+  "examples": [
+    {
+      "code": "ADDWSE SBSD(LIB7/ORDER) WRKSTNTYPE(5251) JOBD(QCTL) AT(*SIGNON)"
+    },
+    {
+      "code": "ADDWSE SBSD(LIB7/ORDER) WRKSTN(A12) JOBD(LIB7/ORDER) AT(*ENTER)"
+    }
+  ],
+  "source": {
+    "url": "https://www.ibm.com/docs/en/ssw_ibm_i_74/cl/addwse.htm",
+    "version": "IBM i 7.4"
+  }
+}
