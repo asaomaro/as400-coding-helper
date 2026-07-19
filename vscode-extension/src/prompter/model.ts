@@ -44,7 +44,17 @@ function flattenParameters(
       Array.isArray(parameter.children) &&
       parameter.children.length > 0
     ) {
-      result.push(...flattenParameters(parameter.children));
+      // group は入力欄を持たないので、group に付いた dependsOn は末端へ渡す。
+      // 渡さないと、原典どおり「このパラメーターは必須」と書いた規則が
+      // どこにも効かず、黙って無視される（SNDPGMMSG の MSGF で踏んだ）。
+      // 末端が自前の規則を持つ場合はそちらを優先する。
+      const children = parameter.dependsOn
+        ? parameter.children.map(child =>
+            child.dependsOn ? child : { ...child, dependsOn: parameter.dependsOn }
+          )
+        : parameter.children;
+
+      result.push(...flattenParameters(children));
     } else {
       result.push(parameter);
     }
