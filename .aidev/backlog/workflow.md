@@ -37,6 +37,13 @@ priority: 2           # cl(1) の次。設計書: docs/workflow/ibmi-dev-workflo
       Network Print 経由 `listSpooledFiles` / `readSpooledText`（コンパイルリスト取得に必要）
 - [ ] レシピを CLI 化する — 実証済みレシピを npm パッケージに固定化
       (needs: 実機操作レシピの skill 化)
+- [ ] AI によるテスト生成の方式を確立する — 設計書 4.2「AI にテストを書かせる場合の方針」を
+      実行手順に落とす。受け入れ条件: (1) 新規は設計書をオラクルにする (2) 既存は特性化と
+      明記させる (3) ミューテーションで検出力を検品 (4) `ORDER(*REVERSE)` で独立性を検品。
+      壁の解消が前提 (needs: SQL ツールを MCP に配線する)
+- [ ] 固定長（P 仕様書）で RPGUnit テストが書けることを実機確認する — 原典の例は
+      すべて `**free` で固定長の実例が無い。本 PJ の対象は固定長なので要確認
+      (needs: RPGUnit の pub400 導入可否を確認する)
 - [ ] clPrompter との F4 衝突を確認する — 併用時の keybinding 挙動（設計書 7 章 #3）
 
 ## P3: 将来
