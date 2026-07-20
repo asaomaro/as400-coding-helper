@@ -1,3 +1,4 @@
+import { promptControlHolds, type InternalValueResolver } from "./cdmlRules";
 import type {
   ParameterCondition,
   ParameterDefinition,
@@ -62,7 +63,9 @@ export function dependencyHolds(
  */
 export function evaluateParameter(
   definition: ParameterDefinition,
-  values: Record<string, string | undefined>
+  values: Record<string, string | undefined>,
+  // MapTo の変換表。CDML 由来の promptControl を持つ定義でのみ要る。
+  resolve: InternalValueResolver = (_parameter, value) => value.trim().toUpperCase()
 ): EffectiveParameterState {
   const hasExistingValue = normalize(values[definition.name]).length > 0;
   const dependencies = definition.dependsOn ?? [];
@@ -82,6 +85,13 @@ export function evaluateParameter(
   const visible = (() => {
     if (hasExistingValue) {
       return true;
+    }
+    // CDML 由来の条件表示。dependsOn の visible と両方あるときは AND。
+    const byPromptControl = definition.promptControl
+      ? promptControlHolds(definition.promptControl, values, resolve)
+      : true;
+    if (!byPromptControl) {
+      return false;
     }
     if (visibleRules.length > 0) {
       return visibleRules.some(rule => dependencyHolds(rule, values));

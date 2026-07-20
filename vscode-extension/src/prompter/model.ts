@@ -1,4 +1,9 @@
 import type { PrompterDefinition, ParameterDefinition } from "./types";
+import {
+  buildInternalValueResolver,
+  checkDependencies,
+  type InternalValueResolver
+} from "./cdmlRules";
 import { evaluateParameter } from "./visibilityRules";
 import {
   countOccurrences,
@@ -99,6 +104,9 @@ export function buildInitialState(
   initialValues: Record<string, string | undefined>
 ): PrompterState {
   const slots = expandOccurrences(definition.parameters, initialValues);
+  // CDML 由来の promptControl は内部値(MapTo)で比較する。定義から変換表を作って
+  // 渡さないと、表示値のまま比較されて条件表示が黙って効かなくなる。
+  const resolve = buildInternalValueResolver(definition);
 
   // dependsOn は他パラメータの確定値を参照するため、先に全項目の値を determine する。
   const resolvedValues: Record<string, string | undefined> = {};
@@ -113,7 +121,8 @@ export function buildInitialState(
     const raw = resolvedValues[slot.fieldName] ?? "";
     const { visible, required, disabled, allowedValues } = evaluateParameter(
       slot.parameter,
-      resolvedValues
+      resolvedValues,
+      resolve
     );
     // 初期表示では「必須なのに空」をエラーにしない。開いた瞬間に赤字が並ぶと
     // 警告として機能しなくなる（実機の F4 も入力前は何も出さない）。
@@ -136,7 +145,7 @@ export function buildInitialState(
     };
   });
 
-  const constraintErrors = validateConstraints(definition, resolvedValues);
+  const constraintErrors = validateConstraints(definition, resolvedValues, resolve);
   const hasErrors =
     fields.some(field => Boolean(field.error)) || constraintErrors.length > 0;
 
@@ -154,9 +163,13 @@ export function buildInitialState(
  */
 export function validateConstraints(
   definition: PrompterDefinition,
-  values: Record<string, string | undefined>
+  values: Record<string, string | undefined>,
+  resolve: InternalValueResolver = buildInternalValueResolver(definition)
 ): string[] {
-  const errors: string[] = [];
+  // CDML(DEP) 由来の相関チェック。散文由来の constraints と併せて一覧に出す。
+  const errors: string[] = checkDependencies(definition, values, resolve).map(
+    violation => violation.message
+  );
   const byName = new Map(definition.parameters.map(p => [p.name, p]));
 
   // 「指定した」とは、既定値のままではないこと。CL の相関はほぼ全ての
