@@ -3,6 +3,7 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import {
   buildInternalValueResolver,
+  buildRuleContext,
   checkDependencies,
   promptControlHolds
 } from "../../src/prompter/cdmlRules";
@@ -52,7 +53,7 @@ suite("CDML 由来の相関規則", () => {
   };
 
   test("SPCFD を条件に使える（旧スキーマは値の比較しかできない）", () => {
-    const resolve = buildInternalValueResolver(sndpgmmsg);
+    const resolve = buildRuleContext(sndpgmmsg);
 
     // MSGID だけ指定 → MSGF が無いので違反。
     const violations = checkDependencies(
@@ -73,17 +74,12 @@ suite("CDML 由来の相関規則", () => {
   });
 
   test("「ちょうど1つ」を数えられる（exclusive は『1つまで』しか表せない）", () => {
-    const resolve = buildInternalValueResolver(sndpgmmsg);
+    const resolve = buildRuleContext(sndpgmmsg);
 
-    // どちらも未指定 → 0 個なので違反。exclusive ではここを捕まえられない。
-    assert.equal(
-      checkDependencies(sndpgmmsg, { MSG: "", MSGID: "" }, resolve).some(
-        v => v.messageId === "CPD2536"
-      ),
-      true
-    );
+    // どちらも未指定なら、まだ何も言わない（実機の F4 も入力前は出さない）。
+    assert.deepEqual(checkDependencies(sndpgmmsg, { MSG: "", MSGID: "" }, resolve), []);
 
-    // 両方指定 → 2 個なので違反。
+    // 両方指定 → 2 個なので違反。exclusive ではこの「ちょうど1つ」を表せない。
     assert.equal(
       checkDependencies(sndpgmmsg, { MSG: "HELLO", MSGID: "CPF9898", MSGF: "QCPFMSG" }, resolve)
         .some(v => v.messageId === "CPD2536"),
@@ -112,7 +108,11 @@ suite("CDML 由来の相関規則", () => {
         conditions: [{ relation: "EQ" as const, compareValue: "*SAVF" }]
       }
     ];
-    const asIs = (_p: string, v: string) => v.trim().toUpperCase();
+    const asIs = {
+      resolve: (_p: string, v: string) => v.trim().toUpperCase(),
+      isSpecified: (p: string, all: Record<string, string | undefined>) =>
+        (all[p] ?? "").trim().length > 0
+    };
 
     assert.equal(promptControlHolds(groups, { DEV: "*SAVF" }, asIs), true);
     assert.equal(promptControlHolds(groups, { DEV: "*TAPE" }, asIs), false);
@@ -129,12 +129,20 @@ suite("CDML 由来の相関規則", () => {
         conditions: [{ relation: "EQ" as const, compareValue: "*SAVF" }]
       }
     ];
-    const asIs = (_p: string, v: string) => v.trim().toUpperCase();
+    const asIs = {
+      resolve: (_p: string, v: string) => v.trim().toUpperCase(),
+      isSpecified: (p: string, all: Record<string, string | undefined>) =>
+        (all[p] ?? "").trim().length > 0
+    };
     assert.equal(promptControlHolds(groups, { DEV: "*TAPE *SAVF" }, asIs), true);
   });
 
   test("グループを OR で連ねられる（旧スキーマの all は AND のみ）", () => {
-    const asIs = (_p: string, v: string) => v.trim().toUpperCase();
+    const asIs = {
+      resolve: (_p: string, v: string) => v.trim().toUpperCase(),
+      isSpecified: (p: string, all: Record<string, string | undefined>) =>
+        (all[p] ?? "").trim().length > 0
+    };
     const groups = [
       {
         controlParameter: "A",
@@ -178,7 +186,7 @@ suite("CDML 由来の相関規則", () => {
         { name: "SUB", description: "sub", inputType: "text", required: false }
       ]
     };
-    const resolve = buildInternalValueResolver(definition);
+    const resolve = buildRuleContext(definition);
     // CmpVal は内部値 "1"。
     const groups = [
       {
@@ -252,6 +260,9 @@ suite("CDML 由来の相関規則", () => {
       )
     );
 
+  // dependencies を持つ全コマンド（生成結果から起こしたもの）。
+  const DEPENDENCY_COMMANDS = ["ADDCMNE", "ADDMSGD", "ADDPJE", "ADDRTGE", "ADDWSE", "CHGCMDDFT", "CHGJOBD", "CHGMSGD", "CHGMSGQ", "CHGOBJD", "CHGOUTQ", "CHGPF", "CHGPGM", "CHGPJE", "CHGPRTF", "CHGRTGE", "CHGSPLFA", "CHGSRCPF", "CHGWSE", "CHGWTR", "CHKOBJ", "CLRLIB", "CPYF", "CPYSPLF", "CPYSRCF", "CRTBNDCL", "CRTBNDRPG", "CRTCBLMOD", "CRTCLMOD", "CRTCMD", "CRTDSPF", "CRTDTAARA", "CRTDTAQ", "CRTDUPOBJ", "CRTLF", "CRTMNU", "CRTMSGQ", "CRTOUTQ", "CRTPF", "CRTPGM", "CRTPRTF", "CRTRPGMOD", "CRTSQLCBL", "CRTSQLCBLI", "CRTSQLPKG", "CRTSQLRPG", "CRTSQLRPGI", "CRTSRCPF", "CRTSRVPGM", "DCL", "DLTLIB", "DLTMSGQ", "DLTSPLF", "DLYJOB", "DSPDTAARA", "DSPF", "DSPFD", "DSPFFD", "DSPJOB", "DSPJOBLOG", "DSPLIB", "DSPMOD", "DSPOBJAUT", "DSPOBJD", "EDTF", "EDTOBJAUT", "GRTOBJAUT", "HLDSPLF", "MOVOBJ", "OPNQRYF", "OVRPRTF", "RCVMSG", "RGZPFM", "RLSSPLF", "RLSWTR", "RMVCMNE", "RMVMSG", "RMVWSE", "RNMM", "RNMOBJ", "RTVCLSRC", "RUNQRY", "RUNSQLSTM", "RVKOBJAUT", "SAVCHGOBJ", "SAVLIB", "SAVOBJ", "SBMJOB", "SNDMSG", "SNDPGMMSG", "SNDUSRMSG", "STRPRTWTR", "STRQMQRY", "STRSQL", "UPDSRVPGM", "VRYCFG", "WRKJOB", "WRKLIB", "WRKSPLF", "WRKWTR"];
+
   test("生成した SAVOBJ の PMTCTL が効く（DEV(*SAVF) で SAVF 欄が出る）", () => {
     const savobj = loadCl("SAVOBJ");
     // group に付いた規則が末端まで降りることも同時に見ている。
@@ -294,5 +305,86 @@ suite("CDML 由来の相関規則", () => {
 
     const resolve = buildInternalValueResolver(addmsgd);
     assert.equal(resolve("TYPE", "*CHAR"), "C");
+  });
+
+  /* ---------------------------------------------------------------- *
+   * 一度出した欠陥。どれも「黙って壊れる」種類。
+   * ---------------------------------------------------------------- */
+
+  test("既定値のままは「指定された(SPCFD)」ではない", () => {
+    // これを取り違えると、開いた瞬間に誤った違反が並ぶ。
+    // 実際 dependencies を持つ 100 コマンド中 47 コマンドで出ていた。
+    const definition: PrompterDefinition = {
+      keyword: "Z",
+      description: "z",
+      parameters: [
+        {
+          name: "RPYMSGQ",
+          description: "応答メッセージ待ち行列",
+          inputType: "text",
+          required: false,
+          defaultValue: "*PGMQ"
+        },
+        {
+          name: "MSGTYPE",
+          description: "メッセージ・タイプ",
+          inputType: "text",
+          required: false,
+          defaultValue: "*INFO"
+        }
+      ],
+      dependencies: [
+        {
+          controlRelation: "SPCFD",
+          controlParameter: "RPYMSGQ",
+          countRelation: "EQ",
+          count: 1,
+          messageId: "CPD2538",
+          terms: [{ parameter: "MSGTYPE", relation: "EQ", compareValue: "*INQ" }]
+        }
+      ]
+    };
+
+    // 既定値のまま → RPYMSGQ は未指定。違反にしない。
+    assert.deepEqual(
+      buildInitialState(definition, {}).constraintErrors,
+      []
+    );
+    // 既定値と違う値を入れて初めて規則が効く。
+    assert.equal(
+      buildInitialState(definition, { RPYMSGQ: "MYLIB/MYQ", MSGTYPE: "*INFO" })
+        .constraintErrors.length,
+      1
+    );
+  });
+
+  test("違反の文面は日本語で、メッセージ ID は末尾に残る", () => {
+    // CDML はメッセージ ID しか持たず、生の CPD2441 を出しても意味が通らない。
+    // 生成した実データで確かめる（手で書いた message があると素通りするため）。
+    const [violation] = checkDependencies(loadCl("SNDPGMMSG"), {
+      MSG: "",
+      MSGID: "CPF9898",
+      MSGF: ""
+    });
+    assert.equal(violation.message, "MSGID を指定した場合、MSGF を指定してください。(CPD2441)");
+  });
+
+  test("生成した定義に XML の実体参照が残っていない", () => {
+    // `X&apos;&apos;` のような値がそのまま入ると、比較にも画面にも実体参照が出る。
+    const addmsgd = JSON.stringify(loadCl("ADDMSGD"));
+    assert.equal(/&(apos|quot|amp|lt|gt);/.test(addmsgd), false);
+  });
+
+  test("dependencies を持つ全コマンドが、開いただけではエラーを出さない", () => {
+    // 実機の F4 も入力前は何も出さない。既定値のまま赤字が並ぶと警告として
+    // 機能しなくなる（model.ts の初期表示の方針と揃える）。
+    const noisy: string[] = [];
+    for (const name of DEPENDENCY_COMMANDS) {
+      const definition = loadCl(name);
+      if (buildInitialState(definition, {}).constraintErrors.length > 0) {
+        noisy.push(name);
+      }
+    }
+    assert.deepEqual(noisy, []);
   });
 });

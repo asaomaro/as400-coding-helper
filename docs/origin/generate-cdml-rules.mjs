@@ -40,10 +40,21 @@ const DRY = process.argv.includes("--dry-run");
 // 入れ子が崩れる。実際これで Dep の 536 件中 258 件が Cmd 直下から外れていた。
 const TAG = /<(\/?)([A-Za-z]+)((?:\s+[A-Za-z]+\s*=\s*"[^"]*")*)\s*(\/?)>/g;
 
+// XML の実体参照を戻す。戻さないと CmpVal に `X&apos;&apos;` のような文字列が
+// そのまま入り、比較にも画面にも実体参照が出る。
+function unescapeXml(text) {
+  return text
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&quot;/g, '"')
+    .replace(/&apos;/g, "'")
+    .replace(/&amp;/g, "&");
+}
+
 function attributes(text) {
   const result = {};
   for (const m of text.matchAll(/([A-Za-z]+)\s*=\s*"([^"]*)"/g)) {
-    result[m[1]] = m[2];
+    result[m[1]] = unescapeXml(m[2]);
   }
   return result;
 }
