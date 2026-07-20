@@ -205,6 +205,19 @@ export interface ParameterAttributes {
    */
   readonly minValue?: number;
   readonly maxValue?: number;
+  /**
+   * CL 変数(&NAME)を書けるか（CDML の `AlwVar`）。
+   * 既定は「書ける」。実機の 2500 欄のうち 26 欄だけが NO。
+   */
+  readonly allowsVariable?: boolean;
+  /**
+   * 値そのものへの制約（CDML の `Rel` / `RelVal`）。範囲とは別に
+   * 「0 以外」「1 以上」のような条件が付く欄がある。
+   */
+  readonly valueRelation?: {
+    readonly relation: "EQ" | "NE" | "GT" | "GE" | "LT" | "LE";
+    readonly value: string;
+  };
 }
 
 export interface ParameterDefinition {

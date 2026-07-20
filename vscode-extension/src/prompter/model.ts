@@ -230,8 +230,12 @@ export function validate(
     return "値の入力が必要です。";
   }
 
-  // CL 変数(&NAME)の長さは欄の長さと無関係なので、長さ検査の対象外にする。
-  if (parameter.attributes?.maxLength !== undefined && !trimmed.startsWith("&")) {
+  // CL 変数(&NAME)は欄の長さ・数値・選択肢のどの検査も受けない。
+  // 実機が AlwVar=NO と言う欄（2500 中 26）でだけ通常の値として扱う。
+  const isVariable =
+    trimmed.startsWith("&") && parameter.attributes?.allowsVariable !== false;
+
+  if (parameter.attributes?.maxLength !== undefined && !isVariable) {
     if (trimmed.length > parameter.attributes.maxLength) {
       return `${parameter.attributes.maxLength} 文字以内で入力してください。`;
     }
@@ -246,7 +250,7 @@ export function validate(
     parameter.attributes?.numericOnly &&
     trimmed.length > 0 &&
     !trimmed.startsWith("*") &&
-    !trimmed.startsWith("&")
+    !isVariable
   ) {
     if (!/^[+-]?[0-9]+(?:\.[0-9]+)?$/u.test(trimmed)) {
       return "数値を入力してください。";
@@ -260,7 +264,7 @@ export function validate(
     (minValue !== undefined || maxValue !== undefined) &&
     trimmed.length > 0 &&
     !trimmed.startsWith("*") &&
-    !trimmed.startsWith("&") &&
+    !isVariable &&
     /^[+-]?[0-9]+(?:\.[0-9]+)?$/u.test(trimmed)
   ) {
     const numeric = Number(trimmed);
@@ -269,6 +273,37 @@ export function validate(
     }
     if (maxValue !== undefined && numeric > maxValue) {
       return `${maxValue} 以下の値を入力してください。`;
+    }
+  }
+
+  // 値そのものへの制約（実機の Rel / RelVal）。「0 以外」「1 以上」など。
+  const relation = parameter.attributes?.valueRelation;
+  if (
+    relation &&
+    trimmed.length > 0 &&
+    !trimmed.startsWith("*") &&
+    !isVariable &&
+    /^[+-]?[0-9]+(?:\.[0-9]+)?$/u.test(trimmed) &&
+    /^[+-]?[0-9]+(?:\.[0-9]+)?$/u.test(relation.value)
+  ) {
+    const actual = Number(trimmed);
+    const expected = Number(relation.value);
+    const ok =
+      relation.relation === "EQ" ? actual === expected
+      : relation.relation === "NE" ? actual !== expected
+      : relation.relation === "GT" ? actual > expected
+      : relation.relation === "GE" ? actual >= expected
+      : relation.relation === "LT" ? actual < expected
+      : actual <= expected;
+    if (!ok) {
+      const word =
+        relation.relation === "NE" ? "以外の値"
+        : relation.relation === "GT" ? "より大きい値"
+        : relation.relation === "GE" ? "以上の値"
+        : relation.relation === "LT" ? "より小さい値"
+        : relation.relation === "LE" ? "以下の値"
+        : "と同じ値";
+      return `${relation.value} ${word}を入力してください。`;
     }
   }
 
@@ -312,7 +347,7 @@ export function validate(
     parameter.options.length > 0 &&
     // CL 変数(&NAME)はどの欄にも書ける。実機の数値型 420 のうち 360 が
     // AlwVar=YES で、列挙値に無くても変数は受ける。
-    !trimmed.startsWith("&")
+    !isVariable
   ) {
     const allowed = parameter.options.map(option => option.value);
     if (trimmed.length > 0 && !allowed.includes(trimmed)) {

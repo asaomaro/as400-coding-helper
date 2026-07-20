@@ -188,6 +188,9 @@ const report = {
   changedLength: 0,
   skippedLength: 0,
   mixedCase: 0,
+  occurrences: 0,
+  noVariable: 0,
+  relations: 0,
   normalizedValues: 0,
   ranges: 0,
   numeric: 0,
@@ -325,6 +328,32 @@ for (const file of readdirSync(CMDDEF).filter(n => n.endsWith(".xml")).sort()) {
         }
       }
 
+      // 繰り返し指定の上限。実機の Max が定義より多いと、入力欄を必要な数まで
+      // 増やせない（CRTPGM の OPTION は実機 6 に対し定義 5 だった）。
+      const maxValues = Number(parm.attrs.Max);
+      if (Number.isFinite(maxValues) && maxValues > 1 && target.maxOccurrences !== maxValues) {
+        target.maxOccurrences = maxValues;
+        changed = true;
+        if (lang === "ja") report.occurrences += 1;
+      }
+
+      // CL 変数を書けない欄。既定は「書ける」なので NO のときだけ記録する。
+      if (parm.attrs.AlwVar === "NO") {
+        target.attributes = { ...(target.attributes ?? {}), allowsVariable: false };
+        changed = true;
+        if (lang === "ja") report.noVariable += 1;
+      }
+
+      // 値そのものへの制約（0 以外・1 以上など）。範囲とは別に付く。
+      if (parm.attrs.Rel && parm.attrs.RelVal !== undefined) {
+        target.attributes = {
+          ...(target.attributes ?? {}),
+          valueRelation: { relation: parm.attrs.Rel, value: parm.attrs.RelVal }
+        };
+        changed = true;
+        if (lang === "ja") report.relations += 1;
+      }
+
       // 数値の範囲。実機が受ける下限・上限をそのまま使う。
       const rangeMin = Number(parm.attrs.RangeMinVal);
       const rangeMax = Number(parm.attrs.RangeMaxVal);
@@ -401,6 +430,9 @@ console.log(`  promptControl ${report.promptControl} 件`);
 console.log(`  mapTo         ${report.mapTo} 件`);
 console.log(`  restricted:false（任意の値を書ける欄）  ${report.unrestricted} 件`);
 console.log(`  原典が取りこぼした選択肢の補完          ${report.addedValues} 件`);
+console.log(`  繰り返し上限(Max)の修正                  ${report.occurrences} 件`);
+console.log(`  CL 変数を書けない欄(AlwVar=NO)           ${report.noVariable} 件`);
+console.log(`  値の制約(Rel/RelVal)                    ${report.relations} 件`);
 console.log(`  ノーブレークスペースの正規化            ${report.normalizedValues} 件`);
 console.log(`  英大文字強制をやめた欄(Case=MIXED)        ${report.mixedCase} 件`);
 console.log(`  数値の範囲(RangeMinVal/RangeMaxVal)      ${report.ranges} 件`);

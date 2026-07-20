@@ -559,7 +559,13 @@ suite("CDML 由来の相関規則", () => {
           probes.push(String(parameter.attributes.minValue));
           probes.push(String(parameter.attributes.maxValue));
         }
-        if (parameter.attributes?.numericOnly) probes.push("&COUNT");
+        // CL 変数は AlwVar=NO の欄には書けない（DCL の TYPE など）。
+        if (
+          parameter.attributes?.numericOnly &&
+          parameter.attributes?.allowsVariable !== false
+        ) {
+          probes.push("&COUNT");
+        }
         if (parameter.defaultValue) probes.push(parameter.defaultValue);
         for (const value of probes) {
           const error = validate(parameter, value, false);
@@ -572,5 +578,32 @@ suite("CDML 由来の相関規則", () => {
       walk(loadCl(name).parameters, name);
     }
     assert.deepEqual(rejected, []);
+  });
+
+  test("CL 変数を書けない欄では変数も通常の値として扱う", () => {
+    // DCL の TYPE は実機 AlwVar=NO。&VAR は書けない。
+    const dcl = loadCl("DCL");
+    const type = dcl.parameters.find(p => p.name === "TYPE");
+    assert.equal(type?.attributes?.allowsVariable, false);
+    assert.ok(validate(type!, "&MYVAR"));
+  });
+
+  test("繰り返しの上限が実機に合っている", () => {
+    // CRTPGM の OPTION は実機 Max=6。定義が 5 だと 6 つ目を追加できない。
+    const option = loadCl("CRTPGM").parameters.find(p => p.name === "OPTION");
+    assert.equal(option?.maxOccurrences, 6);
+  });
+
+  test("値の制約(Rel/RelVal)が効く", () => {
+    const withRelation = DEPENDENCY_COMMANDS.flatMap(name =>
+      loadCl(name).parameters.filter(p => p.attributes?.valueRelation)
+    );
+    assert.ok(withRelation.length > 0, "valueRelation を持つ欄がある");
+    const target = withRelation.find(p => p.attributes!.valueRelation!.relation === "GE");
+    if (target) {
+      const bound = Number(target.attributes!.valueRelation!.value);
+      assert.equal(validate(target, String(bound)), undefined);
+      assert.ok(validate(target, String(bound - 1)));
+    }
   });
 });
