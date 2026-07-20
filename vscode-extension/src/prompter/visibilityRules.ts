@@ -1,4 +1,4 @@
-import { promptControlHolds, type RuleContext } from "./cdmlRules";
+import { createCdmlEvaluator, promptControlHolds, type RuleContext } from "./cdmlRules";
 import type {
   ParameterCondition,
   ParameterDefinition,
@@ -65,10 +65,7 @@ export function evaluateParameter(
   definition: ParameterDefinition,
   values: Record<string, string | undefined>,
   // MapTo の変換表と「指定されたか」の判定。promptControl を持つ定義でのみ要る。
-  context: RuleContext = {
-    resolve: (_parameter, value) => value.trim().toUpperCase(),
-    isSpecified: (parameter, all) => (all[parameter] ?? "").trim().length > 0
-  }
+  context: RuleContext = createCdmlEvaluator({})
 ): EffectiveParameterState {
   const hasExistingValue = normalize(values[definition.name]).length > 0;
   const dependencies = definition.dependsOn ?? [];

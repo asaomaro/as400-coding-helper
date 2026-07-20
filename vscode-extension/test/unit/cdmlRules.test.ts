@@ -2,12 +2,13 @@ import { strict as assert } from "node:assert";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import {
-  buildInternalValueResolver,
   buildRuleContext,
   checkDependencies,
+  createCdmlEvaluator,
   promptControlHolds
 } from "../../src/prompter/cdmlRules";
 import { buildInitialState } from "../../src/prompter/model";
+import { buildHtml, toSerializableState } from "../../src/prompter/binding";
 import type { PrompterDefinition } from "../../src/prompter/types";
 
 /**
@@ -108,11 +109,7 @@ suite("CDML 由来の相関規則", () => {
         conditions: [{ relation: "EQ" as const, compareValue: "*SAVF" }]
       }
     ];
-    const asIs = {
-      resolve: (_p: string, v: string) => v.trim().toUpperCase(),
-      isSpecified: (p: string, all: Record<string, string | undefined>) =>
-        (all[p] ?? "").trim().length > 0
-    };
+    const asIs = createCdmlEvaluator({});
 
     assert.equal(promptControlHolds(groups, { DEV: "*SAVF" }, asIs), true);
     assert.equal(promptControlHolds(groups, { DEV: "*TAPE" }, asIs), false);
@@ -129,20 +126,12 @@ suite("CDML 由来の相関規則", () => {
         conditions: [{ relation: "EQ" as const, compareValue: "*SAVF" }]
       }
     ];
-    const asIs = {
-      resolve: (_p: string, v: string) => v.trim().toUpperCase(),
-      isSpecified: (p: string, all: Record<string, string | undefined>) =>
-        (all[p] ?? "").trim().length > 0
-    };
+    const asIs = createCdmlEvaluator({});
     assert.equal(promptControlHolds(groups, { DEV: "*TAPE *SAVF" }, asIs), true);
   });
 
   test("グループを OR で連ねられる（旧スキーマの all は AND のみ）", () => {
-    const asIs = {
-      resolve: (_p: string, v: string) => v.trim().toUpperCase(),
-      isSpecified: (p: string, all: Record<string, string | undefined>) =>
-        (all[p] ?? "").trim().length > 0
-    };
+    const asIs = createCdmlEvaluator({});
     const groups = [
       {
         controlParameter: "A",
@@ -303,8 +292,8 @@ suite("CDML 由来の相関規則", () => {
     assert.ok(type?.valueMap, "TYPE に valueMap が生成されている");
     assert.equal(type?.valueMap?.["*CHAR"], "C");
 
-    const resolve = buildInternalValueResolver(addmsgd);
-    assert.equal(resolve("TYPE", "*CHAR"), "C");
+    const resolve = buildRuleContext(addmsgd);
+    assert.equal(resolve.resolve("TYPE", "*CHAR"), "C");
   });
 
   /* ---------------------------------------------------------------- *
@@ -386,5 +375,93 @@ suite("CDML 由来の相関規則", () => {
       }
     }
     assert.deepEqual(noisy, []);
+  });
+
+  /* ---------------------------------------------------------------- *
+   * WebView まで届いているか。
+   *
+   * model.ts まで届いていても、プロンプターの画面は入力のたびクライアント側で
+   * 再評価する。そこに規則が渡っていなければ、開いた瞬間の一度きりで終わる
+   * （実際 PR #93 はその状態で、dependencies は一度も画面に出ていなかった）。
+   * ---------------------------------------------------------------- */
+  const renderCl = (name: string): string => {
+    const definition = loadCl(name);
+    const state = buildInitialState(definition, {});
+    return buildHtml(
+      toSerializableState(definition, state, {
+        keyword: definition.keyword,
+        language: "cl",
+        line: 0
+      } as never),
+      { cspSource: "x", nonce: "n" }
+    );
+  };
+
+  test("PMTCTL が入力欄の属性として出ている", () => {
+    // script の中にも `data-prompt-control` の語は出るので、**script より前**
+    // （＝実際の入力欄）に属性が書かれていることを見る。
+    const html = renderCl("SAVOBJ");
+    const body = html.slice(0, html.indexOf("<script"));
+    const match = body.match(/data-prompt-control="([^"]*)"/);
+    assert.ok(match, "入力欄に data-prompt-control が書き出されている");
+    assert.ok(
+      match![1].includes("controlParameter"),
+      "属性の中身が規則そのものになっている"
+    );
+  });
+
+  test("埋め込んだ評価器が WebView 側で動き、サーバと同じ答えを返す", () => {
+    // toString() で埋め込んでいるため、壊れれば構文エラーか挙動差になる。
+    // 実際に取り出して動かし、サーバ側の評価と突き合わせる。
+    const definition = loadCl("SNDPGMMSG");
+    const html = renderCl("SNDPGMMSG");
+
+    const match = html.match(
+      /const createCdmlEvaluator = ([\s\S]*?);\n    const CDML = createCdmlEvaluator\(([\s\S]*?)\);/
+    );
+    assert.ok(match, "埋め込まれた評価器と spec を取り出せる");
+
+    // eslint-disable-next-line no-new-func
+    const factory = new Function(`return (${match![1]});`)();
+    const spec = JSON.parse(match![2]);
+    const embedded = factory(spec);
+
+    const scenarios: Record<string, string>[] = [
+      {},
+      { MSGID: "CPF9898" },
+      { MSGID: "CPF9898", MSGF: "QCPFMSG" },
+      { MSG: "HELLO", MSGID: "CPF9898", MSGF: "QCPFMSG" }
+    ];
+    for (const values of scenarios) {
+      assert.deepEqual(
+        embedded.checkDependencies(values),
+        checkDependencies(definition, values),
+        `シナリオ ${JSON.stringify(values)} でサーバと一致する`
+      );
+    }
+  });
+
+  test("埋め込んだ評価器で PMTCTL も同じ答えになる", () => {
+    const definition = loadCl("SAVOBJ");
+    const html = renderCl("SAVOBJ");
+    const match = html.match(
+      /const createCdmlEvaluator = ([\s\S]*?);\n    const CDML = createCdmlEvaluator\(([\s\S]*?)\);/
+    );
+    assert.ok(match);
+    // eslint-disable-next-line no-new-func
+    const embedded = new Function(`return (${match![1]});`)()(JSON.parse(match![2]));
+    const server = buildRuleContext(definition);
+
+    const savf = definition.parameters.find(p => p.name === "SAVF");
+    const groups = savf?.promptControl;
+    assert.ok(groups, "SAVOBJ の SAVF は promptControl を持つ");
+
+    for (const dev of ["", "*TAPE", "*SAVF", "*TAPE *SAVF"]) {
+      assert.equal(
+        embedded.promptControlHolds(groups, { DEV: dev }),
+        server.promptControlHolds(groups, { DEV: dev }),
+        `DEV=${dev} でサーバと一致する`
+      );
+    }
   });
 });
