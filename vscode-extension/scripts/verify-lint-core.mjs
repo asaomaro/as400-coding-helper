@@ -95,10 +95,45 @@ function extractStringArray(source, name, label) {
   return [...block[1].matchAll(/"([a-z0-9]+)"/gu)].map(m => m[1]);
 }
 
-const target = extractStringArray(
-  readFileSync(join(EXT, "src/utils/fileScope.ts"), "utf8"),
-  "TARGET_EXTENSIONS",
-  "fileScope.ts"
+/**
+ * TARGET_EXTENSIONS は用途別の集合（RPG/CL/DDS/CMD）の**合成**で、それ自体は
+ * 文字列リテラルを持たない。合成元を辿って解決する。
+ *
+ * ここを素朴に「TARGET_EXTENSIONS のリテラルを読む」だけにすると、合成に
+ * 変わった時点で**空集合になり、部分集合の検査が素通りする**。
+ * verify-contributes.mjs も同じ理由で合成を辿っている（そちらと方式を揃える）。
+ */
+function readTargetExtensions(source) {
+  const spreadBlock = /TARGET_EXTENSIONS[^=]*=\s*\[([\s\S]*?)\]/u.exec(source);
+  if (!spreadBlock) {
+    failures.push("fileScope.ts の TARGET_EXTENSIONS が読めない");
+    return undefined;
+  }
+
+  const extensions = [];
+  // 合成元（`...RPG_EXTENSIONS` の形）を辿る。
+  for (const match of spreadBlock[1].matchAll(/\.\.\.([A-Z_]+)/gu)) {
+    const values = extractStringArray(source, match[1], "fileScope.ts");
+    if (!values || values.length === 0) {
+      failures.push(`fileScope.ts の ${match[1]} が読めない`);
+      return undefined;
+    }
+    extensions.push(...values);
+  }
+  // 直接書かれたリテラルも拾う（合成をやめてリテラルに戻したときのため）。
+  for (const match of spreadBlock[1].matchAll(/"([a-z0-9]+)"/gu)) {
+    if (!extensions.includes(match[1])) extensions.push(match[1]);
+  }
+
+  if (extensions.length === 0) {
+    failures.push("fileScope.ts から拡張子を 1 つも取り出せない（読み取りが壊れている）");
+    return undefined;
+  }
+  return extensions;
+}
+
+const target = readTargetExtensions(
+  readFileSync(join(EXT, "src/utils/fileScope.ts"), "utf8")
 );
 const lintable = extractStringArray(
   readFileSync(join(EXT, "src/core/sourceKind.ts"), "utf8"),
