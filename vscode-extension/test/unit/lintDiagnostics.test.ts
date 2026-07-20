@@ -3,6 +3,7 @@ import * as vscode from "vscode";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { lintDocument } from "../../src/language/lintDiagnostics";
+import { RpgClDiagnostics } from "../../src/language/diagnostics";
 
 /**
  * VSCode 側の殻。検査そのものは lint core のテストが見ているので、ここでは
@@ -84,5 +85,65 @@ suite("lint: VSCode 診断", () => {
     const diagnostics = lintDocument(document);
     assert.strictEqual(diagnostics.length, 1);
     assert.strictEqual((diagnostics[0] as { code?: string }).code, "line-length");
+  });
+});
+
+/**
+ * 消費経路の到達性。
+ *
+ * AGENTS.md「追加したリソースは『到達可能』になって初めて完了」。この PJ は
+ * 定義を足したのに配線が無くて死蔵、を何度か踏んでいる。lintDocument が
+ * 正しく動いても、diagnostics.refresh から呼ばれていなければ画面には何も出ない。
+ * ここでは **RpgClDiagnostics.refresh を実際に通して** 収集に入ることを見る。
+ */
+suite("lint: 診断の配線（refresh からの到達性）", () => {
+  teardown(() => setConfig({}));
+
+  function collectionOf(diagnostics: RpgClDiagnostics) {
+    return (diagnostics as unknown as {
+      collection: { get(uri: { fsPath: string }): unknown[] | undefined };
+    }).collection;
+  }
+
+  test("refresh 経由で RPG の診断が収集に入る", () => {
+    const diagnostics = new RpgClDiagnostics();
+    const document = fakeDocument("EMPMNT01.rpgle");
+    diagnostics.refresh(document);
+
+    const stored = collectionOf(diagnostics).get(document.uri);
+    assert.ok(stored && stored.length > 0, "refresh から lint core に届いていない");
+  });
+
+  test("refresh 経由で DDS の診断が収集に入る（正常なら空）", () => {
+    const diagnostics = new RpgClDiagnostics();
+    const document = fakeDocument("CUSTMST.pf");
+    diagnostics.refresh(document);
+
+    assert.deepStrictEqual(collectionOf(diagnostics).get(document.uri), []);
+  });
+
+  test("refresh は CL の既存経路を壊さない（lint に流さない）", () => {
+    const diagnostics = new RpgClDiagnostics();
+    const document = fakeDocument("DYBAT001CL.clp");
+    diagnostics.refresh(document);
+
+    // CL は parseClDocument の担当。lint の桁検査は走らない。
+    const stored = collectionOf(diagnostics).get(document.uri);
+    assert.ok(Array.isArray(stored), "CL でも収集は設定される");
+  });
+
+  test("対象外の拡張子は収集に触れない", () => {
+    const diagnostics = new RpgClDiagnostics();
+    const document = fakeDocument("CUSTMST.pf");
+    (document as unknown as { uri: { fsPath: string } }).uri = {
+      fsPath: "/tmp/readme.txt"
+    };
+    diagnostics.refresh(document);
+
+    assert.strictEqual(
+      collectionOf(diagnostics).get(document.uri),
+      undefined,
+      "isInScopeDocument で弾かれるはず"
+    );
   });
 });

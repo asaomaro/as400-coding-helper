@@ -19,8 +19,14 @@ export interface RuleSpec {
   readonly severity: Severity;
   /** SARIF の規則説明に出す一文。 */
   readonly description: string;
-  /** 継続記入行にも適用するか（定位置の欄を見ない規則だけ true）。 */
-  readonly appliesToContinuation: boolean;
+  /**
+   * 定位置の欄を見る規則か。
+   *
+   * false の規則（行長など）は**行の種類を問わず適用する**。注記行や継続記入行、
+   * 種別が決まらない行でも桁あふれは起こるため。true の規則は欄が存在する行
+   * （前処理が "checked" と判定した行）でだけ回す。
+   */
+  readonly positional: boolean;
 }
 
 export const RULE_SPECS: readonly RuleSpec[] = [
@@ -32,7 +38,7 @@ export const RULE_SPECS: readonly RuleSpec[] = [
     description:
       "行が 100 桁を超えていないか。81-100 桁は原典が注記域と規定しているため、" +
       "80 桁超過は指摘しない。",
-    appliesToContinuation: true
+    positional: false
   },
   {
     id: "numeric-field",
@@ -41,7 +47,7 @@ export const RULE_SPECS: readonly RuleSpec[] = [
     severity: "error",
     description:
       "右寄せ必須の数値欄に数字以外が入っていないか（実機では CPF7311）。",
-    appliesToContinuation: false
+    positional: true
   },
   {
     id: "numeric-alignment",
@@ -49,7 +55,7 @@ export const RULE_SPECS: readonly RuleSpec[] = [
     enabledByDefault: true,
     severity: "warning",
     description: "数値欄が右寄せで書かれているか。",
-    appliesToContinuation: false
+    positional: true
   },
   {
     id: "required-field",
@@ -60,7 +66,7 @@ export const RULE_SPECS: readonly RuleSpec[] = [
       "必須欄が空でないか。**既定で無効**。DDS は定義の required が生成時に " +
       "false 固定で材料が無く、RPG は継続記入行やオペランドを取らない命令で " +
       "偽陽性が出る（実測 64 件）。",
-    appliesToContinuation: false
+    positional: true
   },
   {
     id: "restricted-value",
@@ -70,7 +76,7 @@ export const RULE_SPECS: readonly RuleSpec[] = [
     description:
       "定義済み値以外が入っていないか。**既定で無効**。値集合が原典の注記を " +
       "取りこぼしており（DBCS のデータ・タイプ）、原典自体も実機より狭い箇所がある。",
-    appliesToContinuation: false
+    positional: true
   }
 ];
 

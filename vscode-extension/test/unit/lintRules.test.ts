@@ -168,10 +168,10 @@ suite("lint: 規則の既定", () => {
     }
   });
 
-  test("継続記入行に適用してよいのは行長だけ", () => {
-    const forContinuation = RULE_SPECS.filter(s => s.appliesToContinuation);
+  test("定位置の欄を見ない規則は行長だけ", () => {
+    const nonPositional = RULE_SPECS.filter(s => !s.positional);
     assert.deepStrictEqual(
-      forContinuation.map(s => s.id),
+      nonPositional.map(s => s.id),
       ["line-length"]
     );
   });

@@ -110,3 +110,58 @@ suite("lint: 定義の読み込み", () => {
     assert.ok(findings.some(f => f.ruleId === "numeric-field"));
   });
 });
+
+/**
+ * 行長は定位置の意味とは独立に効かなければならない。
+ *
+ * 実装当初は engine が注記行・種別不明行を規則にかける前に落としており、
+ * **桁あふれがいちばん起きやすい日本語の注記行で line-length が働いていなかった**
+ * （test 工程で検出）。桁あふれは欄の有無と無関係なので、行の種類を問わず見る。
+ */
+suite("lint: 行長は行の種類を問わず効く", () => {
+  const long = (prefix: string) => prefix + "あ".repeat(130 - prefix.length);
+
+  const cases: ReadonlyArray<[string, string, string]> = [
+    ["RPG の注記行", "x.rpgle", "     D* "],
+    ["DDS の注記行", "x.pf", "     A* "],
+    ["RPG の仕様書コード不明行", "x.rpgle", "     Z"],
+    ["DDS の継続行（キーワードのみ）", "x.pf", "     A" + " ".repeat(38)],
+    ["RPG の継続記入行", "x.rpgle", "     F" + " ".repeat(10)],
+    ["RPG の仕様書行", "x.rpgle", "     D"]
+  ];
+
+  for (const [label, file, prefix] of cases) {
+    test(`${label}でも 100 桁超を指摘する`, () => {
+      const findings = lintFile({
+        fsPath: join(SRC_DIR, file),
+        lines: [long(prefix)],
+        definitions: loadDefinitions(defaultResourcesDir(__dirname))
+      });
+      assert.ok(
+        findings.some(f => f.ruleId === "line-length"),
+        `${label}: line-length が効いていない`
+      );
+    });
+  }
+
+  test("100 桁以内なら注記行でも指摘しない", () => {
+    const findings = lintFile({
+      fsPath: join(SRC_DIR, "x.rpgle"),
+      lines: ["     D* " + "あ".repeat(80)],
+      definitions: loadDefinitions(defaultResourcesDir(__dirname))
+    });
+    assert.deepStrictEqual(findings, []);
+  });
+
+  test("注記行で定位置の規則は動かない（欄が無いので偽陽性の元）", () => {
+    const findings = lintFile({
+      fsPath: join(SRC_DIR, "x.pf"),
+      lines: ["     A* コメント  AB   だが長さ欄の位置に文字がある"],
+      definitions: loadDefinitions(defaultResourcesDir(__dirname))
+    });
+    assert.deepStrictEqual(
+      findings.filter(f => f.ruleId.startsWith("numeric")),
+      []
+    );
+  });
+});

@@ -47,7 +47,19 @@ const vscode = {
     getWorkspaceFolder: () => undefined
   },
   window: { activeTextEditor: undefined, visibleTextEditors: [] },
-  languages: {},
+  languages: {
+    // 診断の配線（イベント→refresh→lint core）を通すための最小の実装。
+    createDiagnosticCollection: name => {
+      const store = new Map();
+      return {
+        name,
+        set: (uri, diagnostics) => store.set(uri.fsPath, diagnostics),
+        get: uri => store.get(uri.fsPath),
+        delete: uri => store.delete(uri.fsPath),
+        dispose() {}
+      };
+    }
+  },
   commands: {},
   StatusBarAlignment: { Left: 1, Right: 2 },
   ConfigurationTarget: { Global: 1 },

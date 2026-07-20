@@ -49,9 +49,11 @@ export function lintFile(request: LintRequest): readonly LintFinding[] {
       language === "dds" ? kind.ddsType : rpgContext?.classify(line, kind.dialect);
 
     const lineKind = classifyLine(line, language, specKeyword);
-    if (lineKind === "comment" || lineKind === "skipped") {
-      return;
-    }
+    // 定位置として読めるのは "checked" の行だけ。注記行・継続記入行・
+    // 種別が決まらない行では欄が存在しないので、欄を見ない規則だけを回す。
+    // **行長の検査はここで落とさない**（桁あふれは定位置の意味と無関係で、
+    // むしろ日本語の注記でこそ起きる）。
+    const positionalAllowed = lineKind === "checked";
 
     const definition = specKeyword
       ? lookupDefinition(request.definitions, language, kind.dialect, specKeyword)
@@ -66,8 +68,7 @@ export function lintFile(request: LintRequest): readonly LintFinding[] {
     };
 
     for (const spec of enabled) {
-      // 継続記入行には定位置の欄が無いので、桁数の上限だけを見る。
-      if (lineKind === "continuation" && !spec.appliesToContinuation) {
+      if (spec.positional && !positionalAllowed) {
         continue;
       }
       findings.push(...spec.rule(context));
