@@ -208,7 +208,7 @@
         "rpgClSupport.lint.rules": {
           "type": "object",
           "default": {},
-          "description": "桁位置検査の規則ごとの有効/無効。既定は line-length / numeric-field / numeric-alignment が有効。required-field と restricted-value は偽陽性が出るため既定で無効（有効にする場合は定義側の修復が要る）。",
+          "description": "桁位置検査の規則ごとの有効/無効。既定で有効なのは line-length / numeric-field / numeric-alignment と、レイアウトの layout-invalid-position / layout-column-one-reserved / layout-invalid-screen-size / layout-spacing-with-line-number（いずれも実機で作成できないソースでしか出ない）。required-field / restricted-value / layout-overflow / layout-overlap は有効なソースでも出るため既定で無効。",
           "additionalProperties": {
             "type": "boolean"
           },
@@ -232,6 +232,30 @@
             "restricted-value": {
               "type": "boolean",
               "description": "定義済み値以外が入っていないか（既定で無効・値集合が不完全）"
+            },
+            "layout-invalid-position": {
+              "type": "boolean",
+              "description": "位置欄(39-44桁)に数字以外が入っていないか（既定で有効・実機では作成できない）"
+            },
+            "layout-column-one-reserved": {
+              "type": "boolean",
+              "description": "表示装置ファイルで1桁目に項目を置いていないか（既定で有効・1桁目は属性文字の予約）"
+            },
+            "layout-invalid-screen-size": {
+              "type": "boolean",
+              "description": "DSPSIZ の書式・値が正しいか（既定で有効・有効値は 24x80 と 27x132 だけ）"
+            },
+            "layout-spacing-with-line-number": {
+              "type": "boolean",
+              "description": "印刷装置ファイルで行番号のある項目に SPACE/SKIP を使っていないか（既定で有効・実機では CPD7860）"
+            },
+            "layout-overflow": {
+              "type": "boolean",
+              "description": "項目が画面/紙面をはみ出していないか（既定で無効・はみ出しても *NOLOC で作成されるため有効なソースでも出る）"
+            },
+            "layout-overlap": {
+              "type": "boolean",
+              "description": "項目が重なっていないか（既定で無効・原典が重複の定義を認めているため有効なソースでも出る）"
             }
           }
         },

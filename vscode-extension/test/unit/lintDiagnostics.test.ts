@@ -48,6 +48,49 @@ suite("lint: VSCode 診断", () => {
     assert.ok(first.range.end.character > first.range.start.character);
   });
 
+  test("レイアウトの指摘もエディタの診断に写る（1 桁目の項目）", () => {
+    // 診断は dspfLayout が出し、lint 経由でここまで届く。
+    // 「lintFile までは届いた」で止めると、エディタに出ない事故に気付けない。
+    const cells = " ".repeat(90).split("");
+    const put = (start: number, text: string) => {
+      for (let i = 0; i < text.length; i += 1) cells[start - 1 + i] = text[i]!;
+    };
+    put(6, "A");
+    put(19, "F1");
+    put(34, "5");
+    put(35, "A");
+    put(38, "O");
+    put(41, "1");
+    put(44, "1");
+    const source = [`${" ".repeat(5)}A          R REC`, cells.join("").trimEnd()].join("\n");
+
+    const diagnostics = lintDocument(fakeDocument("CUSTMNT.dspf", source));
+    const layout = diagnostics.filter(
+      d => typeof d.code === "string" && d.code.startsWith("layout-")
+    );
+    assert.ok(layout.length > 0, "レイアウトの指摘がエディタまで届いていない");
+    assert.strictEqual(layout[0]!.code, "layout-column-one-reserved");
+    assert.strictEqual(layout[0]!.severity, vscode.DiagnosticSeverity.Error);
+    // 位置欄（39-44 桁）を 0 始まりに写した範囲。
+    assert.strictEqual(layout[0]!.range.start.character, 38);
+    assert.strictEqual(layout[0]!.range.end.character, 44);
+  });
+
+  test("レイアウトの規則も設定で無効にできる", () => {
+    setConfig({
+      rpgClSupport: { "lint.rules": { "layout-column-one-reserved": false } }
+    });
+    const source = [
+      `${" ".repeat(5)}A          R REC`,
+      `${" ".repeat(5)}A            F1             5A  O  1  1`
+    ].join("\n");
+    const diagnostics = lintDocument(fakeDocument("CUSTMNT.dspf", source));
+    assert.ok(
+      !diagnostics.some(d => d.code === "layout-column-one-reserved"),
+      "無効にしたレイアウト規則が出ている"
+    );
+  });
+
   test("lint.enable が false なら診断を出さない", () => {
     setConfig({ rpgClSupport: { "lint.enable": false } });
     assert.deepStrictEqual(lintDocument(fakeDocument("EMPMNT01.rpgle")), []);

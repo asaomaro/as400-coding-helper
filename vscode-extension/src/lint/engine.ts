@@ -43,6 +43,20 @@ export function lintFile(request: LintRequest): readonly LintFinding[] {
 
   const findings: LintFinding[] = [];
 
+  // ファイル単位の規則（レイアウト）を先に 1 度だけ回す。
+  // 行の走査と違い、ファイルを解決し切らないと出せない診断を扱う。
+  // 出力順は最後の並べ替えで決まるので、ここで先に積んでも順序は変わらない。
+  for (const spec of enabled) {
+    if (spec.kind !== "file") continue;
+    findings.push(
+      ...spec.rule({
+        fsPath: request.fsPath,
+        lines: request.lines,
+        ...(kind.ddsType ? { ddsType: kind.ddsType } : {})
+      })
+    );
+  }
+
   request.lines.forEach((line, index) => {
     // DDS は種別がファイル単位で決まるので行ごとの判定をしない。
     const specKeyword =
@@ -68,6 +82,7 @@ export function lintFile(request: LintRequest): readonly LintFinding[] {
     };
 
     for (const spec of enabled) {
+      if (spec.kind !== "line") continue;
       if (spec.positional && !positionalAllowed) {
         continue;
       }
