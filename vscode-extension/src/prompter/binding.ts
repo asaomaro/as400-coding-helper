@@ -1,12 +1,18 @@
 import type {
   ParameterDefinition,
   ParameterDependency,
-  PrompterDefinition
+  PrompterDefinition,
+  PromptControlGroup
 } from "./types";
 import type { PrompterState } from "./model";
 import type { ResolvedPosition } from "./positionResolver";
 import { buildCommandHelpText, buildParameterHelpText } from "./commandHelp";
 import { isRepeatableGroup, occurrenceName } from "./occurrences";
+import {
+  buildEvaluatorSpec,
+  createCdmlEvaluator,
+  type CdmlEvaluatorSpec
+} from "./cdmlRules";
 
 export interface SerializableField {
   readonly name: string;
@@ -31,6 +37,8 @@ export interface SerializableField {
   // 初期表示状態と、クライアント側で再評価するための依存規則。
   readonly visible: boolean;
   readonly dependsOn?: readonly ParameterDependency[];
+  /** CDML(PMTCTL) 由来の条件表示規則。クライアント側で入力のたび再評価する。 */
+  readonly promptControl?: readonly PromptControlGroup[];
   readonly disabled: boolean;
   readonly allowedValues?: readonly string[];
   /** 実機の F4 基本プロンプトに出ない「追加パラメータ」か。 */
@@ -52,6 +60,8 @@ export interface SerializablePrompterState {
     string,
     { readonly name: string; readonly defaultValue: string }[]
   >;
+  /** CDML(DEP/PMTCTL) の評価に要るデータ。同じ評価器をクライアントでも動かす。 */
+  readonly evaluatorSpec?: CdmlEvaluatorSpec;
   /** 繰り返し指定の group（最後の一組にだけ「追加」ボタンを出すために使う）。 */
   readonly repeatableGroups?: Record<string, { readonly base: string; readonly max: number }>;
 }
@@ -158,6 +168,7 @@ export function toSerializableState(
     positionColumn: resolved.column,
     commandHelp: buildCommandHelpText(definition),
     constraints: definition.constraints,
+    evaluatorSpec: buildEvaluatorSpec(definition),
     repeatableGroups: buildRepeatableGroups(definition, state),
     // 相関制約の「指定した」判定に既定値が要るため、対象パラメータの末端を渡す。
     constraintFields: definition.constraints?.length
@@ -208,6 +219,7 @@ export function toSerializableState(
       visible: field.visible,
       additional: additionalNames.has(field.parameter.name),
       dependsOn: field.parameter.dependsOn,
+      promptControl: field.parameter.promptControl,
       disabled: field.disabled,
       allowedValues: field.allowedValues
     }))
@@ -427,6 +439,12 @@ export function buildHtml(
     const CONSTRAINTS = ${JSON.stringify(state.constraints ?? [])};
     const CONSTRAINT_FIELDS = ${JSON.stringify(state.constraintFields ?? {})};
 
+    // CDML(DEP/PMTCTL) の評価器を **サーバと同じ関数のまま** 埋め込む。
+    // 写しを手書きするとサーバ/クライアントで必ず食い違うため、
+    // cdmlRules.ts の createCdmlEvaluator は外の識別子を参照しない作りにしてある。
+    const createCdmlEvaluator = ${createCdmlEvaluator.toString()};
+    const CDML = createCdmlEvaluator(${JSON.stringify(state.evaluatorSpec ?? {})});
+
     function getForm() {
       return document.getElementById('prompter-form');
     }
@@ -542,13 +560,18 @@ export function buildHtml(
 
       for (const field of fields) {
         const raw = field.getAttribute('data-depends-on');
-        if (!raw) {
+        const rawPmtCtl = field.getAttribute('data-prompt-control');
+        // dependsOn が無くても promptControl だけを持つ欄がある。
+        // ここで抜けると CDML 由来の条件表示が入力に追従しない。
+        if (!raw && !rawPmtCtl) {
           continue;
         }
 
         let rules = [];
+        let pmtCtl = [];
         try {
-          rules = JSON.parse(raw) || [];
+          rules = raw ? JSON.parse(raw) || [] : [];
+          pmtCtl = rawPmtCtl ? JSON.parse(rawPmtCtl) || [] : [];
         } catch (e) {
           continue;
         }
@@ -591,10 +614,13 @@ export function buildHtml(
         const disabledRules = byEffect('disabled');
         const allowedRules = byEffect('allowedValues');
 
+        // CDML(PMTCTL) の条件表示。dependsOn の visible と両方あるときは AND。
+        const byPromptControl =
+          !pmtCtl || pmtCtl.length === 0 || CDML.promptControlHolds(pmtCtl, values);
         const visible =
           current.length > 0 ||
-          visibleRules.length === 0 ||
-          visibleRules.some(matches);
+          (byPromptControl &&
+            (visibleRules.length === 0 || visibleRules.some(matches)));
         const disabled = disabledRules.some(matches);
         const required =
           !disabled &&
@@ -717,7 +743,10 @@ export function buildHtml(
           return value.toUpperCase() !== String(leaf.defaultValue || '').trim().toUpperCase();
         });
       };
-      const messages = [];
+      // CDML(DEP) 由来の相関チェック。サーバと同じ評価器で判定する。
+      const messages = CDML.checkDependencies(values).map(function (v) {
+        return v.message;
+      });
 
       for (const constraint of constraints) {
         const filled = constraint.parameters.filter(isFilled);
@@ -1255,6 +1284,12 @@ function buildFieldRuleAttributes(field: SerializableField): string {
   if (field.dependsOn?.length) {
     attributes.push(
       ` data-depends-on="${escapeHtml(JSON.stringify(field.dependsOn))}"`
+    );
+  }
+
+  if (field.promptControl?.length) {
+    attributes.push(
+      ` data-prompt-control="${escapeHtml(JSON.stringify(field.promptControl))}"`
     );
   }
 

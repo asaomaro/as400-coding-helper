@@ -276,7 +276,13 @@ export function validate(
     }
   }
 
-  if (parameter.options && parameter.options.length > 0) {
+  // options は「制限」とは限らない。実機が Rstd=NO と言っている欄では、
+  // 列挙した値は候補にすぎず任意の値を書ける。
+  if (
+    parameter.attributes?.restricted !== false &&
+    parameter.options &&
+    parameter.options.length > 0
+  ) {
     const allowed = parameter.options.map(option => option.value);
     if (trimmed.length > 0 && !allowed.includes(trimmed)) {
       return "指定できない値です。";

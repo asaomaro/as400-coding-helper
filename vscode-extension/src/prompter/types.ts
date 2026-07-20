@@ -183,6 +183,18 @@ export interface OriginReference {
 }
 
 export interface ParameterAttributes {
+  /**
+   * 列挙した値以外を書けないか（CDML の `Rstd`）。
+   *
+   * **false のとき options は「候補」であって制限ではない。** 原典の定義済み値だけを
+   * options に持つと、実機が受け付ける値を弾いてしまう（`ADDPFM` の SRCTYPE は
+   * `*NONE` しか選べず `RPGLE` が入力できなかった。実機は Rstd=NO で任意の
+   * ソース・タイプを受ける）。実測で 86 欄がこの状態だった。
+   *
+   * 未設定のときは従来どおり options を制限として扱う（CDML を採っていない
+   * RPG / DDS の定義があるため、既定の挙動は変えない）。
+   */
+  readonly restricted?: boolean;
   readonly characterSet?: "alpha" | "alnum" | "upper" | "any";
   readonly numericOnly?: boolean;
   readonly minLength?: number;
