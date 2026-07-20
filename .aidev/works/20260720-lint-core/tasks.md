@@ -36,14 +36,14 @@
 
 ## ② RpgSpecContext（振る舞い不変・O(n) 化）
 
-- [ ] T7: `core/rpgSpec.ts` に `createRpgSpecContext(cNewOpcodes?)` と
+- [x] T7: `core/rpgSpec.ts` に `createRpgSpecContext(cNewOpcodes?)` と
       `RpgSpecContext.classify(text, dialect?)` を追加する。内部状態は
       `fileDescription`（**既出の名前は上書きしない**）と
       `lastRecordName`（**毎回上書きする**）の 2 つ。
       既存の `classifyRpgSpecKeyword(text, {precedingLines})` は、その場で
       コンテキストを作って先行行を流し込む**ラッパー**に置き換える（実装は 1 つだけ）。
       **受け入れ**: `verify-rpg-roundtrip.mjs` の 11 サンプルと `npm test` が不変（依存: T2）
-- [ ] T8: `test/unit/rpgSpecContext.test.ts` を追加し、**蓄積版と `precedingLines` 版が
+- [x] T8: `test/unit/rpgSpecContext.test.ts` を追加し、**蓄積版と `precedingLines` 版が
       全ての I/O 仕様書変種で同じ結果を返す**ことを検査する。
       F 仕様書が同名で複数あるケース（先勝ち）とレコード識別行が複数あるケース（後勝ち）を含める。
       **受け入れ**: 非対称を逆にすると落ちる（依存: T7）
