@@ -71,12 +71,12 @@
 
 ## ⑤ HTML 生成（純粋関数）
 
-- [ ] T14: `src/language/prtfPreviewHtml.ts` に `PrtfLayout` → HTML の変換を実装する。
+- [x] T14: `src/language/prtfPreviewHtml.ts` に `PrtfLayout` → HTML の変換を実装する。
       桁は `ch` の整数倍で `position: absolute`、**箱の幅も計算値で固定**して
       `overflow: hidden`。ルーラーとオーバーフロー行（既定 60）の線を出す。
       CSP に対応する。**vscode を import しない**。
       **受け入れ**: 単体テスト（依存: T13）
-- [ ] T15: 桁揃えのテストを書く。**フォントに依存しないこと**を、生成された
+- [x] T15: 桁揃えのテストを書く。**フォントに依存しないこと**を、生成された
       HTML の `left` / `width` が `ch` の整数倍であることで確かめる。
       **受け入れ**: 全角を含む項目でも桁が計算値どおり（依存: T14）
 
