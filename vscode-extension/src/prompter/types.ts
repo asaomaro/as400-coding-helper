@@ -261,6 +261,11 @@ export interface ParameterDefinition {
    * 「コマンド・ストリング」/「Command string」と書かれているものが該当する。
    */
   readonly valueKind?: "command";
+  /**
+   * この欄が指すオブジェクトの種類（CDML の `IsFile` / `IsPgm` / `IsDtaAra`）。
+   * ワークスペースのソースから名前の候補を出すのに使う。実機には問い合わせない。
+   */
+  readonly objectKind?: "file" | "program" | "dataArea";
   readonly dependsOn?: readonly ParameterDependency[];
   /**
    * CDML の PMTCTL 由来の条件表示規則。dependsOn の effect:"visible" と併用でき、

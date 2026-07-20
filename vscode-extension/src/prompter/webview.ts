@@ -7,6 +7,7 @@ import { showParameterHelp } from "./help";
 import { PrompterDefinitionLoader } from "./jsonDefinitions";
 import { parseClCommand, mapParsedCommandToValues } from "./clCommandParser";
 import { buildClCommandBody } from "./applyChanges";
+import { collectWorkspaceObjects } from "./workspaceObjects";
 
 export interface PrompterResult {
   readonly confirmed: boolean;
@@ -20,7 +21,14 @@ export async function openPrompter(
   initialValues: Record<string, string>
 ): Promise<PrompterResult | undefined> {
   const initialState = buildInitialState(definition, initialValues);
-  const serializable = toSerializableState(definition, initialState, resolved);
+  // オブジェクト名の候補はワークスペースのソースから集める（実機には繋がない）。
+  const objectCandidates = await collectWorkspaceObjects();
+  const serializable = toSerializableState(
+    definition,
+    initialState,
+    resolved,
+    objectCandidates
+  );
 
   const config = vscode.workspace.getConfiguration("rpgClSupport");
   const openBeside = config.get<boolean>("prompter.openBeside") ?? false;

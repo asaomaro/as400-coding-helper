@@ -49,13 +49,26 @@ function flattenParameters(
       // 渡さないと、原典どおり「このパラメーターは必須」と書いた規則が
       // どこにも効かず、黙って無視される（SNDPGMMSG の MSGF で踏んだ）。
       // 末端が自前の規則を持つ場合はそちらを優先する。
-      // CDML の PMTCTL も同じ理由で降ろす。<Parm> に付く規則を group に置くと
-      // 入力欄が無いため効かない。
-      const children = (parameter.dependsOn || parameter.promptControl
+      // CDML の PMTCTL / objectKind も同じ理由で降ろす。<Parm> に付いたものを
+      // group に置くと入力欄が無いため効かない。
+      // objectKind は**修飾名の末尾（オブジェクト名の欄）だけ**に降ろす。
+      // ライブラリー欄にファイル名の候補を出しても混乱するだけ。
+      const objectLeaf =
+        parameter.groupKind === "qualified"
+          ? parameter.children[parameter.children.length - 1]?.name
+          : undefined;
+      const children = (parameter.dependsOn ||
+      parameter.promptControl ||
+      parameter.objectKind
         ? parameter.children.map(child => ({
             ...child,
             dependsOn: child.dependsOn ?? parameter.dependsOn,
-            promptControl: child.promptControl ?? parameter.promptControl
+            promptControl: child.promptControl ?? parameter.promptControl,
+            objectKind:
+              child.objectKind ??
+              (objectLeaf === undefined || child.name === objectLeaf
+                ? parameter.objectKind
+                : undefined)
           }))
         : parameter.children) as ParameterDefinition[];
 

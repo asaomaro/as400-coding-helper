@@ -24,6 +24,7 @@
 | `Rel` / `RelVal` | 66 | 値の制約 → `attributes.valueRelation` |
 | `AlwVar` | 2500 | CL 変数を書けるか → `attributes.allowsVariable`（NO は 26 欄） |
 | `Max` | 2500 | 繰り返しの上限 → `maxOccurrences` |
+| `IsFile` / `IsPgm` / `IsDtaAra` | 149 欄が該当 | 欄が指すオブジェクトの種類 → `objectKind`。ワークスペースのソースから名前の候補を出す |
 | `Dft` | 1658 | 既定値の裏取り（実測で差異ゼロ。上書きはしない） |
 | `Min` | 3112 | 必須の裏取り（実測で**食い違いゼロ**。反映不要） |
 | `Val` | 13712 | 選択肢の値。`MapTo` と対で使う |
@@ -76,7 +77,6 @@ pub400 は `QLANGID(ENU)` で **CDML の文言は英語**。日本語 NLS(`QSYS2
 | `Expr` | `NO` 588 | CL 式を書けるか。本 PJ は式の構文解析を持たないため、判定に使えない |
 | `DspInput` | `PROMPT` 8 | 入力の表示方法。該当が少ない |
 | `InlPmtLen` | 725 | 入力欄の表示幅。見た目のみで、正誤には影響しない |
-| `IsFile` / `IsPgm` / `IsDtaAra` | 2500 | その欄がファイル/プログラム/データ域を指すという意味情報。将来 F4 でのオブジェクト選択に使える可能性がある |
 
 ### 実データに出現しない
 
