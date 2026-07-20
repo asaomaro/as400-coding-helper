@@ -1,30 +1,29 @@
 import * as vscode from "vscode";
-import { resolvePrtfLayout, type PrtfPage } from "../core/dds/prtfLayout";
-import {
-  hasExplicitRow,
-  writeBackPosition
-} from "../core/dds/ddsPositionWriteBack";
-import { buildPrtfPreviewHtml } from "./prtfPreviewHtml";
+import { resolveDspfLayout } from "../core/dds/dspfLayout";
+import { writeBackPosition } from "../core/dds/ddsPositionWriteBack";
+import { resolveDdsType } from "../core/sourceKind";
+import { buildDspfPreviewHtml } from "./dspfPreviewHtml";
 
 /**
- * 帳票（PRTF）プレビューの vscode 側の殻。
+ * 画面（DSPF）プレビューの vscode 側の殻。
  *
- * レイアウト解決と HTML 生成は `core/dds` と `prtfPreviewHtml` にあり、
- * ここは VSCode との出入りだけを持つ。
+ * レイアウト解決と HTML 生成は `core/dds` と `dspfPreviewHtml` にあり、
+ * ここは VSCode との出入りだけを持つ（帳票プレビューと同じ形）。
  *
  * ■ ソースが唯一の真実
  *   WebView に配置状態を持たせない。文書が変わるたびに解決し直して
- *   HTML を作り直す。利用者はプレビューを開いたままソースを直接編集できるので、
- *   状態を 2 か所に持つと必ず食い違う。
+ *   HTML を作り直す。
  *
  * ■ IBM i Renderer と共存する
- *   言語登録をせず**拡張子で判定**し、コマンドも別にする（PJ の既定方針）。
- *   あちらは `dds.prtf` の languageId で発火するので、両方入っていても
- *   互いのコマンドは衝突しない。
+ *   あちらは DSPF のスクリーン・デザイナーを持つので、名前の衝突回避は
+ *   帳票より重要になる。言語登録をせず**拡張子で判定**し、
+ *   コマンド ID・viewType を別にする。キーバインドは割り当てない。
+ *
+ * ■ 対象の判定は `resolveDdsType` に委ねる
+ *   `.dspf` と `.mnudds` の 2 つを別々に列挙しない（同じ集合を 2 か所に持たない）。
  */
 
-const CONFIG_SECTION = "rpgClSupport";
-const VIEW_TYPE = "rpgClSupport.prtfPreview";
+const VIEW_TYPE = "rpgClSupport.dspfPreview";
 
 interface PreviewSession {
   readonly panel: vscode.WebviewPanel;
@@ -33,22 +32,8 @@ interface PreviewSession {
 
 let session: PreviewSession | undefined;
 
-function isPrtf(document: vscode.TextDocument): boolean {
-  return document.uri.fsPath.toLowerCase().endsWith(".prtf");
-}
-
-function resolvePage(): PrtfPage | undefined {
-  const config = vscode.workspace.getConfiguration(CONFIG_SECTION);
-  const rows = config.get<number>("prtf.pageLength");
-  const columns = config.get<number>("prtf.pageWidth");
-  const overflowLine = config.get<number>("prtf.overflowLine");
-  const page: Partial<PrtfPage> = {};
-  if (typeof rows === "number" && rows > 0) Object.assign(page, { rows });
-  if (typeof columns === "number" && columns > 0) Object.assign(page, { columns });
-  if (typeof overflowLine === "number" && overflowLine > 0) {
-    Object.assign(page, { overflowLine });
-  }
-  return Object.keys(page).length > 0 ? (page as PrtfPage) : undefined;
+function isDspf(document: vscode.TextDocument): boolean {
+  return resolveDdsType(document.uri.fsPath) === "DDS-DSPF";
 }
 
 function documentLines(document: vscode.TextDocument): string[] {
@@ -65,19 +50,23 @@ function render(current: PreviewSession): void {
       ? vscode.window.activeTextEditor.selection.active.line + 1
       : undefined;
 
-  const layout = resolvePrtfLayout(documentLines(current.document), {
-    ...(resolvePage() ? { page: resolvePage() } : {})
-  });
+  const layout = resolveDspfLayout(documentLines(current.document));
 
-  current.panel.webview.html = buildPrtfPreviewHtml(layout, {
+  current.panel.webview.html = buildDspfPreviewHtml(layout, {
     cspSource: current.panel.webview.cspSource,
     nonce: createNonce(),
-    title: current.document.uri.fsPath.split(/[\\/]/u).pop() ?? "PRTF",
+    title: current.document.uri.fsPath.split(/[\\/]/u).pop() ?? "DSPF",
     ...(activeLine !== undefined ? { activeSourceLine: activeLine } : {})
   });
 }
 
-/** 画面から項目を動かしたときの書き戻し。 */
+/**
+ * 画面から項目を動かしたときの書き戻し。
+ *
+ * 帳票と違い**確認を挟まない**。帳票の確認は「行番号を書くと SPACE/SKIP が
+ * 無効になる」という印刷装置ファイル固有の意味論に由来するもので、
+ * DSPF の位置は常に絶対なので確認する内容が無い。
+ */
 async function moveItem(
   current: PreviewSession,
   sourceLine: number,
@@ -93,37 +82,11 @@ async function moveItem(
   }
 
   const original = current.document.lineAt(index).text;
-
-  // 元々位置欄に行番号が無かった項目に絶対行を書くと、
-  // 「順序と SPACE/SKIP で流れる帳票」が「固定行の帳票」に変質する。
-  if (!hasExplicitRow(original)) {
-    const answer = await vscode.window.showWarningMessage(
-      `${sourceLine} 行目は行番号を使わず SPACE/SKIP で流れています。` +
-        "行番号を書くと意味が変わり、原典では SPACE/SKIP が無効になります。続けますか。",
-      { modal: true },
-      "行番号を書く",
-      "桁だけ変える"
-    );
-    if (answer === undefined) return;
-    if (answer === "桁だけ変える") {
-      await applyLine(current, index, writeBackPosition({ line: original, column }));
-      return;
-    }
-  }
-
-  await applyLine(current, index, writeBackPosition({ line: original, row, column }));
-}
-
-async function applyLine(
-  current: PreviewSession,
-  index: number,
-  text: string
-): Promise<void> {
   const edit = new vscode.WorkspaceEdit();
   edit.replace(
     current.document.uri,
     current.document.lineAt(index).range,
-    text
+    writeBackPosition({ line: original, row, column })
   );
   await vscode.workspace.applyEdit(edit);
 }
@@ -136,7 +99,7 @@ function openPreview(document: vscode.TextDocument): void {
 
   const panel = vscode.window.createWebviewPanel(
     VIEW_TYPE,
-    "帳票プレビュー",
+    "画面プレビュー",
     { viewColumn: vscode.ViewColumn.Beside, preserveFocus: true },
     { enableScripts: true, retainContextWhenHidden: true }
   );
@@ -181,13 +144,13 @@ function openPreview(document: vscode.TextDocument): void {
   render(current);
 }
 
-export function registerPrtfPreview(context: vscode.ExtensionContext): void {
+export function registerDspfPreview(context: vscode.ExtensionContext): void {
   context.subscriptions.push(
-    vscode.commands.registerCommand("rpgClSupport.showPrtfPreview", () => {
+    vscode.commands.registerCommand("rpgClSupport.showDspfPreview", () => {
       const editor = vscode.window.activeTextEditor;
-      if (!editor || !isPrtf(editor.document)) {
+      if (!editor || !isDspf(editor.document)) {
         void vscode.window.showInformationMessage(
-          "帳票プレビューは .prtf のファイルで実行してください。"
+          "画面プレビューは .dspf / .mnudds のファイルで実行してください。"
         );
         return;
       }

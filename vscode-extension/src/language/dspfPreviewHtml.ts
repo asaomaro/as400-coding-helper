@@ -1,28 +1,26 @@
 import type {
-  LayoutDiagnostic,
-  PlacedItem,
-  PrtfLayout
-} from "../core/dds/prtfLayout";
+  DspfDiagnostic,
+  DspfLayout,
+  DspfPlacedItem
+} from "../core/dds/dspfLayout";
 import { buildRuler, escapeHtml } from "./ddsPreviewHtmlShared";
 
-// 目盛りは DSPF と共有する。既存の参照元（テスト）のために再エクスポートする。
-export { buildRuler };
-
 /**
- * 帳票レイアウト → WebView の HTML。
+ * 画面レイアウト → WebView の HTML。
  *
  * **vscode を import しない**（文字列を返すだけ）。単体テストで桁を検査できる。
  *
- * ■ 桁は計算で決めて箱を固定する
- *   等幅フォントでも全角がちょうど 2 倍幅になる保証は無く、環境で変わる。
+ * ■ 桁は計算で決めて箱を固定する（PRTF と同じ考え方）
+ *   等幅フォントでも全角がちょうど 2 倍幅になる保証は無い。
  *   **計算した桁が正、表示は箱に収める**（`overflow: hidden`）。
- *   はみ出したら見た目で分かり、それ自体が「幅が足りない」という情報になる。
  *
- *   位置と幅は `--cell`（1 桁の幅）の整数倍で置く。`ch` は等幅フォントの
- *   `0` の幅なので、半角 1 文字＝1 桁に対応する。
+ * ■ 属性文字を描く（DSPF 固有）
+ *   属性文字はソースに書かれていないのに画面の桁を消費する。
+ *   これを描かないと「なぜ隣に項目を置けないのか」が分からない。
+ *   項目の前後 1 桁に淡いマーカーを出す。
  */
 
-export interface PrtfPreviewHtmlOptions {
+export interface DspfPreviewHtmlOptions {
   readonly cspSource: string;
   readonly nonce: string;
   /** 見出しに出すファイル名。 */
@@ -31,18 +29,18 @@ export interface PrtfPreviewHtmlOptions {
   readonly activeSourceLine?: number;
 }
 
-export function buildPrtfPreviewHtml(
-  layout: PrtfLayout,
-  options: PrtfPreviewHtmlOptions
+export function buildDspfPreviewHtml(
+  layout: DspfLayout,
+  options: DspfPreviewHtmlOptions
 ): string {
-  const { page } = layout;
+  const { screen } = layout;
 
   return `<!DOCTYPE html>
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
   <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'nonce-${options.nonce}'; style-src ${options.cspSource} 'unsafe-inline';">
-  <title>帳票プレビュー - ${escapeHtml(options.title)}</title>
+  <title>画面プレビュー - ${escapeHtml(options.title)}</title>
   <style>
     :root {
       /* 1 桁の幅。全角はこの 2 倍を占めるものとして桁を計算済み。 */
@@ -56,27 +54,20 @@ export function buildPrtfPreviewHtml(
       margin: 0;
     }
     .toolbar { margin-bottom: 8px; font-family: sans-serif; font-size: 12px; }
-    .paper {
+    .screen {
       position: relative;
-      width: calc(var(--cell) * ${page.columns});
-      height: calc(var(--line-height) * ${page.rows});
+      width: calc(var(--cell) * ${screen.columns});
+      height: calc(var(--line-height) * ${screen.rows});
       border: 1px solid var(--vscode-panel-border, #888);
       background: var(--vscode-editor-background, #1e1e1e);
       overflow: hidden;
     }
     .ruler {
       position: relative;
-      width: calc(var(--cell) * ${page.columns});
+      width: calc(var(--cell) * ${screen.columns});
       white-space: pre;
       opacity: 0.6;
       user-select: none;
-    }
-    .overflow-line {
-      position: absolute;
-      left: 0;
-      width: 100%;
-      border-top: 1px dashed var(--vscode-editorWarning-foreground, #cca700);
-      opacity: 0.7;
     }
     .item {
       position: absolute;
@@ -92,12 +83,20 @@ export function buildPrtfPreviewHtml(
     .item.field { background: var(--vscode-editor-selectionBackground, #264f78); }
     .item.unknown-width {
       background: transparent;
-      border-left: 2px solid var(--vscode-editorWarning-foreground, #cca700);
-      padding-left: 2px;
+      border: 1px dashed var(--vscode-editorWarning-foreground, #cca700);
     }
     .item.active { outline: 1px solid var(--vscode-focusBorder, #007acc); }
     .item.movable { cursor: move; }
     .item.dragging { opacity: 0.5; }
+    /* 属性文字。ソースに無いが画面の桁を消費するもの。 */
+    .attribute {
+      position: absolute;
+      height: var(--line-height);
+      width: var(--cell);
+      background: var(--vscode-editorWarning-foreground, #cca700);
+      opacity: 0.18;
+      pointer-events: none;
+    }
     .drop-hint {
       position: absolute;
       font-family: sans-serif;
@@ -108,25 +107,27 @@ export function buildPrtfPreviewHtml(
       pointer-events: none;
       white-space: nowrap;
     }
-    .diagnostics { margin-top: 10px; font-family: sans-serif; font-size: 12px; }
-    .diagnostics li { margin-bottom: 2px; }
+    .notes, .diagnostics { margin-top: 10px; font-family: sans-serif; font-size: 12px; }
+    .notes li, .diagnostics li { margin-bottom: 2px; }
+    .notes { opacity: 0.85; }
     .empty { opacity: 0.7; font-family: sans-serif; }
   </style>
 </head>
 <body>
   <div class="toolbar">
-    ${escapeHtml(options.title)} — ${page.rows} 行 × ${page.columns} 桁
-    （オーバーフロー行 ${page.overflowLine}）
+    ${escapeHtml(options.title)} — ${screen.rows} 行 × ${screen.columns} 桁
+    ${describeScreenSource(layout)}
   </div>
-  <div class="ruler">${escapeHtml(buildRuler(page.columns))}</div>
-  <div class="paper">
-    ${buildOverflowMarker(page.overflowLine, page.rows)}
+  <div class="ruler">${escapeHtml(buildRuler(screen.columns))}</div>
+  <div class="screen">
+    ${layout.items.map(item => renderAttributes(item, screen.columns)).join("\n    ")}
     ${layout.items.map(item => renderItem(item, options.activeSourceLine)).join("\n    ")}
   </div>
+  ${renderNotes(layout)}
   ${renderDiagnostics(layout.diagnostics)}
   <script nonce="${options.nonce}">
     const vscode = acquireVsCodeApi();
-    const paper = document.querySelector('.paper');
+    const screen = document.querySelector('.screen');
 
     // 1 桁・1 行の実寸を測る。CSS の calc と同じ値になるよう、
     // 実際に描かれた項目の位置から逆算する（フォント差の影響を受けない）。
@@ -136,7 +137,7 @@ export function buildPrtfPreviewHtml(
       const column = Number(probe.dataset.column);
       const row = Number(probe.dataset.row);
       const rect = probe.getBoundingClientRect();
-      const base = paper.getBoundingClientRect();
+      const base = screen.getBoundingClientRect();
       return {
         cell: column > 1 ? (rect.left - base.left) / (column - 1) : rect.width,
         line: row > 1 ? (rect.top - base.top) / (row - 1) : rect.height
@@ -148,7 +149,7 @@ export function buildPrtfPreviewHtml(
       if (!hint) {
         hint = document.createElement('div');
         hint.className = 'drop-hint';
-        paper.appendChild(hint);
+        screen.appendChild(hint);
       }
       hint.style.left = x + 'px';
       hint.style.top = y + 'px';
@@ -161,7 +162,7 @@ export function buildPrtfPreviewHtml(
 
     /** 落とした位置を桁・行に直す。桁は計算で決める（見た目に合わせない）。 */
     function toCell(event) {
-      const base = paper.getBoundingClientRect();
+      const base = screen.getBoundingClientRect();
       const { cell, line } = cellSize();
       return {
         row: Math.max(1, Math.round((event.clientY - base.top) / line) + 1),
@@ -189,18 +190,20 @@ export function buildPrtfPreviewHtml(
       });
     });
 
-    paper.addEventListener('dragover', event => {
+    screen.addEventListener('dragover', event => {
       event.preventDefault();
       event.dataTransfer.dropEffect = 'move';
       const at = toCell(event);
-      const base = paper.getBoundingClientRect();
+      const base = screen.getBoundingClientRect();
+      // 1 桁目は属性文字のために予約されているので、落とし先の目安として示す。
+      const warn = at.column <= 1 ? ' ※1 桁目は属性文字用' : '';
       showHint(event.clientX - base.left + 8, event.clientY - base.top + 8,
-        at.row + ' 行 ' + at.column + ' 桁');
+        at.row + ' 行 ' + at.column + ' 桁' + warn);
     });
 
-    paper.addEventListener('dragleave', hideHint);
+    screen.addEventListener('dragleave', hideHint);
 
-    paper.addEventListener('drop', event => {
+    screen.addEventListener('drop', event => {
       event.preventDefault();
       hideHint();
       const sourceLine = Number(event.dataTransfer.getData('text/plain'));
@@ -213,12 +216,36 @@ export function buildPrtfPreviewHtml(
 </html>`;
 }
 
-function buildOverflowMarker(overflowLine: number, rows: number): string {
-  if (overflowLine < 1 || overflowLine > rows) return "";
-  return `<div class="overflow-line" style="top: calc(var(--line-height) * ${overflowLine});" title="オーバーフロー行 ${overflowLine}"></div>`;
+function describeScreenSource(layout: DspfLayout): string {
+  if (!layout.sizes.declared) return "（DSPSIZ 省略のため既定の 24×80）";
+  const name = layout.sizes.primary.conditionName;
+  return name ? `（DSPSIZ の 1 次画面 ${escapeHtml(name)}）` : "（DSPSIZ の 1 次画面）";
 }
 
-function renderItem(item: PlacedItem, activeSourceLine?: number): string {
+/**
+ * 開始属性文字・終了属性文字のマーカー。
+ *
+ * 画面の外に出る分は描かない（箱の中だけを描く）。
+ */
+function renderAttributes(item: DspfPlacedItem, columns: number): string {
+  const marks: string[] = [];
+  const put = (column: number, label: string): void => {
+    if (column < 1 || column > columns) return;
+    marks.push(
+      `<div class="attribute" style="top: calc(var(--line-height) * ${item.row - 1});` +
+        ` left: calc(var(--cell) * ${column - 1});" title="${escapeHtml(label)}"></div>`
+    );
+  };
+
+  put(item.occupancy.start, "開始属性文字（画面の桁を 1 つ消費します）");
+  // 幅不明のときは終端が決まらないので、終了属性文字は描かない。
+  if (item.width !== undefined) {
+    put(item.occupancy.end, "終了属性文字（次の項目の開始属性文字と共有できます）");
+  }
+  return marks.join("\n    ");
+}
+
+function renderItem(item: DspfPlacedItem, activeSourceLine?: number): string {
   const classes = ["item", item.kind];
   if (item.width === undefined) classes.push("unknown-width");
   if (activeSourceLine === item.sourceLine) classes.push("active");
@@ -230,7 +257,8 @@ function renderItem(item: PlacedItem, activeSourceLine?: number): string {
   const title =
     item.width === undefined
       ? `${label}（幅不明: ${describeUnknown(item)}）`
-      : `${label}（${item.row} 行 ${item.column} 桁 / ${item.width} 桁）`;
+      : `${label}（${item.row} 行 ${item.column} 桁 / ${item.width} 桁` +
+        ` / 属性文字を含め ${item.occupancy.start}-${item.occupancy.end} 桁）`;
 
   return `<div class="${classes.join(" ")}" data-source-line="${item.sourceLine}"
       data-row="${item.row}" data-column="${item.column}" draggable="true"
@@ -238,7 +266,7 @@ function renderItem(item: PlacedItem, activeSourceLine?: number): string {
       title="${escapeHtml(title)}">${escapeHtml(label)}</div>`;
 }
 
-function describeUnknown(item: PlacedItem): string {
+function describeUnknown(item: DspfPlacedItem): string {
   switch (item.widthUnknownReason) {
     case "reference":
       return "REF で参照している（このファイルに桁数が無い）";
@@ -251,7 +279,44 @@ function describeUnknown(item: PlacedItem): string {
   }
 }
 
-function renderDiagnostics(diagnostics: readonly LayoutDiagnostic[]): string {
+/**
+ * 解決できなかったものを件数で示す。
+ *
+ * 「描けていないものが描けたように見える」ことを避けるための注記。
+ */
+function renderNotes(layout: DspfLayout): string {
+  const notes: string[] = [];
+
+  const unknownWidth = layout.items.filter(item => item.width === undefined).length;
+  if (unknownWidth > 0) {
+    notes.push(`幅が分からない項目が ${unknownWidth} 件あります（破線の枠で位置だけ示しています）`);
+  }
+
+  const relative = layout.diagnostics.filter(
+    diagnostic => diagnostic.code === "relative-position-unresolved"
+  ).length;
+  if (relative > 0) {
+    notes.push(`相対桁（+n）の項目が ${relative} 件あり、描画していません`);
+  }
+
+  if (layout.sizes.secondary) {
+    const { rows, columns } = layout.sizes.secondary.size;
+    notes.push(`2 次画面サイズ（${rows}×${columns}）があります。ここでは 1 次画面だけを描いています`);
+  }
+
+  notes.push(
+    "表示桁数は プログラム桁数 で描いています" +
+      "（キーボード・シフトによる拡大は見ていないため、実機より狭く出ることがあります）"
+  );
+
+  return `<div class="notes">
+    <ul>
+      ${notes.map(note => `<li>${escapeHtml(note)}</li>`).join("\n      ")}
+    </ul>
+  </div>`;
+}
+
+function renderDiagnostics(diagnostics: readonly DspfDiagnostic[]): string {
   if (diagnostics.length === 0) {
     return '<div class="diagnostics empty">指摘はありません。</div>';
   }
@@ -268,4 +333,3 @@ function renderDiagnostics(diagnostics: readonly LayoutDiagnostic[]): string {
     </ul>
   </div>`;
 }
-
