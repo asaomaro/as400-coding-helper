@@ -22,6 +22,54 @@ import { readFileSync, writeFileSync, readdirSync, existsSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
+/**
+ * `attributes` のキー順を正規化する。
+ *
+ * この生成器は `{ ...target.attributes, key: value }` を何度も重ねて属性を足す。
+ * オブジェクトのキー順は挿入順なので、**どの分岐を通ったかで最終的な順序が変わる**。
+ * 中身が同じでも順序だけ違う JSON が生まれ、CI の「再生成しても差分が出ないこと」が
+ * 落ちる（実際に 87 ファイルが順序だけの差分で落ちていた）。
+ *
+ * 順序は `src/prompter/types.ts` の ParameterAttributes の宣言順に合わせる。
+ * アルファベット順にしないのは、関連する属性（minValue/maxValue など）を
+ * 並べて読めるようにするため。未知のキーは末尾にアルファベット順で置く
+ * （属性が増えたときに黙って落とさない）。
+ */
+const ATTRIBUTE_ORDER = [
+  "restricted",
+  "characterSet",
+  "numericOnly",
+  "minLength",
+  "maxLength",
+  "minValue",
+  "maxValue",
+  "allowsVariable",
+  "valueRelation"
+];
+
+function sortAttributes(attributes) {
+  const keys = Object.keys(attributes);
+  const known = ATTRIBUTE_ORDER.filter(key => keys.includes(key));
+  const unknown = keys.filter(key => !ATTRIBUTE_ORDER.includes(key)).sort();
+  const sorted = {};
+  for (const key of [...known, ...unknown]) sorted[key] = attributes[key];
+  return sorted;
+}
+
+/** 定義全体（入れ子の children も含む）の attributes を正規化する。 */
+function normalizeAttributeOrder(definition) {
+  const walk = parameters => {
+    for (const parameter of parameters ?? []) {
+      if (parameter.attributes) {
+        parameter.attributes = sortAttributes(parameter.attributes);
+      }
+      walk(parameter.children);
+    }
+  };
+  walk(definition.parameters);
+  return definition;
+}
+
 // 数値として扱う実機のデータ型（DTD の Type）。
 const NUMERIC_TYPES = new Set(["DEC", "INT2", "INT4", "UINT2", "UINT4"]);
 
@@ -437,7 +485,13 @@ for (const file of readdirSync(CMDDEF).filter(n => n.endsWith(".xml")).sort()) {
 
     if (changed) {
       wroteAny = true;
-      if (!DRY) writeFileSync(path, `${JSON.stringify(definition, null, 2)}\n`, "utf8");
+      if (!DRY) {
+        writeFileSync(
+          path,
+          `${JSON.stringify(normalizeAttributeOrder(definition), null, 2)}\n`,
+          "utf8"
+        );
+      }
     }
   }
 
