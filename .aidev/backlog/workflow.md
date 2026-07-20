@@ -28,8 +28,12 @@ priority: 2           # cl(1) の次。設計書: docs/workflow/ibmi-dev-workflo
 
 ## P2: 品質向上
 
-- [ ] lint core パッケージを作る（桁検査） — 本 PJ の桁定義を使う VS Code 非依存
-      パッケージ。まず RPG/DDS の桁位置検査（設計書 4.3）
+- [x] lint core パッケージを作る（桁検査） — 2026-07-20 PR#101 でマージ。
+      `src/lint/` (vscode 非依存) ＋ CLI(SARIF) ＋ 編集中の診断。判定の共有は
+      `src/core/` に切り出した。**規則は 3 つだけ既定 ON**（`line-length` /
+      `numeric-field` / `numeric-alignment`）。要件の 4 項目のうち「必須欄の未入力」と
+      「定義済み値以外」は、実機コンパイル確認済み 1060 行への実測で 30 件の偽陽性が
+      出たため既定 OFF で枠だけ用意した（下の follow-up 参照）
 - [ ] lint core にキーワード使用レベル検査を足す — DDS の file/record/field レベル
       （依存: 上の桁検査）
 - [ ] 任意 CL 実行・IFS 書き込みを MCP に配線する (repo:as400-web-emulator) —
@@ -46,6 +50,26 @@ priority: 2           # cl(1) の次。設計書: docs/workflow/ibmi-dev-workflo
       すべて `**free` で固定長の実例が無い。本 PJ の対象は固定長なので要確認
       (needs: RPGUnit の pub400 導入可否を確認する)
 - [ ] clPrompter との F4 衝突を確認する — 併用時の keybinding 挙動（設計書 7 章 #3）
+- [ ] lint の値集合を修復して `restricted-value` を有効にする — 原典が有効値の一覧の
+      **直後の「注」**で DBCS のデータ・タイプ(J/E/O/G)を足しており生成器が読めていない。
+      表示装置 38 桁目は「ブランクまたは 0」で 1 文字の正規表現に合わず両方落ちている。
+      実機が受けるのに原典に無い値もある(`CUSTMNT.dspf` の 38 桁 "O")。
+      `generate-dds-prompter.mjs` の注記解析＋実機での裏取りが要る (needs: lint core パッケージを作る（桁検査）)
+- [ ] RPG III の桁属性を実機で確定する — `numericOnly` の欄が定義に 1 つも無く、
+      `.rpg`/`.sqlrpg` には `line-length` しか届かない。RPG/400 Reference が入手できない
+      ため原典照合ができず、実機のコンパイラに判定させる（`probe-rpg3-opcodes.sh` の手法）
+- [ ] CI の「再生成しても差分が出ないこと」を直す — **PR#95 以降 main がずっと赤い**。
+      (1) 再生成ステップが `generate-cdml-rules.mjs` を呼んでおらず CDML 由来データ
+      (`dependencies`/`valueMap`) が消える（401 ファイル差分） (2) それを直しても
+      `attributes` のキー順が再現せず 87 ファイル差分が残る（中身は同一）。
+      生成器のキー順を正規化して全件再生成する必要がある
+- [ ] `docs/src/` の未検証サンプルを実機で確かめる — `CHECKLIST.md` は「すべて
+      コンパイル確認済み」と書くが「作成物」欄は 6 件しか埋まっていない。lint は
+      `EMPMNT01.rpgle` に 12 件・`SLSENT01.rpgle` に 18 件を検出しており、D 仕様書の
+      長さ欄が 33-39 桁に収まっていない疑いがある（確認済みの `IOSAMP.rpgle` は規定どおり）。
+      真陽性なら**サンプルの方を直す**。あわせて CHECKLIST の記述と実態を一致させる
+- [ ] `positionResolver` に RPG 注記行のガードを足す — `ruler.ts:573` にはあるが
+      `positionResolver` に無く、`     H* コメント` に F4 を当てると `H-SPEC` が開く
 
 ## P3: 将来
 
