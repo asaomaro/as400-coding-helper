@@ -104,7 +104,7 @@
 - [x] T20: `package.json` にコマンド・設定を登録する。
       `verify-contributes.mjs` との整合を確認する（拡張子の発火条件）。
       **受け入れ**: `npm run verify` が通る（依存: T16）
-- [ ] T21: **IBM i Renderer との共存を確認**する。両方を入れた状態で、
+- [x] T21: **IBM i Renderer との共存を確認**する。両方を入れた状態で、
       互いのコマンド・プレビューが干渉しないこと。
       `docs/src/CHECKLIST.md` に手順を足す。
       **受け入れ**: 手動確認の結果を記録（依存: T20）
