@@ -14,30 +14,30 @@
       **表を手で書かない**。
       **受け入**: `1`-`4` / `A`-`D` / `J`-`Q` / `W`-`Z` の 20 コードが入る／
       2 回生成しても差分ゼロ（依存: T1）
-- [ ] T3: `docs/origin/verify-dds-editcodes.mjs` を追加し、**原典に現れるコードが
+- [x] T3: `docs/origin/verify-dds-editcodes.mjs` を追加し、**原典に現れるコードが
       漏れなく JSON にあること**を検査する。`npm run verify:defs` に足す。
       **受け入れ**: 検査が通る／JSON からコードを 1 つ削ると落ちる（依存: T2）
 
 ## ② core/dbcs.ts（振る舞い不変の移設＋新規）
 
-- [ ] T4: `src/core/dbcs.ts` を新設し、`isDbcsCodePoint` を
+- [x] T4: `src/core/dbcs.ts` を新設し、`isDbcsCodePoint` を
       `language/dbcsShiftMarkers.ts` から移す。あちらは import に変える。
       **非 export・利用元 1 箇所**なので公開面は変わらない。
       **受け入れ**: 既存テストが通る／SOSI 表示の挙動が変わらない
-- [ ] T5: `core/dbcs.ts` に `printWidth(text)` を実装する。
+- [x] T5: `core/dbcs.ts` に `printWidth(text)` を実装する。
       DBCS の連なりごとに **SO(1) + 全角×2 + SI(1)** を足す。
       **受け入れ**: `'顧客一覧表'`=12 / `'ABC'`=3 / `'A顧客B'`=8 / 空文字=0 /
       DBCS が複数箇所に分かれる場合（依存: T4）
 
 ## ③ core/dds/editCode.ts
 
-- [ ] T6: `src/core/dds/editCode.ts` に `editCodeAttributes(code)`（生成 JSON を読む）と
+- [x] T6: `src/core/dds/editCode.ts` に `editCodeAttributes(code)`（生成 JSON を読む）と
       `editedWidth(length, decimals, code, option)` を実装する。
       幅は**属性から導出**する（コンマの数・小数点・符号・`*` 充てん・浮動通貨記号）。
       `5`-`9` は `{kind:"unknown", reason:"user-defined"}`。
       35 桁目が `S`/ブランク以外なら `not-numeric`。
       **受け入れ**: 単体テスト（依存: T2）
-- [ ] T7: **原典の 20 コードすべて**に単体テストを書く。
+- [x] T7: **原典の 20 コードすべて**に単体テストを書く。
       **受け入れ**: 20 コード分の期待値がある／`5`-`9` が `unknown`／
       `*` 充てんと浮動通貨記号の分の桁が乗る（依存: T6）
 
