@@ -1,5 +1,7 @@
 import * as vscode from "vscode";
 import type { Dialect, LanguageId, PrompterDefinition } from "./types";
+// 定義の置き場所の知識は core/definitionLayout に集約する（lint core と共有）。
+import { definitionFileName, definitionSubPath } from "../core/definitionLayout";
 
 /**
  * CL 定義の表示言語。設定 `rpgClSupport.language` で切り替える。
@@ -24,10 +26,6 @@ export function resolveDefinitionLanguage(): "ja" | "en" {
  */
 const bundledCache = new Map<string, PrompterDefinition | null>();
 
-/** 定義ファイル名はキーワードそのもの（全 288 定義で一致することを検査済み）。 */
-function definitionFileName(keyword: string): string {
-  return `${keyword}.json`;
-}
 
 export class PrompterDefinitionLoader {
   private async loadDefinitionFromUri(uri: vscode.Uri): Promise<PrompterDefinition> {
@@ -156,15 +154,7 @@ export class PrompterDefinitionLoader {
   }
 
   private resolveSubPath(language: LanguageId, dialect: Dialect | undefined): string[] {
-    if (language === "rpg-fixed") {
-      // RPG も言語別に分ける。ただし RPG III は英語原典が無く英語版を作れない
-      // ため、読み込み側で日本語版に落ちる（loadDefinition の fallback）。
-      return ["rpg", dialect ?? "ile", resolveDefinitionLanguage()];
-    }
-    // .cmd の文は CL コマンドではないので別に置く。混ぜると CL の
-    // プロンプターに PARM や QUAL が出てしまう。DDS も同様に分ける。
-    const kind = language === "cmd" ? "cmd" : language === "dds" ? "dds" : "cl";
-    return [kind, resolveDefinitionLanguage()];
+    return definitionSubPath(language, dialect, resolveDefinitionLanguage());
   }
 
   private overrideDirs(

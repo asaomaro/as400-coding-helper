@@ -1,5 +1,6 @@
 import * as vscode from "vscode";
 import { resolveDefinitionLanguage } from "../prompter/jsonDefinitions";
+import { resolveDdsType, type DdsType } from "../core/sourceKind";
 
 /**
  * DDS のキーワード補完。
@@ -28,8 +29,6 @@ interface DdsKeyword {
   /** パラメータを取るか。false なら括弧を付けない。 */
   readonly hasParameters?: boolean;
 }
-
-type DdsType = "DDS-PF" | "DDS-DSPF" | "DDS-PRTF";
 
 /** キーワード項目の開始桁（1 始まり）。ここより手前では補完を出さない。 */
 const KEYWORD_COLUMN = 45;
@@ -87,14 +86,9 @@ export function resolveDdsLevel(
 let cache: Map<DdsType, readonly DdsKeyword[]> | undefined;
 let cacheLanguage: string | undefined;
 
-/** 拡張子から DDS の種別を決める（ルーラーの specFamily と同じ規約）。 */
-export function resolveDdsType(fsPath: string): DdsType | undefined {
-  const lower = fsPath.toLowerCase();
-  if (/\.(pf|lf)$/u.test(lower)) return "DDS-PF";
-  if (/\.(dspf|mnudds)$/u.test(lower)) return "DDS-DSPF";
-  if (/\.(prtf)$/u.test(lower)) return "DDS-PRTF";
-  return undefined;
-}
+// 拡張子から DDS の種別を決める判定は core/sourceKind に一本化した
+// （positionResolver の拡張子分岐と同じ知識のため）。既存の import 元を保つ。
+export { resolveDdsType };
 
 async function loadKeywords(
   context: vscode.ExtensionContext
