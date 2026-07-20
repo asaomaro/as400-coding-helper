@@ -189,6 +189,7 @@ const report = {
   skippedLength: 0,
   mixedCase: 0,
   occurrences: 0,
+  objectKinds: 0,
   noVariable: 0,
   relations: 0,
   normalizedValues: 0,
@@ -337,6 +338,26 @@ for (const file of readdirSync(CMDDEF).filter(n => n.endsWith(".xml")).sort()) {
         if (lang === "ja") report.occurrences += 1;
       }
 
+      // この欄が指すオブジェクトの種類。ワークスペースのソースから候補を出す。
+      // IsFile は入出力の別(IN/OUT/UNSPFD)を持つが、候補を出すうえでは同じ。
+      const objectKind =
+        parm.attrs.IsFile === "IN" ||
+        parm.attrs.IsFile === "OUT" ||
+        parm.attrs.IsFile === "UPD" ||
+        parm.attrs.IsFile === "INOUT" ||
+        parm.attrs.IsFile === "UNSPFD"
+          ? "file"
+          : parm.attrs.IsPgm === "YES"
+            ? "program"
+            : parm.attrs.IsDtaAra === "YES"
+              ? "dataArea"
+              : undefined;
+      if (objectKind && target.objectKind !== objectKind) {
+        target.objectKind = objectKind;
+        changed = true;
+        if (lang === "ja") report.objectKinds += 1;
+      }
+
       // CL 変数を書けない欄。既定は「書ける」なので NO のときだけ記録する。
       if (parm.attrs.AlwVar === "NO") {
         target.attributes = { ...(target.attributes ?? {}), allowsVariable: false };
@@ -430,6 +451,7 @@ console.log(`  promptControl ${report.promptControl} 件`);
 console.log(`  mapTo         ${report.mapTo} 件`);
 console.log(`  restricted:false（任意の値を書ける欄）  ${report.unrestricted} 件`);
 console.log(`  原典が取りこぼした選択肢の補完          ${report.addedValues} 件`);
+console.log(`  オブジェクトの種類(IsFile/IsPgm/IsDtaAra)  ${report.objectKinds} 件`);
 console.log(`  繰り返し上限(Max)の修正                  ${report.occurrences} 件`);
 console.log(`  CL 変数を書けない欄(AlwVar=NO)           ${report.noVariable} 件`);
 console.log(`  値の制約(Rel/RelVal)                    ${report.relations} 件`);

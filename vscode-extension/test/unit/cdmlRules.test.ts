@@ -9,6 +9,11 @@ import {
 } from "../../src/prompter/cdmlRules";
 import { buildInitialState, validate } from "../../src/prompter/model";
 import { buildHtml, toSerializableState } from "../../src/prompter/binding";
+import {
+  buildObjectCandidates,
+  objectKindOfExtension,
+  objectNameOfFile
+} from "../../src/prompter/workspaceObjects";
 import type { PrompterDefinition } from "../../src/prompter/types";
 
 /**
@@ -605,5 +610,75 @@ suite("CDML 由来の相関規則", () => {
       assert.equal(validate(target, String(bound)), undefined);
       assert.ok(validate(target, String(bound - 1)));
     }
+  });
+
+  /* ---------------------------------------------------------------- *
+   * オブジェクト名の候補（IsFile / IsPgm / IsDtaAra）
+   * ---------------------------------------------------------------- */
+
+  test("拡張子からオブジェクトの種類が決まる", () => {
+    assert.equal(objectKindOfExtension("pf"), "file");
+    assert.equal(objectKindOfExtension("DSPF"), "file");
+    assert.equal(objectKindOfExtension("rpgle"), "program");
+    assert.equal(objectKindOfExtension("clle"), "program");
+    assert.equal(objectKindOfExtension("md"), undefined);
+  });
+
+  test("オブジェクト名になり得ないファイル名は候補にしない", () => {
+    assert.equal(objectNameOfFile("MYPGM.rpgle"), "MYPGM");
+    assert.equal(objectNameOfFile("src/dir/orders.pf"), "ORDERS");
+    // 10 文字を超える名前は実機のオブジェクト名になり得ない。切り詰めると
+    // 存在しない名前を勧めることになる。
+    assert.equal(objectNameOfFile("VERYLONGNAME1.rpgle"), undefined);
+    // 数字始まりも不可。
+    assert.equal(objectNameOfFile("1BAD.rpgle"), undefined);
+  });
+
+  test("候補は種類ごとに重複なく並ぶ", () => {
+    const candidates = buildObjectCandidates([
+      "/w/MYPGM.rpgle",
+      "/w/other/MYPGM.clle",
+      "/w/ORDERS.pf",
+      "/w/CUST.lf",
+      "/w/readme.md"
+    ]);
+    assert.deepEqual(candidates.program, ["MYPGM"]);
+    assert.deepEqual(candidates.file, ["CUST", "ORDERS"]);
+    assert.equal(candidates.dataArea, undefined);
+  });
+
+  test("オブジェクト欄に候補が紐づく（画面まで届く）", () => {
+    // 定義に objectKind があるだけでは死蔵。datalist と list= が出て初めて効く。
+    const definition = loadCl("CRTBNDRPG");
+    const state = buildInitialState(definition, {});
+    const html = buildHtml(
+      toSerializableState(
+        definition,
+        state,
+        { keyword: definition.keyword, language: "cl", line: 0 } as never,
+        { program: ["MYPGM"], file: ["QRPGLESRC"] }
+      ),
+      { cspSource: "x", nonce: "n" }
+    );
+    assert.ok(html.includes('<datalist id="objects-file"'), "datalist が出ている");
+    assert.ok(html.includes('list="objects-file"'), "欄に list= が付いている");
+    assert.ok(html.includes('<option value="QRPGLESRC">'), "候補が並んでいる");
+  });
+
+  test("CL 変数が入力欄の maxlength で打ち切られない", () => {
+    // MSGID は maxLength 7。maxlength をそのまま出すと &MSGIDVAR と書けない。
+    const definition = loadCl("SNDPGMMSG");
+    const html = buildHtml(
+      toSerializableState(definition, buildInitialState(definition, {}), {
+        keyword: definition.keyword,
+        language: "cl",
+        line: 0
+      } as never),
+      { cspSource: "x", nonce: "n" }
+    );
+    const msgid = html.match(/<input[^>]*name="MSGID"[^>]*>/);
+    assert.ok(msgid, "MSGID の入力欄がある");
+    const max = msgid![0].match(/maxlength="(\d+)"/);
+    assert.ok(max && Number(max[1]) >= 11, `maxlength が 11 以上（実際: ${max?.[1]}）`);
   });
 });

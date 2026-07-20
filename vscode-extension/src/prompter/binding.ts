@@ -13,6 +13,7 @@ import {
   createCdmlEvaluator,
   type CdmlEvaluatorSpec
 } from "./cdmlRules";
+import type { ObjectCandidates } from "./workspaceObjects";
 
 export interface SerializableField {
   readonly name: string;
@@ -39,6 +40,10 @@ export interface SerializableField {
   readonly dependsOn?: readonly ParameterDependency[];
   /** CDML(PMTCTL) 由来の条件表示規則。クライアント側で入力のたび再評価する。 */
   readonly promptControl?: readonly PromptControlGroup[];
+  /** この欄が指すオブジェクトの種類。候補一覧の紐付けに使う。 */
+  readonly objectKind?: "file" | "program" | "dataArea";
+  /** CL 変数(&NAME)を書けるか。入力欄の maxlength に効く。 */
+  readonly allowsVariable?: boolean;
   readonly disabled: boolean;
   readonly allowedValues?: readonly string[];
   /** 実機の F4 基本プロンプトに出ない「追加パラメータ」か。 */
@@ -62,6 +67,8 @@ export interface SerializablePrompterState {
   >;
   /** CDML(DEP/PMTCTL) の評価に要るデータ。同じ評価器をクライアントでも動かす。 */
   readonly evaluatorSpec?: CdmlEvaluatorSpec;
+  /** ワークスペースのソースから集めたオブジェクト名の候補。 */
+  readonly objectCandidates?: ObjectCandidates;
   /** 繰り返し指定の group（最後の一組にだけ「追加」ボタンを出すために使う）。 */
   readonly repeatableGroups?: Record<string, { readonly base: string; readonly max: number }>;
 }
@@ -115,7 +122,9 @@ export interface HtmlOptions {
 export function toSerializableState(
   definition: PrompterDefinition,
   state: PrompterState,
-  resolved: ResolvedPosition
+  resolved: ResolvedPosition,
+  // ワークスペースのソースから集めたオブジェクト名の候補（省略可）。
+  objectCandidates: ObjectCandidates = {}
 ): SerializablePrompterState {
   const groupInfoByChildName = new Map<
     string,
@@ -169,6 +178,7 @@ export function toSerializableState(
     commandHelp: buildCommandHelpText(definition),
     constraints: definition.constraints,
     evaluatorSpec: buildEvaluatorSpec(definition),
+    objectCandidates,
     repeatableGroups: buildRepeatableGroups(definition, state),
     // 相関制約の「指定した」判定に既定値が要るため、対象パラメータの末端を渡す。
     constraintFields: definition.constraints?.length
@@ -220,6 +230,8 @@ export function toSerializableState(
       additional: additionalNames.has(field.parameter.name),
       dependsOn: field.parameter.dependsOn,
       promptControl: field.parameter.promptControl,
+      objectKind: field.parameter.objectKind,
+      allowsVariable: field.parameter.attributes?.allowsVariable,
       disabled: field.disabled,
       allowedValues: field.allowedValues
     }))
@@ -423,6 +435,14 @@ export function buildHtml(
   </div>
   <form id="prompter-form">
     <div id="constraint-errors" class="error constraint-errors" style="display:none"></div>
+${Object.entries(state.objectCandidates ?? {})
+  .map(
+    ([kind, names]) =>
+      `    <datalist id="objects-${escapeHtml(kind)}">${(names ?? [])
+        .map(name => `<option value="${escapeHtml(name)}"></option>`)
+        .join("")}</datalist>`
+  )
+  .join("\n")}
     ${fieldsHtml}
     ${
       state.fields.some(f => f.additional)
@@ -1287,6 +1307,10 @@ function buildFieldRuleAttributes(field: SerializableField): string {
     );
   }
 
+  if (field.objectKind) {
+    attributes.push(` data-object-kind="${escapeHtml(field.objectKind)}"`);
+  }
+
   if (field.promptControl?.length) {
     attributes.push(
       ` data-prompt-control="${escapeHtml(JSON.stringify(field.promptControl))}"`
@@ -1354,10 +1378,17 @@ ${itemsHtml}
   // number / text / group は単一行テキスト入力として扱う。
   // 幅は最大長に合わせる（固定長を扱うため、桁数の目安として意味がある）。
   const size = field.maxLength && field.maxLength > 0 ? Math.min(field.maxLength, 40) : undefined;
-  const sizeAttr = size ? ` size="${size}" maxlength="${field.maxLength}"` : "";
+  // **CL 変数(&NAME)は欄の長さより長くなりうる。** maxlength をそのまま出すと
+  // ブラウザが入力を打ち切り、MSGID(7 文字)のような短い欄に &MSGIDVAR と
+  // 書けなくなる。変数を書ける欄では 11 文字(& + 名前 10)まで許す。
+  const variableRoom = field.allowsVariable === false ? 0 : 11;
+  const inputMax = field.maxLength ? Math.max(field.maxLength, variableRoom) : undefined;
+  const sizeAttr = size ? ` size="${size}" maxlength="${inputMax}"` : "";
+  // オブジェクト名の候補（ワークスペースのソース由来）。実機には問い合わせない。
+  const listAttr = field.objectKind ? ` list="objects-${field.objectKind}"` : "";
   return `<input type="text" name="${escapeHtml(field.name)}" value="${escapeHtml(
     field.value
-  )}"${sizeAttr}${requiredAttr} />`;
+  )}"${sizeAttr}${listAttr}${requiredAttr} />`;
 }
 
 function escapeHtml(value: string): string {
