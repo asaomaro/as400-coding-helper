@@ -112,7 +112,7 @@
 
 ## ⑥ CI
 
-- [ ] T22: `.github/workflows/prompter-definitions.yml` に
-      `npm run verify:purity`・`node scripts/verify-lint-core.mjs`・
-      `docs/src/` の検証済み 6 ファイルへの lint 実行を足す。
-      **受け入れ**: ワークフローの各ステップがローカルで再現できる（依存: T6, T18, T21）
+- [x] T22: `.github/workflows/prompter-definitions.yml` に lint の実行を足す。
+      境界の検査（純粋性＋拡張子）は `verify-lint-core.mjs` が `npm run verify` から
+      呼ばれるので、CI に足すのは lint の実行のみ（`decisions.md` D1）。
+      **受け入れ**: クリーンビルドからローカルで再現でき、exit 0（依存: T6, T18, T21）
