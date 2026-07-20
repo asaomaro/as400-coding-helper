@@ -155,11 +155,17 @@ suite("lint: numeric-field / numeric-alignment", () => {
 });
 
 suite("lint: 規則の既定", () => {
-  test("既定で有効なのは 3 規則", () => {
+  test("既定で有効なのは 7 規則（行単位 3 ＋ レイアウト 4）", () => {
+    // レイアウトの 4 つは「実機で作成できないソースでしか出ない」と原典で
+    // 言い切れるものだけ（根拠は types.ts の RuleId に引用つきで書いてある）。
     assert.deepStrictEqual(defaultEnabledRules(), [
       "line-length",
       "numeric-field",
-      "numeric-alignment"
+      "numeric-alignment",
+      "layout-invalid-position",
+      "layout-column-one-reserved",
+      "layout-invalid-screen-size",
+      "layout-spacing-with-line-number"
     ]);
   });
 
@@ -170,12 +176,35 @@ suite("lint: 規則の既定", () => {
     }
   });
 
-  test("定位置の欄を見ない規則は行長だけ", () => {
-    const nonPositional = RULE_SPECS.filter(s => !s.positional);
+  test("行単位の規則のうち、定位置の欄を見ないものは行長だけ", () => {
+    const nonPositional = RULE_SPECS.filter(
+      s => s.kind === "line" && !s.positional
+    );
     assert.deepStrictEqual(
       nonPositional.map(s => s.id),
       ["line-length"]
     );
+  });
+
+  test("レイアウトの規則はファイル単位（行単位では書けない）", () => {
+    const fileRules = RULE_SPECS.filter(s => s.kind === "file").map(s => s.id);
+    assert.deepStrictEqual(fileRules, [
+      "layout-invalid-position",
+      "layout-column-one-reserved",
+      "layout-invalid-screen-size",
+      "layout-spacing-with-line-number",
+      "layout-overflow",
+      "layout-overlap"
+    ]);
+  });
+
+  test("有効なソースでも出る 2 つのレイアウト規則は既定で無効", () => {
+    // 原典が *NOLOC / オーバーラップの定義を認めているため、件数ではなく
+    // 性質として偽陽性になりうる（母数を増やしても解決しない）。
+    for (const id of ["layout-overflow", "layout-overlap"] as const) {
+      const spec = RULE_SPECS.find(s => s.id === id);
+      assert.strictEqual(spec?.enabledByDefault, false, `${id} は既定で無効`);
+    }
   });
 });
 
