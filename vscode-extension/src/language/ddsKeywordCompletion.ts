@@ -1,6 +1,14 @@
 import * as vscode from "vscode";
 import { resolveDefinitionLanguage } from "../prompter/jsonDefinitions";
+import { DDS_EXTENSIONS, toDocumentSelector } from "../utils/fileScope";
 import { resolveDdsType, type DdsType } from "../core/sourceKind";
+import {
+  DDS_COLUMNS,
+  ddsField,
+  isDdsCommentLine,
+  levelOfLine,
+  type DdsLevel
+} from "../core/ddsLayout";
 
 /**
  * DDS のキーワード補完。
@@ -33,21 +41,9 @@ interface DdsKeyword {
 /** キーワード項目の開始桁（1 始まり）。ここより手前では補完を出さない。 */
 const KEYWORD_COLUMN = 45;
 
-/**
- * DDS の使用レベル。キーワードはどのレベルで書けるかが決まっている。
- * 例: DSPSIZ はファイル・レベル、OVERLAY はレコード・レベル、COLOR はフィールド・レベル。
- */
-export type DdsLevel = "file" | "record" | "field" | "key" | "join" | "select" | "help";
-
-/** 名前タイプ欄（17 桁目）の値 → レベル。 */
-const NAME_TYPE_LEVEL: Readonly<Record<string, DdsLevel>> = {
-  R: "record",
-  K: "key",
-  S: "select",
-  O: "select",
-  J: "join",
-  H: "help"
-};
+// 使用レベルと 17 桁目の対応、桁の定義は ddsLayout に集約している
+// （キーワード補完とアウトラインで同じ規約を共有するため）。
+export type { DdsLevel } from "../core/ddsLayout";
 
 /**
  * その行が属するレベルを求める。
@@ -64,18 +60,17 @@ export function resolveDdsLevel(
     const text = lineAt(index);
 
     // 注記行は桁の意味を持たないので飛ばす。
-    if (text.length > 6 && text.charAt(6) === "*") {
+    if (isDdsCommentLine(text)) {
       continue;
     }
 
-    const nameType = (text.charAt(16) ?? " ").toUpperCase();
-    const level = NAME_TYPE_LEVEL[nameType];
+    const level = levelOfLine(text);
     if (level) {
       return level;
     }
 
     // 17 桁目が空でも名前があればフィールド。名前も無ければ続きの行なので遡る。
-    if (text.slice(18, 28).trim().length > 0) {
+    if (ddsField(text, DDS_COLUMNS.name).trim().length > 0) {
       return "field";
     }
   }
@@ -127,7 +122,7 @@ async function loadKeywords(
  * 注記行（7 桁目が `*`）では 8 桁目以降が本文なので補完しない。
  */
 export function isKeywordArea(line: string, character: number): boolean {
-  if (line.length > 6 && line.charAt(6) === "*") {
+  if (isDdsCommentLine(line)) {
     return false;
   }
   return character >= KEYWORD_COLUMN - 1;
@@ -210,11 +205,10 @@ export function registerDdsKeywordCompletion(
 
   // DDS は言語登録していない（拡張子だけで扱う方針）ため、
   // languageId ではなく scheme+pattern で対象を絞る。
+  // 拡張子は fileScope.ts の DDS_EXTENSIONS が単一の真実源（手書きの glob は
+  // 実際に `.dds` を落としていた）。
   return vscode.languages.registerCompletionItemProvider(
-    [
-      { scheme: "file", pattern: "**/*.{pf,lf,dspf,prtf,mnudds}" },
-      { scheme: "untitled", pattern: "**/*.{pf,lf,dspf,prtf,mnudds}" }
-    ],
+    toDocumentSelector(DDS_EXTENSIONS),
     provider
   );
 }

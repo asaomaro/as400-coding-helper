@@ -21,12 +21,62 @@ const ROOT = join(HERE, "../..");
 const EXT = join(ROOT, "vscode-extension");
 
 const source = readFileSync(join(EXT, "src/utils/fileScope.ts"), "utf8");
-const block = /TARGET_EXTENSIONS\s*=\s*\[([\s\S]*?)\]/u.exec(source);
-if (!block) {
+
+/** `NAME = [ "a", "b" ]` から拡張子の並びを取り出す。無ければ undefined。 */
+function readExtensionArray(name) {
+  const block = new RegExp(`${name}\\s*=\\s*\\[([\\s\\S]*?)\\]`, "u").exec(source);
+  if (!block) return undefined;
+  return [...block[1].matchAll(/"([a-z0-9]+)"/gu)].map(m => m[1]);
+}
+
+// TARGET_EXTENSIONS は用途別の集合（RPG/CL/DDS/CMD）の合成で、それ自体は
+// 文字列リテラルを持たない。合成元をそれぞれ読んで、宣言順に連結する。
+const PURPOSE_ARRAYS = [
+  "RPG_EXTENSIONS",
+  "CL_EXTENSIONS",
+  "DDS_EXTENSIONS",
+  "CMD_EXTENSIONS"
+];
+
+const extensions = [];
+for (const name of PURPOSE_ARRAYS) {
+  const values = readExtensionArray(name);
+  if (!values || values.length === 0) {
+    console.error(`✗ fileScope.ts の ${name} が読めない`);
+    process.exit(1);
+  }
+  extensions.push(...values);
+}
+
+// TARGET_EXTENSIONS に**直接**書かれた拡張子も拾う。合成に加えて
+// リテラルを並べる書き方に戻ったとき、その分が検査から静かに落ちないように。
+const literalBlock = /TARGET_EXTENSIONS\s*=\s*\[([\s\S]*?)\]/u.exec(source);
+for (const match of literalBlock?.[1].matchAll(/"([a-z0-9]+)"/gu) ?? []) {
+  if (!extensions.includes(match[1])) {
+    extensions.push(match[1]);
+  }
+}
+
+// 合成元の取りこぼしを検出する。TARGET_EXTENSIONS に新しい集合が足されたのに
+// PURPOSE_ARRAYS へ足し忘れると、検査対象が静かに減ってしまう。
+const composition = /TARGET_EXTENSIONS\s*=\s*\[([\s\S]*?)\]/u.exec(source);
+if (!composition) {
   console.error("✗ fileScope.ts の TARGET_EXTENSIONS が読めない");
   process.exit(1);
 }
-const extensions = [...block[1].matchAll(/"([a-z0-9]+)"/gu)].map(m => m[1]);
+const spread = [...composition[1].matchAll(/\.\.\.([A-Z_]+)/gu)].map(m => m[1]);
+const unknown = spread.filter(name => !PURPOSE_ARRAYS.includes(name));
+if (unknown.length > 0) {
+  console.error(`✗ TARGET_EXTENSIONS に未知の合成元: ${unknown.join(" ")}`);
+  console.error("  このスクリプトの PURPOSE_ARRAYS にも足すこと");
+  process.exit(1);
+}
+if (spread.length !== PURPOSE_ARRAYS.length) {
+  console.error(
+    `✗ TARGET_EXTENSIONS の合成元が ${spread.length} 件、検査側は ${PURPOSE_ARRAYS.length} 件`
+  );
+  process.exit(1);
+}
 
 const manifest = JSON.parse(readFileSync(join(EXT, "package.json"), "utf8"));
 const failures = [];

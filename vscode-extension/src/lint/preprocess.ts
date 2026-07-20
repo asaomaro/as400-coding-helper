@@ -7,6 +7,14 @@
  * 判定条件はいずれも原典由来（research.md F5 / F2）。
  */
 
+import {
+  DDS_COLUMNS,
+  ddsField,
+  ddsName,
+  isDdsBlankLine,
+  isDdsCommentLine
+} from "../core/ddsLayout";
+
 export type LineKind =
   /** 注記行。定位置の意味を持たない。 */
   | "comment"
@@ -18,24 +26,6 @@ export type LineKind =
   | "skipped";
 
 export type LintLanguage = "rpg-fixed" | "dds";
-
-/**
- * DDS の注記。原典 `物理ファイルおよび論理ファイルの注記 (7 桁目)` より:
- *   「7 桁目にアスタリスク (*) を入力すると、その行は注記として扱われ、
- *     8 から 80 桁目が注記本文として使用されます。
- *     ブランク行 (7 から 80 桁目に文字がまったく指定されていない行) も、
- *     注記として扱われます。」
- *
- * 既存コード（positionResolver / ruler / ddsKeywordCompletion）は `*` しか
- * 見ていないので、ブランク行の条件はここで足している。
- */
-function isDdsComment(text: string): boolean {
-  if (text.length > 6 && text.charAt(6) === "*") {
-    return true;
-  }
-  // 7-80 桁が全て空白ならブランク行＝注記。
-  return text.slice(6, 80).trim().length === 0;
-}
 
 /** RPG の注記は 7 桁目の `*`。空行も定位置として読む意味が無い。 */
 function isRpgComment(text: string): boolean {
@@ -50,10 +40,8 @@ function isRpgComment(text: string): boolean {
  * 直前のレコード／フィールドの続きで、定位置の欄は書かれていない。
  */
 function isDdsContinuation(text: string): boolean {
-  // charAt は範囲外で "" を返す（undefined にはならない）。
-  const nameType = text.charAt(16);
-  const name = text.slice(18, 28);
-  return nameType.trim().length === 0 && name.trim().length === 0;
+  const nameType = ddsField(text, DDS_COLUMNS.nameType);
+  return nameType.trim().length === 0 && ddsName(text).length === 0;
 }
 
 /**
@@ -76,7 +64,9 @@ export function classifyLine(
   specKeyword: string | undefined
 ): LineKind {
   if (language === "dds") {
-    if (isDdsComment(text)) return "comment";
+    // 原典はブランク行も注記として扱う。素の判定は ddsLayout が持ち、
+    // 「定位置として読めるか」の組み立てはここで行う（補完は空行でも候補を出したい）。
+    if (isDdsCommentLine(text) || isDdsBlankLine(text)) return "comment";
     if (isDdsContinuation(text)) return "continuation";
     return "checked";
   }

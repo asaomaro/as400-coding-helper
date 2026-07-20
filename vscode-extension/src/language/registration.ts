@@ -1,6 +1,8 @@
 import * as vscode from "vscode";
 import { registerDdsKeywordCompletion } from "./ddsKeywordCompletion";
 import { registerRpgCompletion } from "./rpgCompletion";
+import { registerDdsSymbols } from "./ddsSymbols";
+import { registerCmdSymbols } from "./cmdSymbols";
 import { RpgClDiagnostics } from "./diagnostics";
 import { registerRpgCommentToggle } from "./rpgCommentToggle";
 import { registerClCommentToggle } from "./clCommentToggle";
@@ -18,6 +20,11 @@ export function registerLanguageFeatures(
   context.subscriptions.push(registerDdsKeywordCompletion(context));
   // RPG の命令コード・組み込み関数・仕様書キーワードの補完。
   context.subscriptions.push(registerRpgCompletion(context));
+
+  // アウトライン（アウトラインタブ・パンくず・シンボルへ移動・記号検索）。
+  // RPG と CL は既存拡張（vscode-rpgle / vscode-clle）が対応済みなので提供しない。
+  context.subscriptions.push(registerDdsSymbols());
+  context.subscriptions.push(registerCmdSymbols());
 
   if (!diagnosticsInstance) {
     diagnosticsInstance = new RpgClDiagnostics();

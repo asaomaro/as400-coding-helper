@@ -7,6 +7,8 @@ import {
 } from "../../src/lint/rules/numericField";
 import { RULE_SPECS, defaultEnabledRules } from "../../src/lint/rules";
 import type { PrompterDefinition } from "../../src/prompter/types";
+import { isDdsBlankLine, isDdsCommentLine } from "../../src/core/ddsLayout";
+import { isKeywordArea } from "../../src/language/ddsKeywordCompletion";
 
 /** 長さ欄（30-34 桁・右寄せ必須）だけを持つ最小の定義。 */
 const DDS_LENGTH_DEF = {
@@ -174,5 +176,44 @@ suite("lint: 規則の既定", () => {
       nonPositional.map(s => s.id),
       ["line-length"]
     );
+  });
+});
+
+/**
+ * DDS の「注記」と「ブランク行」を素の判定として分けてあること。
+ *
+ * 原典はブランク行も注記として扱うが、**用途によって答えが違う**。
+ *   - 補完は空行でも候補を出したい（新しい行こそ補完が要る）
+ *   - lint は空行を検査対象から外したい
+ * 一度この 2 つを `isDdsCommentLine` に統合したところ、**新規行でキーワード補完が
+ * 出なくなった**（テストは通ってしまった）。素の判定を分けて持つ形を固定する。
+ */
+suite("DDS: 注記とブランク行は別の判定として持つ", () => {
+  const blank = "     A" + " ".repeat(50);
+  const comment = "     A* コメント";
+  const written = "     A            CUSTNO         5S 0";
+
+  test("isDdsCommentLine は 7 桁目の * だけを見る（ブランク行は含めない）", () => {
+    assert.strictEqual(isDdsCommentLine(comment), true);
+    assert.strictEqual(isDdsCommentLine(blank), false, "ブランク行まで含めると補完が消える");
+    assert.strictEqual(isDdsCommentLine(written), false);
+  });
+
+  test("isDdsBlankLine は 7-80 桁が空かだけを見る", () => {
+    assert.strictEqual(isDdsBlankLine(blank), true);
+    assert.strictEqual(isDdsBlankLine(""), true);
+    assert.strictEqual(isDdsBlankLine(comment), false);
+    assert.strictEqual(isDdsBlankLine(written), false);
+  });
+
+  test("lint は両方を合わせて注記として扱う（原典どおり）", () => {
+    assert.strictEqual(classifyLine(comment, "dds", "DDS-PF"), "comment");
+    assert.strictEqual(classifyLine(blank, "dds", "DDS-PF"), "comment");
+  });
+
+  test("補完は空行でも候補を出す（劣化の回帰）", () => {
+    // 45 桁目以降ならキーワード欄。空行を注記扱いすると false になってしまう。
+    assert.strictEqual(isKeywordArea(blank, 50), true, "新規行で補完が出なくなっている");
+    assert.strictEqual(isKeywordArea(comment + " ".repeat(40), 50), false);
   });
 });
