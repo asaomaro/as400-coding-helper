@@ -1,8 +1,8 @@
 import * as assert from "assert";
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { lintFile } from "../../src/lint/engine";
-import { loadDefinitions } from "../../src/lint/defsLoader";
+import { defaultResourcesDir, loadDefinitions } from "../../src/lint/defsLoader";
 
 /**
  * 偽陽性ゼロの回帰。**本作業の中心的な受け入れ基準。**
@@ -78,5 +78,35 @@ suite("lint: 実機コンパイル確認済みソースへの偽陽性", () => {
     for (const file of ["DYBAT001CL.clp", "ADDCUST.cmd"]) {
       assert.deepStrictEqual(lintSource(file), [], `${file} は検査対象外`);
     }
+  });
+});
+
+suite("lint: 定義の読み込み", () => {
+  test("resources を上位に向かって探して見つける（ビルド配置に依存しない）", () => {
+    // out/lint/ と out-test/src/lint/ で深さが 1 段違う。段数を決め打ちにすると
+    // 片方で定義が読めず、例外にもならず「指摘ゼロ」になって正常と区別が付かない。
+    // 実際にそれを踏んだので、ここで固定する。
+    const dir = defaultResourcesDir(__dirname);
+    assert.ok(
+      existsSync(join(dir, "prompter")),
+      `resources/prompter が見つからない: ${dir}`
+    );
+  });
+
+  test("定義が引けることを確かめる（引けないと黙って指摘ゼロになる）", () => {
+    const definitions = loadDefinitions(defaultResourcesDir(__dirname));
+    for (const keyword of ["DDS-PF", "DDS-DSPF", "DDS-PRTF"]) {
+      assert.ok(definitions.get("dds", undefined, keyword), `${keyword} が引けない`);
+    }
+    assert.ok(definitions.get("rpg-fixed", "ile", "D-SPEC"), "ile D-SPEC が引けない");
+    assert.ok(definitions.get("rpg-fixed", "rpg3", "F-SPEC"), "rpg3 F-SPEC が引けない");
+  });
+
+  test("桁ずれのあるソースは検出する（規則が実際に動いていることの確認）", () => {
+    // 検証済みコーパスが指摘ゼロなのは「規則が何もしていない」からではない、
+    // ということを示す。EMPMNT01 は D 仕様書の桁がずれている疑いがある。
+    const findings = lintSource("EMPMNT01.rpgle");
+    assert.ok(findings.length > 0, "桁ずれを検出するはず");
+    assert.ok(findings.some(f => f.ruleId === "numeric-field"));
   });
 });

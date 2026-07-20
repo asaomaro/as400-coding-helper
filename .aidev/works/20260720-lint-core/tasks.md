@@ -99,12 +99,12 @@
 
 ## ⑤ VS Code 接続
 
-- [ ] T20: `src/language/diagnostics.ts` の `refresh()` に RPG / DDS の分岐を足し、
+- [x] T20: `src/language/diagnostics.ts` の `refresh()` に RPG / DDS の分岐を足し、
       lint core を呼ぶ。**既存の CL 分岐と登録するイベントは変えない**
       （`onDidOpen` / `onDidChange` / `onDidClose`）。定義は一度読んで再利用する。
       severity を `vscode.DiagnosticSeverity` に写す。
       **受け入れ**: 単体テスト（vscode-stub 上）で RPG / DDS の診断が作られる（依存: T15）
-- [ ] T21: `package.json` の `contributes.configuration` に
+- [x] T21: `package.json` の `contributes.configuration` に
       `rpgClSupport.lint.enable`（boolean・既定 `true`）と
       `rpgClSupport.lint.rules`（object・既定 `{}`）を足し、`diagnostics.ts` で読む。
       `enable: false` のとき診断を出さず既存の収集を消す。
