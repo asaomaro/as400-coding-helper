@@ -10,7 +10,7 @@ import {
   toDocumentSelector,
   toGlobPattern
 } from "../../src/utils/fileScope";
-import { DDS_COLUMNS } from "../../src/language/ddsLayout";
+import { DDS_COLUMNS } from "../../src/core/ddsLayout";
 
 /**
  * 表示系だけを効かせたい拡張子に、言語機能が波及していないことを固定する。

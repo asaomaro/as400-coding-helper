@@ -39,9 +39,30 @@ export function ddsField(text: string, column: DdsColumn): string {
   return text.slice(column[0] - 1, column[1]);
 }
 
-/** 注記行（7 桁目が `*`）は桁の意味を持たない。 */
+/**
+ * 注記行（7 桁目が `*`）は桁の意味を持たない。
+ *
+ * 原典（`物理ファイルおよび論理ファイルの注記 (7 桁目)`）は**ブランク行も注記として
+ * 扱う**と書いているが、それはこの関数に含めていない（`isDdsBlankLine` を別に持つ）。
+ * 「注記か」と「定位置として読めるか」は用途によって答えが違うため:
+ *
+ *   - **補完**は空行でも候補を出したい。まだ何も打っていない新しい行こそ補完が要る。
+ *     ここでブランク行まで弾くと、新規行でキーワード補完が出なくなる。
+ *   - **lint** は空行を検査対象から外したい（欄が書かれていないだけで誤りではない）。
+ *
+ * そこで**素の判定をそれぞれ 1 つずつ**持ち、組み合わせ方は利用側で決める。
+ * 判定そのものを写さなければドリフトはしない。
+ */
 export function isDdsCommentLine(text: string): boolean {
   return ddsField(text, DDS_COLUMNS.comment) === "*";
+}
+
+/**
+ * ブランク行（7-80 桁に文字が無い）。原典はこれも注記として扱う。
+ * 定位置として読む側（lint）は `isDdsCommentLine` と併せて使う。
+ */
+export function isDdsBlankLine(text: string): boolean {
+  return text.slice(6, 80).trim().length === 0;
 }
 
 /**

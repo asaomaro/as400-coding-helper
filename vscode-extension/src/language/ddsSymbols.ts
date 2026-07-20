@@ -6,7 +6,7 @@ import {
   ddsName,
   isDdsCommentLine,
   levelOfLine
-} from "./ddsLayout";
+} from "../core/ddsLayout";
 import {
   expandToChildren,
   toDocumentSymbols,

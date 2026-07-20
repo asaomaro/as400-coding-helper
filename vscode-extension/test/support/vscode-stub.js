@@ -62,12 +62,26 @@ const SymbolKind = {
   Boolean: 16, Array: 17, Object: 18, Key: 19, Null: 20,
   EnumMember: 21, Struct: 22, Event: 23, Operator: 24, TypeParameter: 25
 };
+class Diagnostic {
+  constructor(range, message, severity) {
+    this.range = range;
+    this.message = message;
+    this.severity = severity;
+  }
+}
+
+// 設定を差し替えられるようにする（既定は「未設定」＝実装側の既定値が効く）。
+// テストから `vscode.__setConfig({ "rpgClSupport": { "lint.enable": false } })`。
+let configValues = {};
 
 const vscode = {
   Position,
   Range,
   DocumentSymbol,
   SymbolKind,
+  Diagnostic,
+  DiagnosticSeverity: { Error: 0, Warning: 1, Information: 2, Hint: 3 },
+  __setConfig(values) { configValues = values ?? {}; },
   Uri: {
     file: fsPath => ({ fsPath, scheme: "file", toString: () => fsPath }),
     joinPath: (base, ...parts) => ({
@@ -81,7 +95,9 @@ const vscode = {
     dispose() {}
   },
   workspace: {
-    getConfiguration: () => ({ get: () => undefined }),
+    getConfiguration: section => ({
+      get: key => configValues[section]?.[key]
+    }),
     workspaceFolders: undefined,
     getWorkspaceFolder: () => undefined
   },
@@ -107,12 +123,19 @@ const vscode = {
       vscode.languages.registered.push({ kind: "hover", selector, provider });
       return { dispose() {} };
     },
-    createDiagnosticCollection: () => ({
-      set() {},
-      delete() {},
-      clear() {},
-      dispose() {}
-    })
+    // 診断の配線（イベント→refresh→lint core）を通すため、set したものを
+    // get で読み戻せるようにしておく（no-op スタブだと配線を確かめられない）。
+    createDiagnosticCollection: name => {
+      const store = new Map();
+      return {
+        name,
+        set: (uri, diagnostics) => store.set(uri.fsPath, diagnostics),
+        get: uri => store.get(uri.fsPath),
+        delete: uri => store.delete(uri.fsPath),
+        clear: () => store.clear(),
+        dispose() {}
+      };
+    }
   },
   commands: {},
   StatusBarAlignment: { Left: 1, Right: 2 },
