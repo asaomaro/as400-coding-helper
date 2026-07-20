@@ -15,7 +15,10 @@
       },
       "positional": 1,
       "maxOccurrences": 300,
-      "basic": true
+      "basic": true,
+      "valueMap": {
+        "*NONSYS": "*ALL"
+      }
     },
     {
       "name": "DEV",
@@ -42,7 +45,35 @@
         "characterSet": "upper"
       },
       "positional": 3,
-      "maxOccurrences": 75
+      "maxOccurrences": 75,
+      "promptControl": [
+        {
+          "controlParameter": "DEV",
+          "countRelation": "GT",
+          "count": 0,
+          "conditions": [
+            {
+              "relation": "EQ",
+              "compareValue": "*TAPE"
+            },
+            {
+              "relation": "EQ",
+              "compareValue": "*DKT"
+            },
+            {
+              "relation": "EQ",
+              "compareValue": "*OPT"
+            },
+            {
+              "relation": "EQ",
+              "compareValue": "*"
+            }
+          ]
+        }
+      ],
+      "valueMap": {
+        "*MOUNTED": "*M"
+      }
     },
     {
       "name": "SEQNBR",
@@ -53,6 +84,26 @@
       "defaultValue": "*END",
       "attributes": {
         "characterSet": "upper"
+      },
+      "promptControl": [
+        {
+          "controlParameter": "DEV",
+          "countRelation": "GT",
+          "count": 0,
+          "conditions": [
+            {
+              "relation": "EQ",
+              "compareValue": "*TAPE"
+            },
+            {
+              "relation": "EQ",
+              "compareValue": "*"
+            }
+          ]
+        }
+      ],
+      "valueMap": {
+        "*END": "-3"
       }
     },
     {
@@ -64,7 +115,28 @@
       "defaultValue": "*LIB",
       "attributes": {
         "characterSet": "upper"
-      }
+      },
+      "promptControl": [
+        {
+          "controlParameter": "DEV",
+          "countRelation": "GT",
+          "count": 0,
+          "conditions": [
+            {
+              "relation": "EQ",
+              "compareValue": "*TAPE"
+            },
+            {
+              "relation": "EQ",
+              "compareValue": "*DKT"
+            },
+            {
+              "relation": "EQ",
+              "compareValue": "*"
+            }
+          ]
+        }
+      ]
     },
     {
       "name": "EXPDATE",
@@ -81,7 +153,23 @@
           "label": "*PERM",
           "value": "*PERM"
         }
-      ]
+      ],
+      "promptControl": [
+        {
+          "controlParameter": "DEV",
+          "countRelation": "EQ",
+          "count": 1,
+          "conditions": [
+            {
+              "relation": "NE",
+              "compareValue": "*SAVF"
+            }
+          ]
+        }
+      ],
+      "valueMap": {
+        "*PERM": "0999999"
+      }
     },
     {
       "name": "ENDOPT",
@@ -109,7 +197,33 @@
           "value": "*UNLOAD",
           "help": "テープは操作が終了すると自動的に巻き戻されてアンロードされます。一部の光ディスク装置は操作が終了するとボリュームを排出します。"
         }
-      ]
+      ],
+      "promptControl": [
+        {
+          "controlParameter": "DEV",
+          "countRelation": "GT",
+          "count": 0,
+          "conditions": [
+            {
+              "relation": "EQ",
+              "compareValue": "*TAPE"
+            },
+            {
+              "relation": "EQ",
+              "compareValue": "*OPT"
+            },
+            {
+              "relation": "EQ",
+              "compareValue": "*"
+            }
+          ]
+        }
+      ],
+      "valueMap": {
+        "*LEAVE": "X&apos;00&apos;",
+        "*REWIND": "X&apos;40&apos;",
+        "*UNLOAD": "X&apos;80&apos;"
+      }
     },
     {
       "name": "STRLIB",
@@ -121,7 +235,20 @@
       "attributes": {
         "characterSet": "upper",
         "maxLength": 10
-      }
+      },
+      "promptControl": [
+        {
+          "controlParameter": "DEV",
+          "countRelation": "EQ",
+          "count": 1,
+          "conditions": [
+            {
+              "relation": "NE",
+              "compareValue": "*SAVF"
+            }
+          ]
+        }
+      ]
     },
     {
       "name": "SAVF",
@@ -153,6 +280,19 @@
             "characterSet": "upper",
             "maxLength": 10
           }
+        }
+      ],
+      "promptControl": [
+        {
+          "controlParameter": "DEV",
+          "countRelation": "EQ",
+          "count": 1,
+          "conditions": [
+            {
+              "relation": "EQ",
+              "compareValue": "*SAVF"
+            }
+          ]
         }
       ]
     },
@@ -187,6 +327,19 @@
             "maxLength": 10
           }
         }
+      ],
+      "promptControl": [
+        {
+          "controlParameter": "DEV",
+          "countRelation": "EQ",
+          "count": 1,
+          "conditions": [
+            {
+              "relation": "EQ",
+              "compareValue": "*MEDDFN"
+            }
+          ]
+        }
       ]
     },
     {
@@ -204,6 +357,19 @@
           "label": "*",
           "value": "*",
           "help": "システムは，光ディスク・ボリュームのルート・ディレクトリー内に光ディスク・ファイル名を生成します。"
+        }
+      ],
+      "promptControl": [
+        {
+          "controlParameter": "DEV",
+          "countRelation": "EQ",
+          "count": 1,
+          "conditions": [
+            {
+              "relation": "EQ",
+              "compareValue": "*OPT"
+            }
+          ]
         }
       ]
     },
@@ -228,6 +394,23 @@
           "value": "*NO",
           "help": "装置によってサポートされる最適ブロック・サイズは使用されません。保管コマンドでは，すべての装置タイプによってサポートされる省略時のブロック・サイズが使用されます。テープ・ボリュームは，テープ複製(DUPTAP)コマンドを使用して任意の媒体形式に複製することができます。"
         }
+      ],
+      "promptControl": [
+        {
+          "controlParameter": "DEV",
+          "countRelation": "GT",
+          "count": 0,
+          "conditions": [
+            {
+              "relation": "EQ",
+              "compareValue": "*TAPE"
+            },
+            {
+              "relation": "EQ",
+              "compareValue": "*"
+            }
+          ]
+        }
       ]
     },
     {
@@ -249,7 +432,13 @@
           "label": "*PRV",
           "value": "*PRV"
         }
-      ]
+      ],
+      "valueMap": {
+        "*CURRENT": "C",
+        "*PRV": "P",
+        "V7R4M0": "P",
+        "V7R5M0": "C"
+      }
     },
     {
       "name": "UPDHST",
@@ -301,7 +490,13 @@
           "label": "*REPLACE",
           "value": "*REPLACE"
         }
-      ]
+      ],
+      "valueMap": {
+        "*AFTER": "A",
+        "*ALL": "Y",
+        "*NONE": "N",
+        "*REPLACE": "R"
+      }
     },
     {
       "name": "PRECHK",
@@ -357,7 +552,13 @@
           "value": "*SYSDFN",
           "help": "ライブラリー内のオブジェクトは，別のジョブで使用中であっても，保管することができます。ライブラリー中のオブジェクトはそれぞれ異なる時点にチェックポイントに達することがあり，オブジェクト相互の関係が一貫性のある状態にならないことがあります。"
         }
-      ]
+      ],
+      "valueMap": {
+        "*LIB": "L",
+        "*NO": "N",
+        "*SYNCLIB": "R",
+        "*SYSDFN": "S"
+      }
     },
     {
       "name": "SAVACTWAIT",
@@ -400,7 +601,12 @@
             "characterSet": "upper"
           }
         }
-      ]
+      ],
+      "valueMap": {
+        "*LOCKWAIT": "-2",
+        "*NOCMTBDY": "-3",
+        "*NOMAX": "-1"
+      }
     },
     {
       "name": "SAVACTMSGQ",
@@ -586,7 +792,11 @@
           "value": "*FREE",
           "help": "保管しようとしている指定されたオブジェクトのデータ部分によって占められている記憶域が保管操作の一部として解放されます。ライブラリー中のすべてのオブジェクトが占めている記憶域は，そのライブラリー中のすべてのオブジェクトが正常に保管された後でのみ解放されます。 注: 起こる可能性があるプログラムの異常終了を防止するためには，*FREEが指定された時に，保管しようとしているプログラムがシステムで実行中であってはなりません。"
         }
-      ]
+      ],
+      "valueMap": {
+        "*FREE": "F",
+        "*KEEP": "K"
+      }
     },
     {
       "name": "DTACPR",
@@ -831,7 +1041,12 @@
           }
         }
       ],
-      "maxOccurrences": 300
+      "maxOccurrences": 300,
+      "valueMap": {
+        "*INCLUDE": "I",
+        "*OMIT": "O",
+        "*USRSPC": "U"
+      }
     },
     {
       "name": "ASPDEV",
@@ -871,7 +1086,12 @@
           "value": "*OUTFILE",
           "help": "出力は， 出力を受け取るファイル (OUTFILE) パラメーターで指定されたデータベース・ファイルに送られます。"
         }
-      ]
+      ],
+      "valueMap": {
+        "*NONE": "N",
+        "*OUTFILE": "F",
+        "*PRINT": "L"
+      }
     },
     {
       "name": "OUTFILE",
@@ -948,7 +1168,11 @@
             }
           ]
         }
-      ]
+      ],
+      "valueMap": {
+        "*ADD": "A",
+        "*REPLACE": "R"
+      }
     },
     {
       "name": "INFTYPE",
@@ -981,7 +1205,13 @@
           "value": "*ERR",
           "help": "リストには，コマンド，各ライブラリーの項目，および正常に保管されなかった各オブジェクトの項目に関する情報が入ります。"
         }
-      ]
+      ],
+      "valueMap": {
+        "*ERR": "E",
+        "*LIB": "L",
+        "*MBR": "M",
+        "*OBJ": "O"
+      }
     },
     {
       "name": "CMDUSRSPC",
@@ -1357,5 +1587,602 @@
   "source": {
     "url": "https://www.ibm.com/docs/ja/ssw_ibm_i_74/cl/savlib.htm",
     "version": "IBM i 7.4"
-  }
+  },
+  "dependencies": [
+    {
+      "controlRelation": "ALWAYS",
+      "countRelation": "EQ",
+      "count": 0,
+      "messageId": "CPD3748",
+      "terms": [
+        {
+          "parameter": "LIB",
+          "relation": "EQ",
+          "compareValue": "QDOC"
+        },
+        {
+          "parameter": "LIB",
+          "relation": "EQ",
+          "compareValue": "QPTFOBJ1"
+        },
+        {
+          "parameter": "LIB",
+          "relation": "EQ",
+          "compareValue": "QPTFOBJ2"
+        },
+        {
+          "parameter": "LIB",
+          "relation": "EQ",
+          "compareValue": "QRECOVERY"
+        },
+        {
+          "parameter": "LIB",
+          "relation": "EQ",
+          "compareValue": "QRPLOBJ"
+        },
+        {
+          "parameter": "LIB",
+          "relation": "EQ",
+          "compareValue": "QSPL"
+        },
+        {
+          "parameter": "LIB",
+          "relation": "EQ",
+          "compareValue": "QSRV"
+        },
+        {
+          "parameter": "LIB",
+          "relation": "EQ",
+          "compareValue": "QSYS"
+        },
+        {
+          "parameter": "LIB",
+          "relation": "EQ",
+          "compareValue": "QTEMP"
+        }
+      ]
+    },
+    {
+      "controlRelation": "SPCFD",
+      "controlParameter": "SAVF",
+      "countRelation": "EQ",
+      "count": 0,
+      "messageId": "CPD3754",
+      "terms": [
+        {
+          "parameter": "VOL",
+          "relation": "SPCFD"
+        },
+        {
+          "parameter": "SEQNBR",
+          "relation": "SPCFD"
+        },
+        {
+          "parameter": "LABEL",
+          "relation": "SPCFD"
+        },
+        {
+          "parameter": "EXPDATE",
+          "relation": "SPCFD"
+        },
+        {
+          "parameter": "ENDOPT",
+          "relation": "SPCFD"
+        },
+        {
+          "parameter": "OPTFILE",
+          "relation": "SPCFD"
+        }
+      ]
+    },
+    {
+      "controlRelation": "SPCFD",
+      "controlParameter": "MEDDFN",
+      "countRelation": "EQ",
+      "count": 0,
+      "messageId": "CPD3798",
+      "terms": [
+        {
+          "parameter": "VOL",
+          "relation": "SPCFD"
+        },
+        {
+          "parameter": "SEQNBR",
+          "relation": "SPCFD"
+        },
+        {
+          "parameter": "SAVF",
+          "relation": "SPCFD"
+        },
+        {
+          "parameter": "OPTFILE",
+          "relation": "SPCFD"
+        }
+      ]
+    },
+    {
+      "controlRelation": "SPCFD",
+      "controlParameter": "SAVF",
+      "countRelation": "EQ",
+      "count": 0,
+      "messageId": "CPD3755",
+      "terms": [
+        {
+          "parameter": "LIB",
+          "relation": "EQ",
+          "compareValue": "*ALL"
+        },
+        {
+          "parameter": "LIB",
+          "relation": "EQ",
+          "compareValue": "*IBM"
+        },
+        {
+          "parameter": "LIB",
+          "relation": "EQ",
+          "compareValue": "*ALLUSR"
+        }
+      ]
+    },
+    {
+      "controlRelation": "NE",
+      "controlParameter": "LABEL",
+      "controlCompareValue": "*LIB",
+      "countRelation": "EQ",
+      "count": 3,
+      "messageId": "CPD3758",
+      "terms": [
+        {
+          "parameter": "LIB",
+          "relation": "NE",
+          "compareValue": "*ALL"
+        },
+        {
+          "parameter": "LIB",
+          "relation": "NE",
+          "compareValue": "*IBM"
+        },
+        {
+          "parameter": "LIB",
+          "relation": "NE",
+          "compareValue": "*ALLUSR"
+        }
+      ]
+    },
+    {
+      "controlRelation": "EQ",
+      "controlParameter": "DEV",
+      "controlCompareValue": "*SAVF",
+      "countRelation": "EQ",
+      "count": 1,
+      "messageId": "CPD3760",
+      "terms": [
+        {
+          "parameter": "SAVF",
+          "relation": "SPCFD"
+        }
+      ]
+    },
+    {
+      "controlRelation": "NE",
+      "controlParameter": "DEV",
+      "controlCompareValue": "*SAVF",
+      "countRelation": "EQ",
+      "count": 0,
+      "messageId": "CPD3754",
+      "terms": [
+        {
+          "parameter": "SAVF",
+          "relation": "SPCFD"
+        }
+      ]
+    },
+    {
+      "controlRelation": "EQ",
+      "controlParameter": "DEV",
+      "controlCompareValue": "*MEDDFN",
+      "countRelation": "EQ",
+      "count": 1,
+      "messageId": "CPD3799",
+      "terms": [
+        {
+          "parameter": "MEDDFN",
+          "relation": "SPCFD"
+        }
+      ]
+    },
+    {
+      "controlRelation": "NE",
+      "controlParameter": "DEV",
+      "controlCompareValue": "*MEDDFN",
+      "countRelation": "EQ",
+      "count": 0,
+      "messageId": "CPD379E",
+      "terms": [
+        {
+          "parameter": "MEDDFN",
+          "relation": "SPCFD"
+        }
+      ]
+    },
+    {
+      "controlRelation": "EQ",
+      "controlParameter": "CLEAR",
+      "controlCompareValue": "A",
+      "countRelation": "EQ",
+      "count": 0,
+      "messageId": "CPD3754",
+      "terms": [
+        {
+          "parameter": "SAVF",
+          "relation": "SPCFD"
+        }
+      ]
+    },
+    {
+      "controlRelation": "SPCFD",
+      "controlParameter": "OPTFILE",
+      "countRelation": "EQ",
+      "count": 0,
+      "messageId": "CPD376E",
+      "terms": [
+        {
+          "parameter": "SEQNBR",
+          "relation": "SPCFD"
+        },
+        {
+          "parameter": "LABEL",
+          "relation": "SPCFD"
+        }
+      ]
+    },
+    {
+      "controlRelation": "ALWAYS",
+      "countRelation": "EQ",
+      "count": 0,
+      "messageId": "CPD3770",
+      "terms": [
+        {
+          "parameter": "STRLIB",
+          "relation": "EQ",
+          "compareValue": "QDOC"
+        },
+        {
+          "parameter": "STRLIB",
+          "relation": "EQ",
+          "compareValue": "QPTFOBJ1"
+        },
+        {
+          "parameter": "STRLIB",
+          "relation": "EQ",
+          "compareValue": "QPTFOBJ2"
+        },
+        {
+          "parameter": "STRLIB",
+          "relation": "EQ",
+          "compareValue": "QRECOVERY"
+        },
+        {
+          "parameter": "STRLIB",
+          "relation": "EQ",
+          "compareValue": "QRPLOBJ"
+        },
+        {
+          "parameter": "STRLIB",
+          "relation": "EQ",
+          "compareValue": "QSPL"
+        },
+        {
+          "parameter": "STRLIB",
+          "relation": "EQ",
+          "compareValue": "QSRV"
+        },
+        {
+          "parameter": "STRLIB",
+          "relation": "EQ",
+          "compareValue": "QSYS"
+        },
+        {
+          "parameter": "STRLIB",
+          "relation": "EQ",
+          "compareValue": "QTEMP"
+        }
+      ]
+    },
+    {
+      "controlRelation": "EQ",
+      "controlParameter": "STG",
+      "controlCompareValue": "F",
+      "countRelation": "EQ",
+      "count": 0,
+      "messageId": "CPD370B",
+      "terms": [
+        {
+          "parameter": "LIB",
+          "relation": "EQ",
+          "compareValue": "*ALL"
+        },
+        {
+          "parameter": "LIB",
+          "relation": "EQ",
+          "compareValue": "*ALLUSR"
+        },
+        {
+          "parameter": "LIB",
+          "relation": "EQ",
+          "compareValue": "*IBM"
+        }
+      ]
+    },
+    {
+      "controlRelation": "NE",
+      "controlParameter": "TGTRLS",
+      "controlCompareValue": "C",
+      "countRelation": "EQ",
+      "count": 0,
+      "messageId": "CPD3765",
+      "terms": [
+        {
+          "parameter": "LIB",
+          "relation": "EQ",
+          "compareValue": "*ALL"
+        },
+        {
+          "parameter": "LIB",
+          "relation": "EQ",
+          "compareValue": "*ALLUSR"
+        },
+        {
+          "parameter": "LIB",
+          "relation": "EQ",
+          "compareValue": "*IBM"
+        }
+      ]
+    },
+    {
+      "controlRelation": "EQ",
+      "controlParameter": "SAVACT",
+      "controlCompareValue": "R",
+      "countRelation": "EQ",
+      "count": 0,
+      "messageId": "CPD372F",
+      "terms": [
+        {
+          "parameter": "LIB",
+          "relation": "EQ",
+          "compareValue": "*IBM"
+        }
+      ]
+    },
+    {
+      "controlRelation": "NE",
+      "controlParameter": "SAVACT",
+      "controlCompareValue": "N",
+      "countRelation": "EQ",
+      "count": 0,
+      "messageId": "CPD3727",
+      "terms": [
+        {
+          "parameter": "STG",
+          "relation": "EQ",
+          "compareValue": "F"
+        }
+      ]
+    },
+    {
+      "controlRelation": "SPCFD",
+      "controlParameter": "SAVACTWAIT",
+      "countRelation": "EQ",
+      "count": 1,
+      "messageId": "CPD3726",
+      "terms": [
+        {
+          "parameter": "SAVACT",
+          "relation": "NE",
+          "compareValue": "N"
+        }
+      ]
+    },
+    {
+      "controlRelation": "SPCFD",
+      "controlParameter": "SAVACTMSGQ",
+      "countRelation": "EQ",
+      "count": 1,
+      "messageId": "CPD3726",
+      "terms": [
+        {
+          "parameter": "SAVACT",
+          "relation": "NE",
+          "compareValue": "N"
+        }
+      ]
+    },
+    {
+      "controlRelation": "SPCFD",
+      "controlParameter": "SYNCID",
+      "countRelation": "EQ",
+      "count": 1,
+      "messageId": "CPD37B6",
+      "terms": [
+        {
+          "parameter": "SAVACT",
+          "relation": "EQ",
+          "compareValue": "R"
+        }
+      ]
+    },
+    {
+      "controlRelation": "EQ",
+      "controlParameter": "OUTPUT",
+      "controlCompareValue": "F",
+      "countRelation": "EQ",
+      "count": 1,
+      "messageId": "CPD371E",
+      "terms": [
+        {
+          "parameter": "OUTFILE",
+          "relation": "NE",
+          "compareValue": "X&apos;40&apos;"
+        }
+      ]
+    },
+    {
+      "controlRelation": "NE",
+      "controlParameter": "OUTMBR",
+      "controlCompareValue": "*FIRST",
+      "countRelation": "EQ",
+      "count": 0,
+      "messageId": "CPD9867",
+      "terms": [
+        {
+          "parameter": "OUTFILE",
+          "relation": "EQ",
+          "compareValue": "X&apos;40&apos;"
+        }
+      ]
+    },
+    {
+      "controlRelation": "NE",
+      "controlParameter": "OUTPUT",
+      "controlCompareValue": "F",
+      "countRelation": "EQ",
+      "count": 1,
+      "messageId": "CPD371F",
+      "terms": [
+        {
+          "parameter": "OUTFILE",
+          "relation": "EQ",
+          "compareValue": "X&apos;40&apos;"
+        }
+      ]
+    },
+    {
+      "controlRelation": "SPCFD",
+      "controlParameter": "INFTYPE",
+      "countRelation": "EQ",
+      "count": 0,
+      "messageId": "CPD371D",
+      "terms": [
+        {
+          "parameter": "OUTPUT",
+          "relation": "EQ",
+          "compareValue": "N"
+        }
+      ]
+    },
+    {
+      "controlRelation": "EQ",
+      "controlParameter": "INFTYPE",
+      "controlCompareValue": "E",
+      "countRelation": "EQ",
+      "count": 0,
+      "messageId": "CPD3794",
+      "terms": [
+        {
+          "parameter": "OUTPUT",
+          "relation": "NE",
+          "compareValue": "F"
+        }
+      ]
+    },
+    {
+      "controlRelation": "SPCFD",
+      "controlParameter": "CMDUSRSPC",
+      "countRelation": "GT",
+      "count": 0,
+      "messageId": "CPD37B3",
+      "terms": [
+        {
+          "parameter": "LIB",
+          "relation": "EQ",
+          "compareValue": "*USRSPC"
+        },
+        {
+          "parameter": "OMITLIB",
+          "relation": "EQ",
+          "compareValue": "*USRSPC"
+        },
+        {
+          "parameter": "OMITOBJ",
+          "relation": "EQ",
+          "compareValue": "*USRSPC"
+        },
+        {
+          "parameter": "SELECT",
+          "relation": "EQ",
+          "compareValue": "U"
+        }
+      ]
+    },
+    {
+      "controlRelation": "EQ",
+      "controlParameter": "LIB",
+      "controlCompareValue": "*USRSPC",
+      "countRelation": "EQ",
+      "count": 1,
+      "messageId": "CPD37B2",
+      "terms": [
+        {
+          "parameter": "CMDUSRSPC",
+          "relation": "SPCFD"
+        }
+      ]
+    },
+    {
+      "controlRelation": "EQ",
+      "controlParameter": "OMITLIB",
+      "controlCompareValue": "*USRSPC",
+      "countRelation": "EQ",
+      "count": 1,
+      "messageId": "CPD37B2",
+      "terms": [
+        {
+          "parameter": "CMDUSRSPC",
+          "relation": "SPCFD"
+        }
+      ]
+    },
+    {
+      "controlRelation": "EQ",
+      "controlParameter": "OMITOBJ",
+      "controlCompareValue": "*USRSPC",
+      "countRelation": "EQ",
+      "count": 1,
+      "messageId": "CPD37B2",
+      "terms": [
+        {
+          "parameter": "CMDUSRSPC",
+          "relation": "SPCFD"
+        }
+      ]
+    },
+    {
+      "controlRelation": "EQ",
+      "controlParameter": "SELECT",
+      "controlCompareValue": "U",
+      "countRelation": "EQ",
+      "count": 1,
+      "messageId": "CPD37B2",
+      "terms": [
+        {
+          "parameter": "CMDUSRSPC",
+          "relation": "SPCFD"
+        }
+      ]
+    },
+    {
+      "controlRelation": "EQ",
+      "controlParameter": "LIB",
+      "controlCompareValue": "*SELECT",
+      "countRelation": "EQ",
+      "count": 1,
+      "messageId": "CPD37C5",
+      "terms": [
+        {
+          "parameter": "SELECT",
+          "relation": "SPCFD"
+        }
+      ]
+    }
+  ]
 }

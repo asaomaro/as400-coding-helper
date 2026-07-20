@@ -276,7 +276,12 @@
         }
       ],
       "maxOccurrences": 50,
-      "basic": true
+      "basic": true,
+      "valueMap": {
+        "*ABSVAL": "B",
+        "*ASCEND": "A",
+        "*DESCEND": "D"
+      }
     },
     {
       "name": "UNIQUEKEY",
@@ -289,7 +294,11 @@
         "characterSet": "upper"
       },
       "placeholder": "*NONE",
-      "basic": true
+      "basic": true,
+      "valueMap": {
+        "*ALL": "-1",
+        "*NONE": "0"
+      }
     },
     {
       "name": "JFLD",
@@ -413,7 +422,15 @@
         }
       ],
       "maxOccurrences": 50,
-      "basic": true
+      "basic": true,
+      "valueMap": {
+        "*EQ": "EQ",
+        "*GE": "GE",
+        "*GT": "GT",
+        "*LE": "LE",
+        "*LT": "LT",
+        "*NE": "NE"
+      }
     },
     {
       "name": "JDFTVAL",
@@ -442,7 +459,12 @@
           "help": "結合の組み立てにおいて，省略時の値を使用して生成されたレコードのみが作成されます。このオプションは例外レコードだけを，QUERYファイル・オープンで使用可能なレコードに組み込むために使用されます。*ONLYDFTを指定した場合は，FILEパラメーターに，結合論理ファイルまたはビュー論理ファイルは指定できません。"
         }
       ],
-      "basic": true
+      "basic": true,
+      "valueMap": {
+        "*NO": "J",
+        "*ONLYDFT": "E",
+        "*YES": "C"
+      }
     },
     {
       "name": "JORDER",
@@ -849,7 +871,12 @@
           "help": "オープン操作の有効範囲は，オープン操作が行われるジョブとなります。ジョブがマルチスレッドである場合には，同じスレッドからオープンされたジョブだけがこのODPを共用できます。"
         }
       ],
-      "basic": true
+      "basic": true,
+      "valueMap": {
+        "*ACTGRP": "G",
+        "*ACTGRPDFN": "A",
+        "*JOB": "J"
+      }
     },
     {
       "name": "DUPKEYCHK",
@@ -1072,7 +1099,11 @@
           "value": "*PERM",
           "help": "ファイル・クローズ(CLOF)コマンドによってクローズされるか，あるいはルーティング・ステップまたは省略時の活動化グループが終了するまで，ファイルはオープンされたままです。資源再利用(RCLRSC)コマンドを実行したとしても，QUERYファイルはオープンされたままです。"
         }
-      ]
+      ],
+      "valueMap": {
+        "*NORMAL": "N",
+        "*PERM": "P"
+      }
     }
   ],
   "environment": "すべての環境 (*ALL)",
@@ -1273,5 +1304,85 @@
   "source": {
     "url": "https://www.ibm.com/docs/ja/ssw_ibm_i_74/cl/opnqryf.htm",
     "version": "IBM i 7.4"
-  }
+  },
+  "dependencies": [
+    {
+      "controlRelation": "EQ",
+      "controlParameter": "FORMAT",
+      "controlCompareValue": "*FILE",
+      "countRelation": "EQ",
+      "count": 1,
+      "messageId": "CPD3121",
+      "terms": [
+        {
+          "parameter": "JFLD",
+          "relation": "EQ",
+          "compareValue": "*NONE"
+        }
+      ]
+    },
+    {
+      "controlRelation": "NE",
+      "controlParameter": "UNIQUEKEY",
+      "controlCompareValue": "0",
+      "countRelation": "EQ",
+      "count": 1,
+      "messageId": "CPD3122",
+      "terms": [
+        {
+          "parameter": "KEYFLD",
+          "relation": "NE",
+          "compareValue": "*NONE"
+        }
+      ]
+    },
+    {
+      "controlRelation": "EQ",
+      "controlParameter": "KEYFLD",
+      "controlCompareValue": "*FILE",
+      "countRelation": "EQ",
+      "count": 2,
+      "messageId": "CPD3123",
+      "terms": [
+        {
+          "parameter": "GRPFLD",
+          "relation": "EQ",
+          "compareValue": "*NONE"
+        },
+        {
+          "parameter": "GRPSLT",
+          "relation": "EQ",
+          "compareValue": "*ALL"
+        }
+      ]
+    },
+    {
+      "controlRelation": "NE",
+      "controlParameter": "JDFTVAL",
+      "controlCompareValue": "J",
+      "countRelation": "EQ",
+      "count": 1,
+      "messageId": "CPD3140",
+      "terms": [
+        {
+          "parameter": "JFLD",
+          "relation": "NE",
+          "compareValue": "*NONE"
+        }
+      ]
+    },
+    {
+      "controlRelation": "SPCFD",
+      "controlParameter": "OPNSCOPE",
+      "countRelation": "EQ",
+      "count": 0,
+      "messageId": "CPD3142",
+      "terms": [
+        {
+          "parameter": "TYPE",
+          "relation": "SPCFD"
+        }
+      ]
+    }
+  ]
 }

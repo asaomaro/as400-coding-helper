@@ -54,7 +54,14 @@
         }
       ],
       "positional": 2,
-      "basic": true
+      "basic": true,
+      "valueMap": {
+        "*CTL": "CTL",
+        "*DEV": "DEV",
+        "*LIN": "LIN",
+        "*MLBRSC": "MLB",
+        "*NWS": "NWS"
+      }
     },
     {
       "name": "STATUS",
@@ -98,7 +105,15 @@
         }
       ],
       "positional": 3,
-      "basic": true
+      "basic": true,
+      "valueMap": {
+        "*ALLOCATE": "AL",
+        "*DEALLOCATE": "DL",
+        "*OFF": "OF",
+        "*ON": "ON",
+        "*RESET": "RS",
+        "*UNPROTECTED": "UP"
+      }
     },
     {
       "name": "RANGE",
@@ -121,6 +136,23 @@
           "value": "*OBJ",
           "help": "指定されたオブジェクトだけが構成変更されます。"
         }
+      ],
+      "promptControl": [
+        {
+          "controlParameter": "CFGTYPE",
+          "countRelation": "EQ",
+          "count": 2,
+          "conditions": [
+            {
+              "relation": "NE",
+              "compareValue": "NWS"
+            },
+            {
+              "relation": "NE",
+              "compareValue": "MLB"
+            }
+          ]
+        }
       ]
     },
     {
@@ -132,6 +164,43 @@
       "defaultValue": "*CFGOBJ",
       "attributes": {
         "characterSet": "upper"
+      },
+      "promptControl": [
+        {
+          "controlParameter": "CFGTYPE",
+          "countRelation": "EQ",
+          "count": 1,
+          "logicalRelation": "AND",
+          "conditions": [
+            {
+              "relation": "EQ",
+              "compareValue": "NWS"
+            },
+            {
+              "relation": "EQ",
+              "compareValue": "NWI"
+            },
+            {
+              "relation": "EQ",
+              "compareValue": "LIN"
+            }
+          ]
+        },
+        {
+          "controlParameter": "STATUS",
+          "countRelation": "EQ",
+          "count": 1,
+          "conditions": [
+            {
+              "relation": "EQ",
+              "compareValue": "ON"
+            }
+          ]
+        }
+      ],
+      "valueMap": {
+        "*CFGOBJ": "-1",
+        "*NOWAIT": "0"
       }
     },
     {
@@ -155,7 +224,24 @@
           "value": "*YES",
           "help": "オブジェクトは非同期でオフに構成変更されます。"
         }
-      ]
+      ],
+      "promptControl": [
+        {
+          "controlParameter": "STATUS",
+          "countRelation": "EQ",
+          "count": 1,
+          "conditions": [
+            {
+              "relation": "EQ",
+              "compareValue": "OF"
+            }
+          ]
+        }
+      ],
+      "valueMap": {
+        "*NO": "OF",
+        "*YES": "ON"
+      }
     },
     {
       "name": "RESET",
@@ -178,7 +264,40 @@
           "value": "*YES",
           "help": "関連するIOPはリセットされます。"
         }
-      ]
+      ],
+      "promptControl": [
+        {
+          "controlParameter": "STATUS",
+          "countRelation": "EQ",
+          "count": 1,
+          "logicalRelation": "AND",
+          "conditions": [
+            {
+              "relation": "EQ",
+              "compareValue": "ON"
+            }
+          ]
+        },
+        {
+          "controlParameter": "CFGTYPE",
+          "countRelation": "EQ",
+          "count": 2,
+          "conditions": [
+            {
+              "relation": "NE",
+              "compareValue": "NWS"
+            },
+            {
+              "relation": "NE",
+              "compareValue": "MLB"
+            }
+          ]
+        }
+      ],
+      "valueMap": {
+        "*NO": "OF",
+        "*YES": "ON"
+      }
     },
     {
       "name": "RSRCNAME",
@@ -190,7 +309,20 @@
         "characterSet": "upper",
         "maxLength": 10
       },
-      "maxOccurrences": 16
+      "maxOccurrences": 16,
+      "promptControl": [
+        {
+          "controlParameter": "CFGTYPE",
+          "countRelation": "EQ",
+          "count": 1,
+          "conditions": [
+            {
+              "relation": "EQ",
+              "compareValue": "MLB"
+            }
+          ]
+        }
+      ]
     },
     {
       "name": "FRCVRYOFF",
@@ -218,7 +350,29 @@
           "value": "*LOCK",
           "help": "APPC,システム内通信，NWSH,およびMLB以外の装置では，装置記述のロックが現在の状況に関係なく試みられます。ロックが正常に行われると，装置がオフに構成変更された状態の時に，割り当てられたシステム・ジョブに転送されて装置記述ロックを保留します。装置がオフに構成変更された状態以外の場合には，装置記述をオフに構成変更する試みも行われます。"
         }
-      ]
+      ],
+      "promptControl": [
+        {
+          "controlParameter": "STATUS",
+          "countRelation": "EQ",
+          "count": 1,
+          "conditions": [
+            {
+              "relation": "EQ",
+              "compareValue": "OF"
+            },
+            {
+              "relation": "EQ",
+              "compareValue": "DL"
+            }
+          ]
+        }
+      ],
+      "valueMap": {
+        "*LOCK": "LK",
+        "*NO": "OF",
+        "*YES": "ON"
+      }
     },
     {
       "name": "SBMMLTJOB",
@@ -241,7 +395,28 @@
           "value": "*YES",
           "help": "指定された各ネットワーク・サーバー記述または補助記憶域プール(ASP)記述ごとに，新しいVRYCFGコマンドがバッチで投入されます。"
         }
-      ]
+      ],
+      "promptControl": [
+        {
+          "controlParameter": "CFGTYPE",
+          "countRelation": "EQ",
+          "count": 1,
+          "conditions": [
+            {
+              "relation": "EQ",
+              "compareValue": "NWS"
+            },
+            {
+              "relation": "EQ",
+              "compareValue": "DEV"
+            }
+          ]
+        }
+      ],
+      "valueMap": {
+        "*NO": "OF",
+        "*YES": "ON"
+      }
     },
     {
       "name": "JOBD",
@@ -298,7 +473,36 @@
           "value": "*YES",
           "help": "証明書のセットが生成されます。 注: このパラメーター値を使用するには，入出力システム構成(*IOSYSCFG)および機密保護管理者(*SECADM)特殊権限が必要です。"
         }
-      ]
+      ],
+      "promptControl": [
+        {
+          "controlParameter": "STATUS",
+          "countRelation": "EQ",
+          "count": 1,
+          "logicalRelation": "AND",
+          "conditions": [
+            {
+              "relation": "EQ",
+              "compareValue": "ON"
+            }
+          ]
+        },
+        {
+          "controlParameter": "CFGTYPE",
+          "countRelation": "EQ",
+          "count": 1,
+          "conditions": [
+            {
+              "relation": "EQ",
+              "compareValue": "NWS"
+            }
+          ]
+        }
+      ],
+      "valueMap": {
+        "*NO": "OF",
+        "*YES": "ON"
+      }
     },
     {
       "name": "RESETSYS",
@@ -321,7 +525,36 @@
           "value": "*YES",
           "help": "システムがリセットされます。 注: このパラメーター値を使用するには，すべてのオブジェクト(*ALLOBJ)特殊権限がなければなりません。"
         }
-      ]
+      ],
+      "promptControl": [
+        {
+          "controlParameter": "STATUS",
+          "countRelation": "EQ",
+          "count": 1,
+          "logicalRelation": "AND",
+          "conditions": [
+            {
+              "relation": "EQ",
+              "compareValue": "ON"
+            }
+          ]
+        },
+        {
+          "controlParameter": "CFGTYPE",
+          "countRelation": "EQ",
+          "count": 1,
+          "conditions": [
+            {
+              "relation": "EQ",
+              "compareValue": "NWS"
+            }
+          ]
+        }
+      ],
+      "valueMap": {
+        "*NO": "OF",
+        "*YES": "ON"
+      }
     }
   ],
   "threadSafe": false,
@@ -397,5 +630,216 @@
   "source": {
     "url": "https://www.ibm.com/docs/ja/ssw_ibm_i_74/cl/vrycfg.htm",
     "version": "IBM i 7.4"
-  }
+  },
+  "dependencies": [
+    {
+      "controlRelation": "SPCFD",
+      "controlParameter": "VRYWAIT",
+      "countRelation": "EQ",
+      "count": 2,
+      "messageId": "CPD27F4",
+      "terms": [
+        {
+          "parameter": "CFGTYPE",
+          "relation": "EQ",
+          "compareValue": "NWS"
+        },
+        {
+          "parameter": "CFGTYPE",
+          "relation": "EQ",
+          "compareValue": "NWI"
+        },
+        {
+          "parameter": "CFGTYPE",
+          "relation": "EQ",
+          "compareValue": "LIN"
+        },
+        {
+          "parameter": "STATUS",
+          "relation": "EQ",
+          "compareValue": "ON"
+        }
+      ]
+    },
+    {
+      "controlRelation": "EQ",
+      "controlParameter": "RESET",
+      "controlCompareValue": "ON",
+      "countRelation": "EQ",
+      "count": 1,
+      "messageId": "CPD2735",
+      "terms": [
+        {
+          "parameter": "STATUS",
+          "relation": "EQ",
+          "compareValue": "ON"
+        }
+      ]
+    },
+    {
+      "controlRelation": "SPCFD",
+      "controlParameter": "ASCVRYOFF",
+      "countRelation": "EQ",
+      "count": 1,
+      "messageId": "CPD28C6",
+      "terms": [
+        {
+          "parameter": "STATUS",
+          "relation": "EQ",
+          "compareValue": "OF"
+        }
+      ]
+    },
+    {
+      "controlRelation": "NE",
+      "controlParameter": "CFGTYPE",
+      "controlCompareValue": "MLB",
+      "countRelation": "EQ",
+      "count": 1,
+      "messageId": "CPD8FD2",
+      "terms": [
+        {
+          "parameter": "STATUS",
+          "relation": "EQ",
+          "compareValue": "ON"
+        },
+        {
+          "parameter": "STATUS",
+          "relation": "EQ",
+          "compareValue": "OF"
+        }
+      ]
+    },
+    {
+      "controlRelation": "EQ",
+      "controlParameter": "CFGTYPE",
+      "controlCompareValue": "MLB",
+      "countRelation": "EQ",
+      "count": 1,
+      "messageId": "CPD8FD2",
+      "terms": [
+        {
+          "parameter": "STATUS",
+          "relation": "EQ",
+          "compareValue": "RS"
+        },
+        {
+          "parameter": "STATUS",
+          "relation": "EQ",
+          "compareValue": "AL"
+        },
+        {
+          "parameter": "STATUS",
+          "relation": "EQ",
+          "compareValue": "UP"
+        },
+        {
+          "parameter": "STATUS",
+          "relation": "EQ",
+          "compareValue": "DL"
+        }
+      ]
+    },
+    {
+      "controlRelation": "SPCFD",
+      "controlParameter": "RSRCNAME",
+      "countRelation": "EQ",
+      "count": 1,
+      "messageId": "CPD8FD3",
+      "terms": [
+        {
+          "parameter": "CFGTYPE",
+          "relation": "EQ",
+          "compareValue": "MLB"
+        }
+      ]
+    },
+    {
+      "controlRelation": "SPCFD",
+      "controlParameter": "FRCVRYOFF",
+      "countRelation": "EQ",
+      "count": 1,
+      "messageId": "CPDB15A",
+      "terms": [
+        {
+          "parameter": "STATUS",
+          "relation": "EQ",
+          "compareValue": "OF"
+        },
+        {
+          "parameter": "STATUS",
+          "relation": "EQ",
+          "compareValue": "DL"
+        }
+      ]
+    },
+    {
+      "controlRelation": "SPCFD",
+      "controlParameter": "SBMMLTJOB",
+      "countRelation": "EQ",
+      "count": 1,
+      "messageId": "CPDB1AA",
+      "terms": [
+        {
+          "parameter": "CFGTYPE",
+          "relation": "EQ",
+          "compareValue": "NWS"
+        },
+        {
+          "parameter": "CFGTYPE",
+          "relation": "EQ",
+          "compareValue": "DEV"
+        }
+      ]
+    },
+    {
+      "controlRelation": "SPCFD",
+      "controlParameter": "JOBD",
+      "countRelation": "EQ",
+      "count": 1,
+      "messageId": "CPDB1AC",
+      "terms": [
+        {
+          "parameter": "SBMMLTJOB",
+          "relation": "EQ",
+          "compareValue": "ON"
+        }
+      ]
+    },
+    {
+      "controlRelation": "EQ",
+      "controlParameter": "GENPTHCERT",
+      "controlCompareValue": "ON",
+      "countRelation": "EQ",
+      "count": 1,
+      "messageId": "CPDB1E4",
+      "terms": [
+        {
+          "parameter": "CFGTYPE",
+          "relation": "EQ",
+          "compareValue": "NWS"
+        }
+      ]
+    },
+    {
+      "controlRelation": "EQ",
+      "controlParameter": "RESETSYS",
+      "controlCompareValue": "ON",
+      "countRelation": "EQ",
+      "count": 2,
+      "messageId": "CPDB1E0",
+      "terms": [
+        {
+          "parameter": "CFGTYPE",
+          "relation": "EQ",
+          "compareValue": "NWS"
+        },
+        {
+          "parameter": "STATUS",
+          "relation": "EQ",
+          "compareValue": "ON"
+        }
+      ]
+    }
+  ]
 }

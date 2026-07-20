@@ -35,16 +35,12 @@ export function buildInternalValueResolver(
 
   const walk = (parameters: readonly ParameterDefinition[]): void => {
     for (const parameter of parameters) {
-      for (const option of parameter.options ?? []) {
-        if (!option.mapTo) {
-          continue;
+      if (parameter.valueMap) {
+        const byValue = new Map<string, string>();
+        for (const [value, internal] of Object.entries(parameter.valueMap)) {
+          byValue.set(normalize(value), normalize(internal));
         }
-        let byValue = table.get(parameter.name);
-        if (!byValue) {
-          byValue = new Map<string, string>();
-          table.set(parameter.name, byValue);
-        }
-        byValue.set(normalize(option.value), normalize(option.mapTo));
+        table.set(parameter.name, byValue);
       }
       if (parameter.children) {
         walk(parameter.children);

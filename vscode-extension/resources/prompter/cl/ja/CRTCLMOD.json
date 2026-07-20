@@ -86,7 +86,10 @@
         "maxLength": 10
       },
       "positional": 3,
-      "basic": true
+      "basic": true,
+      "valueMap": {
+        "*MODULE": "*PGM"
+      }
     },
     {
       "name": "SRCSTMF",
@@ -130,7 +133,11 @@
           "help": "コンパイル・リストは作成されません。リストが不要な場合には，コンパイル時のパフォーマンスが向上することがあるので，このオプションを使用しなければなりません。"
         }
       ],
-      "positional": 4
+      "positional": 4,
+      "valueMap": {
+        "*NONE": "N",
+        "*PRINT": "L"
+      }
     },
     {
       "name": "OPTION",
@@ -409,7 +416,14 @@
           "value": "*NONE",
           "help": "コンパイル済みモジュールをデバッグするためのデバッグ・オプションは使用できません。"
         }
-      ]
+      ],
+      "valueMap": {
+        "*ALL": "40",
+        "*LIST": "30",
+        "*NONE": "0",
+        "*SOURCE": "20",
+        "*STMT": "10"
+      }
     },
     {
       "name": "DBGENCKEY",
@@ -563,5 +577,48 @@
   "source": {
     "url": "https://www.ibm.com/docs/ja/ssw_ibm_i_74/cl/crtclmod.htm",
     "version": "IBM i 7.4"
-  }
+  },
+  "dependencies": [
+    {
+      "controlRelation": "GE",
+      "controlParameter": "DBGVIEW",
+      "controlCompareValue": "30",
+      "countRelation": "EQ",
+      "count": 1,
+      "messageId": "CPD0847",
+      "terms": [
+        {
+          "parameter": "OUTPUT",
+          "relation": "NE",
+          "compareValue": "N"
+        }
+      ]
+    },
+    {
+      "controlRelation": "SPCFD",
+      "controlParameter": "SRCSTMF",
+      "countRelation": "NE",
+      "count": 1,
+      "messageId": "CPD5D11",
+      "terms": [
+        {
+          "parameter": "SRCMBR",
+          "relation": "SPCFD"
+        }
+      ]
+    },
+    {
+      "controlRelation": "SPCFD",
+      "controlParameter": "SRCSTMF",
+      "countRelation": "NE",
+      "count": 1,
+      "messageId": "CPD5D11",
+      "terms": [
+        {
+          "parameter": "SRCFILE",
+          "relation": "SPCFD"
+        }
+      ]
+    }
+  ]
 }

@@ -679,7 +679,11 @@
           "value": "*COL",
           "help": "このモジュールはプロファイル・データを収集できます。*COLは，モジュールの最適化レベルが*FULLの時と*CURRENTのターゲット・リリースでコンパイルしている時にだけ指定することができます。"
         }
-      ]
+      ],
+      "valueMap": {
+        "*COL": "2",
+        "*NOCOL": "1"
+      }
     },
     {
       "name": "STGMDL",
@@ -828,7 +832,14 @@
             }
           ]
         }
-      ]
+      ],
+      "valueMap": {
+        "*ALL": "3",
+        "*MODULE": "2",
+        "*NO": "1",
+        "*PCML": "2",
+        "*STMF": "1"
+      }
     },
     {
       "name": "INFOSTMF",
@@ -890,7 +901,17 @@
         }
       ],
       "maxOccurrences": 3,
-      "placeholder": "*NONE"
+      "placeholder": "*NONE",
+      "valueMap": {
+        "*DFT": "1",
+        "*EXPINCLUDE": "4",
+        "*NOEXPINCLUDE": "5",
+        "*NONE": "0",
+        "*NORMVCOMMENT": "3",
+        "*NOSEQSRC": "7",
+        "*RMVCOMMENT": "2",
+        "*SEQSRC": "6"
+      }
     },
     {
       "name": "PPSRCFILE",
@@ -1002,6 +1023,183 @@
         "SRCSTMF"
       ],
       "note": "SRCMBR パラメーターを SRCSTMF パラメーターと一緒に指定することはできません。"
+    }
+  ],
+  "dependencies": [
+    {
+      "controlRelation": "EQ",
+      "controlParameter": "PRFDTA",
+      "controlCompareValue": "2",
+      "countRelation": "EQ",
+      "count": 1,
+      "messageId": "RNS9326",
+      "terms": [
+        {
+          "parameter": "TGTRLS",
+          "relation": "EQ",
+          "compareValue": "*CURRENT"
+        }
+      ]
+    },
+    {
+      "controlRelation": "SPCFD",
+      "controlParameter": "INFOSTMF",
+      "countRelation": "EQ",
+      "count": 1,
+      "messageId": "RNS9327",
+      "terms": [
+        {
+          "parameter": "PGMINFO",
+          "relation": "NE",
+          "compareValue": "1"
+        }
+      ]
+    },
+    {
+      "controlRelation": "SPCFD",
+      "controlParameter": "SRCSTMF",
+      "countRelation": "NE",
+      "count": 1,
+      "messageId": "RNS9329",
+      "terms": [
+        {
+          "parameter": "SRCMBR",
+          "relation": "SPCFD"
+        }
+      ]
+    },
+    {
+      "controlRelation": "SPCFD",
+      "controlParameter": "SRCSTMF",
+      "countRelation": "NE",
+      "count": 1,
+      "messageId": "RNS9330",
+      "terms": [
+        {
+          "parameter": "SRCFILE",
+          "relation": "SPCFD"
+        }
+      ]
+    },
+    {
+      "controlRelation": "SPCFD",
+      "controlParameter": "PPSRCFILE",
+      "countRelation": "NE",
+      "count": 1,
+      "messageId": "RNS9332",
+      "terms": [
+        {
+          "parameter": "PPGENOPT",
+          "relation": "EQ",
+          "compareValue": "0"
+        }
+      ]
+    },
+    {
+      "controlRelation": "SPCFD",
+      "controlParameter": "PPSRCMBR",
+      "countRelation": "NE",
+      "count": 1,
+      "messageId": "RNS9332",
+      "terms": [
+        {
+          "parameter": "PPGENOPT",
+          "relation": "EQ",
+          "compareValue": "0"
+        }
+      ]
+    },
+    {
+      "controlRelation": "SPCFD",
+      "controlParameter": "PPSRCSTMF",
+      "countRelation": "NE",
+      "count": 1,
+      "messageId": "RNS9332",
+      "terms": [
+        {
+          "parameter": "PPGENOPT",
+          "relation": "EQ",
+          "compareValue": "0"
+        }
+      ]
+    },
+    {
+      "controlRelation": "NE",
+      "controlParameter": "PPGENOPT",
+      "controlCompareValue": "0",
+      "countRelation": "EQ",
+      "count": 1,
+      "messageId": "RNS9333",
+      "terms": [
+        {
+          "parameter": "PPSRCSTMF",
+          "relation": "SPCFD"
+        },
+        {
+          "parameter": "PPSRCFILE",
+          "relation": "SPCFD"
+        }
+      ]
+    },
+    {
+      "controlRelation": "SPCFD",
+      "controlParameter": "PPSRCSTMF",
+      "countRelation": "NE",
+      "count": 1,
+      "messageId": "RNS9334",
+      "terms": [
+        {
+          "parameter": "PPSRCMBR",
+          "relation": "SPCFD"
+        }
+      ]
+    },
+    {
+      "controlRelation": "SPCFD",
+      "controlParameter": "PPSRCSTMF",
+      "countRelation": "NE",
+      "count": 1,
+      "messageId": "RNS9334",
+      "terms": [
+        {
+          "parameter": "PPMINOUTLN",
+          "relation": "SPCFD"
+        }
+      ]
+    },
+    {
+      "controlRelation": "EQ",
+      "controlParameter": "PPSRCMBR",
+      "controlCompareValue": "*MODULE",
+      "countRelation": "NE",
+      "count": 2,
+      "messageId": "RNS9335",
+      "terms": [
+        {
+          "parameter": "MODULE",
+          "relation": "EQ",
+          "compareValue": "*CTLSPEC"
+        },
+        {
+          "parameter": "PPGENOPT",
+          "relation": "NE",
+          "compareValue": "0"
+        }
+      ]
+    },
+    {
+      "controlRelation": "EQ",
+      "controlParameter": "PPSRCSTMF",
+      "controlCompareValue": "*SRCSTMF",
+      "countRelation": "EQ",
+      "count": 1,
+      "messageId": "RNS9336",
+      "terms": [
+        {
+          "parameter": "SRCSTMF",
+          "relation": "SPCFD"
+        }
+      ]
     }
   ]
 }

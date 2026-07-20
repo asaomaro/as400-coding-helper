@@ -89,7 +89,12 @@
           }
         }
       ],
-      "basic": true
+      "basic": true,
+      "valueMap": {
+        "*ALLINACT": "*ALL",
+        "*PRV": "PREV",
+        "*SAME": "SAME"
+      }
     },
     {
       "name": "MSGQ",
@@ -176,7 +181,14 @@
           "help": "指定されたメッセージ待ち行列の中のすべての新しいメッセージが待ち行列から除去されます。"
         }
       ],
-      "basic": true
+      "basic": true,
+      "valueMap": {
+        "*ALL": "A",
+        "*BYKEY": "B",
+        "*KEEPUNANS": "K",
+        "*NEW": "N",
+        "*OLD": "O"
+      }
     },
     {
       "name": "RMVEXCP",
@@ -200,7 +212,11 @@
           "help": "指定したメッセージ待ち行列上の未処理の例外メッセージは除去されません。このメッセージは，未処理の例外メッセージとして待ち行列上に残ります。"
         }
       ],
-      "basic": true
+      "basic": true,
+      "valueMap": {
+        "*NO": "N",
+        "*YES": "Y"
+      }
     },
     {
       "name": "RJTDFTRPY",
@@ -337,5 +353,117 @@
   "source": {
     "url": "https://www.ibm.com/docs/ja/ssw_ibm_i_74/cl/rmvmsg.htm",
     "version": "IBM i 7.4"
-  }
+  },
+  "dependencies": [
+    {
+      "controlRelation": "NE",
+      "controlParameter": "CLEAR",
+      "controlCompareValue": "B",
+      "countRelation": "EQ",
+      "count": 0,
+      "messageId": "CPD2435",
+      "terms": [
+        {
+          "parameter": "MSGKEY",
+          "relation": "SPCFD"
+        }
+      ]
+    },
+    {
+      "controlRelation": "EQ",
+      "controlParameter": "CLEAR",
+      "controlCompareValue": "B",
+      "countRelation": "EQ",
+      "count": 1,
+      "messageId": "CPD2435",
+      "terms": [
+        {
+          "parameter": "MSGKEY",
+          "relation": "SPCFD"
+        }
+      ]
+    },
+    {
+      "controlRelation": "SPCFD",
+      "controlParameter": "PGMQ",
+      "countRelation": "EQ",
+      "count": 1,
+      "messageId": "CPD2444",
+      "terms": [
+        {
+          "parameter": "MSGQ",
+          "relation": "EQ",
+          "compareValue": "*PGMQ"
+        },
+        {
+          "parameter": "MSGQ",
+          "relation": "EQ",
+          "compareValue": "X&apos;40&apos;"
+        }
+      ]
+    },
+    {
+      "controlRelation": "EQ",
+      "controlParameter": "CLEAR",
+      "controlCompareValue": "K",
+      "countRelation": "EQ",
+      "count": 0,
+      "messageId": "CPD2408",
+      "terms": [
+        {
+          "parameter": "MSGQ",
+          "relation": "EQ",
+          "compareValue": "*PGMQ"
+        }
+      ]
+    },
+    {
+      "controlRelation": "EQ",
+      "controlParameter": "CLEAR",
+      "controlCompareValue": "K",
+      "countRelation": "EQ",
+      "count": 1,
+      "messageId": "CPD2408",
+      "terms": [
+        {
+          "parameter": "MSGQ",
+          "relation": "SPCFD"
+        }
+      ]
+    },
+    {
+      "controlRelation": "EQ",
+      "controlParameter": "PGMQ",
+      "controlCompareValue": "*ALL",
+      "countRelation": "EQ",
+      "count": 1,
+      "messageId": "CPD2434",
+      "terms": [
+        {
+          "parameter": "CLEAR",
+          "relation": "EQ",
+          "compareValue": "A"
+        }
+      ]
+    },
+    {
+      "controlRelation": "SPCFD",
+      "controlParameter": "RMVEXCP",
+      "countRelation": "EQ",
+      "count": 1,
+      "messageId": "CPD2458",
+      "terms": [
+        {
+          "parameter": "MSGQ",
+          "relation": "EQ",
+          "compareValue": "*PGMQ"
+        },
+        {
+          "parameter": "MSGQ",
+          "relation": "EQ",
+          "compareValue": "X&apos;40&apos;"
+        }
+      ]
+    }
+  ]
 }

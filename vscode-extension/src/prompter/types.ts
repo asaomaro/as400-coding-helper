@@ -27,15 +27,6 @@ export interface ParameterOption {
   readonly value: string;
   // 原典の定義済み値ごとの説明（パラメータ節の <dd>）。
   readonly help?: string;
-  /**
-   * この値の内部値（CDML `<Value MapTo="...">`）。
-   *
-   * DEP / PMTCTL の CmpVal は**内部値**と比較する。書く値と内部値は一致しない
-   * ことが多く（実機の CDML では `<Value>` 13712 件中 9770 件に MapTo がある）、
-   * 変換せずに比較すると規則が黙って成立しなくなる。
-   * 未設定なら value をそのまま内部値として扱う。
-   */
-  readonly mapTo?: string;
 }
 
 export type ParameterInputType = "text" | "dropdown" | "number" | "group";
@@ -245,6 +236,17 @@ export interface ParameterDefinition {
    * 両方あるときは AND（どちらの条件も満たしたときだけ表示）。
    */
   readonly promptControl?: readonly PromptControlGroup[];
+  /**
+   * 書く値 → 内部値の対応（CDML `<Value Val MapTo>` が食い違うものだけ）。
+   *
+   * DEP / PMTCTL の CmpVal は**内部値**と比較する（`*CHAR` に対し `C` など）。
+   * 変換せずに比較すると規則が黙って成立しない。
+   *
+   * options ではなくパラメータに持たせているのは、対象の 7 割強が
+   * `inputType:"text"` で options を持たない欄だから（`ADDMSGD` の TYPE など）。
+   * options 側にも同じ対応を置くと二重管理になるため、ここ 1 箇所に集約する。
+   */
+  readonly valueMap?: Readonly<Record<string, string>>;
 }
 
 export interface PrompterDefinition {

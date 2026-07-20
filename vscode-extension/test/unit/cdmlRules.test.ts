@@ -1,4 +1,6 @@
 import { strict as assert } from "node:assert";
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 import {
   buildInternalValueResolver,
   checkDependencies,
@@ -171,10 +173,7 @@ suite("CDML 由来の相関規則", () => {
           description: "opt",
           inputType: "dropdown",
           required: false,
-          options: [
-            { label: "*YES", value: "*YES", mapTo: "1" },
-            { label: "*NO", value: "*NO", mapTo: "0" }
-          ]
+          valueMap: { "*YES": "1", "*NO": "0" }
         },
         { name: "SUB", description: "sub", inputType: "text", required: false }
       ]
@@ -237,5 +236,63 @@ suite("CDML 由来の相関規則", () => {
     const shown = buildInitialState(definition, { DEV: "*SAVF" });
     assert.equal(shown.fields.find(f => f.fieldName === "SAVF")?.visible, true);
     assert.deepEqual(shown.constraintErrors, ["DEV(*SAVF) のときは SAVF が必要です。"]);
+  });
+
+  /* ---------------------------------------------------------------- *
+   * 生成した実データでの検証。
+   *
+   * 手で組んだ定義で通っても、生成スクリプトが実際に書いた JSON が
+   * 消費経路に届いているとは限らない（死蔵は「置いただけ」で起きる）。
+   * ---------------------------------------------------------------- */
+  const loadCl = (name: string): PrompterDefinition =>
+    JSON.parse(
+      readFileSync(
+        join(__dirname, `../../../resources/prompter/cl/ja/${name}.json`),
+        "utf8"
+      )
+    );
+
+  test("生成した SAVOBJ の PMTCTL が効く（DEV(*SAVF) で SAVF 欄が出る）", () => {
+    const savobj = loadCl("SAVOBJ");
+    // group に付いた規則が末端まで降りることも同時に見ている。
+    const savfOf = (dev: string) =>
+      buildInitialState(savobj, { DEV: dev }).fields.filter(
+        f => f.parameter.name === "SAVF"
+      );
+
+    assert.equal(savfOf("*TAPE").every(f => !f.visible), true);
+    assert.equal(savfOf("*SAVF").some(f => f.visible), true);
+  });
+
+  test("生成した SNDPGMMSG の DEP が効く（MSGID→MSGF）", () => {
+    const sndpgmmsg = loadCl("SNDPGMMSG");
+    const errorsFor = (values: Record<string, string>) =>
+      buildInitialState(sndpgmmsg, values).constraintErrors;
+
+    // MSGID を入れて MSGF が空なら CPD2441 が出る。
+    assert.equal(
+      errorsFor({ MSG: "", MSGID: "CPF9898", MSGF: "" }).some(e =>
+        e.includes("CPD2441")
+      ),
+      true
+    );
+    // MSGF を入れれば消える。
+    assert.equal(
+      errorsFor({ MSG: "", MSGID: "CPF9898", MSGF: "QCPFMSG" }).some(e =>
+        e.includes("CPD2441")
+      ),
+      false
+    );
+  });
+
+  test("生成した valueMap が内部値への変換に使われる", () => {
+    // ADDMSGD の TYPE は *CHAR を内部値 C として比較する。
+    const addmsgd = loadCl("ADDMSGD");
+    const type = addmsgd.parameters.find(p => p.name === "TYPE");
+    assert.ok(type?.valueMap, "TYPE に valueMap が生成されている");
+    assert.equal(type?.valueMap?.["*CHAR"], "C");
+
+    const resolve = buildInternalValueResolver(addmsgd);
+    assert.equal(resolve("TYPE", "*CHAR"), "C");
   });
 });

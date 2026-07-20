@@ -112,7 +112,11 @@
           "help": "出力は， 出力を受け取るファイル (OUTFILE) パラメーターで指定されたデータベース・ファイルに送られます。 注: 256桁を超えるプロシージャー名が見つかって値*OUTFILEが指定されている場合には，プロシージャー名の最後の253文字が出力ファイルに入れられて，その前に3つの不等号(<<<)文字が付けられます。この不等号(<<<)文字は，この名前が部分名のみであることを示します。ジョブ・ログには，使用可能なすべての情報が戻されていないことを示す診断メッセージCPD5D12が送られます。同じメッセージが，モニター可能なコマンド処理プログラム(CPP)の呼び出し側プログラムに，状況メッセージとして送られます。ユーザーは，モジュール情報検索(QBNRMODI)またはモジュール情報リスト(QBNLMODI) APIを使用して，このプロシージャーの完全な名前を見つけることができます。 注: DETAIL(*ALL)が有効なのは，OUTPUT(*OUTFILE)が指定された場合だけです。"
         }
       ],
-      "positional": 3
+      "positional": 3,
+      "valueMap": {
+        "*OUTFILE": "N",
+        "*PRINT": "L"
+      }
     },
     {
       "name": "OUTFILE",
@@ -144,6 +148,19 @@
             "characterSet": "upper",
             "maxLength": 10
           }
+        }
+      ],
+      "promptControl": [
+        {
+          "controlParameter": "OUTPUT",
+          "countRelation": "EQ",
+          "count": 1,
+          "conditions": [
+            {
+              "relation": "EQ",
+              "compareValue": "N"
+            }
+          ]
         }
       ]
     },
@@ -189,7 +206,24 @@
             }
           ]
         }
-      ]
+      ],
+      "promptControl": [
+        {
+          "controlParameter": "OUTPUT",
+          "countRelation": "EQ",
+          "count": 1,
+          "conditions": [
+            {
+              "relation": "EQ",
+              "compareValue": "N"
+            }
+          ]
+        }
+      ],
+      "valueMap": {
+        "*ADD": "ADD",
+        "*REPLACE": "REPLACE"
+      }
     }
   ],
   "threadSafe": false,
@@ -251,5 +285,52 @@
   "source": {
     "url": "https://www.ibm.com/docs/ja/ssw_ibm_i_74/cl/dspmod.htm",
     "version": "IBM i 7.4"
-  }
+  },
+  "dependencies": [
+    {
+      "controlRelation": "EQ",
+      "controlParameter": "OUTPUT",
+      "controlCompareValue": "N",
+      "countRelation": "EQ",
+      "count": 1,
+      "messageId": "CPD9861",
+      "terms": [
+        {
+          "parameter": "OUTFILE",
+          "relation": "NE",
+          "compareValue": "X&apos;40&apos;"
+        }
+      ]
+    },
+    {
+      "controlRelation": "NE",
+      "controlParameter": "OUTMBR",
+      "controlCompareValue": "*FIRST",
+      "countRelation": "EQ",
+      "count": 0,
+      "messageId": "CPD9867",
+      "terms": [
+        {
+          "parameter": "OUTFILE",
+          "relation": "EQ",
+          "compareValue": "X&apos;40&apos;"
+        }
+      ]
+    },
+    {
+      "controlRelation": "NE",
+      "controlParameter": "OUTPUT",
+      "controlCompareValue": "N",
+      "countRelation": "EQ",
+      "count": 1,
+      "messageId": "CPD9862",
+      "terms": [
+        {
+          "parameter": "OUTFILE",
+          "relation": "EQ",
+          "compareValue": "X&apos;40&apos;"
+        }
+      ]
+    }
+  ]
 }

@@ -90,7 +90,11 @@
           "value": "*YES",
           "help": "ファイルにDBCSデータが入っています。"
         }
-      ]
+      ],
+      "valueMap": {
+        "*NO": "N",
+        "*YES": "Y"
+      }
     },
     {
       "name": "TEXT",
@@ -150,7 +154,10 @@
           "help": "ファイルに追加されるメンバーには満了日がありません。"
         }
       ],
-      "placeholder": "*NONE"
+      "placeholder": "*NONE",
+      "valueMap": {
+        "*NONE": "0000000"
+      }
     },
     {
       "name": "MAXMBRS",
@@ -185,7 +192,11 @@
           "value": "*MAX4GB",
           "help": "このファイルと関連付けられるアクセス・パスは，最大4ギガバイト(4,294,966,272バイト）の補助記憶域を占有することができます。"
         }
-      ]
+      ],
+      "valueMap": {
+        "*MAX1TB": "1",
+        "*MAX4GB": "0"
+      }
     },
     {
       "name": "PAGESIZE",
@@ -203,7 +214,10 @@
           "value": "*KEYLEN",
           "help": "アクセス・パス論理ページ・サイズは，1つ以上のキーの合計長によって決定されます。"
         }
-      ]
+      ],
+      "valueMap": {
+        "*KEYLEN": "0"
+      }
     },
     {
       "name": "ACCPTH",
@@ -354,7 +368,10 @@
           },
           "placeholder": "499"
         }
-      ]
+      ],
+      "valueMap": {
+        "*NOMAX": "0"
+      }
     },
     {
       "name": "ALLOCATE",
@@ -377,7 +394,11 @@
           "value": "*YES",
           "help": "新しいメンバーが追加されるたびに，SIZEパラメーターの最初の値に指定された容量の記憶スペースが割り振られます。*YESが指定された場合には，SIZEパラメーターに*NOMAXを指定してはいけません。"
         }
-      ]
+      ],
+      "valueMap": {
+        "*NO": "D",
+        "*YES": "I"
+      }
     },
     {
       "name": "CONTIG",
@@ -397,7 +418,11 @@
           "label": "*YES",
           "value": "*YES"
         }
-      ]
+      ],
+      "valueMap": {
+        "*NO": "N",
+        "*YES": "C"
+      }
     },
     {
       "name": "UNIT",
@@ -468,7 +493,11 @@
           "value": "*YES",
           "help": "ファイルをオープンする時に*YESも指定したジョブで，同じODPを各プログラムと共用することができます。"
         }
-      ]
+      ],
+      "valueMap": {
+        "*NO": "N",
+        "*YES": "Y"
+      }
     },
     {
       "name": "DLTPCT",
@@ -586,5 +615,111 @@
   "source": {
     "url": "https://www.ibm.com/docs/ja/ssw_ibm_i_74/cl/crtsrcpf.htm",
     "version": "IBM i 7.4"
-  }
+  },
+  "dependencies": [
+    {
+      "controlRelation": "EQ",
+      "controlParameter": "ALLOCATE",
+      "controlCompareValue": "I",
+      "countRelation": "EQ",
+      "count": 0,
+      "messageId": "CPD7323",
+      "terms": [
+        {
+          "parameter": "SIZE",
+          "relation": "EQ",
+          "compareValue": "0"
+        }
+      ]
+    },
+    {
+      "controlRelation": "EQ",
+      "controlParameter": "CONTIG",
+      "controlCompareValue": "C",
+      "countRelation": "EQ",
+      "count": 1,
+      "messageId": "CPD7325",
+      "terms": [
+        {
+          "parameter": "ALLOCATE",
+          "relation": "EQ",
+          "compareValue": "I"
+        }
+      ]
+    },
+    {
+      "controlRelation": "EQ",
+      "controlParameter": "MBR",
+      "controlCompareValue": "*NONE",
+      "countRelation": "EQ",
+      "count": 1,
+      "messageId": "CPD7326",
+      "terms": [
+        {
+          "parameter": "EXPDATE",
+          "relation": "EQ",
+          "compareValue": "0000000"
+        }
+      ]
+    },
+    {
+      "controlRelation": "EQ",
+      "controlParameter": "SHARE",
+      "controlCompareValue": "Y",
+      "countRelation": "EQ",
+      "count": 0,
+      "messageId": "CPD7331",
+      "terms": [
+        {
+          "parameter": "MBR",
+          "relation": "EQ",
+          "compareValue": "*NONE"
+        }
+      ]
+    },
+    {
+      "controlRelation": "EQ",
+      "controlParameter": "IGCDTA",
+      "controlCompareValue": "Y",
+      "countRelation": "EQ",
+      "count": 0,
+      "messageId": "CPD7346",
+      "terms": [
+        {
+          "parameter": "RCDLEN",
+          "relation": "LE",
+          "compareValue": "15"
+        }
+      ]
+    },
+    {
+      "controlRelation": "EQ",
+      "controlParameter": "IGCDTA",
+      "controlCompareValue": "N",
+      "countRelation": "EQ",
+      "count": 0,
+      "messageId": "CPD7328",
+      "terms": [
+        {
+          "parameter": "RCDLEN",
+          "relation": "LE",
+          "compareValue": "12"
+        }
+      ]
+    },
+    {
+      "controlRelation": "SPCFD",
+      "controlParameter": "PAGESIZE",
+      "countRelation": "EQ",
+      "count": 1,
+      "messageId": "CPD5150",
+      "terms": [
+        {
+          "parameter": "ACCPTHSIZ",
+          "relation": "EQ",
+          "compareValue": "1"
+        }
+      ]
+    }
+  ]
 }

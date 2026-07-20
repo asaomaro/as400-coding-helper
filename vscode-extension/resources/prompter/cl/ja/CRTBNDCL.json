@@ -136,7 +136,11 @@
           "help": "プログラムは，省略時の活動化グループと関連付けられません。"
         }
       ],
-      "basic": true
+      "basic": true,
+      "valueMap": {
+        "*NO": "N",
+        "*YES": "Y"
+      }
     },
     {
       "name": "ACTGRP",
@@ -149,7 +153,20 @@
         "characterSet": "upper",
         "maxLength": 10
       },
-      "placeholder": "*STGMDL"
+      "placeholder": "*STGMDL",
+      "promptControl": [
+        {
+          "controlParameter": "DFTACTGRP",
+          "countRelation": "EQ",
+          "count": 1,
+          "conditions": [
+            {
+              "relation": "EQ",
+              "compareValue": "N"
+            }
+          ]
+        }
+      ]
     },
     {
       "name": "STGMDL",
@@ -171,6 +188,19 @@
           "label": "*TERASPACE",
           "value": "*TERASPACE",
           "help": "プログラムはテラスペース・ストレージ・モデルで作成されます。テラスペース・ストレージ・モデル・プログラムが活動化されて実行されると，これに自動および静的記憶域用のテラスペース・ストレージが提供されます。テラスペース・ストレージ・プログラムはテラスペース・ストレージ活動化グループ内でのみ実行されます。DFTACTGRP(*YES)が指定されている場合には，STGMDL(*TERASPACE)を指定することはできません。"
+        }
+      ],
+      "promptControl": [
+        {
+          "controlParameter": "DFTACTGRP",
+          "countRelation": "EQ",
+          "count": 1,
+          "conditions": [
+            {
+              "relation": "EQ",
+              "compareValue": "N"
+            }
+          ]
         }
       ]
     },
@@ -196,7 +226,11 @@
           "help": "コンパイル・リストは作成されません。リストが不要な場合には，コンパイル時のパフォーマンスが向上することがあるので，このオプションを使用しなければなりません。"
         }
       ],
-      "positional": 4
+      "positional": 4,
+      "valueMap": {
+        "*NONE": "N",
+        "*PRINT": "L"
+      }
     },
     {
       "name": "OPTION",
@@ -496,7 +530,14 @@
           "value": "*NONE",
           "help": "コンパイル済みプログラムをデバッグするためのデバッグ・オプションは使用できません。"
         }
-      ]
+      ],
+      "valueMap": {
+        "*ALL": "40",
+        "*LIST": "30",
+        "*NONE": "0",
+        "*SOURCE": "20",
+        "*STMT": "10"
+      }
     },
     {
       "name": "DBGENCKEY",
@@ -654,5 +695,67 @@
   "source": {
     "url": "https://www.ibm.com/docs/ja/ssw_ibm_i_74/cl/crtbndcl.htm",
     "version": "IBM i 7.4"
-  }
+  },
+  "dependencies": [
+    {
+      "controlRelation": "GE",
+      "controlParameter": "DBGVIEW",
+      "controlCompareValue": "30",
+      "countRelation": "EQ",
+      "count": 1,
+      "messageId": "CPD0847",
+      "terms": [
+        {
+          "parameter": "OUTPUT",
+          "relation": "NE",
+          "compareValue": "N"
+        }
+      ]
+    },
+    {
+      "controlRelation": "EQ",
+      "controlParameter": "DFTACTGRP",
+      "controlCompareValue": "Y",
+      "countRelation": "EQ",
+      "count": 0,
+      "messageId": "CPD0875",
+      "terms": [
+        {
+          "parameter": "ACTGRP",
+          "relation": "SPCFD"
+        },
+        {
+          "parameter": "STGMDL",
+          "relation": "EQ",
+          "compareValue": "*TERASPACE"
+        }
+      ]
+    },
+    {
+      "controlRelation": "SPCFD",
+      "controlParameter": "SRCSTMF",
+      "countRelation": "NE",
+      "count": 1,
+      "messageId": "CPD5D11",
+      "terms": [
+        {
+          "parameter": "SRCMBR",
+          "relation": "SPCFD"
+        }
+      ]
+    },
+    {
+      "controlRelation": "SPCFD",
+      "controlParameter": "SRCSTMF",
+      "countRelation": "NE",
+      "count": 1,
+      "messageId": "CPD5D11",
+      "terms": [
+        {
+          "parameter": "SRCFILE",
+          "relation": "SPCFD"
+        }
+      ]
+    }
+  ]
 }

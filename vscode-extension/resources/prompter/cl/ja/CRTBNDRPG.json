@@ -149,7 +149,11 @@
           "help": "プログラムは，ACTGRPパラメーターで指定された活動化グループに関連付けられます。*NOを指定した時には，静的バインドが可能です。 ACTGRP(*CALLER)を指定し，このプログラムが省略時の活動化グループで実行するプログラムによって呼び出される場合には，このプログラムは，ファイル共用，ファイル有効範囲設定，およびRCLRSCの面でILEセマンティクスに従って機能します。 DFTACTGRP(*NO)は，名前を指定された活動化グループでの実行やサービス・プログラムへのバインドなどのILE概念の利点を利用する時に便利です。"
         }
       ],
-      "basic": true
+      "basic": true,
+      "valueMap": {
+        "*NO": "0",
+        "*YES": "1"
+      }
     },
     {
       "name": "ACTGRP",
@@ -162,7 +166,20 @@
         "characterSet": "upper",
         "maxLength": 10
       },
-      "placeholder": "*STGMDL"
+      "placeholder": "*STGMDL",
+      "promptControl": [
+        {
+          "controlParameter": "DFTACTGRP",
+          "countRelation": "EQ",
+          "count": 1,
+          "conditions": [
+            {
+              "relation": "EQ",
+              "compareValue": "0"
+            }
+          ]
+        }
+      ]
     },
     {
       "name": "STGMDL",
@@ -190,7 +207,25 @@
           "value": "*TERASPACE",
           "help": "プログラムはテラ・スペース・ストレージ・モデルを使って作成されます。テラ・スペース・ストレージ・モデルのプログラムが活動化され，稼働すると，そのプログラムには自動ストレージと静的ストレージ用のテラ・スペース・ストレージが提供されます。テラ・スペース・ストレージのプログラムは，テラ・スペース・ストレージ活動化グループ内でのみ稼働します。"
         }
-      ]
+      ],
+      "promptControl": [
+        {
+          "controlParameter": "DFTACTGRP",
+          "countRelation": "EQ",
+          "count": 1,
+          "conditions": [
+            {
+              "relation": "EQ",
+              "compareValue": "0"
+            }
+          ]
+        }
+      ],
+      "valueMap": {
+        "*INHERIT": "I",
+        "*SNGLVL": "S",
+        "*TERASPACE": "T"
+      }
     },
     {
       "name": "BNDDIR",
@@ -229,7 +264,20 @@
           "placeholder": "*NONE"
         }
       ],
-      "maxOccurrences": 50
+      "maxOccurrences": 50,
+      "promptControl": [
+        {
+          "controlParameter": "DFTACTGRP",
+          "countRelation": "EQ",
+          "count": 1,
+          "conditions": [
+            {
+              "relation": "EQ",
+              "compareValue": "0"
+            }
+          ]
+        }
+      ]
     },
     {
       "name": "OPTION",
@@ -806,7 +854,11 @@
           "value": "*COL",
           "help": "プログラムはプロファイル・データを収集できます。*COLは，モジュールの最適化レベルが*FULLの時と*CURRENTのターゲット・リリースでコンパイルしている時にだけ指定することができます。 注: BNDDIRパラメーターを使用して追加のモジュールおよびサービス・プログラムをバインドする場合に，これらの追加のオブジェクトは*COLまたは*NOCOLがプログラムに指定されている時には影響を受けません。モジュールのプログラム・プロファイル・データ属性は，モジュール作成時に設定されます。"
         }
-      ]
+      ],
+      "valueMap": {
+        "*COL": "2",
+        "*NOCOL": "1"
+      }
     },
     {
       "name": "LICOPT",
@@ -888,7 +940,14 @@
             }
           ]
         }
-      ]
+      ],
+      "valueMap": {
+        "*ALL": "3",
+        "*MODULE": "2",
+        "*NO": "1",
+        "*PCML": "2",
+        "*STMF": "1"
+      }
     },
     {
       "name": "INFOSTMF",
@@ -950,7 +1009,17 @@
         }
       ],
       "maxOccurrences": 3,
-      "placeholder": "*NONE"
+      "placeholder": "*NONE",
+      "valueMap": {
+        "*DFT": "1",
+        "*EXPINCLUDE": "4",
+        "*NOEXPINCLUDE": "5",
+        "*NONE": "0",
+        "*NORMVCOMMENT": "3",
+        "*NOSEQSRC": "7",
+        "*RMVCOMMENT": "2",
+        "*SEQSRC": "6"
+      }
     },
     {
       "name": "PPSRCFILE",
@@ -1062,6 +1131,240 @@
         "SRCSTMF"
       ],
       "note": "SRCMBR パラメーターを SRCSTMF パラメーターと一緒に指定することはできません。"
+    }
+  ],
+  "dependencies": [
+    {
+      "controlRelation": "SPCFD",
+      "controlParameter": "BNDDIR",
+      "countRelation": "EQ",
+      "count": 1,
+      "messageId": "RNF9302",
+      "terms": [
+        {
+          "parameter": "DFTACTGRP",
+          "relation": "NE",
+          "compareValue": "1"
+        }
+      ]
+    },
+    {
+      "controlRelation": "SPCFD",
+      "controlParameter": "ACTGRP",
+      "countRelation": "EQ",
+      "count": 1,
+      "messageId": "RNF9303",
+      "terms": [
+        {
+          "parameter": "DFTACTGRP",
+          "relation": "NE",
+          "compareValue": "1"
+        }
+      ]
+    },
+    {
+      "controlRelation": "SPCFD",
+      "controlParameter": "STGMDL",
+      "countRelation": "EQ",
+      "count": 1,
+      "messageId": "RNF9305",
+      "terms": [
+        {
+          "parameter": "DFTACTGRP",
+          "relation": "NE",
+          "compareValue": "1"
+        }
+      ]
+    },
+    {
+      "controlRelation": "EQ",
+      "controlParameter": "PRFDTA",
+      "controlCompareValue": "2",
+      "countRelation": "EQ",
+      "count": 1,
+      "messageId": "RNS9326",
+      "terms": [
+        {
+          "parameter": "TGTRLS",
+          "relation": "EQ",
+          "compareValue": "*CURRENT"
+        }
+      ]
+    },
+    {
+      "controlRelation": "SPCFD",
+      "controlParameter": "INFOSTMF",
+      "countRelation": "EQ",
+      "count": 1,
+      "messageId": "RNS9327",
+      "terms": [
+        {
+          "parameter": "PGMINFO",
+          "relation": "NE",
+          "compareValue": "1"
+        }
+      ]
+    },
+    {
+      "controlRelation": "SPCFD",
+      "controlParameter": "SRCSTMF",
+      "countRelation": "NE",
+      "count": 1,
+      "messageId": "RNS9329",
+      "terms": [
+        {
+          "parameter": "SRCMBR",
+          "relation": "SPCFD"
+        }
+      ]
+    },
+    {
+      "controlRelation": "SPCFD",
+      "controlParameter": "SRCSTMF",
+      "countRelation": "NE",
+      "count": 1,
+      "messageId": "RNS9330",
+      "terms": [
+        {
+          "parameter": "SRCFILE",
+          "relation": "SPCFD"
+        }
+      ]
+    },
+    {
+      "controlRelation": "SPCFD",
+      "controlParameter": "PPSRCFILE",
+      "countRelation": "NE",
+      "count": 1,
+      "messageId": "RNS9332",
+      "terms": [
+        {
+          "parameter": "PPGENOPT",
+          "relation": "EQ",
+          "compareValue": "0"
+        }
+      ]
+    },
+    {
+      "controlRelation": "SPCFD",
+      "controlParameter": "PPSRCMBR",
+      "countRelation": "NE",
+      "count": 1,
+      "messageId": "RNS9332",
+      "terms": [
+        {
+          "parameter": "PPGENOPT",
+          "relation": "EQ",
+          "compareValue": "0"
+        }
+      ]
+    },
+    {
+      "controlRelation": "SPCFD",
+      "controlParameter": "PPSRCSTMF",
+      "countRelation": "NE",
+      "count": 1,
+      "messageId": "RNS9332",
+      "terms": [
+        {
+          "parameter": "PPGENOPT",
+          "relation": "EQ",
+          "compareValue": "0"
+        }
+      ]
+    },
+    {
+      "controlRelation": "NE",
+      "controlParameter": "PPGENOPT",
+      "controlCompareValue": "0",
+      "countRelation": "EQ",
+      "count": 1,
+      "messageId": "RNS9333",
+      "terms": [
+        {
+          "parameter": "PPSRCSTMF",
+          "relation": "SPCFD"
+        },
+        {
+          "parameter": "PPSRCFILE",
+          "relation": "SPCFD"
+        }
+      ]
+    },
+    {
+      "controlRelation": "SPCFD",
+      "controlParameter": "PPSRCSTMF",
+      "countRelation": "NE",
+      "count": 1,
+      "messageId": "RNS9334",
+      "terms": [
+        {
+          "parameter": "PPSRCMBR",
+          "relation": "SPCFD"
+        }
+      ]
+    },
+    {
+      "controlRelation": "SPCFD",
+      "controlParameter": "PPSRCSTMF",
+      "countRelation": "NE",
+      "count": 1,
+      "messageId": "RNS9334",
+      "terms": [
+        {
+          "parameter": "PPMINOUTLN",
+          "relation": "SPCFD"
+        }
+      ]
+    },
+    {
+      "controlRelation": "EQ",
+      "controlParameter": "PPSRCMBR",
+      "controlCompareValue": "*PGM",
+      "countRelation": "NE",
+      "count": 2,
+      "messageId": "RNS9337",
+      "terms": [
+        {
+          "parameter": "PGM",
+          "relation": "EQ",
+          "compareValue": "*CTLSPEC"
+        },
+        {
+          "parameter": "PPGENOPT",
+          "relation": "NE",
+          "compareValue": "0"
+        }
+      ]
+    },
+    {
+      "controlRelation": "EQ",
+      "controlParameter": "PPSRCSTMF",
+      "controlCompareValue": "*SRCSTMF",
+      "countRelation": "EQ",
+      "count": 1,
+      "messageId": "RNS9336",
+      "terms": [
+        {
+          "parameter": "SRCSTMF",
+          "relation": "SPCFD"
+        }
+      ]
+    },
+    {
+      "controlRelation": "EQ",
+      "controlParameter": "STGMDL",
+      "controlCompareValue": "1",
+      "countRelation": "EQ",
+      "count": 1,
+      "messageId": "RNS9342",
+      "terms": [
+        {
+          "parameter": "ACTGRP",
+          "relation": "EQ",
+          "compareValue": "*CALLER"
+        }
+      ]
     }
   ]
 }

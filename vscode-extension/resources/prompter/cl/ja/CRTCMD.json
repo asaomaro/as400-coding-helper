@@ -161,6 +161,19 @@
             "maxLength": 10
           }
         }
+      ],
+      "promptControl": [
+        {
+          "controlParameter": "PGM",
+          "countRelation": "EQ",
+          "count": 1,
+          "conditions": [
+            {
+              "relation": "EQ",
+              "compareValue": "*REXX"
+            }
+          ]
+        }
       ]
     },
     {
@@ -173,7 +186,20 @@
       "attributes": {
         "characterSet": "upper",
         "maxLength": 10
-      }
+      },
+      "promptControl": [
+        {
+          "controlParameter": "PGM",
+          "countRelation": "EQ",
+          "count": 1,
+          "conditions": [
+            {
+              "relation": "EQ",
+              "compareValue": "*REXX"
+            }
+          ]
+        }
+      ]
     },
     {
       "name": "REXCMDENV",
@@ -211,6 +237,19 @@
             "maxLength": 10
           },
           "defaultValue": "*COMMAND"
+        }
+      ],
+      "promptControl": [
+        {
+          "controlParameter": "PGM",
+          "countRelation": "EQ",
+          "count": 1,
+          "conditions": [
+            {
+              "relation": "EQ",
+              "compareValue": "*REXX"
+            }
+          ]
         }
       ]
     },
@@ -266,7 +305,23 @@
           "required": false
         }
       ],
-      "maxOccurrences": 8
+      "maxOccurrences": 8,
+      "promptControl": [
+        {
+          "controlParameter": "PGM",
+          "countRelation": "EQ",
+          "count": 1,
+          "conditions": [
+            {
+              "relation": "EQ",
+              "compareValue": "*REXX"
+            }
+          ]
+        }
+      ],
+      "valueMap": {
+        "*NONE": "1"
+      }
     },
     {
       "name": "THDSAFE",
@@ -294,7 +349,12 @@
           "value": "*COND",
           "help": "コマンドは一定の条件付きでスレッド・セーフです。コマンドがスレッド・セーフとなる条件を判別するためには，そのコマンドのオンライン・ヘルプまたはその他の文書を参照してください。"
         }
-      ]
+      ],
+      "valueMap": {
+        "*COND": "C",
+        "*NO": "N",
+        "*YES": "Y"
+      }
     },
     {
       "name": "MLTTHDACN",
@@ -327,7 +387,26 @@
           "value": "*NORUN",
           "help": "コマンドを実行しません。"
         }
-      ]
+      ],
+      "promptControl": [
+        {
+          "controlParameter": "THDSAFE",
+          "countRelation": "EQ",
+          "count": 1,
+          "conditions": [
+            {
+              "relation": "EQ",
+              "compareValue": "N"
+            }
+          ]
+        }
+      ],
+      "valueMap": {
+        "*MSG": "2",
+        "*NORUN": "3",
+        "*RUN": "1",
+        "*SYSVAL": "0"
+      }
     },
     {
       "name": "TEXT",
@@ -869,5 +948,148 @@
   "source": {
     "url": "https://www.ibm.com/docs/ja/ssw_ibm_i_74/cl/crtcmd.htm",
     "version": "IBM i 7.4"
-  }
+  },
+  "dependencies": [
+    {
+      "controlRelation": "NE",
+      "controlParameter": "PGM",
+      "controlCompareValue": "*REXX",
+      "countRelation": "EQ",
+      "count": 0,
+      "messageId": "CPD6256",
+      "terms": [
+        {
+          "parameter": "REXSRCMBR",
+          "relation": "SPCFD"
+        }
+      ]
+    },
+    {
+      "controlRelation": "NE",
+      "controlParameter": "PGM",
+      "controlCompareValue": "*REXX",
+      "countRelation": "EQ",
+      "count": 0,
+      "messageId": "CPD6257",
+      "terms": [
+        {
+          "parameter": "REXSRCFILE",
+          "relation": "SPCFD"
+        }
+      ]
+    },
+    {
+      "controlRelation": "NE",
+      "controlParameter": "PGM",
+      "controlCompareValue": "*REXX",
+      "countRelation": "EQ",
+      "count": 0,
+      "messageId": "CPD6258",
+      "terms": [
+        {
+          "parameter": "REXCMDENV",
+          "relation": "SPCFD"
+        }
+      ]
+    },
+    {
+      "controlRelation": "NE",
+      "controlParameter": "PGM",
+      "controlCompareValue": "*REXX",
+      "countRelation": "EQ",
+      "count": 0,
+      "messageId": "CPD6259",
+      "terms": [
+        {
+          "parameter": "REXEXITPGM",
+          "relation": "SPCFD"
+        }
+      ]
+    },
+    {
+      "controlRelation": "EQ",
+      "controlParameter": "HLPPNLGRP",
+      "controlCompareValue": "*NONE",
+      "countRelation": "EQ",
+      "count": 1,
+      "messageId": "CPD6274",
+      "terms": [
+        {
+          "parameter": "HLPID",
+          "relation": "EQ",
+          "compareValue": "*NONE"
+        }
+      ]
+    },
+    {
+      "controlRelation": "EQ",
+      "controlParameter": "HLPID",
+      "controlCompareValue": "*NONE",
+      "countRelation": "EQ",
+      "count": 1,
+      "messageId": "CPD6274",
+      "terms": [
+        {
+          "parameter": "HLPPNLGRP",
+          "relation": "EQ",
+          "compareValue": "*NONE"
+        }
+      ]
+    },
+    {
+      "controlRelation": "NE",
+      "controlParameter": "HLPSCHIDX",
+      "controlCompareValue": "*NONE",
+      "countRelation": "EQ",
+      "count": 1,
+      "messageId": "CPD6274",
+      "terms": [
+        {
+          "parameter": "HLPPNLGRP",
+          "relation": "NE",
+          "compareValue": "*NONE"
+        }
+      ]
+    },
+    {
+      "controlRelation": "SPCFD",
+      "controlParameter": "MLTTHDACN",
+      "countRelation": "EQ",
+      "count": 1,
+      "messageId": "CPD6278",
+      "terms": [
+        {
+          "parameter": "THDSAFE",
+          "relation": "EQ",
+          "compareValue": "N"
+        }
+      ]
+    },
+    {
+      "controlRelation": "SPCFD",
+      "controlParameter": "SRCSTMF",
+      "countRelation": "NE",
+      "count": 1,
+      "messageId": "CPD5D11",
+      "terms": [
+        {
+          "parameter": "SRCMBR",
+          "relation": "SPCFD"
+        }
+      ]
+    },
+    {
+      "controlRelation": "SPCFD",
+      "controlParameter": "SRCSTMF",
+      "countRelation": "NE",
+      "count": 1,
+      "messageId": "CPD5D11",
+      "terms": [
+        {
+          "parameter": "SRCFILE",
+          "relation": "SPCFD"
+        }
+      ]
+    }
+  ]
 }
