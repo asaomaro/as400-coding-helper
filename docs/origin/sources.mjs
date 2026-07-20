@@ -113,6 +113,9 @@ export const categories = {
       { name: 'PF-LF-KEYWORDS',   topic: 'ssw_ibm_i_74/rzakb/rzakbmstlfkeyw.htm', note: '物理/論理ファイルのキーワード項目 (45-80桁)' },
       { name: 'DSPF-KEYWORDS',    topic: 'ssw_ibm_i_74/rzakc/rzakcmstkeyent.htm', note: '表示装置ファイルのキーワード項目 (45-80桁)' },
       { name: 'PRTF-KEYWORDS',    topic: 'ssw_ibm_i_74/rzakd/rzakdmstprkey.htm',  note: '印刷装置ファイルのキーワード項目 (45-80桁)' },
+      // 編集コードの早見表。EDTCDE の印刷幅を計算するのに要る。
+      // 5-9 は実機の *EDTD オブジェクト（ユーザー定義）なのでオフラインでは解決できない。
+      { name: 'PRTF-EDITCODES', topic: 'ssw_ibm_i_74/rzakd/os400edits.htm', note: '印刷装置ファイル内の IBM i 編集コード' },
       // 定位置項目の各欄の詳細（有効な値の一覧がここにある）
       { name: 'FIELD-PF-lfseq', topic: 'ssw_ibm_i_74/rzakb/lfseq.htm', note: '物理ファイルおよび論理ファイルの順序番号 (1 から 5 桁目)' },
       { name: 'FIELD-PF-lfform', topic: 'ssw_ibm_i_74/rzakb/lfform.htm', note: '物理ファイルおよび論理ファイルの仕様書タイプ (6 桁目)' },

@@ -4,11 +4,11 @@
 
 ## ① 原典と編集コード表
 
-- [ ] T1: `docs/origin/sources.mjs` に印刷装置ファイルの編集コード原典
+- [x] T1: `docs/origin/sources.mjs` に印刷装置ファイルの編集コード原典
       （`ssw_ibm_i_74/rzakd/os400edits.htm`）を足し、`fetch-origin.mjs` で取得して
       `manifest.yml` を更新する。日英とも取る。
       **受け入れ**: `docs/origin/dds/` に HTML が入り manifest に記録される
-- [ ] T2: `docs/origin/generate-dds-editcodes.mjs` を追加し、原典の早見表から
+- [x] T2: `docs/origin/generate-dds-editcodes.mjs` を追加し、原典の早見表から
       `resources/completion/dds-editcodes.json` を生成する。
       コード → `{commas, decimalPoint, negativeSign, zeroBalance, suppressLeadingZero}`。
       **表を手で書かない**。
@@ -43,7 +43,7 @@
 
 ## ④ core/dds/prtfLayout.ts（この作業の芯）
 
-- [ ] T8: **★リスク潰し**。レコード・レベルの `SPACEA`/`SPACEB`/`SKIPA`/`SKIPB` が
+- [x] T8: **★リスク潰し**。レコード・レベルの `SPACEA`/`SPACEB`/`SKIPA`/`SKIPB` が
       「レコードの最後の項目の後（前）」に効くのか「各項目の前後」に効くのかを
       **原典で確定する**。結果を `decisions.md` に記録する。
       **受け入れ**: 原典の記述を引用して確定している（依存: なし。**T10 の前に必ず**）
