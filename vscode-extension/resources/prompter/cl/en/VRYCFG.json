@@ -48,7 +48,14 @@
         }
       ],
       "positional": 2,
-      "basic": true
+      "basic": true,
+      "valueMap": {
+        "*CTL": "CTL",
+        "*DEV": "DEV",
+        "*LIN": "LIN",
+        "*MLBRSC": "MLB",
+        "*NWS": "NWS"
+      }
     },
     {
       "name": "STATUS",
@@ -86,7 +93,15 @@
         }
       ],
       "positional": 3,
-      "basic": true
+      "basic": true,
+      "valueMap": {
+        "*ALLOCATE": "AL",
+        "*DEALLOCATE": "DL",
+        "*OFF": "OF",
+        "*ON": "ON",
+        "*RESET": "RS",
+        "*UNPROTECTED": "UP"
+      }
     },
     {
       "name": "RANGE",
@@ -107,6 +122,23 @@
           "label": "*OBJ",
           "value": "*OBJ"
         }
+      ],
+      "promptControl": [
+        {
+          "controlParameter": "CFGTYPE",
+          "countRelation": "EQ",
+          "count": 2,
+          "conditions": [
+            {
+              "relation": "NE",
+              "compareValue": "NWS"
+            },
+            {
+              "relation": "NE",
+              "compareValue": "MLB"
+            }
+          ]
+        }
       ]
     },
     {
@@ -118,6 +150,43 @@
       "defaultValue": "*CFGOBJ",
       "attributes": {
         "characterSet": "upper"
+      },
+      "promptControl": [
+        {
+          "controlParameter": "CFGTYPE",
+          "countRelation": "EQ",
+          "count": 1,
+          "logicalRelation": "AND",
+          "conditions": [
+            {
+              "relation": "EQ",
+              "compareValue": "NWS"
+            },
+            {
+              "relation": "EQ",
+              "compareValue": "NWI"
+            },
+            {
+              "relation": "EQ",
+              "compareValue": "LIN"
+            }
+          ]
+        },
+        {
+          "controlParameter": "STATUS",
+          "countRelation": "EQ",
+          "count": 1,
+          "conditions": [
+            {
+              "relation": "EQ",
+              "compareValue": "ON"
+            }
+          ]
+        }
+      ],
+      "valueMap": {
+        "*CFGOBJ": "-1",
+        "*NOWAIT": "0"
       }
     },
     {
@@ -139,7 +208,24 @@
           "label": "*YES",
           "value": "*YES"
         }
-      ]
+      ],
+      "promptControl": [
+        {
+          "controlParameter": "STATUS",
+          "countRelation": "EQ",
+          "count": 1,
+          "conditions": [
+            {
+              "relation": "EQ",
+              "compareValue": "OF"
+            }
+          ]
+        }
+      ],
+      "valueMap": {
+        "*NO": "OF",
+        "*YES": "ON"
+      }
     },
     {
       "name": "RESET",
@@ -160,7 +246,40 @@
           "label": "*YES",
           "value": "*YES"
         }
-      ]
+      ],
+      "promptControl": [
+        {
+          "controlParameter": "STATUS",
+          "countRelation": "EQ",
+          "count": 1,
+          "logicalRelation": "AND",
+          "conditions": [
+            {
+              "relation": "EQ",
+              "compareValue": "ON"
+            }
+          ]
+        },
+        {
+          "controlParameter": "CFGTYPE",
+          "countRelation": "EQ",
+          "count": 2,
+          "conditions": [
+            {
+              "relation": "NE",
+              "compareValue": "NWS"
+            },
+            {
+              "relation": "NE",
+              "compareValue": "MLB"
+            }
+          ]
+        }
+      ],
+      "valueMap": {
+        "*NO": "OF",
+        "*YES": "ON"
+      }
     },
     {
       "name": "RSRCNAME",
@@ -172,7 +291,20 @@
         "characterSet": "upper",
         "maxLength": 10
       },
-      "maxOccurrences": 16
+      "maxOccurrences": 16,
+      "promptControl": [
+        {
+          "controlParameter": "CFGTYPE",
+          "countRelation": "EQ",
+          "count": 1,
+          "conditions": [
+            {
+              "relation": "EQ",
+              "compareValue": "MLB"
+            }
+          ]
+        }
+      ]
     },
     {
       "name": "FRCVRYOFF",
@@ -197,7 +329,29 @@
           "label": "*LOCK",
           "value": "*LOCK"
         }
-      ]
+      ],
+      "promptControl": [
+        {
+          "controlParameter": "STATUS",
+          "countRelation": "EQ",
+          "count": 1,
+          "conditions": [
+            {
+              "relation": "EQ",
+              "compareValue": "OF"
+            },
+            {
+              "relation": "EQ",
+              "compareValue": "DL"
+            }
+          ]
+        }
+      ],
+      "valueMap": {
+        "*LOCK": "LK",
+        "*NO": "OF",
+        "*YES": "ON"
+      }
     },
     {
       "name": "SBMMLTJOB",
@@ -218,7 +372,28 @@
           "label": "*YES",
           "value": "*YES"
         }
-      ]
+      ],
+      "promptControl": [
+        {
+          "controlParameter": "CFGTYPE",
+          "countRelation": "EQ",
+          "count": 1,
+          "conditions": [
+            {
+              "relation": "EQ",
+              "compareValue": "NWS"
+            },
+            {
+              "relation": "EQ",
+              "compareValue": "DEV"
+            }
+          ]
+        }
+      ],
+      "valueMap": {
+        "*NO": "OF",
+        "*YES": "ON"
+      }
     },
     {
       "name": "JOBD",
@@ -272,7 +447,36 @@
           "label": "*YES",
           "value": "*YES"
         }
-      ]
+      ],
+      "promptControl": [
+        {
+          "controlParameter": "STATUS",
+          "countRelation": "EQ",
+          "count": 1,
+          "logicalRelation": "AND",
+          "conditions": [
+            {
+              "relation": "EQ",
+              "compareValue": "ON"
+            }
+          ]
+        },
+        {
+          "controlParameter": "CFGTYPE",
+          "countRelation": "EQ",
+          "count": 1,
+          "conditions": [
+            {
+              "relation": "EQ",
+              "compareValue": "NWS"
+            }
+          ]
+        }
+      ],
+      "valueMap": {
+        "*NO": "OF",
+        "*YES": "ON"
+      }
     },
     {
       "name": "RESETSYS",
@@ -293,7 +497,36 @@
           "label": "*YES",
           "value": "*YES"
         }
-      ]
+      ],
+      "promptControl": [
+        {
+          "controlParameter": "STATUS",
+          "countRelation": "EQ",
+          "count": 1,
+          "logicalRelation": "AND",
+          "conditions": [
+            {
+              "relation": "EQ",
+              "compareValue": "ON"
+            }
+          ]
+        },
+        {
+          "controlParameter": "CFGTYPE",
+          "countRelation": "EQ",
+          "count": 1,
+          "conditions": [
+            {
+              "relation": "EQ",
+              "compareValue": "NWS"
+            }
+          ]
+        }
+      ],
+      "valueMap": {
+        "*NO": "OF",
+        "*YES": "ON"
+      }
     }
   ],
   "examples": [
@@ -337,5 +570,216 @@
   "source": {
     "url": "https://www.ibm.com/docs/en/ssw_ibm_i_74/cl/vrycfg.htm",
     "version": "IBM i 7.4"
-  }
+  },
+  "dependencies": [
+    {
+      "controlRelation": "SPCFD",
+      "controlParameter": "VRYWAIT",
+      "countRelation": "EQ",
+      "count": 2,
+      "messageId": "CPD27F4",
+      "terms": [
+        {
+          "parameter": "CFGTYPE",
+          "relation": "EQ",
+          "compareValue": "NWS"
+        },
+        {
+          "parameter": "CFGTYPE",
+          "relation": "EQ",
+          "compareValue": "NWI"
+        },
+        {
+          "parameter": "CFGTYPE",
+          "relation": "EQ",
+          "compareValue": "LIN"
+        },
+        {
+          "parameter": "STATUS",
+          "relation": "EQ",
+          "compareValue": "ON"
+        }
+      ]
+    },
+    {
+      "controlRelation": "EQ",
+      "controlParameter": "RESET",
+      "controlCompareValue": "ON",
+      "countRelation": "EQ",
+      "count": 1,
+      "messageId": "CPD2735",
+      "terms": [
+        {
+          "parameter": "STATUS",
+          "relation": "EQ",
+          "compareValue": "ON"
+        }
+      ]
+    },
+    {
+      "controlRelation": "SPCFD",
+      "controlParameter": "ASCVRYOFF",
+      "countRelation": "EQ",
+      "count": 1,
+      "messageId": "CPD28C6",
+      "terms": [
+        {
+          "parameter": "STATUS",
+          "relation": "EQ",
+          "compareValue": "OF"
+        }
+      ]
+    },
+    {
+      "controlRelation": "NE",
+      "controlParameter": "CFGTYPE",
+      "controlCompareValue": "MLB",
+      "countRelation": "EQ",
+      "count": 1,
+      "messageId": "CPD8FD2",
+      "terms": [
+        {
+          "parameter": "STATUS",
+          "relation": "EQ",
+          "compareValue": "ON"
+        },
+        {
+          "parameter": "STATUS",
+          "relation": "EQ",
+          "compareValue": "OF"
+        }
+      ]
+    },
+    {
+      "controlRelation": "EQ",
+      "controlParameter": "CFGTYPE",
+      "controlCompareValue": "MLB",
+      "countRelation": "EQ",
+      "count": 1,
+      "messageId": "CPD8FD2",
+      "terms": [
+        {
+          "parameter": "STATUS",
+          "relation": "EQ",
+          "compareValue": "RS"
+        },
+        {
+          "parameter": "STATUS",
+          "relation": "EQ",
+          "compareValue": "AL"
+        },
+        {
+          "parameter": "STATUS",
+          "relation": "EQ",
+          "compareValue": "UP"
+        },
+        {
+          "parameter": "STATUS",
+          "relation": "EQ",
+          "compareValue": "DL"
+        }
+      ]
+    },
+    {
+      "controlRelation": "SPCFD",
+      "controlParameter": "RSRCNAME",
+      "countRelation": "EQ",
+      "count": 1,
+      "messageId": "CPD8FD3",
+      "terms": [
+        {
+          "parameter": "CFGTYPE",
+          "relation": "EQ",
+          "compareValue": "MLB"
+        }
+      ]
+    },
+    {
+      "controlRelation": "SPCFD",
+      "controlParameter": "FRCVRYOFF",
+      "countRelation": "EQ",
+      "count": 1,
+      "messageId": "CPDB15A",
+      "terms": [
+        {
+          "parameter": "STATUS",
+          "relation": "EQ",
+          "compareValue": "OF"
+        },
+        {
+          "parameter": "STATUS",
+          "relation": "EQ",
+          "compareValue": "DL"
+        }
+      ]
+    },
+    {
+      "controlRelation": "SPCFD",
+      "controlParameter": "SBMMLTJOB",
+      "countRelation": "EQ",
+      "count": 1,
+      "messageId": "CPDB1AA",
+      "terms": [
+        {
+          "parameter": "CFGTYPE",
+          "relation": "EQ",
+          "compareValue": "NWS"
+        },
+        {
+          "parameter": "CFGTYPE",
+          "relation": "EQ",
+          "compareValue": "DEV"
+        }
+      ]
+    },
+    {
+      "controlRelation": "SPCFD",
+      "controlParameter": "JOBD",
+      "countRelation": "EQ",
+      "count": 1,
+      "messageId": "CPDB1AC",
+      "terms": [
+        {
+          "parameter": "SBMMLTJOB",
+          "relation": "EQ",
+          "compareValue": "ON"
+        }
+      ]
+    },
+    {
+      "controlRelation": "EQ",
+      "controlParameter": "GENPTHCERT",
+      "controlCompareValue": "ON",
+      "countRelation": "EQ",
+      "count": 1,
+      "messageId": "CPDB1E4",
+      "terms": [
+        {
+          "parameter": "CFGTYPE",
+          "relation": "EQ",
+          "compareValue": "NWS"
+        }
+      ]
+    },
+    {
+      "controlRelation": "EQ",
+      "controlParameter": "RESETSYS",
+      "controlCompareValue": "ON",
+      "countRelation": "EQ",
+      "count": 2,
+      "messageId": "CPDB1E0",
+      "terms": [
+        {
+          "parameter": "CFGTYPE",
+          "relation": "EQ",
+          "compareValue": "NWS"
+        },
+        {
+          "parameter": "STATUS",
+          "relation": "EQ",
+          "compareValue": "ON"
+        }
+      ]
+    }
+  ]
 }

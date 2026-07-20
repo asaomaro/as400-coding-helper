@@ -150,7 +150,11 @@
           "value": "*NO"
         }
       ],
-      "basic": true
+      "basic": true,
+      "valueMap": {
+        "*NO": "0",
+        "*YES": "1"
+      }
     },
     {
       "name": "ACTGRP",
@@ -163,7 +167,20 @@
         "characterSet": "upper",
         "maxLength": 10
       },
-      "placeholder": "*STGMDL"
+      "placeholder": "*STGMDL",
+      "promptControl": [
+        {
+          "controlParameter": "DFTACTGRP",
+          "countRelation": "EQ",
+          "count": 1,
+          "conditions": [
+            {
+              "relation": "EQ",
+              "compareValue": "0"
+            }
+          ]
+        }
+      ]
     },
     {
       "name": "STGMDL",
@@ -188,7 +205,25 @@
           "label": "*TERASPACE",
           "value": "*TERASPACE"
         }
-      ]
+      ],
+      "promptControl": [
+        {
+          "controlParameter": "DFTACTGRP",
+          "countRelation": "EQ",
+          "count": 1,
+          "conditions": [
+            {
+              "relation": "EQ",
+              "compareValue": "0"
+            }
+          ]
+        }
+      ],
+      "valueMap": {
+        "*INHERIT": "I",
+        "*SNGLVL": "S",
+        "*TERASPACE": "T"
+      }
     },
     {
       "name": "BNDDIR",
@@ -227,7 +262,20 @@
           "placeholder": "*NONE"
         }
       ],
-      "maxOccurrences": 50
+      "maxOccurrences": 50,
+      "promptControl": [
+        {
+          "controlParameter": "DFTACTGRP",
+          "countRelation": "EQ",
+          "count": 1,
+          "conditions": [
+            {
+              "relation": "EQ",
+              "compareValue": "0"
+            }
+          ]
+        }
+      ]
     },
     {
       "name": "OPTION",
@@ -731,7 +779,11 @@
           "label": "*COL",
           "value": "*COL"
         }
-      ]
+      ],
+      "valueMap": {
+        "*COL": "2",
+        "*NOCOL": "1"
+      }
     },
     {
       "name": "LICOPT",
@@ -807,7 +859,14 @@
             }
           ]
         }
-      ]
+      ],
+      "valueMap": {
+        "*ALL": "3",
+        "*MODULE": "2",
+        "*NO": "1",
+        "*PCML": "2",
+        "*STMF": "1"
+      }
     },
     {
       "name": "INFOSTMF",
@@ -865,7 +924,17 @@
         }
       ],
       "maxOccurrences": 3,
-      "placeholder": "*NONE"
+      "placeholder": "*NONE",
+      "valueMap": {
+        "*DFT": "1",
+        "*EXPINCLUDE": "4",
+        "*NOEXPINCLUDE": "5",
+        "*NONE": "0",
+        "*NORMVCOMMENT": "3",
+        "*NOSEQSRC": "7",
+        "*RMVCOMMENT": "2",
+        "*SEQSRC": "6"
+      }
     },
     {
       "name": "PPSRCFILE",
@@ -963,6 +1032,240 @@
         "SRCSTMF"
       ],
       "note": "SRCMBR パラメーターを SRCSTMF パラメーターと一緒に指定することはできません。"
+    }
+  ],
+  "dependencies": [
+    {
+      "controlRelation": "SPCFD",
+      "controlParameter": "BNDDIR",
+      "countRelation": "EQ",
+      "count": 1,
+      "messageId": "RNF9302",
+      "terms": [
+        {
+          "parameter": "DFTACTGRP",
+          "relation": "NE",
+          "compareValue": "1"
+        }
+      ]
+    },
+    {
+      "controlRelation": "SPCFD",
+      "controlParameter": "ACTGRP",
+      "countRelation": "EQ",
+      "count": 1,
+      "messageId": "RNF9303",
+      "terms": [
+        {
+          "parameter": "DFTACTGRP",
+          "relation": "NE",
+          "compareValue": "1"
+        }
+      ]
+    },
+    {
+      "controlRelation": "SPCFD",
+      "controlParameter": "STGMDL",
+      "countRelation": "EQ",
+      "count": 1,
+      "messageId": "RNF9305",
+      "terms": [
+        {
+          "parameter": "DFTACTGRP",
+          "relation": "NE",
+          "compareValue": "1"
+        }
+      ]
+    },
+    {
+      "controlRelation": "EQ",
+      "controlParameter": "PRFDTA",
+      "controlCompareValue": "2",
+      "countRelation": "EQ",
+      "count": 1,
+      "messageId": "RNS9326",
+      "terms": [
+        {
+          "parameter": "TGTRLS",
+          "relation": "EQ",
+          "compareValue": "*CURRENT"
+        }
+      ]
+    },
+    {
+      "controlRelation": "SPCFD",
+      "controlParameter": "INFOSTMF",
+      "countRelation": "EQ",
+      "count": 1,
+      "messageId": "RNS9327",
+      "terms": [
+        {
+          "parameter": "PGMINFO",
+          "relation": "NE",
+          "compareValue": "1"
+        }
+      ]
+    },
+    {
+      "controlRelation": "SPCFD",
+      "controlParameter": "SRCSTMF",
+      "countRelation": "NE",
+      "count": 1,
+      "messageId": "RNS9329",
+      "terms": [
+        {
+          "parameter": "SRCMBR",
+          "relation": "SPCFD"
+        }
+      ]
+    },
+    {
+      "controlRelation": "SPCFD",
+      "controlParameter": "SRCSTMF",
+      "countRelation": "NE",
+      "count": 1,
+      "messageId": "RNS9330",
+      "terms": [
+        {
+          "parameter": "SRCFILE",
+          "relation": "SPCFD"
+        }
+      ]
+    },
+    {
+      "controlRelation": "SPCFD",
+      "controlParameter": "PPSRCFILE",
+      "countRelation": "NE",
+      "count": 1,
+      "messageId": "RNS9332",
+      "terms": [
+        {
+          "parameter": "PPGENOPT",
+          "relation": "EQ",
+          "compareValue": "0"
+        }
+      ]
+    },
+    {
+      "controlRelation": "SPCFD",
+      "controlParameter": "PPSRCMBR",
+      "countRelation": "NE",
+      "count": 1,
+      "messageId": "RNS9332",
+      "terms": [
+        {
+          "parameter": "PPGENOPT",
+          "relation": "EQ",
+          "compareValue": "0"
+        }
+      ]
+    },
+    {
+      "controlRelation": "SPCFD",
+      "controlParameter": "PPSRCSTMF",
+      "countRelation": "NE",
+      "count": 1,
+      "messageId": "RNS9332",
+      "terms": [
+        {
+          "parameter": "PPGENOPT",
+          "relation": "EQ",
+          "compareValue": "0"
+        }
+      ]
+    },
+    {
+      "controlRelation": "NE",
+      "controlParameter": "PPGENOPT",
+      "controlCompareValue": "0",
+      "countRelation": "EQ",
+      "count": 1,
+      "messageId": "RNS9333",
+      "terms": [
+        {
+          "parameter": "PPSRCSTMF",
+          "relation": "SPCFD"
+        },
+        {
+          "parameter": "PPSRCFILE",
+          "relation": "SPCFD"
+        }
+      ]
+    },
+    {
+      "controlRelation": "SPCFD",
+      "controlParameter": "PPSRCSTMF",
+      "countRelation": "NE",
+      "count": 1,
+      "messageId": "RNS9334",
+      "terms": [
+        {
+          "parameter": "PPSRCMBR",
+          "relation": "SPCFD"
+        }
+      ]
+    },
+    {
+      "controlRelation": "SPCFD",
+      "controlParameter": "PPSRCSTMF",
+      "countRelation": "NE",
+      "count": 1,
+      "messageId": "RNS9334",
+      "terms": [
+        {
+          "parameter": "PPMINOUTLN",
+          "relation": "SPCFD"
+        }
+      ]
+    },
+    {
+      "controlRelation": "EQ",
+      "controlParameter": "PPSRCMBR",
+      "controlCompareValue": "*PGM",
+      "countRelation": "NE",
+      "count": 2,
+      "messageId": "RNS9337",
+      "terms": [
+        {
+          "parameter": "PGM",
+          "relation": "EQ",
+          "compareValue": "*CTLSPEC"
+        },
+        {
+          "parameter": "PPGENOPT",
+          "relation": "NE",
+          "compareValue": "0"
+        }
+      ]
+    },
+    {
+      "controlRelation": "EQ",
+      "controlParameter": "PPSRCSTMF",
+      "controlCompareValue": "*SRCSTMF",
+      "countRelation": "EQ",
+      "count": 1,
+      "messageId": "RNS9336",
+      "terms": [
+        {
+          "parameter": "SRCSTMF",
+          "relation": "SPCFD"
+        }
+      ]
+    },
+    {
+      "controlRelation": "EQ",
+      "controlParameter": "STGMDL",
+      "controlCompareValue": "1",
+      "countRelation": "EQ",
+      "count": 1,
+      "messageId": "RNS9342",
+      "terms": [
+        {
+          "parameter": "ACTGRP",
+          "relation": "EQ",
+          "compareValue": "*CALLER"
+        }
+      ]
     }
   ]
 }

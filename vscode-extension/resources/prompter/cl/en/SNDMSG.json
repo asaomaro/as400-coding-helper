@@ -64,7 +64,10 @@
         }
       ],
       "positional": 2,
-      "maxOccurrences": 50
+      "maxOccurrences": 50,
+      "valueMap": {
+        "*SYSOPR": "QSYSOPR   *LIBL     "
+      }
     },
     {
       "name": "MSGTYPE",
@@ -86,7 +89,11 @@
           "value": "*INQ"
         }
       ],
-      "positional": 4
+      "positional": 4,
+      "valueMap": {
+        "*INFO": "INFO",
+        "*INQ": "INQ"
+      }
     },
     {
       "name": "RPYMSGQ",
@@ -156,5 +163,66 @@
   "source": {
     "url": "https://www.ibm.com/docs/en/ssw_ibm_i_74/cl/sndmsg.htm",
     "version": "IBM i 7.4"
-  }
+  },
+  "dependencies": [
+    {
+      "controlRelation": "SPCFD",
+      "controlParameter": "RPYMSGQ",
+      "countRelation": "EQ",
+      "count": 1,
+      "messageId": "CPD2437",
+      "terms": [
+        {
+          "parameter": "MSGTYPE",
+          "relation": "EQ",
+          "compareValue": "INQ"
+        }
+      ]
+    },
+    {
+      "controlRelation": "SPCFD",
+      "controlParameter": "MSG",
+      "countRelation": "EQ",
+      "count": 1,
+      "messageId": "CPD2471",
+      "terms": [
+        {
+          "parameter": "MSG",
+          "relation": "NE",
+          "compareValue": "X&apos;&apos;"
+        }
+      ]
+    },
+    {
+      "controlRelation": "ALWAYS",
+      "countRelation": "EQ",
+      "count": 1,
+      "messageId": "CPD2544",
+      "terms": [
+        {
+          "parameter": "TOMSGQ",
+          "relation": "SPCFD"
+        },
+        {
+          "parameter": "TOUSR",
+          "relation": "SPCFD"
+        }
+      ]
+    },
+    {
+      "controlRelation": "EQ",
+      "controlParameter": "TOUSR",
+      "controlCompareValue": "*ALLACT",
+      "countRelation": "EQ",
+      "count": 0,
+      "messageId": "CPD2542",
+      "terms": [
+        {
+          "parameter": "MSGTYPE",
+          "relation": "EQ",
+          "compareValue": "INQ"
+        }
+      ]
+    }
+  ]
 }

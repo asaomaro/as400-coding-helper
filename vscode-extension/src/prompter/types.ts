@@ -74,6 +74,97 @@ export interface CommandConstraint {
   readonly note?: string;
 }
 
+/* ------------------------------------------------------------------ *
+ * CDML(コマンド定義 XML) 由来の相関規則
+ *
+ * 実機の *CMD から QCDRCMDD API で取れる DEP(相関チェック) / PMTCTL(条件表示)
+ * を写したもの。**独自の抽象に翻訳せず CDML の構造をそのまま持つ**。
+ *
+ * 理由: 散文の原典から起こした dependsOn / constraints では表せない形が実データに
+ * ある。「指定されたか(SPCFD)」を条件に使う・「成立した条件がちょうど N 個」を
+ * 数える・グループを AND/OR で連ねる、の 3 つ。翻訳しようとすると必ず落ちる。
+ * 競合(bobcozzi/clPrompter)も CDML を 1:1 で持つ設計を採っている。
+ *
+ * 演算子の集合は実機の DTD(/QIBM/XML/DTD/QcdCLCmd.dtd) が正。実データに出て
+ * こない値(UNSPCFD 等)も DTD にある限り残し、逸脱は検査で見張る。
+ * ------------------------------------------------------------------ */
+
+/** 値の比較演算子。DTD の共通部分。 */
+export type CdmlRelation = "EQ" | "NE" | "GT" | "GE" | "LT" | "LE";
+
+/** 成立した条件の個数に対する演算子。ALL は「全て成立」。 */
+export type CdmlCountRelation = CdmlRelation | "ALL";
+
+/** <Dep CtlKwdRel>。SPCFD は「指定された」、ALWAYS は「無条件に適用」。 */
+export type CdmlDepControlRelation = CdmlRelation | "SPCFD" | "ALWAYS";
+
+/** <DepParm Rel>。 */
+export type CdmlDepTermRelation = CdmlRelation | "SPCFD";
+
+/** <PmtCtlCond Rel>。UNSPCFD は「指定されていない」。 */
+export type CdmlPromptControlRelation = CdmlRelation | "SPCFD" | "UNSPCFD";
+
+/** <DepParm> — 相関チェックで数え上げる個々の条件。 */
+export interface CommandDependencyTerm {
+  readonly parameter: string;
+  readonly relation: CdmlDepTermRelation;
+  // 比較先。定数(内部値)と他パラメータのどちらか。SPCFD ではどちらも無い。
+  readonly compareValue?: string;
+  readonly compareParameter?: string;
+}
+
+/**
+ * <Dep> — コマンド単位の相関チェック。
+ *
+ * 意味: 制御条件(controlParameter/controlRelation)が成立するとき、
+ * terms のうち成立している個数が `count countRelation` を満たさなければ
+ * ならない。満たさなければ messageId のエラーになる。
+ *
+ * 例: SNDPGMMSG の「MSGID を指定したら MSGF が必須」
+ *   { controlRelation: "SPCFD", controlParameter: "MSGID",
+ *     countRelation: "EQ", count: 1, messageId: "CPD2441",
+ *     terms: [{ parameter: "MSGF", relation: "SPCFD" }] }
+ */
+export interface CommandDependency {
+  readonly controlRelation: CdmlDepControlRelation;
+  // ALWAYS のときは無い。
+  readonly controlParameter?: string;
+  readonly controlCompareValue?: string;
+  readonly controlCompareParameter?: string;
+  readonly countRelation: CdmlCountRelation;
+  readonly count?: number;
+  // 違反時に実機が出すメッセージ ID（CPD2441 など）。
+  readonly messageId?: string;
+  // 利用者に見せる文。未設定なら messageId をそのまま出す。
+  readonly message?: string;
+  readonly terms: readonly CommandDependencyTerm[];
+}
+
+/** <PmtCtlCond> — 条件表示の個々の条件。制御パラメータの値と比較する。 */
+export interface PromptControlCondition {
+  readonly relation: CdmlPromptControlRelation;
+  readonly compareValue?: string;
+}
+
+/**
+ * <PmtCtl> — 「他パラメータの値に応じて、この欄を表示するか」の 1 グループ。
+ *
+ * 意味: conditions のうち成立している個数が `count countRelation` を満たせば
+ * このグループは真。複数グループは logicalRelation で**左から順に**連ねる
+ * （先頭のグループには logicalRelation が無い）。
+ *
+ * 例: SAVOBJ の「DEV(*SAVF) のときだけ SAVF 欄を表示」
+ *   { controlParameter: "DEV", countRelation: "EQ", count: 1,
+ *     conditions: [{ relation: "EQ", compareValue: "*SAVF" }] }
+ */
+export interface PromptControlGroup {
+  readonly controlParameter: string;
+  readonly countRelation: CdmlCountRelation;
+  readonly count?: number;
+  readonly logicalRelation?: "AND" | "OR";
+  readonly conditions: readonly PromptControlCondition[];
+}
+
 export interface CommandExample {
   readonly code: string;
   readonly note?: string;
@@ -140,6 +231,22 @@ export interface ParameterDefinition {
    */
   readonly valueKind?: "command";
   readonly dependsOn?: readonly ParameterDependency[];
+  /**
+   * CDML の PMTCTL 由来の条件表示規則。dependsOn の effect:"visible" と併用でき、
+   * 両方あるときは AND（どちらの条件も満たしたときだけ表示）。
+   */
+  readonly promptControl?: readonly PromptControlGroup[];
+  /**
+   * 書く値 → 内部値の対応（CDML `<Value Val MapTo>` が食い違うものだけ）。
+   *
+   * DEP / PMTCTL の CmpVal は**内部値**と比較する（`*CHAR` に対し `C` など）。
+   * 変換せずに比較すると規則が黙って成立しない。
+   *
+   * options ではなくパラメータに持たせているのは、対象の 7 割強が
+   * `inputType:"text"` で options を持たない欄だから（`ADDMSGD` の TYPE など）。
+   * options 側にも同じ対応を置くと二重管理になるため、ここ 1 箇所に集約する。
+   */
+  readonly valueMap?: Readonly<Record<string, string>>;
 }
 
 export interface PrompterDefinition {
@@ -156,4 +263,9 @@ export interface PrompterDefinition {
   // 原典の「制約事項」節。
   readonly restrictions?: readonly string[];
   readonly constraints?: readonly CommandConstraint[];
+  /**
+   * CDML の DEP 由来の相関チェック。散文から起こした constraints と併存する
+   * （constraints は「排他/相互必須」の 2 種類しか表せないため置き換えではない）。
+   */
+  readonly dependencies?: readonly CommandDependency[];
 }

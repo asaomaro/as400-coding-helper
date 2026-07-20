@@ -55,7 +55,15 @@
         }
       ],
       "positional": 2,
-      "basic": true
+      "basic": true,
+      "valueMap": {
+        "*CHAR": "1",
+        "*DEC": "2",
+        "*INT": "4",
+        "*LGL": "3",
+        "*PTR": "6",
+        "*UINT": "5"
+      }
     },
     {
       "name": "STG",
@@ -84,7 +92,12 @@
           "help": "この変数の記憶域は， 変数で定義 (DEFVAR) パラメーターに指定されたCL変数によって提供されます。"
         }
       ],
-      "basic": true
+      "basic": true,
+      "valueMap": {
+        "*AUTO": "1",
+        "*BASED": "3",
+        "*DEFINED": "4"
+      }
     },
     {
       "name": "LEN",
@@ -117,7 +130,20 @@
           "placeholder": "0"
         }
       ],
-      "positional": 3
+      "positional": 3,
+      "promptControl": [
+        {
+          "controlParameter": "TYPE",
+          "countRelation": "EQ",
+          "count": 1,
+          "conditions": [
+            {
+              "relation": "NE",
+              "compareValue": "6"
+            }
+          ]
+        }
+      ]
     },
     {
       "name": "VALUE",
@@ -126,7 +152,44 @@
       "inputType": "text",
       "required": false,
       "positional": 4,
-      "placeholder": "' '"
+      "placeholder": "' '",
+      "promptControl": [
+        {
+          "controlParameter": "TYPE",
+          "countRelation": "EQ",
+          "count": 1,
+          "logicalRelation": "AND",
+          "conditions": [
+            {
+              "relation": "NE",
+              "compareValue": "6"
+            }
+          ]
+        },
+        {
+          "controlParameter": "STG",
+          "countRelation": "EQ",
+          "count": 1,
+          "logicalRelation": "AND",
+          "conditions": [
+            {
+              "relation": "NE",
+              "compareValue": "3"
+            }
+          ]
+        },
+        {
+          "controlParameter": "STG",
+          "countRelation": "EQ",
+          "count": 1,
+          "conditions": [
+            {
+              "relation": "NE",
+              "compareValue": "4"
+            }
+          ]
+        }
+      ]
     },
     {
       "name": "BASPTR",
@@ -134,7 +197,20 @@
       "help": "*BASEDの記憶域で宣言されたCL変数の基底ポインターを指定します。\n\nこの名前はアンパーサンド(&)で始まっていなければなりません。\n\n宣言する基底付きCL変数の基底ポインターとして機能し，TYPE(*PTR)として宣言されたCL変数の名前を指定してください。基底付き変数を使用するには，このポインターをある値に初期設定する必要があります。 この名前はアンパーサンド(&)で始まっていなければなりません。",
       "inputType": "text",
       "required": false,
-      "placeholder": "&PTR"
+      "placeholder": "&PTR",
+      "promptControl": [
+        {
+          "controlParameter": "STG",
+          "countRelation": "EQ",
+          "count": 1,
+          "conditions": [
+            {
+              "relation": "EQ",
+              "compareValue": "3"
+            }
+          ]
+        }
+      ]
     },
     {
       "name": "DEFVAR",
@@ -163,6 +239,19 @@
             "numericOnly": true
           },
           "placeholder": "1"
+        }
+      ],
+      "promptControl": [
+        {
+          "controlParameter": "STG",
+          "countRelation": "EQ",
+          "count": 1,
+          "conditions": [
+            {
+              "relation": "EQ",
+              "compareValue": "4"
+            }
+          ]
         }
       ]
     },
@@ -196,6 +285,43 @@
             "numericOnly": true
           },
           "placeholder": "0"
+        }
+      ],
+      "promptControl": [
+        {
+          "controlParameter": "TYPE",
+          "countRelation": "EQ",
+          "count": 1,
+          "logicalRelation": "AND",
+          "conditions": [
+            {
+              "relation": "EQ",
+              "compareValue": "6"
+            }
+          ]
+        },
+        {
+          "controlParameter": "STG",
+          "countRelation": "EQ",
+          "count": 1,
+          "logicalRelation": "AND",
+          "conditions": [
+            {
+              "relation": "NE",
+              "compareValue": "3"
+            }
+          ]
+        },
+        {
+          "controlParameter": "STG",
+          "countRelation": "EQ",
+          "count": 1,
+          "conditions": [
+            {
+              "relation": "NE",
+              "compareValue": "4"
+            }
+          ]
         }
       ]
     }
@@ -231,5 +357,143 @@
   "source": {
     "url": "https://www.ibm.com/docs/ja/ssw_ibm_i_74/cl/dcl.htm",
     "version": "IBM i 7.4"
-  }
+  },
+  "dependencies": [
+    {
+      "controlRelation": "SPCFD",
+      "controlParameter": "VALUE",
+      "countRelation": "EQ",
+      "count": 0,
+      "messageId": "CPD084A",
+      "terms": [
+        {
+          "parameter": "TYPE",
+          "relation": "EQ",
+          "compareValue": "6"
+        }
+      ]
+    },
+    {
+      "controlRelation": "SPCFD",
+      "controlParameter": "VALUE",
+      "countRelation": "EQ",
+      "count": 0,
+      "messageId": "CPD084B",
+      "terms": [
+        {
+          "parameter": "STG",
+          "relation": "EQ",
+          "compareValue": "3"
+        },
+        {
+          "parameter": "STG",
+          "relation": "EQ",
+          "compareValue": "4"
+        }
+      ]
+    },
+    {
+      "controlRelation": "SPCFD",
+      "controlParameter": "DEFVAR",
+      "countRelation": "EQ",
+      "count": 1,
+      "messageId": "CPD086D",
+      "terms": [
+        {
+          "parameter": "STG",
+          "relation": "EQ",
+          "compareValue": "4"
+        }
+      ]
+    },
+    {
+      "controlRelation": "EQ",
+      "controlParameter": "STG",
+      "controlCompareValue": "4",
+      "countRelation": "EQ",
+      "count": 1,
+      "messageId": "CPD086C",
+      "terms": [
+        {
+          "parameter": "DEFVAR",
+          "relation": "SPCFD"
+        }
+      ]
+    },
+    {
+      "controlRelation": "EQ",
+      "controlParameter": "STG",
+      "controlCompareValue": "3",
+      "countRelation": "EQ",
+      "count": 1,
+      "messageId": "CPD084D",
+      "terms": [
+        {
+          "parameter": "BASPTR",
+          "relation": "SPCFD"
+        }
+      ]
+    },
+    {
+      "controlRelation": "SPCFD",
+      "controlParameter": "BASPTR",
+      "countRelation": "EQ",
+      "count": 1,
+      "messageId": "CPD084E",
+      "terms": [
+        {
+          "parameter": "STG",
+          "relation": "EQ",
+          "compareValue": "3"
+        }
+      ]
+    },
+    {
+      "controlRelation": "SPCFD",
+      "controlParameter": "ADDRESS",
+      "countRelation": "EQ",
+      "count": 0,
+      "messageId": "CPD084C",
+      "terms": [
+        {
+          "parameter": "STG",
+          "relation": "EQ",
+          "compareValue": "3"
+        },
+        {
+          "parameter": "STG",
+          "relation": "EQ",
+          "compareValue": "4"
+        }
+      ]
+    },
+    {
+      "controlRelation": "SPCFD",
+      "controlParameter": "ADDRESS",
+      "countRelation": "EQ",
+      "count": 1,
+      "messageId": "CPD085D",
+      "terms": [
+        {
+          "parameter": "TYPE",
+          "relation": "EQ",
+          "compareValue": "6"
+        }
+      ]
+    },
+    {
+      "controlRelation": "SPCFD",
+      "controlParameter": "LEN",
+      "countRelation": "EQ",
+      "count": 1,
+      "messageId": "CPD0849",
+      "terms": [
+        {
+          "parameter": "TYPE",
+          "relation": "NE",
+          "compareValue": "6"
+        }
+      ]
+    }
+  ]
 }

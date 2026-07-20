@@ -75,7 +75,19 @@
           "value": "*NO",
           "help": "プログラムは最適化されません。この最適化レベルでのILEプログラムの場合には，デバッグ時に変数を表示および変更することができます。"
         }
-      ]
+      ],
+      "valueMap": {
+        "10": "N",
+        "20": "B",
+        "30": "Y",
+        "40": "A",
+        "*BASIC": "B",
+        "*FULL": "Y",
+        "*NO": "N",
+        "*NONE": "N",
+        "*SAME": "S",
+        "*YES": "A"
+      }
     },
     {
       "name": "USRPRF",
@@ -103,7 +115,12 @@
           "value": "*OWNER",
           "help": "プログラムの実行時には，プログラムの所有者とプログラムのユーザーの両方のユーザー・プロファイルが使用されます。プログラムの実行中にオブジェクトを検索してアクセスするために，両方のユーザー・プロファイルにあるオブジェクト権限の集合セットが使用されます。所有ユーザー・プロファイルのグループ・プロファイルからの権限は，実行プログラムの権限には組み込まれません。"
         }
-      ]
+      ],
+      "valueMap": {
+        "*OWNER": "O",
+        "*SAME": "S",
+        "*USER": "U"
+      }
     },
     {
       "name": "USEADPAUT",
@@ -131,7 +148,12 @@
           "value": "*NO",
           "help": "このプログラムの実行時に，前の呼び出しレベルからのプログラム借用権限は使用されません。"
         }
-      ]
+      ],
+      "valueMap": {
+        "*NO": "N",
+        "*SAME": "S",
+        "*YES": "Y"
+      }
     },
     {
       "name": "RMVOBS",
@@ -222,7 +244,16 @@
           "value": "*APYALL",
           "help": "ブロック順序およびプロシージャー順序プロファイリング・データが適用されます。プロファイリング・データの収集はこれ以上できません。"
         }
-      ]
+      ],
+      "valueMap": {
+        "*APYALL": "J",
+        "*APYBLKORD": "H",
+        "*APYPRCORD": "J",
+        "*CLR": "G",
+        "*COL": "F",
+        "*NOCOL": "E",
+        "*SAME": "S"
+      }
     },
     {
       "name": "FRCCRT",
@@ -250,7 +281,12 @@
           "value": "*NOCRT",
           "help": "プログラムは再作成されません。プログラムの再作成を暗黙に必要とするプログラム属性を変更しようとすると，エラー・メッセージが出され，プログラムの属性は変更されません。次のパラメーターのいずれかを変更すると，プログラムが再作成されることがあります。 プログラムの最適化 (OPTIMIZE) パラメーター， 借用権限の使用 (USEADPAUT) パラメーター， パフォーマンス収集使用可能 (ENBPFRCOL) パラメーター， プロファイリング・データ (PRFDTA) パラメーター， ユーザー・プロファイル (USRPRF) ，パラメーター， LIC オプション (LICOPT) パラメーター， テラスペース (TERASPACE) パラメーター，または ストレージ・モデル (STGMDL) パラメーター。"
         }
-      ]
+      ],
+      "valueMap": {
+        "*NO": "N",
+        "*NOCRT": "X",
+        "*YES": "Y"
+      }
     },
     {
       "name": "TEXT",
@@ -305,7 +341,12 @@
             }
           ]
         }
-      ]
+      ],
+      "valueMap": {
+        "*ADD": "A",
+        "*NONE": "",
+        "*REPLACE": "R"
+      }
     },
     {
       "name": "NBRTHD",
@@ -383,7 +424,24 @@
             }
           ]
         }
-      ]
+      ],
+      "promptControl": [
+        {
+          "controlParameter": "USRPRF",
+          "countRelation": "LT",
+          "count": 0,
+          "conditions": []
+        }
+      ],
+      "valueMap": {
+        "*ALLPRC": "A",
+        "*ENTRYEXIT": "E",
+        "*FULL": "F",
+        "*NONE": "N",
+        "*NONLEAF": "F",
+        "*PEP": "P",
+        "*SAME": "S"
+      }
     },
     {
       "name": "TERASPACE",
@@ -411,7 +469,20 @@
           "value": "*SAME",
           "help": "テラスペース・ストレージ使用可能化は変わりません。"
         }
-      ]
+      ],
+      "promptControl": [
+        {
+          "controlParameter": "USRPRF",
+          "countRelation": "LT",
+          "count": 0,
+          "conditions": []
+        }
+      ],
+      "valueMap": {
+        "*NO": "N",
+        "*SAME": "S",
+        "*YES": "Y"
+      }
     },
     {
       "name": "STGMDL",
@@ -433,7 +504,11 @@
           "label": "*INHERIT",
           "value": "*INHERIT"
         }
-      ]
+      ],
+      "valueMap": {
+        "*INHERIT": "I",
+        "*SAME": "S"
+      }
     }
   ],
   "threadSafe": false,
@@ -556,5 +631,57 @@
   "source": {
     "url": "https://www.ibm.com/docs/ja/ssw_ibm_i_74/cl/chgpgm.htm",
     "version": "IBM i 7.4"
-  }
+  },
+  "dependencies": [
+    {
+      "controlRelation": "EQ",
+      "controlParameter": "FRCCRT",
+      "controlCompareValue": "X",
+      "countRelation": "EQ",
+      "count": 0,
+      "messageId": "CPD05A0",
+      "terms": [
+        {
+          "parameter": "OPTIMIZE",
+          "relation": "NE",
+          "compareValue": "S"
+        },
+        {
+          "parameter": "USEADPAUT",
+          "relation": "NE",
+          "compareValue": "S"
+        },
+        {
+          "parameter": "USRPRF",
+          "relation": "NE",
+          "compareValue": "S"
+        },
+        {
+          "parameter": "ENBPFRCOL",
+          "relation": "NE",
+          "compareValue": "S"
+        },
+        {
+          "parameter": "PRFDTA",
+          "relation": "NE",
+          "compareValue": "S"
+        },
+        {
+          "parameter": "TERASPACE",
+          "relation": "NE",
+          "compareValue": "S"
+        },
+        {
+          "parameter": "STGMDL",
+          "relation": "NE",
+          "compareValue": "S"
+        },
+        {
+          "parameter": "LICOPT",
+          "relation": "NE",
+          "compareValue": "*SAME"
+        }
+      ]
+    }
+  ]
 }

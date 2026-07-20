@@ -71,7 +71,10 @@
         }
       ],
       "positional": 2,
-      "basic": true
+      "basic": true,
+      "valueMap": {
+        "*PRINT": "*LIST"
+      }
     },
     {
       "name": "FROMMBR",
@@ -98,7 +101,10 @@
         "maxLength": 10
       },
       "positional": 4,
-      "basic": true
+      "basic": true,
+      "valueMap": {
+        "*FIRST": "*N"
+      }
     },
     {
       "name": "TOMBRID",
@@ -143,7 +149,11 @@
         }
       ],
       "positional": 5,
-      "basic": true
+      "basic": true,
+      "valueMap": {
+        "*ADD": "A",
+        "*REPLACE": "R"
+      }
     },
     {
       "name": "SRCCHGDATE",
@@ -186,7 +196,24 @@
           "label": "*FROMMBR",
           "value": "*FROMMBR"
         }
-      ]
+      ],
+      "promptControl": [
+        {
+          "controlParameter": "MBROPT",
+          "countRelation": "EQ",
+          "count": 1,
+          "conditions": [
+            {
+              "relation": "NE",
+              "compareValue": "A"
+            }
+          ]
+        }
+      ],
+      "valueMap": {
+        "*FROMMBR": "F",
+        "*SAME": "S"
+      }
     },
     {
       "name": "SRCTYPE",
@@ -207,7 +234,24 @@
           "label": "*FROMMBR",
           "value": "*FROMMBR"
         }
-      ]
+      ],
+      "promptControl": [
+        {
+          "controlParameter": "MBROPT",
+          "countRelation": "EQ",
+          "count": 1,
+          "conditions": [
+            {
+              "relation": "NE",
+              "compareValue": "A"
+            }
+          ]
+        }
+      ],
+      "valueMap": {
+        "*FROMMBR": "F",
+        "*SAME": "S"
+      }
     },
     {
       "name": "SRCOPT",
@@ -233,7 +277,12 @@
           "value": "*DATE"
         }
       ],
-      "maxOccurrences": 2
+      "maxOccurrences": 2,
+      "valueMap": {
+        "*DATE": "D",
+        "*SAME": "S",
+        "*SEQNBR": "N"
+      }
     },
     {
       "name": "SRCSEQ",
@@ -263,6 +312,19 @@
             "numericOnly": true
           }
         }
+      ],
+      "promptControl": [
+        {
+          "controlParameter": "SRCOPT",
+          "countRelation": "EQ",
+          "count": 1,
+          "conditions": [
+            {
+              "relation": "NE",
+              "compareValue": "S"
+            }
+          ]
+        }
       ]
     }
   ],
@@ -280,5 +342,68 @@
   "source": {
     "url": "https://www.ibm.com/docs/en/ssw_ibm_i_74/cl/cpysrcf.htm",
     "version": "IBM i 7.4"
-  }
+  },
+  "dependencies": [
+    {
+      "controlRelation": "EQ",
+      "controlParameter": "TOFILE",
+      "controlCompareValue": "*LIST",
+      "countRelation": "GT",
+      "count": 0,
+      "messageId": "CPD2834",
+      "terms": [
+        {
+          "parameter": "TOMBR",
+          "relation": "EQ",
+          "compareValue": "*N"
+        },
+        {
+          "parameter": "TOMBR",
+          "relation": "EQ",
+          "compareValue": "*FROMMBR"
+        }
+      ]
+    },
+    {
+      "controlRelation": "SPCFD",
+      "controlParameter": "SRCSEQ",
+      "countRelation": "EQ",
+      "count": 1,
+      "messageId": "CPD2824",
+      "terms": [
+        {
+          "parameter": "SRCOPT",
+          "relation": "SPCFD"
+        }
+      ]
+    },
+    {
+      "controlRelation": "SPCFD",
+      "controlParameter": "TEXT",
+      "countRelation": "EQ",
+      "count": 1,
+      "messageId": "CPD2826",
+      "terms": [
+        {
+          "parameter": "MBROPT",
+          "relation": "NE",
+          "compareValue": "A"
+        }
+      ]
+    },
+    {
+      "controlRelation": "SPCFD",
+      "controlParameter": "SRCTYPE",
+      "countRelation": "EQ",
+      "count": 1,
+      "messageId": "CPD2827",
+      "terms": [
+        {
+          "parameter": "MBROPT",
+          "relation": "NE",
+          "compareValue": "A"
+        }
+      ]
+    }
+  ]
 }

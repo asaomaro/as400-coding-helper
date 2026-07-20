@@ -145,7 +145,12 @@
           "help": "アクセス・パスは再編成時に保守されます。 *NOを指定した場合には，ALWCANCEL(*YES)も指定しなければなりません。"
         }
       ],
-      "basic": true
+      "basic": true,
+      "valueMap": {
+        "*NO": "N",
+        "*OPTIMIZE": "O",
+        "*YES": "Y"
+      }
     },
     {
       "name": "ALWCANCEL",
@@ -169,7 +174,11 @@
           "help": "再編成は取り消すことができます。再編成が完了前に取り消された場合には，同じパラメーターでの後続の再編成は，一般的に終了した個所から続行されます。再編成が取り消されてから行われた変更の数が多すぎる場合には，再編成は続行するのではなく，再開できます。"
         }
       ],
-      "basic": true
+      "basic": true,
+      "valueMap": {
+        "*NO": "N",
+        "*YES": "Y"
+      }
     },
     {
       "name": "LOCK",
@@ -197,7 +206,25 @@
           "value": "*SHRUPD",
           "help": "共用更新ロックが獲得されます。別のジョブからの物理ファイル・メンバーへの並行更新，削除，および挿入アクセスは許可されます。 *SHRUPDを選択した場合，結果として得られるレコード順序はKEYFILEキーワードで要求されたものと正確に一致しない場合があります。レコードは指定された順序に近い順序で再編成されますが，更新，削除，および挿入の操作を並行して行うと，一部のレコードが再編成されない場合があります。レコードが正確に到着順(*NONE)またはキー付きファイルの順序と一致しなければならない場合には，*SHRUPDを使用しないでください。 再編成の終了時に，ファイルの終わりにある削除済みレコードを除去して記憶域をシステムに戻す試みが行われます。*SHRUPDが指定された場合，削除済みレコードを除去する直前に行われる並行挿入により，ファイルの終わりにある削除済みレコードの一部またはすべての除去が妨げられる可能性があります。この場合は，この後の再編成でFROMRCDキーワードを使用することにより，ファイル全体の再編成を再度行わずに削除済みレコードの除去を試行することができます。 *SHRUPDを指定した場合には，ALWCANCEL(*YES)も指定しなければなりません。"
         }
-      ]
+      ],
+      "promptControl": [
+        {
+          "controlParameter": "ALWCANCEL",
+          "countRelation": "EQ",
+          "count": 1,
+          "conditions": [
+            {
+              "relation": "EQ",
+              "compareValue": "Y"
+            }
+          ]
+        }
+      ],
+      "valueMap": {
+        "*EXCL": "5",
+        "*EXCLRD": "4",
+        "*SHRUPD": "3"
+      }
     },
     {
       "name": "FROMRCD",
@@ -209,7 +236,24 @@
       "attributes": {
         "characterSet": "upper"
       },
-      "placeholder": "*START"
+      "placeholder": "*START",
+      "promptControl": [
+        {
+          "controlParameter": "ALWCANCEL",
+          "countRelation": "EQ",
+          "count": 1,
+          "conditions": [
+            {
+              "relation": "EQ",
+              "compareValue": "Y"
+            }
+          ]
+        }
+      ],
+      "valueMap": {
+        "*PRVRGZ": "0",
+        "*START": "1"
+      }
     },
     {
       "name": "SRCOPT",
@@ -237,7 +281,12 @@
         }
       ],
       "maxOccurrences": 2,
-      "placeholder": "*SAME"
+      "placeholder": "*SAME",
+      "valueMap": {
+        "*DATE": "D",
+        "*SAME": "S",
+        "*SEQNBR": "N"
+      }
     },
     {
       "name": "SRCSEQ",
@@ -349,5 +398,105 @@
   "source": {
     "url": "https://www.ibm.com/docs/ja/ssw_ibm_i_74/cl/rgzpfm.htm",
     "version": "IBM i 7.4"
-  }
+  },
+  "dependencies": [
+    {
+      "controlRelation": "NE",
+      "controlParameter": "FROMRCD",
+      "controlCompareValue": "1",
+      "countRelation": "EQ",
+      "count": 2,
+      "messageId": "CPD730B",
+      "terms": [
+        {
+          "parameter": "KEYFILE",
+          "relation": "EQ",
+          "compareValue": "*NONE"
+        },
+        {
+          "parameter": "KEYFILE",
+          "relation": "EQ",
+          "compareValue": "*RPLDLTRCD"
+        },
+        {
+          "parameter": "ALWCANCEL",
+          "relation": "EQ",
+          "compareValue": "Y"
+        }
+      ]
+    },
+    {
+      "controlRelation": "SPCFD",
+      "controlParameter": "SRCSEQ",
+      "countRelation": "EQ",
+      "count": 1,
+      "messageId": "CPD2824",
+      "terms": [
+        {
+          "parameter": "SRCOPT",
+          "relation": "SPCFD"
+        }
+      ]
+    },
+    {
+      "controlRelation": "EQ",
+      "controlParameter": "RBDACCPTH",
+      "controlCompareValue": "N",
+      "countRelation": "EQ",
+      "count": 1,
+      "messageId": "CPD730B",
+      "terms": [
+        {
+          "parameter": "ALWCANCEL",
+          "relation": "EQ",
+          "compareValue": "Y"
+        }
+      ]
+    },
+    {
+      "controlRelation": "EQ",
+      "controlParameter": "KEYFILE",
+      "controlCompareValue": "*RPLDLTRCD",
+      "countRelation": "EQ",
+      "count": 1,
+      "messageId": "CPD730B",
+      "terms": [
+        {
+          "parameter": "ALWCANCEL",
+          "relation": "EQ",
+          "compareValue": "Y"
+        }
+      ]
+    },
+    {
+      "controlRelation": "NE",
+      "controlParameter": "LOCK",
+      "controlCompareValue": "5",
+      "countRelation": "EQ",
+      "count": 1,
+      "messageId": "CPD730B",
+      "terms": [
+        {
+          "parameter": "ALWCANCEL",
+          "relation": "EQ",
+          "compareValue": "Y"
+        }
+      ]
+    },
+    {
+      "controlRelation": "NE",
+      "controlParameter": "SRCOPT",
+      "controlCompareValue": "S",
+      "countRelation": "EQ",
+      "count": 1,
+      "messageId": "CPD730B",
+      "terms": [
+        {
+          "parameter": "ALWCANCEL",
+          "relation": "EQ",
+          "compareValue": "N"
+        }
+      ]
+    }
+  ]
 }

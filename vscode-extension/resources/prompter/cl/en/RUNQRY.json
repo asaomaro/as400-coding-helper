@@ -92,7 +92,10 @@
         }
       ],
       "positional": 2,
-      "maxOccurrences": 32
+      "maxOccurrences": 32,
+      "valueMap": {
+        "*RUNOPT": "X&apos;40404040404040404040&apos;"
+      }
     },
     {
       "name": "OUTTYPE",
@@ -122,7 +125,13 @@
           "value": "*OUTFILE"
         }
       ],
-      "positional": 3
+      "positional": 3,
+      "valueMap": {
+        "*DISPLAY": "1",
+        "*OUTFILE": "3",
+        "*PRINTER": "2",
+        "*RUNOPT": "0"
+      }
     },
     {
       "name": "OUTFORM",
@@ -193,7 +202,29 @@
           "label": "*YES",
           "value": "*YES"
         }
-      ]
+      ],
+      "promptControl": [
+        {
+          "controlParameter": "OUTTYPE",
+          "countRelation": "GT",
+          "count": 0,
+          "conditions": [
+            {
+              "relation": "EQ",
+              "compareValue": "2"
+            },
+            {
+              "relation": "EQ",
+              "compareValue": "3"
+            }
+          ]
+        }
+      ],
+      "valueMap": {
+        "*NO": "N",
+        "*RUNOPT": "X&apos;40&apos;",
+        "*YES": "Y"
+      }
     },
     {
       "name": "PRTDEV",
@@ -205,7 +236,20 @@
       "attributes": {
         "characterSet": "upper",
         "maxLength": 10
-      }
+      },
+      "promptControl": [
+        {
+          "controlParameter": "OUTTYPE",
+          "countRelation": "EQ",
+          "count": 1,
+          "conditions": [
+            {
+              "relation": "EQ",
+              "compareValue": "2"
+            }
+          ]
+        }
+      ]
     },
     {
       "name": "FORMSIZE",
@@ -237,6 +281,19 @@
             "characterSet": "upper"
           }
         }
+      ],
+      "promptControl": [
+        {
+          "controlParameter": "OUTTYPE",
+          "countRelation": "EQ",
+          "count": 1,
+          "conditions": [
+            {
+              "relation": "EQ",
+              "compareValue": "2"
+            }
+          ]
+        }
       ]
     },
     {
@@ -248,7 +305,20 @@
       "defaultValue": "*RUNOPT",
       "attributes": {
         "characterSet": "upper"
-      }
+      },
+      "promptControl": [
+        {
+          "controlParameter": "OUTTYPE",
+          "countRelation": "EQ",
+          "count": 1,
+          "conditions": [
+            {
+              "relation": "EQ",
+              "compareValue": "2"
+            }
+          ]
+        }
+      ]
     },
     {
       "name": "COPIES",
@@ -259,7 +329,20 @@
       "defaultValue": "*RUNOPT",
       "attributes": {
         "characterSet": "upper"
-      }
+      },
+      "promptControl": [
+        {
+          "controlParameter": "OUTTYPE",
+          "countRelation": "EQ",
+          "count": 1,
+          "conditions": [
+            {
+              "relation": "EQ",
+              "compareValue": "2"
+            }
+          ]
+        }
+      ]
     },
     {
       "name": "LINESPACE",
@@ -275,6 +358,19 @@
         {
           "label": "*RUNOPT",
           "value": "*RUNOPT"
+        }
+      ],
+      "promptControl": [
+        {
+          "controlParameter": "OUTTYPE",
+          "countRelation": "EQ",
+          "count": 1,
+          "conditions": [
+            {
+              "relation": "EQ",
+              "compareValue": "2"
+            }
+          ]
         }
       ]
     },
@@ -367,6 +463,19 @@
             }
           ]
         }
+      ],
+      "promptControl": [
+        {
+          "controlParameter": "OUTTYPE",
+          "countRelation": "EQ",
+          "count": 1,
+          "conditions": [
+            {
+              "relation": "EQ",
+              "compareValue": "3"
+            }
+          ]
+        }
       ]
     },
     {
@@ -379,7 +488,20 @@
       "attributes": {
         "characterSet": "upper",
         "maxLength": 10
-      }
+      },
+      "promptControl": [
+        {
+          "controlParameter": "OUTTYPE",
+          "countRelation": "EQ",
+          "count": 1,
+          "conditions": [
+            {
+              "relation": "EQ",
+              "compareValue": "3"
+            }
+          ]
+        }
+      ]
     }
   ],
   "examples": [
@@ -393,5 +515,62 @@
   "source": {
     "url": "https://www.ibm.com/docs/en/ssw_ibm_i_74/cl/runqry.htm",
     "version": "IBM i 7.4"
-  }
+  },
+  "dependencies": [
+    {
+      "controlRelation": "EQ",
+      "controlParameter": "QRY",
+      "controlCompareValue": "X&apos;40&apos;",
+      "countRelation": "EQ",
+      "count": 2,
+      "messageId": "QRY1013",
+      "terms": [
+        {
+          "parameter": "QRYFILE",
+          "relation": "GT",
+          "compareValue": "X&apos;40&apos;"
+        },
+        {
+          "parameter": "QRYFILE",
+          "relation": "NE",
+          "compareValue": "*SAME"
+        }
+      ]
+    },
+    {
+      "controlRelation": "EQ",
+      "controlParameter": "QRY",
+      "controlCompareValue": "*NONE",
+      "countRelation": "EQ",
+      "count": 2,
+      "messageId": "QRY1013",
+      "terms": [
+        {
+          "parameter": "QRYFILE",
+          "relation": "GT",
+          "compareValue": "X&apos;40&apos;"
+        },
+        {
+          "parameter": "QRYFILE",
+          "relation": "NE",
+          "compareValue": "*SAME"
+        }
+      ]
+    },
+    {
+      "controlRelation": "EQ",
+      "controlParameter": "PRTDFN",
+      "controlCompareValue": "Y",
+      "countRelation": "EQ",
+      "count": 1,
+      "messageId": "QRY2278",
+      "terms": [
+        {
+          "parameter": "OUTTYPE",
+          "relation": "NE",
+          "compareValue": "1"
+        }
+      ]
+    }
+  ]
 }

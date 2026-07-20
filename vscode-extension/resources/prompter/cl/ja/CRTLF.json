@@ -219,7 +219,10 @@
         }
       ],
       "maxOccurrences": 32,
-      "basic": true
+      "basic": true,
+      "valueMap": {
+        "*NONE": "X&apos;40&apos;"
+      }
     },
     {
       "name": "TEXT",
@@ -287,7 +290,19 @@
       ],
       "positional": 4,
       "maxOccurrences": 4,
-      "placeholder": "*SRC"
+      "placeholder": "*SRC",
+      "valueMap": {
+        "*EVENTF": "7",
+        "*LIST": "3",
+        "*NOEVENTF": "8",
+        "*NOLIST": "4",
+        "*NOSECLVL": "6",
+        "*NOSOURCE": "2",
+        "*NOSRC": "2",
+        "*SECLVL": "5",
+        "*SOURCE": "1",
+        "*SRC": "1"
+      }
     },
     {
       "name": "SYSTEM",
@@ -350,7 +365,11 @@
           "value": "*MAX4GB",
           "help": "このファイルと関連付けられるアクセス・パスは，最大4ギガバイト(4,294,966,272バイト）の補助記憶域を占有することができます。"
         }
-      ]
+      ],
+      "valueMap": {
+        "*MAX1TB": "1",
+        "*MAX4GB": "0"
+      }
     },
     {
       "name": "PAGESIZE",
@@ -368,7 +387,10 @@
           "value": "*KEYLEN",
           "help": "アクセス・パス論理ページ・サイズは，1つ以上のキーの合計長によって決定されます。"
         }
-      ]
+      ],
+      "valueMap": {
+        "*KEYLEN": "0"
+      }
     },
     {
       "name": "MAINT",
@@ -556,7 +578,11 @@
           "value": "*YES",
           "help": "ファイルをオープンする時に*YESも指定したジョブで，同じODPを各プログラムと共用することができます。"
         }
-      ]
+      ],
+      "valueMap": {
+        "*NO": "N",
+        "*YES": "Y"
+      }
     },
     {
       "name": "SRTSEQ",
@@ -684,5 +710,100 @@
   "source": {
     "url": "https://www.ibm.com/docs/ja/ssw_ibm_i_74/cl/crtlf.htm",
     "version": "IBM i 7.4"
-  }
+  },
+  "dependencies": [
+    {
+      "controlRelation": "SPCFD",
+      "controlParameter": "DTAMBRS",
+      "countRelation": "EQ",
+      "count": 1,
+      "messageId": "CPD7321",
+      "terms": [
+        {
+          "parameter": "MBR",
+          "relation": "NE",
+          "compareValue": "*NONE"
+        }
+      ]
+    },
+    {
+      "controlRelation": "SPCFD",
+      "controlParameter": "FLAG",
+      "countRelation": "EQ",
+      "count": 1,
+      "messageId": "CPD7333",
+      "terms": [
+        {
+          "parameter": "FLAG",
+          "relation": "LE",
+          "compareParameter": "GENLVL"
+        }
+      ]
+    },
+    {
+      "controlRelation": "ALWAYS",
+      "countRelation": "LE",
+      "count": 1,
+      "messageId": "CPD7330",
+      "terms": [
+        {
+          "parameter": "OPTION",
+          "relation": "EQ",
+          "compareValue": "1"
+        },
+        {
+          "parameter": "OPTION",
+          "relation": "EQ",
+          "compareValue": "2"
+        }
+      ]
+    },
+    {
+      "controlRelation": "ALWAYS",
+      "countRelation": "LE",
+      "count": 1,
+      "messageId": "CPD7330",
+      "terms": [
+        {
+          "parameter": "OPTION",
+          "relation": "EQ",
+          "compareValue": "3"
+        },
+        {
+          "parameter": "OPTION",
+          "relation": "EQ",
+          "compareValue": "4"
+        }
+      ]
+    },
+    {
+      "controlRelation": "EQ",
+      "controlParameter": "SHARE",
+      "controlCompareValue": "Y",
+      "countRelation": "EQ",
+      "count": 0,
+      "messageId": "CPD7331",
+      "terms": [
+        {
+          "parameter": "MBR",
+          "relation": "EQ",
+          "compareValue": "*NONE"
+        }
+      ]
+    },
+    {
+      "controlRelation": "SPCFD",
+      "controlParameter": "PAGESIZE",
+      "countRelation": "EQ",
+      "count": 1,
+      "messageId": "CPD5150",
+      "terms": [
+        {
+          "parameter": "ACCPTHSIZ",
+          "relation": "EQ",
+          "compareValue": "1"
+        }
+      ]
+    }
+  ]
 }

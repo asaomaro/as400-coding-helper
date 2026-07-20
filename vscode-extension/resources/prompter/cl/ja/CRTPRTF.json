@@ -182,7 +182,15 @@
           "value": "*AFPDS"
         }
       ],
-      "basic": true
+      "basic": true,
+      "valueMap": {
+        "*AFPDS": "X&apos;02&apos;",
+        "*AFPDSLINE": "X&apos;04&apos;",
+        "*IPDS": "X&apos;01&apos;",
+        "*LINE": "X&apos;03&apos;",
+        "*SCS": "X&apos;00&apos;",
+        "*USERASCII": "X&apos;05&apos;"
+      }
     },
     {
       "name": "IGCDTA",
@@ -578,7 +586,12 @@
           "value": "*MACHINE",
           "help": "どのレコードでも先頭の文字にはマシン・コード制御文字が入っています。*MACHINEを指定する場合には，先頭文字用紙制御コード用の余分な1桁をレコード長に含める必要があります。この値は，外部記述の印刷装置ファイルには無効です。 合わせてTBLREFCHR(*YES)も指定した場合には，レコード長は制御文字とテーブル参照文字のための余分の2桁を加えたものでなければなりません。"
         }
-      ]
+      ],
+      "valueMap": {
+        "*FCFC": "X&apos;01&apos;",
+        "*MACHINE": "X&apos;02&apos;",
+        "*NONE": "X&apos;00&apos;"
+      }
     },
     {
       "name": "CHLVAL",
@@ -1160,7 +1173,11 @@
           "value": "*NONE",
           "help": "マルチプル・アップ印刷を行う時に，出力は減らされません。"
         }
-      ]
+      ],
+      "valueMap": {
+        "*NONE": "X&apos;01&apos;",
+        "*TEXT": "X&apos;00&apos;"
+      }
     },
     {
       "name": "PRTTXT",
@@ -1742,7 +1759,11 @@
           "value": "*NO",
           "help": "データはスプールされません。出力が使用可能になると印刷装置に送られて印刷されます。"
         }
-      ]
+      ],
+      "valueMap": {
+        "*NO": "N",
+        "*YES": "Y"
+      }
     },
     {
       "name": "OUTQ",
@@ -1830,7 +1851,11 @@
           "help": "満了日は， ファイル満了までの日数 (DAYS) パラメーターに指定された値を使用して計算されます。"
         }
       ],
-      "placeholder": "*NONE"
+      "placeholder": "*NONE",
+      "valueMap": {
+        "*DAYS": "9999999",
+        "*NONE": "0999998"
+      }
     },
     {
       "name": "DAYS",
@@ -2471,5 +2496,145 @@
   "source": {
     "url": "https://www.ibm.com/docs/ja/ssw_ibm_i_74/cl/crtprtf.htm",
     "version": "IBM i 7.4"
-  }
+  },
+  "dependencies": [
+    {
+      "controlRelation": "NE",
+      "controlParameter": "SRCMBR",
+      "controlCompareValue": "*FILE",
+      "countRelation": "EQ",
+      "count": 1,
+      "messageId": "CPD7329",
+      "terms": [
+        {
+          "parameter": "SRCFILE",
+          "relation": "NE",
+          "compareValue": "*NONE"
+        }
+      ]
+    },
+    {
+      "controlRelation": "NE",
+      "controlParameter": "SRCFILE",
+      "controlCompareValue": "*NONE",
+      "countRelation": "EQ",
+      "count": 2,
+      "messageId": "CPD7342",
+      "terms": [
+        {
+          "parameter": "CTLCHAR",
+          "relation": "NE",
+          "compareValue": "X&apos;01&apos;"
+        },
+        {
+          "parameter": "CTLCHAR",
+          "relation": "NE",
+          "compareValue": "X&apos;02&apos;"
+        }
+      ]
+    },
+    {
+      "controlRelation": "NE",
+      "controlParameter": "SRCFILE",
+      "controlCompareValue": "*NONE",
+      "countRelation": "EQ",
+      "count": 1,
+      "messageId": "CPD7343",
+      "terms": [
+        {
+          "parameter": "DEVTYPE",
+          "relation": "NE",
+          "compareValue": "X&apos;05&apos;"
+        }
+      ]
+    },
+    {
+      "controlRelation": "SPCFD",
+      "controlParameter": "FLAG",
+      "countRelation": "EQ",
+      "count": 1,
+      "messageId": "CPD7333",
+      "terms": [
+        {
+          "parameter": "FLAG",
+          "relation": "LE",
+          "compareParameter": "GENLVL"
+        }
+      ]
+    },
+    {
+      "controlRelation": "EQ",
+      "controlParameter": "SPOOL",
+      "controlCompareValue": "N",
+      "countRelation": "EQ",
+      "count": 4,
+      "messageId": "CPD7341",
+      "terms": [
+        {
+          "parameter": "DEVTYPE",
+          "relation": "NE",
+          "compareValue": "X&apos;05&apos;"
+        },
+        {
+          "parameter": "DEVTYPE",
+          "relation": "NE",
+          "compareValue": "X&apos;04&apos;"
+        },
+        {
+          "parameter": "DEVTYPE",
+          "relation": "NE",
+          "compareValue": "X&apos;03&apos;"
+        },
+        {
+          "parameter": "DEVTYPE",
+          "relation": "NE",
+          "compareValue": "X&apos;02&apos;"
+        }
+      ]
+    },
+    {
+      "controlRelation": "EQ",
+      "controlParameter": "REDUCE",
+      "controlCompareValue": "X&apos;00&apos;",
+      "countRelation": "EQ",
+      "count": 1,
+      "messageId": "CPD734A",
+      "terms": [
+        {
+          "parameter": "MULTIUP",
+          "relation": "NE",
+          "compareValue": "3"
+        }
+      ]
+    },
+    {
+      "controlRelation": "NE",
+      "controlParameter": "EXPDATE",
+      "controlCompareValue": "9999999",
+      "countRelation": "EQ",
+      "count": 1,
+      "messageId": "CPD330C",
+      "terms": [
+        {
+          "parameter": "DAYS",
+          "relation": "EQ",
+          "compareValue": "0"
+        }
+      ]
+    },
+    {
+      "controlRelation": "EQ",
+      "controlParameter": "EXPDATE",
+      "controlCompareValue": "9999999",
+      "countRelation": "EQ",
+      "count": 1,
+      "messageId": "CPD330B",
+      "terms": [
+        {
+          "parameter": "DAYS",
+          "relation": "SPCFD"
+        }
+      ]
+    }
+  ]
 }

@@ -138,7 +138,12 @@
           "value": "*NO"
         }
       ],
-      "basic": true
+      "basic": true,
+      "valueMap": {
+        "*NO": "N",
+        "*OPTIMIZE": "O",
+        "*YES": "Y"
+      }
     },
     {
       "name": "ALWCANCEL",
@@ -160,7 +165,11 @@
           "value": "*YES"
         }
       ],
-      "basic": true
+      "basic": true,
+      "valueMap": {
+        "*NO": "N",
+        "*YES": "Y"
+      }
     },
     {
       "name": "LOCK",
@@ -185,7 +194,25 @@
           "label": "*SHRUPD",
           "value": "*SHRUPD"
         }
-      ]
+      ],
+      "promptControl": [
+        {
+          "controlParameter": "ALWCANCEL",
+          "countRelation": "EQ",
+          "count": 1,
+          "conditions": [
+            {
+              "relation": "EQ",
+              "compareValue": "Y"
+            }
+          ]
+        }
+      ],
+      "valueMap": {
+        "*EXCL": "5",
+        "*EXCLRD": "4",
+        "*SHRUPD": "3"
+      }
     },
     {
       "name": "FROMRCD",
@@ -197,7 +224,24 @@
       "attributes": {
         "characterSet": "upper"
       },
-      "placeholder": "*START"
+      "placeholder": "*START",
+      "promptControl": [
+        {
+          "controlParameter": "ALWCANCEL",
+          "countRelation": "EQ",
+          "count": 1,
+          "conditions": [
+            {
+              "relation": "EQ",
+              "compareValue": "Y"
+            }
+          ]
+        }
+      ],
+      "valueMap": {
+        "*PRVRGZ": "0",
+        "*START": "1"
+      }
     },
     {
       "name": "SRCOPT",
@@ -224,7 +268,12 @@
         }
       ],
       "maxOccurrences": 2,
-      "placeholder": "*SAME"
+      "placeholder": "*SAME",
+      "valueMap": {
+        "*DATE": "D",
+        "*SAME": "S",
+        "*SEQNBR": "N"
+      }
     },
     {
       "name": "SRCSEQ",
@@ -286,5 +335,105 @@
   "source": {
     "url": "https://www.ibm.com/docs/en/ssw_ibm_i_74/cl/rgzpfm.htm",
     "version": "IBM i 7.4"
-  }
+  },
+  "dependencies": [
+    {
+      "controlRelation": "NE",
+      "controlParameter": "FROMRCD",
+      "controlCompareValue": "1",
+      "countRelation": "EQ",
+      "count": 2,
+      "messageId": "CPD730B",
+      "terms": [
+        {
+          "parameter": "KEYFILE",
+          "relation": "EQ",
+          "compareValue": "*NONE"
+        },
+        {
+          "parameter": "KEYFILE",
+          "relation": "EQ",
+          "compareValue": "*RPLDLTRCD"
+        },
+        {
+          "parameter": "ALWCANCEL",
+          "relation": "EQ",
+          "compareValue": "Y"
+        }
+      ]
+    },
+    {
+      "controlRelation": "SPCFD",
+      "controlParameter": "SRCSEQ",
+      "countRelation": "EQ",
+      "count": 1,
+      "messageId": "CPD2824",
+      "terms": [
+        {
+          "parameter": "SRCOPT",
+          "relation": "SPCFD"
+        }
+      ]
+    },
+    {
+      "controlRelation": "EQ",
+      "controlParameter": "RBDACCPTH",
+      "controlCompareValue": "N",
+      "countRelation": "EQ",
+      "count": 1,
+      "messageId": "CPD730B",
+      "terms": [
+        {
+          "parameter": "ALWCANCEL",
+          "relation": "EQ",
+          "compareValue": "Y"
+        }
+      ]
+    },
+    {
+      "controlRelation": "EQ",
+      "controlParameter": "KEYFILE",
+      "controlCompareValue": "*RPLDLTRCD",
+      "countRelation": "EQ",
+      "count": 1,
+      "messageId": "CPD730B",
+      "terms": [
+        {
+          "parameter": "ALWCANCEL",
+          "relation": "EQ",
+          "compareValue": "Y"
+        }
+      ]
+    },
+    {
+      "controlRelation": "NE",
+      "controlParameter": "LOCK",
+      "controlCompareValue": "5",
+      "countRelation": "EQ",
+      "count": 1,
+      "messageId": "CPD730B",
+      "terms": [
+        {
+          "parameter": "ALWCANCEL",
+          "relation": "EQ",
+          "compareValue": "Y"
+        }
+      ]
+    },
+    {
+      "controlRelation": "NE",
+      "controlParameter": "SRCOPT",
+      "controlCompareValue": "S",
+      "countRelation": "EQ",
+      "count": 1,
+      "messageId": "CPD730B",
+      "terms": [
+        {
+          "parameter": "ALWCANCEL",
+          "relation": "EQ",
+          "compareValue": "N"
+        }
+      ]
+    }
+  ]
 }

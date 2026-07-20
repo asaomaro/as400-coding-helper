@@ -114,7 +114,20 @@
         "characterSet": "upper",
         "maxLength": 10
       },
-      "placeholder": "*FILE"
+      "placeholder": "*FILE",
+      "promptControl": [
+        {
+          "controlParameter": "SRCFILE",
+          "countRelation": "EQ",
+          "count": 1,
+          "conditions": [
+            {
+              "relation": "NE",
+              "compareValue": "*NONE"
+            }
+          ]
+        }
+      ]
     },
     {
       "name": "OPTION",
@@ -168,7 +181,32 @@
         }
       ],
       "maxOccurrences": 3,
-      "placeholder": "*SRC"
+      "placeholder": "*SRC",
+      "promptControl": [
+        {
+          "controlParameter": "SRCFILE",
+          "countRelation": "EQ",
+          "count": 1,
+          "conditions": [
+            {
+              "relation": "NE",
+              "compareValue": "*NONE"
+            }
+          ]
+        }
+      ],
+      "valueMap": {
+        "*EVENTF": "7",
+        "*LIST": "3",
+        "*NOEVENTF": "8",
+        "*NOLIST": "4",
+        "*NOSECLVL": "6",
+        "*NOSOURCE": "2",
+        "*NOSRC": "2",
+        "*SECLVL": "5",
+        "*SOURCE": "1",
+        "*SRC": "1"
+      }
     },
     {
       "name": "GENLVL",
@@ -180,7 +218,20 @@
       "attributes": {
         "numericOnly": true
       },
-      "placeholder": "20"
+      "placeholder": "20",
+      "promptControl": [
+        {
+          "controlParameter": "SRCFILE",
+          "countRelation": "EQ",
+          "count": 1,
+          "conditions": [
+            {
+              "relation": "NE",
+              "compareValue": "*NONE"
+            }
+          ]
+        }
+      ]
     },
     {
       "name": "FLAG",
@@ -192,7 +243,20 @@
       "attributes": {
         "numericOnly": true
       },
-      "placeholder": "0"
+      "placeholder": "0",
+      "promptControl": [
+        {
+          "controlParameter": "SRCFILE",
+          "countRelation": "EQ",
+          "count": 1,
+          "conditions": [
+            {
+              "relation": "NE",
+              "compareValue": "*NONE"
+            }
+          ]
+        }
+      ]
     },
     {
       "name": "DLTDEPLF",
@@ -213,7 +277,24 @@
           "label": "*YES",
           "value": "*YES"
         }
-      ]
+      ],
+      "promptControl": [
+        {
+          "controlParameter": "SRCFILE",
+          "countRelation": "EQ",
+          "count": 1,
+          "conditions": [
+            {
+              "relation": "NE",
+              "compareValue": "*NONE"
+            }
+          ]
+        }
+      ],
+      "valueMap": {
+        "*NO": "N",
+        "*YES": "Y"
+      }
     },
     {
       "name": "RMVCST",
@@ -233,6 +314,19 @@
         {
           "label": "*REMOVE",
           "value": "*REMOVE"
+        }
+      ],
+      "promptControl": [
+        {
+          "controlParameter": "SRCFILE",
+          "countRelation": "EQ",
+          "count": 1,
+          "conditions": [
+            {
+              "relation": "NE",
+              "compareValue": "*NONE"
+            }
+          ]
         }
       ]
     },
@@ -425,7 +519,11 @@
           },
           "placeholder": "*SAME"
         }
-      ]
+      ],
+      "valueMap": {
+        "*NOMAX": "0",
+        "*SAME": "-2"
+      }
     },
     {
       "name": "ALLOCATE",
@@ -450,7 +548,12 @@
           "label": "*SAME",
           "value": "*SAME"
         }
-      ]
+      ],
+      "valueMap": {
+        "*NO": "N",
+        "*SAME": "S",
+        "*YES": "Y"
+      }
     },
     {
       "name": "UNIT",
@@ -718,7 +821,20 @@
         "maxLength": 10
       },
       "maxOccurrences": 300,
-      "placeholder": "*SAME"
+      "placeholder": "*SAME",
+      "promptControl": [
+        {
+          "controlParameter": "NODGRP",
+          "countRelation": "EQ",
+          "count": 1,
+          "conditions": [
+            {
+              "relation": "NE",
+              "compareValue": "*NONE"
+            }
+          ]
+        }
+      ]
     },
     {
       "name": "TEXT",
@@ -742,7 +858,11 @@
       "attributes": {
         "characterSet": "upper"
       },
-      "placeholder": "*SAME"
+      "placeholder": "*SAME",
+      "valueMap": {
+        "*HEX": "65535",
+        "*SAME": "-2"
+      }
     }
   ],
   "examples": [
@@ -759,5 +879,187 @@
   "source": {
     "url": "https://www.ibm.com/docs/en/ssw_ibm_i_74/cl/chgpf.htm",
     "version": "IBM i 7.4"
-  }
+  },
+  "dependencies": [
+    {
+      "controlRelation": "EQ",
+      "controlParameter": "ALLOCATE",
+      "controlCompareValue": "Y",
+      "countRelation": "EQ",
+      "count": 0,
+      "messageId": "CPD7323",
+      "terms": [
+        {
+          "parameter": "SIZE",
+          "relation": "EQ",
+          "compareValue": "0"
+        }
+      ]
+    },
+    {
+      "controlRelation": "EQ",
+      "controlParameter": "NODGRP",
+      "controlCompareValue": "*NONE",
+      "countRelation": "EQ",
+      "count": 0,
+      "messageId": "CPD32D0",
+      "terms": [
+        {
+          "parameter": "PTNKEY",
+          "relation": "NE",
+          "compareValue": "*SAME"
+        }
+      ]
+    },
+    {
+      "controlRelation": "EQ",
+      "controlParameter": "SRCFILE",
+      "controlCompareValue": "*NONE",
+      "countRelation": "EQ",
+      "count": 0,
+      "messageId": "CPD32C7",
+      "terms": [
+        {
+          "parameter": "SRCMBR",
+          "relation": "SPCFD"
+        },
+        {
+          "parameter": "OPTION",
+          "relation": "SPCFD"
+        },
+        {
+          "parameter": "GENLVL",
+          "relation": "SPCFD"
+        },
+        {
+          "parameter": "FLAG",
+          "relation": "SPCFD"
+        },
+        {
+          "parameter": "DLTDEPLF",
+          "relation": "SPCFD"
+        },
+        {
+          "parameter": "RMVCST",
+          "relation": "SPCFD"
+        }
+      ]
+    },
+    {
+      "controlRelation": "NE",
+      "controlParameter": "SRCFILE",
+      "controlCompareValue": "*NONE",
+      "countRelation": "EQ",
+      "count": 1,
+      "messageId": "CPD32C8",
+      "terms": [
+        {
+          "parameter": "CCSID",
+          "relation": "EQ",
+          "compareValue": "-2"
+        }
+      ]
+    },
+    {
+      "controlRelation": "EQ",
+      "controlParameter": "ALLOCATE",
+      "controlCompareValue": "I",
+      "countRelation": "EQ",
+      "count": 0,
+      "messageId": "CPD7323",
+      "terms": [
+        {
+          "parameter": "SIZE",
+          "relation": "EQ",
+          "compareValue": "0"
+        }
+      ]
+    },
+    {
+      "controlRelation": "ALWAYS",
+      "countRelation": "LE",
+      "count": 1,
+      "messageId": "CPD7330",
+      "terms": [
+        {
+          "parameter": "OPTION",
+          "relation": "EQ",
+          "compareValue": "1"
+        },
+        {
+          "parameter": "OPTION",
+          "relation": "EQ",
+          "compareValue": "2"
+        }
+      ]
+    },
+    {
+      "controlRelation": "ALWAYS",
+      "countRelation": "LE",
+      "count": 1,
+      "messageId": "CPD7330",
+      "terms": [
+        {
+          "parameter": "OPTION",
+          "relation": "EQ",
+          "compareValue": "3"
+        },
+        {
+          "parameter": "OPTION",
+          "relation": "EQ",
+          "compareValue": "4"
+        }
+      ]
+    },
+    {
+      "controlRelation": "ALWAYS",
+      "countRelation": "LE",
+      "count": 1,
+      "messageId": "CPD7330",
+      "terms": [
+        {
+          "parameter": "OPTION",
+          "relation": "EQ",
+          "compareValue": "5"
+        },
+        {
+          "parameter": "OPTION",
+          "relation": "EQ",
+          "compareValue": "6"
+        }
+      ]
+    },
+    {
+      "controlRelation": "ALWAYS",
+      "countRelation": "LE",
+      "count": 1,
+      "messageId": "CPD7330",
+      "terms": [
+        {
+          "parameter": "OPTION",
+          "relation": "EQ",
+          "compareValue": "7"
+        },
+        {
+          "parameter": "OPTION",
+          "relation": "EQ",
+          "compareValue": "8"
+        }
+      ]
+    },
+    {
+      "controlRelation": "SPCFD",
+      "controlParameter": "FLAG",
+      "countRelation": "EQ",
+      "count": 1,
+      "messageId": "CPD7333",
+      "terms": [
+        {
+          "parameter": "FLAG",
+          "relation": "LE",
+          "compareParameter": "GENLVL"
+        }
+      ]
+    }
+  ]
 }

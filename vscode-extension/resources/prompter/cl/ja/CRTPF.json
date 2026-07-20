@@ -154,7 +154,11 @@
           "help": "物理ファイルにはソース・レコードが入ります。"
         }
       ],
-      "basic": true
+      "basic": true,
+      "valueMap": {
+        "*DATA": "D",
+        "*SRC": "S"
+      }
     },
     {
       "name": "MBR",
@@ -191,7 +195,11 @@
           "value": "*YES",
           "help": "ファイルにDBCSデータが入っています。"
         }
-      ]
+      ],
+      "valueMap": {
+        "*NO": "N",
+        "*YES": "Y"
+      }
     },
     {
       "name": "TEXT",
@@ -259,7 +267,19 @@
       ],
       "positional": 5,
       "maxOccurrences": 4,
-      "placeholder": "*SRC"
+      "placeholder": "*SRC",
+      "valueMap": {
+        "*EVENTF": "7",
+        "*LIST": "3",
+        "*NOEVENTF": "8",
+        "*NOLIST": "4",
+        "*NOSECLVL": "6",
+        "*NOSOURCE": "2",
+        "*NOSRC": "2",
+        "*SECLVL": "5",
+        "*SOURCE": "1",
+        "*SRC": "1"
+      }
     },
     {
       "name": "SYSTEM",
@@ -306,7 +326,10 @@
           "help": "満了日は指定されません。"
         }
       ],
-      "placeholder": "*NONE"
+      "placeholder": "*NONE",
+      "valueMap": {
+        "*NONE": "0000000"
+      }
     },
     {
       "name": "MAXMBRS",
@@ -341,7 +364,11 @@
           "value": "*MAX4GB",
           "help": "このファイルと関連付けられるアクセス・パスは，最大4ギガバイト(4,294,966,272バイト）の補助記憶域を占有することができます。"
         }
-      ]
+      ],
+      "valueMap": {
+        "*MAX1TB": "1",
+        "*MAX4GB": "0"
+      }
     },
     {
       "name": "PAGESIZE",
@@ -359,7 +386,10 @@
           "value": "*KEYLEN",
           "help": "アクセス・パス論理ページ・サイズは，1つ以上のキーの合計長によって決定されます。"
         }
-      ]
+      ],
+      "valueMap": {
+        "*KEYLEN": "0"
+      }
     },
     {
       "name": "MAINT",
@@ -486,7 +516,10 @@
           },
           "placeholder": "3"
         }
-      ]
+      ],
+      "valueMap": {
+        "*NOMAX": "0"
+      }
     },
     {
       "name": "ALLOCATE",
@@ -509,7 +542,11 @@
           "value": "*YES",
           "help": "新しいメンバーが追加されるたびに，SIZEパラメーターの最初の値に指定された容量の記憶スペースが割り振られます。*YESが指定された場合には，SIZEパラメーターに*NOMAXを指定してはいけません。"
         }
-      ]
+      ],
+      "valueMap": {
+        "*NO": "D",
+        "*YES": "I"
+      }
     },
     {
       "name": "CONTIG",
@@ -532,7 +569,11 @@
           "value": "*YES",
           "help": "レコードを含む空間では，レコードを連続して記憶することができます。レコードを分離しなければならない場合には，メンバーが追加され，レコードを連続して記憶できないことを示すメッセージがユーザーに送られます。"
         }
-      ]
+      ],
+      "valueMap": {
+        "*NO": "N",
+        "*YES": "C"
+      }
     },
     {
       "name": "UNIT",
@@ -603,7 +644,11 @@
           "value": "*YES",
           "help": "ファイルをオープンする時に*YESも指定したジョブで，同じODPを各プログラムと共用することができます。"
         }
-      ]
+      ],
+      "valueMap": {
+        "*NO": "N",
+        "*YES": "Y"
+      }
     },
     {
       "name": "DLTPCT",
@@ -636,7 +681,11 @@
           "label": "*NO",
           "value": "*NO"
         }
-      ]
+      ],
+      "valueMap": {
+        "*NO": "N",
+        "*YES": "Y"
+      }
     },
     {
       "name": "SRTSEQ",
@@ -703,7 +752,11 @@
       "attributes": {
         "characterSet": "upper"
       },
-      "placeholder": "*JOB"
+      "placeholder": "*JOB",
+      "valueMap": {
+        "*HEX": "65535",
+        "*JOB": "0"
+      }
     },
     {
       "name": "ALWUPD",
@@ -873,5 +926,397 @@
   "source": {
     "url": "https://www.ibm.com/docs/ja/ssw_ibm_i_74/cl/crtpf.htm",
     "version": "IBM i 7.4"
-  }
+  },
+  "dependencies": [
+    {
+      "controlRelation": "EQ",
+      "controlParameter": "ALLOCATE",
+      "controlCompareValue": "I",
+      "countRelation": "EQ",
+      "count": 0,
+      "messageId": "CPD7323",
+      "terms": [
+        {
+          "parameter": "SIZE",
+          "relation": "EQ",
+          "compareValue": "0"
+        }
+      ]
+    },
+    {
+      "controlRelation": "ALWAYS",
+      "countRelation": "LE",
+      "count": 1,
+      "messageId": "CPD7324",
+      "terms": [
+        {
+          "parameter": "SRCMBR",
+          "relation": "SPCFD"
+        },
+        {
+          "parameter": "RCDLEN",
+          "relation": "SPCFD"
+        }
+      ]
+    },
+    {
+      "controlRelation": "EQ",
+      "controlParameter": "CONTIG",
+      "controlCompareValue": "C",
+      "countRelation": "EQ",
+      "count": 1,
+      "messageId": "CPD7325",
+      "terms": [
+        {
+          "parameter": "ALLOCATE",
+          "relation": "EQ",
+          "compareValue": "I"
+        }
+      ]
+    },
+    {
+      "controlRelation": "EQ",
+      "controlParameter": "MBR",
+      "controlCompareValue": "*NONE",
+      "countRelation": "EQ",
+      "count": 1,
+      "messageId": "CPD7326",
+      "terms": [
+        {
+          "parameter": "EXPDATE",
+          "relation": "EQ",
+          "compareValue": "0000000"
+        }
+      ]
+    },
+    {
+      "controlRelation": "ALWAYS",
+      "countRelation": "LE",
+      "count": 1,
+      "messageId": "CPD7327",
+      "terms": [
+        {
+          "parameter": "SRCFILE",
+          "relation": "SPCFD"
+        },
+        {
+          "parameter": "RCDLEN",
+          "relation": "SPCFD"
+        }
+      ]
+    },
+    {
+      "controlRelation": "EQ",
+      "controlParameter": "FILETYPE",
+      "controlCompareValue": "S",
+      "countRelation": "LE",
+      "count": 2,
+      "messageId": "CPD7328",
+      "terms": [
+        {
+          "parameter": "RCDLEN",
+          "relation": "SPCFD"
+        },
+        {
+          "parameter": "IGCDTA",
+          "relation": "EQ",
+          "compareValue": "N"
+        },
+        {
+          "parameter": "RCDLEN",
+          "relation": "LE",
+          "compareValue": "12"
+        }
+      ]
+    },
+    {
+      "controlRelation": "ALWAYS",
+      "countRelation": "LE",
+      "count": 1,
+      "messageId": "CPD7330",
+      "terms": [
+        {
+          "parameter": "OPTION",
+          "relation": "EQ",
+          "compareValue": "1"
+        },
+        {
+          "parameter": "OPTION",
+          "relation": "EQ",
+          "compareValue": "2"
+        }
+      ]
+    },
+    {
+      "controlRelation": "ALWAYS",
+      "countRelation": "LE",
+      "count": 1,
+      "messageId": "CPD7330",
+      "terms": [
+        {
+          "parameter": "OPTION",
+          "relation": "EQ",
+          "compareValue": "3"
+        },
+        {
+          "parameter": "OPTION",
+          "relation": "EQ",
+          "compareValue": "4"
+        }
+      ]
+    },
+    {
+      "controlRelation": "EQ",
+      "controlParameter": "SHARE",
+      "controlCompareValue": "Y",
+      "countRelation": "EQ",
+      "count": 0,
+      "messageId": "CPD7331",
+      "terms": [
+        {
+          "parameter": "MBR",
+          "relation": "EQ",
+          "compareValue": "*NONE"
+        }
+      ]
+    },
+    {
+      "controlRelation": "EQ",
+      "controlParameter": "IGCDTA",
+      "controlCompareValue": "Y",
+      "countRelation": "EQ",
+      "count": 1,
+      "messageId": "CPD7340",
+      "terms": [
+        {
+          "parameter": "RCDLEN",
+          "relation": "SPCFD"
+        }
+      ]
+    },
+    {
+      "controlRelation": "EQ",
+      "controlParameter": "IGCDTA",
+      "controlCompareValue": "Y",
+      "countRelation": "LE",
+      "count": 2,
+      "messageId": "CPD7346",
+      "terms": [
+        {
+          "parameter": "RCDLEN",
+          "relation": "SPCFD"
+        },
+        {
+          "parameter": "FILETYPE",
+          "relation": "EQ",
+          "compareValue": "D"
+        },
+        {
+          "parameter": "RCDLEN",
+          "relation": "LE",
+          "compareValue": "3"
+        }
+      ]
+    },
+    {
+      "controlRelation": "EQ",
+      "controlParameter": "IGCDTA",
+      "controlCompareValue": "Y",
+      "countRelation": "LE",
+      "count": 2,
+      "messageId": "CPD7346",
+      "terms": [
+        {
+          "parameter": "RCDLEN",
+          "relation": "SPCFD"
+        },
+        {
+          "parameter": "FILETYPE",
+          "relation": "EQ",
+          "compareValue": "S"
+        },
+        {
+          "parameter": "RCDLEN",
+          "relation": "LE",
+          "compareValue": "15"
+        }
+      ]
+    },
+    {
+      "controlRelation": "EQ",
+      "controlParameter": "IGCDTA",
+      "controlCompareValue": "N",
+      "countRelation": "LE",
+      "count": 2,
+      "messageId": "CPD7347",
+      "terms": [
+        {
+          "parameter": "RCDLEN",
+          "relation": "SPCFD"
+        },
+        {
+          "parameter": "FILETYPE",
+          "relation": "EQ",
+          "compareValue": "D"
+        },
+        {
+          "parameter": "RCDLEN",
+          "relation": "LT",
+          "compareValue": "1"
+        }
+      ]
+    },
+    {
+      "controlRelation": "SPCFD",
+      "controlParameter": "FLAG",
+      "countRelation": "EQ",
+      "count": 1,
+      "messageId": "CPD7333",
+      "terms": [
+        {
+          "parameter": "FLAG",
+          "relation": "LE",
+          "compareParameter": "GENLVL"
+        }
+      ]
+    },
+    {
+      "controlRelation": "EQ",
+      "controlParameter": "FILETYPE",
+      "controlCompareValue": "S",
+      "countRelation": "EQ",
+      "count": 0,
+      "messageId": "CPD7348",
+      "terms": [
+        {
+          "parameter": "REUSEDLT",
+          "relation": "EQ",
+          "compareValue": "Y"
+        }
+      ]
+    },
+    {
+      "controlRelation": "NE",
+      "controlParameter": "CCSID",
+      "controlCompareValue": "0",
+      "countRelation": "EQ",
+      "count": 1,
+      "messageId": "CPD7306",
+      "terms": [
+        {
+          "parameter": "RCDLEN",
+          "relation": "NE",
+          "compareValue": "0"
+        }
+      ]
+    },
+    {
+      "controlRelation": "EQ",
+      "controlParameter": "FILETYPE",
+      "controlCompareValue": "D",
+      "countRelation": "EQ",
+      "count": 1,
+      "messageId": "CPD7307",
+      "terms": [
+        {
+          "parameter": "CCSID",
+          "relation": "EQ",
+          "compareValue": "0"
+        },
+        {
+          "parameter": "CCSID",
+          "relation": "EQ",
+          "compareValue": "65535"
+        }
+      ]
+    },
+    {
+      "controlRelation": "NE",
+      "controlParameter": "RCDLEN",
+      "controlCompareValue": "0",
+      "countRelation": "EQ",
+      "count": 1,
+      "messageId": "CPD7349",
+      "terms": [
+        {
+          "parameter": "SRTSEQ",
+          "relation": "EQ",
+          "compareValue": "*SRC"
+        }
+      ]
+    },
+    {
+      "controlRelation": "NE",
+      "controlParameter": "RCDLEN",
+      "controlCompareValue": "0",
+      "countRelation": "EQ",
+      "count": 1,
+      "messageId": "CPD7349",
+      "terms": [
+        {
+          "parameter": "LANGID",
+          "relation": "EQ",
+          "compareValue": "*JOB"
+        }
+      ]
+    },
+    {
+      "controlRelation": "EQ",
+      "controlParameter": "NODGRP",
+      "controlCompareValue": "*NONE",
+      "countRelation": "EQ",
+      "count": 0,
+      "messageId": "CPD32D0",
+      "terms": [
+        {
+          "parameter": "PTNKEY",
+          "relation": "SPCFD"
+        }
+      ]
+    },
+    {
+      "controlRelation": "SPCFD",
+      "controlParameter": "NODGRP",
+      "countRelation": "EQ",
+      "count": 1,
+      "messageId": "CPD32D0",
+      "terms": [
+        {
+          "parameter": "PTNKEY",
+          "relation": "SPCFD"
+        }
+      ]
+    },
+    {
+      "controlRelation": "SPCFD",
+      "controlParameter": "RCDLEN",
+      "countRelation": "EQ",
+      "count": 0,
+      "messageId": "CPD32D0",
+      "terms": [
+        {
+          "parameter": "NODGRP",
+          "relation": "SPCFD"
+        },
+        {
+          "parameter": "PTNKEY",
+          "relation": "SPCFD"
+        }
+      ]
+    },
+    {
+      "controlRelation": "SPCFD",
+      "controlParameter": "PAGESIZE",
+      "countRelation": "EQ",
+      "count": 1,
+      "messageId": "CPD5150",
+      "terms": [
+        {
+          "parameter": "ACCPTHSIZ",
+          "relation": "EQ",
+          "compareValue": "1"
+        }
+      ]
+    }
+  ]
 }

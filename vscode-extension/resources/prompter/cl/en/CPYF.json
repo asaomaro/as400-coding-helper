@@ -74,7 +74,10 @@
         }
       ],
       "positional": 2,
-      "basic": true
+      "basic": true,
+      "valueMap": {
+        "*PRINT": "*LIST"
+      }
     },
     {
       "name": "FROMMBR",
@@ -104,7 +107,10 @@
       },
       "positional": 4,
       "placeholder": "*FIRST",
-      "basic": true
+      "basic": true,
+      "valueMap": {
+        "*FIRST": "*N"
+      }
     },
     {
       "name": "MBROPT",
@@ -235,7 +241,10 @@
       "attributes": {
         "characterSet": "upper"
       },
-      "placeholder": "*START"
+      "placeholder": "*START",
+      "valueMap": {
+        "*START": "0"
+      }
     },
     {
       "name": "TORCD",
@@ -247,7 +256,10 @@
       "attributes": {
         "characterSet": "upper"
       },
-      "placeholder": "*END"
+      "placeholder": "*END",
+      "valueMap": {
+        "*END": "0"
+      }
     },
     {
       "name": "FROMKEY",
@@ -278,7 +290,11 @@
           "inputType": "text",
           "required": false
         }
-      ]
+      ],
+      "valueMap": {
+        "*BLDKEY": "-1",
+        "*NONE": "0"
+      }
     },
     {
       "name": "TOKEY",
@@ -309,7 +325,11 @@
           "inputType": "text",
           "required": false
         }
-      ]
+      ],
+      "valueMap": {
+        "*BLDKEY": "-1",
+        "*NONE": "0"
+      }
     },
     {
       "name": "NBRRCDS",
@@ -321,7 +341,10 @@
       "attributes": {
         "characterSet": "upper"
       },
-      "placeholder": "*END"
+      "placeholder": "*END",
+      "valueMap": {
+        "*END": "0"
+      }
     },
     {
       "name": "INCCHAR",
@@ -409,7 +432,19 @@
           "inputType": "text",
           "required": false
         }
-      ]
+      ],
+      "valueMap": {
+        "*CT": "7",
+        "*EQ": "2",
+        "*FLD": "*RCD",
+        "*GE": "3",
+        "*GT": "1",
+        "*LE": "6",
+        "*LT": "4",
+        "*NE": "5",
+        "*NG": "6",
+        "*NL": "3"
+      }
     },
     {
       "name": "INCREL",
@@ -516,7 +551,21 @@
           "placeholder": "*NULL"
         }
       ],
-      "maxOccurrences": 50
+      "maxOccurrences": 50,
+      "valueMap": {
+        "*AND": "A",
+        "*EQ": "2",
+        "*GE": "3",
+        "*GT": "1",
+        "*IF": "I",
+        "*LE": "6",
+        "*LT": "4",
+        "*NE": "5",
+        "*NG": "6",
+        "*NL": "3",
+        "*NONE": "N",
+        "*OR": "O"
+      }
     },
     {
       "name": "FMTOPT",
@@ -584,7 +633,12 @@
           "value": "*DATE"
         }
       ],
-      "maxOccurrences": 2
+      "maxOccurrences": 2,
+      "valueMap": {
+        "*DATE": "D",
+        "*SAME": "S",
+        "*SEQNBR": "N"
+      }
     },
     {
       "name": "SRCSEQ",
@@ -649,7 +703,11 @@
           "label": "*NO",
           "value": "*NO"
         }
-      ]
+      ],
+      "valueMap": {
+        "*NO": "N",
+        "*YES": "Y"
+      }
     }
   ],
   "examples": [
@@ -681,5 +739,148 @@
   "source": {
     "url": "https://www.ibm.com/docs/en/ssw_ibm_i_74/cl/cpyf.htm",
     "version": "IBM i 7.4"
-  }
+  },
+  "dependencies": [
+    {
+      "controlRelation": "EQ",
+      "controlParameter": "TOFILE",
+      "controlCompareValue": "*LIST",
+      "countRelation": "GT",
+      "count": 0,
+      "messageId": "CPD2834",
+      "terms": [
+        {
+          "parameter": "TOMBR",
+          "relation": "EQ",
+          "compareValue": "*N"
+        },
+        {
+          "parameter": "TOMBR",
+          "relation": "EQ",
+          "compareValue": "*FROMMBR"
+        }
+      ]
+    },
+    {
+      "controlRelation": "NE",
+      "controlParameter": "FROMRCD",
+      "controlCompareValue": "0",
+      "countRelation": "EQ",
+      "count": 2,
+      "messageId": "CPD2831",
+      "terms": [
+        {
+          "parameter": "FROMKEY",
+          "relation": "EQ",
+          "compareValue": "0"
+        },
+        {
+          "parameter": "TOKEY",
+          "relation": "EQ",
+          "compareValue": "0"
+        }
+      ]
+    },
+    {
+      "controlRelation": "NE",
+      "controlParameter": "TORCD",
+      "controlCompareValue": "0",
+      "countRelation": "EQ",
+      "count": 2,
+      "messageId": "CPD2832",
+      "terms": [
+        {
+          "parameter": "FROMKEY",
+          "relation": "EQ",
+          "compareValue": "0"
+        },
+        {
+          "parameter": "TOKEY",
+          "relation": "EQ",
+          "compareValue": "0"
+        }
+      ]
+    },
+    {
+      "controlRelation": "ALWAYS",
+      "countRelation": "GT",
+      "count": 0,
+      "messageId": "CPD2830",
+      "terms": [
+        {
+          "parameter": "FROMRCD",
+          "relation": "EQ",
+          "compareValue": "0"
+        },
+        {
+          "parameter": "TORCD",
+          "relation": "EQ",
+          "compareValue": "0"
+        },
+        {
+          "parameter": "FROMRCD",
+          "relation": "LE",
+          "compareParameter": "TORCD"
+        }
+      ]
+    },
+    {
+      "controlRelation": "NE",
+      "controlParameter": "NBRRCDS",
+      "controlCompareValue": "0",
+      "countRelation": "EQ",
+      "count": 2,
+      "messageId": "CPD2833",
+      "terms": [
+        {
+          "parameter": "TORCD",
+          "relation": "EQ",
+          "compareValue": "0"
+        },
+        {
+          "parameter": "TOKEY",
+          "relation": "EQ",
+          "compareValue": "0"
+        }
+      ]
+    },
+    {
+      "controlRelation": "SPCFD",
+      "controlParameter": "SRCSEQ",
+      "countRelation": "EQ",
+      "count": 1,
+      "messageId": "CPD2824",
+      "terms": [
+        {
+          "parameter": "SRCOPT",
+          "relation": "SPCFD"
+        }
+      ]
+    },
+    {
+      "controlRelation": "EQ",
+      "controlParameter": "COMPRESS",
+      "controlCompareValue": "N",
+      "countRelation": "EQ",
+      "count": 3,
+      "messageId": "CPD2822",
+      "terms": [
+        {
+          "parameter": "TOFILE",
+          "relation": "NE",
+          "compareValue": "*LIST"
+        },
+        {
+          "parameter": "INCCHAR",
+          "relation": "EQ",
+          "compareValue": "*NONE"
+        },
+        {
+          "parameter": "INCREL",
+          "relation": "EQ",
+          "compareValue": "N"
+        }
+      ]
+    }
+  ]
 }

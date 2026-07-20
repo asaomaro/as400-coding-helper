@@ -242,7 +242,13 @@
           "help": "データベース・ファイルにコピーされるレコード様式がCOPYPRTでIBMシステム/36で作成されたものと同じであることを指定します。この値は，1次または2次補助記憶域プールに存在しているスプール・ファイルには許可されません。"
         }
       ],
-      "basic": true
+      "basic": true,
+      "valueMap": {
+        "*FCFC": "F",
+        "*NONE": "N",
+        "*PRTCTL": "P",
+        "*S36FMT": "S"
+      }
     },
     {
       "name": "CHLVAL",
@@ -276,7 +282,13 @@
         }
       ],
       "maxOccurrences": 12,
-      "basic": true
+      "basic": true,
+      "valueMap": {
+        "10": "A",
+        "11": "B",
+        "12": "C",
+        "*NORMAL": "N"
+      }
     },
     {
       "name": "TOSTMF",
@@ -295,7 +307,20 @@
           "help": "出力はユーザー定義の物理ファイルに書き出されます。この値は， TO データベース・ファイル (TOFILE) パラメーターにユーザー定義の物理データベース・ファイルが指定された場合のみ有効です。"
         }
       ],
-      "basic": true
+      "basic": true,
+      "promptControl": [
+        {
+          "controlParameter": "TOFILE",
+          "countRelation": "NE",
+          "count": 0,
+          "conditions": [
+            {
+              "relation": "EQ",
+              "compareValue": "*TOSTMF"
+            }
+          ]
+        }
+      ]
     },
     {
       "name": "WSCST",
@@ -335,7 +360,20 @@
           "defaultValue": "*NONE"
         }
       ],
-      "basic": true
+      "basic": true,
+      "promptControl": [
+        {
+          "controlParameter": "TOFILE",
+          "countRelation": "NE",
+          "count": 0,
+          "conditions": [
+            {
+              "relation": "EQ",
+              "compareValue": "*TOSTMF"
+            }
+          ]
+        }
+      ]
     },
     {
       "name": "STMFOPT",
@@ -359,7 +397,20 @@
           "help": "レコードは，既存のストリーム・ファイル・レコードを置き換えます。"
         }
       ],
-      "basic": true
+      "basic": true,
+      "promptControl": [
+        {
+          "controlParameter": "TOFILE",
+          "countRelation": "NE",
+          "count": 0,
+          "conditions": [
+            {
+              "relation": "EQ",
+              "compareValue": "*TOSTMF"
+            }
+          ]
+        }
+      ]
     },
     {
       "name": "OPNSPLF",
@@ -593,5 +644,51 @@
   "source": {
     "url": "https://www.ibm.com/docs/ja/ssw_ibm_i_74/cl/cpysplf.htm",
     "version": "IBM i 7.4"
-  }
+  },
+  "dependencies": [
+    {
+      "controlRelation": "SPCFD",
+      "controlParameter": "CHLVAL",
+      "countRelation": "EQ",
+      "count": 1,
+      "messageId": "CPD3378",
+      "terms": [
+        {
+          "parameter": "CTLCHAR",
+          "relation": "EQ",
+          "compareValue": "F"
+        }
+      ]
+    },
+    {
+      "controlRelation": "EQ",
+      "controlParameter": "TOFILE",
+      "controlCompareValue": "*TOSTMF",
+      "countRelation": "EQ",
+      "count": 0,
+      "messageId": "CPD3377",
+      "terms": [
+        {
+          "parameter": "TOSTMF",
+          "relation": "EQ",
+          "compareValue": "*NONE"
+        }
+      ]
+    },
+    {
+      "controlRelation": "NE",
+      "controlParameter": "TOFILE",
+      "controlCompareValue": "*TOSTMF",
+      "countRelation": "EQ",
+      "count": 0,
+      "messageId": "CPD3377",
+      "terms": [
+        {
+          "parameter": "TOSTMF",
+          "relation": "NE",
+          "compareValue": "*NONE"
+        }
+      ]
+    }
+  ]
 }
