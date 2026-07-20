@@ -85,15 +85,15 @@
 
 ## ④ SARIF と CLI
 
-- [ ] T17: `src/lint/sarif.ts` に SARIF 2.1.0 への変換を実装する。
+- [x] T17: `src/lint/sarif.ts` に SARIF 2.1.0 への変換を実装する。
       `tool.driver.rules[]` に**無効なものも含めた全 RuleId** を
       `defaultConfiguration.level` 付きで出す。
       **受け入れ**: 必須プロパティの存在と型を検査する単体テスト（依存: T9）
-- [ ] T18: `src/cli/lint.ts` を実装し、`package.json` に `"lint": "node out/cli/lint.js"` を足す。
+- [x] T18: `src/cli/lint.ts` を実装し、`package.json` に `"lint": "node out/cli/lint.js"` を足す。
       `--format` / `--output` / `--rule` / `--no-rule` / `--fail-on` を解析する。
       **受け入れ**: `npm run compile && node out/cli/lint.js docs/src/CUSTMST.pf` が
       SARIF を出し exit 0（依存: T15, T17）
-- [ ] T19: CLI の単体テストを追加する。終了コード 0（指摘なし）/ 1（error あり）/
+- [x] T19: CLI の単体テストを追加する。終了コード 0（指摘なし）/ 1（error あり）/
       2（ファイル未指定・定義が読めない）と `--fail-on never` の挙動。
       **受け入れ**: 3 つの終了コードすべてを踏む（依存: T18）
 
