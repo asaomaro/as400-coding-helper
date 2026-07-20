@@ -4,7 +4,7 @@ import { resolveDialect } from "./dialect";
 import { classifyRpgSpecKeyword } from "./specClassifier";
 import { getLogicalCommandRange } from "../language/clContinuation";
 import { joinContinuationLines, parseClCommand } from "./clCommandParser";
-import { resolveDdsType } from "../language/ddsKeywordCompletion";
+import { resolveDdsType, resolveSourceKind } from "../core/sourceKind";
 
 export interface ResolvedPosition {
   readonly language: LanguageId;
@@ -100,24 +100,7 @@ function getLanguageId(document: vscode.TextDocument): LanguageId | undefined {
     return "cl";
   }
 
-  // .cmd はコマンド定義ソース。言語登録はしていない（表示系と同じく拡張子で扱う）。
-  const lower = document.uri.fsPath.toLowerCase();
-  if (/\.cmd$/u.test(lower)) {
-    return "cmd";
-  }
-
-  // DDS。同じ A 仕様書でも用途で桁の意味が変わるので、種別は keyword 側で決める。
-  if (/\.(pf|lf|dspf|prtf|mnudds|dds)$/u.test(lower)) {
-    return "dds";
-  }
-
-  if (/\.(sqlrpgle|rpgle|sqlrpg|rpg)$/u.test(lower)) {
-    return "rpg-fixed";
-  }
-
-  if (/\.(clle|clp)$/u.test(lower)) {
-    return "cl";
-  }
-
-  return undefined;
+  // 拡張子による判定は core/sourceKind に一本化してある
+  // （lint core と同じ判定を使う。写しを作るとドリフトする）。
+  return resolveSourceKind(document.uri.fsPath)?.language;
 }

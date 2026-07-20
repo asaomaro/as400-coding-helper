@@ -73,11 +73,26 @@ jobs:
             exit 1
           fi
 
-      - name: 拡張のビルドと検証（定義の構造 / CL 往復）
+      - name: 拡張のビルドと検証（定義の構造 / CL 往復 / lint core の境界）
         working-directory: vscode-extension
         run: |
           npm ci || npm install
           npm run verify
+
+      # lint コマンドは vscode を必要としないので、素の node で回せる。
+      # 対象は実機（pub400 / IBM i 7.5）でコンパイルが通ることを確認済みの
+      # ソースだけ。正しいソースなので指摘が出たら偽陽性であり、そこで落とす。
+      # SLSENT01 / EMPMNT01 / RPG3SAMP はコンパイル確認が取れておらず
+      # 桁ずれの疑いがあるため対象にしない（指摘が出るのが正しい可能性がある）。
+      - name: 桁位置 lint（実機コンパイル確認済みソースで指摘ゼロ）
+        run: |
+          node vscode-extension/out/cli/lint.js --format text --fail-on warning \
+            docs/src/CUSTMST.pf \
+            docs/src/CUSTLF1.lf \
+            docs/src/CUSTMNT.dspf \
+            docs/src/CUSTRPT.prtf \
+            docs/src/DBCSSAMP.pf \
+            docs/src/IOSAMP.rpgle
 
       # ユニットテストは依存（mocha / 型定義）が要るので、依存を入れる
       # このジョブで走らせる。verify ジョブは素の node で原典照合をするだけ。
