@@ -1,13 +1,11 @@
+import { ddsField, ddsName } from "../ddsLayout";
+import { DDS_POSITION_COLUMN, DDS_POSITION_ROW } from "./ddsPositionColumns";
 import {
-  DDS_COLUMNS,
-  ddsField,
-  ddsName,
-  isDdsBlankLine,
-  isDdsCommentLine
-} from "../ddsLayout";
-import { printWidth } from "../dbcs";
-import { PRTF_POSITION_COLUMN, PRTF_POSITION_ROW } from "./prtfColumns";
-import { editedWidth } from "./editCode";
+  constantWidth,
+  fieldWidth,
+  type WidthUnknownReason
+} from "./ddsFieldWidth";
+import { readConstant, readNumber, toLogicalUnits } from "./ddsLogicalUnits";
 
 /**
  * 印刷装置ファイル（PRTF）の紙面レイアウトを解決する。
@@ -29,11 +27,7 @@ import { editedWidth } from "./editCode";
  *   フィールド・レベル … **その項目**の前後
  */
 
-export type WidthUnknownReason =
-  | "reference"
-  | "user-defined-edit-code"
-  | "not-numeric"
-  | "no-length";
+export type { WidthUnknownReason } from "./ddsFieldWidth";
 
 export interface PlacedItem {
   readonly kind: "field" | "constant";
@@ -155,19 +149,6 @@ function readSpacing(keywords: string): Spacing {
   };
 }
 
-/** 定数（キーワード欄の `'…'`）を取り出す。 */
-function readConstant(keywords: string): string | undefined {
-  const match = /^'((?:[^']|'')*)'/u.exec(keywords.trim());
-  return match ? match[1].replace(/''/gu, "'") : undefined;
-}
-
-function readNumber(text: string): number | undefined {
-  const trimmed = text.trim();
-  if (trimmed.length === 0) return undefined;
-  if (!/^\d+$/u.test(trimmed)) return undefined;
-  return Number(trimmed);
-}
-
 interface Cursor {
   row: number;
   recordName?: string;
@@ -197,72 +178,6 @@ function flushRecordAfter(cursor: Cursor): void {
   cursor.pendingRecordAfter = undefined;
 }
 
-/**
- * 論理単位。DDS では**キーワードだけの行は直前のレコード／項目の続き**なので、
- * 行を 1 本ずつ処理すると桁送りの持ち主を取り違える。
- *
- * 実際に `CUSTRPT.prtf` で踏んだ:
- * ```
- *   A          R HEADING                   SKIPB(1)
- *   A                                      SPACEA(2)   ← HEADING のキーワード
- *   A                                    30'顧客一覧表'
- * ```
- * 2 行目を独立した行として扱うと、見出しと明細が同じ行に重なる。
- */
-interface LogicalUnit {
-  readonly kind: "record" | "item";
-  /** 単位の代表行（項目の桁を読む行）。 */
-  readonly line: string;
-  readonly sourceLine: number;
-  /** 代表行＋継続行のキーワード欄を連結したもの。 */
-  readonly keywords: string;
-}
-
-function toLogicalUnits(lines: readonly string[]): LogicalUnit[] {
-  const units: LogicalUnit[] = [];
-  const keywordAreaOf = (line: string): string => line.slice(44).trimEnd();
-
-  lines.forEach((line, index) => {
-    if (isDdsCommentLine(line) || isDdsBlankLine(line)) return;
-
-    const nameType = ddsField(line, DDS_COLUMNS.nameType).trim().toUpperCase();
-    const name = ddsName(line);
-    const keywordArea = keywordAreaOf(line);
-    const constant = readConstant(keywordArea);
-
-    if (nameType === "R") {
-      units.push({
-        kind: "record",
-        line,
-        sourceLine: index + 1,
-        keywords: keywordArea
-      });
-      return;
-    }
-
-    if (name.length > 0 || constant !== undefined) {
-      units.push({
-        kind: "item",
-        line,
-        sourceLine: index + 1,
-        keywords: keywordArea
-      });
-      return;
-    }
-
-    // キーワードだけの行。直前の単位に足す。
-    // 直前が無ければファイル・レベルのキーワード（REF など）で、配置に関係しない。
-    const previous = units[units.length - 1];
-    if (!previous) return;
-    units[units.length - 1] = {
-      ...previous,
-      keywords: `${previous.keywords} ${keywordArea}`.trim()
-    };
-  });
-
-  return units;
-}
-
 export function resolvePrtfLayout(
   lines: readonly string[],
   options?: PrtfLayoutOptions
@@ -275,8 +190,8 @@ export function resolvePrtfLayout(
   for (const unit of toLogicalUnits(lines)) {
     const { line, sourceLine, keywords } = unit;
     const spacing = readSpacing(keywords);
-    const explicitRow = readNumber(ddsField(line, PRTF_POSITION_ROW));
-    const explicitColumn = readNumber(ddsField(line, PRTF_POSITION_COLUMN));
+    const explicitRow = readNumber(ddsField(line, DDS_POSITION_ROW));
+    const explicitColumn = readNumber(ddsField(line, DDS_POSITION_COLUMN));
 
     // --- レコード様式 ---
     if (unit.kind === "record") {
@@ -320,8 +235,8 @@ export function resolvePrtfLayout(
 
     // 位置欄に数字以外が入っていたら、黙って 1 行 1 桁に置かない。
     // 「書けていないものが正しく置かれたように見える」のが一番まずい。
-    const rowText = ddsField(line, PRTF_POSITION_ROW).trim();
-    const columnText = ddsField(line, PRTF_POSITION_COLUMN).trim();
+    const rowText = ddsField(line, DDS_POSITION_ROW).trim();
+    const columnText = ddsField(line, DDS_POSITION_COLUMN).trim();
     const invalid = [
       rowText.length > 0 && explicitRow === undefined ? `行 "${rowText}"` : "",
       columnText.length > 0 && explicitColumn === undefined
@@ -344,38 +259,11 @@ export function resolvePrtfLayout(
     const row = explicitRow ?? cursor.row;
     const column = explicitColumn ?? 1;
 
-    let width: number | undefined;
-    let widthUnknownReason: WidthUnknownReason | undefined;
-
-    if (isConstant) {
-      width = printWidth(constant);
-    } else if (ddsField(line, DDS_COLUMNS.reference).trim().toUpperCase() === "R") {
-      widthUnknownReason = "reference";
-    } else {
-      const length = readNumber(ddsField(line, DDS_COLUMNS.length));
-      if (length === undefined) {
-        widthUnknownReason = "no-length";
-      } else {
-        const editMatch = /\bEDTCDE\s*\(\s*([0-9A-Za-z])\s*([^)]*)\)/u.exec(keywords);
-        if (editMatch) {
-          const decimals = readNumber(ddsField(line, DDS_COLUMNS.decimals)) ?? 0;
-          const dataType = ddsField(line, DDS_COLUMNS.dataType);
-          const edited = editedWidth(length, decimals, editMatch[1], editMatch[2], dataType);
-          if (edited.kind === "width") {
-            width = edited.width;
-          } else {
-            widthUnknownReason =
-              edited.reason === "user-defined"
-                ? "user-defined-edit-code"
-                : edited.reason === "not-numeric"
-                  ? "not-numeric"
-                  : "no-length";
-          }
-        } else {
-          width = length;
-        }
-      }
-    }
+    const resolved = isConstant
+      ? constantWidth(constant)
+      : fieldWidth(line, keywords);
+    const width = resolved.width;
+    const widthUnknownReason = resolved.reason;
 
     if (row > MAX_POSITION || column > MAX_POSITION) {
       diagnostics.push({

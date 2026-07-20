@@ -1,4 +1,4 @@
-import { PRTF_POSITION_COLUMN, PRTF_POSITION_ROW } from "./prtfColumns";
+import { DDS_POSITION_COLUMN, DDS_POSITION_ROW } from "./ddsPositionColumns";
 
 /**
  * 帳票プレビューで項目を動かしたときの、ソース行への書き戻し。
@@ -26,15 +26,15 @@ export interface WriteBackRequest {
 /** 位置欄（39-44 桁）だけを書き換えた行を返す。 */
 export function writeBackPosition(request: WriteBackRequest): string {
   let line = request.line;
-  line = replaceColumns(line, PRTF_POSITION_ROW, format(request.row, 3));
-  line = replaceColumns(line, PRTF_POSITION_COLUMN, format(request.column, 3));
+  line = replaceColumns(line, DDS_POSITION_ROW, format(request.row, 3));
+  line = replaceColumns(line, DDS_POSITION_COLUMN, format(request.column, 3));
   // 位置欄の書き換えで生まれた行末の空白は落とす（元の行と同じ姿に保つ）。
   return line.trimEnd();
 }
 
 /** 位置欄に行番号が書かれているか。書き戻しの確認に使う。 */
 export function hasExplicitRow(line: string): boolean {
-  return readColumns(line, PRTF_POSITION_ROW).trim().length > 0;
+  return readColumns(line, DDS_POSITION_ROW).trim().length > 0;
 }
 
 function format(value: number | undefined, width: number): string {

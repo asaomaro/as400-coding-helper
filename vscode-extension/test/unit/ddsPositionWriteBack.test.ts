@@ -4,7 +4,7 @@ import { join } from "node:path";
 import {
   hasExplicitRow,
   writeBackPosition
-} from "../../src/core/dds/prtfWriteBack";
+} from "../../src/core/dds/ddsPositionWriteBack";
 import { resolvePrtfLayout } from "../../src/core/dds/prtfLayout";
 
 /**
