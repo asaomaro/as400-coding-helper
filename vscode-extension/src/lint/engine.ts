@@ -3,7 +3,7 @@ import { createRpgSpecContext } from "../core/rpgSpec";
 import { resolveSourceKind } from "../core/sourceKind";
 import type { DefinitionSet } from "./defsLoader";
 import { classifyLine, type LintLanguage } from "./preprocess";
-import { RULE_SPECS, defaultEnabledRules, ruleSpec } from "./rules";
+import { RULE_SPECS, defaultEnabledRules } from "./rules";
 import type { LintFinding, LintOptions, RuleId } from "./types";
 
 /**

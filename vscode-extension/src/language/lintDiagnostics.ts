@@ -2,6 +2,7 @@ import * as vscode from "vscode";
 import { lintFile } from "../lint/engine";
 import { defaultResourcesDir, loadDefinitions, type DefinitionSet } from "../lint/defsLoader";
 import { defaultEnabledRules } from "../lint/rules";
+import { getCNewOpcodes } from "../prompter/specClassifier";
 import type { LintFinding, RuleId } from "../lint/types";
 
 /**
@@ -80,7 +81,12 @@ export function lintDocument(document: vscode.TextDocument): vscode.Diagnostic[]
     definitions: getDefinitions(),
     options: {
       enabledRules: resolveEnabledRules(),
-      dialectOverrides: config.get<Record<string, unknown>>("rpgDialectByExtension")
+      dialectOverrides: config.get<Record<string, unknown>>("rpgDialectByExtension"),
+      // 設定 rpgClSupport.cNewOpcodes を渡さないと、ルーラー／プロンプターが
+      // C-NEW と見る行を lint が C-SPEC と見てしまう。C-SPEC だけが
+      // FIELDLEN(64-68) / DECPOS(69-70) を数値欄に持つため、拡張演算項目 2 が
+      // その桁まで伸びた正しい行を弾く（＝偽陽性）。
+      cNewOpcodes: getCNewOpcodes()
     }
   });
 

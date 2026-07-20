@@ -71,6 +71,30 @@ suite("lint: SARIF", () => {
     assert.strictEqual(location.artifactLocation.uri, "docs/src/CUSTMST.pf");
   });
 
+  test("baseDir は区切りの境界まで見る（前方一致だけで削らない）", () => {
+    // baseDir="/repo" が "/repository/..." に一致して先頭を削ってはいけない。
+    const doc = toSarif(
+      [{ fsPath: "/repository/docs/A.pf", findings: [FINDING] }],
+      { baseDir: "/repo" }
+    ) as any;
+    assert.strictEqual(
+      doc.runs[0].results[0].locations[0].physicalLocation.artifactLocation.uri,
+      "/repository/docs/A.pf"
+    );
+  });
+
+  test("baseDir の外のファイルは絶対パスのまま返す", () => {
+    // 先頭の "/" を落とすと、絶対パスなのに相対に見える uri になる。
+    const doc = toSarif(
+      [{ fsPath: "/elsewhere/A.pf", findings: [FINDING] }],
+      { baseDir: "/repo" }
+    ) as any;
+    assert.strictEqual(
+      doc.runs[0].results[0].locations[0].physicalLocation.artifactLocation.uri,
+      "/elsewhere/A.pf"
+    );
+  });
+
   test("Windows の区切りも POSIX に直す", () => {
     const doc = toSarif(
       [{ fsPath: "C:\\repo\\docs\\src\\A.pf", findings: [FINDING] }],

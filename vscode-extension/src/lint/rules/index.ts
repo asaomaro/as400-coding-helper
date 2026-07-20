@@ -1,4 +1,4 @@
-import type { LintFinding, Rule, RuleId, Severity } from "../types";
+import type { Rule, RuleId, Severity } from "../types";
 import { lineLengthRule } from "./lineLength";
 import { numericAlignmentRule, numericFieldRule } from "./numericField";
 import { requiredFieldRule } from "./requiredField";
@@ -80,14 +80,6 @@ export const RULE_SPECS: readonly RuleSpec[] = [
   }
 ];
 
-const BY_ID = new Map(RULE_SPECS.map(spec => [spec.id, spec]));
-
-export function ruleSpec(id: RuleId): RuleSpec | undefined {
-  return BY_ID.get(id);
-}
-
 export function defaultEnabledRules(): RuleId[] {
   return RULE_SPECS.filter(spec => spec.enabledByDefault).map(spec => spec.id);
 }
-
-export type { LintFinding };

@@ -147,3 +147,35 @@ suite("lint: 診断の配線（refresh からの到達性）", () => {
     );
   });
 });
+
+/**
+ * ルーラー／プロンプターと lint で桁が食い違わないこと。
+ *
+ * `rpgClSupport.cNewOpcodes` はルーラーとプロンプターの C 仕様の新旧判定に効く。
+ * これを lint に渡し忘れると、ルーラーが C-NEW と見る行を lint は C-SPEC と見る。
+ * C-SPEC だけが FIELDLEN(64-68) / DECPOS(69-70) を数値欄に持つため、拡張演算項目 2 が
+ * その桁まで伸びた**正しい行を弾く**。review で検出（review.md ラウンド 1 の must）。
+ */
+suite("lint: 設定 cNewOpcodes がルーラーと食い違わない", () => {
+  teardown(() => setConfig({}));
+
+  // 拡張演算項目 2 は原典どおり 80 桁まで伸ばせる。64-70 桁に式が掛かる行。
+  const line = "     C                   MONITOR   TOTAL = AMOUNT + TAX + FREIGHT + X";
+
+  test("既定のオペコード集合では C-SPEC 扱い（前提の確認）", () => {
+    const diagnostics = lintDocument(fakeDocument("x.rpgle", line));
+    assert.ok(
+      diagnostics.some(d => (d as { code?: string }).code === "numeric-field"),
+      "MONITOR は既定では C-NEW ではないので C-SPEC の桁で読まれる"
+    );
+  });
+
+  test("設定に足したオペコードは lint にも効く（偽陽性が消える）", () => {
+    setConfig({ rpgClSupport: { cNewOpcodes: ["MONITOR"] } });
+    assert.deepStrictEqual(
+      lintDocument(fakeDocument("x.rpgle", line)),
+      [],
+      "ルーラーが C-NEW と見る行を lint が C-SPEC の桁で弾いている"
+    );
+  });
+});

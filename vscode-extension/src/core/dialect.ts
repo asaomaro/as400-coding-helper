@@ -29,7 +29,7 @@ const FALLBACK_DIALECT: Dialect = "ile";
  * 拡張子マップを正規化する。キーは小文字化＋先頭 `.` を補い、
  * 値が `ile`/`rpg3` 以外のエントリは捨てる。
  */
-export function normalizeOverrides(
+function normalizeOverrides(
   overrides: Record<string, unknown> | undefined
 ): Record<string, Dialect> {
   const normalized: Record<string, Dialect> = {};

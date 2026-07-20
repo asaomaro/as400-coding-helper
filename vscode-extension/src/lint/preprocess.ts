@@ -50,7 +50,8 @@ function isRpgComment(text: string): boolean {
  * 直前のレコード／フィールドの続きで、定位置の欄は書かれていない。
  */
 function isDdsContinuation(text: string): boolean {
-  const nameType = text.charAt(16) ?? " ";
+  // charAt は範囲外で "" を返す（undefined にはならない）。
+  const nameType = text.charAt(16);
   const name = text.slice(18, 28);
   return nameType.trim().length === 0 && name.trim().length === 0;
 }

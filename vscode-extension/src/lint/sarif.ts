@@ -86,9 +86,22 @@ function toSarifLevel(severity: LintFinding["severity"]): "error" | "warning" {
  * （Windows の `\` をそのまま入れると CI 側で解決できない）。
  */
 function toUri(fsPath: string, baseDir?: string): string {
-  let path = fsPath;
-  if (baseDir && path.startsWith(baseDir)) {
-    path = path.slice(baseDir.length);
+  const posix = fsPath.replace(/\\/gu, "/");
+  if (!baseDir) {
+    return posix;
   }
-  return path.replace(/\\/gu, "/").replace(/^\/+/u, "");
+
+  // 区切りの境界まで見る。単純な startsWith だと baseDir="/repo" が
+  // "/repository/x.pf" にも一致して先頭を削ってしまう。
+  const base = baseDir.replace(/\\/gu, "/").replace(/\/+$/u, "");
+  if (posix === base) {
+    return posix;
+  }
+  if (posix.startsWith(`${base}/`)) {
+    return posix.slice(base.length + 1);
+  }
+
+  // baseDir の外にあるファイルは絶対パスのまま返す。先頭の "/" を落とすと
+  // 相対パスに見えるのに絶対、という紛らわしい uri になる。
+  return posix;
 }
