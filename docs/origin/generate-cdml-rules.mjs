@@ -22,6 +22,9 @@ import { readFileSync, writeFileSync, readdirSync, existsSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
+// 数値として扱う実機のデータ型（DTD の Type）。
+const NUMERIC_TYPES = new Set(["DEC", "INT2", "INT4", "UINT2", "UINT4"]);
+
 const HERE = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(HERE, "../..");
 const CMDDEF = join(HERE, "cmddef");
@@ -48,7 +51,11 @@ function unescapeXml(text) {
     .replace(/&gt;/g, ">")
     .replace(/&quot;/g, '"')
     .replace(/&apos;/g, "'")
-    .replace(/&#(\d+);/g, (_all, code) => String.fromCharCode(Number(code)))
+    // &#160; はノーブレークスペース。CHGJOB の DATSEP/TIMSEP に現れるが、
+    // 意味は「空白の区切り文字」なので通常の空白に寄せる。
+    .replace(/&#(\d+);/g, (_all, code) =>
+      Number(code) === 160 ? " " : String.fromCharCode(Number(code))
+    )
     .replace(/&amp;/g, "&");
 }
 
@@ -180,6 +187,10 @@ const report = {
   addedLength: 0,
   changedLength: 0,
   skippedLength: 0,
+  mixedCase: 0,
+  normalizedValues: 0,
+  ranges: 0,
+  numeric: 0,
   missingDefinition: []
 };
 
@@ -267,6 +278,19 @@ for (const file of readdirSync(CMDDEF).filter(n => n.endsWith(".xml")).sort()) {
       const target = definition.parameters.find(p => p.name === parm.attrs.Kwd);
       if (!target) continue;
 
+      // 既に入っている値のノーブレークスペースも直す。補完は追加しかしないため、
+      // 一度取り込んだ `&#160;` 入りの値はここで正規化しないと残る。
+      for (const option of target.options ?? []) {
+        if (typeof option.value === "string" && option.value.includes("\u00a0")) {
+          option.value = option.value.replace(/\u00a0/g, " ");
+          if (typeof option.label === "string") {
+            option.label = option.label.replace(/\u00a0/g, " ");
+          }
+          changed = true;
+          if (lang === "ja") report.normalizedValues += 1;
+        }
+      }
+
       // Rstd: 列挙した値以外を書けるか。options を持つ欄にだけ意味がある。
       if (parm.attrs.Rstd && target.options?.length) {
         const restricted = parm.attrs.Rstd === "YES";
@@ -290,10 +314,54 @@ for (const file of readdirSync(CMDDEF).filter(n => n.endsWith(".xml")).sort()) {
         }
       }
 
+      // Case: MIXED は大文字小文字をそのまま渡す欄。英大文字を強制すると
+      // IFS のパス（CRTBNDRPG の INCDIR など）に小文字が書けなくなる。
+      if (parm.attrs.Case === "MIXED") {
+        const charset = target.attributes?.characterSet;
+        if (charset === "upper" || charset === "alpha" || charset === "alnum") {
+          target.attributes = { ...(target.attributes ?? {}), characterSet: "any" };
+          changed = true;
+          if (lang === "ja") report.mixedCase += 1;
+        }
+      }
+
+      // 数値の範囲。実機が受ける下限・上限をそのまま使う。
+      const rangeMin = Number(parm.attrs.RangeMinVal);
+      const rangeMax = Number(parm.attrs.RangeMaxVal);
+      if (Number.isFinite(rangeMin) && Number.isFinite(rangeMax)) {
+        target.attributes = {
+          ...(target.attributes ?? {}),
+          minValue: rangeMin,
+          maxValue: rangeMax
+        };
+        changed = true;
+        if (lang === "ja") report.ranges += 1;
+      }
+
+      // 数値型。定義済み値(*SAME 等)は validate 側で対象外にしている。
+      // ただし * で始まらない非数値の選択肢を持つ欄は、数値と限らないので外す。
+      if (NUMERIC_TYPES.has(parm.attrs.Type) && !target.attributes?.numericOnly) {
+        const hasNonNumericChoice = (target.options ?? []).some(option => {
+          const value = String(option.value).trim();
+          return !value.startsWith("*") && !/^[+-]?[0-9]+(?:\.[0-9]+)?$/u.test(value);
+        });
+        if (!hasNonNumericChoice) {
+          target.attributes = { ...(target.attributes ?? {}), numericOnly: true };
+          changed = true;
+          if (lang === "ja") report.numeric += 1;
+        }
+      }
+
       // Len: 実機が受ける長さ。ただし MapTo を持つ欄の Len は**内部値の長さ**で、
       // そのまま入れると表示値が入力できなくなる（ADDMSGD の TYPE は Len=1 だが
       // 書くのは *CHAR）。既知の値より短い Len は採らない。
-      const len = Number(parm.attrs.Len);
+      // DEC の Len は「全体桁数.小数部桁数」（CRTPRTF の LPI は "3.1"）。
+      // そのまま文字数にすると「3.1 文字以内」という誤った検査になる。
+      // 符号と小数点の分を足して文字数に直す。
+      const rawLen = String(parm.attrs.Len ?? "");
+      const len = rawLen.includes(".")
+        ? Number(rawLen.split(".")[0]) + 2
+        : Number(rawLen);
       if (Number.isFinite(len) && len > 0) {
         const longest = Math.max(
           0,
@@ -333,6 +401,10 @@ console.log(`  promptControl ${report.promptControl} 件`);
 console.log(`  mapTo         ${report.mapTo} 件`);
 console.log(`  restricted:false（任意の値を書ける欄）  ${report.unrestricted} 件`);
 console.log(`  原典が取りこぼした選択肢の補完          ${report.addedValues} 件`);
+console.log(`  ノーブレークスペースの正規化            ${report.normalizedValues} 件`);
+console.log(`  英大文字強制をやめた欄(Case=MIXED)        ${report.mixedCase} 件`);
+console.log(`  数値の範囲(RangeMinVal/RangeMaxVal)      ${report.ranges} 件`);
+console.log(`  数値型(numericOnly)の補完                ${report.numeric} 件`);
 console.log(`  maxLength 追加 ${report.addedLength} 件 / 変更 ${report.changedLength} 件 / 見送り ${report.skippedLength} 件`);
 if (report.unmatchedParm.size > 0) {
   console.log(`  定義に無いパラメータ: ${[...report.unmatchedParm].join(", ")}`);
