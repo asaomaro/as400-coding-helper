@@ -99,9 +99,57 @@ const vscode = {
       get: key => configValues[section]?.[key]
     }),
     workspaceFolders: undefined,
-    getWorkspaceFolder: () => undefined
+    getWorkspaceFolder: () => undefined,
+    onDidChangeTextDocument: () => ({ dispose() {} }),
+    onDidCloseTextDocument: () => ({ dispose() {} }),
+    onDidOpenTextDocument: () => ({ dispose() {} }),
+    applyEdit: () => Promise.resolve(true)
   },
-  window: { activeTextEditor: undefined, visibleTextEditors: [] },
+  window: {
+    activeTextEditor: undefined,
+    visibleTextEditors: [],
+    messages: [],
+    createWebviewPanel(viewType, title) {
+      const panel = {
+        viewType,
+        title,
+        webview: {
+          html: "",
+          cspSource: "vscode-resource:",
+          onDidReceiveMessage(handler) {
+            panel.webview.__handler = handler;
+            return { dispose() {} };
+          },
+          postMessage() {}
+        },
+        onDidDispose(handler) {
+          panel.__onDispose = handler;
+          return { dispose() {} };
+        },
+        dispose() {
+          panel.__disposed = true;
+          panel.__onDispose?.();
+        }
+      };
+      vscode.window.__lastPanel = panel;
+      return panel;
+    },
+    showInformationMessage(message) {
+      vscode.window.messages.push(message);
+      return Promise.resolve(undefined);
+    },
+    showWarningMessage(message) {
+      vscode.window.messages.push(message);
+      return Promise.resolve(undefined);
+    },
+    onDidChangeTextEditorSelection: () => ({ dispose() {} }),
+    showTextDocument() {
+      return Promise.resolve({
+        selection: undefined,
+        revealRange() {}
+      });
+    }
+  },
   // 登録の呼び出しを記録する。「定義を足しただけで消費経路に繋がっていない」
   // 種類の欠陥をテストから捕まえるため（実際に F4 のキーバインドで踏んでいる）。
   languages: {
@@ -137,8 +185,25 @@ const vscode = {
       };
     }
   },
-  commands: {},
+  commands: {
+    // 配線（コマンド登録 → プレビューを開く）を通すための最小の実装。
+    registered: new Map(),
+    registerCommand(id, handler) {
+      vscode.commands.registered.set(id, handler);
+      return { dispose() {} };
+    },
+    executeCommand(id, ...args) {
+      const handler = vscode.commands.registered.get(id);
+      return handler ? handler(...args) : undefined;
+    }
+  },
   StatusBarAlignment: { Left: 1, Right: 2 },
+  ViewColumn: { One: 1, Beside: -2 },
+  Selection: class { constructor(anchor, active) { this.anchor = anchor; this.active = active; } },
+  WorkspaceEdit: class {
+    constructor() { this.edits = []; }
+    replace(uri, range, text) { this.edits.push({ uri, range, text }); }
+  },
   ConfigurationTarget: { Global: 1 },
   FileType: { File: 1, Directory: 2 }
 };

@@ -1,4 +1,6 @@
 import * as vscode from "vscode";
+// 全角の判定は core と共有する（帳票プレビューと食い違わせないため）。
+import { isDbcsCodePoint } from "../core/dbcs";
 import { isInScopeDocument } from "../utils/fileScope";
 
 /** 表示の状態。ステータスバーのクリックで切り替える。 */
@@ -9,21 +11,6 @@ let statusBarItem: vscode.StatusBarItem | undefined;
 let shiftOutDecoration: vscode.TextEditorDecorationType | undefined;
 let shiftInDecoration: vscode.TextEditorDecorationType | undefined;
 
-function isDbcsCodePoint(codePoint: number): boolean {
-  // おおまかに「全角系の文字」を DBCS とみなす
-  // - Hiragana, Katakana, CJK, 全角英数・記号など
-  if (
-    (codePoint >= 0x3040 && codePoint <= 0x30ff) || // Hiragana/Katakana
-    (codePoint >= 0x3400 && codePoint <= 0x9fff) || // CJK Unified Ideographs + Ext.A
-    (codePoint >= 0xf900 && codePoint <= 0xfaff) || // CJK Compatibility Ideographs
-    (codePoint >= 0xff01 && codePoint <= 0xff60) || // Fullwidth ASCII variants
-    (codePoint >= 0xffe0 && codePoint <= 0xffe6) // Fullwidth currency etc.
-  ) {
-    return true;
-  }
-
-  return false;
-}
 
 export function registerDbcsShiftMarkers(
   context: vscode.ExtensionContext

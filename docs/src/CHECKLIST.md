@@ -9,7 +9,7 @@
 | `CUSTMST.pf` | `CRTPF` | DDS(物理) のルーラー・F4・キーワード補完 |
 | `CUSTLF1.lf` | `CRTLF` | DDS(論理) の選択/省略・キーのレベル |
 | `CUSTMNT.dspf` | `CRTDSPF` | DDS(表示) のレベル別補完 |
-| `CUSTRPT.prtf` | `CRTPRTF` | DDS(印刷) の桁と補完 |
+| `CUSTRPT.prtf` | `CRTPRTF` | DDS(印刷) の桁と補完、**帳票プレビュー** |
 | `DBCSSAMP.pf` | `CRTPF` | SOSI 表示（`{` `}`）と桁合わせ |
 | `ADDCUST.cmd` | `CRTCMD` | `.cmd` のルーラー・F4（CMD/PARM/ELEM/QUAL/DEP） |
 | `IOSAMP.rpgle` | `CRTBNDRPG` | RPG の I/O/P 仕様書のルーラー・F4 |
@@ -100,3 +100,41 @@ system "CRTPF FILE(<lib>/CUSTMST) SRCFILE(<lib>/QDDSSRC) SRCMBR(CUSTMST) MBR(*NO
 - `SPACEA`/`SKIPB` を使う様式で行番号を書いていた（`CPD7860`）
 - RPG の I 仕様のフィールド位置を右詰めにしていなかった（`RNF0263`）
 - コマンド定義の修飾子に `MIN(1)` が無く空の既定値が問題になった（`CPD0251`）
+
+## 帳票プレビュー（PRTF）
+
+`CUSTRPT.prtf` を開いてコマンド **「帳票プレビュー: 印刷イメージを表示」** を実行する。
+
+確かめること:
+
+1. **見出しが 1 行目・30 桁目に出る**。`SKIPB(1)` が効いている。
+2. **`'顧客一覧表'` の箱が 12 桁ぶんある**。JS の文字数（5 桁）ではない。
+   ここがこの機能の存在理由で、競合（IBM i Renderer）は 5 桁で描く。
+3. **明細（CUSTNO / CUSTNM / CUSTAM）が 3 行目**に出る。`SPACEA(2)` が効いている。
+4. 明細の 3 項目は **幅不明の印**が付く（`REF(CUSTMST)` を解決しないため）。
+   ホバーで「REF で参照している」と出る。
+5. **ソースを編集するとプレビューが追従する**（位置欄の数字を変えてみる）。
+6. **項目をクリックするとソースの該当行へ飛ぶ**。
+7. カーソルを別の行へ動かすと、**対応する項目が強調される**。
+
+### IBM i Renderer との共存
+
+IBM i Development Extension Pack（`halcyontechltd.vscode-displayfile`）が
+入っている環境で:
+
+- 本 PJ のコマンドは **「帳票プレビュー: 印刷イメージを表示」**、
+  あちらは **`IBM i Renderer`** の別コマンド。**両方が使える**こと。
+- 本 PJ は言語登録をせず**拡張子で判定**しているので、
+  あちらの `dds.prtf` の languageId 発火とは干渉しない。
+- 見比べると、**日本語の定数の幅が違う**（あちらは 5 桁、本 PJ は 12 桁）。
+
+### 紙面の大きさ
+
+`PAGESIZE` は DDS ではなく `CRTPRTF` のパラメータなので、DDS からは決まらない。
+設定で変える:
+
+- `rpgClSupport.prtf.pageLength`（既定 66）
+- `rpgClSupport.prtf.pageWidth`（既定 132）
+- `rpgClSupport.prtf.overflowLine`（既定 60）
+
+いずれも既定値は `CRTPRTF` の既定（原典由来）。
