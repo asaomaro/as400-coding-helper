@@ -2,6 +2,7 @@ import * as vscode from "vscode";
 import { resolveDefinitionLanguage } from "../prompter/jsonDefinitions";
 import { classifyRpgSpecKeyword } from "../prompter/specClassifier";
 import { resolveDialect } from "../prompter/dialect";
+import { RPG_EXTENSIONS, toGlobPattern } from "../utils/fileScope";
 
 /**
  * RPG（固定長）の補完。
@@ -251,10 +252,12 @@ export function registerRpgCompletion(
     }
   };
 
+  // 拡張子は fileScope.ts の RPG_EXTENSIONS が単一の真実源（手書きの glob は
+  // 増えた拡張子を落としやすい）。languageId 側は .rpgle / .rpg の登録分を拾う。
   return vscode.languages.registerCompletionItemProvider(
     [
       { scheme: "file", language: "rpg-fixed" },
-      { scheme: "file", pattern: "**/*.{rpg,rpgle,sqlrpgle,sqlrpg}" }
+      { scheme: "file", pattern: toGlobPattern(RPG_EXTENSIONS) }
     ],
     provider,
     "%"
