@@ -199,6 +199,12 @@ export interface ParameterAttributes {
   readonly numericOnly?: boolean;
   readonly minLength?: number;
   readonly maxLength?: number;
+  /**
+   * 数値の下限・上限（CDML の `RangeMinVal` / `RangeMaxVal`）。
+   * 定義済み値(`*SAME` など)は範囲の対象外。
+   */
+  readonly minValue?: number;
+  readonly maxValue?: number;
 }
 
 export interface ParameterDefinition {

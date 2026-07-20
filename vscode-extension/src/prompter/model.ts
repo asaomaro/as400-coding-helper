@@ -230,7 +230,8 @@ export function validate(
     return "値の入力が必要です。";
   }
 
-  if (parameter.attributes?.maxLength !== undefined) {
+  // CL 変数(&NAME)の長さは欄の長さと無関係なので、長さ検査の対象外にする。
+  if (parameter.attributes?.maxLength !== undefined && !trimmed.startsWith("&")) {
     if (trimmed.length > parameter.attributes.maxLength) {
       return `${parameter.attributes.maxLength} 文字以内で入力してください。`;
     }
@@ -238,9 +239,36 @@ export function validate(
 
   // 数値項目でも、定義済み値（*DEVD 等）・小数・符号は正当に現れる。
   // 整数だけに限ると CPYF の STARTNBR(1.00) や CRTPRTF の DOWN(*DEVD) を誤って弾く。
-  if (parameter.attributes?.numericOnly && trimmed.length > 0 && !trimmed.startsWith("*")) {
+  //
+  // **CL 変数(&NAME) も数値欄に書ける。** 実機の数値型パラメータ 420 のうち
+  // 360 が AlwVar=YES で、変数を受ける。弾くと CL プログラムが書けない。
+  if (
+    parameter.attributes?.numericOnly &&
+    trimmed.length > 0 &&
+    !trimmed.startsWith("*") &&
+    !trimmed.startsWith("&")
+  ) {
     if (!/^[+-]?[0-9]+(?:\.[0-9]+)?$/u.test(trimmed)) {
       return "数値を入力してください。";
+    }
+  }
+
+  // 数値の範囲（実機の RangeMinVal / RangeMaxVal）。
+  // 定義済み値(*SAME 等)は数値ではないので対象外。
+  const { minValue, maxValue } = parameter.attributes ?? {};
+  if (
+    (minValue !== undefined || maxValue !== undefined) &&
+    trimmed.length > 0 &&
+    !trimmed.startsWith("*") &&
+    !trimmed.startsWith("&") &&
+    /^[+-]?[0-9]+(?:\.[0-9]+)?$/u.test(trimmed)
+  ) {
+    const numeric = Number(trimmed);
+    if (minValue !== undefined && numeric < minValue) {
+      return `${minValue} 以上の値を入力してください。`;
+    }
+    if (maxValue !== undefined && numeric > maxValue) {
+      return `${maxValue} 以下の値を入力してください。`;
     }
   }
 
@@ -271,7 +299,7 @@ export function validate(
     charset &&
     (charset === "alpha" || charset === "alnum" || charset === "upper")
   ) {
-    if (!/^[A-Za-z0-9_ *\/&.\-'"()#@$]+$/u.test(trimmed)) {
+    if (!/^[A-Za-z0-9_ *\/&.\-'":,()#@$]+$/u.test(trimmed)) {
       return "使用できない文字が含まれています。";
     }
   }
@@ -281,7 +309,10 @@ export function validate(
   if (
     parameter.attributes?.restricted !== false &&
     parameter.options &&
-    parameter.options.length > 0
+    parameter.options.length > 0 &&
+    // CL 変数(&NAME)はどの欄にも書ける。実機の数値型 420 のうち 360 が
+    // AlwVar=YES で、列挙値に無くても変数は受ける。
+    !trimmed.startsWith("&")
   ) {
     const allowed = parameter.options.map(option => option.value);
     if (trimmed.length > 0 && !allowed.includes(trimmed)) {

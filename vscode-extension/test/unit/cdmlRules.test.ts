@@ -506,4 +506,71 @@ suite("CDML 由来の相関規則", () => {
     assert.ok((type?.attributes?.maxLength ?? 0) >= "*CHAR".length);
     assert.equal(validate(type!, "*CHAR"), undefined);
   });
+
+  /* ---------------------------------------------------------------- *
+   * Case / 数値範囲 / 数値型。どれも「実機が受ける値を弾く」欠陥だった。
+   * ---------------------------------------------------------------- */
+
+  test("Case=MIXED の欄で小文字を弾かない（IFS のパス）", () => {
+    // CRTBNDRPG の INCDIR は実機 Case=MIXED。英大文字を強制すると
+    // /home/maro/copybooks のようなパスが書けない。
+    const crtbndrpg = loadCl("CRTBNDRPG");
+    const incdir = crtbndrpg.parameters.find(p => p.name === "INCDIR");
+    assert.notEqual(incdir?.attributes?.characterSet, "upper");
+    assert.equal(validate(incdir!, "/home/maro/copybooks"), undefined);
+  });
+
+  test("CL 変数はどの欄にも書ける", () => {
+    // 実機の数値型 420 のうち 360 が AlwVar=YES。長さ・数値・選択肢のどの検査でも
+    // &NAME を弾いてはいけない。
+    const crtprtf = loadCl("CRTPRTF");
+    const lpi = crtprtf.parameters.find(p => p.name === "LPI");
+    assert.equal(validate(lpi!, "&LINES"), undefined);
+  });
+
+  test("数値の範囲が効く", () => {
+    const withRange = loadCl("CRTPRTF").parameters.find(
+      p => p.attributes?.maxValue !== undefined
+    );
+    assert.ok(withRange, "CRTPRTF に範囲つきの欄がある");
+    const max = withRange!.attributes!.maxValue!;
+    assert.equal(validate(withRange!, String(max)), undefined);
+    assert.ok(validate(withRange!, String(max + 1))?.includes("以下の値"));
+  });
+
+  test("DEC の Len を文字数として誤用しない", () => {
+    // CRTPRTF の LPI は実機 Len="3.1"（3 桁・小数 1 桁）。そのまま maxLength に
+    // すると「3.1 文字以内」という検査になる。
+    const lpi = loadCl("CRTPRTF").parameters.find(p => p.name === "LPI");
+    const max = lpi?.attributes?.maxLength;
+    assert.ok(max === undefined || Number.isInteger(max), "maxLength は整数");
+  });
+
+  test("実機が受ける値を弾かない（全 CL 定義の総当たり）", () => {
+    // 選択肢・既定値・範囲の端・CL 変数を全定義に流す。
+    // 「テストが通る」を「動く」の代わりにしないための検査。
+    const rejected: string[] = [];
+    const walk = (parameters: readonly any[], command: string): void => {
+      for (const parameter of parameters) {
+        const probes: string[] = (parameter.options ?? []).map((o: any) =>
+          String(o.value)
+        );
+        if (parameter.attributes?.minValue !== undefined) {
+          probes.push(String(parameter.attributes.minValue));
+          probes.push(String(parameter.attributes.maxValue));
+        }
+        if (parameter.attributes?.numericOnly) probes.push("&COUNT");
+        if (parameter.defaultValue) probes.push(parameter.defaultValue);
+        for (const value of probes) {
+          const error = validate(parameter, value, false);
+          if (error) rejected.push(`${command}.${parameter.name} = ${value}: ${error}`);
+        }
+        if (parameter.children) walk(parameter.children, command);
+      }
+    };
+    for (const name of DEPENDENCY_COMMANDS) {
+      walk(loadCl(name).parameters, name);
+    }
+    assert.deepEqual(rejected, []);
+  });
 });
