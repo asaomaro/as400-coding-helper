@@ -17,6 +17,59 @@ import type {
 /** パラメータ名と表示値から内部値(MapTo)を引く。 */
 export type InternalValueResolver = (parameter: string, value: string) => string;
 
+/**
+ * 「指定された(SPCFD)」の判定。
+ *
+ * **既定値のままは「指定された」ではない。** CL の相関は対象パラメータがほぼ全て
+ * 既定値を持つため、値の有無だけで判定すると常に成立してしまう
+ * （実際、開いた瞬間に 100 コマンド中 47 コマンドで誤ったエラーが出ていた）。
+ * 同じ判断が model.ts の validateConstraints にもある。
+ */
+export type SpecifiedPredicate = (
+  parameter: string,
+  values: Record<string, string | undefined>
+) => boolean;
+
+export interface RuleContext {
+  readonly resolve: InternalValueResolver;
+  readonly isSpecified: SpecifiedPredicate;
+}
+
+/** 定義から「指定されたか」の判定を作る。既定値と一致するものは未指定とみなす。 */
+export function buildSpecifiedPredicate(
+  definition: PrompterDefinition
+): SpecifiedPredicate {
+  const defaults = new Map<string, string>();
+  const walk = (parameters: readonly ParameterDefinition[]): void => {
+    for (const parameter of parameters) {
+      if (parameter.defaultValue !== undefined) {
+        defaults.set(parameter.name, normalize(parameter.defaultValue));
+      }
+      if (parameter.children) {
+        walk(parameter.children);
+      }
+    }
+  };
+  walk(definition.parameters);
+
+  return (parameter, values) => {
+    const actual = normalize(values[parameter]);
+    if (actual.length === 0) {
+      return false;
+    }
+    const fallback = defaults.get(parameter);
+    return fallback === undefined || actual !== fallback;
+  };
+}
+
+/** 定義から評価に要る文脈をまとめて作る。 */
+export function buildRuleContext(definition: PrompterDefinition): RuleContext {
+  return {
+    resolve: buildInternalValueResolver(definition),
+    isSpecified: buildSpecifiedPredicate(definition)
+  };
+}
+
 function normalize(value: string | undefined): string {
   return (value ?? "").trim().toUpperCase();
 }
@@ -140,7 +193,7 @@ function countSatisfies(
 export function promptControlHolds(
   groups: readonly PromptControlGroup[],
   values: Record<string, string | undefined>,
-  resolve: InternalValueResolver
+  context: RuleContext
 ): boolean {
   if (groups.length === 0) {
     return true;
@@ -149,17 +202,21 @@ export function promptControlHolds(
   let result = true;
   groups.forEach((group, index) => {
     const actual = tokens(values[group.controlParameter]).map(token =>
-      resolve(group.controlParameter, token)
+      context.resolve(group.controlParameter, token)
     );
+    const specified = context.isSpecified(group.controlParameter, values);
 
     const trueCount = group.conditions.filter(condition => {
       if (condition.relation === "SPCFD") {
-        return actual.length > 0;
+        return specified;
       }
       if (condition.relation === "UNSPCFD") {
-        return actual.length === 0;
+        return !specified;
       }
-      const expected = resolve(group.controlParameter, condition.compareValue ?? "");
+      const expected = context.resolve(
+        group.controlParameter,
+        condition.compareValue ?? ""
+      );
       return valueMatches(actual, expected, condition.relation);
     }).length;
 
@@ -182,6 +239,91 @@ export function promptControlHolds(
   return result;
 }
 
+/**
+ * 違反の文面を規則の構造から組み立てる。
+ *
+ * CDML はメッセージ ID しか持たない（文面は実機のメッセージ・ファイルにあり、
+ * pub400 は英語システムのため日本語では取れない。ライブラリー・リストに
+ * QSYS2962 を入れて LANGID(JPN) にしても *CMD 側の CCSID 37 のままだった）。
+ * 生の `CPD2441` を画面に出しても利用者には意味が通らないので、規則そのものから
+ * 日本語の文を作る。ID は追跡できるよう末尾に残す。
+ */
+export function describeDependency(dependency: CommandDependency): string {
+  const relationText: Record<string, string> = {
+    EQ: "が",
+    NE: "が",
+    GT: "が",
+    GE: "が",
+    LT: "が",
+    LE: "が"
+  };
+  const comparison = (relation: string, value: string): string => {
+    switch (relation) {
+      case "EQ":
+        return `${value} のとき`;
+      case "NE":
+        return `${value}以外のとき`;
+      case "GT":
+        return `${value} より大きいとき`;
+      case "GE":
+        return `${value} 以上のとき`;
+      case "LT":
+        return `${value} より小さいとき`;
+      case "LE":
+        return `${value} 以下のとき`;
+      default:
+        return `${value} のとき`;
+    }
+  };
+
+  // 前段（この規則がいつ効くか）。
+  let condition = "";
+  if (dependency.controlRelation === "SPCFD" && dependency.controlParameter) {
+    condition = `${dependency.controlParameter} を指定した場合、`;
+  } else if (dependency.controlRelation !== "ALWAYS" && dependency.controlParameter) {
+    const target =
+      dependency.controlCompareParameter ?? dependency.controlCompareValue ?? "";
+    condition =
+      `${dependency.controlParameter}${relationText[dependency.controlRelation] ?? "が"} ` +
+      `${comparison(dependency.controlRelation, target)}、`;
+  }
+
+  // 後段（何を満たすべきか）。
+  const names = dependency.terms.map(term =>
+    term.relation === "SPCFD"
+      ? term.parameter
+      : `${term.parameter}(${term.compareParameter ?? term.compareValue ?? ""})`
+  );
+  const list = names.join("、");
+  const count = dependency.count ?? 0;
+  const allSpecified = dependency.terms.every(term => term.relation === "SPCFD");
+
+  let requirement: string;
+  if (dependency.countRelation === "ALL") {
+    requirement = `${list} をすべて指定してください。`;
+  } else if (dependency.countRelation === "EQ" && count === 0) {
+    requirement = allSpecified
+      ? `${list} は指定できません。`
+      : `${list} の条件は満たせません。`;
+  } else if (dependency.countRelation === "EQ" && count === 1) {
+    requirement =
+      dependency.terms.length === 1
+        ? `${list} を指定してください。`
+        : `${list} のいずれか 1 つだけを指定してください。`;
+  } else if (dependency.countRelation === "GE" || dependency.countRelation === "GT") {
+    const least = dependency.countRelation === "GT" ? count + 1 : count;
+    requirement = `${list} のうち ${least} つ以上を指定してください。`;
+  } else if (dependency.countRelation === "LE" || dependency.countRelation === "LT") {
+    const most = dependency.countRelation === "LT" ? count - 1 : count;
+    requirement = `${list} のうち指定できるのは ${most} つまでです。`;
+  } else {
+    requirement = `${list} の指定の組み合わせが正しくありません。`;
+  }
+
+  const suffix = dependency.messageId ? `(${dependency.messageId})` : "";
+  return `${condition}${requirement}${suffix}`;
+}
+
 export interface DependencyViolation {
   readonly dependency: CommandDependency;
   readonly messageId?: string;
@@ -192,7 +334,7 @@ export interface DependencyViolation {
 function controlHolds(
   dependency: CommandDependency,
   values: Record<string, string | undefined>,
-  resolve: InternalValueResolver
+  context: RuleContext
 ): boolean {
   if (dependency.controlRelation === "ALWAYS") {
     return true;
@@ -201,14 +343,15 @@ function controlHolds(
   if (!parameter) {
     return false;
   }
-  const actual = tokens(values[parameter]).map(token => resolve(parameter, token));
-
   if (dependency.controlRelation === "SPCFD") {
-    return actual.length > 0;
+    return context.isSpecified(parameter, values);
   }
+  const actual = tokens(values[parameter]).map(token =>
+    context.resolve(parameter, token)
+  );
   const expected = dependency.controlCompareParameter
     ? normalize(values[dependency.controlCompareParameter])
-    : resolve(parameter, dependency.controlCompareValue ?? "");
+    : context.resolve(parameter, dependency.controlCompareValue ?? "");
 
   return valueMatches(actual, expected, dependency.controlRelation);
 }
@@ -217,18 +360,18 @@ function controlHolds(
 function countTrueTerms(
   dependency: CommandDependency,
   values: Record<string, string | undefined>,
-  resolve: InternalValueResolver
+  context: RuleContext
 ): number {
   return dependency.terms.filter(term => {
-    const actual = tokens(values[term.parameter]).map(token =>
-      resolve(term.parameter, token)
-    );
     if (term.relation === "SPCFD") {
-      return actual.length > 0;
+      return context.isSpecified(term.parameter, values);
     }
+    const actual = tokens(values[term.parameter]).map(token =>
+      context.resolve(term.parameter, token)
+    );
     const expected = term.compareParameter
       ? normalize(values[term.compareParameter])
-      : resolve(term.parameter, term.compareValue ?? "");
+      : context.resolve(term.parameter, term.compareValue ?? "");
 
     return valueMatches(actual, expected, term.relation);
   }).length;
@@ -242,15 +385,27 @@ function countTrueTerms(
 export function checkDependencies(
   definition: PrompterDefinition,
   values: Record<string, string | undefined>,
-  resolve: InternalValueResolver = buildInternalValueResolver(definition)
+  context: RuleContext = buildRuleContext(definition)
 ): DependencyViolation[] {
   const violations: DependencyViolation[] = [];
 
   for (const dependency of definition.dependencies ?? []) {
-    if (!controlHolds(dependency, values, resolve)) {
+    // **触っていない欄について違反を出さない。**
+    // 実機の F4 も入力前は何も出さず、DEP は投入時に検査される。既定値のまま
+    // 開いただけで赤字が並ぶと警告として機能しない（既に model.ts の
+    // validateConstraints が同じ判断をしている）。規則が名指しする欄が 1 つも
+    // 指定されていなければ、その規則はまだ評価しない。
+    const touched = [
+      dependency.controlParameter,
+      ...dependency.terms.map(term => term.parameter)
+    ].some(parameter => parameter && context.isSpecified(parameter, values));
+    if (!touched) {
       continue;
     }
-    const trueCount = countTrueTerms(dependency, values, resolve);
+    if (!controlHolds(dependency, values, context)) {
+      continue;
+    }
+    const trueCount = countTrueTerms(dependency, values, context);
     const satisfied = countSatisfies(
       trueCount,
       dependency.terms.length,
@@ -263,10 +418,7 @@ export function checkDependencies(
     violations.push({
       dependency,
       messageId: dependency.messageId,
-      message:
-        dependency.message ??
-        dependency.messageId ??
-        "パラメーターの組み合わせが正しくありません。"
+      message: dependency.message ?? describeDependency(dependency)
     });
   }
 

@@ -1,9 +1,5 @@
 import type { PrompterDefinition, ParameterDefinition } from "./types";
-import {
-  buildInternalValueResolver,
-  checkDependencies,
-  type InternalValueResolver
-} from "./cdmlRules";
+import { buildRuleContext, checkDependencies, type RuleContext } from "./cdmlRules";
 import { evaluateParameter } from "./visibilityRules";
 import {
   countOccurrences,
@@ -108,9 +104,9 @@ export function buildInitialState(
   initialValues: Record<string, string | undefined>
 ): PrompterState {
   const slots = expandOccurrences(definition.parameters, initialValues);
-  // CDML 由来の promptControl は内部値(MapTo)で比較する。定義から変換表を作って
-  // 渡さないと、表示値のまま比較されて条件表示が黙って効かなくなる。
-  const resolve = buildInternalValueResolver(definition);
+  // CDML 由来の規則は内部値(MapTo)で比較し、「指定された」は既定値と区別する。
+  // 定義から作って渡さないと、条件表示が効かない／既定値のままで誤った違反が出る。
+  const context = buildRuleContext(definition);
 
   // dependsOn は他パラメータの確定値を参照するため、先に全項目の値を determine する。
   const resolvedValues: Record<string, string | undefined> = {};
@@ -126,7 +122,7 @@ export function buildInitialState(
     const { visible, required, disabled, allowedValues } = evaluateParameter(
       slot.parameter,
       resolvedValues,
-      resolve
+      context
     );
     // 初期表示では「必須なのに空」をエラーにしない。開いた瞬間に赤字が並ぶと
     // 警告として機能しなくなる（実機の F4 も入力前は何も出さない）。
@@ -149,7 +145,7 @@ export function buildInitialState(
     };
   });
 
-  const constraintErrors = validateConstraints(definition, resolvedValues, resolve);
+  const constraintErrors = validateConstraints(definition, resolvedValues, context);
   const hasErrors =
     fields.some(field => Boolean(field.error)) || constraintErrors.length > 0;
 
@@ -168,10 +164,10 @@ export function buildInitialState(
 export function validateConstraints(
   definition: PrompterDefinition,
   values: Record<string, string | undefined>,
-  resolve: InternalValueResolver = buildInternalValueResolver(definition)
+  context: RuleContext = buildRuleContext(definition)
 ): string[] {
   // CDML(DEP) 由来の相関チェック。散文由来の constraints と併せて一覧に出す。
-  const errors: string[] = checkDependencies(definition, values, resolve).map(
+  const errors: string[] = checkDependencies(definition, values, context).map(
     violation => violation.message
   );
   const byName = new Map(definition.parameters.map(p => [p.name, p]));
