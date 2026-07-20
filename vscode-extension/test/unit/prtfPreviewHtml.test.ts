@@ -152,3 +152,43 @@ suite("PRTF プレビュー: ルーラー", () => {
     assert.strictEqual(buildRuler(132).length, 132);
   });
 });
+
+/**
+ * ドラッグで位置を動かす経路（review ラウンド 1 の should）。
+ *
+ * 受け口（`prtfPreview.ts` の `type: "move"`）だけあって送る側が無いと、
+ * ロジックが実装済みに見えるのに**利用者は項目を動かせない**。
+ * AGENTS.md「追加したリソースは到達可能になって初めて完了」。
+ */
+suite("PRTF プレビュー: ドラッグの経路", () => {
+  const html = htmlFor(sampleLines);
+
+  test("項目がドラッグできる", () => {
+    assert.ok(html.includes('draggable="true"'), "draggable が付いていない");
+    assert.ok(html.includes("movable"), "動かせる印が無い");
+  });
+
+  test("項目が現在の行・桁を持つ（落とす位置の計算に使う）", () => {
+    assert.ok(/data-row="\d+"/u.test(html));
+    assert.ok(/data-column="\d+"/u.test(html));
+  });
+
+  test("落としたら move を送る（受け口と対になっている）", () => {
+    assert.ok(
+      html.includes("type: 'move'"),
+      "move を送る箇所が無い＝受け口が死蔵になる"
+    );
+    assert.ok(html.includes("addEventListener('drop'"), "drop を拾っていない");
+  });
+
+  test("落とす位置は計算で桁に直す（見た目に合わせない）", () => {
+    // 実際に描かれた項目の位置から 1 桁の実寸を逆算する。
+    assert.ok(html.includes("function toCell"), "桁への変換が無い");
+    assert.ok(html.includes("Math.round"), "桁に丸めていない");
+  });
+
+  test("クリック（ジャンプ）とドラッグが両立する", () => {
+    assert.ok(html.includes("type: 'reveal'"));
+    assert.ok(html.includes("type: 'move'"));
+  });
+});

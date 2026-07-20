@@ -92,6 +92,18 @@ export function buildPrtfPreviewHtml(
       padding-left: 2px;
     }
     .item.active { outline: 1px solid var(--vscode-focusBorder, #007acc); }
+    .item.movable { cursor: move; }
+    .item.dragging { opacity: 0.5; }
+    .drop-hint {
+      position: absolute;
+      font-family: sans-serif;
+      font-size: 11px;
+      background: var(--vscode-editorHoverWidget-background, #252526);
+      border: 1px solid var(--vscode-editorHoverWidget-border, #454545);
+      padding: 1px 4px;
+      pointer-events: none;
+      white-space: nowrap;
+    }
     .diagnostics { margin-top: 10px; font-family: sans-serif; font-size: 12px; }
     .diagnostics li { margin-bottom: 2px; }
     .empty { opacity: 0.7; font-family: sans-serif; }
@@ -110,6 +122,49 @@ export function buildPrtfPreviewHtml(
   ${renderDiagnostics(layout.diagnostics)}
   <script nonce="${options.nonce}">
     const vscode = acquireVsCodeApi();
+    const paper = document.querySelector('.paper');
+
+    // 1 桁・1 行の実寸を測る。CSS の calc と同じ値になるよう、
+    // 実際に描かれた項目の位置から逆算する（フォント差の影響を受けない）。
+    function cellSize() {
+      const probe = document.querySelector('.item');
+      if (!probe) return { cell: 8, line: 16 };
+      const column = Number(probe.dataset.column);
+      const row = Number(probe.dataset.row);
+      const rect = probe.getBoundingClientRect();
+      const base = paper.getBoundingClientRect();
+      return {
+        cell: column > 1 ? (rect.left - base.left) / (column - 1) : rect.width,
+        line: row > 1 ? (rect.top - base.top) / (row - 1) : rect.height
+      };
+    }
+
+    let hint;
+    function showHint(x, y, text) {
+      if (!hint) {
+        hint = document.createElement('div');
+        hint.className = 'drop-hint';
+        paper.appendChild(hint);
+      }
+      hint.style.left = x + 'px';
+      hint.style.top = y + 'px';
+      hint.textContent = text;
+    }
+    function hideHint() {
+      hint?.remove();
+      hint = undefined;
+    }
+
+    /** 落とした位置を桁・行に直す。桁は計算で決める（見た目に合わせない）。 */
+    function toCell(event) {
+      const base = paper.getBoundingClientRect();
+      const { cell, line } = cellSize();
+      return {
+        row: Math.max(1, Math.round((event.clientY - base.top) / line) + 1),
+        column: Math.max(1, Math.round((event.clientX - base.left) / cell) + 1)
+      };
+    }
+
     document.querySelectorAll('.item').forEach(element => {
       element.addEventListener('click', () => {
         vscode.postMessage({
@@ -117,6 +172,37 @@ export function buildPrtfPreviewHtml(
           sourceLine: Number(element.dataset.sourceLine)
         });
       });
+
+      element.addEventListener('dragstart', event => {
+        element.classList.add('dragging');
+        event.dataTransfer.setData('text/plain', element.dataset.sourceLine);
+        event.dataTransfer.effectAllowed = 'move';
+      });
+
+      element.addEventListener('dragend', () => {
+        element.classList.remove('dragging');
+        hideHint();
+      });
+    });
+
+    paper.addEventListener('dragover', event => {
+      event.preventDefault();
+      event.dataTransfer.dropEffect = 'move';
+      const at = toCell(event);
+      const base = paper.getBoundingClientRect();
+      showHint(event.clientX - base.left + 8, event.clientY - base.top + 8,
+        at.row + ' 行 ' + at.column + ' 桁');
+    });
+
+    paper.addEventListener('dragleave', hideHint);
+
+    paper.addEventListener('drop', event => {
+      event.preventDefault();
+      hideHint();
+      const sourceLine = Number(event.dataTransfer.getData('text/plain'));
+      if (!sourceLine) return;
+      const at = toCell(event);
+      vscode.postMessage({ type: 'move', sourceLine, row: at.row, column: at.column });
     });
   </script>
 </body>
@@ -147,6 +233,7 @@ function renderItem(item: PlacedItem, activeSourceLine?: number): string {
   const classes = ["item", item.kind];
   if (item.width === undefined) classes.push("unknown-width");
   if (activeSourceLine === item.sourceLine) classes.push("active");
+  classes.push("movable");
 
   // 幅不明の項目は、桁が分からないので最小の箱で位置だけ示す。
   const width = item.width ?? 1;
@@ -157,6 +244,7 @@ function renderItem(item: PlacedItem, activeSourceLine?: number): string {
       : `${label}（${item.row} 行 ${item.column} 桁 / ${item.width} 桁）`;
 
   return `<div class="${classes.join(" ")}" data-source-line="${item.sourceLine}"
+      data-row="${item.row}" data-column="${item.column}" draggable="true"
       style="top: calc(var(--line-height) * ${item.row - 1}); left: calc(var(--cell) * ${item.column - 1}); width: calc(var(--cell) * ${width});"
       title="${escapeHtml(title)}">${escapeHtml(label)}</div>`;
 }

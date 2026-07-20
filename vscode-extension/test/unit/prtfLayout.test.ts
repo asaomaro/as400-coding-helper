@@ -295,3 +295,100 @@ suite("PRTF: 実サンプル CUSTRPT.prtf", () => {
     );
   });
 });
+
+/**
+ * 2 重印刷の検出（decisions.md D3・review ラウンド 1 の must）。
+ *
+ * 原典の注記「行番号を使用せず、スキップ・キーワードもスペース・キーワードも
+ * 指定しなかった場合には、2 重印刷 (重ね打ち) が行われることがあります」。
+ *
+ * `overlap` は症状で、こちらが原因。型だけ定義して実装を忘れていた。
+ */
+suite("PRTF: 2 重印刷の検出", () => {
+  const record = (keywords?: string) =>
+    ddsLine({ nameType: "R", name: "REC", ...(keywords ? { keywords } : {}) });
+  const field = (name: string, column: string, row?: string) =>
+    ddsLine({ name, length: "10", column, ...(row ? { row } : {}) });
+
+  const hasOverprint = (lines: readonly string[]) =>
+    resolvePrtfLayout(lines).diagnostics.some(d => d.code === "possible-overprint");
+
+  test("行番号も桁送りも無ければ検出する", () => {
+    assert.strictEqual(
+      hasOverprint([record(), field("F1", "1"), field("F2", "20")]),
+      true
+    );
+  });
+
+  test("レコード・レベルの桁送りがあれば検出しない", () => {
+    assert.strictEqual(
+      hasOverprint([record("SPACEA(1)"), field("F1", "1"), field("F2", "20")]),
+      false
+    );
+  });
+
+  test("フィールド・レベルの桁送りがあれば検出しない", () => {
+    const withSpacing = ddsLine({
+      name: "F1",
+      length: "10",
+      column: "1",
+      keywords: "SPACEA(1)"
+    });
+    assert.strictEqual(hasOverprint([record(), withSpacing, field("F2", "20")]), false);
+  });
+
+  test("行番号があれば検出しない", () => {
+    assert.strictEqual(
+      hasOverprint([record(), field("F1", "1", "1"), field("F2", "1", "2")]),
+      false
+    );
+  });
+
+  test("項目が 1 つなら検出しない（重ならない）", () => {
+    assert.strictEqual(hasOverprint([record(), field("F1", "1")]), false);
+  });
+});
+
+/**
+ * 位置欄が数字でない場合（review ラウンド 1 の should）。
+ *
+ * 黙って 1 行 1 桁に置くと、書けていないものが紙面の左上に
+ * **正しく置かれたように見える**。
+ */
+suite("PRTF: 位置欄が数字でない", () => {
+  test("検出して項目を描かない", () => {
+    const broken = ddsLine({ name: "F1", length: "10", column: "XX" });
+    const layout = resolvePrtfLayout([
+      ddsLine({ nameType: "R", name: "REC" }),
+      broken
+    ]);
+    assert.strictEqual(layout.items.length, 0, "描画してはいけない");
+    assert.ok(layout.diagnostics.some(d => d.code === "invalid-position"));
+  });
+
+  test("行が数字でない場合も検出する", () => {
+    const broken = ddsLine({ name: "F1", length: "10", row: "AB", column: "1" });
+    const layout = resolvePrtfLayout([
+      ddsLine({ nameType: "R", name: "REC" }),
+      broken
+    ]);
+    assert.strictEqual(layout.items.length, 0);
+    assert.ok(
+      layout.diagnostics.some(
+        d => d.code === "invalid-position" && d.message.includes("行")
+      )
+    );
+  });
+
+  test("位置欄が空なのは正常（桁送りで流れる書き方）", () => {
+    const layout = resolvePrtfLayout([
+      ddsLine({ nameType: "R", name: "REC" }),
+      ddsLine({ name: "F1", length: "10" })
+    ]);
+    assert.strictEqual(layout.items.length, 1);
+    assert.strictEqual(
+      layout.diagnostics.filter(d => d.code === "invalid-position").length,
+      0
+    );
+  });
+});

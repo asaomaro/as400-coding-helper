@@ -65,7 +65,9 @@ export type LayoutDiagnosticCode =
   /** 紙面をはみ出している。 */
   | "overflow"
   /** 行・桁が原典の上限（255）を超えている。 */
-  | "out-of-range";
+  | "out-of-range"
+  /** 位置欄に数字以外が入っている（桁が読めない）。 */
+  | "invalid-position";
 
 export interface LayoutDiagnostic {
   readonly code: LayoutDiagnosticCode;
@@ -169,6 +171,10 @@ function readNumber(text: string): number | undefined {
 interface Cursor {
   row: number;
   recordName?: string;
+  /** 現在のレコードで桁送りキーワードを見たか（レコード・項目のどちらでも）。 */
+  recordHasSpacing?: boolean;
+  /** 現在のレコードの項目のうち、行番号を持たないものの行番号（診断用）。 */
+  recordItemsWithoutRow?: number[];
   /** レコード・レベルの後置き（レコードの全行の後に効く）。 */
   pendingRecordAfter?: { skipAfter?: number; spaceAfter?: number };
 }
@@ -275,7 +281,10 @@ export function resolvePrtfLayout(
     // --- レコード様式 ---
     if (unit.kind === "record") {
       flushRecordAfter(cursor);
+      diagnostics.push(...detectOverprint(cursor));
       cursor.recordName = ddsName(line) || undefined;
+      cursor.recordHasSpacing = spacing.hasAny;
+      cursor.recordItemsWithoutRow = [];
       applyBefore(cursor, spacing);
       // レコード・レベルの後置きは「レコードのすべての行の後」に効く（D1）。
       cursor.pendingRecordAfter = {
@@ -307,6 +316,27 @@ export function resolvePrtfLayout(
           "（原典: 行番号にエラーを示すフラグが付けられます）",
         sourceLine
       });
+    }
+
+    // 位置欄に数字以外が入っていたら、黙って 1 行 1 桁に置かない。
+    // 「書けていないものが正しく置かれたように見える」のが一番まずい。
+    const rowText = ddsField(line, PRTF_POSITION_ROW).trim();
+    const columnText = ddsField(line, PRTF_POSITION_COLUMN).trim();
+    const invalid = [
+      rowText.length > 0 && explicitRow === undefined ? `行 "${rowText}"` : "",
+      columnText.length > 0 && explicitColumn === undefined
+        ? `桁 "${columnText}"`
+        : ""
+    ].filter(text => text.length > 0);
+
+    if (invalid.length > 0) {
+      diagnostics.push({
+        code: "invalid-position",
+        message: `位置欄が数字ではありません（${invalid.join(" / ")}）`,
+        sourceLine
+      });
+      // 配置できないので項目として積まない（描画しない）。
+      continue;
     }
 
     applyBefore(cursor, spacing);
@@ -367,15 +397,49 @@ export function resolvePrtfLayout(
       hasExplicitRow: explicitRow !== undefined
     });
 
+    if (spacing.hasAny) cursor.recordHasSpacing = true;
+    if (explicitRow === undefined) {
+      (cursor.recordItemsWithoutRow ??= []).push(sourceLine);
+    }
+
     applyAfter(cursor, spacing);
   }
 
   flushRecordAfter(cursor);
+  diagnostics.push(...detectOverprint(cursor));
 
   diagnostics.push(...detectOverlaps(items), ...detectOverflow(items, page));
   diagnostics.sort((a, b) => a.sourceLine - b.sourceLine);
 
   return { page, items, diagnostics };
+}
+
+/**
+ * 2 重印刷の検出。原典（`SPACEA` キーワード）の注記:
+ * > 注: 行番号を使用せず、スキップ・キーワードもスペース・キーワードも
+ * > 指定しなかった場合には、**2 重印刷 (重ね打ち) が行われることがあります。**
+ *
+ * `overlap` は症状で、こちらが原因。「桁送りを書いていないから重なっている」
+ * ことを示すために別に持つ（decisions.md D3）。
+ *
+ * **エラーにはしない**。原典も「行われることがあります」で、意図的な重ね打ちも
+ * あり得る。
+ */
+function detectOverprint(cursor: Cursor): LayoutDiagnostic[] {
+  const withoutRow = cursor.recordItemsWithoutRow ?? [];
+  // 桁送りがあるか、そもそも項目が 1 つ以下なら重ならない。
+  if (cursor.recordHasSpacing || withoutRow.length < 2) return [];
+
+  return [
+    {
+      code: "possible-overprint",
+      message:
+        `レコード ${cursor.recordName ?? ""} は行番号もスキップ／スペースも` +
+        "指定していないため、同じ行に重ねて印刷されます" +
+        "（原典: 2 重印刷が行われることがあります）",
+      sourceLine: withoutRow[0]!
+    }
+  ];
 }
 
 /**
