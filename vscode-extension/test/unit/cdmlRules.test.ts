@@ -7,7 +7,7 @@ import {
   createCdmlEvaluator,
   promptControlHolds
 } from "../../src/prompter/cdmlRules";
-import { buildInitialState } from "../../src/prompter/model";
+import { buildInitialState, validate } from "../../src/prompter/model";
 import { buildHtml, toSerializableState } from "../../src/prompter/binding";
 import type { PrompterDefinition } from "../../src/prompter/types";
 
@@ -463,5 +463,47 @@ suite("CDML 由来の相関規則", () => {
         `DEV=${dev} でサーバと一致する`
       );
     }
+  });
+
+  /* ---------------------------------------------------------------- *
+   * 実機の属性(Rstd / Len)の反映。どちらも「正しい入力を弾く」欠陥だった。
+   * ---------------------------------------------------------------- */
+
+  test("Rstd=NO の欄では選択肢以外の値も書ける", () => {
+    // ADDPFM の SRCTYPE は原典の定義済み値が *NONE だけだが、実機は Rstd=NO で
+    // 任意のソース・タイプを受ける。制限として扱うと RPGLE が入力できない。
+    const addpfm = loadCl("ADDPFM");
+    const srctype = addpfm.parameters.find(p => p.name === "SRCTYPE");
+    assert.equal(srctype?.attributes?.restricted, false);
+    assert.equal(validate(srctype!, "RPGLE"), undefined);
+  });
+
+  test("Rstd=YES の欄では選択肢以外を弾く", () => {
+    const savobj = loadCl("SAVOBJ");
+    const restricted = savobj.parameters.find(
+      p => p.attributes?.restricted === true && (p.options?.length ?? 0) > 0
+    );
+    assert.ok(restricted, "SAVOBJ に制限つきの欄がある");
+    assert.equal(validate(restricted!, "ZZZNOTAVALUE"), "指定できない値です。");
+  });
+
+  test("ストリーム・ファイルのパス欄が 10 文字で切られない", () => {
+    // SRCSTMF は実機 Len=5000。原典由来の一律 10 では IFS のパスが書けなかった。
+    const crtbndrpg = loadCl("CRTBNDRPG");
+    const srcstmf = crtbndrpg.parameters.find(p => p.name === "SRCSTMF");
+    assert.ok((srcstmf?.attributes?.maxLength ?? 0) > 100);
+    assert.equal(
+      validate(srcstmf!, "/home/MAROBENI/src/mypgm.rpgle"),
+      undefined
+    );
+  });
+
+  test("MapTo を持つ欄に内部値の長さを入れない", () => {
+    // ADDMSGD の TYPE は実機 Len=1（内部値 C）だが、書くのは *CHAR。
+    // そのまま採ると表示値が入力できなくなる。
+    const addmsgd = loadCl("ADDMSGD");
+    const type = addmsgd.parameters.find(p => p.name === "TYPE");
+    assert.ok((type?.attributes?.maxLength ?? 0) >= "*CHAR".length);
+    assert.equal(validate(type!, "*CHAR"), undefined);
   });
 });

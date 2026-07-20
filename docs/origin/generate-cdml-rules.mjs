@@ -48,6 +48,7 @@ function unescapeXml(text) {
     .replace(/&gt;/g, ">")
     .replace(/&quot;/g, '"')
     .replace(/&apos;/g, "'")
+    .replace(/&#(\d+);/g, (_all, code) => String.fromCharCode(Number(code)))
     .replace(/&amp;/g, "&");
 }
 
@@ -134,6 +135,22 @@ function collectMapTo(node, into) {
   }
 }
 
+/**
+ * <Parm> 直下の値一覧（Values / SpcVal / SngVal）。Elem/Qual の中は含めない。
+ * 制限の判定と選択肢の補完に使う。
+ */
+function parmValues(parm) {
+  const values = [];
+  for (const child of parm.children) {
+    if (child.name === "Values" || child.name === "SpcVal" || child.name === "SngVal") {
+      for (const value of childrenNamed(child, "Value")) {
+        if (value.attrs.Val !== undefined) values.push(value.attrs.Val);
+      }
+    }
+  }
+  return values;
+}
+
 /** 定義 JSON の全パラメータ（group の子も含む）を辿る。 */
 function eachParameter(parameters, visit) {
   for (const parameter of parameters) {
@@ -158,6 +175,11 @@ const report = {
   mapTo: 0,
   unmatchedParm: new Set(),
   unmatchedValue: 0,
+  unrestricted: 0,
+  addedValues: 0,
+  addedLength: 0,
+  changedLength: 0,
+  skippedLength: 0,
   missingDefinition: []
 };
 
@@ -199,7 +221,8 @@ for (const file of readdirSync(CMDDEF).filter(n => n.endsWith(".xml")).sort()) {
     if (table.size > 0) mapToByKwd.set(parm.attrs.Kwd, table);
   }
 
-  if (dependencies.length === 0 && promptControlByKwd.size === 0) continue;
+  // 相関規則が無くても Rstd / Len は反映する。ここで飛ばすと属性が
+  // 101 コマンドにしか入らない（実際に一度そうなっていた）。
 
   let wroteAny = false;
   for (const lang of LANGS) {
@@ -239,6 +262,61 @@ for (const file of readdirSync(CMDDEF).filter(n => n.endsWith(".xml")).sort()) {
       if (lang === "ja") report.mapTo += table.size;
     }
 
+    // --- 実機の属性を反映する（Rstd / Len） ---
+    for (const parm of parms) {
+      const target = definition.parameters.find(p => p.name === parm.attrs.Kwd);
+      if (!target) continue;
+
+      // Rstd: 列挙した値以外を書けるか。options を持つ欄にだけ意味がある。
+      if (parm.attrs.Rstd && target.options?.length) {
+        const restricted = parm.attrs.Rstd === "YES";
+        target.attributes = { ...(target.attributes ?? {}), restricted };
+        changed = true;
+        if (lang === "ja" && !restricted) report.unrestricted += 1;
+
+        // Rstd=YES なら実機の値集合が正。原典が取りこぼした値を補う。
+        if (restricted) {
+          const known = new Set(
+            target.options.map(o => String(o.value).trim().toUpperCase())
+          );
+          for (const value of parmValues(parm)) {
+            if (!known.has(value.trim().toUpperCase())) {
+              target.options.push({ label: value, value });
+              known.add(value.trim().toUpperCase());
+              changed = true;
+              if (lang === "ja") report.addedValues += 1;
+            }
+          }
+        }
+      }
+
+      // Len: 実機が受ける長さ。ただし MapTo を持つ欄の Len は**内部値の長さ**で、
+      // そのまま入れると表示値が入力できなくなる（ADDMSGD の TYPE は Len=1 だが
+      // 書くのは *CHAR）。既知の値より短い Len は採らない。
+      const len = Number(parm.attrs.Len);
+      if (Number.isFinite(len) && len > 0) {
+        const longest = Math.max(
+          0,
+          ...(target.options ?? []).map(o => String(o.value).trim().length),
+          ...(target.singleValues ?? []).map(v => String(v).trim().length),
+          String(target.defaultValue ?? "").trim().length
+        );
+        if (len >= longest) {
+          const before = target.attributes?.maxLength;
+          if (before !== len) {
+            target.attributes = { ...(target.attributes ?? {}), maxLength: len };
+            changed = true;
+            if (lang === "ja") {
+              if (before === undefined) report.addedLength += 1;
+              else report.changedLength += 1;
+            }
+          }
+        } else if (lang === "ja") {
+          report.skippedLength += 1;
+        }
+      }
+    }
+
     if (changed) {
       wroteAny = true;
       if (!DRY) writeFileSync(path, `${JSON.stringify(definition, null, 2)}\n`, "utf8");
@@ -253,6 +331,9 @@ console.log(`${DRY ? "[dry-run] " : ""}反映したコマンド ${report.command
 console.log(`  dependencies  ${report.dependencies} 件`);
 console.log(`  promptControl ${report.promptControl} 件`);
 console.log(`  mapTo         ${report.mapTo} 件`);
+console.log(`  restricted:false（任意の値を書ける欄）  ${report.unrestricted} 件`);
+console.log(`  原典が取りこぼした選択肢の補完          ${report.addedValues} 件`);
+console.log(`  maxLength 追加 ${report.addedLength} 件 / 変更 ${report.changedLength} 件 / 見送り ${report.skippedLength} 件`);
 if (report.unmatchedParm.size > 0) {
   console.log(`  定義に無いパラメータ: ${[...report.unmatchedParm].join(", ")}`);
 }
@@ -260,5 +341,5 @@ if (report.unmatchedValue > 0) {
   console.log(`  MapTo を置く options が無いパラメータ ${report.unmatchedValue} 件`);
 }
 if (report.missingDefinition.length > 0) {
-  console.log(`  対応する定義 JSON が無い: ${report.missingDefinition.join(", ")}`);
+  console.log(`  変更なし: ${report.missingDefinition.length} コマンド`);
 }
