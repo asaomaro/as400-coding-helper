@@ -50,34 +50,34 @@
 
 ## ③ lint core 本体
 
-- [ ] T9: `src/lint/types.ts` に `RuleId` / `Severity` / `LintFinding` / `LintOptions` /
+- [x] T9: `src/lint/types.ts` に `RuleId` / `Severity` / `LintFinding` / `LintOptions` /
       `RuleContext` / `Rule` を定義する
-- [ ] T10: `src/lint/defsLoader.ts` を追加する。`node:fs` で同梱定義のみを読み、
+- [x] T10: `src/lint/defsLoader.ts` を追加する。`node:fs` で同梱定義のみを読み、
       `core/definitionLayout` に従う。表示言語は **`ja` 固定**。
       利用者の上書き（`.rpg-cl/`）は**読まない**。
       **受け入れ**: DDS 3 種と RPG（ile / rpg3）の定義が引ける単体テスト（依存: T4, T9）
-- [ ] T11: `src/lint/preprocess.ts` に `classifyLine` を実装する。
+- [x] T11: `src/lint/preprocess.ts` に `classifyLine` を実装する。
       DDS = 7 桁目 `*` または **7-80 桁が全て空白**／
       RPG = 7 桁目 `*` または行全体が空／
       RPG の F・D 仕様は **7-16 桁が空なら継続行**。
       **受け入れ**: 各分類の単体テスト。DDS のブランク行が `comment` になること（依存: T9）
-- [ ] T12: `src/lint/rules/lineLength.ts` に `line-length` を実装する。
+- [x] T12: `src/lint/rules/lineLength.ts` に `line-length` を実装する。
       **100 桁超過のみ**を指摘（80 桁超過は指摘しない）。
       **受け入れ**: 100 桁ちょうどは指摘なし・101 桁で指摘（依存: T9）
-- [ ] T13: `src/lint/rules/numericField.ts` に `numeric-field`（非数字）と
+- [x] T13: `src/lint/rules/numericField.ts` に `numeric-field`（非数字）と
       `numeric-alignment`（右寄せでない）を実装する。空欄は指摘しない。
       **受け入れ**: DDS の長さ欄（30-34）と RPG の `numericOnly` 欄で正例・負例（依存: T9）
-- [ ] T14: `src/lint/rules/index.ts` に RuleId → 実装・既定 ON/OFF・既定 severity の表を置く。
+- [x] T14: `src/lint/rules/index.ts` に RuleId → 実装・既定 ON/OFF・既定 severity の表を置く。
       `required-field` / `restricted-value` は**枠だけ・既定 OFF**で実装する。
       `restricted-value` は有効化しても `attributes.restricted === true` の欄に限る。
       **受け入れ**: 既定で有効なのが 3 規則であること・OFF の 2 規則を有効にしても
       検証済みコーパスで `restricted-value` が 0 件であること（依存: T12, T13）
-- [ ] T15: `src/lint/engine.ts` に `lintFile(request)` を実装する。
+- [x] T15: `src/lint/engine.ts` に `lintFile(request)` を実装する。
       1 走査で「種別判定 → 行分類 → 規則適用」。DDS はファイル単位で種別が決まるため
       行ごとの判定をしない。RPG のみ `RpgSpecContext` を通す。
       対象外の拡張子は空配列を返す（エラーにしない）。結果は行・桁の昇順。
       **受け入れ**: 結合テスト（依存: T7, T10, T11, T14）
-- [ ] T16: `test/unit/lintCorpus.test.ts` を追加し、**`docs/src/` の実機コンパイル
+- [x] T16: `test/unit/lintCorpus.test.ts` を追加し、**`docs/src/` の実機コンパイル
       確認済み 6 ファイル**（`CUSTMST.pf` / `CUSTLF1.lf` / `CUSTMNT.dspf` /
       `CUSTRPT.prtf` / `DBCSSAMP.pf` / `IOSAMP.rpgle`）で**指摘ゼロ**を検査する。
       未検証 3 ファイルは対象にしない。
