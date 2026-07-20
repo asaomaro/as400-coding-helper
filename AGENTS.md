@@ -202,6 +202,13 @@
   対象の 7 割強は `options` を持たない `text` 欄なので、**パラメータ単位の `valueMap`**
   に集約している（options 側には置かない）。
 
+- **属性ごとの「使う／使わない」は `docs/origin/cdml-attributes.md` に全件記録している**
+  （68 種類）。使わないものにも理由を書く。`verify-cdml-attributes.mjs` が網羅を
+  検査するので、新しい属性が出てきたら判断を書くまで落ちる。
+  反映済みは `dependencies` / `promptControl` / `valueMap` / `restricted` /
+  `maxLength` / `minValue`・`maxValue` / `valueRelation` / `allowsVariable` /
+  `maxOccurrences` / `objectKind` / `numericOnly` / `characterSet`。
+
 ### 外部原典と同じだけ「PJ 内部の仕様」を先に読む
 
 - 上流（research / spec）で調べるのは外部原典だけではない。**出力先の仕様**、すなわち
@@ -209,8 +216,9 @@
   （coding / review）で判明して手戻りになる。
 - 最低限あたるもの:
   - **スキーマ型** `src/prompter/types.ts`（定義 JSON で使える機能の真実源。
-    `dropdown` / `dependsOn` / `constraints` / `singleValues` / `valueKind` などは
-    ここを見ないと存在に気付けない）
+    `dropdown` / `dependsOn` / `constraints` / `singleValues` / `valueKind` /
+    `promptControl` / `dependencies` / `valueMap` / `objectKind` / `attributes.*`
+    などはここを見ないと存在に気付けない）
   - **既存の同種実装**（新しく作る前に、同じことをしている場所を探す。
     桁は `keywordColumns` / 仕様書判定は `specClassifier` / 対象拡張子は `fileScope`）
   - **既存規約**（キーバインドの発火条件、`rpgTabNavigation` の桁移動、
@@ -232,6 +240,66 @@
   （PR#40 で `specClassifier` に単一化）。DDS・`.cmd` の定義を足したのにキーバインドの
   発火条件に拡張子が無く、DDS も RPG III も SQL 組み込みも F4 が効かなかった
   （`verify-contributes.mjs` で一致を検査するようにした）。
+
+#### プロンプターは「モデルまで」では届いていない
+
+- **プロンプターの入力欄は WebView 側でも評価される**。開いたときの状態を作るのは
+  `model.ts` だが、入力のたびの再評価・エラー表示・表示切り替えは `binding.ts` が
+  埋め込む script が行う。**サーバ側だけ直すと、開いた瞬間の一度きりになるか、
+  何も起きない。**
+- PR#93〜#98 でこれを 3 回踏んだ。`dependencies` は WebView に渡っておらず**一度も
+  画面に出ていなかった**。`promptControl` は入力に追従しなかった。`maxLength` を
+  実機に合わせたら、画面の `maxlength` が CL 変数の入力を打ち切った。
+  いずれも `buildInitialState()` を見るテストは通っていた。
+- **到達性の確認は「生成された HTML と script」まで見る**。`buildInitialState().x` を
+  見て「消費経路まで繋いだ」と書かない。
+- **写しを手書きしない**。評価は `createCdmlEvaluator` のように外の識別子を参照しない
+  自己完結な関数に閉じ、`String(...)` で script に埋め込む。同一の関数が動くので
+  食い違いようがない（`dependsOn` と `constraints` は写しが手書きで、`binding.ts` に
+  「片方だけ直すと食い違う」と注意書きが要る状態になっている）。
+
+### 入力の検査を厳しくするときは、実機の値を流して確かめる
+
+原典から「定義済み値」を集めて検査に使うと、**実機が受ける値を弾く**。
+実際に 157 件を弾いていた。**全定義に実機の値を流す検査**を書いて 0 件にした
+（`test/unit/cdmlRules.test.ts` の総当たり）。厳しくする変更では必ず流す。
+
+踏んだものは次のとおり。いずれも「動かすと分かるがテストは通る」種類。
+
+- **列挙した値＝制限とは限らない**。実機の `Rstd=NO` の欄では候補にすぎず任意の値を
+  書ける。`ADDPFM` の `SRCTYPE` は原典の定義済み値が `*NONE` だけで、`RPGLE` が
+  入力できなかった（86 欄が同じ状態）。
+- **CL 変数(`&NAME`)はどの欄にも書ける**。長さ・数値・選択肢のどの検査でも弾かない。
+  実機の数値型 420 欄のうち 360 が `AlwVar=YES`。書けない欄(26)だけ `allowsVariable:false`。
+  **画面の `maxlength` も打ち切る**ので、変数の分の余地を残す。
+- **比較する値は内部値**。`<Value Val MapTo>` は 5222 件で食い違う（`*PRINT`→`L`）。
+  変換せずに比べると規則が黙って成立しない。
+- **長さの単位を取り違えない**。`DEC` の `Len` は「桁数.小数部」で文字数ではない
+  （`CRTPRTF` の `LPI` は `3.1`）。`MapTo` を持つ欄の `Len` は**内部値の長さ**
+  （`ADDMSGD` の `TYPE` は `Len=1` だが書くのは `*CHAR`）。
+- **原典が値を取りこぼしていることがある**。`Rstd=YES` の 840 欄を実機と突き合わせると
+  781 一致・59 欄で原典が不足・余分ゼロ。実機の集合が正。
+
+### 網羅したつもりの一覧は、機械で検査する
+
+- 属性・演算子・拡張子のような**集合を手で数えた一覧は必ず漏れる**。
+  CDML の属性一覧を手で書いたところ、直後に足した `verify-cdml-attributes.mjs` が
+  **17 属性の漏れ**を検出した。
+- 一覧を作ったら、その場で「実データに現れるものが一覧にあるか」を検査する。
+  新しいものが出てきたら判断を書くまで落ちるようにする。
+
+### 原典と実機が食い違ったら、実機のパーサーに判定させる
+
+- 原典（IBM Documentation）と実機の `*CMD` は食い違うことがある。**どちらが正かは
+  推測せず、実機に判定させる。**
+- `PosNbr` を「定位置指定の順序」と読んで `positional` に採ろうとしたが、誤りだった。
+  `CHGJOBD` は原典が「JOBD=1, USER=2, JOBQ=3」、`PosNbr` は「JOBD=1, JOBQ=2, JOBPTY=3」。
+  位置 2 に修飾名を書いて実機でコンパイルすると
+  `CPD0049『Qualified name not valid for parameter USER.』`——**原典が正しい**。
+  543 欄中 53 欄でこの食い違いがあり、採っていればコマンド・ヘルプの
+  「定位置指定順」が誤りになっていた。
+- 判定は**副作用の無い形**で行う。上の例は 1 行の CL をコンパイルして構文エラーを
+  見ただけで、オブジェクトは作っていない。
 
 ### 拡張子を足したら「発火条件」まで足す（配線漏れ）
 
