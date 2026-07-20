@@ -105,6 +105,65 @@ if (!prompter) {
   }
 }
 
+/**
+ * プレビューの右クリック導線は、DDS 種別の判定と一致していなければならない。
+ *
+ * 真実源は src/core/sourceKind.ts の resolveDdsType。ここがずれると
+ * 「拡張子は対象なのにメニューに出ない」「出るのにコマンドが何もしない」
+ * という、動かすまで気付けない食い違いになる。
+ */
+const kindSource = readFileSync(join(EXT, "src/core/sourceKind.ts"), "utf8");
+
+/** resolveDdsType の `/\.(a|b)$/` から、その種別の拡張子を取り出す。 */
+function readDdsTypeExtensions(ddsType) {
+  const pattern = new RegExp(
+    `\\/\\\\\\.\\(([a-z0-9|]+)\\)\\$\\/u\\.test\\(lower\\)\\)\\s*return\\s*"${ddsType}"`,
+    "u"
+  );
+  const match = pattern.exec(kindSource);
+  return match ? match[1].split("|") : undefined;
+}
+
+const PREVIEW_MENUS = [
+  { command: "rpgClSupport.showDspfPreview", ddsType: "DDS-DSPF" },
+  { command: "rpgClSupport.showPrtfPreview", ddsType: "DDS-PRTF" }
+];
+
+const menuItems = manifest.contributes?.menus?.["editor/context"] ?? [];
+
+for (const { command, ddsType } of PREVIEW_MENUS) {
+  const expected = readDdsTypeExtensions(ddsType);
+  if (!expected) {
+    failures.push(`sourceKind.ts から ${ddsType} の拡張子が読めない`);
+    continue;
+  }
+
+  const item = menuItems.find(entry => entry.command === command);
+  if (!item) {
+    failures.push(`${command} が editor/context に無い（右クリックから開けない）`);
+    continue;
+  }
+
+  const declared = [...item.when.matchAll(/resourceExtname == \.([a-z0-9]+)/gu)].map(
+    m => m[1]
+  );
+  const missing = expected.filter(ext => !declared.includes(ext));
+  const extra = declared.filter(ext => !expected.includes(ext));
+
+  if (missing.length > 0) {
+    failures.push(
+      `${command} が出ない拡張子: ${missing.map(e => `.${e}`).join(" ")}` +
+        `（${ddsType} なのにメニューに無い）`
+    );
+  }
+  if (extra.length > 0) {
+    failures.push(
+      `${command} が出るが対象外の拡張子: ${extra.map(e => `.${e}`).join(" ")}` +
+        `（コマンドを実行しても何も起きない）`
+    );
+  }
+}
+
 console.log(`contributes の検査（対象拡張子 ${extensions.length} 件）`);
 
 if (failures.length > 0) {
@@ -113,4 +172,7 @@ if (failures.length > 0) {
   process.exit(1);
 }
 
-console.log("✓ contributes OK（F4 が対象拡張子すべてで発火する）");
+console.log(
+  "✓ contributes OK（F4 が対象拡張子すべてで発火し、" +
+    "プレビューの右クリック導線が DDS 種別と一致する）"
+);

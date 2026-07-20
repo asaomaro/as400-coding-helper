@@ -103,7 +103,8 @@ system "CRTPF FILE(<lib>/CUSTMST) SRCFILE(<lib>/QDDSSRC) SRCMBR(CUSTMST) MBR(*NO
 
 ## 帳票プレビュー（PRTF）
 
-`CUSTRPT.prtf` を開いてコマンド **「帳票プレビュー: 印刷イメージを表示」** を実行する。
+`CUSTRPT.prtf` を開いて **エディタ上で右クリック → 「帳票プレビュー: 印刷イメージを表示」**
+を実行する（コマンドパレットからでも同じ）。
 
 確かめること:
 
@@ -141,7 +142,8 @@ IBM i Development Extension Pack（`halcyontechltd.vscode-displayfile`）が
 
 ## 画面プレビュー（DSPF）
 
-`CUSTMNT.dspf` を開いてコマンド **「画面プレビュー: 表示イメージを表示」** を実行する。
+`CUSTMNT.dspf` を開いて **エディタ上で右クリック → 「画面プレビュー: 表示イメージを表示」**
+を実行する（コマンドパレットからでも同じ）。
 
 確かめること:
 
@@ -168,6 +170,13 @@ IBM i Development Extension Pack（`halcyontechltd.vscode-displayfile`）が
 項目を 1 桁目にドラッグすると、書き戻しはされるが
 **「1 桁目には項目を置けません」** という指摘が出る。
 原典で 1 桁目は属性文字のために予約されており、実機でも作成できない。
+
+### 右クリックの導線
+
+- [ ] `.dspf` の右クリックに **「画面プレビュー」だけ**が出る（帳票は出ない）
+- [ ] `.prtf` の右クリックに **「帳票プレビュー」だけ**が出る（画面は出ない）
+- [ ] `.pf` / `.lf` / `.rpgle` の右クリックには **どちらも出ない**
+- [ ] `.mnudds` の右クリックに「画面プレビュー」が出る
 
 ### IBM i Renderer との共存
 
