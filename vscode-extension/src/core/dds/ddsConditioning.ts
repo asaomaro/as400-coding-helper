@@ -1,3 +1,4 @@
+import { isDdsBlankLine, isDdsCommentLine } from "../ddsLayout";
 import { conditioningAreaOf } from "./ddsLogicalUnits";
 import { isScreenSizeConditionName } from "./dspfScreenSize";
 
@@ -94,6 +95,164 @@ export function readConditioning(lines: readonly string[]): Conditioning {
   }
   if (clauses.length === 0) return { kind: "none" };
   return { kind: "indicators", clauses };
+}
+
+/**
+ * 標識の状態。鍵は **2 桁**（`"01"`..`"99"`）。
+ *
+ * **未設定の標識は鍵ごと持たない。** `"unset"` のような値を作ると
+ * 「未設定」を表す形が 2 つ（鍵が無い／値が unset）になり、
+ * 空判定（`Object.keys(...).length === 0`）が壊れる。
+ */
+export type IndicatorStates = Readonly<Record<string, "on" | "off">>;
+
+/**
+ * 条件の解決結果。**3 値**。
+ *
+ * 未設定の標識を含む条件は `unknown`——「不成立」に倒すと、標識を 1 つ設定しただけで
+ * 無関係な項目が消える。**消すのは不成立と決まったものだけ**。
+ */
+export type ConditionResult = "shown" | "hidden" | "unknown";
+
+/**
+ * 行単位の `clauses` を、原典の言う「条件」（OR で結ばれる AND の組）へ畳む。
+ *
+ * 原典（`表示装置ファイルの条件付け (7 - 16 桁目)`）:
+ * > 2 - 9 個の標識を AND により結び付けて 1 つの条件にすることができます。
+ * > OR で結ばれる複数の条件を指定する場合には、各条件をそれぞれ新しい行から書き始め、
+ * > **最初の条件以外のすべての条件については、7 桁目に O を指定**しなければなりません。
+ * > **最初の条件に O を指定した場合には、警告メッセージが出て、この桁はブランクとして処理されます。**
+ *
+ * したがって **1 行目は必ず新しい条件を開始する**（`O` が書かれていてもブランク扱い）。
+ * 2 行目以降は `O` なら新しい条件、`A`・ブランクなら直前の条件に AND で足す。
+ */
+export function conditionGroups(
+  conditioning: Conditioning
+): readonly (readonly IndicatorTerm[])[] {
+  if (conditioning.kind !== "indicators") return [];
+
+  const groups: IndicatorTerm[][] = [];
+  conditioning.clauses.forEach((clause, index) => {
+    // 1 行目の O はブランク扱い（原典）。
+    if (index === 0 || clause.join === "O") {
+      groups.push([...clause.terms]);
+      return;
+    }
+    groups[groups.length - 1].push(...clause.terms);
+  });
+
+  return groups;
+}
+
+/**
+ * 標識の状態から、その項目（またはキーワード）が選択されるかを解決する。
+ *
+ * ■ 3 値の畳み方（Kleene）
+ *   条件（AND）: 1 つでも偽 → 偽。偽が無く未知があれば → 未知。全部真 → 真。
+ *   全体（OR）: 1 つでも真 → 真。真が無く未知があれば → 未知。全部偽 → 偽。
+ *
+ * ■ 画面サイズ条件名は常に成立として扱う
+ *   1 次画面サイズに一致しないものは `resolveDspfLayout` が既に落としている
+ *   （`dspfLayout.ts` の `matchesScreenSize`）。ここまで来たものは表示される。
+ */
+export function evaluateConditioning(
+  conditioning: Conditioning,
+  states: IndicatorStates
+): ConditionResult {
+  const groups = conditionGroups(conditioning);
+  if (groups.length === 0) return "shown";
+
+  let sawUnknown = false;
+  for (const group of groups) {
+    const value = evaluateGroup(group, states);
+    if (value === true) return "shown";
+    if (value === undefined) sawUnknown = true;
+  }
+  return sawUnknown ? "unknown" : "hidden";
+}
+
+/** AND の組を畳む。`undefined` は未知。 */
+function evaluateGroup(
+  terms: readonly IndicatorTerm[],
+  states: IndicatorStates
+): boolean | undefined {
+  let sawUnknown = false;
+  for (const term of terms) {
+    const state = states[term.indicator];
+    if (state === undefined) {
+      sawUnknown = true;
+      continue;
+    }
+    // N が付いていればオフのときに成立（原典: 8/11/14 桁目 (NOT)）。
+    const satisfied = term.negated ? state === "off" : state === "on";
+    if (!satisfied) return false;
+  }
+  return sawUnknown ? undefined : true;
+}
+
+/**
+ * 人が読む形。例: `01 かつ N02、または 03`。条件が無ければ空文字。
+ *
+ * `N` を落として「オフ」と書き下さないのは、**ソースに書いてある形と対応させる**ため
+ * （プロパティから該当行を探すときに、目で突き合わせられる）。
+ */
+export function describeConditioning(conditioning: Conditioning): string {
+  if (conditioning.kind === "screen-size") return conditioning.name;
+
+  const groups = conditionGroups(conditioning);
+  if (groups.length === 0) return "";
+
+  return groups
+    .map((terms) =>
+      terms
+        .map((term) => `${term.negated ? "N" : ""}${term.indicator}`)
+        .join(" かつ ")
+    )
+    .join("、または ");
+}
+
+/** ソース中に現れる標識。 */
+export interface IndicatorUsage {
+  /** `"01"`..`"99"`。 */
+  readonly indicator: string;
+  /** その標識が**書かれた桁の数**（行数ではない）。 */
+  readonly uses: number;
+}
+
+/**
+ * ソース中で使われている標識を、番号順に列挙する。
+ *
+ * ■ 論理単位を通さない
+ *   原典は条件が付く対象を「フィールド**または**キーワード」としている:
+ *   > ユーザー・プログラムでは、オプション標識をオン (16 進数 F1) またはオフ (16 進数 F0) に
+ *   > セットすることにより、**フィールドまたはキーワード**を選択することができます。
+ *
+ *   `toLogicalUnits` は**キーワードだけの行**を直前の項目へ連結する際に、その行の条件付け欄を
+ *   捨てる（項目の表示を決めるのは項目自身の条件だけなので、それ自体は正しい）。
+ *   そのため `30 DSPATR(RI)` のような**キーワードを条件付ける標識は単位から拾えない**。
+ *   一覧は「このファイルで意味を持つ標識」を出すものなので、**生の行**から集める。
+ *
+ * ■ 判定は `readConditioning` に委ねる
+ *   注記行・空行を除いたうえで 1 行ずつ通す。桁の切り出しと妥当性の規則を 2 か所に書かない。
+ *   `N` は状態の指定であって別の標識ではないので、`N01` も `01` として数える。
+ */
+export function collectIndicators(lines: readonly string[]): readonly IndicatorUsage[] {
+  const counts = new Map<string, number>();
+
+  for (const line of lines) {
+    if (isDdsCommentLine(line) || isDdsBlankLine(line)) continue;
+    const conditioning = readConditioning([line]);
+    if (conditioning.kind !== "indicators") continue;
+    for (const clause of conditioning.clauses) {
+      for (const term of clause.terms) {
+        counts.set(term.indicator, (counts.get(term.indicator) ?? 0) + 1);
+      }
+    }
+  }
+
+  return [...counts.entries()]
+    .sort((a, b) => a[0].localeCompare(b[0]))
+    .map(([indicator, uses]) => ({ indicator, uses }));
 }
 
 /**

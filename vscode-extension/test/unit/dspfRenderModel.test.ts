@@ -1,5 +1,6 @@
 import * as assert from "assert";
 import {
+  applyIndicators,
   buildDspfRenderModel,
   constantSegments,
   printWidth,
@@ -144,5 +145,118 @@ suite("描画モデル: SO / SI の種別", () => {
       assert.strictEqual(segment.cols, 1);
       assert.strictEqual(segment.text, "");
     }
+  });
+});
+
+/**
+ * 標識の状態の反映。**守るのは「指定しなければ何も変わらない」**。
+ *
+ * 状態は利用者が指定する表示の状態で、ソースには書かれていない。既定（何も指定しない）で
+ * モデルが 1 ビットでも変われば、既存の描画・診断・一覧のすべてが疑わしくなる。
+ */
+const CONDITIONED = [
+  "     A          R TEST",
+  "     A  50                              3  2'部門名'",
+  "     A N50                              3  2'未設定'",
+  "     A  01        FLD1          10A  O  5  2",
+  "     A  02        FLD2          10A  O  5  6",
+  "     A            BASE1          5A  O  7  2",
+  "     A            BASE2          5A  O  7  4",
+  "     A  60        NOPOS          5A  O"
+];
+
+suite("描画モデル: 標識の状態を反映する", () => {
+  const model = buildDspfRenderModel(CONDITIONED);
+  const drawn = (states: Parameters<typeof applyIndicators>[1]) =>
+    applyIndicators(model, states).items.map(item => item.sourceLine);
+  const outlineItem = (states: Parameters<typeof applyIndicators>[1], sourceLine: number) =>
+    applyIndicators(model, states)
+      .outline.flatMap(record => record.items)
+      .find(item => item.sourceLine === sourceLine);
+
+  test("状態が空なら引数のモデルをそのまま返す（同一参照）", () => {
+    // 参照で比べる。既定の見え方が変わらないことを、値の比較ではなく構造で固定する。
+    assert.strictEqual(applyIndicators(model, {}), model);
+  });
+
+  test("ソース中の標識を番号順に持つ", () => {
+    assert.deepStrictEqual(model.indicators, [
+      { indicator: "01", uses: 1 },
+      { indicator: "02", uses: 1 },
+      { indicator: "50", uses: 2 },
+      { indicator: "60", uses: 1 }
+    ]);
+  });
+
+  test("項目は条件付けをそのまま持ち、プロパティには読める形で載る", () => {
+    const item = model.items.find(candidate => candidate.sourceLine === 4);
+    assert.strictEqual(item?.condition.kind, "indicators");
+    assert.strictEqual(item?.attributes.condition, "01");
+    const unconditional = model.items.find(candidate => candidate.sourceLine === 6);
+    assert.strictEqual(unconditional?.condition.kind, "none");
+    assert.strictEqual(unconditional?.attributes.condition, undefined);
+  });
+
+  test("不成立の項目だけがキャンバスから消える", () => {
+    assert.ok(drawn({ "50": "on" }).includes(2));
+    assert.ok(!drawn({ "50": "on" }).includes(3));
+    assert.ok(!drawn({ "50": "off" }).includes(2));
+    assert.ok(drawn({ "50": "off" }).includes(3));
+  });
+
+  test("未設定を含む条件の項目は消えない", () => {
+    // 01 だけ倒しても、02 で条件付けられた項目は「出るとも出ないとも決まらない」。
+    assert.ok(drawn({ "01": "off" }).includes(5));
+  });
+
+  test("消えた項目は一覧に理由付きで残る", () => {
+    assert.strictEqual(outlineItem({ "50": "off" }, 2)?.hidden, "condition-off");
+    assert.strictEqual(outlineItem({ "50": "off" }, 3)?.hidden, undefined);
+  });
+
+  test("構造的な理由が既にある項目は上書きしない", () => {
+    // 位置が無い項目は標識をどう倒しても描かれない。そちらを先に伝えるほうが直しに繋がる。
+    assert.strictEqual(outlineItem({ "60": "off" }, 8)?.hidden, "no-position");
+  });
+
+  test("その状態で同時に出る項目の重なりを足す", () => {
+    const codes = applyIndicators(model, { "01": "on", "02": "on" }).diagnostics.map(d => d.code);
+    assert.ok(codes.includes("overlap-under-indicators"));
+    const message = applyIndicators(model, { "01": "on", "02": "on" })
+      .diagnostics.find(d => d.code === "overlap-under-indicators")?.message;
+    assert.ok(message?.includes("01=オン, 02=オン"), message);
+    assert.ok(message?.includes("FLD1") && message?.includes("FLD2"), message);
+  });
+
+  test("指摘にはその組が使う標識だけを添える", () => {
+    // 設定中の標識をすべて並べると、無関係な標識まで載って「何を戻せば消えるか」が読めなくなる。
+    const message = applyIndicators(model, { "01": "on", "02": "on", "50": "off" })
+      .diagnostics.find(d => d.code === "overlap-under-indicators")?.message;
+    assert.ok(message?.includes("標識 01=オン, 02=オン のとき"), message);
+    assert.ok(!message?.includes("50="), message);
+  });
+
+  test("片方が未設定なら重なりを足さない", () => {
+    const codes = applyIndicators(model, { "01": "on" }).diagnostics.map(d => d.code);
+    assert.ok(!codes.includes("overlap-under-indicators"));
+  });
+
+  test("両方とも無条件の重なりは二重に出さない", () => {
+    // BASE1 / BASE2 は `resolveDspfLayout` が既に `overlap` で報告している。
+    const base = model.diagnostics.filter(d => d.code === "overlap").length;
+    const after = applyIndicators(model, { "01": "on", "02": "on" }).diagnostics;
+    assert.strictEqual(base, 1);
+    assert.strictEqual(after.filter(d => d.code === "overlap").length, 1);
+    assert.strictEqual(
+      after.filter(d => d.code === "overlap-under-indicators" && d.message.includes("BASE")).length,
+      0
+    );
+  });
+
+  test("状態を指定しなければ重なりは足さない", () => {
+    assert.deepStrictEqual(
+      applyIndicators(model, {}).diagnostics.map(d => d.code),
+      model.diagnostics.map(d => d.code)
+    );
   });
 });
