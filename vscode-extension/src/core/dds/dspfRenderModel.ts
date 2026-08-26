@@ -26,6 +26,13 @@ import { buildDspfOutline, type ItemAttributes, type OutlineRecord } from "./dsp
 export interface RenderSegment {
   readonly text: string;
   readonly cols: number;
+  /**
+   * SO / SI の桁。
+   *
+   * **表示切替で `{` `}` を描くために持つ。** UI に「これは全角か」を判断させないため、
+   * 種別は区切りを作るときに決める（桁の判断は core、描くのは UI）。
+   */
+  readonly shift?: "so" | "si";
 }
 
 export interface RenderItem {
@@ -163,9 +170,9 @@ export function constantSegments(text: string): RenderSegment[] {
       runCols = 0;
     }
   };
-  const shift = (): void => {
+  const shift = (kind: "so" | "si"): void => {
     flush();
-    segments.push({ text: "", cols: 1 });
+    segments.push({ text: "", cols: 1, shift: kind });
   };
 
   for (const character of text) {
@@ -174,10 +181,10 @@ export function constantSegments(text: string): RenderSegment[] {
     const dbcs = isDbcsCodePoint(codePoint);
 
     if (dbcs && !inDbcsRun) {
-      shift(); // シフトアウト
+      shift("so");
       inDbcsRun = true;
     } else if (!dbcs && inDbcsRun) {
-      shift(); // シフトイン
+      shift("si");
       inDbcsRun = false;
     }
 
@@ -186,7 +193,7 @@ export function constantSegments(text: string): RenderSegment[] {
   }
 
   if (inDbcsRun) {
-    shift(); // 行末まで DBCS が続いた場合のシフトイン
+    shift("si"); // 行末まで DBCS が続いた場合のシフトイン
   }
   flush();
 
