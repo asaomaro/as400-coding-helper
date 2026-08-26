@@ -1,24 +1,13 @@
 import * as vscode from "vscode";
+import { isDbcsCodePoint } from "@as400/dds-core";
 import { isInScopeDocument } from "../utils/fileScope";
 
 let shiftOutDecoration: vscode.TextEditorDecorationType | undefined;
 let shiftInDecoration: vscode.TextEditorDecorationType | undefined;
 
-function isDbcsCodePoint(codePoint: number): boolean {
-  // おおまかに「全角系の文字」を DBCS とみなす
-  // - Hiragana, Katakana, CJK, 全角英数・記号など
-  if (
-    (codePoint >= 0x3040 && codePoint <= 0x30ff) || // Hiragana/Katakana
-    (codePoint >= 0x3400 && codePoint <= 0x9fff) || // CJK Unified Ideographs + Ext.A
-    (codePoint >= 0xf900 && codePoint <= 0xfaff) || // CJK Compatibility Ideographs
-    (codePoint >= 0xff01 && codePoint <= 0xff60) || // Fullwidth ASCII variants
-    (codePoint >= 0xffe0 && codePoint <= 0xffe6) // Fullwidth currency etc.
-  ) {
-    return true;
-  }
-
-  return false;
-}
+// DBCS 判定の正本は @as400/dds-core の text/encoding に移した。
+// ここと表示桁換算で判定が食い違うと、同じファイルを SOSI 表示とビジュアルエディタが
+// 別の桁で語ることになるため、二重定義しない（spec D4）。判定ロジックは変更していない。
 
 export function registerDbcsShiftMarkers(
   context: vscode.ExtensionContext

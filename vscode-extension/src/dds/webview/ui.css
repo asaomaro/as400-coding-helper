@@ -1,0 +1,315 @@
+/*
+ * DDS ビジュアルエディタの見た目。
+ *
+ * ## スタンドアロン優先（design DD7）
+ *
+ * 既定値は**この UI 自身の配色**で書き、ホストのテーマ変数は `var(--vscode-*, 既定値)` として
+ * 上に被せるだけにしてある。VSCode の外に出したときに色が消えないのはこのため
+ * （変数が未定義なら既定値がそのまま効く）。**配色マッピングは移植の継ぎ目の 1 つ。**
+ *
+ * ## 桁は CSS 変数で決まる
+ *
+ * `--cell-w` / `--cell-h` は**起動時に実測した値**が JS から入る（design DD2）。
+ * `ch` を使わないのは、日本語混在の等幅フォントで DBCS 幅と一致する保証がないため。
+ */
+
+:root {
+  --dds-bg: var(--vscode-editor-background, #1f1f1f);
+  --dds-fg: var(--vscode-editor-foreground, #d4d4d4);
+  --dds-chrome-bg: var(--vscode-sideBar-background, #181818);
+  --dds-border: var(--vscode-panel-border, #333);
+  --dds-muted: var(--vscode-descriptionForeground, #9d9d9d);
+  --dds-accent: var(--vscode-focusBorder, #2f81f7);
+  --dds-grid: color-mix(in srgb, var(--dds-fg) 12%, transparent);
+  --dds-grid-strong: color-mix(in srgb, var(--dds-fg) 26%, transparent);
+  --dds-field: var(--vscode-charts-blue, #4fa3ff);
+  --dds-constant: var(--dds-fg);
+  --dds-error: var(--vscode-editorError-foreground, #f14c4c);
+  --dds-warning: var(--vscode-editorWarning-foreground, #cca700);
+
+  --dds-font: var(--vscode-editor-font-family, ui-monospace, "Cascadia Mono", Consolas, "MS Gothic", monospace);
+  --dds-font-size: 14px;
+
+  /* 実測値が入るまでの暫定値。JS が起動直後に上書きする。 */
+  --cell-w: 8px;
+  --cell-h: 18px;
+  --gutter-w: 3.5em;
+}
+
+body {
+  margin: 0;
+  background: var(--dds-bg);
+  color: var(--dds-fg);
+  font-family: var(--vscode-font-family, system-ui, sans-serif);
+  font-size: 13px;
+}
+
+.dds-app {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
+
+/* ---- ツールバー ---------------------------------------------------- */
+
+.dds-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding: 6px 10px;
+  background: var(--dds-chrome-bg);
+  border-bottom: 1px solid var(--dds-border);
+}
+
+.dds-toolbar .record-name {
+  font-weight: 600;
+}
+
+.dds-toolbar .spacer {
+  flex: 1;
+}
+
+.dds-toolbar button {
+  font: inherit;
+  color: var(--vscode-button-secondaryForeground, var(--dds-fg));
+  background: var(--vscode-button-secondaryBackground, #313131);
+  border: 1px solid var(--dds-border);
+  border-radius: 3px;
+  padding: 3px 8px;
+  cursor: pointer;
+}
+
+.dds-toolbar button:hover:not(:disabled) {
+  background: var(--vscode-button-secondaryHoverBackground, #3c3c3c);
+}
+
+.dds-toolbar button:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.dds-toolbar button.armed {
+  outline: 1px solid var(--dds-accent);
+  outline-offset: 1px;
+}
+
+.dds-toolbar input {
+  font: inherit;
+  color: var(--vscode-input-foreground, var(--dds-fg));
+  background: var(--vscode-input-background, #2b2b2b);
+  border: 1px solid var(--vscode-input-border, var(--dds-border));
+  border-radius: 3px;
+  padding: 2px 5px;
+}
+
+.dds-toolbar .group {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.dds-toolbar .group label {
+  color: var(--dds-muted);
+}
+
+/* 実測したセル寸法の表示（design DD2 / 親 plan R6）。
+   桁がずれたとき最初に見る場所なので、常に出しておく。 */
+.dds-metrics {
+  color: var(--dds-muted);
+  font-family: var(--dds-font);
+  font-size: 11px;
+  white-space: nowrap;
+}
+
+/* ---- キャンバス ---------------------------------------------------- */
+
+.dds-main {
+  flex: 1;
+  overflow: auto;
+  padding: 12px;
+}
+
+.dds-frame {
+  width: max-content;
+  font-family: var(--dds-font);
+  font-size: var(--dds-font-size);
+  line-height: var(--cell-h);
+}
+
+.dds-ruler {
+  position: relative;
+  margin-left: var(--gutter-w);
+  height: var(--cell-h);
+  width: calc(var(--cols) * var(--cell-w));
+  color: var(--dds-muted);
+  white-space: pre;
+}
+
+.dds-ruler span {
+  position: absolute;
+  top: 0;
+}
+
+.dds-body {
+  display: flex;
+  align-items: flex-start;
+}
+
+.dds-gutter {
+  width: var(--gutter-w);
+  color: var(--dds-muted);
+  text-align: right;
+  padding-right: 6px;
+  box-sizing: border-box;
+  white-space: pre;
+}
+
+.dds-canvas {
+  position: relative;
+  width: calc(var(--cols) * var(--cell-w));
+  height: calc(var(--rows) * var(--cell-h));
+  border: 1px solid var(--dds-border);
+  background-color: color-mix(in srgb, var(--dds-fg) 4%, var(--dds-bg));
+  /* グリッドは背景で描く。セルごとの DOM は作らない（design DD1）。 */
+  background-image:
+    repeating-linear-gradient(to right,
+      var(--dds-grid-strong) 0 1px,
+      transparent 1px calc(var(--cell-w) * 10)),
+    repeating-linear-gradient(to bottom,
+      var(--dds-grid) 0 1px,
+      transparent 1px var(--cell-h));
+  background-position: 0 0;
+  cursor: default;
+}
+
+.dds-canvas.placing {
+  cursor: crosshair;
+}
+
+/* ---- アイテム ------------------------------------------------------ */
+
+.dds-item {
+  position: absolute;
+  height: var(--cell-h);
+  white-space: pre;
+  cursor: grab;
+  user-select: none;
+  box-sizing: border-box;
+}
+
+.dds-item .seg {
+  display: inline-block;
+  vertical-align: top;
+  /* **桁からはみ出させない。** フォントが全角を 2 セル幅で描かない環境では
+     字が欠けるが、隣の桁を押し出すよりよい——この道具の価値は桁が正しいことにある。 */
+  overflow: hidden;
+  height: var(--cell-h);
+}
+
+.dds-item.constant {
+  color: var(--dds-constant);
+}
+
+.dds-item.field {
+  color: var(--dds-field);
+  border-bottom: 1px dotted color-mix(in srgb, var(--dds-field) 60%, transparent);
+}
+
+.dds-item.selected {
+  outline: 1px solid var(--dds-accent);
+  outline-offset: 0;
+  background: color-mix(in srgb, var(--dds-accent) 18%, transparent);
+}
+
+.dds-item.dragging {
+  opacity: 0.75;
+  cursor: grabbing;
+}
+
+.dds-item.flagged {
+  box-shadow: inset 0 -2px 0 0 var(--dds-warning);
+}
+
+.dds-item.flagged-error {
+  box-shadow: inset 0 -2px 0 0 var(--dds-error);
+}
+
+.dds-item .handle {
+  position: absolute;
+  top: 0;
+  right: calc(var(--cell-w) * -0.5);
+  width: var(--cell-w);
+  height: var(--cell-h);
+  cursor: ew-resize;
+  background: color-mix(in srgb, var(--dds-accent) 55%, transparent);
+}
+
+.dds-empty {
+  color: var(--dds-muted);
+  padding: 8px 2px;
+}
+
+/* ---- 診断 ---------------------------------------------------------- */
+
+.dds-diagnostics {
+  max-height: 30vh;
+  overflow: auto;
+  border-top: 1px solid var(--dds-border);
+  background: var(--dds-chrome-bg);
+}
+
+.dds-diagnostics ul {
+  margin: 0;
+  padding: 4px 0;
+  list-style: none;
+}
+
+.dds-diagnostics li {
+  display: flex;
+  gap: 8px;
+  padding: 3px 10px;
+  cursor: default;
+}
+
+.dds-diagnostics li.jumpable {
+  cursor: pointer;
+}
+
+.dds-diagnostics li.jumpable:hover {
+  background: var(--vscode-list-hoverBackground, #2a2a2a);
+}
+
+.dds-diagnostics .code,
+.dds-diagnostics .target {
+  font-family: var(--dds-font);
+  color: var(--dds-muted);
+  white-space: nowrap;
+}
+
+.dds-diagnostics .error .code,
+.dds-diagnostics .error .mark {
+  color: var(--dds-error);
+}
+
+.dds-diagnostics .warning .code,
+.dds-diagnostics .warning .mark {
+  color: var(--dds-warning);
+}
+
+.dds-diagnostics .none {
+  color: var(--dds-muted);
+  padding: 4px 10px;
+}
+
+/* 測定用。画面には出さないが、レイアウトは通す（visibility:hidden では幅が測れる）。 */
+.dds-measure {
+  position: absolute;
+  visibility: hidden;
+  white-space: pre;
+  font-family: var(--dds-font);
+  font-size: var(--dds-font-size);
+  /* **`--cell-h` を参照しない。** 測ろうとしている値を参照すると循環する。
+     フォント本来の行箱の高さをそのままセル高にする。 */
+  line-height: normal;
+}

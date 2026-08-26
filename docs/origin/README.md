@@ -15,8 +15,10 @@ AS/400 コーディング支援のプロンプター定義（CL コマンド・R
 | `ilerpg/<X>-SPEC.html` | ILE RPG 固定長仕様書（H/F/D/I/C/O/P）の概説ページ | 7 | IBM i 7.4 |
 | `ilerpg/<X>-SPEC-<slug>.html` | 上記の桁・主要キーワード詳細サブページ（桁表を含む） | 14 | IBM i 7.4 |
 | `rpg3/<id>.html` | RPG III(RPG/400) 用 固定長リファレンス（第三者・jaymoseley） | 6 | 下記「rpg3 の出所」参照 |
+| `dds/DDS-*.pdf` | **DDS リファレンス（IBM 公式 PDF）** | 2 | **IBM i V6R1**（下記「dds の出所」参照） |
 | `sources.mjs` | 取得対象リスト（入力） | — | — |
-| `fetch-origin.mjs` | 取得スクリプト（Playwright） | — | — |
+| `fetch-origin.mjs` | 取得スクリプト（Playwright・HTML 用） | — | — |
+| `fetch-dds-origin.sh` | 取得スクリプト（素の HTTP・PDF 用） | — | — |
 | `manifest.yml` | 取得結果（URL・取得日・status・title・bytes・gaps） | — | 生成物 |
 
 各ファイルの取得元 URL・取得日時・HTTP status・タイトル・サイズは **`manifest.yml`** に全件記録。
@@ -87,3 +89,51 @@ PLAYWRIGHT_PKG=/tmp/node_modules/playwright/index.js node docs/origin/fetch-orig
 
 - 保存している HTML は IBM および jaymoseley.com の著作物のスナップショットで、**社内の開発照合用途**に
   限定する。再配布や公開を意図しない。出所は各ファイルおよび `manifest.yml` で辿れる。
+
+
+## dds の出所（2026-08-26 追加）
+
+DDS（DSPF / PRTF）のリファレンス。**HTML ではなく IBM 公式 PDF**。
+
+| ファイル | 内容 | 出所 |
+|---|---|---|
+| `dds/DDS-DSPF.pdf` | System i Programming: DDS for display files | `public.dhe.ibm.com/.../v6r1/en_US/rzakc.pdf` |
+| `dds/DDS-PRTF.pdf` | System i Programming: DDS for printer files | `public.dhe.ibm.com/.../v6r1/en_US/rzakd.pdf` |
+
+取得は `./fetch-dds-origin.sh`（Playwright 不要）。
+
+### なぜ ibm.com/docs から採っていないか
+
+**取れないから。** 実測（2026-08-26）:
+
+- `curl` → **403**
+- **Playwright の実ブラウザでも 403**。返るのは `IBM notice: The page you requested cannot be displayed`
+  （`fetch-origin.mjs` が `BOT_NOTICE` として検出対象にしている、まさにその通知ページ）
+- `https://www.ibm.com/docs/` の**ルートすら 403**。URL の問題ではなくネットワーク単位で弾かれている
+
+ボット検知の回避は行っていない。IBM が自動アクセスを明示的に拒否している以上、迂回すべきではない。
+代わりに、IBM が**公開ファイルサーバで配布している公式 PDF** を使う。
+
+### 制約（参照するとき必ず意識すること）
+
+- **版が違う。** これらは **V6R1**。`cl` / `ilerpg` カテゴリは **7.4**。
+  `public.dhe.ibm.com/systems/power/docs/systemi/` には **v5r2〜v6r1 しか無く、7.x は置かれていない**。
+  DDS の固定長桁割りや主要キーワードは実質変わらないと思われるが、
+  **「思われる」で済ませない**。版差に依存しうる記述を引くときは、その旨を成果物に明記する。
+- **英語版を正とする。** 日本語版（`ja_JP/`）も存在するが、**CID フォントのためテキスト抽出ができず**、
+  機械的な照合に使えない（`poppler-utils` があれば解決するが、前提にしない）。
+  原典照合が目的なので、抽出できる英語版を採る。
+- **PDF なので `<style>` や表構造は保持されない。** 桁位置の表は本文テキストとして読む。
+  抽出テキストは約 700KB（DSPF 版）で、`positions 7 through 16` のような桁の記述を検索できる。
+
+### 実際に裏付けられたこと
+
+取り込み時の確認として、実機から導いた桁割りが原典と一致することを見ている:
+
+```
+positions 7 through 16 are a multiple-field area in which you can specify option indicators
+Positions 17 through 38 must be blank. The location of the field is required (positions 39 through 44)
+```
+
+条件欄 7-16、定数は 17-38 が空白で行桁 39-44 が必須 — `packages/dds-core` が実ソースから
+導いた桁割り（research F8）と一致する。

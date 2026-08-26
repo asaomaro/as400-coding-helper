@@ -37,6 +37,7 @@ exports.registerRuler = registerRuler;
 const vscode = __importStar(require("vscode"));
 const fileScope_1 = require("../utils/fileScope");
 const keywordColumns_1 = require("./keywordColumns");
+const specClassifier_1 = require("../prompter/specClassifier");
 const CYCLE = ["off", "ruler", "full"];
 const STATE_KEY = "rpgClSupport.ruler.mode";
 /** ルーラー文字列の最小桁数（行が短くても最低この幅まで目盛りを出す）。 */
@@ -273,57 +274,9 @@ function classifySpec(document, lineIndex) {
     if (text.length > 6 && text.charAt(6) === "*") {
         return undefined;
     }
-    const specChar = text.charAt(5).toUpperCase();
-    switch (specChar) {
-        case "H":
-            return "H-SPEC";
-        case "F":
-            return "F-SPEC";
-        case "D":
-            return "D-SPEC";
-        case "O":
-            return "O-SPEC";
-        case "P":
-            return "P-SPEC";
-        case "C":
-            return classifyCSpec(text);
-        default:
-            return undefined;
-    }
-}
-function classifyCSpec(text) {
-    const tail = text.length > 6 ? text.slice(6) : "";
-    const tokens = tail.trim().split(/\s+/u).filter(token => token.length > 0);
-    const opcode = (tokens[0] ?? "").toUpperCase();
-    return opcode && getCNewOpcodes().has(opcode) ? "C-NEW" : "C-SPEC";
-}
-/**
- * C 仕様の「新形式」オペコード集合。positionResolver と同じ規約
- * （既定 + 設定 rpgClSupport.cNewOpcodes）を共有する。
- */
-function getCNewOpcodes() {
-    const defaults = new Set([
-        "EVAL",
-        "EVALR",
-        "IF",
-        "ELSEIF",
-        "ELSE",
-        "ENDIF",
-        "SELECT",
-        "WHEN",
-        "OTHER",
-        "ENDSL"
-    ]);
-    const config = vscode.workspace.getConfiguration("rpgClSupport");
-    const configured = config.get("cNewOpcodes");
-    if (Array.isArray(configured)) {
-        for (const value of configured) {
-            if (typeof value === "string" && value.trim().length > 0) {
-                defaults.add(value.trim().toUpperCase());
-            }
-        }
-    }
-    return defaults;
+    // スペック種別判定は specClassifier に集約（positionResolver と共有＝ドリフト防止）。
+    // ルーラー表示は dialect を渡さない（C は従来どおりオペコードで新旧判定）。
+    return (0, specClassifier_1.classifyRpgSpecKeyword)(text);
 }
 async function getColumnsForKey(context, key) {
     if (key === "CL") {

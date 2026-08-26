@@ -1,13 +1,13 @@
 import { strict as assert } from "node:assert";
 import * as vscode from "vscode";
-import { getNextTabStop } from "../../language/rpgLayout";
-import { isEditAllowedRange } from "../../language/rpgEditGuards";
+import { getNextTabStop } from "../../src/language/rpgLayout";
+import { isEditAllowedRange } from "../../src/language/rpgEditGuards";
 import {
   isInScopeUri,
   isInScopeDocument,
   TARGET_EXTENSIONS
-} from "../../utils/fileScope";
-import { getLogicalCommandRange } from "../../language/clContinuation";
+} from "../../src/utils/fileScope";
+import { getLogicalCommandRange } from "../../src/language/clContinuation";
 
 suite("Editing behaviors", () => {
   test("getNextTabStop returns increasing stops", () => {
@@ -106,7 +106,14 @@ suite("Editing behaviors", () => {
 
     const document: Partial<vscode.TextDocument> = {
       lineCount: lines.length,
-      lineAt(index: number) {
+      // TextDocument.lineAt は (line: number) と (position: Position) の
+      // 2 つの呼び出し形を持つ。片方だけのモックは overload を満たさないので、
+      // union で受けて番号に正規化する。
+      lineAt(lineOrPosition: number | vscode.Position) {
+        const index =
+          typeof lineOrPosition === "number"
+            ? lineOrPosition
+            : lineOrPosition.line;
         return {
           lineNumber: index,
           text: lines[index]

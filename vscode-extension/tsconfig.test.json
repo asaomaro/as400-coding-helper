@@ -1,0 +1,28 @@
+{
+  // テストの型検査専用。本体の tsconfig.json は rootDir を ./src に固定しており、
+  // そこへ test/ を足すと rootDir 違反になるうえ、outDir の階層が変わって
+  // package.json の "main"（./out/extension/extension.js）と VSIX の同梱物が壊れる。
+  // そのため別 tsconfig を立て、出力を out-test/ に分離する（.vscodeignore で VSIX から除外）。
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "rootDir": ".",
+    "outDir": "./out-test",
+    // テストは glob 等の開発依存を引き込む。それらの .d.ts まで型検査すると
+    // 依存側の型エラー（lru-cache と lib.es2015 の Map 互換性など）で落ちる。
+    // 自分のコードの型検査が目的なので、ライブラリの宣言はスキップする。
+    "skipLibCheck": true
+  },
+  "include": ["src", "test"],
+  // exclude は継承されず上書きになるので、本体 tsconfig と同じ除外をここにも書く。
+  // WebView 側（ブラウザで動くコード）は DOM の型が要るため tsconfig.webview.json で検査する。
+  "exclude": [
+    "node_modules",
+    "out",
+    "out-test",
+    ".vscode-test",
+    "src/dds/webview/main.ts",
+    "src/dds/webview/bridge.ts",
+    "src/dds/webview/ui.ts",
+    "src/dds/webview/css.d.ts"
+  ]
+}

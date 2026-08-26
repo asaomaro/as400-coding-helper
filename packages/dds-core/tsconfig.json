@@ -1,0 +1,23 @@
+{
+  // AC9(コアに vscode 依存を持たせない)を型システムで強制する設定が 2 つある。触る前に理由を読むこと。
+  //   1. package.json に @types/vscode を入れない。
+  //   2. "types": ["node"] を固定する。npm workspaces は @types/vscode を root の
+  //      node_modules/@types へ巻き上げるため、既定の自動取り込みのままだと
+  //      `import * as vscode from "vscode"` が解決できてしまう。ここを緩めると 1 が無効化される。
+  // 破った場合は tsc が TS2307 で落ち、scripts/check-no-vscode-dep.mjs も検出する（二重の防御）。
+  "compilerOptions": {
+    "module": "commonjs",
+    "target": "ES2022",
+    "lib": ["ES2022"],
+    "outDir": "./out",
+    "rootDir": ".",
+    "strict": true,
+    "esModuleInterop": true,
+    "moduleResolution": "node",
+    "declaration": true,
+    "sourceMap": true,
+    "types": ["node"]
+  },
+  "include": ["src", "test"],
+  "exclude": ["node_modules", "out"]
+}

@@ -11,7 +11,7 @@
     "Programming Languages",
     "Other"
   ],
-  "main": "./out/extension/extension.js",
+  "main": "./dist/extension.js",
   "activationEvents": [
     "onLanguage:rpg-fixed",
     "onLanguage:cl",
@@ -54,6 +54,18 @@
         "language": "cl",
         "scopeName": "source.cl",
         "path": "./resources/language/cl.tmLanguage.json"
+      }
+    ],
+    "customEditors": [
+      {
+        "viewType": "rpgClSupport.ddsVisualEditor",
+        "displayName": "DDS ビジュアルエディタ",
+        "selector": [
+          {
+            "filenamePattern": "*.dspf"
+          }
+        ],
+        "priority": "option"
       }
     ],
     "commands": [
@@ -170,17 +182,30 @@
     }
   },
   "scripts": {
-    "vscode:prepublish": "npm run compile",
+    "vscode:prepublish": "npm run compile && npm run typecheck:webview && npm run bundle -- --production",
+    "build": "npm run compile && npm run typecheck:webview && npm run bundle",
+    "bundle": "node esbuild.mjs",
+    "dev:standalone": "node dev/build-standalone.mjs",
+    "dev:e2e": "node dev/e2e.mjs",
     "compile": "tsc -p ./",
-    "watch": "tsc -watch -p ./",
-    "test": "echo \"Tests are not configured for this environment yet.\""
+    "typecheck:webview": "tsc -p tsconfig.webview.json",
+    "watch": "tsc -w -p ./",
+    "clean:test": "node -e \"require('node:fs').rmSync(process.argv[1],{recursive:true,force:true})\" out-test",
+    "typecheck:test": "npm run clean:test && tsc -p tsconfig.test.json",
+    "test": "npm run typecheck:test && mocha --ui tdd \"out-test/test/unit/**/*.test.js\"",
+    "test:integration": "npm run typecheck:test && node out-test/test/runTests.js"
   },
   "devDependencies": {
     "@types/mocha": "^10.0.0",
     "@types/node": "^20.0.0",
     "@types/vscode": "^1.90.0",
+    "@vscode/test-electron": "^2.3.0",
+    "esbuild": "^0.28.2",
     "glob": "^10.3.0",
     "mocha": "^10.0.0",
     "typescript": "^5.0.0"
+  },
+  "dependencies": {
+    "@as400/dds-core": "*"
   }
 }

@@ -1,0 +1,37 @@
+name: build & tests
+
+# 拡張本体とコアパッケージのビルド・テストを回す。
+# aidev CLI のテスト（aidev-tests.yml）とは対象が別なので、ワークフローを分けている。
+#
+# ここに載せないもの（意図的）:
+#   - 実機(IBM i)接続。ゴールデンの採取時だけ人／エージェントが行い、CI は採取済みと比較する。
+#   - VSCode 拡張の統合テスト（test:integration）。表示環境が要るため、walking skeleton では
+#     型検査の通過までに留める（plan「CI に載せるもの / 載せないもの」）。
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+
+      - name: 依存の導入（workspaces 一括）
+        run: npm ci
+
+      - name: ビルド（dds-core → dds-cli → 拡張の依存順）
+        run: npm run build
+
+      - name: テスト（コア・CLI の単体＋拡張の型検査と単体）
+        run: npm test
+
+      - name: vscode 非依存ガード（requirement AC9）
+        run: npm run guard:no-vscode

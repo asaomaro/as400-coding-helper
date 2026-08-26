@@ -1,0 +1,23 @@
+{
+  // WebView 側（ブラウザで動くコード）の型検査専用。
+  //
+  // 本体の tsconfig.json とは前提が違う:
+  //   - lib に DOM が要る（本体は Node のみ）。
+  //   - types を空にして **node / vscode / mocha の環境型を持ち込まない**。
+  //     WebView が vscode API を触れないことを、型の側からも保証する。
+  // 出力は不要（実体は esbuild が dist/webview/ へバンドルする）ので noEmit。
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "node",
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "types": [],
+    "strict": true,
+    "noEmit": true,
+    "esModuleInterop": true,
+    // @as400/dds-core の .d.ts は Node の型を参照する（読み込み層）。
+    // ここで検査したいのは自分のコードなので、依存の宣言はスキップする。
+    "skipLibCheck": true
+  },
+  "include": ["src/dds/webview", "dev"]
+}

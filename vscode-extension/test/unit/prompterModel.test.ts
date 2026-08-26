@@ -1,9 +1,9 @@
 import { strict as assert } from "node:assert";
-import { buildInitialState, validate } from "../../prompter/model";
+import { buildInitialState, validate } from "../../src/prompter/model";
 import type {
   ParameterDefinition,
   PrompterDefinition
-} from "../../prompter/types";
+} from "../../src/prompter/types";
 
 suite("Prompter model and validation", () => {
   test("buildInitialState uses default values and marks errors", () => {
