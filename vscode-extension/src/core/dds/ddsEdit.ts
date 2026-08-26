@@ -1,6 +1,15 @@
 import { DDS_COLUMNS, ddsField } from "../ddsLayout";
-import { buildItemLine, writeBackLength, type NewDspfItem } from "./ddsEditWriteBack";
 import {
+  buildItemLine,
+  writeBackAttributes,
+  writeBackKeywordArea,
+  writeBackLength,
+  type ItemAttributePatch,
+  type NewDspfItem
+} from "./ddsEditWriteBack";
+import {
+  keywordAreaOf,
+  replaceLeadingConstant,
   toLogicalUnits,
   unitItemKind,
   type LogicalUnit
@@ -36,6 +45,17 @@ export type DdsEdit =
   | { readonly kind: "move"; readonly sourceLine: number; readonly row: number; readonly column: number }
   | { readonly kind: "resize"; readonly sourceLine: number; readonly length: number }
   | { readonly kind: "remove"; readonly sourceLine: number }
+  /**
+   * 項目の中身を変える。**与えた欄だけ**に触る。
+   *
+   * 欄ごとに操作を分けないのは、プロパティが「複数欄を直して 1 回確定する」使い方をするため。
+   * 分けると 1 回の確定が N 個のパッチになり、**途中で 1 つ拒否されたときの状態が説明できない**。
+   */
+  | {
+      readonly kind: "setAttributes";
+      readonly sourceLine: number;
+      readonly attributes: ItemAttributePatch & { readonly text?: string };
+    }
   | { readonly kind: "add"; readonly recordName: string; readonly item: NewDspfItem };
 
 /** 置き換え指示。0 始まり・`replaceTo` は含まない。 */
@@ -53,7 +73,13 @@ export type DdsEditRejectionCode =
   | "position-out-of-range"
   | "record-not-found"
   | "constant-has-length"
-  | "field-needs-name";
+  | "field-needs-name"
+  | "name-too-long"
+  | "decimals-out-of-range"
+  | "field-column-on-constant"
+  | "text-on-field"
+  | "invalid-column-value"
+  | "line-too-long";
 
 export interface DdsEditRejection {
   readonly code: DdsEditRejectionCode;
@@ -63,6 +89,15 @@ export interface DdsEditRejection {
 }
 
 const LENGTH_WIDTH = DDS_COLUMNS.length[1] - DDS_COLUMNS.length[0] + 1;
+const NAME_WIDTH = DDS_COLUMNS.name[1] - DDS_COLUMNS.name[0] + 1;
+const DECIMALS_WIDTH = DDS_COLUMNS.decimals[1] - DDS_COLUMNS.decimals[0] + 1;
+/**
+ * 行の上限。lint の `line-length` と同じ 100 桁にそろえる。
+ *
+ * 原典は「仕様書の注記以外は 7-80 桁」としつつ、**81-100 桁の目盛りを持つ**ので
+ * 80 では切らない（`src/lint/rules/lineLength.ts`）。判定を 2 か所に持たないため同じ値を使う。
+ */
+const MAX_LINE_COLUMNS = 100;
 /** 位置欄は行・桁とも 3 桁ずつ。 */
 const POSITION_WIDTH = 3;
 
@@ -96,6 +131,10 @@ export function validateDdsEdits(
 
     if (edit.kind === "move") {
       rejections.push(...validatePosition(edit.row, edit.column, edit.sourceLine));
+    }
+
+    if (edit.kind === "setAttributes") {
+      rejections.push(...validateAttributes(lines, unit, edit.attributes, edit.sourceLine));
     }
 
     if (edit.kind === "resize") {
@@ -148,6 +187,17 @@ export function applyDdsEdits(
         results.push({ replaceFrom: index, replaceTo: index + 1, lines: [rewritten] });
         break;
       }
+      case "setAttributes": {
+        const unit = itemUnitAt(units, edit.sourceLine);
+        if (!unit) break;
+        const index = edit.sourceLine - 1;
+        results.push({
+          replaceFrom: index,
+          replaceTo: index + 1,
+          lines: [applyAttributes(lines[index], edit.attributes)]
+        });
+        break;
+      }
       case "remove": {
         const unit = itemUnitAt(units, edit.sourceLine);
         if (!unit) break;
@@ -165,6 +215,103 @@ export function applyDdsEdits(
 
   // 降順にすると、先に適用した指示が後続の行番号を動かさない。
   return [...results].sort((a, b) => b.replaceFrom - a.replaceFrom);
+}
+
+/** 属性を書き換えた行を作る。定数のリテラルは**先頭の 1 つだけ**を差し替える。 */
+function applyAttributes(
+  line: string,
+  attributes: ItemAttributePatch & { text?: string }
+): string {
+  let next = writeBackAttributes(line, attributes);
+  if (attributes.text !== undefined) {
+    const replaced = replaceLeadingConstant(keywordAreaOf(next), attributes.text);
+    if (replaced !== undefined) {
+      next = writeBackKeywordArea(next, replaced);
+    }
+  }
+  return next;
+}
+
+/**
+ * 属性の変更が**ソースに書けるか**を見る。
+ *
+ * 規則違反（重なり・はみ出し）は見ない——それは `dspfLayout` の診断の担当で、
+ * 編集は止めない（直すために変えたい、が成立するため）。
+ */
+function validateAttributes(
+  lines: readonly string[],
+  unit: LogicalUnit,
+  attributes: ItemAttributePatch & { text?: string },
+  sourceLine: number
+): DdsEditRejection[] {
+  const rejections: DdsEditRejection[] = [];
+  const isConstant = unitItemKind(unit) === "constant";
+  const at = (code: DdsEditRejectionCode, message: string): DdsEditRejection => ({
+    code,
+    message,
+    sourceLine
+  });
+
+  const touchesFieldColumns =
+    attributes.name !== undefined ||
+    attributes.length !== undefined ||
+    attributes.dataType !== undefined ||
+    attributes.decimals !== undefined ||
+    attributes.usage !== undefined;
+
+  if (isConstant && touchesFieldColumns) {
+    rejections.push(
+      at("field-column-on-constant", "固定情報（定数）には名前や桁数を指定できません")
+    );
+  }
+  if (!isConstant && attributes.text !== undefined) {
+    rejections.push(at("text-on-field", "フィールドにリテラルは書けません"));
+  }
+
+  if (attributes.name !== undefined) {
+    const name = attributes.name.trim();
+    if (name.length === 0) {
+      rejections.push(at("field-needs-name", "フィールドには名前が必要です"));
+    } else if (name.length > NAME_WIDTH) {
+      rejections.push(
+        at("name-too-long", `名前は ${NAME_WIDTH} 桁までです（${name.length} 桁）`)
+      );
+    }
+  }
+  if (
+    attributes.length !== undefined &&
+    (!fitsInColumn(attributes.length, LENGTH_WIDTH) || attributes.length < 1)
+  ) {
+    rejections.push(
+      at("length-out-of-range", `長さ ${attributes.length} は桁数欄に書けません`)
+    );
+  }
+  if (
+    attributes.decimals !== undefined &&
+    (!fitsInColumn(attributes.decimals, DECIMALS_WIDTH) || attributes.decimals < 0)
+  ) {
+    rejections.push(
+      at("decimals-out-of-range", `小数桁 ${attributes.decimals} は小数点以下桁数欄に書けません`)
+    );
+  }
+  for (const [label, value] of [
+    ["データ・タイプ", attributes.dataType],
+    ["使用", attributes.usage]
+  ] as const) {
+    if (value !== undefined && value.trim().length > 1) {
+      rejections.push(at("invalid-column-value", `${label}は 1 桁です（"${value}"）`));
+    }
+  }
+
+  // 書き換えた結果が行の上限を超えるなら書けない。
+  const next = applyAttributes(lines[sourceLine - 1] ?? "", attributes);
+  if (next.length > MAX_LINE_COLUMNS) {
+    rejections.push(
+      at("line-too-long", `書き換えると ${next.length} 桁になり、${MAX_LINE_COLUMNS} 桁を超えます`)
+    );
+  }
+
+  return rejections;
 }
 
 /** 論理単位の行を、連続する塊ごとの削除指示に分ける（注記行を挟むと分かれる）。 */

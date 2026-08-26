@@ -212,7 +212,27 @@ startEditor(bridge, must("#editor"), {
   askItem: kind => ask(kind)
 });
 
-const SAMPLES = [{ name: "CUSTMNT.dspf", text: sample as unknown as string }];
+/**
+ * 2 本目は**描かれない項目を含む**小さな DDS。
+ *
+ * 位置欄が空の項目・画面に出ない用途（`H`）は配置解決で落ちるので**キャンバスに出ない**。
+ * 一覧から手が届くことをここで実際に確かめられるようにしておく
+ * （実サンプルの `CUSTMNT.dspf` には無い形なので、手で試すと見落とす）。
+ */
+const HIDDEN_SAMPLE = [
+  "     A                                      DSPSIZ(24 80 *DS3)",
+  "     A          R MAIN",
+  "     A                                  1  2'見出し'",
+  "     A            SHOWN         10A  B  3 20",
+  "     A            NOPOS         10A  B",
+  "     A            HIDDEN        10A  H",
+  ""
+].join("\n");
+
+const SAMPLES = [
+  { name: "CUSTMNT.dspf", text: sample as unknown as string },
+  { name: "hidden-items.dspf", text: HIDDEN_SAMPLE }
+];
 const select = must<HTMLSelectElement>("#sample");
 SAMPLES.forEach((entry, index) => {
   const option = document.createElement("option");

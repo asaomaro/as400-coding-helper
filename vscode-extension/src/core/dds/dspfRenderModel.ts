@@ -1,5 +1,6 @@
 import { isDbcsCodePoint, printWidth } from "../dbcs";
 import { resolveDspfLayout, type DspfDiagnostic, type DspfLayout } from "./dspfLayout";
+import { buildDspfOutline, type ItemAttributes, type OutlineRecord } from "./dspfOutline";
 
 /**
  * 画面（DSPF）を**描くための形**。GUI に渡す唯一のモデル。
@@ -46,25 +47,38 @@ export interface RenderItem {
   /** 長さ欄を持つか。**定数は持たない**ので、長さは変えられない。 */
   readonly resizable: boolean;
   readonly recordName?: string;
+  /** プロパティに出す値。**キーワードは解釈しない**（生テキスト）。 */
+  readonly attributes: ItemAttributes;
 }
 
 export interface RenderModel {
   /** 種別。DSPF のみ。PRTF を載せるときにここで分岐する。 */
   readonly kind: "dspf";
   readonly canvas: { readonly rows: number; readonly columns: number };
+  /** 描く項目（配置できたものだけ）。 */
   readonly items: readonly RenderItem[];
   readonly diagnostics: readonly DspfDiagnostic[];
   /** 様式の一覧（追加先の選択に使う）。 */
   readonly records: readonly string[];
+  /**
+   * **全項目**の一覧（様式ごと・配置に依らない）。
+   *
+   * `items` は画面に置けたものだけなので、位置欄が空・画面に出ない用途の項目は入らない。
+   * それらにも手が届くように、一覧は別に持つ（`dspfOutline`）。鍵は `sourceLine` で共通。
+   */
+  readonly outline: readonly OutlineRecord[];
 }
 
 /** ソース行から描画モデルを作る。 */
 export function buildDspfRenderModel(lines: readonly string[]): RenderModel {
-  return fromLayout(resolveDspfLayout(lines));
+  return fromLayout(resolveDspfLayout(lines), buildDspfOutline(lines));
 }
 
 /** 既に解決済みのレイアウトから作る（二重に解決しないため）。 */
-export function fromLayout(layout: DspfLayout): RenderModel {
+export function fromLayout(
+  layout: DspfLayout,
+  outline: readonly OutlineRecord[] = []
+): RenderModel {
   const items = layout.items.map(toRenderItem);
   const records: string[] = [];
   for (const item of layout.items) {
@@ -78,7 +92,8 @@ export function fromLayout(layout: DspfLayout): RenderModel {
     canvas: { rows: layout.screen.rows, columns: layout.screen.columns },
     items,
     diagnostics: layout.diagnostics,
-    records
+    records,
+    outline
   };
 }
 
@@ -101,6 +116,15 @@ function toRenderItem(item: DspfLayout["items"][number]): RenderItem {
     occupancy: item.occupancy,
     // 定数は桁数欄を持たない（原典: 固定情報フィールドに桁数を指定してはならない）。
     resizable: item.kind === "field" && item.width !== undefined,
+    attributes: {
+      ...(item.name !== undefined ? { name: item.name } : {}),
+      ...(item.text !== undefined ? { text: item.text } : {}),
+      ...(item.width !== undefined && item.kind === "field" ? { length: item.width } : {}),
+      ...(item.dataType !== undefined ? { dataType: item.dataType } : {}),
+      ...(item.decimals !== undefined ? { decimals: item.decimals } : {}),
+      ...(item.usage !== undefined ? { usage: item.usage } : {}),
+      keywords: item.keywords
+    },
     ...(item.recordName !== undefined ? { recordName: item.recordName } : {})
   };
 }

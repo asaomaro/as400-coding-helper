@@ -90,6 +90,15 @@ export interface DspfPlacedItem {
   readonly usage?: string;
   /** 35 桁目。`S`/`Y` は数値、ブランクや `A` は英数字。描画のプレースホルダに使う。 */
   readonly dataType?: string;
+  /** 36-37 桁。小数点以下桁数。 */
+  readonly decimals?: number;
+  /**
+   * 45 桁以降の生テキスト（代表行＋キーワード継続行を連結したもの）。
+   *
+   * **解釈しない。** キーワードの意味づけは L3 の仕事で、ここでは
+   * プロパティに読み取り専用で見せるためだけに持つ。
+   */
+  readonly keywords: string;
   readonly conditioning: Conditioning;
   readonly occupancy: Occupancy;
 }
@@ -111,7 +120,7 @@ export interface DspfLayout {
  * > 潜在フィールド、プログラム - システム間フィールド、または
  * > メッセージ・フィールドについては、**位置を指定することはできません**。
  */
-const NON_DISPLAY_USAGE = new Set(["H", "P", "M"]);
+export const NON_DISPLAY_USAGE: ReadonlySet<string> = new Set(["H", "P", "M"]);
 
 /** 桁欄が `+n` / `-n`（DDS の「プラス機能」＝相対桁）か。 */
 function isRelativePosition(text: string): boolean {
@@ -320,6 +329,10 @@ export function resolveDspfLayout(lines: readonly string[]): DspfLayout {
       sourceLine,
       usage,
       ...(dataType !== undefined ? { dataType } : {}),
+      ...(readNumber(ddsField(line, DDS_COLUMNS.decimals)) !== undefined
+        ? { decimals: readNumber(ddsField(line, DDS_COLUMNS.decimals)) }
+        : {}),
+      keywords,
       conditioning,
       occupancy
     });

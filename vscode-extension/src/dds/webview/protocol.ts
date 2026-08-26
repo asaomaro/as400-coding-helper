@@ -133,6 +133,39 @@ function parseEdit(value: unknown): DdsEdit | undefined {
       return isPositiveInteger(value.sourceLine)
         ? { kind: "remove", sourceLine: value.sourceLine }
         : undefined;
+    case "setAttributes": {
+      if (!isPositiveInteger(value.sourceLine) || !isRecord(value.attributes)) {
+        return undefined;
+      }
+      const attributes = value.attributes;
+      // 欄の**意味**（10 桁に収まるか等）は core の検証が見る。ここは型だけ。
+      for (const key of ["name", "text", "dataType", "usage"]) {
+        if (attributes[key] !== undefined && typeof attributes[key] !== "string") {
+          return undefined;
+        }
+      }
+      for (const key of ["length", "decimals"]) {
+        if (attributes[key] !== undefined && !Number.isInteger(attributes[key])) {
+          return undefined;
+        }
+      }
+      const known = ["name", "text", "length", "dataType", "decimals", "usage"];
+      if (Object.keys(attributes).some(key => !known.includes(key))) {
+        return undefined; // 知らない欄は通さない（書ける欄だけを扱う）
+      }
+      return {
+        kind: "setAttributes",
+        sourceLine: value.sourceLine,
+        attributes: attributes as {
+          name?: string;
+          text?: string;
+          length?: number;
+          dataType?: string;
+          decimals?: number;
+          usage?: string;
+        }
+      };
+    }
     case "add": {
       if (typeof value.recordName !== "string" || value.recordName.length === 0) {
         return undefined;

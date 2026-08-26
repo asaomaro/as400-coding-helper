@@ -74,10 +74,37 @@ export function keywordAreaOf(line: string): string {
   return line.slice(DDS_KEYWORD_AREA_START - 1).trimEnd();
 }
 
+/** 定数のリテラル（キーワード欄の先頭の `'…'`）。読む側と書く側で同じ形を使う。 */
+const LEADING_CONSTANT = /^'((?:[^']|'')*)'/u;
+
 /** 定数（キーワード欄の `'…'`）を取り出す。 */
 export function readConstant(keywords: string): string | undefined {
-  const match = /^'((?:[^']|'')*)'/u.exec(keywords.trim());
+  const match = LEADING_CONSTANT.exec(keywords.trim());
   return match ? match[1].replace(/''/gu, "'") : undefined;
+}
+
+/**
+ * キーワード欄の**先頭のリテラルだけ**を差し替える。定数でなければ `undefined`。
+ *
+ * **後ろに続くキーワードは触らない。** DDS は `2'見出し'DSPATR(HI)` のように
+ * リテラルの後ろにキーワードを書けるので、欄ごと置き換えると**キーワードが消える**。
+ * 読む側（`readConstant`）と同じ正規表現を使い、規則を 2 か所に持たない。
+ *
+ * リテラル中の `'` は原典の書き方に合わせて `''` に重ねる（`readConstant` がこれを戻す）。
+ */
+export function replaceLeadingConstant(
+  keywords: string,
+  text: string
+): string | undefined {
+  const match = LEADING_CONSTANT.exec(keywords.trim());
+  if (!match) {
+    return undefined;
+  }
+  const leading = keywords.length - keywords.trimStart().length;
+  const quoted = `'${text.replace(/'/gu, "''")}'`;
+  return (
+    keywords.slice(0, leading) + quoted + keywords.trim().slice(match[0].length)
+  );
 }
 
 /**

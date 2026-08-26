@@ -180,6 +180,10 @@ await page.waitForTimeout(150);
 const handle = await page.$(`.dds-item[data-source-line="${target.sourceLine}"] .handle`);
 check("選択するとつまみが出る（フィールドのみ）", handle !== null);
 if (handle) {
+  // 中央ペインは横スクロールする（キャンバスが 80 桁ぶんあるため）。
+  // **見えていない位置を掴もうとしても当たらない**ので、先に送り込む。
+  await handle.scrollIntoViewIfNeeded();
+  await page.waitForTimeout(100);
   const box = await handle.boundingBox();
   await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
   await page.mouse.down();
@@ -272,6 +276,115 @@ check(
   (await sourceLines()).length === beforeRemove.length,
   await byteState()
 );
+
+// ---- 9. 3 ペイン（C1 のレイアウト） -------------------------------------
+check("左ペインに様式ツリーが出る", (await page.$$(".dds-tree .record")).length >= 1);
+check("右ペインがある", (await page.$(".dds-properties")) !== null);
+
+// ---- 10. 一覧から選ぶ → プロパティに出る -------------------------------
+const listed = await page.evaluate(() => {
+  const rows = [...document.querySelectorAll(".dds-tree li.item")];
+  const field = rows.find(row => !row.classList.contains("constant"));
+  return field ? { sourceLine: Number(field.dataset.sourceLine) } : null;
+});
+check("一覧に項目が並ぶ", listed !== null);
+
+if (listed) {
+  await page.click(`.dds-tree li.item[data-source-line="${listed.sourceLine}"]`);
+  await page.waitForTimeout(200);
+  const name = await page.inputValue('.dds-props input[data-key="name"]');
+  check("一覧で選ぶとプロパティに属性が出る", name.length > 0, `名前=${name}`);
+
+  // ---- 11. 属性編集（AC1） --------------------------------------------
+  const before11 = await sourceLines();
+  await page.fill('.dds-props input[data-key="name"]', "RENAMED");
+  await page.keyboard.press("Enter");
+  await page.waitForTimeout(300);
+  const after11 = await sourceLines();
+  const line = after11[listed.sourceLine - 1];
+  check(
+    "名前を変えると 19-28 桁だけが変わる",
+    line.slice(18, 28).trim() === "RENAMED" &&
+      line.slice(28) === before11[listed.sourceLine - 1].slice(28),
+    JSON.stringify(line.slice(18, 34))
+  );
+  const changedNow = await changedLines();
+  check("属性編集でも変わるのは 1 行だけ", changedNow.includes(listed.sourceLine), await byteState());
+
+  // ---- 12. 拒否（AC7・AC-I4） -----------------------------------------
+  // 名前は maxLength で 10 桁を超えられない（**入力の時点で防ぐ**）ので、
+  // 拒否経路は桁数欄で確かめる——5 桁の欄に 6 桁は書けない。
+  const before12 = await sourceLines();
+  await page.fill('.dds-props input[data-key="length"]', "123456");
+  await page.keyboard.press("Enter");
+  await page.waitForTimeout(300);
+  check(
+    "書けない値は何も書き換えない",
+    (await sourceLines()).join("\n") === before12.join("\n")
+  );
+  const rejectText = await page.$eval(".dds-reject", node => node.textContent);
+  check("拒否の理由がプロパティに出る", (rejectText ?? "").length > 0, rejectText ?? "");
+  check(
+    "拒否された欄にフォーカスが戻る（入力し直せる）",
+    await page.evaluate(() => document.activeElement?.dataset?.key === "length")
+  );
+
+  // ---- 13. 入力中はキャンバスへ漏らさない（AC-I5） ----------------------
+  const before13 = await sourceLines();
+  await page.focus('.dds-props input[data-key="name"]');
+  await page.keyboard.press("ArrowRight");
+  await page.keyboard.press("Delete");
+  await page.waitForTimeout(200);
+  check(
+    "プロパティ入力中の矢印・Delete でキャンバスが動かない",
+    (await sourceLines()).join("\n") === before13.join("\n")
+  );
+}
+
+// ---- 14. 描かれない項目も一覧に出て、直せる（AC3） ---------------------
+await page.selectOption("#sample", { index: 1 }); // hidden-items.dspf
+await page.waitForTimeout(300);
+
+const hidden = await page.$$eval(".dds-tree li.item.hidden", nodes =>
+  nodes.map(node => ({
+    sourceLine: Number(node.dataset.sourceLine),
+    label: node.querySelector(".label")?.textContent ?? "",
+    at: node.querySelector(".at")?.textContent ?? ""
+  }))
+);
+check(
+  "**キャンバスに描かれない項目**が一覧に出る（位置なし・画面に出ない用途）",
+  hidden.length === 2,
+  JSON.stringify(hidden)
+);
+check(
+  "描かれない理由が一覧に出る",
+  hidden.every(item => item.at.length > 0 && item.at !== "—"),
+  hidden.map(item => `${item.label}=${item.at}`).join(" / ")
+);
+
+if (hidden.length > 0) {
+  const beforeHidden = await sourceLines();
+  await page.click(`.dds-tree li.item[data-source-line="${hidden[0].sourceLine}"]`);
+  await page.waitForTimeout(200);
+  check(
+    "描かれない項目もプロパティに出る",
+    (await page.inputValue('.dds-props input[data-key="name"]')).length > 0
+  );
+  await page.fill('.dds-props input[data-key="name"]', "FIXED");
+  await page.keyboard.press("Enter");
+  await page.waitForTimeout(300);
+  const line = (await sourceLines())[hidden[0].sourceLine - 1];
+  check(
+    "**描かれない項目を一覧から直せる**（AC3）",
+    line.slice(18, 28).trim() === "FIXED",
+    JSON.stringify(line.slice(18, 34))
+  );
+  check(
+    "直しても他の行はバイト不変",
+    (await sourceLines()).filter((text, index) => text !== beforeHidden[index]).length === 1
+  );
+}
 
 check("実行中に JS エラーが出ていない", errors.length === 0, errors.slice(0, 2).join(" | "));
 
