@@ -1,6 +1,14 @@
 import type { DdsEdit } from "../../core/dds/ddsEdit";
+import {
+  evaluateConditioning,
+  type IndicatorStates
+} from "../../core/dds/ddsConditioning";
 import type { ItemAttributes, OutlineItem } from "../../core/dds/dspfOutline";
-import type { RenderItem, RenderModel } from "../../core/dds/dspfRenderModel";
+import {
+  applyIndicators,
+  type RenderItem,
+  type RenderModel
+} from "../../core/dds/dspfRenderModel";
 import type { Bridge } from "./bridge";
 import {
   cellFromOffset,
@@ -91,6 +99,22 @@ class EditorView {
     dimOthers: true,
     zoom: 1
   };
+  /**
+   * 条件標識の状態。**未設定の標識は鍵ごと持たない**（`display` とは別に持つ——
+   * `display` は真偽値と倍率だけの平坦な形で、鍵が増減する状態を混ぜると空判定が壊れる）。
+   *
+   * これも表示の状態なので**ホストへ送らない**。ソースは 1 文字も変わらない。
+   */
+  private indicators: IndicatorStates = {};
+  /**
+   * 標識の状態を反映したモデル。`render()` で作る。
+   *
+   * **`model` は生のまま残す**——状態を変えるたびにホストへ作り直しを頼まずに済むうえ、
+   * 「ソースが言っていること」と「いま指定している標識で見えること」を取り違えない。
+   */
+  private view: RenderModel | undefined;
+  /** 切替の直後にフォーカスを戻す標識。**戻さないと連続して切り替えられない。** */
+  private pendingIndicatorFocus: string | undefined;
 
   private readonly frame: HTMLElement;
   private readonly ruler: HTMLElement;
@@ -98,6 +122,7 @@ class EditorView {
   private readonly canvas: HTMLElement;
   private readonly diagnostics: HTMLElement;
   private readonly outline: HTMLElement;
+  private readonly indicatorPanel: HTMLElement;
   private readonly properties: HTMLElement;
   private readonly status: HTMLElement;
   private readonly metrics: HTMLElement;
@@ -122,6 +147,7 @@ class EditorView {
     this.canvas = must(root, ".dds-canvas");
     this.diagnostics = must(root, ".dds-diagnostics");
     this.outline = must(root, ".dds-outline");
+    this.indicatorPanel = must(root, ".dds-indicators");
     this.properties = must(root, ".dds-properties");
     this.status = must(root, ".status");
     this.metrics = must(root, ".dds-metrics");
@@ -263,6 +289,10 @@ class EditorView {
     const model = this.model;
     if (!model) return;
 
+    // **描くのは「その標識の状態で見えるもの」。** 生のモデルは `this.model` に残す。
+    const view = applyIndicators(model, this.indicators);
+    this.view = view;
+
     this.applyCellSize();
 
     // **編集中の欄を覚えておく。** 適用のたびにプロパティを作り直すので、
@@ -273,21 +303,22 @@ class EditorView {
         ? active.dataset.key
         : undefined;
 
-    this.frame.style.setProperty("--cols", String(model.canvas.columns));
-    this.frame.style.setProperty("--rows", String(model.canvas.rows));
+    this.frame.style.setProperty("--cols", String(view.canvas.columns));
+    this.frame.style.setProperty("--rows", String(view.canvas.rows));
     this.metrics.textContent =
       `セル ${this.cellWidth.toFixed(2)}×${this.lineHeight.toFixed(2)}px` +
       `${this.display.zoom === 1 ? "" : `（実測 ${this.measuredWidth.toFixed(2)}px × ${Math.round(this.display.zoom * 100)}%）`}` +
-      ` / ${model.canvas.rows}×${model.canvas.columns}`;
+      ` / ${view.canvas.rows}×${view.canvas.columns}`;
     this.title.textContent =
-      model.records.length > 0 ? `様式 ${model.records.join(" / ")}` : "（様式なし）";
+      view.records.length > 0 ? `様式 ${view.records.join(" / ")}` : "（様式なし）";
 
-    this.renderRuler(model.canvas.columns);
-    this.renderGutter(model.canvas.rows);
-    this.renderItems(model.items);
-    this.renderOutline(model);
-    this.renderProperties(model);
-    this.renderDiagnostics(model);
+    this.renderRuler(view.canvas.columns);
+    this.renderGutter(view.canvas.rows);
+    this.renderItems(view.items);
+    this.renderOutline(view);
+    this.renderIndicators(view);
+    this.renderProperties(view);
+    this.renderDiagnostics(view);
 
     for (const toggle of this.toggles) {
       toggle.button.classList.toggle("armed", this.display[toggle.key]);
@@ -297,7 +328,7 @@ class EditorView {
       button.classList.toggle("armed", Number(button.dataset.zoom) === this.display.zoom);
     }
 
-    const canAdd = model.records.length > 0 && this.options.askItem !== undefined;
+    const canAdd = view.records.length > 0 && this.options.askItem !== undefined;
     this.addField.disabled = !canAdd;
     this.addConstant.disabled = !canAdd;
 
@@ -305,6 +336,16 @@ class EditorView {
       this.properties
         .querySelector<HTMLElement>(`[data-key="${focusedKey}"]`)
         ?.focus();
+    }
+
+    if (this.pendingIndicatorFocus !== undefined) {
+      // 選んだ値のボタンへ戻す（作り替えたので元の要素はもう無い）。
+      this.indicatorPanel
+        .querySelector<HTMLElement>(
+          `[data-indicator="${this.pendingIndicatorFocus}"][aria-checked="true"]`
+        )
+        ?.focus();
+      this.pendingIndicatorFocus = undefined;
     }
   }
 
@@ -472,6 +513,122 @@ class EditorView {
     return row;
   }
 
+  /**
+   * 左ペイン下段。**このソースで使われている標識**を出し、3 値で倒せるようにする。
+   *
+   * ## なぜ 3 値か
+   *
+   * 「オン / オフ」の 2 値にすると、既定でどちらかに倒れる——`01` で条件付けた項目か、
+   * `N01` で条件付けた項目のどちらかが**開いた瞬間から消えている**ことになる。
+   * `未設定` があれば、**触っていない標識は今までどおり描かれる**（`unknown` は描く）。
+   *
+   * ## なぜラジオグループか
+   *
+   * 押すたびに巡回するボタンは、**現在値と次の値が読み取れない**（読み上げでは
+   * 「01 ボタン」としか分からない）。APG のラジオグループなら `Tab` でグループに入り、
+   * 矢印で値を選べて、選択中の値が読み上げられる。標識が並んでも `Tab` の回数が増えない。
+   */
+  private renderIndicators(model: RenderModel): void {
+    if (model.indicators.length === 0) {
+      this.indicatorPanel.replaceChildren(
+        text("div", "dds-empty", "このソースでは使われていません")
+      );
+      return;
+    }
+
+    const nodes: HTMLElement[] = [];
+    for (const usage of model.indicators) {
+      const row = document.createElement("div");
+      row.className = "ind-row";
+
+      const head = document.createElement("div");
+      head.className = "ind-head";
+      head.append(
+        text("span", "no", usage.indicator),
+        text("span", "uses", `${usage.uses} か所`)
+      );
+
+      row.append(head, this.indicatorChoice(usage.indicator));
+      nodes.push(row);
+    }
+
+    const reset = document.createElement("button");
+    reset.type = "button";
+    reset.className = "ind-reset";
+    reset.textContent = "すべて未設定";
+    // **一覧に出ている標識だけで押せるかを決める。** 別のファイルを開いたときに残る
+    // 状態（そのファイルに無い標識）は描画に効かない——項目の条件に現れる標識は
+    // 必ず一覧にも出るため。効かない状態のために押せるボタンを出すと、
+    // 「何かが設定されている」と読めてしまう。
+    reset.disabled = !model.indicators.some(
+      usage => this.indicators[usage.indicator] !== undefined
+    );
+    reset.addEventListener("click", () => {
+      this.indicators = {};
+      this.render();
+    });
+    nodes.push(reset);
+
+    this.indicatorPanel.replaceChildren(...nodes);
+  }
+
+  /** 標識 1 つ分の 3 択（APG のラジオグループ：ローミング tabindex ＋ 矢印キー）。 */
+  private indicatorChoice(indicator: string): HTMLElement {
+    const group = document.createElement("div");
+    group.className = "ind-choice";
+    group.setAttribute("role", "radiogroup");
+    group.setAttribute("aria-label", `標識 ${indicator}`);
+
+    const values: ReadonlyArray<{ value: "unset" | "on" | "off"; label: string }> = [
+      { value: "unset", label: "未設定" },
+      { value: "on", label: "オン" },
+      { value: "off", label: "オフ" }
+    ];
+    const current = this.indicators[indicator] ?? "unset";
+
+    const buttons = values.map(({ value, label }) => {
+      const button = document.createElement("button");
+      button.type = "button";
+      button.setAttribute("role", "radio");
+      button.setAttribute("aria-checked", String(value === current));
+      button.textContent = label;
+      button.dataset.indicator = indicator;
+      button.dataset.value = value;
+      // ローミング tabindex。Tab はグループに 1 回だけ入る。
+      button.tabIndex = value === current ? 0 : -1;
+      button.classList.toggle("armed", value === current);
+      button.addEventListener("click", () => this.setIndicator(indicator, value));
+      group.appendChild(button);
+      return button;
+    });
+
+    group.addEventListener("keydown", event => {
+      const step = radioStep(event.key);
+      if (step === undefined) return;
+      // **キャンバスへ漏らさない。** 漏らすと標識を選ぶたびに選択中の項目が動く。
+      event.preventDefault();
+      event.stopPropagation();
+      const index = buttons.findIndex(button => button.tabIndex === 0);
+      const next = step === "first" ? 0 : step === "last" ? values.length - 1
+        : (index + step + values.length) % values.length;
+      this.setIndicator(indicator, values[next].value);
+    });
+
+    return group;
+  }
+
+  private setIndicator(indicator: string, value: "unset" | "on" | "off"): void {
+    const next: Record<string, "on" | "off"> = { ...this.indicators };
+    if (value === "unset") {
+      delete next[indicator];
+    } else {
+      next[indicator] = value;
+    }
+    this.indicators = next;
+    this.pendingIndicatorFocus = indicator;
+    this.render();
+  }
+
   /** 右ペイン。選択中の項目の属性を出し、確定したら編集として送る。 */
   private renderProperties(model: RenderModel): void {
     const item = this.selectedOutlineItem(model);
@@ -527,6 +684,18 @@ class EditorView {
     keywordRow.append(keywordHead, keywordCell);
     table.appendChild(keywordRow);
 
+    const condition = document.createElement("input");
+    condition.value = this.describeCondition(item);
+    condition.readOnly = true;
+    condition.title = "条件付け欄（7-16 桁）。ここでは編集しません";
+    const conditionRow = document.createElement("tr");
+    const conditionHead = document.createElement("td");
+    conditionHead.textContent = "条件";
+    const conditionCell = document.createElement("td");
+    conditionCell.appendChild(condition);
+    conditionRow.append(conditionHead, conditionCell);
+    table.appendChild(conditionRow);
+
     const nodes: HTMLElement[] = [table, this.measures(item, model)];
     const breakdown = this.columnBreakdown(item, model);
     if (breakdown !== undefined) nodes.push(breakdown);
@@ -543,6 +712,30 @@ class EditorView {
     const reject = text("div", "dds-reject", this.rejectMessage);
     nodes.push(reject);
     this.properties.replaceChildren(...nodes);
+  }
+
+/**
+   * プロパティに出す条件。**ソースに書いてある形**（`N` 付き）で出す——
+   * 「オフのとき」と書き下すと、該当行を目で探せなくなる。
+   *
+   * 標識を指定しているときは、**いまその項目が出るか**も添える。
+   * 条件と状態の両方を見比べて頭の中で解く手間を、画面が肩代わりする。
+   */
+  private describeCondition(item: OutlineItem): string {
+    const condition = item.attributes.condition;
+    if (condition === undefined || condition.length === 0) return "なし";
+    if (Object.keys(this.indicators).length === 0) return condition;
+
+    const placed = this.model?.items.find(
+      candidate => candidate.sourceLine === item.sourceLine
+    );
+    if (!placed) return condition;
+
+    switch (evaluateConditioning(placed.condition, this.indicators)) {
+      case "shown": return `${condition}（いまは 出る）`;
+      case "hidden": return `${condition}（いまは 出ない）`;
+      default: return `${condition}（いまは 決まらない）`;
+    }
   }
 
   /**
@@ -941,8 +1134,14 @@ class EditorView {
     this.render();
   }
 
+  /**
+   * 選択中の項目。**描かれているものだけ**（`view`）から探す。
+   *
+   * 条件で消えている項目まで返すと、見えない項目が矢印キーで動き、
+   * 「何も無いところで押したのにソースが変わった」が起きる。
+   */
   private selectedItem(): RenderItem | undefined {
-    return this.model?.items.find(item => item.sourceLine === this.selected);
+    return (this.view ?? this.model)?.items.find(item => item.sourceLine === this.selected);
   }
 
   /**
@@ -953,7 +1152,7 @@ class EditorView {
    * その行以下で最も近い項目の様式を採り、無ければ最後に現れた様式にする。
    */
   private recordAt(row: number): string | undefined {
-    const items = this.model?.items ?? [];
+    const items = (this.view ?? this.model)?.items ?? [];
     let best: RenderItem | undefined;
     for (const item of items) {
       if (item.recordName === undefined) continue;
@@ -962,7 +1161,8 @@ class EditorView {
         best = item;
       }
     }
-    return best?.recordName ?? this.model?.records[this.model.records.length - 1];
+    const records = (this.view ?? this.model)?.records ?? [];
+    return best?.recordName ?? records[records.length - 1];
   }
 
   private dragTarget(gesture: Gesture, deltaX: number, deltaY: number): CellPoint {
@@ -1046,6 +1246,8 @@ function template(): string {
     <div class="dds-side left">
       <div class="pane-title">レコード様式</div>
       <div class="dds-outline"></div>
+      <div class="pane-title">条件標識</div>
+      <div class="dds-indicators"></div>
     </div>
     <div class="dds-main">
       <div class="dds-frame">
@@ -1076,6 +1278,7 @@ function describeHidden(hidden: OutlineItem["hidden"]): string {
     case "no-position": return "位置なし";
     case "invalid-position": return "位置が不正";
     case "not-displayed": return "画面に出ない用途";
+    case "condition-off": return "条件で非表示";
     default: return "—";
   }
 }
@@ -1104,6 +1307,22 @@ function arrowStep(key: string): { row: number; column: number } | undefined {
 }
 
 /** 入力中か。プロパティの入力欄・選択欄にフォーカスがあるとき。 */
+/**
+ * ラジオグループでの移動量。APG の Radio Group パターンに合わせる
+ * （前後の巡回 ＋ Home / End で両端）。当たらないキーは `undefined`。
+ */
+function radioStep(key: string): number | "first" | "last" | undefined {
+  switch (key) {
+    case "ArrowRight":
+    case "ArrowDown": return 1;
+    case "ArrowLeft":
+    case "ArrowUp": return -1;
+    case "Home": return "first";
+    case "End": return "last";
+    default: return undefined;
+  }
+}
+
 function isTypingTarget(target: EventTarget | null): boolean {
   return (
     target instanceof HTMLInputElement ||

@@ -1,4 +1,5 @@
 import { DDS_COLUMNS, ddsField, ddsName } from "../ddsLayout";
+import { describeConditioning, readConditioning } from "./ddsConditioning";
 import { NON_DISPLAY_USAGE } from "./dspfLayout";
 import {
   keywordAreaOf,
@@ -36,10 +37,29 @@ export interface ItemAttributes {
   readonly decimals?: number;
   readonly usage?: string;
   readonly keywords: string;
+  /**
+   * 条件付け（7-16 桁）を人が読む形にしたもの。例 `01 かつ N02、または 03`。
+   * 条件が無ければ**鍵ごと無い**。
+   *
+   * 生の桁ではなく読める形で持つのは、条件が**項目の行より前の行**に書かれうるため
+   * ——プロパティに 1 行の文字列として出せないと、ソースを目で追うしかなくなる。
+   */
+  readonly condition?: string;
 }
 
-/** キャンバスに描かれない理由。描かれるなら undefined。 */
-export type HiddenReason = "no-position" | "invalid-position" | "not-displayed";
+/**
+ * キャンバスに描かれない理由。描かれるなら undefined。
+ *
+ * `condition-off` だけは**構造ではなく状態**（利用者が指定した標識）で決まるので、
+ * `buildDspfOutline` は付けない——付けるのは `applyIndicators`（`dspfRenderModel`）。
+ * 構造的な理由が既にある項目には**上書きしない**（位置が無い項目は、
+ * 標識をどう倒しても描かれないため、そちらを先に伝えるほうが直しに繋がる）。
+ */
+export type HiddenReason =
+  | "no-position"
+  | "invalid-position"
+  | "not-displayed"
+  | "condition-off";
 
 export interface OutlineItem {
   /** 1 始まり。**選択の宛先**（`RenderItem.sourceLine` と同じ鍵）。 */
@@ -109,6 +129,7 @@ function toOutlineItem(unit: ReturnType<typeof toLogicalUnits>[number]): Outline
   const column = readNumber(columnText);
 
   const hidden = hiddenReason(usage, rowText, columnText, row, column);
+  const condition = describeConditioning(readConditioning(unit.conditioningLines));
 
   return {
     sourceLine: unit.sourceLine,
@@ -127,7 +148,8 @@ function toOutlineItem(unit: ReturnType<typeof toLogicalUnits>[number]): Outline
         ? { decimals: readNumber(ddsField(line, DDS_COLUMNS.decimals)) }
         : {}),
       ...(usage !== undefined ? { usage } : {}),
-      keywords
+      keywords,
+      ...(condition.length > 0 ? { condition } : {})
     },
     ...(row !== undefined ? { row } : {}),
     ...(column !== undefined ? { column } : {}),

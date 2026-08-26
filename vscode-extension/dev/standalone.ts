@@ -229,9 +229,30 @@ const HIDDEN_SAMPLE = [
   ""
 ].join("\n");
 
+/**
+ * 3 本目は**条件標識で見え方が変わる** DDS。
+ *
+ * `50` / `N50` は同じ桁に置いた排他の組（標識を倒すと片方だけが出る）、
+ * `01` / `02` は**両方オンにすると重なる**組（実機で初めて分かる類の不具合）。
+ * `30` はキーワードだけを条件付ける標識で、**項目の表示には効かないが一覧には出る**
+ * ——論理単位から集めると取りこぼす形なので、ここで実際に確かめられるようにしておく。
+ */
+const INDICATOR_SAMPLE = [
+  "     A                                      DSPSIZ(24 80 *DS3)",
+  "     A          R MAIN",
+  "     A                                  1  2'見出し'",
+  "     A  50                              3  2'部門名'",
+  "     A N50                              3  2'未定'",
+  "     A  01        FLD1          10A  B  5  2",
+  "     A  02        FLD2          10A  B  5  6",
+  "     A  30                                  DSPATR(RI)",
+  ""
+].join("\n");
+
 const SAMPLES = [
   { name: "CUSTMNT.dspf", text: sample as unknown as string },
-  { name: "hidden-items.dspf", text: HIDDEN_SAMPLE }
+  { name: "hidden-items.dspf", text: HIDDEN_SAMPLE },
+  { name: "indicators.dspf", text: INDICATOR_SAMPLE }
 ];
 const select = must<HTMLSelectElement>("#sample");
 SAMPLES.forEach((entry, index) => {

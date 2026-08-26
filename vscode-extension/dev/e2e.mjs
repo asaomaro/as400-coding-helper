@@ -543,6 +543,107 @@ if (constantLine2) {
   );
 }
 
+// ---- 19. 条件標識（表示だけを変える。ソースは 1 文字も変わらない） -------
+await page.selectOption("#sample", { label: "indicators.dspf" });
+await page.waitForTimeout(250);
+
+const indicatorList = () => page.$$eval(".ind-row .no", nodes => nodes.map(n => n.textContent));
+// SO/SI 表示が入っていると `{部門名}` の形で出るので、**含むか**で見る（完全一致では落ちる）。
+const drawnLabels = () => page.$$eval(".dds-item", nodes => nodes.map(n => n.textContent));
+const treeText = () => page.$eval(".dds-outline", node => node.textContent);
+const setInd = async (indicator, value) => {
+  await page.click(`.ind-choice button[data-indicator="${indicator}"][data-value="${value}"]`);
+  await page.waitForTimeout(120);
+};
+
+check(
+  "標識の一覧にキーワードだけの行の標識も出る（30）",
+  JSON.stringify(await indicatorList()) === JSON.stringify(["01", "02", "30", "50"]),
+  JSON.stringify(await indicatorList())
+);
+
+const drawnBefore = await drawnLabels();
+const sourceBefore = await sourceLines();
+
+await setInd("50", "on");
+const drawnOn = await drawnLabels();
+check(
+  "標識をオンにすると不成立の項目がキャンバスから消える",
+  drawnOn.some(l => l.includes("部門名")) && !drawnOn.some(l => l.includes("未定")),
+  JSON.stringify(drawnOn)
+);
+check("消えた項目は一覧に理由付きで残る", (await treeText()).includes("条件で非表示"));
+
+await setInd("50", "off");
+const drawnOff = await drawnLabels();
+check(
+  "オフにすると逆の項目が出る（N50）",
+  drawnOff.some(l => l.includes("未定")) && !drawnOff.some(l => l.includes("部門名")),
+  JSON.stringify(drawnOff)
+);
+
+check(
+  "**標識を切り替えてもソースは変わらない**",
+  JSON.stringify(await sourceLines()) === JSON.stringify(sourceBefore) &&
+    (await changedLines()).length === 0
+);
+
+// 未設定を含む条件は消さない（01 だけ倒しても 02 の項目は残る）。
+await setInd("01", "off");
+check(
+  "未設定を含む条件の項目は消えない",
+  (await drawnLabels()).filter(label => label.startsWith("XXXX")).length === 1,
+  JSON.stringify(await drawnLabels())
+);
+
+// その状態での重なり（AC6）。
+const diagnostics = () => page.$eval(".dds-diagnostics", node => node.textContent);
+check("指定していない標識では状態つきの重なりを出さない", !(await diagnostics()).includes("重なります"));
+await setInd("01", "on");
+await setInd("02", "on");
+check(
+  "**その標識の状態で同時に出る項目の重なりを指摘する**",
+  (await diagnostics()).includes("01=オン") && (await diagnostics()).includes("重なります"),
+  (await diagnostics()).slice(0, 120)
+);
+
+// 矢印キーはキャンバスへ漏らさない（AC-I5）。
+await page.click(".dds-item");
+await page.waitForTimeout(120);
+const selectedLine = await page.$eval(".dds-item.selected", node => Number(node.dataset.sourceLine));
+const beforeArrowKey = (await sourceLines())[selectedLine - 1];
+await page.click('.ind-choice button[data-indicator="30"][data-value="unset"]');
+await page.waitForTimeout(120);
+await page.keyboard.press("ArrowRight");
+await page.waitForTimeout(150);
+check(
+  "**標識の矢印キーがキャンバスの項目を動かさない**",
+  (await sourceLines())[selectedLine - 1] === beforeArrowKey,
+  `行=${selectedLine}`
+);
+check(
+  "矢印キーで値が変わる（APG のラジオグループ）",
+  await page.$eval('.ind-choice button[data-indicator="30"][data-value="on"]', node =>
+    node.getAttribute("aria-checked") === "true"
+  )
+);
+check(
+  "切替の直後もフォーカスがその標識に残る",
+  await page.evaluate(() => {
+    const active = document.activeElement;
+    return active?.dataset?.indicator === "30" && active.getAttribute("aria-checked") === "true";
+  })
+);
+
+await page.click(".ind-reset");
+await page.waitForTimeout(150);
+check(
+  "すべて未設定で元の見え方に戻る",
+  JSON.stringify(await drawnLabels()) === JSON.stringify(drawnBefore),
+  JSON.stringify(await drawnLabels())
+);
+check("すべて未設定は設定が無いと押せない", await page.$eval(".ind-reset", node => node.disabled));
+
 check("実行中に JS エラーが出ていない", errors.length === 0, errors.slice(0, 2).join(" | "));
 
 await page.screenshot({ path: join(HERE, "out", "e2e.png") });

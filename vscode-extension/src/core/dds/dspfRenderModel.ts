@@ -1,6 +1,25 @@
 import { isDbcsCodePoint, printWidth } from "../dbcs";
-import { resolveDspfLayout, type DspfDiagnostic, type DspfLayout } from "./dspfLayout";
-import { buildDspfOutline, type ItemAttributes, type OutlineRecord } from "./dspfOutline";
+import {
+  collectIndicators,
+  conditionGroups,
+  describeConditioning,
+  evaluateConditioning,
+  type Conditioning,
+  type IndicatorStates,
+  type IndicatorUsage
+} from "./ddsConditioning";
+import {
+  occupanciesOverlap,
+  resolveDspfLayout,
+  type DspfDiagnostic,
+  type DspfLayout
+} from "./dspfLayout";
+import {
+  buildDspfOutline,
+  type ItemAttributes,
+  type OutlineItem,
+  type OutlineRecord
+} from "./dspfOutline";
 
 /**
  * 画面（DSPF）を**描くための形**。GUI に渡す唯一のモデル。
@@ -56,6 +75,14 @@ export interface RenderItem {
   readonly recordName?: string;
   /** プロパティに出す値。**キーワードは解釈しない**（生テキスト）。 */
   readonly attributes: ItemAttributes;
+  /**
+   * 条件付け（7-16 桁）。**ここでは解決しない。**
+   *
+   * どの標識が立っているかは**利用者が指定する表示の状態**で、ソースには書かれていない。
+   * モデルに解決済みの真偽を載せると、状態が変わるたびにホストへ作り直しを頼むことになる。
+   * 規則（`evaluateConditioning`）は core に置いたまま、状態は UI が持つ。
+   */
+  readonly condition: Conditioning;
 }
 
 export interface RenderModel {
@@ -74,17 +101,26 @@ export interface RenderModel {
    * それらにも手が届くように、一覧は別に持つ（`dspfOutline`）。鍵は `sourceLine` で共通。
    */
   readonly outline: readonly OutlineRecord[];
+  /**
+   * ソース中で使われている条件標識（番号順）。
+   *
+   * **キーワードだけを条件付ける標識も含む**（`collectIndicators` が生の行から集める）。
+   * 項目の表示に効かない標識でも、一覧から抜けていると
+   * 「この画面で意味を持つ標識」を数え上げる手段が無くなる。
+   */
+  readonly indicators: readonly IndicatorUsage[];
 }
 
 /** ソース行から描画モデルを作る。 */
 export function buildDspfRenderModel(lines: readonly string[]): RenderModel {
-  return fromLayout(resolveDspfLayout(lines), buildDspfOutline(lines));
+  return fromLayout(resolveDspfLayout(lines), buildDspfOutline(lines), collectIndicators(lines));
 }
 
 /** 既に解決済みのレイアウトから作る（二重に解決しないため）。 */
 export function fromLayout(
   layout: DspfLayout,
-  outline: readonly OutlineRecord[] = []
+  outline: readonly OutlineRecord[] = [],
+  indicators: readonly IndicatorUsage[] = []
 ): RenderModel {
   const items = layout.items.map(toRenderItem);
   const records: string[] = [];
@@ -100,12 +136,142 @@ export function fromLayout(
     items,
     diagnostics: layout.diagnostics,
     records,
-    outline
+    outline,
+    indicators
   };
+}
+
+/**
+ * 標識の状態を描画モデルに反映する。**純関数**（引数を書き換えない）。
+ *
+ * ■ 状態が空なら引数をそのまま返す
+ *   何も指定していないときの見え方を**構造で**固定する。ここで新しいモデルを組み直すと、
+ *   「指定していないのに何かが変わった」を後から検査で追いかけ続けることになる。
+ *
+ * ■ 消すのは「不成立と決まった」項目だけ
+ *   未設定の標識を含む条件は `unknown` で、**描く**。片方の標識だけ倒したときに
+ *   無関係な項目まで消えると、標識を 1 つずつ確かめる使い方ができない。
+ *
+ * ■ 消した項目は一覧に残す
+ *   キャンバスから消えた項目に一覧からも手が届かないと、戻す手段がテキストエディタしかなくなる。
+ *   `outline` の同じ項目へ `condition-off` を付けて、理由が読める形で残す。
+ */
+export function applyIndicators(model: RenderModel, states: IndicatorStates): RenderModel {
+  if (Object.keys(states).length === 0) return model;
+
+  const hidden = new Set<number>();
+  const shown: RenderItem[] = [];
+  for (const item of model.items) {
+    const result = evaluateConditioning(item.condition, states);
+    if (result === "hidden") {
+      hidden.add(item.sourceLine);
+      continue;
+    }
+    shown.push(item);
+  }
+
+  return {
+    ...model,
+    items: shown,
+    outline: hidden.size === 0 ? model.outline : markHidden(model.outline, hidden),
+    diagnostics: [...model.diagnostics, ...overlapsUnderIndicators(shown, states)]
+  };
+}
+
+/** 一覧に「条件で非表示」を付ける。**構造的な理由が既にある項目は触らない。** */
+function markHidden(
+  outline: readonly OutlineRecord[],
+  hidden: ReadonlySet<number>
+): OutlineRecord[] {
+  return outline.map((record) => ({
+    ...record,
+    items: record.items.map((item): OutlineItem =>
+      item.hidden === undefined && hidden.has(item.sourceLine)
+        ? { ...item, hidden: "condition-off" }
+        : item
+    )
+  }));
+}
+
+/**
+ * その標識の状態で**同時に表示されると決まった**項目どうしの重なり。
+ *
+ * ■ なぜ既存の重なり検出と別に持つか
+ *   `resolveDspfLayout` の検出は `isMutuallyExclusive` が「片方でも条件が付いていれば排他」と
+ *   保守的に倒しているので、**条件付きの重なりを報告しない**。原典が
+ *   「相互にオーバーラップするフィールドのうち、一時点で画面に表示されるのは 1 つだけ」と
+ *   認めている以上、静的に厳密化すると `01` と `02` の重なりまで報告することになる
+ *   （同時にオンになりうるので、静的には排他でない）。
+ *
+ *   利用者が**標識の組み合わせを言い切った**ときだけなら、その前提が置けるので誤検出にならない。
+ *
+ * ■ `unknown` は対象にしない
+ *   出るとは決まっていない項目を重なりの相手にすると、指定していない標識のせいで
+ *   指摘が出ることになる。
+ */
+function overlapsUnderIndicators(
+  items: readonly RenderItem[],
+  states: IndicatorStates
+): DspfDiagnostic[] {
+  const definite = items.filter(
+    (item) => evaluateConditioning(item.condition, states) === "shown"
+  );
+  const diagnostics: DspfDiagnostic[] = [];
+
+  for (let i = 0; i < definite.length; i += 1) {
+    for (let j = i + 1; j < definite.length; j += 1) {
+      const a = definite[i];
+      const b = definite[j];
+      if (a.row !== b.row) continue;
+      if (a.recordName !== b.recordName) continue;
+      if (a.widthCols === undefined || b.widthCols === undefined) continue;
+      // 両方とも無条件の組は `resolveDspfLayout` が既に報告している。二重に出さない。
+      if (a.condition.kind === "none" && b.condition.kind === "none") continue;
+      if (!occupanciesOverlap(a.occupancy, b.occupancy)) continue;
+
+      diagnostics.push({
+        code: "overlap-under-indicators",
+        message:
+          `標識 ${describeStatesFor([a, b], states)} のとき ` +
+          `${describeItem(a)} と ${describeItem(b)} が ` +
+          `${a.row} 行目で重なります（属性文字を含む占有で判定）`,
+        sourceLine: b.sourceLine
+      });
+    }
+  }
+
+  return diagnostics;
+}
+
+/**
+ * 指摘に添える標識の状態。**その 2 つの項目が使っている標識だけ**を出す。
+ *
+ * 設定中の標識をすべて並べると、この重なりに関係の無い標識まで載る
+ * （「01=オン, 02=オン, 50=オフ のとき FLD1 と FLD2 が重なります」の `50` は無関係）。
+ * 何を戻せば消える指摘なのかが読めなくなる。
+ */
+function describeStatesFor(items: readonly RenderItem[], states: IndicatorStates): string {
+  const used = new Set<string>();
+  for (const item of items) {
+    for (const group of conditionGroups(item.condition)) {
+      for (const term of group) used.add(term.indicator);
+    }
+  }
+
+  return [...used]
+    .filter((indicator) => states[indicator] !== undefined)
+    .sort((a, b) => a.localeCompare(b))
+    .map((indicator) => `${indicator}=${states[indicator] === "on" ? "オン" : "オフ"}`)
+    .join(", ");
+}
+
+function describeItem(item: RenderItem): string {
+  return item.kind === "constant" ? `定数 '${item.label}'` : (item.label || "名前のない項目");
 }
 
 function toRenderItem(item: DspfLayout["items"][number]): RenderItem {
   const label = item.kind === "constant" ? (item.text ?? "") : (item.name ?? "");
+  const condition = describeConditioning(item.conditioning);
 
   return {
     sourceLine: item.sourceLine,
@@ -130,8 +296,10 @@ function toRenderItem(item: DspfLayout["items"][number]): RenderItem {
       ...(item.dataType !== undefined ? { dataType: item.dataType } : {}),
       ...(item.decimals !== undefined ? { decimals: item.decimals } : {}),
       ...(item.usage !== undefined ? { usage: item.usage } : {}),
-      keywords: item.keywords
+      keywords: item.keywords,
+      ...(condition.length > 0 ? { condition } : {})
     },
+    condition: item.conditioning,
     ...(item.recordName !== undefined ? { recordName: item.recordName } : {})
   };
 }

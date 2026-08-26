@@ -46,6 +46,14 @@ import {
 export type DspfDiagnosticCode =
   /** 条件が同じ項目どうしが重なっている。 */
   | "overlap"
+  /**
+   * 利用者が指定した標識の状態で、同時に表示される項目どうしが重なっている。
+   *
+   * `overlap` と分けるのは**前提が違う**ため。`overlap` はソースだけから言えること
+   * （両方とも無条件）で、こちらは「この標識の組み合わせなら」という前提の下でだけ成り立つ。
+   * 混ぜると、指摘を消すために何を直せばよいのかが読めなくなる。
+   */
+  | "overlap-under-indicators"
   /** 画面をはみ出している。 */
   | "overflow"
   /** 位置欄に数字以外が入っている。 */
@@ -191,7 +199,7 @@ function occupancyOf(
  * **端点の一致は重なりとしない**。原典より、あるフィールドの終了属性文字は
  * 次のフィールドの開始属性文字に重ねてよく、間は 1 桁で足りる。
  */
-function overlaps(a: Occupancy, b: Occupancy): boolean {
+export function occupanciesOverlap(a: Occupancy, b: Occupancy): boolean {
   return a.start < b.end && b.start < a.end;
 }
 
@@ -369,7 +377,7 @@ function detectOverlaps(items: readonly DspfPlacedItem[]): DspfDiagnostic[] {
       if (a.recordName !== b.recordName) continue;
       if (a.width === undefined || b.width === undefined) continue;
       if (isMutuallyExclusive(a.conditioning, b.conditioning)) continue;
-      if (!overlaps(a.occupancy, b.occupancy)) continue;
+      if (!occupanciesOverlap(a.occupancy, b.occupancy)) continue;
 
       diagnostics.push({
         code: "overlap",
