@@ -54,7 +54,19 @@ body {
   padding: 3px 8px;
   cursor: pointer;
 }
-.dds-toolbar button.armed { outline: 1px solid var(--dds-accent); }
+.dds-toolbar button.armed {
+  outline: 1px solid var(--dds-accent);
+  background: color-mix(in srgb, var(--dds-accent) 22%, var(--vscode-button-secondaryBackground, #313131));
+}
+/* 配置（置く）と表示（切替）を分ける。混ぜると「押すと何かが起きる」種類が見分けられない。 */
+.dds-toolbar .sep {
+  width: 1px;
+  align-self: stretch;
+  background: var(--dds-border);
+  margin: 0 2px;
+}
+.dds-toolbar .zoom { display: flex; align-items: center; gap: 4px; }
+.dds-toolbar .zoom .label { color: var(--dds-muted); }
 .dds-toolbar .status { color: var(--dds-warning); }
 /* 実測したセル寸法。桁がずれたとき最初に見る場所なので常に出す。 */
 .dds-metrics { color: var(--dds-muted); font-family: var(--dds-font); font-size: 11px; }
@@ -124,6 +136,7 @@ body {
 .dds-props input[readonly] { opacity: 0.7; }
 .dds-measures { font-family: var(--dds-font); font-size: 11px; color: var(--dds-muted); }
 .dds-measures div { padding: 1px 3px; }
+.dds-measures.breakdown { color: var(--dds-fg); opacity: 0.85; padding-top: 4px; }
 .dds-note { color: var(--dds-warning); font-size: 11px; padding: 4px 3px; }
 .dds-reject { color: var(--dds-error); font-size: 11px; padding: 4px 3px; min-height: 1.2em; }
 .dds-empty { color: var(--dds-muted); padding: 8px 3px; }
@@ -163,6 +176,8 @@ body {
       transparent 1px var(--cell-h));
 }
 .dds-canvas.placing { cursor: crosshair; }
+/* グリッドを切る。ルーラーと行番号は残す（桁を読む手がかりを全部は消さない）。 */
+.dds-canvas.no-grid { background-image: none; }
 
 .dds-item {
   position: absolute;
@@ -191,6 +206,12 @@ body {
   background: color-mix(in srgb, var(--dds-accent) 18%, transparent);
 }
 .dds-item.dragging { opacity: 0.75; cursor: grabbing; }
+/* SO / SI の桁。**元から空いている 1 桁**に記号を描くだけで、幅は変えない。 */
+.dds-item .seg.shift { color: var(--dds-muted); opacity: 0.85; }
+/* アクティブ様式の外。**消さずに沈める**——読めなくなると一覧との対応が取れない。 */
+.dds-item.dimmed { opacity: 0.35; }
+.dds-attr.dimmed { opacity: 0.06; }
+
 .dds-item .handle {
   position: absolute;
   top: 0;

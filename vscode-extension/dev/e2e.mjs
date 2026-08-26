@@ -386,6 +386,163 @@ if (hidden.length > 0) {
   );
 }
 
+// ---- 15. 表示切替（SO/SI・属性バイト・グリッド・他様式） ----------------
+await page.selectOption("#sample", { index: 0 }); // CUSTMNT.dspf に戻す
+await page.waitForTimeout(300);
+
+/** DBCS 定数の位置・幅と、SO/SI の桁に描かれている文字。 */
+const dbcsState = () =>
+  page.evaluate(() => {
+    const item = [...document.querySelectorAll(".dds-item.constant")].find(node =>
+      node.textContent.includes("顧客保守")
+    );
+    if (!item) return null;
+    const box = item.getBoundingClientRect();
+    return {
+      left: Math.round(box.left * 100) / 100,
+      width: Math.round(box.width * 100) / 100,
+      shifts: [...item.querySelectorAll(".seg.shift")].map(node => node.textContent)
+    };
+  });
+
+const beforeShift = await dbcsState();
+await page.click("#dds-toggle-shifts");
+await page.waitForTimeout(200);
+const afterShift = await dbcsState();
+check(
+  "SO/SI を入れると `{` `}` が出る",
+  afterShift?.shifts.join("") === "{}",
+  JSON.stringify(afterShift?.shifts)
+);
+check(
+  "**表示を入れても項目の位置と幅は変わらない**（桁が動かない）",
+  beforeShift?.left === afterShift?.left && beforeShift?.width === afterShift?.width,
+  `${JSON.stringify(beforeShift)} → ${JSON.stringify(afterShift)}`
+);
+
+await page.click("#dds-toggle-attributes");
+await page.waitForTimeout(150);
+check("属性バイトを切ると消える", (await page.$$(".dds-attr")).length === 0);
+await page.click("#dds-toggle-attributes");
+await page.waitForTimeout(150);
+check("入れ直すと戻る", (await page.$$(".dds-attr")).length > 0);
+
+await page.click("#dds-toggle-grid");
+await page.waitForTimeout(150);
+check(
+  "グリッドを切ると罫線が消える（ルーラーは残る）",
+  (await page.$$(".dds-canvas.no-grid")).length === 1 &&
+    (await page.$$(".dds-ruler span")).length > 0
+);
+await page.click("#dds-toggle-grid");
+
+// 他様式の淡色: CUSTMNT は HEADER / DETAIL の 2 様式
+const detail = await page.evaluate(() => {
+  const item = [...document.querySelectorAll(".dds-item")].find(
+    node => Number(node.dataset.sourceLine) >= 11
+  );
+  return item ? Number(item.dataset.sourceLine) : null;
+});
+if (detail) {
+  await page.click(`.dds-item[data-source-line="${detail}"]`);
+  await page.waitForTimeout(200);
+  const dimmed = await page.$$eval(".dds-item.dimmed", nodes => nodes.length);
+  check("他様式が淡くなる（選択中の様式以外）", dimmed > 0, `${dimmed} 件`);
+  await page.click("#dds-toggle-dim");
+  await page.waitForTimeout(150);
+  check("切ると全様式が同じ濃さになる", (await page.$$(".dds-item.dimmed")).length === 0);
+  await page.click("#dds-toggle-dim");
+}
+
+// ---- 16. ズーム ---------------------------------------------------------
+const cellAt = () =>
+  page.evaluate(() =>
+    parseFloat(getComputedStyle(document.querySelector(".dds-frame")).getPropertyValue("--cell-w"))
+  );
+const base = await cellAt();
+await page.click('.zoom button[data-zoom="1.5"]');
+await page.waitForTimeout(200);
+const zoomed = await cellAt();
+check(
+  "ズーム 150% でセル幅が 1.5 倍になる",
+  Math.abs(zoomed - base * 1.5) < 0.01,
+  `${base} → ${zoomed}`
+);
+
+const rulerMatches = await page.evaluate(() => {
+  const cell = parseFloat(getComputedStyle(document.querySelector(".dds-frame")).getPropertyValue("--cell-w"));
+  const canvas = document.querySelector(".dds-canvas").getBoundingClientRect();
+  const item = document.querySelector(".dds-item");
+  const box = item.getBoundingClientRect();
+  const border = parseFloat(getComputedStyle(document.querySelector(".dds-canvas")).borderLeftWidth) || 0;
+  return Math.abs(box.left - canvas.left - border - (Number(item.dataset.column) - 1) * cell) < 0.6;
+});
+check("ズーム後も項目の桁位置が一致する", rulerMatches);
+
+// ズーム中のドラッグ（座標変換が倍率に追随するか）
+// 150% ではキャンバスが広がり、ペインの外に出る部分がある。
+// **項目の左端まで送り込む**——`scrollIntoViewIfNeeded` は「一部でも見えていれば動かない」ので、
+// 幅がペインより広い項目では左端が外に出たままになる（掴めない）。
+await page.evaluate(() => {
+  const item = [...document.querySelectorAll(".dds-item")].find(n => n.dataset.resizable === "true");
+  item?.scrollIntoView({ block: "nearest", inline: "start" });
+});
+await page.waitForTimeout(200);
+const zoomTarget = await page.evaluate(() => {
+  const item = [...document.querySelectorAll(".dds-item")].find(n => n.dataset.resizable === "true");
+  const b = item.getBoundingClientRect();
+  return {
+    sourceLine: Number(item.dataset.sourceLine),
+    row: Number(item.dataset.row),
+    column: Number(item.dataset.column),
+    width: Number(item.dataset.width),
+    x: b.left + 4,
+    y: b.top + b.height / 2
+  };
+});
+const zoomCell = await cellAt();
+const zoomLine = await page.evaluate(() =>
+  parseFloat(getComputedStyle(document.querySelector(".dds-frame")).getPropertyValue("--cell-h"))
+);
+await page.mouse.move(zoomTarget.x, zoomTarget.y);
+await page.mouse.down();
+await page.mouse.move(zoomTarget.x + zoomCell * 3, zoomTarget.y - zoomLine * 2, { steps: 8 });
+await page.mouse.up();
+await page.waitForTimeout(300);
+const zoomedLine = (await sourceLines())[zoomTarget.sourceLine - 1];
+check(
+  "**ズーム中でも掴んだ項目が指した桁に入る**",
+  zoomedLine.slice(38, 41) === String(zoomTarget.row - 2).padStart(3) &&
+    zoomedLine.slice(41, 44) === String(Math.min(zoomTarget.column + 3, 80 - zoomTarget.width + 1)).padStart(3),
+  `対象=${JSON.stringify(zoomTarget)} cell=${zoomCell} 行=${JSON.stringify(zoomedLine.slice(38, 44))}`
+);
+
+// ---- 17. 切替は再描画で戻らない（AC7） ---------------------------------
+check(
+  "編集の適用後も切替とズームが保たれる",
+  (await page.$$(".dds-canvas.no-grid")).length === 0 &&
+    (await page.$$eval("#dds-toggle-shifts", nodes => nodes[0].classList.contains("armed"))) &&
+    Math.abs((await cellAt()) - base * 1.5) < 0.01
+);
+
+// ---- 18. 桁勘定 ---------------------------------------------------------
+const constantLine2 = await page.evaluate(() => {
+  const item = [...document.querySelectorAll(".dds-item.constant")].find(node =>
+    node.textContent.includes("顧客保守")
+  );
+  return item ? Number(item.dataset.sourceLine) : null;
+});
+if (constantLine2) {
+  await page.click(`.dds-tree li.item[data-source-line="${constantLine2}"]`);
+  await page.waitForTimeout(200);
+  const breakdown = await page.$eval(".dds-measures.breakdown", node => node.textContent).catch(() => "");
+  check(
+    "定数の桁勘定が出る（SO/SI と全角の内訳）",
+    breakdown.includes("SO/SI") && breakdown.includes("= 10 桁"),
+    breakdown
+  );
+}
+
 check("実行中に JS エラーが出ていない", errors.length === 0, errors.slice(0, 2).join(" | "));
 
 await page.screenshot({ path: join(HERE, "out", "e2e.png") });

@@ -77,8 +77,20 @@ class EditorView {
   private rejectMessage = "";
   /** 拒否されたときフォーカスを戻す欄。**入力し直せるようにする**（AC-I4）。 */
   private pendingFocus: string | undefined;
-  private cellWidth = 8;
-  private lineHeight = 18;
+  /** 実測値（フォントの実寸）。**倍率を掛けない**——掛けると次の測定で二重になる。 */
+  private measuredWidth = 8;
+  private measuredHeight = 18;
+  /**
+   * 表示の状態。**`render()` の外に持つ**——中に持つと再描画のたびに戻り、
+   * 1 回編集するたびに切替が解除される。ホストへは送らない（表示は文書の内容ではない）。
+   */
+  private display = {
+    showShifts: false,
+    showAttributes: true,
+    showGrid: true,
+    dimOthers: true,
+    zoom: 1
+  };
 
   private readonly frame: HTMLElement;
   private readonly ruler: HTMLElement;
@@ -92,6 +104,11 @@ class EditorView {
   private readonly title: HTMLElement;
   private readonly addField: HTMLButtonElement;
   private readonly addConstant: HTMLButtonElement;
+  private readonly toggles: ReadonlyArray<{
+    readonly button: HTMLButtonElement;
+    readonly key: "showShifts" | "showAttributes" | "showGrid" | "dimOthers";
+  }>;
+  private readonly zoomButtons: HTMLButtonElement[] = [];
 
   constructor(
     private readonly bridge: Bridge,
@@ -123,6 +140,36 @@ class EditorView {
     document.addEventListener("keydown", event => this.onKeyDown(event));
     this.addField.addEventListener("click", () => this.arm("field"));
     this.addConstant.addEventListener("click", () => this.arm("constant"));
+
+    this.toggles = [
+      { button: must<HTMLButtonElement>(root, "#dds-toggle-shifts"), key: "showShifts" },
+      { button: must<HTMLButtonElement>(root, "#dds-toggle-attributes"), key: "showAttributes" },
+      { button: must<HTMLButtonElement>(root, "#dds-toggle-grid"), key: "showGrid" },
+      { button: must<HTMLButtonElement>(root, "#dds-toggle-dim"), key: "dimOthers" }
+    ];
+    for (const toggle of this.toggles) {
+      toggle.button.addEventListener("click", () => {
+        this.display = { ...this.display, [toggle.key]: !this.display[toggle.key] };
+        this.render(); // 切替は選択に触らない（AC-I4）
+      });
+    }
+
+    // ズームは**ボタンだけ**。キーを張るとホストのズームと取り合い、
+    // 桁ルーラーが二重に拡大する（確定デザインの未解決 5）。
+    const zoom = must<HTMLElement>(root, ".zoom");
+    zoom.appendChild(text("span", "label", "ズーム"));
+    for (const step of [0.9, 1, 1.25, 1.5]) {
+      const button = document.createElement("button");
+      button.type = "button";
+      button.textContent = `${Math.round(step * 100)}%`;
+      button.dataset.zoom = String(step);
+      button.addEventListener("click", () => {
+        this.display = { ...this.display, zoom: step };
+        this.render();
+      });
+      this.zoomButtons.push(button);
+      zoom.appendChild(button);
+    }
   }
 
   handle(message: { type: string; [key: string]: unknown }): void {
@@ -190,11 +237,24 @@ class EditorView {
     sample.remove();
     if (rect.width <= 0 || rect.height <= 0) return;
 
-    this.cellWidth = rect.width / MEASURE_SAMPLE;
-    this.lineHeight = rect.height;
+    this.measuredWidth = rect.width / MEASURE_SAMPLE;
+    this.measuredHeight = rect.height;
+    this.applyCellSize();
+    this.render();
+  }
+
+  /** 表示に使うセル寸法＝**実測値 × 倍率**。ルーラー・項目・座標変換がすべてこれを見る。 */
+  private get cellWidth(): number {
+    return this.measuredWidth * this.display.zoom;
+  }
+
+  private get lineHeight(): number {
+    return this.measuredHeight * this.display.zoom;
+  }
+
+  private applyCellSize(): void {
     this.frame.style.setProperty("--cell-w", `${this.cellWidth}px`);
     this.frame.style.setProperty("--cell-h", `${this.lineHeight}px`);
-    this.render();
   }
 
   // ---- 描画 --------------------------------------------------------
@@ -202,6 +262,8 @@ class EditorView {
   private render(): void {
     const model = this.model;
     if (!model) return;
+
+    this.applyCellSize();
 
     // **編集中の欄を覚えておく。** 適用のたびにプロパティを作り直すので、
     // 覚えないと「名前を直して次に長さを直す」の途中でフォーカスが飛ぶ。
@@ -215,6 +277,7 @@ class EditorView {
     this.frame.style.setProperty("--rows", String(model.canvas.rows));
     this.metrics.textContent =
       `セル ${this.cellWidth.toFixed(2)}×${this.lineHeight.toFixed(2)}px` +
+      `${this.display.zoom === 1 ? "" : `（実測 ${this.measuredWidth.toFixed(2)}px × ${Math.round(this.display.zoom * 100)}%）`}` +
       ` / ${model.canvas.rows}×${model.canvas.columns}`;
     this.title.textContent =
       model.records.length > 0 ? `様式 ${model.records.join(" / ")}` : "（様式なし）";
@@ -225,6 +288,14 @@ class EditorView {
     this.renderOutline(model);
     this.renderProperties(model);
     this.renderDiagnostics(model);
+
+    for (const toggle of this.toggles) {
+      toggle.button.classList.toggle("armed", this.display[toggle.key]);
+      toggle.button.setAttribute("aria-pressed", String(this.display[toggle.key]));
+    }
+    for (const button of this.zoomButtons) {
+      button.classList.toggle("armed", Number(button.dataset.zoom) === this.display.zoom);
+    }
 
     const canAdd = model.records.length > 0 && this.options.askItem !== undefined;
     this.addField.disabled = !canAdd;
@@ -269,12 +340,28 @@ class EditorView {
   }
 
   private renderItems(items: readonly RenderItem[]): void {
+    this.canvas.classList.toggle("no-grid", !this.display.showGrid);
+
+    // 淡くする基準は**選択中の項目が属する様式**。選択が無ければ基準が無いので淡くしない。
+    const activeRecord = this.display.dimOthers
+      ? items.find(item => item.sourceLine === this.selected)?.recordName
+      : undefined;
+
     const nodes: HTMLElement[] = [];
     for (const item of items) {
-      nodes.push(...attributeMarkers(item));
-      nodes.push(this.buildItem(item));
+      if (this.display.showAttributes) {
+        nodes.push(...attributeMarkers(item, this.dimmed(item, activeRecord)));
+      }
+      const element = this.buildItem(item);
+      if (this.dimmed(item, activeRecord)) element.classList.add("dimmed");
+      nodes.push(element);
     }
     this.canvas.replaceChildren(...nodes);
+  }
+
+  /** アクティブ様式の外か。基準が無ければ淡くしない。 */
+  private dimmed(item: RenderItem, activeRecord: string | undefined): boolean {
+    return activeRecord !== undefined && item.recordName !== activeRecord;
   }
 
   private buildItem(item: RenderItem): HTMLElement {
@@ -307,7 +394,18 @@ class EditorView {
       const span = document.createElement("span");
       span.className = "seg";
       span.style.width = `calc(var(--cell-w) * ${segment.cols})`;
-      span.textContent = segment.text;
+      if (segment.shift !== undefined) {
+        span.classList.add("shift");
+        // **既に空けてある桁に描く。** 項目の前後に足すと幅が変わり、全部の桁がずれる。
+        // 記号はテキストエディタ側の SOSI 表示と同じ `{` `}`（同じソースが別物に見えないように）。
+        span.textContent = this.display.showShifts
+          ? segment.shift === "so"
+            ? "{"
+            : "}"
+          : "";
+      } else {
+        span.textContent = segment.text;
+      }
       element.appendChild(span);
     }
 
@@ -430,6 +528,8 @@ class EditorView {
     table.appendChild(keywordRow);
 
     const nodes: HTMLElement[] = [table, this.measures(item, model)];
+    const breakdown = this.columnBreakdown(item, model);
+    if (breakdown !== undefined) nodes.push(breakdown);
     if (item.kind === "field") {
       // 黙って壊さない。参照の追随は未実装なので、その旨を出す。
       nodes.push(
@@ -443,6 +543,51 @@ class EditorView {
     const reject = text("div", "dds-reject", this.rejectMessage);
     nodes.push(reject);
     this.properties.replaceChildren(...nodes);
+  }
+
+  /**
+   * 桁勘定。**定数だけ**に出す（フィールドはプレースホルダなので内訳に意味が無い）。
+   *
+   * 区切りを数えるだけで作る——**文字を数え直さない**。
+   * 「なぜこの定数は 10 桁なのか」を画面で説明できるようにするのが目的。
+   */
+  private columnBreakdown(
+    item: OutlineItem,
+    model: RenderModel
+  ): HTMLElement | undefined {
+    const placed = model.items.find(
+      candidate => candidate.sourceLine === item.sourceLine
+    );
+    if (!placed || placed.kind !== "constant" || placed.segments.length === 0) {
+      return undefined;
+    }
+
+    const parts: string[] = [];
+    let shifts = 0;
+    let dbcs = 0;
+    let sbcs = 0;
+    for (const segment of placed.segments) {
+      if (segment.shift !== undefined) {
+        shifts += 1;
+        continue;
+      }
+      // 全角は 1 文字が 2 桁。cols と文字数の差で見分けられる（文字を判定しない）。
+      if (segment.cols === [...segment.text].length * 2) {
+        dbcs += [...segment.text].length;
+      } else {
+        sbcs += segment.cols;
+      }
+    }
+
+    if (shifts > 0) parts.push(`SO/SI ${shifts}`);
+    if (dbcs > 0) parts.push(`全角 ${dbcs} × 2`);
+    if (sbcs > 0) parts.push(`半角 ${sbcs}`);
+
+    return text(
+      "div",
+      "dds-measures breakdown",
+      `桁勘定: ${parts.join(" + ")} = ${placed.widthCols} 桁`
+    );
   }
 
   /** 占有と右端の余裕。**引き算だけ**（幅は core が決めたものを使う）。 */
@@ -866,12 +1011,12 @@ class EditorView {
 }
 
 /** 属性文字の占有を薄く示す（隣接違反が起きる前に見えるように）。 */
-function attributeMarkers(item: RenderItem): HTMLElement[] {
+function attributeMarkers(item: RenderItem, dimmed = false): HTMLElement[] {
   const markers: HTMLElement[] = [];
   for (const column of [item.occupancy.start, item.occupancy.end]) {
     if (column < 1) continue;
     const marker = document.createElement("div");
-    marker.className = "dds-attr";
+    marker.className = dimmed ? "dds-attr dimmed" : "dds-attr";
     marker.style.left = `calc(var(--cell-w) * ${column - 1})`;
     marker.style.top = `calc(var(--cell-h) * ${item.row - 1})`;
     markers.push(marker);
@@ -886,6 +1031,13 @@ function template(): string {
     <span class="record-name"></span>
     <button id="dds-add-field" type="button">フィールドを置く</button>
     <button id="dds-add-constant" type="button">定数を置く</button>
+    <span class="sep"></span>
+    <button id="dds-toggle-shifts" type="button" title="DBCS の前後にある SO / SI を { } で表示します（桁は元から空いています）">SO/SI</button>
+    <button id="dds-toggle-attributes" type="button" title="項目の前後 1 桁を占める属性文字を示します">属性バイト</button>
+    <button id="dds-toggle-grid" type="button" title="桁のグリッドを表示します">グリッド</button>
+    <button id="dds-toggle-dim" type="button" title="選択中の項目が属する様式以外を淡く表示します">他様式を淡く</button>
+    <span class="sep"></span>
+    <span class="zoom" role="group" aria-label="ズーム"></span>
     <span class="spacer"></span>
     <span class="status"></span>
     <span class="dds-metrics"></span>

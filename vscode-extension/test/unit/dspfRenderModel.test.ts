@@ -33,9 +33,9 @@ suite("描画モデル: 区切りは表示桁数と一致する", () => {
     const segments = constantSegments("顧客");
     assert.strictEqual(segmentsWidth(segments), printWidth("顧客"));
     assert.deepStrictEqual(segments, [
-      { text: "", cols: 1 },
+      { text: "", cols: 1, shift: "so" },
       { text: "顧客", cols: 4 },
-      { text: "", cols: 1 }
+      { text: "", cols: 1, shift: "si" }
     ]);
   });
 
@@ -45,9 +45,9 @@ suite("描画モデル: 区切りは表示桁数と一致する", () => {
     assert.strictEqual(segmentsWidth(segments), printWidth(text));
     assert.deepStrictEqual(segments, [
       { text: "ID:", cols: 3 },
-      { text: "", cols: 1 },
+      { text: "", cols: 1, shift: "so" },
       { text: "顧客", cols: 4 },
-      { text: "", cols: 1 }
+      { text: "", cols: 1, shift: "si" }
     ]);
   });
 
@@ -104,5 +104,45 @@ suite("描画モデル: 項目の翻訳", () => {
     assert.ok(field);
     assert.strictEqual(field.occupancy.start, field.column - 1);
     assert.strictEqual(field.occupancy.end, field.column + (field.widthCols ?? 0));
+  });
+});
+
+suite("描画モデル: SO / SI の種別", () => {
+  test("全角の前後が so / si になる", () => {
+    assert.deepStrictEqual(constantSegments("顧客"), [
+      { text: "", cols: 1, shift: "so" },
+      { text: "顧客", cols: 4 },
+      { text: "", cols: 1, shift: "si" }
+    ]);
+  });
+
+  test("半角だけなら種別は付かない", () => {
+    assert.deepStrictEqual(constantSegments("ABC"), [{ text: "ABC", cols: 3 }]);
+  });
+
+  test("全角が途切れるたびに so / si が要る", () => {
+    const segments = constantSegments("あZい");
+    assert.deepStrictEqual(
+      segments.map(segment => segment.shift ?? "-"),
+      ["so", "-", "si", "-", "so", "-", "si"]
+    );
+  });
+
+  test("**種別を足しても幅は変わらない**（表示の有無で桁が動かない前提）", () => {
+    for (const text of ["ABC", "顧客", "あZい", "ID:顧客番号", ""]) {
+      assert.strictEqual(
+        segmentsWidth(constantSegments(text)),
+        printWidth(text),
+        `${text} の幅が変わった`
+      );
+    }
+  });
+
+  test("so / si の区切りは 1 桁で、文字を持たない", () => {
+    for (const segment of constantSegments("顧客A")) {
+      if (segment.shift === undefined) continue;
+      assert.strictEqual(segment.cols, 1);
+      assert.strictEqual(segment.text, "");
+    }
   });
 });
