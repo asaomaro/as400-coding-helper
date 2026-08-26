@@ -40,6 +40,30 @@ export function ddsField(text: string, column: DdsColumn): string {
 }
 
 /**
+ * 桁を置き換える。`ddsField` の対。
+ *
+ * **他の桁には触れない。** 行が短ければ書き込む位置まで空白で伸ばす。
+ * 書き戻しはどの欄でもこの性質が要るので、**取り出しと置き換えを対で 1 か所**に置く
+ * （位置欄・長さ欄でそれぞれ同じものを書くと、片方だけ直されて食い違う）。
+ *
+ * `value` が桁幅より長い場合は**呼び出し側の検査漏れ**なので、そのまま書かずに
+ * 末尾側を切る（欄をはみ出して隣の欄を壊さないことを優先する）。
+ */
+export function ddsReplaceField(
+  text: string,
+  column: DdsColumn,
+  value: string
+): string {
+  const [start, end] = column;
+  const width = end - start + 1;
+  const fitted =
+    value.length > width ? value.slice(value.length - width) : value.padEnd(width, " ");
+  const startIndex = start - 1;
+  const padded = text.length < end ? text.padEnd(end, " ") : text;
+  return padded.slice(0, startIndex) + fitted + padded.slice(end);
+}
+
+/**
  * 注記行（7 桁目が `*`）は桁の意味を持たない。
  *
  * 原典（`物理ファイルおよび論理ファイルの注記 (7 桁目)`）は**ブランク行も注記として

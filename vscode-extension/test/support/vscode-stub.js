@@ -134,6 +134,12 @@ const vscode = {
       vscode.window.__lastPanel = panel;
       return panel;
     },
+    // カスタムエディタの登録。配線が到達しているかを見るために記録だけする。
+    registerCustomEditorProvider(viewType, provider, options) {
+      vscode.window.__customEditors = vscode.window.__customEditors ?? [];
+      vscode.window.__customEditors.push({ viewType, provider, options });
+      return { dispose() {} };
+    },
     showInformationMessage(message) {
       vscode.window.messages.push(message);
       return Promise.resolve(undefined);

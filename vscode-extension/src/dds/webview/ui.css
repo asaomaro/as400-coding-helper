@@ -1,0 +1,166 @@
+/*
+ * DDS エディタの見た目。
+ *
+ * **単独起動を基準に書く。** 既定値はこの UI 自身の配色で、ホストのテーマは
+ * `var(--vscode-*, 既定値)` として上に被せるだけ——VSCode の外へ出しても色が消えない
+ * （変数が未定義なら既定値が効く）。配色マッピングは移植の継ぎ目の 1 つ。
+ *
+ * 桁は `--cell-w` / `--cell-h` で決まる。**起動時に実測した値**が JS から入る。
+ * CSS の `ch` を使わないのは、日本語混在の等幅フォントで DBCS 幅と一致する保証が無いため。
+ */
+
+:root {
+  --dds-bg: var(--vscode-editor-background, #1f1f1f);
+  --dds-fg: var(--vscode-editor-foreground, #d4d4d4);
+  --dds-chrome: var(--vscode-sideBar-background, #181818);
+  --dds-border: var(--vscode-panel-border, #3a3a3a);
+  --dds-muted: var(--vscode-descriptionForeground, #9d9d9d);
+  --dds-accent: var(--vscode-focusBorder, #2f81f7);
+  --dds-field: var(--vscode-charts-blue, #4fa3ff);
+  --dds-error: var(--vscode-editorError-foreground, #f14c4c);
+  --dds-warning: var(--vscode-editorWarning-foreground, #cca700);
+  --dds-font: var(--vscode-editor-font-family, ui-monospace, Consolas, "MS Gothic", monospace);
+  --cell-w: 8px;
+  --cell-h: 18px;
+  --gutter: 3em;
+}
+
+body {
+  margin: 0;
+  background: var(--dds-bg);
+  color: var(--dds-fg);
+  font-family: var(--vscode-font-family, system-ui, sans-serif);
+  font-size: 13px;
+}
+
+.dds-app { display: flex; flex-direction: column; height: 100vh; }
+
+.dds-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  padding: 6px 10px;
+  background: var(--dds-chrome);
+  border-bottom: 1px solid var(--dds-border);
+}
+.dds-toolbar .spacer { flex: 1; }
+.dds-toolbar button {
+  font: inherit;
+  color: var(--vscode-button-secondaryForeground, var(--dds-fg));
+  background: var(--vscode-button-secondaryBackground, #313131);
+  border: 1px solid var(--dds-border);
+  border-radius: 3px;
+  padding: 3px 8px;
+  cursor: pointer;
+}
+.dds-toolbar button.armed { outline: 1px solid var(--dds-accent); }
+.dds-toolbar .status { color: var(--dds-warning); }
+/* 実測したセル寸法。桁がずれたとき最初に見る場所なので常に出す。 */
+.dds-metrics { color: var(--dds-muted); font-family: var(--dds-font); font-size: 11px; }
+
+.dds-main { flex: 1; overflow: auto; padding: 12px; }
+.dds-frame { width: max-content; font-family: var(--dds-font); line-height: var(--cell-h); }
+
+.dds-ruler {
+  position: relative;
+  margin-left: var(--gutter);
+  height: var(--cell-h);
+  color: var(--dds-muted);
+  white-space: pre;
+}
+.dds-ruler span { position: absolute; top: 0; }
+
+.dds-body { display: flex; align-items: flex-start; }
+.dds-gutter {
+  width: var(--gutter);
+  color: var(--dds-muted);
+  text-align: right;
+  padding-right: 6px;
+  box-sizing: border-box;
+  white-space: pre;
+}
+
+.dds-canvas {
+  position: relative;
+  width: calc(var(--cell-w) * var(--cols));
+  height: calc(var(--cell-h) * var(--rows));
+  border: 1px solid var(--dds-border);
+  background-color: color-mix(in srgb, var(--dds-fg) 4%, var(--dds-bg));
+  background-image:
+    repeating-linear-gradient(to right,
+      color-mix(in srgb, var(--dds-fg) 22%, transparent) 0 1px,
+      transparent 1px calc(var(--cell-w) * 10)),
+    repeating-linear-gradient(to bottom,
+      color-mix(in srgb, var(--dds-fg) 10%, transparent) 0 1px,
+      transparent 1px var(--cell-h));
+}
+.dds-canvas.placing { cursor: crosshair; }
+
+.dds-item {
+  position: absolute;
+  height: var(--cell-h);
+  white-space: pre;
+  cursor: grab;
+  user-select: none;
+  box-sizing: border-box;
+}
+.dds-item .seg {
+  display: inline-block;
+  vertical-align: top;
+  height: var(--cell-h);
+  /* **桁からはみ出させない。** 全角を 2 セル幅で描かないフォントでは字が欠けるが、
+     隣の桁を押し出すよりよい——この道具の価値は桁が正しいことにある。 */
+  overflow: hidden;
+}
+.dds-item.constant { color: var(--dds-fg); }
+.dds-item.field {
+  color: var(--dds-field);
+  border-bottom: 1px dotted color-mix(in srgb, var(--dds-field) 60%, transparent);
+}
+.dds-item.unknown-width { opacity: 0.6; font-style: italic; }
+.dds-item.selected {
+  outline: 1px solid var(--dds-accent);
+  background: color-mix(in srgb, var(--dds-accent) 18%, transparent);
+}
+.dds-item.dragging { opacity: 0.75; cursor: grabbing; }
+.dds-item .handle {
+  position: absolute;
+  top: 0;
+  right: calc(var(--cell-w) * -0.5);
+  width: var(--cell-w);
+  height: var(--cell-h);
+  cursor: ew-resize;
+  background: color-mix(in srgb, var(--dds-accent) 60%, transparent);
+}
+/* 属性文字の占有。隣接違反が起きる前に見えるようにする。 */
+.dds-attr {
+  position: absolute;
+  height: var(--cell-h);
+  width: var(--cell-w);
+  background: var(--dds-warning);
+  opacity: 0.14;
+  pointer-events: none;
+}
+
+.dds-diagnostics {
+  max-height: 28vh;
+  overflow: auto;
+  border-top: 1px solid var(--dds-border);
+  background: var(--dds-chrome);
+}
+.dds-diagnostics ul { margin: 0; padding: 4px 0; list-style: none; }
+.dds-diagnostics li { display: flex; gap: 8px; padding: 3px 10px; }
+.dds-diagnostics li.jumpable { cursor: pointer; }
+.dds-diagnostics li.jumpable:hover { background: var(--vscode-list-hoverBackground, #2a2a2a); }
+.dds-diagnostics .code { font-family: var(--dds-font); color: var(--dds-muted); white-space: nowrap; }
+.dds-diagnostics .none { color: var(--dds-muted); padding: 4px 10px; }
+
+.dds-measure {
+  position: absolute;
+  visibility: hidden;
+  white-space: pre;
+  font-family: var(--dds-font);
+  /* **`--cell-h` を参照しない**（測ろうとしている値を参照すると循環する）。 */
+  line-height: normal;
+}

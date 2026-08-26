@@ -12,6 +12,7 @@ import { registerFixedFormatNavigation } from "./fixedFormatNavigation";
 import { registerRuler } from "./ruler";
 import { registerPrtfPreview } from "./prtfPreview";
 import { registerDspfPreview } from "./dspfPreview";
+import { registerDdsVisualEditor } from "../dds/editorProvider";
 
 let diagnosticsInstance: RpgClDiagnostics | undefined;
 
@@ -55,4 +56,5 @@ export function registerLanguageFeatures(
   // 帳票（PRTF）プレビュー。拡張子で判定し、IBM i Renderer とは別コマンド。
   registerPrtfPreview(context);
   registerDspfPreview(context);
+  registerDdsVisualEditor(context);
 }

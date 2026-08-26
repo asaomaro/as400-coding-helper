@@ -1,7 +1,12 @@
 import { DDS_COLUMNS, ddsField, ddsName } from "../ddsLayout";
 import { readConditioning, type Conditioning, isMutuallyExclusive } from "./ddsConditioning";
 import { constantWidth, fieldWidth, type WidthUnknownReason } from "./ddsFieldWidth";
-import { readConstant, readNumber, toLogicalUnits } from "./ddsLogicalUnits";
+import {
+  readConstant,
+  readNumber,
+  toLogicalUnits,
+  unitItemKind
+} from "./ddsLogicalUnits";
 import { DDS_POSITION_COLUMN, DDS_POSITION_ROW } from "./ddsPositionColumns";
 import {
   matchesScreenSize,
@@ -83,6 +88,8 @@ export interface DspfPlacedItem {
   readonly sourceLine: number;
   /** 38 桁目。I=入力 / O=出力 / B=両方 / H=潜在 / P=プログラム間。 */
   readonly usage?: string;
+  /** 35 桁目。`S`/`Y` は数値、ブランクや `A` は英数字。描画のプレースホルダに使う。 */
+  readonly dataType?: string;
   readonly conditioning: Conditioning;
   readonly occupancy: Occupancy;
 }
@@ -127,16 +134,45 @@ function dataEnd(column: number, width: number | undefined): number {
 }
 
 /**
+ * 符号のために余分に占有する桁数。
+ *
+ * **35 桁目が `S`（ゾーン 10 進）かつ入力できる用途（`B` / `I`）のとき、画面上は 1 桁多く占める。**
+ * 符号を入力する場所が要るため。表示専用（`O`）や `Y`（数値のみ）では増えない。
+ *
+ * 原典に該当の記述を見つけられていないので、**実機で確かめた**（`SR-OSAKA` で `CRTDSPF`）。
+ * 8 通りを試し、増えるのは `S` × 入力可のときだけだった:
+ *
+ * | 35 桁 | 使用 | 増える桁 |
+ * |---|---|---|
+ * | `S` | `B` / `I` | **+1** |
+ * | `S` | `O` | 0 |
+ * | `Y` | `B` / `O` | 0 |
+ * | `A` | `B` | 0 |
+ *
+ * **画面には空白として出る**ので、描く幅（`width`）には含めない。
+ * 含めると存在しない文字を描くことになる。占有（重なり）とはみ出しの判定にだけ効かせる。
+ */
+function signPositions(dataType: string | undefined, usage: string | undefined): number {
+  const type = (dataType ?? "").trim().toUpperCase();
+  const use = (usage ?? "").trim().toUpperCase();
+  return type === "S" && (use === "B" || use === "I") ? 1 : 0;
+}
+
+/**
  * 属性文字を含む実効占有を求める。**重なりの判定にだけ使う**。
  *
  * 開始属性文字は `column - 1`、終了属性文字は `column + width`。
  * 幅不明のときは終端が決められないので、データ 1 桁分として扱い、
  * 重なりの判定からは外す（誤検出を避けるため）。
  */
-function occupancyOf(column: number, width: number | undefined): Occupancy {
+function occupancyOf(
+  column: number,
+  width: number | undefined,
+  signWidth = 0
+): Occupancy {
   return {
     start: column - 1,
-    end: width === undefined ? column : column + width
+    end: width === undefined ? column : column + width + signWidth
   };
 }
 
@@ -176,7 +212,8 @@ export function resolveDspfLayout(lines: readonly string[]): DspfLayout {
 
     const constant = readConstant(keywords);
     const fieldName = ddsName(line);
-    const isConstant = constant !== undefined && fieldName.length === 0;
+    // 種別の判定は `ddsLogicalUnits` に一本化してある（編集側と同じ規則を使う）。
+    const isConstant = unitItemKind(unit) === "constant";
     const usage = ddsField(line, DDS_COLUMNS.usage).trim().toUpperCase() || undefined;
 
     // 画面に出ない用途は位置を持たない。診断の対象にもしない。
@@ -238,8 +275,12 @@ export function resolveDspfLayout(lines: readonly string[]): DspfLayout {
       continue;
     }
 
-    const resolved = isConstant ? constantWidth(constant) : fieldWidth(line, keywords);
-    const occupancy = occupancyOf(column, resolved.width);
+    const resolved = isConstant
+      ? constantWidth(constant ?? "")
+      : fieldWidth(line, keywords);
+    const dataType = ddsField(line, DDS_COLUMNS.dataType).trim().toUpperCase() || undefined;
+    const sign = isConstant ? 0 : signPositions(dataType, usage);
+    const occupancy = occupancyOf(column, resolved.width, sign);
 
     if (column <= 1) {
       diagnostics.push({
@@ -257,12 +298,12 @@ export function resolveDspfLayout(lines: readonly string[]): DspfLayout {
         message: `行 ${row} は画面（${screen.rows} 行）の外です`,
         sourceLine
       });
-    } else if (dataEnd(column, resolved.width) > screen.columns) {
+    } else if (dataEnd(column, resolved.width) + sign > screen.columns) {
       diagnostics.push({
         code: "overflow",
         message:
           `桁 ${column}${resolved.width === undefined ? "" : ` + 幅 ${resolved.width}`}` +
-          `（${dataEnd(column, resolved.width)} 桁目まで）は画面（${screen.columns} 桁）の外です`,
+          `（${dataEnd(column, resolved.width) + sign} 桁目まで）は画面（${screen.columns} 桁）の外です`,
         sourceLine
       });
     }
@@ -278,6 +319,7 @@ export function resolveDspfLayout(lines: readonly string[]): DspfLayout {
       recordName,
       sourceLine,
       usage,
+      ...(dataType !== undefined ? { dataType } : {}),
       conditioning,
       occupancy
     });
