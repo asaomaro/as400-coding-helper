@@ -59,7 +59,74 @@ body {
 /* 実測したセル寸法。桁がずれたとき最初に見る場所なので常に出す。 */
 .dds-metrics { color: var(--dds-muted); font-family: var(--dds-font); font-size: 11px; }
 
-.dds-main { flex: 1; overflow: auto; padding: 12px; }
+/* C1 の 3 ペイン（左: 様式ツリー / 中央: キャンバス / 右: プロパティ）。
+   構成はホストが変わっても不変にする——ここが移植可能性の核心。 */
+.dds-panes { flex: 1; display: flex; min-height: 0; }
+.dds-side {
+  overflow: auto;
+  padding: 6px 8px;
+  border-right: 1px solid var(--dds-border);
+  background: var(--dds-chrome);
+  /* **min-width を 0 にする。** flex アイテムの既定（auto）だと中身の幅まで膨らみ、
+     長い項目名がある DDS で左ペインが広がってキャンバスを押し出す
+     （右ペインがキャンバスに被り、つまみが掴めなくなる。実際に踏んだ）。 */
+  min-width: 0;
+}
+.dds-side.left { flex: 0 0 200px; }
+.dds-side.right { flex: 0 0 320px; border-right: 0; border-left: 1px solid var(--dds-border); }
+.dds-main { flex: 1; min-width: 0; overflow: auto; padding: 12px; }
+
+.pane-title {
+  color: var(--dds-muted);
+  margin: 6px 0 4px;
+  border-bottom: 1px solid var(--dds-border);
+  padding-bottom: 2px;
+}
+
+/* ---- 様式ツリー ---- */
+.dds-tree { list-style: none; margin: 0; padding: 0; }
+.dds-tree .record { color: var(--dds-field); margin-top: 4px; font-weight: 600; }
+.dds-tree ul { list-style: none; margin: 0 0 0 10px; padding: 0; }
+.dds-tree li.item {
+  padding: 1px 4px;
+  white-space: nowrap;
+  cursor: pointer;
+  display: flex;
+  gap: 6px;
+  align-items: baseline;
+  border-radius: 2px;
+}
+.dds-tree li.item:hover { background: var(--vscode-list-hoverBackground, #2a2a2a); }
+.dds-tree li.item.selected {
+  background: color-mix(in srgb, var(--dds-accent) 22%, transparent);
+  outline: 1px solid var(--dds-accent);
+}
+.dds-tree .at { color: var(--dds-muted); font-family: var(--dds-font); font-size: 11px; }
+/* 描かれない項目。**一覧にしか出ないので、理由が分かる形にする**。 */
+.dds-tree li.item.hidden .label { opacity: 0.7; font-style: italic; }
+.dds-tree li.item.hidden .at { color: var(--dds-warning); }
+
+/* ---- プロパティ ---- */
+.dds-props { width: 100%; border-collapse: collapse; }
+.dds-props td { padding: 2px 3px; vertical-align: middle; }
+.dds-props td:first-child { color: var(--dds-muted); white-space: nowrap; width: 5.5em; }
+.dds-props input, .dds-props select {
+  font: inherit;
+  width: 100%;
+  box-sizing: border-box;
+  color: var(--vscode-input-foreground, var(--dds-fg));
+  background: var(--vscode-input-background, #2b2b2b);
+  border: 1px solid var(--vscode-input-border, var(--dds-border));
+  border-radius: 2px;
+  padding: 1px 4px;
+}
+.dds-props input.rejected { border-color: var(--dds-error); }
+.dds-props input[readonly] { opacity: 0.7; }
+.dds-measures { font-family: var(--dds-font); font-size: 11px; color: var(--dds-muted); }
+.dds-measures div { padding: 1px 3px; }
+.dds-note { color: var(--dds-warning); font-size: 11px; padding: 4px 3px; }
+.dds-reject { color: var(--dds-error); font-size: 11px; padding: 4px 3px; min-height: 1.2em; }
+.dds-empty { color: var(--dds-muted); padding: 8px 3px; }
 .dds-frame { width: max-content; font-family: var(--dds-font); line-height: var(--cell-h); }
 
 .dds-ruler {

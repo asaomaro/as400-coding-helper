@@ -1,4 +1,5 @@
 import type { DdsEdit } from "../../core/dds/ddsEdit";
+import type { ItemAttributes, OutlineItem } from "../../core/dds/dspfOutline";
 import type { RenderItem, RenderModel } from "../../core/dds/dspfRenderModel";
 import type { Bridge } from "./bridge";
 import {
@@ -72,6 +73,10 @@ class EditorView {
   private gesture: Gesture | undefined;
   private placing: Placing = null;
   private pendingStructural = false;
+  /** 直近の拒否理由。プロパティ内に出す（フォーカスを奪わない場所）。 */
+  private rejectMessage = "";
+  /** 拒否されたときフォーカスを戻す欄。**入力し直せるようにする**（AC-I4）。 */
+  private pendingFocus: string | undefined;
   private cellWidth = 8;
   private lineHeight = 18;
 
@@ -80,6 +85,8 @@ class EditorView {
   private readonly gutter: HTMLElement;
   private readonly canvas: HTMLElement;
   private readonly diagnostics: HTMLElement;
+  private readonly outline: HTMLElement;
+  private readonly properties: HTMLElement;
   private readonly status: HTMLElement;
   private readonly metrics: HTMLElement;
   private readonly title: HTMLElement;
@@ -97,6 +104,8 @@ class EditorView {
     this.gutter = must(root, ".dds-gutter");
     this.canvas = must(root, ".dds-canvas");
     this.diagnostics = must(root, ".dds-diagnostics");
+    this.outline = must(root, ".dds-outline");
+    this.properties = must(root, ".dds-properties");
     this.status = must(root, ".status");
     this.metrics = must(root, ".dds-metrics");
     this.title = must(root, ".record-name");
@@ -132,6 +141,8 @@ class EditorView {
         // 構造を変えたあとは選択を捨てる。宛先の行が消えている／ずれている。
         if (this.pendingStructural) this.selected = undefined;
         this.pendingStructural = false;
+        this.rejectMessage = "";
+        this.pendingFocus = undefined;
         this.setStatus("");
         this.render();
         break;
@@ -141,8 +152,27 @@ class EditorView {
         this.gesture = undefined;
         this.pendingStructural = false;
         const rejections = (message.rejections ?? []) as ReadonlyArray<{ message: string }>;
+        const reason = rejections.map(rejection => rejection.message).join(" / ");
         // 元の位置は UI が覚えず、ホストのモデルから描き直す（状態を 2 か所に置かない）。
-        this.setStatus(rejections.map(rejection => rejection.message).join(" / "));
+        this.rejectMessage = reason;
+
+        if (this.pendingFocus !== undefined) {
+          // **再描画しない。** 文書は変わっていないので描き直す必要が無いうえ、
+          // 描き直すと入力欄ごと作り替わり、フォーカスが飛ぶ。さらに消えた欄の `blur` が
+          // もう一度 commit を呼び、拒否 → 再描画 → blur … と往復し続ける（実際に踏んだ）。
+          const input = this.properties.querySelector<HTMLInputElement>(
+            `input[data-key="${this.pendingFocus}"]`
+          );
+          input?.classList.add("rejected");
+          input?.focus();
+          input?.select();
+          this.showReject(reason);
+          this.pendingFocus = undefined;
+          break;
+        }
+
+        // 元の位置は UI が覚えず、ホストのモデルから描き直す（状態を 2 か所に置かない）。
+        this.setStatus(reason);
         this.render();
         break;
       }
@@ -173,6 +203,14 @@ class EditorView {
     const model = this.model;
     if (!model) return;
 
+    // **編集中の欄を覚えておく。** 適用のたびにプロパティを作り直すので、
+    // 覚えないと「名前を直して次に長さを直す」の途中でフォーカスが飛ぶ。
+    const active = document.activeElement;
+    const focusedKey =
+      active instanceof HTMLElement && this.properties.contains(active)
+        ? active.dataset.key
+        : undefined;
+
     this.frame.style.setProperty("--cols", String(model.canvas.columns));
     this.frame.style.setProperty("--rows", String(model.canvas.rows));
     this.metrics.textContent =
@@ -184,11 +222,19 @@ class EditorView {
     this.renderRuler(model.canvas.columns);
     this.renderGutter(model.canvas.rows);
     this.renderItems(model.items);
+    this.renderOutline(model);
+    this.renderProperties(model);
     this.renderDiagnostics(model);
 
     const canAdd = model.records.length > 0 && this.options.askItem !== undefined;
     this.addField.disabled = !canAdd;
     this.addConstant.disabled = !canAdd;
+
+    if (focusedKey !== undefined) {
+      this.properties
+        .querySelector<HTMLElement>(`[data-key="${focusedKey}"]`)
+        ?.focus();
+    }
   }
 
   // **位置は必ず CSSOM（`element.style.*`）で与える。**
@@ -273,6 +319,256 @@ class EditorView {
     }
 
     return element;
+  }
+
+  /**
+   * 左ペイン。**描かれない項目も出す**——一覧が唯一の手がかりになる項目がある
+   * （位置欄が空・画面に出ない用途は診断すら出ない）。
+   */
+  private renderOutline(model: RenderModel): void {
+    if (model.outline.length === 0) {
+      this.outline.replaceChildren(text("div", "dds-empty", "項目がありません"));
+      return;
+    }
+
+    const list = document.createElement("ul");
+    list.className = "dds-tree";
+
+    for (const record of model.outline) {
+      const heading = document.createElement("li");
+      heading.className = "record";
+      heading.textContent = record.name.length > 0 ? `R ${record.name}` : "（様式の外）";
+      list.appendChild(heading);
+
+      const children = document.createElement("ul");
+      for (const item of record.items) {
+        children.appendChild(this.buildOutlineItem(item));
+      }
+      heading.appendChild(children);
+    }
+
+    this.outline.replaceChildren(list);
+  }
+
+  private buildOutlineItem(item: OutlineItem): HTMLElement {
+    const row = document.createElement("li");
+    row.className = `item ${item.kind}`;
+    if (item.hidden !== undefined) row.classList.add("hidden");
+    if (item.sourceLine === this.selected) row.classList.add("selected");
+    row.tabIndex = 0;
+    row.dataset.sourceLine = String(item.sourceLine);
+
+    const label = item.kind === "constant" ? `'${item.label}'` : item.label;
+    row.append(
+      text("span", "label", label.length > 0 ? label : "（名前なし）"),
+      text("span", "at", describePlacement(item))
+    );
+
+    row.addEventListener("click", () => this.select(item.sourceLine));
+    row.addEventListener("keydown", event => {
+      if (event.key === "Enter" || event.key === " ") {
+        event.preventDefault();
+        this.select(item.sourceLine);
+      }
+    });
+    return row;
+  }
+
+  /** 右ペイン。選択中の項目の属性を出し、確定したら編集として送る。 */
+  private renderProperties(model: RenderModel): void {
+    const item = this.selectedOutlineItem(model);
+    if (!item) {
+      this.properties.replaceChildren(
+        text("div", "dds-empty", "項目を選ぶと属性が出ます")
+      );
+      return;
+    }
+
+    const table = document.createElement("table");
+    table.className = "dds-props";
+    const fields: Array<[string, HTMLElement]> = [];
+
+    if (item.kind === "constant") {
+      fields.push(["文字列", this.attributeInput(item, "text", item.attributes.text ?? "")]);
+    } else {
+      fields.push(["名前", this.attributeInput(item, "name", item.attributes.name ?? "")]);
+      fields.push([
+        "長さ",
+        this.attributeInput(item, "length", String(item.attributes.length ?? ""))
+      ]);
+      fields.push([
+        "型",
+        this.attributeInput(item, "dataType", item.attributes.dataType ?? "")
+      ]);
+      fields.push([
+        "小数",
+        this.attributeInput(item, "decimals", String(item.attributes.decimals ?? ""))
+      ]);
+      fields.push(["使用", this.usageSelect(item)]);
+    }
+
+    for (const [label, control] of fields) {
+      const row = document.createElement("tr");
+      const head = document.createElement("td");
+      head.textContent = label;
+      const cell = document.createElement("td");
+      cell.appendChild(control);
+      row.append(head, cell);
+      table.appendChild(row);
+    }
+
+    const keywords = document.createElement("input");
+    keywords.value = item.attributes.keywords;
+    keywords.readOnly = true;
+    keywords.title = "キーワード欄（45 桁〜）。ここでは編集しません";
+    const keywordRow = document.createElement("tr");
+    const keywordHead = document.createElement("td");
+    keywordHead.textContent = "キーワード";
+    const keywordCell = document.createElement("td");
+    keywordCell.appendChild(keywords);
+    keywordRow.append(keywordHead, keywordCell);
+    table.appendChild(keywordRow);
+
+    const nodes: HTMLElement[] = [table, this.measures(item, model)];
+    if (item.kind === "field") {
+      // 黙って壊さない。参照の追随は未実装なので、その旨を出す。
+      nodes.push(
+        text(
+          "div",
+          "dds-note",
+          "名前を変えても、参照しているキーワード（SFLCTL 等）は追随しません"
+        )
+      );
+    }
+    const reject = text("div", "dds-reject", this.rejectMessage);
+    nodes.push(reject);
+    this.properties.replaceChildren(...nodes);
+  }
+
+  /** 占有と右端の余裕。**引き算だけ**（幅は core が決めたものを使う）。 */
+  private measures(item: OutlineItem, model: RenderModel): HTMLElement {
+    const placed = model.items.find(
+      candidate => candidate.sourceLine === item.sourceLine
+    );
+    const box = document.createElement("div");
+    box.className = "dds-measures";
+
+    const put = (label: string, value: string): void => {
+      const row = document.createElement("div");
+      row.textContent = `${label}: ${value}`;
+      box.appendChild(row);
+    };
+
+    if (!placed) {
+      put("位置", describeHidden(item.hidden));
+      put("占有", "—");
+      put("右端の余裕", "—");
+      return box;
+    }
+
+    put("位置", `${placed.row} 行 ${placed.column} 桁`);
+    put(
+      "占有",
+      `${placed.occupancy.start} 〜 ${placed.occupancy.end} 桁（属性文字を含む）`
+    );
+    put("右端の余裕", `${model.canvas.columns - placed.occupancy.end} 桁`);
+    return box;
+  }
+
+  private attributeInput(
+    item: OutlineItem,
+    key: keyof ItemAttributes,
+    value: string
+  ): HTMLInputElement {
+    const input = document.createElement("input");
+    input.value = value;
+    input.dataset.key = String(key);
+    if (key === "name") input.maxLength = 10;
+    if (key === "dataType") input.maxLength = 1;
+
+    // **確定した値を覚える。** `Enter` と `blur` の両方から commit が来るので、
+    // 覚えないと同じ編集を 2 回送る（拒否されたときは往復が止まらなくなる）。
+    let committed = value;
+    const commit = (): void => {
+      if (input.value === committed) return;
+      committed = input.value;
+      this.sendAttribute(item, key, input.value);
+    };
+
+    input.addEventListener("keydown", event => {
+      if (event.key === "Enter") {
+        event.preventDefault();
+        commit();
+        return;
+      }
+      if (event.key === "Escape") {
+        event.preventDefault();
+        // 編集前に戻す。**何も送らない。**
+        input.value = value;
+        input.blur();
+      }
+    });
+    input.addEventListener("blur", commit);
+    return input;
+  }
+
+  private usageSelect(item: OutlineItem): HTMLSelectElement {
+    const select = document.createElement("select");
+    select.dataset.key = "usage";
+    for (const [value, label] of [
+      ["", "（指定なし）"],
+      ["I", "I 入力"],
+      ["O", "O 出力"],
+      ["B", "B 両用"],
+      ["H", "H 潜在"]
+    ] as const) {
+      const option = document.createElement("option");
+      option.value = value;
+      option.textContent = label;
+      if ((item.attributes.usage ?? "") === value) option.selected = true;
+      select.appendChild(option);
+    }
+    select.addEventListener("change", () => {
+      this.sendAttribute(item, "usage", select.value);
+    });
+    return select;
+  }
+
+  /** 属性 1 つを送る。**確定したときだけ**呼ばれる。 */
+  private sendAttribute(item: OutlineItem, key: keyof ItemAttributes, raw: string): void {
+    const value = raw.trim();
+    const attributes: Record<string, unknown> = {};
+
+    if (key === "length" || key === "decimals") {
+      if (value.length === 0) return; // 空にはできない欄。何もしない。
+      const parsed = Number(value);
+      if (!Number.isInteger(parsed)) {
+        this.showReject(`${key === "length" ? "長さ" : "小数"}は数値です`);
+        return;
+      }
+      attributes[key] = parsed;
+    } else {
+      attributes[key] = key === "text" ? raw : value;
+    }
+
+    this.pendingFocus = String(key);
+    this.send({
+      kind: "setAttributes",
+      sourceLine: item.sourceLine,
+      attributes
+    } as DdsEdit);
+  }
+
+  private selectedOutlineItem(model: RenderModel): OutlineItem | undefined {
+    return model.outline
+      .flatMap(record => record.items)
+      .find(item => item.sourceLine === this.selected);
+  }
+
+  private showReject(message: string): void {
+    this.rejectMessage = message;
+    const box = this.properties.querySelector(".dds-reject");
+    if (box) box.textContent = message;
   }
 
   private renderDiagnostics(model: RenderModel): void {
@@ -406,6 +702,11 @@ class EditorView {
   }
 
   private onKeyDown(event: KeyboardEvent): void {
+    // **入力中はキャンバスへ漏らさない。** 入口で弾かないと、プロパティで矢印を押した瞬間に
+    // 項目が動き、`Delete` で項目が消える。`Esc` だけは入力欄の取り消しとして通す
+    // （入力欄側が値を戻してから blur するので、ここへは来ない）。
+    if (isTypingTarget(event.target)) return;
+
     if (event.key === "Escape") {
       this.placing = null;
       this.updateArmed();
@@ -414,7 +715,6 @@ class EditorView {
       return;
     }
     if (this.mode !== "idle" || this.selected === undefined) return;
-    if (isTypingTarget(event.target)) return;
 
     const item = this.selectedItem();
     if (!item) return;
@@ -590,17 +890,42 @@ function template(): string {
     <span class="status"></span>
     <span class="dds-metrics"></span>
   </div>
-  <div class="dds-main">
-    <div class="dds-frame">
-      <div class="dds-ruler"></div>
-      <div class="dds-body">
-        <div class="dds-gutter"></div>
-        <div class="dds-canvas"></div>
+  <div class="dds-panes">
+    <div class="dds-side left">
+      <div class="pane-title">レコード様式</div>
+      <div class="dds-outline"></div>
+    </div>
+    <div class="dds-main">
+      <div class="dds-frame">
+        <div class="dds-ruler"></div>
+        <div class="dds-body">
+          <div class="dds-gutter"></div>
+          <div class="dds-canvas"></div>
+        </div>
       </div>
+    </div>
+    <div class="dds-side right">
+      <div class="pane-title">プロパティ</div>
+      <div class="dds-properties"></div>
     </div>
   </div>
   <div class="dds-diagnostics"></div>
 </div>`;
+}
+
+/** 一覧に出す位置の表示。**描かれない項目は理由を出す**（一覧が唯一の手がかりなので）。 */
+function describePlacement(item: OutlineItem): string {
+  if (item.hidden !== undefined) return describeHidden(item.hidden);
+  return `${item.row},${item.column}`;
+}
+
+function describeHidden(hidden: OutlineItem["hidden"]): string {
+  switch (hidden) {
+    case "no-position": return "位置なし";
+    case "invalid-position": return "位置が不正";
+    case "not-displayed": return "画面に出ない用途";
+    default: return "—";
+  }
 }
 
 function text(tag: string, className: string, content: string): HTMLElement {
@@ -626,6 +951,11 @@ function arrowStep(key: string): { row: number; column: number } | undefined {
   }
 }
 
+/** 入力中か。プロパティの入力欄・選択欄にフォーカスがあるとき。 */
 function isTypingTarget(target: EventTarget | null): boolean {
-  return target instanceof HTMLInputElement || target instanceof HTMLTextAreaElement;
+  return (
+    target instanceof HTMLInputElement ||
+    target instanceof HTMLTextAreaElement ||
+    target instanceof HTMLSelectElement
+  );
 }

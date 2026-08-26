@@ -26,6 +26,70 @@ export function writeBackLength(line: string, length: number): string {
   ).trimEnd();
 }
 
+/** 定位置欄に書ける属性。**与えた欄だけ**を書き換える。 */
+export interface ItemAttributePatch {
+  readonly name?: string;
+  readonly length?: number;
+  readonly dataType?: string;
+  readonly decimals?: number;
+  readonly usage?: string;
+}
+
+/**
+ * 定位置欄の属性を書き換えた行を返す。**与えた欄だけ**に触る。
+ *
+ * 名前・型・使用は**大文字に正規化**する（実ソースはすべて大文字で、
+ * 小文字のまま書くと実機のコンパイラの扱いが版に依存する）。
+ * 数値欄は右詰め（原典: 桁数は右寄せで指定しなければなりません）。
+ */
+export function writeBackAttributes(
+  line: string,
+  attributes: ItemAttributePatch
+): string {
+  let next = line;
+
+  if (attributes.name !== undefined) {
+    next = ddsReplaceField(next, DDS_COLUMNS.name, attributes.name.toUpperCase());
+  }
+  if (attributes.length !== undefined) {
+    next = ddsReplaceField(
+      next,
+      DDS_COLUMNS.length,
+      formatNumber(attributes.length, columnWidth(DDS_COLUMNS.length))
+    );
+  }
+  if (attributes.dataType !== undefined) {
+    next = ddsReplaceField(
+      next,
+      DDS_COLUMNS.dataType,
+      attributes.dataType.toUpperCase()
+    );
+  }
+  if (attributes.decimals !== undefined) {
+    next = ddsReplaceField(
+      next,
+      DDS_COLUMNS.decimals,
+      formatNumber(attributes.decimals, columnWidth(DDS_COLUMNS.decimals))
+    );
+  }
+  if (attributes.usage !== undefined) {
+    next = ddsReplaceField(next, DDS_COLUMNS.usage, attributes.usage.toUpperCase());
+  }
+
+  return next.trimEnd();
+}
+
+/**
+ * キーワード欄（45 桁〜）を差し替えた行を返す。
+ *
+ * 定数のリテラルを変えるときに使う。**欄の中身は呼び出し側が組む**
+ * （このファイルは桁の面倒だけを見る）。
+ */
+export function writeBackKeywordArea(line: string, keywords: string): string {
+  return (line.slice(0, DDS_KEYWORD_AREA_START - 1).padEnd(DDS_KEYWORD_AREA_START - 1, " ") +
+    keywords).trimEnd();
+}
+
 /** 追加する項目の指定。桁の意味は `DDS_COLUMNS` に従う。 */
 export interface NewDspfItem {
   readonly kind: "field" | "constant";
