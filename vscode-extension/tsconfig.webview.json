@@ -1,0 +1,22 @@
+{
+  // WebView 側（ブラウザで動くコード）と、単独起動ハーネスの型検査。
+  //
+  // 本体の tsconfig.json とは前提が違う:
+  //   - lib に DOM が要る（本体は Node のみ）。
+  //   - **types を空にして vscode / node の環境型を持ち込まない**。
+  //     これで「WebView から vscode を import する」書き方が型の側から落ちる。
+  // 出力は要らない（実体は esbuild が out/dds-webview へ束ねる）ので noEmit。
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "node",
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "types": [],
+    "strict": true,
+    "noEmit": true,
+    "esModuleInterop": true,
+    "resolveJsonModule": true,
+    "skipLibCheck": true
+  },
+  "include": ["src/dds/webview", "dev"]
+}

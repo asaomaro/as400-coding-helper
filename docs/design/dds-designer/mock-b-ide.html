@@ -1,0 +1,1117 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DDS ビジュアルデザイナ ｜ パターンB モダンIDE統合型</title>
+<style>
+/* ============================================================
+   パレット（ライト既定 / prefers-color-scheme: dark で切替）
+   VSCode Light+ / Dark+ の配色に寄せる
+   ============================================================ */
+:root{
+  --bg:#ffffff;
+  --bg-side:#f3f3f3;
+  --bg-activity:#f8f8f8;
+  --bg-tabbar:#f3f3f3;
+  --bg-tab:#ececec;
+  --bg-tab-active:#ffffff;
+  --bg-panel:#f8f8f8;
+  --bg-input:#ffffff;
+  --bg-hover:rgba(0,0,0,.05);
+  --bg-active:rgba(0,120,212,.12);
+  --fg:#3b3b3b;
+  --fg-strong:#1f1f1f;
+  --fg-muted:#6d6d6d;
+  --fg-faint:#8f8f8f;
+  --border:#e2e2e2;
+  --border-strong:#cfcfcf;
+  --accent:#0078d4;
+  --accent-fg:#ffffff;
+  --warn:#bf5b00;
+  --warn-bg:rgba(191,91,0,.10);
+  --err:#c8321f;
+  --err-bg:rgba(200,50,31,.10);
+  --info:#0a67b1;
+
+  /* キャンバス（画面） */
+  --canvas-bg:#fcfcfd;
+  --canvas-fg:#3b3b3b;
+  --grid-v:rgba(0,0,0,.09);
+  --grid-h:rgba(0,0,0,.045);
+  --ruler-fg:#8a8a8a;
+  --ruler-hl:#0078d4;
+
+  /* アイテム種別色 */
+  --c-const:#9a4f00;      --c-const-bg:rgba(206,145,120,.14);
+  --c-in:#0b5fb0;         --c-in-bg:rgba(11,95,176,.10);
+  --c-out:#0a6e56;        --c-out-bg:rgba(10,110,86,.10);
+  --c-sosi:#8e44c8;       --c-sosi-bg:rgba(142,68,200,.14);
+
+  /* 寸法（桁揃えは ch を使わず px セルで組む） */
+  --cell-w:10px;
+  --cell-h:19px;
+  --fs:14px;
+  --mono:"Cascadia Mono","Consolas","Menlo","DejaVu Sans Mono","BIZ UDGothic","MS Gothic","Noto Sans Mono CJK JP",monospace;
+  --ui:"Segoe UI","Hiragino Kaku Gothic ProN","Yu Gothic UI","Meiryo",system-ui,sans-serif;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#1f1f1f;
+    --bg-side:#181818;
+    --bg-activity:#181818;
+    --bg-tabbar:#181818;
+    --bg-tab:#1f1f1f;
+    --bg-tab-active:#1f1f1f;
+    --bg-panel:#181818;
+    --bg-input:#313131;
+    --bg-hover:rgba(255,255,255,.07);
+    --bg-active:rgba(0,122,204,.28);
+    --fg:#cccccc;
+    --fg-strong:#e8e8e8;
+    --fg-muted:#9d9d9d;
+    --fg-faint:#7a7a7a;
+    --border:#2b2b2b;
+    --border-strong:#3c3c3c;
+    --accent:#0078d4;
+    --accent-fg:#ffffff;
+    --warn:#e2a03f;
+    --warn-bg:rgba(226,160,63,.12);
+    --err:#f14c4c;
+    --err-bg:rgba(241,76,76,.12);
+    --info:#4fc1ff;
+    --canvas-bg:#141719;
+    --canvas-fg:#d4d4d4;
+    --grid-v:rgba(255,255,255,.10);
+    --grid-h:rgba(255,255,255,.05);
+    --ruler-fg:#7f7f7f;
+    --ruler-hl:#4fc1ff;
+    --c-const:#ce9178;      --c-const-bg:rgba(206,145,120,.12);
+    --c-in:#4fc1ff;         --c-in-bg:rgba(79,193,255,.12);
+    --c-out:#4ec9b0;        --c-out-bg:rgba(78,201,176,.12);
+    --c-sosi:#c586c0;       --c-sosi-bg:rgba(197,134,192,.16);
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#1f1f1f; --bg-side:#181818; --bg-activity:#181818; --bg-tabbar:#181818;
+  --bg-tab:#1f1f1f; --bg-tab-active:#1f1f1f; --bg-panel:#181818; --bg-input:#313131;
+  --bg-hover:rgba(255,255,255,.07); --bg-active:rgba(0,122,204,.28);
+  --fg:#cccccc; --fg-strong:#e8e8e8; --fg-muted:#9d9d9d; --fg-faint:#7a7a7a;
+  --border:#2b2b2b; --border-strong:#3c3c3c;
+  --warn:#e2a03f; --warn-bg:rgba(226,160,63,.12);
+  --err:#f14c4c; --err-bg:rgba(241,76,76,.12); --info:#4fc1ff;
+  --canvas-bg:#141719; --canvas-fg:#d4d4d4;
+  --grid-v:rgba(255,255,255,.10); --grid-h:rgba(255,255,255,.05);
+  --ruler-fg:#7f7f7f; --ruler-hl:#4fc1ff;
+  --c-const:#ce9178; --c-const-bg:rgba(206,145,120,.12);
+  --c-in:#4fc1ff;    --c-in-bg:rgba(79,193,255,.12);
+  --c-out:#4ec9b0;   --c-out-bg:rgba(78,201,176,.12);
+  --c-sosi:#c586c0;  --c-sosi-bg:rgba(197,134,192,.16);
+}
+
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{
+  background:var(--bg); color:var(--fg);
+  font-family:var(--ui); font-size:13px; line-height:1.5;
+  -webkit-font-smoothing:antialiased;
+}
+button{font-family:inherit;font-size:inherit;color:inherit}
+
+/* ---------- 全体レイアウト ---------- */
+.wrap{padding:14px;max-width:1560px;margin:0 auto}
+.app{
+  border:1px solid var(--border-strong); border-radius:8px; overflow:hidden;
+  box-shadow:0 8px 30px rgba(0,0,0,.10);
+  display:grid; grid-template-rows:auto minmax(0,1fr) auto auto;
+  height:clamp(720px, 90vh, 1020px);
+  background:var(--bg);
+}
+.titlebar{
+  height:34px; display:flex; align-items:center; gap:10px; padding:0 10px;
+  background:var(--bg-tabbar); border-bottom:1px solid var(--border);
+  color:var(--fg-muted); font-size:12px;
+}
+.tl-dots{display:flex;gap:6px;margin-right:4px}
+.tl-dots i{width:11px;height:11px;border-radius:50%;background:var(--border-strong);display:block}
+.tl-title{flex:1;text-align:center;color:var(--fg-muted)}
+.tl-btn{
+  border:1px solid var(--border-strong); background:transparent; border-radius:4px;
+  padding:2px 8px; font-size:11px; cursor:pointer; color:var(--fg-muted);
+}
+.tl-btn:hover{background:var(--bg-hover);color:var(--fg-strong)}
+
+.body{display:grid; grid-template-columns:44px 252px minmax(0,1fr) 306px; min-height:0}
+
+/* ---------- アクティビティバー ---------- */
+.activity{
+  background:var(--bg-activity); border-right:1px solid var(--border);
+  display:flex; flex-direction:column; align-items:center; padding-top:6px; gap:2px;
+}
+.act{
+  width:44px;height:44px;display:grid;place-items:center;color:var(--fg-faint);
+  border-left:2px solid transparent; cursor:pointer;
+}
+.act:hover{color:var(--fg-strong)}
+.act.on{color:var(--fg-strong); border-left-color:var(--accent)}
+.act svg{width:19px;height:19px;fill:none;stroke:currentColor;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
+
+/* ---------- サイドバー共通 ---------- */
+aside{background:var(--bg-side); min-height:0; display:flex; flex-direction:column; overflow:auto}
+aside.left{border-right:1px solid var(--border)}
+aside.right{border-left:1px solid var(--border)}
+.sec-title{
+  font-size:10.5px; letter-spacing:.09em; text-transform:uppercase; color:var(--fg-muted);
+  padding:9px 10px 6px; display:flex; align-items:center; gap:6px; user-select:none;
+}
+.sec-title .chev{font-size:9px;color:var(--fg-faint)}
+.sec-title .grow{flex:1}
+.sec-title .mini{
+  border:none;background:transparent;cursor:pointer;color:var(--fg-faint);
+  padding:1px 4px;border-radius:3px;font-size:12px;
+}
+.sec-title .mini:hover{background:var(--bg-hover);color:var(--fg-strong)}
+.sec{border-bottom:1px solid var(--border); padding-bottom:8px}
+
+/* ---------- レコード様式ツリー ---------- */
+.tree{font-size:12.5px}
+.node{
+  display:flex; align-items:center; gap:6px; padding:3px 10px 3px 8px; cursor:pointer;
+  border-left:2px solid transparent;
+}
+.node:hover{background:var(--bg-hover)}
+.node.rec{font-weight:600}
+.node.rec.active{background:var(--bg-active); border-left-color:var(--accent)}
+.node.rec.inactive{color:var(--fg-faint); font-weight:500}
+.node .chev{width:10px; color:var(--fg-faint); font-size:9px}
+.radio{
+  width:12px;height:12px;border-radius:50%;border:1.5px solid var(--fg-faint);
+  display:grid;place-items:center;flex:0 0 auto;
+}
+.radio.on{border-color:var(--accent)}
+.radio.on::after{content:"";width:6px;height:6px;border-radius:50%;background:var(--accent)}
+.node .nm{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tag{
+  font-size:9.5px; padding:0 5px; border-radius:8px; border:1px solid var(--border-strong);
+  color:var(--fg-muted); white-space:nowrap;
+}
+.tag.act{border-color:var(--accent); color:var(--accent)}
+.eye{
+  border:none;background:transparent;cursor:pointer;color:var(--fg-faint);
+  padding:1px 2px;border-radius:3px;display:grid;place-items:center;flex:0 0 auto;
+}
+.eye:hover{background:var(--bg-hover);color:var(--fg-strong)}
+.eye svg{width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:1.4}
+.eye.off{opacity:.45}
+.child{display:flex;align-items:center;gap:6px;padding:2px 10px 2px 30px;cursor:pointer;font-size:12px}
+.child:hover{background:var(--bg-hover)}
+.child.sel{background:var(--bg-active); outline:1px solid var(--accent); outline-offset:-1px}
+.child .dot{width:7px;height:7px;border-radius:2px;flex:0 0 auto}
+.child .pos{color:var(--fg-faint); font-family:var(--mono); font-size:10.5px}
+.child .lbl{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.grp{padding:3px 10px 2px 22px;color:var(--fg-muted);font-size:11px}
+.node.ghosted, .child.ghosted{opacity:.5}
+.child.ghosted{cursor:not-allowed}
+
+/* ---------- 条件標識 ---------- */
+.ind-row{display:flex;align-items:center;gap:8px;padding:4px 10px;font-size:12px}
+.ind-row:hover{background:var(--bg-hover)}
+.ind-no{font-family:var(--mono);font-weight:700;color:var(--fg-strong);width:22px}
+.ind-desc{flex:1;color:var(--fg-muted);font-size:11px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ind-cnt{font-size:10px;color:var(--fg-faint);font-family:var(--mono)}
+.sw{position:relative;width:28px;height:15px;flex:0 0 auto;cursor:pointer}
+.sw input{position:absolute;opacity:0;width:100%;height:100%;margin:0;cursor:pointer}
+.sw .track{
+  position:absolute;inset:0;border-radius:8px;background:var(--border-strong);
+  transition:background .15s;
+}
+.sw .knob{
+  position:absolute;top:2px;left:2px;width:11px;height:11px;border-radius:50%;
+  background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.35);transition:left .15s;
+}
+.sw input:checked ~ .track{background:var(--accent)}
+.sw input:checked ~ .knob{left:15px}
+.hint{padding:6px 10px 2px;font-size:10.5px;color:var(--fg-faint);line-height:1.55}
+
+/* ---------- エディタ領域 ---------- */
+.editor{display:flex;flex-direction:column;min-width:0;min-height:0;background:var(--bg)}
+.tabbar{
+  display:flex;align-items:stretch;background:var(--bg-tabbar);
+  border-bottom:1px solid var(--border);height:35px;
+}
+.tab{
+  display:flex;align-items:center;gap:7px;padding:0 12px;font-size:12.5px;
+  background:var(--bg-tab);border-right:1px solid var(--border);color:var(--fg-muted);cursor:pointer;
+}
+.tab.on{
+  background:var(--bg-tab-active);color:var(--fg-strong);
+  box-shadow:inset 0 2px 0 0 var(--accent); border-bottom:1px solid var(--bg-tab-active);
+}
+.tab .ico{color:var(--c-in)}
+.tab .x{color:var(--fg-faint);font-size:13px}
+.tabbar .spacer{flex:1;border-bottom:1px solid transparent}
+.tabbar .acts{display:flex;align-items:center;gap:6px;padding:0 10px}
+.ghost-btn{
+  border:1px solid var(--border-strong);background:transparent;border-radius:4px;
+  padding:3px 9px;font-size:11.5px;cursor:pointer;display:flex;align-items:center;gap:5px;
+  color:var(--fg-muted);
+}
+.ghost-btn:hover{background:var(--bg-hover);color:var(--fg-strong)}
+.ghost-btn svg{width:12px;height:12px;fill:none;stroke:currentColor;stroke-width:1.6}
+
+.toolbar{
+  display:flex;align-items:center;gap:6px;padding:6px 10px;flex-wrap:wrap;
+  border-bottom:1px solid var(--border);background:var(--bg);
+}
+.tgroup{display:flex;border:1px solid var(--border-strong);border-radius:5px;overflow:hidden}
+.tb{
+  border:none;background:transparent;padding:4px 9px;cursor:pointer;font-size:11.5px;
+  display:flex;align-items:center;gap:5px;color:var(--fg-muted);white-space:nowrap;
+}
+.tb + .tb{border-left:1px solid var(--border)}
+.tb:hover{background:var(--bg-hover);color:var(--fg-strong)}
+.tb.on{background:var(--accent);color:var(--accent-fg)}
+.tb svg{width:13px;height:13px;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+.sep{width:1px;height:20px;background:var(--border);margin:0 3px}
+.tb-lbl{font-size:11px;color:var(--fg-faint);margin-left:2px}
+
+/* ---------- キャンバス ---------- */
+.canvas-scroll{flex:1;min-height:0;overflow:auto;padding:16px 18px;background:var(--bg)}
+.screen{
+  display:inline-block; background:var(--canvas-bg); color:var(--canvas-fg);
+  border:1px solid var(--border-strong); border-radius:6px; padding:8px 10px 10px;
+  font-family:var(--mono); font-size:var(--fs);
+  box-shadow:0 2px 10px rgba(0,0,0,.06);
+}
+.scr-cap{
+  display:flex;align-items:center;gap:8px;font-family:var(--ui);font-size:10.5px;
+  color:var(--fg-faint);padding:0 2px 6px;
+}
+.scr-cap b{color:var(--fg-muted);font-weight:600}
+.grid-area{display:grid;grid-template-columns:auto auto auto}
+.corner{width:30px}
+.ruler{display:flex;height:var(--cell-h);color:var(--ruler-fg);user-select:none}
+.ruler .rc{
+  flex:0 0 auto;width:var(--cell-w);text-align:center;
+  line-height:var(--cell-h);font-size:calc(var(--fs) - 2px);
+}
+.ruler .rc.num{color:var(--fg-muted);font-weight:700}
+.ruler .rc.hl{color:var(--ruler-hl);background:rgba(0,120,212,.14);border-radius:2px}
+.gutter{display:flex;flex-direction:column;width:30px;user-select:none}
+.gutter .gn{
+  height:var(--cell-h);line-height:var(--cell-h);text-align:right;padding-right:6px;
+  font-size:calc(var(--fs) - 2px);color:var(--ruler-fg);
+}
+.gutter .gn.hl{color:var(--ruler-hl);font-weight:700}
+.gutter .gn.warn{color:var(--warn)}
+.rgutter{width:22px;display:flex;flex-direction:column}
+.rgutter .gm{height:var(--cell-h);line-height:var(--cell-h);text-align:center;font-size:11px}
+
+.grid{
+  position:relative;
+  width:calc(var(--cell-w) * 80);
+  height:calc(var(--cell-h) * 24);
+  background-image:
+    repeating-linear-gradient(to right, var(--grid-v) 0 1px, transparent 1px calc(var(--cell-w) * 10)),
+    repeating-linear-gradient(to bottom, var(--grid-h) 0 1px, transparent 1px var(--cell-h));
+  outline:1px solid var(--border);
+}
+.layer{position:absolute;inset:0}
+.layer.items{z-index:2}
+.layer.diag{z-index:3;pointer-events:none}
+.layer.sel{z-index:4}
+.layer.guide{z-index:1;pointer-events:none}
+
+.item{
+  position:absolute;display:flex;align-items:center;height:var(--cell-h);
+  white-space:nowrap;border-radius:2px;cursor:default;
+}
+.item .cel{
+  flex:0 0 auto;height:var(--cell-h);line-height:var(--cell-h);
+  text-align:center;overflow:hidden;
+}
+.item.k-const{color:var(--c-const);background:var(--c-const-bg)}
+.item.k-in{color:var(--c-in);background:var(--c-in-bg);box-shadow:inset 0 -1px 0 0 currentColor}
+.item.k-out{color:var(--c-out);background:var(--c-out-bg)}
+.item .cel.sosi{color:var(--c-sosi);background:var(--c-sosi-bg);font-weight:700;opacity:.95}
+.item:not(.ghost):hover{outline:1px solid var(--accent);outline-offset:1px;cursor:move;filter:brightness(1.06)}
+.item.ghost{opacity:.42;pointer-events:none;filter:grayscale(.35)}
+.item.clip{
+  border-right:2px solid var(--err);
+  -webkit-mask-image:linear-gradient(to right,#000 calc(100% - 14px),rgba(0,0,0,.35));
+          mask-image:linear-gradient(to right,#000 calc(100% - 14px),rgba(0,0,0,.35));
+}
+.indbadge{
+  position:absolute;left:-1px;top:-8px;font-family:var(--ui);font-size:8.5px;font-weight:700;
+  background:var(--accent);color:var(--accent-fg);border-radius:3px;padding:0 3px;line-height:11px;
+}
+
+/* 診断オーバーレイ */
+.ovl{
+  position:absolute;height:var(--cell-h);border:1px solid var(--err);border-radius:2px;
+  background:repeating-linear-gradient(45deg,var(--err-bg) 0 4px,transparent 4px 8px);
+}
+.ovl.edge{border-style:dashed}
+
+/* スナップガイド */
+.snap{position:absolute;width:0;border-left:1px dashed var(--accent);opacity:.7}
+.snap span{
+  position:absolute;top:-15px;left:-16px;font-family:var(--ui);font-size:9px;color:var(--accent);
+  white-space:nowrap;background:var(--bg);padding:0 3px;border-radius:3px;
+}
+
+/* 選択枠 */
+.selbox{position:absolute;height:var(--cell-h);outline:1.5px solid var(--accent);outline-offset:1px;border-radius:1px}
+.selbox .h{
+  position:absolute;width:6px;height:6px;background:var(--bg);border:1.5px solid var(--accent);border-radius:1px;
+}
+.selbox .h.nw{left:-4px;top:-4px;cursor:nwse-resize}
+.selbox .h.n {left:calc(50% - 3px);top:-4px;cursor:ns-resize}
+.selbox .h.ne{right:-4px;top:-4px;cursor:nesw-resize}
+.selbox .h.w {left:-4px;top:calc(50% - 3px);cursor:ew-resize;background:var(--accent)}
+.selbox .h.e {right:-4px;top:calc(50% - 3px);cursor:ew-resize;background:var(--accent)}
+.selbox .h.sw{left:-4px;bottom:-4px;cursor:nesw-resize}
+.selbox .h.s {left:calc(50% - 3px);bottom:-4px;cursor:ns-resize}
+.selbox .h.se{right:-4px;bottom:-4px;cursor:nwse-resize}
+.selbox .badge{
+  position:absolute;top:-19px;left:-2px;background:var(--accent);color:var(--accent-fg);
+  font-family:var(--ui);font-size:9.5px;padding:1px 6px;border-radius:3px;white-space:nowrap;
+}
+.selbox .meas{
+  position:absolute;bottom:-17px;left:0;font-family:var(--mono);font-size:9.5px;color:var(--accent);
+  white-space:nowrap;background:var(--canvas-bg);padding:0 3px;
+}
+
+/* 5250 配色モード */
+.screen.term{
+  --canvas-bg:#07100a; --canvas-fg:#41ff87;
+  --grid-v:rgba(65,255,135,.14); --grid-h:rgba(65,255,135,.06);
+  --ruler-fg:#2f8f57;
+  --c-const:#41ff87; --c-const-bg:transparent;
+  --c-in:#ffffff;    --c-in-bg:rgba(255,255,255,.10);
+  --c-out:#8fe9ff;   --c-out-bg:transparent;
+  --c-sosi:#ffd166;  --c-sosi-bg:transparent;
+}
+
+/* 凡例／注記 */
+.legend{
+  display:flex;align-items:center;gap:14px;flex-wrap:wrap;
+  padding:7px 18px;border-top:1px solid var(--border);font-size:11px;color:var(--fg-muted);
+}
+.lg{display:flex;align-items:center;gap:5px}
+.sw-box{width:11px;height:11px;border-radius:2px;display:inline-block}
+.callout{
+  margin-left:auto;display:flex;align-items:center;gap:8px;
+  border:1px dashed var(--c-sosi);border-radius:5px;padding:3px 9px;
+  background:var(--c-sosi-bg);color:var(--fg);font-size:11px;
+}
+.callout code{font-family:var(--mono);color:var(--c-sosi);font-weight:700}
+
+/* ---------- 右：プロパティ ---------- */
+.prop-head{
+  padding:10px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px;
+}
+.prop-head .ic{
+  width:22px;height:22px;border-radius:4px;display:grid;place-items:center;
+  background:var(--c-in-bg);color:var(--c-in);font-family:var(--mono);font-weight:700;font-size:12px;
+}
+.prop-head .t1{font-weight:600;color:var(--fg-strong);font-size:13px}
+.prop-head .t2{font-size:10.5px;color:var(--fg-faint)}
+.prop-head .grow{flex:1}
+.row{display:flex;align-items:center;gap:8px;padding:4px 10px}
+.row label{width:74px;flex:0 0 auto;color:var(--fg-muted);font-size:11.5px}
+.row .ctl{flex:1;min-width:0}
+input[type=text],input[type=number],select{
+  width:100%;background:var(--bg-input);color:var(--fg);border:1px solid var(--border-strong);
+  border-radius:3px;padding:3px 6px;font-size:12px;font-family:var(--mono);
+}
+input:focus,select:focus{outline:1px solid var(--accent);border-color:var(--accent)}
+.seg{display:flex;border:1px solid var(--border-strong);border-radius:3px;overflow:hidden}
+.seg button{
+  flex:1;border:none;background:transparent;padding:3px 0;cursor:pointer;font-size:11px;color:var(--fg-muted);
+}
+.seg button + button{border-left:1px solid var(--border)}
+.seg button.on{background:var(--accent);color:var(--accent-fg)}
+.duo{display:flex;gap:6px}
+.ro{
+  font-family:var(--mono);font-size:12px;color:var(--fg-muted);
+  background:var(--bg-hover);border-radius:3px;padding:3px 6px;
+}
+.chips{display:flex;flex-wrap:wrap;gap:5px;padding:2px 10px 6px}
+.chip{
+  display:flex;align-items:center;gap:5px;font-family:var(--mono);font-size:11px;
+  border:1px solid var(--border-strong);border-radius:12px;padding:1px 5px 1px 9px;background:var(--bg-input);
+}
+.chip b{font-weight:600;color:var(--c-out)}
+.chip .x{color:var(--fg-faint);cursor:pointer;font-size:12px;padding:0 2px}
+.chip.add{border-style:dashed;color:var(--fg-muted);cursor:pointer;padding:1px 9px}
+.dds-prev{
+  margin:4px 10px 10px;border:1px solid var(--border);border-radius:4px;overflow-x:auto;
+  background:var(--canvas-bg);
+}
+.dds-prev .pv{
+  font-family:var(--mono);font-size:11.5px;white-space:pre;padding:4px 6px;color:var(--fg);
+  line-height:1.55;
+}
+.dds-prev .pv .r{color:var(--fg-faint)}
+.dds-prev .pv .nm{color:var(--c-in);font-weight:700}
+.dds-prev .pv .num{color:var(--c-out)}
+.dds-prev .pv .kw{color:var(--c-const)}
+.tip{padding:0 10px 10px;font-size:10.5px;color:var(--fg-faint);line-height:1.6}
+.kbd{
+  font-family:var(--mono);font-size:10px;border:1px solid var(--border-strong);border-bottom-width:2px;
+  border-radius:3px;padding:0 4px;color:var(--fg-muted);
+}
+
+/* ---------- 診断パネル ---------- */
+.panel{border-top:1px solid var(--border);background:var(--bg-panel);max-height:186px;display:flex;flex-direction:column}
+.panel-tabs{display:flex;align-items:center;gap:14px;padding:6px 12px;border-bottom:1px solid var(--border)}
+.ptab{font-size:11px;letter-spacing:.05em;color:var(--fg-faint);cursor:pointer;padding-bottom:3px;border-bottom:1px solid transparent}
+.ptab.on{color:var(--fg-strong);border-bottom-color:var(--accent)}
+.pcount{margin-left:auto;display:flex;gap:10px;font-size:11px;color:var(--fg-muted);font-family:var(--mono)}
+.diag-list{overflow:auto;padding:2px 0}
+.diag{
+  display:grid;grid-template-columns:18px 128px 1fr 78px;gap:10px;align-items:center;
+  padding:4px 12px;font-size:11.5px;cursor:pointer;border-left:2px solid transparent;
+}
+.diag:hover{background:var(--bg-hover);border-left-color:var(--border-strong)}
+.diag .sev{text-align:center}
+.diag .loc{font-family:var(--mono);font-size:11px;color:var(--fg-muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.diag .msg{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.diag .code{font-family:var(--mono);font-size:10.5px;color:var(--fg-faint);text-align:right}
+.diag.w .sev{color:var(--warn)}
+.diag.i .sev{color:var(--info)}
+.diag.w .msg b{color:var(--warn)}
+
+/* ---------- ステータスバー ---------- */
+.status{
+  height:24px;background:var(--accent);color:var(--accent-fg);
+  display:flex;align-items:center;gap:0;font-size:11px;padding:0 4px;
+}
+.st{padding:0 8px;height:100%;display:flex;align-items:center;gap:5px;cursor:pointer;white-space:nowrap}
+.st:hover{background:rgba(255,255,255,.15)}
+.st.grow{flex:1;cursor:default}
+.st.grow:hover{background:transparent}
+
+/* ---------- 説明 ---------- */
+.note{
+  margin:14px auto 26px;max-width:1560px;border:1px solid var(--border);border-radius:8px;
+  padding:14px 18px;background:var(--bg-side);
+}
+.note h2{margin:0 0 4px;font-size:13.5px;color:var(--fg-strong)}
+.note h2 span{font-size:11px;color:var(--fg-faint);font-weight:400;margin-left:8px}
+.note ul{margin:8px 0 0;padding-left:18px;columns:2;column-gap:32px;font-size:12px;color:var(--fg-muted);line-height:1.85}
+.note li{break-inside:avoid}
+.note b{color:var(--fg)}
+.note .tradeoff{margin-top:10px;padding-top:9px;border-top:1px dashed var(--border-strong);font-size:11.5px;color:var(--fg-faint)}
+@media (max-width:1200px){ .note ul{columns:1} }
+</style>
+</head>
+<body>
+<div class="wrap">
+<div class="app">
+
+  <!-- ===== タイトルバー ===== -->
+  <div class="titlebar">
+    <div class="tl-dots"><i></i><i></i><i></i></div>
+    <div class="tl-title">EMPMNT01.dspf — QDDSSRC — as400-coding-helper — Visual Studio Code</div>
+    <button class="tl-btn" id="themeBtn" title="ライト / ダーク切替">◐ テーマ</button>
+  </div>
+
+  <div class="body">
+
+    <!-- ===== アクティビティバー ===== -->
+    <nav class="activity">
+      <div class="act" title="エクスプローラー"><svg viewBox="0 0 24 24"><path d="M4 4h6l2 2h8v13H4z"/></svg></div>
+      <div class="act" title="検索"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6"/><path d="M20 20l-4.5-4.5"/></svg></div>
+      <div class="act" title="ソース管理"><svg viewBox="0 0 24 24"><circle cx="7" cy="6" r="2.4"/><circle cx="7" cy="18" r="2.4"/><circle cx="17" cy="12" r="2.4"/><path d="M7 8.4v7.2M9.4 6H14a1 1 0 0 1 1 1v3"/></svg></div>
+      <div class="act on" title="DDS デザイナ"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="1.5"/><path d="M3 9h18M8 9v11"/></svg></div>
+      <div class="act" title="拡張機能"><svg viewBox="0 0 24 24"><rect x="4" y="4" width="7" height="7"/><rect x="13" y="4" width="7" height="7"/><rect x="4" y="13" width="7" height="7"/><path d="M13 16.5h7M16.5 13v7"/></svg></div>
+    </nav>
+
+    <!-- ===== 左サイドバー ===== -->
+    <aside class="left">
+
+      <div class="sec">
+        <div class="sec-title">
+          <span class="chev">▾</span><span class="grow">レコード様式 — EMPMNT01</span>
+          <button class="mini" title="様式を追加">＋</button>
+          <button class="mini" title="折りたたみ">⌄</button>
+        </div>
+        <div class="tree" id="tree"></div>
+      </div>
+
+      <div class="sec">
+        <div class="sec-title"><span class="chev">▾</span><span class="grow">条件標識</span><button class="mini" title="標識を追加">＋</button></div>
+        <div id="indList"></div>
+        <div class="hint">標識を切り替えるとキャンバスの描画が即時に変わります（<b>50</b> を OFF にすると DEPTNM が消えます）。実行時に見える組み合わせを、ソースを書き換えずに確認できます。</div>
+      </div>
+
+      <div class="sec" style="border-bottom:none">
+        <div class="sec-title"><span class="chev">▾</span><span class="grow">ファイル・レベル キーワード</span></div>
+        <div class="child" style="padding-left:22px"><span class="dot" style="background:var(--c-const)"></span><span class="lbl" style="font-family:var(--mono);font-size:11px">DSPSIZ(24 80 *DS3)</span></div>
+        <div class="child" style="padding-left:22px"><span class="dot" style="background:var(--c-const)"></span><span class="lbl" style="font-family:var(--mono);font-size:11px">CA03(03 '終了')</span></div>
+      </div>
+    </aside>
+
+    <!-- ===== 中央：エディタ ===== -->
+    <main class="editor">
+
+      <!-- タブバー -->
+      <div class="tabbar">
+        <div class="tab on">
+          <span class="ico">▦</span><span>EMPMNT01.dspf</span><span style="color:var(--accent)">●</span><span class="x">✕</span>
+        </div>
+        <div class="tab"><span class="ico" style="color:var(--c-out)">▤</span><span>EMPMNT01.rpgle</span><span class="x">✕</span></div>
+        <div class="spacer"></div>
+        <div class="acts">
+          <button class="ghost-btn" title="このファイルをテキストエディタで開く">
+            <svg viewBox="0 0 24 24"><path d="M5 4h9l5 5v11H5z"/><path d="M8 12h7M8 16h7"/></svg>
+            テキストで開く
+          </button>
+          <button class="ghost-btn" title="5250 プレビュー"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="12" rx="1"/><path d="M9 20h6"/></svg>プレビュー</button>
+        </div>
+      </div>
+
+      <!-- ツールバー -->
+      <div class="toolbar">
+        <div class="tgroup" id="modes">
+          <button class="tb on" data-mode="sel"><svg viewBox="0 0 24 24"><path d="M6 3l12 8-5 1.2 3 6-2.4 1.2-3-6L6 17z"/></svg>選択</button>
+          <button class="tb" data-mode="fld"><svg viewBox="0 0 24 24"><rect x="3" y="8" width="12" height="8" rx="1"/><path d="M18 9v6M15 12h6"/></svg>フィールド追加</button>
+          <button class="tb" data-mode="con"><svg viewBox="0 0 24 24"><path d="M5 6h11M10.5 6v12M7.5 18h6"/><path d="M19 12v6M16 15h6"/></svg>定数追加</button>
+        </div>
+        <div class="sep"></div>
+        <div class="tgroup">
+          <button class="tb on" id="btnGrid"><svg viewBox="0 0 24 24"><path d="M3 3h18v18H3z"/><path d="M9 3v18M15 3v18M3 9h18M3 15h18"/></svg>グリッド</button>
+          <button class="tb on" id="btnSnap"><svg viewBox="0 0 24 24"><path d="M12 3v18M3 12h18"/></svg>スナップ</button>
+          <button class="tb on" id="btnGhost"><svg viewBox="0 0 24 24"><path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="2.5"/></svg>非アクティブ様式</button>
+          <button class="tb" id="btnTerm"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="14" rx="1.5"/><path d="M7 9l3 2.5L7 14M12 14h5"/></svg>5250 配色</button>
+        </div>
+        <div class="sep"></div>
+        <span class="tb-lbl">ズーム</span>
+        <div class="tgroup" id="zoom">
+          <button class="tb" data-z="9">90%</button>
+          <button class="tb on" data-z="10">100%</button>
+          <button class="tb" data-z="12">125%</button>
+          <button class="tb" data-z="15">150%</button>
+        </div>
+        <div class="sep"></div>
+        <span class="tb-lbl" id="modeHint">クリックで選択 / ドラッグで移動 / 端をドラッグで長さ変更</span>
+      </div>
+
+      <!-- キャンバス -->
+      <div class="canvas-scroll">
+        <div class="screen" id="screen">
+          <div class="scr-cap">
+            <b>EMPMNT</b> <span>（アクティブ様式）</span><span>·</span>
+            <span>DSPSIZ 24 × 80 <b>*DS3</b></span><span>·</span>
+            <span>CCSID 5035（SO/SI 表示 ON）</span>
+          </div>
+          <div class="grid-area">
+            <div class="corner"></div>
+            <div class="ruler" id="ruler"></div>
+            <div></div>
+            <div class="gutter" id="gutter"></div>
+            <div class="grid" id="grid">
+              <div class="layer guide" id="lGuide"></div>
+              <div class="layer items" id="lItems"></div>
+              <div class="layer diag" id="lDiag"></div>
+              <div class="layer sel" id="lSel"></div>
+            </div>
+            <div class="rgutter" id="rgutter"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 凡例 -->
+      <div class="legend">
+        <span class="lg"><i class="sw-box" style="background:var(--c-const-bg);border:1px solid var(--c-const)"></i>定数</span>
+        <span class="lg"><i class="sw-box" style="background:var(--c-in-bg);border:1px solid var(--c-in)"></i>入力可 (B/I)</span>
+        <span class="lg"><i class="sw-box" style="background:var(--c-out-bg);border:1px solid var(--c-out)"></i>出力のみ (O)</span>
+        <span class="lg"><i class="sw-box" style="background:var(--c-sosi-bg);border:1px solid var(--c-sosi)"></i>SO/SI</span>
+        <span class="lg" style="color:var(--fg-faint)">プレースホルダ: 英数字=<b style="font-family:var(--mono)">X</b> / 数値=<b style="font-family:var(--mono)">9</b></span>
+        <span class="callout">桁勘定 ▸ <code>{社員マスタ保守}</code> = SO 1 + 全角 7 字 × 2 + SI 1 = <b id="sosiCalc">16 桁</b>（2〜17 桁）</span>
+      </div>
+    </main>
+
+    <!-- ===== 右サイドバー：プロパティ ===== -->
+    <aside class="right">
+      <div class="prop-head">
+        <div class="ic">A</div>
+        <div>
+          <div class="t1">EMPNAM</div>
+          <div class="t2">フィールド · レコード様式 EMPMNT</div>
+        </div>
+        <div class="grow"></div>
+        <button class="mini" title="削除" style="border:none;background:transparent;color:var(--fg-faint);cursor:pointer;font-size:14px">🗑</button>
+      </div>
+
+      <div class="sec">
+        <div class="sec-title"><span class="chev">▾</span>基本</div>
+        <div class="row"><label>名前</label><div class="ctl"><input type="text" value="EMPNAM"></div></div>
+        <div class="row"><label>型</label><div class="ctl">
+          <select>
+            <option selected>A — 英数字</option>
+            <option>S — ゾーン10進</option>
+            <option>Y — 日付編集</option>
+            <option>O — DBCS 混在 (OPEN)</option>
+            <option>J — DBCS 専用 (ONLY)</option>
+          </select></div></div>
+        <div class="row"><label>長さ / 小数</label><div class="ctl duo">
+          <input type="number" value="20"><input type="text" value="—" style="opacity:.55">
+        </div></div>
+        <div class="row"><label>使用</label><div class="ctl seg">
+          <button>I 入力</button><button>O 出力</button><button class="on">B 両用</button><button>H 隠し</button>
+        </div></div>
+      </div>
+
+      <div class="sec">
+        <div class="sec-title"><span class="chev">▾</span>位置（画面）</div>
+        <div class="row"><label>行 / 桁</label><div class="ctl duo">
+          <input type="number" value="4"><input type="number" value="14">
+        </div></div>
+        <div class="row"><label>占有</label><div class="ctl ro">14 〜 33 桁（20 桁）</div></div>
+        <div class="row"><label>右端余裕</label><div class="ctl ro">47 桁</div></div>
+        <div class="row"><label>DDS 桁</label><div class="ctl ro">39-41=行 / 42-44=桁</div></div>
+      </div>
+
+      <div class="sec">
+        <div class="sec-title"><span class="chev">▾</span><span class="grow">キーワード</span><button class="mini" title="キーワードを追加">＋</button></div>
+        <div class="chips">
+          <span class="chip"><b>DSPATR</b>(UL)<span class="x">✕</span></span>
+          <span class="chip"><b>CHECK</b>(LC)<span class="x">✕</span></span>
+          <span class="chip add">＋ キーワード追加</span>
+        </div>
+        <div class="sec-title" style="padding-top:2px"><span class="chev">▾</span>条件標識</div>
+        <div class="chips"><span class="chip add">＋ 条件を追加（例: N50）</span></div>
+      </div>
+
+      <div class="sec-title"><span class="chev">▾</span>DDS ソース プレビュー</div>
+      <div class="dds-prev"><div class="pv"><span class="r">....+....1....+....2....+....3....+....4....+....5
+</span>     A            <span class="nm">EMPNAM</span>        <span class="num">20</span>   B  <span class="num">4</span> <span class="num">14</span><span class="kw">DSPATR(UL)</span>
+     A                                        <span class="kw">CHECK(LC)</span></div></div>
+      <div class="tip">
+        キーワードにフォーカスして <span class="kbd">F1</span> でヘルプ、<span class="kbd">F4</span> でプロンプター。<br>
+        変更は 45 桁目以降の継続行として書き戻され、既存の桁位置・コメントは保持されます。
+      </div>
+    </aside>
+  </div>
+
+  <!-- ===== 診断パネル ===== -->
+  <div class="panel">
+    <div class="panel-tabs">
+      <span class="ptab on">問題</span>
+      <span class="ptab">出力</span>
+      <span class="ptab">DDS コンパイル ログ</span>
+      <span class="pcount" id="pcount"></span>
+    </div>
+    <div class="diag-list" id="diagList"></div>
+  </div>
+
+  <!-- ===== ステータスバー ===== -->
+  <div class="status">
+    <div class="st">▦ DDS デザイナ</div>
+    <div class="st" id="stRec">様式: EMPMNT</div>
+    <div class="st">24×80 *DS3</div>
+    <div class="st" id="stSel">選択: EMPNAM  4行14桁 (20桁)</div>
+    <div class="st grow"></div>
+    <div class="st" id="stDiag">⚠ 2  ⓘ 1</div>
+    <div class="st">ルーラー ON</div>
+    <div class="st">SO/SI 表示 ON</div>
+    <div class="st">CCSID 5035</div>
+    <div class="st">DDS-DSPF</div>
+  </div>
+</div>
+
+<!-- ===== 説明 ===== -->
+<div class="note">
+  <h2>パターンB：モダン IDE 統合型<span>VSCode カスタムエディタとしての DDS ビジュアルデザイナ（画面モックアップ・非動作）</span></h2>
+  <ul>
+    <li><b>3ペイン構成。</b>左で構造を把握（様式ツリー＋条件標識）、中央で直接操作、右でプロパティ編集。Figma 等のデザインツールの操作感をそのまま DDS に持ち込む。</li>
+    <li><b>VSCode に溶け込む。</b>アクティビティバー／タブバー／問題パネル／ステータスバーを再利用し、「テキストで開く」で常に固定長ソースへ戻れる（生成ではなく<b>双方向編集</b>）。</li>
+    <li><b>DBCS の桁勘定が主役。</b>全角は 2 桁、SO/SI は <code>{</code> <code>}</code> で各 1 桁を占有。<code>{社員マスタ保守}</code> は 1+7×2+1 = <b>16 桁</b>。桁揃えは <code>ch</code> ではなく <code>--cell-w</code>(px) を基準に組み、全角セルは <code>calc(var(--cell-w)*2)</code> で明示。</li>
+    <li><b>アクティブ様式は 1 つ。</b>他様式は薄く重ね表示（掴めない）ため、重なりの当たりを見ながら編集できる。条件標識トグルで実行時の見え方を切り替えられる。</li>
+    <li><b>診断はキャンバスと連動。</b>桁溢れ・重なりを画面上のマーク／行番号の ⚠ と下部の「問題」一覧の両方に出し、クリックで該当箇所へジャンプする想定。</li>
+  </ul>
+  <div class="tradeoff"><b>トレードオフ：</b>情報密度が高く、幅 1400px 前後を前提とする（ノート PC の狭い画面ではサイドバーの折りたたみが必須）。また VSCode テーマに寄せるほど「5250 の実機の見た目」からは離れるため、ツールバーの「5250 配色」で切り替えられるようにしている。</div>
+</div>
+</div>
+
+<script>
+(function(){
+"use strict";
+
+/* ---------------- モデル（サンプル DDS を反映） ---------------- */
+/* 定数の seg: [文字列, DBCSか]  → 桁数 = DBCS ? 文字数*2+2(SO/SI) : 文字数 */
+var RECS = [
+  {
+    id:"EMPMNT", kind:"レコード様式", active:true, visible:true,
+    items:[
+      {k:"c", row:1,  col:2,  segs:[["社員マスタ保守",1]]},
+      {k:"c", row:1,  col:65, segs:[["EMPMNT01",0]]},
+      {k:"c", row:3,  col:2,  segs:[["社員番号",1]]},
+      {k:"f", name:"EMPNO",  len:6,  dec:0, dtype:"S", use:"B", row:3, col:14},
+      {k:"c", row:4,  col:2,  segs:[["氏名",1]]},
+      {k:"f", name:"EMPNAM", len:20, dtype:"A", use:"B", row:4, col:14, sel:true},
+      {k:"c", row:5,  col:2,  segs:[["所属部門",1]]},
+      {k:"f", name:"DEPTCD", len:3,  dec:0, dtype:"S", use:"B", row:5, col:14},
+      {k:"f", name:"DEPTNM", len:20, dtype:"A", use:"O", row:5, col:20, ind:"50"},
+      {k:"c", row:23, col:2,  segs:[["F3=",0],["終了",1]]}
+    ]
+  },
+  {
+    id:"EMPSFL", kind:"サブファイル", active:false, visible:true,
+    items:[
+      {k:"f", name:"SELOPT",  len:1,  dtype:"A", use:"B", row:10, col:3},
+      {k:"f", name:"SFLENO",  len:6,  dec:0, dtype:"S", use:"O", row:10, col:6},
+      {k:"f", name:"SFLNAM",  len:20, dtype:"A", use:"O", row:10, col:13},
+      {k:"f", name:"SFLDEPT", len:12, dtype:"A", use:"O", row:10, col:30},
+      {k:"f", name:"SFLRMK",  len:20, dtype:"A", use:"O", row:10, col:68}
+    ]
+  }
+];
+
+var INDS = [
+  {no:"03", desc:"CA03 応答標識（終了）", on:true,  kind:"resp"},
+  {no:"30", desc:"入力エラー時の反転表示", on:false, kind:"cond"},
+  {no:"50", desc:"部門名の表示制御",       on:true,  kind:"cond"},
+  {no:"90", desc:"保護表示 DSPATR(PR)",   on:false, kind:"cond"}
+];
+
+var COLS = 80, ROWS = 24;
+
+/* ---------------- 桁数計算 ---------------- */
+function chars(s){ return Array.from(s).length; }
+function widthOf(it){
+  if(it.k === "f") return it.len;
+  var w = 0;
+  it.segs.forEach(function(sg){
+    w += sg[1] ? (chars(sg[0]) * 2 + 2) : chars(sg[0]);   /* SO 1桁 + 全角×2 + SI 1桁 */
+  });
+  return w;
+}
+function endCol(it){ return it.col + widthOf(it) - 1; }
+function label(it){
+  if(it.k === "f") return it.name;
+  return "'" + it.segs.map(function(s){ return s[0]; }).join("") + "'";
+}
+function cls(it){
+  if(it.k === "c") return "k-const";
+  return (it.use === "O") ? "k-out" : "k-in";
+}
+function indActive(no){
+  for(var i=0;i<INDS.length;i++) if(INDS[i].no === no) return INDS[i].on;
+  return true;
+}
+
+/* ---------------- 診断（全様式・可視状態に依らず算出） ---------------- */
+function diagnostics(){
+  var out = [];
+  RECS.forEach(function(r){
+    r.items.forEach(function(it){
+      var e = endCol(it);
+      if(e > COLS){
+        out.push({sev:"w", code:"DDS7101", rec:r.id, row:it.row, col:it.col,
+          msg:"<b>桁溢れ</b>：" + label(it) + " は " + it.col + " 桁から " + widthOf(it) +
+              " 桁ぶん配置され、右端 " + e + " 桁が画面幅 80 桁を超えます"});
+      }
+    });
+    for(var a=0;a<r.items.length;a++){
+      for(var b=a+1;b<r.items.length;b++){
+        var A = r.items[a], B = r.items[b];
+        if(A.row !== B.row) continue;
+        var s = Math.max(A.col, B.col), e2 = Math.min(endCol(A), endCol(B));
+        if(s <= e2){
+          out.push({sev:"w", code:"DDS7102", rec:r.id, row:A.row, col:s,
+            msg:"<b>重なり</b>：" + label(A) + " と " + label(B) + " が " + s + "〜" + e2 + " 桁で重複しています"});
+        }
+      }
+    }
+  });
+  var t = RECS[0].items[0];
+  out.push({sev:"i", code:"DDS7210", rec:"EMPMNT", row:t.row, col:t.col,
+    msg:"定数 " + label(t) + " は SO/SI を含めて " + widthOf(t) + " 桁（" + t.col + "〜" + endCol(t) +
+        " 桁）を占有します（全角 " + chars(t.segs[0][0]) + " 字 × 2 + SO 1 + SI 1）"});
+  return out;
+}
+
+/* ---------------- 描画 ---------------- */
+function cell(ch, span, extra){
+  var w = (span === 2) ? "calc(var(--cell-w) * 2)" : "var(--cell-w)";
+  return '<span class="cel' + (extra ? " " + extra : "") + '" style="width:' + w + '">' + ch + '</span>';
+}
+
+function renderRuler(sel){
+  var h = "";
+  for(var c = 1; c <= COLS; c++){
+    var ch, k = "";
+    if(c % 10 === 0){ ch = String((c / 10) % 10); k = "num"; }
+    else if(c % 5 === 0){ ch = "+"; }
+    else { ch = "."; }
+    if(sel && c >= sel.col && c <= endCol(sel)) k += " hl";
+    h += '<span class="rc ' + k + '">' + ch + "</span>";
+  }
+  document.getElementById("ruler").innerHTML = h;
+}
+
+function renderGutters(sel, diags){
+  var warnRows = {};
+  diags.forEach(function(d){ if(d.sev === "w"){ warnRows[d.row] = 1; } });
+  var g = "", rg = "";
+  for(var r = 1; r <= ROWS; r++){
+    var k = "";
+    if(sel && r === sel.row) k = "hl";
+    else if(warnRows[r]) k = "warn";
+    g  += '<div class="gn ' + k + '">' + r + "</div>";
+    rg += '<div class="gm" style="color:var(--warn)">' + (warnRows[r] ? "⚠" : "") + "</div>";
+  }
+  document.getElementById("gutter").innerHTML = g;
+  document.getElementById("rgutter").innerHTML = rg;
+}
+
+function itemHTML(it, ghost){
+  var w = widthOf(it);
+  var visW = Math.min(w, COLS - it.col + 1);
+  var clip = (it.col + w - 1 > COLS);
+  var inner = "";
+  if(it.k === "f"){
+    var ch = (it.dtype === "S" || it.dec !== undefined) ? "9" : "X";
+    for(var i = 0; i < it.len; i++) inner += cell(ch, 1);
+  } else {
+    it.segs.forEach(function(sg){
+      if(sg[1]){
+        inner += cell("{", 1, "sosi");
+        Array.from(sg[0]).forEach(function(c){ inner += cell(c, 2); });
+        inner += cell("}", 1, "sosi");
+      } else {
+        Array.from(sg[0]).forEach(function(c){ inner += cell(c, 1); });
+      }
+    });
+  }
+  var badge = (it.ind && !ghost) ? '<span class="indbadge">' + it.ind + "</span>" : "";
+  var tip = label(it) + "  " + it.row + "行" + it.col + "桁  " + w + "桁" +
+            (it.k === "f" ? "  " + it.dtype + (it.dec !== undefined ? " (" + it.dec + ")" : "") + " " + it.use : "");
+  return '<div class="item ' + cls(it) + (ghost ? " ghost" : "") + (clip ? " clip" : "") + '"' +
+         ' style="left:calc(var(--cell-w) * ' + (it.col - 1) + ');top:calc(var(--cell-h) * ' + (it.row - 1) + ');' +
+         'width:calc(var(--cell-w) * ' + visW + ');overflow:hidden" title="' + tip + '">' + badge + inner + "</div>";
+}
+
+var state = { showGhost:true, showGuide:true };
+
+function render(){
+  var sel = null;
+  RECS[0].items.forEach(function(i){ if(i.sel) sel = i; });
+
+  var itemsHTML = "", diagHTML = "";
+  RECS.forEach(function(r){
+    if(!r.visible) return;
+    if(!r.active && !state.showGhost) return;
+    r.items.forEach(function(it){
+      if(it.ind && !indActive(it.ind)) return;             /* 条件標識 OFF → 描画しない */
+      itemsHTML += itemHTML(it, !r.active);
+    });
+  });
+
+  var diags = diagnostics();
+
+  /* キャンバス上の診断マーク（可視様式のみ） */
+  RECS.forEach(function(r){
+    if(!r.visible || (!r.active && !state.showGhost)) return;
+    diags.forEach(function(d){
+      if(d.rec !== r.id) return;
+      if(d.sev !== "w") return;
+      if(d.code === "DDS7101"){
+        diagHTML += '<div class="ovl edge" style="left:calc(var(--cell-w) * 76);top:calc(var(--cell-h) * ' +
+                    (d.row - 1) + ');width:calc(var(--cell-w) * 4)"></div>';
+      } else {
+        var m = /(\d+)〜(\d+) 桁/.exec(d.msg.replace(/<[^>]+>/g, ""));
+        if(m){
+          var s = +m[1], e = +m[2];
+          diagHTML += '<div class="ovl" style="left:calc(var(--cell-w) * ' + (s - 1) +
+                      ');top:calc(var(--cell-h) * ' + (d.row - 1) + ');width:calc(var(--cell-w) * ' + (e - s + 1) + ')"></div>';
+        }
+      }
+    });
+  });
+
+  document.getElementById("lItems").innerHTML = itemsHTML;
+  document.getElementById("lDiag").innerHTML  = diagHTML;
+
+  /* スナップガイド（14 桁でラベル列が揃っている） */
+  document.getElementById("lGuide").innerHTML = state.showGuide
+    ? '<div class="snap" style="left:calc(var(--cell-w) * 13);top:calc(var(--cell-h) * 2);height:calc(var(--cell-h) * 3.4)"><span>14 桁で整列</span></div>'
+    : "";
+
+  /* 選択枠 */
+  var selHTML = "";
+  if(sel){
+    selHTML = '<div class="selbox" style="left:calc(var(--cell-w) * ' + (sel.col - 1) +
+      ');top:calc(var(--cell-h) * ' + (sel.row - 1) + ');width:calc(var(--cell-w) * ' + widthOf(sel) + ')">' +
+      '<span class="badge">' + sel.name + " · A(20) · B</span>" +
+      '<span class="meas">' + sel.row + "行 " + sel.col + "〜" + endCol(sel) + "桁（20桁）</span>" +
+      ["nw","n","ne","w","e","sw","s","se"].map(function(p){ return '<i class="h ' + p + '"></i>'; }).join("") +
+      "</div>";
+  }
+  document.getElementById("lSel").innerHTML = selHTML;
+
+  renderRuler(sel);
+  renderGutters(sel, diags);
+  renderTree(sel);
+  renderDiags(diags);
+
+  var t = RECS[0].items[0];
+  document.getElementById("sosiCalc").textContent = widthOf(t) + " 桁";
+}
+
+/* ---------------- ツリー ---------------- */
+function eyeSVG(on){
+  return on
+    ? '<svg viewBox="0 0 24 24"><path d="M2 12s4-6.5 10-6.5S22 12 22 12s-4 6.5-10 6.5S2 12 2 12z"/><circle cx="12" cy="12" r="2.5"/></svg>'
+    : '<svg viewBox="0 0 24 24"><path d="M2 12s4-6.5 10-6.5c2 0 3.7.7 5 1.6M22 12s-4 6.5-10 6.5c-2 0-3.7-.7-5-1.6"/><path d="M4 20L20 4"/></svg>';
+}
+function renderTree(sel){
+  var h = "";
+  RECS.forEach(function(r){
+    h += '<div class="node rec ' + (r.active ? "active" : "inactive") + '" data-rec="' + r.id + '">' +
+         '<span class="chev">' + (r.active ? "▾" : "▸") + "</span>" +
+         '<span class="radio ' + (r.active ? "on" : "") + '" title="アクティブ様式に指定"></span>' +
+         '<span class="nm">R ' + r.id + "</span>" +
+         '<span class="tag ' + (r.active ? "act" : "") + '">' + (r.active ? "編集中" : r.kind) + "</span>" +
+         '<button class="eye ' + (r.visible ? "" : "off") + '" data-eye="' + r.id + '" title="キャンバス表示の切替">' +
+         eyeSVG(r.visible) + "</button></div>";
+    if(!r.active) return;
+    var cs = r.items.filter(function(i){ return i.k === "c"; });
+    var fs = r.items.filter(function(i){ return i.k === "f"; });
+    h += '<div class="grp">定数 (' + cs.length + ")</div>";
+    cs.forEach(function(it){
+      h += '<div class="child"><span class="dot" style="background:var(--c-const)"></span>' +
+           '<span class="lbl">' + label(it) + "</span>" +
+           '<span class="pos">' + it.row + "," + it.col + "</span></div>";
+    });
+    h += '<div class="grp">フィールド (' + fs.length + ")</div>";
+    fs.forEach(function(it){
+      var col = (it.use === "O") ? "var(--c-out)" : "var(--c-in)";
+      h += '<div class="child ' + (it.sel ? "sel" : "") + '"><span class="dot" style="background:' + col + '"></span>' +
+           '<span class="lbl">' + it.name + '<span style="color:var(--fg-faint);font-size:10.5px"> ' +
+           it.len + (it.dec !== undefined ? "," + it.dec : "") + " " + it.use +
+           (it.ind ? " · " + it.ind : "") + "</span></span>" +
+           '<span class="pos">' + it.row + "," + it.col + "</span></div>";
+    });
+  });
+  /* 非アクティブ様式の子（薄く・掴めない） */
+  var sfl = RECS[1];
+  if(!sfl.active){
+    h += '<div class="grp ghosted" style="opacity:.55">EMPSFL のフィールド (' + sfl.items.length + ") — 表示のみ</div>";
+    sfl.items.forEach(function(it){
+      h += '<div class="child ghosted" title="非アクティブ様式のため編集できません"><span class="dot" style="background:var(--c-out)"></span>' +
+           '<span class="lbl">' + it.name + "</span>" +
+           '<span class="pos">' + it.row + "," + it.col + "</span></div>";
+    });
+  }
+  document.getElementById("tree").innerHTML = h;
+
+  document.getElementById("stRec").textContent = "様式: " + RECS.filter(function(r){ return r.active; }).map(function(r){ return r.id; }).join(", ");
+  if(sel){
+    document.getElementById("stSel").textContent =
+      "選択: " + sel.name + "  " + sel.row + "行" + sel.col + "桁 (" + widthOf(sel) + "桁)";
+  }
+}
+
+/* ---------------- 標識パネル ---------------- */
+function affected(no){
+  var n = 0;
+  RECS.forEach(function(r){ r.items.forEach(function(i){ if(i.ind === no) n++; }); });
+  return n;
+}
+function renderInds(){
+  var h = "";
+  INDS.forEach(function(v, idx){
+    h += '<div class="ind-row"><span class="ind-no">' + v.no + "</span>" +
+         '<span class="ind-desc">' + v.desc + "</span>" +
+         '<span class="ind-cnt">' + (v.kind === "resp" ? "応答" : affected(v.no) + "件") + "</span>" +
+         '<label class="sw"><input type="checkbox" data-ind="' + idx + '"' + (v.on ? " checked" : "") +
+         '><span class="track"></span><span class="knob"></span></label></div>';
+  });
+  document.getElementById("indList").innerHTML = h;
+}
+
+/* ---------------- 診断パネル ---------------- */
+function renderDiags(diags){
+  var w = 0, i = 0;
+  var h = diags.map(function(d){
+    if(d.sev === "w") w++; else i++;
+    return '<div class="diag ' + d.sev + '"><span class="sev">' + (d.sev === "w" ? "⚠" : "ⓘ") + "</span>" +
+           '<span class="loc">' + d.rec + "  " + d.row + "行" + d.col + "桁</span>" +
+           '<span class="msg">' + d.msg + "</span>" +
+           '<span class="code">' + d.code + "</span></div>";
+  }).join("");
+  document.getElementById("diagList").innerHTML = h;
+  document.getElementById("pcount").textContent = "⚠ " + w + " 件 ／ ⓘ " + i + " 件";
+  document.getElementById("stDiag").textContent = "⚠ " + w + "  ⓘ " + i;
+}
+
+/* ---------------- 操作（軽い演出） ---------------- */
+document.getElementById("tree").addEventListener("click", function(e){
+  var eye = e.target.closest("[data-eye]");
+  if(eye){
+    RECS.forEach(function(r){ if(r.id === eye.getAttribute("data-eye")) r.visible = !r.visible; });
+    e.stopPropagation(); render(); return;
+  }
+  var rec = e.target.closest("[data-rec]");
+  if(rec){
+    var id = rec.getAttribute("data-rec");
+    RECS.forEach(function(r){ r.active = (r.id === id); });
+    render();
+  }
+});
+document.getElementById("indList").addEventListener("change", function(e){
+  var t = e.target.getAttribute("data-ind");
+  if(t === null) return;
+  INDS[+t].on = e.target.checked;
+  render();
+});
+document.getElementById("modes").addEventListener("click", function(e){
+  var b = e.target.closest(".tb"); if(!b) return;
+  [].forEach.call(this.querySelectorAll(".tb"), function(x){ x.classList.remove("on"); });
+  b.classList.add("on");
+  var m = b.getAttribute("data-mode");
+  var g = document.getElementById("grid");
+  g.style.cursor = (m === "sel") ? "default" : "crosshair";
+  document.getElementById("modeHint").textContent =
+    m === "sel" ? "クリックで選択 / ドラッグで移動 / 端をドラッグで長さ変更"
+  : m === "fld" ? "画面上をドラッグしてフィールド領域を作成（長さは桁数にスナップ）"
+  : "画面上をクリックして定数を入力（全角入力時は SO/SI を自動挿入）";
+});
+document.getElementById("zoom").addEventListener("click", function(e){
+  var b = e.target.closest(".tb"); if(!b) return;
+  [].forEach.call(this.querySelectorAll(".tb"), function(x){ x.classList.remove("on"); });
+  b.classList.add("on");
+  var w = +b.getAttribute("data-z");
+  document.documentElement.style.setProperty("--cell-w", w + "px");
+  document.documentElement.style.setProperty("--cell-h", Math.round(w * 1.9) + "px");
+  document.documentElement.style.setProperty("--fs", Math.round(w * 1.4) + "px");
+});
+function toggleBtn(id, fn){
+  document.getElementById(id).addEventListener("click", function(){
+    this.classList.toggle("on"); fn(this.classList.contains("on"));
+  });
+}
+toggleBtn("btnGrid", function(on){
+  document.getElementById("grid").style.backgroundImage = on ? "" : "none";
+});
+toggleBtn("btnSnap",  function(on){ state.showGuide = on; render(); });
+toggleBtn("btnGhost", function(on){ state.showGhost = on; render(); });
+toggleBtn("btnTerm",  function(on){ document.getElementById("screen").classList.toggle("term", on); });
+document.getElementById("themeBtn").addEventListener("click", function(){
+  var r = document.documentElement, cur = r.getAttribute("data-theme");
+  var dark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+  var next = cur ? (cur === "dark" ? "light" : "dark") : (dark ? "light" : "dark");
+  r.setAttribute("data-theme", next);
+});
+
+renderInds();
+render();
+})();
+</script>
+</body>
+</html>

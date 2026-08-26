@@ -59,6 +59,14 @@ export interface LogicalUnit {
    * 条件付け欄は複数行にまたがるため、代表行だけでは条件を読めない。
    */
   readonly conditioningLines: readonly string[];
+  /**
+   * この単位に属するソース行（1 始まり・昇順）。**先行する条件行・代表行・キーワード継続行**。
+   *
+   * **削除の単位はこれ**——代表行だけ消すとキーワード継続行が孤児として残る。
+   * 注記行・空行はどの単位にも属さないので**含まれない**（間に挟まっていても消さない）。
+   * したがって連続とは限らない。
+   */
+  readonly sourceLines: readonly number[];
 }
 
 /** キーワード欄（45 桁以降）を取り出す。 */
@@ -70,6 +78,20 @@ export function keywordAreaOf(line: string): string {
 export function readConstant(keywords: string): string | undefined {
   const match = /^'((?:[^']|'')*)'/u.exec(keywords.trim());
   return match ? match[1].replace(/''/gu, "'") : undefined;
+}
+
+/**
+ * 項目の種別。**定数（固定情報）か、名前つきフィールドか。**
+ *
+ * 原典（`桁数 (30 - 34 桁目)`）は固定情報に桁数を書かないと定めており、
+ * 実装上も「名前欄が空で、キーワード欄がリテラルで始まる」ものが定数になる。
+ * **描画（`dspfLayout`）と編集（`ddsEdit`）が同じ判定を使う**ために、規則はここに置く。
+ */
+export function unitItemKind(unit: LogicalUnit): "field" | "constant" {
+  const name = ddsName(unit.line).trim();
+  return name.length === 0 && readConstant(unit.keywords) !== undefined
+    ? "constant"
+    : "field";
 }
 
 /** 桁欄の数値を読む。空・数字以外は undefined。 */
@@ -90,6 +112,7 @@ export function toLogicalUnits(lines: readonly string[]): LogicalUnit[] {
   const units: LogicalUnit[] = [];
   /** まだ単位に属さない、先行する条件付けの行。 */
   let pendingConditioning: string[] = [];
+  let pendingConditioningLines: number[] = [];
 
   const push = (kind: "record" | "item", line: string, index: number): void => {
     units.push({
@@ -97,9 +120,11 @@ export function toLogicalUnits(lines: readonly string[]): LogicalUnit[] {
       line,
       sourceLine: index + 1,
       keywords: keywordAreaOf(line),
-      conditioningLines: [...pendingConditioning, line]
+      conditioningLines: [...pendingConditioning, line],
+      sourceLines: [...pendingConditioningLines, index + 1]
     });
     pendingConditioning = [];
+    pendingConditioningLines = [];
   };
 
   lines.forEach((line, index) => {
@@ -123,6 +148,7 @@ export function toLogicalUnits(lines: readonly string[]): LogicalUnit[] {
     // キーワード欄が空で条件付けだけ書かれている行は、**次の単位への前置き**。
     if (keywordArea.length === 0 && conditioningAreaOf(line).trim().length > 0) {
       pendingConditioning.push(line);
+      pendingConditioningLines.push(index + 1);
       return;
     }
 
@@ -132,7 +158,8 @@ export function toLogicalUnits(lines: readonly string[]): LogicalUnit[] {
     if (!previous) return;
     units[units.length - 1] = {
       ...previous,
-      keywords: `${previous.keywords} ${keywordArea}`.trim()
+      keywords: `${previous.keywords} ${keywordArea}`.trim(),
+      sourceLines: [...previous.sourceLines, index + 1]
     };
   });
 

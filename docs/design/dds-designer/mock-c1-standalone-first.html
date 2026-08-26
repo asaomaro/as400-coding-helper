@@ -1,0 +1,1376 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DDS デザイナ ｜ スタンドアロン優先設計（C1）</title>
+<style>
+/* ============================================================
+   独自パレット（VSCode のトークンは参照しない）
+   ライト既定 / prefers-color-scheme: dark / 手動切替
+   ============================================================ */
+:root{
+  --bg:#fbfaf9; --surface:#ffffff; --surface2:#f4f2ef; --surface3:#eae7e2;
+  --line:#e4e0da; --line2:#cdc7be;
+  --fg:#2e2b27; --fg2:#6a6560; --fg3:#98928b;
+  --accent:#5750d9; --accent-fg:#ffffff; --accent-soft:rgba(87,80,217,.12);
+  --ok:#1a7f4b; --ok-soft:rgba(26,127,75,.12);
+  --warn:#a35c00; --warn-soft:rgba(163,92,0,.12);
+  --err:#c02f22;  --err-soft:rgba(192,47,34,.12);
+  --info:#1d6ca8; --info-soft:rgba(29,108,168,.12);
+  --mod:#9a6b00;  --mod-soft:rgba(154,107,0,.14);
+  --add:#1a7f4b;  --add-soft:rgba(26,127,75,.14);
+  --keep:#c2bcb4;
+  --canvas-bg:#ffffff; --canvas-fg:#332f2b;
+  --grid-v:rgba(0,0,0,.10); --grid-h:rgba(0,0,0,.05);
+  --ruler-fg:#918b84; --ruler-hl:#5750d9;
+  --c-const:#9a4f00; --c-const-bg:rgba(190,120,60,.14);
+  --c-in:#2450b8;    --c-in-bg:rgba(36,80,184,.10);
+  --c-out:#0c6f57;   --c-out-bg:rgba(12,111,87,.10);
+  --c-sosi:#8b3fbf;  --c-sosi-bg:rgba(139,63,191,.16);
+  --c-attr:#c07800;  --c-attr-bg:rgba(192,120,0,.18);
+  --shadow:0 10px 34px rgba(40,32,20,.12);
+  --cell-w:10px; --cell-h:19px; --fs:14px;
+  --scell-w:8px; --scell-h:17px; --sfs:12px;
+  --mono:"Cascadia Mono","Consolas","Menlo","DejaVu Sans Mono","BIZ UDGothic","MS Gothic","Noto Sans Mono CJK JP",monospace;
+  --ui:"Segoe UI","Hiragino Kaku Gothic ProN","Yu Gothic UI","Meiryo",system-ui,sans-serif;
+  --r:8px;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#161619; --surface:#1d1d21; --surface2:#25252b; --surface3:#2e2e35;
+  --line:#31313a; --line2:#43434e;
+  --fg:#e7e4e0; --fg2:#a9a49e; --fg3:#7b766f;
+  --accent:#8e88ff; --accent-fg:#15131f; --accent-soft:rgba(142,136,255,.18);
+  --ok:#4cc38a; --ok-soft:rgba(76,195,138,.14);
+  --warn:#e0a33c; --warn-soft:rgba(224,163,60,.14);
+  --err:#f26b5e;  --err-soft:rgba(242,107,94,.14);
+  --info:#63b3ed; --info-soft:rgba(99,179,237,.14);
+  --mod:#d6a52a;  --mod-soft:rgba(214,165,42,.16);
+  --add:#4cc38a;  --add-soft:rgba(76,195,138,.16);
+  --keep:#4c4a52;
+  --canvas-bg:#131316; --canvas-fg:#dedad5;
+  --grid-v:rgba(255,255,255,.10); --grid-h:rgba(255,255,255,.05);
+  --ruler-fg:#807a73; --ruler-hl:#8e88ff;
+  --c-const:#e0a06e; --c-const-bg:rgba(224,160,110,.12);
+  --c-in:#7fb2ff;    --c-in-bg:rgba(127,178,255,.12);
+  --c-out:#5ad0b0;   --c-out-bg:rgba(90,208,176,.12);
+  --c-sosi:#cf8ee0;  --c-sosi-bg:rgba(207,142,224,.18);
+  --c-attr:#e0a33c;  --c-attr-bg:rgba(224,163,60,.20);
+  --shadow:0 10px 34px rgba(0,0,0,.5);
+}}
+:root[data-theme="dark"]{
+  --bg:#161619; --surface:#1d1d21; --surface2:#25252b; --surface3:#2e2e35;
+  --line:#31313a; --line2:#43434e;
+  --fg:#e7e4e0; --fg2:#a9a49e; --fg3:#7b766f;
+  --accent:#8e88ff; --accent-fg:#15131f; --accent-soft:rgba(142,136,255,.18);
+  --ok:#4cc38a; --ok-soft:rgba(76,195,138,.14);
+  --warn:#e0a33c; --warn-soft:rgba(224,163,60,.14);
+  --err:#f26b5e;  --err-soft:rgba(242,107,94,.14);
+  --info:#63b3ed; --info-soft:rgba(99,179,237,.14);
+  --mod:#d6a52a;  --mod-soft:rgba(214,165,42,.16);
+  --add:#4cc38a;  --add-soft:rgba(76,195,138,.16);
+  --keep:#4c4a52;
+  --canvas-bg:#131316; --canvas-fg:#dedad5;
+  --grid-v:rgba(255,255,255,.10); --grid-h:rgba(255,255,255,.05);
+  --ruler-fg:#807a73; --ruler-hl:#8e88ff;
+  --c-const:#e0a06e; --c-const-bg:rgba(224,160,110,.12);
+  --c-in:#7fb2ff;    --c-in-bg:rgba(127,178,255,.12);
+  --c-out:#5ad0b0;   --c-out-bg:rgba(90,208,176,.12);
+  --c-sosi:#cf8ee0;  --c-sosi-bg:rgba(207,142,224,.18);
+  --c-attr:#e0a33c;  --c-attr-bg:rgba(224,163,60,.20);
+  --shadow:0 10px 34px rgba(0,0,0,.5);
+}
+
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{background:var(--bg);color:var(--fg);font-family:var(--ui);font-size:13px;line-height:1.5;-webkit-font-smoothing:antialiased}
+button{font-family:inherit;font-size:inherit;color:inherit}
+.wrap{padding:16px;max-width:1600px;margin:0 auto}
+
+/* ============================================================
+   加算モデル
+   既定（スタンドアロン）= 自前部品はすべて表示。
+   ホストが肩代わりする部品だけを data-* で隠す。
+   ホストが足す機能は既定 display:none で、能力があるときだけ出す。
+   ============================================================ */
+.app[data-fileio="host"]   .own-fileio{display:none !important}
+.app[data-undo="host"]     .own-undo{display:none !important}
+.app[data-palette="host"]  .own-palette{display:none !important}
+.app[data-title="host"]    .own-title{display:none !important}
+.app[data-statusbar="host"] .own-statusbar{display:none !important}
+.hostadd{display:none !important}
+.app[data-textedit="yes"] .add-textedit{display:inline-flex !important}
+.app[data-prompter="yes"] .add-prompter{display:block !important}
+.app[data-host="vscode"]  .add-hostframe{display:flex !important}
+.app[data-host="vscode"]  .add-conflict{display:inline-flex !important}
+
+/* ---------- アプリ外殻（独自の外観） ---------- */
+.app{
+  border:1px solid var(--line2);border-radius:var(--r);overflow:hidden;background:var(--surface);
+  box-shadow:var(--shadow);display:grid;grid-template-rows:auto auto minmax(0,1fr) auto auto;
+  height:clamp(780px,95vh,1140px);position:relative;
+}
+
+/* ホスト（VSCode）が描く領域のプレースホルダ：意図的に低忠実度・グレー */
+.hostframe{
+  display:none;align-items:center;gap:10px;padding:5px 12px;
+  background:repeating-linear-gradient(135deg,var(--surface2) 0 8px,var(--surface3) 8px 16px);
+  border-bottom:1px dashed var(--line2);color:var(--fg3);font-size:11px;
+}
+.hostframe .lb{border:1px dashed var(--line2);border-radius:4px;padding:1px 7px;background:var(--surface)}
+.hostframe .sp{flex:1}
+
+/* アプリヘッダ */
+.appbar{display:flex;align-items:center;gap:10px;padding:8px 12px;border-bottom:1px solid var(--line);background:var(--surface)}
+.brand{display:flex;align-items:center;gap:8px;font-weight:700;color:var(--fg);font-size:14px;letter-spacing:.01em}
+.brand .mk{width:26px;height:26px;border-radius:7px;background:var(--accent);color:var(--accent-fg);display:grid;place-items:center;font-size:13px;font-weight:800}
+.brand .ver{font-size:9.5px;font-weight:600;color:var(--fg3);border:1px solid var(--line2);border-radius:9px;padding:0 6px}
+.fileChip{display:flex;align-items:center;gap:7px;background:var(--surface2);border:1px solid var(--line);border-radius:20px;padding:3px 11px;font-family:var(--mono);font-size:12px}
+.fileChip .dirty{width:7px;height:7px;border-radius:50%;background:var(--mod)}
+.fileChip .cnt{font-family:var(--ui);font-size:10.5px;color:var(--fg2)}
+.bar-sp{flex:1}
+.grp{display:flex;align-items:center;gap:4px}
+.grp.boxed{border:1px solid var(--line2);border-radius:6px;padding:2px;background:var(--surface2)}
+.btn{display:inline-flex;align-items:center;gap:6px;border:1px solid transparent;background:transparent;border-radius:5px;padding:4px 9px;font-size:12px;color:var(--fg2);cursor:pointer;white-space:nowrap}
+.btn:hover{background:var(--surface3);color:var(--fg)}
+.btn.outline{border-color:var(--line2);background:var(--surface)}
+.btn.primary{background:var(--accent);color:var(--accent-fg);border-color:var(--accent);font-weight:600}
+.btn.primary:hover{filter:brightness(1.08);background:var(--accent);color:var(--accent-fg)}
+.btn svg{width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+.btn[disabled]{opacity:.4;cursor:default}
+.btn .n{font-size:9.5px;color:var(--fg3);font-family:var(--mono)}
+.cmdbtn{display:flex;align-items:center;gap:8px;border:1px solid var(--line2);background:var(--surface2);border-radius:6px;padding:4px 9px 4px 10px;font-size:12px;color:var(--fg3);cursor:pointer;min-width:186px}
+.cmdbtn:hover{border-color:var(--accent);color:var(--fg2)}
+.cmdbtn .sp{flex:1}
+.kbd{font-family:var(--mono);font-size:10px;border:1px solid var(--line2);border-bottom-width:2px;border-radius:4px;padding:0 4px;color:var(--fg2);background:var(--surface)}
+.kbd.dead{text-decoration:line-through;opacity:.55}
+.conflictChip{display:none;align-items:center;gap:5px;border:1px solid var(--warn);color:var(--warn);background:var(--warn-soft);border-radius:20px;padding:2px 9px;font-size:11px;cursor:pointer}
+
+/* モック操作（ホスト切替） */
+.mockctl{display:flex;align-items:center;gap:6px;border:1px dashed var(--line2);border-radius:20px;padding:2px 4px 2px 10px}
+.mockctl .lbl{font-size:9.5px;color:var(--fg3);letter-spacing:.05em}
+.seg{display:flex;border:1px solid var(--line2);border-radius:20px;overflow:hidden;background:var(--surface)}
+.seg button{border:none;background:transparent;padding:3px 11px;font-size:11.5px;color:var(--fg2);cursor:pointer}
+.seg button + button{border-left:1px solid var(--line)}
+.seg button.on{background:var(--accent);color:var(--accent-fg);font-weight:600}
+
+/* ---------- 3ペイン ---------- */
+.body{display:grid;grid-template-columns:258px minmax(0,1fr) 340px;min-height:0;background:var(--bg)}
+aside{background:var(--surface);min-height:0;display:flex;flex-direction:column;overflow:auto}
+aside.left{border-right:1px solid var(--line)}
+aside.right{border-left:1px solid var(--line)}
+.card{margin:10px 10px 0;border:1px solid var(--line);border-radius:7px;background:var(--surface);overflow:hidden}
+.card:last-child{margin-bottom:10px}
+.card > .hd{display:flex;align-items:center;gap:6px;padding:6px 9px;background:var(--surface2);border-bottom:1px solid var(--line);font-size:10.5px;letter-spacing:.07em;color:var(--fg2);font-weight:600}
+.card > .hd .sp{flex:1}
+.card > .hd .mini{border:none;background:transparent;color:var(--fg3);cursor:pointer;border-radius:4px;padding:0 4px;font-size:12px}
+.card > .hd .mini:hover{background:var(--surface3);color:var(--fg)}
+
+/* ツリー */
+.node{display:flex;align-items:center;gap:6px;padding:4px 8px;cursor:pointer;font-size:12.5px;border-left:3px solid transparent}
+.node:hover{background:var(--surface2)}
+.node.rec{font-weight:600}
+.node.rec.active{background:var(--accent-soft);border-left-color:var(--accent)}
+.node.rec.inactive{color:var(--fg3);font-weight:500}
+.node .chev{width:10px;color:var(--fg3);font-size:9px}
+.radio{width:12px;height:12px;border-radius:50%;border:1.5px solid var(--fg3);display:grid;place-items:center;flex:0 0 auto}
+.radio.on{border-color:var(--accent)}
+.radio.on::after{content:"";width:6px;height:6px;border-radius:50%;background:var(--accent)}
+.node .nm{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tag{font-size:9.5px;padding:0 5px;border-radius:9px;border:1px solid var(--line2);color:var(--fg3);white-space:nowrap}
+.tag.act{border-color:var(--accent);color:var(--accent);background:var(--accent-soft)}
+.eye{border:none;background:transparent;cursor:pointer;color:var(--fg3);padding:1px 2px;border-radius:4px;display:grid;place-items:center;flex:0 0 auto}
+.eye:hover{background:var(--surface3);color:var(--fg)}
+.eye svg{width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:1.4}
+.eye.off{opacity:.4}
+.child{display:flex;align-items:center;gap:6px;padding:2px 8px 2px 24px;cursor:pointer;font-size:12px}
+.child:hover{background:var(--surface2)}
+.child.sel{background:var(--accent-soft);box-shadow:inset 0 0 0 1px var(--accent)}
+.child .dot{width:7px;height:7px;border-radius:2px;flex:0 0 auto}
+.child .lbl{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.child .pos{color:var(--fg3);font-family:var(--mono);font-size:10.5px}
+.child.ghosted{opacity:.45;cursor:not-allowed}
+.grp-lbl{padding:4px 8px 2px 18px;color:var(--fg3);font-size:10.5px;letter-spacing:.05em}
+.lref{font-family:var(--mono);font-size:9.5px;color:var(--accent);background:var(--accent-soft);border-radius:7px;padding:0 5px}
+
+/* 標識 */
+.ind-row{display:flex;align-items:center;gap:8px;padding:4px 9px;font-size:12px}
+.ind-row:hover{background:var(--surface2)}
+.ind-no{font-family:var(--mono);font-weight:700;width:22px}
+.ind-desc{flex:1;color:var(--fg2);font-size:11px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ind-cnt{font-size:10px;color:var(--fg3);font-family:var(--mono)}
+.sw{position:relative;width:28px;height:15px;flex:0 0 auto;cursor:pointer}
+.sw input{position:absolute;opacity:0;width:100%;height:100%;margin:0;cursor:pointer}
+.sw .track{position:absolute;inset:0;border-radius:8px;background:var(--line2);transition:background .15s}
+.sw .knob{position:absolute;top:2px;left:2px;width:11px;height:11px;border-radius:50%;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.35);transition:left .15s}
+.sw input:checked ~ .track{background:var(--accent)}
+.sw input:checked ~ .knob{left:15px}
+.note-s{padding:6px 9px;font-size:10.5px;color:var(--fg3);line-height:1.6}
+
+/* ホスト能力カード */
+.hostjson{font-family:var(--mono);font-size:10.5px;line-height:1.7;padding:8px 9px;white-space:pre-wrap;word-break:break-all;color:var(--fg2);margin:0}
+.hostjson b{color:var(--fg);font-weight:700}
+.hostjson .t{color:var(--ok);font-weight:700}
+.hostjson .f{color:var(--fg3);font-weight:700}
+.hostjson .s{color:var(--c-const)}
+.hostjson .x{color:var(--accent);font-weight:700}
+.gate{display:flex;gap:7px;align-items:flex-start;padding:5px 9px;border-top:1px solid var(--line);font-size:10.5px;color:var(--fg2)}
+.gate .ic{font-family:var(--mono);font-weight:700;flex:0 0 auto}
+.gate.own .ic{color:var(--accent)} .gate.host .ic{color:var(--fg3)} .gate.plus .ic{color:var(--ok)}
+.gate.host{opacity:.72}
+.gate b{color:var(--fg)}
+
+/* ---------- 中央 ---------- */
+.editor{display:flex;flex-direction:column;min-width:0;min-height:0;background:var(--bg)}
+.toolbar{display:flex;align-items:center;gap:6px;padding:7px 12px;flex-wrap:wrap;border-bottom:1px solid var(--line);background:var(--surface)}
+.tgroup{display:flex;border:1px solid var(--line2);border-radius:6px;overflow:hidden;background:var(--surface)}
+.tb{border:none;background:transparent;padding:4px 9px;cursor:pointer;font-size:11.5px;display:flex;align-items:center;gap:5px;color:var(--fg2);white-space:nowrap}
+.tb + .tb{border-left:1px solid var(--line)}
+.tb:hover{background:var(--surface3);color:var(--fg)}
+.tb.on{background:var(--accent);color:var(--accent-fg)}
+.tb svg{width:13px;height:13px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+.tsep{width:1px;height:20px;background:var(--line);margin:0 3px}
+.tlbl{font-size:11px;color:var(--fg3)}
+.tb.sosi{border:1px solid var(--c-sosi);color:var(--c-sosi);font-weight:700;border-radius:6px;padding:4px 11px}
+.tb.sosi.on{background:var(--c-sosi);color:#fff}
+.tb.sosi::before{content:"{ }";font-family:var(--mono)}
+.banner{display:flex;align-items:center;gap:8px;padding:6px 14px;font-size:11.5px;background:var(--err-soft);color:var(--err);border-bottom:1px solid var(--line)}
+
+.canvas-scroll{flex:1;min-height:0;overflow:auto;padding:16px 18px;background:var(--bg)}
+.screen{display:inline-block;background:var(--canvas-bg);color:var(--canvas-fg);border:1px solid var(--line2);border-radius:7px;padding:9px 11px 11px;font-family:var(--mono);font-size:var(--fs);box-shadow:0 2px 12px rgba(0,0,0,.06)}
+.scr-cap{display:flex;align-items:center;gap:8px;font-family:var(--ui);font-size:10.5px;color:var(--fg3);padding:0 2px 7px}
+.scr-cap b{color:var(--fg2);font-weight:600}
+.grid-area{display:grid;grid-template-columns:auto auto auto}
+.corner{width:30px}
+.ruler{display:flex;height:var(--cell-h);color:var(--ruler-fg);user-select:none}
+.ruler .rc{flex:0 0 auto;width:var(--cell-w);text-align:center;line-height:var(--cell-h);font-size:calc(var(--fs) - 2px)}
+.ruler .rc.num{color:var(--fg2);font-weight:700}
+.ruler .rc.hl{color:var(--ruler-hl);background:var(--accent-soft);border-radius:2px}
+.gutter{display:flex;flex-direction:column;width:30px;user-select:none}
+.gutter .gn{height:var(--cell-h);line-height:var(--cell-h);text-align:right;padding-right:6px;font-size:calc(var(--fs) - 2px);color:var(--ruler-fg)}
+.gutter .gn.hl{color:var(--ruler-hl);font-weight:700}
+.gutter .gn.warn{color:var(--warn)}
+.rgutter{width:22px;display:flex;flex-direction:column}
+.rgutter .gm{height:var(--cell-h);line-height:var(--cell-h);text-align:center;font-size:11px;color:var(--warn)}
+.grid{position:relative;width:calc(var(--cell-w) * 80);height:calc(var(--cell-h) * 24);outline:1px solid var(--line);
+  background-image:repeating-linear-gradient(to right,var(--grid-v) 0 1px,transparent 1px calc(var(--cell-w) * 10)),
+                   repeating-linear-gradient(to bottom,var(--grid-h) 0 1px,transparent 1px var(--cell-h))}
+.grid.nogrid{background-image:none}
+.layer{position:absolute;inset:0}
+.layer.guide{z-index:1;pointer-events:none}.layer.attr{z-index:2;pointer-events:none}
+.layer.items{z-index:3}.layer.diag{z-index:4;pointer-events:none}.layer.sel{z-index:5;pointer-events:none}
+.cel{flex:0 0 auto;height:var(--cell-h);line-height:var(--cell-h);text-align:center;overflow:hidden;display:inline-block}
+.item{position:absolute;display:flex;align-items:center;height:var(--cell-h);white-space:nowrap;border-radius:2px;cursor:pointer}
+.item.k-const{color:var(--c-const);background:var(--c-const-bg)}
+.item.k-in{color:var(--c-in);background:var(--c-in-bg);box-shadow:inset 0 -1px 0 0 currentColor}
+.item.k-out{color:var(--c-out);background:var(--c-out-bg)}
+.item .cel.sosi{color:var(--c-sosi);background:var(--c-sosi-bg);font-weight:700}
+.item:not(.ghost):hover{outline:1px solid var(--accent);outline-offset:1px;filter:brightness(1.06)}
+.item.ghost{opacity:.4;pointer-events:none;filter:grayscale(.4)}
+.item.clip{border-right:2px solid var(--err);-webkit-mask-image:linear-gradient(to right,#000 calc(100% - 14px),rgba(0,0,0,.35));mask-image:linear-gradient(to right,#000 calc(100% - 14px),rgba(0,0,0,.35))}
+.indbadge{position:absolute;left:-1px;top:-8px;font-family:var(--ui);font-size:8.5px;font-weight:700;background:var(--accent);color:var(--accent-fg);border-radius:3px;padding:0 3px;line-height:11px}
+.ab{position:absolute;height:var(--cell-h);width:var(--cell-w);border-radius:1px;background:var(--c-attr-bg);box-shadow:inset 0 0 0 1px var(--c-attr)}
+.ab.tail{background:transparent;opacity:.45}
+.lost{position:absolute;height:var(--cell-h);border:1px dashed var(--err);background:repeating-linear-gradient(45deg,var(--err-soft) 0 3px,transparent 3px 6px);border-radius:2px}
+.lost span{position:absolute;top:-13px;left:0;font-family:var(--ui);font-size:8.5px;color:var(--err);white-space:nowrap;background:var(--canvas-bg);padding:0 2px}
+.ovl{position:absolute;height:var(--cell-h);border:1px solid var(--err);border-radius:2px;background:repeating-linear-gradient(45deg,var(--err-soft) 0 4px,transparent 4px 8px)}
+.ovl.edge{border-style:dashed}
+.ovl.attrx{border-color:var(--warn);background:repeating-linear-gradient(45deg,var(--warn-soft) 0 4px,transparent 4px 8px)}
+.snap{position:absolute;width:0;border-left:1px dashed var(--accent);opacity:.7}
+.snap span{position:absolute;top:-15px;left:-16px;font-family:var(--ui);font-size:9px;color:var(--accent);white-space:nowrap;background:var(--bg);padding:0 3px;border-radius:3px}
+.selbox{position:absolute;height:var(--cell-h);outline:1.5px solid var(--accent);outline-offset:1px;border-radius:1px}
+.selbox .h{position:absolute;width:6px;height:6px;background:var(--surface);border:1.5px solid var(--accent);border-radius:1px}
+.selbox .h.nw{left:-4px;top:-4px}.selbox .h.n{left:calc(50% - 3px);top:-4px}.selbox .h.ne{right:-4px;top:-4px}
+.selbox .h.w{left:-4px;top:calc(50% - 3px);background:var(--accent)}.selbox .h.e{right:-4px;top:calc(50% - 3px);background:var(--accent)}
+.selbox .h.sw{left:-4px;bottom:-4px}.selbox .h.s{left:calc(50% - 3px);bottom:-4px}.selbox .h.se{right:-4px;bottom:-4px}
+.selbox .badge{position:absolute;top:-19px;left:-2px;background:var(--accent);color:var(--accent-fg);font-family:var(--ui);font-size:9.5px;padding:1px 6px;border-radius:4px;white-space:nowrap}
+.selbox .meas{position:absolute;bottom:-17px;left:0;font-family:var(--mono);font-size:9.5px;color:var(--accent);white-space:nowrap;background:var(--canvas-bg);padding:0 3px}
+.screen.term{--canvas-bg:#07100a;--canvas-fg:#41ff87;--grid-v:rgba(65,255,135,.14);--grid-h:rgba(65,255,135,.06);--ruler-fg:#2f8f57;
+  --c-const:#41ff87;--c-const-bg:transparent;--c-in:#ffffff;--c-in-bg:rgba(255,255,255,.10);--c-out:#8fe9ff;--c-out-bg:transparent;--c-sosi:#ffd166;--c-sosi-bg:transparent}
+.legend{display:flex;align-items:center;gap:13px;flex-wrap:wrap;padding:7px 18px;border-top:1px solid var(--line);font-size:11px;color:var(--fg2);background:var(--surface)}
+.lg{display:flex;align-items:center;gap:5px}
+.sw-box{width:11px;height:11px;border-radius:2px;display:inline-block}
+.callout{margin-left:auto;display:flex;align-items:center;gap:8px;border:1px dashed var(--c-sosi);border-radius:6px;padding:3px 10px;background:var(--c-sosi-bg);color:var(--fg);font-size:11px}
+.callout code{font-family:var(--mono);color:var(--c-sosi);font-weight:700}
+
+/* ---------- 右：プロパティ ---------- */
+.prop-head{padding:10px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:9px;background:var(--surface2)}
+.prop-head .ic{width:26px;height:26px;border-radius:6px;display:grid;place-items:center;font-family:var(--mono);font-weight:700;font-size:12px;flex:0 0 auto}
+.prop-head .t1{font-weight:700;font-size:13px;display:flex;align-items:center;gap:6px}
+.prop-head .t2{font-size:10.5px;color:var(--fg3)}
+.row{display:flex;align-items:center;gap:8px;padding:4px 10px}
+.row label{width:80px;flex:0 0 auto;color:var(--fg2);font-size:11.5px}
+.row .ctl{flex:1;min-width:0}
+input[type=text],input[type=number],select{width:100%;background:var(--surface);color:var(--fg);border:1px solid var(--line2);border-radius:5px;padding:3px 7px;font-size:12px;font-family:var(--mono)}
+input:focus,select:focus{outline:2px solid var(--accent-soft);border-color:var(--accent)}
+.segbtn{display:flex;border:1px solid var(--line2);border-radius:5px;overflow:hidden}
+.segbtn button{flex:1;border:none;background:transparent;padding:3px 0;cursor:pointer;font-size:11px;color:var(--fg2)}
+.segbtn button + button{border-left:1px solid var(--line)}
+.segbtn button.on{background:var(--accent);color:var(--accent-fg)}
+.duo{display:flex;gap:6px}
+.ro{font-family:var(--mono);font-size:11.5px;color:var(--fg2);background:var(--surface2);border-radius:5px;padding:3px 7px}
+.ro.attr{color:var(--c-attr);background:var(--c-attr-bg)}
+.chips{display:flex;flex-wrap:wrap;gap:5px;padding:2px 10px 7px}
+.chip{display:flex;align-items:center;gap:5px;font-family:var(--mono);font-size:11px;border:1px solid var(--line2);border-radius:13px;padding:1px 5px 1px 9px;background:var(--surface)}
+.chip b{font-weight:700;color:var(--c-out)}
+.chip .x{color:var(--fg3);cursor:pointer;font-size:12px;padding:0 2px}
+.chip.add{border-style:dashed;color:var(--fg2);cursor:pointer;padding:1px 9px}
+.chip.none{border-style:dashed;color:var(--fg3)}
+.tip{padding:0 10px 10px;font-size:10.5px;color:var(--fg3);line-height:1.65}
+.srccard{margin:2px 10px 10px;border:1px solid var(--line2);border-radius:6px;overflow:hidden;background:var(--canvas-bg)}
+.srccard .hd2{display:flex;align-items:center;gap:6px;padding:4px 8px;background:var(--surface2);font-size:10.5px;color:var(--fg2)}
+.srccard .hd2 .sp{flex:1}
+.srccard .bd{overflow-x:auto;padding:5px 7px 7px}
+.mini-ruler{display:flex;height:14px;color:var(--ruler-fg)}
+.mini-ruler .rc{flex:0 0 auto;width:var(--scell-w);text-align:center;line-height:14px;font-size:9px;font-family:var(--mono)}
+.mini-ruler .rc.num{font-weight:700;color:var(--fg2)}
+.sline-mini{display:flex;font-family:var(--mono);font-size:var(--sfs);position:relative;height:var(--scell-h)}
+.sline-mini .cel{height:var(--scell-h);line-height:var(--scell-h)}
+.lb{font-family:var(--mono);font-size:9.5px;background:var(--accent);color:var(--accent-fg);border-radius:7px;width:26px;text-align:center;flex:0 0 auto}
+.db{font-family:var(--mono);font-size:9.5px;font-weight:700;border-radius:4px;width:15px;text-align:center;flex:0 0 auto}
+.db.M{background:var(--mod-soft);color:var(--mod)}
+.db.A{background:var(--add-soft);color:var(--add)}
+.db.K{background:transparent;color:var(--keep)}
+
+/* ---------- ドック（ソース／検証：自前設計） ---------- */
+.dock{border-top:1px solid var(--line);background:var(--surface);height:244px;display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr)}
+.dpane{display:flex;flex-direction:column;min-width:0;min-height:0}
+.dpane + .dpane{border-left:1px solid var(--line)}
+.dhead{display:flex;align-items:center;gap:8px;padding:6px 11px;border-bottom:1px solid var(--line);font-size:11px;color:var(--fg2);background:var(--surface2)}
+.dhead .ttl{font-weight:700;color:var(--fg);letter-spacing:.06em;font-size:11px}
+.dhead .sp{flex:1}
+.pill{border:1px solid var(--line2);border-radius:10px;padding:0 8px;font-size:10px;white-space:nowrap}
+.pill.keep{border-color:var(--keep);color:var(--fg2)}
+.pill.mod{border-color:var(--mod);color:var(--mod);background:var(--mod-soft)}
+.pill.add{border-color:var(--add);color:var(--add);background:var(--add-soft)}
+.pill.err{border-color:var(--err);color:var(--err);background:var(--err-soft)}
+.pill.warn{border-color:var(--warn);color:var(--warn);background:var(--warn-soft)}
+.pill.info{border-color:var(--info);color:var(--info);background:var(--info-soft)}
+.src-body{overflow:auto;padding:4px 0 8px;background:var(--canvas-bg)}
+.src-ruler{display:flex;padding-left:60px;color:var(--ruler-fg);user-select:none;height:15px}
+.src-ruler .rc{flex:0 0 auto;width:var(--scell-w);text-align:center;line-height:15px;font-size:9.5px;font-family:var(--mono)}
+.src-ruler .rc.num{font-weight:700;color:var(--fg2)}
+.sline{display:flex;align-items:center;gap:6px;padding:0 6px 0 4px;height:var(--scell-h);cursor:pointer;border-left:3px solid transparent}
+.sline:hover{background:var(--surface2)}
+.sline.sel{background:var(--accent-soft);border-left-color:var(--accent)}
+.sline.M{border-left-color:var(--mod)}
+.sline.A{border-left-color:var(--add)}
+.sline.K{border-left-color:var(--keep);border-left-style:dotted}
+.stext{position:relative;display:flex;font-family:var(--mono);font-size:var(--sfs);white-space:nowrap}
+.stext .cel{height:var(--scell-h);line-height:var(--scell-h)}
+.stext .cel.sosi{color:var(--c-sosi);background:var(--c-sosi-bg);font-weight:700}
+.stext .cel.kw{color:var(--c-const)}
+.bytecaret{position:absolute;top:0;height:var(--scell-h);border-left:1.5px solid var(--c-sosi)}
+.bytecaret::after{content:"実バイト終端";position:absolute;top:-1px;left:3px;font-family:var(--ui);font-size:8.5px;color:var(--c-sosi);white-space:nowrap}
+.bytecaret.bad{border-color:var(--err)}
+.bytecaret.bad::after{content:"実バイト終端（−2桁ずれ）";color:var(--err)}
+.gapmark{position:absolute;top:1px;height:calc(var(--scell-h) - 2px);border:1px dashed var(--err);background:repeating-linear-gradient(45deg,var(--err-soft) 0 3px,transparent 3px 6px)}
+
+/* 検証カード（自前設計：桁ストリップ付き） */
+.vlist{overflow:auto;padding:8px 10px 10px;display:flex;flex-direction:column;gap:7px}
+.vcard{border:1px solid var(--line2);border-radius:7px;background:var(--surface);overflow:hidden;cursor:pointer}
+.vcard:hover{border-color:var(--accent)}
+.vcard .vh{display:flex;align-items:center;gap:7px;padding:5px 8px;font-size:11px}
+.vcard .sev{font-size:10px;font-weight:700;border-radius:4px;padding:0 6px}
+.vcard.w .sev{background:var(--warn-soft);color:var(--warn)}
+.vcard.i .sev{background:var(--info-soft);color:var(--info)}
+.vcard .code{font-family:var(--mono);font-size:10px;color:var(--fg3)}
+.vcard .loc{font-family:var(--mono);font-size:10px;color:var(--fg2);margin-left:auto}
+.vcard .vm{padding:0 8px 5px;font-size:11.5px;line-height:1.55;color:var(--fg)}
+.vcard .vm b{color:var(--warn)}
+.vcard.i .vm b{color:var(--info)}
+.vstrip{position:relative;height:9px;margin:0 8px 5px;border:1px solid var(--line);border-radius:3px;background:
+  repeating-linear-gradient(to right,var(--line) 0 1px,transparent 1px 12.5%)}
+.vstrip i{position:absolute;top:-1px;bottom:-1px;background:var(--warn);border-radius:2px;opacity:.85}
+.vcard.i .vstrip i{background:var(--info)}
+.vstrip .ovf{background:var(--err);right:-1px}
+.vfix{border-top:1px dashed var(--line);padding:4px 8px;font-size:10.5px;color:var(--fg2);background:var(--surface2)}
+.vfix b{color:var(--accent)}
+
+/* ---------- 自前ステータスバー ---------- */
+.statusbar{display:flex;align-items:center;gap:0;height:26px;border-top:1px solid var(--line);background:var(--surface2);font-size:11px;color:var(--fg2);padding:0 6px}
+.sb{padding:0 9px;display:flex;align-items:center;gap:5px;height:100%;cursor:pointer;white-space:nowrap;border-radius:4px}
+.sb:hover{background:var(--surface3);color:var(--fg)}
+.sb.grow{flex:1;cursor:default}.sb.grow:hover{background:transparent}
+.sb .dotok{width:7px;height:7px;border-radius:50%;background:var(--ok)}
+.sb .dotw{width:7px;height:7px;border-radius:50%;background:var(--warn)}
+
+/* ---------- オーバーレイ（コマンドパレット / ショートカット） ---------- */
+.ovbg{position:absolute;inset:0;background:rgba(20,16,10,.42);z-index:50;display:none;justify-content:center;align-items:flex-start;padding-top:76px}
+.ovbg.open{display:flex}
+.palette{width:min(560px,86%);background:var(--surface);border:1px solid var(--line2);border-radius:10px;box-shadow:var(--shadow);overflow:hidden}
+.palette .pin{display:flex;align-items:center;gap:8px;padding:10px 12px;border-bottom:1px solid var(--line)}
+.palette .pin input{border:none;background:transparent;font-family:var(--ui);font-size:14px;padding:0;outline:none}
+.palette .plist{max-height:290px;overflow:auto;padding:5px}
+.pitem{display:flex;align-items:center;gap:9px;padding:6px 9px;border-radius:6px;cursor:pointer;font-size:12.5px}
+.pitem:hover,.pitem.on{background:var(--accent-soft)}
+.pitem .ic{width:18px;text-align:center;color:var(--fg3)}
+.pitem .nm{flex:1}
+.pitem .grp2{font-size:10px;color:var(--fg3)}
+.pitem.conflict .kbd{border-color:var(--warn);color:var(--warn)}
+.pfoot{border-top:1px solid var(--line);padding:6px 12px;font-size:10.5px;color:var(--fg3);display:flex;gap:12px}
+.sheet{width:min(720px,90%);background:var(--surface);border:1px solid var(--line2);border-radius:10px;box-shadow:var(--shadow);overflow:hidden}
+.sheet .sh{display:flex;align-items:center;gap:8px;padding:10px 14px;border-bottom:1px solid var(--line);font-weight:700}
+.sheet .sh .sp{flex:1}
+.sheet .sb2{max-height:400px;overflow:auto;padding:10px 14px}
+.ktable{width:100%;border-collapse:collapse;font-size:12px}
+.ktable th{text-align:left;font-size:10px;letter-spacing:.06em;color:var(--fg3);padding:4px 6px;border-bottom:1px solid var(--line);font-weight:600}
+.ktable td{padding:4px 6px;border-bottom:1px solid var(--line)}
+.ktable td.k{width:130px;white-space:nowrap}
+.ktable td.o{width:120px;font-size:10.5px;color:var(--fg3)}
+.warnbadge{font-size:9.5px;border:1px solid var(--warn);color:var(--warn);background:var(--warn-soft);border-radius:8px;padding:0 5px;white-space:nowrap}
+
+/* ---------- 解説・未解決 ---------- */
+.note{margin:16px auto 10px;max-width:1600px;border:1px solid var(--line);border-radius:var(--r);padding:15px 18px;background:var(--surface)}
+.note h2{margin:0 0 6px;font-size:14px}
+.note h2 span{font-size:11px;color:var(--fg3);font-weight:400;margin-left:8px}
+.note ul{margin:8px 0 0;padding-left:18px;columns:2;column-gap:32px;font-size:12px;color:var(--fg2);line-height:1.85}
+.note li{break-inside:avoid}
+.note b{color:var(--fg)}
+.note code{font-family:var(--mono);font-size:11px}
+.unres{margin:0 auto 28px;max-width:1600px;border:1px solid var(--warn);border-radius:var(--r);background:var(--warn-soft);padding:15px 18px}
+.unres h2{margin:0 0 4px;font-size:14px;color:var(--warn)}
+.unres p.lead{margin:0 0 10px;font-size:11.5px;color:var(--fg2)}
+.ulist{display:grid;grid-template-columns:repeat(auto-fit,minmax(330px,1fr));gap:10px}
+.uitem{background:var(--surface);border:1px solid var(--line2);border-radius:7px;padding:9px 11px}
+.uitem .ut{display:flex;align-items:center;gap:7px;font-weight:700;font-size:12.5px;margin-bottom:4px}
+.ubadge{font-size:9.5px;border-radius:9px;padding:0 7px;border:1px solid;white-space:nowrap}
+.ubadge.u{color:var(--err);border-color:var(--err);background:var(--err-soft)}
+.ubadge.p{color:var(--warn);border-color:var(--warn);background:var(--warn-soft)}
+.ubadge.d{color:var(--fg2);border-color:var(--line2)}
+.uitem p{margin:0;font-size:11.5px;color:var(--fg2);line-height:1.65}
+.uitem .fix{margin-top:5px;padding-top:5px;border-top:1px dashed var(--line);font-size:11px;color:var(--fg2)}
+.uitem .fix b{color:var(--accent)}
+@media (max-width:1180px){.note ul{columns:1}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<div class="app" id="app" data-host="standalone">
+
+  <!-- ホスト（VSCode）が描く領域：意図的に低忠実度のプレースホルダ -->
+  <div class="hostframe add-hostframe">
+    <span>ホストが描画する領域（このモックでは簡略表示）</span>
+    <span class="lb">タブ: EMPMNT01.dspf ●</span>
+    <span class="sp"></span>
+    <span class="lb">ホストのステータスバー</span>
+  </div>
+
+  <!-- ===== 自前アプリヘッダ ===== -->
+  <div class="appbar">
+    <div class="brand"><span class="mk">▦</span>DDS デザイナ<span class="ver">0.4 プレビュー</span></div>
+
+    <div class="fileChip own-title">
+      <span>EMPMNT01.dspf</span><span class="dirty" title="未保存の変更あり"></span>
+      <span class="cnt" id="dirtyCnt"></span>
+    </div>
+
+    <div class="grp own-fileio">
+      <button class="btn outline"><svg viewBox="0 0 24 24"><path d="M4 6h6l2 2h8v10H4z"/></svg>開く</button>
+      <button class="btn primary"><svg viewBox="0 0 24 24"><path d="M5 4h11l3 3v13H5z"/><path d="M8 4v6h7V4M8 20v-6h8v6"/></svg>保存</button>
+      <button class="btn outline">名前を付けて保存</button>
+    </div>
+
+    <div class="grp boxed own-undo">
+      <button class="btn" title="元に戻す (Ctrl+Z)"><svg viewBox="0 0 24 24"><path d="M9 7L4 12l5 5"/><path d="M4 12h9a6 6 0 0 1 0 12h-2"/></svg>元に戻す<span class="n">3</span></button>
+      <button class="btn" disabled title="やり直す (Ctrl+Y)"><svg viewBox="0 0 24 24"><path d="M15 7l5 5-5 5"/><path d="M20 12h-9a6 6 0 0 0 0 12h2"/></svg>やり直す<span class="n">0</span></button>
+    </div>
+
+    <div class="bar-sp"></div>
+
+    <button class="cmdbtn own-palette" id="openPalette">
+      <svg viewBox="0 0 24 24" style="width:13px;height:13px;fill:none;stroke:currentColor;stroke-width:1.7"><circle cx="11" cy="11" r="6"/><path d="M20 20l-4.5-4.5"/></svg>
+      コマンドを実行…<span class="sp"></span><span class="kbd">Ctrl</span><span class="kbd">K</span>
+    </button>
+
+    <button class="btn outline add-textedit hostadd" id="btnText">
+      <svg viewBox="0 0 24 24"><path d="M5 4h9l5 5v11H5z"/><path d="M8 12h7M8 16h7"/></svg>テキストで開く</button>
+
+    <button class="conflictChip add-conflict hostadd" id="conflictChip">⚠ キー衝突 4</button>
+
+    <button class="btn outline" id="openHelp" title="ショートカット一覧 (Ctrl+/)">?&nbsp;ヘルプ</button>
+
+    <div class="mockctl">
+      <span class="lbl">モック: ホスト</span>
+      <div class="seg" id="hostSeg">
+        <button class="on" data-host="standalone">スタンドアロン</button>
+        <button data-host="vscode">VSCode 埋め込み</button>
+      </div>
+      <button class="btn" id="themeBtn" title="ライト / ダーク">◐</button>
+    </div>
+  </div>
+
+  <!-- ===== 3ペイン（ホスト非依存・両モードで不変） ===== -->
+  <div class="body">
+    <aside class="left">
+      <div class="card">
+        <div class="hd"><span class="sp">レコード様式 — EMPMNT01</span><button class="mini" title="様式を追加">＋</button></div>
+        <div id="tree"></div>
+      </div>
+      <div class="card">
+        <div class="hd"><span class="sp">条件標識</span><button class="mini">＋</button></div>
+        <div id="indList"></div>
+        <div class="note-s">標識を切り替えるとキャンバスの描画が即時に変わります（<b>50</b> OFF で DEPTNM が消えます）。</div>
+      </div>
+      <div class="card">
+        <div class="hd"><span class="sp">ホスト連携 host</span></div>
+        <pre class="hostjson" id="hostJson"></pre>
+        <div id="hostGates"></div>
+      </div>
+    </aside>
+
+    <main class="editor">
+      <div class="toolbar">
+        <div class="tgroup" id="modes">
+          <button class="tb on" data-mode="sel"><svg viewBox="0 0 24 24"><path d="M6 3l12 8-5 1.2 3 6-2.4 1.2-3-6L6 17z"/></svg>選択</button>
+          <button class="tb" data-mode="fld"><svg viewBox="0 0 24 24"><rect x="3" y="8" width="12" height="8" rx="1"/><path d="M18 9v6M15 12h6"/></svg>フィールド</button>
+          <button class="tb" data-mode="con"><svg viewBox="0 0 24 24"><path d="M5 6h11M10.5 6v12M7.5 18h6"/></svg>定数</button>
+        </div>
+        <div class="tsep"></div>
+        <button class="tb sosi on" id="btnSosi" title="SO/SI の表示切替">SO/SI 表示</button>
+        <div class="tsep"></div>
+        <div class="tgroup">
+          <button class="tb on" id="btnAttr"><svg viewBox="0 0 24 24"><path d="M6 4v16M10 8h8M10 12h8M10 16h5"/></svg>属性バイト</button>
+          <button class="tb on" id="btnGrid"><svg viewBox="0 0 24 24"><path d="M3 3h18v18H3z"/><path d="M9 3v18M15 3v18M3 9h18M3 15h18"/></svg>グリッド</button>
+          <button class="tb on" id="btnSnap"><svg viewBox="0 0 24 24"><path d="M12 3v18M3 12h18"/></svg>スナップ</button>
+          <button class="tb on" id="btnGhost"><svg viewBox="0 0 24 24"><path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="2.5"/></svg>他様式</button>
+          <button class="tb" id="btnTerm"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="14" rx="1.5"/><path d="M7 9l3 2.5L7 14M12 14h5"/></svg>5250 配色</button>
+        </div>
+        <div class="tsep"></div>
+        <span class="tlbl">ズーム</span>
+        <div class="tgroup" id="zoom">
+          <button class="tb" data-z="9">90%</button><button class="tb on" data-z="10">100%</button><button class="tb" data-z="12">125%</button>
+        </div>
+        <span class="tlbl" id="modeHint">クリックで選択 / ドラッグで移動 / 端をドラッグで長さ変更</span>
+      </div>
+
+      <div id="sosiBanner"></div>
+
+      <div class="canvas-scroll">
+        <div class="screen" id="screen">
+          <div class="scr-cap"><b>EMPMNT</b><span>（アクティブ様式）</span><span>·</span><span>DSPSIZ 24 × 80 <b>*DS3</b></span><span>·</span><span>CCSID 5035</span><span>·</span><span id="capSosi"></span></div>
+          <div class="grid-area">
+            <div class="corner"></div><div class="ruler" id="ruler"></div><div></div>
+            <div class="gutter" id="gutter"></div>
+            <div class="grid" id="grid">
+              <div class="layer guide" id="lGuide"></div><div class="layer attr" id="lAttr"></div>
+              <div class="layer items" id="lItems"></div><div class="layer diag" id="lDiag"></div><div class="layer sel" id="lSel"></div>
+            </div>
+            <div class="rgutter" id="rgutter"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="legend">
+        <span class="lg"><i class="sw-box" style="background:var(--c-const-bg);border:1px solid var(--c-const)"></i>定数</span>
+        <span class="lg"><i class="sw-box" style="background:var(--c-in-bg);border:1px solid var(--c-in)"></i>入力可 (B/I)</span>
+        <span class="lg"><i class="sw-box" style="background:var(--c-out-bg);border:1px solid var(--c-out)"></i>出力のみ (O)</span>
+        <span class="lg"><i class="sw-box" style="background:var(--c-sosi-bg);border:1px solid var(--c-sosi)"></i>SO/SI</span>
+        <span class="lg"><i class="sw-box" style="background:var(--c-attr-bg);border:1px solid var(--c-attr)"></i>属性バイト（前後各1桁）</span>
+        <span class="callout">桁勘定 ▸ <code>{社員マスタ保守}</code> = SO 1 + 全角 7 字 × 2 + SI 1 = <b id="sosiCalc">16 桁</b>（2〜17 桁）</span>
+      </div>
+    </main>
+
+    <aside class="right" id="props"></aside>
+  </div>
+
+  <!-- ===== ドック：ソース（双方向連動）＋ 検証（自前設計） ===== -->
+  <div class="dock">
+    <div class="dpane">
+      <div class="dhead">
+        <span class="ttl">ソース</span><span style="font-family:var(--mono)">EMPMNT01.dspf</span>
+        <span class="sp"></span>
+        <span class="pill mod" id="pillMod"></span><span class="pill add" id="pillAdd"></span><span class="pill keep" id="pillKeep"></span>
+      </div>
+      <div class="src-body"><div class="src-ruler" id="srcRuler"></div><div id="srcList"></div></div>
+    </div>
+    <div class="dpane">
+      <div class="dhead">
+        <span class="ttl">検証</span>
+        <span class="sp"></span>
+        <span class="pill err" id="pillErr"></span><span class="pill warn" id="pillWarn"></span><span class="pill info" id="pillInfo"></span>
+      </div>
+      <div class="vlist" id="vlist"></div>
+    </div>
+  </div>
+
+  <!-- ===== 自前ステータスバー ===== -->
+  <div class="statusbar own-statusbar">
+    <div class="sb" id="sbRec">様式 EMPMNT</div>
+    <div class="sb">24 × 80 *DS3</div>
+    <div class="sb" id="sbSel">選択 —</div>
+    <div class="sb grow"></div>
+    <div class="sb" id="sbSosi">SO/SI 表示 ON</div>
+    <div class="sb" id="sbDiag"><span class="dotw"></span>検証 —</div>
+    <div class="sb">CCSID 5035</div>
+    <div class="sb" id="sbHost">スタンドアロン</div>
+  </div>
+
+  <!-- ===== コマンドパレット（自前） ===== -->
+  <div class="ovbg" id="ovPalette">
+    <div class="palette">
+      <div class="pin">
+        <span style="color:var(--fg3)">▸</span>
+        <input type="text" id="palInput" placeholder="コマンドを入力（例: SO/SI、ズーム、保存）" autocomplete="off">
+      </div>
+      <div class="plist" id="palList"></div>
+      <div class="pfoot"><span>↑↓ 移動</span><span>Enter 実行</span><span>Esc 閉じる</span><span id="palNote"></span></div>
+    </div>
+  </div>
+
+  <!-- ===== ショートカット一覧（自前ヘルプ） ===== -->
+  <div class="ovbg" id="ovHelp">
+    <div class="sheet">
+      <div class="sh">キーボード ショートカット<span class="sp"></span>
+        <span style="font-size:11px;font-weight:400;color:var(--fg3)" id="helpMode"></span>
+        <button class="btn outline" id="closeHelp">閉じる</button>
+      </div>
+      <div class="sb2">
+        <p style="margin:0 0 8px;font-size:11.5px;color:var(--fg2)" id="helpLead"></p>
+        <table class="ktable"><thead><tr><th>操作</th><th>キー</th><th>提供元</th><th></th></tr></thead>
+        <tbody id="helpBody"></tbody></table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== 解説 ===== -->
+<div class="note">
+  <h2>C1：スタンドアロン優先設計<span>独立した DDS エディタとして作り、VSCode は「埋め込み先の 1 つ」として後から足す</span></h2>
+  <ul>
+    <li><b>既定はスタンドアロン。</b>初期状態 <code>data-host="standalone"</code> で、自前ヘッダ・ファイル操作・undo/redo・コマンドパレット・ヘルプ・ステータスバー・検証パネルを<b>すべて自前で持つ</b>。VSCode の外観（アクティビティバー・タブ・問題タブ）は模倣していない。</li>
+    <li><b>減算ではなく加算。</b>CSS の既定は「自前部品を表示」。<code>data-fileio="host"</code> のようにホストが肩代わりする宣言が来たときだけ、その部品を降ろす。ホスト固有機能は <code>.hostadd{display:none}</code> が既定で、能力があるときだけ足される。</li>
+    <li><b>host の意味を反転。</b>「何が使えるか」ではなく<b>「ホストが何を肩代わりするか」</b>。<code>providesFileIO / providesUndo / providesCommandPalette</code>（＋提案として <code>providesTitle / providesStatusBar</code>）が降ろす側、<code>canOpenTextEditor / hasPrompter</code> が足す側。</li>
+    <li><b>検証パネルは自前設計。</b>問題タブの行リストではなく、1 件ごとにカード化し、<b>80 桁のミニストリップ</b>で問題の桁範囲を図示し、<b>修正案</b>を添える。DDS 固有の情報量に合わせた形。</li>
+    <li><b>引き継いだ核。</b>3ペイン、双方向の選択連動（<code>#n</code> 行番号）、差分バッジと「未変更 N 行はバイト単位で不変」、SO/SI トグル（OFF で −2 桁のズレを可視化）、属性バイトと <code>DDS7103</code>、5250 配色、ズーム、桁勘定の計算関数は b2 と同一のものを使用。</li>
+    <li><b>切替の検証。</b>ヘッダ右の「モック: ホスト」で VSCode 埋め込みに切り替えると、ファイル操作・undo/redo・パレット・ファイル名・ステータスバーが降り、「テキストで開く」「F4 プロンプター」が足される。<b>3ペインとキャンバス、ドック、検証は 1 ピクセルも変わらない。</b></li>
+  </ul>
+</div>
+
+<!-- ===== 未解決（取り繕わずに列挙） ===== -->
+<div class="unres">
+  <h2>未解決 — VSCode に埋め込んだときに collision する箇所</h2>
+  <p class="lead">スタンドアロン優先で設計したものを VSCode モードに載せ替えたとき、<b>レイアウトは無改造で収まった</b>（3ペイン・キャンバス・ドック・検証・プロパティは不変）。一方で、<b>UI を隠すだけでは解けない衝突が 5 件</b>残る。いずれも「表示の出し分け」ではなく<b>ホストとの責務分担そのもの</b>の問題。</p>
+  <div class="ulist">
+
+    <div class="uitem">
+      <div class="ut"><span class="ubadge u">未解決</span>キーバインドの取り合い</div>
+      <p>ホストへ<b>丸ごと委譲できる</b>キー（<code>Ctrl+S</code> 保存 / <code>Ctrl+Z・Ctrl+Y</code> undo / <code>Ctrl+K</code> パレット）は UI ごと降ろせば済む。問題は<b>降ろせない 4 つ</b>—<code>Ctrl+=</code> <code>Ctrl+-</code>（キャンバスのズーム）、<code>Ctrl+Shift+M</code>（検証へ移動）、<code>Ctrl+/</code>（ショートカット一覧）。DDS デザイナ固有の機能なのに VSCode が同じキーを先に解決する。WebView 側で握り潰すとホストのコマンドが死に、通すと自前機能が無反応になる。<b>両立する設定は無い。</b></p>
+      <div class="fix"><b>暫定：</b>VSCode モードでは自前キーを無効化し、拡張側で <code>DDS:</code> プレフィックスのコマンドとして再登録して別キーを割り当てる。ヘルプ一覧では該当キーに取り消し線＋「VSCode が先取り」を表示（実装済み・ヘッダの「⚠ キー衝突 4」から確認可）。</div>
+    </div>
+
+    <div class="uitem">
+      <div class="ut"><span class="ubadge u">未解決</span>undo スタックの二重化</div>
+      <p>スタンドアロンでは自前の編集履歴が必須。一方 VSCode の <code>CustomTextEditor</code> では編集を <code>WorkspaceEdit</code> として発行し undo をホストへ委譲するのが正道。<b>UI は隠せてもモデル層の分岐は残る</b>（自前スタック / ホスト委譲の二系統）。</p>
+      <div class="fix"><b>方針案：</b>編集を必ず「ドキュメント差分（パッチ）」として表現し、適用先だけを差し替える。スタンドアロンではパッチを自前スタックへ、VSCode ではホストへ渡す。<b>コア側に undo API を持たせない</b>のが条件。</div>
+    </div>
+
+    <div class="uitem">
+      <div class="ut"><span class="ubadge p">部分解決</span>dirty 表示の粒度が落ちる</div>
+      <p>自前ヘッダは「未保存の変更 3 行」という<b>DDS 固有の粒度</b>を出せるが、VSCode のタブは <code>●</code> しか出せない。<code>providesTitle</code> で自前表示を降ろすと、この情報が消える。</p>
+      <div class="fix"><b>暫定：</b>ソースペインのヘッダ（変更 1 行 / 追加 2 行 / 未変更 10 行）へ退避させ、ヘッダからは落とす。降ろす代わりに情報が失われる典型例。</div>
+    </div>
+
+    <div class="uitem">
+      <div class="ut"><span class="ubadge p">部分解決</span>ステータス項目の置き場</div>
+      <p>自前ステータスバーは <code>providesStatusBar</code> で降ろせるが、CCSID・SO/SI 状態・選択桁は VSCode のステータスバーに出せない（WebView からは <code>StatusBarItem</code> を登録できず、拡張本体の協力が要る）。</p>
+      <div class="fix"><b>方針案：</b>host メッセージに <code>setStatusItems([...])</code> を足し、拡張側が代理登録する。<b>host インターフェースの拡張が必要</b>で、現行の 6 フィールドでは足りない。</div>
+    </div>
+
+    <div class="uitem">
+      <div class="ut"><span class="ubadge u">未解決</span>ズーム操作の二重適用</div>
+      <p>自前のキャンバスズーム（<code>--cell-w</code>）と VSCode のエディタズーム（<code>Ctrl+=</code>）が同時に効き、桁ルーラーが二重に拡大する。桁位置の正確さが売りの画面で<b>実寸が信用できなくなる</b>。</p>
+      <div class="fix"><b>暫定：</b>VSCode モードでは自前ズームを％表示だけにして <code>Ctrl+=</code> をホストに譲る／もしくは WebView に <code>zoom</code> 非追従を宣言する。どちらも一長一短で未決。</div>
+    </div>
+
+    <div class="uitem">
+      <div class="ut"><span class="ubadge d">意図的</span>テーマが VSCode と揃わない</div>
+      <p>独自パレット（<code>--vscode-*</code> 参照ゼロ）のため、埋め込むと配色がホストのテーマから浮く。これは<b>スタンドアロンを正とした帰結</b>で、バグではない。</p>
+      <div class="fix"><b>選択肢：</b>任意適用のブリッジ層（<code>--vscode-editor-background</code> → 自前トークン）を被せられるようにする。ただし被せると見た目の二重管理が発生するため、既定は独自パレットのままとする。</div>
+    </div>
+
+  </div>
+</div>
+</div>
+
+<script>
+(function(){
+"use strict";
+
+/* ============================================================
+   host = 「ホストが何を肩代わりするか」の宣言
+   ============================================================ */
+var HOSTS = {
+  standalone: { name:"standalone",
+    providesFileIO:false, providesUndo:false, providesCommandPalette:false,
+    providesTitle:false, providesStatusBar:false,
+    canOpenTextEditor:false, hasPrompter:false },
+  vscode: { name:"vscode",
+    providesFileIO:true, providesUndo:true, providesCommandPalette:true,
+    providesTitle:true, providesStatusBar:true,
+    canOpenTextEditor:true, hasPrompter:true }
+};
+var HOST = HOSTS.standalone;              /* 既定はスタンドアロン */
+
+/* ============================================================
+   モデル（サンプル DDS を反映）
+   ============================================================ */
+var SO = "\u0001", SI = "\u0002";
+
+var RECS = [
+  { id:"EMPMNT", kind:"レコード様式", active:true, visible:true, kw:["CA03(03 '終了')"],
+    items:[
+      {k:"c", row:1,  col:2,  segs:[["社員マスタ保守",1]]},
+      {k:"c", row:1,  col:65, segs:[["EMPMNT01",0]]},
+      {k:"c", row:3,  col:2,  segs:[["社員番号",1]]},
+      {k:"f", name:"EMPNO",  len:6,  dec:0, use:"B", row:3, col:14, kw:[]},
+      {k:"c", row:4,  col:2,  segs:[["氏名",1]]},
+      {k:"f", name:"EMPNAM", len:20, use:"B", row:4, col:14, kw:["DSPATR(UL)","CHECK(LC)"], diff:"M", was:"長さ 15 → 20 に変更"},
+      {k:"c", row:5,  col:2,  segs:[["所属部門",1]]},
+      {k:"f", name:"DEPTCD", len:3,  dec:0, use:"B", row:5, col:14, kw:[]},
+      {k:"f", name:"DEPTNM", len:20, use:"O", row:5, col:20, kw:[], ind:"50", diff:"A", was:"今回追加"},
+      {k:"c", row:23, col:2,  segs:[["F3=",0],["終了",1]]}
+    ]},
+  { id:"EMPSFL", kind:"サブファイル", active:false, visible:true, kw:["SFL"],
+    items:[
+      {k:"f", name:"SELOPT",  len:1,  use:"B", row:10, col:3,  kw:[]},
+      {k:"f", name:"SFLENO",  len:6,  dec:0, use:"O", row:10, col:4,  kw:[]},
+      {k:"f", name:"SFLNAM",  len:20, use:"O", row:10, col:13, kw:[]},
+      {k:"f", name:"SFLDEPT", len:12, use:"O", row:10, col:30, kw:[]},
+      {k:"f", name:"SFLRMK",  len:20, use:"O", row:10, col:68, kw:[]}
+    ]}
+];
+var INDS = [
+  {no:"03", desc:"CA03 応答標識（終了）", on:true,  kind:"resp"},
+  {no:"30", desc:"入力エラー時の反転表示", on:false, kind:"cond"},
+  {no:"50", desc:"部門名の表示制御",       on:true,  kind:"cond"},
+  {no:"90", desc:"保護表示 DSPATR(PR)",   on:false, kind:"cond"}
+];
+var COLS = 80, ROWS = 24;
+var UI = { sosi:true, attr:true, ghost:true, guide:true, grid:true };
+var SEL = { r:0, i:5 };
+
+/* ============================================================
+   桁勘定（全角=2桁 / SO・SI=各1桁）
+   ============================================================ */
+function isWide(c){
+  return /[ᄀ-ᅟ⺀-〾ぁ-㏿㐀-䶿一-鿿ꀀ-꓏가-힣豈-﫿︰-﹯＀-｠￠-￦]/.test(c);
+}
+function trueW(s){ var w=0,i,c; for(i=0;i<s.length;i++){ c=s.charAt(i); w += (c===SO||c===SI) ? 1 : (isWide(c)?2:1); } return w; }
+function dispW(s){ var w=0,i,c; for(i=0;i<s.length;i++){ c=s.charAt(i); if(c===SO||c===SI){ if(UI.sosi) w+=1; } else { w += isWide(c)?2:1; } } return w; }
+function dispText(it){
+  if(it.k === "f"){ var ch=(it.dec!==undefined)?"9":"X", s="", i; for(i=0;i<it.len;i++) s+=ch; return s; }
+  return it.segs.map(function(sg){ return sg[1] ? SO + sg[0] + SI : sg[0]; }).join("");
+}
+function literal(it){ return "'" + dispText(it) + "'"; }
+function widthOf(it){ return it.k === "f" ? it.len : trueW(dispText(it)); }
+function endCol(it){ return it.col + widthOf(it) - 1; }
+function label(it){ return it.k === "f" ? it.name : "'" + it.segs.map(function(s){return s[0];}).join("") + "'"; }
+function kls(it){ return it.k === "c" ? "k-const" : (it.use === "O" ? "k-out" : "k-in"); }
+function indOn(no){ for(var i=0;i<INDS.length;i++) if(INDS[i].no === no) return INDS[i].on; return true; }
+function esc(c){ return c==="&"?"&amp;":c==="<"?"&lt;":c===">"?"&gt;":c===" "?"&nbsp;":c; }
+function cel(ch, span, cls, cw){
+  return '<span class="cel' + (cls?" "+cls:"") + '" style="width:' + (span===2?"calc("+cw+" * 2)":cw) + '">' + ch + "</span>";
+}
+function cellsHTML(s, cw, kwFrom){
+  var h="", i, c, col=1;
+  for(i=0;i<s.length;i++){
+    c = s.charAt(i);
+    if(c===SO || c===SI){ if(UI.sosi){ h += cel(c===SO?"{":"}", 1, "sosi", cw); col++; } continue; }
+    var wide = isWide(c);
+    h += cel(esc(c), wide?2:1, (kwFrom && col>=kwFrom) ? "kw" : "", cw);
+    col += wide?2:1;
+  }
+  return h;
+}
+
+/* ============================================================
+   DDS ソース生成
+   ============================================================ */
+function head44(){ return new Array(45).join(" "); }
+function put(s,pos,txt){ return s.substring(0,pos-1) + txt + s.substring(pos-1+txt.length); }
+function rjust(s,txt,right){ txt = String(txt); return put(s, right - txt.length + 1, txt); }
+function buildSource(){
+  var L=[], n=0, rec=RECS[0];
+  function push(o){ o.n = ++n; L.push(o); return o; }
+  push({ head: put(head44(),6,"A"), tail:"DSPSIZ(24 80 *DS3)", kind:"file", diff:null });
+  push({ head: put(put(put(head44(),6,"A"),17,"R"),19,rec.id), tail:rec.kw[0], kind:"rec", diff:null, ref:{r:0,i:-1} });
+  rec.items.forEach(function(it, idx){
+    var h = put(head44(),6,"A"), tail;
+    if(it.ind) h = put(h,9,it.ind);
+    if(it.k === "f"){
+      h = put(h,19,it.name);
+      h = rjust(h,it.len,34);
+      if(it.dec !== undefined) h = rjust(h,it.dec,37);
+      h = put(h,38,it.use);
+      tail = (it.kw && it.kw[0]) || "";
+    } else { tail = literal(it); }
+    h = rjust(h,it.row,41);
+    h = rjust(h,it.col,44);
+    push({ head:h, tail:tail, kind:"item", ref:{r:0,i:idx}, diff:it.diff || null });
+    var kws = it.kw || [];
+    for(var k=1;k<kws.length;k++){
+      push({ head:put(head44(),6,"A"), tail:kws[k], kind:"cont", ref:{r:0,i:idx},
+             diff:(it.name === "EMPNAM" && k === 1) ? "A" : null });
+    }
+  });
+  return L;
+}
+
+/* ============================================================
+   検証（実バイト基準・表示トグルに依存しない）
+   ============================================================ */
+function diagnostics(){
+  var out = [];
+  RECS.forEach(function(r){
+    r.items.forEach(function(it){
+      if(endCol(it) > COLS){
+        out.push({sev:"w", code:"DDS7101", rec:r.id, row:it.row, col:it.col, from:it.col, to:80, ovf:true,
+          msg:"<b>桁溢れ</b>：" + label(it) + " は " + it.col + " 桁から " + widthOf(it) + " 桁ぶん配置され、右端 " +
+              endCol(it) + " 桁が画面幅 80 桁を超えます",
+          fix:"桁を " + (81 - widthOf(it)) + " まで戻すか、長さを " + (81 - it.col) + " 桁以下にする"});
+      }
+    });
+    for(var a=0;a<r.items.length;a++){
+      for(var b=a+1;b<r.items.length;b++){
+        var A=r.items[a], B=r.items[b];
+        if(A.row !== B.row) continue;
+        var s=Math.max(A.col,B.col), e=Math.min(endCol(A),endCol(B));
+        if(s <= e){
+          out.push({sev:"w", code:"DDS7102", rec:r.id, row:A.row, col:s, from:s, to:e,
+            msg:"<b>重なり</b>：" + label(A) + " と " + label(B) + " が " + s + "〜" + e + " 桁で重複しています",
+            fix:label(B) + " を " + (endCol(A) + 2) + " 桁へ移動（属性バイト 1 桁ぶんを空ける）"});
+          continue;
+        }
+        var pre = (B.col > A.col) ? B : A, oth = (B.col > A.col) ? A : B, ab = pre.col - 1;
+        if(ab >= oth.col && ab <= endCol(oth)){
+          out.push({sev:"w", code:"DDS7103", rec:r.id, row:A.row, col:ab, from:ab, to:ab,
+            msg:"<b>属性バイト衝突</b>：" + label(pre) + " の直前に必要な属性バイト（" + ab + " 桁）を " +
+                label(oth) + " が占有しています。5250 では各項目の前後に 1 表示桁ずつ必要です",
+            fix:label(pre) + " を " + (endCol(oth) + 2) + " 桁へ移動する"});
+        }
+      }
+    }
+  });
+  var t = RECS[0].items[0];
+  out.push({sev:"i", code:"DDS7210", rec:"EMPMNT", row:t.row, col:t.col, from:t.col, to:endCol(t),
+    msg:"定数 " + label(t) + " は SO/SI を含めて <b>" + widthOf(t) + " 桁</b>（" + t.col + "〜" + endCol(t) +
+        " 桁）を占有します（SO 1 + 全角 " + Array.from(t.segs[0][0]).length + " 字 × 2 + SI 1）",
+    fix:"この桁勘定は SO/SI 表示の ON/OFF に関係なく一定（ファイルの実バイトが基準）"});
+  if(!UI.sosi){
+    var nd = 0;
+    RECS[0].items.forEach(function(i){ if(i.k === "c" && trueW(dispText(i)) !== dispW(dispText(i))) nd++; });
+    out.push({sev:"i", code:"DDS7211", rec:"EMPMNT", row:1, col:1, from:1, to:80,
+      msg:"<b>SO/SI 非表示中</b>：DBCS 定数 " + nd + " 件で、表示桁が実桁より 2 桁ずつ短く見えています",
+      fix:"ツールバーの「SO/SI 表示」を ON に戻す（ファイルの実バイトは不変）"});
+  }
+  return out;
+}
+
+/* ============================================================
+   描画
+   ============================================================ */
+var SRC = [];
+function $(id){ return document.getElementById(id); }
+
+function renderRuler(sel){
+  var h="", c, ch, k;
+  for(c=1;c<=COLS;c++){
+    if(c%10===0){ ch=String((c/10)%10); k="num"; } else if(c%5===0){ ch="+"; k=""; } else { ch="."; k=""; }
+    if(sel && c>=sel.col && c<=endCol(sel)) k += " hl";
+    h += '<span class="rc ' + k + '">' + ch + "</span>";
+  }
+  $("ruler").innerHTML = h;
+}
+function rulerCells(from,to,cls){
+  var h="", c, ch, k;
+  for(c=from;c<=to;c++){
+    if(c%10===0){ ch=String((c/10)%10); k="num"; } else if(c%5===0){ ch="+"; k=""; } else { ch="."; k=""; }
+    h += '<span class="rc ' + k + '">' + ch + "</span>";
+  }
+  return h;
+}
+function renderGutters(sel, diags){
+  var warn={}, g="", rg="", r;
+  diags.forEach(function(d){ if(d.sev==="w") warn[d.row]=1; });
+  for(r=1;r<=ROWS;r++){
+    var k = (sel && r===sel.row) ? "hl" : (warn[r] ? "warn" : "");
+    g  += '<div class="gn ' + k + '">' + r + "</div>";
+    rg += '<div class="gm">' + (warn[r] ? "⚠" : "") + "</div>";
+  }
+  $("gutter").innerHTML = g; $("rgutter").innerHTML = rg;
+}
+function itemHTML(it, ri, ii, ghost){
+  var txt=dispText(it), dw=dispW(txt), tw=trueW(txt);
+  var vis=Math.min(dw, COLS-it.col+1), clip=(it.col+tw-1 > COLS);
+  var badge = (it.ind && !ghost) ? '<span class="indbadge">' + it.ind + "</span>" : "";
+  var tip = label(it) + "  " + it.row + "行" + it.col + "桁  " + tw + "桁";
+  return '<div class="item ' + kls(it) + (ghost?" ghost":"") + (clip?" clip":"") + '" data-sel="' + ri + "," + ii +
+    '" title="' + tip + '" style="left:calc(var(--cell-w) * ' + (it.col-1) + ');top:calc(var(--cell-h) * ' + (it.row-1) +
+    ');width:calc(var(--cell-w) * ' + vis + ');overflow:hidden">' + badge + cellsHTML(txt,"var(--cell-w)") + "</div>";
+}
+function srcLineOf(r,i){
+  for(var k=0;k<SRC.length;k++){ var L=SRC[k]; if(L.ref && L.ref.r===r && L.ref.i===i && L.kind!=="cont") return L; }
+  return null;
+}
+
+function render(){
+  var rec = RECS[SEL.r], sel = (SEL.i >= 0) ? RECS[SEL.r].items[SEL.i] : null;
+  var diags = diagnostics();
+  SRC = buildSource();
+
+  var itemsH="", attrH="", diagH="";
+  RECS.forEach(function(r, ri){
+    if(!r.visible) return;
+    if(!r.active && !UI.ghost) return;
+    r.items.forEach(function(it, ii){
+      if(it.ind && !indOn(it.ind)) return;
+      itemsH += itemHTML(it, ri, ii, !r.active);
+      if(UI.attr){
+        var op = r.active ? "" : "opacity:.3;";
+        if(it.col > 1) attrH += '<i class="ab" title="属性バイト（' + (it.col-1) + ' 桁）" style="' + op +
+          'left:calc(var(--cell-w) * ' + (it.col-2) + ');top:calc(var(--cell-h) * ' + (it.row-1) + ')"></i>';
+        var te = endCol(it) + 1;
+        if(te <= COLS) attrH += '<i class="ab tail" title="終端属性（' + te + ' 桁）" style="' + op +
+          'left:calc(var(--cell-w) * ' + (te-1) + ');top:calc(var(--cell-h) * ' + (it.row-1) + ')"></i>';
+      }
+      if(!UI.sosi && r.active){
+        var txt=dispText(it), lost=trueW(txt)-dispW(txt);
+        if(lost > 0) diagH += '<i class="lost" style="left:calc(var(--cell-w) * ' + (it.col-1+dispW(txt)) +
+          ');top:calc(var(--cell-h) * ' + (it.row-1) + ');width:calc(var(--cell-w) * ' + lost + ')"><span>−' + lost + "桁</span></i>";
+      }
+    });
+  });
+  RECS.forEach(function(r){
+    if(!r.visible || (!r.active && !UI.ghost)) return;
+    diags.forEach(function(d){
+      if(d.rec !== r.id || d.sev !== "w") return;
+      var from = d.ovf ? 77 : d.from, to = d.ovf ? 80 : d.to;
+      diagH += '<i class="ovl' + (d.ovf?" edge":"") + (d.code==="DDS7103"?" attrx":"") +
+        '" style="left:calc(var(--cell-w) * ' + (from-1) + ');top:calc(var(--cell-h) * ' + (d.row-1) +
+        ');width:calc(var(--cell-w) * ' + (to-from+1) + ')"></i>';
+    });
+  });
+  $("lItems").innerHTML = itemsH;
+  $("lAttr").innerHTML = attrH;
+  $("lDiag").innerHTML = diagH;
+  $("lGuide").innerHTML = UI.guide
+    ? '<i class="snap" style="left:calc(var(--cell-w) * 13);top:calc(var(--cell-h) * 2);height:calc(var(--cell-h) * 3.4)"><span>14 桁で整列</span></i>' : "";
+
+  var selH = "";
+  if(sel && rec.active){
+    var line = srcLineOf(SEL.r, SEL.i);
+    selH = '<i class="selbox" style="left:calc(var(--cell-w) * ' + (sel.col-1) + ');top:calc(var(--cell-h) * ' + (sel.row-1) +
+      ');width:calc(var(--cell-w) * ' + dispW(dispText(sel)) + ')">' +
+      '<span class="badge">' + label(sel) + (line ? "  #" + line.n : "") + "</span>" +
+      '<span class="meas">' + sel.row + "行 " + sel.col + "〜" + endCol(sel) + "桁（" + widthOf(sel) + "桁）</span>" +
+      ["nw","n","ne","w","e","sw","s","se"].map(function(p){ return '<i class="h ' + p + '"></i>'; }).join("") + "</i>";
+  }
+  $("lSel").innerHTML = selH;
+  $("grid").className = "grid" + (UI.grid ? "" : " nogrid");
+
+  renderRuler(rec.active ? sel : null);
+  renderGutters(rec.active ? sel : null, diags);
+  renderTree();
+  renderSource();
+  renderDiags(diags);
+  renderProps(sel);
+  renderHost();
+
+  var t = RECS[0].items[0];
+  $("sosiCalc").textContent = widthOf(t) + " 桁";
+  $("capSosi").innerHTML = UI.sosi ? 'SO/SI 表示 <b>ON</b>（{ } が各 1 桁）'
+    : '<span style="color:var(--err)">SO/SI 表示 OFF（桁がずれて見えます）</span>';
+  $("sosiBanner").innerHTML = UI.sosi ? "" :
+    '<div class="banner">⚠ <b>SO/SI 非表示</b>：DBCS 定数が実際より 2 桁ずつ短く描かれています（赤い斜線＝消えた SO/SI）。' +
+    'ソース面では「実バイト終端」との −2 桁のズレとして現れます。<b>ファイルの中身は 1 バイトも変わっていません。</b></div>';
+  $("sbSosi").textContent = "SO/SI 表示 " + (UI.sosi ? "ON" : "OFF");
+  $("sbSel").textContent = sel ? "選択 " + label(sel) + " " + sel.row + "行" + sel.col + "桁"
+                               : "選択 様式 " + RECS[SEL.r].id;
+  $("sbRec").textContent = "様式 " + RECS.filter(function(r){return r.active;}).map(function(r){return r.id;}).join(", ");
+}
+
+function eyeSVG(on){
+  return on ? '<svg viewBox="0 0 24 24"><path d="M2 12s4-6.5 10-6.5S22 12 22 12s-4 6.5-10 6.5S2 12 2 12z"/><circle cx="12" cy="12" r="2.5"/></svg>'
+            : '<svg viewBox="0 0 24 24"><path d="M2 12s4-6.5 10-6.5c2 0 3.7.7 5 1.6M22 12s-4 6.5-10 6.5c-2 0-3.7-.7-5-1.6"/><path d="M4 20L20 4"/></svg>';
+}
+function renderTree(){
+  var h = "";
+  RECS.forEach(function(r, ri){
+    h += '<div class="node rec ' + (r.active?"active":"inactive") + '" data-rec="' + ri + '">' +
+      '<span class="chev">' + (r.active?"▾":"▸") + "</span>" +
+      '<span class="radio ' + (r.active?"on":"") + '" title="アクティブ様式に指定"></span>' +
+      '<span class="nm">R ' + r.id + "</span>" +
+      '<span class="tag ' + (r.active?"act":"") + '">' + (r.active?"編集中":r.kind) + "</span>" +
+      '<button class="eye ' + (r.visible?"":"off") + '" data-eye="' + ri + '" title="キャンバス表示の切替">' + eyeSVG(r.visible) + "</button></div>";
+    if(!r.active) return;
+    var cs=[], fs=[];
+    r.items.forEach(function(it, ii){ (it.k==="c"?cs:fs).push([it, ii]); });
+    [["定数", cs, "var(--c-const)"], ["フィールド", fs, null]].forEach(function(g){
+      h += '<div class="grp-lbl">' + g[0] + " (" + g[1].length + ")</div>";
+      g[1].forEach(function(p){
+        var it=p[0], ii=p[1], line=srcLineOf(ri, ii);
+        var col = g[2] || (it.use==="O" ? "var(--c-out)" : "var(--c-in)");
+        h += '<div class="child ' + ((SEL.r===ri && SEL.i===ii)?"sel":"") + '" data-sel="' + ri + "," + ii + '">' +
+          '<span class="dot" style="background:' + col + '"></span><span class="lbl">' + label(it) +
+          (it.k==="f" ? '<span style="color:var(--fg3);font-size:10.5px"> ' + it.len + (it.dec!==undefined?","+it.dec:"") +
+            " " + it.use + (it.ind?" · "+it.ind:"") + "</span>" : "") + "</span>" +
+          (it.diff ? '<span class="db ' + it.diff + '">' + it.diff + "</span>" : "") +
+          (line ? '<span class="lref">#' + line.n + "</span>" : "") +
+          '<span class="pos">' + it.row + "," + it.col + "</span></div>";
+      });
+    });
+  });
+  var sfl = RECS[1];
+  if(!sfl.active){
+    h += '<div class="grp-lbl" style="opacity:.6">EMPSFL のフィールド (' + sfl.items.length + ") — 表示のみ</div>";
+    sfl.items.forEach(function(it){
+      h += '<div class="child ghosted" title="非アクティブ様式のため編集できません">' +
+        '<span class="dot" style="background:var(--c-out)"></span><span class="lbl">' + it.name + "</span>" +
+        '<span class="pos">' + it.row + "," + it.col + "</span></div>";
+    });
+  }
+  $("tree").innerHTML = h;
+}
+function affected(no){ var n=0; RECS.forEach(function(r){ r.items.forEach(function(i){ if(i.ind===no) n++; }); }); return n; }
+function renderInds(){
+  var h = "";
+  INDS.forEach(function(v, idx){
+    h += '<div class="ind-row"><span class="ind-no">' + v.no + "</span>" +
+      '<span class="ind-desc">' + v.desc + "</span>" +
+      '<span class="ind-cnt">' + (v.kind==="resp" ? "応答" : affected(v.no) + "件") + "</span>" +
+      '<label class="sw"><input type="checkbox" data-ind="' + idx + '"' + (v.on?" checked":"") +
+      '><span class="track"></span><span class="knob"></span></label></div>';
+  });
+  $("indList").innerHTML = h;
+}
+function renderSource(){
+  var h="", mod=0, add=0, keep=0;
+  SRC.forEach(function(L){
+    var text = L.head + (L.tail || "");
+    var isSel = L.ref && L.ref.r === SEL.r && L.ref.i === SEL.i;
+    var cls = L.diff || "K";
+    if(L.diff === "M") mod++; else if(L.diff === "A") add++; else keep++;
+    var tw=trueW(text), dw=dispW(text), lost=tw-dw, marks="";
+    if(/[\u0001\u0002]/.test(text)){
+      marks += '<i class="bytecaret' + (lost>0?" bad":"") + '" style="left:calc(var(--scell-w) * ' + tw + ')"></i>';
+      if(lost > 0) marks += '<i class="gapmark" style="left:calc(var(--scell-w) * ' + dw +
+        ');width:calc(var(--scell-w) * ' + lost + ')"></i>';
+    }
+    h += '<div class="sline ' + cls + (isSel?" sel":"") + '" data-line="' + L.n + '"' +
+      (L.ref ? ' data-sel="' + L.ref.r + "," + L.ref.i + '"' : "") +
+      ' title="' + (L.diff==="M"?"変更行":L.diff==="A"?"追加行":"未変更（バイト単位で不変）") + '">' +
+      '<span class="lb">#' + L.n + "</span>" +
+      '<span class="db ' + cls + '">' + (L.diff || "·") + "</span>" +
+      '<span class="stext">' + cellsHTML(text, "var(--scell-w)", 45) + marks + "</span></div>";
+  });
+  $("srcList").innerHTML = h;
+  $("pillMod").textContent = "変更 " + mod + " 行";
+  $("pillAdd").textContent = "追加 " + add + " 行";
+  $("pillKeep").textContent = "🔒 未変更 " + keep + " 行はバイト単位で不変";
+  $("dirtyCnt").textContent = "未保存 " + (mod + add) + " 行";
+}
+function renderDiags(diags){
+  var er=0, wa=0, inf=0;
+  var h = diags.map(function(d){
+    if(d.sev==="w") wa++; else inf++;
+    var from = d.from || 1, to = d.to || 80;
+    var l = ((from-1)/80*100).toFixed(2), w = ((to-from+1)/80*100).toFixed(2);
+    return '<div class="vcard ' + d.sev + '">' +
+      '<div class="vh"><span class="sev">' + (d.sev==="w"?"警告":"情報") + "</span>" +
+      '<span class="code">' + d.code + "</span>" +
+      '<span class="loc">' + d.rec + " · " + d.row + "行" + from + "桁</span></div>" +
+      '<div class="vm">' + d.msg + "</div>" +
+      '<div class="vstrip"><i class="' + (d.ovf?"ovf":"") + '" style="left:' + l + "%;width:" + w + '%"></i></div>' +
+      (d.fix ? '<div class="vfix"><b>修正案</b>　' + d.fix + "</div>" : "") + "</div>";
+  }).join("");
+  $("vlist").innerHTML = h;
+  $("pillErr").textContent  = "重大 " + er;
+  $("pillWarn").textContent = "警告 " + wa;
+  $("pillInfo").textContent = "情報 " + inf;
+  $("sbDiag").innerHTML = '<span class="' + (wa?"dotw":"dotok") + '"></span>検証 ' + (wa ? "警告 " + wa + " 件" : "問題なし");
+}
+function renderProps(sel){
+  var rec = RECS[SEL.r], h = "";
+  if(!sel){
+    h += '<div class="prop-head"><div class="ic" style="background:var(--accent-soft);color:var(--accent)">R</div>' +
+      '<div><div class="t1">' + rec.id + '</div><div class="t2">' + rec.kind + " · " + rec.items.length + " 項目</div></div></div>" +
+      '<div class="row" style="padding-top:8px"><label>様式名</label><div class="ctl"><input type="text" value="' + rec.id + '"></div></div>' +
+      '<div class="row"><label>種類</label><div class="ctl ro">' + rec.kind + "</div></div>" +
+      '<div class="row"><label>キーワード</label><div class="ctl"></div></div><div class="chips">' +
+      rec.kw.map(function(k){ return '<span class="chip">' + k + '<span class="x">✕</span></span>'; }).join("") +
+      '<span class="chip add">＋ 追加</span></div>';
+    $("props").innerHTML = h; return;
+  }
+  var isF = sel.k === "f", tw = widthOf(sel), line = srcLineOf(SEL.r, SEL.i);
+  var icBg = isF ? (sel.use==="O"?"var(--c-out-bg)":"var(--c-in-bg)") : "var(--c-const-bg)";
+  var icFg = isF ? (sel.use==="O"?"var(--c-out)":"var(--c-in)") : "var(--c-const)";
+  var icTx = isF ? (sel.dec!==undefined?"S":"A") : "T";
+
+  h += '<div class="prop-head"><div class="ic" style="background:' + icBg + ';color:' + icFg + '">' + icTx + "</div>" +
+    '<div><div class="t1">' + (isF ? sel.name : "定数") +
+    (sel.diff ? '<span class="db ' + sel.diff + '">' + sel.diff + "</span>" : "") +
+    (line ? '<span class="lref">#' + line.n + "</span>" : "") + "</div>" +
+    '<div class="t2">' + (isF ? "フィールド" : "定数（リテラル）") + " · 様式 " + rec.id + (sel.was ? " · " + sel.was : "") + "</div></div></div>";
+
+  if(isF){
+    h += '<div class="row" style="padding-top:8px"><label>名前</label><div class="ctl"><input type="text" value="' + sel.name + '"></div></div>' +
+      '<div class="row"><label>型</label><div class="ctl"><select>' +
+      (sel.dec !== undefined ? '<option selected>S — ゾーン10進</option><option>A — 英数字</option>'
+        : '<option selected>A — 英数字</option><option>S — ゾーン10進</option><option>O — DBCS 混在</option><option>J — DBCS 専用</option>') +
+      "</select></div></div>" +
+      '<div class="row"><label>長さ / 小数</label><div class="ctl duo"><input type="number" value="' + sel.len +
+      '"><input type="text" value="' + (sel.dec!==undefined?sel.dec:"—") + '"' + (sel.dec===undefined?' style="opacity:.55"':"") + "></div></div>" +
+      '<div class="row"><label>使用</label><div class="ctl segbtn">' +
+      ["I 入力","O 出力","B 両用","H 隠し"].map(function(t){
+        return "<button" + (t.charAt(0)===sel.use ? ' class="on"' : "") + ">" + t + "</button>"; }).join("") + "</div></div>";
+  } else {
+    var raw = sel.segs.map(function(s){ return s[0]; }).join("");
+    var nD = sel.segs.filter(function(s){ return s[1]; }).reduce(function(n,s){ return n + Array.from(s[0]).length; }, 0);
+    var nS = sel.segs.filter(function(s){ return !s[1]; }).reduce(function(n,s){ return n + s[0].length; }, 0);
+    h += '<div class="row" style="padding-top:8px"><label>テキスト</label><div class="ctl"><input type="text" value="' + raw + '"></div></div>' +
+      '<div class="row"><label>内訳</label><div class="ctl ro">' + (nS ? "半角 " + nS + " 桁 + " : "") +
+      "全角 " + nD + " 字 ×2 = " + (nD*2) + " 桁" + (nD ? " + SO/SI 2 桁" : "") + "</div></div>" +
+      '<div class="row"><label>実占有</label><div class="ctl ro" style="color:var(--c-sosi)">' + tw + " 桁</div></div>";
+  }
+  h += '<div class="row" style="border-top:1px solid var(--line);margin-top:6px;padding-top:8px"><label>行 / 桁</label>' +
+    '<div class="ctl duo"><input type="number" value="' + sel.row + '"><input type="number" value="' + sel.col + '"></div></div>' +
+    '<div class="row"><label>占有</label><div class="ctl ro">' + sel.col + " 〜 " + endCol(sel) + " 桁（" + tw + " 桁）</div></div>" +
+    '<div class="row"><label>属性バイト</label><div class="ctl ro attr">前 ' + (sel.col-1) + " 桁 / 後 " + (endCol(sel)+1) + " 桁</div></div>" +
+    '<div class="row"><label>右端余裕</label><div class="ctl ro">' + (COLS - endCol(sel)) + " 桁</div></div>";
+
+  h += '<div class="row" style="border-top:1px solid var(--line);margin-top:6px;padding-top:8px"><label>キーワード</label><div class="ctl"></div></div><div class="chips">' +
+    (sel.kw && sel.kw.length ? sel.kw.map(function(k){
+      var m = /^([A-Z0-9]+)(\(.*\))?$/.exec(k);
+      return '<span class="chip"><b>' + (m?m[1]:k) + "</b>" + (m && m[2] ? m[2] : "") + '<span class="x">✕</span></span>'; }).join("")
+      : '<span class="chip none">未設定</span>') + '<span class="chip add">＋ 追加</span></div>' +
+    '<div class="row"><label>条件標識</label><div class="ctl"></div></div><div class="chips">' +
+    (sel.ind ? '<span class="chip"><b>' + sel.ind + '</b> ON で表示<span class="x">✕</span></span>' : '<span class="chip none">なし</span>') +
+    '<span class="chip add">＋ 条件</span></div>';
+
+  if(line){
+    var text = line.head + (line.tail || "");
+    h += '<div class="srccard"><div class="hd2"><span class="lb">#' + line.n + "</span>" +
+      '<span class="db ' + (line.diff || "K") + '">' + (line.diff || "·") + "</span><span>" +
+      (line.diff==="M" ? "変更行" : line.diff==="A" ? "追加行" : "未変更（バイト保全）") + "</span>" +
+      '<span class="sp"></span><span style="font-size:10px;color:var(--fg3)">39-41=行 / 42-44=桁 / 45-=機能</span></div>' +
+      '<div class="bd"><div class="mini-ruler">' + rulerCells(1,72) + "</div>" +
+      '<div class="sline-mini">' + cellsHTML(text, "var(--scell-w)", 45) + "</div></div></div>";
+  }
+  h += '<div class="tip add-prompter hostadd">キーワードにフォーカスして <span class="kbd">F1</span> でヘルプ、' +
+       '<span class="kbd">F4</span> でプロンプター（ホストの拡張が提供）。</div>';
+  $("props").innerHTML = h;
+}
+
+/* ---- ホスト連携カード ---- */
+function renderHost(){
+  var bo = function(v){ return '<span class="' + (v?"t":"f") + '">' + v + "</span>"; };
+  $("hostJson").innerHTML =
+    'host → webview :\n{ type:<span class="s">"load"</span>, doc:<b>RenderModel</b>,\n  host:{\n' +
+    '   name:<span class="s">"' + HOST.name + '"</span>,\n' +
+    "   providesFileIO: " + bo(HOST.providesFileIO) + ",\n" +
+    "   providesUndo: " + bo(HOST.providesUndo) + ",\n" +
+    "   providesCommandPalette: " + bo(HOST.providesCommandPalette) + ",\n" +
+    '   <span class="x">providesTitle</span>: ' + bo(HOST.providesTitle) + ",\n" +
+    '   <span class="x">providesStatusBar</span>: ' + bo(HOST.providesStatusBar) + ",\n" +
+    "   canOpenTextEditor: " + bo(HOST.canOpenTextEditor) + ",\n" +
+    "   hasPrompter: " + bo(HOST.hasPrompter) + "\n  } }";
+  function gate(kind, on, name, txt){
+    return '<div class="gate ' + kind + '"><span class="ic">' + (kind==="plus" ? "＋" : on ? "－" : "●") +
+      '</span><span><b>' + name + "</b> " + txt + "</span></div>";
+  }
+  $("hostGates").innerHTML =
+    gate(HOST.providesFileIO?"host":"own", HOST.providesFileIO, "providesFileIO",
+      HOST.providesFileIO ? "→ 開く/保存はホストが持つので自前ボタンを降ろす" : "→ 自前の開く/保存を表示中") +
+    gate(HOST.providesUndo?"host":"own", HOST.providesUndo, "providesUndo",
+      HOST.providesUndo ? "→ undo/redo をホストへ委譲し自前ボタンを降ろす" : "→ 自前の undo/redo を表示中") +
+    gate(HOST.providesCommandPalette?"host":"own", HOST.providesCommandPalette, "providesCommandPalette",
+      HOST.providesCommandPalette ? "→ ホストのパレットへ DDS: コマンドを登録" : "→ 自前パレット（Ctrl+K）を表示中") +
+    gate(HOST.providesTitle?"host":"own", HOST.providesTitle, "providesTitle",
+      HOST.providesTitle ? "→ ファイル名表示を降ろす（粒度は落ちる・未解決）" : "→ 自前のファイル名＋未保存表示") +
+    gate(HOST.providesStatusBar?"host":"own", HOST.providesStatusBar, "providesStatusBar",
+      HOST.providesStatusBar ? "→ 自前ステータスバーを降ろす（項目の置き場は未解決）" : "→ 自前ステータスバー") +
+    (HOST.canOpenTextEditor ? gate("plus", true, "canOpenTextEditor", "→「テキストで開く」を追加") : "") +
+    (HOST.hasPrompter ? gate("plus", true, "hasPrompter", "→ F1 ヘルプ / F4 プロンプターの案内を追加") : "");
+}
+
+/* ============================================================
+   コマンド定義（自前パレット & ショートカット一覧の単一の出どころ）
+   conflict:true = VSCode 埋め込み時にホストがキーを先取りするもの
+   ============================================================ */
+var CMDS = [
+  {ic:"{}", nm:"SO/SI 表示の切替",       key:"Ctrl+Alt+S", grp:"表示", run:function(){ setSosi(!UI.sosi); }},
+  {ic:"▤",  nm:"属性バイト表示の切替",   key:"Ctrl+Alt+A", grp:"表示", run:function(){ tog("btnAttr"); }},
+  {ic:"▦",  nm:"グリッドの切替",         key:"Ctrl+Alt+G", grp:"表示", run:function(){ tog("btnGrid"); }},
+  {ic:"■",  nm:"5250 配色の切替",        key:"Ctrl+Alt+5", grp:"表示", run:function(){ tog("btnTerm"); }},
+  {ic:"＋", nm:"ズーム拡大",             key:"Ctrl+=",     grp:"表示", conflict:true, run:function(){ zoomStep(1); }},
+  {ic:"－", nm:"ズーム縮小",             key:"Ctrl+-",     grp:"表示", conflict:true, run:function(){ zoomStep(-1); }},
+  {ic:"⌸",  nm:"フィールドを追加",       key:"F",          grp:"編集", run:function(){ mode("fld"); }},
+  {ic:"T",  nm:"定数を追加",             key:"T",          grp:"編集", run:function(){ mode("con"); }},
+  {ic:"↖",  nm:"選択モード",             key:"V",          grp:"編集", run:function(){ mode("sel"); }},
+  {ic:"↶",  nm:"元に戻す",               key:"Ctrl+Z",     grp:"編集", conflict:true, own:"undo"},
+  {ic:"↷",  nm:"やり直す",               key:"Ctrl+Y",     grp:"編集", conflict:true, own:"undo"},
+  {ic:"⤓",  nm:"保存",                   key:"Ctrl+S",     grp:"ファイル", conflict:true, own:"fileio"},
+  {ic:"⤒",  nm:"開く",                   key:"Ctrl+O",     grp:"ファイル", own:"fileio"},
+  {ic:"⚑",  nm:"検証結果へ移動",         key:"Ctrl+Shift+M", grp:"移動", conflict:true},
+  {ic:"?",  nm:"ショートカット一覧",     key:"Ctrl+/",     grp:"ヘルプ", conflict:true, run:function(){ openOv("ovHelp"); }}
+];
+
+/* ============================================================
+   操作
+   ============================================================ */
+function selectFrom(el){
+  var v = el.getAttribute("data-sel");
+  if(!v) return;
+  var p = v.split(",");
+  SEL = { r:+p[0], i:+p[1] };
+  RECS.forEach(function(r, ri){ r.active = (ri === SEL.r); });
+  render();
+}
+function on(id, ev, fn){ var e = $(id); if(e) e.addEventListener(ev, fn); }
+function tog(id){ var b = $(id); if(b) b.click(); }
+function mode(m){
+  var g = $("modes"), all = g.querySelectorAll(".tb"), i;
+  for(i=0;i<all.length;i++) all[i].classList.toggle("on", all[i].getAttribute("data-mode") === m);
+  $("grid").style.cursor = (m === "sel") ? "default" : "crosshair";
+  $("modeHint").textContent = m === "sel" ? "クリックで選択 / ドラッグで移動 / 端をドラッグで長さ変更"
+    : m === "fld" ? "ドラッグでフィールド領域を作成（属性バイト 1 桁を自動確保）"
+    : "クリックで定数を入力（全角入力時は SO/SI を自動挿入）";
+}
+var ZOOMS = [9,10,12], zi = 1;
+function applyZoom(){
+  var w = ZOOMS[zi];
+  document.documentElement.style.setProperty("--cell-w", w + "px");
+  document.documentElement.style.setProperty("--cell-h", Math.round(w*1.9) + "px");
+  document.documentElement.style.setProperty("--fs", Math.round(w*1.4) + "px");
+  var all = $("zoom").querySelectorAll(".tb"), i;
+  for(i=0;i<all.length;i++) all[i].classList.toggle("on", +all[i].getAttribute("data-z") === w);
+}
+function zoomStep(d){ zi = Math.max(0, Math.min(ZOOMS.length-1, zi + d)); applyZoom(); }
+function setSosi(v){ UI.sosi = v; $("btnSosi").classList.toggle("on", v); render(); }
+
+on("tree","click",function(e){
+  var eye = e.target.closest("[data-eye]");
+  if(eye){ var k = +eye.getAttribute("data-eye"); RECS[k].visible = !RECS[k].visible; e.stopPropagation(); render(); return; }
+  var s = e.target.closest("[data-sel]");
+  if(s && !s.classList.contains("ghosted")){ selectFrom(s); return; }
+  var r = e.target.closest("[data-rec]");
+  if(r){ SEL = { r:+r.getAttribute("data-rec"), i:-1 }; RECS.forEach(function(x,i){ x.active = (i === SEL.r); }); render(); }
+});
+on("lItems","click",function(e){ var s = e.target.closest("[data-sel]"); if(s) selectFrom(s); });
+on("srcList","click",function(e){ var s = e.target.closest("[data-sel]"); if(s) selectFrom(s); });
+on("indList","change",function(e){
+  var t = e.target.getAttribute("data-ind"); if(t === null) return;
+  INDS[+t].on = e.target.checked; render();
+});
+on("modes","click",function(e){ var b = e.target.closest(".tb"); if(b) mode(b.getAttribute("data-mode")); });
+on("zoom","click",function(e){
+  var b = e.target.closest(".tb"); if(!b) return;
+  zi = ZOOMS.indexOf(+b.getAttribute("data-z")); applyZoom();
+});
+function toggle(id, fn){ on(id,"click",function(){ this.classList.toggle("on"); fn(this.classList.contains("on")); }); }
+toggle("btnSosi", function(v){ UI.sosi = v; render(); });
+toggle("btnAttr", function(v){ UI.attr = v; render(); });
+toggle("btnGrid", function(v){ UI.grid = v; render(); });
+toggle("btnSnap", function(v){ UI.guide = v; render(); });
+toggle("btnGhost",function(v){ UI.ghost = v; render(); });
+toggle("btnTerm", function(v){ $("screen").classList.toggle("term", v); });
+on("sbSosi","click",function(){ setSosi(!UI.sosi); });
+
+/* ---- ホスト切替（加算/降ろすを data-* で表現） ---- */
+function applyHost(){
+  var a = $("app");
+  a.setAttribute("data-host", HOST.name);
+  a.setAttribute("data-fileio",   HOST.providesFileIO ? "host" : "own");
+  a.setAttribute("data-undo",     HOST.providesUndo ? "host" : "own");
+  a.setAttribute("data-palette",  HOST.providesCommandPalette ? "host" : "own");
+  a.setAttribute("data-title",    HOST.providesTitle ? "host" : "own");
+  a.setAttribute("data-statusbar",HOST.providesStatusBar ? "host" : "own");
+  a.setAttribute("data-textedit", HOST.canOpenTextEditor ? "yes" : "no");
+  a.setAttribute("data-prompter", HOST.hasPrompter ? "yes" : "no");
+  var seg = $("hostSeg").querySelectorAll("button"), i;
+  for(i=0;i<seg.length;i++) seg[i].classList.toggle("on", seg[i].getAttribute("data-host") === HOST.name);
+  $("conflictChip").textContent = "⚠ キー衝突 " + conflictCount();
+  $("sbHost").textContent = HOST.name === "vscode" ? "VSCode 埋め込み" : "スタンドアロン";
+  render();
+}
+function cmdHidden(c){
+  return (c.own === "fileio" && HOST.providesFileIO) || (c.own === "undo" && HOST.providesUndo);
+}
+function conflictCount(){
+  if(HOST.name !== "vscode") return 0;
+  return CMDS.filter(function(c){ return c.conflict && !cmdHidden(c); }).length;
+}
+on("hostSeg","click",function(e){
+  var b = e.target.closest("[data-host]"); if(!b) return;
+  HOST = HOSTS[b.getAttribute("data-host")];
+  applyHost();
+});
+on("themeBtn","click",function(){
+  var r = document.documentElement, cur = r.getAttribute("data-theme");
+  var dark = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
+  r.setAttribute("data-theme", cur ? (cur === "dark" ? "light" : "dark") : (dark ? "light" : "dark"));
+});
+
+/* ---- オーバーレイ（パレット / ヘルプ） ---- */
+function openOv(id){ $(id).classList.add("open"); if(id === "ovPalette"){ renderPalette(""); $("palInput").focus(); } if(id === "ovHelp") renderHelp(); }
+function closeOv(){ $("ovPalette").classList.remove("open"); $("ovHelp").classList.remove("open"); }
+on("openPalette","click",function(){ openOv("ovPalette"); });
+on("openHelp","click",function(){ openOv("ovHelp"); });
+on("closeHelp","click",closeOv);
+on("conflictChip","click",function(){ openOv("ovHelp"); });
+["ovPalette","ovHelp"].forEach(function(id){
+  on(id,"click",function(e){ if(e.target === this) closeOv(); });
+});
+function renderPalette(q){
+  var list = CMDS.filter(function(c){
+    if(cmdHidden(c)) return false;
+    return !q || (c.nm + c.grp + c.key).toLowerCase().indexOf(q.toLowerCase()) >= 0;
+  });
+  $("palList").innerHTML = list.map(function(c, i){
+    var conf = (HOST.name === "vscode" && c.conflict);
+    return '<div class="pitem ' + (i===0?"on ":"") + (conf?"conflict":"") + '" data-cmd="' + CMDS.indexOf(c) + '">' +
+      '<span class="ic">' + c.ic + "</span><span class=\"nm\">" + c.nm + "</span>" +
+      '<span class="grp2">' + c.grp + "</span>" +
+      '<span class="kbd' + (conf?" dead":"") + '">' + c.key + "</span>" +
+      (conf ? '<span class="warnbadge">ホスト優先</span>' : "") + "</div>";
+  }).join("") || '<div class="pitem" style="color:var(--fg3)">一致するコマンドがありません</div>';
+  $("palNote").textContent = HOST.name === "vscode"
+    ? "VSCode 埋め込み時は Ctrl+Shift+P の「DDS:」から実行" : "";
+}
+on("palInput","input",function(){ renderPalette(this.value); });
+on("palList","click",function(e){
+  var it = e.target.closest("[data-cmd]"); if(!it) return;
+  var c = CMDS[+it.getAttribute("data-cmd")];
+  closeOv();
+  if(c && c.run) c.run();
+});
+function renderHelp(){
+  var vs = (HOST.name === "vscode");
+  $("helpMode").textContent = vs ? "現在: VSCode 埋め込み" : "現在: スタンドアロン";
+  $("helpLead").innerHTML = vs
+    ? "VSCode 埋め込みでは、<b>取り消し線のキーはホストが先に処理</b>します。自前ハンドラは無効化され、拡張側の <code>DDS:</code> コマンドとして再登録されます（未解決の衝突・ページ下部参照）。"
+    : "スタンドアロンでは全てのキーをこのアプリが処理します。";
+  $("helpBody").innerHTML = CMDS.map(function(c){
+    var hidden = cmdHidden(c), conf = vs && c.conflict;
+    return "<tr" + (hidden ? ' style="opacity:.45"' : "") + "><td>" + c.nm + "</td>" +
+      '<td class="k"><span class="kbd' + (conf?" dead":"") + '">' + c.key + "</span></td>" +
+      '<td class="o">' + (hidden ? "ホストが提供" : "このアプリ") + "</td>" +
+      "<td>" + (conf ? '<span class="warnbadge">VSCode が先取り</span>' : "") + "</td></tr>";
+  }).join("");
+}
+document.addEventListener("keydown", function(e){
+  if(e.key === "Escape"){ closeOv(); return; }
+  var k = e.key.toLowerCase();
+  if((e.ctrlKey || e.metaKey) && k === "k" && !HOST.providesCommandPalette){ e.preventDefault(); openOv("ovPalette"); }
+  if((e.ctrlKey || e.metaKey) && k === "/"){ e.preventDefault(); openOv("ovHelp"); }
+});
+
+renderInds();
+$("srcRuler").innerHTML = rulerCells(1,72);
+applyZoom();
+applyHost();
+})();
+</script>
+</body>
+</html>

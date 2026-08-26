@@ -1,0 +1,756 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DDS ビジュアルデザイナ モックアップ (パターンA: SEU/SDA 継承型)</title>
+<style>
+:root{
+  /* ---- 桁グリッドの基準。ch は "0" の幅 = 全角幅と一致しないため使わない ---- */
+  --cell-w: 12px;              /* 半角1桁の幅 */
+  --cell-h: 24px;              /* 1行の高さ  */
+  --cell-w2: calc(var(--cell-w) * 2);  /* 全角(DBCS)1文字 = 2桁 */
+  --gut: 38px;                 /* 行番号ガター */
+  --canvas-w: calc(var(--cell-w) * 80);
+  --canvas-h: calc(var(--cell-h) * 24);
+
+  --page-bg:#04070a;
+  --scr-bg:#08120e;
+  --chrome:#0d1a16;
+  --line:#1d3a30;
+  --green:#46d97a;
+  --green-dim:#2b6f4b;
+  --green-bright:#b9ffd4;
+  --amber:#ffbf47;
+  --cyan:#63d8de;
+  --white:#e9f6ee;
+  --red:#ff6b5e;
+  --mono: ui-monospace, "Courier New", "MS Gothic", monospace;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{
+  background:
+    radial-gradient(1200px 700px at 50% 0%, #0a1512 0%, var(--page-bg) 70%),
+    var(--page-bg);
+  color:var(--green);
+  font-family:var(--mono);
+  font-size:13px;
+  padding:18px 16px 40px;
+}
+.wrap{max-width:1400px;margin:0 auto}
+
+/* ================= ヘッダ / 説明 ================= */
+.pagehead{
+  border:1px solid var(--line);
+  background:linear-gradient(180deg,#0e1c17,#091310);
+  padding:10px 14px;
+  margin-bottom:14px;
+}
+.pagehead h1{
+  margin:0 0 6px;font-size:15px;font-weight:normal;color:var(--green-bright);
+  letter-spacing:.06em;
+}
+.pagehead .tag{
+  display:inline-block;background:var(--green);color:#04120a;
+  padding:1px 7px;margin-right:8px;font-weight:bold;letter-spacing:.08em;
+}
+.pagehead p{margin:0;color:var(--green-dim);line-height:1.7;font-size:12px}
+.pagehead p b{color:var(--green)}
+
+/* ================= 端末シェル ================= */
+.terminal{
+  border:1px solid var(--line);
+  background:var(--chrome);
+  box-shadow:0 0 0 1px #000 inset, 0 14px 44px rgba(0,0,0,.6);
+}
+.titlebar{
+  display:flex;align-items:center;gap:10px;
+  padding:5px 10px;border-bottom:1px solid var(--line);
+  background:#102019;color:var(--green-bright);letter-spacing:.05em;
+}
+.titlebar .sys{color:var(--green-dim)}
+.titlebar .spacer{flex:1}
+.titlebar .badge{border:1px solid var(--green-dim);padding:0 6px;color:var(--green)}
+
+.statusline{
+  display:flex;flex-wrap:wrap;gap:0 22px;
+  padding:4px 10px;border-bottom:1px solid var(--line);
+  color:var(--green-dim);background:#0a1712;font-size:12px;
+}
+.statusline b{color:var(--amber);font-weight:normal}
+.statusline .k{color:var(--green-dim)}
+
+.main{display:flex;align-items:flex-start;gap:0;overflow-x:auto}
+
+/* ================= キャンバス ================= */
+.screenpane{padding:10px 12px 8px;flex:0 0 auto}
+
+.rulerrow{display:flex;height:var(--cell-h);align-items:center}
+.gutterhead{
+  width:var(--gut);flex:0 0 auto;text-align:right;padding-right:6px;
+  color:var(--green-dim);
+}
+.ruler{
+  position:relative;width:var(--canvas-w);height:var(--cell-h);
+  white-space:nowrap;color:var(--green-dim);
+  border-bottom:1px solid var(--line);
+}
+.ruler .cell{color:var(--green-dim)}
+.ruler .cell.tens{color:var(--green-bright)}
+.ruler .cell.five{color:var(--green)}
+#rulerHi{
+  position:absolute;top:2px;height:calc(var(--cell-h) - 4px);
+  background:rgba(255,191,71,.22);border-left:1px solid var(--amber);
+  border-right:1px solid var(--amber);pointer-events:none;
+}
+
+.screenbody{display:flex}
+.gutter{
+  width:var(--gut);flex:0 0 auto;
+  border-right:1px solid var(--line);
+}
+.gutter .ln{
+  height:var(--cell-h);line-height:var(--cell-h);
+  text-align:right;padding-right:6px;color:var(--green-dim);
+}
+.gutter .ln.cur{background:rgba(255,191,71,.16);color:var(--amber)}
+
+.canvas{
+  position:relative;flex:0 0 auto;
+  width:var(--canvas-w);height:var(--canvas-h);
+  background-color:var(--scr-bg);
+  background-image:
+    repeating-linear-gradient(to right, rgba(70,217,122,.20) 0 1px, transparent 1px calc(var(--cell-w) * 10)),
+    repeating-linear-gradient(to right, rgba(70,217,122,.10) 0 1px, transparent 1px calc(var(--cell-w) * 5)),
+    repeating-linear-gradient(to right, rgba(70,217,122,.05) 0 1px, transparent 1px var(--cell-w)),
+    repeating-linear-gradient(to bottom, rgba(70,217,122,.07) 0 1px, transparent 1px var(--cell-h));
+  overflow:hidden;
+  cursor:crosshair;
+}
+
+/* --- 1文字 = 1セル。全角は明示的に2桁分 --- */
+.cell{
+  display:inline-block;
+  width:var(--cell-w);
+  height:var(--cell-h);
+  line-height:var(--cell-h);
+  text-align:center;
+  vertical-align:top;
+  font-size:20px;
+  overflow:visible;
+}
+.cell.w{width:var(--cell-w2)}      /* DBCS 全角 = 2桁 */
+.cell.so,.cell.si{color:var(--red);opacity:.85;font-size:17px} /* SO/SI = { } 各1桁 */
+
+.item{
+  position:absolute;
+  left:calc((var(--c) - 1) * var(--cell-w));
+  top:calc((var(--r) - 1) * var(--cell-h));
+  height:var(--cell-h);
+  white-space:nowrap;
+  text-shadow:0 0 7px rgba(70,217,122,.35);
+}
+.item.k-const{color:var(--green)}
+.item.k-field-b{color:var(--amber);background:rgba(255,191,71,.09);box-shadow:inset 0 -2px 0 rgba(255,191,71,.5)}
+.item.k-field-o{color:var(--cyan);background:rgba(99,216,222,.06)}
+.item.k-field-i{color:var(--white);background:rgba(233,246,238,.08);box-shadow:inset 0 -2px 0 rgba(233,246,238,.4)}
+
+.layer-active .item{cursor:pointer}
+.layer-active .item:hover{outline:1px dotted var(--green-bright);outline-offset:0}
+.layer-ghost .item{opacity:.30;cursor:not-allowed;text-shadow:none;filter:saturate(.5)}
+.layer-ghost.dim .item{opacity:.11}
+.layer-ghost .item:hover{outline:1px dotted var(--red);opacity:.42}
+.layer-hidden{display:none}
+
+/* --- 選択枠 + リサイズハンドル(8方向) --- */
+.item.sel{outline:1px solid var(--white);background:rgba(255,191,71,.20)}
+.hnd{position:absolute;width:7px;height:7px;background:var(--amber);border:1px solid #241800;z-index:5}
+.h-nw{left:-4px;top:-4px;cursor:nwse-resize}
+.h-n {left:calc(50% - 3.5px);top:-4px;cursor:ns-resize;opacity:.45}
+.h-ne{right:-4px;top:-4px;cursor:nesw-resize}
+.h-w {left:-4px;top:calc(50% - 3.5px);cursor:ew-resize;width:8px;height:11px}
+.h-e {right:-4px;top:calc(50% - 3.5px);cursor:ew-resize;width:8px;height:11px}
+.h-sw{left:-4px;bottom:-4px;cursor:nesw-resize}
+.h-s {left:calc(50% - 3.5px);bottom:-4px;cursor:ns-resize;opacity:.45}
+.h-se{right:-4px;bottom:-4px;cursor:nwse-resize}
+
+/* 5250 のアンダーライン型カーソル（文字を隠さない） */
+.caret{
+  position:absolute;width:var(--cell-w);height:4px;
+  left:calc((var(--c) - 1) * var(--cell-w));
+  top:calc((var(--r) - 1) * var(--cell-h) + var(--cell-h) - 4px);
+  background:var(--green-bright);opacity:.9;
+  animation:blink 1.05s steps(1,end) infinite;
+}
+@keyframes blink{0%,49%{opacity:.75}50%,100%{opacity:0}}
+
+/* ================= 桁勘定インフォ ================= */
+.colinfo{
+  margin-top:8px;border:1px solid var(--line);background:#0a1712;
+  padding:6px 9px;color:var(--green-dim);line-height:1.9;font-size:12px;
+  width:calc(var(--gut) + var(--canvas-w));
+}
+.colinfo .hd{color:var(--green-bright);letter-spacing:.06em}
+.colinfo b{color:var(--amber);font-weight:normal}
+.colinfo .so{color:var(--red)}
+.colinfo .eq{color:var(--green)}
+
+/* ================= 右パネル ================= */
+.side{
+  flex:1 1 300px;min-width:290px;
+  border-left:1px solid var(--line);
+  padding:10px 12px 8px;align-self:stretch;background:#091411;
+}
+.box{border:1px solid var(--line);margin-bottom:12px;background:#0a1712}
+.box>h2{
+  margin:0;font-size:12px;font-weight:normal;letter-spacing:.10em;
+  background:var(--green-dim);color:#04120a;padding:2px 7px;
+}
+.box .bd{padding:6px 7px}
+.hint{color:var(--green-dim);font-size:11px;line-height:1.6;margin-top:5px}
+
+/* レコード様式リスト */
+table.fmt{border-collapse:collapse;width:100%;font-size:12px}
+table.fmt th{
+  text-align:left;font-weight:normal;color:var(--green-dim);
+  border-bottom:1px solid var(--line);padding:2px 4px;
+}
+table.fmt td{padding:2px 4px;color:var(--green)}
+table.fmt tr.row{cursor:pointer}
+table.fmt tr.row:hover td{background:rgba(70,217,122,.10)}
+table.fmt tr.act td{background:var(--green);color:#04120a}
+table.fmt tr.act td.st{font-weight:bold}
+table.fmt tr.ghost td{color:var(--green-dim)}
+table.fmt tr.off td{color:#264a3c}
+.selmark{width:14px;display:inline-block}
+
+/* 標識 */
+.indrow{display:flex;align-items:center;gap:7px;padding:2px 3px;cursor:pointer;font-size:12px}
+.indrow:hover{background:rgba(70,217,122,.10)}
+.indrow .bx{color:var(--amber)}
+.indrow .no{color:var(--green-bright);width:20px;display:inline-block}
+.indrow .st{width:26px;display:inline-block}
+.indrow .st.on{color:var(--amber)}
+.indrow .st.off{color:var(--green-dim)}
+.indrow .ds{color:var(--green-dim);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.indrow.on .ds{color:var(--green)}
+.indadd{display:flex;gap:6px;margin-top:6px;align-items:center;border-top:1px solid var(--line);padding-top:6px}
+.indadd input{
+  width:44px;background:#04120a;border:1px solid var(--green-dim);
+  color:var(--amber);font-family:var(--mono);font-size:12px;padding:2px 4px;
+}
+.indadd button,.btn{
+  background:#0f2019;border:1px solid var(--green-dim);color:var(--green);
+  font-family:var(--mono);font-size:11px;padding:2px 8px;cursor:pointer;
+}
+.indadd button:hover,.btn:hover{background:var(--green-dim);color:#04120a}
+
+/* 属性 */
+.attr{width:100%;border-collapse:collapse;font-size:12px}
+.attr th{text-align:left;font-weight:normal;color:var(--green-dim);width:74px;padding:1px 4px 1px 0;vertical-align:top}
+.attr td{color:var(--green-bright);padding:1px 0}
+.ddsline{
+  margin-top:6px;border-top:1px solid var(--line);padding-top:6px;
+  overflow-x:auto;white-space:pre;color:var(--cyan);font-size:12px;
+}
+
+/* ================= メッセージ行 / Fキー ================= */
+.msgline{
+  border-top:1px solid var(--line);padding:3px 12px;
+  background:#0a1712;color:var(--white);letter-spacing:.03em;
+}
+.msgline.err{color:var(--red)}
+.fkeys{
+  border-top:1px solid var(--line);background:#102019;
+  padding:5px 12px 6px;display:flex;flex-wrap:wrap;gap:4px 18px;
+}
+.fk{color:var(--green-dim);white-space:nowrap}
+.fk i{font-style:normal;background:var(--green-dim);color:#04120a;padding:0 4px;margin-right:3px}
+
+.legend{display:flex;flex-wrap:wrap;gap:6px 18px;margin-top:10px;color:var(--green-dim);font-size:12px}
+.legend span.sw{display:inline-block;width:11px;height:11px;vertical-align:-1px;margin-right:5px;border:1px solid #000}
+.foot{
+  margin-top:16px;border:1px solid var(--line);background:#091411;padding:10px 14px;
+  color:var(--green-dim);font-size:12px;line-height:1.85;
+}
+.foot h3{margin:0 0 6px;font-size:13px;font-weight:normal;color:var(--green-bright);letter-spacing:.06em}
+.foot ul{margin:0;padding-left:1.15em}
+.foot b{color:var(--green)}
+.foot .warn{color:var(--amber)}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="pagehead">
+    <h1><span class="tag">パターンA</span>DDS ビジュアルデザイナ — SEU / SDA 継承型 画面モックアップ</h1>
+    <p>
+      5250端末・SEU・SDA の<b>見た目と用語をそのまま踏襲</b>し、既存 AS/400 開発者の学習コストをゼロにする案。
+      主役は <b>24行×80桁のキャンバス</b>で、パネル類は右端に最小限。桁位置は上端ルーラーで常に数えられ、
+      DBCS は <b>SO/SI を <span style="color:var(--red)">{ }</span> として各1桁</b>で可視化する（実機と同じ桁勘定）。
+      ※本ページは<b>見た目の提案用モックアップ</b>。選択・様式切替・標識トグルのみ簡易に動作します。
+    </p>
+  </div>
+
+  <div class="terminal">
+    <div class="titlebar">
+      <span>DDS 画面設計</span>
+      <span class="sys">ファイル . . . : EMPFM &nbsp; ライブラリー . . : MYLIB &nbsp; メンバー . . . : EMPFM</span>
+      <span class="spacer"></span>
+      <span class="badge">DSPSIZ(24 80 *DS3)</span>
+      <span class="sys">S/N SYS400</span>
+    </div>
+
+    <div class="statusline">
+      <span><span class="k">様式 . . :</span> <b id="stFmt">EMPMNT</b></span>
+      <span><span class="k">カーソル :</span> 行 <b id="stCurRow">4</b> / 桁 <b id="stCurCol">14</b></span>
+      <span><span class="k">選択 . . :</span> <b id="stSel">EMPNAM</b></span>
+      <span><span class="k">占有桁 . :</span> <b id="stSpan">14 - 33 (20桁)</b></span>
+      <span><span class="k">標識 . . :</span> <b id="stInd">03 ON</b></span>
+    </div>
+
+    <div class="main">
+      <!-- ===== 左: 24x80 キャンバス ===== -->
+      <div class="screenpane">
+        <div class="rulerrow">
+          <div class="gutterhead">桁&gt;</div>
+          <div class="ruler" id="ruler"><div id="rulerHi"></div></div>
+        </div>
+        <div class="screenbody">
+          <div class="gutter" id="gutter"></div>
+          <div class="canvas" id="canvas">
+            <div class="layer layer-active"  id="lyEMPMNT"></div>
+            <div class="layer layer-ghost"   id="lyEMPSFL"></div>
+            <div class="caret" id="caret" style="--r:4;--c:14"></div>
+          </div>
+        </div>
+
+        <div class="colinfo" id="colinfo"></div>
+
+        <div class="legend">
+          <span><span class="sw" style="background:#46d97a"></span>定数(テキスト)</span>
+          <span><span class="sw" style="background:#ffbf47"></span>入出力 B / 入力 I</span>
+          <span><span class="sw" style="background:#63d8de"></span>出力のみ O</span>
+          <span><span class="sw" style="background:#ff6b5e"></span>SO/SI ( { } ) = 各1桁</span>
+          <span><span class="sw" style="background:#2b6f4b"></span>非アクティブ様式(掴めない)</span>
+        </div>
+      </div>
+
+      <!-- ===== 右: 最小限のパネル ===== -->
+      <div class="side">
+
+        <div class="box">
+          <h2>レコード様式 (F9)</h2>
+          <div class="bd">
+            <table class="fmt" id="fmtTable">
+              <tr><th style="width:16px"></th><th>様式名</th><th>種類</th><th>項目</th><th>状態</th></tr>
+            </table>
+            <div class="hint">
+              &gt; = アクティブ様式（編集可）。他はレイヤーとして薄く表示され、<br>
+              クリックしても掴めない。行クリックでアクティブを切替。
+            </div>
+          </div>
+        </div>
+
+        <div class="box">
+          <h2>条件標識 01-99 (F10)</h2>
+          <div class="bd">
+            <div id="indList"></div>
+            <div class="indadd">
+              <span style="color:var(--green-dim)">追加&gt;</span>
+              <input id="indNew" maxlength="2" placeholder="NN" inputmode="numeric">
+              <button id="indAdd">＋登録</button>
+            </div>
+            <div class="hint">使用する標識だけを登録してトグル。ON/OFF はキャンバスの<br>条件付き表示（例: 30=SFLDSP）に即反映される。</div>
+          </div>
+        </div>
+
+        <div class="box">
+          <h2>選択項目の属性 (F11)</h2>
+          <div class="bd">
+            <table class="attr" id="attrTable"></table>
+            <div class="ddsline" id="ddsLine"></div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <div class="msgline" id="msgline">項目をクリックすると属性と桁勘定が表示されます。</div>
+
+    <div class="fkeys">
+      <span class="fk"><i>F3</i>終了</span>
+      <span class="fk"><i>F4</i>プロンプト</span>
+      <span class="fk"><i>F6</i>フィールド追加</span>
+      <span class="fk"><i>F9</i>様式選択</span>
+      <span class="fk"><i>F10</i>条件標識</span>
+      <span class="fk"><i>F11</i>属性表示</span>
+      <span class="fk"><i>F12</i>取消</span>
+      <span class="fk"><i>F14</i>DDSソース表示</span>
+      <span class="fk"><i>F23</i>項目削除</span>
+      <span class="fk"><i>F24</i>キーの続き</span>
+    </div>
+  </div>
+
+  <div class="foot">
+    <h3>このパターンの狙いとトレードオフ</h3>
+    <ul>
+      <li><b>狙い1: 学習コストゼロ。</b> 用語（レコード様式 / 条件標識 / 桁 / Fキー）も配色も 5250・SDA のまま。既存の AS/400 開発者が説明なしで触れる。</li>
+      <li><b>狙い2: 桁勘定を裏切らない。</b> セル幅は CSS 変数 <code>--cell-w</code>(px) で固定し、全角は <code>calc(var(--cell-w) * 2)</code>。<code>ch</code> 単位（"0"の幅）は全角幅と一致しないため使用していない。</li>
+      <li><b>狙い3: DBCS の SO/SI を可視化。</b> 実機で1桁ずつ消費される SO/SI を <span style="color:var(--red)">{ }</span> として実体化。例: 1行2桁の <span style="color:var(--red)">{</span>社員マスタ保守<span style="color:var(--red)">}</span> = 1 + 7文字×2 + 1 = <b>16桁</b>（2-17桁）。</li>
+      <li><b>狙い4: 様式はレイヤー、標識はトグル。</b> アクティブ様式だけが編集可・他は薄く固定。標識 ON/OFF で条件付き表示を即プレビュー。</li>
+      <li><span class="warn">トレードオフ:</span> 端末風の低コントラスト配色と情報密度は新規参入者・マウス主体の利用者には不親切。プロパティ編集は右パネルの1枚に集約せざるを得ず、複雑なキーワード（SFLCTL 群など）の GUI 化は本パターンでは表現しきれない。</li>
+    </ul>
+  </div>
+
+</div>
+
+<script>
+/* ==========================================================
+   モックアップ用データ（サンプル DDS を反映）
+   ========================================================== */
+var FORMATS = [
+  { name:"EMPMNT", type:"RECORD", items:10, state:"active" },
+  { name:"EMPSFL", type:"SFL",    items:4,  state:"ghost"  },
+  { name:"EMPCTL", type:"SFLCTL", items:6,  state:"off"    }
+];
+
+/* kind: const=定数 / field=フィールド, usage: B(入出力) O(出力) I(入力), dt: A(英数) S(数値) */
+var ITEMS = [
+  { id:"c1", fmt:"EMPMNT", kind:"const", row:1,  col:2,  text:"社員マスタ保守",
+    dds:"     A                                  1  2'社員マスタ保守'" },
+  { id:"c2", fmt:"EMPMNT", kind:"const", row:1,  col:65, text:"EMPMNT01",
+    dds:"     A                                  1 65'EMPMNT01'" },
+  { id:"c3", fmt:"EMPMNT", kind:"const", row:3,  col:2,  text:"社員番号",
+    dds:"     A                                  3  2'社員番号'" },
+  { id:"f1", fmt:"EMPMNT", kind:"field", row:3,  col:14, name:"EMPNO",  len:6,  dec:0,   dt:"S", usage:"B",
+    dds:"     A            EMPNO          6  0B  3 14" },
+  { id:"c4", fmt:"EMPMNT", kind:"const", row:4,  col:2,  text:"氏名",
+    dds:"     A                                  4  2'氏名'" },
+  { id:"f2", fmt:"EMPMNT", kind:"field", row:4,  col:14, name:"EMPNAM", len:20, dec:null, dt:"A", usage:"B",
+    dds:"     A            EMPNAM        20   B  4 14" },
+  { id:"c5", fmt:"EMPMNT", kind:"const", row:5,  col:2,  text:"所属部門",
+    dds:"     A                                  5  2'所属部門'" },
+  { id:"f3", fmt:"EMPMNT", kind:"field", row:5,  col:14, name:"DEPTCD", len:3,  dec:0,   dt:"S", usage:"B",
+    dds:"     A            DEPTCD         3  0B  5 14" },
+  { id:"f4", fmt:"EMPMNT", kind:"field", row:5,  col:20, name:"DEPTNM", len:20, dec:null, dt:"A", usage:"O",
+    dds:"     A            DEPTNM        20   O  5 20" },
+  { id:"c6", fmt:"EMPMNT", kind:"const", row:23, col:2,  text:"F3=終了",
+    dds:"     A                                 23  2'F3=終了'" }
+];
+
+/* --- 2つ目の様式: サブファイル EMPSFL（ダミー / 非アクティブ）--- */
+(function(){
+  for (var r = 9; r <= 20; r++) {
+    ITEMS.push({ id:"s"+r+"a", fmt:"EMPSFL", kind:"field", row:r, col:3,  name:"SFSEL",  len:1,  dec:null, dt:"A", usage:"I",
+      dds:"     A            SFSEL          1   I  " + r + "  3" });
+    ITEMS.push({ id:"s"+r+"b", fmt:"EMPSFL", kind:"field", row:r, col:6,  name:"SFEMPNO",len:6,  dec:0,   dt:"S", usage:"O",
+      dds:"     A            SFEMPNO        6  0O  " + r + "  6" });
+    ITEMS.push({ id:"s"+r+"c", fmt:"EMPSFL", kind:"field", row:r, col:14, name:"SFEMPNM",len:20, dec:null, dt:"A", usage:"O",
+      dds:"     A            SFEMPNM       20   O  " + r + " 14" });
+    ITEMS.push({ id:"s"+r+"d", fmt:"EMPSFL", kind:"field", row:r, col:36, name:"SFDEPTNM",len:20,dec:null, dt:"A", usage:"O",
+      dds:"     A            SFDEPTNM      20   O  " + r + " 36" });
+  }
+})();
+
+var INDICATORS = [
+  { no:"03", on:true,  desc:"CA03  終了キー" },
+  { no:"30", on:true,  desc:"SFLDSP  サブファイル表示" },
+  { no:"31", on:false, desc:"SFLDSPCTL  制御レコード表示" },
+  { no:"40", on:false, desc:"エラー  入力検査 NG" },
+  { no:"90", on:false, desc:"DSPATR(PR)  入力保護" }
+];
+
+/* ==========================================================
+   DBCS 判定と桁勘定 ( SO/SI = { } を各1桁として数える )
+   ========================================================== */
+function isWide(ch){
+  var c = ch.codePointAt(0);
+  return (c>=0x1100&&c<=0x115F)||(c>=0x2E80&&c<=0x303E)||(c>=0x3041&&c<=0x33FF)||
+         (c>=0x3400&&c<=0x4DBF)||(c>=0x4E00&&c<=0x9FFF)||(c>=0xA000&&c<=0xA4CF)||
+         (c>=0xAC00&&c<=0xD7A3)||(c>=0xF900&&c<=0xFAFF)||(c>=0xFE30&&c<=0xFE6F)||
+         (c>=0xFF01&&c<=0xFF60)||(c>=0xFFE0&&c<=0xFFE6)||(c>=0x20000&&c<=0x3FFFD);
+}
+/* 文字列を [{t:'sbcs'|'dbcs'|'so'|'si', ch:...}] のセル列に展開 */
+function toCells(text){
+  var out = [], inD = false, i, ch, w;
+  for (i = 0; i < text.length; i++) {
+    ch = text[i]; w = isWide(ch);
+    if (w && !inD) { out.push({t:"so", ch:"{"}); inD = true; }
+    if (!w && inD) { out.push({t:"si", ch:"}"}); inD = false; }
+    out.push({ t: w ? "dbcs" : "sbcs", ch: ch });
+  }
+  if (inD) out.push({t:"si", ch:"}"});
+  return out;
+}
+function cellsWidth(cells){
+  var n = 0;
+  for (var i = 0; i < cells.length; i++) n += (cells[i].t === "dbcs" ? 2 : 1);
+  return n;
+}
+/* 桁勘定の内訳文字列（DBCS 混在に対応） */
+function breakdown(text){
+  var sb = 0, db = 0, runs = 0, inD = false, i, w;
+  for (i = 0; i < text.length; i++) {
+    w = isWide(text[i]);
+    if (w) { db++; if (!inD) { runs++; inD = true; } }
+    else   { sb++; inD = false; }
+  }
+  var parts = [];
+  if (sb)   parts.push("半角 " + sb + "文字×1 = " + sb + "桁");
+  if (runs) parts.push('<span class="so">SO</span> ' + runs + "×1 = " + runs + "桁");
+  if (db)   parts.push("全角 " + db + "文字×2 = " + (db*2) + "桁");
+  if (runs) parts.push('<span class="so">SI</span> ' + runs + "×1 = " + runs + "桁");
+  return { parts: parts, total: sb + db*2 + runs*2 };
+}
+function fieldPlaceholder(it){
+  return (it.dt === "S" ? "9" : "X").repeat(it.len);
+}
+function itemWidth(it){
+  return it.kind === "const" ? cellsWidth(toCells(it.text)) : it.len;
+}
+
+/* ==========================================================
+   描画
+   ========================================================== */
+var CELLW = 12; /* --cell-w と一致させる（ルーラーのハイライト計算用） */
+
+function buildRuler(){
+  var el = document.getElementById("ruler"), html = "", c, ch, cls;
+  for (c = 1; c <= 80; c++) {
+    if (c % 10 === 0)     { ch = String((c/10) % 10); cls = "cell tens"; }
+    else if (c % 5 === 0) { ch = "+";                 cls = "cell five"; }
+    else                  { ch = ".";                 cls = "cell";      }
+    html += '<span class="' + cls + '">' + ch + "</span>";
+  }
+  el.insertAdjacentHTML("beforeend", html);
+}
+function buildGutter(){
+  var el = document.getElementById("gutter"), html = "", r;
+  for (r = 1; r <= 24; r++) html += '<div class="ln" data-r="' + r + '">' + r + "</div>";
+  el.innerHTML = html;
+}
+function itemHtml(it){
+  var cells, cls, i, inner = "";
+  if (it.kind === "const") {
+    cells = toCells(it.text);
+    cls = "item k-const";
+  } else {
+    cells = fieldPlaceholder(it).split("").map(function(ch){ return {t:"sbcs", ch:ch}; });
+    cls = "item k-field-" + it.usage.toLowerCase();
+  }
+  for (i = 0; i < cells.length; i++) {
+    var c = cells[i];
+    var cc = "cell" + (c.t === "dbcs" ? " w" : "") + (c.t === "so" ? " so" : "") + (c.t === "si" ? " si" : "");
+    inner += '<span class="' + cc + '">' + c.ch + "</span>";
+  }
+  return '<div class="' + cls + '" id="it-' + it.id + '" data-id="' + it.id +
+         '" style="--r:' + it.row + ';--c:' + it.col + '">' + inner + "</div>";
+}
+function renderCanvas(){
+  var a = [], g = [];
+  for (var i = 0; i < ITEMS.length; i++) {
+    var it = ITEMS[i];
+    if (it.fmt === "EMPMNT") a.push(itemHtml(it));
+    if (it.fmt === "EMPSFL") g.push(itemHtml(it));
+  }
+  document.getElementById("lyEMPMNT").innerHTML = a.join("");
+  document.getElementById("lyEMPSFL").innerHTML = g.join("");
+  applyLayerState();
+}
+function applyLayerState(){
+  var map = { EMPMNT:"lyEMPMNT", EMPSFL:"lyEMPSFL" };
+  for (var i = 0; i < FORMATS.length; i++) {
+    var f = FORMATS[i], el = document.getElementById(map[f.name]);
+    if (!el) continue;
+    el.className = "layer " +
+      (f.state === "active" ? "layer-active" : f.state === "ghost" ? "layer-ghost" : "layer-hidden");
+  }
+  /* 標識30(SFLDSP) OFF → サブファイル様式はさらに薄く（条件付き表示のプレビュー） */
+  var sfl = document.getElementById("lyEMPSFL");
+  var ind30 = INDICATORS.filter(function(x){ return x.no === "30"; })[0];
+  if (sfl && sfl.className.indexOf("layer-ghost") >= 0 && ind30 && !ind30.on) sfl.className += " dim";
+}
+function renderFormats(){
+  var t = document.getElementById("fmtTable");
+  while (t.rows.length > 1) t.deleteRow(1);
+  FORMATS.forEach(function(f){
+    var tr = t.insertRow(-1);
+    tr.className = "row " + f.state;
+    tr.setAttribute("data-fmt", f.name);
+    var st = f.state === "active" ? "編集中" : f.state === "ghost" ? "表示のみ" : "非表示";
+    tr.innerHTML =
+      "<td>" + (f.state === "active" ? "&gt;" : "&nbsp;") + "</td>" +
+      "<td>" + f.name + "</td><td>" + f.type + "</td><td>" + f.items + "</td>" +
+      '<td class="st">' + st + "</td>";
+    tr.onclick = function(){ setActiveFormat(f.name); };
+  });
+}
+function renderIndicators(){
+  var el = document.getElementById("indList");
+  el.innerHTML = INDICATORS.map(function(x){
+    return '<div class="indrow ' + (x.on ? "on" : "") + '" data-no="' + x.no + '">' +
+             '<span class="bx">[' + (x.on ? "X" : "&nbsp;") + "]</span>" +
+             '<span class="no">' + x.no + "</span>" +
+             '<span class="st ' + (x.on ? "on" : "off") + '">' + (x.on ? "ON" : "OFF") + "</span>" +
+             '<span class="ds">' + x.desc + "</span>" +
+           "</div>";
+  }).join("");
+  Array.prototype.forEach.call(el.querySelectorAll(".indrow"), function(r){
+    r.onclick = function(){
+      var no = r.getAttribute("data-no");
+      INDICATORS.forEach(function(x){ if (x.no === no) x.on = !x.on; });
+      renderIndicators(); applyLayerState(); updateStatus();
+      msg("標識 " + no + " を " + (INDICATORS.filter(function(x){return x.no===no;})[0].on ? "ON" : "OFF") + " にしました。");
+    };
+  });
+}
+
+/* ---------- 選択状態 ---------- */
+var selId = "f2";  /* 初期選択 = EMPNAM (リサイズハンドル表示用) */
+
+function select(id, silent){
+  var it = ITEMS.filter(function(x){ return x.id === id; })[0];
+  if (!it) return;
+  var act = FORMATS.filter(function(f){ return f.state === "active"; })[0];
+  if (!act || it.fmt !== act.name) {
+    msg("様式 " + it.fmt + " はアクティブではありません。F9 でアクティブ様式を切り替えてください。", true);
+    return;
+  }
+  selId = id;
+  Array.prototype.forEach.call(document.querySelectorAll(".item.sel"), function(e){
+    e.classList.remove("sel");
+    Array.prototype.forEach.call(e.querySelectorAll(".hnd"), function(h){ h.remove(); });
+  });
+  var el = document.getElementById("it-" + id);
+  el.classList.add("sel");
+  ["nw","n","ne","w","e","sw","s","se"].forEach(function(p){
+    var h = document.createElement("div");
+    h.className = "hnd h-" + p;
+    el.appendChild(h);
+  });
+  /* カーソルを項目先頭へ */
+  var caret = document.getElementById("caret");
+  caret.style.setProperty("--r", it.row);
+  caret.style.setProperty("--c", it.col);
+  updateStatus(); renderAttr(); renderColInfo(); highlightRuler();
+  if (!silent) msg("項目 " + (it.name || "定数") + " を選択しました。ハンドルのドラッグで長さを変更できます。");
+}
+function selItem(){ return ITEMS.filter(function(x){ return x.id === selId; })[0]; }
+
+function updateStatus(){
+  var it = selItem(), w = itemWidth(it);
+  var act = FORMATS.filter(function(f){ return f.state === "active"; })[0];
+  document.getElementById("stFmt").textContent = act ? act.name : "-";
+  document.getElementById("stCurRow").textContent = it.row;
+  document.getElementById("stCurCol").textContent = it.col;
+  document.getElementById("stSel").textContent = it.kind === "const" ? "定数 '" + it.text + "'" : it.name;
+  document.getElementById("stSpan").textContent = it.col + " - " + (it.col + w - 1) + " (" + w + "桁)";
+  var on = INDICATORS.filter(function(x){ return x.on; }).map(function(x){ return x.no; });
+  document.getElementById("stInd").textContent = on.length ? on.join(",") + " ON" : "なし";
+  Array.prototype.forEach.call(document.querySelectorAll("#gutter .ln"), function(e){
+    e.classList.toggle("cur", Number(e.getAttribute("data-r")) === it.row);
+  });
+}
+function renderAttr(){
+  var it = selItem(), w = itemWidth(it), rows;
+  if (it.kind === "const") {
+    rows = [["種類","定数 (CONSTANT)"],
+            ["内容","'" + it.text + "'"],
+            ["文字種","DBCS 混在 (SO/SI 付き)"],
+            ["位置","行 " + it.row + " / 桁 " + it.col],
+            ["占有桁",it.col + " - " + (it.col + w - 1) + "  計 " + w + "桁"],
+            ["条件標識","なし"]];
+  } else {
+    var t = it.dt === "S" ? ("数値 " + it.len + ",  小数 " + it.dec + "桁") : ("英数字 " + it.len + "桁");
+    var u = it.usage === "B" ? "B  入出力両用" : it.usage === "O" ? "O  出力のみ" : "I  入力のみ";
+    rows = [["フィールド",it.name],
+            ["属性",t],
+            ["用途",u],
+            ["位置","行 " + it.row + " / 桁 " + it.col],
+            ["占有桁",it.col + " - " + (it.col + w - 1) + "  計 " + w + "桁"],
+            ["表示属性",it.usage === "O" ? "DSPATR(HI)" : "DSPATR(UL)"],
+            ["条件標識","なし"]];
+  }
+  document.getElementById("attrTable").innerHTML = rows.map(function(r){
+    return "<tr><th>" + r[0] + "</th><td>" + r[1] + "</td></tr>";
+  }).join("");
+  document.getElementById("ddsLine").textContent = it.dds;
+}
+function renderColInfo(){
+  var it = selItem(), html, w = itemWidth(it);
+  if (it.kind === "const") {
+    var b = breakdown(it.text);
+    html = '<span class="hd">桁勘定 &gt;</span> ' + it.row + "行 " + it.col + "桁 の定数 &nbsp;" +
+           '<span class="so">{</span>' + it.text + '<span class="so">}</span>' +
+           "<br>&nbsp;&nbsp;" + b.parts.join(" &nbsp;+&nbsp; ") +
+           ' &nbsp;<span class="eq">=</span> <b>' + b.total + "桁</b> &nbsp;→ 占有 <b>" +
+           it.col + " - " + (it.col + b.total - 1) + "桁</b>";
+  } else {
+    html = '<span class="hd">桁勘定 &gt;</span> ' + it.row + "行 " + it.col + "桁 のフィールド <b>" + it.name + "</b>" +
+           "<br>&nbsp;&nbsp;" + (it.dt === "S" ? "数値" : "英数字") + " " + it.len + "桁 × 1 = <b>" + w +
+           "桁</b>（プレースホルダ <b>" + (it.dt === "S" ? "9" : "X") + "</b> の反復で表示）&nbsp;→ 占有 <b>" +
+           it.col + " - " + (it.col + w - 1) + "桁</b>";
+  }
+  /* 常設の参考例（DBCS の桁勘定はこの機能の核） */
+  html += '<br><span style="color:#264a3c">参考&gt;</span> ' +
+          '<span class="so">{</span>社員マスタ保守<span class="so">}</span> = ' +
+          '<span class="so">SO</span>(1) + 全角7文字×2(14) + <span class="so">SI</span>(1) ' +
+          '<span class="eq">=</span> <b>16桁</b> … 1行2桁配置なら <b>2 - 17桁</b>を占有する';
+  document.getElementById("colinfo").innerHTML = html;
+}
+function highlightRuler(){
+  var it = selItem(), w = itemWidth(it), hi = document.getElementById("rulerHi");
+  hi.style.left  = ((it.col - 1) * CELLW) + "px";
+  hi.style.width = (w * CELLW) + "px";
+}
+function setActiveFormat(name){
+  var target = FORMATS.filter(function(f){ return f.name === name; })[0];
+  if (!target) return;
+  if (!ITEMS.some(function(x){ return x.fmt === name; })) {
+    msg("様式 " + name + " は本モックアップでは項目を定義していません。", true); return;
+  }
+  if (target.state === "off") { target.state = "ghost"; msg("様式 " + name + " を表示しました。"); }
+  FORMATS.forEach(function(f){ if (f.state === "active") f.state = "ghost"; });
+  target.state = "active";
+  renderFormats(); renderCanvas();
+  var first = ITEMS.filter(function(x){ return x.fmt === name; })[0];
+  if (first) select(first.id, true);
+  msg("アクティブ様式を " + name + " に切り替えました。他の様式はレイヤーとして薄く表示されます。");
+}
+function msg(text, isErr){
+  var m = document.getElementById("msgline");
+  m.textContent = text;
+  m.className = "msgline" + (isErr ? " err" : "");
+}
+
+/* ---------- イベント ---------- */
+document.getElementById("canvas").addEventListener("click", function(e){
+  var el = e.target.closest ? e.target.closest(".item") : null;
+  if (!el) return;
+  select(el.getAttribute("data-id"));
+});
+document.getElementById("indAdd").onclick = function(){
+  var v = (document.getElementById("indNew").value || "").replace(/[^0-9]/g, "");
+  if (!v) { msg("標識番号は 01-99 の数字で入力してください。", true); return; }
+  var no = ("0" + v).slice(-2);
+  if (no === "00" || Number(no) > 99) { msg("標識番号は 01-99 の範囲です。", true); return; }
+  if (INDICATORS.some(function(x){ return x.no === no; })) { msg("標識 " + no + " は登録済みです。", true); return; }
+  INDICATORS.push({ no:no, on:false, desc:"（用途未設定）" });
+  INDICATORS.sort(function(a,b){ return a.no < b.no ? -1 : 1; });
+  document.getElementById("indNew").value = "";
+  renderIndicators(); updateStatus();
+  msg("標識 " + no + " を登録しました。");
+};
+
+/* ---------- 初期化 ---------- */
+buildRuler();
+buildGutter();
+renderFormats();
+renderIndicators();
+renderCanvas();
+select("f2", true);
+</script>
+</body>
+</html>
