@@ -107,9 +107,19 @@ priority: 1           # DDS の視覚的確認と編集（charter の第 4 の�
   変えるなら `src/lint/rules/lineLength.ts` と**同時に**変える必要がある。
   出所: `20260826-dds-attribute-editing` の `decisions.md` D7。
 
-- [ ] **PRTF（帳票）の編集に広げる** — 編集エンジンは DSPF 前提ではない
-  （`ddsEdit` は位置欄と長さ欄しか触らず、論理単位も PRTF と共有）。
-  描画モデルを PRTF 用に足せば同じ UI が使える見込み。`prtfLayout` は既にある。
+- [x] **PRTF（帳票）の編集に広げる** — 済（`20260827-dds-prtf-editor`）。
+  翻訳（`toRenderItem`）を種別に依らない形へ切り出し、`resolvePrtfLayout` から
+  同じ `RenderModel` を作る。**行が行送り（SPACE / SKIP）で決まる項目は桁だけ動かせる**
+  （`moveColumn`。行番号を書き込むと行送りが無効になるため）。
+  帳票に無いもの（属性文字・5250 配色）は切替ごと出さない。
+  **実機の印刷結果と行送りの解決が一致**することを確認済み
+  （`verify/verify-prtf-rows.mjs`。`resolvePrtfLayout` はそれまで原典から起こしたままだった）。
+
+- [ ] **帳票の強調（`HIGHLIGHT` / `UNDERLINE`）を描く** — 画面の 5250 配色にあたるもの。
+  `DSPATR` は PRTF に無く、帳票は別のキーワードを使う。
+
+- [ ] **複数ページの帳票を見る** — `resolvePrtfLayout` は 1 ページ分を返す。
+  `SKIPB` で改ページが起きる帳票は 2 ページ目以降が見えない。
 
 - [ ] **キーワードと条件標識の編集（L2 / L3）** — いまの編集は位置と長さだけ。
   `DSPATR` / `COLOR` / `EDTCDE` などのキーワードと、条件標識の付け外しは未対応。

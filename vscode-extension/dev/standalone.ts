@@ -2,6 +2,7 @@ import "../src/dds/webview/ui.css";
 import "./standalone.css";
 import { applyDdsEdits, validateDdsEdits } from "../src/core/dds/ddsEdit";
 import { buildDspfRenderModel } from "../src/core/dds/dspfRenderModel";
+import { buildPrtfRenderModel } from "../src/core/dds/prtfRenderModel";
 import type { Bridge } from "../src/dds/webview/bridge";
 import {
   parseEditorMessage,
@@ -12,6 +13,7 @@ import {
 import type { DdsKeywordHelp } from "../src/core/dds/ddsKeywords";
 import { startEditor } from "../src/dds/webview/ui";
 import sample from "../../docs/src/CUSTMNT.dspf";
+import report from "../../docs/src/CUSTRPT.prtf";
 import keywordTables from "../resources/completion/dds-keywords.json";
 
 /**
@@ -144,8 +146,16 @@ class StandaloneHost {
     }
   }
 
+  /**
+   * 描画モデル。**拡張子で種別を選ぶ**（VSCode 側と同じ規約）。
+   *
+   * 帳票は行が行送り（SPACE / SKIP）で決まるので、画面の配置解決では位置が出ない。
+   * 紙面の大きさは設定を持たないホストなので `CRTPRTF` の既定のまま。
+   */
   private model(): ReturnType<typeof buildDspfRenderModel> {
-    return buildDspfRenderModel(this.lines);
+    return this.name.toLowerCase().endsWith(".prtf")
+      ? buildPrtfRenderModel(this.lines)
+      : buildDspfRenderModel(this.lines);
   }
 
   /** ソース面。**読み込み時から変わった行に印**を付ける（触っていない行が動かないことを見る）。 */
@@ -271,7 +281,10 @@ const INDICATOR_SAMPLE = [
 const SAMPLES = [
   { name: "CUSTMNT.dspf", text: sample as unknown as string },
   { name: "hidden-items.dspf", text: HIDDEN_SAMPLE },
-  { name: "indicators.dspf", text: INDICATOR_SAMPLE }
+  { name: "indicators.dspf", text: INDICATOR_SAMPLE },
+  // 帳票。**行は SPACE / SKIP で決まり、位置欄には桁だけが書かれる**——
+  // 画面ファイルには無い形なので、ここで実際に触れるようにしておく。
+  { name: "CUSTRPT.prtf", text: report as unknown as string }
 ];
 const select = must<HTMLSelectElement>("#sample");
 SAMPLES.forEach((entry, index) => {

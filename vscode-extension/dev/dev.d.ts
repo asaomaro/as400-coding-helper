@@ -3,4 +3,8 @@ declare module "*.dspf" {
   const content: string;
   export default content;
 }
+declare module "*.prtf" {
+  const content: string;
+  export default content;
+}
 declare module "*.css";

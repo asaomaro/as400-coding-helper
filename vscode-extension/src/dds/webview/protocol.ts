@@ -143,6 +143,11 @@ function parseEdit(value: unknown): DdsEdit | undefined {
         isPositiveInteger(value.column)
         ? { kind: "move", sourceLine: value.sourceLine, row: value.row, column: value.column }
         : undefined;
+    case "moveColumn":
+      // 帳票の**桁だけ**の移動。行は行送り（SPACE / SKIP）で決まるので触らない。
+      return isPositiveInteger(value.sourceLine) && isPositiveInteger(value.column)
+        ? { kind: "moveColumn", sourceLine: value.sourceLine, column: value.column }
+        : undefined;
     case "resize":
       return isPositiveInteger(value.sourceLine) && isPositiveInteger(value.length)
         ? { kind: "resize", sourceLine: value.sourceLine, length: value.length }

@@ -12,13 +12,15 @@ import {
 import {
   keywordAreaOf,
   readConstant,
+  readNumber,
   replaceLeadingConstant,
   startsContinuation,
   toLogicalUnits,
   unitItemKind,
   type LogicalUnit
 } from "./ddsLogicalUnits";
-import { writeBackPosition } from "./ddsPositionWriteBack";
+import { DDS_POSITION_ROW } from "./ddsPositionColumns";
+import { writeBackColumn, writeBackPosition } from "./ddsPositionWriteBack";
 
 /**
  * DDS ソースへの編集操作。**vscode を import しない**（行の配列 → 置き換え指示）。
@@ -47,6 +49,13 @@ import { writeBackPosition } from "./ddsPositionWriteBack";
 
 export type DdsEdit =
   | { readonly kind: "move"; readonly sourceLine: number; readonly row: number; readonly column: number }
+  /**
+   * **桁だけ**動かす（帳票）。
+   *
+   * 実務の PRTF は位置欄に行番号を書かず、行は `SPACE` / `SKIP` で決まる。
+   * `move` は行も書き込むので使えない——書き込むと行送りが**無効になる**。
+   */
+  | { readonly kind: "moveColumn"; readonly sourceLine: number; readonly column: number }
   | { readonly kind: "resize"; readonly sourceLine: number; readonly length: number }
   | { readonly kind: "remove"; readonly sourceLine: number }
   /**
@@ -97,7 +106,16 @@ export type DdsEditRejectionCode =
   /** 定数の欄がリテラルで始まらなくなる（項目として認識されなくなる）。 */
   | "constant-needs-literal"
   /** 項目のキーワード行の間に注記行が挟まっている（区間で置き換えると注記が消える）。 */
-  | "keyword-lines-not-contiguous";
+  | "keyword-lines-not-contiguous"
+  /**
+   * 行が**行送り**（`SPACE` / `SKIP`）で決まっている項目の行を変えようとした（PRTF）。
+   *
+   * 位置欄に行番号を書き込むと `SPACE` / `SKIP` は**無効になる**——原典の規定で、
+   * `prtfLayout` も `spacing-with-line-number` として診断している。
+   * 行を動かしたいなら `SPACEA` / `SKIPB` を直す話で、位置欄の書き換えではない。
+   * **桁だけを変える移動は通す。**
+   */
+  | "row-from-spacing";
 
 export interface DdsEditRejection {
   readonly code: DdsEditRejectionCode;
@@ -153,6 +171,12 @@ export function validateDdsEdits(
 
     if (edit.kind === "move") {
       rejections.push(...validatePosition(edit.row, edit.column, edit.sourceLine));
+      rejections.push(...validateRowMove(unit, edit.sourceLine));
+    }
+
+    if (edit.kind === "moveColumn") {
+      // 行は触らないので見ない。
+      rejections.push(...validatePosition(undefined, edit.column, edit.sourceLine));
     }
 
     if (edit.kind === "setAttributes") {
@@ -201,6 +225,18 @@ export function applyDdsEdits(
 
   for (const edit of edits) {
     switch (edit.kind) {
+      case "moveColumn": {
+        const unit = itemUnitAt(units, edit.sourceLine);
+        if (!unit) break;
+        const index = edit.sourceLine - 1;
+        // **行欄には触らない。** 行送りで決まる行を書き換えないため。
+        results.push({
+          replaceFrom: index,
+          replaceTo: index + 1,
+          lines: [writeBackColumn(lines[index], edit.column)]
+        });
+        break;
+      }
       case "move":
       case "resize": {
         const unit = itemUnitAt(units, edit.sourceLine);
@@ -295,6 +331,30 @@ function validateKeywords(
   }
 
   return rejections;
+}
+
+/**
+ * 行を変える移動が**書けるか**。
+ *
+ * 位置欄の行番号が空の項目は、行が**行送り**（`SPACE` / `SKIP`）で決まっている。
+ * そこへ行番号を書き込むと行送りが無効になり、**別のものになる**。
+ * 実務の PRTF はほとんどの項目が行番号を持たないので、**桁だけの移動は通す**。
+ *
+ * DSPF では位置欄が空の項目は配置できず、キャンバスに出ない（＝移動の宛先にならない）ので、
+ * この判定が効くのは実質 PRTF だけ。
+ */
+function validateRowMove(unit: LogicalUnit, sourceLine: number): DdsEditRejection[] {
+  // 行番号が書いてあるなら、位置欄の書き換えでそのまま動く。
+  if (readNumber(ddsField(unit.line, DDS_POSITION_ROW)) !== undefined) return [];
+  return [
+    {
+      code: "row-from-spacing",
+      message:
+        "この項目の行は行送り（SPACE / SKIP）で決まります。" +
+        "行番号を書き込むと行送りが無効になるため、行は変えません（桁は変えられます）",
+      sourceLine
+    }
+  ];
 }
 
 /**
@@ -519,8 +579,9 @@ function validateAdd(
   return rejections;
 }
 
+/** 位置欄に書けるか。`row` を省くと桁だけを見る（帳票の `moveColumn`）。 */
 function validatePosition(
-  row: number,
+  row: number | undefined,
   column: number,
   sourceLine?: number
 ): DdsEditRejection[] {
@@ -531,7 +592,9 @@ function validatePosition(
   });
 
   const rejections: DdsEditRejection[] = [];
-  if (!fitsInColumn(row, POSITION_WIDTH) || row < 1) rejections.push(bad("行", row));
+  if (row !== undefined && (!fitsInColumn(row, POSITION_WIDTH) || row < 1)) {
+    rejections.push(bad("行", row));
+  }
   if (!fitsInColumn(column, POSITION_WIDTH) || column < 1) {
     rejections.push(bad("桁", column));
   }

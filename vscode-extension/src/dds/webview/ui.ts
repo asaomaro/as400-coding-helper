@@ -56,6 +56,13 @@ interface Gesture {
   readonly origin: CellPoint;
   readonly widthCols: number;
   readonly element: HTMLElement;
+  /**
+   * 行が**行送り**（`SPACE` / `SKIP`）で決まる（帳票）。
+   *
+   * true のとき**縦には動かさない**——位置欄に行番号を書き込むと行送りが無効になり、
+   * 別のものになるため。桁だけを動かす（`moveColumn`）。
+   */
+  readonly rowFromSpacing: boolean;
 }
 
 /** 追加の内容をホストに聞く（ホストが入力手段を持つ）。 */
@@ -332,12 +339,14 @@ class EditorView {
       `セル ${this.cellWidth.toFixed(2)}×${this.lineHeight.toFixed(2)}px` +
       `${this.display.zoom === 1 ? "" : `（実測 ${this.measuredWidth.toFixed(2)}px × ${Math.round(this.display.zoom * 100)}%）`}` +
       ` / ${view.canvas.rows}×${view.canvas.columns}`;
+    const kindLabel = view.kind === "prtf" ? "帳票" : "画面";
     this.title.textContent =
-      view.records.length > 0 ? `様式 ${view.records.join(" / ")}` : "（様式なし）";
+      `${kindLabel}｜` +
+      (view.records.length > 0 ? `様式 ${view.records.join(" / ")}` : "（様式なし）");
 
     this.renderRuler(view.canvas.columns);
     this.renderGutter(view.canvas.rows);
-    this.renderItems(view.items);
+    this.renderItems(view);
     this.renderOutline(view);
     this.renderIndicators(view);
     this.renderProperties(view);
@@ -346,6 +355,9 @@ class EditorView {
     for (const toggle of this.toggles) {
       toggle.button.classList.toggle("armed", this.display[toggle.key]);
       toggle.button.setAttribute("aria-pressed", String(this.display[toggle.key]));
+      // 表示装置だけのものは帳票で**出さない**（押しても何も起きないボタンを置かない）。
+      const displayOnly = toggle.key === "showAttributes" || toggle.key === "showColors";
+      toggle.button.hidden = displayOnly && !this.isDisplayFile();
     }
     for (const button of this.zoomButtons) {
       button.classList.toggle("armed", Number(button.dataset.zoom) === this.display.zoom);
@@ -403,7 +415,8 @@ class EditorView {
     this.gutter.replaceChildren(...cells);
   }
 
-  private renderItems(items: readonly RenderItem[]): void {
+  private renderItems(model: RenderModel): void {
+    const items = model.items;
     this.canvas.classList.toggle("no-grid", !this.display.showGrid);
 
     // 淡くする基準は**選択中の項目が属する様式**。選択が無ければ基準が無いので淡くしない。
@@ -413,14 +426,25 @@ class EditorView {
 
     const nodes: HTMLElement[] = [];
     for (const item of items) {
-      if (this.display.showAttributes) {
+      // **属性文字は表示装置のもの。** 印刷には出ないので帳票では描かない。
+      if (this.display.showAttributes && this.isDisplayFile()) {
         nodes.push(...attributeMarkers(item, this.dimmed(item, activeRecord)));
       }
       const element = this.buildItem(item);
       if (this.dimmed(item, activeRecord)) element.classList.add("dimmed");
       nodes.push(element);
     }
+    // **キャンバスは毎回作り替える**ので、線もここで一緒に入れる
+    // （外に置くと `replaceChildren` で消える。実際に踏んだ）。
+    const overflow = overflowLine(model);
+    if (overflow) nodes.push(overflow);
+
     this.canvas.replaceChildren(...nodes);
+  }
+
+  /** 表示装置ファイルか。帳票には属性文字も 5250 の配色も無い。 */
+  private isDisplayFile(): boolean {
+    return (this.view ?? this.model)?.kind !== "prtf";
   }
 
   /** アクティブ様式の外か。基準が無ければ淡くしない。 */
@@ -438,6 +462,8 @@ class EditorView {
     element.dataset.column = String(item.column);
     element.dataset.width = String(item.widthCols ?? 1);
     element.dataset.resizable = String(item.resizable);
+    element.dataset.rowFromSpacing = String(item.rowFromSpacing === true);
+    if (item.rowFromSpacing) element.classList.add("row-from-spacing");
     element.style.left = `calc(var(--cell-w) * ${item.column - 1})`;
     element.style.top = `calc(var(--cell-h) * ${item.row - 1})`;
     element.style.width = `calc(var(--cell-w) * ${item.widthCols ?? 1})`;
@@ -447,7 +473,8 @@ class EditorView {
       ` / ソース ${item.sourceLine} 行目${describeAppearance(item.appearance)}）`;
 
     // **配色は色だけ。桁と位置は変えない。**
-    if (this.display.showColors) {
+    // 5250 の配色は表示装置ファイルのもの（PRTF に `DSPATR` は無い）。
+    if (this.display.showColors && this.isDisplayFile()) {
       element.classList.add("colored", `c-${item.appearance.color}`);
       if (item.appearance.reverse) element.classList.add("reverse");
       if (item.appearance.underline) element.classList.add("underline");
@@ -1279,7 +1306,8 @@ class EditorView {
         column: Number(current.dataset.column)
       },
       widthCols: Number(current.dataset.width),
-      element: current
+      element: current,
+      rowFromSpacing: current.dataset.rowFromSpacing === "true"
     };
     this.mode = target?.dataset.role === "resize" ? "resizing" : "selecting";
     event.preventDefault();
@@ -1326,12 +1354,16 @@ class EditorView {
         this.gesture = undefined;
         return;
       }
-      this.send({
-        kind: "move",
-        sourceLine: gesture.sourceLine,
-        row: target.row,
-        column: target.column
-      });
+      this.send(
+        gesture.rowFromSpacing
+          ? { kind: "moveColumn", sourceLine: gesture.sourceLine, column: target.column }
+          : {
+              kind: "move",
+              sourceLine: gesture.sourceLine,
+              row: target.row,
+              column: target.column
+            }
+      );
       return;
     }
 
@@ -1379,11 +1411,20 @@ class EditorView {
     if (!step) return;
     event.preventDefault();
     const canvas = this.canvasSize();
+    const column = clamp(item.column + step.column, 1, canvas.columns);
+
+    // 行送りで決まる行は上下させない（帳票）。桁だけを動かす。
+    if (item.rowFromSpacing) {
+      if (step.column === 0) return;
+      this.send({ kind: "moveColumn", sourceLine: item.sourceLine, column });
+      return;
+    }
+
     this.send({
       kind: "move",
       sourceLine: item.sourceLine,
       row: clamp(item.row + step.row, 1, canvas.rows),
-      column: clamp(item.column + step.column, 1, canvas.columns)
+      column
     });
   }
 
@@ -1478,14 +1519,17 @@ class EditorView {
   }
 
   private dragTarget(gesture: Gesture, deltaX: number, deltaY: number): CellPoint {
-    return movedTo(
+    const target = movedTo(
       gesture.origin,
       deltaX,
-      deltaY,
+      // 行送りで決まる行は動かさない。**縦の移動そのものを起こさない**ので、
+      // 拒否が出るのではなく「掴んでも上下しない」という手応えになる。
+      gesture.rowFromSpacing ? 0 : deltaY,
       gesture.widthCols,
       this.cellMetrics(),
       this.canvasSize()
     );
+    return gesture.rowFromSpacing ? { ...target, row: gesture.origin.row } : target;
   }
 
   private resizeTarget(gesture: Gesture, deltaX: number): number {
@@ -1596,6 +1640,23 @@ const COLOR_LABELS: Readonly<Record<string, string>> = {
   pink: "ピンク",
   blue: "青"
 };
+
+/**
+ * オーバーフロー行（帳票）。ここを越えると次のページに送られる。
+ *
+ * 紙面の大きさと同じく **DDS には書かれていない**（`CRTPRTF` の `OVRFLW`）ので、
+ * ホストが設定から渡した値をそのまま引く。画面ファイルには無い概念。
+ */
+function overflowLine(model: RenderModel): HTMLElement | undefined {
+  const line = model.overflowLine;
+  if (line === undefined || line < 1 || line > model.canvas.rows) return undefined;
+
+  const element = document.createElement("div");
+  element.className = "dds-overflow";
+  element.style.top = `calc(var(--cell-h) * ${line})`;
+  element.title = `オーバーフロー行 ${line}（CRTPRTF の OVRFLW）`;
+  return element;
+}
 
 /** 属性文字の占有を薄く示す（隣接違反が起きる前に見えるように）。 */
 function attributeMarkers(item: RenderItem, dimmed = false): HTMLElement[] {
