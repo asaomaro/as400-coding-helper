@@ -18,8 +18,8 @@ AS/400 コーディング支援のプロンプター定義（CL コマンド・R
 | `rpg3/<id>.html` | RPG III(RPG/400) 用 固定長リファレンス（第三者・jaymoseley） | 6 | 下記「rpg3 の出所」参照 |
 | `sources.mjs` | 取得対象リスト（入力） | — | — |
 | `dds/<種別>-{POSITIONAL,KEYWORDS}.html` | DDS の桁とキーワード索引（日本語） | 6 | IBM i 7.4 |
-| `dds/detail/<page>.htm` | DDS 各キーワードの詳細（構文の出所） | 285 | IBM i 7.4 |
-| `dds-en/…` | 同上（英語） | 291 | IBM i 7.4 |
+| `dds/detail/<page>.htm` | DDS 各キーワードの詳細（構文の出所） | 287 | IBM i 7.4 |
+| `dds-en/…` | 同上（英語） | 293 | IBM i 7.4 |
 | `fetch-origin.mjs` | 取得スクリプト（Playwright） | — | — |
 | `generate-cl-definitions.mjs` | CL 定義 JSON の生成スクリプト | — | — |
 | `verify-cl-definitions.mjs` | 生成結果と原典の突き合わせ検査 | — | — |
