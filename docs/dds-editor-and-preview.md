@@ -50,3 +50,33 @@ DDS（`.dspf` / `.mnudds` / `.prtf`）には**器が 2 つ**あり、役割が�
 - 1 ページの中で `LPI` が変わる帳票（複数あることを注記で知らせる）
 - 名前を変えたときの参照（`SFLCTL(NAME)` 等）の追随
 - ファイル・レベルのキーワード（`DSPSIZ` / `REF` / `INDARA` / `PRINT`）の表示
+
+## VSCode を使わずに見る / 直す（CLI）
+
+コア（桁の解決・描画・編集）は `vscode` に依存しないので、素の node から叩ける。
+AI エージェントに DDS を読ませたり直させたりするのはこちら。
+
+```sh
+cd vscode-extension && npm run compile
+
+node out/cli/dds.js parse   <file>                 # 様式と項目を JSON で
+node out/cli/dds.js render  --format text <file>   # 画面／紙面の絵
+node out/cli/dds.js patch   --edits e.json <file>  # 編集を当てる（--write で書く）
+node out/cli/lint.js        <file>                 # 桁位置の検査（SARIF）
+```
+
+`render --format text` は**桁が合った絵**を出す。DBCS の SO / SI も 1 桁として
+数えるので、目で桁を数え直さなくてよい。
+
+```
+    ....+....1....+....2....+....3
+ 2 |    顧客保守       CUSTOMER MAINT
+14 |   ····     全角赤
+```
+
+`····` は `DSPATR(ND)`（**桁は占めるが文字が出ない**）。空白と区別できる。
+
+`patch` は 2 段で断る。**ソースに書けない**編集（宛先が無い・桁に収まらない）と、
+**書けるが画面が壊れる**編集（1 桁目に置く等、配置の指摘が増えるもの）。
+どちらでも 1 つでも引っかかれば**何も書かない**。承知のうえで通すなら
+`--allow-new-issues`。

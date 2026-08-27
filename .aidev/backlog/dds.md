@@ -41,10 +41,25 @@ priority: 1           # DDS の視覚的確認と編集（charter の第 4 の�
   - 落ちることを 2 通りで確認済み（`Y` の +1 を戻す → 2 件 / DBCS を 1 桁に数える → 10 件）。
   - 実測: 単体 750 件（+47）。
 
-- [ ] **CLI に DDS の操作を足す（`parse` / `render` / `validate` / `patch`）** — 現在の CLI は
-  lint のみ。AI エージェントが DDS を読み・描き・検証し・編集するには CLI 表面が要る。
-  編集エンジン（`core/dds/ddsEdit.ts`）は既にあるので、**薄く載せるだけ**で済む。
-  参考実装: PR #108 の `packages/dds-cli`（`init` を含む・AC7 の記録つき）。
+- [x] **CLI に DDS の操作を足す（`parse` / `render` / `patch`）** — 済（`20260827-dds-cli`）。
+  `out/cli/dds.js`。`render --format text` は**桁の合った絵**を出す
+  （DBCS の SO/SI も 1 桁として数え、`DSPATR(ND)` は `·` で「桁は占めるが文字が出ない」を示す）。
+  `patch` は編集を検証して当てる（`--write` が無ければ書かない）。
+  画面・帳票の両方に効き、帳票の用紙は `--page-rows` / `--page-columns` / `--overflow`。
+  - ~~`validate`~~ は**作らなかった**。桁位置と配置の検査は **lint が同じ判定を出している**
+    （`src/lint/rules/layout.ts:52` が `resolveDspfLayout` / `resolvePrtfLayout` を包む）。
+    2 つ目の入口は「どちらが正か」を生む。使い方から `lint.js` へ案内している。
+  - **穴が 1 つ出た**（下の項目）。CLI を通した瞬間に、GUI では到達しにくい経路が見えた。
+  - 使い方は `docs/dds-editor-and-preview.md`。実測: 単体 771 件（+21）。
+
+- [ ] **`validateDdsEdits` が 1 桁目への移動を通す** — 原典は「最初の桁は属性文字のために
+  予約されています」と禁じ、`resolveDspfLayout` も `column-one-reserved` を出すが、
+  `validateDdsEdits` は「ソースに書けるか」しか見ないので通ってしまう。
+  CLI は**指摘の増分**で止めているので実害は塞いであるが、`ddsEdit` 自体は通す。
+  直すなら DDS の種別が要る（1 桁目の禁止は**表示装置ファイルだけ**。帳票に属性文字は無い）。
+  `validateDdsEdits` は種別を受け取らず、呼び出しが 48 か所あるので、
+  **引数を足すと渡し忘れた側で黙って検査が消える**（配線漏れ）。渡し方から決めること。
+  出所: `20260827-dds-cli` の `decisions.md` D2。
 
 - [ ] **エディタの GUI e2e を CI に載せる** — `dev/e2e.mjs`（単独起動を実操作する 15 件）は
   手元でしか走っていない。`playwright-core` とブラウザのキャッシュを CI に用意すれば載る。
