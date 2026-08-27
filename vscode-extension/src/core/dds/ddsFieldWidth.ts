@@ -13,6 +13,21 @@ import { editedWidth } from "./editCode";
  * ■ 分からないときは分からないと言う
  *   参照フィールド（29 桁目の `R`）は参照先を解決しないと幅が出ない。
  *   推測で描くと桁がずれた絵になるので、`undefined` を返して理由を添える。
+ *
+ * ■ **キーワードの条件は見ない。見てはいけない。**
+ *   見え方（`COLOR` / `DSPATR`）は条件つきで書けるので `keywordGroups` で解いているが、
+ *   幅を変えるキーワードは**そもそも条件付けできない**。実機で確かめた
+ *   （2026-08-27 / IBM i 7.3。`.aidev/works/20260827-dds-conditional-edtcde/verify/`）:
+ *
+ *   | キーワードを条件付ける | `CRTDSPF` |
+ *   |---|---|
+ *   | `DSPATR(RI)` / `COLOR(RED)` | **通る** |
+ *   | `EDTCDE(J)`（`B` / `O` とも） | **通らない**（`CPF7311`） |
+ *   | `EDTWRD(...)` / `CHECK(RB)` | **通らない** |
+ *
+ *   つまり**条件つき `EDTCDE` は有効なソースに存在しない**ので、連結した `keywords`
+ *   から求めてよい。`keywordGroups` があるので「幅も条件で解けるのに解いていない」と
+ *   読めてしまうが、**解くと存在しない状態を描くことになる**。
  */
 
 export type WidthUnknownReason =
