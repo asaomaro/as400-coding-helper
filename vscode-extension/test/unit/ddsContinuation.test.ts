@@ -1,8 +1,5 @@
 import * as assert from "assert";
-import {
-  applyDdsEdits,
-  validateDdsEdits
-} from "../../src/core/dds/ddsEdit";
+import { applyDdsEdits, validateDdsEdits } from "../../src/core/dds/ddsEdit";
 import {
   joinContinuations,
   startsContinuation,
@@ -153,7 +150,7 @@ suite("継続: 項目として認識される", () => {
   });
 });
 
-suite("継続: 書き換えは拒否する", () => {
+suite("継続: 書き換え", () => {
   const SOURCE = [
     rec("KWR"),
     cst(3, 12, "'ABC-"),
@@ -162,27 +159,37 @@ suite("継続: 書き換えは拒否する", () => {
     fn("DSPATR(HI)")
   ];
 
-  test("継続にまたがる定数の文字列は拒否する", () => {
-    const rejections = validateDdsEdits(SOURCE, [
+  test("**継続にまたがる定数の文字列を変えられる**（欄全体を折り直す）", () => {
+    // `20260827-dds-keyword-continuation` では拒否していた。折り返しができたので通す。
+    assert.deepStrictEqual(
+      validateDdsEdits(SOURCE, [
+        { kind: "setAttributes", sourceLine: 2, attributes: { text: "NEW" } }
+      ]),
+      []
+    );
+    const results = applyDdsEdits(SOURCE, [
       { kind: "setAttributes", sourceLine: 2, attributes: { text: "NEW" } }
     ]);
-    assert.deepStrictEqual(rejections.map(r => r.code), ["keyword-continuation"]);
+    assert.strictEqual(results.length, 1);
+    // 継続していた 2 行が 1 行にまとまる（収まるので折らない）。
+    assert.deepStrictEqual([results[0].replaceFrom, results[0].replaceTo], [1, 3]);
+    assert.strictEqual(results[0].lines.length, 1);
+    assert.ok(results[0].lines[0].endsWith("'NEW'"), results[0].lines[0]);
   });
 
-  test("位置の変更は拒否しない（代表行の桁しか触らない）", () => {
+  test("位置の変更は従来どおり通る（代表行の桁しか触らない）", () => {
     assert.deepStrictEqual(
       validateDdsEdits(SOURCE, [{ kind: "move", sourceLine: 2, row: 4, column: 12 }]),
       []
     );
   });
 
-  test("**別行のキーワードを持つだけの定数は拒否しない**", () => {
-    // `DSPATR(HI)` は継続ではない。代表行の欄を書き換えてもその行は壊れない。
-    assert.deepStrictEqual(
-      validateDdsEdits(SOURCE, [
-        { kind: "setAttributes", sourceLine: 4, attributes: { text: "NEW" } }
-      ]),
-      []
-    );
+  test("**別行のキーワードを持つだけの定数は代表行だけを触る**", () => {
+    // `DSPATR(HI)` は継続ではない。その行はそのまま残る。
+    const results = applyDdsEdits(SOURCE, [
+      { kind: "setAttributes", sourceLine: 4, attributes: { text: "NEW" } }
+    ]);
+    assert.deepStrictEqual([results[0].replaceFrom, results[0].replaceTo], [3, 4]);
+    assert.strictEqual(results[0].lines.length, 1);
   });
 });

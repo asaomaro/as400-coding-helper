@@ -736,7 +736,7 @@ class EditorView {
 
     const nodes: HTMLElement[] = [
       table,
-      this.keywordSection(item.sourceLine, item.attributes.keywords),
+      this.keywordSection(item.sourceLine, item.attributes.keywords, "field"),
       this.measures(item, model)
     ];
     const breakdown = this.columnBreakdown(item, model);
@@ -770,7 +770,7 @@ class EditorView {
         "dds-record-title",
         record.name.length > 0 ? `様式 ${record.name}` : "（様式の外）"
       ),
-      this.keywordSection(record.sourceLine, record.keywords)
+      this.keywordSection(record.sourceLine, record.keywords, "record")
     ];
     if (record.keywords.trim().length === 0) {
       nodes.push(text("div", "dds-note", "この様式にはレコード・レベルのキーワードがありません"));
@@ -794,7 +794,11 @@ class EditorView {
    * 定数のリテラルは**キーワードではない**ので、そう分かる形にする
    * （キーワード扱いすると、定数を選ぶたびに誤った印が付く）。
    */
-  private keywordSection(sourceLine: number, keywords: string): HTMLElement {
+  private keywordSection(
+    sourceLine: number,
+    keywords: string,
+    level: "record" | "field"
+  ): HTMLElement {
     const section = document.createElement("div");
     section.className = "kw-section";
     section.appendChild(text("div", "kw-label", "キーワード"));
@@ -828,25 +832,149 @@ class EditorView {
       chip.addEventListener("click", () => this.toggleKeyword(key));
       chips.appendChild(chip);
 
+      // 定数のリテラルには `✕` を付けない——消すと項目でなくなり、キャンバスから消える
+      // （core も `constant-needs-literal` で拒否する）。
+      if (entry.kind === "keyword") {
+        const remove = document.createElement("button");
+        remove.type = "button";
+        remove.className = "kw-x";
+        remove.textContent = "✕";
+        remove.title = `${entry.name} を外す`;
+        remove.dataset.key = `kwx:${index}`;
+        remove.addEventListener("click", () => this.removeKeyword(sourceLine, entries, index));
+        chips.appendChild(remove);
+      }
+
       if (this.openKeyword === key && found !== undefined) {
         chip.classList.add("open");
         help = keywordHelpBlock(found);
       }
     });
 
+    chips.appendChild(this.addKeywordButton(sourceLine, keywords, level));
     chips.addEventListener("keydown", event => this.onKeywordKey(event, chips));
     section.appendChild(chips);
     if (help !== undefined) section.appendChild(help);
 
-    // **生テキストを失わない。** 桁を数えたい人・そのままコピーしたい人の手段。
+    // **生テキストは編集できる。** 引数を直に書き換える手段であり、
+    // 桁を数えたい人・コピーしたい人の手段でもある。折り返しは core がやる。
     const raw = document.createElement("input");
     raw.className = "kw-raw";
     raw.value = keywords;
-    raw.readOnly = true;
-    raw.title = "キーワード欄（45 桁〜）の生テキスト。ここでは編集しません";
+    raw.dataset.key = "kw:raw";
+    raw.title = "キーワード欄（45 桁〜）。Enter で確定、Esc で元に戻す。桁は自動で折ります";
+    raw.addEventListener("keydown", event => {
+      if (event.key === "Enter") {
+        event.preventDefault();
+        raw.blur();
+        return;
+      }
+      if (event.key === "Escape") {
+        event.preventDefault();
+        raw.value = keywords;
+        raw.blur();
+      }
+    });
+    raw.addEventListener("blur", () => {
+      if (raw.value === keywords) return;
+      this.sendKeywords(sourceLine, raw.value);
+    });
     section.appendChild(raw);
 
     return section;
+  }
+
+  /**
+   * `＋` と、その場で開く候補つきの入力欄。
+   *
+   * 候補は**原典の表**（`load` で受け取ったもの）から、そのレベルのものを出す。
+   * `<datalist>` を使うのは、**ホストに入力箱を頼まずに済む**ため——
+   * プロトコルを増やさずに、両方のホストで同じ形が動く。
+   *
+   * **絞り込みは候補の並びにだけ効かせる。** 書けるかどうかの検証には使わない
+   * （レベルの判定を誤ると、正しい記述を拒否することになる）。
+   */
+  private addKeywordButton(
+    sourceLine: number,
+    keywords: string,
+    level: "record" | "field"
+  ): HTMLElement {
+    const wrap = document.createElement("span");
+    wrap.className = "kw-add";
+
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "kw-chip add";
+    button.textContent = "＋ 追加";
+    button.dataset.key = "kw:add";
+    wrap.appendChild(button);
+
+    const input = document.createElement("input");
+    input.className = "kw-add-input";
+    input.placeholder = "キーワード名";
+    input.dataset.key = "kw:add-input";
+    input.hidden = true;
+
+    const list = document.createElement("datalist");
+    const listId = `dds-kw-${level}`;
+    list.id = listId;
+    for (const help of this.keywordHelp) {
+      // level を持たないものは常に出す（判別できなかっただけで、書けないとは限らない）。
+      if (help.level && help.level.length > 0 && !help.level.includes(level)) continue;
+      const option = document.createElement("option");
+      option.value = help.name;
+      option.label = help.title;
+      list.appendChild(option);
+    }
+    input.setAttribute("list", listId);
+    wrap.append(input, list);
+
+    button.addEventListener("click", () => {
+      input.hidden = false;
+      input.value = "";
+      input.focus();
+    });
+    input.addEventListener("keydown", event => {
+      if (event.key === "Escape") {
+        event.preventDefault();
+        input.hidden = true;
+        button.focus();
+        return;
+      }
+      if (event.key !== "Enter") return;
+      event.preventDefault();
+      const name = input.value.trim().toUpperCase();
+      if (name.length === 0) return;
+      const help = findKeywordHelp(name, this.keywordHelp);
+      // 引数を取るキーワードは括弧まで書いて、続きを入力できる形で渡す。
+      const added = help?.hasParameters === false ? name : `${name}()`;
+      this.sendKeywords(sourceLine, `${keywords} ${added}`.trim());
+    });
+
+    return wrap;
+  }
+
+  private removeKeyword(
+    sourceLine: number,
+    entries: readonly KeywordEntry[],
+    index: number
+  ): void {
+    const next = entries
+      .filter((_, position) => position !== index)
+      .map(entry => entry.raw)
+      .join(" ");
+    this.sendKeywords(sourceLine, next);
+  }
+
+  /**
+   * キーワード欄の置き換えを送る。
+   *
+   * 拒否されたときの戻り先は**生テキストの入力欄**にする——理由を読んで直せる唯一の場所で、
+   * チップの `✕` は消えている可能性があるため。
+   */
+  private sendKeywords(sourceLine: number, keywords: string): void {
+    this.pendingFocus = "kw:raw";
+    this.send({ kind: "setKeywords", sourceLine, keywords });
   }
 
   private toggleKeyword(key: string): void {

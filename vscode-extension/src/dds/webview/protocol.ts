@@ -151,6 +151,11 @@ function parseEdit(value: unknown): DdsEdit | undefined {
       return isPositiveInteger(value.sourceLine)
         ? { kind: "remove", sourceLine: value.sourceLine }
         : undefined;
+    case "setKeywords":
+      // 中身（リテラルで始まるか・桁に収まるか）は core の検証が見る。ここは型だけ。
+      return isPositiveInteger(value.sourceLine) && typeof value.keywords === "string"
+        ? { kind: "setKeywords", sourceLine: value.sourceLine, keywords: value.keywords }
+        : undefined;
     case "setAttributes": {
       if (!isPositiveInteger(value.sourceLine) || !isRecord(value.attributes)) {
         return undefined;

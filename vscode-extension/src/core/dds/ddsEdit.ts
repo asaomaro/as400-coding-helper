@@ -2,6 +2,8 @@ import { DDS_COLUMNS, ddsField } from "../ddsLayout";
 import {
   buildItemLine,
   writeBackAttributes,
+  buildKeywordLine,
+  foldKeywordArea,
   writeBackKeywordArea,
   writeBackLength,
   type ItemAttributePatch,
@@ -9,6 +11,7 @@ import {
 } from "./ddsEditWriteBack";
 import {
   keywordAreaOf,
+  readConstant,
   replaceLeadingConstant,
   startsContinuation,
   toLogicalUnits,
@@ -57,6 +60,16 @@ export type DdsEdit =
       readonly sourceLine: number;
       readonly attributes: ItemAttributePatch & { readonly text?: string };
     }
+  /**
+   * キーワード欄（45-80 桁）を**まるごと**置き換える。
+   *
+   * 与えるのは**結合後のテキスト**（`OutlineItem.attributes.keywords` と同じ形）。
+   * 36 桁に収まらなければ `foldKeywordArea` が折るので、呼び出し側は桁を数えない。
+   *
+   * `setAttributes` と分けているのは**宛先が違う**ため——あちらは代表行 1 本、
+   * こちらは代表行から続くキーワード行の**区間**を置き換える。
+   */
+  | { readonly kind: "setKeywords"; readonly sourceLine: number; readonly keywords: string }
   | { readonly kind: "add"; readonly recordName: string; readonly item: NewDspfItem };
 
 /** 置き換え指示。0 始まり・`replaceTo` は含まない。 */
@@ -81,14 +94,10 @@ export type DdsEditRejectionCode =
   | "text-on-field"
   | "invalid-column-value"
   | "line-too-long"
-  /**
-   * キーワード欄が継続行にまたがっている。
-   *
-   * 継続（`-` / `+` / 引用符の開いたまま）で 2 行以上に分かれた値は、**代表行だけを
-   * 書き換えると継続行が取り残されて壊れる**。折り直して書き出す仕組みが要るので、
-   * この版では拒否する。**位置・長さの変更は拒否しない**（代表行の桁しか触らないため）。
-   */
-  | "keyword-continuation";
+  /** 定数の欄がリテラルで始まらなくなる（項目として認識されなくなる）。 */
+  | "constant-needs-literal"
+  /** 項目のキーワード行の間に注記行が挟まっている（区間で置き換えると注記が消える）。 */
+  | "keyword-lines-not-contiguous";
 
 export interface DdsEditRejection {
   readonly code: DdsEditRejectionCode;
@@ -128,7 +137,11 @@ export function validateDdsEdits(
       continue;
     }
 
-    const unit = itemUnitAt(units, edit.sourceLine);
+    // キーワードの編集だけは**様式も対象**（`OVERLAY` / `CFnn` は様式にしか書けない）。
+    const unit =
+      edit.kind === "setKeywords"
+        ? unitAt(units, edit.sourceLine)
+        : itemUnitAt(units, edit.sourceLine);
     if (!unit) {
       rejections.push({
         code: "line-not-found",
@@ -144,6 +157,10 @@ export function validateDdsEdits(
 
     if (edit.kind === "setAttributes") {
       rejections.push(...validateAttributes(lines, unit, edit.attributes, edit.sourceLine));
+    }
+
+    if (edit.kind === "setKeywords") {
+      rejections.push(...validateKeywords(unit, edit.keywords, edit.sourceLine));
     }
 
     if (edit.kind === "resize") {
@@ -200,10 +217,39 @@ export function applyDdsEdits(
         const unit = itemUnitAt(units, edit.sourceLine);
         if (!unit) break;
         const index = edit.sourceLine - 1;
+
+        // 継続にまたがるリテラルは、代表行だけでは差し替えられない。
+        // **欄全体を作り直して折る**（区間の置き換えになる）。
+        if (edit.attributes.text !== undefined && startsContinuation(unit.line)) {
+          const run = keywordRunOf(unit);
+          const replaced = replaceLeadingConstant(unit.keywords, edit.attributes.text);
+          if (run && replaced !== undefined) {
+            const head = writeBackAttributes(lines[index], edit.attributes);
+            results.push({
+              replaceFrom: run.from,
+              replaceTo: run.to,
+              lines: keywordLines(head, replaced)
+            });
+            break;
+          }
+        }
+
         results.push({
           replaceFrom: index,
           replaceTo: index + 1,
           lines: [applyAttributes(lines[index], edit.attributes)]
+        });
+        break;
+      }
+      case "setKeywords": {
+        const unit = unitAt(units, edit.sourceLine);
+        if (!unit) break;
+        const run = keywordRunOf(unit);
+        if (!run) break; // 検証済みなので通常は起きない。
+        results.push({
+          replaceFrom: run.from,
+          replaceTo: run.to,
+          lines: keywordLines(lines[edit.sourceLine - 1], edit.keywords)
         });
         break;
       }
@@ -224,6 +270,68 @@ export function applyDdsEdits(
 
   // 降順にすると、先に適用した指示が後続の行番号を動かさない。
   return [...results].sort((a, b) => b.replaceFrom - a.replaceFrom);
+}
+
+/**
+ * キーワード欄の置き換えが**ソースに書けるか**。
+ *
+ * 桁は `foldKeywordArea` が必ず収めるので見ない。見るのは 2 つだけ:
+ * **定数がリテラルで始まらなくなっていないか**（始まらないと項目として認識されず、
+ * キャンバスから消える）と、**区間が連続しているか**（注記行を巻き込まない）。
+ */
+function validateKeywords(
+  unit: LogicalUnit,
+  keywords: string,
+  sourceLine: number
+): DdsEditRejection[] {
+  const rejections = validateKeywordRun(unit, sourceLine);
+
+  if (unitItemKind(unit) === "constant" && readConstant(keywords) === undefined) {
+    rejections.push({
+      code: "constant-needs-literal",
+      message: "固定情報（定数）のキーワード欄はリテラル（'…'）で始まる必要があります",
+      sourceLine
+    });
+  }
+
+  return rejections;
+}
+
+/**
+ * その項目の**キーワード欄の区間**（代表行から続く行）。
+ *
+ * 返すのは 0 始まりの半開区間。`sourceLines` のうち代表行以降が対象で、
+ * **連続していなければ `undefined`**——間に注記行が挟まっていると、
+ * 区間で置き換えたときに注記が消える。
+ */
+function keywordRunOf(unit: LogicalUnit): { from: number; to: number } | undefined {
+  const after = unit.sourceLines.filter(line => line >= unit.sourceLine).sort((a, b) => a - b);
+  if (after.length === 0) return undefined;
+  for (let i = 1; i < after.length; i += 1) {
+    if (after[i] !== after[i - 1] + 1) return undefined;
+  }
+  return { from: after[0] - 1, to: after[after.length - 1] };
+}
+
+function validateKeywordRun(unit: LogicalUnit, sourceLine: number): DdsEditRejection[] {
+  if (keywordRunOf(unit) !== undefined) return [];
+  return [
+    {
+      code: "keyword-lines-not-contiguous",
+      message: "キーワードの行の間に注記行が挟まっています（この形は書き換えません）",
+      sourceLine
+    }
+  ];
+}
+
+/** キーワード欄を折って、代表行から続く行を組み立てる。 */
+function keywordLines(representative: string, keywords: string): string[] {
+  const chunks = foldKeywordArea(keywords);
+  if (chunks.length === 0) return [writeBackKeywordArea(representative, "")];
+  return [
+    writeBackKeywordArea(representative, chunks[0]),
+    ...chunks.slice(1).map(buildKeywordLine)
+  ];
 }
 
 /** 属性を書き換えた行を作る。定数のリテラルは**先頭の 1 つだけ**を差し替える。 */
@@ -277,17 +385,10 @@ function validateAttributes(
     rejections.push(at("text-on-field", "フィールドにリテラルは書けません"));
   }
 
-  // 継続行にまたがるキーワード欄は書き換えない（折り直す仕組みが無い）。
-  // **キーワード欄を触るものだけ**が対象——位置・長さは代表行の桁しか触らない。
-  // 別の行に書かれた普通のキーワード（`OVERLAY` など）は継続ではないので拒否しない
-  // （代表行の欄を書き換えても、その行はそのまま残って壊れない）。
+  // 継続にまたがる定数のリテラルは、**欄全体を折り直して**書き出す（`applyDdsEdits`）。
+  // その経路は区間を置き換えるので、注記行が挟まっていると注記が消える。
   if (attributes.text !== undefined && startsContinuation(unit.line)) {
-    rejections.push(
-      at(
-        "keyword-continuation",
-        "キーワード欄が継続行にまたがっています（この版では書き換えません）"
-      )
-    );
+    rejections.push(...validateKeywordRun(unit, sourceLine));
   }
 
   if (attributes.name !== undefined) {
@@ -443,6 +544,19 @@ function itemUnitAt(
   sourceLine: number
 ): LogicalUnit | undefined {
   return units.find(unit => unit.kind === "item" && unit.sourceLine === sourceLine);
+}
+
+/**
+ * 項目でも**様式でも**引く。
+ *
+ * キーワード欄は様式（`R XXXX`）も持つ——`OVERLAY` / `CFnn` はそこにしか書けない。
+ * 位置や長さは様式に無いので、**キーワードの編集だけ**がこちらを使う。
+ */
+function unitAt(
+  units: readonly LogicalUnit[],
+  sourceLine: number
+): LogicalUnit | undefined {
+  return units.find(unit => unit.sourceLine === sourceLine);
 }
 
 function fitsInColumn(value: number, width: number): boolean {
