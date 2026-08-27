@@ -135,60 +135,217 @@ export function conditioningAreaOf(line: string): string {
   return line.slice(start - 1, end);
 }
 
+/**
+ * DDS が読む機能欄の終わり（80 桁目）。
+ *
+ * **81 桁目以降は読まれない。** 実機で 80 桁を超える行を書くと、はみ出した部分は
+ * 無かったことになり `CPD7508「閉じ引用符が無い」`で落ちる（2026-08-27・IBM i 7.3 で確認）。
+ * 継続の判定を行全体で行うと、はみ出した文字を継続記号と誤読する。
+ */
+const DDS_KEYWORD_AREA_END = 80;
+
+/** 機能欄（45-80 桁）。継続の判定と結合はこの範囲で行う。 */
+function functionsArea(line: string): string {
+  return line.slice(DDS_KEYWORD_AREA_START - 1, DDS_KEYWORD_AREA_END).trimEnd();
+}
+
+/** 引用符が閉じていないか。`''` は中のエスケープなので、そこでは閉じない。 */
+function hasOpenQuote(text: string): boolean {
+  let index = 0;
+  while (index < text.length) {
+    if (text[index] !== "'") {
+      index += 1;
+      continue;
+    }
+    index += 1;
+    // 開いた引用符。閉じを探す。
+    for (;;) {
+      if (index >= text.length) return true;
+      if (text[index] !== "'") {
+        index += 1;
+        continue;
+      }
+      if (text[index + 1] === "'") {
+        index += 2; // エスケープされた引用符
+        continue;
+      }
+      index += 1;
+      break;
+    }
+  }
+  return false;
+}
+
+/** 継続の種類。**判定の優先順位は `-` → `+` → 引用符が開いている**（実機で確認）。 */
+type Continuation = "minus" | "plus" | "open" | undefined;
+
+function continuationOf(segment: string, accumulated: string): Continuation {
+  const last = segment.slice(-1);
+  if (last === "-") return "minus";
+  if (last === "+") return "plus";
+  if (hasOpenQuote(accumulated)) return "open";
+  return undefined;
+}
+
+/**
+ * その行の機能欄が**次の行へ続いている**か。
+ *
+ * 書き換えの可否を決めるのに使う。**継続でつながった値は代表行だけを書き換えると壊れる**
+ * ——継続行が取り残されて、閉じない引用符や宙に浮いた括弧が残る。
+ */
+export function startsContinuation(line: string): boolean {
+  const area = functionsArea(line);
+  return continuationOf(area, area) !== undefined;
+}
+
+/** 継続でまとまった機能欄。 */
+export interface JoinedLine {
+  /** 代表行（0 始まりの添字）。位置・長さ・用途はこの行から読む。 */
+  readonly index: number;
+  /** 結合後の機能欄。**継続記号は含まない。** */
+  readonly keywords: string;
+  /** 1 始まりの行番号。**継続に使った行を含む**（削除がまとめて消せるように）。 */
+  readonly sourceLines: readonly number[];
+}
+
+/**
+ * 継続でつながった行を 1 つにまとめる。**分類より先に行う。**
+ *
+ * ## なぜ分類より先か
+ *
+ * 継続元の行は引用符が閉じていないので `readConstant` が読めず、名前欄も空になる。
+ * 分類を先にすると「キーワードだけの行」と判定され、**項目が丸ごと消える**
+ * （直前の様式のキーワードに吸収される）。実際、実機で通る DSPF の定数 5 個のうち
+ * 描かれたのは 1 個だけだった。
+ *
+ * ## 規則（実機で判定。2026-08-27 / IBM i 7.3）
+ *
+ * ローカルの原典スナップショットに継続規則のページが無いため、実機のコンパイラに判定させた
+ * （`CRTDSPF` のリストの `Expanded Source` に**解決後の定数**が出る）。
+ *
+ * | 機能欄の最後の非空白 | 次行の取り方 | 実測 |
+ * |---|---|---|
+ * | `-` | `-` を捨て、**45 桁目ちょうど**から（空白も保つ） | `'ABC-` ＋ `   DEF'` → `ABC   DEF` |
+ * | `+` | `+` を捨て、**最初の非空白**から | `'ABC+` ＋ `   DEF'` → `ABCDEF` |
+ * | どちらでもなく引用符が開いている | **空白 1 つ**を挟んで最初の非空白から | `'ABC` ＋ `DEF'` → `ABC DEF` |
+ *
+ * リテラルの外でも切れ（`COLOR(-` ＋ `RED)` → `COLOR(RED)`）、3 行以上も連鎖する。
+ *
+ * ## 継続でない「キーワードだけの行」は対象外
+ *
+ * `OVERLAY` を別の行に書く形は普通で、それは**空白 1 つ**で連結する（`toLogicalUnits` の仕事）。
+ * ここで継続と判定するのは、上の 3 条件に当たるときだけ。
+ */
+export function joinContinuations(lines: readonly string[]): JoinedLine[] {
+  const joined: JoinedLine[] = [];
+  let index = 0;
+
+  while (index < lines.length) {
+    const line = lines[index];
+    if (isDdsCommentLine(line) || isDdsBlankLine(line)) {
+      joined.push({ index, keywords: functionsArea(line), sourceLines: [index + 1] });
+      index += 1;
+      continue;
+    }
+
+    let segment = functionsArea(line);
+    let keywords = segment;
+    const sourceLines = [index + 1];
+    let next = index + 1;
+
+    for (;;) {
+      const kind = continuationOf(segment, keywords);
+      if (kind === undefined) break;
+      // 次の行が無い / 注記行・空行なら継続しない。**継続記号はそのまま残す**
+      // （捨てると「書いたのに消えた」になる）。
+      if (next >= lines.length) break;
+      if (isDdsCommentLine(lines[next]) || isDdsBlankLine(lines[next])) break;
+
+      const tail = functionsArea(lines[next]);
+      // **機能欄が空の行は継続に使わない。** 条件付けだけの行（次の単位への前置き）が
+      // ここに来ることがあり、吸い込むとその条件が次の項目に付かなくなる。
+      if (tail.length === 0) break;
+
+      keywords =
+        kind === "minus"
+          ? keywords.slice(0, -1) + tail
+          : kind === "plus"
+            ? keywords.slice(0, -1) + tail.trimStart()
+            : `${keywords} ${tail.trimStart()}`;
+      sourceLines.push(next + 1);
+      segment = tail;
+      next += 1;
+    }
+
+    joined.push({ index, keywords, sourceLines });
+    index = next;
+  }
+
+  return joined;
+}
+
 export function toLogicalUnits(lines: readonly string[]): LogicalUnit[] {
   const units: LogicalUnit[] = [];
   /** まだ単位に属さない、先行する条件付けの行。 */
   let pendingConditioning: string[] = [];
   let pendingConditioningLines: number[] = [];
 
-  const push = (kind: "record" | "item", line: string, index: number): void => {
+  const push = (
+    kind: "record" | "item",
+    line: string,
+    joined: JoinedLine
+  ): void => {
     units.push({
       kind,
       line,
-      sourceLine: index + 1,
-      keywords: keywordAreaOf(line),
+      sourceLine: joined.index + 1,
+      keywords: joined.keywords,
       conditioningLines: [...pendingConditioning, line],
-      sourceLines: [...pendingConditioningLines, index + 1]
+      sourceLines: [...pendingConditioningLines, ...joined.sourceLines]
     });
     pendingConditioning = [];
     pendingConditioningLines = [];
   };
 
-  lines.forEach((line, index) => {
-    if (isDdsCommentLine(line) || isDdsBlankLine(line)) return;
+  // **継続を先に解く。** 分類より先でないと、引用符が閉じていない継続元の行が
+  // 「キーワードだけの行」と誤判定され、項目が丸ごと消える。
+  for (const joined of joinContinuations(lines)) {
+    const line = lines[joined.index];
+    if (isDdsCommentLine(line) || isDdsBlankLine(line)) continue;
 
     const nameType = ddsField(line, DDS_COLUMNS.nameType).trim().toUpperCase();
     const name = ddsName(line);
-    const keywordArea = keywordAreaOf(line);
+    const keywordArea = joined.keywords;
     const constant = readConstant(keywordArea);
 
     if (nameType === "R") {
-      push("record", line, index);
-      return;
+      push("record", line, joined);
+      continue;
     }
 
     if (name.length > 0 || constant !== undefined) {
-      push("item", line, index);
-      return;
+      push("item", line, joined);
+      continue;
     }
 
     // キーワード欄が空で条件付けだけ書かれている行は、**次の単位への前置き**。
     if (keywordArea.length === 0 && conditioningAreaOf(line).trim().length > 0) {
       pendingConditioning.push(line);
-      pendingConditioningLines.push(index + 1);
-      return;
+      pendingConditioningLines.push(joined.index + 1);
+      continue;
     }
 
-    // キーワードだけの行。直前の単位に足す。
+    // キーワードだけの行。直前の単位に**空白 1 つ**で足す。
+    // **継続とは別物**（継続は上で解いてある）。`OVERLAY` を別の行に書く形がこれ。
     // 直前が無ければファイル・レベルのキーワード（REF など）で、配置に関係しない。
     const previous = units[units.length - 1];
-    if (!previous) return;
+    if (!previous) continue;
     units[units.length - 1] = {
       ...previous,
       keywords: `${previous.keywords} ${keywordArea}`.trim(),
-      sourceLines: [...previous.sourceLines, index + 1]
+      sourceLines: [...previous.sourceLines, ...joined.sourceLines]
     };
-  });
+  }
 
   return units;
 }

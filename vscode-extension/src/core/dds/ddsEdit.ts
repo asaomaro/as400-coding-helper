@@ -10,6 +10,7 @@ import {
 import {
   keywordAreaOf,
   replaceLeadingConstant,
+  startsContinuation,
   toLogicalUnits,
   unitItemKind,
   type LogicalUnit
@@ -79,7 +80,15 @@ export type DdsEditRejectionCode =
   | "field-column-on-constant"
   | "text-on-field"
   | "invalid-column-value"
-  | "line-too-long";
+  | "line-too-long"
+  /**
+   * キーワード欄が継続行にまたがっている。
+   *
+   * 継続（`-` / `+` / 引用符の開いたまま）で 2 行以上に分かれた値は、**代表行だけを
+   * 書き換えると継続行が取り残されて壊れる**。折り直して書き出す仕組みが要るので、
+   * この版では拒否する。**位置・長さの変更は拒否しない**（代表行の桁しか触らないため）。
+   */
+  | "keyword-continuation";
 
 export interface DdsEditRejection {
   readonly code: DdsEditRejectionCode;
@@ -266,6 +275,19 @@ function validateAttributes(
   }
   if (!isConstant && attributes.text !== undefined) {
     rejections.push(at("text-on-field", "フィールドにリテラルは書けません"));
+  }
+
+  // 継続行にまたがるキーワード欄は書き換えない（折り直す仕組みが無い）。
+  // **キーワード欄を触るものだけ**が対象——位置・長さは代表行の桁しか触らない。
+  // 別の行に書かれた普通のキーワード（`OVERLAY` など）は継続ではないので拒否しない
+  // （代表行の欄を書き換えても、その行はそのまま残って壊れない）。
+  if (attributes.text !== undefined && startsContinuation(unit.line)) {
+    rejections.push(
+      at(
+        "keyword-continuation",
+        "キーワード欄が継続行にまたがっています（この版では書き換えません）"
+      )
+    );
   }
 
   if (attributes.name !== undefined) {
