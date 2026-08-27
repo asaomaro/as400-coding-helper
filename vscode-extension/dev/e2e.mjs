@@ -649,7 +649,9 @@ check("すべて未設定は設定が無いと押せない", await page.$eval(".
 await page.selectOption("#sample", { label: "CUSTMNT.dspf" });
 await page.waitForTimeout(250);
 
-const chipTexts = () => page.$$eval(".kw-chip", nodes => nodes.map(n => n.textContent));
+// `＋ 追加` と「未設定」はキーワードではないので数えない。
+const chipTexts = () =>
+  page.$$eval(".kw-chip:not(.add):not(.none)", nodes => nodes.map(n => n.textContent));
 const helpText = () => page.$eval(".kw-help", node => node.textContent).catch(() => "");
 const selectTreeItem = async label => {
   const line = await page.evaluate(name => {
@@ -736,6 +738,88 @@ check(
   "様式の中の項目をクリックしたら項目が選ばれる",
   // 名前は input の値なので textContent には出ない。値を直接読む。
   (await page.$eval('.dds-properties input[data-key="name"]', node => node.value)) === "CUSTNM"
+);
+
+// ---- 21. キーワードの編集（追加・削除・引数の変更と折り返し） -----------
+const msgtxtLine = await selectTreeItem("MSGTXT");
+const rawValue = () => page.$eval(".kw-raw", node => node.value);
+const sourceAt = async line => (await sourceLines())[line - 1];
+
+check("生テキストが編集できる（読み取り専用ではない）", await page.$eval(".kw-raw", n => !n.readOnly));
+
+// 36 桁に収まらない並びを入れて、切れ目で折られることを見る。
+await page.fill(".kw-raw", "COLOR(RED) DSPATR(RI HI ND) CHECK(RZ) DSPATR(UL)");
+await page.keyboard.press("Enter");
+await page.waitForTimeout(400);
+check(
+  "**読み直しても同じ並びに戻る**（折っても値が変わらない）",
+  (await rawValue()) === "COLOR(RED) DSPATR(RI HI ND) CHECK(RZ) DSPATR(UL)",
+  await rawValue()
+);
+const folded = [await sourceAt(msgtxtLine), await sourceAt(msgtxtLine + 1)];
+check(
+  "**桁が溢れたら次の行へ折られる**（どの行も 80 桁以内）",
+  folded.every(line => line.length <= 80) && folded[1].slice(0, 44).trim() === "A",
+  JSON.stringify(folded)
+);
+check(
+  "切れ目で折るので継続記号を使わない",
+  !folded[0].trimEnd().endsWith("-"),
+  folded[0]
+);
+
+// チップの ✕ で 1 つ外す。
+const chipsBefore = (await chipTexts()).length;
+await page.click(".kw-x");
+await page.waitForTimeout(400);
+check(
+  "**チップの ✕ でキーワードが 1 つ消える**",
+  (await chipTexts()).length === chipsBefore - 1,
+  `${chipsBefore} → ${(await chipTexts()).length}`
+);
+check("消したぶんは生テキストからも消える", !(await rawValue()).includes("COLOR(RED)"), await rawValue());
+
+// ＋ で足す（原典の一覧が候補に出る）。
+await page.click(".kw-chip.add");
+await page.waitForTimeout(150);
+check(
+  "＋ で候補つきの入力欄が開く（原典の一覧から）",
+  (await page.$eval(".kw-add-input", n => !n.hidden)) &&
+    (await page.$$eval(`datalist#dds-kw-field option`, ns => ns.length)) > 50
+);
+await page.fill(".kw-add-input", "DSPATR");
+await page.keyboard.press("Enter");
+await page.waitForTimeout(400);
+check("**足したキーワードがソースに入る**", (await rawValue()).includes("DSPATR()"), await rawValue());
+
+// **様式のキーワードも編集できる**（OVERLAY / CFnn は様式にしか書けない）。
+await page.click(".dds-tree li.record .label");
+await page.waitForTimeout(200);
+const recordBefore = await rawValue();
+await page.fill(".kw-raw", `${recordBefore} PUTOVR`);
+await page.keyboard.press("Enter");
+await page.waitForTimeout(400);
+check(
+  "**様式のキーワードを足せる**",
+  (await rawValue()).includes("PUTOVR") && (await sourceAt(6)).includes("R HEADER"),
+  await sourceAt(6)
+);
+
+// 定数からリテラルを消す編集は拒否される。
+// **行番号は直前の編集でずれている**（様式の 2 行が 1 行にまとまった）ので、選択から採る。
+const literalLine = await selectTreeItem("顧客保守");
+await page.fill(".kw-raw", "DSPATR(HI)");
+await page.keyboard.press("Enter");
+await page.waitForTimeout(400);
+check(
+  "**定数からリテラルを消す編集は拒否される**",
+  (await page.$eval(".dds-reject", node => node.textContent)).includes("リテラル"),
+  await page.$eval(".dds-reject", node => node.textContent)
+);
+check(
+  "拒否されたらソースは変わらない",
+  (await sourceAt(literalLine)).includes("顧客保守"),
+  await sourceAt(literalLine)
 );
 
 check("実行中に JS エラーが出ていない", errors.length === 0, errors.slice(0, 2).join(" | "));
