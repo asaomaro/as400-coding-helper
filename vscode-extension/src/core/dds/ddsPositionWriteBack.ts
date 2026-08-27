@@ -33,6 +33,16 @@ export function writeBackPosition(request: WriteBackRequest): string {
   return line.trimEnd();
 }
 
+/**
+ * **桁欄（42-44）だけ**を書き換えた行を返す。行欄には触らない。
+ *
+ * 帳票で使う。行が `SPACE` / `SKIP` で決まっている項目に行番号を書き込むと、
+ * 行送りが**無効になる**（原典。`prtfLayout` も診断している）。
+ */
+export function writeBackColumn(line: string, column: number): string {
+  return ddsReplaceField(line, DDS_POSITION_COLUMN, format(column, 3)).trimEnd();
+}
+
 /** 位置欄に行番号が書かれているか。書き戻しの確認に使う。 */
 export function hasExplicitRow(line: string): boolean {
   return ddsField(line, DDS_POSITION_ROW).trim().length > 0;

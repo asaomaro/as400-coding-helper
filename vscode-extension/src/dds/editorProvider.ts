@@ -2,6 +2,8 @@ import * as vscode from "vscode";
 import { applyDdsEdits, validateDdsEdits, type DdsEditResult } from "../core/dds/ddsEdit";
 import type { DdsKeywordHelp } from "../core/dds/ddsKeywords";
 import { buildDspfRenderModel, type RenderModel } from "../core/dds/dspfRenderModel";
+import { buildPrtfRenderModel } from "../core/dds/prtfRenderModel";
+import { DEFAULT_PAGE, type PrtfPage } from "../core/dds/prtfLayout";
 import { resolveDdsType } from "../core/sourceKind";
 import { resolveDefinitionLanguage } from "../prompter/jsonDefinitions";
 import { buildDdsEditorHtml, createNonce } from "./webviewHtml";
@@ -315,7 +317,32 @@ async function askItem(
 }
 
 function modelOf(document: vscode.TextDocument): RenderModel {
-  return buildDspfRenderModel(documentLines(document));
+  const lines = documentLines(document);
+  // **種別で解決を選ぶ。** 帳票は行が行送り（SPACE / SKIP）で決まるので、
+  // 画面の配置解決では位置が出ない。
+  return resolveDdsType(document.fileName) === "DDS-PRTF"
+    ? buildPrtfRenderModel(lines, { page: prtfPage() })
+    : buildDspfRenderModel(lines);
+}
+
+/**
+ * 帳票の紙面。**DDS には書かれていない**（`CRTPRTF` の `PAGESIZE` / `OVRFLW`）ので設定から採る。
+ *
+ * 帳票プレビュー（`language/prtfPreview.ts`）と**同じ設定**を読む——
+ * 同じソースが 2 つの画面で別の紙面に見えないようにするため。
+ */
+function prtfPage(): PrtfPage {
+  const config = vscode.workspace.getConfiguration("rpgClSupport");
+  const positive = (key: string): number | undefined => {
+    const value = config.get<number>(key);
+    return typeof value === "number" && value > 0 ? value : undefined;
+  };
+
+  return {
+    rows: positive("prtf.pageLength") ?? DEFAULT_PAGE.rows,
+    columns: positive("prtf.pageWidth") ?? DEFAULT_PAGE.columns,
+    overflowLine: positive("prtf.overflowLine") ?? DEFAULT_PAGE.overflowLine
+  };
 }
 
 function documentLines(document: vscode.TextDocument): string[] {

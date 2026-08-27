@@ -1,26 +1,42 @@
-import { isDbcsCodePoint, printWidth } from "../dbcs";
 import {
   collectIndicators,
   conditionGroups,
-  describeConditioning,
   evaluateConditioning,
-  type Conditioning,
   type IndicatorStates,
   type IndicatorUsage
 } from "./ddsConditioning";
 import {
+  constantSegments,
+  printWidth,
+  segmentsWidth,
+  toRenderItem,
+  type RenderItem,
+  type RenderSegment
+} from "./ddsRenderItem";
+import {
   occupanciesOverlap,
   resolveDspfLayout,
   type DspfDiagnostic,
+  type DspfDiagnosticCode,
   type DspfLayout
 } from "./dspfLayout";
-import { resolveAppearance, type ScreenAppearance } from "./dspfAttributes";
+import type { LayoutDiagnosticCode } from "./prtfLayout";
 import {
   buildDspfOutline,
-  type ItemAttributes,
   type OutlineItem,
   type OutlineRecord
 } from "./dspfOutline";
+
+// **翻訳は種別に依らない**ので `ddsRenderItem` に置いてある。
+// 既存の import 元を壊さないよう、ここからも出す。
+export {
+  constantSegments,
+  printWidth,
+  segmentsWidth,
+  toRenderItem,
+  type RenderItem,
+  type RenderSegment
+};
 
 /**
  * 画面（DSPF）を**描くための形**。GUI に渡す唯一のモデル。
@@ -42,64 +58,36 @@ import {
  * そこで**文字と占有桁数の対応を core が決めて渡し**、UI は `cols × セル幅` の箱に流すだけにする。
  */
 
-/** 描画の 1 区切り。SO/SI は `text` が空の 1 桁として現れる。 */
-export interface RenderSegment {
-  readonly text: string;
-  readonly cols: number;
-  /**
-   * SO / SI の桁。
-   *
-   * **表示切替で `{` `}` を描くために持つ。** UI に「これは全角か」を判断させないため、
-   * 種別は区切りを作るときに決める（桁の判断は core、描くのは UI）。
-   */
-  readonly shift?: "so" | "si";
-}
+/**
+ * 描画モデルが載せる診断のコード。
+ *
+ * 画面（`resolveDspfLayout`）と帳票（`resolvePrtfLayout`）で**集合が違う**
+ * （帳票には `spacing-with-line-number` / `possible-overprint` がある）。
+ * **どちらも作り直さず、解決側が出したものをそのまま載せる**ので、和で持つ。
+ */
+export type RenderDiagnosticCode = DspfDiagnosticCode | LayoutDiagnosticCode;
 
-export interface RenderItem {
-  /** 1 始まり。**編集の宛先**（合成 ID は持たない——構造が変わると別の項目を指すため）。 */
-  readonly sourceLine: number;
-  readonly kind: "field" | "constant";
+export interface RenderDiagnostic {
+  readonly code: RenderDiagnosticCode;
+  readonly message: string;
   /** 1 始まり。 */
-  readonly row: number;
-  /** 1 始まり・表示桁。 */
-  readonly column: number;
-  /** 表示桁数（DBCS・SO/SI 込み）。幅不明なら undefined。 */
-  readonly widthCols: number | undefined;
-  /** 表示するラベル（定数はリテラル、フィールドは名前）。 */
-  readonly label: string;
-  /** 描画の区切り。`cols` の合計は `widthCols`。幅不明なら空。 */
-  readonly segments: readonly RenderSegment[];
-  /** 属性文字を含む実効占有（1 始まり・両端を含む）。 */
-  readonly occupancy: { readonly start: number; readonly end: number };
-  /** 長さ欄を持つか。**定数は持たない**ので、長さは変えられない。 */
-  readonly resizable: boolean;
-  readonly recordName?: string;
-  /** プロパティに出す値。**キーワードは解釈しない**（生テキスト）。 */
-  readonly attributes: ItemAttributes;
-  /**
-   * 実機での見え方（色・反転表示・下線・明滅・非表示）。
-   *
-   * `COLOR` / `DSPATR` から求める。対応表は原典から生成し、**実機の画面と全 61 通りを
-   * 突き合わせて確認済み**（`20260827-dds-5250-colors`）。
-   */
-  readonly appearance: ScreenAppearance;
-  /**
-   * 条件付け（7-16 桁）。**ここでは解決しない。**
-   *
-   * どの標識が立っているかは**利用者が指定する表示の状態**で、ソースには書かれていない。
-   * モデルに解決済みの真偽を載せると、状態が変わるたびにホストへ作り直しを頼むことになる。
-   * 規則（`evaluateConditioning`）は core に置いたまま、状態は UI が持つ。
-   */
-  readonly condition: Conditioning;
+  readonly sourceLine: number;
 }
 
 export interface RenderModel {
   /** 種別。DSPF のみ。PRTF を載せるときにここで分岐する。 */
-  readonly kind: "dspf";
+  readonly kind: "dspf" | "prtf";
   readonly canvas: { readonly rows: number; readonly columns: number };
+  /**
+   * オーバーフロー行（帳票のみ）。ここを越えると次のページに送られる。
+   *
+   * 紙面の大きさと同じく **DDS には書かれていない**（`CRTPRTF` の `OVRFLW`）ので、
+   * ホストが設定から渡す。画面ファイルには無い概念なので `undefined`。
+   */
+  readonly overflowLine?: number;
   /** 描く項目（配置できたものだけ）。 */
   readonly items: readonly RenderItem[];
-  readonly diagnostics: readonly DspfDiagnostic[];
+  readonly diagnostics: readonly RenderDiagnostic[];
   /** 様式の一覧（追加先の選択に使う）。 */
   readonly records: readonly string[];
   /**
@@ -277,109 +265,3 @@ function describeItem(item: RenderItem): string {
   return item.kind === "constant" ? `定数 '${item.label}'` : (item.label || "名前のない項目");
 }
 
-function toRenderItem(item: DspfLayout["items"][number]): RenderItem {
-  const label = item.kind === "constant" ? (item.text ?? "") : (item.name ?? "");
-  const condition = describeConditioning(item.conditioning);
-
-  return {
-    sourceLine: item.sourceLine,
-    kind: item.kind,
-    row: item.row,
-    column: item.column,
-    widthCols: item.width,
-    label,
-    segments:
-      item.width === undefined
-        ? []
-        : item.kind === "constant"
-          ? constantSegments(item.text ?? "")
-          : [{ text: placeholder(item), cols: item.width }],
-    occupancy: item.occupancy,
-    // 定数は桁数欄を持たない（原典: 固定情報フィールドに桁数を指定してはならない）。
-    resizable: item.kind === "field" && item.width !== undefined,
-    attributes: {
-      ...(item.name !== undefined ? { name: item.name } : {}),
-      ...(item.text !== undefined ? { text: item.text } : {}),
-      ...(item.width !== undefined && item.kind === "field" ? { length: item.width } : {}),
-      ...(item.dataType !== undefined ? { dataType: item.dataType } : {}),
-      ...(item.decimals !== undefined ? { decimals: item.decimals } : {}),
-      ...(item.usage !== undefined ? { usage: item.usage } : {}),
-      keywords: item.keywords,
-      ...(condition.length > 0 ? { condition } : {})
-    },
-    appearance: resolveAppearance(item.keywords),
-    condition: item.conditioning,
-    ...(item.recordName !== undefined ? { recordName: item.recordName } : {})
-  };
-}
-
-/**
- * フィールドの見え方。SDA と同じ流儀で、長さと位置が分かる形にする。
- *
- * 実際に何が出るかは実行時のデータ次第なので、**名前ではなくプレースホルダ**を敷く
- * （名前を出すと、名前の長さと桁数が食い違って見える）。
- */
-function placeholder(item: DspfLayout["items"][number]): string {
-  const numeric = (item.name ?? "").length > 0 && isNumericLike(item);
-  return (numeric ? "9" : "X").repeat(item.width ?? 0);
-}
-
-function isNumericLike(item: DspfLayout["items"][number]): boolean {
-  return item.kind === "field" && /^[SY]$/u.test((item.dataType ?? "").trim().toUpperCase());
-}
-
-/**
- * 定数の区切り。**`printWidth` と同じ規則**で歩く（SO/SI が桁を消費する）。
- *
- * 同じ種別の連なりは 1 区切りにまとめる。全角の連なりは `cols` が文字数の 2 倍、
- * SO / SI は**空文字の 1 桁**として現れる。
- */
-export function constantSegments(text: string): RenderSegment[] {
-  const segments: RenderSegment[] = [];
-  let run = "";
-  let runCols = 0;
-  let inDbcsRun = false;
-
-  const flush = (): void => {
-    if (runCols > 0) {
-      segments.push({ text: run, cols: runCols });
-      run = "";
-      runCols = 0;
-    }
-  };
-  const shift = (kind: "so" | "si"): void => {
-    flush();
-    segments.push({ text: "", cols: 1, shift: kind });
-  };
-
-  for (const character of text) {
-    const codePoint = character.codePointAt(0);
-    if (codePoint === undefined) continue;
-    const dbcs = isDbcsCodePoint(codePoint);
-
-    if (dbcs && !inDbcsRun) {
-      shift("so");
-      inDbcsRun = true;
-    } else if (!dbcs && inDbcsRun) {
-      shift("si");
-      inDbcsRun = false;
-    }
-
-    run += character;
-    runCols += dbcs ? 2 : 1;
-  }
-
-  if (inDbcsRun) {
-    shift("si"); // 行末まで DBCS が続いた場合のシフトイン
-  }
-  flush();
-
-  return segments;
-}
-
-/** 区切りの合計と `printWidth` が一致することの保証（テストが使う）。 */
-export function segmentsWidth(segments: readonly RenderSegment[]): number {
-  return segments.reduce((total, segment) => total + segment.cols, 0);
-}
-
-export { printWidth };

@@ -6,6 +6,8 @@ import {
   type WidthUnknownReason
 } from "./ddsFieldWidth";
 import { readConstant, readNumber, toLogicalUnits } from "./ddsLogicalUnits";
+import { readConditioning, type Conditioning } from "./ddsConditioning";
+import { DDS_COLUMNS } from "../ddsLayout";
 
 /**
  * 印刷装置ファイル（PRTF）の紙面レイアウトを解決する。
@@ -45,6 +47,25 @@ export interface PlacedItem {
   readonly sourceLine: number;
   /** 位置欄に行番号が書かれていたか（書き戻しの確認に使う）。 */
   readonly hasExplicitRow: boolean;
+  /** 38 桁目。使用目的。 */
+  readonly usage?: string;
+  /** 35 桁目。データ・タイプ。 */
+  readonly dataType?: string;
+  /** 36-37 桁。小数点以下桁数。 */
+  readonly decimals?: number;
+  /**
+   * 45 桁以降の生テキスト（代表行＋キーワード継続行）。**解釈しない。**
+   * プロパティに読み取り専用で見せ、キーワードの編集の入力にする。
+   */
+  readonly keywords: string;
+  /** 条件付け欄（7-16 桁）。 */
+  readonly conditioning: Conditioning;
+  /**
+   * 占有（1 始まり・両端を含む）。**帳票に属性文字は無い**ので項目そのもの。
+   *
+   * 表示装置（`dspfLayout`）は前後 1 桁を属性文字が占めるが、印刷にそれは出ない。
+   */
+  readonly occupancy: { readonly start: number; readonly end: number };
 }
 
 export type LayoutDiagnosticCode =
@@ -273,6 +294,10 @@ export function resolvePrtfLayout(
       });
     }
 
+    const usage = ddsField(line, DDS_COLUMNS.usage).trim().toUpperCase() || undefined;
+    const dataType = ddsField(line, DDS_COLUMNS.dataType).trim().toUpperCase() || undefined;
+    const decimals = readNumber(ddsField(line, DDS_COLUMNS.decimals));
+
     items.push({
       kind: isConstant ? "constant" : "field",
       ...(isConstant ? { text: constant } : { name: fieldName }),
@@ -282,7 +307,14 @@ export function resolvePrtfLayout(
       ...(widthUnknownReason ? { widthUnknownReason } : {}),
       ...(cursor.recordName ? { recordName: cursor.recordName } : {}),
       sourceLine,
-      hasExplicitRow: explicitRow !== undefined
+      hasExplicitRow: explicitRow !== undefined,
+      ...(usage !== undefined ? { usage } : {}),
+      ...(dataType !== undefined ? { dataType } : {}),
+      ...(decimals !== undefined ? { decimals } : {}),
+      keywords,
+      conditioning: readConditioning(unit.conditioningLines),
+      // 帳票に属性文字は無い。占有は項目そのもの。
+      occupancy: { start: column, end: column + (width ?? 1) }
     });
 
     if (spacing.hasAny) cursor.recordHasSpacing = true;

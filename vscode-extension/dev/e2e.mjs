@@ -901,6 +901,75 @@ check(
 await page.click("#dds-toggle-colors");
 await page.waitForTimeout(200);
 
+// ---- 23. 帳票（PRTF）--------------------------------------------------
+await page.selectOption("#sample", { label: "CUSTRPT.prtf" });
+await page.waitForTimeout(400);
+
+check(
+  "**帳票を開ける**（紙面は CRTPRTF の既定 66 × 132）",
+  (await page.$eval(".dds-metrics", n => n.textContent)).includes("66×132"),
+  await page.$eval(".dds-metrics", n => n.textContent)
+);
+check(
+  "種別が分かる",
+  (await page.$eval(".record-name", n => n.textContent)).startsWith("帳票"),
+  await page.$eval(".record-name", n => n.textContent)
+);
+check(
+  "**行送り（SKIPB / SPACEA）で決まった行に描かれる**",
+  JSON.stringify(await page.$$eval(".dds-item", ns => ns.map(n => `${n.dataset.row},${n.dataset.column}`))) ===
+    JSON.stringify(["1,30", "3,5", "3,15", "3,50"]),
+  JSON.stringify(await page.$$eval(".dds-item", ns => ns.map(n => `${n.dataset.row},${n.dataset.column}`)))
+);
+check(
+  "**帳票に無いものを出さない**（属性文字・5250 配色）",
+  (await page.$$(".dds-attr")).length === 0 &&
+    (await page.$eval("#dds-toggle-attributes", n => n.hidden)) &&
+    (await page.$eval("#dds-toggle-colors", n => n.hidden))
+);
+check(
+  "オーバーフロー行が引かれる（CRTPRTF の OVRFLW）",
+  (await page.$$(".dds-overflow")).length === 1
+);
+check(
+  "一覧が「位置なし」にならない（行送りで位置は決まっている）",
+  !(await page.$eval(".dds-outline", n => n.textContent)).includes("位置なし"),
+  await page.$eval(".dds-outline", n => n.textContent)
+);
+
+// 桁だけのドラッグ（縦には動かない）。
+const prtfCell = await cellAt();
+const prtfLine = await page.evaluate(() =>
+  parseFloat(getComputedStyle(document.querySelector(".dds-frame")).getPropertyValue("--cell-h"))
+);
+const prtfTarget = await page.$eval('.dds-item[data-row="3"][data-column="5"]', node => {
+  const r = node.getBoundingClientRect();
+  return { sourceLine: Number(node.dataset.sourceLine), x: r.left + 3, y: r.top + r.height / 2 };
+});
+await page.mouse.move(prtfTarget.x, prtfTarget.y);
+await page.mouse.down();
+// **右 4 桁・下 5 行**に引く。下方向は効かないはず。
+await page.mouse.move(prtfTarget.x + prtfCell * 4, prtfTarget.y + prtfLine * 5, { steps: 8 });
+await page.mouse.up();
+await page.waitForTimeout(400);
+
+const prtfMoved = (await sourceLines())[prtfTarget.sourceLine - 1];
+check(
+  "**桁だけ動く**（右へ 4 桁）",
+  prtfMoved.slice(41, 44) === "  9",
+  JSON.stringify(prtfMoved)
+);
+check(
+  "**行欄には書き込まない**（書き込むと行送りが無効になる）",
+  prtfMoved.slice(38, 41).trim() === "",
+  JSON.stringify(prtfMoved)
+);
+check(
+  "縦には動いていない",
+  (await page.$$eval(".dds-item", ns => ns.map(n => n.dataset.row))).every(r => r === "1" || r === "3"),
+  JSON.stringify(await page.$$eval(".dds-item", ns => ns.map(n => n.dataset.row)))
+);
+
 check("実行中に JS エラーが出ていない", errors.length === 0, errors.slice(0, 2).join(" | "));
 
 await page.screenshot({ path: join(HERE, "out", "e2e.png") });

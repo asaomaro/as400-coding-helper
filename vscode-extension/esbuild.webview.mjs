@@ -12,7 +12,7 @@ const production = process.argv.includes("--production");
 const common = {
   bundle: true,
   // フィクスチャは文字列として埋め込む（単独起動でサンプルをすぐ開けるように）。
-  loader: { ".dspf": "text" },
+  loader: { ".dspf": "text", ".prtf": "text" },
   format: "iife",
   platform: "browser",
   target: "es2022",
