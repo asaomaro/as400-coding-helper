@@ -138,6 +138,23 @@ MAROBENI1/QRPGLESRC(EVFTEST) :0 桁0-0  [RNS9308] T50 Compilation stopped. Sever
 
 重大度は `getSevNum()` で判定する（`30` 以上が致命。`T50` は打ち切り）。
 
+## 4.5 コンパイル・リストを読む（DDS の解決結果を見る）
+
+DDS には `*EVENTF` の他に**もっと直接的な観測手段**がある。`CRTDSPF` のコンパイル・リストの
+**`Expanded Source`** には、**解決後の定数が長さつきで**出る（継続行を結合した結果や、
+参照フィールドの展開が読める）。画面を出すより速く、値がそのまま見える。
+
+```sh
+# スプール名は「メンバー名」。ジョブは QPRTJOB なので JOB(*) では取れない。
+# QSYS2.OUTPUT_QUEUE_ENTRIES_BASIC で JOB_NAME / FILE_NUMBER を引いてから:
+system "CPYSPLF FILE(<MBR>) TOFILE(*TOSTMF) JOB(<job>) SPLNBR(<n>) \
+        TOSTMF('/home/<USER>/<MBR>.lst') STMFOPT(*REPLACE) WSCST(*NONE)"
+```
+
+**`TOFILE(*TOSTMF)` である**（`*STMF` は `CPD0078` で弾かれる）。
+取り出したファイルは**ジョブの CCSID（EBCDIC）**で、行末も EBCDIC の `NL`(0x15) なので、
+UTF-8 として読むと 1 行に見える。**中身の CCSID で復号する**こと。
+
 ## 5. 受信（ソースメンバー → ローカル）
 
 送信の逆。
@@ -150,7 +167,19 @@ system "CPYTOSTMF FROMMBR('/QSYS.LIB/<LIB>.LIB/QRPGLESRC.FILE/MYPGM.MBR') \
 
 **CCSID**: 非 UTF-8 のソースファイルでは `STMFCCSID(1208)` に加えて
 `DBFCCSID(<ソースファイルの CCSID>)` の指定が要る（vscode-ibmi は QTEMP 経由の
-2 段変換をしている）。**DBCS を含む場合は未確認**。
+2 段変換をしている）。
+
+**DBCS を含むソースは、ソース物理ファイルの CCSID を先に決める**（2026-08-27・
+SR-OSAKA / IBM i 7.3 で確認）。`CRTSRCPF FILE(x) RCDLEN(112)` の既定は
+**CCSID 1027（日本語 SBCS のみ）**になり、そこへ `CPYFRMSTMF … STMFCCSID(1208)` で
+全角を入れると**黙って空白に落ちる**——コンパイルは通り、画面には何も出ない。
+
+```sh
+system "CRTSRCPF FILE(<LIB>/QDDSSRC) RCDLEN(112) CCSID(5035) IGCDTA(*YES) TEXT('DDS source')"
+```
+
+こうすれば UTF-8 の全角がそのまま入り、SO/SI はコピー時に挿入される
+（実機の画面で桁位置まで確認済み。`.aidev/works/20260827-dds-keyword-continuation/research.md` F4/F6）。
 
 ## 引用符の扱い（実際に踏んだ罠）
 
@@ -167,7 +196,6 @@ CL 文字列の中に `'` が要る場合、ローカルで単引用符を使う
 
 以下は本書では確認していない。使う前に確かめること。
 
-- **DBCS を含むソースの送受信**（CCSID 変換の正しさ）
 - **RPGUnit**（`RUCRTRPG` / `RUCALLTST`）の導入と実行 → backlog P1
 - **固定長（P 仕様書）での RPGUnit テスト**のコンパイル → backlog P2
 - `RUCALLTST` の結果出力の形式
