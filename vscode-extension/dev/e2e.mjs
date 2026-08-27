@@ -696,6 +696,69 @@ check(
 );
 check("すべて未設定は設定が無いと押せない", await page.$eval(".ind-reset", node => node.disabled));
 
+// ---- 19c. 条件標識の編集（7-16 桁への書き戻し）--------------------------
+//
+// **OR では行が増える**（原典: 項目は最後の標識と同じ行）。桁を手で打たせず、
+// 短い形（AND は空白 / OR はカンマ）で受けて core が書き戻す。
+const conditionValue = () => page.inputValue('.dds-props input[data-key="condition"]');
+const setCondition = async text => {
+  await page.fill('.dds-props input[data-key="condition"]', text);
+  await page.press('.dds-props input[data-key="condition"]', "Enter");
+  await page.waitForTimeout(200);
+};
+
+// **FLD2（`02` で条件付けた項目）を選ぶ。** FLD1 と重なっており、下の FLD1 は
+// クリックが届かない（重なりはこの様式がわざと持っている形）。並び順に頼らず
+// 「フィールドのうち最後」で引く。
+await page.locator(".dds-item").filter({ hasText: "XXXX" }).last().click();
+await page.waitForTimeout(150);
+check(
+  "条件が短い形で読める",
+  (await conditionValue()) === "02",
+  await conditionValue()
+);
+
+const linesBeforeCondition = await sourceLines();
+await setCondition("N02 03");
+check(
+  "**条件を書き換えるとソースの 7-16 桁が変わる**",
+  (await sourceLines()).some(l => l.slice(6, 16).includes("N02 03")),
+  JSON.stringify((await sourceLines()).filter(l => l.includes("N02")))
+);
+check("書き換えた条件が読み戻せる", (await conditionValue()) === "N02 03", await conditionValue());
+
+await setCondition("50, 60");
+const orLines = await sourceLines();
+check(
+  "**OR にすると行が増え、2 つ目の 7 桁目に O が入る**",
+  orLines.length === linesBeforeCondition.length + 1 &&
+    orLines.some(l => l.charAt(6) === "O" && l.slice(6, 16).includes("60")),
+  JSON.stringify(orLines.filter(l => l.charAt(6) === "O"))
+);
+check("OR も読み戻せる", (await conditionValue()) === "50, 60", await conditionValue());
+
+await setCondition("");
+check(
+  "空にすると条件が消え、行数も戻る",
+  (await sourceLines()).length === linesBeforeCondition.length &&
+    (await conditionValue()) === "",
+  `${(await sourceLines()).length} 行 / ${JSON.stringify(await conditionValue())}`
+);
+
+// 読めない形は送らない（ソースが変わらない）。
+const beforeBad = await sourceLines();
+await setCondition("abc");
+check(
+  "**読めない形はソースを変えない**",
+  JSON.stringify(await sourceLines()) === JSON.stringify(beforeBad),
+  await page.$eval(".status", node => node.textContent)
+);
+check(
+  "断った理由が出る",
+  (await page.$eval(".status", node => node.textContent)).includes("標識"),
+  await page.$eval(".status", node => node.textContent)
+);
+
 // ---- 20. キーワードのチップと原典ヘルプ -------------------------------
 // 題材を実物（CUSTMNT.dspf）に戻す。読み込み直しなので文書は元の状態になる。
 await page.selectOption("#sample", { label: "CUSTMNT.dspf" });

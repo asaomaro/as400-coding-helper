@@ -1,9 +1,15 @@
 import type { DdsEdit } from "../../core/dds/ddsEdit";
 import {
+  conditionGroups,
   describeConditioning,
   evaluateConditioning,
   type IndicatorStates
 } from "../../core/dds/ddsConditioning";
+import {
+  conditionLineCount,
+  formatConditionText,
+  parseConditionText
+} from "../../core/dds/ddsConditionWriteBack";
 import {
   findKeywordHelp,
   parseKeywordEntries,
@@ -105,6 +111,14 @@ class EditorView {
   private rejectMessage = "";
   /** 拒否されたときフォーカスを戻す欄。**入力し直せるようにする**（AC-I4）。 */
   private pendingFocus: string | undefined;
+  /**
+   * 編集で項目の行がずれるとき、**次に選び直す行**。
+   *
+   * 条件の編集は行数を変えうる（OR や 4 つ以上の AND では条件だけの行が増える）。
+   * 選択は行番号で持っているので、放っておくと**編集した直後に選択が迷子になる**
+   * （プロパティごと消える。e2e で踏んだ）。
+   */
+  private pendingSelection: number | undefined;
   /** 実測値（フォントの実寸）。**倍率を掛けない**——掛けると次の測定で二重になる。 */
   private measuredWidth = 8;
   private measuredHeight = 18;
@@ -269,6 +283,10 @@ class EditorView {
         this.gesture = undefined;
         // 構造を変えたあとは選択を捨てる。宛先の行が消えている／ずれている。
         if (this.pendingStructural) this.selected = undefined;
+        if (this.pendingSelection !== undefined) {
+          this.selected = this.pendingSelection;
+          this.pendingSelection = undefined;
+        }
         this.pendingStructural = false;
         this.rejectMessage = "";
         this.pendingFocus = undefined;
@@ -280,6 +298,7 @@ class EditorView {
         this.mode = "idle";
         this.gesture = undefined;
         this.pendingStructural = false;
+        this.pendingSelection = undefined;
         const rejections = (message.rejections ?? []) as ReadonlyArray<{ message: string }>;
         const reason = rejections.map(rejection => rejection.message).join(" / ");
         // 元の位置は UI が覚えず、ホストのモデルから描き直す（状態を 2 か所に置かない）。
@@ -884,10 +903,7 @@ class EditorView {
       table.appendChild(row);
     }
 
-    const condition = document.createElement("input");
-    condition.value = this.describeCondition(item);
-    condition.readOnly = true;
-    condition.title = "条件付け欄（7-16 桁）。ここでは編集しません";
+    const condition = this.conditionInput(item);
     const conditionRow = document.createElement("tr");
     const conditionHead = document.createElement("td");
     conditionHead.textContent = "条件";
@@ -1185,26 +1201,87 @@ class EditorView {
   }
 
   /**
-   * プロパティに出す条件。**ソースに書いてある形**（`N` 付き）で出す——
-   * 「オフのとき」と書き下すと、該当行を目で探せなくなる。
+   * 条件標識の入力欄。**短い形**（`N50 01, 60` ＝ AND は空白 / OR はカンマ）で打つ。
    *
-   * 標識を指定しているときは、**いまその項目が出るか**も添える。
-   * 条件と状態の両方を見比べて頭の中で解く手間を、画面が肩代わりする。
+   * ソースの桁（7 桁目の `A`/`O`、3 桁ずつの枠）を打たせると必ずずれるので、
+   * 1 行の形で受けて書き戻しは core（`writeBackCondition`）に任せる。
+   * **OR や 4 つ以上の AND では行が増える**が、それも core が面倒を見る。
+   *
+   * 読み書きで**同じ形**を使う（`formatConditionText` / `parseConditionText`）
+   * ——往復しない形にすると、開いて閉じただけで条件が変わる。
    */
-  private describeCondition(item: OutlineItem): string {
-    const condition = item.attributes.condition;
-    if (condition === undefined || condition.length === 0) return "なし";
-    if (Object.keys(this.indicators).length === 0) return condition;
-
+  private conditionInput(item: OutlineItem): HTMLInputElement {
+    const input = document.createElement("input");
+    // 他の入力欄と同じく `data-key` で引けるようにする（e2e の宛先にもなる）。
+    input.dataset.key = "condition";
     const placed = this.model?.items.find(
       candidate => candidate.sourceLine === item.sourceLine
     );
-    if (!placed) return condition;
+    const groups = placed ? conditionGroups(placed.condition) : [];
+    const current = formatConditionText(groups);
+    input.value = current;
+    input.placeholder = "なし";
+    input.title =
+      "条件標識。AND は空白、OR はカンマ（例: N50 01, 60）。空にすると条件を外します" +
+      `${this.describeConditionState(item)}`;
 
+    // **画面サイズ条件名は編集しない**（標識とは別の欄の使い方。ここでは触らせない）。
+    if (placed?.condition.kind === "screen-size") {
+      input.value = placed.condition.name;
+      input.readOnly = true;
+      input.title = "画面サイズ条件名。ここでは編集しません";
+      return input;
+    }
+
+    const commit = (): void => {
+      if (input.value.trim() === current.trim()) return;
+      const parsed = parseConditionText(input.value);
+      if (!parsed.ok) {
+        this.setStatus(parsed.message);
+        input.value = current;
+        return;
+      }
+      // **行がずれる分だけ選択を送る。** 数え方は core（`conditionLineCount`）に任せ、
+      // ここには写さない。
+      this.pendingSelection =
+        item.sourceLine +
+        (conditionLineCount(parsed.groups) - conditionLineCount(groups));
+      this.send({
+        kind: "setCondition",
+        sourceLine: item.sourceLine,
+        condition: parsed.groups
+      });
+    };
+    // 他の入力欄（`attributeInput`）と同じ約束にそろえる:
+    // Enter で確定 / Escape で戻す / 抜けたら確定。
+    input.addEventListener("keydown", event => {
+      if (event.key === "Enter") {
+        event.preventDefault();
+        commit();
+        return;
+      }
+      if (event.key === "Escape") {
+        event.preventDefault();
+        // 編集前に戻す。**何も送らない。**
+        input.value = current;
+        input.blur();
+      }
+    });
+    input.addEventListener("blur", commit);
+    return input;
+  }
+
+  /** いまの標識でその項目が出るか。入力欄の説明に添える。 */
+  private describeConditionState(item: OutlineItem): string {
+    if (Object.keys(this.indicators).length === 0) return "";
+    const placed = this.model?.items.find(
+      candidate => candidate.sourceLine === item.sourceLine
+    );
+    if (!placed) return "";
     switch (evaluateConditioning(placed.condition, this.indicators)) {
-      case "shown": return `${condition}（いまは 出る）`;
-      case "hidden": return `${condition}（いまは 出ない）`;
-      default: return `${condition}（いまは 決まらない）`;
+      case "shown": return "（いまは 出る）";
+      case "hidden": return "（いまは 出ない）";
+      default: return "（いまは 決まらない）";
     }
   }
 
