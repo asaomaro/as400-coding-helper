@@ -153,26 +153,63 @@ function dataEnd(column: number, width: number | undefined): number {
 /**
  * 符号のために余分に占有する桁数。
  *
- * **35 桁目が `S`（ゾーン 10 進）かつ入力できる用途（`B` / `I`）のとき、画面上は 1 桁多く占める。**
- * 符号を入力する場所が要るため。表示専用（`O`）や `Y`（数値のみ）では増えない。
+ * **入力できる用途（`B` / `I`）の数字フィールドは、画面上で 1 桁多く占める。**
+ * `S`（符号付き数字）は**符号**の場所、`Y`（数字のみ）で小数点以下があれば
+ * **小数点**の場所が要るため。表示専用（`O`）では増えない。
  *
- * 原典に該当の記述を見つけられていないので、**実機で確かめた**（`SR-OSAKA` で `CRTDSPF`）。
- * 8 通りを試し、増えるのは `S` × 入力可のときだけだった:
+ * 原典（`表示装置ファイルの桁数 (30 - 34 桁目)`）は増えること自体は述べている:
+ * > 画面に表示されるときのフィールドの桁数を**表示桁数**といいます。表示桁数は、
+ * > プログラム桁数と同じかまたは**それより大きくなります**。フィールドの表示桁数は、
+ * > **キーボード・シフト (35 桁目に指定)** のほか、**小数点以下の桁数 (36 および 37 桁目)**
+ * > や**編集機能**などのその他のフィールド仕様によって決まります。
  *
- * | 35 桁 | 使用 | 増える桁 |
- * |---|---|---|
- * | `S` | `B` / `I` | **+1** |
- * | `S` | `O` | 0 |
- * | `Y` | `B` / `O` | 0 |
- * | `A` | `B` | 0 |
+ * ただし**どれだけ増えるかの表は原典のこのページに無い**（「有効な項目」の子ページ）。
+ * AGENTS.md「原典と実機が食い違ったら、実機のパーサーに判定させる」に従い、
+ * **全通りを実機に出して 5250 が返す欄の桁数を読んだ**
+ * （`.aidev/works/20260827-dds-render-golden/verify/probe-display-length.mjs`。
+ * 2026-08-27 / IBM i 7.3。桁数 6 で宣言して測った値）:
+ *
+ * | 35 桁 | 小数 | 使用 | 実機 | 増える桁 |
+ * |---|---|---|---|---|
+ * | `A` / `X` / `N` | – | `I` / `B` | 6 | 0 |
+ * | `S` | 0 | `I` / `B` | 7 | **+1**（符号） |
+ * | `S` | 2 | `I` / `B` | 7 | **+1**（符号のみ。小数点は出ない） |
+ * | `S` | 0 / 2 | `O` | 6 | 0 |
+ * | `Y` | 0 | `I` / `B` / `O` | 6 | 0 |
+ * | **`Y`** | **2** | **`I` / `B`** | **7** | **+1（小数点）** |
+ * | `Y` | 2 | `O` | 6 | 0 |
+ *
+ * **`Y` × 小数点ありの行は取りこぼしていた**（`20260827-dds-render-golden` で発覚）。
+ * 数字の入力欄はどの画面にもあるので、重なり・はみ出しの判定が 1 桁甘かった。
+ *
+ * ■ 編集（`EDTCDE`）があるときは足さない
+ *   `fieldWidth` が `editedWidth` で解いた幅に**小数点も符号も既に入っている**。
+ *   実機でも `6Y 2B EDTCDE(J)` は 9 桁で、`editedWidth` の返す 9 と一致する。
+ *   ここで足すと二重になる。
  *
  * **画面には空白として出る**ので、描く幅（`width`）には含めない。
  * 含めると存在しない文字を描くことになる。占有（重なり）とはみ出しの判定にだけ効かせる。
  */
-function signPositions(dataType: string | undefined, usage: string | undefined): number {
-  const type = (dataType ?? "").trim().toUpperCase();
+/** `EDTCDE` が書かれているか。幅の解決（`fieldWidth`）と同じ形で見る。 */
+const HAS_EDIT_CODE = /\bEDTCDE\s*\(/u;
+
+function extraDisplayPositions(
+  dataType: string | undefined,
+  usage: string | undefined,
+  decimals: number | undefined,
+  hasEditCode: boolean
+): number {
+  // 編集が効いている幅には小数点も符号も入っている（`editedWidth`）。二重に足さない。
+  if (hasEditCode) return 0;
+
   const use = (usage ?? "").trim().toUpperCase();
-  return type === "S" && (use === "B" || use === "I") ? 1 : 0;
+  // 表示専用は入力しないので、符号にも小数点にも場所が要らない。
+  if (use !== "B" && use !== "I") return 0;
+
+  const type = (dataType ?? "").trim().toUpperCase();
+  if (type === "S") return 1;
+  if (type === "Y" && (decimals ?? 0) > 0) return 1;
+  return 0;
 }
 
 /**
@@ -296,7 +333,10 @@ export function resolveDspfLayout(lines: readonly string[]): DspfLayout {
       ? constantWidth(constant ?? "")
       : fieldWidth(line, keywords);
     const dataType = ddsField(line, DDS_COLUMNS.dataType).trim().toUpperCase() || undefined;
-    const sign = isConstant ? 0 : signPositions(dataType, usage);
+    const decimals = readNumber(ddsField(line, DDS_COLUMNS.decimals));
+    const sign = isConstant
+      ? 0
+      : extraDisplayPositions(dataType, usage, decimals, HAS_EDIT_CODE.test(keywords));
     const occupancy = occupancyOf(column, resolved.width, sign);
 
     if (column <= 1) {
@@ -337,8 +377,8 @@ export function resolveDspfLayout(lines: readonly string[]): DspfLayout {
       sourceLine,
       usage,
       ...(dataType !== undefined ? { dataType } : {}),
-      ...(readNumber(ddsField(line, DDS_COLUMNS.decimals)) !== undefined
-        ? { decimals: readNumber(ddsField(line, DDS_COLUMNS.decimals)) }
+      ...(decimals !== undefined
+        ? { decimals }
         : {}),
       keywords,
       conditioning,
