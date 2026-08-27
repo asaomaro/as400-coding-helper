@@ -78,6 +78,13 @@ export interface OutlineRecord {
   readonly name: string;
   readonly sourceLine: number;
   readonly items: readonly OutlineItem[];
+  /**
+   * 様式宣言の行（と、その継続行）のキーワード欄。**解釈しない**（生テキスト）。
+   *
+   * `OVERLAY` / `CF03` のような**レコード・レベルのキーワードはここにしか無い**。
+   * 項目の一覧だけを持っていると、デザイナからはこれらが一切読めない。
+   */
+  readonly keywords: string;
 }
 
 /**
@@ -91,6 +98,7 @@ export function buildDspfOutline(lines: readonly string[]): OutlineRecord[] {
     name: string;
     sourceLine: number;
     items: OutlineItem[];
+    keywords: string;
   }
 
   const records: Building[] = [];
@@ -98,14 +106,19 @@ export function buildDspfOutline(lines: readonly string[]): OutlineRecord[] {
 
   for (const unit of toLogicalUnits(lines)) {
     if (unit.kind === "record") {
-      current = { name: ddsName(unit.line), sourceLine: unit.sourceLine, items: [] };
+      current = {
+        name: ddsName(unit.line),
+        sourceLine: unit.sourceLine,
+        items: [],
+        keywords: unit.keywords
+      };
       records.push(current);
       continue;
     }
 
     if (!current) {
       // 様式宣言より前に現れた項目（本来は不正）。捨てずに名前の無い束へ入れる。
-      current = { name: "", sourceLine: unit.sourceLine, items: [] };
+      current = { name: "", sourceLine: unit.sourceLine, items: [], keywords: "" };
       records.push(current);
     }
 

@@ -9,8 +9,17 @@ import {
   type EditorMessage,
   type HostMessage
 } from "../src/dds/webview/protocol";
+import type { DdsKeywordHelp } from "../src/core/dds/ddsKeywords";
 import { startEditor } from "../src/dds/webview/ui";
 import sample from "../../docs/src/CUSTMNT.dspf";
+import keywordTables from "../resources/completion/dds-keywords.json";
+
+/**
+ * 原典から生成したキーワードの解説。**日本語で固定**——
+ * 単独起動は設定を持たないホストなので、切り替える先が無い
+ * （VSCode 側は `rpgClSupport.language` に従う）。
+ */
+const KEYWORD_HELP = (keywordTables as Record<string, DdsKeywordHelp[]>)["DDS-DSPF"];
 
 /**
  * 単独起動ハーネス。**検証用であり製品の一部ではない**（VSIX には入れない）。
@@ -68,7 +77,12 @@ class StandaloneHost {
     this.lines = text.split(/\r?\n/u);
     this.original = [...this.lines];
     this.history = [];
-    this.bridge.send({ type: "load", model: this.model(), host: STANDALONE_HOST });
+    this.bridge.send({
+      type: "load",
+      model: this.model(),
+      host: STANDALONE_HOST,
+      keywords: KEYWORD_HELP
+    });
     this.renderSource();
   }
 
@@ -92,7 +106,12 @@ class StandaloneHost {
   private async receive(message: EditorMessage): Promise<void> {
     switch (message.type) {
       case "ready":
-        this.bridge.send({ type: "load", model: this.model(), host: STANDALONE_HOST });
+        this.bridge.send({
+      type: "load",
+      model: this.model(),
+      host: STANDALONE_HOST,
+      keywords: KEYWORD_HELP
+    });
         return;
       case "openSource":
         this.reveal(message.sourceLine);

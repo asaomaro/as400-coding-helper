@@ -1,4 +1,5 @@
 import type { DdsEdit, DdsEditRejection } from "../../core/dds/ddsEdit";
+import type { DdsKeywordHelp } from "../../core/dds/ddsKeywords";
 import type { RenderModel } from "../../core/dds/dspfRenderModel";
 
 /**
@@ -39,7 +40,24 @@ export const STANDALONE_HOST: EditorHost = {
 
 /** ホスト → UI。 */
 export type HostMessage =
-  | { readonly type: "load"; readonly model: RenderModel; readonly host: EditorHost }
+  | {
+      readonly type: "load";
+      readonly model: RenderModel;
+      readonly host: EditorHost;
+      /**
+       * 原典から生成したキーワードの解説。**任意**。
+       *
+       * ■ なぜ `load` だけに載せるか
+       *   文書ごとに変わらない静的なデータで、日本語版は 140KB ある。
+       *   `applied` に載せると**編集のたびに送り直す**ことになる。
+       *   UI 側は最初に受け取ったものを保持する。
+       *
+       * ■ なぜ任意か
+       *   渡せないホスト（読み込みに失敗した場合を含む）でも
+       *   **チップの並びは出したい**。解説だけが出ない状態で成立させる。
+       */
+      readonly keywords?: readonly DdsKeywordHelp[];
+    }
   | { readonly type: "applied"; readonly model: RenderModel }
   | {
       readonly type: "rejected";

@@ -293,3 +293,56 @@ body {
   cursor: pointer;
 }
 .ind-reset:disabled { opacity: 0.5; cursor: default; }
+
+/* ---- キーワード欄（チップ ＋ 原典の解説） ----
+   1 本の文字列では「どこで切れているか」が読めず、`RZ` が何かも分からない。
+   原典の解説は既にリポジトリにあるので、チップから辿れるようにする。 */
+.kw-section { margin-top: 8px; }
+.kw-label { color: var(--dds-muted); margin-bottom: 3px; }
+.kw-chips { display: flex; flex-wrap: wrap; gap: 3px; }
+.kw-chip {
+  padding: 1px 5px;
+  font-family: var(--dds-font);
+  font-size: 11px;
+  background: var(--vscode-button-secondaryBackground, #3a3d41);
+  color: var(--vscode-button-secondaryForeground, #ccc);
+  border: 1px solid var(--dds-border);
+  border-radius: 9px;
+  cursor: pointer;
+  text-align: left;
+}
+.kw-chip.open { background: var(--vscode-button-background, #0e639c); color: var(--vscode-button-foreground, #fff); }
+.kw-chip:focus-visible { outline: 1px solid var(--dds-field); outline-offset: 1px; }
+/* 定数のリテラルは**キーワードではない**。押しても解説は出ないので、そう見えるようにする。 */
+.kw-chip.literal { background: transparent; color: var(--dds-fg); cursor: default; }
+/* 原典に無い綴り。消さずに印だけ付ける（消すと「書いたのに無い」になる）。 */
+.kw-chip.unknown { border-color: var(--dds-warning); color: var(--dds-warning); }
+.kw-chip.unknown::after { content: " ?"; }
+.kw-chip.none { background: transparent; color: var(--dds-muted); border-style: dashed; cursor: default; }
+
+.kw-help {
+  margin-top: 4px;
+  padding: 5px 6px;
+  border: 1px solid var(--dds-border);
+  border-left: 2px solid var(--dds-field);
+  background: var(--dds-chrome);
+}
+.kw-help-title { font-weight: 600; margin-bottom: 2px; }
+.kw-help-level { color: var(--dds-muted); font-size: 11px; }
+.kw-help-syntax {
+  font-family: var(--dds-font);
+  font-size: 11px;
+  margin: 3px 0;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.kw-help-text { font-size: 11px; line-height: 1.5; }
+.kw-raw { margin-top: 4px; width: 100%; }
+.dds-record-title { font-weight: 600; color: var(--dds-field); margin-bottom: 4px; }
+.dds-tree li.record { cursor: pointer; }
+/* **見出しの帯だけを塗る。** li に塗ると入れ子の項目まで背景が伸びる（実際に踏んだ）。 */
+.dds-tree li.record.selected > .label {
+  background: var(--vscode-list-activeSelectionBackground, #04395e);
+  color: var(--vscode-list-activeSelectionForeground, #fff);
+}
+.dds-tree li.record:focus-visible { outline: 1px solid var(--dds-field); outline-offset: -1px; }

@@ -644,6 +644,100 @@ check(
 );
 check("すべて未設定は設定が無いと押せない", await page.$eval(".ind-reset", node => node.disabled));
 
+// ---- 20. キーワードのチップと原典ヘルプ -------------------------------
+// 題材を実物（CUSTMNT.dspf）に戻す。読み込み直しなので文書は元の状態になる。
+await page.selectOption("#sample", { label: "CUSTMNT.dspf" });
+await page.waitForTimeout(250);
+
+const chipTexts = () => page.$$eval(".kw-chip", nodes => nodes.map(n => n.textContent));
+const helpText = () => page.$eval(".kw-help", node => node.textContent).catch(() => "");
+const selectTreeItem = async label => {
+  const line = await page.evaluate(name => {
+    const node = [...document.querySelectorAll(".dds-tree li.item")].find(n =>
+      n.textContent.includes(name)
+    );
+    return node ? Number(node.dataset.sourceLine) : null;
+  }, label);
+  await page.click(`.dds-tree li.item[data-source-line="${line}"]`);
+  await page.waitForTimeout(150);
+  return line;
+};
+
+const custnoLine = await selectTreeItem("CUSTNO");
+check(
+  "キーワードがチップに分かれて出る",
+  JSON.stringify(await chipTexts()) === JSON.stringify(["CHECK(RZ)"]),
+  JSON.stringify(await chipTexts())
+);
+check(
+  "生テキストも残っている（桁を数える手段を消さない）",
+  (await page.$eval(".kw-raw", node => node.value)) === "CHECK(RZ)"
+);
+
+await page.click(".kw-chip.keyword");
+await page.waitForTimeout(150);
+check(
+  "**チップを押すと原典の解説が出る**",
+  (await helpText()).includes("検査") && (await helpText()).includes("CHECK("),
+  (await helpText()).slice(0, 80)
+);
+check("解説を開いてもフォーカスはそのチップに残る", await page.evaluate(() =>
+  document.activeElement?.classList.contains("kw-chip")
+));
+
+await page.click(".kw-chip.keyword");
+await page.waitForTimeout(150);
+check("もう一度押すと閉じる", (await page.$(".kw-help")) === null);
+
+// F1 でも開く（この PJ のプロンプターと同じ作法）。
+await page.focus(".kw-chip.keyword");
+await page.keyboard.press("F1");
+await page.waitForTimeout(150);
+check("**F1 でも解説が開く**", (await helpText()).includes("検査"));
+
+// キーをキャンバスへ漏らさない（AC-I5）。
+const beforeDelete = (await sourceLines())[custnoLine - 1];
+await page.keyboard.press("Delete");
+await page.waitForTimeout(200);
+check(
+  "**チップ上の Delete でキャンバスの項目が消えない**",
+  (await sourceLines())[custnoLine - 1] === beforeDelete,
+  `行=${custnoLine}`
+);
+
+// 定数のリテラルは「原典に無いキーワード」ではない。
+await selectTreeItem("顧客保守");
+check(
+  "定数のリテラルに「原典に無い」の印が付かない",
+  (await page.$$(".kw-chip.literal")).length === 1 &&
+    (await page.$$(".kw-chip.unknown")).length === 0,
+  JSON.stringify(await chipTexts())
+);
+
+// 様式（レコード・レベル）のキーワード。CF03 は原典の総称 CFnn に当たる。
+await page.click(".dds-tree li.record .label");
+await page.waitForTimeout(200);
+check(
+  "**様式を選ぶとレコード・レベルのキーワードが出る**",
+  JSON.stringify(await chipTexts()) === JSON.stringify(["OVERLAY", "CF03(03 '終了')"]),
+  JSON.stringify(await chipTexts())
+);
+await page.click('.kw-chip[data-keyword="CF03"]');
+await page.waitForTimeout(150);
+check(
+  "**CF03 が原典の総称 CFnn の解説に当たる**",
+  (await helpText()).includes("CFnn") && (await helpText()).includes("コマンド機能"),
+  (await helpText()).slice(0, 60)
+);
+
+// 様式を選んでも項目のクリックは項目を選ぶ（入れ子の見分け）。
+await selectTreeItem("CUSTNM");
+check(
+  "様式の中の項目をクリックしたら項目が選ばれる",
+  // 名前は input の値なので textContent には出ない。値を直接読む。
+  (await page.$eval('.dds-properties input[data-key="name"]', node => node.value)) === "CUSTNM"
+);
+
 check("実行中に JS エラーが出ていない", errors.length === 0, errors.slice(0, 2).join(" | "));
 
 await page.screenshot({ path: join(HERE, "out", "e2e.png") });
