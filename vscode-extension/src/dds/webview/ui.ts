@@ -3,6 +3,12 @@ import {
   evaluateConditioning,
   type IndicatorStates
 } from "../../core/dds/ddsConditioning";
+import {
+  findKeywordHelp,
+  parseKeywordEntries,
+  type DdsKeywordHelp,
+  type KeywordEntry
+} from "../../core/dds/ddsKeywords";
 import type { ItemAttributes, OutlineItem } from "../../core/dds/dspfOutline";
 import {
   applyIndicators,
@@ -115,6 +121,16 @@ class EditorView {
   private view: RenderModel | undefined;
   /** 切替の直後にフォーカスを戻す標識。**戻さないと連続して切り替えられない。** */
   private pendingIndicatorFocus: string | undefined;
+  /**
+   * 原典から生成したキーワードの解説。**`load` で 1 回だけ受け取る**。
+   *
+   * 文書ごとに変わらない静的なデータ（日本語版は 140KB）なので、
+   * 編集のたびに送り直させない。渡されなければ空のまま——
+   * そのときは**「原典に無い」の印も出さない**（表が無いのだから当然で、誤解を招く）。
+   */
+  private keywordHelp: readonly DdsKeywordHelp[] = [];
+  /** 解説を開いているキーワード（`<行>:<何番目>`）。選択が変われば当たらなくなる＝閉じる。 */
+  private openKeyword: string | undefined;
 
   private readonly frame: HTMLElement;
   private readonly ruler: HTMLElement;
@@ -203,6 +219,7 @@ class EditorView {
       case "load":
         this.host = message.host as EditorHost;
         this.model = message.model as RenderModel;
+        this.keywordHelp = (message.keywords ?? []) as readonly DdsKeywordHelp[];
         this.mode = "idle";
         this.setStatus("");
         this.render();
@@ -476,7 +493,32 @@ class EditorView {
     for (const record of model.outline) {
       const heading = document.createElement("li");
       heading.className = "record";
-      heading.textContent = record.name.length > 0 ? `R ${record.name}` : "（様式の外）";
+      // **様式そのものも選べるようにする。** `OVERLAY` / `CF03` のような
+      // レコード・レベルのキーワードは様式宣言の行にしか無く、
+      // 項目しか選べないとデザイナからは一切読めない。
+      heading.tabIndex = 0;
+      heading.dataset.sourceLine = String(record.sourceLine);
+      if (record.sourceLine === this.selected) heading.classList.add("selected");
+      heading.append(
+        text("span", "label", record.name.length > 0 ? `R ${record.name}` : "（様式の外）")
+      );
+      // 項目は見出しの**中**（入れ子の ul）にあるので、クリックもキーも上がってくる。
+      // **一番内側の li が自分かどうか**で見分ける（`.label` は項目側にもあるので使えない）。
+      const isOwn = (target: EventTarget | null): boolean =>
+        target instanceof HTMLElement && target.closest("li") === heading;
+
+      heading.addEventListener("click", event => {
+        if (!isOwn(event.target)) return;
+        event.stopPropagation();
+        this.select(record.sourceLine);
+      });
+      heading.addEventListener("keydown", event => {
+        if (!isOwn(event.target)) return;
+        if (event.key !== "Enter" && event.key !== " ") return;
+        event.preventDefault();
+        event.stopPropagation();
+        this.select(record.sourceLine);
+      });
       list.appendChild(heading);
 
       const children = document.createElement("ul");
@@ -631,10 +673,18 @@ class EditorView {
 
   /** 右ペイン。選択中の項目の属性を出し、確定したら編集として送る。 */
   private renderProperties(model: RenderModel): void {
+    const record = model.outline.find(
+      candidate => candidate.sourceLine === this.selected
+    );
+    if (record !== undefined) {
+      this.renderRecordProperties(record);
+      return;
+    }
+
     const item = this.selectedOutlineItem(model);
     if (!item) {
       this.properties.replaceChildren(
-        text("div", "dds-empty", "項目を選ぶと属性が出ます")
+        text("div", "dds-empty", "項目または様式を選ぶと属性が出ます")
       );
       return;
     }
@@ -672,18 +722,6 @@ class EditorView {
       table.appendChild(row);
     }
 
-    const keywords = document.createElement("input");
-    keywords.value = item.attributes.keywords;
-    keywords.readOnly = true;
-    keywords.title = "キーワード欄（45 桁〜）。ここでは編集しません";
-    const keywordRow = document.createElement("tr");
-    const keywordHead = document.createElement("td");
-    keywordHead.textContent = "キーワード";
-    const keywordCell = document.createElement("td");
-    keywordCell.appendChild(keywords);
-    keywordRow.append(keywordHead, keywordCell);
-    table.appendChild(keywordRow);
-
     const condition = document.createElement("input");
     condition.value = this.describeCondition(item);
     condition.readOnly = true;
@@ -696,7 +734,11 @@ class EditorView {
     conditionRow.append(conditionHead, conditionCell);
     table.appendChild(conditionRow);
 
-    const nodes: HTMLElement[] = [table, this.measures(item, model)];
+    const nodes: HTMLElement[] = [
+      table,
+      this.keywordSection(item.sourceLine, item.attributes.keywords),
+      this.measures(item, model)
+    ];
     const breakdown = this.columnBreakdown(item, model);
     if (breakdown !== undefined) nodes.push(breakdown);
     if (item.kind === "field") {
@@ -714,7 +756,134 @@ class EditorView {
     this.properties.replaceChildren(...nodes);
   }
 
-/**
+  /**
+   * 様式（`R XXXX`）のプロパティ。**キーワードだけ**を出す。
+   *
+   * 様式は画面上の位置も長さも持たないので、項目と同じ表は意味を持たない。
+   * ここに出す価値があるのは `OVERLAY` / `CF03` のような
+   * **レコード・レベルのキーワード**で、それは様式宣言の行にしか無い。
+   */
+  private renderRecordProperties(record: RenderModel["outline"][number]): void {
+    const nodes: HTMLElement[] = [
+      text(
+        "div",
+        "dds-record-title",
+        record.name.length > 0 ? `様式 ${record.name}` : "（様式の外）"
+      ),
+      this.keywordSection(record.sourceLine, record.keywords)
+    ];
+    if (record.keywords.trim().length === 0) {
+      nodes.push(text("div", "dds-note", "この様式にはレコード・レベルのキーワードがありません"));
+    }
+    this.properties.replaceChildren(...nodes);
+  }
+
+  /**
+   * キーワード欄を**チップの並び**にし、選ぶと原典の解説を出す。
+   *
+   * ## なぜ 1 本の文字列ではいけないか
+   *
+   * `toLogicalUnits` はキーワード継続行を空白 1 個で連結するので、
+   * `DSPATR(RI) COLOR(RED) CHECK(RZ)` が 1 つの塊に見える。**どこで切れているか**が読めず、
+   * ましてや `RZ` が何かは知っている人にしか分からない。
+   * 原典の解説は**既にリポジトリにある**のに、テキストエディタの補完でしか出てこなかった。
+   *
+   * ## 消さない・並べ替えない
+   *
+   * 原典に無い綴りも**印を付けて出す**。消すと「書いたのに無い」が起き、原因が掴めなくなる。
+   * 定数のリテラルは**キーワードではない**ので、そう分かる形にする
+   * （キーワード扱いすると、定数を選ぶたびに誤った印が付く）。
+   */
+  private keywordSection(sourceLine: number, keywords: string): HTMLElement {
+    const section = document.createElement("div");
+    section.className = "kw-section";
+    section.appendChild(text("div", "kw-label", "キーワード"));
+
+    const entries = parseKeywordEntries(keywords);
+    const chips = document.createElement("div");
+    chips.className = "kw-chips";
+
+    if (entries.length === 0) {
+      chips.appendChild(text("span", "kw-chip none", "未設定"));
+    }
+
+    let help: HTMLElement | undefined;
+    entries.forEach((entry, index) => {
+      const key = `${sourceLine}:${index}`;
+      const found =
+        entry.kind === "keyword" && this.keywordHelp.length > 0
+          ? findKeywordHelp(entry.name, this.keywordHelp)
+          : undefined;
+      // 表が無いときは「原典に無い」と言えない（言えば必ず全部に付く）。
+      const unknown =
+        entry.kind === "keyword" && this.keywordHelp.length > 0 && found === undefined;
+
+      const chip = document.createElement("button");
+      chip.type = "button";
+      chip.className = `kw-chip ${entry.kind}${unknown ? " unknown" : ""}`;
+      chip.textContent = entry.raw;
+      chip.dataset.key = `kw:${index}`;
+      chip.dataset.keyword = entry.name;
+      chip.title = describeChip(entry, found, unknown);
+      chip.addEventListener("click", () => this.toggleKeyword(key));
+      chips.appendChild(chip);
+
+      if (this.openKeyword === key && found !== undefined) {
+        chip.classList.add("open");
+        help = keywordHelpBlock(found);
+      }
+    });
+
+    chips.addEventListener("keydown", event => this.onKeywordKey(event, chips));
+    section.appendChild(chips);
+    if (help !== undefined) section.appendChild(help);
+
+    // **生テキストを失わない。** 桁を数えたい人・そのままコピーしたい人の手段。
+    const raw = document.createElement("input");
+    raw.className = "kw-raw";
+    raw.value = keywords;
+    raw.readOnly = true;
+    raw.title = "キーワード欄（45 桁〜）の生テキスト。ここでは編集しません";
+    section.appendChild(raw);
+
+    return section;
+  }
+
+  private toggleKeyword(key: string): void {
+    this.openKeyword = this.openKeyword === key ? undefined : key;
+    this.render();
+  }
+
+  /**
+   * チップ上のキー。**キャンバスへ漏らさない**——漏らすと `Delete` で項目が消え、
+   * 矢印で項目が動く（プロパティの入力欄で一度踏んだのと同じ罠）。
+   *
+   * `F1` を解説に割り当てるのは、この PJ のプロンプターと同じ作法
+   * （フォーカス中の項目のヘルプは `F1`）。
+   */
+  private onKeywordKey(event: KeyboardEvent, chips: HTMLElement): void {
+    const target = event.target;
+    if (!(target instanceof HTMLElement) || !chips.contains(target)) return;
+
+    if (event.key === "F1") {
+      event.preventDefault();
+      event.stopPropagation();
+      target.click();
+      return;
+    }
+    if (event.key === "Escape" && this.openKeyword !== undefined) {
+      event.preventDefault();
+      event.stopPropagation();
+      this.openKeyword = undefined;
+      this.render();
+      return;
+    }
+    if (/^(Delete|Backspace|Arrow(Up|Down|Left|Right))$/u.test(event.key)) {
+      event.stopPropagation();
+    }
+  }
+
+  /**
    * プロパティに出す条件。**ソースに書いてある形**（`N` 付き）で出す——
    * 「オフのとき」と書き下すと、該当行を目で探せなくなる。
    *
@@ -1208,6 +1377,51 @@ class EditorView {
   private setStatus(message: string): void {
     this.status.textContent = message;
   }
+}
+
+/** チップの吹き出し。押す前に何なのかが分かるようにする。 */
+function describeChip(
+  entry: KeywordEntry,
+  found: DdsKeywordHelp | undefined,
+  unknown: boolean
+): string {
+  if (entry.kind === "literal") return "定数（固定情報）。キーワードではありません";
+  if (unknown) return `${entry.name} は原典のキーワード一覧にありません`;
+  if (found === undefined) return entry.name;
+  return `${found.name} — ${found.title}（押すと解説）`;
+}
+
+/** 使用レベルの日本語。原典の言い回しに合わせる。 */
+const LEVEL_LABELS: Readonly<Record<string, string>> = {
+  file: "ファイル",
+  record: "レコード",
+  field: "フィールド",
+  key: "キー",
+  join: "結合",
+  select: "選択",
+  help: "ヘルプ"
+};
+
+/**
+ * 原典の解説。**ここで文章を書き起こさない**——出所は
+ * `docs/origin/generate-dds-keywords.mjs` が原典から生成したデータだけ。
+ */
+function keywordHelpBlock(help: DdsKeywordHelp): HTMLElement {
+  const block = document.createElement("div");
+  block.className = "kw-help";
+  block.appendChild(text("div", "kw-help-title", `${help.name} — ${help.title}`));
+
+  if (help.level && help.level.length > 0) {
+    const labels = help.level.map(level => LEVEL_LABELS[level] ?? level).join(" / ");
+    block.appendChild(text("div", "kw-help-level", `レベル: ${labels}`));
+  }
+  for (const syntax of help.syntax ?? []) {
+    block.appendChild(text("div", "kw-help-syntax", syntax));
+  }
+  if (help.description) {
+    block.appendChild(text("div", "kw-help-text", help.description));
+  }
+  return block;
 }
 
 /** 属性文字の占有を薄く示す（隣接違反が起きる前に見えるように）。 */

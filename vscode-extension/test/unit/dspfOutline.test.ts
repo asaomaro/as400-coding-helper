@@ -129,6 +129,19 @@ suite("項目一覧: 実サンプル", () => {
     assert.ok(item, "キーワードつきの項目が見つからない");
     assert.ok(item.attributes.keywords.includes("COLOR(RED)"));
   });
+
+  test("**様式もキーワードを持つ**（レコード・レベルはここにしか無い）", () => {
+    // `OVERLAY` / `CF03` は様式宣言の行にあり、項目の一覧からは辿れない。
+    const header = buildDspfOutline(lines).find(record => record.name === "HEADER");
+    assert.ok(header, "HEADER 様式が見つからない");
+    assert.ok(header.keywords.includes("OVERLAY"), header.keywords);
+    assert.ok(header.keywords.includes("CF03(03 '終了')"), header.keywords);
+  });
+
+  test("キーワードの無い様式は空文字（undefined にしない）", () => {
+    const detail = buildDspfOutline(lines).find(record => record.name === "DETAIL");
+    assert.strictEqual(detail?.keywords, "");
+  });
 });
 
 suite("項目一覧: 配置解決との食い違いを検査する", () => {

@@ -1,7 +1,9 @@
 import * as vscode from "vscode";
 import { applyDdsEdits, validateDdsEdits, type DdsEditResult } from "../core/dds/ddsEdit";
+import type { DdsKeywordHelp } from "../core/dds/ddsKeywords";
 import { buildDspfRenderModel, type RenderModel } from "../core/dds/dspfRenderModel";
 import { resolveDdsType } from "../core/sourceKind";
+import { resolveDefinitionLanguage } from "../prompter/jsonDefinitions";
 import { buildDdsEditorHtml, createNonce } from "./webviewHtml";
 import {
   parseEditorMessage,
@@ -32,6 +34,14 @@ import {
  */
 
 export const DDS_EDITOR_VIEW_TYPE = "rpgClSupport.ddsVisualEditor";
+
+/**
+ * 読み込み済みの解説の表（言語ごと）。
+ *
+ * 同梱物なので**実行中に変わらない**。日本語版は 140KB あり、
+ * エディタを開くたびに読み直して解析する意味が無い（補完側も同じ形で持っている）。
+ */
+const keywordTables = new Map<string, Record<string, DdsKeywordHelp[]>>();
 
 /** WebView の資産の置き場（esbuild の出力先）。 */
 const WEBVIEW_DIR = ["out", "dds-webview"];
@@ -99,15 +109,61 @@ class DdsVisualEditorProvider implements vscode.CustomTextEditorProvider {
     });
   }
 
+  /**
+   * 原典から生成したキーワードの解説を読む。
+   *
+   * 言語の決め方は**既存のキーワード補完と同じ関数**を通す
+   * （`resolveDefinitionLanguage`）。同じ JSON を読むのに設定の解釈が 2 つあると、
+   * 補完は日本語・エディタは英語、のような食い違いが起きる。
+   *
+   * 読めなければ `undefined`。**エディタは開く**（解説だけが出ない）。
+   */
+  private async keywordHelp(
+    document: vscode.TextDocument
+  ): Promise<readonly DdsKeywordHelp[] | undefined> {
+    const type = resolveDdsType(document.fileName);
+    if (type === undefined) return undefined;
+
+    const language = resolveDefinitionLanguage();
+    const uri = vscode.Uri.joinPath(
+      this.context.extensionUri,
+      "resources",
+      "completion",
+      language === "ja" ? "dds-keywords.json" : `dds-keywords.${language}.json`
+    );
+
+    const cached = keywordTables.get(language);
+    if (cached !== undefined) return cached[type];
+
+    try {
+      const text = (await vscode.workspace.openTextDocument(uri)).getText();
+      const parsed = JSON.parse(text) as Record<string, DdsKeywordHelp[]>;
+      keywordTables.set(language, parsed);
+      const table = parsed[type];
+      return Array.isArray(table) ? table : undefined;
+    } catch (error) {
+      console.log("[rpgClSupport] DDS キーワード解説の読み込みに失敗", String(error));
+      return undefined;
+    }
+  }
+
   private async handle(
     document: vscode.TextDocument,
     message: EditorMessage,
     post: (message: HostMessage) => void
   ): Promise<void> {
     switch (message.type) {
-      case "ready":
-        post({ type: "load", model: modelOf(document), host: VSCODE_HOST });
+      case "ready": {
+        // 解説は**文書ごとに変わらない**ので、ここで 1 回だけ載せる。
+        const keywords = await this.keywordHelp(document);
+        post({
+          type: "load",
+          model: modelOf(document),
+          host: VSCODE_HOST,
+          ...(keywords !== undefined ? { keywords } : {})
+        });
         return;
+      }
 
       case "openSource": {
         const line = Math.min(Math.max(message.sourceLine - 1, 0), document.lineCount - 1);

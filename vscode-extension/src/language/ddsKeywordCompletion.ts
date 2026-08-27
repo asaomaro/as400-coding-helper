@@ -1,4 +1,5 @@
 import * as vscode from "vscode";
+import type { DdsKeywordHelp } from "../core/dds/ddsKeywords";
 import { resolveDefinitionLanguage } from "../prompter/jsonDefinitions";
 import { DDS_EXTENSIONS, toDocumentSelector } from "../utils/fileScope";
 import { resolveDdsType, type DdsType } from "../core/sourceKind";
@@ -21,22 +22,16 @@ import {
  * docs/origin/generate-dds-keywords.mjs が生成する。
  */
 
-interface DdsKeyword {
-  readonly name: string;
-  /** 和名・英名（「音響警報」「Audible Alarm」）。 */
-  readonly title: string;
-  /**
-   * 使用レベル。原典の索引と各キーワードの詳細ページから取る。
-   * 判別できなかったものは未設定で、その場合はどのレベルでも出す
-   * （出すべきものを隠すより、余分に出す方が害が少ない）。
-   */
-  readonly level?: readonly string[];
-  readonly description?: string;
-  /** 構文。複数の書き方があるキーワードは複数行になる。 */
-  readonly syntax?: readonly string[];
-  /** パラメータを取るか。false なら括弧を付けない。 */
-  readonly hasParameters?: boolean;
-}
+/**
+ * 1 件の形は core の `DdsKeywordHelp` と同じ。
+ *
+ * **同じ JSON を DDS ビジュアルエディタも読む**ので、型は core に置いて共有する
+ * （層をまたぐが、出所が同じ 1 つのデータなので形が 2 つあってはいけない）。
+ *
+ * `level` は原典の索引と詳細ページから取る。判別できなかったものは未設定で、
+ * その場合はどのレベルでも出す（出すべきものを隠すより、余分に出す方が害が少ない）。
+ */
+type DdsKeyword = DdsKeywordHelp;
 
 /** キーワード項目の開始桁（1 始まり）。ここより手前では補完を出さない。 */
 const KEYWORD_COLUMN = 45;
