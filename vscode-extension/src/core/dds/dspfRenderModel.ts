@@ -20,6 +20,7 @@ import {
   type DspfDiagnosticCode,
   type DspfLayout
 } from "./dspfLayout";
+import type { PrintDensity } from "./prtfDensity";
 import type { LayoutDiagnosticCode } from "./prtfLayout";
 import {
   buildDspfOutline,
@@ -85,6 +86,13 @@ export interface RenderModel {
    * ホストが設定から渡す。画面ファイルには無い概念なので `undefined`。
    */
   readonly overflowLine?: number;
+  /**
+   * 印刷密度（帳票のみ）。**紙の比率で描く**ときに使う。
+   *
+   * ソースに `CPI` / `LPI` があればそれ、無ければ `CRTPRTF` の既定。
+   * 画面ファイルには無い概念なので `undefined`。
+   */
+  readonly density?: PrintDensity;
   /** 描く項目（配置できたものだけ）。 */
   readonly items: readonly RenderItem[];
   readonly diagnostics: readonly RenderDiagnostic[];
