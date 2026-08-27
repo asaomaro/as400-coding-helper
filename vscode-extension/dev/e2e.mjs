@@ -822,6 +822,85 @@ check(
   await sourceAt(literalLine)
 );
 
+// ---- 22. 5250 の配色 ----------------------------------------------------
+// **題材を読み直す。** 直前の節でキーワードを編集しているので、素の状態から見る。
+await page.selectOption("#sample", { label: "hidden-items.dspf" });
+await page.waitForTimeout(200);
+await page.selectOption("#sample", { label: "CUSTMNT.dspf" });
+await page.waitForTimeout(300);
+
+const colorClasses = () => page.$$eval(".dds-item", ns => ns.map(n => n.className));
+const msgLine = await selectTreeItem("MSGTXT");
+
+check(
+  "配色は既定で入っている（実機の見え方を出すのが目的）",
+  await page.$eval("#dds-toggle-colors", n => n.classList.contains("armed"))
+);
+check(
+  "COLOR を書かない項目は緑（原典: 緑はデフォルトの色）",
+  (await page.$$eval(".dds-item.constant", ns => ns.map(n => n.className))).every(c =>
+    c.includes("c-green")
+  ),
+  JSON.stringify(await colorClasses())
+);
+check(
+  "**COLOR(RED) を書いた項目は赤**（実サンプルの MSGTXT）",
+  await page.$eval(`.dds-item[data-source-line="${msgLine}"]`, n => n.classList.contains("c-red")),
+  JSON.stringify(await colorClasses())
+);
+
+const boxBefore = await page.$eval(`.dds-item[data-source-line="${msgLine}"]`, n => {
+  const r = n.getBoundingClientRect();
+  return { left: Math.round(r.left), width: Math.round(r.width) };
+});
+
+await page.fill(".kw-raw", "COLOR(YLW) DSPATR(RI)");
+await page.keyboard.press("Enter");
+await page.waitForTimeout(400);
+check(
+  "**COLOR(YLW) DSPATR(RI) が黄の反転表示になる**",
+  await page.$eval(`.dds-item[data-source-line="${msgLine}"]`, n =>
+    n.classList.contains("c-yellow") && n.classList.contains("reverse")
+  )
+);
+const boxAfter = await page.$eval(`.dds-item[data-source-line="${msgLine}"]`, n => {
+  const r = n.getBoundingClientRect();
+  return { left: Math.round(r.left), width: Math.round(r.width) };
+});
+check(
+  "**配色を変えても桁と位置は変わらない**",
+  boxBefore.left === boxAfter.left && boxBefore.width === boxAfter.width,
+  `${JSON.stringify(boxBefore)} → ${JSON.stringify(boxAfter)}`
+);
+
+// 書いたのに出ない組み合わせ。
+await page.fill(".kw-raw", "DSPATR(UL HI RI)");
+await page.keyboard.press("Enter");
+await page.waitForTimeout(400);
+check(
+  "**UL＋HI＋RI が非表示として描かれる**（コンパイルも通り警告も出ない組み合わせ）",
+  await page.$eval(`.dds-item[data-source-line="${msgLine}"]`, n =>
+    n.classList.contains("non-display")
+  )
+);
+check(
+  "非表示でも枠は残る（選べなくならない）",
+  await page.$eval(`.dds-item[data-source-line="${msgLine}"]`, n =>
+    n.getBoundingClientRect().width > 0
+  )
+);
+
+// 切ると今までの見え方に戻る。
+await page.click("#dds-toggle-colors");
+await page.waitForTimeout(200);
+check(
+  "配色を切ると色の付いた項目が無くなる",
+  (await colorClasses()).every(c => !c.includes("colored")),
+  JSON.stringify(await colorClasses())
+);
+await page.click("#dds-toggle-colors");
+await page.waitForTimeout(200);
+
 check("実行中に JS エラーが出ていない", errors.length === 0, errors.slice(0, 2).join(" | "));
 
 await page.screenshot({ path: join(HERE, "out", "e2e.png") });

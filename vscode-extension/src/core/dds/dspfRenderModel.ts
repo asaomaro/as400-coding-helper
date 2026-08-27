@@ -14,6 +14,7 @@ import {
   type DspfDiagnostic,
   type DspfLayout
 } from "./dspfLayout";
+import { resolveAppearance, type ScreenAppearance } from "./dspfAttributes";
 import {
   buildDspfOutline,
   type ItemAttributes,
@@ -75,6 +76,13 @@ export interface RenderItem {
   readonly recordName?: string;
   /** プロパティに出す値。**キーワードは解釈しない**（生テキスト）。 */
   readonly attributes: ItemAttributes;
+  /**
+   * 実機での見え方（色・反転表示・下線・明滅・非表示）。
+   *
+   * `COLOR` / `DSPATR` から求める。対応表は原典から生成し、**実機の画面と全 61 通りを
+   * 突き合わせて確認済み**（`20260827-dds-5250-colors`）。
+   */
+  readonly appearance: ScreenAppearance;
   /**
    * 条件付け（7-16 桁）。**ここでは解決しない。**
    *
@@ -299,6 +307,7 @@ function toRenderItem(item: DspfLayout["items"][number]): RenderItem {
       keywords: item.keywords,
       ...(condition.length > 0 ? { condition } : {})
     },
+    appearance: resolveAppearance(item.keywords),
     condition: item.conditioning,
     ...(item.recordName !== undefined ? { recordName: item.recordName } : {})
   };

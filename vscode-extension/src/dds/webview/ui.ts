@@ -103,6 +103,11 @@ class EditorView {
     showAttributes: true,
     showGrid: true,
     dimOthers: true,
+    /**
+     * 5250 の配色で描く。**既定は入**——実機の見え方を出すのがこの画面の目的で、
+     * 桁だけを見たい人が切る。
+     */
+    showColors: true,
     zoom: 1
   };
   /**
@@ -147,7 +152,7 @@ class EditorView {
   private readonly addConstant: HTMLButtonElement;
   private readonly toggles: ReadonlyArray<{
     readonly button: HTMLButtonElement;
-    readonly key: "showShifts" | "showAttributes" | "showGrid" | "dimOthers";
+    readonly key: "showShifts" | "showAttributes" | "showGrid" | "dimOthers" | "showColors";
   }>;
   private readonly zoomButtons: HTMLButtonElement[] = [];
 
@@ -187,7 +192,8 @@ class EditorView {
       { button: must<HTMLButtonElement>(root, "#dds-toggle-shifts"), key: "showShifts" },
       { button: must<HTMLButtonElement>(root, "#dds-toggle-attributes"), key: "showAttributes" },
       { button: must<HTMLButtonElement>(root, "#dds-toggle-grid"), key: "showGrid" },
-      { button: must<HTMLButtonElement>(root, "#dds-toggle-dim"), key: "dimOthers" }
+      { button: must<HTMLButtonElement>(root, "#dds-toggle-dim"), key: "dimOthers" },
+      { button: must<HTMLButtonElement>(root, "#dds-toggle-colors"), key: "showColors" }
     ];
     for (const toggle of this.toggles) {
       toggle.button.addEventListener("click", () => {
@@ -438,7 +444,16 @@ class EditorView {
     element.title =
       `${item.label}（${item.row} 行 ${item.column} 桁` +
       `${item.widthCols === undefined ? " / 幅不明" : ` / ${item.widthCols} 桁`}` +
-      ` / ソース ${item.sourceLine} 行目）`;
+      ` / ソース ${item.sourceLine} 行目${describeAppearance(item.appearance)}）`;
+
+    // **配色は色だけ。桁と位置は変えない。**
+    if (this.display.showColors) {
+      element.classList.add("colored", `c-${item.appearance.color}`);
+      if (item.appearance.reverse) element.classList.add("reverse");
+      if (item.appearance.underline) element.classList.add("underline");
+      if (item.appearance.blink) element.classList.add("blink");
+      if (item.appearance.nonDisplay) element.classList.add("non-display");
+    }
 
     if (item.segments.length === 0) {
       const span = document.createElement("span");
@@ -1552,6 +1567,36 @@ function keywordHelpBlock(help: DdsKeywordHelp): HTMLElement {
   return block;
 }
 
+/**
+ * 見え方の説明（吹き出しに添える）。**「書いたのに出ない」を先に見せる**のが要点。
+ */
+function describeAppearance(appearance: RenderItem["appearance"]): string {
+  // 吹き出しは素のテキスト。強調記号を書いても記号のまま出る。
+  if (appearance.nonDisplay) return " / 非表示になります（UL＋HI＋RI は ND と同じ）";
+  const marks = [
+    ["reverse", "反転表示"],
+    ["underline", "下線"],
+    ["blink", "明滅"]
+  ] as const;
+  const extra = marks
+    .filter(([key]) => appearance[key])
+    .map(([, label]) => label)
+    .join("・");
+  const color = COLOR_LABELS[appearance.color] ?? appearance.color;
+  return ` / ${color}${extra ? `・${extra}` : ""}`;
+}
+
+/** 原典の色名。**表示にだけ使う**（識別子は英語）。 */
+const COLOR_LABELS: Readonly<Record<string, string>> = {
+  green: "緑",
+  white: "白",
+  red: "赤",
+  turquoise: "空",
+  yellow: "黄",
+  pink: "ピンク",
+  blue: "青"
+};
+
 /** 属性文字の占有を薄く示す（隣接違反が起きる前に見えるように）。 */
 function attributeMarkers(item: RenderItem, dimmed = false): HTMLElement[] {
   const markers: HTMLElement[] = [];
@@ -1578,6 +1623,7 @@ function template(): string {
     <button id="dds-toggle-attributes" type="button" title="項目の前後 1 桁を占める属性文字を示します">属性バイト</button>
     <button id="dds-toggle-grid" type="button" title="桁のグリッドを表示します">グリッド</button>
     <button id="dds-toggle-dim" type="button" title="選択中の項目が属する様式以外を淡く表示します">他様式を淡く</button>
+    <button id="dds-toggle-colors" type="button" title="COLOR / DSPATR から実機の見え方（色・反転表示・下線・非表示）で描きます">5250 配色</button>
     <span class="sep"></span>
     <span class="zoom" role="group" aria-label="ズーム"></span>
     <span class="spacer"></span>
