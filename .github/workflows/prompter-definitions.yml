@@ -103,3 +103,59 @@ jobs:
       - name: ユニットテスト
         working-directory: vscode-extension
         run: npm test
+
+  # ---------------------------------------------------------------------------
+  # GUI e2e（単独起動ハーネスを実際に操作する）
+  #
+  # WebView の中は拡張ホストから触れず、単体テストは `buildInitialState()` までしか
+  # 見ない。**掴んで動かす・つまみで伸ばす・チップを外す・標識を倒す**が実際に効くかは、
+  # ここでしか落ちない（`moveColumn` が `parseEdit` に無くホストが黙って捨てていた件は、
+  # 型検査も単体テストも通っていた）。
+  #
+  # **不安定なまま載せない。** 載せる前に手元で 10 回連続回して緑を確認した
+  # （2026-08-27・109 件・1 回 25 秒。記録は
+  # `.aidev/works/20260827-dds-e2e-on-ci/verify/stability-2026-08-27.txt`）。
+  # 不安定なテストを混ぜると**赤を無視する習慣**がつき、CI 全体が効かなくなる。
+  # したがって `continue-on-error` は付けない——落ちたら止まる。
+  #
+  # verify ジョブとは別にして並行に走らせる。ブラウザの用意（1 分ほど）を
+  # 原典照合の前に挟まないため、そしてブラウザ回りの失敗が原典照合の失敗を
+  # 隠さないため。
+  gui-e2e:
+    runs-on: ubuntu-latest
+    env:
+      # **キャッシュの鍵。** 浮動にすると毎回キャッシュが外れてブラウザを取り直す。
+      # 上げるときはここだけを変える（`playwright-core` は依存に入れない——
+      # CI 以外では要らず、`npm ci` を重くするだけなので）。
+      PLAYWRIGHT_VERSION: "1.62.1"
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: ブラウザのキャッシュ
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ env.PLAYWRIGHT_VERSION }}
+
+      - name: 依存とブラウザ
+        working-directory: vscode-extension
+        run: |
+          npm ci || npm install
+          npm install --no-save "playwright-core@${PLAYWRIGHT_VERSION}"
+          # --with-deps は sudo を要求して遅い。ubuntu-latest には必要な共有ライブラリが
+          # 入っており、起動は --no-sandbox --disable-gpu なので付けなくてよい。
+          node node_modules/playwright-core/cli.js install chromium
+
+      - name: WebView を束ねる
+        working-directory: vscode-extension
+        run: npm run compile:webview
+
+      # 前提が足りないときは終了コード 2 で落ちる（ブラウザが無い / ページが無い）。
+      # **skip にしない**——「走らなかった」を「通った」と読み違えないため。
+      - name: GUI e2e
+        working-directory: vscode-extension
+        run: node dev/e2e.mjs

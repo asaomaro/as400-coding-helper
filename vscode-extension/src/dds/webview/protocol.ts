@@ -161,6 +161,29 @@ function parseEdit(value: unknown): DdsEdit | undefined {
       return isPositiveInteger(value.sourceLine) && typeof value.keywords === "string"
         ? { kind: "setKeywords", sourceLine: value.sourceLine, keywords: value.keywords }
         : undefined;
+    case "setCondition": {
+      // 条件は OR で結ばれる AND の組。**中身の上限（9 と 9）は core の検証が見る。**
+      if (!isPositiveInteger(value.sourceLine) || !Array.isArray(value.condition)) {
+        return undefined;
+      }
+      const condition: { indicator: string; negated: boolean }[][] = [];
+      for (const group of value.condition) {
+        if (!Array.isArray(group)) return undefined;
+        const terms: { indicator: string; negated: boolean }[] = [];
+        for (const term of group) {
+          if (
+            !isRecord(term) ||
+            typeof term.indicator !== "string" ||
+            typeof term.negated !== "boolean"
+          ) {
+            return undefined;
+          }
+          terms.push({ indicator: term.indicator, negated: term.negated });
+        }
+        condition.push(terms);
+      }
+      return { kind: "setCondition", sourceLine: value.sourceLine, condition };
+    }
     case "setAttributes": {
       if (!isPositiveInteger(value.sourceLine) || !isRecord(value.attributes)) {
         return undefined;

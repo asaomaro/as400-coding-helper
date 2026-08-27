@@ -19,6 +19,11 @@ import {
   unitItemKind,
   type LogicalUnit
 } from "./ddsLogicalUnits";
+import {
+  CONDITION_LIMITS,
+  writeBackCondition,
+  type ConditionGroups
+} from "./ddsConditionWriteBack";
 import { DDS_POSITION_ROW } from "./ddsPositionColumns";
 import { writeBackColumn, writeBackPosition } from "./ddsPositionWriteBack";
 
@@ -79,6 +84,19 @@ export type DdsEdit =
    * こちらは代表行から続くキーワード行の**区間**を置き換える。
    */
   | { readonly kind: "setKeywords"; readonly sourceLine: number; readonly keywords: string }
+  /**
+   * 条件標識（7-16 桁）を**まるごと**置き換える。
+   *
+   * 与えるのは OR で結ばれる AND の組（`ConditionGroups`）。**空なら条件を消す。**
+   * 原典より項目は「最後の (または唯一の) 標識と同じ行」に置くので、
+   * OR や 4 つ以上の AND では**行が増える**——宛先は代表行だけでなく、
+   * 先行する条件行を含む**区間**になる。
+   */
+  | {
+      readonly kind: "setCondition";
+      readonly sourceLine: number;
+      readonly condition: ConditionGroups;
+    }
   | { readonly kind: "add"; readonly recordName: string; readonly item: NewDspfItem };
 
 /** 置き換え指示。0 始まり・`replaceTo` は含まない。 */
@@ -115,7 +133,13 @@ export type DdsEditRejectionCode =
    * 行を動かしたいなら `SPACEA` / `SKIPB` を直す話で、位置欄の書き換えではない。
    * **桁だけを変える移動は通す。**
    */
-  | "row-from-spacing";
+  | "row-from-spacing"
+  /** 標識が 01-99 でない。 */
+  | "condition-indicator-invalid"
+  /** 1 つの条件に 10 個以上の標識、または 10 個以上の条件（原典の上限は 9 と 9）。 */
+  | "condition-too-many"
+  /** 条件行と代表行の間に注記行が挟まっている（区間で置き換えると注記が消える）。 */
+  | "condition-lines-not-contiguous";
 
 export interface DdsEditRejection {
   readonly code: DdsEditRejectionCode;
@@ -166,6 +190,11 @@ export function validateDdsEdits(
         message: `${edit.sourceLine} 行目に編集できる項目がありません（ソースが変わっている可能性があります）`,
         sourceLine: edit.sourceLine
       });
+      continue;
+    }
+
+    if (edit.kind === "setCondition") {
+      rejections.push(...validateCondition(unit, edit.condition, edit.sourceLine));
       continue;
     }
 
@@ -286,6 +315,18 @@ export function applyDdsEdits(
           replaceFrom: run.from,
           replaceTo: run.to,
           lines: keywordLines(lines[edit.sourceLine - 1], edit.keywords)
+        });
+        break;
+      }
+      case "setCondition": {
+        const unit = itemUnitAt(units, edit.sourceLine);
+        if (!unit) break;
+        const run = conditionRunOf(unit);
+        if (!run) break; // 検証済みなので通常は起きない。
+        results.push({
+          replaceFrom: run.from,
+          replaceTo: run.to,
+          lines: writeBackCondition(unit.line, edit.condition)
         });
         break;
       }
@@ -577,6 +618,87 @@ function validateAdd(
 
   rejections.push(...validatePosition(item.row, item.column));
   return rejections;
+}
+
+/**
+ * 条件標識を書けるか。**原典の上限を見る。**
+ *
+ * > 1 つのフィールドまたはキーワードについて**最大 9 つの条件**を指定することができ、
+ * > 1 つの条件について**最大 9 つの標識**を指定することができます。
+ *
+ * 標識そのものは 01-99（原典「オプション標識は、01 - 99 の 2 桁の数字で指定します」）。
+ */
+function validateCondition(
+  unit: LogicalUnit,
+  groups: ConditionGroups,
+  sourceLine: number
+): DdsEditRejection[] {
+  const rejections: DdsEditRejection[] = [];
+
+  if (groups.length > CONDITION_LIMITS.groups) {
+    rejections.push({
+      code: "condition-too-many",
+      message:
+        `条件は ${CONDITION_LIMITS.groups} つまでです（${groups.length} つ指定されています）` +
+        "（原典: 最大 9 つの条件）",
+      sourceLine
+    });
+  }
+
+  for (const terms of groups) {
+    if (terms.length > CONDITION_LIMITS.termsPerGroup) {
+      rejections.push({
+        code: "condition-too-many",
+        message:
+          `1 つの条件に書ける標識は ${CONDITION_LIMITS.termsPerGroup} 個までです` +
+          `（${terms.length} 個指定されています）（原典: 1 つの条件について最大 9 つの標識）`,
+        sourceLine
+      });
+    }
+    for (const term of terms) {
+      if (!/^\d{1,2}$/u.test(term.indicator) || Number(term.indicator) < 1) {
+        rejections.push({
+          code: "condition-indicator-invalid",
+          message:
+            `標識 '${term.indicator}' は書けません` +
+            "（原典: オプション標識は、01 - 99 の 2 桁の数字で指定します）",
+          sourceLine
+        });
+      }
+    }
+  }
+
+  // **条件が空でも 1 本は残る**（代表行）ので、区間が連続しているかだけ見る。
+  if (!conditionRunOf(unit)) {
+    rejections.push({
+      code: "condition-lines-not-contiguous",
+      message:
+        "条件の行と項目の行の間に注記行が挟まっています" +
+        "（まとめて置き換えると注記が消えるため書き換えません）",
+      sourceLine
+    });
+  }
+
+  return rejections;
+}
+
+/**
+ * 条件を置き換える区間（0 始まり・`to` は含まない）。
+ *
+ * 先行する条件行から代表行まで。**キーワード継続行は含めない**——あちらは代表行の
+ * 後ろに続くので、条件の書き換えでは触らない。
+ *
+ * 注記行が挟まっていたら `undefined`（区間で置き換えると注記が消える）。
+ */
+function conditionRunOf(unit: LogicalUnit): { from: number; to: number } | undefined {
+  // `conditioningLines` は「先行する条件行 → 代表行」の順。
+  const leading = unit.conditioningLines.length - 1;
+  const first = unit.sourceLines[0];
+  const representative = unit.sourceLine;
+  if (first === undefined) return undefined;
+  // 連続していること（間に注記行が無いこと）。
+  if (representative - first !== leading) return undefined;
+  return { from: first - 1, to: representative };
 }
 
 /** 位置欄に書けるか。`row` を省くと桁だけを見る（帳票の `moveColumn`）。 */

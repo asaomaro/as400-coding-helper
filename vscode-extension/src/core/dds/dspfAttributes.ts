@@ -1,4 +1,9 @@
 import attributeData from "../../../resources/completion/dds-attributes.json";
+import {
+  activeKeywordGroups,
+  type IndicatorStates,
+  type KeywordGroup
+} from "./ddsConditioning";
 import { parseKeywordEntries } from "./ddsKeywords";
 
 /**
@@ -98,9 +103,9 @@ export const DEFAULT_APPEARANCE: ScreenAppearance = appearanceOf(BITS.base);
  *   なお `COLOR` を書かずに `DSPATR(HI RI UL)` と**明示した**場合は原典どおり非表示になる
  *   （こちらも実機で確認済み）。落とすのは色から来た `HI` のときだけ。
  *
- * ■ 条件付きの `COLOR` / `DSPATR` は見ない
- *   `50 COLOR(RED)` のような形の条件は `toLogicalUnits` が捨てている。
- *   条件に関係なく効くものとして扱う（この版の割り切り。backlog `dds.md`）。
+ * ■ 条件つきの `COLOR` / `DSPATR` は `resolveAppearanceUnder` が扱う
+ *   `50 COLOR(RED)` のような形は、その項目の条件とは**別の条件**で効いたり効かなかったりする。
+ *   この関数は渡された欄をそのまま解くので、**条件で絞ってから**呼ぶこと。
  */
 export function resolveAppearance(keywords: string): ScreenAppearance {
   let color: ScreenColor | undefined;
@@ -143,6 +148,28 @@ export function resolveAppearance(keywords: string): ScreenAppearance {
   }
 
   return appearanceOf(byte);
+}
+
+/**
+ * **成立している条件のキーワードだけ**で見え方を求める。
+ *
+ * 原典（`COLOR`）:
+ * > 1 つの出力命令について 2 つ以上の COLOR キーワードが**有効になっている**場合には、
+ * > …**DDS で最初に指定されている COLOR キーワード**を使用します
+ *
+ * 「有効になっている」ものの最初なので、**先に条件で絞り、そのあと最初のものを採る**。
+ * 群はソースの順に並んでいるので、連結した順がそのまま指定の順になる。
+ */
+export function resolveAppearanceUnder(
+  groups: readonly KeywordGroup[],
+  states: IndicatorStates
+): ScreenAppearance {
+  return resolveAppearance(
+    activeKeywordGroups(groups, states)
+      .map(group => group.keywords)
+      .join(" ")
+      .trim()
+  );
 }
 
 /**

@@ -6,7 +6,12 @@ import {
   type WidthUnknownReason
 } from "./ddsFieldWidth";
 import { readConstant, readNumber, toLogicalUnits } from "./ddsLogicalUnits";
-import { readConditioning, type Conditioning } from "./ddsConditioning";
+import {
+  readConditioning,
+  resolveKeywordGroups,
+  type Conditioning,
+  type KeywordGroup
+} from "./ddsConditioning";
 import { DDS_COLUMNS } from "../ddsLayout";
 
 /**
@@ -58,6 +63,8 @@ export interface PlacedItem {
    * プロパティに読み取り専用で見せ、キーワードの編集の入力にする。
    */
   readonly keywords: string;
+  /** キーワード欄を条件ごとに分けたもの。**画面と同じ形**（`DSPATR` は無いが経路は共通）。 */
+  readonly keywordGroups: readonly KeywordGroup[];
   /** 条件付け欄（7-16 桁）。 */
   readonly conditioning: Conditioning;
   /**
@@ -312,6 +319,7 @@ export function resolvePrtfLayout(
       ...(dataType !== undefined ? { dataType } : {}),
       ...(decimals !== undefined ? { decimals } : {}),
       keywords,
+      keywordGroups: resolveKeywordGroups(unit),
       conditioning: readConditioning(unit.conditioningLines),
       // 帳票に属性文字は無い。占有は項目そのもの。
       occupancy: { start: column, end: column + (width ?? 1) }

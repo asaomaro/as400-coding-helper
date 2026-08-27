@@ -41,9 +41,24 @@ npm install --no-save playwright-core
 npm run dev:e2e
 ```
 
-`playwright-core` を **devDependency にしていない**のは、CI にブラウザ本体が無く動かせないため。
-入れると「CI に載っているのに走っていないテスト」が生まれる。手動導入に留めている。
+`playwright-core` を **devDependency にしていない**のは、CI 以外では要らず `npm ci` を
+重くするだけだから。CI 側は `--no-save` で**版を固定して**入れる
+（浮動にするとブラウザのキャッシュの鍵が毎回変わって取り直しになる）。
 ブラウザは `~/.cache/ms-playwright/chromium-*` を自動で探す（`PLAYWRIGHT_CHROMIUM` で明示も可）。
+
+## CI で走る
+
+`.github/workflows/prompter-definitions.yml` の **`gui-e2e` ジョブ**が、PR と main への
+push で回す。`verify` とは別ジョブなので並行に走り、既存のジョブを遅くしない。
+
+**不安定なまま載せていない。** 載せる前に手元で 10 回連続回して緑を確認した
+（2026-08-27・109 件・1 回 25 秒。記録は
+`.aidev/works/20260827-dds-e2e-on-ci/verify/stability-2026-08-27.txt`、
+測り直しは同じ場所の `e2e-stability.sh`）。
+
+**落ちたら止まる**（`continue-on-error` を付けていない）。不安定なテストを混ぜると
+赤を無視する習慣がつき、CI 全体が効かなくなる。**もし不安定になったら、
+非ブロッキングにするのではなく原因を直すか、外す。**
 
 ## ここで確かめられないもの
 

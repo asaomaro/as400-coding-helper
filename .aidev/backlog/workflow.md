@@ -58,11 +58,13 @@ priority: 2           # cl(1) の次。設計書: docs/workflow/ibmi-dev-workflo
 - [ ] RPG III の桁属性を実機で確定する — `numericOnly` の欄が定義に 1 つも無く、
       `.rpg`/`.sqlrpg` には `line-length` しか届かない。RPG/400 Reference が入手できない
       ため原典照合ができず、実機のコンパイラに判定させる（`probe-rpg3-opcodes.sh` の手法）
-- [ ] CI の「再生成しても差分が出ないこと」を直す — **PR#95 以降 main がずっと赤い**。
-      (1) 再生成ステップが `generate-cdml-rules.mjs` を呼んでおらず CDML 由来データ
-      (`dependencies`/`valueMap`) が消える（401 ファイル差分） (2) それを直しても
-      `attributes` のキー順が再現せず 87 ファイル差分が残る（中身は同一）。
-      生成器のキー順を正規化して全件再生成する必要がある
+- [x] CI の「再生成しても差分が出ないこと」を直す — **既に解消していた**（2026-08-27 確認）。
+      ~~PR#95 以降 main がずっと赤い~~ 起票後に別の作業で直っており、
+      `prompter-definitions.yml` の再生成ステップは `generate-cdml-rules.mjs` を
+      呼んでいる（「これを飛ばすと…常に失敗する」と注記つき）。
+      手元で 16 本の生成器を全部回して**差分ゼロ**、直近の CI も 6 連続で success。
+      **起票を閉じ忘れていた例**——backlog は遅れるので、着手前に現物で裏を取ること
+      （AGENTS.md / `aidev-00-start`）。
 - [ ] `docs/src/` の未検証サンプルを実機で確かめる — `CHECKLIST.md` は「すべて
       コンパイル確認済み」と書くが「作成物」欄は 6 件しか埋まっていない。lint は
       `EMPMNT01.rpgle` に 12 件・`SLSENT01.rpgle` に 18 件を検出しており、D 仕様書の
