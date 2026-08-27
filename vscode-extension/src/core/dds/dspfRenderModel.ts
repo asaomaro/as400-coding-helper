@@ -5,6 +5,7 @@ import {
   type IndicatorStates,
   type IndicatorUsage
 } from "./ddsConditioning";
+import { resolveAppearanceUnder } from "./dspfAttributes";
 import {
   constantSegments,
   printWidth,
@@ -159,6 +160,13 @@ export function fromLayout(
  * ■ 消した項目は一覧に残す
  *   キャンバスから消えた項目に一覧からも手が届かないと、戻す手段がテキストエディタしかなくなる。
  *   `outline` の同じ項目へ `condition-off` を付けて、理由が読める形で残す。
+ *
+ * ■ **見え方も作り直す**
+ *   原典は条件が付く対象を「フィールド**または**キーワード」としており、
+ *   `30 DSPATR(RI)` のように**キーワードだけが条件つき**の形がある。項目は出たままで
+ *   反転表示だけ消える、が起きるので、残す項目の `appearance` も解き直す。
+ *   条件つきの群を持たない項目は解き直しても同じ結果になるので、**元の項目をそのまま使う**
+ *   （無駄な作り直しで参照が変わらないように）。
  */
 export function applyIndicators(model: RenderModel, states: IndicatorStates): RenderModel {
   if (Object.keys(states).length === 0) return model;
@@ -171,7 +179,7 @@ export function applyIndicators(model: RenderModel, states: IndicatorStates): Re
       hidden.add(item.sourceLine);
       continue;
     }
-    shown.push(item);
+    shown.push(withAppearanceUnder(item, states));
   }
 
   return {
@@ -180,6 +188,18 @@ export function applyIndicators(model: RenderModel, states: IndicatorStates): Re
     outline: hidden.size === 0 ? model.outline : markHidden(model.outline, hidden),
     diagnostics: [...model.diagnostics, ...overlapsUnderIndicators(shown, states)]
   };
+}
+
+/**
+ * キーワードの条件を解いて見え方を作り直す。**条件つきの群が無ければ元のまま返す。**
+ *
+ * 元のまま返すのは速さのためではなく、**参照が変わらないこと**に意味があるため
+ * ——変わらないはずのものが変わると、後から「なぜ変わったか」を追う羽目になる。
+ */
+function withAppearanceUnder(item: RenderItem, states: IndicatorStates): RenderItem {
+  const conditional = item.keywordGroups.some(group => group.conditioning.kind !== "none");
+  if (!conditional) return item;
+  return { ...item, appearance: resolveAppearanceUnder(item.keywordGroups, states) };
 }
 
 /** 一覧に「条件で非表示」を付ける。**構造的な理由が既にある項目は触らない。** */

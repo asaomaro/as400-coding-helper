@@ -1,5 +1,6 @@
 import type { DdsEdit } from "../../core/dds/ddsEdit";
 import {
+  describeConditioning,
   evaluateConditioning,
   type IndicatorStates
 } from "../../core/dds/ddsConditioning";
@@ -895,6 +896,17 @@ class EditorView {
     conditionRow.append(conditionHead, conditionCell);
     table.appendChild(conditionRow);
 
+    const conditionalKeywords = this.describeConditionalKeywords(item);
+    if (conditionalKeywords !== undefined) {
+      const row = document.createElement("tr");
+      const head = document.createElement("td");
+      head.textContent = "条件つき";
+      const cell = document.createElement("td");
+      cell.appendChild(conditionalKeywords);
+      row.append(head, cell);
+      table.appendChild(row);
+    }
+
     const nodes: HTMLElement[] = [
       table,
       this.keywordSection(item.sourceLine, item.attributes.keywords, "field"),
@@ -1194,6 +1206,48 @@ class EditorView {
       case "hidden": return `${condition}（いまは 出ない）`;
       default: return `${condition}（いまは 決まらない）`;
     }
+  }
+
+  /**
+   * **条件つきのキーワード**を出す。無ければ行ごと出さない。
+   *
+   * 原典は条件が付く対象を「フィールド**または**キーワード」としており、
+   * `30 DSPATR(RI)` のようにキーワードだけが条件つきの形がある。
+   * 「常にこう見える」のか「ある標識のときだけ」かで読み方が変わるので、
+   * チップ（全部のキーワード）とは**別の行**で示す。
+   *
+   * 標識を指定しているときは、いまその条件が効いているかも添える。
+   */
+  private describeConditionalKeywords(item: OutlineItem): HTMLElement | undefined {
+    const placed = this.model?.items.find(
+      candidate => candidate.sourceLine === item.sourceLine
+    );
+    const groups = (placed?.keywordGroups ?? []).filter(
+      group => group.conditioning.kind !== "none"
+    );
+    if (groups.length === 0) return undefined;
+
+    const list = document.createElement("div");
+    list.className = "dds-conditional-keywords";
+    const specified = Object.keys(this.indicators).length > 0;
+
+    for (const group of groups) {
+      const line = document.createElement("div");
+      const condition = describeConditioning(group.conditioning);
+      const state = specified
+        ? evaluateConditioning(group.conditioning, this.indicators)
+        : undefined;
+      const suffix =
+        state === "shown" ? "（いまは 効く）"
+        : state === "hidden" ? "（いまは 効かない）"
+        : state === "unknown" ? "（いまは 決まらない）"
+        : "";
+      line.textContent = `${condition}: ${group.keywords}${suffix}`;
+      if (state === "hidden") line.classList.add("is-off");
+      line.title = `${group.sourceLine} 行目`;
+      list.appendChild(line);
+    }
+    return list;
   }
 
   /**

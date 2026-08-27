@@ -596,6 +596,58 @@ check(
   JSON.stringify(await drawnLabels())
 );
 
+// ---- 19b. 条件つきの DSPATR（キーワードにも条件が付く）------------------
+//
+// `30 DSPATR(RI)` は FLD2 のキーワードだけを条件付ける。**項目は出たまま反転表示だけ消える。**
+// 直す前は条件が捨てられており、標識を倒しても反転したままだった。
+await setInd("01", "unset");
+const fld2Classes = () =>
+  page.$$eval(".dds-item", nodes =>
+    nodes.filter(n => n.textContent.startsWith("XXXX")).map(n => n.className)
+  );
+
+check(
+  "既定では条件つき DSPATR も効く（未設定は決まらない＝効かせる）",
+  (await fld2Classes()).some(c => c.includes("reverse")),
+  JSON.stringify(await fld2Classes())
+);
+
+await setInd("30", "off");
+const offClasses = await fld2Classes();
+check(
+  "**条件つき DSPATR は不成立で効かなくなる（項目は残る）**",
+  offClasses.length === 2 && !offClasses.some(c => c.includes("reverse")),
+  JSON.stringify(offClasses)
+);
+
+await setInd("30", "on");
+check(
+  "成立させると戻る",
+  (await fld2Classes()).some(c => c.includes("reverse")),
+  JSON.stringify(await fld2Classes())
+);
+
+// プロパティに条件つきキーワードが出る。
+await page.click(".dds-item:has-text('XXXX') >> nth=1");
+await page.waitForTimeout(150);
+const conditionalText = await page
+  .$eval(".dds-conditional-keywords", node => node.textContent)
+  .catch(() => "");
+check(
+  "プロパティで条件つきキーワードが読める",
+  conditionalText.includes("30") && conditionalText.includes("DSPATR(RI)"),
+  conditionalText
+);
+
+await setInd("30", "unset");
+check(
+  "**条件を切り替えてもソースは変わらない**",
+  JSON.stringify(await sourceLines()) === JSON.stringify(sourceBefore) &&
+    (await changedLines()).length === 0
+);
+
+await setInd("01", "off");
+
 // その状態での重なり（AC6）。
 const diagnostics = () => page.$eval(".dds-diagnostics", node => node.textContent);
 check("指定していない標識では状態つきの重なりを出さない", !(await diagnostics()).includes("重なります"));

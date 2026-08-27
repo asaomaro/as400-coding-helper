@@ -1,5 +1,11 @@
 import { DDS_COLUMNS, ddsField, ddsName } from "../ddsLayout";
-import { readConditioning, type Conditioning, isMutuallyExclusive } from "./ddsConditioning";
+import {
+  isMutuallyExclusive,
+  readConditioning,
+  resolveKeywordGroups,
+  type Conditioning,
+  type KeywordGroup
+} from "./ddsConditioning";
 import { constantWidth, fieldWidth, type WidthUnknownReason } from "./ddsFieldWidth";
 import {
   readConstant,
@@ -107,6 +113,14 @@ export interface DspfPlacedItem {
    * プロパティに読み取り専用で見せるためだけに持つ。
    */
   readonly keywords: string;
+  /**
+   * キーワード欄を**条件ごとに**分けたもの（条件は解決済み）。
+   *
+   * `keywords` はこれらの連結。**見え方の解決だけ**がこちらを見る
+   * ——`30 DSPATR(RI)` のように条件つきのキーワードがあると、
+   * 連結だけでは「条件に関係なく効く」ことになってしまう。
+   */
+  readonly keywordGroups: readonly KeywordGroup[];
   readonly conditioning: Conditioning;
   readonly occupancy: Occupancy;
 }
@@ -381,6 +395,7 @@ export function resolveDspfLayout(lines: readonly string[]): DspfLayout {
         ? { decimals }
         : {}),
       keywords,
+      keywordGroups: resolveKeywordGroups(unit),
       conditioning,
       occupancy
     });

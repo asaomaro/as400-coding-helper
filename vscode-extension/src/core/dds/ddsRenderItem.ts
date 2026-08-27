@@ -1,6 +1,10 @@
 import { isDbcsCodePoint, printWidth } from "../dbcs";
-import { describeConditioning, type Conditioning } from "./ddsConditioning";
-import { resolveAppearance, type ScreenAppearance } from "./dspfAttributes";
+import {
+  describeConditioning,
+  type Conditioning,
+  type KeywordGroup
+} from "./ddsConditioning";
+import { resolveAppearanceUnder, type ScreenAppearance } from "./dspfAttributes";
 import type { ItemAttributes } from "./dspfOutline";
 
 /**
@@ -69,6 +73,14 @@ export interface RenderItem {
    */
   readonly appearance: ScreenAppearance;
   /**
+   * キーワード欄を**条件ごとに**分けたもの。
+   *
+   * `attributes.keywords`（全部の連結）と違い、**どのキーワードがどの条件で効くか**を持つ。
+   * 標識を倒したときに見え方を作り直すのに要る（`applyIndicators`）。
+   * 条件の付いた群が 1 つも無ければ、倒しても見え方は変わらない。
+   */
+  readonly keywordGroups: readonly KeywordGroup[];
+  /**
    * 条件付け（7-16 桁）。**ここでは解決しない。**
    *
    * どの標識が立っているかは**利用者が指定する表示の状態**で、ソースには書かれていない。
@@ -94,6 +106,7 @@ export interface PlacedSource {
   readonly dataType?: string;
   readonly decimals?: number;
   readonly keywords: string;
+  readonly keywordGroups: readonly KeywordGroup[];
   readonly conditioning: Conditioning;
   readonly occupancy: { readonly start: number; readonly end: number };
   /**
@@ -135,7 +148,10 @@ export function toRenderItem(item: PlacedSource): RenderItem {
       keywords: item.keywords,
       ...(condition.length > 0 ? { condition } : {})
     },
-    appearance: resolveAppearance(item.keywords),
+    // **標識が未設定の状態**で解く。未設定は「決まらない」＝効かせるので、
+    // 条件つきキーワードも既定では効く（＝これまでと同じ見え方）。
+    appearance: resolveAppearanceUnder(item.keywordGroups, {}),
+    keywordGroups: item.keywordGroups,
     condition: item.conditioning,
     ...(item.recordName !== undefined ? { recordName: item.recordName } : {}),
     ...(item.rowFromSpacing ? { rowFromSpacing: true } : {})

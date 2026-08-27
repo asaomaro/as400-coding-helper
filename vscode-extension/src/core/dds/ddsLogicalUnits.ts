@@ -45,6 +45,32 @@ export const DDS_KEYWORD_AREA_START = DDS_COLUMNS.position[1] + 1;
 /** 条件付け欄（7-16 桁）。原典の表示装置ファイルの区切りに合わせる。 */
 export const DDS_CONDITIONING: readonly [number, number] = [7, 16];
 
+/**
+ * 条件ごとのキーワード欄。**キーワードにも条件が付く。**
+ *
+ * 原典（`表示装置ファイルの条件付け (7 - 16 桁目)`）:
+ * > ユーザー・プログラムでは、オプション標識をオン (16 進数 F1) またはオフ (16 進数 F0) に
+ * > セットすることにより、**フィールドまたはキーワード**を選択することができます。
+ *
+ * `30 DSPATR(RI)` のような形は、**その項目の条件とは別の条件**で効いたり効かなかったりする。
+ * 連結した `keywords` だけを持っていると、この条件が消えて**常に効く**ことになる
+ * （実際そうなっており、標識を倒しても反転表示が消えなかった）。
+ *
+ * ここでは**桁を切り出すところまで**を持ち、条件の解釈（`readConditioning`）はしない
+ * ——`ddsConditioning` がこのファイルを import しているので、逆向きに import すると環状になる。
+ */
+export interface RawKeywordGroup {
+  /**
+   * 条件を読むための行群。代表行の分は**空**（項目自身の条件は
+   * `LogicalUnit.conditioningLines` が持っており、出た時点で自分のキーワードは効く）。
+   */
+  readonly conditioningLines: readonly string[];
+  /** その行（と継続行）の機能欄。 */
+  readonly keywords: string;
+  /** 1 始まり。 */
+  readonly sourceLine: number;
+}
+
 export interface LogicalUnit {
   readonly kind: "record" | "item";
   /** 単位の代表行（項目の桁を読む行）。 */
@@ -67,6 +93,15 @@ export interface LogicalUnit {
    * したがって連続とは限らない。
    */
   readonly sourceLines: readonly number[];
+  /**
+   * キーワード欄を**条件ごとに**分けたもの。連結すると `keywords` に一致する
+   * （`test/unit/ddsConditionalAttributes.test.ts` で固定）。
+   *
+   * `keywords` は今までどおり**全部を繋いだもの**。`readConstant` / `fieldWidth` /
+   * `readSpacing` / チップ表示 / `setKeywords` の 5 か所が読んでおり、
+   * ここから条件つき分を引くとそれらの意味が変わる。**見え方の解決だけ**がこちらを見る。
+   */
+  readonly keywordGroups: readonly RawKeywordGroup[];
 }
 
 /** キーワード欄（45 桁以降）を取り出す。 */
@@ -301,7 +336,11 @@ export function toLogicalUnits(lines: readonly string[]): LogicalUnit[] {
       sourceLine: joined.index + 1,
       keywords: joined.keywords,
       conditioningLines: [...pendingConditioning, line],
-      sourceLines: [...pendingConditioningLines, ...joined.sourceLines]
+      sourceLines: [...pendingConditioningLines, ...joined.sourceLines],
+      // 代表行のキーワードは項目自身の条件で決まるので、群としては無条件。
+      keywordGroups: [
+        { conditioningLines: [], keywords: joined.keywords, sourceLine: joined.index + 1 }
+      ]
     });
     pendingConditioning = [];
     pendingConditioningLines = [];
@@ -340,10 +379,22 @@ export function toLogicalUnits(lines: readonly string[]): LogicalUnit[] {
     // 直前が無ければファイル・レベルのキーワード（REF など）で、配置に関係しない。
     const previous = units[units.length - 1];
     if (!previous) continue;
+
+    // **この行の条件はこの行のキーワードのもの。** 先行する条件だけの行があれば
+    // それも含める——原典より条件は直後の指定に付き、
+    // 「最後の (または唯一の) 標識は同じ行に指定」される。
+    const conditioningLines = [...pendingConditioning, line];
+    pendingConditioning = [];
+    pendingConditioningLines = [];
+
     units[units.length - 1] = {
       ...previous,
       keywords: `${previous.keywords} ${keywordArea}`.trim(),
-      sourceLines: [...previous.sourceLines, ...joined.sourceLines]
+      sourceLines: [...previous.sourceLines, ...joined.sourceLines],
+      keywordGroups: [
+        ...previous.keywordGroups,
+        { conditioningLines, keywords: keywordArea, sourceLine: joined.index + 1 }
+      ]
     };
   }
 

@@ -1,5 +1,5 @@
 import { isDdsBlankLine, isDdsCommentLine } from "../ddsLayout";
-import { conditioningAreaOf } from "./ddsLogicalUnits";
+import { conditioningAreaOf, type LogicalUnit } from "./ddsLogicalUnits";
 import { isScreenSizeConditionName } from "./dspfScreenSize";
 
 /**
@@ -209,6 +209,55 @@ export function describeConditioning(conditioning: Conditioning): string {
         .join(" かつ ")
     )
     .join("、または ");
+}
+
+/**
+ * 条件つきのキーワード欄（条件を解いたもの）。
+ *
+ * `RawKeywordGroup`（桁を切っただけ）を配置解決が解いてこの形にする。
+ * **見え方の解決だけがこれを見る**——`keywords`（全部の連結）の意味は変えていない。
+ */
+export interface KeywordGroup {
+  readonly conditioning: Conditioning;
+  readonly keywords: string;
+  /** 1 始まり。 */
+  readonly sourceLine: number;
+}
+
+/**
+ * 論理単位のキーワード群の条件を解く。**画面と帳票で同じものを使う。**
+ *
+ * 桁の切り出しは `toLogicalUnits`（条件の解釈をしない。環状 import になるため）、
+ * 解釈はここ、という分担にしてある。
+ */
+export function resolveKeywordGroups(unit: LogicalUnit): KeywordGroup[] {
+  return unit.keywordGroups.map(group => ({
+    conditioning: readConditioning(group.conditioningLines),
+    keywords: group.keywords,
+    sourceLine: group.sourceLine
+  }));
+}
+
+/**
+ * その標識の状態で**効いているキーワード群**だけを残す。
+ *
+ * 倒し方は項目の表示と**同じ**（`applyIndicators` の「消すのは不成立と決まったものだけ」）:
+ *
+ * | 解決 | 効かせるか | 理由 |
+ * |---|---|---|
+ * | `shown` | ○ | 成立している |
+ * | `unknown` | **○** | 未設定は「決まらない」。既定の見え方を変えないため |
+ * | `hidden` | ✕ | 不成立と決まった |
+ *
+ * 片方だけ別の倒し方にすると、同じ標識で**項目は残るのに色だけ消える**が起きる。
+ */
+export function activeKeywordGroups(
+  groups: readonly KeywordGroup[],
+  states: IndicatorStates
+): readonly KeywordGroup[] {
+  return groups.filter(
+    group => evaluateConditioning(group.conditioning, states) !== "hidden"
+  );
 }
 
 /** ソース中に現れる標識。 */
