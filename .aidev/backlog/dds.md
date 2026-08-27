@@ -61,10 +61,15 @@ priority: 1           # DDS の視覚的確認と編集（charter の第 4 の�
   **引数を足すと渡し忘れた側で黙って検査が消える**（配線漏れ）。渡し方から決めること。
   出所: `20260827-dds-cli` の `decisions.md` D2。
 
-- [ ] **エディタの GUI e2e を CI に載せる** — `dev/e2e.mjs`（単独起動を実操作する 15 件）は
-  手元でしか走っていない。`playwright-core` とブラウザのキャッシュを CI に用意すれば載る。
-  **不安定なまま載せると赤を無視する習慣がつく**ので、再現率を測ってから
-  （例: 10 回連続で緑）判断する。出所: `20260826-dds-editor-port` の `decisions.md` D9。
+- [x] **エディタの GUI e2e を CI に載せる** — 済（`20260827-dds-e2e-on-ci`）。
+  `.github/workflows/prompter-definitions.yml` の **`gui-e2e` ジョブ**が PR と main で回す。
+  `verify` とは別ジョブ（並行）なので既存のジョブを遅くしない。
+  ブラウザは `actions/cache` に載せ、`playwright-core` は**版を固定**して `--no-save`
+  （浮動にするとキャッシュの鍵が毎回変わる）。
+  **不安定なまま載せていない**——先に手元で **10 回連続緑**を確認した
+  （109 件・1 回 25 秒。記録は `verify/stability-2026-08-27.txt`、測り直しは `e2e-stability.sh`）。
+  `continue-on-error` は付けていない（落ちたら止まる）。
+  ~~15 件~~ 起票時は 15 件だったが、いまは 109 件。
 
 - [x] **表示トグルを足す（SO/SI の `{ }` 表示・属性バイト・グリッド・ズーム）** —
   `20260826-dds-display-toggles` で実装（PR は本文参照）。
