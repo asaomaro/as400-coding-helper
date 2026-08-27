@@ -12,27 +12,54 @@ priority: 1           # DDS の視覚的確認と編集（charter の第 4 の�
 
 ## 項目
 
-- [ ] **プレビューとエディタの使い分けを案内する** — `showDspfPreview`（読む器）と
-  DDS ビジュアルエディタ（編集する器）が並存している。どちらをいつ使うのかが
-  どこにも書かれていないので、利用者は片方しか見つけられない。README か
-  コマンドの説明文に導線を足す。出所: `20260826-dds-editor-port` の `review.md`。
+- [x] **プレビューとエディタの使い分けを案内する** — 済（`20260827-dds-preview-vs-editor`）。
+  調べたら**案内以前に到達できていなかった**——ビジュアルエディタは `customEditors` に
+  しか無く（`priority: "option"`）、コマンドもメニュー項目も持たないため
+  「エディターで開く…」を知る利用者にしか届いていなかった。
+  `rpgClSupport.openDdsVisualEditor` を足してプレビューと**同じ右クリックメニューに並べ**、
+  3 つの `title` に役割（読み取り / 編集）を書いた。使い分けは
+  `docs/dds-editor-and-preview.md`。配線は `verify-contributes.mjs` が
+  `resolveDdsType` と `customEditors[].selector` の**両方**と突き合わせる
+  （導線を足す前は落ちることを確認済み）。実測: 単体 703 件（+3）。
+  ~~README か~~ 本 PJ に README は無いので文書は `docs/` 直下に置いた。
 
 - [x] **実機ゴールデン（DBCS の桁）** — 済（`20260827-dds-keyword-continuation` の research F4）。
   12 桁目に置いた定数の実機の画面での占有を実測し、`constantSegments` と一致することを確認した
   （`'顧客保守'` は SO+4×2+SI ＝ **10 桁**で、**最初の文字は開始桁の次**に出る）。
   半角混在・全角の途切れ・DBCS の継続も一致。
 
-- [ ] **実機ゴールデンとの突き合わせを入れる（描画全体）** — 描画（`dspfRenderModel` / プレビュー）が
-  実機の見え方と一致するかは、いま**目視でしか確かめていない**。ts5250 で
-  `CRTDSPF` → 表示 → 採取し、`render` の出力と機械比較する仕組みを入れる。
-  DBCS を含む様式を必ず含めること（SO/SI が桁を消費するため、ここが最もずれる）。
-  参考実装: `feature/dds-visual-editor` ブランチ（PR #108・draft）の
-  `packages/dds-core/test/golden/` と `docs/dds-golden/README.md`。
+- [x] **実機ゴールデンとの突き合わせを入れる（描画全体）** — 済（`20260827-dds-render-golden`）。
+  `test/golden/RENDER1.dspf`（生成物）を実機に `CRTDSPF` して 5250 に出し、画面を
+  `RENDER1.screen.json` に採った。突き合わせは `test/unit/ddsRenderGolden.test.ts` で
+  **実機に繋がずに**走る（定数の桁・入力欄の表示桁数・色と属性・条件で出ないもの）。
+  ゴールデンは**実機の事実だけ**を持つ（`cells` / `fields`。モデルの語彙は入れない）。
+  採り直しは `verify/capture-render-golden.mjs`。
+  - **欠陥を 1 件見つけた**: `Y`（数字のみ）× 小数点あり × 入力可の欄は実機が
+    **1 桁広く**返す（小数点の場所）。既存の `signPositions` は `S` の符号だけを見ており、
+    小数点を取りこぼしていた。表示桁数の規則は原典に表が無いので**実機に判定させた**
+    （`verify/probe-display-length.mjs`。20 通り）。
+  - 落ちることを 2 通りで確認済み（`Y` の +1 を戻す → 2 件 / DBCS を 1 桁に数える → 10 件）。
+  - 実測: 単体 750 件（+47）。
 
-- [ ] **CLI に DDS の操作を足す（`parse` / `render` / `validate` / `patch`）** — 現在の CLI は
-  lint のみ。AI エージェントが DDS を読み・描き・検証し・編集するには CLI 表面が要る。
-  編集エンジン（`core/dds/ddsEdit.ts`）は既にあるので、**薄く載せるだけ**で済む。
-  参考実装: PR #108 の `packages/dds-cli`（`init` を含む・AC7 の記録つき）。
+- [x] **CLI に DDS の操作を足す（`parse` / `render` / `patch`）** — 済（`20260827-dds-cli`）。
+  `out/cli/dds.js`。`render --format text` は**桁の合った絵**を出す
+  （DBCS の SO/SI も 1 桁として数え、`DSPATR(ND)` は `·` で「桁は占めるが文字が出ない」を示す）。
+  `patch` は編集を検証して当てる（`--write` が無ければ書かない）。
+  画面・帳票の両方に効き、帳票の用紙は `--page-rows` / `--page-columns` / `--overflow`。
+  - ~~`validate`~~ は**作らなかった**。桁位置と配置の検査は **lint が同じ判定を出している**
+    （`src/lint/rules/layout.ts:52` が `resolveDspfLayout` / `resolvePrtfLayout` を包む）。
+    2 つ目の入口は「どちらが正か」を生む。使い方から `lint.js` へ案内している。
+  - **穴が 1 つ出た**（下の項目）。CLI を通した瞬間に、GUI では到達しにくい経路が見えた。
+  - 使い方は `docs/dds-editor-and-preview.md`。実測: 単体 771 件（+21）。
+
+- [ ] **`validateDdsEdits` が 1 桁目への移動を通す** — 原典は「最初の桁は属性文字のために
+  予約されています」と禁じ、`resolveDspfLayout` も `column-one-reserved` を出すが、
+  `validateDdsEdits` は「ソースに書けるか」しか見ないので通ってしまう。
+  CLI は**指摘の増分**で止めているので実害は塞いであるが、`ddsEdit` 自体は通す。
+  直すなら DDS の種別が要る（1 桁目の禁止は**表示装置ファイルだけ**。帳票に属性文字は無い）。
+  `validateDdsEdits` は種別を受け取らず、呼び出しが 48 か所あるので、
+  **引数を足すと渡し忘れた側で黙って検査が消える**（配線漏れ）。渡し方から決めること。
+  出所: `20260827-dds-cli` の `decisions.md` D2。
 
 - [ ] **エディタの GUI e2e を CI に載せる** — `dev/e2e.mjs`（単独起動を実操作する 15 件）は
   手元でしか走っていない。`playwright-core` とブラウザのキャッシュを CI に用意すれば載る。
@@ -99,6 +126,15 @@ priority: 1           # DDS の視覚的確認と編集（charter の第 4 の�
   （`ddsLogicalUnits.ts` の「直前が無ければファイル・レベルのキーワード」で捨てている）
   一覧にもプロパティにも出ない。CUSTMNT.dspf ではキーワード行 8 本のうち 4 本がこれにあたる。
 
+- [ ] **`editedWidth` が表示装置ファイルの `Y` を弾く** — 実機は `6Y 2B EDTCDE(J)` を通し
+  **9 桁**で表示するが、`editCode.ts` は「35 桁目が `S` かブランクのときだけ有効」という
+  **印刷装置ファイルの原典**に従って `Y` を `not-numeric` で弾く（幅が `undefined` になる）。
+  表示装置ファイルの原典（36-37 桁目）は逆に「編集が効力を持っている場合は、キーボード・
+  シフトは**数字のみ (35 桁目が Y)**」と書いている。`editedWidth` の返す 9 は実機と一致
+  しているので、**通せば正しく描ける**。ただし帳票と共用なので、帳票側も実機で確かめてから
+  緩めること。いまは「分からない」と言うだけなので**誤って描くことはない**。
+  出所: `20260827-dds-render-golden` の `decisions.md` D5。
+
 - [ ] **名前変更の参照追随**（`SFLCTL(NAME)` 等）— 現状は「追随しません」とプロパティに断っている。
   キーワードの解析（`parseKeywordEntries`）ができたので、引数の中の名前を見つける土台はできた。
 
@@ -132,8 +168,11 @@ priority: 1           # DDS の視覚的確認と編集（charter の第 4 の�
   いまは 1 つの値で描き、**複数あることを知らせる**に留めている。
   「行 ＝ 一定の高さ」を前提にしているキャンバスの作りに関わる。
 
-- [ ] **キーワードと条件標識の編集（L2 / L3）** — いまの編集は位置と長さだけ。
-  `DSPATR` / `COLOR` / `EDTCDE` などのキーワードと、条件標識の付け外しは未対応。
+- [x] **キーワードの編集（L3）** — 済（`20260827-dds-keyword-edit`。上の項目と同一）。
+  ~~いまの編集は位置と長さだけ~~ 属性（`20260826-dds-attribute-editing`）と
+  キーワード（`20260827-dds-keyword-edit`）まで届いている。
+
+- [ ] **条件標識の編集（L2）** — 上の「条件標識の編集（付け外し）」と同じ 1 件。
   **原典（`docs/origin/dds/`）を正として**進めること。`editCode.ts` が先例。
 
 - [ ] **単独起動を製品にするか決める** — `dev/` のハーネスは検証用で、ファイル操作も undo も
