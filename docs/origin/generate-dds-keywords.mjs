@@ -70,7 +70,10 @@ const KEYWORD_LINK = /<a[^>]*href="[^"]*\/(rzak[bcd])\/[a-z0-9_]+\.htm[^"]*"[^>]
  *   「ALTPAGEDWN/ALTPAGEUP (代替次ページ…) キーワード」→ 2件に分ける
  */
 function parseTitle(title) {
-  const match = /([A-Z][A-Z0-9]*(?:\/[A-Z][A-Z0-9]*)*)\s*[（(]([^)）]*)[）)]/.exec(title);
+  // `nn` は原典の書き方（`CAnn` = CA01-CA24 の総称）。小文字を許さないと**取りこぼす**
+  // ——実際に CAnn / CFnn が丸ごと落ちており、DSPF で最も使われる部類の
+  // 機能キー・キーワードが補完にもヘルプにも出ていなかった。
+  const match = /([A-Z][A-Z0-9]*(?:nn)?(?:\/[A-Z][A-Z0-9]*(?:nn)?)*)\s*[（(]([^)）]*)[）)]/.exec(title);
   if (!match) return [];
 
   const label = match[2].trim();

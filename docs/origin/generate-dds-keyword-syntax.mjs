@@ -56,7 +56,9 @@ function detailPaths(indexFile) {
     /href="[^"]*\/(rzak[bcd]\/[a-z0-9_]+\.htm)[^"]*"[^>]*>([\s\S]{0,90}?)<\/a>/g
   )) {
     const label = strip(match[2]);
-    const names = /([A-Z][A-Z0-9]*(?:\/[A-Z][A-Z0-9]*)*)\s*[（(]/.exec(label);
+    // `nn` は原典の書き方（`CAnn` = CA01-CA24 の総称）。索引側（generate-dds-keywords.mjs）と
+    // **同じ形**にしておかないと、名前は拾えても構文だけが付かない状態になる。
+    const names = /([A-Z][A-Z0-9]*(?:nn)?(?:\/[A-Z][A-Z0-9]*(?:nn)?)*)\s*[（(]/.exec(label);
     if (!names) continue;
 
     for (const name of names[1].split("/")) {

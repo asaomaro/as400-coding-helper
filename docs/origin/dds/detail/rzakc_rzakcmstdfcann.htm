@@ -1,0 +1,84 @@
+<h1 class="title topictitle1">表示装置ファイルの CAnn (コマンド・アテンション) キーワード</h1><div id="lastModifiedDate"><span>Last Updated</span>: 2021-04-13</div>
+<div class="body refbody"><p class="shortdesc">これはファイル・レベルまたはレコード・レベル・キーワードで、キーワードで指定された機能キー (CA01 - CA24) が使用可能なことを指定するのに使用します。</p>
+<div class="section"><p class="p">該当の機能キーは、コマンド・アテンション (CA) キーとして使用されるもので、
+そのキーを押しても表示装置からの入力データの転送は行われません。
+このキーワードでは 01 - 99 までの応答標識を使用することができます。</p>
+<p class="p">システム/36 環境で使用するファイルに CA<var class="keyword varname">nn</var> キーワードを指定する場合の特殊な考慮事項については、<a class="xref" href="/docs/ja/ssw_ibm_i_74/rzakc/s36env.htm" title="ユーザー画面管理 (USRDSPMGT) キーワードを指定すると、その表示装置ファイルのレコード様式がシステム/36 SFGR 画面様式と同じ働きをします。">表示装置ファイルのシステム/36 環境に関する考慮事項</a>を参照してください。</p>
+<div class="p">キーワードの形式は次のとおりです。<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" role="textbox" tabindex="0" aria-label="Code snippet" aria-readonly="true" aria-multiline="true"><pre class="pre codeblock"><code>CAnn[(response-indicator ['text'])]</code></pre></div><div class="docs--copy-btn"></div></div>
+</div>
+<div class="p">このキーワードを指定した場合には、指定した機能キーを表示装置のユーザーが押すと、次の処理が行われます。<ul class="ul cds--list--unordered"><li class="li cds--list__item">入力バッファー内の他のすべての機能キー応答標識はオフ (16 進数 F0) になります。</li>
+<li class="li cds--list__item">CAnn キーワードで指定された応答標識があれば、その応答標識がオン (16 進数 F1) になります。</li>
+<li class="li cds--list__item"><span class="keyword">IBM® i</span> のデータ管理フィードバック域が更新されます。</li>
+<li class="li cds--list__item">入力バッファー内の既存のデータは、応答標識が (指定されていれば) オンになることを除いて、変更はありません。</li>
+<li class="li cds--list__item">制御権がユーザー・プログラムに戻ります。</li>
+</ul>
+</div>
+<p class="p">応答標識を指定した場合には、指定のキーを押すと、その応答標識がオンにセットされ、プログラムに戻されます。
+(テキスト情報は、その標識に関連付けられ、プログラムの文書化の目的で、高水準言語コンパイラーで使用することができます。)</p>
+<p class="p">コマンド機能キー (CF) またはコマンド・アテンション・キーとして指定されていない機能キーを表示装置のユーザーが押すと、<span class="keyword">IBM i</span> オペレーティング・システムから操作員にメッセージが出され、その時点ではそのキーが無効であることが示されます。</p>
+<p class="p">同じ表示装置ファイル内で、CF キーワードおよび CA キーワードを組み合わせて使用することができます。ただし、同じキー番号を CA と CF の両方に指定することはできません。
+例えば、CA02 と CF02 を同じ表示装置ファイル内で指定するのは無効です。</p>
+<div class="note note border-2 cds--inline-notification--info ibmdocs-note cds--inline-notification cds--inline-notification--low-contrast margin-top-1 margin-bottom-1"><div class="cds--inline-notification__details"><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" class="cds--inline-notification__icon" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M16,2A14,14,0,1,0,30,16,14,14,0,0,0,16,2Zm0,5a1.5,1.5,0,1,1-1.5,1.5A1.5,1.5,0,0,1,16,7Zm4,17.12H12V21.88h2.88V15.12H13V12.88h4.13v9H20Z"></path></svg>
+        <div class="cds--inline-notification__text-wrapper">
+          <div class="cds--inline-notification__subtitle"><span class="notetitle ibm-bold ibm-textcolor-blue-50 background-blue cds--inline-notification__title ibm-padding-top-1 ibm-padding-bottom-1 padding-left-1 padding-right-1">注:</span> ファイル・レベルの CA キーおよび CF キーは、レコード・レベルにまでその効力が及びます。
+キー番号を割り当てる際には、この点を考慮することが必要です。
+例えば、CA02 をファイル・レベルで指定してある場合には、CF02 をレコード・レベルで指定すると、その CF02 はエラーになります。</div>
+        </div>
+      </div></div>
+<p class="p">1 - 9 の範囲のキーを指定する場合には、キーワードに先行ゼロを付けなければなりません (例えば、CA04 と指定します)。</p>
+<p class="p">このキーワードについては、オプション標識を使用することができます。</p>
+</div>
+<div class="section"><h2 class="title sectiontitle">妥当性検査</h2><p class="p">表示装置のユーザーが CF キーを押すと、MDT がオンになっているフィールドのデータは、妥当性検査の前に入力バッファーに入れられます。
+そのあとで、データ内にエラーがあればそれが検出され、該当のエラー・メッセージが表示画面に送られます。
+データが入力バッファーに置かれるまで妥当性検査は行われないので、CF キーを押したあとで有効な CA キーを押すと、正しくないデータがプログラムに戻される場合があります。
+しかし、この状態は、CA キーを押した時点でプログラムが入力データを処理する場合でない限り、問題とはなりません。</p>
+<div class="p">この状態が起きないようにするには、次のような 2 つの方法があります。<ul class="ul cds--list--unordered"><li class="li cds--list__item">CA キーが使用できないようにし、CF キーを指定して、データの妥当性検査が行われるようにする。</li>
+<li class="li cds--list__item">CA キーを使用する場合には、下記の妥当性検査キーワードを指定しない。<p class="lines">CHECK(M10)<br>
+CHECK(M11)<br>
+CHECK(VN)<br>
+CHECK(VNE)<br>
+COMP (EQ, NE, LT, NL, GT, NG, LE, GE)<br>
+RANGE<br>
+VALUES</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="section"><h2 class="title sectiontitle">処理中のコマンド・アテンション・キーに有効な機能キー</h2><p class="p">一般的には、最後の出力命令によって有効な機能キーが決まります。ただし、この規則には次のような例外があります。</p>
+<ul class="ul cds--list--unordered"><li class="li cds--list__item">その命令によりデータが表示画面に送られない場合には、各種の機能キーの有効性は変わりません。この種の命令には次のようなものがあります。<ul class="ul cds--list--unordered cds--list--nested"><li class="li cds--list__item">サブファイル・レコードに対する出力命令。</li>
+<li class="li cds--list__item">サブファイル・レコードに対する更新。</li>
+<li class="li cds--list__item">サブファイルまたはサブファイル制御レコードの表示は行わずに、サブファイルの消去、削除、または初期設定だけを行う、サブファイル制御レコードに対する出力命令。</li>
+</ul>
+</li>
+<li class="li cds--list__item">ERRMSG (エラー・メッセージ) または ERRMSGID (エラー・メッセージ識別コード) を選択することによりエラー・メッセージを表示する出力命令では、エラー・メッセージの表示中に有効になる CA キーまたは CF キーを選択することもできます。</li>
+<li class="li cds--list__item">サブファイルに MNUCNL (メニュー取り消しキー)、MNUBARSW (メニュー・バー切り替えキー)、または SFLDROP (サブファイル切り捨て) が指定されている場合には、SFLDROP キーワードに指定された CA または CF キーの妥当性は、最後の出力命令によって判別されます。ただし、該当の CA キーまたは CF キーは、サブファイルが表示されている限り有効であり、Drop (切り捨て) キーとしてだけ機能を果たします。</li>
+<li class="li cds--list__item">サブファイルに SFLFOLD (サブファイル継続) が指定されている場合には、SFLFOLD キーワードに指定された CA キーあるいは CF キーの有効性は、最後の出力命令により決まります。
+ただし、該当の CA キーまたは CF キーは、サブファイルが表示されている限り有効であり、Fold (継続) キーとしてだけ機能を果たします。</li>
+<li class="li cds--list__item">SFLDROP または SFLFOLD が使用する 2 つのサブファイルを同時に表示する場合には、同一の機能キーを両方の SFLDROP キーワードと SFLFOLD キーワードに指定しなければなりません。
+それらのキーが異なっていた場合には、最後に表示されたサブファイルに対して指定されたキーだけが有効になります。この機能キーを押すと、カーソルのあるサブファイルに対して当該コマンドが実行されます。
+カーソルがサブファイル中にない場合には、上の方のサブファイルに対して、機能キーの機能が実行されます。</li>
+<li class="li cds--list__item">SFLENTER (サブファイル実行キー) を使用する 2 つのサブファイルが同時に表示される場合、実行キーとして有効な CA キーまたは CF キーは、最後に表示されたサブファイルの SFLENTER キーワードに指定されている CA キーまたは CF キーだけです。影響を受けるサブファイルは、Enter キーを押したときのカーソルの位置により決まります。</li>
+</ul>
+<div class="note note border-2 cds--inline-notification--info ibmdocs-note cds--inline-notification cds--inline-notification--low-contrast margin-top-1 margin-bottom-1"><div class="cds--inline-notification__details"><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" class="cds--inline-notification__icon" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M16,2A14,14,0,1,0,30,16,14,14,0,0,0,16,2Zm0,5a1.5,1.5,0,1,1-1.5,1.5A1.5,1.5,0,0,1,16,7Zm4,17.12H12V21.88h2.88V15.12H13V12.88h4.13v9H20Z"></path></svg>
+        <div class="cds--inline-notification__text-wrapper">
+          <div class="cds--inline-notification__subtitle"><span class="notetitle ibm-bold ibm-textcolor-blue-50 background-blue cds--inline-notification__title ibm-padding-top-1 ibm-padding-bottom-1 padding-left-1 padding-right-1">注:</span> 応答標識が指定されている CLEAR、HELP、HOME、および PRINT キーワードは、それぞれ CA キーと同様の機能を持ちます。</div>
+        </div>
+      </div></div>
+</div>
+<div class="example"><h2 class="title sectiontitle">例</h2><p class="p">次の例は、CAnn キーワードの指定方法を示しています。</p>
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" role="textbox" tabindex="0" aria-label="Code snippet" aria-readonly="true" aria-multiline="true"><pre class="pre codeblock"><code>|...+....1....+....2....+....3....+....4....+....5....+....6....+....7....+....8
+00011A                                      CA01(91 'End of Program')
+00012A                                      CA02(92)
+00013A                                      CA03
+     A</code></pre></div><div class="docs--copy-btn"></div></div>
+</div>
+</div>
+<div class="related-links ibm-padding-top-1 ibm-padding-bottom-2 bx--row bottom-section-parent" aria-label="bottom related links">
+<div class="familylinks ibm-margin-bottom-1">
+<div class="parentlink"><strong>親トピック:</strong> <div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a class="link bottom-section-link" href="/docs/ja/ssw_ibm_i_74/rzakc/rzakcmstkeyent.htm" title="表示装置ファイルを定義するキーワード項目は、45 - 80 桁目 (機能欄) に記入します。">表示装置ファイルの DDS キーワード項目 (45 - 80 桁目)</a></div></div>
+</div>
+<div class="relinfo relconcepts ibm-margin-bottom-1"><strong>関連概念</strong>:<br>
+<div><div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a class="link bottom-section-link" href="/docs/ja/ssw_ibm_i_74/rzakc/s36retkeyretcmd.htm" title="これらはレコード・レベル・キーワードで、ある表示画面で使用可能になっていた機能キー、コマンド機能 (CFnn) キー、またはコマンド・アテンション (CAnn) キーを、定義中のレコードが表示される時点で、有効な状態のまま保持しておくことを指定するために使用します。">RETKEY (機能キー保持) および RETCMDKEY (コマンド・キー保持) キーワード</a></div></div>
+</div>
+</div>
+
