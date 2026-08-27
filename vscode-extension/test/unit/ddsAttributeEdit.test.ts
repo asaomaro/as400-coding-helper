@@ -55,7 +55,7 @@ const SOURCE: readonly string[] = [
 
 function applied(edits: readonly DdsEdit[]): string[] {
   const lines = [...SOURCE];
-  for (const result of applyDdsEdits(SOURCE, edits)) {
+  for (const result of applyDdsEdits(SOURCE, edits, "DDS-DSPF")) {
     lines.splice(result.replaceFrom, result.replaceTo - result.replaceFrom, ...result.lines);
   }
   return lines;
@@ -138,7 +138,7 @@ suite("属性編集: 定数のリテラル", () => {
 
 suite("属性編集: 書けないものだけ拒否する", () => {
   const codes = (edit: DdsEdit): string[] =>
-    validateDdsEdits(SOURCE, [edit]).map(rejection => rejection.code);
+    validateDdsEdits(SOURCE, [edit], "DDS-DSPF").map(rejection => rejection.code);
 
   test("名前が 10 桁を超える", () => {
     assert.deepStrictEqual(
@@ -207,7 +207,7 @@ suite("属性編集: 書けないものだけ拒否する", () => {
     const results = applyDdsEdits(SOURCE, [
       { kind: "setAttributes", sourceLine: 2, attributes: { name: "OK" } },
       { kind: "setAttributes", sourceLine: 2, attributes: { name: "TOOLONGNAME1" } }
-    ]);
+    ], "DDS-DSPF");
     assert.deepStrictEqual(results, []);
   });
 });

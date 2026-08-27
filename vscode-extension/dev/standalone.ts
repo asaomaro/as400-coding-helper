@@ -1,6 +1,10 @@
 import "../src/dds/webview/ui.css";
 import "./standalone.css";
-import { applyDdsEdits, validateDdsEdits } from "../src/core/dds/ddsEdit";
+import {
+  applyDdsEdits,
+  validateDdsEdits,
+  type EditableDdsType
+} from "../src/core/dds/ddsEdit";
 import { buildDspfRenderModel } from "../src/core/dds/dspfRenderModel";
 import { buildPrtfRenderModel } from "../src/core/dds/prtfRenderModel";
 import type { Bridge } from "../src/dds/webview/bridge";
@@ -125,12 +129,12 @@ class StandaloneHost {
       }
       case "edit": {
         // **VSCode 版とまったく同じ呼び出し。** 判定は core にあり、ホストは経路を用意するだけ。
-        const rejections = validateDdsEdits(this.lines, message.edits);
+        const rejections = validateDdsEdits(this.lines, message.edits, this.ddsType());
         if (rejections.length > 0) {
           this.bridge.send({ type: "rejected", model: this.model(), rejections });
           return;
         }
-        const results = applyDdsEdits(this.lines, message.edits);
+        const results = applyDdsEdits(this.lines, message.edits, this.ddsType());
         this.history.push([...this.lines]);
         for (const result of results) {
           this.lines.splice(
@@ -153,9 +157,17 @@ class StandaloneHost {
    * 紙面の大きさは設定を持たないホストなので `CRTPRTF` の既定のまま。
    */
   private model(): ReturnType<typeof buildDspfRenderModel> {
-    return this.name.toLowerCase().endsWith(".prtf")
+    return this.ddsType() === "DDS-PRTF"
       ? buildPrtfRenderModel(this.lines)
       : buildDspfRenderModel(this.lines);
+  }
+
+  /**
+   * 編集の検証にも種別が要る（1 桁目の禁止は表示装置だけ / 行送りは印刷装置だけ）。
+   * **描画と同じ判定を使う**——2 か所で拡張子を見ると食い違う。
+   */
+  private ddsType(): EditableDdsType {
+    return this.name.toLowerCase().endsWith(".prtf") ? "DDS-PRTF" : "DDS-DSPF";
   }
 
   /** ソース面。**読み込み時から変わった行に印**を付ける（触っていない行が動かないことを見る）。 */

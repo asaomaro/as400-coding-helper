@@ -1,5 +1,10 @@
 import * as vscode from "vscode";
-import { applyDdsEdits, validateDdsEdits, type DdsEditResult } from "../core/dds/ddsEdit";
+import {
+  applyDdsEdits,
+  validateDdsEdits,
+  type DdsEditResult,
+  type EditableDdsType
+} from "../core/dds/ddsEdit";
 import type { DdsKeywordHelp } from "../core/dds/ddsKeywords";
 import { buildDspfRenderModel, type RenderModel } from "../core/dds/dspfRenderModel";
 import { buildPrtfRenderModel } from "../core/dds/prtfRenderModel";
@@ -229,13 +234,16 @@ async function applyEdits(
   post: (message: HostMessage) => void
 ): Promise<void> {
   const lines = documentLines(document);
-  const rejections = validateDdsEdits(lines, message.edits);
+  // **種別で答えが変わる検査がある**（1 桁目の禁止は表示装置だけ / 行送りは印刷装置だけ）。
+  // 判定は `resolveDdsType` に委ね、拡張子を数え上げない。
+  const ddsType = editableTypeOf(document);
+  const rejections = validateDdsEdits(lines, message.edits, ddsType);
   if (rejections.length > 0) {
     post({ type: "rejected", model: modelOf(document), rejections });
     return;
   }
 
-  const results = applyDdsEdits(lines, message.edits);
+  const results = applyDdsEdits(lines, message.edits, ddsType);
   if (results.length === 0) {
     post({ type: "applied", model: modelOf(document) });
     return;
@@ -381,6 +389,17 @@ function documentLines(document: vscode.TextDocument): string[] {
     lines.push(document.lineAt(index).text);
   }
   return lines;
+}
+
+/**
+ * その文書の編集用の種別。
+ *
+ * このエディタは `.dspf` / `.mnudds` / `.prtf` にしか開かない（`customEditors` の
+ * `selector`。`verify-contributes.mjs` が突き合わせている）ので、
+ * 帳票でなければ画面ファイルとして扱う。
+ */
+function editableTypeOf(document: vscode.TextDocument): EditableDdsType {
+  return resolveDdsType(document.fileName) === "DDS-PRTF" ? "DDS-PRTF" : "DDS-DSPF";
 }
 
 /** `.dspf` / `.mnudds` か。判定は `resolveDdsType` に委ねる（同じ集合を 2 か所に持たない）。 */

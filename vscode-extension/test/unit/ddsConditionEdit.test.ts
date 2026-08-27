@@ -40,10 +40,10 @@ const term = (indicator: string, negated = false): IndicatorTerm => ({ indicator
 
 /** 検証 → 適用（後ろから当てる）。拒否があれば投げる。 */
 function apply(lines: readonly string[], edits: readonly DdsEdit[]): string[] {
-  const rejections = validateDdsEdits(lines, edits);
+  const rejections = validateDdsEdits(lines, edits, "DDS-DSPF");
   assert.deepStrictEqual(rejections, [], "検証で弾かれた");
   const out = [...lines];
-  for (const result of [...applyDdsEdits(lines, edits)].sort(
+  for (const result of [...applyDdsEdits(lines, edits, "DDS-DSPF")].sort(
     (a, b) => b.replaceFrom - a.replaceFrom
   )) {
     out.splice(result.replaceFrom, result.replaceTo - result.replaceFrom, ...result.lines);
@@ -52,7 +52,7 @@ function apply(lines: readonly string[], edits: readonly DdsEdit[]): string[] {
 }
 
 function rejectionCodes(lines: readonly string[], edits: readonly DdsEdit[]): DdsEditRejectionCode[] {
-  return validateDdsEdits(lines, edits).map(rejection => rejection.code);
+  return validateDdsEdits(lines, edits, "DDS-DSPF").map(rejection => rejection.code);
 }
 
 /** 書いた結果を読み直す（往復の確認）。 */
@@ -227,7 +227,7 @@ suite("条件の編集: 書けないものは断る", () => {
     const edits: DdsEdit[] = [
       { kind: "setCondition", sourceLine: 2, condition: [[term("00")]] }
     ];
-    assert.deepStrictEqual(applyDdsEdits(BASE, edits), []);
+    assert.deepStrictEqual(applyDdsEdits(BASE, edits, "DDS-DSPF"), []);
   });
 });
 

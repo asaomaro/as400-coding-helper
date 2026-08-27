@@ -141,7 +141,7 @@ suite("継続: 項目として認識される", () => {
   });
 
   test("削除は継続行ごと消える", () => {
-    const results = applyDdsEdits(SOURCE, [{ kind: "remove", sourceLine: 2 }]);
+    const results = applyDdsEdits(SOURCE, [{ kind: "remove", sourceLine: 2 }], "DDS-DSPF");
     assert.strictEqual(results.length, 1, JSON.stringify(results));
     // 範囲は 0 始まりの半開区間。[1, 3) ＝ 2 行目（代表行）と 3 行目（継続行）。
     assert.strictEqual(results[0].replaceFrom, 1);
@@ -164,12 +164,12 @@ suite("継続: 書き換え", () => {
     assert.deepStrictEqual(
       validateDdsEdits(SOURCE, [
         { kind: "setAttributes", sourceLine: 2, attributes: { text: "NEW" } }
-      ]),
+      ], "DDS-DSPF"),
       []
     );
     const results = applyDdsEdits(SOURCE, [
       { kind: "setAttributes", sourceLine: 2, attributes: { text: "NEW" } }
-    ]);
+    ], "DDS-DSPF");
     assert.strictEqual(results.length, 1);
     // 継続していた 2 行が 1 行にまとまる（収まるので折らない）。
     assert.deepStrictEqual([results[0].replaceFrom, results[0].replaceTo], [1, 3]);
@@ -179,7 +179,7 @@ suite("継続: 書き換え", () => {
 
   test("位置の変更は従来どおり通る（代表行の桁しか触らない）", () => {
     assert.deepStrictEqual(
-      validateDdsEdits(SOURCE, [{ kind: "move", sourceLine: 2, row: 4, column: 12 }]),
+      validateDdsEdits(SOURCE, [{ kind: "move", sourceLine: 2, row: 4, column: 12 }], "DDS-DSPF"),
       []
     );
   });
@@ -188,7 +188,7 @@ suite("継続: 書き換え", () => {
     // `DSPATR(HI)` は継続ではない。その行はそのまま残る。
     const results = applyDdsEdits(SOURCE, [
       { kind: "setAttributes", sourceLine: 4, attributes: { text: "NEW" } }
-    ]);
+    ], "DDS-DSPF");
     assert.deepStrictEqual([results[0].replaceFrom, results[0].replaceTo], [3, 4]);
     assert.strictEqual(results[0].lines.length, 1);
   });

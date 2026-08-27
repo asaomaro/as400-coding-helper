@@ -156,7 +156,7 @@ suite("キーワードの書き出し: 適用と拒否", () => {
   test("欄をまるごと置き換える（後ろのキーワード行ごと）", () => {
     const results = applyDdsEdits(SOURCE, [
       { kind: "setKeywords", sourceLine: 3, keywords: "COLOR(RED)" }
-    ]);
+    ], "DDS-DSPF");
     assert.strictEqual(results.length, 1);
     assert.deepStrictEqual([results[0].replaceFrom, results[0].replaceTo], [2, 4]);
     assert.strictEqual(results[0].lines.length, 1);
@@ -170,7 +170,7 @@ suite("キーワードの書き出し: 適用と拒否", () => {
         sourceLine: 3,
         keywords: "DSPATR(RI HI ND) COLOR(RED) CHECK(RZ) EDTCDE(1)"
       }
-    ]);
+    ], "DDS-DSPF");
     assert.ok(results[0].lines.length >= 2, JSON.stringify(results[0].lines));
     for (const line of results[0].lines) {
       assert.ok(line.length <= 80, `${line.length} 桁: ${line}`);
@@ -180,7 +180,7 @@ suite("キーワードの書き出し: 適用と拒否", () => {
   test("欄を空にできる（フィールド）", () => {
     const results = applyDdsEdits(SOURCE, [
       { kind: "setKeywords", sourceLine: 3, keywords: "" }
-    ]);
+    ], "DDS-DSPF");
     assert.strictEqual(results[0].lines.length, 1);
     assert.strictEqual(results[0].lines[0].slice(44).trim(), "");
   });
@@ -189,7 +189,7 @@ suite("キーワードの書き出し: 適用と拒否", () => {
     // 消すと `unitItemKind` が項目と認めず、キャンバスから消える。
     const rejections = validateDdsEdits(SOURCE, [
       { kind: "setKeywords", sourceLine: 2, keywords: "DSPATR(HI)" }
-    ]);
+    ], "DDS-DSPF");
     assert.deepStrictEqual(rejections.map(r => r.code), ["constant-needs-literal"]);
   });
 
@@ -197,7 +197,7 @@ suite("キーワードの書き出し: 適用と拒否", () => {
     assert.deepStrictEqual(
       validateDdsEdits(SOURCE, [
         { kind: "setKeywords", sourceLine: 2, keywords: "'CONST' DSPATR(HI)" }
-      ]),
+      ], "DDS-DSPF"),
       []
     );
   });
@@ -210,12 +210,12 @@ suite("キーワードの書き出し: 適用と拒否", () => {
     assert.deepStrictEqual(
       validateDdsEdits(withRecordKeywords, [
         { kind: "setKeywords", sourceLine: 1, keywords: "OVERLAY PUTOVR" }
-      ]),
+      ], "DDS-DSPF"),
       []
     );
     const results = applyDdsEdits(withRecordKeywords, [
       { kind: "setKeywords", sourceLine: 1, keywords: "OVERLAY PUTOVR" }
-    ]);
+    ], "DDS-DSPF");
     assert.ok(results[0].lines[0].endsWith("OVERLAY PUTOVR"), results[0].lines[0]);
     // 様式の 1-44 桁（`R KWR`）は残る。
     assert.ok(results[0].lines[0].includes("R KWR"), results[0].lines[0]);
@@ -229,7 +229,7 @@ suite("キーワードの書き出し: 適用と拒否", () => {
     assert.deepStrictEqual(
       validateDdsEdits(withRecordKeywords, [
         { kind: "move", sourceLine: 1, row: 5, column: 5 }
-      ]).map(r => r.code),
+      ], "DDS-DSPF").map(r => r.code),
       ["line-not-found"]
     );
   });
@@ -243,7 +243,7 @@ suite("キーワードの書き出し: 適用と拒否", () => {
     ];
     const rejections = validateDdsEdits(withComment, [
       { kind: "setKeywords", sourceLine: 2, keywords: "'CONST'" }
-    ]);
+    ], "DDS-DSPF");
     assert.deepStrictEqual(rejections.map(r => r.code), ["keyword-lines-not-contiguous"]);
   });
 });

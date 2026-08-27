@@ -345,7 +345,8 @@ export function run(argv: readonly string[]): number {
       }
       case "patch": {
         const edits = readEdits(options.edits as string);
-        const rejections = validateDdsEdits(source.lines, edits);
+        // **種別で答えが変わる検査がある**（1 桁目の禁止は表示装置だけ）。
+        const rejections = validateDdsEdits(source.lines, edits, ddsType);
         if (rejections.length > 0) {
           // **1 つでも拒否があれば何も書かない。** 一部だけ当たった状態は説明できない。
           const text =
@@ -363,7 +364,7 @@ export function run(argv: readonly string[]): number {
 
         const lines = [...source.lines];
         // **後ろから当てる。** 前から当てると後続の行番号がずれる。
-        const results = [...applyDdsEdits(source.lines, edits)].sort(
+        const results = [...applyDdsEdits(source.lines, edits, ddsType)].sort(
           (a, b) => b.replaceFrom - a.replaceFrom
         );
         for (const result of results) {
@@ -372,9 +373,8 @@ export function run(argv: readonly string[]): number {
 
         // **「書ける」と「正しい」は別物。** `validateDdsEdits` が見るのは
         // 「ソースに書けるか」（桁に収まるか・宛先があるか）だけで、書いた結果が
-        // 妥当な画面になるかは見ない。実際、定数を 1 桁目へ動かす編集は通ってしまう
-        // ——原典は「最初の桁は属性文字のために予約されています」と禁じており、
-        // `resolveDspfLayout` は `column-one-reserved` として指摘する。
+        // 妥当な画面になるかは見ない。重なりやはみ出しは**実機が通す**ので
+        // 拒否されず、そのまま書けてしまう。
         //
         // 規則を CLI に写さず、**解決の指摘が増えたかどうか**で見る。
         // 元から出ている指摘は増分に数えない（直すのは別の話）。
