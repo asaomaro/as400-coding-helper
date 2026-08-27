@@ -48,6 +48,17 @@ const keywordTables = new Map<string, Record<string, DdsKeywordHelp[]>>();
 /** WebView の資産の置き場（esbuild の出力先）。 */
 const WEBVIEW_DIR = ["out", "dds-webview"];
 
+/** ビジュアルエディタを開くコマンド。 */
+export const OPEN_DDS_EDITOR_COMMAND = "rpgClSupport.openDdsVisualEditor";
+
+/**
+ * このエディタが開ける DDS 種別。**プレビューと違い画面・帳票の両方**を受ける。
+ *
+ * 拡張子を数え上げず `resolveDdsType` に委ねる（同じ集合を 2 か所に持たない）。
+ * `package.json` の `when` との一致は `verify-contributes.mjs` が機械検査する。
+ */
+const EDITABLE_DDS_TYPES = new Set(["DDS-DSPF", "DDS-PRTF"]);
+
 export function registerDdsVisualEditor(context: vscode.ExtensionContext): void {
   context.subscriptions.push(
     vscode.window.registerCustomEditorProvider(
@@ -58,7 +69,26 @@ export function registerDdsVisualEditor(context: vscode.ExtensionContext): void 
         // 同じ文書を複数のエディタで開かせない（どちらが最新か分からなくなる）。
         supportsMultipleEditorsPerDocument: false
       }
-    )
+    ),
+    // **開く手段をここで持つ。** `customEditors` の `priority` は `option` なので、
+    // これが無いと「エディターで開く…」を知る利用者にしか届かない
+    // （AGENTS.md「追加したリソースは到達可能になって初めて完了」）。
+    vscode.commands.registerCommand(OPEN_DDS_EDITOR_COMMAND, async () => {
+      const document = vscode.window.activeTextEditor?.document;
+      const ddsType = document ? resolveDdsType(document.uri.fsPath) : undefined;
+      if (!document || ddsType === undefined || !EDITABLE_DDS_TYPES.has(ddsType)) {
+        void vscode.window.showInformationMessage(
+          "DDS ビジュアルエディタは .dspf / .mnudds / .prtf のファイルで実行してください。"
+        );
+        return;
+      }
+      // 組み込みコマンド。**引数は (uri, viewType) の順**——逆にすると無言で失敗する。
+      await vscode.commands.executeCommand(
+        "vscode.openWith",
+        document.uri,
+        DDS_EDITOR_VIEW_TYPE
+      );
+    })
   );
 }
 

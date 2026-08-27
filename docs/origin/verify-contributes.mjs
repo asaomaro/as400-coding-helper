@@ -131,6 +131,23 @@ const PREVIEW_MENUS = [
 
 const menuItems = manifest.contributes?.menus?.["editor/context"] ?? [];
 
+/**
+ * ビジュアルエディタの右クリック導線。
+ *
+ * **エディタ本体が動いても、開く手段が無ければ死蔵**（AGENTS.md「追加したリソースは
+ * 到達可能になって初めて完了」）。実際 `customEditors` は `priority: "option"` なので、
+ * コマンドもメニューも無い間は「エディターで開く…」を知る利用者にしか届いていなかった。
+ *
+ * 対象は DSPF と PRTF の**和**。`ddsType` を配列で持てるように分けてある。
+ */
+const EDITOR_MENUS = [
+  {
+    command: "rpgClSupport.openDdsVisualEditor",
+    ddsTypes: ["DDS-DSPF", "DDS-PRTF"],
+    viewType: "rpgClSupport.ddsVisualEditor"
+  }
+];
+
 for (const { command, ddsType } of PREVIEW_MENUS) {
   const expected = readDdsTypeExtensions(ddsType);
   if (!expected) {
@@ -164,6 +181,89 @@ for (const { command, ddsType } of PREVIEW_MENUS) {
   }
 }
 
+/**
+ * エディタの導線は **2 つの真実源**の両方と一致していなければならない。
+ *
+ * - `resolveDdsType`（どの拡張子がその DDS 種別か）
+ * - `contributes.customEditors[].selector`（どの拡張子でエディタが開けるか）
+ *
+ * 片方だけ見ると「メニューに出るのに開けない」「開けるのにメニューに出ない」を
+ * 通してしまう。どちらも動かすまで気付けない。
+ */
+for (const { command, ddsTypes, viewType } of EDITOR_MENUS) {
+  const expected = [];
+  let readable = true;
+  for (const ddsType of ddsTypes) {
+    const values = readDdsTypeExtensions(ddsType);
+    if (!values) {
+      failures.push(`sourceKind.ts から ${ddsType} の拡張子が読めない`);
+      readable = false;
+      continue;
+    }
+    expected.push(...values);
+  }
+  if (!readable) continue;
+
+  const item = menuItems.find(entry => entry.command === command);
+  if (!item) {
+    failures.push(
+      `${command} が editor/context に無い（右クリックから開けない）`
+    );
+    continue;
+  }
+
+  const declared = [...item.when.matchAll(/resourceExtname == \.([a-z0-9]+)/gu)].map(
+    m => m[1]
+  );
+  const missingKind = expected.filter(ext => !declared.includes(ext));
+  const extraKind = declared.filter(ext => !expected.includes(ext));
+  if (missingKind.length > 0) {
+    failures.push(
+      `${command} が出ない拡張子: ${missingKind.map(e => `.${e}`).join(" ")}` +
+        `（${ddsTypes.join(" / ")} なのにメニューに無い）`
+    );
+  }
+  if (extraKind.length > 0) {
+    failures.push(
+      `${command} が出るが対象外の拡張子: ${extraKind.map(e => `.${e}`).join(" ")}`
+    );
+  }
+
+  // コマンド自体が宣言されているか（title が無いとコマンド パレットにも出ない）。
+  const declaredCommand = (manifest.contributes?.commands ?? []).find(
+    entry => entry.command === command
+  );
+  if (!declaredCommand) {
+    failures.push(`${command} が contributes.commands に無い`);
+  }
+
+  // カスタムエディタの selector と一致するか。
+  const editor = (manifest.contributes?.customEditors ?? []).find(
+    entry => entry.viewType === viewType
+  );
+  if (!editor) {
+    failures.push(`customEditors に ${viewType} が無い`);
+    continue;
+  }
+  const patterns = (editor.selector ?? [])
+    .map(entry => /^\*\.([a-z0-9]+)$/u.exec(entry.filenamePattern ?? "")?.[1])
+    .filter(Boolean);
+  const missingSelector = patterns.filter(ext => !declared.includes(ext));
+  const extraSelector = declared.filter(ext => !patterns.includes(ext));
+  if (missingSelector.length > 0) {
+    failures.push(
+      `${viewType} は .${missingSelector.join(" .")} で開けるのに ` +
+        `${command} のメニューに無い`
+    );
+  }
+  if (extraSelector.length > 0) {
+    failures.push(
+      `${command} が .${extraSelector.join(" .")} に出るが ` +
+        `${viewType} の selector に無い（開いても何も起きない）`
+    );
+  }
+}
+
 console.log(`contributes の検査（対象拡張子 ${extensions.length} 件）`);
 
 if (failures.length > 0) {
@@ -174,5 +274,5 @@ if (failures.length > 0) {
 
 console.log(
   "✓ contributes OK（F4 が対象拡張子すべてで発火し、" +
-    "プレビューの右クリック導線が DDS 種別と一致する）"
+    "プレビュー / ビジュアルエディタの右クリック導線が DDS 種別と一致する）"
 );
