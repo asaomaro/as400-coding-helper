@@ -1,4 +1,5 @@
 import { collectIndicators } from "./ddsConditioning";
+import { resolvePrintDensity, type PrintDensity } from "./prtfDensity";
 import { toRenderItem, type RenderItem } from "./ddsRenderItem";
 import {
   buildDspfOutline,
@@ -43,7 +44,8 @@ export function buildPrtfRenderModel(
   return fromPrtfLayout(
     resolvePrtfLayout(lines, options),
     buildDspfOutline(lines),
-    collectIndicators(lines)
+    collectIndicators(lines),
+    resolvePrintDensity(lines)
   );
 }
 
@@ -51,7 +53,8 @@ export function buildPrtfRenderModel(
 export function fromPrtfLayout(
   layout: PrtfLayout,
   outline: readonly OutlineRecord[] = [],
-  indicators: ReturnType<typeof collectIndicators> = []
+  indicators: ReturnType<typeof collectIndicators> = [],
+  density?: PrintDensity
 ): RenderModel {
   const items: RenderItem[] = layout.items.map(item =>
     toRenderItem({
@@ -75,6 +78,7 @@ export function fromPrtfLayout(
     kind: "prtf",
     canvas: { rows: layout.page.rows, columns: layout.page.columns },
     overflowLine: layout.page.overflowLine,
+    ...(density !== undefined ? { density } : {}),
     items,
     // **診断は作り直さない。** `prtfLayout` のものをそのまま渡す。
     diagnostics: layout.diagnostics.map(diagnostic => ({

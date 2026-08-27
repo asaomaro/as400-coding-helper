@@ -11,6 +11,12 @@ import {
 } from "../../core/dds/ddsKeywords";
 import type { ItemAttributes, OutlineItem } from "../../core/dds/dspfOutline";
 import {
+  CPI_VALUES,
+  DEFAULT_DENSITY,
+  LPI_VALUES,
+  paperInches
+} from "../../core/dds/prtfDensity";
+import {
   applyIndicators,
   type RenderItem,
   type RenderModel
@@ -115,6 +121,10 @@ class EditorView {
      * 桁だけを見たい人が切る。
      */
     showColors: true,
+    /**
+     * 紙の比率で描く（帳票）。**既定は切**——等幅の升目は桁を数えるのに要る。
+     */
+    preview: false,
     zoom: 1
   };
   /**
@@ -143,11 +153,18 @@ class EditorView {
   private keywordHelp: readonly DdsKeywordHelp[] = [];
   /** 解説を開いているキーワード（`<行>:<何番目>`）。選択が変われば当たらなくなる＝閉じる。 */
   private openKeyword: string | undefined;
+  /**
+   * プレビューで使う印刷密度。**利用者が選べる**（ソースの値を既定にする）。
+   *
+   * `undefined` のうちはモデルの値（＝ソース、無ければ `CRTPRTF` の既定）に従う。
+   */
+  private density: { cpi: number; lpi: number } | undefined;
 
   private readonly frame: HTMLElement;
   private readonly ruler: HTMLElement;
   private readonly gutter: HTMLElement;
   private readonly canvas: HTMLElement;
+  private readonly densityBox: HTMLElement;
   private readonly diagnostics: HTMLElement;
   private readonly outline: HTMLElement;
   private readonly indicatorPanel: HTMLElement;
@@ -159,7 +176,13 @@ class EditorView {
   private readonly addConstant: HTMLButtonElement;
   private readonly toggles: ReadonlyArray<{
     readonly button: HTMLButtonElement;
-    readonly key: "showShifts" | "showAttributes" | "showGrid" | "dimOthers" | "showColors";
+    readonly key:
+      | "showShifts"
+      | "showAttributes"
+      | "showGrid"
+      | "dimOthers"
+      | "showColors"
+      | "preview";
   }>;
   private readonly zoomButtons: HTMLButtonElement[] = [];
 
@@ -173,6 +196,7 @@ class EditorView {
     this.ruler = must(root, ".dds-ruler");
     this.gutter = must(root, ".dds-gutter");
     this.canvas = must(root, ".dds-canvas");
+    this.densityBox = must(root, ".density");
     this.diagnostics = must(root, ".dds-diagnostics");
     this.outline = must(root, ".dds-outline");
     this.indicatorPanel = must(root, ".dds-indicators");
@@ -200,7 +224,8 @@ class EditorView {
       { button: must<HTMLButtonElement>(root, "#dds-toggle-attributes"), key: "showAttributes" },
       { button: must<HTMLButtonElement>(root, "#dds-toggle-grid"), key: "showGrid" },
       { button: must<HTMLButtonElement>(root, "#dds-toggle-dim"), key: "dimOthers" },
-      { button: must<HTMLButtonElement>(root, "#dds-toggle-colors"), key: "showColors" }
+      { button: must<HTMLButtonElement>(root, "#dds-toggle-colors"), key: "showColors" },
+      { button: must<HTMLButtonElement>(root, "#dds-toggle-preview"), key: "preview" }
     ];
     for (const toggle of this.toggles) {
       toggle.button.addEventListener("click", () => {
@@ -300,17 +325,42 @@ class EditorView {
   }
 
   /** 表示に使うセル寸法＝**実測値 × 倍率**。ルーラー・項目・座標変換がすべてこれを見る。 */
+  /**
+   * 1 インチのピクセル数。CSS の絶対単位の定義（`1in = 96px`）に合わせる。
+   *
+   * 倍率 100% のとき、画面上でおおよそ実寸になる。
+   */
+  private static readonly PX_PER_INCH = 96;
+
   private get cellWidth(): number {
-    return this.measuredWidth * this.display.zoom;
+    const density = this.previewDensity();
+    // **プレビューでは実測を使わない。** 混ぜると倍率が二重に掛かる。
+    return density
+      ? (EditorView.PX_PER_INCH / density.cpi) * this.display.zoom
+      : this.measuredWidth * this.display.zoom;
   }
 
   private get lineHeight(): number {
-    return this.measuredHeight * this.display.zoom;
+    const density = this.previewDensity();
+    return density
+      ? (EditorView.PX_PER_INCH / density.lpi) * this.display.zoom
+      : this.measuredHeight * this.display.zoom;
+  }
+
+  /** プレビュー中なら使う印刷密度。それ以外は undefined（升目で描く）。 */
+  private previewDensity(): { cpi: number; lpi: number } | undefined {
+    if (!this.display.preview) return undefined;
+    const model = this.view ?? this.model;
+    if (model?.kind !== "prtf") return undefined;
+    return this.density ?? model.density ?? DEFAULT_DENSITY;
   }
 
   private applyCellSize(): void {
     this.frame.style.setProperty("--cell-w", `${this.cellWidth}px`);
     this.frame.style.setProperty("--cell-h", `${this.lineHeight}px`);
+    // **フォントは幅で合わせる。** 等幅なので幅が合えば桁が合う（高さは溢れてよい）。
+    const scale = this.previewDensity() ? this.cellWidth / this.measuredWidth : 1;
+    this.frame.style.setProperty("--font-scale", String(scale));
   }
 
   // ---- 描画 --------------------------------------------------------
@@ -357,11 +407,15 @@ class EditorView {
       toggle.button.setAttribute("aria-pressed", String(this.display[toggle.key]));
       // 表示装置だけのものは帳票で**出さない**（押しても何も起きないボタンを置かない）。
       const displayOnly = toggle.key === "showAttributes" || toggle.key === "showColors";
-      toggle.button.hidden = displayOnly && !this.isDisplayFile();
+      // プレビュー（紙の比率）は帳票だけ。画面に CPI / LPI は無い。
+      const printOnly = toggle.key === "preview";
+      toggle.button.hidden =
+        (displayOnly && !this.isDisplayFile()) || (printOnly && this.isDisplayFile());
     }
     for (const button of this.zoomButtons) {
       button.classList.toggle("armed", Number(button.dataset.zoom) === this.display.zoom);
     }
+    this.renderDensity(view);
 
     const canAdd = view.records.length > 0 && this.options.askItem !== undefined;
     this.addField.disabled = !canAdd;
@@ -440,6 +494,71 @@ class EditorView {
     if (overflow) nodes.push(overflow);
 
     this.canvas.replaceChildren(...nodes);
+  }
+
+
+  /**
+   * 印刷密度の選択（帳票のプレビュー中だけ出す）と、用紙の大きさ。
+   *
+   * 値は**原典から生成した集合**（`CPI(10|15)` / `LPI(4|6|8|9|12)`）。
+   * 用紙の大きさは原典の式——高さ ＝ 行数 ÷ LPI、幅 ＝ 桁数 ÷ CPI
+   * （原典の例「66 行 / 6 LPI ＝ 11.0 インチ」と一致する）。
+   */
+  private renderDensity(model: RenderModel): void {
+    const density = this.previewDensity();
+    if (!density) {
+      this.densityBox.replaceChildren();
+      this.densityBox.hidden = true;
+      return;
+    }
+    this.densityBox.hidden = false;
+
+    const nodes: HTMLElement[] = [];
+    for (const [label, values, key] of [
+      ["CPI", CPI_VALUES, "cpi"],
+      ["LPI", LPI_VALUES, "lpi"]
+    ] as const) {
+      nodes.push(text("span", "label", label));
+      const select = document.createElement("select");
+      select.className = "density-select";
+      select.dataset.key = `density:${key}`;
+      select.setAttribute("aria-label", `${label}（1 インチ当たりの${key === "cpi" ? "文字数" : "行数"}）`);
+      for (const value of values) {
+        const option = document.createElement("option");
+        option.value = String(value);
+        option.textContent = String(value);
+        option.selected = value === density[key];
+        select.appendChild(option);
+      }
+      select.addEventListener("change", () => {
+        this.density = { ...density, [key]: Number(select.value) };
+        this.render();
+      });
+      nodes.push(select);
+    }
+
+    const paper = paperInches(model.canvas, density);
+    nodes.push(
+      text(
+        "span",
+        "paper",
+        `用紙 ${paper.width.toFixed(1)} × ${paper.height.toFixed(1)} インチ`
+      )
+    );
+
+    // ソースに複数書かれているなら**黙って 1 つで描かない**。
+    const written = model.density?.written;
+    if (model.density?.mixed && written) {
+      const parts = [
+        written.cpi.length > 1 ? `CPI ${written.cpi.join(" / ")}` : "",
+        written.lpi.length > 1 ? `LPI ${written.lpi.join(" / ")}` : ""
+      ].filter(Boolean);
+      nodes.push(
+        text("span", "mixed", `※ ソースに複数（${parts.join("・")}）。1 つで描いています`)
+      );
+    }
+
+    this.densityBox.replaceChildren(...nodes);
   }
 
   /** 表示装置ファイルか。帳票には属性文字も 5250 の配色も無い。 */
@@ -1685,6 +1804,8 @@ function template(): string {
     <button id="dds-toggle-grid" type="button" title="桁のグリッドを表示します">グリッド</button>
     <button id="dds-toggle-dim" type="button" title="選択中の項目が属する様式以外を淡く表示します">他様式を淡く</button>
     <button id="dds-toggle-colors" type="button" title="COLOR / DSPATR から実機の見え方（色・反転表示・下線・非表示）で描きます">5250 配色</button>
+    <button id="dds-toggle-preview" type="button" title="CPI / LPI で決まる紙の比率で描きます（1 桁 = 1/CPI インチ、1 行 = 1/LPI インチ）">プレビュー</button>
+    <span class="density" role="group" aria-label="印刷密度"></span>
     <span class="sep"></span>
     <span class="zoom" role="group" aria-label="ズーム"></span>
     <span class="spacer"></span>

@@ -970,6 +970,100 @@ check(
   JSON.stringify(await page.$$eval(".dds-item", ns => ns.map(n => n.dataset.row)))
 );
 
+// ---- 24. 帳票のプレビュー（CPI / LPI）----------------------------------
+const frameVar = name =>
+  page.evaluate(
+    key => parseFloat(getComputedStyle(document.querySelector(".dds-frame")).getPropertyValue(key)),
+    name
+  );
+const paperText = () => page.$eval(".density .paper", node => node.textContent);
+
+// **倍率を 100% に戻してから見る。** 前の節で 150% にしてあり、
+// 紙の比率と倍率は掛け合わさる（それ自体は正しい。下で確かめる）。
+await page.click('.zoom button[data-zoom="1"]');
+await page.waitForTimeout(200);
+
+const gridCell = { w: await frameVar("--cell-w"), h: await frameVar("--cell-h") };
+check("プレビューは既定で切（升目のまま）", !(await page.$eval("#dds-toggle-preview", n => n.classList.contains("armed"))));
+
+await page.click("#dds-toggle-preview");
+await page.waitForTimeout(300);
+const paperCell = { w: await frameVar("--cell-w"), h: await frameVar("--cell-h") };
+check(
+  "**紙の比率になる**（1 桁 = 1/CPI インチ・1 行 = 1/LPI インチ。96px/インチ）",
+  Math.abs(paperCell.w - 96 / 10) < 0.01 && Math.abs(paperCell.h - 96 / 6) < 0.01,
+  JSON.stringify(paperCell)
+);
+check(
+  "**用紙の大きさがインチで出る**（原典: 66 行 / 6 LPI = 11.0 インチ）",
+  (await paperText()).includes("13.2") && (await paperText()).includes("11.0"),
+  await paperText()
+);
+
+await page.selectOption('select[data-key="density:cpi"]', "15");
+await page.waitForTimeout(300);
+check(
+  "**CPI を変えると比率が変わる**",
+  Math.abs((await frameVar("--cell-w")) - 96 / 15) < 0.01 && (await paperText()).includes("8.8"),
+  `${await frameVar("--cell-w")} / ${await paperText()}`
+);
+await page.selectOption('select[data-key="density:lpi"]', "8");
+await page.waitForTimeout(300);
+check(
+  "LPI を変えると高さが変わる",
+  Math.abs((await frameVar("--cell-h")) - 96 / 8) < 0.01,
+  String(await frameVar("--cell-h"))
+);
+
+// **プレビュー中でも掴んで動かせる**（桁が指したとおりに入る）。
+const previewCell = await frameVar("--cell-w");
+const previewTarget = await page.$eval('.dds-item[data-row="3"]', node => {
+  const r = node.getBoundingClientRect();
+  return {
+    sourceLine: Number(node.dataset.sourceLine),
+    column: Number(node.dataset.column),
+    x: r.left + 2,
+    y: r.top + r.height / 2
+  };
+});
+await page.mouse.move(previewTarget.x, previewTarget.y);
+await page.mouse.down();
+await page.mouse.move(previewTarget.x + previewCell * 3, previewTarget.y, { steps: 8 });
+await page.mouse.up();
+await page.waitForTimeout(400);
+check(
+  "**プレビュー中でも掴んだ項目が指した桁に入る**",
+  (await sourceLines())[previewTarget.sourceLine - 1].slice(41, 44) ===
+    String(previewTarget.column + 3).padStart(3),
+  JSON.stringify((await sourceLines())[previewTarget.sourceLine - 1])
+);
+
+// 倍率と掛け合わさること（紙の比率 × 倍率）。
+await page.click('.zoom button[data-zoom="1.5"]');
+await page.waitForTimeout(200);
+check(
+  "**紙の比率と倍率は掛け合わさる**",
+  Math.abs((await frameVar("--cell-w")) - (96 / 15) * 1.5) < 0.01,
+  String(await frameVar("--cell-w"))
+);
+await page.click('.zoom button[data-zoom="1"]');
+await page.waitForTimeout(200);
+
+await page.click("#dds-toggle-preview");
+await page.waitForTimeout(300);
+check(
+  "切ると升目に戻る",
+  Math.abs((await frameVar("--cell-w")) - gridCell.w) < 0.01,
+  `${await frameVar("--cell-w")} / ${gridCell.w}`
+);
+check("升目に戻ると CPI / LPI は出ない", await page.$eval(".density", n => n.hidden));
+
+// 画面ファイルではプレビューを出さない。
+await page.selectOption("#sample", { label: "CUSTMNT.dspf" });
+await page.waitForTimeout(300);
+check("**画面ファイルではプレビューの切替を出さない**（CPI / LPI は帳票のもの）",
+  await page.$eval("#dds-toggle-preview", n => n.hidden));
+
 check("実行中に JS エラーが出ていない", errors.length === 0, errors.slice(0, 2).join(" | "));
 
 await page.screenshot({ path: join(HERE, "out", "e2e.png") });
