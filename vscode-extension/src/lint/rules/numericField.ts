@@ -85,10 +85,14 @@ export function numericAlignmentRule(context: RuleContext): readonly LintFinding
     if (value.length === 0) continue;
     // 数字でない時点で numeric-field が指摘するので、ここでは扱わない。
     if (!/^\d+$/u.test(value)) continue;
-    // 行末で欄が切れている場合は右寄せかどうか判定できない。
-    if (field.raw.length < (field.parameter.sourceLength ?? 0)) continue;
-
-    const rightAligned = field.raw === value.padStart(field.raw.length);
+    // **行末で欄が切れていても判定できる。** 固定長のレコードは空白で埋められるので、
+    // 「行が短い」は「残りが空白」と同じ——欄の最後の桁に値が来ていない、つまり左詰め。
+    //
+    // 直す前は「判定できない」として飛ばしていたが、**実機はその形を通さない**
+    // （IBM i 7.3 / `CRTRPGPGM`。C 仕様の長さを 49 桁に置いて行を終えると通らず、
+    // 51 桁に置くと通る。`.aidev/works/20260828-rpg3-numeric-columns/verify/`）。
+    const padded = field.raw.padEnd(field.parameter.sourceLength ?? field.raw.length);
+    const rightAligned = padded === value.padStart(padded.length);
     if (rightAligned) continue;
 
     findings.push({
@@ -96,7 +100,7 @@ export function numericAlignmentRule(context: RuleContext): readonly LintFinding
       severity: "warning",
       message:
         `${field.parameter.description}は右寄せで書きます` +
-        `（実機では左詰めが CPF7311 になります）。`,
+        "（実機は左詰めを受け付けません）。",
       line: context.lineNumber,
       startColumn: field.startColumn,
       endColumn: field.endColumn,
