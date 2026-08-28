@@ -76,3 +76,40 @@ export function printWidth(text: string): number {
 
   return width;
 }
+
+/**
+ * 実機の桁数が `max` を超え始める位置（**JS の添字**）。超えなければ undefined。
+ *
+ * `printWidth` は「全体で何桁か」しか答えないが、指摘の下線を引くには
+ * **どこから溢れたか**が要る。エディタの列は JS の添字なので、桁とは別物。
+ *
+ * SO/SI の分は `printWidth` と同じ数え方（DBCS の連なりの前後に 1 桁ずつ）。
+ */
+export function indexExceedingWidth(text: string, max: number): number | undefined {
+  let width = 0;
+  let inDbcsRun = false;
+  let index = 0;
+
+  for (const character of text) {
+    const codePoint = character.codePointAt(0);
+    const dbcs = codePoint !== undefined && isDbcsCodePoint(codePoint);
+
+    // この 1 文字を置いたら何桁になるか。DBCS の切れ目では SO / SI が入る。
+    let next = width;
+    if (dbcs) {
+      if (!inDbcsRun) next += 1; // シフトアウト
+      next += 2;
+    } else {
+      if (inDbcsRun) next += 1; // シフトイン
+      next += 1;
+    }
+    // 行末の DBCS には必ずシフトインが要る。
+    const closed = dbcs ? next + 1 : next;
+    if (closed > max) return index;
+
+    width = next;
+    inDbcsRun = dbcs;
+    index += character.length;
+  }
+  return undefined;
+}

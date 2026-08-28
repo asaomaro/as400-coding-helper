@@ -333,6 +333,29 @@ const REFERENCE_SAMPLE = [
   ""
 ].join("\n");
 
+/**
+ * 帳票の**強調**（`HIGHLIGHT` / `UNDERLINE` / `COLOR`）。
+ *
+ * 画面の 5250 配色とは語彙が違う——反転表示も明滅も非表示も無い。
+ * `HIGHLIGHT` は**様式に書くとその中の全項目に効く**（原典）ので、
+ * 見出しの様式に置いて確かめられるようにしてある。
+ * `COLOR(*RGB …)` は原典が「出力装置によって異なります」と書く形で、
+ * **色を決めない**（指定があることだけを示す）。
+ */
+const REPORT_EMPHASIS_SAMPLE = [
+  "     A          R HEADING                   SKIPB(1)",
+  "     A                                      SPACEA(2)",
+  "     A                                      HIGHLIGHT",
+  "     A                                     5'MONTHLY REPORT'",
+  "     A                                    30'PAGE'",
+  "     A          R DETLINE                   SPACEA(1)",
+  "     A            ITEMNO        10A        5",
+  "     A            ITEMNM        20A       20UNDERLINE",
+  "     A            AMOUNT         9S       50COLOR(RED)",
+  "     A            NOTE          10A       65COLOR(*RGB 50 50 0)",
+  ""
+].join("\n");
+
 const SAMPLES = [
   { name: "CUSTMNT.dspf", text: sample as unknown as string },
   { name: "hidden-items.dspf", text: HIDDEN_SAMPLE },
@@ -341,7 +364,8 @@ const SAMPLES = [
   { name: "references.dspf", text: REFERENCE_SAMPLE },
   // 帳票。**行は SPACE / SKIP で決まり、位置欄には桁だけが書かれる**——
   // 画面ファイルには無い形なので、ここで実際に触れるようにしておく。
-  { name: "CUSTRPT.prtf", text: report as unknown as string }
+  { name: "CUSTRPT.prtf", text: report as unknown as string },
+  { name: "report-emphasis.prtf", text: REPORT_EMPHASIS_SAMPLE }
 ];
 const select = must<HTMLSelectElement>("#sample");
 SAMPLES.forEach((entry, index) => {
