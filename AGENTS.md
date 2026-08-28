@@ -350,10 +350,20 @@
   `QRG0008『Compile stopped. Severity level NN errors found』` までで、
   「どの桁が悪いのか」は**コンパイル・リスト（スプール）にしかない**。
 - 取り方: `QSYS2.OUTPUT_QUEUE_ENTRIES_BASIC` を `SPOOLED_FILE_NAME` で引いて
-  `FILE_NUMBER` を得て、スプール取得ツールで本文を読む。リストには
+  `FILE_NUMBER` と `JOB_NAME` を得て、本文を読む。リストには
   **誤りの桁に `*` の下線と 4 桁のメッセージ番号**が付き、末尾の「MESSAGE SUMMARY」に
   本文が出る。外部記述ファイルなら解決した様式名とフィールドの一覧も出るので、
   **F 仕様が正しく読めているか**がそのまま分かる。
+- **`CRTRPGPGM` のリストのスプール名は `QRPGLST` ではなく「プログラム名」**（実測）。
+  `QRPGLST` で引くと**1 件も見つからず、「メッセージが無い＝正しい」と誤読する**。
+  プログラム名で引けば、どのリストがどの回のものかも曖昧にならない。
+- **件数が多いときは MCP のスプール取得を使わない。** 1 件で 18k トークンほど返るので、
+  30 件読むと会話が埋まる。`NetPrintConnection.readSpooledPages` をスクリプト内で呼び、
+  **必要な行だけ抜いて出力する**（`20260828-rpg3-fspec-continuation-options` の
+  `verify/probe-options.mjs`）。
+- **`GENLVL(50)` を付けたら「作成できたか」で判定してはいけない。** 重大度 30 の誤りが
+  あっても**プログラムは作成される**。`CRTRPGPGM` の戻りを見ると、存在しない語まで
+  「通った」ことになる。判定はリストのメッセージ番号で行う。
 - **これを知らずに二分探索で切り分けると時間を失う。** 実際、
   `20260828-rpg3-fspec-reclen` は「外部記述の F 仕様の書き方が当たっていない」と
   結論して止めたが、リストを読んだら `CPF5715 File … in library *LIBL not found` で、
