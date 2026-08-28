@@ -765,9 +765,9 @@ check(
 // 画面サイズ条件名（`*DS3` 等）も同じ欄で書ける。標識とは別の欄の使い方。
 await setCondition("*DS3");
 check(
-  "**画面サイズ条件名も書ける（7 桁目はブランク・名前は 8 桁目から）**",
+  "**画面サイズ条件名も書ける（名前は 9 桁目から。実機は 8 桁目を通さない）**",
   (await sourceLines()).some(
-    line => line.charAt(6) === " " && line.slice(7, 16).trimEnd() === "*DS3"
+    line => line.slice(6, 8) === "  " && line.slice(8, 16).trimEnd() === "*DS3"
   ),
   JSON.stringify((await sourceLines()).filter(l => l.includes("*DS3")))
 );
