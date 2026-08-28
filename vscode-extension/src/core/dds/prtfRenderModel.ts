@@ -11,7 +11,7 @@ import {
   type PrtfLayout,
   type PrtfLayoutOptions
 } from "./prtfLayout";
-import type { RenderModel } from "./dspfRenderModel";
+import { toFileKeywords, type RenderModel } from "./dspfRenderModel";
 
 /**
  * 帳票（PRTF）を**描くための形**。GUI に渡すのは DSPF と同じ `RenderModel`。
@@ -41,12 +41,15 @@ export function buildPrtfRenderModel(
   lines: readonly string[],
   options?: PrtfLayoutOptions
 ): RenderModel {
-  return fromPrtfLayout(
-    resolvePrtfLayout(lines, options),
-    buildDspfOutline(lines),
-    collectIndicators(lines),
-    resolvePrintDensity(lines)
-  );
+  return {
+    ...fromPrtfLayout(
+      resolvePrtfLayout(lines, options),
+      buildDspfOutline(lines),
+      collectIndicators(lines),
+      resolvePrintDensity(lines)
+    ),
+    fileKeywords: toFileKeywords(lines)
+  };
 }
 
 /** 既に解決済みのレイアウトから作る（二重に解決しないため）。 */
@@ -89,7 +92,9 @@ export function fromPrtfLayout(
     records,
     // **一覧の「位置なし」を帳票の見方に直す。**
     outline: placedOutline(outline, layout),
-    indicators
+    indicators,
+    // 生の行を持たないので空。`buildPrtfRenderModel` が足す。
+    fileKeywords: []
   };
 }
 

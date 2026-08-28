@@ -3,7 +3,11 @@ import { readFileSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { applyDdsEdits, validateDdsEdits, type DdsEdit } from "../core/dds/ddsEdit";
 import { buildDspfOutline } from "../core/dds/dspfOutline";
-import { buildDspfRenderModel, type RenderModel } from "../core/dds/dspfRenderModel";
+import {
+  buildDspfRenderModel,
+  toFileKeywords,
+  type RenderModel
+} from "../core/dds/dspfRenderModel";
 import { buildPrtfRenderModel } from "../core/dds/prtfRenderModel";
 import { DEFAULT_PAGE } from "../core/dds/prtfLayout";
 import { resolveDdsType, type DdsType } from "../core/sourceKind";
@@ -330,7 +334,14 @@ export function run(argv: readonly string[]): number {
     switch (options.command) {
       case "parse":
         output = `${JSON.stringify(
-          { file: options.file, ddsType, records: buildDspfOutline(source.lines) },
+          {
+            file: options.file,
+            ddsType,
+            // **ファイル・レベルのキーワードは様式に属さない**ので別に出す。
+            // 出さないと `DSPSIZ` / `REF` / `INDARA` が CLI からも読めない。
+            fileKeywords: toFileKeywords(source.lines),
+            records: buildDspfOutline(source.lines)
+          },
           null,
           2
         )}\n`;

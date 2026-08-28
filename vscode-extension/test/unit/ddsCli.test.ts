@@ -107,6 +107,19 @@ suite("DDS CLI: parse", () => {
     );
   });
 
+  /** 様式に属さないので  には入らない。**別に出さないと読めない。** */
+  test("ファイル・レベルのキーワードも出る", () => {
+    const result = invoke(["parse", join(__dirname, "..", "..", "..", "..", "docs", "src", "CUSTMNT.dspf")]);
+    assert.strictEqual(result.code, 0);
+    const parsed = JSON.parse(result.out) as {
+      fileKeywords: Array<{ keywords: string }>;
+    };
+    assert.deepStrictEqual(
+      parsed.fileKeywords.map(entry => entry.keywords),
+      ["DSPSIZ(24 80 *DS3)", "REF(CUSTMST)", "INDARA", "PRINT"]
+    );
+  });
+
   test("parse は text を受け付けない", () => {
     assert.strictEqual(invoke(["parse", "--format", "text", GOLDEN]).code, 2);
   });
