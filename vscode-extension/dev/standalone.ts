@@ -290,10 +290,29 @@ const INDICATOR_SAMPLE = [
   ""
 ].join("\n");
 
+/**
+ * 2 つの画面サイズを持つ様式。**位置の上書き行**（条件名 ＋ 位置だけの行）が
+ * 2 次画面サイズでの位置を与える。原典（`DSPSIZ` の 例 2 / 例 3）の形。
+ *
+ * 実サンプルには 2 サイズのものが無く、この形は**実機でしか確かめられない**
+ * 制約（条件名は 2 次を指し、上書き行にしか書けない）を持つので、
+ * 触れる形を 1 本置いておく。
+ */
+const TWO_SIZE_SAMPLE = [
+  "     A                                      DSPSIZ(24 80 27 132)",
+  "     A          R MAIN",
+  "     A                                  1  2'見出し'",
+  "     A            FLDA          10A  B 23  2",
+  "     A  *DS4                           26 40",
+  "     A            FLDB          10A  B  5  2",
+  ""
+].join("\n");
+
 const SAMPLES = [
   { name: "CUSTMNT.dspf", text: sample as unknown as string },
   { name: "hidden-items.dspf", text: HIDDEN_SAMPLE },
   { name: "indicators.dspf", text: INDICATOR_SAMPLE },
+  { name: "two-sizes.dspf", text: TWO_SIZE_SAMPLE },
   // 帳票。**行は SPACE / SKIP で決まり、位置欄には桁だけが書かれる**——
   // 画面ファイルには無い形なので、ここで実際に触れるようにしておく。
   { name: "CUSTRPT.prtf", text: report as unknown as string }

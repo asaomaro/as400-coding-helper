@@ -108,6 +108,13 @@ export interface LogicalUnit {
    * ここから条件つき分を引くとそれらの意味が変わる。**見え方の解決だけ**がこちらを見る。
    */
   readonly keywordGroups: readonly RawKeywordGroup[];
+  /**
+   * 2 次画面サイズでの位置（**位置の上書き行**）。
+   *
+   * 直す前はこれを「次の単位への前置き」と見なして**丸ごと捨てていた**ので、
+   * 2 次画面サイズの位置がどこにも残らなかった。
+   */
+  readonly alternatePositions: readonly AlternatePosition[];
 }
 
 /** キーワード欄（45 桁以降）を取り出す。 */
@@ -329,7 +336,26 @@ export function joinContinuations(lines: readonly string[]): JoinedLine[] {
  * 行の種類。**分類の規則を 1 か所に持つ**——`toLogicalUnits` と
  * `fileLevelKeywordLines` で食い違うと、同じ行が別のものとして扱われる。
  */
-export type DdsLineKind = "record" | "item" | "conditioning" | "keywords" | "none";
+export type DdsLineKind =
+  | "record"
+  | "item"
+  | "conditioning"
+  /**
+   * **位置の上書き行**。条件（画面サイズ条件名）＋位置だけで、名前もキーワードも無い。
+   *
+   * 原典（`DSPSIZ` の 例 2）:
+   * ```
+   * 00040A            FIELDB        10  0   1 81
+   * 00050A  *NORMAL                         1 50
+   * ```
+   * 50 行目は **FIELDB の、2 次画面サイズでの位置**を与える。別の項目ではない。
+   *
+   * 条件だけの行（次の単位への前置き）と**位置の有無**で見分ける——
+   * 前置きは項目と同じ行に最後の標識を置くので、位置を持たない。
+   */
+  | "position-override"
+  | "keywords"
+  | "none";
 
 /**
  * その行が何か。`keywords` は**継続を解いたあとの機能欄**を渡すこと
@@ -344,11 +370,28 @@ export function classifyDdsLine(line: string, keywords: string): DdsLineKind {
   const name = ddsName(line);
   if (name.length > 0 || readConstant(keywords) !== undefined) return "item";
 
-  // キーワード欄が空で条件付けだけ書かれている行は、次の単位への前置き。
   if (keywords.length === 0 && conditioningAreaOf(line).trim().length > 0) {
-    return "conditioning";
+    // **位置があれば直前の項目の上書き**、無ければ次の単位への前置き。
+    return ddsField(line, DDS_COLUMNS.position).trim().length > 0
+      ? "position-override"
+      : "conditioning";
   }
   return keywords.length > 0 ? "keywords" : "none";
+}
+
+/**
+ * 2 次画面サイズでの位置（**位置の上書き行**）。
+ *
+ * 原典（`DSPSIZ`）より、2 つの画面サイズを持つファイルでは、同じ項目を
+ * サイズごとに別の位置に置ける。上書き行は**直前の項目のもの**。
+ */
+export interface AlternatePosition {
+  /** 1 始まり。 */
+  readonly sourceLine: number;
+  /** 位置を読む行。 */
+  readonly line: string;
+  /** 条件を読むための行群（先行する条件行 → その行）。 */
+  readonly conditioningLines: readonly string[];
 }
 
 /** ファイル・レベルのキーワード行（最初の様式・項目より前）。 */
@@ -359,6 +402,12 @@ export interface FileKeywordLine {
   readonly keywords: string;
   /** 条件を読むための行群（先行する条件行 → その行）。 */
   readonly conditioningLines: readonly string[];
+  /**
+   * その行と**キーワード継続行**（1 始まり・昇順）。
+   *
+   * 書き換えの宛先はこの区間。継続でつながった値は先頭行だけ書き換えると壊れる。
+   */
+  readonly sourceLines: readonly number[];
 }
 
 /**
@@ -383,6 +432,7 @@ export function fileLevelKeywordLines(lines: readonly string[]): FileKeywordLine
     if (kind === "record" || kind === "item") break;
     if (kind === "none") continue;
 
+
     if (kind === "conditioning") {
       pendingConditioning.push(line);
       continue;
@@ -391,7 +441,8 @@ export function fileLevelKeywordLines(lines: readonly string[]): FileKeywordLine
     collected.push({
       sourceLine: joined.index + 1,
       keywords: joined.keywords,
-      conditioningLines: [...pendingConditioning, line]
+      conditioningLines: [...pendingConditioning, line],
+      sourceLines: joined.sourceLines
     });
     pendingConditioning = [];
   }
@@ -425,7 +476,8 @@ export function toLogicalUnits(lines: readonly string[]): LogicalUnit[] {
           sourceLine: joined.index + 1,
           sourceLines: [joined.index + 1]
         }
-      ]
+      ],
+      alternatePositions: []
     });
     pendingConditioning = [];
     pendingConditioningLines = [];
@@ -458,6 +510,32 @@ export function toLogicalUnits(lines: readonly string[]): LogicalUnit[] {
     }
 
     if (kind === "none") continue;
+
+    // **位置の上書き行は直前の項目のもの。** 別の項目でも次の単位への前置きでもない。
+    if (kind === "position-override") {
+      const target = units[units.length - 1];
+      // 直前が項目でなければ（様式の直後など）置き場所が無い。捨てずに前置き扱いへ戻す。
+      if (!target || target.kind !== "item") {
+        pendingConditioning.push(line);
+        pendingConditioningLines.push(joined.index + 1);
+        continue;
+      }
+      units[units.length - 1] = {
+        ...target,
+        sourceLines: [...target.sourceLines, ...pendingConditioningLines, joined.index + 1],
+        alternatePositions: [
+          ...target.alternatePositions,
+          {
+            sourceLine: joined.index + 1,
+            line,
+            conditioningLines: [...pendingConditioning, line]
+          }
+        ]
+      };
+      pendingConditioning = [];
+      pendingConditioningLines = [];
+      continue;
+    }
 
     // キーワードだけの行。直前の単位に**空白 1 つ**で足す。
     // **継続とは別物**（継続は上で解いてある）。`OVERLAY` を別の行に書く形がこれ。

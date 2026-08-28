@@ -47,6 +47,7 @@ const USAGE = `使い方: node out/cli/dds.js <コマンド> [オプション] <
   --page-rows <n>        帳票: 1 ページの行数（既定 ${DEFAULT_PAGE.rows}）
   --page-columns <n>     帳票: 1 行の桁数（既定 ${DEFAULT_PAGE.columns}）
   --overflow <n>         帳票: オーバーフロー行（既定 ${DEFAULT_PAGE.overflowLine}）
+  --screen-size <n>      画面: primary（既定）| secondary（2 次画面サイズの絵）
   --help
 
 対象は画面（.dspf / .mnudds）と帳票（.prtf）。物理/論理ファイル（.pf / .lf）は
@@ -64,6 +65,7 @@ interface CliOptions {
   edits?: string;
   write: boolean;
   allowNewIssues: boolean;
+  screenSize: "primary" | "secondary";
   page: { rows: number; columns: number; overflowLine: number };
   file: string;
 }
@@ -84,6 +86,7 @@ function parseArgs(argv: readonly string[]): CliOptions {
     format: "json",
     write: false,
     allowNewIssues: false,
+    screenSize: "primary",
     page: { ...DEFAULT_PAGE },
     file: ""
   };
@@ -138,6 +141,14 @@ function parseArgs(argv: readonly string[]): CliOptions {
       case "--overflow":
         options.page.overflowLine = number();
         break;
+      case "--screen-size": {
+        const value = next();
+        if (value !== "primary" && value !== "secondary") {
+          throw new UsageError(`--screen-size は primary か secondary です: ${value}`);
+        }
+        options.screenSize = value;
+        break;
+      }
       default:
         if (arg.startsWith("-")) throw new UsageError(`知らないオプションです: ${arg}`);
         files.push(arg);
@@ -186,11 +197,20 @@ function joinSource(source: SourceText, lines: readonly string[]): string {
 function modelOf(
   ddsType: DdsType,
   lines: readonly string[],
-  page: CliOptions["page"]
+  page: CliOptions["page"],
+  screenSize: CliOptions["screenSize"] = "primary"
 ): RenderModel {
-  return ddsType === "DDS-PRTF"
-    ? buildPrtfRenderModel(lines, { page })
-    : buildDspfRenderModel(lines);
+  if (ddsType === "DDS-PRTF") return buildPrtfRenderModel(lines, { page });
+
+  const model = buildDspfRenderModel(lines);
+  if (screenSize !== "secondary" || model.secondaryScreen === undefined) return model;
+  // **2 次画面サイズの絵**。項目は同じ `sourceLine` を持つ（別の位置に置いた同じ項目）。
+  return {
+    ...model,
+    canvas: model.secondaryScreen.canvas,
+    items: model.secondaryScreen.items,
+    diagnostics: model.secondaryScreen.diagnostics
+  };
 }
 
 /**
@@ -347,7 +367,11 @@ export function run(argv: readonly string[]): number {
         )}\n`;
         break;
       case "render": {
-        const model = modelOf(ddsType, source.lines, options.page);
+        const model = modelOf(ddsType, source.lines, options.page, options.screenSize);
+        if (options.screenSize === "secondary" && model.secondaryScreen === undefined) {
+          console.error("✗ このファイルは 2 次画面サイズを宣言していません（DSPSIZ）");
+          return 2;
+        }
         output =
           options.format === "text"
             ? `${drawModel(model)}\n`

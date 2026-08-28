@@ -182,21 +182,35 @@ suite("画面サイズ条件名: 2 次を指しているか（実機で確定）
   }
 
   /**
-   * **論理単位からは見つからない。** 画面サイズ条件名が書かれる行の多くは
-   * 「条件名 ＋ 位置」だけの**位置の上書き行**で、名前もキーワードも持たない。
-   * `toLogicalUnits` はそれを「次の単位への前置き」と見なし、続く単位が無ければ捨てる。
+   * **位置の上書き行**（「条件名 ＋ 位置」だけで名前もキーワードも無い行）でも指摘できる。
+   *
+   * 探し方は**生の行**を 1 行ずつ（`collectIndicators` と同じ）。
+   * `20260828-dds-alternate-position` で上書き行は直前の項目へ付くようになったが、
+   * **直前が項目でない場合**（様式の直後など）は付く先が無いので、
+   * 単位から探すと取りこぼす。生の行なら形に依らず全部見える。
    */
   test("位置の上書き行（名前もキーワードも無い行）でも指摘できる", () => {
+    assert.strictEqual(reports("DSPSIZ(24 80 27 132)", "*NOTDEC"), true);
+  });
+
+  test("直前が項目でない上書き行でも指摘できる（単位に付かない形）", () => {
     const lines = [
       dspsiz("DSPSIZ(24 80 27 132)"),
       "     A          R T",
-      "     A            FLDB          10A  O  2  4",
       withName("*NOTDEC")
     ];
+    // 様式の直後なので付く先が無い＝単位には入らない。
     assert.ok(
-      !toLogicalUnits(lines).some(unit => unit.sourceLines.includes(4)),
-      "前提が変わった: 上書き行が論理単位に入っている"
+      !toLogicalUnits(lines).some(unit =>
+        unit.alternatePositions.some(alternate => alternate.sourceLine === 3)
+      ),
+      "前提が変わった: 様式の直後の上書き行が項目に付いている"
     );
-    assert.strictEqual(reports("DSPSIZ(24 80 27 132)", "*NOTDEC"), true);
+    assert.ok(
+      resolveDspfLayout(lines).diagnostics.some(
+        diagnostic => diagnostic.code === "invalid-screen-size-condition"
+      ),
+      "単位に付かない上書き行を取りこぼしている"
+    );
   });
 });

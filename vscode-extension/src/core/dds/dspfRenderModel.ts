@@ -26,6 +26,7 @@ import {
   type DspfDiagnosticCode,
   type DspfLayout
 } from "./dspfLayout";
+import { resolveScreenSizes } from "./dspfScreenSize";
 import type { PrintDensity } from "./prtfDensity";
 import type { LayoutDiagnosticCode } from "./prtfLayout";
 import {
@@ -141,6 +142,24 @@ export interface RenderModel {
    * **別に持って渡す**（捨てると、デザイナからは読む手段が無い）。
    */
   readonly fileKeywords: readonly FileKeywordEntry[];
+  /**
+   * **2 次画面サイズでの絵**（`DSPSIZ` が 2 つのサイズを宣言しているときだけ）。
+   *
+   * 原典（`DSPSIZ` の 例 2 / 例 3）より、同じ項目をサイズごとに別の位置へ置ける
+   * （「位置の上書き行」）。1 次だけを描いていると、**2 次画面での見え方が一切見えない**。
+   *
+   * 項目は同じ `sourceLine` を持つ（別の項目ではなく、同じ項目の別の位置）。
+   */
+  readonly secondaryScreen?: SecondaryScreen;
+}
+
+/** 2 次画面サイズでの解決結果。 */
+export interface SecondaryScreen {
+  readonly canvas: { readonly rows: number; readonly columns: number };
+  /** 画面サイズ条件名（`*DS4` / ユーザー定義名）。数値形式の `DSPSIZ` では無い。 */
+  readonly name?: string;
+  readonly items: readonly RenderItem[];
+  readonly diagnostics: readonly RenderDiagnostic[];
 }
 
 /** 生の行からファイル・レベルのキーワードを読み、条件を解く。 */
@@ -154,9 +173,26 @@ export function toFileKeywords(lines: readonly string[]): FileKeywordEntry[] {
 
 /** ソース行から描画モデルを作る。 */
 export function buildDspfRenderModel(lines: readonly string[]): RenderModel {
-  return {
+  const model: RenderModel = {
     ...fromLayout(resolveDspfLayout(lines), buildDspfOutline(lines), collectIndicators(lines)),
     fileKeywords: toFileKeywords(lines)
+  };
+
+  // 2 次画面サイズが宣言されていれば、そちらの絵も作る。
+  const { sizes } = resolveScreenSizes(lines);
+  if (sizes.secondary === undefined) return model;
+
+  const secondary = resolveDspfLayout(lines, { screenSize: "secondary" });
+  return {
+    ...model,
+    secondaryScreen: {
+      canvas: { rows: secondary.screen.rows, columns: secondary.screen.columns },
+      ...(sizes.secondary.conditionName !== undefined
+        ? { name: sizes.secondary.conditionName }
+        : {}),
+      items: secondary.items.map(toRenderItem),
+      diagnostics: secondary.diagnostics
+    }
   };
 }
 

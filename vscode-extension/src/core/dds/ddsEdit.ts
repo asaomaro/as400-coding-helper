@@ -17,6 +17,8 @@ import {
   startsContinuation,
   toLogicalUnits,
   unitItemKind,
+  fileLevelKeywordLines,
+  type FileKeywordLine,
   type LogicalUnit,
   type RawKeywordGroup
 } from "./ddsLogicalUnits";
@@ -254,7 +256,24 @@ export function validateDdsEdits(
       continue;
     }
 
-    // キーワードの編集だけは**様式も対象**（`OVERLAY` / `CFnn` は様式にしか書けない）。
+    // キーワードの編集は**様式も、ファイル・レベルの行も対象**。
+    // `OVERLAY` / `CFnn` は様式にしか、`DSPSIZ` / `REF` はファイル・レベルにしか書けない。
+    if (edit.kind === "setKeywords") {
+      const fileLevel = fileLevelAt(lines, edit.sourceLine);
+      if (fileLevel !== undefined) {
+        if (!contiguous(fileLevel.sourceLines)) {
+          rejections.push({
+            code: "keyword-lines-not-contiguous",
+            message:
+              "キーワードの行の間に注記行が挟まっています" +
+              "（まとめて置き換えると注記が消えるため書き換えません）",
+            sourceLine: edit.sourceLine
+          });
+        }
+        continue;
+      }
+    }
+
     const unit =
       edit.kind === "setKeywords"
         ? unitAt(units, edit.sourceLine)
@@ -395,6 +414,18 @@ export function applyDdsEdits(
         break;
       }
       case "setKeywords": {
+        // **ファイル・レベルの行は論理単位にならない**ので先に見る。
+        const fileLevel = fileLevelAt(lines, edit.sourceLine);
+        if (fileLevel !== undefined) {
+          const last = fileLevel.sourceLines[fileLevel.sourceLines.length - 1];
+          results.push({
+            replaceFrom: fileLevel.sourceLines[0] - 1,
+            replaceTo: last,
+            lines: keywordLines(lines[edit.sourceLine - 1], edit.keywords)
+          });
+          break;
+        }
+
         const unit = unitAt(units, edit.sourceLine);
         if (!unit) break;
         const run = keywordRunOf(unit);
@@ -736,6 +767,19 @@ function validateAdd(
   // **追加でも同じ**（移動だけ塞いでも、追加から入れれば同じ状態になる）。
   rejections.push(...validateColumnOne(item.row, item.column, ddsType, item.row));
   return rejections;
+}
+
+/**
+ * その行がファイル・レベルのキーワード行なら返す。
+ *
+ * **論理単位にならない**（最初の様式より前にあり、置けるものではない）ので、
+ * 単位から探しても見つからない。`setKeywords` の宛先として別に引く。
+ */
+function fileLevelAt(
+  lines: readonly string[],
+  sourceLine: number
+): FileKeywordLine | undefined {
+  return fileLevelKeywordLines(lines).find(entry => entry.sourceLine === sourceLine);
 }
 
 /** 行番号が連続しているか（間に注記行が挟まっていないか）。 */

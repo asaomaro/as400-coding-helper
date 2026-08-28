@@ -15,6 +15,8 @@ import {
 } from "./ddsConditioning";
 import { constantWidth, fieldWidth, type WidthUnknownReason } from "./ddsFieldWidth";
 import {
+  classifyDdsLine,
+  joinContinuations,
   readConstant,
   readNumber,
   toLogicalUnits,
@@ -266,9 +268,28 @@ export function occupanciesOverlap(a: Occupancy, b: Occupancy): boolean {
   return a.start < b.end && b.start < a.end;
 }
 
-export function resolveDspfLayout(lines: readonly string[]): DspfLayout {
+/**
+ * どちらの画面サイズで解決するか。
+ *
+ * **2 次画面サイズは、位置の上書き行で描く。** 原典（`DSPSIZ` の 例 2 / 例 3）より、
+ * 2 つのサイズを持つファイルでは同じ項目をサイズごとに別の位置へ置ける。
+ * 上書きが無い項目は 1 次と同じ位置に出る。
+ */
+export interface DspfLayoutOptions {
+  readonly screenSize?: "primary" | "secondary";
+}
+
+export function resolveDspfLayout(
+  lines: readonly string[],
+  options: DspfLayoutOptions = {}
+): DspfLayout {
   const diagnostics: DspfDiagnostic[] = [];
   const { sizes, problems } = resolveScreenSizes(lines);
+  // 2 次が無ければ 1 次で解く（呼び出し側が知らずに指定しても壊れない）。
+  const target =
+    options.screenSize === "secondary" && sizes.secondary !== undefined
+      ? sizes.secondary
+      : sizes.primary;
 
   for (const problem of problems) {
     diagnostics.push({
@@ -278,7 +299,7 @@ export function resolveDspfLayout(lines: readonly string[]): DspfLayout {
     });
   }
 
-  const screen = sizes.primary.size;
+  const screen = target.size;
   const items: DspfPlacedItem[] = [];
   let recordName: string | undefined;
 
@@ -305,17 +326,27 @@ export function resolveDspfLayout(lines: readonly string[]): DspfLayout {
 
     const conditioning = readConditioning(unit.conditioningLines);
 
-    // 画面サイズ条件名が 1 次画面サイズを指していないなら、2 次画面用の位置指定。
-    // 初版は 1 次だけを描くので、配置しない。**これは正当なので診断は出さない**。
+    // 画面サイズ条件名が対象のサイズを指していないなら、別のサイズ用の指定。
+    // **これは正当なので診断は出さない**（使えない条件名かどうかは別に見ている）。
     if (
       conditioning.kind === "screen-size" &&
-      !matchesScreenSize(conditioning.name, sizes.primary)
+      !matchesScreenSize(conditioning.name, target)
     ) {
       continue;
     }
 
-    const rowText = ddsField(line, DDS_POSITION_ROW).trim();
-    const columnText = ddsField(line, DDS_POSITION_COLUMN).trim();
+    // **対象のサイズを指す上書き行があれば、その位置で描く。**
+    // 原典（`DSPSIZ` の 例 2）: 同じ項目をサイズごとに別の位置へ置ける。
+    const override = unit.alternatePositions.find(alternate =>
+      matchesScreenSize(
+        (readConditioning(alternate.conditioningLines) as { name?: string }).name ?? "",
+        target
+      )
+    );
+    const positionLine = override?.line ?? line;
+
+    const rowText = ddsField(positionLine, DDS_POSITION_ROW).trim();
+    const columnText = ddsField(positionLine, DDS_POSITION_COLUMN).trim();
 
     // DDS の「プラス機能」（相対桁）。原典が折り返し規則を明示していないため、
     // 推測で描かずに未解決として示す。
@@ -443,6 +474,25 @@ export function resolveDspfLayout(lines: readonly string[]): DspfLayout {
  * ならない。理屈も通る: 項目自身の行が 1 次の位置を与えるので、
  * 1 次を条件にした指定は矛盾する。
  *
+ * ## もう 1 つの規則: **位置の上書き行にしか書けない**
+ *
+ * 実機で書ける形を洗った（同上）:
+ *
+ * | 条件名を書く行 | `CRTDSPF` |
+ * |---|---|
+ * | **位置の上書き行**（条件名 ＋ 位置だけ） | **通る** |
+ * | 定数の行（独立した項目） | 通らない |
+ * | 項目自身の行（名前つき） | 通らない |
+ * | 様式の行 | 通らない |
+ * | キーワード行（`DSPATR` / `COLOR` / `OVERLAY` の 3 つで確認） | 通らない |
+ *
+ * **原典と食い違う。** 原典（`条件付け (7 - 16 桁目)`）は
+ * > DSPSIZ キーワードに指定した画面サイズ条件名によって、**キーワードの使用や**
+ * > フィールドの位置を条件付けることができます。
+ *
+ * と書くが、実機はキーワードの条件付けを通さなかった（3 つのキーワードで確認）。
+ * AGENTS.md「原典と実機が食い違ったら、実機のパーサーに判定させる」に従い実機を採る。
+ *
  * ## 判定
  *
  * 2 次画面サイズが宣言されていて、かつ `matchesScreenSize` がそれに一致すること。
@@ -454,9 +504,25 @@ function undeclaredScreenSizeDiagnostics(
 ): DspfDiagnostic[] {
   const diagnostics: DspfDiagnostic[] = [];
 
-  const check = (conditioning: Conditioning, sourceLine: number): void => {
+  const check = (line: string, keywords: string, sourceLine: number): void => {
+    const conditioning = readConditioning([line]);
     if (conditioning.kind !== "screen-size") return;
     const { name } = conditioning;
+
+    // ■ 規則 1: **位置の上書き行にしか書けない**（条件名 ＋ 位置だけの行）。
+    if (classifyDdsLine(line, keywords) !== "position-override") {
+      diagnostics.push({
+        code: "invalid-screen-size-condition",
+        message:
+          `画面サイズ条件名 ${name} は位置の上書き行にしか書けません` +
+          "（条件名と位置だけの行。項目・様式・キーワードの行には書けません）。" +
+          "実機はこの形をコンパイルしません",
+        sourceLine
+      });
+      return;
+    }
+
+    // ■ 規則 2: **2 次画面サイズを指していること**。
     if (sizes.secondary !== undefined && matchesScreenSize(name, sizes.secondary)) {
       return;
     }
@@ -477,14 +543,14 @@ function undeclaredScreenSizeDiagnostics(
     });
   };
 
-  // **論理単位を通さない**（`collectIndicators` と同じ理由）。
-  // 画面サイズ条件名が書かれる行の多くは「条件名 ＋ 位置」だけの**位置の上書き行**で、
-  // 名前もキーワードも持たない。`toLogicalUnits` はそれを「次の単位への前置き」と見なし、
-  // 続く単位が無ければ**丸ごと捨てる**——単位から探すと 1 行も見つからない。
-  lines.forEach((line, index) => {
-    if (isDdsCommentLine(line) || isDdsBlankLine(line)) return;
-    check(readConditioning([line]), index + 1);
-  });
+  // **論理単位を通さない。** 上書き行は直前が項目のときだけ単位に付き、
+  // 様式の直後などでは付く先が無い（`collectIndicators` と同じ理由で生の行を見る）。
+  // 継続は解いてから分類する（解かないと継続元の行を項目と読み違える）。
+  for (const joined of joinContinuations(lines)) {
+    const line = lines[joined.index];
+    if (isDdsCommentLine(line) || isDdsBlankLine(line)) continue;
+    check(line, joined.keywords, joined.index + 1);
+  }
 
   return diagnostics;
 }
