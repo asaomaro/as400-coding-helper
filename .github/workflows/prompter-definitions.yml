@@ -105,6 +105,41 @@ jobs:
         run: npm test
 
   # ---------------------------------------------------------------------------
+  # 統合テスト（VSCode の拡張ホストの中で走らせる）
+  #
+  # WebView の中は GUI e2e が見るが、**VSCode の器**（コマンドの登録・
+  # `WorkspaceEdit`・カスタムエディタ）は拡張ホストの中でしか確かめられない。
+  #
+  # **長く動かない状態だった。** `vscode-test` が依存に入っておらず、
+  # `test/suite/index.ts` は `bdd` で `suite` / `test` を拾えず、対象も
+  # 1 つ上（＝単体テストまで）を見ていた。F4 のテストは
+  # 「利用者が送信／取消するまで解決しない Promise」を `await` しており、
+  # **拡張ホストごと落ちてスイート全体が止まっていた**。
+  #
+  # 器（Electron）を動かすには表示装置が要るので `xvfb-run` で包む。
+  # verify / gui-e2e とは別ジョブにして並行に走らせる。
+  integration:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: 表示装置（Electron を動かすのに要る）
+        run: sudo apt-get update && sudo apt-get install -y xvfb
+
+      - name: 依存
+        working-directory: vscode-extension
+        run: npm ci || npm install
+
+      # **落ちたら止まる。** `continue-on-error` は付けない。
+      - name: 統合テスト
+        working-directory: vscode-extension
+        run: xvfb-run -a npm run test:integration
+
+  # ---------------------------------------------------------------------------
   # GUI e2e（単独起動ハーネスを実際に操作する）
   #
   # WebView の中は拡張ホストから触れず、単体テストは `buildInitialState()` までしか
