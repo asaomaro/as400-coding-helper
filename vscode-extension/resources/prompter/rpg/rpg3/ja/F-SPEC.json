@@ -126,12 +126,13 @@
     {
       "name": "BLOCKLEN",
       "description": "ブロック長",
-      "help": "20-23桁。固定ブロック化はブロック・サイズ、固定非ブロック化はレコード・サイズ、可変は最大レコード・サイズ。",
+      "help": "20-23桁。**IBM i では空白でなければならない。** 実機で確かめた（IBM i 7.3 / CRTRPGPGM）: 値を入れると QRG2016『Positions 20-23, 47-52, 60-65, 67-70, or 73-74 of an F specification are not blank』でコンパイルが止まる。System/3x のブロック長の欄で、IBM i の RPG/400 は使わない（ブロック化は実機が自動で決める）。既存ソースを読むために欄は残してある。",
       "inputType": "number",
       "required": false,
       "sourceStart": 20,
       "sourceLength": 4,
-      "placeholder": "0"
+      "visibleByDefault": false,
+      "placeholder": ""
     },
     {
       "name": "RECLEN",
@@ -163,13 +164,16 @@
     {
       "name": "RECADDRLEN",
       "description": "レコード・アドレス長 / キー・フィールド長",
-      "help": "29-30桁。レコード・アドレス・ファイルは各エントリの占有桁数、ISAM はレコード・キー長。",
+      "help": "29-30桁。レコード・アドレス・ファイルは各エントリの占有桁数、ISAM はレコード・キー長。 **数字だけ・右寄せ**。実機で確かめた（IBM i 7.3 / CRTRPGPGM）: 英字は通らず、左詰めも通らない。",
       "inputType": "number",
       "required": false,
       "sourceStart": 29,
       "sourceLength": 2,
       "visibleByDefault": false,
-      "placeholder": "0"
+      "placeholder": "0",
+      "attributes": {
+        "numericOnly": true
+      }
     },
     {
       "name": "RECADDRTYPE",
@@ -219,13 +223,16 @@
     {
       "name": "KEYSTART",
       "description": "キー・フィールド開始位置",
-      "help": "35-38桁。キー・フィールドの開始位置。",
+      "help": "35-38桁。キー・フィールドの開始位置。 **数字だけ・右寄せ**。実機で確かめた（IBM i 7.3 / CRTRPGPGM）: 英字は通らず、左詰めも通らない。",
       "inputType": "number",
       "required": false,
       "sourceStart": 35,
       "sourceLength": 4,
       "visibleByDefault": false,
-      "placeholder": "0"
+      "placeholder": "0",
+      "attributes": {
+        "numericOnly": true
+      }
     },
     {
       "name": "EXTLINE",
@@ -259,7 +266,7 @@
     {
       "name": "SYMDEVICE",
       "description": "シンボリック装置",
-      "help": "47-52桁。MVT/MVS では空白。",
+      "help": "47-52桁。**IBM i では空白でなければならない。** 実機で確かめた（IBM i 7.3 / CRTRPGPGM）: 値を入れると QRG2016（20-23 / 47-52 / 60-65 / 67-70 / 73-74 は空白）でコンパイルが止まる。System/3x のシンボリック装置の欄。既存ソースを読むために欄は残してある。",
       "inputType": "text",
       "required": false,
       "sourceStart": 47,
@@ -271,9 +278,9 @@
       }
     },
     {
-      "name": "LABELS",
-      "description": "ラベル",
-      "help": "53桁目。空白=ラベルなし、S=標準、E=標準＋ユーザー。",
+      "name": "CONTINUATION",
+      "description": "継続",
+      "help": "53桁目。**IBM i ではラベルの欄ではなく「継続」の欄**で、`K` か空白しか入らない。実機で確かめた（IBM i 7.3 / CRTRPGPGM）: `E` を入れると QRG2067『The Continuation entry is not K or blank』になり、`K` と 54-59 の選択（例 INFDS）・60-65 の記入を書いた継続行はコンパイルが通る。",
       "inputType": "text",
       "required": false,
       "sourceStart": 53,

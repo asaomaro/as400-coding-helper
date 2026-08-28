@@ -211,6 +211,12 @@ function classifyWithState(
       return dialect === "rpg3"
         ? `${specChar}-SPEC`
         : classifyIoSpec(specChar as "I" | "O", text, state);
+    case "E":
+    case "L":
+      // **拡張(E)・行カウンター(L)は RPG III にしか無い。** RPG IV で廃止された
+      // ため ILE 側には定義が存在しない（`prompter/rpg/ile/` に E/L は無い）。
+      // ここを通していなかったので、定義はあるのに F4 も lint も届いていなかった。
+      return dialect === "rpg3" ? `${specChar}-SPEC` : undefined;
     case "P":
       return "P-SPEC";
     case "C":

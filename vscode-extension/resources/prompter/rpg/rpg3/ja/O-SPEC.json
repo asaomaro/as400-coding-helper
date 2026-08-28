@@ -58,35 +58,37 @@
     {
       "name": "SPACEBEFORE",
       "description": "スペース前",
-      "help": "17桁目。印刷前に空ける行数（0-3）。",
+      "help": "17桁目。印刷前に空ける行数。**0-3 の数字だけ。** 実機で確かめた（IBM i 7.3 / CRTRPGPGM）: `0`〜`3` は通り、`4` も英字も通らない。",
       "inputType": "text",
       "required": false,
       "sourceStart": 17,
       "sourceLength": 1,
       "attributes": {
         "characterSet": "alnum",
-        "maxLength": 1
+        "maxLength": 1,
+        "numericOnly": true
       },
       "placeholder": "1"
     },
     {
       "name": "SPACEAFTER",
       "description": "スペース後",
-      "help": "18桁目。印刷後に空ける行数（0-3）。",
+      "help": "18桁目。印刷後に空ける行数。**0-3 の数字だけ。** 実機で確かめた（IBM i 7.3 / CRTRPGPGM）: 英字は通らない（スペース前と同じ扱い）。",
       "inputType": "text",
       "required": false,
       "sourceStart": 18,
       "sourceLength": 1,
       "attributes": {
         "characterSet": "alnum",
-        "maxLength": 1
+        "maxLength": 1,
+        "numericOnly": true
       },
       "placeholder": "1"
     },
     {
       "name": "SKIPBEFORE",
       "description": "スキップ前",
-      "help": "19-20桁。印刷前にスキップするチャネル（01-12）。",
+      "help": "19-20桁。印刷前に紙送りする**行番号**（チャネル番号ではない）。**数字だけではない**——実機で確かめた（IBM i 7.3 / CRTRPGPGM）: 実機が受けるのは `01`-`99` / `A0`-`A9`（100-109行）/ `B0`-`B2`（110-112行）／空白で、外すと QRG6016『The Skip entries are not 01-99, A0-A9, B0-B2, or blank』になる。`A0` が通るので**数字だけの検証を掛けてはいけない**。数字で書くときは右寄せ（`1 ` は通らない）。",
       "inputType": "text",
       "required": false,
       "sourceStart": 19,
@@ -101,7 +103,7 @@
     {
       "name": "SKIPAFTER",
       "description": "スキップ後",
-      "help": "21-22桁。印刷後にスキップするチャネル（01-12）。",
+      "help": "21-22桁。印刷後に紙送りする**行番号**（チャネル番号ではない）。受ける値はスキップ前と同じ `01`-`99` / `A0`-`A9` / `B0`-`B2` ／空白（QRG6016）。実機で確かめた（IBM i 7.3 / CRTRPGPGM）: `A0` が通るため**数字だけの検証を掛けてはいけない**。",
       "inputType": "text",
       "required": false,
       "sourceStart": 21,
@@ -173,12 +175,15 @@
     {
       "name": "ENDPOS",
       "description": "終了位置",
-      "help": "40-43桁。出力レコード内で出力フィールドの右端文字を置く位置。",
+      "help": "40-43桁。出力レコード内で出力フィールドの右端文字を置く位置。 **数字だけ・右寄せ**。実機で確かめた（IBM i 7.3 / CRTRPGPGM）: 英字は通らず、左詰めも通らない。",
       "inputType": "number",
       "required": false,
       "sourceStart": 40,
       "sourceLength": 4,
-      "placeholder": "20"
+      "placeholder": "20",
+      "attributes": {
+        "numericOnly": true
+      }
     },
     {
       "name": "PACKED",
