@@ -3,6 +3,18 @@
  * "cmd" は .cmd ソースに書くコマンド定義ステートメント（CMD/PARM/ELEM/QUAL/DEP/PMTCTL）。
  * CL コマンドではないが、構文は同じなので解析と書き戻しは CL と同じ経路を通る。
  */
+/**
+ * 欄が指すオブジェクトの種類（CDML の `IsFile` / `IsPgm` / `IsDtaAra`）。
+ *
+ * **`workspaceObjects.ts` ではなくここに置く。** あちらは `vscode` を import するため、
+ * WebView 側（`types: []` で型検査する）から型だけを引くことができない。
+ * 集める処理はあちらに残り、この型を再輸出している。
+ */
+export type ObjectKind = "file" | "program" | "dataArea";
+
+/** 候補の集合。種類ごとに名前を並べる。 */
+export type ObjectCandidates = Partial<Record<ObjectKind, string[]>>;
+
 export type LanguageId = "rpg-fixed" | "cl" | "cmd" | "dds";
 
 // RPG 固定長の方言。languageId(`rpg-fixed`) とは直交する別次元で、
@@ -265,7 +277,7 @@ export interface ParameterDefinition {
    * この欄が指すオブジェクトの種類（CDML の `IsFile` / `IsPgm` / `IsDtaAra`）。
    * ワークスペースのソースから名前の候補を出すのに使う。実機には問い合わせない。
    */
-  readonly objectKind?: "file" | "program" | "dataArea";
+  readonly objectKind?: ObjectKind;
   readonly dependsOn?: readonly ParameterDependency[];
   /**
    * CDML の PMTCTL 由来の条件表示規則。dependsOn の effect:"visible" と併用でき、

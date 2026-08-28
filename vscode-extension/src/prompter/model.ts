@@ -84,10 +84,15 @@ function flattenParameters(
 /**
  * 入力欄を、繰り返し指定の件数だけ展開して並べる。
  * 2件目以降の入力欄名は `名前#2` のように連番になる（occurrences.ts の規則）。
+ *
+ * **件数は値からは復元しきれない。** `countOccurrences` は値の入っている組しか
+ * 数えないので、画面で「追加」を押した直後の**空の組**が消えてしまう。
+ * そのため呼び出し側が組数を指定できるようにしてある（`shown`）。
  */
 function expandOccurrences(
   parameters: readonly ParameterDefinition[],
-  values: Record<string, string | undefined>
+  values: Record<string, string | undefined>,
+  shown: Record<string, number> = {}
 ): { parameter: ParameterDefinition; occurrence: number; fieldName: string }[] {
   const result: {
     parameter: ParameterDefinition;
@@ -96,7 +101,12 @@ function expandOccurrences(
   }[] = [];
 
   for (const parameter of parameters) {
-    const count = isRepeatableGroup(parameter) ? countOccurrences(parameter, values) : 1;
+    const count = isRepeatableGroup(parameter)
+      ? Math.min(
+          parameter.maxOccurrences ?? 1,
+          Math.max(countOccurrences(parameter, values), shown[parameter.name] ?? 1)
+        )
+      : 1;
 
     for (let occurrence = 0; occurrence < count; occurrence += 1) {
       for (const leaf of flattenParameters([parameter])) {
@@ -112,11 +122,32 @@ function expandOccurrences(
   return result;
 }
 
+export interface InitialStateOptions {
+  /**
+   * 繰り返し group ごとに、画面で表示している組数。
+   * 値から数えた件数と大きい方を採り、定義の `maxOccurrences` で抑える。
+   */
+  readonly occurrences?: Record<string, number>;
+  /**
+   * 「必須なのに空」をエラーにするか。**初期表示は false、確定時は true。**
+   *
+   * 開いた瞬間に赤字が並ぶと警告として機能しないので、初期表示では出さない
+   * （実機の F4 も入力前は何も出さない）。確定のときだけ咎める。
+   * この判定は以前 WebView 側の JS が別に持っていたが、写しになるのでここへ寄せた。
+   */
+  readonly reportEmptyRequired?: boolean;
+}
+
 export function buildInitialState(
   definition: PrompterDefinition,
-  initialValues: Record<string, string | undefined>
+  initialValues: Record<string, string | undefined>,
+  options: InitialStateOptions = {}
 ): PrompterState {
-  const slots = expandOccurrences(definition.parameters, initialValues);
+  const slots = expandOccurrences(
+    definition.parameters,
+    initialValues,
+    options.occurrences
+  );
   // CDML 由来の規則は内部値(MapTo)で比較し、「指定された」は既定値と区別する。
   // 定義から作って渡さないと、条件表示が効かない／既定値のままで誤った違反が出る。
   const context = buildRuleContext(definition);
@@ -137,11 +168,10 @@ export function buildInitialState(
       resolvedValues,
       context
     );
-    // 初期表示では「必須なのに空」をエラーにしない。開いた瞬間に赤字が並ぶと
-    // 警告として機能しなくなる（実機の F4 も入力前は何も出さない）。
-    // 未入力は必須マーク（*）で示し、送信時にクライアント側が検証する。
+    // 初期表示では「必須なのに空」をエラーにしない（options の説明を参照）。
+    // 未入力は必須マーク（*）で示し、確定のときだけ咎める。
     const error =
-      raw.trim().length === 0 && required
+      raw.trim().length === 0 && required && !options.reportEmptyRequired
         ? undefined
         : validate(slot.parameter, raw, required, allowedValues);
 

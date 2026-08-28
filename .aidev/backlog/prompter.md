@@ -11,7 +11,7 @@ priority: 1           # 既存機能の構造改善。DDS(1) と同格
 
 ## 項目
 
-- [ ] **F4 プロンプターを VSCode 非依存（standalone 基準）に作り替え、Playwright で自律テストできるようにする**
+- [x] **F4 プロンプターを VSCode 非依存（standalone 基準）に作り替え、Playwright で自律テストできるようにする** — 済（`20260828-prompter-standalone`）
 
   **狙い**: DDS ビジュアルエディタ（`20260826-dds-editor-port` / PR #109）で確立した構造
   ——判断はコア / UI は描くだけ / `acquireVsCodeApi` は bridge の 1 か所 / ホスト能力を宣言——
@@ -38,6 +38,33 @@ priority: 1           # 既存機能の構造改善。DDS(1) と同格
   **非後退で守るもの**: F4 の起動経路（キーバインド・`resourceExtname` の条件）、
   定義 JSON の読み込み、可変パラメータ・グルーピング・ヘルプ（F1）、
   `applyChanges` の桁書き戻し、CL 往復検証（`npm run verify` の `verify:roundtrip`）。
+
+  **結果（2026-08-29 実測）**:
+  - `binding.ts` **1,401 行を削除**（HTML + CSS + インライン JS 827 行）。
+    `src/prompter/` は 4,718 → **4,699 行 / 22 ファイル**、`vscode` を import するのは
+    9 → **8 ファイル**で、**新しい 4 ファイル（`webview/`）はいずれも含まない**。
+  - **判定の写しがゼロになった。** UI は `model.ts` / `visibilityRules.ts` / `cdmlRules.ts` を
+    直接 import する。~~`dependsOn` と `constraints` は写しが手書き~~ という状態は解消。
+    描画モデルから `evaluatorSpec` / `constraintFields` / `constraints` も落とした
+    （写しを動かすためだけの荷物だった。復活は `test/unit/prompterWebview.test.ts` が検査）。
+  - **単独起動 + e2e**: `dev/prompter.html` / `dev/prompter-e2e.mjs`。**57 件 / 1 回 8.6 秒**、
+    **12 回連続で緑**。CI の `gui-e2e` に別ステップ（`if: always()`）で載せた。
+  - **後退を戻すと落ちることを 7 件で確認**（`.aidev/works/20260828-prompter-standalone/verify/e2e-load-bearing.md`）。
+  - 単体テスト 1084 → **1110**。`npm run verify` の 19 検査は緑のまま。
+
+  **非後退で守るもの**（起票時に挙げたもの）はすべて維持:
+  F4 の起動経路（`verify-contributes` 緑）／定義 JSON の読み込み（無変更）／
+  可変パラメータ・グルーピング・ヘルプ（e2e で 1 件ずつ）／`applyChanges` の桁書き戻し
+  （`commandText.ts` へ**中身を変えずに**移動し、往復検証 538 定義が緑）。
+
+  **途中で見つけて直したもの**（起票時には見えていなかった）:
+  - **選択肢に無い値が確定で消える**。実機が `Rstd=NO` と言う 86 欄では列挙値以外を書けるが、
+    `ADDPFM SRCTYPE(RPGLE)` は旧実装だと先頭の `*NONE` に化けていた。**旧実装から続く欠陥。**
+  - **F5 の `preLaunchTask` が `compile` だけ**で、束ねた資産が無く**画面が真っ白**になる
+    （DDS ビジュアルエディタも同じ穴だった）。`compile:all` を足した。
+
+  **残した制限**: `retainContextWhenHidden: false` のままで、隠して再表示すると入力が初期値に戻る。
+  旧実装でも同じ挙動なので後退ではない。
 
   出所: ユーザー要望（2026-08-26）。
 

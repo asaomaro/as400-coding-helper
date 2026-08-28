@@ -1,0 +1,74 @@
+/*
+ * プロンプターの見た目。**`binding.ts` が文字列で持っていた `<style>` をそのまま移した**もの。
+ *
+ * ひとつだけ変えている: 表示/非表示を `style="display:none"` ではなく `.hidden` で行う。
+ * CSP から `'unsafe-inline'` を外したので、**`style="…"` 属性は黙って落ちる**
+ * （例外は出ない。DDS 側で同じ罠を踏んでいる。`src/dds/webviewHtml.ts` の注記）。
+ */
+
+body { font-family: sans-serif; padding: 8px; }
+
+/* 表示の切り替えはすべてこれ。インラインの style は使わない。 */
+.hidden { display: none !important; }
+
+.field { margin-bottom: 6px; }
+.field label > span { display: inline-block; min-width: 15em; }
+.required-mark { color: #d97; font-weight: bold; }
+.error { color: #be1100; font-size: 0.9em; }
+.buttons { margin-top: 12px; }
+
+.help-indicator {
+  display: inline-block; width: 1.1em; height: 1.1em; line-height: 1.1em;
+  text-align: center; border: 1px solid currentColor; border-radius: 50%;
+  font-size: 0.8em; vertical-align: middle;
+  margin-left: 6px; color: #8ab; cursor: pointer;
+}
+.prompt-indicator {
+  margin-left: 6px;
+  padding: 0 4px;
+  border: 1px solid #8ab;
+  border-radius: 3px;
+  color: #8ab;
+  cursor: pointer;
+  font-size: 0.85em;
+}
+
+.help-overlay {
+  position: fixed;
+  inset: 0;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+.help-overlay.visible { display: flex; }
+.help-backdrop {
+  position: absolute;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.4);
+}
+.help-dialog {
+  position: relative;
+  max-width: 480px;
+  max-height: 60vh;
+  padding: 12px;
+  background-color: #1e1e1e;
+  color: #f0f0f0;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+  border-radius: 4px;
+  overflow: auto;
+  z-index: 1001;
+  /* コマンドヘルプは節ごとの改行を保持して表示する。 */
+  white-space: pre-wrap;
+}
+
+.has-error { border: 1px solid #be1100; }
+.constraint-errors { margin-bottom: 8px; white-space: pre-wrap; }
+.toggle-additional { margin: 8px 0; }
+.group-add { margin-top: 4px; }
+.group-remove { margin-top: 4px; margin-left: 4px; }
+
+/* ラベルの右に並べる。ブロックのままだと入力欄が次の行へ回る。 */
+.multi-field { display: inline-block; vertical-align: top; }
+.multi-items { display: flex; flex-direction: column; gap: 4px; margin-bottom: 4px; }
+.multi-item { display: flex; gap: 4px; }

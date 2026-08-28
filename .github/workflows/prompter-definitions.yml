@@ -202,6 +202,15 @@ jobs:
 
       # 前提が足りないときは終了コード 2 で落ちる（ブラウザが無い / ページが無い）。
       # **skip にしない**——「走らなかった」を「通った」と読み違えないため。
-      - name: GUI e2e
+      #
+      # 2 本を別ステップにするのは、片方が落ちても**もう片方の結果を見たい**から
+      # （`npm run dev:e2e` は `&&` で繋いでおり、手元で 1 発で回すためのもの）。
+      - name: GUI e2e（DDS ビジュアルエディタ）
         working-directory: vscode-extension
         run: node dev/e2e.mjs
+
+      - name: GUI e2e（F4 プロンプター）
+        # 前のステップが落ちても走らせる。どちらが壊れたのかを 1 回の実行で見る。
+        if: always()
+        working-directory: vscode-extension
+        run: node dev/prompter-e2e.mjs
