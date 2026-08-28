@@ -1607,6 +1607,40 @@ await page.click('[data-key="page:prev"]');
 await page.waitForTimeout(220);
 check("戻れる", (await pageLabel()) === "1 / 2", await pageLabel());
 
+// **LPI がページの途中で変わると行の高さも変わる。**
+// 原典（`LPI`）は途中で変えることを認めており、位置は用紙上の絶対位置になる。
+await page.click("#dds-toggle-preview");
+await page.waitForTimeout(250);
+const topOf = async label =>
+  (await page.$$eval(".dds-item", ns =>
+    ns.map(n => ({ t: n.textContent, top: n.style.top, h: n.style.height }))
+  )).find(item => item.t.includes(label));
+check(
+  "**紙の比率では位置（インチ）で置く**（PAGE ONE は先頭 ＝ 0px）",
+  (await topOf("PAGE ONE"))?.top === "0px",
+  JSON.stringify(await topOf("PAGE ONE"))
+);
+// 倍率は既定 150% なので 1 インチ = 144px。
+check(
+  "**行の高さはその行の LPI で決まる**（6 LPI ＝ 144/6 ＝ 24px）",
+  (await topOf("PAGE ONE"))?.h === "24px",
+  JSON.stringify(await topOf("PAGE ONE"))
+);
+await page.click('[data-key="page:next"]');
+await page.waitForTimeout(220);
+check(
+  "**LPI(12) の行は半分の高さになる**（144/12 ＝ 12px）",
+  (await topOf("DENSE LINE"))?.h === "12px",
+  JSON.stringify(await topOf("DENSE LINE"))
+);
+check(
+  "同じページの 6 LPI の行は 24px のまま（行ごとに違う）",
+  (await topOf("PAGE TWO"))?.h === "24px",
+  JSON.stringify(await topOf("PAGE TWO"))
+);
+await page.click("#dds-toggle-preview");
+await page.waitForTimeout(220);
+
 await page.selectOption("#sample", { label: "CUSTRPT.prtf" });
 await page.waitForTimeout(250);
 

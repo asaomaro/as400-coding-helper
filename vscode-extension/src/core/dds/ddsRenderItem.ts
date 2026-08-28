@@ -94,6 +94,14 @@ export interface RenderItem {
    */
   readonly page?: number;
   /**
+   * ページ先頭からの位置（インチ）と、その行の LPI（帳票のみ）。
+   *
+   * **紙の比率で描くときはこちらを使う。** 行番号 × 一定の高さでは、
+   * LPI がページの途中で変わる帳票が描けない（原典は変えることを認めている）。
+   */
+  readonly inches?: number;
+  readonly lpi?: number;
+  /**
    * キーワード欄を**条件ごとに**分けたもの。
    *
    * `attributes.keywords`（全部の連結）と違い、**どのキーワードがどの条件で効くか**を持つ。
@@ -122,6 +130,9 @@ export interface PlacedSource {
   readonly column: number;
   /** 何ページ目か（帳票）。 */
   readonly page?: number;
+  /** ページ先頭からの位置（インチ）と、その行の LPI（帳票）。 */
+  readonly inches?: number;
+  readonly lpi?: number;
   readonly width: number | undefined;
   readonly recordName?: string;
   readonly sourceLine: number;
@@ -202,7 +213,9 @@ export function toRenderItem(item: PlacedSource, options: RenderItemOptions = {}
     condition: item.conditioning,
     ...(item.recordName !== undefined ? { recordName: item.recordName } : {}),
     ...(item.rowFromSpacing ? { rowFromSpacing: true } : {}),
-    ...(item.page !== undefined ? { page: item.page } : {})
+    ...(item.page !== undefined ? { page: item.page } : {}),
+    ...(item.inches !== undefined ? { inches: item.inches } : {}),
+    ...(item.lpi !== undefined ? { lpi: item.lpi } : {})
   };
 }
 

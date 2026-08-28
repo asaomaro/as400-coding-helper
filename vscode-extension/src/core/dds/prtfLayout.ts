@@ -65,6 +65,13 @@ export interface PlacedItem {
    * LPI がページの途中で変わると、行番号と位置は比例しなくなる。
    */
   readonly inches: number;
+  /**
+   * その行に効いている LPI（1 インチ当たりの行数）。
+   *
+   * **行の高さは `1 ÷ lpi` インチ。** ページの途中で変わりうるので、
+   * ファイル全体の 1 つの値では描けない（原典は途中で変えることを認めている）。
+   */
+  readonly lpi: number;
   /** undefined は幅不明。 */
   readonly width: number | undefined;
   readonly widthUnknownReason?: WidthUnknownReason;
@@ -443,6 +450,7 @@ export function resolvePrtfLayout(
       page: cursor.page,
       // 行番号を書いた項目は、その行の位置（いまの LPI で数える）。
       inches: explicitRow !== undefined ? explicitRow / cursor.lpi : cursor.inches,
+      lpi: cursor.lpi,
       width,
       ...(widthUnknownReason ? { widthUnknownReason } : {}),
       ...(cursor.recordName ? { recordName: cursor.recordName } : {}),

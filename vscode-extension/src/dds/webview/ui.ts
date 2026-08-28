@@ -704,8 +704,24 @@ class EditorView {
     element.dataset.rowFromSpacing = String(item.rowFromSpacing === true);
     if (item.rowFromSpacing) element.classList.add("row-from-spacing");
     element.style.left = `calc(var(--cell-w) * ${item.column - 1})`;
-    element.style.top = `calc(var(--cell-h) * ${item.row - 1})`;
     element.style.width = `calc(var(--cell-w) * ${item.widthCols ?? 1})`;
+
+    // **紙の比率で描くときは位置（インチ）を使う。**
+    // 行番号 × 一定の高さでは、LPI がページの途中で変わる帳票が描けない
+    // （原典は変えることを認めている: 「6 LPI で 24 行、次に 8 LPI で 24 行」）。
+    // LPI が 1 つなら `位置 = (行番号 - 1) ÷ LPI` なので、答えは今までと同じ。
+    const paper = this.previewDensity();
+    if (paper && item.inches !== undefined) {
+      const perInch = EditorView.PX_PER_INCH * this.display.zoom;
+      const lineHeight = perInch / (item.lpi ?? paper.lpi);
+      // **`inches` は原典の数え方で「その行を印刷し終えた位置」**
+      // （原典: 行番号 48 へのスキップは「48/6 = 8 インチ分スキップしてから印刷」）。
+      // 描くのに要るのは**行の上端**なので、1 行分だけ戻す。
+      element.style.top = `${item.inches * perInch - lineHeight}px`;
+      element.style.height = `${lineHeight}px`;
+    } else {
+      element.style.top = `calc(var(--cell-h) * ${item.row - 1})`;
+    }
     element.title =
       `${item.label}（${item.row} 行 ${item.column} 桁` +
       `${item.widthCols === undefined ? " / 幅不明" : ` / ${item.widthCols} 桁`}` +

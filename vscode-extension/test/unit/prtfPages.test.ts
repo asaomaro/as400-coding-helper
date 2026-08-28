@@ -241,3 +241,49 @@ suite("帳票のページ: 描画モデル", () => {
     assert.strictEqual(model.pages, 1);
   });
 });
+
+/**
+ * **行の高さは行ごとに決まる。** LPI がページの途中で変わると、
+ * 「行 ＝ 一定の高さ」では描けない（原典は変えることを認めている）。
+ */
+suite("帳票のページ: 行ごとの LPI", () => {
+  test("項目はその行の LPI を持つ", () => {
+    const layout = resolvePrtfLayout([
+      keywordLine("LPI(6)"),
+      record("R1"),
+      constant(5, "AAA"),
+      record("R2", "LPI(12)"),
+      constant(5, "BBB"),
+      record("R3"),
+      constant(5, "CCC")
+    ]);
+    assert.strictEqual(at(layout, "AAA").lpi, 6);
+    assert.strictEqual(at(layout, "BBB").lpi, 12);
+    // 様式の終わりでファイル・レベルへ戻る。
+    assert.strictEqual(at(layout, "CCC").lpi, 6);
+  });
+
+  test("LPI を書かない帳票は CRTPRTF の既定（6）になる", () => {
+    const layout = resolvePrtfLayout([record("R1"), constant(5, "AAA")]);
+    assert.strictEqual(at(layout, "AAA").lpi, 6);
+  });
+
+  test("原典に無い LPI の値は採らない（既定のまま）", () => {
+    const layout = resolvePrtfLayout([record("R1", "LPI(7)"), constant(5, "AAA")]);
+    assert.strictEqual(at(layout, "AAA").lpi, 6);
+  });
+
+  test("描画モデルにも位置と LPI が届く", () => {
+    const model = buildPrtfRenderModel([
+      keywordLine("LPI(6)"),
+      record("R1", "LPI(12) SPACEA(12)"),
+      constant(5, "AAA"),
+      record("R2"),
+      constant(5, "BBB")
+    ]);
+    const bbb = model.items.find(item => item.label === "BBB");
+    assert.ok(bbb);
+    assert.strictEqual(bbb.lpi, 6);
+    assert.strictEqual(bbb.inches, 1);
+  });
+});
