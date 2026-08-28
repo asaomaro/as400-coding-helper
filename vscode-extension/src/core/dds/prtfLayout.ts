@@ -5,7 +5,13 @@ import {
   fieldWidth,
   type WidthUnknownReason
 } from "./ddsFieldWidth";
-import { readConstant, readNumber, toLogicalUnits } from "./ddsLogicalUnits";
+import {
+  readConstant,
+  readNumber,
+  toLogicalUnits,
+  type LogicalUnit
+} from "./ddsLogicalUnits";
+import { unconditionableKeywords, type ConditionableDdsType } from "./ddsConditionable";
 import {
   readConditioning,
   resolveKeywordGroups,
@@ -89,7 +95,9 @@ export type LayoutDiagnosticCode =
   /** 行・桁が原典の上限（255）を超えている。 */
   | "out-of-range"
   /** 位置欄に数字以外が入っている（桁が読めない）。 */
-  | "invalid-position";
+  | "invalid-position"
+  /** 条件を付けられないキーワードに条件が付いている（実機がコンパイルしない）。 */
+  | "keyword-not-conditionable";
 
 export interface LayoutDiagnostic {
   readonly code: LayoutDiagnosticCode;
@@ -121,6 +129,47 @@ export const DEFAULT_PAGE: PrtfPage = {
   columns: 132,
   overflowLine: 60
 };
+
+/**
+ * **条件を付けられないキーワードに条件が付いている**行を報告する。
+ *
+ * DDS は条件が付く対象を「フィールドまたはキーワード」とするが、
+ * **キーワードごとに可否が決まっている**。付けられないものに付けると実機は
+ * コンパイルを通さない（`CPF7311`。`EDTCDE` / `EDTWRD` / `CHECK` で確認済み）。
+ * デザイナが黙っていると、壊れたと気付くのは実機に持っていったときになる。
+ *
+ * 可否が原典に書かれていないキーワードは**黙って通す**（知らないものを咎めない）。
+ */
+function unconditionableDiagnostics(
+  units: readonly LogicalUnit[],
+  ddsType: ConditionableDdsType
+): { code: "keyword-not-conditionable"; message: string; sourceLine: number }[] {
+  const diagnostics: {
+    code: "keyword-not-conditionable";
+    message: string;
+    sourceLine: number;
+  }[] = [];
+
+  for (const unit of units) {
+    // **先頭の群は代表行**。そこに書かれたキーワードは項目自身の条件で決まるので、
+    // 「キーワードに条件を付けた」ことにはならない。
+    for (const group of resolveKeywordGroups(unit).slice(1)) {
+      if (group.conditioning.kind !== "indicators") continue;
+      const names = unconditionableKeywords(ddsType, group.keywords);
+      if (names.length === 0) continue;
+      diagnostics.push({
+        code: "keyword-not-conditionable",
+        message:
+          `${names.join(" / ")} には条件標識を付けられません` +
+          "（原典: オプション標識は、このキーワードでは無効です）。" +
+          "実機はこの形をコンパイルしません",
+        sourceLine: group.sourceLine
+      });
+    }
+  }
+
+  return diagnostics;
+}
 
 /** 原典: 指定できる行番号・桁番号の最大値は 255。 */
 const MAX_POSITION = 255;
@@ -215,7 +264,10 @@ export function resolvePrtfLayout(
   const diagnostics: LayoutDiagnostic[] = [];
   const cursor: Cursor = { row: 1 };
 
-  for (const unit of toLogicalUnits(lines)) {
+  const units = toLogicalUnits(lines);
+  diagnostics.push(...unconditionableDiagnostics(units, "PRTF"));
+
+  for (const unit of units) {
     const { line, sourceLine, keywords } = unit;
     const spacing = readSpacing(keywords);
     const explicitRow = readNumber(ddsField(line, DDS_POSITION_ROW));

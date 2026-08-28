@@ -155,8 +155,8 @@ suite("lint: numeric-field / numeric-alignment", () => {
 });
 
 suite("lint: 規則の既定", () => {
-  test("既定で有効なのは 7 規則（行単位 3 ＋ レイアウト 4）", () => {
-    // レイアウトの 4 つは「実機で作成できないソースでしか出ない」と原典で
+  test("既定で有効なのは 8 規則（行単位 3 ＋ レイアウト 5）", () => {
+    // レイアウトの 5 つは「実機で作成できないソースでしか出ない」と原典で
     // 言い切れるものだけ（根拠は types.ts の RuleId に引用つきで書いてある）。
     assert.deepStrictEqual(defaultEnabledRules(), [
       "line-length",
@@ -164,6 +164,7 @@ suite("lint: 規則の既定", () => {
       "numeric-alignment",
       "layout-invalid-position",
       "layout-column-one-reserved",
+      "layout-keyword-not-conditionable",
       "layout-invalid-screen-size",
       "layout-spacing-with-line-number"
     ]);
@@ -191,6 +192,7 @@ suite("lint: 規則の既定", () => {
     assert.deepStrictEqual(fileRules, [
       "layout-invalid-position",
       "layout-column-one-reserved",
+      "layout-keyword-not-conditionable",
       "layout-invalid-screen-size",
       "layout-spacing-with-line-number",
       "layout-overflow",

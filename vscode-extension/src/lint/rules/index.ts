@@ -75,6 +75,15 @@ const LAYOUT_RULES = [
       "原典「最初の桁は属性文字のために予約されています」。"
   },
   {
+    code: "keyword-not-conditionable",
+    id: "layout-keyword-not-conditionable",
+    severity: "error",
+    enabledByDefault: true,
+    description:
+      "条件を付けられないキーワードに条件標識が付いていないか。" +
+      "原典「オプション標識は、このキーワードでは無効です」。実機はコンパイルしない。"
+  },
+  {
     code: "invalid-screen-size",
     id: "layout-invalid-screen-size",
     severity: "error",

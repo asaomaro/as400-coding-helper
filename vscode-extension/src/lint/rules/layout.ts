@@ -1,5 +1,8 @@
 import { DDS_COLUMNS } from "../../core/ddsLayout";
-import { DDS_KEYWORD_AREA_START } from "../../core/dds/ddsLogicalUnits";
+import {
+  DDS_CONDITIONING,
+  DDS_KEYWORD_AREA_START
+} from "../../core/dds/ddsLogicalUnits";
 import { resolveDspfLayout } from "../../core/dds/dspfLayout";
 import { resolvePrtfLayout } from "../../core/dds/prtfLayout";
 import type { FileRule, FileRuleContext, LintFinding, RuleId, Severity } from "../types";
@@ -58,7 +61,7 @@ function resolve(context: FileRuleContext): ResolvedDiagnostics | undefined {
 }
 
 /** 指摘が指す桁の範囲。診断の性質で使い分ける。 */
-type Span = "position" | "keywords";
+type Span = "position" | "keywords" | "conditioning";
 
 /**
  * ここに載せるのは `RuleId` を持つ診断コードだけ。
@@ -69,6 +72,8 @@ const SPAN_BY_CODE: ReadonlyMap<string, Span> = new Map([
   // 位置欄（39-44 桁）を直せば解決するもの。
   ["invalid-position", "position"],
   ["column-one-reserved", "position"],
+  // 条件付け欄（7-16 桁）を直せば解決する。
+  ["keyword-not-conditionable", "conditioning"],
   ["overflow", "position"],
   ["overlap", "position"],
   ["spacing-with-line-number", "position"],
@@ -84,6 +89,12 @@ function spanOf(line: string, span: Span): { start: number; end: number } {
     // 欄に届かない短い行では、指す場所が無いので行全体に落とす。
     if (line.length < positionStart) return wholeLine;
     return { start: positionStart, end: Math.min(line.length, positionEnd) + 1 };
+  }
+
+  if (span === "conditioning") {
+    const [start, end] = DDS_CONDITIONING;
+    if (line.length < start) return wholeLine;
+    return { start, end: Math.min(line.length, end) + 1 };
   }
 
   if (line.length < DDS_KEYWORD_AREA_START) return wholeLine;
