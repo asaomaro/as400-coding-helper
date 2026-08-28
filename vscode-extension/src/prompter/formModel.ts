@@ -53,6 +53,15 @@ export interface SerializableField {
   readonly objectKind?: "file" | "program" | "dataArea";
   /** CL 変数(&NAME)を書けるか。入力欄の maxlength に効く。 */
   readonly allowsVariable?: boolean;
+  /**
+   * 選択肢が「制限」か「候補」か（実機の `Rstd`）。
+   *
+   * **`false` なら候補にすぎず、一覧に無い値も書ける。** 画面はこれを見て
+   * 入力部品を変える——`<select>` は一覧に無い値を打てないため。
+   * 該当は 108 欄で、**うち 57 欄は選択肢が 1 つしかない**（`ADDPFM` の `SRCTYPE` は
+   * 定義済み値が `*NONE` だけだが、実際に書くのは `RPGLE` など）。
+   */
+  readonly restricted?: boolean;
   readonly disabled: boolean;
   readonly allowedValues?: readonly string[];
   /** 実機の F4 基本プロンプトに出ない「追加パラメータ」か。 */
@@ -211,6 +220,7 @@ export function toSerializableState(
       promptControl: field.parameter.promptControl,
       objectKind: field.parameter.objectKind,
       allowsVariable: field.parameter.attributes?.allowsVariable,
+      restricted: field.parameter.attributes?.restricted,
       disabled: field.disabled,
       allowedValues: field.allowedValues
     }))

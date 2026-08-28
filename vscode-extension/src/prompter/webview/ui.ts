@@ -342,12 +342,13 @@ export function startPrompter(bridge: Bridge, root: HTMLElement): void {
 
   function buildControl(field: SerializableField): HTMLElement {
     if (field.inputType === "dropdown" && field.options && field.options.length > 0) {
-      const select = el("select", { name: field.name }) as HTMLSelectElement;
-      for (const option of field.options) {
-        select.appendChild(el("option", { value: option.value, textContent: option.label }));
-      }
-      select.value = field.value;
-      return select;
+      // **列挙した値＝制限とは限らない。** 実機が `Rstd=NO` と言う欄では候補にすぎず、
+      // 任意の値を書ける。`<select>` は一覧に無い値を打てないので、そこだけ
+      // 一覧つきの自由入力にする（候補は見えたまま、打ちたい値も打てる）。
+      // 該当 108 欄のうち **57 欄は選択肢が 1 つ**——選択ではなく錠前になっていた。
+      return field.restricted === false
+        ? buildOpenChoice(field)
+        : buildSelect(field);
     }
 
     if (typeof field.maxOccurrences === "number" && field.maxOccurrences > 1) {
@@ -355,6 +356,41 @@ export function startPrompter(bridge: Bridge, root: HTMLElement): void {
     }
 
     return buildTextInput(field, field.value);
+  }
+
+  /** 制限のある選択欄。一覧の値しか選べない。 */
+  function buildSelect(field: SerializableField): HTMLSelectElement {
+    const select = el("select", { name: field.name }) as HTMLSelectElement;
+    for (const option of field.options ?? []) {
+      select.appendChild(el("option", { value: option.value, textContent: option.label }));
+    }
+    select.value = field.value;
+    return select;
+  }
+
+  /**
+   * 候補つきの自由入力。**入力欄の作りは `buildTextInput` に任せる**——
+   * 幅・`maxlength`（CL 変数の余地）・候補の紐付けを別経路で作ると、
+   * どちらかが後退する（PR#98 で `maxlength` を落として踏んだ）。
+   */
+  function buildOpenChoice(field: SerializableField): HTMLElement {
+    const wrapper = el("span", { className: "open-choice" });
+    const input = buildTextInput(field, field.value);
+
+    // **`objectKind` の候補より、この欄の選択肢を優先する。** `list` は 1 つしか
+    // 付けられない。実データに両方持つ欄は 0 件だが、増えたときに黙って
+    // 片方が消えないよう、ここで明示しておく。
+    const listId = `choices-${field.name}`;
+    input.setAttribute("list", listId);
+
+    const list = el("datalist", { id: listId });
+    for (const option of field.options ?? []) {
+      list.appendChild(el("option", { value: option.value }));
+    }
+
+    wrapper.appendChild(input);
+    wrapper.appendChild(list);
+    return wrapper;
   }
 
   /** 複数値の欄（`+` / `-` で増減する）。値は改行区切りで持つ。 */
