@@ -87,6 +87,31 @@ suite("RPG III の数値欄: I 仕様", () => {
   });
 });
 
+suite("RPG III の数値欄: F 仕様", () => {
+  /**
+   * 実機で確かめた（`verify/probe-rpg3-fspec.mjs`）:
+   * 定義どおりの桁（種別 15 / レコード長 24-27 右寄せ）は**通る**、
+   * サンプルの見た目（1 桁ずつ右）は**通らない**、左詰めも英字も**通らない**。
+   */
+  const fSpec = (reclen: { col: number; text: string }): string => {
+    let line = put(put(put(put(" ".repeat(80), 6, "F"), 7, "INFILE"), 15, "I"), 16, "P");
+    line = put(put(line, 19, "F"), 40, "DISK");
+    return put(line, reclen.col, reclen.text);
+  };
+
+  test("レコード長を右寄せなら指摘しない", () => {
+    assert.deepStrictEqual(codes([fSpec({ col: 24, text: "  80" })]), []);
+  });
+
+  test("**レコード長を左詰めにしたら指摘する**", () => {
+    assert.ok(codes([fSpec({ col: 24, text: "80" })]).includes("numeric-alignment"));
+  });
+
+  test("レコード長に英字なら指摘する", () => {
+    assert.ok(codes([fSpec({ col: 24, text: "  8A" })]).includes("numeric-field"));
+  });
+});
+
 suite("RPG III の数値欄: 実サンプル", () => {
   /**
    * **`RPG3SAMP.rpg` も壊れていた**（長さが 49 桁・小数なし）。実機が通さない形で、
