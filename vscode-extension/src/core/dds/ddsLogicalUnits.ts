@@ -394,6 +394,20 @@ export interface AlternatePosition {
   readonly conditioningLines: readonly string[];
 }
 
+/**
+ * その単位が占める**最後の行**（1 始まり）。
+ *
+ * 位置の上書き行を挿す位置はこの次。実機は run の**途中**に上書き行を置くと
+ * 通さない（継続行の間に挟むと `CRTDSPF` が落ちる。
+ * `.aidev/works/20260828-dds-secondary-edit/verify/probe-override-placement.mjs` の P3）。
+ *
+ * `sourceLines` には先行する条件行も入っているので、**最大値**を採る
+ * （先頭でも件数でもない）。
+ */
+export function unitRunEnd(unit: LogicalUnit): number {
+  return unit.sourceLines.reduce((max, line) => (line > max ? line : max), unit.sourceLine);
+}
+
 /** ファイル・レベルのキーワード行（最初の様式・項目より前）。 */
 export interface FileKeywordLine {
   /** 1 始まり。 */

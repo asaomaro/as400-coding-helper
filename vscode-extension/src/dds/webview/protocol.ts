@@ -133,15 +133,45 @@ export function parseEdits(value: unknown): readonly DdsEdit[] | undefined {
   return edits;
 }
 
+/**
+ * `move` の画面サイズ。**省略時は 1 次**（`undefined` を返す）。
+ * 知らない値は `"invalid"` で、呼び出し側が編集ごと弾く。
+ */
+function parseScreenSize(value: unknown): "primary" | "secondary" | undefined | "invalid" {
+  if (value === undefined) return undefined;
+  if (value === "primary" || value === "secondary") return value;
+  return "invalid";
+}
+
 function parseEdit(value: unknown): DdsEdit | undefined {
   if (!isRecord(value)) return undefined;
 
   switch (value.kind) {
-    case "move":
-      return isPositiveInteger(value.sourceLine) &&
-        isPositiveInteger(value.row) &&
-        isPositiveInteger(value.column)
-        ? { kind: "move", sourceLine: value.sourceLine, row: value.row, column: value.column }
+    case "move": {
+      if (
+        !isPositiveInteger(value.sourceLine) ||
+        !isPositiveInteger(value.row) ||
+        !isPositiveInteger(value.column)
+      ) {
+        return undefined;
+      }
+      // どちらの画面サイズの位置か。**省略時は 1 次**（いままでと同じ）。
+      // 2 次なら宛先は位置の上書き行になる（無ければ core が作る）。
+      const which = parseScreenSize(value.screenSize);
+      if (which === "invalid") return undefined;
+      const screenSize = which === undefined ? {} : { screenSize: which };
+      return {
+        kind: "move",
+        sourceLine: value.sourceLine,
+        row: value.row,
+        column: value.column,
+        ...screenSize
+      };
+    }
+    case "clearAlternatePosition":
+      // 位置の上書き行を消す。`remove`（項目を消す）とは別の操作。
+      return isPositiveInteger(value.sourceLine)
+        ? { kind: "clearAlternatePosition", sourceLine: value.sourceLine }
         : undefined;
     case "moveColumn":
       // 帳票の**桁だけ**の移動。行は行送り（SPACE / SKIP）で決まるので触らない。
@@ -184,14 +214,17 @@ function parseEdit(value: unknown): DdsEdit | undefined {
         condition.push(terms);
       }
       // 画面サイズ条件名（`*DS3` 等）。標識と混ぜられないことは core の検証が見る。
-      if (value.screenSize !== undefined && typeof value.screenSize !== "string") {
+      // **`move.screenSize` と別物**——あちらは `"primary" | "secondary"`。
+      if (value.screenSizeName !== undefined && typeof value.screenSizeName !== "string") {
         return undefined;
       }
-      const screenSize =
-        typeof value.screenSize === "string" ? { screenSize: value.screenSize } : {};
+      const named =
+        typeof value.screenSizeName === "string"
+          ? { screenSizeName: value.screenSizeName }
+          : {};
       return value.kind === "setKeywordCondition"
-        ? { kind: "setKeywordCondition", sourceLine: value.sourceLine, condition, ...screenSize }
-        : { kind: "setCondition", sourceLine: value.sourceLine, condition, ...screenSize };
+        ? { kind: "setKeywordCondition", sourceLine: value.sourceLine, condition, ...named }
+        : { kind: "setCondition", sourceLine: value.sourceLine, condition, ...named };
     }
     case "setAttributes": {
       if (!isPositiveInteger(value.sourceLine) || !isRecord(value.attributes)) {

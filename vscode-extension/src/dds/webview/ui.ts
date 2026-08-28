@@ -10,11 +10,14 @@ import {
   formatConditionText,
   parseConditionText
 } from "../../core/dds/ddsConditionWriteBack";
+import { findFieldReferences } from "../../core/dds/ddsReferences";
 import {
   findKeywordHelp,
+  keywordsForLevel,
   parseKeywordEntries,
   type DdsKeywordHelp,
-  type KeywordEntry
+  type KeywordEntry,
+  type KeywordLevel
 } from "../../core/dds/ddsKeywords";
 import type { ItemAttributes, OutlineItem } from "../../core/dds/dspfOutline";
 import {
@@ -109,6 +112,11 @@ class EditorView {
   private pendingStructural = false;
   /** 直近の拒否理由。プロパティ内に出す（フォーカスを奪わない場所）。 */
   private rejectMessage = "";
+  /**
+   * 適用が通ったときに出す一言。**送る側が決める**——ホストは何が起きたかを
+   * 知っているが、それを言葉にするのは画面の仕事。
+   */
+  private pendingStatus: string | undefined;
   /** 拒否されたときフォーカスを戻す欄。**入力し直せるようにする**（AC-I4）。 */
   private pendingFocus: string | undefined;
   /**
@@ -297,7 +305,8 @@ class EditorView {
         this.pendingStructural = false;
         this.rejectMessage = "";
         this.pendingFocus = undefined;
-        this.setStatus("");
+        this.setStatus(this.pendingStatus ?? "");
+        this.pendingStatus = undefined;
         this.render();
         break;
       case "rejected": {
@@ -306,6 +315,7 @@ class EditorView {
         this.gesture = undefined;
         this.pendingStructural = false;
         this.pendingSelection = undefined;
+        this.pendingStatus = undefined;
         const rejections = (message.rejections ?? []) as ReadonlyArray<{ message: string }>;
         const reason = rejections.map(rejection => rejection.message).join(" / ");
         // 元の位置は UI が覚えず、ホストのモデルから描き直す（状態を 2 か所に置かない）。
@@ -407,6 +417,18 @@ class EditorView {
       items: secondary.items,
       diagnostics: secondary.diagnostics
     };
+  }
+
+  /**
+   * 編集の宛先になる画面サイズ。**1 次なら undefined**（編集に載せない）。
+   *
+   * 2 次では位置を決めているのが**位置の上書き行**なので、`move` にこれを載せないと
+   * 項目自身の行（＝1 次の位置）が黙って書き換わる。判定を 1 か所に閉じておく。
+   */
+  private get editingScreenSize(): "secondary" | undefined {
+    return this.display.secondaryScreen && this.model?.secondaryScreen !== undefined
+      ? "secondary"
+      : undefined;
   }
 
   private render(): void {
@@ -1005,12 +1027,15 @@ class EditorView {
     const breakdown = this.columnBreakdown(item, model);
     if (breakdown !== undefined) nodes.push(breakdown);
     if (item.kind === "field") {
-      // 黙って壊さない。参照の追随は未実装なので、その旨を出す。
+      // **何が一緒に変わるかを書く。** 直す前は「SFLCTL 等は追随しません」と
+      // 出していたが、`SFLCTL` が指すのは項目ではなく**様式**で、
+      // 項目の改名では元から影響しない（断り書き自体が誤っていた）。
       nodes.push(
         text(
           "div",
           "dds-note",
-          "名前を変えても、参照しているキーワード（SFLCTL 等）は追随しません"
+          "名前を変えると、この項目を指すキーワード（&名前 / CSRLOC / HLPARA(*FLD)）も" +
+            "一緒に変わります。様式（レコード）の名前はデザイナからは変えられません"
         )
       );
     }
@@ -1032,8 +1057,8 @@ class EditorView {
    * **編集できる。** `setKeywords` の宛先はファイル・レベルの行も引けるようにしてある
    * （論理単位にならないので、`ddsEdit` が生の行から別に引く）。
    *
-   * ただし `＋`（候補から足す）は出さない——候補はキーワードの**使用レベル**で
-   * 絞っており、ファイル・レベルの一覧をまだ持っていない。生テキストからは書ける。
+   * `＋`（候補から足す）も出す。候補はキーワードの**使用レベル**で絞っており、
+   * ファイル・レベルの一覧は原典から生成済み（DSPF 47 件 / PRTF 9 件）。
    */
   private renderFileKeywordProperties(entry: RenderModel["fileKeywords"][number]): void {
     const nodes: HTMLElement[] = [
@@ -1082,7 +1107,7 @@ class EditorView {
   private keywordSection(
     sourceLine: number,
     keywords: string,
-    level: "record" | "field" | "file",
+    level: KeywordLevel,
     options: { readOnly?: boolean } = {}
   ): HTMLElement {
     const section = document.createElement("div");
@@ -1137,7 +1162,7 @@ class EditorView {
       }
     });
 
-    if (options.readOnly !== true && level !== "file") {
+    if (options.readOnly !== true) {
       chips.appendChild(this.addKeywordButton(sourceLine, keywords, level));
     }
     chips.addEventListener("keydown", event => this.onKeywordKey(event, chips));
@@ -1186,7 +1211,7 @@ class EditorView {
   private addKeywordButton(
     sourceLine: number,
     keywords: string,
-    level: "record" | "field"
+    level: KeywordLevel
   ): HTMLElement {
     const wrap = document.createElement("span");
     wrap.className = "kw-add";
@@ -1207,9 +1232,9 @@ class EditorView {
     const list = document.createElement("datalist");
     const listId = `dds-kw-${level}`;
     list.id = listId;
-    for (const help of this.keywordHelp) {
-      // level を持たないものは常に出す（判別できなかっただけで、書けないとは限らない）。
-      if (help.level && help.level.length > 0 && !help.level.includes(level)) continue;
+    // 絞り込みは core（`keywordsForLevel`）。ここに写すと、単体で確かめられる規則と
+    // 画面に出る規則が別々に育つ。
+    for (const help of keywordsForLevel(this.keywordHelp, level)) {
       const option = document.createElement("option");
       option.value = help.name;
       option.label = help.title;
@@ -1353,7 +1378,7 @@ class EditorView {
         kind: "setCondition",
         sourceLine: item.sourceLine,
         condition: parsed.groups,
-        ...(parsed.screenSize !== undefined ? { screenSize: parsed.screenSize } : {})
+        ...(parsed.screenSize !== undefined ? { screenSizeName: parsed.screenSize } : {})
       });
     };
     // 他の入力欄（`attributeInput`）と同じ約束にそろえる:
@@ -1449,7 +1474,7 @@ class EditorView {
           kind: "setKeywordCondition",
           sourceLine: group.sourceLine,
           condition: parsed.groups,
-          ...(parsed.screenSize !== undefined ? { screenSize: parsed.screenSize } : {})
+          ...(parsed.screenSize !== undefined ? { screenSizeName: parsed.screenSize } : {})
         });
       };
       input.addEventListener("keydown", event => {
@@ -1624,11 +1649,44 @@ class EditorView {
     }
 
     this.pendingFocus = String(key);
+    // **名前を変えると他の行も変わる。** 何行変わったかを出さないと、
+    // 押した人には「1 つ直したはずなのにソースが増えて動いた」ようにしか見えない。
+    this.pendingStatus =
+      key === "name" ? this.describeRenameFollow(item.attributes.name ?? "") : undefined;
     this.send({
       kind: "setAttributes",
       sourceLine: item.sourceLine,
       attributes
     } as DdsEdit);
+  }
+
+  /**
+   * その名前を指している参照の件数（0 件なら知らせない）。
+   *
+   * 数え方は core（`findFieldReferences`）に任せる。**ここで数え直すと、
+   * 実際に書き換わる箇所と件数が食い違う。**
+   */
+  private describeRenameFollow(from: string): string | undefined {
+    const model = this.model;
+    if (!model || from.trim().length === 0) return undefined;
+    const target = from.trim().toUpperCase();
+
+    const areas = [
+      ...model.fileKeywords.map(entry => entry.keywords),
+      ...model.outline.flatMap(record => [
+        record.keywords,
+        ...record.items.map(item => item.attributes.keywords ?? "")
+      ])
+    ];
+    const count = areas.reduce(
+      (total, keywords) =>
+        total +
+        findFieldReferences(keywords).filter(
+          reference => reference.name.toUpperCase() === target
+        ).length,
+      0
+    );
+    return count === 0 ? undefined : `${count} か所の参照も一緒に変えました`;
   }
 
   private selectedOutlineItem(model: RenderModel): OutlineItem | undefined {
@@ -1678,19 +1736,17 @@ class EditorView {
     // **Pending 中は受け付けない**（往復の途中で次の編集を積まない）。
     if (this.mode === "pending") return;
 
-    // **2 次画面サイズの表示では動かせない。** 位置を決めているのは
-    // 「位置の上書き行」で、掴んで動かすと**項目自身の行**（＝1 次の位置）を
-    // 書き換えてしまう。選ぶことはできる。
-    if (this.display.secondaryScreen && this.model?.secondaryScreen !== undefined) {
-      const picked = (event.target as HTMLElement | null)?.closest<HTMLElement>(".dds-item");
+    const target = event.target as HTMLElement | null;
+
+    // **2 次では長さを変えられない。** 位置の上書き行は長さ欄を持てず
+    // （実機で確認）、長さは画面サイズで変わらない。掴ませずに理由を出す。
+    if (this.editingScreenSize !== undefined && target?.dataset.role === "resize") {
+      const picked = target.closest<HTMLElement>(".dds-item");
       this.select(picked ? Number(picked.dataset.sourceLine) : undefined);
-      if (picked) {
-        this.setStatus("2 次画面サイズの表示では動かせません（位置は上書き行が決めます）");
-      }
+      this.setStatus("長さは画面サイズで変わりません（上書き行は位置だけを持ちます）");
       return;
     }
 
-    const target = event.target as HTMLElement | null;
     const element = target?.closest<HTMLElement>(".dds-item") ?? null;
     if (!element) {
       this.select(undefined);
@@ -1761,6 +1817,7 @@ class EditorView {
         this.gesture = undefined;
         return;
       }
+      const screenSize = this.editingScreenSize;
       this.send(
         gesture.rowFromSpacing
           ? { kind: "moveColumn", sourceLine: gesture.sourceLine, column: target.column }
@@ -1768,7 +1825,8 @@ class EditorView {
               kind: "move",
               sourceLine: gesture.sourceLine,
               row: target.row,
-              column: target.column
+              column: target.column,
+              ...(screenSize !== undefined ? { screenSize } : {})
             }
       );
       return;
@@ -1810,7 +1868,14 @@ class EditorView {
 
     if (event.key === "Delete" || event.key === "Backspace") {
       event.preventDefault();
-      this.send({ kind: "remove", sourceLine: item.sourceLine });
+      // **2 次では「項目を消す」ではなく「上書き行を消す」。** 2 次の絵で項目を
+      // 選んで Delete を押した人が期待するのは、その画面での位置指定を取り消すこと
+      // ——項目そのものが両方の画面から消えることではない。
+      this.send(
+        this.editingScreenSize === undefined
+          ? { kind: "remove", sourceLine: item.sourceLine }
+          : { kind: "clearAlternatePosition", sourceLine: item.sourceLine }
+      );
       return;
     }
 
@@ -1827,11 +1892,13 @@ class EditorView {
       return;
     }
 
+    const screenSize = this.editingScreenSize;
     this.send({
       kind: "move",
       sourceLine: item.sourceLine,
       row: clamp(item.row + step.row, 1, canvas.rows),
-      column
+      column,
+      ...(screenSize !== undefined ? { screenSize } : {})
     });
   }
 
@@ -2093,7 +2160,7 @@ function template(): string {
     <button id="dds-toggle-dim" type="button" title="選択中の項目が属する様式以外を淡く表示します">他様式を淡く</button>
     <button id="dds-toggle-colors" type="button" title="COLOR / DSPATR から実機の見え方（色・反転表示・下線・非表示）で描きます">5250 配色</button>
     <button id="dds-toggle-preview" type="button" title="CPI / LPI で決まる紙の比率で描きます（1 桁 = 1/CPI インチ、1 行 = 1/LPI インチ）">プレビュー</button>
-    <button id="dds-toggle-secondary" type="button" title="2 次画面サイズでの見え方を描きます（位置の上書き行で決まる位置。この表示では動かせません）">2 次画面</button>
+    <button id="dds-toggle-secondary" type="button" title="2 次画面サイズでの見え方を描きます（動かすと位置の上書き行に書きます。長さは変えられません）">2 次画面</button>
     <span class="density" role="group" aria-label="印刷密度"></span>
     <span class="sep"></span>
     <span class="zoom" role="group" aria-label="ズーム"></span>

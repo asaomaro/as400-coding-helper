@@ -98,6 +98,23 @@ export function screenSizeOfConditionName(name: string): ScreenSize | undefined 
 }
 
 /**
+ * その大きさを条件付けるときに**書く名前**。`matchesScreenSize` の逆向き。
+ *
+ * ユーザー定義名があればそれを、無ければ IBM 提供名（`*DS3` / `*DS4`）を返す。
+ * 原典より、`DSPSIZ` を数値形式で書くと条件名が付かないが、そのときも
+ * IBM 提供名で条件付けできる——だから「名前が無い ＝ 条件付けできない」ではない。
+ *
+ * どちらも決まらない（原典に無い大きさ）なら undefined。
+ */
+export function conditionNameFor(entry: ScreenSizeEntry): string | undefined {
+  if (entry.conditionName !== undefined) return entry.conditionName;
+  for (const [name, size] of IBM_SIZE_NAMES) {
+    if (sameSize(size, entry.size)) return name;
+  }
+  return undefined;
+}
+
+/**
  * 条件付け欄に書かれた画面サイズ条件名が、指定のサイズを指しているか。
  *
  * **名前の文字列だけで比べてはいけない。** `DSPSIZ` を数値形式で書くと

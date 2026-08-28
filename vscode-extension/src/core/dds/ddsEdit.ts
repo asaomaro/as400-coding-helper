@@ -1,5 +1,6 @@
-import { DDS_COLUMNS, ddsField } from "../ddsLayout";
+import { DDS_COLUMNS, ddsField, isDdsBlankLine, isDdsCommentLine } from "../ddsLayout";
 import {
+  buildAlternatePositionLine,
   buildItemLine,
   writeBackAttributes,
   buildKeywordLine,
@@ -17,7 +18,9 @@ import {
   startsContinuation,
   toLogicalUnits,
   unitItemKind,
+  unitRunEnd,
   fileLevelKeywordLines,
+  type AlternatePosition,
   type FileKeywordLine,
   type LogicalUnit,
   type RawKeywordGroup
@@ -28,7 +31,13 @@ import {
   writeBackScreenSizeCondition,
   type ConditionGroups
 } from "./ddsConditionWriteBack";
-import { isScreenSizeConditionName } from "./dspfScreenSize";
+import {
+  conditionNameFor,
+  isScreenSizeConditionName,
+  resolveScreenSizes
+} from "./dspfScreenSize";
+import { findAlternatePosition } from "./ddsConditioning";
+import { renameFieldReferences } from "./ddsReferences";
 import { COLUMN_ONE_MESSAGE, isRowOneColumnOne } from "./dspfLayout";
 import { DDS_POSITION_ROW } from "./ddsPositionColumns";
 import { writeBackColumn, writeBackPosition } from "./ddsPositionWriteBack";
@@ -67,7 +76,22 @@ import { writeBackColumn, writeBackPosition } from "./ddsPositionWriteBack";
 export type EditableDdsType = "DDS-DSPF" | "DDS-PRTF";
 
 export type DdsEdit =
-  | { readonly kind: "move"; readonly sourceLine: number; readonly row: number; readonly column: number }
+  | {
+      readonly kind: "move";
+      readonly sourceLine: number;
+      readonly row: number;
+      readonly column: number;
+      /**
+       * どちらの画面サイズの位置を動かすか。**省略時は 1 次**（いままでと同じ）。
+       *
+       * `"secondary"` のとき、書き込む先は項目の行ではなく**位置の上書き行**になる
+       * （無ければ作る）。項目の行を書き換えると 1 次の位置が黙って変わる。
+       *
+       * 値は `DspfLayoutOptions.screenSize` と**同じ語**。絵を解く側と編集する側で
+       * 言葉が違うと、UI が変換を持つことになる。
+       */
+      readonly screenSize?: "primary" | "secondary";
+    }
   /**
    * **桁だけ**動かす（帳票）。
    *
@@ -113,8 +137,11 @@ export type DdsEdit =
       /**
        * **画面サイズ条件名**（`*DS3` 等）を書くとき。標識とは**別の欄の使い方**で、
        * AND も OR もしないので `condition` とは**同時に指定できない**（検証で弾く）。
+       *
+       * `move.screenSize`（`"primary" | "secondary"`）と**別物**。
+       * こちらは欄に書く**名前そのもの**なので `Name` を付けて分けてある。
        */
-      readonly screenSize?: string;
+      readonly screenSizeName?: string;
     }
   /**
    * **キーワード行**の条件標識を置き換える（`30 DSPATR(RI)` の `30`）。
@@ -129,9 +156,18 @@ export type DdsEdit =
       readonly kind: "setKeywordCondition";
       readonly sourceLine: number;
       readonly condition: ConditionGroups;
-      /** 画面サイズ条件名。`condition` とは同時に指定できない（検証で弾く）。 */
-      readonly screenSize?: string;
+      /** 画面サイズ条件名（`move.screenSize` と別物）。`condition` とは同時に指定できない。 */
+      readonly screenSizeName?: string;
     }
+  /**
+   * 位置の上書き行を**消す**（2 次でも 1 次と同じ位置に出るようにする）。
+   *
+   * `remove` に画面サイズを足す形は採らない。**`remove` は「項目を消す」**で、
+   * 同じ語が 2 次では「上書き行だけ消す」に化けると、押した人の予想と食い違う。
+   *
+   * `sourceLine` は**項目の代表行**（上書き行ではない）。
+   */
+  | { readonly kind: "clearAlternatePosition"; readonly sourceLine: number }
   | { readonly kind: "add"; readonly recordName: string; readonly item: NewDspfItem };
 
 /** 置き換え指示。0 始まり・`replaceTo` は含まない。 */
@@ -188,7 +224,22 @@ export type DdsEditRejectionCode =
    * **これは書き方の好みではなく、実機がコンパイルを通さない形**（`CPF7311`）。
    * 重なり・はみ出しは実機が通すので拒否しない（直すために動かせる必要がある）。
    */
-  | "column-one-reserved";
+  | "column-one-reserved"
+  /**
+   * 2 次画面サイズの位置を動かそうとしたが、`DSPSIZ` に 2 次が宣言されていない。
+   *
+   * 上書き行の条件付け欄には**その 2 次を指す名前**しか書けない
+   * （`20260828-dds-undeclared-screen-size` で確認済み）。宣言が無ければ書く名前が無い。
+   */
+  | "screen-size-not-declared"
+  /**
+   * 2 次画面サイズの位置を**帳票**で動かそうとした。
+   *
+   * `DSPSIZ` は表示装置ファイルのキーワードで、帳票に 2 次画面サイズは無い。
+   */
+  | "screen-size-not-editable"
+  /** 消そうとした位置の上書き行が無い（`clearAlternatePosition` の宛先）。 */
+  | "alternate-position-not-found";
 
 export interface DdsEditRejection {
   readonly code: DdsEditRejectionCode;
@@ -242,7 +293,7 @@ export function validateDdsEdits(
         continue;
       }
       rejections.push(
-        ...validateConditionShape(edit.condition, edit.sourceLine, edit.screenSize)
+        ...validateConditionShape(edit.condition, edit.sourceLine, edit.screenSizeName)
       );
       if (!contiguous(group.sourceLines)) {
         rejections.push({
@@ -289,7 +340,7 @@ export function validateDdsEdits(
 
     if (edit.kind === "setCondition") {
       rejections.push(
-        ...validateCondition(unit, edit.condition, edit.sourceLine, edit.screenSize)
+        ...validateCondition(unit, edit.condition, edit.sourceLine, edit.screenSizeName)
       );
       continue;
     }
@@ -297,7 +348,26 @@ export function validateDdsEdits(
     if (edit.kind === "move") {
       rejections.push(...validatePosition(edit.row, edit.column, edit.sourceLine));
       rejections.push(...validateColumnOne(edit.row, edit.column, ddsType, edit.sourceLine));
-      rejections.push(...validateRowMove(unit, ddsType, edit.sourceLine));
+      if (edit.screenSize === "secondary") {
+        // **上書き行に書く。** 行送りの検査は要らない（`SPACE`/`SKIP` は帳票のもので、
+        // 帳票はこの下で丸ごと弾かれる）。
+        rejections.push(...validateSecondary(lines, ddsType, edit.sourceLine));
+      } else {
+        rejections.push(...validateRowMove(unit, ddsType, edit.sourceLine));
+      }
+    }
+
+    if (edit.kind === "clearAlternatePosition") {
+      rejections.push(...validateSecondary(lines, ddsType, edit.sourceLine));
+      if (alternateFor(lines, unit) === undefined) {
+        rejections.push({
+          code: "alternate-position-not-found",
+          message:
+            `${edit.sourceLine} 行目の項目に位置の上書き行がありません` +
+            "（2 次画面サイズでも 1 次と同じ位置に出ます）",
+          sourceLine: edit.sourceLine
+        });
+      }
     }
 
     if (edit.kind === "moveColumn") {
@@ -377,12 +447,28 @@ export function applyDdsEdits(
       case "resize": {
         const unit = itemUnitAt(units, edit.sourceLine);
         if (!unit) break; // 検証済みなので通常は起きない。
+
+        // **2 次は宛先が違う。** 項目の行を書き換えると 1 次の位置が黙って変わる。
+        if (edit.kind === "move" && edit.screenSize === "secondary") {
+          results.push(...moveSecondary(lines, unit, edit.row, edit.column));
+          break;
+        }
+
         const index = edit.sourceLine - 1;
         const rewritten =
           edit.kind === "move"
             ? writeBackPosition({ line: lines[index], row: edit.row, column: edit.column })
             : writeBackLength(lines[index], edit.length);
         results.push({ replaceFrom: index, replaceTo: index + 1, lines: [rewritten] });
+        break;
+      }
+      case "clearAlternatePosition": {
+        const unit = itemUnitAt(units, edit.sourceLine);
+        if (!unit) break;
+        const alternate = alternateFor(lines, unit);
+        if (!alternate) break; // 検証済み。
+        const index = alternate.sourceLine - 1;
+        results.push({ replaceFrom: index, replaceTo: index + 1, lines: [] });
         break;
       }
       case "setAttributes": {
@@ -411,6 +497,20 @@ export function applyDdsEdits(
           replaceTo: index + 1,
           lines: [applyAttributes(lines[index], edit.attributes)]
         });
+
+        // **名前を変えたら、それを指しているキーワードも直す。**
+        // 参照は**別の行**にあるので、同じ確定の中で一緒に積む
+        // ——名前だけ変わって参照が古いままの状態は、実機が通さない。
+        if (edit.attributes.name !== undefined) {
+          results.push(
+            ...renameReferenceResults(
+              lines,
+              ddsName(unit.line),
+              edit.attributes.name,
+              edit.sourceLine
+            )
+          );
+        }
         break;
       }
       case "setKeywords": {
@@ -446,9 +546,9 @@ export function applyDdsEdits(
           replaceFrom: run.from,
           replaceTo: run.to,
           lines:
-            edit.screenSize === undefined
+            edit.screenSizeName === undefined
               ? writeBackCondition(unit.line, edit.condition)
-              : writeBackScreenSizeCondition(unit.line, edit.screenSize)
+              : writeBackScreenSizeCondition(unit.line, edit.screenSizeName)
         });
         break;
       }
@@ -462,9 +562,9 @@ export function applyDdsEdits(
           replaceFrom: first - 1,
           replaceTo: edit.sourceLine,
           lines:
-            edit.screenSize === undefined
+            edit.screenSizeName === undefined
               ? writeBackCondition(lines[edit.sourceLine - 1], edit.condition)
-              : writeBackScreenSizeCondition(lines[edit.sourceLine - 1], edit.screenSize)
+              : writeBackScreenSizeCondition(lines[edit.sourceLine - 1], edit.screenSizeName)
         });
         break;
       }
@@ -816,10 +916,10 @@ function validateCondition(
   unit: LogicalUnit,
   groups: ConditionGroups,
   sourceLine: number,
-  screenSize?: string
+  screenSizeName?: string
 ): DdsEditRejection[] {
   const rejections: DdsEditRejection[] = [
-    ...validateConditionShape(groups, sourceLine, screenSize)
+    ...validateConditionShape(groups, sourceLine, screenSizeName)
   ];
 
   // **条件が空でも 1 本は残る**（代表行）ので、区間が連続しているかだけ見る。
@@ -843,11 +943,11 @@ function validateCondition(
 function validateConditionShape(
   groups: ConditionGroups,
   sourceLine: number,
-  screenSize?: string
+  screenSizeName?: string
 ): DdsEditRejection[] {
   const rejections: DdsEditRejection[] = [];
 
-  if (screenSize !== undefined) {
+  if (screenSizeName !== undefined) {
     // **標識と混ぜられない。** 画面サイズ条件名は AND でも OR でもない。
     if (groups.length > 0) {
       rejections.push({
@@ -856,11 +956,11 @@ function validateConditionShape(
         sourceLine
       });
     }
-    if (!isScreenSizeConditionName(screenSize)) {
+    if (!isScreenSizeConditionName(screenSizeName)) {
       rejections.push({
         code: "screen-size-name-invalid",
         message:
-          `画面サイズ条件名 '${screenSize}' が無効です` +
+          `画面サイズ条件名 '${screenSizeName}' が無効です` +
           "（原典: 2 - 8 文字で、最初の文字はアスタリスク (*)）",
         sourceLine
       });
@@ -968,6 +1068,152 @@ function validatePosition(
     rejections.push(bad("桁", column));
   }
   return rejections;
+}
+
+/**
+ * 名前の変更に追随してキーワード欄を書き換える指示。
+ *
+ * ## 何を追うか
+ *
+ * `findFieldReferences` が決める（`ddsReferences.ts`）——`&名前` と、原典が
+ * 「このファイル内の項目」と書いている定位置の引数だけ。**外部のファイル・
+ * フォント・メッセージを指す引数は触らない**（黙って書き換わると原因が掴めない）。
+ *
+ * ## 行ごとに、その場で書き換える
+ *
+ * **論理単位の区間をまとめて置き換えない。** 区間で置き換えると `foldKeywordArea` が
+ * 走り、**参照と関係のない行まで畳まれる**（`R MAIN` の次の `CSRLOC` 行が
+ * `R MAIN` の行に吸い込まれた）。改名で他の行の見た目が変わるのは驚きなので、
+ * **参照が書かれている物理行のキーワード欄だけ**を差し替える。
+ *
+ * 欄（45-80 桁）に収まらなくなったときだけ、その行を折る（`keywordLines`）。
+ * 折るのは 1 行の中の話で、隣の行は巻き込まない。
+ *
+ * ## 改名した行そのものは対象外
+ *
+ * 代表行は既に別の指示で書き換えている。同じ行に 2 つの指示が出ると区間が重なる。
+ */
+function renameReferenceResults(
+  lines: readonly string[],
+  from: string,
+  to: string,
+  skipSourceLine: number
+): DdsEditResult[] {
+  const results: DdsEditResult[] = [];
+  if (from.trim().length === 0 || from.trim().toUpperCase() === to.trim().toUpperCase()) {
+    return results;
+  }
+
+  lines.forEach((line, index) => {
+    if (index + 1 === skipSourceLine) return;
+    if (isDdsCommentLine(line) || isDdsBlankLine(line)) return;
+
+    const area = keywordAreaOf(line);
+    const renamed = renameFieldReferences(area, from, to);
+    if (renamed === area) return;
+
+    results.push({ replaceFrom: index, replaceTo: index + 1, lines: keywordLines(line, renamed) });
+  });
+
+  return results;
+}
+
+/**
+ * 2 次画面サイズの位置を書く。**上書き行があれば置き換え、無ければ作る。**
+ *
+ * 作る行の形と置き場所は実機に判定させた（IBM i 7.3 / `CRTDSPF`。原典に規定が無い。
+ * `.aidev/works/20260828-dds-secondary-edit/verify/`）:
+ *
+ * - 置き場所は**項目の run の直後**。run の途中（継続行の間）に挟むと通らない。
+ *   項目の**前**にも置けない（直前の項目に付くため）。
+ * - 条件付け欄に書けるのは**画面サイズ条件名だけ**。標識を混ぜると通らない。
+ * - **長さ欄を持てない**。だから空の A 仕様書行から作り、位置だけを書く。
+ * - 1 項目 **1 本**。だから既存があれば置き換える（足さない）。
+ */
+function moveSecondary(
+  lines: readonly string[],
+  unit: LogicalUnit,
+  row: number,
+  column: number
+): DdsEditResult[] {
+  const name = secondaryConditionName(lines);
+  if (name === undefined) return []; // 検証済み。
+
+  const existing = alternateFor(lines, unit);
+  if (existing) {
+    const index = existing.sourceLine - 1;
+    return [
+      {
+        replaceFrom: index,
+        replaceTo: index + 1,
+        lines: [writeBackPosition({ line: lines[index], row, column })]
+      }
+    ];
+  }
+
+  // run の**次**に挿す（`replaceFrom === replaceTo` が挿入）。
+  const at = unitRunEnd(unit);
+  return [
+    { replaceFrom: at, replaceTo: at, lines: [buildAlternatePositionLine(name, row, column)] }
+  ];
+}
+
+/**
+ * 2 次画面サイズの位置を触れるか。触れないなら理由を返す。
+ *
+ * 「書けない形」だけを弾く（`DdsEditRejectionCode` の方針）——
+ * 画面をはみ出す位置は実機が通すので、いままでどおり診断で出す。
+ */
+function validateSecondary(
+  lines: readonly string[],
+  ddsType: EditableDdsType,
+  sourceLine: number
+): DdsEditRejection[] {
+  if (ddsType !== "DDS-DSPF") {
+    return [
+      {
+        code: "screen-size-not-editable",
+        message:
+          "帳票に 2 次画面サイズはありません（DSPSIZ は表示装置ファイルのキーワードです）",
+        sourceLine
+      }
+    ];
+  }
+
+  if (secondaryConditionName(lines) === undefined) {
+    return [
+      {
+        code: "screen-size-not-declared",
+        message:
+          "DSPSIZ に 2 次画面サイズが宣言されていません" +
+          "（上書き行の条件付け欄に書く名前が決まりません）",
+        sourceLine
+      }
+    ];
+  }
+  return [];
+}
+
+/**
+ * 上書き行に書く**画面サイズ条件名**。2 次が無ければ undefined。
+ *
+ * 読む側（`resolveDspfLayout`）と同じ `resolveScreenSizes` を通す。
+ * ここで `DSPSIZ` を読み直すと、同じ解釈が 2 通りになる。
+ */
+function secondaryConditionName(lines: readonly string[]): string | undefined {
+  const { sizes } = resolveScreenSizes(lines);
+  return sizes.secondary === undefined ? undefined : conditionNameFor(sizes.secondary);
+}
+
+/** その項目の、2 次画面サイズを指す位置の上書き行。 */
+function alternateFor(
+  lines: readonly string[],
+  unit: LogicalUnit
+): AlternatePosition | undefined {
+  const { sizes } = resolveScreenSizes(lines);
+  return sizes.secondary === undefined
+    ? undefined
+    : findAlternatePosition(unit, sizes.secondary);
 }
 
 /** その行にある「編集できる項目」の論理単位。レコード宣言行は対象外。 */

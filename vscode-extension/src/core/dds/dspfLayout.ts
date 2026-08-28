@@ -7,6 +7,7 @@ import {
 } from "../ddsLayout";
 import { unconditionableKeywords, type ConditionableDdsType } from "./ddsConditionable";
 import {
+  findAlternatePosition,
   isMutuallyExclusive,
   readConditioning,
   resolveKeywordGroups,
@@ -337,12 +338,7 @@ export function resolveDspfLayout(
 
     // **対象のサイズを指す上書き行があれば、その位置で描く。**
     // 原典（`DSPSIZ` の 例 2）: 同じ項目をサイズごとに別の位置へ置ける。
-    const override = unit.alternatePositions.find(alternate =>
-      matchesScreenSize(
-        (readConditioning(alternate.conditioningLines) as { name?: string }).name ?? "",
-        target
-      )
-    );
+    const override = findAlternatePosition(unit, target);
     const positionLine = override?.line ?? line;
 
     const rowText = ddsField(positionLine, DDS_POSITION_ROW).trim();

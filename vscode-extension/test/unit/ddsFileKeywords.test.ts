@@ -13,6 +13,7 @@ import {
   type DdsEdit
 } from "../../src/core/dds/ddsEdit";
 import { buildPrtfRenderModel } from "../../src/core/dds/prtfRenderModel";
+import { keywordsForLevel, type DdsKeywordHelp } from "../../src/core/dds/ddsKeywords";
 
 /**
  * **ファイル・レベルのキーワード**（`DSPSIZ` / `REF` / `INDARA` / `PRINT` など）。
@@ -225,5 +226,56 @@ suite("ファイル・レベルのキーワード: 編集", () => {
       { kind: "setKeywords", sourceLine: record.sourceLine, keywords: "OVERLAY" }
     ]);
     assert.ok(after[record.sourceLine - 1].includes("OVERLAY"));
+  });
+});
+
+/**
+ * ファイル・レベルでも `＋`（候補から足す）を出す。
+ *
+ * 前 work（`20260828-dds-file-keyword-edit`）では**出さなかった**——
+ * 「ファイル・レベルの一覧をまだ持っていない」と書いたが、**持っていた**
+ * （`resources/completion/dds-keywords.json` の `level` に `file` が入っている）。
+ * 出せない理由の見立てが外れていたので、確かめた事実をテストに固定する。
+ */
+suite("ファイル・レベルのキーワード: 候補", () => {
+  const HELP = (
+    JSON.parse(
+      readFileSync(
+        join(ROOT, "vscode-extension", "resources", "completion", "dds-keywords.json"),
+        "utf8"
+      )
+    ) as Record<string, DdsKeywordHelp[]>
+  )["DDS-DSPF"];
+
+  test("ファイル・レベルの候補が空でない（原典から生成済み）", () => {
+    assert.ok(keywordsForLevel(HELP, "file").length > 0, "候補が 1 件も無い");
+  });
+
+  test("**DSPSIZ / INDARA / PRINT はファイル・レベルの候補に出る**", () => {
+    const names = keywordsForLevel(HELP, "file").map(help => help.name);
+    for (const name of ["DSPSIZ", "INDARA", "PRINT", "REF"]) {
+      assert.ok(names.includes(name), `${name} が候補に無い`);
+    }
+  });
+
+  test("フィールド・レベルの候補には DSPSIZ が出ない（絞りが効いている）", () => {
+    const names = keywordsForLevel(HELP, "field").map(help => help.name);
+    assert.ok(!names.includes("DSPSIZ"), "絞りが効いていない");
+    assert.ok(names.includes("COLOR"), "COLOR が消えた");
+  });
+
+  /**
+   * AGENTS.md「判別できなかったものはどのレベルでも出す」。
+   * 出すべきものを隠すより余分に出す方が害が少ない。
+   */
+  test("レベルを持たないキーワードはどのレベルでも出る", () => {
+    const unknown = HELP.filter(help => !help.level || help.level.length === 0);
+    assert.ok(unknown.length > 0, "レベル未設定のものが無い（前提が変わった）");
+    for (const level of ["file", "record", "field"] as const) {
+      const names = keywordsForLevel(HELP, level).map(help => help.name);
+      for (const help of unknown) {
+        assert.ok(names.includes(help.name), `${help.name} が ${level} で消えた`);
+      }
+    }
   });
 });
