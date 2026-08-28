@@ -22,6 +22,7 @@ import {
   readNumber,
   replaceLeadingConstant,
   startsContinuation,
+  joinContinuations,
   toLogicalUnits,
   unitItemKind,
   unitRunEnd,
@@ -1191,15 +1192,20 @@ function validateRecordRename(
  * 「このファイル内の項目」と書いている定位置の引数だけ。**外部のファイル・
  * フォント・メッセージを指す引数は触らない**（黙って書き換わると原因が掴めない）。
  *
- * ## 行ごとに、その場で書き換える
+ * ## 継続でつながった行は**まとめて**、それ以外は**その場で**
  *
  * **論理単位の区間をまとめて置き換えない。** 区間で置き換えると `foldKeywordArea` が
  * 走り、**参照と関係のない行まで畳まれる**（`R MAIN` の次の `CSRLOC` 行が
  * `R MAIN` の行に吸い込まれた）。改名で他の行の見た目が変わるのは驚きなので、
- * **参照が書かれている物理行のキーワード欄だけ**を差し替える。
+ * 既定は**参照が書かれている物理行のキーワード欄だけ**を差し替える。
  *
- * 欄（45-80 桁）に収まらなくなったときだけ、その行を折る（`keywordLines`）。
- * 折るのは 1 行の中の話で、隣の行は巻き込まない。
+ * ただし**継続（`-` / `+` / 引用符の開き）でつながった run は別**。
+ * `CSRLOC(ROW +` / `COL)` のように**参照が行をまたいで書かれている**と、
+ * 物理行だけを見ても名前が見つからない（`COL` の側には `CSRLOC(` が無い）。
+ * そこで継続の run は**結合したテキストで探し、まとめて折り直す**。
+ *
+ * この 2 つは衝突しない——単独のキーワード行は `joinContinuations` が
+ * **別の run** として返すので、`R MAIN` の次の `CSRLOC` 行が吸い込まれることはない。
  *
  * ## 改名した行そのものは対象外
  *
@@ -1217,16 +1223,35 @@ function renameReferenceResults(
     return results;
   }
 
-  lines.forEach((line, index) => {
-    if (index + 1 === skipSourceLine) return;
-    if (isDdsCommentLine(line) || isDdsBlankLine(line)) return;
+  for (const joined of joinContinuations(lines)) {
+    const head = lines[joined.index];
+    if (isDdsCommentLine(head) || isDdsBlankLine(head)) continue;
+    // 代表行が改名の宛先なら触らない（別の指示が同じ行を書き換えている）。
+    if (joined.index + 1 === skipSourceLine) continue;
 
-    const area = keywordAreaOf(line);
-    const renamed = rename(area, from, to);
-    if (renamed === area) return;
+    // ■ 継続でつながっていない run は**その場で**（見た目を変えない）。
+    if (joined.sourceLines.length === 1) {
+      const area = keywordAreaOf(head);
+      const renamed = rename(area, from, to);
+      if (renamed === area) continue;
+      results.push({
+        replaceFrom: joined.index,
+        replaceTo: joined.index + 1,
+        lines: keywordLines(head, renamed)
+      });
+      continue;
+    }
 
-    results.push({ replaceFrom: index, replaceTo: index + 1, lines: keywordLines(line, renamed) });
-  });
+    // ■ 継続の run は**結合したテキストで探して折り直す**。
+    const renamed = rename(joined.keywords, from, to);
+    if (renamed === joined.keywords) continue;
+    const last = joined.sourceLines[joined.sourceLines.length - 1];
+    results.push({
+      replaceFrom: joined.index,
+      replaceTo: last,
+      lines: keywordLines(head, renamed)
+    });
+  }
 
   return results;
 }

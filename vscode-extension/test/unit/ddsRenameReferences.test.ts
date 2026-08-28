@@ -211,3 +211,88 @@ suite("参照の追随: 判断の網羅", () => {
     }
   });
 });
+
+/**
+ * **継続でつながった行にまたがる参照。**
+ *
+ * `CSRLOC(ROW +` / `COL)` のように書かれていると、物理行だけを見ても
+ * `COL` の側には `CSRLOC(` が無いので参照と分からない。継続の run は
+ * **結合したテキストで探して折り直す**。
+ *
+ * 単独のキーワード行は `joinContinuations` が**別の run** として返すので、
+ * `R MAIN` の次の `CSRLOC` 行が `R MAIN` に吸い込まれることはない（前 work の回帰）。
+ */
+suite("参照の追随: 継続行", () => {
+  test("**継続の後ろ側にある名前も変わる**", () => {
+    const lines = [
+      "     A          R MAIN                      CSRLOC(CSRROW +",
+      "     A                                      CSRCOL)",
+      "     A            CSRROW         3S 0H",
+      "     A            CSRCOL         3S 0H"
+    ];
+    const after = apply(lines, [
+      { kind: "setAttributes", sourceLine: 4, attributes: { name: "NEWCOL" } }
+    ]);
+    const joined = after.join(" ");
+    assert.ok(joined.includes("NEWCOL"), joined);
+    assert.ok(!joined.includes("CSRCOL"), `古い名前が残った: ${joined}`);
+  });
+
+  test("継続の前側にある名前も変わる", () => {
+    const lines = [
+      "     A          R MAIN                      CSRLOC(CSRROW +",
+      "     A                                      CSRCOL)",
+      "     A            CSRROW         3S 0H",
+      "     A            CSRCOL         3S 0H"
+    ];
+    const after = apply(lines, [
+      { kind: "setAttributes", sourceLine: 3, attributes: { name: "NEWROW" } }
+    ]);
+    assert.ok(after.join(" ").includes("NEWROW"));
+    assert.ok(after.join(" ").includes("CSRCOL"), "後ろ側が消えた");
+  });
+
+  test("`&` の参照が継続にまたがっても変わる", () => {
+    const lines = [
+      "     A          R MAIN                      COLOR(RED) +",
+      "     A                                      SFLCSRRRN(&SFLRRN)",
+      "     A            SFLRRN         5S 0H"
+    ];
+    const after = apply(lines, [
+      { kind: "setAttributes", sourceLine: 3, attributes: { name: "NEWRRN" } }
+    ]);
+    assert.ok(after.join(" ").includes("SFLCSRRRN(&NEWRRN)"), after.join(" "));
+    assert.ok(after.join(" ").includes("COLOR(RED)"), "他のキーワードが消えた");
+  });
+
+  /** **前 work の回帰**。単独のキーワード行は継続ではないので畳まれない。 */
+  test("単独のキーワード行は様式の行に吸い込まれない", () => {
+    const lines = [
+      "     A          R MAIN",
+      "     A                                      CSRLOC(CSRROW CSRCOL)",
+      "     A            CSRROW         3S 0H",
+      "     A            CSRCOL         3S 0H"
+    ];
+    const after = apply(lines, [
+      { kind: "setAttributes", sourceLine: 3, attributes: { name: "NEWROW" } }
+    ]);
+    assert.strictEqual(after.length, lines.length, "行数が変わった");
+    assert.strictEqual(after[0], lines[0], "様式の行が変わった");
+    assert.ok(after[1].includes("CSRLOC(NEWROW CSRCOL)"), after[1]);
+  });
+
+  test("様式の参照も継続にまたがって追える", () => {
+    const lines = [
+      "     A          R OTHER                     OVERLAY +",
+      "     A                                      ERASE(MAIN)",
+      "     A            F1            10A  B  7  2",
+      "     A          R MAIN",
+      "     A            F2            10A  B  5  2"
+    ];
+    const after = apply(lines, [
+      { kind: "renameRecord", sourceLine: 4, name: "NEWMAIN" }
+    ]);
+    assert.ok(after.join(" ").includes("ERASE(NEWMAIN)"), after.join(" "));
+    assert.ok(after.join(" ").includes("R NEWMAIN"), after.join(" "));
+  });
+});

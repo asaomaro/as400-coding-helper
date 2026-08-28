@@ -1179,6 +1179,15 @@ check(
     (await lineWith("ERASE")).includes("ERASE(NEWMAIN)"),
   `${await lineWith("PASSRCD")} / ${await lineWith("ERASE")}`
 );
+// `ERASE(MAIN)` は `OVERLAY +` の継続の先にある。物理行だけを見ると
+// `ERASE(` が別の行にあり参照と分からない——結合したテキストで探す経路。
+check(
+  "**継続にまたがる参照も追える**（OVERLAY + の先の ERASE）",
+  (await lineWith("ERASE(NEWMAIN)")) !== undefined &&
+    (await sourceLines()).some(line => line.includes("OVERLAY")) &&
+    !(await sourceLines()).some(line => line.includes("ERASE(MAIN)")),
+  JSON.stringify((await sourceLines()).filter(l => /OVERLAY|ERASE/.test(l)))
+);
 check(
   "**項目を指す参照（CSRLOC）は巻き込まれない**",
   (await lineWith("CSRLOC")).includes("CSRLOC(NEWROW CSRCOL)"),
