@@ -12,6 +12,7 @@ import {
 } from "../../core/dds/ddsConditionWriteBack";
 import { findFieldReferences, findRecordReferences } from "../../core/dds/ddsReferences";
 import { printColorLabel, type PrintAppearance } from "../../core/dds/prtfAppearance";
+import { selectPrintPage } from "../../core/dds/prtfRenderModel";
 import {
   findKeywordHelp,
   genericKeywordPrefix,
@@ -158,6 +159,13 @@ class EditorView {
     secondaryScreen: false,
     zoom: 1
   };
+  /**
+   * いま見ている帳票のページ（1 始まり）。
+   *
+   * `display` に混ぜない——あちらは真偽値と倍率だけの平坦な形で、
+   * 数の状態を混ぜると切替の総当たり（`toggles`）が壊れる。
+   */
+  private printPage = 1;
   /**
    * 条件標識の状態。**未設定の標識は鍵ごと持たない**（`display` とは別に持つ——
    * `display` は真偽値と倍率だけの平坦な形で、鍵が増減する状態を混ぜると空判定が壊れる）。
@@ -412,6 +420,9 @@ class EditorView {
    * 一覧・プロパティ・標識はそのまま使える。
    */
   private screenModel(model: RenderModel): RenderModel {
+    // **帳票はページを絞る。** 後戻りするスキップでページが増える（原典 `LPI`）。
+    if (model.kind === "prtf") return selectPrintPage(model, this.printPage);
+
     const secondary = model.secondaryScreen;
     if (!this.display.secondaryScreen || secondary === undefined) return model;
     return {
@@ -585,7 +596,10 @@ class EditorView {
    */
   private renderDensity(model: RenderModel): void {
     const density = this.previewDensity();
-    if (!density) {
+    const pages = model.pages ?? 1;
+    // **ページ送りは密度と同じ帯に置く**（どちらも帳票の紙の話）。
+    // 密度が出ない（升目のまま）ときでもページが複数なら帯を出す。
+    if (!density && pages <= 1) {
       this.densityBox.replaceChildren();
       this.densityBox.hidden = true;
       return;
@@ -593,6 +607,33 @@ class EditorView {
     this.densityBox.hidden = false;
 
     const nodes: HTMLElement[] = [];
+
+    if (pages > 1) {
+      nodes.push(text("span", "label", "ページ"));
+      const step = (delta: number, label: string, title: string): HTMLButtonElement => {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = "page-step";
+        button.textContent = label;
+        button.title = title;
+        button.dataset.key = `page:${delta > 0 ? "next" : "prev"}`;
+        button.disabled =
+          delta < 0 ? this.printPage <= 1 : this.printPage >= pages;
+        button.addEventListener("click", () => {
+          this.printPage = Math.min(Math.max(1, this.printPage + delta), pages);
+          this.render();
+        });
+        return button;
+      };
+      nodes.push(step(-1, "◀", "前のページ"));
+      nodes.push(text("span", "paper page-number", `${this.printPage} / ${pages}`));
+      nodes.push(step(1, "▶", "次のページ"));
+    }
+
+    if (!density) {
+      this.densityBox.replaceChildren(...nodes);
+      return;
+    }
     for (const [label, values, key] of [
       ["CPI", CPI_VALUES, "cpi"],
       ["LPI", LPI_VALUES, "lpi"]

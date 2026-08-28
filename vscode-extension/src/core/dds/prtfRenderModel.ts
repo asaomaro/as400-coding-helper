@@ -39,14 +39,15 @@ import { toFileKeywords, type RenderModel } from "./dspfRenderModel";
 /** ソース行から帳票の描画モデルを作る。 */
 export function buildPrtfRenderModel(
   lines: readonly string[],
-  options?: PrtfLayoutOptions
+  options?: PrtfLayoutOptions & { readonly showPage?: number }
 ): RenderModel {
   return {
     ...fromPrtfLayout(
       resolvePrtfLayout(lines, options),
       buildDspfOutline(lines),
       collectIndicators(lines),
-      resolvePrintDensity(lines)
+      resolvePrintDensity(lines),
+      options?.showPage
     ),
     fileKeywords: toFileKeywords(lines)
   };
@@ -57,7 +58,9 @@ export function fromPrtfLayout(
   layout: PrtfLayout,
   outline: readonly OutlineRecord[] = [],
   indicators: ReturnType<typeof collectIndicators> = [],
-  density?: PrintDensity
+  density?: PrintDensity,
+  /** 描くページ（1 始まり）。省略時は 1 ページ目。 */
+  showPage = 1
 ): RenderModel {
   // **様式のキーワード欄を引けるようにする。** `HIGHLIGHT` は様式に書くと
   // その中の全項目に効く（原典）ので、項目だけを見ると太字を取りこぼす。
@@ -66,7 +69,12 @@ export function fromPrtfLayout(
     if (record.name.length > 0) recordKeywords.set(record.name, record.keywords);
   }
 
-  const items: RenderItem[] = layout.items.map(item =>
+  // **モデルは全ページ分を持つ。** 絞るのは描くとき（`selectPrintPage`）——
+  // ページを替えるたびにホストへ作り直しを頼むと、往復のあいだ絵が消える。
+  const page = Math.min(Math.max(1, Math.trunc(showPage)), layout.pages);
+  const onPage = layout.items;
+
+  const items: RenderItem[] = onPage.map(item =>
     toRenderItem(
       {
         ...item,
@@ -84,7 +92,7 @@ export function fromPrtfLayout(
   );
 
   const records: string[] = [];
-  for (const item of layout.items) {
+  for (const item of onPage) {
     if (item.recordName && !records.includes(item.recordName)) {
       records.push(item.recordName);
     }
@@ -94,6 +102,8 @@ export function fromPrtfLayout(
     kind: "prtf",
     canvas: { rows: layout.page.rows, columns: layout.page.columns },
     overflowLine: layout.page.overflowLine,
+    pages: layout.pages,
+    currentPage: page,
     ...(density !== undefined ? { density } : {}),
     items,
     // **診断は作り直さない。** `prtfLayout` のものをそのまま渡す。
@@ -135,4 +145,24 @@ function placedOutline(
       return { ...rest, row: found.row, column: found.column };
     })
   }));
+}
+
+/**
+ * **1 ページ分に絞ったモデル。** 帳票でなければそのまま返す。
+ *
+ * 絞るのを描く側に置くのは、**ページを替えるたびにホストへ作り直しを頼まない**ため
+ * ——往復のあいだ絵が消える。`screenModel`（2 次画面サイズ）と同じ形。
+ *
+ * 範囲の外を指したら端に丸める。空の絵を出すより、端のページを見せる方がよい。
+ */
+export function selectPrintPage(model: RenderModel, page: number): RenderModel {
+  const total = model.pages ?? 1;
+  if (model.kind !== "prtf" || total <= 1) return model;
+
+  const wanted = Math.min(Math.max(1, Math.trunc(page)), total);
+  return {
+    ...model,
+    currentPage: wanted,
+    items: model.items.filter(item => (item.page ?? 1) === wanted)
+  };
 }

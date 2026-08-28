@@ -356,6 +356,26 @@ const REPORT_EMPHASIS_SAMPLE = [
   ""
 ].join("\n");
 
+/**
+ * **複数ページの帳票。** 30 行進んだあとで 3 行目へ戻るので、原典より改ページになる。
+ *
+ * 原典（`LPI`）: 「ある行番号へのスキップを指定した場合に、それが**現在位置より
+ * 前の位置**であれば…**改ページが生じます**」。
+ * 最後の様式は `LPI(12)` で、レコードの終わりにファイル・レベル（6）へ戻る。
+ */
+const MULTI_PAGE_SAMPLE = [
+  "     A                                      LPI(6)",
+  "     A          R PAGE1                     SKIPB(1)",
+  "     A                                     5'PAGE ONE'",
+  "     A          R BODY                      SPACEA(30)",
+  "     A            AMOUNT         9S        5",
+  "     A          R PAGE2                     SKIPB(3)",
+  "     A                                     5'PAGE TWO'",
+  "     A          R DENSE                     LPI(12) SPACEA(6)",
+  "     A                                     5'DENSE LINE'",
+  ""
+].join("\n");
+
 const SAMPLES = [
   { name: "CUSTMNT.dspf", text: sample as unknown as string },
   { name: "hidden-items.dspf", text: HIDDEN_SAMPLE },
@@ -365,7 +385,8 @@ const SAMPLES = [
   // 帳票。**行は SPACE / SKIP で決まり、位置欄には桁だけが書かれる**——
   // 画面ファイルには無い形なので、ここで実際に触れるようにしておく。
   { name: "CUSTRPT.prtf", text: report as unknown as string },
-  { name: "report-emphasis.prtf", text: REPORT_EMPHASIS_SAMPLE }
+  { name: "report-emphasis.prtf", text: REPORT_EMPHASIS_SAMPLE },
+  { name: "multi-page.prtf", text: MULTI_PAGE_SAMPLE }
 ];
 const select = must<HTMLSelectElement>("#sample");
 SAMPLES.forEach((entry, index) => {

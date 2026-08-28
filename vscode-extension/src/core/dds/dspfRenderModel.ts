@@ -109,6 +109,15 @@ export interface RenderModel {
    */
   readonly overflowLine?: number;
   /**
+   * ページ数（帳票のみ）。**後戻りするスキップで増える。**
+   *
+   * 原典（`LPI`）: 「ある行番号へのスキップを指定した場合に、それが**現在位置より
+   * 前の位置**であれば…**改ページが生じます**」。
+   */
+  readonly pages?: number;
+  /** いま描いているページ（帳票のみ・1 始まり）。 */
+  readonly currentPage?: number;
+  /**
    * 印刷密度（帳票のみ）。**紙の比率で描く**ときに使う。
    *
    * ソースに `CPI` / `LPI` があればそれ、無ければ `CRTPRTF` の既定。
