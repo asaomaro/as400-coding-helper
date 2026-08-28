@@ -147,10 +147,46 @@ suite("lint: 行長は行の種類を問わず効く", () => {
   test("100 桁以内なら注記行でも指摘しない", () => {
     const findings = lintFile({
       fsPath: join(SRC_DIR, "x.rpgle"),
-      lines: ["     D* " + "あ".repeat(80)],
+      // 半角 92 文字 ＝ 92 桁。**全角で 80 文字にすると 170 桁**になる（下のテスト）。
+      lines: ["     D* " + "A".repeat(92)],
       definitions: loadDefinitions(defaultResourcesDir(__dirname))
     });
     assert.deepStrictEqual(findings, []);
+  });
+
+  /**
+   * **桁は実機の桁で数える。**
+   *
+   * 直す前は JS の文字数で数えており、全角 80 文字（JS 88 文字）の注記行を
+   * 「100 桁以内」として通していた。実機では SO/SI ＋ 全角 2 桁で **170 桁**になり、
+   * メンバーに入れた時点で**切り捨てられる**（IBM i 7.3 で実測。全角 30 文字の
+   * 定数を持つ行が JS 76 文字 → 読み戻し 71 文字。
+   * `.aidev/works/20260828-dds-line-width-columns/verify/probe-line-truncation.mjs`）。
+   * 指摘が出ないまま黙って欠けるのが直す前の状態だった。
+   */
+  test("**全角は 2 桁 ＋ SO/SI で数える**（JS の文字数では足りない）", () => {
+    const findings = lintFile({
+      fsPath: join(SRC_DIR, "x.rpgle"),
+      lines: ["     D* " + "あ".repeat(80)],
+      definitions: loadDefinitions(defaultResourcesDir(__dirname))
+    });
+    const lineLength = findings.filter(finding => finding.ruleId === "line-length");
+    assert.strictEqual(lineLength.length, 1, "指摘が出ていない");
+    assert.ok(lineLength[0].message.includes("170 桁"), lineLength[0].message);
+    assert.ok(lineLength[0].message.includes("文字数は 88"), lineLength[0].message);
+  });
+
+  test("全角でも 100 桁以内なら指摘しない", () => {
+    const findings = lintFile({
+      fsPath: join(SRC_DIR, "x.rpgle"),
+      // `     D* ` が 8 桁、全角 45 文字が SO(1) + 90 + SI(1) = 92 桁 → 計 100 桁。
+      lines: ["     D* " + "あ".repeat(45)],
+      definitions: loadDefinitions(defaultResourcesDir(__dirname))
+    });
+    assert.deepStrictEqual(
+      findings.filter(finding => finding.ruleId === "line-length"),
+      []
+    );
   });
 
   test("注記行で定位置の規則は動かない（欄が無いので偽陽性の元）", () => {

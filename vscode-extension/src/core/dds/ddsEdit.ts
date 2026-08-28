@@ -48,6 +48,7 @@ import { renameFieldReferences, renameRecordReferences } from "./ddsReferences";
 import { COLUMN_ONE_MESSAGE, isRowOneColumnOne } from "./dspfLayout";
 import { DDS_POSITION_ROW } from "./ddsPositionColumns";
 import { writeBackColumn, writeBackPosition } from "./ddsPositionWriteBack";
+import { printWidth } from "../dbcs";
 
 /**
  * DDS ソースへの編集操作。**vscode を import しない**（行の配列 → 置き換え指示）。
@@ -283,6 +284,8 @@ const DECIMALS_WIDTH = DDS_COLUMNS.decimals[1] - DDS_COLUMNS.decimals[0] + 1;
  *
  * 原典は「仕様書の注記以外は 7-80 桁」としつつ、**81-100 桁の目盛りを持つ**ので
  * 80 では切らない（`src/lint/rules/lineLength.ts`）。判定を 2 か所に持たないため同じ値を使う。
+ *
+ * **数えるのは実機の桁**（`printWidth`）。JS の文字数では全角の分が足りない。
  */
 const MAX_LINE_COLUMNS = 100;
 /** 位置欄は行・桁とも 3 桁ずつ。 */
@@ -830,9 +833,10 @@ function validateAttributes(
 
   // 書き換えた結果が行の上限を超えるなら書けない。
   const next = applyAttributes(lines[sourceLine - 1] ?? "", attributes);
-  if (next.length > MAX_LINE_COLUMNS) {
+  const columns = printWidth(next);
+  if (columns > MAX_LINE_COLUMNS) {
     rejections.push(
-      at("line-too-long", `書き換えると ${next.length} 桁になり、${MAX_LINE_COLUMNS} 桁を超えます`)
+      at("line-too-long", `書き換えると ${columns} 桁になり、${MAX_LINE_COLUMNS} 桁を超えます`)
     );
   }
 

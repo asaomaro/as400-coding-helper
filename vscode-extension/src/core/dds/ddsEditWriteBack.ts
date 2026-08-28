@@ -1,4 +1,5 @@
 import { DDS_COLUMNS, ddsReplaceField } from "../ddsLayout";
+import { indexExceedingWidth, printWidth } from "../dbcs";
 import { DDS_CONDITIONING } from "./ddsLogicalUnits";
 import { formatScreenSizeArea } from "./ddsConditionWriteBack";
 import { writeBackPosition } from "./ddsPositionWriteBack";
@@ -53,6 +54,23 @@ export const KEYWORD_AREA_WIDTH = 80 - DDS_KEYWORD_AREA_START + 1;
  * 読む側は `+` も解釈するが（実機の規則）、書くのは `-` だけにする。
  * `+` は**継続行の先頭の空白を捨てる**ので、空白を含む値で再現性が落ちる。
  *
+ * ## 桁は**実機の桁**で数える（JS の文字数ではない）
+ *
+ * 実機のメンバーでは DBCS の連なりの前後に SO/SI が 1 桁ずつ入り、全角 1 文字は
+ * 2 桁を占める（`printWidth`）。**JS の文字数で数えると欄からはみ出す行を書き出す。**
+ * 実機で境目を測った（IBM i 7.3。
+ * `.aidev/works/20260828-dds-line-width-columns/verify/probe-dbcs-width.mjs`）:
+ *
+ * | 定数の中身 | 実機の桁 | `CRTDSPF` |
+ * |---|---|---|
+ * | 全角 15 | `'`+SO+30+SI+`'` = 34 | 通る |
+ * | 全角 16 | 36（ちょうど） | 通る |
+ * | 全角 17 | 38 | **通らない** |
+ * | 半角 2 ＋ 全角 15 | 36（ちょうど） | 通る |
+ * | 半角 3 ＋ 全角 15 | 37 | **通らない** |
+ *
+ * `printWidth` の値と実機の可否が**完全に一致**する。
+ *
  * 返り値の 1 つ目が代表行の欄、2 つ目以降が継続行の欄。空なら空配列。
  */
 export function foldKeywordArea(keywords: string): readonly string[] {
@@ -69,23 +87,29 @@ export function foldKeywordArea(keywords: string): readonly string[] {
 
   for (const entry of parseKeywordEntries(flat)) {
     const candidate = current.length === 0 ? entry.raw : `${current} ${entry.raw}`;
-    if (candidate.length <= KEYWORD_AREA_WIDTH) {
+    if (printWidth(candidate) <= KEYWORD_AREA_WIDTH) {
       current = candidate;
       continue;
     }
 
     // 切れ目で折れるなら折る（継続記号は要らない）。
     flush();
-    if (entry.raw.length <= KEYWORD_AREA_WIDTH) {
+    if (printWidth(entry.raw) <= KEYWORD_AREA_WIDTH) {
       current = entry.raw;
       continue;
     }
 
     // 1 つのキーワードが 36 桁を超える。ここだけ `-` で切る。
+    // **切る位置も実機の桁で決める**——`-` の 1 桁を残す。
     let rest = entry.raw;
-    while (rest.length > KEYWORD_AREA_WIDTH) {
-      chunks.push(`${rest.slice(0, KEYWORD_AREA_WIDTH - 1)}-`);
-      rest = rest.slice(KEYWORD_AREA_WIDTH - 1);
+    for (;;) {
+      const at = indexExceedingWidth(rest, KEYWORD_AREA_WIDTH - 1);
+      if (at === undefined) break;
+      // 1 文字も入らない（全角 1 文字で 35 桁を超える）ことは無いが、
+      // 念のため止める——0 で切ると同じ塊を無限に積む。
+      if (at === 0) break;
+      chunks.push(`${rest.slice(0, at)}-`);
+      rest = rest.slice(at);
     }
     current = rest;
   }
