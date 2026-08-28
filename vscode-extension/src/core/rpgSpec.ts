@@ -1,3 +1,4 @@
+import rpgCompletion from "../../resources/completion/rpg-completion.json";
 import type { Dialect } from "../prompter/types";
 
 /**
@@ -20,17 +21,46 @@ import type { Dialect } from "../prompter/types";
  */
 
 /** C 仕様の「新形式」オペコードの既定集合。設定はこれに追加する形で効く。 */
-export const DEFAULT_C_NEW_OPCODES: ReadonlySet<string> = new Set([
-  "EVAL",
-  "EVALR",
-  "IF",
-  "ELSEIF",
+/**
+ * **拡張演算項目 2 を採る命令**（`C-NEW` の桁で書く命令）。
+ *
+ * ## 手で並べない
+ *
+ * 原典から生成した補完データ（`resources/completion/rpg-completion.json`）の
+ * `fixedForm.columns` に**「拡張演算項目 2」**が入っているものを採る。
+ *
+ * 手で並べていたころは 10 件しか無く、**`DOU` が抜けていた**——`DOU` の行に
+ * 固定欄の桁（`C-SPEC`）を当てるため、64-68 桁の「フィールド長」に式の途中が
+ * 入っているように見え、**正しいソースに lint が指摘を出していた**
+ * （`docs/src/EMPMNT01.rpgle:147`）。原典には 17 件ある。
+ *
+ * ## 演算項目を採らない命令は別に足す
+ *
+ * `ELSE` / `ENDIF` / `SELECT` / `OTHER` / `ENDSL` は**何も採らない**ので原典の
+ * 「拡張演算項目 2」の一覧には出ない。固定欄の桁を当てても実害は無いが、
+ * プロンプターが**埋めようのない欄**（演算項目 1 / 2・結果フィールド）を出すので、
+ * こちらに含める。
+ */
+const NO_OPERAND_OPCODES: readonly string[] = [
   "ELSE",
   "ENDIF",
   "SELECT",
-  "WHEN",
   "OTHER",
   "ENDSL"
+];
+
+/** 補完データの列名（日英）。原典の言い回しをそのまま見る。 */
+const EXTENDED_FACTOR2_LABELS: readonly string[] = ["拡張演算項目", "Extended Factor 2"];
+
+export const DEFAULT_C_NEW_OPCODES: ReadonlySet<string> = new Set([
+  ...(rpgCompletion.opcodes ?? [])
+    .filter(opcode =>
+      (opcode.fixedForm?.columns ?? []).some(column =>
+        EXTENDED_FACTOR2_LABELS.some(label => column.includes(label))
+      )
+    )
+    .map(opcode => opcode.name.toUpperCase()),
+  ...NO_OPERAND_OPCODES
 ]);
 
 export interface RpgSpecOptions {

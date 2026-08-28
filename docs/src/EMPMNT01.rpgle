@@ -24,16 +24,16 @@ H*=====================================================================
      D*
      D*-- 日付編集用
      D DATES           DS
-     D  SDATE                  8S 0
-     D  SYY                    4S 0 OVERLAY(SDATE:1)
-     D  SMM                    2S 0 OVERLAY(SDATE:5)
-     D  SDD                    2S 0 OVERLAY(SDATE:7)
+     D SDATE                          8S 0
+     D SYY                            4S 0 OVERLAY(SDATE:1)
+     D SMM                            2S 0 OVERLAY(SDATE:5)
+     D SDD                            2S 0 OVERLAY(SDATE:7)
      D*
      D*-- エラーメッセージ用API
      D ERRCODE         DS
-     D  BYTPVD                     10I 0 INZ(0)
-     D  BYTAVL                     10I 0
-     D  MSGID                       7A
+     D BYTPVD                        10I 0 INZ(0)
+     D BYTAVL                        10I 0
+     D MSGID                          7A
      D*
      D*=====================================================================
      D* スタンドアロン変数定義
