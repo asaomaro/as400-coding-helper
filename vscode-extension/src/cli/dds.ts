@@ -8,7 +8,7 @@ import {
   toFileKeywords,
   type RenderModel
 } from "../core/dds/dspfRenderModel";
-import { buildPrtfRenderModel } from "../core/dds/prtfRenderModel";
+import { buildPrtfRenderModel, selectPrintPage } from "../core/dds/prtfRenderModel";
 import { DEFAULT_PAGE } from "../core/dds/prtfLayout";
 import { resolveDdsType, type DdsType } from "../core/sourceKind";
 // **編集 JSON の関門は WebView と共通**（`parseEdits`）。protocol は vscode に依存しない。
@@ -50,6 +50,7 @@ const USAGE = `使い方: node out/cli/dds.js <コマンド> [オプション] <
   --page-columns <n>     帳票: 1 行の桁数（既定 ${DEFAULT_PAGE.columns}）
   --overflow <n>         帳票: オーバーフロー行（既定 ${DEFAULT_PAGE.overflowLine}）
   --screen-size <n>      画面: primary（既定）| secondary（2 次画面サイズの絵）
+  --page <n>             帳票: 何ページ目を描くか（既定 1）
   --help
 
 対象は画面（.dspf / .mnudds）と帳票（.prtf）。物理/論理ファイル（.pf / .lf）は
@@ -68,6 +69,8 @@ interface CliOptions {
   write: boolean;
   allowNewIssues: boolean;
   screenSize: "primary" | "secondary";
+  /** 帳票の何ページ目を描くか（1 始まり）。 */
+  printPage: number;
   page: { rows: number; columns: number; overflowLine: number };
   file: string;
 }
@@ -89,6 +92,7 @@ function parseArgs(argv: readonly string[]): CliOptions {
     write: false,
     allowNewIssues: false,
     screenSize: "primary",
+    printPage: 1,
     page: { ...DEFAULT_PAGE },
     file: ""
   };
@@ -142,6 +146,9 @@ function parseArgs(argv: readonly string[]): CliOptions {
         break;
       case "--overflow":
         options.page.overflowLine = number();
+        break;
+      case "--page":
+        options.printPage = number();
         break;
       case "--screen-size": {
         const value = next();
@@ -200,9 +207,13 @@ function modelOf(
   ddsType: DdsType,
   lines: readonly string[],
   page: CliOptions["page"],
-  screenSize: CliOptions["screenSize"] = "primary"
+  screenSize: CliOptions["screenSize"] = "primary",
+  printPage = 1
 ): RenderModel {
-  if (ddsType === "DDS-PRTF") return buildPrtfRenderModel(lines, { page });
+  if (ddsType === "DDS-PRTF") {
+    // **ページを絞るのは描く側**（`selectPrintPage`）。モデルは全ページ分を持つ。
+    return selectPrintPage(buildPrtfRenderModel(lines, { page }), printPage);
+  }
 
   const model = buildDspfRenderModel(lines);
   if (screenSize !== "secondary" || model.secondaryScreen === undefined) return model;
@@ -376,7 +387,7 @@ export function run(argv: readonly string[]): number {
         )}\n`;
         break;
       case "render": {
-        const model = modelOf(ddsType, source.lines, options.page, options.screenSize);
+        const model = modelOf(ddsType, source.lines, options.page, options.screenSize, options.printPage);
         if (options.screenSize === "secondary" && model.secondaryScreen === undefined) {
           console.error("✗ このファイルは 2 次画面サイズを宣言していません（DSPSIZ）");
           return 2;

@@ -1565,9 +1565,89 @@ check(
   })()
 );
 
+// ---- 複数ページの帳票 --------------------------------------------------
+//
+// 原典（`LPI`）: 「ある行番号へのスキップを指定した場合に、それが**現在位置より
+// 前の位置**であれば…**改ページが生じます**」。
+await page.selectOption("#sample", { label: "multi-page.prtf" });
+await page.waitForTimeout(250);
+
+const pageLabel = async () =>
+  (await page.$(".density .page-number")) === null
+    ? ""
+    : await page.$eval(".density .page-number", n => n.textContent);
+const itemTexts = async () =>
+  await page.$$eval(".dds-item", ns => ns.map(n => n.textContent));
+
+check(
+  "**ページ送りが出る**（2 ページある）",
+  (await pageLabel()) === "1 / 2",
+  await pageLabel()
+);
+check(
+  "1 ページ目には 1 ページ目の項目だけが出る",
+  (await itemTexts()).some(t => t.includes("PAGE ONE")) &&
+    !(await itemTexts()).some(t => t.includes("PAGE TWO")),
+  JSON.stringify(await itemTexts())
+);
+check("戻るは最初のページで押せない", await page.$eval('[data-key="page:prev"]', n => n.disabled));
+
+await page.click('[data-key="page:next"]');
+await page.waitForTimeout(220);
+check(
+  "**次のページに送れる**",
+  (await pageLabel()) === "2 / 2" &&
+    (await itemTexts()).some(t => t.includes("PAGE TWO")) &&
+    !(await itemTexts()).some(t => t.includes("PAGE ONE")),
+  `${await pageLabel()} ${JSON.stringify(await itemTexts())}`
+);
+check("進むは最後のページで押せない", await page.$eval('[data-key="page:next"]', n => n.disabled));
+
+await page.click('[data-key="page:prev"]');
+await page.waitForTimeout(220);
+check("戻れる", (await pageLabel()) === "1 / 2", await pageLabel());
+
+// **LPI がページの途中で変わると行の高さも変わる。**
+// 原典（`LPI`）は途中で変えることを認めており、位置は用紙上の絶対位置になる。
+await page.click("#dds-toggle-preview");
+await page.waitForTimeout(250);
+const topOf = async label =>
+  (await page.$$eval(".dds-item", ns =>
+    ns.map(n => ({ t: n.textContent, top: n.style.top, h: n.style.height }))
+  )).find(item => item.t.includes(label));
+check(
+  "**紙の比率では位置（インチ）で置く**（PAGE ONE は先頭 ＝ 0px）",
+  (await topOf("PAGE ONE"))?.top === "0px",
+  JSON.stringify(await topOf("PAGE ONE"))
+);
+// 倍率は既定 150% なので 1 インチ = 144px。
+check(
+  "**行の高さはその行の LPI で決まる**（6 LPI ＝ 144/6 ＝ 24px）",
+  (await topOf("PAGE ONE"))?.h === "24px",
+  JSON.stringify(await topOf("PAGE ONE"))
+);
+await page.click('[data-key="page:next"]');
+await page.waitForTimeout(220);
+check(
+  "**LPI(12) の行は半分の高さになる**（144/12 ＝ 12px）",
+  (await topOf("DENSE LINE"))?.h === "12px",
+  JSON.stringify(await topOf("DENSE LINE"))
+);
+check(
+  "同じページの 6 LPI の行は 24px のまま（行ごとに違う）",
+  (await topOf("PAGE TWO"))?.h === "24px",
+  JSON.stringify(await topOf("PAGE TWO"))
+);
+await page.click("#dds-toggle-preview");
+await page.waitForTimeout(220);
+
 await page.selectOption("#sample", { label: "CUSTRPT.prtf" });
 await page.waitForTimeout(250);
 
+check(
+  "**1 ページの帳票にはページ送りを出さない**",
+  (await page.$(".density .page-number")) === null
+);
 check(
   "オーバーフロー行が引かれる（CRTPRTF の OVRFLW）",
   (await page.$$(".dds-overflow")).length === 1

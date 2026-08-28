@@ -1,5 +1,6 @@
 import { ddsField, ddsName } from "../ddsLayout";
 import { DDS_POSITION_COLUMN, DDS_POSITION_ROW } from "./ddsPositionColumns";
+import { LPI_VALUES, resolvePrintDensity } from "./prtfDensity";
 import {
   constantWidth,
   fieldWidth,
@@ -46,10 +47,31 @@ export interface PlacedItem {
   readonly kind: "field" | "constant";
   readonly name?: string;
   readonly text?: string;
-  /** 1 始まり。 */
+  /**
+   * **そのページの中の**行番号（1 始まり）。
+   *
+   * 原典より、後戻りするスキップは改ページを起こす。ページをまたぐと行番号は
+   * 1 から数え直す——`page` と組で見ないと位置が決まらない。
+   */
   readonly row: number;
   /** 1 始まり。 */
   readonly column: number;
+  /** 何ページ目か（1 始まり）。 */
+  readonly page: number;
+  /**
+   * ページの先頭からの**位置（インチ）**。
+   *
+   * 原典: 「データは、**行番号ではなく位置に基づいて**順次に処理されます」。
+   * LPI がページの途中で変わると、行番号と位置は比例しなくなる。
+   */
+  readonly inches: number;
+  /**
+   * その行に効いている LPI（1 インチ当たりの行数）。
+   *
+   * **行の高さは `1 ÷ lpi` インチ。** ページの途中で変わりうるので、
+   * ファイル全体の 1 つの値では描けない（原典は途中で変えることを認めている）。
+   */
+  readonly lpi: number;
   /** undefined は幅不明。 */
   readonly width: number | undefined;
   readonly widthUnknownReason?: WidthUnknownReason;
@@ -117,6 +139,8 @@ export interface PrtfLayout {
   readonly page: PrtfPage;
   readonly items: readonly PlacedItem[];
   readonly diagnostics: readonly LayoutDiagnostic[];
+  /** ページ数（1 以上）。後戻りするスキップで増える。 */
+  readonly pages: number;
 }
 
 export interface PrtfLayoutOptions {
@@ -226,8 +250,29 @@ function readSpacing(keywords: string): Spacing {
   };
 }
 
+/**
+ * 印刷の現在地。
+ *
+ * **行番号と位置の両方を持つ。** 原典（`LPI`）:
+ * > データは、**行番号ではなく位置に基づいて**順次に処理されます。ある行番号への
+ * > スキップを指定した場合に、それが**現在位置より前の位置**であれば
+ * > (たとえその行番号が現在の行番号より大きくても)、**改ページが生じます**。
+ *
+ * LPI が 1 つなら位置は行番号に比例するので、どちらで見ても同じ答えになる。
+ * **複数あると比例しない**——原典の例では 6 LPI で 24 行・8 LPI で 24 行の
+ * あと、48 行目が 7 インチ（一定なら 8 インチ）の位置に来る。
+ */
 interface Cursor {
+  /** ページ内の行番号（1 始まり）。 */
   row: number;
+  /** 何ページ目か（1 始まり）。 */
+  page: number;
+  /** ページの先頭からの位置（インチ）。 */
+  inches: number;
+  /** いま効いている LPI。レコードの終わりでファイル・レベルへ戻る。 */
+  lpi: number;
+  /** ファイル・レベルの LPI（`CRTPRTF` の既定、または `LPI` キーワード）。 */
+  fileLpi: number;
   recordName?: string;
   /** 現在のレコードで桁送りキーワードを見たか（レコード・項目のどちらでも）。 */
   recordHasSpacing?: boolean;
@@ -237,22 +282,57 @@ interface Cursor {
   pendingRecordAfter?: { skipAfter?: number; spaceAfter?: number };
 }
 
+/**
+ * 指定の行番号へスキップする。**後戻りなら改ページ。**
+ *
+ * 原典（`LPI`）より、スキップ先の位置は**絶対**で `行番号 ÷ そのときの LPI` インチ。
+ * 原典の例: ページ 66 行・6 LPI で「行番号 48 へのスキップ」は
+ * 「ページの初めから **48/6 = 8 インチ**」。
+ *
+ * **いまの位置より前なら改ページ**する。原典の例: 6 LPI で 24 行・8 LPI で 24 行
+ * 印刷して 7 インチにいるとき、`SKIPB(55)` は 8 LPI で 55/8 = 6.875 インチ
+ * ——7 インチより前なので改ページになる。
+ */
+function skipTo(cursor: Cursor, line: number): void {
+  const target = line / cursor.lpi;
+  if (target < cursor.inches) {
+    cursor.page += 1;
+  }
+  cursor.row = line;
+  cursor.inches = target;
+}
+
+/** 行送り。**位置はいまの LPI で進む**（原典: SPACE は新しい LPI を使用する）。 */
+function advance(cursor: Cursor, lines: number): void {
+  cursor.row += lines;
+  cursor.inches += lines / cursor.lpi;
+}
+
+// **処理の順序は原典が定めている**: LPI → SKIPB → SPACEB → SPACEA → SKIPA。
 function applyBefore(cursor: Cursor, spacing: Spacing): void {
-  if (spacing.skipBefore !== undefined) cursor.row = spacing.skipBefore;
-  if (spacing.spaceBefore !== undefined) cursor.row += spacing.spaceBefore;
+  if (spacing.skipBefore !== undefined) skipTo(cursor, spacing.skipBefore);
+  if (spacing.spaceBefore !== undefined) advance(cursor, spacing.spaceBefore);
 }
 
 function applyAfter(cursor: Cursor, spacing: Spacing): void {
-  if (spacing.skipAfter !== undefined) cursor.row = spacing.skipAfter;
-  if (spacing.spaceAfter !== undefined) cursor.row += spacing.spaceAfter;
+  if (spacing.spaceAfter !== undefined) advance(cursor, spacing.spaceAfter);
+  if (spacing.skipAfter !== undefined) skipTo(cursor, spacing.skipAfter);
 }
 
 function flushRecordAfter(cursor: Cursor): void {
   const pending = cursor.pendingRecordAfter;
   if (!pending) return;
-  if (pending.skipAfter !== undefined) cursor.row = pending.skipAfter;
-  if (pending.spaceAfter !== undefined) cursor.row += pending.spaceAfter;
+  if (pending.spaceAfter !== undefined) advance(cursor, pending.spaceAfter);
+  if (pending.skipAfter !== undefined) skipTo(cursor, pending.skipAfter);
   cursor.pendingRecordAfter = undefined;
+}
+
+/** レコードのキーワード欄から `LPI(n)` を読む。原典に無い値は採らない。 */
+function readLpi(keywords: string): number | undefined {
+  const match = /\bLPI\s*\(\s*(\d+)\s*\)/u.exec(keywords);
+  if (!match) return undefined;
+  const value = Number(match[1]);
+  return LPI_VALUES.includes(value) ? value : undefined;
 }
 
 export function resolvePrtfLayout(
@@ -262,7 +342,9 @@ export function resolvePrtfLayout(
   const page: PrtfPage = { ...DEFAULT_PAGE, ...(options?.page ?? {}) };
   const items: PlacedItem[] = [];
   const diagnostics: LayoutDiagnostic[] = [];
-  const cursor: Cursor = { row: 1 };
+  // **ファイル・レベルの LPI**。書かれていなければ `CRTPRTF` の既定（原典）。
+  const fileLpi = resolvePrintDensity(lines).lpi;
+  const cursor: Cursor = { row: 1, page: 1, inches: 0, lpi: fileLpi, fileLpi };
 
   const units = toLogicalUnits(lines);
   diagnostics.push(...unconditionableDiagnostics(units, "PRTF"));
@@ -280,6 +362,9 @@ export function resolvePrtfLayout(
       cursor.recordName = ddsName(line) || undefined;
       cursor.recordHasSpacing = spacing.hasAny;
       cursor.recordItemsWithoutRow = [];
+      // **LPI が先**（原典の処理順: LPI → SKIPB → SPACEB → SPACEA → SKIPA）。
+      // レコードの終わりでファイル・レベルへ戻るので、ここで毎回入れ直す。
+      cursor.lpi = readLpi(keywords) ?? cursor.fileLpi;
       applyBefore(cursor, spacing);
       // レコード・レベルの後置きは「レコードのすべての行の後」に効く（D1）。
       cursor.pendingRecordAfter = {
@@ -362,6 +447,10 @@ export function resolvePrtfLayout(
       ...(isConstant ? { text: constant } : { name: fieldName }),
       row,
       column,
+      page: cursor.page,
+      // 行番号を書いた項目は、その行の位置（いまの LPI で数える）。
+      inches: explicitRow !== undefined ? explicitRow / cursor.lpi : cursor.inches,
+      lpi: cursor.lpi,
       width,
       ...(widthUnknownReason ? { widthUnknownReason } : {}),
       ...(cursor.recordName ? { recordName: cursor.recordName } : {}),
@@ -391,7 +480,8 @@ export function resolvePrtfLayout(
   diagnostics.push(...detectOverlaps(items), ...detectOverflow(items, page));
   diagnostics.sort((a, b) => a.sourceLine - b.sourceLine);
 
-  return { page, items, diagnostics };
+  const pages = items.reduce((max, item) => (item.page > max ? item.page : max), cursor.page);
+  return { page, items, diagnostics, pages };
 }
 
 /**

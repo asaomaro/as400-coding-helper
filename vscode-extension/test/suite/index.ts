@@ -1,38 +1,32 @@
-import * as path from "node:path";
-import * as Mocha from "mocha";
-import * as glob from "glob";
+import { resolve } from "node:path";
+import Mocha from "mocha";
+import { glob } from "glob";
 
-export function run(): Promise<void> {
-  const mocha = new Mocha({
-    ui: "bdd",
-    color: true
-  });
+/**
+ * 拡張ホストの中で走らせる統合テストの入口。
+ *
+ * ## 見ているのは「VSCode が要るもの」だけ
+ *
+ * 対象は `test/integration` **だけ**。以前は 1 つ上（`..`）を見ており、
+ * 単体テストまで拡張ホストの中で走っていた——何が VSCode を要るテストなのかが
+ * 分からなくなるうえ、単体は `npm test` の方が速い。
+ *
+ * ## `tdd`
+ *
+ * テストは `suite` / `test` で書かれている。`bdd` ではどちらも未定義になる。
+ */
+export async function run(): Promise<void> {
+  const mocha = new Mocha({ ui: "tdd", color: true, timeout: 20000 });
+  const testsRoot = resolve(__dirname, "../integration");
 
-  const testsRoot = path.resolve(__dirname, "..");
+  for (const file of await glob("**/*.test.js", { cwd: testsRoot })) {
+    mocha.addFile(resolve(testsRoot, file));
+  }
 
-  return new Promise((resolve, reject) => {
-    glob("**/*.test.js", { cwd: testsRoot }, (err, files) => {
-      if (err) {
-        reject(err);
-        return;
-      }
-
-      for (const file of files) {
-        mocha.addFile(path.resolve(testsRoot, file));
-      }
-
-      try {
-        mocha.run(failures => {
-          if (failures > 0) {
-            reject(new Error(`${failures} tests failed.`));
-          } else {
-            resolve();
-          }
-        });
-      } catch (error) {
-        reject(error);
-      }
+  await new Promise<void>((resolvePromise, reject) => {
+    mocha.run(failures => {
+      if (failures > 0) reject(new Error(`${failures} tests failed.`));
+      else resolvePromise();
     });
   });
 }
-
