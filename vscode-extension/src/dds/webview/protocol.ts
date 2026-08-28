@@ -168,6 +168,11 @@ function parseEdit(value: unknown): DdsEdit | undefined {
         ...screenSize
       };
     }
+    case "renameRecord":
+      // 名前の中身（長さ・重複）は core の検証が見る。ここは型だけ。
+      return isPositiveInteger(value.sourceLine) && typeof value.name === "string"
+        ? { kind: "renameRecord", sourceLine: value.sourceLine, name: value.name }
+        : undefined;
     case "clearAlternatePosition":
       // 位置の上書き行を消す。`remove`（項目を消す）とは別の操作。
       return isPositiveInteger(value.sourceLine)

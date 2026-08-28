@@ -1,4 +1,10 @@
-import { DDS_COLUMNS, ddsField, isDdsBlankLine, isDdsCommentLine } from "../ddsLayout";
+import {
+  DDS_COLUMNS,
+  ddsField,
+  ddsReplaceField,
+  isDdsBlankLine,
+  isDdsCommentLine
+} from "../ddsLayout";
 import {
   buildAlternatePositionLine,
   buildItemLine,
@@ -37,7 +43,7 @@ import {
   resolveScreenSizes
 } from "./dspfScreenSize";
 import { findAlternatePosition } from "./ddsConditioning";
-import { renameFieldReferences } from "./ddsReferences";
+import { renameFieldReferences, renameRecordReferences } from "./ddsReferences";
 import { COLUMN_ONE_MESSAGE, isRowOneColumnOne } from "./dspfLayout";
 import { DDS_POSITION_ROW } from "./ddsPositionColumns";
 import { writeBackColumn, writeBackPosition } from "./ddsPositionWriteBack";
@@ -168,6 +174,15 @@ export type DdsEdit =
    * `sourceLine` は**項目の代表行**（上書き行ではない）。
    */
   | { readonly kind: "clearAlternatePosition"; readonly sourceLine: number }
+  /**
+   * **様式（レコード）の名前**を変える。指している参照も一緒に直す。
+   *
+   * `setAttributes` を広げる形は採らない。あちらは長さ・型・用途・定数の文字列を
+   * 受け取れるが、様式にはどれも無い——受け取れる形にすると
+   * 「様式に長さを送ったらどうなるか」を考え続けることになる。
+   * 追う参照も別（項目は `&名前` / `CSRLOC`、様式は `SFLCTL` / `ERASE` …）。
+   */
+  | { readonly kind: "renameRecord"; readonly sourceLine: number; readonly name: string }
   | { readonly kind: "add"; readonly recordName: string; readonly item: NewDspfItem };
 
 /** 置き換え指示。0 始まり・`replaceTo` は含まない。 */
@@ -239,7 +254,18 @@ export type DdsEditRejectionCode =
    */
   | "screen-size-not-editable"
   /** 消そうとした位置の上書き行が無い（`clearAlternatePosition` の宛先）。 */
-  | "alternate-position-not-found";
+  | "alternate-position-not-found"
+  /** 指定した行に様式（`R XXXX`）が無い。 */
+  | "record-line-not-found"
+  /** 様式には名前が必要（空にできない）。 */
+  | "record-needs-name"
+  /**
+   * その名前の様式が既にある。
+   *
+   * **実機が通さない**（同じ名前の様式を 2 つ置くとコンパイルできない。IBM i 7.3。
+   * `.aidev/works/20260828-dds-record-rename/verify/probe-record-names.mjs` の N1）。
+   */
+  | "record-name-duplicate";
 
 export interface DdsEditRejection {
   readonly code: DdsEditRejectionCode;
@@ -323,6 +349,12 @@ export function validateDdsEdits(
         }
         continue;
       }
+    }
+
+    // **様式の改名は宛先が様式**。`itemUnitAt` では引けないので先に処理する。
+    if (edit.kind === "renameRecord") {
+      rejections.push(...validateRecordRename(units, edit.sourceLine, edit.name));
+      continue;
     }
 
     const unit =
@@ -460,6 +492,28 @@ export function applyDdsEdits(
             ? writeBackPosition({ line: lines[index], row: edit.row, column: edit.column })
             : writeBackLength(lines[index], edit.length);
         results.push({ replaceFrom: index, replaceTo: index + 1, lines: [rewritten] });
+        break;
+      }
+      case "renameRecord": {
+        const unit = units.find(
+          candidate => candidate.kind === "record" && candidate.sourceLine === edit.sourceLine
+        );
+        if (!unit) break; // 検証済み。
+        const index = edit.sourceLine - 1;
+        results.push({
+          replaceFrom: index,
+          replaceTo: index + 1,
+          lines: [ddsReplaceField(lines[index], DDS_COLUMNS.name, edit.name.trim().toUpperCase()).trimEnd()]
+        });
+        results.push(
+          ...renameReferenceResults(
+            lines,
+            ddsName(unit.line),
+            edit.name,
+            edit.sourceLine,
+            renameRecordReferences
+          )
+        );
         break;
       }
       case "clearAlternatePosition": {
@@ -1071,6 +1125,64 @@ function validatePosition(
 }
 
 /**
+ * 様式の改名が書けるか。
+ *
+ * **同じ名前の様式を 2 つ置けない**——実機がコンパイルを通さない（IBM i 7.3。
+ * `.aidev/works/20260828-dds-record-rename/verify/probe-record-names.mjs` の N1）。
+ * 名前の長さの上限は項目と同じ 10 桁（同 probe の NC / ND）。
+ */
+function validateRecordRename(
+  units: readonly LogicalUnit[],
+  sourceLine: number,
+  name: string
+): DdsEditRejection[] {
+  const target = units.find(
+    unit => unit.kind === "record" && unit.sourceLine === sourceLine
+  );
+  if (!target) {
+    return [
+      {
+        code: "record-line-not-found",
+        message: `${sourceLine} 行目に様式がありません（ソースが変わっている可能性があります）`,
+        sourceLine
+      }
+    ];
+  }
+
+  const trimmed = name.trim();
+  if (trimmed.length === 0) {
+    return [{ code: "record-needs-name", message: "様式には名前が必要です", sourceLine }];
+  }
+  if (trimmed.length > NAME_WIDTH) {
+    return [
+      {
+        code: "name-too-long",
+        message: `名前は ${NAME_WIDTH} 桁までです（${trimmed.length} 桁）`,
+        sourceLine
+      }
+    ];
+  }
+
+  const upper = trimmed.toUpperCase();
+  const clash = units.some(
+    unit =>
+      unit.kind === "record" &&
+      unit.sourceLine !== sourceLine &&
+      ddsName(unit.line).toUpperCase() === upper
+  );
+  if (clash) {
+    return [
+      {
+        code: "record-name-duplicate",
+        message: `様式 ${upper} は既にあります（同じ名前の様式は 2 つ置けません）`,
+        sourceLine
+      }
+    ];
+  }
+  return [];
+}
+
+/**
  * 名前の変更に追随してキーワード欄を書き換える指示。
  *
  * ## 何を追うか
@@ -1097,7 +1209,8 @@ function renameReferenceResults(
   lines: readonly string[],
   from: string,
   to: string,
-  skipSourceLine: number
+  skipSourceLine: number,
+  rename: (keywords: string, from: string, to: string) => string = renameFieldReferences
 ): DdsEditResult[] {
   const results: DdsEditResult[] = [];
   if (from.trim().length === 0 || from.trim().toUpperCase() === to.trim().toUpperCase()) {
@@ -1109,7 +1222,7 @@ function renameReferenceResults(
     if (isDdsCommentLine(line) || isDdsBlankLine(line)) return;
 
     const area = keywordAreaOf(line);
-    const renamed = renameFieldReferences(area, from, to);
+    const renamed = rename(area, from, to);
     if (renamed === area) return;
 
     results.push({ replaceFrom: index, replaceTo: index + 1, lines: keywordLines(line, renamed) });

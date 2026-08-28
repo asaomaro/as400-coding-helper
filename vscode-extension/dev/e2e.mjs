@@ -1146,6 +1146,62 @@ check(
   await lineWith("SFLCSRRRN")
 );
 
+// **様式の改名。** 名前の欄は様式のプロパティにもある。
+// **見出しの `.label` を押す。** `li.record` の中心は入れ子の項目行に当たることが
+// あり、UI 側は「一番内側の li が自分か」で見分けるので選択が起きない。
+const selectRecord = async label => {
+  for (const row of await page.$$(".dds-tree li.record > .label")) {
+    if (((await row.textContent()) ?? "").trim() === `R ${label}`) {
+      await row.click();
+      return;
+    }
+  }
+  throw new Error(`様式 ${label} が一覧に無い`);
+};
+await selectRecord("MAIN");
+await page.waitForTimeout(180);
+check(
+  "**様式にも名前の欄が出る**",
+  (await page.$('.dds-props input[data-key="recordName"]')) !== null
+);
+const recordName = await page.$('.dds-props input[data-key="recordName"]');
+await recordName.fill("NEWMAIN");
+await recordName.press("Enter");
+await page.waitForTimeout(280);
+check(
+  "**様式の名前が変わる**",
+  (await lineWith("R NEWMAIN")) !== undefined,
+  JSON.stringify(await sourceLines())
+);
+check(
+  "**様式を指す参照（PASSRCD / ERASE）も一緒に変わる**",
+  (await lineWith("PASSRCD")).includes("PASSRCD(NEWMAIN)") &&
+    (await lineWith("ERASE")).includes("ERASE(NEWMAIN)"),
+  `${await lineWith("PASSRCD")} / ${await lineWith("ERASE")}`
+);
+check(
+  "**項目を指す参照（CSRLOC）は巻き込まれない**",
+  (await lineWith("CSRLOC")).includes("CSRLOC(NEWROW CSRCOL)"),
+  await lineWith("CSRLOC")
+);
+
+// **既にある様式の名前には変えられない**（実機が同じ名前の様式を 2 つ通さない）。
+const beforeClash = await sourceLines();
+const clashInput = await page.$('.dds-props input[data-key="recordName"]');
+await clashInput.fill("OTHER");
+await clashInput.press("Enter");
+await page.waitForTimeout(280);
+check(
+  "**名前が重なる改名は拒否され、ソースは変わらない**",
+  JSON.stringify(await sourceLines()) === JSON.stringify(beforeClash),
+  JSON.stringify(await sourceLines())
+);
+check(
+  "拒否の理由が出る",
+  (await page.$eval(".dds-reject", n => n.textContent)).includes("既にあります"),
+  await page.$eval(".dds-reject", n => n.textContent)
+);
+
 const beforePlain = await sourceLines();
 await rename("CUSTNO", "NEWNO");
 check(

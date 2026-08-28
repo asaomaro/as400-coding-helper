@@ -10,7 +10,7 @@ import {
   formatConditionText,
   parseConditionText
 } from "../../core/dds/ddsConditionWriteBack";
-import { findFieldReferences } from "../../core/dds/ddsReferences";
+import { findFieldReferences, findRecordReferences } from "../../core/dds/ddsReferences";
 import {
   findKeywordHelp,
   genericKeywordPrefix,
@@ -1081,13 +1081,102 @@ class EditorView {
         "div",
         "dds-record-title",
         record.name.length > 0 ? `様式 ${record.name}` : "（様式の外）"
-      ),
-      this.keywordSection(record.sourceLine, record.keywords, "record")
+      )
     ];
+
+    // **様式にも名前の欄を出す。** 出す前は改名するのにテキストエディタが要り、
+    // 手で直すと `SFLCTL` などの参照が置き去りになった（実機が通さない形になる）。
+    // 「（様式の外）」＝ 最初の様式より前のキーワード行には名前が無いので出さない。
+    if (record.name.length > 0) {
+      const table = document.createElement("table");
+      table.className = "dds-props";
+      const row = document.createElement("tr");
+      const label = document.createElement("th");
+      label.textContent = "名前";
+      const cell = document.createElement("td");
+      cell.appendChild(this.recordNameInput(record));
+      row.append(label, cell);
+      table.appendChild(row);
+      nodes.push(table);
+    }
+
+    nodes.push(this.keywordSection(record.sourceLine, record.keywords, "record"));
     if (record.keywords.trim().length === 0) {
       nodes.push(text("div", "dds-note", "この様式にはレコード・レベルのキーワードがありません"));
     }
+    if (record.name.length > 0) {
+      nodes.push(
+        text(
+          "div",
+          "dds-note",
+          "名前を変えると、この様式を指すキーワード（SFLCTL / ERASE / PASSRCD / " +
+            "HLPRCD / MNUBARDSP / MNUBARCHC）も一緒に変わります"
+        )
+      );
+    }
+    nodes.push(text("div", "dds-reject", this.rejectMessage));
     this.properties.replaceChildren(...nodes);
+  }
+
+  /**
+   * 様式の名前の入力欄。
+   *
+   * `attributeInput` と**同じ約束**（Enter で確定 / Escape で戻す / 抜けたら確定・
+   * 同じ値なら送らない）にそろえる。送る編集だけが違う。
+   */
+  private recordNameInput(record: RenderModel["outline"][number]): HTMLInputElement {
+    const input = document.createElement("input");
+    input.value = record.name;
+    input.dataset.key = "recordName";
+    input.maxLength = 10;
+
+    let committed = record.name;
+    const commit = (): void => {
+      if (input.value === committed) return;
+      committed = input.value;
+      this.pendingFocus = "recordName";
+      this.pendingStatus = this.describeRecordRenameFollow(record.name);
+      this.send({ kind: "renameRecord", sourceLine: record.sourceLine, name: input.value });
+    };
+
+    input.addEventListener("keydown", event => {
+      if (event.key === "Enter") {
+        event.preventDefault();
+        input.blur();
+        return;
+      }
+      if (event.key === "Escape") {
+        event.preventDefault();
+        input.value = committed;
+        input.blur();
+      }
+    });
+    input.addEventListener("blur", commit);
+    return input;
+  }
+
+  /** その様式を指している参照の件数（0 件なら知らせない）。 */
+  private describeRecordRenameFollow(from: string): string | undefined {
+    const model = this.model;
+    if (!model || from.trim().length === 0) return undefined;
+    const target = from.trim().toUpperCase();
+
+    const areas = [
+      ...model.fileKeywords.map(entry => entry.keywords),
+      ...model.outline.flatMap(entry => [
+        entry.keywords,
+        ...entry.items.map(item => item.attributes.keywords ?? "")
+      ])
+    ];
+    const count = areas.reduce(
+      (total, keywords) =>
+        total +
+        findRecordReferences(keywords).filter(
+          reference => reference.name.toUpperCase() === target
+        ).length,
+      0
+    );
+    return count === 0 ? undefined : `${count} か所の参照も一緒に変えました`;
   }
 
   /**
