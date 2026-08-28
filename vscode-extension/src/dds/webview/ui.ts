@@ -409,6 +409,18 @@ class EditorView {
     };
   }
 
+  /**
+   * 編集の宛先になる画面サイズ。**1 次なら undefined**（編集に載せない）。
+   *
+   * 2 次では位置を決めているのが**位置の上書き行**なので、`move` にこれを載せないと
+   * 項目自身の行（＝1 次の位置）が黙って書き換わる。判定を 1 か所に閉じておく。
+   */
+  private get editingScreenSize(): "secondary" | undefined {
+    return this.display.secondaryScreen && this.model?.secondaryScreen !== undefined
+      ? "secondary"
+      : undefined;
+  }
+
   private render(): void {
     const model = this.model;
     if (!model) return;
@@ -1353,7 +1365,7 @@ class EditorView {
         kind: "setCondition",
         sourceLine: item.sourceLine,
         condition: parsed.groups,
-        ...(parsed.screenSize !== undefined ? { screenSize: parsed.screenSize } : {})
+        ...(parsed.screenSize !== undefined ? { screenSizeName: parsed.screenSize } : {})
       });
     };
     // 他の入力欄（`attributeInput`）と同じ約束にそろえる:
@@ -1449,7 +1461,7 @@ class EditorView {
           kind: "setKeywordCondition",
           sourceLine: group.sourceLine,
           condition: parsed.groups,
-          ...(parsed.screenSize !== undefined ? { screenSize: parsed.screenSize } : {})
+          ...(parsed.screenSize !== undefined ? { screenSizeName: parsed.screenSize } : {})
         });
       };
       input.addEventListener("keydown", event => {
@@ -1678,19 +1690,17 @@ class EditorView {
     // **Pending 中は受け付けない**（往復の途中で次の編集を積まない）。
     if (this.mode === "pending") return;
 
-    // **2 次画面サイズの表示では動かせない。** 位置を決めているのは
-    // 「位置の上書き行」で、掴んで動かすと**項目自身の行**（＝1 次の位置）を
-    // 書き換えてしまう。選ぶことはできる。
-    if (this.display.secondaryScreen && this.model?.secondaryScreen !== undefined) {
-      const picked = (event.target as HTMLElement | null)?.closest<HTMLElement>(".dds-item");
+    const target = event.target as HTMLElement | null;
+
+    // **2 次では長さを変えられない。** 位置の上書き行は長さ欄を持てず
+    // （実機で確認）、長さは画面サイズで変わらない。掴ませずに理由を出す。
+    if (this.editingScreenSize !== undefined && target?.dataset.role === "resize") {
+      const picked = target.closest<HTMLElement>(".dds-item");
       this.select(picked ? Number(picked.dataset.sourceLine) : undefined);
-      if (picked) {
-        this.setStatus("2 次画面サイズの表示では動かせません（位置は上書き行が決めます）");
-      }
+      this.setStatus("長さは画面サイズで変わりません（上書き行は位置だけを持ちます）");
       return;
     }
 
-    const target = event.target as HTMLElement | null;
     const element = target?.closest<HTMLElement>(".dds-item") ?? null;
     if (!element) {
       this.select(undefined);
@@ -1761,6 +1771,7 @@ class EditorView {
         this.gesture = undefined;
         return;
       }
+      const screenSize = this.editingScreenSize;
       this.send(
         gesture.rowFromSpacing
           ? { kind: "moveColumn", sourceLine: gesture.sourceLine, column: target.column }
@@ -1768,7 +1779,8 @@ class EditorView {
               kind: "move",
               sourceLine: gesture.sourceLine,
               row: target.row,
-              column: target.column
+              column: target.column,
+              ...(screenSize !== undefined ? { screenSize } : {})
             }
       );
       return;
@@ -1810,7 +1822,14 @@ class EditorView {
 
     if (event.key === "Delete" || event.key === "Backspace") {
       event.preventDefault();
-      this.send({ kind: "remove", sourceLine: item.sourceLine });
+      // **2 次では「項目を消す」ではなく「上書き行を消す」。** 2 次の絵で項目を
+      // 選んで Delete を押した人が期待するのは、その画面での位置指定を取り消すこと
+      // ——項目そのものが両方の画面から消えることではない。
+      this.send(
+        this.editingScreenSize === undefined
+          ? { kind: "remove", sourceLine: item.sourceLine }
+          : { kind: "clearAlternatePosition", sourceLine: item.sourceLine }
+      );
       return;
     }
 
@@ -1827,11 +1846,13 @@ class EditorView {
       return;
     }
 
+    const screenSize = this.editingScreenSize;
     this.send({
       kind: "move",
       sourceLine: item.sourceLine,
       row: clamp(item.row + step.row, 1, canvas.rows),
-      column
+      column,
+      ...(screenSize !== undefined ? { screenSize } : {})
     });
   }
 
@@ -2093,7 +2114,7 @@ function template(): string {
     <button id="dds-toggle-dim" type="button" title="選択中の項目が属する様式以外を淡く表示します">他様式を淡く</button>
     <button id="dds-toggle-colors" type="button" title="COLOR / DSPATR から実機の見え方（色・反転表示・下線・非表示）で描きます">5250 配色</button>
     <button id="dds-toggle-preview" type="button" title="CPI / LPI で決まる紙の比率で描きます（1 桁 = 1/CPI インチ、1 行 = 1/LPI インチ）">プレビュー</button>
-    <button id="dds-toggle-secondary" type="button" title="2 次画面サイズでの見え方を描きます（位置の上書き行で決まる位置。この表示では動かせません）">2 次画面</button>
+    <button id="dds-toggle-secondary" type="button" title="2 次画面サイズでの見え方を描きます（動かすと位置の上書き行に書きます。長さは変えられません）">2 次画面</button>
     <span class="density" role="group" aria-label="印刷密度"></span>
     <span class="sep"></span>
     <span class="zoom" role="group" aria-label="ズーム"></span>

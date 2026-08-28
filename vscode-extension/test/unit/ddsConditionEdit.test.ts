@@ -483,7 +483,7 @@ suite("条件の編集: 画面サイズ条件名", () => {
    */
   test("画面サイズ条件名を書ける（名前は 9 桁目から）", () => {
     const after = apply(TWO_SIZES, [
-      { kind: "setCondition", sourceLine: 3, condition: [], screenSize: "*DS4" }
+      { kind: "setCondition", sourceLine: 3, condition: [], screenSizeName: "*DS4" }
     ]);
     assert.strictEqual(after.length, TWO_SIZES.length, "行数が変わった");
     assert.strictEqual(after[2].slice(6, 8), "  ", "7-8 桁目はブランク");
@@ -494,7 +494,7 @@ suite("条件の編集: 画面サイズ条件名", () => {
 
   test("8 文字の名前も 9-16 桁に収まる", () => {
     const after = apply(TWO_SIZES, [
-      { kind: "setCondition", sourceLine: 3, condition: [], screenSize: "*ABCDEFG" }
+      { kind: "setCondition", sourceLine: 3, condition: [], screenSizeName: "*ABCDEFG" }
     ]);
     assert.strictEqual(after[2].slice(8, 16), "*ABCDEFG");
     assert.ok(after[2].includes("FLD1"), "項目の欄を侵している");
@@ -502,7 +502,7 @@ suite("条件の編集: 画面サイズ条件名", () => {
 
   test("書いた名前が読み戻せる", () => {
     const after = apply(TWO_SIZES, [
-      { kind: "setCondition", sourceLine: 3, condition: [], screenSize: "*DS4" }
+      { kind: "setCondition", sourceLine: 3, condition: [], screenSizeName: "*DS4" }
     ]);
     const unit = toLogicalUnits(after).find(candidate => candidate.line.includes("FLD1"));
     assert.ok(unit);
@@ -516,7 +516,7 @@ suite("条件の編集: 画面サイズ条件名", () => {
 
   test("標識に戻せる / 消せる", () => {
     const withSize = apply(TWO_SIZES, [
-      { kind: "setCondition", sourceLine: 3, condition: [], screenSize: "*DS4" }
+      { kind: "setCondition", sourceLine: 3, condition: [], screenSizeName: "*DS4" }
     ]);
     const backToIndicators = apply(withSize, [
       { kind: "setCondition", sourceLine: 3, condition: [[term("50")]] }
@@ -536,7 +536,7 @@ suite("条件の編集: 画面サイズ条件名", () => {
           kind: "setCondition",
           sourceLine: 3,
           condition: [[term("50")]],
-          screenSize: "*DS4"
+          screenSizeName: "*DS4"
         }
       ]),
       ["screen-size-name-invalid"]
@@ -547,7 +547,7 @@ suite("条件の編集: 画面サイズ条件名", () => {
     for (const name of ["DS4", "*", "*TOOLONGNAME"]) {
       assert.deepStrictEqual(
         rejectionCodes(TWO_SIZES, [
-          { kind: "setCondition", sourceLine: 3, condition: [], screenSize: name }
+          { kind: "setCondition", sourceLine: 3, condition: [], screenSizeName: name }
         ]),
         ["screen-size-name-invalid"],
         `${name} が通ってしまう`
@@ -562,7 +562,7 @@ suite("条件の編集: 画面サイズ条件名", () => {
       "     A                                      DSPATR(RI)"
     ];
     const after = apply(lines, [
-      { kind: "setKeywordCondition", sourceLine: 3, condition: [], screenSize: "*DS3" }
+      { kind: "setKeywordCondition", sourceLine: 3, condition: [], screenSizeName: "*DS3" }
     ]);
     assert.strictEqual(after[2].slice(8, 16).trimEnd(), "*DS3");
     assert.ok(after[2].includes("DSPATR(RI)"), "キーワードが消えた");
@@ -586,14 +586,14 @@ suite("条件の編集: 画面サイズ条件名", () => {
     const message = parseEditorMessage({
       type: "edit",
       edits: [
-        { kind: "setCondition", sourceLine: 3, condition: [], screenSize: "*DS4" }
+        { kind: "setCondition", sourceLine: 3, condition: [], screenSizeName: "*DS4" }
       ]
     });
     assert.ok(message && message.type === "edit");
     const edit = message.edits[0];
     assert.strictEqual(edit.kind, "setCondition");
     assert.strictEqual(
-      edit.kind === "setCondition" ? edit.screenSize : undefined,
+      edit.kind === "setCondition" ? edit.screenSizeName : undefined,
       "*DS4"
     );
   });
@@ -601,7 +601,7 @@ suite("条件の編集: 画面サイズ条件名", () => {
   test("形が違えば通さない（配線）", () => {
     const message = parseEditorMessage({
       type: "edit",
-      edits: [{ kind: "setCondition", sourceLine: 3, condition: [], screenSize: 4 }]
+      edits: [{ kind: "setCondition", sourceLine: 3, condition: [], screenSizeName: 4 }]
     });
     assert.ok(
       !message || (message.type === "edit" && message.edits.length === 0),
@@ -664,7 +664,7 @@ suite("条件の編集: 画面サイズ条件名の桁（実機で確定）", ()
   test("書いて読み直すと同じ名前になる（9 桁目から）", () => {
     const after = apply(
       ["     A          R MAIN", "     A            FLD1          10A  B  5  2"],
-      [{ kind: "setCondition", sourceLine: 2, condition: [], screenSize: "*DS4" }]
+      [{ kind: "setCondition", sourceLine: 2, condition: [], screenSizeName: "*DS4" }]
     );
     const conditioning = readConditioning([after[1]]);
     assert.strictEqual(conditioning.kind, "screen-size");

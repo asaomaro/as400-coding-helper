@@ -11,6 +11,8 @@ import {
 import { buildPrtfRenderModel } from "../core/dds/prtfRenderModel";
 import { DEFAULT_PAGE } from "../core/dds/prtfLayout";
 import { resolveDdsType, type DdsType } from "../core/sourceKind";
+// **編集 JSON の関門は WebView と共通**（`parseEdits`）。protocol は vscode に依存しない。
+import { parseEdits } from "../dds/webview/protocol";
 
 /**
  * DDS（画面 / 帳票）を**読む・描く・直す** CLI。
@@ -316,7 +318,14 @@ function readEdits(source: string): DdsEdit[] {
   if (!Array.isArray(parsed)) {
     throw new UsageError("--edits の中身は編集の配列です");
   }
-  return parsed as DdsEdit[];
+  // **WebView と同じ関門を通す。** 素通しにすると、知らない値
+  // （`screenSize: "tertiary"` など）が既定に落ちて**別の行が書き換わる**。
+  // 検査を写すと片方だけ古くなるので、`parseEdits` をそのまま呼ぶ。
+  const edits = parseEdits(parsed);
+  if (edits === undefined) {
+    throw new UsageError("--edits に読めない編集が含まれています");
+  }
+  return [...edits];
 }
 
 export function run(argv: readonly string[]): number {

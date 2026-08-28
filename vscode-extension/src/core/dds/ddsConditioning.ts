@@ -1,6 +1,14 @@
 import { isDdsBlankLine, isDdsCommentLine } from "../ddsLayout";
-import { conditioningAreaOf, type LogicalUnit } from "./ddsLogicalUnits";
-import { isScreenSizeConditionName } from "./dspfScreenSize";
+import {
+  conditioningAreaOf,
+  type AlternatePosition,
+  type LogicalUnit
+} from "./ddsLogicalUnits";
+import {
+  isScreenSizeConditionName,
+  matchesScreenSize,
+  type ScreenSizeEntry
+} from "./dspfScreenSize";
 
 /**
  * 条件付け欄（7 - 16 桁目）を読む。
@@ -326,4 +334,28 @@ export function collectIndicators(lines: readonly string[]): readonly IndicatorU
 export function isMutuallyExclusive(a: Conditioning, b: Conditioning): boolean {
   if (a.kind === "none" && b.kind === "none") return false;
   return true;
+}
+
+/**
+ * その項目の、指定した大きさを指す**位置の上書き行**。
+ *
+ * 絵を解く側（`resolveDspfLayout`）と編集する側（`applyDdsEdits`）が**同じ関数を通る**。
+ * 写すと、描いた位置と書き換える行が食い違いうる——見えている項目を掴んで動かしたのに
+ * 別の行が書き換わる、という壊れ方をする。
+ *
+ * 突き合わせは `matchesScreenSize`で、**名前の文字列では比べない**
+ * （`DSPSIZ` を数値形式で書くと条件名が付かず、IBM 提供名で条件付ける）。
+ *
+ * 実機は 1 項目 1 本しか通さないが、壊れた入力なら 2 本ありうるので先頭を採る。
+ */
+export function findAlternatePosition(
+  unit: LogicalUnit,
+  entry: ScreenSizeEntry
+): AlternatePosition | undefined {
+  return unit.alternatePositions.find(alternate => {
+    const conditioning = readConditioning(alternate.conditioningLines);
+    return (
+      conditioning.kind === "screen-size" && matchesScreenSize(conditioning.name, entry)
+    );
+  });
 }

@@ -1,4 +1,7 @@
 import { DDS_COLUMNS, ddsReplaceField } from "../ddsLayout";
+import { DDS_CONDITIONING } from "./ddsLogicalUnits";
+import { formatScreenSizeArea } from "./ddsConditionWriteBack";
+import { writeBackPosition } from "./ddsPositionWriteBack";
 import { parseKeywordEntries } from "./ddsKeywords";
 import { DDS_KEYWORD_AREA_START } from "./ddsLogicalUnits";
 import { DDS_POSITION_COLUMN, DDS_POSITION_ROW } from "./ddsPositionColumns";
@@ -250,4 +253,27 @@ function columnWidth([start, end]: readonly [number, number]): number {
 /** 数値欄は右詰め。桁に収まらない値は呼び出し側が検査する前提。 */
 function formatNumber(value: number, width: number): string {
   return String(Math.trunc(value)).padStart(width, " ");
+}
+
+/**
+ * **位置の上書き行**（2 次画面サイズでの位置）を 1 本作る。
+ *
+ * 形は実機に判定させた（IBM i 7.3 / `CRTDSPF`。原典に規定が無い。
+ * `.aidev/works/20260828-dds-secondary-edit/verify/probe-override-placement.mjs`）:
+ * **画面サイズ条件名と位置だけ**を持つ。長さ欄を足すと通らない (PA)、
+ * 条件付け欄に標識を混ぜても通らない (Q3/Q7)。
+ *
+ * だから `buildItemLine` と違い、名前・長さ・データ型・用途・キーワードを**受け取らない**
+ * ——受け取れる形にすると「書いたらどうなるか」を考え続けることになる。
+ */
+export function buildAlternatePositionLine(
+  name: string,
+  row: number,
+  column: number
+): string {
+  return writeBackPosition({
+    line: ddsReplaceField(LINE_PREFIX, DDS_CONDITIONING, formatScreenSizeArea(name)),
+    row,
+    column
+  }).trimEnd();
 }

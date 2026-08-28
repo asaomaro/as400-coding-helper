@@ -932,24 +932,102 @@ check(
   )).includes(5)
 );
 
-// **動かせない。** 位置を決めているのは上書き行なので、掴んで動かすと
-// 項目自身の行（＝1 次の位置）を書き換えてしまう。
-const secondaryItem = await page.$(".dds-item");
-const box = await secondaryItem.boundingBox();
-await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
-await page.mouse.down();
-await page.mouse.move(box.x + box.width / 2 + 60, box.y + box.height / 2 + 30, { steps: 6 });
-await page.mouse.up();
-await page.waitForTimeout(220);
+// **2 次でも動かせる。** 宛先は項目自身の行ではなく**位置の上書き行**
+// （無ければ作る）。項目の行を書き換えると 1 次の位置が黙って変わる。
+//
+// 掴む対象は `.dds-item` の**要素そのもの**（端の掴み手＝`data-role="resize"` を
+// 避けて中央を掴む）。要素は選択で描き直されるので、掴む直前に取り直す。
+// 掴む対象は **`data-row` で選ぶ**。項目はどれも `XXXXXXXXXX` と描かれるので、
+// 文字で選ぶと別の項目を掴む（最初にそれで constant を掴んで通らなかった）。
+const grabAtRow = async row => {
+  for (const handle of await page.$$(".dds-item")) {
+    if ((await handle.getAttribute("data-row")) === String(row)) return handle;
+  }
+  throw new Error(`${row} 行目の項目が無い`);
+};
+const dragBy = async (handle, dx, dy) => {
+  // **先に見える位置へ送る。** 27 行の画面では下端の項目が横スクロールバーに
+  // 隠れ、掴んだつもりでキャンバスを掴む（送信そのものが起きない）。
+  await handle.scrollIntoViewIfNeeded();
+  const box = await handle.boundingBox();
+  await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+  await page.mouse.down();
+  await page.mouse.move(box.x + box.width / 2 + dx, box.y + box.height / 2 + dy, { steps: 8 });
+  await page.mouse.up();
+  await page.waitForTimeout(260);
+};
+/** 上書き行（条件名 ＋ 位置だけの行）だけを取り出す。 */
+const overrideLines = async () =>
+  (await sourceLines()).filter(line => line.slice(6, 16).trim().startsWith("*"));
+
+// FLDA は既に上書き行を持つ（2 次では 26,40 に描かれる）。動かしても**増えない**。
+const fldaLineBefore = (await sourceLines()).find(line => line.includes("FLDA"));
+const overrideBefore = (await overrideLines())[0];
+await dragBy(await grabAtRow(26), 60, -30);
 check(
-  "**2 次画面サイズの表示では動かせない（ソースが変わらない）**",
-  JSON.stringify(await sourceLines()) === JSON.stringify(sourceBeforeSecondary),
-  await page.$eval(".status", node => node.textContent)
+  "**2 次で動かすと上書き行が書き換わる（項目の行は変わらない）**",
+  (await sourceLines()).find(line => line.includes("FLDA")) === fldaLineBefore &&
+    (await overrideLines()).length === 1 &&
+    (await overrideLines())[0] !== overrideBefore,
+  JSON.stringify(await overrideLines())
 );
 check(
-  "動かせない理由が出る",
-  (await page.$eval(".status", node => node.textContent)).includes("上書き行"),
-  await page.$eval(".status", node => node.textContent)
+  "1 次の位置（項目の行）は変わらない",
+  (await sourceLines()).find(line => line.includes("FLDA")).slice(38, 44) ===
+    fldaLineBefore.slice(38, 44),
+  (await sourceLines()).find(line => line.includes("FLDA"))
+);
+
+// **上書き行の無い項目を動かすと作られる。** FLDB は 1 次の位置しか持たない
+// （2 次でも 5,2 に描かれる）。
+const fldbLineBefore = (await sourceLines()).find(line => line.includes("FLDB"));
+await dragBy(await grabAtRow(5), 40, 40);
+check(
+  "**上書き行が無い項目を動かすと 1 本作られる**",
+  (await overrideLines()).length === 2,
+  JSON.stringify(await overrideLines())
+);
+check(
+  "作られた上書き行は条件名と位置だけを持つ",
+  (await overrideLines()).every(
+    line => line.slice(16, 38).trim() === "" && line.slice(44).trim() === ""
+  ),
+  JSON.stringify(await overrideLines())
+);
+check(
+  "作った側の項目の行も変わらない",
+  (await sourceLines()).find(line => line.includes("FLDB")) === fldbLineBefore
+);
+
+// **長さは変えられない**（上書き行は長さ欄を持てない＝実機で確認）。
+const lengthBefore = (await sourceLines()).find(line => line.includes("FLDA")).slice(29, 34);
+const resizeHandle = await page.$('.dds-item [data-role="resize"]');
+if (resizeHandle) {
+  const rbox = await resizeHandle.boundingBox();
+  await page.mouse.move(rbox.x + rbox.width / 2, rbox.y + rbox.height / 2);
+  await page.mouse.down();
+  await page.mouse.move(rbox.x + 60, rbox.y, { steps: 6 });
+  await page.mouse.up();
+  await page.waitForTimeout(220);
+}
+check(
+  "**2 次では長さを変えられない**",
+  (await sourceLines()).find(line => line.includes("FLDA")).slice(29, 34) === lengthBefore,
+  (await sourceLines()).find(line => line.includes("FLDA"))
+);
+
+// **Delete は「項目を消す」ではなく「上書き行を消す」。**
+// 直前のドラッグで上書き行を作った FLDB を選ぶ（2 次で 9 行目に来ている）。
+await (await grabAtRow(7)).click();
+await page.waitForTimeout(150);
+const itemCountBefore = (await sourceLines()).filter(line => line.includes("FLD")).length;
+await page.keyboard.press("Delete");
+await page.waitForTimeout(260);
+check(
+  "**2 次の Delete は上書き行だけを消す（項目は残る）**",
+  (await sourceLines()).filter(line => line.includes("FLD")).length === itemCountBefore &&
+    (await overrideLines()).length === 1,
+  JSON.stringify(await overrideLines())
 );
 
 await page.click("#dds-toggle-secondary");
