@@ -1,4 +1,4 @@
-import { DDS_COLUMNS, ddsField } from "../ddsLayout";
+import { DDS_COLUMNS, ddsField, isDdsBlankLine, isDdsCommentLine } from "../ddsLayout";
 import {
   buildAlternatePositionLine,
   buildItemLine,
@@ -37,6 +37,7 @@ import {
   resolveScreenSizes
 } from "./dspfScreenSize";
 import { findAlternatePosition } from "./ddsConditioning";
+import { renameFieldReferences } from "./ddsReferences";
 import { COLUMN_ONE_MESSAGE, isRowOneColumnOne } from "./dspfLayout";
 import { DDS_POSITION_ROW } from "./ddsPositionColumns";
 import { writeBackColumn, writeBackPosition } from "./ddsPositionWriteBack";
@@ -496,6 +497,20 @@ export function applyDdsEdits(
           replaceTo: index + 1,
           lines: [applyAttributes(lines[index], edit.attributes)]
         });
+
+        // **名前を変えたら、それを指しているキーワードも直す。**
+        // 参照は**別の行**にあるので、同じ確定の中で一緒に積む
+        // ——名前だけ変わって参照が古いままの状態は、実機が通さない。
+        if (edit.attributes.name !== undefined) {
+          results.push(
+            ...renameReferenceResults(
+              lines,
+              ddsName(unit.line),
+              edit.attributes.name,
+              edit.sourceLine
+            )
+          );
+        }
         break;
       }
       case "setKeywords": {
@@ -1053,6 +1068,54 @@ function validatePosition(
     rejections.push(bad("桁", column));
   }
   return rejections;
+}
+
+/**
+ * 名前の変更に追随してキーワード欄を書き換える指示。
+ *
+ * ## 何を追うか
+ *
+ * `findFieldReferences` が決める（`ddsReferences.ts`）——`&名前` と、原典が
+ * 「このファイル内の項目」と書いている定位置の引数だけ。**外部のファイル・
+ * フォント・メッセージを指す引数は触らない**（黙って書き換わると原因が掴めない）。
+ *
+ * ## 行ごとに、その場で書き換える
+ *
+ * **論理単位の区間をまとめて置き換えない。** 区間で置き換えると `foldKeywordArea` が
+ * 走り、**参照と関係のない行まで畳まれる**（`R MAIN` の次の `CSRLOC` 行が
+ * `R MAIN` の行に吸い込まれた）。改名で他の行の見た目が変わるのは驚きなので、
+ * **参照が書かれている物理行のキーワード欄だけ**を差し替える。
+ *
+ * 欄（45-80 桁）に収まらなくなったときだけ、その行を折る（`keywordLines`）。
+ * 折るのは 1 行の中の話で、隣の行は巻き込まない。
+ *
+ * ## 改名した行そのものは対象外
+ *
+ * 代表行は既に別の指示で書き換えている。同じ行に 2 つの指示が出ると区間が重なる。
+ */
+function renameReferenceResults(
+  lines: readonly string[],
+  from: string,
+  to: string,
+  skipSourceLine: number
+): DdsEditResult[] {
+  const results: DdsEditResult[] = [];
+  if (from.trim().length === 0 || from.trim().toUpperCase() === to.trim().toUpperCase()) {
+    return results;
+  }
+
+  lines.forEach((line, index) => {
+    if (index + 1 === skipSourceLine) return;
+    if (isDdsCommentLine(line) || isDdsBlankLine(line)) return;
+
+    const area = keywordAreaOf(line);
+    const renamed = renameFieldReferences(area, from, to);
+    if (renamed === area) return;
+
+    results.push({ replaceFrom: index, replaceTo: index + 1, lines: keywordLines(line, renamed) });
+  });
+
+  return results;
 }
 
 /**

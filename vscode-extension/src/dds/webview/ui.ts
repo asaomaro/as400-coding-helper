@@ -10,6 +10,7 @@ import {
   formatConditionText,
   parseConditionText
 } from "../../core/dds/ddsConditionWriteBack";
+import { findFieldReferences } from "../../core/dds/ddsReferences";
 import {
   findKeywordHelp,
   keywordsForLevel,
@@ -111,6 +112,11 @@ class EditorView {
   private pendingStructural = false;
   /** 直近の拒否理由。プロパティ内に出す（フォーカスを奪わない場所）。 */
   private rejectMessage = "";
+  /**
+   * 適用が通ったときに出す一言。**送る側が決める**——ホストは何が起きたかを
+   * 知っているが、それを言葉にするのは画面の仕事。
+   */
+  private pendingStatus: string | undefined;
   /** 拒否されたときフォーカスを戻す欄。**入力し直せるようにする**（AC-I4）。 */
   private pendingFocus: string | undefined;
   /**
@@ -299,7 +305,8 @@ class EditorView {
         this.pendingStructural = false;
         this.rejectMessage = "";
         this.pendingFocus = undefined;
-        this.setStatus("");
+        this.setStatus(this.pendingStatus ?? "");
+        this.pendingStatus = undefined;
         this.render();
         break;
       case "rejected": {
@@ -308,6 +315,7 @@ class EditorView {
         this.gesture = undefined;
         this.pendingStructural = false;
         this.pendingSelection = undefined;
+        this.pendingStatus = undefined;
         const rejections = (message.rejections ?? []) as ReadonlyArray<{ message: string }>;
         const reason = rejections.map(rejection => rejection.message).join(" / ");
         // 元の位置は UI が覚えず、ホストのモデルから描き直す（状態を 2 か所に置かない）。
@@ -1019,12 +1027,15 @@ class EditorView {
     const breakdown = this.columnBreakdown(item, model);
     if (breakdown !== undefined) nodes.push(breakdown);
     if (item.kind === "field") {
-      // 黙って壊さない。参照の追随は未実装なので、その旨を出す。
+      // **何が一緒に変わるかを書く。** 直す前は「SFLCTL 等は追随しません」と
+      // 出していたが、`SFLCTL` が指すのは項目ではなく**様式**で、
+      // 項目の改名では元から影響しない（断り書き自体が誤っていた）。
       nodes.push(
         text(
           "div",
           "dds-note",
-          "名前を変えても、参照しているキーワード（SFLCTL 等）は追随しません"
+          "名前を変えると、この項目を指すキーワード（&名前 / CSRLOC / HLPARA(*FLD)）も" +
+            "一緒に変わります。様式（レコード）の名前はデザイナからは変えられません"
         )
       );
     }
@@ -1638,11 +1649,44 @@ class EditorView {
     }
 
     this.pendingFocus = String(key);
+    // **名前を変えると他の行も変わる。** 何行変わったかを出さないと、
+    // 押した人には「1 つ直したはずなのにソースが増えて動いた」ようにしか見えない。
+    this.pendingStatus =
+      key === "name" ? this.describeRenameFollow(item.attributes.name ?? "") : undefined;
     this.send({
       kind: "setAttributes",
       sourceLine: item.sourceLine,
       attributes
     } as DdsEdit);
+  }
+
+  /**
+   * その名前を指している参照の件数（0 件なら知らせない）。
+   *
+   * 数え方は core（`findFieldReferences`）に任せる。**ここで数え直すと、
+   * 実際に書き換わる箇所と件数が食い違う。**
+   */
+  private describeRenameFollow(from: string): string | undefined {
+    const model = this.model;
+    if (!model || from.trim().length === 0) return undefined;
+    const target = from.trim().toUpperCase();
+
+    const areas = [
+      ...model.fileKeywords.map(entry => entry.keywords),
+      ...model.outline.flatMap(record => [
+        record.keywords,
+        ...record.items.map(item => item.attributes.keywords ?? "")
+      ])
+    ];
+    const count = areas.reduce(
+      (total, keywords) =>
+        total +
+        findFieldReferences(keywords).filter(
+          reference => reference.name.toUpperCase() === target
+        ).length,
+      0
+    );
+    return count === 0 ? undefined : `${count} か所の参照も一緒に変えました`;
   }
 
   private selectedOutlineItem(model: RenderModel): OutlineItem | undefined {

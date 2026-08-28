@@ -308,11 +308,31 @@ const TWO_SIZE_SAMPLE = [
   ""
 ].join("\n");
 
+/**
+ * 名前を指すキーワードを持つ様式。**項目の改名で一緒に変わる**ことを触って確かめる。
+ *
+ * `CSRLOC` は定位置の項目名（規則 B）、`SFLCSRRRN(&…)` は `&` の参照（規則 A）。
+ * `REF(CUSTMST)` は**外部**を指すので、同じ名前でも変わってはいけない。
+ * 実サンプルにはどれも無い（`CUSTMNT.dspf` に `&` は 1 つも出てこない）。
+ */
+const REFERENCE_SAMPLE = [
+  "     A                                      REF(CSRROW)",
+  "     A          R MAIN",
+  "     A                                      CSRLOC(CSRROW CSRCOL)",
+  "     A                                      SFLCSRRRN(&SFLRRN)",
+  "     A            CSRROW         3S 0H",
+  "     A            CSRCOL         3S 0H",
+  "     A            SFLRRN         5S 0H",
+  "     A            CUSTNO        10A  B  5  2",
+  ""
+].join("\n");
+
 const SAMPLES = [
   { name: "CUSTMNT.dspf", text: sample as unknown as string },
   { name: "hidden-items.dspf", text: HIDDEN_SAMPLE },
   { name: "indicators.dspf", text: INDICATOR_SAMPLE },
   { name: "two-sizes.dspf", text: TWO_SIZE_SAMPLE },
+  { name: "references.dspf", text: REFERENCE_SAMPLE },
   // 帳票。**行は SPACE / SKIP で決まり、位置欄には桁だけが書かれる**——
   // 画面ファイルには無い形なので、ここで実際に触れるようにしておく。
   { name: "CUSTRPT.prtf", text: report as unknown as string }

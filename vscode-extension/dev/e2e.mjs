@@ -1069,6 +1069,71 @@ check(
   JSON.stringify(await canvasSize()) === JSON.stringify({ rows: 24, columns: 80 })
 );
 
+// ---- 19g. 名前変更の参照追随 --------------------------------------------
+//
+// 項目の名前を変えると、その項目を**指しているキーワードの引数**も一緒に変わる。
+// 直す前はプロパティに「追随しません（SFLCTL 等）」と出ていたが、`SFLCTL` が
+// 指すのは項目ではなく**様式**で、項目の改名では元から影響しなかった。
+await page.selectOption("#sample", { label: "references.dspf" });
+await page.waitForTimeout(250);
+
+const lineWith = async token => (await sourceLines()).find(line => line.includes(token));
+/** 一覧から項目を選び、名前の欄を書き換えて確定する。 */
+const rename = async (label, next) => {
+  const rows = await page.$$(".dds-tree li.item");
+  for (const row of rows) {
+    if (((await row.textContent()) ?? "").includes(label)) {
+      await row.click();
+      break;
+    }
+  }
+  await page.waitForTimeout(180);
+  const name = await page.$('.dds-props input[data-key="name"]');
+  await name.fill(next);
+  await name.press("Enter");
+  await page.waitForTimeout(280);
+};
+
+check(
+  "断り書きが「一緒に変わる」を伝える",
+  (await page.$$eval(".dds-note", nodes => nodes.map(n => n.textContent))).some(t =>
+    t.includes("一緒に変わります")
+  ),
+  JSON.stringify(await page.$$eval(".dds-note", nodes => nodes.map(n => n.textContent)))
+);
+
+await rename("CSRROW", "NEWROW");
+check(
+  "**定位置の参照（CSRLOC）が追随する**",
+  (await lineWith("CSRLOC")).includes("CSRLOC(NEWROW CSRCOL)"),
+  await lineWith("CSRLOC")
+);
+check(
+  "**外部を指す REF は同じ名前でも変わらない**",
+  (await lineWith("REF(")).includes("REF(CSRROW)"),
+  await lineWith("REF(")
+);
+check(
+  "何か所変わったかがステータスに出る",
+  (await page.$eval(".status", n => n.textContent)).includes("参照"),
+  await page.$eval(".status", n => n.textContent)
+);
+
+await rename("SFLRRN", "NEWRRN");
+check(
+  "**`&` の参照が追随する**",
+  (await lineWith("SFLCSRRRN")).includes("SFLCSRRRN(&NEWRRN)"),
+  await lineWith("SFLCSRRRN")
+);
+
+const beforePlain = await sourceLines();
+await rename("CUSTNO", "NEWNO");
+check(
+  "参照の無い項目の改名は他の行を変えない",
+  (await sourceLines()).filter((line, i) => line !== beforePlain[i]).length === 1,
+  JSON.stringify((await sourceLines()).filter((line, i) => line !== beforePlain[i]))
+);
+
 // ---- 20. キーワードのチップと原典ヘルプ -------------------------------
 // 題材を実物（CUSTMNT.dspf）に戻す。読み込み直しなので文書は元の状態になる。
 await page.selectOption("#sample", { label: "CUSTMNT.dspf" });
