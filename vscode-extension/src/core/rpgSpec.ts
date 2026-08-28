@@ -103,9 +103,29 @@ function createContext(
   };
 }
 
+/**
+ * **注記行か。** 7 桁目（添字 6）が `*`。
+ *
+ * 原典より 7 桁目の `*` は行全体を注記にする。仕様書の文字（6 桁目）は
+ * 注記行にも書かれるので、**それだけを見ると `     H* コメント` が H 仕様書に見える**。
+ *
+ * 判定はここ 1 か所に置く。ルーラーとプロンプターが別々に持っていたころ、
+ * ルーラーは注記行で出ないのに **F4 は `H-SPEC` を開いていた**。
+ */
+function isCommentLine(text: string): boolean {
+  return text.length > 6 && text.charAt(6) === "*";
+}
+
 /** 1 行を索引に取り込む（分類の後に呼ぶ）。 */
 function absorb(text: string, state: ContextState): void {
   if (text.length < 6) return;
+  // **注記行は索引に入れない。** `absorb` は分類の結果に関わらず毎行呼ばれる。
+  //
+  // ファイル名の方は衝突しない（注記行の 7-16 桁は必ず `*` で始まる）が、
+  // **`lastRecordName` は中身を問わず上書きする**——注記を 1 行挟むだけで、
+  // 続くフィールド行が「直前のレコード様式」を見失い、記述種別が変わる
+  // （プログラム記述が外部記述として扱われる）。
+  if (isCommentLine(text)) return;
   const specChar = text.charAt(5).toUpperCase();
 
   if (specChar === "F") {
@@ -138,6 +158,11 @@ function classifyWithState(
   state: ContextState
 ): string | undefined {
   if (text.length < 6) {
+    return undefined;
+  }
+  // **注記行に仕様書は無い。** 6 桁目には文字が書かれるが、7 桁目が `*` なら
+  // 行全体が注記。ここで弾かないと F4 が注記行で仕様書を開く。
+  if (isCommentLine(text)) {
     return undefined;
   }
 

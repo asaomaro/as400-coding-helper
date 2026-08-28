@@ -174,3 +174,68 @@ suite("RpgSpecContext", () => {
     ]);
   });
 });
+
+/**
+ * **注記行に仕様書は無い。**
+ *
+ * 7 桁目（添字 6）の `*` は行全体を注記にする。6 桁目には仕様書の文字が
+ * 書かれるので、**それだけを見ると `     H* コメント` が H 仕様書に見える**。
+ *
+ * 直す前はルーラーだけが判定を持っており、**F4 は注記行で `H-SPEC` を開いていた**
+ * （`ruler.ts` に写しがあり、`positionResolver` には無かった）。
+ * 判定を分類器の中へ移し、写しを外した。
+ */
+suite("RPG 仕様書: 注記行", () => {
+  test("**注記行は仕様書として分類しない**", () => {
+    for (const spec of ["H", "F", "D", "I", "O", "P", "C"]) {
+      assert.strictEqual(
+        classifyRpgSpecKeyword(`     ${spec}* コメント`),
+        undefined,
+        `${spec}* が分類された`
+      );
+    }
+  });
+
+  test("注記でない行はいままでどおり分類する（回帰）", () => {
+    assert.strictEqual(classifyRpgSpecKeyword("     H DFTACTGRP(*NO)"), "H-SPEC");
+    assert.strictEqual(classifyRpgSpecKeyword("     D FLD1            10A"), "D-SPEC");
+    assert.strictEqual(classifyRpgSpecKeyword("     P PROC1           B"), "P-SPEC");
+  });
+
+  test("7 桁目が `*` でなければ注記ではない", () => {
+    assert.strictEqual(classifyRpgSpecKeyword("     H  *コメントに見える"), "H-SPEC");
+  });
+
+  /**
+   * **注記行を索引に入れない。**
+   *
+   * `absorb` は分類の結果に関わらず毎行呼ばれる。注記行の 7-16 桁は必ず `*` で
+   * 始まるので**ファイル名としては衝突しない**が、`lastRecordName` は
+   * **中身を問わず上書きする**——注記を挟むと、続くフィールド行が
+   * 「直前のレコード様式」を見失う。
+   */
+  test("**注記行はレコード様式名の索引を汚さない**", () => {
+    const preceding = [
+      // プログラム記述のファイル（22 桁目が F）。
+      "     FCUSTREC   IF   F  100        DISK",
+      "     ICUSTREC",
+      "     I* ここに注記を挟む"
+    ];
+    // 名前欄の空いた I 仕様（フィールド行）。直前のレコード様式に従う。
+    assert.strictEqual(
+      classifyRpgSpecKeyword("     I                        1  10 CUSTNO", {
+        precedingLines: preceding
+      }),
+      "I-SPEC-FLD-PGM"
+    );
+  });
+
+  test("注記を挟まなければ同じ答えになる（対照）", () => {
+    assert.strictEqual(
+      classifyRpgSpecKeyword("     I                        1  10 CUSTNO", {
+        precedingLines: ["     FCUSTREC   IF   F  100        DISK", "     ICUSTREC"]
+      }),
+      "I-SPEC-FLD-PGM"
+    );
+  });
+});
