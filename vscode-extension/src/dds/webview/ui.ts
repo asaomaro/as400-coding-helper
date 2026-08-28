@@ -663,13 +663,47 @@ class EditorView {
    * （位置欄が空・画面に出ない用途は診断すら出ない）。
    */
   private renderOutline(model: RenderModel): void {
-    if (model.outline.length === 0) {
+    if (model.outline.length === 0 && model.fileKeywords.length === 0) {
       this.outline.replaceChildren(text("div", "dds-empty", "項目がありません"));
       return;
     }
 
     const list = document.createElement("ul");
     list.className = "dds-tree";
+
+    // **ファイル・レベルのキーワードを先頭に置く。** 最初の様式より前にあるので、
+    // ソースの並びと同じ順になる。ここに出さないとデザイナから一切読めない。
+    if (model.fileKeywords.length > 0) {
+      // **`record` を付けない。** 様式を選ぶ側が拾ってしまう（様式ではない）。
+      const heading = text("li", "file-level", "");
+      heading.append(text("span", "label", "ファイル"));
+      list.appendChild(heading);
+
+      const children = document.createElement("ul");
+      for (const entry of model.fileKeywords) {
+        const row = document.createElement("li");
+        // **`item` にしない。** 項目を選ぶ側（一覧の走査・キー移動）が
+        // ファイル・レベルの行まで拾ってしまう。これらは項目ではない。
+        row.className = "file-keyword";
+        row.tabIndex = 0;
+        row.dataset.sourceLine = String(entry.sourceLine);
+        if (entry.sourceLine === this.selected) row.classList.add("selected");
+        row.append(text("span", "label", entry.keywords));
+        row.title = `${entry.sourceLine} 行目`;
+        row.addEventListener("click", event => {
+          event.stopPropagation();
+          this.select(entry.sourceLine);
+        });
+        row.addEventListener("keydown", event => {
+          if (event.key !== "Enter" && event.key !== " ") return;
+          event.preventDefault();
+          event.stopPropagation();
+          this.select(entry.sourceLine);
+        });
+        children.appendChild(row);
+      }
+      heading.appendChild(children);
+    }
 
     for (const record of model.outline) {
       const heading = document.createElement("li");
@@ -854,6 +888,14 @@ class EditorView {
 
   /** 右ペイン。選択中の項目の属性を出し、確定したら編集として送る。 */
   private renderProperties(model: RenderModel): void {
+    const fileKeyword = model.fileKeywords.find(
+      candidate => candidate.sourceLine === this.selected
+    );
+    if (fileKeyword !== undefined) {
+      this.renderFileKeywordProperties(fileKeyword);
+      return;
+    }
+
     const record = model.outline.find(
       candidate => candidate.sourceLine === this.selected
     );
@@ -952,6 +994,32 @@ class EditorView {
    * ここに出す価値があるのは `OVERLAY` / `CF03` のような
    * **レコード・レベルのキーワード**で、それは様式宣言の行にしか無い。
    */
+  /**
+   * ファイル・レベルのキーワードのプロパティ。**読むだけ。**
+   *
+   * 編集（`setKeywords`）の宛先は論理単位で、ファイル・レベルの行は単位にならない
+   * ——送っても `line-not-found` で断られる。**効かない操作を出さない**ために
+   * チップは読み取り専用にする（原典の解説は出る）。
+   */
+  private renderFileKeywordProperties(entry: RenderModel["fileKeywords"][number]): void {
+    const nodes: HTMLElement[] = [
+      text("div", "dds-record-title", "ファイル・レベルのキーワード"),
+      this.keywordSection(entry.sourceLine, entry.keywords, "file", { readOnly: true })
+    ];
+    const condition = describeConditioning(entry.condition);
+    if (condition.length > 0) {
+      nodes.push(text("div", "dds-note", `条件: ${condition}`));
+    }
+    nodes.push(
+      text(
+        "div",
+        "dds-note",
+        `${entry.sourceLine} 行目。ここでは編集しません（テキストエディタで直してください）`
+      )
+    );
+    this.properties.replaceChildren(...nodes);
+  }
+
   private renderRecordProperties(record: RenderModel["outline"][number]): void {
     const nodes: HTMLElement[] = [
       text(
@@ -986,7 +1054,8 @@ class EditorView {
   private keywordSection(
     sourceLine: number,
     keywords: string,
-    level: "record" | "field"
+    level: "record" | "field" | "file",
+    options: { readOnly?: boolean } = {}
   ): HTMLElement {
     const section = document.createElement("div");
     section.className = "kw-section";
@@ -1023,7 +1092,7 @@ class EditorView {
 
       // 定数のリテラルには `✕` を付けない——消すと項目でなくなり、キャンバスから消える
       // （core も `constant-needs-literal` で拒否する）。
-      if (entry.kind === "keyword") {
+      if (entry.kind === "keyword" && options.readOnly !== true) {
         const remove = document.createElement("button");
         remove.type = "button";
         remove.className = "kw-x";
@@ -1040,7 +1109,9 @@ class EditorView {
       }
     });
 
-    chips.appendChild(this.addKeywordButton(sourceLine, keywords, level));
+    if (options.readOnly !== true && level !== "file") {
+      chips.appendChild(this.addKeywordButton(sourceLine, keywords, level));
+    }
     chips.addEventListener("keydown", event => this.onKeywordKey(event, chips));
     section.appendChild(chips);
     if (help !== undefined) section.appendChild(help);
@@ -1048,6 +1119,7 @@ class EditorView {
     // **生テキストは編集できる。** 引数を直に書き換える手段であり、
     // 桁を数えたい人・コピーしたい人の手段でもある。折り返しは core がやる。
     const raw = document.createElement("input");
+    if (options.readOnly === true) raw.readOnly = true;
     raw.className = "kw-raw";
     raw.value = keywords;
     raw.dataset.key = "kw:raw";
@@ -1218,19 +1290,22 @@ class EditorView {
       candidate => candidate.sourceLine === item.sourceLine
     );
     const groups = placed ? conditionGroups(placed.condition) : [];
-    const current = formatConditionText(groups);
+    // 画面サイズ条件名はそのまま出す（短い形の一部として打ち直せる）。
+    const current =
+      placed?.condition.kind === "screen-size"
+        ? placed.condition.name
+        : formatConditionText(groups);
     input.value = current;
     input.placeholder = "なし";
     input.title =
-      "条件標識。AND は空白、OR はカンマ（例: N50 01, 60）。空にすると条件を外します" +
+      "条件。標識は AND が空白・OR がカンマ（例: N50 01, 60）。" +
+      "画面サイズ条件名（例: *DS4）も書けます。空にすると条件を外します" +
       `${this.describeConditionState(item)}`;
 
-    // **画面サイズ条件名は編集しない**（標識とは別の欄の使い方。ここでは触らせない）。
+    // **画面サイズ条件名も同じ欄で編集する**（`*DS3` 等）。標識とは混ぜられないので、
+    // どちらか一方だけを打つ形になる（混ぜたら core の検証が断る）。
     if (placed?.condition.kind === "screen-size") {
       input.value = placed.condition.name;
-      input.readOnly = true;
-      input.title = "画面サイズ条件名。ここでは編集しません";
-      return input;
     }
 
     const commit = (): void => {
@@ -1249,7 +1324,8 @@ class EditorView {
       this.send({
         kind: "setCondition",
         sourceLine: item.sourceLine,
-        condition: parsed.groups
+        condition: parsed.groups,
+        ...(parsed.screenSize !== undefined ? { screenSize: parsed.screenSize } : {})
       });
     };
     // 他の入力欄（`attributeInput`）と同じ約束にそろえる:
@@ -1344,7 +1420,8 @@ class EditorView {
         this.send({
           kind: "setKeywordCondition",
           sourceLine: group.sourceLine,
-          condition: parsed.groups
+          condition: parsed.groups,
+          ...(parsed.screenSize !== undefined ? { screenSize: parsed.screenSize } : {})
         });
       };
       input.addEventListener("keydown", event => {

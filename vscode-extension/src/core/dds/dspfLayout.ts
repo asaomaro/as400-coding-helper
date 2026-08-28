@@ -1,4 +1,5 @@
 import { DDS_COLUMNS, ddsField, ddsName } from "../ddsLayout";
+import { unconditionableKeywords, type ConditionableDdsType } from "./ddsConditionable";
 import {
   isMutuallyExclusive,
   readConditioning,
@@ -11,7 +12,8 @@ import {
   readConstant,
   readNumber,
   toLogicalUnits,
-  unitItemKind
+  unitItemKind,
+  type LogicalUnit
 } from "./ddsLogicalUnits";
 import { DDS_POSITION_COLUMN, DDS_POSITION_ROW } from "./ddsPositionColumns";
 import {
@@ -68,6 +70,8 @@ export type DspfDiagnosticCode =
   | "column-one-reserved"
   /** 位置欄が空で配置できない。 */
   | "missing-position"
+  /** 条件を付けられないキーワードに条件が付いている（実機がコンパイルしない）。 */
+  | "keyword-not-conditionable"
   /** 桁欄が `+n`（相対桁）。初版は解決しない。 */
   | "relative-position-unresolved"
   /** DSPSIZ の書式・値が不正。 */
@@ -270,7 +274,10 @@ export function resolveDspfLayout(lines: readonly string[]): DspfLayout {
   const items: DspfPlacedItem[] = [];
   let recordName: string | undefined;
 
-  for (const unit of toLogicalUnits(lines)) {
+  const units = toLogicalUnits(lines);
+  diagnostics.push(...unconditionableDiagnostics(units, "DSPF"));
+
+  for (const unit of units) {
     const { line, sourceLine, keywords } = unit;
 
     if (unit.kind === "record") {
@@ -402,6 +409,48 @@ export function resolveDspfLayout(lines: readonly string[]): DspfLayout {
   diagnostics.push(...detectOverlaps(items));
 
   return { screen, sizes, items, diagnostics };
+}
+
+
+/**
+ * **条件を付けられないキーワードに条件が付いている**行を報告する。
+ *
+ * DDS は条件が付く対象を「フィールドまたはキーワード」とするが、
+ * **キーワードごとに可否が決まっている**。付けられないものに付けると実機は
+ * コンパイルを通さない（`CPF7311`。`EDTCDE` / `EDTWRD` / `CHECK` で確認済み）。
+ * デザイナが黙っていると、壊れたと気付くのは実機に持っていったときになる。
+ *
+ * 可否が原典に書かれていないキーワードは**黙って通す**（知らないものを咎めない）。
+ */
+function unconditionableDiagnostics(
+  units: readonly LogicalUnit[],
+  ddsType: ConditionableDdsType
+): { code: "keyword-not-conditionable"; message: string; sourceLine: number }[] {
+  const diagnostics: {
+    code: "keyword-not-conditionable";
+    message: string;
+    sourceLine: number;
+  }[] = [];
+
+  for (const unit of units) {
+    // **先頭の群は代表行**。そこに書かれたキーワードは項目自身の条件で決まるので、
+    // 「キーワードに条件を付けた」ことにはならない。
+    for (const group of resolveKeywordGroups(unit).slice(1)) {
+      if (group.conditioning.kind !== "indicators") continue;
+      const names = unconditionableKeywords(ddsType, group.keywords);
+      if (names.length === 0) continue;
+      diagnostics.push({
+        code: "keyword-not-conditionable",
+        message:
+          `${names.join(" / ")} には条件標識を付けられません` +
+          "（原典: オプション標識は、このキーワードでは無効です）。" +
+          "実機はこの形をコンパイルしません",
+        sourceLine: group.sourceLine
+      });
+    }
+  }
+
+  return diagnostics;
 }
 
 /**

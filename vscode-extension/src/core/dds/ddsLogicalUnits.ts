@@ -325,6 +325,80 @@ export function joinContinuations(lines: readonly string[]): JoinedLine[] {
   return joined;
 }
 
+/**
+ * 行の種類。**分類の規則を 1 か所に持つ**——`toLogicalUnits` と
+ * `fileLevelKeywordLines` で食い違うと、同じ行が別のものとして扱われる。
+ */
+export type DdsLineKind = "record" | "item" | "conditioning" | "keywords" | "none";
+
+/**
+ * その行が何か。`keywords` は**継続を解いたあとの機能欄**を渡すこと
+ * （継続元の行は引用符が閉じていないので、生の欄では定数と読めない）。
+ */
+export function classifyDdsLine(line: string, keywords: string): DdsLineKind {
+  if (isDdsCommentLine(line) || isDdsBlankLine(line)) return "none";
+
+  const nameType = ddsField(line, DDS_COLUMNS.nameType).trim().toUpperCase();
+  if (nameType === "R") return "record";
+
+  const name = ddsName(line);
+  if (name.length > 0 || readConstant(keywords) !== undefined) return "item";
+
+  // キーワード欄が空で条件付けだけ書かれている行は、次の単位への前置き。
+  if (keywords.length === 0 && conditioningAreaOf(line).trim().length > 0) {
+    return "conditioning";
+  }
+  return keywords.length > 0 ? "keywords" : "none";
+}
+
+/** ファイル・レベルのキーワード行（最初の様式・項目より前）。 */
+export interface FileKeywordLine {
+  /** 1 始まり。 */
+  readonly sourceLine: number;
+  /** その行（と継続行）の機能欄。 */
+  readonly keywords: string;
+  /** 条件を読むための行群（先行する条件行 → その行）。 */
+  readonly conditioningLines: readonly string[];
+}
+
+/**
+ * **ファイル・レベルのキーワード**を読む（`DSPSIZ` / `REF` / `INDARA` / `PRINT` など）。
+ *
+ * これらは**最初のレコード様式より前**に書かれる。`toLogicalUnits` は
+ * レコードにも項目にも属さない先頭のキーワード行を捨てる（配置に関係しないため）ので、
+ * 一覧にもプロパティにも出てこなかった。**捨てているものを別の口から読む。**
+ *
+ * `toLogicalUnits` の返す形を変えないのは、`resolveDspfLayout` などの読み手が
+ * 「単位＝置けるもの」を前提にしているため。ここに混ぜると置こうとしてしまう。
+ */
+export function fileLevelKeywordLines(lines: readonly string[]): FileKeywordLine[] {
+  const collected: FileKeywordLine[] = [];
+  let pendingConditioning: string[] = [];
+
+  for (const joined of joinContinuations(lines)) {
+    const line = lines[joined.index];
+    const kind = classifyDdsLine(line, joined.keywords);
+
+    // 様式か項目が出たら、そこから先はファイル・レベルではない。
+    if (kind === "record" || kind === "item") break;
+    if (kind === "none") continue;
+
+    if (kind === "conditioning") {
+      pendingConditioning.push(line);
+      continue;
+    }
+
+    collected.push({
+      sourceLine: joined.index + 1,
+      keywords: joined.keywords,
+      conditioningLines: [...pendingConditioning, line]
+    });
+    pendingConditioning = [];
+  }
+
+  return collected;
+}
+
 export function toLogicalUnits(lines: readonly string[]): LogicalUnit[] {
   const units: LogicalUnit[] = [];
   /** まだ単位に属さない、先行する条件付けの行。 */
@@ -363,27 +437,27 @@ export function toLogicalUnits(lines: readonly string[]): LogicalUnit[] {
     const line = lines[joined.index];
     if (isDdsCommentLine(line) || isDdsBlankLine(line)) continue;
 
-    const nameType = ddsField(line, DDS_COLUMNS.nameType).trim().toUpperCase();
-    const name = ddsName(line);
     const keywordArea = joined.keywords;
-    const constant = readConstant(keywordArea);
+    const kind = classifyDdsLine(line, keywordArea);
 
-    if (nameType === "R") {
+    if (kind === "record") {
       push("record", line, joined);
       continue;
     }
 
-    if (name.length > 0 || constant !== undefined) {
+    if (kind === "item") {
       push("item", line, joined);
       continue;
     }
 
     // キーワード欄が空で条件付けだけ書かれている行は、**次の単位への前置き**。
-    if (keywordArea.length === 0 && conditioningAreaOf(line).trim().length > 0) {
+    if (kind === "conditioning") {
       pendingConditioning.push(line);
       pendingConditioningLines.push(joined.index + 1);
       continue;
     }
+
+    if (kind === "none") continue;
 
     // キーワードだけの行。直前の単位に**空白 1 つ**で足す。
     // **継続とは別物**（継続は上で解いてある）。`OVERLAY` を別の行に書く形がこれ。

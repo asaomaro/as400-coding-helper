@@ -1,5 +1,6 @@
 import { ddsReplaceField } from "../ddsLayout";
 import { DDS_CONDITIONING } from "./ddsLogicalUnits";
+import { isScreenSizeConditionName } from "./dspfScreenSize";
 import type { IndicatorTerm } from "./ddsConditioning";
 
 /**
@@ -67,6 +68,32 @@ export function formatConditioningArea(
     area += formatTerm(terms[slot]);
   }
   return area;
+}
+
+/**
+ * **画面サイズ条件名**を書いた条件付け欄（10 桁）。
+ *
+ * 条件付け欄には標識のほかに画面サイズ条件名（`*DS3` 等）も入る。原典:
+ * > DSPSIZ キーワードに指定した画面サイズ条件名によって、キーワードの使用や
+ * > フィールドの位置を条件付けることができます。
+ *
+ * **7 桁目はブランクで、名前は 8 桁目から**（`readConditioning` が
+ * 「8 桁目から `*` で始まる」で読んでいるのと対になる）。
+ */
+export function formatScreenSizeArea(name: string): string {
+  return ` ${name.toUpperCase()}`.padEnd(10, " ").slice(0, 10);
+}
+
+/**
+ * 画面サイズ条件名を書き戻した行。**1 本だけ**（名前は AND も OR もしない）。
+ */
+export function writeBackScreenSizeCondition(
+  representativeLine: string,
+  name: string
+): string[] {
+  return [
+    ddsReplaceField(representativeLine, DDS_CONDITIONING, formatScreenSizeArea(name)).trimEnd()
+  ];
 }
 
 /** 条件付け欄を消した行（7-16 桁をブランクに）。 */
@@ -146,7 +173,9 @@ export function formatConditionText(groups: ConditionGroups): string {
 }
 
 export type ParsedCondition =
-  | { readonly ok: true; readonly groups: ConditionGroups }
+  | { readonly ok: true; readonly groups: ConditionGroups; readonly screenSize?: undefined }
+  /** 画面サイズ条件名（`*DS3` 等）。標識とは**別の欄の使い方**なので混ぜない。 */
+  | { readonly ok: true; readonly groups: readonly []; readonly screenSize: string }
   | { readonly ok: false; readonly message: string };
 
 /**
@@ -158,6 +187,19 @@ export type ParsedCondition =
 export function parseConditionText(text: string): ParsedCondition {
   const trimmed = text.trim();
   if (trimmed.length === 0) return { ok: true, groups: [] };
+
+  // **画面サイズ条件名**（`*DS3` / ユーザー定義名）。標識と混ぜられない
+  // ——AND でも OR でもないので、書けるのは 1 つだけ。
+  if (trimmed.startsWith("*")) {
+    const name = trimmed.toUpperCase();
+    if (!isScreenSizeConditionName(name)) {
+      return {
+        ok: false,
+        message: `画面サイズ条件名 '${trimmed}' が無効です（原典: 2 - 8 文字で、最初の文字は *）`
+      };
+    }
+    return { ok: true, groups: [], screenSize: name };
+  }
 
   const groups: IndicatorTerm[][] = [];
   for (const part of trimmed.split(",")) {

@@ -23,8 +23,10 @@ import {
 import {
   CONDITION_LIMITS,
   writeBackCondition,
+  writeBackScreenSizeCondition,
   type ConditionGroups
 } from "./ddsConditionWriteBack";
+import { isScreenSizeConditionName } from "./dspfScreenSize";
 import { COLUMN_ONE_MESSAGE, isRowOneColumnOne } from "./dspfLayout";
 import { DDS_POSITION_ROW } from "./ddsPositionColumns";
 import { writeBackColumn, writeBackPosition } from "./ddsPositionWriteBack";
@@ -106,6 +108,11 @@ export type DdsEdit =
       readonly kind: "setCondition";
       readonly sourceLine: number;
       readonly condition: ConditionGroups;
+      /**
+       * **画面サイズ条件名**（`*DS3` 等）を書くとき。標識とは**別の欄の使い方**で、
+       * AND も OR もしないので `condition` とは**同時に指定できない**（検証で弾く）。
+       */
+      readonly screenSize?: string;
     }
   /**
    * **キーワード行**の条件標識を置き換える（`30 DSPATR(RI)` の `30`）。
@@ -120,6 +127,8 @@ export type DdsEdit =
       readonly kind: "setKeywordCondition";
       readonly sourceLine: number;
       readonly condition: ConditionGroups;
+      /** 画面サイズ条件名。`condition` とは同時に指定できない（検証で弾く）。 */
+      readonly screenSize?: string;
     }
   | { readonly kind: "add"; readonly recordName: string; readonly item: NewDspfItem };
 
@@ -166,6 +175,8 @@ export type DdsEditRejectionCode =
   | "condition-lines-not-contiguous"
   /** 指定した行にキーワード行が無い（`setKeywordCondition` の宛先が見つからない）。 */
   | "keyword-line-not-found"
+  /** 画面サイズ条件名が原典の形（2-8 文字・先頭 `*`）でない、または標識と混ざっている。 */
+  | "screen-size-name-invalid"
   /**
    * 1 行 1 桁に置こうとした（**表示装置ファイルだけ**）。
    *
@@ -228,7 +239,9 @@ export function validateDdsEdits(
         });
         continue;
       }
-      rejections.push(...validateConditionShape(edit.condition, edit.sourceLine));
+      rejections.push(
+        ...validateConditionShape(edit.condition, edit.sourceLine, edit.screenSize)
+      );
       if (!contiguous(group.sourceLines)) {
         rejections.push({
           code: "condition-lines-not-contiguous",
@@ -256,7 +269,9 @@ export function validateDdsEdits(
     }
 
     if (edit.kind === "setCondition") {
-      rejections.push(...validateCondition(unit, edit.condition, edit.sourceLine));
+      rejections.push(
+        ...validateCondition(unit, edit.condition, edit.sourceLine, edit.screenSize)
+      );
       continue;
     }
 
@@ -399,7 +414,10 @@ export function applyDdsEdits(
         results.push({
           replaceFrom: run.from,
           replaceTo: run.to,
-          lines: writeBackCondition(unit.line, edit.condition)
+          lines:
+            edit.screenSize === undefined
+              ? writeBackCondition(unit.line, edit.condition)
+              : writeBackScreenSizeCondition(unit.line, edit.screenSize)
         });
         break;
       }
@@ -412,7 +430,10 @@ export function applyDdsEdits(
         results.push({
           replaceFrom: first - 1,
           replaceTo: edit.sourceLine,
-          lines: writeBackCondition(lines[edit.sourceLine - 1], edit.condition)
+          lines:
+            edit.screenSize === undefined
+              ? writeBackCondition(lines[edit.sourceLine - 1], edit.condition)
+              : writeBackScreenSizeCondition(lines[edit.sourceLine - 1], edit.screenSize)
         });
         break;
       }
@@ -750,9 +771,12 @@ function keywordGroupAt(
 function validateCondition(
   unit: LogicalUnit,
   groups: ConditionGroups,
-  sourceLine: number
+  sourceLine: number,
+  screenSize?: string
 ): DdsEditRejection[] {
-  const rejections: DdsEditRejection[] = [...validateConditionShape(groups, sourceLine)];
+  const rejections: DdsEditRejection[] = [
+    ...validateConditionShape(groups, sourceLine, screenSize)
+  ];
 
   // **条件が空でも 1 本は残る**（代表行）ので、区間が連続しているかだけ見る。
   if (!conditionRunOf(unit)) {
@@ -768,12 +792,37 @@ function validateCondition(
   return rejections;
 }
 
-/** 条件の**形**（上限と標識）を見る。項目にもキーワードにも同じ規則が効く。 */
+/**
+ * 条件の**形**（上限と標識、画面サイズ条件名）を見る。
+ * 項目にもキーワードにも同じ規則が効く。
+ */
 function validateConditionShape(
   groups: ConditionGroups,
-  sourceLine: number
+  sourceLine: number,
+  screenSize?: string
 ): DdsEditRejection[] {
   const rejections: DdsEditRejection[] = [];
+
+  if (screenSize !== undefined) {
+    // **標識と混ぜられない。** 画面サイズ条件名は AND でも OR でもない。
+    if (groups.length > 0) {
+      rejections.push({
+        code: "screen-size-name-invalid",
+        message: "画面サイズ条件名と標識は同時に指定できません（欄の使い方が別です）",
+        sourceLine
+      });
+    }
+    if (!isScreenSizeConditionName(screenSize)) {
+      rejections.push({
+        code: "screen-size-name-invalid",
+        message:
+          `画面サイズ条件名 '${screenSize}' が無効です` +
+          "（原典: 2 - 8 文字で、最初の文字はアスタリスク (*)）",
+        sourceLine
+      });
+    }
+    return rejections;
+  }
 
   if (groups.length > CONDITION_LIMITS.groups) {
     rejections.push({

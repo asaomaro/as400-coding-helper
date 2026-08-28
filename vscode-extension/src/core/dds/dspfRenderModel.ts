@@ -7,6 +7,11 @@ import {
 } from "./ddsConditioning";
 import { resolveAppearanceUnder } from "./dspfAttributes";
 import {
+  fileLevelKeywordLines,
+  type FileKeywordLine
+} from "./ddsLogicalUnits";
+import { readConditioning, type Conditioning } from "./ddsConditioning";
+import {
   constantSegments,
   printWidth,
   segmentsWidth,
@@ -76,6 +81,21 @@ export interface RenderDiagnostic {
   readonly sourceLine: number;
 }
 
+/**
+ * ファイル・レベルのキーワード（`DSPSIZ` / `REF` / `INDARA` / `PRINT` など）。
+ *
+ * **最初の様式より前**に書かれるので `toLogicalUnits` は論理単位にしない
+ * （置けるものではないため）。一覧にもプロパティにも出ず、デザイナからは
+ * **一切読めなかった**——`CUSTMNT.dspf` ではキーワード行 8 本のうち 4 本がこれにあたる。
+ */
+export interface FileKeywordEntry {
+  /** 1 始まり。 */
+  readonly sourceLine: number;
+  readonly keywords: string;
+  /** ファイル・レベルでも条件は書ける。 */
+  readonly condition: Conditioning;
+}
+
 export interface RenderModel {
   /** 種別。DSPF のみ。PRTF を載せるときにここで分岐する。 */
   readonly kind: "dspf" | "prtf";
@@ -114,11 +134,30 @@ export interface RenderModel {
    * 「この画面で意味を持つ標識」を数え上げる手段が無くなる。
    */
   readonly indicators: readonly IndicatorUsage[];
+  /**
+   * ファイル・レベルのキーワード（最初の様式より前）。
+   *
+   * `outline` は様式ごとの一覧なので、様式に属さないこれらはそこに入らない。
+   * **別に持って渡す**（捨てると、デザイナからは読む手段が無い）。
+   */
+  readonly fileKeywords: readonly FileKeywordEntry[];
+}
+
+/** 生の行からファイル・レベルのキーワードを読み、条件を解く。 */
+export function toFileKeywords(lines: readonly string[]): FileKeywordEntry[] {
+  return fileLevelKeywordLines(lines).map((entry: FileKeywordLine) => ({
+    sourceLine: entry.sourceLine,
+    keywords: entry.keywords,
+    condition: readConditioning(entry.conditioningLines)
+  }));
 }
 
 /** ソース行から描画モデルを作る。 */
 export function buildDspfRenderModel(lines: readonly string[]): RenderModel {
-  return fromLayout(resolveDspfLayout(lines), buildDspfOutline(lines), collectIndicators(lines));
+  return {
+    ...fromLayout(resolveDspfLayout(lines), buildDspfOutline(lines), collectIndicators(lines)),
+    fileKeywords: toFileKeywords(lines)
+  };
 }
 
 /** 既に解決済みのレイアウトから作る（二重に解決しないため）。 */
@@ -142,7 +181,9 @@ export function fromLayout(
     diagnostics: layout.diagnostics,
     records,
     outline,
-    indicators
+    indicators,
+    // 生の行を持たないので空。`buildDspfRenderModel` が足す。
+    fileKeywords: []
   };
 }
 

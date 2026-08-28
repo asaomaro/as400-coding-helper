@@ -762,6 +762,28 @@ check(
   await page.$eval(".status", node => node.textContent)
 );
 
+// 画面サイズ条件名（`*DS3` 等）も同じ欄で書ける。標識とは別の欄の使い方。
+await setCondition("*DS3");
+check(
+  "**画面サイズ条件名も書ける（7 桁目はブランク・名前は 8 桁目から）**",
+  (await sourceLines()).some(
+    line => line.charAt(6) === " " && line.slice(7, 16).trimEnd() === "*DS3"
+  ),
+  JSON.stringify((await sourceLines()).filter(l => l.includes("*DS3")))
+);
+check("画面サイズ条件名が読み戻せる", (await conditionValue()) === "*DS3", await conditionValue());
+
+// 形が違えば送らない。
+const beforeBadSize = await sourceLines();
+await setCondition("*TOOLONGNAME");
+check(
+  "形の違う画面サイズ条件名はソースを変えない",
+  JSON.stringify(await sourceLines()) === JSON.stringify(beforeBadSize),
+  await page.$eval(".status", node => node.textContent)
+);
+
+await setCondition("");
+
 // ---- 19d. キーワード行の条件の編集 --------------------------------------
 //
 // `30 DSPATR(RI)` の `30`。**宛先は項目ではなくキーワードの行**。
@@ -792,6 +814,55 @@ check(
   (await sourceLines())[kwLineBefore]
 );
 check("条件なしとして読み戻せる", (await kwCondValue()) === "", await kwCondValue());
+
+// ---- 19e. ファイル・レベルのキーワード ---------------------------------
+//
+// `DSPSIZ` / `REF` / `INDARA` / `PRINT` は**最初の様式より前**にあり、
+// 論理単位にならないので一覧にもプロパティにも出てこなかった。
+await page.selectOption("#sample", { label: "CUSTMNT.dspf" });
+await page.waitForTimeout(250);
+
+const fileLevelLabels = () =>
+  page.$$eval(".dds-tree > li.file-level > ul > li.file-keyword .label", nodes =>
+    nodes.map(n => n.textContent)
+  );
+check(
+  "**ファイル・レベルのキーワードが一覧に出る**",
+  JSON.stringify(await fileLevelLabels()) ===
+    JSON.stringify(["DSPSIZ(24 80 *DS3)", "REF(CUSTMST)", "INDARA", "PRINT"]),
+  JSON.stringify(await fileLevelLabels())
+);
+
+await page.click(".dds-tree > li.file-level > ul > li.file-keyword >> nth=0");
+await page.waitForTimeout(180);
+check(
+  "選ぶとプロパティに出る",
+  (await page.$eval(".dds-props-title, .dds-record-title", n => n.textContent)).includes(
+    "ファイル・レベル"
+  ),
+  await page.$eval(".dds-record-title", n => n.textContent)
+);
+check(
+  "チップに分かれて原典の解説が引ける",
+  (await page.$$eval(".kw-chip", nodes => nodes.map(n => n.textContent))).some(t =>
+    t.startsWith("DSPSIZ")
+  ),
+  JSON.stringify(await page.$$eval(".kw-chip", nodes => nodes.map(n => n.textContent)))
+);
+// **効かない操作を出さない。** 編集の宛先は論理単位で、ここは単位にならない。
+check(
+  "読み取り専用（`✕` と `＋` を出さない）",
+  (await page.$$(".kw-x")).length === 0 &&
+    (await page.$$eval(".kw-chip", nodes => nodes.map(n => n.textContent))).every(
+      t => !t.includes("追加")
+    )
+);
+check(
+  "生テキストも読み取り専用",
+  await page.$eval(".kw-raw", node => node.readOnly)
+);
+
+const beforeFileLevel = await sourceLines();
 
 // ---- 20. キーワードのチップと原典ヘルプ -------------------------------
 // 題材を実物（CUSTMNT.dspf）に戻す。読み込み直しなので文書は元の状態になる。

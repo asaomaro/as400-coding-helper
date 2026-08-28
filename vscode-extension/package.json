@@ -250,7 +250,7 @@
         "rpgClSupport.lint.rules": {
           "type": "object",
           "default": {},
-          "description": "桁位置検査の規則ごとの有効/無効。既定で有効なのは line-length / numeric-field / numeric-alignment と、レイアウトの layout-invalid-position / layout-column-one-reserved / layout-invalid-screen-size / layout-spacing-with-line-number（いずれも実機で作成できないソースでしか出ない）。required-field / restricted-value / layout-overflow / layout-overlap は有効なソースでも出るため既定で無効。",
+          "description": "桁位置検査の規則ごとの有効/無効。既定で有効なのは line-length / numeric-field / numeric-alignment と、レイアウトの layout-invalid-position / layout-column-one-reserved / layout-keyword-not-conditionable / layout-invalid-screen-size / layout-spacing-with-line-number（いずれも実機で作成できないソースでしか出ない）。required-field / restricted-value / layout-overflow / layout-overlap は有効なソースでも出るため既定で無効。",
           "additionalProperties": {
             "type": "boolean"
           },
@@ -278,6 +278,10 @@
             "layout-invalid-position": {
               "type": "boolean",
               "description": "位置欄(39-44桁)に数字以外が入っていないか（既定で有効・実機では作成できない）"
+            },
+            "layout-keyword-not-conditionable": {
+              "type": "boolean",
+              "description": "条件を付けられないキーワードに条件標識が付いていないか（既定で有効・実機はコンパイルしない）"
             },
             "layout-column-one-reserved": {
               "type": "boolean",
@@ -330,7 +334,7 @@
     "dds": "node out/cli/dds.js",
     "watch": "tsc -watch -p ./",
     "test": "npm run compile:test && mocha --ui tdd --require ./test/support/vscode-stub.js \"out-test/test/unit/**/*.test.js\"",
-    "verify:defs": "node scripts/validate-prompter-defs.mjs && node scripts/verify-lint-core.mjs && node ../docs/origin/verify-dds-columns.mjs && node ../docs/origin/verify-dds-keywords.mjs && node ../docs/origin/verify-rpg-completion.mjs && node ../docs/origin/verify-rpg3-completion.mjs && node ../docs/origin/verify-dds-editcodes.mjs && node ../docs/origin/verify-dds-attributes.mjs && node ../docs/origin/verify-dds-print-density.mjs && node ../docs/origin/verify-dds-prompter.mjs && node ../docs/origin/verify-rpg-spec-definitions.mjs && node ../docs/origin/verify-contributes.mjs",
+    "verify:defs": "node scripts/validate-prompter-defs.mjs && node scripts/verify-lint-core.mjs && node ../docs/origin/verify-dds-columns.mjs && node ../docs/origin/verify-dds-keywords.mjs && node ../docs/origin/verify-rpg-completion.mjs && node ../docs/origin/verify-rpg3-completion.mjs && node ../docs/origin/verify-dds-editcodes.mjs && node ../docs/origin/verify-dds-attributes.mjs && node ../docs/origin/verify-dds-conditioning.mjs && node ../docs/origin/verify-dds-print-density.mjs && node ../docs/origin/verify-dds-prompter.mjs && node ../docs/origin/verify-rpg-spec-definitions.mjs && node ../docs/origin/verify-contributes.mjs",
     "verify:roundtrip": "npm run compile && node scripts/verify-cl-roundtrip.mjs && node scripts/verify-cl-roundtrip.mjs --lang=en && node scripts/verify-rpg-roundtrip.mjs && node scripts/verify-prompter-roundtrip.mjs",
     "verify": "npm run verify:defs && npm run verify:roundtrip",
     "compile:test": "node -e \"require('node:fs').rmSync('out-test',{recursive:true,force:true})\" && tsc -p tsconfig.test.json",
