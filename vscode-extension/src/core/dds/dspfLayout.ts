@@ -64,7 +64,7 @@ export type DspfDiagnosticCode =
   | "overflow"
   /** 位置欄に数字以外が入っている。 */
   | "invalid-position"
-  /** 1 桁目に置いている（原典: 属性文字のために予約）。 */
+  /** 1 行 1 桁に置いている（開始属性文字を置く場所が無い）。 */
   | "column-one-reserved"
   /** 位置欄が空で配置できない。 */
   | "missing-position"
@@ -353,12 +353,10 @@ export function resolveDspfLayout(lines: readonly string[]): DspfLayout {
       : extraDisplayPositions(dataType, usage, decimals, HAS_EDIT_CODE.test(keywords));
     const occupancy = occupancyOf(column, resolved.width, sign);
 
-    if (column <= 1) {
+    if (isRowOneColumnOne(row, column)) {
       diagnostics.push({
         code: "column-one-reserved",
-        message:
-          "1 桁目には項目を置けません" +
-          "（原典: 最初の桁は属性文字のために予約されています）",
+        message: COLUMN_ONE_MESSAGE,
         sourceLine
       });
     }
@@ -405,6 +403,39 @@ export function resolveDspfLayout(lines: readonly string[]): DspfLayout {
 
   return { screen, sizes, items, diagnostics };
 }
+
+/**
+ * **1 行 1 桁だけが置けない。** 他の行の 1 桁目は置ける。
+ *
+ * 原典（`表示装置ファイルの桁数 (30 - 34 桁目)`）は
+ * > フィールドは、表示画面の最初の桁を占めることはできません。
+ * > 最初の桁は属性文字のために予約されています。例えば 24 x 80 の画面で、
+ * > 符号付き数字フィールドについて、**39 - 41 桁目 (行) に 1 を指定し、
+ * > 42 - 44 桁目 (桁) に 1 を指定した**とすると、フィールドは 1 行目の 1 桁目から
+ * > 始まってしまうことになり、したがってこの指定は無効です。
+ *
+ * と書く。読みようによっては「どの行でも 1 桁目は不可」だが、**原典の例は 1 行 1 桁**で、
+ * 実機で確かめると**そのとおり**だった（2026-08-27 / IBM i 7.3）:
+ *
+ * | 位置 | `CRTDSPF` |
+ * |---|---|
+ * | **1 行 1 桁**（定数・フィールドとも） | **通らない**（`CPF7311`） |
+ * | 2 行 1 桁 | 通る |
+ * | 1 行 2 桁 | 通る |
+ *
+ * 開始属性文字は 1 桁手前——**2 行 1 桁なら 1 行 80 桁**に置けるが、
+ * 1 行 1 桁には手前が無い。以前は行を見ずに `column <= 1` で報告しており、
+ * **既定 ON の規則が実機で通るソースを誤検出していた**
+ * （`20260827-dds-edit-type-aware` で実機に判定させて判明）。
+ */
+export function isRowOneColumnOne(row: number, column: number): boolean {
+  return row === 1 && column === 1;
+}
+
+/** 1 行 1 桁の説明。診断と編集の拒否で**同じ文**を使う。 */
+export const COLUMN_ONE_MESSAGE =
+  "1 行 1 桁には項目を置けません（開始属性文字を置く手前の桁がありません）。" +
+  "他の行の 1 桁目は置けます（属性文字は前の行の 80 桁目に入ります）";
 
 /**
  * 重なりの検出。

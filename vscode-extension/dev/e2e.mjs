@@ -627,17 +627,20 @@ check(
   JSON.stringify(await fld2Classes())
 );
 
-// プロパティに条件つきキーワードが出る。
+// プロパティにキーワード行とその条件が出る。
 await page.click(".dds-item:has-text('XXXX') >> nth=1");
 await page.waitForTimeout(150);
-const conditionalText = await page
-  .$eval(".dds-conditional-keywords", node => node.textContent)
+const kwRowText = await page
+  .$eval(".dds-conditional-keyword .kw", node => node.textContent)
   .catch(() => "");
+const kwCondValue = () =>
+  page.inputValue('.dds-props input[data-key="keywordCondition"]');
 check(
-  "プロパティで条件つきキーワードが読める",
-  conditionalText.includes("30") && conditionalText.includes("DSPATR(RI)"),
-  conditionalText
+  "プロパティでキーワード行が読める",
+  kwRowText.includes("DSPATR(RI)"),
+  kwRowText
 );
+check("その行の条件が短い形で読める", (await kwCondValue()) === "30", await kwCondValue());
 
 await setInd("30", "unset");
 check(
@@ -758,6 +761,37 @@ check(
   (await page.$eval(".status", node => node.textContent)).includes("標識"),
   await page.$eval(".status", node => node.textContent)
 );
+
+// ---- 19d. キーワード行の条件の編集 --------------------------------------
+//
+// `30 DSPATR(RI)` の `30`。**宛先は項目ではなくキーワードの行**。
+await page.locator(".dds-item").filter({ hasText: "XXXX" }).last().click();
+await page.waitForTimeout(150);
+const setKwCondition = async text => {
+  await page.fill('.dds-props input[data-key="keywordCondition"]', text);
+  await page.press('.dds-props input[data-key="keywordCondition"]', "Enter");
+  await page.waitForTimeout(220);
+};
+
+const kwLineBefore = (await sourceLines()).findIndex(l => l.includes("DSPATR(RI)"));
+await setKwCondition("N40");
+check(
+  "**キーワード行の条件だけを書き換える（項目の行は動かない）**",
+  (await sourceLines())[kwLineBefore].slice(6, 16).includes("N40") &&
+    (await sourceLines()).filter(l => l.includes("XXXX") || l.includes("FLD")).length ===
+      linesBeforeCondition.filter(l => l.includes("FLD")).length,
+  (await sourceLines())[kwLineBefore]
+);
+check("書き換えた条件が読み戻せる", (await kwCondValue()) === "N40", await kwCondValue());
+
+await setKwCondition("");
+check(
+  "空にするとキーワード行の条件が消える",
+  (await sourceLines())[kwLineBefore].slice(6, 16).trim() === "" &&
+    (await sourceLines())[kwLineBefore].includes("DSPATR(RI)"),
+  (await sourceLines())[kwLineBefore]
+);
+check("条件なしとして読み戻せる", (await kwCondValue()) === "", await kwCondValue());
 
 // ---- 20. キーワードのチップと原典ヘルプ -------------------------------
 // 題材を実物（CUSTMNT.dspf）に戻す。読み込み直しなので文書は元の状態になる。

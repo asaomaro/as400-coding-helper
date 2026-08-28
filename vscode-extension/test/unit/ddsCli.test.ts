@@ -224,42 +224,60 @@ suite("DDS CLI: patch", () => {
   /**
    * **「書ける」と「正しい」は別物。**
    *
-   * `validateDdsEdits` が見るのは「ソースに書けるか」だけなので、定数を 1 桁目へ
-   * 動かす編集は通る。原典は「最初の桁は属性文字のために予約されています」と
-   * 禁じており、`resolveDspfLayout` は `column-one-reserved` として指摘する。
+   * `validateDdsEdits` が見るのは「ソースに書けるか」だけ。実機が通す形
+   * （重なり・はみ出し）は拒否しないので、**画面をはみ出す位置へも動かせる**。
    * CLI は規則を写さず、**解決の指摘が増えたか**で止める。
    */
   test("配置の指摘が増える編集は書かない", () => {
     const path = tempCopy(GOLDEN, "T.dspf");
     const before = readFileSync(path, "utf8");
+    // 'CUSTOMER MAINT'（14 桁）を 75 桁目へ。80 桁の画面をはみ出す。
     const edits = writeEdits(join(path, ".."), [
-      { kind: "move", sourceLine: 5, row: 3, column: 1 }
+      { kind: "move", sourceLine: 6, row: 2, column: 75 }
     ]);
 
     const result = invoke(["patch", "--edits", edits, "--write", path]);
     assert.strictEqual(result.code, 1);
     assert.strictEqual(readFileSync(path, "utf8"), before, "指摘が増えるのに書いた");
     const parsed = JSON.parse(result.out) as { newIssues: Array<{ code: string }> };
-    assert.strictEqual(parsed.newIssues[0].code, "column-one-reserved");
+    assert.strictEqual(parsed.newIssues[0].code, "overflow");
   });
 
   test("--allow-new-issues なら承知のうえで書ける", () => {
     const path = tempCopy(GOLDEN, "T.dspf");
     const edits = writeEdits(join(path, ".."), [
-      { kind: "move", sourceLine: 5, row: 3, column: 1 }
+      { kind: "move", sourceLine: 6, row: 2, column: 75 }
     ]);
 
     assert.strictEqual(
       invoke(["patch", "--edits", edits, "--write", "--allow-new-issues", path]).code,
       0
     );
-    assert.ok(readFileSync(path, "utf8").includes("  3  1'顧客保守'"), "書けていない");
+    assert.ok(readFileSync(path, "utf8").includes("  2 75'CUSTOMER"), "書けていない");
+  });
+
+  /**
+   * **1 行 1 桁は「書ける」の段でもう断る**（実機が `CPF7311` で通さないため）。
+   * 指摘の増分ではなく `validateDdsEdits` の拒否として出る。
+   */
+  test("1 行 1 桁への移動は拒否として断る", () => {
+    const path = tempCopy(GOLDEN, "T.dspf");
+    const before = readFileSync(path, "utf8");
+    const edits = writeEdits(join(path, ".."), [
+      { kind: "move", sourceLine: 5, row: 1, column: 1 }
+    ]);
+
+    const result = invoke(["patch", "--edits", edits, "--write", path]);
+    assert.strictEqual(result.code, 1);
+    assert.strictEqual(readFileSync(path, "utf8"), before);
+    const parsed = JSON.parse(result.out) as { rejections: Array<{ code: string }> };
+    assert.strictEqual(parsed.rejections[0].code, "column-one-reserved");
   });
 
   test("元からある指摘は増分に数えない", () => {
     // 1 桁目の項目を含むソースを作り、そこから**別の**まっとうな編集を当てる。
     const path = tempCopy(GOLDEN, "T.dspf");
-    const broken = readFileSync(path, "utf8").replace("  2  4'顧客保守'", "  2  1'顧客保守'");
+    const broken = readFileSync(path, "utf8").replace("  2 20'CUSTOMER MAINT'", "  2 75'CUSTOMER MAINT'");
     writeFileSync(path, broken, "utf8");
     const edits = writeEdits(join(path, ".."), [
       { kind: "move", sourceLine: 6, row: 3, column: 30 }

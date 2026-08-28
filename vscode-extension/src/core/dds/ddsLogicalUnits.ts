@@ -67,8 +67,14 @@ export interface RawKeywordGroup {
   readonly conditioningLines: readonly string[];
   /** その行（と継続行）の機能欄。 */
   readonly keywords: string;
-  /** 1 始まり。 */
+  /** 1 始まり。キーワードが書かれている行。 */
   readonly sourceLine: number;
+  /**
+   * 条件を書き換えるときに**置き換える範囲**（1 始まり・昇順）。
+   * 先行する条件だけの行 → キーワードの行。**継続行は含めない**
+   * （あちらはキーワードの続きで、条件の書き換えでは触らない）。
+   */
+  readonly sourceLines: readonly number[];
 }
 
 export interface LogicalUnit {
@@ -339,7 +345,12 @@ export function toLogicalUnits(lines: readonly string[]): LogicalUnit[] {
       sourceLines: [...pendingConditioningLines, ...joined.sourceLines],
       // 代表行のキーワードは項目自身の条件で決まるので、群としては無条件。
       keywordGroups: [
-        { conditioningLines: [], keywords: joined.keywords, sourceLine: joined.index + 1 }
+        {
+          conditioningLines: [],
+          keywords: joined.keywords,
+          sourceLine: joined.index + 1,
+          sourceLines: [joined.index + 1]
+        }
       ]
     });
     pendingConditioning = [];
@@ -384,16 +395,22 @@ export function toLogicalUnits(lines: readonly string[]): LogicalUnit[] {
     // それも含める——原典より条件は直後の指定に付き、
     // 「最後の (または唯一の) 標識は同じ行に指定」される。
     const conditioningLines = [...pendingConditioning, line];
+    const groupLines = [...pendingConditioningLines, joined.index + 1];
     pendingConditioning = [];
     pendingConditioningLines = [];
 
     units[units.length - 1] = {
       ...previous,
       keywords: `${previous.keywords} ${keywordArea}`.trim(),
-      sourceLines: [...previous.sourceLines, ...joined.sourceLines],
+      sourceLines: [...previous.sourceLines, ...groupLines, ...joined.sourceLines.slice(1)],
       keywordGroups: [
         ...previous.keywordGroups,
-        { conditioningLines, keywords: keywordArea, sourceLine: joined.index + 1 }
+        {
+          conditioningLines,
+          keywords: keywordArea,
+          sourceLine: joined.index + 1,
+          sourceLines: groupLines
+        }
       ]
     };
   }

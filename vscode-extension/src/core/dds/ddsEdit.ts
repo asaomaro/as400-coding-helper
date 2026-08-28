@@ -17,13 +17,15 @@ import {
   startsContinuation,
   toLogicalUnits,
   unitItemKind,
-  type LogicalUnit
+  type LogicalUnit,
+  type RawKeywordGroup
 } from "./ddsLogicalUnits";
 import {
   CONDITION_LIMITS,
   writeBackCondition,
   type ConditionGroups
 } from "./ddsConditionWriteBack";
+import { COLUMN_ONE_MESSAGE, isRowOneColumnOne } from "./dspfLayout";
 import { DDS_POSITION_ROW } from "./ddsPositionColumns";
 import { writeBackColumn, writeBackPosition } from "./ddsPositionWriteBack";
 
@@ -51,6 +53,14 @@ import { writeBackColumn, writeBackPosition } from "./ddsPositionWriteBack";
  * 注記行・空行はどの単位にも属さないので消さない——結果として範囲は連続とは限らず、
  * だから戻り値は**配列**になっている。
  */
+
+/**
+ * 編集できる DDS の種別。
+ *
+ * **`DDS-PF` は入らない。** 物理/論理ファイルには配置の概念が無く、編集の対象になりえない
+ * ——受け取れる形にすると「PF を編集しようとしたらどうなるか」を考え続けることになる。
+ */
+export type EditableDdsType = "DDS-DSPF" | "DDS-PRTF";
 
 export type DdsEdit =
   | { readonly kind: "move"; readonly sourceLine: number; readonly row: number; readonly column: number }
@@ -97,6 +107,20 @@ export type DdsEdit =
       readonly sourceLine: number;
       readonly condition: ConditionGroups;
     }
+  /**
+   * **キーワード行**の条件標識を置き換える（`30 DSPATR(RI)` の `30`）。
+   *
+   * `setCondition` と宛先が違う。あちらは項目そのもの（項目が出るかどうか）、
+   * こちらは**そのキーワードが効くかどうか**——原典は条件が付く対象を
+   * 「フィールド**または**キーワード」としている。
+   *
+   * `sourceLine` は**キーワードが書かれている行**（`KeywordGroup.sourceLine`）。
+   */
+  | {
+      readonly kind: "setKeywordCondition";
+      readonly sourceLine: number;
+      readonly condition: ConditionGroups;
+    }
   | { readonly kind: "add"; readonly recordName: string; readonly item: NewDspfItem };
 
 /** 置き換え指示。0 始まり・`replaceTo` は含まない。 */
@@ -139,7 +163,19 @@ export type DdsEditRejectionCode =
   /** 1 つの条件に 10 個以上の標識、または 10 個以上の条件（原典の上限は 9 と 9）。 */
   | "condition-too-many"
   /** 条件行と代表行の間に注記行が挟まっている（区間で置き換えると注記が消える）。 */
-  | "condition-lines-not-contiguous";
+  | "condition-lines-not-contiguous"
+  /** 指定した行にキーワード行が無い（`setKeywordCondition` の宛先が見つからない）。 */
+  | "keyword-line-not-found"
+  /**
+   * 1 行 1 桁に置こうとした（**表示装置ファイルだけ**）。
+   *
+   * 名前は `resolveDspfLayout` の診断コードと**そろえてある**——同じ規則なので、
+   * 別の名前にすると「同じことを 2 つの名前で言っている」状態になる。
+   *
+   * **これは書き方の好みではなく、実機がコンパイルを通さない形**（`CPF7311`）。
+   * 重なり・はみ出しは実機が通すので拒否しない（直すために動かせる必要がある）。
+   */
+  | "column-one-reserved";
 
 export interface DdsEditRejection {
   readonly code: DdsEditRejectionCode;
@@ -168,14 +204,40 @@ const POSITION_WIDTH = 3;
  */
 export function validateDdsEdits(
   lines: readonly string[],
-  edits: readonly DdsEdit[]
+  edits: readonly DdsEdit[],
+  ddsType: EditableDdsType
 ): readonly DdsEditRejection[] {
   const units = toLogicalUnits(lines);
   const rejections: DdsEditRejection[] = [];
 
   for (const edit of edits) {
     if (edit.kind === "add") {
-      rejections.push(...validateAdd(units, edit.recordName, edit.item));
+      rejections.push(...validateAdd(units, edit.recordName, edit.item, ddsType));
+      continue;
+    }
+
+    if (edit.kind === "setKeywordCondition") {
+      const group = keywordGroupAt(units, edit.sourceLine);
+      if (!group) {
+        rejections.push({
+          code: "keyword-line-not-found",
+          message:
+            `${edit.sourceLine} 行目にキーワードの行がありません` +
+            "（ソースが変わっている可能性があります）",
+          sourceLine: edit.sourceLine
+        });
+        continue;
+      }
+      rejections.push(...validateConditionShape(edit.condition, edit.sourceLine));
+      if (!contiguous(group.sourceLines)) {
+        rejections.push({
+          code: "condition-lines-not-contiguous",
+          message:
+            "条件の行とキーワードの行の間に注記行が挟まっています" +
+            "（まとめて置き換えると注記が消えるため書き換えません）",
+          sourceLine: edit.sourceLine
+        });
+      }
       continue;
     }
 
@@ -200,12 +262,22 @@ export function validateDdsEdits(
 
     if (edit.kind === "move") {
       rejections.push(...validatePosition(edit.row, edit.column, edit.sourceLine));
-      rejections.push(...validateRowMove(unit, edit.sourceLine));
+      rejections.push(...validateColumnOne(edit.row, edit.column, ddsType, edit.sourceLine));
+      rejections.push(...validateRowMove(unit, ddsType, edit.sourceLine));
     }
 
     if (edit.kind === "moveColumn") {
       // 行は触らないので見ない。
       rejections.push(...validatePosition(undefined, edit.column, edit.sourceLine));
+      // 行は変えないので、**いまの行**と突き合わせる。
+      rejections.push(
+        ...validateColumnOne(
+          readNumber(ddsField(unit.line, DDS_POSITION_ROW)) ?? 0,
+          edit.column,
+          ddsType,
+          edit.sourceLine
+        )
+      );
     }
 
     if (edit.kind === "setAttributes") {
@@ -243,9 +315,10 @@ export function validateDdsEdits(
  */
 export function applyDdsEdits(
   lines: readonly string[],
-  edits: readonly DdsEdit[]
+  edits: readonly DdsEdit[],
+  ddsType: EditableDdsType
 ): readonly DdsEditResult[] {
-  if (validateDdsEdits(lines, edits).length > 0) {
+  if (validateDdsEdits(lines, edits, ddsType).length > 0) {
     return [];
   }
 
@@ -330,6 +403,19 @@ export function applyDdsEdits(
         });
         break;
       }
+      case "setKeywordCondition": {
+        const group = keywordGroupAt(units, edit.sourceLine);
+        if (!group) break; // 検証済みなので通常は起きない。
+        const first = group.sourceLines[0];
+        // **書き戻しは項目のときと同じ**——最後の 1 本が「条件を担う行」で、
+        // ここではキーワードの行がそれにあたる。
+        results.push({
+          replaceFrom: first - 1,
+          replaceTo: edit.sourceLine,
+          lines: writeBackCondition(lines[edit.sourceLine - 1], edit.condition)
+        });
+        break;
+      }
       case "remove": {
         const unit = itemUnitAt(units, edit.sourceLine);
         if (!unit) break;
@@ -384,7 +470,15 @@ function validateKeywords(
  * DSPF では位置欄が空の項目は配置できず、キャンバスに出ない（＝移動の宛先にならない）ので、
  * この判定が効くのは実質 PRTF だけ。
  */
-function validateRowMove(unit: LogicalUnit, sourceLine: number): DdsEditRejection[] {
+function validateRowMove(
+  unit: LogicalUnit,
+  ddsType: EditableDdsType,
+  sourceLine: number
+): DdsEditRejection[] {
+  // **帳票だけの話。** 画面ファイルに `SPACE` / `SKIP` は無く、行番号が空の項目は
+  // そもそも配置されない（`missing-position`）。種別を見ないと、画面ファイルで
+  // 意味を成さない理由（「行送りで決まります」）を返すことになる。
+  if (ddsType !== "DDS-PRTF") return [];
   // 行番号が書いてあるなら、位置欄の書き換えでそのまま動く。
   if (readNumber(ddsField(unit.line, DDS_POSITION_ROW)) !== undefined) return [];
   return [
@@ -585,7 +679,8 @@ function insertionPoint(
 function validateAdd(
   units: readonly LogicalUnit[],
   recordName: string,
-  item: NewDspfItem
+  item: NewDspfItem,
+  ddsType: EditableDdsType
 ): DdsEditRejection[] {
   const rejections: DdsEditRejection[] = [];
 
@@ -617,7 +712,31 @@ function validateAdd(
   }
 
   rejections.push(...validatePosition(item.row, item.column));
+  // **追加でも同じ**（移動だけ塞いでも、追加から入れれば同じ状態になる）。
+  rejections.push(...validateColumnOne(item.row, item.column, ddsType, item.row));
   return rejections;
+}
+
+/** 行番号が連続しているか（間に注記行が挟まっていないか）。 */
+function contiguous(lines: readonly number[]): boolean {
+  for (let i = 1; i < lines.length; i += 1) {
+    if (lines[i] !== lines[i - 1] + 1) return false;
+  }
+  return true;
+}
+
+/** その行にあるキーワード群（`30 DSPATR(RI)` のような**キーワードだけの行**）。 */
+function keywordGroupAt(
+  units: readonly LogicalUnit[],
+  sourceLine: number
+): RawKeywordGroup | undefined {
+  for (const unit of units) {
+    // **先頭の群は代表行**（項目自身の条件で決まる）。宛先にしない。
+    for (const group of unit.keywordGroups.slice(1)) {
+      if (group.sourceLine === sourceLine) return group;
+    }
+  }
+  return undefined;
 }
 
 /**
@@ -630,6 +749,27 @@ function validateAdd(
  */
 function validateCondition(
   unit: LogicalUnit,
+  groups: ConditionGroups,
+  sourceLine: number
+): DdsEditRejection[] {
+  const rejections: DdsEditRejection[] = [...validateConditionShape(groups, sourceLine)];
+
+  // **条件が空でも 1 本は残る**（代表行）ので、区間が連続しているかだけ見る。
+  if (!conditionRunOf(unit)) {
+    rejections.push({
+      code: "condition-lines-not-contiguous",
+      message:
+        "条件の行と項目の行の間に注記行が挟まっています" +
+        "（まとめて置き換えると注記が消えるため書き換えません）",
+      sourceLine
+    });
+  }
+
+  return rejections;
+}
+
+/** 条件の**形**（上限と標識）を見る。項目にもキーワードにも同じ規則が効く。 */
+function validateConditionShape(
   groups: ConditionGroups,
   sourceLine: number
 ): DdsEditRejection[] {
@@ -668,17 +808,6 @@ function validateCondition(
     }
   }
 
-  // **条件が空でも 1 本は残る**（代表行）ので、区間が連続しているかだけ見る。
-  if (!conditionRunOf(unit)) {
-    rejections.push({
-      code: "condition-lines-not-contiguous",
-      message:
-        "条件の行と項目の行の間に注記行が挟まっています" +
-        "（まとめて置き換えると注記が消えるため書き換えません）",
-      sourceLine
-    });
-  }
-
   return rejections;
 }
 
@@ -699,6 +828,31 @@ function conditionRunOf(unit: LogicalUnit): { from: number; to: number } | undef
   // 連続していること（間に注記行が無いこと）。
   if (representative - first !== leading) return undefined;
   return { from: first - 1, to: representative };
+}
+
+/**
+ * **1 行 1 桁**に置こうとしていないか。**表示装置ファイルだけ**の規則。
+ *
+ * 判定と文面は `dspfLayout` の診断と共有する（同じ規則を 2 か所に書かない）。
+ *
+ * ■ ここだけ拒否する理由
+ *   重なり・はみ出しは**実機が通す**ので拒否しない——直すために一度重ねる、
+ *   といった動かし方ができなくなる（既存の判断）。1 行 1 桁は違う。
+ *   **実機がコンパイルを通さない**（`CPF7311`。2026-08-27 / IBM i 7.3 で確認）ので、
+ *   書けてしまうと壊れたと気付くのは実機に持っていったときになる。
+ *
+ * ■ 帳票は対象外
+ *   属性文字が無いので手前の桁が要らない。原典の
+ *   `位置 (印刷装置ファイルの 39 から 44 桁目)` にも 1 桁目の制限は無い。
+ */
+function validateColumnOne(
+  row: number,
+  column: number,
+  ddsType: EditableDdsType,
+  sourceLine: number
+): DdsEditRejection[] {
+  if (ddsType !== "DDS-DSPF" || !isRowOneColumnOne(row, column)) return [];
+  return [{ code: "column-one-reserved", message: COLUMN_ONE_MESSAGE, sourceLine }];
 }
 
 /** 位置欄に書けるか。`row` を省くと桁だけを見る（帳票の `moveColumn`）。 */

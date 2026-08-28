@@ -64,7 +64,7 @@ const SOURCE: readonly string[] = [
 /** 置き換え指示を実際に当てて、適用後の行を得る。 */
 function applied(edits: readonly DdsEdit[]): string[] {
   const lines = [...SOURCE];
-  for (const result of applyDdsEdits(SOURCE, edits)) {
+  for (const result of applyDdsEdits(SOURCE, edits, "DDS-DSPF")) {
     lines.splice(result.replaceFrom, result.replaceTo - result.replaceFrom, ...result.lines);
   }
   return lines;
@@ -84,7 +84,7 @@ suite("DDS 編集: 移動と長さ変更", () => {
   test("移動は代表行 1 行だけを置き換える", () => {
     const results = applyDdsEdits(SOURCE, [
       { kind: "move", sourceLine: 6, row: 9, column: 30 }
-    ]);
+    ], "DDS-DSPF");
     assert.strictEqual(results.length, 1);
     assert.deepStrictEqual(
       { from: results[0].replaceFrom, to: results[0].replaceTo },
@@ -197,7 +197,7 @@ suite("DDS 編集: 追加", () => {
 
 suite("DDS 編集: 書けないものだけ拒否する", () => {
   const reject = (edit: DdsEdit): string[] =>
-    validateDdsEdits(SOURCE, [edit]).map(rejection => rejection.code);
+    validateDdsEdits(SOURCE, [edit], "DDS-DSPF").map(rejection => rejection.code);
 
   test("宛先の行に項目が無い", () => {
     assert.deepStrictEqual(reject({ kind: "move", sourceLine: 4, row: 1, column: 1 }), [
@@ -231,7 +231,7 @@ suite("DDS 編集: 書けないものだけ拒否する", () => {
       reject({
         kind: "add",
         recordName: "NOSUCH",
-        item: { kind: "constant", text: "x", row: 1, column: 1 }
+        item: { kind: "constant", text: "x", row: 3, column: 5 }
       }),
       ["record-not-found"]
     );
@@ -242,23 +242,61 @@ suite("DDS 編集: 書けないものだけ拒否する", () => {
       reject({
         kind: "add",
         recordName: "DETAIL",
-        item: { kind: "field", length: 5, row: 1, column: 1 }
+        item: { kind: "field", length: 5, row: 3, column: 5 }
       }),
       ["field-needs-name"]
     );
   });
 
-  test("**規則違反（重なり・はみ出し・1 桁目）は拒否しない**", () => {
-    // 判定は dspfLayout の診断が担う。編集は止めない（直すために動かせる必要がある）。
+  /**
+   * **実機が通すものは拒否しない。** 重なり・はみ出しは実機でコンパイルが通る
+   * （2026-08-27 / IBM i 7.3 で確認）ので、編集は止めない
+   * ——直すために一度重ねる、といった動かし方ができなくなる。
+   *
+   * 1 桁目も**行が 1 でなければ通る**（属性文字は前の行の 80 桁目に入る）。
+   */
+  test("**実機が通す形（重なり・はみ出し・2 行以降の 1 桁目）は拒否しない**", () => {
     assert.deepStrictEqual(reject({ kind: "move", sourceLine: 6, row: 5, column: 1 }), []);
     assert.deepStrictEqual(reject({ kind: "resize", sourceLine: 7, length: 99 }), []);
+  });
+
+  /**
+   * **1 行 1 桁だけは拒否する。** 開始属性文字を置く手前の桁が無く、
+   * 実機が `CPF7311` でコンパイルを通さない（2026-08-27 / IBM i 7.3 で確認）。
+   * 書けてしまうと、壊れたと気付くのは実機に持っていったときになる。
+   */
+  test("**1 行 1 桁は拒否する（実機が通さない）**", () => {
+    assert.deepStrictEqual(
+      reject({ kind: "move", sourceLine: 6, row: 1, column: 1 }),
+      ["column-one-reserved"]
+    );
+    assert.deepStrictEqual(
+      reject({
+        kind: "add",
+        recordName: "DETAIL",
+        item: { kind: "constant", text: "x", row: 1, column: 1 }
+      }),
+      ["column-one-reserved"]
+    );
+  });
+
+  /** 帳票には属性文字が無いので、1 行 1 桁でも置ける。 */
+  test("帳票では 1 行 1 桁を拒否しない", () => {
+    assert.deepStrictEqual(
+      validateDdsEdits(
+        SOURCE,
+        [{ kind: "move", sourceLine: 6, row: 1, column: 1 }],
+        "DDS-PRTF"
+      ).map(rejection => rejection.code),
+      []
+    );
   });
 
   test("1 つでも書けない操作があれば、何も適用しない", () => {
     const results = applyDdsEdits(SOURCE, [
       { kind: "move", sourceLine: 6, row: 9, column: 30 },
       { kind: "resize", sourceLine: 7, length: 999999 }
-    ]);
+    ], "DDS-DSPF");
     assert.deepStrictEqual(results, []);
   });
 });
@@ -268,7 +306,7 @@ suite("DDS 編集: 複数の指示", () => {
     const results = applyDdsEdits(SOURCE, [
       { kind: "move", sourceLine: 6, row: 9, column: 30 },
       { kind: "remove", sourceLine: 10 }
-    ]);
+    ], "DDS-DSPF");
     const froms = results.map((result: DdsEditResult) => result.replaceFrom);
     assert.deepStrictEqual(froms, [...froms].sort((a, b) => b - a));
   });

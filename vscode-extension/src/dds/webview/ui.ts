@@ -916,7 +916,7 @@ class EditorView {
     if (conditionalKeywords !== undefined) {
       const row = document.createElement("tr");
       const head = document.createElement("td");
-      head.textContent = "条件つき";
+      head.textContent = "キーワード行";
       const cell = document.createElement("td");
       cell.appendChild(conditionalKeywords);
       row.append(head, cell);
@@ -1299,9 +1299,9 @@ class EditorView {
     const placed = this.model?.items.find(
       candidate => candidate.sourceLine === item.sourceLine
     );
-    const groups = (placed?.keywordGroups ?? []).filter(
-      group => group.conditioning.kind !== "none"
-    );
+    // **先頭の群は代表行**（項目自身の条件で決まる。`条件` 欄がそれを編集する）。
+    // ここに出すのは**別の行に書かれたキーワード**だけ。
+    const groups = (placed?.keywordGroups ?? []).slice(1);
     if (groups.length === 0) return undefined;
 
     const list = document.createElement("div");
@@ -1309,20 +1309,60 @@ class EditorView {
     const specified = Object.keys(this.indicators).length > 0;
 
     for (const group of groups) {
-      const line = document.createElement("div");
-      const condition = describeConditioning(group.conditioning);
+      const row = document.createElement("div");
+      row.className = "dds-conditional-keyword";
+
+      const label = document.createElement("span");
+      label.className = "kw";
+      label.textContent = group.keywords;
+      label.title = `${group.sourceLine} 行目`;
+
+      const input = document.createElement("input");
+      input.dataset.key = "keywordCondition";
+      input.dataset.sourceLine = String(group.sourceLine);
+      const current = formatConditionText(conditionGroups(group.conditioning));
+      input.value = current;
+      input.placeholder = "条件なし";
       const state = specified
         ? evaluateConditioning(group.conditioning, this.indicators)
         : undefined;
-      const suffix =
-        state === "shown" ? "（いまは 効く）"
-        : state === "hidden" ? "（いまは 効かない）"
-        : state === "unknown" ? "（いまは 決まらない）"
-        : "";
-      line.textContent = `${condition}: ${group.keywords}${suffix}`;
-      if (state === "hidden") line.classList.add("is-off");
-      line.title = `${group.sourceLine} 行目`;
-      list.appendChild(line);
+      input.title =
+        `${group.sourceLine} 行目のキーワードの条件。AND は空白、OR はカンマ（例: N50 01, 60）` +
+        (state === "shown" ? "（いまは 効く）"
+          : state === "hidden" ? "（いまは 効かない）"
+          : state === "unknown" ? "（いまは 決まらない）" : "");
+      if (state === "hidden") row.classList.add("is-off");
+
+      const commit = (): void => {
+        if (input.value.trim() === current.trim()) return;
+        const parsed = parseConditionText(input.value);
+        if (!parsed.ok) {
+          this.setStatus(parsed.message);
+          input.value = current;
+          return;
+        }
+        this.send({
+          kind: "setKeywordCondition",
+          sourceLine: group.sourceLine,
+          condition: parsed.groups
+        });
+      };
+      input.addEventListener("keydown", event => {
+        if (event.key === "Enter") {
+          event.preventDefault();
+          commit();
+          return;
+        }
+        if (event.key === "Escape") {
+          event.preventDefault();
+          input.value = current;
+          input.blur();
+        }
+      });
+      input.addEventListener("blur", commit);
+
+      row.append(label, input);
+      list.appendChild(row);
     }
     return list;
   }

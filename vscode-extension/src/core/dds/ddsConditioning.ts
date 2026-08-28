@@ -220,8 +220,10 @@ export function describeConditioning(conditioning: Conditioning): string {
 export interface KeywordGroup {
   readonly conditioning: Conditioning;
   readonly keywords: string;
-  /** 1 始まり。 */
+  /** 1 始まり。キーワードが書かれている行。 */
   readonly sourceLine: number;
+  /** 条件を書き換えるときに置き換える範囲（先行する条件行 → キーワードの行）。 */
+  readonly sourceLines: readonly number[];
 }
 
 /**
@@ -234,7 +236,8 @@ export function resolveKeywordGroups(unit: LogicalUnit): KeywordGroup[] {
   return unit.keywordGroups.map(group => ({
     conditioning: readConditioning(group.conditioningLines),
     keywords: group.keywords,
-    sourceLine: group.sourceLine
+    sourceLine: group.sourceLine,
+    sourceLines: group.sourceLines
   }));
 }
 

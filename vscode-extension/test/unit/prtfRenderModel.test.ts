@@ -124,23 +124,23 @@ suite("帳票の編集: 行送りで決まる行は書き換えない", () => {
   test("**行を変える移動は拒否する**", () => {
     const rejections = validateDdsEdits(SOURCE, [
       { kind: "move", sourceLine: 5, row: 8, column: 5 }
-    ]);
+    ], "DDS-PRTF");
     assert.deepStrictEqual(rejections.map(r => r.code), ["row-from-spacing"]);
   });
 
   test("行番号を書いた項目の移動は通る", () => {
     assert.deepStrictEqual(
-      validateDdsEdits(SOURCE, [{ kind: "move", sourceLine: 6, row: 8, column: 10 }]),
+      validateDdsEdits(SOURCE, [{ kind: "move", sourceLine: 6, row: 8, column: 10 }], "DDS-PRTF"),
       []
     );
   });
 
   test("**桁だけの移動は通り、行欄には触らない**", () => {
     assert.deepStrictEqual(
-      validateDdsEdits(SOURCE, [{ kind: "moveColumn", sourceLine: 5, column: 9 }]),
+      validateDdsEdits(SOURCE, [{ kind: "moveColumn", sourceLine: 5, column: 9 }], "DDS-PRTF"),
       []
     );
-    const results = applyDdsEdits(SOURCE, [{ kind: "moveColumn", sourceLine: 5, column: 9 }]);
+    const results = applyDdsEdits(SOURCE, [{ kind: "moveColumn", sourceLine: 5, column: 9 }], "DDS-PRTF");
     assert.strictEqual(results.length, 1);
     const line = results[0].lines[0];
     assert.strictEqual(line.slice(38, 41).trim(), "", "行欄に書き込んでいる");
@@ -149,7 +149,7 @@ suite("帳票の編集: 行送りで決まる行は書き換えない", () => {
 
   test("桁が桁欄に収まらなければ拒否する", () => {
     assert.deepStrictEqual(
-      validateDdsEdits(SOURCE, [{ kind: "moveColumn", sourceLine: 5, column: 1000 }]).map(r => r.code),
+      validateDdsEdits(SOURCE, [{ kind: "moveColumn", sourceLine: 5, column: 1000 }], "DDS-PRTF").map(r => r.code),
       ["position-out-of-range"]
     );
   });

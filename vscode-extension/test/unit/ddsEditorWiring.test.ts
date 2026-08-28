@@ -156,9 +156,9 @@ suite("DDS エディタ: 配線", () => {
 suite("DDS エディタ: 編集が文書に届くまで", () => {
   /** provider が通す経路をそのまま組み立てる（VSCode API に触るのは WorkspaceEdit だけ）。 */
   function apply(edits: readonly DdsEdit[]): string[] {
-    assert.deepStrictEqual(validateDdsEdits(LINES, edits), [], "検証で弾かれた");
+    assert.deepStrictEqual(validateDdsEdits(LINES, edits, "DDS-DSPF"), [], "検証で弾かれた");
     const lines = [...LINES];
-    for (const result of applyDdsEdits(LINES, edits)) {
+    for (const result of applyDdsEdits(LINES, edits, "DDS-DSPF")) {
       lines.splice(result.replaceFrom, result.replaceTo - result.replaceFrom, ...result.lines);
     }
     return lines;

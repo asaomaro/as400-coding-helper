@@ -15,9 +15,14 @@ import {
 import {
   conditionGroups,
   readConditioning,
+  resolveKeywordGroups,
   type IndicatorTerm
 } from "../../src/core/dds/ddsConditioning";
 import { toLogicalUnits } from "../../src/core/dds/ddsLogicalUnits";
+import {
+  applyIndicators,
+  buildDspfRenderModel
+} from "../../src/core/dds/dspfRenderModel";
 import { parseEditorMessage } from "../../src/dds/webview/protocol";
 
 /**
@@ -40,10 +45,10 @@ const term = (indicator: string, negated = false): IndicatorTerm => ({ indicator
 
 /** 検証 → 適用（後ろから当てる）。拒否があれば投げる。 */
 function apply(lines: readonly string[], edits: readonly DdsEdit[]): string[] {
-  const rejections = validateDdsEdits(lines, edits);
+  const rejections = validateDdsEdits(lines, edits, "DDS-DSPF");
   assert.deepStrictEqual(rejections, [], "検証で弾かれた");
   const out = [...lines];
-  for (const result of [...applyDdsEdits(lines, edits)].sort(
+  for (const result of [...applyDdsEdits(lines, edits, "DDS-DSPF")].sort(
     (a, b) => b.replaceFrom - a.replaceFrom
   )) {
     out.splice(result.replaceFrom, result.replaceTo - result.replaceFrom, ...result.lines);
@@ -52,7 +57,7 @@ function apply(lines: readonly string[], edits: readonly DdsEdit[]): string[] {
 }
 
 function rejectionCodes(lines: readonly string[], edits: readonly DdsEdit[]): DdsEditRejectionCode[] {
-  return validateDdsEdits(lines, edits).map(rejection => rejection.code);
+  return validateDdsEdits(lines, edits, "DDS-DSPF").map(rejection => rejection.code);
 }
 
 /** 書いた結果を読み直す（往復の確認）。 */
@@ -227,7 +232,7 @@ suite("条件の編集: 書けないものは断る", () => {
     const edits: DdsEdit[] = [
       { kind: "setCondition", sourceLine: 2, condition: [[term("00")]] }
     ];
-    assert.deepStrictEqual(applyDdsEdits(BASE, edits), []);
+    assert.deepStrictEqual(applyDdsEdits(BASE, edits, "DDS-DSPF"), []);
   });
 });
 
@@ -337,4 +342,119 @@ suite("条件の編集: 行数の数え方が 1 つであること", () => {
       );
     });
   }
+});
+
+suite("キーワード行の条件の編集", () => {
+  /**
+   * 原典は条件が付く対象を「フィールド**または**キーワード」としている。
+   * `30 DSPATR(RI)` の `30` は**そのキーワードだけ**を条件付ける
+   * ——項目そのものの条件（`setCondition`）とは宛先が違う。
+   *
+   * `COLOR` / `DSPATR` を条件付けられることは実機で確認済み
+   * （`20260827-dds-conditional-edtcde` の probe。`EDTCDE` は通らない）。
+   */
+  const WITH_KEYWORD = [
+    "     A          R MAIN",
+    "     A            FLD2          10A  B  5  6",
+    "     A  30                                  DSPATR(RI)",
+    "     A            FLD3          10A  B  7  6"
+  ];
+
+  /** その行のキーワード群の条件を読む。 */
+  function keywordCondition(lines: readonly string[], sourceLine: number) {
+    const unit = toLogicalUnits(lines).find(candidate =>
+      candidate.keywordGroups.some(group => group.sourceLine === sourceLine)
+    );
+    assert.ok(unit, `${sourceLine} 行目の群が無い`);
+    const group = resolveKeywordGroups(unit).find(
+      candidate => candidate.sourceLine === sourceLine
+    );
+    assert.ok(group);
+    return conditionGroups(group.conditioning);
+  }
+
+  test("キーワード行の条件だけを書き換える", () => {
+    const after = apply(WITH_KEYWORD, [
+      { kind: "setKeywordCondition", sourceLine: 3, condition: [[term("40", true), term("01")]] }
+    ]);
+    assert.strictEqual(after.length, WITH_KEYWORD.length, "行数が変わった");
+    assert.deepStrictEqual(keywordCondition(after, 3), [[term("40", true), term("01")]]);
+    // **項目の行は動かない。**
+    assert.strictEqual(after[1], WITH_KEYWORD[1]);
+    assert.strictEqual(after[3], WITH_KEYWORD[3]);
+    assert.ok(after[2].includes("DSPATR(RI)"), "キーワードが消えた");
+  });
+
+  test("OR にすると行が増える（キーワードの行が最後）", () => {
+    const after = apply(WITH_KEYWORD, [
+      { kind: "setKeywordCondition", sourceLine: 3, condition: [[term("50")], [term("60")]] }
+    ]);
+    assert.strictEqual(after.length, WITH_KEYWORD.length + 1);
+    assert.strictEqual(after[3].charAt(6), "O", "2 つ目の条件に O が無い");
+    assert.ok(after[3].includes("DSPATR(RI)"), "キーワードが最後の行にない");
+    assert.deepStrictEqual(keywordCondition(after, 4), [[term("50")], [term("60")]]);
+    // 項目の行は動かない（キーワード行は代表行より後ろなので前に挿さらない）。
+    assert.strictEqual(after[1], WITH_KEYWORD[1]);
+  });
+
+  test("空にすると条件だけが消え、キーワードは残る", () => {
+    const cleared = apply(WITH_KEYWORD, [
+      { kind: "setKeywordCondition", sourceLine: 3, condition: [] }
+    ]);
+    assert.strictEqual(cleared[2].slice(6, 16).trim(), "");
+    assert.ok(cleared[2].includes("DSPATR(RI)"));
+    assert.deepStrictEqual(keywordCondition(cleared, 3), []);
+  });
+
+  test("宛先が代表行（項目の行）なら断る", () => {
+    assert.deepStrictEqual(
+      rejectionCodes(WITH_KEYWORD, [
+        { kind: "setKeywordCondition", sourceLine: 2, condition: [[term("50")]] }
+      ]),
+      ["keyword-line-not-found"]
+    );
+  });
+
+  test("上限は項目のときと同じ規則で見る", () => {
+    const groups = Array.from({ length: CONDITION_LIMITS.groups + 1 }, (_, i) => [
+      term(String(i + 10))
+    ]);
+    assert.deepStrictEqual(
+      rejectionCodes(WITH_KEYWORD, [
+        { kind: "setKeywordCondition", sourceLine: 3, condition: groups }
+      ]),
+      ["condition-too-many"]
+    );
+  });
+
+  test("見え方に効く（条件を変えると倒れ方が変わる）", () => {
+    const after = apply(WITH_KEYWORD, [
+      { kind: "setKeywordCondition", sourceLine: 3, condition: [[term("77")]] }
+    ]);
+    const model = buildDspfRenderModel(after);
+    const reverseUnder = (states: Record<string, "on" | "off">): boolean => {
+      const view = applyIndicators(model, states);
+      const item = view.items.find(candidate => candidate.label === "FLD2");
+      assert.ok(item);
+      return item.appearance.reverse;
+    };
+    assert.strictEqual(reverseUnder({ "77": "off" }), false, "新しい条件が効いていない");
+    assert.strictEqual(reverseUnder({ "77": "on" }), true);
+    assert.strictEqual(reverseUnder({ "30": "off" }), true, "古い条件が残っている");
+  });
+
+  test("**配線**: setKeywordCondition が WebView からホストへ渡る", () => {
+    const message = parseEditorMessage({
+      type: "edit",
+      edits: [
+        {
+          kind: "setKeywordCondition",
+          sourceLine: 3,
+          condition: [[{ indicator: "30", negated: false }]]
+        }
+      ]
+    });
+    assert.ok(message && message.type === "edit");
+    assert.strictEqual(message.edits[0].kind, "setKeywordCondition");
+  });
 });
