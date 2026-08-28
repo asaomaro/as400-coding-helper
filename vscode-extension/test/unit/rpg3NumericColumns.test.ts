@@ -4,6 +4,8 @@ import { join } from "node:path";
 import { lintFile } from "../../src/lint/engine";
 import { classifyRpgSpecKeyword } from "../../src/core/rpgSpec";
 import { defaultResourcesDir, loadDefinitions } from "../../src/lint/defsLoader";
+import { buildInitialState } from "../../src/prompter/model";
+import type { PrompterDefinition } from "../../src/prompter/types";
 
 /**
  * **RPG III の数値欄。**
@@ -289,5 +291,118 @@ suite("RPG III の E / L 仕様は分類される", () => {
   test("ILE では E / L を分類しない", () => {
     assert.strictEqual(classifyRpgSpecKeyword(line("E"), { dialect: "ile" }), undefined);
     assert.strictEqual(classifyRpgSpecKeyword(line("L"), { dialect: "ile" }), undefined);
+  });
+});
+
+/**
+ * **F 仕様の継続行（53桁目が `K`）。**
+ *
+ * 53桁目が継続欄であることは前 work で実機確認済み（`QRG2067`）。しかし
+ * **選択(54-59)と記入(60-65)の欄が定義に無く、継続行が書けなかった**。
+ *
+ * 選択に入る語は原典が無いので**実機のコンパイラに 50 語を流して判定させた**
+ * （`.aidev/works/20260828-rpg3-fspec-continuation-options/verify/`）:
+ *
+ * - 判定は**リストのメッセージ番号**で行う。`QRG2023` = 語が無効。
+ *   **作成の成否では判別できない**——`GENLVL(50)` では誤りがあっても作成される。
+ * - 有効 15 件 / 無効 35 件。対照（`INFDS` と `ZZZZZZ`）は先頭・末尾とも期待どおり。
+ * - **候補の出所（ILE の F 仕様キーワード）は 15 件中 5 件を取りこぼしていた**
+ *   （`SAVDS` `IND` `NUM` `ID` `COMIT` は 2 巡目で見つかった）。
+ *   だから**選択肢で縛らない**——一覧に無い語も書ける。
+ */
+suite("RPG III の F 仕様 継続行", () => {
+  const fSpec = (): PrompterDefinition =>
+    JSON.parse(
+      readFileSync(
+        join(RESOURCES, "prompter", "rpg", "rpg3", "ja", "F-SPEC.json"),
+        "utf8"
+      )
+    ) as PrompterDefinition;
+
+  test("選択(54-59)と記入(60-65)の欄がある", () => {
+    const byName = new Map(fSpec().parameters.map(p => [p.name, p]));
+    assert.deepStrictEqual(
+      [byName.get("CONTOPT")?.sourceStart, byName.get("CONTOPT")?.sourceLength],
+      [54, 6]
+    );
+    assert.deepStrictEqual(
+      [byName.get("CONTENTRY")?.sourceStart, byName.get("CONTENTRY")?.sourceLength],
+      [60, 6]
+    );
+  });
+
+  /**
+   * **桁が重なると静かに壊れる**——片方に入力すると他方が壊れ、読み戻しも曖昧になる。
+   * 欄を足すたびに目で確かめるのは無理なので、全欄を機械で見る。
+   */
+  test("F 仕様の欄は桁が重ならない", () => {
+    const ranges = fSpec()
+      .parameters.map(p => ({
+        name: p.name,
+        start: p.sourceStart ?? 0,
+        end: (p.sourceStart ?? 0) + (p.sourceLength ?? 0) - 1
+      }))
+      .sort((a, b) => a.start - b.start);
+
+    const overlaps = ranges
+      .slice(1)
+      .map((range, index) => ({ previous: ranges[index], range }))
+      .filter(({ previous, range }) => range.start <= previous.end)
+      .map(({ previous, range }) => `${previous.name}(${previous.start}-${previous.end}) / ${range.name}(${range.start}-${range.end})`);
+
+    assert.deepStrictEqual(overlaps, [], "重なっている欄がある");
+  });
+
+  /**
+   * **継続行のときだけ出す。** ファイル行では 60-65 は空白でなければならない
+   * （実機の `QRG2016`）。条件表示にしておけば、書いて踏むことがない。
+   */
+  suite("53桁目が K のときだけ出る", () => {
+    const visibleOf = (name: string, values: Record<string, string>): boolean =>
+      buildInitialState(fSpec(), values).fields.find(f => f.fieldName === name)?.visible === true;
+
+    test("継続でなければ出さない", () => {
+      assert.strictEqual(visibleOf("CONTOPT", {}), false);
+      assert.strictEqual(visibleOf("CONTENTRY", {}), false);
+    });
+
+    test("K なら出す", () => {
+      assert.strictEqual(visibleOf("CONTOPT", { CONTINUATION: "K" }), true);
+      assert.strictEqual(visibleOf("CONTENTRY", { CONTINUATION: "K" }), true);
+    });
+
+    test("K 以外なら出さない", () => {
+      assert.strictEqual(visibleOf("CONTOPT", { CONTINUATION: "E" }), false);
+    });
+
+    /** 既存ソースを読むため。値が入っているものを隠すと編集できなくなる。 */
+    test("値が入っていれば、継続でなくても隠さない", () => {
+      assert.strictEqual(visibleOf("CONTOPT", { CONTOPT: "INFDS" }), true);
+    });
+  });
+
+  /**
+   * 一覧を**閉じた集合として書かない**ことの回帰。`options` を付けると
+   * プロンプターが `<select>` になり、**実機が受ける語を打てなくなる**
+   * （`ADDPFM` の `SRCTYPE` で踏んだのと同じ形）。
+   */
+  test("選択欄を選択肢で縛っていない", () => {
+    const contopt = fSpec().parameters.find(p => p.name === "CONTOPT");
+    assert.strictEqual(contopt?.inputType, "text");
+    assert.strictEqual(contopt?.options, undefined, "options を付けると自由入力できなくなる");
+    // 確かめた語は説明に置く（F1 で読める）。
+    for (const word of ["INFDS", "INFSR", "SFILE", "SAVDS", "COMIT"]) {
+      assert.ok(contopt?.help?.includes(word), `${word} が説明にある`);
+    }
+    assert.ok(
+      contopt?.help?.includes("全部とは限らない"),
+      "**網羅ではない**ことが書いてある"
+    );
+  });
+
+  /** help に「K か空白」と書いてあるのに、入力例が `S` になっていた。 */
+  test("継続欄の入力例が K になっている", () => {
+    const cont = fSpec().parameters.find(p => p.name === "CONTINUATION");
+    assert.strictEqual(cont?.placeholder, "K");
   });
 });

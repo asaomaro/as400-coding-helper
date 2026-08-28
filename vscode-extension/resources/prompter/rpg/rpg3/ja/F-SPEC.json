@@ -290,7 +290,54 @@
         "characterSet": "upper",
         "maxLength": 1
       },
-      "placeholder": "S"
+      "placeholder": "K"
+    },
+    {
+      "name": "CONTOPT",
+      "description": "継続 選択",
+      "help": "54-59桁。**継続行（53桁目が K）の「選択」**。この語で、続く記入(60-65)の意味が決まる。\n\n実機（IBM i 7.3 / CRTRPGPGM）で 50 語を流して確かめた語 15 件:\n  INFDS  … ファイル情報データ構造の名前を記入に書く\n  INFSR  … ファイル例外/エラー副ルーチンの名前\n  RECNO  … 相対レコード番号のフィールド名\n  PLIST  … パラメータリスト名\n  PASS   … 標識を渡すか（*NOIND）\n  PRTCTL … 印刷制御のデータ構造名\n  SLN    … 開始行番号（WORKSTN）\n  RENAME … 外部記述の様式名を別名にする\n  SFILE  … 副ファイル。外部記述ファイルでのみ使える\n  IGNORE … その様式を無視する。外部記述ファイルでのみ使える\n  NUM / SAVDS / IND / ID … WORKSTN ファイル用（QRG2156 がこの 4 語を名指しする）\n  COMIT  … コミットメント制御\n\n**この一覧で全部とは限らない。** 候補は ILE の F 仕様キーワードから作ったので RPG III にしか無い語を取りこぼす。実際 2 巡目で SAVDS / IND / NUM / ID / COMIT の 5 件が追加で見つかった（15 件中 5 件）。だからこの欄は**選択肢で縛っていない**——ここに無い語も書ける。\n\n調べ方: 継続行に語を書いてコンパイルし、リスト（スプール名はプログラム名）に **QRG2023『The Option entry is invalid』が出れば無効**、出なければ有効。作成できたかどうかでは判別できない（GENLVL を上げると誤りがあっても作成される）。",
+      "inputType": "text",
+      "required": false,
+      "sourceStart": 54,
+      "sourceLength": 6,
+      "visibleByDefault": false,
+      "dependsOn": [
+        {
+          "effect": "visible",
+          "parameter": "CONTINUATION",
+          "equalsAny": [
+            "K"
+          ]
+        }
+      ],
+      "attributes": {
+        "characterSet": "upper",
+        "maxLength": 6
+      },
+      "placeholder": "INFDS"
+    },
+    {
+      "name": "CONTENTRY",
+      "description": "継続 記入",
+      "help": "60-65桁。**継続行の「記入」**。意味は選択(54-59)の語ごとに違うので、型で縛っていない。\n  INFDS → データ構造名 / INFSR → 副ルーチン名 / RECNO → フィールド名 /\n  RENAME → 様式名 / SLN → 行番号 / PASS → *NOIND\n\n**ファイル行（継続行でない行）では 60-65 桁は空白でなければならない。** 実機で確認済み（QRG2016。20-23 / 47-52 / 60-65 / 67-70 / 73-74）。そのためこの欄は 53桁目が K のときだけ出す。",
+      "inputType": "text",
+      "required": false,
+      "sourceStart": 60,
+      "sourceLength": 6,
+      "visibleByDefault": false,
+      "dependsOn": [
+        {
+          "effect": "visible",
+          "parameter": "CONTINUATION",
+          "equalsAny": [
+            "K"
+          ]
+        }
+      ],
+      "attributes": {
+        "characterSet": "upper",
+        "maxLength": 6
+      }
     },
     {
       "name": "FILEADD",

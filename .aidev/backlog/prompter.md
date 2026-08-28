@@ -68,6 +68,24 @@ priority: 1           # 既存機能の構造改善。DDS(1) と同格
 
   出所: ユーザー要望（2026-08-26）。
 
+- [ ] **`restricted:false` の選択欄で、列挙外の値を打てるようにする**
+
+  `attributes.restricted:false` は**検証を緩めるだけ**で、画面は `<select>` のまま。
+  `<select>` である以上、**列挙に無い値は打てない**。実機が `Rstd=NO` と言う欄では
+  列挙値以外を書けるので、これは「正しい入力を弾く」欠陥にあたる。
+
+  **該当は CL の 86 欄**（`ADDPFM` の `SRCTYPE` は定義済み値が `*NONE` だけで、
+  `RPGLE` と打てない）。`20260828-prompter-standalone` で
+  **ソースに書かれていた値は選択肢に足す**ようにしたので値が消えることは無くなったが、
+  **新しく打つことはできないまま**。
+
+  直し方の見当: `SerializableField` に `restricted` を載せ、`ui.ts` の `buildControl` が
+  `dropdown` かつ `restricted === false` なら `<input list=...>` ＋ `<datalist>` を描く。
+  DDS/CL 両方に効く。
+
+  出所: `20260828-rpg3-fspec-continuation-options` の review（同じ問題を
+  `inputType:"text"` で**回避**したが、回避であって解決ではない）。
+
 - [x] **F4 の統合テストが止まる問題を直す** — 済（`20260828-f4-integration-test`）。
   待つのをやめ、「一定時間 reject しないこと」で**起動できること**だけを見る。
   送信／取消の振る舞いは WebView の e2e が実物で確かめている。
