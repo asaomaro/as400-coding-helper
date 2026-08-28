@@ -84,6 +84,15 @@ const LAYOUT_RULES = [
       "原典「オプション標識は、このキーワードでは無効です」。実機はコンパイルしない。"
   },
   {
+    code: "invalid-screen-size-condition",
+    id: "layout-invalid-screen-size-condition",
+    severity: "error",
+    enabledByDefault: true,
+    description:
+      "画面サイズ条件名が 2 次画面サイズを指しているか。" +
+      "指していない形は実機がコンパイルしない（8 通りを実機で確認）。"
+  },
+  {
     code: "invalid-screen-size",
     id: "layout-invalid-screen-size",
     severity: "error",

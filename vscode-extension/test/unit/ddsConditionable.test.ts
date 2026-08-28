@@ -5,6 +5,7 @@ import {
 } from "../../src/core/dds/ddsConditionable";
 import { resolveDspfLayout } from "../../src/core/dds/dspfLayout";
 import { resolvePrtfLayout } from "../../src/core/dds/prtfLayout";
+import { toLogicalUnits } from "../../src/core/dds/ddsLogicalUnits";
 
 /**
  * **キーワードにオプション標識を付けられるか。**
@@ -114,5 +115,88 @@ suite("条件付けの可否: 指摘", () => {
     ]).diagnostics.filter(d => d.code === "keyword-not-conditionable");
     assert.strictEqual(diagnostics.length, 1);
     assert.strictEqual(diagnostics[0].sourceLine, 3);
+  });
+});
+
+suite("画面サイズ条件名: 2 次を指しているか（実機で確定）", () => {
+  /**
+   * **「DSPSIZ に宣言してあればよい」ではなかった。**
+   * 実機で 8 通りを試して確定した（2026-08-28 / IBM i 7.3。
+   * `.aidev/works/20260828-dds-undeclared-screen-size/verify/`）:
+   *
+   * | `DSPSIZ` | 条件名 | `CRTDSPF` |
+   * |---|---|---|
+   * | 無し | `*DS3` / `*DS4` | 通らない |
+   * | `(24 80)` | `*DS4` | 通らない |
+   * | `(24 80 27 132)` | `*DS3`（1 次） | **通らない** |
+   * | `(24 80 27 132)` | `*DS4`（2 次） | 通る |
+   * | `(27 132 *WIDE 24 80 *NORMAL)` | `*WIDE`（1 次） | **通らない** |
+   * | 同上 | `*NORMAL`（2 次） | 通る |
+   * | 同上 | `*NOTDEC` | 通らない |
+   *
+   * 8 通りすべてを「**2 次画面サイズを指していること**」という 1 つの規則が説明する。
+   * 項目自身の行が 1 次の位置を与えるので、1 次を条件にした指定は矛盾する。
+   */
+  const withName = (name: string): string => {
+    const chars = " ".repeat(80).split("");
+    chars[5] = "A";
+    for (let i = 0; i < name.length; i += 1) chars[8 + i] = name[i];
+    for (let i = 0; i < 3; i += 1) {
+      chars[38 + i] = "  3"[i];
+      chars[41 + i] = "  4"[i];
+    }
+    return chars.join("").replace(/ +$/u, "");
+  };
+  const dspsiz = (text: string): string => {
+    const chars = " ".repeat(80).split("");
+    chars[5] = "A";
+    for (let i = 0; i < text.length; i += 1) chars[44 + i] = text[i];
+    return chars.join("").replace(/ +$/u, "");
+  };
+
+  const reports = (declaration: string | undefined, name: string): boolean =>
+    resolveDspfLayout([
+      ...(declaration === undefined ? [] : [dspsiz(declaration)]),
+      "     A          R T",
+      "     A            FLDB          10A  O  2  4",
+      withName(name)
+    ]).diagnostics.some(
+      diagnostic => diagnostic.code === "invalid-screen-size-condition"
+    );
+
+  const CASES: ReadonlyArray<[string | undefined, string, boolean]> = [
+    [undefined, "*DS4", true],
+    [undefined, "*DS3", true],
+    ["DSPSIZ(24 80)", "*DS4", true],
+    ["DSPSIZ(24 80 27 132)", "*DS3", true],
+    ["DSPSIZ(24 80 27 132)", "*DS4", false],
+    ["DSPSIZ(27 132 *WIDE 24 80 *NORMAL)", "*WIDE", true],
+    ["DSPSIZ(27 132 *WIDE 24 80 *NORMAL)", "*NORMAL", false],
+    ["DSPSIZ(27 132 *WIDE 24 80 *NORMAL)", "*NOTDEC", true]
+  ];
+
+  for (const [declaration, name, expected] of CASES) {
+    test(`${declaration ?? "DSPSIZ 無し"} + ${name} → ${expected ? "指摘する" : "指摘しない"}`, () => {
+      assert.strictEqual(reports(declaration, name), expected);
+    });
+  }
+
+  /**
+   * **論理単位からは見つからない。** 画面サイズ条件名が書かれる行の多くは
+   * 「条件名 ＋ 位置」だけの**位置の上書き行**で、名前もキーワードも持たない。
+   * `toLogicalUnits` はそれを「次の単位への前置き」と見なし、続く単位が無ければ捨てる。
+   */
+  test("位置の上書き行（名前もキーワードも無い行）でも指摘できる", () => {
+    const lines = [
+      dspsiz("DSPSIZ(24 80 27 132)"),
+      "     A          R T",
+      "     A            FLDB          10A  O  2  4",
+      withName("*NOTDEC")
+    ];
+    assert.ok(
+      !toLogicalUnits(lines).some(unit => unit.sourceLines.includes(4)),
+      "前提が変わった: 上書き行が論理単位に入っている"
+    );
+    assert.strictEqual(reports("DSPSIZ(24 80 27 132)", "*NOTDEC"), true);
   });
 });

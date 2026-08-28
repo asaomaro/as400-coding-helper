@@ -378,6 +378,15 @@ suite("DSPF: 画面サイズ条件名は名前ではなくサイズで突き合�
     })
   ];
 
+  /**
+   * **描くことと、実機で通ることは別。**
+   *
+   * 名前ではなくサイズで突き合わせる（`*DS3` ＝ 1 次の 24x80）ので**描く**
+   * ——ここを名前の一致で判定していたとき、この形の項目が黙って消えていた。
+   *
+   * ただし**実機はこの形をコンパイルしない**（2026-08-28 / IBM i 7.3 で確認。
+   * 条件名は 2 次画面サイズを指す必要がある）。描いたうえで指摘を出す。
+   */
   test("条件名を持たない DSPSIZ でも *DS3（＝1 次の 24x80）の項目を描く", () => {
     const { items, diagnostics } = resolveDspfLayout(numericForm(" *DS3"));
     assert.deepStrictEqual(
@@ -385,13 +394,17 @@ suite("DSPF: 画面サイズ条件名は名前ではなくサイズで突き合�
       ["F"],
       "1 次画面サイズと同じ *DS3 の項目が消えている"
     );
-    assert.deepStrictEqual(diagnostics, []);
+    assert.deepStrictEqual(
+      diagnostics.map(diagnostic => diagnostic.code),
+      ["invalid-screen-size-condition"],
+      "1 次を指す条件名は実機が通さないので指摘する"
+    );
   });
 
   test("*DS4（＝2 次の 27x132）の項目は描かない（正当なので診断も出さない）", () => {
     const { items, diagnostics } = resolveDspfLayout(numericForm(" *DS4"));
     assert.deepStrictEqual(items, []);
-    assert.deepStrictEqual(diagnostics, []);
+    assert.deepStrictEqual(diagnostics, [], "2 次を指す条件名は実機も通す");
   });
 
   test("1 次が *DS4 のときは *DS4 の項目を描き、*DS3 は描かない", () => {
