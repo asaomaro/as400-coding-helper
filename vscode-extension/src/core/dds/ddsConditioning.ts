@@ -62,18 +62,21 @@ export function readConditioning(lines: readonly string[]): Conditioning {
     const area = conditioningAreaOf(line);
     if (area.trim().length === 0) continue;
 
-    const join = area.charAt(0).toUpperCase() === "O" ? "O" : "A";
-    // 8-16 桁（標識 3 つ分、または画面サイズ条件名）。
-    const body = area.slice(1);
-
-    // 画面サイズ条件名（8 桁目から `*` で始まる）。
-    const trimmedBody = body.trim();
-    if (trimmedBody.startsWith("*")) {
-      if (isScreenSizeConditionName(trimmedBody)) {
-        screenSizeName = trimmedBody.toUpperCase();
+    // **画面サイズ条件名は 7 桁目からも書ける。** 実機で確かめた
+    // （2026-08-28 / IBM i 7.3）: 7 桁目 = 通る / 8 桁目 = 通らない / 9 桁目 = 通る。
+    // 欄全体を見て `*` で始まるなら名前として読む——7 桁目を AND/OR として
+    // 切り落とすと、その形の条件が**黙って消える**。
+    const trimmedArea = area.trim();
+    if (trimmedArea.startsWith("*")) {
+      if (isScreenSizeConditionName(trimmedArea)) {
+        screenSizeName = trimmedArea.toUpperCase();
       }
       continue;
     }
+
+    const join = area.charAt(0).toUpperCase() === "O" ? "O" : "A";
+    // 8-16 桁（標識 3 つ分）。
+    const body = area.slice(1);
 
     const terms: IndicatorTerm[] = [];
     for (const offset of INDICATOR_SLOTS) {

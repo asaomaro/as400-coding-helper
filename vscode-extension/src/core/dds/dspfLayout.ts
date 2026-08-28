@@ -1,4 +1,10 @@
-import { DDS_COLUMNS, ddsField, ddsName } from "../ddsLayout";
+import {
+  DDS_COLUMNS,
+  ddsField,
+  ddsName,
+  isDdsBlankLine,
+  isDdsCommentLine
+} from "../ddsLayout";
 import { unconditionableKeywords, type ConditionableDdsType } from "./ddsConditionable";
 import {
   isMutuallyExclusive,
@@ -72,6 +78,8 @@ export type DspfDiagnosticCode =
   | "missing-position"
   /** 条件を付けられないキーワードに条件が付いている（実機がコンパイルしない）。 */
   | "keyword-not-conditionable"
+  /** 画面サイズ条件名が 2 次画面サイズを指していない（実機がコンパイルしない）。 */
+  | "invalid-screen-size-condition"
   /** 桁欄が `+n`（相対桁）。初版は解決しない。 */
   | "relative-position-unresolved"
   /** DSPSIZ の書式・値が不正。 */
@@ -276,6 +284,7 @@ export function resolveDspfLayout(lines: readonly string[]): DspfLayout {
 
   const units = toLogicalUnits(lines);
   diagnostics.push(...unconditionableDiagnostics(units, "DSPF"));
+  diagnostics.push(...undeclaredScreenSizeDiagnostics(lines, sizes));
 
   for (const unit of units) {
     const { line, sourceLine, keywords } = unit;
@@ -352,7 +361,7 @@ export function resolveDspfLayout(lines: readonly string[]): DspfLayout {
 
     const resolved = isConstant
       ? constantWidth(constant ?? "")
-      : fieldWidth(line, keywords);
+      : fieldWidth(line, keywords, "DSPF");
     const dataType = ddsField(line, DDS_COLUMNS.dataType).trim().toUpperCase() || undefined;
     const decimals = readNumber(ddsField(line, DDS_COLUMNS.decimals));
     const sign = isConstant
@@ -411,6 +420,74 @@ export function resolveDspfLayout(lines: readonly string[]): DspfLayout {
   return { screen, sizes, items, diagnostics };
 }
 
+
+/**
+ * **画面サイズ条件名が 2 次画面サイズを指していない**行を報告する。
+ *
+ * ## 規則は実機が決めた
+ *
+ * 「`DSPSIZ` に宣言してあればよい」と思っていたが、違った。実機で確かめた
+ * （2026-08-28 / IBM i 7.3。`.aidev/works/20260828-dds-undeclared-screen-size/verify/`）:
+ *
+ * | `DSPSIZ` | 条件名 | `CRTDSPF` |
+ * |---|---|---|
+ * | 無し | `*DS3` / `*DS4` | 通らない |
+ * | `(24 80)` | `*DS3` / `*DS4` | 通らない |
+ * | `(24 80 27 132)` | `*DS3`（**1 次**） | **通らない** |
+ * | `(24 80 27 132)` | `*DS4`（2 次） | 通る |
+ * | `(27 132 *WIDE 24 80 *NORMAL)` | `*WIDE`（**1 次**） | **通らない** |
+ * | 同上 | `*NORMAL`（2 次） | 通る |
+ * | 同上 | `*NOTDEC`（未宣言） | 通らない |
+ *
+ * **7 通りすべてを 1 つの規則が説明する**——条件名は**2 次画面サイズ**を指していなければ
+ * ならない。理屈も通る: 項目自身の行が 1 次の位置を与えるので、
+ * 1 次を条件にした指定は矛盾する。
+ *
+ * ## 判定
+ *
+ * 2 次画面サイズが宣言されていて、かつ `matchesScreenSize` がそれに一致すること。
+ * IBM 提供名（`*DS3` / `*DS4`）もサイズに解決してから突き合わせる（原典）。
+ */
+function undeclaredScreenSizeDiagnostics(
+  lines: readonly string[],
+  sizes: ScreenSizes
+): DspfDiagnostic[] {
+  const diagnostics: DspfDiagnostic[] = [];
+
+  const check = (conditioning: Conditioning, sourceLine: number): void => {
+    if (conditioning.kind !== "screen-size") return;
+    const { name } = conditioning;
+    if (sizes.secondary !== undefined && matchesScreenSize(name, sizes.secondary)) {
+      return;
+    }
+
+    const why =
+      sizes.secondary === undefined
+        ? "2 次画面サイズが DSPSIZ に宣言されていません"
+        : matchesScreenSize(name, sizes.primary)
+          ? "1 次画面サイズを指しています（項目の行が 1 次の位置を与えるので指定が矛盾します）"
+          : "DSPSIZ に宣言されていません";
+
+    diagnostics.push({
+      code: "invalid-screen-size-condition",
+      message:
+        `画面サイズ条件名 ${name} では条件付けできません——${why}。` +
+        "条件名は 2 次画面サイズを指す必要があります（実機はこの形をコンパイルしません）",
+      sourceLine
+    });
+  };
+
+  // **論理単位を通さない**（`collectIndicators` と同じ理由）。
+  // 画面サイズ条件名が書かれる行の多くは「条件名 ＋ 位置」だけの**位置の上書き行**で、
+  // 名前もキーワードも持たない。`toLogicalUnits` はそれを「次の単位への前置き」と見なし、
+  // 続く単位が無ければ**丸ごと捨てる**——単位から探すと 1 行も見つからない。
+  lines.forEach((line, index) => {
+    if (isDdsCommentLine(line) || isDdsBlankLine(line)) return;
+    check(readConditioning([line]), index + 1);
+  });
+
+  return diagnostics;
+}
 
 /**
  * **条件を付けられないキーワードに条件が付いている**行を報告する。

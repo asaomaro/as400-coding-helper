@@ -71,17 +71,36 @@ export function formatConditioningArea(
 }
 
 /**
+ * 画面サイズ条件名を書き始める桁。
+ *
+ * **8 桁目には書けない。** 実機で確かめた（2026-08-28 / IBM i 7.3。
+ * `.aidev/works/20260828-dds-screen-size-column/verify/`）:
+ *
+ * | 名前の開始桁 | `CRTDSPF` |
+ * |---|---|
+ * | 7 | 通る |
+ * | **8** | **通らない**（`CPF7311`） |
+ * | 9 | 通る（**原典の例がこの桁**） |
+ *
+ * 8 桁目は最初の標識の `N`（NOT）の位置なので、`*` を置くと解釈が曖昧になるのだと思われる。
+ * 原典の例（`DSPSIZ` の 例 2 / 例 3）はいずれも 9 桁目から書いており、そちらに揃える。
+ */
+const SCREEN_SIZE_NAME_COLUMN = 9;
+
+/**
  * **画面サイズ条件名**を書いた条件付け欄（10 桁）。
  *
  * 条件付け欄には標識のほかに画面サイズ条件名（`*DS3` 等）も入る。原典:
  * > DSPSIZ キーワードに指定した画面サイズ条件名によって、キーワードの使用や
  * > フィールドの位置を条件付けることができます。
  *
- * **7 桁目はブランクで、名前は 8 桁目から**（`readConditioning` が
- * 「8 桁目から `*` で始まる」で読んでいるのと対になる）。
+ * **名前は 9 桁目から**（上記の実機の結果。7-8 桁目はブランク）。
+ * 名前は最長 8 文字なので 9-16 桁にちょうど収まる。
  */
 export function formatScreenSizeArea(name: string): string {
-  return ` ${name.toUpperCase()}`.padEnd(10, " ").slice(0, 10);
+  const [start] = DDS_CONDITIONING;
+  const lead = " ".repeat(SCREEN_SIZE_NAME_COLUMN - start);
+  return `${lead}${name.toUpperCase()}`.padEnd(10, " ").slice(0, 10);
 }
 
 /**

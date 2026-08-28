@@ -9,6 +9,7 @@ import {
   CONDITION_LIMITS,
   conditionLineCount,
   formatConditionText,
+  formatScreenSizeArea,
   parseConditionText,
   writeBackCondition
 } from "../../src/core/dds/ddsConditionWriteBack";
@@ -473,14 +474,30 @@ suite("条件の編集: 画面サイズ条件名", () => {
     "     A            FLD1          10A  B  5  2"
   ];
 
-  test("画面サイズ条件名を書ける（7 桁目はブランク・名前は 8 桁目から）", () => {
+  /**
+   * **名前は 9 桁目から。** 実機で確かめた（2026-08-28 / IBM i 7.3）:
+   * 7 桁目 = 通る / **8 桁目 = 通らない**（`CPF7311`）/ 9 桁目 = 通る。
+   * 原典の例（`DSPSIZ` の 例 2 / 例 3）も 9 桁目から書いている。
+   *
+   * 直す前は 8 桁目に書いており、**実機が受け付けないソース**を作っていた。
+   */
+  test("画面サイズ条件名を書ける（名前は 9 桁目から）", () => {
     const after = apply(TWO_SIZES, [
       { kind: "setCondition", sourceLine: 3, condition: [], screenSize: "*DS4" }
     ]);
     assert.strictEqual(after.length, TWO_SIZES.length, "行数が変わった");
-    assert.strictEqual(after[2].charAt(6), " ", "7 桁目はブランク");
-    assert.strictEqual(after[2].slice(7, 16).trimEnd(), "*DS4");
+    assert.strictEqual(after[2].slice(6, 8), "  ", "7-8 桁目はブランク");
+    assert.strictEqual(after[2].indexOf("*") + 1, 9, "名前が 9 桁目から始まっていない");
+    assert.strictEqual(after[2].slice(8, 16).trimEnd(), "*DS4");
     assert.ok(after[2].includes("FLD1"), "項目が消えた");
+  });
+
+  test("8 文字の名前も 9-16 桁に収まる", () => {
+    const after = apply(TWO_SIZES, [
+      { kind: "setCondition", sourceLine: 3, condition: [], screenSize: "*ABCDEFG" }
+    ]);
+    assert.strictEqual(after[2].slice(8, 16), "*ABCDEFG");
+    assert.ok(after[2].includes("FLD1"), "項目の欄を侵している");
   });
 
   test("書いた名前が読み戻せる", () => {
@@ -547,7 +564,7 @@ suite("条件の編集: 画面サイズ条件名", () => {
     const after = apply(lines, [
       { kind: "setKeywordCondition", sourceLine: 3, condition: [], screenSize: "*DS3" }
     ]);
-    assert.strictEqual(after[2].slice(7, 16).trimEnd(), "*DS3");
+    assert.strictEqual(after[2].slice(8, 16).trimEnd(), "*DS3");
     assert.ok(after[2].includes("DSPATR(RI)"), "キーワードが消えた");
   });
 
@@ -590,5 +607,66 @@ suite("条件の編集: 画面サイズ条件名", () => {
       !message || (message.type === "edit" && message.edits.length === 0),
       "数値が通ってしまう"
     );
+  });
+});
+
+suite("条件の編集: 画面サイズ条件名の桁（実機で確定）", () => {
+  /**
+   * **実機（2026-08-28 / IBM i 7.3）で確かめた桁。**
+   * `.aidev/works/20260828-dds-screen-size-column/verify/` が再現する。
+   *
+   * | 名前の開始桁 | `CRTDSPF` |
+   * |---|---|
+   * | 7 | 通る |
+   * | **8** | **通らない**（`CPF7311`） |
+   * | 9 | 通る（原典の例がこの桁） |
+   *
+   * 8 桁目は最初の標識の `N`（NOT）の位置なので、`*` を置くと解釈が曖昧になる。
+   */
+  const at = (column: number, name: string): string => {
+    const chars = " ".repeat(80).split("");
+    chars[5] = "A";
+    for (let i = 0; i < name.length; i += 1) chars[column - 1 + i] = name[i];
+    return chars.join("").replace(/ +$/u, "");
+  };
+
+  test("書き出す桁は 9（実機が 8 を通さない）", () => {
+    assert.strictEqual(formatScreenSizeArea("*DS4"), "  *DS4    ");
+  });
+
+  /**
+   * **7 桁目からの形も読める。** 実機が通す以上、読めないと
+   * その条件が黙って消える（`kind: "none"` になり、無条件として描かれる）。
+   */
+  test("7 / 8 / 9 桁目のどれから書かれていても読める", () => {
+    for (const column of [7, 8, 9, 10]) {
+      const conditioning = readConditioning([at(column, "*DS4")]);
+      assert.strictEqual(
+        conditioning.kind,
+        "screen-size",
+        `${column} 桁目から書かれた名前が読めない`
+      );
+      assert.strictEqual(
+        conditioning.kind === "screen-size" ? conditioning.name : "",
+        "*DS4"
+      );
+    }
+  });
+
+  /** 標識の読み方は変えていない（7 桁目を名前と取り違えない）。 */
+  test("標識はこれまでどおり読める", () => {
+    assert.deepStrictEqual(
+      conditionGroups(readConditioning(["     A  50", "     AO 60"])),
+      [[term("50")], [term("60")]]
+    );
+  });
+
+  test("書いて読み直すと同じ名前になる（9 桁目から）", () => {
+    const after = apply(
+      ["     A          R MAIN", "     A            FLD1          10A  B  5  2"],
+      [{ kind: "setCondition", sourceLine: 2, condition: [], screenSize: "*DS4" }]
+    );
+    const conditioning = readConditioning([after[1]]);
+    assert.strictEqual(conditioning.kind, "screen-size");
   });
 });

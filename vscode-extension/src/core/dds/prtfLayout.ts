@@ -341,7 +341,7 @@ export function resolvePrtfLayout(
 
     const resolved = isConstant
       ? constantWidth(constant)
-      : fieldWidth(line, keywords);
+      : fieldWidth(line, keywords, "PRTF");
     const width = resolved.width;
     const widthUnknownReason = resolved.reason;
 

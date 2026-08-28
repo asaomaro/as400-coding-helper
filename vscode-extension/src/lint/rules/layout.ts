@@ -74,6 +74,7 @@ const SPAN_BY_CODE: ReadonlyMap<string, Span> = new Map([
   ["column-one-reserved", "position"],
   // 条件付け欄（7-16 桁）を直せば解決する。
   ["keyword-not-conditionable", "conditioning"],
+  ["invalid-screen-size-condition", "conditioning"],
   ["overflow", "position"],
   ["overlap", "position"],
   ["spacing-with-line-number", "position"],
