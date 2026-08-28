@@ -352,7 +352,7 @@ export function resolveDspfLayout(lines: readonly string[]): DspfLayout {
 
     const resolved = isConstant
       ? constantWidth(constant ?? "")
-      : fieldWidth(line, keywords);
+      : fieldWidth(line, keywords, "DSPF");
     const dataType = ddsField(line, DDS_COLUMNS.dataType).trim().toUpperCase() || undefined;
     const decimals = readNumber(ddsField(line, DDS_COLUMNS.decimals));
     const sign = isConstant

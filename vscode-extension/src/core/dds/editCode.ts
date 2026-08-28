@@ -62,18 +62,44 @@ export function editCodeAttributes(code: string): EditCodeAttributes | undefined
  * @param option   `*`（アスタリスク充てん）または浮動通貨記号。
  * @param dataType データ・タイプ（35 桁目）。`S` かブランク以外には効かない。
  */
+/**
+ * `EDTCDE` を書けるキーボード・シフト（35 桁目）。**種別で違う。**
+ *
+ * 印刷装置ファイルの原典は「35 桁目に S またはブランク」と書くが、
+ * **表示装置ファイルは `Y` も通る**。実機で確かめた（2026-08-28 / IBM i 7.3。
+ * `.aidev/works/20260828-dds-edtcde-shift/verify/`）:
+ *
+ * | 種別 | `6Y 2O EDTCDE(J)` | `6S 2O EDTCDE(J)` |
+ * |---|---|---|
+ * | 表示装置 | **通る** | 通る |
+ * | 印刷装置 | **通らない**（`CPF7311`） | 通る |
+ *
+ * 表示装置ファイルの原典（`小数点以下の桁数 (36 - 37 桁目)`）も
+ * > 定義中のフィールドについて編集が効力を持っている場合は、キーボード・シフトは
+ * > **数字のみ (35 桁目が Y)** となります。
+ *
+ * と書いており、実機と一致する。**印刷装置の規則を表示装置に当てていた**のが誤り。
+ */
+const EDITABLE_SHIFTS: Readonly<Record<EditedWidthDdsType, readonly string[]>> = {
+  DSPF: ["", "S", "Y"],
+  PRTF: ["", "S"]
+};
+
+/** `editedWidth` が種別で答えを変えるので、呼ぶ側が渡す。 */
+export type EditedWidthDdsType = "DSPF" | "PRTF";
+
 export function editedWidth(
   length: number,
   decimals: number,
   code: string,
-  option?: string,
-  dataType?: string
+  option: string | undefined,
+  dataType: string | undefined,
+  ddsType: EditedWidthDdsType
 ): EditedWidth {
   const normalized = code.trim().toUpperCase();
 
-  // 原典: EDTCDE は 35 桁目に S またはブランクが入っているフィールドにのみ有効。
   const type = (dataType ?? "").trim().toUpperCase();
-  if (type !== "" && type !== "S") {
+  if (!EDITABLE_SHIFTS[ddsType].includes(type)) {
     return { kind: "unknown", reason: "not-numeric" };
   }
 

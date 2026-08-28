@@ -1,7 +1,7 @@
 import { DDS_COLUMNS, ddsField } from "../ddsLayout";
 import { printWidth } from "../dbcs";
 import { readNumber } from "./ddsLogicalUnits";
-import { editedWidth } from "./editCode";
+import { editedWidth, type EditedWidthDdsType } from "./editCode";
 
 /**
  * 項目の幅（実機での桁数）を求める。**印刷装置・表示装置に共通**。
@@ -58,8 +58,13 @@ export function constantWidth(text: string): ResolvedWidth {
  *
  * @param line 項目の代表行
  * @param keywords 代表行＋継続行のキーワード欄
+ * @param ddsType 種別。`EDTCDE` を書けるキーボード・シフトが表示装置と印刷装置で違う
  */
-export function fieldWidth(line: string, keywords: string): ResolvedWidth {
+export function fieldWidth(
+  line: string,
+  keywords: string,
+  ddsType: EditedWidthDdsType
+): ResolvedWidth {
   // 29 桁目の R は参照フィールド。参照先を解決しないので幅は出せない。
   if (ddsField(line, DDS_COLUMNS.reference).trim().toUpperCase() === "R") {
     return { width: undefined, reason: "reference" };
@@ -77,7 +82,8 @@ export function fieldWidth(line: string, keywords: string): ResolvedWidth {
 
   const decimals = readNumber(ddsField(line, DDS_COLUMNS.decimals)) ?? 0;
   const dataType = ddsField(line, DDS_COLUMNS.dataType);
-  const edited = editedWidth(length, decimals, editMatch[1], editMatch[2], dataType);
+  // **種別で答えが変わる**（`EDTCDE` を書ける 35 桁目の値が違う）。
+  const edited = editedWidth(length, decimals, editMatch[1], editMatch[2], dataType, ddsType);
   if (edited.kind === "width") return { width: edited.width };
 
   return {
