@@ -17,7 +17,8 @@ import {
   startsContinuation,
   toLogicalUnits,
   unitItemKind,
-  type LogicalUnit
+  type LogicalUnit,
+  type RawKeywordGroup
 } from "./ddsLogicalUnits";
 import {
   CONDITION_LIMITS,
@@ -106,6 +107,20 @@ export type DdsEdit =
       readonly sourceLine: number;
       readonly condition: ConditionGroups;
     }
+  /**
+   * **キーワード行**の条件標識を置き換える（`30 DSPATR(RI)` の `30`）。
+   *
+   * `setCondition` と宛先が違う。あちらは項目そのもの（項目が出るかどうか）、
+   * こちらは**そのキーワードが効くかどうか**——原典は条件が付く対象を
+   * 「フィールド**または**キーワード」としている。
+   *
+   * `sourceLine` は**キーワードが書かれている行**（`KeywordGroup.sourceLine`）。
+   */
+  | {
+      readonly kind: "setKeywordCondition";
+      readonly sourceLine: number;
+      readonly condition: ConditionGroups;
+    }
   | { readonly kind: "add"; readonly recordName: string; readonly item: NewDspfItem };
 
 /** 置き換え指示。0 始まり・`replaceTo` は含まない。 */
@@ -149,6 +164,8 @@ export type DdsEditRejectionCode =
   | "condition-too-many"
   /** 条件行と代表行の間に注記行が挟まっている（区間で置き換えると注記が消える）。 */
   | "condition-lines-not-contiguous"
+  /** 指定した行にキーワード行が無い（`setKeywordCondition` の宛先が見つからない）。 */
+  | "keyword-line-not-found"
   /**
    * 1 行 1 桁に置こうとした（**表示装置ファイルだけ**）。
    *
@@ -196,6 +213,31 @@ export function validateDdsEdits(
   for (const edit of edits) {
     if (edit.kind === "add") {
       rejections.push(...validateAdd(units, edit.recordName, edit.item, ddsType));
+      continue;
+    }
+
+    if (edit.kind === "setKeywordCondition") {
+      const group = keywordGroupAt(units, edit.sourceLine);
+      if (!group) {
+        rejections.push({
+          code: "keyword-line-not-found",
+          message:
+            `${edit.sourceLine} 行目にキーワードの行がありません` +
+            "（ソースが変わっている可能性があります）",
+          sourceLine: edit.sourceLine
+        });
+        continue;
+      }
+      rejections.push(...validateConditionShape(edit.condition, edit.sourceLine));
+      if (!contiguous(group.sourceLines)) {
+        rejections.push({
+          code: "condition-lines-not-contiguous",
+          message:
+            "条件の行とキーワードの行の間に注記行が挟まっています" +
+            "（まとめて置き換えると注記が消えるため書き換えません）",
+          sourceLine: edit.sourceLine
+        });
+      }
       continue;
     }
 
@@ -358,6 +400,19 @@ export function applyDdsEdits(
           replaceFrom: run.from,
           replaceTo: run.to,
           lines: writeBackCondition(unit.line, edit.condition)
+        });
+        break;
+      }
+      case "setKeywordCondition": {
+        const group = keywordGroupAt(units, edit.sourceLine);
+        if (!group) break; // 検証済みなので通常は起きない。
+        const first = group.sourceLines[0];
+        // **書き戻しは項目のときと同じ**——最後の 1 本が「条件を担う行」で、
+        // ここではキーワードの行がそれにあたる。
+        results.push({
+          replaceFrom: first - 1,
+          replaceTo: edit.sourceLine,
+          lines: writeBackCondition(lines[edit.sourceLine - 1], edit.condition)
         });
         break;
       }
@@ -662,6 +717,28 @@ function validateAdd(
   return rejections;
 }
 
+/** 行番号が連続しているか（間に注記行が挟まっていないか）。 */
+function contiguous(lines: readonly number[]): boolean {
+  for (let i = 1; i < lines.length; i += 1) {
+    if (lines[i] !== lines[i - 1] + 1) return false;
+  }
+  return true;
+}
+
+/** その行にあるキーワード群（`30 DSPATR(RI)` のような**キーワードだけの行**）。 */
+function keywordGroupAt(
+  units: readonly LogicalUnit[],
+  sourceLine: number
+): RawKeywordGroup | undefined {
+  for (const unit of units) {
+    // **先頭の群は代表行**（項目自身の条件で決まる）。宛先にしない。
+    for (const group of unit.keywordGroups.slice(1)) {
+      if (group.sourceLine === sourceLine) return group;
+    }
+  }
+  return undefined;
+}
+
 /**
  * 条件標識を書けるか。**原典の上限を見る。**
  *
@@ -672,6 +749,27 @@ function validateAdd(
  */
 function validateCondition(
   unit: LogicalUnit,
+  groups: ConditionGroups,
+  sourceLine: number
+): DdsEditRejection[] {
+  const rejections: DdsEditRejection[] = [...validateConditionShape(groups, sourceLine)];
+
+  // **条件が空でも 1 本は残る**（代表行）ので、区間が連続しているかだけ見る。
+  if (!conditionRunOf(unit)) {
+    rejections.push({
+      code: "condition-lines-not-contiguous",
+      message:
+        "条件の行と項目の行の間に注記行が挟まっています" +
+        "（まとめて置き換えると注記が消えるため書き換えません）",
+      sourceLine
+    });
+  }
+
+  return rejections;
+}
+
+/** 条件の**形**（上限と標識）を見る。項目にもキーワードにも同じ規則が効く。 */
+function validateConditionShape(
   groups: ConditionGroups,
   sourceLine: number
 ): DdsEditRejection[] {
@@ -708,17 +806,6 @@ function validateCondition(
         });
       }
     }
-  }
-
-  // **条件が空でも 1 本は残る**（代表行）ので、区間が連続しているかだけ見る。
-  if (!conditionRunOf(unit)) {
-    rejections.push({
-      code: "condition-lines-not-contiguous",
-      message:
-        "条件の行と項目の行の間に注記行が挟まっています" +
-        "（まとめて置き換えると注記が消えるため書き換えません）",
-      sourceLine
-    });
   }
 
   return rejections;
