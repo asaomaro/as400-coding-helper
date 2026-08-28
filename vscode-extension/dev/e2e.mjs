@@ -1497,11 +1497,77 @@ check(
   JSON.stringify(await page.$$eval(".dds-item", ns => ns.map(n => `${n.dataset.row},${n.dataset.column}`)))
 );
 check(
-  "**帳票に無いものを出さない**（属性文字・5250 配色）",
+  "**帳票に無いものを出さない**（属性文字）",
   (await page.$$(".dds-attr")).length === 0 &&
-    (await page.$eval("#dds-toggle-attributes", n => n.hidden)) &&
-    (await page.$eval("#dds-toggle-colors", n => n.hidden))
+    (await page.$eval("#dds-toggle-attributes", n => n.hidden))
 );
+// **見え方は帳票にもある**——語彙は違う（太字・下線・カラー）が、
+// 「見え方を出すかどうか」という切替の意味は同じ。
+check(
+  "見え方の切替は帳票でも出る",
+  !(await page.$eval("#dds-toggle-colors", n => n.hidden))
+);
+check(
+  "**帳票の項目は画面の 5250 配色では描かれない**（DSPATR は帳票に無い）",
+  (await page.$$(".dds-item.colored")).length === 0 &&
+    (await page.$$(".dds-item.printed")).length > 0,
+  JSON.stringify(await page.$$eval(".dds-item", ns => ns.map(n => n.className)))
+);
+// ---- 帳票の強調 --------------------------------------------------------
+//
+// 画面の 5250 配色とは**語彙が違う**——太字・下線・カラーだけで、
+// 反転表示も明滅も非表示も無い（帳票に `DSPATR` は無く、実機も通さない）。
+await page.selectOption("#sample", { label: "report-emphasis.prtf" });
+await page.waitForTimeout(250);
+
+const printClasses = async label =>
+  (await page.$$eval(".dds-item", ns =>
+    ns.map(n => ({ text: n.textContent, cls: n.className }))
+  )).find(item => item.text.includes(label))?.cls ?? "";
+
+check(
+  "**様式の HIGHLIGHT が中の項目に太字で効く**（原典: 全フィールドに適用）",
+  (await printClasses("MONTHLY REPORT")).includes("bold") &&
+    (await printClasses("PAGE")).includes("bold"),
+  await printClasses("MONTHLY REPORT")
+);
+check(
+  "別の様式の項目は太字にならない",
+  !(await printClasses("XXXXXXXXXX")).includes("bold"),
+  await printClasses("XXXXXXXXXX")
+);
+check(
+  "**UNDERLINE が下線で出る**",
+  (await page.$$(".dds-item.printed.underline")).length === 1,
+  JSON.stringify(await page.$$eval(".dds-item", ns => ns.map(n => n.className)))
+);
+check(
+  "**COLOR(RED) が赤で出る**（帳票のカラー名）",
+  (await page.$$(".dds-item.p-red")).length === 1,
+  JSON.stringify(await page.$$eval(".dds-item", ns => ns.map(n => n.className)))
+);
+// 原典が「出力装置によって異なります」と書く形。**色を決めない。**
+check(
+  "**装置依存のカラー（*RGB）は色を決めず、指定があることだけ示す**",
+  (await page.$$(".dds-item.device-color")).length === 1 &&
+    (await page.$$(".dds-item.device-color.p-blk")).length === 1,
+  JSON.stringify(await page.$$eval(".dds-item", ns => ns.map(n => n.className)))
+);
+check(
+  "見え方を切ると強調が消える",
+  await (async () => {
+    await page.click("#dds-toggle-colors");
+    await page.waitForTimeout(200);
+    const none = (await page.$$(".dds-item.printed")).length === 0;
+    await page.click("#dds-toggle-colors");
+    await page.waitForTimeout(200);
+    return none;
+  })()
+);
+
+await page.selectOption("#sample", { label: "CUSTRPT.prtf" });
+await page.waitForTimeout(250);
+
 check(
   "オーバーフロー行が引かれる（CRTPRTF の OVRFLW）",
   (await page.$$(".dds-overflow")).length === 1

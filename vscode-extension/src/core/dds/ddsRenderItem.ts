@@ -4,7 +4,12 @@ import {
   type Conditioning,
   type KeywordGroup
 } from "./ddsConditioning";
-import { resolveAppearanceUnder, type ScreenAppearance } from "./dspfAttributes";
+import {
+  DEFAULT_APPEARANCE,
+  resolveAppearanceUnder,
+  type ScreenAppearance
+} from "./dspfAttributes";
+import { resolvePrintAppearance, type PrintAppearance } from "./prtfAppearance";
 import type { ItemAttributes } from "./dspfOutline";
 
 /**
@@ -73,6 +78,14 @@ export interface RenderItem {
    */
   readonly appearance: ScreenAppearance;
   /**
+   * **帳票での見え方**（太字・下線・カラー）。帳票のときだけ入る。
+   *
+   * 画面の `appearance` とは**別物**——帳票に `DSPATR` は無く（実機は通さない）、
+   * `COLOR` は名前の集合が違う（`BLK` / `BRN` があり `WHT` が無い）。
+   * 画面の表を当てると帳票にしかない色が読めないので、分けて持つ。
+   */
+  readonly printAppearance?: PrintAppearance;
+  /**
    * キーワード欄を**条件ごとに**分けたもの。
    *
    * `attributes.keywords`（全部の連結）と違い、**どのキーワードがどの条件で効くか**を持つ。
@@ -118,7 +131,23 @@ export interface PlacedSource {
   readonly rowFromSpacing?: boolean;
 }
 
-export function toRenderItem(item: PlacedSource): RenderItem {
+/** 翻訳の付帯情報。**帳票のときだけ要る**もの。 */
+export interface RenderItemOptions {
+  /**
+   * 帳票として解く。`printAppearance` が入り、画面用の `appearance` は既定のまま。
+   *
+   * 帳票のキーワードを画面の表で読むと**取り違える**（`COLOR(BRN)` が読めず、
+   * `COLOR(WHT)` を読めてしまう）ので、種別で分ける。
+   */
+  readonly print?: boolean;
+  /**
+   * 様式のキーワード欄。**`HIGHLIGHT` は様式に書くと全項目に効く**（原典）ので、
+   * 項目だけを見ると太字を取りこぼす。
+   */
+  readonly recordKeywords?: string;
+}
+
+export function toRenderItem(item: PlacedSource, options: RenderItemOptions = {}): RenderItem {
   const label = item.kind === "constant" ? (item.text ?? "") : (item.name ?? "");
   const condition = describeConditioning(item.conditioning);
 
@@ -150,7 +179,15 @@ export function toRenderItem(item: PlacedSource): RenderItem {
     },
     // **標識が未設定の状態**で解く。未設定は「決まらない」＝効かせるので、
     // 条件つきキーワードも既定では効く（＝これまでと同じ見え方）。
-    appearance: resolveAppearanceUnder(item.keywordGroups, {}),
+    // **画面の表は帳票に当てない。** 帳票は `printAppearance` を持つ。
+    appearance: options.print
+      ? DEFAULT_APPEARANCE
+      : resolveAppearanceUnder(item.keywordGroups, {}),
+    ...(options.print
+      ? {
+          printAppearance: resolvePrintAppearance(item.keywords, options.recordKeywords ?? "")
+        }
+      : {}),
     keywordGroups: item.keywordGroups,
     condition: item.conditioning,
     ...(item.recordName !== undefined ? { recordName: item.recordName } : {}),

@@ -59,15 +59,28 @@ export function fromPrtfLayout(
   indicators: ReturnType<typeof collectIndicators> = [],
   density?: PrintDensity
 ): RenderModel {
+  // **様式のキーワード欄を引けるようにする。** `HIGHLIGHT` は様式に書くと
+  // その中の全項目に効く（原典）ので、項目だけを見ると太字を取りこぼす。
+  const recordKeywords = new Map<string, string>();
+  for (const record of outline) {
+    if (record.name.length > 0) recordKeywords.set(record.name, record.keywords);
+  }
+
   const items: RenderItem[] = layout.items.map(item =>
-    toRenderItem({
-      ...item,
-      keywords: item.keywords,
-      conditioning: item.conditioning,
-      occupancy: item.occupancy,
-      // 行番号を書いていない項目は、行が行送りで決まる。
-      rowFromSpacing: !item.hasExplicitRow
-    })
+    toRenderItem(
+      {
+        ...item,
+        keywords: item.keywords,
+        conditioning: item.conditioning,
+        occupancy: item.occupancy,
+        // 行番号を書いていない項目は、行が行送りで決まる。
+        rowFromSpacing: !item.hasExplicitRow
+      },
+      {
+        print: true,
+        recordKeywords: recordKeywords.get(item.recordName ?? "") ?? ""
+      }
+    )
   );
 
   const records: string[] = [];

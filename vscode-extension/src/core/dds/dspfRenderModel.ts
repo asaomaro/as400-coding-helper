@@ -190,7 +190,7 @@ export function buildDspfRenderModel(lines: readonly string[]): RenderModel {
       ...(sizes.secondary.conditionName !== undefined
         ? { name: sizes.secondary.conditionName }
         : {}),
-      items: secondary.items.map(toRenderItem),
+      items: secondary.items.map(item => toRenderItem(item)),
       diagnostics: secondary.diagnostics
     }
   };
@@ -202,7 +202,7 @@ export function fromLayout(
   outline: readonly OutlineRecord[] = [],
   indicators: readonly IndicatorUsage[] = []
 ): RenderModel {
-  const items = layout.items.map(toRenderItem);
+  const items = layout.items.map(item => toRenderItem(item));
   const records: string[] = [];
   for (const item of layout.items) {
     if (item.recordName && !records.includes(item.recordName)) {

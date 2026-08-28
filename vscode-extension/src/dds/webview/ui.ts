@@ -11,6 +11,7 @@ import {
   parseConditionText
 } from "../../core/dds/ddsConditionWriteBack";
 import { findFieldReferences, findRecordReferences } from "../../core/dds/ddsReferences";
+import { printColorLabel, type PrintAppearance } from "../../core/dds/prtfAppearance";
 import {
   findKeywordHelp,
   genericKeywordPrefix,
@@ -477,7 +478,9 @@ class EditorView {
       toggle.button.classList.toggle("armed", this.display[toggle.key]);
       toggle.button.setAttribute("aria-pressed", String(this.display[toggle.key]));
       // 表示装置だけのものは帳票で**出さない**（押しても何も起きないボタンを置かない）。
-      const displayOnly = toggle.key === "showAttributes" || toggle.key === "showColors";
+      // **配色は帳票にもある**——語彙は違うが（太字・下線・カラー）、
+      // 「見え方を出すかどうか」という切替の意味は同じなので同じボタンに載せる。
+      const displayOnly = toggle.key === "showAttributes";
       // プレビュー（紙の比率）は帳票だけ。画面に CPI / LPI は無い。
       const printOnly = toggle.key === "preview";
       // 2 次画面サイズは **`DSPSIZ` が 2 つ宣言しているときだけ**。
@@ -665,7 +668,8 @@ class EditorView {
     element.title =
       `${item.label}（${item.row} 行 ${item.column} 桁` +
       `${item.widthCols === undefined ? " / 幅不明" : ` / ${item.widthCols} 桁`}` +
-      ` / ソース ${item.sourceLine} 行目${describeAppearance(item.appearance)}）`;
+      ` / ソース ${item.sourceLine} 行目` +
+      `${item.printAppearance === undefined ? describeAppearance(item.appearance) : describePrintAppearance(item.printAppearance)}）`;
 
     // **配色は色だけ。桁と位置は変えない。**
     // 5250 の配色は表示装置ファイルのもの（PRTF に `DSPATR` は無い）。
@@ -675,6 +679,18 @@ class EditorView {
       if (item.appearance.underline) element.classList.add("underline");
       if (item.appearance.blink) element.classList.add("blink");
       if (item.appearance.nonDisplay) element.classList.add("non-display");
+    }
+
+    // **帳票の強調は別の語彙。** 太字（`HIGHLIGHT`）・下線（`UNDERLINE`）・
+    // カラー（`COLOR`。名前の集合が画面と違う）。反転表示も明滅も非表示も無い。
+    const print = item.printAppearance;
+    if (this.display.showColors && print !== undefined) {
+      element.classList.add("printed", `p-${print.color.toLowerCase()}`);
+      if (print.bold) element.classList.add("bold");
+      if (print.underline) element.classList.add("underline");
+      // 装置依存の指定（`*RGB` 等）は**色を決めない**——原典が「出力装置によって
+      // 異なります」と書いているので、決め打ちすると実機と違う絵になる。
+      if (print.deviceColor) element.classList.add("device-color");
     }
 
     if (item.segments.length === 0) {
@@ -2215,6 +2231,21 @@ function describeAppearance(appearance: RenderItem["appearance"]): string {
   return ` / ${color}${extra ? `・${extra}` : ""}`;
 }
 
+/**
+ * 帳票の見え方の説明。**画面とは語彙が違う**——反転表示も明滅も非表示も無い。
+ *
+ * 色の和名は原典の表から引く（`printColorLabel`）。ここに写さない。
+ */
+function describePrintAppearance(print: PrintAppearance): string {
+  const marks: string[] = [];
+  if (print.bold) marks.push("太字");
+  if (print.underline) marks.push("下線");
+  const color = print.deviceColor
+    ? "カラー指定あり（装置依存）"
+    : (printColorLabel(print.color) ?? print.color);
+  return ` / ${color}${marks.length > 0 ? `・${marks.join("・")}` : ""}`;
+}
+
 /** 原典の色名。**表示にだけ使う**（識別子は英語）。 */
 const COLOR_LABELS: Readonly<Record<string, string>> = {
   green: "緑",
@@ -2269,7 +2300,7 @@ function template(): string {
     <button id="dds-toggle-attributes" type="button" title="項目の前後 1 桁を占める属性文字を示します">属性バイト</button>
     <button id="dds-toggle-grid" type="button" title="桁のグリッドを表示します">グリッド</button>
     <button id="dds-toggle-dim" type="button" title="選択中の項目が属する様式以外を淡く表示します">他様式を淡く</button>
-    <button id="dds-toggle-colors" type="button" title="COLOR / DSPATR から実機の見え方（色・反転表示・下線・非表示）で描きます">5250 配色</button>
+    <button id="dds-toggle-colors" type="button" title="実機の見え方で描きます（画面: COLOR / DSPATR から色・反転表示・下線・非表示 / 帳票: HIGHLIGHT / UNDERLINE / COLOR から太字・下線・カラー）">見え方</button>
     <button id="dds-toggle-preview" type="button" title="CPI / LPI で決まる紙の比率で描きます（1 桁 = 1/CPI インチ、1 行 = 1/LPI インチ）">プレビュー</button>
     <button id="dds-toggle-secondary" type="button" title="2 次画面サイズでの見え方を描きます（動かすと位置の上書き行に書きます。長さは変えられません）">2 次画面</button>
     <span class="density" role="group" aria-label="印刷密度"></span>
