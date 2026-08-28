@@ -402,6 +402,12 @@ export interface FileKeywordLine {
   readonly keywords: string;
   /** 条件を読むための行群（先行する条件行 → その行）。 */
   readonly conditioningLines: readonly string[];
+  /**
+   * その行と**キーワード継続行**（1 始まり・昇順）。
+   *
+   * 書き換えの宛先はこの区間。継続でつながった値は先頭行だけ書き換えると壊れる。
+   */
+  readonly sourceLines: readonly number[];
 }
 
 /**
@@ -435,7 +441,8 @@ export function fileLevelKeywordLines(lines: readonly string[]): FileKeywordLine
     collected.push({
       sourceLine: joined.index + 1,
       keywords: joined.keywords,
-      conditioningLines: [...pendingConditioning, line]
+      conditioningLines: [...pendingConditioning, line],
+      sourceLines: joined.sourceLines
     });
     pendingConditioning = [];
   }

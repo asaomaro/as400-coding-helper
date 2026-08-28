@@ -1027,28 +1027,24 @@ class EditorView {
    * **レコード・レベルのキーワード**で、それは様式宣言の行にしか無い。
    */
   /**
-   * ファイル・レベルのキーワードのプロパティ。**読むだけ。**
+   * ファイル・レベルのキーワードのプロパティ。
    *
-   * 編集（`setKeywords`）の宛先は論理単位で、ファイル・レベルの行は単位にならない
-   * ——送っても `line-not-found` で断られる。**効かない操作を出さない**ために
-   * チップは読み取り専用にする（原典の解説は出る）。
+   * **編集できる。** `setKeywords` の宛先はファイル・レベルの行も引けるようにしてある
+   * （論理単位にならないので、`ddsEdit` が生の行から別に引く）。
+   *
+   * ただし `＋`（候補から足す）は出さない——候補はキーワードの**使用レベル**で
+   * 絞っており、ファイル・レベルの一覧をまだ持っていない。生テキストからは書ける。
    */
   private renderFileKeywordProperties(entry: RenderModel["fileKeywords"][number]): void {
     const nodes: HTMLElement[] = [
       text("div", "dds-record-title", "ファイル・レベルのキーワード"),
-      this.keywordSection(entry.sourceLine, entry.keywords, "file", { readOnly: true })
+      this.keywordSection(entry.sourceLine, entry.keywords, "file")
     ];
     const condition = describeConditioning(entry.condition);
     if (condition.length > 0) {
       nodes.push(text("div", "dds-note", `条件: ${condition}`));
     }
-    nodes.push(
-      text(
-        "div",
-        "dds-note",
-        `${entry.sourceLine} 行目。ここでは編集しません（テキストエディタで直してください）`
-      )
-    );
+    nodes.push(text("div", "dds-note", `${entry.sourceLine} 行目`));
     this.properties.replaceChildren(...nodes);
   }
 

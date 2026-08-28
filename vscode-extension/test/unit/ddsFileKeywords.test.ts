@@ -7,6 +7,11 @@ import {
   toLogicalUnits
 } from "../../src/core/dds/ddsLogicalUnits";
 import { buildDspfRenderModel } from "../../src/core/dds/dspfRenderModel";
+import {
+  applyDdsEdits,
+  validateDdsEdits,
+  type DdsEdit
+} from "../../src/core/dds/ddsEdit";
 import { buildPrtfRenderModel } from "../../src/core/dds/prtfRenderModel";
 
 /**
@@ -161,5 +166,64 @@ suite("ファイル・レベルのキーワード: モデルに載る", () => {
         assert.ok(item.sourceLine > 5, `${item.sourceLine} 行目が一覧に混ざっている`);
       }
     }
+  });
+});
+
+suite("ファイル・レベルのキーワード: 編集", () => {
+  /**
+   * **宛先は論理単位ではない。** ファイル・レベルの行は単位にならないので、
+   * `ddsEdit` が生の行から別に引く。引けないと `line-not-found` で断られていた。
+   */
+  const apply = (lines: readonly string[], edits: readonly DdsEdit[]): string[] => {
+    assert.deepStrictEqual(validateDdsEdits(lines, edits, "DDS-DSPF"), [], "検証で弾かれた");
+    const out = [...lines];
+    for (const result of [...applyDdsEdits(lines, edits, "DDS-DSPF")].sort(
+      (a, b) => b.replaceFrom - a.replaceFrom
+    )) {
+      out.splice(result.replaceFrom, result.replaceTo - result.replaceFrom, ...result.lines);
+    }
+    return out;
+  };
+
+  test("ファイル・レベルの行を書き換えられる", () => {
+    const after = apply(CUSTMNT, [
+      { kind: "setKeywords", sourceLine: 4, keywords: "INDARA PRINT" }
+    ]);
+    assert.strictEqual(after.length, CUSTMNT.length, "行数が変わった");
+    assert.ok(after[3].includes("INDARA PRINT"));
+    assert.deepStrictEqual(
+      fileLevelKeywordLines(after).map(entry => entry.keywords),
+      ["DSPSIZ(24 80 *DS3)", "REF(CUSTMST)", "INDARA PRINT", "PRINT"],
+      "読み戻せない"
+    );
+  });
+
+  test("他のファイル・レベル行を巻き込まない", () => {
+    const after = apply(CUSTMNT, [
+      { kind: "setKeywords", sourceLine: 4, keywords: "INDARA PRINT" }
+    ]);
+    for (const index of [0, 1, 2, 4, 5]) {
+      assert.strictEqual(after[index], CUSTMNT[index], `${index + 1} 行目が変わっている`);
+    }
+  });
+
+  test("36 桁を超えれば折る（項目のときと同じ経路）", () => {
+    const long = "REF(VERYLONGLIBRARY/VERYLONGFILENAME) INDARA PRINT";
+    const after = apply(CUSTMNT, [{ kind: "setKeywords", sourceLine: 3, keywords: long }]);
+    assert.ok(after.length > CUSTMNT.length, "折れていない");
+    assert.deepStrictEqual(
+      fileLevelKeywordLines(after).find(entry => entry.sourceLine === 3)?.keywords,
+      long,
+      "折った結果が読み戻せない"
+    );
+  });
+
+  test("様式のキーワードは今までどおり書き換えられる", () => {
+    const record = toLogicalUnits(CUSTMNT).find(unit => unit.kind === "record");
+    assert.ok(record);
+    const after = apply(CUSTMNT, [
+      { kind: "setKeywords", sourceLine: record.sourceLine, keywords: "OVERLAY" }
+    ]);
+    assert.ok(after[record.sourceLine - 1].includes("OVERLAY"));
   });
 });

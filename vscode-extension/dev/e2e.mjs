@@ -849,20 +849,39 @@ check(
   ),
   JSON.stringify(await page.$$eval(".kw-chip", nodes => nodes.map(n => n.textContent)))
 );
-// **効かない操作を出さない。** 編集の宛先は論理単位で、ここは単位にならない。
+// **`＋` は出さない。** 候補は使用レベルで絞っており、ファイル・レベルの一覧がまだ無い。
 check(
-  "読み取り専用（`✕` と `＋` を出さない）",
-  (await page.$$(".kw-x")).length === 0 &&
-    (await page.$$eval(".kw-chip", nodes => nodes.map(n => n.textContent))).every(
-      t => !t.includes("追加")
-    )
-);
-check(
-  "生テキストも読み取り専用",
-  await page.$eval(".kw-raw", node => node.readOnly)
+  "候補からの追加（`＋`）は出さない",
+  (await page.$$eval(".kw-chip", nodes => nodes.map(n => n.textContent))).every(
+    t => !t.includes("追加")
+  )
 );
 
+// **編集はできる。** 宛先は `ddsEdit` が生の行から引く（論理単位にならないため）。
 const beforeFileLevel = await sourceLines();
+const dspsizLine = beforeFileLevel.findIndex(l => l.includes("DSPSIZ"));
+await page.fill(".kw-raw", "DSPSIZ(24 80 *DS3) PRINT");
+await page.press(".kw-raw", "Enter");
+await page.waitForTimeout(250);
+check(
+  "**ファイル・レベルのキーワードを編集できる**",
+  (await sourceLines())[dspsizLine].includes("DSPSIZ(24 80 *DS3) PRINT"),
+  (await sourceLines())[dspsizLine]
+);
+check(
+  "行数は変わらない（他のファイル・レベル行を巻き込まない）",
+  (await sourceLines()).length === beforeFileLevel.length,
+  `${(await sourceLines()).length} / ${beforeFileLevel.length}`
+);
+
+await page.fill(".kw-raw", "DSPSIZ(24 80 *DS3)");
+await page.press(".kw-raw", "Enter");
+await page.waitForTimeout(250);
+check(
+  "戻すと元のソースに一致する",
+  JSON.stringify(await sourceLines()) === JSON.stringify(beforeFileLevel),
+  (await sourceLines())[dspsizLine]
+);
 
 // ---- 19f. 2 次画面サイズ ------------------------------------------------
 //
