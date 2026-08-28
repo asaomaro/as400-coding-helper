@@ -37,20 +37,20 @@ H*=====================================================================
      D*
      D*-- 日付時刻編集用
      D DATETIME        DS
-     D  WDATE                  8S 0
-     D  WTIME                  6S 0
-     D  WYY                    4S 0 OVERLAY(WDATE:1)
-     D  WMM                    2S 0 OVERLAY(WDATE:5)
-     D  WDD                    2S 0 OVERLAY(WDATE:7)
-     D  WHH                    2S 0 OVERLAY(WTIME:1)
-     D  WMI                    2S 0 OVERLAY(WTIME:3)
-     D  WSS                    2S 0 OVERLAY(WTIME:5)
+     D WDATE                          8S 0
+     D WTIME                          6S 0
+     D WYY                            4S 0 OVERLAY(WDATE:1)
+     D WMM                            2S 0 OVERLAY(WDATE:5)
+     D WDD                            2S 0 OVERLAY(WDATE:7)
+     D WHH                            2S 0 OVERLAY(WTIME:1)
+     D WMI                            2S 0 OVERLAY(WTIME:3)
+     D WSS                            2S 0 OVERLAY(WTIME:5)
      D*
      D*-- エラーコード用API
      D ERRCODE         DS
-     D  BYTPVD                     10I 0 INZ(0)
-     D  BYTAVL                     10I 0
-     D  MSGID                       7A
+     D BYTPVD                        10I 0 INZ(0)
+     D BYTAVL                        10I 0
+     D MSGID                          7A
      D*
      D*=====================================================================
      D* スタンドアロン変数定義

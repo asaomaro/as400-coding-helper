@@ -24,6 +24,17 @@ function fakeDocument(file: string, text?: string): vscode.TextDocument {
   } as unknown as vscode.TextDocument;
 }
 
+/**
+ * **桁がずれた RPG**。長さが 32 桁・型が 33 桁で、正しくは 33-39 / 40。
+ * 実機はこの形を通さない。
+ *
+ * もとは `docs/src/EMPMNT01.rpgle` に寄りかかっていたが、**そのサンプルの方が
+ * 誤り**だった（`20260828-rpg-sample-columns` で直した）。
+ * **規則が動くことの証明を「サンプルが壊れていること」に頼らない。**
+ */
+const MISALIGNED = ["     D DATES           DS", "     D  SDATE                  8S 0"].join("\n");
+const misalignedDocument = () => fakeDocument("misaligned.rpgle", MISALIGNED);
+
 const setConfig = (values: Record<string, Record<string, unknown>>) =>
   (vscode as unknown as { __setConfig(v: unknown): void }).__setConfig(values);
 
@@ -36,7 +47,9 @@ suite("lint: VSCode 診断", () => {
   });
 
   test("桁がずれていれば Diagnostic に写る", () => {
-    const diagnostics = lintDocument(fakeDocument("EMPMNT01.rpgle"));
+    // **壊れた材料はここに置く**（サンプルが壊れていることに寄りかからない）。
+    // 長さが 32 桁・型が 33 桁。正しくは 33-39 / 40 で、実機はこの形を通さない。
+    const diagnostics = lintDocument(misalignedDocument());
     assert.ok(diagnostics.length > 0, "桁ずれを検出するはず");
 
     const first = diagnostics[0]!;
@@ -97,11 +110,11 @@ suite("lint: VSCode 診断", () => {
   });
 
   test("規則ごとに無効化できる", () => {
-    const before = lintDocument(fakeDocument("EMPMNT01.rpgle"));
+    const before = lintDocument(misalignedDocument());
     assert.ok(before.some(d => (d as { code?: string }).code === "numeric-field"));
 
     setConfig({ rpgClSupport: { "lint.rules": { "numeric-field": false } } });
-    const after = lintDocument(fakeDocument("EMPMNT01.rpgle"));
+    const after = lintDocument(misalignedDocument());
     assert.ok(
       !after.some(d => (d as { code?: string }).code === "numeric-field"),
       "無効にした規則の診断は消える"
@@ -150,7 +163,7 @@ suite("lint: 診断の配線（refresh からの到達性）", () => {
 
   test("refresh 経由で RPG の診断が収集に入る", () => {
     const diagnostics = new RpgClDiagnostics();
-    const document = fakeDocument("EMPMNT01.rpgle");
+    const document = misalignedDocument();
     diagnostics.refresh(document);
 
     const stored = collectionOf(diagnostics).get(document.uri);

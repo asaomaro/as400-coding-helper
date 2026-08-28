@@ -32,6 +32,21 @@ const VERIFIED_SOURCES = [
   { file: "IOSAMP.rpgle", builtWith: "CRTBNDRPG" }
 ];
 
+/**
+ * **桁がずれた RPG**（規則が実際に動くことを示すための材料）。
+ *
+ * もとは `docs/src/EMPMNT01.rpgle` に寄りかかっていたが、**そのサンプルの方が
+ * 誤り**だった（D 仕様書の長さ欄が 33-39 桁に収まっておらず、実機が通さない。
+ * `20260828-rpg-sample-columns` で直した）。
+ * **規則が動くことの証明を「サンプルが壊れていること」に頼らない。**
+ */
+const MISALIGNED_RPG = [
+  "     D DATES           DS",
+  // 長さが 32 桁・型が 33 桁（正しくは 33-39 / 40）。実機はこの形を通さない。
+  "     D  SDATE                  8S 0",
+  "     D  SYY                    4S 0 OVERLAY(SDATE:1)"
+];
+
 function lintSource(file: string, enabledRules?: Parameters<typeof lintFile>[0]["options"]) {
   const fsPath = join(SRC_DIR, file);
   const lines = readFileSync(fsPath, "utf8").split(/\r?\n/);
@@ -104,8 +119,13 @@ suite("lint: 定義の読み込み", () => {
 
   test("桁ずれのあるソースは検出する（規則が実際に動いていることの確認）", () => {
     // 検証済みコーパスが指摘ゼロなのは「規則が何もしていない」からではない、
-    // ということを示す。EMPMNT01 は D 仕様書の桁がずれている疑いがある。
-    const findings = lintSource("EMPMNT01.rpgle");
+    // ということを示す。**壊れた材料はここに置く**——サンプルが壊れている
+    // ことに寄りかかると、サンプルを直した瞬間にこの証明が消える（実際に消えた）。
+    const findings = lintFile({
+      fsPath: join(SRC_DIR, "misaligned.rpgle"),
+      lines: MISALIGNED_RPG,
+      definitions: loadDefinitions(RESOURCES)
+    });
     assert.ok(findings.length > 0, "桁ずれを検出するはず");
     assert.ok(findings.some(f => f.ruleId === "numeric-field"));
   });

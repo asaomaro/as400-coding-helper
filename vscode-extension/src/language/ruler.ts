@@ -569,11 +569,10 @@ function classifySpec(
     return undefined;
   }
 
-  // 7 桁目（index 6）が '*' のコメント行は種別なし。
-  if (text.length > 6 && text.charAt(6) === "*") {
-    return undefined;
-  }
-
+  // 注記行（7 桁目が `*`）の判定は **specClassifier の中**にある。
+  // ここに写しを置いていたので、プロンプター側だけ判定が抜けていた
+  // （`     H* コメント` に F4 を当てると `H-SPEC` が開いた）。
+  //
   // スペック種別判定は specClassifier に集約（positionResolver と共有＝ドリフト防止）。
   // ルーラー表示は dialect を渡さない（C は従来どおりオペコードで新旧判定）が、
   // I/O 仕様書の記述種別は F 仕様書（22 桁目）で決まるため前の行は渡す。

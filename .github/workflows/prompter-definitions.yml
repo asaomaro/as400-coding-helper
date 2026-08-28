@@ -62,6 +62,10 @@ jobs:
           node docs/origin/generate-dds-keyword-syntax.mjs
           node docs/origin/generate-dds-keywords.mjs --lang=en
           node docs/origin/generate-dds-keyword-syntax.mjs --lang=en
+          # **キーワード表が出来上がってから**にする。`generate-dds-keyword-syntax`
+          # が詳細ページから `level` を足すので、その前に走らせると 5 件足りない
+          # 表になる（PR #130 の CI で実際に落ちた）。
+          node docs/origin/generate-dds-keyword-levels.mjs
           node docs/origin/generate-rpg-completion.mjs
           node docs/origin/generate-rpg-completion.mjs --lang=en
           node docs/origin/generate-rpg3-completion.mjs
@@ -84,11 +88,15 @@ jobs:
           npm run verify
 
       # lint コマンドは vscode を必要としないので、素の node で回せる。
-      # 対象は実機（pub400 / IBM i 7.5）でコンパイルが通ることを確認済みの
-      # ソースだけ。正しいソースなので指摘が出たら偽陽性であり、そこで落とす。
-      # SLSENT01 / EMPMNT01 / RPG3SAMP はコンパイル確認が取れておらず
-      # 桁ずれの疑いがあるため対象にしない（指摘が出るのが正しい可能性がある）。
-      - name: 桁位置 lint（実機コンパイル確認済みソースで指摘ゼロ）
+      # 正しいソースなので指摘が出たら偽陽性であり、そこで落とす。
+      #
+      # **SLSENT01 / EMPMNT01 / RPG3SAMP も対象に入れた**（2026-08-28）。
+      # 以前は「桁ずれの疑いがある」として外していたが、実機に判定させたところ
+      # **サンプルの方が誤り**だった（D 仕様書の長さ欄が 33-39 桁に収まっておらず
+      # 7 桁ぶん左。`CRTBNDRPG` が通さない）。サンプルを直し、あわせて
+      # 拡張演算項目 2 の命令の集合を原典から採るようにした（`DOU` が抜けており、
+      # 正しい行に偽陽性を出していた）。
+      - name: 桁位置 lint（サンプルで指摘ゼロ）
         run: |
           node vscode-extension/out/cli/lint.js --format text --fail-on warning \
             docs/src/CUSTMST.pf \
@@ -96,7 +104,10 @@ jobs:
             docs/src/CUSTMNT.dspf \
             docs/src/CUSTRPT.prtf \
             docs/src/DBCSSAMP.pf \
-            docs/src/IOSAMP.rpgle
+            docs/src/IOSAMP.rpgle \
+            docs/src/EMPMNT01.rpgle \
+            docs/src/SLSENT01.rpgle \
+            docs/src/RPG3SAMP.rpg
 
       # ユニットテストは依存（mocha / 型定義）が要るので、依存を入れる
       # このジョブで走らせる。verify ジョブは素の node で原典照合をするだけ。

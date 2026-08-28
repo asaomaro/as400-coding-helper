@@ -1,7 +1,8 @@
 import * as assert from "assert";
 import {
   classifyRpgSpecKeyword,
-  createRpgSpecContext
+  createRpgSpecContext,
+  DEFAULT_C_NEW_OPCODES
 } from "../../src/core/rpgSpec";
 
 /**
@@ -172,5 +173,125 @@ suite("RpgSpecContext", () => {
       "C-NEW",
       "C-SPEC"
     ]);
+  });
+});
+
+/**
+ * **注記行に仕様書は無い。**
+ *
+ * 7 桁目（添字 6）の `*` は行全体を注記にする。6 桁目には仕様書の文字が
+ * 書かれるので、**それだけを見ると `     H* コメント` が H 仕様書に見える**。
+ *
+ * 直す前はルーラーだけが判定を持っており、**F4 は注記行で `H-SPEC` を開いていた**
+ * （`ruler.ts` に写しがあり、`positionResolver` には無かった）。
+ * 判定を分類器の中へ移し、写しを外した。
+ */
+suite("RPG 仕様書: 注記行", () => {
+  test("**注記行は仕様書として分類しない**", () => {
+    for (const spec of ["H", "F", "D", "I", "O", "P", "C"]) {
+      assert.strictEqual(
+        classifyRpgSpecKeyword(`     ${spec}* コメント`),
+        undefined,
+        `${spec}* が分類された`
+      );
+    }
+  });
+
+  test("注記でない行はいままでどおり分類する（回帰）", () => {
+    assert.strictEqual(classifyRpgSpecKeyword("     H DFTACTGRP(*NO)"), "H-SPEC");
+    assert.strictEqual(classifyRpgSpecKeyword("     D FLD1            10A"), "D-SPEC");
+    assert.strictEqual(classifyRpgSpecKeyword("     P PROC1           B"), "P-SPEC");
+  });
+
+  test("7 桁目が `*` でなければ注記ではない", () => {
+    assert.strictEqual(classifyRpgSpecKeyword("     H  *コメントに見える"), "H-SPEC");
+  });
+
+  /**
+   * **注記行を索引に入れない。**
+   *
+   * `absorb` は分類の結果に関わらず毎行呼ばれる。注記行の 7-16 桁は必ず `*` で
+   * 始まるので**ファイル名としては衝突しない**が、`lastRecordName` は
+   * **中身を問わず上書きする**——注記を挟むと、続くフィールド行が
+   * 「直前のレコード様式」を見失う。
+   */
+  test("**注記行はレコード様式名の索引を汚さない**", () => {
+    const preceding = [
+      // プログラム記述のファイル（22 桁目が F）。
+      "     FCUSTREC   IF   F  100        DISK",
+      "     ICUSTREC",
+      "     I* ここに注記を挟む"
+    ];
+    // 名前欄の空いた I 仕様（フィールド行）。直前のレコード様式に従う。
+    assert.strictEqual(
+      classifyRpgSpecKeyword("     I                        1  10 CUSTNO", {
+        precedingLines: preceding
+      }),
+      "I-SPEC-FLD-PGM"
+    );
+  });
+
+  test("注記を挟まなければ同じ答えになる（対照）", () => {
+    assert.strictEqual(
+      classifyRpgSpecKeyword("     I                        1  10 CUSTNO", {
+        precedingLines: ["     FCUSTREC   IF   F  100        DISK", "     ICUSTREC"]
+      }),
+      "I-SPEC-FLD-PGM"
+    );
+  });
+});
+
+/**
+ * **拡張演算項目 2 を採る命令の集合**（`C-NEW` の桁で書く命令）。
+ *
+ * 手で並べていたころは 10 件しか無く、**`DOU` が抜けていた**——`DOU` の行に
+ * 固定欄の桁（`C-SPEC`）を当てるため、64-68 桁の「フィールド長」に式の途中が
+ * 入っているように見え、**正しいソースに lint が指摘を出していた**
+ * （`docs/src/EMPMNT01.rpgle:147`）。
+ *
+ * いまは原典から生成した補完データの `fixedForm.columns` から採る。
+ */
+suite("RPG 仕様書: 拡張演算項目 2 の命令", () => {
+  test("**原典に「拡張演算項目 2」と書かれた命令がすべて入っている**", () => {
+    const opcodes = (
+      require("../../resources/completion/rpg-completion.json") as {
+        opcodes: { name: string; fixedForm?: { columns?: string[] } }[];
+      }
+    ).opcodes;
+    const fromOrigin = opcodes
+      .filter(opcode => (opcode.fixedForm?.columns ?? []).some(c => c.includes("拡張演算項目")))
+      .map(opcode => opcode.name.toUpperCase());
+
+    assert.ok(fromOrigin.length > 0, "原典から 1 つも取れていない");
+    for (const name of fromOrigin) {
+      assert.ok(DEFAULT_C_NEW_OPCODES.has(name), `${name} が抜けている`);
+    }
+  });
+
+  /** 抜けていた実物。ここが落ちたら同じ欠陥が戻っている。 */
+  test("**DOU / DOW / FOR / RETURN / CALLP が入っている**", () => {
+    for (const name of ["DOU", "DOW", "FOR", "RETURN", "CALLP", "EVAL", "IF", "WHEN"]) {
+      assert.ok(DEFAULT_C_NEW_OPCODES.has(name), `${name} が抜けている`);
+    }
+  });
+
+  /** 演算項目を採らない命令は原典の一覧に出ないので、別に足してある。 */
+  test("何も採らない命令（ELSE / ENDIF / SELECT / OTHER / ENDSL）も入っている", () => {
+    for (const name of ["ELSE", "ENDIF", "SELECT", "OTHER", "ENDSL"]) {
+      assert.ok(DEFAULT_C_NEW_OPCODES.has(name), `${name} が抜けている`);
+    }
+  });
+
+  test("固定欄の命令は入っていない（回帰）", () => {
+    for (const name of ["SETLL", "READ", "CHAIN", "MOVEL", "ADD"]) {
+      assert.ok(!DEFAULT_C_NEW_OPCODES.has(name), `${name} が入っている`);
+    }
+  });
+
+  test("**DOU の行は C-NEW として分類される**", () => {
+    assert.strictEqual(
+      classifyRpgSpecKeyword("     C                   DOU       %EOF(F) OR RRN >= N"),
+      "C-NEW"
+    );
   });
 });

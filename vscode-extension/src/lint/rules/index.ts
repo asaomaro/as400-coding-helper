@@ -100,6 +100,15 @@ const LAYOUT_RULES = [
     description: "DSPSIZ の書式・値が正しいか。原典の有効値は 24x80 と 27x132 だけ。"
   },
   {
+    code: "keyword-wrong-level",
+    id: "layout-keyword-wrong-level",
+    severity: "error",
+    enabledByDefault: true,
+    description:
+      "キーワードを書けないレベル（ファイル / レコード / フィールド）に書いていないか。" +
+      "実機はコンパイルしない（7 通りを実機で確認）。原典がレベルを書いていないものは咎めない。"
+  },
+  {
     code: "spacing-with-line-number",
     id: "layout-spacing-with-line-number",
     severity: "error",
