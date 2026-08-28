@@ -864,6 +864,82 @@ check(
 
 const beforeFileLevel = await sourceLines();
 
+// ---- 19f. 2 次画面サイズ ------------------------------------------------
+//
+// **位置の上書き行**（条件名 ＋ 位置だけの行）が 2 次画面サイズでの位置を与える。
+// 直す前は上書き行を「次の単位への前置き」と見なして捨てており、
+// 2 次画面での見え方が一切見えなかった。
+await page.selectOption("#sample", { label: "two-sizes.dspf" });
+await page.waitForTimeout(250);
+
+const canvasSize = () =>
+  page.$eval(".dds-canvas", node => ({
+    rows: Number(node.dataset.rows),
+    columns: Number(node.dataset.columns)
+  }));
+const itemAt = async label => {
+  const found = await page.$$eval(".dds-item", nodes =>
+    nodes.map(n => ({
+      text: n.textContent,
+      row: Number(n.dataset.row),
+      column: Number(n.dataset.column)
+    }))
+  );
+  return found.find(item => item.text.includes(label));
+};
+
+check("2 次画面サイズがあると切替が出る", !(await page.$eval("#dds-toggle-secondary", n => n.hidden)));
+check(
+  "1 次では 24x80 で、項目は宣言どおりの位置",
+  JSON.stringify(await canvasSize()) === JSON.stringify({ rows: 24, columns: 80 }) &&
+    (await itemAt("XXXX"))?.row === 23,
+  JSON.stringify(await canvasSize())
+);
+
+const sourceBeforeSecondary = await sourceLines();
+await page.click("#dds-toggle-secondary");
+await page.waitForTimeout(220);
+check(
+  "**2 次に切り替えると画面が 27x132 になり、上書きの位置で描く**",
+  JSON.stringify(await canvasSize()) === JSON.stringify({ rows: 27, columns: 132 }) &&
+    (await itemAt("XXXX"))?.row === 26 &&
+    (await itemAt("XXXX"))?.column === 40,
+  JSON.stringify(await canvasSize()) + " " + JSON.stringify(await itemAt("XXXX"))
+);
+check(
+  "上書きの無い項目は 2 次でも同じ位置",
+  (await page.$$eval(".dds-item", nodes =>
+    nodes.filter(n => n.textContent.includes("XXXX")).map(n => Number(n.dataset.row))
+  )).includes(5)
+);
+
+// **動かせない。** 位置を決めているのは上書き行なので、掴んで動かすと
+// 項目自身の行（＝1 次の位置）を書き換えてしまう。
+const secondaryItem = await page.$(".dds-item");
+const box = await secondaryItem.boundingBox();
+await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+await page.mouse.down();
+await page.mouse.move(box.x + box.width / 2 + 60, box.y + box.height / 2 + 30, { steps: 6 });
+await page.mouse.up();
+await page.waitForTimeout(220);
+check(
+  "**2 次画面サイズの表示では動かせない（ソースが変わらない）**",
+  JSON.stringify(await sourceLines()) === JSON.stringify(sourceBeforeSecondary),
+  await page.$eval(".status", node => node.textContent)
+);
+check(
+  "動かせない理由が出る",
+  (await page.$eval(".status", node => node.textContent)).includes("上書き行"),
+  await page.$eval(".status", node => node.textContent)
+);
+
+await page.click("#dds-toggle-secondary");
+await page.waitForTimeout(220);
+check(
+  "戻すと 1 次に戻る",
+  JSON.stringify(await canvasSize()) === JSON.stringify({ rows: 24, columns: 80 })
+);
+
 // ---- 20. キーワードのチップと原典ヘルプ -------------------------------
 // 題材を実物（CUSTMNT.dspf）に戻す。読み込み直しなので文書は元の状態になる。
 await page.selectOption("#sample", { label: "CUSTMNT.dspf" });

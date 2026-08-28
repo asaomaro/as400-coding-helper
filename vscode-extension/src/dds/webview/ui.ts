@@ -140,6 +140,11 @@ class EditorView {
      * 紙の比率で描く（帳票）。**既定は切**——等幅の升目は桁を数えるのに要る。
      */
     preview: false,
+    /**
+     * **2 次画面サイズの絵**。`DSPSIZ` が 2 つのサイズを宣言しているときだけ切り替えられる。
+     * 位置は「位置の上書き行」（条件名 ＋ 位置）が決める。
+     */
+    secondaryScreen: false,
     zoom: 1
   };
   /**
@@ -197,7 +202,8 @@ class EditorView {
       | "showGrid"
       | "dimOthers"
       | "showColors"
-      | "preview";
+      | "preview"
+      | "secondaryScreen";
   }>;
   private readonly zoomButtons: HTMLButtonElement[] = [];
 
@@ -240,7 +246,8 @@ class EditorView {
       { button: must<HTMLButtonElement>(root, "#dds-toggle-grid"), key: "showGrid" },
       { button: must<HTMLButtonElement>(root, "#dds-toggle-dim"), key: "dimOthers" },
       { button: must<HTMLButtonElement>(root, "#dds-toggle-colors"), key: "showColors" },
-      { button: must<HTMLButtonElement>(root, "#dds-toggle-preview"), key: "preview" }
+      { button: must<HTMLButtonElement>(root, "#dds-toggle-preview"), key: "preview" },
+      { button: must<HTMLButtonElement>(root, "#dds-toggle-secondary"), key: "secondaryScreen" }
     ];
     for (const toggle of this.toggles) {
       toggle.button.addEventListener("click", () => {
@@ -385,12 +392,29 @@ class EditorView {
 
   // ---- 描画 --------------------------------------------------------
 
+  /**
+   * 描く対象のモデル。**2 次画面サイズの切替が入っていればそちらへ差し替える。**
+   *
+   * 項目は同じ `sourceLine` を持つ（別の項目ではなく、同じ項目の別の位置）ので、
+   * 一覧・プロパティ・標識はそのまま使える。
+   */
+  private screenModel(model: RenderModel): RenderModel {
+    const secondary = model.secondaryScreen;
+    if (!this.display.secondaryScreen || secondary === undefined) return model;
+    return {
+      ...model,
+      canvas: secondary.canvas,
+      items: secondary.items,
+      diagnostics: secondary.diagnostics
+    };
+  }
+
   private render(): void {
     const model = this.model;
     if (!model) return;
 
     // **描くのは「その標識の状態で見えるもの」。** 生のモデルは `this.model` に残す。
-    const view = applyIndicators(model, this.indicators);
+    const view = applyIndicators(this.screenModel(model), this.indicators);
     this.view = view;
 
     this.applyCellSize();
@@ -405,6 +429,9 @@ class EditorView {
 
     this.frame.style.setProperty("--cols", String(view.canvas.columns));
     this.frame.style.setProperty("--rows", String(view.canvas.rows));
+    // 画面の大きさを DOM にも出す（e2e が桁数を数えずに確かめられるように）。
+    this.canvas.dataset.rows = String(view.canvas.rows);
+    this.canvas.dataset.columns = String(view.canvas.columns);
     this.metrics.textContent =
       `セル ${this.cellWidth.toFixed(2)}×${this.lineHeight.toFixed(2)}px` +
       `${this.display.zoom === 1 ? "" : `（実測 ${this.measuredWidth.toFixed(2)}px × ${Math.round(this.display.zoom * 100)}%）`}` +
@@ -429,8 +456,13 @@ class EditorView {
       const displayOnly = toggle.key === "showAttributes" || toggle.key === "showColors";
       // プレビュー（紙の比率）は帳票だけ。画面に CPI / LPI は無い。
       const printOnly = toggle.key === "preview";
+      // 2 次画面サイズは **`DSPSIZ` が 2 つ宣言しているときだけ**。
+      const noSecondary =
+        toggle.key === "secondaryScreen" && this.model?.secondaryScreen === undefined;
       toggle.button.hidden =
-        (displayOnly && !this.isDisplayFile()) || (printOnly && this.isDisplayFile());
+        (displayOnly && !this.isDisplayFile()) ||
+        (printOnly && this.isDisplayFile()) ||
+        noSecondary;
     }
     for (const button of this.zoomButtons) {
       button.classList.toggle("armed", Number(button.dataset.zoom) === this.display.zoom);
@@ -1650,6 +1682,18 @@ class EditorView {
     // **Pending 中は受け付けない**（往復の途中で次の編集を積まない）。
     if (this.mode === "pending") return;
 
+    // **2 次画面サイズの表示では動かせない。** 位置を決めているのは
+    // 「位置の上書き行」で、掴んで動かすと**項目自身の行**（＝1 次の位置）を
+    // 書き換えてしまう。選ぶことはできる。
+    if (this.display.secondaryScreen && this.model?.secondaryScreen !== undefined) {
+      const picked = (event.target as HTMLElement | null)?.closest<HTMLElement>(".dds-item");
+      this.select(picked ? Number(picked.dataset.sourceLine) : undefined);
+      if (picked) {
+        this.setStatus("2 次画面サイズの表示では動かせません（位置は上書き行が決めます）");
+      }
+      return;
+    }
+
     const target = event.target as HTMLElement | null;
     const element = target?.closest<HTMLElement>(".dds-item") ?? null;
     if (!element) {
@@ -2053,6 +2097,7 @@ function template(): string {
     <button id="dds-toggle-dim" type="button" title="選択中の項目が属する様式以外を淡く表示します">他様式を淡く</button>
     <button id="dds-toggle-colors" type="button" title="COLOR / DSPATR から実機の見え方（色・反転表示・下線・非表示）で描きます">5250 配色</button>
     <button id="dds-toggle-preview" type="button" title="CPI / LPI で決まる紙の比率で描きます（1 桁 = 1/CPI インチ、1 行 = 1/LPI インチ）">プレビュー</button>
+    <button id="dds-toggle-secondary" type="button" title="2 次画面サイズでの見え方を描きます（位置の上書き行で決まる位置。この表示では動かせません）">2 次画面</button>
     <span class="density" role="group" aria-label="印刷密度"></span>
     <span class="sep"></span>
     <span class="zoom" role="group" aria-label="ズーム"></span>

@@ -336,7 +336,15 @@ suite("DSPF: 位置の解決", () => {
 });
 
 suite("DSPF: 2 次画面サイズ用の位置指定", () => {
-  test("1 次と違う画面サイズ条件名の項目は描かない（正当なので診断も出さない）", () => {
+  /**
+   * **項目の行に画面サイズ条件名は書けない。** 実機で確かめた
+   * （2026-08-28 / IBM i 7.3）——条件名が書けるのは**位置の上書き行**
+   * （条件名 ＋ 位置だけの行）だけで、項目・定数・様式・キーワードの行では
+   * コンパイルが通らない。
+   *
+   * 描かないこと自体はそのまま（1 次の絵には出ない）。
+   */
+  test("1 次と違う画面サイズ条件名の項目は描かないが、書き方は指摘する", () => {
     const { items, diagnostics } = resolveDspfLayout([
       ddsLine({ keywords: "DSPSIZ(24 80 *NORMAL 27 132 *WIDE)" }),
       ddsLine({ nameType: "R", name: "REC" }),
@@ -351,7 +359,82 @@ suite("DSPF: 2 次画面サイズ用の位置指定", () => {
       ddsLine({ conditioning: " *WIDE", name: "B", length: "5", dataType: "A", usage: "O", row: "1", column: "100" })
     ]);
     assert.deepStrictEqual(items.map(item => item.name), ["A"]);
+    assert.deepStrictEqual(
+      diagnostics.map(diagnostic => diagnostic.code),
+      ["invalid-screen-size-condition"],
+      "項目の行に条件名を書く形は実機が通さないので指摘する"
+    );
+  });
+
+  /**
+   * **本来の形**（原典 `DSPSIZ` の 例 2 / 例 3）: 条件名 ＋ 位置だけの行が、
+   * 直前の項目の「2 次画面サイズでの位置」を上書きする。
+   */
+  test("位置の上書き行は指摘しない（原典の形）", () => {
+    const { diagnostics } = resolveDspfLayout([
+      ddsLine({ keywords: "DSPSIZ(24 80 27 132)" }),
+      ddsLine({ nameType: "R", name: "REC" }),
+      ddsLine({ name: "A", length: "5", dataType: "A", usage: "O", row: "23", column: "2" }),
+      ddsLine({ conditioning: "  *DS4", row: "26", column: "5" })
+    ]);
     assert.deepStrictEqual(diagnostics, []);
+  });
+
+  test("上書き行で 2 次画面サイズの絵が描ける", () => {
+    const lines = [
+      ddsLine({ keywords: "DSPSIZ(24 80 27 132)" }),
+      ddsLine({ nameType: "R", name: "REC" }),
+      ddsLine({ name: "A", length: "5", dataType: "A", usage: "O", row: "23", column: "2" }),
+      ddsLine({ conditioning: "  *DS4", row: "26", column: "5" })
+    ];
+    const primary = resolveDspfLayout(lines);
+    assert.deepStrictEqual(
+      { rows: primary.screen.rows, columns: primary.screen.columns },
+      { rows: 24, columns: 80 }
+    );
+    assert.deepStrictEqual(
+      primary.items.map(item => [item.row, item.column]),
+      [[23, 2]]
+    );
+
+    const secondary = resolveDspfLayout(lines, { screenSize: "secondary" });
+    assert.deepStrictEqual(
+      { rows: secondary.screen.rows, columns: secondary.screen.columns },
+      { rows: 27, columns: 132 }
+    );
+    assert.deepStrictEqual(
+      secondary.items.map(item => [item.row, item.column]),
+      [[26, 5]],
+      "上書きの位置で描いていない"
+    );
+  });
+
+  test("上書きが無い項目は 2 次でも同じ位置に出る", () => {
+    const lines = [
+      ddsLine({ keywords: "DSPSIZ(24 80 27 132)" }),
+      ddsLine({ nameType: "R", name: "REC" }),
+      ddsLine({ name: "A", length: "5", dataType: "A", usage: "O", row: "5", column: "2" })
+    ];
+    assert.deepStrictEqual(
+      resolveDspfLayout(lines, { screenSize: "secondary" }).items.map(item => [
+        item.row,
+        item.column
+      ]),
+      [[5, 2]]
+    );
+  });
+
+  test("2 次が宣言されていなければ 1 次で解く", () => {
+    const lines = [
+      ddsLine({ keywords: "DSPSIZ(24 80)" }),
+      ddsLine({ nameType: "R", name: "REC" }),
+      ddsLine({ name: "A", length: "5", dataType: "A", usage: "O", row: "5", column: "2" })
+    ];
+    const layout = resolveDspfLayout(lines, { screenSize: "secondary" });
+    assert.deepStrictEqual(
+      { rows: layout.screen.rows, columns: layout.screen.columns },
+      { rows: 24, columns: 80 }
+    );
   });
 });
 
@@ -397,14 +480,18 @@ suite("DSPF: 画面サイズ条件名は名前ではなくサイズで突き合�
     assert.deepStrictEqual(
       diagnostics.map(diagnostic => diagnostic.code),
       ["invalid-screen-size-condition"],
-      "1 次を指す条件名は実機が通さないので指摘する"
+      "項目の行に条件名を書く形は実機が通さないので指摘する"
     );
   });
 
-  test("*DS4（＝2 次の 27x132）の項目は描かない（正当なので診断も出さない）", () => {
+  test("*DS4（＝2 次の 27x132）の項目は 1 次に描かない", () => {
     const { items, diagnostics } = resolveDspfLayout(numericForm(" *DS4"));
     assert.deepStrictEqual(items, []);
-    assert.deepStrictEqual(diagnostics, [], "2 次を指す条件名は実機も通す");
+    // 項目の行に条件名を書く形なので、2 次を指していても実機は通さない。
+    assert.deepStrictEqual(
+      diagnostics.map(diagnostic => diagnostic.code),
+      ["invalid-screen-size-condition"]
+    );
   });
 
   test("1 次が *DS4 のときは *DS4 の項目を描き、*DS3 は描かない", () => {
