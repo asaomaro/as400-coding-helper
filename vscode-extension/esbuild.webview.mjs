@@ -21,11 +21,18 @@ const common = {
   logLevel: "info"
 };
 
-// 1) VSCode の WebView 用。
+// 1) VSCode の WebView 用。**エディタとプロンプターで別々に束ねる**——
+//    どちらか一方しか開かないので、混ぜると読み込む量が倍になる。
 await build({
   ...common,
   entryPoints: ["src/dds/webview/main.ts"],
   outfile: "out/dds-webview/editor.js"
+});
+
+await build({
+  ...common,
+  entryPoints: ["src/prompter/webview/main.ts"],
+  outfile: "out/prompter-webview/prompter.js"
 });
 
 // 2) 単独起動ハーネス（検証用）。**--production では作らない**——
@@ -39,4 +46,15 @@ if (!production && existsSync("dev/standalone.ts")) {
   });
   copyFileSync("dev/standalone.html", "dev/out/index.html");
   console.log("dev/out/index.html を生成しました");
+}
+
+if (!production && existsSync("dev/prompter-standalone.ts")) {
+  mkdirSync("dev/out", { recursive: true });
+  await build({
+    ...common,
+    entryPoints: ["dev/prompter-standalone.ts"],
+    outfile: "dev/out/prompter.js"
+  });
+  copyFileSync("dev/prompter.html", "dev/out/prompter.html");
+  console.log("dev/out/prompter.html を生成しました");
 }

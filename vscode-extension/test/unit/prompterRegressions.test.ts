@@ -10,8 +10,7 @@ import {
 import { buildClCommandText } from "../../src/prompter/applyChanges";
 import { buildInitialState } from "../../src/prompter/model";
 import { buildCommandHelpText } from "../../src/prompter/commandHelp";
-import { buildHtml, toSerializableState } from "../../src/prompter/binding";
-import { TinyElement } from "../support/tiny-dom";
+import { buildBlocks, toSerializableState } from "../../src/prompter/formModel";
 import { resolveDdsLevel } from "../../src/language/ddsKeywordCompletion";
 import { resolveCompletionKind } from "../../src/language/rpgCompletion";
 import type { PrompterDefinition } from "../../src/prompter/types";
@@ -128,33 +127,21 @@ suite("コマンド全体ヘルプ", () => {
 });
 
 suite("プロンプターの描画", () => {
-  const render = (rel: string) => {
+  const model = (rel: string) => {
     const definition = load(rel);
-    const state = buildInitialState(definition, {});
-    return buildHtml(
-      toSerializableState(definition, state, {
-        keyword: definition.keyword,
-        language: "cl",
-        line: 0
-      } as never),
-      { cspSource: "x", nonce: "n" }
-    );
+    return toSerializableState(definition, buildInitialState(definition, {}));
   };
 
   /** 画面に出てくる順に、入力欄名と囲みの見出しを拾う。 */
-  const order = (html: string): string[] => {
-    const found: string[] = [];
-    for (const match of html.matchAll(/<legend>([^<]+)<\/legend>|name="([A-Z][A-Z0-9_]*)"/gu)) {
-      const name = match[1] ? `[${match[1]}]` : match[2];
-      if (name && !found.includes(name)) found.push(name);
-    }
-    return found;
-  };
+  const order = (rel: string): string[] =>
+    buildBlocks(model(rel)).map(block =>
+      block.kind === "field" ? block.field.name : `[${block.label}]`
+    );
 
   test("入力欄は定義の順（＝原典の順）に出る", () => {
     // 以前は囲みのある項目を全部先に出しており、PARM では先頭のはずの KWD が
     // SNGVAL などの後ろに回っていた。
-    const rendered = order(render("cmd/ja/PARM.json"));
+    const rendered = order("cmd/ja/PARM.json");
     assert.equal(rendered[0], "KWD", `先頭は KWD のはず: ${rendered.slice(0, 4)}`);
 
     const kwd = rendered.indexOf("KWD");
@@ -162,106 +149,29 @@ suite("プロンプターの描画", () => {
     assert.ok(kwd < group, "囲みより前に単独の欄が出ること");
   });
 
-  test("2 組目以降に削除ボタンが出る", () => {
+  test("囲みは最初の子が現れた位置に置かれ、後続の子はそこへ入る", () => {
+    const blocks = buildBlocks(model("cl/ja/SBMJOB.json"));
+    const jobd = blocks.find(block => block.kind === "group" && block.name === "JOBD");
+    assert.ok(jobd && jobd.kind === "group", "JOBD の囲みがある");
+    assert.deepEqual(
+      jobd.fields.map(field => field.name),
+      ["LIB", "JOBD"],
+      "修飾名の 2 欄が 1 つの囲みに束ねられる"
+    );
+  });
+
+  test("繰り返し group は最後の一組にだけ「追加」を出す", () => {
+    // 途中の組に出すと、どこに追加されるのか分からなくなる。
+    // **押して増える／減ることは e2e が画面で確かめる**（ここは印の位置だけ）。
     const definition = load("cmd/ja/PARM.json");
     const parsed = parseClCommand("PARM KWD(X) TYPE(*CHAR) SNGVAL((*ALL 'A') (*NONE 'B'))");
     assert.ok(parsed);
 
     const state = buildInitialState(definition, mapParsedCommandToValues(definition, parsed));
-    const html = buildHtml(
-      toSerializableState(definition, state, {
-        keyword: "PARM",
-        language: "cmd",
-        line: 0
-      } as never),
-      { cspSource: "x", nonce: "n" }
-    );
+    const rendered = toSerializableState(definition, state);
+    const groups = Object.keys(rendered.repeatableGroups ?? {});
 
-    const boxes = [...html.matchAll(/data-group-name="(SNGVAL[^"]*)"[\s\S]*?<\/fieldset>/gu)];
-    assert.equal(boxes.length, 2, "2 組そろっていること");
-    assert.ok(!/class="group-remove"/u.test(boxes[0][0]), "1 組目は消せない");
-    assert.ok(/class="group-remove"/u.test(boxes[1][0]), "2 組目には削除が出る");
-  });
-
-  test("途中の組を消すと後ろが繰り上がる（連番が飛ばない）", () => {
-    // 増減は WebView の script が行う。生成された script から振り直しの処理を
-    // 取り出し、最小の DOM 模型で実際に動かす。
-    const html = render("cmd/ja/PARM.json");
-    const source = html.slice(
-      html.indexOf("function renumberGroup"),
-      html.indexOf("function escapeForDom")
-    );
-
-    const form = new TinyElement("form");
-    const makeBox = (index: number) => {
-      const box = new TinyElement("fieldset");
-      box.className = "group-field";
-      box.setAttribute("data-group-name", index === 1 ? "SNGVAL" : `SNGVAL#${index}`);
-      box.setAttribute("data-label-base", "単一値");
-
-      const legend = new TinyElement("legend");
-      legend.textContent = index === 1 ? "単一値" : `単一値 (${index})`;
-      box.appendChild(legend);
-
-      const input = new TinyElement("input");
-      input.setAttribute("name", index === 1 ? "SNGVAL" : `SNGVAL#${index}`);
-      box.appendChild(input);
-
-      if (index > 1) {
-        const remove = new TinyElement("button");
-        remove.className = "group-remove";
-        box.appendChild(remove);
-      }
-      return form.appendChild(box);
-    };
-
-    makeBox(1);
-    const second = makeBox(2);
-    const third = makeBox(3);
-    const add = new TinyElement("button");
-    add.className = "group-add";
-    third.appendChild(add);
-
-    const renumber = new Function(
-      "form",
-      "document",
-      `${source}; return renumberGroup;`
-    )(form, { createElement: (tag: string) => new TinyElement(tag) }) as (base: string) => void;
-
-    second.remove();
-    renumber("SNGVAL");
-
-    const names = form.children.map(box => box.getAttribute("data-group-name"));
-    const inputs = form.children.map(box => box.querySelector("input")?.getAttribute("name"));
-
-    assert.deepEqual(names, ["SNGVAL", "SNGVAL#2"], "番号が飛ばない");
-    assert.deepEqual(inputs, ["SNGVAL", "SNGVAL#2"], "入力欄の名前も振り直す");
-    assert.ok(form.children[1].querySelector(".group-add"), "追加は最後の組に残る");
-    assert.ok(!form.children[0].querySelector(".group-remove"), "1 組目は消せない");
-  });
-
-  test("組を増減したら番号を振り直す（生成された script の確認）", () => {
-    // 増減は画面側の処理なので DOM が要る。ここでは「振り直す処理があること」と
-    // 「入力欄の名前を番号から作り直していること」を固定する。
-    // 実際の増減はブラウザ上での確認が要る。
-    const html = render("cmd/ja/PARM.json");
-
-    assert.match(html, /function renumberGroup\(base\)/u, "振り直しの処理があること");
-    assert.match(
-      html,
-      /name\.split\('#'\)\[0\] \+ suffix/u,
-      "入力欄の名前を番号から作り直すこと"
-    );
-    assert.match(html, /className = 'group-remove'/u, "削除ボタンを作ること");
-    assert.match(html, /renumberGroup\(base\)/u, "追加・削除の後に呼ぶこと");
-  });
-
-  test("繰り返しの入力欄がラベルの右に並ぶ（次の行に回らない）", () => {
-    const html = render("cmd/ja/PARM.json");
-    assert.match(
-      html,
-      /\.multi-field \{ display: inline-block/u,
-      "ブロックのままだと入力欄がラベルの次の行へ回る"
-    );
+    assert.ok(groups.includes("SNGVAL#2"), `2 組目が最後: ${groups.join(",")}`);
+    assert.ok(!groups.includes("SNGVAL"), "1 組目には出さない");
   });
 });

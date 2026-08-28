@@ -272,20 +272,34 @@
 
 #### プロンプターは「モデルまで」では届いていない
 
-- **プロンプターの入力欄は WebView 側でも評価される**。開いたときの状態を作るのは
-  `model.ts` だが、入力のたびの再評価・エラー表示・表示切り替えは `binding.ts` が
-  埋め込む script が行う。**サーバ側だけ直すと、開いた瞬間の一度きりになるか、
-  何も起きない。**
+- **プロンプターの入力欄は WebView 側でも評価される**。開いたときの状態を作るのも、
+  入力のたびの再評価・エラー表示・表示切り替えも画面側で起きる。
+  **コア側だけ直しても、画面に出るとは限らない。**
 - PR#93〜#98 でこれを 3 回踏んだ。`dependencies` は WebView に渡っておらず**一度も
   画面に出ていなかった**。`promptControl` は入力に追従しなかった。`maxLength` を
   実機に合わせたら、画面の `maxlength` が CL 変数の入力を打ち切った。
   いずれも `buildInitialState()` を見るテストは通っていた。
-- **到達性の確認は「生成された HTML と script」まで見る**。`buildInitialState().x` を
-  見て「消費経路まで繋いだ」と書かない。
-- **写しを手書きしない**。評価は `createCdmlEvaluator` のように外の識別子を参照しない
-  自己完結な関数に閉じ、`String(...)` で script に埋め込む。同一の関数が動くので
-  食い違いようがない（`dependsOn` と `constraints` は写しが手書きで、`binding.ts` に
-  「片方だけ直すと食い違う」と注意書きが要る状態になっている）。
+- **到達性の確認は「押して動くか」まで見る**。`buildInitialState().x` を見て
+  「消費経路まで繋いだ」と書かない。**確かめる場所は `dev/prompter-e2e.mjs`**——
+  単独起動ハーネスをブラウザで開いて実際に操作する（`dev/README.md`）。
+- **写しを手書きしない。というより、写しを作らない。**
+  UI（`src/prompter/webview/ui.ts`）は `model.ts` / `visibilityRules.ts` /
+  `cdmlRules.ts` を**そのまま import する**（esbuild が束ねる）。判断は UI に無い。
+
+**2026-08-29 に構造を入れ替えた**（`20260828-prompter-standalone`）。それ以前は
+`binding.ts` が HTML・CSS・**インライン JS 827 行**を文字列で組み立てており、
+条件表示と相関制約の判定が**サーバとクライアントに二重に書かれていた**
+（「片方だけ直すと食い違う」と注意書きで守っていた。実際 `visibleByDefault` は
+既に食い違っていた）。いまは DDS ビジュアルエディタと同じ 4 点セット——
+**契約（`webview/protocol.ts`）/ bridge / 素の web の UI / ホスト能力の宣言**——で、
+`acquireVsCodeApi` の呼び出しは `webview/bridge.ts` の 1 か所だけ。
+
+- **UI に `vscode` を持ち込まない**。`tsconfig.webview.json` が `types: []` で
+  型ごと締め出し、単体テストが実ファイルも見張る（`test/unit/prompterWebview.test.ts`）。
+- **`webview/{ui,bridge,main}.ts` は本体の tsc から `exclude` する**（DOM 型が要るため）。
+  逆に `protocol.ts` はホストも使うので除外しない。DDS 側と同じ並び。
+- **F5 は `npm run compile:all`**（tsc ＋ esbuild）。`compile` だけだと束ねた資産が無く、
+  **画面が真っ白になる**（例外も出ない）。`.vscode/tasks.json` がこれを指している。
 
 ### 入力の検査を厳しくするときは、実機の値を流して確かめる
 

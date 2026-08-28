@@ -13,9 +13,11 @@
  * する（ユニットテストは vscode をスタブに差し替えるため）。
  */
 import * as vscode from "vscode";
+import type { ObjectCandidates, ObjectKind } from "./types";
 
-/** 欄が指すオブジェクトの種類。 */
-export type ObjectKind = "file" | "program" | "dataArea";
+// 型は types.ts が持つ（WebView 側から `vscode` 抜きで引けるようにするため）。
+// 集める処理はここに残す。
+export type { ObjectCandidates, ObjectKind };
 
 /**
  * 拡張子から、その中身が表すオブジェクトの種類を決める。
@@ -65,9 +67,6 @@ export function objectNameOfFile(fileName: string): string | undefined {
   }
   return name;
 }
-
-/** 候補の集合。種類ごとに名前を並べる。 */
-export type ObjectCandidates = Partial<Record<ObjectKind, string[]>>;
 
 /** ファイル名の一覧から候補を組み立てる（vscode に依存しない部分）。 */
 export function buildObjectCandidates(fileNames: readonly string[]): ObjectCandidates {

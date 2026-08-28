@@ -8,7 +8,7 @@ import {
   promptControlHolds
 } from "../../src/prompter/cdmlRules";
 import { buildInitialState, validate } from "../../src/prompter/model";
-import { buildHtml, toSerializableState } from "../../src/prompter/binding";
+import { buildBlocks, toSerializableState } from "../../src/prompter/formModel";
 import {
   buildObjectCandidates,
   objectKindOfExtension,
@@ -383,53 +383,37 @@ suite("CDML 由来の相関規則", () => {
   });
 
   /* ---------------------------------------------------------------- *
-   * WebView まで届いているか。
+   * 画面まで届いているか。
    *
-   * model.ts まで届いていても、プロンプターの画面は入力のたびクライアント側で
-   * 再評価する。そこに規則が渡っていなければ、開いた瞬間の一度きりで終わる
-   * （実際 PR #93 はその状態で、dependencies は一度も画面に出ていなかった）。
+   * model.ts まで届いていても、画面は入力のたびに再評価する。そこに規則が
+   * 渡っていなければ、開いた瞬間の一度きりで終わる（実際 PR #93 はその状態で、
+   * dependencies は一度も画面に出ていなかった）。
+   *
+   * **いまは UI がコアを直接呼ぶので、写しの食い違いは起こりえない。**
+   * ここで見るのは「描画モデルに載っているか」まで。実際に押して変わるかは
+   * `dev/prompter-e2e.mjs` がブラウザで確かめる（属性ではなく振る舞いを見る）。
    * ---------------------------------------------------------------- */
-  const renderCl = (name: string): string => {
+  const renderCl = (name: string) => {
     const definition = loadCl(name);
-    const state = buildInitialState(definition, {});
-    return buildHtml(
-      toSerializableState(definition, state, {
-        keyword: definition.keyword,
-        language: "cl",
-        line: 0
-      } as never),
-      { cspSource: "x", nonce: "n" }
-    );
+    return toSerializableState(definition, buildInitialState(definition, {}));
   };
 
-  test("PMTCTL が入力欄の属性として出ている", () => {
-    // script の中にも `data-prompt-control` の語は出るので、**script より前**
-    // （＝実際の入力欄）に属性が書かれていることを見る。
-    const html = renderCl("SAVOBJ");
-    const body = html.slice(0, html.indexOf("<script"));
-    const match = body.match(/data-prompt-control="([^"]*)"/);
-    assert.ok(match, "入力欄に data-prompt-control が書き出されている");
-    assert.ok(
-      match![1].includes("controlParameter"),
-      "属性の中身が規則そのものになっている"
+  test("PMTCTL が描画モデルの入力欄に載っている", () => {
+    const model = renderCl("SAVOBJ");
+    const controlled = model.fields.filter(field => field.promptControl?.length);
+    assert.ok(controlled.length > 0, "条件表示を持つ欄がある");
+    assert.equal(
+      controlled[0].promptControl?.[0].controlParameter,
+      "DEV",
+      "規則の中身がそのまま載っている"
     );
   });
 
-  test("埋め込んだ評価器が WebView 側で動き、サーバと同じ答えを返す", () => {
-    // toString() で埋め込んでいるため、壊れれば構文エラーか挙動差になる。
-    // 実際に取り出して動かし、サーバ側の評価と突き合わせる。
+  test("CDML(DEP) の違反が描画モデルに載る（画面に出る形になっている）", () => {
+    // 以前はこの評価器を `toString()` で WebView へ埋め込み、写しが動くことを
+    // 確かめていた。**いまは UI が同じ関数を直接呼ぶので写しが無い。**
+    // 代わりに「画面が読む場所（描画モデル）に違反が載るか」を見る。
     const definition = loadCl("SNDPGMMSG");
-    const html = renderCl("SNDPGMMSG");
-
-    const match = html.match(
-      /const createCdmlEvaluator = ([\s\S]*?);\n    const CDML = createCdmlEvaluator\(([\s\S]*?)\);/
-    );
-    assert.ok(match, "埋め込まれた評価器と spec を取り出せる");
-
-    // eslint-disable-next-line no-new-func
-    const factory = new Function(`return (${match![1]});`)();
-    const spec = JSON.parse(match![2]);
-    const embedded = factory(spec);
 
     const scenarios: Record<string, string>[] = [
       {},
@@ -438,36 +422,43 @@ suite("CDML 由来の相関規則", () => {
       { MSG: "HELLO", MSGID: "CPF9898", MSGF: "QCPFMSG" }
     ];
     for (const values of scenarios) {
-      assert.deepEqual(
-        embedded.checkDependencies(values),
-        checkDependencies(definition, values),
-        `シナリオ ${JSON.stringify(values)} でサーバと一致する`
-      );
+      const model = toSerializableState(definition, buildInitialState(definition, values));
+      for (const violation of checkDependencies(definition, values)) {
+        assert.ok(
+          model.constraintErrors.includes(violation.message),
+          `シナリオ ${JSON.stringify(values)}: 「${violation.message}」が画面に載る`
+        );
+      }
     }
+
+    // MSG と MSGID を同時に指定した場合だけ違反が出る（出ないなら死蔵）。
+    const clean = toSerializableState(definition, buildInitialState(definition, {}));
+    const dirty = toSerializableState(
+      definition,
+      buildInitialState(definition, { MSG: "HELLO", MSGID: "CPF9898" })
+    );
+    assert.equal(clean.constraintErrors.length, 0, "何も入れなければ違反は無い");
+    assert.ok(dirty.constraintErrors.length > 0, "排他に触れたら違反が出る");
   });
 
-  test("埋め込んだ評価器で PMTCTL も同じ答えになる", () => {
+  test("PMTCTL が入力値に追従して欄を出し入れする", () => {
+    // 以前は埋め込んだ写しがサーバと同じ答えを返すかを見ていた。
+    // **いまは UI が同じ評価器を直接呼ぶ**ので、見るのは「値を変えたら
+    // 描画モデルの表示が変わるか」——写しの一致ではなく、効いているかどうか。
     const definition = loadCl("SAVOBJ");
-    const html = renderCl("SAVOBJ");
-    const match = html.match(
-      /const createCdmlEvaluator = ([\s\S]*?);\n    const CDML = createCdmlEvaluator\(([\s\S]*?)\);/
-    );
-    assert.ok(match);
-    // eslint-disable-next-line no-new-func
-    const embedded = new Function(`return (${match![1]});`)()(JSON.parse(match![2]));
-    const server = buildRuleContext(definition);
+    const visibleOf = (name: string, values: Record<string, string>): boolean =>
+      toSerializableState(definition, buildInitialState(definition, values)).fields.find(
+        field => field.name === name
+      )?.visible === true;
 
-    const savf = definition.parameters.find(p => p.name === "SAVF");
-    const groups = savf?.promptControl;
-    assert.ok(groups, "SAVOBJ の SAVF は promptControl を持つ");
+    assert.equal(visibleOf("SAVF", { DEV: "*SAVF" }), true, "DEV(*SAVF) なら SAVF が出る");
+    assert.equal(visibleOf("SAVF", { DEV: "*TAPE" }), false, "DEV(*TAPE) なら SAVF は出ない");
+    assert.equal(visibleOf("MEDDFN", { DEV: "*MEDDFN" }), true, "DEV(*MEDDFN) なら出る");
+    assert.equal(visibleOf("MEDDFN", { DEV: "*SAVF" }), false, "DEV(*SAVF) なら出ない");
 
-    for (const dev of ["", "*TAPE", "*SAVF", "*TAPE *SAVF"]) {
-      assert.equal(
-        embedded.promptControlHolds(groups, { DEV: dev }),
-        server.promptControlHolds(groups, { DEV: dev }),
-        `DEV=${dev} でサーバと一致する`
-      );
-    }
+    // **既定値のある欄は隠れない**（入力済みの値を握り潰さないため）。
+    // OPTFILE は既定値 `*` を持つので、DEV に関わらず出る。規則ではなく仕様。
+    assert.equal(visibleOf("OPTFILE", { DEV: "*SAVF" }), true, "既定値を持つ欄は隠さない");
   });
 
   /* ---------------------------------------------------------------- *
@@ -647,38 +638,29 @@ suite("CDML 由来の相関規則", () => {
     assert.equal(candidates.dataArea, undefined);
   });
 
-  test("オブジェクト欄に候補が紐づく（画面まで届く）", () => {
-    // 定義に objectKind があるだけでは死蔵。datalist と list= が出て初めて効く。
+  test("オブジェクト欄に候補が紐づく（描画モデルまで届く）", () => {
+    // 定義に objectKind があるだけでは死蔵。候補と欄の両方が要る。
+    // **実際に datalist が出て list= が付くか**は e2e が画面で確かめる。
     const definition = loadCl("CRTBNDRPG");
-    const state = buildInitialState(definition, {});
-    const html = buildHtml(
-      toSerializableState(
-        definition,
-        state,
-        { keyword: definition.keyword, language: "cl", line: 0 } as never,
-        { program: ["MYPGM"], file: ["QRPGLESRC"] }
-      ),
-      { cspSource: "x", nonce: "n" }
-    );
-    assert.ok(html.includes('<datalist id="objects-file"'), "datalist が出ている");
-    assert.ok(html.includes('list="objects-file"'), "欄に list= が付いている");
-    assert.ok(html.includes('<option value="QRPGLESRC">'), "候補が並んでいる");
+    const model = toSerializableState(definition, buildInitialState(definition, {}), {
+      program: ["MYPGM"],
+      file: ["QRPGLESRC"]
+    });
+
+    assert.deepEqual(model.objectCandidates?.file, ["QRPGLESRC"], "候補が載っている");
+    const pgm = model.fields.find(field => field.name === "PGM");
+    assert.equal(pgm?.objectKind, "program", "欄に種類が降りている（group からの引き継ぎ）");
   });
 
-  test("CL 変数が入力欄の maxlength で打ち切られない", () => {
-    // MSGID は maxLength 7。maxlength をそのまま出すと &MSGIDVAR と書けない。
+  test("CL 変数の余地を計算する素材が描画モデルに揃っている", () => {
+    // MSGID は maxLength 7。maxlength をそのまま入力欄に出すと &MSGIDVAR と
+    // 書けない（PR#98 で踏んだ）。**打ち切らないことの確認は e2e**——
+    // 実際に入力欄へ打ち込んで確かめる。ここは材料が欠けていないかだけ見る。
     const definition = loadCl("SNDPGMMSG");
-    const html = buildHtml(
-      toSerializableState(definition, buildInitialState(definition, {}), {
-        keyword: definition.keyword,
-        language: "cl",
-        line: 0
-      } as never),
-      { cspSource: "x", nonce: "n" }
-    );
-    const msgid = html.match(/<input[^>]*name="MSGID"[^>]*>/);
-    assert.ok(msgid, "MSGID の入力欄がある");
-    const max = msgid![0].match(/maxlength="(\d+)"/);
-    assert.ok(max && Number(max[1]) >= 11, `maxlength が 11 以上（実際: ${max?.[1]}）`);
+    const model = toSerializableState(definition, buildInitialState(definition, {}));
+    const msgid = model.fields.find(field => field.name === "MSGID");
+
+    assert.equal(msgid?.maxLength, 7, "欄の長さが載っている");
+    assert.notEqual(msgid?.allowsVariable, false, "CL 変数を書ける欄だと分かる");
   });
 });
