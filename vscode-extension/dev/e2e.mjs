@@ -869,6 +869,26 @@ check(
   `${fileOptions.length} 件 / DSPSIZ=${fileOptions.includes("DSPSIZ")} COLOR=${fileOptions.includes("COLOR")}`
 );
 
+// **総称（CFnn）はそのまま送らない。** 大文字にすると `CFNN` になり実機が通さない。
+await page.fill(".kw-add-input", "CFnn");
+await page.press(".kw-add-input", "Enter");
+await page.waitForTimeout(250);
+check(
+  "**総称のキーワードはソースに入らない**",
+  !(await sourceLines()).some(line => line.includes("CFNN")),
+  JSON.stringify((await sourceLines()).filter(l => l.includes("CF")))
+);
+check(
+  "番号の場所より前が入力欄に残る",
+  (await page.$eval(".kw-add-input", n => n.value)) === "CF",
+  await page.$eval(".kw-add-input", n => n.value)
+);
+check(
+  "**使える番号の範囲が出る**（原典の説明文から）",
+  (await page.$eval(".status", n => n.textContent)).includes("CF01 - CF24"),
+  await page.$eval(".status", n => n.textContent)
+);
+
 // **選んだ候補がソースに入る。** 一覧を出すだけでは届いていない。
 const beforeFileAdd = await sourceLines();
 const dspsizAt = beforeFileAdd.findIndex(l => l.includes("DSPSIZ"));
@@ -1124,6 +1144,71 @@ check(
   "**`&` の参照が追随する**",
   (await lineWith("SFLCSRRRN")).includes("SFLCSRRRN(&NEWRRN)"),
   await lineWith("SFLCSRRRN")
+);
+
+// **様式の改名。** 名前の欄は様式のプロパティにもある。
+// **見出しの `.label` を押す。** `li.record` の中心は入れ子の項目行に当たることが
+// あり、UI 側は「一番内側の li が自分か」で見分けるので選択が起きない。
+const selectRecord = async label => {
+  for (const row of await page.$$(".dds-tree li.record > .label")) {
+    if (((await row.textContent()) ?? "").trim() === `R ${label}`) {
+      await row.click();
+      return;
+    }
+  }
+  throw new Error(`様式 ${label} が一覧に無い`);
+};
+await selectRecord("MAIN");
+await page.waitForTimeout(180);
+check(
+  "**様式にも名前の欄が出る**",
+  (await page.$('.dds-props input[data-key="recordName"]')) !== null
+);
+const recordName = await page.$('.dds-props input[data-key="recordName"]');
+await recordName.fill("NEWMAIN");
+await recordName.press("Enter");
+await page.waitForTimeout(280);
+check(
+  "**様式の名前が変わる**",
+  (await lineWith("R NEWMAIN")) !== undefined,
+  JSON.stringify(await sourceLines())
+);
+check(
+  "**様式を指す参照（PASSRCD / ERASE）も一緒に変わる**",
+  (await lineWith("PASSRCD")).includes("PASSRCD(NEWMAIN)") &&
+    (await lineWith("ERASE")).includes("ERASE(NEWMAIN)"),
+  `${await lineWith("PASSRCD")} / ${await lineWith("ERASE")}`
+);
+// `ERASE(MAIN)` は `OVERLAY +` の継続の先にある。物理行だけを見ると
+// `ERASE(` が別の行にあり参照と分からない——結合したテキストで探す経路。
+check(
+  "**継続にまたがる参照も追える**（OVERLAY + の先の ERASE）",
+  (await lineWith("ERASE(NEWMAIN)")) !== undefined &&
+    (await sourceLines()).some(line => line.includes("OVERLAY")) &&
+    !(await sourceLines()).some(line => line.includes("ERASE(MAIN)")),
+  JSON.stringify((await sourceLines()).filter(l => /OVERLAY|ERASE/.test(l)))
+);
+check(
+  "**項目を指す参照（CSRLOC）は巻き込まれない**",
+  (await lineWith("CSRLOC")).includes("CSRLOC(NEWROW CSRCOL)"),
+  await lineWith("CSRLOC")
+);
+
+// **既にある様式の名前には変えられない**（実機が同じ名前の様式を 2 つ通さない）。
+const beforeClash = await sourceLines();
+const clashInput = await page.$('.dds-props input[data-key="recordName"]');
+await clashInput.fill("OTHER");
+await clashInput.press("Enter");
+await page.waitForTimeout(280);
+check(
+  "**名前が重なる改名は拒否され、ソースは変わらない**",
+  JSON.stringify(await sourceLines()) === JSON.stringify(beforeClash),
+  JSON.stringify(await sourceLines())
+);
+check(
+  "拒否の理由が出る",
+  (await page.$eval(".dds-reject", n => n.textContent)).includes("既にあります"),
+  await page.$eval(".dds-reject", n => n.textContent)
 );
 
 const beforePlain = await sourceLines();

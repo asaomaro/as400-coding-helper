@@ -317,6 +317,7 @@ const TWO_SIZE_SAMPLE = [
  */
 const REFERENCE_SAMPLE = [
   "     A                                      REF(CSRROW)",
+  "     A                                      PASSRCD(MAIN)",
   "     A          R MAIN",
   "     A                                      CSRLOC(CSRROW CSRCOL)",
   "     A                                      SFLCSRRRN(&SFLRRN)",
@@ -324,6 +325,11 @@ const REFERENCE_SAMPLE = [
   "     A            CSRCOL         3S 0H",
   "     A            SFLRRN         5S 0H",
   "     A            CUSTNO        10A  B  5  2",
+  // **継続（`+`）にまたがる参照**。物理行だけを見ると `ERASE(` が別の行にあり、
+  // 参照と分からない。結合したテキストで探して折り直す経路がここで動く。
+  "     A          R OTHER                     OVERLAY +",
+  "     A                                      ERASE(MAIN)",
+  "     A            OTHFLD        10A  B  7  2",
   ""
 ].join("\n");
 

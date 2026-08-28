@@ -28,12 +28,10 @@ import { parseKeywordEntries } from "./ddsKeywords";
  *   （散文からは機械的に決まらない）ので、**原典の引用を各行に添える**。
  *   網羅は `docs/origin/verify-dds-references.mjs` が見張る。
  *
- * ## 様式（レコード）の参照は入れていない
+ * ## 様式（レコード）の参照は別の表
  *
  * `SFLCTL` / `ERASE` / `PASSRCD` / `MNUBARDSP` / `MNUBARCHC` / `HLPRCD` は
- * 原典上「このファイル内の様式」だが、**デザイナに様式を改名する手段が無い**
- * （名前の入力欄があるのは項目のプロパティだけ）。到達しないので入れない。
- * 判断したことは `NOT_FOLLOWED` に残す（検査が「書き忘れ」と区別できるように）。
+ * **様式**を指す。項目の改名では触らず、様式の改名でだけ追う（`RECORD_ARGUMENTS`）。
  */
 
 /** 項目名を採る定位置の引数。**キーワード名は大文字**。 */
@@ -76,13 +74,6 @@ const FIELD_ARGUMENTS: ReadonlyMap<string, FieldArgumentRule> = new Map([
  * 新しいキーワードが原典に増えたら、ここか `FIELD_ARGUMENTS` に書くまで検査が落ちる。
  */
 export const NOT_FOLLOWED: ReadonlyMap<string, string> = new Map([
-  // ■ 様式（レコード）を指す。原典上はこのファイル内だが、改名の手段が無いので追わない。
-  ["SFLCTL", "様式を指す（改名の手段が無い）"],
-  ["ERASE", "様式を指す（改名の手段が無い）"],
-  ["PASSRCD", "様式を指す（改名の手段が無い）"],
-  ["MNUBARDSP", "様式を指す（改名の手段が無い）。&choice-field は規則 A が拾う"],
-  ["MNUBARCHC", "様式を指す（改名の手段が無い）。&return-field は規則 A が拾う"],
-  ["HLPRCD", "様式を指す（ファイル名を省くとこのファイル内）。改名の手段が無い"],
   // ■ 外部のオブジェクトを指す。**触ってはいけない。**
   ["REF", "外部のデータベース・ファイル / 様式"],
   ["REFFLD", "外部の様式 / フィールド"],
@@ -139,6 +130,96 @@ export const NOT_FOLLOWED: ReadonlyMap<string, string> = new Map([
   ["SFLRCDNBR", "定義中のフィールド自身（引数は CURSOR / *TOP）"],
   ["INDTXT", "標識と説明（項目ではない）"],
   ["CHANGE", "応答標識（項目ではない）"]
+]);
+
+/**
+ * 様式（レコード）名を採る定位置の引数。
+ *
+ * ## 実機で確かめたもの
+ *
+ * `SFLCTL` / `ERASE` / `PASSRCD` は、**存在しない様式を指すとコンパイルが通らない**
+ * （IBM i 7.3。`.aidev/works/20260828-dds-record-rename/verify/probe-record-names.mjs`）。
+ * 追随しないと壊れることが確かめられている。
+ *
+ * `HLPRCD` は**存在しない様式を指しても通る**（同 probe の H4）。コンパイラーが
+ * 見ていないので、**追随しないと実行時まで気付けない**——追う値打ちはむしろ大きい。
+ * ただし裏を返すと、誤って追っても実機は教えてくれない。だから
+ * 「ファイル名を省いたときだけ」という原典の条件を厳密に守る。
+ *
+ * ## 原典だけで決めたもの
+ *
+ * `MNUBARDSP` / `MNUBARCHC` は**実機で確かめられていない**（メニュー・バーの
+ * 通る形を組めなかった。対照が落ちたので判定できない）。原典の文は明確なので
+ * 表には入れるが、確かめた根拠が違うことを `origin` に書き分けてある。
+ */
+interface RecordArgumentRule {
+  readonly positions: readonly number[] | "all";
+  /** 引数がこの数より多いときは外部を指す（`HLPRCD` のファイル名つき）。 */
+  readonly onlyWhenArgumentCountIs?: number;
+  /** 原典の引用と、実機で確かめたかどうか。 */
+  readonly origin: string;
+}
+
+const RECORD_ARGUMENTS: ReadonlyMap<string, RecordArgumentRule> = new Map([
+  [
+    "SFLCTL",
+    {
+      positions: [0],
+      origin:
+        "実機で確認済み。「サブファイル・レコード様式の名前を…指定しなければなりません」"
+    }
+  ],
+  [
+    "PASSRCD",
+    {
+      positions: [0],
+      origin:
+        "実機で確認済み。「record-format-name は…ファイル内に存在するものでなければなりません」"
+    }
+  ],
+  [
+    "ERASE",
+    {
+      // `ERASE(record-name-1 [record-name-2 ...[record-name-20]])` — 全部が様式名。
+      positions: "all",
+      origin:
+        "実機で確認済み。「パラメーター値として指定するレコード様式は、" +
+        "このファイル内に入っているものでなければなりません」"
+    }
+  ],
+  [
+    "HLPRCD",
+    {
+      positions: [0],
+      // **ファイル名を添えると外部を指す。** 原典:
+      // 「ファイル名を指定しない場合には、レコード様式は定義中のファイルに
+      //   入っていなければなりません」
+      onlyWhenArgumentCountIs: 1,
+      origin:
+        "実機で両方の形が通ることを確認（存在しない様式でも通るのでコンパイラーは見ていない）。" +
+        "「ファイル名を指定しない場合には、レコード様式は定義中のファイルに入っていなければなりません」"
+    }
+  ],
+  [
+    "MNUBARDSP",
+    {
+      // 形式が 2 つあり、`MNUBARDSP[(&pull-down-input)]` の 1 つ目は様式名ではない。
+      // `&` で始まる引数は下の走査が除くので、位置だけで決めても壊れない。
+      positions: [0],
+      origin:
+        "**原典のみ**（実機で通る形を組めなかった）。" +
+        "「メニュー・バー・レコードは、定義中のレコードと同じファイル内に存在しなければなりません」"
+    }
+  ],
+  [
+    "MNUBARCHC",
+    {
+      positions: [1],
+      origin:
+        "**原典のみ**（実機で通る形を組めなかった）。" +
+        "「指定するレコードは、ファイル内に存在するものでなければならず」"
+    }
+  ]
 ]);
 
 export interface DdsNameReference {
@@ -218,7 +299,14 @@ function splitKeyword(
   };
 }
 
-/** 名前として使える形か。`*FLD` のような予約語と数値を弾く。 */
+/**
+ * 名前として使える形か。`*FLD` のような予約語と数値を弾く。
+ *
+ * **`&名前` もここで落ちる**（先頭の `&` は名前に使える文字ではない）。
+ * 様式の参照でこれが効く——`MNUBARDSP` には `MNUBARDSP[(&pull-down-input)]` と
+ * いう形式があり、1 つ目の引数を無条件に様式名として扱うと潜在フィールドの名前を
+ * 書き換える。項目の参照では `&` を**先に外してから**渡すので影響しない。
+ */
 function looksLikeName(text: string): boolean {
   return /^[A-Za-z#$@][A-Za-z0-9_#$@]{0,9}$/u.test(text);
 }
@@ -228,7 +316,14 @@ function looksLikeName(text: string): boolean {
  *
  * 見つけるだけで、書き換えはしない（`renameFieldReferences` が使う）。
  */
-export function findFieldReferences(keywords: string): readonly DdsNameReference[] {
+function scanKeywords(
+  keywords: string,
+  collect: (
+    keyword: string,
+    args: readonly Argument[],
+    push: (reference: DdsNameReference) => void
+  ) => void
+): DdsNameReference[] {
   const references: DdsNameReference[] = [];
 
   // `parseKeywordEntries` は位置を返さないので、**読んだところまでを覚えて**前へ進む。
@@ -243,9 +338,22 @@ export function findFieldReferences(keywords: string): readonly DdsNameReference
     const split = splitKeyword(entry.raw);
     if (!split || rawStart < 0) continue;
 
-    const args = splitArguments(split.inner, rawStart + split.innerStart);
+    collect(split.name, splitArguments(split.inner, rawStart + split.innerStart), reference =>
+      references.push(reference)
+    );
+  }
 
-    const rule = FIELD_ARGUMENTS.get(split.name);
+  return references;
+}
+
+/**
+ * キーワード欄から、**このソースの項目**を指している箇所を集める。
+ *
+ * 見つけるだけで、書き換えはしない（`renameFieldReferences` が使う）。
+ */
+export function findFieldReferences(keywords: string): readonly DdsNameReference[] {
+  return scanKeywords(keywords, (keyword, args, push) => {
+    const rule = FIELD_ARGUMENTS.get(keyword);
     const positional =
       rule !== undefined &&
       (rule.onlyWhenFirstIs === undefined ||
@@ -258,8 +366,8 @@ export function findFieldReferences(keywords: string): readonly DdsNameReference
       if (argument.text.startsWith("&")) {
         const name = argument.text.slice(1);
         if (!looksLikeName(name)) return;
-        references.push({
-          keyword: split.name,
+        push({
+          keyword,
           name,
           start: argument.start + 1,
           end: argument.end,
@@ -270,17 +378,38 @@ export function findFieldReferences(keywords: string): readonly DdsNameReference
       // ■ 規則 B: 定位置。
       if (!positional.includes(index)) return;
       if (!looksLikeName(argument.text)) return;
-      references.push({
-        keyword: split.name,
-        name: argument.text,
-        start: argument.start,
-        end: argument.end,
-        rule: "positional"
-      });
+      push({ keyword, name: argument.text, start: argument.start, end: argument.end, rule: "positional" });
     });
-  }
+  });
+}
 
-  return references;
+/**
+ * キーワード欄から、**このソースの様式**を指している箇所を集める。
+ *
+ * 項目とは別の表を引く（`RECORD_ARGUMENTS`）。`&` の付いた引数は**様式名ではない**
+ * ——`MNUBARDSP` には `MNUBARDSP[(&pull-down-input)]` という形式があり、
+ * 位置だけで決めると潜在フィールドの名前を様式名として書き換える。
+ */
+export function findRecordReferences(keywords: string): readonly DdsNameReference[] {
+  return scanKeywords(keywords, (keyword, args, push) => {
+    const rule = RECORD_ARGUMENTS.get(keyword);
+    if (rule === undefined) return;
+    if (
+      rule.onlyWhenArgumentCountIs !== undefined &&
+      args.length !== rule.onlyWhenArgumentCountIs
+    ) {
+      return;
+    }
+
+    args.forEach((argument, index) => {
+      if (rule.positions !== "all" && !rule.positions.includes(index)) return;
+      // `&名前`（潜在フィールド）は `looksLikeName` が弾く——先頭の `&` は
+      // 名前に使える文字ではない。**ここで二重に見ない**（同じ規則を 2 か所に
+      // 置くと、片方だけ緩めたときに黙って守りが消える）。
+      if (!looksLikeName(argument.text)) return;
+      push({ keyword, name: argument.text, start: argument.start, end: argument.end, rule: "positional" });
+    });
+  });
 }
 
 /**
@@ -290,12 +419,26 @@ export function findFieldReferences(keywords: string): readonly DdsNameReference
  * `&CUSTNO2` の中の `CUSTNO` は変わらない。
  */
 export function renameFieldReferences(keywords: string, from: string, to: string): string {
+  return renameIn(findFieldReferences(keywords), keywords, from, to);
+}
+
+/**
+ * 様式を指している名前を置き換えたキーワード欄。一致が無ければ**元のまま**。
+ */
+export function renameRecordReferences(keywords: string, from: string, to: string): string {
+  return renameIn(findRecordReferences(keywords), keywords, from, to);
+}
+
+function renameIn(
+  found: readonly DdsNameReference[],
+  keywords: string,
+  from: string,
+  to: string
+): string {
   const target = from.trim().toUpperCase();
   if (target.length === 0) return keywords;
 
-  const hits = findFieldReferences(keywords).filter(
-    reference => reference.name.toUpperCase() === target
-  );
+  const hits = found.filter(reference => reference.name.toUpperCase() === target);
   if (hits.length === 0) return keywords;
 
   // **後ろから当てる。** 前から当てると、置き換えで長さが変わって後続の位置がずれる。
