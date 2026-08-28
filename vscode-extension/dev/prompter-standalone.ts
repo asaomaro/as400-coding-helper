@@ -18,6 +18,7 @@ import CRTBNDRPG from "../resources/prompter/cl/ja/CRTBNDRPG.json";
 import ALCOBJ from "../resources/prompter/cl/ja/ALCOBJ.json";
 import CALL from "../resources/prompter/cl/ja/CALL.json";
 import SAVOBJ from "../resources/prompter/cl/ja/SAVOBJ.json";
+import ADDPFM from "../resources/prompter/cl/ja/ADDPFM.json";
 import PARM from "../resources/prompter/cmd/ja/PARM.json";
 
 /**
@@ -100,6 +101,8 @@ const SAMPLES: { readonly label: string; readonly definition: PrompterDefinition
   { label: "PARM — 繰り返しの組", definition: PARM as PrompterDefinition },
   // CDML(PMTCTL) の条件表示（DEV の値で SAVF / MEDDFN が出入りする）
   { label: "SAVOBJ — PMTCTL の条件表示", definition: SAVOBJ as PrompterDefinition },
+  // 「候補にすぎない」選択欄（SRCTYPE は定義済み値が *NONE だけだが RPGLE と書ける）
+  { label: "ADDPFM — 候補にすぎない選択欄", definition: ADDPFM as PrompterDefinition },
   { label: "CALL — 入れ子で開く先", definition: CALL as PrompterDefinition },
   { label: "FIXTURE — 見えない欄は咎めない（検証用）", definition: HIDDEN_REQUIRED }
 ];

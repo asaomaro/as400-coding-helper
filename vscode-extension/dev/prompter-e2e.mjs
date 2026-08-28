@@ -400,13 +400,56 @@ check("「-」で入力欄を減らせる", (await page.$$(".multi-item")).lengt
 await pick("CRTBNDRPG — 候補一覧・条件表示");
 check(
   "種類ごとに候補一覧が出る",
-  (await page.$$eval("datalist", ns => ns.map(n => n.id))).join(",") ===
-    "objects-program,objects-file,objects-dataArea"
+  // **欄ごとの候補（`choices-*`）と混ぜて数えない。** ここが見たいのは
+  // 「オブジェクト名の候補が種類ごとに出ているか」だけ。
+  (await page.$$eval("datalist[id^='objects-']", ns => ns.map(n => n.id))).join(",") ===
+    "objects-program,objects-file,objects-dataArea",
+  (await page.$$eval("datalist[id^='objects-']", ns => ns.map(n => n.id))).join(",")
 );
 check(
   "**欄に候補が紐づく**（定義に objectKind があるだけでは死蔵）",
   (await page.$eval('[name="PGM"]', n => n.getAttribute("list"))) === "objects-program" &&
     (await page.$eval('[name="SRCFILE"]', n => n.getAttribute("list"))) === "objects-file"
+);
+
+// ---- 13b. 候補にすぎない選択欄（一覧に無い値も打てる）----------------------
+
+await pick("ADDPFM — 候補にすぎない選択欄");
+await page.keyboard.press("F10"); // SRCTYPE は追加パラメーター側
+await settle();
+
+check(
+  "**候補にすぎない欄は自由入力になる**（`<select>` では一覧に無い値を打てない）",
+  (await page.$eval('[name="SRCTYPE"]', n => n.tagName)) === "INPUT" &&
+    (await page.$eval('[name="SRCTYPE"]', n => n.getAttribute("list"))) === "choices-SRCTYPE",
+  await page.$eval('[name="SRCTYPE"]', n => n.tagName + " list=" + n.getAttribute("list"))
+);
+check(
+  "候補は一覧として見える（打ちながら選べる）",
+  (await page.$$eval("#choices-SRCTYPE option", ns => ns.map(n => n.value))).join(",") === "*NONE",
+  (await page.$$eval("#choices-SRCTYPE option", ns => ns.map(n => n.value))).join(",")
+);
+check(
+  "**制限のある欄は `<select>` のまま**（振る舞いを変えない）",
+  (await page.$$eval("#root select[name]", ns => ns.length)) > 0,
+  `${await page.$$eval("#root select[name]", ns => ns.length)} 欄`
+);
+
+await page.fill('[name="SRCTYPE"]', "RPGLE");
+await page.fill('[name="FILE"]', "QRPGLESRC");
+await page.fill('[name="MBR"]', "MYPGM");
+await settle();
+check(
+  "一覧に無い値を打っても咎めない（実機は Rstd=NO で受ける）",
+  (await fieldErrors()).length === 0,
+  (await fieldErrors()).join(",")
+);
+await page.click("#root button[type=submit]");
+await settle();
+check(
+  "**打った値が確定して書き戻しに乗る**",
+  (await outcome()) === "確定" && (await resultLine()).includes("SRCTYPE(RPGLE)"),
+  JSON.stringify(await resultLine())
 );
 
 // ---- 14. CL 変数の余地（maxlength）-----------------------------------------

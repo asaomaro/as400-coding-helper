@@ -246,6 +246,57 @@ suite("プロンプター WebView の土台", () => {
     });
   });
 
+  suite("「制限」か「候補」かを画面へ渡す", () => {
+    // 列挙した値＝制限とは限らない。実機が Rstd=NO と言う欄では任意の値を書ける。
+    // **画面はこれを見て入力部品を変える**——`<select>` は一覧に無い値を打てないため。
+    const restrictedOf = (rel: string, name: string): boolean | undefined => {
+      const definition = load(rel);
+      return toSerializableState(definition, buildInitialState(definition, {})).fields.find(
+        field => field.name === name
+      )?.restricted;
+    };
+
+    test("候補にすぎない欄は restricted:false が載る", () => {
+      assert.equal(restrictedOf("cl/ja/ADDPFM.json", "SRCTYPE"), false);
+    });
+
+    test("制限のある欄は false にならない（振る舞いを変えない）", () => {
+      // 未指定＝制限あり。`false` を立てるのは定義が明示した欄だけ。
+      assert.notEqual(restrictedOf("cl/ja/ADDPFM.json", "SHARE"), false);
+    });
+
+    test("**該当は 108 欄あり、うち 57 欄は選択肢が 1 つしかない**", () => {
+      // 選択肢 1 つの `<select>` は選択ではなく錠前で、その欄は実質入力できなかった。
+      // 件数が動いたら、この変更の前提（どれだけの欄が助かるか）が変わっている。
+      const dir = join(__dirname, "../../../resources/prompter");
+      const flatten = (params: readonly any[]): any[] =>
+        params.flatMap(p =>
+          p.inputType === "group" && p.children?.length ? flatten(p.children) : [p]
+        );
+
+      let total = 0;
+      let single = 0;
+      for (const scope of ["cl/ja", "cl/en", "cmd/ja", "cmd/en"]) {
+        const scopeDir = join(dir, scope);
+        for (const file of readdirSync(scopeDir)) {
+          const definition = JSON.parse(readFileSync(join(scopeDir, file), "utf8"));
+          for (const parameter of flatten(definition.parameters)) {
+            if (
+              parameter.inputType === "dropdown" &&
+              parameter.options?.length > 0 &&
+              parameter.attributes?.restricted === false
+            ) {
+              total += 1;
+              if (parameter.options.length === 1) single += 1;
+            }
+          }
+        }
+      }
+      assert.equal(total, 108, "候補にすぎない選択欄の数");
+      assert.equal(single, 57, "うち選択肢が 1 つしかない欄");
+    });
+  });
+
   suite("描画モデルは判定を持ち込まない", () => {
     test("相関の違反は画面が読む形で載る", () => {
       const definition = load("cl/ja/SNDPGMMSG.json");
