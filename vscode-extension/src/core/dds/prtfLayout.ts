@@ -1,6 +1,7 @@
 import { ddsField, ddsName } from "../ddsLayout";
 import { DDS_POSITION_COLUMN, DDS_POSITION_ROW } from "./ddsPositionColumns";
 import { LPI_VALUES, resolvePrintDensity } from "./prtfDensity";
+import { keywordLevelDiagnostics } from "./ddsKeywordLevels";
 import {
   constantWidth,
   fieldWidth,
@@ -118,6 +119,11 @@ export type LayoutDiagnosticCode =
   | "out-of-range"
   /** 位置欄に数字以外が入っている（桁が読めない）。 */
   | "invalid-position"
+  /**
+   * キーワードを書けないレベルに書いている。**実機はコンパイルを通さない**。
+   * 原典がレベルを書いていないものは咎めない。
+   */
+  | "keyword-wrong-level"
   /** 条件を付けられないキーワードに条件が付いている（実機がコンパイルしない）。 */
   | "keyword-not-conditionable";
 
@@ -348,6 +354,7 @@ export function resolvePrtfLayout(
 
   const units = toLogicalUnits(lines);
   diagnostics.push(...unconditionableDiagnostics(units, "PRTF"));
+  diagnostics.push(...keywordLevelDiagnostics(lines, units, "PRTF"));
 
   for (const unit of units) {
     const { line, sourceLine, keywords } = unit;

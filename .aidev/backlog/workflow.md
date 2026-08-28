@@ -34,8 +34,20 @@ priority: 2           # cl(1) の次。設計書: docs/workflow/ibmi-dev-workflo
       `numeric-field` / `numeric-alignment`）。要件の 4 項目のうち「必須欄の未入力」と
       「定義済み値以外」は、実機コンパイル確認済み 1060 行への実測で 30 件の偽陽性が
       出たため既定 OFF で枠だけ用意した（下の follow-up 参照）
-- [ ] lint core にキーワード使用レベル検査を足す — DDS の file/record/field レベル
-      （依存: 上の桁検査）
+- [x] lint core にキーワード使用レベル検査を足す — 済（`20260828-dds-keyword-levels`）。
+      `layout-keyword-wrong-level`（**既定 ON**）。DSPF / PRTF / PF の 3 種別に効く。
+      - **実機がその形を通さない**ことを確かめた（`verify/probe-levels.mjs`。7 通り）:
+        `DSPSIZ` を様式や項目に / `OVERLAY` をファイルや項目に /
+        `COLOR` を様式やファイルに置くと**通らない**。原典のレベルと全件一致。
+      - **原典がレベルを書いていないキーワードは咎めない**（表に入れない）。
+        補完側の「判別できなかったものはどのレベルでも出す」と対
+        ——出す側は広く、**咎める側は狭く**。
+      - **先に偽陽性を数えてから既定を決めた**。検証済みサンプル 5 件で 0 件
+        だったので既定 ON（既存の基準どおり）。偽陽性が出る検査は切られ、
+        切られた検査は無いのと同じ。
+      - 資源は**名前とレベルだけ**にした（13.7 KB）。`dspfLayout` は WebView にも
+        束ねられるので、解説つきの `dds-keywords.json` を取り込まない。
+      - 実測: 単体 1050 件（+12）・既定 ON の規則が 9 → 10。
 - [ ] 任意 CL 実行・IFS 書き込みを MCP に配線する (repo:as400-web-emulator) —
       `CommandConnection` / `IfsConnection` の公開（設計書 F3 の不足 2）
 - [ ] 既存スプール読み取りを MCP に配線する (repo:as400-web-emulator) —

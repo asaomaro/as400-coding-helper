@@ -64,6 +64,14 @@ export type RuleId =
    * **原典が可否を書いていないキーワードは咎めない**（知らないものを弾かない）。
    */
   | "layout-keyword-not-conditionable"
+  /**
+   * 既定 ON。キーワードを書けないレベルに書いている。
+   *
+   * 原典がキーワードごとに書ける場所（ファイル / レコード / フィールド）を定めており、
+   * **違うレベルに書くと実機はコンパイルを通さない**（IBM i 7.3 で 7 通り確認）。
+   * 原典がレベルを書いていないキーワードは咎めない（表に入れていない）。
+   */
+  | "layout-keyword-wrong-level"
   /** 既定 ON。行番号のある様式で SPACE/SKIP。実機で CPD7860（docs/src/CHECKLIST.md に実例）。 */
   | "layout-spacing-with-line-number"
   /**

@@ -6,6 +6,7 @@ import {
   isDdsCommentLine
 } from "../ddsLayout";
 import { unconditionableKeywords, type ConditionableDdsType } from "./ddsConditionable";
+import { keywordLevelDiagnostics } from "./ddsKeywordLevels";
 import {
   findAlternatePosition,
   isMutuallyExclusive,
@@ -81,6 +82,11 @@ export type DspfDiagnosticCode =
   | "missing-position"
   /** 条件を付けられないキーワードに条件が付いている（実機がコンパイルしない）。 */
   | "keyword-not-conditionable"
+  /**
+   * キーワードを書けないレベルに書いている。**実機はコンパイルを通さない**
+   * （7 通りを実機で確認）。原典がレベルを書いていないものは咎めない。
+   */
+  | "keyword-wrong-level"
   /** 画面サイズ条件名が 2 次画面サイズを指していない（実機がコンパイルしない）。 */
   | "invalid-screen-size-condition"
   /** 桁欄が `+n`（相対桁）。初版は解決しない。 */
@@ -306,6 +312,7 @@ export function resolveDspfLayout(
 
   const units = toLogicalUnits(lines);
   diagnostics.push(...unconditionableDiagnostics(units, "DSPF"));
+  diagnostics.push(...keywordLevelDiagnostics(lines, units, "DSPF"));
   diagnostics.push(...undeclaredScreenSizeDiagnostics(lines, sizes));
 
   for (const unit of units) {
