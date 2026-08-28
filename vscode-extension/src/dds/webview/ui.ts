@@ -13,6 +13,8 @@ import {
 import { findFieldReferences } from "../../core/dds/ddsReferences";
 import {
   findKeywordHelp,
+  genericKeywordPrefix,
+  genericKeywordRange,
   keywordsForLevel,
   parseKeywordEntries,
   type DdsKeywordHelp,
@@ -1260,6 +1262,26 @@ class EditorView {
       const name = input.value.trim().toUpperCase();
       if (name.length === 0) return;
       const help = findKeywordHelp(name, this.keywordHelp);
+
+      // **総称のまま送らない。** 原典はキー番号をまとめて `CFnn` と書くので、
+      // そのまま大文字にすると `CFNN` になり、実機がコンパイルを通さない。
+      // 番号の場所より前だけを残して、続きを打ってもらう（入力欄は閉じない）。
+      //
+      // 判定は**表の名前**で行う（打たれた綴りではない）。`cfnn` と小文字で
+      // 打たれても総称であることに変わりはなく、`CF03` は総称ではない。
+      const prefix = help === undefined ? undefined : genericKeywordPrefix(help.name);
+      if (prefix !== undefined && help !== undefined && name === help.name.toUpperCase()) {
+        input.value = prefix;
+        input.focus();
+        const range = genericKeywordRange(help);
+        this.setStatus(
+          range === undefined
+            ? `${prefix} に続けて番号を入れてください`
+            : `${prefix}${range.from} - ${prefix}${range.to} の番号を入れてください`
+        );
+        return;
+      }
+
       // 引数を取るキーワードは括弧まで書いて、続きを入力できる形で渡す。
       const added = help?.hasParameters === false ? name : `${name}()`;
       this.sendKeywords(sourceLine, `${keywords} ${added}`.trim());

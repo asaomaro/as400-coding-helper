@@ -869,6 +869,26 @@ check(
   `${fileOptions.length} 件 / DSPSIZ=${fileOptions.includes("DSPSIZ")} COLOR=${fileOptions.includes("COLOR")}`
 );
 
+// **総称（CFnn）はそのまま送らない。** 大文字にすると `CFNN` になり実機が通さない。
+await page.fill(".kw-add-input", "CFnn");
+await page.press(".kw-add-input", "Enter");
+await page.waitForTimeout(250);
+check(
+  "**総称のキーワードはソースに入らない**",
+  !(await sourceLines()).some(line => line.includes("CFNN")),
+  JSON.stringify((await sourceLines()).filter(l => l.includes("CF")))
+);
+check(
+  "番号の場所より前が入力欄に残る",
+  (await page.$eval(".kw-add-input", n => n.value)) === "CF",
+  await page.$eval(".kw-add-input", n => n.value)
+);
+check(
+  "**使える番号の範囲が出る**（原典の説明文から）",
+  (await page.$eval(".status", n => n.textContent)).includes("CF01 - CF24"),
+  await page.$eval(".status", n => n.textContent)
+);
+
 // **選んだ候補がソースに入る。** 一覧を出すだけでは届いていない。
 const beforeFileAdd = await sourceLines();
 const dspsizAt = beforeFileAdd.findIndex(l => l.includes("DSPSIZ"));

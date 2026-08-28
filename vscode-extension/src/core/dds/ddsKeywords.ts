@@ -176,6 +176,44 @@ export function keywordsForLevel(
   );
 }
 
+/**
+ * 総称の名前（`CFnn` のように**番号の場所**を持つもの）か。
+ *
+ * 原典はキー番号をまとめて `CAnn` / `CFnn` と書く。**そのまま書き出すと実機が
+ * 通さない**（`CFNN` / `CFNN()` はコンパイルできない。IBM i 7.3 で確認。
+ * `.aidev/works/20260828-dds-generic-keyword-number/verify/`）。
+ *
+ * 判定は「大文字の名前の中に小文字が残っている」。いまの原典では `nn` の 2 件だけだが、
+ * 別の綴りが来ても効く。番号の場所より前（`CF`）を返すので、入力欄に残せる。
+ */
+export function genericKeywordPrefix(name: string): string | undefined {
+  const match = /^([A-Z#$@][A-Z0-9#$@]*?)([a-z]+)$/u.exec(name.trim());
+  return match === null ? undefined : match[1];
+}
+
+/**
+ * 総称のキーワードで**使える番号の範囲**。原典の説明文から取り出す。
+ *
+ * 書き写さない——原典が変われば表示も変わる。区切りは**日英で違う**ので両方を読む:
+ * 日本語「機能キー (CF01 - CF24) が使用可能な」/
+ * 英語「the keyword (CF01 through CF24) is available」。
+ *
+ * 説明文に無ければ undefined（案内から範囲だけが落ちる）。
+ */
+export function genericKeywordRange(
+  help: DdsKeywordHelp
+): { readonly from: string; readonly to: string } | undefined {
+  const prefix = genericKeywordPrefix(help.name);
+  if (prefix === undefined || help.description === undefined) return undefined;
+
+  const pattern = new RegExp(
+    `${prefix}(\\d+)\\s*(?:-|\u2013|\u301c|\uff5e|through|から)\\s*${prefix}(\\d+)`,
+    "u"
+  );
+  const match = pattern.exec(help.description);
+  return match === null ? undefined : { from: match[1], to: match[2] };
+}
+
 export function findKeywordHelp(
   name: string,
   table: readonly DdsKeywordHelp[]
