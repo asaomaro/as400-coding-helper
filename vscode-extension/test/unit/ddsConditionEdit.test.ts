@@ -458,3 +458,137 @@ suite("キーワード行の条件の編集", () => {
     assert.strictEqual(message.edits[0].kind, "setKeywordCondition");
   });
 });
+
+suite("条件の編集: 画面サイズ条件名", () => {
+  /**
+   * 条件付け欄には標識のほかに**画面サイズ条件名**（`*DS3` 等）も入る。原典:
+   * > DSPSIZ キーワードに指定した画面サイズ条件名によって、キーワードの使用や
+   * > フィールドの位置を条件付けることができます。
+   *
+   * 標識とは**別の欄の使い方**（AND でも OR でもない）なので、混ぜられない。
+   */
+  const TWO_SIZES = [
+    "     A                                      DSPSIZ(24 80 *DS3 27 132 *DS4)",
+    "     A          R MAIN",
+    "     A            FLD1          10A  B  5  2"
+  ];
+
+  test("画面サイズ条件名を書ける（7 桁目はブランク・名前は 8 桁目から）", () => {
+    const after = apply(TWO_SIZES, [
+      { kind: "setCondition", sourceLine: 3, condition: [], screenSize: "*DS4" }
+    ]);
+    assert.strictEqual(after.length, TWO_SIZES.length, "行数が変わった");
+    assert.strictEqual(after[2].charAt(6), " ", "7 桁目はブランク");
+    assert.strictEqual(after[2].slice(7, 16).trimEnd(), "*DS4");
+    assert.ok(after[2].includes("FLD1"), "項目が消えた");
+  });
+
+  test("書いた名前が読み戻せる", () => {
+    const after = apply(TWO_SIZES, [
+      { kind: "setCondition", sourceLine: 3, condition: [], screenSize: "*DS4" }
+    ]);
+    const unit = toLogicalUnits(after).find(candidate => candidate.line.includes("FLD1"));
+    assert.ok(unit);
+    const conditioning = readConditioning(unit.conditioningLines);
+    assert.strictEqual(conditioning.kind, "screen-size");
+    assert.strictEqual(
+      conditioning.kind === "screen-size" ? conditioning.name : "",
+      "*DS4"
+    );
+  });
+
+  test("標識に戻せる / 消せる", () => {
+    const withSize = apply(TWO_SIZES, [
+      { kind: "setCondition", sourceLine: 3, condition: [], screenSize: "*DS4" }
+    ]);
+    const backToIndicators = apply(withSize, [
+      { kind: "setCondition", sourceLine: 3, condition: [[term("50")]] }
+    ]);
+    assert.deepStrictEqual(readBack(backToIndicators, "FLD1"), [[term("50")]]);
+
+    const cleared = apply(withSize, [
+      { kind: "setCondition", sourceLine: 3, condition: [] }
+    ]);
+    assert.deepStrictEqual(cleared, TWO_SIZES, "元に戻らない");
+  });
+
+  test("標識とは混ぜられない", () => {
+    assert.deepStrictEqual(
+      rejectionCodes(TWO_SIZES, [
+        {
+          kind: "setCondition",
+          sourceLine: 3,
+          condition: [[term("50")]],
+          screenSize: "*DS4"
+        }
+      ]),
+      ["screen-size-name-invalid"]
+    );
+  });
+
+  test("原典の形（2-8 文字・先頭 `*`）でなければ断る", () => {
+    for (const name of ["DS4", "*", "*TOOLONGNAME"]) {
+      assert.deepStrictEqual(
+        rejectionCodes(TWO_SIZES, [
+          { kind: "setCondition", sourceLine: 3, condition: [], screenSize: name }
+        ]),
+        ["screen-size-name-invalid"],
+        `${name} が通ってしまう`
+      );
+    }
+  });
+
+  test("キーワード行にも書ける", () => {
+    const lines = [
+      "     A          R MAIN",
+      "     A            FLD1          10A  B  5  2",
+      "     A                                      DSPATR(RI)"
+    ];
+    const after = apply(lines, [
+      { kind: "setKeywordCondition", sourceLine: 3, condition: [], screenSize: "*DS3" }
+    ]);
+    assert.strictEqual(after[2].slice(7, 16).trimEnd(), "*DS3");
+    assert.ok(after[2].includes("DSPATR(RI)"), "キーワードが消えた");
+  });
+
+  suite("短い形", () => {
+    test("`*DS3` は画面サイズ条件名として読む", () => {
+      const parsed = parseConditionText("*ds4");
+      assert.ok(parsed.ok);
+      assert.strictEqual(parsed.screenSize, "*DS4", "大文字に揃わない");
+      assert.deepStrictEqual(parsed.groups, [], "標識としても読んでいる");
+    });
+
+    test("形が違えば理由を返す", () => {
+      const parsed = parseConditionText("*TOOLONGNAME");
+      assert.strictEqual(parsed.ok, false);
+    });
+  });
+
+  test("**配線**: screenSize が WebView からホストへ渡る", () => {
+    const message = parseEditorMessage({
+      type: "edit",
+      edits: [
+        { kind: "setCondition", sourceLine: 3, condition: [], screenSize: "*DS4" }
+      ]
+    });
+    assert.ok(message && message.type === "edit");
+    const edit = message.edits[0];
+    assert.strictEqual(edit.kind, "setCondition");
+    assert.strictEqual(
+      edit.kind === "setCondition" ? edit.screenSize : undefined,
+      "*DS4"
+    );
+  });
+
+  test("形が違えば通さない（配線）", () => {
+    const message = parseEditorMessage({
+      type: "edit",
+      edits: [{ kind: "setCondition", sourceLine: 3, condition: [], screenSize: 4 }]
+    });
+    assert.ok(
+      !message || (message.type === "edit" && message.edits.length === 0),
+      "数値が通ってしまう"
+    );
+  });
+});

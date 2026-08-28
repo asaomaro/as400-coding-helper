@@ -183,9 +183,15 @@ function parseEdit(value: unknown): DdsEdit | undefined {
         }
         condition.push(terms);
       }
+      // 画面サイズ条件名（`*DS3` 等）。標識と混ぜられないことは core の検証が見る。
+      if (value.screenSize !== undefined && typeof value.screenSize !== "string") {
+        return undefined;
+      }
+      const screenSize =
+        typeof value.screenSize === "string" ? { screenSize: value.screenSize } : {};
       return value.kind === "setKeywordCondition"
-        ? { kind: "setKeywordCondition", sourceLine: value.sourceLine, condition }
-        : { kind: "setCondition", sourceLine: value.sourceLine, condition };
+        ? { kind: "setKeywordCondition", sourceLine: value.sourceLine, condition, ...screenSize }
+        : { kind: "setCondition", sourceLine: value.sourceLine, condition, ...screenSize };
     }
     case "setAttributes": {
       if (!isPositiveInteger(value.sourceLine) || !isRecord(value.attributes)) {

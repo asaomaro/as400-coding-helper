@@ -1218,19 +1218,22 @@ class EditorView {
       candidate => candidate.sourceLine === item.sourceLine
     );
     const groups = placed ? conditionGroups(placed.condition) : [];
-    const current = formatConditionText(groups);
+    // 画面サイズ条件名はそのまま出す（短い形の一部として打ち直せる）。
+    const current =
+      placed?.condition.kind === "screen-size"
+        ? placed.condition.name
+        : formatConditionText(groups);
     input.value = current;
     input.placeholder = "なし";
     input.title =
-      "条件標識。AND は空白、OR はカンマ（例: N50 01, 60）。空にすると条件を外します" +
+      "条件。標識は AND が空白・OR がカンマ（例: N50 01, 60）。" +
+      "画面サイズ条件名（例: *DS4）も書けます。空にすると条件を外します" +
       `${this.describeConditionState(item)}`;
 
-    // **画面サイズ条件名は編集しない**（標識とは別の欄の使い方。ここでは触らせない）。
+    // **画面サイズ条件名も同じ欄で編集する**（`*DS3` 等）。標識とは混ぜられないので、
+    // どちらか一方だけを打つ形になる（混ぜたら core の検証が断る）。
     if (placed?.condition.kind === "screen-size") {
       input.value = placed.condition.name;
-      input.readOnly = true;
-      input.title = "画面サイズ条件名。ここでは編集しません";
-      return input;
     }
 
     const commit = (): void => {
@@ -1249,7 +1252,8 @@ class EditorView {
       this.send({
         kind: "setCondition",
         sourceLine: item.sourceLine,
-        condition: parsed.groups
+        condition: parsed.groups,
+        ...(parsed.screenSize !== undefined ? { screenSize: parsed.screenSize } : {})
       });
     };
     // 他の入力欄（`attributeInput`）と同じ約束にそろえる:
@@ -1344,7 +1348,8 @@ class EditorView {
         this.send({
           kind: "setKeywordCondition",
           sourceLine: group.sourceLine,
-          condition: parsed.groups
+          condition: parsed.groups,
+          ...(parsed.screenSize !== undefined ? { screenSize: parsed.screenSize } : {})
         });
       };
       input.addEventListener("keydown", event => {

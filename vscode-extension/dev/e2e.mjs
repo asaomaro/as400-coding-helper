@@ -762,6 +762,28 @@ check(
   await page.$eval(".status", node => node.textContent)
 );
 
+// 画面サイズ条件名（`*DS3` 等）も同じ欄で書ける。標識とは別の欄の使い方。
+await setCondition("*DS3");
+check(
+  "**画面サイズ条件名も書ける（7 桁目はブランク・名前は 8 桁目から）**",
+  (await sourceLines()).some(
+    line => line.charAt(6) === " " && line.slice(7, 16).trimEnd() === "*DS3"
+  ),
+  JSON.stringify((await sourceLines()).filter(l => l.includes("*DS3")))
+);
+check("画面サイズ条件名が読み戻せる", (await conditionValue()) === "*DS3", await conditionValue());
+
+// 形が違えば送らない。
+const beforeBadSize = await sourceLines();
+await setCondition("*TOOLONGNAME");
+check(
+  "形の違う画面サイズ条件名はソースを変えない",
+  JSON.stringify(await sourceLines()) === JSON.stringify(beforeBadSize),
+  await page.$eval(".status", node => node.textContent)
+);
+
+await setCondition("");
+
 // ---- 19d. キーワード行の条件の編集 --------------------------------------
 //
 // `30 DSPATR(RI)` の `30`。**宛先は項目ではなくキーワードの行**。
