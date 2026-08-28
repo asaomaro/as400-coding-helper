@@ -849,13 +849,45 @@ check(
   ),
   JSON.stringify(await page.$$eval(".kw-chip", nodes => nodes.map(n => n.textContent)))
 );
-// **`＋` は出さない。** 候補は使用レベルで絞っており、ファイル・レベルの一覧がまだ無い。
+// **`＋` を出す。** 候補は使用レベルで絞っており、ファイル・レベルの一覧は
+// 原典から生成済み（DSPF 47 件）。前 work では「一覧がまだ無い」と見立てて出していなかった。
 check(
-  "候補からの追加（`＋`）は出さない",
-  (await page.$$eval(".kw-chip", nodes => nodes.map(n => n.textContent))).every(
-    t => !t.includes("追加")
-  )
+  "**候補からの追加（`＋`）が出る**",
+  (await page.$$eval(".kw-chip", nodes => nodes.map(n => n.textContent))).some(t =>
+    t.includes("追加")
+  ),
+  JSON.stringify(await page.$$eval(".kw-chip", nodes => nodes.map(n => n.textContent)))
 );
+await page.click(".kw-chip.add");
+await page.waitForTimeout(150);
+const fileOptions = await page.$$eval(".kw-add-input + datalist option, datalist option", nodes =>
+  nodes.map(n => n.value)
+);
+check(
+  "**候補はファイル・レベルのものに絞られている**（DSPSIZ が出て COLOR が出ない）",
+  fileOptions.includes("DSPSIZ") && !fileOptions.includes("COLOR"),
+  `${fileOptions.length} 件 / DSPSIZ=${fileOptions.includes("DSPSIZ")} COLOR=${fileOptions.includes("COLOR")}`
+);
+
+// **選んだ候補がソースに入る。** 一覧を出すだけでは届いていない。
+const beforeFileAdd = await sourceLines();
+const dspsizAt = beforeFileAdd.findIndex(l => l.includes("DSPSIZ"));
+await page.fill(".kw-add-input", "PRINT");
+await page.press(".kw-add-input", "Enter");
+await page.waitForTimeout(250);
+check(
+  "**候補から足したキーワードがファイル・レベルの行に入る**",
+  (await sourceLines())[dspsizAt].includes("PRINT"),
+  (await sourceLines())[dspsizAt]
+);
+check(
+  "足しても行数は変わらない",
+  (await sourceLines()).length === beforeFileAdd.length,
+  `${(await sourceLines()).length} / ${beforeFileAdd.length}`
+);
+await page.fill(".kw-raw", "DSPSIZ(24 80 *DS3)");
+await page.press(".kw-raw", "Enter");
+await page.waitForTimeout(250);
 
 // **編集はできる。** 宛先は `ddsEdit` が生の行から引く（論理単位にならないため）。
 const beforeFileLevel = await sourceLines();

@@ -12,9 +12,11 @@ import {
 } from "../../core/dds/ddsConditionWriteBack";
 import {
   findKeywordHelp,
+  keywordsForLevel,
   parseKeywordEntries,
   type DdsKeywordHelp,
-  type KeywordEntry
+  type KeywordEntry,
+  type KeywordLevel
 } from "../../core/dds/ddsKeywords";
 import type { ItemAttributes, OutlineItem } from "../../core/dds/dspfOutline";
 import {
@@ -1044,8 +1046,8 @@ class EditorView {
    * **編集できる。** `setKeywords` の宛先はファイル・レベルの行も引けるようにしてある
    * （論理単位にならないので、`ddsEdit` が生の行から別に引く）。
    *
-   * ただし `＋`（候補から足す）は出さない——候補はキーワードの**使用レベル**で
-   * 絞っており、ファイル・レベルの一覧をまだ持っていない。生テキストからは書ける。
+   * `＋`（候補から足す）も出す。候補はキーワードの**使用レベル**で絞っており、
+   * ファイル・レベルの一覧は原典から生成済み（DSPF 47 件 / PRTF 9 件）。
    */
   private renderFileKeywordProperties(entry: RenderModel["fileKeywords"][number]): void {
     const nodes: HTMLElement[] = [
@@ -1094,7 +1096,7 @@ class EditorView {
   private keywordSection(
     sourceLine: number,
     keywords: string,
-    level: "record" | "field" | "file",
+    level: KeywordLevel,
     options: { readOnly?: boolean } = {}
   ): HTMLElement {
     const section = document.createElement("div");
@@ -1149,7 +1151,7 @@ class EditorView {
       }
     });
 
-    if (options.readOnly !== true && level !== "file") {
+    if (options.readOnly !== true) {
       chips.appendChild(this.addKeywordButton(sourceLine, keywords, level));
     }
     chips.addEventListener("keydown", event => this.onKeywordKey(event, chips));
@@ -1198,7 +1200,7 @@ class EditorView {
   private addKeywordButton(
     sourceLine: number,
     keywords: string,
-    level: "record" | "field"
+    level: KeywordLevel
   ): HTMLElement {
     const wrap = document.createElement("span");
     wrap.className = "kw-add";
@@ -1219,9 +1221,9 @@ class EditorView {
     const list = document.createElement("datalist");
     const listId = `dds-kw-${level}`;
     list.id = listId;
-    for (const help of this.keywordHelp) {
-      // level を持たないものは常に出す（判別できなかっただけで、書けないとは限らない）。
-      if (help.level && help.level.length > 0 && !help.level.includes(level)) continue;
+    // 絞り込みは core（`keywordsForLevel`）。ここに写すと、単体で確かめられる規則と
+    // 画面に出る規則が別々に育つ。
+    for (const help of keywordsForLevel(this.keywordHelp, level)) {
       const option = document.createElement("option");
       option.value = help.name;
       option.label = help.title;

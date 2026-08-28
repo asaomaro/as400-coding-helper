@@ -155,6 +155,27 @@ function skipParenthesized(text: string, from: number): number {
  * （`20260827-dds-keyword-cann` の `decisions.md` D3）。表で `nn` を含むのは
  * `CAnn` / `CFnn` の 2 件だけ。
  */
+/** キーワードを書ける場所。原典の「使用レベル」に合わせた語。 */
+export type KeywordLevel = "file" | "record" | "field";
+
+/**
+ * そのレベルで**候補に出す**キーワード。
+ *
+ * **絞り込みは候補の並びにだけ効かせる。** 書けるかどうかの検証には使わない
+ * ——レベルの判定を誤ると、正しい記述を拒否することになる。
+ *
+ * **レベルを持たないものは常に出す**（AGENTS.md「判別できなかったものは
+ * どのレベルでも出す」）。出すべきものを隠すより余分に出す方が害が少ない。
+ */
+export function keywordsForLevel(
+  help: readonly DdsKeywordHelp[],
+  level: KeywordLevel
+): readonly DdsKeywordHelp[] {
+  return help.filter(
+    entry => !entry.level || entry.level.length === 0 || entry.level.includes(level)
+  );
+}
+
 export function findKeywordHelp(
   name: string,
   table: readonly DdsKeywordHelp[]
