@@ -61,7 +61,52 @@ suite("DDS 定位置欄の有効な値", () => {
       for (const lang of ["ja", "en"]) {
         assert.deepEqual(
           valuesAt(lang, "DDS-PF", 35),
-          ["P", "S", "B", "F", "A", "H", "L", "T", "Z", "5", "J", "E", "O", "G"],
+          ["", "P", "S", "B", "F", "A", "H", "L", "T", "Z", "5", "J", "E", "O", "G"],
+          `${lang}: 35 桁目`
+        );
+      }
+    });
+
+    /**
+     * **ブランクは値の一覧ではなく本文にある。**
+     *
+     * > この欄がブランクであれば、定義中のフィールドのデータ・タイプは、
+     * > この論理ファイルの基礎となる物理ファイル内の対応するフィールドの
+     * > データ・タイプと同じものになります。
+     *
+     * 生成器がブランクを採るのは項目に「ブランク」と書かれているときだけなので
+     * 落ちていた。実機（`CRTPF`）はブランクを受ける。
+     * 落としたままだと `restricted: true` の欄が `<select>` になったとき
+     * **ブランクへ戻せなくなる**。
+     */
+    test("**本文にしか無いブランクが入っている**", () => {
+      for (const lang of ["ja", "en"]) {
+        assert.equal(valuesAt(lang, "DDS-PF", 35)[0], "", `${lang}: 先頭がブランクでない`);
+      }
+    });
+  });
+
+  suite("印刷装置ファイルの 35 桁目（データ・タイプ）", () => {
+    /**
+     * **注の書き出しは種別で揺れる。**
+     * 物理/論理・表示装置は「注: **データ・タイプ** J (専用)…」だが、
+     * 印刷装置は「注: **O (混用) および G (グラフィック)** は…」と値から始まる。
+     * 生成器が前置きの語を要求していたため、印刷装置だけ落ちていた。
+     * 実機（`CRTPRTF`）は `G` `O` を受ける。
+     */
+    test("**注にしか無い O / G が入っている**", () => {
+      for (const lang of ["ja", "en"]) {
+        for (const value of ["O", "G"]) {
+          assert.ok(valuesAt(lang, "DDS-PRTF", 35).includes(value), `${lang}: ${value} が無い`);
+        }
+      }
+    });
+
+    test("実機が受ける 9 件とそろっている", () => {
+      for (const lang of ["ja", "en"]) {
+        assert.deepEqual(
+          valuesAt(lang, "DDS-PRTF", 35),
+          ["", "S", "A", "F", "L", "T", "Z", "O", "G"],
           `${lang}: 35 桁目`
         );
       }
@@ -94,7 +139,13 @@ suite("DDS 定位置欄の有効な値", () => {
   });
 
   test("ブランクを選べる欄では先頭にある（値を入れたあと元へ戻せる）", () => {
-    for (const [type, column] of [["DDS-DSPF", 35], ["DDS-DSPF", 38], ["DDS-PF", 38]] as const) {
+    // **`restricted: true` の欄はここが効く。** 画面が `<select>` になるので、
+    // ブランクが無いと「既定に戻す」ができなくなる（`webview/ui.ts` の buildSelect）。
+    for (const [type, column] of [
+      ["DDS-PF", 17], ["DDS-PF", 35], ["DDS-PF", 38],
+      ["DDS-DSPF", 17], ["DDS-DSPF", 35], ["DDS-DSPF", 38],
+      ["DDS-PRTF", 17], ["DDS-PRTF", 35]
+    ] as const) {
       assert.equal(valuesAt("ja", type, column)[0], "", `${type} ${column} 桁目`);
     }
   });
@@ -142,13 +193,37 @@ suite("DDS の restricted-value", () => {
       }
     }
     // 増やすときは**実機で全空間を試してから**。原典を読んだだけで足さない。
-    assert.deepEqual(flags, ["DDS-DSPF:38"]);
+    // 根拠: .aidev/works/20260829-dds-restricted-expand/verify/compare.json
+    assert.deepEqual(flags, [
+      "DDS-PF:17", "DDS-PF:35", "DDS-PF:38",
+      "DDS-DSPF:17", "DDS-DSPF:35", "DDS-DSPF:38",
+      "DDS-PRTF:35"
+    ]);
   });
 
-  test("確かめていない欄は restricted: false（列挙は候補にすぎない）", () => {
-    for (const [type, column] of [["DDS-PRTF", 35], ["DDS-PF", 35], ["DDS-DSPF", 35]] as const) {
+  /**
+   * **印刷装置の 17 桁目だけが `false` のまま。**
+   *
+   * 実機は `H` を受ける（`CPD7410@17` が出ず、35 桁と 42 桁の指摘だけが出る）が、
+   * **原典は日英とも `R` とブランクだけ**を挙げる（`FIELD-PRTF-prttype.html`）。
+   * 原典に無い値を足す判断は、`H`（ヘルプ仕様）が印刷装置で何を意味するのかが
+   * 分からないまま行えない。`false` なら候補つきの自由入力のままで、
+   * `H` を書きたい利用者を妨げない。
+   */
+  test("確かめて一致しなかった欄は restricted: false（列挙は候補にすぎない）", () => {
+    for (const [type, column] of [["DDS-PRTF", 17]] as const) {
       const parameter = load("ja", type).parameters.find(p => p.sourceStart === column);
       assert.equal(parameter?.attributes?.restricted, false, `${type} ${column} 桁目`);
+    }
+  });
+
+  test("ja / en で restricted がそろっている", () => {
+    for (const type of ["DDS-PF", "DDS-DSPF", "DDS-PRTF"]) {
+      const flags = (lang: string) =>
+        load(lang, type).parameters
+          .filter(p => p.options?.length)
+          .map(p => `${p.sourceStart}:${p.attributes?.restricted}`);
+      assert.deepEqual(flags("ja"), flags("en"), type);
     }
   });
 
@@ -175,6 +250,66 @@ suite("DDS の restricted-value", () => {
       const found = lint([header, field("BAD2", "0", 3)]);
       assert.equal(found.length, 1);
       assert.match(found[0].message, /"0" は指定できません/u);
+    });
+  });
+
+  /**
+   * **広げた 6 欄が、実機の弾いた値をそのまま指摘する。**
+   *
+   * 期待値は**実機の判定そのもの**で、原典の読み方から起こしたものではない
+   * （`.aidev/works/20260829-dds-restricted-expand/verify/`）。
+   * 各文字は全 37 通りの網羅で「値が無効」と出たもの:
+   * `CPD7419 Data type not valid.` / `CPD7410 Characters in indicated field not allowed.`
+   *
+   * `CPD7408`（長さ・小数の咎め）と `CPD7914`（レコードが複数）は**受理**側なので、
+   * ここには入れない——入れると実機が通す値を弾くことになる。
+   */
+  suite("広げた欄が実機の弾く値を指摘する", () => {
+    const at = (fsPath: string, lines: readonly string[]) =>
+      lintFile({ fsPath, lines, definitions: loadDefinitions(RESOURCES) })
+        .filter(f => f.ruleId === "restricted-value");
+
+    const rec = (name: string) => put(put(put(" ".repeat(80), 6, "A"), 17, "R"), 19, name);
+    /** 物理/論理の項目行（位置欄が無い）。 */
+    const pfField = (name: string, column: number, value: string) =>
+      put(put(put(put(" ".repeat(80), 6, "A"), 19, name), 30, "   10"), column, value);
+    /** 画面・帳票の項目行（位置欄が要る）。 */
+    const posField = (name: string, column: number, value: string) =>
+      put(put(pfField(name, 35, "A"), column, value), 39, "  1");
+
+    const CASES = [
+      { why: "物理/論理 17 桁: H は CPD7410@17", path: "/x/T.pf",
+        lines: [rec("R1"), put(put(put(" ".repeat(80), 6, "A"), 17, "H"), 19, "F1")], column: 17, value: "H" },
+      { why: "物理/論理 35 桁: Q は CPD7419@35", path: "/x/T.pf",
+        lines: [rec("R1"), pfField("F1", 35, "Q")], column: 35, value: "Q" },
+      { why: "物理/論理 38 桁: X は CPD7410@38（B/I/N 以外）", path: "/x/T.pf",
+        lines: [rec("R1"), put(pfField("F1", 35, "A"), 38, "X")], column: 38, value: "X" },
+      { why: "表示装置 17 桁: K は CPD7410@17（物理では有効）", path: "/x/T.dspf",
+        lines: [rec("R1"), put(put(put(" ".repeat(80), 6, "A"), 17, "K"), 19, "F1")], column: 17, value: "K" },
+      { why: "表示装置 35 桁: B は CPD7419@35", path: "/x/T.dspf",
+        lines: [rec("R1"), posField("F1", 35, "B")], column: 35, value: "B" },
+      { why: "印刷装置 35 桁: B は CPD7419@35", path: "/x/T.prtf",
+        lines: [rec("R1"), posField("F1", 35, "B")], column: 35, value: "B" }
+    ];
+
+    for (const c of CASES) {
+      test(c.why, () => {
+        const found = at(c.path, c.lines);
+        assert.equal(found.length, 1, `指摘が ${found.length} 件`);
+        assert.equal(found[0].startColumn, c.column);
+        assert.match(found[0].message, new RegExp(`"${c.value}" は指定できません`, "u"));
+      });
+    }
+
+    /**
+     * **印刷装置の 17 桁目は咎めない**（`restricted: false` のまま）。
+     * 実機が `H` を受けるのに原典に無いため、集合が確定していない。
+     * ここが指摘を出すようになったら、値集合を確かめ直すこと。
+     */
+    test("印刷装置 17 桁は咎めない（集合が未確定）", () => {
+      const found = at("/x/T.prtf",
+        [rec("R1"), put(put(put(" ".repeat(80), 6, "A"), 17, "H"), 19, "F1")]);
+      assert.deepEqual(found, []);
     });
   });
 });

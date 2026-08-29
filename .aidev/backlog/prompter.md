@@ -118,3 +118,17 @@ priority: 1           # 既存機能の構造改善。DDS(1) と同格
   - **いま確かめているのは「例外なく起動できる」まで**。`WorkspaceEdit` や undo は
     まだ書いていないが、**器が動くようになったので次から足せる**。
 
+
+- [ ] **英語版 DDS 定義に日本語が混ざる（146 箇所）** — `resources/prompter/dds/en/DDS-*.json`
+  の欄の説明・ヘルプ・選択肢のラベルに日本語が残る（`"（ブランク）Character (default)"`、
+  `"物理 / 論理ファイルの定位置項目"` など）。英語で開いても日本語が出る。
+  - 原因は 2 つ。**欄の説明が桁定義（navigation、日本語）から来ている**ことと、
+    ブランクの接頭辞 `（ブランク）` が生成器にじか書きされていること
+    （`generate-dds-prompter.mjs` の `addBlank` / `addProseBlank`）。
+  - **RPG 側には検査がある**（`verify-rpg-spec-definitions.mjs` が「英語版に日本語なし」を
+    見ている）が、**DDS には無い**。直すときは検査もセットで足す。
+  - 直し方は RPG に前例がある——訳文を 1 ファイルに集める
+    （`docs/origin/rpg-spec-en-strings.json` に相当するものを DDS 用に作る）。
+    **桁・欄の名前・選択肢の値といった事実は訳文ファイルに入れない**（RPG と同じ規約）。
+  - 出所: `20260829-dds-restricted-expand` の review（should-2）。
+    値集合を広げる話とは別なので、その work では直していない。

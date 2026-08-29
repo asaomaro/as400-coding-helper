@@ -77,6 +77,62 @@ for (const lang of ["ja", "en"]) {
   }
 }
 
+/**
+ * **ja と en で値集合・`restricted` が一致すること。**
+ *
+ * 英語版で変えてよいのは**表示に出る文字だけ**で、構造（値・入力種別・制限の有無）は
+ * 同じでなければならない。ずれると**同じソースが言語で違う結果になる**——
+ * `restricted: true` の欄では lint の指摘が言語で変わり、プロンプターでは
+ * 書き戻せる値が変わる。
+ *
+ * ずれ得る理由がある。値の一部は**原典の「注」から拾っており**、注は
+ * 200 文字の窓で切っている（`generate-dds-prompter.mjs` の `addNoteDataTypes`）。
+ * 窓の内側に入る語は**日英で違う**ので、片方だけが値を拾うことが起こりうる
+ * （現に物理/論理は ja の窓に `A (文字)` が入り en には入らない。
+ * どちらも既存の値なので、いまは結果に出ていないだけ）。
+ *
+ * ラベルは訳文なので比べない。
+ */
+for (const type of ["DDS-PF", "DDS-DSPF", "DDS-PRTF"]) {
+  const read = lang => {
+    const file = join(PROMPTER, lang, `${type}.json`);
+    if (!existsSync(file)) return new Map();
+    const definition = JSON.parse(readFileSync(file, "utf8"));
+    return new Map(
+      (definition.parameters ?? []).map(p => [
+        p.sourceStart,
+        {
+          values: (p.options ?? []).map(o => o.value).join("|"),
+          inputType: p.inputType ?? "",
+          restricted: p.attributes?.restricted
+        }
+      ])
+    );
+  };
+  const ja = read("ja");
+  const en = read("en");
+
+  for (const [start, a] of ja) {
+    const b = en.get(start);
+    if (!b) {
+      failures.push(`${type}: ${start} 桁目の欄が en に無い`);
+      continue;
+    }
+    if (a.values !== b.values) {
+      failures.push(`${type}: ${start} 桁目の値が ja/en で違う（ja=${a.values || "なし"} / en=${b.values || "なし"}）`);
+    }
+    if (a.inputType !== b.inputType) {
+      failures.push(`${type}: ${start} 桁目の入力種別が ja/en で違う（ja=${a.inputType} / en=${b.inputType}）`);
+    }
+    if (a.restricted !== b.restricted) {
+      failures.push(`${type}: ${start} 桁目の restricted が ja/en で違う（ja=${a.restricted} / en=${b.restricted}）`);
+    }
+  }
+  for (const start of en.keys()) {
+    if (!ja.has(start)) failures.push(`${type}: ${start} 桁目の欄が ja に無い`);
+  }
+}
+
 console.log("DDS プロンプター定義の検査");
 
 if (failures.length > 0) {
