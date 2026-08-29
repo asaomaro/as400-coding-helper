@@ -124,9 +124,61 @@ CL プロンプターを本 PJ の看板に掲げるのは筋が悪い。`*CMD` 
 芯は競合が存在しない **SOSI / DDS / `.cmd` / 日本語** に置く方が通る。
 
 未解決:
-- **F4 の衝突**。clPrompter と併用された場合の挙動は未確認
 - CL で追いつく唯一の現実的な道は「接続時に実機の `*CMD` から定義を作る」経路
   （§6）。その場合バンドル定義はオフライン時の縮退運転になる
+
+### 3.1 F4 の衝突（2026-08-29 確定）
+
+両者のマニフェストから `contributes.keybindings` を直読して突き合わせた。
+
+| | `when` |
+|---|---|
+| clPrompter | `editorTextFocus && (editorLangId == clle \|\| editorLangId == clp \|\| editorLangId == cl \|\| editorLangId == bnd \|\| editorLangId == cmd)` |
+| 本 PJ | `editorTextFocus && (resourceExtname == .rpg \|\| … \|\| .clp \|\| .clle \|\| … \|\| .cmd)` |
+
+**軸が違う。** 向こうは `editorLangId`、本 PJ は `resourceExtname` で書いている。
+文字列を見比べても重なりは分からず、**どの拡張子がどの languageId になるか**で決まる。
+
+**clPrompter は `contributes.languages` を持たない**（マニフェストで確認）。
+つまり向こうの `when` が真になるかは、**他の拡張がその languageId を登録しているか**に
+かかっている。本 PJ は `cl` を `.clp` に登録している。
+
+| ファイル | 本 PJ の F4 | clPrompter の F4 | 結果 |
+|---|---|---|---|
+| `.clp` | 効く（`resourceExtname`） | 効く（**本 PJ が `.clp` → `cl` を登録しているため**） | **衝突** |
+| `.clle` | 効く | `clle` / `cl` を**誰かが登録していれば**効く（`IBM.vscode-clle` 等） | **環境次第で衝突** |
+| `.cmd` | 効く | `cmd` を誰かが登録していれば効く。既定では `.cmd` は `bat` | **環境次第** |
+| `.rpg` / `.rpgle` / `.sqlrpg*` / DDS | 効く | 該当しない | 衝突なし |
+
+**皮肉な点**: `.clp` で clPrompter の F4 が発火するのは、**本 PJ が `.clp` を `cl` 言語に
+登録しているから**。本 PJ を入れなければ（他に `cl` を登録する拡張が無ければ）
+向こうの F4 は `.clp` で発火しない。
+
+**どちらが勝つかは制御できない。** VSCode は拡張どうしのキーバインドに優先度を規定して
+おらず、条件を満たすものの中から**最後に登録されたもの**が実行される。登録順は拡張の
+読み込み順で決まるため、利用者にも拡張の作者にも決められない。
+
+**回避は利用者側の `keybindings.json`**（利用者の設定は拡張より強い）。片方を止める:
+
+```jsonc
+// clPrompter を止めて本 PJ を使う
+{ "key": "f4", "command": "-clPrompter.clPrompter" }
+
+// 本 PJ を止めて clPrompter を使う
+{ "key": "f4", "command": "-rpgClSupport.showPrompter" }
+
+// 使い分ける（例: CL は clPrompter、それ以外は本 PJ）
+{ "key": "f4", "command": "-rpgClSupport.showPrompter",
+  "when": "resourceExtname == .clp || resourceExtname == .clle" }
+```
+
+**本 PJ の挙動は変えていない。** `.clp` の F4 を降りるのは本 PJ の CL プロンプターを
+使えなくすることと同義で、どちらを使うかは利用者の選択。`.clp` → `cl` の言語登録を
+やめる案も採らない——`cl` はコメントトグル・タブナビ・CL 診断の発火条件でもあり、
+外すと本 PJ の機能が落ちる。
+
+出典: `bobcozzi/clPrompter` の `package.json`（2026-08-29 取得）/
+`vscode-extension/package.json`。
 
 ---
 
