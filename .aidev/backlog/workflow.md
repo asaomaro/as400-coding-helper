@@ -381,8 +381,6 @@ priority: 2           # cl(1) の次。設計書: docs/workflow/ibmi-dev-workflo
 
 ## P3: 将来
 
-- [ ] E2E ハーネスを DSL 化する (repo:as400-web-emulator) — example-automation.mjs の
-      雛形をパッケージ化（レポーター・フィクスチャ管理）
 - [x] **CI を整える（本 PJ 側）** — 済（`20260829-ci-regen-coverage`）。
       **lint core の CI 化は起票より前に既に済んでいた**（閉じ忘れ）:
       `verify-lint-core.mjs`（境界）・桁位置 lint（サンプルで指摘ゼロ）・単体テスト・
@@ -396,8 +394,31 @@ priority: 2           # cl(1) の次。設計書: docs/workflow/ibmi-dev-workflo
         `generate-rpg-io-definitions.mjs`）。後者は一度も CI で回っていなかった。
       - 手編集をコミットすると落ちることを確認済み。既存のドリフトはゼロ。
 
-- [ ] **as400-web-emulator のオフライン回帰を CI で** (repo:as400-web-emulator) —
-      上の項目の残り半分。**別リポジトリなのでこのリポジトリからは着手できない**
-      （ローカルにチェックアウトが無い）。出所: `20260829-ci-regen-coverage`。
+- [ ] **ts5250 のオフライン回帰を CI で** (repo:**ts5250**) — 着手済み・**judgment 待ち**。
+      **リポジトリは改名されており `/workspaces/ts5250` にある**（以前「ローカルに無い」と
+      書いたのは名前で探していたため）。
+      **PR: asaomaro/ts5250#383（draft）**（work: `ts5250/.aidev/works/20260829-offline-regression-ci`）。
+      - あちらには **CI が無かった**（`.github/workflows/` が存在しない）。約 5,400 の
+        テストと `lint` / `build` が揃っているのに PR で回っていない。
+      - `lint` → `build` → `test` の 1 ジョブを足した。手元では 3 コマンドとも rc=0。
+      - **CI は初回で落ち、それが収穫だった**。手元（Node 24）では緑なのに
+        **runner（Node 20）で 2 件落ちる**。どちらもテストが環境を前提にしている箇所:
+        - `ebcdic` の CCSID 1252 でユーロ記号が往復しない。`reverseTableFor` が
+          逆引き表を**ランタイムの `TextDecoder`** から作るため ICU 差で表が変わる。
+          **`engines.node` は `>=20` なのに下限で動いていない**。
+        - `server` の `printer-output-runtime` で、runner に**等幅 CJK フォントが無く**、
+          PDF 保存に到達する前にフォントの警告が出る。
+      - **緑にする手はどれも筋が悪い**（Node を 24 に上げる＝非互換を隠す／他人のテストの
+        期待値を外から書き換える／その 2 ファイルを CI から外す＝回帰の目的に反する）。
+        **draft のままにして判断を残した。**
+      次の判断: 2 件を直してから CI を入れるか、Node を上げて先に入れるか。
+
+- [ ] **E2E ハーネスを DSL 化する範囲を決める** (repo:**ts5250**) — 着手には設計判断が要る。
+      `scripts/example-automation.mjs` は **79 行のテンプレート**（極小ハーネス ＋ 薄い
+      `Session5250` ドライバ）で、実行に**実機（pub400）の接続が要る**。
+      「パッケージ化（レポーター・フィクスチャ管理）」は、**置き場所（`packages/` か
+      `tools/` か）・公開 API・レポーターの形**が未定義で、他リポジトリに新しい
+      公開パッケージを設計する話になる。決めてもらえれば着手できる。
+      出所: `20260829-mcp-wiring-stocktake`（改名の判明にともなう棚卸し）。
 - [ ] PowerVS トライアル環境の手順を文書化する — 申請〜接続〜片付け（設計書 5.1）
 - [ ] チーム向け導入手順を書く — 一人検証の完了後（設計書 5.3）
