@@ -471,6 +471,20 @@ check(
   await page.$eval('[name="C35"]', n => n.value)
 );
 
+// 印刷装置の 38 桁目——**候補ゼロの自由入力だった欄**が選択欄になっていること。
+await pick("DDS-PRTF — 箇条書きから採った選択欄");
+await settle();
+check(
+  "**DDS 使用目的（印刷装置 38 桁）が選択欄になっている**（以前は候補ゼロの text）",
+  (await page.$eval('[name="C38"]', n => n.tagName)) === "SELECT",
+  await page.$eval('[name="C38"]', n => n.tagName)
+);
+check(
+  "その選択肢は ブランク / O / P（原典の箇条書きどおり）",
+  (await page.$$eval('select[name="C38"] option', ns => ns.map(n => n.value))).join("|") === "|O|P",
+  (await page.$$eval('select[name="C38"] option', ns => ns.map(n => n.value))).join("|")
+);
+
 await pick("ADDPFM — 候補にすぎない選択欄");
 await page.keyboard.press("F10");
 await settle();

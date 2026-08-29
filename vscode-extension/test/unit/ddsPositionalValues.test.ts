@@ -113,6 +113,31 @@ suite("DDS 定位置欄の有効な値", () => {
     });
   });
 
+  suite("印刷装置ファイルの 38 桁目（使用目的）", () => {
+    /**
+     * **原典の並べ方が 3 つ目の形**だった。定義リストでも表でもなく**箇条書き**:
+     *
+     * > `<li><samp>O</samp> またはブランク: 出力専用</li>`
+     * > `<li><samp>P</samp>: プログラム - システム間 (特殊な出力フィールド)</li>`
+     *
+     * 読めていなかったので**選択肢が丸ごと空**で、この欄だけ候補ゼロの自由入力だった。
+     * 実機（`CRTPRTF`）の全 37 通りは**位置あり／なしとも受理が ブランク O P** の 3 件で、
+     * 原典と完全一致した。
+     */
+    test("箇条書きから値が入っている（ブランク / O / P）", () => {
+      for (const lang of ["ja", "en"]) {
+        assert.deepEqual(valuesAt(lang, "DDS-PRTF", 38), ["", "O", "P"], `${lang}: 38 桁目`);
+      }
+    });
+
+    test("**選択欄になっている**（以前は候補ゼロの自由入力だった）", () => {
+      for (const lang of ["ja", "en"]) {
+        const parameter = load(lang, "DDS-PRTF").parameters.find(p => p.sourceStart === 38);
+        assert.equal(parameter?.inputType, "dropdown", `${lang}: 38 桁目`);
+      }
+    });
+  });
+
   suite("表示装置ファイルの 38 桁目（使用目的）", () => {
     /**
      * **日本語版の原典が誤っている。** ja は「ブランクまたは 0」（数字のゼロ）、
@@ -144,7 +169,7 @@ suite("DDS 定位置欄の有効な値", () => {
     for (const [type, column] of [
       ["DDS-PF", 17], ["DDS-PF", 35], ["DDS-PF", 38],
       ["DDS-DSPF", 17], ["DDS-DSPF", 35], ["DDS-DSPF", 38],
-      ["DDS-PRTF", 17], ["DDS-PRTF", 35]
+      ["DDS-PRTF", 17], ["DDS-PRTF", 35], ["DDS-PRTF", 38]
     ] as const) {
       assert.equal(valuesAt("ja", type, column)[0], "", `${type} ${column} 桁目`);
     }
@@ -197,7 +222,7 @@ suite("DDS の restricted-value", () => {
     assert.deepEqual(flags, [
       "DDS-PF:17", "DDS-PF:35", "DDS-PF:38",
       "DDS-DSPF:17", "DDS-DSPF:35", "DDS-DSPF:38",
-      "DDS-PRTF:35"
+      "DDS-PRTF:35", "DDS-PRTF:38"
     ]);
   });
 
@@ -289,7 +314,9 @@ suite("DDS の restricted-value", () => {
       { why: "表示装置 35 桁: B は CPD7419@35", path: "/x/T.dspf",
         lines: [rec("R1"), posField("F1", 35, "B")], column: 35, value: "B" },
       { why: "印刷装置 35 桁: B は CPD7419@35", path: "/x/T.prtf",
-        lines: [rec("R1"), posField("F1", 35, "B")], column: 35, value: "B" }
+        lines: [rec("R1"), posField("F1", 35, "B")], column: 35, value: "B" },
+      { why: "印刷装置 38 桁: I は CPD7410@38（O / P 以外）", path: "/x/T.prtf",
+        lines: [rec("R1"), put(posField("F1", 35, "A"), 38, "I")], column: 38, value: "I" }
     ];
 
     for (const c of CASES) {
