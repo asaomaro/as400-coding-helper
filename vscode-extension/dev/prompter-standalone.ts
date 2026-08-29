@@ -21,6 +21,7 @@ import SAVOBJ from "../resources/prompter/cl/ja/SAVOBJ.json";
 import ADDPFM from "../resources/prompter/cl/ja/ADDPFM.json";
 import PARM from "../resources/prompter/cmd/ja/PARM.json";
 import DDSPF from "../resources/prompter/dds/ja/DDS-PF.json";
+import DDSPRTF from "../resources/prompter/dds/ja/DDS-PRTF.json";
 
 /**
  * F4 プロンプターの単独起動ハーネス。**検証用であり製品の一部ではない**（VSIX には入れない）。
@@ -109,6 +110,9 @@ const SAMPLES: { readonly label: string; readonly definition: PrompterDefinition
   // 確定した欄は `restricted: true` で `<select>` になる。**ブランクが選べること**が
   // 要——選べないと「既定に戻す」ができない（20260829-dds-restricted-expand）。
   { label: "DDS-PF — 制限のある定位置欄（ブランクを選べる）", definition: DDSPF as PrompterDefinition },
+  // **候補ゼロの自由入力だった欄が選択欄になる**（38 桁目・使用目的）。原典の値は
+  // 箇条書きにしか無く、生成器が読めていなかった（20260829-dds-prtf-usage-values）。
+  { label: "DDS-PRTF — 箇条書きから採った選択欄", definition: DDSPRTF as PrompterDefinition },
   { label: "FIXTURE — 見えない欄は咎めない（検証用）", definition: HIDDEN_REQUIRED }
 ];
 

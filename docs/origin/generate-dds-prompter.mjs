@@ -118,6 +118,7 @@ function detailPages(overviewFile, prefix) {
  * | 表示装置 35 桁 | ブランク ＋ 17 件 | 一致 → `true` |
  * | 表示装置 38 桁 | ブランク B H I M O P | 前作業で確定済み → `true` |
  * | 印刷装置 35 桁 | ブランク ＋ 8 件 | 一致 → `true`（`G` `O` は注から、ブランクは本文から） |
+ * | 印刷装置 38 桁 | ブランク O P | 一致 → `true`（値は箇条書きから。位置あり／なしとも同じ） |
  * | 印刷装置 17 桁 | ブランク **H** R | **不一致 → `false`**（下記） |
  *
  * **物理/論理 38 桁は文脈で値が変わる。** 原典（`FIELD-PF-lfusg.html`）が
@@ -139,7 +140,7 @@ function detailPages(overviewFile, prefix) {
 const PROVEN_COMPLETE = new Set([
   "DDS-PF:17", "DDS-PF:35", "DDS-PF:38",
   "DDS-DSPF:17", "DDS-DSPF:35", "DDS-DSPF:38",
-  "DDS-PRTF:35"
+  "DDS-PRTF:35", "DDS-PRTF:38"
 ]);
 
 /**
@@ -231,7 +232,10 @@ function parseDetail(file) {
       options.unshift({ label: `（ブランク）${meaning.slice(0, 36)}`, value: "" });
     }
   };
-  const addOption = (term, meaning) => {
+  const addOption = (term, rawMeaning) => {
+    // **箇条書きは意味の側にコロンを置く**（`<li><samp>P</samp>: プログラム…</li>`）。
+    // そのままだとラベルが `P（: プログラム…）` になる。区切りなので落とす。
+    const meaning = String(rawMeaning).replace(/^\s*[:：]\s*/u, "").trim();
     // 原典は「ブランク」も有効な項目として挙げる（多くの欄で既定値になる）。
     // 空欄を選べないと、値を入れたあとに元へ戻せない。
     if (/^(ブランク|Blank)(\s*[（(].*[）)])?$/u.test(term)) {
@@ -250,6 +254,21 @@ function parseDetail(file) {
       addBlank(meaning);
       if (!options.some(o => o.value === either[1])) {
         options.push({ label: `${either[1]}（${meaning.slice(0, 40)}）`, value: either[1] });
+      }
+      return;
+    }
+
+    // **「X またはブランク」の形**（印刷装置の 38 桁目）。上の「ブランクまたは X」の
+    // 鏡像で、原典は箇条書きの側に値を、説明の側に「またはブランク」を書く:
+    //   <li><samp>O</samp> またはブランク: 出力専用</li>
+    // 読まないと**ブランクが落ちる**。この欄はブランクが `O` と同じ意味なので、
+    // 選べないと「既定へ戻す」ができなくなる。
+    const orBlank = /^(?:またはブランク|or blank)\s*[:：]\s*([\s\S]*)$/u.exec(meaning);
+    const single = /^([A-Z0-9])(?:\s*[（(].*[）)])?$/u.exec(term);
+    if (orBlank && single) {
+      addBlank(orBlank[1].trim());
+      if (!options.some(o => o.value === single[1])) {
+        options.push({ label: `${single[1]}（${orBlank[1].trim().slice(0, 40)}）`, value: single[1] });
       }
       return;
     }
@@ -305,6 +324,18 @@ function parseDetail(file) {
   // 片方だけだと印刷装置の選択欄が丸ごと落ちる。
   for (const match of html.matchAll(/<dt[^>]*>([\s\S]*?)<\/dt>\s*<dd[^>]*>([\s\S]*?)<\/dd>/g)) {
     addOption(plain(match[1]), plain(match[2]));
+  }
+
+  // **3 つ目の並べ方——箇条書き。** 印刷装置の 38 桁目（使用目的）はこの形しか持たず、
+  //   <li><samp class="ph tt">O</samp> またはブランク: 出力専用</li>
+  // 定義リストでも表でもないため**選択肢が丸ごと空**になっていた（`inputType: "text"`）。
+  //
+  // **`<samp>` で始まる `<li>` だけ**を採る。同じページの他の箇条書き
+  // （「位置は無効です。」等の散文）は `<samp>` で始まらないので当たらない。
+  // 巻き込まないことは原典の全件走査で確かめた——`dds` と `dds-en` の全 HTML で
+  // この形を持つのは `FIELD-PRTF-prtuse.html` の日英 2 件だけ。
+  for (const item of html.matchAll(/<li[^>]*>\s*<samp[^>]*>([\s\S]*?)<\/samp>([\s\S]*?)<\/li>/gi)) {
+    addOption(plain(item[1]), plain(item[2]));
   }
 
   for (const table of html.matchAll(/<table[^>]*>([\s\S]*?)<\/table>/gi)) {
