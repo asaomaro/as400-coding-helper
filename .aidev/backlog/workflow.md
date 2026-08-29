@@ -29,16 +29,27 @@ priority: 2           # cl(1) の次。設計書: docs/workflow/ibmi-dev-workflo
       - **SR-OSAKA なら標準経路で入る**（`*ALLOBJ` ＋ `*SAVSYS` があり `RSTLIB` が通る）。
       - `RUCALLTST` の結果出力の採取は導入が前提なので**未着手**（下の項目に送った）。
 
-- [ ] **RPGUnit を SR-OSAKA に導入する** — 決定（2026-08-29）: **(a) SR-OSAKA に標準経路で入れる**。
-      pub400 は不可と確定（`RSTLIB` に要る `*ALLOBJ`/`*SAVSYS` が無い）。SR-OSAKA なら
-      権限が足りて `RSTLIB` が通るので、RPGUnit 側のライブラリ名 `RPGUNIT` 前提の
-      手直しが要らない。(b) pub400 にソースからビルドする案は労力に見合わないので**採らない**。
-      **第三者の save file を利用者の機械に入れる**ため、次を条件にする:
-      入手元（iSphere / RPGUnit 公式配布）とバージョンを記録に残す・導入ライブラリーを
-      分けて後から消せる形にする。
-      入れたら `@ibm/itest` の実行と **`RUCALLTST` の結果出力の形**の採取まで行う
-      （失敗は CPF9897 例外で伝わるため EVFEVENT とは別経路。設計書 4.2 / 7 章 #2）。
+- [x] **RPGUnit を SR-OSAKA に導入する** — 済（`20260829-rpgunit-sr-osaka`）。
+      **iRPGUnit v4.0.3.r** を既定名 `RPGUNIT` で導入（31 オブジェクト）。SAVF は `ASAOLIB/RPGUNIT`。
+      - **最新は使えない。** v6.0.2.r は `RSTLIB` こそ通る（`TGTRLS(V7R3M0)`）が、
+        `RUCRTRPG` が `CRTRPGMOD … TGTCCSID(…)` を発行し、**7.3 の `CRTRPGMOD` に
+        `TGTCCSID` が無い**（`CPD0043`）。**保存形式の互換とコマンドの互換は別。**
+      - **`TGTRLS` はバイト列から読めない。** SAVF 内の `VxRyMz` は*オブジェクトの作成
+        リリース*で、復元可否を決める `TGTRLS` ではない（v4: 文字列 `V7R3M0` / `TGTRLS` は
+        `V7R1M0`）。**判定は `DSPSAVF` の `Release level`。**
+      - **配布元は GitHub `tools-400/irpgunit`**（SourceForge は 2024-11-03 に移行）。
+        ただし v4.0.3.r は SAVF 単体が無く、SourceForge の Update Site zip の
+        `Server/RPGUNIT.SAVF`（4,994,880 B / `sha256:3309f68e…54ea0`）に同梱。
+      - **`RSTLIB` だけでは終わらない場合がある。** v4 の `upload_savf.cmd` は
+        `A_INSTALL` の作成・実行まで指示するが、**既定名なら不要**（原典の記述どおり、
+        実際 `RSTLIB` だけで動いた）。v6 には `RPGUNIT1` が無いので v4 の手順は当たらない。
+      - `RUCALLTST` の結果出力の形は下の項目に採取済み。
       出所: `20260829-rpgunit-pub400-feasibility`。
+
+- [x] **RPGUnit をどこに入れるか決める** — 済。**SR-OSAKA に標準経路で入れる**（上で実施）。
+      pub400 は不可と確定（`RSTLIB` に要る `*ALLOBJ`/`*SAVSYS` が無い）。
+      条件（入手元とバージョンを記録・導入ライブラリーを分けて後から消せる形）は満たしている
+      ——`ASAOLIB` には混ぜず `RPGUNIT` に分離したので `DLTLIB`/`CLRLIB` で丸ごと戻せる。
 - [x] 実機操作レシピを skill 化する — 済。**大部分は起票時点で既にあった**
       （`.claude/skills/ibmi-remote/SKILL.md` 206 行に ssh / pub400 経由の
       メンバー送受信・コンパイル・エラー取得が揃っていた）。**閉じ忘れ。**
@@ -112,11 +123,25 @@ priority: 2           # cl(1) の次。設計書: docs/workflow/ibmi-dev-workflo
       実行手順に落とす。受け入れ条件: (1) 新規は設計書をオラクルにする (2) 既存は特性化と
       明記させる (3) ミューテーションで検出力を検品 (4) `ORDER(*REVERSE)` で独立性を検品。
       ※ 前提の「SQL ツールを MCP に配線する」は済（上）。**着手可能**。
-- [ ] 固定長（P 仕様書）で RPGUnit テストが書けることを実機確認する — 原典の例は
-      すべて `**free` で固定長の実例が無い。本 PJ の対象は固定長なので要確認
-      (needs: RPGUnit を SR-OSAKA に導入する)
-      ※ 置き場所は決着済み（2026-08-29: **SR-OSAKA に標準経路で入れる**）。
-      pub400 が不可なのは確定（`20260829-rpgunit-pub400-feasibility`）。導入が済めば着手できる。
+- [x] 固定長（P 仕様書）で RPGUnit テストが書けることを実機確認する — 済
+      （`20260829-rpgunit-sr-osaka`）。**書ける。** 原典の例はすべて `**free` だが、
+      `**free` を 1 行も含まない H/P/D/C 仕様のソースから
+      `/COPY RPGUNIT/QINCLUDE,TESTCASE`（775 行・**1 行目が `**free`**）を引いて
+      コンパイルも実行も通った。
+      - **対照つきで確かめた。** 最初の試行は本命も対照（`**free` 版）も落ちており、
+        対照が落ちたことで「固定長が原因ではない」と分かった。真因は `TESTCASE` が
+        **入れ子で非修飾の `/include qinclude,TEMPLATES`** を持つことで、`RPGUNIT` が
+        `*LIBL` に要る（外側の `/COPY` を修飾しても内側には効かない）。
+      - 結果: `RNS9305 … 00 highest severity` が両方で出て、`RUCALLTST` は
+        `2 test cases, 2 assertions, 1 failure, 0 error.`（わざと落とした 1 本が
+        `Expected 2, but was 3.` ＋ `(FIXTST2->FIXTST2:900)` で報告された）。
+      - **`RUCALLTST` の結果出力の形**（後段が読む先。スプール名は `QSYSPRT` ではなく **`RPGUNIT`**）:
+        最終行が集計（`FAILURE.` / `n test cases, n assertions, n failure, n error.`）、
+        失敗は `<手続き名> - FAILURE` ＋ 期待値/実際値 ＋ `(pgm->module:SEQNBR)`。
+        `OPTION(*SRCSTMT)` を付けていれば SEQNBR から元ソースに戻せる。
+        失敗時は `CPF9897` の escape も投げる（EVFEVENT とは別経路）。
+      - **実機の再現物**: `ASAOLIB/QUNITSRC`（`FIXTST`/`FREETST`/`FIXTST2`/`RUDRV2`）と
+        `ASAOLIB/FIXTST2 *SRVPGM`。
 - [x] **clPrompter との F4 衝突を確認する** — 済（`20260829-clprompter-f4-conflict`）。
       両者のマニフェストを直読して突き合わせた（`docs/research/code-for-ibmi.md` §3.1）。
       - **軸が違う**。向こうは `editorLangId`、本 PJ は `resourceExtname`。
