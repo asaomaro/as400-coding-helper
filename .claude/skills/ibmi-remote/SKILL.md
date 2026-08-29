@@ -1,6 +1,6 @@
 ---
 name: ibmi-remote
-description: IBM i 実機への転送・コンパイル・エラー取得を ssh で行う。「実機にコンパイルして」「ソースを転送して」「コンパイルエラーを見て」などのとき、または AI の自律ループ（編集→転送→コンパイル→修正）を回すときに使用する。
+description: IBM i 実機への転送・コンパイル・エラー取得・コンパイルリストの読み取り。ssh（pub400）と hostserver ライブラリ（SR-OSAKA。Node から直接）の 2 経路。「実機にコンパイルして」「ソースを転送して」「コンパイルエラーを見て」「実機で桁を確かめて」などのとき、または AI の自律ループ（編集→転送→コンパイル→修正）を回すときに使用する。
 allowed-tools: [Bash, Read, Write]
 ---
 
@@ -10,6 +10,18 @@ IBM i 実機（pub400 等）へ ssh で到達し、**ソースメンバーの送
 
 **ここに載っているコマンド列はすべて pub400（IBM i 7.5）で実行を確認済み**
 （2026-07-19）。未確認のものは「未確認」と明記してある。
+
+## どちらの経路を使うか
+
+**2 通りある。機械で決まる。**
+
+| 機械 | 経路 | 理由 |
+|---|---|---|
+| **pub400**（共用機・IBM i 7.5） | **ssh**（本書 1〜5 節） | ホストサーバーのポートが開いていない |
+| **SR-OSAKA**（自機・IBM i 7.3） | **hostserver ライブラリ**（本書 6 節） | Node から直接叩ける。ssh より速く、スプールも SQL も同じ経路で読める |
+
+**いまこの PJ の実機検証はほぼ SR-OSAKA / hostserver 経路**（DDS の桁・RPG III の
+桁属性・F 仕様の継続行…）。pub400 は共用機なので、**大量に流す検証は SR-OSAKA で行う**。
 
 ## 前提
 
@@ -181,7 +193,11 @@ system "CRTSRCPF FILE(<LIB>/QDDSSRC) RCDLEN(112) CCSID(5035) IGCDTA(*YES) TEXT('
 こうすれば UTF-8 の全角がそのまま入り、SO/SI はコピー時に挿入される
 （実機の画面で桁位置まで確認済み。`.aidev/works/20260827-dds-keyword-continuation/research.md` F4/F6）。
 
-## 引用符の扱い（実際に踏んだ罠）
+## 引用符の扱い（実際に踏んだ罠。**ssh 経路のみ**）
+
+> hostserver 経路（6 節）には**この問題は無い**。CL 文字列を JS の文字列として
+> そのまま渡すので、層が 1 つしかない。
+
 
 `ssh 'system "CL ..."'` は**引用符が 3 層**（ローカル shell / ssh / CL）になる。
 CL 文字列の中に `'` が要る場合、ローカルで単引用符を使うと壊れる。
@@ -191,6 +207,138 @@ CL 文字列の中に `'` が要る場合、ローカルで単引用符を使う
   `'/home/x/y'` を素直に書けるよう、外側を二重引用符にしておく
 - 複雑になったら **SQL/CL をファイルに書いて転送**し、`RUNSQLSTM SRCSTMF('...')` で
   実行する（この経路も確認済み。ただし SELECT は通らない）
+
+## 6. hostserver 経路（SR-OSAKA。Node から直接）
+
+`ts5250` の hostserver ライブラリを **Node のスクリプトから呼ぶ**。ssh を経由しないので
+速く、コマンド・IFS・SQL・スプールが**同じスクリプトの中で繋がる**。
+
+### 6.0 秘密の渡し方
+
+**`/workspaces/ts5250/.env` は読まない・値を出さない**（あちらの AGENTS.md の規約）。
+`--env-file` で渡すだけ。識別子は `.env.verify` にあり、**こちらは読んでよい**
+（`AS400_SYSTEM` / `AS400_LIB` / `AS400_IFS_DIR` / `AS400_PRTDEV`）。
+
+```sh
+cd /workspaces/ts5250 && node --env-file=.env --env-file=.env.verify <スクリプト>
+```
+
+### 6.1 接続の型（これを写して使う）
+
+```js
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
+const TS5250 = "/workspaces/ts5250";
+const { CommandConnection, IfsConnection, DbConnection, query, NetPrintConnection } =
+  await import(join(TS5250, "packages/hostserver/dist/index.js"));
+const { SecretCrypto } = await import(join(TS5250, "packages/server/dist/secret-crypto.js"));
+const profiles = JSON.parse(readFileSync(join(TS5250, "profiles.local.json"), "utf8"));
+const sys = profiles.systems.find(s => s.id === process.env.AS400_SYSTEM || s.name === process.env.AS400_SYSTEM);
+const creds = {
+  host: sys.host, user: sys.signon.user,
+  password: SecretCrypto.fromEnv()?.decrypt(sys.signon.passwordEnc)
+};
+const LIB = process.env.AS400_LIB, IFS = process.env.AS400_IFS_DIR;
+```
+
+| 接続 | 使いどころ |
+|---|---|
+| `CommandConnection` | CL コマンド（`.run()` が `{ success }` を返す） |
+| `IfsConnection` | IFS への読み書き（`writeFile` / `deleteFile`） |
+| `DbConnection` ＋ `query(db, sql)` | SQL。スプールの所在を引くのに使う |
+| `NetPrintConnection` | **スプールの本文を読む**（`readSpooledPages`） |
+
+### 6.2 最小のレシピ（送る → 型付け → コンパイル）
+
+```js
+const ifs = await IfsConnection.connect({ ...creds, resolvePort: true });
+try { await ifs.writeFile(`${IFS}/X.rpg`, new TextEncoder().encode(source), { create: true, truncate: true }); }
+finally { ifs.close(); }
+
+const cmd = await CommandConnection.connect({ ...creds, resolvePort: true });
+try {
+  await cmd.run(`CRTSRCPF FILE(${LIB}/QTMPSRC) RCDLEN(112)`);
+  await cmd.run(`CPYFRMSTMF FROMSTMF('${IFS}/X.rpg') TOMBR('/QSYS.LIB/${LIB}.LIB/QTMPSRC.FILE/X.MBR') MBROPT(*REPLACE) STMFCCSID(1208)`);
+  await cmd.run(`CHGPFM FILE(${LIB}/QTMPSRC) MBR(X) SRCTYPE(RPG)`);
+  const r = await cmd.run(`CRTRPGPGM PGM(${LIB}/X) SRCFILE(${LIB}/QTMPSRC) SRCMBR(X) REPLACE(*YES)`);
+} finally { cmd.close(); }
+```
+
+DBCS を含むなら `CRTSRCPF` に `CCSID(5035) IGCDTA(*YES)` を付ける（5 節の注記と同じ理由）。
+
+### 6.3 ライブラリー・リストは持ち越せない
+
+**`CommandConnection` はコマンドごとに別ジョブで動く。`ADDLIBLE` は次のコマンドに効かない。**
+
+外部記述ファイルはコンパイル時に `*LIBL` で解決されるので、これを知らないと
+
+```
+CPF5715  File CUSTMAS in library *LIBL not found
+```
+
+を踏む。**そして「F 仕様の書き方が違う」と誤診する**——`20260828-rpg3-fspec-reclen` が
+実際にそう結論して止まり、`20260828-rpg3-numeric-fields` で覆った（桁は最初から合っていた）。
+
+回避は 2 つ:
+
+- `*LIBL` に載るライブラリー（`QGPL` など）にファイルを置く
+- `SBMJOB CMD(...) INLLIBL(...)` で 1 つのジョブにまとめて流す
+
+### 6.4 コンパイル・リストを読む
+
+**`CRTRPGPGM` などが返すメッセージに欄ごとの理由は入らない。** 返るのは
+`QRG0008『Compile stopped. Severity level NN errors found』`まで。
+**どの桁が悪いのかはコンパイル・リスト（スプール）にしかない。**
+
+```js
+const q = await query(db, `SELECT SPOOLED_FILE_NAME, FILE_NUMBER, JOB_NAME
+  FROM QSYS2.OUTPUT_QUEUE_ENTRIES_BASIC
+  WHERE USER_NAME = CURRENT_USER AND SPOOLED_FILE_NAME = '${name}'
+  ORDER BY CREATE_TIMESTAMP DESC FETCH FIRST 1 ROWS ONLY`);
+const sp = q.rows[0];
+const [jobNumber, jobUser, jobName] = String(sp.JOB_NAME).split("/");
+const pages = await printer.readSpooledPages({
+  fileName: sp.SPOOLED_FILE_NAME, fileNumber: sp.FILE_NUMBER, jobName, jobUser, jobNumber
+});
+const text = pages.flatMap(p => (p.lines ?? p.rows ?? [])
+  .map(l => (typeof l === "string" ? l : l.text ?? ""))).join("\n");
+```
+
+**踏みやすい 3 つ:**
+
+- **スプール名は `QRPGLST` ではなく「対象の名前」**（`CRTRPGPGM` ならプログラム名、
+  `CRTDSPF` ならメンバー名。4.5 節も参照）。取り違えると **0 件しか返らず、
+  「メッセージが無い ＝ 正しい」と誤読する**。2026-08-29 に実際に踏み、
+  **でたらめな語まで「有効」に見えた**。
+- **件数が多いときは MCP のスプール取得を使わない。** 1 件で 18k トークンほど返る。
+  上のように**スクリプト内で読んで必要な行だけ出す**（50 件流しても会話は数十行）。
+- **`GENLVL` を上げたら「作成できたか」で判定しない。** `GENLVL(50)` では重大度 30 の
+  誤りがあっても**プログラムは作成される**。存在しない語まで「通った」ことになる。
+  **判定はメッセージ番号で行う。**
+
+### 6.5 対照を置く。片付けは数えて確かめる
+
+**対照（正しいと分かっている形・明らかに誤っている形）を必ず一緒に流す。**
+先頭と末尾の両方に置くと、**途中で診断が止まっていないこと**も分かる。
+
+> **対照が無ければ誤った結論を記録していた。** 6.4 のスプール名の取り違えは、
+> 対照の `ZZZZZZ`（存在しない語）が「有効」と出たことで気付いた。
+> 候補だけを流していたら、**30 語すべてを「有効」として定義に書き込んでいた。**
+
+**片付けは「消すコマンドを呼んだ」ではなく「残っていないこと」を数えて確かめる。**
+
+```js
+const left = await query(db, `SELECT COUNT(*) AS N FROM QSYS2.OUTPUT_QUEUE_ENTRIES_BASIC
+  WHERE USER_NAME = CURRENT_USER AND SPOOLED_FILE_NAME IN (...)`);
+const objs = await query(db, `SELECT OBJNAME FROM TABLE(QSYS2.OBJECT_STATISTICS('${LIB}','*ALL'))
+  WHERE OBJCREATED > CURRENT TIMESTAMP - 6 HOURS`);
+```
+
+> 2026-08-29、`DLTSPLF` の `JOB()` に `番号/ユーザー/名前#ファイル番号` と書いており
+> **書式が誤っていた**。`.catch(() => {})` で握り潰していたため気付かず、
+> **71 件が残っていた**。数えて初めて分かった。
+
+**スプールを消すときの書式**: `DLTSPLF FILE(<名前>) JOB(<番号/ユーザー/名前>) SPLNBR(<番号>)`。
 
 ## 未確認事項
 

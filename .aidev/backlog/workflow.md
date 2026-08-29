@@ -19,9 +19,17 @@ priority: 2           # cl(1) の次。設計書: docs/workflow/ibmi-dev-workflo
 - [ ] RPGUnit の pub400 導入可否を確認する — RPGUNIT ライブラリの導入を試み、
       `@ibm/itest` で 1 本実行する。あわせて **`RUCALLTST` の結果出力の形**を採取する
       （失敗は CPF9897 例外で伝わるため EVFEVENT とは別経路。設計書 4.2 / 7 章 #2）
-- [ ] 実機操作レシピを skill 化する — メンバー送受信（CCSID レシピ）・コンパイル
-      （liblist + *EVENTF）・エラー取得の 3 レシピを `.claude/skills/` に。
-      資格情報は環境変数のみ（設計書 4.1）(needs: EVFEVENT の SQL 取得を実機確認する)
+- [x] 実機操作レシピを skill 化する — 済。**大部分は起票時点で既にあった**
+      （`.claude/skills/ibmi-remote/SKILL.md` 206 行に ssh / pub400 経由の
+      メンバー送受信・コンパイル・エラー取得が揃っていた）。**閉じ忘れ。**
+      足りなかった 2 点を `20260829-ibmi-remote-hostserver` で追記（+144 行 / 削除 0）:
+      - **ライブラリー・リストが持ち越せない**こと（`ADDLIBLE` は次のコマンドに効かない）。
+        知らないと `CPF5715` を桁の問題と誤診する（実際に `20260828-rpg3-fspec-reclen` で発生）。
+      - **いま実際に使っている hostserver 経路**（`ts5250` を Node から直接）。
+        接続の型・最小のレシピ・コンパイルリストの読み方・対照と片付け。
+      **この gap は同じ日に害を出した**——`CRTRPGPGM` のスプール名を `QRPGLST` と
+      思い込んで 0 件しか返らず、**でたらめな語まで「有効」に見えた**。
+      ところが同じ skill の 4.5 節に「スプール名はメンバー名」と**既に書いてあった**。
 - [ ] SQL ツールを MCP に配線する (repo:as400-web-emulator) — core の `DbConnection` を
       MCP ツール（query 系）として公開。書き込みは対象スキーマ検証付き
       （設計書 4.2 / 6 章 #1。あちらの backlog `hostserver.md` と合流）
