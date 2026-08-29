@@ -326,6 +326,21 @@ priority: 2           # cl(1) の次。設計書: docs/workflow/ibmi-dev-workflo
 
 - [ ] E2E ハーネスを DSL 化する (repo:as400-web-emulator) — example-automation.mjs の
       雛形をパッケージ化（レポーター・フィクスチャ管理）
-- [ ] CI を整える — 本 PJ の lint core と as400-web-emulator のオフライン回帰を CI で
+- [x] **CI を整える（本 PJ 側）** — 済（`20260829-ci-regen-coverage`）。
+      **lint core の CI 化は起票より前に既に済んでいた**（閉じ忘れ）:
+      `verify-lint-core.mjs`（境界）・桁位置 lint（サンプルで指摘ゼロ）・単体テスト・
+      統合・GUI e2e が `prompter-definitions.yml` で回っている。
+      残っていたのは**再生成チェックの取りこぼし**で、そちらを直した:
+      - **差分検査が 3 つの出力先を列挙**しており（`prompter/cl` / `navigation` / `completion`）、
+        **`prompter/dds` `prompter/cmd` `prompter/rpg` が漏れていた**。
+        つまり **DDS の定義 JSON は手で直しても CI が気付かない**状態だった。
+        列挙をやめて `vscode-extension/resources` 全体を見るようにした。
+      - 生成器も 2 つ抜けていた（`generate-dds-columns.mjs --lang=en` /
+        `generate-rpg-io-definitions.mjs`）。後者は一度も CI で回っていなかった。
+      - 手編集をコミットすると落ちることを確認済み。既存のドリフトはゼロ。
+
+- [ ] **as400-web-emulator のオフライン回帰を CI で** (repo:as400-web-emulator) —
+      上の項目の残り半分。**別リポジトリなのでこのリポジトリからは着手できない**
+      （ローカルにチェックアウトが無い）。出所: `20260829-ci-regen-coverage`。
 - [ ] PowerVS トライアル環境の手順を文書化する — 申請〜接続〜片付け（設計書 5.1）
 - [ ] チーム向け導入手順を書く — 一人検証の完了後（設計書 5.3）

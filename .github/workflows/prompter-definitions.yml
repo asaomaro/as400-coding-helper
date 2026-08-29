@@ -58,6 +58,9 @@ jobs:
           # 「差分が出ないこと」が常に失敗する（PR#95 以降ここが抜けていた）。
           node docs/origin/generate-cdml-rules.mjs
           node docs/origin/generate-dds-columns.mjs
+          # 英語版の桁・ラベル（20260829-dds-en-labels）。忘れると en の生成物が
+          # 再生成されず、ドリフトが検出されない。
+          node docs/origin/generate-dds-columns.mjs --lang=en
           node docs/origin/generate-dds-keywords.mjs
           node docs/origin/generate-dds-keyword-syntax.mjs
           node docs/origin/generate-dds-keywords.mjs --lang=en
@@ -74,10 +77,18 @@ jobs:
           node docs/origin/generate-dds-prompter.mjs
           node docs/origin/generate-dds-prompter.mjs --lang=en
           node docs/origin/generate-rpg-spec-definitions.mjs
-          if ! git diff --quiet -- vscode-extension/resources/prompter/cl vscode-extension/resources/navigation vscode-extension/resources/completion; then
+          # I/O 仕様書の 8 定義（レコード識別 / フィールド × プログラム記述 / 外部記述）。
+          # 一度も CI で回っていなかった。
+          node docs/origin/generate-rpg-io-definitions.mjs
+          # **対象を列挙しない。** 以前は prompter/cl・navigation・completion の 3 つを
+          # 並べており、出力先が増えたときに足し忘れても何も起きなかった。実際
+          # prompter/dds・prompter/cmd・prompter/rpg の 3 つが漏れていて、
+          # **DDS の定義 JSON は手で直しても CI が気付かない**状態だった。
+          # resources 全体を見れば、生成器が増えても同期漏れが起きない。
+          if ! git diff --quiet -- vscode-extension/resources; then
             echo "::error::定義 JSON が生成結果と一致しません。"
             echo "::error::JSON を手で直さず、生成スクリプトを直して再生成してください。"
-            git diff --stat -- vscode-extension/resources/prompter/cl vscode-extension/resources/navigation vscode-extension/resources/completion
+            git diff --stat -- vscode-extension/resources
             exit 1
           fi
 
