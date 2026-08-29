@@ -33,10 +33,46 @@ const NAV = join(ROOT, "vscode-extension/resources/navigation");
 const OUT = join(ROOT, `vscode-extension/resources/prompter/dds/${LANG}`);
 
 const TYPES = [
-  { key: "DDS-PF", overview: "PF-LF-POSITIONAL.html", prefix: "FIELD-PF-", title: "物理/論理ファイル" },
-  { key: "DDS-DSPF", overview: "DSPF-POSITIONAL.html", prefix: "FIELD-DSPF-", title: "表示装置ファイル" },
-  { key: "DDS-PRTF", overview: "PRTF-POSITIONAL.html", prefix: "FIELD-PRTF-", title: "印刷装置ファイル" }
+  { key: "DDS-PF", overview: "PF-LF-POSITIONAL.html", prefix: "FIELD-PF-" },
+  { key: "DDS-DSPF", overview: "DSPF-POSITIONAL.html", prefix: "FIELD-DSPF-" },
+  { key: "DDS-PRTF", overview: "PRTF-POSITIONAL.html", prefix: "FIELD-PRTF-" }
 ];
+
+/**
+ * **表示に出る文字を 1 か所に集める。**
+ *
+ * 以前は種別名も欄の説明もブランクの接頭辞も生成器にじか書きされており、
+ * `--lang=en` で作った定義に**日本語が 146 箇所**残っていた。
+ *
+ * 訳すのは**説明とラベルだけ**。桁・欄の名前・選択肢の値といった**事実は訳さない**
+ * ——欄の名前は `dds-field-labels{,.en}.json`（原典から生成）、値は原典の詳細ページから来る。
+ * RPG 側の規約（`docs/origin/rpg-spec-en-strings.json`）と同じ考え方。
+ */
+const STRINGS = {
+  ja: {
+    title: { "DDS-PF": "物理/論理ファイル", "DDS-DSPF": "表示装置ファイル", "DDS-PRTF": "印刷装置ファイル" },
+    columns: range => `（${range} 桁目）`,
+    blank: meaning => `（ブランク）${meaning}`,
+    option: (value, meaning) => `${value}（${meaning}）`,
+    fileDescription: title => `${title}の定位置項目（A 仕様書）`,
+    fileHelp: title =>
+      `${title}の 1-44 桁は定位置項目、45-80 桁はキーワード項目。` +
+      "同じ A 仕様書でも用途で桁の意味が変わるため、種別ごとに定義を分けている。",
+    keywordHelp: "キーワードを書く欄。キーワードの一覧と構文は補完（Ctrl+Space）で出る。"
+  },
+  en: {
+    title: { "DDS-PF": "physical and logical files", "DDS-DSPF": "display files", "DDS-PRTF": "printer files" },
+    columns: range => ` (position${/-/u.test(range) ? "s" : ""} ${range})`,
+    blank: meaning => `(Blank) ${meaning}`,
+    option: (value, meaning) => `${value} (${meaning})`,
+    fileDescription: title => `Positional entries for ${title} (A specification)`,
+    fileHelp: title =>
+      `Positions 1-44 of ${title} are positional entries; positions 45-80 are keyword entries. ` +
+      "The same A specification means different things per file type, so each type has its own definition.",
+    keywordHelp: "Keyword area. The keyword list and syntax are available from completion (Ctrl+Space)."
+  }
+};
+const T = STRINGS[LANG] ?? STRINGS.ja;
 
 const decode = text =>
   text
@@ -229,7 +265,7 @@ function parseDetail(file) {
   const options = [];
   const addBlank = meaning => {
     if (!options.some(o => o.value === "")) {
-      options.unshift({ label: `（ブランク）${meaning.slice(0, 36)}`, value: "" });
+      options.unshift({ label: T.blank(meaning.slice(0, 36)), value: "" });
     }
   };
   const addOption = (term, rawMeaning) => {
@@ -253,7 +289,7 @@ function parseDetail(file) {
     if (either) {
       addBlank(meaning);
       if (!options.some(o => o.value === either[1])) {
-        options.push({ label: `${either[1]}（${meaning.slice(0, 40)}）`, value: either[1] });
+        options.push({ label: T.option(either[1], meaning.slice(0, 40)), value: either[1] });
       }
       return;
     }
@@ -268,7 +304,7 @@ function parseDetail(file) {
     if (orBlank && single) {
       addBlank(orBlank[1].trim());
       if (!options.some(o => o.value === single[1])) {
-        options.push({ label: `${single[1]}（${orBlank[1].trim().slice(0, 40)}）`, value: single[1] });
+        options.push({ label: T.option(single[1], orBlank[1].trim().slice(0, 40)), value: single[1] });
       }
       return;
     }
@@ -277,7 +313,7 @@ function parseDetail(file) {
     // 数字も落とさない（データ・タイプの「5」= 2 進文字が該当する）。
     const value = /^([A-Z0-9])(?:\s*[（(].*[）)])?$/u.exec(term);
     if (!value || options.some(o => o.value === value[1])) return;
-    options.push({ label: `${value[1]}（${meaning.slice(0, 40)}）`, value: value[1] });
+    options.push({ label: T.option(value[1], meaning.slice(0, 40)), value: value[1] });
   };
 
   /**
@@ -313,7 +349,7 @@ function parseDetail(file) {
       if (!/DBCS/u.test(note[1])) continue;
       for (const m of note[1].matchAll(/\b([A-Z])\s*[（(]([^)）]{1,12})[）)]/gu)) {
         if (options.some(o => o.value === m[1])) continue;
-        options.push({ label: `${m[1]}（${m[2]}）`, value: m[1] });
+        options.push({ label: T.option(m[1], m[2]), value: m[1] });
       }
     }
   }
@@ -407,12 +443,17 @@ function addProseBlank(detail, typeKey, column) {
   const meaning = entry.meaning[LANG] ?? entry.meaning.ja;
   return {
     ...detail,
-    options: [{ label: `（ブランク）${meaning}`, value: "" }, ...detail.options]
+    options: [{ label: T.blank(meaning), value: "" }, ...detail.options]
   };
 }
 
 const columns = JSON.parse(readFileSync(join(NAV, "dds-keyword-columns.json"), "utf8"));
-const labels = JSON.parse(readFileSync(join(NAV, "dds-field-labels.json"), "utf8"));
+// **欄の名前は言語別**。英語版は `dds-field-labels.en.json`（原典の英語ページから生成）。
+// 無ければ日本語版に落ちる（RPG III と同じ——出せないより日本語でも出る方がよい）。
+const labelFile = LANG === "ja" ? "dds-field-labels.json" : `dds-field-labels.${LANG}.json`;
+const labels = JSON.parse(
+  readFileSync(join(NAV, existsSync(join(NAV, labelFile)) ? labelFile : "dds-field-labels.json"), "utf8")
+);
 
 /** 桁定義は「1 始まりの開始桁」の配列。末尾の欄は 80 桁目まで。 */
 const SOURCE_WIDTH = 80;
@@ -447,12 +488,10 @@ for (const type of TYPES) {
     const base = {
       // 入力欄の名前は表示言語に依らない内部キー。桁で決める。
       name: `C${start}`,
-      description: `${label}（${length > 1 ? `${start}-${end - 1}` : start} 桁目）`,
+      description: `${label}${T.columns(length > 1 ? `${start}-${end - 1}` : `${start}`)}`,
       help:
         detail.help ??
-        (keywordArea
-          ? "キーワードを書く欄。キーワードの一覧と構文は補完（Ctrl+Space）で出る。"
-          : undefined),
+        (keywordArea ? T.keywordHelp : undefined),
       required: false,
       sourceStart: start,
       sourceLength: length,
@@ -480,10 +519,8 @@ for (const type of TYPES) {
 
   const definition = {
     keyword: type.key,
-    description: `${type.title}の定位置項目（A 仕様書）`,
-    help:
-      `${type.title}の 1-44 桁は定位置項目、45-80 桁はキーワード項目。` +
-      "同じ A 仕様書でも用途で桁の意味が変わるため、種別ごとに定義を分けている。",
+    description: T.fileDescription(T.title[type.key]),
+    help: T.fileHelp(T.title[type.key]),
     source: `IBM Documentation ${type.overview}`,
     parameters
   };
