@@ -1,6 +1,6 @@
 ---
 name: ibmi-remote
-description: IBM i 実機への転送・コンパイル・エラー取得・コンパイルリストの読み取り。ssh（pub400）と hostserver ライブラリ（SR-OSAKA。Node から直接）の 2 経路。「実機にコンパイルして」「ソースを転送して」「コンパイルエラーを見て」「実機で桁を確かめて」などのとき、または AI の自律ループ（編集→転送→コンパイル→修正）を回すときに使用する。
+description: IBM i 実機への転送・コンパイル・エラー取得・コンパイルリストの読み取り。ssh（pub400）と hostserver ライブラリ（SR-OSAKA。Node から直接）の 2 経路。RPGUnit（SR-OSAKA・v4.0.3.r 導入済み）での単体テストも扱う。「実機にコンパイルして」「ソースを転送して」「コンパイルエラーを見て」「実機で桁を確かめて」「RPGUnit でテストを書いて／走らせて」「RUCALLTST の結果を見て」などのとき、または AI の自律ループ（編集→転送→コンパイル→修正）を回すときに使用する。
 allowed-tools: [Bash, Read, Write]
 ---
 
@@ -340,13 +340,142 @@ const objs = await query(db, `SELECT OBJNAME FROM TABLE(QSYS2.OBJECT_STATISTICS(
 
 **スプールを消すときの書式**: `DLTSPLF FILE(<名前>) JOB(<番号/ユーザー/名前>) SPLNBR(<番号>)`。
 
+## 7. RPGUnit（単体テスト）
+
+**SR-OSAKA に導入済み**（`RPGUNIT` ライブラリー・iRPGUnit **v4.0.3.r**）。
+導入と検証の記録は `.aidev/works/20260829-rpgunit-sr-osaka/`。
+
+### 7.1 バージョンは v4.0.3.r（最新は 7.3 で使えない）
+
+**最新の v6 系を入れてはいけない。** `RSTLIB` は通る（`TGTRLS(V7R3M0)`）が、
+`RUCRTRPG` が `CRTRPGMOD … TGTCCSID(…)` を発行し、**7.3 の `CRTRPGMOD` に
+`TGTCCSID` が無い**ため必ず落ちる。
+
+```
+CPD0043  Keyword TGTCCSID not valid for this command.
+CPF0001  Error found on CRTRPGMOD command.
+CPF9897  Unable to create test <名前>.
+```
+
+**保存形式の互換（`TGTRLS`）と、コマンドが使うキーワードの互換は別物。**
+「復元できた＝使える」と読まないこと。
+
+**`TGTRLS` は SAVF のバイト列からは読めない。** 中に見える `VxRyMz` は
+*オブジェクトの作成リリース*で、復元可否を決める値ではない（v4 はファイル内 `V7R3M0` /
+`TGTRLS` は `V7R1M0`）。**判定は `DSPSAVF` の `Release level`。**
+
+入手元は GitHub `tools-400/irpgunit`（SourceForge は 2024-11-03 に移行）。
+ただし v4.0.3.r は SAVF 単体が無く、SourceForge の Update Site zip の
+`Server/RPGUNIT.SAVF`（4,994,880 B / `sha256:3309f68e…54ea0`）に同梱されている。
+
+### 7.2 テストの形（固定長で書ける）
+
+**NOMAIN のサービスプログラム**。`export` した手続きのうち **名前が `test` で始まるもの**が
+テストケースになる。
+
+| 手続き | 呼ばれるタイミング |
+|---|---|
+| `setUpSuite` / `tearDownSuite` | スイート全体の前後に 1 回 |
+| `setUp` / `tearDown` | **各テストの前後** |
+| `test*` | テストケース本体 |
+
+**原典の例はすべて `**free` だが、固定長で書ける**（実機で確認済み。対照つき）。
+`RPGUNIT/QINCLUDE,TESTCASE` は 1 行目が `**free` でも、固定長の主ソースから `/COPY` できる。
+
+```
+     H NOMAIN OPTION(*SRCSTMT:*NODEBUGIO)
+      /COPY RPGUNIT/QINCLUDE,TESTCASE
+     PTESTPASS         B                   EXPORT
+     DTESTPASS         PI
+     C                   CALLP     iEqual(2:2)
+     PTESTPASS         E
+```
+
+**`OPTION(*SRCSTMT)` を付ける。** 失敗報告のソース位置（`(PGM->MODULE:900)`）が
+これで元のソース行に戻せる。
+
+判定に使う手続き（`/COPY qinclude,TESTCASE` で入る）:
+
+| | 用途 |
+|---|---|
+| `iEqual(expected : actual [: fieldName])` | 数値 |
+| `aEqual(expected : actual [: fieldName])` | 文字 |
+| `nEqual(expected : actual [: fieldName])` | 標識 |
+| `assert(condition : msgIfFalse)` | 任意の条件 |
+| `fail(msg)` | 無条件に失敗させる |
+| `assertJobLogContains(msgId)` | ジョブログにそのメッセージが出たか |
+
+例題が実機に 19 本ある（`RPGUNIT/QTESTCASES,TESTPGM01`〜`19`。テンプレートは `QSRC,TEMPLATE`）。
+
+### 7.3 ビルドと実行
+
+```
+RUCRTRPG   TSTPGM(<lib>/<名前>) SRCFILE(<lib>/<ソースPF>) SRCMBR(<メンバー>)
+RUCALLTST  TSTPGM(<lib>/<名前>)
+```
+
+`RUCALLTST` の主なパラメータ（`RPGUNIT/QCMD,RUCALLTST` の定義から）:
+
+| パラメータ | 値 | 既定 |
+|---|---|---|
+| `TSTPRC` | `*ALL` / 手続き名（最大 250） | `*ALL` |
+| **`ORDER`** | `*API` / **`*REVERSE`** | `*API` |
+| `DETAIL` | `*BASIC` / `*ALL` | `*BASIC` |
+| `OUTPUT` | `*ALLWAYS` / `*ERROR` / `*NONE` | `*ALLWAYS` |
+| `LIBL` | `*CURRENT` / `*JOBD` / ライブラリー名（最大 250） | `*CURRENT` |
+| `RCLRSC` | `*NO` / `*ALWAYS` / `*ONCE` | `*NO` |
+| `XMLSTMF` | IFS のパス（最大 1024） | `*NONE` |
+
+`ORDER(*REVERSE)` は設計書 4.2 の「テストの独立性の検品」に使える。
+`XMLSTMF` は CI 向けの XML 出力（**未検証**）。
+他に `CMPMOD`（モジュール単体）・`RUCRTCBL`（COBOL）・`UPDLIB LIB(<名前>)`
+（ライブラリー名を変えた後の参照貼り直し）がある。
+
+### 7.4 結果の読み方
+
+**スプール名は `RPGUNIT`**（`QSYSPRT` ではない。`QSYSPRT` で探すと 0 件になり
+「メッセージが無い＝成功」と誤読する。4.5 節の `QRPGLST` と同じ罠）。
+
+```
+*** Tests of FIXTST2 ***
+iRPGUnit    : v4.0.3
+IBM i       : V7R3M0
+TESTFAIL - FAILURE
+Expected 2, but was 3.
+  TESTFAIL (FIXTST2->FIXTST2:900)
+-----------------------
+FAILURE. 2 test cases, 2 assertions, 1 failure, 0 error.
+```
+
+- **最終行が集計**（`SUCCESS.` / `FAILURE.` ＋ `n test cases, n assertions, n failure, n error.`）。
+- 失敗は `<手続き名> - FAILURE` ＋ 期待値/実際値 ＋ `(pgm->module:SEQNBR)`。
+- **失敗があると `CPF9897` の escape も投げる**（EVFEVENT とは別経路。設計書 4.2 / 7 章）。
+
+### 7.5 踏みやすい罠（すべて実際に踏んだ）
+
+- **`RPGUNIT` を `*LIBL` に載せる。** `TESTCASE` が入れ子で**非修飾の**
+  `/include qinclude,TEMPLATES` を持つので、**外側の `/COPY` を修飾しても足りない**。
+  6.3 のとおり `ADDLIBLE` は次のコマンドに効かないので、**CL 1 本にまとめる**か
+  `SBMJOB … INLLIBL(RPGUNIT …)` で回す。
+- **CL の中では `RPGUNIT/RUCRTRPG` と修飾する。** コマンド解決は**コンパイル時**なので、
+  実行時の `ADDLIBLE` では間に合わず `CPD0030 Command … not found` になる。
+- **バッチは `INQMSGRPY(*DFT)` を付ける。** 監視していない例外が照会メッセージになり、
+  **ジョブが `MSGW` のまま残る**（実際に 150 秒以上残し `ENDJOB` で回収した）。
+- **`RUCRTRPG` は既定の 20 秒では終わらない。** `CommandConnection.connect({ timeoutMs })`
+  を伸ばすか `SBMJOB` で切り離す（6 節の経路）。
+- **入れ直しは `CLRLIB` → `RSTLIB`。** `DLTLIB` は `CPF2113` で通らないことがある。
+  ロックの主は `QZRCSRVS` の**事前開始ジョブ**で、`ADDLIBLE` の名残の `*SHRRD` を持つ。
+  `ENDJOB` すれば消えるが**他人の接続を巻き込む**ので `CLRLIB` で足りる。
+  なお `DLTLIB` の失敗を確認せずに `RSTLIB` を続けると、**版が混在する**
+  （`CPF3283` でソース物理ファイルだけ拒否され、プログラムは置き換わる）。
+
 ## 未確認事項
 
 以下は本書では確認していない。使う前に確かめること。
 
-- **RPGUnit**（`RUCRTRPG` / `RUCALLTST`）の導入と実行 → backlog P1
-- **固定長（P 仕様書）での RPGUnit テスト**のコンパイル → backlog P2
-- `RUCALLTST` の結果出力の形式
+- `RUCALLTST` の **`XMLSTMF`**（CI 向け XML 出力）の中身
+- **pub400 での RPGUnit** は不可と確定（`RSTLIB`/`RSTOBJ`/`CRTLIB` が `CPF9802`）。
+  7 節は **SR-OSAKA 専用**。
 
 ## 参照
 
