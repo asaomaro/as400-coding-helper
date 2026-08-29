@@ -48,9 +48,25 @@ priority: 2           # cl(1) の次。設計書: docs/workflow/ibmi-dev-workflo
       **この gap は同じ日に害を出した**——`CRTRPGPGM` のスプール名を `QRPGLST` と
       思い込んで 0 件しか返らず、**でたらめな語まで「有効」に見えた**。
       ところが同じ skill の 4.5 節に「スプール名はメンバー名」と**既に書いてあった**。
-- [ ] SQL ツールを MCP に配線する (repo:as400-web-emulator) — core の `DbConnection` を
-      MCP ツール（query 系）として公開。書き込みは対象スキーマ検証付き
-      （設計書 4.2 / 6 章 #1。あちらの backlog `hostserver.md` と合流）
+- [x] **SQL ツールを MCP に配線する** (repo:**ts5250**) — 済（配線は起票より前に完了。閉じ忘れ）。
+      **リポジトリは `as400-web-emulator` → `ts5250` に改名**されている（`/workspaces/ts5250`）。
+      `host_sql` が `packages/server/src/host-server-tools.ts:144` にあり、
+      `mcp-server.ts:14` の `registerHostServerTools` で MCP に出ている。
+      列メタデータ・`maxRows` の打ち切り（`truncated`）・LOB のしきい値まで実装済み。
+      - **ただし受け入れ条件の「対象スキーマ検証」は実装されていない。**
+        代わりに `allowWrite: true` の明示を要求する設計で、**コードに理由が書いてある**——
+        「これは安全の境界ではない。`host_command` から `RUNSQL` を撃てば同じことが
+        できるので、SELECT 専用に縛っても書き込みは止まらない。意図を毎回述べさせるためのもの」。
+        **設計書 6 章 #1 の前提（SQL ツール側のスキーマ検証で書き込みを縛る）が
+        成り立たない**ことを示しているので、下の項目に送った。
+      確認: `20260829-mcp-wiring-stocktake`。
+
+- [ ] **書き込みの安全境界をどこに置くか決める** — 設計書 6 章 #1 は
+      「MCP の SQL ツール側でスキーマ検証」を求めているが、ts5250 の実装は
+      **それでは境界にならない**と判断して `allowWrite` の明示だけを課している
+      （`host_command` から `RUNSQL` が撃てるため）。設計書を実装に合わせるか、
+      `host_command` も含めた別の境界（接続プロファイル側の権限で縛る等）を置くかを決める。
+      出所: `20260829-mcp-wiring-stocktake`。
 
 ## P2: 品質向上
 
@@ -74,10 +90,18 @@ priority: 2           # cl(1) の次。設計書: docs/workflow/ibmi-dev-workflo
       - 資源は**名前とレベルだけ**にした（13.7 KB）。`dspfLayout` は WebView にも
         束ねられるので、解説つきの `dds-keywords.json` を取り込まない。
       - 実測: 単体 1050 件（+12）・既定 ON の規則が 9 → 10。
-- [ ] 任意 CL 実行・IFS 書き込みを MCP に配線する (repo:as400-web-emulator) —
-      `CommandConnection` / `IfsConnection` の公開（設計書 F3 の不足 2）
-- [ ] 既存スプール読み取りを MCP に配線する (repo:as400-web-emulator) —
-      Network Print 経由 `listSpooledFiles` / `readSpooledText`（コンパイルリスト取得に必要）
+- [x] **任意 CL 実行・IFS 書き込みを MCP に配線する** (repo:**ts5250**) — 済（閉じ忘れ）。
+      `host_command`（`host-server-tools.ts:624`）/ `host_write_file`（`:774`）/
+      `host_read_file`（`:745`）。確認: `20260829-mcp-wiring-stocktake`。
+- [x] **既存スプール読み取りを MCP に配線する** (repo:**ts5250**) — 済（閉じ忘れ）。
+      `host_list_spools`（`host-server-tools.ts:660`）/ `host_get_spool`（`:697`）。
+      **実際にこの作業で使っている**——DDS の実機検証でコンパイル・リストを読むのに
+      `readSpooledPages` 経路を回した（`20260829-dds-restricted-expand` ほか）。
+      確認: `20260829-mcp-wiring-stocktake`。
+
+  なお ts5250 の MCP には **`host_*` が 24 個**登録されている（上記のほか
+  `host_call_program` / `host_dtaq_*` / `host_list_jobs` / `host_list_objects` /
+  `host_sql_explain` / `host_upload_table` 等）。起票時の想定より広い。
 - [ ] レシピを CLI 化する — 実証済みレシピを npm パッケージに固定化
       (needs: 実機操作レシピの skill 化)
 - [ ] AI によるテスト生成の方式を確立する — 設計書 4.2「AI にテストを書かせる場合の方針」を
