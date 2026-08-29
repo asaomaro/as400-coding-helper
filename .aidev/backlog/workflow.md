@@ -16,9 +16,27 @@ priority: 2           # cl(1) の次。設計書: docs/workflow/ibmi-dev-workflo
       **SQL は不可**（`RUNSQLSTM` は SQL0084 / PASE `db2` は権限なし）で
       `CPYTOSTMF` を使う。行・桁・msgId・重大度が取れることまで確認。
       コマンド列は skill `ibmi-remote` に、訂正は設計書 4.1 に反映
-- [ ] RPGUnit の pub400 導入可否を確認する — RPGUNIT ライブラリの導入を試み、
-      `@ibm/itest` で 1 本実行する。あわせて **`RUCALLTST` の結果出力の形**を採取する
-      （失敗は CPF9897 例外で伝わるため EVFEVENT とは別経路。設計書 4.2 / 7 章 #2）
+- [x] **RPGUnit の pub400 導入可否を確認する** — 済（`20260829-rpgunit-pub400-feasibility`）。
+      **pub400 には入れられない。確定。** 副作用ゼロで確かめた（読み取り ＋ `CHKOBJ` のみ）。
+      - pub400 の一般アカウント（`MARO`）は **特殊権限が 1 つも無い**（`SPECIAL_AUTHORITIES` が空）。
+      - **標準経路が塞がっている**。RPGUnit は save file 配布で `RSTLIB` が要るが
+        **`CPF9802`**（`RSTOBJ` も同じ）。
+      - **`RPGUNIT` という名前のライブラリすら作れない**（`CRTLIB` も `CPF9802`）。
+        自分のライブラリは `MARO1` / `MARO2` / `MAROB` の 3 つだけ。
+      - **ビルド系（`CRTBNDRPG` / `CRTSRVPGM` / `CRTCMD` / `CRTMSGF` 等）は使える**ので
+        「絶対に無理」ではないが、RPGUnit のビルドは**ライブラリ名 `RPGUNIT` を前提**に
+        しており、別名で入れるには手直しが要る。**やるかどうかは労力の判断。**
+      - **SR-OSAKA なら標準経路で入る**（`*ALLOBJ` ＋ `*SAVSYS` があり `RSTLIB` が通る）。
+      - `RUCALLTST` の結果出力の採取は導入が前提なので**未着手**（下の項目に送った）。
+
+- [ ] **RPGUnit をどこに入れるか決める** — pub400 が不可と確定したので、選択肢は 2 つ。
+      (a) **SR-OSAKA に標準経路で入れる**（権限は足りている。ただし
+      **第三者の save file を利用者の機械に入れる**判断が要る）。
+      (b) **pub400 に自分のライブラリ名でソースからビルドする**（道具は揃っているが
+      RPGUnit 側のライブラリ名の前提を手直しする労力が要る）。
+      決まったら `@ibm/itest` の実行と **`RUCALLTST` の結果出力の形**の採取まで行う
+      （失敗は CPF9897 例外で伝わるため EVFEVENT とは別経路。設計書 4.2 / 7 章 #2）。
+      出所: `20260829-rpgunit-pub400-feasibility`。
 - [x] 実機操作レシピを skill 化する — 済。**大部分は起票時点で既にあった**
       （`.claude/skills/ibmi-remote/SKILL.md` 206 行に ssh / pub400 経由の
       メンバー送受信・コンパイル・エラー取得が揃っていた）。**閉じ忘れ。**
@@ -68,7 +86,9 @@ priority: 2           # cl(1) の次。設計書: docs/workflow/ibmi-dev-workflo
       壁の解消が前提 (needs: SQL ツールを MCP に配線する)
 - [ ] 固定長（P 仕様書）で RPGUnit テストが書けることを実機確認する — 原典の例は
       すべて `**free` で固定長の実例が無い。本 PJ の対象は固定長なので要確認
-      (needs: RPGUnit の pub400 導入可否を確認する)
+      (needs: RPGUnit をどこに入れるか決める)
+      ※ 前提が変わった。**pub400 には入れられないことが確定**したので
+      （`20260829-rpgunit-pub400-feasibility`）、どこに入れるかが決まらないと着手できない。
 - [x] **clPrompter との F4 衝突を確認する** — 済（`20260829-clprompter-f4-conflict`）。
       両者のマニフェストを直読して突き合わせた（`docs/research/code-for-ibmi.md` §3.1）。
       - **軸が違う**。向こうは `editorLangId`、本 PJ は `resourceExtname`。
