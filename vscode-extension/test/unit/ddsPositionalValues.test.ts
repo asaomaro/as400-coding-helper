@@ -2,6 +2,9 @@ import { strict as assert } from "node:assert";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import type { PrompterDefinition } from "../../src/prompter/types";
+import { lintFile } from "../../src/lint/engine";
+import { defaultResourcesDir, loadDefinitions } from "../../src/lint/defsLoader";
+import { defaultEnabledRules } from "../../src/lint/rules/index";
 
 /**
  * **DDS の定位置欄の「有効な値」。**
@@ -94,5 +97,84 @@ suite("DDS 定位置欄の有効な値", () => {
     for (const [type, column] of [["DDS-DSPF", 35], ["DDS-DSPF", 38], ["DDS-PF", 38]] as const) {
       assert.equal(valuesAt("ja", type, column)[0], "", `${type} ${column} 桁目`);
     }
+  });
+});
+
+/**
+ * **`restricted-value` は「網羅で確かめた欄」だけを見る。**
+ *
+ * `restricted: true` が付くのは、**実機で全空間（1 文字なら 37 通り）を試して
+ * 原典と一致した欄だけ**。列挙された値だけ試しても「漏れが無い」ことは分からない。
+ *
+ * 確かめずに立てると**正しいソースを弾く**——実際、印刷装置の 35 桁は原典に無い
+ * `G` / `O` を実機が受ける（`20260829-dds-restricted-enable/verify/probe-confirm.mjs`）。
+ */
+suite("DDS の restricted-value", () => {
+  const RESOURCES = defaultResourcesDir(__dirname);
+  const put = (line: string, column: number, value: string): string => {
+    const chars = line.padEnd(80, " ").split("");
+    for (let i = 0; i < value.length; i += 1) chars[column - 1 + i] = value[i];
+    return chars.join("").replace(/ +$/u, "");
+  };
+  const field = (name: string, usage: string, row: number): string =>
+    put(put(put(put(put(put(" ".repeat(80), 6, "A"), 19, name), 30, "   10"), 35, "A"), 38, usage),
+      39, `  ${row}`.slice(-3));
+
+  const lint = (lines: readonly string[]) =>
+    lintFile({
+      fsPath: "/x/T.dspf",
+      lines,
+      definitions: loadDefinitions(RESOURCES)
+    }).filter(f => f.ruleId === "restricted-value");
+
+  test("既定で有効", () => {
+    assert.ok(defaultEnabledRules().includes("restricted-value"));
+  });
+
+  test("**確かめた欄だけに restricted: true が付く**", () => {
+    const flags: string[] = [];
+    for (const type of ["DDS-PF", "DDS-DSPF", "DDS-PRTF"]) {
+      for (const parameter of load("ja", type).parameters) {
+        if (!parameter.options?.length) continue;
+        if (parameter.attributes?.restricted === true) {
+          flags.push(`${type}:${parameter.sourceStart}`);
+        }
+      }
+    }
+    // 増やすときは**実機で全空間を試してから**。原典を読んだだけで足さない。
+    assert.deepEqual(flags, ["DDS-DSPF:38"]);
+  });
+
+  test("確かめていない欄は restricted: false（列挙は候補にすぎない）", () => {
+    for (const [type, column] of [["DDS-PRTF", 35], ["DDS-PF", 35], ["DDS-DSPF", 35]] as const) {
+      const parameter = load("ja", type).parameters.find(p => p.sourceStart === column);
+      assert.equal(parameter?.attributes?.restricted, false, `${type} ${column} 桁目`);
+    }
+  });
+
+  suite("実機が弾く値を指摘する", () => {
+    const record = put(put(" ".repeat(80), 6, "A"), 17, "R");
+    const header = put(record, 19, "REC1");
+
+    test("有効な値は指摘しない", () => {
+      assert.deepEqual(lint([header, field("GOOD", "B", 1)]), []);
+    });
+
+    test("**原典に無い値を指摘する**", () => {
+      const found = lint([header, field("BAD1", "Z", 2)]);
+      assert.equal(found.length, 1);
+      assert.equal(found[0].startColumn, 38);
+      assert.match(found[0].message, /"Z" は指定できません/u);
+    });
+
+    /**
+     * `0` は**日本語版の原典が誤って挙げていた値**。実機は CPD7410 で弾く。
+     * 直す前は定義に入っていたので、この規則があっても素通りしていた。
+     */
+    test("日本語版の原典の誤植（0）も指摘する", () => {
+      const found = lint([header, field("BAD2", "0", 3)]);
+      assert.equal(found.length, 1);
+      assert.match(found[0].message, /"0" は指定できません/u);
+    });
   });
 });

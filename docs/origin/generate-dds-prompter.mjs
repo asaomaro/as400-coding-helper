@@ -92,6 +92,24 @@ function detailPages(overviewFile, prefix) {
  * 定義を原典の誤りに合わせず、**実機で確かめてから例外として除く**。
  * 根拠は必ず添える（`verify-cl-roundtrip.mjs` の BROKEN_EXAMPLES と同じ作法）。
  */
+/**
+ * **値集合を「網羅」で確かめ、原典と一致した欄**。ここだけ `restricted: true` になる。
+ *
+ * 1 文字の欄は空間が 37 通り（ブランク ＋ A-Z ＋ 0-9）なので、全部試せば
+ * 漏れが無いことまで決まる。列挙された値だけ試しても**漏れは分からない**。
+ *
+ * | 欄 | 状態 |
+ * |---|---|
+ * | 表示装置 38 桁 | **37/37 を試し、原典（英語版）と完全一致**。→ `true` |
+ * | 印刷装置 35 桁 | 原典に無い `G` `O` を実機が受ける。→ `false` |
+ * | 表示装置 35 桁 | 一括の読み取りが当てにならず未確定。→ `false` |
+ * | 物理/論理 35・38 桁 | 対照が落ちて雛形が誤りと判明。未確定。→ `false` |
+ * | 17 桁（仕様のタイプ） | 値を変えると行の種類が変わり、1 文字の判定にならない。→ `false` |
+ *
+ * 根拠: `.aidev/works/20260829-dds-restricted-enable/verify/`
+ */
+const PROVEN_COMPLETE = new Set(["DDS-DSPF:38"]);
+
 const ORIGIN_ERRATA = [
   {
     lang: "ja",
@@ -289,6 +307,15 @@ for (const type of TYPES) {
       attributes: {
         characterSet: "upper",
         maxLength: length,
+        // **列挙が「制限」か「候補」か。** 実機で全空間（1 文字なら 37 通り）を
+        // 試して原典と一致した欄だけ `true`。それ以外は `false`＝候補にすぎない。
+        //
+        // 確かめずに `true` にすると**正しいソースを弾く**。実際、印刷装置の 35 桁は
+        // 原典に無い `G` / `O` を実機が受ける（`verify/probe-confirm.mjs`）。
+        // `false` なら画面は候補つきの自由入力になり、lint も咎めない。
+        ...(detail.options.length >= 2
+          ? { restricted: PROVEN_COMPLETE.has(`${type.key}:${start}`) }
+          : {}),
         // 右寄せの欄は数値欄として扱う（書き戻しが padStart になる）。
         ...(detail.rightAligned ? { numericOnly: true } : {})
       }
