@@ -87,6 +87,28 @@ function detailPages(overviewFile, prefix) {
 }
 
 /**
+ * **原典が誤っている箇所**。実機の判定を正とする（AGENTS.md）。
+ *
+ * 定義を原典の誤りに合わせず、**実機で確かめてから例外として除く**。
+ * 根拠は必ず添える（`verify-cl-roundtrip.mjs` の BROKEN_EXAMPLES と同じ作法）。
+ */
+const ORIGIN_ERRATA = [
+  {
+    lang: "ja",
+    file: "FIELD-DSPF-pos38.html",
+    // **消すのではなく直す。** 消すだけだと、日本語版から**正しい値 O が失われる**
+    // （利用者は 38 桁目に O を書けなくなる）。誤植なので置き換える。
+    replace: { from: "0", to: "O" },
+    why:
+      "日本語版は「ブランクまたは 0」（数字のゼロ）と書くが、英語版は「Blank or O」（英字のオー）。" +
+      "実機（IBM i 7.3 / CRTDSPF）で確かめたところ **0 は CPD7410『示されたフィールドに文字を" +
+      "使用することはできない』で弾かれ、O は通る**。対照（B=通る / Q=弾かれる）は 4/4 一致。" +
+      "実サンプル docs/src/CUSTMNT.dspf も 38 桁目に O を使っている。" +
+      "→ 日本語版の誤植。20260829-dds-restricted-values/verify/pos38-result.json"
+  }
+];
+
+/**
  * 詳細ページから説明と有効な値を取る。
  * 値は定義リストの <dt> に1文字で並ぶ。見出し行（「項目」/「Entry」）は除く。
  */
@@ -103,12 +125,30 @@ function parseDetail(file) {
   const help = body.split(/親トピック|Parent topic/)[0].trim() || undefined;
 
   const options = [];
+  const addBlank = meaning => {
+    if (!options.some(o => o.value === "")) {
+      options.unshift({ label: `（ブランク）${meaning.slice(0, 36)}`, value: "" });
+    }
+  };
   const addOption = (term, meaning) => {
     // 原典は「ブランク」も有効な項目として挙げる（多くの欄で既定値になる）。
     // 空欄を選べないと、値を入れたあとに元へ戻せない。
     if (/^(ブランク|Blank)(\s*[（(].*[）)])?$/u.test(term)) {
-      if (!options.some(o => o.value === "")) {
-        options.unshift({ label: `（ブランク）${meaning.slice(0, 36)}`, value: "" });
+      addBlank(meaning);
+      return;
+    }
+
+    // **「ブランクまたは 0」の形**（表示装置の 38 桁目）。1 文字の正規表現に合わず、
+    // **ブランクと値の両方が落ちていた**。2 つの項目として採る。
+    //
+    // ここは日英で中身が違う: ja は「ブランクまたは 0」（数字のゼロ）、
+    // en は「Blank or O」（英字のオー）。**どちらが正しいかは実機に判定させる**
+    // ので、ここでは原典に書いてあるものをそのまま採る。
+    const either = /^(?:ブランクまたは|Blank or)\s*([A-Z0-9])$/u.exec(term);
+    if (either) {
+      addBlank(meaning);
+      if (!options.some(o => o.value === either[1])) {
+        options.push({ label: `${either[1]}（${meaning.slice(0, 40)}）`, value: either[1] });
       }
       return;
     }
@@ -119,6 +159,25 @@ function parseDetail(file) {
     if (!value || options.some(o => o.value === value[1])) return;
     options.push({ label: `${value[1]}（${meaning.slice(0, 40)}）`, value: value[1] });
   };
+
+  /**
+   * 「注」に列挙されたデータ・タイプを足す。
+   *
+   * **対象を狭く取る。** 注は他にもあり（37 桁目に 0 を指定…など）、広く拾うと
+   * 関係の無い文字を値として採ってしまう。「データ・タイプ」/「data types」で
+   * 始まる注だけを見て、`J (専用)` の形だけを採る。
+   */
+  function addNoteDataTypes(source) {
+    const text = plain(source);
+    const note = /(?:注|Note)\s*[:：]\s*(?:データ・タイプ|The data types)([\s\S]{0,160})/u.exec(text);
+    if (!note) return;
+    // 「DBCS」を含む文だけを対象にする（DBCS の説明であることの裏取り）。
+    if (!/DBCS/u.test(note[1])) return;
+    for (const m of note[1].matchAll(/\b([A-Z])\s*[（(]([^)）]{1,12})[）)]/gu)) {
+      if (options.some(o => o.value === m[1])) continue;
+      options.push({ label: `${m[1]}（${m[2]}）`, value: m[1] });
+    }
+  }
 
   // 値の並べ方は 2 通りある。ページによって使い分けられているので両方読む。
   //   定義リスト  <dt>B</dt><dd>入力と出力の両方が可能</dd>   （物理/論理・表示装置）
@@ -135,10 +194,53 @@ function parseDetail(file) {
     }
   }
 
+  // **値の一覧が子ページにあることがある。** 表示装置の 35 桁目（データ・タイプ／
+  // キーボード・シフト）は、親ページが「表示装置ファイルの有効な項目」への
+  // リンクを持つだけで、値は子ページにある。追わないと**その欄の選択肢が空になる**。
+  if (options.length === 0) {
+    // リンクの文字列は「**表示装置ファイルの**有効な項目」のように前置きが付く。
+    // 先頭一致にすると当たらない（実際に外して気付いた）。
+    const child = /href="[^"]*rzak[bcd]\/([a-z0-9_]+)\.htm[^"]*"[^>]*>(?:(?!<\/a>)[\s\S]){0,40}?(?:有効な項目|Valid entries)/u.exec(html);
+    if (child) {
+      const prefix = file.slice(0, file.lastIndexOf("/") + 1);
+      const childPath = join(ORIGIN, `${prefix}FIELD-DSPF-valentries.html`);
+      if (existsSync(childPath)) {
+        const childHtml = readFileSync(childPath, "utf8");
+        for (const table of childHtml.matchAll(/<table[^>]*>([\s\S]*?)<\/table>/gi)) {
+          for (const row of table[1].matchAll(/<tr[^>]*>([\s\S]*?)<\/tr>/gi)) {
+            const cells = [...row[1].matchAll(/<t[dh][^>]*>([\s\S]*?)<\/t[dh]>/gi)].map(c => plain(c[1]));
+            if (cells.length >= 2) addOption(cells[0], cells[1]);
+          }
+        }
+        addNoteDataTypes(childHtml);
+      }
+    }
+  }
+
+  // **一覧の直後の「注」が値を足していることがある。** DBCS のデータ・タイプ
+  // （J 専用 / E 択一 / O 混用 / G 図形）は表にも定義リストにも無く、注にしかない。
+  // 読まないと**実機が受ける値を弾く**（この規則が既定 OFF だった理由の 1 つ）。
+  addNoteDataTypes(html);
+
   // 右寄せの指定。DDS の長さ欄は「右寄せで指定しなければならない」と原典にある。
   // 左詰めで書き戻すと桁がずれた別物になるため、書き戻し側に伝える必要がある。
   // 語は日英で違う（ja「右寄せ」/ en「right-aligned」）。
   const rightAligned = /右寄せ|右詰|right[- ]?(aligned|adjusted|justified)/iu.test(body);
+
+  // 原典の誤りを除く（根拠は ORIGIN_ERRATA に書く）。
+  for (const erratum of ORIGIN_ERRATA) {
+    if (erratum.file !== file || erratum.lang !== LANG) continue;
+    const at = options.findIndex(o => o.value === erratum.replace.from);
+    if (at < 0) continue;
+    if (options.some(o => o.value === erratum.replace.to)) {
+      options.splice(at, 1); // 正しい値が既にあるなら誤植だけ落とす
+      continue;
+    }
+    options[at] = {
+      label: options[at].label.replace(erratum.replace.from, erratum.replace.to),
+      value: erratum.replace.to
+    };
+  }
 
   return { help, options, rightAligned };
 }

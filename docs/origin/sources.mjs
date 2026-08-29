@@ -138,6 +138,9 @@ export const categories = {
       { name: 'FIELD-DSPF-rzakcmstpos29', topic: 'ssw_ibm_i_74/rzakc/rzakcmstpos29.htm', note: '表示装置ファイルの参照 (29 桁目)' },
       { name: 'FIELD-DSPF-pos3034', topic: 'ssw_ibm_i_74/rzakc/pos3034.htm', note: '表示装置ファイルの桁数 (30 - 34 桁目)' },
       { name: 'FIELD-DSPF-rzakcmstdfdt', topic: 'ssw_ibm_i_74/rzakc/rzakcmstdfdt.htm', note: '表示装置ファイルのデータ・タイプおよびキーボード・シフト (35 桁目)' },
+      // 35 桁目の**値の一覧は親ページに無い**。親は「表示装置ファイルの有効な項目」への
+      // リンクだけを持ち、値はこの子ページにある。取らないと 35 桁の値集合が空になる。
+      { name: 'FIELD-DSPF-valentries', topic: 'ssw_ibm_i_74/rzakc/rzakcvalentries.htm', note: '表示装置ファイルの有効な項目 (35 桁目の値の一覧)' },
       { name: 'FIELD-DSPF-pos3637', topic: 'ssw_ibm_i_74/rzakc/pos3637.htm', note: '表示装置ファイルの小数点以下の桁数 (36 - 37 桁目)' },
       { name: 'FIELD-DSPF-pos38', topic: 'ssw_ibm_i_74/rzakc/pos38.htm', note: '表示装置ファイルの使用目的 (38 桁目)' },
       { name: 'FIELD-DSPF-pos3944', topic: 'ssw_ibm_i_74/rzakc/pos3944.htm', note: '表示装置ファイルの位置 (39 - 44 桁目)' },
