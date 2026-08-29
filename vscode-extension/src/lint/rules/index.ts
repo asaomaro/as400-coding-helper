@@ -191,11 +191,13 @@ export const RULE_SPECS: readonly RuleSpec[] = [
     kind: "line",
     id: "restricted-value",
     rule: restrictedValueRule,
-    enabledByDefault: false,
+    enabledByDefault: true,
     severity: "error",
     description:
-      "定義済み値以外が入っていないか。**既定で無効**。値集合が原典の注記を " +
-      "取りこぼしており（DBCS のデータ・タイプ）、原典自体も実機より狭い箇所がある。",
+      "定義済み値以外が入っていないか。**`restricted: true` の欄だけ**を見る。" +
+      "その印が付くのは、実機で全空間（1 文字なら 37 通り）を試して原典と一致した欄だけ" +
+      "（いまは表示装置の 38 桁目）。確かめていない欄は `restricted: false` で、" +
+      "列挙は候補にすぎないので咎めない。",
     positional: true
   },
   // --- レイアウト（ファイル単位）---

@@ -49,7 +49,8 @@ suite("lint: SARIF", () => {
     const driver = sarif().runs[0].tool.driver;
     const find = (id: string) => driver.rules.find((r: any) => r.id === id);
     assert.strictEqual(find("required-field").defaultConfiguration.level, "none");
-    assert.strictEqual(find("restricted-value").defaultConfiguration.level, "none");
+    // `restricted-value` は既定 ON になった（値集合を実機で確かめた欄だけを見る）。
+    assert.strictEqual(find("restricted-value").defaultConfiguration.level, "error");
     assert.strictEqual(find("line-length").defaultConfiguration.level, "error");
     assert.strictEqual(find("numeric-alignment").defaultConfiguration.level, "warning");
   });

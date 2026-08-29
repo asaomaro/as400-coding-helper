@@ -155,13 +155,19 @@ suite("lint: numeric-field / numeric-alignment", () => {
 });
 
 suite("lint: 規則の既定", () => {
-  test("既定で有効なのは 10 規則（行単位 3 ＋ レイアウト 7）", () => {
+  test("既定で有効なのは 11 規則（行単位 4 ＋ レイアウト 7）", () => {
     // レイアウトの 7 つは「実機で作成できないソースでしか出ない」と原典で
     // 言い切れるものだけ（根拠は types.ts の RuleId に引用つきで書いてある）。
+    //
+    // `restricted-value` は 2026-08-29 に加わった。**`restricted: true` の欄だけ**を
+    // 見る規則で、その印が付くのは**実機で全空間（1 文字なら 37 通り）を試して
+    // 原典と一致した欄だけ**（いまは表示装置の 38 桁目のみ）。
+    // 検証済みサンプル 5 件で偽陽性 0 件を確かめてから既定 ON にした。
     assert.deepStrictEqual(defaultEnabledRules(), [
       "line-length",
       "numeric-field",
       "numeric-alignment",
+      "restricted-value",
       "layout-invalid-position",
       "layout-column-one-reserved",
       "layout-keyword-not-conditionable",
@@ -172,8 +178,13 @@ suite("lint: 規則の既定", () => {
     ]);
   });
 
-  test("偽陽性が出ると分かっている 2 規則は既定で無効", () => {
-    for (const id of ["required-field", "restricted-value"] as const) {
+  test("偽陽性が出ると分かっている規則は既定で無効", () => {
+    // `required-field` だけが残っている。DDS は定義の required が生成時に false 固定で
+    // 材料が無く、RPG は継続記入行やオペランドを取らない命令で偽陽性が出る（実測 64 件）。
+    //
+    // `restricted-value` はここから外れた（値集合を実機で確かめたため）。
+    // **外すときは必ず偽陽性を数えてから**——切られる規則は無いのと同じ。
+    for (const id of ["required-field"] as const) {
       const spec = RULE_SPECS.find(s => s.id === id);
       assert.strictEqual(spec?.enabledByDefault, false, `${id} は既定で無効`);
     }
