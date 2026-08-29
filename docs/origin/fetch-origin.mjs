@@ -68,7 +68,12 @@ function loadExisting() {
     if (!m || !section) continue;
     try {
       const obj = JSON.parse(m[1]);
-      const key = `${obj.category}/${obj.name}`;
+      // **鍵は保存先のパスから作る。** 書き込み側は `${cat}${suffix}/${name}` を使い、
+      // 英語版は `dds-en/...` になる。ここで `category/name` を組み直すと
+      // **日本語版と英語版が同じ鍵に潰れ、読み戻した時点で片方が消える**
+      // （実測: 618 行のうち 154 組が重複扱いになり、`--only=dds` を 1 回流しただけで
+      // ilerpg の英語版 152 件が manifest から落ちた）。
+      const key = obj.file ? String(obj.file).replace(/\.html$/u, '') : `${obj.category}/${obj.name}`;
       (section === 'items' ? items : gaps).set(key, obj);
     } catch { /* skip unparmsable */ }
   }
