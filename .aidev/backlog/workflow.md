@@ -69,7 +69,20 @@ priority: 2           # cl(1) の次。設計書: docs/workflow/ibmi-dev-workflo
 - [ ] 固定長（P 仕様書）で RPGUnit テストが書けることを実機確認する — 原典の例は
       すべて `**free` で固定長の実例が無い。本 PJ の対象は固定長なので要確認
       (needs: RPGUnit の pub400 導入可否を確認する)
-- [ ] clPrompter との F4 衝突を確認する — 併用時の keybinding 挙動（設計書 7 章 #3）
+- [x] **clPrompter との F4 衝突を確認する** — 済（`20260829-clprompter-f4-conflict`）。
+      両者のマニフェストを直読して突き合わせた（`docs/research/code-for-ibmi.md` §3.1）。
+      - **軸が違う**。向こうは `editorLangId`、本 PJ は `resourceExtname`。
+        文字列を見比べても重なりは分からない。
+      - **clPrompter は `contributes.languages` を持たない**ので、その `when` が真になるかは
+        **他の拡張がその languageId を登録しているか**次第。
+      - **`.clp` で衝突する。そしてその原因は本 PJ 側**——`.clp` → `cl` の言語登録が
+        向こうの `editorLangId == cl` を真にしている。`.clle` と `.cmd` は環境次第。
+        RPG と DDS は衝突しない。
+      - **どちらが勝つかは制御できない**（VSCode は拡張どうしの優先度を規定しておらず、
+        登録順で決まる）。回避は利用者の `keybindings.json`（3 パターンを記載）。
+      - **本 PJ の挙動は変えていない**。`.clp` の F4 を降りるのは本 PJ の CL プロンプターを
+        使えなくすることと同義で、選ぶのは利用者。`cl` の言語登録も外せない
+        （コメントトグル・タブナビ・CL 診断の発火条件でもある）。
 - [x] **lint の値集合を修復する** — 済（`20260829-dds-restricted-values`）。原典が有効値の一覧の
       **直後の「注」**で DBCS のデータ・タイプ(J/E/O/G)を足しており生成器が読めていない。
       表示装置 38 桁目は「ブランクまたは 0」で 1 文字の正規表現に合わず両方落ちている。
