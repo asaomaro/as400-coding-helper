@@ -435,6 +435,45 @@ check(
   `${await page.$$eval("#root select[name]", ns => ns.length)} 欄`
 );
 
+// ---- 13c. 制限のある定位置欄（DDS）— ブランクへ戻せること --------------------
+//
+// **`restricted: true` は入力欄の種類を変える。** 候補つき自由入力（`buildOpenChoice`）
+// から錠前の `<select>`（`buildSelect`）になり、`select.value = field.value` は
+// **一覧に無い値を黙って落とす**。だからブランクが選択肢に無いと、値を入れたあと
+// **既定へ戻せなくなる**。値集合を広げる変更のたびにここが効く。
+
+await pick("DDS-PF — 制限のある定位置欄（ブランクを選べる）");
+await settle();
+
+for (const [name, label] of [["C17", "仕様のタイプ"], ["C35", "データ・タイプ"], ["C38", "使用目的"]]) {
+  check(
+    `**DDS ${label}（${name}）は錠前の select**`,
+    (await page.$eval(`[name="${name}"]`, n => n.tagName)) === "SELECT",
+    await page.$eval(`[name="${name}"]`, n => n.tagName)
+  );
+  check(
+    `DDS ${label}（${name}）は**ブランクを選べる**（既定へ戻せる）`,
+    (await page.$$eval(`select[name="${name}"] option`, ns => ns.map(n => n.value)))[0] === "",
+    (await page.$$eval(`select[name="${name}"] option`, ns => ns.map(n => n.value))).join("|")
+  );
+}
+
+// 値を入れてからブランクへ戻す。**戻せること**が確かめたいこと。
+await page.selectOption('[name="C35"]', "P");
+await settle();
+check(
+  "値を入れたあとブランクへ戻せる",
+  await (async () => {
+    await page.selectOption('[name="C35"]', "");
+    await settle();
+    return (await page.$eval('[name="C35"]', n => n.value)) === "";
+  })(),
+  await page.$eval('[name="C35"]', n => n.value)
+);
+
+await pick("ADDPFM — 候補にすぎない選択欄");
+await page.keyboard.press("F10");
+await settle();
 await page.fill('[name="SRCTYPE"]', "RPGLE");
 await page.fill('[name="FILE"]', "QRPGLESRC");
 await page.fill('[name="MBR"]', "MYPGM");

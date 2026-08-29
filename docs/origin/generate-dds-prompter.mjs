@@ -93,22 +93,105 @@ function detailPages(overviewFile, prefix) {
  * 根拠は必ず添える（`verify-cl-roundtrip.mjs` の BROKEN_EXAMPLES と同じ作法）。
  */
 /**
- * **値集合を「網羅」で確かめ、原典と一致した欄**。ここだけ `restricted: true` になる。
+ * **値集合を「網羅」で確かめ、実機の受理集合と完全一致した欄**。ここだけ `restricted: true`。
  *
  * 1 文字の欄は空間が 37 通り（ブランク ＋ A-Z ＋ 0-9）なので、全部試せば
  * 漏れが無いことまで決まる。列挙された値だけ試しても**漏れは分からない**。
  *
- * | 欄 | 状態 |
- * |---|---|
- * | 表示装置 38 桁 | **37/37 を試し、原典（英語版）と完全一致**。→ `true` |
- * | 印刷装置 35 桁 | 原典に無い `G` `O` を実機が受ける。→ `false` |
- * | 表示装置 35 桁 | 一括の読み取りが当てにならず未確定。→ `false` |
- * | 物理/論理 35・38 桁 | 対照が落ちて雛形が誤りと判明。未確定。→ `false` |
- * | 17 桁（仕様のタイプ） | 値を変えると行の種類が変わり、1 文字の判定にならない。→ `false` |
+ * 判定は**リストの「メッセージ番号 ＋ 印が指す桁」**で読む。作成の成否では決まらない
+ * ——有効な値でも長さや小数の前提が違えば落ちる。
  *
- * 根拠: `.aidev/works/20260829-dds-restricted-enable/verify/`
+ * | 番号 | 意味 | 集合 |
+ * |---|---|---|
+ * | `CPD7419` Data type not valid.                                    | 値が無効 | 無効 |
+ * | `CPD7410` Characters in indicated field not allowed.              | 値が無効 | 無効 |
+ * | `CPD7408` Entry for decimal positions or field length not valid.  | 値は受理 | **受理** |
+ * | `CPD7635` Length too large for floating-point precision.          | 値は受理 | **受理** |
+ * | `CPD7914` File contains more than one record.（17 桁で出る）      | 値は受理 | **受理** |
+ *
+ * | 欄 | 実機の受理 | 状態 |
+ * |---|---|---|
+ * | 物理/論理 17 桁 | ブランク J K O R S | 3 文脈（物理・単純論理・結合論理）で同一。一致 → `true` |
+ * | 物理/論理 35 桁 | ブランク ＋ 14 件 | 一致 → `true`（ブランクは `BLANK_FROM_PROSE`） |
+ * | 物理/論理 38 桁 | ブランク B I N | **文脈ごとに違う**（下記）。和が定義と一致 → `true` |
+ * | 表示装置 17 桁 | ブランク H R | 一致 → `true` |
+ * | 表示装置 35 桁 | ブランク ＋ 17 件 | 一致 → `true` |
+ * | 表示装置 38 桁 | ブランク B H I M O P | 前作業で確定済み → `true` |
+ * | 印刷装置 35 桁 | ブランク ＋ 8 件 | 一致 → `true`（`G` `O` は注から、ブランクは本文から） |
+ * | 印刷装置 17 桁 | ブランク **H** R | **不一致 → `false`**（下記） |
+ *
+ * **物理/論理 38 桁は文脈で値が変わる。** 原典（`FIELD-PF-lfusg.html`）が
+ * 「物理ファイルの場合」「論理ファイルに有効な項目」と分けて書いており、実機も一致した:
+ * 物理(`CRTPF`) = ブランク B / 単純論理(`PFILE`) = ＋I / 結合論理(`JFILE`) = ブランク I N
+ * （結合論理に `B` は不可——「結合論理ファイルは読み取り専用ファイルであるため」）。
+ * **1 つの定義が `.pf` と `.lf` の両方を担う**ので、対応するのは 3 文脈の**和**。
+ *
+ * **印刷装置 17 桁は `false` のまま。** 実機は `H` を受ける（`CPD7410@17` が出ず、
+ * 35 桁と 42 桁の指摘だけが出る）が、**原典は日英とも `R` とブランクだけ**を挙げる
+ * （`FIELD-PRTF-prttype.html` / `dds-en` も同じ）。原典に無い値を定義へ足す判断は、
+ * `H`（ヘルプ仕様）が印刷装置で何を意味するのかが分からないまま行えない。
+ * `false` なら候補つきの自由入力のままで、`H` を書きたい利用者を妨げない。
+ *
+ * 根拠: `.aidev/works/20260829-dds-restricted-expand/verify/`
+ * （`compare.mjs` が実機の結果と定義を突き合わせ、`compare.json` に残す）
+ * / 表示装置 38 桁は `.aidev/works/20260829-dds-restricted-enable/verify/`
  */
-const PROVEN_COMPLETE = new Set(["DDS-DSPF:38"]);
+const PROVEN_COMPLETE = new Set([
+  "DDS-PF:17", "DDS-PF:35", "DDS-PF:38",
+  "DDS-DSPF:17", "DDS-DSPF:35", "DDS-DSPF:38",
+  "DDS-PRTF:35"
+]);
+
+/**
+ * **ブランクが「値の一覧」ではなく本文にしか書かれていない欄。**
+ *
+ * 生成器がブランクを採るのは、`<dt>` や表の項目が「ブランク」と書かれているときだけ
+ * （`addBlank`）。ところが 2 つの欄では**本文だけ**にあり、落ちていた。
+ *
+ * 落とすと害が出る。`restricted: true` の欄は画面が `<select>` になり、
+ * **一覧に無い値へは戻せない**（`webview/ui.ts` の `buildSelect`）。
+ * データ・タイプのブランクは「既定（文字／基礎ファイルと同じ）」を意味する常用の値で、
+ * 実機も受ける。落としたままにはできない。
+ *
+ * **本文の解析はしない。** 書き方が揃っておらず、**別の桁の話を拾う**。実際、
+ * 印刷装置のページには「小数点以下の桁数 **(36 から 37 桁目)** がブランクであれば
+ * A (文字)」とあり、ブランクなのは 35 桁目ではない。素朴な照合はここで誤る。
+ *
+ * **入れる条件は 2 つとも要る**——原典の本文にブランクの意味が書かれていること、
+ * **かつ実機の網羅がブランクを受理したこと**。片方だけでは入れない。
+ */
+const BLANK_FROM_PROSE = [
+  {
+    type: "DDS-PF",
+    column: 35,
+    meaning: { ja: "基礎となる物理ファイルと同じデータ・タイプ", en: "Same data type as the physical file" },
+    origin: {
+      ja: "この欄がブランクであれば、定義中のフィールドのデータ・タイプは、"
+        + "この論理ファイルの基礎となる物理ファイル内の対応するフィールドのデータ・タイプと同じものになります。",
+      en: "If you leave this position blank, the field you are defining has the same data type "
+        + "as the corresponding field in the physical files on which the logical files are based."
+    },
+    machine:
+      "全 37 通りのうちブランクは指摘なし（CRTPF / CRTLF(PFILE) / CRTLF(JFILE) の 3 文脈とも）。"
+      + "20260829-dds-restricted-expand/verify/exhaustive-XPF35.txt"
+  },
+  {
+    type: "DDS-PRTF",
+    column: 35,
+    meaning: { ja: "文字（既定）", en: "Character (default)" },
+    origin: {
+      ja: "データ・タイプを指定せず、参照フィールドから複写もしなかった場合には、"
+        + "IBM i オペレーティング・システムはデフォルトにより次の値を割り当てます。"
+        + "小数点以下の桁数 (36 から 37 桁目) がブランクであれば A (文字)。",
+      en: "If you do not specify a data type and do not copy one from a referenced field, "
+        + "the IBM i operating system assigns the following defaults: "
+        + "A (character) if the decimal positions (positions 36 through 37) are blank."
+    },
+    machine:
+      "全 37 通りのうちブランクは指摘なし（CRTPRTF）。"
+      + "20260829-dds-restricted-expand/verify/exhaustive-XPR35.txt"
+  }
+];
 
 const ORIGIN_ERRATA = [
   {
@@ -181,19 +264,38 @@ function parseDetail(file) {
   /**
    * 「注」に列挙されたデータ・タイプを足す。
    *
-   * **対象を狭く取る。** 注は他にもあり（37 桁目に 0 を指定…など）、広く拾うと
-   * 関係の無い文字を値として採ってしまう。「データ・タイプ」/「data types」で
-   * 始まる注だけを見て、`J (専用)` の形だけを採る。
+   * **対象を狭く取るのは `DBCS` の裏取りで行う。** 以前は「注:」の直後が
+   * 「データ・タイプ」/「The data types」で始まることも要求していたが、
+   * **書き出しは種別で揺れる**ので条件として弱く、実際に落としていた。
+   *
+   * | 種別 | 原典の注の書き出し | 旧条件 |
+   * |---|---|---|
+   * | 物理/論理・表示装置 | 「注: **データ・タイプ** J (専用)、E (択一)…」 | ○ |
+   * | 印刷装置 | 「注: **O (混用) および G (グラフィック)** は…」 | **×** |
+   *
+   * 落ちると**実機が受ける値を弾く**ことになる（印刷装置 35 桁の `G` `O`）。
+   *
+   * 緩めても巻き込まないことは**原典の全件走査で裏を取ってある**。
+   * `dds` と `dds-en` の全 HTML のうち「DBCS を含む注」を持つのは 3 ページだけで
+   * （`FIELD-DSPF-valentries` / `FIELD-PF-ldata` / `FIELD-PRTF-prtdata`）、
+   * いずれもデータ・タイプのページ。拾う値も DBCS のデータ・タイプに限られる。
+   *
+   * **注は 1 ページに複数ある**（「37 桁目に 0 を指定します」等）ので全部見る。
+   * 先頭の 1 つだけを見ると、DBCS の注が 2 番目にあるページで落ちる。
+   *
+   * 窓を 160 → 200 文字にしたのは、**前置きの語を正規表現が消費しなくなった**分を
+   * 埋めるため（実効範囲を元と同じに保つ）。原典の全件で確かめた限り
+   * **160 と 200 で拾う値は同じ**なので、いまの結果を変える変更ではない。
    */
   function addNoteDataTypes(source) {
     const text = plain(source);
-    const note = /(?:注|Note)\s*[:：]\s*(?:データ・タイプ|The data types)([\s\S]{0,160})/u.exec(text);
-    if (!note) return;
-    // 「DBCS」を含む文だけを対象にする（DBCS の説明であることの裏取り）。
-    if (!/DBCS/u.test(note[1])) return;
-    for (const m of note[1].matchAll(/\b([A-Z])\s*[（(]([^)）]{1,12})[）)]/gu)) {
-      if (options.some(o => o.value === m[1])) continue;
-      options.push({ label: `${m[1]}（${m[2]}）`, value: m[1] });
+    for (const note of text.matchAll(/(?:注|Notes?)\s*[:：]\s*([\s\S]{0,200})/gu)) {
+      // 「DBCS」を含む注だけを対象にする（データ・タイプの説明であることの裏取り）。
+      if (!/DBCS/u.test(note[1])) continue;
+      for (const m of note[1].matchAll(/\b([A-Z])\s*[（(]([^)）]{1,12})[）)]/gu)) {
+        if (options.some(o => o.value === m[1])) continue;
+        options.push({ label: `${m[1]}（${m[2]}）`, value: m[1] });
+      }
     }
   }
 
@@ -263,6 +365,21 @@ function parseDetail(file) {
   return { help, options, rightAligned };
 }
 
+/**
+ * 本文にしか無いブランクを足す（`BLANK_FROM_PROSE`）。
+ * **先頭に置く**——原典の一覧はブランクを先に挙げるのが通例で、画面の並びを揃える。
+ */
+function addProseBlank(detail, typeKey, column) {
+  const entry = BLANK_FROM_PROSE.find(b => b.type === typeKey && b.column === column);
+  if (!entry) return detail;
+  if (detail.options.some(o => o.value === "")) return detail;
+  const meaning = entry.meaning[LANG] ?? entry.meaning.ja;
+  return {
+    ...detail,
+    options: [{ label: `（ブランク）${meaning}`, value: "" }, ...detail.options]
+  };
+}
+
 const columns = JSON.parse(readFileSync(join(NAV, "dds-keyword-columns.json"), "utf8"));
 const labels = JSON.parse(readFileSync(join(NAV, "dds-field-labels.json"), "utf8"));
 
@@ -287,7 +404,11 @@ for (const type of TYPES) {
     const page = pages
       .filter(p => p.from <= start && start <= p.to)
       .sort((a, b) => a.to - a.from - (b.to - b.from))[0];
-    const detail = page ? parseDetail(page.file) : { help: undefined, options: [] };
+    const detail = addProseBlank(
+      page ? parseDetail(page.file) : { help: undefined, options: [] },
+      type.key,
+      start
+    );
 
     // 45-80 桁は定位置項目ではないため、桁ごとの説明ページが無い。
     const keywordArea = start >= 45;

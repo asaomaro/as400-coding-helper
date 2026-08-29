@@ -20,6 +20,7 @@ import CALL from "../resources/prompter/cl/ja/CALL.json";
 import SAVOBJ from "../resources/prompter/cl/ja/SAVOBJ.json";
 import ADDPFM from "../resources/prompter/cl/ja/ADDPFM.json";
 import PARM from "../resources/prompter/cmd/ja/PARM.json";
+import DDSPF from "../resources/prompter/dds/ja/DDS-PF.json";
 
 /**
  * F4 プロンプターの単独起動ハーネス。**検証用であり製品の一部ではない**（VSIX には入れない）。
@@ -104,6 +105,10 @@ const SAMPLES: { readonly label: string; readonly definition: PrompterDefinition
   // 「候補にすぎない」選択欄（SRCTYPE は定義済み値が *NONE だけだが RPGLE と書ける）
   { label: "ADDPFM — 候補にすぎない選択欄", definition: ADDPFM as PrompterDefinition },
   { label: "CALL — 入れ子で開く先", definition: CALL as PrompterDefinition },
+  // **制限のある選択欄（DDS の定位置欄）。** 実機で全 37 通りを試して値集合が
+  // 確定した欄は `restricted: true` で `<select>` になる。**ブランクが選べること**が
+  // 要——選べないと「既定に戻す」ができない（20260829-dds-restricted-expand）。
+  { label: "DDS-PF — 制限のある定位置欄（ブランクを選べる）", definition: DDSPF as PrompterDefinition },
   { label: "FIXTURE — 見えない欄は咎めない（検証用）", definition: HIDDEN_REQUIRED }
 ];
 
