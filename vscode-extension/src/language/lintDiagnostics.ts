@@ -1,7 +1,7 @@
 import * as vscode from "vscode";
 import { lintFile } from "../lint/engine";
 import { defaultResourcesDir, loadDefinitions, type DefinitionSet } from "../lint/defsLoader";
-import { defaultEnabledRules } from "../lint/rules";
+import { defaultEnabledRules, resolveMaxColumn } from "../lint/rules";
 import { getCNewOpcodes } from "../prompter/specClassifier";
 import type { LintFinding, RuleId } from "../lint/types";
 
@@ -86,7 +86,11 @@ export function lintDocument(document: vscode.TextDocument): vscode.Diagnostic[]
       // C-NEW と見る行を lint が C-SPEC と見てしまう。C-SPEC だけが
       // FIELDLEN(64-68) / DECPOS(69-70) を数値欄に持つため、拡張演算項目 2 が
       // その桁まで伸びた正しい行を弾く（＝偽陽性）。
-      cNewOpcodes: getCNewOpcodes()
+      cNewOpcodes: getCNewOpcodes(),
+      // 設定 rpgClSupport.lint.maxColumn（ソース物理ファイルのデータ桁数）。
+      // **不正値は既定に戻す**——設定 UI にエラーを出す手立てが無く、
+      // 検査が黙って止まるのが最悪なため（resolveMaxColumn が判断する）。
+      maxColumn: resolveMaxColumn(config.get<unknown>("lint.maxColumn"))
     }
   });
 

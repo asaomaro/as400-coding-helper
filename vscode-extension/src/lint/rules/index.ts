@@ -5,6 +5,15 @@ import { numericAlignmentRule, numericFieldRule } from "./numericField";
 import { requiredFieldRule } from "./requiredField";
 import { restrictedValueRule } from "./restrictedValue";
 
+// 桁上限の既定と値域は規則本体（lineLength.ts）が持つ。100 の根拠＝原典の注記域の
+// 記述がそこに書いてあるため。engine と消費者はここから引く。
+export {
+  DEFAULT_MAX_COLUMN,
+  MIN_MAX_COLUMN,
+  MAX_MAX_COLUMN,
+  resolveMaxColumn
+} from "./lineLength";
+
 /**
  * 規則の一覧と既定の有効／無効。
  *

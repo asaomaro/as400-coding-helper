@@ -121,6 +121,41 @@ suite("lint: VSCode 診断", () => {
     );
   });
 
+  test("lint.maxColumn で桁上限を下げられる", () => {
+    // 実機のレコード長 92（データ 80 桁）のソース物理ファイル向け。
+    // 既定 100 では 81-100 桁を注記域として通すので、指摘は出ない。
+    const source = "A".repeat(85);
+    assert.ok(
+      !lintDocument(fakeDocument("SAMPLE.rpgle", source)).some(
+        d => (d as { code?: string }).code === "line-length"
+      ),
+      "既定では 85 桁の行は指摘されない"
+    );
+
+    setConfig({ rpgClSupport: { "lint.maxColumn": 80 } });
+    const after = lintDocument(fakeDocument("SAMPLE.rpgle", source)).filter(
+      d => (d as { code?: string }).code === "line-length"
+    );
+    assert.strictEqual(after.length, 1, "上限を下げると指摘が出る");
+    assert.ok(after[0]!.message.includes("固定長ソースは 80 桁までです"), after[0]!.message);
+  });
+
+  test("lint.maxColumn の不正値は既定に戻す（検査が黙って止まらない）", () => {
+    // 設定 UI にエラーを出す手立てが無いので、黙って既定へ倒す。
+    const source = "A".repeat(101);
+    for (const value of [0, -5, 1.5, "80", null]) {
+      setConfig({ rpgClSupport: { "lint.maxColumn": value } });
+      const findings = lintDocument(fakeDocument("SAMPLE.rpgle", source)).filter(
+        d => (d as { code?: string }).code === "line-length"
+      );
+      assert.strictEqual(findings.length, 1, `${String(value)} でも検査は動く`);
+      assert.ok(
+        findings[0]!.message.includes("固定長ソースは 100 桁までです"),
+        `${String(value)} は既定 100 に戻るべき: ${findings[0]!.message}`
+      );
+    }
+  });
+
   test("既定で無効な規則は設定で有効にできる", () => {
     const before = lintDocument(fakeDocument("EMPMNT01.rpgle"));
     setConfig({ rpgClSupport: { "lint.rules": { "required-field": true } } });

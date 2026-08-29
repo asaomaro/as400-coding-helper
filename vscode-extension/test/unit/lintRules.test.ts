@@ -1,6 +1,10 @@
 import * as assert from "assert";
 import { classifyLine } from "../../src/lint/preprocess";
-import { lineLengthRule } from "../../src/lint/rules/lineLength";
+import {
+  DEFAULT_MAX_COLUMN,
+  lineLengthRule,
+  resolveMaxColumn
+} from "../../src/lint/rules/lineLength";
 import {
   numericAlignmentRule,
   numericFieldRule
@@ -27,8 +31,12 @@ const DDS_LENGTH_DEF = {
   ]
 } as unknown as PrompterDefinition;
 
-function context(line: string, definition?: PrompterDefinition) {
-  return { line, lineNumber: 1, definition, specKeyword: "DDS-PF" };
+function context(
+  line: string,
+  definition?: PrompterDefinition,
+  maxColumn: number = DEFAULT_MAX_COLUMN
+) {
+  return { line, lineNumber: 1, definition, specKeyword: "DDS-PF", maxColumn };
 }
 
 suite("lint: 行の分類", () => {
@@ -110,6 +118,92 @@ suite("lint: line-length", () => {
     assert.strictEqual(findings[0]?.ruleId, "line-length");
     assert.strictEqual(findings[0]?.startColumn, 101);
     assert.strictEqual(findings[0]?.endColumn, 102);
+  });
+});
+
+/**
+ * 桁上限を設定できるようにした分の検査。
+ *
+ * 実機のソース物理ファイルのレコード長は 1 つではない（171 種類・461,236 件を実測）。
+ * 112 → データ 100 桁が 86.7%、92 → 80 桁が 11.4%。後者では 81 桁目以降が
+ * 実機に入れた時点で切り捨てられるので、上限 80 で検知できる必要がある。
+ */
+suite("lint: line-length の桁上限", () => {
+  test("上限 80 なら 80 桁ちょうどは指摘しない", () => {
+    assert.deepStrictEqual(lineLengthRule(context("A".repeat(80), undefined, 80)), []);
+  });
+
+  test("上限 80 なら 81 桁で指摘し、範囲は 81 桁目から", () => {
+    const findings = lineLengthRule(context("A".repeat(81), undefined, 80));
+    assert.strictEqual(findings.length, 1);
+    assert.strictEqual(findings[0]?.startColumn, 81);
+    assert.strictEqual(findings[0]?.endColumn, 82);
+  });
+
+  test("上限 80 なら 95 桁も指摘する（既定 100 では通っていた行）", () => {
+    // 既定の上限では「81-100 桁は注記域」として通す行。上限を下げると捕まる。
+    assert.deepStrictEqual(lineLengthRule(context("A".repeat(95))), []);
+    assert.strictEqual(lineLengthRule(context("A".repeat(95), undefined, 80)).length, 1);
+  });
+
+  // --- メッセージが上限に追従すること（固定文言を残すと落ちる） ---
+
+  test("既定 100 のメッセージは従来のまま", () => {
+    const message = lineLengthRule(context("A".repeat(101)))[0]?.message ?? "";
+    assert.ok(message.includes("固定長ソースは 100 桁までです"), message);
+    assert.ok(message.includes("（1-80 桁が仕様書、81-100 桁が注記域）"), message);
+  });
+
+  test("上限 80 では注記域を案内しない", () => {
+    const message = lineLengthRule(context("A".repeat(81), undefined, 80))[0]?.message ?? "";
+    assert.ok(message.includes("固定長ソースは 80 桁までです"), message);
+    assert.ok(message.includes("（1-80 桁が仕様書。注記域は入りません）"), message);
+    // 上限だけ差し替えて後半を固定のままにすると、ここで落ちる。
+    assert.ok(!message.includes("81-100 桁が注記域"), message);
+  });
+
+  test("上限 90 では注記域を 81-90 桁と言う", () => {
+    const message = lineLengthRule(context("A".repeat(91), undefined, 90))[0]?.message ?? "";
+    assert.ok(message.includes("固定長ソースは 90 桁までです"), message);
+    assert.ok(message.includes("（1-80 桁が仕様書、81-90 桁が注記域）"), message);
+  });
+
+  test("上限 103 でも注記域は 100 桁までとしか言わない（原典を超えて主張しない）", () => {
+    // 原典が規定するのは 81-100 桁目までで、101 桁目以降は書かれていない。
+    const message = lineLengthRule(context("A".repeat(104), undefined, 103))[0]?.message ?? "";
+    assert.ok(message.includes("固定長ソースは 103 桁までです"), message);
+    assert.ok(message.includes("（1-80 桁が仕様書、81-100 桁が注記域）"), message);
+  });
+
+  // --- 桁は実機の桁で数える（JS の文字数ではない） ---
+
+  test("全角を含む行は printWidth で判定する", () => {
+    // 全角 41 文字 = SO+SI 込みで 84 桁。JS の文字数は 41 なので、
+    // 文字数で数えていれば上限 80 でも通ってしまう。
+    const line = "あ".repeat(41);
+    assert.strictEqual(line.length, 41);
+    const findings = lineLengthRule(context(line, undefined, 80));
+    assert.strictEqual(findings.length, 1);
+    assert.ok(findings[0]?.message.includes("全角の分を含む。文字数は 41"), findings[0]?.message);
+  });
+});
+
+suite("lint: resolveMaxColumn（設定値の解決）", () => {
+  test("妥当な整数はそのまま通す", () => {
+    assert.strictEqual(resolveMaxColumn(80), 80);
+    assert.strictEqual(resolveMaxColumn(100), 100);
+    assert.strictEqual(resolveMaxColumn(32754), 32754);
+    assert.strictEqual(resolveMaxColumn(1), 1);
+  });
+
+  test("整数でない・範囲外・型違いは既定に戻す", () => {
+    for (const value of [0, -5, 1.5, 32755, "80", null, undefined, {}, NaN]) {
+      assert.strictEqual(
+        resolveMaxColumn(value),
+        DEFAULT_MAX_COLUMN,
+        `${String(value)} は既定に戻るべき`
+      );
+    }
   });
 });
 
