@@ -115,6 +115,15 @@ export interface LintOptions {
   readonly dialectOverrides?: Record<string, unknown>;
   /** C 仕様の新形式オペコード集合。未指定なら既定集合。 */
   readonly cNewOpcodes?: ReadonlySet<string>;
+  /**
+   * 行長検査の桁上限。**ソース物理ファイルのデータ桁数**（レコード長 - 12。
+   * 先頭に行番号 6 バイトと日付 6 バイトが付くため）を入れる。
+   * 未指定なら `DEFAULT_MAX_COLUMN`(100)。
+   *
+   * 実機のレコード長は 1 つではない（171 種類・461,236 件を実測）。
+   * 112 → 100 桁が 86.7%、92 → 80 桁が 11.4% で、`115`(103桁) や `132`(120桁) も実在する。
+   */
+  readonly maxColumn?: number;
 }
 
 /** 規則に渡す 1 行分の文脈。**行の分類は渡さない**（規則側で再判定させないため）。 */
@@ -126,6 +135,12 @@ export interface RuleContext {
   readonly definition?: PrompterDefinition;
   readonly specKeyword?: string;
   readonly dialect?: Dialect;
+  /**
+   * 解決済みの桁上限。**必須にしている**——任意にすると規則側にも既定値が要り、
+   * 既定が 2 か所になる。片方だけ直しても型は通りテストも落ちないまま食い違う
+   * （`RuleSpec.severity` を 1 か所にしか書かない理由と同じ）。
+   */
+  readonly maxColumn: number;
 }
 
 export type Rule = (context: RuleContext) => readonly LintFinding[];

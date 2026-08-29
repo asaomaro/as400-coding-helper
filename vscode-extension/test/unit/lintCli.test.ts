@@ -1,6 +1,10 @@
 import * as assert from "assert";
+import { mkdtempSync, readFileSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import { toSarif } from "../../src/lint/sarif";
 import { RULE_SPECS } from "../../src/lint/rules";
+import { run } from "../../src/cli/lint";
 import type { LintFinding } from "../../src/lint/types";
 
 /**
@@ -116,5 +120,85 @@ suite("lint: SARIF", () => {
   test("warning は SARIF の warning に写る", () => {
     const doc = sarif([{ ...FINDING, ruleId: "numeric-alignment", severity: "warning" }]);
     assert.strictEqual(doc.runs[0].results[0].level, "warning");
+  });
+});
+
+/**
+ * CLI の桁上限。
+ *
+ * **エディタと CI で同じ上限が使えることが要点**。片方だけ変えると、
+ * レコード長 92（データ 80 桁）のソース物理ファイルで実機に入れた時点で
+ * 切り捨てられる行が CI を素通りする。
+ */
+suite("lint CLI: --max-column", () => {
+  /** 85 桁の行を 1 本だけ持つ検査用ソース。既定 100 では通り、上限 80 では捕まる。 */
+  function fixture(): { source: string; output: string } {
+    const dir = mkdtempSync(join(tmpdir(), "lint-max-column-"));
+    const source = join(dir, "SAMPLE.rpgle");
+    writeFileSync(source, `${"A".repeat(85)}\n`, "utf8");
+    return { source, output: join(dir, "out.txt") };
+  }
+
+  /** line-length だけを有効にして走らせ、テキスト出力を返す。 */
+  function lint(args: readonly string[]): { code: number; text: string } {
+    const { source, output } = fixture();
+    const code = run([
+      "--rule",
+      "line-length",
+      "--format",
+      "text",
+      "--output",
+      output,
+      ...args,
+      source
+    ]);
+    return { code, text: readFileSync(output, "utf8") };
+  }
+
+  test("既定（100 桁）では 85 桁の行を指摘しない", () => {
+    const { code, text } = lint([]);
+    assert.strictEqual(code, 0);
+    assert.ok(!text.includes("line-length"), text);
+  });
+
+  test("--max-column 80 なら同じ行を指摘する", () => {
+    const { code, text } = lint(["--max-column", "80"]);
+    assert.strictEqual(code, 1, "error の指摘が出れば終了コードは 1");
+    assert.ok(text.includes("line-length"), text);
+    assert.ok(text.includes("固定長ソースは 80 桁までです"), text);
+    // 規則単体と同じメッセージであること（エディタと CI の食い違いを防ぐ要）。
+    assert.ok(text.includes("（1-80 桁が仕様書。注記域は入りません）"), text);
+  });
+
+  test("不正な値は UsageError で落とす（黙って既定に戻さない）", () => {
+    // 設定と違い、明示的に渡した値が無視されるのは事故のもと。
+    for (const value of ["abc", "0", "-5", "1.5", "32755"]) {
+      const { source } = fixture();
+      assert.strictEqual(
+        run(["--max-column", value, source]),
+        2,
+        `--max-column ${value} は使用法エラーになるべき`
+      );
+    }
+  });
+
+  test("値を伴わない --max-column も落ちる", () => {
+    assert.strictEqual(run(["--max-column"]), 2);
+  });
+
+  test("使い方に、設定と同じ値を渡すべきことが書いてある", () => {
+    // 渡し忘れの食い違いが最も踏みやすい罠なので、USAGE に明記されていること。
+    // USAGE は --help のときだけ出るので、そちらで確かめる。
+    const logs: string[] = [];
+    const original = console.error;
+    console.error = (message?: unknown) => void logs.push(String(message));
+    try {
+      assert.strictEqual(run(["--help"]), 0);
+    } finally {
+      console.error = original;
+    }
+    const usage = logs.join("\n");
+    assert.ok(usage.includes("--max-column"), usage);
+    assert.ok(usage.includes("rpgClSupport.lint.maxColumn"), usage);
   });
 });

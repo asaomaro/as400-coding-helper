@@ -3,7 +3,7 @@ import { createRpgSpecContext } from "../core/rpgSpec";
 import { resolveSourceKind } from "../core/sourceKind";
 import type { DefinitionSet } from "./defsLoader";
 import { classifyLine, type LintLanguage } from "./preprocess";
-import { RULE_SPECS, defaultEnabledRules } from "./rules";
+import { DEFAULT_MAX_COLUMN, RULE_SPECS, defaultEnabledRules } from "./rules";
 import type { LintFinding, LintOptions, RuleId } from "./types";
 
 /**
@@ -40,6 +40,10 @@ export function lintFile(request: LintRequest): readonly LintFinding[] {
     language === "rpg-fixed"
       ? createRpgSpecContext(request.options?.cNewOpcodes)
       : undefined;
+
+  // 桁上限は**ここで 1 度だけ解決する**。規則側に既定を持たせないため
+  // （RuleContext.maxColumn を必須にしてあるのと対）。
+  const maxColumn = request.options?.maxColumn ?? DEFAULT_MAX_COLUMN;
 
   const findings: LintFinding[] = [];
 
@@ -78,7 +82,8 @@ export function lintFile(request: LintRequest): readonly LintFinding[] {
       lineNumber: index + 1,
       definition,
       specKeyword,
-      dialect: kind.dialect
+      dialect: kind.dialect,
+      maxColumn
     };
 
     for (const spec of enabled) {

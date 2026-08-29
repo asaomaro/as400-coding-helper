@@ -3,7 +3,13 @@ import { readFileSync, writeFileSync, existsSync } from "node:fs";
 import { relative, resolve } from "node:path";
 import { lintFile } from "../lint/engine";
 import { defaultResourcesDir, loadDefinitions } from "../lint/defsLoader";
-import { RULE_SPECS, defaultEnabledRules } from "../lint/rules";
+import {
+  DEFAULT_MAX_COLUMN,
+  MAX_MAX_COLUMN,
+  MIN_MAX_COLUMN,
+  RULE_SPECS,
+  defaultEnabledRules
+} from "../lint/rules";
 import { DEFAULT_C_NEW_OPCODES } from "../core/rpgSpec";
 import { toSarif, type FileFindings } from "../lint/sarif";
 import type { LintFinding, RuleId, Severity } from "../lint/types";
@@ -25,11 +31,17 @@ const USAGE = `使い方: node out/cli/lint.js [オプション] <ファイル�
   --no-rule <id>                   個別に無効化する（繰り返し可）
   --fail-on <error|warning|never>  終了コード 1 にする閾値（既定 error）
   --c-new-opcode <名前>            C 仕様を新形式とみなすオペコードを足す（繰り返し可）
+  --max-column <桁数>              行長検査の桁上限（既定 100）
   --help
 
 VSCode の設定 rpgClSupport.cNewOpcodes を使っている場合は、同じ値を
 --c-new-opcode で渡す。渡さないとエディタと CI で C 仕様の新旧判定が食い違い、
 CI 側だけ FIELDLEN(64-68) / DECPOS(69-70) を数値欄として検査してしまう。
+
+--max-column も同じ。VSCode の設定 rpgClSupport.lint.maxColumn を変えているなら
+同じ値を渡す。渡さないと CI だけ 100 桁で検査し、レコード長 92（データ 80 桁）の
+ソース物理ファイルでは実機で切り捨てられる行が CI を素通りする。
+入れる値はレコード長ではなくデータ桁数（レコード長 - 12）。
 
 規則:
 ${RULE_SPECS.map(
@@ -46,6 +58,7 @@ interface CliOptions {
   disabled: RuleId[];
   failOn: Severity | "never";
   cNewOpcodes: string[];
+  maxColumn: number;
   files: string[];
 }
 
@@ -57,6 +70,7 @@ function parseArgs(argv: readonly string[]): CliOptions {
     disabled: [],
     failOn: "error",
     cNewOpcodes: [],
+    maxColumn: DEFAULT_MAX_COLUMN,
     files: []
   };
   const knownRules = new Set<string>(RULE_SPECS.map(spec => spec.id));
@@ -100,6 +114,23 @@ function parseArgs(argv: readonly string[]): CliOptions {
       case "--c-new-opcode":
         options.cNewOpcodes.push(next().trim().toUpperCase());
         break;
+      case "--max-column": {
+        const raw = next();
+        const value = Number(raw);
+        // **設定と違い黙って既定に戻さない。** 明示的に渡した値が無視されるのは
+        // 事故のもとなので、--fail-on / --format と同じく使い方を出して落とす。
+        if (
+          !Number.isInteger(value) ||
+          value < MIN_MAX_COLUMN ||
+          value > MAX_MAX_COLUMN
+        ) {
+          throw new UsageError(
+            `--max-column は ${MIN_MAX_COLUMN}〜${MAX_MAX_COLUMN} の整数です: ${raw}`
+          );
+        }
+        options.maxColumn = value;
+        break;
+      }
       case "--fail-on": {
         const value = next();
         if (value !== "error" && value !== "warning" && value !== "never") {
@@ -189,6 +220,7 @@ export function run(argv: readonly string[]): number {
       definitions,
       options: {
         enabledRules: enabled,
+        maxColumn: options.maxColumn,
         ...(options.cNewOpcodes.length > 0
           ? {
               cNewOpcodes: new Set([
