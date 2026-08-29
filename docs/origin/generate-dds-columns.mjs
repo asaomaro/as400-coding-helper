@@ -63,11 +63,55 @@ const ENTRY = new RegExp(
 const PREFIX =
   /^(表示装置ファイル|印刷装置ファイル|物理ファイルおよび論理ファイル|物理ファイル|論理ファイル)(用に|の)?/;
 
+/**
+ * **英語はリンクの文言から採る。**
+ *
+ * 英語原典は `Sequence number for printer files (positions 1 through 5)` と
+ * **数字の前**に `positions` を置く。日本語向けの `ENTRY`（`…(\d+)…桁目`）は
+ * 構造が合わず、14 欄中 4 欄しか取れない。
+ *
+ * 平文に英語版の正規表現を当てても**ラベルが前の文を巻き込む**
+ * （英語は語を空白で区切るので、日本語のように「空白でない 1 語」で境界が決まらない。
+ * 実測で `A K ITMNBR ABSVAL A Sequence number` になった）。
+ *
+ * 一方**リンクの文言は完全で境界が明確**なので、そこから採る。
+ * 日本語の経路は変えない——検証済み（`verify-dds-columns.mjs`）で、ルーラーも読む。
+ */
+const LINK = /<a[^>]*href="[^"]*"[^>]*>([^<]{5,120})<\/a>/g;
+const ENTRY_EN =
+  /^(.+?)\s+for\s+[a-z ]+files?\s*\(positions?\s+(\d+)(?:\s*(?:through|and|-)\s*(\d+))?\)/;
+
+/** 原典が書いていない欄を補うときの名前。日本語版の既定値と同じ位置・同じ数。 */
+const FILL = {
+  ja: { seq: "順序番号", form: "仕様書タイプ", comment: "注記", keyword: "キーワード項目" },
+  en: { seq: "Sequence number", form: "Form type", comment: "Comment", keyword: "Keyword entries" }
+};
+const fill = FILL[LANG] ?? FILL.ja;
+
 function parseColumns(file) {
-  const text = plain(readFileSync(join(ORIGIN, file), "utf8"));
+  const source = readFileSync(join(ORIGIN, file), "utf8");
+  const text = plain(source);
   const entries = new Map();
 
-  for (const match of text.matchAll(ENTRY)) {
+  if (LANG !== "ja") {
+    for (const link of source.matchAll(LINK)) {
+      const label = decode(link[1].replace(/\s+/g, " ")).trim();
+      const match = ENTRY_EN.exec(label);
+      if (!match) continue;
+      const from = Number(match[2]);
+      const to = Number(match[3] ?? match[2]);
+      if ((from === 1 && to === 44) || to > 80) continue;
+      const linkLabel = match[1].trim();
+      // **「定位置項目」は欄ではなく見出し。** 表示装置のページは先頭 3 欄をまとめて
+      // 「1-7」とだけ書くので、これを欄として採ると 順序番号 / 仕様書タイプ / 注記 の
+      // 補完（下）が働かず、欄が 14 → 12 に減る。日本語側も同じ語を除いている。
+      if (/^Positional entries$/iu.test(linkLabel)) continue;
+      const key = `${from}-${to}`;
+      if (!entries.has(key)) entries.set(key, { from, to, label: linkLabel });
+    }
+  }
+
+  for (const match of LANG === "ja" ? text.matchAll(ENTRY) : []) {
     const from = Number(match[2]);
     const to = Number(match[3] ?? match[2]);
 
@@ -107,15 +151,15 @@ function parseColumns(file) {
   const filled = [...byStart.values()];
   if (!byStart.has(1)) {
     filled.push(
-      { from: 1, to: 5, label: "順序番号" },
-      { from: 6, to: 6, label: "仕様書タイプ" },
-      { from: 7, to: 7, label: "注記" }
+      { from: 1, to: 5, label: fill.seq },
+      { from: 6, to: 6, label: fill.form },
+      { from: 7, to: 7, label: fill.comment }
     );
   }
 
   // キーワード項目(45-80)は全種別に存在する。書かれていないページがあるため補う。
   if (!filled.some(entry => entry.from === 45)) {
-    filled.push({ from: 45, to: 80, label: "キーワード項目" });
+    filled.push({ from: 45, to: 80, label: fill.keyword });
   }
 
   // ルーラーは開始桁の一覧なので、同じ桁が2つあってはならない。

@@ -133,6 +133,50 @@ for (const type of ["DDS-PF", "DDS-DSPF", "DDS-PRTF"]) {
   }
 }
 
+/**
+ * **英語版に日本語が混ざっていないこと。**
+ *
+ * 混入は目で見ないと気付けない。実際、欄の名前が桁定義（日本語）から来ていたため
+ * **146 箇所**残っていた（`en/DDS-PRTF.json` の `順序番号（1-5 桁目）` など）。
+ *
+ * RPG 側は `verify-rpg-spec-definitions.mjs` が同じ検査を持つ。DDS には無かった。
+ * 落ちたときに**どのキーに何が入っていたか**を出す（分からないと直せない）。
+ */
+const JAPANESE = /[\u3040-\u309F\u30A0-\u30FF\u4E00-\u9FFF]/u;
+for (const type of ["DDS-PF", "DDS-DSPF", "DDS-PRTF"]) {
+  const file = join(PROMPTER, "en", `${type}.json`);
+  if (!existsSync(file)) continue;
+  const found = [];
+  const walk = (value, path) => {
+    if (typeof value === "string") {
+      if (JAPANESE.test(value)) found.push(`${path} = ${JSON.stringify(value.slice(0, 60))}`);
+      return;
+    }
+    if (Array.isArray(value)) value.forEach(item => walk(item, path));
+    else if (value && typeof value === "object") {
+      for (const key of Object.keys(value)) walk(value[key], path ? `${path}.${key}` : key);
+    }
+  };
+  walk(JSON.parse(readFileSync(file, "utf8")), "");
+  for (const hit of found.slice(0, 5)) failures.push(`en/${type}: 日本語が混ざっている（${hit}）`);
+  if (found.length > 5) failures.push(`en/${type}: 日本語が混ざっている（ほか ${found.length - 5} 箇所）`);
+}
+
+/**
+ * **桁の構造が日英で一致すること。**
+ * 欄の名前は言語別のファイルから来る（`dds-field-labels{,.en}.json`）が、
+ * **桁は同じでなければならない**。ずれると同じソースが言語で違う欄に割れる。
+ */
+const columnsEnPath = join(NAV, "dds-keyword-columns.en.json");
+if (existsSync(columnsEnPath)) {
+  const columnsEn = JSON.parse(readFileSync(columnsEnPath, "utf8"));
+  for (const type of ["DDS-PF", "DDS-DSPF", "DDS-PRTF"]) {
+    const a = JSON.stringify(columns[type]);
+    const b = JSON.stringify(columnsEn[type]);
+    if (a !== b) failures.push(`${type}: 桁定義が ja/en で違う（ja=${a} / en=${b}）`);
+  }
+}
+
 console.log("DDS プロンプター定義の検査");
 
 if (failures.length > 0) {

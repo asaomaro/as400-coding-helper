@@ -242,6 +242,42 @@ suite("DDS の restricted-value", () => {
     }
   });
 
+  /**
+   * **英語版に日本語が混ざらないこと。**
+   *
+   * 欄の名前が桁定義（日本語）から来ていたため、以前は **146 箇所**残っていた
+   * （`順序番号（1-5 桁目）` など）。英語で開いても欄の名前が日本語だった。
+   * いまは `dds-field-labels.en.json`（英語原典から生成）を読む。
+   */
+  test("**英語版に日本語が混ざっていない**", () => {
+    const japanese = /[\u3040-\u309F\u30A0-\u30FF\u4E00-\u9FFF]/u;
+    for (const type of ["DDS-PF", "DDS-DSPF", "DDS-PRTF"]) {
+      const found: string[] = [];
+      const walk = (value: unknown, path: string): void => {
+        if (typeof value === "string") {
+          if (japanese.test(value)) found.push(`${path} = ${value.slice(0, 50)}`);
+          return;
+        }
+        if (Array.isArray(value)) value.forEach(item => walk(item, path));
+        else if (value && typeof value === "object") {
+          for (const key of Object.keys(value)) {
+            walk((value as Record<string, unknown>)[key], path ? `${path}.${key}` : key);
+          }
+        }
+      };
+      walk(load("en", type), "");
+      assert.deepEqual(found, [], `${type}: 日本語が混ざっている`);
+    }
+  });
+
+  test("欄の名前が原典の英語の見出しどおり", () => {
+    const names = (type: string) =>
+      load("en", type).parameters.map(p => p.description.replace(/\s*\(position.*$/u, ""));
+    assert.deepEqual(names("DDS-PRTF").slice(0, 4),
+      ["Sequence number", "Form type", "Comment", "Condition"]);
+    assert.equal(names("DDS-DSPF")[9], "Data type and keyboard shift");
+  });
+
   test("ja / en で restricted がそろっている", () => {
     for (const type of ["DDS-PF", "DDS-DSPF", "DDS-PRTF"]) {
       const flags = (lang: string) =>
