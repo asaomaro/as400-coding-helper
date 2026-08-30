@@ -454,7 +454,7 @@ assert するテストが出る。実装にバグがあれば**バグごと固�
 | # | 未検証事項 | 確認方法 | 設計への影響 |
 |---|---|---|---|
 | 1 | ~~EVFEVENT の取得＋`@ibm/ibmi-eventf-parser` の実出力適用~~ | **2026-07-19 確認済み**（skill `ibmi-remote`）。SQL は不可で `CPYTOSTMF` を使う（4.1 の訂正） | 解消 |
-| 2 | ~~RPGUnit（RPGUNIT ライブラリ）の pub400 一般ユーザー導入可否~~ | **2026-08-29 確認済み**。pub400 は**不可**（`RSTLIB`/`RSTOBJ`/`CRTLIB` がすべて `CPF9802`。特殊権限が 1 つも無い）。**SR-OSAKA に iRPGUnit v4.0.3.r を導入済み**で、**固定長（H/P/D/C 仕様）でテストが書けることも実機で確認**（対照つき）。使い方と罠は skill `ibmi-remote` 7 節 | 解消。ユニット層は SR-OSAKA で成立する |
+| 2 | ~~RPGUnit（RPGUNIT ライブラリ）の pub400 一般ユーザー導入可否~~ | **2026-08-29 確認済み**。pub400 は**不可**（`RSTLIB`/`RSTOBJ`/`CRTLIB` がすべて `CPF9802`。特殊権限が 1 つも無い）。**SR-OSAKA に iRPGUnit v4.0.3.r を導入済み**で、**固定長（H/P/D/C 仕様）でテストが書けることも実機で確認**（対照つき）。導入手順は [`rpgunit-install.md`](rpgunit-install.md)、テストの書き方と実行は skill `rpgunit-test` | 解消。ユニット層は SR-OSAKA で成立する |
 | 3 | ~~clPrompter 併用時の F4 キー衝突~~ | **2026-08-29 確認済み**（`20260829-clprompter-f4-conflict`）。両者のマニフェストを直読して突き合わせた（`docs/research/code-for-ibmi.md` §3.1）| 解消 |
 | 4 | pub400 の database ホストサーバー到達性（Db2 TS 配線の前提。telnet とは別ポート） | core の `DbConnection` は実機で全型取得を確認済み（F3）のため低リスク。配線後に再確認 | 不可なら 5250 経由 RUNSQL に縮退 |
 
