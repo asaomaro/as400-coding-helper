@@ -528,10 +528,36 @@ RUCALLTST  TSTPGM(<lib>/<名前>)
 他に `CMPMOD`（モジュール単体）・`RUCRTCBL`（COBOL）・`UPDLIB LIB(<名前>)`
 （ライブラリー名を変えた後の参照貼り直し）がある。
 
-### 7.4 結果の読み方
+### 7.4 結果の読み方（スプール ／ XML）
+
+結果の出口は **2 つあり、独立して制御できる**（実機で確認済み。同じ 1 ジョブで
+`RUCALLTST` を 3 回呼び、既定 / `OUTPUT(*NONE)` / `OUTPUT(*NONE) XMLSTMF(...)` を比べた）。
+
+| 出口 | 制御 | 既定 |
+|---|---|---|
+| **スプール** | `OUTPUT(*ALLWAYS` / `*ERROR` / `*NONE)` | `*ALLWAYS`（必ず出る） |
+| **XML（IFS）** | `XMLSTMF('<パス>')` | `*NONE`（出ない） |
+
+**`OUTPUT(*NONE)` にすればスプールは 1 件も出ない**（3 回呼んでスプールは既定の 1 件だけだった）。
+CI で XML だけ欲しいなら `OUTPUT(*NONE) XMLSTMF(...)` にすると出力キューを汚さない。
+
+#### スプール
+
 
 **スプール名は `RPGUNIT`**（`QSYSPRT` ではない。`QSYSPRT` で探すと 0 件になり
 「メッセージが無い＝成功」と誤読する。4.5 節の `QRPGLST` と同じ罠）。
+
+**`USER_DATA` にテスト対象のプログラム名が入る**ので、複数スイートを回したときの
+取り違えはこれで防げる（実測。`OUTPUT_QUEUE` は `QUSRSYS/PRT01`・`FORM_TYPE` は `*STD`）。
+
+```sql
+SELECT SPOOLED_FILE_NAME, FILE_NUMBER, USER_DATA, JOB_NAME
+  FROM QSYS2.OUTPUT_QUEUE_ENTRIES_BASIC
+ WHERE SPOOLED_FILE_NAME = 'RPGUNIT' AND USER_DATA = '<テスト対象のプログラム名>'
+```
+
+**`RUCRTRPG` が出すコンパイル・リストは別物**で、そちらは**プログラム名**のスプールになる
+（`EXCTST` など）。結果と取り違えないこと。
 
 ```
 *** Tests of FIXTST2 ***
@@ -557,6 +583,30 @@ FAILURE. 2 test cases, 2 assertions, 1 failure, 0 error.
 - 失敗は `<手続き名> - FAILURE` ＋ 期待値/実際値 ＋ `(pgm->module:SEQNBR)`。
 - **失敗があると `CPF9897` の escape も投げる**（EVFEVENT とは別経路。設計書 4.2 / 7 章）。
 
+#### XML（`XMLSTMF`）— **JUnit 形式**
+
+CI に載せるならこちら。**JUnit の `<testsuite>` / `<testcase>` そのもの**なので、
+GitHub Actions や Jenkins のテストレポーターがそのまま食える（実機で確認済み）。
+
+```xml
+<?xml version="1.0" encoding="UTF-8" ?>
+<testsuite errors="0" failures="0" hostname="" id="0" name="ASAOLIB/EXCTST" tests="1" >
+    <properties>
+        <property name="currentlibrary" value="*CRTDFT" />
+        <property name="user.librarylist" value="RPGUNIT    ASAOLIB    QGPL       QTEMP      "/>
+        <property name="os.version" value="V7R3M0"/>
+        <property name="irpgunit.version" value="4.0.3"/>
+    </properties>
+    <testcase name="TESTEXC" assertions="1" classname="EXCTST" time="0.001" >
+    </testcase>
+</testsuite>
+```
+
+- `name` は `<ライブラリー>/<プログラム>`、`classname` はプログラム名、`tests` は件数。
+- ライブラリー・リストと OS / iRPGUnit のバージョンが `<properties>` に入るので、
+  **どの環境で回したかが成果物だけで分かる**。
+- 失敗時に `<failure>` 要素が入るはずだが、**そこは未確認**（上の実測は成功ケース）。
+
 ### 7.5 踏みやすい罠（すべて実際に踏んだ）
 
 - **`RPGUNIT` を `*LIBL` に載せる。** `TESTCASE` が入れ子で**非修飾の**
@@ -579,7 +629,7 @@ FAILURE. 2 test cases, 2 assertions, 1 failure, 0 error.
 
 以下は本書では確認していない。使う前に確かめること。
 
-- `RUCALLTST` の **`XMLSTMF`**（CI 向け XML 出力）の中身
+- `XMLSTMF` の **失敗時**の XML（`<failure>` 要素の形）。成功時は確認済み（7.4）
 - **pub400 での RPGUnit** は不可と確定（`RSTLIB`/`RSTOBJ`/`CRTLIB` が `CPF9802`）。
   7 節は **SR-OSAKA 専用**。
 
