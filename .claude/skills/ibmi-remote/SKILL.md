@@ -407,6 +407,50 @@ CPF9897  Unable to create test <名前>.
 
 例題が実機に 19 本ある（`RPGUNIT/QTESTCASES,TESTPGM01`〜`19`。テンプレートは `QSRC,TEMPLATE`）。
 
+#### SQLRPGLE（埋め込み SQL）も固定長で書ける
+
+**`RUCRTRPG` はメンバーのソースタイプで分岐する**（`RPGUNIT/QSRC,CRTRPG`）。
+コマンドは 1 本で、`CRTSQLRPGI` への切り替えは内部で起きる。
+
+```
+srcType = getMemberType( srcFile.nm : srcFile.lib : srcMbrRslv );
+if (srcType <> MBR_RPGLE and srcType <> MBR_SQLRPGLE );
+  sndEscapeMsgAboveCtlBdy( 'Source type ' + %trim(srcType) …
+```
+
+つまり **`CHGPFM … SRCTYPE(SQLRPGLE)` を忘れると `RPGLE` として扱われて落ちる**。
+
+固定長の埋め込み SQL は `C/EXEC SQL` … `C+` … `C/END-EXEC`。実機で確認済み（対照つき）:
+
+```
+     H NOMAIN OPTION(*SRCSTMT:*NODEBUGIO)
+      /COPY RPGUNIT/QINCLUDE,TESTCASE
+     PTESTSQLFIX       B                   EXPORT
+     DTESTSQLFIX       PI
+     DN                S             10I 0
+     C/EXEC SQL
+     C+ SELECT 42 INTO :N FROM SYSIBM.SYSDUMMY1
+     C/END-EXEC
+     C                   CALLP     iEqual(42:N)
+     PTESTSQLFIX       E
+```
+
+→ `Success. 1 test case, 1 assertion, 0 failure, 0 error.`（`**free` の対照も同じ結果）
+
+**SQL 版のテンプレートが同梱されている**（v4 は `QSRC,TEMPLSQL`、v6 は
+`QTEMPLATE,RPGSQL`）。想定された書き方は「SQL を撃って `SQLSTATE` を assert する」:
+
+```
+exec sql <文>;
+assert(not isSqlError(sqlState));
+```
+
+`isSQLError()` / `setIgnSQLWarn()` がテンプレートに入っている。
+
+**テンプレートは `set option commit = *none;` で始まる。** コミットメント制御を使わないので、
+**ロールバックによるテスト間の分離は効かない**——後始末は `tearDown` の明示的な削除頼みになる。
+独立性は `RUCALLTST … ORDER(*REVERSE)` で検品する（7.3）。
+
 ### 7.3 ビルドと実行
 
 ```
@@ -447,7 +491,16 @@ Expected 2, but was 3.
 FAILURE. 2 test cases, 2 assertions, 1 failure, 0 error.
 ```
 
-- **最終行が集計**（`SUCCESS.` / `FAILURE.` ＋ `n test cases, n assertions, n failure, n error.`）。
+- **最終行が集計。表記が成功と失敗で揃っていない**（実測）:
+
+  ```
+  Success. 1 test case, 1 assertion, 0 failure, 0 error.
+  FAILURE. 2 test cases, 2 assertions, 1 failure, 0 error.
+  ```
+
+  成功は **`Success.`（混在ケース）**、失敗は **`FAILURE.`（大文字）**。
+  さらに **`test case(s)` / `assertion(s)` は単複が変わる**。
+  parse するなら大小文字を無視し、単複の `s?` を許すこと。
 - 失敗は `<手続き名> - FAILURE` ＋ 期待値/実際値 ＋ `(pgm->module:SEQNBR)`。
 - **失敗があると `CPF9897` の escape も投げる**（EVFEVENT とは別経路。設計書 4.2 / 7 章）。
 
