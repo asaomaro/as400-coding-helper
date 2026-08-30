@@ -141,10 +141,42 @@ RUCALLTST  TSTPGM(<lib>/<名前>)
 他に `CMPMOD`（モジュール単体）・`RUCRTCBL`（COBOL）・`UPDLIB LIB(<名前>)`
 （ライブラリー名を変えた後の参照貼り直し）。
 
-### 走らせ方の型（そのまま写して使う）
+### **メンバー名はテストプログラム名と同じにする**
 
-`ADDLIBLE` は次のコマンドに効かない（`ibmi-remote` 6.3）ので **CL 1 本にまとめて
-`SBMJOB` する**。コマンドは `RPGUNIT/` で修飾する。
+`SRCMBR` に別名を渡しても効かない。`getMemberType` が**プログラム名のメンバー**を
+探しに行って落ちる（実測。2 回再現）。
+
+```
+RUCRTRPG TSTPGM(ASAOLIB/BLDD) SRCFILE(ASAOLIB/QUNITSRC) SRCMBR(FIXTST2)
+→ CPF9815  Member BLDD file QUNITSRC in library ASAOLIB not found.   （To procedure: getMemberType）
+```
+
+`SRCFILE` は効く（既定の `QRPGLESRC` ではなく `QUNITSRC` を見に行っている）ので、
+効かないのは `SRCMBR` だけ。**RUCRTRPG の仕様か `SBMJOB` 経由特有かは切り分けていない**が、
+名前を揃えれば起きない。
+
+### 走らせ方の型
+
+**CL driver は必須ではない。** `SBMJOB` の `CMD()` に直接書ける（実測）。
+`INLLIBL` がそのジョブの `*LIBL` を作るので `ADDLIBLE` も要らない。
+
+```
+SBMJOB CMD(RPGUNIT/RUCALLTST TSTPGM(<lib>/<名前>) OUTPUT(*NONE) +
+             XMLSTMF('<IFS>/result.xml'))
+         JOB(RUNTST) INLLIBL(RPGUNIT <lib> QGPL QTEMP) INQMSGRPY(*DFT)
+```
+
+ビルドも同じ形でよい。
+
+```
+SBMJOB CMD(RPGUNIT/RUCRTRPG TSTPGM(<lib>/<名前>) SRCFILE(<lib>/<src>) +
+             SRCMBR(<名前>))
+         JOB(BLD) INLLIBL(RPGUNIT <lib> QGPL QTEMP) INQMSGRPY(*DFT)
+```
+
+**ビルドと実行を 1 ジョブでまとめたいときだけ CL driver を使う**（2 本の `SBMJOB` は
+互いを待たないので、実行が先に走りうる）。`ADDLIBLE` は次のコマンドに効かない
+（`ibmi-remote` 6.3）ので、driver 側では `RPGUNIT/` で修飾する。
 
 ```
              PGM
