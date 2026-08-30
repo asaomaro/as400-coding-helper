@@ -367,12 +367,9 @@ pub400 には入れられない（`RSTLIB`/`RSTOBJ`/`CRTLIB` が `CPF9802`）。
 
 ## 未確認事項
 
-以下は本書では確認していない。使う前に確かめること。
-
-- RPGUnit の出力の文字化けを**直す手段**（`CHGSPLFA` の `CHRID` 等で救えるか）。
-  化けること自体は確定済み（skill `rpgunit-test` 5 節）。
-- **pub400 での RPGUnit** は不可と確定（`RSTLIB`/`RSTOBJ`/`CRTLIB` が `CPF9802`）。
-  7 節は **SR-OSAKA 専用**。
+**現在なし。** かつてここにあった 3 件（RPGUnit の導入と実行 / 固定長での
+コンパイル / `RUCALLTST` の結果出力の形式）はいずれも実機で確認して解消し、
+`docs/workflow/rpgunit-install.md` と skill `rpgunit-test` に移した。
 
 ## 参照
 
