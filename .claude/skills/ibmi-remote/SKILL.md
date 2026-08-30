@@ -379,8 +379,16 @@ CPF9897  Unable to create test <名前>.
 | `setUp` / `tearDown` | **各テストの前後** |
 | `test*` | テストケース本体 |
 
-**原典の例はすべて `**free` だが、固定長で書ける**（実機で確認済み。対照つき）。
-`RPGUNIT/QINCLUDE,TESTCASE` は 1 行目が `**free` でも、固定長の主ソースから `/COPY` できる。
+**固定長で書ける**（実機で確認済み。対照つき）。**include の書式は版で違う**ので注意する。
+
+| 版 | `QINCLUDE,TESTCASE` の書式 |
+|---|---|
+| **v4.0.3.r（導入済み）** | **固定長の D 仕様**（1 行目は `      /if not defined (IRPGUNIT_TESTCASE)`） |
+| v6 系 | `**free` |
+
+**どちらでも固定長の主ソースから `/COPY` できる**（v6 が入っていた時期に `**free` の
+include を固定長から引いてコンパイルが通ることを対照つきで確認済み）。
+つまり `**free` かどうかは**気にしなくてよい**が、**中を読むときに書式を取り違えない**こと。
 
 ```
      H NOMAIN OPTION(*SRCSTMT:*NODEBUGIO)
@@ -394,18 +402,63 @@ CPF9897  Unable to create test <名前>.
 **`OPTION(*SRCSTMT)` を付ける。** 失敗報告のソース位置（`(PGM->MODULE:900)`）が
 これで元のソース行に戻せる。
 
-判定に使う手続き（`/COPY qinclude,TESTCASE` で入る）:
+#### 公開 API（v4.0.3.r の `QINCLUDE,TESTCASE` から。全 18 件）
 
-| | 用途 |
-|---|---|
-| `iEqual(expected : actual [: fieldName])` | 数値 |
-| `aEqual(expected : actual [: fieldName])` | 文字 |
-| `nEqual(expected : actual [: fieldName])` | 標識 |
-| `assert(condition : msgIfFalse)` | 任意の条件 |
-| `fail(msg)` | 無条件に失敗させる |
-| `assertJobLogContains(msgId)` | ジョブログにそのメッセージが出たか |
+**戻り値を比べるだけの道具ではない。** IBM i の副作用（メッセージ・例外・ファイル）を
+検証するために作られている。
+
+| 分類 | 手続き | 用途 |
+|---|---|---|
+| 値の比較 | `iEqual` / `aEqual` / `nEqual` | 数値 / 文字 / 標識。`(expected : actual [: fieldName])` |
+| 一般 | `assert(condition : msgIfFalse)` | 任意の条件 |
+| | `fail(msg)` | 無条件に失敗。**「例外が飛ぶはず」の検証に使う** |
+| **例外** | `getMonitoredMessage()` | 監視した例外の情報を取る。`fail()` と組で使う |
+| **メッセージ** | `assertJobLogContains(msgId [: since])` | ジョブログにそのメッセージが出たか |
+| | `assertMessageQueueContains(msgId [: since])` | メッセージキューに出たか |
+| 下ごしらえ | `runCmd(cmd)` | CL コマンドを実行する（arrange / act） |
+| | `clrpfm(file : lib)` | 物理ファイルをクリア（**フィクスチャの後始末**） |
+| | `rclactgrp(...)` | 活動化グループの再利用（状態のリセット） |
+| | `waitSeconds` / `getFullTimeStamp` / `getMemberType` / `setLowMessageKey` | 補助 |
+| 画面 | `displayStatusMessage` / `restoreStatusMessage` / `clearStatusMessage` | 進捗表示 |
+
+**「例外が飛ぶこと」を検証する形**（RPG の単体テストで最も使う型の 1 つ）。
+下は 0 除算を起こして `MCH1211` を捕まえる例で、**実機で通した実物**
+（`Success. 1 test case, 1 assertion, 0 failure, 0 error.`）:
+
+```
+     H NOMAIN OPTION(*SRCSTMT:*NODEBUGIO)
+      /COPY RPGUNIT/QINCLUDE,TESTCASE
+     PTESTEXC          B                   EXPORT
+     DTESTEXC          PI
+     DMSGINFO          DS                  LIKEDS(MsgInfo_t)
+     DA                S             10I 0
+     DB                S             10I 0
+     C                   MONITOR
+     C                   EVAL      B = 0
+     C                   EVAL      A = 1 / B
+     C                   CALLP     fail('例外が飛ぶはずだった')
+     C                   ON-ERROR
+     C                   EVAL      MSGINFO = getMonitoredMessage()
+     C                   CALLP     aEqual('MCH1211': MSGINFO.Id)
+     C                   ENDMON
+     PTESTEXC          E
+```
+
+**`getMonitoredMessage()` の戻りは DS なので、いったん `LIKEDS(MsgInfo_t)` の変数へ代入する**
+（`getMonitoredMessage().Id` のように直接は書けない）。原典のコメントも
+`aEqual( 'MCH1211': msgInfo.Id );` と変数経由で書いている。
 
 例題が実機に 19 本ある（`RPGUNIT/QTESTCASES,TESTPGM01`〜`19`。テンプレートは `QSRC,TEMPLATE`）。
+
+#### 何を「単位」にするか
+
+**`RUCRTRPG` は `BNDSRVPGM` / `MODULE` / `BNDDIR` を持つ**（既定はいずれも `*NONE`）。
+つまり想定は「**テスト対象をテスト・サービスプログラムにバインドし、その手続きを直接呼ぶ**」。
+`*PGM` を `CALL` する形も書けるが、そちらは粒度が粗い。
+
+**画面プログラム（DSPF を開くもの）は自動テストに乗らない。** バッチジョブには
+表示装置が無いため。**業務ロジックを手続きに切り出し、画面プログラムは薄い殻にする**のが
+テストできる形になる。
 
 #### SQLRPGLE（埋め込み SQL）も固定長で書ける
 
