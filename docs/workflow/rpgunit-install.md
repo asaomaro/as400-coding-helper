@@ -207,7 +207,11 @@ DLTF   FILE(<lib>/RPGUNIT)   （SAVF）
 | **XML** | ファイルの CCSID が **819（ISO 8859-1）**。宣言は `encoding="UTF-8"` だが実体は Latin-1。**日本語のメッセージは空になる** |
 
 `CHGJOB CCSID(37)` では直らない（表示は装置の文字セットで決まる）。
-`CHGSPLFA` の `CHRID` で救えるかは未確認。
+**`CHRID` では救えない**（実機で確認済み）。`CHGSPLFA` に `CHRID` パラメータは無く
+（`CPD0043`）、作成時に `OVRPRTF FILE(QSYSPRT) CHRID(697 37)` を掛けても表示は変わらない。
+**上書き自体は届いている**——同じ上書きに `SPLFNAME(CHRQ)` を足すとスプール名が変わるので、
+RUCALLTST が `QSYSPRT` を開いていること、上書きが効いていることの両方が確かめられる。
+それでも化けたままなので、**CHRID 翻訳では直らない**と結論する。
 
 **回避**: CI のレポートに出す文字は ASCII で書く。人が読むならスプールを当てにせず、
 プログラムからラテン系でデコードして読む（skill `rpgunit-test`）。
