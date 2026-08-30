@@ -605,7 +605,46 @@ GitHub Actions や Jenkins のテストレポーターがそのまま食える�
 - `name` は `<ライブラリー>/<プログラム>`、`classname` はプログラム名、`tests` は件数。
 - ライブラリー・リストと OS / iRPGUnit のバージョンが `<properties>` に入るので、
   **どの環境で回したかが成果物だけで分かる**。
-- 失敗時に `<failure>` 要素が入るはずだが、**そこは未確認**（上の実測は成功ケース）。
+
+**失敗したときの形**（実測）:
+
+```xml
+<testsuite errors="0" failures="2" name="ASAOLIB/MSGTST" tests="2" >
+    <testcase name="TESTASCII" assertions="0" classname="MSGTST" time="0.001" >
+        <failure message="ASCII failure text">
+TESTASCII (MSGTST-&gt;MSGTST:500)
+        </failure>
+    </testcase>
+</testsuite>
+```
+
+`message` 属性にメッセージ、本文にソース位置（`>` は `&gt;` にエスケープされる）。
+
+##### **日本語は XML に載らない**（実測。CI に載せるなら効く）
+
+**ファイルの CCSID は 819（ISO 8859-1）** で作られる。XML 宣言は `encoding="UTF-8"` と
+書いてあるが**実体は Latin-1** で、ASCII の範囲では一致するので気付きにくい。
+
+そのため **`fail('日本語のメッセージ')` は `message=""`（空）になる**。同じ実行の
+ASCII 側は `message="ASCII failure text"` と正しく載るので、**内容によって落ちる**。
+
+**ソースメンバー側は正しい**（`CPYTOSTMF … STMFCCSID(1208)` で取り出すと
+`fail('日本語のメッセージ')` がそのまま返る）ので、落ちているのは XML の書き出し。
+
+→ **CI のレポートに出したい文字は ASCII で書く。** 日本語を入れたいなら
+スプール側を読むか、`assert` の第 2 引数ではなくテスト手続きの名前で表現する。
+
+##### 存在しないディレクトリは CL の**コンパイル時**に弾かれる
+
+`RUCALLTST` は妥当性検査プログラム（`RUCALLTSTV`）を持つので、CL に定数で書いた
+`XMLSTMF` のパスはコンパイル時に検査される。
+
+```
+* CPD0006 30  Directory does not exist. Check parameter 'XML stream file' (XMLSTMF).
+```
+
+**実行時ではなく `CRTBNDCL` が落ちる**（`CPF0820`）。早く気付ける利点だが、
+出力先を実行時に決めたいなら CL 変数にする必要がある。
 
 ### 7.5 踏みやすい罠（すべて実際に踏んだ）
 
@@ -629,7 +668,9 @@ GitHub Actions や Jenkins のテストレポーターがそのまま食える�
 
 以下は本書では確認していない。使う前に確かめること。
 
-- `XMLSTMF` の **失敗時**の XML（`<failure>` 要素の形）。成功時は確認済み（7.4）
+- **スプール側の日本語**。私の読み取り経路（`readSpooledPages`）では化けたが、
+  **実機の画面で見たときに正しいかは切り分けていない**（ソースメンバーは正しい）。
+  XML 側で落ちることは確定（7.4）。
 - **pub400 での RPGUnit** は不可と確定（`RSTLIB`/`RSTOBJ`/`CRTLIB` が `CPF9802`）。
   7 節は **SR-OSAKA 専用**。
 
