@@ -28,9 +28,13 @@
  *   .env の中身は読まない（あちらの規約）。識別子は .env.verify から取る。
  */
 import { readFileSync, writeFileSync, existsSync } from "node:fs";
-import { basename, extname, join, resolve } from "node:path";
+import { basename, dirname, extname, join, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
 
 const TS5250 = process.env.TS5250_DIR ?? "/workspaces/ts5250";
+/** 書式は skill 側に置く（道具ではなく手順の一部なので）。 */
+const DEFAULT_TEMPLATE = join(dirname(fileURLToPath(import.meta.url)),
+  "..", ".claude", "skills", "rpgunit-test", "templates", "test-report.md");
 
 // ---------------------------------------------------------------- 純粋な部分
 // 実機に触らない。--self-test で確かめる。
@@ -45,6 +49,9 @@ const USAGE = `使い方: node tools/run-rpgunit.mjs <ソースファイル> [�
   --bnd <lib/名前>    テスト対象のサービスプログラム（繰り返し可）
                       テスト対象のビルドは利用者側の仕事。ここでは束ねるだけ
   --xml <パス>        JUnit XML の保存先（ローカル）
+  --md <パス>         テスト結果を Markdown で保存（書式はテンプレート）
+  --template <パス>   Markdown の書式（既定:
+                      .claude/skills/rpgunit-test/templates/test-report.md）
   --json              要約を JSON で出す（自律ループ向け）
   --keep              IFS の作業ファイルを消さない
   --order <api|reverse>       RUCALLTST の ORDER（既定 api）
@@ -93,6 +100,8 @@ export function parseArgs(argv) {
         break;
       }
       case "--xml": o.xml = next(); break;
+      case "--md": o.md = next(); break;
+      case "--template": o.template = next(); break;
       case "--json": o.json = true; break;
       case "--keep": o.keep = true; break;
       case "--self-test": o.selfTest = true; break;
@@ -166,8 +175,13 @@ export function summarize(xml) {
     }
     cases.push(c);
   }
+  const properties = [];
+  const pre = /<property\b([^>]*?)\/?>/g;
+  let pm;
+  while ((pm = pre.exec(xml)) !== null)
+    properties.push({ name: attr(pm[1], "name"), value: unescapeXml(attr(pm[1], "value")).trim() });
   return { name: attr(head, "name"), tests: num(head, "tests"),
-    failures: num(head, "failures"), errors: num(head, "errors"), cases };
+    failures: num(head, "failures"), errors: num(head, "errors"), cases, properties };
 }
 
 /**
@@ -184,6 +198,59 @@ export function compareRuns(a, b) {
   return names
     .map(name => ({ name, a: A.get(name) ?? "無し", b: B.get(name) ?? "無し" }))
     .filter(d => d.a !== d.b);
+}
+
+/**
+ * ごく小さなテンプレート展開。**mustache の部分集合**だけを実装する。
+ *
+ *   {{key}}            値を埋める
+ *   {{#key}}…{{/key}}  配列なら繰り返し / 真なら 1 回 / 偽・空なら丸ごと省く
+ *   {{! … }}           注記（出力されない）
+ *
+ * これ以上（条件分岐・入れ子の複雑な参照）は入れない。**書式は人が読んで直せる**
+ * ことが目的で、テンプレート言語を作ることではない。
+ */
+export function renderTemplate(tpl, data) {
+  // 注記を先に落とす（行ごと消す）
+  let out = tpl.replace(/^[ \t]*\{\{!.*?\}\}[ \t]*\r?\n/gm, "").replace(/\{\{!.*?\}\}/g, "");
+  // 節（繰り返し／条件）。入れ子は 1 段だけ想定。
+  out = out.replace(/\{\{#(\w+)\}\}\r?\n?([\s\S]*?)\{\{\/\1\}\}\r?\n?/g, (_, key, body) => {
+    const v = data[key];
+    if (!v || (Array.isArray(v) && v.length === 0)) return "";
+    const items = Array.isArray(v) ? v : [typeof v === "object" ? v : data];
+    return items.map(item => renderTemplate(body, { ...data, ...item })).join("");
+  });
+  // 値。未定義は空文字（テンプレートに穴が空いても壊れない）
+  return out.replace(/\{\{(\w+)\}\}/g, (_, key) => (data[key] === undefined || data[key] === null ? "" : String(data[key])));
+}
+
+/** 要約と実行条件から、テンプレートに渡す平たいデータを作る。 */
+export function reportData(s, ctx) {
+  const failed = s.cases.filter(c => c.failure);
+  const bad = s.failures + s.errors;
+  return {
+    pgm: ctx.pgm, suiteName: s.name, timestamp: ctx.timestamp,
+    verdict: bad > 0 ? "FAILURE" : "SUCCESS",
+    tests: s.tests, failures: s.failures, errors: s.errors,
+    passed: s.tests - s.failures - s.errors,
+    source: ctx.source, srctype: ctx.srctype,
+    bind: ctx.bind && ctx.bind.length ? ctx.bind.join(" ") : "（なし）",
+    order: ctx.order ?? "api",
+    independence: ctx.independence ?? "（していない）",
+    cases: s.cases.map(c => ({
+      mark: c.failure ? "✗" : "✓", name: c.name,
+      result: c.failure ? "失敗" : "合格",
+      assertions: c.assertions ?? "", time: c.time ?? ""
+    })),
+    hasFailures: failed.length > 0,
+    failed: failed.map(c => ({
+      name: c.name, message: c.failure.message || "(メッセージなし)",
+      detail: c.failure.detail || "(詳細なし)"
+    })),
+    hasIndependenceDiff: (ctx.independenceDiff ?? []).length > 0,
+    independenceDiff: ctx.independenceDiff ?? [],
+    properties: s.properties ?? []
+  };
 }
 
 /** 人が読む要約。 */
@@ -362,6 +429,7 @@ async function main(argv) {
         finally { i2.close(); }
       };
 
+      let indepDiff = [], indepLabel, independenceFailed = false;
       const t1 = Date.now();
       const xml = await runOnce(o.order ?? "api", "A");
       if (xml === null) return 2;
@@ -373,6 +441,8 @@ async function main(argv) {
         if (xmlR === null) return 2;
         const sR = summarize(xmlR);
         const diff = compareRuns(s, sR);
+        indepDiff = diff;
+        indepLabel = diff.length ? `**食い違いあり**（正順 ${s.failures + s.errors} 失敗 / 逆順 ${sR.failures + sR.errors} 失敗）` : "一致（正順・逆順）";
         console.log(`▸ 独立性   正順 ${s.failures + s.errors} 失敗 / 逆順 ${sR.failures + sR.errors} 失敗` +
           `  … ${diff.length ? "**食い違いあり**" : "一致"}`);
         if (diff.length) {
@@ -382,7 +452,9 @@ async function main(argv) {
           console.log("");
           console.log("  前のテストが残したもの（DB の行・活動化グループのグローバル・");
           console.log("  ジョブログのメッセージ）を tearDown で片付けているか確かめてください。");
-          return 1;
+          // **ここで return しない。** --md / --xml を出してから失敗にする
+          // （食い違ったときこそ報告書が要る）。
+          independenceFailed = true;
         }
       }
       console.log(`▸ 実行     ${o.pgm} … ${s.tests} tests, ${s.failures} failure (${((Date.now() - t1) / 1000).toFixed(1)}s)`);
@@ -390,7 +462,18 @@ async function main(argv) {
       if (o.json) console.log(JSON.stringify(s, null, 2));
       else console.log(render(s));
       if (o.xml) { writeFileSync(resolve(o.xml), xml, "utf8"); console.log(`\n  XML: ${resolve(o.xml)}`); }
-      code = s.failures + s.errors > 0 ? 1 : 0;
+      if (o.md) {
+        const tplPath = o.template ? resolve(o.template) : DEFAULT_TEMPLATE;
+        if (!existsSync(tplPath)) { console.error(`✗ テンプレートがありません: ${tplPath}`); return 2; }
+        const md = renderTemplate(readFileSync(tplPath, "utf8"), reportData(s, {
+          pgm: o.pgm, source: basename(o.source), srctype: o.srctype, bind: o.bnd,
+          order: o.order ?? "api", timestamp: new Date().toISOString().replace("T", " ").slice(0, 19),
+          independence: indepLabel, independenceDiff: indepDiff
+        }));
+        writeFileSync(resolve(o.md), md, "utf8");
+        console.log(`  MD : ${resolve(o.md)}`);
+      }
+      code = (s.failures + s.errors > 0 || independenceFailed) ? 1 : 0;
     } finally {
       // --- 後始末（IFS のみ。スプールは消さない） ---
       if (!o.keep) {
@@ -487,6 +570,29 @@ Expected:
   eq(s6.cases[0].failure.detail.startsWith("Callstack:"), true, "本文の CDATA を剥がす");
   eq(failureLocation(s6.cases[0].failure.detail), "TESTNG (V2TST->V2TST:1300)", "本文から失敗位置を拾う");
   eq(unescapeXml("&amp;apos;"), "&apos;", "&amp; を最後に戻す（&amp;apos; を壊さない）");
+
+  console.log("renderTemplate（mustache の部分集合）");
+  eq(renderTemplate("a{{x}}b", { x: 1 }), "a1b", "値を埋める");
+  eq(renderTemplate("a{{x}}b", {}), "ab", "未定義は空（穴が空いても壊れない）");
+  eq(renderTemplate("{{! 注記 }}x", {}), "x", "注記は出力されない");
+  eq(renderTemplate("{{#l}}\n- {{n}}\n{{/l}}", { l: [{ n: "a" }, { n: "b" }] }),
+     "- a\n- b\n", "配列は繰り返す");
+  eq(renderTemplate("A{{#f}}\nX\n{{/f}}B", { f: [] }), "AB", "空配列は丸ごと省く");
+  eq(renderTemplate("A{{#f}}\nX\n{{/f}}B", { f: false }), "AB", "偽も丸ごと省く");
+  eq(renderTemplate("{{#f}}\nX{{y}}\n{{/f}}", { f: true, y: 1 }), "X1\n", "真なら 1 回（親の値が見える）");
+
+  console.log("reportData");
+  const rd = reportData(
+    { name: "L/P", tests: 2, failures: 1, errors: 0,
+      cases: [{ name: "A", assertions: 1, time: "0.1" },
+              { name: "B", assertions: 0, time: "0.2", failure: { message: "m", detail: "d" } }],
+      properties: [{ name: "os.version", value: "V7R3M0" }] },
+    { pgm: "P", source: "P.rpgle", srctype: "RPGLE", bind: [], order: "api", timestamp: "T" });
+  eq([rd.verdict, rd.passed, rd.hasFailures, rd.bind], ["FAILURE", 1, true, "（なし）"], "判定・合格数・バインド無し");
+  eq(rd.cases.map(c => c.mark), ["✓", "✗"], "合否の印");
+  eq(rd.failed.length, 1, "失敗だけを詳細に回す");
+  eq(reportData({ name: "x", tests: 1, failures: 0, errors: 0, cases: [{ name: "A" }], properties: [] },
+     { bind: ["L/S"] }).hasFailures, false, "失敗が無ければ詳細節を出さない");
 
   console.log(ng === 0 ? "\nself-test OK" : `\nself-test NG（${ng} 件）`);
   return ng === 0 ? 0 : 1;

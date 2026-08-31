@@ -71,6 +71,15 @@ node tools/run-rpgunit.mjs test/X.rpgle --bnd MYLIB/A --bnd MYLIB/B   # 繰り�
 道具は束ねるだけ。動く一式は [`example/`](example/) にある（対象を壊すとテストが
 落ちることまで確かめてある）。
 
+### Markdown のレポート
+
+```
+node tools/run-rpgunit.mjs test/X.rpgle --md build/rpgunit.md
+```
+
+**書式は `.claude/skills/rpgunit-test/templates/test-report.md`** を実行時に読む。
+テンプレートを直せば出力が変わる（コードは触らない）。失敗時・独立性の食い違い時も出る。
+
 ### 独立性を検品する
 
 ```
