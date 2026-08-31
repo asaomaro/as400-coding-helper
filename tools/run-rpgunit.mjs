@@ -47,6 +47,7 @@ const USAGE = `使い方: node tools/run-rpgunit.mjs <ソースファイル> [�
   --xml <パス>        JUnit XML の保存先（ローカル）
   --json              要約を JSON で出す（自律ループ向け）
   --keep              IFS の作業ファイルを消さない
+  --no-tgtccsid       TGTCCSID(0) を渡さない（v4.0.3.r 以前の版で使う）
   --self-test         実機に触らず、純粋な部分だけ確かめる
   --help
 `;
@@ -91,6 +92,7 @@ export function parseArgs(argv) {
       case "--json": o.json = true; break;
       case "--keep": o.keep = true; break;
       case "--self-test": o.selfTest = true; break;
+      case "--no-tgtccsid": o.noTgtCcsid = true; break;  // v4.0.3.r 以前（TGTCCSID が無い版）
       default:
         if (a.startsWith("-")) throw new UsageError(`知らないオプションです: ${a}`);
         if (o.source) throw new UsageError("ソースファイルは 1 つだけです");
@@ -105,6 +107,24 @@ export function parseArgs(argv) {
   o.pgm = o.pgm.toUpperCase();
   o.srctype ??= srcTypeFromExt(o.source);
   return o;
+}
+
+/** v6 は本文を CDATA で包む（v4 は素）。両方を読めるようにする。 */
+function stripCdata(t) {
+  const m = /<!\[CDATA\[([\s\S]*?)\]\]>/.exec(t);
+  return m ? m[1] : t;
+}
+
+/** **`&amp;` は最後**（先に戻すと `&amp;apos;` が壊れる）。 */
+function unescapeXml(t) {
+  return t.replace(/&lt;/g, "<").replace(/&gt;/g, ">")
+    .replace(/&apos;/g, "'").replace(/&quot;/g, '"').replace(/&amp;/g, "&");
+}
+
+/** 失敗した場所（`NAME (PGM->MODULE:NNN)`）を本文から拾う。無ければ先頭行。 */
+function failureLocation(detail) {
+  const m = /^\s*(\S+\s+\([^)]*:\d+\))\s*$/m.exec(detail);
+  return m ? m[1] : (detail.split("\n").find(l => l.trim()) ?? "").trim();
 }
 
 /** JUnit XML から件数と失敗の内訳を取り出す。実機が出したものをそのまま読む。 */
@@ -126,8 +146,8 @@ export function summarize(xml) {
     const body = m[3] ?? "";
     const f = /<(failure|error)\b([^>]*)>([\s\S]*?)<\/\1>/.exec(body);
     if (f) {
-      c.failure = { kind: f[1], message: attr(f[2], "message"),
-        detail: f[3].replace(/&gt;/g, ">").replace(/&lt;/g, "<").replace(/&amp;/g, "&").trim() };
+      c.failure = { kind: f[1], message: unescapeXml(attr(f[2], "message")),
+        detail: unescapeXml(stripCdata(f[3])).trim() };
     }
     cases.push(c);
   }
@@ -140,8 +160,9 @@ function render(s) {
   const out = [];
   for (const c of s.cases) {
     if (!c.failure) continue;
-    out.push(`  ✗ ${c.name}  ${c.failure.detail.split("\n")[0]}`);
-    if (c.failure.message) out.push(`      ${c.failure.message}`);
+    const where = failureLocation(c.failure.detail);
+    out.push(`  ✗ ${c.name}  ${c.failure.message || where}`);
+    if (c.failure.message && where) out.push(`      ${where}`);
   }
   const bad = s.failures + s.errors;
   out.push("");
@@ -267,8 +288,14 @@ async function main(argv) {
       const bnd = o.bnd.length
         ? ` BNDSRVPGM(${o.bnd.map(b => (b.includes("/") ? b : `${LIB}/${b}`)).join(" ")})`
         : "";
+      // **TGTCCSID(0) を必ず渡す。** v5 以降の RUCRTRPG は既定（*SRC）だと
+      // CRTRPGMOD に TGTCCSID を付けるが、IBM i 7.3 の CRTRPGMOD にその
+      // キーワードは無く CPD0043 で落ちる。CRTTST.RPGLE の serializeTgtCcsid は
+      // `if (tgtCcsid = 0) return '';` なので、0 を渡せばキーワードごと消える。
+      // v4 には TGTCCSID パラメータ自体が無いので、その場合は付けない。
+      const tgt = o.noTgtCcsid ? "" : " TGTCCSID(0)";
       const sub = await cmd.run(`SBMJOB CMD(RPGUNIT/RUCRTRPG TSTPGM(${LIB}/${o.pgm}) SRCFILE(${LIB}/${o.srcfile}) ` +
-        `SRCMBR(${o.pgm})${bnd}) JOB(${buildJob}) INLLIBL(RPGUNIT ${LIB} QGPL QTEMP) INQMSGRPY(*DFT)`);
+        `SRCMBR(${o.pgm})${bnd}${tgt}) JOB(${buildJob}) INLLIBL(RPGUNIT ${LIB} QGPL QTEMP) INQMSGRPY(*DFT)`);
       // **投入自体の失敗を見る。** 見ないと、走らなかったものを「ビルド失敗」と報告して
       // 本当の理由（コマンドの書式など）が消える。
       if (!sub.success) {
@@ -369,6 +396,24 @@ TESTASCII (MSGTST-&gt;MSGTST:500)
   eq(s.cases[1].failure, undefined, "合格したケースに failure は無い");
   eq(summarize(`<testsuite errors="0" failures="0" name="X" tests="1"><testcase name="A" classname="X" time="0"/></testsuite>`).cases.length,
      1, "自己終了タグの <testcase …/> も拾う");
+
+  console.log("summarize（v6 形式: CDATA ＋ &apos;）");
+  const v6 = `<testsuite errors="0" failures="1" name="ASAOLIB/V2TST" tests="1">
+  <testcase name="TESTNG" assertions="1" classname="V2TST" time="1.29" timeUnit="s">
+    <failure message="Expected &apos;2&apos;, but was &apos;3&apos;."><![CDATA[
+Callstack:
+  TESTNG (V2TST->V2TST:1300)
+
+Expected:
+  2,00000000000000000000
+]]></failure>
+  </testcase>
+</testsuite>`;
+  const s6 = summarize(v6);
+  eq(s6.cases[0].failure.message, "Expected '2', but was '3'.", "message の &apos; を戻す");
+  eq(s6.cases[0].failure.detail.startsWith("Callstack:"), true, "本文の CDATA を剥がす");
+  eq(failureLocation(s6.cases[0].failure.detail), "TESTNG (V2TST->V2TST:1300)", "本文から失敗位置を拾う");
+  eq(unescapeXml("&amp;apos;"), "&apos;", "&amp; を最後に戻す（&amp;apos; を壊さない）");
 
   console.log(ng === 0 ? "\nself-test OK" : `\nself-test NG（${ng} 件）`);
   return ng === 0 ? 0 : 1;
