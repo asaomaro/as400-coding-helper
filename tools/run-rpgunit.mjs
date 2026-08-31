@@ -47,6 +47,10 @@ const USAGE = `使い方: node tools/run-rpgunit.mjs <ソースファイル> [�
   --xml <パス>        JUnit XML の保存先（ローカル）
   --json              要約を JSON で出す（自律ループ向け）
   --keep              IFS の作業ファイルを消さない
+  --order <api|reverse>       RUCALLTST の ORDER（既定 api）
+  --rclrsc <no|always|once>   RUCALLTST の RCLRSC（既定 no）
+  --check-independence        正順と逆順を両方走らせ、合否が食い違えば失敗にする
+                              （設計書 4.2 の「逆順実行」検品）
   --no-tgtccsid       TGTCCSID(0) を渡さない（v4.0.3.r 以前の版で使う）
   --self-test         実機に触らず、純粋な部分だけ確かめる
   --help
@@ -93,6 +97,17 @@ export function parseArgs(argv) {
       case "--keep": o.keep = true; break;
       case "--self-test": o.selfTest = true; break;
       case "--no-tgtccsid": o.noTgtCcsid = true; break;  // v4.0.3.r 以前（TGTCCSID が無い版）
+      case "--order": {
+        const v = next().toLowerCase();
+        if (v !== "api" && v !== "reverse") throw new UsageError(`--order は api か reverse です: ${v}`);
+        o.order = v; break;
+      }
+      case "--rclrsc": {
+        const v = next().toLowerCase();
+        if (!["no", "always", "once"].includes(v)) throw new UsageError(`--rclrsc は no / always / once です: ${v}`);
+        o.rclrsc = v; break;
+      }
+      case "--check-independence": o.checkIndependence = true; break;
       default:
         if (a.startsWith("-")) throw new UsageError(`知らないオプションです: ${a}`);
         if (o.source) throw new UsageError("ソースファイルは 1 つだけです");
@@ -153,6 +168,22 @@ export function summarize(xml) {
   }
   return { name: attr(head, "name"), tests: num(head, "tests"),
     failures: num(head, "failures"), errors: num(head, "errors"), cases };
+}
+
+/**
+ * 2 回の実行を突き合わせ、**合否が食い違うテスト**を返す。
+ *
+ * **比べるのは合否だけ。** 実行時間・並び順・メッセージの文言は毎回変わるので
+ * 差として扱わない（扱うと毎回「食い違い」になって検査が意味を失う）。
+ * 片方にしか無いテストも食い違いとする（順序で件数が変わるのは異常）。
+ */
+export function compareRuns(a, b) {
+  const ok = r => new Map(r.cases.map(c => [c.name, c.failure ? "失敗" : "合格"]));
+  const A = ok(a), B = ok(b);
+  const names = [...new Set([...A.keys(), ...B.keys()])].sort();
+  return names
+    .map(name => ({ name, a: A.get(name) ?? "無し", b: B.get(name) ?? "無し" }))
+    .filter(d => d.a !== d.b);
 }
 
 /** 人が読む要約。 */
@@ -312,24 +343,48 @@ async function main(argv) {
       console.log(`▸ ビルド   ${o.pgm} … OK (${((Date.now() - t0) / 1000).toFixed(1)}s)`);
 
       // --- 実行 ---
+      // 1 回走らせて結果を採る。--check-independence では順序を変えて 2 回呼ぶ。
+      const runOnce = async (order, tag) => {
+        const job = `${runJob}${tag}`.slice(0, 10);
+        const opts = ` ORDER(*${order.toUpperCase()})` +
+          (o.rclrsc ? ` RCLRSC(*${o.rclrsc.toUpperCase()})` : "");
+        const sub2 = await cmd.run(`SBMJOB CMD(RPGUNIT/RUCALLTST TSTPGM(${LIB}/${o.pgm}) OUTPUT(*NONE) ` +
+          `XMLSTMF('${ifsXml}')${opts}) JOB(${job}) INLLIBL(RPGUNIT ${LIB} QGPL QTEMP) INQMSGRPY(*DFT)`);
+        if (!sub2.success) {
+          console.error("✗ 実行を投入できません");
+          for (const m of sub2.messages ?? []) console.error(`    ${m.id} ${m.text}`);
+          return null;
+        }
+        if (!await waitJob(hs, creds, job)) { console.error(`✗ 実行が終わりません JOB(${job})`); return null; }
+        const i2 = await hs.IfsConnection.connect({ ...creds, resolvePort: true, timeoutMs: 120000 });
+        try { return new TextDecoder().decode(await i2.readFile(ifsXml)); }
+        catch { console.error(`✗ 結果の XML がありません: ${ifsXml}`); await reportSpools(hs, creds, user, job); return null; }
+        finally { i2.close(); }
+      };
+
       const t1 = Date.now();
-      const sub2 = await cmd.run(`SBMJOB CMD(RPGUNIT/RUCALLTST TSTPGM(${LIB}/${o.pgm}) OUTPUT(*NONE) ` +
-        `XMLSTMF('${ifsXml}')) JOB(${runJob}) INLLIBL(RPGUNIT ${LIB} QGPL QTEMP) INQMSGRPY(*DFT)`);
-      if (!sub2.success) {
-        console.error("✗ 実行を投入できません");
-        for (const m of sub2.messages ?? []) console.error(`    ${m.id} ${m.text}`);
-        return 2;
-      }
-      if (!await waitJob(hs, creds, runJob)) { console.error(`✗ 実行が終わりません JOB(${runJob})`); return 2; }
-
-      // --- 結果の採取 ---
-      const ifs2 = await hs.IfsConnection.connect({ ...creds, resolvePort: true, timeoutMs: 120000 });
-      let xml;
-      try { xml = new TextDecoder().decode(await ifs2.readFile(ifsXml)); }
-      catch { console.error(`✗ 結果の XML がありません: ${ifsXml}`); await reportSpools(hs, creds, user, runJob); return 2; }
-      finally { ifs2.close(); }
-
+      const xml = await runOnce(o.order ?? "api", "A");
+      if (xml === null) return 2;
       const s = summarize(xml);
+
+      // --- 独立性の検品（設計書 4.2 の「逆順実行」）---
+      if (o.checkIndependence) {
+        const xmlR = await runOnce("reverse", "R");
+        if (xmlR === null) return 2;
+        const sR = summarize(xmlR);
+        const diff = compareRuns(s, sR);
+        console.log(`▸ 独立性   正順 ${s.failures + s.errors} 失敗 / 逆順 ${sR.failures + sR.errors} 失敗` +
+          `  … ${diff.length ? "**食い違いあり**" : "一致"}`);
+        if (diff.length) {
+          console.log("");
+          console.log("  正順と逆順で合否が違うテスト（順序に依存している）:");
+          for (const d of diff) console.log(`    ✗ ${d.name}  正順=${d.a} / 逆順=${d.b}`);
+          console.log("");
+          console.log("  前のテストが残したもの（DB の行・活動化グループのグローバル・");
+          console.log("  ジョブログのメッセージ）を tearDown で片付けているか確かめてください。");
+          return 1;
+        }
+      }
       console.log(`▸ 実行     ${o.pgm} … ${s.tests} tests, ${s.failures} failure (${((Date.now() - t1) / 1000).toFixed(1)}s)`);
       console.log("");
       if (o.json) console.log(JSON.stringify(s, null, 2));
@@ -396,6 +451,24 @@ TESTASCII (MSGTST-&gt;MSGTST:500)
   eq(s.cases[1].failure, undefined, "合格したケースに failure は無い");
   eq(summarize(`<testsuite errors="0" failures="0" name="X" tests="1"><testcase name="A" classname="X" time="0"/></testsuite>`).cases.length,
      1, "自己終了タグの <testcase …/> も拾う");
+
+  console.log("引数の解決（独立性の検品）");
+  eq(parseArgs(["a/x.rpgle"]).order, undefined, "--order 省略時は未指定（既定 api を後段で当てる）");
+  eq(parseArgs(["a/x.rpgle", "--order", "REVERSE"]).order, "reverse", "--order は小文字化される");
+  eq(parseArgs(["a/x.rpgle", "--check-independence"]).checkIndependence, true, "--check-independence");
+  eq(parseArgs(["a/x.rpgle", "--rclrsc", "ALWAYS"]).rclrsc, "always", "--rclrsc は小文字化される");
+  eq((() => { try { parseArgs(["a/x.rpgle", "--order", "random"]); return "通った"; }
+      catch (e) { return e instanceof UsageError ? "弾いた" : "別の例外"; } })(),
+     "弾いた", "--order の不正値は弾く");
+
+  console.log("compareRuns（合否だけを比べる）");
+  const mk = cases => ({ cases: cases.map(([name, bad]) => ({ name, ...(bad ? { failure: { message: "x", detail: "" } } : {}) })) });
+  eq(compareRuns(mk([["A", false], ["B", false]]), mk([["B", false], ["A", false]])), [],
+     "並び順が違うだけなら食い違いではない");
+  eq(compareRuns(mk([["A", false], ["B", false]]), mk([["A", false], ["B", true]])),
+     [{ name: "B", a: "合格", b: "失敗" }], "合否が違えば食い違い");
+  eq(compareRuns(mk([["A", false]]), mk([["A", false], ["B", false]])),
+     [{ name: "B", a: "無し", b: "合格" }], "片方にしか無いテストも食い違い");
 
   console.log("summarize（v6 形式: CDATA ＋ &apos;）");
   const v6 = `<testsuite errors="0" failures="1" name="ASAOLIB/V2TST" tests="1">
