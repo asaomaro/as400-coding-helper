@@ -58,6 +58,19 @@ FAILURE  2 tests, 1 failure, 0 error
     QPJOBLOG #2  JOB(151901/ASAO/RUBH39NC)
 ```
 
+### テスト対象をバインドする
+
+自己完結のテストではなく**自分の手続きを検証する**なら `--bnd` を使う。
+
+```
+node tools/run-rpgunit.mjs test/CALCTST.rpgle --bnd CALCSRV
+node tools/run-rpgunit.mjs test/X.rpgle --bnd MYLIB/A --bnd MYLIB/B   # 繰り返し可
+```
+
+ライブラリーを省くと `AS400_LIB` で補う。**テスト対象のビルドは利用者側の仕事**で、
+道具は束ねるだけ。動く一式は [`example/`](example/) にある（対象を壊すとテストが
+落ちることまで確かめてある）。
+
 ### CI で使う
 
 `--xml` で JUnit XML を保存すれば、そのままテストレポーターに渡せる。
