@@ -71,6 +71,16 @@ node tools/run-rpgunit.mjs test/X.rpgle --bnd MYLIB/A --bnd MYLIB/B   # 繰り�
 道具は束ねるだけ。動く一式は [`example/`](example/) にある（対象を壊すとテストが
 落ちることまで確かめてある）。
 
+### 独立性を検品する
+
+```
+node tools/run-rpgunit.mjs test/X.rpgle --check-independence
+```
+
+正順と逆順を両方走らせ、**合否が食い違えば終了コード 1**。順序依存は正順だけでは
+緑なので、これが唯一の機械的な検出手段になる。`--order api|reverse` で片方だけ、
+`--rclrsc always` で活動化グループを毎回作り直す。
+
 ### CI で使う
 
 `--xml` で JUnit XML を保存すれば、そのままテストレポーターに渡せる。
