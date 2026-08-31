@@ -42,6 +42,8 @@ const USAGE = `使い方: node tools/run-rpgunit.mjs <ソースファイル> [�
   --srctype <型>      RPGLE | SQLRPGLE（既定: 拡張子から判定）
   --lib <ライブラリー>  既定: 環境変数 AS400_LIB
   --srcfile <名前>    ソース物理ファイル（既定: QUNITSRC。無ければ作る）
+  --bnd <lib/名前>    テスト対象のサービスプログラム（繰り返し可）
+                      テスト対象のビルドは利用者側の仕事。ここでは束ねるだけ
   --xml <パス>        JUnit XML の保存先（ローカル）
   --json              要約を JSON で出す（自律ループ向け）
   --keep              IFS の作業ファイルを消さない
@@ -58,7 +60,7 @@ export function srcTypeFromExt(file) {
 }
 
 export function parseArgs(argv) {
-  const o = { keep: false, json: false, selfTest: false, srcfile: "QUNITSRC" };
+  const o = { keep: false, json: false, selfTest: false, srcfile: "QUNITSRC", bnd: [] };
   for (let i = 0; i < argv.length; i += 1) {
     const a = argv[i];
     const next = () => {
@@ -77,6 +79,14 @@ export function parseArgs(argv) {
       }
       case "--lib": o.lib = next(); break;
       case "--srcfile": o.srcfile = next().toUpperCase(); break;
+      case "--bnd": {
+        const v = next().toUpperCase();
+        // lib/name か name。RUCRTRPG の BNDSRVPGM は修飾名を取る。
+        if (!/^([A-Z0-9$#@_.]{1,10}\/)?[A-Z0-9$#@_.]{1,10}$/.test(v))
+          throw new UsageError(`--bnd は <ライブラリー>/<名前> か <名前> です: ${v}`);
+        o.bnd.push(v);
+        break;
+      }
       case "--xml": o.xml = next(); break;
       case "--json": o.json = true; break;
       case "--keep": o.keep = true; break;
@@ -247,12 +257,25 @@ async function main(argv) {
         `TOMBR('/QSYS.LIB/${LIB}.LIB/${o.srcfile}.FILE/${o.pgm}.MBR') MBROPT(*REPLACE) STMFCCSID(1208)`);
       if (!cpy.success) { console.error("✗ メンバーに書けません"); for (const m of cpy.messages ?? []) console.error(`    ${m.id} ${m.text}`); return 2; }
       await cmd.run(`CHGPFM FILE(${LIB}/${o.srcfile}) MBR(${o.pgm}) SRCTYPE(${o.srctype})`);
-      console.log(`▸ 転送     ${basename(o.source)} → ${LIB}/${o.srcfile}(${o.pgm})  [${o.srctype}]`);
+      console.log(`▸ 転送     ${basename(o.source)} → ${LIB}/${o.srcfile}(${o.pgm})  [${o.srctype}]` +
+        (o.bnd.length ? `  bind: ${o.bnd.join(" ")}` : ""));
 
       // --- ビルド ---
       const t0 = Date.now();
-      await cmd.run(`SBMJOB CMD(RPGUNIT/RUCRTRPG TSTPGM(${LIB}/${o.pgm}) SRCFILE(${LIB}/${o.srcfile}) ` +
-        `SRCMBR(${o.pgm})) JOB(${buildJob}) INLLIBL(RPGUNIT ${LIB} QGPL QTEMP) INQMSGRPY(*DFT)`);
+      // BNDSRVPGM は MAX(50) のリストで、修飾は `library/name`（原典 RPGUNIT/QCMD,RUCRTRPG）。
+      // 空白区切りにすると 2 つの要素として読まれる。1 つも無ければ付けない（既定 *NONE）。
+      const bnd = o.bnd.length
+        ? ` BNDSRVPGM(${o.bnd.map(b => (b.includes("/") ? b : `${LIB}/${b}`)).join(" ")})`
+        : "";
+      const sub = await cmd.run(`SBMJOB CMD(RPGUNIT/RUCRTRPG TSTPGM(${LIB}/${o.pgm}) SRCFILE(${LIB}/${o.srcfile}) ` +
+        `SRCMBR(${o.pgm})${bnd}) JOB(${buildJob}) INLLIBL(RPGUNIT ${LIB} QGPL QTEMP) INQMSGRPY(*DFT)`);
+      // **投入自体の失敗を見る。** 見ないと、走らなかったものを「ビルド失敗」と報告して
+      // 本当の理由（コマンドの書式など）が消える。
+      if (!sub.success) {
+        console.error("✗ ビルドを投入できません");
+        for (const m of sub.messages ?? []) console.error(`    ${m.id} ${m.text}`);
+        return 2;
+      }
       if (!await waitJob(hs, creds, buildJob)) { console.error(`✗ ビルドが終わりません JOB(${buildJob})`); return 2; }
       if (!await objectExists(hs, creds, LIB, o.pgm)) {
         console.error(`✗ ビルド失敗   ${o.pgm} が作成されませんでした`);
@@ -263,8 +286,13 @@ async function main(argv) {
 
       // --- 実行 ---
       const t1 = Date.now();
-      await cmd.run(`SBMJOB CMD(RPGUNIT/RUCALLTST TSTPGM(${LIB}/${o.pgm}) OUTPUT(*NONE) ` +
+      const sub2 = await cmd.run(`SBMJOB CMD(RPGUNIT/RUCALLTST TSTPGM(${LIB}/${o.pgm}) OUTPUT(*NONE) ` +
         `XMLSTMF('${ifsXml}')) JOB(${runJob}) INLLIBL(RPGUNIT ${LIB} QGPL QTEMP) INQMSGRPY(*DFT)`);
+      if (!sub2.success) {
+        console.error("✗ 実行を投入できません");
+        for (const m of sub2.messages ?? []) console.error(`    ${m.id} ${m.text}`);
+        return 2;
+      }
       if (!await waitJob(hs, creds, runJob)) { console.error(`✗ 実行が終わりません JOB(${runJob})`); return 2; }
 
       // --- 結果の採取 ---
@@ -315,6 +343,12 @@ function selfTest() {
   eq(parseArgs(["a/x.rpgle", "--srctype", "sqlrpgle"]).srctype, "SQLRPGLE", "--srctype が拡張子に優先する");
   eq(parseArgs(["a/x.rpgle", "--pgm", "other"]).pgm, "OTHER", "--pgm は大文字化される");
   eq(parseArgs(["a/x.rpgle"]).srcfile, "QUNITSRC", "ソース PF の既定");
+  eq(parseArgs(["a/x.rpgle"]).bnd, [], "--bnd 省略時は空（既定 *NONE）");
+  eq(parseArgs(["a/x.rpgle", "--bnd", "mylib/calcsrv"]).bnd, ["MYLIB/CALCSRV"], "--bnd は大文字化される");
+  eq(parseArgs(["a/x.rpgle", "--bnd", "A", "--bnd", "B"]).bnd, ["A", "B"], "--bnd は繰り返せる");
+  eq((() => { try { parseArgs(["a/x.rpgle", "--bnd", "a/b/c"]); return "通った"; }
+      catch (e) { return e instanceof UsageError ? "弾いた" : "別の例外"; } })(),
+     "弾いた", "--bnd の不正な形は弾く");
 
   console.log("summarize（実機が出した XML の実物）");
   const xml = `<?xml version="1.0" encoding="UTF-8" ?>
