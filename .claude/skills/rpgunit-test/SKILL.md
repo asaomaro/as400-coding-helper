@@ -6,8 +6,11 @@ allowed-tools: [Bash, Read, Write]
 
 # RPGUnit でテストを書く・走らせる・結果を取る
 
-**SR-OSAKA に導入済み**（`RPGUNIT` ライブラリー・iRPGUnit **v4.0.3.r**）。
+**SR-OSAKA に導入済み**（`RPGUNIT` ライブラリー・iRPGUnit **v6.0.2.r**）。
 pub400 には入っていない（入れられない）。
+
+> **v5 以降は `RUCRTRPG … TGTCCSID(0)` が要る**（7.3 の `CRTRPGMOD` に `TGTCCSID` が
+> 無いため）。`tools/run-rpgunit.mjs` は常に付けるので、道具を使う限り意識しなくてよい。
 
 - **導入・入れ直し・撤去** → `docs/workflow/rpgunit-install.md`
 - **転送・コンパイル・スプール読みの一般手順** → skill `ibmi-remote`（特に 6 節の接続の型）
@@ -69,9 +72,16 @@ node tools/run-rpgunit.mjs tools/example/CALCTST.rpgle --bnd CALCSRV
 `/COPY RPGUNIT/QINCLUDE,TESTCASE` で入る。
 **戻り値を比べるだけの道具ではない。** IBM i の副作用を検証するために作られている。
 
+> **新規は V2（`assertEqual`）を使う。** 旧 API（`iEqual` / `aEqual` / `nEqual`）は
+> v4 にしか無かった名残で、**型ごとに手続きが分かれているぶん誤りを隠す**。
+> 実例: `iEqual(105 : addTax(100 : 0.055))` は `zoned(31:0)` に丸められて**通ってしまう**が、
+> 実際の戻りは `105.50`。`assertEqual` なら `Expected '105', but was '105.5'.` で落ちる。
+> **偽の緑を掴んでいた**（実機で確認）。
+
 | 分類 | 手続き | 用途 |
 |---|---|---|
-| 値の比較 | `iEqual` / `aEqual` / `nEqual` | 数値 / 文字 / 標識。`(expected : actual [: fieldName])` |
+| **値の比較（V2）** | **`assertEqual(期待 : 実際 [: メッセージ])`** | **型で自動振り分け。これを使う** |
+| 値の比較（旧・v4 のみ） | `iEqual` / `aEqual` / `nEqual` | 数値 / 文字 / 標識。**新規では使わない** |
 | 一般 | `assert(condition : msgIfFalse)` | 任意の条件 |
 | | `fail(msg)` | 無条件に失敗。**「例外が飛ぶはず」の検証に使う** |
 | **例外** | `getMonitoredMessage()` | 監視した例外の情報を取る。`fail()` と組で使う |

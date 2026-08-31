@@ -32,6 +32,9 @@ CRTSRVPGM SRVPGM(<lib>/CALCSRV) MODULE(<lib>/CALCSRV) EXPORT(*ALL) REPLACE(*YES)
   ソース PF が `*LIBL` に居るジョブでないと `CPF4102` になる（実機で踏んだ）。
   修飾しないのは、実務のソースがそう書かれているから。
 - **`EXPORT(*ALL)` で足りる**（バインダー言語は要らない）。実機で確認済み。
+- テストは **V2 の `assertEqual`** で書く（設計書 4.2）。旧 `iEqual` は型で丸めるため
+  **誤った期待値を隠す**——`iEqual(105 : addTax(100 : 0.055))` は通ってしまうが、
+  実際の戻りは `105.50` で `assertEqual` なら落ちる。
 
 ### 2. テストを回す
 
