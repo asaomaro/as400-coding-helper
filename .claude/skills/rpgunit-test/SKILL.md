@@ -155,6 +155,21 @@ RUCRTRPG TSTPGM(ASAOLIB/BLDD) SRCFILE(ASAOLIB/QUNITSRC) SRCMBR(FIXTST2)
 効かないのは `SRCMBR` だけ。**RUCRTRPG の仕様か `SBMJOB` 経由特有かは切り分けていない**が、
 名前を揃えれば起きない。
 
+### まず `tools/run-rpgunit.mjs` を見る
+
+**転送・ビルド・実行・結果採取を 1 コマンドで通す道具がある。**
+下の罠は全部その中に閉じ込めてあるので、**手で組む前にこちらを使う**。
+
+```
+cd /workspaces/ts5250 && node --env-file=.env --env-file=.env.verify \
+  <repo>/tools/run-rpgunit.mjs <ソース> --xml build/rpgunit.xml
+```
+
+終了コードは `0`=全合格 / `1`=テスト失敗 / `2`=道具の異常（ビルド失敗を含む）。
+詳細は [`tools/README.md`](../../../tools/README.md)。
+
+以下は**その道具が中で何をしているか**——手で組む必要が出たときのための記録。
+
 ### 走らせ方の型
 
 **CL driver は必須ではない。** `SBMJOB` の `CMD()` に直接書ける（実測）。
