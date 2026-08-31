@@ -352,6 +352,9 @@ RUCALLTST TSTPGM(<lib>/<name>) [TSTPRC(<proc>)]                      # 実行（
 
 #### AI にテストを書かせる場合の方針
 
+> **実行手順は skill `rpgunit-test` の 0 節**（この方針を手順に落としたもの）。
+> 道具は `tools/run-rpgunit.mjs`——独立性は `--check-independence` で機械的に検品できる。
+
 有望だが、**期待値の出所（オラクル）を誤ると害になる**。
 
 **同義反復の危険**: AI に RPG コードを読ませてテストを書かせると、「今そう動いていること」を
