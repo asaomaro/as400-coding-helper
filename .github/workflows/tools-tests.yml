@@ -1,0 +1,20 @@
+name: tools self-test
+
+# tools/ の道具の**純粋な部分**を回す。実機（SR-OSAKA）には触らない。
+# ここが無いと、道具に足した検査（オラクルの印・テンプレート展開・XML の読み方）を
+# 誰も走らせないまま腐る。実機が要る部分は CI では回せないので対象外。
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  self-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: '20' }
+      - name: run-rpgunit.mjs --self-test
+        run: node tools/run-rpgunit.mjs --self-test

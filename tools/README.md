@@ -80,6 +80,27 @@ node tools/run-rpgunit.mjs test/X.rpgle --md build/rpgunit.md
 **書式は `.claude/skills/rpgunit-test/templates/test-report.md`** を実行時に読む。
 テンプレートを直せば出力が変わる（コードは触らない）。失敗時・独立性の食い違い時も出る。
 
+### 期待値の出所を検品する
+
+```
+node tools/run-rpgunit.mjs test/X.rpgle --require-oracle
+```
+
+各テスト手続きに**オラクルの印**（`VERIFICATION` / `CHARACTERIZATION`）と
+**根拠の行**（`オラクル:` / `期待値の出所:`）があるかを見る（skill
+`rpgunit-test` §0.2）。**既定は警告**で実行は続き、レポートに載る。
+`--require-oracle` は**走らせずに終了コード 1**——出所不明のまま走ると
+「緑のレポート」が出来てしまうため。
+
+実装を読んで書いた期待値は**バグごと固定して検出力ゼロで緑になる**。
+印はそれを「特性化テスト」と名乗らせるための仕掛けで、**印と根拠は対**。
+単語だけの `VERIFICATION` は名乗りの偽装なので通らない。
+
+**印の中身が正しいか（引用した条項が実在するか）は検査しない。人が読む。**
+
+実行後に**実機が報告したテスト名と突き合わせる**。ソースから読めなかった手続きは
+出所不明として扱う（読み落としがあると検品ごと素通りするため）。
+
 ### 独立性を検品する
 
 ```
@@ -97,10 +118,11 @@ node tools/run-rpgunit.mjs test/X.rpgle --check-independence
 ```yaml
 - run: |
     cd /workspaces/ts5250 && node --env-file=.env --env-file=.env.verify \
-      $GITHUB_WORKSPACE/tools/run-rpgunit.mjs src/MYTEST.rpgle --xml $GITHUB_WORKSPACE/rpgunit.xml
+      $GITHUB_WORKSPACE/tools/run-rpgunit.mjs src/MYTEST.rpgle --require-oracle \
+        --xml $GITHUB_WORKSPACE/rpgunit.xml --md $GITHUB_WORKSPACE/rpgunit.md
 - uses: actions/upload-artifact@v4
   if: always()
-  with: { name: rpgunit, path: rpgunit.xml }
+  with: { name: rpgunit, path: "rpgunit.*" }
 ```
 
 **ただし実機に届く runner が要る。** GitHub の hosted runner からは SR-OSAKA に繋がらない。

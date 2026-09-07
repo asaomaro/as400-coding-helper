@@ -26,14 +26,33 @@
 | バインドした対象 | {{bind}} |
 | 実行順 | {{order}} |
 | 独立性の検品 | {{independence}} |
+| 期待値の出所 | {{oracleSummary}} |
 
 ## テストケース
 
-| | テスト | 判定 | assertions | 時間 |
-|---|---|---|---:|---:|
+| | テスト | 判定 | 出所 | assertions | 時間 |
+|---|---|---|---|---:|---:|
 {{#cases}}
-| {{mark}} | `{{name}}` | {{result}} | {{assertions}} | {{time}} |
+| {{mark}} | `{{name}}` | {{result}} | {{kind}} | {{assertions}} | {{time}} |
 {{/cases}}
+
+{{! 出所が「特性化」のものは網羅に数えない（skill §0.4）。 }}
+{{#hasOracleProblems}}
+## 期待値の出所が不明なテスト
+
+次のテストは**どこから来た期待値かが書かれていません**。合格していても
+「仕様どおり」の根拠にはならず、**網羅の数にも入れられません**。
+
+| テスト | 理由 |
+|---|---|
+{{#oracleProblems}}
+| `{{name}}` | {{reason}} |
+{{/oracleProblems}}
+
+実装を読んで期待値を書いたなら `CHARACTERIZATION` と名乗らせてください
+（skill `rpgunit-test` §0.2）。
+
+{{/hasOracleProblems}}
 
 {{#hasFailures}}
 ## 失敗の詳細

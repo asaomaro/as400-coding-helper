@@ -58,6 +58,8 @@ const USAGE = `使い方: node tools/run-rpgunit.mjs <ソースファイル> [�
   --rclrsc <no|always|once>   RUCALLTST の RCLRSC（既定 no）
   --check-independence        正順と逆順を両方走らせ、合否が食い違えば失敗にする
                               （設計書 4.2 の「逆順実行」検品）
+  --require-oracle    オラクルの印（VERIFICATION / CHARACTERIZATION）が
+                      無いテストがあれば、走らせずに失敗にする（CI 用）
   --no-tgtccsid       TGTCCSID(0) を渡さない（v4.0.3.r 以前の版で使う）
   --self-test         実機に触らず、純粋な部分だけ確かめる
   --help
@@ -117,6 +119,7 @@ export function parseArgs(argv) {
         o.rclrsc = v; break;
       }
       case "--check-independence": o.checkIndependence = true; break;
+      case "--require-oracle": o.requireOracle = true; break;
       default:
         if (a.startsWith("-")) throw new UsageError(`知らないオプションです: ${a}`);
         if (o.source) throw new UsageError("ソースファイルは 1 つだけです");
@@ -201,6 +204,61 @@ export function compareRuns(a, b) {
 }
 
 /**
+ * オラクルの印（skill `rpgunit-test` §0.2）をソースから読む。
+ *
+ * **印は「直前のものが効く」。** ファイル頭の印は以降すべてに効き、途中で書き直せば
+ * そこから変わる。1 ファイルに検証と特性化が混在してもよい。
+ *
+ * **印と根拠は対で意味を持つ。** 単語だけの `VERIFICATION` は名乗りの偽装なので、
+ * 根拠の行（`オラクル:` / `期待値の出所:`）が無ければ欠陥として扱う。
+ *
+ * 印の**中身が正しいか**（引用した条項が実在するか）は検査しない。**人が読む。**
+ */
+export function parseOracleMarkers(source) {
+  const tests = [];
+  let cur = null;      // いま効いている印 { kind, evidence }
+  let pending = "";    // 継続名前行で積んだ名前
+  const push = name => tests.push({ name: name.toUpperCase(), kind: cur?.kind ?? null, evidence: cur?.evidence ?? false });
+  for (const line of source.split(/\r?\n/)) {
+    // 注記行（固定長は 7 桁目が `*`、自由形式は `//`）
+    if (line[6] === "*" || line.trimStart().startsWith("//")) {
+      // **CHARACTERIZATION を先に見る。** 特性化の見出しには
+      // 「検証テストではない」のように VERIFICATION が同居しうる。
+      if (/CHARACTERIZATION/.test(line)) cur = { kind: "特性化", evidence: false };
+      else if (/VERIFICATION/.test(line)) cur = { kind: "検証", evidence: false };
+      else if (cur && /(オラクル|Oracle|期待値の出所|Source)\s*[:：]/i.test(line)) cur.evidence = true;
+      continue;
+    }
+    // 固定長の P 仕様（6 桁目 `P`）。名前 7-21 桁 / 24 桁目 `B` / キーワード 44-80 桁。
+    if (/^p$/i.test(line[5] ?? "")) {
+      const body = line.slice(6, 80).trim();
+      // **継続名前行。** 名前が 15 桁に収まらないと `...` で次行へ続く。
+      // これを読まないと、長い名前のテストが**丸ごと見えなくなる**（実機で確認：
+      // `testLongProcedureName` はコンパイルでき、RPGUnit は全長で報告する）。
+      if (body.endsWith("...")) { pending += body.slice(0, -3).trim(); continue; }
+      const name = pending || line.slice(6, 21).trim();
+      pending = "";
+      // EXPORT はキーワード欄で探す。行全体を見ると注記域(81-100)が引っかかる
+      if (/^b$/i.test(line[23] ?? "") && /\bEXPORT\b/i.test(line.slice(43, 80)) && /^test/i.test(name))
+        push(name);
+      continue;
+    }
+    // 自由形式
+    const m = /^\s*dcl-proc\s+([A-Za-z0-9_#$@]+)\s+export\s*;/i.exec(line);
+    if (m && /^test/i.test(m[1])) push(m[1]);
+  }
+  const problems = [];
+  for (const t of tests) {
+    if (!t.kind) problems.push({ name: t.name, reason: "出所不明（VERIFICATION / CHARACTERIZATION の印が無い）" });
+    else if (!t.evidence) problems.push({ name: t.name, reason: `根拠の行が無い（${t.kind === "検証" ? "オラクル:" : "期待値の出所:"}）` });
+  }
+  return { tests, problems,
+    verified: tests.filter(t => t.kind === "検証").length,
+    characterized: tests.filter(t => t.kind === "特性化").length,
+    unknown: tests.filter(t => !t.kind).length };
+}
+
+/**
  * ごく小さなテンプレート展開。**mustache の部分集合**だけを実装する。
  *
  *   {{key}}            値を埋める
@@ -228,6 +286,8 @@ export function renderTemplate(tpl, data) {
 export function reportData(s, ctx) {
   const failed = s.cases.filter(c => c.failure);
   const bad = s.failures + s.errors;
+  const o = ctx.oracle ?? { tests: [], problems: [], verified: 0, characterized: 0, unknown: 0 };
+  const kindOf = new Map(o.tests.map(t => [t.name, t.kind ?? "**不明**"]));
   return {
     pgm: ctx.pgm, suiteName: s.name, timestamp: ctx.timestamp,
     verdict: bad > 0 ? "FAILURE" : "SUCCESS",
@@ -240,6 +300,7 @@ export function reportData(s, ctx) {
     cases: s.cases.map(c => ({
       mark: c.failure ? "✗" : "✓", name: c.name,
       result: c.failure ? "失敗" : "合格",
+      kind: kindOf.get((c.name ?? "").toUpperCase()) ?? "**不明**",
       assertions: c.assertions ?? "", time: c.time ?? ""
     })),
     hasFailures: failed.length > 0,
@@ -249,6 +310,10 @@ export function reportData(s, ctx) {
     })),
     hasIndependenceDiff: (ctx.independenceDiff ?? []).length > 0,
     independenceDiff: ctx.independenceDiff ?? [],
+    // **§0.4「特性化テストは網羅に数えない」を支えるため内訳を必ず出す。**
+    oracleSummary: `検証 ${o.verified} / 特性化 ${o.characterized} / 不明 ${o.unknown}`,
+    hasOracleProblems: o.problems.length > 0,
+    oracleProblems: o.problems,
     properties: s.properties ?? []
   };
 }
@@ -352,6 +417,26 @@ async function main(argv) {
   if (!requireEnv()) return 2;
   if (!existsSync(o.source)) { console.error(`✗ ソースがありません: ${o.source}`); return 2; }
 
+  // --- オラクルの印の検品（実機に触る前に済ませる） ---
+  const oracle = parseOracleMarkers(readFileSync(o.source, "utf8"));
+  if (oracle.problems.length) {
+    console.error("");
+    console.error("⚠ オラクルの印がありません（skill rpgunit-test §0.2）:");
+    for (const pb of oracle.problems) console.error(`    ✗ ${pb.name}  ${pb.reason}`);
+    console.error("");
+    console.error("  期待値の出所が書かれていないテストは、**緑でも「仕様どおり」の根拠になりません**。");
+    console.error("  実装を読んで書いた期待値なら CHARACTERIZATION と名乗らせてください。");
+    if (o.requireOracle) {
+      // **走らせない。** 出所不明のまま走ると緑のレポートが出来てしまう。
+      console.error("  --require-oracle が指定されているので走らせません。");
+      return 1;
+    }
+    console.error("  （--require-oracle で失敗にできます）");
+    console.error("");
+  } else if (oracle.tests.length) {
+    console.log(`▸ オラクル 検証 ${oracle.verified} / 特性化 ${oracle.characterized}`);
+  }
+
   const LIB = (o.lib ?? process.env.AS400_LIB).toUpperCase();
   const IFS = process.env.AS400_IFS_DIR;
   const stamp = Date.now().toString(36).slice(-5).toUpperCase();
@@ -435,6 +520,23 @@ async function main(argv) {
       if (xml === null) return 2;
       const s = summarize(xml);
 
+      // **件数を実データと突き合わせる。** 解析が手続きを取りこぼすと検品ごと
+      // 素通りする（実際、継続名前行を読めず 1 件も見えていなかった）。
+      // 実機が報告した名前を正とし、印を読めなかったものは出所不明として扱う。
+      const seen = new Set(oracle.tests.map(t => t.name));
+      const missed = [];
+      for (const c of s.cases) {
+        const n = (c.name ?? "").toUpperCase();
+        if (!n || seen.has(n)) continue;
+        seen.add(n);
+        missed.push(n);
+        oracle.problems.push({ name: n, reason: "出所不明（ソースから印を読み取れませんでした）" });
+      }
+      if (missed.length) {
+        console.error(`⚠ ソースから読めなかったテストがあります: ${missed.join(" ")}`);
+        console.error("  実機は報告しているので、印の検査を素通りしています。");
+      }
+
       // --- 独立性の検品（設計書 4.2 の「逆順実行」）---
       if (o.checkIndependence) {
         const xmlR = await runOnce("reverse", "R");
@@ -468,7 +570,7 @@ async function main(argv) {
         const md = renderTemplate(readFileSync(tplPath, "utf8"), reportData(s, {
           pgm: o.pgm, source: basename(o.source), srctype: o.srctype, bind: o.bnd,
           order: o.order ?? "api", timestamp: new Date().toISOString().replace("T", " ").slice(0, 19),
-          independence: indepLabel, independenceDiff: indepDiff
+          independence: indepLabel, independenceDiff: indepDiff, oracle
         }));
         writeFileSync(resolve(o.md), md, "utf8");
         console.log(`  MD : ${resolve(o.md)}`);
@@ -593,6 +695,72 @@ Expected:
   eq(rd.failed.length, 1, "失敗だけを詳細に回す");
   eq(reportData({ name: "x", tests: 1, failures: 0, errors: 0, cases: [{ name: "A" }], properties: [] },
      { bind: ["L/S"] }).hasFailures, false, "失敗が無ければ詳細節を出さない");
+
+  console.log("parseOracleMarkers（オラクルの印）");
+  const V = "      *  検証テスト（VERIFICATION）\n      *  オラクル: 設計書 3.2\n";
+  // **見出しに VERIFICATION が同居する形**を実際に置く（英語で書くとこうなる）。
+  // ここを Japanese の「検証テストではない」にすると、判定順を入れ替えても
+  // テストが落ちない——**印の取り違えを検出できない試験になる**。
+  const C = "      *  CHARACTERIZATION — this is not a VERIFICATION test\n" +
+            "      *  期待値の出所: 2026-08-31 時点の戻り値\n";
+  const P = n => `     P${n.padEnd(17)}B                   EXPORT\n`;
+  const om = src => parseOracleMarkers(src);
+  // 欠陥が出ない変異で例外を投げると、残りの試験ごと落ちて理由が見えなくなる
+  const reason = src => om(src).problems[0]?.reason ?? "（欠陥なし）";
+
+  eq(om(V + P("TESTTAX")).tests, [{ name: "TESTTAX", kind: "検証", evidence: true }], "検証の印が効く");
+  eq(om(C + P("TESTTAX")).tests, [{ name: "TESTTAX", kind: "特性化", evidence: true }],
+     "特性化の見出しに VERIFICATION が同居しても特性化と読む");
+  eq(om(P("TESTTAX")).problems.map(p => p.name), ["TESTTAX"], "印が無ければ欠陥");
+  eq(reason(P("TESTTAX")).startsWith("出所不明"), true, "理由は出所不明");
+  eq(reason("      *  VERIFICATION\n" + P("TESTTAX")).startsWith("根拠の行が無い"),
+     true, "**単語だけの印は通さない**（名乗りの偽装）");
+  // 原典の見出しは `* ====` の飾り線で囲む。**飾り線を根拠と数えない**こと
+  // （数えると、オラクルの行を省いた見出しが素通りする）
+  eq(reason("      * ==========\n      *  VERIFICATION\n      * ==========\n" + P("TESTTAX"))
+       .startsWith("根拠の行が無い"), true, "飾り線は根拠にならない");
+  eq(om(V + P("TESTA") + P("TESTB")).tests.map(t => t.kind), ["検証", "検証"],
+     "頭の印は以降すべてに効く");
+  eq(om(V + P("TESTA") + C + P("TESTB")).tests.map(t => t.kind), ["検証", "特性化"],
+     "途中で書き直せばそこから変わる（混在できる）");
+  eq([om(V + P("TESTA") + C + P("TESTB")).verified, om(V + P("TESTA") + C + P("TESTB")).characterized],
+     [1, 1], "内訳を数える（特性化は網羅に数えないため）");
+  eq(om(V + P("SETUP") + P("TEARDOWN") + P("TESTA")).tests.map(t => t.name), ["TESTA"],
+     "setUp / tearDown はテストではない");
+  eq(om(V + "     PHELPER           B                   EXPORT\n").tests, [],
+     "test で始まらない export はテストではない");
+  eq(om(V + "     PTESTX            B\n").tests, [], "EXPORT が無ければテストではない");
+  eq(om(V + "     DTESTX            B                   EXPORT\n").tests, [],
+     "6 桁目が P でなければ P 仕様ではない");
+  eq(om("// CHARACTERIZATION\n// 期待値の出所: 実測\ndcl-proc testFree export;\n").tests,
+     [{ name: "TESTFREE", kind: "特性化", evidence: true }], "自由形式も読む");
+  // **継続名前行**（名前が 15 桁に収まらない形）。実機で `TESTLONGPROCEDURENAME` が
+  // コンパイルでき、RPGUnit が全長で報告することを確認済み。
+  // これを読まないとテストが丸ごと見えず、**検品が素通りする**
+  eq(om(V + "     PtestLongProcedureName...\n" +
+             "     P                 B                   EXPORT\n").tests,
+     [{ name: "TESTLONGPROCEDURENAME", kind: "検証", evidence: true }],
+     "継続名前行（`...`）で続く長い名前を読む");
+  eq(om(V + "     PsetUpVeryLongHelperName...\n" +
+             "     P                 B                   EXPORT\n").tests, [],
+     "継続名前行でも test 始まりでなければテストではない");
+  // 注記域(81-100)に EXPORT と書かれても拾わない
+  eq(om(V + "     PTESTX            B" + " ".repeat(56) + "EXPORT\n").tests, [],
+     "キーワード欄の外の EXPORT は拾わない");
+  eq(om(V + P("TESTA")).problems, [], "印と根拠が揃っていれば欠陥なし");
+
+  console.log("reportData（オラクル）");
+  const ro = reportData(
+    { name: "L/P", tests: 2, failures: 0, errors: 0,
+      cases: [{ name: "TESTA" }, { name: "TESTB" }], properties: [] },
+    { bind: [], oracle: om(V + P("TESTA") + P("TESTB")) });
+  eq(ro.oracleSummary, "検証 2 / 特性化 0 / 不明 0", "内訳を出す");
+  eq(ro.cases.map(c => c.kind), ["検証", "検証"], "テストごとに出所を出す");
+  eq(ro.hasOracleProblems, false, "欠陥が無ければ節を出さない");
+  const rp = reportData(
+    { name: "L/P", tests: 1, failures: 0, errors: 0, cases: [{ name: "TESTA" }], properties: [] },
+    { bind: [], oracle: om(P("TESTA")) });
+  eq([rp.hasOracleProblems, rp.cases[0].kind], [true, "**不明**"], "印が無ければレポートに出す");
 
   console.log(ng === 0 ? "\nself-test OK" : `\nself-test NG（${ng} 件）`);
   return ng === 0 ? 0 : 1;
