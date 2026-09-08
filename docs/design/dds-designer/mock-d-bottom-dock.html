@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DDS エディタ — ソースを下部ドックへ（レイアウト案 D）</title>
+<style>
+/* 配色は ui.css の既定値（単独起動時の色）に合わせる。 */
+:root{
+  --bg:#1f1f1f; --fg:#d4d4d4; --chrome:#181818; --line:#3a3a3a;
+  --muted:#9d9d9d; --accent:#2f81f7; --field:#4fa3ff; --err:#f14c4c; --warn:#cca700;
+  --mono:ui-monospace,Consolas,"MS Gothic",monospace;
+  --cell-w:8px; --cell-h:18px; --gutter:3em;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{margin:0;height:100vh;overflow:hidden;background:var(--bg);color:var(--fg);
+     font-family:system-ui,sans-serif;font-size:13px}
+
+/* ============ 検討用の外枠（製品には無い） ============ */
+#demo{display:flex;flex-direction:column;height:100vh}
+#demobar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;
+  padding:6px 10px;background:#0d0d0d;border-bottom:1px solid var(--line);color:#ddd}
+#demobar strong{color:#fff}
+#demobar .seg{display:flex;border:1px solid #444;border-radius:3px;overflow:hidden}
+#demobar .seg button{border:0;border-right:1px solid #444}
+#demobar .seg button:last-child{border-right:0}
+#demobar button,#demobar select{font:inherit;color:#ddd;background:#2b2b2b;border:1px solid #444;
+  border-radius:3px;padding:3px 8px;cursor:pointer}
+#demobar button[aria-pressed=true]{background:var(--accent);color:#fff;border-color:var(--accent)}
+#demobar .spacer{flex:1}
+#verdict{font-family:var(--mono);font-size:12px;padding:2px 8px;border-radius:3px;white-space:nowrap}
+#verdict.ok{color:#7ee787;background:rgba(126,231,135,.10)}
+#verdict.ng{color:var(--err);background:rgba(241,76,76,.12)}
+
+/* ============ ここから下が製品の画面 ============ */
+#shell{flex:1;display:flex;flex-direction:column;min-height:0;
+  border-top:2px solid #000;background:var(--bg)}
+
+.toolbar{display:flex;align-items:center;gap:6px;flex-wrap:wrap;
+  padding:4px 8px;background:var(--chrome);border-bottom:1px solid var(--line)}
+.toolbar button{font:inherit;font-size:12px;color:#ddd;background:#2b2b2b;
+  border:1px solid #444;border-radius:3px;padding:2px 7px;cursor:pointer}
+.toolbar button[aria-pressed=true]{background:#37414d;border-color:#5a6b7d;color:#fff}
+.toolbar .sep{width:1px;height:16px;background:var(--line);margin:0 2px}
+.toolbar .spacer{flex:1}
+.toolbar .status{color:var(--muted);font-size:12px}
+
+/* --- 上段：3 ペイン（C1 の核。ここは変えない） --- */
+#work{flex:1;display:flex;min-height:0}
+.side{background:var(--chrome);border-right:1px solid var(--line);
+  overflow:auto;min-width:0;padding:6px 0}
+.side.left{flex:0 0 200px}
+.side.right{flex:0 0 320px;border-right:0;border-left:1px solid var(--line)}
+.pane-title{color:var(--muted);font-size:11px;letter-spacing:.04em;
+  padding:5px 10px 3px;text-transform:none}
+.main{flex:1;min-width:0;overflow:auto;padding:12px}
+
+.tree{font-size:12px}
+.tree div{padding:2px 10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tree div.rec{color:#e6c07b}
+.tree div.item{padding-left:22px;color:#cfcfcf}
+.tree div.sel{background:rgba(47,129,247,.22);box-shadow:inset 2px 0 0 var(--accent)}
+.props{width:100%;border-collapse:collapse;font-size:12px}
+.props td{padding:2px 10px;vertical-align:top}
+.props td:first-child{color:var(--muted);white-space:nowrap;width:5.5em}
+.props input{font:inherit;font-family:var(--mono);width:100%;background:#2b2b2b;
+  color:#ddd;border:1px solid #444;border-radius:2px;padding:1px 4px}
+.chips{display:flex;flex-wrap:wrap;gap:3px;padding:4px 10px}
+.chip{font-family:var(--mono);font-size:11px;background:#2b2b2b;border:1px solid #454545;
+  border-radius:9px;padding:1px 7px;color:#cfcfcf}
+
+/* --- キャンバス（桁が命なので実寸で描く） --- */
+.frame{width:max-content;font-family:var(--mono);font-size:13px;line-height:var(--cell-h)}
+.ruler{position:relative;margin-left:var(--gutter);height:var(--cell-h);
+  color:var(--muted);white-space:pre}
+.ruler span{position:absolute;top:0}
+.cbody{display:flex;align-items:flex-start}
+.gutter{width:var(--gutter);color:var(--muted);text-align:right;padding-right:6px;white-space:pre}
+.canvas{position:relative;
+  width:calc(var(--cell-w) * var(--cols));
+  height:calc(var(--cell-h) * var(--rows));
+  border:1px solid var(--line);background-color:#232323;
+  background-image:
+    repeating-linear-gradient(to right,rgba(212,212,212,.22) 0 1px,transparent 1px calc(var(--cell-w)*10)),
+    repeating-linear-gradient(to bottom,rgba(212,212,212,.10) 0 1px,transparent 1px var(--cell-h))}
+.it{position:absolute;height:var(--cell-h);white-space:pre;cursor:grab;
+  font-family:var(--mono);font-size:13px}
+.it.const{color:#d4d4d4}
+.it.fld{color:var(--field);background:rgba(79,163,255,.12);outline:1px solid rgba(79,163,255,.35)}
+.it.sel{outline:1px solid var(--accent);background:rgba(47,129,247,.20)}
+
+/* --- 下段：ドック（提案の中心） --- */
+#grip{height:6px;cursor:row-resize;background:var(--chrome);
+  border-top:1px solid var(--line);border-bottom:1px solid var(--line);position:relative;flex:none}
+#grip::after{content:"";position:absolute;left:50%;top:2px;width:36px;height:2px;
+  margin-left:-18px;border-radius:1px;background:#555}
+#grip:hover::after{background:var(--accent)}
+#dock{display:flex;flex-direction:column;min-height:0;background:#161616;flex:none}
+#dockbar{display:flex;align-items:center;gap:2px;padding:0 6px;
+  background:var(--chrome);border-bottom:1px solid var(--line);flex:none}
+#dockbar .tab{font:inherit;font-size:12px;color:var(--muted);background:transparent;
+  border:0;border-bottom:2px solid transparent;padding:6px 10px;cursor:pointer}
+#dockbar .tab[aria-selected=true]{color:#fff;border-bottom-color:var(--accent)}
+#dockbar .count{font-family:var(--mono);font-size:11px;margin-left:5px;
+  padding:0 5px;border-radius:8px;background:#3a3a3a;color:#ddd}
+#dockbar .count.err{background:rgba(241,76,76,.22);color:#ff9b9b}
+#dockbar .spacer{flex:1}
+#dockbar .icon{font:inherit;font-size:13px;color:var(--muted);background:transparent;
+  border:0;padding:4px 7px;cursor:pointer;border-radius:3px;line-height:1}
+#dockbar .icon:hover{background:#2b2b2b;color:#fff}
+#dockbody{flex:1;overflow:auto;min-height:0}
+body.collapsed #grip{display:none}
+body.collapsed #dockbody{display:none}
+
+/* ソース面 */
+.src{font-family:var(--mono);font-size:12px;line-height:1.5;white-space:pre;padding:4px 0}
+.src .line{display:flex;gap:8px;padding:0 10px}
+.src .no{color:#666;user-select:none;min-width:3em;text-align:right}
+.src .line.changed{background:rgba(79,163,255,.16);box-shadow:inset 2px 0 0 var(--field)}
+.src .line.cur{background:rgba(47,129,247,.24)}
+.src .c{color:#6a9955}
+/* 検証面 */
+.diag{font-size:12px}
+.diag li{display:flex;gap:8px;padding:4px 10px;list-style:none;border-bottom:1px solid #222}
+.diag .sev{font-family:var(--mono)}
+.diag .sev.e{color:var(--err)} .diag .sev.w{color:var(--warn)}
+.diag .at{color:var(--muted);font-family:var(--mono);white-space:nowrap}
+
+/* ============ 現在のレイアウト（比較用） ============ */
+body.mode-current #shell{flex-direction:row}
+body.mode-current #work{flex:1;min-width:0}
+body.mode-current #grip{width:6px;height:auto;cursor:col-resize;
+  border:0;border-left:1px solid var(--line);border-right:1px solid var(--line)}
+body.mode-current #grip::after{left:2px;top:50%;width:2px;height:36px;margin:-18px 0 0 0}
+body.mode-current #dock{flex:0 0 36%;min-width:340px}
+body.mode-current .toolbar{display:none}
+
+/* 注記 */
+#notes{padding:10px 14px;border-top:1px solid var(--line);background:#141414;
+  max-height:34vh;overflow:auto;flex:none}
+#notes h2{font-size:13px;margin:10px 0 4px;color:#fff}
+#notes h2:first-child{margin-top:0}
+#notes p,#notes li{color:#c9c9c9;line-height:1.7;margin:3px 0}
+#notes table{border-collapse:collapse;font-size:12px;margin:6px 0}
+#notes th,#notes td{border:1px solid #333;padding:4px 8px;text-align:left;vertical-align:top}
+#notes th{background:#1d1d1d;color:#fff}
+#notes code{font-family:var(--mono);background:#000;padding:1px 4px;border-radius:2px}
+#notes .q{color:var(--warn)}
+body.hide-notes #notes{display:none}
+</style>
+</head>
+<body class="mode-proposal">
+
+<div id="demo">
+  <!-- 検討用の外枠。製品には作らない（C1 のホスト切替と同じ扱い）。 -->
+  <div id="demobar">
+    <strong>レイアウト案 D</strong>
+    <span class="seg" role="group" aria-label="レイアウト">
+      <button type="button" id="btn-current"  aria-pressed="false">現在（左右）</button>
+      <button type="button" id="btn-proposal" aria-pressed="true">提案（下部ドック）</button>
+    </span>
+    <select id="size">
+      <option value="24,80">DSPF 24×80</option>
+      <option value="27,132">DSPF 27×132</option>
+      <option value="66,132">PRTF 66×132</option>
+      <option value="66,198">PRTF 66×198</option>
+    </select>
+    <span class="spacer"></span>
+    <span id="verdict"></span>
+    <button type="button" id="btn-notes" aria-pressed="true">注記</button>
+  </div>
+
+  <div id="shell">
+    <div class="toolbar">
+      <button type="button" aria-pressed="true">選択</button>
+      <button type="button">フィールド</button>
+      <button type="button">定数</button>
+      <span class="sep"></span>
+      <button type="button" aria-pressed="true">SO/SI</button>
+      <button type="button">属性バイト</button>
+      <button type="button" aria-pressed="true">グリッド</button>
+      <button type="button">他様式を淡く</button>
+      <button type="button">見え方</button>
+      <span class="sep"></span>
+      <button type="button">−</button><button type="button">100%</button><button type="button">＋</button>
+      <span class="spacer"></span>
+      <span class="status" id="status"></span>
+    </div>
+
+    <div id="work">
+      <div class="side left">
+        <div class="pane-title">レコード様式</div>
+        <div class="tree">
+          <div class="rec">▾ EMPHDR</div>
+          <div class="item">定数 '社員マスタ保守'</div>
+          <div class="item">定数 '会社'</div>
+          <div class="rec">▾ EMPDTL</div>
+          <div class="item sel">EMPNO   3,12</div>
+          <div class="item">EMPNAM  5,12</div>
+          <div class="item">DEPT    7,12</div>
+          <div class="item">SALARY  9,12</div>
+          <div class="rec">▸ EMPFTR</div>
+        </div>
+        <div class="pane-title">条件標識</div>
+        <div class="tree">
+          <div class="item">31 SFLDSPCTL</div>
+          <div class="item">40 エラー表示</div>
+        </div>
+      </div>
+
+      <div class="main" id="main">
+        <div class="frame" id="frame">
+          <div class="ruler" id="ruler"></div>
+          <div class="cbody">
+            <div class="gutter" id="gutter"></div>
+            <div class="canvas" id="canvas"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="side right">
+        <div class="pane-title">プロパティ</div>
+        <table class="props">
+          <tr><td>名前</td><td><input value="EMPNO"></td></tr>
+          <tr><td>種別</td><td><input value="フィールド（入出力）"></td></tr>
+          <tr><td>位置</td><td><input value="3 行 12 桁"></td></tr>
+          <tr><td>長さ</td><td><input value="6"></td></tr>
+          <tr><td>データ</td><td><input value="A（文字）"></td></tr>
+          <tr><td>参照</td><td><input value="EMPMST/EMPNO"></td></tr>
+        </table>
+        <div class="pane-title">キーワード</div>
+        <div class="chips">
+          <span class="chip">DSPATR(HI)</span><span class="chip">CHECK(RZ)</span>
+          <span class="chip">COLOR(BLU)</span><span class="chip">＋</span>
+        </div>
+        <div class="pane-title">対応ソース行</div>
+        <div class="chips"><span class="chip">18 – 20 行目</span></div>
+      </div>
+    </div>
+
+    <div id="grip" title="ドラッグで高さを変える／ダブルクリックで折りたたむ"></div>
+
+    <div id="dock">
+      <div id="dockbar">
+        <button type="button" class="tab" id="tab-src"  aria-selected="true">ソース</button>
+        <button type="button" class="tab" id="tab-diag" aria-selected="false">検証<span class="count err">2</span></button>
+        <span class="spacer"></span>
+        <button type="button" class="icon" id="btn-half" title="半分">▤</button>
+        <button type="button" class="icon" id="btn-max"  title="最大化">▣</button>
+        <button type="button" class="icon" id="btn-fold" title="折りたたむ">▾</button>
+      </div>
+      <div id="dockbody">
+        <div class="src" id="pane-src"></div>
+        <ul class="diag" id="pane-diag" hidden>
+          <li><span class="sev e">✖</span><span>'社員マスタ保守' が 76 桁目から始まり、右端を 6 桁はみ出します（SO 1 ＋ 全角 7 字 × 2 ＋ SI 1 = 16 桁）</span><span class="at">12 行目</span></li>
+          <li><span class="sev e">✖</span><span>DSPSIZ(24 80 27 132) に条件名がありません。IBM 提供の <code>*DS3</code> で条件付けされます</span><span class="at">4 行目</span></li>
+          <li><span class="sev w">⚠</span><span>EMPDTL に OVERLAY がありません。EMPHDR が消えます</span><span class="at">16 行目</span></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div id="notes">
+    <h2>直したい症状</h2>
+    <p><code>dev/standalone.css</code> の <code>#panes{grid-template-columns:minmax(0,1fr) minmax(340px,36%)}</code> が
+    ソース面に<strong>最低 340px・最大 36%</strong> を渡している。エディタ内部は左 200px ＋ 右 320px が固定なので、
+    <strong>キャンバスに残る幅が 80 桁（8px × 80 = 640px）に届かない</strong>。上の「現在（左右）」で再現できる。</p>
+
+    <h2>桁が入るかを数える</h2>
+    <table>
+      <tr><th>置き方</th><th>キャンバスに渡る幅</th><th>80 桁</th><th>132 桁</th></tr>
+      <tr><td>現在（左右・ソース 36%）</td><td>幅 − 520 − 36%</td><td class="q">窓 1600px でも不足</td><td>不足</td></tr>
+      <tr><td>提案（下部ドック）</td><td>幅 − 520</td><td>窓 1180px 以上で収まる</td><td>窓 1600px 前後で収まる</td></tr>
+    </table>
+    <p>右上の判定は<strong>いま開いている窓で実測</strong>している。窓幅を変えると変わる。</p>
+
+    <h2>提案の要点</h2>
+    <ul>
+      <li><strong>ソースは下・全幅。</strong> 桁は横に伸びるので、横を削る置き方と相性が悪い。縦なら行数を削るだけで済む。</li>
+      <li><strong>ソースと検証を 1 つのドックにタブでまとめる。</strong> 下端の取り合いを避ける（いまは検証が別に下端を占めている）。</li>
+      <li><strong>自由に展開できる</strong>——境目をドラッグ／ダブルクリックで折りたたみ／▤ 半分／▣ 最大化／▾ 折りたたみ。
+      折りたたむとタブ 1 行だけが残り、<strong>キャンバスが縦いっぱいに使える</strong>。</li>
+      <li><strong>3 ペインは変えない。</strong> C1 で「移植可能性の核心」と決めた構成なので、触るのは下段だけ。</li>
+    </ul>
+
+    <h2>決めていただきたいこと</h2>
+    <table>
+      <tr><th>#</th><th>論点</th><th>案</th></tr>
+      <tr><td>1</td><td>既定の高さ</td><td>ソース 8 行ぶん（≒180px）。狭い窓では折りたたんで開く形も可</td></tr>
+      <tr><td>2</td><td>VSCode 埋め込み時</td><td>ドックを webview 内に持つか、VSCode のテキストエディタを<code>下に分割</code>して使うか。<span class="q">前者なら見た目が両モードで一致するが、編集はできない（表示専用）</span></td></tr>
+      <tr><td>3</td><td>検証タブの扱い</td><td>件数バッジ付きでタブに同居。エラーが出たら自動で開くか</td></tr>
+      <tr><td>4</td><td>132 桁 / 198 桁</td><td>下部ドックでも足りない。左右ペインの折りたたみが要るか（別案）</td></tr>
+    </table>
+  </div>
+</div>
+
+<script>
+(function () {
+  const $ = s => document.querySelector(s);
+  const canvas = $("#canvas"), ruler = $("#ruler"), gutter = $("#gutter");
+  const CELL_W = 8, CELL_H = 18;
+  let rows = 24, cols = 80;
+
+  /* --- 画面を描く。桁は実寸（1 桁 = 8px）で置く。 --- */
+  const ITEMS = [
+    { r: 1,  c: 25, t: "社員マスタ保守", dbcs: true },
+    { r: 1,  c: 70, t: "EMPMNT01" },
+    { r: 3,  c: 2,  t: "社員番号", dbcs: true },
+    { r: 3,  c: 12, t: "______", fld: true, sel: true },
+    { r: 5,  c: 2,  t: "氏名", dbcs: true },
+    { r: 5,  c: 12, t: "____________________", fld: true },
+    { r: 7,  c: 2,  t: "所属", dbcs: true },
+    { r: 7,  c: 12, t: "__________", fld: true },
+    { r: 9,  c: 2,  t: "給与", dbcs: true },
+    { r: 9,  c: 12, t: "_________", fld: true },
+    { r: 12, c: 60, t: "＊＊＊　確認してください　＊＊＊", dbcs: true },
+    { r: 22, c: 2,  t: "F3=終了   F12=取消" }
+  ];
+
+  function draw() {
+    canvas.style.setProperty("--cols", cols);
+    canvas.style.setProperty("--rows", rows);
+    canvas.style.setProperty("--cell-w", CELL_W + "px");
+    canvas.style.setProperty("--cell-h", CELL_H + "px");
+
+    ruler.innerHTML = "";
+    ruler.style.width = cols * CELL_W + "px";
+    for (let c = 10; c <= cols; c += 10) {
+      const s = document.createElement("span");
+      s.textContent = String(c);
+      s.style.left = ((c - String(c).length) * CELL_W) + "px";
+      ruler.appendChild(s);
+    }
+    gutter.textContent = Array.from({ length: rows }, (_, i) => String(i + 1).padStart(3)).join("\n");
+
+    canvas.innerHTML = "";
+    for (const it of ITEMS) {
+      if (it.r > rows || it.c > cols) continue;
+      const d = document.createElement("div");
+      // DBCS は 1 字 2 桁。SO/SI で前後 1 桁ずつ増える（表示は { }）。
+      d.className = "it " + (it.fld ? "fld" : "const") + (it.sel ? " sel" : "");
+      d.textContent = it.dbcs ? "{" + it.t + "}" : it.t;
+      d.style.left = ((it.c - 1) * CELL_W) + "px";
+      d.style.top  = ((it.r - 1) * CELL_H) + "px";
+      canvas.appendChild(d);
+    }
+    measure();
+  }
+
+  /* --- 桁が入るかを実測する。**この数字が提案の根拠。** --- */
+  function measure() {
+    const main = $("#main");
+    const need = cols * CELL_W + 39 /* 行番号 */ + 24 /* 余白 */ + 2;
+    const have = Math.round(main.clientWidth);
+    const v = $("#verdict"), ok = have >= need;
+    v.className = ok ? "ok" : "ng";
+    v.textContent = `${cols} 桁に必要 ${need}px ／ キャンバスに渡る幅 ${have}px … ` +
+      (ok ? "収まる" : `${need - have}px 不足（横スクロールが出る）`);
+    $("#status").textContent = `EMPDTL ｜ ${rows}×${cols} ｜ 選択: EMPNO 3,12 ｜ SO/SI 表示 ｜ 検証 2 件`;
+  }
+
+  /* --- ソース面 --- */
+  const SRC = [
+    ["     A*%%TS  SD  20260908  083000  ASAOMARO", "c"],
+    ["     A                                      DSPSIZ(24 80 *DS3 27 132 *DS4)", ""],
+    ["     A          R EMPHDR", ""],
+    ["     A                                  1 25'社員マスタ保守'", ""],
+    ["     A                                  1 70'EMPMNT01'", ""],
+    ["     A          R EMPDTL", ""],
+    ["     A                                      OVERLAY", ""],
+    ["     A                                  3  2'社員番号'", ""],
+    ["     A            EMPNO          6A  B  3 12", "cur"],
+    ["     A                                      DSPATR(HI)", "changed"],
+    ["     A                                      CHECK(RZ)", "changed"],
+    ["     A                                  5  2'氏名'", ""],
+    ["     A            EMPNAM        20A  B  5 12", ""],
+    ["     A                                  7  2'所属'", ""],
+    ["     A            DEPT          10A  B  7 12", ""],
+    ["     A                                  9  2'給与'", ""],
+    ["     A            SALARY         9S 0B  9 12", ""],
+    ["     A          R EMPFTR", ""],
+    ["     A                                 22  2'F3=終了   F12=取消'", ""]
+  ];
+  $("#pane-src").innerHTML = SRC.map(([t, k], i) =>
+    `<div class="line ${k === "c" ? "" : k}"><span class="no">${i + 1}</span><span class="${k === "c" ? "c" : ""}">${
+      t.replace(/&/g, "&amp;").replace(/</g, "&lt;")}</span></div>`).join("");
+
+  /* --- ドック：自由に展開できること --- */
+  const dock = $("#dock"), grip = $("#grip"), body = document.body;
+  let h = 190, folded = false;
+
+  function apply() {
+    body.classList.toggle("collapsed", folded);
+    // 現在レイアウトでは横幅として効かせる（比較のため）
+    if (body.classList.contains("mode-current")) dock.style.flex = "";
+    else dock.style.flex = folded ? "none" : `0 0 ${h}px`;
+    $("#btn-fold").textContent = folded ? "▴" : "▾";
+    requestAnimationFrame(measure);
+  }
+  grip.addEventListener("mousedown", e => {
+    if (body.classList.contains("mode-current")) return;
+    e.preventDefault();
+    const y0 = e.clientY, h0 = h;
+    const mv = ev => { h = Math.max(28, Math.min(window.innerHeight - 220, h0 + (y0 - ev.clientY))); folded = false; apply(); };
+    const up = () => { document.removeEventListener("mousemove", mv); document.removeEventListener("mouseup", up); };
+    document.addEventListener("mousemove", mv); document.addEventListener("mouseup", up);
+  });
+  grip.addEventListener("dblclick", () => { folded = !folded; apply(); });
+  $("#btn-fold").addEventListener("click", () => { folded = !folded; apply(); });
+  $("#btn-half").addEventListener("click", () => { folded = false; h = Math.round(window.innerHeight * 0.35); apply(); });
+  $("#btn-max").addEventListener("click",  () => { folded = false; h = window.innerHeight - 240; apply(); });
+
+  for (const [id, show] of [["#tab-src", "#pane-src"], ["#tab-diag", "#pane-diag"]]) {
+    $(id).addEventListener("click", () => {
+      for (const [i2, s2] of [["#tab-src", "#pane-src"], ["#tab-diag", "#pane-diag"]]) {
+        const on = i2 === id;
+        $(i2).setAttribute("aria-selected", String(on));
+        $(s2).hidden = !on;
+      }
+      if (folded) { folded = false; apply(); }
+    });
+  }
+
+  /* --- 比較用の切り替え --- */
+  function setMode(m) {
+    body.classList.toggle("mode-current", m === "current");
+    body.classList.toggle("mode-proposal", m === "proposal");
+    $("#btn-current").setAttribute("aria-pressed", String(m === "current"));
+    $("#btn-proposal").setAttribute("aria-pressed", String(m === "proposal"));
+    folded = false; apply();
+  }
+  $("#btn-current").addEventListener("click", () => setMode("current"));
+  $("#btn-proposal").addEventListener("click", () => setMode("proposal"));
+  $("#size").addEventListener("change", e => {
+    [rows, cols] = e.target.value.split(",").map(Number); draw();
+  });
+  $("#btn-notes").addEventListener("click", e => {
+    const on = body.classList.toggle("hide-notes");
+    e.target.setAttribute("aria-pressed", String(!on));
+    measure();
+  });
+  window.addEventListener("resize", measure);
+
+  draw(); apply();
+})();
+</script>
+</body>
+</html>
