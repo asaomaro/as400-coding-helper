@@ -105,6 +105,8 @@ const DEFAULT_DOCK_HEIGHT = 190;
 const DOCK_MIN_HEIGHT = 60;
 const SIDE_LEFT_WIDTH = 200;
 const SIDE_RIGHT_WIDTH = 320;
+/** 畳んだ側に残す縦棒の幅（`ui.css` の `.dds-side.folded` と合わせる）。 */
+const SIDE_FOLDED_WIDTH = 22;
 
 /** 読めない文脈がある（サンドボックス）。**読めなくても既定で成立させる。** */
 function loadPanelState(): PanelState {
@@ -2073,7 +2075,10 @@ class EditorView {
    */
   private requiredCanvasWidth(model: RenderModel): number {
     const gutter = 3 * 13; // --gutter: 3em / 13px
-    return model.canvas.columns * this.cellWidth + gutter + 24 + 2;
+    // **倍率を掛けない実測値で数える。** ズームは「細かく見たい」という表示の好みで、
+    // 拡大したせいで一覧やプロパティが消えるのは利用者と喧嘩する。畳むかどうかは
+    // **そのファイルの桁数**（132 桁なら足りない、80 桁なら足りる）で決める。
+    return model.canvas.columns * this.measuredWidth + gutter + 24 + 2;
   }
 
   /**
@@ -2090,13 +2095,21 @@ class EditorView {
     // **両方向に決める。** 畳む方だけだと、一度 132 桁を開いたあと 80 桁に戻しても
     // 畳んだままになり、以後どのファイルでも左右が消えたままになる（実際に踏んだ）。
     // 利用者が自分で畳んだ分（保存された値）は残す——幅が足りていても畳んだままにする。
-    const available = (this.grip.parentElement?.clientWidth ?? window.innerWidth)
-      - SIDE_LEFT_WIDTH
-      - SIDE_RIGHT_WIDTH;
-    const tooNarrow = available < this.requiredCanvasWidth(model);
+    //
+    // **足りない分だけ畳み、左から畳む。** 右はプロパティとキーワードの入力欄で、
+    // ここを畳むと編集する手段そのものが消える。左は一覧＝辿る手段なので、
+    // 畳んでもキャンバスから直接選べる。両方畳むのは左だけでは足りないときに限る。
+    const width = this.grip.parentElement?.clientWidth ?? window.innerWidth;
+    const need = this.requiredCanvasWidth(model);
     const saved = loadPanelState();
-    this.panel.foldLeft = saved.foldLeft || tooNarrow;
-    this.panel.foldRight = saved.foldRight || tooNarrow;
+    const fits = (left: boolean, right: boolean): boolean =>
+      width - (left ? SIDE_FOLDED_WIDTH : SIDE_LEFT_WIDTH)
+            - (right ? SIDE_FOLDED_WIDTH : SIDE_RIGHT_WIDTH) >= need;
+
+    const foldLeft = saved.foldLeft || !fits(false, false);
+    const foldRight = saved.foldRight || !fits(foldLeft, false);
+    this.panel.foldLeft = foldLeft;
+    this.panel.foldRight = foldRight;
     this.applyPanels();
   }
 

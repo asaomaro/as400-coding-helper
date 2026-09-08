@@ -67,6 +67,18 @@ const check = (name, ok, detail = "") => {
 
 const browser = await chromium.launch({ executablePath, args: ["--no-sandbox", "--disable-gpu"] });
 const page = await browser.newPage({ viewport: { width: 1400, height: 900 } });
+/**
+ * 左ペインを開く。**桁数と窓幅しだいで開いた時点で畳まれている**ため
+ * （132 桁など）、一覧や標識を触る手順の前に必ず通す。
+ * 折り畳みそのものは 24 節で別に検査している。
+ */
+const openLeftPane = async () => {
+  if (await page.$eval(".dds-side.left", n => n.classList.contains("folded"))) {
+    await page.click("#dds-fold-left");
+    await page.waitForTimeout(120);
+  }
+};
+
 const errors = [];
 page.on("pageerror", error => errors.push(String(error)));
 page.on("console", message => {
@@ -291,6 +303,7 @@ const listed = await page.evaluate(() => {
 check("一覧に項目が並ぶ", listed !== null);
 
 if (listed) {
+  await openLeftPane();
   await page.click(`.dds-tree li.item[data-source-line="${listed.sourceLine}"]`);
   await page.waitForTimeout(200);
   const name = await page.inputValue('.dds-props input[data-key="name"]');
@@ -366,6 +379,7 @@ check(
 
 if (hidden.length > 0) {
   const beforeHidden = await sourceLines();
+  await openLeftPane();
   await page.click(`.dds-tree li.item[data-source-line="${hidden[0].sourceLine}"]`);
   await page.waitForTimeout(200);
   check(
@@ -534,6 +548,7 @@ const constantLine2 = await page.evaluate(() => {
   return item ? Number(item.dataset.sourceLine) : null;
 });
 if (constantLine2) {
+  await openLeftPane();
   await page.click(`.dds-tree li.item[data-source-line="${constantLine2}"]`);
   await page.waitForTimeout(200);
   const breakdown = await page.$eval(".dds-measures.breakdown", node => node.textContent).catch(() => "");
@@ -548,11 +563,13 @@ if (constantLine2) {
 await page.selectOption("#sample", { label: "indicators.dspf" });
 await page.waitForTimeout(250);
 
+
 const indicatorList = () => page.$$eval(".ind-row .no", nodes => nodes.map(n => n.textContent));
 // SO/SI 表示が入っていると `{部門名}` の形で出るので、**含むか**で見る（完全一致では落ちる）。
 const drawnLabels = () => page.$$eval(".dds-item", nodes => nodes.map(n => n.textContent));
 const treeText = () => page.$eval(".dds-outline", node => node.textContent);
 const setInd = async (indicator, value) => {
+  await openLeftPane();
   await page.click(`.ind-choice button[data-indicator="${indicator}"][data-value="${value}"]`);
   await page.waitForTimeout(120);
 };
@@ -668,6 +685,7 @@ await page.click(".dds-item");
 await page.waitForTimeout(120);
 const selectedLine = await page.$eval(".dds-item.selected", node => Number(node.dataset.sourceLine));
 const beforeArrowKey = (await sourceLines())[selectedLine - 1];
+await openLeftPane();
 await page.click('.ind-choice button[data-indicator="30"][data-value="unset"]');
 await page.waitForTimeout(120);
 await page.keyboard.press("ArrowRight");
@@ -834,6 +852,7 @@ check(
   JSON.stringify(await fileLevelLabels())
 );
 
+await openLeftPane();
 await page.click(".dds-tree > li.file-level > ul > li.file-keyword >> nth=0");
 await page.waitForTimeout(180);
 check(
@@ -1230,12 +1249,14 @@ const chipTexts = () =>
   page.$$eval(".kw-chip:not(.add):not(.none)", nodes => nodes.map(n => n.textContent));
 const helpText = () => page.$eval(".kw-help", node => node.textContent).catch(() => "");
 const selectTreeItem = async label => {
+  await openLeftPane();
   const line = await page.evaluate(name => {
     const node = [...document.querySelectorAll(".dds-tree li.item")].find(n =>
       n.textContent.includes(name)
     );
     return node ? Number(node.dataset.sourceLine) : null;
   }, label);
+  await openLeftPane();
   await page.click(`.dds-tree li.item[data-source-line="${line}"]`);
   // **選ばれるまで待つ。** 時間で誤魔化すと「押しても選択されない」欠陥が
   // 後続の検査の失敗として現れ、原因が追えなくなる（実際にそうなった）。
@@ -1295,6 +1316,7 @@ check(
 );
 
 // 様式（レコード・レベル）のキーワード。CF03 は原典の総称 CFnn に当たる。
+await openLeftPane();
 await page.click(".dds-tree li.record .label");
 await page.waitForTimeout(200);
 check(
@@ -1371,6 +1393,7 @@ await page.waitForTimeout(400);
 check("**足したキーワードがソースに入る**", (await rawValue()).includes("DSPATR()"), await rawValue());
 
 // **様式のキーワードも編集できる**（OVERLAY / CFnn は様式にしか書けない）。
+await openLeftPane();
 await page.click(".dds-tree li.record .label");
 await page.waitForTimeout(200);
 const recordBefore = await rawValue();
