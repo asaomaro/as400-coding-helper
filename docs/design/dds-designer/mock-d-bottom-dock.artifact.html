@@ -1,0 +1,497 @@
+<title>DDS エディタ 下部ドック案</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+JP:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/*
+ * 配色は 2 段。ページの地はエディタより少し暗く冷たくして、
+ * エディタの実物（ui.css の既定色）が「置かれた装置」として浮くようにする。
+ * ダーク一本に決めているのは、対象そのものが暗いエディタだから——
+ * 明るい地に置くと評価したい見た目が変わってしまう。
+ */
+:root{
+  --bg:#0e1115; --surface:#151a20; --raised:#1b2129; --line:#262d36;
+  --fg:#dee3e9; --muted:#8b95a2; --dim:#5f6b78;
+  --accent:#2f81f7; --ok:#4ec9a0; --bad:#f14c4c; --warn:#cca700;
+  /* エディタ実物の既定色（vscode-extension/src/dds/webview/ui.css） */
+  --e-bg:#1f1f1f; --e-fg:#d4d4d4; --e-chrome:#181818; --e-line:#3a3a3a;
+  --e-muted:#9d9d9d; --e-field:#4fa3ff;
+  --sans:"IBM Plex Sans JP",system-ui,sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Consolas,monospace;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--sans);
+     font-size:15px;line-height:1.75;-webkit-font-smoothing:antialiased}
+.wrap{max-width:1180px;margin:0 auto;padding:0 24px}
+h1,h2,h3{text-wrap:balance;margin:0}
+a{color:var(--accent)}
+code{font-family:var(--mono);font-size:.88em;background:#000;color:#c9d4e0;
+     padding:.1em .4em;border-radius:3px}
+strong{font-weight:600;color:#fff}
+
+/* ---------- 見出し ---------- */
+header{padding:56px 0 32px}
+.eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.14em;color:var(--dim);
+  text-transform:uppercase}
+h1{font-size:clamp(30px,4.4vw,44px);font-weight:600;letter-spacing:-.02em;
+   line-height:1.2;margin:10px 0 0}
+.lede{max-width:62ch;color:var(--muted);margin:14px 0 0;font-size:16px}
+.lede b{color:var(--fg);font-weight:500}
+
+/* ---------- 装置（エディタの実物） ---------- */
+.stage{padding:8px 0 40px}
+.controls{display:flex;align-items:center;gap:14px;flex-wrap:wrap;
+  padding:12px 14px;background:var(--surface);border:1px solid var(--line);
+  border-radius:8px 8px 0 0;border-bottom:0}
+.ctl{display:flex;align-items:center;gap:7px;font-size:13px;color:var(--muted)}
+.ctl > span{white-space:nowrap}
+.seg{display:flex;border:1px solid var(--line);border-radius:5px;overflow:hidden}
+.seg button{font:inherit;font-size:13px;color:var(--muted);background:var(--raised);
+  border:0;border-right:1px solid var(--line);padding:5px 12px;cursor:pointer}
+.seg button:last-child{border-right:0}
+.seg button[aria-pressed=true]{background:var(--accent);color:#fff}
+select{font:inherit;font-size:13px;color:var(--fg);background:var(--raised);
+  border:1px solid var(--line);border-radius:5px;padding:5px 8px;cursor:pointer}
+button:focus-visible,select:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.controls .grow{flex:1}
+#verdict{font-family:var(--mono);font-size:12.5px;font-variant-numeric:tabular-nums;
+  padding:5px 11px;border-radius:5px;white-space:nowrap}
+#verdict.ok{color:var(--ok);background:rgba(78,201,160,.12);border:1px solid rgba(78,201,160,.3)}
+#verdict.ng{color:var(--bad);background:rgba(241,76,76,.12);border:1px solid rgba(241,76,76,.32)}
+
+.viewport{border:1px solid var(--line);border-radius:0 0 8px 8px;background:#000;
+  overflow:hidden;position:relative}
+#scaler{transform-origin:top left}
+.hint{font-size:12.5px;color:var(--dim);margin:10px 2px 0;font-family:var(--mono)}
+
+/* ===== ここから内側はエディタ実物の写し ===== */
+#shell{display:flex;flex-direction:column;background:var(--e-bg);color:var(--e-fg);
+  font-family:var(--sans);font-size:13px;line-height:1.5}
+.toolbar{display:flex;align-items:center;gap:5px;flex-wrap:wrap;flex:none;
+  padding:5px 8px;background:var(--e-chrome);border-bottom:1px solid var(--e-line)}
+.toolbar button{font:inherit;font-size:12px;color:#ddd;background:#2b2b2b;
+  border:1px solid #444;border-radius:3px;padding:2px 7px;cursor:default}
+.toolbar button[aria-pressed=true]{background:#37414d;border-color:#5a6b7d;color:#fff}
+.toolbar .sep{width:1px;height:16px;background:var(--e-line);margin:0 3px}
+.toolbar .grow{flex:1}
+.toolbar .status{color:var(--e-muted);font-size:12px;font-family:var(--mono)}
+
+#work{flex:1;display:flex;min-height:0}
+.side{background:var(--e-chrome);border-right:1px solid var(--e-line);
+  overflow:auto;min-width:0;padding:4px 0}
+.side.left{flex:0 0 200px}
+.side.right{flex:0 0 320px;border-right:0;border-left:1px solid var(--e-line)}
+.pane-title{color:var(--e-muted);font-size:11px;padding:6px 10px 3px}
+.main{flex:1;min-width:0;overflow:auto;padding:12px}
+
+.tree{font-size:12px}
+.tree div{padding:2px 10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tree .rec{color:#e6c07b}
+.tree .item{padding-left:22px;color:#cfcfcf;font-family:var(--mono);font-size:11.5px}
+.tree .sel{background:rgba(47,129,247,.22);box-shadow:inset 2px 0 0 var(--accent)}
+.props{width:100%;border-collapse:collapse;font-size:12px}
+.props td{padding:2px 10px}
+.props td:first-child{color:var(--e-muted);white-space:nowrap;width:5.5em}
+.props .v{font-family:var(--mono);font-size:11.5px;background:#2b2b2b;color:#ddd;
+  border:1px solid #444;border-radius:2px;padding:1px 5px;display:block}
+.chips{display:flex;flex-wrap:wrap;gap:3px;padding:4px 10px}
+.chip{font-family:var(--mono);font-size:11px;background:#2b2b2b;border:1px solid #454545;
+  border-radius:9px;padding:1px 7px;color:#cfcfcf}
+
+.frame{width:max-content;font-family:var(--mono);font-size:13px;line-height:var(--cell-h)}
+.ruler{position:relative;margin-left:var(--gutter);height:var(--cell-h);
+  color:var(--e-muted);white-space:pre;font-size:11px}
+.ruler span{position:absolute;top:0}
+.cbody{display:flex;align-items:flex-start}
+.gutter{width:var(--gutter);color:var(--e-muted);text-align:right;padding-right:6px;
+  white-space:pre;font-size:11px}
+.canvas{position:relative;
+  width:calc(var(--cell-w) * var(--cols));height:calc(var(--cell-h) * var(--rows));
+  border:1px solid var(--e-line);background-color:#232323;
+  background-image:
+    repeating-linear-gradient(to right,rgba(212,212,212,.20) 0 1px,transparent 1px calc(var(--cell-w)*10)),
+    repeating-linear-gradient(to bottom,rgba(212,212,212,.09) 0 1px,transparent 1px var(--cell-h))}
+.it{position:absolute;height:var(--cell-h);white-space:pre;font-family:var(--mono);font-size:13px}
+.it.fld{color:var(--e-field);background:rgba(79,163,255,.12);outline:1px solid rgba(79,163,255,.35)}
+.it.sel{outline:1px solid var(--accent);background:rgba(47,129,247,.22)}
+
+#grip{flex:none;height:7px;cursor:row-resize;background:var(--e-chrome);
+  border-top:1px solid var(--e-line);border-bottom:1px solid var(--e-line);position:relative}
+#grip::after{content:"";position:absolute;left:50%;top:2.5px;width:38px;height:2px;
+  margin-left:-19px;border-radius:1px;background:#5a5a5a}
+#grip:hover::after{background:var(--accent)}
+#dock{display:flex;flex-direction:column;min-height:0;background:#161616;flex:none}
+#dockbar{display:flex;align-items:center;gap:2px;padding:0 6px;flex:none;
+  background:var(--e-chrome);border-bottom:1px solid var(--e-line)}
+.tab{font:inherit;font-size:12px;color:var(--e-muted);background:transparent;border:0;
+  border-bottom:2px solid transparent;padding:6px 10px;cursor:pointer}
+.tab[aria-selected=true]{color:#fff;border-bottom-color:var(--accent)}
+.badge{font-family:var(--mono);font-size:10.5px;margin-left:5px;padding:0 5px;
+  border-radius:8px;background:rgba(241,76,76,.22);color:#ff9b9b}
+#dockbar .grow{flex:1}
+.icon{font:inherit;font-size:13px;color:var(--e-muted);background:transparent;border:0;
+  padding:4px 7px;cursor:pointer;border-radius:3px;line-height:1}
+.icon:hover{background:#2b2b2b;color:#fff}
+#dockbody{flex:1;overflow:auto;min-height:0}
+#shell.folded #grip{display:none}
+#shell.folded #dockbody{display:none}
+
+.src{font-family:var(--mono);font-size:12px;line-height:1.55;white-space:pre;padding:4px 0}
+.src .ln{display:flex;gap:9px;padding:0 10px}
+.src .no{color:#5a5a5a;user-select:none;min-width:2.4em;text-align:right}
+.src .changed{background:rgba(79,163,255,.15);box-shadow:inset 2px 0 0 var(--e-field)}
+.src .cur{background:rgba(47,129,247,.24)}
+.src .cm{color:#6a9955}
+.diag{margin:0;padding:0;font-size:12px}
+.diag li{display:flex;gap:9px;padding:5px 11px;list-style:none;border-bottom:1px solid #222}
+.diag .sev{font-family:var(--mono)}
+.diag .e{color:var(--bad)} .diag .w{color:var(--warn)}
+.diag .at{color:var(--e-muted);font-family:var(--mono);white-space:nowrap;margin-left:auto}
+
+/* 現在（左右）の比較 */
+#shell.current{flex-direction:row}
+#shell.current > .toolbar{display:none}
+#shell.current #work{flex:1;min-width:0}
+#shell.current #grip{width:7px;height:auto;cursor:col-resize;
+  border:0;border-left:1px solid var(--e-line);border-right:1px solid var(--e-line)}
+#shell.current #grip::after{left:2.5px;top:50%;width:2px;height:38px;margin:-19px 0 0}
+#shell.current #dock{flex:0 0 36%;min-width:340px}
+
+/* ---------- 本文 ---------- */
+section{padding:14px 0 34px}
+h2{font-size:22px;font-weight:600;letter-spacing:-.01em;margin:0 0 6px}
+h2 + p{color:var(--muted);max-width:64ch;margin:0 0 18px}
+.tblwrap{overflow-x:auto;border:1px solid var(--line);border-radius:8px;background:var(--surface)}
+table{border-collapse:collapse;width:100%;font-size:14px;min-width:560px}
+th,td{padding:11px 14px;text-align:left;vertical-align:top;border-bottom:1px solid var(--line)}
+tbody tr:last-child td{border-bottom:0}
+th{font-size:12px;letter-spacing:.06em;color:var(--dim);font-weight:500;
+   text-transform:uppercase;background:#11151a}
+td.num{font-family:var(--mono);font-variant-numeric:tabular-nums;white-space:nowrap}
+.yes{color:var(--ok)} .no{color:var(--bad)}
+ul.points{list-style:none;padding:0;margin:0;display:grid;gap:2px}
+ul.points li{display:grid;grid-template-columns:26px 1fr;gap:12px;padding:11px 0;
+  border-bottom:1px solid var(--line);max-width:74ch}
+ul.points li:last-child{border-bottom:0}
+ul.points .n{font-family:var(--mono);font-size:12px;color:var(--dim);padding-top:5px}
+ul.points p{margin:0;color:var(--muted)}
+ul.points b{display:block;color:var(--fg);font-weight:500;margin-bottom:1px}
+footer{border-top:1px solid var(--line);margin-top:20px;padding:22px 0 60px;
+  color:var(--dim);font-size:13px}
+footer code{background:transparent;padding:0;color:var(--muted)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+
+<div class="wrap">
+  <header>
+    <div class="eyebrow">DDS ビジュアルエディタ / レイアウト案</div>
+    <h1>ソースを下部ドックへ</h1>
+    <p class="lede">いま、エディタとソース表示が<b>左右に並んでいる</b>。ソース面が最低 340px・最大 36% を横取りし、
+    エディタ内部でも左 200px ＋ 右 320px が固定なので、<b>キャンバスに 80 桁を描く幅が残らない</b>。
+    桁は横に伸びるものなので、横を削る置き方と相性が悪い。</p>
+  </header>
+
+  <div class="stage">
+    <div class="controls">
+      <div class="ctl"><span>置き方</span>
+        <span class="seg" role="group" aria-label="レイアウト">
+          <button type="button" id="m-cur" aria-pressed="false">現在（左右）</button>
+          <button type="button" id="m-new" aria-pressed="true">提案（下部）</button>
+        </span>
+      </div>
+      <div class="ctl"><span>画面</span>
+        <select id="size" aria-label="画面サイズ">
+          <option value="24,80">DSPF 24×80</option>
+          <option value="27,132">DSPF 27×132</option>
+          <option value="66,132">PRTF 66×132</option>
+        </select>
+      </div>
+      <div class="ctl"><span>窓幅</span>
+        <select id="win" aria-label="想定する窓幅">
+          <option value="1280">1280px</option>
+          <option value="1440">1440px</option>
+          <option value="1600" selected>1600px</option>
+          <option value="1920">1920px</option>
+        </select>
+      </div>
+      <span class="grow"></span>
+      <span id="verdict"></span>
+    </div>
+    <div class="viewport" id="viewport"><div id="scaler"><div id="shell"></div></div></div>
+    <p class="hint" id="hint"></p>
+  </div>
+
+  <section>
+    <h2>桁が入るかを数える</h2>
+    <p>「広く見える」ではなく実測で判断する。下の数字は選んだ画面サイズと窓幅から計算している。</p>
+    <div class="tblwrap">
+      <table>
+        <thead><tr><th>置き方</th><th>キャンバスに渡る幅</th><th>必要な幅</th><th>判定</th></tr></thead>
+        <tbody id="evidence"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <section>
+    <h2>提案の要点</h2>
+    <ul class="points">
+      <li><span class="n">01</span><p><b>ソースは下・全幅に置く</b>桁は横に伸びる。縦なら行数を削るだけで済み、桁を削らずに畳める。</p></li>
+      <li><span class="n">02</span><p><b>ソースと検証をタブでひとつのドックにまとめる</b>いまは検証が別に下端を占めている。ソースを下ろすと下端の取り合いになるため、先にまとめる。</p></li>
+      <li><span class="n">03</span><p><b>自由に展開できる</b>境目をドラッグ／ダブルクリックで畳む／▤ 半分／▣ 最大化。畳むとタブ 1 行だけが残り、キャンバスが縦いっぱいに使える。</p></li>
+      <li><span class="n">04</span><p><b>3 ペインには触らない</b>C1 で「移植可能性の核心」と決めた構成。変えるのは下段だけにする。</p></li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>決めていただきたいこと</h2>
+    <p>いずれも実装に入る前に方向が要るもの。<b>#2 は実装方針そのものが分かれる。</b></p>
+    <div class="tblwrap">
+      <table>
+        <thead><tr><th style="width:2.5em">#</th><th>論点</th><th>案／分かれ目</th></tr></thead>
+        <tbody>
+          <tr><td class="num">1</td><td>既定の高さ</td><td>ソース 8 行ぶん（約 190px）。狭い窓では畳んだ状態で開く形も採れる</td></tr>
+          <tr><td class="num">2</td><td><b>VSCode 埋め込み時の中身</b></td>
+              <td>ドックを webview の中に持つ（両モードで見た目が一致するが<b>表示専用</b>）か、VSCode のテキストエディタを「下に分割」して使う（<b>編集できる</b>が見た目と操作が VSCode の作法になる）</td></tr>
+          <tr><td class="num">3</td><td>検証タブの扱い</td><td>件数バッジ付きでタブに同居。エラーが出たとき自動で開くかどうか</td></tr>
+          <tr><td class="num">4</td><td>132 桁・198 桁</td><td><b>下部ドックでは足りない。</b>左右ペインを畳める仕掛けが別に要る</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <footer>
+    同じものを <code>docs/design/dds-designer/mock-d-bottom-dock.html</code> に置いてある（既存 5 案と同じ場所、<code>file://</code> で開ける）。
+    エディタ部分の配色・桁の描き方は <code>vscode-extension/src/dds/webview/ui.css</code> の実物に合わせている。
+  </footer>
+</div>
+
+<script>
+(function(){
+  const $ = s => document.querySelector(s);
+  const shell = $("#shell"), viewport = $("#viewport"), scaler = $("#scaler");
+  const SIDE_L = 200, SIDE_R = 320, GUTTER_EM = 3, PAD = 24;
+  let rows = 24, cols = 80, win = 1600, mode = "new";
+  let dockH = 190, dockW = 0.36, folded = false, tab = "src";
+  let CELL_W = 8, CELL_H = 18;
+
+  /* 実際の編集画面と同じく、桁の幅は**実測**する（ui.css: 起動時に測った値が入る）。 */
+  function measureCell(){
+    const p = document.createElement("span");
+    p.style.cssText = "position:absolute;visibility:hidden;white-space:pre;" +
+      "font-family:var(--mono);font-size:13px;line-height:18px";
+    p.textContent = "0".repeat(100);
+    document.body.appendChild(p);
+    CELL_W = p.getBoundingClientRect().width / 100;
+    p.remove();
+  }
+
+  const ITEMS = [
+    {r:1,c:25,t:"社員マスタ保守",d:1},{r:1,c:70,t:"EMPMNT01"},
+    {r:3,c:2,t:"社員番号",d:1},{r:3,c:12,t:"______",f:1,s:1},
+    {r:5,c:2,t:"氏名",d:1},{r:5,c:12,t:"____________________",f:1},
+    {r:7,c:2,t:"所属",d:1},{r:7,c:12,t:"__________",f:1},
+    {r:9,c:2,t:"給与",d:1},{r:9,c:12,t:"_________",f:1},
+    {r:12,c:60,t:"＊＊＊　確認してください　＊＊＊",d:1},
+    {r:22,c:2,t:"F3=終了   F12=取消"}
+  ];
+  const SRC = [
+    ["     A*%%TS  SD  20260908  083000  ASAOMARO","cm"],
+    ["     A                                      DSPSIZ(24 80 *DS3 27 132 *DS4)",""],
+    ["     A          R EMPHDR",""],
+    ["     A                                  1 25'社員マスタ保守'",""],
+    ["     A          R EMPDTL",""],
+    ["     A                                      OVERLAY",""],
+    ["     A                                  3  2'社員番号'",""],
+    ["     A            EMPNO          6A  B  3 12","cur"],
+    ["     A                                      DSPATR(HI)","changed"],
+    ["     A                                      CHECK(RZ)","changed"],
+    ["     A                                  5  2'氏名'",""],
+    ["     A            EMPNAM        20A  B  5 12",""],
+    ["     A                                  7  2'所属'",""],
+    ["     A            DEPT          10A  B  7 12",""],
+    ["     A                                  9  2'給与'",""],
+    ["     A            SALARY         9S 0B  9 12",""],
+    ["     A          R EMPFTR",""]
+  ];
+  const esc = s => s.replace(/&/g,"&amp;").replace(/</g,"&lt;");
+
+  function build(){
+    const tools = ["選択","フィールド","定数","|","SO/SI","属性バイト","グリッド","他様式を淡く","見え方"];
+    const on = new Set(["選択","SO/SI","グリッド"]);
+    shell.innerHTML =
+      `<div class="toolbar">${tools.map(t => t === "|" ? '<span class="sep"></span>'
+        : `<button type="button"${on.has(t) ? ' aria-pressed="true"' : ""}>${t}</button>`).join("")}
+        <span class="grow"></span><span class="status" id="status"></span></div>
+      <div id="work">
+        <div class="side left">
+          <div class="pane-title">レコード様式</div>
+          <div class="tree"><div class="rec">▾ EMPHDR</div><div class="item">定数 '社員マスタ保守'</div>
+            <div class="rec">▾ EMPDTL</div><div class="item sel">EMPNO   3,12</div>
+            <div class="item">EMPNAM  5,12</div><div class="item">DEPT    7,12</div>
+            <div class="item">SALARY  9,12</div><div class="rec">▸ EMPFTR</div></div>
+          <div class="pane-title">条件標識</div>
+          <div class="tree"><div class="item">31 SFLDSPCTL</div><div class="item">40 エラー表示</div></div>
+        </div>
+        <div class="main" id="main"><div class="frame">
+          <div class="ruler" id="ruler"></div>
+          <div class="cbody"><div class="gutter" id="gutter"></div><div class="canvas" id="canvas"></div></div>
+        </div></div>
+        <div class="side right">
+          <div class="pane-title">プロパティ</div>
+          <table class="props">
+            <tr><td>名前</td><td><span class="v">EMPNO</span></td></tr>
+            <tr><td>種別</td><td><span class="v">フィールド（入出力）</span></td></tr>
+            <tr><td>位置</td><td><span class="v">3 行 12 桁</span></td></tr>
+            <tr><td>長さ</td><td><span class="v">6</span></td></tr>
+            <tr><td>参照</td><td><span class="v">EMPMST/EMPNO</span></td></tr>
+          </table>
+          <div class="pane-title">キーワード</div>
+          <div class="chips"><span class="chip">DSPATR(HI)</span><span class="chip">CHECK(RZ)</span><span class="chip">＋</span></div>
+          <div class="pane-title">対応ソース行</div>
+          <div class="chips"><span class="chip">8 – 10 行目</span></div>
+        </div>
+      </div>
+      <div id="grip" title="ドラッグで高さを変える／ダブルクリックで畳む"></div>
+      <div id="dock">
+        <div id="dockbar">
+          <button type="button" class="tab" data-t="src">ソース</button>
+          <button type="button" class="tab" data-t="diag">検証<span class="badge">3</span></button>
+          <span class="grow"></span>
+          <button type="button" class="icon" data-a="half" title="半分">▤</button>
+          <button type="button" class="icon" data-a="max" title="最大化">▣</button>
+          <button type="button" class="icon" data-a="fold" title="畳む">▾</button>
+        </div>
+        <div id="dockbody">
+          <div class="src" id="p-src">${SRC.map(([t,k],i) =>
+            `<div class="ln ${k === "cm" ? "" : k}"><span class="no">${i+1}</span><span class="${k === "cm" ? "cm" : ""}">${esc(t)}</span></div>`).join("")}</div>
+          <ul class="diag" id="p-diag" hidden>
+            <li><span class="sev e">✖</span><span>'社員マスタ保守' が 76 桁目から始まり、右端を 6 桁はみ出します（SO 1 ＋ 全角 7 字 × 2 ＋ SI 1 ＝ 16 桁）</span><span class="at">4 行目</span></li>
+            <li><span class="sev e">✖</span><span>DSPSIZ に条件名がありません。IBM 提供の <code>*DS3</code> で条件付けされます</span><span class="at">2 行目</span></li>
+            <li><span class="sev w">⚠</span><span>EMPDTL に OVERLAY がありません。EMPHDR が消えます</span><span class="at">5 行目</span></li>
+          </ul>
+        </div>
+      </div>`;
+    wire();
+  }
+
+  function paint(){
+    const canvas = $("#canvas"), ruler = $("#ruler"), gutter = $("#gutter");
+    shell.style.setProperty("--cell-w", CELL_W + "px");
+    shell.style.setProperty("--cell-h", CELL_H + "px");
+    shell.style.setProperty("--gutter", GUTTER_EM + "em");
+    canvas.style.setProperty("--cols", cols);
+    canvas.style.setProperty("--rows", rows);
+    ruler.innerHTML = "";
+    ruler.style.width = cols * CELL_W + "px";
+    for (let c = 10; c <= cols; c += 10){
+      const s = document.createElement("span");
+      s.textContent = String(c);
+      s.style.left = ((c - String(c).length) * CELL_W) + "px";
+      ruler.appendChild(s);
+    }
+    gutter.textContent = Array.from({length:rows},(_,i)=>String(i+1).padStart(3)).join("\n");
+    canvas.innerHTML = "";
+    for (const it of ITEMS){
+      if (it.r > rows || it.c > cols) continue;
+      const d = document.createElement("div");
+      d.className = "it" + (it.f ? " fld" : "") + (it.s ? " sel" : "");
+      d.textContent = it.d ? "{" + it.t + "}" : it.t;   // DBCS は SO/SI を { } で示す
+      d.style.left = ((it.c - 1) * CELL_W) + "px";
+      d.style.top  = ((it.r - 1) * CELL_H) + "px";
+      canvas.appendChild(d);
+    }
+    $("#status").textContent = `EMPDTL ｜ ${rows}×${cols} ｜ EMPNO 3,12 ｜ 検証 3 件`;
+  }
+
+  /* 窓幅からキャンバスに渡る幅を出す。**この数字が提案の根拠。** */
+  const gutterPx = () => GUTTER_EM * 13;
+  const need = () => Math.round(cols * CELL_W + gutterPx() + PAD + 2);
+  function have(m){
+    const inner = m === "cur" ? win - Math.max(340, win * dockW) - 7 : win;
+    return Math.round(inner - SIDE_L - SIDE_R - PAD);
+  }
+
+  function report(){
+    const n = need(), h = have(mode), ok = h >= n;
+    const v = $("#verdict");
+    v.className = ok ? "ok" : "ng";
+    v.textContent = ok ? `${cols} 桁 ${n}px ／ 使える ${h}px … 収まる`
+                       : `${cols} 桁 ${n}px ／ 使える ${h}px … ${n - h}px 不足`;
+    $("#evidence").innerHTML = [["cur","現在（左右・ソース 36%）"],["new","提案（下部ドック）"]]
+      .map(([m,label]) => {
+        const hh = have(m), o = hh >= n;
+        return `<tr><td>${label}${m === mode ? " ←表示中" : ""}</td><td class="num">${hh}px</td>` +
+               `<td class="num">${n}px</td><td class="${o ? "yes" : "no"}">${o ? "収まる" : (n - hh) + "px 不足"}</td></tr>`;
+      }).join("");
+    $("#hint").textContent = `窓幅 ${win}px を想定して原寸で描き、表示は幅に合わせて縮めている（桁の比率はそのまま）。`;
+  }
+
+  function layout(){
+    shell.classList.toggle("current", mode === "cur");
+    shell.classList.toggle("folded", folded && mode === "new");
+    const dock = $("#dock");
+    dock.style.flex = mode === "cur" ? `0 0 ${Math.round(dockW*100)}%`
+                    : (folded ? "none" : `0 0 ${dockH}px`);
+    const h = mode === "cur" ? 520 : 560;
+    shell.style.width = win + "px";
+    shell.style.height = h + "px";
+    const scale = Math.min(1, viewport.clientWidth / win);
+    scaler.style.transform = `scale(${scale})`;
+    viewport.style.height = Math.round(h * scale) + "px";
+    report();
+  }
+
+  function wire(){
+    const grip = $("#grip");
+    grip.addEventListener("pointerdown", e => {
+      e.preventDefault(); grip.setPointerCapture(e.pointerId);
+      const scale = Math.min(1, viewport.clientWidth / win);
+      const p0 = mode === "cur" ? e.clientX : e.clientY;
+      const d0 = mode === "cur" ? dockW : dockH;
+      const mv = ev => {
+        const d = ((mode === "cur" ? p0 - ev.clientX : p0 - ev.clientY)) / scale;
+        if (mode === "cur") dockW = Math.max(.2, Math.min(.6, d0 + d / win));
+        else { dockH = Math.max(30, Math.min(430, d0 + d)); folded = false; }
+        layout();
+      };
+      const up = () => { grip.removeEventListener("pointermove", mv); grip.removeEventListener("pointerup", up); };
+      grip.addEventListener("pointermove", mv); grip.addEventListener("pointerup", up);
+    });
+    grip.addEventListener("dblclick", () => { if (mode === "new"){ folded = !folded; layout(); } });
+
+    for (const b of shell.querySelectorAll(".icon")) b.addEventListener("click", () => {
+      const a = b.dataset.a;
+      if (a === "fold") folded = !folded;
+      else { folded = false; dockH = a === "half" ? 270 : 400; }
+      layout();
+      shell.querySelector('[data-a="fold"]').textContent = folded ? "▴" : "▾";
+    });
+    for (const b of shell.querySelectorAll(".tab")) b.addEventListener("click", () => {
+      tab = b.dataset.t;
+      for (const o of shell.querySelectorAll(".tab")) o.setAttribute("aria-selected", String(o.dataset.t === tab));
+      $("#p-src").hidden = tab !== "src";
+      $("#p-diag").hidden = tab !== "diag";
+      if (folded){ folded = false; layout(); }
+    });
+    shell.querySelector('.tab[data-t="src"]').setAttribute("aria-selected","true");
+  }
+
+  function setMode(m){
+    mode = m;
+    $("#m-cur").setAttribute("aria-pressed", String(m === "cur"));
+    $("#m-new").setAttribute("aria-pressed", String(m === "new"));
+    folded = false; layout();
+  }
+  $("#m-cur").addEventListener("click", () => setMode("cur"));
+  $("#m-new").addEventListener("click", () => setMode("new"));
+  $("#size").addEventListener("change", e => {
+    [rows, cols] = e.target.value.split(",").map(Number); paint(); layout();
+  });
+  $("#win").addEventListener("change", e => { win = Number(e.target.value); layout(); });
+  window.addEventListener("resize", layout);
+
+  measureCell(); build(); paint(); layout();
+  // 字体が遅れて届くと桁幅が変わるので、届いてから測り直す
+  if (document.fonts && document.fonts.ready)
+    document.fonts.ready.then(() => { measureCell(); paint(); layout(); });
+})();
+</script>

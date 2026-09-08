@@ -239,18 +239,128 @@ body {
   pointer-events: none;
 }
 
-.dds-diagnostics {
-  max-height: 28vh;
-  overflow: auto;
-  border-top: 1px solid var(--dds-border);
+/* ---------- 下部ドック（ソース／検証） ----------
+ *
+ * ソースは**下・全幅**に置く。桁は横に伸びるので、横を削る置き方と相性が悪い
+ * （左右に並べると 80 桁 = cellWidth × 80 を描く幅が残らない）。縦なら行を削るだけで済む。
+ *
+ * **タブ行は畳んでも残す。** 検証を常設リストからタブへ移した代わりに、
+ * 件数バッジが常に見えることで気付ける形にしている。
+ */
+.dds-grip {
+  flex: none;
+  height: 7px;
+  cursor: row-resize;
+  position: relative;
   background: var(--dds-chrome);
+  border-top: 1px solid var(--dds-border);
+  border-bottom: 1px solid var(--dds-border);
 }
+.dds-grip::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 2.5px;
+  width: 38px;
+  height: 2px;
+  margin-left: -19px;
+  border-radius: 1px;
+  background: var(--dds-muted);
+  opacity: 0.5;
+}
+.dds-grip:hover::after { background: var(--dds-accent); opacity: 1; }
+
+.dds-dock { display: flex; flex-direction: column; min-height: 0; flex: none; }
+.dds-dock-bar {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  flex: none;
+  padding: 0 6px;
+  background: var(--dds-chrome);
+  border-top: 1px solid var(--dds-border);
+}
+.dds-dock-bar .tab {
+  font: inherit;
+  font-size: 12px;
+  color: var(--dds-muted);
+  background: transparent;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  padding: 6px 10px;
+  cursor: pointer;
+}
+.dds-dock-bar .tab[aria-selected="true"] { color: var(--dds-fg); border-bottom-color: var(--dds-accent); }
+.dds-dock-bar .badge {
+  font-family: var(--dds-font);
+  font-size: 10.5px;
+  margin-left: 5px;
+  padding: 0 5px;
+  border-radius: 8px;
+  background: var(--dds-border);
+  color: var(--dds-fg);
+}
+.dds-dock-bar .badge.has-error {
+  background: color-mix(in srgb, var(--dds-error) 26%, transparent);
+  color: var(--dds-error);
+}
+.dds-dock-bar .spacer { flex: 1; }
+.dds-dock-bar .icon {
+  font: inherit;
+  font-size: 13px;
+  line-height: 1;
+  color: var(--dds-muted);
+  background: transparent;
+  border: 0;
+  padding: 4px 7px;
+  border-radius: 3px;
+  cursor: pointer;
+}
+.dds-dock-bar .icon:hover { background: var(--vscode-list-hoverBackground, #2a2a2a); color: var(--dds-fg); }
+.dds-dock-body { flex: 1; overflow: auto; min-height: 0; background: var(--dds-chrome); }
+/* 畳んだらタブ行だけを残す（件数バッジは見え続ける）。 */
+.dds-app.dock-folded .dds-grip,
+.dds-app.dock-folded .dds-dock-body { display: none; }
+
+.dds-source { font-family: var(--dds-font); font-size: 12px; line-height: 1.5; white-space: pre; padding: 4px 0; }
+.dds-source .line { display: flex; gap: 9px; padding: 0 10px; }
+.dds-source .line.jumpable { cursor: pointer; }
+.dds-source .line.jumpable:hover { background: var(--vscode-list-hoverBackground, #2a2a2a); }
+.dds-source .no { color: var(--dds-muted); user-select: none; min-width: 3em; text-align: right; }
+/* 読み込み時から変わった行。**ここ以外が変わっていないこと**が見どころ。 */
+.dds-source .line.changed { background: color-mix(in srgb, var(--dds-field) 16%, transparent); box-shadow: inset 2px 0 0 0 var(--dds-field); }
+.dds-source .line.current { background: color-mix(in srgb, var(--dds-accent) 24%, transparent); }
+.dds-source .empty { color: var(--dds-muted); padding: 6px 10px; }
+
 .dds-diagnostics ul { margin: 0; padding: 4px 0; list-style: none; }
 .dds-diagnostics li { display: flex; gap: 8px; padding: 3px 10px; }
 .dds-diagnostics li.jumpable { cursor: pointer; }
 .dds-diagnostics li.jumpable:hover { background: var(--vscode-list-hoverBackground, #2a2a2a); }
 .dds-diagnostics .code { font-family: var(--dds-font); color: var(--dds-muted); white-space: nowrap; }
 .dds-diagnostics .none { color: var(--dds-muted); padding: 4px 10px; }
+
+/* ---------- 左右ペインを畳む ----------
+ * 132 桁は左右 520px を返してもらわないと入らない（198 桁は畳んでも入らない）。
+ */
+.pane-head { display: flex; align-items: center; gap: 4px; }
+.pane-head .pane-title { flex: 1; min-width: 0; }
+.pane-fold {
+  font: inherit;
+  font-size: 11px;
+  line-height: 1;
+  color: var(--dds-muted);
+  background: transparent;
+  border: 0;
+  padding: 3px 6px;
+  border-radius: 3px;
+  cursor: pointer;
+}
+.pane-fold:hover { background: var(--vscode-list-hoverBackground, #2a2a2a); color: var(--dds-fg); }
+/* 畳んだ側は縦棒 1 本だけ残す。**消さない**——戻す手掛かりが無くなるため。 */
+.dds-side.folded { flex: 0 0 22px; overflow: hidden; padding: 4px 0; }
+.dds-side.folded > *:not(.pane-head) { display: none; }
+.dds-side.folded .pane-head { flex-direction: column; }
+.dds-side.folded .pane-title { display: none; }
 
 .dds-measure {
   position: absolute;

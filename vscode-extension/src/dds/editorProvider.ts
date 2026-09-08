@@ -127,7 +127,7 @@ class DdsVisualEditorProvider implements vscode.CustomTextEditorProvider {
       if (event.document.uri.toString() !== document.uri.toString()) return;
       // テキスト側の編集でも、自分が入れた編集でも、再描画はこの 1 か所を通る。
       // モデルを丸ごと差し替えるだけなので**冪等**——再入してもループしない。
-      post({ type: "applied", model: modelOf(document) });
+      post({ type: "applied", ...viewOf(document) });
     });
 
     const received = panel.webview.onDidReceiveMessage(raw => {
@@ -195,7 +195,7 @@ class DdsVisualEditorProvider implements vscode.CustomTextEditorProvider {
         const keywords = await this.keywordHelp(document);
         post({
           type: "load",
-          model: modelOf(document),
+          ...viewOf(document),
           host: VSCODE_HOST,
           ...(keywords !== undefined ? { keywords } : {})
         });
@@ -239,13 +239,13 @@ async function applyEdits(
   const ddsType = editableTypeOf(document);
   const rejections = validateDdsEdits(lines, message.edits, ddsType);
   if (rejections.length > 0) {
-    post({ type: "rejected", model: modelOf(document), rejections });
+    post({ type: "rejected", ...viewOf(document), rejections });
     return;
   }
 
   const results = applyDdsEdits(lines, message.edits, ddsType);
   if (results.length === 0) {
-    post({ type: "applied", model: modelOf(document) });
+    post({ type: "applied", ...viewOf(document) });
     return;
   }
 
@@ -258,7 +258,7 @@ async function applyEdits(
   if (!applied) {
     post({
       type: "rejected",
-      model: modelOf(document),
+      ...viewOf(document),
       rejections: [
         {
           code: "line-not-found",
@@ -352,6 +352,16 @@ async function askItem(
     dataType: "A",
     usage: "B"
   };
+}
+
+/**
+ * モデルと生のソースを**1 組で**返す。
+ *
+ * ドックのソース面はモデルと同じ瞬間の内容でなければならない。別々に採ると、
+ * 編集直後に**モデルだけ新しくソースが古い**状態が作れてしまう。
+ */
+function viewOf(document: vscode.TextDocument): { model: RenderModel; source: string[] } {
+  return { model: modelOf(document), source: documentLines(document) };
 }
 
 function modelOf(document: vscode.TextDocument): RenderModel {

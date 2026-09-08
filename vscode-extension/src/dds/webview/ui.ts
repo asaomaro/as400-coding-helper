@@ -91,6 +91,57 @@ export type AskItem = (
   at: CellPoint
 ) => Promise<Record<string, unknown> | undefined>;
 
+/** 下部ドックと左右ペインの状態。**ホストに依らない**ので `localStorage` に置く。 */
+interface PanelState {
+  dockHeight: number;
+  dockFolded: boolean;
+  foldLeft: boolean;
+  foldRight: boolean;
+}
+
+const PANEL_KEY = "dds.dock";
+/** 既定はソース 8 行ぶん。選択中の項目（1〜3 行）の前後が見える最小限。 */
+const DEFAULT_DOCK_HEIGHT = 190;
+const DOCK_MIN_HEIGHT = 60;
+const SIDE_LEFT_WIDTH = 200;
+const SIDE_RIGHT_WIDTH = 320;
+/** 畳んだ側に残す縦棒の幅（`ui.css` の `.dds-side.folded` と合わせる）。 */
+const SIDE_FOLDED_WIDTH = 22;
+
+/** 読めない文脈がある（サンドボックス）。**読めなくても既定で成立させる。** */
+function loadPanelState(): PanelState {
+  const fallback: PanelState = {
+    dockHeight: DEFAULT_DOCK_HEIGHT,
+    dockFolded: false,
+    foldLeft: false,
+    foldRight: false
+  };
+  try {
+    const raw = window.localStorage?.getItem(PANEL_KEY);
+    if (raw === null || raw === undefined) return fallback;
+    const parsed = JSON.parse(raw) as Partial<PanelState>;
+    return {
+      dockHeight:
+        typeof parsed.dockHeight === "number" && Number.isFinite(parsed.dockHeight)
+          ? Math.max(DOCK_MIN_HEIGHT, parsed.dockHeight)
+          : fallback.dockHeight,
+      dockFolded: parsed.dockFolded === true,
+      foldLeft: parsed.foldLeft === true,
+      foldRight: parsed.foldRight === true
+    };
+  } catch {
+    return fallback;
+  }
+}
+
+function savePanelState(state: PanelState): void {
+  try {
+    window.localStorage?.setItem(PANEL_KEY, JSON.stringify(state));
+  } catch {
+    /* 残せなくても動作は変えない */
+  }
+}
+
 export interface EditorOptions {
   /** 追加の内容を聞く手段。省略すると「追加」は使えない。 */
   readonly askItem?: AskItem;
@@ -226,6 +277,23 @@ class EditorView {
   }>;
   private readonly zoomButtons: HTMLButtonElement[] = [];
 
+  private readonly dock: HTMLElement;
+  private readonly grip: HTMLElement;
+  private readonly sourcePane: HTMLElement;
+  private readonly sourceTab: HTMLButtonElement;
+  private readonly diagnosticsTab: HTMLButtonElement;
+  private readonly diagnosticsBadge: HTMLElement;
+  private readonly foldButton: HTMLButtonElement;
+  private readonly sideLeft: HTMLElement;
+  private readonly sideRight: HTMLElement;
+
+  /** いま出ているソース。**モデルと同じ瞬間の内容**（ホストが 1 組で送る）。 */
+  private source: readonly string[] = [];
+  /** `load` の内容。**変更行の印はこれとの差**で出す。 */
+  private originalSource: readonly string[] = [];
+  private tab: "source" | "diagnostics" = "source";
+  private panel: PanelState = loadPanelState();
+
   constructor(
     private readonly bridge: Bridge,
     root: HTMLElement,
@@ -246,6 +314,16 @@ class EditorView {
     this.title = must(root, ".record-name");
     this.addField = must(root, "#dds-add-field");
     this.addConstant = must(root, "#dds-add-constant");
+    this.dock = must(root, ".dds-dock");
+    this.grip = must(root, ".dds-grip");
+    this.sourcePane = must(root, ".dds-source");
+    this.sourceTab = must<HTMLButtonElement>(root, "#dds-tab-source");
+    this.diagnosticsTab = must<HTMLButtonElement>(root, "#dds-tab-diagnostics");
+    this.diagnosticsBadge = must(root, "#dds-tab-diagnostics .badge");
+    this.foldButton = must<HTMLButtonElement>(root, "#dds-dock-fold");
+    this.sideLeft = must(root, ".dds-side.left");
+    this.sideRight = must(root, ".dds-side.right");
+    this.wireDock(root);
 
     this.measure();
     // **フォントは後から届くことがある。** 先に測ると代替フォントの幅で全桁がずれる。
@@ -298,13 +376,18 @@ class EditorView {
       case "load":
         this.host = message.host as EditorHost;
         this.model = message.model as RenderModel;
+        this.source = (message.source ?? []) as readonly string[];
+        // **原本はここでしか採らない。** 以降の差が「読み込みから変わった行」になる。
+        this.originalSource = this.source;
         this.keywordHelp = (message.keywords ?? []) as readonly DdsKeywordHelp[];
         this.mode = "idle";
         this.setStatus("");
         this.render();
+        this.decideOnOpen(this.model);
         break;
       case "applied":
         this.model = message.model as RenderModel;
+        this.source = (message.source ?? this.source) as readonly string[];
         this.mode = "idle";
         this.gesture = undefined;
         // 構造を変えたあとは選択を捨てる。宛先の行が消えている／ずれている。
@@ -322,6 +405,7 @@ class EditorView {
         break;
       case "rejected": {
         this.model = message.model as RenderModel;
+        this.source = (message.source ?? this.source) as readonly string[];
         this.mode = "idle";
         this.gesture = undefined;
         this.pendingStructural = false;
@@ -484,6 +568,7 @@ class EditorView {
     this.renderIndicators(view);
     this.renderProperties(view);
     this.renderDiagnostics(view);
+    this.renderSource();
 
     for (const toggle of this.toggles) {
       toggle.button.classList.toggle("armed", this.display[toggle.key]);
@@ -1354,6 +1439,12 @@ class EditorView {
       }
     });
     raw.addEventListener("blur", () => {
+      // **外された欄からは確定しない。** 再描画で作り替えられた欄は文書に
+      // 繋がっておらず、その値はもう利用者の意思ではない。ここを見ないと、
+      // 拒否 → フォーカスは残る → 次の再描画で外れる → blur → 同じ編集を再送
+      // という往復になる（拒否の分岐にある注意書きと同じ罠の裏側）。
+      // 実際、これが「関係無い操作をした瞬間に選択が飛ぶ」形で表に出た。
+      if (!raw.isConnected) return;
       if (raw.value === keywords) return;
       this.sendKeywords(sourceLine, raw.value);
     });
@@ -1885,6 +1976,192 @@ class EditorView {
     if (box) box.textContent = message;
   }
 
+  // ---------------------------------------------------------------- 下部ドック
+
+  /**
+   * ドックと左右ペインの操作を繋ぐ。
+   *
+   * **編集中はタブを勝手に切り替えない。** 編集の途中では一時的なエラーが普通に出る
+   * （項目をドラッグしている最中に右端をはみ出す等）ので、追従すると見ていたソースを奪う。
+   * 判断するのは**開いたときだけ**（`decideOnOpen`）。
+   */
+  private wireDock(root: HTMLElement): void {
+    this.grip.addEventListener("pointerdown", event => {
+      event.preventDefault();
+      this.grip.setPointerCapture(event.pointerId);
+      const startY = event.clientY;
+      const startHeight = this.panel.dockHeight;
+      const move = (moved: PointerEvent): void => {
+        const limit = Math.max(DOCK_MIN_HEIGHT, window.innerHeight - 200);
+        this.panel.dockHeight = Math.max(
+          DOCK_MIN_HEIGHT,
+          Math.min(limit, startHeight + (startY - moved.clientY))
+        );
+        this.panel.dockFolded = false;
+        this.applyPanels();
+      };
+      const up = (): void => {
+        this.grip.removeEventListener("pointermove", move);
+        this.grip.removeEventListener("pointerup", up);
+        savePanelState(this.panel);
+      };
+      this.grip.addEventListener("pointermove", move);
+      this.grip.addEventListener("pointerup", up);
+    });
+    this.grip.addEventListener("dblclick", () => this.setDockFolded(!this.panel.dockFolded));
+
+    this.foldButton.addEventListener("click", () => this.setDockFolded(!this.panel.dockFolded));
+    must<HTMLButtonElement>(root, "#dds-dock-half").addEventListener("click", () =>
+      this.setDockHeight(Math.round(window.innerHeight * 0.35))
+    );
+    must<HTMLButtonElement>(root, "#dds-dock-max").addEventListener("click", () =>
+      this.setDockHeight(Math.max(DOCK_MIN_HEIGHT, window.innerHeight - 200))
+    );
+
+    this.sourceTab.addEventListener("click", () => this.showTab("source"));
+    this.diagnosticsTab.addEventListener("click", () => this.showTab("diagnostics"));
+
+    must<HTMLButtonElement>(root, "#dds-fold-left").addEventListener("click", () => {
+      this.panel.foldLeft = !this.panel.foldLeft;
+      this.applyPanels();
+      savePanelState(this.panel);
+    });
+    must<HTMLButtonElement>(root, "#dds-fold-right").addEventListener("click", () => {
+      this.panel.foldRight = !this.panel.foldRight;
+      this.applyPanels();
+      savePanelState(this.panel);
+    });
+
+    this.applyPanels();
+  }
+
+  private setDockHeight(height: number): void {
+    this.panel.dockHeight = height;
+    this.panel.dockFolded = false;
+    this.applyPanels();
+    savePanelState(this.panel);
+  }
+
+  private setDockFolded(folded: boolean): void {
+    this.panel.dockFolded = folded;
+    this.applyPanels();
+    savePanelState(this.panel);
+  }
+
+  private showTab(tab: "source" | "diagnostics"): void {
+    this.tab = tab;
+    this.sourceTab.setAttribute("aria-selected", String(tab === "source"));
+    this.diagnosticsTab.setAttribute("aria-selected", String(tab === "diagnostics"));
+    this.sourcePane.hidden = tab !== "source";
+    this.diagnostics.hidden = tab !== "diagnostics";
+    // タブを選んだのに何も見えないのは操作の取りこぼしになる
+    if (this.panel.dockFolded) this.setDockFolded(false);
+    else this.revealSelectedSource();
+  }
+
+  private applyPanels(): void {
+    const app = this.grip.parentElement;
+    app?.classList.toggle("dock-folded", this.panel.dockFolded);
+    this.dock.style.flex = this.panel.dockFolded ? "none" : `0 0 ${this.panel.dockHeight}px`;
+    this.foldButton.textContent = this.panel.dockFolded ? "▴" : "▾";
+    this.foldButton.title = this.panel.dockFolded ? "広げる" : "畳む";
+    this.sideLeft.classList.toggle("folded", this.panel.foldLeft);
+    this.sideRight.classList.toggle("folded", this.panel.foldRight);
+  }
+
+  /**
+   * キャンバスが**桁を描くのに要る幅**。`cellWidth` は実測値を使う
+   * （決め打ちにすると字体が変わったときに静かにずれる）。
+   */
+  private requiredCanvasWidth(model: RenderModel): number {
+    const gutter = 3 * 13; // --gutter: 3em / 13px
+    // **倍率を掛けない実測値で数える。** ズームは「細かく見たい」という表示の好みで、
+    // 拡大したせいで一覧やプロパティが消えるのは利用者と喧嘩する。畳むかどうかは
+    // **そのファイルの桁数**（132 桁なら足りない、80 桁なら足りる）で決める。
+    return model.canvas.columns * this.measuredWidth + gutter + 24 + 2;
+  }
+
+  /**
+   * 開いたときだけ決めるもの（決定 #3 / #4）。**以降は勝手に動かさない。**
+   *
+   * - 診断にエラーがあれば検証タブで開く（無ければソース）
+   * - 幅が足りなければ左右ペインを畳んでおく
+   */
+  private decideOnOpen(model: RenderModel): void {
+    // **`RenderDiagnostic` に severity は無い**（code / message / sourceLine のみ）ので、
+    // 「エラーがあれば」は「指摘があれば」で読む。区別が要るなら core 側に足す話になる。
+    this.showTab(model.diagnostics.length > 0 ? "diagnostics" : "source");
+
+    // **両方向に決める。** 畳む方だけだと、一度 132 桁を開いたあと 80 桁に戻しても
+    // 畳んだままになり、以後どのファイルでも左右が消えたままになる（実際に踏んだ）。
+    // 利用者が自分で畳んだ分（保存された値）は残す——幅が足りていても畳んだままにする。
+    //
+    // **足りない分だけ畳み、左から畳む。** 右はプロパティとキーワードの入力欄で、
+    // ここを畳むと編集する手段そのものが消える。左は一覧＝辿る手段なので、
+    // 畳んでもキャンバスから直接選べる。両方畳むのは左だけでは足りないときに限る。
+    const width = this.grip.parentElement?.clientWidth ?? window.innerWidth;
+    const need = this.requiredCanvasWidth(model);
+    const saved = loadPanelState();
+    const fits = (left: boolean, right: boolean): boolean =>
+      width - (left ? SIDE_FOLDED_WIDTH : SIDE_LEFT_WIDTH)
+            - (right ? SIDE_FOLDED_WIDTH : SIDE_RIGHT_WIDTH) >= need;
+
+    const foldLeft = saved.foldLeft || !fits(false, false);
+    const foldRight = saved.foldRight || !fits(foldLeft, false);
+    this.panel.foldLeft = foldLeft;
+    this.panel.foldRight = foldRight;
+    this.applyPanels();
+  }
+
+  /**
+   * ソース面。**表示専用**（決定 #2）——行を押すとホストのエディタへ飛ぶ。
+   *
+   * 変更行は `load` の内容との差で塗る。**ここ以外が変わっていないこと**が見どころなので、
+   * 塗る範囲を広げない。
+   */
+  private renderSource(): void {
+    if (this.source.length === 0) {
+      this.sourcePane.replaceChildren(text("div", "empty", "ソースがありません"));
+      return;
+    }
+    const rows = this.source.map((line, index) => {
+      const row = document.createElement("div");
+      row.className = "line";
+      row.dataset.line = String(index + 1);
+      if (line !== this.originalSource[index]) row.classList.add("changed");
+      if (index + 1 === this.selected) row.classList.add("current");
+      if (this.host.canOpenSource) {
+        row.classList.add("jumpable");
+        row.addEventListener("click", () =>
+          this.bridge.post({ type: "openSource", sourceLine: index + 1 })
+        );
+      }
+      row.append(text("span", "no", String(index + 1)), text("span", "text", line));
+      return row;
+    });
+    this.sourcePane.replaceChildren(...rows);
+    this.updateDiagnosticsBadge();
+    this.revealSelectedSource();
+  }
+
+  /**
+   * 件数バッジ。**常設リストを畳んだ代わりの気付き手段**なので、
+   * タブ行が畳んでも残ることと対で意味を持つ。
+   */
+  private updateDiagnosticsBadge(): void {
+    const count = this.model?.diagnostics.length ?? 0;
+    this.diagnosticsBadge.textContent = count === 0 ? "" : String(count);
+    this.diagnosticsBadge.classList.toggle("has-error", count > 0);
+  }
+
+  /** 選んだ項目の行までスクロールする。**追従しないなら 8 行に意味が無い。** */
+  private revealSelectedSource(): void {
+    if (this.tab !== "source" || this.panel.dockFolded || this.selected === undefined) return;
+    this.sourcePane
+      .querySelector(`.line[data-line="${this.selected}"]`)
+      ?.scrollIntoView({ block: "nearest" });
+  }
+
   private renderDiagnostics(model: RenderModel): void {
     if (model.diagnostics.length === 0) {
       this.diagnostics.replaceChildren(text("div", "none", "検証: 指摘はありません"));
@@ -2369,7 +2646,10 @@ function template(): string {
   </div>
   <div class="dds-panes">
     <div class="dds-side left">
-      <div class="pane-title">レコード様式</div>
+      <div class="pane-head">
+        <div class="pane-title">レコード様式</div>
+        <button id="dds-fold-left" class="pane-fold" type="button" title="左を畳む（キャンバスに 200 桁ぶんの幅を返します）">◧</button>
+      </div>
       <div class="dds-outline"></div>
       <div class="pane-title">条件標識</div>
       <div class="dds-indicators"></div>
@@ -2384,11 +2664,28 @@ function template(): string {
       </div>
     </div>
     <div class="dds-side right">
-      <div class="pane-title">プロパティ</div>
+      <div class="pane-head">
+        <button id="dds-fold-right" class="pane-fold" type="button" title="右を畳む（キャンバスに 320 桁ぶんの幅を返します）">◨</button>
+        <div class="pane-title">プロパティ</div>
+      </div>
       <div class="dds-properties"></div>
     </div>
   </div>
-  <div class="dds-diagnostics"></div>
+  <div class="dds-grip" title="ドラッグで高さを変えます／ダブルクリックで畳みます"></div>
+  <div class="dds-dock">
+    <div class="dds-dock-bar">
+      <button class="tab" id="dds-tab-source" type="button" aria-selected="true">ソース</button>
+      <button class="tab" id="dds-tab-diagnostics" type="button" aria-selected="false">検証<span class="badge"></span></button>
+      <span class="spacer"></span>
+      <button class="icon" id="dds-dock-half" type="button" title="半分">▤</button>
+      <button class="icon" id="dds-dock-max" type="button" title="最大化">▣</button>
+      <button class="icon" id="dds-dock-fold" type="button" title="畳む">▾</button>
+    </div>
+    <div class="dds-dock-body">
+      <div class="dds-source"></div>
+      <div class="dds-diagnostics" hidden></div>
+    </div>
+  </div>
 </div>`;
 }
 
