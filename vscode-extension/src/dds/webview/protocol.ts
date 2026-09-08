@@ -45,6 +45,16 @@ export type HostMessage =
       readonly model: RenderModel;
       readonly host: EditorHost;
       /**
+       * 生のソース行。**下部ドックのソース面に出す。**
+       *
+       * `RenderModel` に入れないのは、あれが *描くための* モデルだから——
+       * 生の行は描画データではない。ここ（プロトコル層）に置く。
+       *
+       * **変更行の印は UI 側で出す。** `load` の内容を原本として持ち、以降と
+       * 突き合わせる。ホストに `changedLines` を送らせると差分の定義が 2 か所に散る。
+       */
+      readonly source: readonly string[];
+      /**
        * 原典から生成したキーワードの解説。**任意**。
        *
        * ■ なぜ `load` だけに載せるか
@@ -58,10 +68,11 @@ export type HostMessage =
        */
       readonly keywords?: readonly DdsKeywordHelp[];
     }
-  | { readonly type: "applied"; readonly model: RenderModel }
+  | { readonly type: "applied"; readonly model: RenderModel; readonly source: readonly string[] }
   | {
       readonly type: "rejected";
       readonly model: RenderModel;
+      readonly source: readonly string[];
       readonly rejections: readonly DdsEditRejection[];
     }
   /** 追加の内容の回答。取り消しなら `item` は null。 */

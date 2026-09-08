@@ -85,19 +85,19 @@ class StandaloneHost {
     this.history = [];
     this.bridge.send({
       type: "load",
-      model: this.model(),
+      ...this.view(),
       host: STANDALONE_HOST,
       keywords: KEYWORD_HELP
     });
-    this.renderSource();
+    this.showByteState();
   }
 
   undo(): void {
     const previous = this.history.pop();
     if (!previous) return;
     this.lines = previous;
-    this.bridge.send({ type: "applied", model: this.model() });
-    this.renderSource();
+    this.bridge.send({ type: "applied", ...this.view() });
+    this.showByteState();
   }
 
   save(): void {
@@ -113,14 +113,14 @@ class StandaloneHost {
     switch (message.type) {
       case "ready":
         this.bridge.send({
-      type: "load",
-      model: this.model(),
-      host: STANDALONE_HOST,
-      keywords: KEYWORD_HELP
-    });
+          type: "load",
+          ...this.view(),
+          host: STANDALONE_HOST,
+          keywords: KEYWORD_HELP
+        });
         return;
       case "openSource":
-        this.reveal(message.sourceLine);
+        // 単独起動には飛ぶ先のエディタが無い（`canOpenSource: false`）ので何もしない。
         return;
       case "askItem": {
         const item = await ask(message.kind);
@@ -131,7 +131,7 @@ class StandaloneHost {
         // **VSCode 版とまったく同じ呼び出し。** 判定は core にあり、ホストは経路を用意するだけ。
         const rejections = validateDdsEdits(this.lines, message.edits, this.ddsType());
         if (rejections.length > 0) {
-          this.bridge.send({ type: "rejected", model: this.model(), rejections });
+          this.bridge.send({ type: "rejected", ...this.view(), rejections });
           return;
         }
         const results = applyDdsEdits(this.lines, message.edits, this.ddsType());
@@ -143,8 +143,8 @@ class StandaloneHost {
             ...result.lines
           );
         }
-        this.bridge.send({ type: "applied", model: this.model() });
-        this.renderSource();
+        this.bridge.send({ type: "applied", ...this.view() });
+        this.showByteState();
         return;
       }
     }
@@ -170,27 +170,19 @@ class StandaloneHost {
     return this.name.toLowerCase().endsWith(".prtf") ? "DDS-PRTF" : "DDS-DSPF";
   }
 
-  /** ソース面。**読み込み時から変わった行に印**を付ける（触っていない行が動かないことを見る）。 */
-  private renderSource(): void {
-    const pane = must("#source");
-    must("#sourceName").textContent = this.name;
-    pane.replaceChildren(
-      ...this.lines.map((line, index) => {
-        const row = document.createElement("div");
-        row.className = "line";
-        row.dataset.line = String(index + 1);
-        if (line !== this.original[index]) row.classList.add("changed");
-        const number = document.createElement("span");
-        number.className = "no";
-        number.textContent = String(index + 1).padStart(3, " ");
-        const text = document.createElement("span");
-        text.className = "text";
-        text.textContent = line;
-        row.append(number, text);
-        return row;
-      })
-    );
+  /**
+   * モデルと生のソースを**1 組で**返す。ドックのソース面はモデルと同じ瞬間の
+   * 内容でなければならない（別々に採ると、モデルだけ新しい状態が作れる）。
+   */
+  private view(): { model: ReturnType<typeof buildDspfRenderModel>; source: string[] } {
+    return { model: this.model(), source: [...this.lines] };
+  }
 
+  /**
+   * 「読み込みから何バイト変わったか」。**ホストの殻の仕事**として残す。
+   * ソースの表示そのものは UI 本体の下部ドックが持つ（両モードで同じものが出る）。
+   */
+  private showByteState(): void {
     const changed = this.lines.filter((line, index) => line !== this.original[index]).length;
     must("#byteState").textContent =
       this.lines.length !== this.original.length
@@ -198,11 +190,6 @@ class StandaloneHost {
         : changed === 0
           ? "読み込み時から変更なし"
           : `変更行 ${changed} 行（他の ${this.lines.length - changed} 行はバイト不変）`;
-  }
-
-  private reveal(sourceLine: number): void {
-    const row = document.querySelector<HTMLElement>(`#source .line[data-line="${sourceLine}"]`);
-    row?.scrollIntoView({ block: "center" });
   }
 }
 

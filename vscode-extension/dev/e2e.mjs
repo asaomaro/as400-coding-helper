@@ -76,10 +76,11 @@ page.on("console", message => {
 await page.goto(pathToFileURL(PAGE).href, { waitUntil: "load" });
 await page.waitForSelector(".dds-item");
 
+// ソース面は**ハーネスではなく UI 本体の下部ドック**にある（設計 README「案 D」）。
 const sourceLines = () =>
-  page.$$eval("#source .line .text", nodes => nodes.map(node => node.textContent));
+  page.$$eval(".dds-source .line .text", nodes => nodes.map(node => node.textContent));
 const changedLines = () =>
-  page.$$eval("#source .line.changed", nodes => nodes.map(node => Number(node.dataset.line)));
+  page.$$eval(".dds-source .line.changed", nodes => nodes.map(node => Number(node.dataset.line)));
 const byteState = () => page.$eval("#byteState", node => node.textContent);
 const cell = () =>
   page.evaluate(() => {
@@ -1236,7 +1237,9 @@ const selectTreeItem = async label => {
     return node ? Number(node.dataset.sourceLine) : null;
   }, label);
   await page.click(`.dds-tree li.item[data-source-line="${line}"]`);
-  await page.waitForTimeout(150);
+  // **選ばれるまで待つ。** 時間で誤魔化すと「押しても選択されない」欠陥が
+  // 後続の検査の失敗として現れ、原因が追えなくなる（実際にそうなった）。
+  await page.waitForSelector(`.dds-tree li.item[data-source-line="${line}"].selected`);
   return line;
 };
 
@@ -1784,6 +1787,98 @@ await page.selectOption("#sample", { label: "CUSTMNT.dspf" });
 await page.waitForTimeout(300);
 check("**画面ファイルではプレビューの切替を出さない**（CPI / LPI は帳票のもの）",
   await page.$eval("#dds-toggle-preview", n => n.hidden));
+
+// ---- 24. 下部ドック（ソース／検証） --------------------------------------
+// ソースは**左右ではなく下**に置いた（桁は横に伸びるので、横を削るとキャンバスに
+// 80 桁が入らない）。ここで見るのは「押して動くか」——畳む・広げる・切り替える。
+
+const dockCanvasH = () => page.$eval(".dds-main", n => Math.round(n.getBoundingClientRect().height));
+const dockCanvasW = () => page.$eval(".dds-main", n => Math.round(n.getBoundingClientRect().width));
+
+check(
+  "**ソースが下部ドックに出る**（ハーネスではなく UI 本体が持つ）",
+  (await page.$$eval(".dds-source .line", ns => ns.length)) > 0,
+  String(await page.$$eval(".dds-source .line", ns => ns.length))
+);
+check(
+  "ドックはキャンバスの下にある（左右ではない）",
+  await page.evaluate(() => {
+    const main = document.querySelector(".dds-main").getBoundingClientRect();
+    const dock = document.querySelector(".dds-dock").getBoundingClientRect();
+    return dock.top >= main.bottom - 1;
+  })
+);
+// **いま選ばれている項目**とソース面の強調が一致するかを見る（特定の項目には依存しない）。
+const dockPick = await selectTreeItem("CUSTNO");
+check(
+  "選んだ項目の行が強調される（追従しないと 8 行に意味が無い）",
+  (await page.$eval(".dds-source .line.current", n => Number(n.dataset.line))) === dockPick,
+  `current=${await page.$eval(".dds-source .line.current", n => n.dataset.line).catch(() => "無し")} / 選択=${dockPick}`
+);
+
+const heightBeforeFold = await dockCanvasH();
+await page.click("#dds-dock-fold");
+await page.waitForTimeout(150);
+check(
+  "**畳むとキャンバスが縦に広がる**",
+  (await dockCanvasH()) > heightBeforeFold,
+  `${heightBeforeFold} → ${await dockCanvasH()}`
+);
+check(
+  "畳んでもタブ行は残る（件数バッジが唯一の気付き手段なので消さない）",
+  await page.$eval(".dds-dock-bar", n => n.getBoundingClientRect().height > 0)
+);
+check(
+  "畳むと中身は見えない",
+  await page.$eval(".dds-dock-body", n => n.getBoundingClientRect().height === 0)
+);
+
+await page.click("#dds-dock-fold");
+await page.waitForTimeout(150);
+check("もう一度押すと戻る", Math.abs((await dockCanvasH()) - heightBeforeFold) <= 2,
+  `${heightBeforeFold} → ${await dockCanvasH()}`);
+
+await page.click("#dds-tab-diagnostics");
+await page.waitForTimeout(100);
+check("検証タブに切り替わる", await page.$eval(".dds-diagnostics", n => !n.hidden));
+check("ソース面は隠れる", await page.$eval(".dds-source", n => n.hidden));
+await page.click("#dds-tab-source");
+await page.waitForTimeout(100);
+check("ソースタブに戻る", await page.$eval(".dds-source", n => !n.hidden));
+
+// 左右を畳むと 132 桁ぶんの幅が返る（198 桁は畳んでも足りない）。
+const widthBeforeFold = await dockCanvasW();
+await page.click("#dds-fold-left");
+await page.click("#dds-fold-right");
+await page.waitForTimeout(150);
+check(
+  "**左右を畳むとキャンバスに幅が返る**（132 桁のため）",
+  (await dockCanvasW()) > widthBeforeFold + 400,
+  `${widthBeforeFold} → ${await dockCanvasW()}`
+);
+check(
+  "畳んでも戻す手掛かりは残る（ボタンは消さない）",
+  await page.$eval("#dds-fold-left", n => n.getBoundingClientRect().width > 0)
+);
+await page.click("#dds-fold-left");
+await page.click("#dds-fold-right");
+await page.waitForTimeout(150);
+check("左右も戻せる", Math.abs((await dockCanvasW()) - widthBeforeFold) <= 2,
+  `${widthBeforeFold} → ${await dockCanvasW()}`);
+
+// **畳んだままにならないこと。** 開くたびに決め直すので、幅の要る帳票（132 桁）で
+// 畳んだあと画面ファイル（80 桁）に戻したら開いていなければならない。
+// 畳む方向にしか判断しないと、以後どのファイルでも左右が消えたままになる。
+await page.selectOption("#sample", { label: "CUSTRPT.prtf" });
+await page.waitForTimeout(400);
+const foldedForWide = await page.$eval(".dds-side.left", n => n.classList.contains("folded"));
+await page.selectOption("#sample", { label: "CUSTMNT.dspf" });
+await page.waitForTimeout(400);
+check(
+  "**幅の要らないファイルに戻したら左右が開く**（畳んだままにしない）",
+  await page.$eval(".dds-side.left", n => !n.classList.contains("folded")),
+  `132 桁で畳んだ=${foldedForWide} / 80 桁に戻したあと folded=${await page.$eval(".dds-side.left", n => n.classList.contains("folded"))}`
+);
 
 check("実行中に JS エラーが出ていない", errors.length === 0, errors.slice(0, 2).join(" | "));
 
