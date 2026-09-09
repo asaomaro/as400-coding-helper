@@ -264,6 +264,67 @@ for (const { command, ddsTypes, viewType } of EDITOR_MENUS) {
   }
 }
 
+/**
+ * 新規作成コマンドの到達性。
+ *
+ * **雛形を作れても、その拡張子でビジュアルエディタが開かなければ死蔵**
+ * （作った直後にテキストエディタが出て、様式を手で書く元の状態に戻る）。
+ * 見るのは 3 つ——コマンドが宣言されているか・右クリックから届くか・
+ * **作ったファイルが開けるか**。最後の 1 つが本体で、
+ * `sourceKind.ts`（どの拡張子がその種別か）と `customEditors[].selector`
+ * （どの拡張子で開けるか）の**両方**と突き合わせる。
+ *
+ * 拡張子は `editorProvider.ts` の `NEW_FILE_EXTENSION` から読む
+ * （数え上げず、実際に使われる値を採る）。
+ */
+const NEW_FILE_COMMANDS = [
+  { command: "rpgClSupport.newDspf", ddsType: "DDS-DSPF" },
+  { command: "rpgClSupport.newPrtf", ddsType: "DDS-PRTF" }
+];
+
+const providerSource = readFileSync(join(EXT, "src/dds/editorProvider.ts"), "utf8");
+const editorViewType = /DDS_EDITOR_VIEW_TYPE = "([^"]+)"/u.exec(providerSource)?.[1];
+const editorSelector = (manifest.contributes?.customEditors ?? []).find(
+  entry => entry.viewType === editorViewType
+);
+const selectorExtensions = (editorSelector?.selector ?? [])
+  .map(entry => /^\*\.([a-z0-9]+)$/u.exec(entry.filenamePattern ?? "")?.[1])
+  .filter(Boolean);
+
+const explorerItems = manifest.contributes?.menus?.["explorer/context"] ?? [];
+
+for (const { command, ddsType } of NEW_FILE_COMMANDS) {
+  if (!(manifest.contributes?.commands ?? []).some(entry => entry.command === command)) {
+    failures.push(`${command} が contributes.commands に無い（パレットに出ない）`);
+  }
+  if (!explorerItems.some(entry => entry.command === command)) {
+    failures.push(`${command} が explorer/context に無い（右クリックから作れない）`);
+  }
+
+  // `NEW_FILE_EXTENSION` の当該行から拡張子を読む（例: `"DDS-DSPF": ".dspf"`）。
+  const declared = new RegExp(`"${ddsType}":\\s*"\\.([a-z0-9]+)"`, "u").exec(
+    providerSource
+  )?.[1];
+  if (!declared) {
+    failures.push(`editorProvider.ts の NEW_FILE_EXTENSION から ${ddsType} が読めない`);
+    continue;
+  }
+
+  const kindExtensions = readDdsTypeExtensions(ddsType);
+  if (!kindExtensions?.includes(declared)) {
+    failures.push(
+      `${command} が作る .${declared} は sourceKind.ts で ${ddsType} と判定されない` +
+        `（作ったファイルの種別が食い違う）`
+    );
+  }
+  if (!selectorExtensions.includes(declared)) {
+    failures.push(
+      `${command} が作る .${declared} が ${editorViewType} の selector に無い` +
+        `（作れるのにビジュアルエディタで開かない）`
+    );
+  }
+}
+
 console.log(`contributes の検査（対象拡張子 ${extensions.length} 件）`);
 
 if (failures.length > 0) {
@@ -274,5 +335,6 @@ if (failures.length > 0) {
 
 console.log(
   "✓ contributes OK（F4 が対象拡張子すべてで発火し、" +
-    "プレビュー / ビジュアルエディタの右クリック導線が DDS 種別と一致する）"
+    "プレビュー / ビジュアルエディタの右クリック導線が DDS 種別と一致し、" +
+    "新規作成が作るファイルがそのままビジュアルエディタで開く）"
 );

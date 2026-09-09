@@ -6,6 +6,7 @@ import {
   type EditableDdsType
 } from "../core/dds/ddsEdit";
 import type { DdsKeywordHelp } from "../core/dds/ddsKeywords";
+import { buildDdsTemplate } from "../core/dds/ddsTemplate";
 import { buildDspfRenderModel, type RenderModel } from "../core/dds/dspfRenderModel";
 import { buildPrtfRenderModel } from "../core/dds/prtfRenderModel";
 import { DEFAULT_PAGE, type PrtfPage } from "../core/dds/prtfLayout";
@@ -57,6 +58,31 @@ const WEBVIEW_DIR = ["out", "dds-webview"];
 export const OPEN_DDS_EDITOR_COMMAND = "rpgClSupport.openDdsVisualEditor";
 
 /**
+ * 新しい DDS を作るコマンド。**種別ごとに 1 つ**（雛形の中身が違う）。
+ *
+ * `customEditors` は既存のファイルにしか付かないので、これが無いと
+ * **デザイナは「直す道具」のままで「作る道具」にならない**——
+ * 様式を手で書いたファイルを用意しないと使えなかった。
+ */
+export const NEW_DSPF_COMMAND = "rpgClSupport.newDspf";
+export const NEW_PRTF_COMMAND = "rpgClSupport.newPrtf";
+
+/**
+ * 新規作成が付ける拡張子。**種別の判定は `resolveDdsType` に委ねる**ので、
+ * ここに要るのは「合っていなかったときに何を足すか」だけ（集合は数え上げない）。
+ */
+const NEW_FILE_EXTENSION: Record<EditableDdsType, string> = {
+  "DDS-DSPF": ".dspf",
+  "DDS-PRTF": ".prtf"
+};
+
+/** 保存ダイアログに最初から入れておく名前。IBM i のメンバー名は 10 桁まで。 */
+const NEW_FILE_NAME: Record<EditableDdsType, string> = {
+  "DDS-DSPF": "NEWDSPF",
+  "DDS-PRTF": "NEWPRTF"
+};
+
+/**
  * このエディタが開ける DDS 種別。**プレビューと違い画面・帳票の両方**を受ける。
  *
  * 拡張子を数え上げず `resolveDdsType` に委ねる（同じ集合を 2 か所に持たない）。
@@ -93,7 +119,118 @@ export function registerDdsVisualEditor(context: vscode.ExtensionContext): void 
         document.uri,
         DDS_EDITOR_VIEW_TYPE
       );
-    })
+    }),
+    // **新しく作る手段。** 右クリックの引数はフォルダーの URI（コマンド・パレットからは無い）。
+    vscode.commands.registerCommand(NEW_DSPF_COMMAND, (folder?: vscode.Uri) =>
+      createDdsFile("DDS-DSPF", folder)
+    ),
+    vscode.commands.registerCommand(NEW_PRTF_COMMAND, (folder?: vscode.Uri) =>
+      createDdsFile("DDS-PRTF", folder)
+    )
+  );
+}
+
+/**
+ * 新しい DDS を作り、そのままビジュアルエディタで開く。
+ *
+ * ## 保存先はダイアログに決めさせる
+ *
+ * ワークスペースを開いていない状態でも成立させたい。既定の場所を推測して黙って置くより、
+ * **どこへ置くかを聞く**ほうが確か——取り消せば何も起きない。
+ *
+ * **`filters` は付けない。** 付けると拡張子の集合が `sourceKind.ts` の外にもう 1 つできる。
+ * 代わりに、返ってきたパスを `resolveDdsType` に judge させ、合わなければ足す。
+ *
+ * ## 中身は core が持つ
+ *
+ * 雛形の組み立ては `buildDdsTemplate`。単独起動と**同じファイル**ができることが
+ * 「スタンドアロンが本体で VSCode は埋め込み先の 1 つ」という設計の担保になる。
+ */
+async function createDdsFile(
+  ddsType: EditableDdsType,
+  folder: vscode.Uri | undefined
+): Promise<void> {
+  const target = await vscode.window.showSaveDialog({
+    defaultUri: defaultNewFileUri(ddsType, folder),
+    saveLabel: "作成",
+    title:
+      ddsType === "DDS-PRTF"
+        ? "新しい帳票ファイル (PRTF) の保存先"
+        : "新しい画面ファイル (DSPF) の保存先"
+  });
+  // 取り消し。**何も出さない**（押した人は自分で止めたことを知っている）。
+  if (target === undefined) return;
+
+  // 拡張子が種別と食い違うと、作れてもビジュアルエディタで開かない。
+  const uri =
+    resolveDdsType(target.fsPath) === ddsType
+      ? target
+      : target.with({ path: `${target.path}${NEW_FILE_EXTENSION[ddsType]}` });
+
+  // **ダイアログが確かめていないパスに黙って書かない。**
+  //
+  // `showSaveDialog` が衝突を見るのは**利用者が打ったパス**だけ。こちらが拡張子を
+  // 足して別のパスへ書くなら、ダイアログが出したはずの確認をやり直す必要がある——
+  // `CUSTMNT` と打つと `CUSTMNT` に衝突は無く、`CUSTMNT.dspf` が**黙って消える**。
+  //
+  // この PJ が「確認を出さず undo に委ねる」のは**取り消せる操作**の話。
+  // 開いていないファイルの上書きに undo は無いので、そちらの作法は当てはまらない。
+  if (uri.path !== target.path && (await fileExists(uri))) {
+    const name = uri.fsPath.split(/[\\/]/u).pop() ?? uri.fsPath;
+    const overwrite = "上書きする";
+    const answer = await vscode.window.showWarningMessage(
+      `${name} は既にあります。上書きしますか？（元の内容は戻せません）`,
+      { modal: true },
+      overwrite
+    );
+    if (answer !== overwrite) return;
+  }
+
+  const body = `${buildDdsTemplate(ddsType).join("\n")}\n`;
+  try {
+    await vscode.workspace.fs.writeFile(uri, Buffer.from(body, "utf8"));
+  } catch (error) {
+    void vscode.window.showErrorMessage(
+      `DDS ファイルを作成できませんでした: ${String(error)}`
+    );
+    return;
+  }
+
+  try {
+    // **引数は (uri, viewType) の順**——逆にすると無言で失敗する。
+    await vscode.commands.executeCommand("vscode.openWith", uri, DDS_EDITOR_VIEW_TYPE);
+  } catch (error) {
+    // ファイルは残っている。**黙らせない**（作ったのに開かない状態を放置しない）。
+    void vscode.window.showErrorMessage(
+      `作成したファイルをビジュアルエディタで開けませんでした: ${String(error)}`
+    );
+  }
+}
+
+/** そのパスに何かあるか。**無ければ `stat` が失敗する**ので、それで判定する。 */
+async function fileExists(uri: vscode.Uri): Promise<boolean> {
+  try {
+    await vscode.workspace.fs.stat(uri);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * 保存ダイアログの初期値。右クリックされたフォルダー → 最初のワークスペース → 無し、の順。
+ *
+ * **ワークスペースが無くても成立する**（`defaultUri` を省くと、ダイアログが既定の場所を出す）。
+ */
+function defaultNewFileUri(
+  ddsType: EditableDdsType,
+  folder: vscode.Uri | undefined
+): vscode.Uri | undefined {
+  const base = folder ?? vscode.workspace.workspaceFolders?.[0]?.uri;
+  if (base === undefined) return undefined;
+  return vscode.Uri.joinPath(
+    base,
+    `${NEW_FILE_NAME[ddsType]}${NEW_FILE_EXTENSION[ddsType]}`
   );
 }
 
