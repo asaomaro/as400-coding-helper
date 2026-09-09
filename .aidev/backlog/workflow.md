@@ -504,3 +504,15 @@ priority: 2           # cl(1) の次。設計書: docs/workflow/ibmi-dev-workflo
       出所: `20260829-mcp-wiring-stocktake`（改名の判明にともなう棚卸し）。
 - [ ] PowerVS トライアル環境の手順を文書化する — 申請〜接続〜片付け（設計書 5.1）
 - [ ] チーム向け導入手順を書く — 一人検証の完了後（設計書 5.3）
+
+- [ ] **統合テストの緑を「webview が描けている」根拠にできるようにする**
+  （`20260908-dds-new-and-records` の retro）。
+  `npm run test:integration` が走らせるのは `npm run compile`（tsc のみ）で、
+  **束ねた資産（`out/dds-webview` / `out/prompter-webview`）が無くても通る**。
+  - 実測: `out/` を消した状態で走らせると
+    `Webview.loadLocalResource - Error using fileReader … prompter.js` が出ているのに
+    3 件とも pass した（webview は真っ白のまま「例外なく起動する」が通る）。
+  - AGENTS.md は「F5 は `npm run compile:all`。`compile` だけだと画面が真っ白になる」と
+    既に書いているが、**統合テストはその `compile` だけを踏んでいる**。
+  - 案: `test:integration` を `compile:all` にする／資産の存在を起動時に検査する／
+    テスト側で「描けたか」を 1 つ見る。**どれも「緑の意味」を変えるので、選択は要検討**。
