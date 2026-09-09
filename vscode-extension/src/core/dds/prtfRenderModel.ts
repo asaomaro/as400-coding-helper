@@ -1,4 +1,5 @@
 import { collectIndicators } from "./ddsConditioning";
+import { findDanglingReferences } from "./ddsDanglingReferences";
 import { resolvePrintDensity, type PrintDensity } from "./prtfDensity";
 import { toRenderItem, type RenderItem } from "./ddsRenderItem";
 import {
@@ -11,7 +12,7 @@ import {
   type PrtfLayout,
   type PrtfLayoutOptions
 } from "./prtfLayout";
-import { toFileKeywords, type RenderModel } from "./dspfRenderModel";
+import { recordNames, toFileKeywords, type RenderModel } from "./dspfRenderModel";
 
 /**
  * 帳票（PRTF）を**描くための形**。GUI に渡すのは DSPF と同じ `RenderModel`。
@@ -41,22 +42,32 @@ export function buildPrtfRenderModel(
   lines: readonly string[],
   options?: PrtfLayoutOptions & { readonly showPage?: number }
 ): RenderModel {
+  const outline = buildDspfOutline(lines);
+  const fileKeywords = toFileKeywords(lines);
+  const base = fromPrtfLayout(
+    resolvePrtfLayout(lines, options),
+    outline,
+    collectIndicators(lines),
+    resolvePrintDensity(lines),
+    options?.showPage
+  );
   return {
-    ...fromPrtfLayout(
-      resolvePrtfLayout(lines, options),
-      buildDspfOutline(lines),
-      collectIndicators(lines),
-      resolvePrintDensity(lines),
-      options?.showPage
-    ),
-    fileKeywords: toFileKeywords(lines)
+    ...base,
+    fileKeywords,
+    // **画面側と同じ**。`fromPrtfLayout` は生の行を持たないのでここで足す。
+    diagnostics: [...base.diagnostics, ...findDanglingReferences(outline, fileKeywords)]
   };
 }
 
-/** 既に解決済みのレイアウトから作る（二重に解決しないため）。 */
+/**
+ * 既に解決済みのレイアウトから作る（二重に解決しないため）。
+ *
+ * **`outline` に既定値は置かない**（画面側の `fromLayout` と同じ理由。
+ * 渡し忘れると `records` が黙って空になる）。
+ */
 export function fromPrtfLayout(
   layout: PrtfLayout,
-  outline: readonly OutlineRecord[] = [],
+  outline: readonly OutlineRecord[],
   indicators: ReturnType<typeof collectIndicators> = [],
   density?: PrintDensity,
   /** 描くページ（1 始まり）。省略時は 1 ページ目。 */
@@ -91,13 +102,6 @@ export function fromPrtfLayout(
     )
   );
 
-  const records: string[] = [];
-  for (const item of onPage) {
-    if (item.recordName && !records.includes(item.recordName)) {
-      records.push(item.recordName);
-    }
-  }
-
   return {
     kind: "prtf",
     canvas: { rows: layout.page.rows, columns: layout.page.columns },
@@ -112,7 +116,8 @@ export function fromPrtfLayout(
       message: diagnostic.message,
       sourceLine: diagnostic.sourceLine
     })),
-    records,
+    // **配置できた項目からは数えない**（画面側と同じ。`recordNames` の注記）。
+    records: recordNames(outline),
     // **一覧の「位置なし」を帳票の見方に直す。**
     outline: placedOutline(outline, layout),
     indicators,

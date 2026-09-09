@@ -265,6 +265,22 @@ export function buildItemLine(item: NewDspfItem): string {
   return line.trimEnd();
 }
 
+/**
+ * 新しい様式（レコード）の宣言行を組み立てる。
+ *
+ * 原典（`dds/FIELD-DSPF-pos17.html` / `dds/FIELD-DSPF-pos1928.html`）:
+ * > 17 桁目に R を指定した場合には、19 - 28 桁目に指定した名前はレコード様式名になります。
+ *
+ * **雛形（`ddsTemplate.ts`）と `addRecord` の両方がこれを通る。** 別々に組むと、
+ * 「新しく作ったファイルの様式」と「後から足した様式」で桁がずれても誰も気付かない。
+ *
+ * 桁は `DDS_COLUMNS` から採る（`buildItemLine` と同じ流儀。ここで数えない）。
+ */
+export function buildRecordLine(name: string): string {
+  const typed = ddsReplaceField(LINE_PREFIX, DDS_COLUMNS.nameType, "R");
+  return ddsReplaceField(typed, DDS_COLUMNS.name, name.trim().toUpperCase()).trimEnd();
+}
+
 /** リテラルを引用符でくるむ。中の `'` は `''` に重ねる。 */
 export function quoteLiteral(text: string): string {
   return `'${text.replace(/'/gu, "''")}'`;

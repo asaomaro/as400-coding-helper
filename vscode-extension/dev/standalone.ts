@@ -5,6 +5,7 @@ import {
   validateDdsEdits,
   type EditableDdsType
 } from "../src/core/dds/ddsEdit";
+import { buildDdsTemplate } from "../src/core/dds/ddsTemplate";
 import { buildDspfRenderModel } from "../src/core/dds/dspfRenderModel";
 import { buildPrtfRenderModel } from "../src/core/dds/prtfRenderModel";
 import type { Bridge } from "../src/dds/webview/bridge";
@@ -363,12 +364,31 @@ const MULTI_PAGE_SAMPLE = [
   ""
 ].join("\n");
 
+/**
+ * **小文字で書かれた様式名。** DDS の名前は実機が大文字に畳むので、
+ * ソースに小文字で書いてもコンパイルは通る（SEU から書けば大文字になるが、
+ * 手で書いたソースや移行してきたソースには残っている）。
+ *
+ * デザイナ側は追加も改名も大文字に揃えて書き出すので、**この形は読み込みでしか現れない**
+ * ——名前で様式を引き当てる経路（削除したあと隣へ焦点を移す等）が
+ * 大文字にそろえて比べているか、ここでしか確かめられない。
+ */
+const LOWERCASE_SAMPLE = [
+  "     A                                      DSPSIZ(24 80 *DS3)",
+  "     A          R first",
+  "     A                                  1  2'見出し'",
+  "     A          R second",
+  "     A            fld1          10A  B  5  2",
+  ""
+].join("\n");
+
 const SAMPLES = [
   { name: "CUSTMNT.dspf", text: sample as unknown as string },
   { name: "hidden-items.dspf", text: HIDDEN_SAMPLE },
   { name: "indicators.dspf", text: INDICATOR_SAMPLE },
   { name: "two-sizes.dspf", text: TWO_SIZE_SAMPLE },
   { name: "references.dspf", text: REFERENCE_SAMPLE },
+  { name: "lowercase-names.dspf", text: LOWERCASE_SAMPLE },
   // 帳票。**行は SPACE / SKIP で決まり、位置欄には桁だけが書かれる**——
   // 画面ファイルには無い形なので、ここで実際に触れるようにしておく。
   { name: "CUSTRPT.prtf", text: report as unknown as string },
@@ -386,6 +406,18 @@ select.addEventListener("change", () => {
   const entry = SAMPLES[Number(select.value)];
   host.load(entry.name, entry.text);
 });
+
+/**
+ * 新規作成。**雛形は core が持つ**（`buildDdsTemplate`）ので、VSCode 側と同じ内容になる。
+ *
+ * ファイルシステムは要らない——単独起動は読み込んだ内容を抱えるだけで、
+ * 書き出しは「保存（ダウンロード）」が担う。種別は**ファイル名の拡張子**で決まる。
+ */
+const startNew = (name: string, ddsType: EditableDdsType): void => {
+  host.load(name, `${buildDdsTemplate(ddsType).join("\n")}\n`);
+};
+must("#new-dspf").addEventListener("click", () => startNew("NEWDSPF.dspf", "DDS-DSPF"));
+must("#new-prtf").addEventListener("click", () => startNew("NEWPRTF.prtf", "DDS-PRTF"));
 
 must<HTMLInputElement>("#open").addEventListener("change", event => {
   const file = (event.target as HTMLInputElement).files?.[0];

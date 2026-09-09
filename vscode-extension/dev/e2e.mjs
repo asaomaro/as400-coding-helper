@@ -1903,6 +1903,433 @@ check(
   `132 桁で畳んだ=${foldedForWide} / 80 桁に戻したあと folded=${await page.$eval(".dds-side.left", n => n.classList.contains("folded"))}`
 );
 
+// ---- 25. 一から作る（新規作成・様式の追加と削除）------------------------
+//
+// **ここが「直す道具」と「作る道具」の分かれ目。** 雛形を作った直後に
+// 何も置けないと、テキストエディタで様式を手書きする元の状態に戻る。
+// モデルの中を見ても分からない（`records` は通っても UI が押させない）ので、
+// **押して動くか**をここで見る。
+
+await page.click("#new-dspf");
+await page.waitForTimeout(400);
+const fresh = await sourceLines();
+check(
+  "新規 DSPF は DSPSIZ と様式 1 つでできる",
+  fresh.some(line => line.includes("DSPSIZ(24 80 *DS3)")) &&
+    fresh.some(line => /^\s{5}A\s+R REC1\s*$/u.test(line)),
+  JSON.stringify(fresh.slice(0, 2))
+);
+
+check(
+  "**作った直後に「定数を置く」が押せる**（項目 0 件の様式でも）",
+  await page.$eval("#dds-add-constant", node => !node.disabled)
+);
+
+// AC2 の本丸。テキストを一切触らずに置けるか。
+const beforeFirstItem = (await sourceLines()).length;
+await page.click("#dds-add-constant");
+const freshCanvas = await page.locator(".dds-canvas").boundingBox();
+await page.mouse.click(freshCanvas.x + cellWidth * 5, freshCanvas.y + 3 * 12);
+await page.waitForTimeout(200);
+await page.fill("#ask-text", "見出し");
+await page.click("#ask-ok");
+await page.waitForTimeout(300);
+const withFirstItem = await sourceLines();
+check(
+  "**雛形にそのまま定数を置ける**（テキストエディタに戻らない）",
+  withFirstItem.length === beforeFirstItem + 1 &&
+    withFirstItem.some(line => line.includes("'見出し'")),
+  `${beforeFirstItem} → ${withFirstItem.length} 行`
+);
+
+// AC2 は「フィールド**と**定数」。定数だけでは片方しか確かめていない。
+const beforeFirstField = (await sourceLines()).length;
+await page.click("#dds-add-field");
+await page.mouse.click(freshCanvas.x + cellWidth * 5, freshCanvas.y + 5 * 12);
+await page.waitForTimeout(200);
+await page.fill("#ask-name", "FIRSTFLD");
+await page.fill("#ask-length", "8");
+await page.click("#ask-ok");
+await page.waitForTimeout(300);
+const withFirstField = await sourceLines();
+check(
+  "**雛形にそのままフィールドも置ける**",
+  withFirstField.length === beforeFirstField + 1 &&
+    withFirstField.some(line => line.includes("FIRSTFLD")),
+  JSON.stringify(withFirstField.find(l => l.includes("FIRSTFLD"))?.trimEnd() ?? "")
+);
+
+// ---- 様式を足す（一覧の見出しの ＋）-------------------------------------
+await openLeftPane();
+const recordsBefore = (await page.$$(".dds-tree li.record")).length;
+
+// Escape は捨てる（何も作らない）。
+await page.click("#dds-add-record");
+await page.fill("#dds-add-record-input", "CANCELME");
+await page.keyboard.press("Escape");
+await page.waitForTimeout(250);
+check(
+  "Escape で取り消すと様式は作られない",
+  (await page.$$(".dds-tree li.record")).length === recordsBefore &&
+    !(await sourceLines()).some(line => line.includes("CANCELME"))
+);
+check(
+  "取り消したら ＋ へ焦点が戻る",
+  await page.evaluate(() => document.activeElement?.id === "dds-add-record")
+);
+
+await page.click("#dds-add-record");
+await page.fill("#dds-add-record-input", "FOOTER");
+await page.keyboard.press("Enter");
+await page.waitForTimeout(350);
+const afterAddRecord = await sourceLines();
+check(
+  "＋ から様式を足すと R FOOTER が増える",
+  afterAddRecord.some(line => /^\s{5}A\s+R FOOTER\s*$/u.test(line)),
+  JSON.stringify(afterAddRecord.map(l => l.trimEnd()))
+);
+check(
+  "**足した様式が選ばれ、その見出しに焦点がある**",
+  await page.evaluate(() => {
+    const active = document.activeElement;
+    return (
+      active instanceof HTMLElement &&
+      active.matches("li.record") &&
+      active.classList.contains("selected") &&
+      (active.querySelector(".label")?.textContent ?? "").includes("FOOTER")
+    );
+  })
+);
+
+// 足した様式にそのまま置けるか（`recordAt` が選択を見る分）。
+const beforeInNew = (await sourceLines()).length;
+await page.click("#dds-add-constant");
+const canvasForNew = await page.locator(".dds-canvas").boundingBox();
+await page.mouse.click(canvasForNew.x + cellWidth * 5, canvasForNew.y + 20 * 12);
+await page.waitForTimeout(200);
+await page.fill("#ask-text", "脚注");
+await page.click("#ask-ok");
+await page.waitForTimeout(300);
+const afterInNew = await sourceLines();
+check(
+  "足した様式にそのまま項目を置ける",
+  afterInNew.length === beforeInNew + 1 && afterInNew.some(l => l.includes("'脚注'")),
+  `${beforeInNew} → ${afterInNew.length} 行`
+);
+
+// **項目を持つ様式を選んでいるときは、選択で上書きしない。**
+// 見出しは `OVERLAY` / `CF03` を読むためにも選ぶ。そのままキャンバスを押した人は
+// 「押した行の様式に入る」と思っている——救うのは**行の見当が原理的に届かない
+// 様式（項目 0 件）だけ**にする。
+await page.evaluate(() => {
+  const headings = [...document.querySelectorAll(".dds-tree li.record")];
+  const footer = headings.find(h =>
+    (h.querySelector(":scope > .label")?.textContent ?? "").includes("FOOTER")
+  );
+  footer?.click();
+});
+await page.waitForTimeout(200);
+await page.click("#dds-add-constant");
+await page.mouse.click(canvasForNew.x + cellWidth * 40, canvasForNew.y + 3 * 12);
+await page.waitForTimeout(200);
+await page.fill("#ask-text", "REC1側");
+await page.click("#ask-ok");
+await page.waitForTimeout(300);
+const placedRows = await sourceLines();
+const rec1At = placedRows.findIndex(l => /^\s{5}A\s+R REC1\s*$/u.test(l));
+const footerAt = placedRows.findIndex(l => /^\s{5}A\s+R FOOTER\s*$/u.test(l));
+const newAt = placedRows.findIndex(l => l.includes("'REC1側'"));
+check(
+  "**項目を持つ様式を選んでいても、押した行の様式に入る**（選択で上書きしない）",
+  newAt > rec1At && newAt < footerAt,
+  `REC1=${rec1At} / 新しい行=${newAt} / FOOTER=${footerAt}`
+);
+
+check(
+  "同じ名前の様式は作れない（理由が出る）",
+  await (async () => {
+    await page.click("#dds-add-record");
+    await page.fill("#dds-add-record-input", "FOOTER");
+    await page.keyboard.press("Enter");
+    await page.waitForTimeout(300);
+    const status = await page.$eval(".status", n => n.textContent ?? "");
+    const stillOpen = await page.$eval("#dds-add-record-input", n => !n.hidden);
+    // **入力欄は開いたまま**（打った名前が消えると何が悪かったか分からない）。
+    await page.keyboard.press("Escape");
+    await page.waitForTimeout(150);
+    return status.includes("既にあります") && stillOpen;
+  })()
+);
+
+// ---- 様式を消す（✕・確認しない）-----------------------------------------
+const beforeRemoveRecord = await sourceLines();
+await page.hover('.dds-tree li.record:last-of-type');
+await page.waitForTimeout(100);
+const removedCount = await page.evaluate(() => {
+  const headings = [...document.querySelectorAll(".dds-tree li.record")];
+  const footer = headings.find(h =>
+    (h.querySelector(".label")?.textContent ?? "").includes("FOOTER")
+  );
+  const button = footer?.querySelector("button.record-remove");
+  const items = footer?.querySelectorAll("li.item").length ?? 0;
+  button?.click();
+  return items;
+});
+await page.waitForTimeout(350);
+const afterRemoveRecord = await sourceLines();
+check(
+  "✕ で様式と中の項目がまとめて消える（確認は出ない）",
+  !afterRemoveRecord.some(line => line.includes("R FOOTER")) &&
+    !afterRemoveRecord.some(line => line.includes("'脚注'")) &&
+    afterRemoveRecord.length === beforeRemoveRecord.length - (1 + removedCount),
+  `${beforeRemoveRecord.length} → ${afterRemoveRecord.length} 行（項目 ${removedCount} 件）`
+);
+check(
+  "**消えた件数が知らされる**",
+  (await page.$eval(".status", n => n.textContent ?? "")).includes(`項目 ${removedCount} 件`),
+  await page.$eval(".status", n => n.textContent ?? "")
+);
+
+await page.click("#undo");
+await page.waitForTimeout(300);
+check(
+  "削除した様式は undo で戻る",
+  (await sourceLines()).length === beforeRemoveRecord.length,
+  await byteState()
+);
+
+// ---- 26. 入力欄のキーをキャンバスへ漏らさない（AC-I5）--------------------
+//
+// プロパティの入力欄で既に踏んだ罠。漏らすと `Delete` で項目が消え、矢印で項目が動く。
+
+await page.click(".dds-tree li.item");
+await page.waitForTimeout(150);
+const guardBefore = await sourceLines();
+await page.click("#dds-add-record");
+await page.keyboard.press("Delete");
+await page.keyboard.press("ArrowDown");
+await page.keyboard.press("ArrowRight");
+await page.waitForTimeout(250);
+check(
+  "**入力中のキーはキャンバスへ漏れない**（Delete で消えず、矢印で動かない）",
+  JSON.stringify(await sourceLines()) === JSON.stringify(guardBefore),
+  `${guardBefore.length} → ${(await sourceLines()).length} 行`
+);
+await page.keyboard.press("Escape");
+await page.waitForTimeout(150);
+
+// ---- 27. キーボードだけで様式を作る（AC-I3・AC-I4）-----------------------
+//
+// `＋` は素の `<button>` なので Tab で届く。ここでは**押してから確定までを
+// マウス無しで通せるか**を見る（焦点の受け渡しが切れていないこと）。
+
+const beforeKeyboard = (await page.$$(".dds-tree li.record")).length;
+await page.$eval("#dds-add-record", node => node.focus());
+await page.keyboard.press("Enter");
+await page.waitForTimeout(150);
+check(
+  "＋ を Enter で押すと入力欄へ焦点が移る",
+  await page.evaluate(() => document.activeElement?.id === "dds-add-record-input")
+);
+await page.keyboard.type("KBDREC");
+await page.keyboard.press("Enter");
+await page.waitForTimeout(350);
+check(
+  "**マウス無しで様式を作り、その見出しへ焦点が移る**",
+  (await page.$$(".dds-tree li.record")).length === beforeKeyboard + 1 &&
+    (await page.evaluate(() => {
+      const active = document.activeElement;
+      return (
+        active instanceof HTMLElement &&
+        active.matches("li.record") &&
+        (active.querySelector(".label")?.textContent ?? "").includes("KBDREC")
+      );
+    }))
+);
+
+// 削除したら**隣**へ移る（消えた行に残らない）。
+// **見出しの label だけを採る。** `li.record .label` だと入れ子の項目の label まで
+// 拾ってしまう（最初はそれで '脚注' を隣だと思い込んだ）。
+const neighbourBefore = await page.evaluate(() => {
+  const names = [...document.querySelectorAll(".dds-tree li.record")].map(
+    h => h.querySelector(":scope > .label")?.textContent ?? ""
+  );
+  return names[names.findIndex(n => n.includes("KBDREC")) - 1] ?? "";
+});
+await page.evaluate(() => {
+  const headings = [...document.querySelectorAll(".dds-tree li.record")];
+  const target = headings.find(h =>
+    (h.querySelector(".label")?.textContent ?? "").includes("KBDREC")
+  );
+  target?.querySelector("button.record-remove")?.click();
+});
+await page.waitForTimeout(350);
+check(
+  "削除したら**隣の様式**へ焦点が移る（消えた行に残らない）",
+  await page.evaluate(
+    expected =>
+      document.activeElement instanceof HTMLElement &&
+      document.activeElement.matches("li.record") &&
+      (document.activeElement.querySelector(":scope > .label")?.textContent ?? "") ===
+        expected,
+    neighbourBefore
+  ),
+  neighbourBefore
+);
+
+// **`✕` はキーボードでも押せること。** 見出し自身も `Enter` / `Space` を拾うので、
+// 中のボタンの分まで横取りすると `✕` がマウス専用になる。
+await page.click("#new-dspf");
+await page.waitForTimeout(350);
+await openLeftPane();
+await page.click("#dds-add-record");
+await page.fill("#dds-add-record-input", "KEYDEL");
+await page.keyboard.press("Enter");
+await page.waitForTimeout(350);
+// **その様式の `✕` を掴む。** 先頭の `.record-remove` を掴むと別の様式のもので、
+// しかも `visibility: hidden` なので `focus()` が効かない（最初それで空振りした）。
+await page.evaluate(() => {
+  const headings = [...document.querySelectorAll(".dds-tree li.record")];
+  const target = headings.find(h =>
+    (h.querySelector(":scope > .label")?.textContent ?? "").includes("KEYDEL")
+  );
+  target?.querySelector("button.record-remove")?.focus();
+});
+await page.keyboard.press("Enter");
+await page.waitForTimeout(350);
+check(
+  "**✕ は Enter でも押せる**（見出しが横取りしない）",
+  !(await sourceLines()).some(line => line.includes("R KEYDEL")),
+  JSON.stringify((await sourceLines()).map(l => l.trimEnd()))
+);
+
+// ---- 28. 様式が 0 件でも ＋ から作れる（AC12）----------------------------
+//
+// **既存の空ファイルを救う唯一の手段。** 一覧は「項目がありません」を出して
+// 早く返るので、`＋` がその中にあると消える。
+
+await page.click("#new-dspf");
+await page.waitForTimeout(350);
+await openLeftPane();
+await page.evaluate(() => {
+  document
+    .querySelector(".dds-tree li.record button.record-remove")
+    ?.click();
+});
+await page.waitForTimeout(350);
+check(
+  "様式を全部消すと「フィールドを置く」は押せなくなる",
+  await page.$eval("#dds-add-field", node => node.disabled)
+);
+// **最後の 1 つを消したら焦点は `＋` へ。** 消えた行に残さず、body にも落とさない
+// ——キーボードだけの人がここで行き場を失うと、そこから何もできない。
+check(
+  "**最後の様式を消したら ＋ へ焦点が移る**（行き場を失わない）",
+  await page.evaluate(() => document.activeElement?.id === "dds-add-record"),
+  await page.evaluate(() => document.activeElement?.tagName + "#" + (document.activeElement?.id ?? ""))
+);
+check(
+  "**それでも ＋ は押せる**（様式 0 件のファイルの唯一の逃げ道）",
+  await page.$eval("#dds-add-record", node => !node.disabled && node.offsetParent !== null)
+);
+await page.click("#dds-add-record");
+await page.fill("#dds-add-record-input", "ONLYREC");
+await page.keyboard.press("Enter");
+await page.waitForTimeout(350);
+check(
+  "0 件から様式を作ると、また置けるようになる",
+  (await sourceLines()).some(line => line.includes("R ONLYREC")) &&
+    (await page.$eval("#dds-add-field", node => !node.disabled))
+);
+
+// 追加も undo で戻る（AC9 の追加側）。
+await page.click("#undo");
+await page.waitForTimeout(300);
+check(
+  "足した様式も undo で戻る",
+  !(await sourceLines()).some(line => line.includes("R ONLYREC")),
+  await byteState()
+);
+
+// **小文字で書かれた様式名でも名前で引き当てられる。**
+// `ddsName` は桁を切って trim するだけで大文字化しない（`R first` はそのまま `first`）。
+// 一方こちらは大文字で控えるので、突き合わせをそろえていないと**引き当てに失敗し**、
+// 隣へ移るはずの焦点が静かに `＋` へ落ちる。デザイナは追加も改名も大文字で書き出すため、
+// **この形は読み込んだソースにしか現れない**（見本を 1 本置いてある）。
+await page.selectOption("#sample", { label: "lowercase-names.dspf" });
+await page.waitForTimeout(400);
+await openLeftPane();
+await page.evaluate(() => {
+  const headings = [...document.querySelectorAll(".dds-tree li.record")];
+  const second = headings.find(h =>
+    (h.querySelector(":scope > .label")?.textContent ?? "").includes("second")
+  );
+  second?.querySelector("button.record-remove")?.click();
+});
+await page.waitForTimeout(400);
+check(
+  "**小文字の様式名でも隣へ焦点が移る**（大文字にそろえて突き合わせている）",
+  await page.evaluate(() => {
+    const active = document.activeElement;
+    return (
+      active instanceof HTMLElement &&
+      active.matches("li.record") &&
+      (active.querySelector(":scope > .label")?.textContent ?? "").includes("first")
+    );
+  }),
+  await page.evaluate(
+    () => document.activeElement?.tagName + "#" + (document.activeElement?.id ?? "")
+  )
+);
+
+// ---- 29. 宙に浮いた参照が検証タブに出る（AC11）---------------------------
+//
+// **黙って書き換えない。** 消した様式を指す `PASSRCD` / `ERASE` はソースに残り、
+// 検証タブに出る（書き換わると原因が掴めない）。
+
+await page.selectOption("#sample", { label: "references.dspf" });
+await page.waitForTimeout(400);
+await openLeftPane();
+const badgeBefore = await page.$eval("#dds-tab-diagnostics .badge", n => n.textContent ?? "");
+check(
+  "参照がそろっているうちは指摘が出ない",
+  badgeBefore.trim() === "" || badgeBefore.trim() === "0",
+  JSON.stringify(badgeBefore)
+);
+
+await page.evaluate(() => {
+  const headings = [...document.querySelectorAll(".dds-tree li.record")];
+  const main = headings.find(h =>
+    (h.querySelector(".label")?.textContent ?? "").includes("MAIN")
+  );
+  main?.querySelector("button.record-remove")?.click();
+});
+await page.waitForTimeout(400);
+await page.click("#dds-tab-diagnostics");
+await page.waitForTimeout(200);
+const danglingText = await page.$eval(".dds-diagnostics", n => n.textContent ?? "");
+check(
+  "**消した様式を指す参照が検証タブに出る**",
+  danglingText.includes("PASSRCD") && danglingText.includes("ERASE"),
+  JSON.stringify(danglingText.slice(0, 160))
+);
+// **この見本では項目側の参照は浮かない。** `CSRLOC(CSRROW CSRCOL)` と
+// `SFLCSRRRN(&SFLRRN)` は消した MAIN 自身のレコード・レベルのキーワードなので、
+// 指す先（中のフィールド）と一緒に消える——**出ないのが正しい**。
+// 別の様式から中のフィールドを指している形は `ddsNewAndRecords.test.ts` が見る。
+check(
+  "**消えた様式の中で完結していた参照は指摘にならない**（偽陽性を出さない）",
+  !danglingText.includes("CSRLOC") && !danglingText.includes("SFLCSRRRN"),
+  JSON.stringify(danglingText.slice(0, 240))
+);
+check(
+  "**ソースは書き換えない**（参照はそのまま残る）",
+  (await sourceLines()).some(line => line.includes("PASSRCD(MAIN)")) &&
+    (await sourceLines()).some(line => line.includes("ERASE(MAIN)"))
+);
+await page.click("#dds-tab-source");
+await page.waitForTimeout(150);
+
 check("実行中に JS エラーが出ていない", errors.length === 0, errors.slice(0, 2).join(" | "));
 
 await page.screenshot({ path: join(HERE, "out", "e2e.png") });

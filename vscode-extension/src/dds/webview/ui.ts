@@ -182,6 +182,25 @@ class EditorView {
    * （プロパティごと消える。e2e で踏んだ）。
    */
   private pendingSelection: number | undefined;
+  /**
+   * 適用後に選ぶ様式の**名前**（`null` なら選択を外す。`undefined` は「触らない」）。
+   *
+   * 行番号（`pendingSelection`）では追えない——様式の追加・削除は**行をずらす**ので、
+   * 送る前に控えた行番号は当てにならない。名前なら同一ファイル内で固有（原典）。
+   *
+   * **突き合わせは大文字にそろえる。** `ddsName` は桁を切って trim するだけで
+   * 大文字化しないので、`R rec2` と小文字で書かれたソースでは名前がそのまま出る。
+   */
+  private pendingSelectRecord: string | null | undefined;
+  /**
+   * 適用後に**焦点も**移すか。行き先は選んだ様式の見出し、選べなければ `＋`。
+   *
+   * `pendingSelectRecord` と分けてある。**「選ぶ」と「焦点を移す」は別**——
+   * 項目を置いたときは様式を選んだままにしたいが、焦点はキャンバスに残したい。
+   * 一緒にすると「隣が無いときに `＋` へ戻す」（様式を全部消した場合）が
+   * **`pendingSelectRecord` が undefined になって丸ごと飛ぶ**（実際にそうなっていた）。
+   */
+  private pendingRecordFocus = false;
   /** 実測値（フォントの実寸）。**倍率を掛けない**——掛けると次の測定で二重になる。 */
   private measuredWidth = 8;
   private measuredHeight = 18;
@@ -264,6 +283,8 @@ class EditorView {
   private readonly title: HTMLElement;
   private readonly addField: HTMLButtonElement;
   private readonly addConstant: HTMLButtonElement;
+  private readonly addRecord: HTMLButtonElement;
+  private readonly addRecordInput: HTMLInputElement;
   private readonly toggles: ReadonlyArray<{
     readonly button: HTMLButtonElement;
     readonly key:
@@ -314,6 +335,10 @@ class EditorView {
     this.title = must(root, ".record-name");
     this.addField = must(root, "#dds-add-field");
     this.addConstant = must(root, "#dds-add-constant");
+    // **`renderOutline` の外に置く。** あそこは項目 0 件で早く返るので、
+    // 中に置くと**様式が 1 つも無いファイルで `＋` が消える**（唯一の逃げ道が塞がる）。
+    this.addRecord = must(root, "#dds-add-record");
+    this.addRecordInput = must(root, "#dds-add-record-input");
     this.dock = must(root, ".dds-dock");
     this.grip = must(root, ".dds-grip");
     this.sourcePane = must(root, ".dds-source");
@@ -336,6 +361,7 @@ class EditorView {
     document.addEventListener("keydown", event => this.onKeyDown(event));
     this.addField.addEventListener("click", () => this.arm("field"));
     this.addConstant.addEventListener("click", () => this.arm("constant"));
+    this.wireAddRecord();
 
     this.toggles = [
       { button: must<HTMLButtonElement>(root, "#dds-toggle-shifts"), key: "showShifts" },
@@ -396,6 +422,19 @@ class EditorView {
           this.selected = this.pendingSelection;
           this.pendingSelection = undefined;
         }
+        // 様式の追加・削除の行き先。**行はずれているので名前で引き直す。**
+        if (this.pendingSelectRecord !== undefined) {
+          const target = this.pendingSelectRecord?.toUpperCase();
+          this.selected =
+            target === undefined
+              ? undefined
+              : this.model?.outline.find(
+                  record => record.name.toUpperCase() === target
+                )?.sourceLine;
+          this.pendingSelectRecord = undefined;
+        }
+        // 焦点は動かさない（行き先は `pendingRecordFocus` が決める）。
+        this.hideAddRecord();
         this.pendingStructural = false;
         this.rejectMessage = "";
         this.pendingFocus = undefined;
@@ -410,6 +449,10 @@ class EditorView {
         this.gesture = undefined;
         this.pendingStructural = false;
         this.pendingSelection = undefined;
+        // **入力欄は閉じない**（打った名前が消えると、何が悪かったのか確かめられない）。
+        this.pendingSelectRecord = undefined;
+        // 何も変わっていないので焦点も動かさない（`render()` で消費させない）。
+        this.pendingRecordFocus = false;
         this.pendingStatus = undefined;
         const rejections = (message.rejections ?? []) as ReadonlyArray<{ message: string }>;
         const reason = rejections.map(rejection => rejection.message).join(" / ");
@@ -600,6 +643,19 @@ class EditorView {
       this.properties
         .querySelector<HTMLElement>(`[data-key="${focusedKey}"]`)
         ?.focus();
+    }
+
+    if (this.pendingRecordFocus) {
+      this.pendingRecordFocus = false;
+      // 行き先は選んだ様式の見出し。**様式が 1 つも残っていなければ `＋`**
+      // ——消えた行に焦点を残さないし、body に落として行き場を失わせもしない。
+      const heading =
+        this.selected === undefined
+          ? null
+          : this.outline.querySelector<HTMLElement>(
+              `li.record[data-source-line="${this.selected}"]`
+            );
+      (heading ?? this.addRecord).focus();
     }
 
     if (this.pendingIndicatorFocus !== undefined) {
@@ -931,10 +987,30 @@ class EditorView {
       heading.append(
         text("span", "label", record.name.length > 0 ? `R ${record.name}` : "（様式の外）")
       );
+      // **名前のある様式だけ消せる。**「（様式の外）」は様式ではない（消す対象が無い）。
+      // 見出しの中に置くので Tab で届き、マウス専用にはならない。
+      if (record.name.length > 0) {
+        const remove = document.createElement("button");
+        remove.type = "button";
+        remove.className = "record-remove";
+        remove.textContent = "✕";
+        remove.title = `${record.name} を削除（中の項目 ${record.items.length} 件も消えます・元に戻せます）`;
+        remove.addEventListener("click", event => {
+          event.stopPropagation();
+          this.removeRecord(record);
+        });
+        heading.appendChild(remove);
+      }
       // 項目は見出しの**中**（入れ子の ul）にあるので、クリックもキーも上がってくる。
       // **一番内側の li が自分かどうか**で見分ける（`.label` は項目側にもあるので使えない）。
+      // **見出しの中のボタンは除く。** 見出しは `Enter` / `Space` を「様式を選ぶ」に
+      // 使うので、除かないと `✕` にフォーカスして `Enter` を押しても
+      // **選択に化けてボタンが押せない**（`preventDefault` で click も出なくなる）。
+      // クリックは `stopPropagation` で止まるが、キーは止まらないので**ここで除く**。
       const isOwn = (target: EventTarget | null): boolean =>
-        target instanceof HTMLElement && target.closest("li") === heading;
+        target instanceof HTMLElement &&
+        target.closest("li") === heading &&
+        target.closest("button") === null;
 
       heading.addEventListener("click", event => {
         if (!isOwn(event.target)) return;
@@ -2393,6 +2469,12 @@ class EditorView {
     }
 
     this.pendingStructural = true;
+    // **見出しを選んで置いたなら、置いたあとも選んだままにする。**
+    // `pendingStructural` は行がずれるので選択を捨てるが、それだと足した様式が
+    // 置いた直後に選択から外れ、一覧のどこで作業していたか分からなくなる。
+    // 選択から来ていないとき（行の見当で決まったとき）は**触らない**
+    // ——置くたびに選択が生まれると、次のクリックの行き先が静かに変わる。
+    if (this.selectedRecordHeading() === record) this.pendingSelectRecord = record;
     this.mode = "pending";
     this.setStatus("適用中…");
     this.bridge.post({
@@ -2411,7 +2493,12 @@ class EditorView {
 
   private send(edit: DdsEdit): void {
     this.mode = "pending";
-    this.pendingStructural = edit.kind === "add" || edit.kind === "remove";
+    // 行がずれるものは選択を捨てる（宛先の行が消えている／ずれている）。
+    this.pendingStructural =
+      edit.kind === "add" ||
+      edit.kind === "remove" ||
+      edit.kind === "addRecord" ||
+      edit.kind === "removeRecord";
     this.setStatus("適用中…");
     this.bridge.post({ type: "edit", edits: [edit] });
   }
@@ -2439,7 +2526,122 @@ class EditorView {
    * 先頭に足されると、画面上のどこにも現れない（利用者からは「消えた」ように見える）。
    * その行以下で最も近い項目の様式を採り、無ければ最後に現れた様式にする。
    */
+  /**
+   * 一覧の見出しの `＋`。**キーワードの `＋ 追加` と同じ約束**にそろえる
+   * （`addKeywordButton`）——押すと隠してある入力欄が出て焦点が移り、
+   * `Enter` で確定、`Escape` で閉じて `＋` へ焦点が戻る。
+   *
+   * **`blur` では確定しない。** 改名（`recordNameInput`）は「既にある値を直す」ので
+   * 抜けたら確定が自然だが、追加は「無かったものを作る」——**焦点が外れただけで
+   * 様式ができるのは驚き**になる。
+   *
+   * 入力欄が素の `<input>` なのは意図的で、`isTypingTarget` がこれを見て
+   * **キーをキャンバスへ漏らさない**（漏らすと `Delete` で項目が消え、矢印で項目が動く）。
+   */
+  private wireAddRecord(): void {
+    this.addRecord.addEventListener("click", () => {
+      this.addRecordInput.hidden = false;
+      this.addRecordInput.value = "";
+      this.addRecordInput.focus();
+    });
+
+    this.addRecordInput.addEventListener("keydown", event => {
+      if (event.key === "Escape") {
+        event.preventDefault();
+        this.closeAddRecord();
+        return;
+      }
+      if (event.key !== "Enter") return;
+      event.preventDefault();
+
+      const name = this.addRecordInput.value.trim();
+      if (name.length === 0) return; // 空は送らない（`addKeywordButton` と同じ）。
+
+      // 拒否されたら**入力欄を閉じない**（打った名前が消えると、何が悪かったのか分からない）。
+      // 閉じるのは `applied` を受けたときだけ。
+      this.pendingSelectRecord = name;
+      this.pendingRecordFocus = true;
+      this.pendingStatus = `様式 ${name.toUpperCase()} を作りました`;
+      this.send({ kind: "addRecord", name });
+    });
+  }
+
+  /**
+   * 入力欄を閉じて `＋` へ焦点を戻す（`Escape`）。**送らない。**
+   *
+   * 焦点を動かすので、**開いていたときだけ**呼ぶ形にしてある——どの編集でも呼ぶと、
+   * 項目を動かすたびに焦点が `＋` へ飛ぶ。
+   */
+  private closeAddRecord(): void {
+    this.hideAddRecord();
+    this.addRecord.focus();
+  }
+
+  /** 入力欄を畳むだけ。**焦点は動かさない**（適用後の行き先は別に決まっている）。 */
+  private hideAddRecord(): void {
+    this.addRecordInput.hidden = true;
+    this.addRecordInput.value = "";
+  }
+
+  /**
+   * 様式を消す。**確認しない**——この PJ は「即座に実行して undo で戻す」で統一してあり
+   * （項目の削除も確認しない）、ここだけモーダルにすると作法が割れる。
+   *
+   * 代わりに**何が消えたかを後から知らせる**。件数は**送る前に**数える
+   * （消えた後には数えられない）。
+   */
+  private removeRecord(record: RenderModel["outline"][number]): void {
+    this.pendingStatus =
+      `${record.name} を削除しました（項目 ${record.items.length} 件）`;
+    // 焦点と選択の行き先は**隣の様式**（消えた行に残らない）。
+    // 隣が無い＝最後の 1 つを消した。`null` を置いて「選択を外して `＋` へ」を伝える
+    // ——`undefined` にすると `applied` の分岐ごと飛んで、焦点が body に落ちる。
+    this.pendingSelectRecord = this.neighbourRecordName(record.name) ?? null;
+    this.pendingRecordFocus = true;
+    this.send({ kind: "removeRecord", sourceLine: record.sourceLine });
+  }
+
+  /** 一覧の並びで隣にある様式の名前（前があれば前、無ければ次。無ければ undefined）。 */
+  private neighbourRecordName(name: string): string | undefined {
+    const named = ((this.view ?? this.model)?.outline ?? []).filter(
+      record => record.name.length > 0
+    );
+    const at = named.findIndex(record => record.name === name);
+    if (at < 0) return undefined;
+    return named[at - 1]?.name ?? named[at + 1]?.name;
+  }
+
+  /**
+   * クリックした行に置くとしたら、どの様式か。
+   *
+   * **行から様式は厳密には決まらない**——画面ファイルの様式は行が重なりうる
+   * （同じ画面に複数の様式を書き出す）。だから見当をつけるしかない。順に:
+   *
+   * 1. **描かれた項目を 1 つも持たない様式の見出しを選んでいるなら、その様式**
+   * 2. その行以上で**いちばん下にある項目**の様式
+   * 3. 最後の様式
+   *
+   * ■ なぜ 1 が要るか
+   *   足したばかりの様式には項目が 1 つも無いので 2 では**絶対に引っかからない**。
+   *   項目のある様式が上にあると新しい様式へ永久に届かず、「足したのに置けない」になる。
+   *   実際、単独起動で押して初めて分かった——様式を足して選ばれている状態で
+   *   キャンバスを押すと、**別の様式に入っていた**。
+   *
+   * ■ なぜ「項目を持たない様式」に絞るか
+   *   2 が届く様式まで選択で上書きすると、**この作業と関係のない振る舞いが変わる**
+   *   ——様式の見出しは `OVERLAY` / `CF03` を読むために選ぶことがあり、そのまま
+   *   キャンバスを押した人は「押した行の様式に入る」と思っている。
+   *   絞れば、**2 が原理的に届かない様式だけ**を選択で救うことになり、
+   *   それ以外はいままでと 1 バイトも変わらない。
+   *
+   * ■ 項目を選んでいるときは対象外
+   *   見出しを選ぶのは「この様式で作業する」という明示だが、項目を選ぶのは
+   *   その項目を見ているだけで、置き先の宣言ではない。
+   */
   private recordAt(row: number): string | undefined {
+    const empty = this.selectedEmptyRecord();
+    if (empty !== undefined) return empty;
+
     const items = (this.view ?? this.model)?.items ?? [];
     let best: RenderItem | undefined;
     for (const item of items) {
@@ -2451,6 +2653,34 @@ class EditorView {
     }
     const records = (this.view ?? this.model)?.records ?? [];
     return best?.recordName ?? records[records.length - 1];
+  }
+
+  /**
+   * **様式の見出しそのもの**を選んでいるならその名前（項目を選んでいるなら undefined）。
+   *
+   * 名前の無い束（「（様式の外）」）は様式ではないので返さない。
+   */
+  private selectedRecordHeading(): string | undefined {
+    const selected = this.selected;
+    if (selected === undefined) return undefined;
+    const record = ((this.view ?? this.model)?.outline ?? []).find(
+      candidate => candidate.sourceLine === selected
+    );
+    return record !== undefined && record.name.length > 0 ? record.name : undefined;
+  }
+
+  /**
+   * 選んでいる様式のうち、**キャンバスに描かれた項目を 1 つも持たない**もの。
+   *
+   * 「描かれた」で見るのは、行の見当（`recordAt` の 2）が使うのが `model.items`
+   * ＝配置できた項目だから。位置欄が空・用途が `H` の項目しか無い様式も
+   * 行の見当では引っかからないので、ここで救う対象に入る。
+   */
+  private selectedEmptyRecord(): string | undefined {
+    const name = this.selectedRecordHeading();
+    if (name === undefined) return undefined;
+    const items = (this.view ?? this.model)?.items ?? [];
+    return items.some(item => item.recordName === name) ? undefined : name;
   }
 
   private dragTarget(gesture: Gesture, deltaX: number, deltaY: number): CellPoint {
@@ -2648,6 +2878,10 @@ function template(): string {
     <div class="dds-side left">
       <div class="pane-head">
         <div class="pane-title">レコード様式</div>
+        <span class="rec-add">
+          <button id="dds-add-record" type="button" title="レコード様式を足す（ファイルの末尾に付きます）">＋</button>
+          <input id="dds-add-record-input" class="rec-add-input" maxlength="10" placeholder="様式名" hidden>
+        </span>
         <button id="dds-fold-left" class="pane-fold" type="button" title="左を畳む（キャンバスに 200 桁ぶんの幅を返します）">◧</button>
       </div>
       <div class="dds-outline"></div>

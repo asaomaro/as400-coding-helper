@@ -184,6 +184,17 @@ function parseEdit(value: unknown): DdsEdit | undefined {
       return isPositiveInteger(value.sourceLine) && typeof value.name === "string"
         ? { kind: "renameRecord", sourceLine: value.sourceLine, name: value.name }
         : undefined;
+    case "addRecord":
+      // 様式を足す。**宛先の行を採らない**（置き場はファイルの末尾）。
+      // 名前の中身（長さ・重複）は core の検証が見る。ここは型だけ。
+      return typeof value.name === "string"
+        ? { kind: "addRecord", name: value.name }
+        : undefined;
+    case "removeRecord":
+      // 様式ごと消す。`remove`（項目を消す）とは別の操作。
+      return isPositiveInteger(value.sourceLine)
+        ? { kind: "removeRecord", sourceLine: value.sourceLine }
+        : undefined;
     case "clearAlternatePosition":
       // 位置の上書き行を消す。`remove`（項目を消す）とは別の操作。
       return isPositiveInteger(value.sourceLine)

@@ -8,6 +8,7 @@ import {
 import {
   buildAlternatePositionLine,
   buildItemLine,
+  buildRecordLine,
   writeBackAttributes,
   buildKeywordLine,
   foldKeywordArea,
@@ -185,6 +186,23 @@ export type DdsEdit =
    * 追う参照も別（項目は `&名前` / `CSRLOC`、様式は `SFLCTL` / `ERASE` …）。
    */
   | { readonly kind: "renameRecord"; readonly sourceLine: number; readonly name: string }
+  /**
+   * **様式（レコード）を足す。** 置き場は**ファイルの末尾**なので `sourceLine` を採らない
+   * ——足す先は「どこか」ではなく「最後」だから（並べ替えは扱わない。順序はソースの並びで決まる）。
+   *
+   * `add`（項目を足す）と分ける。あちらは**既にある様式の中**に項目を置くもので、
+   * 宛先の様式が要る。こちらはその様式そのものを作る——受け取るものも作る行も別。
+   */
+  | { readonly kind: "addRecord"; readonly name: string }
+  /**
+   * **様式を消す。中の項目も一緒に消える。**
+   *
+   * `remove`（項目を消す）と分ける。同じ語が「選んでいるものによって様式ごと消える」に
+   * 化けると、押した人の予想と食い違う（`clearAlternatePosition` を分けたのと同じ理由）。
+   *
+   * `sourceLine` は**様式宣言の行**。
+   */
+  | { readonly kind: "removeRecord"; readonly sourceLine: number }
   | { readonly kind: "add"; readonly recordName: string; readonly item: NewDspfItem };
 
 /** 置き換え指示。0 始まり・`replaceTo` は含まない。 */
@@ -307,6 +325,19 @@ export function validateDdsEdits(
   for (const edit of edits) {
     if (edit.kind === "add") {
       rejections.push(...validateAdd(units, edit.recordName, edit.item, ddsType));
+      continue;
+    }
+
+    // **様式そのものの追加。** 宛先の行を採らないので、行を引く分岐より前に出す。
+    if (edit.kind === "addRecord") {
+      rejections.push(...validateRecordName(units, edit.name));
+      continue;
+    }
+
+    if (edit.kind === "removeRecord") {
+      if (!recordUnitAt(units, edit.sourceLine)) {
+        rejections.push(recordLineNotFound(edit.sourceLine));
+      }
       continue;
     }
 
@@ -638,6 +669,15 @@ export function applyDdsEdits(
         results.push({ replaceFrom: at, replaceTo: at, lines: [buildItemLine(edit.item)] });
         break;
       }
+      case "addRecord": {
+        const at = appendPoint(lines);
+        results.push({ replaceFrom: at, replaceTo: at, lines: [buildRecordLine(edit.name)] });
+        break;
+      }
+      case "removeRecord": {
+        results.push(...recordRemovalRuns(units, edit.sourceLine));
+        break;
+      }
     }
   }
 
@@ -860,6 +900,65 @@ function removalRuns(unit: LogicalUnit): DdsEditResult[] {
     previous = index;
   }
   runs.push({ replaceFrom: start, replaceTo: previous + 1, lines: [] });
+  return runs;
+}
+
+/**
+ * 様式を足す位置＝**最後の「中身のある行」の直後**（0 始まりの挿入点）。
+ *
+ * `insertionPoint`（下）は**その様式の中の末尾**を返すもので、ここでは使えない
+ * ——様式を足す先は「どの様式の中か」ではなく「ファイルの最後」。
+ *
+ * 末尾の空行を跨いで足す。読み込んだ行は末尾に空文字を持つことが多く
+ * （`text.split(/\r?\n/)`）、そのまま末尾に付けると**行頭に空行が残った**ファイルになる。
+ * 空白しか無いファイル（新規の空ファイル）では 0 を返し、先頭に置く。
+ */
+function appendPoint(lines: readonly string[]): number {
+  for (let index = lines.length - 1; index >= 0; index -= 1) {
+    if (!isDdsBlankLine(lines[index])) return index + 1;
+  }
+  return 0;
+}
+
+/**
+ * 様式ごと消す削除指示。**その様式の宣言行と、中の全項目の行**が対象。
+ *
+ * 塊の切り方は項目の削除（`removalRuns`）と同じ流儀——**注記行・空行はどの論理単位にも
+ * 属さない**ので集合に入らず、連続が途切れたところで指示が分かれる。結果として
+ * **利用者が書いた注記は残る**（黙って消さない）。
+ *
+ * 位置の上書き行（`*DS4` の行）は項目の `sourceLines` に含まれているので、
+ * ここで別に拾わなくても一緒に消える（**孤児にしない**）。
+ */
+function recordRemovalRuns(
+  units: readonly LogicalUnit[],
+  sourceLine: number
+): DdsEditResult[] {
+  const start = units.findIndex(
+    unit => unit.kind === "record" && unit.sourceLine === sourceLine
+  );
+  if (start < 0) return []; // 検証済みなので通常は起きない。
+
+  const owned: number[] = [...units[start].sourceLines];
+  for (const unit of units.slice(start + 1)) {
+    if (unit.kind === "record") break;
+    owned.push(...unit.sourceLines);
+  }
+
+  const indexes = [...new Set(owned)].sort((a, b) => a - b).map(line => line - 1);
+  const runs: DdsEditResult[] = [];
+  let from = indexes[0];
+  let previous = indexes[0];
+  for (const index of indexes.slice(1)) {
+    if (index === previous + 1) {
+      previous = index;
+      continue;
+    }
+    runs.push({ replaceFrom: from, replaceTo: previous + 1, lines: [] });
+    from = index;
+    previous = index;
+  }
+  runs.push({ replaceFrom: from, replaceTo: previous + 1, lines: [] });
   return runs;
 }
 
@@ -1130,40 +1229,39 @@ function validatePosition(
 }
 
 /**
- * 様式の改名が書けるか。
+ * 様式の名前が書けるか。**改名でも追加でも同じ規則。**
  *
  * **同じ名前の様式を 2 つ置けない**——実機がコンパイルを通さない（IBM i 7.3。
  * `.aidev/works/20260828-dds-record-rename/verify/probe-record-names.mjs` の N1）。
  * 名前の長さの上限は項目と同じ 10 桁（同 probe の NC / ND）。
+ *
+ * ■ 文字種は見ない
+ *   原典（`dds/FIELD-DSPF-pos1928.html`）に規定が無い。追加だけ厳しくすると
+ *   「改名では通るのに追加では通らない名前」ができる。
+ *
+ * ■ 改名と追加で分けない
+ *   写すと片方だけ緩めたときに**黙って守りが消える**。違いは 2 つだけで、
+ *   引数で表す——`exceptSourceLine`（自分自身は重複と見なさない。改名のときだけ）と
+ *   `sourceLine`（拒否に添える行。追加には宛先の行が無いので省く）。
  */
-function validateRecordRename(
+function validateRecordName(
   units: readonly LogicalUnit[],
-  sourceLine: number,
-  name: string
+  name: string,
+  options: { readonly exceptSourceLine?: number; readonly sourceLine?: number } = {}
 ): DdsEditRejection[] {
-  const target = units.find(
-    unit => unit.kind === "record" && unit.sourceLine === sourceLine
-  );
-  if (!target) {
-    return [
-      {
-        code: "record-line-not-found",
-        message: `${sourceLine} 行目に様式がありません（ソースが変わっている可能性があります）`,
-        sourceLine
-      }
-    ];
-  }
+  const { exceptSourceLine, sourceLine } = options;
+  const at = sourceLine !== undefined ? { sourceLine } : {};
 
   const trimmed = name.trim();
   if (trimmed.length === 0) {
-    return [{ code: "record-needs-name", message: "様式には名前が必要です", sourceLine }];
+    return [{ code: "record-needs-name", message: "様式には名前が必要です", ...at }];
   }
   if (trimmed.length > NAME_WIDTH) {
     return [
       {
         code: "name-too-long",
         message: `名前は ${NAME_WIDTH} 桁までです（${trimmed.length} 桁）`,
-        sourceLine
+        ...at
       }
     ];
   }
@@ -1172,7 +1270,7 @@ function validateRecordRename(
   const clash = units.some(
     unit =>
       unit.kind === "record" &&
-      unit.sourceLine !== sourceLine &&
+      unit.sourceLine !== exceptSourceLine &&
       ddsName(unit.line).toUpperCase() === upper
   );
   if (clash) {
@@ -1180,11 +1278,38 @@ function validateRecordRename(
       {
         code: "record-name-duplicate",
         message: `様式 ${upper} は既にあります（同じ名前の様式は 2 つ置けません）`,
-        sourceLine
+        ...at
       }
     ];
   }
   return [];
+}
+
+/** その行の様式（無ければ undefined）。改名・削除の宛先を引く。 */
+function recordUnitAt(
+  units: readonly LogicalUnit[],
+  sourceLine: number
+): LogicalUnit | undefined {
+  return units.find(unit => unit.kind === "record" && unit.sourceLine === sourceLine);
+}
+
+/** 宛先の様式が見つからないときの拒否。改名・削除で同じ文言を使う。 */
+function recordLineNotFound(sourceLine: number): DdsEditRejection {
+  return {
+    code: "record-line-not-found",
+    message: `${sourceLine} 行目に様式がありません（ソースが変わっている可能性があります）`,
+    sourceLine
+  };
+}
+
+/** 様式の改名が書けるか。名前の規則は `validateRecordName` が持つ。 */
+function validateRecordRename(
+  units: readonly LogicalUnit[],
+  sourceLine: number,
+  name: string
+): DdsEditRejection[] {
+  if (!recordUnitAt(units, sourceLine)) return [recordLineNotFound(sourceLine)];
+  return validateRecordName(units, name, { exceptSourceLine: sourceLine, sourceLine });
 }
 
 /**

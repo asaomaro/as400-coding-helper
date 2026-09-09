@@ -70,6 +70,23 @@ class Diagnostic {
   }
 }
 
+/**
+ * `Uri` の最小実装。**`path` と `with()` を持たせる**——新規作成が
+ * 「拡張子が種別に合わなければ足す」を `uri.with({ path: … })` で行うため、
+ * 無いと拡張子を足す経路が試せない（本物の `Uri` も `with` は差分マージ）。
+ */
+function makeUri(fsPath) {
+  return {
+    fsPath,
+    path: fsPath,
+    scheme: "file",
+    toString: () => fsPath,
+    with(parts) {
+      return makeUri(parts.path ?? fsPath);
+    }
+  };
+}
+
 // 設定を差し替えられるようにする（既定は「未設定」＝実装側の既定値が効く）。
 // テストから `vscode.__setConfig({ "rpgClSupport": { "lint.enable": false } })`。
 let configValues = {};
@@ -83,11 +100,8 @@ const vscode = {
   DiagnosticSeverity: { Error: 0, Warning: 1, Information: 2, Hint: 3 },
   __setConfig(values) { configValues = values ?? {}; },
   Uri: {
-    file: fsPath => ({ fsPath, scheme: "file", toString: () => fsPath }),
-    joinPath: (base, ...parts) => ({
-      fsPath: [base.fsPath, ...parts].join("/"),
-      toString: () => [base.fsPath, ...parts].join("/")
-    })
+    file: fsPath => makeUri(fsPath),
+    joinPath: (base, ...parts) => makeUri([base.fsPath, ...parts].join("/"))
   },
   EventEmitter: class {
     constructor() { this.event = () => ({ dispose() {} }); }
@@ -103,12 +117,57 @@ const vscode = {
     onDidChangeTextDocument: () => ({ dispose() {} }),
     onDidCloseTextDocument: () => ({ dispose() {} }),
     onDidOpenTextDocument: () => ({ dispose() {} }),
-    applyEdit: () => Promise.resolve(true)
+    applyEdit: () => Promise.resolve(true),
+    /**
+     * ファイルシステム。**書いた内容を覚えるだけ**（実際には書かない）。
+     * テストから `vscode.workspace.fs.__written` で確かめる。
+     * `vscode.workspace.fs.__failWrite = true` で失敗させられる。
+     */
+    fs: {
+      __written: [],
+      __failWrite: false,
+      /** 既に在ることにするパス（`stat` が成功する）。 */
+      __existing: [],
+      writeFile(uri, content) {
+        if (vscode.workspace.fs.__failWrite) {
+          return Promise.reject(new Error("EACCES"));
+        }
+        vscode.workspace.fs.__written.push({ uri, content });
+        return Promise.resolve();
+      },
+      /** **本物と同じく、無ければ reject する。** 「在るか」はこれでしか分からない。 */
+      stat(uri) {
+        return vscode.workspace.fs.__existing.includes(uri.fsPath)
+          ? Promise.resolve({ type: 1, size: 0 })
+          : Promise.reject(new Error("ENOENT"));
+      }
+    }
   },
   window: {
     activeTextEditor: undefined,
     visibleTextEditors: [],
     messages: [],
+    errors: [],
+    /**
+     * 保存ダイアログ。**テストが答えを決める**——
+     * `vscode.window.__saveDialogResult` に Uri を入れると採用、
+     * `undefined`（既定）なら取り消し。呼ばれた引数は `__saveDialogOptions` に残る。
+     */
+    __saveDialogResult: undefined,
+    __saveDialogOptions: undefined,
+    showSaveDialog(options) {
+      vscode.window.__saveDialogOptions = options;
+      return Promise.resolve(vscode.window.__saveDialogResult);
+    },
+    showErrorMessage(message) {
+      vscode.window.errors.push(message);
+      return Promise.resolve(undefined);
+    },
+    /**
+     * 確認の答え。**テストが決める**——押すボタンの文字列を入れると
+     * それを選んだことになる。既定（undefined）は「閉じた／取り消した」。
+     */
+    __warningAnswer: undefined,
     createWebviewPanel(viewType, title) {
       const panel = {
         viewType,
@@ -144,9 +203,11 @@ const vscode = {
       vscode.window.messages.push(message);
       return Promise.resolve(undefined);
     },
+    // **答えを返せるようにする。** 確認（モーダル）を出す経路は、選んだ結果で
+    // 振る舞いが変わるので、`undefined` 固定だと「取り消した」側しか試せない。
     showWarningMessage(message) {
       vscode.window.messages.push(message);
-      return Promise.resolve(undefined);
+      return Promise.resolve(vscode.window.__warningAnswer);
     },
     onDidChangeTextEditorSelection: () => ({ dispose() {} }),
     showTextDocument() {

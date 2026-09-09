@@ -26,6 +26,10 @@ import {
   type DspfDiagnosticCode,
   type DspfLayout
 } from "./dspfLayout";
+import {
+  findDanglingReferences,
+  type DanglingReferenceCode
+} from "./ddsDanglingReferences";
 import { resolveScreenSizes } from "./dspfScreenSize";
 import type { PrintDensity } from "./prtfDensity";
 import type { LayoutDiagnosticCode } from "./prtfLayout";
@@ -73,7 +77,12 @@ export {
  * （帳票には `spacing-with-line-number` / `possible-overprint` がある）。
  * **どちらも作り直さず、解決側が出したものをそのまま載せる**ので、和で持つ。
  */
-export type RenderDiagnosticCode = DspfDiagnosticCode | LayoutDiagnosticCode;
+export type RenderDiagnosticCode =
+  | DspfDiagnosticCode
+  | LayoutDiagnosticCode
+  // **配置の話ではない。** 名前が指す先の有無は解決側では分からない
+  // （生の行と、ファイル全体の名前の集合が要る）ので、モデルを組むところで足す。
+  | DanglingReferenceCode;
 
 export interface RenderDiagnostic {
   readonly code: RenderDiagnosticCode;
@@ -182,9 +191,15 @@ export function toFileKeywords(lines: readonly string[]): FileKeywordEntry[] {
 
 /** ソース行から描画モデルを作る。 */
 export function buildDspfRenderModel(lines: readonly string[]): RenderModel {
+  const outline = buildDspfOutline(lines);
+  const fileKeywords = toFileKeywords(lines);
+  const base = fromLayout(resolveDspfLayout(lines), outline, collectIndicators(lines));
   const model: RenderModel = {
-    ...fromLayout(resolveDspfLayout(lines), buildDspfOutline(lines), collectIndicators(lines)),
-    fileKeywords: toFileKeywords(lines)
+    ...base,
+    fileKeywords,
+    // **宙に浮いた参照はここでしか出せない。** `fromLayout` は生の行を持たないので
+    // ファイル全体の名前の集合を作れない（`fromLayout` 側には足さない）。
+    diagnostics: [...base.diagnostics, ...findDanglingReferences(outline, fileKeywords)]
   };
 
   // 2 次画面サイズが宣言されていれば、そちらの絵も作る。
@@ -205,31 +220,56 @@ export function buildDspfRenderModel(lines: readonly string[]): RenderModel {
   };
 }
 
-/** 既に解決済みのレイアウトから作る（二重に解決しないため）。 */
+/**
+ * 既に解決済みのレイアウトから作る（二重に解決しないため）。
+ *
+ * **`outline` に既定値は置かない。** 渡し忘れると `records` が黙って空になり、
+ * 「様式が 1 つも無い」ものとして扱われる——これは実際に踏んだ壊れ方そのもの
+ * （`recordNames` の注記）。省けない形にして、渡し忘れをコンパイルで落とす。
+ */
 export function fromLayout(
   layout: DspfLayout,
-  outline: readonly OutlineRecord[] = [],
+  outline: readonly OutlineRecord[],
   indicators: readonly IndicatorUsage[] = []
 ): RenderModel {
   const items = layout.items.map(item => toRenderItem(item));
-  const records: string[] = [];
-  for (const item of layout.items) {
-    if (item.recordName && !records.includes(item.recordName)) {
-      records.push(item.recordName);
-    }
-  }
 
   return {
     kind: "dspf",
     canvas: { rows: layout.screen.rows, columns: layout.screen.columns },
     items,
     diagnostics: layout.diagnostics,
-    records,
+    records: recordNames(outline),
     outline,
     indicators,
     // 生の行を持たないので空。`buildDspfRenderModel` が足す。
     fileKeywords: []
   };
+}
+
+/**
+ * 一覧に出る様式の名前（ソース順）。
+ *
+ * **配置できた項目からは数えない。** 以前は `layout.items` の `recordName` を集めていたが、
+ * 配置解決は**画面に置けない項目を落とす**ので、
+ *
+ * - 項目が 0 件の様式（新規作成の雛形・足したばかりの様式）
+ * - 非表示の用途（`H`）の項目しか持たない様式
+ *
+ * が丸ごと消えていた。UI はこの一覧の件数で「フィールドを置く」の可否を決めているため、
+ * **雛形を作っても何も置けない**状態になっていた（塞がっていたのはここ 1 か所）。
+ *
+ * `outline` は `toLogicalUnits` から作られ配置解決を通らないので、宣言された様式が全部並ぶ。
+ * 名前の無い束（最初の様式より前に現れた項目）は**様式ではない**ので外す。
+ */
+export function recordNames(outline: readonly OutlineRecord[]): string[] {
+  const records: string[] = [];
+  for (const record of outline) {
+    if (record.name.length > 0 && !records.includes(record.name)) {
+      records.push(record.name);
+    }
+  }
+  return records;
 }
 
 /**
