@@ -145,6 +145,15 @@ export const categories = {
       { name: 'FIELD-DSPF-pos38', topic: 'ssw_ibm_i_74/rzakc/pos38.htm', note: '表示装置ファイルの使用目的 (38 桁目)' },
       { name: 'FIELD-DSPF-pos3944', topic: 'ssw_ibm_i_74/rzakc/pos3944.htm', note: '表示装置ファイルの位置 (39 - 44 桁目)' },
       { name: 'FIELD-DSPF-rzakcmstkeyent', topic: 'ssw_ibm_i_74/rzakc/rzakcmstkeyent.htm', note: '表示装置ファイルの DDS キーワード項目 (45 - 80 桁目)' },
+      // GRD 系（罫線・枠）5 件は上の索引（rzakcmstkeyent.htm）に載っていない。
+      // 実機で確認すると「DDS の 2 バイト文字セット (DBCS) に関する考慮事項」の章の
+      // 子ページ（DSPKWD、下に別掲）からのみ辿れる（2026-09-10 実機確認）。
+      { name: 'DSPKWD', topic: 'ssw_ibm_i_74/rzakc/dspkwd.htm', note: '表示装置ファイルの DBCS を使用するためのキーワードに関する考慮事項（GRD 系等の2次索引）' },
+      { name: 'FIELD-DSPF-rzakcmstdfgrdl', topic: 'ssw_ibm_i_74/rzakc/rzakcmstdfgrdl.htm', note: '表示装置ファイルの GRDLIN (グリッド・ライン) キーワード' },
+      { name: 'FIELD-DSPF-rzakcmstdfgrdb', topic: 'ssw_ibm_i_74/rzakc/rzakcmstdfgrdb.htm', note: '表示装置ファイルの GRDBOX (グリッド・ボックス) キーワード' },
+      { name: 'FIELD-DSPF-rzakcmstdfgrda', topic: 'ssw_ibm_i_74/rzakc/rzakcmstdfgrda.htm', note: '表示装置ファイルの GRDATR (グリッド属性) キーワード' },
+      { name: 'FIELD-DSPF-rzakcmstdfgrdc', topic: 'ssw_ibm_i_74/rzakc/rzakcmstdfgrdc.htm', note: '表示装置ファイルの GRDCLR (グリッド消去) キーワード' },
+      { name: 'FIELD-DSPF-rzakcmstdfgrdr', topic: 'ssw_ibm_i_74/rzakc/rzakcmstdfgrdr.htm', note: '表示装置ファイルの GRDRCD (グリッド・レコード) キーワード' },
       { name: 'FIELD-PRTF-rzakdmstprkey', topic: 'ssw_ibm_i_74/rzakd/rzakdmstprkey.htm', note: '印刷装置ファイルのキーワード項目 (45 から 80 桁目)' },
       { name: 'FIELD-PRTF-prtseq', topic: 'ssw_ibm_i_74/rzakd/prtseq.htm', note: '順序番号 (印刷装置ファイルの 1 から 5 桁目)' },
       { name: 'FIELD-PRTF-prtform', topic: 'ssw_ibm_i_74/rzakd/prtform.htm', note: '用紙タイプ (印刷装置ファイルの 6 桁目)' },

@@ -154,3 +154,42 @@ suite("帳票の編集: 行送りで決まる行は書き換えない", () => {
     );
   });
 });
+
+/**
+ * 罫線・枠（`BOX`/`LINE`）の `RenderModel` への反映（`20260908-dds-ruled-lines`）。
+ *
+ * 単位は cm/inch（`CRTPRTF` の `UOM`。既定 `*INCH`）——CPI/LPI（既定 10/6）で
+ * 行・桁に変換し尽くしてから `RenderModel` に載る（design.md 方針C）。
+ */
+suite("描画モデル: 罫線・枠（BOX/LINE）", () => {
+  test("BOX が gridBoxes に、LINE が gridLines に載る（sourceLine 付き）", () => {
+    const source = [rec("MAIN", "BOX(0 0 1 1 0.1)"), rec("FOOT", "LINE(0 0 1 *HRZ 0.1)")];
+    const model = buildPrtfRenderModel(source);
+
+    assert.strictEqual(model.gridBoxes.length, 1);
+    // 0インチ→行1/桁1（+1オフセット）、1インチの差分→depth=LPI(6)、width=CPI(10)。
+    assert.deepStrictEqual(model.gridBoxes[0], { row: 1, column: 1, depth: 6, width: 10, sourceLine: 1 });
+
+    assert.strictEqual(model.gridLines.length, 1);
+    assert.deepStrictEqual(model.gridLines[0], {
+      row: 1,
+      column: 1,
+      length: 10,
+      edge: "upper",
+      sourceLine: 2
+    });
+  });
+
+  test("罫線・枠が無ければ両方とも空配列", () => {
+    const model = buildPrtfRenderModel([rec("MAIN", "SPACEA(1)")]);
+    assert.deepStrictEqual(model.gridBoxes, []);
+    assert.deepStrictEqual(model.gridLines, []);
+  });
+
+  test("垂直方向の LINE は edge=left に正規化される", () => {
+    const model = buildPrtfRenderModel([rec("MAIN", "LINE(0 1 1 *VRT 0.1)")]);
+    assert.strictEqual(model.gridLines[0]?.edge, "left");
+    // 垂直線の長さは LPI（1インチ分の行数）で換算する。
+    assert.strictEqual(model.gridLines[0]?.length, 6);
+  });
+});

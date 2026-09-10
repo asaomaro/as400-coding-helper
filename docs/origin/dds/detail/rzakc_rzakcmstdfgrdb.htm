@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="ja"><head><meta charset="utf-8"><title>GRDBOX (グリッド・ボックス) キーワード</title></head>
+<body>
+<h1 class="title topictitle1">GRDBOX (グリッド・ボックス) キーワード</h1><div id="lastModifiedDate"><span>Last Updated</span>: 2021-04-13</div>
+<div class="body refbody"><p class="shortdesc">これは、レコード・レベル・キーワードで、ボックス構造の形、位置、および属性を定義するのに使用します。
+このキーワードは、ボックスが消去されるか、表示されるか、または処理されないかどうかを定義します。</p>
+<div class="section"><p class="p">キーワードの形式は次のとおりです。</p>
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" role="textbox" tabindex="0" aria-label="Code snippet" aria-readonly="true" aria-multiline="true"><pre class="pre codeblock"><code>GRDBOX((*POS ([*DS3] [*DS4]
+start-row | &amp;start-row-field
+start-column | &amp;start-column-field
+depth | &amp;depth-field
+width | &amp;width-field));
+[(*TYPE type of box
+[horizontal rule | &amp;hrule-field]
+[vertical rule | &amp;vrule-field])]
+[(*COLOR color of box | &amp;color-field)]
+[(*LINTYP line type of box | &amp;lintyp-field)]
+[(*CONTROL | &amp;control-field)]</code></pre></div><div class="docs--copy-btn"></div></div>
+<p class="p">*POS パラメーターは必須パラメーターです。
+このパラメーターにはボックスの位置とサイズを記述します。
+*POS パラメーター内で *DS3 または *DS4 をコーディングするとき、使用中の表示サイズに応じて 2 つの異なる開始行、開始桁、および長さの値を使用することができます。
+DSPSIZ キーワードは、ファイル・レベルでコード化する必要があります。</p>
+<p class="p">*TYPE パラメーターは必須パラメーターです。
+横および縦の罫線の値は、各罫線間の文字スペースの数を定義します。
+例えば、*TYPE VRT ボックスが 21 桁の幅および 3 桁の罫線値で定義される場合、ボックスには 6 つの縦線があります。
+罫線値が幅または深さの偶数倍ではない場合、奇数のスペースの罫線がボックスの右側または下部に引かれます。
+このパラメーターのデフォルトは、PLAIN です。</p>
+<p class="p">横または縦の罫線の値は、プログラム - システム間フィールドを使用して定義することができます。
+フィールド名が指定されている場合、フィールドはレコード様式内に存在します。
+フィールドはデータ・タイプ S、使用目的 P、3 のフィールド桁数、および小数点以下の桁数 0 として定義されます。</p>
+<p class="p">*COLOR および *LINTYP パラメーターは、ボックスの色および属性を定義します。P フィールドは、実行時の属性を定義または変更するのに使用されます。</p>
+<p class="p">*COLOR および *LINTYP パラメーターの詳細については、<a class="xref" href="/docs/ja/ssw_ibm_i_74/rzakc/rzakcmstdfgrda.htm" title="これはファイル・レベルまたはレコード・レベル・キーワードで、グリッド構造のデフォルトの色および線のタイプ属性を定義するために使用します。">GRDATR (グリッド属性) キーワード</a>を参照してください。</p>
+<p class="p">*NONE が GRDBOX キーワードによって定義される場合、GRDATR キーワードによって設定される色が使用されます。</p>
+<p class="p">P フィールドが COLOR または LINTYP パラメーターのどちらかに指定される場合、フィールドはレコード様式内に存在しなければなりません。
+フィールドはデータ・タイプ A、使用目的 P、および 1 の長さとして定義されます。</p>
+<p class="p">*CONTROL パラメーターは、この GRDBOX が表示されるか、画面から消去されるか、または無視 (キーワードをオフに任意指定するのと同様) されるかどうかを指定します。フィールドはレコード様式内に存在し、データ・タイプ S、使用目的 P、および 1 の桁数として定義されなければなりません。P フィールドが 0 に設定される場合は、グリッド・ラインが表示されます。
+P フィールドが、1 に設定される場合、GRDBOX キーワードは処理されません。
+P フィールドが -1 に設定される場合、現在表示されているグリッド・ラインのレコードが消去されます。
+P フィールドが定義された値以外の値に設定される場合、省略時値 0 が使用されます。</p>
+<p class="p">グリッド・ライン・サポートには、DBCS 装置が必須です。この装置は、日本語 DOS を呼び出す能力があります。</p>
+<p class="p">このキーワードについては、オプション標識を使用することができます。</p>
+</div>
+<div class="example"><h2 class="title sectiontitle">例</h2><p class="p">次の例は、GRDBOX キーワードの指定方法を示しています。</p>
+<div class="cds--snippet docs--snippet-v10 cds--snippet--multi cds--snippet--expand"><div class="cds--snippet-container" role="textbox" tabindex="0" aria-label="Code snippet" aria-readonly="true" aria-multiline="true"><pre class="pre codeblock"><code>|...+....1....+....2....+....3....+....4....+....5....+....6....+....7....+....8
+     A                                      DSPSIZ(*DS3 *DS4)
+     A                                      GDRATR((*COLOR WHT) (*LINTYP SLD))
+     A          R GRDREC1                   GRDRCD
+     A                                      GRDATR((*COLOR BLU) (LINTYP DSH))
+     A                                      GRDBOX(*POS (2 5 10 70 ) (*TYPE PLAIN))
+     A
+     A          R GRDREC2                   GRDRCD
+     A 90                                   DSPMOD(*DS4)
+     A                                      GRDBOX((*POS (*DS3 5 5 18 70) +
+     A                                      (*DS4 5 5 19 120)) (*TYPE PLAIN))
+     A                                      GRDBOX((*POS (*DS3 5 5 18 70) +
+     A                                      (*DS4 7 7 3 103)) (*TYPE VTR 10) +
+     A                                      (*CONTROL &amp;CNTL1));
+     A
+     A                                      GRDBOX((*POS (*DS3 12 7 6 53) +
+     A                                      (*DS4 127 6 103)) +
+     A                                      (*TYPE HRZ 2) +
+     A                                      (*COLOR RED)  (*LINTYP &amp;LNTP1); +
+     A                                      (*CONTROL &amp;CNTL2));
+     A
+     A
+     A 95                                   GRDBOX((*POS (&amp;SCROW1 &amp;SCOL1 &amp;DPTH1 +
+     A                                      &amp;WDTH1)); +
+     A                                      (*TYPE HRZVRT &amp;HRUL1 &amp;VRUL1); +
+     A                                      (*COLOR &amp;CLR1); +
+     A                                      (*CONTROL &amp;CNTL3));
+     A            CNTL1          1S 0P
+     A            CNTL2          1S 0P
+     A            CNTL3          1S 0P
+     A            LNTP1          1A  P
+     A            CLR1           1A  P
+     A            SROW1          3S 0P
+     A            SCOL1          3S 0P
+     A            DPTH1          3S 0P
+     A            WDTH1          3S 0P
+     A            HRUL1          3S 0P
+     A            VRUL1          3S 0P
+     A</code></pre></div><div class="docs--copy-btn"></div></div>
+<p class="p">GRDREC1 レコードを作成すると、行 2、桁 5 の位置に、高さが 10 行で幅が 70 桁として定義される無地のボックスが表示されます。ボックスは青色の破線で表現されます。</p>
+<div class="p">GRDREC2 レコードを作成すると、以下の出力が表示されます。<ul class="ul cds--list--unordered"><li class="li cds--list__item">レコードが 24 x 80 の表示で作成されるか、DSPMOD がオフにされる場合、以下のようになります。<ol class="ol cds--list--ordered--temporary"><li class="li cds--list__item">無地ボックスは、行 5、桁 5 を起点として、高さ 18 行、幅 70 桁で表示されます。グリッドの線は、色が白で、ファイル・レベルの GRDATR キーワードによって定義される実線タイプです。</li>
+<li class="li cds--list__item">P フィールド CNTL1 の値が 0 に等しい場合、縦の罫線が入ったボックスが行 7、桁 7 を起点として、高さ 3 行、幅 70 桁で描かれます。ボックスには、10 文字分のスペースごとに縦線があります。グリッドの線は、白で、ファイル・レベルの GRDATR キーワードによって定義される実線タイプです。P フィールド CNTL1 の値が -1 の場合、ボックスは消去されます。P フィールド CNTL1 の値が 1 の場合、GRDBOX キーワードによる処理はなされません。</li>
+<li class="li cds--list__item">P フィールド CNTL2 の値が 0 に等しい場合、横の罫線が入ったボックスが表示されます。このボックスは、行 12、桁 7 を起点として、高さ 6 行、幅 60 桁です。ボックスには、2 文字分のスペースごとに横線があります。線は赤で、線のタイプは P フィールド LNTP1 の値によって決まります。
+LNTP1 の値が無効または NONE (X'FF') の場合、線のタイプは、ファイル・レベルの GDRATR キーワード (実線) からの線のタイプがデフォルトとして指定されます。P フィールド CNTL2 の値が -1 の場合、ボックスは消去されます。P フィールド CNTL2 の値が 1 の場合、GRDBOX キーワードによる処理はなされません。</li>
+<li class="li cds--list__item">オプション標識 95 がオンになり、P フィールド CNTL3 の値が 0 に等しい場合、横線および縦の罫線が入ったボックスが処理されます。行、桁、幅、および高さは、適切な P フィールドから実行時に決定されます。色は、CLR1 の P フィールドの値から決定されます。
+線のタイプは、そのファイル・レベルにおける GRDATR キーワードをデフォルトとして指定します。オプション標識 95 がオフになる場合、ボックスは処理されません。
+P フィールド CNTL3 の値が -1 の場合、GRDBOX キーワードによる処理はなされません。</li>
+</ol>
+</li>
+<li class="li cds--list__item">レコードが 27 x 132 の表示で作成され、かつ DSPMOD がオンにされる場合、以下のようになります。<ol class="ol cds--list--ordered--temporary"><li class="li cds--list__item">無地ボックスは、行 5、桁 5 を起点として、高さ 19 行、幅 120 桁で表示されます。グリッドの線は、色が白で、ファイル・レベルの GRDATR キーワードによって定義される実線タイプです。</li>
+<li class="li cds--list__item">P フィールド CNTL1 の値が 0 に等しい場合、縦の罫線が入ったボックスが行 7、桁 7 を起点として、高さ 3 行、幅 110 桁で描かれます。ボックスには、10 文字分のスペースごとに縦線があります。グリッドの線は白で、実線ですが、P フィールド CNTL1 の値が -1 の場合、ボックスは消去されます。P フィールド CNTL1 の値が 1 の場合、GRDBOX キーワードによる処理はなされません。</li>
+<li class="li cds--list__item">P フィールド CNTL2 の値が 0 に等しい場合、横の罫線が入ったボックスが表示されます。このボックスは、行 12、桁 7 を起点として、高さ 6 行、幅 110 桁です。
+ボックスには、2 文字分のスペースごとに横線があります。線は赤で、線のタイプは P フィールド LNTP1 の値によって決まります。
+LNTP1 の値が無効または NONE (X'FF') の場合、線のタイプは、ファイル・レベルの GDRATR キーワード (実線) からの線のタイプがデフォルトとして指定されます。P フィールド CNTL2 の値が -1 の場合、ボックスは消去されます。P フィールド CNTL2 の値が 1 の場合、GRDBOX キーワードによる処理はなされません。</li>
+<li class="li cds--list__item">オプション標識 95 がオンになり、P フィールド CNTL3 の値が 0 に等しい場合、横線および縦の罫線が入ったボックスが処理されます。行、桁、幅、および高さは、適切な P フィールドから実行時に決定されます。色は、CLR1 の P フィールドの値から決定されます。
+線のタイプは、そのファイル・レベルにおける GRDATR キーワードをデフォルトとして指定します。オプション標識 95 がオフになる場合、ボックスは処理されません。
+P フィールド CNTL3 の値が -1 の場合、GRDBOX キーワードによる処理はなされません。</li>
+</ol>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="related-links ibm-padding-top-1 ibm-padding-bottom-2 bx--row bottom-section-parent" aria-label="bottom related links">
+<div class="familylinks ibm-margin-bottom-1">
+<div class="parentlink"><strong>親トピック:</strong> <div><svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="blue" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.6 7.4 24.1 15 3 15 3 17 24.1 17 16.6 24.6 18 26 28 16z"></path><title>Arrow right</title></svg><a class="link bottom-section-link" href="/docs/ja/ssw_ibm_i_74/rzakc/dspkwd.htm" title="DBCS データ・フィールドでは使用を避けるべき DDS キーワードもあり、注意して使用すべき DDS キーワードもあります。">DBCS を使用する表示装置ファイルのためのキーワードに関する考慮事項</a></div></div>
+</div>
+</div>
+
+
+</body></html>

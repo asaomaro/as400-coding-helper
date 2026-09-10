@@ -32,6 +32,11 @@ import {
 } from "./ddsDanglingReferences";
 import { resolveScreenSizes } from "./dspfScreenSize";
 import type { PrintDensity } from "./prtfDensity";
+import {
+  collectDspfGridShapes,
+  type RenderGridBox,
+  type RenderGridLine
+} from "./ddsGridShapes";
 import type { LayoutDiagnosticCode } from "./prtfLayout";
 import {
   buildDspfOutline,
@@ -135,6 +140,10 @@ export interface RenderModel {
   readonly density?: PrintDensity;
   /** 描く項目（配置できたものだけ）。 */
   readonly items: readonly RenderItem[];
+  /** 罫線（DSPF: `GRDLIN` / PRTF: `LINE`）。行・桁は解決済み（`20260908-dds-ruled-lines`）。 */
+  readonly gridLines: readonly RenderGridLine[];
+  /** 枠（DSPF: `GRDBOX` / PRTF: `BOX`）。同上。 */
+  readonly gridBoxes: readonly RenderGridBox[];
   readonly diagnostics: readonly RenderDiagnostic[];
   /** 様式の一覧（追加先の選択に使う）。 */
   readonly records: readonly string[];
@@ -177,6 +186,8 @@ export interface SecondaryScreen {
   /** 画面サイズ条件名（`*DS4` / ユーザー定義名）。数値形式の `DSPSIZ` では無い。 */
   readonly name?: string;
   readonly items: readonly RenderItem[];
+  readonly gridLines: readonly RenderGridLine[];
+  readonly gridBoxes: readonly RenderGridBox[];
   readonly diagnostics: readonly RenderDiagnostic[];
 }
 
@@ -207,6 +218,7 @@ export function buildDspfRenderModel(lines: readonly string[]): RenderModel {
   if (sizes.secondary === undefined) return model;
 
   const secondary = resolveDspfLayout(lines, { screenSize: "secondary" });
+  const secondaryShapes = collectDspfGridShapes(outline, "secondary");
   return {
     ...model,
     secondaryScreen: {
@@ -215,6 +227,8 @@ export function buildDspfRenderModel(lines: readonly string[]): RenderModel {
         ? { name: sizes.secondary.conditionName }
         : {}),
       items: secondary.items.map(item => toRenderItem(item)),
+      gridLines: secondaryShapes.lines,
+      gridBoxes: secondaryShapes.boxes,
       diagnostics: secondary.diagnostics
     }
   };
@@ -233,11 +247,16 @@ export function fromLayout(
   indicators: readonly IndicatorUsage[] = []
 ): RenderModel {
   const items = layout.items.map(item => toRenderItem(item));
+  // GRDLIN/GRDBOX はレコード・レベルのキーワードなので `outline`（配置解決を通さない）
+  // から読む——`records` を `outline` から作るのと同じ理由（`recordNames` の注記）。
+  const shapes = collectDspfGridShapes(outline, "primary");
 
   return {
     kind: "dspf",
     canvas: { rows: layout.screen.rows, columns: layout.screen.columns },
     items,
+    gridLines: shapes.lines,
+    gridBoxes: shapes.boxes,
     diagnostics: layout.diagnostics,
     records: recordNames(outline),
     outline,
