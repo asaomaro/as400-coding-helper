@@ -4,3 +4,12 @@
 tracker:
   type: github        # github | jira | redmine | none（none＝外部連携なし・backlog/ローカル完結）
   # baseUrl:          # 任意。チケットURLの組み立てに使う（例 https://your.atlassian.net/browse/）
+
+# 起動確認（`aidev smoke`）。「ビルドした成果物が最初の使える状態まで到達するか」を見る、
+# 終了するコマンド（常駐しない）。VSCode 拡張機能本体は `npm test`/e2e で見ているので、
+# ここは CLI（`out/cli/dds.js` / `out/cli/lint.js`）が実際に動くかを見る。
+# 複数形にしてあるのは、work が新しい入口を足すたびにここへ1行足す運用のため
+# （`aidev-50-test`「起動確認」の指示）。
+smokeCommands:
+  - node vscode-extension/out/cli/dds.js parse vscode-extension/test/golden/RENDER1.dspf && node vscode-extension/out/cli/lint.js vscode-extension/test/golden/RENDER1.dspf
+  - out=$(node vscode-extension/out/cli/dds.js render --format json vscode-extension/test/golden/GRIDSAMPLE.dspf); echo "$out" | grep -q '"gridLines"' && echo "$out" | grep -q '"gridBoxes"'

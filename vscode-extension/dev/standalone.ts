@@ -297,6 +297,18 @@ const TWO_SIZE_SAMPLE = [
 ].join("\n");
 
 /**
+ * 2 次画面サイズを持ち、罫線が `*DS3`/`*DS4` の両方で位置を持つ様式。
+ * `20260908-dds-ruled-lines` review 指摘（screenModel が secondary の
+ * gridLines/gridBoxes を差し替えていなかった）の回帰確認に使う。
+ * 1 次: 1 行 1 桁 長さ5 ／ 2 次: 9 行 1 桁 長さ5。
+ */
+const GRID_TWO_SIZE_SAMPLE = [
+  "     A                                      DSPSIZ(24 80 27 132)",
+  "     A          R GRDREC                    GRDLIN((*POS *DS3 1 1 5 *DS4 9 1 5))",
+  ""
+].join("\n");
+
+/**
  * 名前を指すキーワードを持つ様式。**項目の改名で一緒に変わる**ことを触って確かめる。
  *
  * `CSRLOC` は定位置の項目名（規則 B）、`SFLCSRRRN(&…)` は `&` の参照（規則 A）。
@@ -357,7 +369,9 @@ const MULTI_PAGE_SAMPLE = [
   "     A                                     5'PAGE ONE'",
   "     A          R BODY                      SPACEA(30)",
   "     A            AMOUNT         9S        5",
-  "     A          R PAGE2                     SKIPB(3)",
+  // BOX は `20260908-dds-ruled-lines` review 指摘（帳票の複数ページで
+  // gridLines/gridBoxes がページ絞り込みに従わず全ページに出ていた）の回帰確認用。
+  "     A          R PAGE2                     SKIPB(3) BOX(0 0 1 1 0.1)",
   "     A                                     5'PAGE TWO'",
   "     A          R DENSE                     LPI(12) SPACEA(6)",
   "     A                                     5'DENSE LINE'",
@@ -387,6 +401,7 @@ const SAMPLES = [
   { name: "hidden-items.dspf", text: HIDDEN_SAMPLE },
   { name: "indicators.dspf", text: INDICATOR_SAMPLE },
   { name: "two-sizes.dspf", text: TWO_SIZE_SAMPLE },
+  { name: "grid-two-sizes.dspf", text: GRID_TWO_SIZE_SAMPLE },
   { name: "references.dspf", text: REFERENCE_SAMPLE },
   { name: "lowercase-names.dspf", text: LOWERCASE_SAMPLE },
   // 帳票。**行は SPACE / SKIP で決まり、位置欄には桁だけが書かれる**——

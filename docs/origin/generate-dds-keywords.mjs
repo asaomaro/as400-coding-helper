@@ -33,9 +33,15 @@ const ORIGIN = join(HERE, `dds${LANG === "ja" ? "" : `-${LANG}`}`);
 const OUT = join(ROOT, "vscode-extension/resources/completion");
 
 const TYPES = [
-  { key: "DDS-PF", file: "PF-LF-KEYWORDS.html" },
-  { key: "DDS-DSPF", file: "DSPF-KEYWORDS.html" },
-  { key: "DDS-PRTF", file: "PRTF-KEYWORDS.html" }
+  { key: "DDS-PF", files: ["PF-LF-KEYWORDS.html"] },
+  // **表示装置ファイルは2つの索引を持つ**。GRD 系（罫線・枠）など5件は
+  // 主索引（DSPF-KEYWORDS.html）に載っておらず、「DBCS を使用するための
+  // キーワードに関する考慮事項」（DSPKWD.html）からしか辿れない
+  // （2026-09-10 実機確認。`sources.mjs` の DSPKWD エントリのコメント参照）。
+  // **索引に無いキーワードが他にも見つかったら、ここに索引を足す**——
+  // 特定のキーワード名をこのスクリプトにハードコードしない。
+  { key: "DDS-DSPF", files: ["DSPF-KEYWORDS.html", "DSPKWD.html"] },
+  { key: "DDS-PRTF", files: ["PRTF-KEYWORDS.html"] }
 ];
 
 const decode = text =>
@@ -98,29 +104,33 @@ function parseLevel(description) {
 
 const result = {};
 
-for (const { key, file } of TYPES) {
-  const html = readFileSync(join(ORIGIN, file), "utf8");
+for (const { key, files } of TYPES) {
   const byName = new Map();
 
-  const links = [...html.matchAll(KEYWORD_LINK)];
+  // **複数の索引ファイルを1つの key にまとめる**——先に出た索引の項目を優先する
+  // （`byName.has` のガードは索引をまたいでも同じ働きをする）。
+  for (const file of files) {
+    const html = readFileSync(join(ORIGIN, file), "utf8");
+    const links = [...html.matchAll(KEYWORD_LINK)];
 
-  for (const [index, link] of links.entries()) {
-    const title = strip(link[2]);
-    // リンク直後から次のリンクの手前までが説明。項目をまたいで拾うと
-    // 隣のキーワードの説明が付く（実際に ABSVAL に ALIAS の説明が付いていた）。
-    const from = link.index + link[0].length;
-    const to = links[index + 1]?.index ?? Math.min(from + 1200, html.length);
-    const description = strip(html.slice(from, to)).slice(0, 400);
+    for (const [index, link] of links.entries()) {
+      const title = strip(link[2]);
+      // リンク直後から次のリンクの手前までが説明。項目をまたいで拾うと
+      // 隣のキーワードの説明が付く（実際に ABSVAL に ALIAS の説明が付いていた）。
+      const from = link.index + link[0].length;
+      const to = links[index + 1]?.index ?? Math.min(from + 1200, html.length);
+      const description = strip(html.slice(from, to)).slice(0, 400);
 
-    for (const { name, title: label } of parseTitle(title)) {
-      // 同じキーワードが複数の索引項目に出ることがある。先に出た方を採る。
-      if (byName.has(name)) continue;
-      byName.set(name, {
-        name,
-        title: label,
-        ...(parseLevel(description) ? { level: parseLevel(description) } : {}),
-        ...(description ? { description } : {})
-      });
+      for (const { name, title: label } of parseTitle(title)) {
+        // 同じキーワードが複数の索引項目に出ることがある。先に出た方を採る。
+        if (byName.has(name)) continue;
+        byName.set(name, {
+          name,
+          title: label,
+          ...(parseLevel(description) ? { level: parseLevel(description) } : {}),
+          ...(description ? { description } : {})
+        });
+      }
     }
   }
 

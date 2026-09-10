@@ -260,3 +260,81 @@ suite("描画モデル: 標識の状態を反映する", () => {
     );
   });
 });
+
+/**
+ * 罫線・枠（`GRDLIN`/`GRDBOX`）の `RenderModel` への反映（`20260908-dds-ruled-lines`）。
+ *
+ * 桁を手で数え直さないよう、行を列位置から機械的に組み立てる
+ * （`prtfRenderModel.test.ts` の `put`/`A`/`rec` と同じ考え方）。
+ */
+const gridPut = (line: string, column: number, value: string): string => {
+  const a = line.split("");
+  for (let i = 0; i < value.length; i += 1) a[column - 1 + i] = value[i];
+  return a.join("");
+};
+const gridA = () => gridPut(" ".repeat(80), 6, "A");
+const gridRec = (name: string, keywords = "") =>
+  gridPut(gridPut(gridPut(gridA(), 17, "R"), 19, name), 45, keywords).replace(/ +$/u, "");
+
+suite("描画モデル: 罫線・枠（GRDLIN/GRDBOX）", () => {
+  test("GRDLIN が gridLines に、GRDBOX が gridBoxes に載る（sourceLine 付き）", () => {
+    const model = buildDspfRenderModel([
+      gridPut(gridA(), 45, "DSPSIZ(24 80 *DS3)"),
+      gridRec("MAIN", "GRDLIN((*POS 3 1 80)(*TYPE UPPER))"),
+      gridRec("FOOTER", "GRDBOX((*POS 20 5 3 10))")
+    ]);
+
+    assert.strictEqual(model.gridLines.length, 1);
+    assert.deepStrictEqual(model.gridLines[0], {
+      row: 3,
+      column: 1,
+      length: 80,
+      edge: "upper",
+      sourceLine: 2
+    });
+
+    assert.strictEqual(model.gridBoxes.length, 1);
+    assert.deepStrictEqual(model.gridBoxes[0], {
+      row: 20,
+      column: 5,
+      depth: 3,
+      width: 10,
+      sourceLine: 3
+    });
+  });
+
+  test("罫線・枠が無ければ両方とも空配列（プロパティ自体は必ず存在する）", () => {
+    const model = buildDspfRenderModel([gridRec("MAIN")]);
+    assert.deepStrictEqual(model.gridLines, []);
+    assert.deepStrictEqual(model.gridBoxes, []);
+  });
+
+  test("項目 0 件の様式に罫線を書いても gridLines に載る（records と同じく outline 由来）", () => {
+    // `records` を `outline` から作る修正（`20260908-dds-new-and-records`）と同じ理由で、
+    // 罫線も配置解決を経由しない `outline` から読む。項目が無くても読めることを確かめる。
+    const model = buildDspfRenderModel([gridRec("EMPTY", "GRDLIN((*POS 1 1 10))")]);
+    assert.strictEqual(model.gridLines.length, 1);
+  });
+
+  test("GRDCLR は gridLines/gridBoxes に現れない（D4: 動的な消去効果はシミュレートしない）", () => {
+    const model = buildDspfRenderModel([gridRec("MAIN", "GRDCLR((*POS 1 1 5 5))")]);
+    assert.deepStrictEqual(model.gridLines, []);
+    assert.deepStrictEqual(model.gridBoxes, []);
+  });
+
+  test("GRDRCD は gridLines/gridBoxes に現れない（D5: 座標を持たない宣言的キーワード）", () => {
+    const model = buildDspfRenderModel([gridRec("GRIDREC", "GRDRCD")]);
+    assert.deepStrictEqual(model.gridLines, []);
+    assert.deepStrictEqual(model.gridBoxes, []);
+  });
+
+  test("2次画面サイズにも罫線が出る（secondaryScreen.gridLines）", () => {
+    // キーワード欄は45-80桁の36文字まで（継続行を使っていないため、収まる長さにする）。
+    const model = buildDspfRenderModel([
+      gridPut(gridA(), 45, "DSPSIZ(24 80 *DS3 27 132 *DS4)"),
+      gridRec("MAIN", "GRDLIN((*POS *DS3 1 1 5 *DS4 1 1 9))")
+    ]);
+    assert.strictEqual(model.gridLines[0]?.length, 5);
+    assert.strictEqual(model.secondaryScreen?.gridLines[0]?.length, 9);
+  });
+});

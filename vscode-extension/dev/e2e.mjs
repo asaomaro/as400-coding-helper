@@ -1109,6 +1109,49 @@ check(
   JSON.stringify(await canvasSize()) === JSON.stringify({ rows: 24, columns: 80 })
 );
 
+// ---- 19f-2. 2 次画面での罫線（review 指摘の回帰確認）--------------------
+//
+// `screenModel()` は 2 次に切り替えるとき canvas/items/diagnostics だけを
+// 差し替えていて、gridLines/gridBoxes を差し替えていなかった——1 次の位置の
+// ままの罫線が描かれ続け、選択して消そうとしても内部の比較が食い違って
+// Delete が黙って効かなかった。
+await page.selectOption("#sample", { label: "grid-two-sizes.dspf" });
+await page.waitForTimeout(250);
+
+const gridLineBox = () => page.$eval(".dds-grid-line", n => ({ top: n.style.top }));
+const primaryTop = (await gridLineBox()).top;
+await page.click("#dds-toggle-secondary");
+await page.waitForTimeout(220);
+const secondaryTop = (await gridLineBox()).top;
+check(
+  "**2 次に切り替えると罫線も 2 次の位置で描かれる**（1 次のままにならない）",
+  primaryTop !== secondaryTop,
+  `1次=${primaryTop} 2次=${secondaryTop}`
+);
+// `element.style.top` は計算前の `calc(...)` 文字列——1 次: 1 行目 → row-1=0。
+// 2 次: *DS4 の 9 行目 → row-1=8。文字列そのもので比べる（parseFloat は
+// "calc(...)" の中の最初の数字（この場合の変数名相当）を拾わず NaN になる）。
+check(
+  "2 次の位置は原典の *DS4 の値（9 行目）どおり",
+  secondaryTop === "calc(var(--cell-h) * 8)",
+  `secondaryTop=${secondaryTop}`
+);
+
+await page.click(".dds-grid-line");
+await page.waitForTimeout(150);
+const beforeDeleteSecondary = await sourceLines();
+await page.keyboard.press("Delete");
+await page.waitForTimeout(250);
+check(
+  "**2 次画面で選択した罫線を Delete で削除できる**（内部比較が 1 次のままだと黙って失敗する）",
+  JSON.stringify(await sourceLines()) !== JSON.stringify(beforeDeleteSecondary),
+  JSON.stringify(await sourceLines())
+);
+await page.click("#undo");
+await page.waitForTimeout(250);
+await page.click("#dds-toggle-secondary");
+await page.waitForTimeout(220);
+
 // ---- 19g. 名前変更の参照追随 --------------------------------------------
 //
 // 項目の名前を変えると、その項目を**指しているキーワードの引数**も一緒に変わる。
@@ -1134,6 +1177,17 @@ const rename = async (label, next) => {
   await page.waitForTimeout(280);
 };
 
+// **断り書きはフィールドを選んだプロパティにしか出ない。** 直前のどのセクションで
+// 何を選んでいたかに依存させない——サンプルを読み込んだ直後は選択が保証されないので、
+// ここで明示的にフィールド（CSRROW）を選んでから確かめる（暗黙の持ち越しに頼る形は
+// 他のセクションを差し込むと壊れる。実際に罫線・枠のセクションを間に挟んで踏んだ）。
+for (const row of await page.$$(".dds-tree li.item")) {
+  if (((await row.textContent()) ?? "").includes("CSRROW")) {
+    await row.click();
+    break;
+  }
+}
+await page.waitForTimeout(180);
 check(
   "断り書きが「一緒に変わる」を伝える",
   (await page.$$eval(".dds-note", nodes => nodes.map(n => n.textContent))).some(t =>
@@ -1632,6 +1686,21 @@ check("進むは最後のページで押せない", await page.$eval('[data-key=
 await page.click('[data-key="page:prev"]');
 await page.waitForTimeout(220);
 check("戻れる", (await pageLabel()) === "1 / 2", await pageLabel());
+
+// **BOX/LINE もページで絞られる**（review 指摘の回帰確認）。
+// PAGE2 の様式に BOX を持たせてある——1 ページ目には出ず、2 ページ目にだけ出るはず。
+check(
+  "1 ページ目には BOX が出ない",
+  (await page.$$(".dds-grid-box")).length === 0
+);
+await page.click('[data-key="page:next"]');
+await page.waitForTimeout(220);
+check(
+  "**2 ページ目には BOX が出る**（全ページに重複して出ない）",
+  (await page.$$(".dds-grid-box")).length === 1
+);
+await page.click('[data-key="page:prev"]');
+await page.waitForTimeout(220);
 
 // **LPI がページの途中で変わると行の高さも変わる。**
 // 原典（`LPI`）は途中で変えることを認めており、位置は用紙上の絶対位置になる。
@@ -2327,6 +2396,196 @@ check(
   (await sourceLines()).some(line => line.includes("PASSRCD(MAIN)")) &&
     (await sourceLines()).some(line => line.includes("ERASE(MAIN)"))
 );
+await page.click("#dds-tab-source");
+await page.waitForTimeout(150);
+
+// ---- 30. 罫線・枠を置く（20260908-dds-ruled-lines・AC4, AC6, AC-I1〜I5）----
+//
+// **既存のフィールド配置と同じ「置く」道具に揃える**（`＋` と同じ武骨さ）。
+// 1点目（始点）→2点目（終点）の2クリック（またはキーボードで2回の Enter）で
+// 確定する。同じ行なら罫線（横）、同じ桁なら罫線（縦）、それ以外は枠になる。
+
+await page.click("#new-dspf");
+await page.waitForTimeout(400);
+const gridCanvas = await page.locator(".dds-canvas").boundingBox();
+const cellY = 12; // 既存の行オフセット計算（25節）と同じ既知値。
+
+check(
+  "**罫線・枠を置く**ボタンがある（AC-I1）",
+  await page.$eval("#dds-add-grid", node => node.textContent?.includes("罫線") ?? false)
+);
+
+// --- マウス2クリックで横の罫線（同じ行）---
+const beforeLine = (await sourceLines()).length;
+await page.click("#dds-add-grid");
+check("押すと armed になる（AC-I1）", await page.$eval("#dds-add-grid", n => n.classList.contains("armed")));
+await page.mouse.click(gridCanvas.x + cellWidth * 4, gridCanvas.y + 3 * cellY);
+await page.waitForTimeout(120);
+await page.mouse.click(gridCanvas.x + cellWidth * 14, gridCanvas.y + 3 * cellY);
+await page.waitForTimeout(300);
+const afterLine = await sourceLines();
+check(
+  "**同じ行の2点を選ぶと横の罫線（GRDLIN）が置かれる**（AC4）",
+  afterLine.length === beforeLine,
+  `キーワードは既存様式の欄に追記されるため行数は変わらない — ${beforeLine} → ${afterLine.length}`
+);
+check(
+  "GRDLIN の桁・長さが始点・終点の桁から求まる（4→14桁 → 桁4・長さ11）",
+  afterLine.some(line => /GRDLIN\(\(\*POS \d+ 4 11\)\(\*TYPE UPPER\)\)/u.test(line)),
+  JSON.stringify(afterLine.find(l => l.includes("GRDLIN"))?.trim() ?? "")
+);
+check(
+  "**配置後は新しく置いた罫線へ焦点が移る**（AC-I4）",
+  await page.evaluate(
+    () => document.activeElement instanceof HTMLElement && document.activeElement.matches(".dds-grid-shape.dds-grid-line")
+  )
+);
+check(
+  "1件確定したら armed が解ける（次の配置は別操作）",
+  !(await page.$eval("#dds-add-grid", n => n.classList.contains("armed")))
+);
+
+// --- 縦の罫線（同じ桁・異なる行）---
+await page.click("#dds-add-grid");
+await page.mouse.click(gridCanvas.x + cellWidth * 30, gridCanvas.y + 5 * cellY);
+await page.mouse.click(gridCanvas.x + cellWidth * 30, gridCanvas.y + 9 * cellY);
+await page.waitForTimeout(300);
+check(
+  "**同じ桁の2点を選ぶと縦の罫線になる**（edge=left）",
+  (await sourceLines()).some(line => /GRDLIN\(\(\*POS \d+ 30 5\)\(\*TYPE LEFT\)\)/u.test(line)),
+  JSON.stringify((await sourceLines()).filter(l => l.includes("GRDLIN")).map(l => l.trim()))
+);
+
+// --- 枠（異なる行・異なる桁）---
+await page.click("#dds-add-grid");
+await page.mouse.click(gridCanvas.x + cellWidth * 40, gridCanvas.y + 10 * cellY);
+await page.mouse.click(gridCanvas.x + cellWidth * 50, gridCanvas.y + 14 * cellY);
+await page.waitForTimeout(300);
+check(
+  "**行・桁とも異なる2点を選ぶと枠（GRDBOX）になる**（AC4）",
+  (await sourceLines()).some(line => /GRDBOX\(\(\*POS \d+ 40 5 11\)\)/u.test(line)),
+  JSON.stringify((await sourceLines()).filter(l => l.includes("GRDBOX")).map(l => l.trim()))
+);
+check("**置いた枠がキャンバスに描かれる**（.dds-grid-box）", (await page.$$(".dds-grid-box")).length >= 1);
+
+// --- 始点と同じ点をクリックしても長さ1の罫線が黙って出来ない（review 指摘の回帰確認）---
+const beforeSamePoint = await sourceLines();
+await page.click("#dds-add-grid");
+await page.mouse.click(gridCanvas.x + cellWidth * 60, gridCanvas.y + 15 * cellY);
+await page.mouse.click(gridCanvas.x + cellWidth * 60, gridCanvas.y + 15 * cellY);
+await page.waitForTimeout(200);
+check(
+  "**始点と同じ点を2回目に選んでも何も置かれない**（長さ1の罫線が誤って出来ない）",
+  JSON.stringify(await sourceLines()) === JSON.stringify(beforeSamePoint),
+  JSON.stringify((await sourceLines()).filter(l => l.includes("GRDLIN")).map(l => l.trim()))
+);
+check(
+  "同じ点クリック後も罫線ツールは armed のまま（終点をやり直せる）",
+  await page.$eval("#dds-add-grid", n => n.classList.contains("armed"))
+);
+await page.keyboard.press("Escape");
+await page.waitForTimeout(150);
+
+// --- Escape で取り消す（AC-I2） ---
+const beforeEscape = await sourceLines();
+await page.click("#dds-add-grid");
+await page.mouse.click(gridCanvas.x + cellWidth * 2, gridCanvas.y + 20 * cellY);
+await page.keyboard.press("Escape");
+await page.waitForTimeout(150);
+check(
+  "**Escape で取り消すと何も置かれない**（始点だけ選んだ状態から）",
+  JSON.stringify(await sourceLines()) === JSON.stringify(beforeEscape)
+);
+check(
+  "取り消したら **罫線・枠を置く** ボタンへ焦点が戻る",
+  await page.evaluate(() => document.activeElement?.id === "dds-add-grid")
+);
+check("Escape で armed も解ける", !(await page.$eval("#dds-add-grid", n => n.classList.contains("armed"))));
+
+// --- キーボードだけで置く（AC-I3） ---
+const beforeKeyboardGrid = (await sourceLines()).length;
+await page.$eval("#dds-add-grid", node => node.focus());
+await page.keyboard.press("Enter");
+await page.waitForTimeout(120);
+check(
+  "Enter で武装したら仮想カーソルが出る（.dds-grid-marker.cursor）",
+  (await page.$$(".dds-grid-marker.cursor")).length === 1
+);
+for (let i = 0; i < 6; i += 1) await page.keyboard.press("ArrowRight");
+for (let i = 0; i < 2; i += 1) await page.keyboard.press("ArrowDown");
+await page.keyboard.press("Enter"); // 始点確定
+await page.waitForTimeout(80);
+check(
+  "始点確定後は始点マーカーも残る（.dds-grid-marker.start）",
+  (await page.$$(".dds-grid-marker.start")).length === 1
+);
+for (let i = 0; i < 4; i += 1) await page.keyboard.press("ArrowRight");
+await page.keyboard.press("Enter"); // 終点確定 → 送信
+await page.waitForTimeout(300);
+check(
+  "**マウス無しで罫線を置ける**（AC-I3）",
+  (await sourceLines()).length >= beforeKeyboardGrid,
+  JSON.stringify((await sourceLines()).filter(l => l.includes("GRDLIN")).map(l => l.trim()))
+);
+
+// --- 削除（AC6） ---
+const beforeGridDelete = await sourceLines();
+const firstGridShape = await page.locator(".dds-grid-shape").first();
+await firstGridShape.click();
+check(
+  "クリックした罫線・枠が選択状態になる（.selected）",
+  await firstGridShape.evaluate(node => node.classList.contains("selected"))
+);
+await page.keyboard.press("Delete");
+await page.waitForTimeout(300);
+check(
+  "**選択した罫線・枠を Delete で削除できる**（AC6）",
+  JSON.stringify(await sourceLines()) !== JSON.stringify(beforeGridDelete)
+);
+await page.click("#undo");
+await page.waitForTimeout(300);
+check(
+  "削除は undo で戻る（AC6 と同じ規約——即座に実行して undo に委ねる）",
+  JSON.stringify(await sourceLines()) === JSON.stringify(beforeGridDelete)
+);
+
+// --- 罫線ツール中は既存項目のキー操作に漏れない（AC-I5） ---
+// 座標は 25 節で実績のある組（`cellWidth * 5`, `5 * cellY`）をそのまま使う。
+await page.click("#dds-add-field");
+await page.mouse.click(gridCanvas.x + cellWidth * 5, gridCanvas.y + 5 * cellY);
+await page.waitForTimeout(200);
+await page.fill("#ask-name", "GRDTEST");
+await page.fill("#ask-length", "5");
+await page.click("#ask-ok");
+await page.waitForTimeout(300);
+// **`.dds-item` の見た目は値のプレースホルダー（`XXXXX` 等）で、名前ではない。**
+// 名前は `title` 属性に入る（`buildItem` が組み立てる）ので、そこで引く。
+await page.click('.dds-item[title*="GRDTEST"]');
+const fieldLineBefore = (await sourceLines()).find(l => l.includes("GRDTEST"));
+await page.click("#dds-add-grid");
+for (let i = 0; i < 5; i += 1) await page.keyboard.press("ArrowRight");
+await page.keyboard.press("Escape");
+await page.waitForTimeout(150);
+check(
+  "**罫線ツール中の矢印キーは選択中のフィールドを動かさない**（AC-I5）",
+  (await sourceLines()).find(l => l.includes("GRDTEST")) === fieldLineBefore,
+  JSON.stringify(fieldLineBefore?.trim())
+);
+
+// --- PRTF でも同じ道具で置ける ---
+await page.click("#new-prtf");
+await page.waitForTimeout(400);
+const prtfCanvas = await page.locator(".dds-canvas").boundingBox();
+await page.click("#dds-add-grid");
+await page.mouse.click(prtfCanvas.x + cellWidth * 5, prtfCanvas.y + 2 * cellY);
+await page.mouse.click(prtfCanvas.x + cellWidth * 15, prtfCanvas.y + 2 * cellY);
+await page.waitForTimeout(300);
+check(
+  "**PRTF でも同じ操作で罫線（LINE）が置ける**",
+  (await sourceLines()).some(line => line.includes("LINE(")),
+  JSON.stringify((await sourceLines()).filter(l => l.includes("LINE")).map(l => l.trim()))
+);
+
 await page.click("#dds-tab-source");
 await page.waitForTimeout(150);
 

@@ -30,10 +30,12 @@ const ORIGIN = join(HERE, `dds${LANG === "ja" ? "" : `-${LANG}`}`);
 const DETAIL = join(ORIGIN, "detail");
 const COMPLETION = join(ROOT, "vscode-extension/resources/completion");
 
+// **`generate-dds-keywords.mjs` と同じ索引の組**（DSPF は2索引）。
+// 索引が増えたらここも合わせる（キーワード名はハードコードしない）。
 const TYPES = [
-  { key: "DDS-PF", file: "PF-LF-KEYWORDS.html" },
-  { key: "DDS-DSPF", file: "DSPF-KEYWORDS.html" },
-  { key: "DDS-PRTF", file: "PRTF-KEYWORDS.html" }
+  { key: "DDS-PF", files: ["PF-LF-KEYWORDS.html"] },
+  { key: "DDS-DSPF", files: ["DSPF-KEYWORDS.html", "DSPKWD.html"] },
+  { key: "DDS-PRTF", files: ["PRTF-KEYWORDS.html"] }
 ];
 
 const decode = text =>
@@ -47,23 +49,26 @@ const decode = text =>
 
 const strip = html => decode(String(html).replace(/<[^>]+>/g, " ")).replace(/\s+/g, " ").trim();
 
-/** 索引から「キーワード名 → 詳細ページのファイル名」を作る。 */
-function detailPaths(indexFile) {
-  const html = readFileSync(join(ORIGIN, indexFile), "utf8");
+/** 索引から「キーワード名 → 詳細ページのファイル名」を作る。複数索引をまとめられる。 */
+function detailPaths(indexFiles) {
   const map = new Map();
 
-  for (const match of html.matchAll(
-    /href="[^"]*\/(rzak[bcd]\/[a-z0-9_]+\.htm)[^"]*"[^>]*>([\s\S]{0,90}?)<\/a>/g
-  )) {
-    const label = strip(match[2]);
-    // `nn` は原典の書き方（`CAnn` = CA01-CA24 の総称）。索引側（generate-dds-keywords.mjs）と
-    // **同じ形**にしておかないと、名前は拾えても構文だけが付かない状態になる。
-    const names = /([A-Z][A-Z0-9]*(?:nn)?(?:\/[A-Z][A-Z0-9]*(?:nn)?)*)\s*[（(]/.exec(label);
-    if (!names) continue;
+  for (const indexFile of indexFiles) {
+    const html = readFileSync(join(ORIGIN, indexFile), "utf8");
 
-    for (const name of names[1].split("/")) {
-      if (name.length >= 2 && !map.has(name)) {
-        map.set(name, match[1].replace("/", "_"));
+    for (const match of html.matchAll(
+      /href="[^"]*\/(rzak[bcd]\/[a-z0-9_]+\.htm)[^"]*"[^>]*>([\s\S]{0,90}?)<\/a>/g
+    )) {
+      const label = strip(match[2]);
+      // `nn` は原典の書き方（`CAnn` = CA01-CA24 の総称）。索引側（generate-dds-keywords.mjs）と
+      // **同じ形**にしておかないと、名前は拾えても構文だけが付かない状態になる。
+      const names = /([A-Z][A-Z0-9]*(?:nn)?(?:\/[A-Z][A-Z0-9]*(?:nn)?)*)\s*[（(]/.exec(label);
+      if (!names) continue;
+
+      for (const name of names[1].split("/")) {
+        if (name.length >= 2 && !map.has(name)) {
+          map.set(name, match[1].replace("/", "_"));
+        }
       }
     }
   }
@@ -164,8 +169,8 @@ let filled = 0;
 let missing = 0;
 let levelFilled = 0;
 
-for (const { key, file } of TYPES) {
-  const paths = detailPaths(file);
+for (const { key, files } of TYPES) {
+  const paths = detailPaths(files);
 
   for (const keyword of data[key] ?? []) {
     const detail = paths.get(keyword.name);

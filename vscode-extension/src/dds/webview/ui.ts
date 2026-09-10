@@ -25,6 +25,21 @@ import {
 } from "../../core/dds/ddsKeywords";
 import type { ItemAttributes, OutlineItem } from "../../core/dds/dspfOutline";
 import {
+  buildGrdbox,
+  buildGrdlin,
+  buildPrtfBox,
+  buildPrtfLine,
+  parseGrdbox,
+  parseGrdlin,
+  parsePrtfBox,
+  parsePrtfLine,
+  type GridBoxShape,
+  type GridLineShape,
+  type RenderGridBox,
+  type RenderGridLine,
+  type ScreenSizeTarget
+} from "../../core/dds/ddsGridShapes";
+import {
   CPI_VALUES,
   DEFAULT_DENSITY,
   LPI_VALUES,
@@ -67,7 +82,7 @@ const DRAG_THRESHOLD_PX = 3;
 const MEASURE_SAMPLE = 80;
 
 type Mode = "idle" | "selecting" | "dragging" | "resizing" | "pending";
-type Placing = "field" | "constant" | null;
+type Placing = "field" | "constant" | "grid" | null;
 
 interface Gesture {
   readonly sourceLine: number;
@@ -164,6 +179,25 @@ class EditorView {
   private selected: number | undefined;
   private gesture: Gesture | undefined;
   private placing: Placing = null;
+  /**
+   * 罫線・枠ツールの始点。`undefined` は「まだ始点を選んでいない」。
+   *
+   * `placing === "grid"` のときだけ意味を持つ。2 点目の確定（クリック／Enter）で
+   * 使い切り、送信の前に `undefined` へ戻す（次の配置に持ち越さない）。
+   */
+  private gridStart: CellPoint | undefined;
+  /**
+   * キーボードで罫線・枠を置くときの仮想カーソル。マウスは `cellAt` が都度計算するが、
+   * キーボードには「いまどのセルを指しているか」を覚える場所が無いと矢印キーが動かせない。
+   */
+  private gridCursor: CellPoint | undefined;
+  /** 配置直後に焦点を移す先（`render()` が読んで消費する。見つからなければ `＋` へ）。 */
+  private pendingGridFocus: { readonly sourceLine: number; readonly row: number; readonly column: number } | undefined;
+  /** 選択中の罫線・枠。フィールドの `this.selected`（sourceLine）とは別に持つ
+   * ——同じ様式に複数の罫線・枠がありうるので、行番号だけでは区別できない。 */
+  private selectedGridShape:
+    | { readonly sourceLine: number; readonly row: number; readonly column: number; readonly kind: "line" | "box" }
+    | undefined;
   private pendingStructural = false;
   /** 直近の拒否理由。プロパティ内に出す（フォーカスを奪わない場所）。 */
   private rejectMessage = "";
@@ -283,6 +317,7 @@ class EditorView {
   private readonly title: HTMLElement;
   private readonly addField: HTMLButtonElement;
   private readonly addConstant: HTMLButtonElement;
+  private readonly addGrid: HTMLButtonElement;
   private readonly addRecord: HTMLButtonElement;
   private readonly addRecordInput: HTMLInputElement;
   private readonly toggles: ReadonlyArray<{
@@ -335,6 +370,7 @@ class EditorView {
     this.title = must(root, ".record-name");
     this.addField = must(root, "#dds-add-field");
     this.addConstant = must(root, "#dds-add-constant");
+    this.addGrid = must(root, "#dds-add-grid");
     // **`renderOutline` の外に置く。** あそこは項目 0 件で早く返るので、
     // 中に置くと**様式が 1 つも無いファイルで `＋` が消える**（唯一の逃げ道が塞がる）。
     this.addRecord = must(root, "#dds-add-record");
@@ -361,6 +397,7 @@ class EditorView {
     document.addEventListener("keydown", event => this.onKeyDown(event));
     this.addField.addEventListener("click", () => this.arm("field"));
     this.addConstant.addEventListener("click", () => this.arm("constant"));
+    this.addGrid.addEventListener("click", () => this.arm("grid"));
     this.wireAddRecord();
 
     this.toggles = [
@@ -556,6 +593,8 @@ class EditorView {
       ...model,
       canvas: secondary.canvas,
       items: secondary.items,
+      gridLines: secondary.gridLines,
+      gridBoxes: secondary.gridBoxes,
       diagnostics: secondary.diagnostics
     };
   }
@@ -658,6 +697,15 @@ class EditorView {
       (heading ?? this.addRecord).focus();
     }
 
+    if (this.pendingGridFocus !== undefined) {
+      const { sourceLine, row, column } = this.pendingGridFocus;
+      this.pendingGridFocus = undefined;
+      const shape = this.canvas.querySelector<HTMLElement>(
+        `.dds-grid-shape[data-source-line="${sourceLine}"][data-row="${row}"][data-column="${column}"]`
+      );
+      (shape ?? this.addGrid).focus();
+    }
+
     if (this.pendingIndicatorFocus !== undefined) {
       // 選んだ値のボタンへ戻す（作り替えたので元の要素はもう無い）。
       this.indicatorPanel
@@ -724,7 +772,107 @@ class EditorView {
     const overflow = overflowLine(model);
     if (overflow) nodes.push(overflow);
 
+    nodes.push(...this.gridShapeElements(model));
+
     this.canvas.replaceChildren(...nodes);
+  }
+
+  /** 罫線・枠（＋ 配置ツールの仮想カーソル）の DOM 要素。`renderItems` から呼ぶだけ。 */
+  private gridShapeElements(model: RenderModel): HTMLElement[] {
+    const nodes: HTMLElement[] = [];
+
+    for (const line of model.gridLines) {
+      nodes.push(this.buildGridLineElement(line));
+    }
+    for (const box of model.gridBoxes) {
+      nodes.push(this.buildGridBoxElement(box));
+    }
+
+    // 罫線・枠ツールの仮想カーソル（キーボード操作の目印）。始点を選んだ後は
+    // 始点も薄く示す——2 点の関係が見えないと、次にどこを終点にしているか分からない。
+    if (this.placing === "grid" && this.gridCursor) {
+      if (this.gridStart) nodes.push(this.buildGridMarker(this.gridStart, "start"));
+      nodes.push(this.buildGridMarker(this.gridCursor, "cursor"));
+    }
+
+    return nodes;
+  }
+
+  private buildGridLineElement(line: RenderGridLine): HTMLElement {
+    const element = document.createElement("div");
+    const horizontal = line.edge === "upper" || line.edge === "lower";
+    element.className = `dds-grid-shape dds-grid-line ${horizontal ? "horizontal" : "vertical"}`;
+    element.tabIndex = 0;
+    element.dataset.sourceLine = String(line.sourceLine);
+    element.dataset.row = String(line.row);
+    element.dataset.column = String(line.column);
+    element.dataset.shapeKind = "line";
+    element.title = `罫線（${line.row} 行 ${line.column} 桁 / 長さ ${line.length} / ${line.edge}）`;
+    element.style.left = `calc(var(--cell-w) * ${line.column - 1})`;
+    if (horizontal) {
+      element.style.top =
+        line.edge === "lower"
+          ? `calc(var(--cell-h) * ${line.row})`
+          : `calc(var(--cell-h) * ${line.row - 1})`;
+      element.style.width = `calc(var(--cell-w) * ${line.length})`;
+    } else {
+      element.style.top = `calc(var(--cell-h) * ${line.row - 1})`;
+      element.style.left =
+        line.edge === "right"
+          ? `calc(var(--cell-w) * ${line.column})`
+          : `calc(var(--cell-w) * ${line.column - 1})`;
+      element.style.height = `calc(var(--cell-h) * ${line.length})`;
+    }
+    if (this.isSelectedGridShape(line.sourceLine, line.row, line.column, "line")) {
+      element.classList.add("selected");
+    }
+    return element;
+  }
+
+  private buildGridBoxElement(box: RenderGridBox): HTMLElement {
+    const element = document.createElement("div");
+    element.className = "dds-grid-shape dds-grid-box";
+    element.tabIndex = 0;
+    element.dataset.sourceLine = String(box.sourceLine);
+    element.dataset.row = String(box.row);
+    element.dataset.column = String(box.column);
+    element.dataset.shapeKind = "box";
+    element.title = `枠（${box.row} 行 ${box.column} 桁 / ${box.depth} 行 × ${box.width} 桁）`;
+    element.style.left = `calc(var(--cell-w) * ${box.column - 1})`;
+    element.style.top = `calc(var(--cell-h) * ${box.row - 1})`;
+    element.style.width = `calc(var(--cell-w) * ${box.width})`;
+    element.style.height = `calc(var(--cell-h) * ${box.depth})`;
+    if (this.isSelectedGridShape(box.sourceLine, box.row, box.column, "box")) {
+      element.classList.add("selected");
+    }
+    return element;
+  }
+
+  /** 罫線・枠の描画要素が「いま選択中のもの」と同じ実体を指しているか。 */
+  private isSelectedGridShape(
+    sourceLine: number,
+    row: number,
+    column: number,
+    kind: "line" | "box"
+  ): boolean {
+    const selected = this.selectedGridShape;
+    return (
+      selected !== undefined &&
+      selected.sourceLine === sourceLine &&
+      selected.row === row &&
+      selected.column === column &&
+      selected.kind === kind
+    );
+  }
+
+  private buildGridMarker(at: CellPoint, kind: "start" | "cursor"): HTMLElement {
+    const element = document.createElement("div");
+    element.className = `dds-grid-marker ${kind}`;
+    element.style.left = `calc(var(--cell-w) * ${at.column - 1})`;
+    element.style.top = `calc(var(--cell-h) * ${at.row - 1})`;
+    element.title =
+      kind === "start" ? `始点 ${at.row} 行 ${at.column} 桁` : `${at.row} 行 ${at.column} 桁`;
+    return element;
   }
 
 
@@ -2267,6 +2415,11 @@ class EditorView {
 
   private onPointerDown(event: PointerEvent): void {
     if (this.placing !== null) {
+      // **既定動作を止める。** 止めないと、ブラウザが「フォーカス可能でない要素を
+      // 押した」既定動作として焦点を body へ落とす——`place()` が明示的に置いた
+      // 要素へ焦点を移しても、この既定動作の方が後に効いて上書きしてしまう
+      // （罫線・枠ツールで実際に踏んだ。AC-I4）。
+      event.preventDefault();
       void this.place(event);
       return;
     }
@@ -2281,6 +2434,28 @@ class EditorView {
       const picked = target.closest<HTMLElement>(".dds-item");
       this.select(picked ? Number(picked.dataset.sourceLine) : undefined);
       this.setStatus("長さは画面サイズで変わりません（上書き行は位置だけを持ちます）");
+      return;
+    }
+
+    // 罫線・枠は `.dds-item` と別のクラスで描く（フィールドと性質が違う——
+    // 値もデータ型も持たず、ドラッグ移動・リサイズも対象外。選択と削除だけを扱う）。
+    const gridShapeElement = target?.closest<HTMLElement>(".dds-grid-shape") ?? null;
+    if (gridShapeElement) {
+      event.preventDefault();
+      this.select(undefined);
+      this.selectedGridShape = {
+        sourceLine: Number(gridShapeElement.dataset.sourceLine),
+        row: Number(gridShapeElement.dataset.row),
+        column: Number(gridShapeElement.dataset.column),
+        kind: gridShapeElement.dataset.shapeKind === "box" ? "box" : "line"
+      };
+      this.render();
+      this.canvas
+        .querySelector<HTMLElement>(
+          `.dds-grid-shape[data-source-line="${gridShapeElement.dataset.sourceLine}"]` +
+            `[data-row="${gridShapeElement.dataset.row}"][data-column="${gridShapeElement.dataset.column}"]`
+        )
+        ?.focus();
       return;
     }
 
@@ -2393,11 +2568,46 @@ class EditorView {
 
     if (event.key === "Escape") {
       this.placing = null;
+      this.gridStart = undefined;
+      this.gridCursor = undefined;
       this.updateArmed();
       this.select(undefined);
       this.setStatus("");
+      this.render();
       return;
     }
+
+    // 罫線・枠ツールが有効な間は、矢印キー／Enter がここで終わる
+    // ——選択中の項目のキー処理（下）へは漏らさない（AC-I5）。
+    if (this.placing === "grid") {
+      if (this.mode !== "idle") return;
+      if (event.key === "Enter") {
+        event.preventDefault();
+        this.confirmGridPoint(this.gridCursor ?? this.initialGridCursor());
+        return;
+      }
+      const step = arrowStep(event.key);
+      if (!step) return;
+      event.preventDefault();
+      const canvas = this.canvasSize();
+      const cursor = this.gridCursor ?? this.initialGridCursor();
+      this.gridCursor = {
+        row: clamp(cursor.row + step.row, 1, canvas.rows),
+        column: clamp(cursor.column + step.column, 1, canvas.columns)
+      };
+      this.render();
+      return;
+    }
+
+    // 罫線・枠を選んでいるときの削除（フィールドの Delete と同じキー）。
+    if (this.selectedGridShape !== undefined) {
+      if (event.key === "Delete" || event.key === "Backspace") {
+        event.preventDefault();
+        this.removeGridShape(this.selectedGridShape);
+      }
+      return;
+    }
+
     if (this.mode !== "idle" || this.selected === undefined) return;
 
     const item = this.selectedItem();
@@ -2441,18 +2651,40 @@ class EditorView {
 
   private arm(kind: Exclude<Placing, null>): void {
     this.placing = this.placing === kind ? null : kind;
+    this.gridStart = undefined;
+    this.gridCursor = this.placing === "grid" ? this.initialGridCursor() : undefined;
     this.updateArmed();
-    this.setStatus(this.placing === null ? "" : "キャンバスをクリックすると置きます（Esc で取り消し）");
+    this.setStatus(
+      this.placing === null
+        ? ""
+        : this.placing === "grid"
+          ? "始点をクリック（または Enter）してください（Esc で取り消し）"
+          : "キャンバスをクリックすると置きます（Esc で取り消し）"
+    );
+    // 罫線・枠ツールはキーボードの仮想カーソルを描く必要がある（キーボードだけで
+    // 完結させるため。AC-I3）。他の道具はクリックでしか使わないので描き直さない。
+    if (this.placing === "grid" || kind === "grid") this.render();
+  }
+
+  /** 罫線・枠ツールの仮想カーソルの初期位置。選択中の項目があればそこから始める。 */
+  private initialGridCursor(): CellPoint {
+    const item = this.selectedItem();
+    return item ? { row: item.row, column: item.column } : { row: 1, column: 1 };
   }
 
   private updateArmed(): void {
     this.addField.classList.toggle("armed", this.placing === "field");
     this.addConstant.classList.toggle("armed", this.placing === "constant");
+    this.addGrid.classList.toggle("armed", this.placing === "grid");
     this.canvas.classList.toggle("placing", this.placing !== null);
   }
 
   private async place(event: PointerEvent): Promise<void> {
     const kind = this.placing;
+    if (kind === "grid") {
+      this.confirmGridPoint(this.cellAt(event));
+      return;
+    }
     const ask = this.options.askItem;
     if (kind === null || ask === undefined) return;
 
@@ -2489,6 +2721,150 @@ class EditorView {
     });
   }
 
+  /**
+   * 罫線・枠ツールの1点を確定する（クリック／Enter で共通）。
+   *
+   * 1点目は始点として覚えるだけ（**まだ送らない**）。2点目で確定し、
+   * 矩形の形から罫線か枠かを決めて送る。
+   */
+  private confirmGridPoint(at: CellPoint): void {
+    this.gridCursor = at;
+    if (this.gridStart === undefined) {
+      this.gridStart = at;
+      this.setStatus(
+        `始点 ${at.row} 行 ${at.column} 桁 を選びました。終点をクリック（または Enter）してください（Esc で取り消し）`
+      );
+      this.render();
+      return;
+    }
+
+    const start = this.gridStart;
+    // **始点と同じ点は終点にならない。** 1 桁 × 1 行の「線」が意図せず出来る
+    // ——長さ 1 の罫線を静かに書くより、まだ終点を選んでいない扱いにする方が安全。
+    if (start.row === at.row && start.column === at.column) {
+      this.setStatus(
+        `始点と同じ点です。終点は別の行・桁を選んでください（Esc で取り消し）`
+      );
+      return;
+    }
+
+    this.gridStart = undefined;
+    this.gridCursor = undefined;
+    this.placing = null;
+    this.updateArmed();
+    this.submitGridShape(start, at);
+  }
+
+  /**
+   * 始点・終点から罫線・枠を組み立てて送る。
+   *
+   * **1行 or 1桁の選択は罫線、それ以外は枠**（design.md「振る舞いの詳細」）。
+   * 罫線・枠は既存の汎用キーワード編集（`setKeywords`）に乗せる——専用の
+   * `DdsEdit` は新設しない（`20260908-dds-ruled-lines` decisions.md D1）。
+   */
+  private submitGridShape(start: CellPoint, end: CellPoint): void {
+    const recordName = this.recordAt(Math.min(start.row, end.row));
+    const record =
+      recordName !== undefined
+        ? (this.view ?? this.model)?.outline.find(candidate => candidate.name === recordName)
+        : undefined;
+    if (record === undefined) {
+      this.setStatus("罫線・枠を置ける様式がありません");
+      this.render();
+      return;
+    }
+
+    const rowMin = Math.min(start.row, end.row);
+    const rowMax = Math.max(start.row, end.row);
+    const columnMin = Math.min(start.column, end.column);
+    const columnMax = Math.max(start.column, end.column);
+
+    const model = this.model;
+    const isPrtf = model?.kind === "prtf";
+    const density = model?.density ?? DEFAULT_DENSITY;
+    // 新規配置は常に単純な（*DS3/*DS4 を持たない）POS で書く——2次画面用に
+    // 既存の *DS3/*DS4 併記へ合成することはしない（design.md の対象範囲外）。
+
+    let snippet: string;
+    let label: string;
+    if (rowMin === rowMax) {
+      const shape: GridLineShape = { row: rowMin, column: columnMin, length: columnMax - columnMin + 1, edge: "upper" };
+      snippet = isPrtf ? buildPrtfLine(shape, density) : buildGrdlin(shape);
+      label = "罫線";
+    } else if (columnMin === columnMax) {
+      const shape: GridLineShape = { row: rowMin, column: columnMin, length: rowMax - rowMin + 1, edge: "left" };
+      snippet = isPrtf ? buildPrtfLine(shape, density) : buildGrdlin(shape);
+      label = "罫線";
+    } else {
+      const shape: GridBoxShape = {
+        row: rowMin,
+        column: columnMin,
+        depth: rowMax - rowMin + 1,
+        width: columnMax - columnMin + 1
+      };
+      snippet = isPrtf ? buildPrtfBox(shape, density) : buildGrdbox(shape);
+      label = "枠";
+    }
+
+    const current = record.keywords.trim();
+    this.pendingStatus = `${label}を置きました`;
+    this.pendingGridFocus = { sourceLine: record.sourceLine, row: rowMin, column: columnMin };
+    this.send({
+      kind: "setKeywords",
+      sourceLine: record.sourceLine,
+      keywords: current.length === 0 ? snippet : `${current} ${snippet}`
+    });
+  }
+
+  /**
+   * 選択中の罫線・枠を削除する。既存のキーワード・チップ削除と同じ経路
+   * ——現在の全文から対象の occurrence だけを除いて `setKeywords` を送る
+   * （`20260908-dds-ruled-lines` decisions.md D1）。
+   */
+  private removeGridShape(target: { readonly sourceLine: number; readonly row: number; readonly column: number; readonly kind: "line" | "box" }): void {
+    const record = (this.view ?? this.model)?.outline.find(candidate => candidate.sourceLine === target.sourceLine);
+    if (record === undefined) return;
+
+    const model = this.model;
+    const isPrtf = model?.kind === "prtf";
+    const density = model?.density ?? DEFAULT_DENSITY;
+    const screenTarget: ScreenSizeTarget = this.editingScreenSize === "secondary" ? "secondary" : "primary";
+
+    const lineKeyword = isPrtf ? "LINE" : "GRDLIN";
+    const boxKeyword = isPrtf ? "BOX" : "GRDBOX";
+    const kept: string[] = [];
+    let removed = false;
+
+    for (const entry of parseKeywordEntries(record.keywords)) {
+      if (!removed && entry.kind === "keyword" && entry.parameters !== undefined) {
+        if (target.kind === "line" && entry.name === lineKeyword) {
+          const shape = isPrtf
+            ? parsePrtfLine(entry.parameters, density)
+            : parseGrdlin(entry.parameters, screenTarget);
+          if (shape && shape.row === target.row && shape.column === target.column) {
+            removed = true;
+            continue;
+          }
+        }
+        if (target.kind === "box" && entry.name === boxKeyword) {
+          const shape = isPrtf
+            ? parsePrtfBox(entry.parameters, density)
+            : parseGrdbox(entry.parameters, screenTarget);
+          if (shape && shape.row === target.row && shape.column === target.column) {
+            removed = true;
+            continue;
+          }
+        }
+      }
+      kept.push(entry.raw);
+    }
+    if (!removed) return;
+
+    this.pendingStatus = `${target.kind === "line" ? "罫線" : "枠"}を削除しました`;
+    this.selectedGridShape = undefined;
+    this.send({ kind: "setKeywords", sourceLine: record.sourceLine, keywords: kept.join(" ") });
+  }
+
   // ---- 補助 --------------------------------------------------------
 
   private send(edit: DdsEdit): void {
@@ -2504,7 +2880,10 @@ class EditorView {
   }
 
   private select(sourceLine: number | undefined): void {
-    if (this.selected === sourceLine) return;
+    // 選択は一本化する——フィールド/様式を選んだら、罫線・枠の選択は外す。
+    const hadGridShape = this.selectedGridShape !== undefined;
+    this.selectedGridShape = undefined;
+    if (this.selected === sourceLine && !hadGridShape) return;
     this.selected = sourceLine;
     this.render();
   }
@@ -2859,6 +3238,7 @@ function template(): string {
     <span class="record-name"></span>
     <button id="dds-add-field" type="button">フィールドを置く</button>
     <button id="dds-add-constant" type="button">定数を置く</button>
+    <button id="dds-add-grid" type="button" title="始点をクリック（または Enter）、終点をクリック（または Enter）で罫線・枠を置きます。1行/1桁の選択は罫線、それ以外は枠になります">罫線・枠を置く</button>
     <span class="sep"></span>
     <button id="dds-toggle-shifts" type="button" title="DBCS の前後にある SO / SI を { } で表示します（桁は元から空いています）">SO/SI</button>
     <button id="dds-toggle-attributes" type="button" title="項目の前後 1 桁を占める属性文字を示します">属性バイト</button>

@@ -1,6 +1,7 @@
 import { collectIndicators } from "./ddsConditioning";
 import { findDanglingReferences } from "./ddsDanglingReferences";
-import { resolvePrintDensity, type PrintDensity } from "./prtfDensity";
+import { DEFAULT_DENSITY, resolvePrintDensity, type PrintDensity } from "./prtfDensity";
+import { collectPrtfGridShapes } from "./ddsGridShapes";
 import { toRenderItem, type RenderItem } from "./ddsRenderItem";
 import {
   buildDspfOutline,
@@ -102,6 +103,27 @@ export function fromPrtfLayout(
     )
   );
 
+  // BOX/LINE は cm/inch 単位で書かれるため、行・桁に変換し尽くしてから渡す
+  // （design.md 方針C）。`UOM` は DDS に現れないので既定（`*INCH`）を使う
+  // ——`PAGESIZE`/`OVRFLW` と同じ「ホストが渡す設定値」の一つ（未対応。research 未確認事項）。
+  //
+  // **様式ごとのページも要る。** GRDLIN/GRDBOX ではなく BOX/LINE（様式・レコード・レベルの
+  // キーワード）は項目のような `page` を自分では持たないため、**同じ様式の項目が
+  // 解決したページ**を借りる（items と同じ「最初に見つかったものを採る」）。
+  // 借りる先が無い（項目 0 件の様式）は既定で1ページ目（`selectPrintPage` の
+  // `item.page ?? 1` と同じ既定）。
+  const recordPage = new Map<string, number>();
+  for (const item of onPage) {
+    if (item.recordName && !recordPage.has(item.recordName)) {
+      recordPage.set(item.recordName, item.page);
+    }
+  }
+  const outlineWithPages = outline.map(record => ({
+    ...record,
+    ...(recordPage.has(record.name) ? { page: recordPage.get(record.name) } : {})
+  }));
+  const shapes = collectPrtfGridShapes(outlineWithPages, density ?? DEFAULT_DENSITY);
+
   return {
     kind: "prtf",
     canvas: { rows: layout.page.rows, columns: layout.page.columns },
@@ -110,6 +132,8 @@ export function fromPrtfLayout(
     currentPage: page,
     ...(density !== undefined ? { density } : {}),
     items,
+    gridLines: shapes.lines,
+    gridBoxes: shapes.boxes,
     // **診断は作り直さない。** `prtfLayout` のものをそのまま渡す。
     diagnostics: layout.diagnostics.map(diagnostic => ({
       code: diagnostic.code,
@@ -168,6 +192,8 @@ export function selectPrintPage(model: RenderModel, page: number): RenderModel {
   return {
     ...model,
     currentPage: wanted,
-    items: model.items.filter(item => (item.page ?? 1) === wanted)
+    items: model.items.filter(item => (item.page ?? 1) === wanted),
+    gridLines: model.gridLines.filter(line => (line.page ?? 1) === wanted),
+    gridBoxes: model.gridBoxes.filter(box => (box.page ?? 1) === wanted)
   };
 }
