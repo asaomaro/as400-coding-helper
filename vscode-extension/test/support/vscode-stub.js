@@ -110,14 +110,37 @@ const vscode = {
   },
   workspace: {
     getConfiguration: section => ({
-      get: key => configValues[section]?.[key]
+      get: (key, defaultValue) => configValues[section]?.[key] ?? defaultValue
     }),
     workspaceFolders: undefined,
-    getWorkspaceFolder: () => undefined,
-    onDidChangeTextDocument: () => ({ dispose() {} }),
+    __workspaceFolder: undefined,
+    __relativePath: undefined,
+    __appliedEdits: [],
+    __applyEditResult: true,
+    __textDocumentChangeListeners: [],
+    __configurationChangeListeners: [],
+    getWorkspaceFolder: () => vscode.workspace.__workspaceFolder,
+    asRelativePath: uri => vscode.workspace.__relativePath ?? uri.fsPath,
+    onDidChangeTextDocument(listener) {
+      vscode.workspace.__textDocumentChangeListeners.push(listener);
+      return { dispose() {} };
+    },
+    onDidChangeConfiguration(listener) {
+      vscode.workspace.__configurationChangeListeners.push(listener);
+      return { dispose() {} };
+    },
+    __fireTextDocumentChange(event) {
+      vscode.workspace.__textDocumentChangeListeners.forEach(listener => listener(event));
+    },
+    __fireConfigurationChange(event) {
+      vscode.workspace.__configurationChangeListeners.forEach(listener => listener(event));
+    },
     onDidCloseTextDocument: () => ({ dispose() {} }),
     onDidOpenTextDocument: () => ({ dispose() {} }),
-    applyEdit: () => Promise.resolve(true),
+    applyEdit: edit => {
+      vscode.workspace.__appliedEdits.push(edit);
+      return Promise.resolve(vscode.workspace.__applyEditResult);
+    },
     /**
      * ファイルシステム。**書いた内容を覚えるだけ**（実際には書かない）。
      * テストから `vscode.workspace.fs.__written` で確かめる。
@@ -148,6 +171,11 @@ const vscode = {
     visibleTextEditors: [],
     messages: [],
     errors: [],
+    decorationTypes: [],
+    __inputBoxResult: undefined,
+    __inputBoxOptions: undefined,
+    __showTextDocumentCalls: [],
+    __activeTextEditorChangeListeners: [],
     /**
      * 保存ダイアログ。**テストが答えを決める**——
      * `vscode.window.__saveDialogResult` に Uri を入れると採用、
@@ -162,6 +190,15 @@ const vscode = {
     showErrorMessage(message) {
       vscode.window.errors.push(message);
       return Promise.resolve(undefined);
+    },
+    showInputBox(options) {
+      vscode.window.__inputBoxOptions = options;
+      return Promise.resolve(vscode.window.__inputBoxResult);
+    },
+    createTextEditorDecorationType(options) {
+      const decoration = { options, dispose() {} };
+      vscode.window.decorationTypes.push(decoration);
+      return decoration;
     },
     /**
      * 確認の答え。**テストが決める**——押すボタンの文字列を入れると
@@ -210,7 +247,16 @@ const vscode = {
       return Promise.resolve(vscode.window.__warningAnswer);
     },
     onDidChangeTextEditorSelection: () => ({ dispose() {} }),
-    showTextDocument() {
+    onDidChangeActiveTextEditor(listener) {
+      vscode.window.__activeTextEditorChangeListeners.push(listener);
+      return { dispose() {} };
+    },
+    __fireActiveTextEditorChange(editor) {
+      vscode.window.activeTextEditor = editor;
+      vscode.window.__activeTextEditorChangeListeners.forEach(listener => listener(editor));
+    },
+    showTextDocument(document, options) {
+      vscode.window.__showTextDocumentCalls.push({ document, options });
       return Promise.resolve({
         selection: undefined,
         revealRange() {}
@@ -265,6 +311,7 @@ const vscode = {
     }
   },
   StatusBarAlignment: { Left: 1, Right: 2 },
+  EndOfLine: { LF: 1, CRLF: 2 },
   ViewColumn: { One: 1, Beside: -2 },
   Selection: class { constructor(anchor, active) { this.anchor = anchor; this.active = active; } },
   WorkspaceEdit: class {

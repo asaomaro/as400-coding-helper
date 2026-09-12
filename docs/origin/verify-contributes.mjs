@@ -132,6 +132,39 @@ const PREVIEW_MENUS = [
 const menuItems = manifest.contributes?.menus?.["editor/context"] ?? [];
 
 /**
+ * 手動同期はすべての固定長ソースで同じ対象集合を使う。メニューだけの手書き列挙を
+ * `TARGET_EXTENSIONS` と照合し、導線が一部の拡張子で死蔵しないようにする。
+ */
+const MEMBER_SYNC_COMMANDS = [
+  "rpgClSupport.ibmiSourceSync.upload",
+  "rpgClSupport.ibmiSourceSync.download"
+];
+
+for (const command of MEMBER_SYNC_COMMANDS) {
+  if (!(manifest.contributes?.commands ?? []).some(entry => entry.command === command)) {
+    failures.push(`${command} が contributes.commands に無い（パレットに出ない）`);
+  }
+
+  const item = menuItems.find(entry => entry.command === command);
+  if (!item) {
+    failures.push(`${command} が editor/context に無い（右クリックから同期できない）`);
+    continue;
+  }
+
+  const declared = [...item.when.matchAll(/resourceExtname == \.([a-z0-9]+)/gu)].map(
+    match => match[1]
+  );
+  const missing = extensions.filter(ext => !declared.includes(ext));
+  const extra = declared.filter(ext => !extensions.includes(ext));
+  if (missing.length > 0) {
+    failures.push(`${command} が出ない拡張子: ${missing.map(ext => `.${ext}`).join(" ")}`);
+  }
+  if (extra.length > 0) {
+    failures.push(`${command} が出るが対象外の拡張子: ${extra.map(ext => `.${ext}`).join(" ")}`);
+  }
+}
+
+/**
  * ビジュアルエディタの右クリック導線。
  *
  * **エディタ本体が動いても、開く手段が無ければ死蔵**（AGENTS.md「追加したリソースは
