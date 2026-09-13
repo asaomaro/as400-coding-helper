@@ -132,6 +132,26 @@
         "command": "rpgClSupport.newPrtf",
         "title": "新しい帳票ファイル (PRTF) を作る（ビジュアルエディタで開きます）",
         "category": "RPG/CL Support"
+      },
+      {
+        "command": "rpgClSupport.ibmiSourceSync.upload",
+        "title": "IBM i: 現在のソースをアップロード",
+        "category": "RPG/CL Support"
+      },
+      {
+        "command": "rpgClSupport.ibmiSourceSync.download",
+        "title": "IBM i: 現在のソースをダウンロード",
+        "category": "RPG/CL Support"
+      },
+      {
+        "command": "rpgClSupport.ibmiSourceSync.setAuthenticationSecret",
+        "title": "IBM i 同期: 認証情報を保存",
+        "category": "RPG/CL Support"
+      },
+      {
+        "command": "rpgClSupport.ibmiSourceSync.clearAuthenticationSecret",
+        "title": "IBM i 同期: 保存済み認証情報を削除",
+        "category": "RPG/CL Support"
       }
     ],
     "menus": {
@@ -162,6 +182,16 @@
           "command": "rpgClSupport.openDdsVisualEditor",
           "when": "resourceExtname == .dspf || resourceExtname == .mnudds || resourceExtname == .prtf",
           "group": "navigation@2"
+        },
+        {
+          "command": "rpgClSupport.ibmiSourceSync.upload",
+          "when": "editorTextFocus && (resourceExtname == .rpg || resourceExtname == .rpgle || resourceExtname == .sqlrpgle || resourceExtname == .sqlrpg || resourceExtname == .clp || resourceExtname == .clle || resourceExtname == .pf || resourceExtname == .lf || resourceExtname == .dspf || resourceExtname == .prtf || resourceExtname == .mnudds || resourceExtname == .dds || resourceExtname == .cmd)",
+          "group": "navigation@9"
+        },
+        {
+          "command": "rpgClSupport.ibmiSourceSync.download",
+          "when": "editorTextFocus && (resourceExtname == .rpg || resourceExtname == .rpgle || resourceExtname == .sqlrpgle || resourceExtname == .sqlrpg || resourceExtname == .clp || resourceExtname == .clle || resourceExtname == .pf || resourceExtname == .lf || resourceExtname == .dspf || resourceExtname == .prtf || resourceExtname == .mnudds || resourceExtname == .dds || resourceExtname == .cmd)",
+          "group": "navigation@10"
         }
       ]
     },
@@ -195,6 +225,49 @@
     "configuration": {
       "title": "RPG/CL Development Support",
       "properties": {
+        "rpgClSupport.ibmiSourceSync.host": {
+          "type": "string",
+          "default": "",
+          "description": "IBM i 同期先の SSH ホスト名または IP アドレスです。"
+        },
+        "rpgClSupport.ibmiSourceSync.port": {
+          "type": "number",
+          "default": 22,
+          "minimum": 1,
+          "maximum": 65535,
+          "description": "IBM i 同期先の SSH ポート番号です。"
+        },
+        "rpgClSupport.ibmiSourceSync.user": {
+          "type": "string",
+          "default": "",
+          "description": "IBM i 同期に使用する SSH ユーザー名です。"
+        },
+        "rpgClSupport.ibmiSourceSync.authMethod": {
+          "type": "string",
+          "enum": ["password", "privateKey"],
+          "default": "password",
+          "description": "IBM i 同期の SSH 認証方式です。パスワードまたは秘密鍵を選びます。"
+        },
+        "rpgClSupport.ibmiSourceSync.privateKeyPath": {
+          "type": "string",
+          "default": "",
+          "description": "秘密鍵認証で使用するローカル秘密鍵ファイルへの絶対パスです。秘密鍵本文は保存しません。"
+        },
+        "rpgClSupport.ibmiSourceSync.ifsTempDirectory": {
+          "type": "string",
+          "default": "",
+          "description": "同期時に UTF-8 の一時ストリーム・ファイルを置く IBM i IFS の絶対ディレクトリーです。"
+        },
+        "rpgClSupport.ibmiSourceSync.hostKeySha256": {
+          "type": "string",
+          "default": "",
+          "description": "接続先 SSH ホスト鍵の SHA-256 fingerprint です。未設定の接続は拒否します。"
+        },
+        "rpgClSupport.seuColors.enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "SEU 色属性の可視マーカーに対応する色表示を有効にします。"
+        },
         "rpgClSupport.cNewOpcodes": {
           "type": "array",
           "items": {
@@ -382,11 +455,15 @@
   "devDependencies": {
     "@types/mocha": "^10.0.0",
     "@types/node": "^20.0.0",
+    "@types/ssh2": "^1.15.6",
     "@types/vscode": "^1.90.0",
     "@vscode/test-electron": "^3.1.0",
     "esbuild": "^0.25.12",
     "glob": "^10.3.0",
     "mocha": "^10.0.0",
     "typescript": "^5.0.0"
+  },
+  "dependencies": {
+    "ssh2": "^1.17.0"
   }
 }
