@@ -19,6 +19,7 @@ import {
   IBMI_SOURCE_SYNC_SECRET_KEY,
   registerMemberSyncCommands
 } from "../../src/extension/commands/memberSync";
+import { initializeOutputLogger } from "../../src/extension/outputLogger";
 
 suite("IBM i source member target", () => {
   test("src の4階層から大文字の IBM i member target を解決する", () => {
@@ -257,6 +258,7 @@ function resetSyncStub(): void {
   stub.commands.registered.clear();
   stub.window.messages = [];
   stub.window.errors = [];
+  stub.window.__errorMessageResult = undefined;
   stub.window.__showTextDocumentCalls = [];
   stub.workspace.__appliedEdits = [];
   stub.workspace.__applyEditResult = true;
@@ -393,6 +395,73 @@ suite("IBM i source sync commands", () => {
 
     assert.equal(factoryCalled, false);
     assert.ok(stub.window.errors.some((message: string) => message.includes("認証情報を保存")));
+  });
+
+  test("転送失敗時は診断情報を Output チャネルへ残して表示する", async () => {
+    resetSyncStub();
+    const stub = vscode as unknown as any;
+    stub.window.outputChannels = [];
+    const document = createDocument("A");
+    stub.window.activeTextEditor = {
+      document,
+      viewColumn: vscode.ViewColumn.One,
+      selection: new vscode.Selection(new vscode.Position(0, 0), new vscode.Position(0, 0))
+    };
+    const { context } = createSyncContext("password");
+    const loggerContext = { subscriptions: [] as { dispose(): void }[] } as unknown as vscode.ExtensionContext;
+    initializeOutputLogger(loggerContext);
+    registerMemberSyncCommands(context, async () => {
+      throw new IbmiSourceSyncError("copy", "IBM i のコピー・コマンドが失敗しました。", "CPF2869: member not found");
+    });
+
+    try {
+      await vscode.commands.executeCommand("rpgClSupport.ibmiSourceSync.upload");
+
+      const channel = stub.window.outputChannels[0];
+      assert.ok(channel.lines.some((line: string) => line.includes("CPF2869: member not found")));
+      assert.deepEqual(channel.showCalls, [true]);
+    } finally {
+      for (const disposable of loggerContext.subscriptions) {
+        disposable.dispose();
+      }
+    }
+  });
+
+  test("通知を閉じていない設定エラーの後でも同じ文書を再実行できる", async () => {
+    resetSyncStub();
+    const stub = vscode as unknown as any;
+    const document = createDocument("A");
+    stub.window.activeTextEditor = {
+      document,
+      viewColumn: vscode.ViewColumn.One,
+      selection: new vscode.Selection(new vscode.Position(0, 0), new vscode.Position(0, 0))
+    };
+    stub.__setConfig({
+      "rpgClSupport.ibmiSourceSync": {
+        host: "ibmi.example.test",
+        port: 22,
+        user: "TESTUSER",
+        authMethod: "invalid",
+        ifsTempDirectory: "/tmp",
+        hostKeySha256: transportSettings.hostKeySha256
+      }
+    });
+    let resolveNotification: (() => void) | undefined;
+    stub.window.__errorMessageResult = new Promise<void>(resolve => {
+      resolveNotification = resolve;
+    });
+    const { context } = createSyncContext("password");
+    registerMemberSyncCommands(context, async () => new FakeTransport());
+
+    const firstRun = vscode.commands.executeCommand("rpgClSupport.ibmiSourceSync.upload");
+    await new Promise<void>(resolve => setImmediate(resolve));
+    stub.window.__errorMessageResult = undefined;
+    await vscode.commands.executeCommand("rpgClSupport.ibmiSourceSync.upload");
+
+    assert.ok(stub.window.errors.some((message: string) => message.includes("authMethod")));
+    assert.ok(!stub.window.errors.some((message: string) => message.includes("すでに IBM i と同期中")));
+    resolveNotification?.();
+    await firstRun;
   });
 
   test("download の保存失敗は成功通知にしない", async () => {

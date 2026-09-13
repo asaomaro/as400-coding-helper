@@ -28,7 +28,9 @@ export type IbmiSourceSyncErrorKind =
 export class IbmiSourceSyncError extends Error {
   constructor(
     readonly kind: IbmiSourceSyncErrorKind,
-    message: string
+    message: string,
+    /** Output パネル専用の診断情報。通知には出さない。 */
+    readonly diagnostic?: string
   ) {
     super(message);
     this.name = "IbmiSourceSyncError";
@@ -221,10 +223,10 @@ async function connect(
 
   await new Promise<void>((resolve, reject) => {
     let settled = false;
-    const fail = (kind: IbmiSourceSyncErrorKind, message: string): void => {
+    const fail = (kind: IbmiSourceSyncErrorKind, message: string, error?: unknown): void => {
       if (!settled) {
         settled = true;
-        reject(new IbmiSourceSyncError(kind, message));
+        reject(new IbmiSourceSyncError(kind, message, compactDiagnostic(error)));
       }
     };
     client.once("ready", () => {
@@ -233,12 +235,13 @@ async function connect(
         resolve();
       }
     });
-    client.once("error", () =>
+    client.once("error", error =>
       fail(
         rejectedHostKey ? "hostKey" : "authentication",
         rejectedHostKey
           ? "IBM i の SSH ホスト鍵が設定した fingerprint と一致しません。"
-          : "IBM i への SSH 接続または認証に失敗しました。"
+          : "IBM i への SSH 接続または認証に失敗しました。",
+        error
       )
     );
     client.once("close", () => fail("transfer", "IBM i への SSH 接続が確立前に閉じられました。"));
@@ -325,7 +328,11 @@ function executeCopy(client: Client, command: string): Promise<void> {
         if (code === 0) {
           resolve();
         } else {
-          reject(new IbmiSourceSyncError("copy", stderr ? "IBM i のコピー・コマンドが失敗しました。" : "IBM i のコピー・コマンドを完了できませんでした。"));
+          reject(new IbmiSourceSyncError(
+            "copy",
+            stderr ? "IBM i のコピー・コマンドが失敗しました。" : "IBM i のコピー・コマンドを完了できませんでした。",
+            compactDiagnostic(stderr)
+          ));
         }
       });
     });
@@ -344,5 +351,11 @@ function toSyncError(kind: IbmiSourceSyncErrorKind, error: unknown): IbmiSourceS
     copy: "IBM i の source member コピーに失敗しました。",
     cleanup: "IBM i の一時ファイルを削除できませんでした。"
   };
-  return new IbmiSourceSyncError(kind, messageByKind[kind]);
+  return new IbmiSourceSyncError(kind, messageByKind[kind], compactDiagnostic(error));
+}
+
+function compactDiagnostic(error: unknown): string | undefined {
+  const value = error instanceof Error ? error.message : String(error ?? "");
+  const normalized = value.replace(/[\r\n\t]+/gu, " ").trim();
+  return normalized ? normalized.slice(0, 4_000) : undefined;
 }

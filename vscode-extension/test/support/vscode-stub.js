@@ -171,9 +171,11 @@ const vscode = {
     visibleTextEditors: [],
     messages: [],
     errors: [],
+    outputChannels: [],
     decorationTypes: [],
     __inputBoxResult: undefined,
     __inputBoxOptions: undefined,
+    __errorMessageResult: undefined,
     __showTextDocumentCalls: [],
     __activeTextEditorChangeListeners: [],
     /**
@@ -189,7 +191,20 @@ const vscode = {
     },
     showErrorMessage(message) {
       vscode.window.errors.push(message);
-      return Promise.resolve(undefined);
+      return vscode.window.__errorMessageResult ?? Promise.resolve(undefined);
+    },
+    createOutputChannel(name) {
+      const channel = {
+        name,
+        lines: [],
+        showCalls: [],
+        disposed: false,
+        appendLine(value) { this.lines.push(value); },
+        show(preserveFocus) { this.showCalls.push(preserveFocus); },
+        dispose() { this.disposed = true; }
+      };
+      vscode.window.outputChannels.push(channel);
+      return channel;
     },
     showInputBox(options) {
       vscode.window.__inputBoxOptions = options;
