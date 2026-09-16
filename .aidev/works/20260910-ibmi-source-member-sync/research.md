@@ -6,6 +6,9 @@
 - Q2: SEU/PDM の色属性バイトを UTF-8 経路で失わず、VS Code では入力可能かつ意味の分かる文字にできるか。
 - Q3: 色を VS Code のテキスト編集と同時にどう描画するか。
 - Q4: 認証情報・CCSID・一時 IFS ファイルの扱いを安全に確定できるか。
+- Q5: アップロード時、ファイル名から抽出したテキスト記述・ソース・タイプを、既存メンバー・未作成メンバーの両方へどのコマンド列・順序で反映できるか。
+- Q6: 対象拡張子ごとの SRCTYPE 値はどう決まるか。機械的に決まらないものはあるか。
+- Q7: 自由記述のテキスト記述値を CL コマンド文字列へ埋め込む際、エスケープ・注入の懸念はないか。
 
 ## 判明した事実
 
@@ -96,6 +99,55 @@ upload:   marker→wire UTF-8 -> SFTP put -> SFTP close -> SSH exec CPYFRMSTMF -
 - SOSI 表示の購読・破棄・対象外クリアの先例: `vscode-extension/src/language/dbcsShiftMarkers.ts`。色マーカーは保存文字そのものなので、SOSI の `before.contentText` を流用しない。一方で active editor / document change の購読、`setDecorations`、対象外でのクリアはそのまま踏襲できる。
 - ユニットテストの vscode スタブ: `vscode-extension/test/support/vscode-stub.js`。SecretStorage、TextEditorDecoration、コマンド登録をテストできる形へ拡張が必要。
 
+### F8: `CPYFRMSTMF` は宛先メンバーが無ければ自動作成する。`ADDPFM` は不要
+
+IBM Documentation 原文（[CPYFRMSTMF](https://www.ibm.com/docs/en/ssw_ibm_i_74/cl/cpyfrmstmf.htm)）:
+
+> "When copying to a database file member, the database file must exist. If the member does not exist, it is created."
+
+つまり **宛先のソース物理ファイル（データベース・ファイル）自体は事前に存在している必要があるが、メンバーが無ければ `CPYFRMSTMF` が自動的に作成する**。既存実装（`vscode-extension/src/sync/ibmiSourceTransport.ts` の `buildCopyFromStreamFileCommand`）はすでに `MBROPT(*REPLACE)` で `CPYFRMSTMF` を呼んでおり、追加のコマンドを増やさずにメンバー未作成のケースへ対応できる。
+
+`MBROPT` の値は次のとおり（同原典）: `*NONE`＝オブジェクトが存在すれば失敗・レコード複写なし、`*ADD`＝既存レコードの末尾に追加、`*REPLACE`＝既存レコードを置換。既存メンバーの内容を丸ごと置き換える現行仕様（AC2）と、新規メンバー作成（AC17）のどちらにも `MBROPT(*REPLACE)` のままで両立する。
+
+ライブラリーまたはソース物理ファイル自体が存在しない場合の挙動は、原典に明示的な記載が無い（権限節に "Add (*ADD) authority to the database member's library if the database member does not already exist." とあるのみ）。メッセージ番号（CPF prefix 等)での判別は原典からは確定できず、**実機での確認、または既存の汎用エラー分類（`kind: "copy"`）で「理由を示す」要件を満たす設計判断のどちらかが必要**（design への申し送りに記載）。
+
+### F9: `CHGPFM` で SRCTYPE と TEXT を同時に反映できる。実行順は「内容コピー → CHGPFM」
+
+`ibmi-remote` skill（`.claude/skills/ibmi-remote/SKILL.md:1`）に、pub400 実機で確認済みの手順として次が明記されている:
+
+```
+system "CPYFRMSTMF FROMSTMF('...') TOMBR('/QSYS.LIB/<LIB>.LIB/QRPGLESRC.FILE/MYPGM.MBR') MBROPT(*REPLACE) STMFCCSID(1208)"
+system "CHGPFM FILE(<LIB>/QRPGLESRC) MBR(MYPGM) SRCTYPE(RPGLE)"
+```
+
+同 skill の hostserver 経路の最小レシピ（`SKILL.md:` 6.2 節）でも `CPYFRMSTMF` の**直後**に `CHGPFM ... SRCTYPE(...)` を呼んでおり、「ソースタイプはコピーだけでは付かない。別途 `CHGPFM` で設定する」と明記されている。
+
+本 PJ の CL プロンプター定義（原典から生成済み・機械照合済み）で `CHGPFM` の `TEXT` パラメーターを確認したところ、`SRCTYPE` とは独立した別パラメーターであり、同一コマンド呼び出しに両方を指定できる（`vscode-extension/resources/prompter/cl/ja/CHGPFM.json`）。したがって新設コマンドは 1 回で済む:
+
+```
+CHGPFM FILE(<LIB>/<SRCPF>) MBR(<MBR>) SRCTYPE(<拡張子由来の値>) TEXT('<抽出したテキスト記述>')
+```
+
+実行順は「`CPYFRMSTMF`（内容コピー。メンバー未作成なら同時に作成）→ `CHGPFM`（属性反映）」で、既存メンバー・新規メンバーの両方に同じ順序が適用できる。`CHGPFM` は対象メンバーの存在を前提とするため、`CPYFRMSTMF` より先には呼べない。
+
+### F10: 桁数上限は既存の CL コマンド定義（原典照合済み）から取得済み
+
+`vscode-extension/resources/prompter/cl/ja/ADDPFM.json` の `TEXT` パラメーター: `attributes.maxLength: 50`、`characterSet: "upper"`。`SRCTYPE` パラメーター: `attributes.maxLength: 10`、原文ヘルプに「最初の文字は英字（`\`, `@`, `#` を含む）でなければならず、残りの文字は英数字または下線でなければならない」とある。`CHGPFM.json` も同じ制約を持つ。これらはこの PJ の検証規約（`docs/origin/verify-cl-definitions.mjs`）で原典と機械照合済みの値であり、新たに一次資料を当たる必要は無い。
+
+メンバー名の規則は既存の `IBM_I_OBJECT_NAME`（`vscode-extension/src/sync/memberTarget.ts:8`）`^[A-Z$#@][A-Z0-9_$#@]{0,9}$` がそのまま IBM i オブジェクト名の一般規則と一致し、流用できる。
+
+### F11: SRCTYPE の拡張子対応は概ね機械的だが、`.dds` は実世界の慣行が無い
+
+対象拡張子（`vscode-extension/src/utils/fileScope.ts:12-40` の `TARGET_EXTENSIONS`）のうち、`rpg`・`rpgle`・`sqlrpgle`・`sqlrpg`・`clp`・`clle`・`pf`・`lf`・`dspf`・`prtf`・`cmd` は大文字化するだけで実務の SRCTYPE 慣行と一致する（`ibmi-remote` skill の実機確認済み例でも `SRCTYPE(RPGLE)` のように拡張子の大文字化がそのまま使われている）。
+
+`mnudds` は AGENTS.md の既存知見（DSPF と同じ A 仕様書の固定長）から `MNUDDS` を充てるのが妥当。一方 `dds`（AGENTS.md 記載どおり「`.dds` と名付ける環境への保険」であり実務の主形ではない）は、対応する実機の慣行が無い。原典・実機のどちらにも「`.dds` の SRCTYPE はこれ」という一次資料が存在しないため、この対応だけは **PJ 側の設計判断**（例: 汎用値を割り当てる／このケースだけ SRCTYPE 反映を対象外にする）が必要であり、design への申し送りとする。
+
+### F12: テキスト記述の CL コマンド注入リスク
+
+現行の `buildCopyFromStreamFileCommand` 等は `${target.library}` 等、`IBM_I_OBJECT_NAME` で検証済みの値だけをテンプレートリテラルへ埋め込んでおり、注入の懸念が無い。今回新設する `CHGPFM ... TEXT('<自由記述>')` は、**ファイル名から取り出した未加工の文字列**を CL 文字列リテラルへ埋め込む初めてのケースである。
+
+CL の文字列リテラルはアポストロフィを `''`（2 個）でエスケープする規則があり、原文をそのまま埋め込むと、テキスト記述に `'` が含まれた場合に CL 構文が壊れる（意図しないパラメーターの注入・コマンド解析エラーにつながり得る）。本コマンドは `ssh2` の `client.exec()` へ直接渡す 1 個の文字列であり、ローカル shell を経由しないため `ibmi-remote` skill が警告する「3 層の引用符」問題（ローカル shell / ssh / CL）は当てはまらないが、**`system "..."` の外側二重引用符と CL 文字列リテラルの単引用符、少なくとも 2 層のエスケープ**は設計で扱う必要がある。
+
 ## 実現性とリスク
 
 | リスク | 対応 |
@@ -106,6 +158,16 @@ upload:   marker→wire UTF-8 -> SFTP put -> SFTP close -> SSH exec CPYFRMSTMF -
 | 色範囲と VS Code の構文色が競合 | decoration の foreground を属性開始から次の属性直前まで適用し、各文書変更で再計算する。 |
 | CCSID 65535 の source PF | `DBFCCSID(*FILE)` の IBM i 変換エラーを捕捉し、元メンバーを更新せず設定修正を通知する。 |
 | 一時 IFS ファイルが残る | UUID を含む接続専用パス、成功・失敗とも `finally` で SFTP delete。 |
+| テキスト記述に含まれる `'` による CL 構文破壊・注入 | `CHGPFM` の `TEXT('...')` 生成時に `'` を `''` へエスケープする専用関数を作り、他の値と同じテンプレートリテラル直書きにしない（F12）。 |
+| ライブラリー／ソース物理ファイル未存在の判別が原典から確定できない | メッセージ番号での精密な分類を design の必須要件にはせず、既存の汎用エラー分類（`kind`）を流用する／実機確認できる場合のみ精密化する、のいずれかを design で判断する（F8）。 |
+| `.dds` の SRCTYPE 対応が一次資料から決まらない | design で PJ 側の既定値または対象外の判断を明示する（F11）。 |
+
+## 実装アンカー（追加分）
+
+- A1: メンバー名・ライブラリー・ソース物理ファイルの解決 — `vscode-extension/src/sync/memberTarget.ts:8`（`IBM_I_OBJECT_NAME`）, `:18`（`resolveMemberTarget`）。テキスト記述抽出・`_` 分割ロジックをここに追加するか別関数に分けるかは design 判断。
+- A2: アップロード時の CL コマンド生成 — `vscode-extension/src/sync/ibmiSourceTransport.ts:271`（`buildCopyFromStreamFileCommand`）。`CHGPFM` 用の新しい builder 関数をここに追加する対称的な設計にできる。
+- A3: アップロードのコマンドハンドラー — `vscode-extension/src/extension/commands/memberSync.ts:43`（`runTransfer`）。アップロード前のローカル検証（命名規則・桁数）とエラー通知の追加箇所。
+- A4: 対象拡張子の単一真実源 — `vscode-extension/src/utils/fileScope.ts:47`（`TARGET_EXTENSIONS`）。SRCTYPE 対応表を新設する場合、ここからの導出を検査する仕組み（既存の `verify-contributes.mjs` 相当）を検討する。
 
 ## design への申し送り
 
@@ -114,3 +176,7 @@ upload:   marker→wire UTF-8 -> SFTP put -> SFTP close -> SSH exec CPYFRMSTMF -
 3. IFS temp directory を必須の非機密設定にし、CCSID は `DBFCCSID(*FILE)` に任せる。password / passphrase は SecretStorage の設定コマンドだけで設定する。
 4. ダウンロード、アップロード、資格情報設定、色表示オンオフのコマンドと editor/context メニューを設計する。
 5. 実機検証は本プローブを維持し、赤 `Ŕ` の入力から `x'28'` が同位置に戻ること、7 色の wire map、DBCS 行、IFS cleanup を受け入れ条件にする。
+6. ファイル名からのメンバー名・テキスト記述抽出は `resolveMemberTarget`（`memberTarget.ts`）と対称の純粋関数として設計し、ローカル検証（命名規則・50/10 桁）を IBM i への接続前に完結させる（F10）。
+7. アップロードのコマンド列は「`CPYFRMSTMF`（内容コピー・メンバー未作成なら自動作成）→ `CHGPFM SRCTYPE(...) TEXT('...')`（属性反映）」の順で統一し、新規メンバー用の別経路（`ADDPFM`）は設けない（F8, F9）。
+8. `CHGPFM` の `TEXT('...')` を組み立てる際は、アポストロフィのエスケープ（`'` → `''`）を行う専用の builder 関数にする。既存の `buildCopyFromStreamFileCommand` と同様、値の直書きにしない（F12）。
+9. `.dds`（保険用拡張子）の SRCTYPE 対応と、ライブラリー／ソース物理ファイル未存在時のエラー分類の精度は、一次資料からは確定できなかった。design で PJ 側の判断として明記する（F8, F11）。

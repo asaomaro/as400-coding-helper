@@ -6,9 +6,10 @@ import {
   createIbmiSourceTransport,
   IbmiSourceSyncError,
   type IbmiSourceSyncSettings,
-  type IbmiSourceTransport
+  type IbmiSourceTransport,
+  type UploadAttributes
 } from "../../src/sync/ibmiSourceTransport";
-import { resolveMemberTarget, type MemberTarget } from "../../src/sync/memberTarget";
+import { deriveSourceType, resolveMemberTarget, type MemberTarget } from "../../src/sync/memberTarget";
 import {
   findColorSegments,
   VISIBLE_COLOR_MARKERS,
@@ -19,34 +20,113 @@ import {
   IBMI_SOURCE_SYNC_SECRET_KEY,
   registerMemberSyncCommands
 } from "../../src/extension/commands/memberSync";
-import { initializeOutputLogger } from "../../src/extension/outputLogger";
 
 suite("IBM i source member target", () => {
   test("src の4階層から大文字の IBM i member target を解決する", () => {
     assert.deepEqual(resolveMemberTarget("src/testlib/testsrc/testrpg.rpg"), {
-      library: "TESTLIB",
-      sourceFile: "TESTSRC",
-      member: "TESTRPG"
+      ok: true,
+      target: {
+        library: "TESTLIB",
+        sourceFile: "TESTSRC",
+        member: "TESTRPG",
+        extension: "rpg",
+        textDescription: undefined
+      }
     });
   });
 
   test("Windows の区切り文字も workspace 相対パスとして受け入れる", () => {
     assert.deepEqual(resolveMemberTarget("src\\testlib\\testsrc\\testrpg.rpgle"), {
-      library: "TESTLIB",
-      sourceFile: "TESTSRC",
-      member: "TESTRPG"
+      ok: true,
+      target: {
+        library: "TESTLIB",
+        sourceFile: "TESTSRC",
+        member: "TESTRPG",
+        extension: "rpgle",
+        textDescription: undefined
+      }
     });
   });
 
-  test("src 配下でない、不完全な、または IBM i object name でないパスは拒否する", () => {
+  test("src 配下でない、不完全なパスは pathShape として拒否する", () => {
     for (const path of [
       "other/TESTLIB/TESTSRC/TESTRPG.rpg",
       "src/TESTLIB/TESTSRC/TESTRPG",
-      "src/TESTLIB/TESTSRC/TOO-LONG-NAME.rpg",
-      "src/TESTLIB/TESTSRC/.rpg",
-      "src/TESTLIB/TESTSRC/TEST.RPG.EXTRA"
+      "src/TESTLIB/TESTSRC/.rpg"
     ]) {
-      assert.equal(resolveMemberTarget(path), undefined, path);
+      assert.deepEqual(resolveMemberTarget(path), { ok: false, reason: "pathShape" }, path);
+    }
+  });
+
+  test("拡張子より前に余分な '.' を含む名前はメンバー名に '.' が残り memberName として拒否する", () => {
+    assert.deepEqual(resolveMemberTarget("src/TESTLIB/TESTSRC/TEST.RPG.EXTRA"), { ok: false, reason: "memberName" });
+  });
+
+  test("最初の '-' でメンバー名とテキスト記述に分割する", () => {
+    assert.deepEqual(resolveMemberTarget("src/TESTLIB/TESTSRC/TESTRPG-ITEM_MASTER.rpg"), {
+      ok: true,
+      target: {
+        library: "TESTLIB",
+        sourceFile: "TESTSRC",
+        member: "TESTRPG",
+        extension: "rpg",
+        textDescription: "ITEM_MASTER"
+      }
+    });
+  });
+
+  test("'-' の直後が空文字列ならテキスト記述は undefined にする", () => {
+    const result = resolveMemberTarget("src/TESTLIB/TESTSRC/TESTRPG-.rpg");
+    assert.equal(result.ok, true);
+    assert.equal((result as { ok: true; target: { textDescription?: string } }).target.textDescription, undefined);
+  });
+
+  test("既存のアンダースコア入りメンバー名は分割されず従来どおり解決される（decisions.md D7）", () => {
+    assert.deepEqual(resolveMemberTarget("src/TESTLIB/TESTSRC/MY_PGM.rpg"), {
+      ok: true,
+      target: {
+        library: "TESTLIB",
+        sourceFile: "TESTSRC",
+        member: "MY_PGM",
+        extension: "rpg",
+        textDescription: undefined
+      }
+    });
+  });
+
+  test("メンバー名部分（'-' より前）が IBM i object name 規則に違反すれば memberName を返す", () => {
+    for (const path of [
+      "src/TESTLIB/TESTSRC/TOOLONGMEMBERNAME-desc.rpg",
+      "src/TESTLIB/TESTSRC/1STARTSDIGIT-desc.rpg",
+      "src/TESTLIB/TESTSRC/BAD.NAME-desc.rpg"
+    ]) {
+      assert.deepEqual(resolveMemberTarget(path), { ok: false, reason: "memberName" }, path);
+    }
+  });
+
+  test("テキスト記述が50文字を超えれば textDescription を返す", () => {
+    const longDescription = "A".repeat(51);
+    assert.deepEqual(
+      resolveMemberTarget(`src/TESTLIB/TESTSRC/TESTRPG-${longDescription}.rpg`),
+      { ok: false, reason: "textDescription" }
+    );
+  });
+
+  test("テキスト記述がちょうど50文字なら許容する", () => {
+    const description = "A".repeat(50);
+    const result = resolveMemberTarget(`src/TESTLIB/TESTSRC/TESTRPG-${description}.rpg`);
+    assert.equal(result.ok, true);
+    assert.equal((result as { ok: true; target: { textDescription?: string } }).target.textDescription, description);
+  });
+});
+
+suite("IBM i source type の導出", () => {
+  test("TARGET_EXTENSIONS の全拡張子を大文字化する（特例なし。decisions.md D8）", () => {
+    for (const extension of ["rpg", "rpgle", "sqlrpgle", "sqlrpg", "clp", "clle", "pf", "lf", "dspf", "prtf", "mnudds", "dds", "cmd"]) {
+      const sourceType = deriveSourceType(extension);
+      assert.equal(sourceType, extension.toUpperCase());
+      assert.ok(sourceType.length <= 10, sourceType);
+      assert.match(sourceType, /^[A-Z][A-Z0-9_]*$/u);
     }
   });
 });
@@ -211,22 +291,169 @@ suite("IBM i source transport", () => {
     assert.equal(differentCaseVerifier?.(hostKey), false);
   });
 
-  test("upload は SFTP を閉じてから CPYFRMSTMF を実行し、最後に IFS を削除する", async () => {
+  test("upload は SFTP を閉じてから CPYFRMSTMF、続けて CHGPFM を実行し、最後に IFS を削除する", async () => {
     const client = new FakeClient();
     const transport = await createIbmiSourceTransport(
       transportSettings,
       "secret",
       () => client as unknown as Client
     );
-    await transport.upload({ library: "TESTLIB", sourceFile: "TESTSRC", member: "TESTMBR" }, "ABC\n");
+    await transport.upload(
+      { library: "TESTLIB", sourceFile: "TESTSRC", member: "TESTMBR", extension: "rpg", textDescription: "ITEM MASTER" },
+      "ABC\n",
+      { sourceType: "RPG", textDescription: "ITEM MASTER" }
+    );
 
     const copyIndex = client.events.findIndex(event => event.includes("CPYFRMSTMF"));
+    const changeIndex = client.events.findIndex(event => event.includes("CHGPFM"));
     const firstClose = client.events.indexOf("sftp:close");
     const cleanupIndex = client.events.findIndex(event => event.startsWith("sftp:unlink:"));
     assert.ok(firstClose >= 0 && firstClose < copyIndex, client.events.join("\n"));
-    assert.ok(copyIndex >= 0 && copyIndex < cleanupIndex, client.events.join("\n"));
+    assert.ok(copyIndex >= 0 && copyIndex < changeIndex, client.events.join("\n"));
+    assert.ok(changeIndex >= 0 && changeIndex < cleanupIndex, client.events.join("\n"));
     assert.match(client.events[copyIndex], /DBFCCSID\(\*FILE\)/u);
     assert.match(client.events[copyIndex], /\/QSYS\.LIB\/TESTLIB\.LIB\/TESTSRC\.FILE\/TESTMBR\.MBR/u);
+    assert.match(client.events[changeIndex], /CHGPFM FILE\(TESTLIB\/TESTSRC\) MBR\(TESTMBR\) SRCTYPE\(RPG\) TEXT\('ITEM MASTER'\)/u);
+  });
+
+  test("upload はテキスト記述が無ければ CHGPFM に TEXT(...) を付けない（既存値を保持）", async () => {
+    const client = new FakeClient();
+    const transport = await createIbmiSourceTransport(
+      transportSettings,
+      "secret",
+      () => client as unknown as Client
+    );
+    await transport.upload(
+      { library: "TESTLIB", sourceFile: "TESTSRC", member: "TESTMBR", extension: "rpg" },
+      "ABC\n",
+      { sourceType: "RPG" }
+    );
+
+    const changeIndex = client.events.findIndex(event => event.includes("CHGPFM"));
+    assert.match(client.events[changeIndex], /CHGPFM FILE\(TESTLIB\/TESTSRC\) MBR\(TESTMBR\) SRCTYPE\(RPG\)"$/u);
+  });
+
+  test("upload はテキスト記述内のアポストロフィをエスケープしてから CHGPFM へ渡す", async () => {
+    const client = new FakeClient();
+    const transport = await createIbmiSourceTransport(
+      transportSettings,
+      "secret",
+      () => client as unknown as Client
+    );
+    await transport.upload(
+      { library: "TESTLIB", sourceFile: "TESTSRC", member: "TESTMBR", extension: "rpg" },
+      "ABC\n",
+      { sourceType: "RPG", textDescription: "O'BRIEN'S FILE" }
+    );
+
+    const changeIndex = client.events.findIndex(event => event.includes("CHGPFM"));
+    assert.match(client.events[changeIndex], /TEXT\('O''BRIEN''S FILE'\)/u);
+  });
+
+  test("upload はテキスト記述内の remote shell 特殊文字（\\ \" $ `）も CL のアポストロフィと独立にエスケープする", async () => {
+    // client.exec() のコマンド文字列は remote 側の login shell が `shell -c '<command>'` として
+    // 実行するため、system "..." の外側二重引用符は shell が解釈する（\, ", $, ` が特殊）。
+    // CL 文字列リテラルのアポストロフィ二重化だけでは、この層のエスケープにならない（研究 F12、review ラウンド3）。
+    const client = new FakeClient();
+    const transport = await createIbmiSourceTransport(
+      transportSettings,
+      "secret",
+      () => client as unknown as Client
+    );
+    const raw = "A\"B$C`D\\E'F";
+    await transport.upload(
+      { library: "TESTLIB", sourceFile: "TESTSRC", member: "TESTMBR", extension: "rpg" },
+      "ABC\n",
+      { sourceType: "RPG", textDescription: raw }
+    );
+
+    const changeIndex = client.events.findIndex(event => event.includes("CHGPFM"));
+    const command = client.events[changeIndex];
+    const textMatch = command.match(/TEXT\('([\s\S]*)'\)"$/u);
+    assert.ok(textMatch, command);
+    const escaped = textMatch![1];
+
+    // remote shell の二重引用符コンテキストで特殊な4文字はすべて `\` で前置されている。
+    assert.match(escaped, /\\"/u);
+    assert.match(escaped, /\\\$/u);
+    assert.match(escaped, /\\`/u);
+    assert.match(escaped, /\\\\/u);
+
+    // shell → CL の順で剥がすと元の生文字列に戻る（実際に評価される順序と同じ）。
+    const afterShell = escaped.replace(/\\([\\"$`])/gu, "$1");
+    const afterCl = afterShell.replace(/''/gu, "'");
+    assert.equal(afterCl, raw);
+  });
+
+  test("upload は CPYFRMSTMF 失敗時に CHGPFM を実行せず kind: copy で失敗する", async () => {
+    class FailingCopyClient extends FakeClient {
+      exec(
+        command: string,
+        callback: (error: Error | undefined, stream?: {
+          stderr: { on(event: string, listener: (data: Buffer) => void): void };
+          on(event: string, listener: (code: number) => void): void;
+        }) => void
+      ): this {
+        this.events.push(`exec:${command}`);
+        const code = command.includes("CPYFRMSTMF") ? 1 : 0;
+        callback(undefined, {
+          stderr: { on: () => undefined },
+          on: (event, listener) => { if (event === "close") { listener(code); } }
+        });
+        return this;
+      }
+    }
+    const client = new FailingCopyClient();
+    const transport = await createIbmiSourceTransport(
+      transportSettings,
+      "secret",
+      () => client as unknown as Client
+    );
+
+    await assert.rejects(
+      () => transport.upload(
+        { library: "TESTLIB", sourceFile: "TESTSRC", member: "TESTMBR", extension: "rpg" },
+        "ABC\n",
+        { sourceType: "RPG" }
+      ),
+      (error: unknown) => error instanceof IbmiSourceSyncError && error.kind === "copy"
+    );
+    assert.ok(!client.events.some(event => event.includes("CHGPFM")), client.events.join("\n"));
+  });
+
+  test("upload は CPYFRMSTMF 成功・CHGPFM 失敗時に kind: attributes で失敗する", async () => {
+    class FailingChangeClient extends FakeClient {
+      exec(
+        command: string,
+        callback: (error: Error | undefined, stream?: {
+          stderr: { on(event: string, listener: (data: Buffer) => void): void };
+          on(event: string, listener: (code: number) => void): void;
+        }) => void
+      ): this {
+        this.events.push(`exec:${command}`);
+        const code = command.includes("CHGPFM") ? 1 : 0;
+        callback(undefined, {
+          stderr: { on: () => undefined },
+          on: (event, listener) => { if (event === "close") { listener(code); } }
+        });
+        return this;
+      }
+    }
+    const client = new FailingChangeClient();
+    const transport = await createIbmiSourceTransport(
+      transportSettings,
+      "secret",
+      () => client as unknown as Client
+    );
+
+    await assert.rejects(
+      () => transport.upload(
+        { library: "TESTLIB", sourceFile: "TESTSRC", member: "TESTMBR", extension: "rpg" },
+        "ABC\n",
+        { sourceType: "RPG" }
+      ),
+      (error: unknown) => error instanceof IbmiSourceSyncError && error.kind === "attributes"
+    );
   });
 
   test("download は CPYTOSTMF、SFTP read、cleanup の順に UTF-8 wire text を返す", async () => {
@@ -236,7 +463,7 @@ suite("IBM i source transport", () => {
       "secret",
       () => client as unknown as Client
     );
-    const text = await transport.download({ library: "TESTLIB", sourceFile: "TESTSRC", member: "TESTMBR" });
+    const text = await transport.download({ library: "TESTLIB", sourceFile: "TESTSRC", member: "TESTMBR", extension: "rpg" });
 
     const copyIndex = client.events.findIndex(event => event.includes("CPYTOSTMF"));
     const readIndex = client.events.findIndex(event => event.startsWith("sftp:read:"));
@@ -258,7 +485,6 @@ function resetSyncStub(): void {
   stub.commands.registered.clear();
   stub.window.messages = [];
   stub.window.errors = [];
-  stub.window.__errorMessageResult = undefined;
   stub.window.__showTextDocumentCalls = [];
   stub.workspace.__appliedEdits = [];
   stub.workspace.__applyEditResult = true;
@@ -312,12 +538,12 @@ function createSyncContext(secret: string | undefined): {
 }
 
 class FakeTransport implements IbmiSourceTransport {
-  uploaded: { target: unknown; text: string } | undefined;
+  uploaded: { target: unknown; text: string; attributes: UploadAttributes } | undefined;
   downloaded = "";
   disposed = false;
 
-  async upload(target: MemberTarget, utf8WireText: string): Promise<void> {
-    this.uploaded = { target, text: utf8WireText };
+  async upload(target: MemberTarget, utf8WireText: string, attributes: UploadAttributes): Promise<void> {
+    this.uploaded = { target, text: utf8WireText, attributes };
   }
 
   async download(): Promise<string> {
@@ -346,11 +572,100 @@ suite("IBM i source sync commands", () => {
     await vscode.commands.executeCommand("rpgClSupport.ibmiSourceSync.upload");
 
     assert.deepEqual(transport.uploaded, {
-      target: { library: "TESTLIB", sourceFile: "TESTSRC", member: "TESTRPG" },
-      text: `A${String.fromCodePoint(0x0088)}B\n`
+      target: { library: "TESTLIB", sourceFile: "TESTSRC", member: "TESTRPG", extension: "rpg", textDescription: undefined },
+      text: `A${String.fromCodePoint(0x0088)}B\n`,
+      attributes: { sourceType: "RPG", textDescription: undefined }
     });
     assert.equal(transport.disposed, true);
     assert.ok(stub.window.messages.some((message: string) => message.includes("アップロード")));
+  });
+
+  test("upload はファイル名のテキスト記述と拡張子由来の SRCTYPE を transport へ渡す", async () => {
+    resetSyncStub();
+    const stub = vscode as unknown as any;
+    stub.workspace.__relativePath = "src/testlib/testsrc/testrpg-item_master.rpgle";
+    const document = createDocument("ABC\n");
+    stub.window.activeTextEditor = {
+      document,
+      viewColumn: vscode.ViewColumn.One,
+      selection: new vscode.Selection(new vscode.Position(0, 0), new vscode.Position(0, 0))
+    };
+    const { context } = createSyncContext("password");
+    const transport = new FakeTransport();
+    registerMemberSyncCommands(context, async () => transport);
+
+    await vscode.commands.executeCommand("rpgClSupport.ibmiSourceSync.upload");
+
+    assert.equal(transport.uploaded?.target && (transport.uploaded.target as { member: string }).member, "TESTRPG");
+    assert.deepEqual(transport.uploaded?.attributes, { sourceType: "RPGLE", textDescription: "item_master" });
+  });
+
+  test("メンバー名の規則に違反するファイル名は接続せずエラーを通知する", async () => {
+    resetSyncStub();
+    const stub = vscode as unknown as any;
+    stub.workspace.__relativePath = "src/testlib/testsrc/toolongmembername-desc.rpg";
+    const document = createDocument("ABC\n");
+    stub.window.activeTextEditor = {
+      document,
+      viewColumn: vscode.ViewColumn.One,
+      selection: new vscode.Selection(new vscode.Position(0, 0), new vscode.Position(0, 0))
+    };
+    const { context } = createSyncContext("password");
+    let factoryCalled = false;
+    registerMemberSyncCommands(context, async () => {
+      factoryCalled = true;
+      return new FakeTransport();
+    });
+
+    await vscode.commands.executeCommand("rpgClSupport.ibmiSourceSync.upload");
+
+    assert.equal(factoryCalled, false);
+    assert.ok(stub.window.errors.some((message: string) => message.includes("メンバー名")));
+  });
+
+  test("テキスト記述が50文字を超えるファイル名は接続せずエラーを通知する", async () => {
+    resetSyncStub();
+    const stub = vscode as unknown as any;
+    stub.workspace.__relativePath = `src/testlib/testsrc/testrpg-${"a".repeat(51)}.rpg`;
+    const document = createDocument("ABC\n");
+    stub.window.activeTextEditor = {
+      document,
+      viewColumn: vscode.ViewColumn.One,
+      selection: new vscode.Selection(new vscode.Position(0, 0), new vscode.Position(0, 0))
+    };
+    const { context } = createSyncContext("password");
+    let factoryCalled = false;
+    registerMemberSyncCommands(context, async () => {
+      factoryCalled = true;
+      return new FakeTransport();
+    });
+
+    await vscode.commands.executeCommand("rpgClSupport.ibmiSourceSync.upload");
+
+    assert.equal(factoryCalled, false);
+    assert.ok(stub.window.errors.some((message: string) => message.includes("テキスト記述")));
+  });
+
+  test("属性反映（CHGPFM）だけが失敗した場合は、内容は反映済みであることが伝わる通知にする", async () => {
+    resetSyncStub();
+    const stub = vscode as unknown as any;
+    const document = createDocument("ABC\n");
+    stub.window.activeTextEditor = {
+      document,
+      viewColumn: vscode.ViewColumn.One,
+      selection: new vscode.Selection(new vscode.Position(0, 0), new vscode.Position(0, 0))
+    };
+    const { context } = createSyncContext("password");
+    class PartiallyFailingTransport extends FakeTransport {
+      async upload(): Promise<void> {
+        throw new IbmiSourceSyncError("attributes", "IBM i のメンバー属性の反映コマンドが失敗しました。");
+      }
+    }
+    registerMemberSyncCommands(context, async () => new PartiallyFailingTransport());
+
+    await vscode.commands.executeCommand("rpgClSupport.ibmiSourceSync.upload");
+
+    assert.ok(stub.window.errors.some((message: string) => message.includes("内容はアップロードしましたが")));
   });
 
   test("download は wire control を marker と元の EOL に戻し、replace と save の後に通知する", async () => {
@@ -395,73 +710,6 @@ suite("IBM i source sync commands", () => {
 
     assert.equal(factoryCalled, false);
     assert.ok(stub.window.errors.some((message: string) => message.includes("認証情報を保存")));
-  });
-
-  test("転送失敗時は診断情報を Output チャネルへ残して表示する", async () => {
-    resetSyncStub();
-    const stub = vscode as unknown as any;
-    stub.window.outputChannels = [];
-    const document = createDocument("A");
-    stub.window.activeTextEditor = {
-      document,
-      viewColumn: vscode.ViewColumn.One,
-      selection: new vscode.Selection(new vscode.Position(0, 0), new vscode.Position(0, 0))
-    };
-    const { context } = createSyncContext("password");
-    const loggerContext = { subscriptions: [] as { dispose(): void }[] } as unknown as vscode.ExtensionContext;
-    initializeOutputLogger(loggerContext);
-    registerMemberSyncCommands(context, async () => {
-      throw new IbmiSourceSyncError("copy", "IBM i のコピー・コマンドが失敗しました。", "CPF2869: member not found");
-    });
-
-    try {
-      await vscode.commands.executeCommand("rpgClSupport.ibmiSourceSync.upload");
-
-      const channel = stub.window.outputChannels[0];
-      assert.ok(channel.lines.some((line: string) => line.includes("CPF2869: member not found")));
-      assert.deepEqual(channel.showCalls, [true]);
-    } finally {
-      for (const disposable of loggerContext.subscriptions) {
-        disposable.dispose();
-      }
-    }
-  });
-
-  test("通知を閉じていない設定エラーの後でも同じ文書を再実行できる", async () => {
-    resetSyncStub();
-    const stub = vscode as unknown as any;
-    const document = createDocument("A");
-    stub.window.activeTextEditor = {
-      document,
-      viewColumn: vscode.ViewColumn.One,
-      selection: new vscode.Selection(new vscode.Position(0, 0), new vscode.Position(0, 0))
-    };
-    stub.__setConfig({
-      "rpgClSupport.ibmiSourceSync": {
-        host: "ibmi.example.test",
-        port: 22,
-        user: "TESTUSER",
-        authMethod: "invalid",
-        ifsTempDirectory: "/tmp",
-        hostKeySha256: transportSettings.hostKeySha256
-      }
-    });
-    let resolveNotification: (() => void) | undefined;
-    stub.window.__errorMessageResult = new Promise<void>(resolve => {
-      resolveNotification = resolve;
-    });
-    const { context } = createSyncContext("password");
-    registerMemberSyncCommands(context, async () => new FakeTransport());
-
-    const firstRun = vscode.commands.executeCommand("rpgClSupport.ibmiSourceSync.upload");
-    await new Promise<void>(resolve => setImmediate(resolve));
-    stub.window.__errorMessageResult = undefined;
-    await vscode.commands.executeCommand("rpgClSupport.ibmiSourceSync.upload");
-
-    assert.ok(stub.window.errors.some((message: string) => message.includes("authMethod")));
-    assert.ok(!stub.window.errors.some((message: string) => message.includes("すでに IBM i と同期中")));
-    resolveNotification?.();
-    await firstRun;
   });
 
   test("download の保存失敗は成功通知にしない", async () => {

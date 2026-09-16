@@ -10,6 +10,8 @@ architecture の4層を下から順に実装する。まず manifest・テスト
 
 T1 と T2 は土台として先に完了させる。T3 で IBM i との境界・cleanup の不変条件を固定し、T4 がそれを document 操作へ組み込む。T5 は marker domain と command の登録後に extension へ結線する。T6 は全タスクの後に回し、単体テストの緑だけで実機往復や extension host の起動を代弁しない。
 
+T1〜T7 は完了済み（US1〜US3、AC1〜AC11・AC-I1〜AC-I5）。T8〜T11 は US4（AC12〜AC18: アップロード時のファイル名からのテキスト記述・SRCTYPE 反映）を追加する。T8（target 解決の純粋ロジック）が土台で、T9（transport の CHGPFM 追加）と T10（command の通知分岐）がそれぞれ独立した層を触るため T8 完了後に着手できる。T11（実機検証）は T9・T10 の両方を終えてから行う。
+
 ## リスク / 留意点
 
 - `ssh2` の SFTP subsystem を閉じてから同一 SSH client 上で `CPYFRMSTMF` を実行する順序は、実機で `CPFA09E` を避けるための必須条件である。T3 の facade test と T6 の実機 probe の両方で固定する。
@@ -17,6 +19,9 @@ T1 と T2 は土台として先に完了させる。T3 で IBM i との境界・
 - password/passphrase、秘密鍵本文、raw command は通知・ログ・settings JSON に残さない。private key path だけを非機密設定として transport adapter が読み込む。
 - 7基底色以外の修飾属性は初期 UI の対象外である。未知 wire control を削除・丸めず無変換通過させ、基底7色だけを marker と decoration にする。
 - `package.json` の menu `when` は静的列挙であるため、`TARGET_EXTENSIONS` と一致する検証を `verify-contributes.mjs` に追加して配線漏れを防ぐ。
+- `CHGPFM ... TEXT('...')` へ埋め込む `textDescription` は、ファイル名由来の未加工文字列を CL コマンド文字列へ埋め込む初めての経路である。アポストロフィのエスケープを怠ると CL 構文が壊れる（T9 で対応、研究 F12）。
+- 全角文字を含む `textDescription` が `CHGPFM` 経由で正しく往復するかは design 時点で未検証（研究の未確定事項）。T11 の実機検証で確認し、問題があれば設計へ差し戻す。
+- `-`（ハイフン）区切りの導入で、既存のアンダースコア入りメンバー名の解決結果を変えないこと（decisions.md D7）を T8 の回帰テストで固定する。
 
 ## テスト方針
 
@@ -60,3 +65,23 @@ T1 と T2 は土台として先に完了させる。T3 で IBM i との境界・
       対象: `vscode-extension/src/sync/ibmiSourceTransport.ts` `vscode-extension/test/unit/memberSync.test.ts` / 根拠: review.md「レビュー ラウンド 1」
       依存: T3
       AC: AC4, AC6
+
+- [x] T8: `resolveMemberTarget` を判別共用体（`ok:true/target` / `ok:false/reason`）へ変更し、ファイル名を最初の `-` で分割してメンバー名・テキスト記述を抽出・検証する。`deriveSourceType`（拡張子の一様大文字化、特例なし）を追加する。既存のアンダースコア入りメンバー名（例: `MY_PGM.rpg`）が分割されず従来どおり解決されることを回帰テストで固定する。
+      対象: `vscode-extension/src/sync/memberTarget.ts` `vscode-extension/test/unit/memberSync.test.ts` / 根拠: design「アップロード属性の抽出と target 解決」「target 解決」、decisions.md D7・D8
+      依存: T2
+      AC: AC12, AC13, AC14, AC15, AC16
+
+- [x] T9: `ibmiSourceTransport` の `upload` を「`CPYFRMSTMF`（内容コピー・宛先メンバー未存在なら自動作成） → `CHGPFM FILE(...) MBR(...) SRCTYPE(...) [TEXT('...')]`（属性反映）」の2段に拡張する。CL 文字列リテラルのアポストロフィをエスケープする専用関数を追加し、`textDescription` を含むテキストを安全に組み立てる。内容コピー成功後に属性コマンドだけ失敗した場合は `kind: "attributes"` として区別する。宛先ライブラリー／ソース物理ファイルが存在しない場合に既存の `kind: "copy"` 失敗として扱われることを fake ssh client で確認する。
+      対象: `vscode-extension/src/sync/ibmiSourceTransport.ts` `vscode-extension/test/unit/memberSync.test.ts` / 根拠: design「transport」「アップロード」「エラー処理」、research F8・F9・F12
+      依存: T3, T8
+      AC: AC14, AC17, AC18
+
+- [x] T10: アップロード command ハンドラーを、`resolveMemberTarget` の新しい失敗理由（`pathShape`/`memberName`/`textDescription`）ごとに IBM i 接続前の具体的な通知を出すよう変更する。`transport.upload` へ `deriveSourceType`/`textDescription` を渡し、`kind: "attributes"` 失敗時は「内容は反映済みだが属性反映に失敗した」ことが伝わる通知にする。
+      対象: `vscode-extension/src/extension/commands/memberSync.ts` `vscode-extension/test/unit/memberSync.test.ts` / 根拠: design「アップロード」「エラー処理」
+      依存: T4, T8, T9
+      AC: AC12, AC13, AC14, AC15, AC16, AC17, AC18
+
+- [ ] T11: 実機検証を追加する。テキスト記述に全角文字（日本語）を含む場合の `CHGPFM ... TEXT('...')` 往復（design 時点で未検証・ユーザー承認済み）、宛先メンバー未存在時の `CPYFRMSTMF` 自動作成（AC17）、宛先ライブラリー／ソース物理ファイル未存在時の失敗（AC18）を確認する。実機に接続できない場合は test-result へ未検証として明記し、成功扱いにしない。
+      対象: `.aidev/works/20260910-ibmi-source-member-sync/verify/probe-seu-source-color.mjs`（拡張、または新規 probe スクリプト） / 根拠: design「テスト方針」、ibmi-remote skill
+      依存: T9, T10
+      AC: AC12, AC17, AC18

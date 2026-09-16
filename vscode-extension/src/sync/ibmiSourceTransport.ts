@@ -22,26 +22,37 @@ export type IbmiSourceSyncErrorKind =
   | "authentication"
   | "transfer"
   | "copy"
+  | "attributes"
   | "cleanup";
 
 /** 秘密値や raw command を含まない、利用者向けに分類済みの同期エラー。 */
 export class IbmiSourceSyncError extends Error {
   constructor(
     readonly kind: IbmiSourceSyncErrorKind,
-    message: string,
-    /** Output パネル専用の診断情報。通知には出さない。 */
-    readonly diagnostic?: string
+    message: string
   ) {
     super(message);
     this.name = "IbmiSourceSyncError";
   }
 }
 
+/** アップロード時に IBM i メンバーへ反映する属性。ファイル名から抽出済み・検証済みの値を渡す。 */
+export interface UploadAttributes {
+  /** `deriveSourceType` の戻り値。 */
+  readonly sourceType: string;
+  /** 未加工の利用者文字列。CL 文字列リテラルへ埋め込む前に transport 側でエスケープする。 */
+  readonly textDescription?: string;
+}
+
 export interface IbmiSourceTransport {
   /** UTF-8 wire text。EOL と可視 marker は command 層が扱う。 */
   download(target: MemberTarget): Promise<string>;
-  /** LF 正規化済みの UTF-8 wire text を source member へ反映する。 */
-  upload(target: MemberTarget, utf8WireText: string): Promise<void>;
+  /**
+   * LF 正規化済みの UTF-8 wire text を source member へ反映し、続けて SRCTYPE/TEXT 属性を反映する。
+   * 内容コピーが失敗すれば `kind: "copy"`、内容コピー成功後の属性反映だけが失敗すれば
+   * `kind: "attributes"` として区別する（内容は既に反映済みであることが呼出元へ伝わるようにする）。
+   */
+  upload(target: MemberTarget, utf8WireText: string, attributes: UploadAttributes): Promise<void>;
   dispose(): void;
 }
 
@@ -50,6 +61,8 @@ type SshClientFactory = () => Client;
 const SAFE_IFS_PATH = /^\/(?:[A-Za-z0-9_.$#@-]+\/)*[A-Za-z0-9_.$#@-]*$/u;
 const SHA256_HEX = /^[A-Fa-f0-9]{64}$/u;
 const SHA256_BASE64 = /^SHA256:[A-Za-z0-9+/]{43}=?$/u;
+const SOURCE_TYPE = /^[A-Z$#@][A-Z0-9_$#@]{0,9}$/u;
+const TEXT_DESCRIPTION_MAX_LENGTH = 50;
 
 /**
  * SSH 接続を作る。第3引数は unit test で接続ライフサイクルを差し替えるためだけのもの。
@@ -100,14 +113,18 @@ class SshIbmiSourceTransport implements IbmiSourceTransport {
     return result;
   }
 
-  async upload(target: MemberTarget, utf8WireText: string): Promise<void> {
+  async upload(target: MemberTarget, utf8WireText: string, attributes: UploadAttributes): Promise<void> {
     this.ensureOpen();
+    validateUploadAttributes(attributes);
     const temporaryPath = this.makeTemporaryPath();
     await this.withCleanup(
       async () => {
         await this.withSftp(sftp => writeSftpFile(sftp, temporaryPath, Buffer.from(utf8WireText, "utf8")));
         // CPYFRMSTMF は SFTP が stream file を閉じてからでなければ CPFA09E になり得る。
+        // 宛先メンバーが無ければ CPYFRMSTMF が自動作成する（research.md F8。ADDPFM は呼ばない）。
         await executeCopy(this.client, buildCopyFromStreamFileCommand(target, temporaryPath));
+        // 内容コピー成功後にだけ属性を反映する。CHGPFM は既存メンバーを前提にするため。
+        await executeAttributeChange(this.client, buildChangeAttributesCommand(target, attributes));
       },
       temporaryPath
     );
@@ -223,10 +240,10 @@ async function connect(
 
   await new Promise<void>((resolve, reject) => {
     let settled = false;
-    const fail = (kind: IbmiSourceSyncErrorKind, message: string, error?: unknown): void => {
+    const fail = (kind: IbmiSourceSyncErrorKind, message: string): void => {
       if (!settled) {
         settled = true;
-        reject(new IbmiSourceSyncError(kind, message, compactDiagnostic(error)));
+        reject(new IbmiSourceSyncError(kind, message));
       }
     };
     client.once("ready", () => {
@@ -235,13 +252,12 @@ async function connect(
         resolve();
       }
     });
-    client.once("error", error =>
+    client.once("error", () =>
       fail(
         rejectedHostKey ? "hostKey" : "authentication",
         rejectedHostKey
           ? "IBM i の SSH ホスト鍵が設定した fingerprint と一致しません。"
-          : "IBM i への SSH 接続または認証に失敗しました。",
-        error
+          : "IBM i への SSH 接続または認証に失敗しました。"
       )
     );
     client.once("close", () => fail("transfer", "IBM i への SSH 接続が確立前に閉じられました。"));
@@ -273,6 +289,41 @@ function buildCopyToStreamFileCommand(target: MemberTarget, temporaryPath: strin
 
 function buildCopyFromStreamFileCommand(target: MemberTarget, temporaryPath: string): string {
   return `system "CPYFRMSTMF FROMSTMF('${temporaryPath}') TOMBR('${buildMemberPath(target)}') MBROPT(*REPLACE) STMFCCSID(1208) DBFCCSID(*FILE)"`;
+}
+
+function validateUploadAttributes(attributes: UploadAttributes): void {
+  if (!SOURCE_TYPE.test(attributes.sourceType)) {
+    throw new IbmiSourceSyncError("configuration", "IBM i 同期のソース・タイプが不正です。");
+  }
+  if (attributes.textDescription !== undefined && attributes.textDescription.length > TEXT_DESCRIPTION_MAX_LENGTH) {
+    throw new IbmiSourceSyncError("configuration", "IBM i 同期のテキスト記述が上限（50文字）を超えています。");
+  }
+}
+
+/** CL 文字列リテラルのアポストロフィを `''`（2個）へエスケープする。未加工の利用者文字列を埋め込む前に必ず通す。 */
+function escapeClStringLiteral(value: string): string {
+  return value.replace(/'/gu, "''");
+}
+
+/**
+ * `system "..."` の外側二重引用符コンテキスト向けにエスケープする。
+ *
+ * `client.exec()` で送るコマンド文字列は、SSH サーバー側でログイン shell に
+ * `shell -c '<command>'` の形で実行される（sshd の一般的な exec リクエスト処理）。
+ * そのため `system "..."` の二重引用符は remote shell が解釈し、内側の `\` `"` `$` `` ` ``
+ * は shell の特殊文字として展開・エスケープ解除の対象になる。CL 文字列リテラルの
+ * エスケープ（`escapeClStringLiteral`）だけでは this 層を素通りしてしまうため、
+ * それとは独立にこの層のエスケープが要る（research.md F12・review ラウンド3）。
+ */
+function escapeForRemoteShellDoubleQuoted(value: string): string {
+  return value.replace(/[\\"$`]/gu, character => `\\${character}`);
+}
+
+function buildChangeAttributesCommand(target: MemberTarget, attributes: UploadAttributes): string {
+  const textClause = attributes.textDescription === undefined
+    ? ""
+    : ` TEXT('${escapeForRemoteShellDoubleQuoted(escapeClStringLiteral(attributes.textDescription))}')`;
+  return `system "CHGPFM FILE(${target.library}/${target.sourceFile}) MBR(${target.member}) SRCTYPE(${attributes.sourceType})${textClause}"`;
 }
 
 function openSftp(client: Client): Promise<SFTPWrapper> {
@@ -312,11 +363,17 @@ function removeSftpFile(sftp: SFTPWrapper, path: string): Promise<void> {
   });
 }
 
-function executeCopy(client: Client, command: string): Promise<void> {
+function executeClCommand(
+  client: Client,
+  command: string,
+  kind: IbmiSourceSyncErrorKind,
+  failureMessage: string,
+  incompleteMessage: string
+): Promise<void> {
   return new Promise((resolve, reject) => {
     client.exec(command, (error, stream) => {
       if (error || !stream) {
-        reject(toSyncError("copy", error));
+        reject(toSyncError(kind, error));
         return;
       }
 
@@ -328,15 +385,31 @@ function executeCopy(client: Client, command: string): Promise<void> {
         if (code === 0) {
           resolve();
         } else {
-          reject(new IbmiSourceSyncError(
-            "copy",
-            stderr ? "IBM i のコピー・コマンドが失敗しました。" : "IBM i のコピー・コマンドを完了できませんでした。",
-            compactDiagnostic(stderr)
-          ));
+          reject(new IbmiSourceSyncError(kind, stderr ? failureMessage : incompleteMessage));
         }
       });
     });
   });
+}
+
+function executeCopy(client: Client, command: string): Promise<void> {
+  return executeClCommand(
+    client,
+    command,
+    "copy",
+    "IBM i のコピー・コマンドが失敗しました。",
+    "IBM i のコピー・コマンドを完了できませんでした。"
+  );
+}
+
+function executeAttributeChange(client: Client, command: string): Promise<void> {
+  return executeClCommand(
+    client,
+    command,
+    "attributes",
+    "IBM i のメンバー属性（テキスト記述・ソース・タイプ）の反映コマンドが失敗しました。",
+    "IBM i のメンバー属性の反映コマンドを完了できませんでした。"
+  );
 }
 
 function toSyncError(kind: IbmiSourceSyncErrorKind, error: unknown): IbmiSourceSyncError {
@@ -349,13 +422,8 @@ function toSyncError(kind: IbmiSourceSyncErrorKind, error: unknown): IbmiSourceS
     authentication: "IBM i の SSH 認証に失敗しました。",
     transfer: "IBM i とのファイル転送に失敗しました。",
     copy: "IBM i の source member コピーに失敗しました。",
+    attributes: "IBM i のメンバー属性の反映に失敗しました。",
     cleanup: "IBM i の一時ファイルを削除できませんでした。"
   };
-  return new IbmiSourceSyncError(kind, messageByKind[kind], compactDiagnostic(error));
-}
-
-function compactDiagnostic(error: unknown): string | undefined {
-  const value = error instanceof Error ? error.message : String(error ?? "");
-  const normalized = value.replace(/[\r\n\t]+/gu, " ").trim();
-  return normalized ? normalized.slice(0, 4_000) : undefined;
+  return new IbmiSourceSyncError(kind, messageByKind[kind]);
 }
