@@ -13,14 +13,14 @@ aidev ハーネスの **state.yml / metrics.yml 更新を「単一の検証済�
 POSIX（Linux/macOS）:
 
 ```sh
-.claude/skills/aidev-docs/bin/aidev <command> ...
+tools/aidev-cli/aidev <command> ...
 ```
 
 Windows:
 
 ```powershell
-pwsh .claude/skills/aidev-docs/bin/aidev.ps1 <command> ...
-# Windows PowerShell 5.1 の場合: powershell -File .claude\skills\aidev-docs\bin\aidev.ps1 <command> ...
+pwsh tools/aidev-cli/aidev.ps1 <command> ...
+# Windows PowerShell 5.1 の場合: powershell -File tools\aidev-cli\aidev.ps1 <command> ...
 ```
 
 ## コマンド
@@ -73,7 +73,7 @@ pwsh .claude/skills/aidev-docs/bin/aidev.ps1 <command> ...
 成功時のみコミット**する：
 
 ```sh
-.claude/skills/aidev-docs/bin/aidev verify && git commit ...   # verify 失敗なら commit しない
+tools/aidev-cli/aidev verify && git commit ...   # verify 失敗なら commit しない
 ```
 
 ## 依存（dependsOn）の判定
