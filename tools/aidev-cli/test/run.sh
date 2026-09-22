@@ -1,6 +1,6 @@
 #!/bin/sh
 # aidev CLI テスト（status / metrics / worktree / 既存回帰 / sh⇔ps1 パリティ）。Node 非依存。
-# 使い方: sh .claude/skills/aidev-docs/bin/test/run.sh
+# 使い方: sh tools/aidev-cli/test/run.sh
 # 一時フィクスチャ（works/backlog/metrics）を作り、aidev の出力を期待値と照合する。
 set -u
 
@@ -133,12 +133,12 @@ if command -v git >/dev/null 2>&1; then
   # フィクスチャ git リポジトリを $TMP/repo に作る（既定 worktree パスは $TMP/repo-wt/* ＝ $TMP 配下なので
   # 既存 trap の rm -rf "$TMP" で worktree ごと自動掃除される）。
   REPO="$TMP/repo"
-  # CLI は skills 配下に置く（worktree add は worktree 内の .claude/skills/aidev-docs/bin/aidev を self-invoke するため、
+  # CLI は tools/aidev-cli 配下に置く（worktree add は worktree 内の tools/aidev-cli/aidev を self-invoke するため、
   # 追跡＝コミットして worktree に伝播させる）。.aidev/ は追跡マーカ(.gitkeep)で worktree に存在させ、
   # find_root が worktree 内 .aidev で止まる（さもないと $TMP/.aidev へ脱出して汚染する）。実 repo は charter/config/works
   # が追跡されているのと同じ前提。
-  mkdir -p "$REPO/.claude/skills/aidev-docs/bin" "$REPO/.aidev"
-  cp "$AIDEV_SH" "$REPO/.claude/skills/aidev-docs/bin/aidev"; chmod +x "$REPO/.claude/skills/aidev-docs/bin/aidev"
+  mkdir -p "$REPO/tools/aidev-cli" "$REPO/.aidev"
+  cp "$AIDEV_SH" "$REPO/tools/aidev-cli/aidev"; chmod +x "$REPO/tools/aidev-cli/aidev"
   : > "$REPO/.aidev/.gitkeep"
   printf '.aidev/current\n' > "$REPO/.gitignore"
   (
@@ -335,10 +335,10 @@ if command -v pwsh >/dev/null 2>&1; then
   # pwsh 不在の開発機では skip されるため、ps1 の worktree は本節（pwsh 環境/CI）で初めて実行検証される。
   if command -v git >/dev/null 2>&1; then
     PREPO="$TMP/prepo"
-    # CLI は skills 配下（worktree add の self-invoke 先）。.aidev/ は追跡 work(20260101-existing)で worktree に存在。
-    mkdir -p "$PREPO/.claude/skills/aidev-docs/bin" "$PREPO/.aidev/works/20260101-existing"
-    cp "$AIDEV_SH"  "$PREPO/.claude/skills/aidev-docs/bin/aidev";     chmod +x "$PREPO/.claude/skills/aidev-docs/bin/aidev"
-    cp "$AIDEV_PS1" "$PREPO/.claude/skills/aidev-docs/bin/aidev.ps1"
+    # CLI は tools/aidev-cli 配下（worktree add の self-invoke 先）。.aidev/ は追跡 work(20260101-existing)で worktree に存在。
+    mkdir -p "$PREPO/tools/aidev-cli" "$PREPO/.aidev/works/20260101-existing"
+    cp "$AIDEV_SH"  "$PREPO/tools/aidev-cli/aidev";     chmod +x "$PREPO/tools/aidev-cli/aidev"
+    cp "$AIDEV_PS1" "$PREPO/tools/aidev-cli/aidev.ps1"
     printf '.aidev/current\n' > "$PREPO/.gitignore"
     # 既存work一致 add の回帰用に slug:existing の work をコミットしておく
     cat > "$PREPO/.aidev/works/20260101-existing/state.yml" <<'YML'
