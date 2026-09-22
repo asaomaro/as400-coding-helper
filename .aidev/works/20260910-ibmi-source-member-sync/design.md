@@ -13,6 +13,8 @@ IBM i から UTF-8 へ変換された 7 基底色の制御 Unicode は、文書�
 - **CCSID の正本は source PF。** `CPYTOSTMF` / `CPYFRMSTMF` に `STMFCCSID(1208) DBFCCSID(*FILE)` を渡す。CCSID を settings に複製しない。65535 など IBM i が変換を拒否する場合は、ホストメンバーとローカル文書のどちらも変更成功扱いにしない。
 - **色の初期対象は7基底色。** `Ĝ`/`Ŵ`/`Ŕ`/`Ŧ`/`Ŷ`/`Ṕ`/`Ḃ` を marker にする。反転・下線等の修飾属性は入力・装飾の対象外だが、既存 wire Unicode を変換せず通過させ、無変更往復で失わない。
 - **同期は明示コマンドのみ。** 保存イベントは登録しない。ダウンロードは現在の document の全範囲を置換して保存し、開始時に捕捉した document を再表示してフォーカスを戻す。
+- **アップロードはファイル名からメンバー属性を反映する。** ファイル名の `<メンバー名>-<テキスト記述>.<拡張子>` 規則を `resolveMemberTarget` 自身の解決結果に統合し、命名規則・桁数違反は IBM i へ接続する前にローカルで弾く。区切り文字はアンダースコアではなくハイフン（`-`）にする。IBM i オブジェクト名の合法文字にハイフンは無いため、既存のアンダースコア入りメンバー名と衝突しない（decisions.md D7）。
+- **属性反映は「内容コピー → 属性変更」の1コマンド追加で行う。** `CPYFRMSTMF` は宛先メンバーが無ければ自動作成するため、新規メンバー作成専用のコマンド（`ADDPFM` 等）は増やさない。内容コピー成功後に `CHGPFM FILE(...) MBR(...) SRCTYPE(...) TEXT('...')` を1回呼ぶ（research.md F8, F9）。
 
 ### 操作シーケンス
 
@@ -26,10 +28,12 @@ sequenceDiagram
   U->>C: Upload or Download command
   C->>C: resolve active URI / validate settings and secret
   alt Upload
+    C->>C: resolveMemberTarget: split filename at first "-", validate member/text/SRCTYPE locally
     C->>C: marker -> wire Unicode, normalize LF
     C->>T: SFTP put temporary UTF-8 file
     T->>T: close SFTP file handle
-    T->>H: CPYFRMSTMF STMFCCSID(1208) DBFCCSID(*FILE)
+    T->>H: CPYFRMSTMF STMFCCSID(1208) DBFCCSID(*FILE)  (member 未作成なら自動作成)
+    T->>H: CHGPFM SRCTYPE(...) [TEXT('...')]
   else Download
     T->>H: CPYTOSTMF STMFCCSID(1208) DBFCCSID(*FILE)
     T->>C: SFTP get temporary UTF-8 file
@@ -45,10 +49,10 @@ sequenceDiagram
 | ファイル | 変更 |
 |---|---|
 | `vscode-extension/package.json` | `ssh2` 依存、同期設定、4 コマンド、エディター右クリックメニューを追加 |
-| `vscode-extension/src/sync/memberTarget.ts` | workspace 相対パスから IBM i member target を純粋に解決 |
+| `vscode-extension/src/sync/memberTarget.ts` | workspace 相対パスから IBM i member target を純粋に解決。ファイル名のハイフン分割によるテキスト記述抽出、メンバー名/テキスト記述の桁数・文字種検証、拡張子から SRCTYPE を導出する `deriveSourceType` を追加 |
 | `vscode-extension/src/sync/visibleColorMarkers.ts` | 7基底色の marker/wire 変換、装飾セグメントを純粋に計算 |
-| `vscode-extension/src/sync/ibmiSourceTransport.ts` | `ssh2` の接続、exec、SFTP、IFS cleanup、エラー正規化 |
-| `vscode-extension/src/extension/commands/memberSync.ts` | 設定・SecretStorage・現在文書・transport を組み合わせる upload/download/secret commands |
+| `vscode-extension/src/sync/ibmiSourceTransport.ts` | `ssh2` の接続、exec、SFTP、IFS cleanup、エラー正規化。`upload` に SRCTYPE/TEXT 反映用の `CHGPFM` 呼び出しと CL 文字列リテラルのエスケープを追加 |
+| `vscode-extension/src/extension/commands/memberSync.ts` | 設定・SecretStorage・現在文書・transport を組み合わせる upload/download/secret commands。アップロード時のローカル検証失敗・属性反映失敗（内容は成功・属性のみ失敗）を区別して通知 |
 | `vscode-extension/src/language/seuColorMarkers.ts` | 色装飾の作成、再計算、設定変更時の再描画 |
 | `vscode-extension/src/extension/extension.ts` | 同期コマンドと色装飾を activation 時に登録 |
 | `vscode-extension/test/support/vscode-stub.js` | SecretStorage、装飾、document save、入力 box の最小 stub を追加 |
@@ -65,6 +69,8 @@ sequenceDiagram
 - `WorkspaceEdit.replace` と `workspace.applyEdit` は既存の書き戻し経路で使われる。`vscode-extension/src/prompter/applyChanges.ts:79-95`。
 - unit test は extension host を起動せず `test/support/vscode-stub.js` を差し替える。`vscode-extension/package.json:374,378` と `vscode-extension/test/support/vscode-stub.js:255-285`。
 - IBM i の色属性、UTF-8 wire 値、CCSID 5035 の往復、SFTP close 後に `CPYFRMSTMF` を呼ぶ制約は [research.md](research.md) F2-F5 と実機プローブに確定記録されている。
+- `CPYFRMSTMF` は宛先メンバーが無ければ自動作成し、`CHGPFM` は既存メンバーの SRCTYPE/TEXT を1コマンドで変更できることは、IBM Documentation 原典と `ibmi-remote` skill の実機確認済み手順から確定している。[research.md](research.md) F8, F9。
+- テキスト記述・SRCTYPE の桁数上限（50桁・10桁）とメンバー名の命名規則は、この PJ が原典から生成・機械照合済みの CL コマンド定義（`vscode-extension/resources/prompter/cl/ja/ADDPFM.json` / `CHGPFM.json`）と既存の `IBM_I_OBJECT_NAME`（`vscode-extension/src/sync/memberTarget.ts:8`）から確定している。[research.md](research.md) F10。
 
 ## インターフェース / データ構造
 
@@ -92,11 +98,37 @@ export interface ColorSegment {
   readonly color: SeuBaseColor;
 }
 
-export function resolveMemberTarget(relativePath: string): MemberTarget | undefined;
 export function wireToVisible(text: string): string;
 export function visibleToWire(text: string): string;
 export function findColorSegments(lines: readonly string[]): readonly ColorSegment[];
 ```
+
+### アップロード属性の抽出と target 解決
+
+```ts
+export interface MemberTarget {
+  readonly library: string;              // 大文字、IBM i object-name として検証済み
+  readonly sourceFile: string;           // 同上
+  readonly member: string;               // ハイフンより前の部分。大文字、object-name として検証済み
+  readonly extension: string;            // 小文字。SRCTYPE 導出の入力
+  readonly textDescription?: string;     // ハイフンより後（拡張子を除く）。桁数検証済み。区切りが無ければ undefined
+}
+
+export type ResolveMemberTargetResult =
+  | { readonly ok: true; readonly target: MemberTarget }
+  | { readonly ok: false; readonly reason: "pathShape" }      // src/<LIB>/<SRCFILE>/<name>.<ext> の形になっていない
+  | { readonly ok: false; readonly reason: "memberName" }     // ハイフンより前が IBM i object-name 規則に違反
+  | { readonly ok: false; readonly reason: "textDescription" }; // ハイフンより後が50文字を超える
+
+export function resolveMemberTarget(relativePath: string): ResolveMemberTargetResult;
+
+/** 拡張子から SRCTYPE を導出する。TARGET_EXTENSIONS の全拡張子を対象に大文字化するだけの一様な規則（design 決定。research.md F11）。 */
+export function deriveSourceType(extension: string): string;
+```
+
+**ハイフン分割の規則**: `resolveMemberTarget` は `<filename>` から拡張子を除いた後、最初の `-` で分割する。`-` が無ければ全体をメンバー名とし `textDescription` は `undefined` にする（既存の AC1 の挙動を保つ）。`-` の直後が空文字列（例: `MBR-.rpg`）の場合も `textDescription` を `undefined` にする（意味のある記述が無いものとして無視する）。メンバー名部分だけを `IBM_I_OBJECT_NAME` で検証する（`library`/`sourceFile` と同じ規則）。**`library`/`sourceFile` セグメントにはハイフン分割を適用しない**（アップロード対象はファイル名だけであり、ライブラリー名にテキスト記述の概念は無い）。
+
+`ok: false` のとき、command 側（`memberSync.ts`）が `reason` ごとに具体的な通知文を出す（下記「エラー処理」）。既存の「対応外パス」という一つの `undefined` 型を割ったのは、AC15/AC16 が「違反内容が分かるエラー」を求めるため。
 
 マップは下表を `visibleColorMarkers.ts` の唯一の真実源に置く。
 
@@ -133,9 +165,14 @@ const SECRET_KEY = "rpgClSupport.ibmiSourceSync.authentication";
 ### transport
 
 ```ts
+export interface UploadAttributes {
+  readonly sourceType: string;             // deriveSourceType の戻り値。TARGET_EXTENSIONS 由来で安全
+  readonly textDescription?: string;       // 未加工の利用者文字列。CL 文字列リテラルへ埋め込む前に必ずエスケープする
+}
+
 export interface IbmiSourceTransport {
   download(target: MemberTarget): Promise<string>; // UTF-8 wire text、EOL は未正規化
-  upload(target: MemberTarget, utf8WireText: string): Promise<void>;
+  upload(target: MemberTarget, utf8WireText: string, attributes: UploadAttributes): Promise<void>;
   dispose(): void;
 }
 
@@ -147,14 +184,20 @@ export function createIbmiSourceTransport(
 
 adapter は target を IBM i object-name として、IFS temporary directory を絶対 path として検証する。CL 文字列へ埋め込む前に library/source file/member/path を検証・quote し、未検証入力を shell へ渡さない。`ssh2` の host verifier は `hostKeySha256` と一致しない接続を拒否する。
 
+**`textDescription` のエスケープ**: `upload` 内部の `CHGPFM` 用 builder は、CL 文字列リテラルのアポストロフィ規則（`'` を `''` の2個へ変換）を専用関数で適用してから `TEXT('...')` を組み立てる。他の値（library/sourceFile/member/sourceType）はすべて `IBM_I_OBJECT_NAME` 検証済みか `TARGET_EXTENSIONS` 由来の既知文字列であり、エスケープ不要。**未加工の利用者文字列を CL コマンド文字列へ埋め込むのはこの経路が初めてであり、エスケープを怠ると CL 構文の破壊・注入につながる**（research.md F12）。
+
+**全角文字を含む `textDescription` の扱い**: `CHGPFM ... TEXT('...')` は内容コピー（`CPYFRMSTMF`/`CPYTOSTMF`）が使う `STMFCCSID`/`DBFCCSID` の変換を経由せず、CL コマンド文字列として直接送信される。全角文字（日本語等）が正しく往復するかは本 work の調査時点で未検証であり（research.md 未確定事項）、**実装時に実機で確認する**（ユーザー承認済み。テスト方針に検証項目を追加）。ローカル検証は JS の文字列長（UTF-16 code unit 数）で50文字以内かを見る近似であり、DBCS を含む場合の IBM i 側バイト長との差異は実機検証の対象とする。
+
 ## 振る舞いの詳細
 
 ### target 解決
 
 1. command が active document の URI が所属 workspace の配下か確かめ、`workspace.asRelativePath` で相対パスを得る。
-2. `resolveMemberTarget` は相対 segment が `src/<LIB>/<SRCFILE>/<filename>` のちょうど4個であることを確認する。
-3. `<filename>` から最後の拡張子だけを落とした member が空でなく、LIB/SRCFILE/member が IBM i object-name 規則に適合するときだけ target を返す。
-4. 小文字入力は uppercase に正規化する。対応外パスでは `undefined` を返し、command が理由を表示する。
+2. `resolveMemberTarget` は相対 segment が `src/<LIB>/<SRCFILE>/<filename>` のちょうど4個であることを確認する。満たさなければ `{ ok: false, reason: "pathShape" }`。
+3. `<filename>` から最後の拡張子だけを落とし、最初の `-` でメンバー名とテキスト記述に分割する（`-` が無ければ全体をメンバー名、テキスト記述は `undefined`）。LIB/SRCFILE/member が IBM i object-name 規則に適合しなければ `{ ok: false, reason: "memberName" }`。テキスト記述が50文字を超えれば `{ ok: false, reason: "textDescription" }`。
+4. 小文字入力は uppercase に正規化する（テキスト記述は大文字化しない。原文のまま保持する）。すべて満たせば `{ ok: true, target }` を返す（`target.extension` は拡張子の小文字表記）。
+
+**ダウンロードでも同じ解決結果を使う**。ダウンロードは `target.member`（ハイフンより前の部分）だけを転送対象の特定に使い、`target.textDescription`/`target.extension` は参照しない。ローカルファイル名の生成・変更は行わない（AC3, 対象外節）。
 
 ### ダウンロード
 
@@ -166,9 +209,12 @@ adapter は target を IBM i object-name として、IFS temporary directory を
 
 ### アップロード
 
-1. 開始時に捕捉した document の `getText()` を読み、`visibleToWire` を適用する。改行を LF に正規化して UTF-8 bytes にする。
-2. SFTP put を完了させ、**SFTP file handle と subsystem session を閉じてから**（SSH Client 接続は維持する）`CPYFRMSTMF FROMSTMF(...) TOMBR(...) MBROPT(*REPLACE) STMFCCSID(1208) DBFCCSID(*FILE)` を SSH exec する。
-3. 成否にかかわらず一時 IFS file を delete する。CL 成功時だけ成功通知し、document の保存状態は変更しない。
+1. `resolveMemberTarget` の結果が `ok: false` なら IBM i へ接続せず、`reason` に応じた具体的な通知を出して終了する（AC15, AC16。下記「エラー処理」）。
+2. `ok: true` のとき、`deriveSourceType(target.extension)` で `sourceType` を求める。
+3. 開始時に捕捉した document の `getText()` を読み、`visibleToWire` を適用する。改行を LF に正規化して UTF-8 bytes にする。
+4. SFTP put を完了させ、**SFTP file handle と subsystem session を閉じてから**（SSH Client 接続は維持する）`CPYFRMSTMF FROMSTMF(...) TOMBR(...) MBROPT(*REPLACE) STMFCCSID(1208) DBFCCSID(*FILE)` を SSH exec する。宛先メンバーが無ければこのコマンドが新規作成する（AC17）。ライブラリーまたはソース物理ファイルが無ければこのコマンドが失敗する（AC18）。
+5. 内容コピーが成功したら、`CHGPFM FILE(<LIB>/<SRCFILE>) MBR(<member>) SRCTYPE(<sourceType>) [TEXT('<エスケープ済み textDescription>')]` を SSH exec する（`textDescription` が `undefined` なら `TEXT(...)` を付けない＝`*SAME` で既存値を保持）。
+6. 成否にかかわらず一時 IFS file を delete する。内容コピーが失敗した場合は `kind: "copy"` の失敗として通知し、属性コマンドは呼ばない。内容コピーが成功し属性コマンドだけ失敗した場合は `kind: "attributes"` の失敗として区別し、「内容は反映済みだが属性の反映に失敗した」ことが伝わる通知にする。両方成功したときだけ完全な成功通知を出す。document の保存状態は変更しない。
 
 ### marker 表示
 
@@ -194,7 +240,9 @@ editor/context の `when` は `TARGET_EXTENSIONS` と同じ全拡張子を packa
 - 文字列の JS length は DBCS の実機バイト幅と異なるが、色 marker は一つの source attribute byte に対して一つの BMP code unit である。marker 変換は DBCS 文字を変更しない。
 - 受信した修飾属性の wire control は見える marker に置換せず、そのまま upload へ戻す。通常文字や未知属性を削除・丸めない。
 - SOSI は DBCS の前後へ表示だけを差し込む装飾である。色 marker は保存本文なので処理を共有せず、両方の decoration が同じ対象文書で共存できることを integration test で見る。
-- IFS は temporary path のみを使い、library/source PF/member の作成・削除・改名・browse は実施しない。
+- IFS は temporary path のみを使い、library/source PF/member の作成・削除・改名・browse は実施しない。メンバーの新規作成だけは `CPYFRMSTMF` の既定挙動（宛先メンバー未存在時の自動作成）に委ね、`ADDPFM` 等の専用作成コマンドは呼ばない（library/source PF は既存が前提。対象外節）。
+- **SRCTYPE の拡張子対応は特例を設けず一様に大文字化する。** `TARGET_EXTENSIONS`（`rpg`/`rpgle`/`sqlrpgle`/`sqlrpg`/`clp`/`clle`/`pf`/`lf`/`dspf`/`prtf`/`mnudds`/`dds`/`cmd`）はいずれも大文字化した結果が10文字以内・英字始まりの IBM i object-name 規則を満たす。`.dds`（保険用拡張子）についても実世界の慣行を示す一次資料が無いため（research.md F11）、他の拡張子と同じ規則をそのまま適用し `DDS` とする。SRCTYPE パラメーターは列挙された選択肢に制限される欄ではなく任意の適合文字列を受け付けるため、この一様な規則で技術的な問題は生じない。
+- **ライブラリー／ソース物理ファイル未存在の判別に、CPF メッセージ番号の個別解析は行わない。** 一次資料・実機のどちらからも確定できなかった（research.md F8）。`CPYFRMSTMF` 失敗は既存の `kind: "copy"` 分類のまま扱い、汎用メッセージで「理由（コピー・コマンドの失敗）」を示す（AC18 はこの水準で満たす）。メッセージ番号に基づく精密な原因切り分けは、実機で確認できた時点の follow-up とする。
 
 ## エラー処理 / 異常系
 
@@ -206,8 +254,12 @@ editor/context の `when` は `TARGET_EXTENSIONS` と同じ全拡張子を packa
 | host key 不一致 | 接続せず、設定した fingerprint とサーバー鍵を管理者へ確認するよう表示 |
 | SSH/SFTP 認証・到達・権限失敗 | error ID と安全な要約だけを表示。password/passphrase/key 本文・command の秘密値はログしない |
 | CPY conversion / CCSID 65535 | IBM i member を更新成功扱いにせず、source PF CCSID の修正を案内 |
-| upload の CPY 失敗 | temporary IFS file を finally で削除し、member は成功通知しない |
+| upload の CPY 失敗 | temporary IFS file を finally で削除し、member は成功通知しない（ライブラリー・ソース物理ファイル未存在もこの分類。AC18） |
 | download の WorkspaceEdit/save 失敗 | transport 成功とローカル保存成功を分けて error 通知。フォーカスは開始文書へ戻す |
+| `resolveMemberTarget` が `reason: "pathShape"` | 接続せず、既存どおり `src/<LIB>/<SRCFILE>/<MEMBER>.<ext>` 形式を表示 |
+| `resolveMemberTarget` が `reason: "memberName"` | 接続せず、メンバー名の規則（半角10文字以内・先頭は英字または `$` `#` `@`・数字始まり不可）を具体的に表示する（AC15） |
+| `resolveMemberTarget` が `reason: "textDescription"` | 接続せず、テキスト記述の上限（50文字）を具体的に表示する（AC16） |
+| upload の CHGPFM（属性反映）失敗 | 内容コピーは成功済みのため、成功通知はせず「内容は反映済みだが、テキスト記述・ソース・タイプの反映に失敗した」ことが伝わる `kind: "attributes"` の通知にする。member 内容は成功扱いにするが属性は未反映と明示する |
 
 ## テスト方針
 
@@ -217,6 +269,11 @@ editor/context の `when` は `TARGET_EXTENSIONS` と同じ全拡張子を packa
 - transport は `ssh2` client facade を注入し、SFTP put close → exec CPYFRMSTMF の順序、finally cleanup、host key mismatch、stderr の secret 非露出を unit test する。
 - integration は extension host で marker decoration と SOSI decoration の共存を確認する。
 - 実機は [probe-seu-source-color.mjs](verify/probe-seu-source-color.mjs) を拡張して、7基底色、`Ŕ` 入力の `x'28'` 復元、DBCS を含む行、IFS cleanup を検査する。
+- `resolveMemberTarget` のファイル名解析は、ハイフン区切りあり/なし、テキスト記述の桁超過、メンバー名の規則違反（10文字超過・数字始まり・使用不可文字）を table-driven unit test する。既存のアンダースコア入りメンバー名（例: `MY_PGM.rpg`）が引き続き分割されずに解決されることも回帰として固定する（decisions.md D7）。
+- `deriveSourceType` は `TARGET_EXTENSIONS` の全拡張子に対し、10文字以内・英字始まりの SRCTYPE を返すことを検査する（`.dds`/`.mnudds` を含む）。
+- CL 文字列リテラルのエスケープ関数は、`'` を含むテキスト記述（例: `O'BRIEN`）が `''` へ変換されることと、エスケープ後に組み立てたコマンド文字列が意図しないパラメーターへ分解されないことを unit test する。
+- transport の `upload` は、CPY 失敗時に CHGPFM を呼ばないこと、CPY 成功・CHGPFM 失敗時に `kind: "attributes"` を返すこと、両方成功時だけ完全成功を返すことを fake ssh2 client で unit test する。
+- **実機**: `CHGPFM ... TEXT('...')` に全角文字（日本語）を含むテキスト記述を渡し、`DSPFD`/`CPYTOSTMF` 等で読み戻して文字化けしないことを確認する（design 時点で未検証。coding/test 工程で実施し、問題があれば設計へ差し戻す）。
 
 ## 受け入れ基準との対応
 
@@ -236,3 +293,10 @@ editor/context の `when` は `TARGET_EXTENSIONS` と同じ全拡張子を packa
 - AC-I3: command palette の command と document に直接入力した marker が入力経路となる。
 - AC-I4: handler 開始時に捕捉した document を `showTextDocument` の入力とし、download の後も同エディターへ戻す。
 - AC-I5: command/menu は editor context に限定し、SOSI/color decorations は対象文書だけへ適用する。F4/tab/save keybinding と保存 listener は変更しない。
+- AC12: `resolveMemberTarget` がファイル名をハイフンで分割して `target.member`/`target.textDescription` を返し、`transport.upload` の `attributes.textDescription` が `CHGPFM ... TEXT('...')` の入力となる。
+- AC13: ハイフン無しファイル名では `target.textDescription` が `undefined` になり、`CHGPFM` の `TEXT(...)` を省略する（`*SAME` 既定で既存値を保持）。
+- AC14: `deriveSourceType(target.extension)` が `attributes.sourceType` の入力となり、`textDescription` の有無に関わらず毎回 `CHGPFM ... SRCTYPE(...)` を呼ぶ。
+- AC15: `resolveMemberTarget` の `reason: "memberName"` が command の分岐入力となり、IBM i へ接続する前に規則を示すエラーを通知する。
+- AC16: `resolveMemberTarget` の `reason: "textDescription"` が command の分岐入力となり、IBM i へ接続する前に上限を示すエラーを通知する。
+- AC17: `CPYFRMSTMF` の宛先メンバー未存在時の自動作成（研究確定）が新規メンバー作成の実現手段であり、その後の `CHGPFM` 呼び出しが属性設定の入力となる。
+- AC18: `CPYFRMSTMF` のライブラリー/ソース物理ファイル未存在時の失敗が `kind: "copy"` の入力となり、既存のエラー通知経路で理由を示す。
