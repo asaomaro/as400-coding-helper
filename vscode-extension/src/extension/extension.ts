@@ -3,6 +3,7 @@ import { registerLanguageFeatures } from "../language/registration";
 import { registerShowPrompterCommand } from "./commands/showPrompter";
 import { registerMemberSyncCommands } from "./commands/memberSync";
 import { registerSeuColorMarkers } from "../language/seuColorMarkers";
+import { registerRpgUnitTesting } from "../testing/testController";
 import { initializeOutputLogger, logInfo, showOutput } from "./outputLogger";
 
 export function activate(context: vscode.ExtensionContext): void {
@@ -21,6 +22,8 @@ export function activate(context: vscode.ExtensionContext): void {
   logInfo("IBM i source member 同期コマンドを登録しました。");
   registerSeuColorMarkers(context);
   logInfo("SEU 色 marker 表示を登録しました。");
+  registerRpgUnitTesting(context);
+  logInfo("RPGUnit Test Explorer 統合を登録しました。");
 }
 
 export function deactivate(): void {

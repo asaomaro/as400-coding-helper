@@ -151,6 +151,8 @@ const vscode = {
       __failWrite: false,
       /** 既に在ることにするパス（`stat` が成功する）。 */
       __existing: [],
+      /** `readFile` が返す内容。`vscode.workspace.fs.__contents.set(uri.fsPath, "text"|Uint8Array)`。 */
+      __contents: new Map(),
       writeFile(uri, content) {
         if (vscode.workspace.fs.__failWrite) {
           return Promise.reject(new Error("EACCES"));
@@ -163,7 +165,19 @@ const vscode = {
         return vscode.workspace.fs.__existing.includes(uri.fsPath)
           ? Promise.resolve({ type: 1, size: 0 })
           : Promise.reject(new Error("ENOENT"));
+      },
+      readFile(uri) {
+        const content = vscode.workspace.fs.__contents.get(uri.fsPath);
+        if (content === undefined) {
+          return Promise.reject(new Error(`ENOENT: ${uri.fsPath}`));
+        }
+        return Promise.resolve(typeof content === "string" ? Buffer.from(content, "utf8") : content);
       }
+    },
+    /** `findFiles` が返すURI一覧。`vscode.workspace.__findFilesResult = [uri, ...]`。 */
+    __findFilesResult: [],
+    findFiles() {
+      return Promise.resolve(vscode.workspace.__findFilesResult);
     }
   },
   window: {
@@ -325,6 +339,64 @@ const vscode = {
       return handler ? handler(...args) : undefined;
     }
   },
+  RelativePattern: class { constructor(base, pattern) { this.base = base; this.pattern = pattern; } },
+  Location: class { constructor(uri, rangeOrPosition) { this.uri = uri; this.range = rangeOrPosition; } },
+  TestMessage: class { constructor(message) { this.message = message; this.location = undefined; } },
+  TestRunProfileKind: { Run: 1, Debug: 2, Coverage: 3 },
+  /**
+   * `vscode.tests` の最小実装。`TestItemCollection` は本物同様
+   * `[id, TestItem]` を返すイテレータを持つ Map ベース。
+   * `TestRun` は呼び出しを配列に記録するだけ（テストから `run.__calls` で確認する）。
+   */
+  tests: {
+    createTestController(id, label) {
+      function makeCollectionFor(owner) {
+        const map = new Map();
+        return {
+          add(item) { map.set(item.id, item); item.parent = owner; },
+          replace(items) { map.clear(); for (const item of items) { map.set(item.id, item); item.parent = owner; } },
+          get(itemId) { return map.get(itemId); },
+          forEach(cb) { map.forEach((item, itemId) => cb(item, itemId)); },
+          [Symbol.iterator]() { return map.entries(); },
+          get size() { return map.size; }
+        };
+      }
+      const controller = {
+        id,
+        label,
+        items: undefined,
+        resolveHandler: undefined,
+        refreshHandler: undefined,
+        __runProfiles: [],
+        createTestItem(itemId, itemLabel, uri) {
+          const item = { id: itemId, label: itemLabel, uri, range: undefined, parent: undefined, canResolveChildren: false };
+          item.children = makeCollectionFor(item);
+          return item;
+        },
+        createRunProfile(profileLabel, kind, runHandler, isDefault) {
+          const profile = { label: profileLabel, kind, runHandler, isDefault };
+          controller.__runProfiles.push(profile);
+          return profile;
+        },
+        createTestRun() {
+          const calls = [];
+          return {
+            __calls: calls,
+            enqueued: item => calls.push({ event: "enqueued", item }),
+            started: item => calls.push({ event: "started", item }),
+            passed: item => calls.push({ event: "passed", item }),
+            failed: (item, message) => calls.push({ event: "failed", item, message }),
+            errored: (item, message) => calls.push({ event: "errored", item, message }),
+            skipped: item => calls.push({ event: "skipped", item }),
+            end: () => calls.push({ event: "end" })
+          };
+        },
+        dispose() {}
+      };
+      controller.items = makeCollectionFor(undefined);
+      return controller;
+    }
+  },
   StatusBarAlignment: { Left: 1, Right: 2 },
   EndOfLine: { LF: 1, CRLF: 2 },
   ViewColumn: { One: 1, Beside: -2 },
@@ -334,7 +406,16 @@ const vscode = {
     replace(uri, range, text) { this.edits.push({ uri, range, text }); }
   },
   ConfigurationTarget: { Global: 1 },
-  FileType: { File: 1, Directory: 2 }
+  FileType: { File: 1, Directory: 2 },
+  // 他拡張機能の検出（Code for IBM i 等）。テストは
+  // `vscode.extensions.__registry.set(id, { isActive, exports, activate: () => Promise<exports> })`
+  // で登録する。未登録なら `getExtension` は undefined を返す（未導入と同じ挙動）。
+  extensions: {
+    __registry: new Map(),
+    getExtension(id) {
+      return vscode.extensions.__registry.get(id);
+    }
+  }
 };
 
 const load = Module._load;
