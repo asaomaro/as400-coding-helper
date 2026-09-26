@@ -1,8 +1,10 @@
 import { strict as assert } from "node:assert";
 import * as vscode from "vscode";
 import {
+  chooseDeployMethod,
   connectViaCodeForIbmi,
   wrapConnection,
+  type RawDeployTools,
   type RawIbmiConnection
 } from "../../src/testing/codeForIbmi";
 
@@ -161,5 +163,85 @@ suite("wrapConnection", () => {
     const conn = wrapConnection(raw);
     const result = await conn.runCommandSubmitted("RPGUNIT/RUCRTRPG ...", { jobNamePrefix: "RUB" });
     assert.deepEqual(result, { completed: false });
+  });
+
+  const folder = { uri: vscode.Uri.file("/ws"), name: "ws", index: 2 } as vscode.WorkspaceFolder;
+
+  function fakeDeployTools(overrides: Partial<RawDeployTools> = {}): { tools: RawDeployTools; launched: unknown[][] } {
+    const launched: unknown[][] = [];
+    const tools: RawDeployTools = {
+      getRemoteDeployDirectory: () => "/home/ASAO/builds/ws",
+      launchDeploy: async (...args) => { launched.push(args); return { remoteDirectory: "/home/ASAO/builds/ws" }; },
+      ...overrides
+    };
+    return { tools, launched };
+  }
+
+  test("deploy: デプロイ API が無ければ unavailable", async () => {
+    assert.deepEqual(await wrapConnection(makeRawConnection()).deploy(folder), { ok: false, reason: "unavailable" });
+  });
+
+  test("deploy: デプロイ先が未設定なら notConfigured で、launchDeploy を呼ばない（呼ぶとダイアログが出る）", async () => {
+    const { tools, launched } = fakeDeployTools({ getRemoteDeployDirectory: () => undefined });
+    assert.deepEqual(await wrapConnection(makeRawConnection(), tools).deploy(folder), { ok: false, reason: "notConfigured" });
+    assert.equal(launched.length, 0);
+  });
+
+  test("deploy: フォルダーの番号と方法を渡し、デプロイ先を返す", async () => {
+    const { tools, launched } = fakeDeployTools();
+    const raw = makeRawConnection({ remoteFeatures: { md5sum: "/QOpenSys/pkgs/bin/md5sum" } });
+    assert.deepEqual(await wrapConnection(raw, tools).deploy(folder), { ok: true, remoteDirectory: "/home/ASAO/builds/ws" });
+    assert.deepEqual(launched, [[2, "compare"]]);
+  });
+
+  test("deploy: launchDeploy が undefined を返す・例外を投げるなら failed", async () => {
+    const none = fakeDeployTools({ launchDeploy: async () => undefined });
+    assert.deepEqual(await wrapConnection(makeRawConnection(), none.tools).deploy(folder), { ok: false, reason: "failed" });
+    const thrown = fakeDeployTools({ launchDeploy: async () => { throw new Error("Invalid deployment path"); } });
+    assert.deepEqual(await wrapConnection(makeRawConnection(), thrown.tools).deploy(folder), { ok: false, reason: "failed" });
+  });
+
+  test("chooseDeployMethod: 使える既定の方法なら任せる／無ければ md5sum の有無で compare か all（changed は選ばない）", () => {
+    assert.equal(chooseDeployMethod({ defaultDeploymentMethod: "all" }, undefined, false), undefined);
+    assert.equal(chooseDeployMethod({ defaultDeploymentMethod: "changed" }, undefined, false), undefined);
+    assert.equal(chooseDeployMethod({ defaultDeploymentMethod: "compare" }, { md5sum: "/bin/md5sum" }, false), undefined);
+    assert.equal(chooseDeployMethod({ defaultDeploymentMethod: "staged" }, undefined, true), undefined);
+    assert.equal(chooseDeployMethod({ defaultDeploymentMethod: "" }, { md5sum: "/bin/md5sum" }, false), "compare");
+    assert.equal(chooseDeployMethod({}, { md5sum: undefined }, false), "all");
+    assert.equal(chooseDeployMethod({}, undefined, true), "all");
+  });
+
+  test("chooseDeployMethod: 使えない既定は渡さない（渡すと Code for IBM i が選択の UI を開いて実行が止まる）", () => {
+    assert.equal(chooseDeployMethod({ defaultDeploymentMethod: "compare" }, undefined, false), "all", "md5sum が無い compare");
+    assert.equal(chooseDeployMethod({ defaultDeploymentMethod: "unstaged" }, { md5sum: "/bin/md5sum" }, false), "compare", "Git 拡張が無い");
+    assert.equal(chooseDeployMethod({ defaultDeploymentMethod: "selected" }, undefined, true), "all", "候補に無い値");
+  });
+
+  test("deploy: 使える既定の方法があれば方法を渡さない（Code for IBM i に任せる）", async () => {
+    const { tools, launched } = fakeDeployTools();
+    const raw = makeRawConnection({ getConfig: () => ({ libraryList: [], defaultDeploymentMethod: "all" }) });
+    await wrapConnection(raw, tools).deploy(folder);
+    assert.deepEqual(launched, [[2, undefined]]);
+  });
+
+  test("currentLibrary: 接続設定の現行ライブラリー（大文字）。空なら undefined", () => {
+    const withLib = makeRawConnection({ getConfig: () => ({ libraryList: [], currentLibrary: "asaolib" }) });
+    assert.equal(wrapConnection(withLib).currentLibrary, "ASAOLIB");
+    const blank = makeRawConnection({ getConfig: () => ({ libraryList: [], currentLibrary: " " }) });
+    assert.equal(wrapConnection(blank).currentLibrary, undefined);
+    assert.equal(wrapConnection(makeRawConnection()).currentLibrary, undefined);
+  });
+
+  test("connectViaCodeForIbmi: exports.deployTools を接続に渡す（無ければメンバー方式だけ動く）", async () => {
+    const { tools } = fakeDeployTools();
+    stub.extensions.__registry.set(EXTENSION_ID, {
+      isActive: true,
+      exports: { instance: { getConnection: () => makeRawConnection() }, deployTools: tools }
+    });
+    const result = await connectViaCodeForIbmi();
+    assert.equal(result.ok, true);
+    if (result.ok) {
+      assert.deepEqual(await result.connection.deploy(folder), { ok: true, remoteDirectory: "/home/ASAO/builds/ws" });
+    }
   });
 });

@@ -17,6 +17,11 @@
  * 5. git の最上位の `.vscode/testing.json` の `bndDir`（終了コード 0。上端まで遡ること）。
  * 6. `--bnd`（終了コード 0）。
  * 7. 誤った `testing.json`（`bndSrvPgm` が文字列。終了コード 2・コンパイルしない）。
+ * 8〜10. IFS 方式（`*.test.rpgle`。RPG のソースを IFS へ送り、EBCDIC に変換した写しから作る。
+ *    `.aidev/works/20260926-rpgunit-ifs-deploy/design.md` AC5・AC8）:
+ *    別ディレクトリのコピー句（日本語リテラル）で合格・送ったものを片付ける／日本語入りのテストで終了コード 1（`--keep`）／
+ *    対照: `--keep` で残した UTF-8（タグ 1208）の主ソースを直接 `RUCRTRPG SRCSTMF` に渡すと `CPE3490` で開けない。
+ *    IFS 方式の作業場所は専用のディレクトリ（`AS400_IFS_DIR` を差し替えて道具に渡す）にして、最後に中身ごと消す。
  *
  * 終わったら作ったメンバー・オブジェクト・IFS のファイルを消し、**残っていないことを数えて**確かめる。
  *
@@ -31,10 +36,11 @@
 import { spawnSync, execFileSync } from "node:child_process";
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
-import { dirname, join } from "node:path";
+import { basename, dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import {
-  BIND_TEST_SOURCE, CALC, basicSource, bindConfig, cleanUp, connectHostServer, createBindTargets, srvpgmExists
+  BIND_TEST_SOURCE, CALC, COPY_HEADER, basicSource, bindConfig, cleanUp, connectHostServer, copyTestSource, createBindTargets,
+  japaneseSource, srvpgmExists
 } from "../vscode-extension/dev/rpgunit-e2e-fixtures.mjs";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
@@ -58,8 +64,7 @@ const SRC_DIR = join(WORK, "src", "QUNITSRC");
 
 /** 作業場所を空にして `files`（相対パス → 中身）だけを置く（.git は残す）。 */
 function writeWork(files) {
-  rmSync(join(WORK, "src"), { recursive: true, force: true });
-  rmSync(join(WORK, ".vscode"), { recursive: true, force: true });
+  for (const dir of ["src", ".vscode", "test", "qcopy"]) rmSync(join(WORK, dir), { recursive: true, force: true });
   for (const [relative, text] of Object.entries(files)) {
     const full = join(WORK, relative);
     mkdirSync(dirname(full), { recursive: true });
@@ -67,11 +72,42 @@ function writeWork(files) {
   }
 }
 
-function tool(source, args = []) {
+function tool(source, args = [], env = {}) {
   const t0 = Date.now();
-  const r = spawnSync(process.execPath, [TOOL, join(SRC_DIR, source), ...args], { encoding: "utf8", env: process.env, timeout: 600000 });
+  const path = source.includes("/") ? join(WORK, source) : join(SRC_DIR, source);
+  const r = spawnSync(process.execPath, [TOOL, path, ...args], { encoding: "utf8", env: { ...process.env, ...env }, timeout: 600000 });
   console.log(`    （${source} ${args.join(" ")} → 終了コード ${r.status}、${((Date.now() - t0) / 1000).toFixed(1)}s）`);
   return { code: r.status, out: r.stdout ?? "", err: r.stderr ?? "" };
+}
+
+const IFS_WORK = `${IFS}/rpgunit-e2e-tool`;
+
+async function ifsCommand(command) {
+  const cmd = await host.hs.CommandConnection.connect({ ...host.creds, resolvePort: true, timeoutMs: 60000 });
+  try { return await cmd.run(command); } catch { return { success: false }; } finally { cmd.close(); }
+}
+
+/** ディレクトリの中にあるものの数（ディレクトリ自身は数えない。無ければ 0）。 */
+async function ifsCount(dir) {
+  const rows = await host.sql(`SELECT COUNT(*) AS N FROM TABLE(QSYS2.IFS_OBJECT_STATISTICS(START_PATH_NAME => '${dir}', SUBTREE_DIRECTORIES => 'YES'))
+    WHERE CAST(PATH_NAME AS VARCHAR(1024)) <> '${dir}'`).catch(() => [{ N: 0 }]);
+  return Number(rows[0]?.N ?? 0);
+}
+
+/** 共通部品を通さずに 1 つのコマンドを SQL ジョブで流し、ジョブログを返す（対照用）。 */
+async function directCompile(command) {
+  const db = await host.hs.DbConnection.connect({ ...host.creds, resolvePort: true, timeoutMs: 300000 });
+  try {
+    const last = Number((await host.hs.query(db, "SELECT COALESCE(MAX(ORDINAL_POSITION),0) AS N FROM TABLE(QSYS2.JOBLOG_INFO('*'))")).rows[0].N);
+    await host.hs.executeStatement(db, "CALL QSYS2.QCMDEXC(?)", { parameters: [`CHGLIBL LIBL(RPGUNIT ${LIB} QGPL QTEMP) CURLIB(*CRTDFT)`] });
+    try {
+      await host.hs.executeStatement(db, "CALL QSYS2.QCMDEXC(?)", { parameters: [command] });
+      return { ok: true, log: [] };
+    } catch {
+      const rows = (await host.hs.query(db, `SELECT MESSAGE_ID, MESSAGE_TEXT FROM TABLE(QSYS2.JOBLOG_INFO('*')) WHERE ORDINAL_POSITION > ${last} ORDER BY ORDINAL_POSITION`)).rows;
+      return { ok: false, log: rows.map(r => `${r.MESSAGE_ID ?? ""}: ${String(r.MESSAGE_TEXT ?? "").trim()}`) };
+    }
+  } finally { db.close(); }
 }
 
 const failures = [];
@@ -149,13 +185,44 @@ try {
   expect(g.code === 2 && g.err.includes("バインド指定が正しくありません") && g.err.includes("testing.json"),
     "終了コード 2、どのファイルが誤りかを出す（--bnd があっても弾く）", dump(g));
   expect(!g.out.includes("▸ 転送"), "コンパイルしない（実機に触らない）");
+
+  // --- IFS 方式 ---
+  // 作業場所（送信先・変換した写し・結果 XML）は専用のディレクトリ。道具には AS400_IFS_DIR を差し替えて渡す
+  await ifsCommand(`MKDIR DIR('${IFS_WORK}')`);
+  const ifsEnv = { AS400_IFS_DIR: IFS_WORK };
+  const deployRoot = `${IFS_WORK}/rpgunit/${basename(WORK)}`;
+
+  console.log("シナリオ 8: IFS 方式・別ディレクトリのコピー句（日本語リテラル）");
+  writeWork({ "test/ifscopy.test.rpgle": copyTestSource("qcopy/e2ecopy_h.rpgleinc"), "qcopy/e2ecopy_h.rpgleinc": COPY_HEADER });
+  const k = tool("test/ifscopy.test.rpgle", [], ifsEnv);
+  expect(k.code === 0, "コピー句を IFS の相対パスで /COPY して合格（終了コード 0）", dump(k));
+  expect(k.out.includes(`→ ${deployRoot}`) && k.out.includes(`${LIB}/TIFSCOPY`), "送信先と、IBM i Testing と同じ規則のプログラム名を出す", dump(k));
+  const afterCopy = await ifsCount(IFS_WORK);
+  expect(afterCopy === 0, `--keep 無し: 送ったもの・写し・結果 XML を残さない（残り ${afterCopy}）`);
+
+  console.log("シナリオ 9: IFS 方式・日本語入りのテスト（--keep）");
+  writeWork({ "test/ifsbasic.test.rpgle": japaneseSource() });
+  const l = tool("test/ifsbasic.test.rpgle", ["--keep"], ifsEnv);
+  expect(l.code === 1, "終了コード 1（TESTPASS 合格・TESTFAIL 失敗）", dump(l));
+  expect(l.out.includes("Expected '2', but was '3'.") && /2 tests, 1 failure/.test(l.out), "件数と失敗メッセージがメンバー方式と同じ", dump(l));
+  const keptSource = `${deployRoot}/test/ifsbasic.test.rpgle`;
+  const keptTag = (await host.sql(`SELECT CCSID FROM TABLE(QSYS2.IFS_OBJECT_STATISTICS(START_PATH_NAME => '${keptSource}', SUBTREE_DIRECTORIES => 'NO'))`))[0]?.CCSID;
+  expect(Number(keptTag) === 1208, `--keep: 送った主ソースが残り、タグは 1208（実際: ${keptTag}）`);
+
+  console.log("シナリオ 10: 対照——UTF-8（タグ 1208）の主ソースを変換せずに RUCRTRPG へ渡す");
+  const direct = await directCompile(`RPGUNIT/RUCRTRPG TSTPGM(${LIB}/TIFSRAW) SRCSTMF('${keptSource}') TGTCCSID(0)`);
+  expect(!direct.ok && direct.log.some(m => /^CPE3490/.test(m)) && direct.log.some(m => /^RNS9339/.test(m)),
+    `CPE3490（変換エラー）・RNS9339（開けない）になる（${direct.log.filter(m => /^(CPE|RNS)/.test(m)).join(" / ") || "なし"}）`);
 } finally {
+  await ifsCommand(`RMDIR DIR('${IFS_WORK}') SUBTREE(*ALL)`);
+  const leftWork = await ifsCount(IFS_WORK);
+  expect(leftWork === 0, `IFS 方式の作業場所を消した（残り ${leftWork}）`);
   for (const name of [`${MEMBER}.xml`, `${MEMBER}.src`, `${BIND_MEMBER}.xml`, `${BIND_MEMBER}.src`]) {
     const cmd = await host.hs.CommandConnection.connect({ ...host.creds, resolvePort: true, timeoutMs: 20000 });
     try { await cmd.run(`RMVLNK OBJLNK('${IFS}/${name}')`); } finally { cmd.close(); }
   }
   const leftIfs = await ifsLeft([`${MEMBER}.xml`, `${MEMBER}.src`, `${BIND_MEMBER}.xml`, `${BIND_MEMBER}.src`]);
-  const leftLib = await cleanUp(host, LIB, [MEMBER, BIND_MEMBER, CALC]);
+  const leftLib = await cleanUp(host, LIB, [MEMBER, BIND_MEMBER, CALC, "TIFSCOPY", "TIFSBASIC", "TIFSRAW"]);
   expect(leftIfs.length === 0 && leftLib === 0, `片付け後に実機へ何も残っていない（IFS ${leftIfs.length} / ライブラリー ${leftLib}）`);
   rmSync(WORK, { recursive: true, force: true });
 }

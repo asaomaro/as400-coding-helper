@@ -82,6 +82,49 @@ export function basicSource(broken, oracleHeader = []) {
   ].join("\n");
 }
 
+/**
+ * `basicSource` と**同じ 2 手続き**（件数と失敗メッセージを比べられるように）で、日本語の注記と、`TESTPASS` の比較を
+ * 日本語の文字リテラルにしたもの。IFS 方式で UTF-8 のまま送ったソースが、変換してコンパイルされることを確かめる
+ * （`.aidev/works/20260926-rpgunit-ifs-deploy/design.md` AC4）。
+ */
+export function japaneseSource() {
+  return [
+    "     H NOMAIN OPTION(*SRCSTMT:*NODEBUGIO)",
+    "      * 日本語の注記：IFS 方式のテスト",
+    COPY_TESTCASE,
+    "     PTESTPASS         B                   EXPORT",
+    "     DTESTPASS         PI",
+    "     C                   CALLP     assert('日本語' = '日本語':'jp')",
+    "     PTESTPASS         E",
+    "     PTESTFAIL         B                   EXPORT",
+    "     DTESTFAIL         PI",
+    "     C                   CALLP     assertEqual(2:3)",
+    "     PTESTFAIL         E",
+    ""
+  ].join("\n");
+}
+
+/** IFS のコピー句（日本語の注記と、日本語の文字リテラルの定数）。 */
+export const COPY_HEADER = [
+  "      * コピー句の日本語の注記",
+  "     D JP_WORD         C                   CONST('日本語')",
+  ""
+].join("\n");
+
+/** コピー句を IFS の相対パスで `/COPY` し、その日本語の定数を比べるテスト（手続き名は `procedure`）。 */
+export function copyTestSource(copyPath, procedure = "TESTCOPY") {
+  return [
+    "     H NOMAIN OPTION(*SRCSTMT:*NODEBUGIO)",
+    COPY_TESTCASE,
+    `      /COPY ${copyPath}`,
+    `     P${procedure.padEnd(15)}  B                   EXPORT`,
+    `     D${procedure.padEnd(15)}  PI`,
+    "     C                   CALLP     assert(JP_WORD = '日本語':'copy')",
+    `     P${procedure.padEnd(15)}  E`,
+    ""
+  ].join("\n");
+}
+
 export const CALC = "E2ECALC";
 export const BNDDIR = "E2EBND";
 
@@ -121,10 +164,10 @@ export async function srvpgmExists({ sql }, lib, name) {
 }
 
 /**
- * `names` のメンバーとオブジェクト、`BNDDIR` を消し、**残っている数**を返す（0 が合格）。
+ * `names` のメンバーとオブジェクト、`BNDDIR`、`ifsDirs`（IFS のディレクトリ。中身ごと）を消し、**残っている数**を返す（0 が合格）。
  * スプールは消さない。
  */
-export async function cleanUp({ hs, creds, sql }, lib, names) {
+export async function cleanUp({ hs, creds, sql }, lib, names, ifsDirs = []) {
   const cmd = await hs.CommandConnection.connect({ ...creds, resolvePort: true, timeoutMs: 20000 });
   try {
     for (const name of names) {
@@ -134,10 +177,17 @@ export async function cleanUp({ hs, creds, sql }, lib, names) {
       await cmd.run(`RMVM FILE(${lib}/QUNITSRC) MBR(${name})`).catch(() => undefined);
     }
     await cmd.run(`DLTOBJ OBJ(${lib}/${BNDDIR}) OBJTYPE(*BNDDIR)`).catch(() => undefined);
+    for (const dir of ifsDirs) await cmd.run(`RMDIR DIR('${dir}') SUBTREE(*ALL)`).catch(() => undefined);
   } finally { cmd.close(); }
   const quoted = [...names, BNDDIR].map(n => `'${n}'`).join(",");
   const objects = await sql(`SELECT OBJNAME FROM TABLE(QSYS2.OBJECT_STATISTICS('${lib}','*ALL')) WHERE OBJNAME IN (${quoted})`);
   const members = await sql(`SELECT SYSTEM_TABLE_MEMBER FROM QSYS2.SYSPARTITIONSTAT
     WHERE SYSTEM_TABLE_SCHEMA='${lib}' AND SYSTEM_TABLE_NAME='QUNITSRC' AND SYSTEM_TABLE_MEMBER IN (${quoted})`);
-  return objects.length + members.length;
+  let ifsLeft = 0;
+  for (const dir of ifsDirs) {
+    const rows = await sql(`SELECT COUNT(*) AS N FROM TABLE(QSYS2.IFS_OBJECT_STATISTICS(START_PATH_NAME => '${dir}', SUBTREE_DIRECTORIES => 'NO'))`)
+      .catch(() => [{ N: 0 }]);   // 無ければ関数が失敗する＝残っていない
+    ifsLeft += Number(rows[0]?.N ?? 0);
+  }
+  return objects.length + members.length + ifsLeft;
 }

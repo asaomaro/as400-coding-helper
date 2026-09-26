@@ -185,10 +185,14 @@ const vscode = {
         return Promise.resolve(typeof content === "string" ? Buffer.from(content, "utf8") : content);
       }
     },
-    /** `findFiles` が返すURI一覧。`vscode.workspace.__findFilesResult = [uri, ...]`。 */
+    /**
+     * `findFiles` が返すURI一覧。`vscode.workspace.__findFilesResult = [uri, ...]`。
+     * 関数なら `(include, exclude)` を受けて一覧を返す（glob ごとに結果を変えたいテスト用）。
+     */
     __findFilesResult: [],
-    findFiles() {
-      return Promise.resolve(vscode.workspace.__findFilesResult);
+    findFiles(include, exclude) {
+      const result = vscode.workspace.__findFilesResult;
+      return Promise.resolve(typeof result === "function" ? result(include, exclude) : result);
     }
   },
   window: {

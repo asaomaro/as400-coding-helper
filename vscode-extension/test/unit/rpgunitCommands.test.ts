@@ -1,5 +1,7 @@
 import { strict as assert } from "node:assert";
-import { buildCreateTestCommand, buildRunTestCommand } from "../../src/testing/rpgunitCommands";
+import {
+  buildCreateStreamTestCommand, buildCreateTestCommand, buildRunTestCommand, quoteClString
+} from "../../src/testing/rpgunitCommands";
 
 suite("RPGUnit command builder", () => {
   test("RUCRTRPG は SRCMBR に program と同じ値を使う（バインド無し・TGTCCSID(0)既定）", () => {
@@ -64,6 +66,35 @@ suite("RPGUnit command builder", () => {
       }),
       "RPGUNIT/RUCALLTST TSTPGM(ASAOLIB/CALCTST) OUTPUT(*NONE) XMLSTMF('/tmp/CALCTST.xml') " +
       "ORDER(*REVERSE) RCLRSC(*ALWAYS)"
+    );
+  });
+
+  test("IFS 方式: SRCSTMF と INCDIR（複数・順に）、バインドと TGTCCSID(0)", () => {
+    assert.equal(
+      buildCreateStreamTestCommand({
+        library: "ASAOLIB", program: "TCALC", sourceStreamFile: "/tmp/ci/TCALC.rpgle",
+        includeDirectories: ["/home/ASAO/builds/ws/test", "/home/ASAO/builds/ws"],
+        bindServicePrograms: ["CALCSRV"], bindingDirectories: ["MYBND"]
+      }),
+      "RPGUNIT/RUCRTRPG TSTPGM(ASAOLIB/TCALC) SRCSTMF('/tmp/ci/TCALC.rpgle') " +
+      "INCDIR('/home/ASAO/builds/ws/test' '/home/ASAO/builds/ws') BNDSRVPGM(CALCSRV) BNDDIR(MYBND) TGTCCSID(0)"
+    );
+  });
+
+  test("IFS 方式: INCDIR が空なら付けない。noTgtCcsid なら TGTCCSID を付けない", () => {
+    assert.equal(
+      buildCreateStreamTestCommand({
+        library: "L", program: "TX", sourceStreamFile: "/t/TX.sqlrpgle", includeDirectories: [], noTgtCcsid: true
+      }),
+      "RPGUNIT/RUCRTRPG TSTPGM(L/TX) SRCSTMF('/t/TX.sqlrpgle')"
+    );
+  });
+
+  test("IFS のパスの ' は 2 つ重ねる（CL の文字列リテラル）", () => {
+    assert.equal(quoteClString("/home/o'brien/x.rpgle"), "'/home/o''brien/x.rpgle'");
+    assert.match(
+      buildCreateStreamTestCommand({ library: "L", program: "TX", sourceStreamFile: "/a'b/TX.rpgle", includeDirectories: ["/a'b"] }),
+      /SRCSTMF\('\/a''b\/TX\.rpgle'\) INCDIR\('\/a''b'\)/
     );
   });
 });

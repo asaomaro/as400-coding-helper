@@ -41,9 +41,9 @@
  *       /path/to/tools/run-rpgunit.mjs <ソース>
  *   .env の中身は読まない（あちらの規約）。識別子は .env.verify から取る。
  */
-import { readFileSync, writeFileSync, existsSync, statSync } from "node:fs";
+import { readFileSync, writeFileSync, existsSync, statSync, readdirSync, realpathSync } from "node:fs";
 import { execFileSync } from "node:child_process";
-import { basename, dirname, extname, join, resolve } from "node:path";
+import { basename, dirname, extname, join, relative, resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 
 const TS5250 = process.env.TS5250_DIR ?? "/workspaces/ts5250";
@@ -57,15 +57,18 @@ const CORE_DIR = join(HERE, "..", "vscode-extension", "out", "testing");
 let core;
 try {
   const load = name => import(pathToFileURL(join(CORE_DIR, `${name}.js`)).href);
-  const [suiteRunner, resultParser, testingConfigCore] =
-    await Promise.all([load("suiteRunner"), load("resultParser"), load("testingConfigCore")]);
-  core = { ...suiteRunner, ...resultParser, ...testingConfigCore };
+  const [suiteRunner, resultParser, testingConfigCore, streamTarget, rpgunitCommands] = await Promise.all(
+    [load("suiteRunner"), load("resultParser"), load("testingConfigCore"), load("streamTarget"), load("rpgunitCommands")]);
+  core = { ...suiteRunner, ...resultParser, ...testingConfigCore, ...streamTarget, quoteClString: rpgunitCommands.quoteClString };
 } catch (error) {
   console.error(`✗ 共通部品を読めません（${CORE_DIR}）: ${error.message}`);
   console.error("  先にビルドしてください: cd vscode-extension && npm install && npm run compile");
   process.exit(2);
 }
-const { compileSuite, runSuite, parseJUnitXml, failureLocation, findTestingConfigs, resolveBinding } = core;
+const {
+  compileSuite, compileStreamSuite, runSuite, parseJUnitXml, failureLocation, findTestingConfigs, resolveBinding,
+  isStreamTestFile, streamTestProgramName, resolveStreamTestTarget, quoteClString
+} = core;
 
 // ---------------------------------------------------------------- 純粋な部分
 // 実機に触らない。--self-test で確かめる。
@@ -85,7 +88,7 @@ const USAGE = `使い方: node tools/run-rpgunit.mjs <ソースファイル> [�
   --template <パス>   Markdown の書式（既定:
                       .claude/skills/rpgunit-test/templates/test-report.md）
   --json              要約を JSON で出す（自律ループ向け）
-  --keep              IFS の作業ファイル（ソースと結果 XML）を実行後に消さない
+  --keep              IFS の作業ファイル（送ったソース・変換した写し・結果 XML）を実行後に消さない
                       （実行前の結果 XML は常に消す。古い結果を読まないため）
   --order <api|reverse>       RUCALLTST の ORDER（既定 api）
   --rclrsc <no|always|once>   RUCALLTST の RCLRSC（既定 no）
@@ -155,6 +158,12 @@ export function parseArgs(argv) {
   }
   if (o.selfTest) return o;
   if (!o.source) throw new UsageError("ソースファイルを指定してください");
+  // IFS 方式（*.test.rpgle）。名前は IBM i Testing と同じ規則（共通部品 streamTarget）。
+  o.stream = isStreamTestFile(o.source);
+  if (o.stream && !o.pgm) {
+    o.pgm = streamTestProgramName(o.source);
+    if (!o.pgm) throw new UsageError(`ファイル名 ${basename(o.source)} からプログラム名を作れません。--pgm で指定してください`);
+  }
   // **メンバー名はプログラム名と同じにする。** 別名だと getMemberType が
   // プログラム名のメンバーを探して CPF9815 になる（実測）。選ばせない。
   o.pgm ??= basename(o.source, extname(o.source)).toUpperCase();
@@ -172,6 +181,51 @@ export function findSearchRoot(sourcePath) {
   } catch {
     return dir;
   }
+}
+
+/** IFS 方式で IFS へ送る RPG のソース（テストが /COPY するコピー句を含む）。 */
+export const DEPLOY_FILE = /\.(rpgle|sqlrpgle|rpgleinc|rpginc|inc|cpy)$/i;
+
+/**
+ * IFS 方式で送るファイル（root からの相対パス、区切りは /）。git なら追跡済みと、無視されていない未追跡
+ * （書いたばかりのコピー句も届くように）。git でなければ root 直下だけ。テスト自身は必ず含める
+ * （`.aidev/works/20260926-rpgunit-ifs-deploy/decisions.md` D8）。
+ */
+export function selectDeployFiles(candidates, sourceRelative) {
+  const files = new Set(candidates.map(f => f.replace(/\\/g, "/")).filter(f => DEPLOY_FILE.test(f)));
+  files.add(sourceRelative);
+  return [...files].sort();
+}
+
+/**
+ * ソースの、送信の最上位からの相対パス（区切りは /）。最上位の外なら undefined——ファイル名だけに落とすと、
+ * 最上位の直下にある同じ名前の別のファイルを送ってしまう。シンボリックリンク（macOS の /tmp など）は呼び出し側で
+ * `realpathSync` にそろえてから渡す（git の --show-toplevel は実パスを返す）。
+ */
+export function relativeToRoot(root, source) {
+  const rel = relative(root, source).replace(/\\/g, "/");
+  return !rel || rel.startsWith("../") || rel === ".." || /^[A-Za-z]:/.test(rel) || rel.startsWith("/") ? undefined : rel;
+}
+
+function listDeployCandidates(root) {
+  try {
+    // 作業ツリーで消した（index に残っている）ファイルは除く。読めずに全体が止まるので
+    return execFileSync("git", ["-C", root, "ls-files", "-z", "--cached", "--others", "--exclude-standard"],
+      { encoding: "utf8", stdio: ["ignore", "pipe", "ignore"], maxBuffer: 64 * 1024 * 1024 })
+      .split("\0").filter(f => f && existsSync(join(root, f)));
+  } catch {
+    return readdirSync(root, { withFileTypes: true }).filter(e => e.isFile()).map(e => e.name);
+  }
+}
+
+/** 送るファイルを置くのに要るディレクトリ（親から順。deployRoot の親から）。 */
+export function directoriesToCreate(deployRoot, files) {
+  const dirs = new Set([dirname(deployRoot).replace(/\\/g, "/"), deployRoot]);
+  for (const f of files) {
+    const parts = f.split("/").slice(0, -1);
+    for (let i = 1; i <= parts.length; i += 1) dirs.add(`${deployRoot}/${parts.slice(0, i).join("/")}`);
+  }
+  return [...dirs].sort((a, b) => a.split("/").length - b.split("/").length || a.localeCompare(b));
 }
 
 /** Node の fs で読む（共通部品の findTestingConfigs に渡す）。 */
@@ -418,6 +472,19 @@ async function openSuiteConnection(hs, creds, { ifsDir, keep }) {
       if (copied.code !== 0) throw new Error(`メンバーに書けません\n${copied.stderr}`);
       return true;
     },
+    /**
+     * IFS 方式の送信（タグ 1208。Code for IBM i のデプロイと同じタグ）。接続は 1 本にまとめる（共用機の負荷。AGENTS.md）。
+     * 書く前に `onBeforeWrite` を呼ぶ——途中で失敗したファイルも片付けの対象にするため。
+     */
+    async writeStreams(entries, onBeforeWrite) {
+      await withIfs(async ifs => {
+        for (const { path, bytes } of entries) {
+          onBeforeWrite(path);
+          try { await ifs.writeFile(path, bytes, { create: true, dataCcsid: 1208 }); }
+          catch (error) { throw new Error(`IFS へソースを送れません: ${path}\n    ${error.message ?? error}`); }
+        }
+      });
+    },
     async downloadStreamfile(path) {
       // RPGUnit の XML は CCSID 819（Latin-1）。Code for IBM i 側（codeForIbmi.ts）と同じ復号にする。
       return withIfs(async ifs => Buffer.from(await ifs.readFile(path)).toString("latin1"));
@@ -472,6 +539,16 @@ async function main(argv) {
 
   const LIB = (o.lib ?? process.env.AS400_LIB).toUpperCase();
   const target = { library: LIB, sourceFile: o.srcfile, member: o.pgm, extension: o.srctype.toLowerCase() };
+  const program = { library: LIB, program: o.pgm };
+  // IFS 方式: git の最上位（testing.json の探索と同じ上端）からの相対パスで送る
+  const sourceRelative = relativeToRoot(realpathSync(root), realpathSync(o.source));
+  if (o.stream && !sourceRelative) {
+    console.error(`✗ ソースが送信の最上位（${root}）の外にあります: ${o.source}`);
+    return 2;
+  }
+  const streamTarget = o.stream ? resolveStreamTestTarget(sourceRelative) : undefined;
+  const deployRoot = `${process.env.AS400_IFS_DIR}/rpgunit/${basename(root)}`;
+  const deployed = { files: [], dirs: [] };
 
   const { hs, creds } = await connectAll();
   let conn;
@@ -484,11 +561,30 @@ async function main(argv) {
 
     // --- 転送とビルド ---
     const t0 = Date.now();
-    const compiled = await compileSuite(conn, { target, source: sourceText, binding: binding.binding, noTgtCcsid: o.noTgtCcsid });
-    console.log(`▸ 転送     ${basename(o.source)} → ${LIB}/${o.srcfile}(${o.pgm})  [${o.srctype}]` +
-      (bindLabel.length ? `  ${bindLabel.join(" ")}` : ""));
+    let compiled;
+    if (streamTarget) {
+      // IFS 方式: RPG のソースを送り（Code for IBM i のデプロイの代わり）、変換してコンパイルするのは共通部品
+      const files = selectDeployFiles(listDeployCandidates(root), sourceRelative);
+      for (const dir of directoriesToCreate(deployRoot, files)) {
+        if ((await conn.runCommand(`MKDIR DIR(${quoteClString(dir)})`)).code === 0) deployed.dirs.push(dir);   // 既存なら失敗するだけ
+      }
+      let entries;
+      try { entries = files.map(f => ({ path: `${deployRoot}/${f}`, bytes: readFileSync(join(root, f)) })); }
+      catch (error) { console.error(`✗ 送るソースを読めません: ${error.message ?? error}`); return 2; }
+      try { await conn.writeStreams(entries, path => deployed.files.push(path)); }
+      catch (error) { console.error(`✗ ${error.message ?? error}`); return 2; }
+      console.log(`▸ 転送     ${files.length} ファイル → ${deployRoot}  （テスト ${sourceRelative} → ${LIB}/${o.pgm}）` +
+        (bindLabel.length ? `  ${bindLabel.join(" ")}` : ""));
+      compiled = await compileStreamSuite(conn, {
+        program, target: streamTarget, deployRoot, binding: binding.binding, noTgtCcsid: o.noTgtCcsid, keepCopy: o.keep
+      });
+    } else {
+      compiled = await compileSuite(conn, { target, source: sourceText, binding: binding.binding, noTgtCcsid: o.noTgtCcsid });
+      console.log(`▸ 転送     ${basename(o.source)} → ${LIB}/${o.srcfile}(${o.pgm})  [${o.srctype}]` +
+        (bindLabel.length ? `  ${bindLabel.join(" ")}` : ""));
+    }
     if (!compiled.ok) {
-      console.error(`✗ ビルド失敗   ${o.pgm}`);
+      console.error(compiled.stage === "convert" ? `✗ ビルド失敗（IFS のソースの変換）   ${o.pgm}` : `✗ ビルド失敗   ${o.pgm}`);
       console.error("  ジョブログ:");
       for (const line of compiled.detail.split("\n")) console.error(`    ${line}`);
       return 2;
@@ -497,7 +593,7 @@ async function main(argv) {
 
     // --- 実行（--check-independence では順序を変えて 2 回） ---
     const t1 = Date.now();
-    const first = await runSuite(conn, { target, order: o.order ?? "api", reclaimResources: o.rclrsc, keepXml: o.keep });
+    const first = await runSuite(conn, { program, order: o.order ?? "api", reclaimResources: o.rclrsc, keepXml: o.keep });
     if (!first.ok) { console.error(`✗ ${first.detail}`); return 2; }
     const s = first.suite;
 
@@ -519,7 +615,7 @@ async function main(argv) {
 
     let indepDiff = [], indepLabel, independenceFailed = false;
     if (o.checkIndependence) {
-      const reversed = await runSuite(conn, { target, order: "reverse", reclaimResources: o.rclrsc, keepXml: o.keep });
+      const reversed = await runSuite(conn, { program, order: "reverse", reclaimResources: o.rclrsc, keepXml: o.keep });
       if (!reversed.ok) { console.error(`✗ ${reversed.detail}`); return 2; }
       const sR = reversed.suite;
       const diff = compareRuns(s, sR);
@@ -559,6 +655,11 @@ async function main(argv) {
     console.error(`✗ ${e.message}`);
     return 2;
   } finally {
+    // IFS 方式で送ったものは消す（--keep なら残す）。この実行で作ったディレクトリだけを、深い方から
+    if (conn && !o.keep) {
+      for (const f of deployed.files) await conn.runCommand(`QSYS/RMVLNK OBJLNK(${quoteClString(f)})`).catch(() => undefined);
+      for (const d of [...deployed.dirs].reverse()) await conn.runCommand(`RMDIR DIR(${quoteClString(d)})`).catch(() => undefined);
+    }
     conn?.close();
   }
 }
@@ -584,6 +685,25 @@ function selfTest() {
   eq(parseArgs(["a/x.rpgle"]).srcfile, "QUNITSRC", "ソース PF の既定");
   eq(parseArgs(["a/x.rpgle"]).bnd, [], "--bnd 省略時は空（既定 *NONE）");
   eq(parseArgs(["a/x.rpgle", "--bnd", "A", "--bnd", "B"]).bnd, ["A", "B"], "--bnd は繰り返せる（形の検査は resolveToolBinding）");
+
+  console.log("引数の解決（IFS 方式 *.test.rpgle）");
+  eq([parseArgs(["test/calc.test.rpgle"]).stream, parseArgs(["a/x.rpgle"]).stream], [true, false], "*.test.rpgle は IFS 方式");
+  eq(parseArgs(["test/calc.test.rpgle"]).pgm, "TCALC", "名前は IBM i Testing と同じ規則（T を前置）");
+  eq(parseArgs(["test/customerMaster.test.sqlrpgle"]).pgm, "TCM", "10 文字を超えれば大文字を拾って詰める");
+  eq(parseArgs(["test/calc.test.rpgle", "--pgm", "mine"]).pgm, "MINE", "--pgm が優先する");
+  eq((() => { try { parseArgs(["my.calc.test.rpgle"]); return "通った"; }
+      catch (e) { return e instanceof UsageError && /--pgm/.test(e.message) ? "弾いた" : `別の例外 ${e.message}`; } })(),
+     "弾いた", "名前を作れなければ --pgm を促して終了コード 2（UsageError）");
+
+  console.log("IFS 方式で送るファイル");
+  eq(selectDeployFiles(["a/b.RPGLE", "q/h.rpgleinc", "README.md", "x\\y.sqlrpgle", "c.inc", "d.CPY", "e.rpg"], "t/t.test.rpgle"),
+     ["a/b.RPGLE", "c.inc", "d.CPY", "q/h.rpgleinc", "t/t.test.rpgle", "x/y.sqlrpgle"], "RPG のソースとコピー句だけ（テスト自身は必ず）");
+  eq(directoriesToCreate("/home/U/rpgunit/repo", ["t/sub/a.rpgle", "q/h.rpgleinc", "top.rpgle"]),
+     ["/home/U/rpgunit", "/home/U/rpgunit/repo", "/home/U/rpgunit/repo/q", "/home/U/rpgunit/repo/t", "/home/U/rpgunit/repo/t/sub"],
+     "親から順に作る（消すときは逆順）");
+
+  eq([relativeToRoot("/r", "/r/test/a.test.rpgle"), relativeToRoot("/r", "/other/a.test.rpgle"), relativeToRoot("/r", "/r")],
+     ["test/a.test.rpgle", undefined, undefined], "最上位からの相対パス。外ならファイル名に落とさず undefined");
 
   console.log("resolveToolBinding（testing.json と --bnd）");
   const cfg = (text, path = "t/testing.json") => ({ path, text });

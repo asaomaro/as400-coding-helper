@@ -21,6 +21,11 @@ export type ResolveMemberTargetResult =
 const IBM_I_OBJECT_NAME = /^[A-Z$#@][A-Z0-9_$#@]{0,9}$/u;
 const TEXT_DESCRIPTION_MAX_LENGTH = 50;
 
+/** IBM i のオブジェクト名として正しいか（大文字で渡す）。メンバー名と IFS 方式のテスト・プログラム名で同じ規則を使う。 */
+export function isIbmiObjectName(name: string): boolean {
+  return IBM_I_OBJECT_NAME.test(name);
+}
+
 /**
  * workspace 相対の `src/<LIB>/<SRCFILE>/<MEMBER>-<テキスト記述>.<ext>` を IBM i の source member に解決する。
  *
@@ -58,9 +63,9 @@ export function resolveMemberTarget(relativePath: string): ResolveMemberTargetRe
   const member = memberSegment.toUpperCase();
 
   if (
-    !IBM_I_OBJECT_NAME.test(library) ||
-    !IBM_I_OBJECT_NAME.test(sourceFile) ||
-    !IBM_I_OBJECT_NAME.test(member)
+    !isIbmiObjectName(library) ||
+    !isIbmiObjectName(sourceFile) ||
+    !isIbmiObjectName(member)
   ) {
     return { ok: false, reason: "memberName" };
   }

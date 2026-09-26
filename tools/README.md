@@ -99,6 +99,28 @@ node tools/run-rpgunit.mjs test/X.rpgle --bnd MYLIB/A --bnd MYLIB/B   # 繰り�
 道具は束ねるだけ。動く一式は [`example/`](example/) にある（対象を壊すとテストが
 落ちることまで確かめてある）。
 
+### IFS 方式（`*.test.rpgle`）
+
+ソースメンバーの階層に置かない、IBM i Testing と同じ置き方のテストも回せる。**ファイル名が `.test.rpgle` / `.test.sqlrpgle`
+で終われば IFS 方式**（大文字小文字は問わない。`src/` の下でも IFS 方式）。VS Code 側の使い方と規則は
+[`docs/workflow/rpgunit-test-explorer.md`](../docs/workflow/rpgunit-test-explorer.md)。
+
+```
+node tools/run-rpgunit.mjs test/calc.test.rpgle
+▸ 転送     3 ファイル → /home/ASAO/rpgunit/myrepo  （テスト test/calc.test.rpgle → ASAOLIB/TCALC）
+▸ ビルド   TCALC … OK (2.1s)
+```
+
+- **送るもの**: git の最上位（`testing.json` を探す上端と同じ）の RPG ソース（`.rpgle` `.sqlrpgle` `.rpgleinc` `.rpginc` `.inc` `.cpy`）を、
+  同じ相対パスで `<AS400_IFS_DIR>/rpgunit/<最上位のディレクトリ名>/` へ送る（CCSID タグ 1208）。追跡済みと、無視されていない未追跡の両方
+  （書いたばかりのコピー句も届く）。git でなければテストのディレクトリの直下だけ。
+- **名前**: `--pgm` 省略時は IBM i Testing と同じ規則（`calc.test.rpgle` → `TCALC`。規則は上の文書）。作れなければ `--pgm` を促して終了コード 2。
+  ライブラリーはメンバー方式と同じ `--lib` / `AS400_LIB`。
+- **コンパイル**: テストの主ソースだけを `CPY … TOCCSID(*JOBCCSID) DTAFMT(*TEXT)` で写してから `RUCRTRPG SRCSTMF`。7.3 の日本語環境では
+  UTF-8 のまま渡すと `CPE3490` で開けないため（実機で確認）。`/COPY` の相対パスは **テストのディレクトリ → 送信の最上位** の順に探す。
+- **片付け**: 実行後、送ったファイルと**この実行で作ったディレクトリだけ**を消す（`--keep` なら残す。変換した写しと結果 XML も同じ）。
+- 変換・ビルドの失敗は終了コード 2 とジョブログ。IFS へ送れなければ終了コード 2。
+
 ### Markdown のレポート
 
 ```
@@ -188,7 +210,7 @@ $ node tools/run-rpgunit.mjs --self-test
 ### 実機 E2E
 
 道具そのものを実機で確かめる（正常・古い `*SRVPGM`・`testing.json`・`--bnd`・誤った `testing.json`・
-各オプション・片付けて残存ゼロ）。テストソースは VS Code 側の E2E（`vscode-extension/dev/rpgunit-e2e.mjs`）と
+各オプション・IFS 方式（コピー句・日本語・UTF-8 のまま渡すと開けない対照）・片付けて残存ゼロ）。テストソースは VS Code 側の E2E（`vscode-extension/dev/rpgunit-e2e.mjs`）と
 共有している（`vscode-extension/dev/rpgunit-e2e-fixtures.mjs`）。
 
 ```sh

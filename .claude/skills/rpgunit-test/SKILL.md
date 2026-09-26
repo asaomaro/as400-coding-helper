@@ -324,6 +324,12 @@ cd /workspaces/ts5250 && node --env-file=.env --env-file=.env.verify \
 - **ビルド失敗はジョブログを出して終了コード 2**。成否は `RUCRTRPG` の結果で決める（前回の `*SRVPGM` が
   残っていても取り違えない）。行ごとの理由はコンパイル・リスト（スプール名＝プログラム名）を読む。
 - 結果 XML は実行の前に必ず消す（`--keep` でも。前回の結果を読まないため）。`--keep` は実行後に残すだけ。
+- **IFS 方式**: ファイル名が `.test.rpgle` / `.test.sqlrpgle` で終わるテストは、ソースメンバーではなく IFS へ送って
+  `RUCRTRPG SRCSTMF` で作る（IBM i Testing と同じ置き方。置き場所は自由）。名前は `T` を前置した IBM i Testing の規則
+  （`calc.test.rpgle` → `TCALC`）。`/COPY` は IFS の相対パス（テストのディレクトリ → git の最上位の順に探す）とメンバー形式の両方が使える。
+  **7.3 の日本語環境では UTF-8 の主ソースをそのまま `SRCSTMF` に渡すと `CPE3490` で開けない**——道具は主ソースだけを
+  `CPY TOCCSID(*JOBCCSID)` で写してから渡す（手で組むときも同じ手が要る）。詳細は `tools/README.md` と
+  `docs/workflow/rpgunit-test-explorer.md`。
 
 以下は**手で組む必要が出たときの型**。道具自身は `SBMJOB` を使わず、hostserver の SQL ジョブで
 `CHGLIBL` と同じコマンドを `QSYS2.QCMDEXC` で流す（Code for IBM i と同じ方式）。
