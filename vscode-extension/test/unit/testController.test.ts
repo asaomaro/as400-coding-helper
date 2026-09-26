@@ -1,6 +1,6 @@
 import { strict as assert } from "node:assert";
 import * as vscode from "vscode";
-import { registerRpgUnitTesting } from "../../src/testing/testController";
+import { registerRpgUnitTesting, testLibraryList } from "../../src/testing/testController";
 import type { IbmiTestingConnection } from "../../src/testing/codeForIbmi";
 
 const stub = vscode as unknown as any;
@@ -30,6 +30,7 @@ function fakeConnection(overrides: Partial<IbmiTestingConnection> = {}): IbmiTes
     checkObjectExists: async () => true,
     runSQL: async () => [],
     tempDirectory: "/tmp",
+    libraryList: ["QGPL"],
     ...overrides
   };
 }
@@ -60,6 +61,7 @@ suite("RPGUnit TestController配線", () => {
     stub.workspace.fs.__contents.clear();
     stub.workspace.workspaceFolders = undefined;
     stub.workspace.__relativePath = undefined;
+    stub.workspace.textDocuments = [];
   });
 
   test("resolveHandler がテストソースを検出しTestItemツリーを作る", async () => {
@@ -175,5 +177,108 @@ suite("RPGUnit TestController配線", () => {
     assert.equal(failed.length, 1);
     assert.equal(failed[0].message.message, "Expected 3, but was 4.");
     assert.ok(failed[0].message.location, "location が設定されている");
+  });
+  test("RUCRTRPG と RUCALLTST は RPGUNIT を先頭にしたライブラリー・リストで実行する", async () => {
+    const holder = captureController();
+    const calls: { command: string; libraryList?: readonly string[] }[] = [];
+    const xml = `<testsuite errors="0" failures="0" name="ASAOLIB/CALCTST" tests="1">
+      <testcase name="TESTADD" classname="CALCTST"/>
+    </testsuite>`;
+    const connection = fakeConnection({
+      runCommand: async (command: string, opts?: { libraryList?: readonly string[] }) => {
+        calls.push({ command, libraryList: opts?.libraryList });
+        return { code: 0, stdout: "", stderr: "" };
+      },
+      downloadStreamfile: async () => xml
+    });
+    registerRpgUnitTesting(fakeContext(), async () => ({ ok: true, connection }));
+    const controller = holder.get();
+    setupOneTestFile();
+    await controller.resolveHandler();
+    await runAll(controller);
+
+    const create = calls.find(c => c.command.includes("RUCRTRPG"));
+    const runTest = calls.find(c => c.command.includes("RUCALLTST"));
+    assert.deepEqual(create?.libraryList, ["RPGUNIT", "ASAOLIB", "QGPL"]);
+    assert.deepEqual(runTest?.libraryList, ["RPGUNIT", "ASAOLIB", "QGPL"]);
+  });
+
+  test("testLibraryList は重複を除き RPGUNIT・対象ライブラリー・利用者の順に並べる", () => {
+    assert.deepEqual(testLibraryList("asaolib", ["QGPL", "RPGUNIT", "ASAOLIB"]), ["RPGUNIT", "ASAOLIB", "QGPL"]);
+  });
+
+  test("前回の *SRVPGM が残っていても、RUCRTRPG が失敗すれば errored にする", async () => {
+    const holder = captureController();
+    const connection = fakeConnection({
+      checkObjectExists: async () => true,
+      runCommand: async (command: string) =>
+        command.includes("RUCRTRPG")
+          ? { code: 1, stdout: "", stderr: "CPF4102: QINCLUDE not found" }
+          : { code: 0, stdout: "", stderr: "" }
+    });
+    registerRpgUnitTesting(fakeContext(), async () => ({ ok: true, connection }));
+    const controller = holder.get();
+    setupOneTestFile();
+    await controller.resolveHandler();
+
+    const run = await runAll(controller);
+    const errored = run.__calls.filter((c: any) => c.event === "errored");
+    assert.equal(errored.length, 1);
+    assert.match(errored[0].message.message, /CPF4102/);
+    assert.equal(run.__calls.filter((c: any) => c.event === "passed").length, 0);
+  });
+
+  test("エディターで開いている未保存の内容をアップロードする", async () => {
+    const holder = captureController();
+    const uploaded: string[] = [];
+    const connection = fakeConnection({
+      uploadMemberContent: async (_target, content) => { uploaded.push(content); return true; }
+    });
+    registerRpgUnitTesting(fakeContext(), async () => ({ ok: true, connection }));
+    const controller = holder.get();
+    setupOneTestFile();
+    await controller.resolveHandler();
+    const uri = stub.Uri.file("/ws/src/ASAOLIB/QUNITSRC/CALCTST.rpgle");
+    stub.workspace.textDocuments = [{ uri, getText: () => "UNSAVED" }];
+
+    await runAll(controller);
+    assert.deepEqual(uploaded, ["UNSAVED"]);
+  });
+
+  test("実行中に例外が出ても errored にして run を終える", async () => {
+    const holder = captureController();
+    const connection = fakeConnection({
+      uploadMemberContent: async () => { throw new Error("CPF5813 upload failed"); }
+    });
+    registerRpgUnitTesting(fakeContext(), async () => ({ ok: true, connection }));
+    const controller = holder.get();
+    setupOneTestFile();
+    await controller.resolveHandler();
+
+    const run = await runAll(controller);
+    const errored = run.__calls.filter((c: any) => c.event === "errored");
+    assert.equal(errored.length, 1);
+    assert.match(errored[0].message.message, /CPF5813/);
+    assert.equal(run.__calls[run.__calls.length - 1].event, "end");
+  });
+  test("RUCALLTST の前に前回の結果XMLを消す（古い結果を読まない）", async () => {
+    const holder = captureController();
+    const commands: string[] = [];
+    const xml = `<testsuite errors="0" failures="0" name="ASAOLIB/CALCTST" tests="1">
+      <testcase name="TESTADD" classname="CALCTST"/>
+    </testsuite>`;
+    const connection = fakeConnection({
+      runCommand: async (command: string) => { commands.push(command); return { code: 0, stdout: "", stderr: "" }; },
+      downloadStreamfile: async () => xml
+    });
+    registerRpgUnitTesting(fakeContext(), async () => ({ ok: true, connection }));
+    const controller = holder.get();
+    setupOneTestFile();
+    await controller.resolveHandler();
+    await runAll(controller);
+
+    const removeBefore = commands.findIndex(c => c.startsWith("QSYS/RMVLNK") && c.includes("CALCTST.xml"));
+    const runTest = commands.findIndex(c => c.includes("RUCALLTST"));
+    assert.ok(removeBefore >= 0 && removeBefore < runTest, commands.join("\n"));
   });
 });

@@ -52,3 +52,26 @@ CHECK: findings / FINDINGS: 2
 
 CHECK: ok / FINDINGS: 0
 ラウンド1の2指摘の修正を確認。修正差分以外の新規の欠陥は無し。
+
+## クロス点検 ラウンド 2（deliver 後の修正 T10〜T13・2026-09-26）
+
+CHECK: findings / FINDINGS: 1
+- [should][conv:-] `vscode-extension/src/testing/testController.ts`（`runFile`）
+  結果 XML のパスは毎回同じ（`<tempDirectory>/<メンバー>.xml`）で、後始末は読み取り後の `finally` だけ。
+  前回の実行が中断して XML が残っていると、今回 `RUCALLTST` が XML を出さなかったときに**古い結果を読む**
+  （T11 で直した「古い `*SRVPGM` による誤判定」と同じ種類）。 / 対応: 修正済（`RUCALLTST` の前にも
+  `RMVLNK` する。回帰テスト追加。1 行外すと落ちることを確認）。
+  あわせて「テスト失敗時は `RUCALLTST` の code が 0 以外になる」という未実測の断定をコメントから外した。
+
+## ラウンド 3（deliver 後・実機 E2E で見つかった欠陥の修正・2026-09-26）
+
+CHECK: ok / FINDINGS: 0
+- 前提: 欠陥 3 件（`CPF4102`・古い `*SRVPGM` による誤判定・未保存内容／例外で run が終わらない）は
+  レビューではなく**実機 E2E で見つかった**（decisions.md D8）。ラウンド 1・2 のレビューは
+  偽物の接続を前提にした読解で、ライブラリー・リストの欠落を指摘できなかった。
+- 要件適合: AC1〜AC4・AC6・AC-I4 を本物の VS Code／Code for IBM i／実機で確認（test-result.md ラウンド 3）。
+- 価値適合: 「人間の開発者が Test Explorer で RPGUnit を実行し結果を確認できる状態」は、修正前は
+  **1 件も実行できず満たされていなかった**。修正後に満たされた。
+- 正確性: `&LIBL` は `Variables.expand` で**コマンド文字列にも置換がかかる**（`new RegExp(key)`）。
+  RUCRTRPG/RUCALLTST/CHGPFM/RMVLNK の文字列に `&LIBL` は現れないので影響なし。
+- 規約: 追加テストは修正前に戻して落ちることを確認済み（AGENTS.md「テストの走らせ方」）。

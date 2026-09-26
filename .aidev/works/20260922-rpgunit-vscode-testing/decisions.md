@@ -176,3 +176,30 @@ D4追記のとおり、SR-OSAKAには`CODECOV`コマンド自体が存在しな�
 - 影響: `aidev coverage`のAC総数が11→10に変わる。deliverのPR本文には「既知の制約」として
   AC5未実装を明記する。将来コードカバレッジに着手する場合は、backlog項目として起票し、
   5770WDS導入済みの実機確認から始める。
+
+## D8: deliver 後の実機 E2E で欠陥を 3 件見つけ、同じ work で工程を踏み直す（2026-09-26）
+
+- 背景: PR #178 のマージ後、ユーザーから「RPGUnit 対応と VS Code Test 対応は完了しているか」と
+  問われた。単体テストはスタブと偽の接続だけで、本物の VS Code・Code for IBM i・実機を通した確認を
+  していなかった。test-result.md の「未検証の穴」に「Extension Development Host を起動できない」と
+  書いていたが、**誤りだった**——`.vscode-test/` に test-electron の VS Code 本体があり、
+  WSLg のディスプレイ（`DISPLAY=:0`）と `playwright-core` の `_electron` で起動・操作できた。
+  Code for IBM i も隔離した拡張ディレクトリへ入れ、SR-OSAKA へ SSH（22）で接続できた。
+- 見つかった欠陥（いずれも修正前のコードを実機で動かして観測）:
+  1. **全件コンパイル失敗**: `CPF4102 メンバーTEMPLATESを含むファイルQINCLUDEがライブラリー*LIBLに
+     見つからない`。Code for IBM i の `runCommand` は接続設定のライブラリー・リストで `CHGLIBL` してから
+     実行する（`codefori/vscode-ibmi` の `src/api/CompileTools.ts`）。利用者の設定に `RPGUNIT` が無い。
+  2. **古い `*SRVPGM` による誤判定**: 成否をオブジェクトの有無で見ていたため、前回の `*SRVPGM` が
+     残っているとコンパイル失敗を成功と判定し、古いテストを走らせる。実機で `*SRVPGM` が残った状態を
+     作って確認した。
+  3. 未保存の編集内容がテストされない。ファイル単位の例外で `run.end()` に届かない。
+- 決定: `env` の `&LIBL` で `RPGUNIT`・対象ライブラリー・利用者のリストの順に渡す。成否は
+  `RUCRTRPG` の `code`（エスケープ・メッセージで 0 以外）で判定する。開いている文書の内容を優先し、
+  ファイル単位の例外は errored にする。実機 e2e を `dev/rpgunit-e2e.mjs` として残す。
+- 理由 / 代替案: ライブラリー・リストは `SBMJOB INLLIBL(...)`（`tools/run-rpgunit.mjs` の方式）でも
+  解決できるが、ジョブログ（コンパイルエラーの本文）を `stderr` で受け取れなくなるため採らない。
+  PR はマージ済みだが、欠陥はこの work の成果物のものなので、deliver skill の
+  「deliver 後に作業が続いたら工程を踏み直す」に従い同じ work で記録する（手戻りとして数える）。
+- 影響: test-result.md の「未検証の穴」のうち「実 VS Code」「実 Code for IBM i」は解消。
+  単体テストは緑のまま全件落ちる状態を着地させていた——**偽物の接続は外部拡張の振る舞い
+  （ライブラリー・リスト）を持たない**。外部拡張に乗る機能は、実物での確認を着地の条件にする。

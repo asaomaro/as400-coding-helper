@@ -16,6 +16,7 @@ F4 プロンプター（`src/prompter/webview/`）——はどちらも **VSCode
 | `e2e.mjs` | そのハーネスを**実際に操作して**確かめる e2e（移動・つまみ・追加・削除・undo・DBCS の桁） |
 | `prompter-standalone.ts` / `prompter.html` / `prompter.css` | F4 プロンプターの単独起動ハーネス。同じ作り。定義 JSON は `import` で埋め込む（`file://` では `fetch` できない） |
 | `prompter-e2e.mjs` | プロンプターの e2e（条件表示・必須・繰り返しの組・ヘルプ・F4 in F4・書き戻し行） |
+| `rpgunit-e2e.mjs` / `rpgunit-e2e-helper/` | RPGUnit の Test Explorer 統合を**本物の VS Code・Code for IBM i・実機（SR-OSAKA）**で確かめる e2e。WebView ではなく拡張ホスト＋外部拡張＋実機の結線を見る（偽物の接続ではライブラリー・リストが無く、`CPF4102` が単体テストで見えなかった）。動かし方はファイル先頭 |
 
 ホストが肩代わりしないものは、ハーネス側の帯として自前で持つ。
 **これが VSCode 版との差の全部**。

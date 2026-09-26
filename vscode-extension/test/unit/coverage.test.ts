@@ -11,7 +11,8 @@ function makeConnection(existsFor: readonly string[]): IbmiTestingConnection {
     writeStreamfile: async () => undefined,
     checkObjectExists: async object => existsFor.includes(`${object.library}/${object.name}`),
     runSQL: async () => [],
-    tempDirectory: "/tmp"
+    tempDirectory: "/tmp",
+    libraryList: []
   };
 }
 
