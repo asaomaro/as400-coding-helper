@@ -1,5 +1,6 @@
 import * as vscode from "vscode";
 import type { MemberTarget } from "../sync/memberTarget";
+import type { CommandResultLike, SuiteConnection } from "./suiteRunner";
 
 /**
  * Code for IBM i 拡張機能（`halcyontechltd.code-for-ibmi`）へのソフト検出adapter。
@@ -9,12 +10,6 @@ import type { MemberTarget } from "../sync/memberTarget";
  */
 
 const EXTENSION_ID = "halcyontechltd.code-for-ibmi";
-
-export interface CommandResultLike {
-  readonly code: number;
-  readonly stdout: string;
-  readonly stderr: string;
-}
 
 /** SBMJOB＋ポーリング方式の結果（`.aidev/works/20260922-rpgunit-vscode-testing/decisions.md` D2のフォールバック）。 */
 export interface SubmittedCommandResult {
@@ -47,24 +42,16 @@ export interface RawIbmiConnection {
   };
 }
 
-export interface IbmiTestingConnection {
-  uploadMemberContent(target: MemberTarget, content: string): Promise<boolean>;
-  /** `libraryList` を渡すと、そのコマンドの間だけライブラリー・リストを差し替える。 */
-  runCommand(command: string, opts?: { libraryList?: readonly string[] }): Promise<CommandResultLike>;
+/** Code for IBM i の接続。テストの手順が使う部分（`SuiteConnection`）に、この拡張だけが使う操作を足したもの。 */
+export interface IbmiTestingConnection extends SuiteConnection {
   /** `RUCRTRPG` が同期実行のタイムアウトに収まらない場合のフォールバック（`.aidev/works/20260922-rpgunit-vscode-testing/decisions.md` D2, D4）。 */
   runCommandSubmitted(
     command: string,
     opts: { jobNamePrefix: string; timeoutSeconds?: number }
   ): Promise<SubmittedCommandResult>;
-  /** RPGUnitのXML結果はCCSID 819（Latin-1）で出る前提でデコードする
-   *  （`docs/workflow/rpgunit-install.md:213-231`）。 */
-  downloadStreamfile(remotePath: string): Promise<string>;
   writeStreamfile(remotePath: string, content: string): Promise<void>;
   checkObjectExists(object: { library: string; name: string; type: string }): Promise<boolean>;
   runSQL(statements: string): Promise<readonly Record<string, unknown>[]>;
-  readonly tempDirectory: string;
-  /** 利用者が Code for IBM i に設定しているライブラリー・リスト。 */
-  readonly libraryList: readonly string[];
 }
 
 export type ConnectFailureReason = "notInstalled" | "notConnected" | "incompatibleApi";

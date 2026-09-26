@@ -34,6 +34,9 @@ import { execFileSync } from "node:child_process";
 import { join } from "node:path";
 import { createRequire } from "node:module";
 import { fileURLToPath } from "node:url";
+import {
+  BIND_TEST_SOURCE, BNDDIR, CALC, basicSource, bindConfig, cleanUp, connectHostServer, createBindTargets, srvpgmExists
+} from "./rpgunit-e2e-fixtures.mjs";
 
 const HERE = fileURLToPath(new URL(".", import.meta.url));
 const EXT = join(HERE, "..");
@@ -46,7 +49,6 @@ const STATUS = join(WORK, "status.log");
 const WS = join(WORK, "ws");
 const LIB = process.env.AS400_LIB;
 const MEMBER = "RUE2ETST";
-const TS5250 = process.env.TS5250_DIR ?? "/workspaces/ts5250";
 
 const vscodeDir = readdirSync(join(EXT, ".vscode-test")).filter(n => n.startsWith("vscode-linux-x64-")).sort().pop();
 if (!vscodeDir || !LIB) {
@@ -55,19 +57,8 @@ if (!vscodeDir || !LIB) {
 }
 const VSC = join(EXT, ".vscode-test", vscodeDir);
 
-// --- 資格情報（メモリのみ） ---
-const hs = await import(join(TS5250, "packages/hostserver/dist/index.js"));
-const { SecretCrypto } = await import(join(TS5250, "packages/server/dist/secret-crypto.js"));
-const profiles = JSON.parse(readFileSync(join(TS5250, "profiles.local.json"), "utf8"));
-const sys = profiles.systems.find(s => s.id === process.env.AS400_SYSTEM || s.name === process.env.AS400_SYSTEM);
-const creds = { host: sys.host, user: sys.signon.user, password: SecretCrypto.fromEnv()?.decrypt(sys.signon.passwordEnc) };
-
-const sql = async statement => {
-  const db = await hs.DbConnection.connect({ ...creds, resolvePort: true, timeoutMs: 30000 });
-  try { const r = await hs.query(db, statement); return r.rows ?? r; } finally { db.close(); }
-};
-const srvpgmExists = async () =>
-  (await sql(`SELECT OBJNAME FROM TABLE(QSYS2.OBJECT_STATISTICS('${LIB}','*SRVPGM')) WHERE OBJNAME='${MEMBER}'`)).length > 0;
+// --- 資格情報（メモリのみ）。テストソースとテスト対象は道具の E2E と共有（rpgunit-e2e-fixtures.mjs） ---
+const host = await connectHostServer();
 
 // --- 隔離した拡張ディレクトリに Code for IBM i を入れる（無ければ） ---
 const extDir = join(WORK, "ext");
@@ -87,41 +78,7 @@ writeFileSync(join(userDir, "User", "settings.json"), JSON.stringify({
   "extensions.autoUpdate": false
 }, null, 2));
 
-// --- 固定長の行を桁で組み立てる（手で空白を数えない） ---
-const H = keywords => `     H${keywords}`;
-const P = (name, beginEnd, keywords = "") => `     P${name.padEnd(15)}  ${beginEnd}${" ".repeat(19)}${keywords}`.trimEnd();
-const D = (name, type, length = "", dataType = "", decimals = "", keywords = "") =>
-  `     D${name.padEnd(15)}  ${type.padEnd(2)}${" ".repeat(7)}${length.padStart(7)}${dataType.padEnd(1)}` +
-  `${decimals.padStart(2)} ${keywords}`.trimEnd();
-const C = (opcode, extended) => `     C${" ".repeat(19)}${opcode.padEnd(10)}${extended}`;
-const COPY_TESTCASE = "      /COPY RPGUNIT/QINCLUDE,TESTCASE";
-
-/** テスト対象のサービスプログラム（`e2eAdd(a:b)` = a + b を公開）。 */
-const CALC_SOURCE = [
-  H("NOMAIN"),
-  D("e2eAdd", "PR", "10", "I", "0"), D("a", "", "10", "I", "0", "CONST"), D("b", "", "10", "I", "0", "CONST"),
-  P("e2eAdd", "B", "EXPORT"),
-  D("e2eAdd", "PI", "10", "I", "0"), D("a", "", "10", "I", "0", "CONST"), D("b", "", "10", "I", "0", "CONST"),
-  C("RETURN", "a + b"),
-  P("e2eAdd", "E"),
-  ""
-].join("\n");
-
-/** サービスプログラムの手続きを呼ぶテスト。バインドが無いと未解決の参照でテストを作れない。 */
-const BIND_TEST_SOURCE = [
-  H("NOMAIN OPTION(*SRCSTMT:*NODEBUGIO)"),
-  COPY_TESTCASE,
-  D("e2eAdd", "PR", "10", "I", "0"), D("a", "", "10", "I", "0", "CONST"), D("b", "", "10", "I", "0", "CONST"),
-  P("TESTADD", "B", "EXPORT"),
-  D("TESTADD", "PI"),
-  C("CALLP", "assertEqual(5:e2eAdd(2:3))"),
-  P("TESTADD", "E"),
-  ""
-].join("\n");
-
 const BIND_MEMBER = "RUE2EBND";
-const CALC = "E2ECALC";
-const BNDDIR = "E2EBND";
 
 /** ワークスペースを空にして、`files`（相対パス → 中身）だけを置く。 */
 function writeWorkspace(files) {
@@ -131,51 +88,6 @@ function writeWorkspace(files) {
     mkdirSync(join(full, ".."), { recursive: true });
     writeFileSync(full, text);
   }
-}
-
-function basicSource(broken) {
-  return [
-    "     H NOMAIN OPTION(*SRCSTMT:*NODEBUGIO)",
-    COPY_TESTCASE,
-    "     PTESTPASS         B                   EXPORT",
-    "     DTESTPASS         PI",
-    "     C                   CALLP     assertEqual(2:2)",
-    "     PTESTPASS         E",
-    "     PTESTFAIL         B                   EXPORT",
-    "     DTESTFAIL         PI",
-    broken
-      ? "     C                   CALLP     undefinedProc(2:3)"
-      : "     C                   CALLP     assertEqual(2:3)",
-    "     PTESTFAIL         E",
-    ""
-  ].join("\n");
-}
-
-/** テスト対象のサービスプログラムとバインディング・ディレクトリを実機に作る（hostserver 経由）。 */
-async function createBindTargets() {
-  const IFS = process.env.AS400_IFS_DIR;
-  const ifsPath = `${IFS}/${CALC}.rpgle`;
-  const ifs = await hs.IfsConnection.connect({ ...creds, resolvePort: true });
-  try { await ifs.writeFile(ifsPath, new TextEncoder().encode(CALC_SOURCE), { create: true, truncate: true }); }
-  finally { ifs.close(); }
-  const cmd = await hs.CommandConnection.connect({ ...creds, resolvePort: true, timeoutMs: 60000 });
-  try {
-    const steps = [
-      `CPYFRMSTMF FROMSTMF('${ifsPath}') TOMBR('/QSYS.LIB/${LIB}.LIB/QUNITSRC.FILE/${CALC}.MBR') MBROPT(*REPLACE) STMFCCSID(1208)`,
-      `CHGPFM FILE(${LIB}/QUNITSRC) MBR(${CALC}) SRCTYPE(RPGLE)`,
-      `CRTRPGMOD MODULE(${LIB}/${CALC}) SRCFILE(${LIB}/QUNITSRC) SRCMBR(${CALC}) REPLACE(*YES)`,
-      `CRTSRVPGM SRVPGM(${LIB}/${CALC}) MODULE(${LIB}/${CALC}) EXPORT(*ALL) REPLACE(*YES)`,
-      `CRTBNDDIR BNDDIR(${LIB}/${BNDDIR})`,
-      `ADDBNDDIRE BNDDIR(${LIB}/${BNDDIR}) OBJ((${LIB}/${CALC} *SRVPGM))`
-    ];
-    for (const step of steps) {
-      const r = await cmd.run(step);
-      if (!r.success) {
-        throw new Error(`テスト対象を作れません: ${step}\n${(r.messages ?? []).map(m => `${m.id} ${m.text}`).join("\n")}`);
-      }
-    }
-    await cmd.run(`RMVLNK OBJLNK('${ifsPath}')`).catch(() => undefined);
-  } finally { cmd.close(); }
 }
 
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
@@ -189,7 +101,7 @@ async function runScenario(name, { member, tests, checkLanguage = false }) {
       PATH: process.env.PATH, HOME: process.env.HOME,
       DISPLAY: process.env.DISPLAY, WAYLAND_DISPLAY: process.env.WAYLAND_DISPLAY,
       XDG_RUNTIME_DIR: process.env.XDG_RUNTIME_DIR, DONT_PROMPT_WSL_INSTALL: "1",
-      E2E_STATUS_FILE: STATUS, E2E_HOST: creds.host, E2E_USER: creds.user, E2E_PASSWORD: creds.password
+      E2E_STATUS_FILE: STATUS, E2E_HOST: host.creds.host, E2E_USER: host.creds.user, E2E_PASSWORD: host.creds.password
     },
     args: [
       WS,
@@ -282,7 +194,6 @@ const expect = (ok, label) => {
 
 const basicPath = `src/${LIB}/QUNITSRC/${MEMBER}.rpgle`;
 const bindPath = `src/${LIB}/QUNITSRC/${BIND_MEMBER}.rpgle`;
-const bindConfig = key => JSON.stringify({ rpgunit: { rucrtrpg: { [key]: [key === "bndSrvPgm" ? CALC : BNDDIR] } } }, null, 2);
 
 try {
   console.log("シナリオ 1: 正常");
@@ -294,7 +205,7 @@ try {
   expect(a.languageMode === "RPG Fixed", `.rpgle の言語モードが RPG Fixed のまま（実際: ${a.languageMode}）`);
 
   console.log("シナリオ 2: 古い *SRVPGM が残ったままコンパイル失敗");
-  const stale = await srvpgmExists();
+  const stale = await srvpgmExists(host, LIB, MEMBER);
   expect(stale, "前提: シナリオ 1 の *SRVPGM が残っている");
   writeWorkspace({ [basicPath]: basicSource(true) });
   const b = await runScenario("2-stale", { member: MEMBER, tests: ["TESTPASS", "TESTFAIL"] });
@@ -303,7 +214,7 @@ try {
   expect(b.messages.TESTPASS.includes("コンパイルに失敗しました"), "コンパイル失敗のメッセージが出る");
 
   console.log("シナリオ 3〜5: テスト対象のサービスプログラムをバインドする（testing.json）");
-  await createBindTargets();
+  await createBindTargets(host, LIB);
   writeWorkspace({ [bindPath]: BIND_TEST_SOURCE });
   const c = await runScenario("3-no-binding", { member: BIND_MEMBER, tests: ["TESTADD"] });
   expect(c.rows.includes("TESTADD (Errored)"), "対照: testing.json 無しでは Errored");
@@ -325,21 +236,7 @@ try {
     console.log(c.messages.TESTADD, "\n---\n", d.messages.TESTADD);
   }
 } finally {
-  const cmd = await hs.CommandConnection.connect({ ...creds, resolvePort: true, timeoutMs: 20000 });
-  try {
-    for (const name of [MEMBER, BIND_MEMBER, CALC]) {
-      for (const type of ["*SRVPGM", "*MODULE", "*PGM"]) {
-        await cmd.run(`DLTOBJ OBJ(${LIB}/${name}) OBJTYPE(${type})`).catch(() => undefined);
-      }
-      await cmd.run(`RMVM FILE(${LIB}/QUNITSRC) MBR(${name})`).catch(() => undefined);
-    }
-    await cmd.run(`DLTOBJ OBJ(${LIB}/${BNDDIR}) OBJTYPE(*BNDDIR)`).catch(() => undefined);
-  } finally { cmd.close(); }
-  const names = [MEMBER, BIND_MEMBER, CALC, BNDDIR].map(n => `'${n}'`).join(",");
-  const leftObjects = await sql(`SELECT OBJNAME FROM TABLE(QSYS2.OBJECT_STATISTICS('${LIB}','*ALL')) WHERE OBJNAME IN (${names})`);
-  const leftMembers = await sql(`SELECT SYSTEM_TABLE_MEMBER FROM QSYS2.SYSPARTITIONSTAT
-    WHERE SYSTEM_TABLE_SCHEMA='${LIB}' AND SYSTEM_TABLE_NAME='QUNITSRC' AND SYSTEM_TABLE_MEMBER IN (${names})`);
-  expect(leftObjects.length === 0 && leftMembers.length === 0, "片付け後に実機へ何も残っていない");
+  expect(await cleanUp(host, LIB, [MEMBER, BIND_MEMBER, CALC]) === 0, "片付け後に実機へ何も残っていない");
   rmSync(STATUS, { force: true });
 }
 

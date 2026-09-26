@@ -63,4 +63,19 @@ Expected:
     assert.equal(c.failure?.kind, "error");
     assert.equal(c.failure?.detail, "boom");
   });
+  test("assertions・time とスイートの properties を読む（道具のレポートが使う）", () => {
+    const xml = `<testsuite errors="0" failures="0" name="ASAOLIB/X" tests="1">
+    <properties>
+        <property name="user.librarylist" value="RPGUNIT    ASAOLIB    QGPL       "/>
+        <property name="irpgunit.version" value="6.0.2"/>
+    </properties>
+    <testcase name="TESTA" assertions="3" classname="X" time="0.125" />
+</testsuite>`;
+    const s = parseJUnitXml(xml);
+    assert.deepEqual([s.cases[0].assertions, s.cases[0].time], [3, "0.125"]);
+    assert.deepEqual(s.properties, [
+      { name: "user.librarylist", value: "RPGUNIT    ASAOLIB    QGPL" },
+      { name: "irpgunit.version", value: "6.0.2" }
+    ]);
+  });
 });

@@ -185,6 +185,10 @@ RPG で効く変異:
 node tools/run-rpgunit.mjs tools/example/CALCTST.rpgle --bnd CALCSRV
 ```
 
+- **束ねる指定は `testing.json` にも書ける**（IBM i Testing 互換。VS Code の Test Explorer と同じ読み方）。
+  `{"rpgunit":{"rucrtrpg":{"bndSrvPgm":["CALCSRV"],"bndDir":["MYBNDDIR"]}}}`。ソースから git の最上位まで
+  遡った最寄りの 1 つと、最上位の `.vscode/testing.json` を読み、キーごとに最寄りが優先。
+  `--bnd` は `bndSrvPgm` だけを置き換える。修飾しなければ `*LIBL` で探す。誤った `testing.json` は終了コード 2。
 - 対象のビルドは**利用者側の仕事**（道具は束ねるだけ）。`EXPORT(*ALL)` で足りる。
 - `/COPY` を修飾しないなら、対象のビルドも `SBMJOB … INLLIBL(<lib> …)` で組む
   （ソース PF が `*LIBL` に無いと `CPF4102`）。
@@ -315,7 +319,14 @@ cd /workspaces/ts5250 && node --env-file=.env --env-file=.env.verify \
 終了コードは `0`=全合格 / `1`=テスト失敗 / `2`=道具の異常（ビルド失敗を含む）。
 詳細は [`tools/README.md`](../../../tools/README.md)。
 
-以下は**その道具が中で何をしているか**——手で組む必要が出たときのための記録。
+- **先に `cd vscode-extension && npm run compile`**。道具は VS Code の Test Explorer と同じ共通部品
+  （`vscode-extension/out/testing/*.js`）で動く。無ければ終了コード 2 でそう言う。
+- **ビルド失敗はジョブログを出して終了コード 2**。成否は `RUCRTRPG` の結果で決める（前回の `*SRVPGM` が
+  残っていても取り違えない）。行ごとの理由はコンパイル・リスト（スプール名＝プログラム名）を読む。
+- 結果 XML は実行の前に必ず消す（`--keep` でも。前回の結果を読まないため）。`--keep` は実行後に残すだけ。
+
+以下は**手で組む必要が出たときの型**。道具自身は `SBMJOB` を使わず、hostserver の SQL ジョブで
+`CHGLIBL` と同じコマンドを `QSYS2.QCMDEXC` で流す（Code for IBM i と同じ方式）。
 
 ### 走らせ方の型
 

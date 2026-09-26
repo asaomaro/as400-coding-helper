@@ -1,6 +1,7 @@
 import { strict as assert } from "node:assert";
 import * as vscode from "vscode";
-import { readTestingConfigs, resolveBinding, type TestingConfigSource } from "../../src/testing/testingConfig";
+import { readTestingConfigs } from "../../src/testing/testingConfig";
+import { findTestingConfigs, resolveBinding, type ReadOutcome, type TestingConfigSource } from "../../src/testing/testingConfigCore";
 
 const stub = vscode as unknown as any;
 
@@ -164,5 +165,42 @@ suite("testing.json の探し方（readTestingConfigs）", () => {
     stub.workspace.fs.__directories = ["/ws/src/ASAOLIB/QUNITSRC/testing.json"];
     const r = await readTestingConfigs(testFile);
     assert.match(r.nearest?.readError ?? "", /ディレクトリ/);
+  });
+});
+
+suite("testing.json の探し方（findTestingConfigs・vscode 非依存）", () => {
+  const fsOf = (files: Record<string, string>) => async (file: string): Promise<ReadOutcome> =>
+    file in files ? { kind: "text", text: files[file] } : { kind: "missing" };
+  const same = (file: string) => file;
+
+  test("上端より上は読まない（上端＝git の最上位を想定）", async () => {
+    const r = await findTestingConfigs("/repo/src/LIB/QUNITSRC/T.rpgle", "/repo", fsOf({ "/testing.json": "{}", "/repo/../testing.json": "{}" }), same);
+    assert.deepEqual(r, {});
+  });
+
+  test("上端がソースのディレクトリー（git でない場合）なら、そこだけを見る", async () => {
+    const dir = "/work/tests";
+    const r = await findTestingConfigs(`${dir}/T.rpgle`, dir, fsOf({ "/work/testing.json": "{\"parent\":1}", "/work/tests/.vscode/testing.json": "{}" }), same);
+    assert.equal(r.nearest, undefined);
+    assert.equal(r.global?.path, "/work/tests/.vscode/testing.json");
+  });
+
+  test("<上端>/.vscode/testing.json を global として読み、最寄りと合わせてキーごとに最寄りを優先する", async () => {
+    const r = await findTestingConfigs("/repo/src/T.rpgle", "/repo", fsOf({
+      "/repo/testing.json": JSON.stringify({ rpgunit: { rucrtrpg: { bndSrvPgm: ["NEAR"] } } }),
+      "/repo/.vscode/testing.json": JSON.stringify({ rpgunit: { rucrtrpg: { bndSrvPgm: ["G"], bndDir: ["GD"] } } })
+    }), same);
+    assert.deepEqual(resolveBinding(r.nearest, r.global), {
+      ok: true, binding: { servicePrograms: ["NEAR"], bindingDirectories: ["GD"] }
+    });
+  });
+
+  test("ディレクトリー・読めないファイルは理由を持つ", async () => {
+    const read = async (file: string): Promise<ReadOutcome> =>
+      file === "/repo/src/testing.json" ? { kind: "directory" } :
+      file === "/repo/.vscode/testing.json" ? { kind: "error", message: "EACCES" } : { kind: "missing" };
+    const r = await findTestingConfigs("/repo/src/T.rpgle", "/repo", read, same);
+    assert.match(r.nearest?.readError ?? "", /ディレクトリ/);
+    assert.equal(r.global?.readError, "EACCES");
   });
 });

@@ -12,7 +12,16 @@ export interface TestCaseFailure {
 export interface TestCaseResult {
   readonly name: string;
   readonly classname: string;
+  readonly assertions: number;
+  /** 秒。XML の文字列のまま（`0.001` など）。 */
+  readonly time: string;
   readonly failure?: TestCaseFailure;
+}
+
+/** `<properties>` の中身（ライブラリー・リストや OS／iRPGUnit の版。どの環境で回したかが分かる）。 */
+export interface SuiteProperty {
+  readonly name: string;
+  readonly value: string;
 }
 
 export interface TestSuiteResult {
@@ -21,6 +30,7 @@ export interface TestSuiteResult {
   readonly failures: number;
   readonly errors: number;
   readonly cases: readonly TestCaseResult[];
+  readonly properties: readonly SuiteProperty[];
 }
 
 /** v6 は本文を CDATA で包む（v4 は素）。両方を読めるようにする。 */
@@ -70,8 +80,17 @@ export function parseJUnitXml(xml: string): TestSuiteResult {
     cases.push({
       name: attr(attrs, "name"),
       classname: attr(attrs, "classname"),
+      assertions: numAttr(attrs, "assertions"),
+      time: attr(attrs, "time"),
       ...(failure ? { failure } : {})
     });
+  }
+
+  const properties: SuiteProperty[] = [];
+  const propertyRe = /<property\b([^>]*?)\/?>/g;
+  let p: RegExpExecArray | null;
+  while ((p = propertyRe.exec(xml)) !== null) {
+    properties.push({ name: attr(p[1], "name"), value: unescapeXml(attr(p[1], "value")).trim() });
   }
 
   return {
@@ -79,7 +98,8 @@ export function parseJUnitXml(xml: string): TestSuiteResult {
     tests: numAttr(head, "tests"),
     failures: numAttr(head, "failures"),
     errors: numAttr(head, "errors"),
-    cases
+    cases,
+    properties
   };
 }
 
