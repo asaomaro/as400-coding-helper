@@ -1,0 +1,170 @@
+<!DOCTYPE html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>03-window</title><style>
+:root{--bg:#0b0f0d;--fg:#c9d6cd;--card:#111815;--line:#22302a;--muted:#8ba396;
+--crt:#000000;--crt-bezel:#111111;--crt-line:#2a2a2a;
+--t-green:#00ff00;--t-white:#ffffff;--t-red:#ff0000;--t-turquoise:#00ffff;
+--t-yellow:#ffff00;--t-pink:#ff00ff;--t-blue:#7890f0;--t-glow:0 0 1px;
+--mono:ui-monospace,"SFMono-Regular",Menlo,Consolas,"BIZ UDGothic","MS Gothic",monospace}
+.pal-soft{--crt:#050d09;--crt-bezel:#0c1710;--crt-line:#16281d;
+--t-green:#3ddc84;--t-white:#e8f0e8;--t-red:#ff6161;--t-turquoise:#4dd8d8;
+--t-yellow:#e8d44d;--t-pink:#ff8ad8;--t-blue:#6ea8ff}
+#t:checked ~ .page{--bg:#f4f6f2;--fg:#1f2937;--card:#fff;--line:#d3d9cf;--muted:#5b6b61;
+--crt:#f7f8f4;--crt-bezel:#eceee8;--crt-line:#d3d9cf;
+--t-green:#1a7f37;--t-white:#1f2937;--t-red:#c62828;--t-turquoise:#007c8a;
+--t-yellow:#9a6b00;--t-pink:#c02679;--t-blue:#2456c4;--t-glow:0 0 0}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);
+font:13px/1.5 ui-sans-serif,system-ui,"Hiragino Kaku Gothic ProN","Noto Sans JP",sans-serif}
+.page{min-height:100vh;padding:16px;background:var(--bg);color:var(--fg)}
+header{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:12px}
+h1{font-size:15px;margin:0}
+button,.btn{font:inherit;height:28px;padding:0 10px;display:inline-flex;align-items:center;
+background:var(--card);color:var(--fg);border:1px solid var(--line);border-radius:6px;cursor:pointer}
+button:disabled{opacity:.45;cursor:default}
+.meta{display:grid;grid-template-columns:auto 1fr;gap:2px 12px;margin:0 0 12px;
+font-size:12px;color:var(--muted)}
+.meta dt{white-space:nowrap}
+.meta dd{margin:0;word-break:break-all}
+figure.scr{margin:0 0 12px}
+figcaption{font-size:12px;color:var(--muted);margin-bottom:6px}
+.crt{display:inline-block;background:var(--crt-bezel);border:1px solid var(--crt-line);
+border-radius:8px;padding:10px}
+/* **grid に padding を置かない。** 重ねる要素の top/left が padding box の角に揃うため、
+   padding があると絶対配置だけ数 px ずれる（web-ui はその補正を各所に持っている）。
+   最初から持たなければ、ずれる余地が無い。 */
+.grid{position:relative;background:var(--crt);color:var(--t-green);
+font-family:var(--mono);
+font-size:15px;line-height:1.25;white-space:pre}
+.ln{height:1.25em}
+/* 全角は必ず箱に入れて 2 桁を占めさせる（フォントに依らせない）。h は対を失った全角 */
+.w,.h{overflow:hidden;text-align:left}
+.w{width:2ch}
+.h{width:1ch}
+/* 色は class ごとに --cell へも控える。**反転で currentColor を使ってはいけない**——
+   同じルールで color を上書きすると currentColor がその新しい色に解決され、
+   背景と文字が同色になって反転部分が消える（web-ui が --cell を持つのも同じ理由）。 */
+.c-green{color:var(--t-green);--cell:var(--t-green)}
+.c-white{color:var(--t-white);--cell:var(--t-white)}
+.c-red{color:var(--t-red);--cell:var(--t-red)}
+.c-turquoise{color:var(--t-turquoise);--cell:var(--t-turquoise)}
+.c-yellow{color:var(--t-yellow);--cell:var(--t-yellow)}
+.c-pink{color:var(--t-pink);--cell:var(--t-pink)}
+.c-blue{color:var(--t-blue);--cell:var(--t-blue)}
+.a-u{text-decoration:underline}
+/* **文字ランは行送りぶんの箱にする**（web-ui の .grid-span と同じ考え方）。
+   素のインライン要素は内容領域（フォントの ascent+descent）にしか背景を塗らないので、
+   反転が縦に続くと行間に地色の隙間が横線として並ぶ。box-shadow 等で固定量を足す手は
+   **内容領域が広いフォントで隣の行へはみ出す**（実測: Noto Sans Mono CJK JP で
+   行送り 18.75px に対し塗り 25px）。必要な量はフォントごとに違い CSS から読めないため、
+   箱そのものを行送りに合わせる。vertical-align:top と height は対で必要。 */
+.a-r{background:var(--cell);color:var(--crt)}
+/* SO/SI マークの既定は**隠す**。見せるのは #s1/#s2:checked（TOGGLE_CSS）。
+   **隠すのは字の色だけ。** visibility:hidden は箱ごと消えるので、背景色の付いた桁
+   （反転）では**背景まで消えていた**（利用者の報告）。
+   反転・下線は**制御桁そのものの見た目**であって印の一部ではないから、
+   印を出していないときも残す——web-ui がそこに空白 1 桁を描くのと同じ絵になる。
+   下線は色に連動する（text-decoration-color の既定は currentColor）ので、隠している間は
+   桁の色で引き直す。display:none は桁が詰まるので、どの状態でも使えない。
+   user-select:none は web-ui に合わせる——マークは制御桁の印であってデータではないので、
+   選択してコピーした文字列に混ぜない。 */
+.a-so{color:transparent;text-decoration-color:var(--cell,currentColor);
+user-select:none;-webkit-user-select:none}
+.ln span{display:inline-block;height:1.25em;vertical-align:top}
+/* 桁区切り（colsepHtml）。色は ACS の既定（白）に合わせて --t-white（明色テーマでは濃い字色） */
+.cs{height:3px;background:repeating-linear-gradient(to right,var(--t-white) 0 1px,transparent 1px 1ch)}
+.cs-line{height:calc(1.25em - 1px)}
+.a-b{animation:bl 1s step-end infinite}
+@keyframes bl{50%{opacity:.25}}
+@media (prefers-reduced-motion:reduce){.a-b{animation:none}}
+.cur,.fld,.cs,.gl,.gwin,.gwt,.gsel,.gsb{position:absolute;pointer-events:none}
+/* 幅は要素側の style が決める（全角の上では 2ch）。ここは既定 */
+.cur{width:1ch;height:1.25em;background:var(--t-white);opacity:.55}
+.fld{height:1.25em;border-bottom:1px dotted var(--crt-line)}
+.fld-p{border-bottom-style:none}
+.gl-h{border-top:1px solid currentColor}
+.gl-v{border-left:1px solid currentColor}
+/* 線種は web-ui（ScreenGrid.vue の .grid-line）と同じ見え方に揃える */
+.gl-h.gl-dotted{border-top-style:dotted}.gl-v.gl-dotted{border-left-style:dotted}
+.gl-h.gl-dashed{border-top-style:dashed}.gl-v.gl-dashed{border-left-style:dashed}
+.gl-h.gl-double{border-top-style:double;border-top-width:3px}
+.gl-v.gl-double{border-left-style:double;border-left-width:3px}
+.gl-h.gl-thick{border-top-width:2px}.gl-v.gl-thick{border-left-width:2px}
+.gwin{border:1px solid var(--t-turquoise);border-radius:2px}
+.gwt{color:var(--t-yellow);white-space:pre}
+.gsel{display:flex;gap:4px}
+.gc{border:1px solid var(--crt-line);padding:0 2px;border-radius:3px}
+.gc.sel{box-shadow:inset 0 0 0 1px currentColor}
+.gc.na{opacity:.45}
+.gsb{width:1ch;height:1.25em;background:var(--crt-line)}
+/* 画面下の状態行（OIA）。web-ui の StatusBar と同じ実値。
+   **項目の区切りは gap で作る。** 規則が無かった頃は素の inline のまま並び、
+   「行/列 01/001画面 24x80入力可」と繋がって読めなかった（利用者の指摘）。
+   区切り文字を挟まないのは、ここが桁の絵ではなく**注記**だからで、
+   折り返しても崩れない間隔のほうが素直に効く。
+   ※ここは STYLE のテンプレートリテラル内。バッククォートは書けない。 */
+.oia{display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:5px 10px;
+font-family:var(--mono);font-size:11px;color:var(--muted);
+background:var(--crt-bezel);border-top:1px solid var(--crt-line)}
+.oia b{color:var(--t-green)}
+.lock{color:var(--t-yellow)}
+.msg{color:var(--t-red)}
+.frames{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px;font-size:12px}
+.frames button.on{outline:2px solid var(--t-green)}
+[hidden]{display:none!important}
+
+.tg{position:absolute;width:1px;height:1px;opacity:0;margin:0;pointer-events:none}
+/* フォントは 3 値以上なので SO/SI と同じ順送り（ボタン 1 つが候補を一巡する） */
+.fw{display:none}
+#t:focus-visible ~ .page label[for=t],
+#k:focus-visible ~ .page label[for=k],
+#s0:focus-visible ~ .page label[for=s1],
+#s1:focus-visible ~ .page label[for=s2],
+#s2:focus-visible ~ .page label[for=s0]{outline:2px solid var(--t-green);outline-offset:1px}
+/* 2 値のボタンは両方の字を入れておき、**素の状態のほうだけ**を出す。
+   ここを .btn>span で一括に隠すと、変化部分を固定幅の箱（.tv）に入れた
+   SO/SI の語まで消える——実際に消えて「現在の状態が出ない」になった（利用者の指摘）。
+   隠すのは .st-on だけでよい。
+   ※ここは STYLE のテンプレートリテラル内。バッククォートは書けない。 */
+.btn>.st-on{display:none}
+/* **トグルで変化する部分は固定幅にする。** 押すたびに字数が変わると
+   ボタンの幅が変わり、**後ろのボタンが左右に動く**（利用者の指摘）。
+   変化する部分だけを固定幅の箱に入れれば、状態が変わっても幅は同じ。
+   web-ui のヘッダー（App.vue の .tv）と同じ手。
+   **フォント名だけは固定できない**——候補も字数も環境で変わるので、
+   その 1 つだけを一番右に置いて、幅が変わっても後続に響かないようにしてある。 */
+.tv{display:inline-block;text-align:left;white-space:nowrap}
+.tv.theme{width:5.4em}
+.tv.sosi{width:3.2em}
+.tv.kana{width:2.4em}
+#t:checked ~ .page label[for=t]>.st-off,#k:checked ~ .page label[for=k]>.st-off{display:none}
+#t:checked ~ .page label[for=t]>.st-on,#k:checked ~ .page label[for=k]>.st-on{display:inline-block}
+/* 表示コードの出し分け。**必ず片方だけが出る**ので桁は動かない。
+   .ln span が (0,1,1) なので、打ち消す側はクラス 2 つ (0,2,0) で書く。 */
+.ln .vb{display:none}
+#k:checked ~ .page .ln .va{display:none}
+#k:checked ~ .page .ln .vb{display:inline-block}
+.sw{display:none}
+#s0:checked ~ .page label[for=s1],
+#s1:checked ~ .page label[for=s2],
+#s2:checked ~ .page label[for=s0]{display:inline-flex}
+#s1:checked ~ .page .a-so{text-decoration-color:currentColor;
+color:color-mix(in srgb,var(--cell,currentColor) 30%,var(--crt))}
+#s1:checked ~ .page .a-r .a-so,#s1:checked ~ .page .a-r.a-so{
+color:color-mix(in srgb,var(--crt) 30%,var(--cell))}
+#s2:checked ~ .page .a-so{text-decoration-color:currentColor;
+color:color-mix(in srgb,var(--cell,currentColor) 65%,var(--crt))}
+#s2:checked ~ .page .a-r .a-so,#s2:checked ~ .page .a-r.a-so{
+color:color-mix(in srgb,var(--crt) 65%,var(--cell))}
+#g0:checked ~ .page{--mono:ui-monospace,"SFMono-Regular",Menlo,Consolas,"BIZ UDGothic","MS Gothic",monospace}
+#g0:checked ~ .page label[for=g1]{display:inline-flex}
+#g1:checked ~ .page{--mono:"BIZ UDGothic","BIZ UDPGothic",ui-monospace,"SFMono-Regular",Menlo,Consolas,"BIZ UDGothic","MS Gothic",monospace}
+#g1:checked ~ .page label[for=g2]{display:inline-flex}
+#g2:checked ~ .page{--mono:"MS Gothic","Osaka-Mono",ui-monospace,"SFMono-Regular",Menlo,Consolas,"BIZ UDGothic","MS Gothic",monospace}
+#g2:checked ~ .page label[for=g3]{display:inline-flex}
+#g3:checked ~ .page{--mono:"HackGen Console NF","HackGen35 Console NF","HackGen Console","HackGen",ui-monospace,"SFMono-Regular",Menlo,Consolas,"BIZ UDGothic","MS Gothic",monospace}
+#g3:checked ~ .page label[for=g4]{display:inline-flex}
+#g4:checked ~ .page{--mono:"UDEV Gothic NF","UDEV Gothic 35NF","UDEV Gothic",ui-monospace,"SFMono-Regular",Menlo,Consolas,"BIZ UDGothic","MS Gothic",monospace}
+#g4:checked ~ .page label[for=g5]{display:inline-flex}
+#g5:checked ~ .page{--mono:"PlemolJP Console NF","PlemolJP Console","PlemolJP",ui-monospace,"SFMono-Regular",Menlo,Consolas,"BIZ UDGothic","MS Gothic",monospace}
+#g5:checked ~ .page label[for=g6]{display:inline-flex}
+#g6:checked ~ .page{--mono:"Cica",ui-monospace,"SFMono-Regular",Menlo,Consolas,"BIZ UDGothic","MS Gothic",monospace}
+#g6:checked ~ .page label[for=g0]{display:inline-flex}</style></head><body><input class="tg" type="checkbox" id="t"><input class="tg" type="radio" name="g" id="g0" checked><input class="tg" type="radio" name="g" id="g1"><input class="tg" type="radio" name="g" id="g2"><input class="tg" type="radio" name="g" id="g3"><input class="tg" type="radio" name="g" id="g4"><input class="tg" type="radio" name="g" id="g5"><input class="tg" type="radio" name="g" id="g6"><input class="tg" type="radio" name="s" id="s0" checked><input class="tg" type="radio" name="s" id="s1"><input class="tg" type="radio" name="s" id="s2"><div class="page"><header><h1>03-window</h1><label class="btn" for="t"><span class="st-off tv theme">🌙 ダーク</span><span class="st-on tv theme">☀ ライト</span></label><label class="btn sw" for="s1">SO/SI <span class="tv sosi">非表示</span></label><label class="btn sw" for="s2">SO/SI <span class="tv sosi">薄目</span></label><label class="btn sw" for="s0">SO/SI <span class="tv sosi">濃目</span></label><label class="btn fw" for="g1">フォント: 標準</label><label class="btn fw" for="g2">フォント: BIZ UDゴシック</label><label class="btn fw" for="g3">フォント: MS ゴシック</label><label class="btn fw" for="g4">フォント: 白源 HackGen</label><label class="btn fw" for="g5">フォント: UDEV Gothic</label><label class="btn fw" for="g6">フォント: PlemolJP</label><label class="btn fw" for="g0">フォント: Cica</label></header><figure class="scr" data-rows="24" data-cols="80"><div class="crt"><div class="grid" style="width:80ch"><div class="ln"><span class="c-green"> CMPLXR                   </span><span class="c-white"> </span><span class="c-white a-r a-so">{</span><span class="w c-white a-r">顧</span><span class="w c-white a-r">客</span><span class="w c-white a-r">照</span><span class="w c-white a-r">会</span><span class="w c-white a-r">（</span><span class="w c-white a-r">サ</span><span class="w c-white a-r">ブ</span><span class="w c-white a-r">フ</span><span class="w c-white a-r">ァ</span><span class="w c-white a-r">イ</span><span class="w c-white a-r">ル</span><span class="w c-white a-r">）</span><span class="c-white a-r a-so">}</span><span class="c-green">                26/09/27   </span></div><div class="ln"><span class="c-green">                                                                      2:10:32   </span></div><div class="ln"><span class="c-green"> </span><span class="c-green a-so">{</span><span class="w c-green">検</span><span class="w c-green">索</span><span class="w c-green">（</span><span class="w c-green">顧</span><span class="w c-green">客</span><span class="w c-green">名</span><span class="w c-green">）</span><span class="w c-green">：</span><span class="c-green a-so">}</span><span class="c-green">  </span><span class="c-green a-u">                    </span><span class="c-green">                                       </span></div><div class="ln"><span class="c-blue"> 1=</span><span class="c-blue a-so">{</span><span class="w c-blue">選</span><span class="w c-blue">択</span><span class="c-blue a-so">}</span><span class="c-blue"> 5=</span><span class="c-blue a-so">{</span><span class="w c-blue">表</span><span class="w c-blue">示</span><span class="c-blue a-so">}</span><span class="c-green">                                                              </span></div><div class="ln"><span class="c-green"> </span><span class="c-green a-so">{</span><span class="w c-green">─</span><span class="w c-green">─</span><span class="w c-green">─</span><span class="w c-green">─</span><span class="w c-green">─</span><span class="w c-green">─</span><span class="w c-green">─</span><span class="w c-green">─</span><span class="w c-green">─</span><span class="w c-green">─</span><span class="w c-green">─</span><span class="w c-green">─</span><span class="w c-green">─</span><span class="w c-green">─</span><span class="w c-green">─</span><span class="c-green a-so">}</span><span class="c-green">      </span><span class="c-green a-so">{</span><span class="w c-green">─</span><span class="w c-green">─</span><span class="w c-green">─</span><span class="w c-green">─</span><span class="w c-green">─</span><span class="w c-green">─</span><span class="w c-green">─</span><span class="w c-green">─</span><span class="w c-green">─</span><span class="w c-green">─</span><span class="w c-green">─</span><span class="w c-green">─</span><span class="w c-green">─</span><span class="w c-green">─</span><span class="w c-green">─</span><span class="c-green a-so">}</span><span class="c-green">         </span></div><div class="ln"><span class="c-white"> </span><span class="c-white a-u">OP</span><span class="c-green">  </span><span class="c-white"> </span><span class="c-white a-u a-so">{</span><span class="w c-white a-u">番</span><span class="w c-white a-u">号</span><span class="c-white a-u a-so">}</span><span class="c-green">   </span><span class="c-white"> </span><span class="c-white a-u a-so">{</span><span class="w c-white a-u">顧</span><span class="w c-white a-u">客</span><span class="w c-white a-u">名</span><span class="c-white a-u a-so">}</span><span class="c-green">                        </span><span class="c-white"> </span><span class="c-white a-u a-so">{</span><span class="w c-white a-u">残</span><span class="w c-white a-u">高</span><span class="c-white a-u a-so">}</span><span class="c-green">           </span><span class="c-white"> </span><span class="c-white a-u a-so">{</span><span class="w c-white a-u">状</span><span class="w c-white a-u">態</span><span class="c-white a-u a-so">}</span><span class="c-green">       </span></div><div class="ln"><span class="c-green">  </span><span class="c-green a-u">5</span><span class="c-green">   1000001   </span><span class="c-green a-so">{</span><span class="w c-green">顧</span><span class="w c-green">客</span><span class="c-green a-so">}</span><span class="c-green">1                                1,234.57    OK           </span></div><div class="ln"><span class="c-green">  </span><span class="c-green a-u"> </span><span class="c-green">   1000002   </span><span class="c-green a-so">{</span><span class="h c-green">顧</span><span class="c-green">                                                 OK           </span></div><div class="ln"><span class="c-green">  </span><span class="c-green a-u"> </span><span class="c-green">   1000003   </span><span class="c-green a-so">{</span><span class="h c-green">顧</span><span class="c-green">                                                 OK           </span></div><div class="ln"><span class="c-green">  </span><span class="c-green a-u"> </span><span class="c-green">   1000004   </span><span class="c-green a-so">{</span><span class="h c-green">顧</span><span class="c-green">    </span><span class="c-green a-so">{</span><span class="w c-green">コ</span><span class="w c-green">ー</span><span class="w c-green">ド</span><span class="w c-green">：</span><span class="c-green a-so">}</span><span class="c-green">  1000001                          OK           </span></div><div class="ln"><span class="c-green">  </span><span class="c-green a-u"> </span><span class="c-green">   1000005   </span><span class="c-green a-so">{</span><span class="h c-green">顧</span><span class="c-green">                                                 HOLD         </span></div><div class="ln"><span class="c-green">  </span><span class="c-green a-u"> </span><span class="c-green">   1000006   </span><span class="c-green a-so">{</span><span class="h c-green">顧</span><span class="c-green">    </span><span class="c-green a-so">{</span><span class="w c-green">顧</span><span class="w c-green">客</span><span class="w c-green">名</span><span class="w c-green">：</span><span class="c-green a-so">}</span><span class="c-green">  </span><span class="c-green a-so">{</span><span class="w c-green">顧</span><span class="w c-green">客</span><span class="c-green a-so">}</span><span class="c-green">1                          OK           </span></div><div class="ln"><span class="c-green">  </span><span class="c-green a-u"> </span><span class="c-green">   1000007   </span><span class="c-green a-so">{</span><span class="h c-green">顧</span><span class="c-green">                                                 OK           </span></div><div class="ln"><span class="c-green">  </span><span class="c-green a-u"> </span><span class="c-green">   1000008   </span><span class="c-green a-so">{</span><span class="h c-green">顧</span><span class="c-green">    </span><span class="c-green a-so">{</span><span class="w c-green">残</span><span class="w c-green">高</span><span class="w c-green">：</span><span class="c-green a-so">}</span><span class="c-green">   </span><span class="c-yellow">       1,234.57 </span><span class="c-green">                  OK           </span></div><div class="ln"><span class="c-green">  </span><span class="c-green a-u"> </span><span class="c-green">   1000009   </span><span class="c-green a-so">{</span><span class="h c-green">顧</span><span class="c-green">                                                 OK           </span></div><div class="ln"><span class="c-green">  </span><span class="c-green a-u"> </span><span class="c-green">   1000010   </span><span class="c-green a-so">{</span><span class="h c-green">顧</span><span class="c-green">   </span><span class="c-blue"> F12=</span><span class="c-blue a-so">{</span><span class="w c-blue">戻</span><span class="w c-blue">る</span><span class="c-blue a-so">}</span><span class="c-green">                                   HOLD         </span></div><div class="ln"><span class="c-green">  </span><span class="c-green a-u"> </span><span class="c-green">   1000011   </span><span class="c-green a-so">{</span><span class="h c-green">顧</span><span class="c-green">                                                 OK           </span></div><div class="ln"><span class="c-green">  </span><span class="c-green a-u"> </span><span class="c-green">   1000012   </span><span class="c-green a-so">{</span><span class="h c-green">顧</span><span class="c-green">                                                 OK           </span></div><div class="ln"><span class="c-green">                                                                  </span><span class="c-white">    </span><span class="c-white a-so">{</span><span class="w c-white">続</span><span class="w c-white">く</span><span class="c-white a-so">}</span><span class="c-white">...</span><span class="c-green"> </span></div><div class="ln"><span class="c-green">                                                                                </span></div><div class="ln"><span class="c-green">                                                                                </span></div><div class="ln"><span class="c-green">                                                                                </span></div><div class="ln"><span class="c-blue"> F3=</span><span class="c-blue a-so">{</span><span class="w c-blue">終</span><span class="w c-blue">了</span><span class="c-blue a-so">}</span><span class="c-blue"> F12=</span><span class="c-blue a-so">{</span><span class="w c-blue">取</span><span class="w c-blue">消</span><span class="c-blue a-so">}</span><span class="c-green">                                                           </span></div><div class="ln"><span class="c-red">                                                                       </span><span class="c-green">         </span></div><div class="cs cs-dot" style="left:34ch;top:calc(17.5em - 4px);width:calc(15ch + 1px)"></div><div class="cur" style="left:21ch;top:10em;width:1ch"></div><div class="gwin" style="left:19ch;top:8.75em;width:48ch;height:13.75em"></div><div class="gwt" style="left:38ch;top:8.75em">�+�£�(Xｧg�</div></div><div class="oia"><span>行/列 <b>09/022</b></span><span>画面 <b>24x80</b></span><span class="ok">入力可</span></div></div></figure></div></body></html>
