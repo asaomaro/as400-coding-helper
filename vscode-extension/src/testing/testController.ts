@@ -1,10 +1,9 @@
 import * as vscode from "vscode";
 import { discoverTestFiles, type DiscoveredTestFile } from "./discovery";
 import { connectViaCodeForIbmi, type ConnectResult, type IbmiTestingConnection, type ConnectFailureReason } from "./codeForIbmi";
-import { buildCreateTestCommand, buildRunTestCommand } from "./rpgunitCommands";
-import { parseJUnitXml } from "./resultParser";
-import { deriveSourceType } from "../sync/memberTarget";
-import { readTestingConfigs, resolveBinding } from "./testingConfig";
+import { compileSuite, runSuite } from "./suiteRunner";
+import { readTestingConfigs } from "./testingConfig";
+import { resolveBinding } from "./testingConfigCore";
 
 const CONTROLLER_ID = "rpgClSupport.rpgunit";
 const CONTROLLER_LABEL = "RPGUnit";
@@ -64,15 +63,6 @@ async function readSourceText(uri: vscode.Uri): Promise<string> {
   return Buffer.from(bytes).toString("utf8");
 }
 
-/**
- * コンパイル・実行に使うライブラリー・リスト。`RPGUNIT` が要るのは、`TESTCASE` が
- * 修飾なしの `/include qinclude,TEMPLATES` を持つため（`.claude/skills/rpgunit-test/SKILL.md`
- * 「踏みやすい罠」）。利用者の接続設定に無いと `CPF4102` で落ちる（E2Eで実測）。
- */
-export function testLibraryList(targetLibrary: string, userLibraryList: readonly string[]): readonly string[] {
-  return [...new Set(["RPGUNIT", targetLibrary, ...userLibraryList].map(name => name.toUpperCase()))];
-}
-
 function erroredAll(run: vscode.TestRun, children: readonly vscode.TestItem[], text: string): void {
   const message = new vscode.TestMessage(text);
   for (const child of children) {
@@ -100,56 +90,20 @@ async function runFile(
   }
 
   const source = await readSourceText(fileItem.uri!);
-  await connection.uploadMemberContent(discovered.target, source);
-  // アップロード（CPYFRMSTMF相当）だけではSRCTYPE属性が付かない。RUCRTRPGは
-  // getMemberType()でメンバーのSRCTYPEを見て分岐するため、別途設定が必須
-  // （`.claude/skills/ibmi-remote/SKILL.md`「ソースタイプは別途設定する」）。
-  await connection.runCommand(
-    `CHGPFM FILE(${discovered.target.library}/${discovered.target.sourceFile}) ` +
-    `MBR(${discovered.target.member}) SRCTYPE(${deriveSourceType(discovered.target.extension)})`
-  );
-
-  const libraryList = testLibraryList(discovered.target.library, connection.libraryList);
-  const createCommand = buildCreateTestCommand({
-    library: discovered.target.library,
-    program: discovered.target.member,
-    sourceFile: discovered.target.sourceFile,
-    bindServicePrograms: binding.binding.servicePrograms,
-    bindingDirectories: binding.binding.bindingDirectories
-  });
-  // 実機確認（T1）でRUCRTRPGは約1.4秒と判明し、同期runCommandをデフォルトにしている
-  // （`.aidev/works/20260922-rpgunit-vscode-testing/decisions.md` D4）。大規模テストで同期実行がタイムアウトする場合は、ここを
-  // `connection.runCommandSubmitted(createCommand, {...})`（SBMJOB＋ポーリング）に
-  // 差し替える（`.aidev/works/20260922-rpgunit-vscode-testing/decisions.md` D2）。
-  const createResult = await connection.runCommand(createCommand, { libraryList });
-  // 成否はコマンドの結果で決める。オブジェクトの有無で見ると、前回の *SRVPGM が残っているとき
-  // コンパイル失敗を成功と取り違える。
-  if (createResult.code !== 0) {
-    erroredAll(run, children, `コンパイルに失敗しました。\n${createResult.stderr || createResult.stdout || "(詳細なし)"}`);
+  // 実機確認で RUCRTRPG は 1〜2 秒と判明し、同期実行を既定にしている
+  // （`.aidev/works/20260922-rpgunit-vscode-testing/decisions.md` D4）。大規模テストで同期実行が
+  // タイムアウトする場合の切り替え先は `connection.runCommandSubmitted`（同 D2）。
+  const compiled = await compileSuite(connection, { target: discovered.target, source, binding: binding.binding });
+  if (!compiled.ok) {
+    erroredAll(run, children, `コンパイルに失敗しました。\n${compiled.detail}`);
     return;
   }
-
-  const xmlPath = `${connection.tempDirectory}/${discovered.target.member}.xml`;
-  // パスは毎回同じ。前回の XML が残っていると、今回 RUCALLTST が結果を出さなかったときに
-  // 古い結果を読んでしまうので、実行前に消す。
-  await connection.runCommand(`QSYS/RMVLNK OBJLNK('${xmlPath}')`).catch(() => undefined);
-  // 合否は XML で判定するので、RUCALLTST 自体の code は見ない。
-  await connection.runCommand(
-    buildRunTestCommand({ library: discovered.target.library, program: discovered.target.member, xmlStmf: xmlPath }),
-    { libraryList }
-  );
-
-  let xml: string;
-  try {
-    xml = await connection.downloadStreamfile(xmlPath);
-  } catch (error) {
-    erroredAll(run, children, `結果を取得できませんでした: ${String((error as Error)?.message ?? error)}`);
+  const ran = await runSuite(connection, { target: discovered.target });
+  if (!ran.ok) {
+    erroredAll(run, children, ran.detail);
     return;
-  } finally {
-    await connection.runCommand(`QSYS/RMVLNK OBJLNK('${xmlPath}')`).catch(() => undefined);
   }
-
-  const suite = parseJUnitXml(xml);
+  const suite = ran.suite;
   const childByName = new Map(children.map(child => [child.label.toUpperCase(), child]));
   for (const testCase of suite.cases) {
     const child = childByName.get(testCase.name.toUpperCase());

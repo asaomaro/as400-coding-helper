@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * RPGUnit のテストを 1 コマンドで回して結果を採る。
+ * RPGUnit のテストを 1 コマンドで回して結果を採る（skill `rpgunit-test` が使う道具）。
  *
  *   node tools/run-rpgunit.mjs <ソース> [--pgm 名前] [--srctype RPGLE|SQLRPGLE]
  *                                       [--xml <保存先>] [--json] [--keep]
@@ -12,29 +12,60 @@
  *   書いていた（.aidev/works/ に 65 本）。接続の型・完了待ち・スプールの引数名を
  *   書き直すたびに同じ罠を踏む。踏む場所をここ 1 か所に閉じ込める。
  *
+ * ■ VS Code の Test Explorer と同じ実装を使う
+ *   コマンドの組み立て・testing.json の探し方と解釈・結果 XML の解析・コンパイル〜実行の手順は
+ *   `vscode-extension/src/testing/` の共通部品（ビルド済みの `out/testing/*.js`）を呼ぶ。この道具が
+ *   持つのは接続（ts5250 の hostserver）と、道具だけの機能（オラクル印・独立性の検査・レポート）。
+ *   2 か所に書いていた頃、成否の判定・バインドの解釈・ライブラリー・リストが食い違っていた
+ *   （`.aidev/works/20260926-rpgunit-shared-runner/requirements.md`）。
+ *
+ * ■ 接続は SQL ジョブで QCMDEXC
+ *   hostserver の DbConnection（1 本の SQL ジョブ）で `CALL QSYS2.QCMDEXC(?)` を呼び、`CHGLIBL` と
+ *   コマンドを同じジョブで流す。失敗は SqlError、理由はジョブログ（QSYS2.JOBLOG_INFO）。
+ *   Code for IBM i と同じ方式（同 decisions.md D3・D6・D8。実機で確認済み）。
+ *
  * ■ 閉じ込めてある罠（利用者は知らなくてよい）
  *   - SRCMBR はプログラム名と揃える（別名は CPF9815。getMemberType がプログラム名で探す）
  *   - CHGPFM SRCTYPE(SQLRPGLE) を忘れると RPGLE として扱われて落ちる
- *   - SBMJOB に INLLIBL(RPGUNIT …) と INQMSGRPY(*DFT) が要る
- *     （後者が無いと監視漏れの例外が照会になりジョブが MSGW で残る）
- *   - CL の中では RPGUNIT/ で修飾する（解決はコンパイル時）
+ *   - ライブラリー・リストに RPGUNIT が要る（TESTCASE の修飾なし /include。無いと CPF4102）
+ *   - RUCALLTST はテストが失敗すると自身も失敗を返す。合否は XML で決める
+ *   - ビルドの成否は RUCRTRPG の結果で決める。オブジェクトの有無で見ると、前回の *SRVPGM が
+ *     残っているときにコンパイル失敗を成功と取り違える（旧版の欠陥）
  *   - 既定 20 秒のソケット時間切れでは RUCRTRPG が終わらない
- *   - 結果のスプール名は RPGUNIT、コンパイル・リストはプログラム名
+ *   - コンパイル・リストのスプール名はプログラム名
  *
  * ■ 前提
- *   /workspaces/ts5250 のチェックアウトと、そこの --env-file。
+ *   /workspaces/ts5250 のチェックアウトと、そこの --env-file。共通部品のビルド（vscode-extension で
+ *   `npm run compile`）。
  *     cd /workspaces/ts5250 && node --env-file=.env --env-file=.env.verify \
  *       /path/to/tools/run-rpgunit.mjs <ソース>
  *   .env の中身は読まない（あちらの規約）。識別子は .env.verify から取る。
  */
-import { readFileSync, writeFileSync, existsSync } from "node:fs";
+import { readFileSync, writeFileSync, existsSync, statSync } from "node:fs";
+import { execFileSync } from "node:child_process";
 import { basename, dirname, extname, join, resolve } from "node:path";
-import { fileURLToPath } from "node:url";
+import { fileURLToPath, pathToFileURL } from "node:url";
 
 const TS5250 = process.env.TS5250_DIR ?? "/workspaces/ts5250";
+const HERE = dirname(fileURLToPath(import.meta.url));
 /** 書式は skill 側に置く（道具ではなく手順の一部なので）。 */
-const DEFAULT_TEMPLATE = join(dirname(fileURLToPath(import.meta.url)),
-  "..", ".claude", "skills", "rpgunit-test", "templates", "test-report.md");
+const DEFAULT_TEMPLATE = join(HERE, "..", ".claude", "skills", "rpgunit-test", "templates", "test-report.md");
+
+// ---------------------------------------------------------------- 共通部品
+// VS Code の Test Explorer と同じ実装。未ビルドなら何を打てばよいかを出して終了コード 2。
+const CORE_DIR = join(HERE, "..", "vscode-extension", "out", "testing");
+let core;
+try {
+  const load = name => import(pathToFileURL(join(CORE_DIR, `${name}.js`)).href);
+  const [suiteRunner, resultParser, testingConfigCore] =
+    await Promise.all([load("suiteRunner"), load("resultParser"), load("testingConfigCore")]);
+  core = { ...suiteRunner, ...resultParser, ...testingConfigCore };
+} catch (error) {
+  console.error(`✗ 共通部品を読めません（${CORE_DIR}）: ${error.message}`);
+  console.error("  先にビルドしてください: cd vscode-extension && npm install && npm run compile");
+  process.exit(2);
+}
+const { compileSuite, runSuite, parseJUnitXml, failureLocation, findTestingConfigs, resolveBinding } = core;
 
 // ---------------------------------------------------------------- 純粋な部分
 // 実機に触らない。--self-test で確かめる。
@@ -46,14 +77,16 @@ const USAGE = `使い方: node tools/run-rpgunit.mjs <ソースファイル> [�
   --srctype <型>      RPGLE | SQLRPGLE（既定: 拡張子から判定）
   --lib <ライブラリー>  既定: 環境変数 AS400_LIB
   --srcfile <名前>    ソース物理ファイル（既定: QUNITSRC。無ければ作る）
-  --bnd <lib/名前>    テスト対象のサービスプログラム（繰り返し可）
+  --bnd <lib/名前>    テスト対象のサービスプログラム（繰り返し可）。修飾しなければ *LIBL で探す
+                      testing.json の bndSrvPgm より優先する（bndDir はそのまま）
                       テスト対象のビルドは利用者側の仕事。ここでは束ねるだけ
   --xml <パス>        JUnit XML の保存先（ローカル）
   --md <パス>         テスト結果を Markdown で保存（書式はテンプレート）
   --template <パス>   Markdown の書式（既定:
                       .claude/skills/rpgunit-test/templates/test-report.md）
   --json              要約を JSON で出す（自律ループ向け）
-  --keep              IFS の作業ファイルを消さない
+  --keep              IFS の作業ファイル（ソースと結果 XML）を実行後に消さない
+                      （実行前の結果 XML は常に消す。古い結果を読まないため）
   --order <api|reverse>       RUCALLTST の ORDER（既定 api）
   --rclrsc <no|always|once>   RUCALLTST の RCLRSC（既定 no）
   --check-independence        正順と逆順を両方走らせ、合否が食い違えば失敗にする
@@ -93,14 +126,8 @@ export function parseArgs(argv) {
       }
       case "--lib": o.lib = next(); break;
       case "--srcfile": o.srcfile = next().toUpperCase(); break;
-      case "--bnd": {
-        const v = next().toUpperCase();
-        // lib/name か name。RUCRTRPG の BNDSRVPGM は修飾名を取る。
-        if (!/^([A-Z0-9$#@_.]{1,10}\/)?[A-Z0-9$#@_.]{1,10}$/.test(v))
-          throw new UsageError(`--bnd は <ライブラリー>/<名前> か <名前> です: ${v}`);
-        o.bnd.push(v);
-        break;
-      }
+      // 形の検査と大文字化は testing.json と同じ規則（共通部品の resolveBinding）で行う。
+      case "--bnd": o.bnd.push(next()); break;
       case "--xml": o.xml = next(); break;
       case "--md": o.md = next(); break;
       case "--template": o.template = next(); break;
@@ -136,55 +163,37 @@ export function parseArgs(argv) {
   return o;
 }
 
-/** v6 は本文を CDATA で包む（v4 は素）。両方を読めるようにする。 */
-function stripCdata(t) {
-  const m = /<!\[CDATA\[([\s\S]*?)\]\]>/.exec(t);
-  return m ? m[1] : t;
-}
 
-/** **`&amp;` は最後**（先に戻すと `&amp;apos;` が壊れる）。 */
-function unescapeXml(t) {
-  return t.replace(/&lt;/g, "<").replace(/&gt;/g, ">")
-    .replace(/&apos;/g, "'").replace(/&quot;/g, '"').replace(/&amp;/g, "&");
-}
-
-/** 失敗した場所（`NAME (PGM->MODULE:NNN)`）を本文から拾う。無ければ先頭行。 */
-function failureLocation(detail) {
-  const m = /^\s*(\S+\s+\([^)]*:\d+\))\s*$/m.exec(detail);
-  return m ? m[1] : (detail.split("\n").find(l => l.trim()) ?? "").trim();
-}
-
-/** JUnit XML から件数と失敗の内訳を取り出す。実機が出したものをそのまま読む。 */
-export function summarize(xml) {
-  const suite = /<testsuite\b([^>]*)>/.exec(xml);
-  const attr = (s, k) => {
-    const m = new RegExp(`\\b${k}="([^"]*)"`).exec(s ?? "");
-    return m ? m[1] : "";
-  };
-  const num = (s, k) => Number(attr(s, k) || 0);
-  const head = suite?.[1] ?? "";
-  const cases = [];
-  // <testcase …/> と <testcase …> … </testcase> の両方を拾う
-  const re = /<testcase\b([^>]*?)(\/>|>([\s\S]*?)<\/testcase>)/g;
-  let m;
-  while ((m = re.exec(xml)) !== null) {
-    const c = { name: attr(m[1], "name"), classname: attr(m[1], "classname"),
-      assertions: num(m[1], "assertions"), time: attr(m[1], "time") };
-    const body = m[3] ?? "";
-    const f = /<(failure|error)\b([^>]*)>([\s\S]*?)<\/\1>/.exec(body);
-    if (f) {
-      c.failure = { kind: f[1], message: unescapeXml(attr(f[2], "message")),
-        detail: unescapeXml(stripCdata(f[3])).trim() };
-    }
-    cases.push(c);
+/** ソースを含む git リポジトリーの最上位。git でなければソースのディレクトリー（testing.json を探す上端）。 */
+export function findSearchRoot(sourcePath) {
+  const dir = dirname(resolve(sourcePath));
+  try {
+    return execFileSync("git", ["-C", dir, "rev-parse", "--show-toplevel"], { encoding: "utf8", stdio: ["ignore", "pipe", "ignore"] }).trim();
+  } catch {
+    return dir;
   }
-  const properties = [];
-  const pre = /<property\b([^>]*?)\/?>/g;
-  let pm;
-  while ((pm = pre.exec(xml)) !== null)
-    properties.push({ name: attr(pm[1], "name"), value: unescapeXml(attr(pm[1], "value")).trim() });
-  return { name: attr(head, "name"), tests: num(head, "tests"),
-    failures: num(head, "failures"), errors: num(head, "errors"), cases, properties };
+}
+
+/** Node の fs で読む（共通部品の findTestingConfigs に渡す）。 */
+async function readLocal(file) {
+  let stat;
+  try { stat = statSync(file); } catch { return { kind: "missing" }; }
+  if (stat.isDirectory()) return { kind: "directory" };
+  try { return { kind: "text", text: readFileSync(file, "utf8") }; }
+  catch (error) { return { kind: "error", message: String(error.message ?? error) }; }
+}
+
+/**
+ * testing.json のバインド指定を解決し、--bnd があれば bndSrvPgm だけを置き換える。
+ * --bnd も testing.json と同じ規則（形・件数・大文字化）で検査する——規則を 2 か所に書かない。
+ */
+export function resolveToolBinding(configs, bnd) {
+  const fromConfig = resolveBinding(configs.nearest, configs.global);
+  if (!fromConfig.ok) return { ok: false, path: fromConfig.path, reason: fromConfig.reason };
+  if (!bnd.length) return fromConfig;
+  const fromArgs = resolveBinding({ path: "--bnd", text: JSON.stringify({ rpgunit: { rucrtrpg: { bndSrvPgm: bnd } } }) }, undefined);
+  if (!fromArgs.ok) return { ok: false, path: "--bnd", reason: fromArgs.reason.replace("rpgunit.rucrtrpg.bndSrvPgm", "--bnd") };
+  return { ok: true, binding: { ...fromConfig.binding, servicePrograms: fromArgs.binding.servicePrograms } };
 }
 
 /**
@@ -363,46 +372,59 @@ async function connectAll() {
   if (!sys) throw new Error(`profiles.local.json に ${want} がありません`);
   const creds = { host: sys.host, user: sys.signon.user,
     password: SecretCrypto.fromEnv()?.decrypt(sys.signon.passwordEnc) };
-  return { hs, creds, user: String(sys.signon.user).toUpperCase() };
+  return { hs, creds };
 }
 
-/** ジョブが消えるまで待つ。SBMJOB は投げっぱなしなので消滅で判断する。 */
-async function waitJob(hs, creds, jobName, seconds = 180) {
-  const db = await hs.DbConnection.connect({ ...creds, resolvePort: true, timeoutMs: 60000 });
-  try {
-    for (let i = 0; i < Math.ceil(seconds / 5); i += 1) {
-      await new Promise(r => setTimeout(r, 5000));
-      const r = await hs.query(db,
-        `SELECT JOB_NAME FROM TABLE(QSYS2.ACTIVE_JOB_INFO(DETAILED_INFO=>'NONE'))
-          WHERE UPPER(JOB_NAME) LIKE '%${jobName}%'`);
-      if (!(r.rows ?? r).length) return true;
-    }
-    return false;
-  } finally { db.close(); }
-}
+/**
+ * 共通部品の SuiteConnection を hostserver で実装する。SQL ジョブ 1 本で CHGLIBL とコマンドを流し、
+ * 失敗（SqlError）は code 1 とジョブログにする。IFS は一時ソースと結果 XML の置き場。
+ */
+async function openSuiteConnection(hs, creds, { ifsDir, keep }) {
+  const db = await hs.DbConnection.connect({ ...creds, resolvePort: true, timeoutMs: 300000 });
+  const qcmdexc = command => hs.executeStatement(db, "CALL QSYS2.QCMDEXC(?)", { parameters: [command] });
+  const lastJoblog = async () =>
+    Number((await hs.query(db, "SELECT COALESCE(MAX(ORDINAL_POSITION), 0) AS N FROM TABLE(QSYS2.JOBLOG_INFO('*'))")).rows[0].N);
+  const joblogSince = async since =>
+    (await hs.query(db, `SELECT MESSAGE_ID, MESSAGE_TEXT FROM TABLE(QSYS2.JOBLOG_INFO('*'))
+      WHERE ORDINAL_POSITION > ${since} ORDER BY ORDINAL_POSITION`)).rows
+      .map(r => `${r.MESSAGE_ID ?? ""}: ${String(r.MESSAGE_TEXT ?? "").trim()}`);
+  const withIfs = async work => {
+    const ifs = await hs.IfsConnection.connect({ ...creds, resolvePort: true, timeoutMs: 120000 });
+    try { return await work(ifs); } finally { ifs.close(); }
+  };
 
-/** 失敗したときに「次に読む先」を出す。スプールは消さない。 */
-async function reportSpools(hs, creds, user, jobName) {
-  const db = await hs.DbConnection.connect({ ...creds, resolvePort: true, timeoutMs: 60000 });
-  try {
-    const r = await hs.query(db,
-      `SELECT SPOOLED_FILE_NAME, FILE_NUMBER, JOB_NAME FROM QSYS2.OUTPUT_QUEUE_ENTRIES_BASIC
-        WHERE USER_NAME='${user}' AND JOB_NAME LIKE '%${jobName}%' ORDER BY CREATE_TIMESTAMP`);
-    const rows = r.rows ?? r;
-    if (!rows.length) return;
-    console.error("  次に読む先（スプールは消していません）:");
-    for (const x of rows)
-      console.error(`    ${x.SPOOLED_FILE_NAME} #${x.FILE_NUMBER}  JOB(${x.JOB_NAME})`);
-  } finally { db.close(); }
-}
-
-async function objectExists(hs, creds, lib, name) {
-  const db = await hs.DbConnection.connect({ ...creds, resolvePort: true, timeoutMs: 60000 });
-  try {
-    const r = await hs.query(db,
-      `SELECT OBJNAME FROM TABLE(QSYS2.OBJECT_STATISTICS('${lib}','*ALL')) WHERE OBJNAME='${name}'`);
-    return (r.rows ?? r).length > 0;
-  } finally { db.close(); }
+  const conn = {
+    tempDirectory: ifsDir,
+    libraryList: ["QGPL", "QTEMP"],
+    async runCommand(command, opts) {
+      const since = await lastJoblog();
+      try {
+        if (opts?.libraryList) await qcmdexc(`CHGLIBL LIBL(${opts.libraryList.join(" ")}) CURLIB(*CRTDFT)`);
+        await qcmdexc(command);
+        return { code: 0, stdout: "", stderr: "" };
+      } catch (error) {
+        const log = await joblogSince(since).catch(() => []);
+        return { code: 1, stdout: "", stderr: [...log, String(error.message ?? error)].join("\n") };
+      }
+    },
+    async uploadMemberContent(target, content) {
+      const src = `${ifsDir}/${target.member}.src`;
+      await withIfs(ifs => ifs.writeFile(src, new TextEncoder().encode(content), { create: true, truncate: true }));
+      // ソース物理ファイルが無ければ作る（既存なら CPF7302 で失敗するだけ）
+      await conn.runCommand(`CRTSRCPF FILE(${target.library}/${target.sourceFile}) RCDLEN(112) CCSID(5035) IGCDTA(*YES)`);
+      const copied = await conn.runCommand(`CPYFRMSTMF FROMSTMF('${src}') ` +
+        `TOMBR('/QSYS.LIB/${target.library}.LIB/${target.sourceFile}.FILE/${target.member}.MBR') MBROPT(*REPLACE) STMFCCSID(1208)`);
+      if (!keep) await conn.runCommand(`QSYS/RMVLNK OBJLNK('${src}')`);
+      if (copied.code !== 0) throw new Error(`メンバーに書けません\n${copied.stderr}`);
+      return true;
+    },
+    async downloadStreamfile(path) {
+      // RPGUnit の XML は CCSID 819（Latin-1）。Code for IBM i 側（codeForIbmi.ts）と同じ復号にする。
+      return withIfs(async ifs => Buffer.from(await ifs.readFile(path)).toString("latin1"));
+    },
+    close() { db.close(); }
+  };
+  return conn;
 }
 
 async function main(argv) {
@@ -416,9 +438,10 @@ async function main(argv) {
   if (o.selfTest) return selfTest();
   if (!requireEnv()) return 2;
   if (!existsSync(o.source)) { console.error(`✗ ソースがありません: ${o.source}`); return 2; }
+  const sourceText = readFileSync(o.source, "utf8");
 
   // --- オラクルの印の検品（実機に触る前に済ませる） ---
-  const oracle = parseOracleMarkers(readFileSync(o.source, "utf8"));
+  const oracle = parseOracleMarkers(sourceText);
   if (oracle.problems.length) {
     console.error("");
     console.error("⚠ オラクルの印がありません（skill rpgunit-test §0.2）:");
@@ -437,160 +460,109 @@ async function main(argv) {
     console.log(`▸ オラクル 検証 ${oracle.verified} / 特性化 ${oracle.characterized}`);
   }
 
+  // --- バインド指定（testing.json と --bnd）。誤っていればコンパイルしない ---
+  const sourcePath = resolve(o.source).replace(/\\/g, "/");
+  const root = findSearchRoot(o.source).replace(/\\/g, "/");
+  const configs = await findTestingConfigs(sourcePath, root, readLocal, file => file.startsWith(`${root}/`) ? file.slice(root.length + 1) : file);
+  const binding = resolveToolBinding(configs, o.bnd);
+  if (!binding.ok) {
+    console.error(`✗ バインド指定が正しくありません: ${binding.path}\n    ${binding.reason}`);
+    return 2;
+  }
+
   const LIB = (o.lib ?? process.env.AS400_LIB).toUpperCase();
-  const IFS = process.env.AS400_IFS_DIR;
-  const stamp = Date.now().toString(36).slice(-5).toUpperCase();
-  const buildJob = `RUB${stamp}`.slice(0, 10);
-  const runJob = `RUR${stamp}`.slice(0, 10);
-  const ifsSrc = `${IFS}/${o.pgm}.src`;
-  const ifsXml = `${IFS}/${o.pgm}.xml`;
+  const target = { library: LIB, sourceFile: o.srcfile, member: o.pgm, extension: o.srctype.toLowerCase() };
 
-  const { hs, creds, user } = await connectAll();
-  let code = 2;
+  const { hs, creds } = await connectAll();
+  let conn;
   try {
-    // --- 転送 ---
-    const ifs = await hs.IfsConnection.connect({ ...creds, resolvePort: true, timeoutMs: 120000 });
-    try {
-      await ifs.writeFile(ifsSrc, new Uint8Array(readFileSync(o.source)), { create: true, truncate: true });
-    } finally { ifs.close(); }
+    conn = await openSuiteConnection(hs, creds, { ifsDir: process.env.AS400_IFS_DIR, keep: o.keep });
+    const bindLabel = [
+      ...binding.binding.servicePrograms.map(b => `bndsrvpgm ${b}`),
+      ...binding.binding.bindingDirectories.map(b => `bnddir ${b}`)
+    ];
 
-    const cmd = await hs.CommandConnection.connect({ ...creds, resolvePort: true, timeoutMs: 120000 });
-    try {
-      await cmd.run(`CRTSRCPF FILE(${LIB}/${o.srcfile}) RCDLEN(112) CCSID(5035) IGCDTA(*YES)`); // 既存なら CPF7302
-      const cpy = await cmd.run(`CPYFRMSTMF FROMSTMF('${ifsSrc}') ` +
-        `TOMBR('/QSYS.LIB/${LIB}.LIB/${o.srcfile}.FILE/${o.pgm}.MBR') MBROPT(*REPLACE) STMFCCSID(1208)`);
-      if (!cpy.success) { console.error("✗ メンバーに書けません"); for (const m of cpy.messages ?? []) console.error(`    ${m.id} ${m.text}`); return 2; }
-      await cmd.run(`CHGPFM FILE(${LIB}/${o.srcfile}) MBR(${o.pgm}) SRCTYPE(${o.srctype})`);
-      console.log(`▸ 転送     ${basename(o.source)} → ${LIB}/${o.srcfile}(${o.pgm})  [${o.srctype}]` +
-        (o.bnd.length ? `  bind: ${o.bnd.join(" ")}` : ""));
-
-      // --- ビルド ---
-      const t0 = Date.now();
-      // BNDSRVPGM は MAX(50) のリストで、修飾は `library/name`（原典 RPGUNIT/QCMD,RUCRTRPG）。
-      // 空白区切りにすると 2 つの要素として読まれる。1 つも無ければ付けない（既定 *NONE）。
-      const bnd = o.bnd.length
-        ? ` BNDSRVPGM(${o.bnd.map(b => (b.includes("/") ? b : `${LIB}/${b}`)).join(" ")})`
-        : "";
-      // **TGTCCSID(0) を必ず渡す。** v5 以降の RUCRTRPG は既定（*SRC）だと
-      // CRTRPGMOD に TGTCCSID を付けるが、IBM i 7.3 の CRTRPGMOD にその
-      // キーワードは無く CPD0043 で落ちる。CRTTST.RPGLE の serializeTgtCcsid は
-      // `if (tgtCcsid = 0) return '';` なので、0 を渡せばキーワードごと消える。
-      // v4 には TGTCCSID パラメータ自体が無いので、その場合は付けない。
-      const tgt = o.noTgtCcsid ? "" : " TGTCCSID(0)";
-      const sub = await cmd.run(`SBMJOB CMD(RPGUNIT/RUCRTRPG TSTPGM(${LIB}/${o.pgm}) SRCFILE(${LIB}/${o.srcfile}) ` +
-        `SRCMBR(${o.pgm})${bnd}${tgt}) JOB(${buildJob}) INLLIBL(RPGUNIT ${LIB} QGPL QTEMP) INQMSGRPY(*DFT)`);
-      // **投入自体の失敗を見る。** 見ないと、走らなかったものを「ビルド失敗」と報告して
-      // 本当の理由（コマンドの書式など）が消える。
-      if (!sub.success) {
-        console.error("✗ ビルドを投入できません");
-        for (const m of sub.messages ?? []) console.error(`    ${m.id} ${m.text}`);
-        return 2;
-      }
-      if (!await waitJob(hs, creds, buildJob)) { console.error(`✗ ビルドが終わりません JOB(${buildJob})`); return 2; }
-      if (!await objectExists(hs, creds, LIB, o.pgm)) {
-        console.error(`✗ ビルド失敗   ${o.pgm} が作成されませんでした`);
-        await reportSpools(hs, creds, user, buildJob);
-        return 2;
-      }
-      console.log(`▸ ビルド   ${o.pgm} … OK (${((Date.now() - t0) / 1000).toFixed(1)}s)`);
-
-      // --- 実行 ---
-      // 1 回走らせて結果を採る。--check-independence では順序を変えて 2 回呼ぶ。
-      const runOnce = async (order, tag) => {
-        const job = `${runJob}${tag}`.slice(0, 10);
-        const opts = ` ORDER(*${order.toUpperCase()})` +
-          (o.rclrsc ? ` RCLRSC(*${o.rclrsc.toUpperCase()})` : "");
-        const sub2 = await cmd.run(`SBMJOB CMD(RPGUNIT/RUCALLTST TSTPGM(${LIB}/${o.pgm}) OUTPUT(*NONE) ` +
-          `XMLSTMF('${ifsXml}')${opts}) JOB(${job}) INLLIBL(RPGUNIT ${LIB} QGPL QTEMP) INQMSGRPY(*DFT)`);
-        if (!sub2.success) {
-          console.error("✗ 実行を投入できません");
-          for (const m of sub2.messages ?? []) console.error(`    ${m.id} ${m.text}`);
-          return null;
-        }
-        if (!await waitJob(hs, creds, job)) { console.error(`✗ 実行が終わりません JOB(${job})`); return null; }
-        const i2 = await hs.IfsConnection.connect({ ...creds, resolvePort: true, timeoutMs: 120000 });
-        try { return new TextDecoder().decode(await i2.readFile(ifsXml)); }
-        catch { console.error(`✗ 結果の XML がありません: ${ifsXml}`); await reportSpools(hs, creds, user, job); return null; }
-        finally { i2.close(); }
-      };
-
-      let indepDiff = [], indepLabel, independenceFailed = false;
-      const t1 = Date.now();
-      const xml = await runOnce(o.order ?? "api", "A");
-      if (xml === null) return 2;
-      const s = summarize(xml);
-
-      // **件数を実データと突き合わせる。** 解析が手続きを取りこぼすと検品ごと
-      // 素通りする（実際、継続名前行を読めず 1 件も見えていなかった）。
-      // 実機が報告した名前を正とし、印を読めなかったものは出所不明として扱う。
-      const seen = new Set(oracle.tests.map(t => t.name));
-      const missed = [];
-      for (const c of s.cases) {
-        const n = (c.name ?? "").toUpperCase();
-        if (!n || seen.has(n)) continue;
-        seen.add(n);
-        missed.push(n);
-        oracle.problems.push({ name: n, reason: "出所不明（ソースから印を読み取れませんでした）" });
-      }
-      if (missed.length) {
-        console.error(`⚠ ソースから読めなかったテストがあります: ${missed.join(" ")}`);
-        console.error("  実機は報告しているので、印の検査を素通りしています。");
-      }
-
-      // --- 独立性の検品（設計書 4.2 の「逆順実行」）---
-      if (o.checkIndependence) {
-        const xmlR = await runOnce("reverse", "R");
-        if (xmlR === null) return 2;
-        const sR = summarize(xmlR);
-        const diff = compareRuns(s, sR);
-        indepDiff = diff;
-        indepLabel = diff.length ? `**食い違いあり**（正順 ${s.failures + s.errors} 失敗 / 逆順 ${sR.failures + sR.errors} 失敗）` : "一致（正順・逆順）";
-        console.log(`▸ 独立性   正順 ${s.failures + s.errors} 失敗 / 逆順 ${sR.failures + sR.errors} 失敗` +
-          `  … ${diff.length ? "**食い違いあり**" : "一致"}`);
-        if (diff.length) {
-          console.log("");
-          console.log("  正順と逆順で合否が違うテスト（順序に依存している）:");
-          for (const d of diff) console.log(`    ✗ ${d.name}  正順=${d.a} / 逆順=${d.b}`);
-          console.log("");
-          console.log("  前のテストが残したもの（DB の行・活動化グループのグローバル・");
-          console.log("  ジョブログのメッセージ）を tearDown で片付けているか確かめてください。");
-          // **ここで return しない。** --md / --xml を出してから失敗にする
-          // （食い違ったときこそ報告書が要る）。
-          independenceFailed = true;
-        }
-      }
-      console.log(`▸ 実行     ${o.pgm} … ${s.tests} tests, ${s.failures} failure (${((Date.now() - t1) / 1000).toFixed(1)}s)`);
-      console.log("");
-      if (o.json) console.log(JSON.stringify(s, null, 2));
-      else console.log(render(s));
-      if (o.xml) { writeFileSync(resolve(o.xml), xml, "utf8"); console.log(`\n  XML: ${resolve(o.xml)}`); }
-      if (o.md) {
-        const tplPath = o.template ? resolve(o.template) : DEFAULT_TEMPLATE;
-        if (!existsSync(tplPath)) { console.error(`✗ テンプレートがありません: ${tplPath}`); return 2; }
-        const md = renderTemplate(readFileSync(tplPath, "utf8"), reportData(s, {
-          pgm: o.pgm, source: basename(o.source), srctype: o.srctype, bind: o.bnd,
-          order: o.order ?? "api", timestamp: new Date().toISOString().replace("T", " ").slice(0, 19),
-          independence: indepLabel, independenceDiff: indepDiff, oracle
-        }));
-        writeFileSync(resolve(o.md), md, "utf8");
-        console.log(`  MD : ${resolve(o.md)}`);
-      }
-      code = (s.failures + s.errors > 0 || independenceFailed) ? 1 : 0;
-    } finally {
-      // --- 後始末（IFS のみ。スプールは消さない） ---
-      if (!o.keep) {
-        try {
-          for (const f of [ifsSrc, ifsXml]) await cmd.run(`RMVLNK OBJLNK('${f}')`);
-        } catch { /* 後始末の失敗で結果を握り潰さない */ }
-      }
-      cmd.close();
+    // --- 転送とビルド ---
+    const t0 = Date.now();
+    const compiled = await compileSuite(conn, { target, source: sourceText, binding: binding.binding, noTgtCcsid: o.noTgtCcsid });
+    console.log(`▸ 転送     ${basename(o.source)} → ${LIB}/${o.srcfile}(${o.pgm})  [${o.srctype}]` +
+      (bindLabel.length ? `  ${bindLabel.join(" ")}` : ""));
+    if (!compiled.ok) {
+      console.error(`✗ ビルド失敗   ${o.pgm}`);
+      console.error("  ジョブログ:");
+      for (const line of compiled.detail.split("\n")) console.error(`    ${line}`);
+      return 2;
     }
+    console.log(`▸ ビルド   ${o.pgm} … OK (${((Date.now() - t0) / 1000).toFixed(1)}s)`);
+
+    // --- 実行（--check-independence では順序を変えて 2 回） ---
+    const t1 = Date.now();
+    const first = await runSuite(conn, { target, order: o.order ?? "api", reclaimResources: o.rclrsc, keepXml: o.keep });
+    if (!first.ok) { console.error(`✗ ${first.detail}`); return 2; }
+    const s = first.suite;
+
+    // **件数を実データと突き合わせる。** 解析が手続きを取りこぼすと検品ごと素通りする。
+    // 実機が報告した名前を正とし、印を読めなかったものは出所不明として扱う。
+    const seen = new Set(oracle.tests.map(t => t.name));
+    const missed = [];
+    for (const c of s.cases) {
+      const n = (c.name ?? "").toUpperCase();
+      if (!n || seen.has(n)) continue;
+      seen.add(n);
+      missed.push(n);
+      oracle.problems.push({ name: n, reason: "出所不明（ソースから印を読み取れませんでした）" });
+    }
+    if (missed.length) {
+      console.error(`⚠ ソースから読めなかったテストがあります: ${missed.join(" ")}`);
+      console.error("  実機は報告しているので、印の検査を素通りしています。");
+    }
+
+    let indepDiff = [], indepLabel, independenceFailed = false;
+    if (o.checkIndependence) {
+      const reversed = await runSuite(conn, { target, order: "reverse", reclaimResources: o.rclrsc, keepXml: o.keep });
+      if (!reversed.ok) { console.error(`✗ ${reversed.detail}`); return 2; }
+      const sR = reversed.suite;
+      const diff = compareRuns(s, sR);
+      indepDiff = diff;
+      indepLabel = diff.length ? `**食い違いあり**（正順 ${s.failures + s.errors} 失敗 / 逆順 ${sR.failures + sR.errors} 失敗）` : "一致（正順・逆順）";
+      console.log(`▸ 独立性   正順 ${s.failures + s.errors} 失敗 / 逆順 ${sR.failures + sR.errors} 失敗` +
+        `  … ${diff.length ? "**食い違いあり**" : "一致"}`);
+      if (diff.length) {
+        console.log("");
+        console.log("  正順と逆順で合否が違うテスト（順序に依存している）:");
+        for (const d of diff) console.log(`    ✗ ${d.name}  正順=${d.a} / 逆順=${d.b}`);
+        console.log("");
+        console.log("  前のテストが残したもの（DB の行・活動化グループのグローバル・");
+        console.log("  ジョブログのメッセージ）を tearDown で片付けているか確かめてください。");
+        // **ここで return しない。** --md / --xml を出してから失敗にする（食い違ったときこそ報告書が要る）。
+        independenceFailed = true;
+      }
+    }
+    console.log(`▸ 実行     ${o.pgm} … ${s.tests} tests, ${s.failures} failure (${((Date.now() - t1) / 1000).toFixed(1)}s)`);
+    console.log("");
+    if (o.json) console.log(JSON.stringify(s, null, 2));
+    else console.log(render(s));
+    if (o.xml) { writeFileSync(resolve(o.xml), first.xml, "utf8"); console.log(`\n  XML: ${resolve(o.xml)}`); }
+    if (o.md) {
+      const tplPath = o.template ? resolve(o.template) : DEFAULT_TEMPLATE;
+      if (!existsSync(tplPath)) { console.error(`✗ テンプレートがありません: ${tplPath}`); return 2; }
+      const md = renderTemplate(readFileSync(tplPath, "utf8"), reportData(s, {
+        pgm: o.pgm, source: basename(o.source), srctype: o.srctype, bind: bindLabel,
+        order: o.order ?? "api", timestamp: new Date().toISOString().replace("T", " ").slice(0, 19),
+        independence: indepLabel, independenceDiff: indepDiff, oracle
+      }));
+      writeFileSync(resolve(o.md), md, "utf8");
+      console.log(`  MD : ${resolve(o.md)}`);
+    }
+    return (s.failures + s.errors > 0 || independenceFailed) ? 1 : 0;
   } catch (e) {
     console.error(`✗ ${e.message}`);
     return 2;
+  } finally {
+    conn?.close();
   }
-  return code;
 }
+
 
 // ---------------------------------------------------------------- self-test
 
@@ -611,13 +583,27 @@ function selfTest() {
   eq(parseArgs(["a/x.rpgle", "--pgm", "other"]).pgm, "OTHER", "--pgm は大文字化される");
   eq(parseArgs(["a/x.rpgle"]).srcfile, "QUNITSRC", "ソース PF の既定");
   eq(parseArgs(["a/x.rpgle"]).bnd, [], "--bnd 省略時は空（既定 *NONE）");
-  eq(parseArgs(["a/x.rpgle", "--bnd", "mylib/calcsrv"]).bnd, ["MYLIB/CALCSRV"], "--bnd は大文字化される");
-  eq(parseArgs(["a/x.rpgle", "--bnd", "A", "--bnd", "B"]).bnd, ["A", "B"], "--bnd は繰り返せる");
-  eq((() => { try { parseArgs(["a/x.rpgle", "--bnd", "a/b/c"]); return "通った"; }
-      catch (e) { return e instanceof UsageError ? "弾いた" : "別の例外"; } })(),
-     "弾いた", "--bnd の不正な形は弾く");
+  eq(parseArgs(["a/x.rpgle", "--bnd", "A", "--bnd", "B"]).bnd, ["A", "B"], "--bnd は繰り返せる（形の検査は resolveToolBinding）");
 
-  console.log("summarize（実機が出した XML の実物）");
+  console.log("resolveToolBinding（testing.json と --bnd）");
+  const cfg = (text, path = "t/testing.json") => ({ path, text });
+  const none = { nearest: undefined, global: undefined };
+  eq(resolveToolBinding(none, []), { ok: true, binding: { servicePrograms: [], bindingDirectories: [] } },
+     "どちらも無ければ空（既定 *NONE）");
+  eq(resolveToolBinding(none, ["mylib/calcsrv", "other"]).binding.servicePrograms, ["MYLIB/CALCSRV", "OTHER"],
+     "--bnd は大文字化し、修飾しなければそのまま（RUCRTRPG の既定 *LIBL で探す）");
+  const both = { nearest: cfg(`{"rpgunit":{"rucrtrpg":{"bndSrvPgm":["CFGSRV"],"bndDir":["CFGDIR"]}}}`), global: undefined };
+  eq(resolveToolBinding(both, []).binding, { servicePrograms: ["CFGSRV"], bindingDirectories: ["CFGDIR"] },
+     "testing.json のバインド指定を読む");
+  eq(resolveToolBinding(both, ["ARGSRV"]).binding, { servicePrograms: ["ARGSRV"], bindingDirectories: ["CFGDIR"] },
+     "--bnd は bndSrvPgm だけを置き換える（bndDir は残る）");
+  const badArg = resolveToolBinding(none, ["a/b/c"]);
+  eq([badArg.ok, badArg.path, /--bnd/.test(badArg.reason ?? "")], [false, "--bnd", true], "--bnd の不正な形は弾く");
+  const badCfg = resolveToolBinding({ nearest: cfg(`{"rpgunit":{"rucrtrpg":{"bndSrvPgm":"CALCSRV"}}}`), global: undefined }, ["X"]);
+  eq([badCfg.ok, badCfg.path], [false, "t/testing.json"], "誤った testing.json は --bnd があっても弾く");
+
+  console.log("parseJUnitXml（共通部品。実機が出した XML の実物）");
+  const summarize = parseJUnitXml;
   const xml = `<?xml version="1.0" encoding="UTF-8" ?>
 <testsuite errors="0" failures="1" hostname="" id="0" name="ASAOLIB/MSGTST" tests="2" >
     <testcase name="TESTASCII" assertions="0" classname="MSGTST" time="0.001" >
@@ -655,7 +641,7 @@ TESTASCII (MSGTST-&gt;MSGTST:500)
   eq(compareRuns(mk([["A", false]]), mk([["A", false], ["B", false]])),
      [{ name: "B", a: "無し", b: "合格" }], "片方にしか無いテストも食い違い");
 
-  console.log("summarize（v6 形式: CDATA ＋ &apos;）");
+  console.log("parseJUnitXml（v6 形式: CDATA ＋ &apos;）");
   const v6 = `<testsuite errors="0" failures="1" name="ASAOLIB/V2TST" tests="1">
   <testcase name="TESTNG" assertions="1" classname="V2TST" time="1.29" timeUnit="s">
     <failure message="Expected &apos;2&apos;, but was &apos;3&apos;."><![CDATA[
@@ -671,7 +657,22 @@ Expected:
   eq(s6.cases[0].failure.message, "Expected '2', but was '3'.", "message の &apos; を戻す");
   eq(s6.cases[0].failure.detail.startsWith("Callstack:"), true, "本文の CDATA を剥がす");
   eq(failureLocation(s6.cases[0].failure.detail), "TESTNG (V2TST->V2TST:1300)", "本文から失敗位置を拾う");
-  eq(unescapeXml("&amp;apos;"), "&apos;", "&amp; を最後に戻す（&amp;apos; を壊さない）");
+  eq(s6.cases[0].assertions, 1, "assertions を読む（レポートの表）");
+  eq(summarize(`<testsuite name="X" tests="0"><properties><property name="os.version" value="V7R3M0"/></properties></testsuite>`).properties,
+     [{ name: "os.version", value: "V7R3M0" }], "property を読む（レポートの環境欄）");
+
+  console.log("共通部品を使っている（道具自身のソース）");
+  // **2 つ目の実装を作らない。** 道具が独自に解析・組み立て・判定を持つと、VS Code 側と食い違う
+  // （実際、成否の判定・バインドの解釈・ライブラリー・リストが食い違っていた）。
+  const body = readFileSync(fileURLToPath(import.meta.url), "utf8").split("// ---------------------------------------------------------------- self-test")[0];
+  for (const [re, what] of [
+    [/RUCRTRPG\s+TSTPGM|RUCALLTST\s+TSTPGM/, "RPGUnit のコマンドを組み立てている（rpgunitCommands を使う）"],
+    [/<testcase|<testsuite/, "結果 XML を解析している（parseJUnitXml を使う）"],
+    [/OBJECT_STATISTICS/, "オブジェクトの有無でビルドの成否を見ている（compileSuite を使う）"],
+    [/SBMJOB/, "投入ジョブで回している（SuiteConnection の SQL ジョブを使う）"],
+    [/bndSrvPgm"\s*:|MAX\(50\)/, "バインド指定を独自に解釈している（resolveBinding を使う）"],
+    [/["']\.vscode["']|["']testing\.json["']/, "testing.json を独自に探している（findTestingConfigs を使う）"]
+  ]) eq(re.test(body), false, `道具が ${what} ことはない`);
 
   console.log("renderTemplate（mustache の部分集合）");
   eq(renderTemplate("a{{x}}b", { x: 1 }), "a1b", "値を埋める");

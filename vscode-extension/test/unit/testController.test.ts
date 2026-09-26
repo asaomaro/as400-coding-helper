@@ -1,6 +1,7 @@
 import { strict as assert } from "node:assert";
 import * as vscode from "vscode";
-import { registerRpgUnitTesting, testLibraryList } from "../../src/testing/testController";
+import { registerRpgUnitTesting } from "../../src/testing/testController";
+import { testLibraryList } from "../../src/testing/suiteRunner";
 import type { IbmiTestingConnection } from "../../src/testing/codeForIbmi";
 
 const stub = vscode as unknown as any;
