@@ -7,7 +7,9 @@ import {
   mapParsedCommandToValues,
   isContinuedLine
 } from "../../src/prompter/clCommandParser";
-import { buildClCommandText } from "../../src/prompter/applyChanges";
+import { applyChanges, buildClCommandText } from "../../src/prompter/applyChanges";
+import { narrowToEditableColumns } from "../../src/prompter/commandText";
+import * as vscode from "vscode";
 import { buildInitialState } from "../../src/prompter/model";
 import { buildCommandHelpText } from "../../src/prompter/commandHelp";
 import { buildBlocks, toSerializableState } from "../../src/prompter/formModel";
@@ -175,3 +177,53 @@ suite("プロンプターの描画", () => {
     assert.ok(!groups.includes("SNGVAL"), "1 組目には出さない");
   });
 });
+
+// RPG 固定長の 4 行目は 1〜6 桁目を変えない決まり（FR-031）。行全体を組み立て直すプロンプターが、
+// 1 桁でも掛かるとして丸ごと拒まれ、4 行目だけ何も書けなかった（docs/research/20260927-f4-prompter-exploration の P2）。
+suite("4 行目への書き戻し（FR-031）", () => {
+  test("narrowToEditableColumns: 先頭 6 桁が同じなら 7 桁目以降だけを書く／違えば書けない／元が短くても比べる", () => {
+    assert.deepEqual(narrowToEditableColumns("     D", "     DF3                       3      3N", 6),
+      { ok: true, start: 6, text: "F3                       3      3N" });
+    assert.deepEqual(narrowToEditableColumns("     D", "     C                   EVAL", 6), { ok: false });
+    assert.deepEqual(narrowToEditableColumns("     ", "     DX", 6), { ok: false }, "6 桁目が空白から D に変わる");
+    assert.deepEqual(narrowToEditableColumns("", "", 6), { ok: true, start: 0, text: "" });
+  });
+
+  const stub = vscode as unknown as any;
+  const dSpec = JSON.parse(readFileSync(join(__dirname, "..", "..", "..", "resources", "prompter", "rpg", "ile", "ja", "D-SPEC.json"), "utf8"));
+
+  function fakeEditor(lines: string[]): any {
+    return {
+      document: {
+        uri: stub.Uri.file("/ws/X.rpgle"),
+        lineAt: (n: number) => ({ text: lines[n] })
+      }
+    };
+  }
+
+  test("4 行目の D 仕様の値を 7 桁目以降に書き戻し、1〜6 桁目は残す", async () => {
+    stub.workspace.__appliedEdits = [];
+    const editor = fakeEditor(["     H", "     F", "     D", "     D", "     D"]);
+    await applyChanges(editor, dSpec, { language: "rpg", line: 3 } as any, { NAME: "F3", FROM: "3", LEN: "3" } as any);
+    assert.equal(stub.workspace.__appliedEdits.length, 1);
+    const [edit] = stub.workspace.__appliedEdits[0].edits;
+    assert.equal(edit.range.start.character, 6, "7 桁目から置き換える");
+    assert.ok(edit.text.startsWith("F3"), edit.text);
+  });
+
+  test("4 行目で 1〜6 桁目が変わる確定は書かずに知らせる。5 行目はこれまでどおり行全体を置き換える", async () => {
+    stub.workspace.__appliedEdits = [];
+    stub.window.messages = [];
+    const editor = fakeEditor(["     H", "     F", "     D", "     D", "     D"]);
+    // 1〜5 桁目（順序番号の所）に書く欄を持つ定義。同梱の定義には無いが、FR-031 の側の断り方を確かめるために作る
+    const seqDefinition = { keyword: "SEQ", parameters: [{ name: "SEQ", sourceStart: 1, sourceLength: 5 }] };
+    await applyChanges(editor, seqDefinition as any, { language: "rpg", line: 3 } as any, { SEQ: "00400" } as any);
+    assert.equal(stub.workspace.__appliedEdits.length, 0);
+    assert.ok(stub.window.messages.some((m: string) => /4 行目の 1〜6 桁目は変更できない/.test(m)), stub.window.messages.join("\n"));
+
+    await applyChanges(editor, seqDefinition as any, { language: "rpg", line: 4 } as any, { SEQ: "00500" } as any);
+    assert.equal(stub.workspace.__appliedEdits[0].edits[0].range.start.character, 0);
+    assert.ok(stub.workspace.__appliedEdits[0].edits[0].text.startsWith("00500"));
+  });
+});
+

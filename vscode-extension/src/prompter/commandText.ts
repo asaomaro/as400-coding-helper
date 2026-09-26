@@ -437,3 +437,24 @@ export function buildRpgLineText(
 
   return result;
 }
+
+export type NarrowedEdit =
+  | { readonly ok: true; readonly start: number; readonly text: string }
+  | { readonly ok: false };
+
+/**
+ * 先頭 `protectedColumns` 桁を変えずに書けるなら、置き換える範囲を `protectedColumns` 桁目以降に狭める。
+ *
+ * RPG 固定長の 4 行目は 1〜6 桁目を変えない決まりがある（初期の仕様 FR-031。`language/rpgEditGuards.ts`）。
+ * プロンプターは行全体を組み立て直すので、そのままでは 1 桁でも範囲に掛かって丸ごと拒まれ、何も書けなかった。
+ * 組み立てた行の先頭が元の行と同じなら、先頭を残して後ろだけ書けばよい。違うなら書けない（`ok: false`）。
+ * 比べるときは両方を `protectedColumns` 桁まで空白で埋める（元の行が短くても比べられるように）。
+ */
+export function narrowToEditableColumns(original: string, updated: string, protectedColumns: number): NarrowedEdit {
+  const head = (text: string): string => text.slice(0, protectedColumns).padEnd(protectedColumns, " ");
+  if (head(original) !== head(updated)) {
+    return { ok: false };
+  }
+  const start = Math.min(protectedColumns, original.length);
+  return { ok: true, start, text: updated.slice(start) };
+}

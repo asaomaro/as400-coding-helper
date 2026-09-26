@@ -141,7 +141,7 @@ priority: 1           # 既存機能の構造改善。DDS(1) と同格
 
 <!-- 2026-09-27 実操作調査（本物の VS Code で RPG・CL を書き、実機でコンパイルした）。根拠は docs/research/20260927-f4-prompter-exploration/findings.md -->
 
-- [ ] **ソースの 4 行目だけ書き戻さない不具合を直す**（最優先）。`src/language/rpgEditGuards.ts:11` の `if (line === 3)` がデバッグ用の固定値のまま残り、
+- [x] **ソースの 4 行目だけ書き戻さない不具合を直す**（最優先）— 済（`20260926-prompter-line4-guard`）。原因はデバッグの残骸ではなく初期の仕様 FR-031（4 行目の 1〜6 桁目を変えない）で、行全体を置き換えるので丸ごと拒まれていた。先頭 6 桁が同じなら 7 桁目以降だけを書くようにした。`src/language/rpgEditGuards.ts:11` の `if (line === 3)` がデバッグ用の固定値のまま残り、
   `applyChanges`（DDS 以外＝RPG と CL）で 4 行目を必ず拒否する。拒否はログだけで利用者に出ない（docs/research/20260927-f4-prompter-exploration/findings.md の P2）。Tab 移動（`rpgTabNavigation.ts:371,397`）も同じ判定を使う。
 - [ ] **桁幅を超える値を黙って切り捨てない**（データを壊す・最優先）。`buildRpgLineText` の `slice(-sourceLength)` が左から切り、`EVAL` の式や
   `EXTPROC` が化ける（docs/research/20260927-f4-prompter-exploration/findings.md の P3）。定義側も `maxLength` が桁幅より大きい欄がある（C の演算項目 30＞14、D の KEYWORDS 40＞37、FROM 30＞7）。
