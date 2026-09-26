@@ -1,0 +1,13 @@
+             PGM
+             DCL        VAR(&MSG) TYPE(*CHAR) LEN(80)
+             OVRPRTF    FILE(CMPLXP) PAGESIZE(66 132 *ROWCOL) +
+                        OVRFLW(60) OVRSCOPE(*JOB)
+             CALL       PGM(*LIBL/CMPLXPR)
+             MONMSG     MSGID(CPF0000) EXEC(DO)
+             SNDPGMMSG  MSG('CMPLXPR 印刷エラー') MSGTYPE(*DIAG)
+             ENDDO
+             DLTOVR     FILE(CMPLXP) LVL(*JOB)
+             CALL       PGM(*LIBL/CMPLXR)
+             MONMSG     MSGID(CPF0000) +
+                        EXEC(SNDPGMMSG MSG('CMPLXR 異常終了') MSGTYPE(*DIAG))
+             ENDPGM
