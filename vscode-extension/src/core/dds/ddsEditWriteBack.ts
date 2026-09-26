@@ -266,6 +266,22 @@ export function buildItemLine(item: NewDspfItem): string {
 }
 
 /**
+ * 新しい項目の行を組み立てる（**継続行まで含めて**）。
+ *
+ * 定数のリテラルはキーワード欄（45〜80 桁の 36 桁）に置くので、長い定数は 1 行に収まらない。1 行に書くと
+ * 実機は 81 桁目以降を読まずリテラルが閉じないまま後続の行を飲み込み（CPD7508 / CPD7596）、エディタの一覧からも
+ * 後続の様式が消える（`docs/research/20260927-dds-editor-exploration/findings.md` の D16）。
+ * 生テキストの編集と同じ `foldKeywordArea` で折る——折り方（実機の桁・DBCS の SO/SI・`-` 継続）を 2 か所に書かない。
+ */
+export function buildItemLines(item: NewDspfItem): readonly string[] {
+  if (item.kind !== "constant") return [buildItemLine(item)];
+  const chunks = foldKeywordArea(quoteLiteral(item.text ?? ""));
+  if (chunks.length <= 1) return [buildItemLine(item)];
+  const head = writeBackKeywordArea(buildItemLine({ ...item, text: "" }), chunks[0]);
+  return [head, ...chunks.slice(1).map(buildKeywordLine)];
+}
+
+/**
  * 新しい様式（レコード）の宣言行を組み立てる。
  *
  * 原典（`dds/FIELD-DSPF-pos17.html` / `dds/FIELD-DSPF-pos1928.html`）:

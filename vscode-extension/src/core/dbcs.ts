@@ -6,23 +6,38 @@
  * 片方だけ直すと「ルーラーでは合っているのにプレビューがずれる」が起きる。
  */
 
+import { DBCS_RANGES_IBM939 } from "./dbcsTable";
+
 /**
  * その符号位置を DBCS（全角）とみなすか。
  *
- * おおまかに「全角系の文字」を DBCS とする
- * （ひらがな・カタカナ・CJK・全角英数記号など）。
+ * まず **実機の変換表**（CCSID 5035 = IBM-939、`dbcsTable.ts`）で引く。罫線 `─`・
+ * `■`・`※`・`「」`・ギリシャ文字など、見た目からは分かりにくい DBCS もここで拾う。
+ * 変換表に無い文字（CJK 拡張など。実機では置換文字になる）は、全角系の範囲なら DBCS とする。
  */
 export function isDbcsCodePoint(codePoint: number): boolean {
-  if (
+  if (inRanges(DBCS_RANGES_IBM939, codePoint)) return true;
+
+  return (
     (codePoint >= 0x3040 && codePoint <= 0x30ff) || // Hiragana/Katakana
     (codePoint >= 0x3400 && codePoint <= 0x9fff) || // CJK Unified Ideographs + Ext.A
     (codePoint >= 0xf900 && codePoint <= 0xfaff) || // CJK Compatibility Ideographs
     (codePoint >= 0xff01 && codePoint <= 0xff60) || // Fullwidth ASCII variants
-    (codePoint >= 0xffe0 && codePoint <= 0xffe6) // Fullwidth currency etc.
-  ) {
-    return true;
-  }
+    (codePoint >= 0xffe0 && codePoint <= 0xffe6) || // Fullwidth currency etc.
+    codePoint >= 0x20000 // CJK Ext.B 以降
+  );
+}
 
+/** [開始, 終了] を平たく並べた昇順の配列を二分探索する。 */
+function inRanges(ranges: readonly number[], codePoint: number): boolean {
+  let low = 0;
+  let high = ranges.length / 2 - 1;
+  while (low <= high) {
+    const middle = (low + high) >> 1;
+    if (codePoint < ranges[middle * 2]) high = middle - 1;
+    else if (codePoint > ranges[middle * 2 + 1]) low = middle + 1;
+    else return true;
+  }
   return false;
 }
 

@@ -7,7 +7,7 @@ import {
 } from "../ddsLayout";
 import {
   buildAlternatePositionLine,
-  buildItemLine,
+  buildItemLines,
   buildRecordLine,
   writeBackAttributes,
   buildKeywordLine,
@@ -666,7 +666,7 @@ export function applyDdsEdits(
       case "add": {
         const at = insertionPoint(units, edit.recordName);
         if (at === undefined) break;
-        results.push({ replaceFrom: at, replaceTo: at, lines: [buildItemLine(edit.item)] });
+        results.push({ replaceFrom: at, replaceTo: at, lines: [...buildItemLines(edit.item)] });
         break;
       }
       case "addRecord": {
