@@ -39,7 +39,7 @@
   実機 E2E シナリオ 6（未設定で Errored と「デプロイ先が設定されていません」）。道具の送信失敗は D12 のとおり review でコードを読む。
 - AC11: pass — 実機 E2E シナリオ 9（`test/testing.json` の `bndSrvPgm` で `TESTADD` Passed）。道具も `testing.json` を同じ部品で読む（既存シナリオ 4〜6）。
 - AC12: pass — `tools/README.md`（IFS 方式の節）・skill `rpgunit-test`・新規 `docs/workflow/rpgunit-test-explorer.md`。
-- AC13: 未確定 — PR の CI で確かめる（deliver で記す。T11）。
+- AC13: pass — PR #182 の CI（test・self-test・verify・integration・gui-e2e）がすべて成功（run 36233787763・36233787770・36233787771）。
 - AC14: pass — `discovery.test.ts`（`src/L/F/x.test.rpgle` は IFS 方式だけ、`src/L/F/X.rpgle` はメンバー方式だけ、`calc-add.test.rpgle` も IFS 方式。D14）。
 
 ## 失敗の証跡

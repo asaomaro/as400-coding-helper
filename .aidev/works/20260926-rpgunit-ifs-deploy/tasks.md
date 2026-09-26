@@ -84,7 +84,7 @@ Test Explorer）、道具の順に載せる。実機 E2E は VS Code・道具と
       対象: `tools/README.md` / `.claude/skills/rpgunit-test/SKILL.md` / 新規 `docs/workflow/rpgunit-test-explorer.md`
       依存: T6, T7, T8
       AC: AC7, AC12
-- [ ] T11: 回帰と CI。`npm test` 全件、`dev/rpgunit-e2e.mjs`（既存 12 項目＋追加）、道具の self-test、`tools/run-rpgunit-e2e.mjs`（既存 23 項目＋追加）、PR の CI。
+- [x] T11: 回帰と CI。`npm test` 全件、`dev/rpgunit-e2e.mjs`（既存 12 項目＋追加）、道具の self-test、`tools/run-rpgunit-e2e.mjs`（既存 23 項目＋追加）、PR の CI。
       消化は test 工程と deliver（CI）（decisions D13）。
       対象: 未特定（各テスト・E2E・CI の実行結果）
       依存: T8, T9, T10
