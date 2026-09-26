@@ -15,7 +15,13 @@ export interface CreateTestCommandOptions {
    */
   readonly program: string;
   readonly sourceFile: string;
+  /**
+   * `BNDSRVPGM`。修飾の無い名前はそのまま渡し、`RUCRTRPG` の既定（`*LIBL`）で解決させる
+   * （IBM i Testing の `testing.json` と同じ解釈。`.aidev/works/20260926-rpgunit-bind-srvpgm/decisions.md` D4）。
+   */
   readonly bindServicePrograms?: readonly string[];
+  /** `BNDDIR`。扱いは `bindServicePrograms` と同じ。 */
+  readonly bindingDirectories?: readonly string[];
   /** v4.0.3.r 以前（`TGTCCSID` パラメータ自体が無い版）でのみ true にする。 */
   readonly noTgtCcsid?: boolean;
 }
@@ -30,13 +36,12 @@ export interface RunTestCommandOptions {
 
 /** `RUCRTRPG` の1行を組み立てる。`SRCMBR` は常に `program` と同じ値にする。 */
 export function buildCreateTestCommand(opts: CreateTestCommandOptions): string {
-  const { library, program, sourceFile, bindServicePrograms = [], noTgtCcsid = false } = opts;
-  const bnd = bindServicePrograms.length
-    ? ` BNDSRVPGM(${bindServicePrograms.map(b => (b.includes("/") ? b : `${library}/${b}`)).join(" ")})`
-    : "";
+  const { library, program, sourceFile, bindServicePrograms = [], bindingDirectories = [], noTgtCcsid = false } = opts;
+  const bnd = bindServicePrograms.length ? ` BNDSRVPGM(${bindServicePrograms.join(" ")})` : "";
+  const bndDir = bindingDirectories.length ? ` BNDDIR(${bindingDirectories.join(" ")})` : "";
   const tgt = noTgtCcsid ? "" : " TGTCCSID(0)";
   return `RPGUNIT/RUCRTRPG TSTPGM(${library}/${program}) SRCFILE(${library}/${sourceFile}) ` +
-    `SRCMBR(${program})${bnd}${tgt}`;
+    `SRCMBR(${program})${bnd}${bndDir}${tgt}`;
 }
 
 /** `RUCALLTST` の1行を組み立てる。 */

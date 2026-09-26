@@ -4,6 +4,7 @@ import { connectViaCodeForIbmi, type ConnectResult, type IbmiTestingConnection, 
 import { buildCreateTestCommand, buildRunTestCommand } from "./rpgunitCommands";
 import { parseJUnitXml } from "./resultParser";
 import { deriveSourceType } from "../sync/memberTarget";
+import { readTestingConfigs, resolveBinding } from "./testingConfig";
 
 const CONTROLLER_ID = "rpgClSupport.rpgunit";
 const CONTROLLER_LABEL = "RPGUnit";
@@ -90,6 +91,14 @@ async function runFile(
     run.started(child);
   }
 
+  // バインド指定（testing.json）はアップロードより前に確かめる。誤っていればコンパイルしない。
+  const configs = await readTestingConfigs(fileItem.uri!);
+  const binding = resolveBinding(configs.nearest, configs.global);
+  if (!binding.ok) {
+    erroredAll(run, children, `testing.json の設定が正しくありません: ${binding.path}\n${binding.reason}`);
+    return;
+  }
+
   const source = await readSourceText(fileItem.uri!);
   await connection.uploadMemberContent(discovered.target, source);
   // アップロード（CPYFRMSTMF相当）だけではSRCTYPE属性が付かない。RUCRTRPGは
@@ -104,12 +113,14 @@ async function runFile(
   const createCommand = buildCreateTestCommand({
     library: discovered.target.library,
     program: discovered.target.member,
-    sourceFile: discovered.target.sourceFile
+    sourceFile: discovered.target.sourceFile,
+    bindServicePrograms: binding.binding.servicePrograms,
+    bindingDirectories: binding.binding.bindingDirectories
   });
   // 実機確認（T1）でRUCRTRPGは約1.4秒と判明し、同期runCommandをデフォルトにしている
-  // （decisions.md D4）。大規模テストで同期実行がタイムアウトする場合は、ここを
+  // （`.aidev/works/20260922-rpgunit-vscode-testing/decisions.md` D4）。大規模テストで同期実行がタイムアウトする場合は、ここを
   // `connection.runCommandSubmitted(createCommand, {...})`（SBMJOB＋ポーリング）に
-  // 差し替える（decisions.md D2）。
+  // 差し替える（`.aidev/works/20260922-rpgunit-vscode-testing/decisions.md` D2）。
   const createResult = await connection.runCommand(createCommand, { libraryList });
   // 成否はコマンドの結果で決める。オブジェクトの有無で見ると、前回の *SRVPGM が残っているとき
   // コンパイル失敗を成功と取り違える。

@@ -16,7 +16,7 @@ suite("RPGUnit command builder", () => {
     );
   });
 
-  test("BNDSRVPGM はライブラリー修飾の無い名前に library を補う", () => {
+  test("BNDSRVPGM は修飾の無い名前を補わずに渡す（*LIBL で解決させる。D4）", () => {
     const cmd = buildCreateTestCommand({
       library: "ASAOLIB", program: "CALCTST", sourceFile: "QUNITSRC",
       bindServicePrograms: ["CALCSRV", "OTHERLIB/OTHERSRV"]
@@ -24,7 +24,28 @@ suite("RPGUnit command builder", () => {
     assert.equal(
       cmd,
       "RPGUNIT/RUCRTRPG TSTPGM(ASAOLIB/CALCTST) SRCFILE(ASAOLIB/QUNITSRC) SRCMBR(CALCTST) " +
-      "BNDSRVPGM(ASAOLIB/CALCSRV OTHERLIB/OTHERSRV) TGTCCSID(0)"
+      "BNDSRVPGM(CALCSRV OTHERLIB/OTHERSRV) TGTCCSID(0)"
+    );
+  });
+
+  test("BNDDIR を BNDSRVPGM の後ろに付ける", () => {
+    const cmd = buildCreateTestCommand({
+      library: "ASAOLIB", program: "CALCTST", sourceFile: "QUNITSRC",
+      bindServicePrograms: ["CALCSRV"], bindingDirectories: ["MYBND", "*LIBL/OTHERBND"]
+    });
+    assert.equal(
+      cmd,
+      "RPGUNIT/RUCRTRPG TSTPGM(ASAOLIB/CALCTST) SRCFILE(ASAOLIB/QUNITSRC) SRCMBR(CALCTST) " +
+      "BNDSRVPGM(CALCSRV) BNDDIR(MYBND *LIBL/OTHERBND) TGTCCSID(0)"
+    );
+  });
+
+  test("空配列なら BNDSRVPGM も BNDDIR も付けない", () => {
+    assert.equal(
+      buildCreateTestCommand({
+        library: "ASAOLIB", program: "CALCTST", sourceFile: "QUNITSRC", bindServicePrograms: [], bindingDirectories: []
+      }),
+      "RPGUNIT/RUCRTRPG TSTPGM(ASAOLIB/CALCTST) SRCFILE(ASAOLIB/QUNITSRC) SRCMBR(CALCTST) TGTCCSID(0)"
     );
   });
 
