@@ -516,3 +516,13 @@ priority: 2           # cl(1) の次。設計書: docs/workflow/ibmi-dev-workflo
     既に書いているが、**統合テストはその `compile` だけを踏んでいる**。
   - 案: `test:integration` を `compile:all` にする／資産の存在を起動時に検査する／
     テスト側で「描けたか」を 1 つ見る。**どれも「緑の意味」を変えるので、選択は要検討**。
+
+- [ ] **RPGUnit の Test Explorer 統合で、テストソースを IFS に展開してコンパイルする方式にも対応する**
+  （2026-09-26 ユーザー要望。`20260926-rpgunit-bind-srvpgm` の検討中に起票）。
+  いまは `src/<LIB>/<SRCFILE>/<MEMBER>.rpgle` をソースメンバーへ送り `RUCRTRPG SRCFILE/SRCMBR` で
+  コンパイルする（ソースメンバー同期と同じ対応づけ）。IBM i Testing 拡張はローカルの `*.test.rpgle` を
+  Code for IBM i のデプロイで IFS へ送り、`RUCRTRPG SRCSTMF(<デプロイ先>/<相対パス>)`・
+  `TSTPGM(&CURLIB/…)`・`INCDIR(<デプロイ先>)` でコンパイルする
+  （`IBM/vscode-ibmi-testing` の `api/runner.ts`。2026-09-26 に直読）。
+  設計で決めること: 2 方式の切り替え条件（ファイル名／設定）、`/COPY` の解決（メンバーか IFS パスか）、
+  テストプログラムの置き場、IBM i 7.3 の `RUCRTRPG` で `SRCSTMF` が使えるかの実機確認。

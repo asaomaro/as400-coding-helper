@@ -122,7 +122,11 @@ const vscode = {
     __textDocumentChangeListeners: [],
     __configurationChangeListeners: [],
     getWorkspaceFolder: () => vscode.workspace.__workspaceFolder,
-    asRelativePath: uri => vscode.workspace.__relativePath ?? uri.fsPath,
+    // `__relativePath` は値か関数。関数なら URI ごとに相対パスを返せる（複数ファイルのテスト用）。
+    asRelativePath: uri => {
+      const relative = vscode.workspace.__relativePath;
+      return typeof relative === "function" ? relative(uri) : relative ?? uri.fsPath;
+    },
     onDidChangeTextDocument(listener) {
       vscode.workspace.__textDocumentChangeListeners.push(listener);
       return { dispose() {} };
@@ -163,7 +167,12 @@ const vscode = {
         return Promise.resolve();
       },
       /** **本物と同じく、無ければ reject する。** 「在るか」はこれでしか分からない。 */
+      /** ディレクトリとして在ることにするパス（`stat` が `type: 2` を返す）。 */
+      __directories: [],
       stat(uri) {
+        if (vscode.workspace.fs.__directories.includes(uri.fsPath)) {
+          return Promise.resolve({ type: 2, size: 0 });
+        }
         return vscode.workspace.fs.__existing.includes(uri.fsPath)
           ? Promise.resolve({ type: 1, size: 0 })
           : Promise.reject(new Error("ENOENT"));

@@ -87,12 +87,56 @@ writeFileSync(join(userDir, "User", "settings.json"), JSON.stringify({
   "extensions.autoUpdate": false
 }, null, 2));
 
-function writeSource(broken) {
-  const dir = join(WS, "src", LIB, "QUNITSRC");
-  mkdirSync(dir, { recursive: true });
-  writeFileSync(join(dir, `${MEMBER}.rpgle`), [
+// --- 固定長の行を桁で組み立てる（手で空白を数えない） ---
+const H = keywords => `     H${keywords}`;
+const P = (name, beginEnd, keywords = "") => `     P${name.padEnd(15)}  ${beginEnd}${" ".repeat(19)}${keywords}`.trimEnd();
+const D = (name, type, length = "", dataType = "", decimals = "", keywords = "") =>
+  `     D${name.padEnd(15)}  ${type.padEnd(2)}${" ".repeat(7)}${length.padStart(7)}${dataType.padEnd(1)}` +
+  `${decimals.padStart(2)} ${keywords}`.trimEnd();
+const C = (opcode, extended) => `     C${" ".repeat(19)}${opcode.padEnd(10)}${extended}`;
+const COPY_TESTCASE = "      /COPY RPGUNIT/QINCLUDE,TESTCASE";
+
+/** テスト対象のサービスプログラム（`e2eAdd(a:b)` = a + b を公開）。 */
+const CALC_SOURCE = [
+  H("NOMAIN"),
+  D("e2eAdd", "PR", "10", "I", "0"), D("a", "", "10", "I", "0", "CONST"), D("b", "", "10", "I", "0", "CONST"),
+  P("e2eAdd", "B", "EXPORT"),
+  D("e2eAdd", "PI", "10", "I", "0"), D("a", "", "10", "I", "0", "CONST"), D("b", "", "10", "I", "0", "CONST"),
+  C("RETURN", "a + b"),
+  P("e2eAdd", "E"),
+  ""
+].join("\n");
+
+/** サービスプログラムの手続きを呼ぶテスト。バインドが無いと未解決の参照でテストを作れない。 */
+const BIND_TEST_SOURCE = [
+  H("NOMAIN OPTION(*SRCSTMT:*NODEBUGIO)"),
+  COPY_TESTCASE,
+  D("e2eAdd", "PR", "10", "I", "0"), D("a", "", "10", "I", "0", "CONST"), D("b", "", "10", "I", "0", "CONST"),
+  P("TESTADD", "B", "EXPORT"),
+  D("TESTADD", "PI"),
+  C("CALLP", "assertEqual(5:e2eAdd(2:3))"),
+  P("TESTADD", "E"),
+  ""
+].join("\n");
+
+const BIND_MEMBER = "RUE2EBND";
+const CALC = "E2ECALC";
+const BNDDIR = "E2EBND";
+
+/** ワークスペースを空にして、`files`（相対パス → 中身）だけを置く。 */
+function writeWorkspace(files) {
+  rmSync(WS, { recursive: true, force: true });
+  for (const [relative, text] of Object.entries(files)) {
+    const full = join(WS, relative);
+    mkdirSync(join(full, ".."), { recursive: true });
+    writeFileSync(full, text);
+  }
+}
+
+function basicSource(broken) {
+  return [
     "     H NOMAIN OPTION(*SRCSTMT:*NODEBUGIO)",
-    "      /COPY RPGUNIT/QINCLUDE,TESTCASE",
+    COPY_TESTCASE,
     "     PTESTPASS         B                   EXPORT",
     "     DTESTPASS         PI",
     "     C                   CALLP     assertEqual(2:2)",
@@ -104,13 +148,40 @@ function writeSource(broken) {
       : "     C                   CALLP     assertEqual(2:3)",
     "     PTESTFAIL         E",
     ""
-  ].join("\n"));
+  ].join("\n");
+}
+
+/** テスト対象のサービスプログラムとバインディング・ディレクトリを実機に作る（hostserver 経由）。 */
+async function createBindTargets() {
+  const IFS = process.env.AS400_IFS_DIR;
+  const ifsPath = `${IFS}/${CALC}.rpgle`;
+  const ifs = await hs.IfsConnection.connect({ ...creds, resolvePort: true });
+  try { await ifs.writeFile(ifsPath, new TextEncoder().encode(CALC_SOURCE), { create: true, truncate: true }); }
+  finally { ifs.close(); }
+  const cmd = await hs.CommandConnection.connect({ ...creds, resolvePort: true, timeoutMs: 60000 });
+  try {
+    const steps = [
+      `CPYFRMSTMF FROMSTMF('${ifsPath}') TOMBR('/QSYS.LIB/${LIB}.LIB/QUNITSRC.FILE/${CALC}.MBR') MBROPT(*REPLACE) STMFCCSID(1208)`,
+      `CHGPFM FILE(${LIB}/QUNITSRC) MBR(${CALC}) SRCTYPE(RPGLE)`,
+      `CRTRPGMOD MODULE(${LIB}/${CALC}) SRCFILE(${LIB}/QUNITSRC) SRCMBR(${CALC}) REPLACE(*YES)`,
+      `CRTSRVPGM SRVPGM(${LIB}/${CALC}) MODULE(${LIB}/${CALC}) EXPORT(*ALL) REPLACE(*YES)`,
+      `CRTBNDDIR BNDDIR(${LIB}/${BNDDIR})`,
+      `ADDBNDDIRE BNDDIR(${LIB}/${BNDDIR}) OBJ((${LIB}/${CALC} *SRVPGM))`
+    ];
+    for (const step of steps) {
+      const r = await cmd.run(step);
+      if (!r.success) {
+        throw new Error(`テスト対象を作れません: ${step}\n${(r.messages ?? []).map(m => `${m.id} ${m.text}`).join("\n")}`);
+      }
+    }
+    await cmd.run(`RMVLNK OBJLNK('${ifsPath}')`).catch(() => undefined);
+  } finally { cmd.close(); }
 }
 
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
 
 /** VS Code を起動し、全テストを走らせ、行ごとの結果とメッセージを返す。 */
-async function runScenario(name) {
+async function runScenario(name, { member, tests, checkLanguage = false }) {
   writeFileSync(STATUS, "");
   const app = await _electron.launch({
     executablePath: join(VSC, "code"),
@@ -158,7 +229,7 @@ async function runScenario(name) {
       const labels = await win.$$eval(".test-explorer .monaco-list-row", rows => rows.map(r => r.getAttribute("aria-label") ?? ""));
       if (labels.some(label => /\((Passed|Failed|Errored)\)/.test(label))) break;
     }
-    const fileRow = win.locator(".test-explorer .monaco-list-row", { hasText: MEMBER }).first();
+    const fileRow = win.locator(".test-explorer .monaco-list-row", { hasText: member }).first();
     await fileRow.click();
     await win.keyboard.press("ArrowRight");
     await sleep(1500);
@@ -168,22 +239,35 @@ async function runScenario(name) {
     await command("Test: Show Output");
     await sleep(2500);
     const messages = {};
-    for (const test of ["TESTPASS", "TESTFAIL"]) {
+    for (const test of tests) {
       const row = win.locator(".monaco-list-row", { hasText: test }).last();
       await row.click();
       await sleep(2000);
-      messages[test] = await win.evaluate(() => document.querySelector(".part.panel")?.innerText ?? "");
+      // 本文のエディターは表示中の行しか DOM に出ない。先頭を読んだあと、末尾へ移ってもう一度読む
+      const top = await win.evaluate(() => document.querySelector(".part.panel")?.innerText ?? "");
+      const body = win.locator(".part.panel .monaco-editor").first();
+      let bottom = "";
+      if (await body.count()) {
+        await body.click();
+        await win.keyboard.press("Control+End");
+        await sleep(800);
+        bottom = await win.evaluate(() => document.querySelector(".part.panel")?.innerText ?? "");
+      }
+      messages[test] = `${top}\n${bottom}`;
     }
     await shot("message");
 
-    await win.keyboard.press("Control+P");
-    await sleep(600);
-    await win.keyboard.type(`${MEMBER}.rpgle`);
-    await sleep(1200);
-    await win.keyboard.press("Enter");
-    await sleep(3000);
-    const languageMode = await win.evaluate(() => document.getElementById("status.editor.mode")?.innerText ?? "");
-    await shot("editor");
+    let languageMode = "";
+    if (checkLanguage) {
+      await win.keyboard.press("Control+P");
+      await sleep(600);
+      await win.keyboard.type(`${member}.rpgle`);
+      await sleep(1200);
+      await win.keyboard.press("Enter");
+      await sleep(3000);
+      languageMode = await win.evaluate(() => document.getElementById("status.editor.mode")?.innerText ?? "");
+      await shot("editor");
+    }
     return { rows, messages, languageMode };
   } finally {
     await Promise.race([app.close(), sleep(8000)]);
@@ -196,10 +280,14 @@ const expect = (ok, label) => {
   if (!ok) failures.push(label);
 };
 
+const basicPath = `src/${LIB}/QUNITSRC/${MEMBER}.rpgle`;
+const bindPath = `src/${LIB}/QUNITSRC/${BIND_MEMBER}.rpgle`;
+const bindConfig = key => JSON.stringify({ rpgunit: { rucrtrpg: { [key]: [key === "bndSrvPgm" ? CALC : BNDDIR] } } }, null, 2);
+
 try {
   console.log("シナリオ 1: 正常");
-  writeSource(false);
-  const a = await runScenario("1-normal");
+  writeWorkspace({ [basicPath]: basicSource(false) });
+  const a = await runScenario("1-normal", { member: MEMBER, tests: ["TESTPASS", "TESTFAIL"], checkLanguage: true });
   expect(a.rows.includes("TESTPASS (Passed)"), "TESTPASS が Passed");
   expect(a.rows.includes("TESTFAIL (Failed)"), "TESTFAIL が Failed");
   expect(a.messages.TESTFAIL.includes("Expected '2', but was '3'."), "TESTFAIL の失敗メッセージが出る");
@@ -208,22 +296,49 @@ try {
   console.log("シナリオ 2: 古い *SRVPGM が残ったままコンパイル失敗");
   const stale = await srvpgmExists();
   expect(stale, "前提: シナリオ 1 の *SRVPGM が残っている");
-  writeSource(true);
-  const b = await runScenario("2-stale");
+  writeWorkspace({ [basicPath]: basicSource(true) });
+  const b = await runScenario("2-stale", { member: MEMBER, tests: ["TESTPASS", "TESTFAIL"] });
   expect(b.rows.includes("TESTPASS (Errored)") && b.rows.includes("TESTFAIL (Errored)"),
     "両方 Errored（古いテストを成功と報告しない）");
   expect(b.messages.TESTPASS.includes("コンパイルに失敗しました"), "コンパイル失敗のメッセージが出る");
+
+  console.log("シナリオ 3〜5: テスト対象のサービスプログラムをバインドする（testing.json）");
+  await createBindTargets();
+  writeWorkspace({ [bindPath]: BIND_TEST_SOURCE });
+  const c = await runScenario("3-no-binding", { member: BIND_MEMBER, tests: ["TESTADD"] });
+  expect(c.rows.includes("TESTADD (Errored)"), "対照: testing.json 無しでは Errored");
+  // 対照は「正しい理由で」落ちていなければ意味が無い（バインドが無く E2EADD が解決できない）
+  const reason = c.messages.TESTADD.split("\n").filter(line => /E2EADD/i.test(line));
+  expect(reason.length > 0, `対照の理由がバインドの欠落（E2EADD が解決できない）: ${reason.join(" / ") || "(見つからない)"}`);
+
+  writeWorkspace({ [bindPath]: BIND_TEST_SOURCE, [`src/${LIB}/QUNITSRC/testing.json`]: bindConfig("bndSrvPgm") });
+  const d = await runScenario("4-bndsrvpgm", { member: BIND_MEMBER, tests: ["TESTADD"] });
+  expect(d.rows.includes("TESTADD (Passed)"), `bndSrvPgm: ["${CALC}"] で Passed`);
+
+  writeWorkspace({ [bindPath]: BIND_TEST_SOURCE, [".vscode/testing.json"]: bindConfig("bndDir") });
+  const e = await runScenario("5-bnddir", { member: BIND_MEMBER, tests: ["TESTADD"] });
+  expect(e.rows.includes("TESTADD (Passed)"), `bndDir: ["${BNDDIR}"]（.vscode/testing.json）で Passed`);
+  if (!e.rows.includes("TESTADD (Passed)")) {
+    console.log(e.messages.TESTADD);
+  }
+  if (!c.rows.includes("TESTADD (Errored)") || !d.rows.includes("TESTADD (Passed)")) {
+    console.log(c.messages.TESTADD, "\n---\n", d.messages.TESTADD);
+  }
 } finally {
   const cmd = await hs.CommandConnection.connect({ ...creds, resolvePort: true, timeoutMs: 20000 });
   try {
-    for (const type of ["*SRVPGM", "*MODULE", "*PGM"]) {
-      await cmd.run(`DLTOBJ OBJ(${LIB}/${MEMBER}) OBJTYPE(${type})`).catch(() => undefined);
+    for (const name of [MEMBER, BIND_MEMBER, CALC]) {
+      for (const type of ["*SRVPGM", "*MODULE", "*PGM"]) {
+        await cmd.run(`DLTOBJ OBJ(${LIB}/${name}) OBJTYPE(${type})`).catch(() => undefined);
+      }
+      await cmd.run(`RMVM FILE(${LIB}/QUNITSRC) MBR(${name})`).catch(() => undefined);
     }
-    await cmd.run(`RMVM FILE(${LIB}/QUNITSRC) MBR(${MEMBER})`).catch(() => undefined);
+    await cmd.run(`DLTOBJ OBJ(${LIB}/${BNDDIR}) OBJTYPE(*BNDDIR)`).catch(() => undefined);
   } finally { cmd.close(); }
-  const leftObjects = await sql(`SELECT OBJNAME FROM TABLE(QSYS2.OBJECT_STATISTICS('${LIB}','*ALL')) WHERE OBJNAME='${MEMBER}'`);
+  const names = [MEMBER, BIND_MEMBER, CALC, BNDDIR].map(n => `'${n}'`).join(",");
+  const leftObjects = await sql(`SELECT OBJNAME FROM TABLE(QSYS2.OBJECT_STATISTICS('${LIB}','*ALL')) WHERE OBJNAME IN (${names})`);
   const leftMembers = await sql(`SELECT SYSTEM_TABLE_MEMBER FROM QSYS2.SYSPARTITIONSTAT
-    WHERE SYSTEM_TABLE_SCHEMA='${LIB}' AND SYSTEM_TABLE_NAME='QUNITSRC' AND SYSTEM_TABLE_MEMBER='${MEMBER}'`);
+    WHERE SYSTEM_TABLE_SCHEMA='${LIB}' AND SYSTEM_TABLE_NAME='QUNITSRC' AND SYSTEM_TABLE_MEMBER IN (${names})`);
   expect(leftObjects.length === 0 && leftMembers.length === 0, "片付け後に実機へ何も残っていない");
   rmSync(STATUS, { force: true });
 }

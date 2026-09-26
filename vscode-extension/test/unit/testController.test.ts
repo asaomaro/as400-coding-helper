@@ -62,6 +62,8 @@ suite("RPGUnit TestController配線", () => {
     stub.workspace.workspaceFolders = undefined;
     stub.workspace.__relativePath = undefined;
     stub.workspace.textDocuments = [];
+    stub.workspace.__workspaceFolder = undefined;
+    stub.workspace.fs.__existing = [];
   });
 
   test("resolveHandler がテストソースを検出しTestItemツリーを作る", async () => {
@@ -280,5 +282,69 @@ suite("RPGUnit TestController配線", () => {
     const removeBefore = commands.findIndex(c => c.startsWith("QSYS/RMVLNK") && c.includes("CALCTST.xml"));
     const runTest = commands.findIndex(c => c.includes("RUCALLTST"));
     assert.ok(removeBefore >= 0 && removeBefore < runTest, commands.join("\n"));
+  });
+  /** 2 本のテストファイル（別ディレクトリ）と、それぞれの testing.json を置く。 */
+  function setupTwoFilesWithConfigs(configs: Record<string, string>): void {
+    const a = stub.Uri.file("/ws/src/ASAOLIB/QUNITSRC/CALCTST.rpgle");
+    const b = stub.Uri.file("/ws/src/OTHERLIB/QUNITSRC/OTHTST.rpgle");
+    stub.workspace.workspaceFolders = [{ uri: stub.Uri.file("/ws") }];
+    stub.workspace.__workspaceFolder = { uri: stub.Uri.file("/ws") };
+    stub.workspace.__findFilesResult = [a, b];
+    stub.workspace.__relativePath = (uri: any) => uri.fsPath.replace(/^\/ws\//, "");
+    stub.workspace.fs.__contents.set(a.fsPath, "     PTESTADD          B                   EXPORT\n");
+    stub.workspace.fs.__contents.set(b.fsPath, "     PTESTOTH          B                   EXPORT\n");
+    stub.workspace.fs.__existing = Object.keys(configs);
+    for (const [path, text] of Object.entries(configs)) {
+      stub.workspace.fs.__contents.set(path, text);
+    }
+  }
+
+  test("testing.json の bndSrvPgm/bndDir をファイルごとに RUCRTRPG へ渡す（別ファイルの値は混ざらない）", async () => {
+    const holder = captureController();
+    const commands: string[] = [];
+    const connection = fakeConnection({
+      runCommand: async (command: string) => { commands.push(command); return { code: 0, stdout: "", stderr: "" }; },
+      downloadStreamfile: async () => "<testsuite tests=\"0\"></testsuite>"
+    });
+    registerRpgUnitTesting(fakeContext(), async () => ({ ok: true, connection }));
+    const controller = holder.get();
+    setupTwoFilesWithConfigs({
+      "/ws/src/ASAOLIB/QUNITSRC/testing.json": JSON.stringify({ rpgunit: { rucrtrpg: { bndSrvPgm: ["calcsrv"] } } }),
+      "/ws/.vscode/testing.json": JSON.stringify({ rpgunit: { rucrtrpg: { bndDir: ["GLOBALBND"] } } })
+    });
+    await controller.resolveHandler();
+    await runAll(controller);
+
+    const creates = commands.filter(c => c.includes("RUCRTRPG"));
+    assert.equal(creates.length, 2);
+    const calc = creates.find(c => c.includes("TSTPGM(ASAOLIB/CALCTST)"));
+    const other = creates.find(c => c.includes("TSTPGM(OTHERLIB/OTHTST)"));
+    assert.match(calc ?? "", /BNDSRVPGM\(CALCSRV\) BNDDIR\(GLOBALBND\)/);
+    assert.ok(other && !other.includes("BNDSRVPGM") && other.includes("BNDDIR(GLOBALBND)"), other);
+  });
+
+  test("testing.json が誤っていれば、そのファイルだけ errored（パスと理由）にしてアップロードもしない", async () => {
+    const holder = captureController();
+    const uploaded: string[] = [];
+    const connection = fakeConnection({
+      uploadMemberContent: async target => { uploaded.push(target.member); return true; },
+      downloadStreamfile: async () => `<testsuite errors="0" failures="0" name="X" tests="1">
+        <testcase name="TESTOTH" classname="OTHTST"/></testsuite>`
+    });
+    registerRpgUnitTesting(fakeContext(), async () => ({ ok: true, connection }));
+    const controller = holder.get();
+    setupTwoFilesWithConfigs({
+      "/ws/src/ASAOLIB/QUNITSRC/testing.json": JSON.stringify({ rpgunit: { rucrtrpg: { bndSrvPgm: "CALCSRV" } } })
+    });
+    await controller.resolveHandler();
+
+    const run = await runAll(controller);
+    const errored = run.__calls.filter((c: any) => c.event === "errored");
+    assert.equal(errored.length, 1);
+    assert.equal(errored[0].item.label, "TESTADD");
+    assert.match(errored[0].message.message, /src\/ASAOLIB\/QUNITSRC\/testing\.json/);
+    assert.match(errored[0].message.message, /bndSrvPgm は文字列の配列/);
+    assert.deepEqual(uploaded, ["OTHTST"]);
+    assert.ok(run.__calls.some((c: any) => c.event === "passed" && c.item.label === "TESTOTH"));
   });
 });

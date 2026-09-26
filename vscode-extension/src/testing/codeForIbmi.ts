@@ -3,7 +3,7 @@ import type { MemberTarget } from "../sync/memberTarget";
 
 /**
  * Code for IBM i 拡張機能（`halcyontechltd.code-for-ibmi`）へのソフト検出adapter。
- * `package.json` の `extensionDependencies` には追加しない（decisions.md D1）。
+ * `package.json` の `extensionDependencies` には追加しない（`.aidev/works/20260922-rpgunit-vscode-testing/decisions.md` D1）。
  * `20260910-ibmi-source-member-sync` の decisions.md D1（後に撤回）と同じ検出パターン
  * （未導入・未接続・API不一致をそれぞれ別の理由として明示する）。
  */
@@ -16,7 +16,7 @@ export interface CommandResultLike {
   readonly stderr: string;
 }
 
-/** SBMJOB＋ポーリング方式の結果（decisions.md D2のフォールバック）。 */
+/** SBMJOB＋ポーリング方式の結果（`.aidev/works/20260922-rpgunit-vscode-testing/decisions.md` D2のフォールバック）。 */
 export interface SubmittedCommandResult {
   /** ジョブが timeoutSeconds 以内に消滅したか。 */
   readonly completed: boolean;
@@ -51,7 +51,7 @@ export interface IbmiTestingConnection {
   uploadMemberContent(target: MemberTarget, content: string): Promise<boolean>;
   /** `libraryList` を渡すと、そのコマンドの間だけライブラリー・リストを差し替える。 */
   runCommand(command: string, opts?: { libraryList?: readonly string[] }): Promise<CommandResultLike>;
-  /** `RUCRTRPG` が同期実行のタイムアウトに収まらない場合のフォールバック（decisions.md D2, D4）。 */
+  /** `RUCRTRPG` が同期実行のタイムアウトに収まらない場合のフォールバック（`.aidev/works/20260922-rpgunit-vscode-testing/decisions.md` D2, D4）。 */
   runCommandSubmitted(
     command: string,
     opts: { jobNamePrefix: string; timeoutSeconds?: number }
