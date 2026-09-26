@@ -56,7 +56,7 @@ exit 1
   `--keep`（IFS に XML とソースが残る）・`--check-independence`（一致）・`--rclrsc always`、終了コード 1。
 - AC9: pass — `npm test` 全件（既存テストの期待値は不変）。`dev/rpgunit-e2e.mjs` 12 項目（共有部品へ移した後の版で）。
 - AC10: pass — 道具の実機 E2E（正常・古い `*SRVPGM`・`testing.json`・`--bnd`）。
-- AC11: 未確定 — `tools-tests.yml` にビルドを足した。PR の CI で確かめる（deliver で結果を記す）。
+- AC11: pass — `tools-tests.yml` にビルドを足した。PR #181 の CI（run 36220086950）でビルド→`self-test OK`。
 - AC12: pass — `tools/README.md`（共通部品・前提・ビルド失敗の表示・`testing.json`・`--bnd`・罠の表・`--keep` と実行前の削除・E2E）、
   skill `rpgunit-test`（バインドの節・道具の節）。
 - AC13: pass — `suiteRunner.test.ts`（2 つの既定リスト）。実機: バインドの無いテスト（シナリオ 1）が `RPGUNIT` の `/include` を解決して動いた。
