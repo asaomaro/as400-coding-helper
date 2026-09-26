@@ -32,6 +32,8 @@ function fakeConnection(overrides: Partial<IbmiTestingConnection> = {}): IbmiTes
     runSQL: async () => [],
     tempDirectory: "/tmp",
     libraryList: ["QGPL"],
+    currentLibrary: "CURLIB",
+    deploy: async () => ({ ok: true, remoteDirectory: "/home/ASAO/builds/ws" }),
     ...overrides
   };
 }
@@ -347,5 +349,177 @@ suite("RPGUnit TestController配線", () => {
     assert.match(errored[0].message.message, /bndSrvPgm は文字列の配列/);
     assert.deepEqual(uploaded, ["OTHTST"]);
     assert.ok(run.__calls.some((c: any) => c.event === "passed" && c.item.label === "TESTOTH"));
+  });
+
+  // --- IFS 方式（*.test.rpgle をデプロイした IFS のソースから作る） ---
+
+  const STREAM_XML = `<testsuite errors="0" failures="0" name="CURLIB/TCALC" tests="1">
+      <testcase name="TESTADD" classname="TCALC"/>
+    </testsuite>`;
+
+  function setupStreamFiles(files: Record<string, string>): void {
+    const folder = { uri: stub.Uri.file("/ws"), name: "ws", index: 0 };
+    stub.workspace.workspaceFolders = [folder];
+    stub.workspace.__workspaceFolder = folder;
+    const uris = Object.keys(files).map(relative => stub.Uri.file(`/ws/${relative}`));
+    stub.workspace.__findFilesResult = uris;
+    const byPath = new Map(Object.keys(files).map(relative => [stub.Uri.file(`/ws/${relative}`).fsPath, relative]));
+    stub.workspace.__relativePath = (uri: { fsPath: string }) => byPath.get(uri.fsPath);
+    for (const [relative, text] of Object.entries(files)) {
+      stub.workspace.fs.__contents.set(stub.Uri.file(`/ws/${relative}`).fsPath, text);
+    }
+  }
+
+  const TEST_SOURCE = "     PTESTADD          B                   EXPORT\n";
+
+  function recordingConnection(overrides: Partial<IbmiTestingConnection> = {}): {
+    connection: IbmiTestingConnection; commands: string[]; deploys: unknown[]; uploads: string[];
+  } {
+    const commands: string[] = [];
+    const deploys: unknown[] = [];
+    const uploads: string[] = [];
+    const connection = fakeConnection({
+      runCommand: async command => { commands.push(command); return { code: 0, stdout: "", stderr: "" }; },
+      uploadMemberContent: async target => { uploads.push(target.member); return true; },
+      deploy: async folder => { deploys.push(folder.index); return { ok: true, remoteDirectory: "/home/ASAO/builds/ws" }; },
+      downloadStreamfile: async () => STREAM_XML,
+      ...overrides
+    });
+    return { connection, commands, deploys, uploads };
+  }
+
+  async function runStream(files: Record<string, string>, connection: IbmiTestingConnection): Promise<any> {
+    const holder = captureController();
+    registerRpgUnitTesting(fakeContext(), async () => ({ ok: true, connection }));
+    const controller = holder.get();
+    setupStreamFiles(files);
+    await controller.resolveHandler();
+    return { run: await runAll(controller), controller };
+  }
+
+  const erroredMessages = (run: any): string[] =>
+    run.__calls.filter((c: any) => c.event === "errored").map((c: any) => c.message.message);
+
+  test("IFS 方式: 項目はファイル名と、description にプログラム名", async () => {
+    const holder = captureController();
+    registerRpgUnitTesting(fakeContext(), async () => ({ ok: false, reason: "notInstalled" }));
+    const controller = holder.get();
+    setupStreamFiles({ "test/calc.test.rpgle": TEST_SOURCE, "my.calc.test.rpgle": TEST_SOURCE });
+    await controller.resolveHandler();
+    const items = [...controller.items].map(([, item]: [string, any]) => [item.label, item.description]);
+    assert.deepEqual(items, [["calc.test.rpgle", "TCALC"], ["my.calc.test.rpgle", "プログラム名を作れません"]]);
+  });
+
+  test("IFS 方式: デプロイ → 現行ライブラリーに変換した写しから作る → 実行して passed", async () => {
+    const { connection, commands, deploys } = recordingConnection();
+    const { run } = await runStream({ "test/calc.test.rpgle": TEST_SOURCE }, connection);
+    assert.deepEqual(deploys, [0]);
+    assert.deepEqual(commands, [
+      "CPY OBJ('/home/ASAO/builds/ws/test/calc.test.rpgle') TOOBJ('/tmp/TCALC.rpgle') TOCCSID(*JOBCCSID) DTAFMT(*TEXT) REPLACE(*YES)",
+      "RPGUNIT/RUCRTRPG TSTPGM(CURLIB/TCALC) SRCSTMF('/tmp/TCALC.rpgle') " +
+        "INCDIR('/home/ASAO/builds/ws/test' '/home/ASAO/builds/ws') TGTCCSID(0)",
+      "QSYS/RMVLNK OBJLNK('/tmp/TCALC.rpgle')",
+      "QSYS/RMVLNK OBJLNK('/tmp/TCALC.xml')",
+      "RPGUNIT/RUCALLTST TSTPGM(CURLIB/TCALC) OUTPUT(*NONE) XMLSTMF('/tmp/TCALC.xml')",
+      "QSYS/RMVLNK OBJLNK('/tmp/TCALC.xml')"
+    ]);
+    assert.ok(run.__calls.some((c: any) => c.event === "passed"));
+    assert.deepEqual(erroredMessages(run), []);
+  });
+
+  test("IFS 方式: 同じフォルダーのファイルが複数でもデプロイは 1 回。メンバー方式と混在しても両方走る", async () => {
+    const { connection, deploys, uploads, commands } = recordingConnection();
+    await runStream({
+      "test/calc.test.rpgle": TEST_SOURCE,
+      "test/other.test.rpgle": TEST_SOURCE,
+      "src/ASAOLIB/QUNITSRC/CALCTST.rpgle": TEST_SOURCE
+    }, connection);
+    assert.deepEqual(deploys, [0]);
+    assert.deepEqual(uploads, ["CALCTST"], "メンバー方式はこれまでどおりアップロードする");
+    assert.ok(commands.some(c => c.includes("TSTPGM(CURLIB/TCALC)")));
+    assert.ok(commands.some(c => c.includes("TSTPGM(CURLIB/TOTHER)")));
+    assert.ok(commands.some(c => c.includes("TSTPGM(ASAOLIB/CALCTST) SRCFILE(ASAOLIB/QUNITSRC)")));
+  });
+
+  for (const [reason, pattern] of [
+    ["notConfigured", /デプロイ先が設定されていません/],
+    ["failed", /デプロイに失敗しました/],
+    ["unavailable", /デプロイAPIが見つかりません/]
+  ] as const) {
+    test(`IFS 方式: デプロイが ${reason} なら errored（コンパイルしない）`, async () => {
+      const { connection, commands } = recordingConnection({ deploy: async () => ({ ok: false, reason }) });
+      const { run } = await runStream({ "test/calc.test.rpgle": TEST_SOURCE }, connection);
+      const messages = erroredMessages(run);
+      assert.equal(messages.length, 1);
+      assert.match(messages[0], pattern);
+      assert.deepEqual(commands, []);
+    });
+  }
+
+  test("IFS 方式: 現行ライブラリーが無ければ errored", async () => {
+    const { connection, commands } = recordingConnection({ currentLibrary: undefined });
+    const { run } = await runStream({ "test/calc.test.rpgle": TEST_SOURCE }, connection);
+    assert.match(erroredMessages(run)[0], /現行ライブラリーがありません/);
+    assert.deepEqual(commands, []);
+  });
+
+  test("IFS 方式: 名前を作れなければ errored（理由と直し方）", async () => {
+    const { connection, commands } = recordingConnection();
+    const { run } = await runStream({ "my.calc.test.rpgle": TEST_SOURCE }, connection);
+    assert.match(erroredMessages(run)[0], /ファイル名 my\.calc\.test\.rpgle からIBM iのプログラム名を作れません/);
+    assert.deepEqual(commands, []);
+  });
+
+  test("IFS 方式: 変換に失敗したらデプロイの確認を促す。コンパイル失敗はメンバー方式と同じ文言", async () => {
+    const convert = recordingConnection({
+      runCommand: async command => ({ code: command.startsWith("CPY ") ? 1 : 0, stdout: "", stderr: "CPFA0A9: オブジェクトが見つからない。" })
+    });
+    const a = await runStream({ "test/calc.test.rpgle": TEST_SOURCE }, convert.connection);
+    assert.match(erroredMessages(a.run)[0], /IFS のソースを変換できません[\s\S]*CPFA0A9[\s\S]*デプロイされているか確認してください/);
+
+    const compile = recordingConnection({
+      runCommand: async command => ({ code: command.includes("RUCRTRPG") ? 1 : 0, stdout: "", stderr: "RNS9309: 作成されませんでした。" })
+    });
+    const b = await runStream({ "test/calc.test.rpgle": TEST_SOURCE }, compile.connection);
+    assert.match(erroredMessages(b.run)[0], /^コンパイルに失敗しました。\nRNS9309/);
+  });
+
+  test("IFS 方式: 開いているエディターの未保存の内容は使わない（デプロイ先のファイルを変換してコンパイルする）", async () => {
+    const { connection, uploads, commands } = recordingConnection();
+    let read = 0;
+    stub.workspace.textDocuments = [{ uri: stub.Uri.file("/ws/test/calc.test.rpgle"), getText: () => { read += 1; return "unsaved"; } }];
+    await runStream({ "test/calc.test.rpgle": TEST_SOURCE }, connection);
+    assert.equal(read, 0, "エディターの内容を読まない");
+    assert.deepEqual(uploads, [], "メンバーへアップロードしない");
+    assert.match(commands[0], /^CPY OBJ\('\/home\/ASAO\/builds\/ws\/test\/calc\.test\.rpgle'\)/);
+  });
+
+  test("IFS 方式: デプロイが例外を投げても errored にして run を終え、メンバー方式は走る", async () => {
+    const { connection, uploads } = recordingConnection({ deploy: async () => { throw new Error("boom"); } });
+    const { run } = await runStream({
+      "test/calc.test.rpgle": TEST_SOURCE,
+      "src/ASAOLIB/QUNITSRC/CALCTST.rpgle": TEST_SOURCE
+    }, connection);
+    assert.ok(erroredMessages(run).some(m => /デプロイに失敗しました/.test(m)));
+    assert.deepEqual(uploads, ["CALCTST"]);
+    assert.ok(run.__calls.some((c: any) => c.event === "end"), "run.end() が呼ばれる");
+  });
+
+  test("IFS 方式: testing.json のバインド指定が効く。誤っていればコンパイルしない", async () => {
+    const good = recordingConnection();
+    stub.workspace.fs.__existing = ["/ws/test/testing.json"];
+    await runStream({
+      "test/calc.test.rpgle": TEST_SOURCE,
+      "test/testing.json": JSON.stringify({ rpgunit: { rucrtrpg: { bndSrvPgm: ["CALCSRV"] } } })
+    }, good.connection);
+    assert.ok(good.commands.some(c => /RUCRTRPG TSTPGM\(CURLIB\/TCALC\) .* BNDSRVPGM\(CALCSRV\) /.test(c)));
+
+    const bad = recordingConnection();
+    const { run } = await runStream({
+      "test/calc.test.rpgle": TEST_SOURCE,
+      "test/testing.json": JSON.stringify({ rpgunit: { rucrtrpg: { bndSrvPgm: "CALCSRV" } } })
+    }, bad.connection);
+    assert.match(erroredMessages(run)[0], /testing\.json の設定が正しくありません/);
+    assert.deepEqual(bad.commands, []);
   });
 });

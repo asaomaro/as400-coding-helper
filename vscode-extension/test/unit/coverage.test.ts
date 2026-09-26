@@ -12,7 +12,9 @@ function makeConnection(existsFor: readonly string[]): IbmiTestingConnection {
     checkObjectExists: async object => existsFor.includes(`${object.library}/${object.name}`),
     runSQL: async () => [],
     tempDirectory: "/tmp",
-    libraryList: []
+    libraryList: [],
+    currentLibrary: undefined,
+    deploy: async () => ({ ok: false, reason: "unavailable" })
   };
 }
 

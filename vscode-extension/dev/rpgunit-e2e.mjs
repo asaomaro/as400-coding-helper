@@ -15,7 +15,15 @@
  * 2. 古い `*SRVPGM` が残ったままコンパイルが失敗する: 両方 Errored になるか
  *    （オブジェクトの有無で成否を見ると「成功」と取り違え、古いテストを走らせてしまう）。
  *
- * 終わったら作ったメンバーとオブジェクトを消し、**残っていないことを数えて**確かめる。
+ * 3〜5. テスト対象のサービスプログラムを `testing.json` でバインドする（対照: バインド無しでは Errored）。
+ * 6〜9. IFS 方式（`*.test.rpgle` を Code for IBM i のデプロイで IFS へ送り、EBCDIC に変換した写しから作る）:
+ *    デプロイ先が未設定なら Errored／日本語入りのテストがメンバー方式と同時に正しく判定される／
+ *    別ディレクトリのコピー句（日本語リテラル）で Passed・無いコピー句で Errored（対照）／
+ *    大文字の接尾辞 `.TEST.RPGLE` の検出と `testing.json` のバインド
+ *    （`.aidev/works/20260926-rpgunit-ifs-deploy/design.md` AC1〜AC4・AC6・AC10・AC11）。
+ *    デプロイ先と現行ライブラリーはヘルパー拡張が起動ごとに環境変数から設定する。
+ *
+ * 終わったら作ったメンバー・オブジェクト・デプロイ先を消し、**残っていないことを数えて**確かめる。
  *
  * ## 動かし方
  *
@@ -35,7 +43,8 @@ import { join } from "node:path";
 import { createRequire } from "node:module";
 import { fileURLToPath } from "node:url";
 import {
-  BIND_TEST_SOURCE, BNDDIR, CALC, basicSource, bindConfig, cleanUp, connectHostServer, createBindTargets, srvpgmExists
+  BIND_TEST_SOURCE, BNDDIR, CALC, COPY_HEADER, basicSource, bindConfig, cleanUp, connectHostServer, copyTestSource,
+  createBindTargets, japaneseSource, srvpgmExists
 } from "./rpgunit-e2e-fixtures.mjs";
 
 const HERE = fileURLToPath(new URL(".", import.meta.url));
@@ -79,6 +88,20 @@ writeFileSync(join(userDir, "User", "settings.json"), JSON.stringify({
 }, null, 2));
 
 const BIND_MEMBER = "RUE2EBND";
+/** IFS 方式と同時に出すメンバー方式のテスト（手続き名を IFS 方式のテストと重ねない）。 */
+const MEMBER_ONLY = "RUE2EMBR";
+const MEMBER_ONLY_SOURCE = [
+  "     H NOMAIN OPTION(*SRCSTMT:*NODEBUGIO)",
+  "      /COPY RPGUNIT/QINCLUDE,TESTCASE",
+  "     PTESTMBR          B                   EXPORT",
+  "     DTESTMBR          PI",
+  "     C                   CALLP     assertEqual(1:1)",
+  "     PTESTMBR          E",
+  ""
+].join("\n");
+/** IFS 方式のデプロイ先（Code for IBM i のデプロイがここへ送る）と、作られるテスト・プログラム（IBM i Testing と同じ名前の規則）。 */
+const DEPLOY_DIR = `${process.env.AS400_IFS_DIR}/rpgunit-e2e-deploy`;
+const IFS_PROGRAMS = ["TIFSBASIC", "TIFSCOPY", "TIFSNOCOPY", "TIFSBIND"];
 
 /** ワークスペースを空にして、`files`（相対パス → 中身）だけを置く。 */
 function writeWorkspace(files) {
@@ -92,16 +115,24 @@ function writeWorkspace(files) {
 
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
 
+// WSLg: ログインのセッションが終わると /run/user/<uid> が消え、VS Code の窓が開かないまま起動が時間切れになる
+// （2026-09-26 に実際に起きた）。無ければ WSLg の実行時ディレクトリを使う。
+const RUNTIME_DIR = process.env.XDG_RUNTIME_DIR && existsSync(process.env.XDG_RUNTIME_DIR)
+  ? process.env.XDG_RUNTIME_DIR
+  : existsSync("/mnt/wslg/runtime-dir") ? "/mnt/wslg/runtime-dir" : process.env.XDG_RUNTIME_DIR;
+
 /** VS Code を起動し、全テストを走らせ、行ごとの結果とメッセージを返す。 */
-async function runScenario(name, { member, tests, checkLanguage = false }) {
+async function runScenario(name, { member, tests, checkLanguage = false, deployDir }) {
   writeFileSync(STATUS, "");
   const app = await _electron.launch({
     executablePath: join(VSC, "code"),
     env: {
       PATH: process.env.PATH, HOME: process.env.HOME,
       DISPLAY: process.env.DISPLAY, WAYLAND_DISPLAY: process.env.WAYLAND_DISPLAY,
-      XDG_RUNTIME_DIR: process.env.XDG_RUNTIME_DIR, DONT_PROMPT_WSL_INSTALL: "1",
-      E2E_STATUS_FILE: STATUS, E2E_HOST: host.creds.host, E2E_USER: host.creds.user, E2E_PASSWORD: host.creds.password
+      XDG_RUNTIME_DIR: RUNTIME_DIR, DONT_PROMPT_WSL_INSTALL: "1",
+      E2E_STATUS_FILE: STATUS, E2E_HOST: host.creds.host, E2E_USER: host.creds.user, E2E_PASSWORD: host.creds.password,
+      // IFS 方式: テスト・プログラムを作る現行ライブラリーと、デプロイ先（無ければヘルパーが外す）
+      E2E_CURLIB: LIB, ...(deployDir ? { E2E_DEPLOY_DIR: deployDir } : {})
     },
     args: [
       WS,
@@ -139,18 +170,24 @@ async function runScenario(name, { member, tests, checkLanguage = false }) {
     for (let i = 0; i < 60; i += 1) {
       await sleep(2000);
       const labels = await win.$$eval(".test-explorer .monaco-list-row", rows => rows.map(r => r.getAttribute("aria-label") ?? ""));
-      if (labels.some(label => /\((Passed|Failed|Errored)\)/.test(label))) break;
+      // 前のシナリオの結果が「outdated result」として残る（user-data-dir を使い回すため）。今回の結果が全行に揃うまで待つ
+      // （メンバー方式が先に終わり、デプロイを挟む IFS 方式がまだ走っていることがある）
+      if (labels.length && labels.every(label => /\((Passed|Failed|Errored|Skipped)\)/.test(label) && !/outdated/.test(label))) break;
     }
-    const fileRow = win.locator(".test-explorer .monaco-list-row", { hasText: member }).first();
-    await fileRow.click();
-    await win.keyboard.press("ArrowRight");
-    await sleep(1500);
+    // 開くファイルの行（IFS 方式は複数を開くことがある）
+    for (const label of Array.isArray(member) ? member : [member]) {
+      const fileRow = win.locator(".test-explorer .monaco-list-row", { hasText: label }).first();
+      await fileRow.click();
+      await win.keyboard.press("ArrowRight");
+      await sleep(1500);
+    }
     await shot("tree");
     const rows = await win.$$eval(".test-explorer .monaco-list-row", rs => rs.map(r => r.getAttribute("aria-label") ?? ""));
 
     await command("Test: Show Output");
     await sleep(2500);
     const messages = {};
+    // 失敗の詳細は該当の子の行を選んで読む（行を探すのは子の名前で。ファイルの間で名前を重ねないこと）
     for (const test of tests) {
       const row = win.locator(".monaco-list-row", { hasText: test }).last();
       await row.click();
@@ -173,7 +210,7 @@ async function runScenario(name, { member, tests, checkLanguage = false }) {
     if (checkLanguage) {
       await win.keyboard.press("Control+P");
       await sleep(600);
-      await win.keyboard.type(`${member}.rpgle`);
+      await win.keyboard.type(`${Array.isArray(member) ? member[0] : member}.rpgle`);
       await sleep(1200);
       await win.keyboard.press("Enter");
       await sleep(3000);
@@ -235,8 +272,50 @@ try {
   if (!c.rows.includes("TESTADD (Errored)") || !d.rows.includes("TESTADD (Passed)")) {
     console.log(c.messages.TESTADD, "\n---\n", d.messages.TESTADD);
   }
+
+  // --- IFS 方式（*.test.rpgle を Code for IBM i のデプロイで IFS へ送り、変換した写しから作る） ---
+  const ifsBasic = "test/ifsbasic.test.rpgle";
+  const memberOnly = `src/${LIB}/QUNITSRC/${MEMBER_ONLY}.rpgle`;
+
+  console.log("シナリオ 6: IFS 方式・デプロイ先が未設定");
+  writeWorkspace({ [ifsBasic]: japaneseSource() });
+  const f = await runScenario("6-ifs-no-deploy", { member: "ifsbasic.test.rpgle", tests: ["TESTPASS"] });
+  expect(f.rows.includes("TESTPASS (Errored)") && f.rows.includes("TESTFAIL (Errored)"), "未設定なら両方 Errored");
+  expect(f.messages.TESTPASS.includes("デプロイ先が設定されていません"), "デプロイ先の設定を促すメッセージが出る");
+
+  console.log("シナリオ 7: IFS 方式・日本語入り（メンバー方式と同時）");
+  writeWorkspace({ [ifsBasic]: japaneseSource(), [memberOnly]: MEMBER_ONLY_SOURCE });
+  const g = await runScenario("7-ifs-normal", { member: ["ifsbasic.test.rpgle", MEMBER_ONLY], tests: ["TESTPASS", "TESTFAIL"], deployDir: DEPLOY_DIR });
+  // IFS 方式の行の aria-label は description（プログラム名）から始まる（画面ではファイル名の横にプログラム名が出る）
+  expect(g.rows.some(r => r.startsWith("TIFSBASIC")) && g.rows.some(r => r.startsWith(MEMBER_ONLY)),
+    `IFS 方式とメンバー方式の項目が同時に出る（${g.rows.filter(r => !/^TEST/.test(r)).join(" / ")}）`);
+  expect(g.rows.includes("TESTPASS (Passed)"), "IFS 方式: TESTPASS（日本語リテラルの比較）が Passed");
+  expect(g.rows.includes("TESTFAIL (Failed)"), "IFS 方式: TESTFAIL が Failed");
+  expect(g.messages.TESTFAIL.includes("Expected '2', but was '3'."), "IFS 方式: 失敗メッセージがメンバー方式と同じ");
+  expect(g.rows.includes("TESTMBR (Passed)"), "同じ実行のメンバー方式のテストも Passed");
+  if (!g.rows.includes("TESTPASS (Passed)")) console.log(g.messages.TESTPASS);
+
+  console.log("シナリオ 8: IFS 方式・別ディレクトリのコピー句（日本語リテラル）と対照");
+  writeWorkspace({
+    "test/ifscopy.test.rpgle": copyTestSource("qcopy/e2ecopy_h.rpgleinc"),
+    "qcopy/e2ecopy_h.rpgleinc": COPY_HEADER,
+    "test/ifsnocopy.test.rpgle": copyTestSource("qcopy/missing_h.rpgleinc", "TESTMISS")
+  });
+  const h = await runScenario("8-ifs-copy", { member: ["ifscopy.test.rpgle", "ifsnocopy.test.rpgle"], tests: ["TESTCOPY", "TESTMISS"], deployDir: DEPLOY_DIR });
+  expect(h.rows.includes("TESTCOPY (Passed)"), "コピー句を IFS の相対パスで /COPY して Passed");
+  expect(h.rows.includes("TESTMISS (Errored)") && h.messages.TESTMISS.includes("コンパイルに失敗しました"),
+    "対照: 無いコピー句ならコンパイル失敗で Errored");
+  if (!h.rows.includes("TESTCOPY (Passed)")) console.log(h.messages.TESTCOPY);
+
+  console.log("シナリオ 9: IFS 方式・testing.json のバインド（大文字の接尾辞 .TEST.RPGLE）");
+  writeWorkspace({ "test/IFSBIND.TEST.RPGLE": BIND_TEST_SOURCE, "test/testing.json": bindConfig("bndSrvPgm") });
+  const i = await runScenario("9-ifs-bind", { member: "IFSBIND.TEST.RPGLE", tests: ["TESTADD"], deployDir: DEPLOY_DIR });
+  expect(i.rows.some(r => r.startsWith("TIFSBIND")), `大文字の接尾辞も検出される（glob の [tT]…）（${i.rows.join(" / ")}）`);
+  expect(i.rows.includes("TESTADD (Passed)"), `IFS 方式でも bndSrvPgm: ["${CALC}"] で Passed`);
+  if (!i.rows.includes("TESTADD (Passed)")) console.log(i.messages.TESTADD);
 } finally {
-  expect(await cleanUp(host, LIB, [MEMBER, BIND_MEMBER, CALC]) === 0, "片付け後に実機へ何も残っていない");
+  const left = await cleanUp(host, LIB, [MEMBER, BIND_MEMBER, CALC, MEMBER_ONLY, ...IFS_PROGRAMS], [DEPLOY_DIR]);
+  expect(left === 0, `片付け後に実機へ何も残っていない（残り ${left}）`);
   rmSync(STATUS, { force: true });
 }
 

@@ -517,7 +517,8 @@ priority: 2           # cl(1) の次。設計書: docs/workflow/ibmi-dev-workflo
   - 案: `test:integration` を `compile:all` にする／資産の存在を起動時に検査する／
     テスト側で「描けたか」を 1 つ見る。**どれも「緑の意味」を変えるので、選択は要検討**。
 
-- [ ] **RPGUnit の Test Explorer 統合で、テストソースを IFS に展開してコンパイルする方式にも対応する**
+- [x] **RPGUnit の Test Explorer 統合で、テストソースを IFS に展開してコンパイルする方式にも対応する** — 済（`20260926-rpgunit-ifs-deploy`）。
+  `*.test.rpgle` を Code for IBM i のデプロイで IFS へ送り、主ソースを `CPY TOCCSID(*JOBCCSID)` で写してから `RUCRTRPG SRCSTMF`（7.3 の日本語環境で UTF-8 のままでは `CPE3490`）。道具も同じ部品で対応。
   （2026-09-26 ユーザー要望。`20260926-rpgunit-bind-srvpgm` の検討中に起票）。
   いまは `src/<LIB>/<SRCFILE>/<MEMBER>.rpgle` をソースメンバーへ送り `RUCRTRPG SRCFILE/SRCMBR` で
   コンパイルする（ソースメンバー同期と同じ対応づけ）。IBM i Testing 拡張はローカルの `*.test.rpgle` を

@@ -12,6 +12,7 @@ const CORE_FILES = [
   "src/testing/resultParser.ts",
   "src/testing/testingConfigCore.ts",
   "src/testing/suiteRunner.ts",
+  "src/testing/streamTarget.ts",
   "src/sync/memberTarget.ts"
 ];
 

@@ -3,9 +3,14 @@
  * （VS Code の Test Explorer と `tools/run-rpgunit.mjs` の両方が使う）。
  * 接続は `SuiteConnection` として受け取る——VS Code 側は Code for IBM i、道具は ts5250 の hostserver。
  */
+import { posix } from "node:path";
 import { deriveSourceType, type MemberTarget } from "../sync/memberTarget";
-import { buildCreateTestCommand, buildRunTestCommand, type ReclaimResources, type RunOrder } from "./rpgunitCommands";
+import {
+  buildCreateStreamTestCommand, buildCreateTestCommand, buildRunTestCommand, quoteClString,
+  type ReclaimResources, type RunOrder
+} from "./rpgunitCommands";
 import { parseJUnitXml, type TestSuiteResult } from "./resultParser";
+import type { StreamTestTarget } from "./streamTarget";
 import type { BindingSpec } from "./testingConfigCore";
 
 export interface CommandResultLike {
@@ -35,6 +40,12 @@ export interface SuiteConnection {
  */
 export function testLibraryList(targetLibrary: string, baseLibraryList: readonly string[]): readonly string[] {
   return [...new Set(["RPGUNIT", targetLibrary, ...baseLibraryList].map(name => name.toUpperCase()))];
+}
+
+/** 作るテスト・プログラム（ライブラリーと名前）。メンバー方式ではメンバー名がそのままプログラム名になる。 */
+export interface TestProgram {
+  readonly library: string;
+  readonly program: string;
 }
 
 export type CompileOutcome = { readonly ok: true } | { readonly ok: false; readonly detail: string };
@@ -67,6 +78,72 @@ export async function compileSuite(
   return result.code === 0 ? { ok: true } : { ok: false, detail: result.stderr || result.stdout || "(詳細なし)" };
 }
 
+/** IFS 方式の失敗は段階を持つ。変換（`CPY`）の失敗なら、呼び出し側が「展開されているか」の案内を足せる。 */
+export type StreamCompileOutcome =
+  | { readonly ok: true }
+  | { readonly ok: false; readonly stage: "convert" | "compile"; readonly detail: string };
+
+/**
+ * IFS 方式。展開は済んでいる前提（`deployRoot` の下に `target.relativePath` がある）。
+ *
+ * 主ソースを `CPY … TOCCSID(*JOBCCSID) DTAFMT(*TEXT)` で一時ディレクトリへ写してから `RUCRTRPG SRCSTMF` に渡す。
+ * 7.3（ジョブ CCSID 5035）では UTF-8（タグ 1208）の主ソースを直接渡すと `CPE3490` で開けない。EBCDIC に写せば
+ * 日本語の注記・リテラルとも通る。コピー句は 1208 のままで読める
+ * （`.aidev/works/20260926-rpgunit-ifs-deploy/research.md` F2・F5・F21・F22、decisions.md D6）。
+ * 写しは元と別の場所にあるので、`INCDIR` に元のテストのディレクトリと展開先の最上位をこの順で渡す
+ * （コンパイラーは主ソースのディレクトリも探すが、写しのディレクトリになるため。research F6）。
+ */
+export async function compileStreamSuite(
+  conn: SuiteConnection,
+  input: {
+    program: TestProgram;
+    target: StreamTestTarget;
+    deployRoot: string;
+    binding: BindingSpec;
+    noTgtCcsid?: boolean;
+    keepCopy?: boolean;
+  }
+): Promise<StreamCompileOutcome> {
+  const { program, target, deployRoot, binding, noTgtCcsid, keepCopy } = input;
+  // 末尾の `/` を落とす（`/` そのものは残す）
+  const root = posix.normalize(deployRoot).replace(/(.)\/+$/, "$1");
+  const source = posix.join(root, target.relativePath);
+  const copy = `${conn.tempDirectory}/${program.program}.${target.extension}`;
+  try {
+    const converted = await conn.runCommand(
+      `CPY OBJ(${quoteClString(source)}) TOOBJ(${quoteClString(copy)}) TOCCSID(*JOBCCSID) DTAFMT(*TEXT) REPLACE(*YES)`
+    );
+    if (converted.code !== 0) {
+      return {
+        ok: false,
+        stage: "convert",
+        detail: `IFS のソースを変換できません（${source}）。\n${converted.stderr || converted.stdout || "(詳細なし)"}`
+      };
+    }
+    const sourceDirectory = posix.dirname(source);
+    const result = await conn.runCommand(
+      buildCreateStreamTestCommand({
+        library: program.library,
+        program: program.program,
+        sourceStreamFile: copy,
+        includeDirectories: sourceDirectory === root ? [root] : [sourceDirectory, root],
+        bindServicePrograms: binding.servicePrograms,
+        bindingDirectories: binding.bindingDirectories,
+        noTgtCcsid
+      }),
+      { libraryList: testLibraryList(program.library, conn.libraryList) }
+    );
+    return result.code === 0
+      ? { ok: true }
+      : { ok: false, stage: "compile", detail: result.stderr || result.stdout || "(詳細なし)" };
+  } finally {
+    if (!keepCopy) {
+      // 片付けの失敗でコンパイルの結果を上書きしない（結果 XML の削除と同じ扱い）
+      await conn.runCommand(`QSYS/RMVLNK OBJLNK(${quoteClString(copy)})`).catch(() => undefined);
+    }
+  }
+}
+
 export type RunOutcome =
   | { readonly ok: true; readonly suite: TestSuiteResult; readonly xml: string }
   | { readonly ok: false; readonly detail: string };
@@ -74,17 +151,17 @@ export type RunOutcome =
 /** 結果 XML を消す → `RUCALLTST` → 取得 → 消す（`keepXml` なら残す）→ 解析。合否は XML で決める。 */
 export async function runSuite(
   conn: SuiteConnection,
-  input: { target: MemberTarget; order?: RunOrder; reclaimResources?: ReclaimResources; keepXml?: boolean }
+  input: { program: TestProgram; order?: RunOrder; reclaimResources?: ReclaimResources; keepXml?: boolean }
 ): Promise<RunOutcome> {
-  const { target, order, reclaimResources, keepXml } = input;
-  const xmlPath = `${conn.tempDirectory}/${target.member}.xml`;
+  const { program, order, reclaimResources, keepXml } = input;
+  const xmlPath = `${conn.tempDirectory}/${program.program}.xml`;
   const remove = () => conn.runCommand(`QSYS/RMVLNK OBJLNK('${xmlPath}')`).catch(() => undefined);
   // パスは毎回同じ。前回の XML が残っていると、今回 RUCALLTST が結果を出さなかったときに古い結果を読む。
   await remove();
   // テストが失敗すると RUCALLTST 自体も CPF9897 で失敗を返す（実機で確認）。合否は XML で決めるので code は見ない。
   await conn.runCommand(
-    buildRunTestCommand({ library: target.library, program: target.member, xmlStmf: xmlPath, order, reclaimResources }),
-    { libraryList: testLibraryList(target.library, conn.libraryList) }
+    buildRunTestCommand({ library: program.library, program: program.program, xmlStmf: xmlPath, order, reclaimResources }),
+    { libraryList: testLibraryList(program.library, conn.libraryList) }
   );
   let xml: string;
   try {
