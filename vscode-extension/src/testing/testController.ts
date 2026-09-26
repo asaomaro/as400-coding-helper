@@ -53,9 +53,30 @@ function collectRequestedFiles(
   return [...byFileId.values()];
 }
 
+/** 開いているエディターがあれば未保存の内容を優先する（利用者が見ているものを試す）。 */
 async function readSourceText(uri: vscode.Uri): Promise<string> {
+  const open = vscode.workspace.textDocuments.find(document => document.uri.toString() === uri.toString());
+  if (open) {
+    return open.getText();
+  }
   const bytes = await vscode.workspace.fs.readFile(uri);
   return Buffer.from(bytes).toString("utf8");
+}
+
+/**
+ * コンパイル・実行に使うライブラリー・リスト。`RPGUNIT` が要るのは、`TESTCASE` が
+ * 修飾なしの `/include qinclude,TEMPLATES` を持つため（`.claude/skills/rpgunit-test/SKILL.md`
+ * 「踏みやすい罠」）。利用者の接続設定に無いと `CPF4102` で落ちる（E2Eで実測）。
+ */
+export function testLibraryList(targetLibrary: string, userLibraryList: readonly string[]): readonly string[] {
+  return [...new Set(["RPGUNIT", targetLibrary, ...userLibraryList].map(name => name.toUpperCase()))];
+}
+
+function erroredAll(run: vscode.TestRun, children: readonly vscode.TestItem[], text: string): void {
+  const message = new vscode.TestMessage(text);
+  for (const child of children) {
+    run.errored(child, message);
+  }
 }
 
 async function runFile(
@@ -79,6 +100,7 @@ async function runFile(
     `MBR(${discovered.target.member}) SRCTYPE(${deriveSourceType(discovered.target.extension)})`
   );
 
+  const libraryList = testLibraryList(discovered.target.library, connection.libraryList);
   const createCommand = buildCreateTestCommand({
     library: discovered.target.library,
     program: discovered.target.member,
@@ -88,35 +110,29 @@ async function runFile(
   // （decisions.md D4）。大規模テストで同期実行がタイムアウトする場合は、ここを
   // `connection.runCommandSubmitted(createCommand, {...})`（SBMJOB＋ポーリング）に
   // 差し替える（decisions.md D2）。
-  const createResult = await connection.runCommand(createCommand);
-  // RUCRTRPG が作るテストオブジェクトは *SRVPGM（*PGM ではない。実機確認済み。decisions.md D4追記）。
-  const compiled = await connection.checkObjectExists({
-    library: discovered.target.library,
-    name: discovered.target.member,
-    type: "*SRVPGM"
-  });
-  if (!compiled) {
-    const detail = createResult.stderr || createResult.stdout || "(詳細なし)";
-    const message = new vscode.TestMessage(`コンパイルに失敗しました。\n${detail}`);
-    for (const child of children) {
-      run.errored(child, message);
-    }
+  const createResult = await connection.runCommand(createCommand, { libraryList });
+  // 成否はコマンドの結果で決める。オブジェクトの有無で見ると、前回の *SRVPGM が残っているとき
+  // コンパイル失敗を成功と取り違える。
+  if (createResult.code !== 0) {
+    erroredAll(run, children, `コンパイルに失敗しました。\n${createResult.stderr || createResult.stdout || "(詳細なし)"}`);
     return;
   }
 
   const xmlPath = `${connection.tempDirectory}/${discovered.target.member}.xml`;
+  // パスは毎回同じ。前回の XML が残っていると、今回 RUCALLTST が結果を出さなかったときに
+  // 古い結果を読んでしまうので、実行前に消す。
+  await connection.runCommand(`QSYS/RMVLNK OBJLNK('${xmlPath}')`).catch(() => undefined);
+  // 合否は XML で判定するので、RUCALLTST 自体の code は見ない。
   await connection.runCommand(
-    buildRunTestCommand({ library: discovered.target.library, program: discovered.target.member, xmlStmf: xmlPath })
+    buildRunTestCommand({ library: discovered.target.library, program: discovered.target.member, xmlStmf: xmlPath }),
+    { libraryList }
   );
 
   let xml: string;
   try {
     xml = await connection.downloadStreamfile(xmlPath);
   } catch (error) {
-    const message = new vscode.TestMessage(`結果を取得できませんでした: ${String((error as Error)?.message ?? error)}`);
-    for (const child of children) {
-      run.errored(child, message);
-    }
+    erroredAll(run, children, `結果を取得できませんでした: ${String((error as Error)?.message ?? error)}`);
     return;
   } finally {
     await connection.runCommand(`QSYS/RMVLNK OBJLNK('${xmlPath}')`).catch(() => undefined);
@@ -175,7 +191,16 @@ async function runHandler(
       }
       continue;
     }
-    await runFile(run, connectResult.connection, target);
+    try {
+      await runFile(run, connectResult.connection, target);
+    } catch (error) {
+      // 例外で抜けると run.end() に届かず、テストが実行中のまま残る。
+      erroredAll(
+        run,
+        [...target.fileItem.children].map(([, child]) => child),
+        `実行中にエラーが発生しました: ${String((error as Error)?.message ?? error)}`
+      );
+    }
   }
 
   run.end();

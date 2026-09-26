@@ -113,6 +113,8 @@ const vscode = {
       get: (key, defaultValue) => configValues[section]?.[key] ?? defaultValue
     }),
     workspaceFolders: undefined,
+    /** 開いている文書。テストから `{ uri, getText }` を入れる。 */
+    textDocuments: [],
     __workspaceFolder: undefined,
     __relativePath: undefined,
     __appliedEdits: [],

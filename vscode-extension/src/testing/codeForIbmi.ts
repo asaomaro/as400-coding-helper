@@ -29,9 +29,16 @@ export interface SubmittedCommandResult {
  * オブジェクトリテラルを渡せるようにする。
  */
 export interface RawIbmiConnection {
-  runCommand(data: { command: string; getSpooledFiles?: boolean }): Promise<CommandResultLike>;
+  /**
+   * ILE コマンドは Code for IBM i の SQL ジョブで `CHGLIBL` のあとに実行される。
+   * `env` の `&LIBL` を渡すとその `CHGLIBL` のライブラリー・リストを差し替えられる
+   * （`codefori/vscode-ibmi` の `src/api/CompileTools.ts` の `runCommand`）。
+   * 失敗（エスケープ・メッセージ）なら `code` が 0 以外になり、ジョブログが `stderr` に入る。
+   */
+  runCommand(data: { command: string; env?: Record<string, string> }): Promise<CommandResultLike>;
   runSQL(statements: string): Promise<readonly Record<string, unknown>[]>;
   getTempDirectory(): string;
+  getConfig(): { readonly libraryList: readonly string[] };
   readonly content: {
     uploadMemberContent(library: string, sourceFile: string, member: string, content: string): Promise<boolean>;
     downloadStreamfileRaw(remotePath: string): Promise<Uint8Array>;
@@ -42,7 +49,8 @@ export interface RawIbmiConnection {
 
 export interface IbmiTestingConnection {
   uploadMemberContent(target: MemberTarget, content: string): Promise<boolean>;
-  runCommand(command: string, opts?: { getSpooledFiles?: boolean }): Promise<CommandResultLike>;
+  /** `libraryList` を渡すと、そのコマンドの間だけライブラリー・リストを差し替える。 */
+  runCommand(command: string, opts?: { libraryList?: readonly string[] }): Promise<CommandResultLike>;
   /** `RUCRTRPG` が同期実行のタイムアウトに収まらない場合のフォールバック（decisions.md D2, D4）。 */
   runCommandSubmitted(
     command: string,
@@ -55,6 +63,8 @@ export interface IbmiTestingConnection {
   checkObjectExists(object: { library: string; name: string; type: string }): Promise<boolean>;
   runSQL(statements: string): Promise<readonly Record<string, unknown>[]>;
   readonly tempDirectory: string;
+  /** 利用者が Code for IBM i に設定しているライブラリー・リスト。 */
+  readonly libraryList: readonly string[];
 }
 
 export type ConnectFailureReason = "notInstalled" | "notConnected" | "incompatibleApi";
@@ -70,7 +80,8 @@ export function wrapConnection(connection: RawIbmiConnection): IbmiTestingConnec
       return connection.content.uploadMemberContent(target.library, target.sourceFile, target.member, content);
     },
     async runCommand(command, opts) {
-      const result = await connection.runCommand({ command, getSpooledFiles: opts?.getSpooledFiles });
+      const env = opts?.libraryList ? { "&LIBL": opts.libraryList.join(" ") } : undefined;
+      const result = await connection.runCommand({ command, ...(env ? { env } : {}) });
       return { code: result.code, stdout: result.stdout, stderr: result.stderr };
     },
     async runCommandSubmitted(command, opts) {
@@ -109,7 +120,8 @@ export function wrapConnection(connection: RawIbmiConnection): IbmiTestingConnec
     async runSQL(statements) {
       return connection.runSQL(statements);
     },
-    tempDirectory: connection.getTempDirectory()
+    tempDirectory: connection.getTempDirectory(),
+    libraryList: [...(connection.getConfig().libraryList ?? [])]
   };
 }
 
@@ -122,6 +134,7 @@ function looksLikeRawConnection(value: unknown): value is RawIbmiConnection {
     typeof candidate.runCommand === "function" &&
     typeof candidate.runSQL === "function" &&
     typeof candidate.getTempDirectory === "function" &&
+    typeof candidate.getConfig === "function" &&
     typeof candidate.content === "object" &&
     candidate.content !== null &&
     typeof (candidate.content as Record<string, unknown>).uploadMemberContent === "function"

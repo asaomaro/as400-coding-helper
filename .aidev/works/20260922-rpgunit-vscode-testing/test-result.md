@@ -73,16 +73,67 @@ smoke: pass (exit 0)
 VS Code拡張機能ホストの起動を要し、現在の`smokeCommand`の枠組み（CLIプロセスの起動確認）では
 検証できない（下記「未検証の穴」参照）。
 
+## ラウンド3（deliver 後・本物の VS Code／Code for IBM i／実機での E2E・2026-09-26）
+
+### 修正前（PR #178 のマージ済みコード）で観測した失敗
+
+VS Code 1.137.0（`.vscode-test/`）を `playwright-core` の `_electron` で起動し、Code for IBM i 3.0.13 で
+SR-OSAKA に接続して Testing ビューから全テストを実行した。検出は正しい（`RUE2ETST` 配下に
+`TESTPASS`/`TESTFAIL`）が、両方とも Errored。Test Results パネルの本文（そのまま）:
+
+```
+コンパイルに失敗しました。
+CPC3305: 0個のファイルが削除された。0個のファイルは削除されていません。
+CPC2198: 現行ライブラリーが*CRTDFTに変更された。
+CPC2101: ライブラリー・リストが変更された。
+null: CRTRPGMOD
+null:   MODULE(ASAOLIB/RUE2ETST)
+null:   SRCFILE(ASAOLIB/QUNITSRC)
+null:   SRCMBR(RUE2ETST)
+null:   OPTION(*SRCSTMT)
+null:   DBGVIEW(*LIST)
+null:   TGTRLS(*CURRENT)
+null:   DEFINE(*NONE)
+CPF427D: データ変換に置換文字が使用された可能性があります。
+CPF4102: メンバーTEMPLATESを含むファイルQINCLUDEがライブラリー*LIBLに見つからない。
+```
+
+原因と修正は decisions.md D8・tasks.md T10〜T13。古い `*SRVPGM` による誤判定は、修正後のコードで
+`*SRVPGM`（`OBJCREATED 2026-09-26-11.33.03`）が残った状態のままコンパイル失敗させ、
+Errored になることを実機で確認した。
+
+### 修正後
+
+```
+$ npm test（vscode-extension/）
+  1299 passing
+
+$ cd /workspaces/ts5250 && node --env-file=.env --env-file=.env.verify <repo>/vscode-extension/dev/rpgunit-e2e.mjs
+シナリオ 1: 正常
+  ✓ TESTPASS が Passed
+  ✓ TESTFAIL が Failed
+  ✓ TESTFAIL の失敗メッセージが出る
+  ✓ .rpgle の言語モードが RPG Fixed のまま（実際: RPG Fixed）
+シナリオ 2: 古い *SRVPGM が残ったままコンパイル失敗
+  ✓ 前提: シナリオ 1 の *SRVPGM が残っている
+  ✓ 両方 Errored（古いテストを成功と報告しない）
+  ✓ コンパイル失敗のメッセージが出る
+  ✓ 片付け後に実機へ何も残っていない
+SUCCESS
+```
+
+画面でも、テストツリー（`TESTPASS` ✓ / `TESTFAIL` ✗）、エディターの行頭マーカー（3 行目 ✓・7 行目 ✗。
+`TestMessage.location`／`TestItem.range` が効いている）、失敗本文 `Expected '2', but was '3'.`、
+既存機能（ルーラー・SOSI・言語モード `RPG Fixed`）が Code for IBM i と同居して動くことを確認した。
+追加した単体テスト 8 件は、実装を修正前に戻すと落ちることを確認済み。
+
 ## 未検証の穴（skip / 環境不足）
 
-- **実際のVS Code拡張機能ホストでの動作確認をしていない**。この開発環境（devcontainer）では
-  VS Code Extension Development Hostを起動できないため、`vscode.tests.createTestController`が
-  実際のTest Explorerパネルに正しく描画されるか、`TestMessage.location`のジャンプが実際に機能するか、
-  Run/Debugボタンの操作性（AC-I1〜I3）は**スタブ・フェイクによる単体テストの範囲でのみ確認済み**。
-- **実際のCode for IBM i拡張機能・実際のIBM i接続での動作確認をしていない**。`codeForIbmi.ts`の
-  `connectViaCodeForIbmi`・`wrapConnection`は、GitHub一次ソースから確認した型シグネチャに基づく
-  実装だが、実際のCode for IBM i拡張機能を介した接続・コマンド実行・ファイル転送では未検証。
-  T1の実機確認はts5250/hostserver経由で行っており、Code for IBM iのAPI経由ではない。
-- **コードカバレッジ（AC5）は未実装**。SR-OSAKAにCODECOV/5770WDSが導入されていないため、
-  検出以降（コマンド構築・実行・結果解析）を実装・検証する手段が無い。
-- これらはdeliverのPR本文「既知の制約」に引き継ぐ。
+- ~~実際のVS Code拡張機能ホストでの動作確認をしていない~~ → ラウンド3で解消（「起動できない」は誤りだった。
+  decisions.md D8）。
+- ~~実際のCode for IBM i拡張機能・実際のIBM i接続での動作確認をしていない~~ → ラウンド3で解消。
+- 実機 E2E は手動のハーネス（`dev/rpgunit-e2e.mjs`）で、CI には載せていない（実機と資格情報が要るため）。
+- Code for IBM i は 3.0.13 の 1 版でのみ確認。
+- テスト 1 件だけの実行（手続き単位の `TSTPRC`）は未実装で、ファイル単位でまとめて走る。
+- キャンセル操作（AC-I2）の実機での操作確認はしていない（単体テストのみ）。
+- **コードカバレッジは対象外**（D7）。

@@ -112,3 +112,26 @@ design.mdの依存性注入方針に沿い、**純粋ロジック（検出・コ
       対象: 未特定（既存 `test/unit` 配下の実行結果）
       依存: T8
       AC: AC6, AC-I5
+
+### deliver 後の追加（実機 E2E で見つかった欠陥・2026-09-26。decisions.md D8）
+
+- [x] T10: `RUCRTRPG`/`RUCALLTST` を `RPGUNIT`・対象ライブラリー・利用者のライブラリー・リストの順で
+      実行する（Code for IBM i の `runCommand` の `env` の `&LIBL`）。無いと `CPF4102` で全件落ちる。
+      対象: `vscode-extension/src/testing/codeForIbmi.ts` `wrapConnection` /
+      `vscode-extension/src/testing/testController.ts` `runFile` `testLibraryList`
+      依存: T9
+      AC: AC2
+- [x] T11: コンパイルの成否を `*SRVPGM` の有無ではなく `RUCRTRPG` の結果（`code`）で判定する。
+      前回の `*SRVPGM` が残っているとコンパイル失敗を成功と取り違え、古いテストを走らせていた。
+      対象: `vscode-extension/src/testing/testController.ts` `runFile`
+      依存: T9
+      AC: AC2, AC4
+- [x] T12: 開いているエディターの未保存の内容を送る。ファイル単位の例外で run が終わらず
+      「実行中」のまま残らないよう、例外を errored にして受け止める。
+      対象: `vscode-extension/src/testing/testController.ts` `readSourceText` `runHandler`
+      依存: T9
+      AC: AC2, AC3
+- [x] T13: 本物の VS Code・Code for IBM i・実機で確かめる e2e（`dev/rpgunit-e2e.mjs`）を追加する。
+      対象: `vscode-extension/dev/rpgunit-e2e.mjs`（新規） / `vscode-extension/dev/rpgunit-e2e-helper/`（新規）
+      依存: T10, T11, T12
+      AC: AC1, AC2, AC3, AC4, AC6, AC-I4

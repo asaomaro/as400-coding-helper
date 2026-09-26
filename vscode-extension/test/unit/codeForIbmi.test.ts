@@ -14,6 +14,7 @@ function makeRawConnection(overrides: Partial<RawIbmiConnection> = {}): RawIbmiC
     runCommand: async () => ({ code: 0, stdout: "", stderr: "" }),
     runSQL: async () => [],
     getTempDirectory: () => "/tmp",
+    getConfig: () => ({ libraryList: ["QGPL", "ASAOLIB"] }),
     content: {
       uploadMemberContent: async () => true,
       downloadStreamfileRaw: async () => new Uint8Array(),
@@ -98,6 +99,24 @@ suite("wrapConnection", () => {
     );
     assert.equal(ok, true);
     assert.deepEqual(calls, [["ASAOLIB", "QUNITSRC", "CALCTST", "source text"]]);
+  });
+
+  test("runCommand に libraryList を渡すと env の &LIBL で Code for IBM i へ渡す", async () => {
+    const calls: unknown[] = [];
+    const raw = makeRawConnection({
+      runCommand: async data => { calls.push(data); return { code: 0, stdout: "", stderr: "" }; }
+    });
+    const conn = wrapConnection(raw);
+    await conn.runCommand("RPGUNIT/RUCRTRPG X", { libraryList: ["RPGUNIT", "ASAOLIB", "QGPL"] });
+    await conn.runCommand("CHGPFM X");
+    assert.deepEqual(calls, [
+      { command: "RPGUNIT/RUCRTRPG X", env: { "&LIBL": "RPGUNIT ASAOLIB QGPL" } },
+      { command: "CHGPFM X" }
+    ]);
+  });
+
+  test("利用者のライブラリー・リストを getConfig から取る", () => {
+    assert.deepEqual(wrapConnection(makeRawConnection()).libraryList, ["QGPL", "ASAOLIB"]);
   });
 
   test("downloadStreamfile はLatin-1でデコードする", async () => {
