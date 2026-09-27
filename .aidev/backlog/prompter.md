@@ -146,7 +146,7 @@ priority: 1           # 既存機能の構造改善。DDS(1) と同格
 - [x] **桁幅を超える値を黙って切り捨てない**（データを壊す・最優先）— 済（`20260927-prompter-column-overflow`）。桁の決まった欄は桁幅を超えるとエラーで確定を止める。`buildRpgLineText` の `slice(-sourceLength)` が左から切り、`EVAL` の式や
   `EXTPROC` が化ける（docs/research/20260927-f4-prompter-exploration/findings.md の P3）。定義側も `maxLength` が桁幅より大きい欄がある（C の演算項目 30＞14、D の KEYWORDS 40＞37、FROM 30＞7）。
   桁幅を超えたら欄にエラーを出して確定を止める。
-- [ ] **欄を桁の決まりどおりに寄せる（左詰めしない）**。trim の後に左詰めするので、C の条件標識（9-11）・結果標識（71-76）、D の開始・終了位置
+- [x] **欄を桁の決まりどおりに寄せる（左詰めしない）**— 済（`20260927-prompter-column-layout`）。定義の `columnLayout`（右寄せ・DDS の条件付け・行と桁）で置き、C の結果標識は 3 欄に分けた。実機でコンパイル可。trim の後に左詰めするので、C の条件標識（9-11）・結果標識（71-76）、D の開始・終了位置
   （実機 RNF0263 × 7）、DDS の条件付け・位置・小数が正しい桁に入らない（docs/research/20260927-f4-prompter-exploration/findings.md の P4）。DDS の位置は行・桁を 1 欄にしている定義側も直す。
 - [ ] **H 仕様書を書き戻す・読み込む**（docs/research/20260927-f4-prompter-exploration/findings.md の P1）。欄はキーワード形式で桁を持たず、`buildRpgLineText` が桁の無い定義で `return original` する。
   キーワードの組み立てと解析が要る。

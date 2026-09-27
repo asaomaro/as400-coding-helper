@@ -8,7 +8,7 @@ import {
   isContinuedLine
 } from "../../src/prompter/clCommandParser";
 import { applyChanges, buildClCommandText } from "../../src/prompter/applyChanges";
-import { narrowToEditableColumns } from "../../src/prompter/commandText";
+import { buildRpgLineText, narrowToEditableColumns } from "../../src/prompter/commandText";
 import * as vscode from "vscode";
 import { buildInitialState } from "../../src/prompter/model";
 import { buildCommandHelpText } from "../../src/prompter/commandHelp";
@@ -245,5 +245,61 @@ suite("桁幅を超える値（実操作調査 P3）", () => {
       buildInitialState(dSpec, { NAME: "P", DECLTYPE: "PR", KEYWORDS: value }).fields.find(field => field.fieldName === "KEYWORDS")?.error;
     assert.equal(keywords(`EXTPROC('${"A".repeat(26)}')`), undefined); // 37 文字
     assert.equal(keywords(`EXTPROC('${"A".repeat(27)}')`), "37 桁に収まりません（38 文字）。");
+  });
+});
+
+suite("桁の決まりどおりに寄せる（実操作調査 P4）", () => {
+  // trim した値を左詰めで書いていたため、別の意味の桁に入っていた。
+  // 実機: D の開始位置の左詰めは RNF0263、DSPF の小数・行・桁の左詰めは CPD7422。
+  const at = (line: string, from: number, to: number): string => line.padEnd(to).slice(from - 1, to);
+  const write = (rel: string, original: string, values: Record<string, string>): string => {
+    const definition = load(rel);
+    const current = Object.fromEntries(
+      definition.parameters
+        .filter(p => typeof p.sourceStart === "number" && typeof p.sourceLength === "number")
+        .map(p => [p.name, original.padEnd(100).slice(p.sourceStart! - 1, p.sourceStart! - 1 + p.sourceLength!).trim()])
+    );
+    return buildRpgLineText(original, definition, { ...current, ...values });
+  };
+
+  test("C 仕様の条件標識は右寄せ（OF は 10-11 桁、N01 は 9-11 桁）", () => {
+    assert.equal(at(write("rpg/ile/ja/C-SPEC.json", "     C", { INDICATORS: "OF", OPCODE: "EXCEPT" }), 9, 11), " OF");
+    assert.equal(at(write("rpg/ile/ja/C-SPEC.json", "     C", { INDICATORS: "N01", OPCODE: "EXSR" }), 9, 11), "N01");
+  });
+
+  test("C 仕様の結果標識は高・低・等しいの組ごとに置ける（等しいだけ 75-76 桁）", () => {
+    const line = write("rpg/ile/ja/C-SPEC.json", "     C", { OPCODE: "READC", FACTOR2: "SFL01", RESIND_EQ: "50" });
+    assert.equal(at(line, 71, 76), "    50");
+  });
+
+  test("D 仕様の開始位置は右寄せ", () => {
+    const line = write("rpg/ile/ja/D-SPEC.json", "     D", { NAME: "FLD", FROM: "12", LEN: "15" });
+    assert.equal(at(line, 26, 32), "     12");
+    assert.equal(at(line, 33, 39), "     15");
+  });
+
+  test("DSPF の条件付けは N＋標識の 3 桁ずつ。画面サイズ条件名は 9 桁目から", () => {
+    assert.equal(at(write("dds/ja/DDS-DSPF.json", "     A", { C8: "40", C19: "FLD" }), 8, 16), " 40      ");
+    assert.equal(at(write("dds/ja/DDS-DSPF.json", "     A", { C8: "N40 41", C19: "FLD" }), 8, 16), "N40 41   ");
+    assert.equal(at(write("dds/ja/DDS-DSPF.json", "     A", { C8: "*DS4", C39: "24 46" }), 8, 16), " *DS4    ");
+  });
+
+  test("DSPF の小数は右寄せ、位置は行 39-41・桁 42-44 に右寄せ", () => {
+    const line = write("dds/ja/DDS-DSPF.json", "     A", { C19: "AMT", C30: "7", C36: "0", C38: "B", C39: "7 74" });
+    assert.equal(at(line, 30, 37), "    7  0"); // 長さ 30-34・タイプ 35（空）・小数 36-37
+    assert.equal(at(line, 39, 44), "  7 74");
+  });
+
+  test("PRTF の位置が 1 つだけなら桁（42-44）", () => {
+    assert.equal(at(write("dds/ja/DDS-PRTF.json", "     A", { C19: "FLD", C39: "10" }), 39, 44), "    10");
+  });
+
+  test("形に合わない値は欄のエラーにする", () => {
+    const dspf = load("dds/ja/DDS-DSPF.json");
+    const error = (values: Record<string, string>, name: string) =>
+      buildInitialState(dspf, values).fields.find(field => field.fieldName === name)?.error;
+    assert.match(error({ C39: "1 2 3" }, "C39") ?? "", /行と桁/);
+    assert.match(error({ C8: "AB" }, "C8") ?? "", /標識/);
+    assert.equal(error({ C8: "N40N41" }, "C8"), undefined);
   });
 });

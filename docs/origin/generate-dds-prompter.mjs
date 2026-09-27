@@ -180,6 +180,21 @@ const PROVEN_COMPLETE = new Set([
 ]);
 
 /**
+ * 値の置き方（`attributes.columnLayout`）。未設定は左詰め。
+ *
+ * **左詰めで書くと別の意味の桁に入り、実機で作成できない。** 小数点以下の桁数・位置の行と桁は
+ * 左詰めで `CPD7422『示された数字フィールドの値が正しくない』`（2026-09-27 に実機で確認。
+ * `.aidev/works/20260927-prompter-column-layout/verify/`）。条件付けは `N`（8・11・14 桁）と
+ * 標識（9-10・12-13・15-16 桁）の 3 組で、`40` を 8 桁目から書くと `4` が NOT 欄に入る。
+ * 物理/論理ファイルでは条件付け・位置を使わない（原典「この欄は物理ファイルまたは論理ファイルでは使用しません」）。
+ */
+const COLUMN_LAYOUT = {
+  "DDS-PF": { 36: "right" },
+  "DDS-DSPF": { 8: "indicatorSlots", 36: "right", 39: "rowColumn" },
+  "DDS-PRTF": { 8: "indicatorSlots", 36: "right", 39: "rowColumn" }
+};
+
+/**
  * **ブランクが「値の一覧」ではなく本文にしか書かれていない欄。**
  *
  * 生成器がブランクを採るのは、`<dt>` や表の項目が「ブランク」と書かれているときだけ
@@ -508,7 +523,8 @@ for (const type of TYPES) {
           ? { restricted: PROVEN_COMPLETE.has(`${type.key}:${start}`) }
           : {}),
         // 右寄せの欄は数値欄として扱う（書き戻しが padStart になる）。
-        ...(detail.rightAligned ? { numericOnly: true } : {})
+        ...(detail.rightAligned ? { numericOnly: true } : {}),
+        ...(COLUMN_LAYOUT[type.key]?.[start] ? { columnLayout: COLUMN_LAYOUT[type.key][start] } : {})
       }
     };
 

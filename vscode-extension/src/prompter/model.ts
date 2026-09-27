@@ -1,6 +1,7 @@
 import type { PrompterDefinition, ParameterDefinition } from "./types";
 import { buildRuleContext, checkDependencies, type RuleContext } from "./cdmlRules";
 import { evaluateParameter } from "./visibilityRules";
+import { columnLayoutError } from "./commandText";
 import {
   countOccurrences,
   isRepeatableGroup,
@@ -293,6 +294,8 @@ export function validate(
     if (length > columns) {
       return `${columns} 桁に収まりません（${length} 文字）。`;
     }
+    const layoutError = columnLayoutError(trimmed, columns, parameter.attributes?.columnLayout);
+    if (layoutError !== undefined) return layoutError;
   }
 
   // 数値項目でも、定義済み値（*DEVD 等）・小数・符号は正当に現れる。

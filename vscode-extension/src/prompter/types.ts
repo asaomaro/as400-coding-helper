@@ -209,6 +209,17 @@ export interface ParameterAttributes {
   readonly restricted?: boolean;
   readonly characterSet?: "alpha" | "alnum" | "upper" | "any";
   readonly numericOnly?: boolean;
+  /**
+   * 桁の決まった欄に値をどう置くか。未設定は左詰め（`numericOnly` なら右寄せ）。
+   *
+   * - `right`: 右寄せ。数値ではないが右に寄せる欄（C 仕様の条件標識 `N01`、D 仕様の開始位置）。
+   * - `indicatorSlots`: DDS の条件付け（8-16 桁）。`N`＋2 桁の標識を 3 桁ずつの枠に置く
+   *   （`40` → ` 40`、`N40 41` → `N40 41`）。`*DS4` のような画面サイズ条件名は 9 桁目から。
+   * - `rowColumn`: DDS の位置（39-41 行・42-44 桁）。`7 74` → `  7 74`、1 つだけなら桁。
+   *
+   * trim した値を左詰めで書くと、別の意味の桁に入る（実操作調査の P4。実機で RNF0263 / CPD7422）。
+   */
+  readonly columnLayout?: "right" | "indicatorSlots" | "rowColumn";
   readonly minLength?: number;
   readonly maxLength?: number;
   /**
