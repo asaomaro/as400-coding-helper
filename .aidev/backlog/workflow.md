@@ -85,7 +85,8 @@ priority: 2           # cl(1) の次。設計書: docs/workflow/ibmi-dev-workflo
 
 ## P2: 品質向上
 
-- [ ] **ソース・ファイル単位でメンバーを一括で送受信する** — 起票 2026-09-27（利用者の要望）。
+- [x] **ソース・ファイル単位でメンバーを一括で送受信する** — 起票 2026-09-27（利用者の要望）。
+      **済（PR #199、`20260927-ibmi-source-bulk-sync`）**。SSH 経路そのものの実機確認は未了（検証環境に SSH が無い）。
       いまの同期（`rpgClSupport.ibmiSourceSync.upload/download`）は**開いている 1 メンバーだけ**。
       これを `QRPGSRC` などのソース・ファイル ⇔ ローカルのフォルダ（`src/<LIB>/<SRCFILE>/`、
       既存と同じ対応づけ）の単位に広げる。
