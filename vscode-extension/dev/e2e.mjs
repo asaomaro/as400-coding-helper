@@ -1560,24 +1560,26 @@ await page.evaluate(() => {
 await page.waitForTimeout(200);
 {
   // 位置は**既にある項目から**割り出す（1 行 30 桁の見出し）。画素の固定値は CI の描画で外れる。
-  // 画面の外（スクロールで隠れた所）を押さないよう、先に見える所へ出す。
+  // 押す所は**キャンバスそのものが当たる点**から選ぶ。画素の固定値は CI の描画で外れ、
+  // 1 行目はスクロールすると目盛り（`.dds-ruler`）の下に隠れる（CI で実際にそうなった）。
   await page.locator('.dds-item[data-row="1"]').first().scrollIntoViewIfNeeded();
-  const anchor = await page.locator('.dds-item[data-row="1"]').first().boundingBox();
   const cell = await cellAt();
+  const point = await page.evaluate(cellWidth => {
+    const anchor = document.querySelector('.dds-item[data-row="1"]').getBoundingClientRect();
+    for (let row = 1; row <= 12; row += 1) {
+      const x = anchor.left + cellWidth * 25;
+      const y = anchor.top + anchor.height * (row + 0.5);
+      if (document.elementFromPoint(x, y)?.classList.contains("dds-canvas")) return { x, y };
+    }
+    return null;
+  }, cell);
   await page.click("#dds-add-constant");
-  await page.mouse.click(anchor.x + cell * 25, anchor.y + anchor.height / 2);
+  if (point) await page.mouse.click(point.x, point.y);
   const opened = await page
     .waitForSelector("#ask-text", { state: "visible", timeout: 5000 })
     .then(() => true, () => false);
   if (!opened) {
-    // 開かなかったら理由の手がかりを残す（押した所・状態表示・構え）。
-    console.log(JSON.stringify({
-      anchor,
-      cell,
-      status: await page.$eval(".status", n => n.textContent),
-      armed: await page.$eval("#dds-add-constant", n => n.className),
-      hit: await page.evaluate(([x, y]) => document.elementFromPoint(x, y)?.className ?? null, [anchor.x + cell * 25, anchor.y + anchor.height / 2])
-    }));
+    console.log(JSON.stringify({ point, cell, status: await page.$eval(".status", n => n.textContent) }));
   }
   await page.fill("#ask-text", "PAGE", { timeout: 5000 });
   await page.click("#ask-ok");
