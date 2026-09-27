@@ -35,6 +35,12 @@ await build({
   outfile: "out/prompter-webview/prompter.js"
 });
 
+await build({
+  ...common,
+  entryPoints: ["src/sync/webview/main.ts"],
+  outfile: "out/sync-webview/sync.js"
+});
+
 // 2) 単独起動ハーネス（検証用）。**--production では作らない**——
 //    VSIX に検証用の出力を混ぜない（`vscode:prepublish` はこちらを通らない）。
 if (!production && existsSync("dev/standalone.ts")) {
@@ -57,4 +63,15 @@ if (!production && existsSync("dev/prompter-standalone.ts")) {
   });
   copyFileSync("dev/prompter.html", "dev/out/prompter.html");
   console.log("dev/out/prompter.html を生成しました");
+}
+
+if (!production && existsSync("dev/sync-standalone.ts")) {
+  mkdirSync("dev/out", { recursive: true });
+  await build({
+    ...common,
+    entryPoints: ["dev/sync-standalone.ts"],
+    outfile: "dev/out/sync.js"
+  });
+  copyFileSync("dev/sync.html", "dev/out/sync.html");
+  console.log("dev/out/sync.html を生成しました");
 }

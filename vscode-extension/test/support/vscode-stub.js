@@ -101,7 +101,14 @@ const vscode = {
   __setConfig(values) { configValues = values ?? {}; },
   Uri: {
     file: fsPath => makeUri(fsPath),
-    joinPath: (base, ...parts) => makeUri([base.fsPath, ...parts].join("/"))
+    joinPath: (base, ...parts) => makeUri([base.fsPath, ...parts].join("/")),
+    from: ({ scheme, path, query }) => ({
+      scheme,
+      path,
+      query,
+      fsPath: path,
+      toString: () => `${scheme}:${path}${query ? `?${query}` : ""}`
+    })
   },
   EventEmitter: class {
     constructor() { this.event = () => ({ dispose() {} }); }
@@ -122,6 +129,11 @@ const vscode = {
     __textDocumentChangeListeners: [],
     __configurationChangeListeners: [],
     getWorkspaceFolder: () => vscode.workspace.__workspaceFolder,
+    __contentProviders: new Map(),
+    registerTextDocumentContentProvider(scheme, provider) {
+      vscode.workspace.__contentProviders.set(scheme, provider);
+      return { dispose() {} };
+    },
     // `__relativePath` は値か関数。関数なら URI ごとに相対パスを返せる（複数ファイルのテスト用）。
     asRelativePath: uri => {
       const relative = vscode.workspace.__relativePath;
@@ -164,18 +176,42 @@ const vscode = {
           return Promise.reject(new Error("EACCES"));
         }
         vscode.workspace.fs.__written.push({ uri, content });
+        // 書いたものを読み戻せるようにする（一括の送受信は書いた後にフォルダを読み直す）。
+        if (vscode.workspace.fs.__writeThrough) vscode.workspace.fs.__contents.set(uri.fsPath, content);
         return Promise.resolve();
       },
       /** **本物と同じく、無ければ reject する。** 「在るか」はこれでしか分からない。 */
       /** ディレクトリとして在ることにするパス（`stat` が `type: 2` を返す）。 */
       __directories: [],
+      /** 更新日時（`stat` の mtime）。`vscode.workspace.fs.__mtimes.set(fsPath, ms)`。 */
+      __mtimes: new Map(),
       stat(uri) {
         if (vscode.workspace.fs.__directories.includes(uri.fsPath)) {
           return Promise.resolve({ type: 2, size: 0 });
         }
-        return vscode.workspace.fs.__existing.includes(uri.fsPath)
-          ? Promise.resolve({ type: 1, size: 0 })
+        const exists = vscode.workspace.fs.__existing.includes(uri.fsPath) || vscode.workspace.fs.__contents.has(uri.fsPath);
+        return exists
+          ? Promise.resolve({ type: 1, size: 0, mtime: vscode.workspace.fs.__mtimes.get(uri.fsPath) ?? 0 })
           : Promise.reject(new Error("ENOENT"));
+      },
+      /** フォルダの中身。`__contents` のうち直下のファイルを返す。無ければ reject（本物と同じ）。 */
+      readDirectory(uri) {
+        const prefix = `${uri.fsPath}/`;
+        const names = [...vscode.workspace.fs.__contents.keys()]
+          .filter(path => path.startsWith(prefix) && !path.slice(prefix.length).includes("/"))
+          .map(path => [path.slice(prefix.length), 1]);
+        const directories = vscode.workspace.fs.__directories
+          .filter(path => path.startsWith(prefix) && !path.slice(prefix.length).includes("/"))
+          .map(path => [path.slice(prefix.length), 2]);
+        if (names.length === 0 && directories.length === 0 && !vscode.workspace.fs.__directories.includes(uri.fsPath)) {
+          return Promise.reject(new Error(`ENOENT: ${uri.fsPath}`));
+        }
+        return Promise.resolve([...names, ...directories]);
+      },
+      __createdDirectories: [],
+      createDirectory(uri) {
+        vscode.workspace.fs.__createdDirectories.push(uri.fsPath);
+        return Promise.resolve();
       },
       readFile(uri) {
         const content = vscode.workspace.fs.__contents.get(uri.fsPath);
@@ -256,6 +292,7 @@ const vscode = {
         webview: {
           html: "",
           cspSource: "vscode-resource:",
+          asWebviewUri: uri => uri,
           onDidReceiveMessage(handler) {
             panel.webview.__handler = handler;
             return { dispose() {} };
@@ -265,6 +302,9 @@ const vscode = {
         onDidDispose(handler) {
           panel.__onDispose = handler;
           return { dispose() {} };
+        },
+        reveal() {
+          panel.__revealed = (panel.__revealed ?? 0) + 1;
         },
         dispose() {
           panel.__disposed = true;
@@ -414,7 +454,7 @@ const vscode = {
   },
   StatusBarAlignment: { Left: 1, Right: 2 },
   EndOfLine: { LF: 1, CRLF: 2 },
-  ViewColumn: { One: 1, Beside: -2 },
+  ViewColumn: { Active: -1, One: 1, Beside: -2 },
   Selection: class { constructor(anchor, active) { this.anchor = anchor; this.active = active; } },
   WorkspaceEdit: class {
     constructor() { this.edits = []; }

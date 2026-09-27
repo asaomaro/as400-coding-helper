@@ -1,7 +1,8 @@
 import { createHash, randomUUID } from "node:crypto";
 import { readFile } from "node:fs/promises";
 import { Client, type ConnectConfig, type SFTPWrapper } from "ssh2";
-import type { MemberTarget } from "./memberTarget";
+import { buildMemberListSql, parseMemberListing, type RemoteListing } from "./bulkSync";
+import { isIbmiObjectName, type MemberTarget } from "./memberTarget";
 
 export type IbmiAuthMethod = "password" | "privateKey";
 
@@ -23,6 +24,7 @@ export type IbmiSourceSyncErrorKind =
   | "transfer"
   | "copy"
   | "attributes"
+  | "list"
   | "cleanup";
 
 /** 秘密値や raw command を含まない、利用者向けに分類済みの同期エラー。 */
@@ -53,6 +55,11 @@ export interface IbmiSourceTransport {
    * `kind: "attributes"` として区別する（内容は既に反映済みであることが呼出元へ伝わるようにする）。
    */
   upload(target: MemberTarget, utf8WireText: string, attributes: UploadAttributes): Promise<void>;
+  /**
+   * ソース・ファイルのメンバー一覧。`RUNSQL` 1 回で UTF-8 の JSON を IFS に書かせ、SFTP で読む
+   * （`bulkSync.ts` の `buildMemberListSql`）。名前は検査済みのものだけを渡す。
+   */
+  listMembers(library: string, sourceFile: string): Promise<RemoteListing>;
   dispose(): void;
 }
 
@@ -128,6 +135,32 @@ class SshIbmiSourceTransport implements IbmiSourceTransport {
       },
       temporaryPath
     );
+  }
+
+  async listMembers(library: string, sourceFile: string): Promise<RemoteListing> {
+    this.ensureOpen();
+    if (!isIbmiObjectName(library) || !isIbmiObjectName(sourceFile)) {
+      throw new IbmiSourceSyncError("configuration", "ライブラリーとソース・ファイルの名前が IBM i のオブジェクト名として正しくありません。");
+    }
+    const temporaryPath = this.makeTemporaryPath();
+    const text = await this.withCleanup(
+      async () => {
+        await executeClCommand(
+          this.client,
+          buildListMembersCommand(library, sourceFile, temporaryPath),
+          "list",
+          "IBM i のメンバー一覧を取得するコマンドが失敗しました。",
+          "IBM i のメンバー一覧を取得するコマンドを完了できませんでした。"
+        );
+        return (await this.withSftp(sftp => readSftpFile(sftp, temporaryPath))).toString("utf8");
+      },
+      temporaryPath
+    );
+    const listing = parseMemberListing(text);
+    if (listing === undefined) {
+      throw new IbmiSourceSyncError("list", "IBM i のメンバー一覧を読み取れませんでした。");
+    }
+    return listing;
   }
 
   dispose(): void {
@@ -287,6 +320,16 @@ function buildCopyToStreamFileCommand(target: MemberTarget, temporaryPath: strin
   return `system "CPYTOSTMF FROMMBR('${buildMemberPath(target)}') TOSTMF('${temporaryPath}') STMFOPT(*REPLACE) STMFCCSID(1208) DBFCCSID(*FILE)"`;
 }
 
+/**
+ * メンバー一覧を UTF-8 の JSON で IFS に書かせる。`QSYS2.IFS_WRITE_UTF8` は IBM i 7.3 で動く（実機で確認）。
+ * SQL の `'` は RUNSQL の文字列の中なので 2 つに、全体は remote shell の二重引用符の中なので `$` などを逃がす
+ * （`isIbmiObjectName` は `$` を許す）。
+ */
+export function buildListMembersCommand(library: string, sourceFile: string, temporaryPath: string): string {
+  const sql = `CALL QSYS2.IFS_WRITE_UTF8(PATH_NAME => '${temporaryPath}', LINE => (${buildMemberListSql(library, sourceFile)}), OVERWRITE => 'REPLACE', END_OF_LINE => 'NONE')`;
+  return `system "${escapeForRemoteShellDoubleQuoted(`RUNSQL SQL('${escapeClStringLiteral(sql)}') COMMIT(*NONE)`)}"`;
+}
+
 function buildCopyFromStreamFileCommand(target: MemberTarget, temporaryPath: string): string {
   return `system "CPYFRMSTMF FROMSTMF('${temporaryPath}') TOMBR('${buildMemberPath(target)}') MBROPT(*REPLACE) STMFCCSID(1208) DBFCCSID(*FILE)"`;
 }
@@ -423,6 +466,7 @@ function toSyncError(kind: IbmiSourceSyncErrorKind, error: unknown): IbmiSourceS
     transfer: "IBM i とのファイル転送に失敗しました。",
     copy: "IBM i の source member コピーに失敗しました。",
     attributes: "IBM i のメンバー属性の反映に失敗しました。",
+    list: "IBM i のメンバー一覧を取得できませんでした。",
     cleanup: "IBM i の一時ファイルを削除できませんでした。"
   };
   return new IbmiSourceSyncError(kind, messageByKind[kind]);

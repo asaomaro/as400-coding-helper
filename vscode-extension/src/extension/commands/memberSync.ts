@@ -12,7 +12,7 @@ import { isInScopeDocument } from "../../utils/fileScope";
 
 export const IBMI_SOURCE_SYNC_SECRET_KEY = "rpgClSupport.ibmiSourceSync.authentication";
 
-type TransportFactory = (
+export type TransportFactory = (
   settings: IbmiSourceSyncSettings,
   authenticationSecret: string | undefined
 ) => Promise<IbmiSourceTransport>;
@@ -78,15 +78,7 @@ async function runTransfer(
   inFlightUris.add(uriKey);
   let transport: IbmiSourceTransport | undefined;
   try {
-    const settings = readSettings();
-    const authenticationSecret = await context.secrets.get(IBMI_SOURCE_SYNC_SECRET_KEY);
-    if (settings.authMethod === "password" && !authenticationSecret) {
-      throw new IbmiSourceSyncError(
-        "configuration",
-        "IBM i 同期のパスワードを「認証情報を保存」で登録してください。"
-      );
-    }
-    transport = await transportFactory(settings, authenticationSecret);
+    transport = await openTransport(context, transportFactory);
 
     if (direction === "upload") {
       const wireText = normalizeToLf(visibleToWire(snapshot.document.getText()));
@@ -116,6 +108,22 @@ async function runTransfer(
       selection: snapshot.selection
     });
   }
+}
+
+/** 設定と保存済みの認証情報で接続する。1 メンバーの同期と一括の送受信で共有する。 */
+export async function openTransport(
+  context: vscode.ExtensionContext,
+  transportFactory: TransportFactory
+): Promise<IbmiSourceTransport> {
+  const settings = readSettings();
+  const authenticationSecret = await context.secrets.get(IBMI_SOURCE_SYNC_SECRET_KEY);
+  if (settings.authMethod === "password" && !authenticationSecret) {
+    throw new IbmiSourceSyncError(
+      "configuration",
+      "IBM i 同期のパスワードを「認証情報を保存」で登録してください。"
+    );
+  }
+  return transportFactory(settings, authenticationSecret);
 }
 
 function readSettings(): IbmiSourceSyncSettings {
@@ -176,7 +184,7 @@ function describeResolveFailure(reason: "pathShape" | "memberName" | "textDescri
   }
 }
 
-function toUserMessage(error: unknown): string {
+export function toUserMessage(error: unknown): string {
   if (error instanceof IbmiSourceSyncError) {
     if (error.kind === "attributes") {
       return `IBM i へ内容はアップロードしましたが、テキスト記述・ソース・タイプの反映に失敗しました。${error.message}`;
