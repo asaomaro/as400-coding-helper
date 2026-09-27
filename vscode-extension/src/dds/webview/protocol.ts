@@ -91,9 +91,10 @@ export type EditorMessage =
    */
   | {
       readonly type: "askItem";
-      readonly kind: "field" | "constant";
-      readonly row: number;
-      readonly column: number;
+      /** `hidden` は潜在フィールド（位置なし・使用 H）。位置を持たないので row / column は無い。 */
+      readonly kind: "field" | "constant" | "hidden";
+      readonly row?: number;
+      readonly column?: number;
     };
 
 /**
@@ -117,6 +118,7 @@ export function parseEditorMessage(value: unknown): EditorMessage | undefined {
       return edits === undefined ? undefined : { type: "edit", edits };
     }
     case "askItem":
+      if (value.kind === "hidden") return { type: "askItem", kind: "hidden" };
       return (value.kind === "field" || value.kind === "constant") &&
         isPositiveInteger(value.row) &&
         isPositiveInteger(value.column)
@@ -189,6 +191,11 @@ function parseEdit(value: unknown): DdsEdit | undefined {
       // 名前の中身（長さ・重複）は core の検証が見る。ここは型だけ。
       return typeof value.name === "string"
         ? { kind: "addRecord", name: value.name }
+        : undefined;
+    case "moveToRecord":
+      // 項目を別の様式へ移す。様式の有無・同じ様式かは core の検証が見る。
+      return isPositiveInteger(value.sourceLine) && typeof value.recordName === "string" && value.recordName.length > 0
+        ? { kind: "moveToRecord", sourceLine: value.sourceLine, recordName: value.recordName }
         : undefined;
     case "addFileKeywords":
       // ファイル・レベルの行を足す。**宛先の行を採らない**（置き場は最初の様式の前）。中身は core の検証が見る。
@@ -305,7 +312,9 @@ function parseEdit(value: unknown): DdsEdit | undefined {
       if (!isRecord(value.item)) return undefined;
       const item = value.item;
       if (item.kind !== "field" && item.kind !== "constant") return undefined;
-      if (!isPositiveInteger(item.row) || !isPositiveInteger(item.column)) return undefined;
+      // 位置は省ける（潜在フィールド）。書くなら正の整数。省けるかどうかは core の検証が見る。
+      if (item.row !== undefined && !isPositiveInteger(item.row)) return undefined;
+      if (item.column !== undefined && !isPositiveInteger(item.column)) return undefined;
 
       // 欄の**意味**（長さが桁数欄に収まるか等）は core の検証が見る。
       // ここで判断を持つと、同じ規則が 2 か所になる。
@@ -327,8 +336,8 @@ function parseEdit(value: unknown): DdsEdit | undefined {
           dataType: item.dataType as string | undefined,
           decimals: item.decimals as number | undefined,
           usage: item.usage as string | undefined,
-          row: item.row,
-          column: item.column
+          ...(item.row !== undefined ? { row: item.row as number } : {}),
+          ...(item.column !== undefined ? { column: item.column as number } : {})
         }
       };
     }

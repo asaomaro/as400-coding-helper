@@ -59,6 +59,9 @@ import { STANDALONE_HOST, type EditorHost } from "./protocol";
  */
 const NEW_FILE_KEYWORD_LINE = 0;
 
+/** 一覧のドラッグで運ぶ項目の型（他のドラッグと混ざらないよう専用の型にする）。 */
+const DRAG_ITEM_TYPE = "application/x-dds-item";
+
 /**
  * DDS エディタのキャンバス UI。**素の web として書く**（`vscode` にも `acquireVsCodeApi` にも触らない）。
  *
@@ -99,8 +102,9 @@ interface Gesture {
 
 /** 追加の内容をホストに聞く（ホストが入力手段を持つ）。 */
 export type AskItem = (
-  kind: "field" | "constant",
-  at: CellPoint
+  kind: "field" | "constant" | "hidden",
+  /** 潜在フィールド（`hidden`）は位置を持たないので無い。 */
+  at?: CellPoint
 ) => Promise<Record<string, unknown> | undefined>;
 
 /** 下部ドックと左右ペインの状態。**ホストに依らない**ので `localStorage` に置く。 */
@@ -1025,6 +1029,20 @@ class EditorView {
           this.removeRecord(record);
         });
         heading.appendChild(remove);
+
+        // **潜在フィールドを足す**（位置なし・使用 H。キャンバスには描かれないので一覧から足す。利用者の決定）。
+        if (this.options.askItem !== undefined && this.model?.kind !== "prtf") {
+          const addHidden = document.createElement("button");
+          addHidden.type = "button";
+          addHidden.className = "record-add-hidden";
+          addHidden.textContent = "＋ 潜在";
+          addHidden.title = `${record.name} に潜在フィールド（使用 H・位置なし）を足す`;
+          addHidden.addEventListener("click", event => {
+            event.stopPropagation();
+            void this.addHiddenField(record.name);
+          });
+          heading.appendChild(addHidden);
+        }
       }
       // 項目は見出しの**中**（入れ子の ul）にあるので、クリックもキーも上がってくる。
       // **一番内側の li が自分かどうか**で見分ける（`.label` は項目側にもあるので使えない）。
@@ -1049,6 +1067,31 @@ class EditorView {
         event.stopPropagation();
         this.select(record.sourceLine);
       });
+      // **項目を様式へドラッグして移す**（実操作調査の D15・利用者の決定）。見出しの中（項目の上）に落としても同じ。
+      if (record.name.length > 0) {
+        heading.addEventListener("dragover", event => {
+          if (!event.dataTransfer?.types.includes(DRAG_ITEM_TYPE)) return;
+          event.preventDefault();
+          event.dataTransfer.dropEffect = "move";
+          heading.classList.add("drop-target");
+        });
+        heading.addEventListener("dragleave", event => {
+          if (event.relatedTarget instanceof Node && heading.contains(event.relatedTarget)) return;
+          heading.classList.remove("drop-target");
+        });
+        heading.addEventListener("drop", event => {
+          const raw = event.dataTransfer?.getData(DRAG_ITEM_TYPE);
+          heading.classList.remove("drop-target");
+          if (!raw) return;
+          event.preventDefault();
+          event.stopPropagation();
+          const sourceLine = Number(raw);
+          if (record.items.some(item => item.sourceLine === sourceLine)) return; // 同じ様式の中では何もしない
+          const moved = (this.model?.outline ?? []).flatMap(entry => entry.items).find(item => item.sourceLine === sourceLine);
+          this.pendingStatus = `${moved?.label || "項目"} を様式 ${record.name} へ移しました`;
+          this.send({ kind: "moveToRecord", sourceLine, recordName: record.name });
+        });
+      }
       list.appendChild(heading);
 
       const children = document.createElement("ul");
@@ -1068,6 +1111,12 @@ class EditorView {
     if (item.sourceLine === this.selected) row.classList.add("selected");
     row.tabIndex = 0;
     row.dataset.sourceLine = String(item.sourceLine);
+    // 別の様式の見出しへドラッグして移す（D15）。
+    row.draggable = true;
+    row.addEventListener("dragstart", event => {
+      event.dataTransfer?.setData(DRAG_ITEM_TYPE, String(item.sourceLine));
+      if (event.dataTransfer) event.dataTransfer.effectAllowed = "move";
+    });
 
     const label = item.kind === "constant" ? `'${item.label}'` : item.label;
     row.append(
@@ -2590,6 +2639,19 @@ class EditorView {
     this.canvas.classList.toggle("placing", this.placing !== null);
   }
 
+  /** 潜在フィールドを様式の末尾に足す。名前・長さ・型はホストが聞く（使用は H、位置なし）。 */
+  private async addHiddenField(recordName: string): Promise<void> {
+    const ask = this.options.askItem;
+    if (ask === undefined) return;
+    const item = await ask("hidden");
+    if (item === undefined) {
+      this.setStatus("");
+      return;
+    }
+    this.pendingStatus = `様式 ${recordName} に潜在フィールドを足しました`;
+    this.send({ kind: "add", recordName, item: { ...item, kind: "field", usage: "H" } } as DdsEdit);
+  }
+
   private async place(event: PointerEvent): Promise<void> {
     const kind = this.placing;
     const ask = this.options.askItem;
@@ -2641,6 +2703,7 @@ class EditorView {
       edit.kind === "remove" ||
       edit.kind === "addRecord" ||
       edit.kind === "addFileKeywords" ||
+      edit.kind === "moveToRecord" ||
       edit.kind === "removeRecord";
     this.setStatus("適用中…");
     this.bridge.post({ type: "edit", edits: [edit] });

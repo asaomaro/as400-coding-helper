@@ -23,7 +23,7 @@ if (root !== null) {
           resolve(data.item ?? undefined);
         };
         window.addEventListener("message", handler);
-        bridge.post({ type: "askItem", kind, row: at.row, column: at.column });
+        bridge.post(at === undefined ? { type: "askItem", kind } : { type: "askItem", kind, row: at.row, column: at.column });
       })
   });
 }

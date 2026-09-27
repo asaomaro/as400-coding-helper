@@ -612,3 +612,52 @@ suite("出力先の構成を壊さない", () => {
     assert.deepStrictEqual(offenders, []);
   });
 });
+
+suite("DDS 編集: 項目を別の様式へ移す（D15）・潜在フィールドを足す", () => {
+  const apply = (source: readonly string[], edit: DdsEdit, type: "DDS-PRTF" | "DDS-DSPF" = "DDS-DSPF"): string[] => {
+    const lines = [...source];
+    const results = applyDdsEdits(source, [edit], type);
+    assert.ok(results.length > 0, JSON.stringify(validateDdsEdits(source, [edit], type)));
+    for (const result of results) lines.splice(result.replaceFrom, result.replaceTo - result.replaceFrom, ...result.lines);
+    return lines;
+  };
+
+  test("条件の行・キーワード行ごと、移し先の様式の末尾へ移す", () => {
+    const source = [
+      ln({ record: "REC1" }),
+      ln({ conditioning: "  40" }),
+      ln({ name: "F1", length: 10, dataType: "A", usage: "O", row: 3, column: 2, keywords: "DSPATR(HI)" }),
+      ln({ keywords: "COLOR(RED)" }),
+      ln({ name: "F2", length: 5, dataType: "A", usage: "O", row: 4, column: 2 }),
+      ln({ record: "FOOT" }),
+      ln({ row: 24, column: 2, keywords: "'F3=END'" })
+    ];
+    assert.deepStrictEqual(apply(source, { kind: "moveToRecord", sourceLine: 3, recordName: "FOOT" }), [
+      source[0], source[4], source[5], source[6], source[1], source[2], source[3]
+    ]);
+  });
+
+  test("同じ様式へは移さない・無い様式へは移さない", () => {
+    const source = [ln({ record: "REC1" }), ln({ name: "F1", length: 10, dataType: "A", usage: "O", row: 3, column: 2 })];
+    assert.strictEqual(validateDdsEdits(source, [{ kind: "moveToRecord", sourceLine: 2, recordName: "REC1" }], "DDS-DSPF").length, 1);
+    assert.strictEqual(validateDdsEdits(source, [{ kind: "moveToRecord", sourceLine: 2, recordName: "NONE" }], "DDS-DSPF").length, 1);
+  });
+
+  test("帳票で行送りの様式へ移すと行番号を外す", () => {
+    const source = [ln({ record: "PLINE" }), ln({ row: 10, column: 2, keywords: "'X'" }), ln({ record: "PHEAD", keywords: "SKIPB(3)" }), ln({ column: 2, keywords: "'H'" })];
+    const after = apply(source, { kind: "moveToRecord", sourceLine: 2, recordName: "PHEAD" }, "DDS-PRTF");
+    assert.strictEqual(after[after.length - 1].slice(38, 44), "     2");
+  });
+
+  test("潜在フィールドは位置なしで足せる。位置の要る使用で位置が無ければ足さない", () => {
+    const source = [ln({ record: "REC1" })];
+    const after = apply(source, { kind: "add", recordName: "REC1", item: { kind: "field", name: "KEY", length: 6, dataType: "A", usage: "H" } });
+    assert.strictEqual(after[1], ln({ name: "KEY", length: 6, dataType: "A", usage: "H" }));
+    assert.strictEqual(validateDdsEdits(source, [{ kind: "add", recordName: "REC1", item: { kind: "field", name: "X", length: 1, usage: "B" } }], "DDS-DSPF").length, 1);
+  });
+
+  test("キャンバスに使用 H で置いても位置は書かない", () => {
+    const after = apply([ln({ record: "REC1" })], { kind: "add", recordName: "REC1", item: { kind: "field", name: "KEY", length: 6, dataType: "A", usage: "H", row: 5, column: 10 } });
+    assert.strictEqual(after[1], ln({ name: "KEY", length: 6, dataType: "A", usage: "H" }));
+  });
+});

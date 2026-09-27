@@ -1531,6 +1531,43 @@ await page.waitForTimeout(400);
   check("**置くときに入れた型・小数・使用がそのまま書かれる**（D6）", line.slice(29, 38) === "    9Y 2O", JSON.stringify(line));
 }
 
+// ---- 22a2. 項目を様式へドラッグして移す（D15）・潜在フィールドを足す（利用者の決定）----
+await page.selectOption("#sample", { label: "CUSTMNT.dspf" });
+await page.waitForTimeout(400);
+{
+  const records = await page.$$eval(".dds-tree li.record > .label", ns => ns.map(n => (n.textContent ?? "").replace(/^R /u, "")));
+  const [fromRecord, toRecord] = records;
+  const item = page.locator(".dds-tree li.record").first().locator("li.item").first();
+  const itemLine = Number(await item.getAttribute("data-source-line"));
+  const itemText = (await sourceLines())[itemLine - 1];
+  const target = page.locator(".dds-tree li.record").nth(1).locator(":scope > .label");
+  await item.dragTo(target);
+  await page.waitForTimeout(400);
+  const after = await sourceLines();
+  const movedAt = after.indexOf(itemText);
+  const toAt = after.findIndex(l => new RegExp(`^\\s{5}A\\s+R ${toRecord}\\b`, "u").test(l));
+  check(
+    "**一覧で項目を別の様式の見出しへドラッグすると、その様式へ移る**（D15）",
+    movedAt > toAt && toAt >= 0,
+    `${fromRecord} → ${toRecord}: 移し先 ${toAt} 行 / 項目 ${movedAt} 行`
+  );
+  check("移したことを状況表示で知らせる", (await page.$eval(".status", n => n.textContent ?? "")).includes(`様式 ${toRecord} へ移しました`));
+
+  await page.locator(".dds-tree li.record").first().locator(":scope > .record-add-hidden").click();
+  await page.waitForSelector("#ask-name", { state: "visible", timeout: 5000 });
+  check("潜在フィールドは使用を聞かない（H に決まっている）", await page.$eval("#ask-usage", n => n.closest("label")?.hidden === true));
+  await page.fill("#ask-name", "HIDKEY");
+  await page.fill("#ask-length", "6");
+  await page.click("#ask-ok");
+  await page.waitForTimeout(300);
+  const hiddenLine = (await sourceLines()).find(l => l.includes("HIDKEY")) ?? "";
+  check(
+    "**「＋ 潜在」で使用 H・位置なしのフィールドが様式に入る**",
+    hiddenLine.slice(37, 38) === "H" && hiddenLine.slice(38, 44).trim() === "",
+    JSON.stringify(hiddenLine)
+  );
+}
+
 // ---- 22b. 実機が作成しない形を検証タブに出す（実操作調査の D18）------------
 await page.selectOption("#sample", { label: "machine-errors.dspf" });
 await page.waitForTimeout(400);

@@ -207,6 +207,11 @@ export type DdsEdit =
    */
   | { readonly kind: "addFileKeywords"; readonly keywords: string }
   /**
+   * **項目を別の様式へ移す**（一覧でのドラッグ＆ドロップ。実操作調査の D15・利用者の決定）。
+   * 条件の行・継続行・位置の上書き行（`*DS4`）も丸ごと運び、移し先の様式の末尾に置く。
+   */
+  | { readonly kind: "moveToRecord"; readonly sourceLine: number; readonly recordName: string }
+  /**
    * **キーワードを 1 つ、条件つきの自分の行へ移す**（`31 SFLDSP` / `40 COLOR(RED)`）。
    *
    * 様式・項目のキーワードに条件を付けるには、そのキーワードだけの行（キーワード行）が要る。
@@ -376,6 +381,26 @@ export function validateDdsEdits(
           code: "keyword-wrong-level",
           message: `${wrong.join(" / ")} はファイル・レベルに書けません（実機は CPD7486）`
         });
+      }
+      continue;
+    }
+
+    if (edit.kind === "moveToRecord") {
+      const unit = itemUnitAt(units, edit.sourceLine);
+      if (!unit) {
+        rejections.push({
+          code: "line-not-found",
+          message: `${edit.sourceLine} 行目に移せる項目がありません（ソースが変わっている可能性があります）`,
+          sourceLine: edit.sourceLine
+        });
+        continue;
+      }
+      if (insertionPoint(units, edit.recordName) === undefined) {
+        rejections.push({ code: "record-not-found", message: `レコード様式 ${edit.recordName} が見つかりません` });
+        continue;
+      }
+      if (recordNameOf(units, unit)?.toUpperCase() === edit.recordName.toUpperCase()) {
+        rejections.push({ code: "record-not-found", message: `既に様式 ${edit.recordName.toUpperCase()} の項目です`, sourceLine: edit.sourceLine });
       }
       continue;
     }
@@ -767,6 +792,20 @@ export function applyDdsEdits(
         results.push({ replaceFrom: at, replaceTo: at, lines: [buildRecordLine(edit.name)] });
         break;
       }
+      case "moveToRecord": {
+        const unit = itemUnitAt(units, edit.sourceLine);
+        const at = insertionPoint(units, edit.recordName);
+        if (!unit || at === undefined) break; // 検証済み。
+        const moved = [...unit.sourceLines].sort((a, b) => a - b).map(line => lines[line - 1]);
+        // 帳票で行送りの様式へ移すなら行番号を外す（行送りと行番号は併用できない。実機 CPD7860）。
+        if (ddsType === "DDS-PRTF" && recordUsesSpacing(units, edit.recordName)) {
+          const representative = [...unit.sourceLines].sort((a, b) => a - b).indexOf(unit.sourceLine);
+          moved[representative] = ddsReplaceField(moved[representative], DDS_POSITION_ROW, "   ").replace(/\s+$/u, "");
+        }
+        results.push(...removalRuns(unit));
+        results.push({ replaceFrom: at, replaceTo: at, lines: moved });
+        break;
+      }
       case "conditionKeyword": {
         const located = locateKeyword(lines, units, edit.sourceLine, edit.index);
         if (!located) break; // 検証済み。
@@ -1148,9 +1187,13 @@ function validateAdd(
     rejections.push(...validateUsage(item.usage, ddsType));
   }
 
+  // 位置を省けるのは位置を持てない使用（H・P・M、帳票は P）だけ。潜在フィールドを一覧から足す入口（利用者の決定）。
+  if (item.column === undefined && !(item.kind === "field" && isPositionlessUsage(item.usage, ddsType))) {
+    rejections.push({ code: "position-out-of-range", message: "位置（桁）が要ります" });
+  }
   rejections.push(...validatePosition(item.row, item.column));
   // **追加でも同じ**（移動だけ塞いでも、追加から入れれば同じ状態になる）。
-  if (item.row !== undefined) {
+  if (item.row !== undefined && item.column !== undefined) {
     rejections.push(...validateColumnOne(item.row, item.column, ddsType, item.row));
   }
   return rejections;
@@ -1211,11 +1254,14 @@ function effectiveNewItem(
   const usage =
     item.kind === "field" && item.usage === undefined && ddsType === "DDS-DSPF" ? "B" : item.usage;
   const omitRow = ddsType === "DDS-PRTF" && recordUsesSpacing(units, recordName);
-  const { row, ...rest } = item;
+  // 位置を持てない使用（H・P・M。帳票は P）なら位置を書かない（実機 CPD7443 / CPD7436）。
+  const positionless = item.kind === "field" && isPositionlessUsage(usage, ddsType);
+  const { row, column, ...rest } = item;
   return {
     ...rest,
     ...(usage !== undefined ? { usage } : {}),
-    ...(omitRow ? {} : row !== undefined ? { row } : {})
+    ...(omitRow || positionless ? {} : row !== undefined ? { row } : {}),
+    ...(positionless ? {} : column !== undefined ? { column } : {})
   };
 }
 
@@ -1418,7 +1464,7 @@ function validateColumnOne(
 /** 位置欄に書けるか。`row` を省くと桁だけを見る（帳票の `moveColumn`）。 */
 function validatePosition(
   row: number | undefined,
-  column: number,
+  column: number | undefined,
   sourceLine?: number
 ): DdsEditRejection[] {
   const bad = (what: string, value: number): DdsEditRejection => ({
@@ -1431,7 +1477,7 @@ function validatePosition(
   if (row !== undefined && (!fitsInColumn(row, POSITION_WIDTH) || row < 1)) {
     rejections.push(bad("行", row));
   }
-  if (!fitsInColumn(column, POSITION_WIDTH) || column < 1) {
+  if (column !== undefined && (!fitsInColumn(column, POSITION_WIDTH) || column < 1)) {
     rejections.push(bad("桁", column));
   }
   return rejections;
@@ -1803,6 +1849,16 @@ function locateKeyword(
       return { unit, group: groups[g], isFirst: g === 0, entries: [...entries], entryIndex: index - offset, entry, end };
     }
     offset += entries.length;
+  }
+  return undefined;
+}
+
+/** 項目が属する様式の名前（直前の様式の宣言行）。 */
+function recordNameOf(units: readonly LogicalUnit[], item: LogicalUnit): string | undefined {
+  let name: string | undefined;
+  for (const unit of units) {
+    if (unit === item) return name;
+    if (unit.kind === "record") name = ddsName(unit.line);
   }
   return undefined;
 }
