@@ -126,6 +126,38 @@ const LAYOUT_RULES = [
       "印刷装置ファイルで、行番号のある項目に SPACE/SKIP を使っていないか（実機では CPD7860）。"
   },
   {
+    code: "keyword-needs-indicator",
+    id: "layout-keyword-needs-indicator",
+    severity: "error",
+    enabledByDefault: true,
+    description:
+      "条件標識が必須のキーワード（SFLCLR / SFLDLT / SFLEND）に条件が付いているか。" +
+      "原典「このキーワードには、オプション標識を指定しなければなりません」。実機は CPD7490。"
+  },
+  {
+    code: "position-not-allowed",
+    id: "layout-position-not-allowed",
+    severity: "error",
+    enabledByDefault: true,
+    description:
+      "位置を持てない使用（表示装置 H・P・M、印刷装置 P）の項目に位置が無いか。実機は CPD7443 / CPD7436。"
+  },
+  {
+    code: "invalid-usage",
+    id: "layout-invalid-usage",
+    severity: "error",
+    enabledByDefault: true,
+    description: "印刷装置ファイルの使用が 空白・O・P のいずれかか。実機は CPD7410。"
+  },
+  {
+    code: "unclosed-literal",
+    id: "layout-unclosed-literal",
+    severity: "error",
+    enabledByDefault: true,
+    description:
+      "リテラルが 80 桁目までに閉じず、次の行にも続いていないか（81 桁目以降は注記域）。実機は CPD7508。"
+  },
+  {
     code: "overflow",
     id: "layout-overflow",
     severity: "warning",

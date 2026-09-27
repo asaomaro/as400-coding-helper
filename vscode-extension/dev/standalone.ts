@@ -258,6 +258,26 @@ const HIDDEN_SAMPLE = [
 ].join("\n");
 
 /**
+ * **実機が作成しない形**（実操作調査の D18）。検証タブに出ることを確かめる。
+ * SFLCLR に条件が無い（CPD7490）・潜在フィールドに位置（CPD7443）・閉じないリテラル（CPD7508）。
+ */
+const MACHINE_ERROR_SAMPLE = [
+  "     A                                      DSPSIZ(24 80 *DS3)",
+  "     A          R SFL01                     SFL",
+  "     A            F1            10A  O  5  2",
+  "     A          R CTL01                     SFLCTL(SFL01)",
+  "     A                                      SFLSIZ(0010)",
+  "     A                                      SFLPAG(0005)",
+  "     A  31                                  SFLDSP",
+  "     A                                      SFLCLR",
+  "     A            KEY           10A  H  2  2",
+  "     A                                  1  2'" + "-".repeat(60) + "'",
+  "     A          R FOOT",
+  "     A                                 24  2'F3=END'",
+  ""
+].join("\n");
+
+/**
  * 3 本目は**条件標識で見え方が変わる** DDS。
  *
  * `50` / `N50` は同じ桁に置いた排他の組（標識を倒すと片方だけが出る）、
@@ -388,6 +408,7 @@ const SAMPLES = [
   { name: "two-sizes.dspf", text: TWO_SIZE_SAMPLE },
   { name: "references.dspf", text: REFERENCE_SAMPLE },
   { name: "lowercase-names.dspf", text: LOWERCASE_SAMPLE },
+  { name: "machine-errors.dspf", text: MACHINE_ERROR_SAMPLE },
   // 帳票。**行は SPACE / SKIP で決まり、位置欄には桁だけが書かれる**——
   // 画面ファイルには無い形なので、ここで実際に触れるようにしておく。
   { name: "CUSTRPT.prtf", text: report as unknown as string },

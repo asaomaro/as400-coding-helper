@@ -61,6 +61,19 @@ for (const { kind, keyword, conditionable } of MACHINE) {
   }
 }
 
+/**
+ * **条件が必須のキーワード**（実機 IBM i 7.3・2026-09-27）。条件を付けずに書くと
+ * CPD7490「示されたキーワードにはオプション標識が必要である」で作成されない。付けると作成できる
+ * （`.aidev/works/20260927-dds-validation-machine-errors/verify/N*.dspf`）。原典から採った集合と完全に一致すること。
+ */
+const MACHINE_REQUIRED = { DSPF: ["SFLCLR", "SFLDLT", "SFLEND"] };
+for (const [kind, expected] of Object.entries(MACHINE_REQUIRED)) {
+  const got = [...(data.required?.[kind] ?? [])].sort();
+  if (JSON.stringify(got) !== JSON.stringify([...expected].sort())) {
+    failures.push(`条件が必須のキーワードが実機と食い違う: ${kind} 原典 ${JSON.stringify(got)} / 実機 ${JSON.stringify(expected)}`);
+  }
+}
+
 for (const [kind, minimum] of Object.entries(MINIMUM)) {
   const total = Object.keys(data.keywords[kind] ?? {}).length;
   if (total < minimum) {
@@ -81,4 +94,4 @@ if (failures.length > 0) {
   process.exit(1);
 }
 
-console.log("✓ 条件付けの可否 OK（原典と一致し、実機で確かめた 5 件とも食い違わない）");
+console.log("✓ 条件付けの可否 OK（原典と一致し、実機で確かめた 5 件・条件が必須の 3 件とも食い違わない）");

@@ -249,7 +249,11 @@ suite("lint: numeric-field / numeric-alignment", () => {
 });
 
 suite("lint: 規則の既定", () => {
-  test("既定で有効なのは 11 規則（行単位 4 ＋ レイアウト 7）", () => {
+  test("既定で有効なのは 15 規則（行単位 4 ＋ レイアウト 11）", () => {
+    // 2026-09-27 に 4 つ足した（keyword-needs-indicator / position-not-allowed / invalid-usage /
+    // unclosed-literal）。どれも実機で作成できないことを確かめ、検証済みのサンプル（docs/src・実機で通った
+    // 見本）に当てて偽陽性 0 件を確かめた（.aidev/works/20260927-dds-validation-machine-errors）。
+    //
     // レイアウトの 7 つは「実機で作成できないソースでしか出ない」と原典で
     // 言い切れるものだけ（根拠は types.ts の RuleId に引用つきで書いてある）。
     //
@@ -268,7 +272,11 @@ suite("lint: 規則の既定", () => {
       "layout-invalid-screen-size-condition",
       "layout-invalid-screen-size",
       "layout-keyword-wrong-level",
-      "layout-spacing-with-line-number"
+      "layout-spacing-with-line-number",
+      "layout-keyword-needs-indicator",
+      "layout-position-not-allowed",
+      "layout-invalid-usage",
+      "layout-unclosed-literal"
     ]);
   });
 
@@ -304,6 +312,10 @@ suite("lint: 規則の既定", () => {
       "layout-invalid-screen-size",
       "layout-keyword-wrong-level",
       "layout-spacing-with-line-number",
+      "layout-keyword-needs-indicator",
+      "layout-position-not-allowed",
+      "layout-invalid-usage",
+      "layout-unclosed-literal",
       "layout-overflow",
       "layout-overlap"
     ]);

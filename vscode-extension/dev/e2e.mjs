@@ -1502,6 +1502,16 @@ check(
 await page.click("#dds-toggle-colors");
 await page.waitForTimeout(200);
 
+// ---- 22b. 実機が作成しない形を検証タブに出す（実操作調査の D18）------------
+await page.selectOption("#sample", { label: "machine-errors.dspf" });
+await page.waitForTimeout(400);
+{
+  const shown = await page.$eval(".dds-diagnostics", n => n.textContent ?? "");
+  check("**SFLCLR に条件が無いと検証タブに出る**（CPD7490）", shown.includes("CPD7490"), shown.slice(0, 300));
+  check("**潜在フィールドに位置があると検証タブに出る**（CPD7443）", shown.includes("CPD7443"));
+  check("**80 桁目までに閉じないリテラルが検証タブに出る**（CPD7508）", shown.includes("CPD7508"));
+}
+
 // ---- 23. 帳票（PRTF）--------------------------------------------------
 await page.selectOption("#sample", { label: "CUSTRPT.prtf" });
 await page.waitForTimeout(400);

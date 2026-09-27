@@ -529,7 +529,7 @@ priority: 1           # DDS の視覚的確認と編集（charter の第 4 の�
   （docs/research/20260927-dds-editor-exploration/findings.md の帳票 P1）。あわせて**フィールドの使用を `B` にしない**（印刷装置は空白・`O`・`P`。使用の選択肢も画面用が出る。P2）と、
   帳票のプロパティに出る画面用の文言（属性文字・CSRLOC）の整理（P4）。
 - [x] **使用を `H`（潜在）/ `P` にしたら位置欄を空ける** — 済（`20260927-dds-positionless-usage`。M も。2 次画面の上書き行も消す）。「潜在フィールドを位置なしで置く入口」は未着手（置き方の UI の判断が要る）。いまは位置が残り実機 CPD7443（docs/research/20260927-dds-editor-exploration/findings.md の D9）。潜在フィールドを位置なしで置く入口も無い。
-- [ ] **検証を実機の誤りに揃える**。実機で重大度 20 以上だった CPD7443（`H` に位置）・CPD7490（`SFLCLR` 等に標識が無い）・CPD7508（80 桁あふれ）を
+- [x] **検証を実機の誤りに揃える** — 済（`20260927-dds-validation-machine-errors`。CPD7490 / CPD7443・CPD7436 / CPD7410 / CPD7508 を検証タブと lint に出す）。実機で重大度 20 以上だった CPD7443（`H` に位置）・CPD7490（`SFLCLR` 等に標識が無い）・CPD7508（80 桁あふれ）を
   1 つも指摘しない（docs/research/20260927-dds-editor-exploration/findings.md の D18）。ソースの形だけで判定できる。上の各項目の直しと重なるので、検証の側は最後にまとめてよい。
 - [ ] **ウィンドウ様式（`WINDOW`）の枠を描き、中の項目を枠からの相対位置で描く**。いまは枠が出ず、ウィンドウの `2 2` を画面の 2 行 2 桁に描く
   （docs/research/20260927-dds-editor-exploration/findings.md の D12。重なりの検査も絶対位置になる）。あわせて**サブファイルを `SFLPAG` の行ぶん描く**（いまは 1 行だけ。D13）。

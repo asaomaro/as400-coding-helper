@@ -1,4 +1,5 @@
 import { ddsField, ddsName } from "../ddsLayout";
+import { ddsSourceDiagnostics, type DdsSourceDiagnosticCode } from "./ddsSourceDiagnostics";
 import { DDS_POSITION_COLUMN, DDS_POSITION_ROW } from "./ddsPositionColumns";
 import { LPI_VALUES, resolvePrintDensity } from "./prtfDensity";
 import { keywordLevelDiagnostics } from "./ddsKeywordLevels";
@@ -125,7 +126,9 @@ export type LayoutDiagnosticCode =
    */
   | "keyword-wrong-level"
   /** 条件を付けられないキーワードに条件が付いている（実機がコンパイルしない）。 */
-  | "keyword-not-conditionable";
+  | "keyword-not-conditionable"
+  /** ソースの形だけで分かる、実機が作成しない誤り（`ddsSourceDiagnostics`）。 */
+  | DdsSourceDiagnosticCode;
 
 export interface LayoutDiagnostic {
   readonly code: LayoutDiagnosticCode;
@@ -359,6 +362,7 @@ export function resolvePrtfLayout(
 
   const units = toLogicalUnits(lines);
   diagnostics.push(...unconditionableDiagnostics(units, "PRTF"));
+  diagnostics.push(...ddsSourceDiagnostics(lines, units, "PRTF"));
   diagnostics.push(...keywordLevelDiagnostics(lines, units, "PRTF"));
 
   for (const unit of units) {
