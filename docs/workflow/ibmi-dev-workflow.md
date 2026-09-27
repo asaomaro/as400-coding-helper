@@ -148,7 +148,7 @@ sequenceDiagram
 ```
 
 **2026-07-19 に pub400（IBM i 7.5）で全段の実行を確認済み**。実証済みのコマンド列は
-skill `ibmi-remote`（`.claude/skills/ibmi-remote/SKILL.md`）に置いた。
+skill `ibmi-remote`（`skills/ibmi-remote/SKILL.md`）に置いた。
 実装形態は**レシピ集（skill）→ CLI に段階化**（spec 決定）で、現在は前半の段階。
 
 #### 4 段目は SQL ではなく `CPYTOSTMF`（当初設計からの訂正）

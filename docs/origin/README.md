@@ -131,7 +131,7 @@ node docs/origin/verify-cl-definitions.mjs   [CMD ...]   # 原典と突き合わ
 生成スクリプトを直す**（手で直しても次の再生成で消える）。
 
 原典に書かれておらず生成できない項目（`dependsOn` の相関規則、`constraints`、`placeholder`、
-要素の英名）は既存 JSON から引き継がれる。これらの追加・修正は `.claude/skills/cl-command-def`
+要素の英名）は既存 JSON から引き継がれる。これらの追加・修正は `skills/cl-command-def`
 の手順に従う。
 
 ## 保存形式（重要）

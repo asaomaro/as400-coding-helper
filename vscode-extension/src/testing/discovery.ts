@@ -38,7 +38,7 @@ export function isDiscoveredStreamTest(file: DiscoveredTestFile): file is Discov
 
 /**
  * ソース本文から `test` 始まりの `EXPORT` 手続きを列挙する（純粋関数）。
- * `.claude/skills/rpgunit-test/SKILL.md:147-192` のRPGUnitテストの形
+ * `skills/rpgunit-test/SKILL.md:147-192` のRPGUnitテストの形
  * （`NOMAIN`サービスプログラム、`test`始まりのexport手続き）に基づく。
  */
 export function findTestProcedures(source: string): readonly DiscoveredTestProcedure[] {
@@ -111,7 +111,7 @@ const STREAM_TEST_GLOB = "**/*.[tT][eE][sS][tT].{[rR][pP][gG][lL][eE],[sS][qQ][l
 /**
  * ワークスペース内のテストを探す。メンバー方式は `src/**​/*.rpgle|*.sqlrpgle`、IFS 方式は `*.test.rpgle` 等
  * （IBM i Testing と同じ置き方。`node_modules` は除く）。RPG III（`.rpg`）はサブプロシージャーが無く
- * RPGUnit対象外（`.claude/skills/rpgunit-test/SKILL.md:145`）のため走査しない。
+ * RPGUnit対象外（`skills/rpgunit-test/SKILL.md:145`）のため走査しない。
  */
 export async function discoverTestFiles(
   workspaceFolders: readonly vscode.WorkspaceFolder[]

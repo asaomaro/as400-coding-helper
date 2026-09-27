@@ -51,7 +51,7 @@ priority: 2           # cl(1) の次。設計書: docs/workflow/ibmi-dev-workflo
       条件（入手元とバージョンを記録・導入ライブラリーを分けて後から消せる形）は満たしている
       ——`ASAOLIB` には混ぜず `RPGUNIT` に分離したので `DLTLIB`/`CLRLIB` で丸ごと戻せる。
 - [x] 実機操作レシピを skill 化する — 済。**大部分は起票時点で既にあった**
-      （`.claude/skills/ibmi-remote/SKILL.md` 206 行に ssh / pub400 経由の
+      （`skills/ibmi-remote/SKILL.md` 206 行に ssh / pub400 経由の
       メンバー送受信・コンパイル・エラー取得が揃っていた）。**閉じ忘れ。**
       足りなかった 2 点を `20260829-ibmi-remote-hostserver` で追記（+144 行 / 削除 0）:
       - **ライブラリー・リストが持ち越せない**こと（`ADDLIBLE` は次のコマンドに効かない）。

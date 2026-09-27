@@ -28,7 +28,7 @@ SEU で書くのと同じ感覚で VS Code でも書けるようにします。
 - [使い方](#使い方)
   - [対象のファイル](#対象のファイル) ／ [書く](#書く) ／ [画面・帳票（DDS）](#画面帳票dds) ／
     [IBM i とソースを送受信する](#ibm-i-とソースを送受信する) ／ [RPGUnit のテストを回す](#rpgunit-のテストを回す) ／
-    [コマンドラインの道具](#コマンドラインの道具vs-code-不要)
+    [コマンドラインの道具](#コマンドラインの道具vs-code-不要) ／ [AI エージェントから使う（skill）](#ai-エージェントから使うskill)
 - [設定](#設定)
 - [既知の制約](#既知の制約)
 - [リポジトリの構成](#リポジトリの構成)
@@ -176,6 +176,27 @@ node out/cli/dds.js patch --edits <編集.json> <ファイル>   # 項目の移�
 RPGUnit のテストを VS Code を使わずに回す `tools/run-rpgunit.mjs` もあります（[tools/README.md](tools/README.md)）。
 こちらは実機への接続に別リポジトリ（ts5250）を使います。
 
+### AI エージェントから使う（skill）
+
+Claude Code などの AI エージェント向けに、手順と罠をまとめた skill を `skills/` に置いています。
+
+| skill | 使いどころ |
+|---|---|
+| `ibmi-remote` | IBM i 実機へのソースの転送・コンパイル・エラーとコンパイル・リストの取得（AI の自律ループの実行手段） |
+| `rpgunit-test` | RPGUnit のテストを書く・ビルドする・実行して結果を取る |
+| `cl-command-def` | CL コマンドのプロンプター定義を、IBM の原典から生成・照合する |
+| `rpg-spec-def` | RPG 仕様書のプロンプター定義を、固定長フォーマットの原典から作る・照合する |
+
+どの PJ で作業していても使えるよう、`~/.claude/skills/` にリンクを貼って読み込ませます。
+
+```sh
+for s in /workspaces/ibmi-dogubako/skills/*/; do
+  ln -sfn "${s%/}" ~/.claude/skills/"$(basename "$s")"
+done
+```
+
+skill の中の相対パス（`tools/…` など）は、このリポジトリのルートからの相対です。
+
 ### 困ったとき
 
 コマンド「Dogubako: 出力を表示」で拡張のログを見られます。
@@ -213,7 +234,8 @@ RPGUnit のテストを VS Code を使わずに回す `tools/run-rpgunit.mjs` �
 | `docs/origin/` | IBM の原典から定義を生成・照合するスクリプト。**定義の JSON は手で直さず、ここのスクリプトを直す** |
 | `docs/workflow/` | IBM i の開発ワークフロー（AI の自律ループ・RPGUnit の導入など）の設計と手順 |
 | `docs/research/` | 調査の記録（競合の比較・実機での確認など） |
-| `tools/` | 実機に触る開発用の道具（RPGUnit の実行など）。CI では動かない |
+| `tools/` | 実機に触る開発用の道具（RPGUnit の実行など）。CI では動かない（自己テストだけ回す） |
+| `skills/` | AI エージェント向けの skill（[上](#ai-エージェントから使うskill)） |
 | `.aidev/` | 開発の作業記録（要件・タスク・テスト結果・レビュー）と backlog |
 | `build-vsix.sh` / `.bat` | VSIX を作る |
 

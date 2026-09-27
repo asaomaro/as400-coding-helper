@@ -91,4 +91,4 @@
 
 ---
 
-生成: `tools/run-rpgunit.mjs --md`（書式は `.claude/skills/rpgunit-test/templates/test-report.md`）
+生成: `tools/run-rpgunit.mjs --md`（書式は `skills/rpgunit-test/templates/test-report.md`）

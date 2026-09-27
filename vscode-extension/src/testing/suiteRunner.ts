@@ -35,7 +35,7 @@ export interface SuiteConnection {
 
 /**
  * コンパイル・実行に使うライブラリー・リスト。`RPGUNIT` が要るのは、`TESTCASE` が
- * 修飾なしの `/include qinclude,TEMPLATES` を持つため（`.claude/skills/rpgunit-test/SKILL.md`
+ * 修飾なしの `/include qinclude,TEMPLATES` を持つため（`skills/rpgunit-test/SKILL.md`
  * 「踏みやすい罠」）。無いと `CPF4102` で落ちる（実機で観測）。
  */
 export function testLibraryList(targetLibrary: string, baseLibraryList: readonly string[]): readonly string[] {
@@ -58,7 +58,7 @@ export async function compileSuite(
   const { target, source, binding, noTgtCcsid } = input;
   await conn.uploadMemberContent(target, source);
   // アップロード（CPYFRMSTMF 相当）だけでは SRCTYPE 属性が付かない。RUCRTRPG は getMemberType() で
-  // メンバーの SRCTYPE を見て分岐するため、別途設定が必須（`.claude/skills/ibmi-remote/SKILL.md`）。
+  // メンバーの SRCTYPE を見て分岐するため、別途設定が必須（`skills/ibmi-remote/SKILL.md`）。
   await conn.runCommand(
     `CHGPFM FILE(${target.library}/${target.sourceFile}) MBR(${target.member}) ` +
     `SRCTYPE(${deriveSourceType(target.extension)})`

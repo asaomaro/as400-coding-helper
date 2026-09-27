@@ -11,7 +11,7 @@ export interface CreateTestCommandOptions {
   /**
    * テストプログラム名。`SRCMBR` にもこの値をそのまま使う——
    * 別名を渡すと `getMemberType` がプログラム名でメンバーを探しに行き `CPF9815` になる
-   * （`.claude/skills/rpgunit-test/SKILL.md:291-303` で実機確認済み）。
+   * （`skills/rpgunit-test/SKILL.md:291-303` で実機確認済み）。
    */
   readonly program: string;
   readonly sourceFile: string;
