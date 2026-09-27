@@ -572,7 +572,10 @@ export function applyDdsEdits(
           const run = keywordRunOf(unit);
           const replaced = replaceLeadingConstant(unit.keywords, edit.attributes.text);
           if (run && replaced !== undefined) {
-            const head = writeBackAttributes(lines[index], edit.attributes);
+            const written = writeBackAttributes(lines[index], edit.attributes);
+            const head = isPositionlessUsage(edit.attributes.usage, ddsType)
+              ? writeBackPosition({ line: written })
+              : written;
             results.push({
               replaceFrom: run.from,
               replaceTo: run.to,
@@ -582,11 +585,18 @@ export function applyDdsEdits(
           }
         }
 
+        const positionless = isPositionlessUsage(edit.attributes.usage, ddsType);
+        const applied = applyAttributes(lines[index], edit.attributes);
         results.push({
           replaceFrom: index,
           replaceTo: index + 1,
-          lines: [applyAttributes(lines[index], edit.attributes)]
+          lines: [positionless ? writeBackPosition({ line: applied }) : applied]
         });
+        // 2 次画面サイズの位置の上書き行（`*DS4 … 24 46`）も位置なので、一緒に消す。
+        const alternate = positionless && ddsType === "DDS-DSPF" ? alternateFor(lines, unit) : undefined;
+        if (alternate) {
+          results.push({ replaceFrom: alternate.sourceLine - 1, replaceTo: alternate.sourceLine, lines: [] });
+        }
 
         // **名前を変えたら、それを指しているキーワードも直す。**
         // 参照は**別の行**にあるので、同じ確定の中で一緒に積む
@@ -1040,6 +1050,21 @@ function validateAdd(
     rejections.push(...validateColumnOne(item.row, item.column, ddsType, item.row));
   }
   return rejections;
+}
+
+/**
+ * 位置（39-44 桁）を持てない使用か。
+ *
+ * 画面は `H`（潜在）・`P`（プログラム - システム間）・`M`（メッセージ）、帳票は `P`。原典
+ * （`FIELD-DSPF-pos3944.html`「潜在フィールド、プログラム - システム間フィールド、またはメッセージ・
+ * フィールドについては、位置を指定することはできません」/ `FIELD-PRTF-prtuse.html`「位置は無効です」）。
+ * 実機も H・P に位置があると CPD7443、M は CPD7436 で作成しない（2026-09-27 に確認。
+ * `.aidev/works/20260927-dds-positionless-usage/verify/`）。使用を変えても位置を残していた（実操作調査の D9）。
+ */
+function isPositionlessUsage(usage: string | undefined, ddsType: EditableDdsType): boolean {
+  if (usage === undefined) return false;
+  const value = usage.trim().toUpperCase();
+  return ddsType === "DDS-PRTF" ? value === "P" : value === "H" || value === "P" || value === "M";
 }
 
 /**

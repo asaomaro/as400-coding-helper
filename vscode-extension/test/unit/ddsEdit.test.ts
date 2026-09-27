@@ -407,3 +407,49 @@ suite("DDS 編集: 帳票に置く項目（実操作調査の帳票 P1・P2）",
     assert.deepStrictEqual(codes("O"), []);
   });
 });
+
+suite("DDS 編集: 位置を持てない使用（実操作調査 D9）", () => {
+  const apply = (source: readonly string[], edit: DdsEdit, type: "DDS-PRTF" | "DDS-DSPF" = "DDS-DSPF"): string[] => {
+    const lines = [...source];
+    for (const result of applyDdsEdits(source, [edit], type)) {
+      lines.splice(result.replaceFrom, result.replaceTo - result.replaceFrom, ...result.lines);
+    }
+    return lines;
+  };
+
+  // 実機は H・P に位置があると CPD7443、M は CPD7436 で作成しない。
+  for (const usage of ["H", "P", "M"]) {
+    test(`画面で使用を ${usage} にすると位置（39-44 桁）を空ける`, () => {
+      const after = apply(SOURCE, { kind: "setAttributes", sourceLine: 6, attributes: { usage } });
+      assert.strictEqual(after[5], ln({ name: "CUSTNO", length: 6, dataType: "S", usage }));
+    });
+  }
+
+  test("使用を O にしても位置は残る", () => {
+    const after = apply(SOURCE, { kind: "setAttributes", sourceLine: 6, attributes: { usage: "O" } });
+    assert.strictEqual(after[5].slice(38, 44), "  5 20");
+  });
+
+  test("2 次画面サイズの位置の上書き行も消す", () => {
+    const source = [
+      ln({ keywords: "DSPSIZ(24 80 *DS3 27 132 *DS4)" }),
+      ln({ record: "MAIN" }),
+      ln({ name: "FLDA", length: 10, dataType: "A", usage: "B", row: 5, column: 2 }),
+      ln({ conditioning: "  *DS4", row: 6, column: 6 }),
+      ln({ name: "FLDB", length: 10, dataType: "A", usage: "B", row: 8, column: 2 })
+    ];
+    const after = apply(source, { kind: "setAttributes", sourceLine: 3, attributes: { usage: "H" } });
+    assert.deepStrictEqual(after, [
+      source[0],
+      source[1],
+      ln({ name: "FLDA", length: 10, dataType: "A", usage: "H" }),
+      source[4]
+    ]);
+  });
+
+  test("帳票は P で位置を空ける（O は残す）", () => {
+    const prtf = [ln({ record: "PREC" }), ln({ name: "FLD", length: 5, dataType: "A", row: 3, column: 2 })];
+    assert.strictEqual(apply(prtf, { kind: "setAttributes", sourceLine: 2, attributes: { usage: "P" } }, "DDS-PRTF")[1].slice(38, 44).trim(), "");
+    assert.strictEqual(apply(prtf, { kind: "setAttributes", sourceLine: 2, attributes: { usage: "O" } }, "DDS-PRTF")[1].slice(38, 44), "  3  2");
+  });
+});
