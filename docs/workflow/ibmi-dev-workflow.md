@@ -68,7 +68,7 @@ aidev は言語非依存の**工程・承認・記録**の枠組みであり、�
 | 資源 | 役割 | 備考 |
 |---|---|---|
 | **Code for IBM i** | 人間の接続・ブラウズ・コンパイル UI | 活用する側に回る（競合しない）。AI からは使わない（F1: 同じことを直接やる） |
-| **本 PJ (as400-coding-helper)** | 人間の固定長編集支援（ルーラー・F4・SOSI・補完）＋桁定義データ | 桁定義は将来のローカル lint の唯一の材料（F7） |
+| **本 PJ (ibmi-dogubako)** | 人間の固定長編集支援（ルーラー・F4・SOSI・補完）＋桁定義データ | 桁定義は将来のローカル lint の唯一の材料（F7） |
 | **as400-web-emulator** | AI の 5250 操作（MCP 19 ツール）・E2E・スプール受信 | 画面系は実用水準。SQL/CL/IFS は core 実装済み・MCP 未配線（F3） |
 | **内製 Java MCP (MCP DB2 Server)** | 当面の DB 参照（SELECT のみ） | TS 配線完了後は as400-web-emulator に集約（spec 決定） |
 

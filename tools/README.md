@@ -34,7 +34,7 @@ node tools/run-rpgunit.mjs <ソース> [--pgm 名前] [--srctype RPGLE|SQLRPGLE]
 
 ```sh
 cd /workspaces/ts5250 && node --env-file=.env --env-file=.env.verify \
-  /workspaces/as400-coding-helper/tools/run-rpgunit.mjs <ソース>
+  /workspaces/ibmi-dogubako/tools/run-rpgunit.mjs <ソース>
 ```
 
 足りないものがあれば**何が無いかを列挙して終了コード 2 で落ちる**。
@@ -215,5 +215,5 @@ $ node tools/run-rpgunit.mjs --self-test
 
 ```sh
 cd /workspaces/ts5250 && node --env-file=.env --env-file=.env.verify \
-  /workspaces/as400-coding-helper/tools/run-rpgunit-e2e.mjs
+  /workspaces/ibmi-dogubako/tools/run-rpgunit-e2e.mjs
 ```

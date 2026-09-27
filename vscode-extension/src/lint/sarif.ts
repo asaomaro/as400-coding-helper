@@ -38,7 +38,7 @@ export function toSarif(
           driver: {
             name: toolName,
             informationUri:
-              "https://github.com/asaomaro/as400-coding-helper",
+              "https://github.com/asaomaro/ibmi-dogubako",
             ...(options.toolVersion ? { version: options.toolVersion } : {}),
             // 無効な規則も出す。「その規則が存在し、既定でどう扱われるか」が
             // 結果を読む側に伝わるようにするため。

@@ -1,4 +1,4 @@
-const WS = "/workspaces/as400-coding-helper/docs/research/20260927-f4-prompter-exploration/ws";
+const WS = "/workspaces/ibmi-dogubako/docs/research/20260927-f4-prompter-exploration/ws";
 const fs = await import("node:fs");
 if (await win.locator(".context-view .hover-contents").count()) { await win.mouse.click(150, 800); await h.sleep(200); }
 const S = ms => h.sleep(ms);

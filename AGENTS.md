@@ -1,5 +1,14 @@
 ﻿# Overview
 
+- **名称は `ibmi-dogubako`（道具箱）**（2026-09-28 改名。旧名 `as400-coding-helper`）。
+  IBM i に昔からある Toolbox（IBM Toolbox for Java など）に掛けた和名。当初は固定長の編集支援
+  （ルーラー・SOSI・F4 プロンプター）だけだったが、テストツール・AI から使う skill・送受信などへ
+  広がったので、個々の機能ではなく「道具をまとめる箱」を名前にした。AS400 ではなく現在の呼称 IBM i を使う。
+  - リポジトリ・VS Code 拡張（`asaomaro.ibmi-dogubako`、表示名「Dogubako for IBM i」）で名前を揃える。
+  - **IBM を名前の先頭に置かない**（公式製品に見えるため）。英語の `ibmi-toolbox` にしないのも同じ理由
+    （IBM Toolbox for Java が公式製品）。
+  - コマンド・設定の接頭辞 `rpgClSupport.*` は**旧名のまま残している**。変えると利用者の
+    `settings.json`（IBM i 同期の接続設定など）が読めなくなるため。
 - VSCode上でAS400のコーディング(RPG,RPGLE,CLP,DDS,PRTF,CMD)をサポートするVSCode拡張機能を開発するPJ
 
 ## 言語
