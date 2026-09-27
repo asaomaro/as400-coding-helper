@@ -1,6 +1,6 @@
 import * as vscode from "vscode";
 
-export const OUTPUT_CHANNEL_NAME = "AS400 Coding Helper";
+export const OUTPUT_CHANNEL_NAME = "Dogubako for IBM i";
 
 type LogLevel = "INFO" | "WARN" | "ERROR";
 type LogFields = Readonly<Record<string, string | number | boolean | undefined>>;
