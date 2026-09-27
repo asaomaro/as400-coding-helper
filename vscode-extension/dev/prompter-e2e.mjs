@@ -627,6 +627,26 @@ check(
   (await fieldErrors()).join(",")
 );
 
+// ---- 17b. 桁幅を超える値は確定を止める（実操作調査 P3）---------------------
+
+await pick("C-SPEC — 桁幅を超える値");
+await page.fill('[name="OPCODE"]', "EVAL");
+await page.fill('[name="FACTOR2"]', "DSPDATE = %DEC(%DATE():*YMD)");
+await page.locator('[name="FACTOR2"]').dispatchEvent("input");
+await settle();
+check(
+  "**桁幅（14）を超える演算項目は入力したときに欄のエラーになる**",
+  (await fieldErrors()).includes("FACTOR2"),
+  (await fieldErrors()).join(",")
+);
+await page.click("#root button[type=submit]");
+await settle();
+check("桁幅を超えたままでは確定できない", (await outcome()) === "", await outcome());
+await page.fill('[name="FACTOR2"]', "%DATE()");
+await page.locator('[name="FACTOR2"]').dispatchEvent("input");
+await settle();
+check("桁幅に収めるとエラーが消える", !(await fieldErrors()).includes("FACTOR2"), (await fieldErrors()).join(","));
+
 // ---- 18. CSP を守れる形になっているか --------------------------------------
 
 check(

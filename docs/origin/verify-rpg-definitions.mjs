@@ -102,11 +102,17 @@ const LABELS = {
     RESULT: "結果フィールド",
     FIELDLEN: "フィールド長",
     DECPOS: "小数点以下の桁数",
-    RESULTIND: "結果標識",
+    // 原典は 71-76 桁を 1 項目（結果標識）として挙げるが、中身は 2 桁ずつの 3 組（高・低・等しい）。
+    // 1 欄にすると空の組を表せない（`    50` が trim で `50` になり 71 桁目に入る。実操作調査の P4）。
+    // 同じラベルに複数の欄を対応させた場合は、欄を並べた範囲が原典の範囲と一致することを見る。
+    RESIND_HI: "結果標識",
+    RESIND_LO: "結果標識",
+    RESIND_EQ: "結果標識",
     COMMENT: "注記"
   },
   "C-NEW": {
     CTLLEVEL: "制御レベル",
+    INDICATORS: "標識",
     OPCODE: "命令および拡張",
     COND: "拡張演算項目 2",
     COMMENT: "注記"
@@ -144,23 +150,33 @@ for (const [spec, labels] of Object.entries(LABELS)) {
   const definitionPath = join(DEFS, `${spec}.json`);
   const definition = JSON.parse(readFileSync(definitionPath, "utf8"));
 
+  // 同じラベルに対応させた欄をまとめる（結果標識の 3 組など）。
+  const byLabel = new Map();
   for (const parameter of definition.parameters) {
     const label = labels[parameter.name];
     if (!label) {
       failures.push(`${spec}.${parameter.name}: 原典ラベルの対応が未定義`);
       continue;
     }
+    byLabel.set(label, [...(byLabel.get(label) ?? []), parameter]);
+  }
 
+  for (const [label, parameters] of byLabel) {
+    const name = parameters.map(p => p.name).join("+");
     const expected = columns.get(label);
     if (!expected) {
-      failures.push(`${spec}.${parameter.name}: 原典に「${label}」が見つからない`);
+      failures.push(`${spec}.${name}: 原典に「${label}」が見つからない`);
       continue;
     }
 
     checked += 1;
-    const start = parameter.sourceStart;
-    const length = parameter.sourceLength;
-    const actual = start && length ? [start, start + length - 1] : null;
+    // 複数の欄は隙間なく続いていなければならない（並べた範囲を 1 つの範囲として比べる）。
+    const ranges = parameters
+      .map(p => (p.sourceStart && p.sourceLength ? [p.sourceStart, p.sourceStart + p.sourceLength - 1] : null))
+      .sort((a, b) => (a?.[0] ?? 0) - (b?.[0] ?? 0));
+    const contiguous = ranges.every((r, i) => r && (i === 0 || r[0] === ranges[i - 1][1] + 1));
+    const actual = contiguous ? [ranges[0][0], ranges[ranges.length - 1][1]] : null;
+    const parameter = { name };
 
     if (!actual || actual[0] !== expected[0] || actual[1] !== expected[1]) {
       failures.push(

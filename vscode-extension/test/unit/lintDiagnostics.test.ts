@@ -270,3 +270,11 @@ suite("lint: 設定 cNewOpcodes がルーラーと食い違わない", () => {
     );
   });
 });
+
+// 演算拡張付きの EVAL(H) を旧形式と誤り、64-70 桁に掛かる式を「フィールド長」として咎めていた（実操作調査 P5）。
+suite("lint: 演算拡張付きの命令も C-NEW の桁で読む", () => {
+  test("EVAL(H) の式が 64 桁を超えても咎めない", () => {
+    const line = "     C                   EVAL(H)   TOTAL = AMOUNT + TAX + FREIGHT + X";
+    assert.deepStrictEqual(lintDocument(fakeDocument("x.rpgle", line)), []);
+  });
+});

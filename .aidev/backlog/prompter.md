@@ -143,16 +143,18 @@ priority: 1           # 既存機能の構造改善。DDS(1) と同格
 
 - [x] **ソースの 4 行目だけ書き戻さない不具合を直す**（最優先）— 済（`20260926-prompter-line4-guard`）。原因はデバッグの残骸ではなく初期の仕様 FR-031（4 行目の 1〜6 桁目を変えない）で、行全体を置き換えるので丸ごと拒まれていた。先頭 6 桁が同じなら 7 桁目以降だけを書くようにした。`src/language/rpgEditGuards.ts:11` の `if (line === 3)` がデバッグ用の固定値のまま残り、
   `applyChanges`（DDS 以外＝RPG と CL）で 4 行目を必ず拒否する。拒否はログだけで利用者に出ない（docs/research/20260927-f4-prompter-exploration/findings.md の P2）。Tab 移動（`rpgTabNavigation.ts:371,397`）も同じ判定を使う。
-- [ ] **桁幅を超える値を黙って切り捨てない**（データを壊す・最優先）。`buildRpgLineText` の `slice(-sourceLength)` が左から切り、`EVAL` の式や
+- [x] **桁幅を超える値を黙って切り捨てない**（データを壊す・最優先）— 済（`20260927-prompter-column-overflow`）。桁の決まった欄は桁幅を超えるとエラーで確定を止める。`buildRpgLineText` の `slice(-sourceLength)` が左から切り、`EVAL` の式や
   `EXTPROC` が化ける（docs/research/20260927-f4-prompter-exploration/findings.md の P3）。定義側も `maxLength` が桁幅より大きい欄がある（C の演算項目 30＞14、D の KEYWORDS 40＞37、FROM 30＞7）。
   桁幅を超えたら欄にエラーを出して確定を止める。
-- [ ] **欄を桁の決まりどおりに寄せる（左詰めしない）**。trim の後に左詰めするので、C の条件標識（9-11）・結果標識（71-76）、D の開始・終了位置
+- [x] **欄を桁の決まりどおりに寄せる（左詰めしない）**— 済（`20260927-prompter-column-layout`）。定義の `columnLayout`（右寄せ・DDS の条件付け・行と桁）で置き、C の結果標識は 3 欄に分けた。実機でコンパイル可。trim の後に左詰めするので、C の条件標識（9-11）・結果標識（71-76）、D の開始・終了位置
   （実機 RNF0263 × 7）、DDS の条件付け・位置・小数が正しい桁に入らない（docs/research/20260927-f4-prompter-exploration/findings.md の P4）。DDS の位置は行・桁を 1 欄にしている定義側も直す。
 - [ ] **H 仕様書を書き戻す・読み込む**（docs/research/20260927-f4-prompter-exploration/findings.md の P1）。欄はキーワード形式で桁を持たず、`buildRpgLineText` が桁の無い定義で `return original` する。
   キーワードの組み立てと解析が要る。
-- [ ] **C 仕様の新旧（C-SPEC / C-NEW）の判定を 26-35 桁の命令で行う**（docs/research/20260927-f4-prompter-exploration/findings.md の P5）。`rpgSpec.ts:299-311` `classifyCSpec` が 7 桁目以降の最初の語を
+- [x] **C 仕様の新旧（C-SPEC / C-NEW）の判定を 26-35 桁の命令で行う** — 済（`20260927-prompter-cnew-by-opcode-column`。P5・P10。P15 は下に分けた）（docs/research/20260927-f4-prompter-exploration/findings.md の P5）。`rpgSpec.ts:299-311` `classifyCSpec` が 7 桁目以降の最初の語を
   命令とみなし、`EVAL(H)` や条件標識つきの行を旧形式で開く（式が P3 で壊れる）。同じ判定の lint も誤検知する。あわせて C-NEW に条件標識（9-11 桁）の欄（P10）と、
   空行・空の `C` から新旧を選んで開く入口（P15）。
+- [ ] **空行・空の `C` から C-SPEC / C-NEW を選んで開く入口**（P15。上の新旧判定から分けた）。いまは 26 桁目に命令を手で打ってからでないと C-NEW が開かない。
+  選ばせ方（F4 で種類の一覧を出す／プロンプター内で切り替える等）の判断が要る。
 - [ ] **英大文字だけに縛っている欄を実機に合わせる**: DDS のキーワード欄（日本語・小文字の定数が書けず、既存の日本語定数の行は無変更でも確定できない）、
   RPG の名前欄（ILE は大小文字を混ぜてよい）（docs/research/20260927-f4-prompter-exploration/findings.md の P6・P12）。`characterSet: "upper"` の付け方を原典で見直す。
 - [ ] **RPG 仕様書の定義の不足をまとめて直す**（docs/research/20260927-f4-prompter-exploration/findings.md の P7・P8・P9・P11・P23）: 必須が強すぎる欄（D の LEN・F の継続行・P の E 行・C-NEW の COND）／

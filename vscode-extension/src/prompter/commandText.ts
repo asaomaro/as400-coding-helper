@@ -401,6 +401,9 @@ export function buildRpgLineText(
         return trimmed.slice(-parameter.sourceLength);
       }
 
+      const laidOut = layOutColumns(trimmed, parameter.sourceLength, parameter.attributes?.columnLayout);
+      if (laidOut !== undefined) return laidOut;
+
       if (isNumericField) {
         return trimmed.padStart(parameter.sourceLength, " ");
       }
@@ -457,4 +460,50 @@ export function narrowToEditableColumns(original: string, updated: string, prote
   }
   const start = Math.min(protectedColumns, original.length);
   return { ok: true, start, text: updated.slice(start) };
+}
+
+/**
+ * `columnLayout` に従って値を桁幅ぶんの文字列にする。レイアウトが無い、または値がその形に
+ * 合わないときは undefined（形の誤りは `columnLayoutError` が欄のエラーにする）。
+ */
+export function layOutColumns(
+  value: string,
+  width: number,
+  layout: "right" | "indicatorSlots" | "rowColumn" | undefined
+): string | undefined {
+  if (layout === undefined || value.length === 0) return undefined;
+  if (layout === "right") return value.padStart(width, " ");
+
+  if (layout === "rowColumn") {
+    const parts = value.split(/\s+/u);
+    if (parts.length > 2 || parts.some(part => part.length > 3)) return undefined;
+    const [row, column] = parts.length === 2 ? parts : ["", parts[0]];
+    return (row.padStart(3, " ") + column.padStart(3, " ")).padEnd(width, " ");
+  }
+
+  // indicatorSlots
+  if (value.startsWith("*")) return ` ${value}`.padEnd(width, " ");
+  const slots = indicatorSlots(value);
+  if (slots === undefined || slots.length * 3 > width) return undefined;
+  return slots.map(slot => slot.padStart(3, " ")).join("").padEnd(width, " ");
+}
+
+/** `columnLayout` の形に合わない値の理由（合えば undefined）。 */
+export function columnLayoutError(
+  value: string,
+  width: number,
+  layout: "right" | "indicatorSlots" | "rowColumn" | undefined
+): string | undefined {
+  if (layout === undefined || layout === "right" || value.length === 0) return undefined;
+  if (layOutColumns(value, width, layout) !== undefined) return undefined;
+  return layout === "rowColumn"
+    ? "行と桁を空白で区切って入力してください（例: 7 74）。桁だけなら 1 つ。"
+    : "標識は N と 2 桁の数字で、3 つまで入力してください（例: N40 41）。";
+}
+
+/** `N40 41` / `N4041` → [`N40`, `41`]。形に合わなければ undefined。 */
+function indicatorSlots(value: string): string[] | undefined {
+  const compact = value.replace(/\s+/gu, "");
+  if (!/^(?:N?\d{2})+$/u.test(compact)) return undefined;
+  return compact.match(/N?\d{2}/gu) ?? undefined;
 }
