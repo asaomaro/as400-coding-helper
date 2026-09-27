@@ -66,7 +66,12 @@ export async function applyChanges(
 
   // 桁で書き戻すのは RPG も DDS も同じ（sourceStart / sourceLength を使う）。
   let replaceRange = range;
-  let newText = buildRpgLineText(line.text, definition, values);
+  // 空行からプロンプト・タイプで開いたときは、6 桁目に仕様書の文字を置いてから組む（P15）。
+  const lineText =
+    resolved.specLetter !== undefined && resolved.language !== "dds" && line.text.padEnd(6, " ").charAt(5) === " "
+      ? line.text.padEnd(6, " ").slice(0, 5) + resolved.specLetter + line.text.slice(6)
+      : line.text;
+  let newText = buildRpgLineText(lineText, definition, values);
 
   // 15 桁を超える名前は継続名前行（`…...`）に分けて書く。上にある継続名前行も書き直す（実操作調査の P21）。
   const continued = resolved.language !== "dds" ? continuedNameParameter(definition) : undefined;
@@ -74,6 +79,7 @@ export async function applyChanges(
     const base = Math.max(0, resolved.line - 50);
     const lines: string[] = [];
     for (let i = base; i <= resolved.line; i += 1) lines.push(document.lineAt(i).text);
+    lines[lines.length - 1] = lineText; // 仕様書の文字を置いた行（空行から開いたとき）
     const raw = values[continued];
     const name = (Array.isArray(raw) ? raw[0] ?? "" : raw ?? "").toString();
     const written = writeContinuedName(lines, lines.length - 1, name, (original, value) =>

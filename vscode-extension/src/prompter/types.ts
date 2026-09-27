@@ -236,6 +236,11 @@ export interface ParameterAttributes {
    * 読み書きは `rpgNameContinuation.ts`。
    */
   readonly nameContinuation?: boolean;
+  /**
+   * 1 行をそのまま入れる欄（ACS のプロンプト・タイプ `**` の「データ域」）。桁の目盛りを出し、等幅で 80 桁ぶんの幅にする。
+   * 値は trim せずに行へ書く（実操作調査の P15・利用者の決定）。
+   */
+  readonly ruler?: boolean;
   readonly minLength?: number;
   readonly maxLength?: number;
   /**

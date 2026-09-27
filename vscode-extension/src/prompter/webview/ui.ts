@@ -1,4 +1,5 @@
 import "./ui.css";
+import { PROMPT_TYPE_PARAMETER } from "../promptTypes";
 import { buildInitialState } from "../model";
 import {
   buildBlocks,
@@ -43,6 +44,8 @@ interface Session {
   /** 繰り返し group ごとの表示している組数。値からは復元しきれないので持つ。 */
   occurrences: Record<string, number>;
   additionalShown: boolean;
+  /** 開いたときのプロンプト・タイプ（RPG）。変えて OK したら欄の検査をせずに送る（ACS と同じく開き直すだけ）。 */
+  readonly initialPromptType?: string;
   /**
    * 一度でも確定を押したか。
    * **押すまでは「必須なのに空」を咎めない**（開いた瞬間に赤字が並ぶと警告にならない）。
@@ -355,6 +358,18 @@ export function startPrompter(bridge: Bridge, root: HTMLElement): void {
       return buildMultiField(field);
     }
 
+    if (field.ruler) {
+      // データ域: 桁の目盛り（ACS と同じ形）の下に 80 桁ぶんの等幅の欄。
+      const wrap = el("div", { className: "ruler-field" });
+      wrap.appendChild(el("div", { className: "ruler", textContent: RULER_TEXT }));
+      const input = buildTextInput(field, field.value);
+      input.classList.add("ruler-input");
+      input.size = 80;
+      input.maxLength = 80;
+      wrap.appendChild(input);
+      return wrap;
+    }
+
     return buildTextInput(field, field.value);
   }
 
@@ -512,6 +527,15 @@ export function startPrompter(bridge: Bridge, root: HTMLElement): void {
 
   function submit(): void {
     if (!session) return;
+    // **プロンプト・タイプを変えたら、他の欄を検査せずに送る。** ホストが書かずに別の仕様書で開き直す
+    // （ACS と同じ。空の C の行で必須の命令が空でも CX へ切り替えられる。実操作調査の P15）。
+    if (
+      session.initialPromptType !== undefined &&
+      (session.values[PROMPT_TYPE_PARAMETER] ?? "").trim().toUpperCase() !== session.initialPromptType.trim().toUpperCase()
+    ) {
+      bridge.post({ type: "submit", values: submittedValues() });
+      return;
+    }
     session.submitAttempted = true;
     refresh();
     if (!model) return;
@@ -698,7 +722,8 @@ export function startPrompter(bridge: Bridge, root: HTMLElement): void {
         values: { ...message.values },
         occurrences: {},
         additionalShown: false,
-        submitAttempted: false
+        submitAttempted: false,
+        initialPromptType: message.values[PROMPT_TYPE_PARAMETER]
       };
       // 値から数えた組数を出発点にする（既にソースに複数組書かれている場合）。
       const initial = deriveModel(session);
@@ -800,6 +825,9 @@ function applyAllowedValues(control: Control, allowed: readonly string[] | undef
  * 属性セレクタに入れる文字を逃がす。
  * 入力欄名には `#`（繰り返しの連番）が入るので、素で書くと ID 扱いになる。
  */
+/** データ域の桁の目盛り（ACS のプロンプト・タイプ `**` と同じ形。1-80 桁）。 */
+const RULER_TEXT = "....+... 1 ...+... 2 ...+... 3 ...+... 4 ...+... 5 ...+... 6 ...+... 7 ...+... 8";
+
 function cssEscape(value: string): string {
   return value.replace(/["\\]/gu, "\\$&");
 }
