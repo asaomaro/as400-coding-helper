@@ -470,6 +470,8 @@ class EditorView {
           input?.focus();
           input?.select();
           this.showReject(reason);
+          // 状態表示も理由に戻す。戻さないと「適用中…」のまま残る（実操作調査の D5）。
+          this.setStatus(reason);
           this.pendingFocus = undefined;
           break;
         }

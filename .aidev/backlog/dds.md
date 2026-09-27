@@ -533,7 +533,7 @@ priority: 1           # DDS の視覚的確認と編集（charter の第 4 の�
   1 つも指摘しない（docs/research/20260927-dds-editor-exploration/findings.md の D18）。ソースの形だけで判定できる。上の各項目の直しと重なるので、検証の側は最後にまとめてよい。
 - [ ] **ウィンドウ様式（`WINDOW`）の枠を描き、中の項目を枠からの相対位置で描く**。いまは枠が出ず、ウィンドウの `2 2` を画面の 2 行 2 桁に描く
   （docs/research/20260927-dds-editor-exploration/findings.md の D12。重なりの検査も絶対位置になる）。あわせて**サブファイルを `SFLPAG` の行ぶん描く**（いまは 1 行だけ。D13）。
-- [ ] **`DATE` / `TIME` / `SYSNAME` / `USER` の項目（文字列の無い定数）を作れるようにする**（docs/research/20260927-dds-editor-exploration/findings.md の D4）。いまは空の定数を黙って捨て、
+- [ ] **`DATE` / `TIME` / `SYSNAME` / `USER` の項目（文字列の無い定数）を作れるようにする**（D5「適用中…」のまま戻らない件は済: `20260927-dds-reject-status`。残りは D4）（docs/research/20260927-dds-editor-exploration/findings.md の D4）。いまは空の定数を黙って捨て、
   生テキストで `DATE EDTCDE(Y)` にすると弾く。あわせて**書き換えを弾いたあと状態が「適用中…」のまま戻らない**のを直す（D5）。
 - [ ] **画面の罫線キーワード（`GRDRCD` / `GRDATR` / `GRDBOX` / `GRDLIN` / `GRDCLR`）を辞書に入れ、描く**（docs/research/20260927-dds-editor-exploration/findings.md の D19）。実機は受け付けるが
   （`v3/CMPLXD.dspf` で `CRTDSPF` 通過）、候補に無く「?」のチップになり線も描かない。原典の索引 `docs/origin/dds/DSPF-KEYWORDS.html` に無いので、
