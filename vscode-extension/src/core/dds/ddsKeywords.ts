@@ -1,3 +1,5 @@
+import type { KeywordValueSlot } from "./ddsKeywordValues";
+
 /**
  * キーワード欄（45-80 桁）を**読める形に分ける**。
  *
@@ -49,6 +51,8 @@ export interface DdsKeywordHelp {
   /** 構文。書き方が複数あるキーワードは複数行になる。 */
   readonly syntax?: readonly string[];
   readonly hasParameters?: boolean;
+  /** 書ける値の一覧（引数の位置ごと）。原典から生成（`generate-dds-keyword-values.mjs`）。 */
+  readonly values?: readonly KeywordValueSlot[];
 }
 
 /**
