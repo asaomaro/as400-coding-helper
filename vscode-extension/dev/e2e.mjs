@@ -2476,6 +2476,11 @@ check(
 
   await page.click("#new-prtf");
   await page.waitForTimeout(400);
+  // 132 桁の帳票は窓が狭いと左右が自動で畳まれる（CI の窓で踏んだ）。プロパティを使うので右を戻す。
+  if (await page.$eval(".dds-side.right", n => n.classList.contains("folded"))) {
+    await page.click("#dds-fold-right");
+    await page.waitForTimeout(200);
+  }
   check(
     "**行が無くても「ファイル」の節が出る**（D1）",
     (await page.$$eval(".dds-tree li.file-level li.file-keyword", ns => ns.map(n => n.textContent ?? ""))).some(t => t.includes("足す")),
