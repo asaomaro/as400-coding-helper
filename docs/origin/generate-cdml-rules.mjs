@@ -345,6 +345,20 @@ for (const file of readdirSync(CMDDEF).filter(n => n.endsWith(".xml")).sort()) {
         }
       }
 
+      // 条件表示の欄（PmtCtl="PMTCTL"）は、条件が成り立てば**基本の画面に出る**（F10 の追加パラメーターではない）。
+      // F10 の側は PmtCtl="PMTRQS"。basic は実機の F4 の実測（cl-prompt-groups.json）だが、実測は条件が成り立たない
+      // 空の状態で取ったので条件表示の欄が抜けていた（DCL の LEN / VALUE が F10 の奥に入った。実操作調査の P17）。
+      // 実測のあるコマンド（basic を持つ欄がある）にだけ足す。
+      if (
+        parm.attrs.PmtCtl === "PMTCTL" &&
+        target.basic !== true &&
+        definition.parameters.some(p => p.basic === true)
+      ) {
+        target.basic = true;
+        changed = true;
+        if (lang === "ja") report.conditionalBasic = (report.conditionalBasic ?? 0) + 1;
+      }
+
       // Rstd: 列挙した値以外を書けるか。options を持つ欄にだけ意味がある。
       if (parm.attrs.Rstd && target.options?.length) {
         const restricted = parm.attrs.Rstd === "YES";
@@ -525,6 +539,7 @@ console.log(`  英大文字強制をやめた欄(Case=MIXED)        ${report.mix
 console.log(`  数値の範囲(RangeMinVal/RangeMaxVal)      ${report.ranges} 件`);
 console.log(`  数値型(numericOnly)の補完                ${report.numeric} 件`);
 console.log(`  文字ストリング(characterString)          ${report.characterStrings ?? 0} 件`);
+console.log(`  条件表示の欄を基本の画面へ(basic)        ${report.conditionalBasic ?? 0} 件`);
 console.log(`  maxLength 追加 ${report.addedLength} 件 / 変更 ${report.changedLength} 件 / 見送り ${report.skippedLength} 件`);
 if (report.unmatchedParm.size > 0) {
   console.log(`  定義に無いパラメータ: ${[...report.unmatchedParm].join(", ")}`);

@@ -185,9 +185,17 @@ function parseParameterSections(html, command) {
     const end = i + 1 < anchors.length ? anchors[i + 1].index : html.length;
     const body = html.slice(start, end);
 
-    // 見出し・注記を除いた本文（最初の数段落）を説明にする。
-    const paragraphs = matchAll(body, /<p>([\s\S]*?)<\/p>/gi)
-      .map(m => stripTags(m[1]))
+    // 見出し・注記を除いた本文（段落と箇条書き）を説明にする。
+    // **箇条書き（<ul>）も本文に入れる。** 段落だけを拾うと「最大長は次の通りです。」の後の一覧が落ち、
+    // 説明が途中で切れていた（DCL の LEN。実操作調査の P17）。並びは原典の順のまま、項目は「・」で始める。
+    const paragraphs = matchAll(body, /<p>([\s\S]*?)<\/p>|<ul[^>]*>([\s\S]*?)<\/ul>/gi)
+      .map(m =>
+        m[2] === undefined
+          ? stripTags(m[1])
+          : matchAll(m[2], /<li[^>]*>([\s\S]*?)<\/li>/gi)
+              .map(item => `・${stripTags(item[1])}`)
+              .join("\n")
+      )
       .filter(text => text.length > 0 && !/^注\s*[:：]/.test(text));
 
     // <h3> で区画に割り、区画ごとに dt/dd を集める。

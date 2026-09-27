@@ -14,7 +14,7 @@
 |---|---|---|
 | `Kwd` | 3112 | パラメータ名の対応付け |
 | `Dep` / `DepParm` | 536 | 相関チェック → `dependencies` |
-| `PmtCtl` / `PmtCtlCond` | 231 | 条件表示 → `promptControl` |
+| `PmtCtl` / `PmtCtlCond` | 231 | 条件表示 → `promptControl`。`Parm` の `PmtCtl="PMTCTL"` は基本の画面の欄（`basic`。`PMTRQS` は F10 の側） |
 | `Value` の `MapTo` | 1633 | 内部値への変換 → `valueMap` |
 | `Rstd` | 2500 | 列挙値以外を書けるか → `attributes.restricted` |
 | `Len` | 1943 | 長さ → `attributes.maxLength`（DEC は「桁数.小数部」） |

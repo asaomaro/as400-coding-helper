@@ -543,3 +543,16 @@ suite("プロンプト・タイプ（ACS と同じ切り替え。P15 の決定�
     assert.equal(shown.parameters[0].name, PROMPT_TYPE_PARAMETER);
   });
 });
+
+suite("CL: 条件表示の欄は基本の画面・説明の箇条書き（実操作調査 P17）", () => {
+  const dcl = load("cl/ja/DCL.json");
+  const len = dcl.parameters.find(p => p.name === "LEN")!;
+  test("DCL の LEN / VALUE は F10 の奥ではなく基本の画面の欄（CDML の PmtCtl=PMTCTL）", () => {
+    assert.equal(len.basic, true);
+    assert.equal(dcl.parameters.find(p => p.name === "VALUE")?.basic, true);
+  });
+  test("LEN の説明に最大長の一覧が入る（以前は「次の通りです。」で切れていた）", () => {
+    assert.match(len.help ?? "", /最大長は次の通りです。\n\n・10進数-- 15桁/u);
+    assert.match(len.help ?? "", /・文字-- 32767バイト/u);
+  });
+});
