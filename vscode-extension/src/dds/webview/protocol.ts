@@ -202,6 +202,23 @@ function parseEdit(value: unknown): DdsEdit | undefined {
       return typeof value.keywords === "string"
         ? { kind: "addFileKeywords", keywords: value.keywords }
         : undefined;
+    case "addGrid":
+      // 罫線を足す。キーワードの形・様式が GRDRCD かは core の検証が見る。ここは型だけ。
+      return typeof value.recordName === "string" && value.recordName.length > 0 && typeof value.keyword === "string" &&
+        (value.createRecord === undefined || typeof value.createRecord === "boolean")
+        ? {
+            kind: "addGrid",
+            recordName: value.recordName,
+            keyword: value.keyword,
+            ...(value.createRecord === true ? { createRecord: true } : {})
+          }
+        : undefined;
+    case "setGridKeyword":
+      // 罫線を書き換える／消す（空）。宛先が罫線かは core の検証が見る。
+      return isPositiveInteger(value.sourceLine) && Number.isInteger(value.index) && (value.index as number) >= 0 &&
+        typeof value.keyword === "string"
+        ? { kind: "setGridKeyword", sourceLine: value.sourceLine, index: value.index as number, keyword: value.keyword }
+        : undefined;
     case "removeRecord":
       // 様式ごと消す。`remove`（項目を消す）とは別の操作。
       return isPositiveInteger(value.sourceLine)

@@ -237,7 +237,21 @@ export type DdsEdit =
    * `sourceLine` は**様式宣言の行**。
    */
   | { readonly kind: "removeRecord"; readonly sourceLine: number }
-  | { readonly kind: "add"; readonly recordName: string; readonly item: NewDspfItem };
+  | { readonly kind: "add"; readonly recordName: string; readonly item: NewDspfItem }
+  /**
+   * **罫線（`GRDBOX` / `GRDLIN`）のキーワードを様式に足す**（キャンバスでドラッグして引く。利用者の決定 2026-09-27）。
+   *
+   * 罫線は `GRDRCD` の様式にしか書けない（原典 `GRDRCD`）。`createRecord` なら `recordName` の名前で
+   * `GRDRCD` の様式をファイルの末尾に作ってから書く。`keyword` は `buildGridKeyword` が作ったもの。
+   */
+  | { readonly kind: "addGrid"; readonly recordName: string; readonly keyword: string; readonly createRecord?: boolean }
+  /**
+   * **罫線のキーワードを書き換える／消す**（移動・伸縮・色や形の変更。`keyword` が空なら消す）。
+   *
+   * 宛先は様式の宣言行と、その様式のキーワード欄を全部の行を通して区切ったときの何番目か
+   * （`conditionKeyword` と同じ数え方。`GridShape.recordLine` / `index`）。同じ行の他のキーワードは残す。
+   */
+  | { readonly kind: "setGridKeyword"; readonly sourceLine: number; readonly index: number; readonly keyword: string };
 
 /** 置き換え指示。0 始まり・`replaceTo` は含まない。 */
 export interface DdsEditResult {
@@ -315,6 +329,8 @@ export type DdsEditRejectionCode =
   | "alternate-position-not-found"
   /** 指定した行に様式（`R XXXX`）が無い。 */
   | "record-line-not-found"
+  /** 罫線を書けない（様式が `GRDRCD` でない・宛先が罫線のキーワードでない・キーワードの形が違う）。 */
+  | "grid-not-allowed"
   /** 様式には名前が必要（空にできない）。 */
   | "record-needs-name"
   /**
@@ -383,6 +399,33 @@ export function validateDdsEdits(
           message: `${wrong.join(" / ")} はファイル・レベルに書けません（実機は CPD7486）`
         });
       }
+      continue;
+    }
+
+    if (edit.kind === "addGrid") {
+      rejections.push(...validateGridKeyword(edit.keyword, false));
+      if (edit.createRecord) {
+        rejections.push(...validateRecordName(units, edit.recordName));
+      } else if (!isGridRecord(units, edit.recordName)) {
+        rejections.push({
+          code: "grid-not-allowed",
+          message: `様式 ${edit.recordName.toUpperCase()} は罫線の様式（GRDRCD）ではありません（原典: 罫線は GRDRCD の様式に書く）`
+        });
+      }
+      continue;
+    }
+
+    if (edit.kind === "setGridKeyword") {
+      const located = locateKeyword(lines, units, edit.sourceLine, edit.index);
+      if (located === undefined || !["GRDBOX", "GRDLIN"].includes(located.entry.name.toUpperCase())) {
+        rejections.push({
+          code: "grid-not-allowed",
+          message: `${edit.sourceLine} 行目の様式の ${edit.index + 1} 番目に罫線がありません（ソースが変わっている可能性があります）`,
+          sourceLine: edit.sourceLine
+        });
+        continue;
+      }
+      rejections.push(...validateGridKeyword(edit.keyword, true));
       continue;
     }
 
@@ -819,6 +862,38 @@ export function applyDdsEdits(
           replaceTo: insertAt,
           lines: [...writeBackCondition(buildKeywordLine(moved[0] ?? ""), edit.condition), ...moved.slice(1).map(buildKeywordLine)]
         });
+        if (remaining.length > 0 || isFirst) {
+          results.push({ replaceFrom: group.sourceLine - 1, replaceTo: end, lines: keywordLines(lines[group.sourceLine - 1], remaining) });
+        } else {
+          // その行のキーワードが無くなる。条件の行ごと消す。
+          results.push({ replaceFrom: Math.min(...group.sourceLines) - 1, replaceTo: end, lines: [] });
+        }
+        break;
+      }
+      case "addGrid": {
+        const keywordLines = foldKeywordArea(edit.keyword).map(buildKeywordLine);
+        if (edit.createRecord) {
+          const at = appendPoint(lines);
+          results.push({
+            replaceFrom: at,
+            replaceTo: at,
+            lines: [writeBackKeywordArea(buildRecordLine(edit.recordName), "GRDRCD"), ...keywordLines]
+          });
+          break;
+        }
+        const at = insertionPoint(units, edit.recordName);
+        if (at === undefined) break; // 検証済み。
+        results.push({ replaceFrom: at, replaceTo: at, lines: keywordLines });
+        break;
+      }
+      case "setGridKeyword": {
+        const located = locateKeyword(lines, units, edit.sourceLine, edit.index);
+        if (!located) break; // 検証済み。
+        const { group, isFirst, entries, entryIndex, end } = located;
+        const remaining = entries
+          .map((entry, i) => (i === entryIndex ? edit.keyword.trim() : entry.raw))
+          .filter(raw => raw.length > 0)
+          .join(" ");
         if (remaining.length > 0 || isFirst) {
           results.push({ replaceFrom: group.sourceLine - 1, replaceTo: end, lines: keywordLines(lines[group.sourceLine - 1], remaining) });
         } else {
@@ -1862,6 +1937,27 @@ function locateKeyword(
     offset += entries.length;
   }
   return undefined;
+}
+
+/** 罫線を書ける様式（`GRDRCD` を持つ様式）か。 */
+function isGridRecord(units: readonly LogicalUnit[], recordName: string): boolean {
+  const record = units.find(
+    unit => unit.kind === "record" && ddsName(unit.line).toUpperCase() === recordName.toUpperCase()
+  );
+  return record !== undefined && parseKeywordEntries(record.keywords).some(entry => entry.name === "GRDRCD");
+}
+
+/** 罫線のキーワードが 1 つの `GRDBOX(…)` / `GRDLIN(…)` か（消すときは空を許す）。 */
+function validateGridKeyword(keyword: string, allowEmpty: boolean): DdsEditRejection[] {
+  if (allowEmpty && keyword.trim().length === 0) return [];
+  const entries = parseKeywordEntries(keyword);
+  const ok =
+    entries.length === 1 &&
+    entries[0].kind === "keyword" &&
+    ["GRDBOX", "GRDLIN"].includes(entries[0].name) &&
+    entries[0].parameters !== undefined &&
+    /\*POS/iu.test(entries[0].parameters);
+  return ok ? [] : [{ code: "grid-not-allowed", message: `罫線のキーワードの形ではありません: ${keyword}` }];
 }
 
 /** 項目が属する様式の名前（直前の様式の宣言行）。 */

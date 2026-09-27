@@ -187,46 +187,253 @@ function lineLines(values: readonly number[], type: readonly Node[] | undefined)
   return lines;
 }
 
-/** 画面の罫線を解く。 */
-export function resolveGridLines(
+/** 箱か線か、と位置・大きさ・形（キーワードの `*POS` と `*TYPE`）。 */
+export type GridGeometry =
+  | {
+      readonly kind: "box";
+      readonly row: number;
+      readonly column: number;
+      readonly depth: number;
+      readonly width: number;
+      readonly type: GridBoxType;
+      /** 横の罫線の間隔（`HRZ` / `HRZVRT`）。 */
+      readonly horizontalRule?: number;
+      /** 縦の罫線の間隔（`VRT` / `HRZVRT`）。 */
+      readonly verticalRule?: number;
+    }
+  | {
+      readonly kind: "line";
+      readonly row: number;
+      readonly column: number;
+      readonly length: number;
+      readonly type: GridLineKind;
+      readonly repeat?: number;
+      readonly interval?: number;
+    };
+export type GridBoxType = "PLAIN" | "HRZ" | "VRT" | "HRZVRT";
+export type GridLineKind = "UPPER" | "LOWER" | "LEFT" | "RIGHT";
+
+/**
+ * 罫線のキーワード 1 つ（`GRDBOX` / `GRDLIN`）。**選ぶ・動かす・消すの単位**。
+ *
+ * 宛先は「様式の宣言行」と「その様式のキーワード欄を全部の行を通して区切ったときの何番目か」
+ * （`ddsEdit` の `locateKeyword`、キーワードのチップと同じ数え方）。
+ */
+export interface GridShape {
+  /** UI で使う識別子（`様式の行:番目`）。 */
+  readonly key: string;
+  readonly recordName: string;
+  /** 様式の宣言行（1 始まり）。 */
+  readonly recordLine: number;
+  readonly index: number;
+  /** キーワードが書かれている行（1 始まり）。 */
+  readonly sourceLine: number;
+  readonly condition: Conditioning;
+  readonly geometry: GridGeometry;
+  /** キーワードそのものに書かれた色・線種（無ければ GRDATR・既定が効く）。 */
+  readonly writtenColor?: GridColor;
+  readonly writtenLineType?: GridLineType;
+  /** 効いている色・線種。 */
+  readonly color: GridColor;
+  readonly lineType: GridLineType;
+  /** キーワードの生テキスト（`GRDBOX(...)`）。書き換えはこれを元にする。 */
+  readonly raw: string;
+  readonly lines: readonly GridLine[];
+}
+
+function readGeometry(isBox: boolean, values: readonly number[], type: readonly Node[] | undefined): GridGeometry | undefined {
+  const words = (type ?? []).map(node => (typeof node === "string" ? node : ""));
+  const numbers = words.slice(1).map(word => (NUMBER.test(word) ? Number(word) : undefined));
+  if (isBox) {
+    const [row, column, depth, width] = values;
+    const kind = (words[0] || "PLAIN") as GridBoxType;
+    if (!["PLAIN", "HRZ", "VRT", "HRZVRT"].includes(kind)) return undefined;
+    return {
+      kind: "box", row, column, depth, width, type: kind,
+      ...(kind === "HRZ" || kind === "HRZVRT" ? (numbers[0] !== undefined ? { horizontalRule: numbers[0] } : {}) : {}),
+      ...(kind === "VRT" && numbers[0] !== undefined ? { verticalRule: numbers[0] } : {}),
+      ...(kind === "HRZVRT" && numbers[1] !== undefined ? { verticalRule: numbers[1] } : {})
+    };
+  }
+  const [row, column, length] = values;
+  const kind = (words[0] || "UPPER") as GridLineKind;
+  if (!["UPPER", "LOWER", "LEFT", "RIGHT"].includes(kind)) return undefined;
+  return {
+    kind: "line", row, column, length, type: kind,
+    ...(numbers[0] !== undefined ? { repeat: numbers[0] } : {}),
+    ...(numbers[1] !== undefined ? { interval: numbers[1] } : {})
+  };
+}
+
+/** 画面の罫線をキーワードごとに解く。 */
+export function resolveGridShapes(
   lines: readonly string[],
   units: readonly LogicalUnit[],
   size: ScreenSizeEntry
-): GridLine[] {
+): GridShape[] {
   const fileAttributes = fileLevelKeywordLines(lines).reduce(
     (base, entry) => gridAttributes(entry.keywords, base),
     DEFAULT_ATTRIBUTES
   );
-  const result: GridLine[] = [];
+  const result: GridShape[] = [];
 
   for (const unit of units) {
     if (unit.kind !== "record") continue;
     if (!/\bGRD(?:BOX|LIN)\b/iu.test(unit.keywords)) continue;
     const recordName = ddsName(unit.line);
     const recordAttributes = gridAttributes(unit.keywords, fileAttributes);
+    let offset = 0;
 
     for (const group of resolveKeywordGroups(unit)) {
+      const entries = parseKeywordEntries(group.keywords);
+      const groupOffset = offset;
+      offset += entries.length;
       if (group.conditioning.kind === "screen-size" && !matchesScreenSize(group.conditioning.name, size)) continue;
-      for (const entry of parseKeywordEntries(group.keywords)) {
-        if (entry.kind !== "keyword" || entry.parameters === undefined) continue;
-        if (entry.name !== "GRDBOX" && entry.name !== "GRDLIN") continue;
+      entries.forEach((entry, at) => {
+        if (entry.kind !== "keyword" || entry.parameters === undefined) return;
+        if (entry.name !== "GRDBOX" && entry.name !== "GRDLIN") return;
         const nodes = parseNodes(entry.parameters);
         const isBox = entry.name === "GRDBOX";
         const values = readPosition(option(nodes, "*POS"), isBox ? 4 : 3, size);
-        if (values === undefined) continue;
-        const attributes = overlay(recordAttributes, nodes);
+        if (values === undefined) return;
         const type = option(nodes, "*TYPE");
-        for (const segment of isBox ? boxLines(values, type) : lineLines(values, type)) {
-          result.push({
+        const geometry = readGeometry(isBox, values, type);
+        if (geometry === undefined) return;
+        const attributes = overlay(recordAttributes, nodes);
+        const written = overlay({ color: "" as GridColor, lineType: "" as GridLineType }, nodes);
+        const index = groupOffset + at;
+        result.push({
+          key: `${unit.sourceLine}:${index}`,
+          recordName,
+          recordLine: unit.sourceLine,
+          index,
+          sourceLine: group.sourceLine,
+          condition: group.conditioning,
+          geometry,
+          ...(written.color ? { writtenColor: written.color } : {}),
+          ...(written.lineType ? { writtenLineType: written.lineType } : {}),
+          ...attributes,
+          raw: entry.raw,
+          lines: (isBox ? boxLines(values, type) : lineLines(values, type)).map(segment => ({
             ...segment,
             ...attributes,
             recordName,
             sourceLine: group.sourceLine,
             condition: group.conditioning
-          });
-        }
-      }
+          }))
+        });
+      });
     }
   }
   return result;
+}
+
+/** 画面の罫線を解く（線分だけ）。 */
+export function resolveGridLines(
+  lines: readonly string[],
+  units: readonly LogicalUnit[],
+  size: ScreenSizeEntry
+): GridLine[] {
+  return resolveGridShapes(lines, units, size).flatMap(shape => shape.lines);
+}
+
+/** 色・線種の指定。`undefined` は書かない（GRDATR・既定に任せる）。 */
+export interface GridStyle {
+  readonly color?: GridColor;
+  readonly lineType?: GridLineType;
+}
+
+function geometryNodes(geometry: GridGeometry): { position: string; type: string } {
+  if (geometry.kind === "box") {
+    const rules =
+      geometry.type === "HRZ" ? [geometry.horizontalRule ?? 1]
+        : geometry.type === "VRT" ? [geometry.verticalRule ?? 1]
+          : geometry.type === "HRZVRT" ? [geometry.horizontalRule ?? 1, geometry.verticalRule ?? 1]
+            : [];
+    return {
+      position: `${geometry.row} ${geometry.column} ${geometry.depth} ${geometry.width}`,
+      type: [geometry.type, ...rules].join(" ")
+    };
+  }
+  const extra = geometry.repeat !== undefined && geometry.repeat > 1 ? [geometry.repeat, geometry.interval ?? 1] : [];
+  return {
+    position: `${geometry.row} ${geometry.column} ${geometry.length}`,
+    type: [geometry.type, ...extra].join(" ")
+  };
+}
+
+/**
+ * 新しい罫線のキーワードを作る。`*TYPE` は原典で必須なので常に書く。
+ *
+ * `GRDBOX((*POS (5 2 10 60)) (*TYPE PLAIN))` / `GRDLIN((*POS (8 2 60)) (*TYPE LOWER) (*COLOR RED))`
+ */
+export function buildGridKeyword(geometry: GridGeometry, style: GridStyle = {}): string {
+  const { position, type } = geometryNodes(geometry);
+  const parts = [`(*POS (${position}))`, `(*TYPE ${type})`];
+  if (style.color !== undefined) parts.push(`(*COLOR ${style.color})`);
+  if (style.lineType !== undefined) parts.push(`(*LINTYP ${style.lineType})`);
+  return `${geometry.kind === "box" ? "GRDBOX" : "GRDLIN"}(${parts.join(" ")})`;
+}
+
+function serialize(node: Node): string {
+  return typeof node === "string" ? node : `(${node.map(serialize).join(" ")})`;
+}
+
+/**
+ * 既存の罫線のキーワードを書き換える。**触らない指定は残す**（`*CONTROL &CNTL1` など）。
+ *
+ * `*POS` が `*DS3` / `*DS4` で分かれているなら、描いている画面サイズの組だけ書き換える。
+ * 色・線種は `style` に**鍵があれば**書き換え（値が `undefined` なら外す）、鍵が無ければ触らない。
+ */
+export function rewriteGridKeyword(
+  raw: string,
+  geometry: GridGeometry,
+  size: ScreenSizeEntry,
+  style: { color?: GridColor | undefined; lineType?: GridLineType | undefined } = {}
+): string {
+  const entry = parseKeywordEntries(raw)[0];
+  const name = entry?.name === "GRDLIN" ? "GRDLIN" : "GRDBOX";
+  const nodes = parseNodes(entry?.parameters ?? "");
+  const { position, type } = geometryNodes(geometry);
+  const numbers = position.split(" ");
+
+  const positionAt = nodes.findIndex(node => Array.isArray(node) && node[0] === "*POS");
+  const current = positionAt >= 0 ? (nodes[positionAt] as Node[]).slice(1) : [];
+  const named = current.filter(Array.isArray).filter(group => typeof group[0] === "string" && group[0].startsWith("*"));
+  const target = named.find(group => matchesScreenSize(group[0] as string, size));
+  const newPosition: Node[] = target !== undefined
+    ? ["*POS", ...current.map(group => (group === target ? [target[0], ...numbers] : group))]
+    : ["*POS", numbers];
+  if (positionAt >= 0) nodes[positionAt] = newPosition;
+  else nodes.unshift(newPosition);
+
+  const replace = (key: string, value: string | undefined, present: boolean) => {
+    if (!present) return;
+    const at = nodes.findIndex(node => Array.isArray(node) && (node[0] === key || node[0] === key.slice(1)));
+    if (value === undefined) {
+      if (at >= 0) nodes.splice(at, 1);
+      return;
+    }
+    const next: Node[] = [key, ...value.split(" ")];
+    if (at >= 0) nodes[at] = next;
+    else nodes.push(next);
+  };
+  replace("*TYPE", type, true);
+  replace("*COLOR", style.color, "color" in style);
+  replace("*LINTYP", style.lineType, "lineType" in style);
+  return `${name}(${nodes.map(serialize).join(" ")})`;
+}
+
+/** 選んだ 2 つの桁（1 始まり・両端を含む）から、引く罫線の形を決める（利用者の決定: 形で自動判定）。 */
+export function geometryFromCells(
+  from: { row: number; column: number },
+  to: { row: number; column: number }
+): GridGeometry {
+  const row = Math.min(from.row, to.row);
+  const column = Math.min(from.column, to.column);
+  const depth = Math.abs(from.row - to.row) + 1;
+  const width = Math.abs(from.column - to.column) + 1;
+  if (depth === 1) return { kind: "line", row, column, length: width, type: "LOWER" };
+  if (width === 1) return { kind: "line", row, column, length: depth, type: "RIGHT" };
+  return { kind: "box", row, column, depth, width, type: "PLAIN" };
 }
