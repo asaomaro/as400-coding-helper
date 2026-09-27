@@ -79,7 +79,8 @@ function buildParameterTokens(
       continue;
     }
 
-    const token = buildParameterToken(parameter, values);
+    // 元のソースに無かったパラメーターは、既定値のままの修飾子・後ろの要素を省く（利用者が入れたものだけ書く）。
+    const token = buildParameterToken(parameter, values, !present.has(parameter.name.toUpperCase()));
     if (token) {
       tokens.push(token);
     }
@@ -221,7 +222,13 @@ function buildParameterBody(
   parameter: ParameterDefinition,
   values: AppliedValues,
   // 繰り返し指定の何件目か（0 始まり）。入れ子の末端まで引き継ぐ。
-  occurrence = 0
+  occurrence = 0,
+  /**
+   * 既定値のままの修飾子（`*LIBL/`）・後ろの要素（`PAGESIZE` の `*ROWCOL`）を省くか。
+   * 利用者が入れたものだけを書く（2026-09-27 の決定。実操作調査の P16）。元のソースに書かれていた
+   * パラメーターは省かない（呼び出し側が決める）。
+   */
+  omitDefaults = false
 ): string | undefined {
   const children = parameter.children ?? [];
 
@@ -232,7 +239,7 @@ function buildParameterBody(
   }
 
   const childBodies = children.map(
-    child => buildParameterBody(child, values, occurrence) ?? ""
+    child => buildParameterBody(child, values, occurrence, omitDefaults) ?? ""
   );
 
   // 単一値はどの入力欄に入っているとは限らない。修飾名では
@@ -252,9 +259,27 @@ function buildParameterBody(
     return undefined;
   }
 
+  const isDefault = (child: ParameterDefinition, body: string): boolean =>
+    omitDefaults &&
+    body.length > 0 &&
+    (child.children ?? []).length === 0 &&
+    child.defaultValue !== undefined &&
+    body.toUpperCase() === child.defaultValue.trim().toUpperCase();
+
   if ((parameter.groupKind ?? "qualified") === "qualified") {
-    return childBodies.filter(value => value.length > 0).join("/");
+    // 修飾子（オブジェクト名より前の子）は既定値のままなら省く。オブジェクト名（最後の子）は残す。
+    return childBodies
+      .map((value, index) => (index < childBodies.length - 1 && isDefault(children[index], value) ? "" : value))
+      .filter(value => value.length > 0)
+      .join("/");
   }
+
+  // 要素リストは**後ろから**既定値のままの要素を省く（途中を省くと `*N` が要るので残す）。
+  let trimmedLength = childBodies.length;
+  while (trimmedLength > 1 && (childBodies[trimmedLength - 1].length === 0 || isDefault(children[trimmedLength - 1], childBodies[trimmedLength - 1]))) {
+    trimmedLength -= 1;
+  }
+  childBodies.length = trimmedLength;
 
   let lastFilled = -1;
   for (let i = 0; i < childBodies.length; i += 1) {
@@ -277,13 +302,14 @@ function buildParameterBody(
  */
 function buildParameterToken(
   parameter: ParameterDefinition,
-  values: AppliedValues
+  values: AppliedValues,
+  omitDefaults = false
 ): string | undefined {
   if (isRepeatableGroup(parameter)) {
     const bodies: string[] = [];
     const count = countOccurrences(parameter, values);
     for (let index = 0; index < count; index += 1) {
-      const body = buildParameterBody(parameter, values, index);
+      const body = buildParameterBody(parameter, values, index, omitDefaults);
       if (body) bodies.push(body);
     }
 
@@ -315,7 +341,7 @@ function buildParameterToken(
     return list.length > 0 ? `${parameter.name}(${list.join(" ")})` : undefined;
   }
 
-  const body = buildParameterBody(parameter, values);
+  const body = buildParameterBody(parameter, values, 0, omitDefaults);
   return body ? `${parameter.name}(${body})` : undefined;
 }
 
@@ -425,6 +451,14 @@ export function buildRpgLineText(
 
       const laidOut = layOutColumns(trimmed, parameter.sourceLength, parameter.attributes?.columnLayout);
       if (laidOut !== undefined) return laidOut;
+
+      // 字下げを残す欄（D 仕様の名前）は、元の欄の先頭の空白を残す（収まる範囲で）。
+      if (parameter.attributes?.keepIndent === true && trimmed.length > 0) {
+        const indent = (originalSlice.match(/^ */u)?.[0].length ?? 0) % parameter.sourceLength;
+        if (indent > 0 && indent + trimmed.length <= parameter.sourceLength) {
+          return (" ".repeat(indent) + trimmed).padEnd(parameter.sourceLength, " ");
+        }
+      }
 
       if (isNumericField) {
         return trimmed.padStart(parameter.sourceLength, " ");

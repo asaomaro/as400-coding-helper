@@ -2,6 +2,7 @@ import * as vscode from "vscode";
 import type { PrompterDefinition } from "./types";
 import type { ResolvedPosition } from "./positionResolver";
 import { isKeywordFormDefinition, readKeywordForm } from "./keywordForm";
+import { continuedNameParameter, readContinuedName } from "./rpgNameContinuation";
 import { getLogicalCommandRange } from "../language/clContinuation";
 import {
   joinContinuationLines,
@@ -44,6 +45,16 @@ function extractRpgInitialValues(
 
   // Prefer JSON / built-in column metadata when available
   const columnValues = extractByColumns(text, definition);
+
+  // 継続名前行（`…...`）に分かれた長い名前は、上の行とつないで読む（実操作調査の P21）。
+  const continued = continuedNameParameter(definition);
+  if (continued !== undefined) {
+    const from = Math.max(0, resolved.line - 50);
+    const lines: string[] = [];
+    for (let i = from; i <= resolved.line; i += 1) lines.push(resolved.document.lineAt(i).text);
+    const name = readContinuedName(lines, lines.length - 1, columnValues[continued] ?? "");
+    if (name.length > 0) columnValues[continued] = name;
+  }
 
   // For D-spec, if COMMENT was not obtained from column metadata,
   // fall back to treating columns 81+ as the comment area.

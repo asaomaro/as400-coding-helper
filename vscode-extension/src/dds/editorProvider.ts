@@ -11,6 +11,7 @@ import { buildDspfRenderModel, type RenderModel } from "../core/dds/dspfRenderMo
 import { buildPrtfRenderModel } from "../core/dds/prtfRenderModel";
 import { DEFAULT_PAGE, type PrtfPage } from "../core/dds/prtfLayout";
 import { resolveDdsType } from "../core/sourceKind";
+import { fieldPlacementChoices, type PositionalDefinition } from "../core/dds/fieldChoices";
 import { resolveDefinitionLanguage } from "../prompter/jsonDefinitions";
 import { buildDdsEditorHtml, createNonce } from "./webviewHtml";
 import {
@@ -352,7 +353,7 @@ class DdsVisualEditorProvider implements vscode.CustomTextEditorProvider {
       }
 
       case "askItem": {
-        const item = await askItem(message.kind, message.row, message.column);
+        const item = await askItem(message.kind, message.row, message.column, editableTypeOf(document), this.context.extensionUri);
         post({ type: "askItemResult", item: item ?? null });
         return;
       }
@@ -444,11 +445,23 @@ function applyResult(
   );
 }
 
+/** F4 の DDS 定義（35・38 桁の選択肢の出所）を読む。読めなければ選択肢なし（型・使用は既定で置く）。 */
+async function readPositionalDefinition(extensionUri: vscode.Uri, ddsType: EditableDdsType): Promise<PositionalDefinition> {
+  try {
+    const uri = vscode.Uri.joinPath(extensionUri, "resources", "prompter", "dds", resolveDefinitionLanguage(), `${ddsType}.json`);
+    return JSON.parse(new TextDecoder("utf-8").decode(await vscode.workspace.fs.readFile(uri))) as PositionalDefinition;
+  } catch {
+    return { parameters: [] };
+  }
+}
+
 /** 追加する項目の内容を聞く。取り消し（Esc）なら undefined。 */
 async function askItem(
   kind: "field" | "constant",
   row: number,
-  column: number
+  column: number,
+  ddsType: EditableDdsType,
+  extensionUri: vscode.Uri
 ): Promise<Record<string, unknown> | undefined> {
   if (kind === "constant") {
     const text = await vscode.window.showInputBox({
@@ -482,12 +495,41 @@ async function askItem(
   });
   if (length === undefined) return undefined;
 
+  // 型・小数・使用も聞く（実操作調査の D6。利用者の決定）。一覧と既定は `fieldPlacementChoices`。
+  const choices = fieldPlacementChoices(ddsType, await readPositionalDefinition(extensionUri, ddsType));
+  const pick = async (title: string, items: readonly { value: string; label: string }[], preset: string) => {
+    const quickItems = items.map(item => ({ label: item.label, value: item.value }));
+    const chosen = await vscode.window.showQuickPick(
+      [...quickItems.filter(item => item.value === preset), ...quickItems.filter(item => item.value !== preset)],
+      { title, placeHolder: "Enter で先頭（既定）を選ぶ" }
+    );
+    return chosen?.value;
+  };
+  const dataType = await pick(`${name.trim().toUpperCase()} の型（35 桁）`, choices.dataTypes, choices.defaultDataType);
+  if (dataType === undefined) return undefined;
+
+  let decimals: number | undefined;
+  if (choices.decimalTypes.has(dataType)) {
+    const text = await vscode.window.showInputBox({
+      title: `${name.trim().toUpperCase()} の小数点以下の桁数`,
+      value: "0",
+      prompt: "36-37 桁",
+      validateInput: value => (/^\d{1,2}$/u.test(value.trim()) ? undefined : "0〜99 で入力してください")
+    });
+    if (text === undefined) return undefined;
+    decimals = Number(text.trim());
+  }
+
+  const usage = await pick(`${name.trim().toUpperCase()} の使用（38 桁）`, choices.usages, choices.defaultUsage);
+  if (usage === undefined) return undefined;
+
   return {
     kind: "field",
     name: name.trim().toUpperCase(),
     length: Number(length.trim()),
-    dataType: "A"
-    // 使用は書かない。既定はファイルの種類で決まる（画面は B、帳票は出力専用。`applyDdsEdits`）。
+    dataType,
+    ...(decimals !== undefined ? { decimals } : {}),
+    usage
   };
 }
 

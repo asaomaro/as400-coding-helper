@@ -257,6 +257,11 @@ await page.waitForTimeout(300);
 const afterAdd = await sourceLines();
 const added = afterAdd.find(line => line.includes("NEWFLD"));
 check(
+  "置くときの既定は型 A・使用 B（これまでと同じ。D6）",
+  added !== undefined && added.slice(34, 35) === "A" && added.slice(37, 38) === "B",
+  JSON.stringify(added)
+);
+check(
   "フィールドを置くと行が 1 本増える",
   afterAdd.length === beforeAdd.length + 1 && added !== undefined,
   added ? JSON.stringify(added.trimEnd()) : `${beforeAdd.length} → ${afterAdd.length}`
@@ -1506,6 +1511,25 @@ check(
 );
 await page.click("#dds-toggle-colors");
 await page.waitForTimeout(200);
+
+// ---- 22a. 置くときに型・小数・使用を聞く（実操作調査 D6・利用者の決定）----------
+await page.selectOption("#sample", { label: "CUSTMNT.dspf" });
+await page.waitForTimeout(400);
+{
+  const box = await page.locator(".dds-canvas").boundingBox();
+  await page.click("#dds-add-field");
+  await page.mouse.click(box.x + cellWidth * 40, box.y + 20 * 12);
+  await page.waitForSelector("#ask-name", { state: "visible", timeout: 5000 });
+  await page.fill("#ask-name", "AMOUNT");
+  await page.fill("#ask-length", "9");
+  await page.selectOption("#ask-type", "Y");
+  await page.fill("#ask-decimals", "2");
+  await page.selectOption("#ask-usage", "O");
+  await page.click("#ask-ok");
+  await page.waitForTimeout(300);
+  const line = (await sourceLines()).find(l => l.includes("AMOUNT")) ?? "";
+  check("**置くときに入れた型・小数・使用がそのまま書かれる**（D6）", line.slice(29, 38) === "    9Y 2O", JSON.stringify(line));
+}
 
 // ---- 22b. 実機が作成しない形を検証タブに出す（実操作調査の D18）------------
 await page.selectOption("#sample", { label: "machine-errors.dspf" });

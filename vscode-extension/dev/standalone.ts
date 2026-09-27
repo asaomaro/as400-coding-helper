@@ -8,6 +8,9 @@ import {
 import { buildDdsTemplate } from "../src/core/dds/ddsTemplate";
 import { buildDspfRenderModel } from "../src/core/dds/dspfRenderModel";
 import { buildPrtfRenderModel } from "../src/core/dds/prtfRenderModel";
+import { fieldPlacementChoices } from "../src/core/dds/fieldChoices";
+import DDSDSPF_DEF from "../resources/prompter/dds/ja/DDS-DSPF.json";
+import DDSPRTF_DEF from "../resources/prompter/dds/ja/DDS-PRTF.json";
 import type { Bridge } from "../src/dds/webview/bridge";
 import {
   parseEditorMessage,
@@ -167,7 +170,7 @@ class StandaloneHost {
    * 編集の検証にも種別が要る（1 桁目の禁止は表示装置だけ / 行送りは印刷装置だけ）。
    * **描画と同じ判定を使う**——2 か所で拡張子を見ると食い違う。
    */
-  private ddsType(): EditableDdsType {
+  ddsType(): EditableDdsType {
     return this.name.toLowerCase().endsWith(".prtf") ? "DDS-PRTF" : "DDS-DSPF";
   }
 
@@ -204,6 +207,26 @@ function ask(kind: "field" | "constant"): Promise<Record<string, unknown> | unde
   if (nameRow) nameRow.hidden = kind !== "field";
   if (lengthRow) lengthRow.hidden = kind !== "field";
   if (textRow) textRow.hidden = kind !== "constant";
+  // 型・小数・使用も聞く（VS Code 版と同じ一覧と既定。`fieldPlacementChoices`）。
+  const choices = fieldPlacementChoices(host.ddsType(), host.ddsType() === "DDS-PRTF" ? DDSPRTF_DEF : DDSDSPF_DEF);
+  const fill = (select: HTMLSelectElement, items: readonly { value: string; label: string }[], preset: string): void => {
+    select.replaceChildren(
+      ...items.map(item => {
+        const option = document.createElement("option");
+        option.value = item.value;
+        option.textContent = item.label;
+        option.selected = item.value === preset;
+        return option;
+      })
+    );
+  };
+  fill(must<HTMLSelectElement>("#ask-type"), choices.dataTypes, choices.defaultDataType);
+  fill(must<HTMLSelectElement>("#ask-usage"), choices.usages, choices.defaultUsage);
+  must<HTMLInputElement>("#ask-decimals").value = "";
+  for (const id of ["#ask-type", "#ask-decimals", "#ask-usage"]) {
+    const row = must<HTMLElement>(id).closest("label");
+    if (row) row.hidden = kind !== "field";
+  }
 
   return new Promise(resolve => {
     const done = (): void => {
@@ -218,7 +241,11 @@ function ask(kind: "field" | "constant"): Promise<Record<string, unknown> | unde
               kind: "field",
               name: must<HTMLInputElement>("#ask-name").value.trim().toUpperCase(),
               length: Number(must<HTMLInputElement>("#ask-length").value),
-              dataType: "A"
+              dataType: must<HTMLSelectElement>("#ask-type").value,
+              ...(must<HTMLInputElement>("#ask-decimals").value.trim().length > 0
+                ? { decimals: Number(must<HTMLInputElement>("#ask-decimals").value.trim()) }
+                : {}),
+              usage: must<HTMLSelectElement>("#ask-usage").value
             }
           : { kind: "constant", text: must<HTMLInputElement>("#ask-text").value }
       );

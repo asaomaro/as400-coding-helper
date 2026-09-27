@@ -8,6 +8,7 @@ import {
 import { buildItemLines } from "../../src/core/dds/ddsEditWriteBack";
 import { buildDspfOutline } from "../../src/core/dds/dspfOutline";
 import { printWidth } from "../../src/core/dbcs";
+import { fieldPlacementChoices } from "../../src/core/dds/fieldChoices";
 
 /**
  * 編集操作。**ここで守るのは「触った範囲の外が 1 文字も変わらない」こと。**
@@ -575,5 +576,39 @@ suite("DDS 編集: キーワード欄の書き換えで条件つきの行を平�
       SOURCE_WITH_CONDITION[2],
       SOURCE_WITH_CONDITION[3]
     ]);
+  });
+});
+
+suite("DDS: フィールドを置くときの型・使用の選択肢（D6）", () => {
+  test("一覧は F4 の定義（35・38 桁）と同じで、既定はこれまでと同じ", () => {
+    const definition = (type: string) =>
+      JSON.parse(require("fs").readFileSync(require("path").join(__dirname, `../../../resources/prompter/dds/ja/${type}.json`), "utf8"));
+    const dspf = fieldPlacementChoices("DDS-DSPF", definition("DDS-DSPF"));
+    const prtf = fieldPlacementChoices("DDS-PRTF", definition("DDS-PRTF"));
+    assert.ok(dspf.dataTypes.some(c => c.value === "Y") && dspf.usages.some(c => c.value === "B"));
+    assert.deepStrictEqual(prtf.usages.map(c => c.value), ["", "O", "P"]);
+    assert.strictEqual(dspf.defaultDataType, "A");
+    assert.strictEqual(dspf.defaultUsage, "B");
+    assert.strictEqual(prtf.defaultUsage, "");
+  });
+});
+
+suite("出力先の構成を壊さない", () => {
+  // src から resources/prompter の JSON を import すると、tsc がその一部だけを出力先（out/・out-test/）の
+  // resources/prompter/ に写し、定義を相対パスで探すコードが**本物ではなくその一部を読む**（D6 で 40 件落ちた）。
+  test("src は resources/prompter の JSON を import しない", () => {
+    const fs = require("fs") as typeof import("fs");
+    const path = require("path") as typeof import("path");
+    const root = path.join(__dirname, "../../../src");
+    const offenders: string[] = [];
+    const walk = (dir: string): void => {
+      for (const name of fs.readdirSync(dir)) {
+        const full = path.join(dir, name);
+        if (fs.statSync(full).isDirectory()) walk(full);
+        else if (full.endsWith(".ts") && /from\s+["'][^"']*resources\/prompter\//u.test(fs.readFileSync(full, "utf8"))) offenders.push(full);
+      }
+    };
+    walk(root);
+    assert.deepStrictEqual(offenders, []);
   });
 });

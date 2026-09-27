@@ -12,6 +12,7 @@ import { buildRpgLineText, narrowToEditableColumns } from "../../src/prompter/co
 import { printWidth } from "../../src/core/dbcs";
 import { readKeywordForm } from "../../src/prompter/keywordForm";
 import { withOpcodeCandidates } from "../../src/prompter/opcodeCandidates";
+import { readContinuedName, writeContinuedName } from "../../src/prompter/rpgNameContinuation";
 import * as vscode from "vscode";
 import { buildInitialState } from "../../src/prompter/model";
 import { buildCommandHelpText } from "../../src/prompter/commandHelp";
@@ -458,4 +459,62 @@ suite("C 仕様書の命令コードの候補（実操作調査 P18）", () => {
     const error = buildInitialState(definition, { OPCODE: "EVAL(H)", COND: "X = 1" }).fields.find(f => f.fieldName === "OPCODE")?.error;
     assert.equal(error, undefined);
   });
+});
+
+suite("CL: 利用者が入れたものだけ書く（P16 の決定）", () => {
+  const call = load("cl/ja/CALL.json");
+  const ovrprtf = load("cl/ja/OVRPRTF.json");
+  test("既定値のままのライブラリー（*LIBL）は書かない。入れたライブラリーは書く", () => {
+    assert.match(buildClCommandText(call, { LIB: "*LIBL", PGM: "CMPLXPR" }), /CALL\s+PGM\(CMPLXPR\)$/u);
+    assert.match(buildClCommandText(call, { LIB: "MYLIB", PGM: "CMPLXPR" }), /PGM\(MYLIB\/CMPLXPR\)/u);
+  });
+  test("要素リストの後ろの既定値（*ROWCOL）は書かない。既定値でなければ書く", () => {
+    assert.match(buildClCommandText(ovrprtf, { FILE: "CMPLXP", LENGTH: "66", WIDTH: "132", PAGESIZE_UOM: "*ROWCOL" }), /PAGESIZE\(66 132\)/u);
+    assert.match(buildClCommandText(ovrprtf, { FILE: "CMPLXP", LENGTH: "66", WIDTH: "132", PAGESIZE_UOM: "*UOM" }), /PAGESIZE\(66 132 \*UOM\)/u);
+  });
+  test("元のソースに書かれていたパラメーターはそのまま残す", () => {
+    assert.match(buildClCommandText(call, { LIB: "*LIBL", PGM: "CMPLXPR" }, { presentParameters: ["PGM"] }), /PGM\(\*LIBL\/CMPLXPR\)/u);
+  });
+});
+
+suite("D 仕様の名前: 継続名前行と字下げ（P21 の決定）", () => {
+  const dSpec = load("rpg/ile/ja/D-SPEC.json");
+  const build = (original: string, name: string, values: Record<string, string>) =>
+    buildRpgLineText(original, dSpec, { ...values, NAME: name });
+
+  test("15 桁を超える名前は継続名前行に分け、主要定義行の名前欄を空ける", () => {
+    const written = writeContinuedName(["     D"], 0, "customerAccountBalance", (o, n) => build(o, n, { DECLTYPE: "S", LEN: "11", INTTYPE: "P", DEC: "2" }));
+    assert.equal(written.from, 0);
+    assert.deepEqual(written.text.split("\n"), [
+      "     DcustomerAccountBalance...",
+      "     D                 S             11P 2"
+    ]);
+  });
+
+  test("継続名前行を読むとつながり、短くすると継続名前行が消える", () => {
+    const lines = ["     DcustomerAccount...", "     D   Balance     S             11P 2"];
+    assert.equal(readContinuedName(lines, 1, "Balance"), "customerAccountBalance");
+    const written = writeContinuedName(lines, 1, "BAL", (o, n) => build(o, n, { DECLTYPE: "S", LEN: "11", INTTYPE: "P", DEC: "2" }));
+    assert.equal(written.from, 0);
+    assert.equal(written.text, "     D   BAL           S             11P 2");
+  });
+
+  test("名前を変えても字下げ（8 桁目から）は残る", () => {
+    const original = "     D  SUB1                   1      5";
+    const values = readValues(original);
+    assert.equal(build(original, "SUB9", values).slice(6, 21), "  SUB9         ");
+  });
+
+  test("長い名前は桁幅の検査に掛からない", () => {
+    const error = buildInitialState(dSpec, { NAME: "customerAccountBalance", DECLTYPE: "S", LEN: "11" }).fields.find(f => f.fieldName === "NAME")?.error;
+    assert.equal(error, undefined);
+  });
+
+  function readValues(line: string): Record<string, string> {
+    return Object.fromEntries(
+      dSpec.parameters
+        .filter(p => typeof p.sourceStart === "number" && typeof p.sourceLength === "number")
+        .map(p => [p.name, line.padEnd(100).slice(p.sourceStart! - 1, p.sourceStart! - 1 + p.sourceLength!).trim()])
+    );
+  }
 });

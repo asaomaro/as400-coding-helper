@@ -298,7 +298,8 @@ await settle();
 check(
   "埋めれば確定できる",
   (await outcome()) === "確定" &&
-    (await resultLine()) === "             SNDPGMMSG  MSGID(CPF9898) MSGF(*LIBL/QCPFMSG)",
+    // 既定値のままのライブラリー（*LIBL）は書かない（利用者が入れたものだけ書く。P16 の決定）。
+    (await resultLine()) === "             SNDPGMMSG  MSGID(CPF9898) MSGF(QCPFMSG)",
   JSON.stringify(await resultLine())
 );
 
@@ -397,7 +398,7 @@ check(
 );
 check(
   "複数値は空白区切りで書き戻される",
-  (await resultLine()) === "             CALL       PGM(*LIBL/MYPGM) PARM('A' 'B')",
+  (await resultLine()) === "             CALL       PGM(MYPGM) PARM('A' 'B')",
   JSON.stringify(await resultLine())
 );
 await page.click(".multi-remove");
