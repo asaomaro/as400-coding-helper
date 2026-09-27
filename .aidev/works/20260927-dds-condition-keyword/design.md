@@ -9,6 +9,7 @@
 - WebView の契約（`protocol.ts`）にも通す。
 
 ## 受け入れ基準との対応
-- AC1・AC2: `ddsEdit.ts`（`conditionKeyword` / `locateKeyword`）。`ddsEdit.test.ts`。
+- AC1: `ddsEdit.ts`（`conditionKeyword` / `locateKeyword`）。`ddsEdit.test.ts`。
+- AC2: `ddsEdit.ts`（検証の `isConditionable`）。`ddsEdit.test.ts`。
 - AC3: `ui.ts`（`keywordSection` の「条件」）・`protocol.ts`・`ui.css`。`dev/e2e.mjs`（22c）。
 - AC4: `verify/make-sfl.mjs` → `CONDKW.dspf`。
