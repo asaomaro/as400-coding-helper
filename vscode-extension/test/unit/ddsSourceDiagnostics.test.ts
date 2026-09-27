@@ -91,3 +91,23 @@ suite("DDS 検証: 括弧の中が空のキーワード（D3）", () => {
     assert.deepStrictEqual(codes(resolveDspfLayout(source("DSPSIZ(24 80 *DS3)")).diagnostics, "empty-parameters"), [3]);
   });
 });
+
+suite("DDS 辞書: DBCS の画面のキーワード（実操作調査 D19）", () => {
+  // 主の索引に無く、別の索引（DBCS の考慮事項）にだけある。以前は候補に出ず「?」のチップになった。
+  const help = JSON.parse(require("fs").readFileSync(require("path").join(__dirname, "../../../resources/completion/dds-keywords.json"), "utf8"))["DDS-DSPF"] as { name: string; level?: string[] }[];
+  test("GRDRCD / GRDBOX / GRDLIN / GRDCLR / GRDATR がレコード・レベルのキーワードとして入っている", () => {
+    for (const name of ["GRDRCD", "GRDBOX", "GRDLIN", "GRDCLR", "GRDATR"]) {
+      assert.ok(help.find(entry => entry.name === name)?.level?.includes("record"), name);
+    }
+  });
+  test("罫線のキーワードを書いた実機で通る画面に指摘が出ない", () => {
+    const source = [
+      "     A                                      DSPSIZ(24 80 *DS3)",
+      "     A          R GRID01                    GRDRCD",
+      "     A                                      GRDATR((*COLOR BLU) (*LINTYP SLD))",
+      "     A                                      GRDBOX((*POS (5 1 18 80)) (*TYPE PLAIN))",
+      "     A                                      GRDLIN((*POS (6 2 78)) (*TYPE UPPER))"
+    ];
+    assert.deepStrictEqual(resolveDspfLayout(source).diagnostics, []);
+  });
+});

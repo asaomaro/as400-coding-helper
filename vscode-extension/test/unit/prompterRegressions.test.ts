@@ -11,6 +11,7 @@ import { applyChanges, buildClCommandText } from "../../src/prompter/applyChange
 import { buildRpgLineText, narrowToEditableColumns } from "../../src/prompter/commandText";
 import { printWidth } from "../../src/core/dbcs";
 import { readKeywordForm } from "../../src/prompter/keywordForm";
+import { withOpcodeCandidates } from "../../src/prompter/opcodeCandidates";
 import * as vscode from "vscode";
 import { buildInitialState } from "../../src/prompter/model";
 import { buildCommandHelpText } from "../../src/prompter/commandHelp";
@@ -436,5 +437,25 @@ suite("H 仕様書（キーワード形式）を読み書きする（実操作�
   test("何も変えずに確定すると元の行のまま", () => {
     const original = "     H DFTACTGRP(*NO) ACTGRP(*NEW) NOMAIN";
     assert.equal(buildRpgLineText(original, hSpec, readKeywordForm(original, hSpec)), original);
+  });
+});
+
+suite("C 仕様書の命令コードの候補（実操作調査 P18）", () => {
+  const values = (rel: string, dialect: "ile" | "rpg3" = "ile") =>
+    withOpcodeCandidates(load(rel), dialect, "ja").parameters.find(p => p.name === "OPCODE")?.options?.map(o => o.value) ?? [];
+
+  test("C-NEW は拡張演算項目 2 を取る命令、C-SPEC は取らない命令（行の分類と同じ集合）", () => {
+    const cNew = values("rpg/ile/ja/C-NEW.json");
+    const cSpec = values("rpg/ile/ja/C-SPEC.json");
+    for (const name of ["EVAL", "IF", "DOW", "ELSE", "ENDIF"]) assert.ok(cNew.includes(name), name);
+    for (const name of ["CHAIN", "MOVEL", "READ", "SETON", "EXFMT"]) assert.ok(cSpec.includes(name), name);
+    assert.ok(!cNew.includes("CHAIN") && !cSpec.includes("EVAL"));
+    assert.ok(!cSpec.some(value => value !== value.toUpperCase()), "総称（ANDxx 等）は入れない");
+  });
+
+  test("候補は制限ではない（演算拡張つきも書ける）", () => {
+    const definition = withOpcodeCandidates(load("rpg/ile/ja/C-NEW.json"), "ile", "ja");
+    const error = buildInitialState(definition, { OPCODE: "EVAL(H)", COND: "X = 1" }).fields.find(f => f.fieldName === "OPCODE")?.error;
+    assert.equal(error, undefined);
   });
 });

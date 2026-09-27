@@ -28,6 +28,7 @@ import {
   unitItemKind,
   unitRunEnd,
   fileLevelKeywordLines,
+  conditioningAreaOf,
   type AlternatePosition,
   type FileKeywordLine,
   type LogicalUnit,
@@ -699,6 +700,12 @@ export function applyDdsEdits(
 
         const unit = unitAt(units, edit.sourceLine);
         if (!unit) break;
+        // 条件つきのキーワード行がある様式・項目だけ、行ごとに書き分ける（条件を残す）。
+        // 条件の無い継続行だけなら、これまでどおり代表行から折り直す。
+        if (unit.keywordGroups.slice(1).some(group => group.conditioningLines.some(line => conditioningAreaOf(line).trim().length > 0))) {
+          results.push(...setKeywordsKeepingConditions(lines, unit, edit.keywords));
+          break;
+        }
         const run = keywordRunOf(unit);
         if (!run) break; // 検証済みなので通常は起きない。
         results.push({
@@ -1700,6 +1707,70 @@ function itemUnitAt(
  * 位置や長さは様式に無いので、**キーワードの編集だけ**がこちらを使う。
  */
 /**
+ * キーワードの群（代表行、または条件つきのキーワード行）の**続き（継続行）の最後の行**（1 始まり・含む）。
+ * キーワード行の直後から、次の群の行の手前まで、1-44 桁が空の行を続きとみなす。
+ */
+function groupKeywordEnd(lines: readonly string[], unit: LogicalUnit, g: number): number {
+  const groups = unit.keywordGroups;
+  const nextStart = g + 1 < groups.length ? Math.min(...groups[g + 1].sourceLines) : Number.POSITIVE_INFINITY;
+  let end = groups[g].sourceLine;
+  while (
+    end + 1 < nextStart &&
+    unit.sourceLines.includes(end + 1) &&
+    (lines[end] ?? "").slice(6, 44).trim().length === 0
+  ) {
+    end += 1;
+  }
+  return end;
+}
+
+/**
+ * 条件つきの行を持つ様式・項目のキーワード欄を書き換える。**条件つきの行のキーワードはその行に残す。**
+ *
+ * UI はキーワード欄を全部の行を通した 1 本の文字列で渡す（チップの並び）。そのまま代表行に折り直すと、
+ * 条件つきの行のキーワードが代表行へ吸い込まれ、**条件が黙って消えていた**（`40 COLOR(RED)` が無条件になる）。
+ * 新しい並びに残っているものは元の行に残し、消えたものだけその行から外す（行が空になれば条件の行ごと消す）。
+ * 残りの（新しく足された・代表行にあった）キーワードは代表行へ書く。
+ */
+function setKeywordsKeepingConditions(
+  lines: readonly string[],
+  unit: LogicalUnit,
+  keywords: string
+): DdsEditResult[] {
+  const remaining = [...parseKeywordEntries(keywords)];
+  const take = (raw: string): boolean => {
+    const at = remaining.findIndex(entry => entry.raw.toUpperCase() === raw.toUpperCase());
+    if (at < 0) return false;
+    remaining.splice(at, 1);
+    return true;
+  };
+  const results: DdsEditResult[] = [];
+  const groups = unit.keywordGroups;
+  for (let g = groups.length - 1; g >= 1; g -= 1) {
+    const entries = parseKeywordEntries(groups[g].keywords);
+    const kept = entries.filter(entry => take(entry.raw));
+    if (kept.length === entries.length) continue; // 変わっていない行は触らない
+    const end = groupKeywordEnd(lines, unit, g);
+    if (kept.length === 0) {
+      results.push({ replaceFrom: Math.min(...groups[g].sourceLines) - 1, replaceTo: end, lines: [] });
+    } else {
+      results.push({
+        replaceFrom: groups[g].sourceLine - 1,
+        replaceTo: end,
+        lines: keywordLines(lines[groups[g].sourceLine - 1], kept.map(entry => entry.raw).join(" "))
+      });
+    }
+  }
+  const firstEnd = groupKeywordEnd(lines, unit, 0);
+  results.push({
+    replaceFrom: groups[0].sourceLine - 1,
+    replaceTo: firstEnd,
+    lines: keywordLines(lines[groups[0].sourceLine - 1], remaining.map(entry => entry.raw).join(" "))
+  });
+  return results;
+}
+
+/**
  * 様式・項目のキーワード欄を全部の行を通して区切ったときの `index` 番目を、どの行の何番目かに引き直す。
  * `end` はその行のキーワードの続き（継続行）の最後（1 始まり・含む）。
  */
@@ -1728,16 +1799,7 @@ function locateKeyword(
     if (index < offset + entries.length) {
       const entry = entries[index - offset];
       if (entry.kind !== "keyword") return undefined;
-      // 継続行: キーワード行の直後から、次の群の行の手前まで（1-44 桁が空の行）。
-      const nextStart = g + 1 < groups.length ? Math.min(...groups[g + 1].sourceLines) : Number.POSITIVE_INFINITY;
-      let end = groups[g].sourceLine;
-      while (
-        end + 1 < nextStart &&
-        unit.sourceLines.includes(end + 1) &&
-        (lines[end] ?? "").slice(6, 44).trim().length === 0
-      ) {
-        end += 1;
-      }
+      const end = groupKeywordEnd(lines, unit, g);
       return { unit, group: groups[g], isFirst: g === 0, entries: [...entries], entryIndex: index - offset, entry, end };
     }
     offset += entries.length;

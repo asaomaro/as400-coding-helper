@@ -3,8 +3,11 @@ import {
   conditionGroups,
   describeConditioning,
   evaluateConditioning,
-  type IndicatorStates
+  resolveKeywordGroups,
+  type IndicatorStates,
+  type KeywordGroup
 } from "../../core/dds/ddsConditioning";
+import { toLogicalUnits } from "../../core/dds/ddsLogicalUnits";
 import {
   conditionLineCount,
   formatConditionText,
@@ -1373,6 +1376,8 @@ class EditorView {
     }
 
     nodes.push(this.keywordSection(record.sourceLine, record.keywords, "record"));
+    const conditional = this.describeRecordConditionalKeywords(record.sourceLine);
+    if (conditional !== undefined) nodes.push(conditional);
     if (record.keywords.trim().length === 0) {
       nodes.push(text("div", "dds-note", "この様式にはレコード・レベルのキーワードがありません"));
     }
@@ -1888,7 +1893,24 @@ class EditorView {
     );
     // **先頭の群は代表行**（項目自身の条件で決まる。`条件` 欄がそれを編集する）。
     // ここに出すのは**別の行に書かれたキーワード**だけ。
-    const groups = (placed?.keywordGroups ?? []).slice(1);
+    return this.conditionalKeywordRows((placed?.keywordGroups ?? []).slice(1));
+  }
+
+  /**
+   * 様式の、**条件つきの行に分かれたキーワード**（`31 SFLDSP`）。項目と同じ欄で出し、条件を直せる。
+   * 様式は絵に描かれないので、ソースから論理単位を引き直して群を取る。
+   * 条件の無い継続行は様式のキーワードの続きなので出さない。
+   */
+  private describeRecordConditionalKeywords(sourceLine: number): HTMLElement | undefined {
+    const unit = toLogicalUnits(this.source).find(candidate => candidate.sourceLine === sourceLine);
+    if (!unit) return undefined;
+    const groups = resolveKeywordGroups(unit)
+      .slice(1)
+      .filter(group => group.conditioning.kind !== "none");
+    return this.conditionalKeywordRows(groups);
+  }
+
+  private conditionalKeywordRows(groups: readonly KeywordGroup[]): HTMLElement | undefined {
     if (groups.length === 0) return undefined;
 
     const list = document.createElement("div");

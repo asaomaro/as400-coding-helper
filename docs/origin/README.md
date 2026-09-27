@@ -18,8 +18,8 @@ AS/400 コーディング支援のプロンプター定義（CL コマンド・R
 | `rpg3/<id>.html` | RPG III(RPG/400) 用 固定長リファレンス（第三者・jaymoseley） | 6 | 下記「rpg3 の出所」参照 |
 | `sources.mjs` | 取得対象リスト（入力） | — | — |
 | `dds/<種別>-{POSITIONAL,KEYWORDS}.html` | DDS の桁とキーワード索引（日本語） | 6 | IBM i 7.4 |
-| `dds/detail/<page>.htm` | DDS 各キーワードの詳細（構文の出所） | 287 | IBM i 7.4 |
-| `dds-en/…` | 同上（英語） | 293 | IBM i 7.4 |
+| `dds/detail/<page>.htm` | DDS 各キーワードの詳細（構文の出所） | 294 | IBM i 7.4（下記の 7 件は 7.3） |
+| `dds-en/…` | 同上（英語） | 300 | IBM i 7.4 |
 | `fetch-origin.mjs` | 取得スクリプト（Playwright） | — | — |
 | `generate-cl-definitions.mjs` | CL 定義 JSON の生成スクリプト | — | — |
 | `verify-cl-definitions.mjs` | 生成結果と原典の突き合わせ検査 | — | — |
@@ -199,3 +199,10 @@ PLAYWRIGHT_PKG=/tmp/node_modules/playwright/index.js node docs/origin/fetch-orig
 
 - 保存している HTML は IBM および jaymoseley.com の著作物のスナップショットで、**社内の開発照合用途**に
   限定する。再配布や公開を意図しない。出所は各ファイルおよび `manifest.yml` で辿れる。
+
+## DBCS の画面のキーワード（GRDBOX 等）の詳細ページ（2026-09-27 追加）
+
+`DSPF-DBCS-KEYWORDS.html`（`rzakc/dspkwd.htm`）の索引にだけあるキーワード（`GRDATR` / `GRDBOX` / `GRDCLR` / `GRDLIN` / `GRDRCD` /
+`IGCALTTYP` / `IGCCNV`）の詳細ページ 7 件は、コンテンツ API（`/docs/api/v1/content/<topic>?parsebody=true&lang=…`）から取得した。
+**日本語は IBM i 7.3（`ssw_ibm_i_73`）から取った。** 7.4 の日本語を求めると、これらのページは英語が返る（2026-07 に英語だけ更新されたため）。
+7.3 は検証に使っている実機の版でもある。英語は 7.4。

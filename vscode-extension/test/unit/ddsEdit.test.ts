@@ -536,3 +536,44 @@ suite("DDS 編集: キーワードを条件つきの行へ移す（実操作調�
     );
   });
 });
+
+suite("DDS 編集: キーワード欄の書き換えで条件つきの行を平らにしない", () => {
+  // 項目の「＋ 追加」は欄全体（全部の行を通した並び）を送る。以前はそれを代表行に折り直し、
+  // `40 COLOR(RED)` の行が代表行へ吸い込まれて**条件が黙って消えていた**。
+  const SOURCE_WITH_CONDITION = [
+    ln({ record: "R1" }),
+    ln({ name: "F1", length: 10, dataType: "A", usage: "O", row: 3, column: 2, keywords: "DSPATR(HI)" }),
+    ln({ conditioning: "  40", keywords: "COLOR(RED)" }),
+    ln({ name: "F2", length: 10, dataType: "A", usage: "O", row: 4, column: 2 })
+  ];
+  const apply = (keywords: string): string[] => {
+    const lines = [...SOURCE_WITH_CONDITION];
+    for (const result of applyDdsEdits(SOURCE_WITH_CONDITION, [{ kind: "setKeywords", sourceLine: 2, keywords }], "DDS-DSPF")) {
+      lines.splice(result.replaceFrom, result.replaceTo - result.replaceFrom, ...result.lines);
+    }
+    return lines;
+  };
+
+  test("キーワードを足しても条件つきの行はそのまま", () => {
+    const after = apply("DSPATR(HI) COLOR(RED) CHECK(ER)");
+    assert.deepStrictEqual(after, [
+      SOURCE_WITH_CONDITION[0],
+      ln({ name: "F1", length: 10, dataType: "A", usage: "O", row: 3, column: 2, keywords: "DSPATR(HI) CHECK(ER)" }),
+      SOURCE_WITH_CONDITION[2],
+      SOURCE_WITH_CONDITION[3]
+    ]);
+  });
+
+  test("条件つきの行のキーワードを外すと、その行ごと消える", () => {
+    assert.deepStrictEqual(apply("DSPATR(HI)"), [SOURCE_WITH_CONDITION[0], SOURCE_WITH_CONDITION[1], SOURCE_WITH_CONDITION[3]]);
+  });
+
+  test("代表行のキーワードを外しても条件つきの行は残る", () => {
+    assert.deepStrictEqual(apply("COLOR(RED)"), [
+      SOURCE_WITH_CONDITION[0],
+      ln({ name: "F1", length: 10, dataType: "A", usage: "O", row: 3, column: 2 }),
+      SOURCE_WITH_CONDITION[2],
+      SOURCE_WITH_CONDITION[3]
+    ]);
+  });
+});

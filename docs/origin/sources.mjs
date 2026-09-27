@@ -113,6 +113,9 @@ export const categories = {
       { name: 'PF-LF-KEYWORDS',   topic: 'ssw_ibm_i_74/rzakb/rzakbmstlfkeyw.htm', note: '物理/論理ファイルのキーワード項目 (45-80桁)' },
       { name: 'DSPF-KEYWORDS',    topic: 'ssw_ibm_i_74/rzakc/rzakcmstkeyent.htm', note: '表示装置ファイルのキーワード項目 (45-80桁)' },
       { name: 'PRTF-KEYWORDS',    topic: 'ssw_ibm_i_74/rzakd/rzakdmstprkey.htm',  note: '印刷装置ファイルのキーワード項目 (45-80桁)' },
+      // DBCS の画面にだけ使うキーワード（GRDBOX 等の罫線・IGCCNV 等）は上の索引に無く、別の索引にある。
+      // 実機は受け付けるのにエディタが知らなかった（2026-09-27 の実操作調査 D19）。
+      { name: 'DSPF-DBCS-KEYWORDS', topic: 'ssw_ibm_i_74/rzakc/dspkwd.htm', note: 'DBCS を使う表示装置ファイルのキーワードの考慮事項（索引）' },
       // 編集コードの早見表。EDTCDE の印刷幅を計算するのに要る。
       // 5-9 は実機の *EDTD オブジェクト（ユーザー定義）なのでオフラインでは解決できない。
       { name: 'PRTF-EDITCODES', topic: 'ssw_ibm_i_74/rzakd/os400edits.htm', note: '印刷装置ファイル内の IBM i 編集コード' },

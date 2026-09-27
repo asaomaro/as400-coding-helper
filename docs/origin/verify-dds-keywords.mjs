@@ -24,7 +24,9 @@ const COMPLETION = join(ROOT, "vscode-extension/resources/completion");
 
 const TYPES = [
   { key: "DDS-PF", file: "PF-LF-KEYWORDS.html" },
-  { key: "DDS-DSPF", file: "DSPF-KEYWORDS.html" },
+  // DBCS の画面にだけ使うキーワード（GRDBOX 等）は別の索引にある（2026-09-27 の実操作調査 D19）。
+  // 先に主の索引を読み、同じ名前は主の方を採る。
+  { key: "DDS-DSPF", file: "DSPF-KEYWORDS.html", extra: ["DSPF-DBCS-KEYWORDS.html"] },
   { key: "DDS-PRTF", file: "PRTF-KEYWORDS.html" }
 ];
 
@@ -89,7 +91,7 @@ for (const lang of ["ja", "en"]) {
   const data = JSON.parse(readFileSync(file, "utf8"));
   counts[lang] = {};
 
-  for (const { key, file: originFile } of TYPES) {
+  for (const { key, file: originFile, extra = [] } of TYPES) {
     const keywords = data[key];
     if (!Array.isArray(keywords) || keywords.length === 0) {
       failures.push(`${lang}/${key}: キーワードが無い`);
@@ -138,7 +140,7 @@ for (const lang of ["ja", "en"]) {
 
     // **索引に名前として書かれているものが 1 つでも欠けていないか。**
     // 件数の下限（下の 7 割判定）は 1〜2 件の欠落では割らないので、名前で突き合わせる。
-    const originNames = originKeywordNames(lang, originFile);
+    const originNames = new Set([originFile, ...extra].flatMap(indexFile => [...originKeywordNames(lang, indexFile)]));
     const missing = [...originNames].filter(name => !names.includes(name));
     if (missing.length > 0) {
       failures.push(
