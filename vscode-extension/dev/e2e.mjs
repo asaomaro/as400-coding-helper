@@ -1568,6 +1568,23 @@ await page.waitForTimeout(400);
   );
 }
 
+// ---- 22a3. 文字列の無い定数（DATE 等）を置く（D4）--------------------------
+await page.selectOption("#sample", { label: "CUSTMNT.dspf" });
+await page.waitForTimeout(400);
+{
+  const box = await page.locator(".dds-canvas").boundingBox();
+  await page.click("#dds-add-constant");
+  await page.mouse.click(box.x + cellWidth * 60, box.y + 22 * 12);
+  await page.waitForSelector("#ask-constant-kind", { state: "visible", timeout: 5000 });
+  await page.selectOption("#ask-constant-kind", "DATE EDTCDE(Y)");
+  await page.click("#ask-ok");
+  await page.waitForTimeout(300);
+  const line = (await sourceLines()).find(l => /DATE EDTCDE\(Y\)\s*$/u.test(l)) ?? "";
+  check("**定数の種類で DATE を選ぶと、文字列の無い定数が置ける**（D4）", line.length > 0 && line.slice(38, 44).trim().length > 0, JSON.stringify(line));
+  const drawn = await page.$$eval(".dds-item.constant", ns => ns.map(n => n.textContent ?? ""));
+  check("実機の桁数の見本（MM/DD/YY）で描く", drawn.some(t => t.includes("MM/DD/YY")), JSON.stringify(drawn.slice(-3)));
+}
+
 // ---- 22b. 実機が作成しない形を検証タブに出す（実操作調査の D18）------------
 await page.selectOption("#sample", { label: "machine-errors.dspf" });
 await page.waitForTimeout(400);

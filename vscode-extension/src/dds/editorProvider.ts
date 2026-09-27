@@ -11,7 +11,7 @@ import { buildDspfRenderModel, type RenderModel } from "../core/dds/dspfRenderMo
 import { buildPrtfRenderModel } from "../core/dds/prtfRenderModel";
 import { DEFAULT_PAGE, type PrtfPage } from "../core/dds/prtfLayout";
 import { resolveDdsType } from "../core/sourceKind";
-import { fieldPlacementChoices, type PositionalDefinition } from "../core/dds/fieldChoices";
+import { constantKindChoices, fieldPlacementChoices, type PositionalDefinition } from "../core/dds/fieldChoices";
 import { resolveDefinitionLanguage } from "../prompter/jsonDefinitions";
 import { buildDdsEditorHtml, createNonce } from "./webviewHtml";
 import {
@@ -464,6 +464,13 @@ async function askItem(
   extensionUri: vscode.Uri
 ): Promise<Record<string, unknown> | undefined> {
   if (kind === "constant") {
+    // 種類を聞く（文字列 / DATE / TIME …。文字列の無い定数を置けなかった。実操作調査の D4）。
+    const constantKind = await vscode.window.showQuickPick(
+      constantKindChoices(ddsType).map(choice => ({ label: choice.label, value: choice.value })),
+      { title: `定数を ${row} 行 ${column} 桁に置く`, placeHolder: "Enter で文字列" }
+    );
+    if (constantKind === undefined) return undefined;
+    if (constantKind.value.length > 0) return { kind: "constant", keyword: constantKind.value };
     const text = await vscode.window.showInputBox({
       title: `定数を ${row} 行 ${column} 桁に置く`,
       prompt: "表示する文字列（引用符は不要）"

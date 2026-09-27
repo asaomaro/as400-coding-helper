@@ -20,6 +20,7 @@ import {
 import {
   keywordAreaOf,
   readConstant,
+  readKeywordConstant,
   readNumber,
   replaceLeadingConstant,
   startsContinuation,
@@ -857,7 +858,7 @@ function validateKeywords(
 ): DdsEditRejection[] {
   const rejections = validateKeywordRun(unit, sourceLine);
 
-  if (unitItemKind(unit) === "constant" && readConstant(keywords) === undefined) {
+  if (unitItemKind(unit) === "constant" && readConstant(keywords) === undefined && readKeywordConstant(keywords) === undefined) {
     rejections.push({
       code: "constant-needs-literal",
       message: "固定情報（定数）のキーワード欄はリテラル（'…'）で始まる必要があります",
@@ -1148,6 +1149,11 @@ function insertionPoint(
   return Math.max(...last.sourceLines);
 }
 
+/** 置ける文字列の無い定数（原典の各キーワードの一覧にあるもの。MSGCON はメッセージ ID が要るので置く入口からは除く）。 */
+export function keywordConstantsFor(ddsType: EditableDdsType): readonly string[] {
+  return ddsType === "DDS-PRTF" ? ["DATE", "TIME", "PAGNBR"] : ["DATE", "TIME", "SYSNAME", "USER"];
+}
+
 function validateAdd(
   units: readonly LogicalUnit[],
   recordName: string,
@@ -1176,6 +1182,11 @@ function validateAdd(
         message: `長さ ${item.length} は桁数欄（${LENGTH_WIDTH} 桁）に書けません`
       });
     }
+  } else if (item.keyword !== undefined && !keywordConstantsFor(ddsType).includes(readKeywordConstant(item.keyword)?.keyword ?? "")) {
+    rejections.push({
+      code: "invalid-column-value",
+      message: `${item.keyword} は${ddsType === "DDS-PRTF" ? "帳票" : "画面"}の文字列の無い定数に使えません（${keywordConstantsFor(ddsType).join(" / ")}）`
+    });
   } else if (item.length !== undefined) {
     rejections.push({
       code: "constant-has-length",

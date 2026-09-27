@@ -168,7 +168,7 @@ priority: 1           # 既存機能の構造改善。DDS(1) と同格
 - [ ] **RPG の定位置欄の DBCS を実機の桁で数える**（P14 の RPG 側。上の CL の件から分けた）。MOVEL の演算項目 2 に `'無効なオプション'` を入れると文字数では 14 桁に収まるが、
   実機では SO/SI と全角 2 桁で 20 桁になり後続の欄（結果フィールド）と重なる。書き戻し（`buildRpgLineText`）の桁あふれ検査と詰め、読み戻し（行の桁から値を切り出す）を
   実機の桁で数え直す必要がある。SOSI 表示（`{` `}`）と同じ数え方に揃えること。
-- [ ] **プロンプターの軽微な項目 7 件**（P19 の F12/F3・P22 の placeholder は済: `20260927-prompter-seu-keys-placeholders`。P18 の命令の候補は済: `20260927-prompter-opcode-candidates`。残りは P16・P17・P18 の F1 ヘルプ・P20・P21）（docs/research/20260927-f4-prompter-exploration/findings.md の P16〜P22）: CL の既定値の出し方の不統一／DCL の LEN が F10 の奥・ヘルプの表抜け／C の F1 ヘルプが命令と無関係・
+- [x] **プロンプターの軽微な項目 7 件**（すべて済または決定により対応しない。P18 の F1 ヘルプは `20260927-prompter-opcode-field-help`）（P19 の F12/F3・P22 の placeholder は済: `20260927-prompter-seu-keys-placeholders`。P18 の命令の候補は済: `20260927-prompter-opcode-candidates`。P16・P21 は済、P20 は対応しない（決定）。P17 は済: `20260927-prompter-cl-conditional-basic`。残りは P18 の F1 ヘルプ）（docs/research/20260927-f4-prompter-exploration/findings.md の P16〜P22）: CL の既定値の出し方の不統一／DCL の LEN が F10 の奥・ヘルプの表抜け／C の F1 ヘルプが命令と無関係・
   命令の候補が無い／F12・F3 で取り消せない／確定後に次の行へ進まない／D の名前の `...` 継続が書けない／誤解を招く placeholder。
   - **決定 P16（2026-09-27・利用者）** — 済（`20260927-prompter-cl-omit-defaults`）: CL は利用者が入れたものだけ書く。修飾名のライブラリーや要素リストの後ろの要素が既定値のままなら省く（`PGM(CMPLXPR)` / `PAGESIZE(66 132)`）。元のソースに書かれていたものは残す。
   - **決定 P20（2026-09-27・利用者）**: 対応しない。ACS はプロンプター呼び出し前のカーソル位置を保つ。いまも同じ動き。

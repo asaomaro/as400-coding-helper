@@ -8,7 +8,7 @@ import {
 import { buildDdsTemplate } from "../src/core/dds/ddsTemplate";
 import { buildDspfRenderModel } from "../src/core/dds/dspfRenderModel";
 import { buildPrtfRenderModel } from "../src/core/dds/prtfRenderModel";
-import { fieldPlacementChoices } from "../src/core/dds/fieldChoices";
+import { constantKindChoices, fieldPlacementChoices } from "../src/core/dds/fieldChoices";
 import DDSDSPF_DEF from "../resources/prompter/dds/ja/DDS-DSPF.json";
 import DDSPRTF_DEF from "../resources/prompter/dds/ja/DDS-PRTF.json";
 import type { Bridge } from "../src/dds/webview/bridge";
@@ -210,6 +210,17 @@ function ask(kind: "field" | "constant" | "hidden"): Promise<Record<string, unkn
   if (nameRow) nameRow.hidden = kind !== "field";
   if (lengthRow) lengthRow.hidden = kind !== "field";
   if (textRow) textRow.hidden = kind !== "constant";
+  const constantKind = must<HTMLSelectElement>("#ask-constant-kind");
+  constantKind.replaceChildren(
+    ...constantKindChoices(host.ddsType()).map(choice => {
+      const option = document.createElement("option");
+      option.value = choice.value;
+      option.textContent = choice.label;
+      return option;
+    })
+  );
+  const kindRow = constantKind.closest("label");
+  if (kindRow) kindRow.hidden = kind !== "constant";
   // 型・小数・使用も聞く（VS Code 版と同じ一覧と既定。`fieldPlacementChoices`）。
   const choices = fieldPlacementChoices(host.ddsType(), host.ddsType() === "DDS-PRTF" ? DDSPRTF_DEF : DDSDSPF_DEF);
   const fill = (select: HTMLSelectElement, items: readonly { value: string; label: string }[], preset: string): void => {
@@ -251,7 +262,9 @@ function ask(kind: "field" | "constant" | "hidden"): Promise<Record<string, unkn
                 : {}),
               usage: hidden ? "H" : must<HTMLSelectElement>("#ask-usage").value
             }
-          : { kind: "constant", text: must<HTMLInputElement>("#ask-text").value }
+          : must<HTMLSelectElement>("#ask-constant-kind").value.length > 0
+            ? { kind: "constant", keyword: must<HTMLSelectElement>("#ask-constant-kind").value }
+            : { kind: "constant", text: must<HTMLInputElement>("#ask-text").value }
       );
     };
     dialog.addEventListener("close", done);

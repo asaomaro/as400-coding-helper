@@ -126,6 +126,47 @@ export function keywordAreaOf(line: string): string {
 const LEADING_CONSTANT = /^'((?:[^']|'')*)'/u;
 
 /** 定数（キーワード欄の `'…'`）を取り出す。 */
+/**
+ * **文字列の無い定数**（`DATE` / `TIME` / `SYSNAME` / `USER` / `PAGNBR` / `MSGCON`）。名前もリテラルも無く、
+ * キーワードだけで「実行時の値を出す固定情報」になる項目。
+ *
+ * 以前は項目として認識せず、様式のキーワードの続きと読んでいた（描かれず、「レコード・レベルに書けない」と誤って指摘した）。
+ * 置く入口も無かった（実操作調査の D4）。
+ *
+ * `sample` は画面・紙面に描く見本で、**長さは実機の桁数**（2026-09-27 に `CRTDSPF` のリストで確認。
+ * `.aidev/works/20260927-dds-keyword-constants/verify/KWCONST.dspf`）: DATE 6 / DATE EDTCDE(Y) 8 / DATE(*YY) 8 /
+ * DATE(*YY) EDTCDE(Y) 10 / TIME 8 / SYSNAME 8 / USER 10。
+ */
+export function readKeywordConstant(keywords: string): { keyword: string; sample: string } | undefined {
+  const text = keywords.trim().toUpperCase();
+  const first = /^([A-Z]+)/u.exec(text)?.[1];
+  if (first === undefined) return undefined;
+  switch (first) {
+    case "DATE": {
+      const longYear = /^DATE\s*\([^)]*\*YY\b/u.test(text);
+      const separated = /\bEDTCDE\s*\(\s*Y\s*\)/u.test(text);
+      const sample = separated ? (longYear ? "MM/DD/YYYY" : "MM/DD/YY") : longYear ? "MMDDYYYY" : "MMDDYY";
+      return { keyword: "DATE", sample };
+    }
+    case "TIME": {
+      const word = /\bEDTWRD\s*\(\s*'([^']*)'/u.exec(text)?.[1];
+      return { keyword: "TIME", sample: word === undefined ? "HH:MM:SS" : "HH:MM:SS".padEnd(word.length, " ").slice(0, word.length) };
+    }
+    case "SYSNAME":
+      return { keyword: "SYSNAME", sample: "SYSNAME " };
+    case "USER":
+      return { keyword: "USER", sample: "USER      " };
+    case "PAGNBR":
+      return { keyword: "PAGNBR", sample: "9999" };
+    case "MSGCON": {
+      const length = Number(/^MSGCON\s*\(\s*(\d+)/u.exec(text)?.[1] ?? "0");
+      return length > 0 ? { keyword: "MSGCON", sample: "MSGCON".padEnd(length, " ").slice(0, length) } : undefined;
+    }
+    default:
+      return undefined;
+  }
+}
+
 export function readConstant(keywords: string): string | undefined {
   const match = LEADING_CONSTANT.exec(keywords.trim());
   return match ? match[1].replace(/''/gu, "'") : undefined;
@@ -164,7 +205,7 @@ export function replaceLeadingConstant(
  */
 export function unitItemKind(unit: LogicalUnit): "field" | "constant" {
   const name = ddsName(unit.line).trim();
-  return name.length === 0 && readConstant(unit.keywords) !== undefined
+  return name.length === 0 && (readConstant(unit.keywords) !== undefined || readKeywordConstant(unit.keywords) !== undefined)
     ? "constant"
     : "field";
 }
@@ -368,7 +409,7 @@ export function classifyDdsLine(line: string, keywords: string): DdsLineKind {
   if (nameType === "R") return "record";
 
   const name = ddsName(line);
-  if (name.length > 0 || readConstant(keywords) !== undefined) return "item";
+  if (name.length > 0 || readConstant(keywords) !== undefined || readKeywordConstant(keywords) !== undefined) return "item";
 
   if (keywords.length === 0 && conditioningAreaOf(line).trim().length > 0) {
     // **位置があれば直前の項目の上書き**、無ければ次の単位への前置き。

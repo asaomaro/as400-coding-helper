@@ -203,6 +203,11 @@ export interface NewDspfItem {
   readonly name?: string;
   /** 定数のリテラル。**引用符は付けずに渡す**（この関数が付ける）。 */
   readonly text?: string;
+  /**
+   * 文字列の無い定数のキーワード（`DATE` / `DATE(*YY)` / `TIME` / `SYSNAME` / `USER` / `PAGNBR`）。
+   * 与えたら `text` の代わりにキーワード欄へこれを書く（実操作調査の D4）。
+   */
+  readonly keyword?: string;
   /** 30-34 桁。フィールドのみ。 */
   readonly length?: number;
   /** 35 桁。 */
@@ -271,7 +276,9 @@ export function buildItemLine(item: NewDspfItem): string {
   }
 
   if (item.kind === "constant") {
-    line = line.padEnd(DDS_KEYWORD_AREA_START - 1, " ") + quoteLiteral(item.text ?? "");
+    line =
+      line.padEnd(DDS_KEYWORD_AREA_START - 1, " ") +
+      (item.keyword !== undefined && item.keyword.trim().length > 0 ? item.keyword.trim().toUpperCase() : quoteLiteral(item.text ?? ""));
   }
 
   return line.trimEnd();
@@ -286,7 +293,7 @@ export function buildItemLine(item: NewDspfItem): string {
  * 生テキストの編集と同じ `foldKeywordArea` で折る——折り方（実機の桁・DBCS の SO/SI・`-` 継続）を 2 か所に書かない。
  */
 export function buildItemLines(item: NewDspfItem): readonly string[] {
-  if (item.kind !== "constant") return [buildItemLine(item)];
+  if (item.kind !== "constant" || item.keyword !== undefined) return [buildItemLine(item)];
   const chunks = foldKeywordArea(quoteLiteral(item.text ?? ""));
   if (chunks.length <= 1) return [buildItemLine(item)];
   const head = writeBackKeywordArea(buildItemLine({ ...item, text: "" }), chunks[0]);

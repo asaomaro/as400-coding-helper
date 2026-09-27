@@ -11,7 +11,7 @@ import { applyChanges, buildClCommandText } from "../../src/prompter/applyChange
 import { buildRpgLineText, narrowToEditableColumns } from "../../src/prompter/commandText";
 import { printWidth } from "../../src/core/dbcs";
 import { readKeywordForm } from "../../src/prompter/keywordForm";
-import { withOpcodeCandidates } from "../../src/prompter/opcodeCandidates";
+import { opcodeFieldHelp, withOpcodeCandidates } from "../../src/prompter/opcodeCandidates";
 import { readContinuedName, writeContinuedName } from "../../src/prompter/rpgNameContinuation";
 import { DATA_AREA_KEYWORD, PROMPT_TYPE_PARAMETER, dataAreaDefinition, keywordForPromptType, promptTypeOf, withPromptType } from "../../src/prompter/promptTypes";
 import * as vscode from "vscode";
@@ -541,5 +541,36 @@ suite("プロンプト・タイプ（ACS と同じ切り替え。P15 の決定�
     assert.equal(definition.parameters[0].attributes?.ruler, true);
     const shown = withPromptType(definition);
     assert.equal(shown.parameters[0].name, PROMPT_TYPE_PARAMETER);
+  });
+});
+
+suite("CL: 条件表示の欄は基本の画面・説明の箇条書き（実操作調査 P17）", () => {
+  const dcl = load("cl/ja/DCL.json");
+  const len = dcl.parameters.find(p => p.name === "LEN")!;
+  test("DCL の LEN / VALUE は F10 の奥ではなく基本の画面の欄（CDML の PmtCtl=PMTCTL）", () => {
+    assert.equal(len.basic, true);
+    assert.equal(dcl.parameters.find(p => p.name === "VALUE")?.basic, true);
+  });
+  test("LEN の説明に最大長の一覧が入る（以前は「次の通りです。」で切れていた）", () => {
+    assert.match(len.help ?? "", /最大長は次の通りです。\n\n・10進数-- 15桁/u);
+    assert.match(len.help ?? "", /・文字-- 32767バイト/u);
+  });
+});
+
+suite("C 仕様の演算項目のヘルプ（命令ごとの意味。P18）", () => {
+  test("入れた命令での欄の意味が出る", () => {
+    assert.equal(opcodeFieldHelp("C-SPEC", "FACTOR2", "CHAIN", "ja"), "CHAIN の演算項目 2: 名前 (ファイルまたはレコード様式)");
+    assert.equal(opcodeFieldHelp("C-SPEC", "RESIND_EQ", "READC", "ja"), "READC の等しい: EOF");
+    assert.equal(opcodeFieldHelp("C-NEW", "COND", "EVAL(H)", "ja"), "EVAL の拡張演算項目 2: 割り当てステートメント");
+    assert.equal(opcodeFieldHelp("C-SPEC", "FACTOR1", "SETON", "ja"), "SETON ではこの欄を使いません。");
+    assert.equal(opcodeFieldHelp("C-SPEC", "FACTOR2", "", "ja"), undefined);
+    assert.equal(opcodeFieldHelp("D-SPEC", "NAME", "CHAIN", "ja"), undefined);
+  });
+  test("ヘルプの先頭に足される（命令を変えれば変わる）", () => {
+    const cSpec = load("rpg/ile/ja/C-SPEC.json");
+    const help = (opcode: string) =>
+      toSerializableState(cSpec, buildInitialState(cSpec, { OPCODE: opcode })).fields.find(f => f.name === "FACTOR2")?.help ?? "";
+    assert.match(help("CHAIN"), /^CHAIN の演算項目 2: 名前/u);
+    assert.match(help("ADD"), /^ADD の演算項目 2: 加数/u);
   });
 });

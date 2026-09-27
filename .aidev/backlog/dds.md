@@ -539,14 +539,14 @@ priority: 1           # DDS の視覚的確認と編集（charter の第 4 の�
   1 つも指摘しない（docs/research/20260927-dds-editor-exploration/findings.md の D18）。ソースの形だけで判定できる。上の各項目の直しと重なるので、検証の側は最後にまとめてよい。
 - [ ] **ウィンドウ様式（`WINDOW`）の枠を描き、中の項目を枠からの相対位置で描く**。いまは枠が出ず、ウィンドウの `2 2` を画面の 2 行 2 桁に描く
   （docs/research/20260927-dds-editor-exploration/findings.md の D12。重なりの検査も絶対位置になる）。あわせて**サブファイルを `SFLPAG` の行ぶん描く**（いまは 1 行だけ。D13）。
-- [ ] **`DATE` / `TIME` / `SYSNAME` / `USER` の項目（文字列の無い定数）を作れるようにする**（D5「適用中…」のまま戻らない件は済: `20260927-dds-reject-status`。残りは D4）（docs/research/20260927-dds-editor-exploration/findings.md の D4）。いまは空の定数を黙って捨て、
+- [x] **`DATE` / `TIME` / `SYSNAME` / `USER` の項目（文字列の無い定数）を作れるようにする** — 済（`20260927-dds-keyword-constants`）（D5「適用中…」のまま戻らない件は済: `20260927-dds-reject-status`。残りは D4）（docs/research/20260927-dds-editor-exploration/findings.md の D4）。いまは空の定数を黙って捨て、
   生テキストで `DATE EDTCDE(Y)` にすると弾く。あわせて**書き換えを弾いたあと状態が「適用中…」のまま戻らない**のを直す（D5）。
 - [x] **画面の罫線キーワード（`GRDRCD` / `GRDATR` / `GRDBOX` / `GRDLIN` / `GRDCLR`）を辞書に入れ、描く** — 辞書は済（`20260927-dds-dbcs-grid-keywords`。DBCS の索引から 7 件）。描画は下に分けた（docs/research/20260927-dds-editor-exploration/findings.md の D19）。実機は受け付けるが
   （`v3/CMPLXD.dspf` で `CRTDSPF` 通過）、候補に無く「?」のチップになり線も描かない。原典の索引 `docs/origin/dds/DSPF-KEYWORDS.html` に無いので、
   原典の取り直しから（AGENTS.md「原典から機械的に決まる成果物はスクリプトで生成する」）。
 - [ ] **画面の罫線（`GRDBOX` / `GRDLIN`）をキャンバスに描く**（上の辞書の件から分けた）。`*POS (行 桁 行 桁)` / `(行 桁 長さ)`・`*TYPE`・`GRDATR` の色と線種を読んで線を描く。
   ウィンドウの枠（D12）と描画の土台を共有できるので、あわせて設計するとよい。
-- [ ] **軽微な使い勝手 3 件**（D11 の語の途中で切る件は済: `20260927-dds-fold-at-blank`。残りは D6・D7。置くときの問い合わせの形、テキスト編集のインデント設定という UI の判断が要る）（docs/research/20260927-dds-editor-exploration/findings.md の D6・D7・D11）: フィールドを置くとき型・使用を聞かない（数値の出力項目は置いたあと 2 段で直す）／
+- [x] **軽微な使い勝手 3 件**（D11・D6 は済。D7 は利用者の決定で対応しない）（D11 の語の途中で切る件は済: `20260927-dds-fold-at-blank`。残りは D6・D7。置くときの問い合わせの形、テキスト編集のインデント設定という UI の判断が要る）（docs/research/20260927-dds-editor-exploration/findings.md の D6・D7・D11）: フィールドを置くとき型・使用を聞かない（数値の出力項目は置いたあと 2 段で直す）／
   テキスト側で改行すると自動インデントで固定長の桁がずれる（`.dspf` は言語登録していないので素のテキストの設定が効く）／
   キーワードの自動の折り返しが語の途中で切る（`(*COL-` / `OR WHT))`）。
   - **決定 D6（2026-09-27・利用者）** — 済（`20260927-dds-ask-type-usage`）: フィールドを置くとき名前・桁数に加えて型・小数・使用も聞く。既定値は今と同じ（画面 A・B、帳票は使用なし）。帳票の使用は 空白/O/P だけ。

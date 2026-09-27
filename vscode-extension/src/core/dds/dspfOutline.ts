@@ -4,6 +4,7 @@ import { NON_DISPLAY_USAGE } from "./dspfLayout";
 import {
   keywordAreaOf,
   readConstant,
+  readKeywordConstant,
   readNumber,
   toLogicalUnits,
   unitItemKind
@@ -134,7 +135,7 @@ function toOutlineItem(unit: ReturnType<typeof toLogicalUnits>[number]): Outline
   const kind = unitItemKind(unit);
   // 継続行（`-` / `+`）まで繋いだキーワード欄から読む。代表行だけ読むと、折った長い定数が空の名札になる
   // （描画の `dspfLayout` / `prtfLayout` は元から繋いだ方を読んでいた）。
-  const text = kind === "constant" ? readConstant(keywords) : undefined;
+  const text = kind === "constant" ? readConstant(keywords) ?? readKeywordConstant(keywords)?.keyword : undefined;
   const name = ddsName(line) || undefined;
   const usage = ddsField(line, DDS_COLUMNS.usage).trim().toUpperCase() || undefined;
 

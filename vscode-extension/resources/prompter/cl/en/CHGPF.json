@@ -70,7 +70,7 @@
     {
       "name": "SRCFILE",
       "description": "Source file",
-      "help": "Source file (SRCFILE)\n\nSpecifies the source file used to change the physical file. The source file contains the specifications that describe the record format and its fields, and the access path for the file and its members. The data description specifications (DDS) that are made are described in the Database category in the IBM i Information Center at http://www.ibm.com/systems/i/infocenter/ and the DDS topic collection in the Programming category in the IBM i Information Center at http://www.ibm.com/systems/i/infocenter/.\n\nIf the format attributes are changed, the data in the existing file is converted to the new attributes.\n\nAttention:\n\nIf the access path attributes are changed or the attributes of one of the key fields in the format are changed, a new access path may need to be built.\n\nNote: When the data or the access path attributes are changed, the change file operation can take a long time to complete. Status messages are sent to keep the interactive user informed of the progress of the operation.\n\nSingle values\n\nQualifier 1: Source file\n\nQualifier 2: Library",
+      "help": "Source file (SRCFILE)\n\nSpecifies the source file used to change the physical file. The source file contains the specifications that describe the record format and its fields, and the access path for the file and its members. The data description specifications (DDS) that are made are described in the Database category in the IBM i Information Center at http://www.ibm.com/systems/i/infocenter/ and the DDS topic collection in the Programming category in the IBM i Information Center at http://www.ibm.com/systems/i/infocenter/.\n\nIf the format attributes are changed, the data in the existing file is converted to the new attributes.\n\nAttention:\n\n・The data in the existing file is converted to the new format based on field names. If the name of a field is changed, its existing data is lost.\n・Because you are converting data, it is strongly recommended that you save the file before you issue this command.\n\nIf the access path attributes are changed or the attributes of one of the key fields in the format are changed, a new access path may need to be built.\n\nNote: When the data or the access path attributes are changed, the change file operation can take a long time to complete. Status messages are sent to keep the interactive user informed of the progress of the operation.\n\nSingle values\n\nQualifier 1: Source file\n\nQualifier 2: Library",
       "inputType": "group",
       "required": false,
       "groupKind": "qualified",
@@ -119,6 +119,7 @@
         "maxLength": 10
       },
       "placeholder": "*FILE",
+      "basic": true,
       "promptControl": [
         {
           "controlParameter": "SRCFILE",
@@ -136,7 +137,7 @@
     {
       "name": "OPTION",
       "description": "Source listing options",
-      "help": "Source listing options (OPTION)\n\nSpecifies the type of output produced when the file is changed. A maximum of four of the following values can be specified in any order on this parameter. If neither or both of the values on an option are specified, the first value is used.\n\nNotes:\n\nSource Listing Option\n\nProgram Listing Option\n\nSecond-Level Message Text Option\n\nEvent File Creation Option",
+      "help": "Source listing options (OPTION)\n\nSpecifies the type of output produced when the file is changed. A maximum of four of the following values can be specified in any order on this parameter. If neither or both of the values on an option are specified, the first value is used.\n\nNotes:\n\n・This parameter is valid only when a source file is specified on the Source file (SRCFILE) parameter.\n・The first values on an option are similar to, but are not actually default values, and therefore they cannot be changed with the Change Command Default (CHGCMDDFT) command.\n・You can specify up to 3 values for this parameter.\n\nSource Listing Option\n\nProgram Listing Option\n\nSecond-Level Message Text Option\n\nEvent File Creation Option",
       "inputType": "dropdown",
       "required": false,
       "attributes": {
@@ -188,6 +189,7 @@
       ],
       "maxOccurrences": 3,
       "placeholder": "*SRC",
+      "basic": true,
       "promptControl": [
         {
           "controlParameter": "SRCFILE",
@@ -217,7 +219,7 @@
     {
       "name": "GENLVL",
       "description": "Generation severity level",
-      "help": "Generation severity level (GENLVL)\n\nSpecifies the severity level of errors at which the change operation fails. If errors occur that have a severity level greater than or equal to this value, the operation ends.\n\nNotes:",
+      "help": "Generation severity level (GENLVL)\n\nSpecifies the severity level of errors at which the change operation fails. If errors occur that have a severity level greater than or equal to this value, the operation ends.\n\nNotes:\n\n・This parameter is valid only when a source file is specified on the Source file (SRCFILE) parameter.\n・This parameter applies only to messages created while processing the DDS source. Messages created elsewhere in the file change process are not affected by this parameter.\n・The value on this parameter must be greater than or equal to the value specified on the Flagging severity level (FLAG) parameter.",
       "inputType": "number",
       "required": false,
       "defaultValue": "20",
@@ -227,6 +229,7 @@
         "maxValue": 30
       },
       "placeholder": "20",
+      "basic": true,
       "promptControl": [
         {
           "controlParameter": "SRCFILE",
@@ -254,6 +257,7 @@
         "maxValue": 30
       },
       "placeholder": "0",
+      "basic": true,
       "promptControl": [
         {
           "controlParameter": "SRCFILE",
@@ -290,6 +294,7 @@
           "value": "*YES"
         }
       ],
+      "basic": true,
       "promptControl": [
         {
           "controlParameter": "SRCFILE",
@@ -331,6 +336,7 @@
           "value": "*REMOVE"
         }
       ],
+      "basic": true,
       "promptControl": [
         {
           "controlParameter": "SRCFILE",
@@ -388,7 +394,7 @@
     {
       "name": "ACCPTHSIZ",
       "description": "Access path size",
-      "help": "Access path size (ACCPTHSIZ)\n\nSpecifies the maximum size of auxiliary storage that can be occupied by the following kinds of access paths:\n\nChanging the value for this file causes the access paths that are owned by the file to be rebuilt.\n\nNote: This parameter does not apply to access paths that are created for queries that refer to the data in the file.\n\nPerformance Tip\n\nFor optimum performance, consider whether there is high contention for keys within the access path when selecting the value on this parameter:",
+      "help": "Access path size (ACCPTHSIZ)\n\nSpecifies the maximum size of auxiliary storage that can be occupied by the following kinds of access paths:\n\n・The access paths that are associated with a database file that has a keyed sequence access path.\n・The access paths that are created for referential or unique constraints, and that can be added to this file with the Add Physical File Constraint (ADDPFCST) command.\n\nChanging the value for this file causes the access paths that are owned by the file to be rebuilt.\n\nNote: This parameter does not apply to access paths that are created for queries that refer to the data in the file.\n\nPerformance Tip\n\nFor optimum performance, consider whether there is high contention for keys within the access path when selecting the value on this parameter:\n\n・When there is little or no contention for keys, specifying the *MAX4GB value generally provides better performance.\n・When there is high contention for keys, specifying the *MAX1TB value generally provides better performance.",
       "inputType": "dropdown",
       "required": false,
       "defaultValue": "*SAME",
@@ -884,6 +890,7 @@
       },
       "maxOccurrences": 300,
       "placeholder": "*SAME",
+      "basic": true,
       "promptControl": [
         {
           "controlParameter": "NODGRP",
@@ -915,7 +922,7 @@
     {
       "name": "CCSID",
       "description": "Coded character set ID",
-      "help": "Coded character set ID (CCSID)\n\nSpecifies the coded character set identifier (CCSID) to be used to describe character data in the fields of the file.\n\nNotes:\n\nIf a DBCS field is in the physical file, the CCSID specified must have a corresponding mixed CCSID. More information on valid CCSIDs is in the Globalization information in the iSeries Information Center at http://www.ibm.com/eserver/iseries/infocenter.\n\n指定できる特殊値: *SAME, *HEX",
+      "help": "Coded character set ID (CCSID)\n\nSpecifies the coded character set identifier (CCSID) to be used to describe character data in the fields of the file.\n\nNotes:\n\n・If this parameter is specified, SRCFILE(*NONE) also must be specified.\n・The CCSID cannot be changed if: Any explicit field-level or file-level CCSIDs are specified on the CCSID keyword in the DDS for fields in the physical file, the IDDU, or the SQL.\n・The physical file is a program-described file.\n・The physical file's format contains a concatenated field.\n\nIf a DBCS field is in the physical file, the CCSID specified must have a corresponding mixed CCSID. More information on valid CCSIDs is in the Globalization information in the iSeries Information Center at http://www.ibm.com/eserver/iseries/infocenter.\n\n指定できる特殊値: *SAME, *HEX",
       "inputType": "text",
       "required": false,
       "defaultValue": "*SAME",

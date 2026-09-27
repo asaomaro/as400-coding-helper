@@ -55,3 +55,58 @@ export function withOpcodeCandidates(
     )
   };
 }
+
+/** 欄 → 補完データの固定形式の列（日英の見出しの先頭）。 */
+const COLUMN_PREFIX: Readonly<Record<string, readonly string[]>> = {
+  FACTOR1: ["演算項目 1", "Factor 1"],
+  FACTOR2: ["演算項目 2", "Factor 2"],
+  COND: ["拡張演算項目 2", "Extended Factor 2"],
+  RESULT: ["結果フィールド", "Result Field"]
+};
+const INDICATOR_OFFSET: Readonly<Record<string, number>> = { RESIND_HI: 0, RESIND_LO: 1, RESIND_EQ: 2 };
+
+/**
+ * その命令で**この欄に何を書くか**（F1 のヘルプに足す）。命令が分からない・その欄を使わないなら undefined。
+ *
+ * 演算項目の欄のヘルプは命令によらない一般の説明（「右オペランド」）だけで、入れた命令と無関係だった
+ * （2026-09-27 の実操作調査の P18）。原典の索引から生成した補完データの固定形式（`fixedForm`：列ごとの意味、
+ * 標識は高・低・等しいの 3 つ）から引く。
+ */
+export function opcodeFieldHelp(
+  keyword: string,
+  parameterName: string,
+  opcode: string | undefined,
+  lang: "ja" | "en"
+): string | undefined {
+  const upperKeyword = keyword.toUpperCase();
+  if (upperKeyword !== "C-SPEC" && upperKeyword !== "C-NEW") return undefined;
+  const name = (opcode ?? "").trim().replace(/\(.*$/u, "").toUpperCase();
+  if (name.length === 0) return undefined;
+  const opcodes = ((lang === "en" ? rpgCompletionEn : rpgCompletionJa).opcodes ?? []) as {
+    name: string;
+    fixedForm?: { columns?: string[]; values?: string[] };
+  }[];
+  const form = opcodes.find(entry => entry.name.toUpperCase() === name)?.fixedForm;
+  const columns = form?.columns ?? [];
+  const values = form?.values ?? [];
+  const indicatorOffset = INDICATOR_OFFSET[parameterName.toUpperCase()];
+  let value: string | undefined;
+  let label: string | undefined;
+  if (indicatorOffset !== undefined) {
+    const at = columns.findIndex(column => column === "標識" || column === "Indicators");
+    if (at < 0) return undefined;
+    value = values[at + indicatorOffset];
+    label = lang === "en" ? ["High", "Low", "Equal"][indicatorOffset] : ["高", "低", "等しい"][indicatorOffset];
+  } else {
+    const prefixes = COLUMN_PREFIX[parameterName.toUpperCase()];
+    if (!prefixes) return undefined;
+    const at = columns.findIndex(column => prefixes.some(prefix => column.startsWith(prefix)));
+    if (at < 0) return undefined;
+    value = values[at];
+    label = columns[at];
+  }
+  if (value === undefined || value.trim().length === 0 || value === "_") {
+    return lang === "en" ? `${name}: not used in this position.` : `${name} ではこの欄を使いません。`;
+  }
+  return lang === "en" ? `${name}: ${label} = ${value}` : `${name} の${label}: ${value}`;
+}

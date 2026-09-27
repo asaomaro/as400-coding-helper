@@ -47,3 +47,20 @@ export function fieldPlacementChoices(
     decimalTypes: new Set(ddsType === "DDS-PRTF" ? ["S", "F"] : ["S", "Y", "N", "D", "F"])
   };
 }
+
+/**
+ * 定数を置くときの**種類**。先頭の空文字は「文字列（リテラル）」、それ以外は文字列の無い定数のキーワード
+ * （実操作調査の D4）。見本の桁数は実機で確かめたもの（`readKeywordConstant`）。
+ */
+export function constantKindChoices(ddsType: "DDS-DSPF" | "DDS-PRTF"): readonly FieldChoice[] {
+  const common: FieldChoice[] = [
+    { value: "", label: "文字列（'…'）" },
+    { value: "DATE", label: "DATE 日付（MMDDYY）" },
+    { value: "DATE EDTCDE(Y)", label: "DATE EDTCDE(Y) 日付（MM/DD/YY）" },
+    { value: "DATE(*YY) EDTCDE(Y)", label: "DATE(*YY) EDTCDE(Y) 日付（MM/DD/YYYY）" },
+    { value: "TIME", label: "TIME 時刻（HH:MM:SS）" }
+  ];
+  return ddsType === "DDS-PRTF"
+    ? [...common, { value: "PAGNBR", label: "PAGNBR ページ番号" }]
+    : [...common, { value: "SYSNAME", label: "SYSNAME システム名" }, { value: "USER", label: "USER ユーザー" }];
+}

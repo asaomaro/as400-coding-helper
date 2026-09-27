@@ -657,6 +657,22 @@ await page.locator('[name="FACTOR2"]').dispatchEvent("input");
 await settle();
 check("桁幅に収めるとエラーが消える", !(await fieldErrors()).includes("FACTOR2"), (await fieldErrors()).join(","));
 
+// ---- 17c. 演算項目の F1 ヘルプは入れた命令での意味（P18）------------------
+
+await pick("C-SPEC — 桁幅を超える値");
+await page.fill('[name="OPCODE"]', "CHAIN");
+await page.locator('[name="OPCODE"]').dispatchEvent("input");
+await settle();
+await page.focus('[name="FACTOR2"]');
+await page.keyboard.press("F1");
+await settle();
+{
+  const text = await page.evaluate(() => document.querySelector(".help-panel, .help, [role=dialog]")?.textContent ?? document.body.innerText);
+  check("**F1 で演算項目 2 の CHAIN での意味が出る**（P18）", text.includes("CHAIN の演算項目 2: 名前"), text.slice(0, 120));
+}
+await page.keyboard.press("F1");
+await settle();
+
 // ---- 18. CSP を守れる形になっているか --------------------------------------
 
 check(
