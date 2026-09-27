@@ -1559,10 +1559,12 @@ await page.evaluate(() => {
 });
 await page.waitForTimeout(200);
 {
-  const box = await page.locator(".dds-canvas").boundingBox();
+  // 位置は**既にある項目から**割り出す（1 行 30 桁の見出し）。画素の固定値は CI の描画で外れる。
+  const anchor = await page.locator('.dds-item[data-row="1"]').first().boundingBox();
+  const cell = await cellAt();
   await page.click("#dds-add-constant");
-  await page.mouse.click(box.x + 8 * 60, box.y + 12 * 1 + 4);
-  await page.waitForTimeout(200);
+  await page.mouse.click(anchor.x + cell * 25, anchor.y + anchor.height / 2);
+  await page.waitForSelector("#ask-text", { state: "visible", timeout: 5000 });
   await page.fill("#ask-text", "PAGE");
   await page.click("#ask-ok");
   await page.waitForTimeout(300);
