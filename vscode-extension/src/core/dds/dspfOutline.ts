@@ -132,7 +132,9 @@ function toOutlineItem(unit: ReturnType<typeof toLogicalUnits>[number]): Outline
   const line = unit.line;
   const keywords = unit.keywords;
   const kind = unitItemKind(unit);
-  const text = kind === "constant" ? readConstant(keywordAreaOf(line)) : undefined;
+  // 継続行（`-` / `+`）まで繋いだキーワード欄から読む。代表行だけ読むと、折った長い定数が空の名札になる
+  // （描画の `dspfLayout` / `prtfLayout` は元から繋いだ方を読んでいた）。
+  const text = kind === "constant" ? readConstant(keywords) : undefined;
   const name = ddsName(line) || undefined;
   const usage = ddsField(line, DDS_COLUMNS.usage).trim().toUpperCase() || undefined;
 

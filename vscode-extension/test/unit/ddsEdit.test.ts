@@ -5,6 +5,9 @@ import {
   type DdsEdit,
   type DdsEditResult
 } from "../../src/core/dds/ddsEdit";
+import { buildItemLines } from "../../src/core/dds/ddsEditWriteBack";
+import { buildDspfOutline } from "../../src/core/dds/dspfOutline";
+import { printWidth } from "../../src/core/dbcs";
 
 /**
  * 編集操作。**ここで守るのは「触った範囲の外が 1 文字も変わらない」こと。**
@@ -320,3 +323,42 @@ suite("DDS 編集: 複数の指示", () => {
     assert.deepStrictEqual(changedIndexes(after), [5, 6]);
   });
 });
+
+// 1 行（80 桁）に収まらない定数を 1 行に書くと、実機は 81 桁目以降を読まずリテラルが閉じないまま後続の行を飲み込む
+// （CPD7508 / CPD7596。docs/research/20260927-dds-editor-exploration/findings.md の D16）。置く経路でも生テキストと同じく折る。
+suite("DDS 編集: 長い定数は継続行に折って置く", () => {
+  const longSbcs = "-".repeat(80);
+  const longDbcs = "─".repeat(38);
+
+  test("36 桁を超える定数は代表行と - の継続行に分かれ、どの行も 80 桁以内（実機の桁）", () => {
+    for (const text of [longSbcs, longDbcs, "IT''S " + "X".repeat(40)]) {
+      const lines = buildItemLines({ kind: "constant", text, row: 5, column: 2 });
+      assert.ok(lines.length >= 2, `${text.length} 文字で折れていない`);
+      assert.strictEqual(lines[0].slice(38, 44), "  5  2", "位置は代表行に");
+      for (const line of lines) {
+        assert.ok(printWidth(line) <= 80, `80 桁を超える: ${JSON.stringify(line)} (${printWidth(line)})`);
+      }
+      for (const line of lines.slice(0, -1)) assert.ok(line.endsWith("-"), `継続記号が無い: ${line}`);
+      for (const line of lines.slice(1)) assert.strictEqual(line.slice(0, 44).trim(), "A", "継続行の 1-44 桁は空白");
+    }
+  });
+
+  test("36 桁以内の定数はこれまでどおり 1 行", () => {
+    assert.deepStrictEqual(buildItemLines({ kind: "constant", text: "-".repeat(34), row: 1, column: 2 }).length, 1);
+  });
+
+  test("折った定数を読み直すと元の文字列の 1 つの定数に戻り、後続の様式は変わらない", () => {
+    for (const text of [longSbcs, longDbcs]) {
+      const after = applied([{ kind: "add", recordName: "HEADER", item: { kind: "constant", text, row: 5, column: 2 } }]);
+      const outline = buildDspfOutline(after);
+      assert.deepStrictEqual(outline.map(record => record.name), ["HEADER", "DETAIL"], "後続の様式が消えた");
+      const header = outline.find(record => record.name === "HEADER")!;
+      const placed = header.items.find(item => item.row === 5);
+      assert.ok(placed, "置いた定数が読めない");
+      assert.strictEqual(placed.label, text);
+      const detail = outline.find(record => record.name === "DETAIL")!;
+      assert.deepStrictEqual(detail.items.map(item => item.label), ["CUSTNO", "CUSTNM", "MSGTXT"]);
+    }
+  });
+});
+

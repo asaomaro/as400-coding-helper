@@ -77,4 +77,20 @@ suite("DBCS: 全角の判定", () => {
     // U+FF61-FF9F。実機でも 1 バイトなので SO/SI が要らない。
     assert.strictEqual(isDbcsCodePoint("ｱ".codePointAt(0)!), false);
   });
+
+  test("罫線・記号・ギリシャ文字・和文の約物も実機では全角", () => {
+    // CCSID 5035 で SO/SI に囲まれる文字。以前は手書きの範囲から漏れて 1 桁と数えており、
+    // 罫線だけの定数を 80 桁に折ったつもりが実機では 116 桁になって半分消えた。
+    for (const character of ["─", "│", "┼", "■", "※", "→", "○", "「", "」", "、", "。", "　", "α", "Ж", "×", "℃"]) {
+      assert.strictEqual(isDbcsCodePoint(character.codePointAt(0)!), true, `${character} は全角のはず`);
+    }
+    // 34 本の罫線 = SO + 68 + SI
+    assert.strictEqual(printWidth("─".repeat(34)), 70);
+  });
+
+  test("変換表で 1 バイトになる記号は全角にしない", () => {
+    for (const character of ["¥", "‾", "|", "~"]) {
+      assert.strictEqual(isDbcsCodePoint(character.codePointAt(0)!), false, `${character} は半角のはず`);
+    }
+  });
 });

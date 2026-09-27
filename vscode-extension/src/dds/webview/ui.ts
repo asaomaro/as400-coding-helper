@@ -2475,6 +2475,9 @@ class EditorView {
     // 選択から来ていないとき（行の見当で決まったとき）は**触らない**
     // ——置くたびに選択が生まれると、次のクリックの行き先が静かに変わる。
     if (this.selectedRecordHeading() === record) this.pendingSelectRecord = record;
+    // **どの様式に入ったかを必ず言う。** 見出しを選んでいないときは行の見当で決まるので、
+    // 黙っていると別の様式に入っても気づけない（実操作調査の D14）。
+    this.pendingStatus = `様式 ${record} に置きました`;
     this.mode = "pending";
     this.setStatus("適用中…");
     this.bridge.post({
@@ -2519,13 +2522,6 @@ class EditorView {
     return (this.view ?? this.model)?.items.find(item => item.sourceLine === this.selected);
   }
 
-  /**
-   * その行に置くならどの様式か。
-   *
-   * **先頭の様式に固定しない**——複数様式の DDS で、下の様式を狙って置いたのに
-   * 先頭に足されると、画面上のどこにも現れない（利用者からは「消えた」ように見える）。
-   * その行以下で最も近い項目の様式を採り、無ければ最後に現れた様式にする。
-   */
   /**
    * 一覧の見出しの `＋`。**キーワードの `＋ 追加` と同じ約束**にそろえる
    * （`addKeywordButton`）——押すと隠してある入力欄が出て焦点が移り、
@@ -2615,32 +2611,29 @@ class EditorView {
    * クリックした行に置くとしたら、どの様式か。
    *
    * **行から様式は厳密には決まらない**——画面ファイルの様式は行が重なりうる
-   * （同じ画面に複数の様式を書き出す）。だから見当をつけるしかない。順に:
+   * （同じ画面に複数の様式を書き出す）。順に:
    *
-   * 1. **描かれた項目を 1 つも持たない様式の見出しを選んでいるなら、その様式**
-   * 2. その行以上で**いちばん下にある項目**の様式
+   * 1. **様式の見出しを選んでいるなら、その様式**
+   * 2. その行以上で**いちばん下にある項目**の様式（行の見当）
    * 3. 最後の様式
    *
-   * ■ なぜ 1 が要るか
-   *   足したばかりの様式には項目が 1 つも無いので 2 では**絶対に引っかからない**。
-   *   項目のある様式が上にあると新しい様式へ永久に届かず、「足したのに置けない」になる。
-   *   実際、単独起動で押して初めて分かった——様式を足して選ばれている状態で
-   *   キャンバスを押すと、**別の様式に入っていた**。
-   *
-   * ■ なぜ「項目を持たない様式」に絞るか
-   *   2 が届く様式まで選択で上書きすると、**この作業と関係のない振る舞いが変わる**
-   *   ——様式の見出しは `OVERLAY` / `CF03` を読むために選ぶことがあり、そのまま
-   *   キャンバスを押した人は「押した行の様式に入る」と思っている。
-   *   絞れば、**2 が原理的に届かない様式だけ**を選択で救うことになり、
-   *   それ以外はいままでと 1 バイトも変わらない。
+   * ■ 見出しの選択を行の見当より優先する
+   *   以前は「項目を 1 つも持たない様式」のときだけ選択を採り、項目のある様式では
+   *   行の見当を優先していた（見出しは `OVERLAY` / `CF03` を読むためにも選ぶので、
+   *   そのまま押した人は押した行の様式に入ると思っている、という考え）。
+   *   しかし実操作で、ウィンドウ・足元・サブファイル制御のように**行が重なる様式**では
+   *   選んだ様式へ置く方法が無く、**黙って別の様式に入った**（2026-09-27 の調査の D14。
+   *   `FOOTER` を選んで 22 行目に置くとサブファイルへ、ウィンドウを選ぶと下の様式へ）。
+   *   明示した選択より見当が勝つと、置き先を利用者が決められない。
+   *   見当で決まる場合も含め、置いた様式は状況表示で必ず知らせる（`place`）。
    *
    * ■ 項目を選んでいるときは対象外
    *   見出しを選ぶのは「この様式で作業する」という明示だが、項目を選ぶのは
    *   その項目を見ているだけで、置き先の宣言ではない。
    */
   private recordAt(row: number): string | undefined {
-    const empty = this.selectedEmptyRecord();
-    if (empty !== undefined) return empty;
+    const heading = this.selectedRecordHeading();
+    if (heading !== undefined) return heading;
 
     const items = (this.view ?? this.model)?.items ?? [];
     let best: RenderItem | undefined;
@@ -2667,20 +2660,6 @@ class EditorView {
       candidate => candidate.sourceLine === selected
     );
     return record !== undefined && record.name.length > 0 ? record.name : undefined;
-  }
-
-  /**
-   * 選んでいる様式のうち、**キャンバスに描かれた項目を 1 つも持たない**もの。
-   *
-   * 「描かれた」で見るのは、行の見当（`recordAt` の 2）が使うのが `model.items`
-   * ＝配置できた項目だから。位置欄が空・用途が `H` の項目しか無い様式も
-   * 行の見当では引っかからないので、ここで救う対象に入る。
-   */
-  private selectedEmptyRecord(): string | undefined {
-    const name = this.selectedRecordHeading();
-    if (name === undefined) return undefined;
-    const items = (this.view ?? this.model)?.items ?? [];
-    return items.some(item => item.recordName === name) ? undefined : name;
   }
 
   private dragTarget(gesture: Gesture, deltaX: number, deltaY: number): CellPoint {

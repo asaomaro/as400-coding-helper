@@ -19,6 +19,6 @@ try {
   const job = String(s[0].JOB_NAME).trim();
   const rows = await q(`SELECT SPOOLED_DATA FROM TABLE(SYSTOOLS.SPOOLED_FILE_DATA(JOB_NAME => '${job}', SPOOLED_FILE_NAME => '${spl}', SPOOLED_FILE_NUMBER => ${s[0].N}))`);
   const text = rows.map(r => String(r.SPOOLED_DATA ?? "").trimEnd()).join("\n");
-  writeFileSync(new URL("./run/print-CMPLXP.txt", import.meta.url), text);
+  writeFileSync(new URL(`./run/print-${spl}.txt`, import.meta.url), text);
   console.log(`== スプール ${spl} #${s[0].N} ${s[0].TOTAL_PAGES} ページ（JOB ${job}。消していない）\n${text}`);
 } finally { db.close(); }
