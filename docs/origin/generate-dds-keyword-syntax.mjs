@@ -32,7 +32,9 @@ const COMPLETION = join(ROOT, "vscode-extension/resources/completion");
 
 const TYPES = [
   { key: "DDS-PF", file: "PF-LF-KEYWORDS.html" },
-  { key: "DDS-DSPF", file: "DSPF-KEYWORDS.html" },
+  // DBCS の画面にだけ使うキーワード（GRDBOX 等）は別の索引にある（2026-09-27 の実操作調査 D19）。
+  // 先に主の索引を読み、同じ名前は主の方を採る。
+  { key: "DDS-DSPF", file: "DSPF-KEYWORDS.html", extra: ["DSPF-DBCS-KEYWORDS.html"] },
   { key: "DDS-PRTF", file: "PRTF-KEYWORDS.html" }
 ];
 
@@ -164,8 +166,9 @@ let filled = 0;
 let missing = 0;
 let levelFilled = 0;
 
-for (const { key, file } of TYPES) {
-  const paths = detailPaths(file);
+for (const { key, file, extra = [] } of TYPES) {
+  // 主の索引を後に重ねる（同じ名前は主の索引の詳細ページを採る）。
+  const paths = new Map([...extra.flatMap(indexFile => [...detailPaths(indexFile)]), ...detailPaths(file)]);
 
   for (const keyword of data[key] ?? []) {
     const detail = paths.get(keyword.name);
