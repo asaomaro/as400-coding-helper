@@ -381,9 +381,17 @@ function openSftp(client: Client): Promise<SFTPWrapper> {
   });
 }
 
+/** SFTP の終わりを待つ上限。サーバーが閉じ返さなくても先へ進む（ファイルは閉じ終えている）。 */
+const SFTP_CLOSE_TIMEOUT_MS = 5000;
+
 function closeSftp(sftp: SFTPWrapper): Promise<void> {
   return new Promise(resolve => {
-    sftp.once("close", () => resolve());
+    const timer = setTimeout(resolve, SFTP_CLOSE_TIMEOUT_MS);
+    timer.unref();
+    sftp.once("close", () => {
+      clearTimeout(timer);
+      resolve();
+    });
     sftp.end();
   });
 }
@@ -406,6 +414,17 @@ function removeSftpFile(sftp: SFTPWrapper, path: string): Promise<void> {
   });
 }
 
+/** 1 つのコマンドを待つ上限。これを超えたら接続先が応答していないとみなす。 */
+const COMMAND_TIMEOUT_MS = 5 * 60 * 1000;
+
+/**
+ * `system "..."` を実行し、終了コード 0 で解決する。
+ *
+ * **標準出力も必ず読む。** ssh2 は標準出力を読み終えるまで `close` を出さない
+ * （`onCHANNEL_CLOSE` が `end` を待つ）。読まずにいると、コマンドが終わっても永久に待つ
+ * （2026-09-27 実際に一覧の取得で止まった。`test/unit/ibmiSshLoopback.test.ts`）。
+ * 失敗したときは IBM i のメッセージ（`CPF9810: ...` など）を理由に添える。
+ */
 function executeClCommand(
   client: Client,
   command: string,
@@ -420,19 +439,36 @@ function executeClCommand(
         return;
       }
 
-      let stderr = "";
-      stream.stderr.on("data", data => {
-        stderr += String(data);
-      });
+      let output = "";
+      const collect = (data: Buffer | string): void => {
+        if (output.length < 4000) output += String(data);
+      };
+      stream.on("data", collect);
+      stream.stderr.on("data", collect);
+      const timer = setTimeout(() => {
+        reject(new IbmiSourceSyncError(kind, `${incompleteMessage}（${COMMAND_TIMEOUT_MS / 60000} 分応答がありません）`));
+        stream.close();
+      }, COMMAND_TIMEOUT_MS);
+      // 待っているだけのタイマーでプロセス（テストの mocha など）を引き留めない。
+      timer.unref();
       stream.on("close", (code: number | undefined) => {
+        clearTimeout(timer);
         if (code === 0) {
           resolve();
-        } else {
-          reject(new IbmiSourceSyncError(kind, stderr ? failureMessage : incompleteMessage));
+          return;
         }
+        const messages = describeIbmiMessages(output);
+        reject(new IbmiSourceSyncError(kind, messages ? `${failureMessage}（${messages}）` : output.trim() ? failureMessage : incompleteMessage));
       });
     });
   });
+}
+
+/** 出力から IBM i のメッセージ（`CPF9810: ...` の形の行）を拾う。無ければ出力の先頭。 */
+export function describeIbmiMessages(output: string): string {
+  const lines = output.split(/\r?\n/u).map(line => line.trim()).filter(line => line.length > 0);
+  const messages = lines.filter(line => /^[A-Z][A-Z0-9]{2}[0-9A-F]{4}\b/u.test(line));
+  return (messages.length > 0 ? messages : lines).slice(0, 3).join(" / ").slice(0, 300);
 }
 
 function executeCopy(client: Client, command: string): Promise<void> {
