@@ -538,7 +538,7 @@ priority: 1           # DDS の視覚的確認と編集（charter の第 4 の�
 - [ ] **画面の罫線キーワード（`GRDRCD` / `GRDATR` / `GRDBOX` / `GRDLIN` / `GRDCLR`）を辞書に入れ、描く**（docs/research/20260927-dds-editor-exploration/findings.md の D19）。実機は受け付けるが
   （`v3/CMPLXD.dspf` で `CRTDSPF` 通過）、候補に無く「?」のチップになり線も描かない。原典の索引 `docs/origin/dds/DSPF-KEYWORDS.html` に無いので、
   原典の取り直しから（AGENTS.md「原典から機械的に決まる成果物はスクリプトで生成する」）。
-- [ ] **軽微な使い勝手 3 件**（docs/research/20260927-dds-editor-exploration/findings.md の D6・D7・D11）: フィールドを置くとき型・使用を聞かない（数値の出力項目は置いたあと 2 段で直す）／
+- [ ] **軽微な使い勝手 3 件**（D11 の語の途中で切る件は済: `20260927-dds-fold-at-blank`。残りは D6・D7。置くときの問い合わせの形、テキスト編集のインデント設定という UI の判断が要る）（docs/research/20260927-dds-editor-exploration/findings.md の D6・D7・D11）: フィールドを置くとき型・使用を聞かない（数値の出力項目は置いたあと 2 段で直す）／
   テキスト側で改行すると自動インデントで固定長の桁がずれる（`.dspf` は言語登録していないので素のテキストの設定が効く）／
   キーワードの自動の折り返しが語の途中で切る（`(*COL-` / `OR WHT))`）。
 
