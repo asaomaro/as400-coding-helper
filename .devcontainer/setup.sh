@@ -6,7 +6,8 @@ npm install -g @anthropic-ai/claude-code
 echo "✓ claude installed"
 
 echo "=== Installing project dependencies ==="
-cd /workspaces/as400-coding-helper/vscode-extension
+# リポジトリのフォルダ名に依らない（改名しても動くように）。
+cd "$(dirname "$0")/../vscode-extension"
 npm ci
 echo "✓ npm ci done"
 

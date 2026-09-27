@@ -1,7 +1,7 @@
 import { strict as assert } from "node:assert";
 import * as vscode from "vscode";
 
-const extensionId = "as400-coding-helper.rpg-cl-vscode-support";
+const extensionId = "asaomaro.ibmi-dogubako";
 
 suite("SEU 色 marker Integration", () => {
   teardown(async () => {

@@ -66,7 +66,7 @@ F4 プロンプター（`src/prompter/webview/`）——はどちらも **VSCode
 
 ```sh
 # 1. ビルド（型検査 → 束ねる）
-npm run compile:webview -w rpg-cl-vscode-support   # ルートから。単体なら npm run compile:webview
+npm run compile:webview -w ibmi-dogubako   # ルートから。単体なら npm run compile:webview
 
 # 2a. ブラウザで触る
 #     dev/out/index.html をブラウザで開く（file:// で動く）

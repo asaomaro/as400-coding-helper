@@ -177,7 +177,7 @@ class SshIbmiSourceTransport implements IbmiSourceTransport {
   }
 
   private makeTemporaryPath(): string {
-    return `${this.ifsTempDirectory.replace(/\/$/u, "")}/as400-coding-helper-${randomUUID()}.utf8`;
+    return `${this.ifsTempDirectory.replace(/\/$/u, "")}/ibmi-dogubako-${randomUUID()}.utf8`;
   }
 
   private async withSftp<T>(action: (sftp: SFTPWrapper) => Promise<T>): Promise<T> {
