@@ -10,6 +10,7 @@ import {
 import { applyChanges, buildClCommandText } from "../../src/prompter/applyChanges";
 import { buildRpgLineText, narrowToEditableColumns } from "../../src/prompter/commandText";
 import { printWidth } from "../../src/core/dbcs";
+import { readKeywordForm } from "../../src/prompter/keywordForm";
 import * as vscode from "vscode";
 import { buildInitialState } from "../../src/prompter/model";
 import { buildCommandHelpText } from "../../src/prompter/commandHelp";
@@ -398,5 +399,42 @@ suite("RPG 仕様書の定義の不足（実操作調査 P7・P8・P9・P11・P2
     assert.notEqual(errorOf("rpg/ile/ja/F-SPEC.json", { FILENAME: "QSYSPRT", FILETYPE: "O", FILEDESG: "F", DEVICE: "PRINTER" }, "FILEDESG"), undefined);
     assert.equal(errorOf("rpg/ile/ja/F-SPEC.json", { FILENAME: "QSYSPRT", FILETYPE: "O", FILEDESG: "", DEVICE: "PRINTER" }, "FILEDESG"), undefined);
     assert.equal(errorOf("rpg/ile/ja/F-SPEC.json", { FILENAME: "CUSTMST", FILETYPE: "I", FILEDESG: "F" }, "FILEDESG"), undefined);
+  });
+});
+
+suite("H 仕様書（キーワード形式）を読み書きする（実操作調査 P1）", () => {
+  const hSpec = load("rpg/ile/ja/H-SPEC.json");
+
+  test("確定した値がキーワードとして書かれる", () => {
+    assert.equal(
+      buildRpgLineText("     H", hSpec, { DFTACTGRP: "*NO", ACTGRP: "*NEW", DATFMT: "*ISO" }),
+      "     H DATFMT(*ISO) DFTACTGRP(*NO) ACTGRP(*NEW)"
+    );
+  });
+
+  test("既存の行から値を読み、定義に無いキーワードは残し、空にしたものは外す", () => {
+    const original = "     H DFTACTGRP(*NO) NOMAIN ACTGRP('QILE') BNDDIR('A':'B')";
+    assert.deepEqual(readKeywordForm(original, hSpec), { DFTACTGRP: "*NO", ACTGRP: "'QILE'", BNDDIR: "'A':'B'" });
+    assert.equal(
+      buildRpgLineText(original, hSpec, { DFTACTGRP: "", ACTGRP: "*CALLER", BNDDIR: "'A':'B'" }),
+      "     H NOMAIN ACTGRP(*CALLER) BNDDIR('A':'B')"
+    );
+  });
+
+  test("80 桁を超えたら H の行を足す", () => {
+    const text = buildRpgLineText("     H", hSpec, {
+      DFTACTGRP: "*NO", ACTGRP: "'LONGACTIVATIONGROUP'", BNDDIR: "'QC2LE':'MYBNDDIR'", COPYRIGHT: "'(C) 2026 EXAMPLE CORPORATION'"
+    });
+    const lines = text.split("\n");
+    assert.ok(lines.length >= 2, text);
+    for (const line of lines) {
+      assert.ok(line.length <= 80, line);
+      assert.ok(line.startsWith("     H "), line);
+    }
+  });
+
+  test("何も変えずに確定すると元の行のまま", () => {
+    const original = "     H DFTACTGRP(*NO) ACTGRP(*NEW) NOMAIN";
+    assert.equal(buildRpgLineText(original, hSpec, readKeywordForm(original, hSpec)), original);
   });
 });

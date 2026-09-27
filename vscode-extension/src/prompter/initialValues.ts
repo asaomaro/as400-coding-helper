@@ -1,6 +1,7 @@
 import * as vscode from "vscode";
 import type { PrompterDefinition } from "./types";
 import type { ResolvedPosition } from "./positionResolver";
+import { isKeywordFormDefinition, readKeywordForm } from "./keywordForm";
 import { getLogicalCommandRange } from "../language/clContinuation";
 import {
   joinContinuationLines,
@@ -32,6 +33,11 @@ function extractRpgInitialValues(
 ): Values {
   const line = resolved.document.lineAt(resolved.line);
   const text = line.text;
+
+  // キーワード形式（H 仕様書）は桁ではなくキーワードで読む（実操作調査の P1）。
+  if (isKeywordFormDefinition(definition)) {
+    return readKeywordForm(text, definition);
+  }
 
   const specCharRaw = text.length > 5 ? text.charAt(5) : " ";
   const specChar = specCharRaw.toUpperCase();
