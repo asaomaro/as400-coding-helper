@@ -13,6 +13,7 @@ import { printWidth } from "../../src/core/dbcs";
 import { readKeywordForm } from "../../src/prompter/keywordForm";
 import { withOpcodeCandidates } from "../../src/prompter/opcodeCandidates";
 import { readContinuedName, writeContinuedName } from "../../src/prompter/rpgNameContinuation";
+import { DATA_AREA_KEYWORD, PROMPT_TYPE_PARAMETER, dataAreaDefinition, keywordForPromptType, promptTypeOf, withPromptType } from "../../src/prompter/promptTypes";
 import * as vscode from "vscode";
 import { buildInitialState } from "../../src/prompter/model";
 import { buildCommandHelpText } from "../../src/prompter/commandHelp";
@@ -517,4 +518,28 @@ suite("D 仕様の名前: 継続名前行と字下げ（P21 の決定）", () =>
         .map(p => [p.name, line.padEnd(100).slice(p.sourceStart! - 1, p.sourceStart! - 1 + p.sourceLength!).trim()])
     );
   }
+});
+
+suite("プロンプト・タイプ（ACS と同じ切り替え。P15 の決定）", () => {
+  test("定義のキーワード ↔ プロンプト・タイプ", () => {
+    assert.equal(promptTypeOf("C-NEW"), "CX");
+    assert.equal(promptTypeOf("C-SPEC"), "C");
+    assert.equal(promptTypeOf("D-SPEC"), "D");
+    assert.equal(promptTypeOf(DATA_AREA_KEYWORD), "**");
+    assert.equal(keywordForPromptType("CX", "", "ile", []), "C-NEW");
+    assert.equal(keywordForPromptType("c", "", "ile", []), "C-SPEC");
+    assert.equal(keywordForPromptType("D", "", "ile", []), "D-SPEC");
+    assert.equal(keywordForPromptType("**", "", "ile", []), DATA_AREA_KEYWORD);
+    assert.equal(keywordForPromptType("CX", "", "rpg3", []), undefined, "RPG III に拡張演算項目 2 は無い");
+    assert.equal(keywordForPromptType("E", "", "rpg3", []), "E-SPEC");
+    assert.equal(keywordForPromptType("ZZ", "", "ile", []), undefined);
+  });
+
+  test("データ域は 1-80 桁の 1 欄で、目盛りを出す", () => {
+    const definition = dataAreaDefinition();
+    assert.equal(definition.parameters.length, 1);
+    assert.equal(definition.parameters[0].attributes?.ruler, true);
+    const shown = withPromptType(definition);
+    assert.equal(shown.parameters[0].name, PROMPT_TYPE_PARAMETER);
+  });
 });

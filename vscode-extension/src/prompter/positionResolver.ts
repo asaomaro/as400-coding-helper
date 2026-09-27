@@ -15,6 +15,11 @@ export interface ResolvedPosition {
   readonly line: number;
   readonly column: number;
   readonly keyword: string;
+  /**
+   * プロンプト・タイプで開いたときの仕様書の文字（`C` / `D` …）。6 桁目が空の行に書くとき、そこに置く
+   * （空行からプロンプトを開いた場合。実操作調査の P15）。
+   */
+  readonly specLetter?: string;
 }
 
 export function resolvePosition(

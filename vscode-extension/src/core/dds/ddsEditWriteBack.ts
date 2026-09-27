@@ -216,8 +216,8 @@ export interface NewDspfItem {
    * 行番号と `SPACEx` / `SKIPx` は併用できず、実機は CPD7860 で作成しない）。
    */
   readonly row?: number;
-  /** 42-44 桁。1 始まり。 */
-  readonly column: number;
+  /** 42-44 桁。1 始まり。**省くと位置を書かない**（使用 H・P・M の潜在フィールドなど。位置を持てない）。 */
+  readonly column?: number;
 }
 
 /**
@@ -262,11 +262,13 @@ export function buildItemLine(item: NewDspfItem): string {
       formatNumber(item.row, columnWidth(DDS_POSITION_ROW))
     );
   }
-  line = ddsReplaceField(
-    line,
-    DDS_POSITION_COLUMN,
-    formatNumber(item.column, columnWidth(DDS_POSITION_COLUMN))
-  );
+  if (item.column !== undefined) {
+    line = ddsReplaceField(
+      line,
+      DDS_POSITION_COLUMN,
+      formatNumber(item.column, columnWidth(DDS_POSITION_COLUMN))
+    );
+  }
 
   if (item.kind === "constant") {
     line = line.padEnd(DDS_KEYWORD_AREA_START - 1, " ") + quoteLiteral(item.text ?? "");

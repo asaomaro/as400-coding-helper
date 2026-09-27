@@ -198,7 +198,10 @@ class StandaloneHost {
 }
 
 /** 追加の内容を聞く。**ホストが入力手段を持つ**（VSCode なら showInputBox）。 */
-function ask(kind: "field" | "constant"): Promise<Record<string, unknown> | undefined> {
+function ask(kind: "field" | "constant" | "hidden"): Promise<Record<string, unknown> | undefined> {
+  // 潜在フィールドはフィールドと同じ欄で聞き、使用は H に決まっている（欄を隠す）。
+  const hidden = kind === "hidden";
+  if (hidden) kind = "field";
   const dialog = must<HTMLDialogElement>("#ask");
   must("#ask-title").textContent = kind === "field" ? "フィールドを置く" : "定数を置く";
   const nameRow = must<HTMLInputElement>("#ask-name").closest("label");
@@ -225,8 +228,9 @@ function ask(kind: "field" | "constant"): Promise<Record<string, unknown> | unde
   must<HTMLInputElement>("#ask-decimals").value = "";
   for (const id of ["#ask-type", "#ask-decimals", "#ask-usage"]) {
     const row = must<HTMLElement>(id).closest("label");
-    if (row) row.hidden = kind !== "field";
+    if (row) row.hidden = kind !== "field" || (hidden && id === "#ask-usage");
   }
+  must("#ask-title").textContent = hidden ? "潜在フィールドを足す" : must("#ask-title").textContent;
 
   return new Promise(resolve => {
     const done = (): void => {
@@ -245,7 +249,7 @@ function ask(kind: "field" | "constant"): Promise<Record<string, unknown> | unde
               ...(must<HTMLInputElement>("#ask-decimals").value.trim().length > 0
                 ? { decimals: Number(must<HTMLInputElement>("#ask-decimals").value.trim()) }
                 : {}),
-              usage: must<HTMLSelectElement>("#ask-usage").value
+              usage: hidden ? "H" : must<HTMLSelectElement>("#ask-usage").value
             }
           : { kind: "constant", text: must<HTMLInputElement>("#ask-text").value }
       );

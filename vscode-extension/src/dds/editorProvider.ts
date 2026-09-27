@@ -457,9 +457,9 @@ async function readPositionalDefinition(extensionUri: vscode.Uri, ddsType: Edita
 
 /** 追加する項目の内容を聞く。取り消し（Esc）なら undefined。 */
 async function askItem(
-  kind: "field" | "constant",
-  row: number,
-  column: number,
+  kind: "field" | "constant" | "hidden",
+  row: number | undefined,
+  column: number | undefined,
   ddsType: EditableDdsType,
   extensionUri: vscode.Uri
 ): Promise<Record<string, unknown> | undefined> {
@@ -473,7 +473,7 @@ async function askItem(
   }
 
   const name = await vscode.window.showInputBox({
-    title: `フィールドを ${row} 行 ${column} 桁に置く`,
+    title: kind === "hidden" ? "潜在フィールド（使用 H・位置なし）を足す" : `フィールドを ${row} 行 ${column} 桁に置く`,
     prompt: "フィールド名（19-28 桁）",
     validateInput: value =>
       value.trim().length === 0
@@ -520,7 +520,8 @@ async function askItem(
     decimals = Number(text.trim());
   }
 
-  const usage = await pick(`${name.trim().toUpperCase()} の使用（38 桁）`, choices.usages, choices.defaultUsage);
+  // 潜在フィールドは使用 H で決まっている（聞かない）。
+  const usage = kind === "hidden" ? "H" : await pick(`${name.trim().toUpperCase()} の使用（38 桁）`, choices.usages, choices.defaultUsage);
   if (usage === undefined) return undefined;
 
   return {

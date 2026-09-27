@@ -42,6 +42,8 @@ export interface SerializableField {
   readonly help?: string;
   readonly maxOccurrences?: number;
   readonly maxLength?: number;
+  /** 桁の目盛りを出す 1 行の欄（データ域）。 */
+  readonly ruler?: boolean;
   readonly groupName?: string;
   readonly groupLabel?: string;
   // 初期表示状態と、クライアント側で再評価するための依存規則。
@@ -203,6 +205,7 @@ export function toSerializableState(
       help: buildParameterHelpText(field.parameter),
       maxOccurrences: field.parameter.maxOccurrences,
       maxLength: field.parameter.attributes?.maxLength,
+      ...(field.parameter.attributes?.ruler ? { ruler: true } : {}),
       groupName: (() => {
         const info = groupInfoByChildName.get(field.parameter.name);
         return info ? occurrenceName(info.groupName, field.occurrence) : undefined;
