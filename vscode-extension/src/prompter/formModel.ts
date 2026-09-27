@@ -12,6 +12,7 @@
  *
  * 元は `binding.ts` が HTML の組み立てと一緒に持っていた。
  */
+import { opcodeFieldHelp } from "./opcodeCandidates";
 import type {
   ObjectCandidates,
   ParameterDefinition,
@@ -132,6 +133,15 @@ export function toSerializableState(
   // ワークスペースのソースから集めたオブジェクト名の候補（省略可）。
   objectCandidates: ObjectCandidates = {}
 ): SerializablePrompterState {
+  // C 仕様の演算項目の欄は、入れた命令での意味をヘルプに足す（P18）。
+  const opcode = state.fields.find(candidate => candidate.fieldName === "OPCODE")?.value;
+  const lang: "ja" | "en" = /[\u3040-\u30ff\u4e00-\u9fff]/u.test(definition.description ?? "") ? "ja" : "en";
+  const helpOf = (field: PrompterState["fields"][number]): string | undefined => {
+    const base = buildParameterHelpText(field.parameter);
+    const extra = opcodeFieldHelp(definition.keyword, field.parameter.name, opcode, lang);
+    return [extra, base].filter((text): text is string => Boolean(text)).join("\n\n") || undefined;
+  };
+
   const groupInfoByChildName = new Map<
     string,
     { readonly groupName: string; readonly groupLabel: string }
@@ -200,9 +210,9 @@ export function toSerializableState(
       inputType: field.parameter.inputType,
       options: withCurrentValue(field.parameter.options, field.value),
       error: field.error,
-      hasHelp: Boolean(buildParameterHelpText(field.parameter)),
+      hasHelp: Boolean(helpOf(field)),
       commandValued: field.parameter.valueKind === "command",
-      help: buildParameterHelpText(field.parameter),
+      help: helpOf(field),
       maxOccurrences: field.parameter.maxOccurrences,
       maxLength: field.parameter.attributes?.maxLength,
       ...(field.parameter.attributes?.ruler ? { ruler: true } : {}),
