@@ -3,6 +3,7 @@ import type { PrompterDefinition } from "./types";
 import type { ResolvedPosition } from "./positionResolver";
 import { getLogicalCommandRange } from "../language/clContinuation";
 import { isEditAllowedRange } from "../language/rpgEditGuards";
+import { continuedNameParameter, writeContinuedName } from "./rpgNameContinuation";
 import {
   extractComments,
   joinContinuationLines,
@@ -66,6 +67,34 @@ export async function applyChanges(
   // 桁で書き戻すのは RPG も DDS も同じ（sourceStart / sourceLength を使う）。
   let replaceRange = range;
   let newText = buildRpgLineText(line.text, definition, values);
+
+  // 15 桁を超える名前は継続名前行（`…...`）に分けて書く。上にある継続名前行も書き直す（実操作調査の P21）。
+  const continued = resolved.language !== "dds" ? continuedNameParameter(definition) : undefined;
+  if (continued !== undefined) {
+    const base = Math.max(0, resolved.line - 50);
+    const lines: string[] = [];
+    for (let i = base; i <= resolved.line; i += 1) lines.push(document.lineAt(i).text);
+    const raw = values[continued];
+    const name = (Array.isArray(raw) ? raw[0] ?? "" : raw ?? "").toString();
+    const written = writeContinuedName(lines, lines.length - 1, name, (original, value) =>
+      buildRpgLineText(original, definition, { ...values, [continued]: value })
+    );
+    const fromLine = base + written.from;
+    if (fromLine !== resolved.line || written.text.includes("\n")) {
+      const multiRange = new vscode.Range(new vscode.Position(fromLine, 0), range.end);
+      if (!isEditAllowedRange(document, multiRange)) {
+        void vscode.window.showWarningMessage(
+          `${resolved.line + 1} 行目の名前は 4 行目にかかる継続名前行になるため、プロンプターの内容を書き込みませんでした。`
+        );
+        return;
+      }
+      const multiEdit = new vscode.WorkspaceEdit();
+      multiEdit.replace(document.uri, multiRange, written.text);
+      await vscode.workspace.applyEdit(multiEdit);
+      return;
+    }
+    newText = written.text;
+  }
 
   // 編集の可否は RPG の桁規則で見ている。DDS は別の固定長なので対象外。
   // 4 行目は 1〜6 桁目を変えない決まり（FR-031）。行全体の置き換えは必ず掛かるので、先頭 6 桁が同じなら 7 桁目以降だけを書く。

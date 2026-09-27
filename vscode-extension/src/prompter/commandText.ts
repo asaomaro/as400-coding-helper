@@ -452,6 +452,14 @@ export function buildRpgLineText(
       const laidOut = layOutColumns(trimmed, parameter.sourceLength, parameter.attributes?.columnLayout);
       if (laidOut !== undefined) return laidOut;
 
+      // 字下げを残す欄（D 仕様の名前）は、元の欄の先頭の空白を残す（収まる範囲で）。
+      if (parameter.attributes?.keepIndent === true && trimmed.length > 0) {
+        const indent = (originalSlice.match(/^ */u)?.[0].length ?? 0) % parameter.sourceLength;
+        if (indent > 0 && indent + trimmed.length <= parameter.sourceLength) {
+          return (" ".repeat(indent) + trimmed).padEnd(parameter.sourceLength, " ");
+        }
+      }
+
       if (isNumericField) {
         return trimmed.padStart(parameter.sourceLength, " ");
       }

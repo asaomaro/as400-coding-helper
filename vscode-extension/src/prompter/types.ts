@@ -226,6 +226,16 @@ export interface ParameterAttributes {
    * 囲まないとコンパイルできない（`MSG(… で印刷エラー…)`。実操作調査の P13）。
    */
   readonly characterString?: boolean;
+  /**
+   * 値を書くとき、元の欄の先頭の空白（字下げ）を残す（D 仕様のサブフィールドの名前 `D  SUB1`）。
+   * trim した値を左詰めで書くと字下げが消えていた（実操作調査の P21）。
+   */
+  readonly keepIndent?: boolean;
+  /**
+   * 桁幅を超える値を**継続名前行**（`…...`）に分けて書く欄（ILE RPG の D 仕様の名前）。桁幅の検査をしない。
+   * 読み書きは `rpgNameContinuation.ts`。
+   */
+  readonly nameContinuation?: boolean;
   readonly minLength?: number;
   readonly maxLength?: number;
   /**

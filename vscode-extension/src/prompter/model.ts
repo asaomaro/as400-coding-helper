@@ -289,7 +289,13 @@ export function validate(
   // 桁幅で切るしかなく、以前は左から黙って切っていた（`EVAL` の式・`EXTPROC` が化けた。実操作調査の P3）。
   // 定義の `maxLength` が桁幅より大きい欄があるので、`maxLength` とは別に見る。
   const columns = parameter.sourceLength;
-  if (typeof parameter.sourceStart === "number" && parameter.sourceStart > 0 && typeof columns === "number" && columns > 0) {
+  if (
+    typeof parameter.sourceStart === "number" &&
+    parameter.sourceStart > 0 &&
+    typeof columns === "number" &&
+    columns > 0 &&
+    parameter.attributes?.nameContinuation !== true // 継続名前行に分けて書くので桁幅を超えてよい
+  ) {
     const length = [...trimmed].length;
     if (length > columns) {
       return `${columns} 桁に収まりません（${length} 文字）。`;
