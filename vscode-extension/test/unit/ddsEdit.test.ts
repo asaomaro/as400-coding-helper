@@ -9,6 +9,8 @@ import { buildItemLines } from "../../src/core/dds/ddsEditWriteBack";
 import { buildDspfOutline } from "../../src/core/dds/dspfOutline";
 import { printWidth } from "../../src/core/dbcs";
 import { fieldPlacementChoices } from "../../src/core/dds/fieldChoices";
+import { resolveDspfLayout } from "../../src/core/dds/dspfLayout";
+import { readKeywordConstant } from "../../src/core/dds/ddsLogicalUnits";
 
 /**
  * 編集操作。**ここで守るのは「触った範囲の外が 1 文字も変わらない」こと。**
@@ -659,5 +661,40 @@ suite("DDS 編集: 項目を別の様式へ移す（D15）・潜在フィール�
   test("キャンバスに使用 H で置いても位置は書かない", () => {
     const after = apply([ln({ record: "REC1" })], { kind: "add", recordName: "REC1", item: { kind: "field", name: "KEY", length: 6, dataType: "A", usage: "H", row: 5, column: 10 } });
     assert.strictEqual(after[1], ln({ name: "KEY", length: 6, dataType: "A", usage: "H" }));
+  });
+});
+
+suite("DDS: 文字列の無い定数（DATE / TIME / SYSNAME / USER。D4）", () => {
+  const LINES = [
+    ln({ keywords: "DSPSIZ(24 80 *DS3)" }),
+    ln({ record: "REC" }),
+    ln({ row: 1, column: 70, keywords: "DATE EDTCDE(Y)" }),
+    ln({ row: 2, column: 70, keywords: "TIME" }),
+    ln({ row: 3, column: 70, keywords: "USER" })
+  ];
+  test("項目として読み、実機の桁数で描く（様式のキーワードと誤らない）", () => {
+    const layout = resolveDspfLayout(LINES);
+    assert.deepStrictEqual(layout.items.map(item => [item.row, item.occupancy.end - item.occupancy.start - 1]), [[1, 8], [2, 8], [3, 10]]);
+    assert.deepStrictEqual(layout.diagnostics, []);
+    assert.deepStrictEqual(buildDspfOutline(LINES)[0].items.map(item => item.label), ["DATE", "TIME", "USER"]);
+  });
+  test("実機で測った桁数（DATE 6/8/8/10・TIME 8・SYSNAME 8・USER 10）", () => {
+    const width = (keywords: string) => readKeywordConstant(keywords)?.sample.length;
+    assert.deepStrictEqual(
+      ["DATE", "DATE EDTCDE(Y)", "DATE(*YY)", "DATE(*YY) EDTCDE(Y)", "TIME", "SYSNAME", "USER"].map(width),
+      [6, 8, 8, 10, 8, 8, 10]
+    );
+  });
+  test("置く・書き換える", () => {
+    const lines = [...LINES];
+    for (const r of applyDdsEdits(LINES, [{ kind: "add", recordName: "REC", item: { kind: "constant", keyword: "DATE(*YY) EDTCDE(Y)", row: 5, column: 60 } }], "DDS-DSPF")) {
+      lines.splice(r.replaceFrom, r.replaceTo - r.replaceFrom, ...r.lines);
+    }
+    assert.strictEqual(lines[5], ln({ row: 5, column: 60, keywords: "DATE(*YY) EDTCDE(Y)" }));
+    assert.deepStrictEqual(validateDdsEdits(LINES, [{ kind: "setKeywords", sourceLine: 3, keywords: "DATE(*YY)" }], "DDS-DSPF"), []);
+    assert.strictEqual(
+      validateDdsEdits([ln({ record: "P" })], [{ kind: "add", recordName: "P", item: { kind: "constant", keyword: "SYSNAME", column: 2 } }], "DDS-PRTF").length,
+      1
+    );
   });
 });

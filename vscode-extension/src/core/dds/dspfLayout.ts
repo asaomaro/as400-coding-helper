@@ -21,6 +21,7 @@ import {
   classifyDdsLine,
   joinContinuations,
   readConstant,
+  readKeywordConstant,
   readNumber,
   toLogicalUnits,
   unitItemKind,
@@ -327,7 +328,8 @@ export function resolveDspfLayout(
       continue;
     }
 
-    const constant = readConstant(keywords);
+    // 文字列の無い定数（DATE 等）は、実機の桁数の見本を定数の文字として扱う。
+    const constant = readConstant(keywords) ?? readKeywordConstant(keywords)?.sample;
     const fieldName = ddsName(line);
     // 種別の判定は `ddsLogicalUnits` に一本化してある（編集側と同じ規則を使う）。
     const isConstant = unitItemKind(unit) === "constant";

@@ -278,7 +278,7 @@ function parseEdit(value: unknown): DdsEdit | undefined {
       }
       const attributes = value.attributes;
       // 欄の**意味**（10 桁に収まるか等）は core の検証が見る。ここは型だけ。
-      for (const key of ["name", "text", "dataType", "usage"]) {
+      for (const key of ["name", "text", "keyword", "dataType", "usage"]) {
         if (attributes[key] !== undefined && typeof attributes[key] !== "string") {
           return undefined;
         }
@@ -332,6 +332,7 @@ function parseEdit(value: unknown): DdsEdit | undefined {
           kind: item.kind,
           name: item.name as string | undefined,
           text: item.text as string | undefined,
+          ...(typeof item.keyword === "string" ? { keyword: item.keyword } : {}),
           length: item.length as number | undefined,
           dataType: item.dataType as string | undefined,
           decimals: item.decimals as number | undefined,
