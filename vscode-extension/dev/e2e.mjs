@@ -1527,6 +1527,40 @@ check(
   (await page.$$(".dds-attr")).length === 0 &&
     (await page.$eval("#dds-toggle-attributes", n => n.hidden))
 );
+// **帳票の使用は 空白・O・P だけ**（実操作調査の帳票 P2。画面の I/O/B/H を出していた）。
+await page.click('.dds-item[data-row="3"][data-column="5"]');
+await page.waitForTimeout(200);
+check(
+  "**帳票の使用の選択肢は 空白・O・P**",
+  JSON.stringify(await page.$$eval('select[data-key="usage"] option', ns => ns.map(n => n.value))) ===
+    JSON.stringify(["", "O", "P"]),
+  JSON.stringify(await page.$$eval('select[data-key="usage"] option', ns => ns.map(n => n.value)))
+);
+check(
+  "帳票のプロパティに画面用の文言（属性文字・CSRLOC）が出ない（帳票 P4）",
+  !/属性文字|CSRLOC/u.test(await page.$eval(".dds-properties", n => n.textContent ?? "")),
+  (await page.$eval(".dds-properties", n => n.textContent ?? "")).slice(0, 200)
+);
+// **行送りの様式に置くと行番号を書かない**（帳票 P1。実機は CPD7860 で作成しない）。
+await page.evaluate(() => {
+  [...document.querySelectorAll(".dds-tree li.record")]
+    .find(h => (h.querySelector(":scope > .label")?.textContent ?? "").includes("HEADING"))
+    ?.click();
+});
+await page.waitForTimeout(200);
+{
+  const box = await page.locator(".dds-canvas").boundingBox();
+  await page.click("#dds-add-constant");
+  await page.mouse.click(box.x + 8 * 60, box.y + 12 * 1 + 4);
+  await page.waitForTimeout(200);
+  await page.fill("#ask-text", "PAGE");
+  await page.click("#ask-ok");
+  await page.waitForTimeout(300);
+  const added = (await sourceLines()).find(l => l.includes("'PAGE'")) ?? "";
+  check("**行送りの様式に置いた定数は行番号（39-41 桁）を持たない**", added.length > 0 && added.slice(38, 41).trim() === "", JSON.stringify(added));
+  await page.click("#undo");
+  await page.waitForTimeout(300);
+}
 // **見え方は帳票にもある**——語彙は違う（太字・下線・カラー）が、
 // 「見え方を出すかどうか」という切替の意味は同じ。
 check(

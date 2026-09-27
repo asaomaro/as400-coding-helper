@@ -218,8 +218,7 @@ function ask(kind: "field" | "constant"): Promise<Record<string, unknown> | unde
               kind: "field",
               name: must<HTMLInputElement>("#ask-name").value.trim().toUpperCase(),
               length: Number(must<HTMLInputElement>("#ask-length").value),
-              dataType: "A",
-              usage: "B"
+              dataType: "A"
             }
           : { kind: "constant", text: must<HTMLInputElement>("#ask-text").value }
       );

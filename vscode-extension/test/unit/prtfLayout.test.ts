@@ -217,6 +217,25 @@ suite("PRTF: 診断", () => {
     assert.ok(layout.diagnostics.some(d => d.code === "overflow"));
   });
 
+  // 実機で確認（CPD7860 / CPD7802）。以前は項目自身の行送りだけを見て、様式の SKIPB を見落としていた
+  // （実操作調査の帳票 P1。エディタで置いた 19 項目が全部これだった）。
+  test("様式に行送りがあり、項目に行番号がある併用も検出する", () => {
+    const layout = resolvePrtfLayout([
+      ddsLine({ nameType: "R", name: "REC", keywords: "SKIPB(3)" }),
+      ddsLine({ name: "F1", length: "10", row: "5", column: "1" })
+    ]);
+    assert.ok(layout.diagnostics.some(d => d.code === "spacing-with-line-number"));
+  });
+
+  test("前の項目の行送りの後に行番号を書く併用も検出する", () => {
+    const layout = resolvePrtfLayout([
+      ddsLine({ nameType: "R", name: "REC" }),
+      ddsLine({ name: "F1", length: "10", column: "2", keywords: "SPACEB(1)" }),
+      ddsLine({ name: "F2", length: "10", row: "5", column: "2" })
+    ]);
+    assert.ok(layout.diagnostics.some(d => d.code === "spacing-with-line-number" && d.sourceLine === 3));
+  });
+
   test("行番号と SPACE/SKIP の併用を検出する（原典: 無効）", () => {
     const layout = resolvePrtfLayout([
       ddsLine({ nameType: "R", name: "REC" }),

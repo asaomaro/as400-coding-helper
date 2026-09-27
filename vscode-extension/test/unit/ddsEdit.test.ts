@@ -362,3 +362,48 @@ suite("DDS 編集: 長い定数は継続行に折って置く", () => {
   });
 });
 
+
+suite("DDS 編集: 帳票に置く項目（実操作調査の帳票 P1・P2）", () => {
+  const PRTF: readonly string[] = [
+    ln({ record: "PHEAD", keywords: "SKIPB(3)" }),
+    ln({ column: 2, keywords: "'CMPLXP'" }),
+    ln({ record: "PLINE" }),
+    ln({ row: 10, column: 2, keywords: "'X'" })
+  ];
+  const place = (source: readonly string[], edit: DdsEdit, type: "DDS-PRTF" | "DDS-DSPF" = "DDS-PRTF"): string[] => {
+    const lines = [...source];
+    for (const result of applyDdsEdits(source, [edit], type)) {
+      lines.splice(result.replaceFrom, result.replaceTo - result.replaceFrom, ...result.lines);
+    }
+    return lines;
+  };
+
+  // 行番号と SPACE/SKIP は併用できない。実機は CPD7860 で作成しない。
+  test("行送り（SKIPB）の様式には行番号を書かず、桁だけを書く", () => {
+    const after = place(PRTF, { kind: "add", recordName: "PHEAD", item: { kind: "constant", text: "HEAD", row: 3, column: 40 } });
+    const added = after.find(line => line.includes("'HEAD'")) ?? "";
+    assert.strictEqual(added.slice(38, 44), "    40");
+  });
+
+  test("行番号で書いている様式には、これまでどおり行も書く", () => {
+    const after = place(PRTF, { kind: "add", recordName: "PLINE", item: { kind: "constant", text: "Y", row: 12, column: 5 } });
+    assert.strictEqual((after.find(line => line.includes("'Y'")) ?? "").slice(38, 44), " 12  5");
+  });
+
+  test("帳票に置くフィールドの使用は書かない（画面は B）", () => {
+    const field = { kind: "field" as const, name: "AMT", length: 7, dataType: "A", row: 12, column: 5 };
+    const prtf = place(PRTF, { kind: "add", recordName: "PLINE", item: field });
+    assert.strictEqual((prtf.find(line => line.includes("AMT")) ?? "").slice(37, 38), " ");
+    const dspf = place(SOURCE, { kind: "add", recordName: "DETAIL", item: field }, "DDS-DSPF");
+    assert.strictEqual((dspf.find(line => line.includes(" AMT")) ?? "").slice(37, 38), "B");
+  });
+
+  test("帳票の使用に B・I・H は書けない（O・P・空白は書ける）", () => {
+    const codes = (usage: string) =>
+      validateDdsEdits(PRTF, [{ kind: "add", recordName: "PLINE", item: { kind: "field", name: "F", length: 1, usage, row: 12, column: 5 } }], "DDS-PRTF").map(r => r.code);
+    assert.deepStrictEqual(codes("B"), ["invalid-column-value"]);
+    assert.deepStrictEqual(codes("H"), ["invalid-column-value"]);
+    assert.deepStrictEqual(codes("P"), []);
+    assert.deepStrictEqual(codes("O"), []);
+  });
+});
