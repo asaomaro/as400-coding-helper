@@ -1651,8 +1651,9 @@ await page.waitForTimeout(400);
 
   // 見出しを選んで枠の中に置くと、ウィンドウの中の位置で入る。
   await page.locator(".dds-tree li.record > .label", { hasText: "WINCTL" }).click();
-  const canvas = await page.locator(".dds-canvas").boundingBox();
   await page.click("#dds-add-constant");
+  // **キャンバスの位置は置く準備の後に測る**（状況表示が出てツールバーが折り返すと、キャンバスが下がる。CI の狭い窓で踏んだ）。
+  const canvas = await page.locator(".dds-canvas").boundingBox();
   // 画面の 10 行 40 桁 → ウィンドウの中の 2 行 14 桁（10 - 8 / 40 - 25 - 1）。
   await page.mouse.click(canvas.x + 39.5 * cellWidth, canvas.y + 9.5 * lineHeight);
   await page.waitForSelector("#ask-text", { state: "visible", timeout: 5000 });

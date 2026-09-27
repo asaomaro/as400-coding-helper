@@ -250,6 +250,26 @@ suite("lint: numeric-field / numeric-alignment", () => {
   });
 });
 
+suite("lint: 拡張演算項目 2 の継続記入行は欄として読まない", () => {
+  // `docs/src/SLSENT01.rpgle` 430 行目の形。7-35 桁が空で、式の続きが 36 桁目以降にある。
+  // DBCS を実機の桁で数えると文字列が 64 桁目以降（フィールド長）に掛かるが、実機は重大度 00 で通す
+  // （`.aidev/works/20260927-prompter-rpg-dbcs-columns/verify/DBCSCONT.rpgle`）。
+  const line = "     C                             %CHAR(WSLSNO) + ' を登録しました'";
+
+  test("ILE の C 仕様書では継続記入行", () => {
+    assert.strictEqual(classifyLine(line, "rpg-fixed", "C-SPEC", "ile"), "continuation");
+    assert.strictEqual(classifyLine(line, "rpg-fixed", "C-NEW", "ile"), "continuation");
+  });
+
+  test("RPG III には拡張演算項目 2 が無いので、欄として読む", () => {
+    assert.strictEqual(classifyLine(line, "rpg-fixed", "C-SPEC", "rpg3"), "checked");
+  });
+
+  test("命令がある行は今までどおり", () => {
+    assert.strictEqual(classifyLine("     C                   EVAL      MSG = 'A' +", "rpg-fixed", "C-NEW", "ile"), "checked");
+  });
+});
+
 suite("lint: 欄は実機の桁で切る（DBCS は SO/SI と全角 2 桁）", () => {
   // 「C 仕様の演算項目 2（36-49）の後ろに結果フィールド（50-63）」を最小の定義にしたもの。
   const C_DEF = {

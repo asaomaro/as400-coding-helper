@@ -66,7 +66,7 @@ export function lintFile(request: LintRequest): readonly LintFinding[] {
     const specKeyword =
       language === "dds" ? kind.ddsType : rpgContext?.classify(line, kind.dialect);
 
-    const lineKind = classifyLine(line, language, specKeyword);
+    const lineKind = classifyLine(line, language, specKeyword, kind.dialect);
     // 定位置として読めるのは "checked" の行だけ。注記行・継続記入行・
     // 種別が決まらない行では欄が存在しないので、欄を見ない規則だけを回す。
     // **行長の検査はここで落とさない**（桁あふれは定位置の意味と無関係で、

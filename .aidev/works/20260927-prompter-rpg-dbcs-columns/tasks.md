@@ -6,6 +6,7 @@
       依存: なし
       AC: AC1, AC2, AC3
 - [x] T2: lint の欄の規則（`requiredField` / `restrictedValue` / `numericField`）を実機の桁で切り、下線の範囲をエディタの列に直す（`fieldRange.ts`・`editorColumnOfMachineColumn`）。単体テスト。
-      対象: `vscode-extension/src/lint/rules/{requiredField,restrictedValue,numericField,fieldRange}.ts` / `src/core/dbcs.ts` / `test/unit/lintRules.test.ts`
+      拡張演算項目 2 の継続記入行を継続として分類する（`preprocess.ts`）。
+      対象: `vscode-extension/src/lint/{preprocess,engine}.ts` / `src/lint/rules/{requiredField,restrictedValue,numericField,fieldRange}.ts` / `src/core/dbcs.ts` / `test/unit/lintRules.test.ts`
       依存: T1
       AC: AC4
