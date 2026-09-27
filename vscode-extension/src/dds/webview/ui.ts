@@ -1270,8 +1270,10 @@ class EditorView {
         text(
           "div",
           "dds-note",
-          "名前を変えると、この項目を指すキーワード（&名前 / CSRLOC / HLPARA(*FLD)）も" +
-            "一緒に変わります。様式（レコード）の名前はデザイナからは変えられません"
+          this.model?.kind === "prtf"
+            ? "名前を変えると、この項目を指すキーワード（&名前）も一緒に変わります"
+            : "名前を変えると、この項目を指すキーワード（&名前 / CSRLOC / HLPARA(*FLD)）も" +
+              "一緒に変わります"
         )
       );
     }
@@ -1917,7 +1919,8 @@ class EditorView {
     put("位置", `${placed.row} 行 ${placed.column} 桁`);
     put(
       "占有",
-      `${placed.occupancy.start} 〜 ${placed.occupancy.end} 桁（属性文字を含む）`
+      // 属性文字は画面だけ（帳票には無い。実操作調査の帳票 P4）。
+      `${placed.occupancy.start} 〜 ${placed.occupancy.end} 桁${model.kind === "prtf" ? "" : "（属性文字を含む）"}`
     );
     put("右端の余裕", `${model.canvas.columns - placed.occupancy.end} 桁`);
     return box;
@@ -1963,13 +1966,22 @@ class EditorView {
   private usageSelect(item: OutlineItem): HTMLSelectElement {
     const select = document.createElement("select");
     select.dataset.key = "usage";
-    for (const [value, label] of [
-      ["", "（指定なし）"],
-      ["I", "I 入力"],
-      ["O", "O 出力"],
-      ["B", "B 両用"],
-      ["H", "H 潜在"]
-    ] as const) {
+    // **帳票の使用は 空白・O・P だけ**（原典。画面の選択肢を出していた。実操作調査の帳票 P2）。
+    const choices: ReadonlyArray<readonly [string, string]> =
+      this.model?.kind === "prtf"
+        ? [
+            ["", "（指定なし＝出力専用）"],
+            ["O", "O 出力専用"],
+            ["P", "P プログラム - システム間"]
+          ]
+        : [
+            ["", "（指定なし）"],
+            ["I", "I 入力"],
+            ["O", "O 出力"],
+            ["B", "B 両用"],
+            ["H", "H 潜在"]
+          ];
+    for (const [value, label] of choices) {
       const option = document.createElement("option");
       option.value = value;
       option.textContent = label;

@@ -206,8 +206,11 @@ export interface NewDspfItem {
   readonly decimals?: number;
   /** 38 桁。 */
   readonly usage?: string;
-  /** 39-41 桁。1 始まり。 */
-  readonly row: number;
+  /**
+   * 39-41 桁。1 始まり。**省くと行を書かない**（帳票で行送りが行を決める様式。
+   * 行番号と `SPACEx` / `SKIPx` は併用できず、実機は CPD7860 で作成しない）。
+   */
+  readonly row?: number;
   /** 42-44 桁。1 始まり。 */
   readonly column: number;
 }
@@ -247,11 +250,13 @@ export function buildItemLine(item: NewDspfItem): string {
     }
   }
 
-  line = ddsReplaceField(
-    line,
-    DDS_POSITION_ROW,
-    formatNumber(item.row, columnWidth(DDS_POSITION_ROW))
-  );
+  if (item.row !== undefined) {
+    line = ddsReplaceField(
+      line,
+      DDS_POSITION_ROW,
+      formatNumber(item.row, columnWidth(DDS_POSITION_ROW))
+    );
+  }
   line = ddsReplaceField(
     line,
     DDS_POSITION_COLUMN,

@@ -1,4 +1,5 @@
 import { ddsField, ddsName } from "../ddsLayout";
+import { ddsSourceDiagnostics, type DdsSourceDiagnosticCode } from "./ddsSourceDiagnostics";
 import { DDS_POSITION_COLUMN, DDS_POSITION_ROW } from "./ddsPositionColumns";
 import { LPI_VALUES, resolvePrintDensity } from "./prtfDensity";
 import { keywordLevelDiagnostics } from "./ddsKeywordLevels";
@@ -125,7 +126,9 @@ export type LayoutDiagnosticCode =
    */
   | "keyword-wrong-level"
   /** 条件を付けられないキーワードに条件が付いている（実機がコンパイルしない）。 */
-  | "keyword-not-conditionable";
+  | "keyword-not-conditionable"
+  /** ソースの形だけで分かる、実機が作成しない誤り（`ddsSourceDiagnostics`）。 */
+  | DdsSourceDiagnosticCode;
 
 export interface LayoutDiagnostic {
   readonly code: LayoutDiagnosticCode;
@@ -229,6 +232,11 @@ interface Spacing {
 }
 
 /** キーワード欄（45 桁以降）から数値パラメータのキーワードを読む。 */
+/** キーワード欄に行送り（`SPACEB` / `SPACEA` / `SKIPB` / `SKIPA`）があるか。 */
+export function hasSpacingKeywords(keywords: string): boolean {
+  return readSpacing(keywords).hasAny;
+}
+
 function readSpacing(keywords: string): Spacing {
   const value = (name: string): number | undefined => {
     const match = new RegExp(`\\b${name}\\s*\\(\\s*(\\d+)\\s*\\)`, "u").exec(keywords);
@@ -354,6 +362,7 @@ export function resolvePrtfLayout(
 
   const units = toLogicalUnits(lines);
   diagnostics.push(...unconditionableDiagnostics(units, "PRTF"));
+  diagnostics.push(...ddsSourceDiagnostics(lines, units, "PRTF"));
   diagnostics.push(...keywordLevelDiagnostics(lines, units, "PRTF"));
 
   for (const unit of units) {
@@ -395,12 +404,16 @@ export function resolvePrtfLayout(
     const fieldName = ddsName(line);
     const isConstant = constant !== undefined && fieldName.length === 0;
 
-    if (spacing.hasAny && explicitRow !== undefined) {
+    // **様式に書いた行送りも同じ。** 様式に `SKIPB(3)` を書き、項目に行番号を書くと、
+    // 実機は CPD7860（重大度 30）で作成しない（2026-09-27 に実機で確認。
+    // `.aidev/works/20260927-dds-prtf-spacing-usage/verify/SPROW.prtf`）。前の項目の行送りの後に
+    // 行番号を書いても CPD7802 で作成しない（`FLDSPROW.prtf`）。以前は項目自身の行送りだけを見ていた。
+    if ((spacing.hasAny || cursor.recordHasSpacing) && explicitRow !== undefined) {
       diagnostics.push({
         code: "spacing-with-line-number",
         message:
-          "行番号（39-41 桁）のある項目で SPACE/SKIP は無効です" +
-          "（原典: 行番号にエラーを示すフラグが付けられます）",
+          "行番号（39-41 桁）と SPACE/SKIP は併用できません" +
+          "（実機は CPD7860 / CPD7802 で作成しない。行は行送りに任せ、桁だけを書きます）",
         sourceLine
       });
     }

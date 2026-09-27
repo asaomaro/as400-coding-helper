@@ -61,7 +61,7 @@ function resolve(context: FileRuleContext): ResolvedDiagnostics | undefined {
 }
 
 /** 指摘が指す桁の範囲。診断の性質で使い分ける。 */
-type Span = "position" | "keywords" | "conditioning";
+type Span = "position" | "keywords" | "conditioning" | "usage";
 
 /**
  * ここに載せるのは `RuleId` を持つ診断コードだけ。
@@ -78,8 +78,12 @@ const SPAN_BY_CODE: ReadonlyMap<string, Span> = new Map([
   ["overflow", "position"],
   ["overlap", "position"],
   ["spacing-with-line-number", "position"],
+  ["position-not-allowed", "position"],
+  ["keyword-needs-indicator", "conditioning"],
+  ["invalid-usage", "usage"],
   // キーワード欄（45 桁以降）の記述を指すもの。
-  ["invalid-screen-size", "keywords"]
+  ["invalid-screen-size", "keywords"],
+  ["unclosed-literal", "keywords"]
 ]);
 
 function spanOf(line: string, span: Span): { start: number; end: number } {
@@ -90,6 +94,12 @@ function spanOf(line: string, span: Span): { start: number; end: number } {
     // 欄に届かない短い行では、指す場所が無いので行全体に落とす。
     if (line.length < positionStart) return wholeLine;
     return { start: positionStart, end: Math.min(line.length, positionEnd) + 1 };
+  }
+
+  if (span === "usage") {
+    const [start, end] = DDS_COLUMNS.usage;
+    if (line.length < start) return wholeLine;
+    return { start, end: Math.min(line.length, end) + 1 };
   }
 
   if (span === "conditioning") {

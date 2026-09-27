@@ -7,6 +7,7 @@ import {
 } from "../ddsLayout";
 import { unconditionableKeywords, type ConditionableDdsType } from "./ddsConditionable";
 import { keywordLevelDiagnostics } from "./ddsKeywordLevels";
+import { ddsSourceDiagnostics, type DdsSourceDiagnosticCode } from "./ddsSourceDiagnostics";
 import {
   findAlternatePosition,
   isMutuallyExclusive,
@@ -92,7 +93,9 @@ export type DspfDiagnosticCode =
   /** 桁欄が `+n`（相対桁）。初版は解決しない。 */
   | "relative-position-unresolved"
   /** DSPSIZ の書式・値が不正。 */
-  | "invalid-screen-size";
+  | "invalid-screen-size"
+  /** ソースの形だけで分かる、実機が作成しない誤り（`ddsSourceDiagnostics`）。 */
+  | DdsSourceDiagnosticCode;
 
 export interface DspfDiagnostic {
   readonly code: DspfDiagnosticCode;
@@ -312,6 +315,7 @@ export function resolveDspfLayout(
 
   const units = toLogicalUnits(lines);
   diagnostics.push(...unconditionableDiagnostics(units, "DSPF"));
+  diagnostics.push(...ddsSourceDiagnostics(lines, units, "DSPF"));
   diagnostics.push(...keywordLevelDiagnostics(lines, units, "DSPF"));
   diagnostics.push(...undeclaredScreenSizeDiagnostics(lines, sizes));
 

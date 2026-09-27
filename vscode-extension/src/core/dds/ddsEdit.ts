@@ -48,7 +48,8 @@ import { findAlternatePosition } from "./ddsConditioning";
 import { renameFieldReferences, renameRecordReferences } from "./ddsReferences";
 import { COLUMN_ONE_MESSAGE, isRowOneColumnOne } from "./dspfLayout";
 import { DDS_POSITION_ROW } from "./ddsPositionColumns";
-import { writeBackColumn, writeBackPosition } from "./ddsPositionWriteBack";
+import { hasExplicitRow, writeBackColumn, writeBackPosition } from "./ddsPositionWriteBack";
+import { hasSpacingKeywords } from "./prtfLayout";
 import { printWidth } from "../dbcs";
 
 /**
@@ -324,7 +325,7 @@ export function validateDdsEdits(
 
   for (const edit of edits) {
     if (edit.kind === "add") {
-      rejections.push(...validateAdd(units, edit.recordName, edit.item, ddsType));
+      rejections.push(...validateAdd(units, edit.recordName, effectiveNewItem(units, edit.recordName, edit.item, ddsType), ddsType));
       continue;
     }
 
@@ -452,7 +453,7 @@ export function validateDdsEdits(
     }
 
     if (edit.kind === "setAttributes") {
-      rejections.push(...validateAttributes(lines, unit, edit.attributes, edit.sourceLine));
+      rejections.push(...validateAttributes(lines, unit, edit.attributes, edit.sourceLine, ddsType));
     }
 
     if (edit.kind === "setKeywords") {
@@ -571,7 +572,10 @@ export function applyDdsEdits(
           const run = keywordRunOf(unit);
           const replaced = replaceLeadingConstant(unit.keywords, edit.attributes.text);
           if (run && replaced !== undefined) {
-            const head = writeBackAttributes(lines[index], edit.attributes);
+            const written = writeBackAttributes(lines[index], edit.attributes);
+            const head = isPositionlessUsage(edit.attributes.usage, ddsType)
+              ? writeBackPosition({ line: written })
+              : written;
             results.push({
               replaceFrom: run.from,
               replaceTo: run.to,
@@ -581,11 +585,18 @@ export function applyDdsEdits(
           }
         }
 
+        const positionless = isPositionlessUsage(edit.attributes.usage, ddsType);
+        const applied = applyAttributes(lines[index], edit.attributes);
         results.push({
           replaceFrom: index,
           replaceTo: index + 1,
-          lines: [applyAttributes(lines[index], edit.attributes)]
+          lines: [positionless ? writeBackPosition({ line: applied }) : applied]
         });
+        // 2 次画面サイズの位置の上書き行（`*DS4 … 24 46`）も位置なので、一緒に消す。
+        const alternate = positionless && ddsType === "DDS-DSPF" ? alternateFor(lines, unit) : undefined;
+        if (alternate) {
+          results.push({ replaceFrom: alternate.sourceLine - 1, replaceTo: alternate.sourceLine, lines: [] });
+        }
 
         // **名前を変えたら、それを指しているキーワードも直す。**
         // 参照は**別の行**にあるので、同じ確定の中で一緒に積む
@@ -666,7 +677,11 @@ export function applyDdsEdits(
       case "add": {
         const at = insertionPoint(units, edit.recordName);
         if (at === undefined) break;
-        results.push({ replaceFrom: at, replaceTo: at, lines: [...buildItemLines(edit.item)] });
+        results.push({
+          replaceFrom: at,
+          replaceTo: at,
+          lines: [...buildItemLines(effectiveNewItem(units, edit.recordName, edit.item, ddsType))]
+        });
         break;
       }
       case "addRecord": {
@@ -804,10 +819,14 @@ function validateAttributes(
   lines: readonly string[],
   unit: LogicalUnit,
   attributes: ItemAttributePatch & { text?: string },
-  sourceLine: number
+  sourceLine: number,
+  ddsType: EditableDdsType
 ): DdsEditRejection[] {
   const rejections: DdsEditRejection[] = [];
   const isConstant = unitItemKind(unit) === "constant";
+  if (attributes.usage !== undefined) {
+    rejections.push(...validateUsage(attributes.usage, ddsType, sourceLine));
+  }
   const at = (code: DdsEditRejectionCode, message: string): DdsEditRejection => ({
     code,
     message,
@@ -1021,10 +1040,96 @@ function validateAdd(
     });
   }
 
+  if (item.kind === "field" && item.usage !== undefined) {
+    rejections.push(...validateUsage(item.usage, ddsType));
+  }
+
   rejections.push(...validatePosition(item.row, item.column));
   // **追加でも同じ**（移動だけ塞いでも、追加から入れれば同じ状態になる）。
-  rejections.push(...validateColumnOne(item.row, item.column, ddsType, item.row));
+  if (item.row !== undefined) {
+    rejections.push(...validateColumnOne(item.row, item.column, ddsType, item.row));
+  }
   return rejections;
+}
+
+/**
+ * 位置（39-44 桁）を持てない使用か。
+ *
+ * 画面は `H`（潜在）・`P`（プログラム - システム間）・`M`（メッセージ）、帳票は `P`。原典
+ * （`FIELD-DSPF-pos3944.html`「潜在フィールド、プログラム - システム間フィールド、またはメッセージ・
+ * フィールドについては、位置を指定することはできません」/ `FIELD-PRTF-prtuse.html`「位置は無効です」）。
+ * 実機も H・P に位置があると CPD7443、M は CPD7436 で作成しない（2026-09-27 に確認。
+ * `.aidev/works/20260927-dds-positionless-usage/verify/`）。使用を変えても位置を残していた（実操作調査の D9）。
+ */
+function isPositionlessUsage(usage: string | undefined, ddsType: EditableDdsType): boolean {
+  if (usage === undefined) return false;
+  const value = usage.trim().toUpperCase();
+  return ddsType === "DDS-PRTF" ? value === "P" : value === "H" || value === "P" || value === "M";
+}
+
+/**
+ * 印刷装置ファイルの使用（38 桁）は **空白・`O`（出力専用）・`P`（プログラム - システム間）だけ**
+ * （原典 `FIELD-PRTF-prtuse.html`「印刷装置ファイルの有効な値は次のとおりです」）。
+ * 画面の既定の `B` をそのまま書いていた（実操作調査の帳票 P2）。
+ */
+const PRTF_USAGES: ReadonlySet<string> = new Set(["", "O", "P"]);
+
+function validateUsage(
+  usage: string,
+  ddsType: EditableDdsType,
+  sourceLine?: number
+): DdsEditRejection[] {
+  if (ddsType !== "DDS-PRTF" || PRTF_USAGES.has(usage.trim().toUpperCase())) return [];
+  return [
+    {
+      code: "invalid-column-value",
+      message: `印刷装置ファイルの使用は 空白・O・P のいずれかです（"${usage.trim()}"）`,
+      ...(sourceLine !== undefined ? { sourceLine } : {})
+    }
+  ];
+}
+
+/**
+ * 置く項目を、置き先のファイルと様式に合わせる。
+ *
+ * - **使用の既定はファイルの種類で決まる。** 画面は `B`（両用）、帳票は書かない（＝出力専用）。
+ *   UI は使用を聞かないので、既定をここで持つ（画面の既定を帳票にも書いていた。実操作調査の帳票 P2）。
+ * - **帳票で行送り（`SPACEx` / `SKIPx`）が行を決める様式には、行番号を書かない。**
+ *   併用すると実機は CPD7860「スペースまたはスキップ・キーワードと一緒に行番号を使用することは
+ *   できない」で作成しない（実操作調査の帳票 P1。19 件）。桁だけを書き、行は行送りに任せる。
+ */
+function effectiveNewItem(
+  units: readonly LogicalUnit[],
+  recordName: string,
+  item: NewDspfItem,
+  ddsType: EditableDdsType
+): NewDspfItem {
+  const usage =
+    item.kind === "field" && item.usage === undefined && ddsType === "DDS-DSPF" ? "B" : item.usage;
+  const omitRow = ddsType === "DDS-PRTF" && recordUsesSpacing(units, recordName);
+  const { row, ...rest } = item;
+  return {
+    ...rest,
+    ...(usage !== undefined ? { usage } : {}),
+    ...(omitRow ? {} : row !== undefined ? { row } : {})
+  };
+}
+
+/**
+ * 帳票の様式が行送りで行を決めているか。様式のキーワードに `SPACEx` / `SKIPx` がある、
+ * または様式の項目のどれかが行送りを持つか行番号を持たない。
+ */
+function recordUsesSpacing(units: readonly LogicalUnit[], recordName: string): boolean {
+  const start = units.findIndex(
+    unit => unit.kind === "record" && ddsName(unit.line).toUpperCase() === recordName.toUpperCase()
+  );
+  if (start < 0) return false;
+  if (hasSpacingKeywords(units[start].keywords)) return true;
+  for (const unit of units.slice(start + 1)) {
+    if (unit.kind === "record") break;
+    if (hasSpacingKeywords(unit.keywords) || !hasExplicitRow(unit.line)) return true;
+  }
+  return false;
 }
 
 /**

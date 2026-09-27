@@ -54,6 +54,22 @@ const CANNOT = /オプション標識は[^。]{0,30}無効|オプション標識
 /** 付けられる、と言っている文。 */
 const CAN = /オプション標識[^。]{0,25}使用(?:することが)?でき/u;
 /**
+ * **付けなければならない**、と言っている文（無条件のものだけ）。
+ *
+ *   SFLCLR「このキーワードにはオプション標識を指定することが必要です」
+ *   SFLDLT「オプション標識は、このキーワードでは必須です」
+ *   SFLEND「このキーワードには、オプション標識を指定しなければなりません」
+ *
+ * 「〜を 2 回以上指定する場合には」「ファイル・レベルで指定する場合には」のような
+ * **条件つきの要求は採らない**（`場合` を含む文は除く）。条件を読まずに採ると、
+ * 1 回だけ書いた `COLOR` まで咎めることになる。
+ * 実機（IBM i 7.3）で 3 つとも CPD7490「示されたキーワードにはオプション標識が必要である」を確認済み
+ * （`.aidev/works/20260927-dds-validation-machine-errors/verify/`）。
+ */
+const REQUIRED =
+  /このキーワードに(?:は|対して)[、,]?\s*オプション標識を指定(?:しなければなりません|することが必要)|オプション標識は、?\s*このキーワードでは必須/u;
+
+/**
  * **キーワードではなくフィールドの条件付け**の話をしている文。
  * 「無効です」の直後に来るので、拾うと答えが反転する。
  */
@@ -93,7 +109,15 @@ function conditioningOf(text) {
   return verdict;
 }
 
+/** 条件を付けなければならないか（無条件の要求だけ）。 */
+function requiresConditioning(text) {
+  return (text.match(/[^。]{0,150}オプション標識[^。]{0,170}。/gu) ?? []).some(
+    sentence => REQUIRED.test(sentence) && !/場合/u.test(sentence)
+  );
+}
+
 const keywords = { "PF-LF": {}, DSPF: {}, PRTF: {} };
+const required = { "PF-LF": [], DSPF: [], PRTF: [] };
 const counts = {
   "PF-LF": { yes: 0, no: 0, unknown: 0 },
   DSPF: { yes: 0, no: 0, unknown: 0 },
@@ -110,6 +134,7 @@ for (const name of files) {
   const keyword = keywordOf(html);
   if (!keyword) continue;
   pages += 1;
+  if (requiresConditioning(strip(html)) && !required[kind].includes(keyword)) required[kind].push(keyword);
 
   const verdict = conditioningOf(strip(html));
   if (verdict === undefined) {
@@ -135,12 +160,15 @@ const payload = {
     "原典の各キーワード詳細ページから生成する。手で編集しないこと。",
   source: "IBM Documentation rzakb / rzakc / rzakd のキーワード詳細ページ",
   keywords,
+  // 付けなければ実機が作成しない（CPD7490）キーワード。
+  required: Object.fromEntries(Object.entries(required).map(([kind, names]) => [kind, [...names].sort()])),
   counts
 };
 
 writeFileSync(OUT, `${JSON.stringify(payload, null, 2)}\n`, "utf8");
 console.log(`条件付けの可否を書き出しました: ${OUT}`);
 console.log(`  詳細ページ ${pages} 件`);
+console.log(`  条件が必須: ${JSON.stringify(payload.required)}`);
 for (const kind of Object.keys(counts)) {
   const c = counts[kind];
   console.log(`  ${kind.padEnd(6)} 付けられる ${c.yes} / 付けられない ${c.no} / 判定なし ${c.unknown}`);

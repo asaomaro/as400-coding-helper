@@ -21,6 +21,8 @@ export type ConditionableDdsType = "DSPF" | "PRTF";
 
 interface ConditioningFile {
   readonly keywords: Readonly<Record<string, Readonly<Record<string, boolean>>>>;
+  /** 条件が必須のキーワード（原典の「オプション標識を指定しなければなりません」）。 */
+  readonly required?: Readonly<Record<string, readonly string[]>>;
 }
 
 const data = conditioningData as unknown as ConditioningFile;
@@ -75,6 +77,25 @@ export function unconditionableKeywords(
       isConditionable(ddsType, name) ??
       isConditionable(ddsType, name.replace(/\d+$/u, "nn"));
     if (verdict === false && !found.includes(name)) found.push(name);
+  }
+  return found;
+}
+
+/**
+ * キーワード欄のうち、**条件を付けなければならないもの**の名前（`SFLCLR` / `SFLDLT` / `SFLEND`）。
+ * 付けずに書くと実機は CPD7490 で作成しない。表は原典から生成する（`generate-dds-conditioning.mjs`）。
+ */
+export function keywordsRequiringConditioning(
+  ddsType: ConditionableDdsType,
+  keywords: string
+): string[] {
+  const required = new Set((data.required?.[ddsType] ?? []).map(name => name.toUpperCase()));
+  if (required.size === 0) return [];
+  const found: string[] = [];
+  for (const entry of parseKeywordEntries(keywords)) {
+    if (entry.kind !== "keyword") continue;
+    const name = entry.name.toUpperCase();
+    if (required.has(name) && !found.includes(name)) found.push(name);
   }
   return found;
 }

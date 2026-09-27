@@ -74,6 +74,14 @@ export type RuleId =
   | "layout-keyword-wrong-level"
   /** 既定 ON。行番号のある様式で SPACE/SKIP。実機で CPD7860（docs/src/CHECKLIST.md に実例）。 */
   | "layout-spacing-with-line-number"
+  /** 既定 ON。条件が必須のキーワード（SFLCLR / SFLDLT / SFLEND）に条件が無い。実機 CPD7490。 */
+  | "layout-keyword-needs-indicator"
+  /** 既定 ON。位置を持てない使用（画面 H・P・M、帳票 P）に位置がある。実機 CPD7443 / CPD7436。 */
+  | "layout-position-not-allowed"
+  /** 既定 ON。帳票の使用が 空白・O・P 以外。実機 CPD7410。 */
+  | "layout-invalid-usage"
+  /** 既定 ON。リテラルが 80 桁目までに閉じず、次の行にも続かない。実機 CPD7508。 */
+  | "layout-unclosed-literal"
   /**
    * 既定 OFF。画面／紙面をはみ出す。
    * **有効なソースでも出る**ため。原典（表示装置ファイルの `DSPSIZ` 例 1）:

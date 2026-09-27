@@ -486,8 +486,8 @@ async function askItem(
     kind: "field",
     name: name.trim().toUpperCase(),
     length: Number(length.trim()),
-    dataType: "A",
-    usage: "B"
+    dataType: "A"
+    // 使用は書かない。既定はファイルの種類で決まる（画面は B、帳票は出力専用。`applyDdsEdits`）。
   };
 }
 
