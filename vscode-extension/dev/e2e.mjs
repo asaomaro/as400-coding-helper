@@ -2017,10 +2017,36 @@ check(
   `${beforeInNew} → ${afterInNew.length} 行`
 );
 
-// **項目を持つ様式を選んでいるときは、選択で上書きしない。**
-// 見出しは `OVERLAY` / `CF03` を読むためにも選ぶ。そのままキャンバスを押した人は
-// 「押した行の様式に入る」と思っている——救うのは**行の見当が原理的に届かない
-// 様式（項目 0 件）だけ**にする。
+// 見出しを選んでいなければ、これまでどおり押した行の様式に入る（行の見当）。
+// キャンバスの項目を選ぶと見出しの選択は外れる（項目の選択は置き先の宣言ではない）。
+const rec1Item = await page.evaluateHandle(() =>
+  [...document.querySelectorAll(".dds-item")].find(n => Number(n.getAttribute("data-row")) <= 3)
+);
+await rec1Item.asElement()?.click();
+await page.waitForTimeout(200);
+await page.click("#dds-add-constant");
+await page.mouse.click(canvasForNew.x + cellWidth * 40, canvasForNew.y + 3 * 12);
+await page.waitForTimeout(200);
+await page.fill("#ask-text", "REC1側");
+await page.click("#ask-ok");
+await page.waitForTimeout(300);
+const guessedRows = await sourceLines();
+const rec1At = guessedRows.findIndex(l => /^\s{5}A\s+R REC1\s*$/u.test(l));
+const footerAt2 = guessedRows.findIndex(l => /^\s{5}A\s+R FOOTER\s*$/u.test(l));
+const guessedAt = guessedRows.findIndex(l => l.includes("'REC1側'"));
+check(
+  "見出しを選んでいなければ、押した行の様式に入る",
+  guessedAt > rec1At && guessedAt < footerAt2,
+  `REC1=${rec1At} / 新しい行=${guessedAt} / FOOTER=${footerAt2}`
+);
+check(
+  "行の見当で決まったときも置いた様式を知らせる",
+  (await page.$eval(".status", n => n.textContent ?? "")).includes("様式 REC1 に置きました")
+);
+
+// **項目を持つ様式を選んでいても、選んだ様式に入る**（2026-09-27 の調査の D14）。
+// 以前は行の見当を優先しており、足元・ウィンドウのように行が重なる様式へは置けず、
+// 黙って別の様式に入っていた。FOOTER（いま項目がある）を選んで REC1 の行に置く。
 await page.evaluate(() => {
   const headings = [...document.querySelectorAll(".dds-tree li.record")];
   const footer = headings.find(h =>
@@ -2032,17 +2058,20 @@ await page.waitForTimeout(200);
 await page.click("#dds-add-constant");
 await page.mouse.click(canvasForNew.x + cellWidth * 40, canvasForNew.y + 3 * 12);
 await page.waitForTimeout(200);
-await page.fill("#ask-text", "REC1側");
+await page.fill("#ask-text", "足元側");
 await page.click("#ask-ok");
 await page.waitForTimeout(300);
 const placedRows = await sourceLines();
-const rec1At = placedRows.findIndex(l => /^\s{5}A\s+R REC1\s*$/u.test(l));
 const footerAt = placedRows.findIndex(l => /^\s{5}A\s+R FOOTER\s*$/u.test(l));
-const newAt = placedRows.findIndex(l => l.includes("'REC1側'"));
+const newAt = placedRows.findIndex(l => l.includes("'足元側'"));
 check(
-  "**項目を持つ様式を選んでいても、押した行の様式に入る**（選択で上書きしない）",
-  newAt > rec1At && newAt < footerAt,
-  `REC1=${rec1At} / 新しい行=${newAt} / FOOTER=${footerAt}`
+  "**項目を持つ様式を選んでいても、選んだ様式に入る**（押した行の様式に取られない）",
+  footerAt >= 0 && newAt > footerAt,
+  `FOOTER=${footerAt} / 新しい行=${newAt}`
+);
+check(
+  "置いた様式を状況表示で知らせる",
+  (await page.$eval(".status", n => n.textContent ?? "")).includes("様式 FOOTER に置きました")
 );
 
 check(
