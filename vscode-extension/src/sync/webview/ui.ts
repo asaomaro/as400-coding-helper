@@ -72,7 +72,9 @@ export function startSync(bridge: Bridge, root: HTMLElement): void {
     }
 
     if (current.rows.length === 0) {
-      root.append(element("p", "sync-empty", current.loaded ? "メンバーがありません。" : "一覧を取得できませんでした。"));
+      // 取得中（busy）はまだ一覧が無いだけなので、「取得できなかった」とは出さない。
+      if (current.loaded) root.append(element("p", "sync-empty", "メンバーがありません。"));
+      else if (busy === undefined) root.append(element("p", "sync-empty", "一覧を取得できませんでした。"));
       return;
     }
 
