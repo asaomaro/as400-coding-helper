@@ -11,7 +11,7 @@ import { buildDspfRenderModel, type RenderModel } from "../core/dds/dspfRenderMo
 import { buildPrtfRenderModel } from "../core/dds/prtfRenderModel";
 import { DEFAULT_PAGE, type PrtfPage } from "../core/dds/prtfLayout";
 import { resolveDdsType } from "../core/sourceKind";
-import { fieldPlacementChoices } from "../core/dds/fieldChoices";
+import { fieldPlacementChoices, type PositionalDefinition } from "../core/dds/fieldChoices";
 import { resolveDefinitionLanguage } from "../prompter/jsonDefinitions";
 import { buildDdsEditorHtml, createNonce } from "./webviewHtml";
 import {
@@ -353,7 +353,7 @@ class DdsVisualEditorProvider implements vscode.CustomTextEditorProvider {
       }
 
       case "askItem": {
-        const item = await askItem(message.kind, message.row, message.column, editableTypeOf(document));
+        const item = await askItem(message.kind, message.row, message.column, editableTypeOf(document), this.context.extensionUri);
         post({ type: "askItemResult", item: item ?? null });
         return;
       }
@@ -445,12 +445,23 @@ function applyResult(
   );
 }
 
+/** F4 の DDS 定義（35・38 桁の選択肢の出所）を読む。読めなければ選択肢なし（型・使用は既定で置く）。 */
+async function readPositionalDefinition(extensionUri: vscode.Uri, ddsType: EditableDdsType): Promise<PositionalDefinition> {
+  try {
+    const uri = vscode.Uri.joinPath(extensionUri, "resources", "prompter", "dds", resolveDefinitionLanguage(), `${ddsType}.json`);
+    return JSON.parse(new TextDecoder("utf-8").decode(await vscode.workspace.fs.readFile(uri))) as PositionalDefinition;
+  } catch {
+    return { parameters: [] };
+  }
+}
+
 /** 追加する項目の内容を聞く。取り消し（Esc）なら undefined。 */
 async function askItem(
   kind: "field" | "constant",
   row: number,
   column: number,
-  ddsType: EditableDdsType
+  ddsType: EditableDdsType,
+  extensionUri: vscode.Uri
 ): Promise<Record<string, unknown> | undefined> {
   if (kind === "constant") {
     const text = await vscode.window.showInputBox({
@@ -485,7 +496,7 @@ async function askItem(
   if (length === undefined) return undefined;
 
   // 型・小数・使用も聞く（実操作調査の D6。利用者の決定）。一覧と既定は `fieldPlacementChoices`。
-  const choices = fieldPlacementChoices(ddsType);
+  const choices = fieldPlacementChoices(ddsType, await readPositionalDefinition(extensionUri, ddsType));
   const pick = async (title: string, items: readonly { value: string; label: string }[], preset: string) => {
     const quickItems = items.map(item => ({ label: item.label, value: item.value }));
     const chosen = await vscode.window.showQuickPick(

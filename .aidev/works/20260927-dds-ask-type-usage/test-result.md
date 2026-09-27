@@ -1,6 +1,6 @@
 # テスト結果: フィールドを置くとき型・小数・使用も聞く（D6）
 
-- `npm test`: 1488 passing（追加 1 件）。
+- `npm test`: 1489 passing（追加 2 件。うち 1 件は src が resources/prompter の JSON を import しないことの見張り。review のラウンド 2）。
 - GUI e2e（`dev/e2e.mjs`）: 手元で 246 PASS / 0 FAIL（追加 2 件。手元だけで止まる無関係の段は ±1 を許す写しで流した）。
 
 ## 受け入れ基準ごとの判定

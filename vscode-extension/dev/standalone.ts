@@ -9,6 +9,8 @@ import { buildDdsTemplate } from "../src/core/dds/ddsTemplate";
 import { buildDspfRenderModel } from "../src/core/dds/dspfRenderModel";
 import { buildPrtfRenderModel } from "../src/core/dds/prtfRenderModel";
 import { fieldPlacementChoices } from "../src/core/dds/fieldChoices";
+import DDSDSPF_DEF from "../resources/prompter/dds/ja/DDS-DSPF.json";
+import DDSPRTF_DEF from "../resources/prompter/dds/ja/DDS-PRTF.json";
 import type { Bridge } from "../src/dds/webview/bridge";
 import {
   parseEditorMessage,
@@ -206,7 +208,7 @@ function ask(kind: "field" | "constant"): Promise<Record<string, unknown> | unde
   if (lengthRow) lengthRow.hidden = kind !== "field";
   if (textRow) textRow.hidden = kind !== "constant";
   // 型・小数・使用も聞く（VS Code 版と同じ一覧と既定。`fieldPlacementChoices`）。
-  const choices = fieldPlacementChoices(host.ddsType());
+  const choices = fieldPlacementChoices(host.ddsType(), host.ddsType() === "DDS-PRTF" ? DDSPRTF_DEF : DDSDSPF_DEF);
   const fill = (select: HTMLSelectElement, items: readonly { value: string; label: string }[], preset: string): void => {
     select.replaceChildren(
       ...items.map(item => {
