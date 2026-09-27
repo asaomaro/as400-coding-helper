@@ -1541,6 +1541,10 @@ await page.waitForTimeout(400);
     "条件を付けたら CPD7490 の指摘が消える",
     !(await page.$eval(".dds-diagnostics", n => n.textContent ?? "")).includes("CPD7490")
   );
+  const rows = await page.$$eval(".dds-properties .dds-conditional-keyword", ns =>
+    ns.map(n => `${n.querySelector(".kw")?.textContent}=${n.querySelector("input")?.value}`)
+  );
+  check("**様式のプロパティに条件つきの行のキーワードと条件が出る**", rows.includes("SFLCLR=33"), JSON.stringify(rows));
 }
 
 // ---- 23. 帳票（PRTF）--------------------------------------------------
