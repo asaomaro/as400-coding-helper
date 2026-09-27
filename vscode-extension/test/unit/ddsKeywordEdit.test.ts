@@ -7,7 +7,7 @@ import {
   foldKeywordArea,
   KEYWORD_AREA_WIDTH
 } from "../../src/core/dds/ddsEditWriteBack";
-import { parseKeywordEntries, type DdsKeywordHelp } from "../../src/core/dds/ddsKeywords";
+import { parseKeywordEntries, requiresParameters, type DdsKeywordHelp } from "../../src/core/dds/ddsKeywords";
 import { toLogicalUnits } from "../../src/core/dds/ddsLogicalUnits";
 
 /**
@@ -256,5 +256,16 @@ suite("キーワードの書き出し: 適用と拒否", () => {
       { kind: "setKeywords", sourceLine: 2, keywords: "'CONST'" }
     ], "DDS-DSPF");
     assert.deepStrictEqual(rejections.map(r => r.code), ["keyword-lines-not-contiguous"]);
+  });
+});
+
+suite("キーワード: 括弧の中が必須か（D3）", () => {
+  const help = JSON.parse(readFileSync(join(__dirname, "../../../resources/completion/dds-keywords.json"), "utf8"))["DDS-DSPF"] as DdsKeywordHelp[];
+  const of = (name: string) => requiresParameters(help.find(entry => entry.name === name)!);
+  test("括弧ごと省略できるものは必須ではない", () => {
+    for (const name of ["PRINT", "CAnn", "SFLEND", "INDARA", "OVERLAY"]) assert.strictEqual(of(name), false, name);
+  });
+  test("括弧が必須のものは必須", () => {
+    for (const name of ["DSPSIZ", "COLOR", "CHECK"]) assert.strictEqual(of(name), true, name);
   });
 });

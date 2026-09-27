@@ -17,6 +17,7 @@
 import type { ParameterDefinition, PrompterDefinition } from "./types";
 import { parseClCommand } from "./clCommandParser";
 import { isDbcsCodePoint, printWidth } from "../core/dbcs";
+import { buildKeywordFormLine, isKeywordFormDefinition } from "./keywordForm";
 import {
   countOccurrences,
   isRepeatableGroup,
@@ -330,6 +331,11 @@ export function buildRpgLineText(
     parameter.sourceStart > 0 &&
     parameter.sourceLength > 0
   );
+
+  // キーワード形式（H 仕様書）は桁ではなくキーワードで書く（実操作調査の P1）。
+  if (!hasColumnInfo && isKeywordFormDefinition(definition)) {
+    return buildKeywordFormLine(original, definition, values);
+  }
 
   if (!hasColumnInfo) {
     console.log(

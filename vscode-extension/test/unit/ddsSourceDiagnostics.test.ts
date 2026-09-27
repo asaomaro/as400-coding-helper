@@ -79,3 +79,15 @@ suite("DDS 検証: 実機が作成しない形（D18）", () => {
     assert.deepStrictEqual(codes(resolveDspfLayout(source).diagnostics, "unclosed-literal"), []);
   });
 });
+
+suite("DDS 検証: 括弧の中が空のキーワード（D3）", () => {
+  test("DSPSIZ() を指摘する（CPD7512 / CPD7498）。値があれば指摘しない", () => {
+    const source = (keyword: string): string[] => [
+      `     A                                      ${keyword}`,
+      "     A          R REC",
+      "     A                                  1  2'X' COLOR()"
+    ];
+    assert.deepStrictEqual(codes(resolveDspfLayout(source("DSPSIZ()")).diagnostics, "empty-parameters"), [1, 3]);
+    assert.deepStrictEqual(codes(resolveDspfLayout(source("DSPSIZ(24 80 *DS3)")).diagnostics, "empty-parameters"), [3]);
+  });
+});

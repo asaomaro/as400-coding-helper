@@ -2,7 +2,8 @@ import { DDS_COLUMNS, ddsField } from "../ddsLayout";
 import { indexExceedingWidth } from "../dbcs";
 import { resolveKeywordGroups } from "./ddsConditioning";
 import { keywordsRequiringConditioning, type ConditionableDdsType } from "./ddsConditionable";
-import type { LogicalUnit } from "./ddsLogicalUnits";
+import { fileLevelKeywordLines, type LogicalUnit } from "./ddsLogicalUnits";
+import { parseKeywordEntries } from "./ddsKeywords";
 import { DDS_POSITION_COLUMN, DDS_POSITION_ROW } from "./ddsPositionColumns";
 
 /**
@@ -24,7 +25,9 @@ export type DdsSourceDiagnosticCode =
   /** 帳票の使用が 空白・O・P 以外。実機 CPD7410。 */
   | "invalid-usage"
   /** リテラルが 80 桁目までに閉じていない（継続も無い）。実機 CPD7508。 */
-  | "unclosed-literal";
+  | "unclosed-literal"
+  /** キーワードの括弧の中が空（`DSPSIZ()`）。実機 CPD7512 / CPD7498。 */
+  | "empty-parameters";
 
 export interface DdsSourceDiagnostic {
   readonly code: DdsSourceDiagnosticCode;
@@ -48,6 +51,10 @@ export function ddsSourceDiagnostics(
   const diagnostics: DdsSourceDiagnostic[] = [];
 
   diagnostics.push(...unclosedLiterals(lines));
+  // ファイル・レベルの行は論理単位にならないので別に引く。
+  for (const entry of fileLevelKeywordLines(lines)) {
+    diagnostics.push(...emptyParameters(entry.keywords, entry.sourceLine));
+  }
 
   for (const unit of units) {
     for (const group of resolveKeywordGroups(unit)) {
@@ -62,6 +69,8 @@ export function ddsSourceDiagnostics(
         sourceLine: group.sourceLine
       });
     }
+
+    diagnostics.push(...emptyParameters(unit.keywords, unit.sourceLine));
 
     if (unit.kind !== "item") continue;
     const usage = ddsField(unit.line, DDS_COLUMNS.usage).trim().toUpperCase();
@@ -135,4 +144,20 @@ function unclosedLiterals(lines: readonly string[]): DdsSourceDiagnostic[] {
   if (openedAt !== undefined) report(openedAt);
 
   return diagnostics;
+}
+
+/**
+ * **括弧の中が空のキーワード**（`DSPSIZ()`）。実機は CPD7512「左括弧と右括弧の間に値が見つからない」、
+ * 値が要るキーワードは CPD7498 で作成しない（2026-09-27 に確認。
+ * `.aidev/works/20260927-dds-file-level-keyword-entry/verify/EMPTYP.dspf`）。
+ * エディタの「＋ 追加」が引数の要るキーワードを `NAME()` の形で書いていた（実操作調査の D3）。
+ */
+function emptyParameters(keywords: string, sourceLine: number): DdsSourceDiagnostic[] {
+  return parseKeywordEntries(keywords)
+    .filter(entry => entry.kind === "keyword" && /\(\s*\)$/u.test(entry.raw))
+    .map(entry => ({
+      code: "empty-parameters" as const,
+      message: `${entry.name} の括弧の中が空です（実機は CPD7512 / CPD7498 で作成できません）`,
+      sourceLine
+    }));
 }

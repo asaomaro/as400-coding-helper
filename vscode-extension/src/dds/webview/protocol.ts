@@ -190,6 +190,11 @@ function parseEdit(value: unknown): DdsEdit | undefined {
       return typeof value.name === "string"
         ? { kind: "addRecord", name: value.name }
         : undefined;
+    case "addFileKeywords":
+      // ファイル・レベルの行を足す。**宛先の行を採らない**（置き場は最初の様式の前）。中身は core の検証が見る。
+      return typeof value.keywords === "string"
+        ? { kind: "addFileKeywords", keywords: value.keywords }
+        : undefined;
     case "removeRecord":
       // 様式ごと消す。`remove`（項目を消す）とは別の操作。
       return isPositiveInteger(value.sourceLine)
@@ -218,10 +223,14 @@ function parseEdit(value: unknown): DdsEdit | undefined {
       return isPositiveInteger(value.sourceLine) && typeof value.keywords === "string"
         ? { kind: "setKeywords", sourceLine: value.sourceLine, keywords: value.keywords }
         : undefined;
+    case "conditionKeyword":
     case "setKeywordCondition":
     case "setCondition": {
       // 条件は OR で結ばれる AND の組。**中身の上限（9 と 9）は core の検証が見る。**
       if (!isPositiveInteger(value.sourceLine) || !Array.isArray(value.condition)) {
+        return undefined;
+      }
+      if (value.kind === "conditionKeyword" && !(Number.isInteger(value.index) && (value.index as number) >= 0)) {
         return undefined;
       }
       const condition: { indicator: string; negated: boolean }[][] = [];
@@ -249,6 +258,9 @@ function parseEdit(value: unknown): DdsEdit | undefined {
         typeof value.screenSizeName === "string"
           ? { screenSizeName: value.screenSizeName }
           : {};
+      if (value.kind === "conditionKeyword") {
+        return { kind: "conditionKeyword", sourceLine: value.sourceLine, index: value.index as number, condition };
+      }
       return value.kind === "setKeywordCondition"
         ? { kind: "setKeywordCondition", sourceLine: value.sourceLine, condition, ...named }
         : { kind: "setCondition", sourceLine: value.sourceLine, condition, ...named };

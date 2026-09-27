@@ -50,6 +50,9 @@ import { COLUMN_ONE_MESSAGE, isRowOneColumnOne } from "./dspfLayout";
 import { DDS_POSITION_ROW } from "./ddsPositionColumns";
 import { hasExplicitRow, writeBackColumn, writeBackPosition } from "./ddsPositionWriteBack";
 import { hasSpacingKeywords } from "./prtfLayout";
+import { keywordsNotAllowedAt } from "./ddsKeywordLevels";
+import { isConditionable } from "./ddsConditionable";
+import { parseKeywordEntries } from "./ddsKeywords";
 import { printWidth } from "../dbcs";
 
 /**
@@ -196,6 +199,29 @@ export type DdsEdit =
    */
   | { readonly kind: "addRecord"; readonly name: string }
   /**
+   * **ファイル・レベルのキーワードの行を足す。** 最初の様式の前に入れる（様式が無ければ末尾）。
+   *
+   * 既にある行は `setKeywords` で直せるが、1 本も無いファイル（帳票の雛形など）では
+   * 宛先の行が無く、最初の 1 つを足す手段が無かった（実操作調査の D1）。
+   */
+  | { readonly kind: "addFileKeywords"; readonly keywords: string }
+  /**
+   * **キーワードを 1 つ、条件つきの自分の行へ移す**（`31 SFLDSP` / `40 COLOR(RED)`）。
+   *
+   * 様式・項目のキーワードに条件を付けるには、そのキーワードだけの行（キーワード行）が要る。
+   * 既存の条件の欄は既に分かれている行にしか出ず、1 行に並んだキーワードを分ける手段が無かった
+   * ——サブファイルの `SFLDSP` / `SFLCLR` が組めなかった（実操作調査の D10・D8。実機 CPD7490）。
+   *
+   * `index` は様式・項目のキーワード欄を**全部の行を通して**区切ったときの何番目か（UI のチップの並び）。
+   * 移した行は様式・項目の最後の行の後ろに置く。元の行の他のキーワード・他の行の条件には触らない。
+   */
+  | {
+      readonly kind: "conditionKeyword";
+      readonly sourceLine: number;
+      readonly index: number;
+      readonly condition: ConditionGroups;
+    }
+  /**
    * **様式を消す。中の項目も一緒に消える。**
    *
    * `remove`（項目を消す）と分ける。同じ語が「選んでいるものによって様式ごと消える」に
@@ -217,6 +243,10 @@ export interface DdsEditResult {
 /** 適用できない理由。**「ソースに書けない」ものだけ**が並ぶ。 */
 export type DdsEditRejectionCode =
   | "line-not-found"
+  /** 条件を付けられないキーワードに条件を付けようとした。 */
+  | "keyword-not-conditionable"
+  /** キーワードを書けないレベルに書こうとした（実機 CPD7486）。 */
+  | "keyword-wrong-level"
   | "length-out-of-range"
   | "position-out-of-range"
   | "record-not-found"
@@ -332,6 +362,47 @@ export function validateDdsEdits(
     // **様式そのものの追加。** 宛先の行を採らないので、行を引く分岐より前に出す。
     if (edit.kind === "addRecord") {
       rejections.push(...validateRecordName(units, edit.name));
+      continue;
+    }
+
+    if (edit.kind === "addFileKeywords") {
+      if (edit.keywords.trim().length === 0) {
+        rejections.push({ code: "invalid-column-value", message: "足すキーワードがありません" });
+      }
+      const wrong = keywordsNotAllowedAt(ddsType === "DDS-PRTF" ? "PRTF" : "DSPF", edit.keywords, "file");
+      if (wrong.length > 0) {
+        rejections.push({
+          code: "keyword-wrong-level",
+          message: `${wrong.join(" / ")} はファイル・レベルに書けません（実機は CPD7486）`
+        });
+      }
+      continue;
+    }
+
+    if (edit.kind === "conditionKeyword") {
+      const located = locateKeyword(lines, units, edit.sourceLine, edit.index);
+      if (located === undefined) {
+        rejections.push({
+          code: "keyword-line-not-found",
+          message: `${edit.sourceLine} 行目の ${edit.index + 1} 番目にキーワードがありません（ソースが変わっている可能性があります）`,
+          sourceLine: edit.sourceLine
+        });
+        continue;
+      }
+      const name = located.entry.name.toUpperCase();
+      const conditionable = isConditionable(ddsType === "DDS-PRTF" ? "PRTF" : "DSPF", name) ??
+        isConditionable(ddsType === "DDS-PRTF" ? "PRTF" : "DSPF", name.replace(/\d+$/u, "nn"));
+      if (conditionable === false) {
+        rejections.push({
+          code: "keyword-not-conditionable",
+          message: `${name} には条件標識を付けられません（原典: オプション標識は、このキーワードでは無効です）`,
+          sourceLine: edit.sourceLine
+        });
+      }
+      if (edit.condition.length === 0) {
+        rejections.push({ code: "invalid-column-value", message: "条件を入れてください", sourceLine: edit.sourceLine });
+      }
+      rejections.push(...validateConditionShape(edit.condition, edit.sourceLine));
       continue;
     }
 
@@ -687,6 +758,32 @@ export function applyDdsEdits(
       case "addRecord": {
         const at = appendPoint(lines);
         results.push({ replaceFrom: at, replaceTo: at, lines: [buildRecordLine(edit.name)] });
+        break;
+      }
+      case "conditionKeyword": {
+        const located = locateKeyword(lines, units, edit.sourceLine, edit.index);
+        if (!located) break; // 検証済み。
+        const { unit, group, isFirst, entries, entryIndex, end } = located;
+        const remaining = entries.filter((_, i) => i !== entryIndex).map(entry => entry.raw).join(" ");
+        const insertAt = Math.max(...unit.sourceLines);
+        const moved = foldKeywordArea(located.entry.raw);
+        results.push({
+          replaceFrom: insertAt,
+          replaceTo: insertAt,
+          lines: [...writeBackCondition(buildKeywordLine(moved[0] ?? ""), edit.condition), ...moved.slice(1).map(buildKeywordLine)]
+        });
+        if (remaining.length > 0 || isFirst) {
+          results.push({ replaceFrom: group.sourceLine - 1, replaceTo: end, lines: keywordLines(lines[group.sourceLine - 1], remaining) });
+        } else {
+          // その行のキーワードが無くなる。条件の行ごと消す。
+          results.push({ replaceFrom: Math.min(...group.sourceLines) - 1, replaceTo: end, lines: [] });
+        }
+        break;
+      }
+      case "addFileKeywords": {
+        const firstRecord = units.find(unit => unit.kind === "record");
+        const at = firstRecord ? Math.min(...firstRecord.sourceLines) - 1 : appendPoint(lines);
+        results.push({ replaceFrom: at, replaceTo: at, lines: foldKeywordArea(edit.keywords).map(buildKeywordLine) });
         break;
       }
       case "removeRecord": {
@@ -1602,6 +1699,52 @@ function itemUnitAt(
  * キーワード欄は様式（`R XXXX`）も持つ——`OVERLAY` / `CFnn` はそこにしか書けない。
  * 位置や長さは様式に無いので、**キーワードの編集だけ**がこちらを使う。
  */
+/**
+ * 様式・項目のキーワード欄を全部の行を通して区切ったときの `index` 番目を、どの行の何番目かに引き直す。
+ * `end` はその行のキーワードの続き（継続行）の最後（1 始まり・含む）。
+ */
+function locateKeyword(
+  lines: readonly string[],
+  units: readonly LogicalUnit[],
+  sourceLine: number,
+  index: number
+):
+  | {
+      unit: LogicalUnit;
+      group: LogicalUnit["keywordGroups"][number];
+      isFirst: boolean;
+      entries: ReturnType<typeof parseKeywordEntries>;
+      entryIndex: number;
+      entry: ReturnType<typeof parseKeywordEntries>[number];
+      end: number;
+    }
+  | undefined {
+  const unit = unitAt(units, sourceLine);
+  if (!unit) return undefined;
+  let offset = 0;
+  const groups = unit.keywordGroups;
+  for (let g = 0; g < groups.length; g += 1) {
+    const entries = parseKeywordEntries(groups[g].keywords);
+    if (index < offset + entries.length) {
+      const entry = entries[index - offset];
+      if (entry.kind !== "keyword") return undefined;
+      // 継続行: キーワード行の直後から、次の群の行の手前まで（1-44 桁が空の行）。
+      const nextStart = g + 1 < groups.length ? Math.min(...groups[g + 1].sourceLines) : Number.POSITIVE_INFINITY;
+      let end = groups[g].sourceLine;
+      while (
+        end + 1 < nextStart &&
+        unit.sourceLines.includes(end + 1) &&
+        (lines[end] ?? "").slice(6, 44).trim().length === 0
+      ) {
+        end += 1;
+      }
+      return { unit, group: groups[g], isFirst: g === 0, entries: [...entries], entryIndex: index - offset, entry, end };
+    }
+    offset += entries.length;
+  }
+  return undefined;
+}
+
 function unitAt(
   units: readonly LogicalUnit[],
   sourceLine: number

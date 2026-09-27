@@ -1517,6 +1517,32 @@ await page.waitForTimeout(400);
   check("**80 桁目までに閉じないリテラルが検証タブに出る**（CPD7508）", shown.includes("CPD7508"));
 }
 
+// ---- 22c. 様式のキーワードに条件を付ける（実操作調査 D10）----------------
+{
+  await page.evaluate(() => {
+    [...document.querySelectorAll(".dds-tree li.record")]
+      .find(h => (h.querySelector(":scope > .label")?.textContent ?? "").includes("CTL01"))
+      ?.click();
+  });
+  await page.waitForTimeout(200);
+  const clrIndex = await page.$$eval(".dds-properties .kw-chip.keyword", ns => ns.findIndex(n => n.textContent === "SFLCLR"));
+  await page.click(`.dds-properties .kw-cond[data-key="kwc:${clrIndex}"]`);
+  await page.waitForTimeout(150);
+  await page.fill(".kw-cond-input", "33");
+  await page.press(".kw-cond-input", "Enter");
+  await page.waitForTimeout(400);
+  const lines = await sourceLines();
+  check(
+    "**様式のキーワード SFLCLR に条件を付けると、その行へ分けて書かれる**（D10）",
+    lines.some(l => /^\s{5}A  33\s+SFLCLR\s*$/u.test(l)) && !lines.some(l => /^\s{5}A\s{38}SFLCLR/u.test(l)),
+    JSON.stringify(lines.filter(l => l.includes("SFLCLR")))
+  );
+  check(
+    "条件を付けたら CPD7490 の指摘が消える",
+    !(await page.$eval(".dds-diagnostics", n => n.textContent ?? "")).includes("CPD7490")
+  );
+}
+
 // ---- 23. 帳票（PRTF）--------------------------------------------------
 await page.selectOption("#sample", { label: "CUSTRPT.prtf" });
 await page.waitForTimeout(400);
@@ -2423,6 +2449,89 @@ check(
   (await sourceLines()).some(line => line.includes("PASSRCD(MAIN)")) &&
     (await sourceLines()).some(line => line.includes("ERASE(MAIN)"))
 );
+// ---- ファイル・レベルのキーワードを 1 つ目から足す（実操作調査 D1）・レベル違い（D2）・空の括弧（D3）----
+{
+  const clickFileLevelRow = async () => {
+    await page.evaluate(() => document.querySelector(".dds-tree li.file-level li.file-keyword")?.click());
+    await page.waitForTimeout(200);
+  };
+  // **プロパティの中のものを押す。** 同じ部品が他の所（隠れた枠）にもあり、先頭の一致は見えないことがある（CI で踏んだ）。
+  const addKeyword = async name => {
+    const add = page.locator(".dds-properties .kw-chip.add").first();
+    await add.scrollIntoViewIfNeeded().catch(() => {});
+    const visible = await add.isVisible().catch(() => false);
+    if (!visible) {
+      console.log(JSON.stringify({
+        addButtons: await page.$$eval(".kw-chip.add", ns => ns.map(n => ({ visible: !!n.offsetParent, parent: n.closest("[class]")?.className }))),
+        properties: (await page.$eval(".dds-properties", n => n.textContent ?? "")).slice(0, 200),
+        selected: await page.$$eval(".dds-tree .selected", ns => ns.map(n => n.textContent))
+      }));
+    }
+    await add.click({ timeout: 5000 });
+    await page.waitForTimeout(150);
+    await page.fill(".dds-properties .kw-add-input", name);
+    await page.press(".dds-properties .kw-add-input", "Enter");
+    await page.waitForTimeout(300);
+  };
+
+  await page.click("#new-prtf");
+  await page.waitForTimeout(400);
+  // 132 桁の帳票は窓が狭いと左右が自動で畳まれる（CI の窓で踏んだ）。プロパティを使うので右を戻す。
+  if (await page.$eval(".dds-side.right", n => n.classList.contains("folded"))) {
+    await page.click("#dds-fold-right");
+    await page.waitForTimeout(200);
+  }
+  check(
+    "**行が無くても「ファイル」の節が出る**（D1）",
+    (await page.$$eval(".dds-tree li.file-level li.file-keyword", ns => ns.map(n => n.textContent ?? ""))).some(t => t.includes("足す")),
+    JSON.stringify(await page.$$eval(".dds-tree li.file-level", ns => ns.map(n => n.textContent)))
+  );
+  await clickFileLevelRow();
+  const firstRecordBefore = (await sourceLines()).findIndex(l => /^\s{5}A\s+R /u.test(l));
+  await addKeyword("INDARA");
+  const afterIndara = await sourceLines();
+  check(
+    "**最初のファイル・レベルのキーワードが様式の前の行に入る**（D1）",
+    afterIndara[firstRecordBefore]?.includes("INDARA") && /^\s{5}A\s+R /u.test(afterIndara[firstRecordBefore + 1] ?? ""),
+    JSON.stringify(afterIndara.slice(0, firstRecordBefore + 2))
+  );
+  check(
+    "足した行が選ばれている",
+    (await page.$$eval(".dds-tree li.file-keyword.selected", ns => ns.map(n => n.textContent))).some(t => (t ?? "").includes("INDARA"))
+  );
+
+  // D2: 様式に DSPSIZ（ファイル・レベルのキーワード）を足そうとしても書かない。
+  await page.selectOption("#sample", { label: "CUSTMNT.dspf" });
+  await page.waitForTimeout(400);
+  await page.evaluate(() => document.querySelector(".dds-tree li.record")?.click());
+  await page.waitForTimeout(200);
+  const beforeWrongLevel = await sourceLines();
+  await addKeyword("DSPSIZ");
+  check(
+    "**様式にファイル・レベルのキーワードは足せない**（D2。実機 CPD7486）",
+    (await sourceLines()).join("\n") === beforeWrongLevel.join("\n") &&
+      (await page.$eval(".status", n => n.textContent ?? "")).includes("書けません"),
+    await page.$eval(".status", n => n.textContent ?? "")
+  );
+
+  // D3: 括弧が必須のキーワードは `NAME()` のまま書かず、生テキストの欄で続きを打たせる。
+  await page.click('.dds-item.field');
+  await page.waitForTimeout(200);
+  const beforeColor = await sourceLines();
+  await addKeyword("COLOR");
+  check(
+    "**括弧が必須のキーワードは空の括弧で書かない**（D3。実機 CPD7512 / CPD7498）",
+    (await sourceLines()).join("\n") === beforeColor.join("\n") &&
+      (await page.$eval('input[data-key="kw:raw"]', n => n.value)).endsWith("COLOR()") &&
+      (await page.evaluate(() => document.activeElement?.getAttribute("data-key"))) === "kw:raw",
+    await page.$eval('input[data-key="kw:raw"]', n => n.value)
+  );
+  await page.fill('input[data-key="kw:raw"]', (await page.$eval('input[data-key="kw:raw"]', n => n.value)).replace("COLOR()", "COLOR(RED)"));
+  await page.press('input[data-key="kw:raw"]', "Enter");
+  await page.waitForTimeout(300);
+  check("続きを打って Enter で確定すると書かれる", (await sourceLines()).some(l => l.includes("COLOR(RED)")));
+}
+
 await page.click("#dds-tab-source");
 await page.waitForTimeout(150);
 
