@@ -295,7 +295,11 @@ function resolveFileDescription(
 
 /**
  * C 仕様の新旧判定。dialect が rpg3 のときは C-NEW が存在しないため常に C-SPEC。
- * それ以外（ile / 未指定＝ルーラー表示）は先頭オペコードで C-NEW を判定する。
+ * それ以外（ile / 未指定＝ルーラー表示）は **26-35 桁（命令および拡張）** の命令で C-NEW を判定する。
+ *
+ * 以前は 7 桁目以降の最初の語を命令とみなしており、条件標識（9-11 桁）や演算項目 1 のある行、
+ * 演算拡張付きの `EVAL(H)` を旧形式と誤っていた（実操作調査の P5）。旧形式で開くと
+ * 演算項目 2 が 14 桁しかなく、式が入らない。命令の欄は桁が決まっているので、そこだけを見る。
  */
 function classifyCSpec(
   text: string,
@@ -305,8 +309,7 @@ function classifyCSpec(
   if (dialect === "rpg3") {
     return "C-SPEC";
   }
-  const tail = text.length > 6 ? text.slice(6) : "";
-  const tokens = tail.trim().split(/\s+/u).filter(token => token.length > 0);
-  const opcode = (tokens[0] ?? "").toUpperCase();
+  // 演算拡張（`EVAL(H)` の `(H)`）は命令の名前ではない。
+  const opcode = text.slice(25, 35).trim().replace(/\(.*$/u, "").toUpperCase();
   return opcode && cNewOpcodes.has(opcode) ? "C-NEW" : "C-SPEC";
 }

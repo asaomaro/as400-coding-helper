@@ -267,6 +267,11 @@ suite("桁の決まりどおりに寄せる（実操作調査 P4）", () => {
     assert.equal(at(write("rpg/ile/ja/C-SPEC.json", "     C", { INDICATORS: "N01", OPCODE: "EXSR" }), 9, 11), "N01");
   });
 
+  test("C-NEW にも条件標識（9-11 桁）の欄がある（実操作調査 P10）", () => {
+    const line = write("rpg/ile/ja/C-NEW.json", "     C", { INDICATORS: "OF", OPCODE: "EVAL", COND: "*IN77 = *OFF" });
+    assert.equal(line, "     C   OF              EVAL      *IN77 = *OFF");
+  });
+
   test("C 仕様の結果標識は高・低・等しいの組ごとに置ける（等しいだけ 75-76 桁）", () => {
     const line = write("rpg/ile/ja/C-SPEC.json", "     C", { OPCODE: "READC", FACTOR2: "SFL01", RESIND_EQ: "50" });
     assert.equal(at(line, 71, 76), "    50");

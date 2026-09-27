@@ -150,9 +150,11 @@ priority: 1           # 既存機能の構造改善。DDS(1) と同格
   （実機 RNF0263 × 7）、DDS の条件付け・位置・小数が正しい桁に入らない（docs/research/20260927-f4-prompter-exploration/findings.md の P4）。DDS の位置は行・桁を 1 欄にしている定義側も直す。
 - [ ] **H 仕様書を書き戻す・読み込む**（docs/research/20260927-f4-prompter-exploration/findings.md の P1）。欄はキーワード形式で桁を持たず、`buildRpgLineText` が桁の無い定義で `return original` する。
   キーワードの組み立てと解析が要る。
-- [ ] **C 仕様の新旧（C-SPEC / C-NEW）の判定を 26-35 桁の命令で行う**（docs/research/20260927-f4-prompter-exploration/findings.md の P5）。`rpgSpec.ts:299-311` `classifyCSpec` が 7 桁目以降の最初の語を
+- [x] **C 仕様の新旧（C-SPEC / C-NEW）の判定を 26-35 桁の命令で行う** — 済（`20260927-prompter-cnew-by-opcode-column`。P5・P10。P15 は下に分けた）（docs/research/20260927-f4-prompter-exploration/findings.md の P5）。`rpgSpec.ts:299-311` `classifyCSpec` が 7 桁目以降の最初の語を
   命令とみなし、`EVAL(H)` や条件標識つきの行を旧形式で開く（式が P3 で壊れる）。同じ判定の lint も誤検知する。あわせて C-NEW に条件標識（9-11 桁）の欄（P10）と、
   空行・空の `C` から新旧を選んで開く入口（P15）。
+- [ ] **空行・空の `C` から C-SPEC / C-NEW を選んで開く入口**（P15。上の新旧判定から分けた）。いまは 26 桁目に命令を手で打ってからでないと C-NEW が開かない。
+  選ばせ方（F4 で種類の一覧を出す／プロンプター内で切り替える等）の判断が要る。
 - [ ] **英大文字だけに縛っている欄を実機に合わせる**: DDS のキーワード欄（日本語・小文字の定数が書けず、既存の日本語定数の行は無変更でも確定できない）、
   RPG の名前欄（ILE は大小文字を混ぜてよい）（docs/research/20260927-f4-prompter-exploration/findings.md の P6・P12）。`characterSet: "upper"` の付け方を原典で見直す。
 - [ ] **RPG 仕様書の定義の不足をまとめて直す**（docs/research/20260927-f4-prompter-exploration/findings.md の P7・P8・P9・P11・P23）: 必須が強すぎる欄（D の LEN・F の継続行・P の E 行・C-NEW の COND）／

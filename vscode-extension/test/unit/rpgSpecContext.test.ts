@@ -288,6 +288,15 @@ suite("RPG 仕様書: 拡張演算項目 2 の命令", () => {
     }
   });
 
+  // 以前は 7 桁目以降の最初の語を命令とみなし、これらを旧形式と誤っていた（実操作調査 P5）。
+  test("**命令は 26-35 桁で見る**（演算拡張・条件標識があっても C-NEW）", () => {
+    assert.strictEqual(classifyRpgSpecKeyword("     C                   EVAL(H)   AMT = PRICE * 1.08"), "C-NEW");
+    assert.strictEqual(classifyRpgSpecKeyword("     C   OF              EVAL      *IN77 = *OFF"), "C-NEW");
+    assert.strictEqual(classifyRpgSpecKeyword("     C  N03              IF        X > 0"), "C-NEW");
+    assert.strictEqual(classifyRpgSpecKeyword("     C     KEY           CHAIN     CUSTMAS                            90"), "C-SPEC");
+    assert.strictEqual(classifyRpgSpecKeyword("     C"), "C-SPEC");
+  });
+
   test("**DOU の行は C-NEW として分類される**", () => {
     assert.strictEqual(
       classifyRpgSpecKeyword("     C                   DOU       %EOF(F) OR RRN >= N"),

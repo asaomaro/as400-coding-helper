@@ -112,6 +112,7 @@ const LABELS = {
   },
   "C-NEW": {
     CTLLEVEL: "制御レベル",
+    INDICATORS: "標識",
     OPCODE: "命令および拡張",
     COND: "拡張演算項目 2",
     COMMENT: "注記"
