@@ -50,6 +50,7 @@ import { COLUMN_ONE_MESSAGE, isRowOneColumnOne } from "./dspfLayout";
 import { DDS_POSITION_ROW } from "./ddsPositionColumns";
 import { hasExplicitRow, writeBackColumn, writeBackPosition } from "./ddsPositionWriteBack";
 import { hasSpacingKeywords } from "./prtfLayout";
+import { keywordsNotAllowedAt } from "./ddsKeywordLevels";
 import { printWidth } from "../dbcs";
 
 /**
@@ -196,6 +197,13 @@ export type DdsEdit =
    */
   | { readonly kind: "addRecord"; readonly name: string }
   /**
+   * **ファイル・レベルのキーワードの行を足す。** 最初の様式の前に入れる（様式が無ければ末尾）。
+   *
+   * 既にある行は `setKeywords` で直せるが、1 本も無いファイル（帳票の雛形など）では
+   * 宛先の行が無く、最初の 1 つを足す手段が無かった（実操作調査の D1）。
+   */
+  | { readonly kind: "addFileKeywords"; readonly keywords: string }
+  /**
    * **様式を消す。中の項目も一緒に消える。**
    *
    * `remove`（項目を消す）と分ける。同じ語が「選んでいるものによって様式ごと消える」に
@@ -217,6 +225,8 @@ export interface DdsEditResult {
 /** 適用できない理由。**「ソースに書けない」ものだけ**が並ぶ。 */
 export type DdsEditRejectionCode =
   | "line-not-found"
+  /** キーワードを書けないレベルに書こうとした（実機 CPD7486）。 */
+  | "keyword-wrong-level"
   | "length-out-of-range"
   | "position-out-of-range"
   | "record-not-found"
@@ -332,6 +342,20 @@ export function validateDdsEdits(
     // **様式そのものの追加。** 宛先の行を採らないので、行を引く分岐より前に出す。
     if (edit.kind === "addRecord") {
       rejections.push(...validateRecordName(units, edit.name));
+      continue;
+    }
+
+    if (edit.kind === "addFileKeywords") {
+      if (edit.keywords.trim().length === 0) {
+        rejections.push({ code: "invalid-column-value", message: "足すキーワードがありません" });
+      }
+      const wrong = keywordsNotAllowedAt(ddsType === "DDS-PRTF" ? "PRTF" : "DSPF", edit.keywords, "file");
+      if (wrong.length > 0) {
+        rejections.push({
+          code: "keyword-wrong-level",
+          message: `${wrong.join(" / ")} はファイル・レベルに書けません（実機は CPD7486）`
+        });
+      }
       continue;
     }
 
@@ -687,6 +711,12 @@ export function applyDdsEdits(
       case "addRecord": {
         const at = appendPoint(lines);
         results.push({ replaceFrom: at, replaceTo: at, lines: [buildRecordLine(edit.name)] });
+        break;
+      }
+      case "addFileKeywords": {
+        const firstRecord = units.find(unit => unit.kind === "record");
+        const at = firstRecord ? Math.min(...firstRecord.sourceLines) - 1 : appendPoint(lines);
+        results.push({ replaceFrom: at, replaceTo: at, lines: foldKeywordArea(edit.keywords).map(buildKeywordLine) });
         break;
       }
       case "removeRecord": {

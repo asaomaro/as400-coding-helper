@@ -16,6 +16,7 @@ import { selectPrintPage } from "../../core/dds/prtfRenderModel";
 import {
   findKeywordHelp,
   genericKeywordPrefix,
+  requiresParameters,
   genericKeywordRange,
   keywordsForLevel,
   parseKeywordEntries,
@@ -24,6 +25,7 @@ import {
   type KeywordLevel
 } from "../../core/dds/ddsKeywords";
 import type { ItemAttributes, OutlineItem } from "../../core/dds/dspfOutline";
+import { keywordsNotAllowedAt, levelLabel, levelsOf } from "../../core/dds/ddsKeywordLevels";
 import {
   CPI_VALUES,
   DEFAULT_DENSITY,
@@ -46,6 +48,13 @@ import {
   type CellPoint
 } from "./geometry";
 import { STANDALONE_HOST, type EditorHost } from "./protocol";
+
+
+/**
+ * 「ファイル」の節の、まだ行が無いときの仮の行。ソースの行番号は 1 始まりなので 0 は重ならない。
+ * これを選ぶとファイル・レベルのキーワードを足す欄が出る（実操作調査の D1）。
+ */
+const NEW_FILE_KEYWORD_LINE = 0;
 
 /**
  * DDS エディタのキャンバス UI。**素の web として書く**（`vscode` にも `acquireVsCodeApi` にも触らない）。
@@ -192,6 +201,8 @@ class EditorView {
    * 大文字化しないので、`R rec2` と小文字で書かれたソースでは名前がそのまま出る。
    */
   private pendingSelectRecord: string | null | undefined;
+  /** ファイル・レベルの行を足した直後に、足した行を選ぶ（`addFileKeywords`）。 */
+  private pendingSelectFileKeyword = false;
   /**
    * 適用後に**焦点も**移すか。行き先は選んだ様式の見出し、選べなければ `＋`。
    *
@@ -422,6 +433,11 @@ class EditorView {
           this.selected = this.pendingSelection;
           this.pendingSelection = undefined;
         }
+        // ファイル・レベルの行を足したら、その行（先頭のファイル・レベルの行）を選ぶ。
+        if (this.pendingSelectFileKeyword) {
+          this.selected = this.model?.fileKeywords[0]?.sourceLine;
+          this.pendingSelectFileKeyword = false;
+        }
         // 様式の追加・削除の行き先。**行はずれているので名前で引き直す。**
         if (this.pendingSelectRecord !== undefined) {
           const target = this.pendingSelectRecord?.toUpperCase();
@@ -451,6 +467,7 @@ class EditorView {
         this.pendingSelection = undefined;
         // **入力欄は閉じない**（打った名前が消えると、何が悪かったのか確かめられない）。
         this.pendingSelectRecord = undefined;
+        this.pendingSelectFileKeyword = false;
         // 何も変わっていないので焦点も動かさない（`render()` で消費させない）。
         this.pendingRecordFocus = false;
         this.pendingStatus = undefined;
@@ -935,24 +952,25 @@ class EditorView {
    * （位置欄が空・画面に出ない用途は診断すら出ない）。
    */
   private renderOutline(model: RenderModel): void {
-    if (model.outline.length === 0 && model.fileKeywords.length === 0) {
-      this.outline.replaceChildren(text("div", "dds-empty", "項目がありません"));
-      return;
-    }
-
     const list = document.createElement("ul");
     list.className = "dds-tree";
 
     // **ファイル・レベルのキーワードを先頭に置く。** 最初の様式より前にあるので、
     // ソースの並びと同じ順になる。ここに出さないとデザイナから一切読めない。
-    if (model.fileKeywords.length > 0) {
+    // **行が 1 本も無くても「ファイル」の節は出す。** 出さないと最初のキーワード（`DSPSIZ`・帳票の `LPI` 等）を
+    // 足す入口がエディタに無く、テキストで書くしかなかった（実操作調査の D1）。空のときは足すための行を 1 つ置く。
+    {
       // **`record` を付けない。** 様式を選ぶ側が拾ってしまう（様式ではない）。
       const heading = text("li", "file-level", "");
       heading.append(text("span", "label", "ファイル"));
       list.appendChild(heading);
 
       const children = document.createElement("ul");
-      for (const entry of model.fileKeywords) {
+      const entries =
+        model.fileKeywords.length > 0
+          ? model.fileKeywords
+          : [{ sourceLine: NEW_FILE_KEYWORD_LINE, keywords: "（キーワードなし・ここから足す）" }];
+      for (const entry of entries) {
         const row = document.createElement("li");
         // **`item` にしない。** 項目を選ぶ側（一覧の走査・キー移動）が
         // ファイル・レベルの行まで拾ってしまう。これらは項目ではない。
@@ -961,7 +979,7 @@ class EditorView {
         row.dataset.sourceLine = String(entry.sourceLine);
         if (entry.sourceLine === this.selected) row.classList.add("selected");
         row.append(text("span", "label", entry.keywords));
-        row.title = `${entry.sourceLine} 行目`;
+        row.title = entry.sourceLine === NEW_FILE_KEYWORD_LINE ? "ファイル・レベルのキーワードを足す" : `${entry.sourceLine} 行目`;
         row.addEventListener("click", event => {
           event.stopPropagation();
           this.select(entry.sourceLine);
@@ -1187,6 +1205,14 @@ class EditorView {
       this.renderFileKeywordProperties(fileKeyword);
       return;
     }
+    if (this.selected === NEW_FILE_KEYWORD_LINE && model.fileKeywords.length === 0) {
+      this.renderFileKeywordProperties({
+        sourceLine: NEW_FILE_KEYWORD_LINE,
+        keywords: "",
+        condition: { kind: "none" }
+      } as unknown as RenderModel["fileKeywords"][number]);
+      return;
+    }
 
     const record = model.outline.find(
       candidate => candidate.sourceLine === this.selected
@@ -1309,7 +1335,13 @@ class EditorView {
     if (condition.length > 0) {
       nodes.push(text("div", "dds-note", `条件: ${condition}`));
     }
-    nodes.push(text("div", "dds-note", `${entry.sourceLine} 行目`));
+    nodes.push(
+      text(
+        "div",
+        "dds-note",
+        entry.sourceLine === NEW_FILE_KEYWORD_LINE ? "最初の様式の前に行を足します" : `${entry.sourceLine} 行目`
+      )
+    );
     this.properties.replaceChildren(...nodes);
   }
 
@@ -1615,9 +1647,29 @@ class EditorView {
         return;
       }
 
-      // 引数を取るキーワードは括弧まで書いて、続きを入力できる形で渡す。
-      const added = help?.hasParameters === false ? name : `${name}()`;
-      this.sendKeywords(sourceLine, `${keywords} ${added}`.trim());
+      // **書けないレベルのキーワードは足さない**（実操作調査の D2。様式に `DSPSIZ` を足せていた。実機は CPD7486）。
+      // 判定は検証の `keyword-wrong-level` と同じ表（原典から生成し実機で 7 通り確かめたもの）で、表に無いものは止めない。
+      const wrong = keywordsNotAllowedAt(this.model?.kind === "prtf" ? "PRTF" : "DSPF", name, level);
+      if (wrong.length > 0) {
+        this.setStatus(`${name} は${level === "file" ? "ファイル" : level === "record" ? "様式" : "項目"}には書けません（書ける場所: ${(levelsOf(this.model?.kind === "prtf" ? "PRTF" : "DSPF", name) ?? []).map(levelLabel).join(" / ")}）`);
+        input.focus();
+        return;
+      }
+
+      // **括弧の中が必須のキーワードは確定しない。** `NAME()` のまま書くと実機は作成しない（CPD7512 / CPD7498。D3）。
+      // 生テキストの欄に `NAME()` を入れて括弧の中に焦点を置き、続きを打って Enter で確定してもらう。
+      // 括弧ごと省略できるもの（`PRINT` / `CA03` / `SFLEND`）は名前だけで確定する。原典に無いものも確定しない側に倒す。
+      if (help === undefined || requiresParameters(help)) {
+        const raw = wrap.closest(".kw-section")?.querySelector<HTMLInputElement>('input[data-key="kw:raw"]');
+        if (raw) {
+          raw.value = `${keywords} ${name}()`.trim();
+          raw.focus();
+          raw.setSelectionRange(raw.value.length - 1, raw.value.length - 1);
+          this.setStatus(`${name} の値を括弧の中に入れて Enter で確定します`);
+          return;
+        }
+      }
+      this.sendKeywords(sourceLine, `${keywords} ${name}`.trim());
     });
 
     return wrap;
@@ -1642,6 +1694,12 @@ class EditorView {
    * チップの `✕` は消えている可能性があるため。
    */
   private sendKeywords(sourceLine: number, keywords: string): void {
+    if (sourceLine === NEW_FILE_KEYWORD_LINE) {
+      // 行を足す（宛先の行がまだ無い）。足したあとは足した行を選ぶ（`applied`）。
+      this.pendingSelectFileKeyword = true;
+      this.send({ kind: "addFileKeywords", keywords });
+      return;
+    }
     this.pendingFocus = "kw:raw";
     this.send({ kind: "setKeywords", sourceLine, keywords });
   }
@@ -2515,6 +2573,7 @@ class EditorView {
       edit.kind === "add" ||
       edit.kind === "remove" ||
       edit.kind === "addRecord" ||
+      edit.kind === "addFileKeywords" ||
       edit.kind === "removeRecord";
     this.setStatus("適用中…");
     this.bridge.post({ type: "edit", edits: [edit] });

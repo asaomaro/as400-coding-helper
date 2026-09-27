@@ -453,3 +453,37 @@ suite("DDS 編集: 位置を持てない使用（実操作調査 D9）", () => {
     assert.strictEqual(apply(prtf, { kind: "setAttributes", sourceLine: 2, attributes: { usage: "O" } }, "DDS-PRTF")[1].slice(38, 44), "  3  2");
   });
 });
+
+suite("DDS 編集: ファイル・レベルのキーワードを 1 つ目から足す（実操作調査 D1・D2・D3）", () => {
+  const apply = (source: readonly string[], edit: DdsEdit, type: "DDS-PRTF" | "DDS-DSPF"): string[] => {
+    const lines = [...source];
+    for (const result of applyDdsEdits(source, [edit], type)) {
+      lines.splice(result.replaceFrom, result.replaceTo - result.replaceFrom, ...result.lines);
+    }
+    return lines;
+  };
+
+  test("行が 1 本も無い帳票に、最初の様式の前へ足す（注記行はそのまま）", () => {
+    const source = ["     A* 帳票", ln({ record: "PREC", keywords: "SPACEB(1)" }), ln({ column: 2, keywords: "'X'" })];
+    const after = apply(source, { kind: "addFileKeywords", keywords: "INDARA" }, "DDS-PRTF");
+    assert.deepStrictEqual(after, [source[0], ln({ keywords: "INDARA" }), source[1], source[2]]);
+  });
+
+  test("様式が無ければ末尾に足す", () => {
+    assert.deepStrictEqual(apply([], { kind: "addFileKeywords", keywords: "DSPSIZ(24 80 *DS3)" }, "DDS-DSPF"), [
+      ln({ keywords: "DSPSIZ(24 80 *DS3)" })
+    ]);
+  });
+
+  // 帳票の LPI / CPI はファイル・レベルに書けない（実機 CPD7486。backlog の例は誤りだった）。
+  test("ファイル・レベルに書けないキーワードは足さない（実機 CPD7486）", () => {
+    assert.deepStrictEqual(
+      validateDdsEdits([], [{ kind: "addFileKeywords", keywords: "LPI(8)" }], "DDS-PRTF").map(r => r.code),
+      ["keyword-wrong-level"]
+    );
+    assert.deepStrictEqual(
+      validateDdsEdits([], [{ kind: "addFileKeywords", keywords: "OVERLAY" }], "DDS-DSPF").map(r => r.code),
+      ["keyword-wrong-level"]
+    );
+  });
+});

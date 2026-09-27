@@ -2423,6 +2423,73 @@ check(
   (await sourceLines()).some(line => line.includes("PASSRCD(MAIN)")) &&
     (await sourceLines()).some(line => line.includes("ERASE(MAIN)"))
 );
+// ---- ファイル・レベルのキーワードを 1 つ目から足す（実操作調査 D1）・レベル違い（D2）・空の括弧（D3）----
+{
+  const clickFileLevelRow = async () => {
+    await page.evaluate(() => document.querySelector(".dds-tree li.file-level li.file-keyword")?.click());
+    await page.waitForTimeout(200);
+  };
+  const addKeyword = async name => {
+    await page.click(".kw-chip.add");
+    await page.waitForTimeout(150);
+    await page.fill(".kw-add-input", name);
+    await page.press(".kw-add-input", "Enter");
+    await page.waitForTimeout(300);
+  };
+
+  await page.click("#new-prtf");
+  await page.waitForTimeout(400);
+  check(
+    "**行が無くても「ファイル」の節が出る**（D1）",
+    (await page.$$eval(".dds-tree li.file-level li.file-keyword", ns => ns.map(n => n.textContent ?? ""))).some(t => t.includes("足す")),
+    JSON.stringify(await page.$$eval(".dds-tree li.file-level", ns => ns.map(n => n.textContent)))
+  );
+  await clickFileLevelRow();
+  const firstRecordBefore = (await sourceLines()).findIndex(l => /^\s{5}A\s+R /u.test(l));
+  await addKeyword("INDARA");
+  const afterIndara = await sourceLines();
+  check(
+    "**最初のファイル・レベルのキーワードが様式の前の行に入る**（D1）",
+    afterIndara[firstRecordBefore]?.includes("INDARA") && /^\s{5}A\s+R /u.test(afterIndara[firstRecordBefore + 1] ?? ""),
+    JSON.stringify(afterIndara.slice(0, firstRecordBefore + 2))
+  );
+  check(
+    "足した行が選ばれている",
+    (await page.$$eval(".dds-tree li.file-keyword.selected", ns => ns.map(n => n.textContent))).some(t => (t ?? "").includes("INDARA"))
+  );
+
+  // D2: 様式に DSPSIZ（ファイル・レベルのキーワード）を足そうとしても書かない。
+  await page.selectOption("#sample", { label: "CUSTMNT.dspf" });
+  await page.waitForTimeout(400);
+  await page.evaluate(() => document.querySelector(".dds-tree li.record")?.click());
+  await page.waitForTimeout(200);
+  const beforeWrongLevel = await sourceLines();
+  await addKeyword("DSPSIZ");
+  check(
+    "**様式にファイル・レベルのキーワードは足せない**（D2。実機 CPD7486）",
+    (await sourceLines()).join("\n") === beforeWrongLevel.join("\n") &&
+      (await page.$eval(".status", n => n.textContent ?? "")).includes("書けません"),
+    await page.$eval(".status", n => n.textContent ?? "")
+  );
+
+  // D3: 括弧が必須のキーワードは `NAME()` のまま書かず、生テキストの欄で続きを打たせる。
+  await page.click('.dds-item.field');
+  await page.waitForTimeout(200);
+  const beforeColor = await sourceLines();
+  await addKeyword("COLOR");
+  check(
+    "**括弧が必須のキーワードは空の括弧で書かない**（D3。実機 CPD7512 / CPD7498）",
+    (await sourceLines()).join("\n") === beforeColor.join("\n") &&
+      (await page.$eval('input[data-key="kw:raw"]', n => n.value)).endsWith("COLOR()") &&
+      (await page.evaluate(() => document.activeElement?.getAttribute("data-key"))) === "kw:raw",
+    await page.$eval('input[data-key="kw:raw"]', n => n.value)
+  );
+  await page.fill('input[data-key="kw:raw"]', (await page.$eval('input[data-key="kw:raw"]', n => n.value)).replace("COLOR()", "COLOR(RED)"));
+  await page.press('input[data-key="kw:raw"]', "Enter");
+  await page.waitForTimeout(300);
+  check("続きを打って Enter で確定すると書かれる", (await sourceLines()).some(l => l.includes("COLOR(RED)")));
+}
+
 await page.click("#dds-tab-source");
 await page.waitForTimeout(150);
 

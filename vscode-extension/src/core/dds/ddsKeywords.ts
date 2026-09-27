@@ -228,3 +228,21 @@ export function findKeywordHelp(
   const generic = `${numbered[1]}nn`.toUpperCase();
   return table.find(entry => entry.name.toUpperCase() === generic);
 }
+
+/**
+ * **括弧の中を書かなければならない**キーワードか。
+ *
+ * 構文が `PRINT[(…)]` / `CAnn[(…)]` / `SFLEND[(…)]` のように括弧ごと省略できるものは、名前だけで正しい。
+ * `DSPSIZ(…)` / `COLOR(…)` のように括弧が必須のものに `NAME()` と空で書くと、実機は作成しない
+ * （CPD7512 / CPD7498。実操作調査の D3）。構文が分からなければ「必須」とみなす（空の括弧を書かせない側に倒す）。
+ */
+export function requiresParameters(help: DdsKeywordHelp): boolean {
+  if (help.hasParameters === false) return false;
+  const syntax = help.syntax ?? [];
+  if (syntax.length === 0) return true;
+  const name = help.name.toUpperCase();
+  return !syntax.some(line => {
+    const text = line.trim().toUpperCase();
+    return text === name || text.startsWith(`${name}[`) || text.startsWith(`${name} [`);
+  });
+}

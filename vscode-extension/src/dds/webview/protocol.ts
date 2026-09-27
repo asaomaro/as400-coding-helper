@@ -190,6 +190,11 @@ function parseEdit(value: unknown): DdsEdit | undefined {
       return typeof value.name === "string"
         ? { kind: "addRecord", name: value.name }
         : undefined;
+    case "addFileKeywords":
+      // ファイル・レベルの行を足す。**宛先の行を採らない**（置き場は最初の様式の前）。中身は core の検証が見る。
+      return typeof value.keywords === "string"
+        ? { kind: "addFileKeywords", keywords: value.keywords }
+        : undefined;
     case "removeRecord":
       // 様式ごと消す。`remove`（項目を消す）とは別の操作。
       return isPositiveInteger(value.sourceLine)
