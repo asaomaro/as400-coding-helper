@@ -459,3 +459,19 @@ suite("C 仕様書の命令コードの候補（実操作調査 P18）", () => {
     assert.equal(error, undefined);
   });
 });
+
+suite("CL: 利用者が入れたものだけ書く（P16 の決定）", () => {
+  const call = load("cl/ja/CALL.json");
+  const ovrprtf = load("cl/ja/OVRPRTF.json");
+  test("既定値のままのライブラリー（*LIBL）は書かない。入れたライブラリーは書く", () => {
+    assert.match(buildClCommandText(call, { LIB: "*LIBL", PGM: "CMPLXPR" }), /CALL\s+PGM\(CMPLXPR\)$/u);
+    assert.match(buildClCommandText(call, { LIB: "MYLIB", PGM: "CMPLXPR" }), /PGM\(MYLIB\/CMPLXPR\)/u);
+  });
+  test("要素リストの後ろの既定値（*ROWCOL）は書かない。既定値でなければ書く", () => {
+    assert.match(buildClCommandText(ovrprtf, { FILE: "CMPLXP", LENGTH: "66", WIDTH: "132", PAGESIZE_UOM: "*ROWCOL" }), /PAGESIZE\(66 132\)/u);
+    assert.match(buildClCommandText(ovrprtf, { FILE: "CMPLXP", LENGTH: "66", WIDTH: "132", PAGESIZE_UOM: "*UOM" }), /PAGESIZE\(66 132 \*UOM\)/u);
+  });
+  test("元のソースに書かれていたパラメーターはそのまま残す", () => {
+    assert.match(buildClCommandText(call, { LIB: "*LIBL", PGM: "CMPLXPR" }, { presentParameters: ["PGM"] }), /PGM\(\*LIBL\/CMPLXPR\)/u);
+  });
+});
