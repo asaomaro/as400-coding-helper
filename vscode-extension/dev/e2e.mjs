@@ -1517,6 +1517,32 @@ await page.waitForTimeout(400);
   check("**80 桁目までに閉じないリテラルが検証タブに出る**（CPD7508）", shown.includes("CPD7508"));
 }
 
+// ---- 22c. 様式のキーワードに条件を付ける（実操作調査 D10）----------------
+{
+  await page.evaluate(() => {
+    [...document.querySelectorAll(".dds-tree li.record")]
+      .find(h => (h.querySelector(":scope > .label")?.textContent ?? "").includes("CTL01"))
+      ?.click();
+  });
+  await page.waitForTimeout(200);
+  const clrIndex = await page.$$eval(".dds-properties .kw-chip.keyword", ns => ns.findIndex(n => n.textContent === "SFLCLR"));
+  await page.click(`.dds-properties .kw-cond[data-key="kwc:${clrIndex}"]`);
+  await page.waitForTimeout(150);
+  await page.fill(".kw-cond-input", "33");
+  await page.press(".kw-cond-input", "Enter");
+  await page.waitForTimeout(400);
+  const lines = await sourceLines();
+  check(
+    "**様式のキーワード SFLCLR に条件を付けると、その行へ分けて書かれる**（D10）",
+    lines.some(l => /^\s{5}A  33\s+SFLCLR\s*$/u.test(l)) && !lines.some(l => /^\s{5}A\s{38}SFLCLR/u.test(l)),
+    JSON.stringify(lines.filter(l => l.includes("SFLCLR")))
+  );
+  check(
+    "条件を付けたら CPD7490 の指摘が消える",
+    !(await page.$eval(".dds-diagnostics", n => n.textContent ?? "")).includes("CPD7490")
+  );
+}
+
 // ---- 23. 帳票（PRTF）--------------------------------------------------
 await page.selectOption("#sample", { label: "CUSTRPT.prtf" });
 await page.waitForTimeout(400);

@@ -487,3 +487,52 @@ suite("DDS 編集: ファイル・レベルのキーワードを 1 つ目から�
     );
   });
 });
+
+suite("DDS 編集: キーワードを条件つきの行へ移す（実操作調査 D10・D8）", () => {
+  const apply = (source: readonly string[], edit: DdsEdit): string[] => {
+    const lines = [...source];
+    const results = applyDdsEdits(source, [edit], "DDS-DSPF");
+    assert.ok(results.length > 0, JSON.stringify(validateDdsEdits(source, [edit], "DDS-DSPF")));
+    for (const result of results) lines.splice(result.replaceFrom, result.replaceTo - result.replaceFrom, ...result.lines);
+    return lines;
+  };
+  const on = (indicator: string) => [[{ indicator, negated: false }]];
+  const CONTROL = [
+    ln({ keywords: "DSPSIZ(24 80 *DS3)" }),
+    ln({ record: "SFL01", keywords: "SFL" }),
+    ln({ name: "F1", length: 10, dataType: "A", usage: "O", row: 5, column: 2 }),
+    ln({ record: "CTL01", keywords: "SFLCTL(SFL01)" }),
+    ln({ keywords: "SFLSIZ(0010) SFLPAG(0005)" }),
+    ln({ keywords: "SFLDSP SFLDSPCTL SFLCLR" }),
+    ln({ row: 1, column: 2, keywords: "'X'" })
+  ];
+
+  test("様式のキーワード（SFLDSP）を条件つきの行へ移す。他のキーワードはそのまま", () => {
+    // 様式のキーワードの並び: SFLCTL(SFL01) / SFLSIZ / SFLPAG / SFLDSP(3) / SFLDSPCTL / SFLCLR
+    const after = apply(CONTROL, { kind: "conditionKeyword", sourceLine: 4, index: 3, condition: on("31") });
+    assert.deepStrictEqual(after.slice(3, 7), [
+      CONTROL[3],
+      CONTROL[4],
+      ln({ keywords: "SFLDSPCTL SFLCLR" }),
+      ln({ conditioning: "  31", keywords: "SFLDSP" })
+    ]);
+    assert.strictEqual(after[7], CONTROL[6]);
+  });
+
+  test("項目のキーワード（COLOR）を条件つきの行へ移す", () => {
+    const source = [ln({ record: "R1" }), ln({ name: "F1", length: 10, dataType: "A", usage: "O", row: 3, column: 2, keywords: "COLOR(RED) DSPATR(HI)" })];
+    assert.deepStrictEqual(apply(source, { kind: "conditionKeyword", sourceLine: 2, index: 0, condition: on("40") }), [
+      source[0],
+      ln({ name: "F1", length: 10, dataType: "A", usage: "O", row: 3, column: 2, keywords: "DSPATR(HI)" }),
+      ln({ conditioning: "  40", keywords: "COLOR(RED)" })
+    ]);
+  });
+
+  test("条件を付けられないキーワード（EDTCDE）は移さない", () => {
+    const source = [ln({ record: "R1" }), ln({ name: "F1", length: 7, dataType: "Y", usage: "O", row: 3, column: 2, keywords: "EDTCDE(1)" })];
+    assert.deepStrictEqual(
+      validateDdsEdits(source, [{ kind: "conditionKeyword", sourceLine: 2, index: 0, condition: on("40") }], "DDS-DSPF").map(r => r.code),
+      ["keyword-not-conditionable"]
+    );
+  });
+});

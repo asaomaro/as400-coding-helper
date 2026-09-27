@@ -201,6 +201,8 @@ class EditorView {
    * 大文字化しないので、`R rec2` と小文字で書かれたソースでは名前がそのまま出る。
    */
   private pendingSelectRecord: string | null | undefined;
+  /** 条件の入力欄を開いているキーワード（`行:番号`）。 */
+  private openKeywordCondition: string | undefined;
   /** ファイル・レベルの行を足した直後に、足した行を選ぶ（`addFileKeywords`）。 */
   private pendingSelectFileKeyword = false;
   /**
@@ -1515,6 +1517,49 @@ class EditorView {
         remove.dataset.key = `kwx:${index}`;
         remove.addEventListener("click", () => this.removeKeyword(sourceLine, entries, index));
         chips.appendChild(remove);
+
+        // **条件を付ける**（`31 SFLDSP` / `40 COLOR(RED)`）。そのキーワードだけを条件つきの行へ移す
+        // （実操作調査の D10・D8。サブファイルの SFLDSP / SFLCLR が組めなかった）。ファイル・レベルは対象外。
+        if (level !== "file") {
+          const condition = document.createElement("button");
+          condition.type = "button";
+          condition.className = "kw-cond";
+          condition.textContent = "条件";
+          condition.title = `${entry.name} に条件標識を付ける（その行へ分けて書きます）`;
+          condition.dataset.key = `kwc:${index}`;
+          condition.addEventListener("click", () => {
+            this.openKeywordCondition = this.openKeywordCondition === key ? undefined : key;
+            this.render();
+          });
+          chips.appendChild(condition);
+        }
+      }
+
+      if (this.openKeywordCondition === key && entry.kind === "keyword") {
+        const input = document.createElement("input");
+        input.className = "kw-cond-input";
+        input.dataset.key = "kw:cond-input";
+        input.placeholder = `${entry.name} の条件（例: 31 / N40 41 / 50, 60）`;
+        input.addEventListener("keydown", event => {
+          if (event.key === "Escape") {
+            event.preventDefault();
+            this.openKeywordCondition = undefined;
+            this.render();
+            return;
+          }
+          if (event.key !== "Enter") return;
+          event.preventDefault();
+          const parsed = parseConditionText(input.value);
+          if (!parsed.ok || parsed.screenSize !== undefined || parsed.groups.length === 0) {
+            this.setStatus(parsed.ok ? "標識を入れてください（例: 31 / N40 41）" : parsed.message);
+            return;
+          }
+          this.openKeywordCondition = undefined;
+          this.pendingStatus = `${entry.name} を条件 ${formatConditionText(parsed.groups)} の行へ分けました`;
+          this.send({ kind: "conditionKeyword", sourceLine, index, condition: parsed.groups });
+        });
+        chips.appendChild(input);
+        queueMicrotask(() => input.focus());
       }
 
       if (this.openKeyword === key && found !== undefined) {

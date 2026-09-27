@@ -223,10 +223,14 @@ function parseEdit(value: unknown): DdsEdit | undefined {
       return isPositiveInteger(value.sourceLine) && typeof value.keywords === "string"
         ? { kind: "setKeywords", sourceLine: value.sourceLine, keywords: value.keywords }
         : undefined;
+    case "conditionKeyword":
     case "setKeywordCondition":
     case "setCondition": {
       // 条件は OR で結ばれる AND の組。**中身の上限（9 と 9）は core の検証が見る。**
       if (!isPositiveInteger(value.sourceLine) || !Array.isArray(value.condition)) {
+        return undefined;
+      }
+      if (value.kind === "conditionKeyword" && !(Number.isInteger(value.index) && (value.index as number) >= 0)) {
         return undefined;
       }
       const condition: { indicator: string; negated: boolean }[][] = [];
@@ -254,6 +258,9 @@ function parseEdit(value: unknown): DdsEdit | undefined {
         typeof value.screenSizeName === "string"
           ? { screenSizeName: value.screenSizeName }
           : {};
+      if (value.kind === "conditionKeyword") {
+        return { kind: "conditionKeyword", sourceLine: value.sourceLine, index: value.index as number, condition };
+      }
       return value.kind === "setKeywordCondition"
         ? { kind: "setKeywordCondition", sourceLine: value.sourceLine, condition, ...named }
         : { kind: "setCondition", sourceLine: value.sourceLine, condition, ...named };
