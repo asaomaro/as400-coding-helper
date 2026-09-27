@@ -2,6 +2,7 @@ import type { PrompterDefinition, ParameterDefinition } from "./types";
 import { buildRuleContext, checkDependencies, type RuleContext } from "./cdmlRules";
 import { evaluateParameter } from "./visibilityRules";
 import { columnLayoutError } from "./commandText";
+import { printWidth } from "../core/dbcs";
 import {
   countOccurrences,
   isRepeatableGroup,
@@ -296,9 +297,14 @@ export function validate(
     columns > 0 &&
     parameter.attributes?.nameContinuation !== true // 継続名前行に分けて書くので桁幅を超えてよい
   ) {
-    const length = [...trimmed].length;
+    // **実機の桁で数える**（DBCS は SO/SI と全角 2 桁。実操作調査の P14: `'無効なオプション'` は
+    // 10 文字だが 20 桁で、演算項目 2 の 14 桁を超えて結果フィールドに重なっていた）。
+    const length = printWidth(trimmed);
     if (length > columns) {
-      return `${columns} 桁に収まりません（${length} 文字）。`;
+      const characters = [...trimmed].length;
+      return characters === length
+        ? `${columns} 桁に収まりません（${length} 文字）。`
+        : `${columns} 桁に収まりません（${characters} 文字・シフト文字と全角を含めて ${length} 桁）。`;
     }
     const layoutError = columnLayoutError(trimmed, columns, parameter.attributes?.columnLayout);
     if (layoutError !== undefined) return layoutError;

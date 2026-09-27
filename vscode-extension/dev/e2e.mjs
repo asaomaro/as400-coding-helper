@@ -1585,6 +1585,89 @@ await page.waitForTimeout(400);
   check("実機の桁数の見本（MM/DD/YY）で描く", drawn.some(t => t.includes("MM/DD/YY")), JSON.stringify(drawn.slice(-3)));
 }
 
+// ---- 22a4. ウィンドウ様式の枠と中の位置・サブファイルの 1 ページ（D12・D13）------------
+await page.selectOption("#sample", { label: "window.dspf" });
+await page.waitForTimeout(400);
+{
+  // **セル幅はここで測り直す**（ズームの手順を経ているので、冒頭で測った値は古い）。
+  const cellWidth = await cell();
+  const lineHeight = await page.evaluate(() =>
+    parseFloat(getComputedStyle(document.querySelector(".dds-frame")).getPropertyValue("--cell-h"))
+  );
+  const offsetOf = selector =>
+    page.evaluate(sel => {
+      const node = document.querySelector(sel);
+      if (!node) return null;
+      const canvas = document.querySelector(".dds-canvas");
+      const border = parseFloat(getComputedStyle(canvas).borderLeftWidth) || 0;
+      const box = node.getBoundingClientRect();
+      const base = canvas.getBoundingClientRect();
+      return { left: box.left - base.left - border, top: box.top - base.top - border, width: box.width, height: box.height };
+    }, selector);
+  const frame = await offsetOf(".dds-window");
+  // 原典の例 3: 枠は 8 行 25 桁〜19 行 78 桁。
+  check(
+    "**ウィンドウの枠が 8 行 25 桁〜19 行 78 桁に描かれる**（D12・原典 WINDOW の例 3）",
+    frame !== null &&
+      Math.abs(frame.left - 24 * cellWidth) < 0.6 && Math.abs(frame.top - 7 * lineHeight) < 0.6 &&
+      Math.abs(frame.width - 54 * cellWidth) < 0.6 && Math.abs(frame.height - 12 * lineHeight) < 0.6,
+    JSON.stringify(frame)
+  );
+  const nameLine = (await sourceLines()).findIndex(l => l.includes("NAME ")) + 1;
+  const name = await offsetOf(`.dds-item[data-source-line="${nameLine}"]`);
+  check(
+    "**ウィンドウの中の項目は枠からの位置で描く**（NAME `4 5` は画面の 12 行 31 桁）",
+    name !== null && Math.abs(name.left - 30 * cellWidth) < 0.6 && Math.abs(name.top - 11 * lineHeight) < 0.6,
+    JSON.stringify(name)
+  );
+  const grid = await page.$$eval(".dds-grid", ns => ns.map(n => n.className));
+  check(
+    "**罫線（GRDBOX）を 4 辺の線で描き、GRDATR の色と線種が付く**",
+    grid.length === 4 && grid.every(c => c.includes("g-blu") && c.includes("l-dsh")),
+    JSON.stringify(grid)
+  );
+  const top = await offsetOf(".dds-grid.horizontal");
+  check(
+    "罫線は文字の枠の上に引く（3 行目の上の境目・2 桁目の左の境目から）",
+    top !== null && Math.abs(top.top - 2 * lineHeight) < 1 && Math.abs(top.left - cellWidth) < 1 && Math.abs(top.width - 30 * cellWidth) < 1,
+    JSON.stringify(top)
+  );
+  const copies = await page.$$eval(".dds-item.sfl-repeat", ns => ns.length);
+  check("**サブファイルを SFLPAG(4) の行ぶん描く**（D13。2 項目 × 写し 3 行）", copies === 6, `写し ${copies}`);
+
+  // 動かしても位置欄はウィンドウの中の値で書く（画面の位置を書くと枠の外へ飛ぶ）。
+  const box = await page.locator(`.dds-item[data-source-line="${nameLine}"]`).boundingBox();
+  await page.mouse.move(box.x + 4, box.y + box.height / 2);
+  await page.mouse.down();
+  await page.mouse.move(box.x + 4 + 2 * cellWidth, box.y + box.height / 2 + lineHeight, { steps: 8 });
+  await page.mouse.up();
+  await page.waitForTimeout(300);
+  const moved = (await sourceLines())[nameLine - 1];
+  check(
+    "**ウィンドウの中の項目を動かすと、ウィンドウの中の位置（5 行 7 桁）を書く**",
+    moved.slice(38, 44) === "  5  7",
+    JSON.stringify(moved.slice(38, 44))
+  );
+
+  // 見出しを選んで枠の中に置くと、ウィンドウの中の位置で入る。
+  await page.locator(".dds-tree li.record > .label", { hasText: "WINCTL" }).click();
+  await page.click("#dds-add-constant");
+  // **キャンバスの位置は置く準備の後に測る**（状況表示が出てツールバーが折り返すと、キャンバスが下がる。CI の狭い窓で踏んだ）。
+  const canvas = await page.locator(".dds-canvas").boundingBox();
+  // 画面の 10 行 40 桁 → ウィンドウの中の 2 行 14 桁（10 - 8 / 40 - 25 - 1）。
+  await page.mouse.click(canvas.x + 39.5 * cellWidth, canvas.y + 9.5 * lineHeight);
+  await page.waitForSelector("#ask-text", { state: "visible", timeout: 5000 });
+  await page.fill("#ask-text", "WINTXT");
+  await page.click("#ask-ok");
+  await page.waitForTimeout(300);
+  const placed = (await sourceLines()).find(l => l.includes("'WINTXT'")) ?? "";
+  check(
+    "**枠の中に置いた定数はウィンドウの中の位置（2 行 14 桁）で入る**",
+    placed.slice(38, 44) === "  2 14",
+    JSON.stringify(placed)
+  );
+}
+
 // ---- 22b. 実機が作成しない形を検証タブに出す（実操作調査の D18）------------
 await page.selectOption("#sample", { label: "machine-errors.dspf" });
 await page.waitForTimeout(400);

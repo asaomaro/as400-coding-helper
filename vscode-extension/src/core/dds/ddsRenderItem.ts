@@ -11,6 +11,7 @@ import {
 } from "./dspfAttributes";
 import { resolvePrintAppearance, type PrintAppearance } from "./prtfAppearance";
 import type { ItemAttributes } from "./dspfOutline";
+import type { SubfileRepeat, WindowOrigin } from "./dspfWindow";
 
 /**
  * **描くための項目の形**と、配置解決の結果からそこへの翻訳。
@@ -117,6 +118,14 @@ export interface RenderItem {
    * 規則（`evaluateConditioning`）は core に置いたまま、状態は UI が持つ。
    */
   readonly condition: Conditioning;
+  /**
+   * ウィンドウの中の項目なら、描くときに足す量。**`row` / `column` はソースの値のまま**
+   * （動かしたときの書き戻しはソースの値で行う）。画面の位置は `row + origin.row` /
+   * `column + origin.column`（原典の式「上枠行 + 行」「左枠桁 + 桁 + 1」）。
+   */
+  readonly origin?: WindowOrigin;
+  /** サブファイル・レコードの 1 ページぶんの並べ方（描くだけ。2 件目以降は触れない）。 */
+  readonly repeat?: SubfileRepeat;
 }
 
 /**
@@ -150,6 +159,8 @@ export interface PlacedSource {
    * 行を変える移動は拒否する（`ddsEdit`）。UI は縦のドラッグを止める。
    */
   readonly rowFromSpacing?: boolean;
+  readonly origin?: WindowOrigin;
+  readonly repeat?: SubfileRepeat;
 }
 
 /** 翻訳の付帯情報。**帳票のときだけ要る**もの。 */
@@ -213,6 +224,8 @@ export function toRenderItem(item: PlacedSource, options: RenderItemOptions = {}
     condition: item.conditioning,
     ...(item.recordName !== undefined ? { recordName: item.recordName } : {}),
     ...(item.rowFromSpacing ? { rowFromSpacing: true } : {}),
+    ...(item.origin !== undefined ? { origin: item.origin } : {}),
+    ...(item.repeat !== undefined ? { repeat: item.repeat } : {}),
     ...(item.page !== undefined ? { page: item.page } : {}),
     ...(item.inches !== undefined ? { inches: item.inches } : {}),
     ...(item.lpi !== undefined ? { lpi: item.lpi } : {})

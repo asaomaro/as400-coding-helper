@@ -1,5 +1,7 @@
 import type { ParameterDefinition } from "../../prompter/types";
 import type { LintFinding, RuleContext } from "../types";
+import { printWidth, sliceMachineColumns } from "../../core/dbcs";
+import { editorRange } from "./fieldRange";
 
 /**
  * 数値欄（右寄せ必須の欄）の検査。
@@ -29,16 +31,15 @@ function* numericFields(context: RuleContext): Generator<FieldValue> {
     if (!parameter.attributes?.numericOnly) continue;
     if (!parameter.sourceStart || !parameter.sourceLength) continue;
 
-    const start = parameter.sourceStart - 1;
-    const raw = context.line.slice(start, start + parameter.sourceLength);
+    // 欄は実機の桁で切る（DBCS は SO/SI と全角 2 桁。プロンプターの読み書きと同じ数え方）。
+    const raw = sliceMachineColumns(context.line, parameter.sourceStart, parameter.sourceLength);
     // 行が短くて欄が存在しない場合は指摘しない。
     if (raw.length === 0) continue;
 
     yield {
       parameter,
       raw,
-      startColumn: parameter.sourceStart,
-      endColumn: parameter.sourceStart + raw.length
+      ...editorRange(context.line, parameter.sourceStart, printWidth(raw))
     };
   }
 }

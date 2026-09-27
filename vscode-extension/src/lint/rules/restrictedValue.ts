@@ -1,4 +1,6 @@
 import type { LintFinding, RuleContext } from "../types";
+import { sliceMachineColumns } from "../../core/dbcs";
+import { editorRange } from "./fieldRange";
 
 /**
  * 定義済み値以外の値。**既定で有効**（`rules/index.ts` の `enabledByDefault: true`）。
@@ -31,10 +33,7 @@ export function restrictedValueRule(context: RuleContext): readonly LintFinding[
     if (!parameter.options?.length) continue;
     if (!parameter.sourceStart || !parameter.sourceLength) continue;
 
-    const start = parameter.sourceStart - 1;
-    const value = context.line
-      .slice(start, start + parameter.sourceLength)
-      .trim();
+    const value = sliceMachineColumns(context.line, parameter.sourceStart, parameter.sourceLength).trim();
     if (value.length === 0) continue;
 
     const allowed = parameter.options.map(option => option.value);
@@ -47,8 +46,7 @@ export function restrictedValueRule(context: RuleContext): readonly LintFinding[
         `${parameter.description}に ${JSON.stringify(value)} は指定できません` +
         `（${allowed.filter(v => v.length > 0).join(" / ")}）。`,
       line: context.lineNumber,
-      startColumn: parameter.sourceStart,
-      endColumn: parameter.sourceStart + parameter.sourceLength,
+      ...editorRange(context.line, parameter.sourceStart, parameter.sourceLength),
       specKeyword: context.specKeyword,
       parameterName: parameter.name
     });

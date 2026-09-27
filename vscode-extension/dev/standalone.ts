@@ -445,6 +445,34 @@ const LOWERCASE_SAMPLE = [
   ""
 ].join("\n");
 
+/**
+ * ウィンドウの中のサブファイル（原典 `WINDOW` の例 3 と同じ位置）。
+ * 枠は 8 行 25 桁〜19 行 78 桁、NAME は画面の 12 行 31 桁に出る。サブファイルは SFLPAG(4) で 4 行並ぶ。
+ * 最後の様式は罫線（GRDBOX）。3 行 2 桁から 3 行 × 30 桁の箱を青の破線で描く。
+ */
+const WINDOW_SAMPLE = [
+  "     A                                      DSPSIZ(24 80 *DS3)",
+  "     A          R HEAD",
+  "     A                                  1  2'CUSTOMER INQUIRY'",
+  "     A          R SFLW                      SFL",
+  "     A            NAME          20A  O  4  5",
+  "     A            RANK          10A  O  4 27",
+  "     A          R WINCTL                    SFLCTL(SFLW)",
+  "     A                                      WINDOW(8 25 10 50)",
+  "     A                                      SFLPAG(0004)",
+  "     A                                      SFLSIZ(0017)",
+  "     A                                      SFLDSP",
+  "     A                                      SFLDSPCTL",
+  "     A                                      OVERLAY",
+  "     A                                  2  5'Full Name'",
+  "     A                                  2 27'Rank'",
+  "     A          R GRID                      GRDRCD",
+  "     A                                      GRDATR((*COLOR BLU) (*LINTYP DSH))",
+  "     A                                      GRDBOX((*POS (3 2 3 30)) (*TYPE PL-",
+  "     A                                      AIN))",
+  ""
+].join("\n");
+
 const SAMPLES = [
   { name: "CUSTMNT.dspf", text: sample as unknown as string },
   { name: "hidden-items.dspf", text: HIDDEN_SAMPLE },
@@ -453,6 +481,7 @@ const SAMPLES = [
   { name: "references.dspf", text: REFERENCE_SAMPLE },
   { name: "lowercase-names.dspf", text: LOWERCASE_SAMPLE },
   { name: "machine-errors.dspf", text: MACHINE_ERROR_SAMPLE },
+  { name: "window.dspf", text: WINDOW_SAMPLE },
   // 帳票。**行は SPACE / SKIP で決まり、位置欄には桁だけが書かれる**——
   // 画面ファイルには無い形なので、ここで実際に触れるようにしておく。
   { name: "CUSTRPT.prtf", text: report as unknown as string },

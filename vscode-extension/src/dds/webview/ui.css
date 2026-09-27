@@ -229,6 +229,40 @@ body {
   cursor: ew-resize;
   background: color-mix(in srgb, var(--dds-accent) 60%, transparent);
 }
+/* ウィンドウの枠（WINDOW）。枠文字の桁の**真ん中**に線を引く（枠も 1 桁・1 行を占める）。掴めない。 */
+.dds-window {
+  position: absolute;
+  pointer-events: none;
+}
+.dds-window::before {
+  content: "";
+  position: absolute;
+  inset: calc(var(--cell-h) / 2) calc(var(--cell-w) / 2);
+  border: 1px solid var(--dds-muted);
+  background: color-mix(in srgb, var(--dds-chrome) 55%, transparent);
+}
+.dds-window.floating::before { border-style: dashed; }
+.dds-window-label {
+  position: absolute;
+  top: 0;
+  left: calc(var(--cell-w) * 2);
+  padding: 0 0.3em;
+  font-size: 10px;
+  line-height: calc(var(--cell-h) * 0.9);
+  color: var(--dds-muted);
+  background: var(--dds-bg);
+}
+/* メッセージ行（ウィンドウの最終行）。項目は置けない。 */
+.dds-window-message {
+  position: absolute;
+  left: calc(var(--cell-w) * 2);
+  right: calc(var(--cell-w) * 2);
+  height: var(--cell-h);
+  background: repeating-linear-gradient(135deg, transparent 0 4px, color-mix(in srgb, var(--dds-muted) 18%, transparent) 4px 6px);
+}
+/* サブファイルの 2 件目以降（SFLPAG ぶんの写し）。掴めない。 */
+.dds-item.sfl-repeat { opacity: 0.4; pointer-events: none; }
+
 /* 属性文字の占有。隣接違反が起きる前に見えるようにする。 */
 .dds-attr {
   position: absolute;
@@ -673,3 +707,29 @@ body {
 
 /* 項目を様式へドラッグしている間の、落とし先の見出し（D15）。 */
 .dds-tree li.record.drop-target > .label { outline: 1px dashed var(--dds-field); outline-offset: 2px; }
+
+/* ---- 罫線（GRDBOX / GRDLIN）----
+   文字の枠の上（桁・行の境目）に引く。色・線種は原典 GRDATR の値。既定は白・実線。
+   5250 の配色と同じ変数を使う（明るい色は同じ系統の色で描く）。 */
+.dds-grid {
+  position: absolute;
+  pointer-events: none;
+  --g-color: var(--t-white);
+  --g-width: 1px;
+  --g-style: solid;
+}
+.dds-grid.horizontal { height: 0; border-top: var(--g-width) var(--g-style) var(--g-color); }
+.dds-grid.vertical { width: 0; border-left: var(--g-width) var(--g-style) var(--g-color); }
+.dds-grid.g-blu, .dds-grid.g-lblu { --g-color: var(--t-blue); }
+.dds-grid.g-grn, .dds-grid.g-lgrn { --g-color: var(--t-green); }
+.dds-grid.g-cyan, .dds-grid.g-ltrq { --g-color: var(--t-turquoise); }
+.dds-grid.g-red, .dds-grid.g-lred { --g-color: var(--t-red); }
+.dds-grid.g-vlt, .dds-grid.g-lvlt { --g-color: var(--t-pink); }
+.dds-grid.g-ylw, .dds-grid.g-lylw { --g-color: var(--t-yellow); }
+.dds-grid.g-gry { --g-color: var(--dds-muted); }
+.dds-grid.g-blk { --g-color: #000; }
+.dds-grid.l-thk, .dds-grid.l-thkdsh { --g-width: 2px; }
+.dds-grid.l-dbl, .dds-grid.l-dbldsh { --g-width: 3px; --g-style: double; }
+.dds-grid.l-dot { --g-style: dotted; }
+.dds-grid.l-dsh, .dds-grid.l-thkdsh { --g-style: dashed; }
+.dds-grid.l-dbldsh { --g-style: double; }

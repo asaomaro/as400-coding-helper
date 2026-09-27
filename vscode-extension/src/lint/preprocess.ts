@@ -1,3 +1,5 @@
+import type { Dialect } from "../prompter/types";
+
 /**
  * 行の分類。**除外は規則ではなく前処理で行う。**
  *
@@ -58,10 +60,30 @@ function isRpgContinuation(text: string, specKeyword: string | undefined): boole
   return text.slice(6, 16).trim().length === 0;
 }
 
+/**
+ * ILE RPG の C 仕様書の**拡張演算項目 2 の継続記入行**（7-35 桁が空で、式が 36 桁目以降に続く）。
+ * 原典 `演算仕様書拡張演算項目 2 継続記入行`（C-SPEC-layout）。
+ *
+ * この行の 36-80 桁は式の続きで、演算項目 2・結果フィールド・フィールド長の欄ではない。
+ * 欄として読むと、DBCS を実機の桁で数えたときに式の文字列が 64 桁目以降（フィールド長）に掛かり、
+ * 数値欄の誤検出になる（`docs/src/SLSENT01.rpgle` 430 行目。実機は重大度 00 で通す）。
+ * RPG III には拡張演算項目 2 が無いので対象外。
+ */
+function isExtendedFactor2Continuation(
+  text: string,
+  specKeyword: string | undefined,
+  dialect: Dialect | undefined
+): boolean {
+  if (dialect === "rpg3") return false;
+  if (specKeyword !== "C-SPEC" && specKeyword !== "C-NEW") return false;
+  return text.slice(6, 35).trim().length === 0 && text.slice(35, 80).trim().length > 0;
+}
+
 export function classifyLine(
   text: string,
   language: LintLanguage,
-  specKeyword: string | undefined
+  specKeyword: string | undefined,
+  dialect?: Dialect
 ): LineKind {
   if (language === "dds") {
     // 原典はブランク行も注記として扱う。素の判定は ddsLayout が持ち、
@@ -75,5 +97,6 @@ export function classifyLine(
   // 6 桁目の仕様書コードが読めない行は定位置として扱えない。
   if (!specKeyword) return "skipped";
   if (isRpgContinuation(text, specKeyword)) return "continuation";
+  if (isExtendedFactor2Continuation(text, specKeyword, dialect)) return "continuation";
   return "checked";
 }
