@@ -8,6 +8,7 @@ import {
 import { buildItemLines } from "../../src/core/dds/ddsEditWriteBack";
 import { buildDspfOutline } from "../../src/core/dds/dspfOutline";
 import { printWidth } from "../../src/core/dbcs";
+import { fieldPlacementChoices } from "../../src/core/dds/fieldChoices";
 
 /**
  * 編集操作。**ここで守るのは「触った範囲の外が 1 文字も変わらない」こと。**
@@ -575,5 +576,17 @@ suite("DDS 編集: キーワード欄の書き換えで条件つきの行を平�
       SOURCE_WITH_CONDITION[2],
       SOURCE_WITH_CONDITION[3]
     ]);
+  });
+});
+
+suite("DDS: フィールドを置くときの型・使用の選択肢（D6）", () => {
+  test("一覧は F4 の定義（35・38 桁）と同じで、既定はこれまでと同じ", () => {
+    const dspf = fieldPlacementChoices("DDS-DSPF");
+    const prtf = fieldPlacementChoices("DDS-PRTF");
+    assert.ok(dspf.dataTypes.some(c => c.value === "Y") && dspf.usages.some(c => c.value === "B"));
+    assert.deepStrictEqual(prtf.usages.map(c => c.value), ["", "O", "P"]);
+    assert.strictEqual(dspf.defaultDataType, "A");
+    assert.strictEqual(dspf.defaultUsage, "B");
+    assert.strictEqual(prtf.defaultUsage, "");
   });
 });
