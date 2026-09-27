@@ -16,7 +16,14 @@
  */
 import type { ParameterDefinition, PrompterDefinition } from "./types";
 import { parseClCommand } from "./clCommandParser";
-import { isDbcsCodePoint, printWidth } from "../core/dbcs";
+import {
+  indexExceedingWidth,
+  isDbcsCodePoint,
+  padMachineColumns,
+  printWidth,
+  replaceMachineColumns,
+  sliceMachineColumns
+} from "../core/dbcs";
 import { buildKeywordFormLine, isKeywordFormDefinition } from "./keywordForm";
 import {
   countOccurrences,
@@ -374,7 +381,9 @@ export function buildRpgLineText(
     return original;
   }
 
-  const chars = original.split("");
+  // **桁は実機の桁で数える**（DBCS は SO/SI と全角 2 桁。実操作調査の P14）。
+  // エディタの文字列は全角 1 文字が 1 文字なので、文字の添字で書くと後ろの欄と重なる。
+  let line = original;
 
   for (const parameter of definition.parameters) {
     const paramName = parameter.name.toUpperCase();
@@ -387,30 +396,11 @@ export function buildRpgLineText(
       const rawComment = (values[parameter.name] ?? "").toString();
       const trimmedComment = rawComment.trim();
       const maxCommentLength = parameter.attributes?.maxLength ?? 50;
-      const commentStartIndex = 80; // column 81 (0-based index)
-      const commentEndIndex = commentStartIndex + maxCommentLength;
-
-      if (chars.length < commentEndIndex) {
-        for (let i = chars.length; i < commentEndIndex; i += 1) {
-          chars[i] = " ";
-        }
-      }
-
-      for (let i = commentStartIndex; i < commentEndIndex; i += 1) {
-        chars[i] = " ";
-      }
-
-      if (trimmedComment.length > 0) {
-        const commentText =
-          trimmedComment.length > maxCommentLength
-            ? trimmedComment.slice(0, maxCommentLength)
-            : trimmedComment;
-
-        for (let i = 0; i < commentText.length; i += 1) {
-          const idx = commentStartIndex + i;
-          chars[idx] = commentText.charAt(i);
-        }
-      }
+      const commentText =
+        trimmedComment.length > maxCommentLength
+          ? trimmedComment.slice(0, maxCommentLength)
+          : trimmedComment;
+      line = replaceMachineColumns(line, 81, maxCommentLength, padMachineColumns(commentText, maxCommentLength));
 
       continue;
     }
@@ -433,10 +423,7 @@ export function buildRpgLineText(
     // 取り出すときに前後の空白を落としているため、書き戻しで詰め直すと
     // 元の寄せ方（右寄せ/中寄せ）が失われ、編集していない項目まで行が
     // 変形してしまう（F仕様書の外部記述 'E' などで実際に発生していた）。
-    const originalSlice = original.slice(
-      parameter.sourceStart - 1,
-      parameter.sourceStart - 1 + parameter.sourceLength
-    );
+    const originalSlice = sliceMachineColumns(original, parameter.sourceStart, parameter.sourceLength);
     if (originalSlice.trim() === trimmed) {
       continue;
     }
@@ -445,8 +432,10 @@ export function buildRpgLineText(
       parameter.inputType === "number" || parameter.attributes?.numericOnly;
 
     const padded = (() => {
-      if (trimmed.length > parameter.sourceLength) {
-        return trimmed.slice(-parameter.sourceLength);
+      if (printWidth(trimmed) > parameter.sourceLength) {
+        // 入力の検査（`model.ts`）が止めるので、ここへは来ない。来たら桁の分だけ残す。
+        const cut = indexExceedingWidth(trimmed, parameter.sourceLength) ?? trimmed.length;
+        return padMachineColumns(trimmed.slice(0, cut), parameter.sourceLength);
       }
 
       const laidOut = layOutColumns(trimmed, parameter.sourceLength, parameter.attributes?.columnLayout);
@@ -455,34 +444,22 @@ export function buildRpgLineText(
       // 字下げを残す欄（D 仕様の名前）は、元の欄の先頭の空白を残す（収まる範囲で）。
       if (parameter.attributes?.keepIndent === true && trimmed.length > 0) {
         const indent = (originalSlice.match(/^ */u)?.[0].length ?? 0) % parameter.sourceLength;
-        if (indent > 0 && indent + trimmed.length <= parameter.sourceLength) {
-          return (" ".repeat(indent) + trimmed).padEnd(parameter.sourceLength, " ");
+        if (indent > 0 && indent + printWidth(trimmed) <= parameter.sourceLength) {
+          return padMachineColumns(" ".repeat(indent) + trimmed, parameter.sourceLength);
         }
       }
 
       if (isNumericField) {
-        return trimmed.padStart(parameter.sourceLength, " ");
+        return padMachineColumns(trimmed, parameter.sourceLength, "start");
       }
 
-      return trimmed.padEnd(parameter.sourceLength, " ");
+      return padMachineColumns(trimmed, parameter.sourceLength);
     })();
 
-    const startIndex = parameter.sourceStart - 1;
-    const endIndex = startIndex + parameter.sourceLength;
-
-    if (chars.length < endIndex) {
-      for (let i = chars.length; i < endIndex; i += 1) {
-        chars[i] = " ";
-      }
-    }
-
-    for (let i = 0; i < padded.length; i += 1) {
-      const idx = startIndex + i;
-      chars[idx] = padded.charAt(i);
-    }
+    line = replaceMachineColumns(line, parameter.sourceStart, parameter.sourceLength, padded);
   }
 
-  const result = chars.join("").replace(/\s+$/u, "");
+  const result = line.replace(/\s+$/u, "");
 
   console.log(
     "[rpgClSupport] buildRpgLineText result",

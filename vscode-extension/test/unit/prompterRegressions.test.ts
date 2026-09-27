@@ -9,7 +9,8 @@ import {
 } from "../../src/prompter/clCommandParser";
 import { applyChanges, buildClCommandText } from "../../src/prompter/applyChanges";
 import { buildRpgLineText, narrowToEditableColumns } from "../../src/prompter/commandText";
-import { printWidth } from "../../src/core/dbcs";
+import { printWidth, sliceMachineColumns } from "../../src/core/dbcs";
+import { extractByColumns } from "../../src/prompter/initialValues";
 import { readKeywordForm } from "../../src/prompter/keywordForm";
 import { opcodeFieldHelp, withOpcodeCandidates } from "../../src/prompter/opcodeCandidates";
 import { readContinuedName, writeContinuedName } from "../../src/prompter/rpgNameContinuation";
@@ -572,5 +573,45 @@ suite("C 仕様の演算項目のヘルプ（命令ごとの意味。P18）", ()
       toSerializableState(cSpec, buildInitialState(cSpec, { OPCODE: opcode })).fields.find(f => f.name === "FACTOR2")?.help ?? "";
     assert.match(help("CHAIN"), /^CHAIN の演算項目 2: 名前/u);
     assert.match(help("ADD"), /^ADD の演算項目 2: 加数/u);
+  });
+});
+
+suite("RPG の定位置欄の DBCS を実機の桁で数える（実操作調査 P14）", () => {
+  // エディタの文字列には SO/SI が無く、全角も 1 文字。文字の添字で書くと、実機では後ろの欄に重なる
+  // （`'無効なオプション'` は 10 文字だが SO/SI と全角 2 桁で 20 桁。演算項目 2 は 14 桁）。
+  const cSpec = load("rpg/ile/ja/C-SPEC.json");
+
+  test("桁に収まらない DBCS は欄のエラーにする（文字数ではなく実機の桁）", () => {
+    const state = buildInitialState(cSpec, { OPCODE: "MOVEL", FACTOR2: "'無効なオプション'", RESULT: "MSG" });
+    const factor2 = state.fields.find(field => field.fieldName === "FACTOR2");
+    assert.equal(factor2?.error, "14 桁に収まりません（10 文字・シフト文字と全角を含めて 20 桁）。");
+  });
+
+  test("収まる DBCS の後ろの欄は実機の桁に書く（結果フィールドは実機の 50 桁目）", () => {
+    const line = buildRpgLineText("     C", cSpec, { OPCODE: "MOVEL", FACTOR2: "'無効'", RESULT: "MSG" });
+    // `'無効'` は 1 + SO + 2×2 + SI + 1 = 8 桁（36-43）。44-49 は空白。
+    assert.equal(printWidth(line.slice(0, line.indexOf("MSG"))), 49);
+    assert.equal(sliceMachineColumns(line, 50, 14).trim(), "MSG");
+    assert.equal(sliceMachineColumns(line, 36, 14).trim(), "'無効'");
+  });
+
+  test("読み戻しも実機の桁で切る（入れた値が同じ値で返る）", () => {
+    const line = buildRpgLineText("     C", cSpec, { OPCODE: "MOVEL", FACTOR2: "'無効'", RESULT: "MSG" });
+    const values = extractByColumns(line, cSpec);
+    assert.equal(values.FACTOR2, "'無効'");
+    assert.equal(values.RESULT, "MSG");
+    assert.equal(values.OPCODE, "MOVEL");
+  });
+
+  test("DBCS を含む行を無変更で確定しても、行は変わらない", () => {
+    const original = buildRpgLineText("     C", cSpec, { FACTOR1: "'顧客'", OPCODE: "CAT", FACTOR2: "'名前':1", RESULT: "TEXT" });
+    assert.equal(buildRpgLineText(original, cSpec, extractByColumns(original, cSpec)), original);
+  });
+
+  test("前の欄の値を DBCS に変えても、変えていない後ろの欄は同じ実機の桁に残る", () => {
+    const original = buildRpgLineText("     C", cSpec, { OPCODE: "MOVEL", FACTOR2: "'ABC'", RESULT: "MSG" });
+    const edited = buildRpgLineText(original, cSpec, { ...extractByColumns(original, cSpec), FACTOR2: "'あいう'" });
+    assert.equal(sliceMachineColumns(edited, 50, 14).trim(), "MSG");
+    assert.equal(printWidth(edited.slice(0, edited.indexOf("MSG"))), 49);
   });
 });

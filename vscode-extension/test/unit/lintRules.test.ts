@@ -10,6 +10,8 @@ import {
   numericFieldRule
 } from "../../src/lint/rules/numericField";
 import { RULE_SPECS, defaultEnabledRules } from "../../src/lint/rules";
+import { requiredFieldRule } from "../../src/lint/rules/requiredField";
+import { editorColumnOfMachineColumn } from "../../src/core/dbcs";
 import type { PrompterDefinition } from "../../src/prompter/types";
 import { isDdsBlankLine, isDdsCommentLine } from "../../src/core/ddsLayout";
 import { isKeywordArea } from "../../src/language/ddsKeywordCompletion";
@@ -245,6 +247,43 @@ suite("lint: numeric-field / numeric-alignment", () => {
 
   test("定義が無ければ何も見ない", () => {
     assert.deepStrictEqual(numericFieldRule(context(nonNumeric)), []);
+  });
+});
+
+suite("lint: 欄は実機の桁で切る（DBCS は SO/SI と全角 2 桁）", () => {
+  // 「C 仕様の演算項目 2（36-49）の後ろに結果フィールド（50-63）」を最小の定義にしたもの。
+  const C_DEF = {
+    keyword: "C-SPEC",
+    description: "test",
+    parameters: [
+      { name: "FACTOR2", description: "演算項目 2", inputType: "text", required: false, sourceStart: 36, sourceLength: 14 },
+      { name: "RESULT", description: "結果フィールド", inputType: "text", required: true, sourceStart: 50, sourceLength: 14 },
+      { name: "LEN", description: "桁数", inputType: "text", required: false, sourceStart: 64, sourceLength: 5, attributes: { numericOnly: true } }
+    ]
+  } as unknown as PrompterDefinition;
+  // `'無効'` は 4 文字だが実機では 8 桁（36-43）。MSG は実機の 50 桁目＝文字では 46 列目。
+  const line = "     C                   MOVEL     '無効'      MSG           X";
+
+  test("DBCS の後ろの必須欄を、実機の桁で読んで空と誤らない", () => {
+    // 行は MSG で終わる。文字の添字で 50-63 列を切ると空になり、必須の誤検出になっていた。
+    assert.deepStrictEqual(requiredFieldRule(context(line.slice(0, line.indexOf("MSG") + 3), C_DEF)), []);
+  });
+
+  test("数値欄の指摘の下線は、実機の桁をエディタの列に直して引く", () => {
+    const findings = numericFieldRule(context(line, C_DEF));
+    assert.strictEqual(findings.length, 1);
+    // 実機の 64 桁目は、全角 2 文字（SO/SI 込みで 4 桁多い）ぶん手前の 60 列目。
+    assert.strictEqual(findings[0].startColumn, 60);
+    assert.strictEqual(line.charAt(findings[0].startColumn - 1), "X");
+  });
+
+  test("実機の桁 → エディタの列（SO は直後の全角、SI は直後の文字の列）", () => {
+    const text = "A'無効'B";
+    // 桁: A=1 '=2 SO=3 無=4-5 効=6-7 SI=8 '=9 B=10
+    assert.deepStrictEqual(
+      [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12].map(column => editorColumnOfMachineColumn(text, column)),
+      [1, 2, 3, 3, 3, 4, 4, 5, 5, 6, 8]
+    );
   });
 });
 

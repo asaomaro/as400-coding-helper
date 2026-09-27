@@ -165,7 +165,7 @@ priority: 1           # 既存機能の構造改善。DDS(1) と同格
   **原典と機械的に突き合わせて直す**（AGENTS.md）。
 - [x] **CL: 空白・日本語を含む値を引用符で囲む、DBCS の SO/SI を桁計算に入れる** — 済（`20260927-prompter-cl-quote-dbcs`。CL 側。RPG の定位置欄は下に分けた）（docs/research/20260927-f4-prompter-exploration/findings.md の P13・P14）。いまは `MSG(… で印刷エラー…)` と書いてコンパイルできず、
   SO/SI を数えないので 72 桁の折り返しも RPG の桁（MOVEL の演算項目 2）もずれる。
-- [ ] **RPG の定位置欄の DBCS を実機の桁で数える**（P14 の RPG 側。上の CL の件から分けた）。MOVEL の演算項目 2 に `'無効なオプション'` を入れると文字数では 14 桁に収まるが、
+- [x] **RPG の定位置欄の DBCS を実機の桁で数える** — 済（`20260927-prompter-rpg-dbcs-columns`。書き戻し・読み戻し・桁あふれの検査と lint の欄の規則。実機の CRTBNDRPG で確認）（P14 の RPG 側。上の CL の件から分けた）。MOVEL の演算項目 2 に `'無効なオプション'` を入れると文字数では 14 桁に収まるが、
   実機では SO/SI と全角 2 桁で 20 桁になり後続の欄（結果フィールド）と重なる。書き戻し（`buildRpgLineText`）の桁あふれ検査と詰め、読み戻し（行の桁から値を切り出す）を
   実機の桁で数え直す必要がある。SOSI 表示（`{` `}`）と同じ数え方に揃えること。
 - [x] **プロンプターの軽微な項目 7 件**（すべて済または決定により対応しない。P18 の F1 ヘルプは `20260927-prompter-opcode-field-help`）（P19 の F12/F3・P22 の placeholder は済: `20260927-prompter-seu-keys-placeholders`。P18 の命令の候補は済: `20260927-prompter-opcode-candidates`。P16・P21 は済、P20 は対応しない（決定）。P17 は済: `20260927-prompter-cl-conditional-basic`。残りは P18 の F1 ヘルプ）（docs/research/20260927-f4-prompter-exploration/findings.md の P16〜P22）: CL の既定値の出し方の不統一／DCL の LEN が F10 の奥・ヘルプの表抜け／C の F1 ヘルプが命令と無関係・

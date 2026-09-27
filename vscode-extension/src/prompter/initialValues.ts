@@ -4,6 +4,7 @@ import type { ResolvedPosition } from "./positionResolver";
 import { isKeywordFormDefinition, readKeywordForm } from "./keywordForm";
 import { continuedNameParameter, readContinuedName } from "./rpgNameContinuation";
 import { getLogicalCommandRange } from "../language/clContinuation";
+import { sliceMachineColumns } from "../core/dbcs";
 import {
   joinContinuationLines,
   mapParsedCommandToValues,
@@ -109,17 +110,11 @@ export function extractByColumns(
       continue;
     }
 
-    const startIndex = parameter.sourceStart - 1;
-    const endIndex = startIndex + parameter.sourceLength;
-
-    if (startIndex >= text.length) {
-      continue;
-    }
-
+    // **実機の桁で切る**（DBCS は SO/SI と全角 2 桁。書き戻しの `buildRpgLineText` と同じ数え方）。
     const slice =
       parameter.name.toUpperCase() === "COMMENT"
-        ? text.slice(startIndex) // COMMENT: take until end of line
-        : text.slice(startIndex, Math.min(endIndex, text.length));
+        ? sliceMachineColumns(text, parameter.sourceStart) // COMMENT: take until end of line
+        : sliceMachineColumns(text, parameter.sourceStart, parameter.sourceLength);
     const trimmed = slice.trim();
     if (trimmed.length === 0) {
       continue;

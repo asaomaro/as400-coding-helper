@@ -1,4 +1,6 @@
 import type { LintFinding, RuleContext } from "../types";
+import { sliceMachineColumns } from "../../core/dbcs";
+import { editorRange } from "./fieldRange";
 
 /**
  * 必須欄の未入力。**既定では無効**（`rules/index.ts` の enabledByDefault）。
@@ -23,8 +25,8 @@ export function requiredFieldRule(context: RuleContext): readonly LintFinding[] 
     if (!parameter.required) continue;
     if (!parameter.sourceStart || !parameter.sourceLength) continue;
 
-    const start = parameter.sourceStart - 1;
-    const raw = context.line.slice(start, start + parameter.sourceLength);
+    // 欄は実機の桁で切る（DBCS は SO/SI と全角 2 桁。プロンプターの読み書きと同じ数え方）。
+    const raw = sliceMachineColumns(context.line, parameter.sourceStart, parameter.sourceLength);
     if (raw.trim().length > 0) continue;
 
     findings.push({
@@ -32,8 +34,7 @@ export function requiredFieldRule(context: RuleContext): readonly LintFinding[] 
       severity: "error",
       message: `${parameter.description}は必須です。`,
       line: context.lineNumber,
-      startColumn: parameter.sourceStart,
-      endColumn: parameter.sourceStart + parameter.sourceLength,
+      ...editorRange(context.line, parameter.sourceStart, parameter.sourceLength),
       specKeyword: context.specKeyword,
       parameterName: parameter.name
     });
