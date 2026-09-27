@@ -331,6 +331,21 @@ export const categories = {
       { name: 'O-SPEC-layout-program',  topic: 'ssw_ibm_i_74/rzasd/prlay.htm',   note: 'O: プログラム記述ファイルのレイアウト（桁）' },
       { name: 'O-SPEC-layout-external', topic: 'ssw_ibm_i_74/rzasd/exlay.htm',   note: 'O: 外部記述ファイルのレイアウト（桁）' },
 
+      // --- 第7弾: 桁ごとの詳細（選択できる値）。レイアウトのページは桁とラベルしか持たない。
+      //     プロンプターの選択肢・必須を原典の値で確かめるため（2026-09-27 の実操作調査 P8・P11）。 ---
+      { name: 'F-POS-17', topic: 'ssw_ibm_i_74/rzasd/f17.htm',     note: 'F: 17 桁目（ファイル・タイプ）' },
+      { name: 'F-POS-18', topic: 'ssw_ibm_i_74/rzasd/f18.htm',     note: 'F: 18 桁目（ファイル指定）' },
+      { name: 'F-POS-19', topic: 'ssw_ibm_i_74/rzasd/poenfil.htm', note: 'F: 19 桁目（ファイルの終わり）' },
+      { name: 'F-POS-20', topic: 'ssw_ibm_i_74/rzasd/pofiad.htm',  note: 'F: 20 桁目（ファイルの追加）' },
+      { name: 'F-POS-21', topic: 'ssw_ibm_i_74/rzasd/posseq.htm',  note: 'F: 21 桁目（順序）' },
+      { name: 'F-POS-22', topic: 'ssw_ibm_i_74/rzasd/f22.htm',     note: 'F: 22 桁目（ファイル形式）' },
+      { name: 'F-POS-28', topic: 'ssw_ibm_i_74/rzasd/f28.htm',     note: 'F: 28 桁目（限界内処理）' },
+      { name: 'F-POS-34', topic: 'ssw_ibm_i_74/rzasd/f34.htm',     note: 'F: 34 桁目（レコード・アドレス・タイプ）' },
+      { name: 'F-POS-35', topic: 'ssw_ibm_i_74/rzasd/f35.htm',     note: 'F: 35 桁目（ファイル編成）' },
+      { name: 'D-POS-3339', topic: 'ssw_ibm_i_74/rzasd/d3339.htm', note: 'D: 33-39 桁目（終了位置／長さ）' },
+      { name: 'D-POS-40', topic: 'ssw_ibm_i_74/rzasd/d40.htm',     note: 'D: 40 桁目（内部データ・タイプ）' },
+      { name: 'D-POS-4142', topic: 'ssw_ibm_i_74/rzasd/d4142.htm', note: 'D: 41-42 桁目（小数点以下の桁数）' },
+
       // --- 第6弾: 命令コード・組み込み関数（補完用） ---
       { name: 'OPCODES',  topic: 'ssw_ibm_i_74/rzasd/operxcl.htm', note: '命令コードの索引（C仕様の補完用）' },
       { name: 'BIFS',     topic: 'ssw_ibm_i_74/rzasd/bifs.htm',    note: '組み込み関数の索引（%XXX の補完用）' },

@@ -196,6 +196,30 @@ for (const [spec, labels] of Object.entries(LABELS)) {
   }
 }
 
+// **欄の見出しに書いた桁番号が、定義の桁と一致すること。** 書き戻す桁が正しくても、見出しの桁が
+// 誤っていると利用者は誤った桁を信じる。F 仕様の見出しは「ファイル形式（19 桁）」「装置（34-42 桁）」のように
+// 誤った表（`docs/ILE_RPG_Fixed_Format_Reference.md`）から来ていた（2026-09-27 の実操作調査 P11）。
+const EN_STRINGS = JSON.parse(readFileSync(join(ROOT, "docs/origin/rpg-spec-en-strings.json"), "utf8"));
+const columnsIn = text => {
+  const ja = /（(\d+)(?:\s*-\s*(\d+))?\s*桁）/u.exec(text ?? "");
+  const en = /\(positions?\s+(\d+)(?:\s*-\s*(\d+))?\)/iu.exec(text ?? "");
+  const match = ja ?? en;
+  return match ? [Number(match[1]), Number(match[2] ?? match[1])] : undefined;
+};
+for (const spec of Object.keys(LABELS)) {
+  const definition = JSON.parse(readFileSync(join(DEFS, `${spec}.json`), "utf8"));
+  for (const parameter of definition.parameters) {
+    if (!parameter.sourceStart || !parameter.sourceLength) continue;
+    const actual = [parameter.sourceStart, parameter.sourceStart + parameter.sourceLength - 1];
+    for (const [where, text] of [["ja", parameter.description], ["en", EN_STRINGS[spec]?.[parameter.name]?.description]]) {
+      const written = columnsIn(text);
+      if (written && (written[0] !== actual[0] || written[1] !== actual[1])) {
+        failures.push(`${spec}.${parameter.name}: 見出し（${where}）の桁 ${written.join("-")} が定義の桁 ${actual.join("-")} と違う「${text}」`);
+      }
+    }
+  }
+}
+
 console.log(`検査した項目: ${checked}`);
 for (const [spec, reason] of Object.entries(UNSUPPORTED)) {
   console.log(`  （対象外）${spec}: ${reason}`);

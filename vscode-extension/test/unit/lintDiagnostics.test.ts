@@ -157,10 +157,22 @@ suite("lint: VSCode 診断", () => {
   });
 
   test("既定で無効な規則は設定で有効にできる", () => {
-    const before = lintDocument(fakeDocument("EMPMNT01.rpgle"));
+    // 以前は EMPMNT01.rpgle（実機で通るソース）に required-field が 35 件出ており、それで「増える」を見ていた。
+    // どれも定義の必須が強すぎた偽陽性（D の長さ・C-NEW の式。実操作調査の P7）で、直した今は 0 件。
+    // 命令の無い C 仕様（演算項目 1 だけ）という、本当に必須が欠けた行で確かめる。
+    const document = fakeDocument("x.rpgle", "     C     KEY");
+    const before = lintDocument(document);
     setConfig({ rpgClSupport: { "lint.rules": { "required-field": true } } });
-    const after = lintDocument(fakeDocument("EMPMNT01.rpgle"));
+    const after = lintDocument(document);
     assert.ok(after.length > before.length, "有効にした分だけ増える");
+  });
+
+  test("実機で通るソースに required-field が出ない（必須が強すぎた定義を直した。P7）", () => {
+    setConfig({ rpgClSupport: { "lint.rules": { "required-field": true } } });
+    assert.deepStrictEqual(
+      lintDocument(fakeDocument("EMPMNT01.rpgle")).filter(d => (d as { code?: string }).code === "required-field"),
+      []
+    );
   });
 
   test("CL / .cmd は桁検査の対象外", () => {

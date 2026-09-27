@@ -8,7 +8,7 @@
       "description": "File name",
       "help": "The file name, in positions 7-16 (up to 10 characters).",
       "inputType": "text",
-      "required": true,
+      "required": false,
       "sourceStart": 7,
       "sourceLength": 10,
       "attributes": {
@@ -19,26 +19,26 @@
     {
       "name": "FILETYPE",
       "description": "File type (position 17)",
-      "help": "How the file is used. I = input only, O = output only, U = update, C = combined.",
+      "help": "How the file is used (position 17). I = input, O = output, U = update, C = combined. Blank on a keyword-only continuation line.",
       "inputType": "dropdown",
-      "required": true,
+      "required": false,
       "sourceStart": 17,
       "sourceLength": 1,
       "options": [
         {
-          "label": "Input only (I)",
+          "label": "I Input file",
           "value": "I"
         },
         {
-          "label": "Output only (O)",
+          "label": "O Output file",
           "value": "O"
         },
         {
-          "label": "Update (U)",
+          "label": "U Update file",
           "value": "U"
         },
         {
-          "label": "Combined (C)",
+          "label": "C Combined (input/output) file",
           "value": "C"
         }
       ]
@@ -46,71 +46,133 @@
     {
       "name": "FILEDESG",
       "description": "File designation (position 18)",
-      "help": "F = full procedural. Blank = demand file.",
+      "help": "Blank = output file, P = primary, S = secondary, R = record address, T = array or table, F = full procedural. An output file (O in position 17) must be blank.",
       "inputType": "dropdown",
       "required": false,
       "sourceStart": 18,
       "sourceLength": 1,
       "options": [
         {
-          "label": "Full procedural (F)",
-          "value": "F"
+          "label": "(blank) Output file",
+          "value": ""
         },
         {
-          "label": "(blank) Demand",
-          "value": ""
+          "label": "P Primary file",
+          "value": "P"
+        },
+        {
+          "label": "S Secondary file",
+          "value": "S"
+        },
+        {
+          "label": "R Record address file",
+          "value": "R"
+        },
+        {
+          "label": "T Array or table file",
+          "value": "T"
+        },
+        {
+          "label": "F Full procedural file",
+          "value": "F"
+        }
+      ],
+      "dependsOn": [
+        {
+          "parameter": "FILETYPE",
+          "equalsAny": [
+            "O"
+          ],
+          "effect": "allowedValues",
+          "allowedValues": [
+            ""
+          ]
         }
       ]
     },
     {
       "name": "ENDFILE",
-      "description": "End of file",
-      "inputType": "text",
+      "description": "End of file (position 19)",
+      "inputType": "dropdown",
       "required": false,
       "sourceStart": 19,
       "sourceLength": 1,
-      "help": "E = end the program when this file reaches end of file. Blank = do not end."
+      "help": "E = all records of this file must be processed before the program ends. Applies to primary, secondary, and record-address input/update/combined files.",
+      "options": [
+        {
+          "label": "E All records from the file must be proces…",
+          "value": "E"
+        },
+        {
+          "label": "(blank) If position 19 is blank for all files",
+          "value": ""
+        }
+      ]
     },
     {
       "name": "FILEADD",
-      "description": "File addition",
-      "inputType": "text",
+      "description": "File addition (position 20)",
+      "inputType": "dropdown",
       "required": false,
       "sourceStart": 20,
       "sourceLength": 1,
-      "help": "A = records may be added to the file. Blank = no additions."
+      "help": "A = records can be added to an input or update file. Blank = no additions. Ignored for output files.",
+      "options": [
+        {
+          "label": "(blank) No records can be added to an input or u…",
+          "value": ""
+        },
+        {
+          "label": "A Records are added to an input or update …",
+          "value": "A"
+        }
+      ]
     },
     {
       "name": "SEQUENCE",
-      "description": "Sequence",
-      "inputType": "text",
+      "description": "Sequence (position 21)",
+      "inputType": "dropdown",
       "required": false,
       "sourceStart": 21,
       "sourceLength": 1,
-      "help": "A = ascending, D = descending."
+      "help": "Sequence of the match fields. A or blank = ascending, D = descending.",
+      "options": [
+        {
+          "label": "A Match fields are in ascending sequence",
+          "value": "A"
+        },
+        {
+          "label": "(blank) Match fields are in ascending sequence",
+          "value": ""
+        },
+        {
+          "label": "D Match fields are in descending sequence",
+          "value": "D"
+        }
+      ]
     },
     {
       "name": "FILEFMT",
-      "description": "File format (position 19)",
-      "help": "E = externally described. F = program described.",
+      "description": "File format (position 22)",
+      "help": "E = externally described, F = program described.",
       "inputType": "dropdown",
       "required": false,
       "sourceStart": 22,
       "sourceLength": 1,
       "options": [
         {
-          "label": "Externally described (E)",
-          "value": "E"
+          "label": "F Program-described file",
+          "value": "F"
         },
         {
-          "label": "Program described (F)",
-          "value": "F"
+          "label": "E Externally described file",
+          "value": "E"
         }
       ]
     },
     {
       "name": "RECLEN",
-      "description": "Record length (positions 20-23)",
+      "description": "Record length (positions 23-27)",
       "help": "Record length of a program-described file. Normally blank when externally described.",
       "inputType": "number",
       "required": false,
@@ -124,9 +186,9 @@
     },
     {
       "name": "LIMITS",
-      "description": "Limits processing (positions 24-27)",
-      "help": "Specifies limits processing.",
-      "inputType": "text",
+      "description": "Limits processing (position 28)",
+      "help": "L = sequential-within-limits processing by a record-address file. Blank = sequential or random processing.",
+      "inputType": "dropdown",
       "required": false,
       "sourceStart": 28,
       "sourceLength": 1,
@@ -135,11 +197,21 @@
         "maxLength": 1
       },
       "placeholder": "",
-      "visibleByDefault": false
+      "visibleByDefault": true,
+      "options": [
+        {
+          "label": "L Sequential-within-limits processing by a…",
+          "value": "L"
+        },
+        {
+          "label": "(blank) Sequential or random processing",
+          "value": ""
+        }
+      ]
     },
     {
       "name": "KEYLEN",
-      "description": "Length of key or record address",
+      "description": "Length of key or record address (positions 29-33)",
       "inputType": "text",
       "required": false,
       "sourceStart": 29,
@@ -151,9 +223,9 @@
     },
     {
       "name": "RECADDR",
-      "description": "Record address type (position 28)",
-      "help": "The record address type. Usually K for a keyed file.",
-      "inputType": "text",
+      "description": "Record address type (position 34)",
+      "help": "K = key values (externally described files). Blank = relative record numbers. A/P/G/D/T/Z/F are key types of program-described indexed files.",
+      "inputType": "dropdown",
       "required": false,
       "sourceStart": 34,
       "sourceLength": 1,
@@ -161,14 +233,52 @@
         "characterSet": "upper",
         "maxLength": 1
       },
-      "placeholder": "",
-      "visibleByDefault": false
+      "placeholder": "K",
+      "visibleByDefault": true,
+      "options": [
+        {
+          "label": "(blank) Relative record numbers are used to proc…",
+          "value": ""
+        },
+        {
+          "label": "A Character keys",
+          "value": "A"
+        },
+        {
+          "label": "P Packed keys",
+          "value": "P"
+        },
+        {
+          "label": "G Graphic keys",
+          "value": "G"
+        },
+        {
+          "label": "K Key values are used to process the file",
+          "value": "K"
+        },
+        {
+          "label": "D Date keys are used to process the file",
+          "value": "D"
+        },
+        {
+          "label": "T Time keys are used to process the file",
+          "value": "T"
+        },
+        {
+          "label": "Z Timestamp Keys are used to process the f…",
+          "value": "Z"
+        },
+        {
+          "label": "F Float Key",
+          "value": "F"
+        }
+      ]
     },
     {
       "name": "FILEORG",
-      "description": "File organization (positions 29-33)",
-      "help": "The file organization. Enter K for keyed access.",
-      "inputType": "text",
+      "description": "File organization (position 35)",
+      "help": "Blank = program-described file processed without keys, or an externally described file. I = indexed, T = record address file (program-described only).",
+      "inputType": "dropdown",
       "required": false,
       "sourceStart": 35,
       "sourceLength": 1,
@@ -176,12 +286,25 @@
         "characterSet": "upper",
         "maxLength": 1
       },
-      "placeholder": "K",
-      "visibleByDefault": false
+      "visibleByDefault": true,
+      "options": [
+        {
+          "label": "(blank) The program-described file is processed …",
+          "value": ""
+        },
+        {
+          "label": "I Indexed file",
+          "value": "I"
+        },
+        {
+          "label": "T Record address file that contains relati…",
+          "value": "T"
+        }
+      ]
     },
     {
       "name": "DEVICE",
-      "description": "Device (positions 34-42)",
+      "description": "Device (positions 36-42)",
       "help": "The device type. DISK = database, PRINTER = printer, WORKSTN = display, SPECIAL = special, SEQ = sequential.",
       "inputType": "dropdown",
       "required": false,

@@ -157,7 +157,7 @@ priority: 1           # 既存機能の構造改善。DDS(1) と同格
   選ばせ方（F4 で種類の一覧を出す／プロンプター内で切り替える等）の判断が要る。
 - [x] **英大文字だけに縛っている欄を実機に合わせる** — 済（`20260927-prompter-mixed-case`。DDS のキーワード欄と ILE RPG の名前欄）: DDS のキーワード欄（日本語・小文字の定数が書けず、既存の日本語定数の行は無変更でも確定できない）、
   RPG の名前欄（ILE は大小文字を混ぜてよい）（docs/research/20260927-f4-prompter-exploration/findings.md の P6・P12）。`characterSet: "upper"` の付け方を原典で見直す。
-- [ ] **RPG 仕様書の定義の不足をまとめて直す**（docs/research/20260927-f4-prompter-exploration/findings.md の P7・P8・P9・P11・P23）: 必須が強すぎる欄（D の LEN・F の継続行・P の E 行・C-NEW の COND）／
+- [x] **RPG 仕様書の定義の不足をまとめて直す** — 済（`20260927-prompter-rpg-definition-gaps`。選択欄の値は原典の桁ごとのページから生成）（docs/research/20260927-f4-prompter-exploration/findings.md の P7・P8・P9・P11・P23）: 必須が強すぎる欄（D の LEN・F の継続行・P の E 行・C-NEW の COND）／
   D のデータ・タイプに N・G・C・U・* が無い／表示されない欄（D の小数、F の LIMITS・RECADDR・FILEORG＝`K` が書けない）／F 仕様のラベルの桁番号の誤り
   （`docs/ILE_RPG_Fixed_Format_Reference.md:160-172` の表も誤り）／F のファイル・タイプ `O` とファイル指定の組み合わせの検査（実機 RNF2040）。
   **原典と機械的に突き合わせて直す**（AGENTS.md）。
