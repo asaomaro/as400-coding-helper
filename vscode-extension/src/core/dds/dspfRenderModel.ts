@@ -31,6 +31,8 @@ import {
   type DanglingReferenceCode
 } from "./ddsDanglingReferences";
 import { resolveScreenSizes } from "./dspfScreenSize";
+import type { DspfWindow } from "./dspfWindow";
+import type { GridLine } from "./dspfGrid";
 import type { PrintDensity } from "./prtfDensity";
 import type { LayoutDiagnosticCode } from "./prtfLayout";
 import {
@@ -135,6 +137,10 @@ export interface RenderModel {
   readonly density?: PrintDensity;
   /** 描く項目（配置できたものだけ）。 */
   readonly items: readonly RenderItem[];
+  /** ウィンドウの枠（画面のみ）。中の項目は `RenderItem.origin` で画面の位置に直す。 */
+  readonly windows?: readonly DspfWindow[];
+  /** 罫線（画面のみ。`GRDBOX` / `GRDLIN`）。標識で消えるものは `applyIndicators` が外す。 */
+  readonly gridLines?: readonly GridLine[];
   readonly diagnostics: readonly RenderDiagnostic[];
   /** 様式の一覧（追加先の選択に使う）。 */
   readonly records: readonly string[];
@@ -177,6 +183,8 @@ export interface SecondaryScreen {
   /** 画面サイズ条件名（`*DS4` / ユーザー定義名）。数値形式の `DSPSIZ` では無い。 */
   readonly name?: string;
   readonly items: readonly RenderItem[];
+  readonly windows?: readonly DspfWindow[];
+  readonly gridLines?: readonly GridLine[];
   readonly diagnostics: readonly RenderDiagnostic[];
 }
 
@@ -215,6 +223,8 @@ export function buildDspfRenderModel(lines: readonly string[]): RenderModel {
         ? { name: sizes.secondary.conditionName }
         : {}),
       items: secondary.items.map(item => toRenderItem(item)),
+      ...(secondary.windows.length > 0 ? { windows: secondary.windows } : {}),
+      ...(secondary.gridLines.length > 0 ? { gridLines: secondary.gridLines } : {}),
       diagnostics: secondary.diagnostics
     }
   };
@@ -238,6 +248,8 @@ export function fromLayout(
     kind: "dspf",
     canvas: { rows: layout.screen.rows, columns: layout.screen.columns },
     items,
+    ...(layout.windows.length > 0 ? { windows: layout.windows } : {}),
+    ...(layout.gridLines.length > 0 ? { gridLines: layout.gridLines } : {}),
     diagnostics: layout.diagnostics,
     records: recordNames(outline),
     outline,
@@ -311,6 +323,9 @@ export function applyIndicators(model: RenderModel, states: IndicatorStates): Re
   return {
     ...model,
     items: shown,
+    ...(model.gridLines !== undefined
+      ? { gridLines: model.gridLines.filter(line => evaluateConditioning(line.condition, states) !== "hidden") }
+      : {}),
     outline: hidden.size === 0 ? model.outline : markHidden(model.outline, hidden),
     diagnostics: [...model.diagnostics, ...overlapsUnderIndicators(shown, states)]
   };

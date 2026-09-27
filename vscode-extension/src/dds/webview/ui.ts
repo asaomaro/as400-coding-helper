@@ -40,6 +40,8 @@ import {
   type RenderItem,
   type RenderModel
 } from "../../core/dds/dspfRenderModel";
+import { windowBounds, windowOrigin, type DspfWindow } from "../../core/dds/dspfWindow";
+import type { GridLine } from "../../core/dds/dspfGrid";
 import type { Bridge } from "./bridge";
 import {
   cellFromOffset,
@@ -98,6 +100,8 @@ interface Gesture {
    * 別のものになるため。桁だけを動かす（`moveColumn`）。
    */
   readonly rowFromSpacing: boolean;
+  /** ウィンドウの中の項目なら、描くときに足す量と動かせる範囲（位置はウィンドウの中の値のまま）。 */
+  readonly window?: { readonly origin: CellPoint; readonly bounds: CanvasSize };
 }
 
 /** 追加の内容をホストに聞く（ホストが入力手段を持つ）。 */
@@ -584,6 +588,8 @@ class EditorView {
       ...model,
       canvas: secondary.canvas,
       items: secondary.items,
+      windows: secondary.windows,
+      gridLines: secondary.gridLines,
       diagnostics: secondary.diagnostics
     };
   }
@@ -737,7 +743,11 @@ class EditorView {
       ? items.find(item => item.sourceLine === this.selected)?.recordName
       : undefined;
 
-    const nodes: HTMLElement[] = [];
+    // **枠は項目より先に置く**（項目の下に敷く）。枠は描くだけで、掴めない。
+    const nodes: HTMLElement[] = [
+      ...(model.windows ?? []).map(window => windowFrame(window)),
+      ...(model.gridLines ?? []).map(line => gridLine(line))
+    ];
     for (const item of items) {
       // **属性文字は表示装置のもの。** 印刷には出ないので帳票では描かない。
       if (this.display.showAttributes && this.isDisplayFile()) {
@@ -746,6 +756,7 @@ class EditorView {
       const element = this.buildItem(item);
       if (this.dimmed(item, activeRecord)) element.classList.add("dimmed");
       nodes.push(element);
+      nodes.push(...subfileRepeats(item, element));
     }
     // **キャンバスは毎回作り替える**ので、線もここで一緒に入れる
     // （外に置くと `replaceChildren` で消える。実際に踏んだ）。
@@ -872,7 +883,9 @@ class EditorView {
     element.dataset.resizable = String(item.resizable);
     element.dataset.rowFromSpacing = String(item.rowFromSpacing === true);
     if (item.rowFromSpacing) element.classList.add("row-from-spacing");
-    element.style.left = `calc(var(--cell-w) * ${item.column - 1})`;
+    // ウィンドウの中の項目は、枠の位置を足して描く（位置欄はウィンドウの中の値のまま）。
+    const screen = screenPoint(item);
+    element.style.left = `calc(var(--cell-w) * ${screen.column - 1})`;
     element.style.width = `calc(var(--cell-w) * ${item.widthCols ?? 1})`;
 
     // **紙の比率で描くときは位置（インチ）を使う。**
@@ -889,10 +902,11 @@ class EditorView {
       element.style.top = `${item.inches * perInch - lineHeight}px`;
       element.style.height = `${lineHeight}px`;
     } else {
-      element.style.top = `calc(var(--cell-h) * ${item.row - 1})`;
+      element.style.top = `calc(var(--cell-h) * ${screen.row - 1})`;
     }
     element.title =
       `${item.label}（${item.row} 行 ${item.column} 桁` +
+      `${item.origin === undefined ? "" : `・ウィンドウの中。画面では ${screen.row} 行 ${screen.column} 桁`}` +
       `${item.widthCols === undefined ? " / 幅不明" : ` / ${item.widthCols} 桁`}` +
       ` / ソース ${item.sourceLine} 行目` +
       `${item.printAppearance === undefined ? describeAppearance(item.appearance) : describePrintAppearance(item.printAppearance)}）`;
@@ -2495,7 +2509,8 @@ class EditorView {
       },
       widthCols: Number(current.dataset.width),
       element: current,
-      rowFromSpacing: current.dataset.rowFromSpacing === "true"
+      rowFromSpacing: current.dataset.rowFromSpacing === "true",
+      ...this.itemWindow(sourceLine)
     };
     this.mode = target?.dataset.role === "resize" ? "resizing" : "selecting";
     event.preventDefault();
@@ -2516,8 +2531,9 @@ class EditorView {
 
     if (this.mode === "dragging") {
       const target = this.dragTarget(gesture, deltaX, deltaY);
-      gesture.element.style.left = `calc(var(--cell-w) * ${target.column - 1})`;
-      gesture.element.style.top = `calc(var(--cell-h) * ${target.row - 1})`;
+      const offset = gesture.window?.origin ?? { row: 0, column: 0 };
+      gesture.element.style.left = `calc(var(--cell-w) * ${target.column + offset.column - 1})`;
+      gesture.element.style.top = `calc(var(--cell-h) * ${target.row + offset.row - 1})`;
       return;
     }
 
@@ -2607,7 +2623,7 @@ class EditorView {
     const step = arrowStep(event.key);
     if (!step) return;
     event.preventDefault();
-    const canvas = this.canvasSize();
+    const canvas = this.itemWindow(item.sourceLine).window?.bounds ?? this.canvasSize();
     const column = clamp(item.column + step.column, 1, canvas.columns);
 
     // 行送りで決まる行は上下させない（帳票）。桁だけを動かす。
@@ -2657,9 +2673,12 @@ class EditorView {
     const ask = this.options.askItem;
     if (kind === null || ask === undefined) return;
 
-    const at = this.cellAt(event);
-    const record = this.recordAt(at.row);
+    const screen = this.cellAt(event);
+    const record = this.recordAt(screen);
     if (record === undefined) return;
+    // ウィンドウに表示される様式なら、押した画面の位置をウィンドウの中の位置に直す。
+    const window = this.windowOfRecord(record);
+    const at = window === undefined ? screen : toWindowPoint(window, screen);
     this.placing = null;
     this.updateArmed();
 
@@ -2834,19 +2853,31 @@ class EditorView {
    *   見出しを選ぶのは「この様式で作業する」という明示だが、項目を選ぶのは
    *   その項目を見ているだけで、置き先の宣言ではない。
    */
-  private recordAt(row: number): string | undefined {
+  private recordAt(point: CellPoint): string | undefined {
     const heading = this.selectedRecordHeading();
     if (heading !== undefined) return heading;
 
-    const items = (this.view ?? this.model)?.items ?? [];
+    const model = this.view ?? this.model;
+    // **ウィンドウの枠の中を押したなら、そのウィンドウの様式。** 後に定義したものほど上に出る。
+    const inside = [...(model?.windows ?? [])]
+      .reverse()
+      .find(window =>
+        point.row > window.top && point.row < window.bottom &&
+        point.column > window.left && point.column < window.right
+      );
+    const items = (model?.items ?? []).filter(item =>
+      inside === undefined ? item.origin === undefined : inside.records.includes(item.recordName ?? "")
+    );
+    const row = point.row;
     let best: RenderItem | undefined;
     for (const item of items) {
       if (item.recordName === undefined) continue;
-      if (item.row > row) continue;
-      if (!best || item.row > best.row || (item.row === best.row && item.sourceLine > best.sourceLine)) {
+      if (screenPoint(item).row > row) continue;
+      if (!best || screenPoint(item).row > screenPoint(best).row || (screenPoint(item).row === screenPoint(best).row && item.sourceLine > best.sourceLine)) {
         best = item;
       }
     }
+    if (best === undefined && inside !== undefined) return inside.recordName;
     const records = (this.view ?? this.model)?.records ?? [];
     return best?.recordName ?? records[records.length - 1];
   }
@@ -2865,6 +2896,20 @@ class EditorView {
     return record !== undefined && record.name.length > 0 ? record.name : undefined;
   }
 
+  /** 様式が表示されるウィンドウ（定義・参照・中のサブファイル）。 */
+  private windowOfRecord(record: string): DspfWindow | undefined {
+    return ((this.view ?? this.model)?.windows ?? []).find(window => window.records.includes(record));
+  }
+
+  /** 項目がウィンドウの中なら、描くときに足す量と動かせる範囲。 */
+  private itemWindow(sourceLine: number): Pick<Gesture, "window"> {
+    const item = ((this.view ?? this.model)?.items ?? []).find(candidate => candidate.sourceLine === sourceLine);
+    const window = item?.recordName === undefined ? undefined : this.windowOfRecord(item.recordName);
+    if (item?.origin === undefined || window === undefined) return {};
+    const bounds = windowBounds(window);
+    return { window: { origin: item.origin, bounds: { rows: Math.max(1, bounds.rows), columns: bounds.columns } } };
+  }
+
   private dragTarget(gesture: Gesture, deltaX: number, deltaY: number): CellPoint {
     const target = movedTo(
       gesture.origin,
@@ -2874,7 +2919,8 @@ class EditorView {
       gesture.rowFromSpacing ? 0 : deltaY,
       gesture.widthCols,
       this.cellMetrics(),
-      this.canvasSize()
+      // ウィンドウの中の項目は**ウィンドウの中だけ**を動く（位置欄はウィンドウの中の値）。
+      gesture.window?.bounds ?? this.canvasSize()
     );
     return gesture.rowFromSpacing ? { ...target, row: gesture.origin.row } : target;
   }
@@ -2885,7 +2931,7 @@ class EditorView {
       gesture.origin.column,
       deltaX,
       this.cellMetrics(),
-      this.canvasSize()
+      gesture.window?.bounds ?? this.canvasSize()
     );
   }
 
@@ -3020,15 +3066,110 @@ function overflowLine(model: RenderModel): HTMLElement | undefined {
   return element;
 }
 
+/** 画面に描く位置。ウィンドウの中の項目は枠の位置を足す（原典「上枠行 + 行」「左枠桁 + 桁 + 1」）。 */
+function screenPoint(item: Pick<RenderItem, "row" | "column" | "origin">): CellPoint {
+  return {
+    row: item.row + (item.origin?.row ?? 0),
+    column: item.column + (item.origin?.column ?? 0)
+  };
+}
+
+/** 画面の位置をウィンドウの中の位置に直す。枠の外なら枠の中の端に寄せる。 */
+function toWindowPoint(window: DspfWindow, screen: CellPoint): CellPoint {
+  const origin = windowOrigin(window);
+  const bounds = windowBounds(window);
+  return {
+    row: clamp(screen.row - origin.row, 1, Math.max(1, bounds.rows)),
+    column: clamp(screen.column - origin.column, 1, Math.max(1, bounds.columns))
+  };
+}
+
+/**
+ * ウィンドウの枠（`WINDOW`）。描くだけで掴めない。
+ *
+ * 枠は原典の式どおり上枠行〜下枠行・左枠桁〜右枠桁を占める。最終行がメッセージ行なら薄く示す。
+ * 開始位置が実行時に決まる（`*DFT` / `&フィールド`）ものは、画面の左上に仮に置いたことを見出しで言う。
+ */
+function windowFrame(window: DspfWindow): HTMLElement {
+  const frame = document.createElement("div");
+  frame.className = window.startKnown ? "dds-window" : "dds-window floating";
+  frame.dataset.record = window.recordName;
+  frame.style.left = `calc(var(--cell-w) * ${window.left - 1})`;
+  frame.style.top = `calc(var(--cell-h) * ${window.top - 1})`;
+  frame.style.width = `calc(var(--cell-w) * ${window.right - window.left + 1})`;
+  frame.style.height = `calc(var(--cell-h) * ${window.bottom - window.top + 1})`;
+  const where = window.startKnown
+    ? `${window.top} 行 ${window.left} 桁`
+    : "開始位置は実行時に決まる（仮に左上に描いています）";
+  frame.title = `ウィンドウ ${window.recordName}（${where} / ${window.lines} 行 × ${window.positions} 桁）`;
+  const label = document.createElement("span");
+  label.className = "dds-window-label";
+  label.textContent = window.startKnown ? window.recordName : `${window.recordName}（位置は実行時）`;
+  frame.appendChild(label);
+  if (window.messageLine) {
+    const message = document.createElement("div");
+    message.className = "dds-window-message";
+    message.style.top = `calc(var(--cell-h) * ${window.lines})`;
+    message.title = "メッセージ行（項目は置けません）";
+    frame.appendChild(message);
+  }
+  return frame;
+}
+
+/**
+ * 罫線 1 本（`GRDBOX` / `GRDLIN`）。**文字の枠の上**に引く（桁・行の境目）。描くだけで掴めない。
+ * 色と線種は原典 `GRDATR` の値をそのまま class にし、見え方は CSS が決める。
+ */
+function gridLine(line: GridLine): HTMLElement {
+  const element = document.createElement("div");
+  element.className = `dds-grid ${line.orientation} g-${line.color.toLowerCase()} l-${line.lineType.toLowerCase()}`;
+  // `data-source-line` は付けない（項目を掴むときにその属性で探しているため）。
+  element.dataset.gridLine = String(line.sourceLine);
+  if (line.orientation === "horizontal") {
+    element.style.top = `calc(var(--cell-h) * ${line.at})`;
+    element.style.left = `calc(var(--cell-w) * ${line.from})`;
+    element.style.width = `calc(var(--cell-w) * ${line.to - line.from})`;
+  } else {
+    element.style.left = `calc(var(--cell-w) * ${line.at})`;
+    element.style.top = `calc(var(--cell-h) * ${line.from})`;
+    element.style.height = `calc(var(--cell-h) * ${line.to - line.from})`;
+  }
+  element.title = `罫線（様式 ${line.recordName}・ソース ${line.sourceLine} 行目・${line.color} ${line.lineType}）`;
+  return element;
+}
+
+/**
+ * サブファイルを 1 ページ（`SFLPAG`）ぶん描く。**2 件目以降は写しで、掴めない**
+ * （ソースの項目は 1 つ。どれを動かしても同じ行が書き換わるので、元の 1 件だけを掴ませる）。
+ */
+function subfileRepeats(item: RenderItem, element: HTMLElement): HTMLElement[] {
+  const repeat = item.repeat;
+  if (repeat === undefined) return [];
+  const copies: HTMLElement[] = [];
+  const top = screenPoint(item).row;
+  for (let index = 1; index < repeat.count; index += 1) {
+    const copy = element.cloneNode(true) as HTMLElement;
+    copy.classList.add("sfl-repeat");
+    copy.classList.remove("selected");
+    copy.querySelector(".handle")?.remove();
+    delete copy.dataset.sourceLine;
+    copy.removeAttribute("title");
+    copy.style.top = `calc(var(--cell-h) * ${top + index * repeat.rowStep - 1})`;
+    copies.push(copy);
+  }
+  return copies;
+}
+
 /** 属性文字の占有を薄く示す（隣接違反が起きる前に見えるように）。 */
 function attributeMarkers(item: RenderItem, dimmed = false): HTMLElement[] {
   const markers: HTMLElement[] = [];
+  const offset = { row: item.origin?.row ?? 0, column: item.origin?.column ?? 0 };
   for (const column of [item.occupancy.start, item.occupancy.end]) {
     if (column < 1) continue;
     const marker = document.createElement("div");
     marker.className = dimmed ? "dds-attr dimmed" : "dds-attr";
-    marker.style.left = `calc(var(--cell-w) * ${column - 1})`;
-    marker.style.top = `calc(var(--cell-h) * ${item.row - 1})`;
+    marker.style.left = `calc(var(--cell-w) * ${column + offset.column - 1})`;
+    marker.style.top = `calc(var(--cell-h) * ${item.row + offset.row - 1})`;
     markers.push(marker);
   }
   return markers;

@@ -34,6 +34,15 @@ import {
   type ScreenSize,
   type ScreenSizes
 } from "./dspfScreenSize";
+import { resolveGridLines, type GridLine } from "./dspfGrid";
+import {
+  resolveRecordContext,
+  windowBounds,
+  windowOrigin,
+  type DspfWindow,
+  type SubfileRepeat,
+  type WindowOrigin
+} from "./dspfWindow";
 
 /**
  * 表示装置ファイル（DSPF）の画面レイアウトを解決する。
@@ -148,6 +157,15 @@ export interface DspfPlacedItem {
   readonly keywordGroups: readonly KeywordGroup[];
   readonly conditioning: Conditioning;
   readonly occupancy: Occupancy;
+  /**
+   * ウィンドウの中の項目なら、位置を画面に直すときに足す量（`dspfWindow`）。
+   *
+   * `row` / `column` / `occupancy` は**ソースの値のまま**（ウィンドウの中の位置）。
+   * 書き戻しはソースの値で行うので、ここで画面の位置に直すと動かしたときに壊れる。
+   */
+  readonly origin?: WindowOrigin;
+  /** サブファイル・レコードなら、1 ページ（`SFLPAG`）ぶんの並べ方。描くだけで、項目は 1 つ。 */
+  readonly repeat?: SubfileRepeat;
 }
 
 export interface DspfLayout {
@@ -156,6 +174,10 @@ export interface DspfLayout {
   readonly sizes: ScreenSizes;
   readonly items: readonly DspfPlacedItem[];
   readonly diagnostics: readonly DspfDiagnostic[];
+  /** ウィンドウ（`WINDOW` の定義形）。枠を描くのに使う。 */
+  readonly windows: readonly DspfWindow[];
+  /** 罫線（`GRDBOX` / `GRDLIN`）。 */
+  readonly gridLines: readonly GridLine[];
 }
 
 /**
@@ -315,6 +337,7 @@ export function resolveDspfLayout(
   let recordName: string | undefined;
 
   const units = toLogicalUnits(lines);
+  const context = resolveRecordContext(units);
   diagnostics.push(...unconditionableDiagnostics(units, "DSPF"));
   diagnostics.push(...ddsSourceDiagnostics(lines, units, "DSPF"));
   diagnostics.push(...keywordLevelDiagnostics(lines, units, "DSPF"));
@@ -409,7 +432,11 @@ export function resolveDspfLayout(
       : extraDisplayPositions(dataType, usage, decimals, HAS_EDIT_CODE.test(keywords));
     const occupancy = occupancyOf(column, resolved.width, sign);
 
-    if (isRowOneColumnOne(row, column)) {
+    const window = recordName === undefined ? undefined : context.windowOf.get(recordName.toUpperCase());
+    const repeat = recordName === undefined ? undefined : context.subfileRepeat.get(recordName.toUpperCase());
+
+    // ウィンドウの中の 1 行 1 桁は画面の 1 行 1 桁ではない（左枠の属性バイトが手前にある）。
+    if (window === undefined && isRowOneColumnOne(row, column)) {
       diagnostics.push({
         code: "column-one-reserved",
         message: COLUMN_ONE_MESSAGE,
@@ -417,7 +444,9 @@ export function resolveDspfLayout(
       });
     }
 
-    if (row < 1 || row > screen.rows) {
+    if (window !== undefined) {
+      diagnostics.push(...windowOverflow(window, row, column, resolved.width, sign, sourceLine));
+    } else if (row < 1 || row > screen.rows) {
       diagnostics.push({
         code: "overflow",
         message: `行 ${row} は画面（${screen.rows} 行）の外です`,
@@ -451,13 +480,22 @@ export function resolveDspfLayout(
       keywords,
       keywordGroups: resolveKeywordGroups(unit),
       conditioning,
-      occupancy
+      occupancy,
+      ...(window !== undefined ? { origin: windowOrigin(window) } : {}),
+      ...(repeat !== undefined ? { repeat } : {})
     });
   }
 
   diagnostics.push(...detectOverlaps(items));
 
-  return { screen, sizes, items, diagnostics };
+  return {
+    screen,
+    sizes,
+    items,
+    diagnostics,
+    windows: context.windows,
+    gridLines: resolveGridLines(lines, units, target)
+  };
 }
 
 
@@ -637,6 +675,45 @@ export function isRowOneColumnOne(row: number, column: number): boolean {
 export const COLUMN_ONE_MESSAGE =
   "1 行 1 桁には項目を置けません（開始属性文字を置く手前の桁がありません）。" +
   "他の行の 1 桁目は置けます（属性文字は前の行の 80 桁目に入ります）";
+
+/**
+ * ウィンドウの中に収まっているか。原典（`WINDOW`）:
+ * > このレコードで定義するすべてのフィールドが、ウィンドウに収まらなければなりません。
+ * > ウィンドウの最終ウィンドウ行はメッセージ行として使用され、フィールドを含むことはできません。
+ *
+ * 桁は「左枠から 2 桁右」が 1 桁目で、右枠の手前の属性バイトまでがウィンドウ桁数
+ * （右枠桁 = 左枠桁 + ウィンドウ桁 + 3）。データの最後の桁がウィンドウ桁数以内なら収まる。
+ */
+function windowOverflow(
+  window: DspfWindow,
+  row: number,
+  column: number,
+  width: number | undefined,
+  sign: number,
+  sourceLine: number
+): DspfDiagnostic[] {
+  const usableRows = windowBounds(window).rows;
+  if (row < 1 || row > usableRows) {
+    return [{
+      code: "overflow",
+      message:
+        `行 ${row} はウィンドウ ${window.recordName}（項目を置ける行は ${usableRows} 行` +
+        `${window.messageLine ? "。最終行はメッセージ行" : ""}）の外です`,
+      sourceLine
+    }];
+  }
+  const end = dataEnd(column, width) + sign;
+  if (end > window.positions) {
+    return [{
+      code: "overflow",
+      message:
+        `桁 ${column}${width === undefined ? "" : ` + 幅 ${width}`}（${end} 桁目まで）は` +
+        `ウィンドウ ${window.recordName}（${window.positions} 桁）の外です`,
+      sourceLine
+    }];
+  }
+  return [];
+}
 
 /**
  * 重なりの検出。
