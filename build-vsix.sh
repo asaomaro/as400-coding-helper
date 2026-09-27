@@ -42,6 +42,7 @@ for required in \
   extension/out/prompter-webview/prompter.js \
   extension/out/sync-webview/sync.js \
   extension/node_modules/ssh2/package.json \
+  extension/images/icon.png \
   extension/resources/prompter; do
   if ! grep -q "^$required" <<<"$LIST"; then
     echo "  NG: $required が入っていない"

@@ -1,5 +1,7 @@
 # ibmi-dogubako（道具箱）
 
+<img src="vscode-extension/images/icon.png" alt="" width="96">
+
 IBM i の開発を VS Code と AI から助ける道具箱です。
 名前は IBM i に昔からある Toolbox に掛けた和名です（道具箱 = dogubako）。
 

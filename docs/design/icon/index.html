@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>アイコン案</title>
+<style>
+  :root {
+    --bg: #f4f5f7;
+    --card: #ffffff;
+    --text: #1f2328;
+    --muted: #59636e;
+    --line: #d8dee4;
+    --accent: #1a7f37;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #0d1117;
+      --card: #161b22;
+      --text: #e6edf3;
+      --muted: #9198a1;
+      --line: #30363d;
+      --accent: #3fb950;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #0d1117;
+    --card: #161b22;
+    --text: #e6edf3;
+    --muted: #9198a1;
+    --line: #30363d;
+    --accent: #3fb950;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    padding: 24px 16px 48px;
+    background: var(--bg);
+    color: var(--text);
+    font-family: system-ui, -apple-system, "Segoe UI", "Hiragino Sans", "Noto Sans JP", sans-serif;
+    line-height: 1.6;
+  }
+  main { max-width: 1100px; margin: 0 auto; }
+  header { display: flex; flex-wrap: wrap; align-items: baseline; gap: 8px 16px; margin-bottom: 8px; }
+  h1 { margin: 0; font-size: 1.4rem; }
+  .lead { margin: 0 0 20px; color: var(--muted); font-size: 0.95rem; }
+  .theme { margin-left: auto; display: inline-flex; border: 1px solid var(--line); border-radius: 6px; overflow: hidden; }
+  .theme button {
+    border: 0; padding: 4px 12px; background: transparent; color: var(--text); font: inherit; font-size: 0.85rem; cursor: pointer;
+  }
+  .theme button[aria-pressed="true"] { background: var(--accent); color: #fff; }
+
+  h2 { font-size: 1.05rem; margin: 28px 0 10px; }
+
+  /* 一覧（拡張機能の一覧に並んだときの見え方） */
+  .strip { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+  .strip > div { border-radius: 8px; padding: 14px; display: flex; flex-wrap: wrap; gap: 14px; align-items: center; }
+  .strip .light { background: #ffffff; border: 1px solid #d8dee4; }
+  .strip .dark { background: #1e1e1e; border: 1px solid #333; }
+  .strip figure { margin: 0; display: flex; flex-direction: column; align-items: center; gap: 4px; }
+  .strip figcaption { font-size: 0.7rem; }
+  .strip .light figcaption { color: #59636e; }
+  .strip .dark figcaption { color: #9d9d9d; }
+  .strip img { width: 32px; height: 32px; display: block; }
+
+  /* 案ごとのカード */
+  .cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 16px; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 16px; }
+  .card h3 { margin: 0 0 4px; font-size: 1rem; }
+  .card p { margin: 0 0 12px; color: var(--muted); font-size: 0.88rem; }
+  .preview { display: flex; gap: 16px; align-items: flex-end; flex-wrap: wrap; }
+  .preview .big { width: 128px; height: 128px; display: block; }
+  .sizes { display: flex; flex-direction: column; gap: 8px; }
+  .sizes .row { display: flex; gap: 10px; align-items: flex-end; padding: 6px 8px; border-radius: 6px; }
+  .sizes .row.light { background: #ffffff; border: 1px solid #d8dee4; }
+  .sizes .row.dark { background: #1e1e1e; border: 1px solid #333; }
+  .sizes img { display: block; }
+  .file { margin-top: 10px; font-family: ui-monospace, "Cascadia Mono", Consolas, monospace; font-size: 0.78rem; color: var(--muted); word-break: break-all; }
+
+  @media (max-width: 520px) {
+    .strip { grid-template-columns: 1fr; }
+    .cards { grid-template-columns: 1fr; }
+    .theme { margin-left: 0; }
+  }
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <h1>ibmi-dogubako アイコン案（16 案）</h1>
+    <div class="theme" role="group" aria-label="表示テーマ">
+      <button type="button" data-theme-choice="auto" aria-pressed="true">自動</button>
+      <button type="button" data-theme-choice="light" aria-pressed="false">ライト</button>
+      <button type="button" data-theme-choice="dark" aria-pressed="false">ダーク</button>
+    </div>
+  </header>
+  <p class="lead">下書きです。マーケットプレイスでは 128px、拡張機能の一覧では 32px 前後で表示されます。
+    小さくしたときに形が残るか、明るい背景・暗い背景のどちらでも見えるかを比べてください。</p>
+
+  <h2>拡張機能の一覧に並んだとき（32px）</h2>
+  <div class="strip" id="strip">
+    <div class="light"></div>
+    <div class="dark"></div>
+  </div>
+
+  <h2>案ごと</h2>
+  <div class="cards" id="cards"></div>
+</main>
+
+<script>
+  const icons = [
+    ["01-toolbox-sashigane.svg", "1. 道具箱と差し金", "蓋の開いた道具箱から、L 字の差し金（大工の定規）が斜めに突き出す。名前と中身（桁の定規）がそのまま絵になる。"],
+    ["02-green-screen-box.svg", "2. 緑の画面の道具箱", "道具箱の正面が 5250 の黒い画面。緑の文字とカーソル。IBM i の緑の画面の道具だと一目で分かる。"],
+    ["03-grid-sosi.svg", "3. 枡目と { }", "枡目（1 マス = 1 桁）に、全角 1 字（2 マス）を挟む { と }。ルーラーと SOSI 表示という固有の機能の抽象化。"],
+    ["04-sashigane-corner.svg", "4. 差し金の角", "目盛り付きの L 字の差し金と、角の内側の小さな箱。「桁を正しく測る」を 1 つの形で。"],
+    ["05-hanko.svg", "5. 判子の「箱」", "朱色の角判に「箱」。和名であることを最も強く出す。海外の人には意味が伝わりにくい。"],
+    ["06-f4-key.svg", "6. F4 のキー", "道具箱の中に F4 のキー。SEU の F4 プロンプターを知る人には一発で伝わる。"],
+    ["07-ruler-box.svg", "7. ルーラー付きの木箱", "木箱の縁に SEU の書式行のような目盛り。遠目には木箱、近くで見ると目盛り。"],
+    ["08-db-mark.svg", "8. db の文字マーク", "黒地に緑の等幅フォントで db（dogubako）とカーソル。端末風の文字だけのマーク。"],
+    ["09-glowing-crate.svg", "9. 光る木箱", "立体の木箱の隙間から緑の光が漏れる。古い道具箱の中に今の道具。小さいと潰れやすい。"],
+    ["10-jubako.svg", "10. 重箱", "3 段の重箱。緑 = 書く（編集支援）、金 = 送る（送受信）、朱 = 試す（テスト）。機能が増えたら段を足せる。"],
+    ["11-toolbox-grid-sashigane.svg", "11. 道具箱の中の枡目（差し金あり）", "3 の枡目と { } を 1 の道具箱の正面に入れ、差し金も残した。名前（道具箱）・桁の定規・SOSI の 3 つを 1 枚に。"],
+    ["12-toolbox-grid.svg", "12. 道具箱の中の枡目（取っ手付き）", "11 から差し金を外し、取っ手を付けて枡目を大きくした。小さく表示したときの見やすさを優先。"],
+    ["13-toolbox-screen-sashigane.svg", "13. 道具箱の緑の画面（差し金あり）", "2 の 5250 の画面を 1 の木の道具箱の正面に入れ、差し金も残した。IBM i の道具箱であることと、桁の定規を 1 枚に。"],
+    ["14-toolbox-screen.svg", "14. 道具箱の緑の画面（取っ手付き）", "13 から差し金を外し、取っ手を付けて画面を大きくした。小さく表示したときの見やすさを優先。"],
+    ["15-toolbox-screen-tools3.svg", "15. 道具箱の緑の画面（道具 3 本）", "13 を基準に、差し金・赤鉛筆・金槌の 3 本を箱から出した。道具箱らしさを強めた。"],
+    ["16-toolbox-screen-tools4.svg", "16. 道具箱の緑の画面（道具 4 本）", "15 にドライバーを足して 4 本に。道具が多く、にぎやかな道具箱。小さくすると道具が重なって見える。"]
+  ];
+
+  const make = (tag, attrs = {}, text) => {
+    const node = document.createElement(tag);
+    for (const [key, value] of Object.entries(attrs)) node.setAttribute(key, value);
+    if (text !== undefined) node.textContent = text;
+    return node;
+  };
+
+  const [light, dark] = document.querySelectorAll("#strip > div");
+  icons.forEach(([file, name]) => {
+    for (const box of [light, dark]) {
+      const figure = make("figure");
+      figure.append(make("img", { src: file, alt: name, title: name }), make("figcaption", {}, name.split(".")[0]));
+      box.append(figure);
+    }
+  });
+
+  const cards = document.getElementById("cards");
+  icons.forEach(([file, name, note]) => {
+    const card = make("article", { class: "card" });
+    card.append(make("h3", {}, name), make("p", {}, note));
+    const preview = make("div", { class: "preview" });
+    preview.append(make("img", { class: "big", src: file, alt: name }));
+    const sizes = make("div", { class: "sizes" });
+    for (const mode of ["light", "dark"]) {
+      const row = make("div", { class: `row ${mode}` });
+      for (const size of [64, 32, 16]) row.append(make("img", { src: file, alt: "", width: size, height: size }));
+      sizes.append(row);
+    }
+    preview.append(sizes);
+    card.append(preview, make("div", { class: "file" }, `docs/design/icon/${file}`));
+    cards.append(card);
+  });
+
+  // 表示テーマ（見るだけの好みなので、保存できなくても動く）
+  const root = document.documentElement;
+  const buttons = document.querySelectorAll("[data-theme-choice]");
+  const apply = choice => {
+    if (choice === "auto") root.removeAttribute("data-theme");
+    else root.setAttribute("data-theme", choice);
+    buttons.forEach(button => button.setAttribute("aria-pressed", String(button.dataset.themeChoice === choice)));
+  };
+  let saved = "auto";
+  try { saved = localStorage.getItem("icon-theme") || "auto"; } catch {}
+  apply(saved);
+  buttons.forEach(button => button.addEventListener("click", () => {
+    apply(button.dataset.themeChoice);
+    try { localStorage.setItem("icon-theme", button.dataset.themeChoice); } catch {}
+  }));
+</script>
+</body>
+</html>

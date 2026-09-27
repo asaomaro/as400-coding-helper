@@ -38,7 +38,7 @@ echo [3/3] 中身の確認
 call npx --yes @vscode/vsce@%VSCE_VERSION% ls > "%TEMP%\vsix-files.txt"
 if errorlevel 1 ( echo ERROR: 同梱ファイルの一覧を取れませんでした & exit /b 1 )
 set "NG="
-for %%f in (out/extension/extension.js out/dds-webview/editor.js out/prompter-webview/prompter.js out/sync-webview/sync.js node_modules/ssh2/package.json) do (
+for %%f in (out/extension/extension.js out/dds-webview/editor.js out/prompter-webview/prompter.js out/sync-webview/sync.js node_modules/ssh2/package.json images/icon.png) do (
   findstr /b /c:"%%f" "%TEMP%\vsix-files.txt" >nul || (echo   NG: %%f が入っていない & set "NG=1")
 )
 for %%f in (src/ test/ out-test/ dev/ node_modules/playwright-core/) do (
