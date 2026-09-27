@@ -511,7 +511,10 @@ for (const type of TYPES) {
       sourceStart: start,
       sourceLength: length,
       attributes: {
-        characterSet: "upper",
+        // **キーワード欄（45-80 桁）は英大文字に縛らない。** 定数のリテラルは小文字も DBCS も書け、
+        // 縛ると日本語の定数が確定できない（既存の行を無変更で確定することもできなかった。実操作調査の P6）。
+        // 実機でも小文字・DBCS の定数は作成できる（`.aidev/works/20260927-prompter-mixed-case/verify/MIXCASED.dspf`）。
+        ...(keywordArea ? {} : { characterSet: "upper" }),
         maxLength: length,
         // **列挙が「制限」か「候補」か。** 実機で全空間（1 文字なら 37 通り）を
         // 試して原典と一致した欄だけ `true`。それ以外は `false`＝候補にすぎない。

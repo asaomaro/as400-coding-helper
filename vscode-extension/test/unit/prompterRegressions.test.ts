@@ -308,3 +308,25 @@ suite("桁の決まりどおりに寄せる（実操作調査 P4）", () => {
     assert.equal(error({ C8: "N40N41" }, "C8"), undefined);
   });
 });
+
+suite("英大文字に縛らない欄（実操作調査 P6・P12）", () => {
+  // 実機で作成できる（.aidev/works/20260927-prompter-mixed-case/verify/）。縛ると確定できなかった。
+  const error = (rel: string, values: Record<string, string>, name: string) =>
+    buildInitialState(load(rel), values).fields.find(field => field.fieldName === name)?.error;
+
+  test("DDS のキーワード欄に小文字・日本語の定数が書ける", () => {
+    assert.equal(error("dds/ja/DDS-DSPF.json", { C39: "1 2", C45: "'Search: customer name'" }, "C45"), undefined);
+    assert.equal(error("dds/ja/DDS-DSPF.json", { C39: "2 2", C45: "'顧客名で絞り込みます'" }, "C45"), undefined);
+    assert.equal(error("dds/ja/DDS-PRTF.json", { C39: "2", C45: "'Total'" }, "C45"), undefined);
+  });
+
+  test("ILE RPG の名前は大小文字を混ぜてよい（D・P・F）", () => {
+    assert.equal(error("rpg/ile/ja/D-SPEC.json", { NAME: "loadSubfile", DECLTYPE: "PR" }, "NAME"), undefined);
+    assert.equal(error("rpg/ile/ja/P-SPEC.json", { PROCNAME: "loadSubfile", BEGINEND: "B" }, "PROCNAME"), undefined);
+    assert.equal(error("rpg/ile/ja/F-SPEC.json", { FILENAME: "mixcased" }, "FILENAME"), undefined);
+  });
+
+  test("DDS の名前欄はこれまでどおり英大文字", () => {
+    assert.notEqual(error("dds/ja/DDS-DSPF.json", { C19: "fld" }, "C19"), undefined);
+  });
+});
