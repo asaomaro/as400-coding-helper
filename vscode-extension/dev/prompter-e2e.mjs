@@ -231,6 +231,15 @@ check("Esc で取り消しになる", (await outcome()) === "取り消し");
 await page.click("#root .cancel");
 await settle();
 check("Cancel ボタンでも取り消しになる", (await outcome()) === "取り消し");
+for (const key of ["F12", "F3"]) {
+  await pick("SBMJOB — 値がコマンドの欄・追加パラメーター");
+  await page.fill('[name="CMD"]', "CALL PGM(X)"); // 触ると前回の結果が消える
+  await settle();
+  const before = await outcome();
+  await page.keyboard.press(key);
+  await settle();
+  check(`**${key} でも取り消しになる**（SEU と同じ。P19）`, before === "" && (await outcome()) === "取り消し", `${before} → ${await outcome()}`);
+}
 
 // ---- 8. 条件で必須が変わる（dependsOn）-------------------------------------
 

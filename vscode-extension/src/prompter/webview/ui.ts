@@ -617,7 +617,8 @@ export function startPrompter(bridge: Bridge, root: HTMLElement): void {
         return;
       }
 
-      if (event.key === "Escape") {
+      // SEU のプロンプトと同じく F12（取消し）・F3（終了）でも閉じる（実操作調査の P19。Esc しか効かなかった）。
+      if (event.key === "Escape" || event.key === "F12" || event.key === "F3") {
         event.preventDefault();
         event.stopPropagation();
         if (helpVisible()) {

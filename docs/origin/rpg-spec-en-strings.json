@@ -111,17 +111,24 @@
     },
     "INTTYPE": {
       "description": "Data type",
-      "help": "The field type: A, P, S, B, I, F, D, T, or Z.",
+      "help": "Internal data type (position 40). A = character, N = indicator, P = packed, S = zoned, B = binary, I = integer, U = unsigned, F = float, D = date, T = time, Z = timestamp, G = graphic, C = UCS-2, O = object, * = pointer.",
       "options": {
-        "A": "Character (A)",
-        "P": "Packed decimal (P)",
-        "S": "Zoned decimal (S)",
-        "B": "Binary (B)",
-        "I": "Integer (I)",
-        "F": "Float (F)",
-        "D": "Date (D)",
-        "T": "Time (T)",
-        "Z": "Timestamp (Z)"
+        "": "(blank) When the LIKE keyword is not specified: …",
+        "A": "A Character",
+        "B": "B Numeric (Binary format)",
+        "C": "C UCS-2 (Fixed or Variable-length format)",
+        "D": "D Date",
+        "F": "F Numeric (Float format)",
+        "G": "G Graphic",
+        "I": "I Numeric (Integer format)",
+        "N": "N Character (Indicator format)",
+        "O": "O Object",
+        "P": "P Numeric (Packed decimal format)",
+        "S": "S Numeric (Zoned format)",
+        "T": "T Time",
+        "U": "U Numeric (Unsigned format)",
+        "Z": "Z Timestamp",
+        "*": "* Basing pointer or procedure pointer"
       }
     },
     "DEC": {
@@ -146,64 +153,101 @@
     },
     "FILETYPE": {
       "description": "File type (position 17)",
-      "help": "How the file is used. I = input only, O = output only, U = update, C = combined.",
+      "help": "How the file is used (position 17). I = input, O = output, U = update, C = combined. Blank on a keyword-only continuation line.",
       "options": {
-        "I": "Input only (I)",
-        "O": "Output only (O)",
-        "U": "Update (U)",
-        "C": "Combined (C)"
+        "I": "I Input file",
+        "O": "O Output file",
+        "U": "U Update file",
+        "C": "C Combined (input/output) file"
       }
     },
     "FILEDESG": {
       "description": "File designation (position 18)",
-      "help": "F = full procedural. Blank = demand file.",
+      "help": "Blank = output file, P = primary, S = secondary, R = record address, T = array or table, F = full procedural. An output file (O in position 17) must be blank.",
       "options": {
-        "F": "Full procedural (F)",
-        "": "(blank) Demand"
+        "": "(blank) Output file",
+        "P": "P Primary file",
+        "S": "S Secondary file",
+        "R": "R Record address file",
+        "T": "T Array or table file",
+        "F": "F Full procedural file"
       }
     },
     "ENDFILE": {
-      "description": "End of file",
-      "help": "E = end the program when this file reaches end of file. Blank = do not end."
+      "description": "End of file (position 19)",
+      "help": "E = all records of this file must be processed before the program ends. Applies to primary, secondary, and record-address input/update/combined files.",
+      "options": {
+        "E": "E All records from the file must be proces…",
+        "": "(blank) If position 19 is blank for all files"
+      }
     },
     "FILEADD": {
-      "description": "File addition",
-      "help": "A = records may be added to the file. Blank = no additions."
+      "description": "File addition (position 20)",
+      "help": "A = records can be added to an input or update file. Blank = no additions. Ignored for output files.",
+      "options": {
+        "": "(blank) No records can be added to an input or u…",
+        "A": "A Records are added to an input or update …"
+      }
     },
     "SEQUENCE": {
-      "description": "Sequence",
-      "help": "A = ascending, D = descending."
+      "description": "Sequence (position 21)",
+      "help": "Sequence of the match fields. A or blank = ascending, D = descending.",
+      "options": {
+        "A": "A Match fields are in ascending sequence",
+        "": "(blank) Match fields are in ascending sequence",
+        "D": "D Match fields are in descending sequence"
+      }
     },
     "FILEFMT": {
-      "description": "File format (position 19)",
-      "help": "E = externally described. F = program described.",
+      "description": "File format (position 22)",
+      "help": "E = externally described, F = program described.",
       "options": {
-        "E": "Externally described (E)",
-        "F": "Program described (F)"
+        "F": "F Program-described file",
+        "E": "E Externally described file"
       }
     },
     "RECLEN": {
-      "description": "Record length (positions 20-23)",
+      "description": "Record length (positions 23-27)",
       "help": "Record length of a program-described file. Normally blank when externally described."
     },
     "LIMITS": {
-      "description": "Limits processing (positions 24-27)",
-      "help": "Specifies limits processing."
+      "description": "Limits processing (position 28)",
+      "help": "L = sequential-within-limits processing by a record-address file. Blank = sequential or random processing.",
+      "options": {
+        "L": "L Sequential-within-limits processing by a…",
+        "": "(blank) Sequential or random processing"
+      }
     },
     "KEYLEN": {
-      "description": "Length of key or record address",
+      "description": "Length of key or record address (positions 29-33)",
       "help": "Key length of a program-described file. Blank when externally described."
     },
     "RECADDR": {
-      "description": "Record address type (position 28)",
-      "help": "The record address type. Usually K for a keyed file."
+      "description": "Record address type (position 34)",
+      "help": "K = key values (externally described files). Blank = relative record numbers. A/P/G/D/T/Z/F are key types of program-described indexed files.",
+      "options": {
+        "": "(blank) Relative record numbers are used to proc…",
+        "A": "A Character keys",
+        "P": "P Packed keys",
+        "G": "G Graphic keys",
+        "K": "K Key values are used to process the file",
+        "D": "D Date keys are used to process the file",
+        "T": "T Time keys are used to process the file",
+        "Z": "Z Timestamp Keys are used to process the f…",
+        "F": "F Float Key"
+      }
     },
     "FILEORG": {
-      "description": "File organization (positions 29-33)",
-      "help": "The file organization. Enter K for keyed access."
+      "description": "File organization (position 35)",
+      "help": "Blank = program-described file processed without keys, or an externally described file. I = indexed, T = record address file (program-described only).",
+      "options": {
+        "": "(blank) The program-described file is processed …",
+        "I": "I Indexed file",
+        "T": "T Record address file that contains relati…"
+      }
     },
     "DEVICE": {
-      "description": "Device (positions 34-42)",
+      "description": "Device (positions 36-42)",
       "help": "The device type. DISK = database, PRINTER = printer, WORKSTN = display, SPECIAL = special, SEQ = sequential.",
       "options": {
         "DISK": "DISK (database)",
@@ -550,7 +594,7 @@
     "help": "Mark the beginning and end of a subprocedure (position 6 = P). The begin line (B) pairs with a prototype on a D specification. Positions follow ILE RPG IV; positions 44-80 hold keywords.",
     "PROCNAME": {
       "description": "Procedure name (positions 7-21)",
-      "help": "The subprocedure name (up to 15 characters). Use the same name on the begin (B) and end (E) lines."
+      "help": "The subprocedure name (up to 15 characters). Use the same name on the begin (B) and end (E) lines. May be omitted on the E (end) line."
     },
     "BEGINEND": {
       "description": "Begin/end (position 24)",

@@ -57,6 +57,17 @@ function roundTrip(keywords: string): string {
 const entries = (text: string) => parseKeywordEntries(text).map(e => e.raw);
 
 suite("キーワードの書き出し: 折り返し", () => {
+  // 1 つのキーワードが欄に収まらないときの `-` の切り目は、語の途中ではなく空白の手前（実操作調査の D11）。
+  test("`-` で切るときは語の途中で切らず、読み直すと元の値に戻る", () => {
+    const keywords = "WDWTITLE((*TEXT '顧客詳細') (*COLOR WHT))";
+    const chunks = foldKeywordArea(keywords);
+    assert.ok(chunks.length >= 2, JSON.stringify(chunks));
+    // 切れ目は空白の手前（`(*COL-` のように語を割らない）。
+    assert.ok(chunks.slice(1).every(chunk => chunk.startsWith(" ")), JSON.stringify(chunks));
+    assert.ok(!chunks.some(chunk => /\(\*COL-$/u.test(chunk)), JSON.stringify(chunks));
+    assert.strictEqual(roundTrip(keywords), keywords);
+  });
+
   test("収まるなら 1 行", () => {
     assert.deepStrictEqual(foldKeywordArea("DSPATR(RI) COLOR(RED)"), ["DSPATR(RI) COLOR(RED)"]);
   });

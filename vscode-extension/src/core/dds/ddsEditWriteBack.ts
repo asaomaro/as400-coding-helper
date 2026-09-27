@@ -108,8 +108,13 @@ export function foldKeywordArea(keywords: string): readonly string[] {
       // 1 文字も入らない（全角 1 文字で 35 桁を超える）ことは無いが、
       // 念のため止める——0 で切ると同じ塊を無限に積む。
       if (at === 0) break;
-      chunks.push(`${rest.slice(0, at)}-`);
-      rest = rest.slice(at);
+      // **語の途中で切らない。** 収まる範囲の最後の空白で切る（`(*COL-` / `OR WHT))` と
+      // 読みにくく割れていた。実操作調査の D11）。`-` 継続は次の行の先頭の空白をそのまま続けるので、
+      // 空白の手前で切っても値は変わらない。空白が無ければ従来どおり桁いっぱいで切る。
+      const space = rest.lastIndexOf(" ", at - 1);
+      const cut = space > 0 ? space : at;
+      chunks.push(`${rest.slice(0, cut)}-`);
+      rest = rest.slice(cut);
     }
     current = rest;
   }

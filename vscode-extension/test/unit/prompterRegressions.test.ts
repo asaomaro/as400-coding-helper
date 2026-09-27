@@ -364,3 +364,39 @@ suite("CL: 文字ストリングを引用符で囲む・折り返しを実機の
     for (const line of lines) assert.ok(printWidth(line) <= 72, `${printWidth(line)} 桁: ${line}`);
   });
 });
+
+suite("RPG 仕様書の定義の不足（実操作調査 P7・P8・P9・P11・P23）", () => {
+  const state = (rel: string, values: Record<string, string>) => buildInitialState(load(rel), values, { reportEmptyRequired: true });
+  const errorOf = (rel: string, values: Record<string, string>, name: string) =>
+    state(rel, values).fields.find(field => field.fieldName === name)?.error;
+
+  test("必須が強すぎない: 長さの無い D 行・キーワードだけの F 行・名前の無い P の E 行・ELSE", () => {
+    assert.equal(state("rpg/ile/ja/D-SPEC.json", { NAME: "INDS", DECLTYPE: "DS" }).hasErrors, false);
+    assert.equal(state("rpg/ile/ja/F-SPEC.json", { KEYWORDS: "SFILE(SFL01:RRN)" }).hasErrors, false);
+    assert.equal(state("rpg/ile/ja/P-SPEC.json", { BEGINEND: "E" }).hasErrors, false);
+    assert.equal(state("rpg/ile/ja/C-NEW.json", { OPCODE: "ELSE" }).hasErrors, false);
+  });
+
+  test("D のデータ・タイプに N（標識）・U・G・C・O・* がある（原典の 40 桁目の値）", () => {
+    const values = load("rpg/ile/ja/D-SPEC.json").parameters.find(p => p.name === "INTTYPE")?.options?.map(o => o.value);
+    for (const value of ["N", "U", "G", "C", "O", "*"]) assert.ok(values?.includes(value), value);
+    assert.equal(errorOf("rpg/ile/ja/D-SPEC.json", { NAME: "IND01", LEN: "1", INTTYPE: "N" }, "INTTYPE"), undefined);
+  });
+
+  test("隠れていた欄が見える（D の小数、F の限界内処理・レコード・アドレス・タイプ・ファイル編成）", () => {
+    const visible = (rel: string, name: string) => state(rel, {}).fields.find(field => field.fieldName === name)?.visible;
+    assert.equal(visible("rpg/ile/ja/D-SPEC.json", "DEC"), true);
+    for (const name of ["LIMITS", "RECADDR", "FILEORG"]) assert.equal(visible("rpg/ile/ja/F-SPEC.json", name), true, name);
+  });
+
+  test("F の外部記述キー付き（34 桁目 K）が書ける", () => {
+    const line = buildRpgLineText("     F", load("rpg/ile/ja/F-SPEC.json"), { FILENAME: "CUSTMST", FILETYPE: "I", FILEDESG: "F", FILEFMT: "E", RECADDR: "K", DEVICE: "DISK" });
+    assert.equal(line, "     FCUSTMST   IF   E           K DISK");
+  });
+
+  test("出力ファイル（17 桁 O）のファイル指定はブランクだけ（実機 RNF2040）", () => {
+    assert.notEqual(errorOf("rpg/ile/ja/F-SPEC.json", { FILENAME: "QSYSPRT", FILETYPE: "O", FILEDESG: "F", DEVICE: "PRINTER" }, "FILEDESG"), undefined);
+    assert.equal(errorOf("rpg/ile/ja/F-SPEC.json", { FILENAME: "QSYSPRT", FILETYPE: "O", FILEDESG: "", DEVICE: "PRINTER" }, "FILEDESG"), undefined);
+    assert.equal(errorOf("rpg/ile/ja/F-SPEC.json", { FILENAME: "CUSTMST", FILETYPE: "I", FILEDESG: "F" }, "FILEDESG"), undefined);
+  });
+});
