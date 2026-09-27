@@ -39,6 +39,8 @@ const ATTRIBUTE_ORDER = [
   "restricted",
   "characterSet",
   "numericOnly",
+  "columnLayout",
+  "characterString",
   "minLength",
   "maxLength",
   "minValue",
@@ -436,6 +438,15 @@ for (const file of readdirSync(CMDDEF).filter(n => n.endsWith(".xml")).sort()) {
         if (lang === "ja") report.ranges += 1;
       }
 
+      // 文字ストリング（Type=CHAR）。空白・DBCS・アポストロフィを含む値は引用符で囲まないと
+      // コンパイルできない（`MSG(… で印刷エラー…)`。実操作調査の P13）。書き戻しで囲むための印。
+      // NAME（名前）・CMDSTR（コマンド）などは囲まない（囲むと別の値になる）。
+      if (parm.attrs.Type === "CHAR" && target.inputType !== "group" && target.attributes?.characterString !== true) {
+        target.attributes = { ...(target.attributes ?? {}), characterString: true };
+        changed = true;
+        if (lang === "ja") report.characterStrings = (report.characterStrings ?? 0) + 1;
+      }
+
       // 数値型。定義済み値(*SAME 等)は validate 側で対象外にしている。
       // ただし * で始まらない非数値の選択肢を持つ欄は、数値と限らないので外す。
       if (NUMERIC_TYPES.has(parm.attrs.Type) && !target.attributes?.numericOnly) {
@@ -513,6 +524,7 @@ console.log(`  ノーブレークスペースの正規化            ${report.no
 console.log(`  英大文字強制をやめた欄(Case=MIXED)        ${report.mixedCase} 件`);
 console.log(`  数値の範囲(RangeMinVal/RangeMaxVal)      ${report.ranges} 件`);
 console.log(`  数値型(numericOnly)の補完                ${report.numeric} 件`);
+console.log(`  文字ストリング(characterString)          ${report.characterStrings ?? 0} 件`);
 console.log(`  maxLength 追加 ${report.addedLength} 件 / 変更 ${report.changedLength} 件 / 見送り ${report.skippedLength} 件`);
 if (report.unmatchedParm.size > 0) {
   console.log(`  定義に無いパラメータ: ${[...report.unmatchedParm].join(", ")}`);

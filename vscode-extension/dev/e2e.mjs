@@ -342,6 +342,11 @@ if (listed) {
     "拒否された欄にフォーカスが戻る（入力し直せる）",
     await page.evaluate(() => document.activeElement?.dataset?.key === "length")
   );
+  check(
+    "**拒否されたら状態表示が「適用中…」のまま残らない**（D5）",
+    !(await page.$eval(".status", n => n.textContent ?? "")).includes("適用中"),
+    await page.$eval(".status", n => n.textContent ?? "")
+  );
 
   // ---- 13. 入力中はキャンバスへ漏らさない（AC-I5） ----------------------
   const before13 = await sourceLines();

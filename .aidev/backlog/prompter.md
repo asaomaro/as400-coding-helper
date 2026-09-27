@@ -155,14 +155,17 @@ priority: 1           # 既存機能の構造改善。DDS(1) と同格
   空行・空の `C` から新旧を選んで開く入口（P15）。
 - [ ] **空行・空の `C` から C-SPEC / C-NEW を選んで開く入口**（P15。上の新旧判定から分けた）。いまは 26 桁目に命令を手で打ってからでないと C-NEW が開かない。
   選ばせ方（F4 で種類の一覧を出す／プロンプター内で切り替える等）の判断が要る。
-- [ ] **英大文字だけに縛っている欄を実機に合わせる**: DDS のキーワード欄（日本語・小文字の定数が書けず、既存の日本語定数の行は無変更でも確定できない）、
+- [x] **英大文字だけに縛っている欄を実機に合わせる** — 済（`20260927-prompter-mixed-case`。DDS のキーワード欄と ILE RPG の名前欄）: DDS のキーワード欄（日本語・小文字の定数が書けず、既存の日本語定数の行は無変更でも確定できない）、
   RPG の名前欄（ILE は大小文字を混ぜてよい）（docs/research/20260927-f4-prompter-exploration/findings.md の P6・P12）。`characterSet: "upper"` の付け方を原典で見直す。
 - [ ] **RPG 仕様書の定義の不足をまとめて直す**（docs/research/20260927-f4-prompter-exploration/findings.md の P7・P8・P9・P11・P23）: 必須が強すぎる欄（D の LEN・F の継続行・P の E 行・C-NEW の COND）／
   D のデータ・タイプに N・G・C・U・* が無い／表示されない欄（D の小数、F の LIMITS・RECADDR・FILEORG＝`K` が書けない）／F 仕様のラベルの桁番号の誤り
   （`docs/ILE_RPG_Fixed_Format_Reference.md:160-172` の表も誤り）／F のファイル・タイプ `O` とファイル指定の組み合わせの検査（実機 RNF2040）。
   **原典と機械的に突き合わせて直す**（AGENTS.md）。
-- [ ] **CL: 空白・日本語を含む値を引用符で囲む、DBCS の SO/SI を桁計算に入れる**（docs/research/20260927-f4-prompter-exploration/findings.md の P13・P14）。いまは `MSG(… で印刷エラー…)` と書いてコンパイルできず、
+- [x] **CL: 空白・日本語を含む値を引用符で囲む、DBCS の SO/SI を桁計算に入れる** — 済（`20260927-prompter-cl-quote-dbcs`。CL 側。RPG の定位置欄は下に分けた）（docs/research/20260927-f4-prompter-exploration/findings.md の P13・P14）。いまは `MSG(… で印刷エラー…)` と書いてコンパイルできず、
   SO/SI を数えないので 72 桁の折り返しも RPG の桁（MOVEL の演算項目 2）もずれる。
+- [ ] **RPG の定位置欄の DBCS を実機の桁で数える**（P14 の RPG 側。上の CL の件から分けた）。MOVEL の演算項目 2 に `'無効なオプション'` を入れると文字数では 14 桁に収まるが、
+  実機では SO/SI と全角 2 桁で 20 桁になり後続の欄（結果フィールド）と重なる。書き戻し（`buildRpgLineText`）の桁あふれ検査と詰め、読み戻し（行の桁から値を切り出す）を
+  実機の桁で数え直す必要がある。SOSI 表示（`{` `}`）と同じ数え方に揃えること。
 - [ ] **プロンプターの軽微な項目 7 件**（docs/research/20260927-f4-prompter-exploration/findings.md の P16〜P22）: CL の既定値の出し方の不統一／DCL の LEN が F10 の奥・ヘルプの表抜け／C の F1 ヘルプが命令と無関係・
   命令の候補が無い／F12・F3 で取り消せない／確定後に次の行へ進まない／D の名前の `...` 継続が書けない／誤解を招く placeholder。
 

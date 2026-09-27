@@ -9,6 +9,7 @@ import {
 } from "../../src/prompter/clCommandParser";
 import { applyChanges, buildClCommandText } from "../../src/prompter/applyChanges";
 import { buildRpgLineText, narrowToEditableColumns } from "../../src/prompter/commandText";
+import { printWidth } from "../../src/core/dbcs";
 import * as vscode from "vscode";
 import { buildInitialState } from "../../src/prompter/model";
 import { buildCommandHelpText } from "../../src/prompter/commandHelp";
@@ -306,5 +307,60 @@ suite("桁の決まりどおりに寄せる（実操作調査 P4）", () => {
     assert.match(error({ C39: "1 2 3" }, "C39") ?? "", /行と桁/);
     assert.match(error({ C8: "AB" }, "C8") ?? "", /標識/);
     assert.equal(error({ C8: "N40N41" }, "C8"), undefined);
+  });
+});
+
+suite("英大文字に縛らない欄（実操作調査 P6・P12）", () => {
+  // 実機で作成できる（.aidev/works/20260927-prompter-mixed-case/verify/）。縛ると確定できなかった。
+  const error = (rel: string, values: Record<string, string>, name: string) =>
+    buildInitialState(load(rel), values).fields.find(field => field.fieldName === name)?.error;
+
+  test("DDS のキーワード欄に小文字・日本語の定数が書ける", () => {
+    assert.equal(error("dds/ja/DDS-DSPF.json", { C39: "1 2", C45: "'Search: customer name'" }, "C45"), undefined);
+    assert.equal(error("dds/ja/DDS-DSPF.json", { C39: "2 2", C45: "'顧客名で絞り込みます'" }, "C45"), undefined);
+    assert.equal(error("dds/ja/DDS-PRTF.json", { C39: "2", C45: "'Total'" }, "C45"), undefined);
+  });
+
+  test("ILE RPG の名前は大小文字を混ぜてよい（D・P・F）", () => {
+    assert.equal(error("rpg/ile/ja/D-SPEC.json", { NAME: "loadSubfile", DECLTYPE: "PR" }, "NAME"), undefined);
+    assert.equal(error("rpg/ile/ja/P-SPEC.json", { PROCNAME: "loadSubfile", BEGINEND: "B" }, "PROCNAME"), undefined);
+    assert.equal(error("rpg/ile/ja/F-SPEC.json", { FILENAME: "mixcased" }, "FILENAME"), undefined);
+  });
+
+  test("DDS の名前欄はこれまでどおり英大文字", () => {
+    assert.notEqual(error("dds/ja/DDS-DSPF.json", { C19: "fld" }, "C19"), undefined);
+  });
+});
+
+suite("CL: 文字ストリングを引用符で囲む・折り返しを実機の桁で数える（実操作調査 P13・P14）", () => {
+  const sndpgmmsg = load("cl/ja/SNDPGMMSG.json");
+  const msg = (value: string) => buildClCommandText(sndpgmmsg, { MSG: value });
+
+  test("空白・日本語を含む値は引用符で囲む（囲まないとコンパイルできない）", () => {
+    assert.match(msg("CMPLXPR で印刷エラー"), /MSG\('CMPLXPR で印刷エラー'\)/u);
+    assert.match(msg("印刷エラー"), /MSG\('印刷エラー'\)/u);
+  });
+
+  test("中のアポストロフィは重ねる", () => {
+    assert.match(msg("It's done"), /MSG\('It''s done'\)/u);
+  });
+
+  test("既に囲んだ値・変数・式はそのまま", () => {
+    assert.match(msg("'Already quoted'"), /MSG\('Already quoted'\)/u);
+    assert.match(msg("&TEXT"), /MSG\(&TEXT\)/u);
+    assert.match(msg("'Count: ' *CAT &N"), /MSG\('Count: ' \*CAT &N\)/u);
+  });
+
+  test("空白の無い英数字は囲まない（名前・特殊値の欄は対象外）", () => {
+    assert.match(msg("DONE"), /MSG\(DONE\)/u);
+    assert.match(buildClCommandText(load("cl/ja/CALL.json"), { PGM: "MYPGM" }), /PGM\(MYPGM\)/u);
+  });
+
+  test("折り返しは SO/SI と全角 2 桁で数える（文字数では 72 桁に収まる行も折る）", () => {
+    // 文字数 60・実機 76 桁。文字数で判定すると折り返されず、実機で 72 桁を超えていた。
+    const text = buildClCommandText(sndpgmmsg, { MSG: "印刷装置でエラーが発生したので停止", MSGTYPE: "*COMP" });
+    const lines = text.split("\n");
+    assert.ok(lines.length >= 2, text);
+    for (const line of lines) assert.ok(printWidth(line) <= 72, `${printWidth(line)} 桁: ${line}`);
   });
 });
