@@ -220,6 +220,12 @@ export interface ParameterAttributes {
    * trim した値を左詰めで書くと、別の意味の桁に入る（実操作調査の P4。実機で RNF0263 / CPD7422）。
    */
   readonly columnLayout?: "right" | "indicatorSlots" | "rowColumn";
+  /**
+   * 値が文字ストリング（CDML の `Type="CHAR"`）。空白・DBCS・アポストロフィを含む値は、
+   * 書き戻しで引用符で囲み、中の `'` を `''` に重ねる（SEU のプロンプトと同じ）。
+   * 囲まないとコンパイルできない（`MSG(… で印刷エラー…)`。実操作調査の P13）。
+   */
+  readonly characterString?: boolean;
   readonly minLength?: number;
   readonly maxLength?: number;
   /**

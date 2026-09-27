@@ -18,7 +18,7 @@
 | `Value` の `MapTo` | 1633 | 内部値への変換 → `valueMap` |
 | `Rstd` | 2500 | 列挙値以外を書けるか → `attributes.restricted` |
 | `Len` | 1943 | 長さ → `attributes.maxLength`（DEC は「桁数.小数部」） |
-| `Type` | 3112 | 数値型の判定 → `attributes.numericOnly` |
+| `Type` | 3112 | 数値型の判定 → `attributes.numericOnly`。`CHAR` は `attributes.characterString`（書き戻しで空白・DBCS・`'` を含む値を引用符で囲む） |
 | `Case` | 1907 | `MIXED` は英大文字を強制しない |
 | `RangeMinVal` / `RangeMaxVal` | 194 | 数値の範囲 → `attributes.minValue` / `maxValue` |
 | `Rel` / `RelVal` | 66 | 値の制約 → `attributes.valueRelation` |

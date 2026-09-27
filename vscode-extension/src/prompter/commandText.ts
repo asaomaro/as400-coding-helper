@@ -16,6 +16,7 @@
  */
 import type { ParameterDefinition, PrompterDefinition } from "./types";
 import { parseClCommand } from "./clCommandParser";
+import { isDbcsCodePoint, printWidth } from "../core/dbcs";
 import {
   countOccurrences,
   isRepeatableGroup,
@@ -158,8 +159,9 @@ function wrapClCommand(head: string, paramTokens: readonly string[]): string {
   for (const token of paramTokens) {
     const candidate = `${current}${current.endsWith(" ") ? "" : " "}${token}`;
 
-    // `+ ` の分を見込んで幅を判定する。
-    if (hasToken && candidate.length > CL_LINE_WIDTH - 2) {
+    // `+ ` の分を見込んで幅を判定する。**幅は実機の桁で数える**（DBCS の前後に SO/SI が入り、
+    // 全角 1 文字は 2 桁）。文字数で数えると 67 文字の行が実機で 82 桁になり 80 桁を超えた（実操作調査の P14）。
+    if (hasToken && printWidth(candidate) > CL_LINE_WIDTH - 2) {
       lines.push(`${current.trimEnd()} +`);
       current = indent + token;
       hasToken = true;
@@ -172,6 +174,19 @@ function wrapClCommand(head: string, paramTokens: readonly string[]): string {
 
   lines.push(current.trimEnd());
   return lines.join("\n");
+}
+
+/**
+ * 文字ストリングの値を、必要なら引用符で囲む。
+ *
+ * 囲むのは空白・DBCS・`'` を含むときだけ（囲まないとコンパイルできない）。次は**そのまま**:
+ * 既に `'` で始まる（利用者が囲んだ・`'a' *CAT &X` のような式）、`&` 変数・`*` 特殊値・`(` 式・`%` 組み込み関数で始まる。
+ */
+export function quoteCharacterString(value: string): string {
+  if (/^['&*(%]/u.test(value)) return value;
+  const needs =
+    /[\s']/u.test(value) || [...value].some(character => isDbcsCodePoint(character.codePointAt(0) ?? 0));
+  return needs ? `'${value.replace(/'/gu, "''")}'` : value;
 }
 
 /** 1つの入力値を、前後空白を落とした文字列として取り出す。 */
@@ -211,7 +226,8 @@ function buildParameterBody(
 
   if (parameter.inputType !== "group" || children.length === 0) {
     const single = readSingle(values[occurrenceName(parameter.name, occurrence)]);
-    return single.length > 0 ? single : undefined;
+    if (single.length === 0) return undefined;
+    return parameter.attributes?.characterString ? quoteCharacterString(single) : single;
   }
 
   const childBodies = children.map(
