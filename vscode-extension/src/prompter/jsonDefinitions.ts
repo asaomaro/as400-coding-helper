@@ -2,6 +2,7 @@ import * as vscode from "vscode";
 import type { Dialect, LanguageId, PrompterDefinition } from "./types";
 // 定義の置き場所の知識は core/definitionLayout に集約する（lint core と共有）。
 import { definitionFileName, definitionSubPath } from "../core/definitionLayout";
+import { withOpcodeCandidates } from "./opcodeCandidates";
 
 /**
  * CL 定義の表示言語。設定 `rpgClSupport.language` で切り替える。
@@ -89,6 +90,20 @@ export class PrompterDefinitionLoader {
    * 利用者が置いた場合の保険）。
    */
   async loadDefinition(
+    keyword: string,
+    language: LanguageId,
+    dialect: Dialect | undefined,
+    workspaceFolder: vscode.WorkspaceFolder | undefined,
+    context: vscode.ExtensionContext
+  ): Promise<PrompterDefinition | undefined> {
+    const definition = await this.loadDefinitionAsWritten(keyword, language, dialect, workspaceFolder, context);
+    // C 仕様書の命令コードに候補を付ける（定義の JSON に命令を並べ直さない。`opcodeCandidates.ts`）。
+    return definition && language === "rpg-fixed"
+      ? withOpcodeCandidates(definition, dialect, resolveDefinitionLanguage())
+      : definition;
+  }
+
+  private async loadDefinitionAsWritten(
     keyword: string,
     language: LanguageId,
     dialect: Dialect | undefined,
