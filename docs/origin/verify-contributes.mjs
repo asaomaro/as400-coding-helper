@@ -165,6 +165,30 @@ for (const command of MEMBER_SYNC_COMMANDS) {
 }
 
 /**
+ * ソース・ファイル単位の送受信は、エクスプローラーの `src/<LIB>/<SRCFILE>` フォルダの右クリックと
+ * コマンドパレットの両方から開く（2026-09-27 利用者の判断）。どちらかが欠けると半分の導線が死ぬ。
+ */
+{
+  const command = "rpgClSupport.ibmiSourceSync.openBulk";
+  if (!(manifest.contributes?.commands ?? []).some(entry => entry.command === command)) {
+    failures.push(`${command} が contributes.commands に無い（パレットから開けない）`);
+  }
+  const item = (manifest.contributes?.menus?.["explorer/context"] ?? []).find(entry => entry.command === command);
+  if (!item) {
+    failures.push(`${command} が explorer/context に無い（フォルダの右クリックから開けない）`);
+  } else {
+    const match = /resourcePath =~ \/(.+)\/$/u.exec(item.when);
+    const pattern = match ? new RegExp(match[1], "u") : undefined;
+    const shown = ["/w/src/MYLIB/QRPGSRC", "C:\\w\\src\\MYLIB\\QRPGSRC"];
+    const hidden = ["/w/src/MYLIB", "/w/src/MYLIB/QRPGSRC/SUB"];
+    if (!item.when.includes("explorerResourceIsFolder") || pattern === undefined
+      || !shown.every(path => pattern.test(path)) || hidden.some(path => pattern.test(path))) {
+      failures.push(`${command} の explorer/context の when が src/<LIB>/<SRCFILE> のフォルダだけに出る形になっていない: ${item.when}`);
+    }
+  }
+}
+
+/**
  * ビジュアルエディタの右クリック導線。
  *
  * **エディタ本体が動いても、開く手段が無ければ死蔵**（AGENTS.md「追加したリソースは

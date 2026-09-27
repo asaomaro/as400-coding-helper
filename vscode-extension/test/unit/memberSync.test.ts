@@ -9,6 +9,7 @@ import {
   type IbmiSourceTransport,
   type UploadAttributes
 } from "../../src/sync/ibmiSourceTransport";
+import type { RemoteListing } from "../../src/sync/bulkSync";
 import { deriveSourceType, resolveMemberTarget, type MemberTarget } from "../../src/sync/memberTarget";
 import {
   findColorSegments,
@@ -196,6 +197,7 @@ class FakeSftp {
 
 class FakeClient {
   readonly events: string[] = [];
+  constructor(private readonly readContent = Buffer.from("A\u0088B\r\n", "utf8")) {}
   connectConfig: ConnectConfig | undefined;
   private readonly onceListeners = new Map<string, () => void>();
 
@@ -213,7 +215,7 @@ class FakeClient {
   sftp(callback: (error: Error | undefined, sftp?: SFTPWrapper) => void): this {
     callback(
       undefined,
-      new FakeSftp(this.events, Buffer.from("A\u0088B\r\n", "utf8")) as unknown as SFTPWrapper
+      new FakeSftp(this.events, this.readContent) as unknown as SFTPWrapper
     );
     return this;
   }
@@ -472,6 +474,49 @@ suite("IBM i source transport", () => {
     assert.equal(text, "A\u0088B\r\n");
   });
 
+  test("listMembers は RUNSQL 1 回で JSON を書かせ、SFTP で読んで後始末する", async () => {
+    const client = new FakeClient(Buffer.from(JSON.stringify({
+      exists: 1,
+      members: [{ name: "ORDR01", type: "RPGLE", text: "受注 'A' \"B\"", lines: 12, changed: "2026-09-26 17:09:48" }]
+    }), "utf8"));
+    const transport = await createIbmiSourceTransport(transportSettings, "secret", () => client as unknown as Client);
+    const listing = await transport.listMembers("MY$LIB", "QRPGSRC");
+
+    assert.deepEqual(listing, {
+      exists: true,
+      members: [{ name: "ORDR01", sourceType: "RPGLE", text: "受注 'A' \"B\"", lines: 12, changed: Date.UTC(2026, 8, 26, 17, 9, 48) }]
+    });
+    const execs = client.events.filter(event => event.startsWith("exec:"));
+    assert.equal(execs.length, 1, client.events.join("\n"));
+    const command = execs[0].slice("exec:".length);
+    assert.ok(command.startsWith(`system "RUNSQL SQL('CALL QSYS2.IFS_WRITE_UTF8(PATH_NAME => ''/tmp/`), command);
+    // RUNSQL の文字列の中なので SQL の ' は 2 つ。remote shell の二重引用符の中なので $ は逃がす。
+    assert.ok(command.includes("SYSTEM_TABLE_SCHEMA = ''MY\\$LIB''"), command);
+    assert.ok(command.endsWith(`') COMMIT(*NONE)"`), command);
+    const readIndex = client.events.findIndex(event => event.startsWith("sftp:read:"));
+    const cleanupIndex = client.events.findIndex(event => event.startsWith("sftp:unlink:"));
+    assert.ok(readIndex >= 0 && readIndex < cleanupIndex, client.events.join("\n"));
+  });
+
+  test("listMembers は名前が IBM i のオブジェクト名でなければ接続先にコマンドを送らない", async () => {
+    const client = new FakeClient();
+    const transport = await createIbmiSourceTransport(transportSettings, "secret", () => client as unknown as Client);
+    await assert.rejects(
+      () => transport.listMembers("A'B", "QRPGSRC"),
+      (error: unknown) => error instanceof IbmiSourceSyncError && error.kind === "configuration"
+    );
+    assert.equal(client.events.filter(event => event.startsWith("exec:")).length, 0);
+  });
+
+  test("listMembers は読めない JSON を kind: list で失敗させる", async () => {
+    const client = new FakeClient(Buffer.from("not json", "utf8"));
+    const transport = await createIbmiSourceTransport(transportSettings, "secret", () => client as unknown as Client);
+    await assert.rejects(
+      () => transport.listMembers("MYLIB", "QRPGSRC"),
+      (error: unknown) => error instanceof IbmiSourceSyncError && error.kind === "list"
+    );
+  });
+
   test("password が無い接続は SSH を開始しない", async () => {
     await assert.rejects(
       () => createIbmiSourceTransport(transportSettings, undefined),
@@ -548,6 +593,10 @@ class FakeTransport implements IbmiSourceTransport {
 
   async download(): Promise<string> {
     return this.downloaded;
+  }
+
+  async listMembers(): Promise<RemoteListing> {
+    return { exists: true, members: [] };
   }
 
   dispose(): void {
