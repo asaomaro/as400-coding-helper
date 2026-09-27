@@ -227,3 +227,23 @@ suite("4 行目への書き戻し（FR-031）", () => {
   });
 });
 
+
+suite("桁幅を超える値（実操作調査 P3）", () => {
+  // 以前は書き戻しで左から黙って切り、`EVAL` の式が `(%DATE():*YMD)` に化けていた。
+  // 定義の maxLength（C の演算項目 30）が桁幅（14）より大きいので、maxLength の検査では止まらない。
+  test("C 仕様の演算項目 2 に 14 桁を超える式を入れると、欄のエラーで確定できない", () => {
+    const cSpec = load("rpg/ile/ja/C-SPEC.json");
+    const state = buildInitialState(cSpec, { OPCODE: "EVAL", FACTOR2: "DSPDATE = %DEC(%DATE():*YMD)" });
+    const factor2 = state.fields.find(field => field.fieldName === "FACTOR2");
+    assert.equal(factor2?.error, "14 桁に収まりません（28 文字）。");
+    assert.equal(state.hasErrors, true);
+  });
+
+  test("D 仕様のキーワードは 37 桁まで。ちょうど 37 桁は通る", () => {
+    const dSpec = load("rpg/ile/ja/D-SPEC.json");
+    const keywords = (value: string) =>
+      buildInitialState(dSpec, { NAME: "P", DECLTYPE: "PR", KEYWORDS: value }).fields.find(field => field.fieldName === "KEYWORDS")?.error;
+    assert.equal(keywords(`EXTPROC('${"A".repeat(26)}')`), undefined); // 37 文字
+    assert.equal(keywords(`EXTPROC('${"A".repeat(27)}')`), "37 桁に収まりません（38 文字）。");
+  });
+});

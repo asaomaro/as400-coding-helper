@@ -284,6 +284,17 @@ export function validate(
     }
   }
 
+  // **桁の決まった欄は、その桁数に収まらなければ書けない。** 書き戻し（`buildRpgLineText`）は
+  // 桁幅で切るしかなく、以前は左から黙って切っていた（`EVAL` の式・`EXTPROC` が化けた。実操作調査の P3）。
+  // 定義の `maxLength` が桁幅より大きい欄があるので、`maxLength` とは別に見る。
+  const columns = parameter.sourceLength;
+  if (typeof parameter.sourceStart === "number" && parameter.sourceStart > 0 && typeof columns === "number" && columns > 0) {
+    const length = [...trimmed].length;
+    if (length > columns) {
+      return `${columns} 桁に収まりません（${length} 文字）。`;
+    }
+  }
+
   // 数値項目でも、定義済み値（*DEVD 等）・小数・符号は正当に現れる。
   // 整数だけに限ると CPYF の STARTNBR(1.00) や CRTPRTF の DOWN(*DEVD) を誤って弾く。
   //

@@ -22,6 +22,7 @@ import ADDPFM from "../resources/prompter/cl/ja/ADDPFM.json";
 import PARM from "../resources/prompter/cmd/ja/PARM.json";
 import DDSPF from "../resources/prompter/dds/ja/DDS-PF.json";
 import DDSPRTF from "../resources/prompter/dds/ja/DDS-PRTF.json";
+import CSPEC from "../resources/prompter/rpg/ile/ja/C-SPEC.json";
 
 /**
  * F4 プロンプターの単独起動ハーネス。**検証用であり製品の一部ではない**（VSIX には入れない）。
@@ -113,6 +114,9 @@ const SAMPLES: { readonly label: string; readonly definition: PrompterDefinition
   // **候補ゼロの自由入力だった欄が選択欄になる**（38 桁目・使用目的）。原典の値は
   // 箇条書きにしか無く、生成器が読めていなかった（20260829-dds-prtf-usage-values）。
   { label: "DDS-PRTF — 箇条書きから採った選択欄", definition: DDSPRTF as PrompterDefinition },
+  // **桁の決まった欄は桁幅を超えると確定できない**（演算項目は 14 桁。定義の maxLength は 30）。
+  // 以前は書き戻しで左から黙って切っていた（実操作調査 P3）。
+  { label: "C-SPEC — 桁幅を超える値", definition: CSPEC as PrompterDefinition },
   { label: "FIXTURE — 見えない欄は咎めない（検証用）", definition: HIDDEN_REQUIRED }
 ];
 
