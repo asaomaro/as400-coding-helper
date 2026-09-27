@@ -2455,11 +2455,22 @@ check(
     await page.evaluate(() => document.querySelector(".dds-tree li.file-level li.file-keyword")?.click());
     await page.waitForTimeout(200);
   };
+  // **プロパティの中のものを押す。** 同じ部品が他の所（隠れた枠）にもあり、先頭の一致は見えないことがある（CI で踏んだ）。
   const addKeyword = async name => {
-    await page.click(".kw-chip.add");
+    const add = page.locator(".dds-properties .kw-chip.add").first();
+    await add.scrollIntoViewIfNeeded().catch(() => {});
+    const visible = await add.isVisible().catch(() => false);
+    if (!visible) {
+      console.log(JSON.stringify({
+        addButtons: await page.$$eval(".kw-chip.add", ns => ns.map(n => ({ visible: !!n.offsetParent, parent: n.closest("[class]")?.className }))),
+        properties: (await page.$eval(".dds-properties", n => n.textContent ?? "")).slice(0, 200),
+        selected: await page.$$eval(".dds-tree .selected", ns => ns.map(n => n.textContent))
+      }));
+    }
+    await add.click({ timeout: 5000 });
     await page.waitForTimeout(150);
-    await page.fill(".kw-add-input", name);
-    await page.press(".kw-add-input", "Enter");
+    await page.fill(".dds-properties .kw-add-input", name);
+    await page.press(".dds-properties .kw-add-input", "Enter");
     await page.waitForTimeout(300);
   };
 
