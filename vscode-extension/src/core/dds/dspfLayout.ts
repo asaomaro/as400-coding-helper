@@ -34,7 +34,7 @@ import {
   type ScreenSize,
   type ScreenSizes
 } from "./dspfScreenSize";
-import { resolveGridLines, type GridLine } from "./dspfGrid";
+import { resolveGridShapes, type GridLine, type GridShape } from "./dspfGrid";
 import {
   resolveRecordContext,
   windowBounds,
@@ -176,7 +176,9 @@ export interface DspfLayout {
   readonly diagnostics: readonly DspfDiagnostic[];
   /** ウィンドウ（`WINDOW` の定義形）。枠を描くのに使う。 */
   readonly windows: readonly DspfWindow[];
-  /** 罫線（`GRDBOX` / `GRDLIN`）。 */
+  /** 罫線（`GRDBOX` / `GRDLIN`）のキーワードごとの形。 */
+  readonly gridShapes: readonly GridShape[];
+  /** 罫線の線分（`gridShapes` の線を並べたもの）。 */
   readonly gridLines: readonly GridLine[];
 }
 
@@ -488,13 +490,15 @@ export function resolveDspfLayout(
 
   diagnostics.push(...detectOverlaps(items));
 
+  const gridShapes = resolveGridShapes(lines, units, target);
   return {
     screen,
     sizes,
     items,
     diagnostics,
     windows: context.windows,
-    gridLines: resolveGridLines(lines, units, target)
+    gridShapes,
+    gridLines: gridShapes.flatMap(shape => shape.lines)
   };
 }
 

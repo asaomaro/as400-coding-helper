@@ -98,3 +98,24 @@ suite("ホスト能力の宣言", () => {
     assert.ok(!STANDALONE_HOST.providesFileIO && !STANDALONE_HOST.providesUndo);
   });
 });
+
+suite("エディタのメッセージ検証: 罫線", () => {
+  // 契約に無い種類は黙って捨てられる。罫線を足したときに実際に踏んだ（画面では「適用中…」のまま）。
+  test("addGrid / setGridKeyword を通す", () => {
+    assert.deepStrictEqual(
+      parseEdits([
+        { kind: "addGrid", recordName: "LINES", keyword: "GRDBOX((*POS (5 2 10 60)) (*TYPE PLAIN))", createRecord: true },
+        { kind: "setGridKeyword", sourceLine: 4, index: 2, keyword: "" }
+      ]),
+      [
+        { kind: "addGrid", recordName: "LINES", keyword: "GRDBOX((*POS (5 2 10 60)) (*TYPE PLAIN))", createRecord: true },
+        { kind: "setGridKeyword", sourceLine: 4, index: 2, keyword: "" }
+      ]
+    );
+  });
+
+  test("型の違うものは弾く", () => {
+    assert.strictEqual(parseEdits([{ kind: "addGrid", recordName: "", keyword: "GRDBOX(x)" }]), undefined);
+    assert.strictEqual(parseEdits([{ kind: "setGridKeyword", sourceLine: 4, index: -1, keyword: "" }]), undefined);
+  });
+});

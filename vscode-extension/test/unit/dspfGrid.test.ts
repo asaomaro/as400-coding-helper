@@ -8,8 +8,7 @@ import { buildKeywordLine, foldKeywordArea } from "../../src/core/dds/ddsEditWri
  * `docs/origin/dds/detail/rzakc_rzakcmstdfgrd{b,l,a}.htm` の例と説明から写した。
  */
 
-const record = (name: string, keywords = "") =>
-  `     A          R ${name.padEnd(10)}${" ".repeat(34 - 17 - 10)}${keywords}`.trimEnd();
+const record = (name: string, keywords = "") => `     A          R ${name}`.padEnd(44) + keywords;
 /** キーワードだけの行。80 桁を超えるものは `-` 継続で折る（実機と同じ形）。条件は代表行に付ける。 */
 const keyword = (keywords: string, conditioning = ""): string => {
   const [first, ...rest] = foldKeywordArea(keywords).map(area => buildKeywordLine(area));
@@ -96,8 +95,8 @@ suite("DSPF: 罫線（GRDBOX / GRDLIN）", () => {
       record("R1", "GRDRCD"),
       keyword("GRDLIN((*POS (6 4 20)))", "  95")
     ));
-    assert.strictEqual(model.gridLines?.length, 1);
-    assert.strictEqual(applyIndicators(model, { "95": "off" }).gridLines?.length, 0);
-    assert.strictEqual(applyIndicators(model, { "95": "on" }).gridLines?.length, 1);
+    assert.strictEqual(model.gridShapes?.length, 1);
+    assert.strictEqual(applyIndicators(model, { "95": "off" }).gridShapes?.length, 0);
+    assert.strictEqual(applyIndicators(model, { "95": "on" }).gridShapes?.length, 1);
   });
 });

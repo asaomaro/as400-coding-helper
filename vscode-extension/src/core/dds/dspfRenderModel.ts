@@ -8,8 +8,11 @@ import {
 import { resolveAppearanceUnder } from "./dspfAttributes";
 import {
   fileLevelKeywordLines,
+  toLogicalUnits,
   type FileKeywordLine
 } from "./ddsLogicalUnits";
+import { ddsName } from "../ddsLayout";
+import { parseKeywordEntries } from "./ddsKeywords";
 import { readConditioning, type Conditioning } from "./ddsConditioning";
 import {
   constantSegments,
@@ -32,7 +35,7 @@ import {
 } from "./ddsDanglingReferences";
 import { resolveScreenSizes } from "./dspfScreenSize";
 import type { DspfWindow } from "./dspfWindow";
-import type { GridLine } from "./dspfGrid";
+import type { GridShape } from "./dspfGrid";
 import type { PrintDensity } from "./prtfDensity";
 import type { LayoutDiagnosticCode } from "./prtfLayout";
 import {
@@ -139,8 +142,10 @@ export interface RenderModel {
   readonly items: readonly RenderItem[];
   /** ウィンドウの枠（画面のみ）。中の項目は `RenderItem.origin` で画面の位置に直す。 */
   readonly windows?: readonly DspfWindow[];
-  /** 罫線（画面のみ。`GRDBOX` / `GRDLIN`）。標識で消えるものは `applyIndicators` が外す。 */
-  readonly gridLines?: readonly GridLine[];
+  /** 罫線（画面のみ。`GRDBOX` / `GRDLIN` のキーワードごと）。標識で消えるものは `applyIndicators` が外す。 */
+  readonly gridShapes?: readonly GridShape[];
+  /** 罫線を入れられる様式（`GRDRCD` を持つ様式。ソース順）。 */
+  readonly gridRecords?: readonly string[];
   readonly diagnostics: readonly RenderDiagnostic[];
   /** 様式の一覧（追加先の選択に使う）。 */
   readonly records: readonly string[];
@@ -184,7 +189,7 @@ export interface SecondaryScreen {
   readonly name?: string;
   readonly items: readonly RenderItem[];
   readonly windows?: readonly DspfWindow[];
-  readonly gridLines?: readonly GridLine[];
+  readonly gridShapes?: readonly GridShape[];
   readonly diagnostics: readonly RenderDiagnostic[];
 }
 
@@ -197,13 +202,23 @@ export function toFileKeywords(lines: readonly string[]): FileKeywordEntry[] {
   }));
 }
 
+/** `GRDRCD` を持つ様式（罫線を入れられる様式）の名前。 */
+function gridRecordNames(lines: readonly string[]): string[] {
+  return toLogicalUnits(lines)
+    .filter(unit => unit.kind === "record" && parseKeywordEntries(unit.keywords).some(entry => entry.name === "GRDRCD"))
+    .map(unit => ddsName(unit.line).toUpperCase())
+    .filter(name => name.length > 0);
+}
+
 /** ソース行から描画モデルを作る。 */
 export function buildDspfRenderModel(lines: readonly string[]): RenderModel {
   const outline = buildDspfOutline(lines);
   const fileKeywords = toFileKeywords(lines);
   const base = fromLayout(resolveDspfLayout(lines), outline, collectIndicators(lines));
+  const gridRecords = gridRecordNames(lines);
   const model: RenderModel = {
     ...base,
+    ...(gridRecords.length > 0 ? { gridRecords } : {}),
     fileKeywords,
     // **宙に浮いた参照はここでしか出せない。** `fromLayout` は生の行を持たないので
     // ファイル全体の名前の集合を作れない（`fromLayout` 側には足さない）。
@@ -224,7 +239,7 @@ export function buildDspfRenderModel(lines: readonly string[]): RenderModel {
         : {}),
       items: secondary.items.map(item => toRenderItem(item)),
       ...(secondary.windows.length > 0 ? { windows: secondary.windows } : {}),
-      ...(secondary.gridLines.length > 0 ? { gridLines: secondary.gridLines } : {}),
+      ...(secondary.gridShapes.length > 0 ? { gridShapes: secondary.gridShapes } : {}),
       diagnostics: secondary.diagnostics
     }
   };
@@ -249,7 +264,7 @@ export function fromLayout(
     canvas: { rows: layout.screen.rows, columns: layout.screen.columns },
     items,
     ...(layout.windows.length > 0 ? { windows: layout.windows } : {}),
-    ...(layout.gridLines.length > 0 ? { gridLines: layout.gridLines } : {}),
+    ...(layout.gridShapes.length > 0 ? { gridShapes: layout.gridShapes } : {}),
     diagnostics: layout.diagnostics,
     records: recordNames(outline),
     outline,
@@ -323,8 +338,8 @@ export function applyIndicators(model: RenderModel, states: IndicatorStates): Re
   return {
     ...model,
     items: shown,
-    ...(model.gridLines !== undefined
-      ? { gridLines: model.gridLines.filter(line => evaluateConditioning(line.condition, states) !== "hidden") }
+    ...(model.gridShapes !== undefined
+      ? { gridShapes: model.gridShapes.filter(shape => evaluateConditioning(shape.condition, states) !== "hidden") }
       : {}),
     outline: hidden.size === 0 ? model.outline : markHidden(model.outline, hidden),
     diagnostics: [...model.diagnostics, ...overlapsUnderIndicators(shown, states)]

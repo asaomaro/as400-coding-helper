@@ -41,7 +41,16 @@ import {
   type RenderModel
 } from "../../core/dds/dspfRenderModel";
 import { windowBounds, windowOrigin, type DspfWindow } from "../../core/dds/dspfWindow";
-import type { GridLine } from "../../core/dds/dspfGrid";
+import {
+  buildGridKeyword,
+  geometryFromCells,
+  rewriteGridKeyword,
+  type GridColor,
+  type GridGeometry,
+  type GridLine,
+  type GridLineType,
+  type GridShape
+} from "../../core/dds/dspfGrid";
 import type { Bridge } from "./bridge";
 import {
   cellFromOffset,
@@ -84,7 +93,7 @@ const DRAG_THRESHOLD_PX = 3;
 const MEASURE_SAMPLE = 80;
 
 type Mode = "idle" | "selecting" | "dragging" | "resizing" | "pending";
-type Placing = "field" | "constant" | null;
+type Placing = "field" | "constant" | "grid" | null;
 
 interface Gesture {
   readonly sourceLine: number;
@@ -307,6 +316,19 @@ class EditorView {
   private readonly title: HTMLElement;
   private readonly addField: HTMLButtonElement;
   private readonly addConstant: HTMLButtonElement;
+  private readonly addGrid: HTMLButtonElement;
+  private readonly gridColor: HTMLSelectElement;
+  private readonly gridLineType: HTMLSelectElement;
+  /** 選んでいる罫線（`GridShape.key`）。項目の選択（`selected`）とは同時に持たない。 */
+  private selectedGrid: string | undefined;
+  /** 引いている途中の罫線（押した桁）と、その下書きの枠。 */
+  private gridDraft: { from: CellPoint; to: CellPoint; element: HTMLElement } | undefined;
+  /** 掴んでいる罫線（移動・伸縮）。 */
+  private gridGesture:
+    | { shape: GridShape; mode: "move" | "resize"; startX: number; startY: number; moved: boolean }
+    | undefined;
+  /** 罫線の様式が無いときに、様式の名前を聞いてから書くキーワード。 */
+  private pendingGridKeyword: string | undefined;
   private readonly addRecord: HTMLButtonElement;
   private readonly addRecordInput: HTMLInputElement;
   private readonly toggles: ReadonlyArray<{
@@ -359,6 +381,9 @@ class EditorView {
     this.title = must(root, ".record-name");
     this.addField = must(root, "#dds-add-field");
     this.addConstant = must(root, "#dds-add-constant");
+    this.addGrid = must(root, "#dds-add-grid");
+    this.gridColor = must(root, "#dds-grid-color");
+    this.gridLineType = must(root, "#dds-grid-lintype");
     // **`renderOutline` の外に置く。** あそこは項目 0 件で早く返るので、
     // 中に置くと**様式が 1 つも無いファイルで `＋` が消える**（唯一の逃げ道が塞がる）。
     this.addRecord = must(root, "#dds-add-record");
@@ -385,6 +410,7 @@ class EditorView {
     document.addEventListener("keydown", event => this.onKeyDown(event));
     this.addField.addEventListener("click", () => this.arm("field"));
     this.addConstant.addEventListener("click", () => this.arm("constant"));
+    this.addGrid.addEventListener("click", () => this.arm("grid"));
     this.wireAddRecord();
 
     this.toggles = [
@@ -589,7 +615,7 @@ class EditorView {
       canvas: secondary.canvas,
       items: secondary.items,
       windows: secondary.windows,
-      gridLines: secondary.gridLines,
+      gridShapes: secondary.gridShapes,
       diagnostics: secondary.diagnostics
     };
   }
@@ -672,6 +698,10 @@ class EditorView {
     const canAdd = view.records.length > 0 && this.options.askItem !== undefined;
     this.addField.disabled = !canAdd;
     this.addConstant.disabled = !canAdd;
+    // 罫線は表示装置ファイルだけ（原典: DBCS を使う表示装置ファイルのキーワード）。
+    for (const control of [this.addGrid, this.gridColor, this.gridLineType]) {
+      control.hidden = view.kind === "prtf";
+    }
 
     if (focusedKey !== undefined) {
       this.properties
@@ -746,7 +776,7 @@ class EditorView {
     // **枠は項目より先に置く**（項目の下に敷く）。枠は描くだけで、掴めない。
     const nodes: HTMLElement[] = [
       ...(model.windows ?? []).map(window => windowFrame(window)),
-      ...(model.gridLines ?? []).map(line => gridLine(line))
+      ...(model.gridShapes ?? []).flatMap(shape => this.gridShapeElements(shape))
     ];
     for (const item of items) {
       // **属性文字は表示装置のもの。** 印刷には出ないので帳票では描かない。
@@ -1266,6 +1296,11 @@ class EditorView {
 
   /** 右ペイン。選択中の項目の属性を出し、確定したら編集として送る。 */
   private renderProperties(model: RenderModel): void {
+    const grid = this.selectedGridShape();
+    if (grid !== undefined) {
+      this.renderGridProperties(grid);
+      return;
+    }
     const fileKeyword = model.fileKeywords.find(
       candidate => candidate.sourceLine === this.selected
     );
@@ -2468,6 +2503,10 @@ class EditorView {
   // ---- 操作 --------------------------------------------------------
 
   private onPointerDown(event: PointerEvent): void {
+    if (this.placing === "grid") {
+      this.startGridDraft(event);
+      return;
+    }
     if (this.placing !== null) {
       void this.place(event);
       return;
@@ -2483,6 +2522,13 @@ class EditorView {
       const picked = target.closest<HTMLElement>(".dds-item");
       this.select(picked ? Number(picked.dataset.sourceLine) : undefined);
       this.setStatus("長さは画面サイズで変わりません（上書き行は位置だけを持ちます）");
+      return;
+    }
+
+    // **罫線を掴む。** 線そのもの（または選んだ罫線のつまみ）を押したときだけ。
+    const gridElement = target?.closest<HTMLElement>("[data-grid-key]") ?? null;
+    if (gridElement !== null) {
+      this.grabGrid(gridElement, event);
       return;
     }
 
@@ -2517,6 +2563,15 @@ class EditorView {
   }
 
   private onPointerMove(event: PointerEvent): void {
+    if (this.gridDraft !== undefined) {
+      this.gridDraft.to = this.cellAt(event);
+      placeGridDraft(this.gridDraft.element, geometryFromCells(this.gridDraft.from, this.gridDraft.to));
+      return;
+    }
+    if (this.gridGesture !== undefined) {
+      this.previewGridGesture(event);
+      return;
+    }
     const gesture = this.gesture;
     if (!gesture) return;
 
@@ -2544,6 +2599,19 @@ class EditorView {
   }
 
   private onPointerUp(event: PointerEvent): void {
+    if (this.gridDraft !== undefined) {
+      const draft = this.gridDraft;
+      this.gridDraft = undefined;
+      draft.element.remove();
+      this.placing = null;
+      this.updateArmed();
+      this.drawGrid(geometryFromCells(draft.from, this.cellAt(event)));
+      return;
+    }
+    if (this.gridGesture !== undefined) {
+      this.finishGridGesture(event);
+      return;
+    }
     const gesture = this.gesture;
     if (!gesture) return;
 
@@ -2596,10 +2664,16 @@ class EditorView {
     if (isTypingTarget(event.target)) return;
 
     if (event.key === "Escape") {
+      this.gridDraft?.element.remove();
+      this.gridDraft = undefined;
       this.placing = null;
       this.updateArmed();
       this.select(undefined);
       this.setStatus("");
+      return;
+    }
+    if (this.mode === "idle" && this.selectedGrid !== undefined) {
+      this.onGridKey(event);
       return;
     }
     if (this.mode !== "idle" || this.selected === undefined) return;
@@ -2646,12 +2720,19 @@ class EditorView {
   private arm(kind: Exclude<Placing, null>): void {
     this.placing = this.placing === kind ? null : kind;
     this.updateArmed();
-    this.setStatus(this.placing === null ? "" : "キャンバスをクリックすると置きます（Esc で取り消し）");
+    this.setStatus(
+      this.placing === null
+        ? ""
+        : this.placing === "grid"
+          ? "キャンバスをドラッグした範囲に罫線を引きます（Esc で取り消し）"
+          : "キャンバスをクリックすると置きます（Esc で取り消し）"
+    );
   }
 
   private updateArmed(): void {
     this.addField.classList.toggle("armed", this.placing === "field");
     this.addConstant.classList.toggle("armed", this.placing === "constant");
+    this.addGrid.classList.toggle("armed", this.placing === "grid");
     this.canvas.classList.toggle("placing", this.placing !== null);
   }
 
@@ -2671,7 +2752,7 @@ class EditorView {
   private async place(event: PointerEvent): Promise<void> {
     const kind = this.placing;
     const ask = this.options.askItem;
-    if (kind === null || ask === undefined) return;
+    if (kind === null || kind === "grid" || ask === undefined) return;
 
     const screen = this.cellAt(event);
     const record = this.recordAt(screen);
@@ -2723,14 +2804,270 @@ class EditorView {
       edit.kind === "addRecord" ||
       edit.kind === "addFileKeywords" ||
       edit.kind === "moveToRecord" ||
-      edit.kind === "removeRecord";
+      edit.kind === "removeRecord" ||
+      edit.kind === "addGrid" ||
+      (edit.kind === "setGridKeyword" && edit.keyword.trim().length === 0);
     this.setStatus("適用中…");
     this.bridge.post({ type: "edit", edits: [edit] });
   }
 
+  // ---- 罫線（GRDBOX / GRDLIN。2026-09-27 利用者の決定）------------------------
+
+  /** 罫線を描く要素。線 1 本ごとに 1 つ。選んでいればつまみも足す。 */
+  private gridShapeElements(shape: GridShape): HTMLElement[] {
+    const selected = shape.key === this.selectedGrid;
+    const elements = shape.lines.map(line => {
+      const element = gridLine(line);
+      element.dataset.gridKey = shape.key;
+      element.classList.toggle("selected", selected);
+      element.title = `${shape.raw}（様式 ${shape.recordName}・ソース ${shape.sourceLine} 行目）`;
+      return element;
+    });
+    if (selected) {
+      const handle = document.createElement("div");
+      handle.className = "dds-grid-handle";
+      handle.dataset.gridKey = shape.key;
+      handle.dataset.role = "grid-resize";
+      const end = gridEnd(shape.geometry);
+      handle.style.left = `calc(var(--cell-w) * ${end.column})`;
+      handle.style.top = `calc(var(--cell-h) * ${end.row})`;
+      elements.push(handle);
+    }
+    return elements;
+  }
+
+  private selectedGridShape(): GridShape | undefined {
+    if (this.selectedGrid === undefined) return undefined;
+    return ((this.view ?? this.model)?.gridShapes ?? []).find(shape => shape.key === this.selectedGrid);
+  }
+
+  private selectGrid(key: string | undefined): void {
+    this.selected = undefined;
+    this.selectedGrid = key;
+    this.render();
+  }
+
+  /** 描いている画面サイズ（`*DS3` / `*DS4` の位置を書き換えるときにどちらの組かを決める）。 */
+  private gridScreenSize(): { size: { rows: number; columns: number } } {
+    return { size: (this.view ?? this.model)?.canvas ?? this.canvasSize() };
+  }
+
+  private startGridDraft(event: PointerEvent): void {
+    const from = this.cellAt(event);
+    const element = document.createElement("div");
+    element.className = "dds-grid-draft";
+    placeGridDraft(element, geometryFromCells(from, from));
+    this.canvas.appendChild(element);
+    this.gridDraft = { from, to: from, element };
+    event.preventDefault();
+  }
+
+  /**
+   * 引いた罫線を様式に書く。入れる様式は利用者の決定どおり:
+   * 一覧で罫線の様式を選んでいればそこ、選んでいなければ罫線の様式が 1 つならそこ、
+   * 1 つも無ければ名前を聞いて作る。2 つ以上あって選んでいなければ、選ぶよう言う。
+   */
+  private drawGrid(geometry: GridGeometry): void {
+    const keyword = buildGridKeyword(geometry, {
+      ...(this.gridColor.value ? { color: this.gridColor.value as GridColor } : {}),
+      ...(this.gridLineType.value ? { lineType: this.gridLineType.value as GridLineType } : {})
+    });
+    const gridRecords = (this.view ?? this.model)?.gridRecords ?? [];
+    const heading = this.selectedRecordHeading()?.toUpperCase();
+    const record =
+      heading !== undefined && gridRecords.includes(heading)
+        ? heading
+        : gridRecords.length === 1
+          ? gridRecords[0]
+          : undefined;
+
+    if (record !== undefined) {
+      this.pendingStatus = `様式 ${record} に罫線を引きました`;
+      this.send({ kind: "addGrid", recordName: record, keyword });
+      return;
+    }
+    if (gridRecords.length > 1) {
+      this.setStatus(`罫線を入れる様式（${gridRecords.join(" / ")}）を一覧で選んでから引いてください`);
+      return;
+    }
+    // 罫線の様式（GRDRCD）が無い。名前を聞く（一覧の見出しの ＋ と同じ入力欄）。
+    this.pendingGridKeyword = keyword;
+    this.addRecordInput.hidden = false;
+    this.addRecordInput.value = "";
+    this.addRecordInput.placeholder = "罫線の様式名（GRDRCD）";
+    this.addRecordInput.focus();
+    this.setStatus("罫線の様式（GRDRCD）がありません。様式の名前を入れて Enter で作ります（Esc で取り消し）");
+  }
+
+  private grabGrid(element: HTMLElement, event: PointerEvent): void {
+    const key = element.dataset.gridKey;
+    if (key !== this.selectedGrid) this.selectGrid(key);
+    const shape = this.selectedGridShape();
+    if (shape === undefined) return;
+    this.gridGesture = {
+      shape,
+      mode: element.dataset.role === "grid-resize" ? "resize" : "move",
+      startX: event.clientX,
+      startY: event.clientY,
+      moved: false
+    };
+    event.preventDefault();
+  }
+
+  /** 掴んだ罫線の移動量（桁・行）から、動かした後の形。画面の外へは出さない。 */
+  private gridGestureGeometry(event: PointerEvent): GridGeometry | undefined {
+    const gesture = this.gridGesture;
+    if (gesture === undefined) return undefined;
+    const rows = Math.round((event.clientY - gesture.startY) / this.lineHeight);
+    const columns = Math.round((event.clientX - gesture.startX) / this.cellWidth);
+    if (rows === 0 && columns === 0) return undefined;
+    return gesture.mode === "move"
+      ? moveGrid(gesture.shape.geometry, rows, columns, this.canvasSize())
+      : resizeGrid(gesture.shape.geometry, rows, columns, this.canvasSize());
+  }
+
+  private previewGridGesture(event: PointerEvent): void {
+    const geometry = this.gridGestureGeometry(event);
+    let draft = this.canvas.querySelector<HTMLElement>(".dds-grid-draft");
+    if (geometry === undefined) {
+      draft?.remove();
+      return;
+    }
+    this.gridGesture!.moved = true;
+    if (draft === null) {
+      draft = document.createElement("div");
+      draft.className = "dds-grid-draft";
+      this.canvas.appendChild(draft);
+    }
+    placeGridDraft(draft, geometry);
+  }
+
+  private finishGridGesture(event: PointerEvent): void {
+    const gesture = this.gridGesture!;
+    // 形は**掴みを外す前に**求める（外した後は移動量の起点が無い）。
+    const geometry = this.gridGestureGeometry(event);
+    this.gridGesture = undefined;
+    this.canvas.querySelector(".dds-grid-draft")?.remove();
+    if (!gesture.moved || geometry === undefined) return;
+    this.writeGrid(gesture.shape, geometry);
+  }
+
+  /** 罫線を書き換える。色・線種は `style` に鍵があるときだけ変える。 */
+  private writeGrid(
+    shape: GridShape,
+    geometry: GridGeometry,
+    style: { color?: GridColor | undefined; lineType?: GridLineType | undefined } = {}
+  ): void {
+    const keyword = rewriteGridKeyword(shape.raw, geometry, this.gridScreenSize(), style);
+    if (keyword === shape.raw) return;
+    this.send({ kind: "setGridKeyword", sourceLine: shape.recordLine, index: shape.index, keyword });
+  }
+
+  /** 罫線を選んでいるときのキー。Delete で消し、矢印で 1 桁・1 行動かす（項目と同じ手応え）。 */
+  private onGridKey(event: KeyboardEvent): void {
+    const shape = this.selectedGridShape();
+    if (shape === undefined) return;
+    if (event.key === "Delete" || event.key === "Backspace") {
+      event.preventDefault();
+      this.pendingStatus = "罫線を消しました";
+      this.send({ kind: "setGridKeyword", sourceLine: shape.recordLine, index: shape.index, keyword: "" });
+      return;
+    }
+    const step = arrowStep(event.key);
+    if (!step) return;
+    event.preventDefault();
+    this.writeGrid(shape, moveGrid(shape.geometry, step.row, step.column, this.canvasSize()));
+  }
+
+  /** 選んだ罫線のプロパティ。形・色・線種を変えられる（利用者の決定: 後からも変えられる）。 */
+  private renderGridProperties(shape: GridShape): void {
+    const table = document.createElement("table");
+    table.className = "dds-props dds-grid-props";
+    const row = (label: string, control: HTMLElement): void => {
+      const tr = document.createElement("tr");
+      const head = document.createElement("td");
+      head.textContent = label;
+      const cell = document.createElement("td");
+      cell.appendChild(control);
+      tr.append(head, cell);
+      table.appendChild(tr);
+    };
+    const geometry = shape.geometry;
+    row("罫線", text("span", "", `${geometry.kind === "box" ? "箱（GRDBOX）" : "線（GRDLIN）"}・様式 ${shape.recordName}`));
+    row(
+      "位置",
+      text(
+        "span",
+        "",
+        geometry.kind === "box"
+          ? `${geometry.row} 行 ${geometry.column} 桁・${geometry.depth} 行 × ${geometry.width} 桁`
+          : `${geometry.row} 行 ${geometry.column} 桁・長さ ${geometry.length}`
+      )
+    );
+
+    const select = (key: string, options: ReadonlyArray<[string, string]>, value: string, onChange: (value: string) => void) => {
+      const control = document.createElement("select");
+      control.dataset.key = key;
+      for (const [optionValue, label] of options) {
+        const option = document.createElement("option");
+        option.value = optionValue;
+        option.textContent = label;
+        option.selected = optionValue === value;
+        control.appendChild(option);
+      }
+      control.addEventListener("change", () => onChange(control.value));
+      return control;
+    };
+
+    if (geometry.kind === "box") {
+      row(
+        "形",
+        select("grid:type", BOX_TYPES, geometry.type, value =>
+          this.writeGrid(shape, { ...geometry, type: value as typeof geometry.type })
+        )
+      );
+      const rule = (key: "horizontalRule" | "verticalRule", label: string): void => {
+        const input = document.createElement("input");
+        input.type = "number";
+        input.min = "1";
+        input.dataset.key = `grid:${key}`;
+        input.value = String(geometry[key] ?? 1);
+        input.addEventListener("change", () => {
+          const value = Number(input.value);
+          if (Number.isInteger(value) && value >= 1) this.writeGrid(shape, { ...geometry, [key]: value });
+        });
+        row(label, input);
+      };
+      if (geometry.type === "HRZ" || geometry.type === "HRZVRT") rule("horizontalRule", "横の罫線の間隔");
+      if (geometry.type === "VRT" || geometry.type === "HRZVRT") rule("verticalRule", "縦の罫線の間隔");
+    } else {
+      row(
+        "形",
+        select("grid:type", LINE_TYPES, geometry.type, value =>
+          this.writeGrid(shape, { ...geometry, type: value as typeof geometry.type })
+        )
+      );
+    }
+    row(
+      "色",
+      select("grid:color", [["", "指定しない"], ...GRID_COLORS], shape.writtenColor ?? "", value =>
+        this.writeGrid(shape, geometry, { color: value ? (value as GridColor) : undefined })
+      )
+    );
+    row(
+      "線種",
+      select("grid:lintype", [["", "指定しない"], ...GRID_LINE_TYPES], shape.writtenLineType ?? "", value =>
+        this.writeGrid(shape, geometry, { lineType: value ? (value as GridLineType) : undefined })
+      )
+    );
+    const note = text("div", "dds-note", "指定しない色・線種は GRDATR（無ければ白・実線）が効きます。Delete で消せます。");
+    this.properties.replaceChildren(table, note);
+  }
+
   private select(sourceLine: number | undefined): void {
-    if (this.selected === sourceLine) return;
+    if (this.selected === sourceLine && this.selectedGrid === undefined) return;
     this.selected = sourceLine;
+    this.selectedGrid = undefined;
     this.render();
   }
 
@@ -2775,6 +3112,15 @@ class EditorView {
       const name = this.addRecordInput.value.trim();
       if (name.length === 0) return; // 空は送らない（`addKeywordButton` と同じ）。
 
+      // 罫線を引いたが罫線の様式が無かった。聞いた名前で GRDRCD の様式を作って書く。
+      if (this.pendingGridKeyword !== undefined) {
+        const keyword = this.pendingGridKeyword;
+        this.pendingRecordFocus = false;
+        this.pendingStatus = `罫線の様式 ${name.toUpperCase()} を作り、罫線を引きました`;
+        this.send({ kind: "addGrid", recordName: name, keyword, createRecord: true });
+        return;
+      }
+
       // 拒否されたら**入力欄を閉じない**（打った名前が消えると、何が悪かったのか分からない）。
       // 閉じるのは `applied` を受けたときだけ。
       this.pendingSelectRecord = name;
@@ -2799,6 +3145,8 @@ class EditorView {
   private hideAddRecord(): void {
     this.addRecordInput.hidden = true;
     this.addRecordInput.value = "";
+    this.addRecordInput.placeholder = "";
+    this.pendingGridKeyword = undefined;
   }
 
   /**
@@ -3066,6 +3414,87 @@ function overflowLine(model: RenderModel): HTMLElement | undefined {
   return element;
 }
 
+/** 色（原典 `GRDATR` の表 1）。 */
+const GRID_COLORS: ReadonlyArray<[string, string]> = [
+  ["BLU", "BLU 青"], ["GRN", "GRN 緑"], ["CYAN", "CYAN 空色"], ["RED", "RED 赤"], ["VLT", "VLT 紫"],
+  ["YLW", "YLW 黄"], ["WHT", "WHT 白"], ["GRY", "GRY グレー"], ["LBLU", "LBLU 明るい青"], ["LGRN", "LGRN 明るい緑"],
+  ["LTRQ", "LTRQ 明るい空色"], ["LRED", "LRED 明るい赤"], ["LVLT", "LVLT 明るい紫"], ["LYLW", "LYLW 明るい黄色"],
+  ["HWHT", "HWHT 高輝度の白"], ["BLK", "BLK 黒"]
+];
+/** 線種（原典 `GRDATR` の表 2）。 */
+const GRID_LINE_TYPES: ReadonlyArray<[string, string]> = [
+  ["SLD", "SLD 実線"], ["THK", "THK 太線"], ["DBL", "DBL 二重線"], ["DOT", "DOT 点線"],
+  ["DSH", "DSH 破線"], ["THKDSH", "THKDSH 太破線"], ["DBLDSH", "DBLDSH 二重破線"]
+];
+const BOX_TYPES: ReadonlyArray<[string, string]> = [
+  ["PLAIN", "PLAIN 枠だけ"], ["HRZ", "HRZ 横の罫線"], ["VRT", "VRT 縦の罫線"], ["HRZVRT", "HRZVRT 横と縦の罫線"]
+];
+const LINE_TYPES: ReadonlyArray<[string, string]> = [
+  ["UPPER", "UPPER 行の上"], ["LOWER", "LOWER 行の下"], ["LEFT", "LEFT 桁の左"], ["RIGHT", "RIGHT 桁の右"]
+];
+
+/** ツールバーの選択肢（先頭は「指定しない」）。 */
+function gridOptions(label: string, options: ReadonlyArray<[string, string]>): string {
+  return [`<option value="">${label}: 指定しない</option>`, ...options.map(([value, text]) => `<option value="${value}">${text}</option>`)].join("");
+}
+
+/** 罫線の形の右下（箱）／終わり（線）の境目。つまみを置く所。 */
+function gridEnd(geometry: GridGeometry): { row: number; column: number } {
+  if (geometry.kind === "box") return { row: geometry.row - 1 + geometry.depth, column: geometry.column - 1 + geometry.width };
+  switch (geometry.type) {
+    case "UPPER": return { row: geometry.row - 1, column: geometry.column - 1 + geometry.length };
+    case "LOWER": return { row: geometry.row, column: geometry.column - 1 + geometry.length };
+    case "LEFT": return { row: geometry.row - 1 + geometry.length, column: geometry.column - 1 };
+    case "RIGHT": return { row: geometry.row - 1 + geometry.length, column: geometry.column };
+  }
+}
+
+/** 形を動かす（画面の外へは出さない）。 */
+function moveGrid(geometry: GridGeometry, rows: number, columns: number, canvas: CanvasSize): GridGeometry {
+  const span = geometry.kind === "box"
+    ? { rows: geometry.depth, columns: geometry.width }
+    : geometry.type === "UPPER" || geometry.type === "LOWER"
+      ? { rows: 1, columns: geometry.length }
+      : { rows: geometry.length, columns: 1 };
+  return {
+    ...geometry,
+    row: clamp(geometry.row + rows, 1, Math.max(1, canvas.rows - span.rows + 1)),
+    column: clamp(geometry.column + columns, 1, Math.max(1, canvas.columns - span.columns + 1))
+  };
+}
+
+/** つまみで大きさを変える。箱は深さと幅、横線は長さ（桁）、縦線は長さ（行）。1 未満にはしない。 */
+function resizeGrid(geometry: GridGeometry, rows: number, columns: number, canvas: CanvasSize): GridGeometry {
+  if (geometry.kind === "box") {
+    return {
+      ...geometry,
+      depth: clamp(geometry.depth + rows, 1, canvas.rows - geometry.row + 1),
+      width: clamp(geometry.width + columns, 1, canvas.columns - geometry.column + 1)
+    };
+  }
+  const horizontal = geometry.type === "UPPER" || geometry.type === "LOWER";
+  return {
+    ...geometry,
+    length: horizontal
+      ? clamp(geometry.length + columns, 1, canvas.columns - geometry.column + 1)
+      : clamp(geometry.length + rows, 1, canvas.rows - geometry.row + 1)
+  };
+}
+
+/** 引いている途中・動かしている途中の枠。箱は 4 辺、線はその線の位置に細い帯で描く。 */
+function placeGridDraft(element: HTMLElement, geometry: GridGeometry): void {
+  const end = gridEnd(geometry);
+  // 箱は左上から右下まで。線は線そのものの位置（太さ 0 の帯。枠線で見せる）。
+  const horizontal = geometry.kind === "line" && (geometry.type === "UPPER" || geometry.type === "LOWER");
+  const vertical = geometry.kind === "line" && !horizontal;
+  const top = horizontal ? end.row : geometry.row - 1;
+  const left = vertical ? end.column : geometry.column - 1;
+  element.style.left = `calc(var(--cell-w) * ${left})`;
+  element.style.top = `calc(var(--cell-h) * ${top})`;
+  element.style.width = `calc(var(--cell-w) * ${end.column - left})`;
+  element.style.height = `calc(var(--cell-h) * ${end.row - top})`;
+}
+
 /** 画面に描く位置。ウィンドウの中の項目は枠の位置を足す（原典「上枠行 + 行」「左枠桁 + 桁 + 1」）。 */
 function screenPoint(item: Pick<RenderItem, "row" | "column" | "origin">): CellPoint {
   return {
@@ -3182,6 +3611,9 @@ function template(): string {
     <span class="record-name"></span>
     <button id="dds-add-field" type="button">フィールドを置く</button>
     <button id="dds-add-constant" type="button">定数を置く</button>
+    <button id="dds-add-grid" type="button" title="キャンバスをドラッグした範囲に罫線を引きます（縦横とも 2 以上なら箱、1 行なら横線、1 桁なら縦線）">罫線を引く</button>
+    <select id="dds-grid-color" title="引く罫線の色（*COLOR）。指定しないなら GRDATR・既定の白">${gridOptions("色", GRID_COLORS)}</select>
+    <select id="dds-grid-lintype" title="引く罫線の線種（*LINTYP）。指定しないなら GRDATR・既定の実線">${gridOptions("線種", GRID_LINE_TYPES)}</select>
     <span class="sep"></span>
     <button id="dds-toggle-shifts" type="button" title="DBCS の前後にある SO / SI を { } で表示します（桁は元から空いています）">SO/SI</button>
     <button id="dds-toggle-attributes" type="button" title="項目の前後 1 桁を占める属性文字を示します">属性バイト</button>

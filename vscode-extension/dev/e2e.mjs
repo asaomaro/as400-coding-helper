@@ -1668,6 +1668,134 @@ await page.waitForTimeout(400);
   );
 }
 
+// ---- 22a5. 罫線をマウスで引く・直す（2026-09-27 利用者の決定）--------------------
+await page.selectOption("#sample", { label: "window.dspf" });
+await page.waitForTimeout(400);
+{
+  const cellWidth = await cell();
+  const lineHeight = await page.evaluate(() =>
+    parseFloat(getComputedStyle(document.querySelector(".dds-frame")).getPropertyValue("--cell-h"))
+  );
+  const at = async (row, column) => {
+    const box = await page.locator(".dds-canvas").boundingBox();
+    const border = await page.$eval(".dds-canvas", n => parseFloat(getComputedStyle(n).borderLeftWidth) || 0);
+    return { x: box.x + border + (column - 0.5) * cellWidth, y: box.y + border + (row - 0.5) * lineHeight };
+  };
+  const drawFrom = async (from, to) => {
+    await page.click("#dds-add-grid");
+    const a = await at(...from);
+    const b = await at(...to);
+    await page.mouse.move(a.x, a.y);
+    await page.mouse.down();
+    await page.mouse.move(b.x, b.y, { steps: 6 });
+    await page.mouse.up();
+    await page.waitForTimeout(400);
+  };
+
+  // 1 行だけのドラッグは横線。罫線の様式が 1 つ（GRID）なので、そこへ入る。
+  await drawFrom([6, 10], [6, 40]);
+  let text = (await sourceLines()).join("\n");
+  check(
+    "**1 行のドラッグで横線（GRDLIN LOWER）を罫線の様式に書く**",
+    /GRDLIN\(\(\*POS \(6 10 31\)\) \(\*TYPE LOWER\)\)/u.test(text.replace(/-\n {5}A {38}/gu, "")),
+    JSON.stringify((await sourceLines()).slice(-4))
+  );
+  check("入った様式を状況表示で言う", (await page.$eval(".status", n => n.textContent ?? "")).includes("様式 GRID に罫線を引きました"));
+
+  // 色を選んでから箱を引く。
+  await page.selectOption("#dds-grid-color", "RED");
+  await drawFrom([15, 2], [18, 20]);
+  text = (await sourceLines()).join("\n").replace(/-\n {5}A {38}/gu, "");
+  check(
+    "**縦横 2 以上のドラッグは箱（GRDBOX）で、ツールバーの色を書く**",
+    /GRDBOX\(\(\*POS \(15 2 4 19\)\) \(\*TYPE PLAIN\) \(\*COLOR RED\)\)/u.test(text),
+    text.slice(-200)
+  );
+  await page.selectOption("#dds-grid-color", "");
+  check("引いた線がキャンバスに出る", (await page.$$eval(".dds-grid", ns => ns.length)) >= 4 + 1 + 4);
+
+  // 見本の箱（3 行 2 桁から 3 行 × 30 桁）の上辺を押して選ぶ → プロパティ。
+  const top = await at(3, 10);
+  await page.mouse.click(top.x, top.y - lineHeight / 2);
+  await page.waitForTimeout(300);
+  const props = await page.$eval(".dds-properties", n => n.textContent ?? "");
+  check("**罫線を押すと選べ、プロパティに形・色・線種が出る**", props.includes("箱（GRDBOX）") && props.includes("3 行 2 桁"), props.slice(0, 120));
+
+  await page.selectOption('.dds-properties select[data-key="grid:type"]', "HRZ");
+  await page.waitForTimeout(400);
+  text = (await sourceLines()).join("\n").replace(/-\n {5}A {38}/gu, "");
+  check("**プロパティで形を変えると *TYPE を書き換える**", /GRDBOX\(\(\*POS \(3 2 3 30\)\) \(\*TYPE HRZ 1\)\)/u.test(text), text.slice(-300));
+
+  // 選んだ箱を 1 行下へドラッグ。
+  const grab = await at(3, 12);
+  await page.mouse.move(grab.x, grab.y - lineHeight / 2);
+  await page.mouse.down();
+  await page.mouse.move(grab.x, grab.y + lineHeight / 2, { steps: 6 });
+  await page.mouse.up();
+  await page.waitForTimeout(400);
+  text = (await sourceLines()).join("\n").replace(/-\n {5}A {38}/gu, "");
+  check("**罫線をドラッグすると *POS の行を書き換える**", /GRDBOX\(\(\*POS \(4 2 3 30\)\) \(\*TYPE HRZ 1\)\)/u.test(text), text.slice(-300));
+
+  // Delete で消す。
+  await page.keyboard.press("Delete");
+  await page.waitForTimeout(400);
+  text = (await sourceLines()).join("\n").replace(/-\n {5}A {38}/gu, "");
+  check("**Delete で罫線のキーワードが消え、他の罫線と GRDATR は残る**",
+    !/\*POS \(4 2 3 30\)/u.test(text) && /GRDATR/u.test(text) && /\*POS \(6 10 31\)/u.test(text), text.slice(-300));
+
+  // 赤い箱（15 行 2 桁・4 × 19）を選び、右下のつまみを 2 桁右へ → 幅 21。矢印↓で 1 行下へ。
+  const edge = await at(15, 6);
+  await page.mouse.click(edge.x, edge.y - lineHeight / 2);
+  await page.waitForTimeout(300);
+  const handle = await page.locator(".dds-grid-handle").boundingBox();
+  check("選んだ罫線につまみが出る", handle !== null);
+  if (handle !== null) {
+    const hx = handle.x + handle.width / 2;
+    const hy = handle.y + handle.height / 2;
+    await page.mouse.move(hx, hy);
+    await page.mouse.down();
+    await page.mouse.move(hx + 2 * cellWidth, hy, { steps: 6 });
+    await page.mouse.up();
+    await page.waitForTimeout(400);
+  }
+  text = (await sourceLines()).join("\n").replace(/-\n {5}A {38}/gu, "");
+  check("**つまみで箱の幅を変えると *POS の幅を書き換える（色は残る）**", /GRDBOX\(\(\*POS \(15 2 4 21\)\) \(\*TYPE PLAIN\) \(\*COLOR RED\)\)/u.test(text), text.slice(-300));
+  await page.keyboard.press("ArrowDown");
+  await page.waitForTimeout(400);
+  text = (await sourceLines()).join("\n").replace(/-\n {5}A {38}/gu, "");
+  check("**矢印キーで罫線を 1 行動かす**", /\*POS \(16 2 4 21\)/u.test(text), text.slice(-300));
+}
+
+// 罫線の様式が無いファイルでは、名前を聞いて GRDRCD の様式を作る。
+await page.selectOption("#sample", { label: "CUSTMNT.dspf" });
+await page.waitForTimeout(400);
+{
+  const cellWidth = await cell();
+  const lineHeight = await page.evaluate(() =>
+    parseFloat(getComputedStyle(document.querySelector(".dds-frame")).getPropertyValue("--cell-h"))
+  );
+  await page.click("#dds-add-grid");
+  const box = await page.locator(".dds-canvas").boundingBox();
+  // 下の方の行は下部ドックに隠れることがある。見えている 10 行目で引く。
+  await page.mouse.move(box.x + 1.5 * cellWidth, box.y + 9.5 * lineHeight);
+  await page.mouse.down();
+  await page.mouse.move(box.x + 70.5 * cellWidth, box.y + 9.5 * lineHeight, { steps: 6 });
+  await page.mouse.up();
+  await page.waitForTimeout(300);
+  const visible = await page.$eval("#dds-add-record-input", n => !n.hidden);
+  check("**罫線の様式が無ければ、様式の名前を聞く**", visible);
+  await page.fill("#dds-add-record-input", "lines");
+  await page.keyboard.press("Enter");
+  await page.waitForTimeout(400);
+  const lines = await sourceLines();
+  const at = lines.findIndex(l => /^\s{5}A\s+R LINES\s+GRDRCD\s*$/u.test(l));
+  check(
+    "**GRDRCD の様式を作って罫線を書く**",
+    at >= 0 && /GRDLIN\(\(\*POS \(10 2 70\)\)/u.test(lines.slice(at + 1).join("\n").replace(/-\n {5}A {38}/gu, "")),
+    JSON.stringify(lines.slice(-3))
+  );
+}
+
 // ---- 22b. 実機が作成しない形を検証タブに出す（実操作調査の D18）------------
 await page.selectOption("#sample", { label: "machine-errors.dspf" });
 await page.waitForTimeout(400);
