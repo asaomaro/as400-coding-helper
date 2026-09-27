@@ -2,7 +2,7 @@
  * 探索で作ったソースを実機（SR-OSAKA）でコンパイルし、ジョブログとコンパイル・リストの誤りを出す。
  *
  *   cd /workspaces/ts5250 && node --env-file=.env --env-file=.env.verify <このファイル> <種別> <ソース> [名前] [追加パラメーター]
- *     種別: dspf | prtf | rpgle
+ *     種別: dspf | prtf | pf | rpgle
  *
  * ソースは UTF-8 のまま IFS に置き、CPYFRMSTMF でソース物理ファイル（ASAOLIB/QDDSSRC・QRPGLESRC、CCSID 5035）の
  * メンバーへ写す。リストはスプール（名前はオブジェクト名）から誤りの行（`*` 付きの下線・メッセージ番号・MESSAGE SUMMARY）だけを抜く。
@@ -18,10 +18,11 @@ const IFS = process.env.AS400_IFS_DIR;
 const name = (nameArg ?? basename(path, extname(path))).toUpperCase();
 // 既存の QDDSSRC は CCSID 1027（1 バイト文字だけ）で DBCS が落ちる。触らずに 5035 の別ファイルを使う
 const srcFile = kind === "rpgle" ? "QRPGLESRC" : kind === "clle" ? "QCLSRCJ" : "QDDSJ";
-const srcType = { dspf: "DSPF", prtf: "PRTF", rpgle: "RPGLE", clle: "CLLE" }[kind];
+const srcType = { dspf: "DSPF", prtf: "PRTF", pf: "PF", rpgle: "RPGLE", clle: "CLLE" }[kind];
 const create = {
   dspf: `CRTDSPF FILE(${LIB}/${name}) SRCFILE(${LIB}/${srcFile}) SRCMBR(${name}) OPTION(*SRC *LIST) REPLACE(*YES)`,
   prtf: `CRTPRTF FILE(${LIB}/${name}) SRCFILE(${LIB}/${srcFile}) SRCMBR(${name}) OPTION(*SRC *LIST) REPLACE(*YES)`,
+  pf: `CRTPF FILE(${LIB}/${name}) SRCFILE(${LIB}/${srcFile}) SRCMBR(${name}) OPTION(*SRC *LIST)`,
   clle: `CRTBNDCL PGM(${LIB}/${name}) SRCFILE(${LIB}/${srcFile}) SRCMBR(${name}) REPLACE(*YES)`,
   rpgle: `CRTBNDRPG PGM(${LIB}/${name}) SRCFILE(${LIB}/${srcFile}) SRCMBR(${name}) OPTION(*SRCSTMT) DBGVIEW(*SOURCE) REPLACE(*YES)`
 }[kind] + (extra.length ? ` ${extra.join(" ")}` : "");

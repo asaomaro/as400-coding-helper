@@ -1399,8 +1399,37 @@ check(
 );
 await page.fill(".kw-add-input", "DSPATR");
 await page.keyboard.press("Enter");
+await page.waitForTimeout(300);
+// **値の一覧があるキーワードは、選んでから足す**（2026-09-27 利用者の依頼。複数の値はチェックボックス）。
+check("**DSPATR を足すと値のチェックボックスが出る**", (await page.$$eval('.kw-values.new input[type="checkbox"]', ns => ns.length)) >= 7);
+await page.check('.kw-values.new input[data-key="kwn:0:RI"]');
+await page.check('.kw-values.new input[data-key="kwn:0:HI"]');
+await page.click('[data-key="kwn:add"]');
 await page.waitForTimeout(400);
-check("**足したキーワードがソースに入る**", (await rawValue()).includes("DSPATR()"), await rawValue());
+check("**選んだ値で足す（原典の順に並べる）**", / DSPATR\(HI RI\)$/u.test(await rawValue()), await rawValue());
+
+// 単一の値はドロップダウン。
+await page.click(".kw-chip.add");
+await page.fill(".kw-add-input", "COLOR");
+await page.keyboard.press("Enter");
+await page.waitForTimeout(300);
+await page.selectOption('.kw-values.new select[data-key="kwn:0"]', "RED");
+await page.click('[data-key="kwn:add"]');
+await page.waitForTimeout(400);
+check("**COLOR はドロップダウンで選んで足す**", / COLOR\(RED\)$/u.test(await rawValue()), await rawValue());
+
+// 足したチップを開くと、今の値が選ばれた状態で出て、選び直すとすぐ書き換わる。
+await page.click('.kw-chip[data-keyword="COLOR"]');
+await page.waitForTimeout(200);
+check("チップを開くと今の値が選ばれている", (await page.$eval('.kw-help select[data-key="kwv:0"]', n => n.value)) === "RED");
+await page.selectOption('.kw-help select[data-key="kwv:0"]', "BLU");
+await page.waitForTimeout(400);
+check("**開いたチップで選び直すと値が書き換わる**", / COLOR\(BLU\)$/u.test(await rawValue()), await rawValue());
+await page.click('.kw-chip[data-keyword="DSPATR"]:text("DSPATR(HI RI)")');
+await page.waitForTimeout(200);
+await page.uncheck('.kw-help input[data-key="kwv:0:RI"]');
+await page.waitForTimeout(400);
+check("**チェックを外すとその値が消える**", (await rawValue()).includes("DSPATR(HI) COLOR(BLU)"), await rawValue());
 
 // **様式のキーワードも編集できる**（OVERLAY / CFnn は様式にしか書けない）。
 await openLeftPane();
@@ -2808,21 +2837,22 @@ check(
   );
 
   // D3: 括弧が必須のキーワードは `NAME()` のまま書かず、生テキストの欄で続きを打たせる。
+  // 値の一覧を持つキーワード（COLOR など）は値の選択が開くので、一覧の無い TEXT で見る。
   await page.click('.dds-item.field');
   await page.waitForTimeout(200);
-  const beforeColor = await sourceLines();
-  await addKeyword("COLOR");
+  const beforeText = await sourceLines();
+  await addKeyword("TEXT");
   check(
     "**括弧が必須のキーワードは空の括弧で書かない**（D3。実機 CPD7512 / CPD7498）",
-    (await sourceLines()).join("\n") === beforeColor.join("\n") &&
-      (await page.$eval('input[data-key="kw:raw"]', n => n.value)).endsWith("COLOR()") &&
+    (await sourceLines()).join("\n") === beforeText.join("\n") &&
+      (await page.$eval('input[data-key="kw:raw"]', n => n.value)).endsWith("TEXT()") &&
       (await page.evaluate(() => document.activeElement?.getAttribute("data-key"))) === "kw:raw",
     await page.$eval('input[data-key="kw:raw"]', n => n.value)
   );
-  await page.fill('input[data-key="kw:raw"]', (await page.$eval('input[data-key="kw:raw"]', n => n.value)).replace("COLOR()", "COLOR(RED)"));
+  await page.fill('input[data-key="kw:raw"]', (await page.$eval('input[data-key="kw:raw"]', n => n.value)).replace("TEXT()", "TEXT('NOTE')"));
   await page.press('input[data-key="kw:raw"]', "Enter");
   await page.waitForTimeout(300);
-  check("続きを打って Enter で確定すると書かれる", (await sourceLines()).some(l => l.includes("COLOR(RED)")));
+  check("続きを打って Enter で確定すると書かれる", (await sourceLines()).some(l => l.includes("TEXT('NOTE')")));
 }
 
 await page.click("#dds-tab-source");

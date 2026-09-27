@@ -9,6 +9,12 @@ import {
 } from "../../core/dds/ddsConditioning";
 import { toLogicalUnits } from "../../core/dds/ddsLogicalUnits";
 import {
+  buildKeywordWithValues,
+  missingKeywordValue,
+  readKeywordValues,
+  type KeywordValueSlot
+} from "../../core/dds/ddsKeywordValues";
+import {
   conditionLineCount,
   formatConditionText,
   parseConditionText
@@ -295,6 +301,8 @@ class EditorView {
   private keywordHelp: readonly DdsKeywordHelp[] = [];
   /** 解説を開いているキーワード（`<行>:<何番目>`）。選択が変われば当たらなくなる＝閉じる。 */
   private openKeyword: string | undefined;
+  /** 足そうとしているキーワード（値を選んでから足す）。どの欄のものかも持つ。 */
+  private newKeywordValues: { sourceLine: number; name: string; slots: readonly KeywordValueSlot[] } | undefined;
   /**
    * プレビューで使う印刷密度。**利用者が選べる**（ソースの値を既定にする）。
    *
@@ -1668,14 +1676,24 @@ class EditorView {
       if (this.openKeyword === key && found !== undefined) {
         chip.classList.add("open");
         help = keywordHelpBlock(found);
+        // **値を選べるキーワードは、開いたところで選ばせる**（手で `COLOR(RED)` と打たなくてよい）。
+        if (entry.kind === "keyword" && found.values !== undefined && options.readOnly !== true) {
+          help.appendChild(this.existingValuePicker(sourceLine, entries, index, found.values));
+        }
       }
     });
 
     if (options.readOnly !== true) {
       chips.appendChild(this.addKeywordButton(sourceLine, keywords, level));
     }
+    const pending = this.newKeywordValues;
+    const newPicker =
+      pending !== undefined && pending.sourceLine === sourceLine && options.readOnly !== true
+        ? this.newValuePicker(sourceLine, keywords, pending.name, pending.slots)
+        : undefined;
     chips.addEventListener("keydown", event => this.onKeywordKey(event, chips));
     section.appendChild(chips);
+    if (newPicker !== undefined) section.appendChild(newPicker);
     if (help !== undefined) section.appendChild(help);
 
     // **生テキストは編集できる。** 引数を直に書き換える手段であり、
@@ -1807,6 +1825,13 @@ class EditorView {
       // **括弧の中が必須のキーワードは確定しない。** `NAME()` のまま書くと実機は作成しない（CPD7512 / CPD7498。D3）。
       // 生テキストの欄に `NAME()` を入れて括弧の中に焦点を置き、続きを打って Enter で確定してもらう。
       // 括弧ごと省略できるもの（`PRINT` / `CA03` / `SFLEND`）は名前だけで確定する。原典に無いものも確定しない側に倒す。
+      // **値の一覧があるキーワードは選ばせてから足す**（2026-09-27 利用者の依頼）。
+      if (help !== undefined && help.values !== undefined && requiresParameters(help)) {
+        this.newKeywordValues = { sourceLine, name: help.name, slots: help.values };
+        this.setStatus(`${help.name} の値を選んで「追加」を押します`);
+        this.render();
+        return;
+      }
       if (help === undefined || requiresParameters(help)) {
         const raw = wrap.closest(".kw-section")?.querySelector<HTMLInputElement>('input[data-key="kw:raw"]');
         if (raw) {
@@ -1820,6 +1845,79 @@ class EditorView {
       this.sendKeywords(sourceLine, `${keywords} ${name}`.trim());
     });
 
+    return wrap;
+  }
+
+  /**
+   * 既にあるキーワードの値を選ぶ（チップを開いたところに出す）。選ぶとすぐ書き換える。
+   * 今の引数が一覧の形に読めない（P フィールド・並びが違う）ときは選ばせず、理由を出す。
+   */
+  private existingValuePicker(
+    sourceLine: number,
+    entries: readonly KeywordEntry[],
+    index: number,
+    slots: readonly KeywordValueSlot[]
+  ): HTMLElement {
+    const entry = entries[index];
+    const current = readKeywordValues(slots, entry.parameters);
+    if (current === undefined) {
+      return text("div", "kw-values note", "今の値は一覧の形に読めないため、選択では直せません（下の欄で直してください）");
+    }
+    return valuePicker(slots, current, "kwv", selections => {
+      const missing = missingKeywordValue(slots, selections);
+      if (missing !== undefined) {
+        this.setStatus(`${entry.name} の ${missing + 1} 番目の値を選んでください`);
+        return;
+      }
+      const raw = buildKeywordWithValues(entry.name, slots, selections);
+      if (raw === entry.raw) return;
+      this.pendingStatus = `${raw} にしました`;
+      this.sendKeywords(sourceLine, entries.map((other, position) => (position === index ? raw : other.raw)).join(" "));
+    });
+  }
+
+  /** 足そうとしているキーワードの値を選ぶ。「追加」で書く、「取消」で閉じる。 */
+  private newValuePicker(
+    sourceLine: number,
+    keywords: string,
+    name: string,
+    slots: readonly KeywordValueSlot[]
+  ): HTMLElement {
+    const wrap = document.createElement("div");
+    wrap.className = "kw-values new";
+    wrap.appendChild(text("div", "kw-values-title", `${name} の値`));
+    let selections: string[][] = slots.map(() => []);
+    wrap.appendChild(valuePicker(slots, selections, "kwn", next => {
+      selections = next;
+    }));
+    const add = document.createElement("button");
+    add.type = "button";
+    add.textContent = "追加";
+    add.dataset.key = "kwn:add";
+    add.addEventListener("click", () => {
+      const missing = missingKeywordValue(slots, selections);
+      if (missing !== undefined) {
+        this.setStatus(`${name} の ${missing + 1} 番目の値を選んでください`);
+        return;
+      }
+      const raw = buildKeywordWithValues(name, slots, selections);
+      this.newKeywordValues = undefined;
+      this.pendingStatus = `${raw} を足しました`;
+      this.sendKeywords(sourceLine, `${keywords} ${raw}`.trim());
+    });
+    const cancel = document.createElement("button");
+    cancel.type = "button";
+    cancel.textContent = "取消";
+    cancel.dataset.key = "kwn:cancel";
+    cancel.addEventListener("click", () => {
+      this.newKeywordValues = undefined;
+      this.setStatus("");
+      this.render();
+    });
+    const buttons = document.createElement("div");
+    buttons.className = "kw-values-buttons";
+    buttons.append(add, cancel);
+    wrap.appendChild(buttons);
     return wrap;
   }
 
@@ -3068,6 +3166,7 @@ class EditorView {
     if (this.selected === sourceLine && this.selectedGrid === undefined) return;
     this.selected = sourceLine;
     this.selectedGrid = undefined;
+    this.newKeywordValues = undefined;
     this.render();
   }
 
@@ -3334,6 +3433,96 @@ const LEVEL_LABELS: Readonly<Record<string, string>> = {
  * 原典の解説。**ここで文章を書き起こさない**——出所は
  * `docs/origin/generate-dds-keywords.mjs` が原典から生成したデータだけ。
  */
+/**
+ * 値を選ぶ部品。1 つだけ選ぶ位置はドロップダウン、一覧に無い値も書ける位置は候補つきの入力欄、
+ * 複数並べられる位置はチェックボックスの一覧（利用者の決定。SDA の「表示属性の選択」と同じ考え方）。
+ * 選び直すたびに `onChange` へ全部の位置の選択を渡す。
+ */
+function valuePicker(
+  slots: readonly KeywordValueSlot[],
+  initial: readonly (readonly string[])[],
+  keyPrefix: string,
+  onChange: (selections: string[][]) => void
+): HTMLElement {
+  const selections = slots.map((_, index) => [...(initial[index] ?? [])]);
+  const block = document.createElement("div");
+  block.className = "kw-values";
+  const describe = (choice: { value: string; label?: string }): string =>
+    choice.label ? `${choice.value}  ${choice.label}` : choice.value;
+
+  slots.forEach((slot, index) => {
+    const row = document.createElement("div");
+    row.className = "kw-values-slot";
+    const key = `${keyPrefix}:${index}`;
+
+    if (slot.multiple) {
+      for (const choice of slot.choices) {
+        const label = document.createElement("label");
+        label.className = "kw-values-check";
+        const box = document.createElement("input");
+        box.type = "checkbox";
+        box.value = choice.value;
+        box.dataset.key = `${key}:${choice.value}`;
+        box.checked = selections[index].includes(choice.value);
+        box.addEventListener("change", () => {
+          selections[index] = box.checked
+            ? [...selections[index], choice.value]
+            : selections[index].filter(value => value !== choice.value);
+          onChange(selections.map(values => [...values]));
+        });
+        label.append(box, document.createTextNode(` ${describe(choice)}`));
+        row.appendChild(label);
+      }
+    } else if (slot.other) {
+      // 一覧に無い値も書ける位置。候補つきの入力欄（選んでも打ってもよい）。
+      const input = document.createElement("input");
+      input.className = "kw-values-input";
+      input.dataset.key = key;
+      input.value = selections[index][0] ?? "";
+      input.placeholder = slot.choices.length > 0 ? `${slot.choices.map(choice => choice.value).join(" / ")} など` : "値";
+      if (slot.choices.length > 0) {
+        const list = document.createElement("datalist");
+        list.id = `dds-kwv-${keyPrefix}-${index}`;
+        for (const choice of slot.choices) {
+          const option = document.createElement("option");
+          option.value = choice.value;
+          if (choice.label) option.label = choice.label;
+          list.appendChild(option);
+        }
+        input.setAttribute("list", list.id);
+        row.appendChild(list);
+      }
+      input.addEventListener("change", () => {
+        selections[index] = input.value.trim().length > 0 ? [input.value.trim()] : [];
+        onChange(selections.map(values => [...values]));
+      });
+      row.appendChild(input);
+    } else {
+      const select = document.createElement("select");
+      select.className = "kw-values-select";
+      select.dataset.key = key;
+      const empty = document.createElement("option");
+      empty.value = "";
+      empty.textContent = slot.optional ? "（指定しない）" : "（選んでください）";
+      select.appendChild(empty);
+      for (const choice of slot.choices) {
+        const option = document.createElement("option");
+        option.value = choice.value;
+        option.textContent = describe(choice);
+        option.selected = selections[index][0] === choice.value;
+        select.appendChild(option);
+      }
+      select.addEventListener("change", () => {
+        selections[index] = select.value ? [select.value] : [];
+        onChange(selections.map(values => [...values]));
+      });
+      row.appendChild(select);
+    }
+    block.appendChild(row);
+  });
+  return block;
+}
+
 function keywordHelpBlock(help: DdsKeywordHelp): HTMLElement {
   const block = document.createElement("div");
   block.className = "kw-help";
