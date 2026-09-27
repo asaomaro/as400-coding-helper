@@ -1560,12 +1560,26 @@ await page.evaluate(() => {
 await page.waitForTimeout(200);
 {
   // 位置は**既にある項目から**割り出す（1 行 30 桁の見出し）。画素の固定値は CI の描画で外れる。
+  // 画面の外（スクロールで隠れた所）を押さないよう、先に見える所へ出す。
+  await page.locator('.dds-item[data-row="1"]').first().scrollIntoViewIfNeeded();
   const anchor = await page.locator('.dds-item[data-row="1"]').first().boundingBox();
   const cell = await cellAt();
   await page.click("#dds-add-constant");
   await page.mouse.click(anchor.x + cell * 25, anchor.y + anchor.height / 2);
-  await page.waitForSelector("#ask-text", { state: "visible", timeout: 5000 });
-  await page.fill("#ask-text", "PAGE");
+  const opened = await page
+    .waitForSelector("#ask-text", { state: "visible", timeout: 5000 })
+    .then(() => true, () => false);
+  if (!opened) {
+    // 開かなかったら理由の手がかりを残す（押した所・状態表示・構え）。
+    console.log(JSON.stringify({
+      anchor,
+      cell,
+      status: await page.$eval(".status", n => n.textContent),
+      armed: await page.$eval("#dds-add-constant", n => n.className),
+      hit: await page.evaluate(([x, y]) => document.elementFromPoint(x, y)?.className ?? null, [anchor.x + cell * 25, anchor.y + anchor.height / 2])
+    }));
+  }
+  await page.fill("#ask-text", "PAGE", { timeout: 5000 });
   await page.click("#ask-ok");
   await page.waitForTimeout(300);
   const added = (await sourceLines()).find(l => l.includes("'PAGE'")) ?? "";
