@@ -579,6 +579,16 @@
 - 検証の担保: sh⇔ps1 の差異は `tools/aidev-cli/test/run.sh` のパリティ節（pwsh 環境/CI）で機械的に突合する。
   ローカルに pwsh が無いと skip されるため、**ps1 変更は CI（pwsh 同梱の runner）での実行を必ず確認**する。
 
+### PJ の skill の置き場所
+
+- **PJ の skill は `skills/`**（`ibmi-remote` / `rpgunit-test` / `cl-command-def` / `rpg-spec-def`）。
+  2026-09-28 に `.claude/skills/` から移した。`~/.claude/skills/<名前>` からシンボリック・リンクで
+  読ませるので、**どの PJ で作業していても使える**。`.claude/skills/` に戻さない
+  （リンクと両方にあると同じ skill が 2 つ読み込まれる）。
+- skill の中のパスはこのリポジトリのルートからの相対で書く。`tools/run-rpgunit.mjs` は
+  `skills/rpgunit-test/templates/test-report.md` を実行時に読む（置き場所を動かしたら
+  `--self-test` が落ちる）。
+
 <!-- agent-ninja-START -->
 ## Agent Skills
 

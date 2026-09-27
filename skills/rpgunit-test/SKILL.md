@@ -4,6 +4,10 @@ description: RPGUnit（iRPGUnit）で IBM i の単体テストを書き、ビル
 allowed-tools: [Bash, Read, Write]
 ---
 
+> 置き場所はリポジトリ `ibmi-dogubako` の `skills/rpgunit-test/`（`~/.claude/skills/` からはリンクで見せている）。
+> 文中の相対パス（`tools/…` `docs/…` `vscode-extension/…`）は**そのリポジトリのルートからの相対**。
+> 別の PJ で作業しているときは、リポジトリの場所（例: `/workspaces/ibmi-dogubako`）を補って読む。
+
 # RPGUnit でテストを書く・走らせる・結果を取る
 
 **SR-OSAKA に導入済み**（`RPGUNIT` ライブラリー・iRPGUnit **v6.0.2.r**）。
@@ -317,7 +321,7 @@ cd /workspaces/ts5250 && node --env-file=.env --env-file=.env.verify \
 ```
 
 終了コードは `0`=全合格 / `1`=テスト失敗 / `2`=道具の異常（ビルド失敗を含む）。
-詳細は [`tools/README.md`](../../../tools/README.md)。
+詳細は [`tools/README.md`](../../tools/README.md)。
 
 - **先に `cd vscode-extension && npm run compile`**。道具は VS Code の Test Explorer と同じ共通部品
   （`vscode-extension/out/testing/*.js`）で動く。無ければ終了コード 2 でそう言う。
@@ -454,7 +458,7 @@ TESTASCII (MSGTST-&gt;MSGTST:500)
 node tools/run-rpgunit.mjs <ソース> --md build/rpgunit.md
 ```
 
-**書式は `.claude/skills/rpgunit-test/templates/test-report.md`**（このディレクトリ）。
+**書式は `skills/rpgunit-test/templates/test-report.md`**（このディレクトリ）。
 道具が実行時に読むので、**テンプレートを直せば出力が変わる**（コードは触らない）。
 `--template <パス>` で別の書式も使える。
 

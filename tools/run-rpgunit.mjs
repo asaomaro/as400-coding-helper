@@ -49,7 +49,7 @@ import { fileURLToPath, pathToFileURL } from "node:url";
 const TS5250 = process.env.TS5250_DIR ?? "/workspaces/ts5250";
 const HERE = dirname(fileURLToPath(import.meta.url));
 /** 書式は skill 側に置く（道具ではなく手順の一部なので）。 */
-const DEFAULT_TEMPLATE = join(HERE, "..", ".claude", "skills", "rpgunit-test", "templates", "test-report.md");
+const DEFAULT_TEMPLATE = join(HERE, "..", "skills", "rpgunit-test", "templates", "test-report.md");
 
 // ---------------------------------------------------------------- 共通部品
 // VS Code の Test Explorer と同じ実装。未ビルドなら何を打てばよいかを出して終了コード 2。
@@ -86,7 +86,7 @@ const USAGE = `使い方: node tools/run-rpgunit.mjs <ソースファイル> [�
   --xml <パス>        JUnit XML の保存先（ローカル）
   --md <パス>         テスト結果を Markdown で保存（書式はテンプレート）
   --template <パス>   Markdown の書式（既定:
-                      .claude/skills/rpgunit-test/templates/test-report.md）
+                      skills/rpgunit-test/templates/test-report.md）
   --json              要約を JSON で出す（自律ループ向け）
   --keep              IFS の作業ファイル（送ったソース・変換した写し・結果 XML）を実行後に消さない
                       （実行前の結果 XML は常に消す。古い結果を読まないため）
@@ -674,6 +674,10 @@ function selfTest() {
     console.log(`${ok ? "  ✓" : "  ✗"} ${label}${ok ? "" : `\n      got  ${JSON.stringify(got)}\n      want ${JSON.stringify(want)}`}`);
     if (!ok) ng += 1;
   };
+
+  console.log("レポートの書式");
+  // skill の置き場所を動かすとここが黙って外れる（--md のときだけ読むため）。
+  eq(existsSync(DEFAULT_TEMPLATE), true, `既定のテンプレートがある（${relative(process.cwd(), DEFAULT_TEMPLATE)}）`);
 
   console.log("引数の解決");
   eq(parseArgs(["a/FIXTST2.rpgle"]).pgm, "FIXTST2", "--pgm 省略時はファイル名（大文字）");

@@ -4,6 +4,10 @@ description: IBM i 実機への転送・コンパイル・エラー取得・コ�
 allowed-tools: [Bash, Read, Write]
 ---
 
+> 置き場所はリポジトリ `ibmi-dogubako` の `skills/ibmi-remote/`（`~/.claude/skills/` からはリンクで見せている）。
+> 文中の相対パス（`tools/…` `docs/…` `vscode-extension/…`）は**そのリポジトリのルートからの相対**。
+> 別の PJ で作業しているときは、リポジトリの場所（例: `/workspaces/ibmi-dogubako`）を補って読む。
+
 IBM i 実機（pub400 等）へ ssh で到達し、**ソースメンバーの送受信・コンパイル・
 コンパイルエラーの構造化取得**を行う PJ 固有 skill。設計書
 `docs/workflow/ibmi-dev-workflow.md` の 4.1（AI の自律ループ）の実行手段。

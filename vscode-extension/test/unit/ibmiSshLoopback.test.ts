@@ -142,8 +142,8 @@ function runCl(ibmi: FakeIbmi, command: string): void {
   }
 }
 
-/** 止まったら落とす（mocha の既定 2 秒より短く、理由が分かるように）。 */
-function within<T>(promise: Promise<T>, ms = 1500): Promise<T> {
+/** 止まったら落とす（mocha の上限 10 秒より短く、理由が分かるように）。 */
+function within<T>(promise: Promise<T>, ms = 5000): Promise<T> {
   return Promise.race([
     promise,
     new Promise<T>((_, reject) => setTimeout(() => reject(new Error(`${ms}ms 以内に終わらない（exec の close を待ったまま止まっている）`)), ms))
@@ -151,7 +151,7 @@ function within<T>(promise: Promise<T>, ms = 1500): Promise<T> {
 }
 
 suite("IBM i 同期: 本物の SSH で transport を通す", function () {
-  // 鍵の生成と SSH の握手に時間がかかる。止まったかどうかは `within` が 1.5 秒で見る。
+  // 鍵の生成と SSH の握手に時間がかかる。止まったかどうかは `within` が 5 秒で見る（本当に止まれば終わらないので、負荷の高い機械でも誤判定しない長さ）。
   this.timeout(10000);
   let ibmi: FakeIbmi;
   let server: Awaited<ReturnType<typeof startServer>>;

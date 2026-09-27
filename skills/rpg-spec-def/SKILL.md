@@ -4,6 +4,10 @@ description: RPG固定長仕様書(H/F/D/I/C/O/P)のプロンプター定義JSON
 allowed-tools: [Bash, Read, Write, WebSearch]
 ---
 
+> 置き場所はリポジトリ `ibmi-dogubako` の `skills/rpg-spec-def/`（`~/.claude/skills/` からはリンクで見せている）。
+> 文中の相対パス（`tools/…` `docs/…` `vscode-extension/…`）は**そのリポジトリのルートからの相対**。
+> 別の PJ で作業しているときは、リポジトリの場所（例: `/workspaces/ibmi-dogubako`）を補って読む。
+
 RPG 固定長仕様書（H/F/D/I/C/O/P）の**プロンプター定義 JSON**を、**固定長フォーマットリファレンスの原典を正**
 として作成・検証する PJ固有 skill。CL の `cl-command-def` に対応する RPG 版で、aidev ワークフローの実作業
 （research での桁位置取得、coding での JSON 生成）を担う。**固定長フォーマットのみ対応**（free format 非対応）。

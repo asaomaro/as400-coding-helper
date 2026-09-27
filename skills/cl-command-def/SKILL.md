@@ -4,6 +4,10 @@ description: CLコマンドのプロンプター定義JSONを、IBM Documentatio
 allowed-tools: [Bash, Read, Write, WebSearch]
 ---
 
+> 置き場所はリポジトリ `ibmi-dogubako` の `skills/cl-command-def/`（`~/.claude/skills/` からはリンクで見せている）。
+> 文中の相対パス（`tools/…` `docs/…` `vscode-extension/…`）は**そのリポジトリのルートからの相対**。
+> 別の PJ で作業しているときは、リポジトリの場所（例: `/workspaces/ibmi-dogubako`）を補って読む。
+
 CL コマンドの**プロンプター定義 JSON**を、**IBM Documentation のコマンド仕様を正**として作成・検証する
 PJ固有 skill。aidev ワークフローの実作業（research での仕様取得、coding での JSON 生成）を担う。
 
